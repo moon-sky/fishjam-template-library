@@ -1,0 +1,788 @@
+#ifndef FTL_DTE_HELPER_HPP
+#define FTL_DTE_HELPER_HPP
+#pragma once
+
+
+//#ifdef USE_EXPORT
+//#  include "ftlDTEHelper.h"
+//#endif
+
+namespace FTL
+{
+    LPCTSTR CFDTEUtil::GetWindowTypeString(vsWindowType nWindowType)
+    {
+        switch(nWindowType)
+        {
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeCodeWindow);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeDesigner);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeBrowser);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeWatch);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeLocals);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeImmediate);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeSolutionExplorer);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeProperties);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeFind);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeFindReplace);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeToolbox);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeLinkedWindowFrame);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeMainWindow);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypePreview);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeColorPalette);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeToolWindow);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeDocument);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeOutput);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeTaskList);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeAutos);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeCallStack);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeThreads);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeDocumentOutline);
+            HANDLE_CASE_RETURN_STRING(vsWindowTypeRunningDocuments);
+        default:
+            FTLASSERT(FALSE);
+            break;
+        }
+        return TEXT("");
+    }
+
+    LPCTSTR CFDTEUtil::GetElementKindString(vsCMElement nElementKind)
+    {
+        switch(nElementKind)
+        {
+            HANDLE_CASE_RETURN_STRING(vsCMElementOther);
+            HANDLE_CASE_RETURN_STRING(vsCMElementClass);
+            HANDLE_CASE_RETURN_STRING(vsCMElementFunction);
+            HANDLE_CASE_RETURN_STRING(vsCMElementVariable);
+            HANDLE_CASE_RETURN_STRING(vsCMElementProperty);
+            HANDLE_CASE_RETURN_STRING(vsCMElementNamespace);
+            HANDLE_CASE_RETURN_STRING(vsCMElementParameter);
+            HANDLE_CASE_RETURN_STRING(vsCMElementAttribute);
+            HANDLE_CASE_RETURN_STRING(vsCMElementInterface);
+            HANDLE_CASE_RETURN_STRING(vsCMElementDelegate);
+            HANDLE_CASE_RETURN_STRING(vsCMElementEnum);
+            HANDLE_CASE_RETURN_STRING(vsCMElementStruct);
+            HANDLE_CASE_RETURN_STRING(vsCMElementUnion);
+            HANDLE_CASE_RETURN_STRING(vsCMElementLocalDeclStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementFunctionInvokeStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementPropertySetStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementAssignmentStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementInheritsStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementImplementsStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementOptionStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementVBAttributeStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementVBAttributeGroup);
+            HANDLE_CASE_RETURN_STRING(vsCMElementEventsDeclaration);
+            HANDLE_CASE_RETURN_STRING(vsCMElementUDTDecl);
+            HANDLE_CASE_RETURN_STRING(vsCMElementDeclareDecl);
+            HANDLE_CASE_RETURN_STRING(vsCMElementDefineStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementTypeDef);
+            HANDLE_CASE_RETURN_STRING(vsCMElementIncludeStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementUsingStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementMacro);
+            HANDLE_CASE_RETURN_STRING(vsCMElementMap);
+            HANDLE_CASE_RETURN_STRING(vsCMElementIDLImport);
+            HANDLE_CASE_RETURN_STRING(vsCMElementIDLImportLib);
+            HANDLE_CASE_RETURN_STRING(vsCMElementIDLCoClass);
+            HANDLE_CASE_RETURN_STRING(vsCMElementIDLLibrary);
+            HANDLE_CASE_RETURN_STRING(vsCMElementImportStmt);
+            HANDLE_CASE_RETURN_STRING(vsCMElementMapEntry);
+            HANDLE_CASE_RETURN_STRING(vsCMElementVCBase);
+            HANDLE_CASE_RETURN_STRING(vsCMElementEvent);
+            HANDLE_CASE_RETURN_STRING(vsCMElementModule);
+        default:
+            FTLASSERT(FALSE);
+            break;
+        }
+        return TEXT("");
+    }
+
+    LPCTSTR CFDTEUtil::GetFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind)
+    {
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstructor, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyGet, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyLet, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertySet, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPutRef, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyAssign, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionSub, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionFunction, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionTopLevel, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionDestructor, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionOperator, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionVirtual, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPure, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstant, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionShared, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionInline, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionComMethod, TEXT(","));
+       
+        FTLASSERT(0 == nFunctionKind);
+        return strFormater.GetString();
+    }
+
+#define HANDLE_STRING_COMPARE_RETURN(val, exp, fun) \
+    if(0 == fun((val),(exp))){\
+        return TEXT(#exp);\
+    }
+
+    LPCTSTR CFDTEUtil::GetDTEGuidStringInfo(const CComBSTR& bstring)
+    {
+        USES_CONVERSION;
+        LPSTR pszCompareString = OLE2A(bstring);
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindText, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindHTML, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindResource, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindBinary, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsViewKindPrimary, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsViewKindAny, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsViewKindDebugging, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsViewKindCode, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsViewKindDesigner, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsViewKindTextView, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindTaskList, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindToolbox, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindCallStack, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindThread, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindLocals, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindAutoLocals, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindWatch, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindProperties, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindSolutionExplorer, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindOutput, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindObjectBrowser, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindObjectBrowser, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindMacroExplorer, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindDynamicHelp, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindClassView, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindResourceView, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindDocumentOutline, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindServerExplorer, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindCommandWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindFindSymbol, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindFindSymbolResults, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindFindReplace, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindFindResults1, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindFindResults2, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindMainWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindLinkedWindowFrame, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindWebBrowser, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWizardAddSubProject, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWizardAddItem, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWizardNewProject, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectKindMisc, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectItemsKindMisc, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectItemKindMisc, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectKindUnmodeled, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectKindSolutionItems, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectItemsKindSolutionItems, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectItemKindSolutionItems, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectsKindSolution, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsAddInCmdGroup, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextSolutionBuilding, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextDebugging, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextFullScreenMode, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextDesignMode, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextNoSolution, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextEmptySolution, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextSolutionHasSingleProject, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextSolutionHasMultipleProjects, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextMacroRecording, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextMacroRecordingToolbar, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsMiscFilesProjectUniqueName, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsSolutionItemsProjectUniqueName, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectItemKindPhysicalFile, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectItemKindPhysicalFolder, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectItemKindVirtualFolder, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectItemKindSubProject, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_vk_Primary, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_vk_Debugging, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_vk_Code, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_vk_Designer, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_vk_TextView, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_TaskList, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_Toolbox, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_CallStackWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ThreadWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_LocalsWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_AutoLocalsWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_WatchWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ImmedWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_PropertyBrowser, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_SProjectWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_OutputWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ObjectBrowser, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ContextWindow, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ClassView, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_GUID_AddItemWizard, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_GUID_NewProjectWizard, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsCPP, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsHTML_IE3, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsHTML_RFC1866, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsFortran_Fixed, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsFortran_Free, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsJava, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsVBSMacro, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsIDL, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsCATIDSolution, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsCATIDSolutionBrowseObject, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsCATIDMiscFilesProject, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsCATIDMiscFilesProjectItem, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsCATIDGenericProject, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsCATIDDocument, strcmp );
+        
+        FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Guid String: %s\n"), COLE2T(bstring));
+        return TEXT("Unknown");
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    CFDTEInfoStringOutput::CFDTEInfoStringOutput()
+    {
+        m_nIndent = 2;
+        m_pszIndentSpace = NULL;
+    }
+
+    CFDTEInfoStringOutput::~CFDTEInfoStringOutput()
+    {
+        SAFE_DELETE_ARRAY(m_pszIndentSpace);
+    }
+
+    HRESULT CFDTEInfoStringOutput::SetIndent(int nIndent)
+    {
+        m_nIndent = nIndent;
+        SAFE_DELETE_ARRAY(m_pszIndentSpace);
+        m_pszIndentSpace  = new TCHAR[m_nIndent + 1];
+        for (int i = 0; i < m_nIndent; i++)
+        {
+            m_pszIndentSpace[i] = ' ';
+        }
+        m_pszIndentSpace[m_nIndent] = '\0';
+        
+        return S_OK;
+    }
+
+    VOID CFDTEInfoStringOutput::OutputIndentSpace()
+    {
+        FTLTRACE(TEXT("%s"), m_pszIndentSpace);
+    }
+
+    HRESULT CFDTEInfoStringOutput::OutputInfoName(LPCTSTR pszInfoName)
+    {
+        //OutputIndentSpace();
+        FTLTRACE(TEXT("<<%s>>:\n"), pszInfoName);
+        return S_OK;
+    }
+
+    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, LPCTSTR pValue)
+    {
+        USES_CONVERSION;
+        if (pszKey && pValue)
+        {
+            OutputIndentSpace();
+            FTLTRACE(TEXT("Key=%s,Value=%s\n"), pszKey, pValue);
+            return S_OK;
+        }
+        return S_FALSE;
+    }
+
+
+    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, BSTR* pValue)
+    {
+        USES_CONVERSION;
+        if (pszKey && pValue)
+        {
+            OutputIndentSpace();
+            FTLTRACE(TEXT("Key=%s,Value=%s\n"), pszKey, OLE2CT(*pValue));
+            return S_OK;
+        }
+        return S_FALSE;
+    }
+
+    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, long nCount)
+    {
+        USES_CONVERSION;
+        if (pszKey)
+        {
+            OutputIndentSpace();
+            FTLTRACE(TEXT("Key=%s,Value=%d\n"), pszKey, nCount);
+            return S_OK;
+        }
+        return S_FALSE;
+    }
+
+    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, VARIANT* pValue)
+    {
+        USES_CONVERSION;
+        if (pszKey && pValue)
+        {
+#pragma TODO(VARIANT is Safe Array)
+            CComVariant varString(*pValue);
+            OutputIndentSpace();
+            varString.ChangeType(VT_BSTR);
+            if (varString.bstrVal)
+            {
+                FTLTRACE(TEXT("Key=%s,Value=%s\n"), pszKey, OLE2CT(varString.bstrVal));
+            }
+            else
+            {
+                FTLTRACE(TEXT("Key=%s,Value=NULL\n"), pszKey);
+            }
+            return S_OK;
+        }
+        return S_FALSE;
+    }
+
+    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue)
+    {
+        USES_CONVERSION;
+        if (pszKey && pValue)
+        {
+            OutputIndentSpace();
+            if (VT_ARRAY == pValue->vt)
+            {
+                FTLASSERT(FALSE);
+            }
+            else
+            {
+                CComVariant var(*pValue);
+                var.ChangeType(VT_BSTR);
+                FTLTRACE(TEXT("  Key=%s,[%d in %d] Value=%s\n"), pszKey, nIndex, nTotal, OLE2CT(var.bstrVal));
+            }
+            return S_OK;
+        }
+        return S_FALSE;
+    }
+
+    HRESULT CFDTEDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("DTE")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<_DTE>     spDTE(m_pObj);
+            if (spDTE)
+            {
+                CComBSTR    strName;
+                COM_VERIFY(spDTE->get_Name(&strName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &strName));
+
+                CComBSTR    strFileName;
+                COM_VERIFY(spDTE->get_FileName(&strFileName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FileName"), &strFileName));
+
+                CComBSTR    strVersion;
+                COM_VERIFY(spDTE->get_Version(&strVersion));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Version"), &strVersion));
+
+                CComPtr<Windows>    spWindows;
+                COM_VERIFY(spDTE->get_Windows(&spWindows));
+                CFWindowsDumper winsDumper(spWindows, pInfoOutput, m_nIndent + 2);
+
+                CComPtr<_Solution>  spSolution;
+                COM_VERIFY(spDTE->get_Solution(&spSolution));
+                CFSolutionDumper solutionDumper(spSolution, pInfoOutput, m_nIndent + 2);
+
+                CComPtr<Document>   spActiveDocument;
+                COM_VERIFY(spDTE->get_ActiveDocument(&spActiveDocument));
+                CFDocumentDumper    activeDocumentDumper(spActiveDocument, pInfoOutput, m_nIndent + 2);
+
+                CComPtr<Events> spEvents;
+                COM_VERIFY(spDTE->get_Events(&spEvents));
+                CFEventsDumper      eventsDumper(spEvents, pInfoOutput, m_nIndent + 2);
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFSolutionDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Solution")));
+        if (m_pObj)
+        {
+            CComQIPtr<_Solution>     spSolution(m_pObj);
+            if (spSolution)
+            {
+                CComBSTR bstrFileName;
+                COM_VERIFY(spSolution->get_FileName(&bstrFileName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FileName"), &bstrFileName));
+
+                long nCount = 0;
+                COM_VERIFY(spSolution->get_Count(&nCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("ProjectCount"), nCount));
+
+                for (long nIndex = 1; nIndex <= nCount; nIndex++)
+                {
+                    CComPtr<Project>    spProject;
+                    COM_VERIFY(spSolution->Item(CComVariant(nIndex), &spProject));
+                    CFProjectDumper projectDumper(spProject, pInfoOutput, m_nIndent + 2);
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFProjectDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Project")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<Project>     spProject(m_pObj);
+            if (spProject)
+            {
+                CComBSTR bstrName;
+                COM_VERIFY(spProject->get_Name(&bstrName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
+
+                CComBSTR bstrKind;
+                COM_VERIFY(spProject->get_Kind(&bstrKind));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), CFDTEUtil::GetDTEGuidStringInfo(bstrKind)));
+
+                CComPtr<ProjectItems>   spProjectItems;
+                COM_VERIFY(spProject->get_ProjectItems(&spProjectItems));
+                CFProjectItemsDumper projectItemsDumper(spProjectItems, pInfoOutput, m_nIndent + 2);
+
+                CComPtr<CodeModel>  spCodeModel;
+                COM_VERIFY(spProject->get_CodeModel(&spCodeModel));
+                CFCodeModelDumper codeModelDumper(spCodeModel, pInfoOutput, m_nIndent + 2);
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFProjectItemsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("ProjectItems")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<ProjectItems>     spProjectItems(m_pObj);
+            if (spProjectItems)
+            {
+                CComBSTR bstrKind;
+                COM_VERIFY(spProjectItems->get_Kind(&bstrKind));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), &bstrKind));
+
+                long nCount = 0;
+                COM_VERIFY(spProjectItems->get_Count(&nCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), nCount));
+
+                for (long nIndex = 1; nIndex <= nCount; nIndex++)
+                {
+                    CComPtr<ProjectItem>    spProjectItem;
+                    COM_VERIFY(spProjectItems->Item(CComVariant(nIndex), &spProjectItem));
+                    CFProjectItemDumper projectItemDumper(spProjectItem, pInfoOutput, m_nIndent + 2);
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFProjectItemDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("ProjectItem")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<ProjectItem>     spProjectItem(m_pObj);
+            if (spProjectItem)
+            {
+                CComBSTR bstrName;
+                COM_VERIFY(spProjectItem->get_Name(&bstrName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
+
+                CComBSTR bstrKind;
+                COM_VERIFY(spProjectItem->get_Kind(&bstrKind));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), CFDTEUtil::GetDTEGuidStringInfo(bstrKind)));
+    
+                CComPtr<IDispatch> spProjectItemModel;
+                COM_VERIFY(spProjectItem->get_Object(&spProjectItemModel));
+                COM_DETECT_INTERFACE_FROM_LIST(spProjectItemModel);
+                
+                CComPtr<FileCodeModel> spFileCodeModel;
+                COM_VERIFY_EXCEPT1(spProjectItem->get_FileCodeModel(&spFileCodeModel), S_FALSE);
+                if (SUCCEEDED(hr) && spFileCodeModel)
+                {
+                    COM_DETECT_INTERFACE_FROM_LIST(spFileCodeModel);
+                }
+                CFFileCodeModelDumper fileCodeModelDumper(spFileCodeModel, pInfoOutput, m_nIndent + 2);
+
+                CComVariant varExtenderNames;
+                COM_VERIFY(spProjectItem->get_ExtenderNames(&varExtenderNames));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("ExtenderNames"), &varExtenderNames));
+
+                short sFileCount = 0;
+                COM_VERIFY(spProjectItem->get_FileCount(&sFileCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), sFileCount));
+
+                for (short index = 1; index <= sFileCount; index++)
+                {
+                    CComBSTR bstrFileName;
+                    COM_VERIFY(spProjectItem->get_FileNames(index, &bstrFileName));
+                    COM_VERIFY(pInfoOutput->OnOutput(TEXT("FileNames"),sFileCount, index, &CComVariant(bstrFileName)));
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFEventsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Events")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<Events>     spEvents(m_pObj);
+            if (spEvents)
+            {
+
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFWindowsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Windows")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<Windows>     spWindows(m_pObj);
+            if (spWindows)
+            {
+                long nCount = 0;
+                COM_VERIFY(spWindows->get_Count(&nCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), nCount));
+
+                for (long index = 1; index <= nCount; index++)
+                {
+                    CComPtr<Window> spWindow;
+                    COM_VERIFY(spWindows->Item(CComVariant(index), &spWindow));
+                    CFWindowDumper winDumper(spWindow, pInfoOutput, m_nIndent + 2);
+                }
+
+                CComPtr<_DTE> spDTE;
+                COM_VERIFY(spWindows->get_DTE(&spDTE));
+                CComPtr<_DTE> spDTEParent;
+                COM_VERIFY(spWindows->get_Parent(&spDTEParent));
+                if (spDTE != spDTEParent)
+                {
+                    FTLTRACE(TEXT("DTE and DTEParent is Not Same\n"));
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFWindowDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Window")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<Window>     spWindow(m_pObj);
+            if (spWindow)
+            {
+                CComBSTR bstrCaption;
+                COM_VERIFY(spWindow->get_Caption(&bstrCaption));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Caption"), &bstrCaption));
+                
+                VARIANT_BOOL bVisible = VARIANT_TRUE;
+                COM_VERIFY(spWindow->get_Visible(&bVisible));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Visible"), (long)bVisible));
+
+                long nLeft = 0, nTop = 0, nWidth = 0, nHeight = 0;
+                COM_VERIFY(spWindow->get_Left(&nLeft));
+                COM_VERIFY(spWindow->get_Top(&nTop));
+                COM_VERIFY(spWindow->get_Width(&nWidth));
+                COM_VERIFY(spWindow->get_Height(&nHeight));
+
+                CFStringFormater strPosition;
+                strPosition.Format(TEXT("[%d,%d], {%d x %d}"), nLeft, nTop, nWidth, nHeight);
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("[left,top],{width x Height}"), strPosition.GetString()));
+
+                vsWindowType winType;
+                COM_VERIFY(spWindow->get_Type(&winType));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), CFDTEUtil::GetWindowTypeString(winType)));
+
+                long lHWnd = 0;
+                COM_VERIFY(spWindow->get_HWnd(&lHWnd));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("HWwnd"), lHWnd));
+
+                CComBSTR bstrKind;
+                COM_VERIFY(spWindow->get_Kind(&bstrKind));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), &bstrKind));
+
+                CComBSTR bstrObjectKind;
+                COM_VERIFY(spWindow->get_ObjectKind(&bstrObjectKind));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("ObjectKind"), CFDTEUtil::GetDTEGuidStringInfo(bstrObjectKind)));
+
+                CComPtr<IDispatch> spToolObject;
+                COM_VERIFY(spWindow->get_Object(&spToolObject));
+                if (spToolObject)
+                {
+                    COM_DETECT_INTERFACE_FROM_LIST(spToolObject);
+                }
+
+            }
+        }
+        return hr;
+    }
+
+
+    //Document
+    HRESULT CFDocumentDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Document")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<Document>     spDocument(m_pObj);
+            if (spDocument)
+            {
+                CComBSTR bstrKind;
+                COM_VERIFY(spDocument->get_Kind(&bstrKind));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), CFDTEUtil::GetDTEGuidStringInfo(bstrKind)));
+
+                CComBSTR bstrFullName;
+                COM_VERIFY(spDocument->get_FullName(&bstrFullName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FullName"), &bstrFullName));
+
+                CComPtr<IDispatch> spSelection;
+                COM_VERIFY(spDocument->get_Selection(&spSelection));
+                COM_DETECT_INTERFACE_FROM_LIST(spSelection);
+                CFTextSelectionDumper   selectionDumper(spSelection, pInfoOutput, m_nIndent + 2);
+
+                CComPtr<Window> spActiveWindow;
+                COM_VERIFY(spDocument->get_ActiveWindow(&spActiveWindow));
+                CFWindowDumper  activeWindowDumper(spActiveWindow, pInfoOutput, m_nIndent + 2);
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFTextSelectionDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("TextSelection")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<TextSelection> spTextSelection(m_pObj);
+            if (spTextSelection)
+            {
+
+            }
+        }
+        return hr;
+    }
+
+    //Code
+
+    HRESULT CFFileCodeModelDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("FileCodeModel")));
+        if (m_pObj)
+        {
+            CComQIPtr<FileCodeModel>    spFileCodeModel(m_pObj);
+            if (spFileCodeModel)
+            {
+                CComBSTR bstrLanguage;
+                COM_VERIFY(spFileCodeModel->get_Language(&bstrLanguage));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Language"), &bstrLanguage));
+
+                CComPtr<CodeElements>   spCodeElements;
+                COM_VERIFY(spFileCodeModel->get_CodeElements(&spCodeElements));
+                CFCodeElementsDumper   codeElementsDumper(spCodeElements, pInfoOutput, m_nIndent + 2);
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFCodeModelDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CodeModel")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<CodeModel>     spCodeModel(m_pObj);
+            if (spCodeModel)
+            {
+                CComBSTR bstrLanguage;
+                COM_VERIFY(spCodeModel->get_Language(&bstrLanguage));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Language"), CFDTEUtil::GetDTEGuidStringInfo(bstrLanguage)));
+
+                CComPtr<CodeElements>   spCodeElements;
+                COM_VERIFY(spCodeModel->get_CodeElements(&spCodeElements));
+                CFCodeElementsDumper   codeElementsDumper(spCodeElements, pInfoOutput, m_nIndent + 2);
+
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFCodeElementsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CodeElements")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<CodeElements>     spCodeElements(m_pObj);
+            if (spCodeElements)
+            {
+                long nCount = 0;
+                COM_VERIFY(spCodeElements->get_Count(&nCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), nCount));
+
+                for (long nIndex = 1; nIndex <= nCount; nIndex++)
+                {
+                    CComPtr<CodeElement> spCodeElement;
+                    COM_VERIFY(spCodeElements->Item(CComVariant(nIndex), &spCodeElement));
+                    CFCodeElementDumper codeElementDumper(spCodeElement, pInfoOutput, m_nIndent + 2);
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFCodeElementDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CodeElement")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<CodeElement>     spCodeElement(m_pObj);
+            if (spCodeElement)
+            {
+                CComBSTR bstrName;
+                COM_VERIFY(spCodeElement->get_Name(&bstrName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FullName"), &bstrName));
+
+                CComBSTR bstrFullName;
+                COM_VERIFY(spCodeElement->get_FullName(&bstrFullName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FullName"), &bstrFullName));
+
+                vsCMElement elementKind = vsCMElementOther;
+                COM_VERIFY(spCodeElement->get_Kind(&elementKind));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FullName"), CFDTEUtil::GetElementKindString(elementKind)));
+            }
+        }
+        return hr;
+    }
+
+
+}
+
+
+#endif //FTL_FILE_HPP
