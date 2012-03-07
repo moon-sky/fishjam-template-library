@@ -1,0 +1,40 @@
+add-in的后台线程必须是STA? 
+System.Threading.Thread myThread = new xxx;
+myThread.SetApartmentState(System.Threading.ApartmentState.STA);
+myThread.Start();
+
+
+
+template<typename T>
+class QueryInterfaceForBackgroundThread
+{
+public:
+	QueryInterfaceForBackgroundThread(IUnknown* pUnk)
+	{
+		HRESULT hr = E_FAIL;
+		COM_VERIFY(CoMarshalInterThreadInterfaceInStream(__uuidof(T), pUnk, &m_spStream));
+	}
+	CComPtr<T>	GetInterface()
+	{
+		HRESULT hr = E_FAIL;
+		if (!m_spInterface)
+		{
+			COM_VERIFY(CoGetInterfaceAndReleaseStream(m_spStream, __uuidof(T), (VOID**)&m_spInterface));
+			m_spStream.Detach();
+		}
+		return m_spInterface;
+	}
+	operator CComPtr<T> () 
+	{ 
+		return GetInterface(); 
+	}
+	~QueryInterfaceForBackgroundThread()
+	{
+		
+	}
+private:
+	CComPtr<IStream>	m_spStream;
+	CComPtr<T>	m_spInterface;
+};
+
+Solution -> Prject -> ProjectItems -> ProjectItem

@@ -3,9 +3,10 @@
 #pragma once
 
 
-//#ifdef USE_EXPORT
-//#  include "ftlDTEHelper.h"
-//#endif
+#ifdef USE_EXPORT
+#  include "ftlDTEHelper.h"
+#endif
+#include "ftlComDetect.h"
 
 namespace FTL
 {
@@ -266,7 +267,7 @@ namespace FTL
 
     HRESULT CFDTEInfoStringOutput::OutputInfoName(LPCTSTR pszInfoName)
     {
-        //OutputIndentSpace();
+        OutputIndentSpace();
         FTLTRACE(TEXT("<<%s>>:\n"), pszInfoName);
         return S_OK;
     }
@@ -500,7 +501,10 @@ namespace FTL
     
                 CComPtr<IDispatch> spProjectItemModel;
                 COM_VERIFY(spProjectItem->get_Object(&spProjectItemModel));
-                COM_DETECT_INTERFACE_FROM_LIST(spProjectItemModel);
+                if (SUCCEEDED(hr) && spProjectItemModel)
+                {
+                    COM_DETECT_INTERFACE_FROM_LIST(spProjectItemModel);
+                }
                 
                 CComPtr<FileCodeModel> spFileCodeModel;
                 COM_VERIFY_EXCEPT1(spProjectItem->get_FileCodeModel(&spFileCodeModel), S_FALSE);
@@ -767,7 +771,7 @@ namespace FTL
             {
                 CComBSTR bstrName;
                 COM_VERIFY(spCodeElement->get_Name(&bstrName));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FullName"), &bstrName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
 
                 CComBSTR bstrFullName;
                 COM_VERIFY(spCodeElement->get_FullName(&bstrFullName));

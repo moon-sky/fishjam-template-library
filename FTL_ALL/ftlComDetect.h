@@ -244,9 +244,6 @@ namespace FTL
 # define COM_DETECT_INTERFACE_FROM_REGISTER(pUnk)    (void)pUnk;
 #endif  //NONE FTL_DEBUG
 
-namespace FTL
-{
-
 #ifdef FTL_DEBUG
 
     #define BEGIN_DETECT_INTERFACE() \
@@ -325,6 +322,8 @@ namespace FTL
             return dwInterfaceCount;\
         }
 
+namespace FTL
+{
     class CFComDetect
     {
     public:
