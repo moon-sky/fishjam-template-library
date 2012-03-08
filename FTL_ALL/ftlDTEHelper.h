@@ -9,11 +9,13 @@
 
 namespace FTL
 {
-    using namespace EnvDTE;
-    
+    //using namespace EnvDTE;
+
     FTLEXPORT class CFDTEUtil
     {
     public:
+        FTLINLINE static LPCTSTR GetMsoControlTypeString(MsoControlType controlType);
+        FTLINLINE static LPCTSTR GetMsoBarTypeString(MsoBarType barType);
         FTLINLINE static LPCTSTR GetWindowTypeString(vsWindowType nWindowType);
         FTLINLINE static LPCTSTR GetElementKindString(vsCMElement nElementKind);
         FTLINLINE static LPCTSTR GetFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind); //vsCMFunction
@@ -27,7 +29,7 @@ namespace FTL
         virtual HRESULT OutputInfoName(LPCTSTR pszInfoName) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue) = 0;
-        virtual HRESULT OnOutput(LPCTSTR pszKey, long nCount) = 0;
+        virtual HRESULT OnOutput(LPCTSTR pszKey, long nValue) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT* pValue) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue) = 0;
     };
@@ -41,7 +43,7 @@ namespace FTL
         FTLINLINE virtual HRESULT OutputInfoName(LPCTSTR pszInfoName);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue);
-        FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, long nCount);
+        FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, long nValue);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT* pValue);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue);
     protected:
@@ -86,6 +88,7 @@ namespace FTL
         FTLINLINE HRESULT GetObjInfo(IDTEInfoOutput* pInfoOutput);
     };
 
+    //Solution  info (project/projectitem)
     class CFSolutionDumper : public CFDTEInterfaceDumperBase<CFSolutionDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFSolutionDumper);
@@ -224,7 +227,69 @@ namespace FTL
     };
 
 
+    //CommandBars
+    class CFCommandBarsDumper : public CFDTEInterfaceDumperBase<CFCommandBarsDumper>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFCommandBarsDumper);
+    public:
+        FTLINLINE explicit CFCommandBarsDumper(IDispatch* pObj, IDTEInfoOutput* pInfoOutput, int nIndent)
+            :CFDTEInterfaceDumperBase<CFCommandBarsDumper>(pObj, pInfoOutput, nIndent){}
+    public:
+        FTLINLINE HRESULT GetObjInfo(IDTEInfoOutput* pInfoOutput);
+    };
+
+    class CFCommandBarDumper : public CFDTEInterfaceDumperBase<CFCommandBarDumper>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFCommandBarDumper);
+    public:
+        FTLINLINE explicit CFCommandBarDumper(IDispatch* pObj, IDTEInfoOutput* pInfoOutput, int nIndent)
+            :CFDTEInterfaceDumperBase<CFCommandBarDumper>(pObj, pInfoOutput, nIndent){}
+    public:
+        FTLINLINE HRESULT GetObjInfo(IDTEInfoOutput* pInfoOutput);
+    };
+
+    class CFCommandBarControlsDumper : public CFDTEInterfaceDumperBase<CFCommandBarControlsDumper>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFCommandBarControlsDumper);
+    public:
+        FTLINLINE explicit CFCommandBarControlsDumper(IDispatch* pObj, IDTEInfoOutput* pInfoOutput, int nIndent)
+            :CFDTEInterfaceDumperBase<CFCommandBarControlsDumper>(pObj, pInfoOutput, nIndent){}
+    public:
+        FTLINLINE HRESULT GetObjInfo(IDTEInfoOutput* pInfoOutput);
+    };
+
+    class CFCommandBarControlDumper : public CFDTEInterfaceDumperBase<CFCommandBarControlDumper>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFCommandBarControlDumper);
+    public:
+        FTLINLINE explicit CFCommandBarControlDumper(IDispatch* pObj, IDTEInfoOutput* pInfoOutput, int nIndent)
+            :CFDTEInterfaceDumperBase<CFCommandBarControlDumper>(pObj, pInfoOutput, nIndent){}
+    public:
+        FTLINLINE HRESULT GetObjInfo(IDTEInfoOutput* pInfoOutput);
+    };
+
+
+    //Commands
+    class CFCommandsDumper : public CFDTEInterfaceDumperBase<CFCommandsDumper>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFCommandsDumper);
+    public:
+        FTLINLINE explicit CFCommandsDumper(IDispatch* pObj, IDTEInfoOutput* pInfoOutput, int nIndent)
+            :CFDTEInterfaceDumperBase<CFCommandsDumper>(pObj, pInfoOutput, nIndent){}
+    public:
+        FTLINLINE HRESULT GetObjInfo(IDTEInfoOutput* pInfoOutput);
+    };
     
+    class CFCommandDumper : public CFDTEInterfaceDumperBase<CFCommandDumper>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFCommandDumper);
+    public:
+        FTLINLINE explicit CFCommandDumper(IDispatch* pObj, IDTEInfoOutput* pInfoOutput, int nIndent)
+            :CFDTEInterfaceDumperBase<CFCommandDumper>(pObj, pInfoOutput, nIndent){}
+    public:
+        FTLINLINE HRESULT GetObjInfo(IDTEInfoOutput* pInfoOutput);
+    };
+
     
 
 }//namespace FTL

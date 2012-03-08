@@ -10,6 +10,58 @@
 
 namespace FTL
 {
+    LPCTSTR CFDTEUtil::GetMsoControlTypeString(MsoControlType controlType)
+    {
+        switch(controlType)
+        {
+            HANDLE_CASE_RETURN_STRING(msoControlCustom);
+            HANDLE_CASE_RETURN_STRING(msoControlButton);
+            HANDLE_CASE_RETURN_STRING(msoControlEdit);
+            HANDLE_CASE_RETURN_STRING(msoControlDropdown);
+            HANDLE_CASE_RETURN_STRING(msoControlComboBox);
+            HANDLE_CASE_RETURN_STRING(msoControlButtonDropdown);
+            HANDLE_CASE_RETURN_STRING(msoControlSplitDropdown);
+            HANDLE_CASE_RETURN_STRING(msoControlOCXDropdown);
+            HANDLE_CASE_RETURN_STRING(msoControlGenericDropdown);
+            HANDLE_CASE_RETURN_STRING(msoControlGraphicDropdown);
+            HANDLE_CASE_RETURN_STRING(msoControlPopup);
+            HANDLE_CASE_RETURN_STRING(msoControlGraphicPopup);
+            HANDLE_CASE_RETURN_STRING(msoControlButtonPopup);
+            HANDLE_CASE_RETURN_STRING(msoControlSplitButtonPopup);
+            HANDLE_CASE_RETURN_STRING(msoControlSplitButtonMRUPopup);
+            HANDLE_CASE_RETURN_STRING(msoControlLabel);
+            HANDLE_CASE_RETURN_STRING(msoControlExpandingGrid);
+            HANDLE_CASE_RETURN_STRING(msoControlSplitExpandingGrid);
+            HANDLE_CASE_RETURN_STRING(msoControlGrid);
+            HANDLE_CASE_RETURN_STRING(msoControlGauge);
+            HANDLE_CASE_RETURN_STRING(msoControlGraphicCombo);
+            HANDLE_CASE_RETURN_STRING(msoControlPane);
+            HANDLE_CASE_RETURN_STRING(msoControlActiveX);
+            HANDLE_CASE_RETURN_STRING(msoControlSpinner);
+            HANDLE_CASE_RETURN_STRING(msoControlLabelEx);
+            HANDLE_CASE_RETURN_STRING(msoControlWorkPane);
+            HANDLE_CASE_RETURN_STRING(msoControlAutoCompleteCombo);
+        default:
+            FTLASSERT(FALSE);
+            break;
+        }
+        return TEXT("Unknown");
+    }
+
+    LPCTSTR CFDTEUtil::GetMsoBarTypeString(MsoBarType barType)
+    {
+        switch(barType)
+        {
+            HANDLE_CASE_RETURN_STRING(msoBarTypeNormal);
+            HANDLE_CASE_RETURN_STRING(msoBarTypeMenuBar);
+            HANDLE_CASE_RETURN_STRING(msoBarTypePopup);
+        default:
+            FTLASSERT(FALSE);
+            break;
+        }
+        return TEXT("Unknown");
+    }
+
     LPCTSTR CFDTEUtil::GetWindowTypeString(vsWindowType nWindowType)
     {
         switch(nWindowType)
@@ -278,7 +330,7 @@ namespace FTL
         if (pszKey && pValue)
         {
             OutputIndentSpace();
-            FTLTRACE(TEXT("Key=%s,Value=%s\n"), pszKey, pValue);
+            FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, pValue);
             return S_OK;
         }
         return S_FALSE;
@@ -291,19 +343,19 @@ namespace FTL
         if (pszKey && pValue)
         {
             OutputIndentSpace();
-            FTLTRACE(TEXT("Key=%s,Value=%s\n"), pszKey, OLE2CT(*pValue));
+            FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(*pValue));
             return S_OK;
         }
         return S_FALSE;
     }
 
-    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, long nCount)
+    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, long nValue)
     {
         USES_CONVERSION;
         if (pszKey)
         {
             OutputIndentSpace();
-            FTLTRACE(TEXT("Key=%s,Value=%d\n"), pszKey, nCount);
+            FTLTRACE(TEXT("  Key=%s,Value=%d\n"), pszKey, nValue);
             return S_OK;
         }
         return S_FALSE;
@@ -315,16 +367,16 @@ namespace FTL
         if (pszKey && pValue)
         {
 #pragma TODO(VARIANT is Safe Array)
-            CComVariant varString(*pValue);
             OutputIndentSpace();
-            varString.ChangeType(VT_BSTR);
-            if (varString.bstrVal)
+            if (VT_BSTR == (VT_BSTR & pValue->vt))
             {
-                FTLTRACE(TEXT("Key=%s,Value=%s\n"), pszKey, OLE2CT(varString.bstrVal));
+                CComVariant varString(*pValue);
+                varString.ChangeType(VT_BSTR);
+                FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(varString.bstrVal));
             }
             else
             {
-                FTLTRACE(TEXT("Key=%s,Value=NULL\n"), pszKey);
+                FTLTRACE(TEXT("  Key=%s,Value=NULL\n"), pszKey);
             }
             return S_OK;
         }
@@ -785,6 +837,235 @@ namespace FTL
         return hr;
     }
 
+    HRESULT CFCommandBarsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("_CommandBars")));
+        if (m_pObj)
+        {
+            CComQIPtr<_CommandBars>     spCommandBars(m_pObj);
+            if (spCommandBars)
+            {
+                int nToolBarCount = 0;
+                COM_VERIFY(spCommandBars->get_Count(&nToolBarCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), nToolBarCount));
+                for (int nToolBarIndex = 1; nToolBarIndex <= nToolBarCount; ++ nToolBarIndex)
+                {
+                    CComPtr<CommandBar>  spCommandBar;
+                    COM_VERIFY(spCommandBars->get_Item(CComVariant(nToolBarIndex), &spCommandBar));
+                    CFCommandBarDumper commandBarDumper(spCommandBar, pInfoOutput, m_nIndent + 2);
+                }
+
+                CComPtr<CommandBarControl>	spActiveControl;
+                COM_VERIFY(spCommandBars->get_ActionControl(&spActiveControl));
+                if (spActiveControl)
+                {
+                    CFCommandBarControlDumper commandBarControlDumper(spActiveControl, pInfoOutput, m_nIndent + 2);
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFCommandBarDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBar")));
+        if (m_pObj)
+        {
+            CComQIPtr<CommandBar>     spCommandBar(m_pObj);
+            if (spCommandBar)
+            {
+                CComBSTR bstrName;
+                COM_VERIFY(spCommandBar->get_Name(&bstrName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
+
+                MsoBarType barType;
+                COM_VERIFY(spCommandBar->get_Type(&barType));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), CFDTEUtil::GetMsoBarTypeString(barType)));
+                //VARIANT_BOOL	isBuiltIn = VARIANT_FALSE;
+                //COM_VERIFY(spCommandBar->get_BuiltIn(&isBuiltIn));
+                //COM_VERIFY(pInfoOutput->OnOutput(TEXT("BuiltIn"), isBuiltIn));
+
+                CComBSTR bstrContext;
+                COM_VERIFY(spCommandBar->get_Context(&bstrContext));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Context"), &bstrContext));
+
+                int nIndex = 0;
+                COM_VERIFY(spCommandBar->get_Index(&nIndex));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Index"), nIndex));
+
+                int nLeft = 0, nTop = 0, nWidth = 0, nHeight = 0;
+                
+                COM_VERIFY(spCommandBar->get_Left(&nLeft));
+                COM_VERIFY(spCommandBar->get_Top(&nTop));
+                COM_VERIFY(spCommandBar->get_Width(&nWidth));
+                COM_VERIFY(spCommandBar->get_Height(&nHeight));
+                FTL::CFStringFormater formater;
+                formater.Format(TEXT("[%d,%d], {%d x %d}"), nLeft, nTop, nWidth, nHeight);
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("[left,top], {width x height}"), formater.GetString()));
+
+                CComPtr<CommandBarControls> spCommandBarControls;
+                COM_VERIFY(spCommandBar->get_Controls(&spCommandBarControls));
+                if (spCommandBarControls)
+                {
+                    CFCommandBarControlsDumper commandBarControlsDumper(spCommandBarControls, pInfoOutput, m_nIndent + 2);
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFCommandBarControlsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBarControls")));
+        if (m_pObj)
+        {
+            CComQIPtr<CommandBarControls>     spCommandBarControls(m_pObj);
+            if (spCommandBarControls)
+            {
+                int nCount = 0;
+                COM_VERIFY(spCommandBarControls->get_Count(&nCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), nCount));
+                for (int nIndex = 1; nIndex <= nCount; ++nIndex)
+                {
+                    CComPtr<CommandBarControl>	spCommandBarControl;
+                    COM_VERIFY(spCommandBarControls->get_Item(CComVariant(nIndex), &spCommandBarControl));
+                    if (spCommandBarControl)
+                    {
+                        CFCommandBarControlDumper commandBarControlDumper(spCommandBarControl, pInfoOutput, m_nIndent + 2);
+                    }
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFCommandBarControlDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBarControl")));
+        if (m_pObj)
+        {
+            CComQIPtr<CommandBarControl>     spCommandBarControl(m_pObj);
+            if (spCommandBarControl)
+            {
+                CComBSTR bstrCaptrion;
+                COM_VERIFY(spCommandBarControl->get_Caption(&bstrCaptrion));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Caption"), &bstrCaptrion));
+
+                MsoControlType controlType = msoControlCustom;
+                COM_VERIFY(spCommandBarControl->get_Type(&controlType));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), CFDTEUtil::GetMsoControlTypeString(controlType)));
+
+#if 0
+                //All is ""
+                CComBSTR bstrDescriptionText;
+                COM_VERIFY(spCommandBarControl->get_DescriptionText(&bstrDescriptionText));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("DescriptionText"), &bstrDescriptionText));
+#endif 
+
+                CComBSTR bstrTooltipText;
+                COM_VERIFY(spCommandBarControl->get_TooltipText(&bstrTooltipText));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("TooltipText"), &bstrTooltipText));
+
+                int nId = -1;
+                COM_VERIFY(spCommandBarControl->get_Id(&nId));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Id"), nId));
+
+                int nIndex = -1;
+                COM_VERIFY(spCommandBarControl->get_Index(&nIndex));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Index"), nIndex));
+
+                long lInstanceId = -1;
+                COM_VERIFY(spCommandBarControl->get_InstanceId(&lInstanceId));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("InstanceId"), lInstanceId));
+
+                VARIANT_BOOL bVisible = VARIANT_FALSE;
+                COM_VERIFY(spCommandBarControl->get_Visible(&bVisible));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Visible"), bVisible));
+
+                CComBSTR bstrTag;
+                COM_VERIFY(spCommandBarControl->get_Tag(&bstrTag));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Tag"), &bstrTag));
+
+                CComBSTR bstrOnAction;
+                COM_VERIFY_EXCEPT1(spCommandBarControl->get_OnAction(&bstrOnAction), DISP_E_MEMBERNOTFOUND);
+                if (SUCCEEDED(hr) && bstrOnAction)
+                {
+                    COM_VERIFY(pInfoOutput->OnOutput(TEXT("OnAction"), &bstrOnAction));
+                }
+            }
+        }
+        return hr;
+    }
+
+
+    HRESULT CFCommandsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Commands")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<Commands>     spCommands(m_pObj);
+            if (spCommands)
+            {
+                long lCommandCount = 0;
+                COM_VERIFY(spCommands->get_Count(&lCommandCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), lCommandCount));
+
+                for (long lCommandIndex = 1; lCommandIndex <= lCommandCount; ++lCommandIndex)
+                {
+                    CComPtr<Command>  spCommand;
+                    //TODO: ( pCommands->Item( CComVariant( "DoxygenAddin.Connect.DoxygenAddin" ), 0, &dx_cmd ), dx_cmd );
+                    //  Need Text as Index ?
+                    //用目前这种方式也可以获取，但ID有什么用？
+                    COM_VERIFY(spCommands->Item(CComVariant(lCommandIndex),0, &spCommand));
+                    if (spCommand)
+                    {
+                        CFCommandDumper commandDumper(spCommand, pInfoOutput, m_nIndent + 2);
+                    }
+                }
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFCommandDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Command")));
+        if (m_pObj)
+        {
+            CComQIPtr<Command>     spCommand(m_pObj);
+            if (spCommand)
+            {
+                CComBSTR bstrName;
+                COM_VERIFY(spCommand->get_Name(&bstrName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
+
+                CComBSTR bstrLocalizedName;
+                COM_VERIFY(spCommand->get_LocalizedName(&bstrLocalizedName));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("LocalizedName"), &bstrLocalizedName));
+
+                CComBSTR bstrGuid;
+                //Guid 有什么用？很多是一样，比如 File.FormProperties 和 Edit.ChangeBinding
+                COM_VERIFY(spCommand->get_Guid(&bstrGuid));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Guid"), &bstrGuid));
+
+                long nId = -1;
+                COM_VERIFY(spCommand->get_ID(&nId));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("ID"), nId));
+
+                CComVariant varBindings; //BSTR
+                COM_VERIFY(spCommand->get_Bindings(&varBindings));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Bindings"), &varBindings));
+            }
+        }
+        return hr;
+    }
 
 }
 

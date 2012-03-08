@@ -1031,8 +1031,8 @@ namespace FTL
         BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(s_dwTLSIndex);
         if (NULL == pInfo)
         {
-            //FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
-            //    __FILE__LINE__, GetCurrentThreadId());
+            FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
+                __FILE__LINE__, GetCurrentThreadId());
             pInfo = new BlockElapseInfo();
             ZeroMemory(pInfo, sizeof(BlockElapseInfo));
             TlsSetValue(s_dwTLSIndex, pInfo);
@@ -1073,8 +1073,8 @@ namespace FTL
             pInfo->indent--;
             if (0 == pInfo->indent)
             {
-                //FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
-                //    __FILE__LINE__, GetCurrentThreadId());
+                FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
+                    __FILE__LINE__, GetCurrentThreadId());
                 delete pInfo;
                 TlsSetValue(s_dwTLSIndex, NULL);
             }

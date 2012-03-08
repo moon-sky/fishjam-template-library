@@ -3,6 +3,16 @@ System.Threading.Thread myThread = new xxx;
 myThread.SetApartmentState(System.Threading.ApartmentState.STA);
 myThread.Start();
 
+CommandBars集合包含程序中的所有命令条，如：工具条和菜单条
+CommandBar对象可以包含其它的 CommandBar 对象，这些对象是作为按钮或菜单命令来用的
+每一个CommandBar都将通过CommandBarControls对象被引用
+CommandBarControls又可以包含一组CommandBarControl对象
+每一个CommandBarControl可以包含一个CommandBar对象，并可以通过它来存取控件属性
+
+CommandBarControl可以有三种表现形式：
+ 弹出式(CommandBarPopup)：相当于菜单条的一个菜单项。
+ 组合框(CommandBarComboBox)：类似于工具条中组合框控件。它包括一个工具栏和紧接着工具栏的一个下拉箭头。单击该按钮，将显示出更多的带图标的菜单命令。
+ 按钮(CommandBarButton)：相当于标准的工具栏按钮，即带有图标的按钮。
 
 
 template<typename T>
@@ -38,3 +48,56 @@ private:
 };
 
 Solution -> Prject -> ProjectItems -> ProjectItem
+_CommandBars -> CommandBar -> CommandBarControls -> CommandBarControl(Popup) -> Command(AddControl)
+Commands -> Command 
+
+Bindings -- 快捷键，如 L"Text Editor::Ctrl+Shift+W, V"
+
+HRESULT CConnect::CreateCommand(AddIn* pAddin, Commands2* pCommands2, CommandBar* pCmdBar, const CommandStruct* pCmd)
+{
+	CComPtr<EnvDTE::Command> pCreatedCommand;
+	CComPtr<CommandBarControl> pCommandBarControl;
+
+	HRESULT hr;
+	COM_VERIFY_EXCEPT1(pCommands2->AddNamedCommand2(pAddin, 
+		pCmd->Name, 
+		pCmd->ButtonText,
+		pCmd->ToolTip, 
+		pCmd->bMSOButton, 
+		pCmd->lBitmapId, 
+		NULL, 
+		EnvDTE::vsCommandStatusSupported+EnvDTE::vsCommandStatusEnabled,
+		vsCommandStylePictAndText,
+		vsCommandControlTypeButton,
+		&pCreatedCommand), E_INVALIDARG);
+		
+	//Create New Command
+	if(SUCCEEDED(hr) && (pCreatedCommand != NULL))
+	{
+		COM_VERIFY(pCreatedCommand->AddControl(pCmdBar, pCmd->lPos, (IDispatch**)&pCommandBarControl));
+		if (pCmd->Bindings.bstrVal && pCmd->Bindings.bstrVal[0])
+		{
+			COM_VERIFY(pCreatedCommand->put_Bindings(pCmd->Bindings));
+		}
+	}
+	else
+	{
+		//Already have same command, just find and Update Info
+		CComPtr<EnvDTE::Command> pCurCommand;
+		_bstr_t commandname = AddinString();
+		commandname += pCmd->Name;
+		COM_VERIFY(pCommands2->Item(_variant_t(commandname), 0, &pCurCommand));
+		if (SUCCEEDED(hr) && !pCurCommand)
+		{
+			COM_VERIFY(pCurCommand->AddControl(pCmdBar, pCmd->lPos,
+				(IDispatch**)&pCommandBarControl));
+			
+			if (pCmd->Bindings.bstrVal && pCmd->Bindings.bstrVal[0])
+			{
+				COM_VERIFY(pCurCommand->put_Bindings(pCmd->Bindings));
+			}
+		}
+	}
+
+	return hr;
+}

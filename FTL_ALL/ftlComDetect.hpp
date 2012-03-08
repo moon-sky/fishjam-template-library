@@ -120,6 +120,17 @@ namespace FTL
         }
     };
 
+    class CFEnumVARIANTDump
+    {
+    public:
+        static HRESULT DumpInterfaceInfo(IEnumVARIANT* pEnumVariant)
+        {
+            HRESULT hr = S_FALSE;
+#pragma TODO(complete this)
+            return hr;
+        }
+    };
+
     class CFEnumConnectionPointsDump
     {
     public:
@@ -131,6 +142,7 @@ namespace FTL
             USES_CONVERSION;
 
             hr = pEnumCP->Reset();
+            IID lastIID = {0};
             while (S_OK == hr)
             {
                 hr = pEnumCP->Next(1,&pCP,NULL);//if No more CP, will return S_FALSE
@@ -138,6 +150,16 @@ namespace FTL
                 {
                     IID iid = {0};
                     COM_VERIFY(pCP->GetConnectionInterface(&iid));
+                    if (IsEqualIID(lastIID, iid))
+                    {
+                        //In some COM object(such as Microsoft_VisualStudio_CommandBars::_CommandBars), 
+                        //will get same iid and endless loop, this will make Access Violation (AV) Error
+                        FTLTRACEEX(FTL::tlError, TEXT("%s : CFEnumConnectionPointsDump Find Same IID\n"), __FILE__LINE__);
+                        pCP->Release();
+                        pCP = NULL;
+                        break;
+                    }
+                    lastIID = iid;
                     BSTR strInterfaceName = NULL;
                     COM_VERIFY(GetInterfaceNameByIID(iid, &strInterfaceName));
                     FTLTRACEEX(FTL::tlTrace,TEXT("\t\t  ConnectionPointName[%d] is %s\n"),
@@ -240,7 +262,7 @@ namespace FTL
                 }
                 else
                 {
-                    FTLTRACEEX(FTL::tlWarning, TEXT("ERROR ClassID String: %s\n"), pName);
+                    FTLTRACEEX(FTL::tlWarning, TEXT("%s: ERROR ClassID String: %s\n"),__FILE__LINE__, pName);
                 }
                 dwIndex++;
                 lRet = ::RegEnumKey(hKeyInterface,dwIndex,pName,cchValue);
@@ -605,6 +627,31 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(Breakpoint2)
                 DETECT_INTERFACE_ENTRY(Engines)
                 DETECT_INTERFACE_ENTRY(Engine)
+            }
+            {
+                using namespace Microsoft_VisualStudio_CommandBars;
+                DETECT_INTERFACE_ENTRY(_IVsMsoDispObj)
+
+#pragma TODO(will ambiguous with oleacc.h 556 --IAccessible)
+#if 0
+                DETECT_INTERFACE_ENTRY(IAccessible)  
+#endif 
+
+                DETECT_INTERFACE_ENTRY(_IVsMsoOleAccDispObj)
+                DETECT_INTERFACE_ENTRY(ICommandBarsEvents)
+                DETECT_INTERFACE_ENTRY(_CommandBarsEvents)
+                DETECT_INTERFACE_ENTRY(ICommandBarComboBoxEvents)
+                DETECT_INTERFACE_ENTRY(_CommandBarComboBoxEvents)
+                DETECT_INTERFACE_ENTRY(ICommandBarButtonEvents)
+                DETECT_INTERFACE_ENTRY(_CommandBarButtonEvents)
+                DETECT_INTERFACE_ENTRY(CommandBarControl)
+                DETECT_INTERFACE_ENTRY(_CommandBarButton)
+                DETECT_INTERFACE_ENTRY(_CommandBarComboBox)
+                DETECT_INTERFACE_ENTRY(_CommandBarActiveX)
+                DETECT_INTERFACE_ENTRY(CommandBar)
+                DETECT_INTERFACE_ENTRY(CommandBarControls)
+                DETECT_INTERFACE_ENTRY(_CommandBars)
+                DETECT_INTERFACE_ENTRY(CommandBarPopup)
                 //DETECT_INTERFACE_ENTRY(XXXXXXXXXXXXXX)
             }
 
@@ -1130,7 +1177,7 @@ namespace FTL
             //得到Dispatch接口指针后，调用GetTypeInfoCount，往往返回1，或2，第一个接口就是属性和方法的描述，
             //  第2个ITypeInfo接口可能是事件描述的接口
             DETECT_INTERFACE_ENTRY_EX(IDispatch,CFDispatchDump)
-            DETECT_INTERFACE_ENTRY(IEnumVARIANT)
+            DETECT_INTERFACE_ENTRY_EX(IEnumVARIANT, CFEnumVARIANTDump)
             DETECT_INTERFACE_ENTRY(ITypeComp)
             DETECT_INTERFACE_ENTRY_EX(ITypeInfo, CFTypeInfoDump)   //能获取全部的类型信息(CComTypeInfoHolder)
             DETECT_INTERFACE_ENTRY(ITypeInfo2)
