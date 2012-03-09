@@ -96,8 +96,9 @@ namespace FTL
     |DUMP_FILTER_NCHITTEST\
     |DUMP_FILTER_SETCURSOR)
 
+	//在Output中Dump出当前接受到的消息
 #ifdef FTL_DEBUG
-#  define DOUP_WINDOWS_MSG(pszName, uMsg, filters) \
+#  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) \
     {\
         BOOL bFilterd = FALSE;\
         if( (filters) & DUMP_FILTER_MOUSE_MESSAGE)\
@@ -115,11 +116,12 @@ namespace FTL
         }\
         if(!bFilterd)\
         {\
-            FTLTRACE(TEXT("%s:%s\n"), pszName, FTL::CFMessageInfo(uMsg).ConvertInfo());\
+            FTLTRACE(TEXT("%s:%s, wParam=0x%x, lParam=0x%x\n"),\
+            pszName, FTL::CFMessageInfo(uMsg).ConvertInfo(), wParam, lParam);\
         }\
     }
 #else
-#  define DOUP_WINDOWS_MSG(pszName, uMsg, filters) __noop
+#  define DUMP_WINDOWS_MSG(pszName, uMsg, filters) __noop
 #endif 
 
     //! 将消息( WM_XXX )转换为易读的格式，类似于 ",wm"

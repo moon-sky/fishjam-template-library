@@ -6,6 +6,11 @@
 #  include "ftlComDetect.h"
 #endif
 
+#pragma TODO(unhandled interface)
+//IVsFontAndColorDefaultsProvider
+//IVsCodePageSelection
+//IVsTextManager2
+
 #include <atlcomcli.h>
 #include <OAIdl.h>
 
@@ -119,6 +124,18 @@ namespace FTL
             return S_OK;
         }
     };
+
+	class CFServiceProviderDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IServiceProvider* pServiceProvider)
+		{
+			HRESULT hr = S_FALSE;
+			//COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pServiceProvider);
+			//pServiceProvider->QueryService()
+			return hr;
+		}
+	};
 
     class CFEnumVARIANTDump
     {
@@ -383,6 +400,19 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IObjectIdentity)
 #endif //INCLUDE_DETECT_DISPEX
 
+#if INCLUDE_DETECT_DOCOBJ
+			DETECT_INTERFACE_ENTRY(IOleDocument)
+			DETECT_INTERFACE_ENTRY(IOleDocumentSite)
+			DETECT_INTERFACE_ENTRY(IOleDocumentView)
+			DETECT_INTERFACE_ENTRY(IEnumOleDocumentViews)
+			DETECT_INTERFACE_ENTRY(IContinueCallback)
+			DETECT_INTERFACE_ENTRY(IPrint)
+			DETECT_INTERFACE_ENTRY(IOleCommandTarget)
+			DETECT_INTERFACE_ENTRY(IZoomEvents)
+			DETECT_INTERFACE_ENTRY(IProtectFocus)
+			DETECT_INTERFACE_ENTRY(IProtectedModeMenuServices)
+#endif //INCLUDE_DETECT_DOCOBJ
+
 #if INCLUDE_DETECT_DTE
             {
                 using namespace EnvDTE;
@@ -633,9 +663,8 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(_IVsMsoDispObj)
 
 #pragma TODO(will ambiguous with oleacc.h 556 --IAccessible)
-#if 0
-                DETECT_INTERFACE_ENTRY(IAccessible)  
-#endif 
+				typedef Microsoft_VisualStudio_CommandBars::IAccessible	IVSCommandBarsAccessible;
+                DETECT_INTERFACE_ENTRY(IVSCommandBarsAccessible)  //Change Name
 
                 DETECT_INTERFACE_ENTRY(_IVsMsoOleAccDispObj)
                 DETECT_INTERFACE_ENTRY(ICommandBarsEvents)
@@ -1415,7 +1444,7 @@ namespace FTL
 
 #if INCLUDE_DETECT_SERVPROV
             //!ÔÚ Windows Media 9 Series ÒÔÇ°£¬
-            DETECT_INTERFACE_ENTRY(IServiceProvider)
+            DETECT_INTERFACE_ENTRY_EX(IServiceProvider, CFServiceProviderDump)
 #endif //INCLUDE_DETECT_SERVPROV
 
 #if INCLUDE_DETECT_SHLOBJ
@@ -1794,6 +1823,261 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IEncodingFilterFactory)
             DETECT_INTERFACE_ENTRY(IWrappedProtocol)
 #endif //INCLUDE_DETECT_URLMON
+
+#if INCLUDE_DETECT_VSIP
+			{
+				//containedlanguage.h
+				DETECT_INTERFACE_ENTRY(IVsIntellisenseProjectManager)
+				DETECT_INTERFACE_ENTRY(SVsIntellisenseProjectManager)
+				DETECT_INTERFACE_ENTRY(IVsIntellisenseEngine)
+				DETECT_INTERFACE_ENTRY(SVsIntellisenseEngine)
+				DETECT_INTERFACE_ENTRY(IVsIntellisenseProjectEventSink)
+				DETECT_INTERFACE_ENTRY(IVsItemTypeResolutionService)
+				DETECT_INTERFACE_ENTRY(IVsItemTypeResolutionSite)
+				DETECT_INTERFACE_ENTRY(IVsIntellisenseProjectHost)
+				DETECT_INTERFACE_ENTRY(SVsIntellisenseProjectHost)
+				DETECT_INTERFACE_ENTRY(IVsIntellisenseProject)
+				DETECT_INTERFACE_ENTRY(IVsDataEnvironment)
+
+				//textmgr.h
+				DETECT_INTERFACE_ENTRY(IVsCompoundAction)
+				DETECT_INTERFACE_ENTRY(IVsCompoundViewChange)
+				DETECT_INTERFACE_ENTRY(IVsCompoundActionEvents)
+				DETECT_INTERFACE_ENTRY(IVsAction)
+				DETECT_INTERFACE_ENTRY(IVsTextEditorPropertyCategoryContainer)
+				DETECT_INTERFACE_ENTRY(IVsTextEditorPropertyContainer)
+				DETECT_INTERFACE_ENTRY(IVsCompletionSet)
+				DETECT_INTERFACE_ENTRY(IVsTipWindow)
+				DETECT_INTERFACE_ENTRY(IVsMethodTipWindow)
+				DETECT_INTERFACE_ENTRY(IVsTextTipWindow)
+				DETECT_INTERFACE_ENTRY(IVsMethodData)
+				DETECT_INTERFACE_ENTRY(IVsTextTipData)
+				DETECT_INTERFACE_ENTRY(IVsTextView)
+				DETECT_INTERFACE_ENTRY(IVsThreadSafeTextView)
+				DETECT_INTERFACE_ENTRY(IVsLayeredTextView)
+				DETECT_INTERFACE_ENTRY(IVsTextViewFilter)
+				DETECT_INTERFACE_ENTRY(IVsLanguageContextProvider)
+				DETECT_INTERFACE_ENTRY(IVsTextMarkerContextProvider)
+				DETECT_INTERFACE_ENTRY(IVsViewRangeClient)
+				DETECT_INTERFACE_ENTRY(IVsTextViewEvents)
+				DETECT_INTERFACE_ENTRY(IVsTextManager)
+				DETECT_INTERFACE_ENTRY(IVsShortcutManager)
+				DETECT_INTERFACE_ENTRY(IVsEnumTextBuffers)
+				DETECT_INTERFACE_ENTRY(IVsTextManagerEvents)
+				DETECT_INTERFACE_ENTRY(IVsTextSelectionAction)
+				DETECT_INTERFACE_ENTRY(IVsEnumTextViews)
+				DETECT_INTERFACE_ENTRY(IVsEnumIndependentViews)
+				DETECT_INTERFACE_ENTRY(IVsColorableItem)
+				DETECT_INTERFACE_ENTRY(IVsMergeableUIItem)
+				DETECT_INTERFACE_ENTRY(IVsProvideColorableItems)
+				DETECT_INTERFACE_ENTRY(IVsColorizer)
+				DETECT_INTERFACE_ENTRY(IVsEnumGUID)
+				DETECT_INTERFACE_ENTRY(IVsLanguageInfo)
+				DETECT_INTERFACE_ENTRY(IVsLanguageBlock)
+				DETECT_INTERFACE_ENTRY(IVsEnumBSTR)
+				DETECT_INTERFACE_ENTRY(IVsDebugName)
+				DETECT_INTERFACE_ENTRY(IVsEnumDebugName)
+				DETECT_INTERFACE_ENTRY(IVsLanguageDebugInfo)
+				DETECT_INTERFACE_ENTRY(IVsTextBufferTempInit)
+				DETECT_INTERFACE_ENTRY(IVsTextBuffer)
+				DETECT_INTERFACE_ENTRY(IVsTextLines)
+				DETECT_INTERFACE_ENTRY(IVsTextColorState)
+				DETECT_INTERFACE_ENTRY(IVsTextLinesEvents)
+				DETECT_INTERFACE_ENTRY(IVsTextStream)
+				DETECT_INTERFACE_ENTRY(IVsEnumStreamMarkers)
+				DETECT_INTERFACE_ENTRY(IVsEnumLineMarkers)
+				DETECT_INTERFACE_ENTRY(IVsEnumLayerMarkers)
+				DETECT_INTERFACE_ENTRY(IVsTextMarker)
+				DETECT_INTERFACE_ENTRY(IVsTextStreamMarker)
+				DETECT_INTERFACE_ENTRY(IVsTextLineMarker)
+				DETECT_INTERFACE_ENTRY(IVsTextLayerMarker)
+				DETECT_INTERFACE_ENTRY(IVsTextMarkerType)
+				DETECT_INTERFACE_ENTRY(IVsTextMarkerColorSet)
+				DETECT_INTERFACE_ENTRY(IVsPackageDefinedTextMarkerType)
+				DETECT_INTERFACE_ENTRY(IVsTextMarkerTypeProvider)
+				DETECT_INTERFACE_ENTRY(IVsTextMarkerClient)
+				DETECT_INTERFACE_ENTRY(IVsMouseCursorProvider)
+				DETECT_INTERFACE_ENTRY(IVsTextMarkerGlyphDropHandler)
+				DETECT_INTERFACE_ENTRY(IVsTextTrackingPoint)
+				DETECT_INTERFACE_ENTRY(IVsFullTextScanner)
+				DETECT_INTERFACE_ENTRY(IVsTextScanner)
+				DETECT_INTERFACE_ENTRY(IVsTextFind)
+				DETECT_INTERFACE_ENTRY(IVsTextBufferEvents)
+				DETECT_INTERFACE_ENTRY(IVsTextBufferDataEvents)
+				DETECT_INTERFACE_ENTRY(IVsTextStreamEvents)
+				DETECT_INTERFACE_ENTRY(IVsSplitPane)
+				DETECT_INTERFACE_ENTRY(IVsSplitter)
+				DETECT_INTERFACE_ENTRY(IVsSplitRoot)
+				DETECT_INTERFACE_ENTRY(IVsCodeWindow)
+				DETECT_INTERFACE_ENTRY(IVsCodeWindowManager)
+				DETECT_INTERFACE_ENTRY(IVsDropdownBarClient)
+				DETECT_INTERFACE_ENTRY(IVsDropdownBar)
+				DETECT_INTERFACE_ENTRY(IVsDropdownBarManager)
+				DETECT_INTERFACE_ENTRY(IVsButtonBarClient)
+				DETECT_INTERFACE_ENTRY(IVsButtonBar)
+				DETECT_INTERFACE_ENTRY(IVsButtonBarManager)
+				DETECT_INTERFACE_ENTRY(IVsDefaultButtonBarImages)
+				DETECT_INTERFACE_ENTRY(IVsTextMacroHelper)
+				DETECT_INTERFACE_ENTRY(IVsUserData)
+				DETECT_INTERFACE_ENTRY(IVsUserDataEvents)
+				DETECT_INTERFACE_ENTRY(IVsUndoUnit)
+				DETECT_INTERFACE_ENTRY(IVsUndoTrackingEvents)
+				DETECT_INTERFACE_ENTRY(IVsChangeTrackingUndoManager)
+				DETECT_INTERFACE_ENTRY(IVsLinkedUndoClient)
+				DETECT_INTERFACE_ENTRY(IVsLinkCapableUndoManager)
+				DETECT_INTERFACE_ENTRY(IVsLifetimeControlledObject)
+				DETECT_INTERFACE_ENTRY(IVsLinkedUndoTransactionManager)
+				DETECT_INTERFACE_ENTRY(IVsChangeClusterEvents)
+				DETECT_INTERFACE_ENTRY(IVsDynamicTabProvider)
+				DETECT_INTERFACE_ENTRY(IVsLastChangeTimeProvider)
+				DETECT_INTERFACE_ENTRY(IVsEnumTextSpans)
+				DETECT_INTERFACE_ENTRY(IVsTextLayer)
+				DETECT_INTERFACE_ENTRY(IVsSyntheticRegion)
+				DETECT_INTERFACE_ENTRY(IVsEnumSyntheticRegions)
+				DETECT_INTERFACE_ENTRY(IVsSyntheticTextClient)
+				DETECT_INTERFACE_ENTRY(IVsSyntheticTextSession)
+				DETECT_INTERFACE_ENTRY(IVsSyntheticTextManager)
+				DETECT_INTERFACE_ENTRY(IVsTextHidingLayerModule)
+				DETECT_INTERFACE_ENTRY(IVsHiddenRegion)
+				DETECT_INTERFACE_ENTRY(IVsEnumHiddenRegions)
+				DETECT_INTERFACE_ENTRY(IVsHiddenTextClient)
+				DETECT_INTERFACE_ENTRY(IVsHiddenTextManager)
+				DETECT_INTERFACE_ENTRY(IVsHiddenTextSession)
+				DETECT_INTERFACE_ENTRY(IVsOutliningSession)
+				DETECT_INTERFACE_ENTRY(IVsOutliningCapableLanguage)
+				DETECT_INTERFACE_ENTRY(IVsTextLayerEvents)
+				DETECT_INTERFACE_ENTRY(IVsTextStorage)
+				DETECT_INTERFACE_ENTRY(IVsPersistentTextImage)
+				DETECT_INTERFACE_ENTRY(IVsTextStorageColorState)
+				DETECT_INTERFACE_ENTRY(IVsFinalTextChangeCommitEvents)
+				DETECT_INTERFACE_ENTRY(IVsPreliminaryTextChangeCommitEvents)
+				DETECT_INTERFACE_ENTRY(IVsUndoRedoClusterWithCommitEvents)
+				DETECT_INTERFACE_ENTRY(IVsTextImageEvents)
+				DETECT_INTERFACE_ENTRY(IVsCommitGestureSink)
+				DETECT_INTERFACE_ENTRY(IVsTextImage)
+				DETECT_INTERFACE_ENTRY(IVsEditorGoBackLocations)
+				DETECT_INTERFACE_ENTRY(IVsTextReplaceEvents)
+				DETECT_INTERFACE_ENTRY(IVsFormatFilterProvider)
+				DETECT_INTERFACE_ENTRY(IVsNavigableLocationResolver)
+				DETECT_INTERFACE_ENTRY(IVsLanguageTextOps)
+				DETECT_INTERFACE_ENTRY(IVsLanguageClipboardOps)
+				DETECT_INTERFACE_ENTRY(IVsQueryLineChangeCommit)
+				DETECT_INTERFACE_ENTRY(IVsCodeWindowEvents)
+				DETECT_INTERFACE_ENTRY(IVsFileBackup)
+				DETECT_INTERFACE_ENTRY(IVsLineAttributes)
+
+
+				//vsshell.h
+				DETECT_INTERFACE_ENTRY(IVsPackage)
+				DETECT_INTERFACE_ENTRY(IVsToolWindowFactory)
+				DETECT_INTERFACE_ENTRY(IVsPersistSolutionOpts)
+				DETECT_INTERFACE_ENTRY(IVsPersistSolutionProps)
+				DETECT_INTERFACE_ENTRY(IVsSolutionPersistence)
+				DETECT_INTERFACE_ENTRY(IVsProjectFactory)
+				DETECT_INTERFACE_ENTRY(IVsNonSolutionProjectFactory)
+				DETECT_INTERFACE_ENTRY(IVsRegisterProjectTypes)
+				DETECT_INTERFACE_ENTRY(IVsOwnedProjectFactory)
+				DETECT_INTERFACE_ENTRY(IVsHierarchy)
+				DETECT_INTERFACE_ENTRY(IVsUIHierarchy)
+				DETECT_INTERFACE_ENTRY(IVsHierarchyEvents)
+				DETECT_INTERFACE_ENTRY(IVsParentHierarchy)
+				DETECT_INTERFACE_ENTRY(IVsSolution)
+				DETECT_INTERFACE_ENTRY(IVsSolution2)
+				DETECT_INTERFACE_ENTRY(IVsSolutionEvents)
+				DETECT_INTERFACE_ENTRY(IVsSolutionEvents2)
+				DETECT_INTERFACE_ENTRY(IVsSolutionEvents3)
+				DETECT_INTERFACE_ENTRY(IVsFireSolutionEvents)
+				DETECT_INTERFACE_ENTRY(IVsProject)
+				DETECT_INTERFACE_ENTRY(IVsProject2)
+				DETECT_INTERFACE_ENTRY(IVsProject3)
+				DETECT_INTERFACE_ENTRY(IVsParentProject)
+				DETECT_INTERFACE_ENTRY(IVsNonLocalProject)
+				DETECT_INTERFACE_ENTRY(IVsProjectSpecificEditorMap)
+				DETECT_INTERFACE_ENTRY(IVsProjectSpecificEditorMap2)
+				DETECT_INTERFACE_ENTRY(IVsProjectResources)
+				DETECT_INTERFACE_ENTRY(IVsSupportItemHandoff)
+				DETECT_INTERFACE_ENTRY(IVsAddProjectItemDlg)
+				DETECT_INTERFACE_ENTRY(IVsAddProjectItemDlg2)
+				DETECT_INTERFACE_ENTRY(IVsFilterAddProjectItemDlg)
+				DETECT_INTERFACE_ENTRY(IVsFilterAddProjectItemDlg2)
+				DETECT_INTERFACE_ENTRY(IVsProjectTextImageProvider)
+				DETECT_INTERFACE_ENTRY(IVsSaveOptionsDlg)
+				DETECT_INTERFACE_ENTRY(IEnumRunningDocuments)
+				DETECT_INTERFACE_ENTRY(IVsRunningDocumentTable)
+				DETECT_INTERFACE_ENTRY(IVsRunningDocTableEvents)
+				DETECT_INTERFACE_ENTRY(IVsRunningDocTableEvents2)
+				DETECT_INTERFACE_ENTRY(IVsRunningDocTableEvents3)
+				DETECT_INTERFACE_ENTRY(IVsDocumentLockHolder)
+				DETECT_INTERFACE_ENTRY(IVsSimpleDocFactory)
+				DETECT_INTERFACE_ENTRY(IVsInvisibleEditor)
+				DETECT_INTERFACE_ENTRY(IVsInvisibleEditorManager)
+				DETECT_INTERFACE_ENTRY(IVsXMLMemberIndex)
+				DETECT_INTERFACE_ENTRY(IVsXMLMemberIndexService)
+				DETECT_INTERFACE_ENTRY(IVsXMLMemberData)
+				DETECT_INTERFACE_ENTRY(IVsWindowFrame)
+				DETECT_INTERFACE_ENTRY(IVsWindowFrameNotify)
+				DETECT_INTERFACE_ENTRY(IVsWindowFrameNotify2)
+				DETECT_INTERFACE_ENTRY(IVsBackForwardNavigation)
+				DETECT_INTERFACE_ENTRY(IVsWindowView)
+				DETECT_INTERFACE_ENTRY(IVsToolWindowToolbarHost)
+				DETECT_INTERFACE_ENTRY(IVsToolWindowToolbar)
+				DETECT_INTERFACE_ENTRY(IVsUIShell)
+				DETECT_INTERFACE_ENTRY(IVsUIShellDocumentWindowMgr)
+				DETECT_INTERFACE_ENTRY(IVsPackageDynamicToolOwner)
+				DETECT_INTERFACE_ENTRY(IVsExternalFilesManager)
+				DETECT_INTERFACE_ENTRY(IVsExternalFilesManager2)
+				DETECT_INTERFACE_ENTRY(IVsFileChangeEvents)
+				DETECT_INTERFACE_ENTRY(IVsFileChangeEx)
+				DETECT_INTERFACE_ENTRY(IVsFileChange)
+				DETECT_INTERFACE_ENTRY(IVsIME)
+				DETECT_INTERFACE_ENTRY(IVsRelativePathResolver)
+				DETECT_INTERFACE_ENTRY(IVsUIShellOpenDocument)
+				DETECT_INTERFACE_ENTRY(IVsMultiViewDocumentView)
+				DETECT_INTERFACE_ENTRY(IVsPersistDocData)
+				DETECT_INTERFACE_ENTRY(IVsPersistDocData2)
+				DETECT_INTERFACE_ENTRY(IVsDocDataFileChangeControl)
+				DETECT_INTERFACE_ENTRY(IVsPersistHierarchyItem)
+				DETECT_INTERFACE_ENTRY(IVsPersistHierarchyItem2)
+				DETECT_INTERFACE_ENTRY(IVsUIHierarchyWindow)
+				DETECT_INTERFACE_ENTRY(IVsWindowPane)
+				DETECT_INTERFACE_ENTRY(IEnumPackages)
+				DETECT_INTERFACE_ENTRY(IEnumHierarchies)
+				DETECT_INTERFACE_ENTRY(IEnumWindowFrames)
+				DETECT_INTERFACE_ENTRY(IVsShell)
+				DETECT_INTERFACE_ENTRY(IVsBroadcastMessageEvents)
+				DETECT_INTERFACE_ENTRY(IVsShellPropertyEvents)
+				DETECT_INTERFACE_ENTRY(IVsEditorFactory)
+				DETECT_INTERFACE_ENTRY(IVsRegisterEditors)
+				DETECT_INTERFACE_ENTRY(IVsEditorFactoryNotify)
+				DETECT_INTERFACE_ENTRY(IVsMultiItemSelect)
+				DETECT_INTERFACE_ENTRY(IEnumHierarchyItems)
+				DETECT_INTERFACE_ENTRY(IVsEnumHierarchyItemsFactory)
+				DETECT_INTERFACE_ENTRY(IVsSwatchClient)
+				DETECT_INTERFACE_ENTRY(IVsTrackSelectionEx)
+				DETECT_INTERFACE_ENTRY(IVsSelectionEvents)
+				DETECT_INTERFACE_ENTRY(IVsMonitorSelection)
+				DETECT_INTERFACE_ENTRY(IVsTaskList)
+				DETECT_INTERFACE_ENTRY(IVsTaskProvider)
+				DETECT_INTERFACE_ENTRY(IVsTaskProvider2)
+				DETECT_INTERFACE_ENTRY(IVsTaskItem)
+				DETECT_INTERFACE_ENTRY(IVsTaskItem2)
+				DETECT_INTERFACE_ENTRY(IVsEnumTaskItems)
+				DETECT_INTERFACE_ENTRY(IVsCommentTaskToken)
+				DETECT_INTERFACE_ENTRY(IVsEnumCommentTaskTokens)
+				DETECT_INTERFACE_ENTRY(IVsCommentTaskInfo)
+				DETECT_INTERFACE_ENTRY(IVsTaskListEvents)
+				DETECT_INTERFACE_ENTRY(IVsOutputWindowPane)
+				DETECT_INTERFACE_ENTRY(IVsOutputWindow)
+				DETECT_INTERFACE_ENTRY(IVsAsyncEnum)
+				DETECT_INTERFACE_ENTRY(IVsAsyncEnumCallback)
+				DETECT_INTERFACE_ENTRY(IVsHierarchyDropDataSource)
+				DETECT_INTERFACE_ENTRY(IVsHierarchyDropDataSource2)
+				DETECT_INTERFACE_ENTRY(IVsHierarchyDropDataTarget)
+
+
+			}
+
+#endif //INCLUDE_DETECT_VSIP
 
 #if INCLUDE_DETECT_WMSDKIDL
             DETECT_INTERFACE_ENTRY(IWMMediaProps)

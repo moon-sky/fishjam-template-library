@@ -1478,7 +1478,7 @@ namespace FTL
 
 
 
-        FTLASSERT( 0 == lStyle);
+        //FTLASSERT( 0 == lStyle);
         if (0 != lStyle)
         {
             FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check Style String Not Complete, total=0x%08x, remain=0x%08x\n"),
@@ -1532,7 +1532,7 @@ namespace FTL
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_NOACTIVATE, pszDivide);
 #endif /* _WIN32_WINNT >= 0x0500 */
 
-        FTLASSERT( 0 == lExStyle);
+        //FTLASSERT( 0 == lExStyle);
         if (0 != lExStyle)
         {
             FTLTRACEEX(FTL::tlWarning, TEXT("%s: Check ExStyle String Not Complete, total=0x%08x, remain=0x%08x\n"),

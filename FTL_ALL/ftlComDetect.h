@@ -74,8 +74,14 @@ namespace FTL
 
 # define INCLUDE_DETECT_ACTIVSCP    1
 # define INCLUDE_DETECT_CONTROL     1
-# define INCLUDE_DETECT_DDRAW       0
+
+#ifndef INCLUDE_DETECT_DDRAW
+#    define INCLUDE_DETECT_DDRAW    0
+#endif //INCLUDE_DETECT_DDRAW
+
 # define INCLUDE_DETECT_DISPEX      1
+
+# define INCLUDE_DETECT_DOCOBJ      1
 
 #ifndef INCLUDE_DETECT_DTE
 #   define INCLUDE_DETECT_DTE       0
@@ -96,6 +102,10 @@ namespace FTL
 # define INCLUDE_DETECT_SHLOBJ      0
 # define INCLUDE_DETECT_STRMIF      0
 # define INCLUDE_DETECT_URLMON      1
+
+#ifndef INCLUDE_DETECT_VSIP
+#    define INCLUDE_DETECT_VSIP     0
+#endif 
 
 //Windows Media Format(asf,wma,wmv)
 # define INCLUDE_DETECT_WMF         0
@@ -125,6 +135,10 @@ namespace FTL
 
 #if INCLUDE_DETECT_DISPEX
 #  include <DispEx.h>
+#endif
+
+#if INCLUDE_DETECT_DOCOBJ
+#  include <DocObj.h>
 #endif
 
 #if INCLUDE_DETECT_DSHOWASF
@@ -213,6 +227,13 @@ namespace FTL
         FTLTRACEEX(FTL::tlTrace,TEXT("%s Can Bind to at least %d Interfaces\n\n"),TEXT(#pMoniker),dwIntCount);\
     }
 
+# define COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pUnk) \
+	{\
+		FTLTRACEEX(FTL::tlTrace, TEXT("%s(%d) : Begin Detect Service Provider %s( 0x%p ) From List\n"),TEXT(__FILE__),__LINE__,TEXT(#pUnk),pUnk);\
+		DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromList(pUnk,GUID_NULL,FTL::CFComDetect::cdtService);\
+		FTLTRACEEX(FTL::tlInfo,TEXT("%s's Services Count are at least %d\n\n"),TEXT(#pUnk),dwIntCount);\
+	}
+
 //从自定义列表中检测希望检测的RIID是什么接口（如用于 DirectShow 中的 NonDelegatingQueryInterface）
 //使用同前面相同的自定义列表
 # define COM_DETECT_RIID_FROM_LIST(riid)\
@@ -252,10 +273,15 @@ namespace FTL
             DWORD dwInterfaceCount = 0;\
             DWORD dwTotalCheckCount = 0;\
             IMoniker* pMoniker = NULL;\
+			IServiceProvider* pSvrProvider = NULL;\
             if(CFComDetect::cdtMonikerBind == detectType)\
             {\
                 COM_VERIFY((pUnknown)->QueryInterface(IID_IMoniker,(void**)(&pMoniker)));\
-            }
+            }\
+			else if(CFComDetect::cdtService == detectType)\
+			{\
+				COM_VERIFY((pUnknown)->QueryInterface(IID_IServiceProvider,(void**)(&pSvrProvider)));\
+			}
 
     #define DETECT_INTERFACE_ENTRY_EX_IID(IntType,riid,classDumpInfo)\
             {\
@@ -297,6 +323,22 @@ namespace FTL
                         p##IntType = NULL;\
                     }\
                 }\
+				else if(FTL::CFComDetect::cdtService == detectType)\
+				{\
+					IntType* p##IntType = NULL;\
+					hr = (pSvrProvider)->QueryService(riid, riid,(void**)(&p##IntType));\
+					if(SUCCEEDED(hr) && p##IntType != NULL)\
+					{\
+						dwInterfaceCount++;\
+						FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,TEXT(#IntType));\
+						p##IntType->Release();\
+						p##IntType = NULL;\
+					}\
+					else if(E_NOINTERFACE != hr)\
+					{\
+						FTLTRACEEX(tlWarning,TEXT("Warning: Detect %s ,return 0x%p\n"),TEXT(#IntType),hr);\
+					}\
+				}\
                 else\
                 {\
                     FTLTRACEEX(tlError,TEXT("\tUnknown Operation \n"));\
@@ -315,7 +357,8 @@ namespace FTL
 
     #define END_DETECT_INTERFACE()\
             SAFE_RELEASE(pMoniker);\
-            if(CFComDetect::cdtInterface == detectType)\
+			SAFE_RELEASE(pSvrProvider);\
+			if(CFComDetect::cdtInterface == detectType || CFComDetect::cdtService == detectType)\
             {\
                 FTLTRACEEX(FTL::tlTrace,TEXT("\tTotal Check %d Interfaces\n"),dwTotalCheckCount);\
             }\
@@ -329,9 +372,10 @@ namespace FTL
     public:
         typedef enum ComDetectType
         {
-            cdtInterface,
-            cdtIID,
+            cdtInterface,		//QueryInterface
+            cdtIID,				
             cdtMonikerBind,
+			cdtService,			//QueryService(利用 SID_XXX 一般定义为 IID_XXX 的机制判断)
         }ComDetectType;
 
         FTLINLINE static DWORD CoDetectInterfaceFromRegister(IUnknown* pUnk);
