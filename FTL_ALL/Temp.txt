@@ -101,3 +101,32 @@ HRESULT CConnect::CreateCommand(AddIn* pAddin, Commands2* pCommands2, CommandBar
 
 	return hr;
 }
+
+DTE Service Provider
+	1: ObjectExtenders
+	2: SourceControl
+	3: IVsProfferCommands
+	4: _DTE
+	5: IVsExtensibility
+	6: IInternetSecurityManager
+	7: IVsLinkedUndoTransactionManager
+	8: IVsSolutionPersistence
+	9: IVsRegisterProjectTypes
+	10: IVsSolution
+	11: IVsAddProjectItemDlg
+	12: IVsRunningDocumentTable
+	13: IVsInvisibleEditorManager
+	14: IVsXMLMemberIndexService
+	15: IVsUIShell
+	16: IVsUIShellDocumentWindowMgr
+	17: IVsExternalFilesManager
+	18: IVsFileChangeEx
+	19: IVsFileChange
+	20: IVsIME
+	21: IVsUIShellOpenDocument
+	22: IVsShell
+	23: IVsRegisterEditors
+	24: IVsEnumHierarchyItemsFactory
+	25: IVsMonitorSelection
+	26: IVsTaskList
+	27: IVsOutputWindow
