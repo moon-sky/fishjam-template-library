@@ -287,124 +287,8 @@ namespace FTL
     }
 
     //////////////////////////////////////////////////////////////////////////
-    CFDTEInfoStringOutput::CFDTEInfoStringOutput()
-    {
-        m_nIndent = 2;
-        m_pszIndentSpace = NULL;
-    }
 
-    CFDTEInfoStringOutput::~CFDTEInfoStringOutput()
-    {
-        SAFE_DELETE_ARRAY(m_pszIndentSpace);
-    }
-
-    HRESULT CFDTEInfoStringOutput::SetIndent(int nIndent)
-    {
-        m_nIndent = nIndent;
-        SAFE_DELETE_ARRAY(m_pszIndentSpace);
-        m_pszIndentSpace  = new TCHAR[m_nIndent + 1];
-        for (int i = 0; i < m_nIndent; i++)
-        {
-            m_pszIndentSpace[i] = ' ';
-        }
-        m_pszIndentSpace[m_nIndent] = '\0';
-        
-        return S_OK;
-    }
-
-    VOID CFDTEInfoStringOutput::OutputIndentSpace()
-    {
-        FTLTRACE(TEXT("%s"), m_pszIndentSpace);
-    }
-
-    HRESULT CFDTEInfoStringOutput::OutputInfoName(LPCTSTR pszInfoName)
-    {
-        OutputIndentSpace();
-        FTLTRACE(TEXT("<<%s>>:\n"), pszInfoName);
-        return S_OK;
-    }
-
-    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, LPCTSTR pValue)
-    {
-        USES_CONVERSION;
-        if (pszKey && pValue)
-        {
-            OutputIndentSpace();
-            FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, pValue);
-            return S_OK;
-        }
-        return S_FALSE;
-    }
-
-
-    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, BSTR* pValue)
-    {
-        USES_CONVERSION;
-        if (pszKey && pValue)
-        {
-            OutputIndentSpace();
-            FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(*pValue));
-            return S_OK;
-        }
-        return S_FALSE;
-    }
-
-    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, long nValue)
-    {
-        USES_CONVERSION;
-        if (pszKey)
-        {
-            OutputIndentSpace();
-            FTLTRACE(TEXT("  Key=%s,Value=%d\n"), pszKey, nValue);
-            return S_OK;
-        }
-        return S_FALSE;
-    }
-
-    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, VARIANT* pValue)
-    {
-        USES_CONVERSION;
-        if (pszKey && pValue)
-        {
-#pragma TODO(VARIANT is Safe Array)
-            OutputIndentSpace();
-            if (VT_BSTR == (VT_BSTR & pValue->vt))
-            {
-                CComVariant varString(*pValue);
-                varString.ChangeType(VT_BSTR);
-                FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(varString.bstrVal));
-            }
-            else
-            {
-                FTLTRACE(TEXT("  Key=%s,Value=NULL\n"), pszKey);
-            }
-            return S_OK;
-        }
-        return S_FALSE;
-    }
-
-    HRESULT CFDTEInfoStringOutput::OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue)
-    {
-        USES_CONVERSION;
-        if (pszKey && pValue)
-        {
-            OutputIndentSpace();
-            if (VT_ARRAY == pValue->vt)
-            {
-                FTLASSERT(FALSE);
-            }
-            else
-            {
-                CComVariant var(*pValue);
-                var.ChangeType(VT_BSTR);
-                FTLTRACE(TEXT("  Key=%s,[%d in %d] Value=%s\n"), pszKey, nIndex, nTotal, OLE2CT(var.bstrVal));
-            }
-            return S_OK;
-        }
-        return S_FALSE;
-    }
-
-    HRESULT CFDTEDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFDTEDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("DTE")));
@@ -446,7 +330,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFSolutionDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFSolutionDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Solution")));
@@ -474,7 +358,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFProjectDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFProjectDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Project")));
@@ -504,7 +388,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFProjectItemsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFProjectItemsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("ProjectItems")));
@@ -533,7 +417,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFProjectItemDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFProjectItemDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("ProjectItem")));
@@ -585,7 +469,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFEventsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFEventsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Events")));
@@ -601,7 +485,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFWindowsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFWindowsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Windows")));
@@ -635,7 +519,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFWindowDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFWindowDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Window")));
@@ -693,7 +577,7 @@ namespace FTL
 
 
     //Document
-    HRESULT CFDocumentDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFDocumentDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Document")));
@@ -724,7 +608,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFTextSelectionDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFTextSelectionDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("TextSelection")));
@@ -742,7 +626,7 @@ namespace FTL
 
     //Code
 
-    HRESULT CFFileCodeModelDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFFileCodeModelDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("FileCodeModel")));
@@ -763,7 +647,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFCodeModelDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCodeModelDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CodeModel")));
@@ -786,7 +670,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFCodeElementsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCodeElementsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CodeElements")));
@@ -811,7 +695,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFCodeElementDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCodeElementDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CodeElement")));
@@ -837,7 +721,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFCommandBarsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCommandBarsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("_CommandBars")));
@@ -867,7 +751,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFCommandBarDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCommandBarDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBar")));
@@ -916,7 +800,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFCommandBarControlsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCommandBarControlsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBarControls")));
@@ -942,7 +826,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFCommandBarControlDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCommandBarControlDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBarControl")));
@@ -1002,7 +886,7 @@ namespace FTL
     }
 
 
-    HRESULT CFCommandsDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCommandsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Commands")));
@@ -1033,7 +917,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT CFCommandDumper::GetObjInfo(IDTEInfoOutput* pInfoOutput)
+    HRESULT CFCommandDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Command")));

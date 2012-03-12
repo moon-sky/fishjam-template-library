@@ -96,7 +96,7 @@ namespace FTL
     |DUMP_FILTER_NCHITTEST\
     |DUMP_FILTER_SETCURSOR)
 
-	//在Output中Dump出当前接受到的消息
+    //在Output中Dump出当前接受到的消息
 #ifdef FTL_DEBUG
 #  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) \
     {\
@@ -198,18 +198,18 @@ namespace FTL
         // Data declarations and members
         enum
         {
-            WINSZ_SIZE_X		= 0x00000001,   //自动横向扩展、伸缩，保证左、右边界不变
-            WINSZ_SIZE_Y		= 0x00000002,   //自动纵向扩展、伸缩，保证上、下边界不变
-            WINSZ_MOVE_X		= 0x00000004,   //自动横向移动，保证右边界不变
-            WINSZ_MOVE_Y		= 0x00000008,   //自动纵向移动，保证下边界不变
-            WINSZ_CENTER_X		= 0x00000010,   //自动横向移动，保证左、右边界不变
-            WINSZ_CENTER_Y		= 0x00000020,   //自动纵向移动，保证上、下边界不变
-            WINSZ_REPAINT		= 0x00000040,   //Resize后强制重绘，通常没有必要 
+            WINSZ_SIZE_X        = 0x00000001,   //自动横向扩展、伸缩，保证左、右边界不变
+            WINSZ_SIZE_Y        = 0x00000002,   //自动纵向扩展、伸缩，保证上、下边界不变
+            WINSZ_MOVE_X        = 0x00000004,   //自动横向移动，保证右边界不变
+            WINSZ_MOVE_Y        = 0x00000008,   //自动纵向移动，保证下边界不变
+            WINSZ_CENTER_X      = 0x00000010,   //自动横向移动，保证左、右边界不变
+            WINSZ_CENTER_Y      = 0x00000020,   //自动纵向移动，保证上、下边界不变
+            WINSZ_REPAINT       = 0x00000040,   //Resize后强制重绘，通常没有必要 
 
             // internal use only
-            _WINSZ_BEGIN_GROUP	= 0x00001000,
-            _WINSZ_END_GROUP	= 0x00002000,
-            _WINSZ_GRIPPER		= 0x00004000    //内部使用，表明是拖拽的Gripper，只能有一个(内部设置)
+            _WINSZ_BEGIN_GROUP  = 0x00001000,
+            _WINSZ_END_GROUP    = 0x00002000,
+            _WINSZ_GRIPPER      = 0x00004000    //内部使用，表明是拖拽的Gripper，只能有一个(内部设置)
         };
         struct _WindowResizeMap
         {
@@ -296,7 +296,7 @@ namespace FTL
     class CFUIAdapterForWin
     {
     public:
-        //typedef T		parent_class;
+        //typedef T     parent_class;
 
         //virtual bool PostNotification(XfNotificationPtr pNotify) = 0;
         virtual void UpdateUI() = 0;

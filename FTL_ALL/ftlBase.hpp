@@ -180,12 +180,19 @@ namespace FTL
     {
         if (NULL == m_bufInfo[0])
         {
-            TCHAR strFacility[20] = {0};
-            GetErrorFacility(m_Info,strFacility,_countof(strFacility));
+            switch(m_Info)
+            {
+                HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), CONNECT_E_NOCONNECTION);
+#pragma TODO(Add more error case that APIErrorInfo cannot find)
+            default:
+                TCHAR strFacility[20] = {0};
+                GetErrorFacility(m_Info,strFacility,_countof(strFacility));
 
-            CFAPIErrorInfo apiErrorInfo(m_Info);
-            StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
-                TEXT("%s, Facility:%s"),apiErrorInfo.GetConvertedInfo(),strFacility);
+                CFAPIErrorInfo apiErrorInfo(m_Info);
+                StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
+                    TEXT("%s, Facility:%s"),apiErrorInfo.GetConvertedInfo(),strFacility);
+                break;
+            }
         }
         return m_bufInfo;
     }
