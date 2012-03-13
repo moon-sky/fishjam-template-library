@@ -20,246 +20,221 @@ namespace FTL
     public:
         FTLINLINE static LPCTSTR GetMsoControlTypeString(MsoControlType controlType);
         FTLINLINE static LPCTSTR GetMsoBarTypeString(MsoBarType barType);
-        FTLINLINE static LPCTSTR GetWindowTypeString(vsWindowType nWindowType);
-        FTLINLINE static LPCTSTR GetElementKindString(vsCMElement nElementKind);
+		FTLINLINE static LPCTSTR GetWindowTypeString(EnvDTE::vsWindowType nWindowType);
+        FTLINLINE static LPCTSTR GetElementKindString(EnvDTE::vsCMElement nElementKind);
         FTLINLINE static LPCTSTR GetFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind); //vsCMFunction
         FTLINLINE static LPCTSTR GetDTEGuidStringInfo(const CComBSTR& bstring);
     };
 
-    template <typename T>
-    class CFDTEInterfaceDumperBase
-    {
-        DISABLE_COPY_AND_ASSIGNMENT(CFDTEInterfaceDumperBase);
-    public:
-        FTLINLINE explicit CFDTEInterfaceDumperBase(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :m_pObj(pObj)
-            ,m_nIndent(nIndent)
-        {
-            T* pT = static_cast<T*>(this);
-            pInfoOutput->SetIndent(nIndent);
-            pT->GetObjInfo(pInfoOutput);
-        }
-        
-    public:
-        FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput)
-        {
-            FTLASSERT(FALSE);
-            return S_FALSE;
-        }
-    protected:
-        CComPtr<IDispatch>  m_pObj;
-        int                 m_nIndent;
-    };
-
-    class CFDTEDumper : public CFDTEInterfaceDumperBase<CFDTEDumper>
+    class CFDTEDumper : public CFInterfaceDumperBase<CFDTEDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFDTEDumper);
     public:
-        FTLINLINE explicit CFDTEDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFDTEDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFDTEDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFDTEDumper>(pObj, pInfoOutput, nIndent){}
     public:
         //override
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
     //Solution  info (project/projectitem)
-    class CFSolutionDumper : public CFDTEInterfaceDumperBase<CFSolutionDumper>
+    class CFSolutionDumper : public CFInterfaceDumperBase<CFSolutionDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFSolutionDumper);
     public:
-        FTLINLINE explicit CFSolutionDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFSolutionDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFSolutionDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFSolutionDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFProjectDumper : public CFDTEInterfaceDumperBase<CFProjectDumper>
+    class CFProjectDumper : public CFInterfaceDumperBase<CFProjectDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFProjectDumper);
     public:
-        FTLINLINE explicit CFProjectDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFProjectDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFProjectDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFProjectDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFProjectItemsDumper : public CFDTEInterfaceDumperBase<CFProjectItemsDumper>
+    class CFProjectItemsDumper : public CFInterfaceDumperBase<CFProjectItemsDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFProjectItemsDumper);
     public:
-        FTLINLINE explicit CFProjectItemsDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFProjectItemsDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFProjectItemsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFProjectItemsDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFProjectItemDumper : public CFDTEInterfaceDumperBase<CFProjectItemDumper>
+    class CFProjectItemDumper : public CFInterfaceDumperBase<CFProjectItemDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFProjectItemDumper);
     public:
-        FTLINLINE explicit CFProjectItemDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFProjectItemDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFProjectItemDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFProjectItemDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
    
 
     //Events
-    class CFEventsDumper : public CFDTEInterfaceDumperBase<CFEventsDumper>
+    class CFEventsDumper : public CFInterfaceDumperBase<CFEventsDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFEventsDumper);
     public:
-        FTLINLINE explicit CFEventsDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFEventsDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFEventsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFEventsDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
 
     //Window
-    class CFWindowsDumper : public CFDTEInterfaceDumperBase<CFWindowsDumper>
+    class CFWindowsDumper : public CFInterfaceDumperBase<CFWindowsDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFWindowsDumper);
     public:
-        FTLINLINE explicit CFWindowsDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFWindowsDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFWindowsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFWindowsDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFWindowDumper : public CFDTEInterfaceDumperBase<CFWindowDumper>
+    class CFWindowDumper : public CFInterfaceDumperBase<CFWindowDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFWindowDumper);
     public:
-        FTLINLINE explicit CFWindowDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFWindowDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFWindowDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFWindowDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
 
     //Document
-    class CFDocumentDumper : public CFDTEInterfaceDumperBase<CFDocumentDumper>
+    class CFDocumentDumper : public CFInterfaceDumperBase<CFDocumentDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFDocumentDumper);
     public:
-        FTLINLINE explicit CFDocumentDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFDocumentDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFDocumentDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFDocumentDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFTextSelectionDumper : public CFDTEInterfaceDumperBase<CFTextSelectionDumper>
+    class CFTextSelectionDumper : public CFInterfaceDumperBase<CFTextSelectionDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFTextSelectionDumper);
     public:
-        FTLINLINE explicit CFTextSelectionDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFTextSelectionDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFTextSelectionDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFTextSelectionDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
     //Code
-    class CFFileCodeModelDumper : public CFDTEInterfaceDumperBase<CFFileCodeModelDumper>
+    class CFFileCodeModelDumper : public CFInterfaceDumperBase<CFFileCodeModelDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFFileCodeModelDumper);
     public:
-        FTLINLINE explicit CFFileCodeModelDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFFileCodeModelDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFFileCodeModelDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFFileCodeModelDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFCodeModelDumper : public CFDTEInterfaceDumperBase<CFCodeModelDumper>
+    class CFCodeModelDumper : public CFInterfaceDumperBase<CFCodeModelDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCodeModelDumper);
     public:
-        FTLINLINE explicit CFCodeModelDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCodeModelDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCodeModelDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCodeModelDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFCodeElementsDumper : public CFDTEInterfaceDumperBase<CFCodeElementsDumper>
+    class CFCodeElementsDumper : public CFInterfaceDumperBase<CFCodeElementsDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCodeElementsDumper);
     public:
-        FTLINLINE explicit CFCodeElementsDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCodeElementsDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCodeElementsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCodeElementsDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFCodeElementDumper : public CFDTEInterfaceDumperBase<CFCodeElementDumper>
+    class CFCodeElementDumper : public CFInterfaceDumperBase<CFCodeElementDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCodeElementDumper);
     public:
-        FTLINLINE explicit CFCodeElementDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCodeElementDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCodeElementDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCodeElementDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
 
     //CommandBars
-    class CFCommandBarsDumper : public CFDTEInterfaceDumperBase<CFCommandBarsDumper>
+    class CFCommandBarsDumper : public CFInterfaceDumperBase<CFCommandBarsDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCommandBarsDumper);
     public:
-        FTLINLINE explicit CFCommandBarsDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCommandBarsDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCommandBarsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCommandBarsDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFCommandBarDumper : public CFDTEInterfaceDumperBase<CFCommandBarDumper>
+    class CFCommandBarDumper : public CFInterfaceDumperBase<CFCommandBarDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCommandBarDumper);
     public:
-        FTLINLINE explicit CFCommandBarDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCommandBarDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCommandBarDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCommandBarDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFCommandBarControlsDumper : public CFDTEInterfaceDumperBase<CFCommandBarControlsDumper>
+    class CFCommandBarControlsDumper : public CFInterfaceDumperBase<CFCommandBarControlsDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCommandBarControlsDumper);
     public:
-        FTLINLINE explicit CFCommandBarControlsDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCommandBarControlsDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCommandBarControlsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCommandBarControlsDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-    class CFCommandBarControlDumper : public CFDTEInterfaceDumperBase<CFCommandBarControlDumper>
+    class CFCommandBarControlDumper : public CFInterfaceDumperBase<CFCommandBarControlDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCommandBarControlDumper);
     public:
-        FTLINLINE explicit CFCommandBarControlDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCommandBarControlDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCommandBarControlDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCommandBarControlDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
 
     //Commands
-    class CFCommandsDumper : public CFDTEInterfaceDumperBase<CFCommandsDumper>
+    class CFCommandsDumper : public CFInterfaceDumperBase<CFCommandsDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCommandsDumper);
     public:
-        FTLINLINE explicit CFCommandsDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCommandsDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCommandsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCommandsDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
     
-    class CFCommandDumper : public CFDTEInterfaceDumperBase<CFCommandDumper>
+    class CFCommandDumper : public CFInterfaceDumperBase<CFCommandDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFCommandDumper);
     public:
-        FTLINLINE explicit CFCommandDumper(IDispatch* pObj, IInformationOutput* pInfoOutput, int nIndent)
-            :CFDTEInterfaceDumperBase<CFCommandDumper>(pObj, pInfoOutput, nIndent){}
+        FTLINLINE explicit CFCommandDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFCommandDumper>(pObj, pInfoOutput, nIndent){}
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };

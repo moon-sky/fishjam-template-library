@@ -103,8 +103,7 @@ namespace FTL
         BOOL bFilterd = FALSE;\
         if( (filters) & DUMP_FILTER_MOUSE_MESSAGE)\
         {\
-            if(uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST)\
-                bFilterd = TRUE;\
+			bFilterd = (WM_MOUSEMOVE == uMsg) ? TRUE : bFilterd; \
         }\
         if( (filters) & DUMP_FILTER_NCHITTEST )\
         {\

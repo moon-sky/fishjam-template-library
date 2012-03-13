@@ -182,6 +182,10 @@ namespace FTL
         {
             switch(m_Info)
             {
+				HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), S_FALSE);
+				HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), E_FAIL);
+				HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), E_INVALIDARG);
+				HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), E_NOINTERFACE);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), CONNECT_E_NOCONNECTION);
 #pragma TODO(Add more error case that APIErrorInfo cannot find)
             default:

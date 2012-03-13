@@ -5,6 +5,7 @@
 #ifdef USE_EXPORT
 #  include "ftlVSIPHelper.h"
 #endif
+#include "ftlComDetect.h"
 
 #include <stdidcmd.h>
 
@@ -1282,6 +1283,159 @@ namespace FTL
         }
         return TEXT("Unknown");
     }
+
+
+	HRESULT CFVsPackageDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsPackage")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsPackage>     spVsPackage(m_pObj);
+			if (spVsPackage)
+			{
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsTextManagerDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextManager")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsTextManager>     spVsTextManager(m_pObj);
+			if (spVsTextManager)
+			{
+				USES_CONVERSION;
+				FTL::CFStringFormater formater;
+
+				LANGPREFERENCES langPrefArray[1] = {0};
+				LANGPREFERENCES& langPref = langPrefArray[0];
+				spVsTextManager->GetPerLanguagePreferences(&langPrefArray[0]);
+
+				if (SUCCEEDED(hr))
+				{
+					LPOLESTR strGUID = NULL;
+					COM_VERIFY(StringFromIID(langPref.guidLang, &strGUID));
+
+					//szFileType=%s,
+					formater.Format(
+						TEXT("fShowCompletion=%d,fShowSmartIndent=%d,fHideAdvancedAutoListMembers=%d\n")
+						TEXT("uTabSize=%d,uIndentSize=%d,fInsertTabs=%d,IndentStyle=%d,fAutoListMembers=%d,fAutoListParams=%d\n")
+						TEXT("fVirtualSpace=%d,fWordWrap=%d,fTwoWayTreeview=%d,fHotURLs=%d,fDropdownBar=%d,fLineNumbers=%d\n")
+						TEXT("guidLang=%s\n"),
+						/*CA2T(langPreferences.szFileType),*/ 
+						langPref.fShowCompletion,langPref.fShowSmartIndent,langPref.fHideAdvancedAutoListMembers,
+						langPref.uTabSize,langPref.uIndentSize,langPref.fInsertTabs,
+						langPref.IndentStyle,langPref.fAutoListMembers,langPref.fAutoListParams,
+						langPref.fVirtualSpace,langPref.fWordWrap,langPref.fTwoWayTreeview,
+						langPref.fHotURLs,langPref.fDropdownBar,langPref.fLineNumbers,
+						COLE2T(strGUID));
+
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("PerLanguagePreferences"), formater.GetString()));
+
+					CoTaskMemFree(strGUID);
+				}
+
+				long nMarkerTypeCount = 0;
+				COM_VERIFY(spVsTextManager->GetMarkerTypeCount(&nMarkerTypeCount));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("MarkerTypeCount"), nMarkerTypeCount));
+
+				for (long nMarkerTypeIndex = 0; nMarkerTypeIndex < nMarkerTypeCount; ++nMarkerTypeIndex)
+				{
+					CComPtr<IVsTextMarkerType>	spTextMarkerType;
+					hr = spVsTextManager->GetMarkerTypeInterface(nMarkerTypeIndex, &spTextMarkerType);
+					if (SUCCEEDED(hr) && spTextMarkerType)
+					{
+						COM_VERIFY(pInfoOutput->OnOutput(TEXT("Index"), nMarkerTypeIndex));
+						CFVsTextMarkerTypeDumper      vsTextMarkerTypeDumper(spTextMarkerType, pInfoOutput, m_nIndent + 2);
+					}
+					else
+					{
+						FTLTRACEEX(FTL::tlError, TEXT("GetMarkerTypeInterface Error %d(0x%08x)"), 
+							nMarkerTypeIndex, hr);
+					}
+				}
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsTextMarkerTypeDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextMarkerType")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsTextMarkerType>     spVsTextMarkerType(m_pObj);
+			if (spVsTextMarkerType)
+			{
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsTextViewDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextView")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsTextView>     spVsTextView(m_pObj);
+			if (spVsTextView)
+			{
+				FTL::CFStringFormater formater;
+
+				HWND hWnd = spVsTextView->GetWindowHandle();
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("WindowHandle"), hWnd));
+
+				long nLine = 0;
+				ViewCol nColumn = 0;
+				COM_VERIFY(spVsTextView->GetCaretPos(&nLine, &nColumn));
+
+				COM_VERIFY(formater.Format(TEXT(" Line %d, Col %d"), nLine, nColumn));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("CaretPos"), formater.GetString()));
+
+				TextSpan selectionSpan = {0};
+				COM_VERIFY_EXCEPT1(spVsTextView->GetSelectionSpan(&selectionSpan), S_FALSE);
+				if (SUCCEEDED(hr))
+				{
+					formater.Reset();
+					formater.Format(TEXT("TextSpan From [%d, %d] To [%d, %d]"), selectionSpan.iStartLine, 
+						selectionSpan.iStartIndex, selectionSpan.iEndLine, selectionSpan.iEndIndex);
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("SelectionSpan"), formater.GetString()));
+				}
+				
+				TextSelMode selMode = spVsTextView->GetSelectionMode();
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("SelectionMode"), selMode));
+
+				CComBSTR bstrSelectedText;
+				COM_VERIFY(spVsTextView->GetSelectedText(&bstrSelectedText));
+				if (SUCCEEDED(hr) && NULL != bstrSelectedText)
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("SelectedText"), bstrSelectedText));
+				}
+
+				CComPtr<IDataObject>	spSelectionDataObject;
+				COM_VERIFY(spVsTextView->GetSelectionDataObject(&spSelectionDataObject));
+				if (SUCCEEDED(hr) && spSelectionDataObject)
+				{
+					COM_DETECT_INTERFACE_FROM_LIST(spSelectionDataObject);
+				}
+
+			}
+		}
+		return hr;
+
+	}
 }
 
 #endif //FTL_VSIP_HELPER_HPP

@@ -271,6 +271,17 @@ namespace FTL
 
 #ifdef FTL_DEBUG
 
+	#define DETECT_INTERFACE_ENTRY_IID(IntType, riid) \
+		DETECT_INTERFACE_ENTRY_EX_IID(IntType,riid,CFDummyDump)
+
+	#define DETECT_INTERFACE_ENTRY(IntType) \
+		DETECT_INTERFACE_ENTRY_EX_IID(IntType,__uuidof(IntType),CFDummyDump)
+
+	#define DETECT_INTERFACE_ENTRY_EX(IntType,classDumpInfo) \
+		DETECT_INTERFACE_ENTRY_EX_IID(IntType,__uuidof(IntType),classDumpInfo)
+
+//旧的方式 -- 效率非常差，但可以使用对应接口的实例
+#if 0
     #define BEGIN_DETECT_INTERFACE() \
         {\
             HRESULT hr = E_FAIL;\
@@ -349,16 +360,6 @@ namespace FTL
                 }\
             }
 
-    #define DETECT_INTERFACE_ENTRY_IID(IntType, riid) \
-        DETECT_INTERFACE_ENTRY_EX_IID(IntType,riid,CFDummyDump)
-
-    #define DETECT_INTERFACE_ENTRY(IntType) \
-        DETECT_INTERFACE_ENTRY_EX_IID(IntType,__uuidof(IntType),CFDummyDump)
-
-    #define DETECT_INTERFACE_ENTRY_EX(IntType,classDumpInfo) \
-        DETECT_INTERFACE_ENTRY_EX_IID(IntType,__uuidof(IntType),classDumpInfo)
-
-
     #define END_DETECT_INTERFACE()\
             SAFE_RELEASE(pMoniker);\
             SAFE_RELEASE(pSvrProvider);\
@@ -368,6 +369,120 @@ namespace FTL
             }\
             return dwInterfaceCount;\
         }
+
+#else
+
+//新的方式 -- 效率高(每个接口对应的宏只是数组中的一项)，但不能使用接口的实例
+//  怎么在数组中存储 接口 的类型，或者尝试在接口的数组中保存接口的实例指针 ?
+typedef HRESULT (*DumpInterfaceInfoProc)(IUnknown* pUnknown);
+
+struct CFInterfaceEntryExIID
+{
+	//DWORD_PTR m_vtbl;   // filled in with USE_INTERFACE_PART
+	//IUnknown*  m_pUnk;
+	LPCTSTR		pszInterfaceName;
+	GUID	  id;
+	DumpInterfaceInfoProc	m_pDumpInfoProc;
+	//CFInterfaceEntryExIID() { m_pUnk = 0; }
+};
+
+
+#define BEGIN_DETECT_INTERFACE() \
+		HRESULT hr = E_FAIL;\
+		DWORD dwInterfaceCount = 0;\
+		DWORD dwTotalCheckCount = 0;\
+		IMoniker* pMoniker = NULL;\
+		IServiceProvider* pSvrProvider = NULL;\
+		if(CFComDetect::cdtMonikerBind == detectType)\
+		{\
+			COM_VERIFY((pUnknown)->QueryInterface(IID_IMoniker,(void**)(&pMoniker)));\
+		}\
+		else if(CFComDetect::cdtService == detectType)\
+		{\
+			COM_VERIFY((pUnknown)->QueryInterface(IID_IServiceProvider,(void**)(&pSvrProvider)));\
+		}\
+		CFInterfaceEntryExIID allInterfaceEntries[] = \
+		{\
+
+#define DETECT_INTERFACE_ENTRY_EX_IID(IntType,riid,classDumpInfo) \
+			{	TEXT(#IntType), riid, classDumpInfo::DumpInterfaceInfo },
+	
+#define END_DETECT_INTERFACE() \
+			{	NULL, GUID_NULL, CFDummyDump::DumpInterfaceInfo }\
+		};\
+		CFInterfaceEntryExIID* pEntry = &allInterfaceEntries[0];\
+		while(pEntry && pEntry->id != GUID_NULL)\
+		{\
+			dwTotalCheckCount++;\
+			if(FTL::CFComDetect::cdtInterface == detectType)\
+			{\
+				IUnknown* pQueryUnknown = NULL;\
+				hr = (pUnknown)->QueryInterface(pEntry->id,(void**)(&pQueryUnknown));\
+				if(SUCCEEDED(hr) && pQueryUnknown)\
+				{\
+					dwInterfaceCount++;\
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,pEntry->pszInterfaceName);\
+					pEntry->m_pDumpInfoProc(pQueryUnknown);\
+					pQueryUnknown->Release();\
+					pQueryUnknown = NULL;\
+				}\
+				else if(E_NOINTERFACE != hr)\
+				{\
+					FTLTRACEEX(tlWarning,TEXT("Warning: Detect %s ,return 0x%p\n"),pEntry->pszInterfaceName,hr);\
+				}\
+			}\
+			else if(FTL::CFComDetect::cdtIID == detectType)\
+			{\
+				if(pEntry->id == checkRIID)\
+				{\
+					dwInterfaceCount++;\
+					FTLTRACEEX(FTL::tlTrace,TEXT("\tRiid is %s\n"),pEntry->pszInterfaceName);\
+				}\
+			}\
+			else if(FTL::CFComDetect::cdtMonikerBind == detectType)\
+			{\
+				IUnknown* pBindUnknown = NULL;\
+				hr = (pMoniker)->BindToObject(NULL,NULL,pEntry->id,(void**)(&pBindUnknown));\
+				if(SUCCEEDED(hr) && pBindUnknown != NULL)\
+				{\
+					dwInterfaceCount++;\
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,pEntry->pszInterfaceName);\
+					pBindUnknown->Release();\
+					pBindUnknown = NULL;\
+				}\
+			}\
+			else if(FTL::CFComDetect::cdtService == detectType)\
+			{\
+				IUnknown* pServiceUnknown = NULL;\
+				hr = (pSvrProvider)->QueryService(pEntry->id, pEntry->id,(void**)(&pServiceUnknown));\
+				if(SUCCEEDED(hr) && pServiceUnknown != NULL)\
+				{\
+					dwInterfaceCount++;\
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,pEntry->pszInterfaceName);\
+					pServiceUnknown->Release();\
+					pServiceUnknown = NULL;\
+				}\
+				else if(E_NOINTERFACE != hr)\
+				{\
+					FTLTRACEEX(tlWarning,TEXT("Warning: Detect Service %s ,return 0x%p\n"),pEntry->pszInterfaceName,hr);\
+				}\
+			}\
+			else\
+			{\
+				FTLTRACEEX(tlError,TEXT("\tUnknown Operation \n"));\
+			}\
+			pEntry++;\
+		}\
+		if(CFComDetect::cdtInterface == detectType || CFComDetect::cdtService == detectType)\
+		{\
+			FTLTRACEEX(FTL::tlTrace,TEXT("\tTotal Check %d Interfaces\n"),dwTotalCheckCount);\
+		}\
+		SAFE_RELEASE(pMoniker);\
+		SAFE_RELEASE(pSvrProvider);\
+		return dwInterfaceCount;
+
+	
+#endif 
 
 namespace FTL
 {

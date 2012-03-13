@@ -130,3 +130,11 @@ DTE Service Provider
 	25: IVsMonitorSelection
 	26: IVsTaskList
 	27: IVsOutputWindow
+	
+	
+
+Marker -- 
+  Visual Assist X Current Line,	Visual Assist X Spelling Error,Visual Assist X Syntax Error,
+  Visual Assist X Brace Error, Visual Assist X Brace Matching, Visual Assist X Find Reference (Modified),
+  Visual Assist X Find Result,Visual Assist X Find Reference, µÈ
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\9.0\Text Editor\External Markers\

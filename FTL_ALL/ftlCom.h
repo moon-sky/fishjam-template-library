@@ -70,6 +70,7 @@ namespace FTL
         virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, long nValue) = 0;
+		virtual HRESULT OnOutput(LPCTSTR pszKey, HWND hWnd) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT* pValue) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue) = 0;
     };
@@ -84,6 +85,7 @@ namespace FTL
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, long nValue);
+		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, HWND hWnd);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT* pValue);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue);
     protected:
@@ -91,6 +93,32 @@ namespace FTL
         TCHAR*  m_pszIndentSpace;
         FTLINLINE virtual VOID    OutputIndentSpace();
     };
+
+	template <typename T>
+	class CFInterfaceDumperBase
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFInterfaceDumperBase);
+	public:
+		FTLINLINE explicit CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent);
+		//	:m_pObj(pObj)
+		//	,m_nIndent(nIndent)
+		//{
+		//	T* pT = static_cast<T*>(this);
+		//	pInfoOutput->SetIndent(nIndent);
+		//	pT->GetObjInfo(pInfoOutput);
+		//}
+
+	protected:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+		//{
+		//	FTLASSERT(FALSE);
+		//	return S_FALSE;
+		//}
+	protected:
+		CComPtr<IUnknown>   m_pObj;
+		int                 m_nIndent;
+	};
+
 }//namespace FTL
 
 #endif //FTL_COM_H

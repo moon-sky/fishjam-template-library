@@ -325,7 +325,6 @@ namespace FTL
 
     HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, long nValue)
     {
-        USES_CONVERSION;
         if (pszKey)
         {
             OutputIndentSpace();
@@ -334,6 +333,35 @@ namespace FTL
         }
         return S_FALSE;
     }
+
+	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, HWND hWnd)
+	{
+		if (pszKey)
+		{
+			BOOL bRet = FALSE;
+			OutputIndentSpace();
+			API_VERIFY(::IsWindow(hWnd));
+			if (bRet)
+			{
+				TCHAR szClassName[64] = {0};
+				API_VERIFY(0 != ::GetClassName(hWnd,szClassName, _countof(szClassName)));
+				TCHAR szWindowText[64] = {0};
+				API_VERIFY(0 != ::GetWindowText(hWnd, szWindowText, _countof(szWindowText)));
+				RECT rcWindow = {0};
+				API_VERIFY(::GetWindowRect(hWnd, &rcWindow));
+				
+				FTL::CFStringFormater formater;
+				formater.Format(TEXT("rcWindow=(%d,%d)-(%d,%d), %dx%d, ClassName=%s, WindowText=%s"),
+					rcWindow.left, rcWindow.top, rcWindow.right, rcWindow.bottom,
+					rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top,
+					szClassName, szWindowText);
+				FTLTRACE(TEXT("  Key=%s,Value=%d\n"), pszKey, formater.GetString());
+
+				return S_OK;
+			}
+		}
+		return S_FALSE;
+	}
 
     HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, VARIANT* pValue)
     {
@@ -378,6 +406,22 @@ namespace FTL
         return S_FALSE;
     }
 
+	template <typename T>
+	CFInterfaceDumperBase<T>::CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+		:m_pObj(pObj)
+		,m_nIndent(nIndent)
+	{
+		T* pT = static_cast<T*>(this);
+		pInfoOutput->SetIndent(nIndent);
+		pT->GetObjInfo(pInfoOutput);
+	}
+
+	template <typename T>
+	HRESULT CFInterfaceDumperBase<T>::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		FTLASSERT(FALSE);
+		return S_FALSE;
+	}
 
 } //namespace FTL
 
