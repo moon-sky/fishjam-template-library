@@ -100,20 +100,7 @@ namespace FTL
 		DISABLE_COPY_AND_ASSIGNMENT(CFInterfaceDumperBase);
 	public:
 		FTLINLINE explicit CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent);
-		//	:m_pObj(pObj)
-		//	,m_nIndent(nIndent)
-		//{
-		//	T* pT = static_cast<T*>(this);
-		//	pInfoOutput->SetIndent(nIndent);
-		//	pT->GetObjInfo(pInfoOutput);
-		//}
-
-	protected:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
-		//{
-		//	FTLASSERT(FALSE);
-		//	return S_FALSE;
-		//}
 	protected:
 		CComPtr<IUnknown>   m_pObj;
 		int                 m_nIndent;

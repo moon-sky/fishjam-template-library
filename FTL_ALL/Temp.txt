@@ -14,123 +14,79 @@ CommandBarControl可以有三种表现形式：
  组合框(CommandBarComboBox)：类似于工具条中组合框控件。它包括一个工具栏和紧接着工具栏的一个下拉箭头。单击该按钮，将显示出更多的带图标的菜单命令。
  按钮(CommandBarButton)：相当于标准的工具栏按钮，即带有图标的按钮。
 
-
-template<typename T>
-class QueryInterfaceForBackgroundThread
-{
-public:
-	QueryInterfaceForBackgroundThread(IUnknown* pUnk)
-	{
-		HRESULT hr = E_FAIL;
-		COM_VERIFY(CoMarshalInterThreadInterfaceInStream(__uuidof(T), pUnk, &m_spStream));
-	}
-	CComPtr<T>	GetInterface()
-	{
-		HRESULT hr = E_FAIL;
-		if (!m_spInterface)
-		{
-			COM_VERIFY(CoGetInterfaceAndReleaseStream(m_spStream, __uuidof(T), (VOID**)&m_spInterface));
-			m_spStream.Detach();
-		}
-		return m_spInterface;
-	}
-	operator CComPtr<T> () 
-	{ 
-		return GetInterface(); 
-	}
-	~QueryInterfaceForBackgroundThread()
-	{
-		
-	}
-private:
-	CComPtr<IStream>	m_spStream;
-	CComPtr<T>	m_spInterface;
-};
-
 Solution -> Prject -> ProjectItems -> ProjectItem
 _CommandBars -> CommandBar -> CommandBarControls -> CommandBarControl(Popup) -> Command(AddControl)
 Commands -> Command 
 
 Bindings -- 快捷键，如 L"Text Editor::Ctrl+Shift+W, V"
 
-HRESULT CConnect::CreateCommand(AddIn* pAddin, Commands2* pCommands2, CommandBar* pCmdBar, const CommandStruct* pCmd)
-{
-	CComPtr<EnvDTE::Command> pCreatedCommand;
-	CComPtr<CommandBarControl> pCommandBarControl;
-
-	HRESULT hr;
-	COM_VERIFY_EXCEPT1(pCommands2->AddNamedCommand2(pAddin, 
-		pCmd->Name, 
-		pCmd->ButtonText,
-		pCmd->ToolTip, 
-		pCmd->bMSOButton, 
-		pCmd->lBitmapId, 
-		NULL, 
-		EnvDTE::vsCommandStatusSupported+EnvDTE::vsCommandStatusEnabled,
-		vsCommandStylePictAndText,
-		vsCommandControlTypeButton,
-		&pCreatedCommand), E_INVALIDARG);
-		
-	//Create New Command
-	if(SUCCEEDED(hr) && (pCreatedCommand != NULL))
-	{
-		COM_VERIFY(pCreatedCommand->AddControl(pCmdBar, pCmd->lPos, (IDispatch**)&pCommandBarControl));
-		if (pCmd->Bindings.bstrVal && pCmd->Bindings.bstrVal[0])
-		{
-			COM_VERIFY(pCreatedCommand->put_Bindings(pCmd->Bindings));
-		}
-	}
-	else
-	{
-		//Already have same command, just find and Update Info
-		CComPtr<EnvDTE::Command> pCurCommand;
-		_bstr_t commandname = AddinString();
-		commandname += pCmd->Name;
-		COM_VERIFY(pCommands2->Item(_variant_t(commandname), 0, &pCurCommand));
-		if (SUCCEEDED(hr) && !pCurCommand)
-		{
-			COM_VERIFY(pCurCommand->AddControl(pCmdBar, pCmd->lPos,
-				(IDispatch**)&pCommandBarControl));
-			
-			if (pCmd->Bindings.bstrVal && pCmd->Bindings.bstrVal[0])
-			{
-				COM_VERIFY(pCurCommand->put_Bindings(pCmd->Bindings));
-			}
-		}
-	}
-
-	return hr;
-}
-
 DTE Service Provider
-	1: ObjectExtenders
-	2: SourceControl
-	3: IVsProfferCommands
-	4: _DTE
-	5: IVsExtensibility
-	6: IInternetSecurityManager
-	7: IVsLinkedUndoTransactionManager
-	8: IVsSolutionPersistence
-	9: IVsRegisterProjectTypes
-	10: IVsSolution
-	11: IVsAddProjectItemDlg
-	12: IVsRunningDocumentTable
-	13: IVsInvisibleEditorManager
-	14: IVsXMLMemberIndexService
-	15: IVsUIShell
-	16: IVsUIShellDocumentWindowMgr
-	17: IVsExternalFilesManager
-	18: IVsFileChangeEx
-	19: IVsFileChange
-	20: IVsIME
-	21: IVsUIShellOpenDocument
-	22: IVsShell
-	23: IVsRegisterEditors
-	24: IVsEnumHierarchyItemsFactory
-	25: IVsMonitorSelection
-	26: IVsTaskList
-	27: IVsOutputWindow
-	
+	1 : IVsObjectManager
+	2 : _DTE
+	3 : IVsCommandWindow
+	4 : IVsRegisterFindScope
+	5 : IVsAddProjectItemDlg
+	6 : IVsStructuredFileIO
+	7 : IVsInvisibleEditorManager
+	8 : ICQryAutoFactory
+	9 : IVsHTMLConverter
+	10 : IVsLog
+	11 : IVsFileChange
+	12 : IUIHostLocale
+	13 : IVsEnumHierarchyItemsFactory
+	14 : IHxSession
+	15 : IHxRegisterSession
+	16 : IVsUIShellOpenDocument
+	17 : IVsIntelliMouseHandler
+	18 : IVsParseCommandLine
+	19 : SVsProfilesManagerUI
+	20 : IVsFontAndColorStorage
+	21 : SVsOnlineHelpData
+	22 : SVsSearchService
+	23 : Help
+	24 : SVsHelpPage
+	25 : IVsOutputWindow
+	26 : IVsRegisterScciProvider
+	27 : IVsMonitorSelection
+	28 : SVsWebProxy
+	29 : IVsComponentSelectorDlg
+	30 : SVsHelpOnlineF1Service
+	31 : IVsSolutionPersistence
+	32 : IVsLibraryReferenceManager
+	33 : IVsCmdNameMapping
+	34 : IVsToolbox
+	35 : IVsRegisterEditors
+	36 : IInternetSecurityManager
+	37 : IVsSolution
+	38 : IVsdDeployment
+	39 : ObjectExtenders
+	40 : IVsSolutionBuildManager
+	41 : IVsFileChangeEx
+	42 : IVsMonitorUserContext
+	43 : IVsTaskList
+	44 : IVsBuildEventCommandLineDialogService
+	45 : SVsStartPageDownload
+	46 : IVsRunningDocumentTable
+	47 : IVsdPackageManager
+	48 : IVsUIShell
+	49 : IVsDiscoveryService
+	50 : IVsPropertyPageFrame
+	51 : IVsAddWebReferenceDlg
+	52 : IVsFilterKeys
+	53 : IVsTextImageUtilities
+	54 : IVsAppCommandLine
+	55 : IProfferService
+	56 : IVsXMLMemberIndexService
+	57 : IVsStatusbar
+	58 : IVsUIHierWinClipboardHelper
+	59 : IVsExternalFilesManager
+	60 : IVsMenuEditorFactory
+	61 : IVsdDeployment
+	62 : IVsRegisterProjectTypes
+	63 : SourceControl
+	64 : IVsCodeShareHandler
+	65 : SVsLinkedUndoTransactionManager
+	66 : IVsShell
 	
 
 Marker -- 

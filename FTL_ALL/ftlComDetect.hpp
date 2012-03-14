@@ -121,8 +121,12 @@ namespace FTL
             for (unsigned int infoIndex = 0; infoIndex < infoCount; ++infoIndex)
             {
                 ATL::CComPtr<ITypeInfo>  spTypeInfo;
-                COM_VERIFY(pDisp->GetTypeInfo(infoIndex, LOCALE_SYSTEM_DEFAULT, &spTypeInfo));
-                hr = CFTypeInfoDump::DumpInterfaceInfo(spTypeInfo);
+				//比如 VSIP 中的 IVsHierarchy 会返回 Library not registered
+                COM_VERIFY_EXCEPT1(pDisp->GetTypeInfo(infoIndex, LOCALE_SYSTEM_DEFAULT, &spTypeInfo), TYPE_E_LIBNOTREGISTERED);
+				if (SUCCEEDED(hr) && spTypeInfo)
+				{
+					COM_VERIFY(CFTypeInfoDump::DumpInterfaceInfo(spTypeInfo));
+				}
             }
             return S_OK;
         }
@@ -232,15 +236,24 @@ namespace FTL
     };
 #endif //INCLUDE_DETECT_STRMIF
 
-    DWORD CFComDetect::CoDetectInterfaceFromRegister(IUnknown* pUnk)
+    DWORD CFComDetect::CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType)
     {
-        CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnk, (DWORD)(-1));
+        CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnknown, (DWORD)(-1));
 
         //没有 CATID_INTERFACE ，因此不能用 ICatInformation ？
         LONG lRet = ERROR_SUCCESS;
         DWORD dwCount = 0;
         HRESULT hr = E_FAIL;
         BOOL bRet = FALSE;
+		IServiceProvider* pServiceProvider = NULL;
+		if (cdtService == detectType)
+		{
+			COM_VERIFY(pUnknown->QueryInterface(IID_IServiceProvider, (void**)&pServiceProvider));
+			if (FAILED(hr) || !pServiceProvider)
+			{
+				return DWORD(-1);
+			}
+		}
 
         HKEY hKeyInterface;
         REG_VERIFY(::RegOpenKeyEx(HKEY_CLASSES_ROOT,TEXT("Interface"),0,KEY_READ,&hKeyInterface));
@@ -251,7 +264,6 @@ namespace FTL
             LPTSTR pName = bufName;// + 10;
             DWORD cchValue = MAX_BUFFER_LENGTH;// - 10; 
             GUID guidInfo = GUID_NULL;
-            IUnknown* pDetectedInterface = NULL;
 
             REG_VERIFY(::RegEnumKey(hKeyInterface,dwIndex,pName,cchValue));
             while (ERROR_SUCCESS == lRet)
@@ -260,28 +272,38 @@ namespace FTL
                 COM_VERIFY_EXCEPT1(CLSIDFromString(ATL::CComBSTR(pName),&guidInfo), CO_E_CLASSSTRING);
                 if (SUCCEEDED(hr))
                 {
-                    if(SUCCEEDED(pUnk->QueryInterface(guidInfo,(void**)&pDetectedInterface)))
-                    {
-                        TCHAR interfaceName[MAX_BUFFER_LENGTH] = {0};
-                        DWORD dwInterfaceNameLength = MAX_BUFFER_LENGTH;
-                        DWORD dwType;
+					switch(detectType)
+					{
+					case cdtInterface:
+						hr = _innerCoDtectInterfaceFromRegister(pUnknown, guidInfo);
+						break;
+					case cdtService:
+						hr = _innerCoDtectServiceFromRegister(pServiceProvider, guidInfo);
+						break;
+					default:
+						FTLASSERT(FALSE);
+						break;
+					}
+					if (SUCCEEDED(hr))
+					{
+						TCHAR interfaceName[MAX_BUFFER_LENGTH] = {0};
+						DWORD dwInterfaceNameLength = MAX_BUFFER_LENGTH;
+						DWORD dwType;
 
-                        HKEY hKeyGuid = NULL;
-                        dwCount++;
-                        REG_VERIFY(::RegOpenKeyEx(hKeyInterface,pName,0,KEY_READ,&hKeyGuid));
-                        lRet = ::RegQueryValueEx(hKeyGuid,TEXT(""),NULL,&dwType,(LPBYTE)interfaceName,&dwInterfaceNameLength);
-                        if (ERROR_SUCCESS == lRet)
-                        {
-                            FTLTRACEEX(FTL::tlTrace,TEXT("\t%d : %s\n"),dwCount,interfaceName);
-                        }
-                        else
-                        {
-                            FTLTRACEEX(FTL::tlTrace,TEXT("\t%d : %s\n"),dwCount, pName);
-                        }
-                        pDetectedInterface->Release();
-                        pDetectedInterface = NULL;
-                        SAFE_CLOSE_REG(hKeyGuid);
-                    }
+						HKEY hKeyGuid = NULL;
+						dwCount++;
+						REG_VERIFY(::RegOpenKeyEx(hKeyInterface,pName,0,KEY_READ,&hKeyGuid));
+						lRet = ::RegQueryValueEx(hKeyGuid,TEXT(""),NULL,&dwType,(LPBYTE)interfaceName,&dwInterfaceNameLength);
+						if (ERROR_SUCCESS == lRet)
+						{
+							FTLTRACEEX(FTL::tlTrace,TEXT("\t%d : %s\n"),dwCount,interfaceName);
+						}
+						else
+						{
+							FTLTRACEEX(FTL::tlTrace,TEXT("\t%d : %s\n"),dwCount, pName);
+						}
+						RegCloseKey(hKeyGuid);
+					}
                 }
                 else
                 {
@@ -296,6 +318,32 @@ namespace FTL
         }
         return dwCount;
     }
+
+	HRESULT CFComDetect::_innerCoDtectInterfaceFromRegister(IUnknown* pUnknown, REFGUID guidInfo)
+	{
+		HRESULT hr = E_FAIL;
+		IUnknown* pDetectedInterface = NULL;
+		COM_VERIFY_EXCEPT1(pUnknown->QueryInterface(guidInfo,(void**)&pDetectedInterface), E_NOINTERFACE);
+		if(SUCCEEDED(hr) && pDetectedInterface)
+		{
+			pDetectedInterface->Release();
+			pDetectedInterface = NULL;
+		}
+		return hr;
+	}
+
+	HRESULT CFComDetect::_innerCoDtectServiceFromRegister(IServiceProvider* pServiceProvider, REFGUID guidInfo)
+	{
+		HRESULT hr = E_FAIL;
+		IUnknown* pDetectedInterface = NULL;
+		hr = pServiceProvider->QueryService(guidInfo, guidInfo, (void**)&pDetectedInterface);
+		if(SUCCEEDED(hr) && pDetectedInterface)
+		{
+			pDetectedInterface->Release();
+			pDetectedInterface = NULL;
+		}
+		return hr;
+	}
 
     //本方法同时支持检测多种COM信息 -- 虽然不是好的编程习惯，但能减少维护量
     DWORD CFComDetect::CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType)

@@ -20,9 +20,11 @@ namespace FTL
     class CFVSIPUtils
     {
     public:
+		FTLINLINE static LPCTSTR GetVSHPropIdString(__VSHPROPID propId);
 
         //获取 cmdidcmd.h 中定义的 CmdID 对应的字符串，在 IOleCommandTarget::QueryStatus 中判断 cmds[n].cmdID
         FTLINLINE static LPCTSTR GetStdIdCommandtring(ULONG cmdID);
+
     };
 
 
@@ -60,6 +62,28 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	//Solution and Projects
+	class CFVsSolutionDumper : public CFInterfaceDumperBase<CFVsSolutionDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsSolutionDumper);
+	public:
+		FTLINLINE explicit CFVsSolutionDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsSolutionDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFVsHierarchyDumper : public CFInterfaceDumperBase<CFVsHierarchyDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsHierarchyDumper);
+	public:
+		FTLINLINE explicit CFVsHierarchyDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsHierarchyDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	private:
+		HRESULT EnumAllChildRen(IVsHierarchy* pParent, IInformationOutput* pInfoOutput);
+	};
 
 	//Window
 	class CFVsTextViewDumper : public CFInterfaceDumperBase<CFVsTextViewDumper>
@@ -68,7 +92,6 @@ namespace FTL
 	public:
 		FTLINLINE explicit CFVsTextViewDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
 			:CFInterfaceDumperBase<CFVsTextViewDumper>(pObj, pInfoOutput, nIndent){}
-	public:
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};

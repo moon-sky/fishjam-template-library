@@ -8,9 +8,84 @@
 #include "ftlComDetect.h"
 
 #include <stdidcmd.h>
+#include <comutil.h>
 
 namespace FTL
 {
+	LPCTSTR CFVSIPUtils::GetVSHPropIdString(__VSHPROPID propId)
+	{
+		switch(propId)
+		{
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_Parent);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_FirstChild);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_NextSibling);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_Root);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_TypeGuid);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_SaveName);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_Caption);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IconImgList);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IconIndex);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_Expandable);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ExpandByDefault);
+			//HANDLE_CASE_RETURN_STRING(VSHPROPID_ProjectName);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_Name);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IconHandle);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_OpenFolderIconHandle);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_OpenFolderIconIndex);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_CmdUIGuid);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_SelContainer);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_BrowseObject);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_AltHierarchy);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_AltItemid);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ProjectDir);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_SortPriority);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_UserContext);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_EditLabel);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ExtObject);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ExtSelectedItem);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_StateIconIndex);
+			//HANDLE_CASE_RETURN_STRING(VSHPROPID_ProjectType);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_TypeName);
+			//HANDLE_CASE_RETURN_STRING(VSHPROPID_ReloadableProjectFile);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_HandlesOwnReload);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ParentHierarchy);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ParentHierarchyItemid);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ItemDocCookie);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_Expanded);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ConfigurationProvider);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ImplantHierarchy);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_OwnerKey);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_StartupServices);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_FirstVisibleChild);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_NextVisibleSibling);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IsHiddenItem);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IsNonMemberItem);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IsNonLocalStorage);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_StorageType);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ItemSubType);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_OverlayIconIndex);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DefaultNamespace);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IsNonSearchable);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IsFindInFilesForegroundOnly);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_CanBuildFromMemory);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_PreferredLanguageSID);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ShowProjInSolutionPage);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_AllowEditInRunMode);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IsNewUnsavedItem);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ShowOnlyItemCaption);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ProjectIDGuid);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DesignerVariableNaming);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DesignerFunctionVisibility);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_HasEnumerationSideEffects);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DefaultEnableBuildProjectCfg);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DefaultEnableDeployProjectCfg);
+		default:
+			FTLTRACEEX(FTL::tlError, TEXT("Unknown VSHPropId, %d\n"), propId);
+			break;
+		}
+		return TEXT("Unknown");
+	}
+
     LPCTSTR CFVSIPUtils::GetStdIdCommandtring(ULONG cmdID)
     {
         switch(cmdID)
@@ -1357,7 +1432,7 @@ namespace FTL
 					}
 					else
 					{
-						FTLTRACEEX(FTL::tlError, TEXT("GetMarkerTypeInterface Error %d(0x%08x)"), 
+						FTLTRACEEX(FTL::tlError, TEXT("GetMarkerTypeInterface Error, Index=%d, Error= 0x%08x\n"), 
 							nMarkerTypeIndex, hr);
 					}
 				}
@@ -1377,6 +1452,225 @@ namespace FTL
 			if (spVsTextMarkerType)
 			{
 				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsSolutionDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsSolution")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsSolution>     spVsSolution(m_pObj);
+			if (spVsSolution)
+			{
+				CComBSTR bstrSolutionDirectory;
+				CComBSTR bstrSolutionFile;
+				CComBSTR bstrUserOptsFile;
+
+				//if no solution open ,then return FALSE
+				COM_VERIFY_EXCEPT1(spVsSolution->GetSolutionInfo(&bstrSolutionDirectory, &bstrSolutionFile, &bstrUserOptsFile), S_FALSE);
+				if (S_OK == hr)
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("SolutionDirectory"), bstrSolutionDirectory));
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("SolutionFile"), bstrSolutionFile));
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("UserOptsFile"), bstrUserOptsFile));
+				}
+
+				//Project Name
+				ULONG nProjectsFetched = 0;
+				COM_VERIFY(spVsSolution->GetProjectFilesInSolution (0, 0,NULL, &nProjectsFetched));
+				if (SUCCEEDED(hr) && nProjectsFetched > 0)
+				{
+					CComBSTR* pNameArray = new CComBSTR[nProjectsFetched];
+					COM_VERIFY(spVsSolution->GetProjectFilesInSolution(0,nProjectsFetched, &pNameArray[0], &nProjectsFetched));
+					for (ULONG nIndex = 0; nIndex < nProjectsFetched; ++nIndex)
+					{
+						CFStringFormater formater;
+						formater.Format(TEXT("Project Index=%d, Name=%s"), nIndex, COLE2T(pNameArray[nIndex]));
+						pInfoOutput->OnOutput(TEXT("ProjectFilesInSolution"), formater.GetString());
+					}
+					delete [] pNameArray;
+				}
+
+				//GetProperty
+
+				CComPtr<IEnumHierarchies>	spEnumHierarchies;
+				
+				COM_VERIFY(spVsSolution->GetProjectEnum(EPF_ALLPROJECTS, GUID_NULL, &spEnumHierarchies));
+				if (spEnumHierarchies)
+				{
+					CComPtr<IVsHierarchy> spVsHierarchy;
+					ULONG ulFetched = 0;
+
+					COM_VERIFY_EXCEPT1(spEnumHierarchies->Next(1,&spVsHierarchy, &ulFetched), S_FALSE);
+					while (SUCCEEDED(hr) && ulFetched == 1)
+					{
+						COM_DETECT_INTERFACE_FROM_LIST(spVsHierarchy);
+						COM_DETECT_INTERFACE_FROM_REGISTER(spVsHierarchy);
+						CFVsHierarchyDumper hierarchyDumper(spVsHierarchy, pInfoOutput, m_nIndent + 2);
+
+						spVsHierarchy.Release();
+						COM_VERIFY_EXCEPT1(spEnumHierarchies->Next(1,&spVsHierarchy, &ulFetched), S_FALSE);
+					}
+				}
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsHierarchyDumper::EnumAllChildRen(IVsHierarchy* pParent, IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		if (!pParent)
+		{
+			return E_POINTER;
+		}
+
+		//check Sibling
+		CComVariant varSibling;
+		COM_VERIFY(pParent->GetProperty(VSITEMID_ROOT, VSHPROPID_NextSibling, &varSibling));
+		if (SUCCEEDED(hr))
+		{
+			VSITEMID idSibling = varSibling.lVal;
+			if (VSITEMID_NIL != idSibling)
+			{
+				CComVariant varSiblingPtr;
+				hr = pParent->GetProperty(idSibling, VSHPROPID_BrowseObject, &varSiblingPtr);
+				if (SUCCEEDED(hr))
+				{
+					CFVsHierarchyDumper(varSiblingPtr.punkVal, pInfoOutput, m_nIndent + 2);
+				}
+			}
+		}
+
+		//Check Children
+		CComVariant varChildId;
+		COM_VERIFY(pParent->GetProperty(VSITEMID_ROOT, VSHPROPID_FirstChild, &varChildId));
+		if (SUCCEEDED(hr))
+		{
+			VSITEMID idChild = varChildId.lVal;
+			if (VSITEMID_NIL != idChild)
+			{
+				CComVariant varChildPtr;
+				hr = pParent->GetProperty(idChild, VSHPROPID_BrowseObject, &varChildPtr);
+				if (SUCCEEDED(hr))
+				{
+					COM_DETECT_INTERFACE_FROM_REGISTER(varChildPtr.punkVal);
+					CFVsHierarchyDumper(varChildPtr.punkVal, pInfoOutput, m_nIndent + 2);
+				}
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsHierarchyDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsHierarchy")));
+		if (m_pObj)
+		{
+			CComQIPtr<IVsHierarchy>     spIVsHierarchy(m_pObj);
+			if (spIVsHierarchy)
+			{
+				CComBSTR bstCanonicalName;
+				COM_VERIFY(spIVsHierarchy->GetCanonicalName(VSITEMID_ROOT, &bstCanonicalName));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("CanonicalName"), &bstCanonicalName));
+				
+
+				const __VSHPROPID checkPrperties[] = 
+				{
+						VSHPROPID_Parent,
+						VSHPROPID_FirstChild,
+						VSHPROPID_NextSibling,
+						VSHPROPID_Root,
+						VSHPROPID_TypeGuid	,
+						VSHPROPID_SaveName	,
+						VSHPROPID_Caption	,
+						VSHPROPID_IconImgList	,
+						VSHPROPID_IconIndex	,
+						VSHPROPID_Expandable	,
+						VSHPROPID_ExpandByDefault	,
+						//VSHPROPID_ProjectName	,
+						VSHPROPID_Name	,
+						VSHPROPID_IconHandle	,
+						VSHPROPID_OpenFolderIconHandle	,
+						VSHPROPID_OpenFolderIconIndex	,
+						VSHPROPID_CmdUIGuid	,
+						VSHPROPID_SelContainer	,
+						VSHPROPID_BrowseObject	,
+						VSHPROPID_AltHierarchy	,
+						VSHPROPID_AltItemid	,
+						VSHPROPID_ProjectDir	,
+						VSHPROPID_SortPriority	,
+						VSHPROPID_UserContext	,
+						VSHPROPID_EditLabel	,
+						VSHPROPID_ExtObject	,
+						VSHPROPID_ExtSelectedItem	,
+						VSHPROPID_StateIconIndex	,
+						//VSHPROPID_ProjectType	,
+						VSHPROPID_TypeName	,
+						//VSHPROPID_ReloadableProjectFile	,
+						VSHPROPID_HandlesOwnReload	,
+						VSHPROPID_ParentHierarchy	,
+						VSHPROPID_ParentHierarchyItemid	,
+						VSHPROPID_ItemDocCookie	,
+						VSHPROPID_Expanded	,
+						VSHPROPID_ConfigurationProvider	,
+						VSHPROPID_ImplantHierarchy	,
+						VSHPROPID_OwnerKey	,
+						VSHPROPID_StartupServices	,
+						VSHPROPID_FirstVisibleChild	,
+						VSHPROPID_NextVisibleSibling	,
+						VSHPROPID_IsHiddenItem	,
+						VSHPROPID_IsNonMemberItem	,
+						VSHPROPID_IsNonLocalStorage	,
+						VSHPROPID_StorageType	,
+						VSHPROPID_ItemSubType	,
+						VSHPROPID_OverlayIconIndex	,
+						VSHPROPID_DefaultNamespace	,
+						VSHPROPID_IsNonSearchable	,
+						VSHPROPID_IsFindInFilesForegroundOnly	,
+						VSHPROPID_CanBuildFromMemory	,
+						VSHPROPID_PreferredLanguageSID	,
+						VSHPROPID_ShowProjInSolutionPage	,
+						VSHPROPID_AllowEditInRunMode	,
+						VSHPROPID_IsNewUnsavedItem	,
+						VSHPROPID_ShowOnlyItemCaption	,
+						VSHPROPID_ProjectIDGuid	,
+						VSHPROPID_DesignerVariableNaming	,
+						VSHPROPID_DesignerFunctionVisibility	,
+						VSHPROPID_HasEnumerationSideEffects	,
+						VSHPROPID_DefaultEnableBuildProjectCfg	,
+						VSHPROPID_DefaultEnableDeployProjectCfg	
+				};
+
+				for(int checkIndex = 0; checkIndex < _countof(checkPrperties); ++checkIndex)
+				{
+					CComVariant varProperty;
+					hr = spIVsHierarchy->GetProperty(VSITEMID_ROOT, checkPrperties[checkIndex], &varProperty);
+					if (SUCCEEDED(hr))
+					{
+						FTLTRACE(TEXT("GetProperty Success, property = %d(%s)\n"), checkPrperties[checkIndex],
+							CFVSIPUtils::GetVSHPropIdString(checkPrperties[checkIndex]));
+					}
+				}
+				EnumAllChildRen(spIVsHierarchy, pInfoOutput);
+				//CComVariant varTypeGuid;
+				//COM_VERIFY(spIVsHierarchy->GetProperty(VSITEMID_ROOT, VSHPROPID_TypeGuid, &varTypeGuid));
+				//if (varTypeGuid.vt == VT_BSTR)
+				//{
+				//	CLSID typeGUID = {0};
+				//	CLSIDFromString(varTypeGuid.bstrVal, &typeGUID);
+				//	if (InlineIsEqualGUID(typeGUID, GUID_ItemType_PhysicalFile))
+				//	{
+				//		FTLASSERT(FALSE);
+				//	}
+				//}
 			}
 		}
 		return hr;

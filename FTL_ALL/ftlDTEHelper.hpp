@@ -292,6 +292,7 @@ namespace FTL
 
     //////////////////////////////////////////////////////////////////////////
 
+	//DTE提供了 ObjectExtenders、IVsProfferCommands、IVsIntelliMouseHandler 等 至少 60 多个Service
     HRESULT CFDTEDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
@@ -571,6 +572,7 @@ namespace FTL
                 COM_VERIFY(spWindow->get_Object(&spToolObject));
                 if (spToolObject)
                 {
+					//在代码编辑 Window 中，能够得到 TextWindow
                     COM_DETECT_INTERFACE_FROM_LIST(spToolObject);
                 }
 

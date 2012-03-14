@@ -256,12 +256,20 @@ namespace FTL
 
 
 //从注册表中检测接口指针支持(能进行QI)的接口
-# define COM_DETECT_INTERFACE_FROM_REGISTER(pUnk) \
+# define COM_DETECT_INTERFACE_FROM_REGISTER(pUnknown) \
     {\
-        FTLTRACEEX(FTL::tlTrace,TEXT("%s(%d) : Begin Detect Interface %s( 0x%p ) From Register\n"),TEXT(__FILE__),__LINE__,TEXT(#pUnk),pUnk);\
-        DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromRegister(pUnk);\
-        FTLTRACEEX(FTL::tlTrace,TEXT("%s's Interfaces Count are at least %d\n\n"),TEXT(#pUnk),dwIntCount);\
+        FTLTRACEEX(FTL::tlTrace,TEXT("%s(%d) : Begin Detect Interface %s( 0x%p ) From Register\n"),TEXT(__FILE__),__LINE__,TEXT(#pUnknown),pUnknown);\
+        DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromRegister(pUnknown, GUID_NULL,FTL::CFComDetect::cdtInterface);\
+        FTLTRACEEX(FTL::tlTrace,TEXT("%s's Interfaces Count are at least %d\n\n"),TEXT(#pUnknown),dwIntCount);\
     }
+
+# define COM_DETECT_SERVICE_PROVIDER_FROM_REGISTER(pUnknown) \
+	{\
+		FTLTRACEEX(FTL::tlTrace, TEXT("%s(%d) : Begin Detect Service Provider %s( 0x%p ) From Register\n"),\
+		TEXT(__FILE__),__LINE__,TEXT(#pUnknown),pUnknown);\
+		DWORD dwServiceCount = FTL::CFComDetect::CoDetectInterfaceFromRegister(pUnknown,GUID_NULL,FTL::CFComDetect::cdtService);\
+		FTLTRACEEX(FTL::tlInfo,TEXT("%s's Services Count are at least %d\n\n"),TEXT(#pUnknown),dwServiceCount);\
+	}
 
 #else //FTL_DEBUG
 # define COM_DETECT_INTERFACE_FROM_LIST(pUnk)        (void)pUnk;
@@ -396,10 +404,12 @@ struct CFInterfaceEntryExIID
 		if(CFComDetect::cdtMonikerBind == detectType)\
 		{\
 			COM_VERIFY((pUnknown)->QueryInterface(IID_IMoniker,(void**)(&pMoniker)));\
+			if(!pMoniker) {return DWORD(-1);}\
 		}\
 		else if(CFComDetect::cdtService == detectType)\
 		{\
 			COM_VERIFY((pUnknown)->QueryInterface(IID_IServiceProvider,(void**)(&pSvrProvider)));\
+			if(!pSvrProvider) {return DWORD(-1);}\
 		}\
 		CFInterfaceEntryExIID allInterfaceEntries[] = \
 		{\
@@ -497,13 +507,16 @@ namespace FTL
             cdtService,         //QueryService(利用 SID_XXX 一般定义为 IID_XXX 的机制判断)
         }ComDetectType;
 
-        FTLINLINE static DWORD CoDetectInterfaceFromRegister(IUnknown* pUnk);
+		FTLINLINE static DWORD CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType);
         FTLINLINE static DWORD CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, 
             ComDetectType detectType);
+	private:
+		FTLINLINE static HRESULT _innerCoDtectInterfaceFromRegister(IUnknown* pUnknown, REFGUID guidInfo);
+		FTLINLINE static HRESULT _innerCoDtectServiceFromRegister(IServiceProvider* pServiceProvider, REFGUID guidInfo);
     }; //class CFComDetect
+}//namespace FTL
 
 #endif //FTL_DEBUG
-}//namespace FTL
 
 #endif //FTL_COM_DETECT_H
 
