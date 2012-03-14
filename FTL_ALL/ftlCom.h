@@ -101,8 +101,9 @@ namespace FTL
 	public:
 		FTLINLINE explicit CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent);
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+        virtual ~CFInterfaceDumperBase();
 	protected:
-		CComPtr<IUnknown>   m_pObj;
+		IUnknown*           m_pObj;
 		int                 m_nIndent;
 	};
 

@@ -624,6 +624,13 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(EnvDTE::SolutionContext)
                 DETECT_INTERFACE_ENTRY(EnvDTE::BuildDependencies)
                 DETECT_INTERFACE_ENTRY(EnvDTE::BuildDependency)
+                
+                //Command routing order:
+                //  Add-ins and specially registered VsPackages
+                //  Active Window 
+                //  Active Project (VsHierarchy) and its parents
+                //    Parent Hierarchy has priority over child Hierarchy
+                //  Global Environment & VsPackages 
                 DETECT_INTERFACE_ENTRY(EnvDTE::Commands)   //管理所有的动作，一个动作可由多种方式触发
                 DETECT_INTERFACE_ENTRY(EnvDTE::Command)    //动作 -- 注意和触发动作的用户界面(CommandBarControl)的区别
                 DETECT_INTERFACE_ENTRY(EnvDTE::SelectedItems)
@@ -713,6 +720,7 @@ namespace FTL
             //}
             //{
                 //using namespace Microsoft_VisualStudio_CommandBars;
+                //VS IDE 使用 Office CommandBars
                 DETECT_INTERFACE_ENTRY(Microsoft_VisualStudio_CommandBars::_IVsMsoDispObj)
 
                 //typedef Microsoft_VisualStudio_CommandBars::IAccessible     IVSCommandBarsAccessible;
@@ -2059,7 +2067,9 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsRunningDocTableEvents)
                 DETECT_INTERFACE_ENTRY(IVsRunningDocTableEvents2)
                 DETECT_INTERFACE_ENTRY(IVsRunningDocTableEvents3)
-                DETECT_INTERFACE_ENTRY(IVsDocumentLockHolder)
+
+                //A file can only be opened by one project -- RDT ?
+                DETECT_INTERFACE_ENTRY(IVsDocumentLockHolder) 
                 DETECT_INTERFACE_ENTRY(IVsSimpleDocFactory)
                 DETECT_INTERFACE_ENTRY(IVsInvisibleEditor)
                 DETECT_INTERFACE_ENTRY(IVsInvisibleEditorManager)
@@ -2098,6 +2108,9 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsShell)
                 DETECT_INTERFACE_ENTRY(IVsBroadcastMessageEvents)
                 DETECT_INTERFACE_ENTRY(IVsShellPropertyEvents)
+
+                //CBscEditorFactory 和 EditorFactory ? CBscEditorDocument
+
                 DETECT_INTERFACE_ENTRY(IVsEditorFactory)
                 DETECT_INTERFACE_ENTRY(IVsRegisterEditors)
                 DETECT_INTERFACE_ENTRY(IVsEditorFactoryNotify)

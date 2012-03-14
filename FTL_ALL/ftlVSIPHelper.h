@@ -73,6 +73,21 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	//WindowFrame -> IVsWindowPane/CodeWindow/TextView -> TextBuffer(Colorizer) 
+    //  Type: 
+    //    ToolWindow -- 通常单实例,有 IOleCommandTarget/IVsWindowPane 等，要在 ToolWindows/Menus 注册表下注册
+    //    DocumentWindow(EditorWindow) -- 通常多实例，关联Document
+    class CVsWindowFrameDumper : public CFInterfaceDumperBase<CVsWindowFrameDumper>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CVsWindowFrameDumper);
+    public:
+        FTLINLINE explicit CVsWindowFrameDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CVsWindowFrameDumper>(pObj, pInfoOutput, nIndent){}
+    public:
+        //override
+        FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+    };
+
 	class CFVsHierarchyDumper : public CFInterfaceDumperBase<CFVsHierarchyDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsHierarchyDumper);

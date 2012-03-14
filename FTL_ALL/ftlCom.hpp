@@ -411,7 +411,11 @@ namespace FTL
 		:m_pObj(pObj)
 		,m_nIndent(nIndent)
 	{
-		T* pT = static_cast<T*>(this);
+		if(m_pObj)
+        {
+            m_pObj->AddRef();
+        }
+        T* pT = static_cast<T*>(this);
 		pInfoOutput->SetIndent(nIndent);
 		pT->GetObjInfo(pInfoOutput);
 	}
@@ -423,6 +427,11 @@ namespace FTL
 		return S_FALSE;
 	}
 
+    template <typename T>
+    CFInterfaceDumperBase<T>::~CFInterfaceDumperBase()
+    {
+        SAFE_RELEASE(m_pObj);
+    }
 } //namespace FTL
 
 #endif //FTL_COM_HPP

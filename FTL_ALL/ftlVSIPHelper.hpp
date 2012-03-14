@@ -1676,6 +1676,21 @@ namespace FTL
 		return hr;
 	}
 
+    HRESULT CFVsWindowFrameDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsWindowFrame")));
+
+        if (m_pObj)
+        {
+            CComQIPtr<IVsWindowFrame>     spVsWindowFrame(m_pObj);
+            if (spVsWindowFrame)
+            {
+            }
+        }
+        return hr;
+    }
+
 	HRESULT CFVsTextViewDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -1724,7 +1739,6 @@ namespace FTL
 				{
 					COM_DETECT_INTERFACE_FROM_LIST(spSelectionDataObject);
 				}
-
 			}
 		}
 		return hr;

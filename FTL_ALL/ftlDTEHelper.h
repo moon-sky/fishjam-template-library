@@ -124,6 +124,16 @@ namespace FTL
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
+    class CFTextDocumentDumper : public CFInterfaceDumperBase<CFTextDocumentDumper>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFTextDocumentDumper);
+    public:
+        FTLINLINE explicit CFTextDocumentDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+            :CFInterfaceDumperBase<CFTextDocumentDumper>(pObj, pInfoOutput, nIndent){}
+    public:
+        FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+    };
+ 
     class CFTextSelectionDumper : public CFInterfaceDumperBase<CFTextSelectionDumper>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFTextSelectionDumper);

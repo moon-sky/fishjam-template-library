@@ -556,6 +556,8 @@ namespace FTL
                 COM_VERIFY(spWindow->get_Type(&winType));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), CFDTEUtil::GetWindowTypeString(winType)));
 
+                //DTE中除了MainWindow能获取到HWnd外，其他都不能获得，
+                //要想获取窗体的HWND，需要通过 IVsTextView 等获取?
                 long lHWnd = 0;
                 COM_VERIFY(spWindow->get_HWnd(&lHWnd));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("HWwnd"), lHWnd));
@@ -575,7 +577,8 @@ namespace FTL
 					//在代码编辑 Window 中，能够得到 TextWindow
                     COM_DETECT_INTERFACE_FROM_LIST(spToolObject);
                 }
-
+                //Document 窗口可以获取 Selection
+                //spWindow->get_Selection();
             }
         }
         return hr;
@@ -609,6 +612,40 @@ namespace FTL
                 CComPtr<EnvDTE::Window> spActiveWindow;
                 COM_VERIFY(spDocument->get_ActiveWindow(&spActiveWindow));
                 CFWindowDumper  activeWindowDumper(spActiveWindow, pInfoOutput, m_nIndent + 2);
+
+                CComPtr<IDispatch> spTextDocumentDisp;
+                COM_VERIFY(spDocument->Object(CComBSTR(L"TextDocument"),&spTextDocumentDisp));
+                if (SUCCEEDED(hr) && spTextDocumentDisp)
+                {
+                    CComQIPtr<TextDocument> spTextDoc=spTextDocumentDisp;
+                    CFTextDocumentDumper textDocumentDumper(spTextDoc, pInfoOutput, m_nIndent + 2);
+                }
+
+            }
+        }
+        return hr;
+    }
+
+    HRESULT CFTextDocumentDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+    {
+        HRESULT hr = E_POINTER;
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("TextDocument")));
+        if (m_pObj)
+        {
+            CComQIPtr<EnvDTE::TextDocument>     spTextDocument(m_pObj);
+            if (spTextDocument)
+            {TextSelection
+                FTLASSERT(FALSE);
+                /*
+                //Get TextPoint
+                CComPtr<TextPoint> StartTextPoint;
+                hr=textDoc->get_StartPoint(&StartTextPoint);
+                if ( FAILED(hr) )    return false;
+                //get EditPoint
+                //    CComPtr<EditPoint> StratEditPoint;
+                hr=StartTextPoint->CreateEditPoint(&StratEditPoint);
+                if ( FAILED(hr) )    return false;
+                */
             }
         }
         return hr;
