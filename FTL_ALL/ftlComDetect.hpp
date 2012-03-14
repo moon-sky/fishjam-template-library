@@ -10,7 +10,7 @@
 //IVsFontAndColorDefaultsProvider
 //IVsCodePageSelection
 //IVsTextManager2
-//LearnVSIP中 IWin32Window 、ToolWindowPane 是哪里的？
+//LearnVSIP中 IWin32Window(.NET下WinForm的?) 、ToolWindowPane 是哪里的？
 
 #include <atlcomcli.h>
 #include <OAIdl.h>
@@ -1504,6 +1504,7 @@ namespace FTL
 
 #if INCLUDE_DETECT_SERVPROV
             //!在 Windows Media 9 Series 以前，
+            //服务提供者(如VsPackage)，分为全局服务(global service)和本地服务(local service)
             DETECT_INTERFACE_ENTRY_EX(IServiceProvider, CFServiceProviderDump)
 #endif //INCLUDE_DETECT_SERVPROV
 
@@ -1920,7 +1921,7 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsTextMarkerContextProvider)
                 DETECT_INTERFACE_ENTRY(IVsViewRangeClient)
                 DETECT_INTERFACE_ENTRY(IVsTextViewEvents)
-                DETECT_INTERFACE_ENTRY(IVsTextManager)
+                DETECT_INTERFACE_ENTRY(IVsTextManager) // 访问编辑器,服务为 SID_SVsTextManager
                 DETECT_INTERFACE_ENTRY(IVsShortcutManager)
                 DETECT_INTERFACE_ENTRY(IVsEnumTextBuffers)
                 DETECT_INTERFACE_ENTRY(IVsTextManagerEvents)
@@ -2076,7 +2077,7 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsXMLMemberIndex)
                 DETECT_INTERFACE_ENTRY(IVsXMLMemberIndexService)
                 DETECT_INTERFACE_ENTRY(IVsXMLMemberData)
-                DETECT_INTERFACE_ENTRY(IVsWindowFrame)
+                DETECT_INTERFACE_ENTRY(IVsWindowFrame)  //框，提供Dock、Hide 等功能，包含其它的窗口
                 DETECT_INTERFACE_ENTRY(IVsWindowFrameNotify)
                 DETECT_INTERFACE_ENTRY(IVsWindowFrameNotify2)
                 DETECT_INTERFACE_ENTRY(IVsBackForwardNavigation)
@@ -2101,7 +2102,10 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsPersistHierarchyItem)
                 DETECT_INTERFACE_ENTRY(IVsPersistHierarchyItem2)
                 DETECT_INTERFACE_ENTRY(IVsUIHierarchyWindow)
-                DETECT_INTERFACE_ENTRY(IVsWindowPane)  //所有在VS里的窗口形式的用户界面接口。C#中实现类是 ToolWindowPane
+
+                //所有在VS里的窗口形式的用户界面接口(如 Solution Explorer、Error List 等)。
+                //C#中实现抽象类是 ToolWindowPane
+                DETECT_INTERFACE_ENTRY(IVsWindowPane)
                 DETECT_INTERFACE_ENTRY(IEnumPackages)
                 DETECT_INTERFACE_ENTRY(IEnumHierarchies)
                 DETECT_INTERFACE_ENTRY(IEnumWindowFrames)

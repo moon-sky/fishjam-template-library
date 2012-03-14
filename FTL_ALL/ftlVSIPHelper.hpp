@@ -7,7 +7,13 @@
 #endif
 #include "ftlComDetect.h"
 
-#include <stdidcmd.h>
+#include <stdidcmd.h>  //Visual Studio公开的所有命令的ID。
+  //可见的（和不可见的）菜单项的ID以cmdid 开头，标准编辑器命令以ECMD_ 开头等
+
+#pragma TODO(handle vsshlids and msobtnid)
+#include <vsshlids.h>  //Visual Studio外壳提供的菜单命令的ID
+#include <msobtnid.h>  //Microsoft Office 中用到的命令的ID
+
 #include <comutil.h>
 
 namespace FTL

@@ -634,7 +634,7 @@ namespace FTL
         {
             CComQIPtr<EnvDTE::TextDocument>     spTextDocument(m_pObj);
             if (spTextDocument)
-            {TextSelection
+            {
                 FTLASSERT(FALSE);
                 /*
                 //Get TextPoint
