@@ -20,11 +20,12 @@ namespace FTL
     class CFVSIPUtils
     {
     public:
-		FTLINLINE static LPCTSTR GetVSHPropIdString(__VSHPROPID propId);
+		FTLINLINE static LPCTSTR GetVSHPropIdString(DWORD_PTR propId);
 
         //获取 cmdidcmd.h 中定义的 CmdID 对应的字符串，在 IOleCommandTarget::QueryStatus 中判断 cmds[n].cmdID
         FTLINLINE static LPCTSTR GetStdIdCommandtring(ULONG cmdID);
 
+		FTLINLINE static BOOL IsVsHierarchyHasChildren(IVsHierarchy* pParent, VSITEMID ItemId);
     };
 
 
@@ -97,10 +98,22 @@ namespace FTL
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	private:
-		HRESULT EnumAllChildRen(IVsHierarchy* pParent, IInformationOutput* pInfoOutput);
+		//BOOL    HasChildren(IVsHierarchy* pParent, VSITEMID ItemId);
+		HRESULT DumpAllPropertiesInfo(IVsHierarchy* pParent, VSITEMID ItemId, IInformationOutput* pInfoOutput);
+		HRESULT EnumAllChildRen(IVsHierarchy* pParent,VSITEMID startItemId, IInformationOutput* pInfoOutput);
 	};
 
 	//Window
+	class CFVsWindowFrameDumper : public CFInterfaceDumperBase<CFVsWindowFrameDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsWindowFrameDumper);
+	public:
+		FTLINLINE explicit CFVsWindowFrameDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsWindowFrameDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
 	class CFVsTextViewDumper : public CFInterfaceDumperBase<CFVsTextViewDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextViewDumper);

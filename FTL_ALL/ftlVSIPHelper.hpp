@@ -18,10 +18,34 @@
 
 namespace FTL
 {
-	LPCTSTR CFVSIPUtils::GetVSHPropIdString(__VSHPROPID propId)
+	BOOL CFVSIPUtils::IsVsHierarchyHasChildren(IVsHierarchy* pParent, VSITEMID ItemId)
+	{
+		BOOL bHasChild = FALSE;
+		HRESULT hr = E_FAIL;
+
+		CComVariant varExpandable;
+		COM_VERIFY(pParent->GetProperty(ItemId, VSHPROPID_Expandable, &varExpandable ));
+		if (SUCCEEDED(hr) && varExpandable.lVal != 0)
+		{
+			bHasChild = TRUE;
+		}
+		if (!bHasChild)
+		{
+			CComVariant varContainer;
+			hr = pParent->GetProperty(ItemId, VSHPROPID_Container, &varContainer);
+			if (SUCCEEDED(hr) && varContainer.bVal)
+			{
+				bHasChild = TRUE;
+			}
+		}
+		return bHasChild;
+	}
+
+	LPCTSTR CFVSIPUtils::GetVSHPropIdString(DWORD_PTR propId)
 	{
 		switch(propId)
 		{
+			//enum __VSHPROPID
 			HANDLE_CASE_RETURN_STRING(VSHPROPID_Parent);
 			HANDLE_CASE_RETURN_STRING(VSHPROPID_FirstChild);
 			HANDLE_CASE_RETURN_STRING(VSHPROPID_NextSibling);
@@ -85,6 +109,36 @@ namespace FTL
 			HANDLE_CASE_RETURN_STRING(VSHPROPID_HasEnumerationSideEffects);
 			HANDLE_CASE_RETURN_STRING(VSHPROPID_DefaultEnableBuildProjectCfg);
 			HANDLE_CASE_RETURN_STRING(VSHPROPID_DefaultEnableDeployProjectCfg);
+
+			//enum __VSHPROPID2
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_PropertyPagesCLSIDList);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_CfgPropertyPagesCLSIDList);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ExtObjectCATID);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_BrowseObjectCATID);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_CfgBrowseObjectCATID);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_AddItemTemplatesGuid);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ChildrenEnumerated);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_StatusBarClientText);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DebuggeeProcessId);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IsLinkFile);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_KeepAliveDocument);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_SupportsProjectDesigner);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IntellisenseUnknown);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_IsUpgradeRequired);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DesignerHiddenCodeGeneration);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_SuppressOutOfDateMessageOnBuild);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_Container);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_UseInnerHierarchyIconList);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_EnableDataSourceWindow);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_AppTitleBarTopHierarchyName);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DebuggerSourcePaths);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_CategoryGuid);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_DisableApplicationSettings);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ProjectDesignerEditor);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_PriorityPropertyPagesCLSIDList);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_NoDefaultNestedHierSorting);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_ExcludeFromExportItemTemplate);
+			HANDLE_CASE_RETURN_STRING(VSHPROPID_SupportedMyApplicationTypes);
 		default:
 			FTLTRACEEX(FTL::tlError, TEXT("Unknown VSHPropId, %d\n"), propId);
 			break;
@@ -1515,8 +1569,8 @@ namespace FTL
 					COM_VERIFY_EXCEPT1(spEnumHierarchies->Next(1,&spVsHierarchy, &ulFetched), S_FALSE);
 					while (SUCCEEDED(hr) && ulFetched == 1)
 					{
-						COM_DETECT_INTERFACE_FROM_LIST(spVsHierarchy);
-						COM_DETECT_INTERFACE_FROM_REGISTER(spVsHierarchy);
+						//COM_DETECT_INTERFACE_FROM_LIST(spVsHierarchy);
+						//COM_DETECT_INTERFACE_FROM_REGISTER(spVsHierarchy);
 						CFVsHierarchyDumper hierarchyDumper(spVsHierarchy, pInfoOutput, m_nIndent + 2);
 
 						spVsHierarchy.Release();
@@ -1529,7 +1583,122 @@ namespace FTL
 		return hr;
 	}
 
-	HRESULT CFVsHierarchyDumper::EnumAllChildRen(IVsHierarchy* pParent, IInformationOutput* pInfoOutput)
+	HRESULT CFVsHierarchyDumper::DumpAllPropertiesInfo(IVsHierarchy* pParent, VSITEMID ItemId, IInformationOutput* pInfoOutput)
+	{
+		pInfoOutput->OnOutput(TEXT("ItemId"), ItemId);
+		static const DWORD_PTR checkPrperties[] = 
+		{
+			//enum __VSHPROPID
+			VSHPROPID_Parent,
+			VSHPROPID_FirstChild,
+			VSHPROPID_NextSibling,
+			VSHPROPID_Root,
+			VSHPROPID_TypeGuid	,
+			VSHPROPID_SaveName	,
+			VSHPROPID_Caption	,
+			VSHPROPID_IconImgList	,
+			VSHPROPID_IconIndex	,
+			VSHPROPID_Expandable	,
+			VSHPROPID_ExpandByDefault	,
+			//VSHPROPID_ProjectName	,
+			VSHPROPID_Name	,
+			VSHPROPID_IconHandle	,
+			VSHPROPID_OpenFolderIconHandle	,
+			VSHPROPID_OpenFolderIconIndex	,
+			VSHPROPID_CmdUIGuid	,
+			VSHPROPID_SelContainer	,
+			VSHPROPID_BrowseObject	,
+			VSHPROPID_AltHierarchy	,
+			VSHPROPID_AltItemid	,
+			VSHPROPID_ProjectDir	,
+			VSHPROPID_SortPriority	,
+			VSHPROPID_UserContext	,
+			VSHPROPID_EditLabel	,
+			VSHPROPID_ExtObject	,
+			VSHPROPID_ExtSelectedItem	,
+			VSHPROPID_StateIconIndex	,
+			//VSHPROPID_ProjectType	,
+			VSHPROPID_TypeName	,
+			//VSHPROPID_ReloadableProjectFile	,
+			VSHPROPID_HandlesOwnReload	,
+			VSHPROPID_ParentHierarchy	,
+			VSHPROPID_ParentHierarchyItemid	,
+			VSHPROPID_ItemDocCookie	,
+			VSHPROPID_Expanded	,
+			VSHPROPID_ConfigurationProvider	,
+			VSHPROPID_ImplantHierarchy	,
+			VSHPROPID_OwnerKey	,
+			VSHPROPID_StartupServices	,
+			VSHPROPID_FirstVisibleChild	,
+			VSHPROPID_NextVisibleSibling	,
+			VSHPROPID_IsHiddenItem	,
+			VSHPROPID_IsNonMemberItem	,
+			VSHPROPID_IsNonLocalStorage	,
+			VSHPROPID_StorageType	,
+			VSHPROPID_ItemSubType	,
+			VSHPROPID_OverlayIconIndex	,
+			VSHPROPID_DefaultNamespace	,
+			VSHPROPID_IsNonSearchable	,
+			VSHPROPID_IsFindInFilesForegroundOnly	,
+			VSHPROPID_CanBuildFromMemory	,
+			VSHPROPID_PreferredLanguageSID	,
+			VSHPROPID_ShowProjInSolutionPage	,
+			VSHPROPID_AllowEditInRunMode	,
+			VSHPROPID_IsNewUnsavedItem	,
+			VSHPROPID_ShowOnlyItemCaption	,
+			VSHPROPID_ProjectIDGuid	,
+			VSHPROPID_DesignerVariableNaming	,
+			VSHPROPID_DesignerFunctionVisibility	,
+			VSHPROPID_HasEnumerationSideEffects	,
+			VSHPROPID_DefaultEnableBuildProjectCfg	,
+			VSHPROPID_DefaultEnableDeployProjectCfg,
+
+			//enum __VSHPROPID2
+			VSHPROPID_PropertyPagesCLSIDList,
+			VSHPROPID_CfgPropertyPagesCLSIDList,
+			VSHPROPID_ExtObjectCATID,
+			VSHPROPID_BrowseObjectCATID,
+			VSHPROPID_CfgBrowseObjectCATID,
+			VSHPROPID_AddItemTemplatesGuid,
+			VSHPROPID_ChildrenEnumerated,
+			VSHPROPID_StatusBarClientText,
+			VSHPROPID_DebuggeeProcessId,
+			VSHPROPID_IsLinkFile,
+			VSHPROPID_KeepAliveDocument,
+			VSHPROPID_SupportsProjectDesigner,
+			VSHPROPID_IntellisenseUnknown,
+			VSHPROPID_IsUpgradeRequired,
+			VSHPROPID_DesignerHiddenCodeGeneration,
+			VSHPROPID_SuppressOutOfDateMessageOnBuild,
+			VSHPROPID_Container,
+			VSHPROPID_UseInnerHierarchyIconList,
+			VSHPROPID_EnableDataSourceWindow,
+			VSHPROPID_AppTitleBarTopHierarchyName,
+			VSHPROPID_DebuggerSourcePaths,
+			VSHPROPID_CategoryGuid,
+			VSHPROPID_DisableApplicationSettings,
+			VSHPROPID_ProjectDesignerEditor,
+			VSHPROPID_PriorityPropertyPagesCLSIDList,
+			VSHPROPID_NoDefaultNestedHierSorting,
+			VSHPROPID_ExcludeFromExportItemTemplate,
+			VSHPROPID_SupportedMyApplicationTypes,
+		};
+		HRESULT hr = E_FAIL;
+		for(int checkIndex = 0; checkIndex < _countof(checkPrperties); ++checkIndex)
+		{
+			CComVariant varProperty;
+			hr = pParent->GetProperty(ItemId, checkPrperties[checkIndex], &varProperty);
+			if (SUCCEEDED(hr) && VT_EMPTY != varProperty.vt)
+			{
+				pInfoOutput->OnOutput(
+					CFVSIPUtils::GetVSHPropIdString(checkPrperties[checkIndex]),
+					FTL::CFVariantInfo(varProperty).GetConvertedInfo());
+			}
+		}
+		return S_OK;
+	}
+
+	HRESULT CFVsHierarchyDumper::EnumAllChildRen(IVsHierarchy* pParent, VSITEMID startItemId, IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
 		if (!pParent)
@@ -1537,38 +1706,47 @@ namespace FTL
 			return E_POINTER;
 		}
 
-		//check Sibling
-		CComVariant varSibling;
-		COM_VERIFY(pParent->GetProperty(VSITEMID_ROOT, VSHPROPID_NextSibling, &varSibling));
-		if (SUCCEEDED(hr))
-		{
-			VSITEMID idSibling = varSibling.lVal;
-			if (VSITEMID_NIL != idSibling)
-			{
-				CComVariant varSiblingPtr;
-				hr = pParent->GetProperty(idSibling, VSHPROPID_BrowseObject, &varSiblingPtr);
-				if (SUCCEEDED(hr))
-				{
-					CFVsHierarchyDumper(varSiblingPtr.punkVal, pInfoOutput, m_nIndent + 2);
-				}
-			}
-		}
-
 		//Check Children
 		CComVariant varChildId;
-		COM_VERIFY(pParent->GetProperty(VSITEMID_ROOT, VSHPROPID_FirstChild, &varChildId));
-		if (SUCCEEDED(hr))
+		COM_VERIFY(pParent->GetProperty(startItemId, VSHPROPID_FirstChild, &varChildId));
+		VSITEMID idChild = varChildId.lVal;
+		if (SUCCEEDED(hr) && VSITEMID_NIL != idChild )
 		{
-			VSITEMID idChild = varChildId.lVal;
-			if (VSITEMID_NIL != idChild)
+			CComBSTR bstrCanonicalName;
+			COM_VERIFY(pParent->GetCanonicalName(idChild, &bstrCanonicalName));
+			COM_VERIFY(pInfoOutput->OnOutput(TEXT("CanonicalName"), &bstrCanonicalName));
+
+			//CComVariant varChildPtr;
+			//DumpAllPropertiesInfo(pParent, idChild, pInfoOutput);
+
+			//Enum first child children
+			BOOL bHasChild = CFVSIPUtils::IsVsHierarchyHasChildren(pParent, idChild);
+			if (bHasChild)
 			{
-				CComVariant varChildPtr;
-				hr = pParent->GetProperty(idChild, VSHPROPID_BrowseObject, &varChildPtr);
-				if (SUCCEEDED(hr))
+				EnumAllChildRen(pParent, idChild, pInfoOutput);
+			}
+
+			//check Sibling
+			CComVariant varSibling;
+			COM_VERIFY(pParent->GetProperty(idChild, VSHPROPID_NextSibling, &varSibling));
+			VSITEMID idSibling = varSibling.lVal;
+			while (SUCCEEDED(hr) && VSITEMID_NIL != idSibling)
+			{
+				CComBSTR bstrCanonicalName;
+				COM_VERIFY(pParent->GetCanonicalName(idSibling, &bstrCanonicalName));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("CanonicalName"), &bstrCanonicalName));
+
+				bHasChild = CFVSIPUtils::IsVsHierarchyHasChildren(pParent, idSibling);
+				if (bHasChild)
 				{
-					COM_DETECT_INTERFACE_FROM_REGISTER(varChildPtr.punkVal);
-					CFVsHierarchyDumper(varChildPtr.punkVal, pInfoOutput, m_nIndent + 2);
+					EnumAllChildRen(pParent, idSibling, pInfoOutput);
 				}
+				//DumpAllPropertiesInfo(pParent, idSibling, pInfoOutput);
+
+				
+				CComVariant varExpandable;
+				COM_VERIFY(pParent->GetProperty(idSibling, VSHPROPID_NextSibling, &varSibling));
+				idSibling = varSibling.lVal;
 			}
 		}
 		return hr;
@@ -1587,85 +1765,16 @@ namespace FTL
 				COM_VERIFY(spIVsHierarchy->GetCanonicalName(VSITEMID_ROOT, &bstCanonicalName));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("CanonicalName"), &bstCanonicalName));
 				
-
-				const __VSHPROPID checkPrperties[] = 
+				CComVariant varName;
+				COM_VERIFY(spIVsHierarchy->GetProperty(VSITEMID_ROOT, VSHPROPID_Name, &varName));
+				if (SUCCEEDED(hr))
 				{
-						VSHPROPID_Parent,
-						VSHPROPID_FirstChild,
-						VSHPROPID_NextSibling,
-						VSHPROPID_Root,
-						VSHPROPID_TypeGuid	,
-						VSHPROPID_SaveName	,
-						VSHPROPID_Caption	,
-						VSHPROPID_IconImgList	,
-						VSHPROPID_IconIndex	,
-						VSHPROPID_Expandable	,
-						VSHPROPID_ExpandByDefault	,
-						//VSHPROPID_ProjectName	,
-						VSHPROPID_Name	,
-						VSHPROPID_IconHandle	,
-						VSHPROPID_OpenFolderIconHandle	,
-						VSHPROPID_OpenFolderIconIndex	,
-						VSHPROPID_CmdUIGuid	,
-						VSHPROPID_SelContainer	,
-						VSHPROPID_BrowseObject	,
-						VSHPROPID_AltHierarchy	,
-						VSHPROPID_AltItemid	,
-						VSHPROPID_ProjectDir	,
-						VSHPROPID_SortPriority	,
-						VSHPROPID_UserContext	,
-						VSHPROPID_EditLabel	,
-						VSHPROPID_ExtObject	,
-						VSHPROPID_ExtSelectedItem	,
-						VSHPROPID_StateIconIndex	,
-						//VSHPROPID_ProjectType	,
-						VSHPROPID_TypeName	,
-						//VSHPROPID_ReloadableProjectFile	,
-						VSHPROPID_HandlesOwnReload	,
-						VSHPROPID_ParentHierarchy	,
-						VSHPROPID_ParentHierarchyItemid	,
-						VSHPROPID_ItemDocCookie	,
-						VSHPROPID_Expanded	,
-						VSHPROPID_ConfigurationProvider	,
-						VSHPROPID_ImplantHierarchy	,
-						VSHPROPID_OwnerKey	,
-						VSHPROPID_StartupServices	,
-						VSHPROPID_FirstVisibleChild	,
-						VSHPROPID_NextVisibleSibling	,
-						VSHPROPID_IsHiddenItem	,
-						VSHPROPID_IsNonMemberItem	,
-						VSHPROPID_IsNonLocalStorage	,
-						VSHPROPID_StorageType	,
-						VSHPROPID_ItemSubType	,
-						VSHPROPID_OverlayIconIndex	,
-						VSHPROPID_DefaultNamespace	,
-						VSHPROPID_IsNonSearchable	,
-						VSHPROPID_IsFindInFilesForegroundOnly	,
-						VSHPROPID_CanBuildFromMemory	,
-						VSHPROPID_PreferredLanguageSID	,
-						VSHPROPID_ShowProjInSolutionPage	,
-						VSHPROPID_AllowEditInRunMode	,
-						VSHPROPID_IsNewUnsavedItem	,
-						VSHPROPID_ShowOnlyItemCaption	,
-						VSHPROPID_ProjectIDGuid	,
-						VSHPROPID_DesignerVariableNaming	,
-						VSHPROPID_DesignerFunctionVisibility	,
-						VSHPROPID_HasEnumerationSideEffects	,
-						VSHPROPID_DefaultEnableBuildProjectCfg	,
-						VSHPROPID_DefaultEnableDeployProjectCfg	
-				};
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("VSHPROPID_Name"), &varName.bstrVal));
 
-				for(int checkIndex = 0; checkIndex < _countof(checkPrperties); ++checkIndex)
-				{
-					CComVariant varProperty;
-					hr = spIVsHierarchy->GetProperty(VSITEMID_ROOT, checkPrperties[checkIndex], &varProperty);
-					if (SUCCEEDED(hr))
-					{
-						FTLTRACE(TEXT("GetProperty Success, property = %d(%s)\n"), checkPrperties[checkIndex],
-							CFVSIPUtils::GetVSHPropIdString(checkPrperties[checkIndex]));
-					}
 				}
-				EnumAllChildRen(spIVsHierarchy, pInfoOutput);
+				DumpAllPropertiesInfo(spIVsHierarchy, VSITEMID_ROOT, pInfoOutput);
+
+				EnumAllChildRen(spIVsHierarchy, VSITEMID_ROOT, pInfoOutput);
 				//CComVariant varTypeGuid;
 				//COM_VERIFY(spIVsHierarchy->GetProperty(VSITEMID_ROOT, VSHPROPID_TypeGuid, &varTypeGuid));
 				//if (varTypeGuid.vt == VT_BSTR)

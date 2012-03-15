@@ -32,6 +32,17 @@ namespace FTL
         FTLINLINE static HRESULT DisplayObjectPropertyPage(HWND hWndOwner,LPCOLESTR lpszCaption, IUnknown *pUnk);
     };
 
+    FTLEXPORT class CFVariantInfo : public CFConvertInfoT<CFVariantInfo, VARIANT>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFVariantInfo);
+    public:
+        FTLINLINE explicit CFVariantInfo(VARIANT info);
+        FTLINLINE virtual LPCTSTR ConvertInfo();
+	private:
+		FTLINLINE VOID GetTypeInfo(CFStringFormater& formaterType);
+		FTLINLINE VOID GetValueInfo(CFStringFormater& formaterValue);
+    };
+
     class CFSideBySide //从指定文件中产生COM对象(从sbs中拷贝)
     {
     public:

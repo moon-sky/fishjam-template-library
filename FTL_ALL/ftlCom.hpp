@@ -108,6 +108,143 @@ namespace FTL
         }
         return hr;
     }
+
+	CFVariantInfo::CFVariantInfo(VARIANT info) : CFConvertInfoT<CFVariantInfo, VARIANT>(info)
+	{
+	}
+
+	VOID CFVariantInfo::GetTypeInfo(CFStringFormater& formaterType)
+	{
+		CFStringFormater formaterTypeEx;
+		formaterTypeEx.Format(TEXT(""));	//make sure empty string (not null)
+
+		VARTYPE varType = m_Info.vt;
+
+		HANDLE_COMBINATION_VALUE_TO_STRING(formaterTypeEx,varType, VT_RESERVED, "|");
+		HANDLE_COMBINATION_VALUE_TO_STRING(formaterTypeEx,varType, VT_BYREF, "|");
+		HANDLE_COMBINATION_VALUE_TO_STRING(formaterTypeEx,varType, VT_ARRAY, "|");
+		HANDLE_COMBINATION_VALUE_TO_STRING(formaterTypeEx,varType, VT_VECTOR, "|");
+
+		FTLASSERT((varType & VT_TYPEMASK) == varType && TEXT("just remain type"));
+		varType &= VT_TYPEMASK;
+
+		TCHAR szType[32] = {0};
+		switch(varType)
+		{
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_EMPTY);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_NULL);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I2);
+			//HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I4);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_R4);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_R8);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_CY);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_DATE);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_BSTR);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_DISPATCH);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_ERROR);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_BOOL);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_VARIANT);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UNKNOWN);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_DECIMAL);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I1);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI1);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI2);
+			//HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI4);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I8);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI8);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_INT);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UINT);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_VOID);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_HRESULT);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_PTR);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_SAFEARRAY);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_CARRAY);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_USERDEFINED);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_LPSTR);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_LPWSTR);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_RECORD);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_INT_PTR|VT_I4);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UINT_PTR|VT_UI4);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_FILETIME);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_BLOB);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_STREAM);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_STORAGE);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_STREAMED_OBJECT);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_STORED_OBJECT);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_BLOB_OBJECT);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_CF);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_CLSID);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_VERSIONED_STREAM);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_BSTR_BLOB);
+		default:
+			StringCchPrintf(szType,_countof(szType),TEXT("Unknown Type:%d"),varType);
+			break;
+		}
+		formaterType.Format(TEXT("%s%s"), formaterTypeEx.GetString(), szType);
+	}
+
+	VOID CFVariantInfo::GetValueInfo(CFStringFormater& formaterValue)
+	{
+		VARTYPE varType = m_Info.vt;
+
+		if (
+			(VT_ARRAY == (VT_ARRAY & m_Info.vt))||
+			(VT_VECTOR == (VT_VECTOR & m_Info.vt))||
+			(VT_BYREF == (VT_BYREF & m_Info.vt))
+			)
+		{
+			FTLASSERT(FALSE);
+		}
+		varType &= VT_TYPEMASK;  //Get Type
+
+		switch(varType)
+		{
+		case VT_EMPTY:
+			formaterValue.Format(TEXT("")); //just empty
+			break;
+		case VT_I2:
+			formaterValue.Format(TEXT("%d"),m_Info.iVal);
+			break;
+		case VT_I4:
+		//case VT_INT_PTR:
+			formaterValue.Format(TEXT("%d"),m_Info.lVal);
+			break;
+		case VT_BSTR:
+			formaterValue.Format(TEXT("%s"), COLE2T(m_Info.bstrVal));
+			break;
+		case VT_BOOL:
+			formaterValue.Format(TEXT("%s"), VARIANT_FALSE == m_Info.boolVal ? TEXT("FALSE") : TEXT("TRUE") );
+			break;
+		case VT_UNKNOWN:
+		case VT_DISPATCH:
+			formaterValue.Format(TEXT("0x%p"), m_Info.punkVal);
+			break;
+		default:
+			formaterValue.Format(TEXT("%lld"), m_Info.llVal);
+			break;
+		}
+	}
+
+	LPCTSTR CFVariantInfo::ConvertInfo()
+	{
+		if (NULL == m_bufInfo[0])
+		{
+			//VARIANT m_Info;
+
+			//Get VARIANT Type
+			FTL::CFStringFormater formaterType;
+			GetTypeInfo(formaterType);
+
+			//Get Variant Value
+			FTL::CFStringFormater formaterValue;
+			GetValueInfo(formaterValue);
+
+			StringCchPrintf(m_bufInfo, _countof(m_bufInfo),TEXT("Type = %s, Value = %s"),
+				formaterType.GetString(),formaterValue.GetString());
+		}
+		return m_bufInfo;
+	}
+
     __declspec(selectany) CModulesHolder g_modulesHolder;
 
     HRESULT /*__stdcall*/ CFSideBySide::SbsCreateInstance(LPCTSTR szModule, REFCLSID rclsid, LPUNKNOWN pUnkOuter, 
@@ -368,18 +505,18 @@ namespace FTL
         USES_CONVERSION;
         if (pszKey && pValue)
         {
-#pragma TODO(VARIANT is Safe Array)
-            OutputIndentSpace();
-            if (VT_BSTR == (VT_BSTR & pValue->vt))
-            {
-                ATL::CComVariant varString(*pValue);
-                varString.ChangeType(VT_BSTR);
-                FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(varString.bstrVal));
-            }
-            else
-            {
-                FTLTRACE(TEXT("  Key=%s,Value=NULL\n"), pszKey);
-            }
+//#pragma TODO(VARIANT is Safe Array)
+//            OutputIndentSpace();
+//            if (VT_BSTR == (VT_BSTR & pValue->vt))
+//            {
+//                ATL::CComVariant varString(*pValue);
+//                varString.ChangeType(VT_BSTR);
+//                FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(varString.bstrVal));
+//            }
+//            else
+//            {
+//                FTLTRACE(TEXT("  Key=%s,Value=NULL\n"), pszKey);
+//            }
             return S_OK;
         }
         return S_FALSE;
