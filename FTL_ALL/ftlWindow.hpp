@@ -10,7 +10,10 @@
 
 namespace FTL
 {
-    CFMessageInfo::CFMessageInfo(UINT msg) : CFConvertInfoT<CFMessageInfo,UINT>(msg)
+    CFMessageInfo::CFMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam) 
+        : CFConvertInfoT<CFMessageInfo,UINT>(msg)
+        , m_wParam(wParam)
+        , m_lParam(lParam)
     {
     }
 
@@ -89,7 +92,18 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_COPYDATA);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CANCELJOURNAL); //当某个用户取消程序日志激活状态，提交此消息给程序
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NOTIFY);
+            case WM_NOTIFY:
+                {
+                    //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NOTIFY);
+                    StringCchCopy(m_bufInfo,_countof(m_bufInfo),TEXT("WM_NOTIFY,"));
+                    int len = lstrlen(m_bufInfo);
+                    int nIdCtrl = (int)m_wParam;
+                    LPNMHDR pNmHdr = (LPNMHDR)m_lParam;
+                    StringCchPrintf(m_bufInfo + len, _countof(m_bufInfo) - len, 
+                        TEXT("id=%d,code=%s"), nIdCtrl, CFWinUtil::GetNotifyCodeString(pNmHdr->code));
+                    break;
+                }
+
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INPUTLANGCHANGEREQUEST);    //当用户选择某种输入语言，或输入语言的热键改变
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INPUTLANGCHANGE);   //当平台现场已经被改变后发送此消息给受影响的最顶级窗口
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_TCARD);         //当程序已经初始化windows帮助例程时发送此消息给应用程序

@@ -185,10 +185,11 @@ namespace FTL
 
 	VOID CFVariantInfo::GetValueInfo(CFStringFormater& formaterValue)
 	{
+        //ÓÐ V_BSTR µÈºê¸¨Öú²Ù×÷
 		VARTYPE varType = m_Info.vt;
 
 		if (
-			(VT_ARRAY == (VT_ARRAY & m_Info.vt))||
+			(VT_ARRAY == (VT_ARRAY & m_Info.vt))||    //ATL::CComSafeArray
 			(VT_VECTOR == (VT_VECTOR & m_Info.vt))||
 			(VT_BYREF == (VT_BYREF & m_Info.vt))
 			)
@@ -505,18 +506,18 @@ namespace FTL
         USES_CONVERSION;
         if (pszKey && pValue)
         {
-//#pragma TODO(VARIANT is Safe Array)
-//            OutputIndentSpace();
-//            if (VT_BSTR == (VT_BSTR & pValue->vt))
-//            {
-//                ATL::CComVariant varString(*pValue);
-//                varString.ChangeType(VT_BSTR);
-//                FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(varString.bstrVal));
-//            }
-//            else
-//            {
-//                FTLTRACE(TEXT("  Key=%s,Value=NULL\n"), pszKey);
-//            }
+#pragma TODO(VARIANT is Safe Array)
+            OutputIndentSpace();
+            if (VT_BSTR == (VT_BSTR & pValue->vt))
+            {
+                ATL::CComVariant varString(*pValue);
+                varString.ChangeType(VT_BSTR);
+                FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(varString.bstrVal));
+            }
+            else
+            {
+                FTLTRACE(TEXT("  Key=%s,Value=NULL\n"), pszKey);
+            }
             return S_OK;
         }
         return S_FALSE;

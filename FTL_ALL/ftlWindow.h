@@ -88,13 +88,16 @@
 
 namespace FTL
 {
-#define DUMP_FILTER_MOUSE_MOVE              1
-#define DUMP_FILTER_NCHITTEST               2
-#define DUMP_FILTER_SETCURSOR               4
+#define DUMP_FILTER_MOUSE_MOVE              ((DWORD)(0x0001L))
+#define DUMP_FILTER_NCHITTEST               ((DWORD)(0x0002L))
+#define DUMP_FILTER_SETCURSOR               ((DWORD)(0x0004L))
 
-#define DEFAULT_DUMP_FILTER_MESSAGE         (DUMP_FILTER_MOUSE_MOVE\
+#define DUMP_FILTER_TIMER                   ((DWORD)(0x1000L))
+
+#define DEFAULT_DUMP_FILTER_MESSAGE \
+    DUMP_FILTER_MOUSE_MOVE\
     |DUMP_FILTER_NCHITTEST\
-    |DUMP_FILTER_SETCURSOR)
+    |DUMP_FILTER_SETCURSOR
 
     //在Output中Dump出当前接受到的消息
 #ifdef FTL_DEBUG
@@ -103,7 +106,7 @@ namespace FTL
         BOOL bFilterd = FALSE;\
         if( (filters) & DUMP_FILTER_MOUSE_MOVE)\
         {\
-			bFilterd = (WM_MOUSEMOVE == uMsg) ? TRUE : bFilterd; \
+			bFilterd = (WM_MOUSEMOVE == uMsg || WM_NCMOUSEMOVE == uMsg) ? TRUE : bFilterd; \
         }\
         if( (filters) & DUMP_FILTER_NCHITTEST )\
         {\
@@ -113,10 +116,14 @@ namespace FTL
         {\
             bFilterd = (WM_SETCURSOR == uMsg) ? TRUE : bFilterd;\
         }\
+        if( (filters) & DUMP_FILTER_TIMER )\
+        {\
+            bFilterd = (WM_TIMER == uMsg) ? TRUE : bFilterd;\
+        }\
         if(!bFilterd)\
         {\
-            FTLTRACE(TEXT("%s:%s(%d), wParam=0x%x, lParam=0x%x\n"),\
-            pszName, FTL::CFMessageInfo(uMsg).ConvertInfo(),uMsg, wParam, lParam);\
+            FTLTRACE(TEXT("%s:%s, wParam=0x%x, lParam=0x%x\n"),\
+            pszName, FTL::CFMessageInfo(uMsg, wParam, lParam).ConvertInfo());\
         }\
     }
 #else
@@ -127,8 +134,11 @@ namespace FTL
     FTLEXPORT class CFMessageInfo : public CFConvertInfoT<CFMessageInfo,UINT>
     {
     public:
-        FTLINLINE explicit CFMessageInfo(UINT msg);
+        FTLINLINE explicit CFMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam);
         FTLINLINE virtual LPCTSTR ConvertInfo();
+    public:
+        WPARAM m_wParam;
+        LPARAM m_lParam;
     };
 
     #define BEGIN_WINDOW_RESIZE_MAP(thisClass) \
