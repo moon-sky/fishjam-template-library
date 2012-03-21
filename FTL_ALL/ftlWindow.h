@@ -50,6 +50,9 @@
 *   SW_SHOWNOACTIVATE -- 用最近的大小和位置显示并保持原激活状态
 *   SW_SHOWNORMAL -- 激活并显示，必要时从最大最小化中恢复
 *
+* 反射消息
+*  WM_COMMAND -- 消息的参数中既有发送消息的控件的 ID，又有控件的 HWND，还有通知代码
+*  WM_NOTIFY  -- 消息除 WM_COMMAND 的参数之外还有一个指向 NMHDR 数据结构的指针
 ******************************************************************************************************/
 
 /******************************************************************************************************
@@ -122,8 +125,8 @@ namespace FTL
         }\
         if(!bFilterd)\
         {\
-            FTLTRACE(TEXT("%s:%s, wParam=0x%x, lParam=0x%x\n"),\
-            pszName, FTL::CFMessageInfo(uMsg, wParam, lParam).ConvertInfo());\
+            FTLTRACE(TEXT("%s %s(%d)\n"),\
+            pszName, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(), uMsg );\
         }\
     }
 #else

@@ -17,6 +17,11 @@ namespace FTL
     {
     }
 
+//#define GET_MESSAGE_INFO_ENTRY(msg) \
+//    GET_MESSAGE_INFO_ENTRY_EX( msg, CFDummyMsgInfo )
+//
+//#define GET_MESSAGE_INFO_ENTRY_EX(msg, classDumpInfo )
+
     LPCTSTR CFMessageInfo::ConvertInfo()
     {
         if (NULL == m_bufInfo[0])
@@ -587,6 +592,31 @@ namespace FTL
 				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETSCROLLBARINFO);
 #endif /* _WIN32_WINNT >= 0x0501 */
 
+                //Reflected Window Message IDs
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_COMMAND);
+
+#ifdef _WIN32
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORBTN);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLOREDIT);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORDLG);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORLISTBOX);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORMSGBOX);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORSCROLLBAR);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORSTATIC);
+#else 
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLOR);
+#endif //ifndef _WIN32
+
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_DRAWITEM);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_MEASUREITEM);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_DELETEITEM);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_VKEYTOITEM);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CHARTOITEM);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_COMPAREITEM);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_HSCROLL);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_VSCROLL);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_PARENTNOTIFY);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_NOTIFY);
 				//HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),XXXXXXXXXXXXXXXXX);
             default:
 				if (m_Info > WM_USER)
@@ -1177,27 +1207,20 @@ namespace FTL
         }
         else
         {
-#pragma TODO(how to active a minimize window without change it min/max status)
             API_VERIFY(::SetForegroundWindow(hWnd));
             //ShowWindow(hWnd,...)?
         }
         SwitchToThisWindow(hWnd, TRUE);
 
-        //if (IsWindowVisible(hWnd))
-        //{
-        //}
-        //else
-        //{
-        //}
-
-        //if (IsIconic(hWnd))
-        //{
-        //    API_VERIFY(ShowWindow(hWnd,SW_RESTORE));
-        //}
-        //else
-        //{
-        //    API_VERIFY(ShowWindow(hWnd,SW_SHOW));
-        //}
+//#pragma TODO(how to active a minimize window without change it min/max status)
+//        if (IsIconic(hWnd))
+//        {
+//            API_VERIFY(ShowWindow(hWnd,SW_RESTORE));
+//        }
+//        else
+//        {
+//            API_VERIFY(ShowWindow(hWnd,SW_SHOW));
+//        }
 
         return bRet;
     }
@@ -1310,8 +1333,18 @@ namespace FTL
             HANDLE_CASE_RETURN_STRING(LVN_MARQUEEBEGIN);
             HANDLE_CASE_RETURN_STRING(LVN_GETINFOTIPA);
             HANDLE_CASE_RETURN_STRING(LVN_GETINFOTIPW);
+#if (_WIN32_IE >= 0x0500)
+#  ifndef LVN_INCREMENTALSEARCHA    
+#    define LVN_INCREMENTALSEARCHA  (LVN_FIRST-62)
+#  endif 
             HANDLE_CASE_RETURN_STRING(LVN_INCREMENTALSEARCHA);
+
+#  ifndef LVN_INCREMENTALSEARCHW
+#    define LVN_INCREMENTALSEARCHW  (LVN_FIRST-63)
+#  endif 
             HANDLE_CASE_RETURN_STRING(LVN_INCREMENTALSEARCHW);
+#endif //_WIN32_IE >= 0x0500 
+
 #if _WIN32_WINNT >= 0x0600
             HANDLE_CASE_RETURN_STRING(LVN_COLUMNDROPDOWN);
             HANDLE_CASE_RETURN_STRING(LVN_COLUMNOVERFLOWCLICK);
@@ -1493,7 +1526,7 @@ namespace FTL
             HANDLE_CASE_RETURN_STRING(MCN_SELCHANGE);
             HANDLE_CASE_RETURN_STRING(MCN_GETDAYSTATE);
             HANDLE_CASE_RETURN_STRING(MCN_SELECT);
-            HANDLE_CASE_RETURN_STRING(MCN_VIEWCHANGE);
+            //HANDLE_CASE_RETURN_STRING(MCN_VIEWCHANGE);
 
             // datetimepick2
             HANDLE_CASE_RETURN_STRING(DTN_DATETIMECHANGE);
@@ -1556,6 +1589,9 @@ namespace FTL
 
 #if (_WIN32_WINNT >= 0x0501)
             //BCN_FIRST
+#  ifndef NM_GETCUSTOMSPLITRECT
+#    define NM_GETCUSTOMSPLITRECT       (BCN_FIRST + 0x0003)
+#  endif
             HANDLE_CASE_RETURN_STRING(NM_GETCUSTOMSPLITRECT);
             HANDLE_CASE_RETURN_STRING(BCN_HOTITEMCHANGE);
 #endif //_WIN32_WINNT >= 0x0501
