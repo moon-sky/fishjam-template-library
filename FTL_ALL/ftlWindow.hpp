@@ -403,9 +403,189 @@ namespace FTL
 #if(WINVER >= 0x0400)
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DM_REPOSITION);
 #endif
+
+				//Edit Control Messages
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETRECT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETRECT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETRECTNP);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SCROLL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LINESCROLL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SCROLLCARET);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETMODIFY);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETMODIFY);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETLINECOUNT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LINEINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETHANDLE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETHANDLE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETTHUMB);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LINELENGTH);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_REPLACESEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETLINE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LIMITTEXT); //EM_SETLIMITTEXT
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_CANUNDO);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_UNDO);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_FMTLINES);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LINEFROMCHAR);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETTABSTOPS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETPASSWORDCHAR);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_EMPTYUNDOBUFFER);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETFIRSTVISIBLELINE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETREADONLY);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETWORDBREAKPROC);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETWORDBREAKPROC);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETPASSWORDCHAR);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETMARGINS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETMARGINS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETLIMITTEXT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_POSFROMCHAR);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_CHARFROMPOS);
+#if(WINVER >= 0x0500)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETIMESTATUS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETIMESTATUS);
+#endif /* WINVER >= 0x0500 */
+
+				//Button Control Messages
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_GETCHECK);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETCHECK);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_GETSTATE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETSTATE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETSTYLE);
+#if(WINVER >= 0x0400)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_CLICK);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_GETIMAGE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETIMAGE);
+#endif /* WINVER >= 0x0400 */
+
+#if(WINVER >= 0x0600)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETDONTCLICK);
+#endif /* WINVER >= 0x0600 */
+
+				//Listbox messages
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_ADDSTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_INSERTSTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_DELETESTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SELITEMRANGEEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_RESETCONTENT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETCURSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETCURSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETTEXT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETTEXTLEN);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETCOUNT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SELECTSTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_DIR);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETTOPINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_FINDSTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETSELCOUNT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETSELITEMS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETTABSTOPS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETHORIZONTALEXTENT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETHORIZONTALEXTENT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETCOLUMNWIDTH);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_ADDFILE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETTOPINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETITEMRECT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETITEMDATA);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETITEMDATA);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SELITEMRANGE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETANCHORINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETANCHORINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETCARETINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETCARETINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETITEMHEIGHT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETITEMHEIGHT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_FINDSTRINGEXACT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETLOCALE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETLOCALE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETCOUNT);
+#if(WINVER >= 0x0400)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_INITSTORAGE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_ITEMFROMPOINT);
+#endif /* WINVER >= 0x0400 */
+
+#if(_WIN32_WCE >= 0x0400)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_MULTIPLEADDSTRING);
+#endif //_WIN32_WCE >= 0x0400
+
+#if(_WIN32_WINNT >= 0x0501)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETLISTBOXINFO);
+#endif /* _WIN32_WINNT >= 0x0501 */
+
+//#if(_WIN32_WINNT >= 0x0501)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_MSGMAX);
+//#endif //_WIN32_WINNT
+
+				//Combo Box messages
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETEDITSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_LIMITTEXT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETEDITSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_ADDSTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_DELETESTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_DIR);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETCOUNT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETCURSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETLBTEXT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETLBTEXTLEN);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_INSERTSTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_RESETCONTENT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_FINDSTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SELECTSTRING);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETCURSEL);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SHOWDROPDOWN);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETITEMDATA);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETITEMDATA);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETDROPPEDCONTROLRECT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETITEMHEIGHT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETITEMHEIGHT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETEXTENDEDUI);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETEXTENDEDUI);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETDROPPEDSTATE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_FINDSTRINGEXACT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETLOCALE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETLOCALE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETTOPINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETTOPINDEX);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETHORIZONTALEXTENT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETHORIZONTALEXTENT);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETDROPPEDWIDTH);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETDROPPEDWIDTH);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_INITSTORAGE);
+#if(_WIN32_WCE >= 0x0400)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_MULTIPLEADDSTRING);
+#endif //_WIN32_WCE >= 0x0400
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETCOMBOBOXINFO);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_MSGMAX);
+
+				//Scroll bar messages
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_SETPOS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETPOS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_SETRANGE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_SETRANGEREDRAW);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETRANGE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_ENABLE_ARROWS);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_SETSCROLLINFO);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETSCROLLINFO);
+
+#if(_WIN32_WINNT >= 0x0501)
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETSCROLLBARINFO);
+#endif /* _WIN32_WINNT >= 0x0501 */
+
+				//HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),XXXXXXXXXXXXXXXXX);
             default:
-                StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
-                    TEXT("Unknown Message %d(0x%08x)"),m_Info,m_Info);
+				if (m_Info > WM_USER)
+				{
+					UINT userMsg = m_Info - WM_USER;
+					StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
+						TEXT("0x%08x = (WM_USER+%d)"),userMsg ,m_Info);
+				}
+				else
+				{
+					StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
+						TEXT("Unknown Message %d(0x%08x)"),m_Info,m_Info);
+				}
             }
         }
         return m_bufInfo;
@@ -1388,9 +1568,9 @@ namespace FTL
         FTLASSERT(::IsWindow(hWnd));
         LONG_PTR    lStyle = ::GetWindowLongPtr(hWnd, GWL_STYLE);
         LONG_PTR    lOldStyle = lStyle;
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_OVERLAPPED, pszDivide);
+        //HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_OVERLAPPED, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_POPUP, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CHILD, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CHILDWINDOW, pszDivide); //WS_CHILD
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_MINIMIZE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_VISIBLE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_DISABLED, pszDivide);
@@ -1417,24 +1597,32 @@ namespace FTL
         {
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_LEFTTEXT, pszDivide);
 
+			if (0 != (lStyle & BS_TYPEMASK))
+			{
 #if _WIN32_WINNT >= 0x0600
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_DEFCOMMANDLINK, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_COMMANDLINK, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_DEFSPLITBUTTON, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_SPLITBUTTON, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_DEFCOMMANDLINK, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_COMMANDLINK, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_DEFSPLITBUTTON, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_SPLITBUTTON, pszDivide);
 #endif //_WIN32_WINNT >= 0x0600
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_OWNERDRAW, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_PUSHBOX, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_AUTORADIOBUTTON, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_USERBUTTON, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_GROUPBOX, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_AUTO3STATE, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_3STATE, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_RADIOBUTTON, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_AUTOCHECKBOX, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_CHECKBOX, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_DEFPUSHBUTTON, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_PUSHBUTTON, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_OWNERDRAW, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_PUSHBOX, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_AUTORADIOBUTTON, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_USERBUTTON, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_GROUPBOX, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_AUTO3STATE, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_3STATE, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_RADIOBUTTON, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_AUTOCHECKBOX, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_CHECKBOX, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_DEFPUSHBUTTON, pszDivide);
+			}
+			else
+			{
+				//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_PUSHBUTTON, pszDivide);
+				formater.AppendFormat(TEXT("%s%s"), TEXT("BS_PUSHBUTTON"), pszDivide);
+			}
+
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_FLAT, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_NOTIFY, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_MULTILINE, pszDivide);
@@ -1445,19 +1633,82 @@ namespace FTL
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_CENTER, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_RIGHT, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_LEFT, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_BITMAP, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_ICON, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_TEXT, pszDivide);
+
+			if ( 0 != (lStyle & (BS_ICON|BS_TEXT)))
+			{
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_BITMAP, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_ICON, pszDivide);
+			}
+			else
+			{
+				//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_TEXT, pszDivide);
+				formater.AppendFormat(TEXT("%s%s"), TEXT("BS_TEXT"), pszDivide);
+			}
         }
+
+		//Combo Box styles
+		if (0 ==  lstrcmp(szClassName, WC_COMBOBOX))
+		{
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_DROPDOWNLIST, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_DROPDOWN, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_SIMPLE, pszDivide);
+
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_OWNERDRAWFIXED, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_OWNERDRAWVARIABLE, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_AUTOHSCROLL, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_OEMCONVERT, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_SORT, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_HASSTRINGS, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_NOINTEGRALHEIGHT, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_DISABLENOSCROLL, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_UPPERCASE, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_LOWERCASE, pszDivide);
+		}
+
+		//Edit Control Styles
+		if (0 ==  lstrcmp(szClassName, WC_EDIT))
+		{
+			#define ES_ALIGNMASK	(ES_LEFT | ES_CENTER | ES_RIGHT)
+			if ( 0 != (lStyle & ES_ALIGNMASK))
+			{
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_RIGHT, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_CENTER, pszDivide);
+			}
+			else
+			{
+				//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_LEFT, pszDivide);
+				formater.AppendFormat(TEXT("%s%s"), TEXT("ES_LEFT"), pszDivide);
+			}
+
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_MULTILINE, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_UPPERCASE, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_LOWERCASE, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_PASSWORD, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_AUTOVSCROLL, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_AUTOHSCROLL, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_NOHIDESEL, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_OEMCONVERT, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_READONLY, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_WANTRETURN, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_NUMBER, pszDivide);
+		}
 
         //ListView
         if (0 ==  lstrcmp(szClassName, WC_LISTVIEW))
         {
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_LIST, pszDivide);
-            //HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_ICON, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_REPORT, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_SMALLICON, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_SINGLESEL, pszDivide);
+			if (0 != (lStyle & LVS_TYPEMASK))
+			{
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_LIST, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_SMALLICON, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_REPORT, pszDivide);
+			}
+			else
+			{
+				//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_ICON, pszDivide);
+				formater.AppendFormat(TEXT("%s%s"), TEXT("LVS_ICON"), pszDivide);
+			}
+
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_SINGLESEL, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_SHOWSELALWAYS, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_SORTASCENDING, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_SORTDESCENDING, pszDivide);
@@ -1468,21 +1719,68 @@ namespace FTL
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_OWNERDATA, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_NOSCROLL, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_TYPESTYLEMASK, pszDivide);
-            //HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_ALIGNMASK, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_ALIGNTOP, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_ALIGNLEFT, pszDivide);
-            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_NOSORTHEADER, pszDivide);
+
+			if (0 != (lStyle & LVS_ALIGNMASK ))
+			{
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_ALIGNLEFT, pszDivide);
+			}
+			else
+			{
+				//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_ALIGNTOP, pszDivide);
+				formater.AppendFormat(TEXT("%s%s"), TEXT("LVS_ALIGNTOP"), pszDivide);
+			}
+
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_NOSORTHEADER, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_NOCOLUMNHEADER, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_OWNERDRAWFIXED, pszDivide);
         }
 
+		//Scroll Bar Styles
+		if (0 ==  lstrcmp(szClassName, WC_SCROLLBAR))
+		{
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, SBS_SIZEGRIP, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, SBS_SIZEBOX, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, SBS_BOTTOMALIGN|SBS_RIGHTALIGN|SBS_SIZEBOXBOTTOMRIGHTALIGN, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, SBS_TOPALIGN|SBS_LEFTALIGN|SBS_SIZEBOXTOPLEFTALIGN, pszDivide);
+			if (0 != (lStyle & SBS_VERT))
+			{
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, SBS_VERT, pszDivide);
+			}
+			else
+			{
+				//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, SBS_HORZ, pszDivide);
+				formater.AppendFormat(TEXT("%s%s"), TEXT("SBS_HORZ"), pszDivide);
+			}
+		}
 
+		//SysHeader32 Box styles
+		if (0 ==  lstrcmp(szClassName, WC_HEADER))
+		{
+			//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_HORZ, pszDivide);
+			formater.AppendFormat(TEXT("%s%s"), TEXT("HDS_HORZ"), pszDivide);
+
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_BUTTONS, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_HOTTRACK, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_HIDDEN, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_DRAGDROP, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_FULLDRAG, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_FILTERBAR, pszDivide);
+#if (_WIN32_WINNT >= 0x0501)
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_FLAT, pszDivide);
+#endif //_WIN32_WINNT >= 0x0501
+#if _WIN32_WINNT >= 0x0600
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_CHECKBOXES, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_NOSIZING, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_OVERFLOW, pszDivide);
+#endif
+		}
 
         FTLASSERT( 0 == lStyle);
+		//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, XXXXXXXXX, pszDivide);
         if (0 != lStyle)
         {
-            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check Style String Not Complete, total=0x%08x, remain=0x%08x\n"),
-                __FILE__LINE__, lOldStyle, lStyle);
+            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check Style String For \"%s\" Not Complete, total=0x%08x, remain=0x%08x\n"),
+                __FILE__LINE__, szClassName, lOldStyle, lStyle);
         }
         return formater.GetString();
     }
@@ -1504,12 +1802,33 @@ namespace FTL
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_WINDOWEDGE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_CLIENTEDGE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_CONTEXTHELP, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_RIGHT, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_LEFT, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_RTLREADING, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_LTRREADING, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_LEFTSCROLLBAR, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_RIGHTSCROLLBAR, pszDivide);
+		if (0 != (lExStyle & WS_EX_RIGHT) )
+		{
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_RIGHT, pszDivide);
+		}
+		else
+		{
+			//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_LEFT, pszDivide);
+			formater.AppendFormat(TEXT("%s%s"), TEXT("WS_EX_LEFT"), pszDivide);
+		}
+		if (0 != (lExStyle & WS_EX_RTLREADING))
+		{
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_RTLREADING, pszDivide);
+		}
+		else
+		{
+			//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_LTRREADING, pszDivide);
+			formater.AppendFormat(TEXT("%s%s"), TEXT("WS_EX_LTRREADING"), pszDivide);
+		}
+		if (0 != (lExStyle & WS_EX_LEFTSCROLLBAR))
+		{
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_LEFTSCROLLBAR, pszDivide);
+		}
+		else
+		{
+			//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_RIGHTSCROLLBAR, pszDivide);
+			formater.AppendFormat(TEXT("%s%s"), TEXT("WS_EX_RIGHTSCROLLBAR"), pszDivide);
+		}
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_CONTROLPARENT, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_STATICEDGE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_APPWINDOW, pszDivide);

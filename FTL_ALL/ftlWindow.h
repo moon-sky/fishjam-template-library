@@ -101,7 +101,7 @@ namespace FTL
 #  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) \
     {\
         BOOL bFilterd = FALSE;\
-        if( (filters) & DUMP_FILTER_MOUSE_MESSAGE)\
+        if( (filters) & DUMP_FILTER_MOUSE_MOVE)\
         {\
 			bFilterd = (WM_MOUSEMOVE == uMsg) ? TRUE : bFilterd; \
         }\
@@ -115,12 +115,12 @@ namespace FTL
         }\
         if(!bFilterd)\
         {\
-            FTLTRACE(TEXT("%s:%s, wParam=0x%x, lParam=0x%x\n"),\
-            pszName, FTL::CFMessageInfo(uMsg).ConvertInfo(), wParam, lParam);\
+            FTLTRACE(TEXT("%s:%s(%d), wParam=0x%x, lParam=0x%x\n"),\
+            pszName, FTL::CFMessageInfo(uMsg).ConvertInfo(),uMsg, wParam, lParam);\
         }\
     }
 #else
-#  define DUMP_WINDOWS_MSG(pszName, uMsg, filters) __noop
+#  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) __noop
 #endif 
 
     //! 将消息( WM_XXX )转换为易读的格式，类似于 ",wm"
