@@ -1910,6 +1910,34 @@ namespace FTL
         return formater.GetString();
     }
 
+	LPCTSTR CFWinUtil::GetOwnerDrawState(FTL::CFStringFormater& formater, UINT iState, LPCTSTR pszDivide)
+	{
+		UINT    iOldState = iState;
+
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_SELECTED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_GRAYED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_DISABLED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_CHECKED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_FOCUS, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_DEFAULT, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_COMBOBOXEDIT, pszDivide);
+#if(WINVER >= 0x0500)
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_HOTLIGHT, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_INACTIVE, pszDivide);
+#if(_WIN32_WINNT >= 0x0500)
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_NOACCEL, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_NOFOCUSRECT, pszDivide);
+#endif /* _WIN32_WINNT >= 0x0500 */
+#endif /* WINVER >= 0x0500 */
+
+		FTLASSERT( 0 == iState);
+		if (0 != iState)
+		{
+			FTLTRACEEX(FTL::tlWarning, TEXT("%s: GetOwnerDrawState Not Complete, total=0x%08x, remain=0x%08x\n"),
+				__FILE__LINE__, iOldState, iState);
+		}
+		return formater.GetString();
+	}
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
