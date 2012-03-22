@@ -1611,6 +1611,31 @@ namespace FTL
         return TEXT("Unknown");
     }
 
+    LPCTSTR CFWinUtil::GetCommandNotifyString(HWND hWnd, UINT nCode)
+    {
+        TCHAR szClassName[MAX_PATH] = {0};
+        switch(nCode)
+        {
+            //Combo Box Notification Codes
+            HANDLE_CASE_RETURN_STRING(CBN_ERRSPACE);
+            HANDLE_CASE_RETURN_STRING(CBN_SELCHANGE);
+            HANDLE_CASE_RETURN_STRING(CBN_DBLCLK);
+            HANDLE_CASE_RETURN_STRING(CBN_SETFOCUS);
+            HANDLE_CASE_RETURN_STRING(CBN_KILLFOCUS);
+            HANDLE_CASE_RETURN_STRING(CBN_EDITCHANGE);
+            HANDLE_CASE_RETURN_STRING(CBN_EDITUPDATE);
+            HANDLE_CASE_RETURN_STRING(CBN_DROPDOWN);
+            HANDLE_CASE_RETURN_STRING(CBN_CLOSEUP);
+            HANDLE_CASE_RETURN_STRING(CBN_SELENDOK);
+            HANDLE_CASE_RETURN_STRING(CBN_SELENDCANCEL);
+        default:
+            FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Command Code, %d\n"), nCode);
+            FTLASSERT(FALSE);
+            return TEXT("Unknown");
+        }
+    }
+
+
     LPCTSTR CFWinUtil::GetWindowStyleString(FTL::CFStringFormater& formater, HWND hWnd,LPCTSTR pszDivide/* = TEXT("|") */)
     {
         BOOL bRet = FALSE;
@@ -1910,35 +1935,47 @@ namespace FTL
         return formater.GetString();
     }
 
-	LPCTSTR CFWinUtil::GetOwnerDrawState(FTL::CFStringFormater& formater, UINT iState, LPCTSTR pszDivide)
+	LPCTSTR CFWinUtil::GetOwnerDrawState(FTL::CFStringFormater& formater, UINT itemState, LPCTSTR pszDivide)
 	{
-		UINT    iOldState = iState;
+		UINT    oldItemState = itemState;
 
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_SELECTED, pszDivide);
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_GRAYED, pszDivide);
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_DISABLED, pszDivide);
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_CHECKED, pszDivide);
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_FOCUS, pszDivide);
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_DEFAULT, pszDivide);
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_COMBOBOXEDIT, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_SELECTED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_GRAYED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_DISABLED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_CHECKED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_FOCUS, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_DEFAULT, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_COMBOBOXEDIT, pszDivide);
 #if(WINVER >= 0x0500)
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_HOTLIGHT, pszDivide);
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_INACTIVE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_HOTLIGHT, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_INACTIVE, pszDivide);
 #if(_WIN32_WINNT >= 0x0500)
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_NOACCEL, pszDivide);
-		HANDLE_COMBINATION_VALUE_TO_STRING(formater, iState, ODS_NOFOCUSRECT, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_NOACCEL, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemState, ODS_NOFOCUSRECT, pszDivide);
 #endif /* _WIN32_WINNT >= 0x0500 */
 #endif /* WINVER >= 0x0500 */
 
-		FTLASSERT( 0 == iState);
-		if (0 != iState)
+		FTLASSERT( 0 == itemState);
+		if (0 != itemState)
 		{
 			FTLTRACEEX(FTL::tlWarning, TEXT("%s: GetOwnerDrawState Not Complete, total=0x%08x, remain=0x%08x\n"),
-				__FILE__LINE__, iOldState, iState);
+				__FILE__LINE__, oldItemState, itemState);
 		}
 		return formater.GetString();
 	}
 
+
+    LPCTSTR CFWinUtil::GetOwnerDrawAction(FTL::CFStringFormater& formater, UINT itemAction, LPCTSTR pszDivide)
+    {
+        //UINT    oldItemAction = itemAction;
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemAction, ODA_DRAWENTIRE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemAction, ODA_SELECT, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, itemAction, ODA_FOCUS, pszDivide);
+
+        FTLASSERT(0 == itemAction);
+        return formater.GetString();
+    }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     __declspec(selectany) HHOOK CFMessageBoxHook::s_hHook = NULL;

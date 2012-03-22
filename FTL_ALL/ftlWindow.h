@@ -125,8 +125,8 @@ namespace FTL
         }\
         if(!bFilterd)\
         {\
-            FTLTRACE(TEXT("%s %s(%d)\n"),\
-            pszName, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(), uMsg );\
+            FTLTRACE(TEXT("%s %s(%d), wParam=0x%x, lParam=0x%x\n"),\
+            pszName, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(), uMsg, wParam, lParam );\
         }\
     }
 #else
@@ -292,12 +292,16 @@ namespace FTL
 
         //获取 WM_NOTIFY 消息 Code 对应的字符串信息
         FTLINLINE static LPCTSTR GetNotifyCodeString(UINT nCode);
+        
+        //获取 WM_COMMAND 消息的 notifyCode
+        FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode);
 
         //获取 Windows 窗体属性对应的字符串信息 
         FTLINLINE static LPCTSTR GetWindowStyleString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetWindowExStyleString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
 
-		FTLINLINE static LPCTSTR GetOwnerDrawState(FTL::CFStringFormater& formater, UINT iState, LPCTSTR pszDivide = TEXT("|"));
+		FTLINLINE static LPCTSTR GetOwnerDrawState(FTL::CFStringFormater& formater, UINT itemState, LPCTSTR pszDivide = TEXT("|"));
+        FTLINLINE static LPCTSTR GetOwnerDrawAction(FTL::CFStringFormater& formater, UINT itemAction, LPCTSTR pszDivide = TEXT("|"));
 #if 0
         //窗体居中放置(ATL有源码？)
         FTLINLINE static BOOL CenterWindow(HWND hWndCenter , HWND hWndParent, BOOL bCurrMonitor);
