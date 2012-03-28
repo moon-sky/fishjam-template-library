@@ -37,7 +37,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	CRect rcCmbWindow;
 	m_cbxVKey1.GetWindowRect(rcCmbWindow);
 	this->ScreenToClient(rcCmbWindow);
-	rcCmbWindow.bottom += 200;
+	rcCmbWindow.bottom = rcCmbWindow.top + 200;
 	m_cbxVKey1.MoveWindow(rcCmbWindow);
 
 	for( int i = 0; i < 10; i++ )

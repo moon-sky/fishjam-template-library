@@ -6,6 +6,61 @@
 #ifndef FTL_BASE_H
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
+/******************************************************************************************************
+* CHAIN_MSG_MAP(__super)
+* 
+* Vista/Win7
+*   Aero向导(CPropertySheetImpl<>, CPropertyPageImpl<>)
+*     由属性页变为经典样式的向导:  m_psh.dwFlags |= PSH_WIZARD97; Areo 向导 PSH_AEROWIZARD
+*     消息 PSM_SHOWWIZBUTTONS -- 显示或隐藏向导中的标准按钮， 有 PropSheet_ShowWizButtons 辅助宏
+*          PSM_ENABLEWIZBUTTONS -- 启用或禁用某个标准按钮，有 PropSheet_EnableWizButtons 辅助宏
+*          PSM_SETBUTTONTEXT -- 修改按钮上的文字，有 PropSheet_SetButtonText  辅助宏
+* 任务对话框(TaskDialog/TaskDialogIndirect) -- 
+*   TASKDIALOGCONFIG::pfCallback 回调函数，用来响应任务对话框所触发的事件
+*     通知顺序: TDN_DIALOG_CONSTRUCTED -> TDN_CREATED 
+*   消息：TDM_SET_ELEMENT_TEXT -- 设置任务对话框上控件的文本
+*         TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE -- 在链接旁显示出UAC盾形图标
+*   Flags
+*     TDF_USE_COMMAND_LINKS -- 将自定义按钮显示为命令链接(不能控制标准按钮TDCBF_OK_BUTTON等)
+*     TDF_SHOW_PROGRESS_BAR -- 显示进度条
+*     用TDF_SHOW_MARQUEE_PROGRESS_BAR -- 显示走马灯样式(不停的从左到右)的进度条
+*   进度条()
+*     TDM_SET_PROGRESS_BAR_RANGE -- 指定进度条的指示范围的消息
+*     TDM_SET_PROGRESS_BAR_POS -- 指定进度条在指示范围中的位置
+*     TDM_SET_PROGRESS_BAR_STATE -- 改变进度条的状态
+*     
+* 
+* UAC(User Account Control)
+*   Button_SetElevationRequiredState --好像无效?
+*
+* 分层窗口(WS_EX_LAYERED) -- 允许控制窗体的透明度。分层窗体提供了两种截然不同的编程模型
+*   SetLayeredWindowAttributes(简单) -- 允许设置一个RGB颜色(通常是窗体中不会出现的颜色)，然后所有以该颜色绘出的像素都将呈现为透明
+*     SetLayeredWindowAttributes( 0, 150, LWA_ALPHA);  //设置透明度为150(窗体整体透明,子控件也透明)
+*     SetLayeredWindowAttributes( RGB(240,240,240), 0, LWA_COLORKEY); //窗体整体透明,子控件不透明 
+*       设置指定颜色的部分透明(Dialog背景颜色),如要设置其他颜色，需要在 OnCtlColor 或 WM_ERASEBKGND 中指定颜色
+*     TODO: 组合使用 LWA_ALPHA 和 LWA_COLORKEY ?
+*   UpdateLayeredWindow(困难) -- 提供一个与设备无关的位图，完整定义屏幕上窗体的整体样式，会将指定的位图完整地保留Alpha通道信息并拷贝到窗体上
+*     ::UpdateLayeredWindow( m_hWnd, NULL, &ptDst, &WndSize, dcMem.m_hDC, &ptSrc, 0, &blendPixelFunction, ULW_ALPHA );
+*     这种窗体不支持子控件，不支持OnPaint()，但可以通过PNG图片中的Alpha值来 完全控制屏幕上窗体的透明情况
+*   通过两个窗体重合且分别使用 SetLayeredXXX(,LWA_COLORKEY) 和 UpdateXXX 的方法来提供异形窗体
+* 
+* DWM(Desktop Window Manager,窗口管理器) -- 负责组合桌面上的各个窗体, 允许开发者设置某个窗体在于其它窗体组合/重叠时的显示效果，
+*   即能用来实现“半透明玻璃(Glass)”特效（允许控制窗体范围内部分区域的透明度)
+*     窗体区域(Window Region) -- 指操作系统允许窗体在其中进行绘制的区域，除非切换回Basic主题，否则Vista已不再使用
+*     桌面合成(Desktop Composition) -- DWM所提供的一个功能，可以实现诸如玻璃、3D窗口变换等视觉效果，
+*       启用时，DWM默认将把窗体的非客户区域以玻璃效果呈现，而客户区域默认为不透明。
+*       DwmIsCompositionEnabled -- 判断是否启用了合成效果
+*       DwmEnableComposition -- 暂时禁用/启用桌面合成功能，不需要管理员权限？程序退出时自动恢复
+*       DwmGetColorizationColor -- 检测到合成效果是半透明的还是不透明的，以及合成颜色
+*       DwmEnableBlurBehindWindow -- 让客户区域完全或某部分实现玻璃效果
+*       DwmExtendFrameIntoClientArea -- 可让框架(Window Frame)向客户区扩展
+*         MARGINS margins={-1}; -- 将框架扩展为整个客户区，即可将整个客户区域和非客户区域作为一个无缝的整体进行显示(如玻璃效果)
+*     极光效果(aurora effect) -- 
+*
+* 
+* RGB --  0x00BBGGRR
+* Gdiplus::ARGB -- 0xAARRGGBB  <== 注意：颜色顺序和RGB的相反
+******************************************************************************************************/
 
 /******************************************************************************************************
 * WinProc 返回值：
@@ -94,13 +149,17 @@ namespace FTL
 #define DUMP_FILTER_MOUSE_MOVE              ((DWORD)(0x0001L))
 #define DUMP_FILTER_NCHITTEST               ((DWORD)(0x0002L))
 #define DUMP_FILTER_SETCURSOR               ((DWORD)(0x0004L))
+#define DUMP_FILTER_PAINT					((DWORD)(0x0008L))
+#define DUMP_FILTER_IDLE					((DWORD)(0x0010L))
 
 #define DUMP_FILTER_TIMER                   ((DWORD)(0x1000L))
 
 #define DEFAULT_DUMP_FILTER_MESSAGE \
     DUMP_FILTER_MOUSE_MOVE\
     |DUMP_FILTER_NCHITTEST\
-    |DUMP_FILTER_SETCURSOR
+    |DUMP_FILTER_SETCURSOR\
+	|DUMP_FILTER_PAINT\
+	|DUMP_FILTER_IDLE
 
     //在Output中Dump出当前接受到的消息
 #ifdef FTL_DEBUG
@@ -119,14 +178,23 @@ namespace FTL
         {\
             bFilterd = (WM_SETCURSOR == uMsg) ? TRUE : bFilterd;\
         }\
+		if( (filters) & DUMP_FILTER_PAINT )\
+		{\
+			bFilterd = (WM_PAINT == uMsg || WM_ERASEBKGND == uMsg) ? TRUE : bFilterd;\
+		}\
+		if( (filters) & DUMP_FILTER_IDLE )\
+		{\
+			bFilterd = (WM_ENTERIDLE == uMsg) ? TRUE : bFilterd;\
+		}\
         if( (filters) & DUMP_FILTER_TIMER )\
         {\
             bFilterd = (WM_TIMER == uMsg) ? TRUE : bFilterd;\
         }\
         if(!bFilterd)\
         {\
-            FTLTRACE(TEXT("%s %s(%d), wParam=0x%x, lParam=0x%x\n"),\
-            pszName, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(), uMsg, wParam, lParam );\
+            FTLTRACE(TEXT("%s %s(%d),Tick=%d, wParam=0x%x, lParam=0x%x\n"),\
+            pszName, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(),\
+			uMsg, GetTickCount(), wParam, lParam );\
         }\
     }
 #else

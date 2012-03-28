@@ -4,7 +4,7 @@
 
 #pragma once
 #include "SkinComboBox.h"
-#include <ftlControls.h>
+//#include <ftlControls.h>
 
 DDX_CONTROL_IMPL(CComboBox)
 

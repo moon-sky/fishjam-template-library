@@ -623,7 +623,7 @@ namespace FTL
 				{
 					UINT userMsg = m_Info - WM_USER;
 					StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
-						TEXT("0x%08x = (WM_USER+%d)"),userMsg ,m_Info);
+						TEXT("0x%08x = (WM_USER+%d[0x%x])"),m_Info, userMsg, userMsg );
 				}
 				else
 				{
@@ -1870,7 +1870,7 @@ namespace FTL
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_NOPARENTNOTIFY, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TOPMOST, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_ACCEPTFILES, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TRANSPARENT, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TRANSPARENT, pszDivide);  //鼠标会穿透此窗体(如阴影)
 #if(WINVER >= 0x0400)
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_MDICHILD, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TOOLWINDOW, pszDivide);

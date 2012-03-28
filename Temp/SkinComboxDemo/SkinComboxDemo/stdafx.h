@@ -50,3 +50,7 @@ extern CAppModule _Module;
 #endif
 
 #include <ftlbase.h>
+
+#define DDX_CONTROL_IMPL(x) \
+	class x##_DDX : public CWindowImpl<x##_DDX, x> \
+	{ public: DECLARE_EMPTY_MSG_MAP() }; 
