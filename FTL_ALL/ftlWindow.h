@@ -54,9 +54,11 @@
 *       DwmGetColorizationColor -- 检测到合成效果是半透明的还是不透明的，以及合成颜色
 *       DwmEnableBlurBehindWindow -- 让客户区域完全或某部分实现玻璃效果
 *       DwmExtendFrameIntoClientArea -- 可让框架(Window Frame)向客户区扩展
+*       DwmSetWindowAttribute  -- 设置DWM窗体的属性,如 控制 Flip3D、最小化时的动画效果
 *         MARGINS margins={-1}; -- 将框架扩展为整个客户区，即可将整个客户区域和非客户区域作为一个无缝的整体进行显示(如玻璃效果)
 *     极光效果(aurora effect) -- 
-*
+*     Flip3D(Win+Tab) -- 
+*     任务栏缩略图自动同步 -- DwmRegisterThumbnail、DwmUpdateThumbnailProperties
 * 
 * RGB --  0x00BBGGRR
 * Gdiplus::ARGB -- 0xAARRGGBB  <== 注意：颜色顺序和RGB的相反
@@ -143,6 +145,27 @@
 *   STRINGTABLE -- 每个RC文件中只能有一个字符串表，每行字符串不能超过255个字符
 *   WAVE -- 声音，使用 PlaySound 播放，SND_PURGE(停止播放)
 ******************************************************************************************************/
+
+/******************************************************************************************************
+* MoveWindow
+*  WM_WINDOWPOSCHANGING => WM_WINDOWPOSCHANGED => WM_MOVE=> WM_SIZE => WM_NCCALCSIZE
+* SetWindowPos -- 改变一个窗口的尺寸，位置和Z序
+*   WM_SYNCPAINT(!SWP_DEFERERASE)
+*   WM_NCCALCSIZE(SWP_FRAMECHANGED)
+*   WM_WINDOWPOSCHANGING(!SWP_NOSENDCHANGING)
+*   WM_WINDOWPOSCHANGED 
+* BeginDeferWindowPos/DeferWindowPos/EndDeferWindowPos -- 一次性移动多个窗口
+* SetForegroundWindow
+******************************************************************************************************/
+
+/******************************************************************************************************
+* 模拟按键 Paste ( Ctrl + V )
+*   keybd_event(VK_CONTROL, MapVirtualKey(VK_CONTROL, 0), 0, 0);
+*   keybd_event('V', MapVirtualKey('V', 0), 0, 0);
+*   keybd_event('V', MapVirtualKey('V', 0), KEYEVENTF_KEYUP, 0);
+*   keybd_event(VK_CONTROL, MapVirtualKey(VK_CONTROL, 0), KEYEVENTF_KEYUP, 0);
+******************************************************************************************************/
+
 
 namespace FTL
 {
@@ -347,6 +370,9 @@ namespace FTL
     FTLEXPORT class CFWinUtil
     {
     public:
+		//查找指定ProcessId的主窗口ID
+		FTLINLINE static HWND GetProcessMainWindow(DWORD dwProcessId);
+
         //激活并将指定窗体放在最前方 -- 解决在状态栏闪烁但不到前台的Bug
         //常用于二重启动时将窗体显示在前台
         FTLINLINE static BOOL ActiveAndForegroundWindow(HWND hWnd);

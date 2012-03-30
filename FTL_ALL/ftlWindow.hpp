@@ -72,7 +72,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_MOUSEACTIVATE);
                 GET_MESSAGE_INFO_ENTRY(WM_CHILDACTIVATE); //送此消息给MDI子窗口当用户点击此窗口的标题栏，或当窗口被激活，移动，改变大小
                 GET_MESSAGE_INFO_ENTRY(WM_QUEUESYNC);     //此消息由基于计算机的"训练?"程序发送，通过 WH_JOURNALPALYBACK 的hook程序分离出用户输入消息
-                GET_MESSAGE_INFO_ENTRY(WM_GETMINMAXINFO); //此消息发送给窗口当它将要改变大小或位置
+                GET_MESSAGE_INFO_ENTRY(WM_GETMINMAXINFO); //处理该消息可以得到一个改变最大和最小的窗口缺省值的机会
 
                 GET_MESSAGE_INFO_ENTRY(WM_PAINTICON);     //发送给最小化窗口当它图标将要被重画
                 GET_MESSAGE_INFO_ENTRY(WM_ICONERASEBKGND);//此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
@@ -1191,6 +1191,22 @@ namespace FTL
     }
 
 #endif 
+
+	HWND CFWinUtil::GetProcessMainWindow(DWORD dwProcessId)
+	{
+		HWND hWnd = ::GetTopWindow(NULL);
+		while (hWnd)
+		{
+			DWORD dwPid = 0;
+			DWORD dwThreadId = GetWindowThreadProcessId(hWnd, &dwPid);
+			if (dwPid != 0 && dwPid == dwProcessId)
+			{
+				return hWnd;
+			}
+			hWnd = ::GetNextWindow(hWnd, GW_HWNDNEXT);
+		}
+		return NULL;
+	}
 
     BOOL CFWinUtil::ActiveAndForegroundWindow(HWND hWnd)
     {
