@@ -65,8 +65,74 @@
 ******************************************************************************************************/
 
 /******************************************************************************************************
+* CHAIN_MSG_MAP(__super)
+* 
+* Vista/Win7
+*   Aero向导(CPropertySheetImpl<>, CPropertyPageImpl<>)
+*     由属性页变为经典样式的向导:  m_psh.dwFlags |= PSH_WIZARD97; Areo 向导 PSH_AEROWIZARD
+*     消息 PSM_SHOWWIZBUTTONS -- 显示或隐藏向导中的标准按钮， 有 PropSheet_ShowWizButtons 辅助宏
+*          PSM_ENABLEWIZBUTTONS -- 启用或禁用某个标准按钮，有 PropSheet_EnableWizButtons 辅助宏
+*          PSM_SETBUTTONTEXT -- 修改按钮上的文字，有 PropSheet_SetButtonText  辅助宏
+* 任务对话框(TaskDialog/TaskDialogIndirect) -- 
+*   TASKDIALOGCONFIG::pfCallback 回调函数，用来响应任务对话框所触发的事件
+*     通知顺序: TDN_DIALOG_CONSTRUCTED -> TDN_CREATED 
+*   消息：TDM_SET_ELEMENT_TEXT -- 设置任务对话框上控件的文本
+*         TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE -- 在链接旁显示出UAC盾形图标
+*   Flags
+*     TDF_USE_COMMAND_LINKS -- 将自定义按钮显示为命令链接(不能控制标准按钮TDCBF_OK_BUTTON等)
+*     TDF_SHOW_PROGRESS_BAR -- 显示进度条
+*     用TDF_SHOW_MARQUEE_PROGRESS_BAR -- 显示走马灯样式(不停的从左到右)的进度条
+*   进度条()
+*     TDM_SET_PROGRESS_BAR_RANGE -- 指定进度条的指示范围的消息
+*     TDM_SET_PROGRESS_BAR_POS -- 指定进度条在指示范围中的位置
+*     TDM_SET_PROGRESS_BAR_STATE -- 改变进度条的状态
+*     
+* 
+* UAC(User Account Control)
+*   Button_SetElevationRequiredState --好像无效?
+*
+* 分层窗口(WS_EX_LAYERED) -- 允许控制窗体的透明度。分层窗体提供了两种截然不同的编程模型
+*   SetLayeredWindowAttributes(简单) -- 允许设置一个RGB颜色(通常是窗体中不会出现的颜色)，然后所有以该颜色绘出的像素都将呈现为透明
+*     SetLayeredWindowAttributes( 0, 150, LWA_ALPHA);  //设置透明度为150(窗体整体透明,子控件也透明)
+*     SetLayeredWindowAttributes( RGB(240,240,240), 0, LWA_COLORKEY); //窗体整体透明,子控件不透明 
+*       设置指定颜色的部分透明(Dialog背景颜色),如要设置其他颜色，需要在 OnCtlColor 或 WM_ERASEBKGND 中指定颜色
+*     TODO: 组合使用 LWA_ALPHA 和 LWA_COLORKEY ?
+*   UpdateLayeredWindow(困难) -- 提供一个与设备无关的位图，完整定义屏幕上窗体的整体样式，会将指定的位图完整地保留Alpha通道信息并拷贝到窗体上
+*     ::UpdateLayeredWindow( m_hWnd, NULL, &ptDst, &WndSize, dcMem.m_hDC, &ptSrc, 0, &blendPixelFunction, ULW_ALPHA );
+*     这种窗体不支持子控件，不支持OnPaint()，但可以通过PNG图片中的Alpha值来 完全控制屏幕上窗体的透明情况
+*   通过两个窗体重合且分别使用 SetLayeredXXX(,LWA_COLORKEY) 和 UpdateXXX 的方法来提供异形窗体
+* 
+* DWM(Desktop Window Manager,窗口管理器) -- 负责组合桌面上的各个窗体, 允许开发者设置某个窗体在于其它窗体组合/重叠时的显示效果，
+*   即能用来实现“半透明玻璃(Glass)”特效（允许控制窗体范围内部分区域的透明度)
+*     窗体区域(Window Region) -- 指操作系统允许窗体在其中进行绘制的区域，除非切换回Basic主题，否则Vista已不再使用
+*     桌面合成(Desktop Composition) -- DWM所提供的一个功能，可以实现诸如玻璃、3D窗口变换等视觉效果，
+*       启用时，DWM默认将把窗体的非客户区域以玻璃效果呈现，而客户区域默认为不透明。
+*       DwmIsCompositionEnabled -- 判断是否启用了合成效果
+*       DwmEnableComposition -- 暂时禁用/启用桌面合成功能，不需要管理员权限？程序退出时自动恢复
+*       DwmGetColorizationColor -- 检测到合成效果是半透明的还是不透明的，以及合成颜色
+*       DwmEnableBlurBehindWindow -- 让客户区域完全或某部分实现玻璃效果
+*       DwmExtendFrameIntoClientArea -- 可让框架(Window Frame)向客户区扩展
+*         MARGINS margins={-1}; -- 将框架扩展为整个客户区，即可将整个客户区域和非客户区域作为一个无缝的整体进行显示(如玻璃效果)
+*     极光效果(aurora effect) -- 
+*
+* 
+* RGB --  0x00BBGGRR
+* Gdiplus::ARGB -- 0xAARRGGBB  <== 注意：颜色顺序和RGB的相反
+******************************************************************************************************/
+
+/******************************************************************************************************
 * WinProc 返回值：
 *   0 -- 用户已经处理好消息；如 WM_CLOSE 中返回0则不会关闭，返回 DefaultWindowProc 才关闭(WM_DESTROY)
+*
+* 创建窗口的顺序：PreCreateWindow -> PreSubclassWindow -> OnGetMinMaxInfo -> OnNcCreate -> OnNcCalcSize -> OnCreate
+*   -> OnSize -> OnMove -> OnChildNotify
+* 关闭窗口的顺序：OnClose -> OnDestory -> OnNcDestroy -> PostNcDestory
+*
+* 窗口实例有四个关系窗口的句柄:
+*   1.本窗口的 Z-Order 最高子窗口句柄 <== GetTopWindow
+*   2.本窗口的下一兄弟窗口句柄 <== GetNextWindow
+*   3.本窗口的父窗口的句柄   <== GetParent
+*   4.本窗口的所有者窗口句柄 <== 
 *
 * SendMessage 后执行体是UI线程(后台线程会等待，直到UI线程执行完毕)
 *   如果收到Send消息时，UI线程还在消息处理体中,则★不会立即强制抢断执行★,需要等待执行体结束后，
@@ -84,6 +150,14 @@
 * 创建全屏窗体( WS_POPUP属性, 0,0 ~ CxScreen, CyScreen )：
 *   hWnd = CreateWindow(szWindowClass, szTitle, WS_POPUP | WS_VISIBLE, 0, 0, 
 *     GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), NULL, NULL, hInstance, NULL);
+*
+* 获取鼠标右键单击的位置，并显示弹出菜单(点击后返回)
+*   TrackPopupMenu(hPopMenu, TPM_RIGHTBUTTON | TPM_TOPALIGN | TPM_LEFTALIGN, LOWORD(lParam), HIWORD(lParam) , 0, hwnd, NULL);
+*
+* 在 FormView 中启用界面更新机制：
+*   1.包含 <afxpriv.h>；
+*   2.映射处理消息 WM_IDLEUPDATECMDUI (对话框中需要处理 WM_KICKIDLE )
+*   3.在实现中调用 UpdateDialogControls
 *
 * AdjustWindowRectEx -- 根据客户区的大小和窗口样式，计算并调整窗口的完整尺寸,然后MoveWindow进行调整即可
 *   RECT rcClient = { 0,0,800,600 };
@@ -147,6 +221,24 @@
 ******************************************************************************************************/
 
 /******************************************************************************************************
+* Windows 2000分层窗口 -- SetLayeredWindowAttributes, 可以实现窗体透明特效
+*   WS_EX_LAYERED 扩展窗口风格 -- 窗体将具备复合形状、动画、Alpha混合等方面的视觉特效
+*   创建圆形窗体：在Windows 9x下的正确做法是通过 SetWindowRgn 函数指出需要的窗体形状，但是这种处理在频繁更改窗体形状
+*     或是在屏幕上拖拽时仍有缺陷存在：前台窗体将要求位于其下的窗体重绘整个区域，这将生过多的消息和计算量。
+*     而且使用 SetWindowRgn 只能实现窗体的全透明而无法实现半透明效果。
+*   分层窗口真正实现了两个截然不同的概念：分层和重定向。
+*     1. 设置 WS_EX_LAYERED 属性;
+*     2. 通过 UpdateLayeredWindow 函数来更新分层窗口 -- 需要在位图中绘制出可视区域，并将其与关键色、
+*        Alpha混合参数等一起提供给 UpdateLayeredWindow 函数,此时应用程序并不需要响应WM_PAINT或其他绘制消息.
+*     或: 使用传统的Win32绘制机制 -- 调用 SetLayeredWindowAttributes 完成对关键色(COLORREF crKey)或阿尔法(BYTE bAlpha)混合参数值的设定,
+*         之后系统将开始为分层窗口重定向所有的绘制并自动应用指定的特效
+*   半透明窗体:(#define _WIN32_WINNT 0x0501)
+*     SetWindowLong(m_hWnd,GWL_EXSTYLE,GetWindowLong(m_hWnd,GWL_EXSTYLE) | WS_EX_LAYERED );
+*     //将对话框的窗体(颜色为COLOR_BTNFACE的地方)设为透明并且不再进行点击检测,其他半透明
+*     SetLayeredWindowAttributes(GetSysColor(COLOR_BTNFACE),127,LWA_COLORKEY|LWA_ALPHA); 
+*     //RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+*   异形窗体 -- 编辑出具有特定KeyColor的图片,使用 SetLayeredWindowAttributes 设置KeyColor
+*   阴影效果 -- http://www.codeproject.com/Articles/16362/Bring-your-frame-window-a-shadow
 * MoveWindow
 *  WM_WINDOWPOSCHANGING => WM_WINDOWPOSCHANGED => WM_MOVE=> WM_SIZE => WM_NCCALCSIZE
 * SetWindowPos -- 改变一个窗口的尺寸，位置和Z序
@@ -391,6 +483,7 @@ namespace FTL
         FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode);
 
         //获取 Windows 窗体属性对应的字符串信息 
+        FTLINLINE static LPCTSTR GetWindowClassString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetWindowStyleString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetWindowExStyleString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
 
