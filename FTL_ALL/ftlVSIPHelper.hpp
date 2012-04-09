@@ -12,7 +12,7 @@
 
 #pragma TODO(handle vsshlids and msobtnid)
 #include <vsshlids.h>  //Visual Studio外壳提供的菜单命令的ID
-#include <msobtnid.h>  //Microsoft Office 中用到的命令的ID
+//#include <msobtnid.h>  //Microsoft Office 中用到的命令的ID
 
 #include <comutil.h>
 
@@ -141,6 +141,53 @@ namespace FTL
 			HANDLE_CASE_RETURN_STRING(VSHPROPID_SupportedMyApplicationTypes);
 		default:
 			FTLTRACEEX(FTL::tlError, TEXT("Unknown VSHPropId, %d\n"), propId);
+			break;
+		}
+		return TEXT("Unknown");
+	}
+
+	LPCTSTR CFVSIPUtils::GetVSFPropIdIdString(DWORD_PTR propId)
+	{
+		switch(propId)
+		{
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_Type);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_DocView);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_SPFrame);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_SPProjContext);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_Caption);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_WindowState);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_FrameMode);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_IsWindowTabbed);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_UserContext);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_ViewHelper);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_ShortCaption);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_WindowHelpKeyword);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_WindowHelpCmdText);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_DocCookie);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_OwnerCaption);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_EditorCaption);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_pszMkDocument);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_DocData);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_Hierarchy);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_ItemID);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_CmdUIGuid);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_CreateDocWinFlags);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_guidEditorType);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_pszPhysicalView);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_InheritKeyBindings);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_RDTDocData);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_AltDocData);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_GuidPersistenceSlot);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_GuidAutoActivate);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_CreateToolWinFlags);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_ExtWindowObject);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_MultiInstanceToolNum);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_BitmapResource);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_BitmapIndex);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_ToolbarHost);
+			HANDLE_CASE_RETURN_STRING(VSFPROPID_HideToolwinContainer);
+		default:
+			FTLTRACEEX(FTL::tlError, TEXT("Unknown VSFPropId, %d\n"), propId);
 			break;
 		}
 		return TEXT("Unknown");
@@ -1436,6 +1483,76 @@ namespace FTL
 		return hr;
 	}
 
+	HRESULT CFVsUIShellDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsUIShell")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsUIShell>     spVsUIShell(m_pObj);
+			if (spVsUIShell)
+			{
+				CComBSTR bstrAppName;
+				COM_VERIFY(spVsUIShell->GetAppName(&bstrAppName));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("AppName"), &bstrAppName));  //如 Microsoft Visual Studio
+
+				HWND hWndOwner = NULL;
+				COM_VERIFY(spVsUIShell->GetDialogOwnerHwnd(&hWndOwner));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("DialogOwnerHwnd"), hWndOwner));
+
+				CComPtr<IEnumWindowFrames> spToolWindowEnum;
+				COM_VERIFY(spVsUIShell->GetToolWindowEnum(&spToolWindowEnum));
+				if (SUCCEEDED(hr) && spToolWindowEnum)
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("ToolWindowEnum"), 0L));
+					CFEnumWindowFramesDumper toolWindowEnumDumper(spToolWindowEnum, pInfoOutput, m_nIndent + 2);
+				}
+
+				CComPtr<IEnumWindowFrames> spDocumentWindowEnum;
+				COM_VERIFY(spVsUIShell->GetDocumentWindowEnum(&spDocumentWindowEnum));
+				if (SUCCEEDED(hr) && spDocumentWindowEnum)
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("DocumentWindowEnum"), 0L));
+					CFEnumWindowFramesDumper documentWindowEnumDumper(spDocumentWindowEnum, pInfoOutput, m_nIndent + 2);
+				}
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFEnumWindowFramesDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("EnumWindowFrames")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IEnumWindowFrames>     spEnumWindowFrames(m_pObj);
+			if (spEnumWindowFrames)
+			{
+				COM_VERIFY(spEnumWindowFrames->Reset());
+
+				CComPtr<IVsWindowFrame> spVsWindowFrame;
+				ULONG ulFetched = 0;
+
+				COM_VERIFY_EXCEPT1(spEnumWindowFrames->Next(1, &spVsWindowFrame, &ulFetched), S_FALSE);
+				while (SUCCEEDED(hr) && ulFetched == 1)
+				{
+					//COM_DETECT_INTERFACE_FROM_LIST(spVsWindowFrame);
+					//COM_DETECT_INTERFACE_FROM_REGISTER(spVsWindowFrame);
+					CFVsWindowFrameDumper windowFrameDumper(spVsWindowFrame, pInfoOutput, m_nIndent + 2);
+
+					spVsWindowFrame.Release();
+					COM_VERIFY_EXCEPT1(spEnumWindowFrames->Next(1, &spVsWindowFrame, &ulFetched), S_FALSE);
+				}
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+
 	HRESULT CFVsTextManagerDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -1586,6 +1703,7 @@ namespace FTL
 	HRESULT CFVsHierarchyDumper::DumpAllPropertiesInfo(IVsHierarchy* pParent, VSITEMID ItemId, IInformationOutput* pInfoOutput)
 	{
 		pInfoOutput->OnOutput(TEXT("ItemId"), ItemId);
+#pragma warning(disable : 4245)
 		static const DWORD_PTR checkPrperties[] = 
 		{
 			//enum __VSHPROPID
@@ -1593,64 +1711,64 @@ namespace FTL
 			VSHPROPID_FirstChild,
 			VSHPROPID_NextSibling,
 			VSHPROPID_Root,
-			VSHPROPID_TypeGuid	,
-			VSHPROPID_SaveName	,
-			VSHPROPID_Caption	,
-			VSHPROPID_IconImgList	,
-			VSHPROPID_IconIndex	,
-			VSHPROPID_Expandable	,
-			VSHPROPID_ExpandByDefault	,
-			//VSHPROPID_ProjectName	,
-			VSHPROPID_Name	,
-			VSHPROPID_IconHandle	,
-			VSHPROPID_OpenFolderIconHandle	,
-			VSHPROPID_OpenFolderIconIndex	,
-			VSHPROPID_CmdUIGuid	,
-			VSHPROPID_SelContainer	,
-			VSHPROPID_BrowseObject	,
-			VSHPROPID_AltHierarchy	,
-			VSHPROPID_AltItemid	,
-			VSHPROPID_ProjectDir	,
-			VSHPROPID_SortPriority	,
-			VSHPROPID_UserContext	,
-			VSHPROPID_EditLabel	,
-			VSHPROPID_ExtObject	,
-			VSHPROPID_ExtSelectedItem	,
-			VSHPROPID_StateIconIndex	,
-			//VSHPROPID_ProjectType	,
-			VSHPROPID_TypeName	,
-			//VSHPROPID_ReloadableProjectFile	,
-			VSHPROPID_HandlesOwnReload	,
-			VSHPROPID_ParentHierarchy	,
-			VSHPROPID_ParentHierarchyItemid	,
-			VSHPROPID_ItemDocCookie	,
-			VSHPROPID_Expanded	,
-			VSHPROPID_ConfigurationProvider	,
-			VSHPROPID_ImplantHierarchy	,
-			VSHPROPID_OwnerKey	,
-			VSHPROPID_StartupServices	,
-			VSHPROPID_FirstVisibleChild	,
-			VSHPROPID_NextVisibleSibling	,
-			VSHPROPID_IsHiddenItem	,
-			VSHPROPID_IsNonMemberItem	,
-			VSHPROPID_IsNonLocalStorage	,
-			VSHPROPID_StorageType	,
-			VSHPROPID_ItemSubType	,
-			VSHPROPID_OverlayIconIndex	,
-			VSHPROPID_DefaultNamespace	,
-			VSHPROPID_IsNonSearchable	,
-			VSHPROPID_IsFindInFilesForegroundOnly	,
-			VSHPROPID_CanBuildFromMemory	,
-			VSHPROPID_PreferredLanguageSID	,
-			VSHPROPID_ShowProjInSolutionPage	,
-			VSHPROPID_AllowEditInRunMode	,
-			VSHPROPID_IsNewUnsavedItem	,
-			VSHPROPID_ShowOnlyItemCaption	,
-			VSHPROPID_ProjectIDGuid	,
-			VSHPROPID_DesignerVariableNaming	,
-			VSHPROPID_DesignerFunctionVisibility	,
-			VSHPROPID_HasEnumerationSideEffects	,
-			VSHPROPID_DefaultEnableBuildProjectCfg	,
+			VSHPROPID_TypeGuid,
+			VSHPROPID_SaveName,
+			VSHPROPID_Caption,
+			VSHPROPID_IconImgList,
+			VSHPROPID_IconIndex,
+			VSHPROPID_Expandable,
+			VSHPROPID_ExpandByDefault,
+			//VSHPROPID_ProjectName,
+			VSHPROPID_Name,
+			VSHPROPID_IconHandle,
+			VSHPROPID_OpenFolderIconHandle,
+			VSHPROPID_OpenFolderIconIndex,
+			VSHPROPID_CmdUIGuid,
+			VSHPROPID_SelContainer,
+			VSHPROPID_BrowseObject,
+			VSHPROPID_AltHierarchy,
+			VSHPROPID_AltItemid,
+			VSHPROPID_ProjectDir,
+			VSHPROPID_SortPriority,
+			VSHPROPID_UserContext,
+			VSHPROPID_EditLabel,
+			VSHPROPID_ExtObject,
+			VSHPROPID_ExtSelectedItem,
+			VSHPROPID_StateIconIndex,
+			//VSHPROPID_ProjectType,
+			VSHPROPID_TypeName,
+			//VSHPROPID_ReloadableProjectFile,
+			VSHPROPID_HandlesOwnReload,
+			VSHPROPID_ParentHierarchy,
+			VSHPROPID_ParentHierarchyItemid,
+			VSHPROPID_ItemDocCookie,
+			VSHPROPID_Expanded,
+			VSHPROPID_ConfigurationProvider,
+			VSHPROPID_ImplantHierarchy,
+			VSHPROPID_OwnerKey,
+			VSHPROPID_StartupServices,
+			VSHPROPID_FirstVisibleChild,
+			VSHPROPID_NextVisibleSibling,
+			VSHPROPID_IsHiddenItem,
+			VSHPROPID_IsNonMemberItem,
+			VSHPROPID_IsNonLocalStorage,
+			VSHPROPID_StorageType,
+			VSHPROPID_ItemSubType,
+			VSHPROPID_OverlayIconIndex,
+			VSHPROPID_DefaultNamespace,
+			VSHPROPID_IsNonSearchable,
+			VSHPROPID_IsFindInFilesForegroundOnly,
+			VSHPROPID_CanBuildFromMemory,
+			VSHPROPID_PreferredLanguageSID,
+			VSHPROPID_ShowProjInSolutionPage,
+			VSHPROPID_AllowEditInRunMode,
+			VSHPROPID_IsNewUnsavedItem,
+			VSHPROPID_ShowOnlyItemCaption,
+			VSHPROPID_ProjectIDGuid,
+			VSHPROPID_DesignerVariableNaming,
+			VSHPROPID_DesignerFunctionVisibility,
+			VSHPROPID_HasEnumerationSideEffects,
+			VSHPROPID_DefaultEnableBuildProjectCfg,
 			VSHPROPID_DefaultEnableDeployProjectCfg,
 
 			//enum __VSHPROPID2
@@ -1683,6 +1801,8 @@ namespace FTL
 			VSHPROPID_ExcludeFromExportItemTemplate,
 			VSHPROPID_SupportedMyApplicationTypes,
 		};
+#pragma warning(default : 4245)
+
 		HRESULT hr = E_FAIL;
 		for(int checkIndex = 0; checkIndex < _countof(checkPrperties); ++checkIndex)
 		{
@@ -1691,8 +1811,7 @@ namespace FTL
 			if (SUCCEEDED(hr) && VT_EMPTY != varProperty.vt)
 			{
 				pInfoOutput->OnOutput(
-					CFVSIPUtils::GetVSHPropIdString(checkPrperties[checkIndex]),
-					FTL::CFVariantInfo(varProperty).GetConvertedInfo());
+					CFVSIPUtils::GetVSHPropIdString(checkPrperties[checkIndex]), &varProperty);
 			}
 		}
 		return S_OK;
@@ -1801,6 +1920,91 @@ namespace FTL
             CComQIPtr<IVsWindowFrame>     spVsWindowFrame(m_pObj);
             if (spVsWindowFrame)
             {
+				CComVariant varCaption;
+				COM_VERIFY(spVsWindowFrame->GetProperty(VSFPROPID_Caption, &varCaption));
+				if (SUCCEEDED(hr))
+				{
+					pInfoOutput->OnOutput(TEXT("FrameWindow Caption"), &V_BSTR(&varCaption));
+				}
+
+				VSSETFRAMEPOS framePos;
+				GUID guidRelativeTo = GUID_NULL;
+				int x = 0, y = 0, cx = 0, cy = 0;
+
+				// 在获取 "Macro Explorer" 时出现错误
+				COM_VERIFY_EXCEPT1(spVsWindowFrame->GetFramePos(&framePos, &guidRelativeTo, &x, &y, &cx, &cy), E_UNEXPECTED);
+				if (SUCCEEDED(hr))
+				{
+					FTL::CFStringFormater formater;
+					formater.Format(TEXT("winFramePos=%s, Pos=[%d,%d]-[%d,%d], size={%d,%d}"), 
+						TEXT("TODO"), x, y, x+cx, y+cy, cx, cy );
+					pInfoOutput->OnOutput(TEXT("FramePos"), formater.GetString());
+				}
+
+
+#pragma warning(disable : 4245)
+				static DWORD dwVSFPropIds[] = {
+					VSFPROPID_Type,
+					VSFPROPID_DocView,		//获取关联的 IVsUIHierarchyWindow 接口
+					VSFPROPID_SPFrame,
+					VSFPROPID_SPProjContext,
+					VSFPROPID_Caption,
+					VSFPROPID_WindowState,
+					VSFPROPID_FrameMode,
+					VSFPROPID_IsWindowTabbed,
+					VSFPROPID_UserContext,
+					VSFPROPID_ViewHelper,
+					VSFPROPID_ShortCaption,
+					VSFPROPID_WindowHelpKeyword,
+					VSFPROPID_WindowHelpCmdText,
+					VSFPROPID_DocCookie,
+					VSFPROPID_OwnerCaption,
+					VSFPROPID_EditorCaption,
+					VSFPROPID_pszMkDocument,
+					VSFPROPID_DocData,
+					VSFPROPID_Hierarchy,
+					VSFPROPID_ItemID,
+					VSFPROPID_CmdUIGuid,
+					VSFPROPID_CreateDocWinFlags,
+					VSFPROPID_guidEditorType,
+					VSFPROPID_pszPhysicalView,
+					VSFPROPID_InheritKeyBindings,
+					VSFPROPID_RDTDocData,
+					VSFPROPID_AltDocData,
+					VSFPROPID_GuidPersistenceSlot,
+					VSFPROPID_GuidAutoActivate,
+					VSFPROPID_CreateToolWinFlags,
+					VSFPROPID_ExtWindowObject,
+					VSFPROPID_MultiInstanceToolNum,
+					VSFPROPID_BitmapResource,
+					VSFPROPID_BitmapIndex,
+					VSFPROPID_ToolbarHost,	//获取关联的 IVsToolWindowToolbarHost 接口
+					VSFPROPID_HideToolwinContainer,
+				};
+#pragma warning(default : 4245)
+
+				pInfoOutput->OutputInfoName(TEXT("Property"));
+				for (int i = 0; i < _countof(dwVSFPropIds); i++)
+				{
+					CComVariant varProperty;
+					COM_VERIFY_EXCEPT1(spVsWindowFrame->GetProperty( dwVSFPropIds[i], &varProperty), DISP_E_MEMBERNOTFOUND);
+					if (SUCCEEDED(hr))
+					{
+						COM_VERIFY(pInfoOutput->OnOutput(CFVSIPUtils::GetVSFPropIdIdString(dwVSFPropIds[i]), &varProperty));
+					}
+				}
+
+				pInfoOutput->OutputInfoName(TEXT("GuidProperty:"));
+				for (int i = 0; i < _countof(dwVSFPropIds); i++)
+				{
+					GUID guidProperty = GUID_NULL;
+					COM_VERIFY_EXCEPT1(spVsWindowFrame->GetGuidProperty(dwVSFPropIds[i], &guidProperty), DISP_E_MEMBERNOTFOUND);
+					if (SUCCEEDED(hr) && !IsEqualGUID(guidProperty, GUID_NULL))
+					{
+						COM_VERIFY(pInfoOutput->OnOutput(CFVSIPUtils::GetVSFPropIdIdString(dwVSFPropIds[i]), &guidProperty));
+					}
+				}
+
             }
         }
         return hr;
@@ -1857,7 +2061,44 @@ namespace FTL
 			}
 		}
 		return hr;
+	}
 
+	HRESULT CFVsUIHierarchyDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsUIHierarchy")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsUIHierarchy>     spVsUIHierarchy(m_pObj);
+			if (spVsUIHierarchy)
+			{
+
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFLocalRegistryDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("LocalRegistry")));
+		if (m_pObj)
+		{
+			//CComQIPtr<ILocalRegistry>     spLocalRegistry(m_pObj);
+
+			CComQIPtr<ILocalRegistry4>     spLocalRegistry4(m_pObj);
+			if (spLocalRegistry4)
+			{
+				VSLOCALREGISTRYROOTHANDLE hLocalRegistryRoot = RegHandle_Invalid;
+				CComBSTR bstrPath;
+				COM_VERIFY(spLocalRegistry4->GetLocalRegistryRootEx(RegType_Configuration, &hLocalRegistryRoot, &bstrPath));
+
+				//VSLOCALREGISTRYROOTHANDLE_TO_HKEY(hLocalRegistryRoot)
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ConfigurationRot"), &bstrPath));
+			}
+		}
+		return hr;
 	}
 }
 

@@ -221,10 +221,13 @@
 *   CommandSet? -- 命令集
 *  
 * 常用工具
-*   regpkg.exe -- Package安装以及注册工具，读取 Package 子类中的各种 Attribute 来注册
+*    Regit.exe/regpkg.exe -- Package安装以及注册工具，读取 Package 子类中的各种 Attribute 来注册
 *     VS通过PLK（Package Load Key -- 数字散列码，从微软站点获得）来检查发布版本的扩展包是否合法
 *     (开发时使用VSIP的调试许可证)，
 *     通过 ProvideLoadKey(最小版本,版本号,名字,开发者名字,PLK的资源ID) 属性提供
+*     取消注册时使用 unregister 参数调用，会调用 VSDllUnregisterServer
+*       在 Package 的实现文件中 #include <VSLPackageDllEntryPoints.cpp>
+* 
 *  Microsoft Visual Studio 2008 Experimental hive -- VS2008实验室，devenv.exe /rootSuffix Exp /RANU
 *     会使用独立的注册表信息进行调试，防止影响VS的开发环境 -- 通过编译时的 regpkg 命令行?
 *  vsct -- Visual Studio Command Table, VS2008中定义用户界面的XML，编译成二进制资源后以1000作为资源ID添加到VSPackage.resx资源文件中，

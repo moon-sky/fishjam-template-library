@@ -151,8 +151,11 @@ namespace FTL
         static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
         {
             HRESULT hr = S_FALSE;
-			//CComPtr<IEnumVARIANT> pEnumVariant(pUnknown);
-#pragma TODO(complete this)
+			CComQIPtr<IEnumVARIANT> pEnumVariant(pUnknown);
+			if (pEnumVariant)
+			{
+				COM_VERIFY(pEnumVariant->Reset());
+			}
             return hr;
         }
     };
@@ -236,7 +239,7 @@ namespace FTL
     };
 #endif //INCLUDE_DETECT_STRMIF
 
-    DWORD CFComDetect::CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType)
+    DWORD CFComDetect::CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID /*checkRIID*/, ComDetectType detectType)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnknown, (DWORD)(-1));
 
@@ -2084,7 +2087,7 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsWindowView)
                 DETECT_INTERFACE_ENTRY(IVsToolWindowToolbarHost)
                 DETECT_INTERFACE_ENTRY(IVsToolWindowToolbar)
-                DETECT_INTERFACE_ENTRY(IVsUIShell)  //可用于弹出Message等?  C#中GetService时是SVsUIShell,
+                DETECT_INTERFACE_ENTRY(IVsUIShell)  //可用于弹出Message、CreateToolWindow等?  C#中GetService时是SVsUIShell,
                 DETECT_INTERFACE_ENTRY(IVsUIShellDocumentWindowMgr)
                 DETECT_INTERFACE_ENTRY(IVsPackageDynamicToolOwner)
                 DETECT_INTERFACE_ENTRY(IVsExternalFilesManager)
