@@ -1477,11 +1477,46 @@ namespace FTL
 			CComQIPtr<IVsPackage>     spVsPackage(m_pObj);
 			if (spVsPackage)
 			{
+
+				//判断这个Package是否有Splash信息
+				CComQIPtr<IVsInstalledProduct> spVsInstalledProduct(spVsPackage);
+				if (spVsInstalledProduct)
+				{
+					CFVsInstalledProductDumper installedProductDumper(spVsInstalledProduct, pInfoOutput, m_nIndent + 2);
+				}
 				hr = S_OK;
 			}
 		}
 		return hr;
 	}
+
+	HRESULT CFVsInstalledProductDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsInstalledProduct")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsInstalledProduct>     spVsInstalledProduct(m_pObj);
+			if (spVsInstalledProduct)
+			{
+				CComBSTR bstrOfficialName;
+				COM_VERIFY(spVsInstalledProduct->get_OfficialName(&bstrOfficialName));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("OfficialName"), &bstrOfficialName));
+
+				CComBSTR bstrProductID;
+				COM_VERIFY(spVsInstalledProduct->get_ProductID(&bstrProductID));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ProductID"), &bstrProductID));
+
+				CComBSTR bstrProductDetails;
+				COM_VERIFY(spVsInstalledProduct->get_ProductDetails(&bstrProductDetails));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ProductDetails"), &bstrProductDetails));
+			}
+		}
+		return hr;
+	}
+
+	
 
 	HRESULT CFVsUIShellDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
@@ -1702,7 +1737,7 @@ namespace FTL
 
 	HRESULT CFVsHierarchyDumper::DumpAllPropertiesInfo(IVsHierarchy* pParent, VSITEMID ItemId, IInformationOutput* pInfoOutput)
 	{
-		pInfoOutput->OnOutput(TEXT("ItemId"), ItemId);
+		pInfoOutput->OnOutput(TEXT("ItemId"), (long)ItemId);
 #pragma warning(disable : 4245)
 		static const DWORD_PTR checkPrperties[] = 
 		{
@@ -2043,7 +2078,7 @@ namespace FTL
 				}
 				
 				TextSelMode selMode = spVsTextView->GetSelectionMode();
-				COM_VERIFY(pInfoOutput->OnOutput(TEXT("SelectionMode"), selMode));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("SelectionMode"), (long)selMode));
 
 				CComBSTR bstrSelectedText;
 				COM_VERIFY(spVsTextView->GetSelectedText(&bstrSelectedText));

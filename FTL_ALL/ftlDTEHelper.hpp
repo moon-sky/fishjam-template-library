@@ -10,6 +10,7 @@
 
 namespace FTL
 {
+#ifdef MSO
     LPCTSTR CFDTEUtil::GetMsoControlTypeString(MsoControlType controlType)
     {
         switch(controlType)
@@ -61,10 +62,11 @@ namespace FTL
         }
         return TEXT("Unknown");
     }
+#endif 
 
-    LPCTSTR CFDTEUtil::GetWindowTypeString(EnvDTE::vsWindowType nWindowType)
+    LPCTSTR CFDTEUtil::GetWindowTypeString(DTENS::vsWindowType nWindowType)
     {
-		using namespace EnvDTE;
+		using namespace DTENS;
         switch(nWindowType)
         {
             HANDLE_CASE_RETURN_STRING(vsWindowTypeCodeWindow);
@@ -98,9 +100,9 @@ namespace FTL
         return TEXT("");
     }
 
-    LPCTSTR CFDTEUtil::GetElementKindString(EnvDTE::vsCMElement nElementKind)
+    LPCTSTR CFDTEUtil::GetElementKindString(DTENS::vsCMElement nElementKind)
     {
-		using namespace EnvDTE;
+		using namespace DTENS;
         switch(nElementKind)
         {
             HANDLE_CASE_RETURN_STRING(vsCMElementOther);
@@ -152,7 +154,7 @@ namespace FTL
 
     LPCTSTR CFDTEUtil::GetFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind)
     {
-		using namespace EnvDTE;
+		using namespace DTENS;
         HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstructor, TEXT(","));
         HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyGet, TEXT(","));
         HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyLet, TEXT(","));
@@ -182,7 +184,7 @@ namespace FTL
 
     LPCTSTR CFDTEUtil::GetDTEGuidStringInfo(const CComBSTR& bstring)
     {
-		using namespace EnvDTE;
+		using namespace DTENS;
         USES_CONVERSION;
         LPSTR pszCompareString = OLE2A(bstring);
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindText, strcmp );
@@ -300,7 +302,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::_DTE>     spDTE(m_pObj);
+            CComQIPtr<DTENS::_DTE>     spDTE(m_pObj);
             if (spDTE)
             {
                 CComBSTR    strName;
@@ -315,19 +317,22 @@ namespace FTL
                 COM_VERIFY(spDTE->get_Version(&strVersion));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Version"), &strVersion));
 
-				CComPtr<EnvDTE::Windows>    spWindows;
+				CComPtr<DTENS::Windows>    spWindows;
                 COM_VERIFY(spDTE->get_Windows(&spWindows));
                 CFWindowsDumper winsDumper(spWindows, pInfoOutput, m_nIndent + 2);
 
-                CComPtr<EnvDTE::_Solution>  spSolution;
-                COM_VERIFY(spDTE->get_Solution(&spSolution));
-                CFSolutionDumper solutionDumper(spSolution, pInfoOutput, m_nIndent + 2);
-
-                CComPtr<EnvDTE::Document>   spActiveDocument;
+#ifdef ___DTE_FWD_DEFINED__
+//#  pragma error("dte80.tlh")
+#else
+				CComPtr<DTENS::_Solution>  spSolution;
+				COM_VERIFY(spDTE->get_Solution(&spSolution));
+				CFSolutionDumper solutionDumper(spSolution, pInfoOutput, m_nIndent + 2);
+#endif
+                CComPtr<DTENS::Document>   spActiveDocument;
                 COM_VERIFY(spDTE->get_ActiveDocument(&spActiveDocument));
                 CFDocumentDumper    activeDocumentDumper(spActiveDocument, pInfoOutput, m_nIndent + 2);
 
-                CComPtr<EnvDTE::Events> spEvents;
+                CComPtr<DTENS::Events> spEvents;
                 COM_VERIFY(spDTE->get_Events(&spEvents));
                 CFEventsDumper      eventsDumper(spEvents, pInfoOutput, m_nIndent + 2);
             }
@@ -341,7 +346,7 @@ namespace FTL
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Solution")));
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::_Solution>     spSolution(m_pObj);
+            CComQIPtr<DTENS::_Solution>     spSolution(m_pObj);
             if (spSolution)
             {
                 CComBSTR bstrFileName;
@@ -354,7 +359,7 @@ namespace FTL
 
                 for (long nIndex = 1; nIndex <= nCount; nIndex++)
                 {
-                    CComPtr<EnvDTE::Project>    spProject;
+                    CComPtr<DTENS::Project>    spProject;
                     COM_VERIFY(spSolution->Item(CComVariant(nIndex), &spProject));
                     CFProjectDumper projectDumper(spProject, pInfoOutput, m_nIndent + 2);
                 }
@@ -370,7 +375,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::Project>     spProject(m_pObj);
+            CComQIPtr<DTENS::Project>     spProject(m_pObj);
             if (spProject)
             {
                 CComBSTR bstrName;
@@ -381,11 +386,11 @@ namespace FTL
                 COM_VERIFY(spProject->get_Kind(&bstrKind));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), CFDTEUtil::GetDTEGuidStringInfo(bstrKind)));
 
-                CComPtr<EnvDTE::ProjectItems>   spProjectItems;
+                CComPtr<DTENS::ProjectItems>   spProjectItems;
                 COM_VERIFY(spProject->get_ProjectItems(&spProjectItems));
                 CFProjectItemsDumper projectItemsDumper(spProjectItems, pInfoOutput, m_nIndent + 2);
 
-                CComPtr<EnvDTE::CodeModel>  spCodeModel;
+                CComPtr<DTENS::CodeModel>  spCodeModel;
                 COM_VERIFY(spProject->get_CodeModel(&spCodeModel));
                 CFCodeModelDumper codeModelDumper(spCodeModel, pInfoOutput, m_nIndent + 2);
             }
@@ -400,7 +405,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::ProjectItems>     spProjectItems(m_pObj);
+            CComQIPtr<DTENS::ProjectItems>     spProjectItems(m_pObj);
             if (spProjectItems)
             {
                 CComBSTR bstrKind;
@@ -413,7 +418,7 @@ namespace FTL
 
                 for (long nIndex = 1; nIndex <= nCount; nIndex++)
                 {
-                    CComPtr<EnvDTE::ProjectItem>    spProjectItem;
+                    CComPtr<DTENS::ProjectItem>    spProjectItem;
                     COM_VERIFY(spProjectItems->Item(CComVariant(nIndex), &spProjectItem));
                     CFProjectItemDumper projectItemDumper(spProjectItem, pInfoOutput, m_nIndent + 2);
                 }
@@ -429,7 +434,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::ProjectItem>     spProjectItem(m_pObj);
+            CComQIPtr<DTENS::ProjectItem>     spProjectItem(m_pObj);
             if (spProjectItem)
             {
                 CComBSTR bstrName;
@@ -444,16 +449,18 @@ namespace FTL
                 COM_VERIFY(spProjectItem->get_Object(&spProjectItemModel));
                 if (SUCCEEDED(hr) && spProjectItemModel)
                 {
-                    COM_DETECT_INTERFACE_FROM_LIST(spProjectItemModel);
+					//代码(.cpp等) 能得到 VCFile、VSProjectItem、VCProjectItem 等
+                    COM_DETECT_INTERFACE_FROM_REGISTER(spProjectItemModel);
                 }
                 
-                CComPtr<EnvDTE::FileCodeModel> spFileCodeModel;
+                CComPtr<DTENS::FileCodeModel> spFileCodeModel;
                 COM_VERIFY_EXCEPT1(spProjectItem->get_FileCodeModel(&spFileCodeModel), S_FALSE);
                 if (SUCCEEDED(hr) && spFileCodeModel)
                 {
-                    COM_DETECT_INTERFACE_FROM_LIST(spFileCodeModel);
+					//VC文件能得到 CodeElement、VCCodeElement、VCFileCodeModel、FileCodeModel2、IProvideMultipleClassInfo、VCDesignElement 等
+                    COM_DETECT_INTERFACE_FROM_REGISTER(spFileCodeModel);
+					CFFileCodeModelDumper fileCodeModelDumper(spFileCodeModel, pInfoOutput, m_nIndent + 2);
                 }
-                CFFileCodeModelDumper fileCodeModelDumper(spFileCodeModel, pInfoOutput, m_nIndent + 2);
 
                 CComVariant varExtenderNames;
                 COM_VERIFY(spProjectItem->get_ExtenderNames(&varExtenderNames));
@@ -461,7 +468,7 @@ namespace FTL
 
                 short sFileCount = 0;
                 COM_VERIFY(spProjectItem->get_FileCount(&sFileCount));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), sFileCount));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), (long)sFileCount));
 
                 for (short index = 1; index <= sFileCount; index++)
                 {
@@ -481,7 +488,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::Events>     spEvents(m_pObj);
+            CComQIPtr<DTENS::Events>     spEvents(m_pObj);
             if (spEvents)
             {
 
@@ -497,7 +504,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::Windows>     spWindows(m_pObj);
+            CComQIPtr<DTENS::Windows>     spWindows(m_pObj);
             if (spWindows)
             {
                 long nCount = 0;
@@ -506,19 +513,21 @@ namespace FTL
 
                 for (long index = 1; index <= nCount; index++)
                 {
-                    CComPtr<EnvDTE::Window> spWindow;
+                    CComPtr<DTENS::Window> spWindow;
                     COM_VERIFY(spWindows->Item(CComVariant(index), &spWindow));
                     CFWindowDumper winDumper(spWindow, pInfoOutput, m_nIndent + 2);
                 }
-
-                CComPtr<EnvDTE::_DTE> spDTE;
+#ifdef ___DTE_FWD_DEFINED__
+#else
+                CComPtr<DTENS::_DTE> spDTE;
                 COM_VERIFY(spWindows->get_DTE(&spDTE));
-                CComPtr<EnvDTE::_DTE> spDTEParent;
+                CComPtr<DTENS::_DTE> spDTEParent;
                 COM_VERIFY(spWindows->get_Parent(&spDTEParent));
                 if (spDTE != spDTEParent)
                 {
 					FTLTRACEEX(FTL::tlWarning, TEXT("DTE and DTEParent is Not Same\n"));
                 }
+#endif 
             }
         }
         return hr;
@@ -531,7 +540,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::Window>     spWindow(m_pObj);
+            CComQIPtr<DTENS::Window>     spWindow(m_pObj);
             if (spWindow)
             {
                 CComBSTR bstrCaption;
@@ -540,7 +549,7 @@ namespace FTL
                 
                 VARIANT_BOOL bVisible = VARIANT_TRUE;
                 COM_VERIFY(spWindow->get_Visible(&bVisible));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Visible"), (long)bVisible));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Visible"), bVisible));
 
                 long nLeft = 0, nTop = 0, nWidth = 0, nHeight = 0;
                 COM_VERIFY(spWindow->get_Left(&nLeft));
@@ -552,7 +561,7 @@ namespace FTL
                 strPosition.Format(TEXT("[%d,%d], {%d x %d}"), nLeft, nTop, nWidth, nHeight);
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("[left,top],{width x Height}"), strPosition.GetString()));
 
-                EnvDTE::vsWindowType winType;
+                DTENS::vsWindowType winType;
                 COM_VERIFY(spWindow->get_Type(&winType));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), CFDTEUtil::GetWindowTypeString(winType)));
 
@@ -575,7 +584,7 @@ namespace FTL
                 if (spToolObject)
                 {
 					//在代码编辑 Window 中，能够得到 TextWindow
-                    COM_DETECT_INTERFACE_FROM_LIST(spToolObject);
+                    COM_DETECT_INTERFACE_FROM_REGISTER(spToolObject);
                 }
                 //Document 窗口可以获取 Selection
                 //spWindow->get_Selection();
@@ -593,7 +602,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::Document>     spDocument(m_pObj);
+			CComQIPtr<DTENS::Document>     spDocument(m_pObj);
             if (spDocument)
             {
                 CComBSTR bstrKind;
@@ -606,12 +615,20 @@ namespace FTL
 
                 CComPtr<IDispatch> spSelection;
                 COM_VERIFY(spDocument->get_Selection(&spSelection));
-                COM_DETECT_INTERFACE_FROM_LIST(spSelection);
+                COM_DETECT_INTERFACE_FROM_REGISTER(spSelection);
+				//代码(如 .cpp) 返回的接口能转换为 TextSelection、LifetimeInformation 等
                 CFTextSelectionDumper   selectionDumper(spSelection, pInfoOutput, m_nIndent + 2);
 
-                CComPtr<EnvDTE::Window> spActiveWindow;
+                CComPtr<DTENS::Window> spActiveWindow;
                 COM_VERIFY(spDocument->get_ActiveWindow(&spActiveWindow));
                 CFWindowDumper  activeWindowDumper(spActiveWindow, pInfoOutput, m_nIndent + 2);
+
+				CComPtr<DTENS::ProjectItem> spProjectItem;
+				COM_VERIFY(spDocument->get_ProjectItem(&spProjectItem));
+				if (SUCCEEDED(hr) && spProjectItem)
+				{
+					CFProjectItemDumper	projectItemDumper(spProjectItem, pInfoOutput, m_nIndent + 2);
+				}
 
                 CComPtr<IDispatch> spTextDocumentDisp;
                 COM_VERIFY(spDocument->Object(CComBSTR(L"TextDocument"),&spTextDocumentDisp));
@@ -632,20 +649,32 @@ namespace FTL
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("TextDocument")));
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::TextDocument>     spTextDocument(m_pObj);
+            CComQIPtr<DTENS::TextDocument>     spTextDocument(m_pObj);
             if (spTextDocument)
             {
-                FTLASSERT(FALSE);
-                /*
-                //Get TextPoint
-                CComPtr<TextPoint> StartTextPoint;
-                hr=textDoc->get_StartPoint(&StartTextPoint);
-                if ( FAILED(hr) )    return false;
-                //get EditPoint
-                //    CComPtr<EditPoint> StratEditPoint;
-                hr=StartTextPoint->CreateEditPoint(&StratEditPoint);
-                if ( FAILED(hr) )    return false;
-                */
+				CComBSTR bstrLanguage;
+				COM_VERIFY(spTextDocument->get_Language(&bstrLanguage));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Language"), &bstrLanguage));
+	
+				CComBSTR bstrType;
+				COM_VERIFY(spTextDocument->get_Type(&bstrType));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), &bstrType));
+
+				CComPtr<DTENS::TextPoint> spStartTextPoint;
+                COM_VERIFY(spTextDocument->get_StartPoint(&spStartTextPoint));
+				if (spStartTextPoint)
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("StartTextPoint")));
+					CFTextPointDumper dndPointDumper(spStartTextPoint, pInfoOutput, m_nIndent + 2);
+				}
+                
+				CComPtr<DTENS::TextPoint> spEndTextPoint;
+                COM_VERIFY(spTextDocument->get_EndPoint(&spEndTextPoint));
+				if (spEndTextPoint)
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("EndTextPoint")));
+					CFTextPointDumper dndPointDumper(spEndTextPoint, pInfoOutput, m_nIndent + 2);
+				}
             }
         }
         return hr;
@@ -658,7 +687,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::TextSelection> spTextSelection(m_pObj);
+            CComQIPtr<DTENS::TextSelection> spTextSelection(m_pObj);
             if (spTextSelection)
             {
 
@@ -667,22 +696,58 @@ namespace FTL
         return hr;
     }
 
-    //Code
+	HRESULT CFTextPointDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("TextPoint")));
 
+		if (m_pObj)
+		{
+			CComQIPtr<DTENS::TextPoint> spTextPoint(m_pObj);
+			if (spTextPoint)
+			{
+				long nLine = 0;
+				COM_VERIFY(spTextPoint->get_Line(&nLine));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Line"), nLine));
+
+				long nLineCharOffset = 0;
+				COM_VERIFY(spTextPoint->get_LineCharOffset(&nLineCharOffset));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("LineCharOffset"), nLineCharOffset));
+
+				long nAbsoluteCharOffset = 0;
+				COM_VERIFY(spTextPoint->get_AbsoluteCharOffset(&nAbsoluteCharOffset));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("AbsoluteCharOffset"), nAbsoluteCharOffset));
+
+				long nDisplayColumn = 0;
+				COM_VERIFY(spTextPoint->get_DisplayColumn(&nDisplayColumn));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("DisplayColumn"), nDisplayColumn));
+
+				long nLineLength = 0;
+				COM_VERIFY(spTextPoint->get_LineLength(&nLineLength));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("LineLength"), nLineLength));
+
+				CComPtr<DTENS::CodeElement> spCodeElement;
+			}
+		}
+		return hr;
+	}
+
+
+    //Code
     HRESULT CFFileCodeModelDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("FileCodeModel")));
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::FileCodeModel>    spFileCodeModel(m_pObj);
+            CComQIPtr<DTENS::FileCodeModel>    spFileCodeModel(m_pObj);
             if (spFileCodeModel)
             {
                 CComBSTR bstrLanguage;
                 COM_VERIFY(spFileCodeModel->get_Language(&bstrLanguage));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Language"), &bstrLanguage));
 
-                CComPtr<EnvDTE::CodeElements>   spCodeElements;
+                CComPtr<DTENS::CodeElements>   spCodeElements;
                 COM_VERIFY(spFileCodeModel->get_CodeElements(&spCodeElements));
                 CFCodeElementsDumper   codeElementsDumper(spCodeElements, pInfoOutput, m_nIndent + 2);
             }
@@ -697,14 +762,14 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::CodeModel>     spCodeModel(m_pObj);
+            CComQIPtr<DTENS::CodeModel>     spCodeModel(m_pObj);
             if (spCodeModel)
             {
                 CComBSTR bstrLanguage;
                 COM_VERIFY(spCodeModel->get_Language(&bstrLanguage));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Language"), CFDTEUtil::GetDTEGuidStringInfo(bstrLanguage)));
 
-                CComPtr<EnvDTE::CodeElements>   spCodeElements;
+                CComPtr<DTENS::CodeElements>   spCodeElements;
                 COM_VERIFY(spCodeModel->get_CodeElements(&spCodeElements));
                 CFCodeElementsDumper   codeElementsDumper(spCodeElements, pInfoOutput, m_nIndent + 2);
 
@@ -720,7 +785,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::CodeElements>     spCodeElements(m_pObj);
+            CComQIPtr<DTENS::CodeElements>     spCodeElements(m_pObj);
             if (spCodeElements)
             {
                 long nCount = 0;
@@ -729,7 +794,7 @@ namespace FTL
 
                 for (long nIndex = 1; nIndex <= nCount; nIndex++)
                 {
-                    CComPtr<EnvDTE::CodeElement> spCodeElement;
+                    CComPtr<DTENS::CodeElement> spCodeElement;
                     COM_VERIFY(spCodeElements->Item(CComVariant(nIndex), &spCodeElement));
                     CFCodeElementDumper codeElementDumper(spCodeElement, pInfoOutput, m_nIndent + 2);
                 }
@@ -745,25 +810,59 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::CodeElement>     spCodeElement(m_pObj);
+            CComQIPtr<DTENS::CodeElement>     spCodeElement(m_pObj);
             if (spCodeElement)
             {
-                CComBSTR bstrName;
+				CComBSTR bstrFullName;
+				COM_VERIFY(spCodeElement->get_FullName(&bstrFullName));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("FullName"), &bstrFullName));
+
+				CComBSTR bstrName;
                 COM_VERIFY(spCodeElement->get_Name(&bstrName));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
 
-                CComBSTR bstrFullName;
-                COM_VERIFY(spCodeElement->get_FullName(&bstrFullName));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FullName"), &bstrFullName));
+				VARIANT_BOOL isCodeType = VARIANT_FALSE;
+				COM_VERIFY(spCodeElement->get_IsCodeType(&isCodeType));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("IsCodeType"), isCodeType));
 
-                EnvDTE::vsCMElement elementKind = EnvDTE::vsCMElementOther;
+                DTENS::vsCMElement elementKind = DTENS::vsCMElementOther;
                 COM_VERIFY(spCodeElement->get_Kind(&elementKind));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("FullName"), CFDTEUtil::GetElementKindString(elementKind)));
-            }
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), CFDTEUtil::GetElementKindString(elementKind)));
+
+				CComPtr<TextPoint> spStartTextPoint;
+				COM_VERIFY(spCodeElement->get_StartPoint(&spStartTextPoint));
+				CComPtr<TextPoint> spEndTextPoint;
+				COM_VERIFY(spCodeElement->get_EndPoint(&spEndTextPoint));
+
+				CComVariant varExtenderNames;
+				COM_VERIFY(spCodeElement->get_ExtenderNames(&varExtenderNames));
+				if (SUCCEEDED(hr))
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("ExtenderNames"), &varExtenderNames));
+				}
+
+				CComBSTR bstrExtenderCATID;
+				COM_VERIFY(spCodeElement->get_ExtenderCATID(&bstrExtenderCATID));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ExtenderCATID"), &bstrExtenderCATID));
+
+				CComPtr<CodeElements> spChildren;
+				COM_VERIFY(spCodeElement->get_Children(&spChildren));
+				if (SUCCEEDED(hr) && spChildren)
+				{
+					long nChildCount = 0;
+					COM_VERIFY(spChildren->get_Count(&nChildCount));
+					if (nChildCount > 0)
+					{
+						COM_VERIFY(pInfoOutput->OnOutput(TEXT("Children")));
+						CFCodeElementsDumper childrenDumper(spChildren, pInfoOutput, m_nIndent + 2);
+					}
+				}
+			}
         }
         return hr;
     }
 
+#ifdef USE_MSC
     HRESULT CFCommandBarsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
@@ -927,6 +1026,7 @@ namespace FTL
         }
         return hr;
     }
+#endif 
 
 
     HRESULT CFCommandsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
@@ -936,7 +1036,7 @@ namespace FTL
 
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::Commands>     spCommands(m_pObj);
+            CComQIPtr<DTENS::Commands>     spCommands(m_pObj);
             if (spCommands)
             {
                 long lCommandCount = 0;
@@ -945,7 +1045,7 @@ namespace FTL
 
                 for (long lCommandIndex = 1; lCommandIndex <= lCommandCount; ++lCommandIndex)
                 {
-                    CComPtr<EnvDTE::Command>  spCommand;
+                    CComPtr<DTENS::Command>  spCommand;
                     //TODO: ( pCommands->Item( CComVariant( "DoxygenAddin.Connect.DoxygenAddin" ), 0, &dx_cmd ), dx_cmd );
                     //  Need Text as Index ?
                     //用目前这种方式也可以获取，但ID有什么用？
@@ -966,7 +1066,7 @@ namespace FTL
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Command")));
         if (m_pObj)
         {
-            CComQIPtr<EnvDTE::Command>     spCommand(m_pObj);
+            CComQIPtr<DTENS::Command>     spCommand(m_pObj);
             if (spCommand)
             {
                 CComBSTR bstrName;
@@ -977,10 +1077,14 @@ namespace FTL
                 COM_VERIFY(spCommand->get_LocalizedName(&bstrLocalizedName));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("LocalizedName"), &bstrLocalizedName));
 
+#ifdef ___DTE_FWD_DEFINED__
+
+#else
                 CComBSTR bstrGuid;
                 //Guid 有什么用？很多是一样，比如 File.FormProperties 和 Edit.ChangeBinding
                 COM_VERIFY(spCommand->get_Guid(&bstrGuid));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Guid"), &bstrGuid));
+#endif
 
                 long nId = -1;
                 COM_VERIFY(spCommand->get_ID(&nId));

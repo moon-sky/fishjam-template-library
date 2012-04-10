@@ -206,6 +206,13 @@ namespace FTL
 #  include <UrlMon.h>
 #endif 
 
+#if INCLUDE_DETECT_VSIP
+#  include <containedlanguage.h>
+#  include <textmgr.h>
+#  include <vsshell.h>
+#  include <vssplash.h>
+#endif 
+
 #if INCLUDE_DETECT_WMSDKIDL
 #  include <wmsdkidl.h>
 #endif 

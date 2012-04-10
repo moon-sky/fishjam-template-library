@@ -10,6 +10,12 @@
 #  error ftlDTEHelper requires ftlCom.h to be included first
 #endif
 
+//#define USE_MSO
+//#define USE_MSC		//Microsoft_VisualStudio_CommandBars
+
+#ifndef DTENS		// VxDTE( VSIP SDK ) or EnvDTE( import DTE )
+#  error Please define DTENS first
+#endif 
 
 namespace FTL
 {
@@ -18,10 +24,13 @@ namespace FTL
     FTLEXPORT class CFDTEUtil
     {
     public:
+
+#ifdef USE_MSO
         FTLINLINE static LPCTSTR GetMsoControlTypeString(MsoControlType controlType);
         FTLINLINE static LPCTSTR GetMsoBarTypeString(MsoBarType barType);
-		FTLINLINE static LPCTSTR GetWindowTypeString(EnvDTE::vsWindowType nWindowType);
-        FTLINLINE static LPCTSTR GetElementKindString(EnvDTE::vsCMElement nElementKind);
+#endif 
+		FTLINLINE static LPCTSTR GetWindowTypeString(vsWindowType nWindowType);
+        FTLINLINE static LPCTSTR GetElementKindString(vsCMElement nElementKind);
         FTLINLINE static LPCTSTR GetFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind); //vsCMFunction
         FTLINLINE static LPCTSTR GetDTEGuidStringInfo(const CComBSTR& bstring);
     };
@@ -144,6 +153,16 @@ namespace FTL
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
+	class CFTextPointDumper : public CFInterfaceDumperBase<CFTextPointDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFTextPointDumper);
+	public:
+		FTLINLINE explicit CFTextPointDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFTextPointDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
     //Code
     class CFFileCodeModelDumper : public CFInterfaceDumperBase<CFFileCodeModelDumper>
     {
@@ -186,6 +205,7 @@ namespace FTL
     };
 
 
+#ifdef USE_MSC //Microsoft_VisualStudio_CommandBars
     //CommandBars
     class CFCommandBarsDumper : public CFInterfaceDumperBase<CFCommandBarsDumper>
     {
@@ -196,6 +216,7 @@ namespace FTL
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
+#endif
 
     class CFCommandBarDumper : public CFInterfaceDumperBase<CFCommandBarDumper>
     {

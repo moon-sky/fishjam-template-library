@@ -125,7 +125,7 @@
 * MPF(Managed Package Framework) -- 微软在Visual Studio的COM interoperability程序集之上创建的框架，
 *   可以帮助我们用“本土化”的托管代码来创建VSPackage
 *   
-* VSIP(Visual Studio Integration Package) -- 扩展Visual studio最强大的工具，
+* VSIP(Visual Studio Integration Package，需要链接 vsguids.lib ) -- 扩展Visual studio最强大的工具，
 *   整个visual studio的功能就是建立在以Visual studio外壳（shell）为核心的扩展包上。
 *   Package可以在Visual Studio的启动界面里或在关于对话框里显示它自己的信息
 *   所有的Language、编辑器、调试器、Project System以及其他很多的组件都是Package，扩展：
@@ -221,15 +221,30 @@
 *   CommandSet? -- 命令集
 *  
 * 常用工具
-*    Regit.exe/regpkg.exe -- Package安装以及注册工具，读取 Package 子类中的各种 Attribute 来注册
-*     VS通过PLK（Package Load Key -- 数字散列码，从微软站点获得）来检查发布版本的扩展包是否合法
-*     (开发时使用VSIP的调试许可证)，
-*     通过 ProvideLoadKey(最小版本,版本号,名字,开发者名字,PLK的资源ID) 属性提供
-*     取消注册时使用 unregister 参数调用，会调用 VSDllUnregisterServer
-*       在 Package 的实现文件中 #include <VSLPackageDllEntryPoints.cpp>
+*    $(RegitPath)\Regit.exe/regpkg.exe -- Package安装以及注册工具，读取 Package 子类中的各种 Attribute 来注册
+*
+* 注册/取消注册
+*   VS通过PLK（Package Load Key -- 128个字符的数字散列码，从微软站点 http://msdn.microsoft.com/vstudio/extend/ 获得）
+*   来检查发布版本的扩展包是否合法(开发时使用VSIP的调试许可证)，
+*   通过 ProvideLoadKey(最小版本,版本号,名字,开发者名字,PLK的资源ID) 属性提供
+*   PLK主要有三个部分组成：
+*     1. .rgs 文件中的 CompanyName/ProductName/ProductVersion/MinEdition/ID(如 val ID  = d '%IDS_BASICPACKAGE_LOAD_KEY%') 等
+*     2. VSL_REGISTRY_MAP_NUMBER_ENTRY(IDS_BASICPACKAGE_LOAD_KEY)
+*     3. 关联资源的 IDS_BASICPACKAGE_LOAD_KEY(Hash的字符串)、IDS_BASICPACKAGE_REGISTRY_NAME 宏
 * 
+*   取消注册时使用 unregister 参数调用，会调用 VSDllUnregisterServer
+*     0.定义GUID的 guids.h 文件中不要使用 #pragma once, 其 DEFINE_GUID 定义的 CLSID_XXX 等需要在 #include <initguid.h> 前后各包含一次
+*     在 Package 的实现文件中：
+*     1.#define DEFAULT_REGISTRY_ROOT XXXX 宏， 如 LREGKEY_VISUALSTUDIOROOT L"Exp"
+*     2.#include <VSLPackageDllEntryPoints.cpp>
+* 
+*
 *  Microsoft Visual Studio 2008 Experimental hive -- VS2008实验室，devenv.exe /rootSuffix Exp /RANU
 *     会使用独立的注册表信息进行调试，防止影响VS的开发环境 -- 通过编译时的 regpkg 命令行?
+*     /RANU 
+*     /setup -- 可以在启动的splash screen 获得 logo and product name
+*     /NoVsip -- 模拟没有安装 VS SDK 的机器的行为
+*     /root:Software\Microsoft\VisualStudio\9.0Exp --指定注册的注册表根位置
 *  vsct -- Visual Studio Command Table, VS2008中定义用户界面的XML，编译成二进制资源后以1000作为资源ID添加到VSPackage.resx资源文件中，
 *     regpkg.exe注册时会将相关内容注册到注册表中(位置?)，VS启动时只需读取注册表即可更新界面（无需加载DLL）。
 *    CommandTable -> Commands -> Groups  -> Group  ->

@@ -18,6 +18,7 @@
 //#include <ExDisp.h>
 #include <exdispid.h>
 #include <atlcomcli.h>
+#include <atlsafe.h>
 
 namespace FTL
 {
@@ -186,49 +187,82 @@ namespace FTL
 	VOID CFVariantInfo::GetValueInfo(CFStringFormater& formaterValue)
 	{
         //ÓÐ V_BSTR µÈºê¸¨Öú²Ù×÷
-		VARTYPE varType = m_Info.vt;
+		VARTYPE varType = V_VT(&m_Info);
 
 		if (
-			(VT_ARRAY == (VT_ARRAY & m_Info.vt))||    //ATL::CComSafeArray
-			(VT_VECTOR == (VT_VECTOR & m_Info.vt))||
-			(VT_BYREF == (VT_BYREF & m_Info.vt))
+			(VT_ARRAY == (VT_ARRAY & varType ))||    //ATL::CComSafeArray
+			(VT_VECTOR == (VT_VECTOR & varType))||
+			(VT_BYREF == (VT_BYREF & varType))
 			)
 		{
-			FTLASSERT(FALSE);
-		}
-		varType &= VT_TYPEMASK;  //Get Type
+			if (VT_ARRAY == (VT_ARRAY & varType))
+			{
+				if (NULL != V_ARRAY(&m_Info))
+				{
+					ATL::CComSafeArray<VARIANT> varArray(V_ARRAY(&m_Info));
+					LONG nLowerBound = varArray.GetLowerBound();
+					LONG nUpperBound = varArray.GetUpperBound();
+					formaterValue.AppendFormat(TEXT("[%d-%d]"), nLowerBound, nUpperBound);
 
-		switch(varType)
+					for (LONG nIndex = nLowerBound; nIndex < nUpperBound; ++nIndex)
+					{
+						VARIANT& varItem = varArray.GetAt(nIndex);
+						if (V_VT(&varItem) == VT_BSTR)
+						{
+							formaterValue.AppendFormat(TEXT("%s,"), COLE2T(V_BSTR(&varItem)));
+						}
+						else
+						{
+							FTLASSERT(!TEXT("NOT BSTR"));
+						}
+					}
+				}
+				else
+				{
+					formaterValue.Format(TEXT("NULL BSTR ARRAY"));
+				}
+			}
+			else
+			{
+				FTLASSERT(!TEXT("VT_VECTOR OR VT_BYREF"));
+			}
+		}
+		else
 		{
-		case VT_EMPTY:
-			formaterValue.Format(TEXT("<Empty>")); //just empty
-			break;
-		case VT_NULL:
-			formaterValue.Format(TEXT("<Null>")); //just Null
-			break;
-		case VT_I2:
-			formaterValue.Format(TEXT("%d"), V_I2(&m_Info));
-			break;
-		case VT_I4:
-		//case VT_INT_PTR:
-			formaterValue.Format(TEXT("%d"), V_I4(&m_Info));
-			break;
-		case VT_BSTR:
-			formaterValue.Format(TEXT("%s"), COLE2T(V_BSTR(&m_Info)));
-			break;
-		case VT_BOOL:
-			formaterValue.Format(TEXT("%s"), VARIANT_FALSE == V_BOOL(&m_Info) ? TEXT("FALSE") : TEXT("TRUE") );
-			break;
-		case VT_UNKNOWN:
-		case VT_DISPATCH:
-			formaterValue.Format(TEXT("0x%p"), V_UNKNOWN(&m_Info));
-			break;
-		case VT_UI4:
-			formaterValue.Format(TEXT("%d"), V_UI4(&m_Info));
-			break;
-		default:
-			formaterValue.Format(TEXT("TODO: %lld"), V_I8(&m_Info));
-			break;
+			varType &= VT_TYPEMASK;  //Get Type
+
+			switch(varType)
+			{
+			case VT_EMPTY:
+				formaterValue.Format(TEXT("<Empty>")); //just empty
+				break;
+			case VT_NULL:
+				formaterValue.Format(TEXT("<Null>")); //just Null
+				break;
+			case VT_I2:
+				formaterValue.Format(TEXT("%d"), V_I2(&m_Info));
+				break;
+			case VT_I4:
+				//case VT_INT_PTR:
+				formaterValue.Format(TEXT("%d"), V_I4(&m_Info));
+				break;
+			case VT_BSTR:
+				formaterValue.Format(TEXT("%s"), COLE2T(V_BSTR(&m_Info)));
+				break;
+			case VT_BOOL:
+				formaterValue.Format(TEXT("%s"), VARIANT_FALSE == V_BOOL(&m_Info) ? TEXT("FALSE") : TEXT("TRUE") );
+				break;
+			case VT_UNKNOWN:
+			case VT_DISPATCH:
+				formaterValue.Format(TEXT("0x%p"), V_UNKNOWN(&m_Info));
+				break;
+			case VT_UI4:
+				formaterValue.Format(TEXT("%d"), V_UI4(&m_Info));
+				break;
+			default:
+				formaterValue.Format(TEXT("TODO: %lld"), V_I8(&m_Info));
+				break;
+			}
 		}
 	}
 
@@ -405,6 +439,12 @@ namespace FTL
     //    return m_pInterface;
     //}
 
+	CFOutputWindowInfoOutput* CFOutputWindowInfoOutput::Instance()
+	{
+		static CFOutputWindowInfoOutput s_instance;
+		return &s_instance;
+	}
+
     CFOutputWindowInfoOutput::CFOutputWindowInfoOutput()
     {
         m_nIndent = 2;
@@ -442,9 +482,19 @@ namespace FTL
         return S_OK;
     }
 
+	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszPrompInfo)
+	{
+		if (pszPrompInfo)
+		{
+			OutputIndentSpace();
+			FTLTRACE(TEXT("--%s:--"), pszPrompInfo);
+			return S_OK;
+		}
+		return S_FALSE;
+	}
+
     HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, LPCTSTR pValue)
     {
-        USES_CONVERSION;
         if (pszKey && pValue)
         {
             OutputIndentSpace();
@@ -466,6 +516,17 @@ namespace FTL
         }
         return S_FALSE;
     }
+
+	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, VARIANT_BOOL value)
+	{
+		if (pszKey)
+		{
+			OutputIndentSpace();
+			FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, VARIANT_FALSE == value ? TEXT("FALSE") : TEXT("TRUE"));
+			return S_OK;
+		}
+		return S_FALSE;
+	}
 
     HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, long nValue)
     {

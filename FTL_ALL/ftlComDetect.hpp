@@ -2145,6 +2145,9 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsHierarchyDropDataSource)
                 DETECT_INTERFACE_ENTRY(IVsHierarchyDropDataSource2)
                 DETECT_INTERFACE_ENTRY(IVsHierarchyDropDataTarget)
+
+				//vssplash.h
+				DETECT_INTERFACE_ENTRY(IVsInstalledProduct)
             //}
 
 #endif //INCLUDE_DETECT_VSIP

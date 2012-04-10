@@ -78,8 +78,10 @@ namespace FTL
     public:
         virtual HRESULT SetIndent(int nIndent) = 0;
         virtual HRESULT OutputInfoName(LPCTSTR pszInfoName) = 0;
+		virtual HRESULT OnOutput(LPCTSTR pszPrompInfo) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue) = 0;
-        virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue) = 0;
+		virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue) = 0;
+		virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT_BOOL value) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, long nValue) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, HWND hWnd) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, GUID* pGuid) = 0;
@@ -90,12 +92,15 @@ namespace FTL
     class CFOutputWindowInfoOutput : public IInformationOutput
     {
     public:
+		FTLINLINE static CFOutputWindowInfoOutput* Instance();
         FTLINLINE CFOutputWindowInfoOutput();
         FTLINLINE ~CFOutputWindowInfoOutput();
         FTLINLINE virtual HRESULT SetIndent(int nIndent);
         FTLINLINE virtual HRESULT OutputInfoName(LPCTSTR pszInfoName);
+		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszPrompInfo);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue);
+		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT_BOOL value);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, long nValue);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, HWND hWnd);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, GUID* pGuid);

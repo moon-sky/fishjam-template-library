@@ -38,11 +38,12 @@
 /********************************************************************************************
 *   
 * 接口实现类(VSL::)
-*   IVsPackageImpl -- 实现 IVsPackage 接口, COM组件成为 VS Package
 *   IOleCommandTargetImpl -- 实现 IOleCommandTarget 接口，能处理菜单或工具条事件
-*   ISupportErrorInfoImpl 
+*   ISupportErrorInfoImpl -- 模板参数一般是 InterfaceSupportsErrorInfoList< IXXXX, ErrorInfoList的递归 >
+*   IVsInstalledProductImpl -- 在Splash窗体中显示插件信息(就不再需要 .rgs 中的信息?)，模板参数为相关的资源ID，在.rgs文件中还需要 InstalledProducts 项
+*   IVsPackageImpl -- 实现 IVsPackage 接口, COM组件成为 VS Package
 *   IVsUIHierarchyImpl -- 树状结构(如Solution Explorer的实现类)，实现了 IVsHierarchy 和 IVsUIHierarchy 两个接口
-*
+* 
 * VSL中的类
 *   VsSiteCache(服务的Cache,提供 QueryService ) -- VsSiteCacheGlobal、VsSiteCacheLocal
 *     ？QueryService时一般使用 xxxPackageVsSiteCache.GetCachedService<IVsXXXX, SID_SVsXXX>() 的方式调用，SID_ 后面是C#中对应的字符
@@ -51,7 +52,7 @@
 *     和一个 static const WORD m_sResourceIDs[CountOfImages] = { IDI_XXX, } 的数组
 *   ToolWindowBase -- 创建 ToolWindow 时的基类，实现了
 *     一般需要实现 PostCreate 方法，将窗体加入 VS Frame(有没有自动方法？至少 ExtensibilityExplorer 中是手动实现的)
-*   LoadUILibrary::ExtendedErrorInfo -- 在静态的 GetLoadUILibraryErrorInfo 中提供错误信息
+*   LoadUILibrary::ExtendedErrorInfo -- 在Package静态的 GetLoadUILibraryErrorInfo 中提供错误信息
 *   VSL::Pointer -- 
 *   NonCocreateableComObject -- 可用 CreateInstance 创建COM对象，和 CComObject 的区别?
 * 
@@ -63,16 +64,25 @@
 *
 * 宏
 *   1.命令处理映射(IOleCommandTargetImpl)， 采用 GUID/DWORD 对的方式进行映射处理：
-*     VSL_BEGIN_COMMAND_MAP -- VSL_COMMAND_MAP_ENTRY(vsct中使用的GUID, 命令ID, 查询状态回调, 执行回调 ) -- VSL_END_VSCOMMAND_MAP
-*       系统自带的 GUID/命令ID对 有 GUID_VsUIHierarchyWindowCmds/UIHWCMDID_RightClick 等
+*     VSL_BEGIN_COMMAND_MAP
+*       VSL_COMMAND_MAP_ENTRY(vsct中使用的GUID, 命令ID, 查询状态回调, 执行回调 )
+*       VSL_COMMAND_MAP_CLASS_ENTRY( 使用从 CommandHandler 继承的子类动态映射 )
+*     VSL_END_VSCOMMAND_MAP
+*     系统自带的 GUID/命令ID对 有 GUID_VsUIHierarchyWindowCmds/UIHWCMDID_RightClick 等
 *   2.工具映射(ToolMap), 实现 IVsPackage::CreateTool 方法，在VS需要时创建对应的 Tool, Tool 需要在注册表的 ToolWindows 下注册
 *     VSL_BEGIN_TOOL_MAP -- VSL_TOOL_ENTRY(对应的GUID, 创建回调 )
 *   3.注册表资源映射( 提供.rgs中通过 %token% 使用的变量值 ? )
 *     VSL_BEGIN_REGISTRY_MAP(.rgs文件对应的资源ID)
 *       VSL_REGISTRY_MAP_GUID_ENTRY( 提供 .rgs 文件中使用的 CLSID 值 )
+*       VSL_REGISTRY_MAP_NUMBER_ENTRY( 可提供 PLK -- 如 IDS_XXXX_LOAD_KEY ) 
 *       VSL_REGISTRY_RESOURCE_STRING_ENTRY( 提供字符串资源如PackageName )
-*     VSL_END_REGISTRY_MAP 
-*
+*     VSL_END_REGISTRY_MAP
+*   4.PLK 映射(似乎已经由 VSL_REGISTRY_MAP_NUMBER_ENTRY 替代 ?)
+*     VSL_DECLARE_REGISTRY_RESOURCEID(IDS_XXXX_LOAD_KEY)
+*        ...
+*     VSL_REGISTRY_RESOURCEID_ENTRY(IDS_XXXX_LOAD_KEY)
+*     
+* 
 * 常用的系统常量
 *   CLSID_VSUIHIERARCHYWINDOW -- VS 提供的 hierarchy tool window，可在 ToolWindowBase子类的GetLocalRegistryCLSIDViewObject
 *     中返回表tool window 的类型?
@@ -125,6 +135,17 @@ namespace FTL
 	public:
 		FTLINLINE explicit CFVsPackageDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
 			:CFInterfaceDumperBase<CFVsPackageDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFVsInstalledProductDumper : public CFInterfaceDumperBase<CFVsInstalledProductDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsInstalledProductDumper);
+	public:
+		FTLINLINE explicit CFVsInstalledProductDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsInstalledProductDumper>(pObj, pInfoOutput, nIndent){}
 	public:
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
