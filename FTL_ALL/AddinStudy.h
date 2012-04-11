@@ -144,82 +144,91 @@
 *   需要安装 Visual Studio 200X 的 SDK(VSX SDK) -- http://msdn.com/vsx 
 * 
 * 常用Service -- Visual Studio提供给Add-in和Package的功能，Package也能提供(Proffer)自己的Service
-*   1 : IVsObjectManager
-*   2 : _DTE
-*   3 : IVsCommandWindow
-*   4 : IVsRegisterFindScope
-*   5 : IVsAddProjectItemDlg
-*   6 : IVsStructuredFileIO
-*   7 : IVsInvisibleEditorManager
-*   8 : ICQryAutoFactory
-*   9 : IVsHTMLConverter
-*   10 : IVsLog
-*   11 : IVsFileChange(SVsFileChange)
-*   12 : IUIHostLocale
-*   13 : IVsEnumHierarchyItemsFactory
-*   14 : IHxSession
-*   15 : IHxRegisterSession
-*   16 : IVsUIShellOpenDocument
-*   17 : IVsIntelliMouseHandler
-*   18 : IVsParseCommandLine
-*   19 : SVsProfilesManagerUI
-*   20 : IVsFontAndColorStorage
-*   21 : SVsOnlineHelpData
-*   22 : SVsSearchService
-*   23 : Help
-*   24 : SVsHelpPage
-*   25 : IVsOutputWindow
-*   26 : IVsRegisterScciProvider
-*   27 : IVsMonitorSelection
-*   28 : SVsWebProxy
-*   29 : IVsComponentSelectorDlg
-*   30 : SVsHelpOnlineF1Service
-*   31 : IVsSolutionPersistence
-*   32 : IVsLibraryReferenceManager
-*   33 : IVsCmdNameMapping
-*   34 : IVsToolbox(SVsToolBox)
-*   35 : IVsRegisterEditors(SVsRegisterEditors) -- 
-*   36 : IInternetSecurityManager
-*   37 : IVsSolution
-*   38 : IVsdDeployment
-*   39 : ObjectExtenders
-*   40 : IVsSolutionBuildManager
-*   41 : IVsFileChangeEx
-*   42 : IVsMonitorUserContext
-*   43 : IVsTaskList
-*   44 : IVsBuildEventCommandLineDialogService
-*   45 : SVsStartPageDownload
-*   46 : IVsRunningDocumentTable
-*   47 : IVsdPackageManager
-*   48 : IVsUIShell(SVsUIShell) -- 提供了若干方法去实现与界面有关的功能
-*   49 : IVsDiscoveryService
-*   50 : IVsPropertyPageFrame
-*   51 : IVsAddWebReferenceDlg
-*   52 : IVsFilterKeys
-*   53 : IVsTextImageUtilities
-*   54 : IVsAppCommandLine
-*   55 : IProfferService
-*   56 : IVsXMLMemberIndexService
-*   57 : IVsStatusbar
-*   58 : IVsUIHierWinClipboardHelper
-*   59 : IVsExternalFilesManager
-*   60 : IVsMenuEditorFactory
-*   61 : IVsdDeployment
-*   62 : IVsRegisterProjectTypes
-*   63 : SourceControl
-*   64 : IVsCodeShareHandler
-*   65 : SVsLinkedUndoTransactionManager
-*   66 : IVsShell(SVsShell) --
-*   67 : OleMenuCommandService(IMenuCommandService) -- 有 AddCommand 等方法 
-*   68 : STrackSelection
-*   69 : SVsWindowFrame
+*   _DTE(SID_SDTE)
+*   Help
+*   ICQryAutoFactory
+*   IHxRegisterSession
+*   IHxSession
+*   IInternetSecurityManager
+*   ILocalRegistry(SID_SLocalRegistry)
+*   IOleComponentUIManager(SID_SOleComponentUIManager) --
+*   IProfferService
+*   IUIHostLocale
+*   IVsAddProjectItemDlg
+*   IVsAddWebReferenceDlg
+*   IVsAppCommandLine
+*   IVsBuildEventCommandLineDialogService
+*   IVsCmdNameMapping
+*   IVsCodeShareHandler
+*   IVsCommandWindow
+*   IVsComponentSelectorDlg
+*   IVsdDeployment
+*   IVsdDeployment
+*   IVsDiscoveryService
+*   IVsdPackageManager
+*   IVsEnumHierarchyItemsFactory
+*   IVsExternalFilesManager
+*   IVsFileChange(SVsFileChange)
+*   IVsFileChangeEx
+*   IVsFilterKeys
+*   IVsFontAndColorStorage
+*   IVsHTMLConverter
+*   IVsIntelliMouseHandler
+*   IVsInvisibleEditorManager
+*   IVsLibraryReferenceManager
+*   IVsLog
+*   IVsMacroRecorder(SID_SVsMacroRecorder) -- 宏录制器
+*   IVsMenuEditorFactory
+*   IVsMonitorSelection
+*   IVsMonitorUserContext
+*   IVsObjectManager
+*   IVsOutputWindow
+*   IVsParseCommandLine
+*   IVsPropertyPageFrame
+*   IVsQueryEditQuerySave2(SID_SVsQueryEditQuerySave)
+*   IVsRegisterEditors(SID_SVsRegisterEditors) -- 
+*   IVsRegisterFindScope
+*   IVsRegisterProjectTypes
+*   IVsRegisterScciProvider
+*   IVsRunningDocumentTable
+*   IVsShell(SID_SVsShell) --
+*   IVsSolution(SID_SVsSolution)
+*   IVsSolutionBuildManager
+*   IVsSolutionPersistence
+*   IVsStatusbar(SID_SVsStatusbar)
+*   IVsStructuredFileIO
+*   IVsTaskList
+*   IVsTextImageUtilities
+*   IVsTextManager(SID_SVsTextManager)
+*   IVsToolbox/IVsToolboxClipboardCycler(SID_SVsToolbox)
+*   IVsUIHierWinClipboardHelper
+*   IVsUIShell(SID_SVsUIShell) -- 提供了若干方法去实现与界面有关的功能
+*   IVsUIShellOpenDocument
+*   IVsWindowFrame(SID_SVsWindowFrame)
+*   IVsXMLMemberIndexService
+*   ObjectExtenders
+*   OleMenuCommandService() -- 有 AddCommand 等方法
+*   SourceControl
+*   STrackSelection
+*   SVsHelpOnlineF1Service
+*   SVsHelpPage
+*   SVsLinkedUndoTransactionManager
+*   SVsOnlineHelpData
+*   SVsProfilesManagerUI
+*   SVsSearchService
+*   SVsStartPageDownload
+*   SVsWebProxy
 *
 * 常见接口
-*   IVsPackage -- 必须有 PackageRegistration 的属性？ VSX中有名为 Package 的基础实现？
+*   IVsPackage -- 必须有 PackageRegistration 的属性？ VSX中有名为 Package 的基础实现类 IVsPackageImpl。
 *     CLR的Package必须强命名，需要Key文件。为了性能，Package只有在需要其功能的时候才会加载。
 *     IVsPackage 的 Site 即是 IDE，Package可以通过 IServiceProvider 接口获取到各种Services
 *   CommandSet? -- 命令集
 *  
+* 常见父类
+*   IVsPackageImpl -- 
+*     可重载的方法: PostSited, PreClosing
+* 
 * 常用工具
 *    $(RegitPath)\Regit.exe/regpkg.exe -- Package安装以及注册工具，读取 Package 子类中的各种 Attribute 来注册
 *
@@ -274,6 +283,32 @@
 *     Custom commands (& context menus)
 *     Hidden Text (concealed & expand/collapse)
 *     CodeWindow dropdown bar
+*
+* 
+* 资源映射宏
+*   VSL_BEGIN_REGISTRY_MAP(IDR_REGISTRYSCRIPT)
+*     VSL_REGISTRY_MAP_GUID_ENTRY -- 声明各种GUID，如 ToolWindow、TaskList 等
+*     VSL_REGISTRY_MAP_GUID_ENTRY_EX
+*     VSL_REGISTRY_MAP_NUMBER_ENTRY -- 可以指定 PLK 的 Resouce ID
+*     VSL_REGISTRY_RESOURCEID_ENTRY -- 
+*     VSL_REGISTRY_MAP_TEMPLATE_PATH_ENTRY
+*   VSL_END_REGISTRY_MAP()
+*
+* 命令映射宏
+*   VSL_BEGIN_COMMAND_MAP()
+*     VSL_COMMAND_MAP_ENTRY(cmdSet的Guid, cmdId, 查询状态函数, 处理函数) --
+*       系统提供的 cmdSet 有 CMDSETID_StandardCommandSet97、CMDSETID_StandardCommandSet2K 等
+*   VSL_END_VSCOMMAND_MAP()
+*
+* 消息映射 -- 在ATL::BEGIN_MSG_MAP 的基础上增加了 TRY，理论上说也可以用 WTL
+*   VSL_BEGIN_MSG_MAP(className)
+*     CHAIN_MSG_MAP(基类)
+*   VSL_END_MSG_MAP()
+*
+* IVsPackage::CreateTool 创建 ToolWindow 的映射宏
+*   VSL_BEGIN_TOOL_MAP()
+*     VSL_TOOL_ENTRY(ToolWindow的Guid, 创建函数)
+*   VSL_END_TOOL_MAP()
 *
 **********************************************************************************************************/
 

@@ -39,6 +39,7 @@
 *   
 * 接口实现类(VSL::)
 *   IOleCommandTargetImpl -- 实现 IOleCommandTarget 接口，能处理菜单或工具条事件
+*   IServiceProviderImpl -- 提供Service，使用 BEGIN_SERVICE_MAP、SERVICE_ENTRY 等宏设置能提供的Service
 *   ISupportErrorInfoImpl -- 模板参数一般是 InterfaceSupportsErrorInfoList< IXXXX, ErrorInfoList的递归 >
 *   IVsInstalledProductImpl -- 在Splash窗体中显示插件信息(就不再需要 .rgs 中的信息?)，模板参数为相关的资源ID，在.rgs文件中还需要 InstalledProducts 项
 *   IVsPackageImpl -- 实现 IVsPackage 接口, COM组件成为 VS Package
@@ -97,8 +98,16 @@
 * 错误处理
 *   VSL_CREATE_ERROR_HRESULT -- 会 throw exception ?
 *   VSL_STDMETHODTRY {...} VSL_STDMETHODCATCH()<CR> return VSL_GET_STDMETHOD_HRESULT(); -- 在返回 HRESULT 的函数中的 try..catch 结构
-*   
-*   
+*  
+********************************************************************************************/
+
+/********************************************************************************************
+* RGS配置信息 (%REGROOTBEGIN% -- %REGROOTEND%)
+*   Menus -- 
+*   Packages -- 
+*     CLSID_XXX = s '名字'
+*   Services
+*     IID_YYY = s '%CLSID_XXX%'
 ********************************************************************************************/
 
 /********************************************************************************************
