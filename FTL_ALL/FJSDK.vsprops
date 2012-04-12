@@ -6,8 +6,12 @@
 	>
   <Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="$(FJSDK)Windows\FTL"
+		AdditionalIncludeDirectories="$(FJSDK)Windows\FTL;$(FJSDK)WTL\SDK\WTL80\include;$(FJSDK)Library\CPPUnit\Windows\Include"
 		AdditionalLibraryDirectories="$(FJSDK)Library\CPPUnit\Windows\Lib"
+	/>
+  <Tool
+		  Name="VCResourceCompilerTool"
+		  AdditionalIncludeDirectories="$(FJSDK)WTL\SDK\WTL80\include"
 	/>
   <UserMacro
 		Name="CPPUNITPATH"
