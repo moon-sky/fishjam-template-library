@@ -114,18 +114,25 @@
 * VS的系统Frame的GUID,可通过 VsUIShellUtilities<>::FindToolWindow(FTW_fForceCreate, ...) 获取
 * 通过 CFVsUIShellDumper::GetToolWindowEnum 获取的 IVsWindowFrame 中的 VSFPROPID_GuidPersistenceSlot 属性)
 * 也可通过注册表中查找( VisualStudio\版本\Configuration\ToolWindows )
+*   常量定义在 dte80.h、dteinternal.h 头文件中的 vsContextGuidMacroExplorer 等
 *   Macro Explorer -- {07CD18B4-3BA1-11D2-890A-0060083196C6}
 *   Object Browser -- {269A02DC-6AF8-11D3-BDC4-00C04F688E50}
 *   Output -- {34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}
 *   Properties -- {EEFA5220-E298-11D0-8F78-00A0C9110057}
 *   Property Manager -- {DE1FC918-F32E-4DD7-A915-1792A051F26B}
 *   Solution Explorer -- {3AE79031-E1BC-11D0-8F78-00A0C9110057}
+*
+* vsshell80.idl 文件中有 FontsAndColorsCategory::TextEditor 等的GUID定义
+*   
 ********************************************************************************************/
+#include <containedlanguage.h>
 namespace FTL
 {
     class CFVSIPUtils
     {
     public:
+		FTLINLINE static BOOL IsVsHierarchyHasChildren(IVsHierarchy* pParent, VSITEMID ItemId);
+
 		//Hierarchy property Id -- VSHPROPID_
 		FTLINLINE static LPCTSTR GetVSHPropIdString(DWORD_PTR propId);
 		
@@ -135,7 +142,8 @@ namespace FTL
         //获取 cmdidcmd.h 中定义的 CmdID 对应的字符串，在 IOleCommandTarget::QueryStatus 中判断 cmds[n].cmdID
         FTLINLINE static LPCTSTR GetStdIdCommandtring(ULONG cmdID);
 
-		FTLINLINE static BOOL IsVsHierarchyHasChildren(IVsHierarchy* pParent, VSITEMID ItemId);
+		FTLINLINE static LPCTSTR GetMarkerBehaviorFlagsString(FTL::CFStringFormater& strFormater, DWORD dwBehaviorFlags);
+
     };
 
 	class CFVsPackageDumper : public CFInterfaceDumperBase<CFVsPackageDumper>
@@ -194,6 +202,7 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	//字体信息需要在 HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\9.0\FontAndColors 注册 ?
 	class CFVsTextMarkerTypeDumper : public CFInterfaceDumperBase<CFVsTextMarkerTypeDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextMarkerTypeDumper);
@@ -256,6 +265,16 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	class CFVsEnumTextViewsDumper : public CFInterfaceDumperBase<CFVsEnumTextViewsDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsEnumTextViewsDumper);
+	public:
+		FTLINLINE explicit CFVsEnumTextViewsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsEnumTextViewsDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
 	class CFVsTextViewDumper : public CFInterfaceDumperBase<CFVsTextViewDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextViewDumper);
@@ -266,6 +285,27 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	class CFVsEnumTextBuffersDumper : public CFInterfaceDumperBase<CFVsEnumTextBuffersDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsEnumTextBuffersDumper);
+	public:
+		FTLINLINE explicit CFVsEnumTextBuffersDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsEnumTextBuffersDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFVsTextBufferDumper : public CFInterfaceDumperBase<CFVsTextBufferDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextBufferDumper);
+	public:
+		FTLINLINE explicit CFVsTextBufferDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsTextBufferDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	
 	class CFVsUIHierarchyDumper : public CFInterfaceDumperBase<CFVsUIHierarchyDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsUIHierarchyDumper);
@@ -286,9 +326,6 @@ namespace FTL
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
-
-	
-
 }//namespace FTL
 
 #ifndef USE_EXPORT

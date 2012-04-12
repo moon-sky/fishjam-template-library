@@ -197,7 +197,7 @@ namespace FTL
 		{
 			if (VT_ARRAY == (VT_ARRAY & varType))
 			{
-				if (NULL != V_ARRAY(&m_Info))
+				if (NULL != V_ARRAY(&m_Info) && VT_BSTR == V_VT(&m_Info))
 				{
 					ATL::CComSafeArray<VARIANT> varArray(V_ARRAY(&m_Info));
 					LONG nLowerBound = varArray.GetLowerBound();
@@ -243,24 +243,46 @@ namespace FTL
 				formaterValue.Format(TEXT("%d"), V_I2(&m_Info));
 				break;
 			case VT_I4:
+			case VT_INT:
 				//case VT_INT_PTR:
-				formaterValue.Format(TEXT("%d"), V_I4(&m_Info));
+				formaterValue.Format(TEXT("%d"), V_INT(&m_Info));
+				break;
+			case VT_R4:
+				formaterValue.Format(TEXT("%f"), V_R4(&m_Info));
+				break;
+			case VT_R8:
+			case VT_DATE:
+				formaterValue.Format(TEXT("%e"), V_R8(&m_Info));
+				break;
+			case VT_CY:
+				formaterValue.Format(TEXT("%d-%d"), V_CY(&m_Info).Hi, V_CY(&m_Info).Lo);
 				break;
 			case VT_BSTR:
 				formaterValue.Format(TEXT("%s"), COLE2T(V_BSTR(&m_Info)));
 				break;
+			case VT_DISPATCH:
+			case VT_UNKNOWN:
+				formaterValue.Format(TEXT("0x%p"), V_UNKNOWN(&m_Info));
+				break;
+			case VT_ERROR:
+				{
+					LONG nError = V_ERROR(&m_Info);
+					formaterValue.Format(TEXT("0x%x(%d),%s"), nError, nError, CFAPIErrorInfo(nError).ConvertInfo());
+					break;
+				}
 			case VT_BOOL:
 				formaterValue.Format(TEXT("%s"), VARIANT_FALSE == V_BOOL(&m_Info) ? TEXT("FALSE") : TEXT("TRUE") );
 				break;
-			case VT_UNKNOWN:
-			case VT_DISPATCH:
-				formaterValue.Format(TEXT("0x%p"), V_UNKNOWN(&m_Info));
+			case VT_VARIANT:
+			case VT_DECIMAL:
+				FTLASSERT(FALSE);
 				break;
 			case VT_UI4:
 				formaterValue.Format(TEXT("%d"), V_UI4(&m_Info));
 				break;
 			default:
-				formaterValue.Format(TEXT("TODO: %lld"), V_I8(&m_Info));
+				formaterValue.Format(TEXT("WARNING,TODO: %lld"), V_I8(&m_Info));
+				//FTLASSERT(FALSE);
 				break;
 			}
 		}
@@ -426,18 +448,18 @@ namespace FTL
         SAFE_RELEASE(m_pInterface);
     }
 
-    //template<typename T>
-    //operator T* QueryInterfaceForBackgroundThread<T>::() 
-    //{ 
-    //    if (!m_pInterface)
-    //    {
-    //        HRESULT hr = E_FAIL;
-    //        COM_VERIFY(CoGetInterfaceAndReleaseStream(m_pStream, __uuidof(T), (VOID**)&m_pInterface));
-    //        //Because the function will Release IStream , so this just assign NULL
-    //        m_pStream = NULL;
-    //    }
-    //    return m_pInterface;
-    //}
+    template<typename T>
+	T* QueryInterfaceForBackgroundThread<T>::GetBackThreadInterface()
+    { 
+        if (!m_pInterface)
+        {
+            HRESULT hr = E_FAIL;
+            COM_VERIFY(CoGetInterfaceAndReleaseStream(m_pStream, __uuidof(T), (VOID**)&m_pInterface));
+            //Because the function will Release IStream , so this just assign NULL
+            m_pStream = NULL;
+        }
+        return m_pInterface;
+    }
 
 	CFOutputWindowInfoOutput* CFOutputWindowInfoOutput::Instance()
 	{
@@ -487,7 +509,7 @@ namespace FTL
 		if (pszPrompInfo)
 		{
 			OutputIndentSpace();
-			FTLTRACE(TEXT("--%s:--"), pszPrompInfo);
+			FTLTRACE(TEXT("  --%s:--\n"), pszPrompInfo);
 			return S_OK;
 		}
 		return S_FALSE;

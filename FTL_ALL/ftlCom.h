@@ -67,6 +67,7 @@ namespace FTL
     public:
         QueryInterfaceForBackgroundThread(IUnknown* pUnk);
         ~QueryInterfaceForBackgroundThread();
+		T* GetBackThreadInterface();
         //operator T*();
     private:
         IStream*	m_pStream;

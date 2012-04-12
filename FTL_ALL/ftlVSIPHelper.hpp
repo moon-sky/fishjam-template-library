@@ -1467,6 +1467,28 @@ namespace FTL
     }
 
 
+	LPCTSTR CFVSIPUtils::GetMarkerBehaviorFlagsString(FTL::CFStringFormater& strFormater, DWORD dwBehaviorFlags)
+	{
+		if ( MB_DEFAULT == dwBehaviorFlags )
+		{
+			strFormater.Format(TEXT("MB_DEFAULT"));
+		}
+		else
+		{
+			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_LINESPAN , TEXT(","));
+			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_LEFTEDGE_LEFTTRACK , TEXT(","));
+			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_RIGHTEDGE_RIGHTTRACK , TEXT(","));
+			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_MULTILINESPAN , TEXT(","));
+			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_TRACK_EDIT_ON_RELOAD , TEXT(","));
+		}
+		if (0 != dwBehaviorFlags)
+		{
+			FTLTRACEEX(tlWarning, TEXT("GetMarkerBehaviorFlagsString dwBehaviorFlags Remain IS NOT Zero [0x%0x]\n"), dwBehaviorFlags);
+			//FTLASSERT(0 == dwBehaviorFlags);
+		}
+		return strFormater.GetString();
+	}
+
 	HRESULT CFVsPackageDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -1603,8 +1625,9 @@ namespace FTL
 
 				LANGPREFERENCES langPrefArray[1] = {0};
 				LANGPREFERENCES& langPref = langPrefArray[0];
-				spVsTextManager->GetPerLanguagePreferences(&langPrefArray[0]);
 
+				//TODO: 调用参数错误 ?
+				COM_VERIFY_EXCEPT1(spVsTextManager->GetPerLanguagePreferences(&langPrefArray[0]), E_FAIL);
 				if (SUCCEEDED(hr))
 				{
 					LPOLESTR strGUID = NULL;
@@ -1636,7 +1659,8 @@ namespace FTL
 				for (long nMarkerTypeIndex = 0; nMarkerTypeIndex < nMarkerTypeCount; ++nMarkerTypeIndex)
 				{
 					CComPtr<IVsTextMarkerType>	spTextMarkerType;
-					hr = spVsTextManager->GetMarkerTypeInterface(nMarkerTypeIndex, &spTextMarkerType);
+
+					COM_VERIFY_EXCEPT1(spVsTextManager->GetMarkerTypeInterface(nMarkerTypeIndex, &spTextMarkerType), E_FAIL);
 					if (SUCCEEDED(hr) && spTextMarkerType)
 					{
 						COM_VERIFY(pInfoOutput->OnOutput(TEXT("Index"), nMarkerTypeIndex));
@@ -1644,9 +1668,26 @@ namespace FTL
 					}
 					else
 					{
+						//Some MarkerType package file is deleted from disk ?
 						FTLTRACEEX(FTL::tlError, TEXT("GetMarkerTypeInterface Error, Index=%d, Error= 0x%08x\n"), 
 							nMarkerTypeIndex, hr);
 					}
+				}
+
+				//TODO: 第一个参数传入 NULL， 返回 E_INVALIDARG
+				CComPtr<IVsEnumTextViews> spVsEnumTextViews;
+				COM_VERIFY_EXCEPT1(spVsTextManager->EnumViews(NULL, &spVsEnumTextViews), E_INVALIDARG);
+				if (SUCCEEDED(hr) && spVsEnumTextViews)
+				{
+					CFVsEnumTextViewsDumper vsEnumTextViewsDumper(spVsEnumTextViews, pInfoOutput, m_nIndent + 2);
+				}
+
+				//TODO: IVsTextManager::EnumBuffers 尚未实现
+				CComPtr<IVsEnumTextBuffers> spVsEnumTextBuffers;
+				COM_VERIFY_EXCEPT1(spVsTextManager->EnumBuffers(&spVsEnumTextBuffers), E_NOTIMPL);
+				if (SUCCEEDED(hr) && spVsEnumTextBuffers)
+				{
+					CFVsEnumTextBuffersDumper vsEnumTextBuffersDumper(spVsEnumTextBuffers, pInfoOutput, m_nIndent + 2);
 				}
 			}
 		}
@@ -1660,10 +1701,52 @@ namespace FTL
 
 		if (m_pObj)
 		{
+			COM_DETECT_INTERFACE_FROM_REGISTER(m_pObj);
+
 			CComQIPtr<IVsTextMarkerType>     spVsTextMarkerType(m_pObj);
 			if (spVsTextMarkerType)
 			{
-				hr = S_OK;
+				CComBSTR bstrDisplayName;
+				COM_VERIFY_EXCEPT1(spVsTextMarkerType->GetDisplayName(&bstrDisplayName), E_FAIL);
+				if (SUCCEEDED(hr))
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("DisplayName"), &bstrDisplayName));
+				}
+				else
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("DisplayName"), TEXT("(null)")));
+				}
+				
+				LONG nPriorityIndex = 0;
+				COM_VERIFY(spVsTextMarkerType->GetPriorityIndex(&nPriorityIndex));
+				pInfoOutput->OnOutput(TEXT("PriorityIndex"), nPriorityIndex);
+
+				DWORD dwVisualFlags = 0;
+				COM_VERIFY(spVsTextMarkerType->GetVisualStyle(&dwVisualFlags));
+				pInfoOutput->OnOutput(TEXT("VisualStyle"), (LONG)dwVisualFlags);
+
+
+				DWORD dwBehaviorFlags = 0;
+				COM_VERIFY(spVsTextMarkerType->GetBehaviorFlags(&dwBehaviorFlags));
+				if (SUCCEEDED(hr))
+				{
+					CFStringFormater strBehaviorFlagsFormater;
+					CFVSIPUtils::GetMarkerBehaviorFlagsString(strBehaviorFlagsFormater, dwBehaviorFlags);
+					pInfoOutput->OnOutput(TEXT("BehaviorFlags"), strBehaviorFlagsFormater.GetString());
+				}
+
+				COLORINDEX iForeground = (COLORINDEX)(-1);
+				COLORINDEX iBackground = (COLORINDEX)(-1);
+				//"Compiler Error/Syntax Error" will return E_FAIL
+				//"VA X Spelling Error/VA X Syntax Error" will return E_NOTIMPL
+				//"SQL DML Marker" return E_UNEXPECTED
+				hr = spVsTextMarkerType->GetDefaultColors(&iForeground, &iBackground);
+				//if (SUCCEEDED(hr))
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("Foreground"), (LONG)iForeground));
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("Background"), (LONG)iBackground));
+				}
+				
 			}
 		}
 		return hr;
@@ -2018,7 +2101,7 @@ namespace FTL
 				};
 #pragma warning(default : 4245)
 
-				pInfoOutput->OutputInfoName(TEXT("Property"));
+				pInfoOutput->OnOutput(TEXT("Property"));
 				for (int i = 0; i < _countof(dwVSFPropIds); i++)
 				{
 					CComVariant varProperty;
@@ -2029,7 +2112,7 @@ namespace FTL
 					}
 				}
 
-				pInfoOutput->OutputInfoName(TEXT("GuidProperty:"));
+				pInfoOutput->OnOutput(TEXT("GuidProperty"));
 				for (int i = 0; i < _countof(dwVSFPropIds); i++)
 				{
 					GUID guidProperty = GUID_NULL;
@@ -2044,6 +2127,35 @@ namespace FTL
         }
         return hr;
     }
+
+	HRESULT CFVsEnumTextViewsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsEnumTextViews")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsEnumTextViews>     spVsEnumTextViews(m_pObj);
+			if (spVsEnumTextViews)
+			{
+				COM_VERIFY(spVsEnumTextViews->Reset());
+
+				CComPtr<IVsTextView> spVsTextView;
+				ULONG ulFetched = 0;
+
+				COM_VERIFY_EXCEPT1(spVsEnumTextViews->Next(1, &spVsTextView, &ulFetched), S_FALSE);
+				while (SUCCEEDED(hr) && ulFetched == 1)
+				{
+					CFVsTextViewDumper vsTextViewDumper(spVsTextView, pInfoOutput, m_nIndent + 2);
+
+					spVsTextView.Release();
+					COM_VERIFY_EXCEPT1(spVsEnumTextViews->Next(1, &spVsTextView, &ulFetched), S_FALSE);
+				}
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
 
 	HRESULT CFVsTextViewDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
@@ -2093,6 +2205,65 @@ namespace FTL
 				{
 					COM_DETECT_INTERFACE_FROM_LIST(spSelectionDataObject);
 				}
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsEnumTextBuffersDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsEnumTextBuffers")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsEnumTextBuffers>     spVsEnumTextBuffers(m_pObj);
+			if (spVsEnumTextBuffers)
+			{
+				COM_VERIFY(spVsEnumTextBuffers->Reset());
+
+				CComPtr<IVsTextBuffer> spVsTextBuffer;
+				ULONG ulFetched = 0;
+
+				COM_VERIFY_EXCEPT1(spVsEnumTextBuffers->Next(1, &spVsTextBuffer, &ulFetched), S_FALSE);
+				while (SUCCEEDED(hr) && ulFetched == 1)
+				{
+					CFVsTextBufferDumper vsTextViewDumper(spVsTextBuffer, pInfoOutput, m_nIndent + 2);
+
+					spVsTextBuffer.Release();
+					COM_VERIFY_EXCEPT1(spVsEnumTextBuffers->Next(1, &spVsTextBuffer, &ulFetched), S_FALSE);
+				}
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsTextBufferDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextBuffer")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsTextBuffer>     spVsTextBuffer(m_pObj);
+			if (spVsTextBuffer)
+			{
+				DWORD dwStateFlags = 0;
+				COM_VERIFY(spVsTextBuffer->GetStateFlags(&dwStateFlags));
+				pInfoOutput->OnOutput(TEXT("StateFlags"), (LONG)dwStateFlags);
+
+				LONG nLineCount = 0;
+				COM_VERIFY(spVsTextBuffer->GetLineCount(&nLineCount));
+				pInfoOutput->OnOutput(TEXT("LineCount"), nLineCount);
+
+				LONG nSize = 0;
+				COM_VERIFY(spVsTextBuffer->GetSize(&nSize));
+				pInfoOutput->OnOutput(TEXT("Size"), nSize);
+
+				GUID guidLanguageServiceID = GUID_NULL;
+				COM_VERIFY(spVsTextBuffer->GetLanguageServiceID(&guidLanguageServiceID));
+				//pInfoOutput->OnOutput(TEXT("LanguageServiceID"), )
 			}
 		}
 		return hr;

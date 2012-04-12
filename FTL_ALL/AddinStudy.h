@@ -227,7 +227,9 @@
 *  
 * 常见父类
 *   IVsPackageImpl -- 
-*     可重载的方法: PostSited, PreClosing
+*     可重载的方法: 
+*       void PostSited(IVsPackageEnums::SetSiteResult result)
+*       void PreClosing()
 * 
 * 常用工具
 *    $(RegitPath)\Regit.exe/regpkg.exe -- Package安装以及注册工具，读取 Package 子类中的各种 Attribute 来注册
