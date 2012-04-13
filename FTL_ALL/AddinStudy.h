@@ -150,9 +150,9 @@
 *   IHxRegisterSession
 *   IHxSession
 *   IInternetSecurityManager
-*   ILocalRegistry(SID_SLocalRegistry)
+*   ILocalRegistry/ILocalRegistry4(SID_SLocalRegistry) -- 
 *   IOleComponentUIManager(SID_SOleComponentUIManager) --
-*   IProfferService
+*   IProfferService(SID_SProfferService) -- 向VS提供服务，如 IVsTextMarkerTypeProvider
 *   IUIHostLocale
 *   IVsAddProjectItemDlg
 *   IVsAddWebReferenceDlg

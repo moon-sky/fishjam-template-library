@@ -88,8 +88,19 @@
 *   CLSID_VSUIHIERARCHYWINDOW -- VS 提供的 hierarchy tool window，可在 ToolWindowBase子类的GetLocalRegistryCLSIDViewObject
 *     中返回表tool window 的类型?
 *
-* 常见服务(Service)
-*   SID_SLocalRegistry(ILocalRegistry4) -- 
+* 每一个Marker可以通过 IVsTextManager::GetRegisteredMarkerTypeID 获取到一个唯一的MarkerType，之后会通过该值进行调用
+*   如 IVsTextLines::CreateLineMarker(MarkerType, xxx)
+* 实现自定义的字体格式化( TextMarkerType )
+*   1. 实现 IVsTextMarkerTypeProvider 提供自定义的TextMarker服务
+*   2. 实现 IVsPackageDefinedTextMarkerType
+*             DrawGlyphWithColors 中不要绘制任何文本，为什么?
+*           IVsMergeableUIItem(Environment->Fonts and Colors)
+*             GetMergingPriority -- 找到两个相同canonical name的Marker时使用 (自定义组件应该 0 ~ 0x1000)
+*      来提供具体的 TextMarker
+*   3. [可选]实现 IVsTextMarkerClient 来处理VSShell针对TextMaker的通知和处理(如 tooltips )
+*            CComObject<CMyTextMarkerClient>* pTMClient;
+*            CComObject<CMyTextMarkerClient>::CreateInstance(&pTMClient);
+*   然后使用 IVsTextLines::CreateLineMarker 等方法创建指定的 LineMarker
 *
 * Hierarchy(层次结构)
 *   IVsHierarchy / IVsUIHierarchy
