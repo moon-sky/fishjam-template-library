@@ -198,6 +198,7 @@
 *   IVsMonitorUserContext
 *   IVsObjectManager
 *   IVsOutputWindow
+*   IVsOutputWindowPane(SID_SVsGeneralOutputWindowPane) -- 获取的是Output窗体中的 General，其他如何获取? QI?
 *   IVsParseCommandLine
 *   IVsPropertyPageFrame
 *   IVsQueryEditQuerySave2(SID_SVsQueryEditQuerySave)

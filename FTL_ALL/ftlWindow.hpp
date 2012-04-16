@@ -75,18 +75,6 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUEUESYNC);     //此消息由基于计算机的"训练?"程序发送，通过 WH_JOURNALPALYBACK 的hook程序分离出用户输入消息
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETMINMAXINFO); //处理该消息可以得到一个改变最大和最小的窗口缺省值的机会
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_WININICHANGE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DEVMODECHANGE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ACTIVATEAPP);//属于另一App的窗体将激活时
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_FONTCHANGE);    //当系统的字体资源库变化时发送此消息给所有顶级窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_TIMECHANGE);    //当系统的时间变化时发送此消息给所有顶级窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CANCELMODE);    //取消系统模式时
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETCURSOR);     //如果鼠标引起光标在某个窗口中移动且鼠标输入没有被捕获时，就发消息给某个窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSEACTIVATE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CHILDACTIVATE); //送此消息给MDI子窗口当用户点击此窗口的标题栏，或当窗口被激活，移动，改变大小
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUEUESYNC);     //此消息由基于计算机的"训练?"程序发送，通过 WH_JOURNALPALYBACK 的hook程序分离出用户输入消息
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETMINMAXINFO); //处理该消息可以得到一个改变最大和最小的窗口缺省值的机会
-
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PAINTICON);     //发送给最小化窗口当它图标将要被重画
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ICONERASEBKGND);//此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NEXTDLGCTL);    //此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
