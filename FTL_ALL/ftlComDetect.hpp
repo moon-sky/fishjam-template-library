@@ -204,6 +204,31 @@ namespace FTL
         }
     };
 
+	class CFEnumConnectionsDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = E_FAIL;
+			CComQIPtr<IEnumConnections> pEnumConnections(pUnknown);
+			if (pEnumConnections)
+			{
+				COM_VERIFY(pEnumConnections->Reset());
+				LONG nCount = 0;
+				CONNECTDATA ConnectData;
+				ULONG numRet = 0;
+				while(SUCCEEDED(pEnumConnections->Next(1, &ConnectData, &numRet)) && numRet > 0)
+				{
+					nCount++;
+					FTLTRACEEX(tlTrace, TEXT("Connect Cookie For 0x%p is %d\n"), ConnectData.pUnk, ConnectData.dwCookie);
+					ConnectData.pUnk->Release();
+				}
+				FTLTRACE(TEXT("EnumConnections For 0x%p has %d Connection\n"), nCount);				
+			}
+			return S_OK;
+		}
+	};
+
     class CFConnectionContainerPointDump
     {
     public:
@@ -464,7 +489,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IEnumOleDocumentViews)
             DETECT_INTERFACE_ENTRY(IContinueCallback)
             DETECT_INTERFACE_ENTRY(IPrint)
-            DETECT_INTERFACE_ENTRY(IOleCommandTarget)
+			DETECT_INTERFACE_ENTRY(IOleCommandTarget)	//在COM组件中处理命令(菜单、按钮等), 有 VSL::IOleCommandTargetImpl 基类
             DETECT_INTERFACE_ENTRY(IZoomEvents)
             DETECT_INTERFACE_ENTRY(IProtectFocus)
             DETECT_INTERFACE_ENTRY(IProtectedModeMenuServices)
@@ -518,7 +543,7 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(DTE_NS::IDTWizard)
                 DETECT_INTERFACE_ENTRY(DTE_NS::IVsGlobalsCallback)
                 DETECT_INTERFACE_ENTRY(DTE_NS::IVsGlobals)
-                DETECT_INTERFACE_ENTRY(DTE_NS::IDTCommandTarget)
+                DETECT_INTERFACE_ENTRY(DTE_NS::IDTCommandTarget)  //提供命令处理的接口，有 查询状态 和 点击执行 两个方法
                 DETECT_INTERFACE_ENTRY(DTE_NS::_ProjectsEvents)
                 DETECT_INTERFACE_ENTRY(DTE_NS::_dispProjectsEvents)
                 DETECT_INTERFACE_ENTRY(DTE_NS::_MiscSlnFilesEventsRoot)
@@ -598,7 +623,7 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(DTE_NS::ContextAttributes)
                 DETECT_INTERFACE_ENTRY(DTE_NS::ContextAttribute)
                 DETECT_INTERFACE_ENTRY(DTE_NS::AddIn)
-                DETECT_INTERFACE_ENTRY(DTE_NS::AddIns)
+                DETECT_INTERFACE_ENTRY(DTE_NS::AddIns)	//管理当前VS环境中所有的 Addin,
                 DETECT_INTERFACE_ENTRY(DTE_NS::OutputWindowPane)
                 DETECT_INTERFACE_ENTRY(DTE_NS::OutputWindowPanes)
                 DETECT_INTERFACE_ENTRY(DTE_NS::OutputWindow)
@@ -656,7 +681,7 @@ namespace FTL
             //{
                 //using namespace DTE80_NS;
 #  ifdef DTE80_NS
-                DETECT_INTERFACE_ENTRY(DTE80_NS::Commands2)
+                DETECT_INTERFACE_ENTRY(DTE80_NS::Commands2)  //管理Commands，有 AddNamedCommand2 方法可在制定Addin中添加 Command
                 DETECT_INTERFACE_ENTRY(DTE80_NS::SourceControlBindings)
                 DETECT_INTERFACE_ENTRY(DTE80_NS::SourceControl2)
                 DETECT_INTERFACE_ENTRY(DTE80_NS::CodeAttributeArgument)
@@ -749,6 +774,10 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(Microsoft_VisualStudio_CommandBars::CommandBarPopup)
                 //DETECT_INTERFACE_ENTRY(XXXXXXXXXXXXXX)
             //}
+			//{
+				//DTE Addin 的基本父接口,主要有 OnConnection(可QI供全局使用的 DTE2)、OnDisconnection 等方法
+				DETECT_INTERFACE_ENTRY(AddInDesignerObjects::_IDTExtensibility2)
+			//}
 
 #endif //INCLUDE_DETECT_DTE
 
@@ -1399,7 +1428,7 @@ namespace FTL
 
 #if INCLUDE_DETECT_OCIDL
             //OcIdl.h
-            DETECT_INTERFACE_ENTRY(IEnumConnections)
+            DETECT_INTERFACE_ENTRY_EX(IEnumConnections, CFEnumConnectionsDump)
             DETECT_INTERFACE_ENTRY(IConnectionPoint)
             DETECT_INTERFACE_ENTRY(IEnumConnectionPoints)
             DETECT_INTERFACE_ENTRY_EX(IConnectionPointContainer,CFConnectionContainerPointDump) //连接点容器接口
@@ -1919,18 +1948,23 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsTextTipWindow)
                 DETECT_INTERFACE_ENTRY(IVsMethodData)
                 DETECT_INTERFACE_ENTRY(IVsTextTipData)
-                DETECT_INTERFACE_ENTRY(IVsTextView)
+                DETECT_INTERFACE_ENTRY(IVsTextView)	//有 GetWindowHandle 方法来获得对应窗体的 HWND
                 DETECT_INTERFACE_ENTRY(IVsThreadSafeTextView)
                 DETECT_INTERFACE_ENTRY(IVsLayeredTextView)
                 DETECT_INTERFACE_ENTRY(IVsTextViewFilter)
                 DETECT_INTERFACE_ENTRY(IVsLanguageContextProvider)
                 DETECT_INTERFACE_ENTRY(IVsTextMarkerContextProvider)
                 DETECT_INTERFACE_ENTRY(IVsViewRangeClient)
-                DETECT_INTERFACE_ENTRY(IVsTextViewEvents)
-                DETECT_INTERFACE_ENTRY(IVsTextManager) // 访问编辑器,服务为 SID_SVsTextManager
+                DETECT_INTERFACE_ENTRY(IVsTextViewEvents)  //处理IVsTextView的事件，可在View的 OnSetFocus、OnKillFocus 等回调中进行处理
+                DETECT_INTERFACE_ENTRY(IVsTextManager)
                 DETECT_INTERFACE_ENTRY(IVsShortcutManager)
                 DETECT_INTERFACE_ENTRY(IVsEnumTextBuffers)
+
+				//管理IVsTextView的事件回调，有OnRegisterView(可通过View获取 IConnectionPoint 并Advise) 等
+				//  OnRegisterView -- 表明有新的View(如Code)打开了, 注意：此时窗体还没有创建好(不能获取到HWND)，因此必须
+				//    在连接点中捕获 SetFocus 事件，然后才能获取到 HWND
                 DETECT_INTERFACE_ENTRY(IVsTextManagerEvents)
+
                 DETECT_INTERFACE_ENTRY(IVsTextSelectionAction)
                 DETECT_INTERFACE_ENTRY(IVsEnumTextViews)
                 DETECT_INTERFACE_ENTRY(IVsEnumIndependentViews)
@@ -1960,8 +1994,8 @@ namespace FTL
                 DETECT_INTERFACE_ENTRY(IVsTextLayerMarker)
                 DETECT_INTERFACE_ENTRY(IVsTextMarkerType)
                 DETECT_INTERFACE_ENTRY(IVsTextMarkerColorSet)
-                DETECT_INTERFACE_ENTRY(IVsPackageDefinedTextMarkerType)
-                DETECT_INTERFACE_ENTRY(IVsTextMarkerTypeProvider)
+                DETECT_INTERFACE_ENTRY(IVsPackageDefinedTextMarkerType) //提供自定义的 TextMarker, 可以对指定的文字进行格式化(颜色、字型等)
+                DETECT_INTERFACE_ENTRY(IVsTextMarkerTypeProvider) //自定义MarkerType的Provider,需要在 IServiceProvider 中提供
                 DETECT_INTERFACE_ENTRY(IVsTextMarkerClient)
                 DETECT_INTERFACE_ENTRY(IVsMouseCursorProvider)
                 DETECT_INTERFACE_ENTRY(IVsTextMarkerGlyphDropHandler)

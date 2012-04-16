@@ -6,16 +6,31 @@
 //  其中有 ICodeCompletionItemsProvider 接口?
 
 //DTE中 ProjectItem -> FileCodeModel -> CodeElement->CodeElementChildren ?
+//CAtlDllModuleT 子类中 DECLARE_LIBID(idl中library的UUID) -- 作用 ?
+//   需要先通过 DECLSPEC_UUID 生命对应的UUID
+//idl 中 library(1) -> coclass(n),可通过 CoCreateInstance 创建 -> interface(n)
+//最简单的COM组件：
+//  1.需要从 CComObjectRootEx<线程模型>, CComCoClass<类名,CLSID_XXX> 继承
+//  2.DECLARE_REGISTRY_RESOURCEID(.rgs文件对应的ResourceID)
+//  3.BEGIN_COM_MAP/END_COM_MAP 设置接口映射
+//  4.OBJECT_ENTRY_AUTO(CLSID_XXX, 类名) 映射
 
+//IDispatchImpl -- 如何使用?模板参数?
+//  COM_INTERFACE_ENTRY2 -- 宏的使用(多个IDispatch? ) COM_INTERFACE_ENTRY2(IDispatch, IDTExtensibility2)
+//
+//SetScrollPos(m_handles.vert, SB_CTL, line, TRUE); -- 使用 SB_CTL 是什么意思? 
 /*********************************************************************************************************
 * 问题
 *   1.C# 中有一个 CommandBar.resx 文件， C++/ATL 对应的是什么? 使用 CultureInfo 来管理多语言，C++/ATL如何? 
 *   2.命令目标(IDTCommandTarget)的执行(Exec)和状态获取是通过比较字符串的方式来执行的,有没有更好的方式？
 *
 *
-* 引用的命名空间 ，注意：EnvDTE[x0]定义了自动化对象模型(AOM--Automation Object Model)中的类型
-*     AddInDesignerObjects;
-*     EnvDTE(Environment Development Tools Extensibility)--开发环境工具扩展, 对应VS2005之前的DTE版本(如 DTE 接口)
+* 常见的需要 import 的 libid
+*   AC0714F2-3D04-11D1-AE7D-00A0C90F26F4(1.0) -- AddInDesignerObjects(MSADDNDR.tlh)
+*     主要定义 _IDTExtensibility2(DTE Addin 的基本父接口) 等接口
+*     public IDispatchImpl<_IDTExtensibility2, &IID__IDTExtensibility2, &LIBID_AddInDesignerObjects, 1, 0>,
+*   80CC9F66-E7D8-4DDD-85B6-D9E6CD0E93E2(8.0) -- EnvDTE(Environment Development Tools Extensibility)
+*     开发环境工具扩展, 对应VS2005之前的DTE版本(如 DTE 接口), EnvDTE[x0]定义了自动化对象模型(AOM--Automation Object Model)中的类型
 *       Solution(解决方案和项目)
 *       Command(命令)，分三层结构
 *         触发者，人机接口，如 菜单/工具栏/快捷键 等
@@ -30,9 +45,9 @@
 *       事件
 *       文档
 *       调试器
-*     EnvDTE80 -- 对应于VS2005的DTE(只包含变化了的版本，如 DTE2 接口)，相应的还有 EnvDTE90 等
-*     Microsoft_VisualStudio_CommandBars;
-*     Extensibility (C#中才有?) -- 定义了IDTExtensibility2使用的类型
+*   1A31287A-4D7D-413E-8E32-3B374931BD89(8.0) -- EnvDTE80, 对应于VS2005的DTE(只包含变化了的版本，如 DTE2 接口)，相应的还有 EnvDTE90 等
+*   1CBA492E-7263-47BB-87FE-639000619B15(8.0) -- Microsoft_VisualStudio_CommandBars
+*   xxxxx -- Extensibility (C#中才有?) -- 定义了IDTExtensibility2使用的类型
 *
 * ContextUIGUIDs -- VS定义了一些GUID值来标识其状态的改变。通过函数中的该参数，可指定是否在指定的状态下(vsContextGuidDebugging)启用等
 *********************************************************************************************************/
@@ -143,7 +158,7 @@
 *   LearnVSXNow -- http://www.cnblogs.com/default/archive/2010/02/26/1674582.html
 *   需要安装 Visual Studio 200X 的 SDK(VSX SDK) -- http://msdn.com/vsx 
 * 
-* 常用Service -- Visual Studio提供给Add-in和Package的功能，Package也能提供(Proffer)自己的Service
+* 常用Service(IServiceProvider::QueryService) -- Visual Studio提供给Add-in和Package的功能，Package也能提供(Proffer)自己的Service
 *   _DTE(SID_SDTE)
 *   Help
 *   ICQryAutoFactory
@@ -199,11 +214,12 @@
 *   IVsStructuredFileIO
 *   IVsTaskList
 *   IVsTextImageUtilities
-*   IVsTextManager(SID_SVsTextManager)
+*   IVsTextManager(SID_SVsTextManager) -- 支持 IVsTextManagerEvents 等连接点
 *   IVsToolbox/IVsToolboxClipboardCycler(SID_SVsToolbox)
 *   IVsUIHierWinClipboardHelper
 *   IVsUIShell(SID_SVsUIShell) -- 提供了若干方法去实现与界面有关的功能
-*   IVsUIShellOpenDocument
+*   IVsUIShellOpenDocument(SID_SVsUIShellOpenDocument) -- 可通过其 IsDocumentOpen(NULL, 0, bstrDocumentPath, LOGVIEWID_TextView,
+*      0, &spVsUIHierarchy, &itemId, &spVsWindowFrame, &isOpen) 的方式来获取已经打开的文档的控制接口。 bstrDocumentPath 可通过 Document 等获取
 *   IVsWindowFrame(SID_SVsWindowFrame)
 *   IVsXMLMemberIndexService
 *   ObjectExtenders
@@ -227,7 +243,7 @@
 *  
 * 常见父类
 *   IVsPackageImpl -- 
-*     可重载的方法: 
+*     可重载的方法(不要直接重载 SetSite 方法): 
 *       void PostSited(IVsPackageEnums::SetSiteResult result)
 *       void PreClosing()
 * 
@@ -252,8 +268,8 @@
 *
 *  Microsoft Visual Studio 2008 Experimental hive -- VS2008实验室，devenv.exe /rootSuffix Exp /RANU
 *     会使用独立的注册表信息进行调试，防止影响VS的开发环境 -- 通过编译时的 regpkg 命令行?
-*     /RANU 
-*     /setup -- 可以在启动的splash screen 获得 logo and product name
+*     /RANU -- run as normal user( 注册到 HKEY_CURRENT_USER ?)
+*     /setup -- 可以在启动的splash screen 获得 logo and product name( 注册到 HKEY_LOCAL_MACHINE ?)
 *     /NoVsip -- 模拟没有安装 VS SDK 的机器的行为
 *     /root:Software\Microsoft\VisualStudio\9.0Exp --指定注册的注册表根位置
 *  vsct -- Visual Studio Command Table, VS2008中定义用户界面的XML，编译成二进制资源后以1000作为资源ID添加到VSPackage.resx资源文件中，

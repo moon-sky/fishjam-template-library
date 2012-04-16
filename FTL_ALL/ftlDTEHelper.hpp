@@ -421,11 +421,11 @@ namespace FTL
 #endif 
     }
 
-	HRESULT CFDTEUtil::OpenDocumentAndGotoLine(DTE_NS::_DTE* pDTE, LPCTSTR pszFileName,int line)
+	HRESULT CFDTEUtil::OpenDocumentAndGotoLine(DTE_NS::_DTE* pDTE, LPCTSTR pszFileName, int line, CComPtr<DTE_NS::Document>& spFileDocument)
 	{
 		HRESULT hr = E_FAIL;
 		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pDTE, E_INVALIDARG);
-		CComPtr< DTE_NS::Document > spFileDocument;
+		//CComPtr< DTE_NS::Document > spFileDocument;
 
 		if (pszFileName)
 		{
@@ -471,7 +471,6 @@ namespace FTL
 	}
     //////////////////////////////////////////////////////////////////////////
 
-	//DTE提供了 ObjectExtenders、IVsProfferCommands、IVsIntelliMouseHandler 等 至少 60 多个Service
     HRESULT CFDTEDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
@@ -494,6 +493,12 @@ namespace FTL
                 COM_VERIFY(spDTE->get_Version(&strVersion));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Version"), &strVersion));
 
+				//DTE的主窗口，能通过其 get_HWnd 方法获取主窗口的HWnd句柄(这是唯一一个能获取到HWnd的 DTE_NS::Window 实例?)
+				//  其他窗体的HWND必须通过 IVsTextView::GetWindowHandle 等来获取
+				CComPtr<DTE_NS::Window>		spMainWindow;
+				COM_VERIFY(spDTE->get_MainWindow(&spMainWindow));
+				CFWindowDumper mainWindowDumper(spMainWindow, pInfoOutput, m_nIndent + 2);
+
 				CComPtr<DTE_NS::Windows>    spWindows;
                 COM_VERIFY(spDTE->get_Windows(&spWindows));
                 CFWindowsDumper winsDumper(spWindows, pInfoOutput, m_nIndent + 2);
@@ -509,21 +514,94 @@ namespace FTL
 				COM_VERIFY(spDTE->get_Solution(&spSolution));
 				CFSolutionDumper solutionDumper(spSolution, pInfoOutput, m_nIndent + 2);
 #endif
+				CComPtr<DTE_NS::Document>   spActiveDocument;
+				COM_VERIFY(spDTE->get_ActiveDocument(&spActiveDocument));
+				CFDocumentDumper    activeDocumentDumper(spActiveDocument, pInfoOutput, m_nIndent + 2);
+
 				CComPtr<DTE_NS::Documents>  spDocuments;
 				COM_VERIFY(spDTE->get_Documents(&spDocuments));
 				CFDocumentsDumper   documentsDumper(spDocuments, pInfoOutput, m_nIndent + 2);
 
-                CComPtr<DTE_NS::Document>   spActiveDocument;
-                COM_VERIFY(spDTE->get_ActiveDocument(&spActiveDocument));
-                CFDocumentDumper    activeDocumentDumper(spActiveDocument, pInfoOutput, m_nIndent + 2);
+				CComPtr<DTE_NS::AddIns> spAddins;
+				COM_VERIFY(spDTE->get_AddIns(&spAddins));
+				CFAddinsDumper addinsDumper(spAddins, pInfoOutput, m_nIndent + 2);
 
                 CComPtr<DTE_NS::Events> spEvents;
                 COM_VERIFY(spDTE->get_Events(&spEvents));
                 CFEventsDumper      eventsDumper(spEvents, pInfoOutput, m_nIndent + 2);
+
+				CComPtr<DTE_NS::Commands> spCommands;
+				COM_VERIFY(spDTE->get_Commands(&spCommands));
+				CFCommandsDumper commandsDumper(spCommands, pInfoOutput, m_nIndent + 2);
             }
         }
         return hr;
     }
+
+	HRESULT CFAddinsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Addins")));
+		if (m_pObj)
+		{
+			CComQIPtr<DTE_NS::AddIns>     spAddins(m_pObj);
+			if (spAddins)
+			{
+				long nAddinsCount = 0;
+				COM_VERIFY(spAddins->get_Count(&nAddinsCount));
+				pInfoOutput->OnOutput(TEXT("Addin Count"), nAddinsCount);
+				for (long nAddinIndex = 1; nAddinIndex <= nAddinsCount; ++nAddinIndex)
+				{
+					CComPtr<DTE_NS::AddIn> spAddin;
+					COM_VERIFY(spAddins->Item(CComVariant(nAddinIndex), &spAddin));
+					
+					CFAddinDumper addinDumper(spAddin, pInfoOutput, m_nIndent + 2);
+				}
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFAddinDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Addin")));
+		if (m_pObj)
+		{
+			CComQIPtr<DTE_NS::AddIn>     spAddin(m_pObj);
+			if (spAddin)
+			{
+				CComBSTR bstrName;
+				COM_VERIFY(spAddin->get_Name(&bstrName));
+				pInfoOutput->OnOutput(TEXT("Name"), &bstrName);
+				
+				CComBSTR bstrDescription;
+				COM_VERIFY(spAddin->get_Description(&bstrDescription));
+				pInfoOutput->OnOutput(TEXT("Description"), &bstrDescription);
+
+				VARIANT_BOOL bConnected;
+				COM_VERIFY(spAddin->get_Connected(&bConnected));
+				pInfoOutput->OnOutput(TEXT("Connected"), bConnected);
+
+				CComBSTR bstrProgID;
+				COM_VERIFY(spAddin->get_ProgID(&bstrProgID));
+				pInfoOutput->OnOutput(TEXT("ProgID"), &bstrProgID);
+
+				CComBSTR bstrGuid;
+				COM_VERIFY(spAddin->get_Guid(&bstrGuid));
+				pInfoOutput->OnOutput(TEXT("Guid"), &bstrGuid);
+
+				CComBSTR bstrSatelliteDllPath;
+				COM_VERIFY(spAddin->get_SatelliteDllPath(&bstrSatelliteDllPath));
+				pInfoOutput->OnOutput(TEXT("SatelliteDllPath"), &bstrSatelliteDllPath);
+
+				CComPtr<IDispatch> spDispatchObject;
+				COM_VERIFY(spAddin->get_Object(&spDispatchObject));
+				COM_DETECT_INTERFACE_FROM_REGISTER(spDispatchObject);
+			}
+		}
+		return hr;
+	}
 
     HRESULT CFSolutionDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
@@ -1290,7 +1368,7 @@ namespace FTL
                     //TODO: ( pCommands->Item( CComVariant( "DoxygenAddin.Connect.DoxygenAddin" ), 0, &dx_cmd ), dx_cmd );
                     //  Need Text as Index ?
                     //用目前这种方式也可以获取，但ID有什么用？
-                    COM_VERIFY(spCommands->Item(CComVariant(lCommandIndex),0, &spCommand));
+                    COM_VERIFY(spCommands->Item(CComVariant(lCommandIndex), 0, &spCommand));
                     if (spCommand)
                     {
                         CFCommandDumper commandDumper(spCommand, pInfoOutput, m_nIndent + 2);

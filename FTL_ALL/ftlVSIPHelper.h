@@ -38,8 +38,8 @@
 /********************************************************************************************
 *   
 * 接口实现类(VSL::)
-*   IOleCommandTargetImpl -- 实现 IOleCommandTarget 接口，能处理菜单或工具条事件
-*   IServiceProviderImpl -- 提供Service，使用 BEGIN_SERVICE_MAP、SERVICE_ENTRY 等宏设置能提供的Service
+*   IOleCommandTargetImpl -- 实现 IOleCommandTarget 接口，能处理菜单或工具条事件，然后通过 VSL_BEGIN_COMMAND_MAP 映射命令处理
+*   ATL::IServiceProviderImpl -- 提供Service，使用 BEGIN_SERVICE_MAP、SERVICE_ENTRY 等宏设置能提供的Service
 *   ISupportErrorInfoImpl -- 模板参数一般是 InterfaceSupportsErrorInfoList< IXXXX, ErrorInfoList的递归 >
 *   IVsInstalledProductImpl -- 在Splash窗体中显示插件信息(就不再需要 .rgs 中的信息?)，模板参数为相关的资源ID，在.rgs文件中还需要 InstalledProducts 项
 *   IVsPackageImpl -- 实现 IVsPackage 接口, COM组件成为 VS Package
@@ -72,9 +72,10 @@
 *     系统自带的 GUID/命令ID对 有 GUID_VsUIHierarchyWindowCmds/UIHWCMDID_RightClick 等
 *   2.工具映射(ToolMap), 实现 IVsPackage::CreateTool 方法，在VS需要时创建对应的 Tool, Tool 需要在注册表的 ToolWindows 下注册
 *     VSL_BEGIN_TOOL_MAP -- VSL_TOOL_ENTRY(对应的GUID, 创建回调 )
-*   3.注册表资源映射( 提供.rgs中通过 %token% 使用的变量值 ? )
+*   3.注册表资源映射( 提供.rgs中通过 %token% 使用的变量值 ?  ATL中的  DECLARE_REGISTRY_RESOURCEID -- ?)
 *     VSL_BEGIN_REGISTRY_MAP(.rgs文件对应的资源ID)
-*       VSL_REGISTRY_MAP_GUID_ENTRY( 提供 .rgs 文件中使用的 CLSID 值 )
+*       VSL_REGISTRY_MAP_GUID_ENTRY( 提供 .rgs 文件中使用的 CLSID 值，两边的名字一样 )
+*       VSL_REGISTRY_MAP_GUID_ENTRY_EX(提供 .rgs 文件中使用的 CLSID 值, 两边的名字可以不一样，比如.rgs文件中一般会把Pakcage的CLSID统一为CLSID_Package)
 *       VSL_REGISTRY_MAP_NUMBER_ENTRY( 可提供 PLK -- 如 IDS_XXXX_LOAD_KEY ) 
 *       VSL_REGISTRY_RESOURCE_STRING_ENTRY( 提供字符串资源如PackageName )
 *     VSL_END_REGISTRY_MAP
@@ -88,19 +89,6 @@
 *   CLSID_VSUIHIERARCHYWINDOW -- VS 提供的 hierarchy tool window，可在 ToolWindowBase子类的GetLocalRegistryCLSIDViewObject
 *     中返回表tool window 的类型?
 *
-* 每一个Marker可以通过 IVsTextManager::GetRegisteredMarkerTypeID 获取到一个唯一的MarkerType，之后会通过该值进行调用
-*   如 IVsTextLines::CreateLineMarker(MarkerType, xxx)
-* 实现自定义的字体格式化( TextMarkerType )
-*   1. 实现 IVsTextMarkerTypeProvider 提供自定义的TextMarker服务
-*   2. 实现 IVsPackageDefinedTextMarkerType
-*             DrawGlyphWithColors 中不要绘制任何文本，为什么?
-*           IVsMergeableUIItem(Environment->Fonts and Colors)
-*             GetMergingPriority -- 找到两个相同canonical name的Marker时使用 (自定义组件应该 0 ~ 0x1000)
-*      来提供具体的 TextMarker
-*   3. [可选]实现 IVsTextMarkerClient 来处理VSShell针对TextMaker的通知和处理(如 tooltips )
-*            CComObject<CMyTextMarkerClient>* pTMClient;
-*            CComObject<CMyTextMarkerClient>::CreateInstance(&pTMClient);
-*   然后使用 IVsTextLines::CreateLineMarker 等方法创建指定的 LineMarker
 *
 * Hierarchy(层次结构)
 *   IVsHierarchy / IVsUIHierarchy
@@ -113,12 +101,52 @@
 ********************************************************************************************/
 
 /********************************************************************************************
-* RGS配置信息 (%REGROOTBEGIN% -- %REGROOTEND%)
+* 每一个Marker可以通过 IVsTextManager::GetRegisteredMarkerTypeID 获取到一个唯一的MarkerType(大于0?)，之后会通过该值进行调用
+*   如 IVsTextLines::CreateLineMarker(MarkerType, xxx)等方法创建指定的 LineMarker
+* 实现自定义的字体格式化( TextMarkerType )
+*   1. 实现 IVsTextMarkerTypeProvider 提供自定义的 TextMarker 服务
+*        IVsTextMarkerTypeProvider::GetTextMarkerType 中返回 GUID_MyMakerService 对应的 (IVsPackageDefinedTextMarkerType*)this
+*   2. 实现 IVsPackageDefinedTextMarkerType
+*             GetVisualStyle -- 返回对应的类型组合：MV_GLYPH(会调用到 DrawGlyphWithColors?)， MV_COLOR_ALWAYS(只管颜色?) 等
+*             DrawGlyphWithColors 中不要绘制任何文本，为什么?
+*           IVsMergeableUIItem(Environment->Fonts and Colors中显示 GetDisplayName)
+*             GetMergingPriority -- 找到两个相同canonical name的Marker时使用(大优先还是小优先? 自定义组件应该 0 ~ 0x1000)
+*      来提供具体的 TextMarker
+*   3. [可选]实现 IVsTextMarkerClient 来处理VSShell针对TextMaker的通知和处理(如 tooltips )
+*            CComObject<CMyTextMarkerClient>* pTMClient;
+*            CComObject<CMyTextMarkerClient>::CreateInstance(&pTMClient);
+*   4. 在初始化(如 PostSited)时通过 IProfferService::ProfferService(GUID_MyMakerService, (IServiceProvider*)this, xxx) 提供服务
+*   5. 在 IServiceProvider::QueryService 中返回服务 （GUID_MyMakerService, IVsTextMarkerTypeProvider, this) 
+*   6. 配置注册表信息( .rgs 和 .pkgdef 文件 ), 在 Services 和 Text Editor\External Markers 中增加指定项
+*        Services 中 ForceRemove '%GUID_MyMakerService%' = s '%CLSID_Package%' { val Name = s 'MyMakerServiceName' }
+*        Text Editor\External Markers 中 ForceRemove '%GUID_MyMakerService%' = s 'MyMakerServiceName'
+*           { val DisplayName='xxx'; var Package='%CLSID_Package%'; var Service='%GUID_MyMakerService%' }
+*
+********************************************************************************************/
+
+/********************************************************************************************
+* .RGS配置信息 (%REGROOTBEGIN% -- %REGROOTEND%) , 其中的各种 %变量名% 都是在 VSL_BEGIN_REGISTRY_MAP/VSL_END_REGISTRY_MAP 中定义的
 *   Menus -- 
 *   Packages -- 
 *     CLSID_XXX = s '名字'
 *   Services
 *     IID_YYY = s '%CLSID_XXX%'
+*   变量
+*     %MODULE% -- 编译的结果文件全路径(如 D:\\XXX\\xxx.dll)
+*     %RESOURCE_DLL% -- SatelliteDll 的文件名， 如 xxxUI.dll
+*     %RESOURCE_PATH% -- SatelliteDll 的路径
+* 
+* .pkgdef 文件配置信息(define the registration of a package.类似.reg格式的注册信息文件。 但和 .rgs 文件冲突? 但只用在 DEBUG 版版本中?)
+*   可定制 isolated shell application, 系统自带的 .pkgdef文件 -- BaseConfig.pkgdef, 
+*   介绍文档：http://msdn.microsoft.com/en-us/library/cc138553.aspx
+*   变量(使用方式为 $变量名$ )
+*     $BaseInstallDir$ -- Visual Studio 安装的全路径，和 $ShellFolder$ 一样？
+*     $PackageFolder$ -- 包含程序中package assembly的全路径
+*     $RootFolder$ -- 引用程序中根目录的全路径，等价于 %RESOURCE_PATH%
+*     $RootKey$ -- 注册表的根(可通过命令行等重定向?)
+*     $System$ -- Windows\system32 目录
+*   #resourceID/@resourceID -- 使用指定ID的得字符串资源(localizable Resource Identifier)
+*
 ********************************************************************************************/
 
 /********************************************************************************************
@@ -154,6 +182,8 @@ namespace FTL
         FTLINLINE static LPCTSTR GetStdIdCommandtring(ULONG cmdID);
 
 		FTLINLINE static LPCTSTR GetMarkerBehaviorFlagsString(FTL::CFStringFormater& strFormater, DWORD dwBehaviorFlags);
+
+		FTLINLINE static LPCTSTR GetMarkerVisualFlagsString(FTL::CFStringFormater& strFormater, DWORD dwVisualFlags);
 
     };
 
@@ -276,6 +306,16 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	class CFVsCodeWindowDumper : public CFInterfaceDumperBase<CFVsCodeWindowDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsCodeWindowDumper);
+	public:
+		FTLINLINE explicit CFVsCodeWindowDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsCodeWindowDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
 	class CFVsEnumTextViewsDumper : public CFInterfaceDumperBase<CFVsEnumTextViewsDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsEnumTextViewsDumper);
@@ -286,6 +326,7 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	//IVsTextView -- 可以调用 AddCommandFilter 方法对命令消息(如 ECMD_DOUBLECLICK、ECMD_CANCEL 等 )进行 Filter 处理
 	class CFVsTextViewDumper : public CFInterfaceDumperBase<CFVsTextViewDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextViewDumper);
@@ -316,7 +357,46 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	class CFVsTextLinesDumper : public CFInterfaceDumperBase<CFVsTextLinesDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextLinesDumper);
+	public:
+		FTLINLINE explicit CFVsTextLinesDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsTextLinesDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
 	
+	class CFVsEnumLineMarkersDumper : public CFInterfaceDumperBase<CFVsEnumLineMarkersDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsEnumLineMarkersDumper);
+	public:
+		FTLINLINE explicit CFVsEnumLineMarkersDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsEnumLineMarkersDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFVsTextMarkerDumper : public CFInterfaceDumperBase<CFVsTextMarkerDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextMarkerDumper);
+	public:
+		FTLINLINE explicit CFVsTextMarkerDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsTextMarkerDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFVsTextLineMarkerDumper : public CFInterfaceDumperBase<CFVsTextLineMarkerDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextLineMarkerDumper);
+	public:
+		FTLINLINE explicit CFVsTextLineMarkerDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsTextLineMarkerDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
 	class CFVsUIHierarchyDumper : public CFInterfaceDumperBase<CFVsUIHierarchyDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsUIHierarchyDumper);

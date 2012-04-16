@@ -4,18 +4,22 @@
 	Version="8.00"
 	Name="FJSDK Defaults"
 	>
-  <Tool
-		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="$(FJSDK)Windows\FTL;$(FJSDK)WTL\SDK\WTL80\include;$(FJSDK)Library\CPPUnit\Windows\Include"
-		AdditionalLibraryDirectories="$(FJSDK)Library\CPPUnit\Windows\Lib"
+	<Tool
+		  Name="VCCLCompilerTool"
+		  AdditionalIncludeDirectories="$(FJSDK)Windows\FTL;$(FJSDK)WTL\SDK\WTL80\include;$(FJSDK)Library\CPPUnit\Windows\Include"
+		  AdditionalLibraryDirectories="$(FJSDK)Library\CPPUnit\Windows\Lib"
 	/>
-  <Tool
-		  Name="VCResourceCompilerTool"
-		  AdditionalIncludeDirectories="$(FJSDK)WTL\SDK\WTL80\include"
+	<Tool
+			Name="VCResourceCompilerTool"
+			AdditionalIncludeDirectories="$(FJSDK)WTL\SDK\WTL80\include"
 	/>
-  <UserMacro
-		Name="CPPUNITPATH"
-		Value="$(FJSDK)Library\CPPUnit\"
+	<UserMacro
+		  Name="CPPUNITPATH"
+		  Value="$(FJSDK)Library\CPPUnit\"
 	/>
- 
+	<UserMacro
+		Name="VSIntegrationRoot"
+		Value="$(VSSDK90Install)\VisualStudioIntegration"
+	/>
+
 </VisualStudioPropertySheet>

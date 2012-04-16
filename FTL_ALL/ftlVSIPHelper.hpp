@@ -1489,6 +1489,30 @@ namespace FTL
 		return strFormater.GetString();
 	}
 
+	LPCTSTR CFVSIPUtils::GetMarkerVisualFlagsString(FTL::CFStringFormater& strFormater, DWORD dwVisualFlags)
+	{
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_GLYPH , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_COLOR_ALWAYS , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_COLOR_LINE_IF_NO_MARGIN , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_LINE , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_TIP_FOR_BODY , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_TIP_FOR_GLYPH , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_SEL_MARGIN_GLYPH , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_FORCE_INVISIBLE , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_BORDER , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_GLYPH_HOVER_CURSOR , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_DRAGGABLE_GLYPH , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_MULTILINE_GLYPH , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_CONTEXT_CONTRIBUTION_FOR_BODY , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_COLOR_SPAN_IF_ZERO_LENGTH , TEXT("|"));
+		if (0 != dwVisualFlags)
+		{
+			FTLTRACEEX(tlWarning, TEXT("GetMarkerVisualFlagsString dwVisualFlags Remain IS NOT Zero [0x%0x]\n"), dwVisualFlags);
+			//FTLASSERT(0 == dwVisualFlags);
+		}
+		return strFormater.GetString();
+	}
+
 	HRESULT CFVsPackageDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -1723,8 +1747,12 @@ namespace FTL
 
 				DWORD dwVisualFlags = 0;
 				COM_VERIFY(spVsTextMarkerType->GetVisualStyle(&dwVisualFlags));
-				pInfoOutput->OnOutput(TEXT("VisualStyle"), (LONG)dwVisualFlags);
-
+				if (SUCCEEDED(hr))
+				{
+					CFStringFormater strVisualFlagsFormater;
+					pInfoOutput->OnOutput(TEXT("VisualStyle"), CFVSIPUtils::GetMarkerVisualFlagsString(strVisualFlagsFormater, dwVisualFlags));
+				}
+				
 
 				DWORD dwBehaviorFlags = 0;
 				COM_VERIFY(spVsTextMarkerType->GetBehaviorFlags(&dwBehaviorFlags));
@@ -2059,6 +2087,14 @@ namespace FTL
 					pInfoOutput->OnOutput(TEXT("FramePos"), formater.GetString());
 				}
 
+				//如果是代码窗口对应的 Frame， 则可以通过 IID_IVsCodeWindow 获取到 CodeWindow 接口的实例
+				//其他可以对应获取到 IVsCommandWindow ?
+				CComPtr<IVsCodeWindow> spVsCodeWindow;
+				COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsCodeWindow, (void**)&spVsCodeWindow));
+				if (SUCCEEDED(hr) && spVsCodeWindow)
+				{
+					CFVsCodeWindowDumper codeWindowDumper(spVsCodeWindow, pInfoOutput, m_nIndent + 2);
+				}
 
 #pragma warning(disable : 4245)
 				static DWORD dwVSFPropIds[] = {
@@ -2128,6 +2164,46 @@ namespace FTL
         return hr;
     }
 
+	HRESULT CFVsCodeWindowDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsCodeWindow")));
+		if (m_pObj)
+		{
+			CComQIPtr<IVsCodeWindow>     spVsCodeWindow(m_pObj);
+			if (spVsCodeWindow)
+			{
+				CComBSTR bstrEditorCaptionNotReadOnly;
+				COM_VERIFY(spVsCodeWindow->GetEditorCaption(ROSTATUS_NotReadOnly, &bstrEditorCaptionNotReadOnly));
+				pInfoOutput->OnOutput(TEXT("EditorCaption NotReadOnly"), bstrEditorCaptionNotReadOnly);
+
+				CComBSTR bstrEditorCaptionReadOnly;
+				COM_VERIFY(spVsCodeWindow->GetEditorCaption(ROSTATUS_ReadOnly, &bstrEditorCaptionReadOnly));
+				pInfoOutput->OnOutput(TEXT("EditorCaption ReadOnly"), bstrEditorCaptionReadOnly);
+
+				CLSID viewClassID = CLSID_NULL;
+				COM_VERIFY(spVsCodeWindow->GetViewClassID(&viewClassID));
+				pInfoOutput->OnOutput(TEXT("ViewClassID"), CFDTEUtil::GetDTEGuidStringInfo(viewClassID));
+
+				CComPtr<IVsTextLines> spVsTextLines;
+				COM_VERIFY(spVsCodeWindow->GetBuffer(&spVsTextLines));
+				CFVsTextLinesDumper vsTextLinesDumper(spVsTextLines, pInfoOutput, m_nIndent + 2);
+
+				CComPtr<IVsTextView> spPrimaryView;
+				COM_VERIFY(spVsCodeWindow->GetPrimaryView(&spPrimaryView));
+				pInfoOutput->OnOutput(TEXT("PrimaryView"));
+				CFVsTextViewDumper primaryViewDumper(spPrimaryView, pInfoOutput, m_nIndent + 2);
+
+				CComPtr<IVsTextView> spSecondaryView;
+				COM_VERIFY(spVsCodeWindow->GetSecondaryView(&spSecondaryView));
+				pInfoOutput->OnOutput(TEXT("SecondaryView"));
+				CFVsTextViewDumper secondaryViewDumper(spSecondaryView, pInfoOutput, m_nIndent + 2);
+
+			}
+		}
+		return hr;
+	}
+
 	HRESULT CFVsEnumTextViewsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -2169,6 +2245,7 @@ namespace FTL
 			{
 				FTL::CFStringFormater formater;
 
+				//获取窗体(如 CodeWindow)的句柄 -- DTE::Window 不能获取
 				HWND hWnd = spVsTextView->GetWindowHandle();
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("WindowHandle"), hWnd));
 
@@ -2257,6 +2334,11 @@ namespace FTL
 				COM_VERIFY(spVsTextBuffer->GetLineCount(&nLineCount));
 				pInfoOutput->OnOutput(TEXT("LineCount"), nLineCount);
 
+				LONG nNumberCharsLastLine = 0;
+				COM_VERIFY(spVsTextBuffer->GetLengthOfLine(nLineCount - 1, &nNumberCharsLastLine));
+				pInfoOutput->OnOutput(TEXT("Last Line Char Numbers"), nNumberCharsLastLine);
+				//可再使用 IVsTextLines::GetLineText(0, 0, nLineCount - 1, nNumberCharsLastLine ) 来获得全部文本
+
 				LONG nSize = 0;
 				COM_VERIFY(spVsTextBuffer->GetSize(&nSize));
 				pInfoOutput->OnOutput(TEXT("Size"), nSize);
@@ -2264,6 +2346,130 @@ namespace FTL
 				GUID guidLanguageServiceID = GUID_NULL;
 				COM_VERIFY(spVsTextBuffer->GetLanguageServiceID(&guidLanguageServiceID));
 				//pInfoOutput->OnOutput(TEXT("LanguageServiceID"), )
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsTextLinesDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextLines")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsTextLines>     spVsTextLines(m_pObj);
+			if (spVsTextLines)
+			{
+				CComQIPtr<IVsTextBuffer> spVsTextBuffer(spVsTextLines);
+				CFVsTextBufferDumper textBufferDumper(spVsTextBuffer, pInfoOutput, m_nIndent + 2);
+				
+				LONG nLineCount = 0;
+				COM_VERIFY(spVsTextLines->GetLineCount(&nLineCount));
+				if (SUCCEEDED(hr))
+				{
+					//LONG nNumberCharsLastLine = 0;
+					//COM_VERIFY(spVsTextBuffer->GetLengthOfLine(nLineCount - 1, &nNumberCharsLastLine));
+
+					CComPtr<IVsEnumLineMarkers> spVsEnumLineMarkers;
+
+					long nMakerType = 0; //枚举出当前 IVsTextLines 中所有的 TextMarker,并查看信息
+					COM_VERIFY(spVsTextLines->EnumMarkers(0, 0, nLineCount, 0, nMakerType, EM_ALLTYPES | EM_SORTPRIORITY, &spVsEnumLineMarkers));
+					if (SUCCEEDED(hr) && spVsEnumLineMarkers)
+					{
+						CFVsEnumLineMarkersDumper vsEnumLineMarkersDumper(spVsEnumLineMarkers, pInfoOutput, m_nIndent + 2);
+					}
+				}
+			}
+		}
+		return hr;
+	}
+	
+
+	HRESULT CFVsEnumLineMarkersDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsEnumLineMarkers")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsEnumLineMarkers>     spVsEnumLineMarkers(m_pObj);
+			if (spVsEnumLineMarkers)
+			{
+				LONG nMakerCount = 0;
+				COM_VERIFY(spVsEnumLineMarkers->GetCount(&nMakerCount));
+				pInfoOutput->OnOutput(TEXT("LineMarker Count"), nMakerCount);
+
+				COM_VERIFY(spVsEnumLineMarkers->Reset());
+
+				for(LONG nMarkerIndex = 0; nMarkerIndex < nMakerCount; ++nMarkerIndex)
+				{
+					CComPtr<IVsTextLineMarker>	spVsTextLineMarker;
+					COM_VERIFY(spVsEnumLineMarkers->Next(&spVsTextLineMarker));
+					if (SUCCEEDED(hr) && spVsTextLineMarker)
+					{
+						CFVsTextLineMarkerDumper vsTextLineMarkerDumper(spVsTextLineMarker, pInfoOutput, m_nIndent + 2);
+					}
+				}
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsTextMarkerDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextMarker")));
+		if (m_pObj)
+		{
+			CComQIPtr<IVsTextMarker>     spVsTextMarker(m_pObj);
+			if (spVsTextMarker)
+			{
+				long nMarkerType = 0;
+				COM_VERIFY(spVsTextMarker->GetType(&nMarkerType));
+				pInfoOutput->OnOutput(TEXT("Type"), nMarkerType);
+
+				DWORD dwVisualStyle = 0;
+				COM_VERIFY(spVsTextMarker->GetVisualStyle(&dwVisualStyle));
+				pInfoOutput->OnOutput(TEXT("VisualStyle"), (LONG)dwVisualStyle);
+
+				CComBSTR bstrTipText;
+				COM_VERIFY(spVsTextMarker->GetTipText(&bstrTipText));
+				pInfoOutput->OnOutput(TEXT("TipText"), &bstrTipText);
+
+				DWORD dwBehavior = 0;
+				COM_VERIFY(spVsTextMarker->GetBehavior(&dwBehavior));
+				pInfoOutput->OnOutput(TEXT("Behavior"), dwBehavior);
+
+				LONG nPriorityIndex = 0;
+				COM_VERIFY(spVsTextMarker->GetPriorityIndex(&nPriorityIndex));
+				pInfoOutput->OnOutput(TEXT("PriorityIndex"), nPriorityIndex);
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsTextLineMarkerDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextLineMarker")));
+		if (m_pObj)
+		{
+			CComQIPtr<IVsTextLineMarker>     spVsTextLineMarker(m_pObj);
+			if (spVsTextLineMarker)
+			{
+				CFVsTextMarkerDumper vsTextMakerDumper(spVsTextLineMarker, pInfoOutput, m_nIndent);
+
+				TextSpan CurrentSpan = {0};
+				COM_VERIFY(spVsTextLineMarker->GetCurrentSpan(&CurrentSpan));
+				if (SUCCEEDED(hr))
+				{
+					FTL::CFStringFormater formater;
+					formater.Format(TEXT("TextSpan From [%d, %d] To [%d, %d]"), CurrentSpan.iStartLine, 
+						CurrentSpan.iStartIndex, CurrentSpan.iEndLine, CurrentSpan.iEndIndex);
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("CurrentSpan"), formater.GetString()));
+				}
 			}
 		}
 		return hr;

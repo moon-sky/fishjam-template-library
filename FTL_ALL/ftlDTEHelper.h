@@ -23,6 +23,11 @@
 //#  error Please define VCCML_NS first
 //#endif 
 
+
+/********************************************************************************************
+* DTE -- DTE提供了 ObjectExtenders、IVsProfferCommands、IVsIntelliMouseHandler 等 至少 60 多个Service
+********************************************************************************************/
+
 namespace FTL
 {
     //using namespace EnvDTE;
@@ -42,7 +47,8 @@ namespace FTL
 		FTLINLINE static LPCTSTR GetCMFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind);
 #endif 
         FTLINLINE static LPCTSTR GetDTEGuidStringInfo(const CComBSTR& bstring);
-		FTLINLINE static HRESULT OpenDocumentAndGotoLine(DTE_NS::_DTE* pDTE, LPCTSTR pszFileName,int line);
+		FTLINLINE static HRESULT OpenDocumentAndGotoLine(DTE_NS::_DTE* pDTE, LPCTSTR pszFileName,int line, 
+			CComPtr<DTE_NS::Document>& spFileDocument);
     };
 
     class CFDTEDumper : public CFInterfaceDumperBase<CFDTEDumper>
@@ -55,6 +61,29 @@ namespace FTL
         //override
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
+
+	class CFAddinsDumper : public CFInterfaceDumperBase<CFAddinsDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFAddinsDumper);
+	public:
+		FTLINLINE explicit CFAddinsDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFAddinsDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFAddinDumper : public CFInterfaceDumperBase<CFAddinDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFAddinDumper);
+	public:
+		FTLINLINE explicit CFAddinDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFAddinDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
 
     //Solution  info (project/projectitem)
     class CFSolutionDumper : public CFInterfaceDumperBase<CFSolutionDumper>

@@ -83,11 +83,12 @@ namespace FTL
         virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT_BOOL value) = 0;
-        virtual HRESULT OnOutput(LPCTSTR pszKey, long nValue) = 0;
+        virtual HRESULT OnOutput(LPCTSTR pszKey, LONG nValue) = 0;
+		virtual HRESULT OnOutput(LPCTSTR pszKey, DWORD dwValue) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, HWND hWnd) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, GUID* pGuid) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT* pValue) = 0;
-        virtual HRESULT OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue) = 0;
+        virtual HRESULT OnOutput(LPCTSTR pszKey, LONG nTotal, LONG nIndex, VARIANT* pValue) = 0;
     };
 
     class CFOutputWindowInfoOutput : public IInformationOutput
@@ -102,11 +103,12 @@ namespace FTL
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, BSTR* pValue);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT_BOOL value);
-        FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, long nValue);
+        FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, LONG nValue);
+		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, DWORD dwValue);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, HWND hWnd);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, GUID* pGuid);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT* pValue);
-        FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue);
+        FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, LONG nTotal, LONG nIndex, VARIANT* pValue);
     protected:
         int     m_nIndent;
         TCHAR*  m_pszIndentSpace;

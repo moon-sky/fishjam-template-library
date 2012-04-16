@@ -550,7 +550,7 @@ namespace FTL
 		return S_FALSE;
 	}
 
-    HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, long nValue)
+    HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, LONG nValue)
     {
         if (pszKey)
         {
@@ -560,6 +560,17 @@ namespace FTL
         }
         return S_FALSE;
     }
+
+	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, DWORD dwValue)
+	{
+		if (pszKey)
+		{
+			OutputIndentSpace();
+			FTLTRACE(TEXT("  Key=%s,Value=%d\n"), pszKey, dwValue);
+			return S_OK;
+		}
+		return S_FALSE;
+	}
 
 	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, HWND hWnd)
 	{
@@ -619,7 +630,7 @@ namespace FTL
         return S_FALSE;
     }
 
-    HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, long nTotal, long nIndex, VARIANT* pValue)
+    HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, LONG nTotal, LONG nIndex, VARIANT* pValue)
     {
         if (pszKey && pValue)
         {
