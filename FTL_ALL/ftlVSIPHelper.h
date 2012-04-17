@@ -11,6 +11,9 @@
 #  error ftlVSIPHelper.h requires ftlCom.h to be included first
 #endif
 
+//IVsTextViewEx ? IVsSmartTagTipWindow
+//IntelliSense Hosting :  ms-help://MS.VSCC.v90/MS.VSIPCC.v90/ms.vssdk.v90/dv_vsintegration/html/20c61f8a-d32d-47e2-9c67-bf721e2cbead.htm
+
 /********************************************************************************************
 * #define NOMINMAX // Windows Platform min and max macros cause problems for the Standard C++ Library
 *
@@ -98,6 +101,7 @@
 *   VSL_CREATE_ERROR_HRESULT -- 会 throw exception ?
 *   VSL_STDMETHODTRY {...} VSL_STDMETHODCATCH()<CR> return VSL_GET_STDMETHOD_HRESULT(); -- 在返回 HRESULT 的函数中的 try..catch 结构
 *  
+* RDT(Running Document Table) -- 可通过 VSFPROPID_RDTDocData 获得相关的接口
 ********************************************************************************************/
 
 /********************************************************************************************
@@ -180,6 +184,9 @@ namespace FTL
 
         //获取 cmdidcmd.h 中定义的 CmdID 对应的字符串，在 IOleCommandTarget::QueryStatus 中判断 cmds[n].cmdID
         FTLINLINE static LPCTSTR GetStdIdCommandtring(ULONG cmdID);
+
+
+		FTLINLINE static LPCTSTR GetTextMakerTypeString(LONG nMarkerType);
 
 		FTLINLINE static LPCTSTR GetMarkerBehaviorFlagsString(FTL::CFStringFormater& strFormater, DWORD dwBehaviorFlags);
 
@@ -291,8 +298,8 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	private:
 		//BOOL    HasChildren(IVsHierarchy* pParent, VSITEMID ItemId);
-		HRESULT DumpAllPropertiesInfo(IVsHierarchy* pParent, VSITEMID ItemId, IInformationOutput* pInfoOutput);
-		HRESULT EnumAllChildRen(IVsHierarchy* pParent,VSITEMID startItemId, IInformationOutput* pInfoOutput);
+		FTLINLINE HRESULT DumpAllPropertiesInfo(IVsHierarchy* pParent, VSITEMID ItemId, IInformationOutput* pInfoOutput);
+		FTLINLINE HRESULT EnumAllChildRen(IVsHierarchy* pParent,VSITEMID startItemId, IInformationOutput* pInfoOutput);
 	};
 
 	//Window
@@ -393,6 +400,16 @@ namespace FTL
 	public:
 		FTLINLINE explicit CFVsTextLineMarkerDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
 			:CFInterfaceDumperBase<CFVsTextLineMarkerDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+	
+	class CFVsMergeableUIItemDumper : public CFInterfaceDumperBase<CFVsMergeableUIItemDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsMergeableUIItemDumper);
+	public:
+		FTLINLINE explicit CFVsMergeableUIItemDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsMergeableUIItemDumper>(pObj, pInfoOutput, nIndent){}
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};

@@ -209,7 +209,8 @@ namespace FTL
     	if(0 == fun((val),(exp))){\
 		    if(bFound)\
 			{\
-				FTLTRACEEX(tlWarning, TEXT("Find Same String: %s\n"), #exp);\
+				FTLTRACEEX(tlWarning, TEXT("%s, Warning: Find Same String: %s <=> %s \n"), __FILE__LINE__,\
+					pszResult, TEXT(#exp));\
 				FTLASSERT(!bFound);\
 			}\
 			bFound = TRUE;\
@@ -262,13 +263,20 @@ namespace FTL
 		static const LPCSTR vsProjectTypeSharePointCSharp = "{593B0543-81F6-4436-BA1E-4747859CAAE2}"; //SharePoint (C#)
 		static const LPCSTR vsProjectTypeSilverlight = "{A1591282-1198-4647-A2B1-27E5FF5F6F3B}"; //Silverlight
 		static const LPCSTR vsProjectTypeAspNetMVCApplication = "{603C0E0B-DB56-11DC-BE95-000D561079B0}"; //ASP.Net MVC Application
-		//static const LPCSTR vsProjectType XXXXXXXXXXXXXXXXX ="XXXX"; //
+
+		static const LPCSTR vsConstVsTextView ="{F5E7E71E-1401-11d1-883B-0000F87579D2}"; //textmgr.h 中的 VsTextView, 对应IVsCodeWindow的ViewClassID
+
+		//static const LPCSTR vsConstXXX ="{XXXX}"; //
 
 		
 		using namespace DTE_NS;
         USES_CONVERSION;
         LPSTR pszCompareString = OLE2A(bstring);
-        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindText, strcmp );
+
+#pragma TODO(duplicate test)
+		//dteinternal.h / dte80a.tlh
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindText, strcmp );
+
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindHTML, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindResource, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsDocumentKindBinary, strcmp );
@@ -286,9 +294,8 @@ namespace FTL
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindAutoLocals, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindWatch, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindProperties, strcmp );
-        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindSolutionExplorer, strcmp );
+        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindSolutionExplorer, strcmp );  
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindOutput, strcmp );
-        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindObjectBrowser, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindObjectBrowser, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindMacroExplorer, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsWindowKindDynamicHelp, strcmp );
@@ -339,16 +346,16 @@ namespace FTL
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_vk_Designer, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_vk_TextView, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_TaskList, strcmp );
-        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_Toolbox, strcmp );
+        //HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_Toolbox, strcmp );  //vsWindowKindToolbox
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_CallStackWindow, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ThreadWindow, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_LocalsWindow, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_AutoLocalsWindow, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_WatchWindow, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ImmedWindow, strcmp );
-        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_PropertyBrowser, strcmp );
-        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_SProjectWindow, strcmp );
-        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_OutputWindow, strcmp );
+        //HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_PropertyBrowser, strcmp );	//vsWindowKindProperties
+        //HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_SProjectWindow, strcmp );	//vsWindowKindSolutionExplorer
+        //HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_OutputWindow, strcmp );		//vsWindowKindOutput
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ObjectBrowser, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ContextWindow, strcmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ClassView, strcmp );
@@ -375,6 +382,75 @@ namespace FTL
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsCMLanguageIDL, strcmp );
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsCMLanguageMC, strcmp );
         
+
+		//dte80.h(VSIP)
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionBuilding, strcmp );
+		
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidUIHierarchyDragging, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFullScreenMode, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDesignMode, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidNoSolution, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionExists, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidEmptySolution, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionHasSingleProject, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionHasMultipleProjects, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCodeWindow, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidNotBuildingAndNotDebugging, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionOrProjectUpgrading, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDataSourceWindowSupported, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDataSourceWindowAutoVisible, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidWindowsFormsDesigner, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidToolboxInitialized, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionExistsAndNotBuildingAndNotDebugging, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidTextEditor, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidXMLTextEditor, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCSSTextEditor, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHTMLSourceEditor, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHTMLDesignView, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHTMLSourceView, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHTMLCodeView, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFrames, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSchema, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidData, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidKindStartPage, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCommunityWindow, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDeviceExplorer, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidBookmarks, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidApplicationBrowser, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFavorites, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidErrorList, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHelpSearch, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHelpIndex, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHelpContents, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCallBrowser, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCodeDefinition, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidTaskList, strcmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidToolbox, strcmp );			//vsWindowKindToolbox
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCallStack, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidThread, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidLocals, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidAutoLocals, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidWatch, strcmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidProperties, strcmp );		//vsWindowKindProperties
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionExplorer, strcmp );	//vsWindowKindSolutionExplorer
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidOutput, strcmp );			//vsWindowKindOutput
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidObjectBrowser, strcmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidMacroExplorer, strcmp );		//vsWindowKindMacroExplorer
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDynamicHelp, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidClassView, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidResourceView, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDocumentOutline, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidServerExplorer, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCommandWindow, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindSymbol, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindSymbolResults, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindReplace, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindResults1, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindResults2, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidMainWindow, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidLinkedWindowFrame, strcmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidWebBrowser, strcmp );
+
 		//self defined
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectTypeWindowsCSharp, strcmp );
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectTypeWindowsVBNet, strcmp );
@@ -408,11 +484,15 @@ namespace FTL
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectTypeSharePointCSharp, strcmp );
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectTypeSilverlight, strcmp );
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectTypeAspNetMVCApplication, strcmp );
-		
+
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsConstVsTextView, strcmp );
+
+
 #ifdef FTL_DEBUG
 		if (!bFound)
 		{
-			pszResult = TEXT("Unknown");
+			FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Guid String: %s\n"), COLE2T(bstring));
+			pszResult = TEXT("Unknown:");
 		}
 		return pszResult;
 #else

@@ -19,6 +19,7 @@
 #include <exdispid.h>
 #include <atlcomcli.h>
 #include <atlsafe.h>
+#include "ftlComDetect.h"
 
 namespace FTL
 {
@@ -263,6 +264,10 @@ namespace FTL
 			case VT_DISPATCH:
 			case VT_UNKNOWN:
 				formaterValue.Format(TEXT("0x%p"), V_UNKNOWN(&m_Info));
+				if (NULL != V_UNKNOWN(&m_Info))
+				{
+					COM_DETECT_INTERFACE_FROM_REGISTER(V_UNKNOWN(&m_Info));
+				}
 				break;
 			case VT_ERROR:
 				{
@@ -577,22 +582,26 @@ namespace FTL
 		if (pszKey)
 		{
 			BOOL bRet = FALSE;
-			OutputIndentSpace();
 			API_VERIFY(::IsWindow(hWnd));
 			if (bRet)
 			{
 				TCHAR szClassName[64] = {0};
 				API_VERIFY(0 != ::GetClassName(hWnd,szClassName, _countof(szClassName)));
+
+				//Window Text May be Empty, So it will return zero
 				TCHAR szWindowText[64] = {0};
-				API_VERIFY(0 != ::GetWindowText(hWnd, szWindowText, _countof(szWindowText)));
+				API_VERIFY_EXCEPT1(0 != ::GetWindowText(hWnd, szWindowText, _countof(szWindowText)), ERROR_SUCCESS);
+
 				RECT rcWindow = {0};
 				API_VERIFY(::GetWindowRect(hWnd, &rcWindow));
 				
 				FTL::CFStringFormater formater;
-				formater.Format(TEXT("rcWindow=(%d,%d)-(%d,%d), %dx%d, ClassName=%s, WindowText=%s"),
+				formater.Format(TEXT("rcWindow=(%d,%d)-(%d,%d), %dx%d, ClassName='%s', WindowText='%s'"),
 					rcWindow.left, rcWindow.top, rcWindow.right, rcWindow.bottom,
 					rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top,
 					szClassName, szWindowText);
+
+				OutputIndentSpace();
 				FTLTRACE(TEXT("  Key=%s,Value=\" %s \"\n"), pszKey, formater.GetString());
 
 				return S_OK;
@@ -604,12 +613,12 @@ namespace FTL
 	{
 		if (pszKey && pGuid)
 		{
-			OutputIndentSpace();
-			TCHAR szGuidString[40] = {0};
+			OLECHAR szGuidString[64] = {0};
 			int nRet = StringFromGUID2(*pGuid, szGuidString, _countof(szGuidString));
 			API_ASSERT(0 != nRet);
 			if (0 != nRet)
 			{
+				OutputIndentSpace();
 				FTLTRACE(TEXT(" Key=%s,Value=\" %s \"\n"), pszKey, szGuidString);
 			}
 			return S_OK;			
@@ -621,10 +630,11 @@ namespace FTL
     {
         if (pszKey && pValue)
         {
-            OutputIndentSpace();
 			FTL::CFVariantInfo varInfo(*pValue);
+			LPCTSTR pszInfo = varInfo.GetConvertedInfo();
 
-			FTLTRACE(TEXT("  Key=%s, Value=\" %s \"\n"), pszKey, varInfo.GetConvertedInfo());
+			OutputIndentSpace();
+			FTLTRACE(TEXT("  Key=%s, Value=\" %s \"\n"), pszKey, pszInfo);
             return S_OK;
         }
         return S_FALSE;
@@ -634,9 +644,11 @@ namespace FTL
     {
         if (pszKey && pValue)
         {
-            OutputIndentSpace();
 			FTL::CFVariantInfo varInfo(*pValue);
-            FTLTRACE(TEXT("  Key=%s,[%d in %d] Value=\" %s \"\n"), pszKey, nIndex, nTotal, varInfo.GetConvertedInfo());
+			LPCTSTR pszInfo = varInfo.GetConvertedInfo();
+
+			OutputIndentSpace();
+			FTLTRACE(TEXT("  Key=%s,[%d in %d] Value=\" %s \"\n"), pszKey, nIndex, nTotal, pszInfo);
 	        return S_OK;
         }
         return S_FALSE;
@@ -645,6 +657,7 @@ namespace FTL
 	template <typename T>
 	CFInterfaceDumperBase<T>::CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
 		:m_pObj(pObj)
+		,m_pInfoOutput(pInfoOutput)
 		,m_nIndent(nIndent)
 	{
 		if(m_pObj)
@@ -666,6 +679,7 @@ namespace FTL
     template <typename T>
     CFInterfaceDumperBase<T>::~CFInterfaceDumperBase()
     {
+		m_pInfoOutput->SetIndent(m_nIndent);
         SAFE_RELEASE(m_pObj);
     }
 } //namespace FTL

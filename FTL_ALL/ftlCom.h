@@ -125,6 +125,7 @@ namespace FTL
         virtual ~CFInterfaceDumperBase();
 	protected:
 		IUnknown*           m_pObj;
+		IInformationOutput*	m_pInfoOutput;
 		int                 m_nIndent;
 	};
 

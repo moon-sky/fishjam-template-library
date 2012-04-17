@@ -1467,20 +1467,77 @@ namespace FTL
     }
 
 
+	LPCTSTR CFVSIPUtils::GetTextMakerTypeString(LONG nMarkerType)
+	{
+		switch(nMarkerType)
+		{
+			//enum MARKERTYPE
+			HANDLE_CASE_RETURN_STRING(MARKER_INVISIBLE);		//0
+			HANDLE_CASE_RETURN_STRING(MARKER_READONLY);			//1
+			HANDLE_CASE_RETURN_STRING(MARKER_SHORTCUT);			//2
+			HANDLE_CASE_RETURN_STRING(MARKER_BOOKMARK);			//3
+			HANDLE_CASE_RETURN_STRING(MARKER_COMPILE_ERROR);	//4
+			HANDLE_CASE_RETURN_STRING(MARKER_CODESENSE_ERROR);	//5
+			HANDLE_CASE_RETURN_STRING(MARKER_OTHER_ERROR);		//6
+			HANDLE_CASE_RETURN_STRING(MARKER_REGION_COLLAPSED);	//7
+			HANDLE_CASE_RETURN_STRING(MARKER_REGION_EXPANDED);	//8
+			HANDLE_CASE_RETURN_STRING(MARKER_LIST_LOCATION);	//9
+			HANDLE_CASE_RETURN_STRING(DEF_MARKER_COUNT);		//10
+			//HANDLE_CASE_RETURN_STRING(MARKER_IDENTERROR);		//MARKER_COMPILE_ERROR
+			//HANDLE_CASE_RETURN_STRING(MARKER_SYNTAXERROR);	//MARKER_COMPILE_ERROR
+
+			//enum MARKERTYPE2
+			HANDLE_CASE_RETURN_STRING(MARKER_WARNING);			//11
+			HANDLE_CASE_RETURN_STRING(MARKER_SPAN_MAPPING);		//12
+			HANDLE_CASE_RETURN_STRING(MARKER_REGION_COLLAPSED_NOGLYPH);	//13
+			HANDLE_CASE_RETURN_STRING(MARKER_REGION_EXPANDED_NOGLYPH);	//14
+			HANDLE_CASE_RETURN_STRING(MARKER_EXSTENCIL);				//15
+			HANDLE_CASE_RETURN_STRING(MARKER_EXSTENCIL_SELECTED);		//16
+			HANDLE_CASE_RETURN_STRING(MARKER_SMARTTAG_NONVIS);			//17
+			HANDLE_CASE_RETURN_STRING(MARKER_SMARTTAG_VIS);				//18
+			HANDLE_CASE_RETURN_STRING(MARKER_TRACK_NONSAVE);			//19
+			HANDLE_CASE_RETURN_STRING(MARKER_TRACK_SAVE);				//20
+			HANDLE_CASE_RETURN_STRING(MARKER_BOOKMARK_DISABLED);		//21
+			HANDLE_CASE_RETURN_STRING(MARKER_TRACK_PLACEHOLDER);		//22
+			HANDLE_CASE_RETURN_STRING(MARKER_SMARTTAG_FACTOID);			//23
+			HANDLE_CASE_RETURN_STRING(MARKER_SMARTTAG_EPHEMERAL);		//24
+			HANDLE_CASE_RETURN_STRING(MARKER_BRACE_MATCHING);			//25
+			HANDLE_CASE_RETURN_STRING(MARKER_EXSTENCIL_ENDMARKER);		//26
+			HANDLE_CASE_RETURN_STRING(MARKER_CODEDEFWIN_BACKGROUND);	//27
+			HANDLE_CASE_RETURN_STRING(MARKER_CODEDEFWIN_SELECTION);		//28
+			HANDLE_CASE_RETURN_STRING(MARKER_HIGHLIGHT_PATH);			//29
+			HANDLE_CASE_RETURN_STRING(MARKER_BRACE_MATCHING_BOLD);		//30
+			HANDLE_CASE_RETURN_STRING(MARKER_REFACTORING_BACKGROUND);	//31
+			HANDLE_CASE_RETURN_STRING(MARKER_EXSTENCIL_DEPFIELD);		//32
+			HANDLE_CASE_RETURN_STRING(MARKER_REFACTORING_FIELD);		//33
+			HANDLE_CASE_RETURN_STRING(MARKER_REFACTORING_DEPFIELD);		//34
+			HANDLE_CASE_RETURN_STRING(DEF_MARKER_COUNT_NEW);			//35
+
+			//HANDLE_CASE_RETURN_STRING(XXXXXXXXX);
+		default:
+			FTLTRACEEX(FTL::tlWarning, TEXT("%s : GetTextMakerTypeString CAN NOT Find Type string for %d(0x%x)\n"),
+				__FILE__LINE__, nMarkerType, nMarkerType);
+			break;
+		}
+		return TEXT("Unknown");
+	}
+
 	LPCTSTR CFVSIPUtils::GetMarkerBehaviorFlagsString(FTL::CFStringFormater& strFormater, DWORD dwBehaviorFlags)
 	{
-		if ( MB_DEFAULT == dwBehaviorFlags )
-		{
-			strFormater.Format(TEXT("MB_DEFAULT"));
-		}
-		else
-		{
-			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_LINESPAN , TEXT(","));
-			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_LEFTEDGE_LEFTTRACK , TEXT(","));
-			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_RIGHTEDGE_RIGHTTRACK , TEXT(","));
-			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_MULTILINESPAN , TEXT(","));
-			HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_TRACK_EDIT_ON_RELOAD , TEXT(","));
-		}
+		//enum MARKERBEHAVIORFLAGS
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_DEFAULT , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_LINESPAN , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_LEFTEDGE_LEFTTRACK , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_RIGHTEDGE_RIGHTTRACK , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_MULTILINESPAN , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_TRACK_EDIT_ON_RELOAD , TEXT("|"));
+
+		//MARKERBEHAVIORFLAGS2
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_DONT_DELETE_IF_ZEROLEN , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_INHERIT_FOREGROUND , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_INHERIT_BACKGROUND , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwBehaviorFlags, MB_VIEW_SPECIFIC , TEXT("|"));
+
 		if (0 != dwBehaviorFlags)
 		{
 			FTLTRACEEX(tlWarning, TEXT("GetMarkerBehaviorFlagsString dwBehaviorFlags Remain IS NOT Zero [0x%0x]\n"), dwBehaviorFlags);
@@ -1491,6 +1548,7 @@ namespace FTL
 
 	LPCTSTR CFVSIPUtils::GetMarkerVisualFlagsString(FTL::CFStringFormater& strFormater, DWORD dwVisualFlags)
 	{
+		//enum MARKERVISUAL
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_GLYPH , TEXT("|"));
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_COLOR_ALWAYS , TEXT("|"));
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_COLOR_LINE_IF_NO_MARGIN , TEXT("|"));
@@ -1505,9 +1563,20 @@ namespace FTL
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_MULTILINE_GLYPH , TEXT("|"));
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_CONTEXT_CONTRIBUTION_FOR_BODY , TEXT("|"));
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_COLOR_SPAN_IF_ZERO_LENGTH , TEXT("|"));
+
+		//enum MARKERVISUAL2
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_SMARTTAG , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_TRACK , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_ROUNDEDBORDER , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_BOLDTEXT , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_DISALLOWBGCHANGE , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_DISALLOWFGCHANGE , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_FORCE_CLOSEST_IF_HIDDEN , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, dwVisualFlags, MV_SELECT_WHOLE_LINE , TEXT("|"));
+
 		if (0 != dwVisualFlags)
 		{
-			FTLTRACEEX(tlWarning, TEXT("GetMarkerVisualFlagsString dwVisualFlags Remain IS NOT Zero [0x%0x]\n"), dwVisualFlags);
+			FTLTRACEEX(tlWarning, TEXT("Waring: GetMarkerVisualFlagsString dwVisualFlags Remain IS NOT Zero [0x%0x]\n"), dwVisualFlags);
 			//FTLASSERT(0 == dwVisualFlags);
 		}
 		return strFormater.GetString();
@@ -1586,7 +1655,7 @@ namespace FTL
 				COM_VERIFY(spVsUIShell->GetToolWindowEnum(&spToolWindowEnum));
 				if (SUCCEEDED(hr) && spToolWindowEnum)
 				{
-					COM_VERIFY(pInfoOutput->OnOutput(TEXT("ToolWindowEnum"), 0L));
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("ToolWindowEnum")));
 					CFEnumWindowFramesDumper toolWindowEnumDumper(spToolWindowEnum, pInfoOutput, m_nIndent + 2);
 				}
 
@@ -1594,7 +1663,7 @@ namespace FTL
 				COM_VERIFY(spVsUIShell->GetDocumentWindowEnum(&spDocumentWindowEnum));
 				if (SUCCEEDED(hr) && spDocumentWindowEnum)
 				{
-					COM_VERIFY(pInfoOutput->OnOutput(TEXT("DocumentWindowEnum"), 0L));
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("DocumentWindowEnum")));
 					CFEnumWindowFramesDumper documentWindowEnumDumper(spDocumentWindowEnum, pInfoOutput, m_nIndent + 2);
 				}
 			}
@@ -1612,21 +1681,24 @@ namespace FTL
 			CComQIPtr<IEnumWindowFrames>     spEnumWindowFrames(m_pObj);
 			if (spEnumWindowFrames)
 			{
+				LONG nCount = 0;
 				COM_VERIFY(spEnumWindowFrames->Reset());
 
 				CComPtr<IVsWindowFrame> spVsWindowFrame;
 				ULONG ulFetched = 0;
 
-				COM_VERIFY_EXCEPT1(spEnumWindowFrames->Next(1, &spVsWindowFrame, &ulFetched), S_FALSE);
-				while (SUCCEEDED(hr) && ulFetched == 1)
+				while (SUCCEEDED(spEnumWindowFrames->Next(1, &spVsWindowFrame, &ulFetched)) && ulFetched > 0)
 				{
+					FTLASSERT(1 == ulFetched );
+					nCount++;
+					pInfoOutput->OnOutput(TEXT("Enum Window Frame Index"), nCount);
 					//COM_DETECT_INTERFACE_FROM_LIST(spVsWindowFrame);
 					//COM_DETECT_INTERFACE_FROM_REGISTER(spVsWindowFrame);
 					CFVsWindowFrameDumper windowFrameDumper(spVsWindowFrame, pInfoOutput, m_nIndent + 2);
-
+					
 					spVsWindowFrame.Release();
-					COM_VERIFY_EXCEPT1(spEnumWindowFrames->Next(1, &spVsWindowFrame, &ulFetched), S_FALSE);
 				}
+				pInfoOutput->OnOutput(TEXT("Window Frame Count"), nCount);
 				hr = S_OK;
 			}
 		}
@@ -1848,9 +1920,9 @@ namespace FTL
 
 	HRESULT CFVsHierarchyDumper::DumpAllPropertiesInfo(IVsHierarchy* pParent, VSITEMID ItemId, IInformationOutput* pInfoOutput)
 	{
-		pInfoOutput->OnOutput(TEXT("ItemId"), (long)ItemId);
+		pInfoOutput->OnOutput(TEXT("VsHierarchy ItemId"), (long)ItemId);
 #pragma warning(disable : 4245)
-		static const DWORD_PTR checkPrperties[] = 
+		static const LONG_PTR checkPrperties[] = 
 		{
 			//enum __VSHPROPID
 			VSHPROPID_Parent,
@@ -2073,6 +2145,59 @@ namespace FTL
 					pInfoOutput->OnOutput(TEXT("FrameWindow Caption"), &V_BSTR(&varCaption));
 				}
 
+				CComVariant varType;
+				COM_VERIFY(spVsWindowFrame->GetProperty(VSFPROPID_Type, &varType));
+				FTLASSERT(V_VT(&varType) == VT_I4);
+				switch(V_I4(&varType))
+				{
+				case 1: //Document Frame
+					{
+						//如果是代码窗口对应的 Frame， 则可以通过 IID_IVsCodeWindow 获取到 CodeWindow 接口的实例
+						//其他可以对应获取到 IVsCommandWindow ?
+						CComPtr<IVsCodeWindow> spVsCodeWindow;
+						COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsCodeWindow, (void**)&spVsCodeWindow));
+						if (SUCCEEDED(hr) && spVsCodeWindow)
+						{
+							pInfoOutput->OnOutput(TEXT("WindowFrame is Document Frame"));
+							CFVsCodeWindowDumper codeWindowDumper(spVsCodeWindow, pInfoOutput, m_nIndent + 2);
+						}
+
+						CComVariant varHierarchy;
+						COM_VERIFY(spVsWindowFrame->GetProperty(VSFPROPID_Hierarchy, &varHierarchy));
+						if (SUCCEEDED(hr) && V_UNKNOWN(&varHierarchy))
+						{
+							CComQIPtr<IVsHierarchy>		spVsHierarchy(V_UNKNOWN(&varHierarchy));
+							COM_DETECT_INTERFACE_FROM_REGISTER(spVsHierarchy);
+							CFVsHierarchyDumper	vsHierarchyDumper(spVsHierarchy, pInfoOutput, m_nIndent + 2);
+						}
+					}
+					break;
+				case 2:   //Tool Frame
+					{
+#pragma TODO("其他窗体,比如 Solution Explorer 应该如何获得, 不是 IVsToolWindowToolbar")
+						pInfoOutput->OnOutput(TEXT("WindowFrame is Tool Frame"));
+
+						CComVariant varCreateToolWinFlags;
+						COM_VERIFY_EXCEPT1(spVsWindowFrame->GetProperty(VSFPROPID_CreateToolWinFlags, &varCreateToolWinFlags), DISP_E_MEMBERNOTFOUND);
+						if (SUCCEEDED(hr))
+						{
+							//如 Output： 4718592
+							pInfoOutput->OnOutput(TEXT("FrameWindow CreateToolWinFlags"), V_I4(&varCreateToolWinFlags));
+						}
+
+						//CComPtr<IVsToolWindowToolbar> spVsToolWindowToolbar;
+						//COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsToolWindowToolbar, (void**)&spVsToolWindowToolbar));
+						//if (SUCCEEDED(hr) && spVsToolWindowToolbar)
+						//{
+						//	//CFVsToolWindowToolbarDumper toolWindowToolBarDumper(spVsToolWindowToolbar, pInfoOutput, m_nIndent + 2);
+						//}
+					}
+					break;
+				default:
+					FTLASSERT(FALSE);
+					break;
+				}
+
 				VSSETFRAMEPOS framePos;
 				GUID guidRelativeTo = GUID_NULL;
 				int x = 0, y = 0, cx = 0, cy = 0;
@@ -2082,31 +2207,70 @@ namespace FTL
 				if (SUCCEEDED(hr))
 				{
 					FTL::CFStringFormater formater;
-					formater.Format(TEXT("winFramePos=%s, Pos=[%d,%d]-[%d,%d], size={%d,%d}"), 
-						TEXT("TODO"), x, y, x+cx, y+cy, cx, cy );
+					formater.Format(TEXT(" winFramePos=0x%x, Pos=(%d,%d)-(%d,%d), %dx%d"), 
+						framePos, x, y, x+cx, y+cy, cx, cy );
 					pInfoOutput->OnOutput(TEXT("FramePos"), formater.GetString());
 				}
 
-				//如果是代码窗口对应的 Frame， 则可以通过 IID_IVsCodeWindow 获取到 CodeWindow 接口的实例
-				//其他可以对应获取到 IVsCommandWindow ?
-				CComPtr<IVsCodeWindow> spVsCodeWindow;
-				COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsCodeWindow, (void**)&spVsCodeWindow));
-				if (SUCCEEDED(hr) && spVsCodeWindow)
-				{
-					CFVsCodeWindowDumper codeWindowDumper(spVsCodeWindow, pInfoOutput, m_nIndent + 2);
-				}
-
+				
 #pragma warning(disable : 4245)
 				static DWORD dwVSFPropIds[] = {
 					VSFPROPID_Type,
-					VSFPROPID_DocView,		//获取关联的 IVsUIHierarchyWindow 接口
+					
+					//Solution Explorer(vsWindowKindSolutionExplorer)
+					//	可获取	IVsWindowPaneCommit/IVsPersistSolutionOpts/IVsUIHierarchyWindow2/
+					//			IVsSelectionEvents/IVsSolutionEvents/IOleCommandTarget/IVsExtensibleObject/
+					//			IVsBroadcastMessageEvents
+
+					//Properties(vsWindowKindProperties)
+					//	可获取	IVsWindowPaneCommit/IVsSelectionEvents/IOleCommandTarget/
+
+					//Toolbox(vsWindowKindToolbox)
+					//	可获取	IDropTarget/IVsToolbox3/IVsToolboxClipboardCycler/IVsHierarchyEvents/
+					//			IVsToolbox/IVsSelectionEvents/IOleCommandTarget/IVsExtensibleObject/
+					//			IVsBroadcastMessageEvents
+
+					//Resource View(vsContextGuidResourceView)
+					//	可获取	IDropTarget/IVsObjectManagerEvents/IVsSelectionEvents/IVsMultiItemSelect/
+					//			IVsSolutionEvents/IOleCommandTarget/IVsBroadcastMessageEvents/
+					//			IVsNavigationTool/IVsWindowFrameNotify
+
+					//Macro Explorer(vsWindowKindMacroExplorer)
+					//	可获取	IVsWindowPaneCommit/IVsUIHierarchyWindow2/IVsSelectionEvents/
+					//			IVsSolutionEvents/IOleCommandTarget/IVsExtensibleObject/IVsBroadcastMessageEvents
+
+					//Output(vsWindowKindOutput)
+					//	可获取	IVsOutputWindow/IVsSolutionEvents/IOleCommandTarget/IVsTextView/IVsExtensibleObject/
+					//			IVsFindTarget/IVsOutputWindow2/IVsUserContextUpdate/IVsWindowFrameNotify
+
+					//Pending Changes(第三方 AnkhSvn )
+					//	可获取  IDisposable/IVsWindowFrameNotify3/IProvideClassInfo/IConnectionPointContainer/
+					//			IManagedObject/IVsWindowFrameNotify2/IVsBroadcastMessageEvents/IVsWindowFrameNotify
+
+					//代码窗口，如 .cpp
+					//  可获取  IVsCodeWindowEx/IVsHighlight/IVsTextBufferEvents/IVsSplitRoot/IVsDropdownBarManager/
+					//			IServiceProvider/IVsTextEditorPropertyContainer/SVsCodeWindow/
+					//			IConnectionPointContainer
+					//			IVsToolboxUser/IVsTextBufferDataEvents/IVsBackForwardNavigation/IVsStatusbarUser
+					//			IVsFindTarget2/IVsWindowFrameNotify2/IVsBroadcastMessageEvents/IVsWindowFrameNotify
+					VSFPROPID_DocView,
+
+					//可获取	IServiceProvider 接口
 					VSFPROPID_SPFrame,
+
+					//代码窗口，如 .cpp
+					//	可获取	IVsPerPropertyBrowsing/IPerPropertyBrowsing/IVsCfgProvider2/IServiceProvider/IOleCommandTarget
+					//			IVsExtensibleObject/IVsCfgProvider/IVsFileChangeEvents
 					VSFPROPID_SPProjContext,
+
 					VSFPROPID_Caption,
 					VSFPROPID_WindowState,
 					VSFPROPID_FrameMode,
 					VSFPROPID_IsWindowTabbed,
+
+					//可获取 IVsUserContext  接口
 					VSFPROPID_UserContext,
+
 					VSFPROPID_ViewHelper,
 					VSFPROPID_ShortCaption,
 					VSFPROPID_WindowHelpKeyword,
@@ -2115,29 +2279,70 @@ namespace FTL
 					VSFPROPID_OwnerCaption,
 					VSFPROPID_EditorCaption,
 					VSFPROPID_pszMkDocument,
+
+					//代码窗口，如 .cpp
+					//	可获取	IPersistStream/IVsTextFind/IVsTextLayer2/IVsTextLines2/IVsLinkedUndoClient/IPersistFileCheckSum/
+					//			IVsLastChangeTimeProvider/IPersistFileFormat/IVsTextImage/IVsExpansion/IVsFileBackup/
+					//			IVsCommitGestureSink/IVsUserData/IVsPersistDocData2/IVsTextBufferEx/IVsBatchUpdate/
+					//			IVsTextColorState/IVsCompoundAction/IVsCompoundViewChange/IOleCommandTarget
+					//			IConnectionPointContainer/
+					//			IVsFullTextScanner/IVsDocDataFileChangeControl/IVsSaveOptionsDlg/IVsTextReplaceEvents/
+					//			IVsSupportCodeDefView/IVsTextStream/IVsPersistDocData/IVsTextScanner/IVsTextLines/
+					//			IVsTextBufferTempInit/IVsTextImage2/IVsUndoRedoClusterWithCommitEvents/IObjectWithSite
 					VSFPROPID_DocData,
+
+					//代码窗口，如 .cpp
+					//  可获取	IPersist/IVsPersistHierarchyItem/IPersistFileFormat/
+					//			IVsHierarchy/IVsUIHierarchy/IVsHierarchyDeleteHandler/IVsUIHierWinClipboardHelperEvents/
+					//			IVsHierarchyDropDataTarget/IVsHierarchyDropDataSource/IVsSupportItemHandoff/
+					//			IVsProject3/IVsProjectResources/IVsProjectSpecificEditorMap2/IVsProjectSpecialFiles/IVsProjectCfgProvider
+					//			IVsSccProject2/IVsCfgProvider2/IVsFileBackup/IVsAggregatableProject
+					//			IVsDependencyProvider/IVsExtensibleObject/
+					//			IVsUpdateSolutionEvents/IOleCommandTarget
 					VSFPROPID_Hierarchy,
 					VSFPROPID_ItemID,
+
+					//代码窗口(如.cpp) 可以获得 vsContextGuidTextEditor
 					VSFPROPID_CmdUIGuid,
+
 					VSFPROPID_CreateDocWinFlags,
 					VSFPROPID_guidEditorType,
 					VSFPROPID_pszPhysicalView,
+
+					//Output等获得 vsContextGuidTextEditor
 					VSFPROPID_InheritKeyBindings,
+
+					//代码窗口，如 .cpp
+					//	可获取	IPersistStream/IPersistFileCheckSum/IVsLastChangeTimeProvider/IPersistFileFormat/IVsFileBackup
+					//			IVsCommitGestureSink/IVsPersistDocData2/IVsDocDataFileChangeControl/IVsPersistDocData
+					//			IVsTextFind/IVsTextLayer2/IVsTextLines2/IVsTextImage/IVsTextBufferEx/IVsBatchUpdate
+					//			IVsFullTextScanner/IVsTextBuffer/IVsTextStream/IVsTextScanner/IVsSupportCodeDefView
+					//			IVsTextLines/IVsTextBufferTempInit/
+					//			IVsLinkedUndoClient/IVsExpansion/IVsUserData/IVsTextColorState/IVsTextImage2
+					//			IConnectionPointContainer/IOleCommandTarget/IObjectWithSite
+					//			IVsCompoundAction/IVsCompoundViewChange/IVsSaveOptionsDlg
+					//			IVsTextReplaceEvents/IVsUndoRedoClusterWithCommitEvents
 					VSFPROPID_RDTDocData,
 					VSFPROPID_AltDocData,
 					VSFPROPID_GuidPersistenceSlot,
 					VSFPROPID_GuidAutoActivate,
 					VSFPROPID_CreateToolWinFlags,
+
+					//可获取	DTE::Window2/IVsSelectionEvents/LifetimeInformation 等接口
 					VSFPROPID_ExtWindowObject,
+
 					VSFPROPID_MultiInstanceToolNum,
 					VSFPROPID_BitmapResource,
 					VSFPROPID_BitmapIndex,
-					VSFPROPID_ToolbarHost,	//获取关联的 IVsToolWindowToolbarHost 接口
+
+					//Solution Explorer -- 可获取	IVsToolWindowToolbarHost 等接口
+					VSFPROPID_ToolbarHost,
+
 					VSFPROPID_HideToolwinContainer,
 				};
 #pragma warning(default : 4245)
 
-				pInfoOutput->OnOutput(TEXT("Property"));
+				pInfoOutput->OnOutput(TEXT("WindowFrame Property"));
 				for (int i = 0; i < _countof(dwVSFPropIds); i++)
 				{
 					CComVariant varProperty;
@@ -2148,14 +2353,16 @@ namespace FTL
 					}
 				}
 
-				pInfoOutput->OnOutput(TEXT("GuidProperty"));
+				pInfoOutput->OnOutput(TEXT("WindowFrame GuidProperty"));
 				for (int i = 0; i < _countof(dwVSFPropIds); i++)
 				{
 					GUID guidProperty = GUID_NULL;
 					COM_VERIFY_EXCEPT1(spVsWindowFrame->GetGuidProperty(dwVSFPropIds[i], &guidProperty), DISP_E_MEMBERNOTFOUND);
 					if (SUCCEEDED(hr) && !IsEqualGUID(guidProperty, GUID_NULL))
 					{
-						COM_VERIFY(pInfoOutput->OnOutput(CFVSIPUtils::GetVSFPropIdIdString(dwVSFPropIds[i]), &guidProperty));
+						CComBSTR bstrGuid(guidProperty);
+						COM_VERIFY(pInfoOutput->OnOutput(CFVSIPUtils::GetVSFPropIdIdString(dwVSFPropIds[i]),
+							CFDTEUtil::GetDTEGuidStringInfo(bstrGuid)));
 					}
 				}
 
@@ -2191,14 +2398,18 @@ namespace FTL
 
 				CComPtr<IVsTextView> spPrimaryView;
 				COM_VERIFY(spVsCodeWindow->GetPrimaryView(&spPrimaryView));
+				COM_DETECT_INTERFACE_FROM_REGISTER(spPrimaryView);
+
 				pInfoOutput->OnOutput(TEXT("PrimaryView"));
 				CFVsTextViewDumper primaryViewDumper(spPrimaryView, pInfoOutput, m_nIndent + 2);
 
 				CComPtr<IVsTextView> spSecondaryView;
-				COM_VERIFY(spVsCodeWindow->GetSecondaryView(&spSecondaryView));
-				pInfoOutput->OnOutput(TEXT("SecondaryView"));
-				CFVsTextViewDumper secondaryViewDumper(spSecondaryView, pInfoOutput, m_nIndent + 2);
-
+				COM_VERIFY_EXCEPT1(spVsCodeWindow->GetSecondaryView(&spSecondaryView), E_FAIL);
+				if (SUCCEEDED(hr) && spSecondaryView)
+				{
+					pInfoOutput->OnOutput(TEXT("SecondaryView"));
+					CFVsTextViewDumper secondaryViewDumper(spSecondaryView, pInfoOutput, m_nIndent + 2);
+				}
 			}
 		}
 		return hr;
@@ -2277,10 +2488,10 @@ namespace FTL
 				}
 
 				CComPtr<IDataObject>	spSelectionDataObject;
-				COM_VERIFY(spVsTextView->GetSelectionDataObject(&spSelectionDataObject));
+				COM_VERIFY_EXCEPT1(spVsTextView->GetSelectionDataObject(&spSelectionDataObject), E_FAIL);
 				if (SUCCEEDED(hr) && spSelectionDataObject)
 				{
-					COM_DETECT_INTERFACE_FROM_LIST(spSelectionDataObject);
+					COM_DETECT_INTERFACE_FROM_REGISTER(spSelectionDataObject);
 				}
 			}
 		}
@@ -2299,16 +2510,13 @@ namespace FTL
 			{
 				COM_VERIFY(spVsEnumTextBuffers->Reset());
 
-				CComPtr<IVsTextBuffer> spVsTextBuffer;
 				ULONG ulFetched = 0;
-
-				COM_VERIFY_EXCEPT1(spVsEnumTextBuffers->Next(1, &spVsTextBuffer, &ulFetched), S_FALSE);
-				while (SUCCEEDED(hr) && ulFetched == 1)
+				CComPtr<IVsTextBuffer> spVsTextBuffer;
+				while (SUCCEEDED(spVsEnumTextBuffers->Next(1, &spVsTextBuffer, &ulFetched)) && ulFetched > 0)
 				{
+					FTLASSERT(1 == ulFetched);
 					CFVsTextBufferDumper vsTextViewDumper(spVsTextBuffer, pInfoOutput, m_nIndent + 2);
-
 					spVsTextBuffer.Release();
-					COM_VERIFY_EXCEPT1(spVsEnumTextBuffers->Next(1, &spVsTextBuffer, &ulFetched), S_FALSE);
 				}
 				hr = S_OK;
 			}
@@ -2345,7 +2553,8 @@ namespace FTL
 
 				GUID guidLanguageServiceID = GUID_NULL;
 				COM_VERIFY(spVsTextBuffer->GetLanguageServiceID(&guidLanguageServiceID));
-				//pInfoOutput->OnOutput(TEXT("LanguageServiceID"), )
+				CComBSTR bstrGuidLanguageServiceID(guidLanguageServiceID);
+				pInfoOutput->OnOutput(TEXT("LanguageServiceID"), CFDTEUtil::GetDTEGuidStringInfo(bstrGuidLanguageServiceID));
 			}
 		}
 		return hr;
@@ -2402,12 +2611,13 @@ namespace FTL
 
 				COM_VERIFY(spVsEnumLineMarkers->Reset());
 
-				for(LONG nMarkerIndex = 0; nMarkerIndex < nMakerCount; ++nMarkerIndex)
+				for(LONG nMarkerIndex = 1; nMarkerIndex <= nMakerCount; ++nMarkerIndex)
 				{
 					CComPtr<IVsTextLineMarker>	spVsTextLineMarker;
 					COM_VERIFY(spVsEnumLineMarkers->Next(&spVsTextLineMarker));
 					if (SUCCEEDED(hr) && spVsTextLineMarker)
 					{
+						pInfoOutput->OnOutput(TEXT("LineMarker Index"), nMarkerIndex);
 						CFVsTextLineMarkerDumper vsTextLineMarkerDumper(spVsTextLineMarker, pInfoOutput, m_nIndent + 2);
 					}
 				}
@@ -2423,24 +2633,38 @@ namespace FTL
 		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextMarker")));
 		if (m_pObj)
 		{
+			//可以QI出 IVsTextStreamMarker/IVsTextLineMarkerEx/IVsTextLayerMarker/IVsTextLineMarker/IVsTextMarker/IVsTextTrackingPoint 等接口
 			CComQIPtr<IVsTextMarker>     spVsTextMarker(m_pObj);
 			if (spVsTextMarker)
 			{
-				long nMarkerType = 0;
-				COM_VERIFY(spVsTextMarker->GetType(&nMarkerType));
-				pInfoOutput->OnOutput(TEXT("Type"), nMarkerType);
+				//IVsMergeableUIItem ?
+				COM_DETECT_INTERFACE_FROM_REGISTER(spVsTextMarker);
+				CComQIPtr<IVsMergeableUIItem> spVsMergeableUIItem(spVsTextMarker);
+				if (spVsMergeableUIItem)
+				{
+					CFVsMergeableUIItemDumper vsMergeableUIItemDumper(spVsMergeableUIItem, pInfoOutput, m_nIndent + 2);
+				}
 
+				LONG nMarkerType = 0;
+				COM_VERIFY(spVsTextMarker->GetType(&nMarkerType));
+				pInfoOutput->OnOutput(TEXT("Type"), CFVSIPUtils::GetTextMakerTypeString(nMarkerType));
+
+				FTL::CFStringFormater strFormater;
 				DWORD dwVisualStyle = 0;
 				COM_VERIFY(spVsTextMarker->GetVisualStyle(&dwVisualStyle));
-				pInfoOutput->OnOutput(TEXT("VisualStyle"), (LONG)dwVisualStyle);
+				pInfoOutput->OnOutput(TEXT("VisualStyle"), CFVSIPUtils::GetMarkerVisualFlagsString(strFormater, dwVisualStyle));
 
 				CComBSTR bstrTipText;
-				COM_VERIFY(spVsTextMarker->GetTipText(&bstrTipText));
-				pInfoOutput->OnOutput(TEXT("TipText"), &bstrTipText);
+				hr = spVsTextMarker->GetTipText(&bstrTipText);
+				if (SUCCEEDED(hr))
+				{
+					pInfoOutput->OnOutput(TEXT("TipText"), &bstrTipText);
+				}
 
 				DWORD dwBehavior = 0;
 				COM_VERIFY(spVsTextMarker->GetBehavior(&dwBehavior));
-				pInfoOutput->OnOutput(TEXT("Behavior"), dwBehavior);
+				strFormater.Reset();
+				pInfoOutput->OnOutput(TEXT("Behavior"), CFVSIPUtils::GetMarkerBehaviorFlagsString(strFormater, dwBehavior));
 
 				LONG nPriorityIndex = 0;
 				COM_VERIFY(spVsTextMarker->GetPriorityIndex(&nPriorityIndex));
@@ -2459,14 +2683,14 @@ namespace FTL
 			CComQIPtr<IVsTextLineMarker>     spVsTextLineMarker(m_pObj);
 			if (spVsTextLineMarker)
 			{
-				CFVsTextMarkerDumper vsTextMakerDumper(spVsTextLineMarker, pInfoOutput, m_nIndent);
+				CFVsTextMarkerDumper vsTextMakerDumper(spVsTextLineMarker, pInfoOutput, m_nIndent + 2);
 
 				TextSpan CurrentSpan = {0};
 				COM_VERIFY(spVsTextLineMarker->GetCurrentSpan(&CurrentSpan));
 				if (SUCCEEDED(hr))
 				{
 					FTL::CFStringFormater formater;
-					formater.Format(TEXT("TextSpan From [%d, %d] To [%d, %d]"), CurrentSpan.iStartLine, 
+					formater.Format(TEXT(" From [%d, %d] To [%d, %d]"), CurrentSpan.iStartLine, 
 						CurrentSpan.iStartIndex, CurrentSpan.iEndLine, CurrentSpan.iEndIndex);
 					COM_VERIFY(pInfoOutput->OnOutput(TEXT("CurrentSpan"), formater.GetString()));
 				}
@@ -2475,6 +2699,37 @@ namespace FTL
 		return hr;
 	}
 
+	HRESULT CFVsMergeableUIItemDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsMergeableUIItem")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsMergeableUIItem>     spVsMergeableUIItem(m_pObj);
+			if (spVsMergeableUIItem)
+			{
+				CComBSTR bstrDisplayName;
+				COM_VERIFY(spVsMergeableUIItem->GetDisplayName(&bstrDisplayName));
+				pInfoOutput->OnOutput(TEXT("DisplayName"), &bstrDisplayName);
+
+				CComBSTR bstrCanonicalName;
+				COM_VERIFY(spVsMergeableUIItem->GetCanonicalName(&bstrCanonicalName));
+				pInfoOutput->OnOutput(TEXT("CanonicalName"), &bstrCanonicalName);
+
+				CComBSTR bstrDescription;
+				COM_VERIFY(spVsMergeableUIItem->GetDescription(&bstrDescription));
+				pInfoOutput->OnOutput(TEXT("Description"), &bstrDescription);
+
+				LONG nMergingPriority = 0;
+				COM_VERIFY(spVsMergeableUIItem->GetMergingPriority(&nMergingPriority));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("MergingPriority"), nMergingPriority));
+			}
+		}
+		return hr;
+	}
+
+	
 	HRESULT CFVsUIHierarchyDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
