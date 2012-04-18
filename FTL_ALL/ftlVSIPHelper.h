@@ -174,7 +174,7 @@
 * vsshell80.idl 文件中有 FontsAndColorsCategory::TextEditor 等的GUID定义
 *   
 ********************************************************************************************/
-#include <containedlanguage.h>
+//#include <containedlanguage.h>
 namespace FTL
 {
     class CFVSIPUtils

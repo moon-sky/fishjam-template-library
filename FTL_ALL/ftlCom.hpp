@@ -577,6 +577,11 @@ namespace FTL
 		return S_FALSE;
 	}
 
+	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, int iValue)
+	{
+		return OnOutput(pszKey, (LONG)iValue);
+	}
+
 	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, HWND hWnd)
 	{
 		if (pszKey)

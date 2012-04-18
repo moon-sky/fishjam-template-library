@@ -10,11 +10,12 @@
 
 namespace FTL
 {
-#ifdef MSO
-    LPCTSTR CFDTEUtil::GetMsoControlTypeString(MsoControlType controlType)
+#if	USE_MSVSC
+	LPCTSTR CFDTEUtil::GetMsoControlTypeString(MSVSC_NS::MsoControlType controlType)
     {
         switch(controlType)
         {
+			using namespace MSVSC_NS;
             HANDLE_CASE_RETURN_STRING(msoControlCustom);
             HANDLE_CASE_RETURN_STRING(msoControlButton);
             HANDLE_CASE_RETURN_STRING(msoControlEdit);
@@ -49,10 +50,11 @@ namespace FTL
         return TEXT("Unknown");
     }
 
-    LPCTSTR CFDTEUtil::GetMsoBarTypeString(MsoBarType barType)
+	LPCTSTR CFDTEUtil::GetMsoBarTypeString(MSVSC_NS::MsoBarType barType)
     {
         switch(barType)
         {
+			using namespace MSVSC_NS;
             HANDLE_CASE_RETURN_STRING(msoBarTypeNormal);
             HANDLE_CASE_RETURN_STRING(msoBarTypeMenuBar);
             HANDLE_CASE_RETURN_STRING(msoBarTypePopup);
@@ -62,7 +64,7 @@ namespace FTL
         }
         return TEXT("Unknown");
     }
-#endif 
+#endif //USE_MSVSC
 
     LPCTSTR CFDTEUtil::GetWindowTypeString(DTE_NS::vsWindowType nWindowType)
     {
@@ -177,10 +179,9 @@ namespace FTL
         return strFormater.GetString();
     }
 
-#ifdef VCCML_NS
 	LPCTSTR CFDTEUtil::GetCMFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind)
 	{
-		using namespace VCCML_NS;
+		using namespace DTE_NS;
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstructor , TEXT(","));
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyGet , TEXT(","));
 		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyLet , TEXT(","));
@@ -202,7 +203,7 @@ namespace FTL
 		FTLASSERT(0 == nFunctionKind);
 		return strFormater.GetString();
 	}
-#endif 
+
 
 #ifdef FTL_DEBUG
 #  define HANDLE_STRING_COMPARE_RETURN(val, exp, fun) \
@@ -213,8 +214,11 @@ namespace FTL
 					pszResult, TEXT(#exp));\
 				FTLASSERT(!bFound);\
 			}\
+			else\
+			{\
+				pszResult = TEXT(#exp);\
+			}\
 			bFound = TRUE;\
-			pszResult = TEXT(#exp);\
 		}
 #else
   #define HANDLE_STRING_COMPARE_RETURN(val, exp, fun) \
@@ -360,7 +364,7 @@ namespace FTL
         //HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_OutputWindow, _stricmp );		//vsWindowKindOutput
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ObjectBrowser, _stricmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ContextWindow, _stricmp );
-        HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ClassView, _stricmp );
+        //HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_wk_ClassView, _stricmp );			//vsWindowKindClassView
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_GUID_AddItemWizard, _stricmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsext_GUID_NewProjectWizard, _stricmp );
         HANDLE_STRING_COMPARE_RETURN( pszCompareString, dsCPP, _stricmp );
@@ -386,6 +390,7 @@ namespace FTL
         
 
 		//dte80.h(VSIP)
+		using namespace DTE80_NS;
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionBuilding, _stricmp );
 		
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidUIHierarchyDragging, _stricmp );
@@ -439,7 +444,7 @@ namespace FTL
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidObjectBrowser, _stricmp );
 		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidMacroExplorer, _stricmp );		//vsWindowKindMacroExplorer
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDynamicHelp, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidClassView, _stricmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidClassView, _stricmp );			//vsWindowKindClassView		
 		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidResourceView, _stricmp );		//vsWindowKindResourceView
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDocumentOutline, _stricmp );
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidServerExplorer, _stricmp );
@@ -561,8 +566,8 @@ namespace FTL
 
         if (m_pObj)
         {
-			//可以QI到
-			//	_DTE/DTE2/IServiceProvider
+			//可以QI到(注意：通过 IServiceProvider 即可获取到VSIP中的各种接口 )
+			//	_DTE/DTE2/IServiceProvider/ISupportErrorInfo
             CComQIPtr<DTE_NS::_DTE>     spDTE(m_pObj);
             if (spDTE)
             {
@@ -601,7 +606,10 @@ namespace FTL
 #endif
 				CComPtr<DTE_NS::Document>   spActiveDocument;
 				COM_VERIFY(spDTE->get_ActiveDocument(&spActiveDocument));
-				CFDocumentDumper    activeDocumentDumper(spActiveDocument, pInfoOutput, m_nIndent + 2);
+				if (spActiveDocument)
+				{
+					CFDocumentDumper    activeDocumentDumper(spActiveDocument, pInfoOutput, m_nIndent + 2);
+				}
 
 				CComPtr<DTE_NS::Documents>  spDocuments;
 				COM_VERIFY(spDTE->get_Documents(&spDocuments));
@@ -618,10 +626,54 @@ namespace FTL
 				CComPtr<DTE_NS::Commands> spCommands;
 				COM_VERIFY(spDTE->get_Commands(&spCommands));
 				CFCommandsDumper commandsDumper(spCommands, pInfoOutput, m_nIndent + 2);
+
+				CComPtr<IDispatch> spDispCommandBars;
+				COM_VERIFY(spDTE->get_CommandBars(&spDispCommandBars));
+				COM_DETECT_INTERFACE_FROM_REGISTER(spDispCommandBars);
+
+				CComQIPtr<MSVSC_NS::_CommandBars> spCommandsBars(spDispCommandBars);
+				if(spCommandsBars)
+				{
+					CFCommandBarsDumper commandBarsDumper(spDispCommandBars, pInfoOutput, m_nIndent + 2);
+				}
+
+				CComPtr<DTE_NS::ObjectExtenders> spObjectExtenders;
+				COM_VERIFY(spDTE->get_ObjectExtenders(&spObjectExtenders));
+				COM_DETECT_INTERFACE_FROM_REGISTER(spObjectExtenders);
+				CFObjectExtendersDumper objectExtendersDumper(spObjectExtenders, pInfoOutput, m_nIndent + 2);
+
+				CComPtr<DTE_NS::SourceControl> spSourceControl;
+				COM_VERIFY(spDTE->get_SourceControl(&spSourceControl));
+				COM_DETECT_INTERFACE_FROM_REGISTER(spSourceControl); //SourceControl2/SourceControl
+				//CFSourceControlDumper sourceControlDumper(spSourceControl, pInfoOutput, m_nIndent + 2);
+
+				CComPtr<DTE_NS::Debugger> spDebugger;
+				COM_VERIFY(spDTE->get_Debugger(&spDebugger));
+				COM_DETECT_INTERFACE_FROM_REGISTER(spDebugger);	//Debugger ~ Debugger4/ISupportErrorInfo
             }
         }
         return hr;
     }
+
+	HRESULT CFObjectExtendersDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("ObjectExtenders")));
+		if (m_pObj)
+		{
+			//可以QI到
+			//	ObjectExtenders/ISupportErrorInfo/IExtenderSite
+			CComQIPtr<DTE_NS::ObjectExtenders> spObjectExtenders(m_pObj);
+			if (spObjectExtenders)
+			{
+				CComVariant	varExtenderCATIDs;
+				COM_VERIFY(spObjectExtenders->GetContextualExtenderCATIDs(&varExtenderCATIDs));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ContextualExtenderCATIDs"), &varExtenderCATIDs));
+			}
+		}
+		return hr;
+	};
+
 
 	HRESULT CFAddinsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
@@ -716,9 +768,11 @@ namespace FTL
     HRESULT CFSolutionDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
-        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("Solution")));
+        COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("_Solution")));
         if (m_pObj)
         {
+			//能QI到
+			//	Solution3/_Solution/ISupportVSProperties/IProvideClassInfo2/LifetimeInformation/IPersistFile
             CComQIPtr<DTE_NS::_Solution>     spSolution(m_pObj);
             if (spSolution)
             {
@@ -934,7 +988,7 @@ namespace FTL
         if (m_pObj)
         {
 			//可以QI到
-			//	Window/Window2/IVsSelectionEvents/LifetimeInformation
+			//	Window/Window2/IVsSelectionEvents/LifetimeInformation/ISupportErrorInfo
             CComQIPtr<DTE_NS::Window>     spWindow(m_pObj);
             if (spWindow)
             {
@@ -978,7 +1032,10 @@ namespace FTL
                 COM_VERIFY(spWindow->get_Object(&spToolObject));
                 if (spToolObject)
                 {
-					//在代码编辑 Window 中，能够得到 TextWindow
+					//不同的Window(ObjectKind)能得到不同的接口，
+					//	Output(vsWindowKindOutput) -- OutputWindow
+					//	Solution Explorer(vsWindowKindSolutionExplorer) -- UIHierarchy
+					//	代码编辑 -- TextWindow
                     COM_DETECT_INTERFACE_FROM_REGISTER(spToolObject);
 					CComQIPtr<DTE_NS::TextWindow> spTextWindow(spToolObject);
 					if (spTextWindow)
@@ -988,6 +1045,8 @@ namespace FTL
 
 						//CFTextWindowDumper textWindowDumper(spTextWindow, pInfoOutput, m_nIndent);
 					}
+
+					//在 Solution Explorer 等中，能得到 UIHierarchy
                 }
                 //Document 窗口可以获取 Selection
                 //spWindow->get_Selection();
@@ -1243,7 +1302,9 @@ namespace FTL
 					COM_VERIFY(pInfoOutput->OnOutput(TEXT("CodeElements Count"), nCount));
 				}
 
-                for (long nIndex = 1; nIndex <= nCount; nIndex++)
+                for (long nIndex = 1; 
+					nIndex <= nCount && nIndex <= MAX_DUMP_CHILD_ITEM_COUNT;
+					nIndex++)
                 {
                     CComPtr<DTE_NS::CodeElement> spCodeElement;
                     COM_VERIFY(spCodeElements->Item(CComVariant(nIndex), &spCodeElement));
@@ -1328,41 +1389,45 @@ namespace FTL
 					}
 				}
 
-#ifdef VCCML_NS & 0
+#if	USE_VCCML
 				//VC Information
 				CComQIPtr<VCCML_NS::VCCodeElement> spVCCodeElement(spCodeElement);
 				if (spVCCodeElement)
 				{
 					CFVCCodeElementDumper	vcCodeElementDumper(spVCCodeElement, pInfoOutput, m_nIndent + 2);
 				}
-#endif
+#endif	//USE_VCCML
 			}
         }
         return hr;
     }
 
 
-#ifdef USE_MSC
+#if USE_MSVSC
     HRESULT CFCommandBarsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
     {
         HRESULT hr = E_POINTER;
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("_CommandBars")));
         if (m_pObj)
         {
-			CComQIPtr<Microsoft_VisualStudio_CommandBars::_CommandBars>     spCommandBars(m_pObj);
+			//可以QI到 
+			//	_CommandBars/IConnectionPointContainer/ISupportErrorInfo
+			CComQIPtr<MSVSC_NS::_CommandBars>     spCommandBars(m_pObj);
             if (spCommandBars)
             {
                 int nToolBarCount = 0;
                 COM_VERIFY(spCommandBars->get_Count(&nToolBarCount));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), nToolBarCount));
-                for (int nToolBarIndex = 1; nToolBarIndex <= nToolBarCount; ++ nToolBarIndex)
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("CommandBar Count"), (LONG)nToolBarCount));
+                for (int nToolBarIndex = 1; 
+					nToolBarIndex <= nToolBarCount && nToolBarIndex <= MAX_DUMP_CHILD_ITEM_COUNT;
+					++ nToolBarIndex)
                 {
-                    CComPtr<Microsoft_VisualStudio_CommandBars::CommandBar>  spCommandBar;
+                    CComPtr<MSVSC_NS::CommandBar>  spCommandBar;
                     COM_VERIFY(spCommandBars->get_Item(CComVariant(nToolBarIndex), &spCommandBar));
                     CFCommandBarDumper commandBarDumper(spCommandBar, pInfoOutput, m_nIndent + 2);
                 }
 
-                CComPtr<Microsoft_VisualStudio_CommandBars::CommandBarControl>	spActiveControl;
+                CComPtr<MSVSC_NS::CommandBarControl>	spActiveControl;
                 COM_VERIFY(spCommandBars->get_ActionControl(&spActiveControl));
                 if (spActiveControl)
                 {
@@ -1379,14 +1444,16 @@ namespace FTL
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBar")));
         if (m_pObj)
         {
-            CComQIPtr<Microsoft_VisualStudio_CommandBars::CommandBar>     spCommandBar(m_pObj);
+			//可以QI到
+			//	IAccessible/CommandBar/ISupportErrorInfo
+            CComQIPtr<MSVSC_NS::CommandBar>     spCommandBar(m_pObj);
             if (spCommandBar)
             {
                 CComBSTR bstrName;
                 COM_VERIFY(spCommandBar->get_Name(&bstrName));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
 
-                MsoBarType barType;
+				MSVSC_NS::MsoBarType barType;
                 COM_VERIFY(spCommandBar->get_Type(&barType));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), CFDTEUtil::GetMsoBarTypeString(barType)));
                 //VARIANT_BOOL	isBuiltIn = VARIANT_FALSE;
@@ -1399,7 +1466,7 @@ namespace FTL
 
                 int nIndex = 0;
                 COM_VERIFY(spCommandBar->get_Index(&nIndex));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Index"), nIndex));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Index"), (LONG)nIndex));
 
                 int nLeft = 0, nTop = 0, nWidth = 0, nHeight = 0;
                 
@@ -1411,7 +1478,7 @@ namespace FTL
                 formater.Format(TEXT("[%d,%d], {%d x %d}"), nLeft, nTop, nWidth, nHeight);
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("[left,top], {width x height}"), formater.GetString()));
 
-                CComPtr<CommandBarControls> spCommandBarControls;
+				CComPtr<MSVSC_NS::CommandBarControls> spCommandBarControls;
                 COM_VERIFY(spCommandBar->get_Controls(&spCommandBarControls));
                 if (spCommandBarControls)
                 {
@@ -1428,15 +1495,19 @@ namespace FTL
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBarControls")));
         if (m_pObj)
         {
-            CComQIPtr<CommandBarControls>     spCommandBarControls(m_pObj);
+			//可以QI到
+			//	CommandBarControls/ISupportErrorInfo
+            CComQIPtr<MSVSC_NS::CommandBarControls>     spCommandBarControls(m_pObj);
             if (spCommandBarControls)
             {
                 int nCount = 0;
                 COM_VERIFY(spCommandBarControls->get_Count(&nCount));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Count"), nCount));
-                for (int nIndex = 1; nIndex <= nCount; ++nIndex)
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("CommandBarControl Count"), (LONG)nCount));
+                for (int nIndex = 1; 
+					nIndex <= nCount && nIndex <= MAX_DUMP_CHILD_ITEM_COUNT;
+					++nIndex)
                 {
-                    CComPtr<CommandBarControl>	spCommandBarControl;
+                    CComPtr<MSVSC_NS::CommandBarControl>	spCommandBarControl;
                     COM_VERIFY(spCommandBarControls->get_Item(CComVariant(nIndex), &spCommandBarControl));
                     if (spCommandBarControl)
                     {
@@ -1454,14 +1525,16 @@ namespace FTL
         COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CommandBarControl")));
         if (m_pObj)
         {
-            CComQIPtr<CommandBarControl>     spCommandBarControl(m_pObj);
+			//可以QI到
+			//	CommandBarControl/IAccessible/CommandBarPopup/ISupportErrorInfo
+            CComQIPtr<MSVSC_NS::CommandBarControl>     spCommandBarControl(m_pObj);
             if (spCommandBarControl)
             {
                 CComBSTR bstrCaptrion;
                 COM_VERIFY(spCommandBarControl->get_Caption(&bstrCaptrion));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Caption"), &bstrCaptrion));
 
-                MsoControlType controlType = msoControlCustom;
+				MSVSC_NS::MsoControlType controlType = MSVSC_NS::msoControlCustom;
                 COM_VERIFY(spCommandBarControl->get_Type(&controlType));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), CFDTEUtil::GetMsoControlTypeString(controlType)));
 
@@ -1470,7 +1543,7 @@ namespace FTL
                 CComBSTR bstrDescriptionText;
                 COM_VERIFY(spCommandBarControl->get_DescriptionText(&bstrDescriptionText));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("DescriptionText"), &bstrDescriptionText));
-#endif 
+#endif //if 0
 
                 CComBSTR bstrTooltipText;
                 COM_VERIFY(spCommandBarControl->get_TooltipText(&bstrTooltipText));
@@ -1506,7 +1579,7 @@ namespace FTL
         }
         return hr;
     }
-#endif 
+#endif //USE_MSVSC
 
 
     HRESULT CFCommandsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
@@ -1525,7 +1598,9 @@ namespace FTL
                 COM_VERIFY(spCommands->get_Count(&lCommandCount));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Commands Count"), lCommandCount));
 
-                for (long lCommandIndex = 1; lCommandIndex <= lCommandCount; ++lCommandIndex)
+                for (long lCommandIndex = 1; 
+					lCommandIndex <= lCommandCount && lCommandIndex < MAX_DUMP_CHILD_ITEM_COUNT; 
+					++lCommandIndex)
                 {
                     CComPtr<DTE_NS::Command>  spCommand;
                     //TODO: ( pCommands->Item( CComVariant( "DoxygenAddin.Connect.DoxygenAddin" ), 0, &dx_cmd ), dx_cmd );
@@ -1582,7 +1657,7 @@ namespace FTL
         return hr;
     }
 
-#ifdef VCCML_NS
+#if	USE_VCCML
 	HRESULT CFVCFileCodeModelDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -1756,7 +1831,7 @@ namespace FTL
 		}
 		return hr;
 	}
-#endif //VCCML_NS
+#endif //USE_VCCML
 }
 
 

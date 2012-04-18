@@ -85,6 +85,7 @@ namespace FTL
 		virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT_BOOL value) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, LONG nValue) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, DWORD dwValue) = 0;
+		virtual HRESULT OnOutput(LPCTSTR pszKey, int iValue) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, HWND hWnd) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, GUID* pGuid) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT* pValue) = 0;
@@ -105,6 +106,7 @@ namespace FTL
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT_BOOL value);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, LONG nValue);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, DWORD dwValue);
+		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, int iValue);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, HWND hWnd);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, GUID* pGuid);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, VARIANT* pValue);

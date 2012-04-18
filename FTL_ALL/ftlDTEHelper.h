@@ -10,19 +10,53 @@
 #  error ftlDTEHelper requires ftlCom.h to be included first
 #endif
 
-//#define USE_MSO
-//#define USE_MSC		//Microsoft_VisualStudio_CommandBars
+////一般可以在头文件中增加如下的定义
+//#define USE_DTE		1
+//#define	USE_DTE80	1
+//#define USE_MSVSC	1
+//#define USE_VCCML	1
 
-#ifndef DTE_NS		// VxDTE( VSIP SDK ) or EnvDTE( import DTE )
-#  error Please define DTE_NS first
+//在Dump一些信息(比如Commands)时，由于数量太大，太浪费时间，因此设置默认的最大个数
+#ifndef MAX_DUMP_CHILD_ITEM_COUNT
+#  define MAX_DUMP_CHILD_ITEM_COUNT	5
 #endif 
 
-//#ifndef VCCML_NS	// VCCodeModelLibrary
-////Microsoft Development Environment VC++ Code Model 9.0 Type Library
-////#import "libid:B5D4541F-A1F1-4CE0-B2E7-5DA402367104" version("9.0") lcid("0") raw_interfaces_only named_guids
-//#  error Please define VCCML_NS first
-//#endif 
+//Microsoft_VisualStudio_CommandBars
+//"libid:1CBA492E-7263-47BB-87FE-639000619B15" version("8.0")
+#ifndef USE_MSVSC
+#  define USE_MSVSC		1
+#endif 
+#ifndef MSVSC_NS
+#  define MSVSC_NS		Microsoft_VisualStudio_CommandBars
+#endif 
 
+//DTE
+//"libid:80CC9F66-E7D8-4DDD-85B6-D9E6CD0E93E2" version("8.0")
+#ifndef USE_DTE
+#  define	USE_DTE		1
+#endif 
+//VxDTE( VSIP SDK ) or EnvDTE( import DTE )
+#ifndef DTE_NS
+#  define DTE_NS EnvDTE
+#endif 
+
+//DTE80
+//"libid:1A31287A-4D7D-413e-8E32-3B374931BD89" version("8.0")
+#ifndef USE_DTE80
+#  define USE_DTE80		1
+#endif 
+#ifndef DTE80_NS
+#  define DTE80_NS	EnvDTE80
+#endif 
+
+//Microsoft Development Environment VC++ Code Model 9.0 Type Library
+//#import "libid:B5D4541F-A1F1-4CE0-B2E7-5DA402367104" version("9.0") lcid("0") raw_interfaces_only named_guids
+#ifndef USE_VCCML
+#  define USE_VCCML		0
+#endif
+#ifndef VCCML_NS
+#  define VCCML_NS	VCCodeModelLibrary
+#endif //VCCML_NS
 
 /********************************************************************************************
 * DTE -- DTE提供了 ObjectExtenders、IVsProfferCommands、IVsIntelliMouseHandler 等 至少 60 多个Service
@@ -35,18 +69,17 @@ namespace FTL
     FTLEXPORT class CFDTEUtil
     {
     public:
+#if USE_MSVSC
+		FTLINLINE static LPCTSTR GetMsoControlTypeString(MSVSC_NS::MsoControlType controlType);
+        FTLINLINE static LPCTSTR GetMsoBarTypeString(MSVSC_NS::MsoBarType barType);
+#endif //USE_MSVSC
 
-#ifdef USE_MSO
-        FTLINLINE static LPCTSTR GetMsoControlTypeString(MsoControlType controlType);
-        FTLINLINE static LPCTSTR GetMsoBarTypeString(MsoBarType barType);
-#endif 
 		FTLINLINE static LPCTSTR GetWindowTypeString(DTE_NS::vsWindowType nWindowType);
 		FTLINLINE static LPCTSTR GetElementKindString(DTE_NS::vsCMElement nElementKind);
         FTLINLINE static LPCTSTR GetFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind); //vsCMFunction
-#ifdef VCCML_NS
 		FTLINLINE static LPCTSTR GetCMFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind);
-#endif 
         FTLINLINE static LPCTSTR GetDTEGuidStringInfo(const CComBSTR& bstring);
+
 		FTLINLINE static HRESULT OpenDocumentAndGotoLine(DTE_NS::_DTE* pDTE, LPCTSTR pszFileName,int line, 
 			CComPtr<DTE_NS::Document>& spFileDocument);
     };
@@ -61,6 +94,17 @@ namespace FTL
         //override
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
+
+	class CFObjectExtendersDumper : public CFInterfaceDumperBase<CFObjectExtendersDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFObjectExtendersDumper);
+	public:
+		FTLINLINE explicit CFObjectExtendersDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFObjectExtendersDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
 
 	class CFAddinsDumper : public CFInterfaceDumperBase<CFAddinsDumper>
 	{
@@ -253,7 +297,6 @@ namespace FTL
     };
 
 
-#ifdef USE_MSC //Microsoft_VisualStudio_CommandBars
     //CommandBars
     class CFCommandBarsDumper : public CFInterfaceDumperBase<CFCommandBarsDumper>
     {
@@ -264,7 +307,6 @@ namespace FTL
     public:
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
-#endif
 
     class CFCommandBarDumper : public CFInterfaceDumperBase<CFCommandBarDumper>
     {
@@ -321,7 +363,7 @@ namespace FTL
 	///////////////  Microsoft Development Environment VC++ Code Model 9.0 Type Library /////////////////////
     /////////////////////////////////         VCCodeModelLibrary            /////////////////////////////////
 	/////////////////////////////////  B5D4541F-A1F1-4CE0-B2E7-5DA402367104 /////////////////////////////////
-#ifdef VCCML_NS
+#if USE_VCCML
 	class CFVCFileCodeModelDumper : public CFInterfaceDumperBase<CFVCFileCodeModelDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVCFileCodeModelDumper);
@@ -361,7 +403,7 @@ namespace FTL
 	public:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
-#endif
+#endif	//USE_VCCML
 	
 
 }//namespace FTL
