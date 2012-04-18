@@ -5,6 +5,12 @@
 //CodeBlocks -- 开源的跨平台 C++ IDE，可以学习相关的知识
 //  其中有 ICodeCompletionItemsProvider 接口?
 
+//Visual Assist(us$249) -- http://www.wholetomato.com
+//VSAid(Freeware) -- http://www.brocksoft.co.uk/vsaid.php 
+//PhaStudio(OpenSource,C#) -- http://phatstudio.sourceforge.net
+//Visual Studio Flat Solution Explorer(OpenSource, C++) http://vsflatsolutionexp.codeplex.com/
+//DPack(Freeware) -- http://www.usysware.com/dpack
+
 //DTE中 ProjectItem -> FileCodeModel -> CodeElement->CodeElementChildren ?
 //CAtlDllModuleT 子类中 DECLARE_LIBID(idl中library的UUID) -- 作用 ?
 //   需要先通过 DECLSPEC_UUID 生命对应的UUID
@@ -15,7 +21,6 @@
 //  3.BEGIN_COM_MAP/END_COM_MAP 设置接口映射
 //  4.OBJECT_ENTRY_AUTO(CLSID_XXX, 类名) 映射
 
-//IDispatchImpl -- 如何使用?模板参数?
 //  COM_INTERFACE_ENTRY2 -- 宏的使用(多个IDispatch? ) COM_INTERFACE_ENTRY2(IDispatch, IDTExtensibility2)
 //
 //SetScrollPos(m_handles.vert, SB_CTL, line, TRUE); -- 使用 SB_CTL 是什么意思? 

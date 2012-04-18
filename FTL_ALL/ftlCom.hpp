@@ -589,7 +589,7 @@ namespace FTL
 				API_VERIFY(0 != ::GetClassName(hWnd,szClassName, _countof(szClassName)));
 
 				//Window Text May be Empty, So it will return zero
-				TCHAR szWindowText[64] = {0};
+				TCHAR szWindowText[128] = {0};
 				API_VERIFY_EXCEPT1(0 != ::GetWindowText(hWnd, szWindowText, _countof(szWindowText)), ERROR_SUCCESS);
 
 				RECT rcWindow = {0};
@@ -602,7 +602,7 @@ namespace FTL
 					szClassName, szWindowText);
 
 				OutputIndentSpace();
-				FTLTRACE(TEXT("  Key=%s,Value=\" %s \"\n"), pszKey, formater.GetString());
+				FTLTRACE(TEXT("  Key=%s,Value=\"%s\"\n"), pszKey, formater.GetString());
 
 				return S_OK;
 			}
@@ -666,6 +666,13 @@ namespace FTL
         }
         T* pT = static_cast<T*>(this);
 		pInfoOutput->SetIndent(nIndent);
+		static BOOL s_bDumped = FALSE;
+		if (!s_bDumped)
+		{
+			s_bDumped = TRUE;
+			FTLTRACE(TEXT("In CFInterfaceDumperBase Dump Object Form 0x%p\n"), m_pObj);
+			COM_DETECT_INTERFACE_FROM_REGISTER(m_pObj);
+		}
 		pT->GetObjInfo(pInfoOutput);
 	}
 

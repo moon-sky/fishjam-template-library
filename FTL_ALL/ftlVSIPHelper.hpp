@@ -1640,6 +1640,7 @@ namespace FTL
 
 		if (m_pObj)
 		{
+			//在VS2008中可QI出 IVsUIShell ~ IVsUIShell3
 			CComQIPtr<IVsUIShell>     spVsUIShell(m_pObj);
 			if (spVsUIShell)
 			{
@@ -1713,6 +1714,12 @@ namespace FTL
 
 		if (m_pObj)
 		{
+			//可以QI出
+			//	IVsTextManager/IVsTextManager2/IVsHiddenTextManager/IVsProvideColorableItems/IVsSyntheticTextManager
+			//	IVsFontAndColorDefaultsProvider/IVsCodePageSelection/IVsDefaultButtonBarImages/IVsTextMacroHelper
+			//	IVsPersistSolutionOpts/IVsTextMarkerColorSet/IVsTextEditorPropertyCategoryContainer
+			//	IConnectionPointContainer/IVsFileChangeEvents/IVsBroadcastMessageEvents
+			//	IObjectWithSite/
 			CComQIPtr<IVsTextManager>     spVsTextManager(m_pObj);
 			if (spVsTextManager)
 			{
@@ -1759,7 +1766,7 @@ namespace FTL
 					COM_VERIFY_EXCEPT1(spVsTextManager->GetMarkerTypeInterface(nMarkerTypeIndex, &spTextMarkerType), E_FAIL);
 					if (SUCCEEDED(hr) && spTextMarkerType)
 					{
-						COM_VERIFY(pInfoOutput->OnOutput(TEXT("Index"), nMarkerTypeIndex));
+						COM_VERIFY(pInfoOutput->OnOutput(TEXT("<MarkerTypeIndex>"), nMarkerTypeIndex));
 						CFVsTextMarkerTypeDumper      vsTextMarkerTypeDumper(spTextMarkerType, pInfoOutput, m_nIndent + 2);
 					}
 					else
@@ -1799,6 +1806,8 @@ namespace FTL
 		{
 			COM_DETECT_INTERFACE_FROM_REGISTER(m_pObj);
 
+			//可以QI出
+			//	IVsMergeableUIItem/IVsHiColorItem/IVsTextMarkerType
 			CComQIPtr<IVsTextMarkerType>     spVsTextMarkerType(m_pObj);
 			if (spVsTextMarkerType)
 			{
@@ -1859,6 +1868,10 @@ namespace FTL
 
 		if (m_pObj)
 		{
+			//可以QI出(注意：不能QI到 IServiceProvider)
+			//	IVsSolution3/IVsCreateAggregateProject/IVsFileBackup
+			//	IVsOpenProjectOrSolutionDlg/IVsPersistSolutionOpts/
+			//	IVsTrackProjectDocumentsEvents2/IVsFireSolutionEvents/IVsFireSolutionEvents2/IVsFileChangeEvents/IOleCommandTarget
 			CComQIPtr<IVsSolution>     spVsSolution(m_pObj);
 			if (spVsSolution)
 			{
@@ -1943,13 +1956,24 @@ namespace FTL
 			VSHPROPID_OpenFolderIconIndex,
 			VSHPROPID_CmdUIGuid,
 			VSHPROPID_SelContainer,
+
+			//工程文件 如 .vcproj 可获取	
+			//	IVsPerPropertyBrowsing/IProvidePropertyBuilder/IPerPropertyBrowsing/IVsGetCfgProvider
+			//	IConnectionPointContainer/
+			//	ISpecifyPropertyPages/IOleCommandTarget/IVsBrowseObject
 			VSHPROPID_BrowseObject,
 			VSHPROPID_AltHierarchy,
 			VSHPROPID_AltItemid,
 			VSHPROPID_ProjectDir,
 			VSHPROPID_SortPriority,
+
+			//可获取
+			//	IVsUserContext/
 			VSHPROPID_UserContext,
 			VSHPROPID_EditLabel,
+
+			//工程文件 如 .vcproj 可获取
+			//	ISupportVSProperties/Project
 			VSHPROPID_ExtObject,
 			VSHPROPID_ExtSelectedItem,
 			VSHPROPID_StateIconIndex,
@@ -1957,11 +1981,18 @@ namespace FTL
 			VSHPROPID_TypeName,
 			//VSHPROPID_ReloadableProjectFile,
 			VSHPROPID_HandlesOwnReload,
+
+			//工程文件 如 .vcproj(其Parent为Solution)，也是IVsHierarchy，可获取 
+			//	IVsOpenProjectOrSolutionDlg/IVsPersistSolutionOpts/IVsSolution3/IVsCreateAggregateProject
+			//	IVsFireSolutionEvents2/IVsCfgProvider/IVsFileChangeEvents
 			VSHPROPID_ParentHierarchy,
 			VSHPROPID_ParentHierarchyItemid,
 			VSHPROPID_ItemDocCookie,
 			VSHPROPID_Expanded,
-			VSHPROPID_ConfigurationProvider,
+
+			//工程文件 如 .vcproj 可获取
+			//	IVsProjectResources/IVsSccProject2/IVsCfgProvider2/IVsUpdateSolutionEvents/IVsAggregatableProject 等
+			VSHPROPID_ConfigurationProvider,		//OBSOLETE. Use IVsGetCfgProvider
 			VSHPROPID_ImplantHierarchy,
 			VSHPROPID_OwnerKey,
 			VSHPROPID_StartupServices,
@@ -2010,6 +2041,8 @@ namespace FTL
 			VSHPROPID_UseInnerHierarchyIconList,
 			VSHPROPID_EnableDataSourceWindow,
 			VSHPROPID_AppTitleBarTopHierarchyName,
+
+			//可以获取到 XXX\VC\atlmfc\src\mfc; XXX\VC\atlmfc\src\mfcm; 等得路径
 			VSHPROPID_DebuggerSourcePaths,
 			VSHPROPID_CategoryGuid,
 			VSHPROPID_DisableApplicationSettings,
@@ -2095,6 +2128,15 @@ namespace FTL
 		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsHierarchy")));
 		if (m_pObj)
 		{
+			//大部分可以QI出(?)
+			//	IVsPersistHierarchyItem/IPersistFileFormat/IVsHierarchyDeleteHandler/IVsUIHierWinClipboardHelperEvents
+			//	IVsHierarchyDropDataTarget/IVsHierarchyDropDataSource/IVsExtensibleObject/IVsSupportItemHandoff/
+			//	IVsUIHierarchy
+
+			//如果是工程文件(.vcprj), 可以QI出	
+			//	IVsProject3/IVsProjectResources/IVsProjectSpecificEditorMap/IVsProjectSpecialFiles/IVsProjectCfgProvider
+			//	IVsDependencyProvider/IVsUpdateSolutionEvents/IVsCfgProvider/IVsAggregatableProject
+			//
 			CComQIPtr<IVsHierarchy>     spIVsHierarchy(m_pObj);
 			if (spIVsHierarchy)
 			{
@@ -2135,6 +2177,9 @@ namespace FTL
 
         if (m_pObj)
         {
+			//可QI出 
+			//	IVsWindowFrame/IVsWindowFrame2/IVsHasRelatedSaveItems
+			//	IVsRunningDocTableEvents2/IVsHierarchyEvents/IVsRunningDocTableEvents/IOleCommandTarget
             CComQIPtr<IVsWindowFrame>     spVsWindowFrame(m_pObj);
             if (spVsWindowFrame)
             {
@@ -2185,12 +2230,12 @@ namespace FTL
 							pInfoOutput->OnOutput(TEXT("FrameWindow CreateToolWinFlags"), V_I4(&varCreateToolWinFlags));
 						}
 
-						//CComPtr<IVsToolWindowToolbar> spVsToolWindowToolbar;
-						//COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsToolWindowToolbar, (void**)&spVsToolWindowToolbar));
-						//if (SUCCEEDED(hr) && spVsToolWindowToolbar)
-						//{
-						//	//CFVsToolWindowToolbarDumper toolWindowToolBarDumper(spVsToolWindowToolbar, pInfoOutput, m_nIndent + 2);
-						//}
+						CComPtr<IVsWindowFrame> spVsToolWindowToolbar;
+						COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsToolWindowToolbar, (void**)&spVsToolWindowToolbar));
+						if (SUCCEEDED(hr) && spVsToolWindowToolbar)
+						{
+							//CFVsToolWindowToolbarDumper toolWindowToolBarDumper(spVsToolWindowToolbar, pInfoOutput, m_nIndent + 2);
+						}
 					}
 					break;
 				default:
@@ -2276,9 +2321,9 @@ namespace FTL
 					VSFPROPID_WindowHelpKeyword,
 					VSFPROPID_WindowHelpCmdText,
 					VSFPROPID_DocCookie,
-					VSFPROPID_OwnerCaption,
+					VSFPROPID_OwnerCaption,		//BSTR -- %3  (什么意思)
 					VSFPROPID_EditorCaption,
-					VSFPROPID_pszMkDocument,
+					VSFPROPID_pszMkDocument,	//BSTR -- 可以获得文件的全路径
 
 					//代码窗口，如 .cpp
 					//	可获取	IPersistStream/IVsTextFind/IVsTextLayer2/IVsTextLines2/IVsLinkedUndoClient/IPersistFileCheckSum/
@@ -2306,7 +2351,10 @@ namespace FTL
 					VSFPROPID_CmdUIGuid,
 
 					VSFPROPID_CreateDocWinFlags,
+
+					//代码窗口(如.cpp)可获得 vsConstVCPlusPlusManagedFormEditorFactory
 					VSFPROPID_guidEditorType,
+
 					VSFPROPID_pszPhysicalView,
 
 					//Output等获得 vsContextGuidTextEditor
@@ -2377,6 +2425,12 @@ namespace FTL
 		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsCodeWindow")));
 		if (m_pObj)
 		{
+			//可QI出 
+			//  IVsCodeWindowEx/IVsSplitRoot/IVsDropdownBarManager/IServiceProvider/SVsCodeWindow/IVsToolboxUser/
+			//	IVsBackForwardNavigation/IVsStatusbarUser/IVsFindTarget2/
+			//	IVsTextBufferEvents/IVsTextBufferDataEvents/IVsBroadcastMessageEvents/
+			//	IVsWindowFrameNotify2/IConnectionPointContainer/IOleCommandTarget
+			//	IVsHighlight/IVsTextEditorPropertyContainer/
 			CComQIPtr<IVsCodeWindow>     spVsCodeWindow(m_pObj);
 			if (spVsCodeWindow)
 			{
@@ -2451,6 +2505,11 @@ namespace FTL
 
 		if (m_pObj)
 		{
+			//可以QI出	IVsHighlight/IVsTextViewIntellisenseHostProvider/IVsPersistSolutionOpts/IVsLayeredTextView/
+			//			IVsEditorGoBackLocations/IVsProvideUserContext/IVsUserContextUpdate/IVsTextEditorPropertyCategoryContainer/
+			//			IConnectionPointContainer/IVsCompoundAction/IVsToolboxUser/IVsBackForwardNavigation/
+			//			IVsLineAttributes/IVsStatusbarUser/IVsFindTarget2/IVsTextViewEx/IVsWindowFrameNotify2/
+			//			IVsReadOnlyViewNotification/IVsWindowFrameNotify/IVsThreadSafeTextView 
 			CComQIPtr<IVsTextView>     spVsTextView(m_pObj);
 			if (spVsTextView)
 			{
@@ -2567,6 +2626,14 @@ namespace FTL
 
 		if (m_pObj)
 		{
+			//可QI出 
+			//	IPersistStream/IPersistFileFormat/IPersistFileCheckSum/IVsFileBackup/IVsLastChangeTimeProvider/
+			//	IVsTextFind/IVsTextLines2/IVsTextLayer2/IVsTextImage2/IVsTextStream/IVsTextBufferEx/IVsTextBuffer/IVsTextBufferTempInit
+			//	IVsLinkedUndoClient/IVsCommitGestureSink/IVsUserData/IVsDocDataFileChangeControl/IVsPersistDocData
+			//	IVsExpansion/IVsPersistDocData2/IVsBatchUpdate/IVsCompoundAction/IVsCompoundViewChange
+			//	IVsTextReplaceEvents/IVsUndoRedoClusterWithCommitEvents/
+			//	IConnectionPointContainer/IOleCommandTarget/IObjectWithSite
+			//	IVsFullTextScanner/IVsTextScanner/IVsSaveOptionsDlg/IVsSupportCodeDefView/IVsTextColorState/
 			CComQIPtr<IVsTextLines>     spVsTextLines(m_pObj);
 			if (spVsTextLines)
 			{
@@ -2602,6 +2669,8 @@ namespace FTL
 
 		if (m_pObj)
 		{
+			//可QI出
+			//	IVsEnumStreamMarkers/IVsEnumLineMarkers/IVsEnumLayerMarkers
 			CComQIPtr<IVsEnumLineMarkers>     spVsEnumLineMarkers(m_pObj);
 			if (spVsEnumLineMarkers)
 			{
@@ -2680,6 +2749,8 @@ namespace FTL
 		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextLineMarker")));
 		if (m_pObj)
 		{
+			//可QI出
+			//	IVsTextStreamMarker/IVsTextLineMarkerEx/IVsTextLayerMarker/IVsTextLineMarker/IVsTextMarker/IVsTextTrackingPoint
 			CComQIPtr<IVsTextLineMarker>     spVsTextLineMarker(m_pObj);
 			if (spVsTextLineMarker)
 			{
@@ -2746,6 +2817,95 @@ namespace FTL
 		return hr;
 	}
 
+	HRESULT CFVsIntellisenseHostDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsIntellisenseHost")));
+		if (m_pObj)
+		{
+			//可以QI出
+			//	IVsIntellisenseHost/IVsTextViewIntellisenseHost/IVsIntellisenseOptions/IOleCommandTarget
+			CComQIPtr<IVsIntellisenseHost> spVsIntellisenseHost(m_pObj);
+			if (spVsIntellisenseHost)
+			{
+				CFStringFormater strFormater;
+
+				DWORD dwHostFlags = 0;
+				COM_VERIFY(spVsIntellisenseHost->GetHostFlags(&dwHostFlags));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("HostFlags"), dwHostFlags));
+
+				HWND hWndHost = NULL;
+				COM_VERIFY(spVsIntellisenseHost->GetHostWindow(&hWndHost));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("HostWindow"), hWndHost));
+
+				CComBSTR bstrSubjectText;
+				COM_VERIFY_EXCEPT1(spVsIntellisenseHost->GetSubjectText(&bstrSubjectText), E_NOTIMPL);
+				if (SUCCEEDED(hr))
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("SubjectText"), &bstrSubjectText));
+				}
+
+				LONG nSubjectCaretPos = 0;
+				COM_VERIFY_EXCEPT1(spVsIntellisenseHost->GetSubjectCaretPos(&nSubjectCaretPos), E_NOTIMPL);
+				if (SUCCEEDED(hr))
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("SubjectCaretPos"), nSubjectCaretPos));
+				}
+
+				LONG nSubjectSelectionLine = 0, nSubjectSelectionIndex = 0;
+				COM_VERIFY_EXCEPT1(spVsIntellisenseHost->GetSubjectSelection(&nSubjectSelectionLine, &nSubjectSelectionIndex), E_NOTIMPL);
+				if (SUCCEEDED(hr))
+				{
+					strFormater.Format(TEXT("[%d, %d]"), nSubjectSelectionLine, nSubjectSelectionIndex);
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("SubjectSelection"), strFormater.GetString()));
+				}
+
+				TextSpan contextFocalPoint = {0};
+				LONG nLen = 0;
+				COM_VERIFY(spVsIntellisenseHost->GetContextFocalPoint(&contextFocalPoint, &nLen));
+				strFormater.Format(TEXT("TextSpan From [%d,%d] To [%d, %d], Len=%d"), contextFocalPoint.iStartLine, contextFocalPoint.iStartIndex, 
+					contextFocalPoint.iEndLine, contextFocalPoint.iEndIndex, nLen);
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ContextFocalPoint"), strFormater.GetString()));
+
+				LONG nContextCaretLine = 0, nContextCaretIndex = 0;
+				COM_VERIFY(spVsIntellisenseHost->GetContextCaretPos(&nContextCaretLine, &nContextCaretIndex));
+				strFormater.Format(TEXT("[%d, %d]"), nContextCaretLine, nContextCaretIndex);
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ContextCaretPos"), strFormater.GetString()));
+
+				CRect rcSmartTag;
+				rcSmartTag.SetRectEmpty();
+				COM_VERIFY_EXCEPT1(spVsIntellisenseHost->GetSmartTagRect(&rcSmartTag), E_FAIL);
+				if (SUCCEEDED(hr))
+				{
+					strFormater.Format(TEXT("[%d,%d]-[%d,%d] {%dx%d}"), 
+						rcSmartTag.left, rcSmartTag.top,
+						rcSmartTag.right, rcSmartTag.bottom,
+						rcSmartTag.Width(), rcSmartTag.Height());
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("SmartTagRect"), strFormater.GetString()));
+				}
+			}
+		}
+		return hr;
+	}
+
+
+	HRESULT CFVsTextViewIntellisenseHostDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsTextViewIntellisenseHost")));
+		if (m_pObj)
+		{
+			//可以QI出 
+			//	IVsIntellisenseHost/IVsTextViewIntellisenseHost/IVsIntellisenseOptions/IOleCommandTarget 等
+			CComQIPtr<IVsTextViewIntellisenseHost> spVsTextViewIntellisenseHost(m_pObj);
+			if (spVsTextViewIntellisenseHost)
+			{
+				CFVsIntellisenseHostDumper	vsIntellisenseHostDumper(spVsTextViewIntellisenseHost, pInfoOutput, m_nIndent + 2);
+			}
+		}
+		return hr;
+	}
+
 	HRESULT CFLocalRegistryDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -2753,7 +2913,6 @@ namespace FTL
 		if (m_pObj)
 		{
 			//CComQIPtr<ILocalRegistry>     spLocalRegistry(m_pObj);
-
 			CComQIPtr<ILocalRegistry4>     spLocalRegistry4(m_pObj);
 			if (spLocalRegistry4)
 			{

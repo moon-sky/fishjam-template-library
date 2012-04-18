@@ -41,8 +41,10 @@
 /********************************************************************************************
 *   
 * 接口实现类(VSL::)
-*   IOleCommandTargetImpl -- 实现 IOleCommandTarget 接口，能处理菜单或工具条事件，然后通过 VSL_BEGIN_COMMAND_MAP 映射命令处理
+*   ATL::IDispatchImpl -- 提供 IDispatch 接口的实现，使用例子如下(直接使用 DTE 开发Addin时，参见 FlatSolutionExplorer )
+*     CMyAddin : public IDispatchImpl<IDTExtensibility2, &__uuidof(IDTExtensibility2), &__uuidof(__AddInDesignerObjects), 1, 0>
 *   ATL::IServiceProviderImpl -- 提供Service，使用 BEGIN_SERVICE_MAP、SERVICE_ENTRY 等宏设置能提供的Service
+*   IOleCommandTargetImpl -- 实现 IOleCommandTarget 接口，能处理菜单或工具条事件，然后通过 VSL_BEGIN_COMMAND_MAP 映射命令处理
 *   ISupportErrorInfoImpl -- 模板参数一般是 InterfaceSupportsErrorInfoList< IXXXX, ErrorInfoList的递归 >
 *   IVsInstalledProductImpl -- 在Splash窗体中显示插件信息(就不再需要 .rgs 中的信息?)，模板参数为相关的资源ID，在.rgs文件中还需要 InstalledProducts 项
 *   IVsPackageImpl -- 实现 IVsPackage 接口, COM组件成为 VS Package
@@ -86,7 +88,11 @@
 *     VSL_DECLARE_REGISTRY_RESOURCEID(IDS_XXXX_LOAD_KEY)
 *        ...
 *     VSL_REGISTRY_RESOURCEID_ENTRY(IDS_XXXX_LOAD_KEY)
-*     
+*   5.服务映射
+*     BEGIN_SERVICE_MAP
+*        SERVICE_ENTRY(xxxx)
+*        SERVICE_ENTRY_FWD(SID_XXX, COM接口)
+*     END_SERVICE_MAP
 * 
 * 常用的系统常量
 *   CLSID_VSUIHIERARCHYWINDOW -- VS 提供的 hierarchy tool window，可在 ToolWindowBase子类的GetLocalRegistryCLSIDViewObject
@@ -420,6 +426,27 @@ namespace FTL
 	public:
 		FTLINLINE explicit CFVsUIHierarchyDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
 			:CFInterfaceDumperBase<CFVsUIHierarchyDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	//Intellisense
+	class CFVsIntellisenseHostDumper : public CFInterfaceDumperBase<CFVsIntellisenseHostDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsIntellisenseHostDumper);
+	public:
+		FTLINLINE explicit CFVsIntellisenseHostDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsIntellisenseHostDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFVsTextViewIntellisenseHostDumper : public CFInterfaceDumperBase<CFVsTextViewIntellisenseHostDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsTextViewIntellisenseHostDumper);
+	public:
+		FTLINLINE explicit CFVsTextViewIntellisenseHostDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsTextViewIntellisenseHostDumper>(pObj, pInfoOutput, nIndent){}
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
