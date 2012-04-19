@@ -269,6 +269,14 @@ namespace FTL
         DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromRegister(pUnknown, GUID_NULL,FTL::CFComDetect::cdtInterface);\
         FTLTRACEEX(FTL::tlTrace,TEXT("%s's Interfaces Count are at least %d\n\n"),TEXT(#pUnknown),dwIntCount);\
     }
+	
+//IVsWindowFrame::QueryViewInterface
+# define COM_DETECT_VIEW_INTERFACE_FROM_REGISTER(pUnknown) \
+	{\
+		FTLTRACEEX(FTL::tlTrace,TEXT("%s(%d) : Begin Detect View Interface %s( 0x%p ) From Register\n"),TEXT(__FILE__),__LINE__,TEXT(#pUnknown),pUnknown);\
+		DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromRegister(pUnknown, GUID_NULL,FTL::CFComDetect::cdtViewInterface);\
+		FTLTRACEEX(FTL::tlTrace,TEXT("%s's Interfaces Count are at least %d\n\n"),TEXT(#pUnknown),dwIntCount);\
+	}
 
 # define COM_DETECT_SERVICE_PROVIDER_FROM_REGISTER(pUnknown) \
 	{\
@@ -509,6 +517,7 @@ namespace FTL
         typedef enum ComDetectType
         {
             cdtInterface,       //QueryInterface
+			cdtViewInterface,	//IVsWindowFrame::QueryViewInterface
             cdtIID,             //
             cdtMonikerBind,     //
             cdtService,         //QueryService(利用 SID_XXX 一般定义为 IID_XXX 的机制判断)
@@ -520,6 +529,7 @@ namespace FTL
 	private:
 		FTLINLINE static HRESULT _innerCoDtectInterfaceFromRegister(IUnknown* pUnknown, REFGUID guidInfo);
 		FTLINLINE static HRESULT _innerCoDtectServiceFromRegister(IServiceProvider* pServiceProvider, REFGUID guidInfo);
+		FTLINLINE static HRESULT _innerCoDtectViewInterfaceFromRegister(IVsWindowFrame* pVsWindowFrame, REFGUID guidInfo);
     }; //class CFComDetect
 }//namespace FTL
 

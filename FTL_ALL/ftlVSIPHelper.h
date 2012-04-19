@@ -47,6 +47,7 @@
 *   IOleCommandTargetImpl -- 实现 IOleCommandTarget 接口，能处理菜单或工具条事件，然后通过 VSL_BEGIN_COMMAND_MAP 映射命令处理
 *   ISupportErrorInfoImpl -- 模板参数一般是 InterfaceSupportsErrorInfoList< IXXXX, ErrorInfoList的递归 >
 *   IVsInstalledProductImpl -- 在Splash窗体中显示插件信息(就不再需要 .rgs 中的信息?)，模板参数为相关的资源ID，在.rgs文件中还需要 InstalledProducts 项
+*     但需要调用 /setup 一次? C#中可以用 InstalledProductRegistration 属性来提供(useInterface值为true表示用 IVsInstalledProduct 接口
 *   IVsPackageImpl -- 实现 IVsPackage 接口, COM组件成为 VS Package
 *   IVsUIHierarchyImpl -- 树状结构(如Solution Explorer的实现类)，实现了 IVsHierarchy 和 IVsUIHierarchy 两个接口
 * 
@@ -81,7 +82,7 @@
 *     VSL_BEGIN_REGISTRY_MAP(.rgs文件对应的资源ID)
 *       VSL_REGISTRY_MAP_GUID_ENTRY( 提供 .rgs 文件中使用的 CLSID 值，两边的名字一样 )
 *       VSL_REGISTRY_MAP_GUID_ENTRY_EX(提供 .rgs 文件中使用的 CLSID 值, 两边的名字可以不一样，比如.rgs文件中一般会把Pakcage的CLSID统一为CLSID_Package)
-*       VSL_REGISTRY_MAP_NUMBER_ENTRY( 可提供 PLK -- 如 IDS_XXXX_LOAD_KEY ) 
+*       VSL_REGISTRY_MAP_NUMBER_ENTRY( 可提供 PLK -- 如 IDS_XXXX_LOAD_KEY ) , C#中使用 ProvideLoadKey 属性
 *       VSL_REGISTRY_RESOURCE_STRING_ENTRY( 提供字符串资源如PackageName )
 *     VSL_END_REGISTRY_MAP
 *   4.PLK 映射(似乎已经由 VSL_REGISTRY_MAP_NUMBER_ENTRY 替代 ?)
@@ -106,7 +107,8 @@
 * 错误处理
 *   VSL_CREATE_ERROR_HRESULT -- 会 throw exception ?
 *   VSL_STDMETHODTRY {...} VSL_STDMETHODCATCH()<CR> return VSL_GET_STDMETHOD_HRESULT(); -- 在返回 HRESULT 的函数中的 try..catch 结构
-*  
+*   C#中通过抛出异常进行处理： Microsoft.VisualStudio.ErrorHandler.ThrowOnFailure(hr);
+* 
 * RDT(Running Document Table) -- 可通过 VSFPROPID_RDTDocData 获得相关的接口
 ********************************************************************************************/
 
@@ -174,6 +176,11 @@
 * vsshell80.idl 文件中有 FontsAndColorsCategory::TextEditor 等的GUID定义
 *   
 ********************************************************************************************/
+
+/********************************************************************************************
+* C# 时 -- Microsoft.VisualStudio.Shell, 常被简化[using XXX = ]为 MsVsShell
+*   从 Package 继承, 设置 DefaultRegistryRoot、PackageRegistration 属性(Attribute)
+********************************************************************************************/
 //#include <containedlanguage.h>
 namespace FTL
 {
@@ -199,6 +206,28 @@ namespace FTL
 		FTLINLINE static LPCTSTR GetMarkerVisualFlagsString(FTL::CFStringFormater& strFormater, DWORD dwVisualFlags);
 
     };
+
+	class CFVsShellDumper : public CFInterfaceDumperBase<CFVsShellDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsShellDumper);
+	public:
+		FTLINLINE explicit CFVsShellDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsShellDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFEnumPackagesDumper : public CFInterfaceDumperBase<CFEnumPackagesDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFEnumPackagesDumper);
+	public:
+		FTLINLINE explicit CFEnumPackagesDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFEnumPackagesDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
 
 	class CFVsPackageDumper : public CFInterfaceDumperBase<CFVsPackageDumper>
 	{
@@ -447,6 +476,16 @@ namespace FTL
 	public:
 		FTLINLINE explicit CFVsTextViewIntellisenseHostDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
 			:CFInterfaceDumperBase<CFVsTextViewIntellisenseHostDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFVsResourceManagerDumper : public CFInterfaceDumperBase<CFVsResourceManagerDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsResourceManagerDumper);
+	public:
+		FTLINLINE explicit CFVsResourceManagerDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsResourceManagerDumper>(pObj, pInfoOutput, nIndent){}
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};

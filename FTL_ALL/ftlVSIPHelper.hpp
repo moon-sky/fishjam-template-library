@@ -1582,6 +1582,50 @@ namespace FTL
 		return strFormater.GetString();
 	}
 
+	HRESULT CFVsShellDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsShell")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsShell>     spVsShell(m_pObj);
+			if (spVsShell)
+			{
+				CComPtr<IEnumPackages>	spEnumPackages;
+				COM_VERIFY(spVsShell->GetPackageEnum(&spEnumPackages));
+				CFEnumPackagesDumper	enumPackagesDumper(spEnumPackages, pInfoOutput, m_nIndent + 2);
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFEnumPackagesDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("EnumPackages")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IEnumPackages>     spEnumPackages(m_pObj);
+			if (spEnumPackages)
+			{
+				LONG nCount = 0;
+				ULONG ulFetched = 0;
+				CComPtr<IVsPackage> spVsPackage;
+				while(SUCCEEDED(spEnumPackages->Next(1, &spVsPackage, &ulFetched)) && spVsPackage)
+				{
+					CFVsPackageDumper vsPackageDumper(spVsPackage, pInfoOutput, m_nIndent + 2);
+					nCount++;
+					spVsPackage.Release();
+				}
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Packages Count"), nCount));
+			}
+		}
+		return hr;
+	}
+
 	HRESULT CFVsPackageDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -1592,6 +1636,11 @@ namespace FTL
 			CComQIPtr<IVsPackage>     spVsPackage(m_pObj);
 			if (spVsPackage)
 			{
+				BOOL bClosed = FALSE;
+				COM_VERIFY(spVsPackage->QueryClose(&bClosed));
+				pInfoOutput->OnOutput(TEXT("Close"), bClosed ? TEXT("TRUE") : TEXT("FALSE"));
+
+				//GetPropertyPage
 
 				//判断这个Package是否有Splash信息
 				CComQIPtr<IVsInstalledProduct> spVsInstalledProduct(spVsPackage);
@@ -1599,6 +1648,7 @@ namespace FTL
 				{
 					CFVsInstalledProductDumper installedProductDumper(spVsInstalledProduct, pInfoOutput, m_nIndent + 2);
 				}
+
 				hr = S_OK;
 			}
 		}
@@ -1626,6 +1676,14 @@ namespace FTL
 				CComBSTR bstrProductDetails;
 				COM_VERIFY(spVsInstalledProduct->get_ProductDetails(&bstrProductDetails));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ProductDetails"), &bstrProductDetails));
+
+				UINT idBmp = 0;
+				COM_VERIFY(spVsInstalledProduct->get_IdBmpSplash(&idBmp));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("IdBmpSplash"), (DWORD)idBmp));
+
+				UINT idIcoLogoForAboutbox = 0;
+				COM_VERIFY(spVsInstalledProduct->get_IdIcoLogoForAboutbox(&idIcoLogoForAboutbox));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("IdIcoLogoForAboutbox"), (DWORD)idIcoLogoForAboutbox));
 			}
 		}
 		return hr;
@@ -1872,6 +1930,7 @@ namespace FTL
 			//	IVsSolution3/IVsCreateAggregateProject/IVsFileBackup
 			//	IVsOpenProjectOrSolutionDlg/IVsPersistSolutionOpts/
 			//	IVsTrackProjectDocumentsEvents2/IVsFireSolutionEvents/IVsFireSolutionEvents2/IVsFileChangeEvents/IOleCommandTarget
+			//COM_DETECT_INTERFACE_FROM_LIST(m_pObj);
 			CComQIPtr<IVsSolution>     spVsSolution(m_pObj);
 			if (spVsSolution)
 			{
@@ -2193,12 +2252,15 @@ namespace FTL
 				CComVariant varType;
 				COM_VERIFY(spVsWindowFrame->GetProperty(VSFPROPID_Type, &varType));
 				FTLASSERT(V_VT(&varType) == VT_I4);
+
 				switch(V_I4(&varType))
 				{
 				case 1: //Document Frame
 					{
-						//如果是代码窗口对应的 Frame， 则可以通过 IID_IVsCodeWindow 获取到 CodeWindow 接口的实例
-						//其他可以对应获取到 IVsCommandWindow ?
+						//COM_DETECT_VIEW_INTERFACE_FROM_REGISTER(spVsWindowFrame);
+
+						//可以获取
+						//  .hpp/.cpp -- IVsTextFind/IVsCodeWindow[Ex]/IVsTextLayer[0-2]/IVsHighlight/IVsExpansion/IVsTextBufferEx
 						CComPtr<IVsCodeWindow> spVsCodeWindow;
 						COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsCodeWindow, (void**)&spVsCodeWindow));
 						if (SUCCEEDED(hr) && spVsCodeWindow)
@@ -2219,7 +2281,15 @@ namespace FTL
 					break;
 				case 2:   //Tool Frame
 					{
-#pragma TODO("其他窗体,比如 Solution Explorer 应该如何获得, 不是 IVsToolWindowToolbar")
+						//COM_DETECT_VIEW_INTERFACE_FROM_REGISTER(spVsWindowFrame);
+
+						//可以获取
+						//  Solution Explorer -- IVsWindowPaneCommit/IVsUIHierarchyWindow[0-2]
+						//  Properties -- IVsWindowPaneCommit
+						//	Toolbox -- IVsToolbox[0-3]/IVsExtensibleObject
+						//	Resource View -- IVsMultiItemSelect/IVsNavigationTool
+						//	Macro Explorer -- IVsWindowPaneCommit/IVsUIHierarchyWindow[0-2]
+						//	Output -- IVsOutputWindow[0-2]/IVsTextView/IVsFindTarget
 						pInfoOutput->OnOutput(TEXT("WindowFrame is Tool Frame"));
 
 						CComVariant varCreateToolWinFlags;
@@ -2230,9 +2300,9 @@ namespace FTL
 							pInfoOutput->OnOutput(TEXT("FrameWindow CreateToolWinFlags"), V_I4(&varCreateToolWinFlags));
 						}
 
-						CComPtr<IVsWindowFrame> spVsToolWindowToolbar;
-						COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsToolWindowToolbar, (void**)&spVsToolWindowToolbar));
-						if (SUCCEEDED(hr) && spVsToolWindowToolbar)
+						CComPtr<IVsUIHierarchyWindow> spVsUIHierarchyWindow2;
+						COM_VERIFY(spVsWindowFrame->QueryViewInterface(IID_IVsUIHierarchyWindow, (void**)&spVsUIHierarchyWindow2));
+						if (SUCCEEDED(hr) && spVsUIHierarchyWindow2)
 						{
 							//CFVsToolWindowToolbarDumper toolWindowToolBarDumper(spVsToolWindowToolbar, pInfoOutput, m_nIndent + 2);
 						}
@@ -2901,6 +2971,26 @@ namespace FTL
 			if (spVsTextViewIntellisenseHost)
 			{
 				CFVsIntellisenseHostDumper	vsIntellisenseHostDumper(spVsTextViewIntellisenseHost, pInfoOutput, m_nIndent + 2);
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFVsResourceManagerDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsResourceManager")));
+		if (m_pObj)
+		{
+			//注意：不是 SVsResourceManager, C# 中的语法为 (IVsResourceManager)GetService(typeof(SVsResourceManager));
+			//  只能QI到 IVsResourceManager/ISupportErrorInfo
+			CComQIPtr<IVsResourceManager>     spVsResourceManager(m_pObj);
+			if (spVsResourceManager)
+			{
+				//C# 中的语法
+				//Guid packageGuid = this.GetType().GUID;
+				//int hr = resourceManager.LoadResourceString(ref packageGuid, -1, resourceName, out resourceValue);
+
 			}
 		}
 		return hr;

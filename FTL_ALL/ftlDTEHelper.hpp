@@ -15,7 +15,6 @@ namespace FTL
     {
         switch(controlType)
         {
-			using namespace MSVSC_NS;
             HANDLE_CASE_RETURN_STRING(msoControlCustom);
             HANDLE_CASE_RETURN_STRING(msoControlButton);
             HANDLE_CASE_RETURN_STRING(msoControlEdit);
@@ -54,10 +53,9 @@ namespace FTL
     {
         switch(barType)
         {
-			using namespace MSVSC_NS;
-            HANDLE_CASE_RETURN_STRING(msoBarTypeNormal);
-            HANDLE_CASE_RETURN_STRING(msoBarTypeMenuBar);
-            HANDLE_CASE_RETURN_STRING(msoBarTypePopup);
+			HANDLE_CASE_RETURN_STRING(MSVSC_NS::msoBarTypeNormal);
+            HANDLE_CASE_RETURN_STRING(MSVSC_NS::msoBarTypeMenuBar);
+            HANDLE_CASE_RETURN_STRING(MSVSC_NS::msoBarTypePopup);
         default:
             FTLASSERT(FALSE);
             break;
@@ -390,73 +388,72 @@ namespace FTL
         
 
 		//dte80.h(VSIP)
-		using namespace DTE80_NS;
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionBuilding, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidSolutionBuilding, _stricmp );
 		
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidUIHierarchyDragging, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFullScreenMode, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDesignMode, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidNoSolution, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionExists, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidEmptySolution, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionHasSingleProject, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionHasMultipleProjects, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCodeWindow, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidNotBuildingAndNotDebugging, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionOrProjectUpgrading, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDataSourceWindowSupported, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDataSourceWindowAutoVisible, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidWindowsFormsDesigner, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidToolboxInitialized, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionExistsAndNotBuildingAndNotDebugging, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidTextEditor, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidXMLTextEditor, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCSSTextEditor, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHTMLSourceEditor, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHTMLDesignView, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHTMLSourceView, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHTMLCodeView, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFrames, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSchema, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidData, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidKindStartPage, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCommunityWindow, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDeviceExplorer, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidBookmarks, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidApplicationBrowser, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFavorites, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidErrorList, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHelpSearch, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHelpIndex, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidHelpContents, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCallBrowser, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCodeDefinition, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidTaskList, _stricmp );
-		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidToolbox, _stricmp );			//vsWindowKindToolbox
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCallStack, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidThread, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidLocals, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidAutoLocals, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidWatch, _stricmp );
-		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidProperties, _stricmp );			//vsWindowKindProperties
-		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidSolutionExplorer, _stricmp );	//vsWindowKindSolutionExplorer
-		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidOutput, _stricmp );				//vsWindowKindOutput
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidObjectBrowser, _stricmp );
-		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidMacroExplorer, _stricmp );		//vsWindowKindMacroExplorer
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDynamicHelp, _stricmp );
-		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidClassView, _stricmp );			//vsWindowKindClassView		
-		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidResourceView, _stricmp );		//vsWindowKindResourceView
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidDocumentOutline, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidServerExplorer, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidCommandWindow, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindSymbol, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindSymbolResults, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindReplace, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindResults1, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidFindResults2, _stricmp );
-		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidMainWindow, _stricmp );			//vsWindowKindMainWindow
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidLinkedWindowFrame, _stricmp );
-		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsContextGuidWebBrowser, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidUIHierarchyDragging, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidFullScreenMode, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidDesignMode, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidNoSolution, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidSolutionExists, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidEmptySolution, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidSolutionHasSingleProject, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidSolutionHasMultipleProjects, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidCodeWindow, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidNotBuildingAndNotDebugging, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidSolutionOrProjectUpgrading, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidDataSourceWindowSupported, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidDataSourceWindowAutoVisible, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidWindowsFormsDesigner, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidToolboxInitialized, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidSolutionExistsAndNotBuildingAndNotDebugging, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidTextEditor, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidXMLTextEditor, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidCSSTextEditor, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidHTMLSourceEditor, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidHTMLDesignView, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidHTMLSourceView, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidHTMLCodeView, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidFrames, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidSchema, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidData, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidKindStartPage, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidCommunityWindow, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidDeviceExplorer, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidBookmarks, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidApplicationBrowser, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidFavorites, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidErrorList, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidHelpSearch, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidHelpIndex, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidHelpContents, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidCallBrowser, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidCodeDefinition, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidTaskList, _stricmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidToolbox, _stricmp );			//vsWindowKindToolbox
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidCallStack, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidThread, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidLocals, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidAutoLocals, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidWatch, _stricmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidProperties, _stricmp );			//vsWindowKindProperties
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidSolutionExplorer, _stricmp );	//vsWindowKindSolutionExplorer
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidOutput, _stricmp );				//vsWindowKindOutput
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidObjectBrowser, _stricmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidMacroExplorer, _stricmp );		//vsWindowKindMacroExplorer
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidDynamicHelp, _stricmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidClassView, _stricmp );			//vsWindowKindClassView		
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidResourceView, _stricmp );		//vsWindowKindResourceView
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidDocumentOutline, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidServerExplorer, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidCommandWindow, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidFindSymbol, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidFindSymbolResults, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidFindReplace, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidFindResults1, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidFindResults2, _stricmp );
+		//HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidMainWindow, _stricmp );			//vsWindowKindMainWindow
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidLinkedWindowFrame, _stricmp );
+		HANDLE_STRING_COMPARE_RETURN( pszCompareString, DTE80_NS::vsContextGuidWebBrowser, _stricmp );
 
 		//self defined
 		HANDLE_STRING_COMPARE_RETURN( pszCompareString, vsProjectTypeWindowsCSharp, _stricmp );
@@ -631,11 +628,13 @@ namespace FTL
 				COM_VERIFY(spDTE->get_CommandBars(&spDispCommandBars));
 				COM_DETECT_INTERFACE_FROM_REGISTER(spDispCommandBars);
 
+#if USE_MSVSC
 				CComQIPtr<MSVSC_NS::_CommandBars> spCommandsBars(spDispCommandBars);
 				if(spCommandsBars)
 				{
 					CFCommandBarsDumper commandBarsDumper(spDispCommandBars, pInfoOutput, m_nIndent + 2);
 				}
+#endif	//USE_MSVSC
 
 				CComPtr<DTE_NS::ObjectExtenders> spObjectExtenders;
 				COM_VERIFY(spDTE->get_ObjectExtenders(&spObjectExtenders));

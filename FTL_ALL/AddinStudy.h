@@ -2,6 +2,10 @@
 #define ADD_IN_STUDY_H
 #pragma once
 
+//开发文档
+//Visual Studio 2008 可扩展性开发 -- http://www.cnblogs.com/anderslly/archive/2009/02/23/visualstudio-overview.html
+//LearnVSXNow -- http://www.cnblogs.com/default/archive/2010/02/26/1674582.html
+
 //CodeBlocks -- 开源的跨平台 C++ IDE，可以学习相关的知识
 //  其中有 ICodeCompletionItemsProvider 接口?
 
@@ -160,10 +164,10 @@
 *     Global Service -- 如有已经被site的IVsPackage对象，即可通过GetService方法去访问全局服务,
 *       C#中有静态的 Package.GetGlobalService 方法，使用服务前需要注册服务(C#中是ProvideServiceAttribute)
 * 
-*   LearnVSXNow -- http://www.cnblogs.com/default/archive/2010/02/26/1674582.html
 *   需要安装 Visual Studio 200X 的 SDK(VSX SDK) -- http://msdn.com/vsx 
 * 
 * 常用Service(IServiceProvider::QueryService) -- Visual Studio提供给Add-in和Package的功能，Package也能提供(Proffer)自己的Service
+*   注意：因为一个Service可以提供多个接口，因此良好的习惯是单独定义一个 Sxxx(如 SVsResourceManager) 作为 Service 的类型
 *   _DTE(SID_SDTE)
 *   Help
 *   ICQryAutoFactory
@@ -172,7 +176,9 @@
 *   IInternetSecurityManager
 *   ILocalRegistry/ILocalRegistry4(SID_SLocalRegistry) -- 
 *   IOleComponentUIManager(SID_SOleComponentUIManager) --
-*   IProfferService(SID_SProfferService) -- 向VS提供服务，如 IVsTextMarkerTypeProvider
+*   IProfferService(SID_SProfferService) -- 向VS提供服务，如自定义的 IVsTextMarkerTypeProvider
+*     C# 的服务需要实现 Microsoft.VisualStudio.OLE.Interop.dll 中的IServiceProvider(注意：不是 System 中的),从 Package 继承即可。
+*        通过 ProvideService 属性提供全局服务，[ProvideService(typeof(SMyService))]
 *   IUIHostLocale
 *   IVsAddProjectItemDlg
 *   IVsAddWebReferenceDlg
@@ -211,6 +217,7 @@
 *   IVsRegisterFindScope
 *   IVsRegisterProjectTypes
 *   IVsRegisterScciProvider
+*   IVsResourceManager(SID_SVsResourceManager) -- 
 *   IVsRunningDocumentTable
 *   IVsShell(SID_SVsShell) --
 *   IVsSolution(SID_SVsSolution)
@@ -254,12 +261,13 @@
 *       void PreClosing()
 * 
 * 常用工具
-*    $(RegitPath)\Regit.exe/regpkg.exe -- Package安装以及注册工具，读取 Package 子类中的各种 Attribute 来注册
+*    $(RegitPath)\Regit.exe/RegPkg.exe -- Package安装以及注册工具，读取 Package 子类中的各种
+*      Attribute(如 DefaultRegistryRoot/PackageRegistration) 来注册
 *
 * 注册/取消注册
 *   VS通过PLK（Package Load Key -- 128个字符的数字散列码，从微软站点 http://msdn.microsoft.com/vstudio/extend/ 获得）
 *   来检查发布版本的扩展包是否合法(开发时使用VSIP的调试许可证)，
-*   通过 ProvideLoadKey(最小版本,版本号,名字,开发者名字,PLK的资源ID) 属性提供
+*   C# 通过 ProvideLoadKey(最小版本,版本号,名字,开发者名字,PLK的资源ID) 属性提供
 *   PLK主要有三个部分组成：
 *     1. .rgs 文件中的 CompanyName/ProductName/ProductVersion/MinEdition/ID(如 val ID  = d '%IDS_BASICPACKAGE_LOAD_KEY%') 等
 *     2. VSL_REGISTRY_MAP_NUMBER_ENTRY(IDS_BASICPACKAGE_LOAD_KEY)
@@ -275,9 +283,11 @@
 *  Microsoft Visual Studio 2008 Experimental hive -- VS2008实验室，devenv.exe /rootSuffix Exp /RANU
 *     会使用独立的注册表信息进行调试，防止影响VS的开发环境 -- 通过编译时的 regpkg 命令行?
 *     /RANU -- run as normal user( 注册到 HKEY_CURRENT_USER ?)
-*     /setup -- 可以在启动的splash screen 获得 logo and product name( 注册到 HKEY_LOCAL_MACHINE ?)
-*     /NoVsip -- 模拟没有安装 VS SDK 的机器的行为
+*     /setup -- 让VS在启动时自动检测组件的 安装、卸载、升级等
+*     /NoVsip -- 模拟没有安装 VS SDK 的机器的行为，主要用于验证 PLK ?
+*     /rootSuffix Exp -- 告诉Visual Studio使用 experimental registry hive
 *     /root:Software\Microsoft\VisualStudio\9.0Exp --指定注册的注册表根位置
+*     /Splash -- 长时间显示Splash窗体，以进行确认
 *  vsct -- Visual Studio Command Table, VS2008中定义用户界面的XML，编译成二进制资源后以1000作为资源ID添加到VSPackage.resx资源文件中，
 *     regpkg.exe注册时会将相关内容注册到注册表中(位置?)，VS启动时只需读取注册表即可更新界面（无需加载DLL）。
 *    CommandTable -> Commands -> Groups  -> Group  ->

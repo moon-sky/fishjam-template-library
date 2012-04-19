@@ -1253,6 +1253,7 @@ namespace FTL
 					GetThreadId(m_hThread));
 				if (bTerminateIfTimeOut)
 				{
+					FTLASSERT(FALSE && TEXT("WaitFor Time Out"));
 					TerminateThread(m_hThread, DWORD(-1));
 				}
                 bRet = FALSE;

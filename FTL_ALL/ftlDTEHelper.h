@@ -11,8 +11,8 @@
 #endif
 
 ////一般可以在头文件中增加如下的定义
-//#define USE_DTE		1
-//#define	USE_DTE80	1
+//#define USE_DTE	1
+//#define USE_DTE80	1
 //#define USE_MSVSC	1
 //#define USE_VCCML	1
 
@@ -21,43 +21,52 @@
 #  define MAX_DUMP_CHILD_ITEM_COUNT	5
 #endif 
 
-//Microsoft_VisualStudio_CommandBars
-//"libid:1CBA492E-7263-47BB-87FE-639000619B15" version("8.0")
-#ifndef USE_MSVSC
-#  define USE_MSVSC		1
-#endif 
-#ifndef MSVSC_NS
-#  define MSVSC_NS		Microsoft_VisualStudio_CommandBars
-#endif 
-
 //DTE
 //"libid:80CC9F66-E7D8-4DDD-85B6-D9E6CD0E93E2" version("8.0")
 #ifndef USE_DTE
 #  define	USE_DTE		1
-#endif 
+#endif
+#if USE_DTE
 //VxDTE( VSIP SDK ) or EnvDTE( import DTE )
-#ifndef DTE_NS
-#  define DTE_NS EnvDTE
-#endif 
+#  ifndef DTE_NS
+#    define DTE_NS EnvDTE
+#  endif 
+#endif //USE_DTE
 
-//DTE80
-//"libid:1A31287A-4D7D-413e-8E32-3B374931BD89" version("8.0")
+//Microsoft Development Environment 8.0
+//"libid:1A31287A-4D7D-413E-8E32-3B374931BD89" version("8.0")
 #ifndef USE_DTE80
-#  define USE_DTE80		1
-#endif 
-#ifndef DTE80_NS
-#  define DTE80_NS	EnvDTE80
-#endif 
+#  define USE_DTE80		0
+#endif
+#if USE_DTE80
+//Null( VSIP SDK,  ) or EnvDTE80( import DTE80 )
+#  ifndef DTE80_NS
+#    define DTE80_NS	EnvDTE80
+#  endif
+#endif //USE_DTE80
+
+//Microsoft_VisualStudio_CommandBars
+//"libid:1CBA492E-7263-47BB-87FE-639000619B15" version("8.0")
+#ifndef USE_MSVSC
+#  define USE_MSVSC		0
+#endif
+#if USE_MSVSC
+//Null( VSIP SDK, msotl.h ) or Microsoft_VisualStudio_CommandBars( import Microsoft_VisualStudio_CommandBars )
+#  ifndef MSVSC_NS
+#    define MSVSC_NS		Microsoft_VisualStudio_CommandBars
+#  endif
+#endif //USE_MSVSC
 
 //Microsoft Development Environment VC++ Code Model 9.0 Type Library
 //#import "libid:B5D4541F-A1F1-4CE0-B2E7-5DA402367104" version("9.0") lcid("0") raw_interfaces_only named_guids
 #ifndef USE_VCCML
 #  define USE_VCCML		0
 #endif
-#ifndef VCCML_NS
-#  define VCCML_NS	VCCodeModelLibrary
-#endif //VCCML_NS
-
+#if USE_VCCML
+#  ifndef VCCML_NS
+#    define VCCML_NS	VCCodeModelLibrary
+#  endif //VCCML_NS
+#endif //USE_VCCML
 /********************************************************************************************
 * DTE -- DTE提供了 ObjectExtenders、IVsProfferCommands、IVsIntelliMouseHandler 等 至少 60 多个Service
 ********************************************************************************************/
@@ -360,9 +369,6 @@ namespace FTL
         FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
     };
 
-	///////////////  Microsoft Development Environment VC++ Code Model 9.0 Type Library /////////////////////
-    /////////////////////////////////         VCCodeModelLibrary            /////////////////////////////////
-	/////////////////////////////////  B5D4541F-A1F1-4CE0-B2E7-5DA402367104 /////////////////////////////////
 #if USE_VCCML
 	class CFVCFileCodeModelDumper : public CFInterfaceDumperBase<CFVCFileCodeModelDumper>
 	{

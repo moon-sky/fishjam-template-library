@@ -274,7 +274,16 @@ namespace FTL
         HRESULT hr = E_FAIL;
         BOOL bRet = FALSE;
 		IServiceProvider* pServiceProvider = NULL;
-		if (cdtService == detectType)
+		IVsWindowFrame* pVsWindowFrame = NULL;
+		if (cdtViewInterface == detectType)
+		{
+			COM_VERIFY(pUnknown->QueryInterface(IID_IVsWindowFrame, (void**)&pVsWindowFrame));
+			if (FAILED(hr) || !pVsWindowFrame)
+			{
+				return DWORD(-1);
+			}
+		}
+		else if (cdtService == detectType)
 		{
 			COM_VERIFY(pUnknown->QueryInterface(IID_IServiceProvider, (void**)&pServiceProvider));
 			if (FAILED(hr) || !pServiceProvider)
@@ -304,6 +313,9 @@ namespace FTL
 					{
 					case cdtInterface:
 						hr = _innerCoDtectInterfaceFromRegister(pUnknown, guidInfo);
+						break;
+					case cdtViewInterface:
+						hr = _innerCoDtectViewInterfaceFromRegister(pVsWindowFrame, guidInfo);
 						break;
 					case cdtService:
 						hr = _innerCoDtectServiceFromRegister(pServiceProvider, guidInfo);
@@ -342,6 +354,10 @@ namespace FTL
                 API_VERIFY(ERROR_SUCCESS == lRet || ERROR_NO_MORE_ITEMS == lRet);
             }
             FTLTRACEEX(FTL::tlTrace,TEXT("Total Check %d Interfaces\n"),dwIndex);
+
+			SAFE_RELEASE(pVsWindowFrame);
+			SAFE_RELEASE(pServiceProvider);
+
             SAFE_CLOSE_REG(hKeyInterface);
         }
         return dwCount;
@@ -365,6 +381,19 @@ namespace FTL
 		HRESULT hr = E_FAIL;
 		IUnknown* pDetectedInterface = NULL;
 		hr = pServiceProvider->QueryService(guidInfo, guidInfo, (void**)&pDetectedInterface);
+		if(SUCCEEDED(hr) && pDetectedInterface)
+		{
+			pDetectedInterface->Release();
+			pDetectedInterface = NULL;
+		}
+		return hr;
+	}
+
+	HRESULT CFComDetect::_innerCoDtectViewInterfaceFromRegister(IVsWindowFrame* pVsWindowFrame, REFGUID guidInfo)
+	{
+		HRESULT hr = E_FAIL;
+		IUnknown* pDetectedInterface = NULL;
+		hr = pVsWindowFrame->QueryViewInterface(guidInfo, (void**)&pDetectedInterface);
 		if(SUCCEEDED(hr) && pDetectedInterface)
 		{
 			pDetectedInterface->Release();
