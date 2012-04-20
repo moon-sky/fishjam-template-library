@@ -79,7 +79,6 @@
 
 
 /*********************************************************************************************************
-* http://tortoisesvn.net/docs/nightly/TortoiseSVN_zh_CN/index.html
 * http://www.cnblogs.com/sifang2004/archive/2006/06/26/436076.html
 *
 * Visual Studio 提供了多种不同级别的扩展：
@@ -176,6 +175,7 @@
 *   IInternetSecurityManager
 *   ILocalRegistry/ILocalRegistry4(SID_SLocalRegistry) -- 
 *   IOleComponentUIManager(SID_SOleComponentUIManager) --
+*   OleMenuCommandService(IID_IMenuCommandService) -- 未测试
 *   IProfferService(SID_SProfferService) -- 向VS提供服务，如自定义的 IVsTextMarkerTypeProvider
 *     C# 的服务需要实现 Microsoft.VisualStudio.OLE.Interop.dll 中的IServiceProvider(注意：不是 System 中的),从 Package 继承即可。
 *        通过 ProvideService 属性提供全局服务，[ProvideService(typeof(SMyService))]
@@ -199,15 +199,16 @@
 *   IVsFilterKeys
 *   IVsFontAndColorStorage
 *   IVsHTMLConverter
-*   IVsIntelliMouseHandler
+*   IVsIntelliMouseHandler(SID_SVsIntelliMouseHandler) -- 
 *   IVsInvisibleEditorManager
 *   IVsLibraryReferenceManager
 *   IVsLog
 *   IVsMacroRecorder(SID_SVsMacroRecorder) -- 宏录制器
 *   IVsMenuEditorFactory
+*   IVSMDCodeDomProvider(SID_SVSMDCodeDomProvider)
 *   IVsMonitorSelection
 *   IVsMonitorUserContext
-*   IVsObjectManager
+*   IVsObjectManager[0-2](SID_SVsObjectManager)
 *   IVsOutputWindow
 *   IVsOutputWindowPane(SID_SVsGeneralOutputWindowPane) -- 获取的是Output窗体中的 General，其他如何获取? QI?
 *   IVsParseCommandLine
@@ -218,7 +219,7 @@
 *   IVsRegisterProjectTypes
 *   IVsRegisterScciProvider
 *   IVsResourceManager(SID_SVsResourceManager) -- 
-*   IVsRunningDocumentTable
+*   IVsRunningDocumentTable(SID_SVsRunningDocumentTable)
 *   IVsShell(SID_SVsShell) --
 *   IVsSolution(SID_SVsSolution)
 *   IVsSolutionBuildManager

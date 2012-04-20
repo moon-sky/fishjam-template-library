@@ -1154,6 +1154,10 @@ namespace FTL
 				COM_VERIFY(spTextDocument->get_Type(&bstrType));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), &bstrType));
 
+				CComPtr<DTE_NS::TextSelection> spTextSelection;
+				COM_VERIFY(spTextDocument->get_Selection(&spTextSelection));
+				CFTextSelectionDumper textSelectionDumper(spTextSelection, pInfoOutput, m_nIndent + 2);
+
 				CComPtr<DTE_NS::TextPoint> spStartTextPoint;
                 COM_VERIFY(spTextDocument->get_StartPoint(&spStartTextPoint));
 				if (spStartTextPoint)
@@ -1186,7 +1190,28 @@ namespace FTL
             CComQIPtr<DTE_NS::TextSelection> spTextSelection(m_pObj);
             if (spTextSelection)
             {
+				VARIANT_BOOL bEmpty = VARIANT_TRUE;
+				COM_VERIFY(spTextSelection->get_IsEmpty(&bEmpty));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("IsEmpty"), bEmpty));
 
+				CComBSTR bstrText;
+				COM_VERIFY(spTextSelection->get_Text(&bstrText));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Selection Text"), bstrText));
+
+				LONG nAnchorColumn = 0;
+				COM_VERIFY(spTextSelection->get_AnchorColumn(&nAnchorColumn));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("AnchorColumn"), nAnchorColumn));
+
+				LONG nBottomLine = 0;
+				COM_VERIFY(spTextSelection->get_BottomLine(&nBottomLine));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("BottomLine"), nBottomLine));
+
+				LONG nCurrentColumn = 0, nCurrentLine = 0;
+				COM_VERIFY(spTextSelection->get_CurrentColumn(&nCurrentColumn));
+				COM_VERIFY(spTextSelection->get_CurrentLine(&nCurrentLine));
+				CFStringFormater strFormater;
+				COM_VERIFY(strFormater.Format(TEXT("[%d, %d]"), nCurrentColumn, nCurrentLine));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Current Column and Line")), strFormater.GetString());
             }
         }
         return hr;
@@ -1225,11 +1250,37 @@ namespace FTL
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("LineLength"), nLineLength));
 
 				CComPtr<DTE_NS::CodeElement> spCodeElement;
+				//获取当前位置范围内指定的 Code Element
+				spTextPoint->get_CodeElement(DTE_NS::vsCMElementClass, &spCodeElement); 
 			}
 		}
 		return hr;
 	}
 
+	HRESULT CFVirtualPointDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VirtualPoint")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<DTE_NS::VirtualPoint> spVirtualPoint(m_pObj);
+			if (spVirtualPoint)
+			{
+				//从 TextPoint 继承
+				CFTextPointDumper  textPointDumper(spVirtualPoint, pInfoOutput, m_nIndent + 2);
+
+				LONG nVirtualCharOffset = 0;
+				COM_VERIFY(spVirtualPoint->get_VirtualCharOffset(&nVirtualCharOffset));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("VirtualCharOffset"), nVirtualCharOffset));
+
+				LONG nVirtualDisplayColumn = 0;
+				COM_VERIFY(spVirtualPoint->get_VirtualDisplayColumn(&nVirtualDisplayColumn));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("VirtualDisplayColumn"), nVirtualDisplayColumn));
+			}
+		}
+		return hr;
+	}
 
     //Code
     HRESULT CFFileCodeModelDumper::GetObjInfo(IInformationOutput* pInfoOutput)
@@ -1335,6 +1386,7 @@ namespace FTL
 
 				CComBSTR bstrName;
                 COM_VERIFY(spCodeElement->get_Name(&bstrName));
+				//有的时候(比如函数参数中没有名字)Name会为空
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
 
 				VARIANT_BOOL isCodeType = VARIANT_FALSE;
@@ -1375,6 +1427,7 @@ namespace FTL
 				COM_VERIFY(spCodeElement->get_ExtenderCATID(&bstrExtenderCATID));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("ExtenderCATID"), CFDTEUtil::GetDTEGuidStringInfo(bstrExtenderCATID)));
 
+				//递归遍历
 				CComPtr<DTE_NS::CodeElements> spChildren;
 				COM_VERIFY(spCodeElement->get_Children(&spChildren));
 				if (SUCCEEDED(hr) && spChildren)

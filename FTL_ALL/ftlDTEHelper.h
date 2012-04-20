@@ -264,6 +264,16 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	class CFVirtualPointDumper : public CFInterfaceDumperBase<CFVirtualPointDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVirtualPointDumper);
+	public:
+		FTLINLINE explicit CFVirtualPointDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVirtualPointDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
     //Code
     class CFFileCodeModelDumper : public CFInterfaceDumperBase<CFFileCodeModelDumper>
     {
