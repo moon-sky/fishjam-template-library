@@ -189,6 +189,7 @@ namespace FTL
     public:
 		FTLINLINE static BOOL IsVsHierarchyHasChildren(IVsHierarchy* pParent, VSITEMID ItemId);
 
+#ifdef FTL_DEBUG
 		//Hierarchy property Id -- VSHPROPID_
 		FTLINLINE static LPCTSTR GetVSHPropIdString(DWORD_PTR propId);
 		
@@ -204,9 +205,10 @@ namespace FTL
 		FTLINLINE static LPCTSTR GetMarkerBehaviorFlagsString(FTL::CFStringFormater& strFormater, DWORD dwBehaviorFlags);
 
 		FTLINLINE static LPCTSTR GetMarkerVisualFlagsString(FTL::CFStringFormater& strFormater, DWORD dwVisualFlags);
-
+#endif //FTL_DEBUG
     };
 
+#ifdef FTL_DEBUG
 	class CFVsShellDumper : public CFInterfaceDumperBase<CFVsShellDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFVsShellDumper);
@@ -304,6 +306,16 @@ namespace FTL
 	public:
 		FTLINLINE explicit CFVsSolutionDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
 			:CFInterfaceDumperBase<CFVsSolutionDumper>(pObj, pInfoOutput, nIndent){}
+		//override
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFVsProjectDumper : public CFInterfaceDumperBase<CFVsProjectDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFVsProjectDumper);
+	public:
+		FTLINLINE explicit CFVsProjectDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFVsProjectDumper>(pObj, pInfoOutput, nIndent){}
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
@@ -500,6 +512,8 @@ namespace FTL
 		//override
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
+
+#endif //FTL_DEBUG
 }//namespace FTL
 
 #ifndef USE_EXPORT

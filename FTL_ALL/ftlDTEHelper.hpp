@@ -10,6 +10,57 @@
 
 namespace FTL
 {
+	HRESULT CFDTEUtil::OpenDocumentAndGotoLine(DTE_NS::_DTE* pDTE, LPCTSTR pszFileName, int line, CComPtr<DTE_NS::Document>& spFileDocument)
+	{
+		HRESULT hr = E_FAIL;
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pDTE, E_INVALIDARG);
+		//CComPtr< DTE_NS::Document > spFileDocument;
+
+		if (pszFileName)
+		{
+			CComPtr< DTE_NS::Documents > spDocuments;
+			COM_VERIFY(pDTE->get_Documents( &spDocuments ));
+			CHECK_POINTER_RETURN_VALUE_IF_FAIL(spDocuments, hr);
+
+			CComBSTR bstrFileName( pszFileName );
+			CComVariant type=_T("Text");
+			CComVariant read=_T("False");
+			COM_VERIFY(spDocuments->Open( bstrFileName, 
+				type.bstrVal,
+				read.bVal, 
+				&spFileDocument ));
+		}
+		else
+		{
+			COM_VERIFY(pDTE->get_ActiveDocument(&spFileDocument));
+		}
+		if ( !SUCCEEDED( hr ) || !spFileDocument)
+		{
+			return hr;
+		}
+
+		CComPtr< IDispatch > spSelectionDispatch;
+		COM_VERIFY(spFileDocument->get_Selection( &spSelectionDispatch ));
+
+		CComQIPtr< DTE_NS::TextSelection > spTextSelection(spSelectionDispatch);
+		if (spTextSelection)
+		{
+			COM_VERIFY(spTextSelection->GotoLine( line, TRUE ));
+		}
+
+		COM_VERIFY(spFileDocument->Activate());
+		//CComPtr<DTE_NS::Window> spMainWindow;
+		//COM_VERIFY(pDTE->get_MainWindow(&spMainWindow));
+		//if (SUCCEEDED(hr))
+		//{
+		//	COM_VERIFY(spMainWindow->Activate());
+		//}
+
+		return hr;
+	}
+
+#ifdef FTL_DEBUG
+
 #if	USE_MSVSC
 	LPCTSTR CFDTEUtil::GetMsoControlTypeString(MSVSC_NS::MsoControlType controlType)
     {
@@ -155,50 +206,41 @@ namespace FTL
     LPCTSTR CFDTEUtil::GetFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind)
     {
 		using namespace DTE_NS;
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstructor, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyGet, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyLet, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertySet, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPutRef, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyAssign, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionSub, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionFunction, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionTopLevel, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionDestructor, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionOperator, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionVirtual, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPure, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstant, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionShared, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionInline, TEXT(","));
-        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionComMethod, TEXT(","));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstructor, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyGet, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyLet, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertySet, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPutRef, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyAssign, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionSub, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionFunction, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionTopLevel, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionDestructor, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionOperator, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionVirtual, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPure, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstant, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionShared, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionInline, TEXT("|"));
+        HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionComMethod, TEXT("|"));
        
         FTLASSERT(0 == nFunctionKind);
         return strFormater.GetString();
     }
 
-	LPCTSTR CFDTEUtil::GetCMFunctionKindString(FTL::CFStringFormater& strFormater, int nFunctionKind)
+	LPCTSTR CFDTEUtil::GetAccessKindString(FTL::CFStringFormater& strFormater, int nAccessKind)
 	{
 		using namespace DTE_NS;
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstructor , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyGet , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyLet , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertySet , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPutRef , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPropertyAssign , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionSub , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionFunction , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionTopLevel , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionDestructor , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionOperator , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionVirtual , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionPure , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionConstant , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionShared , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionInline , TEXT(","));
-		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nFunctionKind, vsCMFunctionComMethod , TEXT(","));
 
-		FTLASSERT(0 == nFunctionKind);
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nAccessKind, vsCMAccessPublic , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nAccessKind, vsCMAccessPrivate , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nAccessKind, vsCMAccessProject , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nAccessKind, vsCMAccessProtected , TEXT("|"));
+		//HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nAccessKind, vsCMAccessProjectOrProtected , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nAccessKind, vsCMAccessDefault , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nAccessKind, vsCMAccessAssemblyOrFamily , TEXT("|"));
+		HANDLE_COMBINATION_VALUE_TO_STRING(strFormater, nAccessKind, vsCMAccessWithEvents , TEXT("|"));
+		FTLASSERT(0 == nAccessKind);
 		return strFormater.GetString();
 	}
 
@@ -506,54 +548,7 @@ namespace FTL
 #endif 
     }
 
-	HRESULT CFDTEUtil::OpenDocumentAndGotoLine(DTE_NS::_DTE* pDTE, LPCTSTR pszFileName, int line, CComPtr<DTE_NS::Document>& spFileDocument)
-	{
-		HRESULT hr = E_FAIL;
-		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pDTE, E_INVALIDARG);
-		//CComPtr< DTE_NS::Document > spFileDocument;
 
-		if (pszFileName)
-		{
-			CComPtr< DTE_NS::Documents > spDocuments;
-			COM_VERIFY(pDTE->get_Documents( &spDocuments ));
-			CHECK_POINTER_RETURN_VALUE_IF_FAIL(spDocuments, hr);
-
-			CComBSTR bstrFileName( pszFileName );
-			CComVariant type=_T("Text");
-			CComVariant read=_T("False");
-			COM_VERIFY(spDocuments->Open( bstrFileName, 
-				type.bstrVal,
-				read.bVal, 
-				&spFileDocument ));
-		}
-		else
-		{
-			COM_VERIFY(pDTE->get_ActiveDocument(&spFileDocument));
-		}
-		if ( !SUCCEEDED( hr ) || !spFileDocument)
-		{
-			return hr;
-		}
-
-		CComPtr< IDispatch > spSelectionDispatch;
-		COM_VERIFY(spFileDocument->get_Selection( &spSelectionDispatch ));
-
-		CComQIPtr< DTE_NS::TextSelection > spTextSelection(spSelectionDispatch);
-		if (spTextSelection)
-		{
-			COM_VERIFY(spTextSelection->GotoLine( line, TRUE ));
-		}
-
-		COM_VERIFY(spFileDocument->Activate());
-		//CComPtr<DTE_NS::Window> spMainWindow;
-		//COM_VERIFY(pDTE->get_MainWindow(&spMainWindow));
-		//if (SUCCEEDED(hr))
-		//{
-		//	COM_VERIFY(spMainWindow->Activate());
-		//}
-
-		return hr;
-	}
     //////////////////////////////////////////////////////////////////////////
 
     HRESULT CFDTEDumper::GetObjInfo(IInformationOutput* pInfoOutput)
@@ -812,6 +807,26 @@ namespace FTL
                 COM_VERIFY(spProject->get_Kind(&bstrKind));
                 COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), CFDTEUtil::GetDTEGuidStringInfo(bstrKind)));
 
+				CComPtr<IDispatch>	spDispProjectItem;
+				COM_VERIFY(spProject->get_Object(&spDispProjectItem));
+				if (spDispProjectItem)
+				{
+					//可以QI到
+					//	VSProject/VSProject2/ISpecifyPropertyPages
+					//对于VC工程，可以额外QI到
+					//  VCProject/VCProjectItem
+					COM_DETECT_INTERFACE_FROM_REGISTER(spDispProjectItem);
+				}
+
+				CComBSTR bstrExtenderCATID;
+				COM_VERIFY(spProject->get_ExtenderCATID(&bstrExtenderCATID));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Project ExtenderCATID"), &bstrExtenderCATID));
+				
+				CComVariant varExtenderNames;
+				COM_VERIFY(spProject->get_ExtenderNames(&varExtenderNames));
+				//测试出来为 NULL BSTR ARRAY
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Project ExtenderNames"), &varExtenderNames));
+
                 CComPtr<DTE_NS::ProjectItems>   spProjectItems;
                 COM_VERIFY(spProject->get_ProjectItems(&spProjectItems));
                 CFProjectItemsDumper projectItemsDumper(spProjectItems, pInfoOutput, m_nIndent + 2);
@@ -892,7 +907,8 @@ namespace FTL
 
                 CComVariant varExtenderNames;
                 COM_VERIFY(spProjectItem->get_ExtenderNames(&varExtenderNames));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("ExtenderNames"), &varExtenderNames));
+				//测试出来为 NULL BSTR ARRAY
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("ProjectItem ExtenderNames"), &varExtenderNames));
 
 				CComPtr<DTE_NS::Project>	spSubProject;
 				COM_VERIFY(spProjectItem->get_SubProject(&spSubProject));
@@ -1395,7 +1411,11 @@ namespace FTL
 
                 DTE_NS::vsCMElement elementKind = DTE_NS::vsCMElementOther;
                 COM_VERIFY(spCodeElement->get_Kind(&elementKind));
-                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Kind"), CFDTEUtil::GetElementKindString(elementKind)));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Code Element Kind"), CFDTEUtil::GetElementKindString(elementKind)));
+
+				//根据实际的类型，获取更详细的信息 -- 比如 Class/ Function
+				COM_VERIFY(_innerGetCodeElementTypeInfo(elementKind, spCodeElement, pInfoOutput));
+
 
 				CComBSTR bstrLanguage;
 				COM_VERIFY(spCodeElement->get_Language(&bstrLanguage));
@@ -1454,6 +1474,104 @@ namespace FTL
         return hr;
     }
 
+	HRESULT CFCodeElementDumper::_innerGetCodeElementTypeInfo(DTE_NS::vsCMElement elementKind, 
+		DTE_NS::CodeElement* pCodeElement, IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = S_OK;
+		switch(elementKind)
+		{
+		case DTE_NS::vsCMElementClass:
+			{
+				CFCodeClassDumper codeClassDumper(pCodeElement, pInfoOutput, m_nIndent + 2);				
+				break;
+			}
+		case DTE_NS::vsCMElementFunction:
+			{
+				CFCodeFunctionDumper	codeFunctionDumper(pCodeElement, pInfoOutput, m_nIndent + 2);
+				break;
+			}
+		default:
+			FTLTRACEEX(tlWarning, TEXT("UnHandled Code Element Type Info %s\n"), CFDTEUtil::GetElementKindString(elementKind));
+			COM_DETECT_INTERFACE_FROM_REGISTER(pCodeElement);
+			break;
+		}
+		return hr;
+	}
+
+	HRESULT CFCodeClassDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CodeClass")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<DTE_NS::CodeClass>	spCodeClass(m_pObj);
+			if (spCodeClass)
+			{
+				CFStringFormater strFormater;
+
+				DTE_NS::vsCMAccess	accessType = (DTE_NS::vsCMAccess)0;
+				COM_VERIFY(spCodeClass->get_Access(&accessType));
+				pInfoOutput->OnOutput(TEXT("Class Access"), CFDTEUtil::GetAccessKindString(strFormater, accessType));
+
+				CComPtr<DTE_NS::CodeElements>	spBaseClass;
+				COM_VERIFY(spCodeClass->get_Bases(&spBaseClass));
+				if (spBaseClass)
+				{
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("Base Class")));
+					CFCodeElementsDumper	baseClassDumper(spBaseClass, pInfoOutput, m_nIndent + 2);
+				}
+
+				CComPtr<DTE_NS::CodeElements>	spMembers;
+				COM_VERIFY(spCodeClass->get_Members(&spMembers));
+				if (spMembers)
+				{
+					pInfoOutput->OnOutput(TEXT("Class Members"));
+					CFCodeElementsDumper membersDumper(spMembers, pInfoOutput, m_nIndent + 2);
+				}
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFCodeFunctionDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("CodeFunction")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<DTE_NS::CodeFunction>	spCodeFunction(m_pObj);
+			if (spCodeFunction)
+			{
+				CFStringFormater strFormater;
+
+				DTE_NS::vsCMFunction functionKind = DTE_NS::vsCMFunctionOther;
+				COM_VERIFY(spCodeFunction->get_FunctionKind(&functionKind));
+				CFDTEUtil::GetFunctionKindString(strFormater, functionKind);
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("FunctionKind"), strFormater.GetString()));
+				strFormater.Reset();
+
+				DTE_NS::vsCMAccess	accessKind = DTE_NS::vsCMAccessPublic;
+				COM_VERIFY(spCodeFunction->get_Access(&accessKind));
+				CFDTEUtil::GetAccessKindString(strFormater, accessKind);
+
+				VARIANT_BOOL bMustImplement = VARIANT_FALSE;
+				COM_VERIFY(spCodeFunction->get_MustImplement(&bMustImplement));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("MustImplement"), bMustImplement));
+
+				//get_Overloads
+
+				CComPtr<DTE_NS::CodeElements> spAttributes;
+				COM_VERIFY(spCodeFunction->get_Attributes(&spAttributes));
+				if (spAttributes)
+				{
+					CFCodeElementsDumper	attributesDumper(spAttributes, pInfoOutput, m_nIndent + 2);
+				}
+			}
+		}
+		return hr;
+	}
 
 #if USE_MSVSC
     HRESULT CFCommandBarsDumper::GetObjInfo(IInformationOutput* pInfoOutput)
@@ -1861,29 +1979,14 @@ namespace FTL
 			CComQIPtr<VCCML_NS::VCCodeFunction> spVCCodeFunction(m_pObj);
 			if (spVCCodeFunction)
 			{
-				DTE_NS::vsCMFunction functionKind = DTE_NS::vsCMFunctionOther;
-				COM_VERIFY(spVCCodeFunction->get_FunctionKind(&functionKind));
-				CFStringFormater functionKindFormater;
-				CFDTEUtil::GetCMFunctionKindString(functionKindFormater, functionKind);
-				pInfoOutput->OnOutput(TEXT("FunctionKind"), functionKindFormater.GetString());
 
-				CComPtr<DTE_NS::CodeElements> spChildren;
-				COM_VERIFY(spVCCodeFunction->get_Children(&spChildren));
-				if (SUCCEEDED(hr) && spChildren)
-				{
-					long nChildCount = 0;
-					hr = spChildren->get_Count(&nChildCount);
-					if (SUCCEEDED(hr) && nChildCount > 0)
-					{
-						COM_VERIFY(pInfoOutput->OnOutput(TEXT("VCCodeFunction Children")));
-						CFCodeElementsDumper childrenDumper(spChildren, pInfoOutput, m_nIndent + 2);
-					}
-				}
 			}
 		}
 		return hr;
 	}
 #endif //USE_VCCML
+
+#endif //FTL_DEBUG
 }
 
 

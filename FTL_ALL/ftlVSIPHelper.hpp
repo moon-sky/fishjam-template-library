@@ -41,6 +41,8 @@ namespace FTL
 		return bHasChild;
 	}
 
+#ifdef FTL_DEBUG
+
 	LPCTSTR CFVSIPUtils::GetVSHPropIdString(DWORD_PTR propId)
 	{
 		switch(propId)
@@ -1581,6 +1583,9 @@ namespace FTL
 		}
 		return strFormater.GetString();
 	}
+#endif //FTL_DEBUG
+
+#ifdef FTL_DEBUG
 
 	HRESULT CFVsShellDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
@@ -1990,6 +1995,23 @@ namespace FTL
 		return hr;
 	}
 
+	HRESULT CFVsProjectDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("VsProject")));
+
+		if (m_pObj)
+		{
+			CComQIPtr<IVsProject>     spVsProject(m_pObj);
+			if (spVsProject)
+			{
+				CComBSTR bstrRoot;
+				COM_VERIFY(spVsProject->GetMkDocument(VSITEMID_ROOT, &bstrRoot));
+			}
+		}
+		return hr;
+	}
+
 	HRESULT CFVsHierarchyDumper::DumpAllPropertiesInfo(IVsHierarchy* pParent, VSITEMID ItemId, IInformationOutput* pInfoOutput)
 	{
 		pInfoOutput->OnOutput(TEXT("VsHierarchy ItemId"), (long)ItemId);
@@ -2193,7 +2215,7 @@ namespace FTL
 			//	IVsUIHierarchy
 
 			//如果是工程文件(.vcprj), 可以QI出	
-			//	IVsProject3/IVsProjectResources/IVsProjectSpecificEditorMap/IVsProjectSpecialFiles/IVsProjectCfgProvider
+			//	IVsProject[0~3]/IVsProjectResources/IVsProjectSpecificEditorMap/IVsProjectSpecialFiles/IVsProjectCfgProvider
 			//	IVsDependencyProvider/IVsUpdateSolutionEvents/IVsCfgProvider/IVsAggregatableProject
 			//
 			CComQIPtr<IVsHierarchy>     spIVsHierarchy(m_pObj);
@@ -3016,6 +3038,8 @@ namespace FTL
 		}
 		return hr;
 	}
+
+#endif //FTL_DEBUG
 }
 
 #endif //FTL_VSIP_HELPER_HPP

@@ -1,7 +1,7 @@
 #ifndef ADD_IN_STUDY_H
 #define ADD_IN_STUDY_H
 #pragma once
-
+#include <dte.h>
 //开发文档
 //Visual Studio 2008 可扩展性开发 -- http://www.cnblogs.com/anderslly/archive/2009/02/23/visualstudio-overview.html
 //LearnVSXNow -- http://www.cnblogs.com/default/archive/2010/02/26/1674582.html
@@ -15,7 +15,7 @@
 //Visual Studio Flat Solution Explorer(OpenSource, C++) http://vsflatsolutionexp.codeplex.com/
 //DPack(Freeware) -- http://www.usysware.com/dpack
 
-//DTE中 ProjectItem -> FileCodeModel -> CodeElement->CodeElementChildren ?
+//DTE中 ProjectItem -> FileCodeModel -> CodeElement->CodeElementChildren 
 //CAtlDllModuleT 子类中 DECLARE_LIBID(idl中library的UUID) -- 作用 ?
 //   需要先通过 DECLSPEC_UUID 生命对应的UUID
 //idl 中 library(1) -> coclass(n),可通过 CoCreateInstance 创建 -> interface(n)
@@ -163,7 +163,7 @@
 *     Global Service -- 如有已经被site的IVsPackage对象，即可通过GetService方法去访问全局服务,
 *       C#中有静态的 Package.GetGlobalService 方法，使用服务前需要注册服务(C#中是ProvideServiceAttribute)
 * 
-*   需要安装 Visual Studio 200X 的 SDK(VSX SDK) -- http://msdn.com/vsx 
+*   需要安装 Visual Studio 200X 的 SDK(VSX SDK) -- http://msdn.com/vsx
 * 
 * 常用Service(IServiceProvider::QueryService) -- Visual Studio提供给Add-in和Package的功能，Package也能提供(Proffer)自己的Service
 *   注意：因为一个Service可以提供多个接口，因此良好的习惯是单独定义一个 Sxxx(如 SVsResourceManager) 作为 Service 的类型
@@ -206,7 +206,7 @@
 *   IVsMacroRecorder(SID_SVsMacroRecorder) -- 宏录制器
 *   IVsMenuEditorFactory
 *   IVSMDCodeDomProvider(SID_SVSMDCodeDomProvider)
-*   IVsMonitorSelection
+*   IVsMonitorSelection(SID_SVsShellMonitorSelection)
 *   IVsMonitorUserContext
 *   IVsObjectManager[0-2](SID_SVsObjectManager)
 *   IVsOutputWindow
