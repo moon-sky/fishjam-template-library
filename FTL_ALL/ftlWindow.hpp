@@ -1206,6 +1206,7 @@ namespace FTL
 		{
 			DWORD dwPid = 0;
 			DWORD dwThreadId = GetWindowThreadProcessId(hWnd, &dwPid);
+			UNREFERENCED_PARAMETER(dwThreadId);
 			if (dwPid != 0 && dwPid == dwProcessId)
 			{
 				return hWnd;
@@ -1651,7 +1652,8 @@ namespace FTL
 
     LPCTSTR CFWinUtil::GetCommandNotifyString(HWND hWnd, UINT nCode)
     {
-        TCHAR szClassName[MAX_PATH] = {0};
+        UNREFERENCED_PARAMETER(hWnd);
+		//TCHAR szClassName[MAX_PATH] = {0};
         switch(nCode)
         {
             //Combo Box Notification Codes
@@ -1675,7 +1677,6 @@ namespace FTL
 
     LPCTSTR CFWinUtil::GetWindowClassString(FTL::CFStringFormater& formater, HWND hWnd,LPCTSTR pszDivide/* = TEXT("|") */)
     {
-        BOOL bRet = FALSE;
         FTLASSERT(::IsWindow(hWnd));
         ULONG_PTR clsStyle = ::GetClassLongPtr(hWnd,GCL_STYLE);
         API_ASSERT(clsStyle != 0);

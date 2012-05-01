@@ -1,7 +1,7 @@
 #ifndef ADD_IN_STUDY_H
 #define ADD_IN_STUDY_H
 #pragma once
-#include <dte.h>
+
 //开发文档
 //Visual Studio 2008 可扩展性开发 -- http://www.cnblogs.com/anderslly/archive/2009/02/23/visualstudio-overview.html
 //LearnVSXNow -- http://www.cnblogs.com/default/archive/2010/02/26/1674582.html

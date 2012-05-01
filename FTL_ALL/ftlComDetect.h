@@ -15,6 +15,9 @@
 #  error ftlComDetect.h requires ftlbase.h to be included first
 #endif
 
+#include <atlcomcli.h>
+#include <OAIdl.h>
+
 //TODO -- HKLM下的Software\Classes\Interface 下也有接口，似乎不一样？
 /**********************************************************************************************************
 * 有两种模式查找一个组件支持的接口及数目（QI）
@@ -529,7 +532,9 @@ namespace FTL
 	private:
 		FTLINLINE static HRESULT _innerCoDtectInterfaceFromRegister(IUnknown* pUnknown, REFGUID guidInfo);
 		FTLINLINE static HRESULT _innerCoDtectServiceFromRegister(IServiceProvider* pServiceProvider, REFGUID guidInfo);
+#if INCLUDE_DETECT_VSIP
 		FTLINLINE static HRESULT _innerCoDtectViewInterfaceFromRegister(IVsWindowFrame* pVsWindowFrame, REFGUID guidInfo);
+#endif 
     }; //class CFComDetect
 }//namespace FTL
 

@@ -187,6 +187,7 @@ namespace FTL
 
 	VOID CFVariantInfo::GetValueInfo(CFStringFormater& formaterValue)
 	{
+		USES_CONVERSION;
         //ÓÐ V_BSTR µÈºê¸¨Öú²Ù×÷
 		VARTYPE varType = V_VT(&m_Info);
 

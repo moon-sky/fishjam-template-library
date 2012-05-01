@@ -1249,8 +1249,8 @@ namespace FTL
                 bRet = TRUE;
                 break;
             case WAIT_TIMEOUT:
-				FTLTRACEEX(tlWarning, TEXT("WARNING!!!: Wait For Thread %d TimeOut, Handle=0x%x, Id=%d\n"), dwTimeOut, m_hThread,
-					::GetThreadId(m_hThread));
+				FTLTRACEEX(tlWarning, TEXT("WARNING!!!: Wait For Thread %d TimeOut, Handle=0x%x\n"), 
+					dwTimeOut, m_hThread);
 				if (bTerminateIfTimeOut)
 				{
 					FTLASSERT(FALSE && TEXT("WaitFor Time Out"));

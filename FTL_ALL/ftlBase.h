@@ -286,6 +286,13 @@ namespace FTL
         break;
     #endif
 
+	#ifndef HANDLE_CASE_TO_STRING_FORMATER
+	# define HANDLE_CASE_TO_STRING_FORMATER(f, c)\
+		case (c):\
+		f.Format(TEXT("%s"), TEXT(#c));\
+		break;
+	#endif 
+
     #ifndef HANDLE_CASE_RETURN_STRING
     # define HANDLE_CASE_RETURN_STRING(c) \
         case (c):\
@@ -599,7 +606,7 @@ namespace FTL
 
         typedef struct tagFTDATA
         {
-            ULONG       lSeqNum ;// The sequence number for this trace.
+            LONG       lSeqNum ;// The sequence number for this trace.
             FILETIME    stTime ;
             HMODULE     module;
             TraceLevel  level;

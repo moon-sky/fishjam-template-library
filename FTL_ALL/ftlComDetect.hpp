@@ -12,9 +12,6 @@
 //IVsTextManager2
 //LearnVSIP中 IWin32Window(.NET下WinForm的?) 、ToolWindowPane 是哪里的？
 
-#include <atlcomcli.h>
-#include <OAIdl.h>
-
 namespace FTL
 {
     FTLINLINE HRESULT GetInterfaceNameByIID(REFIID rclsid, BSTR * pszName)
@@ -66,7 +63,7 @@ namespace FTL
         {
             HRESULT hr = E_FAIL;
             TYPEATTR*   pta = NULL; 
-			CComQIPtr<ITypeInfo> pTypeInfo(pUnknown);
+			ATL::CComQIPtr<ITypeInfo> pTypeInfo(pUnknown);
             COM_VERIFY(pTypeInfo-> GetTypeAttr(&pta));
             USES_CONVERSION;
 
@@ -114,7 +111,7 @@ namespace FTL
         {
             HRESULT hr = E_FAIL;
             unsigned int infoCount = 0;
-			CComQIPtr<IDispatch> pDisp(pUnknown);
+			ATL::CComQIPtr<IDispatch> pDisp(pUnknown);
             COM_VERIFY(pDisp->GetTypeInfoCount(&infoCount));
             FTLTRACEEX(FTL::tlTrace,TEXT("\t\tIn CDispatchDump, TypeInfoCount=%d\n"), infoCount);
 
@@ -138,7 +135,7 @@ namespace FTL
         static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
         {
             HRESULT hr = S_FALSE;
-			CComQIPtr<IServiceProvider> pServiceProvider(pUnknown);
+			ATL::CComQIPtr<IServiceProvider> pServiceProvider(pUnknown);
             //COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pServiceProvider);
             //pServiceProvider->QueryService()
             return hr;
@@ -151,7 +148,7 @@ namespace FTL
         static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
         {
             HRESULT hr = S_FALSE;
-			CComQIPtr<IEnumVARIANT> pEnumVariant(pUnknown);
+			ATL::CComQIPtr<IEnumVARIANT> pEnumVariant(pUnknown);
 			if (pEnumVariant)
 			{
 				COM_VERIFY(pEnumVariant->Reset());
@@ -210,7 +207,7 @@ namespace FTL
 		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
 		{
 			HRESULT hr = E_FAIL;
-			CComQIPtr<IEnumConnections> pEnumConnections(pUnknown);
+			ATL::CComQIPtr<IEnumConnections> pEnumConnections(pUnknown);
 			if (pEnumConnections)
 			{
 				COM_VERIFY(pEnumConnections->Reset());
@@ -237,7 +234,7 @@ namespace FTL
             HRESULT hr = E_FAIL;
             //if (pContainer)
             {
-				CComQIPtr<IConnectionPointContainer> pContainer(pUnknown);
+				ATL::CComQIPtr<IConnectionPointContainer> pContainer(pUnknown);
                 IEnumConnectionPoints* pEnumCP = NULL;
                 hr = pContainer->EnumConnectionPoints(&pEnumCP);
                 if (SUCCEEDED(hr) && pEnumCP)
@@ -274,6 +271,16 @@ namespace FTL
         HRESULT hr = E_FAIL;
         BOOL bRet = FALSE;
 		IServiceProvider* pServiceProvider = NULL;
+	    if (cdtService == detectType)
+		{
+			COM_VERIFY(pUnknown->QueryInterface(IID_IServiceProvider, (void**)&pServiceProvider));
+			if (FAILED(hr) || !pServiceProvider)
+			{
+				return DWORD(-1);
+			}
+		}
+
+#if INCLUDE_DETECT_VSIP
 		IVsWindowFrame* pVsWindowFrame = NULL;
 		if (cdtViewInterface == detectType)
 		{
@@ -283,14 +290,7 @@ namespace FTL
 				return DWORD(-1);
 			}
 		}
-		else if (cdtService == detectType)
-		{
-			COM_VERIFY(pUnknown->QueryInterface(IID_IServiceProvider, (void**)&pServiceProvider));
-			if (FAILED(hr) || !pServiceProvider)
-			{
-				return DWORD(-1);
-			}
-		}
+#endif
 
         HKEY hKeyInterface;
         REG_VERIFY(::RegOpenKeyEx(HKEY_CLASSES_ROOT,TEXT("Interface"),0,KEY_READ,&hKeyInterface));
@@ -314,9 +314,11 @@ namespace FTL
 					case cdtInterface:
 						hr = _innerCoDtectInterfaceFromRegister(pUnknown, guidInfo);
 						break;
+#if INCLUDE_DETECT_VSIP
 					case cdtViewInterface:
 						hr = _innerCoDtectViewInterfaceFromRegister(pVsWindowFrame, guidInfo);
 						break;
+#endif
 					case cdtService:
 						hr = _innerCoDtectServiceFromRegister(pServiceProvider, guidInfo);
 						break;
@@ -354,8 +356,9 @@ namespace FTL
                 API_VERIFY(ERROR_SUCCESS == lRet || ERROR_NO_MORE_ITEMS == lRet);
             }
             FTLTRACEEX(FTL::tlTrace,TEXT("Total Check %d Interfaces\n"),dwIndex);
-
+#if	INCLUDE_DETECT_VSIP
 			SAFE_RELEASE(pVsWindowFrame);
+#endif 
 			SAFE_RELEASE(pServiceProvider);
 
             SAFE_CLOSE_REG(hKeyInterface);
@@ -389,6 +392,7 @@ namespace FTL
 		return hr;
 	}
 
+#if INCLUDE_DETECT_VSIP
 	HRESULT CFComDetect::_innerCoDtectViewInterfaceFromRegister(IVsWindowFrame* pVsWindowFrame, REFGUID guidInfo)
 	{
 		HRESULT hr = E_FAIL;
@@ -401,6 +405,7 @@ namespace FTL
 		}
 		return hr;
 	}
+#endif 
 
     //本方法同时支持检测多种COM信息 -- 虽然不是好的编程习惯，但能减少维护量
     DWORD CFComDetect::CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType)

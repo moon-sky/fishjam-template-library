@@ -75,6 +75,11 @@ namespace FTL
         if( f < o.f ) { return true; }\
         else if( f > o.f ) { return false; }
 
+	#ifndef MAKELONGLONG
+		#define MAKELONGLONG(a, b)	((LONGLONG)(((((LONGLONG)(a)) & 0xFFFFFFFF)) | (((((LONGLONG)(b)) & 0xFFFFFFFF)) << 32)))
+		#define HILONG(a) (LONG)	((((LONGLONG)(a)) & 0xFFFFFFFF00000000) >> 32)
+		#define LOLONG(a) (LONG)	(((LONGLONG)(a)) & 0xFFFFFFFF)
+	#endif 
 }
 
 

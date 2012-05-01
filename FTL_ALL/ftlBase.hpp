@@ -725,7 +725,7 @@ namespace FTL
             CFTFileWriter* pFileWriter = GetCurrentThreadFile();
             if ((CFTFileWriter*)INVALID_HANDLE_VALUE != pFileWriter)
             {
-                FTDATA ftdata ;
+				FTDATA ftdata = {0} ;
                 if ( TRUE == m_Options.bDoTimings )
                 {
                     GetSystemTimeAsFileTime ( &ftdata.stTime ) ;// Get the current time stamp.
