@@ -22,6 +22,24 @@
 
 namespace FTL
 {
+	FTLEXPORT class CFControlUtil
+	{
+	public:
+		FTLINLINE static LPCTSTR GetEditNotifyCodeString(DWORD iNotify);
+
+		//获得 RichEditCtrl 中 CHARFORMAT 的信息
+		FTLINLINE static LPCTSTR GetCharFormatMaskString(FTL::CFStringFormater& formater, DWORD dwMasks, LPCTSTR pszDivide = TEXT("|"));
+		FTLINLINE static LPCTSTR GetCharFormatEffectString(FTL::CFStringFormater& formater, DWORD dwEffects, LPCTSTR pszDivide = TEXT("|"));
+
+		//获得 RichEditCtrl 中 PARAFORMAT 的信息 -- 也用于Effect?
+		FTLINLINE static LPCTSTR GetParaFormatMaskString(FTL::CFStringFormater& formater, DWORD dwMasks, LPCTSTR pszDivide = TEXT("|"));
+
+		//获得 RichEditCtrl 中的 PropertyBits 信息(TxGetPropertyBits)
+		FTLINLINE static LPCTSTR GetRichEditPropertyBits(FTL::CFStringFormater& formater, DWORD dwBits, LPCTSTR pszDivide = TEXT("|"));
+
+	};
+
+
     struct FScrollSkinInfo
     {
         CImage* pBtnVUp;

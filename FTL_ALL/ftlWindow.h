@@ -459,6 +459,12 @@ namespace FTL
         //static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
     };
 
+	enum ColorType
+	{
+		ctCtrlColor,
+		ctSysColor,
+	};
+
     FTLEXPORT class CFWinUtil
     {
     public:
@@ -472,13 +478,16 @@ namespace FTL
         //全屏窗口：WS_POPUP|WS_VISIBLE 属性(不能是 WS_OVERLAPPEDWINDOW ), 0,0 ~ CxScreen, CyScreen
         FTLINLINE static BOOL SetWindowFullScreen(HWND hWnd,BOOL isFullScreen, BOOL &oldZoomedState);
         FTLINLINE static LPCDLGTEMPLATE LoadDialog(HMODULE hModuleRes, LPCTSTR szResource, HINSTANCE * phInstFoundIn);
-        
+
+		//获取 GetSysColor 时颜色索引对应的字符串
+		FTLINLINE static LPCTSTR GetColorString(ColorType clrType, int nColorIndex);
+
         //WM_HSCROLL 或 WM_VSCROLL 的通知码
         FTLINLINE static LPCTSTR GetScrollBarCodeString(UINT  nSBCode);
 
         //获取 WM_NOTIFY 消息 Code 对应的字符串信息
         FTLINLINE static LPCTSTR GetNotifyCodeString(UINT nCode);
-        
+
         //获取 WM_COMMAND 消息的 notifyCode
         FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode);
 
