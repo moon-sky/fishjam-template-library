@@ -2,34 +2,34 @@
 #include "SelectTool.h"
 #include "DrawCanvas.h"
 #include "DrawRect.h"
-#include "../resource.h"
+#include "resource.h"
 
+#if 0 //fishjam
 #include <SilverlightCpp.h>
 using namespace SilverlightCpp;
-//#include <SilverlightExCpp.h>
-//using namespace SilverlightExCpp;
+#endif
 
 CSelectTool::CSelectTool()
 : CDrawTool(ttSelection)
 {
 	//TODO: IDrawCanvas is better ?
 	
+#if 0 //fishjam
 	NDGraphics::CGDIPImage imgCursorSelect;
 	imgCursorSelect.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
 		_T( "/Assets/Images/Main/CaptureView/select_cursor_1.png" ) ), ImageFormatPNG ); // NS
 	m_hCursorSelect = (HCURSOR)imgCursorSelect.GetHICON();
 	FTLASSERT(m_hCursorSelect);
-	//POINT ptPhysicalCur = { 0 };
-	//BOOL bRet = FALSE;
-	//API_VERIFY(GetPhysicalCursorPos(&ptPhysicalCur));
-	//API_VERIFY(SetPhysicalCursorPos(ptPhysicalCur.x + 2, ptPhysicalCur.y + 2));
-
 	NDGraphics::CGDIPImage imgCursorSelecting;
 	imgCursorSelecting.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
 		_T( "/Assets/Images/Main/CaptureView/select_cursor_2.png" ) ), ImageFormatPNG ); // NS
 	m_hCursorSelecting = (HCURSOR)imgCursorSelecting.GetHICON();
 	FTLASSERT(m_hCursorSelecting);
 	m_hCursor = m_hCursorSelect;
+#else
+	m_hCursorSelect = LoadCursor(NULL, IDC_CROSS);
+	m_hCursorSelecting = LoadCursor(NULL, IDC_CROSS);
+#endif
 }
 
 void CSelectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point)

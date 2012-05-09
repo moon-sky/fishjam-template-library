@@ -2,7 +2,9 @@
 #include "DrawObject.h"
 #include "RichEditPanel.h"
 
-class CTextObject : public CDrawObject
+class CTextObject 
+	: public CDrawObject
+	, public CMessageFilter
 {
 public:
 	CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType);

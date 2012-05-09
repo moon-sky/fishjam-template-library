@@ -58,6 +58,19 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 	pView->SetMouseLastLogicalPoint(ptLogical);
 }
 
+void CDrawTool::OnKeyDown(IDrawCanvas* pView, UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (VK_DELETE == nChar)
+	{
+		//pView->DeleteSelectObjects();
+	}
+}
+
+void CDrawTool::OnChar(IDrawCanvas* pView, UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+
+}
+
 void CDrawTool::OnEditProperties(IDrawCanvas* /*pView*/)
 {
 }

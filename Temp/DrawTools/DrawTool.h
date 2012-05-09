@@ -14,6 +14,8 @@ public:
 	virtual void OnLButtonDblClk(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	virtual void OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	virtual void OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	virtual void OnKeyDown(IDrawCanvas* pView, UINT nChar, UINT nRepCnt, UINT nFlags);
+	virtual void OnChar(IDrawCanvas* pView, UINT nChar, UINT nRepCnt, UINT nFlags);
 	virtual void OnEditProperties(IDrawCanvas* pView);
 	virtual void OnCancel(IDrawCanvas* pView);
 

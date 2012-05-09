@@ -10,6 +10,7 @@
 #include "SelectTool.h"
 #include "RectTool.h"
 #include "SelectTool.h"
+#include "TextObject.h"
 
 #include "DrawTypeDefine.h"
 
@@ -24,6 +25,7 @@ protected:
 
 	CSelectTool*	m_pSelectTool;
 	CDrawRect*		m_pSelectRect;
+	CTextObject*	m_pFoucsTextObject;
 	ToolType		m_nCurToolType;
 	SelectMode		m_nCurrentSelectMode;
 	DrawToolList	m_tools;
@@ -41,6 +43,8 @@ public:
 		m_nCurToolType = ttNone;
 		m_nCurrentSelectMode = smNone;
 		m_pSelectRect = NULL;
+		m_pFoucsTextObject = NULL;
+
 		//m_bCaptured = FALSE;
 		m_pSelectTool = new CSelectTool();
 		m_tools.push_back(m_pSelectTool);
@@ -128,6 +132,24 @@ public:
 			//{
 			//	pTool->OnLButtonUp(this, nFlags, m_ptLastValidateDevice);
 			//}
+		}
+	}
+
+	void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+	{
+		CDrawTool* pTool = GetCurrentTool();
+		if (pTool)
+		{
+			pTool->OnKeyDown(this, nChar, nRepCnt, nFlags);
+		}
+	}
+
+	void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+	{
+		CDrawTool* pTool = GetCurrentTool();
+		if (pTool)
+		{
+			pTool->OnChar(this, nChar, nRepCnt, nFlags);
 		}
 	}
 
@@ -261,6 +283,11 @@ public:
 
 	virtual void Remove(CDrawObject* pObj)
 	{
+		if (m_pFoucsTextObject == pObj)
+		{
+			m_pFoucsTextObject = NULL;
+		}
+
 		DrawObjectList::iterator iter = std::find(m_allObjects.begin(), m_allObjects.end(), pObj);
 		if (iter != m_allObjects.end())
 		{
@@ -277,20 +304,24 @@ public:
 	void InvalObject(CDrawObject* pObj)
 	{
 		CRect rect = pObj->GetPosition();
+		rect.NormalizeRect();
+		rect.InflateRect(1, 1);
+
 		DocToClient(&rect);
-		if (IsSelected(pObj)) //m_bActive && 
-		{
-			rect.left -= 4;
-			rect.top -= 5;
-			rect.right += 5;
-			rect.bottom += 4;
-		}
-		rect.InflateRect(1, 1); // handles CDrawOleObj objects
+		rect.InflateRect(TRACK_MARGIN, TRACK_MARGIN);
+		//if (IsSelected(pObj)) //m_bActive && 
+		//{
+		//	rect.left -= 4;
+		//	rect.top -= 5;
+		//	rect.right += 5;
+		//	rect.bottom += 4;
+		//}
+		//rect.InflateRect(1, 1); // handles CDrawOleObj objects
 		//rect.InflateRect(4, 4); // handles CDrawOleObj objects
 
 		T* pThis = static_cast<T*>(this);
-		pThis->Invalidate();
-		//::InvalidateRect(pThis->m_hWnd, rect, FALSE);
+		//pThis->Invalidate();
+		::InvalidateRect(pThis->m_hWnd, rect, FALSE);
 	}
 
 	virtual BOOL IsSelected(const CDrawObject* pDrawObj) const
@@ -314,6 +345,10 @@ public:
 		if (pObj == NULL || IsSelected(pObj))
 		{
 			return;
+		}
+		if (pObj->GetDrawObjType() == dotText)
+		{
+			m_pFoucsTextObject = dynamic_cast<CTextObject*>(pObj);
 		}
 		m_selection.push_back(pObj);
 		InvalObject(pObj);
@@ -388,6 +423,11 @@ public:
 		{
 			CDrawObject* pObj = *iter;
 			DrawObjectList::iterator iterInAll = std::find(m_allObjects.begin(), m_allObjects.end(), pObj);
+			
+			if (m_pFoucsTextObject == pObj)
+			{
+				m_pFoucsTextObject = NULL;
+			}
 
 			FTLASSERT(iterInAll != m_allObjects.end());
 			if (iterInAll != m_allObjects.end())

@@ -3,31 +3,68 @@
 #include <textserv.h>
 #include <tom.h>
 
-#pragma comment(lib, "riched20.lib")
+
+typedef void (* PNOTIFY_CALLBACK)(int iNotify, void* pParam);
 
 class CRichEditPanel
 	: public ITextHost
 	, public CMessageFilter
 {
 public:
-	CRichEditPanel(HWND hWndOwner, const RECT* prcClient);
+
+	CRichEditPanel();
 	~CRichEditPanel();
-	BOOL Init();
+	BOOL Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBACK pNotifyCallback = NULL);
 	void DoPaint(CDCHandle dcParent);
 
 	HRESULT GetTextServices(ITextServices** pTextServices);
 	HRESULT SetClientRect(const RECT *prc, BOOL fUpdateExtent = TRUE);
-	RECT* GetClientRect();
+	RECT* GetClientRect() { return &m_rcClient; }
+
+	HRESULT SetText(LPCTSTR pszText);		//TODO:change to RTF?
+	void Range(long cpFirst, long cpLim, ITextRange** ppRange);
+	PNOTIFY_CALLBACK SetNotifyCallback(PNOTIFY_CALLBACK pNotifyCallback);
+
+
+	//property
+	BOOL GetWordWrap(void);
+	void SetWordWrap(BOOL fWordWrap);
+	BOOL GetReadOnly();
+	void SetReadOnly(BOOL fReadOnly);
+	BOOL GetAllowBeep();
+	void SetAllowBeep(BOOL fAllowBeep);
+	RECT* GetViewInset(void);
+	void SetViewInset(RECT *prc);
+	WORD GetDefaultAlign();
+	void SetDefaultAlign(WORD wNewAlign);
+	BOOL GetRichTextFlag();
+	void SetRichTextFlag(BOOL fNew);
+	LONG GetDefaultLeftIndent();
+	void SetDefaultLeftIndent(LONG lNewIndent);
+	
+	BOOL SetSaveSelection(BOOL fSaveSelection);
+	SIZEL *GetExtent(void);
+	void SetExtent(SIZEL *psizelExtent, BOOL fNotify);
+
+	BOOL GetActiveState(void);
+	BOOL DoSetCursor(RECT *prc, POINT *pt);
+	void SetTransparent(BOOL fTransparent);
+	void GetControlRect(LPRECT prc);
+	LONG SetAccelPos(LONG laccelpos);
+	WCHAR SetPasswordChar(WCHAR chPasswordChar);
+	void SetDisabled(BOOL fOn);
+	LONG SetSelBarWidth(LONG lSelBarWidth);
+	BOOL GetTimerState();
+
+	//static LONG GetXPerInch(void) { return xPerInch; }
+	//static LONG	GetYPerInch(void) { return yPerInch; }
+
+	HRESULT OnTxInPlaceActivate(LPCRECT prcClient);
+	HRESULT OnTxInPlaceDeactivate();
 
 	BEGIN_MSG_MAP_EX(CRichEditPanel)
-		MSG_WM_CHAR(OnChar)
-		{
-			HRESULT hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
-			if (hr == S_FALSE)
-			{
-				lResult = ::DefWindowProc(m_hWndOwner, uMsg, wParam, lParam);
-			}
-		}
+		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
+		MESSAGE_HANDLER(WM_CHAR, OnChar)
 	END_MSG_MAP()
 
 	//BEGIN_COM_MAP(CRichEditPanel)
@@ -35,12 +72,12 @@ public:
 	//	COM_INTERFACE_ENTRY(ITextEditControl)
 	//END_COM_MAP()
 
-	//IUnknown
+	//IUnknown interface
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface( REFIID riid, void ** ppvObject);
 	virtual ULONG STDMETHODCALLTYPE AddRef( void);
 	virtual ULONG STDMETHODCALLTYPE Release( void);
 
-	//ITextHost
+	//ITextHost interface
 	virtual HDC TxGetDC();
 	virtual INT TxReleaseDC( HDC hdc );
 	virtual BOOL TxShowScrollBar( INT fnBar, BOOL fShow );
@@ -84,24 +121,36 @@ public:
 	//CMessageFilter
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
+	//Message Handle
+	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+
 private:
+	HRESULT InitDefaultCharFormat(HFONT hfont);
+	HRESULT InitDefaultParaFormat();
+
+private:
+	//this must be the first member variable
 	ULONG					m_cRefs;
+	PNOTIFY_CALLBACK		m_pNotifyCallback;
+
 	HWND					m_hWndOwner;
 	CRect					m_rcClient;
 	CRect					m_rcViewInset;
+	SIZEL					m_sizelExtent;
 	SIZEL					m_szlExtent;
 	DWORD					m_dwStyle;
 	CHARFORMAT				m_charFormat;
 	PARAFORMAT				m_paraFormat;
-	COLORREF 				m_crBackground;			// background color
+	COLORREF 				m_crBackground;			//background color
 	COLORREF				m_crAuto;
-
+	LONG					m_lAcceleratorPos;
 	LONG					m_cchTextMost;
-	LONG					m_lSelBarWidth;
+	LONG					m_lSelBarWidth;			//width of the selection bar
 
 	TCHAR					m_chPasswordChar;
 	CComPtr<ITextServices>	m_spTextServices;
-
+	CComPtr<ITextDocument>	m_spTextDocuemtn;
 	LONG					m_lState;
 
 	unsigned	m_fBorder				:1;	// control has border
@@ -124,13 +173,4 @@ private:
 	unsigned	m_fInplaceActive		:1; // Whether control is inplace active
 	unsigned	m_fTransparent			:1; // Whether control is transparent
 	unsigned	m_fTimer				:1;	// A timer is set
-private:
-	HRESULT InitDefaultCharFormat(CHARFORMATW * pcf, HFONT hfont);
-	HRESULT InitDefaultParaFormat(PARAFORMAT * ppf);
-
-	void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
-	{
-		FTLTRACE(TEXT("RichEditPanel::OnChar, nChar=%d, nRepCnt=%d, nFlags=%d\n"), nChar, nRepCnt, nFlags);
-		SetMsgHandled(FALSE);
-	}
 };

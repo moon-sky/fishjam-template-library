@@ -51,11 +51,11 @@ void CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	CDrawObject* pObj = NULL;
 	if (objType != dotText)
 	{
-		pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), objType);
+		pObj = new CDrawRect(pView, CRect(ptLogical, CSize(1, 1)), objType);
 	}
 	else
 	{
-		pObj = new CTextObject(pView, CRect(ptLogical, CSize(100,100)), objType);
+		pObj = new CTextObject(pView, CRect(ptLogical, CSize(1,1)), objType);
 	}
 
 	pView->Add(pObj);
@@ -82,6 +82,7 @@ void CRectTool::OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 	{
 		// Don't create empty objects...
 		CDrawObject *pObj = pView->GetSelection().back();
+		pView->InvalObject(pObj);
 		pView->Remove(pObj);
 		pObj->Remove();
 		pView->GetSelectTool()->OnLButtonDown(pView, nFlags, point); // try a select!
