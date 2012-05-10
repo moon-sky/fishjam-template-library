@@ -10,9 +10,9 @@
 #define FTL_FUNCTIONAL_H
 #pragma once
 
+#include <iosfwd>
 #include <list>
-//#include <string>
-//#include <functional>
+#include <sstream>
 #include "ftlTypes.h"
 #include <WinSock2.h>
 namespace FTL
@@ -28,6 +28,14 @@ namespace FTL
         return destBegin;
     }
 
+    template <typename T>
+    struct UnreferenceLess : public std::binary_function<T, T, bool>
+    {
+        bool operator()(const T& _Left, const T& _Right) const
+        {
+            return (*_Left < *_Right);
+        }
+    };
 
     template <typename T>
     struct ObjecteDeleter
@@ -187,6 +195,64 @@ namespace FTL
         return &obj;
     }
 
+    FTLINLINE size_t Split(const std::string& text, 
+        const std::string& delimiter,
+        bool bWithDelimeter,
+        std::list<std::string>& tokens)
+    {
+        size_t len = text.length();
+        size_t start = text.find_first_not_of(delimiter); //找到第一个不是分隔符的
+        size_t stop = 0;
+        while ( (start >=0) && (start < len))
+        {
+            stop = text.find_first_of(delimiter, start); //找到这之后的第一个分隔符
+            if( (stop < 0) || stop > len)
+            {
+                stop = len;
+            }
+            if (bWithDelimeter && start > 0)
+            {
+                tokens.push_back(text.substr(start - 1, stop - start + 1));
+            }
+            else
+            {
+                tokens.push_back(text.substr(start, stop - start));
+            }
+            start = text.find_first_not_of(delimiter, stop + 1);
+        }
+        return tokens.size();
+    }
+
+    FTLINLINE int GetRandomArray(int from, int to, std::vector<int>& result)
+    {
+        FTLASSERT(from <= to);
+        int size = to - from + 1;
+        if (size <= 0)
+        {
+            return 0;
+        }
+
+        std::vector<int> tmpVector;
+        tmpVector.resize(size);
+
+        //初始化
+        for (int i = from; i <= to; i++)
+        {
+            tmpVector[i - from] = i;
+        }
+        result.resize(size);
+
+        //time_t now = 0;
+        srand(GetTickCount());
+
+        for (int i = 0; i < size; i++)
+        {
+            int index = rand() % (size-i);
+            result[i] = tmpVector[index];
+            tmpVector[index] = tmpVector[size - i - 1];
+        }
+        return size;
+    }
     // usage std::generate(intVect.begin(), intVect.end(), sequence_generator<int>(1,1));
     template<typename T>
     struct sequence_generator
@@ -227,6 +293,131 @@ namespace FTL
     private:
         InType m_start;
         InType m_step;
+    };
+    FTLINLINE int LuhnCalc(const std::string& strInput)
+    {
+        UNREFERENCED_PARAMETER(strInput);
+        FTLASSERT(FALSE);
+        return 0;
+    }
+    class binarystream
+    {
+    public:
+        explicit binarystream(std::ios_base::openmode mode = std::ios_base::out |std::ios_base::in)
+            : m_stream(mode) {}
+        explicit binarystream(const std::string &str,  
+            std::ios_base::openmode mode = std::ios_base::out|std::ios_base::in)  
+            : m_stream(str, mode) {}  
+        explicit binarystream(const char *str, size_t size,
+            std::ios_base::openmode mode = std::ios_base::out|std::ios_base::in)
+            : m_stream(std::string(str, size), mode) {}
+
+        binarystream &operator>>(std::string &str)
+        {
+            u_int32_t length;
+            *this >> length;
+            if (eof())
+            {
+                return *this;
+            }
+            if (length == 0) {
+                str.clear();
+                return *this;
+            }
+            std::vector<char> buffer(length);
+            m_stream.read(&buffer[0], length);
+            if (!eof())
+            {
+                str.assign(&buffer[0], length);
+            }
+            return *this;
+        }
+        binarystream &operator>>(u_int8_t &u8)
+        {
+            m_stream.read((char *)&u8, 1);
+            return *this;
+        }
+        binarystream &operator>>(u_int16_t &u16)
+        {
+            u_int16_t temp;
+            m_stream.read((char *)&temp, 2);
+            if (!eof())
+            {
+                u16 = ntohs(temp);
+            }
+            return *this;
+        }
+        binarystream &operator>>(u_int32_t &u32)
+        {
+            u_int32_t temp;
+            m_stream.read((char *)&temp, 4);
+            if (!eof())
+            {
+                u32 = ntohl(temp);
+            }
+            return *this;
+        }
+        binarystream &operator>>(u_int64_t &u64)
+        {
+            u_int32_t lower, upper;
+            *this >> lower >> upper;
+            if (!eof())
+            {
+                u64 = static_cast<u_int64_t>(lower) | (static_cast<u_int64_t>(upper) << 32);
+            }
+            return *this;
+        }
+
+        binarystream &operator<<(const std::string &str)
+        {
+            u_int32_t length = (u_int32_t)(str.length());
+            *this <<  length;
+            m_stream.write(str.c_str(), length);
+            return *this;
+        }
+        binarystream &operator<<(u_int8_t u8)
+        {
+            m_stream.write((const char*)&u8, 1);
+            return *this;
+        }
+        binarystream &operator<<(u_int16_t u16)
+        {
+            u16 = htons(u16);
+            m_stream.write((const char*)&u16, 2);
+            return *this;
+        }
+        binarystream &operator<<(u_int32_t u32)
+        {
+            u32 = htonl(u32);
+            m_stream.write((const char*)&u32, 4);
+            return *this;
+        }
+        binarystream &operator<<(u_int64_t u64)
+        {
+            // write 64-bit ints as two 32-bit ints, so we can byte-swap them easily
+            u_int32_t lower = static_cast<u_int32_t>(u64 & 0xFFFFFFFF);
+            u_int32_t upper = static_cast<u_int32_t>(u64 >> 32);
+            *this << lower << upper;
+            return *this;
+        }
+
+        bool eof() const { return m_stream.eof(); }
+        void clear() { m_stream.clear(); }
+        std::string str() const { return m_stream.str(); }
+        void str(const std::string &s){ m_stream.str(s); }
+    
+        // Seek both read and write pointers to the beginning of the stream.
+        void rewind(){
+            m_stream.seekg (0, std::ios::beg);
+            m_stream.seekp (0, std::ios::beg);
+        }
+    private:
+        std::stringstream m_stream;
+    };
+    template <typename T>
+    class BloomFilter
+    {
+    public:
     };
 }//namespace FTL
 
