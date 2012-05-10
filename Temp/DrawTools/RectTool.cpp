@@ -88,6 +88,25 @@ void CRectTool::OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 		pView->GetSelectTool()->OnLButtonDown(pView, nFlags, point); // try a select!
 	}
 	pView->GetSelectTool()->OnLButtonUp(pView, nFlags, point);
+
+	if (!pView->GetSelection().empty())
+	{
+		CDrawObject* pDrawObject = pView->GetSelection().front();
+		pDrawObject->SetActive(TRUE);
+
+		//if (pDrawObject->GetDrawObjType() == dotText)
+		//{
+		//	CTextObject* pTextObject = dynamic_cast<CTextObject*>(pDrawObject);
+		//	//CComPtr<ITextServices> spTextService;
+		//	
+		//	
+		//	//if (spTextService)
+		//	//{ GetTextServices(&spTextService);
+		//	//	spTextService->OnTxInPlaceActivate(pDrawObject->GetPosition());
+		//	//	spTextService->TxSendMessage(WM_SETFOCUS, 0, 0, NULL);
+		//	//}
+		//}
+	}
 }
 
 void CRectTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point)

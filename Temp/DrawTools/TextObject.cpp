@@ -8,7 +8,7 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 {
 	m_pRichEditPanel = new CRichEditPanel();
 	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position);
-	m_pRichEditPanel->OnTxInPlaceActivate(NULL);
+	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
 
 	// Set up the example rich text
 	m_pRichEditPanel->SetText(
@@ -70,4 +70,13 @@ CDrawObject* CTextObject::Clone()
 	pClone->m_logbrush = m_logbrush;
 	
 	return pClone;
+}
+
+void CTextObject::SetActive(BOOL bActive)
+{
+	__super::SetActive(bActive);
+	if (m_pRichEditPanel)
+	{
+		m_pRichEditPanel->SetActive(bActive);
+	}
 }

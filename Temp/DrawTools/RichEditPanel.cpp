@@ -32,12 +32,6 @@ const IID IID_ITextServices =
 //};
 //
 //
-//EXTERN_C const IID IID_ITextEditControl = { /* f6642620-d266-11ce-a89e-00aa006cadc5 */
-//	0xf6642620,
-//	0xd266,
-//	0x11ce,
-//	{0xa8, 0x9e, 0x00, 0xaa, 0x00, 0x6c, 0xad, 0xc5}
-//};
 
 CRichEditPanel::CRichEditPanel()
 {
@@ -46,7 +40,7 @@ CRichEditPanel::CRichEditPanel()
 	ZeroMemory(&m_cRefs, sizeof(CRichEditPanel) - offsetof(CRichEditPanel, m_cRefs));
 
 	m_cRefs = 1;
-	m_dwStyle = ES_MULTILINE | ES_NOHIDESEL;
+	m_dwStyle = ES_MULTILINE | ES_NOHIDESEL ;
 	m_fRich = TRUE;
 	m_cchTextMost = cInitTextMax;
 	m_chPasswordChar = TEXT('*');
@@ -54,6 +48,9 @@ CRichEditPanel::CRichEditPanel()
 
 CRichEditPanel::~CRichEditPanel()
 {
+	m_spTextDocument.Release();
+	m_spTextServices.Release();
+	
 	FTLTRACE(TEXT("CRichEditPanel::~CRichEditPanel\n"));
 }
 
@@ -62,12 +59,6 @@ HRESULT STDMETHODCALLTYPE CRichEditPanel::QueryInterface(REFIID riid, void **ppv
 	HRESULT hr = E_NOINTERFACE;
 	*ppvObject = NULL;
 
-	//if (IsEqualIID(riid, IID_ITextEditControl))
-	//{
-	//	*ppvObject = (ITextEditControl *) this;
-	//	AddRef();
-	//	hr = S_OK;
-	//}
 	if (IsEqualIID(riid, IID_IUnknown) 
 		|| IsEqualIID(riid, IID_ITextHost)) 
 	{
@@ -100,7 +91,7 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(HFONT hfont)
 {
 	FTLTRACE(TEXT("CRichEditPanel::InitDefaultCharFormat\n"));
 
-#if 0 
+#if 1 
 	HWND hwnd;
 	LOGFONT lf;
 	HDC hdc;
@@ -157,8 +148,13 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(HFONT hfont)
 	// Create a default character format
 	::ZeroMemory(&m_charFormat,sizeof(CHARFORMAT));
 	m_charFormat.cbSize = sizeof(CHARFORMAT);
-	m_charFormat.dwMask = CFM_BOLD|CFM_CHARSET|CFM_COLOR|CFM_FACE|CFM_ITALIC|CFM_OFFSET|
+
+	//TODO:CFM_ALL
+	m_charFormat.dwMask =  CFM_BOLD|CFM_CHARSET|CFM_COLOR|CFM_FACE|CFM_ITALIC|CFM_OFFSET|
 		CFM_PROTECTED|CFM_SIZE|CFM_STRIKEOUT|CFM_UNDERLINE;
+	//m_charFormat.dwEffects = CFM_EFFECTS | CFE_AUTOBACKCOLOR | CFE_BOLD| CFE_ITALIC| CFE_UNDERLINE| CFE_STRIKEOUT;
+	//m_charFormat.dwEffects &= ~(CFE_PROTECTED | CFE_LINK);
+
 	m_charFormat.yHeight = 20 * iPointSize;
 	m_charFormat.crTextColor = ::GetSysColor(COLOR_BTNTEXT);
 	m_charFormat.bPitchAndFamily = DEFAULT_PITCH|FF_DONTCARE;
@@ -198,7 +194,8 @@ BOOL CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBAC
 	m_rcClient = *prcClient;
 	m_pNotifyCallback = pNotifyCallback;
 
-	m_rcViewInset = m_rcClient;
+	//m_rcViewInset = m_rcClient;
+#pragma TODO(szlExtent is Himetric)
 	m_szlExtent.cx = m_rcClient.Width();
 	m_szlExtent.cy = m_rcClient.Height();
 
@@ -210,18 +207,18 @@ BOOL CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBAC
 	if (SUCCEEDED(hr) && spUnknown)
 	{
 		COM_VERIFY(spUnknown->QueryInterface(IID_ITextServices, (void**)&m_spTextServices));
-		COM_VERIFY(spUnknown->QueryInterface(__uuidof(ITextDocument), (void**)&m_spTextDocuemtn));
+		COM_VERIFY(spUnknown->QueryInterface(__uuidof(ITextDocument), (void**)&m_spTextDocument));
 		//COM_DETECT_INTERFACE_FROM_REGISTER(m_spTextServices);
 		//COM_DETECT_INTERFACE_FROM_LIST(m_spTextServices);
-		
+
+		COM_VERIFY(m_spTextServices->TxSetText(TEXT("this is sample")));
 	}
 	if (SUCCEEDED(hr))
 	{
-		FTLTRACE(TEXT("Before Call m_spTextServices->OnTxInPlaceActivate, rcClient=[%d,%d]-[%d,%d]\n"),
-			m_rcClient.left, m_rcClient.top, m_rcClient.right, m_rcClient.bottom);
-		m_spTextServices->OnTxInPlaceActivate(&m_rcClient);
-		FTLTRACE(TEXT("After Call m_spTextServices->OnTxInPlaceActivate\n"));
-		bRet = TRUE;
+		//FTLTRACE(TEXT("Before Call m_spTextServices->OnTxInPlaceActivate, rcClient=[%d,%d]-[%d,%d]\n"),
+		//	m_rcClient.left, m_rcClient.top, m_rcClient.right, m_rcClient.bottom);
+		//m_spTextServices->OnTxInPlaceActivate(&m_rcClient);
+		//FTLTRACE(TEXT("After Call m_spTextServices->OnTxInPlaceActivate\n"));
 	}
 
 	if (SUCCEEDED(hr))
@@ -231,6 +228,63 @@ BOOL CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBAC
 	return bRet;
 }
 
+BOOL CRichEditPanel::SetActive(BOOL bActive)
+{
+	BOOL bOldActive = m_fInplaceActive;
+	HRESULT hr = E_FAIL;
+	if (bActive != m_fInplaceActive)
+	{
+		if (bActive)
+		{
+			COM_VERIFY(m_spTextServices->OnTxInPlaceActivate(m_rcClient));
+			COM_VERIFY(m_spTextServices->TxSendMessage(WM_SETFOCUS, 0, 0, NULL));
+		}
+		else
+		{
+			COM_VERIFY(m_spTextServices->OnTxInPlaceDeactivate());
+		}
+		if (SUCCEEDED(hr))
+		{
+			m_fInplaceActive = bActive;
+		}
+	}
+	return bOldActive;
+}
+
+HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont)
+{
+	CHECK_POINTER_READABLE_DATA_RETURN_VALUE_IF_FAIL(FALSE, sizeof(LOGFONT), FALSE);
+
+	HRESULT hr = E_FAIL;
+	CComPtr<ITextRange>		spRange;
+	COM_VERIFY(m_spTextDocument->Range(nStart, nEnd, &spRange));
+	if (SUCCEEDED(hr) && spRange)
+	{
+		CComPtr<ITextFont> spFont;
+		COM_VERIFY(spRange->GetFont(&spFont));
+
+		COM_VERIFY(spFont->SetWeight(pLogFont->lfWeight));
+		COM_VERIFY(spFont->SetUnderline(pLogFont->lfUnderline));
+		COM_VERIFY(spFont->SetName(CComBSTR(pLogFont->lfFaceName)));
+		COM_VERIFY(spFont->SetSize(pLogFont->lfHeight));
+	}
+	return hr;
+}
+
+HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, HFONT	hFont)
+{
+	BOOL bRet = FALSE;
+	LOGFONT logFont = {0};
+	API_VERIFY(0 != ::GetObject(hFont, sizeof(LOGFONT), &logFont));
+	if (bRet)
+	{
+		API_VERIFY(SetTextFont(nStart, nEnd, &logFont));
+
+	}
+	return bRet;
+}
+
+
 void CRichEditPanel::DoPaint(CDCHandle dcParent)
 {
 	HRESULT hr = E_FAIL;
@@ -238,13 +292,14 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 	//dcParent.DrawText(TEXT("CRichEditPanel::Draw"), -1, m_rcClient, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 
 	CRect rcClient = m_rcClient;
+	rcClient.NormalizeRect();
 
 	dcParent.Draw3dRect(rcClient, RGB(255,0,0), RGB(0,0,255));
-	rcClient.DeflateRect(2, 2);
+	rcClient.DeflateRect(1, 1);
 
 	dcParent.FillSolidRect(&rcClient, RGB(255,0,0));
 
-	rcClient.DeflateRect(5, 5);
+	//rcClient.DeflateRect(5, 5);
 	RECT *prc = &rcClient;
 	RECTL rcL = { rcClient.left, rcClient.top, rcClient.right, rcClient.bottom };
 	LONG lViewId = TXTVIEW_ACTIVE;
@@ -285,8 +340,9 @@ HRESULT CRichEditPanel::SetClientRect(const RECT *prc, BOOL fUpdateExtent /* = T
 	FTLTRACE(TEXT("CRichEditPanel::SetClientRect, newRect=[%d,%d]-[%d,%d]\n"),
 		prc->left, prc->top, prc->right, prc->bottom);
 	m_rcClient = *prc;
+	m_rcClient.NormalizeRect();
 
-	m_rcViewInset = m_rcClient;
+	//m_rcViewInset = m_rcClient;
 	m_szlExtent.cx = m_rcClient.Width();
 	m_szlExtent.cy = m_rcClient.Height();
 
@@ -317,7 +373,7 @@ HRESULT CRichEditPanel::OnTxInPlaceActivate(LPCRECT prcClient)
 	m_fInplaceActive = TRUE;
 	HRESULT hr = E_FAIL;
 	COM_VERIFY_EXCEPT1(m_spTextServices->OnTxInPlaceActivate(prcClient), E_FAIL);
-	COM_VERIFY(m_spTextServices->TxSendMessage(WM_SETFOCUS, 0, 0, NULL));
+	//COM_VERIFY(m_spTextServices->TxSendMessage(WM_SETFOCUS, 0, 0, NULL));
 	
 	if (FAILED(hr))
 	{
@@ -338,47 +394,44 @@ HRESULT CRichEditPanel::OnTxInPlaceDeactivate()
 
 HDC CRichEditPanel::TxGetDC()
 {
-	//ATLASSERT(::IsWindow(m_hWndOwner));
-	//HDC hDC = ::GetDC(m_hWndOwner);
-	//FTLTRACE(TEXT("CRichEditPanel::TxGetDC, getDC=0x%x\n"), hDC);
-	//return hDC;
-	return NULL;
+	ATLASSERT(::IsWindow(m_hWndOwner));
+	HDC hDC = ::GetDC(m_hWndOwner);
+	FTLTRACE(TEXT("CRichEditPanel::TxGetDC, getDC=0x%x\n"), hDC);
+	return hDC;
 }
 
 INT CRichEditPanel::TxReleaseDC( HDC hdc )
 {
-	//ATLASSERT(::IsWindow(m_hWndOwner));
-	//FTLTRACE(TEXT("CRichEditPanel::TxReleaseDC hdc=0x%x\n"), hdc);
-	//return ReleaseDC(m_hWndOwner, hdc);
-
-	return 0;
+	ATLASSERT(::IsWindow(m_hWndOwner));
+	FTLTRACE(TEXT("CRichEditPanel::TxReleaseDC hdc=0x%x\n"), hdc);
+	return ReleaseDC(m_hWndOwner, hdc);
 }
 
 BOOL CRichEditPanel::TxShowScrollBar( INT fnBar, BOOL fShow )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxShowScrollBar\n"));
-	throw std::exception("The method or operation is not implemented.");
+	FTLASSERT(FALSE);
 	return FALSE;
 }
 
 BOOL CRichEditPanel::TxEnableScrollBar( INT fuSBFlags, INT fuArrowflags )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxEnableScrollBar\n"));
-	throw std::exception("The method or operation is not implemented.");
+	FTLASSERT(FALSE);
 	return FALSE;
 }
 
 BOOL CRichEditPanel::TxSetScrollRange( INT fnBar, LONG nMinPos, INT nMaxPos, BOOL fRedraw )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxSetScrollRange\n"));
-	throw std::exception("The method or operation is not implemented.");
+	FTLASSERT(FALSE);
 	return FALSE;
 }
 
 BOOL CRichEditPanel::TxSetScrollPos( INT fnBar, INT nPos, BOOL fRedraw )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxSetScrollPos\n"));
-	throw std::exception("The method or operation is not implemented.");
+	FTLASSERT(FALSE);
 	return FALSE;
 }
 
@@ -459,7 +512,6 @@ void CRichEditPanel::TxKillTimer( UINT idTimer )
 void CRichEditPanel::TxScrollWindowEx( INT dx, INT dy, LPCRECT lprcScroll, LPCRECT lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate, UINT fuScroll )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxScrollWindowEx\n"));
-	throw std::exception("The method or operation is not implemented.");
 }
 
 void CRichEditPanel::TxSetCapture( BOOL fCapture )
@@ -534,7 +586,7 @@ HRESULT CRichEditPanel::SetText(LPCTSTR pszText)
 	FTLTRACE(TEXT("CRichEditPanel::SetText, Text=%s\n"), pszText);
 	// Get a range for the whole of the text in the control
 	CComPtr<ITextRange> spTextRange;
-	COM_VERIFY(m_spTextDocuemtn->Range(0, 0, &spTextRange));
+	COM_VERIFY(m_spTextDocument->Range(0, 0, &spTextRange));
 	COM_VERIFY_EXCEPT1(spTextRange->MoveEnd(tomStory, 1, NULL), S_FALSE);
 	
 	// Replace the whole text
@@ -553,7 +605,7 @@ void CRichEditPanel::Range(long cpFirst, long cpLim, ITextRange** ppRange)
 {
 	// Get the given range of text in the control
 	HRESULT hr = E_FAIL;
-	COM_VERIFY(m_spTextDocuemtn->Range(cpFirst,cpLim,ppRange));
+	COM_VERIFY(m_spTextDocument->Range(cpFirst,cpLim,ppRange));
 	if (SUCCEEDED(hr))
 	{
 		USES_CONVERSION;
@@ -567,7 +619,7 @@ void CRichEditPanel::Range(long cpFirst, long cpLim, ITextRange** ppRange)
 //
 HRESULT CRichEditPanel::TxGetViewInset( LPRECT prc )
 {
-	*prc = CRect(0 ,0, 0, 0);
+	*prc = CRect(100 ,200, 300, 400);
 	//FTLTRACE(TEXT("CRichEditPanel::TxGetViewInset, prc=[%d,%d]-[%d,%d]\n"),
 	//	prc->left, prc->top, prc->right, prc->bottom);
 	return S_OK;
@@ -581,8 +633,8 @@ HRESULT CRichEditPanel::TxGetCharFormat( const CHARFORMATW **ppCF )
 	FTLTRACE(TEXT("CRichEditPanel::TxGetCharFormat,szFaceName=%s, crTextColor=0x%x, yHeight=%d, yOffset=%d\n")
 		TEXT("Effects=%s, Mask=%s\n"),
 		m_charFormat.szFaceName, m_charFormat.crTextColor, m_charFormat.yHeight, m_charFormat.yOffset,
-		FTL::CFControlUtil::GetCharFormatEffectString(strFormaterEffects, m_charFormat.dwEffects),
-		FTL::CFControlUtil::GetCharFormatMaskString(strFormaterMasks, m_charFormat.dwMask)
+		FTL::CFControlUtil::GetCharFormatEffectAndMaskString(strFormaterEffects, m_charFormat.dwEffects),
+		FTL::CFControlUtil::GetCharFormatEffectAndMaskString(strFormaterMasks, m_charFormat.dwMask)
 		);
 
 	*ppCF = &m_charFormat;
@@ -667,12 +719,14 @@ HRESULT CRichEditPanel::TxGetExtent( LPSIZEL lpExtent )
 HRESULT CRichEditPanel::OnTxCharFormatChange( const CHARFORMATW * pcf )
 {
 	FTLTRACE(TEXT("CRichEditPanel::OnTxCharFormatChange\n"));
+	FTLASSERT(FALSE);
 	return E_NOTIMPL;
 }
 
 HRESULT CRichEditPanel::OnTxParaFormatChange( const PARAFORMAT * ppf )
 {
 	FTLTRACE(TEXT("CRichEditPanel::OnTxParaFormatChange\n"));
+	FTLASSERT(FALSE);
 	return E_NOTIMPL;
 }
 
@@ -774,9 +828,23 @@ HRESULT CRichEditPanel::TxGetSelectionBarWidth( LONG *lSelBarWidth )
 BOOL CRichEditPanel::PreTranslateMessage(MSG* pMsg)
 {
 #ifdef FTL_DEBUG
-	DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE, pMsg->message, pMsg->wParam, pMsg->lParam);
+	//DEFAULT_DUMP_FILTER_MESSAGE | 
+	DUMP_WINDOWS_MSG(__FILE__LINE__, DUMP_FILTER_TIMER, pMsg->message, pMsg->wParam, pMsg->lParam);
 #endif 
+	HRESULT hr = E_FAIL;
 	LONG lResult = 0;
+
+	switch(pMsg->message)
+	{
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDBLCLK:
+	case WM_MOUSEMOVE:
+	case WM_LBUTTONUP:
+		hr = m_spTextServices->TxSendMessage(pMsg->message, pMsg->wParam, pMsg->lParam, &lResult);
+		//FTLTRACE(TEXT("CRichEditPanel::PreTranslateMessage TxSendMessage for %d return 0x%x\n"), pMsg->message, hr);
+		break;
+	}
+
 	BOOL bRet = ProcessWindowMessage(pMsg->hwnd, pMsg->message, pMsg->wParam, pMsg->lParam, lResult, 0);
 
 	if (bRet)
@@ -793,6 +861,13 @@ BOOL CRichEditPanel::PreTranslateMessage(MSG* pMsg)
 	return bRet;
 }
 
+LRESULT CRichEditPanel::OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	FTLTRACE(TEXT("CRichEditPanel::OnSetFocus\n"));
+
+	return 0;
+}
+
 LRESULT CRichEditPanel::OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	HRESULT hr = E_FAIL;
@@ -805,11 +880,57 @@ LRESULT CRichEditPanel::OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 {
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
-	COM_VERIFY_EXCEPT1(m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult), S_FALSE);
-	if (S_FALSE == S_FALSE)
+	switch(TCHAR(wParam))
+	{
+	case VK_BACK:
+	//	FTLTRACE(TEXT("In KeyDown for Back\n"));
+	//	break;
+	default:
+		hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
+		break;
+	}
+	if (S_FALSE == hr)
 	{
 		bHandled = FALSE;
 	}
 	return lResult;
 }
 
+
+DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie,
+						 LPBYTE pbBuff,
+						 LONG cb,
+						 LONG *pcb
+						 )
+{
+	CStringA strInfo((CHAR*)pbBuff);
+	USES_CONVERSION;
+	FTLTRACE(TEXT("On EditStreamCallback, cb=%d, pbBufff=%s\n"), cb, CA2T(strInfo));
+	return 0;
+}
+
+LRESULT CRichEditPanel::OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	HRESULT hr = E_FAIL;
+
+	//CComVariant varFileName(CComBSTR(TEXT("DocumentRtf.dat")));
+	//COM_VERIFY(m_spTextDocuemtn->Save(&varFileName, tomCreateNew|tomRTF ,0 ));
+	
+	EDITSTREAM	editStream = {0};
+	editStream.dwCookie = DWORD_PTR(this);
+	editStream.dwError = 0;
+	editStream.pfnCallback = EditStreamCallback;
+
+	COM_VERIFY(m_spTextServices->TxSendMessage(EM_STREAMOUT, (WPARAM)(SF_RTF), (LPARAM)&editStream, NULL));
+	return 0;
+}
+
+HRESULT CRichEditPanel::GetTextStream(long nStart, long nEnd, IStream** ppStream)
+{
+	CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppStream, E_POINTER);
+	HRESULT hr = E_FAIL;
+
+
+	FTLASSERT(FALSE);
+	return hr;
+}

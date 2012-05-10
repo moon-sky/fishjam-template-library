@@ -26,8 +26,7 @@ public:
 	{
 		return m_objType;
 	}
-
-
+	
 	void SetZoomFactor(float zoomFactor);
 	//void CalcZoomRect( const CRect& rcOriginal, float zoomFactor, CRect& rcTarget);
 
@@ -60,6 +59,8 @@ public:
 	virtual CDrawObject* Clone();
 	virtual void Remove();
 	//void Invalidate();
+	virtual void SetActive(BOOL bActive);
+	virtual BOOL IsActive();
 
 protected:
 	// Attributes
@@ -69,6 +70,7 @@ protected:
 	DrawObjectType m_objType;
 
 	IDrawCanvas*	m_pDrawCanvas;
+	BOOL			m_bActive;
 	BOOL			m_bPen;
 	BOOL			m_bBrush;
 	LOGPEN			m_logpen;

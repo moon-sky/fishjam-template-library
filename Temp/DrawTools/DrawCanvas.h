@@ -78,35 +78,68 @@ public:
 		//fix Win+D lost focus
 		SetFocus(GetHWnd());
 
-		CDrawTool* pTool = GetCurrentTool();
-		if (pTool)
+		BOOL bHandle = FALSE;
+		if (m_pFoucsTextObject && m_pFoucsTextObject->IsActive())
 		{
-			if (_IsValidateScreenPoint(point))
+			MSG msg = {0};
+			msg.hwnd = this->GetHWnd();
+			msg.message = WM_LBUTTONDOWN;
+			msg.wParam = (WPARAM)nFlags;
+			msg.lParam = MAKELPARAM(point.x, point.y);
+			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
 			{
-				pTool->OnLButtonDown(this, nFlags, point);
+				bHandle = TRUE;
 			}
-			//else
-			//{
-			//	pTool->OnLButtonDown(this, nFlags, m_ptLastValidateDevice);
-			//}
+		}
+		if (!bHandle)
+		{
+			CDrawTool* pTool = GetCurrentTool();
+			if (pTool)
+			{
+				if (_IsValidateScreenPoint(point))
+				{
+					pTool->OnLButtonDown(this, nFlags, point);
+				}
+				//else
+				//{
+				//	pTool->OnLButtonDown(this, nFlags, m_ptLastValidateDevice);
+				//}
+			}
 		}
 	}
+
 	void OnMouseMove(UINT nFlags, const CPoint& point)
 	{
-		CDrawTool* pTool = GetCurrentTool();
-		if (pTool)
+		BOOL bHandled = FALSE;
+		if (m_pFoucsTextObject && m_pFoucsTextObject->IsActive())
 		{
-			if (_IsValidateScreenPoint(point))
+			MSG msg = {0};
+			msg.hwnd = this->GetHWnd();
+			msg.message = WM_MOUSEMOVE;
+			msg.wParam = (WPARAM)nFlags;
+			msg.lParam = MAKELPARAM(point.x, point.y);
+			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
 			{
-				pTool->OnMouseMove(this, nFlags, point);
+				bHandled = TRUE;
 			}
-			//else
-			//{
-			//	CPoint ptDownDevice = m_ptMouseDownLogical;
-			//	this->DocToClient(&ptDownDevice);
-			//	//If this happen, must be Win + D when drag mouse in view
-			//	pTool->OnCancel(this);
-			//}
+		}
+		if (!bHandled)
+		{
+			CDrawTool* pTool = GetCurrentTool();
+			if (pTool)
+			{
+				if (_IsValidateScreenPoint(point))
+				{
+					pTool->OnMouseMove(this, nFlags, point);
+				}
+				//else
+				//{
+				//	CPoint ptDownDevice = m_ptMouseDownLogical;
+				//	this->DocToClient(&ptDownDevice);
+				//	//If this happen, must be Win + D when drag mouse in view
+				//	pTool->OnCancel(this);
+				//}
+			}
 		}
 	}
 
@@ -121,17 +154,34 @@ public:
 
 	void OnLButtonUp(UINT nFlags, const CPoint& point)
 	{
-		CDrawTool* pTool = GetCurrentTool();
-		if (pTool)
+		BOOL bHandled = FALSE;
+		if (m_pFoucsTextObject && m_pFoucsTextObject->IsActive())
 		{
-			if (_IsValidateScreenPoint(point))
+			MSG msg = {0};
+			msg.hwnd = this->GetHWnd();
+			msg.message = WM_LBUTTONUP;
+			msg.wParam = (WPARAM)nFlags;
+			msg.lParam = MAKELPARAM(point.x, point.y);
+			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
 			{
-				pTool->OnLButtonUp(this, nFlags, point);
+				bHandled = TRUE;
 			}
-			//else
-			//{
-			//	pTool->OnLButtonUp(this, nFlags, m_ptLastValidateDevice);
-			//}
+		}
+
+		if (!bHandled)
+		{
+			CDrawTool* pTool = GetCurrentTool();
+			if (pTool)
+			{
+				if (_IsValidateScreenPoint(point))
+				{
+					pTool->OnLButtonUp(this, nFlags, point);
+				}
+				//else
+				//{
+				//	pTool->OnLButtonUp(this, nFlags, m_ptLastValidateDevice);
+				//}
+			}
 		}
 	}
 
@@ -297,6 +347,7 @@ public:
 		DrawObjectList::iterator iter2 = std::find(m_selection.begin(), m_selection.end(), pObj);
 		if (iter2 != m_selection.end())
 		{
+			pObj->SetActive(FALSE);
 			m_selection.erase(iter2);
 		}
 	}

@@ -10,6 +10,7 @@ CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	m_zoomFactor = 1.0f;
 
 	m_objType = objType;
+	m_bActive = FALSE;
 
 	m_bPen = TRUE;
 	m_logpen.lopnStyle = PS_INSIDEFRAME;
@@ -30,6 +31,16 @@ CDrawObject::~CDrawObject()
 void CDrawObject::Remove()
 {
 	delete this;
+}
+
+void CDrawObject::SetActive(BOOL bActive)
+{
+	m_bActive = TRUE;
+}
+
+BOOL CDrawObject::IsActive()
+{
+	return m_bActive;
 }
 
 void CDrawObject::Draw(HDC hDC, BOOL bOriginal)

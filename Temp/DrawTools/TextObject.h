@@ -24,7 +24,8 @@ public:
 	virtual void Draw(HDC hDC, BOOL bOriginal);
 	virtual void MoveHandleTo(int nHandle, CPoint point);
 	virtual CDrawObject* Clone();
+	virtual void SetActive(BOOL bActive);
 
-protected:
+public:
 	CRichEditPanel*	m_pRichEditPanel;	
 };

@@ -9,7 +9,7 @@
 
 BOOL CDrawToolsView::PreTranslateMessage(MSG* pMsg)
 {
-	if (NULL != this->m_pFoucsTextObject)
+	if (NULL != this->m_pFoucsTextObject && this->m_pFoucsTextObject->IsActive())
 	{
 		if (m_pFoucsTextObject->PreTranslateMessage(pMsg))
 		{

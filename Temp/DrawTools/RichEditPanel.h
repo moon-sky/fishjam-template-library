@@ -11,13 +11,26 @@ class CRichEditPanel
 	, public CMessageFilter
 {
 public:
-
 	CRichEditPanel();
 	~CRichEditPanel();
 	BOOL Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBACK pNotifyCallback = NULL);
+	BOOL SetActive(BOOL bActive);
+
+	HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont);
+	HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont);
+
+	HRESULT GetTextStream(long nStart, long nEnd, IStream** ppStream);
+	HRESULT SetTextStream(long nStart, long nEnd, IStream* pStream);
+
 	void DoPaint(CDCHandle dcParent);
 
-	HRESULT GetTextServices(ITextServices** pTextServices);
+
+	HRESULT GetTextServices(ITextServices** ppTextServices)
+	{
+		*ppTextServices = m_spTextServices;
+		(*ppTextServices)->AddRef();
+		return S_OK;
+	}
 	HRESULT SetClientRect(const RECT *prc, BOOL fUpdateExtent = TRUE);
 	RECT* GetClientRect() { return &m_rcClient; }
 
@@ -63,13 +76,14 @@ public:
 	HRESULT OnTxInPlaceDeactivate();
 
 	BEGIN_MSG_MAP_EX(CRichEditPanel)
+		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, OnLButtonDblClk)
+		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
 		MESSAGE_HANDLER(WM_CHAR, OnChar)
 	END_MSG_MAP()
 
 	//BEGIN_COM_MAP(CRichEditPanel)
 	//	COM_INTERFACE_ENTRY(ITextHost)
-	//	COM_INTERFACE_ENTRY(ITextEditControl)
 	//END_COM_MAP()
 
 	//IUnknown interface
@@ -122,9 +136,11 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	//Message Handle
+
+	LRESULT OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-
+	LRESULT OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 private:
 	HRESULT InitDefaultCharFormat(HFONT hfont);
 	HRESULT InitDefaultParaFormat();
@@ -136,7 +152,7 @@ private:
 
 	HWND					m_hWndOwner;
 	CRect					m_rcClient;
-	CRect					m_rcViewInset;
+	//CRect					m_rcViewInset;
 	SIZEL					m_sizelExtent;
 	SIZEL					m_szlExtent;
 	DWORD					m_dwStyle;
@@ -150,7 +166,7 @@ private:
 
 	TCHAR					m_chPasswordChar;
 	CComPtr<ITextServices>	m_spTextServices;
-	CComPtr<ITextDocument>	m_spTextDocuemtn;
+	CComPtr<ITextDocument>	m_spTextDocument;
 	LONG					m_lState;
 
 	unsigned	m_fBorder				:1;	// control has border
