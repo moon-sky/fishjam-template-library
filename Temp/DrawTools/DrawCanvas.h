@@ -86,6 +86,7 @@ public:
 			msg.message = WM_LBUTTONDOWN;
 			msg.wParam = (WPARAM)nFlags;
 			msg.lParam = MAKELPARAM(point.x, point.y);
+			GetCursorPos(&(msg.pt));
 			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
 			{
 				bHandle = TRUE;
@@ -118,6 +119,7 @@ public:
 			msg.message = WM_MOUSEMOVE;
 			msg.wParam = (WPARAM)nFlags;
 			msg.lParam = MAKELPARAM(point.x, point.y);
+			GetCursorPos(&(msg.pt));
 			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
 			{
 				bHandled = TRUE;
@@ -162,6 +164,7 @@ public:
 			msg.message = WM_LBUTTONUP;
 			msg.wParam = (WPARAM)nFlags;
 			msg.lParam = MAKELPARAM(point.x, point.y);
+			GetCursorPos(&(msg.pt));
 			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
 			{
 				bHandled = TRUE;

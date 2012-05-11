@@ -15,6 +15,7 @@ public:
 	~CRichEditPanel();
 	BOOL Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBACK pNotifyCallback = NULL);
 	BOOL SetActive(BOOL bActive);
+	BOOL IsActive();
 
 	HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont);
 	HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont);
@@ -35,7 +36,7 @@ public:
 	RECT* GetClientRect() { return &m_rcClient; }
 
 	HRESULT SetText(LPCTSTR pszText);		//TODO:change to RTF?
-	void Range(long cpFirst, long cpLim, ITextRange** ppRange);
+	HRESULT Range(long cpFirst, long cpLim, ITextRange** ppRange);
 	PNOTIFY_CALLBACK SetNotifyCallback(PNOTIFY_CALLBACK pNotifyCallback);
 
 

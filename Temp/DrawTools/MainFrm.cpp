@@ -127,3 +127,17 @@ LRESULT CMainFrame::OnToolText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	m_view.SetCurrentToolType(ttText);
 	return 0;
 }
+
+LRESULT CMainFrame::OnEditFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	if (m_view.GetSelection().size() > 0)
+	{
+		CTextObject* pTextObject = dynamic_cast<CTextObject*>(m_view.GetSelection().front());
+		if (pTextObject)
+		{
+			LOGFONT logFont = {0};
+			pTextObject->m_pRichEditPanel->SetTextFont(0, 0, &logFont);
+		}
+	}
+	return 0;
+}

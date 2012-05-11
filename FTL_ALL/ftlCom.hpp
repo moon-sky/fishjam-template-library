@@ -578,6 +578,17 @@ namespace FTL
 		return S_FALSE;
 	}
 
+	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, DOUBLE fValue)
+	{
+		if (pszKey)
+		{
+			OutputIndentSpace();
+			FTLTRACE(TEXT("  Key=%s,Value=%f\n"), pszKey, fValue);
+			return S_OK;
+		}
+		return S_FALSE;
+	}
+
 	HRESULT CFOutputWindowInfoOutput::OnOutput(LPCTSTR pszKey, int iValue)
 	{
 		return OnOutput(pszKey, (LONG)iValue);

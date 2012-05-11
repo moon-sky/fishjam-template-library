@@ -36,6 +36,7 @@ public:
 		COMMAND_ID_HANDLER(ID_TOOL_SELECT, OnToolSelect)
 		COMMAND_ID_HANDLER(ID_TOOL_RECT, OnToolRect)
 		COMMAND_ID_HANDLER(ID_TOOL_TEXT, OnToolText)
+		COMMAND_ID_HANDLER(ID_EDIT_FONT, OnEditFont)
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 	END_MSG_MAP()
@@ -55,4 +56,5 @@ public:
 	LRESULT OnToolSelect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnToolRect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnToolText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEditFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };

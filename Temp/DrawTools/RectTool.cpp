@@ -55,7 +55,7 @@ void CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	}
 	else
 	{
-		pObj = new CTextObject(pView, CRect(ptLogical, CSize(1,1)), objType);
+		pObj = new CTextObject(pView, CRect(ptLogical, CSize(1, 1)), objType);
 	}
 
 	pView->Add(pObj);

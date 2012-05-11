@@ -303,7 +303,7 @@ namespace FTL
 		}\
         if( (filters) & DUMP_FILTER_TIMER )\
         {\
-            bFilterd = (WM_TIMER == uMsg) ? TRUE : bFilterd;\
+            bFilterd = (WM_TIMER == uMsg || WM_SYSTIMER == uMsg) ? TRUE : bFilterd;\
         }\
         if(!bFilterd)\
         {\

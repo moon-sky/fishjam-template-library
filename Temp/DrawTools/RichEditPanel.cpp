@@ -7,6 +7,8 @@
 #include <ftlControls.h>
 #endif 
 
+#include <limits>
+
 #pragma comment(lib, "riched20.lib")
 
 #define LY_PER_INCH   1440
@@ -230,10 +232,10 @@ BOOL CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBAC
 
 BOOL CRichEditPanel::SetActive(BOOL bActive)
 {
-	BOOL bOldActive = m_fInplaceActive;
-	HRESULT hr = E_FAIL;
+	BOOL bRet = FALSE;
 	if (bActive != m_fInplaceActive)
 	{
+		HRESULT hr = E_FAIL;
 		if (bActive)
 		{
 			COM_VERIFY(m_spTextServices->OnTxInPlaceActivate(m_rcClient));
@@ -242,31 +244,68 @@ BOOL CRichEditPanel::SetActive(BOOL bActive)
 		else
 		{
 			COM_VERIFY(m_spTextServices->OnTxInPlaceDeactivate());
+			COM_VERIFY(m_spTextServices->TxSendMessage(WM_KILLFOCUS, (WPARAM)NULL, 0, NULL));
 		}
 		if (SUCCEEDED(hr))
 		{
 			m_fInplaceActive = bActive;
 		}
 	}
-	return bOldActive;
+	else
+	{
+		bRet = TRUE;
+	}
+	return bRet;
+}
+
+BOOL CRichEditPanel::IsActive()
+{
+	return m_fInplaceActive;
 }
 
 HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont)
 {
-	CHECK_POINTER_READABLE_DATA_RETURN_VALUE_IF_FAIL(FALSE, sizeof(LOGFONT), FALSE);
+	CHECK_POINTER_READABLE_DATA_RETURN_VALUE_IF_FAIL(pLogFont, sizeof(LOGFONT), FALSE);
 
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	COM_VERIFY(m_spTextDocument->Range(nStart, nEnd, &spRange));
+	if (0 == nStart && 0 == nEnd)
+	{
+		//current select
+		CComPtr<ITextSelection> spCurtSelection;
+		COM_VERIFY(m_spTextDocument->GetSelection(&spCurtSelection));
+		if (spCurtSelection)
+		{
+			spRange = spCurtSelection;
+		}
+	}
+	else if (0 == nStart && -1 == nEnd)
+	{
+		//all
+		//long nCount = 0;
+		//COM_VERIFY(m_spTextDocument->GetStoryCount(&nCount));
+		//COM_VERIFY(m_spTextDocument->Range(0, nCount, &spRange));
+		nEnd = m_cchTextMost;// std::numeric_limits<long>::max();
+		COM_VERIFY(m_spTextDocument->Range(nStart, nEnd, &spRange));
+	}
+	else
+	{
+		COM_VERIFY(m_spTextDocument->Range(nStart, nEnd, &spRange));
+	}
+
+	FTL::CFTextRangeDumper rangeDumper(spRange, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
 		COM_VERIFY(spRange->GetFont(&spFont));
+		
+		COM_VERIFY(spFont->SetForeColor(RGB(255,0,0)));
 
-		COM_VERIFY(spFont->SetWeight(pLogFont->lfWeight));
-		COM_VERIFY(spFont->SetUnderline(pLogFont->lfUnderline));
-		COM_VERIFY(spFont->SetName(CComBSTR(pLogFont->lfFaceName)));
-		COM_VERIFY(spFont->SetSize(pLogFont->lfHeight));
+		//COM_VERIFY(spFont->SetWeight(pLogFont->lfWeight));
+		//COM_VERIFY(spFont->SetUnderline(pLogFont->lfUnderline));
+		//COM_VERIFY(spFont->SetName(CComBSTR(pLogFont->lfFaceName)));
+		//COM_VERIFY(spFont->SetSize(pLogFont->lfHeight));
 	}
 	return hr;
 }
@@ -544,17 +583,20 @@ void CRichEditPanel::TxSetCursor( HCURSOR hcur, BOOL fText )
 
 BOOL CRichEditPanel::TxScreenToClient( LPPOINT lppt )
 {
-	FTLTRACE(TEXT("CRichEditPanel::TxScreenToClient, lppt=[%d,%d]\n"), lppt->x, lppt->y);
 	BOOL bRet = FALSE;
+	POINT ptOld = *lppt;
 	API_VERIFY(::ScreenToClient(m_hWndOwner, lppt));
+	FTLTRACE(TEXT("CRichEditPanel::TxScreenToClient, [%d,%d] => [%d,%d]\n"), ptOld.x, ptOld.y, lppt->x, lppt->y);
 	return bRet;
 }
 
 BOOL CRichEditPanel::TxClientToScreen( LPPOINT lppt )
 {
-	FTLTRACE(TEXT("CRichEditPanel::TxClientToScreen, lppt=[%d,%d]\n"), lppt->x, lppt->y);
 	BOOL bRet = FALSE;
 	API_VERIFY(::ClientToScreen(m_hWndOwner, lppt));
+
+	POINT ptOld = *lppt;
+	FTLTRACE(TEXT("CRichEditPanel::TxClientToScreen, [%d,%d] => [%d,%d]\n"), ptOld.x, ptOld.y, lppt->x, lppt->y);
 	return bRet;
 }
 
@@ -601,7 +643,7 @@ HRESULT CRichEditPanel::SetText(LPCTSTR pszText)
 	return hr;
 }
 
-void CRichEditPanel::Range(long cpFirst, long cpLim, ITextRange** ppRange)
+HRESULT CRichEditPanel::Range(long cpFirst, long cpLim, ITextRange** ppRange)
 {
 	// Get the given range of text in the control
 	HRESULT hr = E_FAIL;
@@ -613,6 +655,7 @@ void CRichEditPanel::Range(long cpFirst, long cpLim, ITextRange** ppRange)
 		COM_VERIFY((*ppRange)->GetText(&bstrText));
 		FTLTRACE(TEXT("After Call Range For [%d,%d] Text is %s\n"), cpFirst, cpLim, COLE2CT(bstrText));
 	}
+	return hr;
 }
 
 
@@ -829,20 +872,36 @@ BOOL CRichEditPanel::PreTranslateMessage(MSG* pMsg)
 {
 #ifdef FTL_DEBUG
 	//DEFAULT_DUMP_FILTER_MESSAGE | 
-	DUMP_WINDOWS_MSG(__FILE__LINE__, DUMP_FILTER_TIMER, pMsg->message, pMsg->wParam, pMsg->lParam);
+	DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE | DUMP_FILTER_TIMER, pMsg->message, pMsg->wParam, pMsg->lParam);
 #endif 
 	HRESULT hr = E_FAIL;
 	LONG lResult = 0;
 
-	switch(pMsg->message)
+	BOOL bWillHandle = FALSE;
+
+	if (IsActive())
 	{
-	case WM_LBUTTONDOWN:
-	case WM_LBUTTONDBLCLK:
-	case WM_MOUSEMOVE:
-	case WM_LBUTTONUP:
-		hr = m_spTextServices->TxSendMessage(pMsg->message, pMsg->wParam, pMsg->lParam, &lResult);
-		//FTLTRACE(TEXT("CRichEditPanel::PreTranslateMessage TxSendMessage for %d return 0x%x\n"), pMsg->message, hr);
-		break;
+		switch(pMsg->message)
+		{
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONDBLCLK:
+		case WM_MOUSEMOVE:
+		case WM_LBUTTONUP:
+			{
+				POINT ptLocalClient = pMsg->pt;
+				TxScreenToClient(&ptLocalClient);
+				if (m_rcClient.PtInRect(ptLocalClient))
+				{
+					hr = m_spTextServices->TxSendMessage(pMsg->message, pMsg->wParam, pMsg->lParam, &lResult);
+					FTLTRACE(TEXT("CRichEditPanel::PreTranslateMessage TxSendMessage for %d return 0x%x\n"), pMsg->message, hr);
+					if (hr == S_OK)
+					{
+						return TRUE;
+					}
+				}
+			}
+			break;
+		}
 	}
 
 	BOOL bRet = ProcessWindowMessage(pMsg->hwnd, pMsg->message, pMsg->wParam, pMsg->lParam, lResult, 0);

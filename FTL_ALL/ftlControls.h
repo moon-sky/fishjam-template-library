@@ -10,6 +10,7 @@
 #include <atlbase.h>
 #include <atlimage.h>
 #include <ftlWindow.h>
+#include <ftlcom.h>
 
 //声明可以和 DDX_CONTROL 一起工作的 CWindowImpl 派生类
 //  如：DDX_CONTROL_IMPL(CListViewCtrl)，这样就有了一个名为 CListViewCtrl_DDX 的类，
@@ -27,18 +28,44 @@ namespace FTL
 	public:
 		FTLINLINE static LPCTSTR GetEditNotifyCodeString(DWORD iNotify);
 
-		//获得 RichEditCtrl 中 CHARFORMAT 的信息
-		FTLINLINE static LPCTSTR GetCharFormatMaskString(FTL::CFStringFormater& formater, DWORD dwMasks, LPCTSTR pszDivide = TEXT("|"));
-		FTLINLINE static LPCTSTR GetCharFormatEffectString(FTL::CFStringFormater& formater, DWORD dwEffects, LPCTSTR pszDivide = TEXT("|"));
+		//tomeTrue 或 tomFalse
+		FTLINLINE static LPCTSTR GetRichEditTomBoolString(long nValue);
+		FTLINLINE static LPCTSTR GetRichEditStoryTypeString(long nStoryType);
+		FTLINLINE static LPCTSTR GetRichEditAnimationTypeString(long nAnimation);
+		FTLINLINE static LPCTSTR GetRichEditUnderLineStyleString(long nUnderLine);
+		FTLINLINE static LPCTSTR GetRichEditColorString(FTL::CFStringFormater& formater, long nColor);
+
+		//获得 RichEditCtrl 中 CHARFORMAT 的信息 -- 也可用于 Effect（部分的 CFE_ 和 CFM_）
+		FTLINLINE static LPCTSTR GetCharFormatEffectAndMaskString(FTL::CFStringFormater& formater, DWORD dwMasks, LPCTSTR pszDivide = TEXT("|"));
 
 		//获得 RichEditCtrl 中 PARAFORMAT 的信息 -- 也用于Effect?
-		FTLINLINE static LPCTSTR GetParaFormatMaskString(FTL::CFStringFormater& formater, DWORD dwMasks, LPCTSTR pszDivide = TEXT("|"));
+		FTLINLINE static LPCTSTR GetParaFormatEffectAndMaskString(FTL::CFStringFormater& formater, DWORD dwMasks, LPCTSTR pszDivide = TEXT("|"));
 
 		//获得 RichEditCtrl 中的 PropertyBits 信息(TxGetPropertyBits)
 		FTLINLINE static LPCTSTR GetRichEditPropertyBits(FTL::CFStringFormater& formater, DWORD dwBits, LPCTSTR pszDivide = TEXT("|"));
 
 	};
 
+	//RichEdit 中的 ITextRange
+	class CFTextRangeDumper : public CFInterfaceDumperBase<CFTextRangeDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFTextRangeDumper);
+	public:
+		FTLINLINE explicit CFTextRangeDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFTextRangeDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFTextFontDumper : public CFInterfaceDumperBase<CFTextFontDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFTextFontDumper);
+	public:
+		FTLINLINE explicit CFTextFontDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFTextFontDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
 
     struct FScrollSkinInfo
     {

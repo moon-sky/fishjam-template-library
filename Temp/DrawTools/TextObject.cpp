@@ -2,10 +2,13 @@
 #include "TextObject.h"
 #include "DrawCanvas.h"
 #include <ftlGdi.h>
+#include <ftlControls.h>
 
 CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType)
 : CDrawObject(pDrawCanvas, position, objType)
 {
+	HRESULT hr = E_FAIL;
+
 	m_pRichEditPanel = new CRichEditPanel();
 	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position);
 	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
@@ -19,14 +22,21 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 		L"The quick brown fox jumped over the lazy dog. "
 		L"The quick brown fox jumped over the lazy dog. "
 		L"The quick brown fox jumped over the lazy dog. ");
+
+	CComPtr<ITextRange> spOriRange;
+	COM_VERIFY(m_pRichEditPanel->Range(0, 100, &spOriRange));
+	CComPtr<ITextFont> spFont;
+	COM_VERIFY(spOriRange->GetFont(&spFont));
+	FTL::CFTextFontDumper	textFontDumper(spFont, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+
 	COLORREF colours[] = {
-		RGB(0xFF,0x00,0x00),
-		RGB(0x00,0xFF,0x00),
-		RGB(0x00,0x00,0xFF),
-		RGB(0xFF,0xFF,0x00),
-		RGB(0xFF,0x00,0xFF),
-		RGB(0x00,0xFF,0xFF),
-		RGB(0x00,0x00,0x00)
+		RGB(0x00,0x00,0x77),
+		//RGB(0x00,0xFF,0x00),
+		//RGB(0x00,0x00,0xFF),
+		//RGB(0xFF,0xFF,0x00),
+		//RGB(0xFF,0x00,0xFF),
+		//RGB(0x00,0xFF,0xFF),
+		//RGB(0x00,0x00,0x00)
 	};
 	for (int i = 0; i < sizeof colours / sizeof colours[0]; i++)
 	{
@@ -37,6 +47,8 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 		range->GetFont(&font);
 		font->SetForeColor(colours[i]);
 		font->SetSize((float)(9+i));
+
+		FTL::CFTextFontDumper	newTextFontDumper(font, FTL::CFOutputWindowInfoOutput::Instance(), 0);
 	}
 }
 
