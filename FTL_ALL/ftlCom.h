@@ -13,6 +13,9 @@
 
 /*************************************************************************************************************
 * INITGUID -- 包含 guiddef.h ？ 中定义的所有 GUID(使用库编译已经编译好的),更好的方式是直接包含 InitGuid.h
+*
+* IAccessible -- MSAA, 活动的可访问兼容性应用，
+*   可用于对象抓图
 *************************************************************************************************************/
 
 #ifndef FTL_BASE_H
@@ -30,6 +33,9 @@ namespace FTL
         FTLINLINE static BOOL IsComponentRegistered(REFCLSID clsid);
         FTLINLINE static BOOL RegisterComponent(LPCTSTR pszFilePath,BOOL bRegister);
         FTLINLINE static HRESULT DisplayObjectPropertyPage(HWND hWndOwner,LPCOLESTR lpszCaption, IUnknown *pUnk);
+		
+		//从Window窗体句柄获取IE内的Docuemnt接口
+		FTLINLINE static HRESULT GetIEDocumentFromHWnd(HWND hWnd, IHTMLDocument** ppDocument);
     };
 
     FTLEXPORT class CFVariantInfo : public CFConvertInfoT<CFVariantInfo, VARIANT>

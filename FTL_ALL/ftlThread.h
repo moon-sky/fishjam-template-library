@@ -726,6 +726,8 @@ namespace FTL
         HWND      hWnd;
         HDC       hDC;
     };
+
+	//后台线程绘制，然后Render到HDC中，注意加锁 -- 例子？codeproject 上的gdiplusspeed
     template <typename T>
     FTLEXPORT class CFBackDrawer
     {

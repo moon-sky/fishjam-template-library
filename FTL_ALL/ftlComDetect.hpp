@@ -1740,6 +1740,8 @@ namespace FTL
             DETECT_INTERFACE_ENTRY_IID(IShellPropSheetExt, IID_IShellPropSheetExt)
             DETECT_INTERFACE_ENTRY_IID(IShellView, IID_IShellView)
             DETECT_INTERFACE_ENTRY_IID(IShellView2, IID_IShellView2)
+
+			//CLSID_TaskbarList
             DETECT_INTERFACE_ENTRY_IID(ITaskbarList, IID_ITaskbarList)      //任务栏的Item管理(可以隐藏任务栏按钮，重新显示窗体后又会出现，为什么？)
             DETECT_INTERFACE_ENTRY_IID(ITaskbarList2, IID_ITaskbarList2)    //了可以设置全屏标志 -- 有什么用？
             DETECT_INTERFACE_ENTRY_IID(IThumbnailCapture, IID_IThumbnailCapture)

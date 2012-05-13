@@ -34,7 +34,7 @@ namespace FTL
         {
         case 0:
             FTLTRACEEX(FTL::tlWarning, TEXT("GetGdiObjectInfo Call GetObjectType(0x%p) Failed, Maybe Already Call DeletedObject!!!\n"));
-            FTLASSERT(ERROR_INSUFFICIENT_BUFFER == GetLastError());
+            FTLASSERT(ERROR_INSUFFICIENT_BUFFER == GetLastError());  //目前测试了 HBitmap，返回值是这个
             break;
         case OBJ_PEN:
             {
@@ -133,6 +133,7 @@ namespace FTL
                 }
                 else
                 {
+                    //DIBSECTION 中除了 BITMAP 以外其他结构体的大小 -- 此时其值应该全为 0
                     const DWORD OtherInfoSize = sizeof(DIBSECTION) - sizeof(BITMAP);
                     BYTE dibSecInfo[OtherInfoSize] = {0};
                     FTLASSERT(memcmp(&dibInfo.dsBmih, dibSecInfo, OtherInfoSize) == 0);
@@ -170,6 +171,7 @@ namespace FTL
                     TEXT("Color=0x%08x,Hatch=%d, NumEntries=%d"),
                     extPenInfo.elpPenStyle,extPenInfo.elpWidth,extPenInfo.elpBrushStyle,
                     extPenInfo.elpColor, extPenInfo.elpHatch,extPenInfo.elpNumEntries);
+                    //#pragma TODO(Need Dump elpStyleEntry)
                 break;
             }
         case OBJ_ENHMETADC:
@@ -232,6 +234,7 @@ namespace FTL
             bRet = (NULL == hOldBmp);
             if (hOldBmp)
             {
+                //如果成功选入，则再Select，恢复原状
                 HBITMAP hOriginalBmp = (HBITMAP)::SelectObject(m_hDCCompatible, (HGDIOBJ)hOldBmp);
                 API_ASSERT(hOriginalBmp == hBmp);
             }
@@ -587,10 +590,11 @@ namespace FTL
 
     LPCTSTR CFGdiUtil::GetStretchBltModeString(int nStretchMode)
     {
+		//产生像素堆积问题?
         switch(nStretchMode)
         {
             //[清除的像素与保存的像素的颜色相与，对黑白图会保存黑色，去掉白色，常用于单色位图]
-            //效果:越来越黑
+            //效果:越来越黑 -- 重叠时执行 "与" 操作
             HANDLE_CASE_RETURN_STRING(BLACKONWHITE);
             
             //清除的像素与保存的像素的颜色相或，对黑白图会保存白色，去掉黑色，用于单色位图
@@ -601,7 +605,8 @@ namespace FTL
             //效果:变粗糙 ?
             HANDLE_CASE_RETURN_STRING(COLORONCOLOR);    //STRETCH_DELETESCANS
             
-            //计算平均颜色，质量高，但速度慢。为了使刷能够对齐，在调用SetStretchBltMode (HALFTONE) 后，必须再调用::SetBrushOrgEx
+            //计算平均颜色，质量高，但速度慢。
+			//为了使刷能够对齐，在调用SetStretchBltMode (HALFTONE) 后，必须再调用::SetBrushOrgEx 校正画刷
             HANDLE_CASE_RETURN_STRING(HALFTONE);        //STRETCH_HALFTONE
         default:
             FTLASSERT(FALSE);

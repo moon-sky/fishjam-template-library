@@ -17,6 +17,8 @@
 #include <WinSock2.h>
 namespace FTL
 {
+    //STL中没有实现 copy_if -- 为什么？
+    //这个是书上写的，一个正确实现的copy_if
     template<typename InputIterator,typename OutputIterator,typename Predicate>
     OutputIterator copy_if(InputIterator begin,InputIterator end,OutputIterator destBegin, Predicate p)
     {
@@ -28,6 +30,7 @@ namespace FTL
         return destBegin;
     }
 
+    //通常用在 set<T*,UnreferenceLess<T*> > 中，否者默认会成为比较指针的地址
     template <typename T>
     struct UnreferenceLess : public std::binary_function<T, T, bool>
     {
@@ -37,16 +40,18 @@ namespace FTL
         }
     };
 
+    //使用 for_each 删除容器中保存的对象指针的类(结构) -- 参见 Effective STL 中的条款7
     template <typename T>
     struct ObjecteDeleter
     {
-        void operator()(const T& ptr) const
+        //注意：不要用 T* ptr, 否则 PairDeleter 无法定义为和容器一样的类型进行删除
+        void operator()(const T& ptr) const  //通过指针的类型自动实例化一个operator
         {
             delete ptr;
         }
     };
 
-    //null deleter, can use to handle pair key
+    //空删除标识，一般用于 pair 的 KEY
     template <typename T>
     struct NullDeleter
     {
@@ -72,6 +77,7 @@ namespace FTL
         }
     };
 
+    //之前使用了VS中特有的 static _Kfn 函数，但在linux上不通用，因此自己写一个
     template <class K>
     const K& ftl_Kfn(const K& Val)
     {
@@ -96,27 +102,38 @@ namespace FTL
         return (Val.second);
     }
 
+    //引入高效的“添加或更新”功能的模版函数 -- 参见 Effective STL 规则 24
+    //使用：
+    // iterator affectedPair =	efficientAddOrUpdate(m, k, v);
+    //   如果键k不在map m中；高效地把pair(k, v)添加到m中；
+    //   否则高效地把和k关联的值更新为v。返回一个指向添加或修改的pair的迭代器
     template<typename MapType,typename KeyArgType,typename ValueArgtype>
     typename MapType::iterator efficientAddOrUpdate(MapType& m,const KeyArgType& k, const ValueArgtype& v)
     {
-        typename MapType::iterator Ib = m.lower_bound(k);
+        //需要能找出k的值是否在map中；如果是这样，那它在哪里；如果不是，它该被插入哪里 -- 使用low_bound的原因
+        typename MapType::iterator Ib = m.lower_bound(k);  // 找到k在或应该在哪里；
 
-        if(Ib != m.end() && !(m.key_comp()(k, Ib->first)))
+        if(Ib != m.end() && !(m.key_comp()(k, Ib->first))) // 如果Ib指向一个pair它的键等价于k
         {
-            Ib->second = v;
-            return Ib;
+            Ib->second = v;	// 更新这个pair的值
+            return Ib;      // 返回指向pair的迭代器
         }
         else
-        {
+        {   //增加
             typedef typename MapType::value_type MVT;
-            return m.insert(Ib, MVT(k, v));
+            //使用了insert的“提示”形式 -- 指出需要插入的位置Ib,可以将插入时间分摊为常数时间 -- 而非对数时间
+            return m.insert(Ib, MVT(k, v));	// 把pair(k, v)添加到m并返回指向新map元素的迭代器
         }
     }
 
-    //find nearest item in set or map
-    // F must be functor like this:
+    //在set或map中根据key查找最接近的元素，通过传入的仿函数(F func)来判断哪个更接近想要的对象
+    //如果找到满足条件且最接近的，返回true,且 retIter 为最接近元素的迭代器；如果找不到，返回false
+    // F 必须是如下结构的函数指针或仿函数
     //   int operator()(const key_type* pPre, const key_type* pWant, const key_type* pNext)
-    //   return value:less 0 indicate pPre is nearer , equal 0 indicate none is nearlier, big 0 indicate pNext is nearer
+    //   注意：
+    //     1.返回值的意义 : 小于0 表示 pPre 更接近， 等于 0 表示两个都不接近， 大于0 表示后一个接近
+    //     2.pPre 和 pNext 都可能为NULL，但 pWant 不可能为NULL
+
     template<typename C, typename F>
     bool find_nearest(const C& container, 
         const typename C::key_type& want, 
@@ -131,6 +148,7 @@ namespace FTL
         retIter = container.end();
         bool bResult = false;
 
+        //查看是否有想要的数据，或者该插入的位置(相等的或后一个)
         typename C::const_iterator nextIter = container.lower_bound(want);
         typename C::const_iterator preIter = nextIter;
 
@@ -138,8 +156,10 @@ namespace FTL
         const typename C::key_type* pPreValue = NULL;
         const typename C::key_type* pNextValue = NULL;
 
+        //找到中间
         if (nextIter != container.end())
         {
+            //直接找到等价的
             if(!container.key_comp()(want, ftl_Kfn(*nextIter)))
             {
                 bResult = true;
@@ -156,6 +176,7 @@ namespace FTL
         }
         else
         {
+            //在最后，说明没有数据，或者想要的是最大的值
             nextIter = (--container.end());
             pNextValue = &ftl_Kfn(*nextIter);
         }
@@ -171,9 +192,14 @@ namespace FTL
             bResult = true;
             retIter = nextIter;
         }
+        //else -- 为0,表明没有找到，retIter 和 bResult 之前已经赋好值了
 
         return bResult;
     }
+
+    ////STL中树的遍历 -- 利用模板参数，可以控制先根、先广等不同的算法
+    //template <typename Predicate, template Functor>
+    //int ForSubTree(const HATIterater& iRoot, Predicate pred, Functor f){}
 
     template<typename T>
     FTLINLINE T& ToRef(T * p)
@@ -253,7 +279,10 @@ namespace FTL
         }
         return size;
     }
-    // usage std::generate(intVect.begin(), intVect.end(), sequence_generator<int>(1,1));
+
+    //一个序列数生成器，用于 std::generate, 使用方法见 test_generate
+    //  std::generate(intVect.begin(), intVect.end(), sequence_generator<int>(1,1));
+    //  
     template<typename T>
     struct sequence_generator
     {
@@ -294,12 +323,21 @@ namespace FTL
         InType m_start;
         InType m_step;
     };
+
+    /************************************************************************
+    * 信用卡的Luhn算法
+    *   数字从右向左每偶数位乘2,未乘2的数字和刚才的结果相加。
+    *   一位数字的直接相加，两位数字则分别相加(如 7x2后为14，则相加为 1+4=5，
+    *   最后的综合可被 10 整除，即有效
+    ************************************************************************/
     FTLINLINE int LuhnCalc(const std::string& strInput)
     {
         UNREFERENCED_PARAMETER(strInput);
         FTLASSERT(FALSE);
         return 0;
     }
+
+    //二进制流输入输出
     class binarystream
     {
     public:
@@ -414,6 +452,12 @@ namespace FTL
     private:
         std::stringstream m_stream;
     };
+
+    //布隆过滤器 -- http://googlechinablog.com/2007/07/bloom-filter.html
+    //  在巨量的Hash集合中，通过多个不同的 hash 函数制作信息指纹，来是判断一个元素是否存在，可以节约为 1/8~1/4 的空间大小
+    //  很长的二进制向量和一系列随机映射函数
+    //好处：快速、省空间
+    //问题：决不会漏掉，但有极小的可能误判，常见的补救办法为 建立一个白名单
     template <typename T>
     class BloomFilter
     {

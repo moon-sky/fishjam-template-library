@@ -7,6 +7,8 @@
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
 /******************************************************************************************************
+* Monitor -- MonitorFromPoint ，系统有一个 multimon.h 文件
+*   
 * CHAIN_MSG_MAP(__super)
 * 
 * Vista/Win7
@@ -248,6 +250,10 @@
 *   WM_WINDOWPOSCHANGED 
 * BeginDeferWindowPos/DeferWindowPos/EndDeferWindowPos -- 一次性移动多个窗口
 * SetForegroundWindow
+*
+* Z序
+*   顶端(Topmost) => 顶层(普通) => 子窗口(后创建在上面)
+*   BringWindowToTop -- 同类的顶部
 ******************************************************************************************************/
 
 /******************************************************************************************************
@@ -256,6 +262,8 @@
 *   keybd_event('V', MapVirtualKey('V', 0), 0, 0);
 *   keybd_event('V', MapVirtualKey('V', 0), KEYEVENTF_KEYUP, 0);
 *   keybd_event(VK_CONTROL, MapVirtualKey(VK_CONTROL, 0), KEYEVENTF_KEYUP, 0);
+*
+* 鼠标位置检测(HitTest), 系统已经定义了 HTOBJECT、HTCLIENT 等宏
 ******************************************************************************************************/
 
 

@@ -13,7 +13,8 @@
 //  使用cpp处理模版：在实现文件中定义：template class XpRectTemplate<char> -- 这样就可以先声明一个使用char的模版类，用于Link
 //    优点：可以向客户端隐藏模版的实现方式，缺点：只能使用有限的模版类型(已经在 .cpp 中定义的)
 //    ★注意：memcpy 等函数相当慢(拷贝字节)，可以采用自己写的，进行DWORD等32位拷贝(注意边界)★
-
+//
+//  Win32SDK -> .Net WinForm -> WPF/Silverlight
 #ifndef FTL_BASE_H
 #define FTL_BASE_H
 #pragma once

@@ -137,6 +137,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 *   6.将memoryDC、pDC的viewPortOrg、WinOrg等都重设为(0,0)，映射模式为MM_TEXT
 *   7.Bitblt(rect.left, rect.right, .... ,&memDC, 0,0, SRCCOPY)
 *
+* 控制通过鼠标改变窗体大小时是否立即重绘：Display  -> 外观 -> Effects -> Show window contents while dragging 
 *****************************************************************************************************/
 
 /*****************************************************************************************************
@@ -144,6 +145,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 *   世界坐标(world space)
 *   逻辑坐标(page space ,logical coordinates) -- 坐标系称为Window，使用逻辑单位(如 0.1英寸)
 *     长久保存的对象位置，GDI绘制(如 GetClipBox)，使用逻辑坐标是所见即所得的基础
+*     GDI使得用户只需在逻辑坐标上绘图即可( 逻辑坐标绘图 ==(MapMode映射)=> 物理坐标 )
 *   设备坐标(device coordinates) -- 坐标系称为ViewPort，面向物理设备，以设备能表示的最小长度(即像素)为单位
 *     CWindow成员函数使用(如 InvalidateRect), Mouse, 位置测试(如 PtInRect等)
 *     三种设备坐标系：客户区(CClientDC, MouseMove)、窗口区(CWindowDC)、屏幕坐标(如 GetCursorPos、SetBrushOrg等)
@@ -174,7 +176,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 *     通常用于有滚动条时设置偏移，如 WTL::CZoomScrollImpl::SetViewportOrg(-m_ptOffset.x, -m_ptOffset.y);
 *   默认映射下：SetViewportOrg(x,y) = SetWindowOrg(-x,-y)
 *     
-*   SetWindowExtEx    //设置逻辑坐标系统中对应的逻辑单位个数，如 100
+*   SetWindowExtEx    //设置逻辑坐标系统中对应的逻辑单位个数，如 100 等
 *   SetViewportExtEx  //设置设备坐标系统中对应的象素个数, 如 GetDeviceCaps(hdc, LOGPIXELSX)表示1逻辑英寸对应的96个象素
 *     或 GetClientRect 取得的客户区像素个数.两者通过 ViewExt/WinExt 的比值算出1逻辑单位对应的设备坐标单位，
 *     如上面的比值表示100个逻辑单位对应96个象素(1逻辑英寸)。
@@ -329,7 +331,8 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 /*****************************************************************************************************
 * 透明绘制
 *   AlphaBlend -- 显示有透明度的图象， Alpha 指定所绘制颜色与背景颜色的混合程度
-*
+*     显示颜色 = 源像素颜色*Alpha/255 + 背景颜色*(255-Alpha)/255( Alpha 为0时完全透明，255时完全不透明 ) 
+* 
 * 半透明显示(snagit抓图时显示的效果)
 *   1.Bitblt 一个完整的原始位图到 dcTran
 *   2.生成一个内存DC(dcAlpha), 填入全黑 -- dcAlpha.FillSolidRect(RGB(0,0,0))
@@ -356,27 +359,24 @@ namespace FTL
 #define RGBA(r,g,b,a)       ((COLORREF)((((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16))|(((DWORD)(BYTE)(a))<<24)))
 #define GetAValue(rgba)     (LOBYTE((rgba)>>24))
 
-#ifdef FTL_DEBUG
-
-    //Check Bitmap Can select into DC
-	//  1.isValidate
-	//  2.have not select into other DC
-#define CHECK_BITMAP_SELECTABLE(h)   \
-    {\
-		FTL::CFGdiObjectChecker checker;\
+    #ifdef FTL_DEBUG
+        //判断位图是否可选入MemoryDC:1.要有效; 2.没有被选入别的DC中
+    #define CHECK_BITMAP_SELECTABLE(h)   \
+        {\
+        FTL::CFGdiObjectChecker checker;\
         FTLASSERT(checker.IsValidate(h));\
         FTLASSERT(!checker.IsSelected(h));\
     }
 
-#define CHECK_GDIOBJECT_VALIDATE(h) \
-    {\
-		FTL::CFGdiObjectChecker checker;\
+    #define CHECK_GDIOBJECT_VALIDATE(h) \
+        {\
+        FTL::CFGdiObjectChecker checker;\
         FTLASSERT(checker.IsValidate(h));\
     }
-#else
+    #else
     #  define CHECK_BITMAP_SELECTABLE(h)      __noop
     #  define CHECK_GDIOBJECT_VALIDATE(h)     __noop
-#endif 
+    #endif 
 
 
     class CFGdiObjectInfoDump
@@ -401,6 +401,7 @@ namespace FTL
         HDC     m_hDCCompatible;
     };
 
+    //必然会获取的信息
 #define HDC_PROPERTY_GET_MAPMODE        0x00000000
 #define HDC_PROPERTY_GET_WINDOW_INFO    0x00000001
 #define HDC_PROPERTY_GET_VIEWPORT_INFO  0x00000002
@@ -625,6 +626,11 @@ namespace FTL
     {
         return (NULL != m_hOldObject && HGDI_ERROR != m_hOldObject);
     }
+
+    //对 region 作特化
+    //CFGdiResourceGuardT<HRGN>::IsValide()
+    //{
+    //}
 
     //WTL 提供的标准 CMemoryDC 不支持 Zoom 和 Scroll(至少位图创建方式没有转换为设备坐标的像素--位图的宽高单位都是像素)
     FTLEXPORT class CFScrollZoomMemoryDC : public CDC

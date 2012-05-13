@@ -316,6 +316,8 @@ namespace FTL
 
 #if((_WIN32_WINNT >= 0x0400) || (WINVER >= 0x0500))
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSEHOVER); //
+
+				//默认情况下，鼠标移开消息是不会发送的，需要通过 TrackMouseEvent( {TME_LEAVE|TME_CANCEL } 注册
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSELEAVE); //鼠标移开时，需要用 ON_MESSAGE 响应
 #endif
 
@@ -1794,8 +1796,8 @@ namespace FTL
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_MINIMIZE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_VISIBLE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_DISABLED, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CLIPSIBLINGS, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CLIPCHILDREN, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CLIPSIBLINGS, pszDivide); //兄弟子窗口互相裁剪(只用于WS_CHILD)
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CLIPCHILDREN, pszDivide); //父窗口中不绘制子窗口
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_MAXIMIZE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CAPTION, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_BORDER, pszDivide);

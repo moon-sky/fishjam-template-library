@@ -9,6 +9,9 @@
 
 /************************************************************************
 * 用于判断当前编译器的选项，通常放在 stdafx.h 文件的最下方
+* 可以使用如下方法进行智能Link -- _MFC_FILENAME_VER 是一个字符串的宏(VS2008 中是 "90")
+*   #pragma comment(lib, "mfc" _MFC_FILENAME_VER "d.lib")
+
 ************************************************************************/
 
 
@@ -29,9 +32,30 @@
 #  pragma message( "  Target Platform is Windows" )
 #elif defined(__APPLE__)    //Mac OS X
 #  pragma message( "  Target Platform is Mac OS" )
+
+//注意：以下的定义都是M2000中的，不一定在别的地方适用
+#elif defined(SUN) || defined(_SUN_)
+#  pragma message( "  Target Platform is SUN Solaris" )
+#elif defined(SUSE_IA64)
+#  pragma message( "  Target Platform is SUSE on HP" )
+#elif defined(SUSE_X86)
+#  pragma message( "  Target Platform is SUSE on ATAE" )
+#elif defined(WIN32) || defined(_WIN64)
+#  pragma message( "  Target Platform is Windows" )
+
 #else
 #  pragma message( "  Unknown Target Platform" )
 #endif 
+
+#if defined(ORACLE)
+#  pragma message( "  Database is ORACLE" )
+#elif defined(SYBASE)
+#  pragma message( "  Database is SYBASE" )
+#elif defined(DB2)
+#  pragma message( "  Database is DB2" )
+#else
+#  pragma message( "  Unknown Database" )
+#endif
 
 #if defined(_M_IX86)
 #  pragma message( "  defined _M_IX86" )
@@ -285,6 +309,18 @@
 #  else
 #    pragma message( "    not defined _ATL_MIXED")
 #  endif 
+
+#  ifdef _ATL_APARTMENT_THREADED
+#    pragma message( "    defined _ATL_APARTMENT_THREADED")
+#else
+#    pragma message( "    not defined _ATL_APARTMENT_THREADED")
+#endif
+
+#  ifdef _ATL_NO_AUTOMATIC_NAMESPACE
+#    pragma message( "    defined _ATL_NO_AUTOMATIC_NAMESPACE")
+#else
+#    pragma message( "    not defined _ATL_NO_AUTOMATIC_NAMESPACE")
+#endif
 
 #  ifdef _ATL_DLL
 //   链接 atl.lib, 运行时依赖 ATL.dll
