@@ -370,7 +370,9 @@ namespace FTL
 	{
 		HRESULT hr = E_FAIL;
 		IUnknown* pDetectedInterface = NULL;
-		COM_VERIFY_EXCEPT1(pUnknown->QueryInterface(guidInfo,(void**)&pDetectedInterface), E_NOINTERFACE);
+		COM_VERIFY_EXCEPT2(pUnknown->QueryInterface(guidInfo,(void**)&pDetectedInterface),
+			E_NOINTERFACE, 
+			E_ACCESSDENIED); //IEToolBar中,对 IWebBrowserApp 获取 ICheckProtectedMode 接口时会返回这个错误
 		if(SUCCEEDED(hr) && pDetectedInterface)
 		{
 			pDetectedInterface->Release();

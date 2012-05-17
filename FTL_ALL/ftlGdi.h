@@ -7,6 +7,7 @@
 #  error ftlGdi.h requires ftlbase.h to be included first
 #endif
 
+//CImage DLL Deadlock -- http://support.microsoft.com/kb/322909
 //http://www.codeproject.com/KB/GDI/anieffect.aspx
 /*
 DOS等传统字符界面用点阵模板显示文字
