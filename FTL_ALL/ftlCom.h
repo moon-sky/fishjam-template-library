@@ -22,6 +22,10 @@
 #  error ftlcom.h requires ftlbase.h to be included first
 #endif
 
+#include <exdispid.h>
+#include <atlcomcli.h>
+#include <atlsafe.h>
+
 namespace FTL
 {
 //Class
@@ -33,9 +37,6 @@ namespace FTL
         FTLINLINE static BOOL IsComponentRegistered(REFCLSID clsid);
         FTLINLINE static BOOL RegisterComponent(LPCTSTR pszFilePath,BOOL bRegister);
         FTLINLINE static HRESULT DisplayObjectPropertyPage(HWND hWndOwner,LPCOLESTR lpszCaption, IUnknown *pUnk);
-		
-		//从Window窗体句柄获取IE内的Docuemnt接口
-		FTLINLINE static HRESULT GetIEDocumentFromHWnd(HWND hWnd, IHTMLDocument** ppDocument);
     };
 
     FTLEXPORT class CFVariantInfo : public CFConvertInfoT<CFVariantInfo, VARIANT>

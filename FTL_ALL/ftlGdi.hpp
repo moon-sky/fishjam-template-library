@@ -502,6 +502,41 @@ namespace FTL
         return m_pszProperty;
     }
 
+	BOOL CFGdiUtil::LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType)
+	{
+		BOOL bRet = FALSE;
+		HRSRC hrSrc = ::FindResource(hModule, MAKEINTRESOURCE(nIDResource), pszType);
+		API_ASSERT(NULL != hrSrc);
+		if (hrSrc)
+		{
+			DWORD dwResSize = SizeofResource(hModule, hrSrc);
+			BYTE* lpRsrc = (BYTE*)LoadResource(hModule, hrSrc);
+			API_ASSERT(NULL != lpRsrc);
+			if (lpRsrc)
+			{
+				HGLOBAL hMem = GlobalAlloc(GMEM_FIXED, dwResSize);
+				BYTE* pmem = (BYTE*)GlobalLock(hMem);
+				CopyMemory(pmem,lpRsrc,dwResSize);
+
+				HRESULT hr = E_FAIL;
+				CComPtr<IStream> pStream;
+				COM_VERIFY(CreateStreamOnHGlobal(hMem, TRUE, &pStream));
+				if (SUCCEEDED(hr) && pStream)
+				{
+					COM_VERIFY(image.Load(pStream));
+					if (SUCCEEDED(hr))
+					{
+						bRet = TRUE;
+					}
+				}
+				GlobalUnlock(hMem);
+			}
+			UnlockResource(hrSrc);
+			FreeResource(hrSrc);
+		}
+		return bRet;
+	}
+
     LPCTSTR CFGdiUtil::GetBkModeString(int nBkMode)
     {
         switch(nBkMode)
@@ -1061,15 +1096,20 @@ namespace FTL
         m_bmpInfo.bmiHeader.biPlanes = 1;
         m_bmpInfo.bmiHeader.biBitCount = (WORD)bpp;
         m_bmpInfo.bmiHeader.biCompression = BI_RGB;
-        m_bmpInfo.bmiHeader.biSizeImage = m_height * m_width * bpp >> 3; // = height*width*4
-        //bmpInfo.bmiHeader.biXPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSX);
+        m_bmpInfo.bmiHeader.biSizeImage = ((m_height * m_width * bpp + 31) >> 3) & ~3;
+										  //(m_height * m_width * bpp + 31) / 32 * 4 ; 
+
+		//bmpInfo.bmiHeader.biXPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSX);
         //bmpInfo.bmiHeader.biYPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSY);
         //bmpInfo.bmiHeader.biClrUsed = 0;
         //bmpInfo.bmiHeader.biClrImportant = 0;
 
         m_hCanvasDC = ::CreateCompatibleDC(NULL);
 
-        API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(NULL, &m_bmpInfo, DIB_RGB_COLORS, 
+        API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(
+			NULL, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
+			&m_bmpInfo, 
+			DIB_RGB_COLORS,
             (VOID**)&m_pBuffer, NULL, 0)));
 
         ZeroMemory(m_pBuffer, m_bmpInfo.bmiHeader.biSizeImage);
@@ -1136,6 +1176,8 @@ namespace FTL
         return dwSize;
     }
 
+#ifdef __ATLGDI_H__
+
     CFScrollZoomMemoryDC::CFScrollZoomMemoryDC(HDC hDC, RECT* pRectPaint)  //rcClip
         :m_hDCOriginal(hDC)
         ,m_hBmpOld(NULL)
@@ -1152,6 +1194,8 @@ namespace FTL
 
         m_hDC = ::CreateCompatibleDC(m_hDCOriginal);
         API_ASSERT(m_hDC != NULL);
+
+		//change to device and create bitmap
         API_VERIFY(::LPtoDP(m_hDCOriginal, (LPPOINT)&m_rcPaint, 2));
         m_hBmp = ::CreateCompatibleBitmap(m_hDCOriginal, 
             m_rcPaint.right - m_rcPaint.left, 
@@ -1162,6 +1206,8 @@ namespace FTL
 
         API_VERIFY(0 !=::SetMapMode(m_hDC, ::GetMapMode(m_hDCOriginal)));
 
+#pragma TODO(是否需要这部分的代码)
+#if 1
         SIZE szWindowExt = {0,0};
         API_VERIFY(::GetWindowExtEx(m_hDCOriginal, &szWindowExt));
         API_VERIFY(::SetWindowExtEx(m_hDC, szWindowExt.cx, szWindowExt.cy, NULL));
@@ -1169,6 +1215,7 @@ namespace FTL
         SIZE szViewportExt = {0,0};
         API_VERIFY(::GetViewportExtEx(m_hDCOriginal, &szViewportExt));
         API_VERIFY(::SetViewportExtEx(m_hDC, szViewportExt.cx, szViewportExt.cy, NULL));
+#endif
 
         ::DPtoLP(m_hDCOriginal, (LPPOINT)&m_rcPaint, 2);
 
@@ -1199,7 +1246,7 @@ namespace FTL
     //{
     //    return this;
     //}
-
+#endif //__ATLGDI_H__
 }
 
 #endif //FTL_GDI_HPP

@@ -16,9 +16,6 @@
 #endif
 
 //#include <ExDisp.h>
-#include <exdispid.h>
-#include <atlcomcli.h>
-#include <atlsafe.h>
 #include "ftlComDetect.h"
 
 using namespace ATL;
@@ -112,17 +109,6 @@ namespace FTL
         }
         return hr;
     }
-
-	HRESULT CFComUtility::GetIEDocumentFromHWnd(HWND hWnd, IHTMLDocument** ppDocument)
-	{
-		HRESULT hr = E_FAIL;
-		LRESULT lRes = 0;
-
-		UINT nMsg = ::RegisterWindowMessage( TEXT("WM_HTML_GETOBJECT") );
-		::SendMessageTimeout( hWnd, nMsg, 0L, 0L, SMTO_ABORTIFHUNG, 1000, (DWORD*)&lRes );
-		hr = ObjectFromLresult( lRes, IID_IHTMLDocument, 0, (void**)&ppDocument );
-		return hr;
-	}
 
 
 	//////////////////////////////////////////////////////////////////////////

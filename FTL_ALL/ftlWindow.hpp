@@ -11,10 +11,69 @@
 
 namespace FTL
 {
+#define GET_MESSAGE_INFO_ENTRY(msg) GET_MESSAGE_INFO_ENTRY_EX( msg, CFDummyMsgInfo )
+
+#define GET_MESSAGE_INFO_ENTRY_EX(msg, classDumpInfo ) HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), msg)
+
+
     class CFDummyMsgInfo
     {
     public:
     };
+
+	CFRegistedMessageInfo::CFRegistedMessageInfo()
+	{
+		m_bInited = FALSE;
+
+		//ZeroMemory(&m_bInited, sizeof(CFRegistedMessageMgr) - offsetofclass())
+	}
+	BOOL CFRegistedMessageInfo::Init()
+	{
+		if (!m_bInited)
+		{
+			m_bInited = TRUE;
+
+			RWM_MSH_MOUSEWHEEL	= RegisterWindowMessage(MSH_MOUSEWHEEL);
+			RWM_COLOROKSTRING	= RegisterWindowMessage(COLOROKSTRING);
+			RWM_FILEOKSTRING	= RegisterWindowMessage(FILEOKSTRING);
+			RWM_FINDMSGSTRING	= RegisterWindowMessage(FINDMSGSTRING);
+			RWM_HELPMSGSTRING	= RegisterWindowMessage(HELPMSGSTRING);
+			RWM_LBSELCHSTRING	= RegisterWindowMessage(LBSELCHSTRING);
+			RWM_SETRGBSTRING	= RegisterWindowMessage(SETRGBSTRING);
+			RWM_SHAREVISTRING	= RegisterWindowMessage(SHAREVISTRING);
+			RWM_COMMDLG_FIND	= RegisterWindowMessage(TEXT("COMMDLG_FIND"));
+			RWM_HTML_GETOBJECT	= RegisterWindowMessage(TEXT("WM_HTML_GETOBJECT"));
+		}
+		return m_bInited;
+	}
+
+#define HANDLE_IF_TO_STRING(buf,len,v,c) \
+	if(v == c) { StringCchCopy(buf,len,TEXT(#c)); }
+	
+
+	LPCTSTR CFRegistedMessageInfo::GetMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_MSH_MOUSEWHEEL);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_COLOROKSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_FILEOKSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_FINDMSGSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HELPMSGSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_LBSELCHSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_SETRGBSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_SHAREVISTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_COMMDLG_FIND);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HTML_GETOBJECT);
+		//HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, XXXXXXXX);
+
+		if(NULL == m_bufInfo[0])
+		{
+			StringCchPrintf(m_bufInfo, _countof(m_bufInfo), 
+				TEXT("Unknown RegisterWindowMessage %d(0x%08x), wParam=%d, lParam=%d"), msg, wParam, lParam);
+		}
+		return m_bufInfo;
+	}
+
+	CFRegistedMessageInfo   CFMessageInfo::s_RegistedMessageInfo;
 
     CFMessageInfo::CFMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam) 
         : CFConvertInfoT<CFMessageInfo,UINT>(msg)
@@ -23,12 +82,9 @@ namespace FTL
     {
     }
 
-#define GET_MESSAGE_INFO_ENTRY(msg) GET_MESSAGE_INFO_ENTRY_EX( msg, CFDummyMsgInfo )
-
-#define GET_MESSAGE_INFO_ENTRY_EX(msg, classDumpInfo ) HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), msg)
-
     LPCTSTR CFMessageInfo::ConvertInfo()
     {
+		s_RegistedMessageInfo.Init();
         if (NULL == m_bufInfo[0])
         {
             switch(m_Info)
@@ -643,11 +699,26 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_NOTIFY);
 				//HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),XXXXXXXXXXXXXXXXX);
             default:
-				if (m_Info > WM_USER)
+				if (m_Info >= WM_USER && m_Info <= 0x7FFF)
 				{
+					//private window classes
 					UINT userMsg = m_Info - WM_USER;
 					StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
 						TEXT("0x%08x = (WM_USER+%d[0x%x])"),m_Info, userMsg, userMsg );
+				}
+				else if(m_Info >= WM_APP && m_Info <= 0xBFFF)
+				{
+					//Messages available for use by applications
+					UINT appMsg = m_Info - WM_APP;
+					StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
+						TEXT("0x%08x = (WM_APP+%d[0x%x])"),m_Info, appMsg, appMsg );
+
+				}
+				else if (m_Info >= 0xC000 && m_Info <= 0xFFFF)
+				{
+					//通过 RegisterWindowMessage 注册的消息
+					StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
+						s_RegistedMessageInfo.GetMessageInfo(m_Info, m_wParam, m_lParam));
 				}
 				else
 				{

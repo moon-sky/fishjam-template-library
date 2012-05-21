@@ -70,6 +70,28 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	//显示文件名路径的窗口 -- 显示成带省略号的，并且有 Tooltip
+	//未写完和测试
+	class CFileNameWnd : public CWindowImpl<CFileNameWnd>
+	{
+	public:
+		BEGIN_MSG_MAP(CFileNameWnd)
+			MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		END_MSG_MAP()
+	protected:
+		LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+		{
+			m_tooltip.Create(m_hWnd);
+			CToolInfo ti(0, m_hWnd, m_nToolTipID, &rcClient, NULL);
+			//DrawText 的 DT_CALCRECT 可计算Rect的返回值，确认是否要 Tooltip::UpdateTipText 和 Active
+			//后期可用 DT_PATH_ELLIPSIS 绘制，
+			//父窗体处理鼠标消息，给 Tooltip 处理： if(m_tooltip.IsWindow()) { m_tooltip.RelayEvent(...); }
+		}
+		
+	private:
+		CToolTipCtrl	m_tooltip;
+	};
+
     struct FScrollSkinInfo
     {
         CImage* pBtnVUp;

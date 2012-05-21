@@ -324,6 +324,31 @@ namespace FTL
 #  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) __noop
 #endif 
 
+	//通过 RegisterWindowMessage 注册的消息
+	//非线程安全
+	class CFRegistedMessageInfo
+	{
+	public:
+		BOOL Init();
+
+		FTLINLINE explicit CFRegistedMessageInfo();
+		FTLINLINE virtual LPCTSTR GetMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam);
+	private:
+		BOOL m_bInited;
+		TCHAR m_bufInfo[128];
+
+		UINT RWM_MSH_MOUSEWHEEL;
+		UINT RWM_COLOROKSTRING;
+		UINT RWM_FILEOKSTRING;
+		UINT RWM_FINDMSGSTRING;
+		UINT RWM_HELPMSGSTRING;
+		UINT RWM_LBSELCHSTRING;
+		UINT RWM_SETRGBSTRING;
+		UINT RWM_SHAREVISTRING;
+		UINT RWM_COMMDLG_FIND;
+		UINT RWM_HTML_GETOBJECT;
+	};
+
     //! 将消息( WM_XXX )转换为易读的格式，类似于 ",wm"
     FTLEXPORT class CFMessageInfo : public CFConvertInfoT<CFMessageInfo,UINT>
     {
@@ -333,6 +358,9 @@ namespace FTL
     public:
         WPARAM m_wParam;
         LPARAM m_lParam;
+
+	private:
+		static CFRegistedMessageInfo	s_RegistedMessageInfo;
     };
 
     #define BEGIN_WINDOW_RESIZE_MAP(thisClass) \

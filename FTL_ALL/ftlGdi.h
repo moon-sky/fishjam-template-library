@@ -6,6 +6,7 @@
 #ifndef FTL_BASE_H
 #  error ftlGdi.h requires ftlbase.h to be included first
 #endif
+#include <atlimage.h>
 
 //CImage DLL Deadlock -- http://support.microsoft.com/kb/322909
 //http://www.codeproject.com/KB/GDI/anieffect.aspx
@@ -274,7 +275,11 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 *   CImage(atlimage.h) -- MFC/ATL共享的新类(本质使用的是 Gdiplus::Bitmap)，同时支持 DDB/DIB,
 *       能从外部磁盘中加载并显示 JPEG/GIF/BMP/PNG等格式的图象文件，支持 Exit 信息?
 *       其Draw方法自动支持透明色或Alpha通道(综合了StretchBlt、TransparentBlt、AlphaBlend等函数)
-*     AlphaBlend -- 支持象素级的颜色混合，实现透明和半透明的效果
+*       注意：如果在DLL中使用 CImage，可能会造成死锁 --静态的 CImage::CInitGDIPlus 变量，如果没有在 DllMain 调用前调用
+*             CImage::ReleaseGDIPlus 进行释放的话，会因为析构该变量时在 DLLMain 中调用 GdiplusShutdown 死锁。
+*     AlphaBlend -- 支持象素级的颜色混合(源位图和目标位图使用Alpha混合功能)，实现透明和半透明的效果
+*       AlphaFormat为0 -- 所有像素使用同样的常量Alpha
+*                  为AC_SRC_ALPHA -- 每一个像素必须有自己的alpha通道，即是32-bpp的DC
 *     Draw -- 多种重载方式，综合了 StretchBlt、TransparentBlt、AlphaBlend等函数的功能，自动支持透明色或Alpha通道
 *     GetBits -- 获取图片中的位图数据
 *     Load/LoadFromResource -- 从 文件/资源 加载图象
@@ -292,7 +297,10 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 *     对删除(DeleteObject)后的HBITMAP(野指针?)调用GetObject会返回0(失败),且GetLastError为ERROR_INSUFFICIENT_BUFFER。
 *     被Select时也会返回NULL，但此时GetLastError为0。
 *     HBITMAP 同一时间只能选入一个DC中，第二次Select时会返回NULL，但GetLastError为0
-*
+* 
+*  CreateDIBSection -- 创建可直接访问的DIB，可直接访问位图的位信息，创建DIBSECTION
+*  CreateDIBitmap -- 从DIB创建DDB，创建BITMAP
+* 
 * 画笔
 *   创建方法:CreatePen/CreatePenIndirect/ExtCreatePen
 *   // 创建Geometric画笔( LOGBRUSH lb )
@@ -509,6 +517,8 @@ namespace FTL
     FTLEXPORT class CFGdiUtil
     {
     public:
+		FTLINLINE static BOOL LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType);
+
         FTLINLINE static LPCTSTR GetGraphicsModeString(int nGraphicsMode);
 
         //背景模式 -- 影响有空隙的图元中的空隙用什么办法填充
@@ -594,7 +604,7 @@ namespace FTL
     class CClipDrawer
     {
     public:
-        void OnPaint(CDC* pDC);
+        void OnPaint(HDC hDC);
     };
 
     template <typename T>
@@ -633,8 +643,9 @@ namespace FTL
     //{
     //}
 
-    //WTL 提供的标准 CMemoryDC 不支持 Zoom 和 Scroll(至少位图创建方式没有转换为设备坐标的像素--位图的宽高单位都是像素)
-    FTLEXPORT class CFScrollZoomMemoryDC : public CDC
+#ifdef __ATLGDI_H__
+    //ATL 提供的标准 CMemoryDC 不支持 Zoom 和 Scroll(至少位图创建方式没有转换为设备坐标的像素--位图的宽高单位都是像素)
+	FTLEXPORT class CFScrollZoomMemoryDC : public CDC
     {
     public:
         // Data members
@@ -649,6 +660,7 @@ namespace FTL
         //operator CFScrollZoomMemoryDC*()
         //CFScrollZoomMemoryDC* operator->()
     };
+#endif //__ATLGDI_H__
 
 	class CFMMTextDCGuard
 	{
