@@ -1,3 +1,48 @@
+对于应用程序而言，Manifest可以是一个和exe文件同一目录下的.manifest文件，也可以是作为一个资源嵌入在exe文件内部的(Embed Manifest)
+
+manifest 中的 assemblyIdentity 信息和 winsxs 中文件的关系
+  <assemblyIdentity type="win32" name="Microsoft.VC90.CRT" version="9.0.21022.8" processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b"></assemblyIdentity>
+对应文件为 
+  C:\Windows\winsxs\x86_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.21022.8_none_bcb86ed6ac711f91\msvcp90.dll
+  即: C:\Windows\winsxs\<processorArchitecture>_<name>_<publicKeyToken>_<version>_<???>_<???>\???.dll
+为什么 VS2010 的文件路径名为： D:\Microsoft Visual Studio 10.0\VC\redist\x64\Microsoft.VC100.CRT\msvcp100.dll
+部署时的可再发行组件包(Redistributable Package)：VCRedist_x86.exe / VCRedist_x64.exe 等
+
+
+WinSxs(native assembly cache)
+
+网上都说 FAT32文件系统中，在处理清单文件阶段，当增量链接时不能完成清单文件的更新（默认情况下），于是造成清单文件嵌入失败，从而使该exe文件运行时没有相应的清单文件而运行失败并提示如上错误.
+实际情况并非如此：
+
+R6034错误 -- 不使用清单来加载 C 运行库会报这个错误， 要使用VC++的动态库(ATL,CRT, MFC, OpenMP)，必须使用manifest
+* An application has made an attempt to load the C runtime library incorrectly
+* 
+
+以类型 RT_MANIFEST, ID 为 1，设置进程的 res\XXX.exe.manifest(如果直接在工程配置里，如何区分Debug和Release?)
+
+http://stackoverflow.com/questions/612624/unable-to-start-program-debug-build
+使用 SxsTrace 解决 "Unable to start program" 的问题。
+0.以管理员账号启动 cmd.exe，并切换到目的程序的目录下
+1.SxsTrace Trace -logfile:SxsTrace.etl
+2.执行 会出错的程序
+3.SxsTrace Parse -logfile:SxsTrace.etl -outfile:SxsTrace.txt， 生成对 mainfest 解析的日志文件。
+4.分析日志文件，从中查找“错误/Error” 等关键字
+例子：Debug 中 XXX.exe.embed.manifest 和 XXX.exe.intermediate.manifest 中依赖了本机上不存在的 Microsoft.VC90.DebugCRT 版本
+  (本机的 WinSXS 中只有 9.0.21022.8 和 9.0.30729.1 的 x86_microsoft.vc90.debugcrt 版本，但清单文件中依赖了 9.0.30729.6161 版本)
+
+错误: 无法解析参考 Microsoft.VC90.DebugCRT,processorArchitecture="x86",publicKeyToken="1fc8b3b9a1e18e3b",type="win32",version="9.0.30729.6161"。
+可能的原因：LeadTools 只有Release版本，使用的是 9.0.30729.6161
+http://www.microsoft.com/en-us/download/details.aspx?id=26368
+
+注意查看：mfcassem.h 
+
+This application has failed to start because the application configuration is incorrect. 
+Review the manifest file for possible errors. Reinstalling the application may fix this problem. For more details, 
+please see the application event log.
+
+
+使用ATL的方式(?)： _ATL_DLL_IMPL 、 _ATL_DLL  
+
 add-in的后台线程必须是STA? 
 System.Threading.Thread myThread = new xxx;
 myThread.SetApartmentState(System.Threading.ApartmentState.STA);
