@@ -1,3 +1,16 @@
+IAssemblyCache
+http://dipplum.com/2009/11/09/side-by-side-assembly/
+
+VC8有两种方法来分发 CRT/MFC/ATL 的 DLL
+1.在程序相同目录下放置 manifest 和 DLL(policy redirections)
+  Application.exe.manifest 中 remove the “publicKeyToken” attribute from the manifests
+2.安装 VCRedist_XXX.exe 到 WinSxs 目录( WinXP 及以后)
+
+_USE_RTM_VERSION is newly introduced in SP1 (and previously also in hotfix 919280).The _USE_RTM_VERSION define determines which CRT version is placed in your manifest file.
+If it is defined, then the old version number is put in. If not defined, then it puts the new version in (what ever version ends up shipping with SP1)
+
+Microsoft.VC80.Debug有没有取决于/d选项（即宏定义_DEBUG）,这个选项决定assert的使用，而调试信息是否产生是由/DEBUG
+
 为什么 VS2010 的文件路径名为： D:\Microsoft Visual Studio 10.0\VC\redist\x64\Microsoft.VC100.CRT\msvcp100.dll
 部署时的可再发行组件包(Redistributable Package)：VCRedist_x86.exe / VCRedist_x64.exe 等
 
