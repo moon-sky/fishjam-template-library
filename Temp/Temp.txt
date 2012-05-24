@@ -47,7 +47,7 @@ http://hi.baidu.com/xlrtx/blog/item/12c312332d07f8f01a4cff8b.html
 
 协议 -- 三部分组成：协议头，具体内容以及协议尾， 必须是ASCII格式？
   协议类型：
-  使用多个表单项（同时传?）传递数据
+  使用多个表单项（同时传?）传递数据(HTTP POST-MultiPartFormData)
     1. 使用 "Content-Type: multipart/form-data; boundary=--XXXXXXXXXXXX" 声明使用多表单分，且指定分割符号
        (可自定义，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
     2. 多个部分内容，有 Content-Disposition 和 Content-Type， 如(参数信息、二进制原始信息)，
