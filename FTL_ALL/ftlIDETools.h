@@ -21,6 +21,15 @@
 ************************************************************************************************/
 
 /************************************************************************************************
+* 缺少 DebugCRT.9.0.30729.6161 无法运行程序的临时解决方式(需要更改 WinSxs 的所有者才能修改)
+* 修改 C:\Windows\winsxs\Manifests\x86_policy.9.0.microsoft.vc90.debugcrt_1fc8b3b9a1e18e3b_9.0.30729.1_none_61305e07e4f1bc01.manifest 文件，
+*   原来只有两行：
+*  		<bindingRedirect  oldVersion="9.0.20718.0-9.0.21022.8" newVersion="9.0.30729.1"/>
+*       <bindingRedirect  oldVersion="9.0.30201.0-9.0.30729.1" newVersion="9.0.30729.1"/>
+*   加入了新的 
+*       <bindingRedirect  oldVersion="9.0.30729.6161-9.0.30729.6161" newVersion="9.0.30729.1"/>
+*   注：这个文件是从 SxsTrace 生成的日志文件中找出来的。
+*   
 * WinSxs(Windows Side-by-Side)
 *
 * ManiFest 
@@ -32,6 +41,7 @@
 *           24( RT_MANIFEST ) 有什么用?
 * 
 *   WinXP以前的Windows会忽略 manifest 的内容。
+*   VS2010 又不再使用manifest了？
 *
 *   注意：VC开发环境中有 atlassem.h、crtassem.h、MFCassem.h 等文件，其中定义了当前编译环境下会使用的 manifest， 
 *         也可以在文件中通过如下的代码指定 -- #pragma comment(linker, "/manifestdependency  ...)

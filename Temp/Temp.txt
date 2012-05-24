@@ -1,0 +1,81 @@
+http://upload.blog.naver.com/upload/upload.nhn?blogId=
+http://blog.naver.com/ToolbarPostWriteForm.nhn?blogId=
+return: 0<@nhn@><@nhn@>452454<@nhn@>/20120524_36/fishjam2000_1337854375890_CLJ7L2_jpg<@nhn@>bleach_51_094.jpg<@nhn@>bleach_51_094.jpg<@nhn@>1931<@nhn@>1461
+
+GenericHTTPClient
+
+	HINTERNET m_hOpen;				// internet open handle
+	HINTERNET m_hConnection;		// internet connection hadle
+	HINTERNET m_hRequest;		// internet request hadle
+	
+	BOOL bRet = ::InternetGetCookie(IDS_LOGIN_COOKIE_DOMAIN, NULL, szCookie, &len); 
+	m_hOpen = ::InternetOpen(IDS_LOGIN_HTTP_AGENT, INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0) ;
+	m_hConnect = ::InternetConnect(m_hOpen, IDS_BLOG_UPLOAD_URL, 80, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+	m_hRequest = ::HttpOpenRequest(m_hConnect, _T("POST"), IDS_BLOG_UPLOAD_PAGE_URL + strID, NULL, NULL, NULL,
+								   INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_RELOAD, 0);
+	
+	//获取参数列表(比如 Content-Type、Accept、Content-Length、 User-Agent、Connection、Cookie 等)，循环发送出去?
+	//  参数类型: 参数值
+	while(...)
+	{
+		bRet = ::HttpAddRequestHeaders(m_hRequest, strHeader.GetBuffer(), strHeader.GetLength(), HTTP_ADDREQ_FLAG_ADD_IF_NEW);
+
+	}
+
+	INTERNET_BUFFERS InternetBufferIn = {0};
+	InternetBufferIn.dwStructSize = sizeof(INTERNET_BUFFERS);
+	InternetBufferIn.Next = NULL;
+
+	bRet = ::HttpSendRequestEx(m_hRequest, &InternetBufferIn, NULL, HSR_INITIATE, 0);
+
+	//循环 发送数据
+	while(...)
+	{
+		DWORD dwOutPostBufferLength = 0;
+		bRet = ::InternetWriteFile(m_hRequest, buffToPost.GetCurrentBuffer(), nBufferSize, &dwOutPostBufferLength);
+	}
+	
+	bRet = ::HttpEndRequest(m_hRequest, NULL, HSR_INITIATE, 0);
+
+	//获取结果
+	const int RESPONSE_MAX_LENGTH = 1024;
+	char byData[RESPONSE_MAX_LENGTH + 1];
+	DWORD dwReadByte = 0;
+	BOOL bRetVal = ::InternetReadFile(m_hRequest, byData, RESPONSE_MAX_LENGTH, &dwReadByte) ;
+
+http://hi.baidu.com/xlrtx/blog/item/12c312332d07f8f01a4cff8b.html
+
+协议 -- 三部分组成：协议头，具体内容以及协议尾， 必须是ASCII格式？
+  协议类型：
+  使用多个表单项（同时传?）传递数据
+    1. 使用 "Content-Type: multipart/form-data; boundary=--XXXXXXXXXXXX" 声明使用多表单分，且指定分割符号
+       (可自定义，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
+    2. 多个部分内容，有 Content-Disposition 和 Content-Type， 如(参数信息、二进制原始信息)，
+       每一部分用 --{boundary} 分开(注意前面多两个 "--" )
+    3. 使用 --{boundary}-- 表示结束(注意前后各多两个 "--" )
+    
+POST(RFC1867), 每个描述部分用"\r\n"分开，结束处有两个"\r\n"
+  POST /接受文件的网页程序地址 HTTP/1.1
+  [M]Accept: text/plain, */*
+  [O]Accept-Language: zh-cn
+  [O]Cache-Control: no-cache
+  [M]Content-Type: multipart/form-data; boundary=--MULTI-PARTS-FORM-DATA-BOUNDARY
+      类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
+      //AVI video/avi
+      //JPG image/jpeg
+      //PNG image/x-png
+      //BMP image/bmp
+      //TIF image/tiff
+      //GIF image/gif
+      //TXT text/plain
+      //XML text/xml
+  []Content-Disposition: -- 可传输二进制文件(前面必须有 ----MULTI-PARTS-FORM-DATA-BOUNDARY )
+      协议头时：form-data; name=\"attach_file\"; filename=\"xxxx\"    -- 其中的 "attach_file" 是各个网站不同的?
+      协议尾时：form-data; name=\"icount\" + CRLF + CRLF + _T("1") + CRLF + 
+      \"submitted\"
+  [M]Content-Length: 内容长度（包括 头 + 数据 + 尾）
+  [O]Content-Transfer-Encoding: binary
+  []Connection: Keep-Alive
+  [O]Host: 192.168.0.8
+  []User-Agent: Mozilla/4.0 (compatible; MSIE 5.00; Windows 98) 或自定义的名字
+  
