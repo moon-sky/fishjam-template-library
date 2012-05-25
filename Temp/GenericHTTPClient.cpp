@@ -5,8 +5,9 @@
 #include "stdafx.h"
 #include "GenericHTTPClient.h"
 #include <winreg.h>
-#pragma comment(lib , "Wininet.lib")
+#include "../../Common/Conversion.h"
 
+const TCHAR *HTTP_MIME[]    = { _T ( "*/*" ), _T ( "text/*" ), NULL } ;
 
 GenericHTTPClient::GenericHTTPClient()
 {
@@ -67,22 +68,33 @@ BOOL GenericHTTPClient::Connect(LPCTSTR szAgent,
 		szUserAccount, // user name
 		szPassword, // password 
 		INTERNET_SERVICE_HTTP, // service type
-		INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_CACHE_WRITE,	// service option																														
+											0, //	INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_CACHE_WRITE,	// service option
 		0);	// context call-back option
 
+	API_ASSERT(_hHTTPConnection);
 	if(!m_hConnection){		
 		m_dwError=::GetLastError();
 		SAFE_CLOSE_INTERNET_HANDLE(m_hOpen);
 		return FALSE;
 	}
-
+#if 0
 	if(::InternetAttemptConnect(NULL)!=ERROR_SUCCESS){		
+		API_ASSERT(FALSE);
 		m_dwError=::GetLastError();
 		SAFE_CLOSE_INTERNET_HANDLE(m_hConnection);
 		SAFE_CLOSE_INTERNET_HANDLE(m_hOpen);
 		return FALSE;
 	}
+#endif 
 
+#if 0
+	if ( szCookie != NULL && lstrcmp ( szCookie, _T ( "INVALID_COOKIE" ) ) != 0 )
+	{
+		CString szURL = _T ( "http://" );
+		szURL += szAddress;
+		BOOL bRes = ::InternetSetCookie ( szURL, NULL, szCookie );
+	}
+#endif 
 	return TRUE;															
 }
 
@@ -106,7 +118,8 @@ BOOL GenericHTTPClient::Request(LPCTSTR szURL,
 	TCHAR szProtocol[__SIZE_BUFFER]= { 0 };
 	TCHAR szAddress[__SIZE_BUFFER]= { 0 };	
 	TCHAR szURI[__SIZE_BUFFER]= {0};
-	DWORD dwSize=0;
+	//DWORD dwSize=0;
+	_dwResultSize = 0;
 
 	ParseURL(szURL, szProtocol, szAddress, wPort, szURI);
 
@@ -118,15 +131,18 @@ BOOL GenericHTTPClient::Request(LPCTSTR szURL,
 		}
 		else
 		{
-			if(!Response((PBYTE)m_szHTTPResponseHeader, __SIZE_HTTP_BUFFER, 
-				(PBYTE)m_szHTTPResponseHTML, __SIZE_HTTP_BUFFER,
-				dwSize))
+			if (	!Response (
+						( PWORD ) _szHTTPResponseHeader, __SIZE_HTTP_BUFFER,
+						( PWORD ) _szHTTPResponseHTML, __SIZE_HTTP_BUFFER, _dwResultSize
+					) )
 			{
 				bReturn=FALSE;		
 			}
 		}
 		Close();
-	}else{
+	}
+	else
+	{
 		bReturn=FALSE;
 	}
 
@@ -164,8 +180,8 @@ BOOL GenericHTTPClient::RequestGet(LPCTSTR szURI)
 		__HTTP_VERB_GET, // HTTP Verb
 		szURI, // Object Name
 		HTTP_VERSION, // Version
-		TEXT(""), // Reference
-		NULL, //&szAcceptType, // Accept Type
+										/*""*/NULL, // Reference
+										&HTTP_MIME[1], // Accept Type
 		INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_CACHE_WRITE,
 		0); // context call-back point
 
@@ -215,7 +231,7 @@ BOOL GenericHTTPClient::RequestPost(LPCTSTR szURI)
 		szURI, // Object Name
 		HTTP_VERSION, // Version
 		TEXT(""), // Reference
-		&szAcceptType, // Accept Type
+										&HTTP_MIME[1], // Accept Type
 		INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_FORMS_SUBMIT,
 		0); // context call-back point
 
@@ -239,9 +255,9 @@ BOOL GenericHTTPClient::RequestPost(LPCTSTR szURI)
 	// SEND REQUEST
 	API_VERIFY(::HttpSendRequest( m_hRequest,	// handle by returned HttpOpenRequest
 		szContentType, // additional HTTP header
-		_tcslen(szContentType), // additional HTTP header length
+							   _tcsclen ( szContentType ), // additional HTTP header length
 		(LPVOID)szPostArguments, // additional data in HTTP Post or HTTP Put
-		_tcslen(szPostArguments)) // additional data length
+							   _tcsclen ( szPostArguments ) ) // additional data length
 		);
 	if(!bRet)
 	{
@@ -266,10 +282,10 @@ BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 	m_hRequest=::HttpOpenRequest(	m_hConnection,
 		__HTTP_VERB_POST, // HTTP Verb
 		szURI, // Object Name
-		HTTP_VERSION, // Version
-		TEXT(""), // Reference
-		&szAcceptType, // Accept Type
-		INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_FORMS_SUBMIT,	// flags
+										NULL, //HTTP_VERSION, // Version
+										NULL, //_T ( "" ), // Reference
+										NULL, //&HTTP_MIME[1], // Accept Type
+										INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_RELOAD, //INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_FORMS_SUBMIT,	// flags
 		0); // context call-back point
 
 	API_ASSERT(m_hRequest);
@@ -278,6 +294,29 @@ BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 		return FALSE;
 	}
 
+	InitilizeRequestHeaders();
+	AddRequestHeader(szContentType);
+	AddRequestHeader(_T("Accept: */*"));
+
+	CAtlString strTempRequest;
+	strTempRequest.Format(_T("Content-Length: %d"), dwPostBufferLength);
+	AddRequestHeader(strTempRequest);
+	
+	strTempRequest.Format(TEXT("User-Agent: %s"), __DEFAULT_AGENT_NAME);
+	AddRequestHeader(strTempRequest);
+
+	AddRequestHeader(_T("Connection: Keep-Alive"));
+	AddRequestHeader(_T("Cache-Control: no-cache"));
+	strTempRequest.Format(_T("Cookie: %s"), szCookie);
+	AddRequestHeader(strTempRequest);
+
+	if (!SendRequestHeaders() )
+	{
+		_dwError = ::GetLastError();
+		return FALSE;
+	}
+
+#if 0
 	// REPLACE HEADER
 	API_VERIFY(::HttpAddRequestHeaders( m_hRequest, __HTTP_ACCEPT, 
 		_tcslen(__HTTP_ACCEPT), HTTP_ADDREQ_FLAG_REPLACE));
@@ -307,8 +346,9 @@ BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 		m_dwError=::GetLastError();
 		return FALSE;
 	}
+#endif 
 
-#ifdef	_DEBUG
+#if 0 //#ifdef	_DEBUG
 	TCHAR	szHTTPRequest[__SIZE_HTTP_BUFFER]= { 0};
 	DWORD	dwHTTPRequestLength=__SIZE_HTTP_BUFFER;
 
@@ -329,6 +369,23 @@ BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 		return FALSE;
 	}
 
+	DWORD dwSendCount = 0;
+	while (TRUE)
+	{
+		int nBufferSize = 0;
+		nBufferSize = min(1024 * 512, dwPostBufferLength - dwSendCount);
+		if (nBufferSize == 0)
+		{
+			break;
+		}
+
+		DWORD dwOutPostBufferLength = 0;
+		API_VERIFY(::InternetWriteFile ( _hHTTPRequest, pPostBuffer + dwSendCount, nBufferSize, &dwOutPostBufferLength ));
+		dwSendCount += dwOutPostBufferLength;
+
+	}
+
+#if 0
 	DWORD dwOutPostBufferLength=0;
 	API_VERIFY(::InternetWriteFile(m_hRequest, pPostBuffer, dwPostBufferLength, &dwOutPostBufferLength));
 	if (!bRet)
@@ -336,6 +393,7 @@ BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 		m_dwError=::GetLastError();
 		return FALSE;
 	}
+#endif 
 
 	API_VERIFY(::HttpEndRequest(m_hRequest, NULL, HSR_INITIATE, 0));
 	if(!bRet)
@@ -346,6 +404,7 @@ BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 
 	// FREE POST MULTI-PARTS FORM DATA ARGUMENTS
 	FreeMultiPartsFormData(pPostBuffer);
+	FTLTRACE(TEXT("Will Success Return from RequestPostMultiPartsFormData\n"));
 
 	return TRUE;
 }
@@ -353,6 +412,7 @@ BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 DWORD GenericHTTPClient::ResponseOfBytes(PBYTE pBuffer, DWORD dwSize)
 {
 	BOOL bRet = FALSE;
+	FTLTRACE(TEXT("Enter ResponseOfBytes\n"));
 	static DWORD dwBytes=0;
 	API_ASSERT(m_hRequest);
 	if(!m_hRequest){
@@ -374,8 +434,11 @@ DWORD GenericHTTPClient::ResponseOfBytes(PBYTE pBuffer, DWORD dwSize)
 	return dwBytes;
 }
 
-BOOL GenericHTTPClient::Response(PBYTE pHeaderBuffer, DWORD dwHeaderBufferLength, 
-								 PBYTE pBuffer, DWORD dwBufferLength, DWORD &dwResultSize)
+BOOL GenericHTTPClient::Response ( PWORD pHeaderBuffer,
+								   DWORD dwHeaderBufferLength,
+								   PWORD pBuffer,
+								   DWORD dwBufferLength,
+								   DWORD &dwResultSize )
 {
 	BOOL bRet = FALSE;
 	BYTE pResponseBuffer[__SIZE_BUFFER]= {0};	
@@ -390,7 +453,10 @@ BOOL GenericHTTPClient::Response(PBYTE pHeaderBuffer, DWORD dwHeaderBufferLength
 	::ZeroMemory(pBuffer, dwBufferLength);
 	dwResultSize=0;
 	while((dwNumOfBytesToRead=ResponseOfBytes(pResponseBuffer, __SIZE_BUFFER))!=NULL && dwResultSize<dwBufferLength){
-		::CopyMemory( (pBuffer+dwResultSize), pResponseBuffer, dwNumOfBytesToRead);		
+		LPCSTR tempBuffer = ( LPCSTR ) pResponseBuffer;
+		CConversion conversion;
+		LPWSTR wStr = conversion.MBCS_TO_UTF16 ( tempBuffer );
+		::CopyMemory ( pBuffer, wStr, dwNumOfBytesToRead * 2 );
 		dwResultSize+=dwNumOfBytesToRead;
 	}
 
@@ -461,6 +527,32 @@ VOID GenericHTTPClient::InitilizePostArguments()
 	return;
 }
 
+VOID GenericHTTPClient::InitilizeRequestHeaders()
+{
+	_vRequestHeaders.clear();
+}
+
+VOID GenericHTTPClient::AddRequestHeader(LPCTSTR pszName)
+{
+	_vRequestHeaders.push_back(pszName);
+}
+
+BOOL GenericHTTPClient::SendRequestHeaders()
+{
+	BOOL bRet = FALSE;
+	std::vector<CAtlString>::iterator iter = _vRequestHeaders.begin();
+	for (; iter != _vRequestHeaders.end(); ++iter)
+	{
+		CAtlString strHeader = *iter + _T("\r\n");
+		FTLTRACE(TEXT("SendRequestHeaders >>>>  %s\n"), strHeader);
+
+		bRet = ::HttpAddRequestHeaders(_hHTTPRequest, (LPTSTR)(LPCTSTR)strHeader, 
+			strHeader.GetLength(), HTTP_ADDREQ_FLAG_ADD_IF_NEW);
+		API_ASSERT(bRet);
+	}
+	return bRet;
+}
+
 VOID GenericHTTPClient::FreeMultiPartsFormData(PBYTE &pBuffer)
 {
 
@@ -487,25 +579,26 @@ DWORD GenericHTTPClient::AllocMultiPartsFormData(PBYTE &pInBuffer, LPCTSTR szBou
 	DWORD dwPosition=0;
 	DWORD dwBufferSize=0;
 
-	for(itArgv=_vArguments.begin(); itArgv<_vArguments.end(); ++itArgv){
+	for(itArgv=_vArguments.begin(); itArgv<_vArguments.end(); ++itArgv)
+	{
 
 		PBYTE pBuffer=NULL;
 
 		// SET MULTI_PRATS FORM DATA BUFFER
-		switch(itArgv->dwType){
+		switch(itArgv->dwType)
+		{
 		case	GenericHTTPClient::TypeNormal:
 			pBuffer=(PBYTE)::LocalAlloc(LPTR, __SIZE_HTTP_HEAD_LINE*4);
+				StringCchPrintfA(( char* ) pBuffer, __SIZE_HTTP_HEAD_LINE * 4,
+								 "--%s\r\n"
+								 "Content-Disposition: form-data; name=\"%s\"\r\n"
+								 "\r\n"
+								 "%s\r\n",
+								 ConvertWCtoC(szBoundary),
+								 ConvertWCtoC(itArgv->szName),
+								 ConvertWCtoC(itArgv->szValue) );
 
-			_stprintf(	(TCHAR*)pBuffer,							
-				TEXT("--%s\r\n")
-				TEXT("Content-Disposition: form-data; name=\"%s\"\r\n")
-				TEXT("\r\n")
-				TEXT("%s\r\n"),
-				szBoundary,
-				itArgv->szName,
-				itArgv->szValue);
-
-			dwBufferSize=_tcslen((TCHAR*)pBuffer);
+				dwBufferSize = strlen ( ( char* ) pBuffer );
 
 			break;
 		case	GenericHTTPClient::TypeBinary:
@@ -524,56 +617,61 @@ DWORD GenericHTTPClient::AllocMultiPartsFormData(PBYTE &pInBuffer, LPCTSTR szBou
 
 			pBuffer=(PBYTE)::LocalAlloc(LPTR, __SIZE_HTTP_HEAD_LINE*3+dwSize+1);
 			BYTE	pBytes[__SIZE_BUFFER+1]="";
+				StringCchPrintfA ( ( char* ) pBuffer, __SIZE_HTTP_HEAD_LINE * 4,
+								   "--%s\r\n"
+								   "Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n"
+								   "Content-Type: %s\r\n"
+								   "\r\n",
+								   ConvertWCtoC ( szBoundary ),
+								   ConvertWCtoC ( itArgv->szName ), ConvertWCtoC ( itArgv->szValue ),
+								   "image/jpeg"
+								   //ConvertWCtoC ( GetContentType ( itArgv->szValue ) )
+								 );
 
-			_stprintf( (TCHAR*)pBuffer,
-				TEXT("--%s\r\n")
-				TEXT("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n")
-				TEXT("Content-Type: %s\r\n")
-				TEXT("\r\n"),
-				szBoundary,
-				itArgv->szName, itArgv->szValue,
-				GetContentType(itArgv->szValue)
-				);
+				DWORD	dwBufPosition = strlen ( ( char* ) pBuffer );
 
-			DWORD	dwBufPosition=_tcslen((TCHAR*)pBuffer);	
-
-			while(::ReadFile(hFile, pBytes, __SIZE_BUFFER, &dwNumOfBytesToRead, NULL) && dwNumOfBytesToRead>0 && dwTotalBytes<=dwSize){
+			while(::ReadFile(hFile, pBytes, __SIZE_BUFFER, &dwNumOfBytesToRead, NULL) && dwNumOfBytesToRead>0 && dwTotalBytes<=dwSize)
+			{
 				::CopyMemory((pBuffer+dwBufPosition+dwTotalBytes), pBytes, dwNumOfBytesToRead);
 				::ZeroMemory(pBytes, __SIZE_BUFFER+1);
 				dwTotalBytes+=dwNumOfBytesToRead;				
 			}
 
-			::CopyMemory((pBuffer+dwBufPosition+dwTotalBytes), TEXT("\r\n"), _tcslen(TEXT("\r\n")));
-			::CloseHandle(hFile);
+				::CopyMemory ( ( pBuffer + dwBufPosition + dwTotalBytes ), "\r\n", strlen ( "\r\n" ) * sizeof ( char ) );
+				::CloseHandle ( hFile );
 
-			dwBufferSize=dwBufPosition+dwTotalBytes+_tcslen(TEXT("\r\n"));
-			break;			
+				dwBufferSize = dwBufPosition + dwTotalBytes + strlen ( "\r\n" ) * sizeof ( char );
+				break;
 		}
 
 		::CopyMemory((pInBuffer+dwPosition), pBuffer, dwBufferSize);
 		dwPosition+=dwBufferSize;
 
-		if(pBuffer){
+		if(pBuffer)
+		{
 			::LocalFree(pBuffer);
 			pBuffer=NULL;
 		}
 	}
 
-	::CopyMemory((pInBuffer+dwPosition), "--", 2);
-	::CopyMemory((pInBuffer+dwPosition+2), szBoundary, _tcslen(szBoundary));
-	::CopyMemory((pInBuffer+dwPosition+2+_tcslen(szBoundary)), "--\r\n", 3);
+	::CopyMemory ( ( pInBuffer + dwPosition ), "--", 2 * sizeof ( char ) );
+	::CopyMemory ( ( pInBuffer + dwPosition + ( 2 * sizeof ( char ) ) ), ConvertWCtoC ( szBoundary ), strlen ( ConvertWCtoC ( szBoundary ) ) * sizeof ( char ) );
+	::CopyMemory ( ( pInBuffer + dwPosition + ( 2 + strlen ( ConvertWCtoC ( szBoundary ) ) ) * sizeof ( char ) ), "--\r\n", 3 * sizeof ( char ) );
 
-	return dwPosition+5+_tcslen(szBoundary);
+	return dwPosition + ( ( 2 + strlen ( ConvertWCtoC ( szBoundary ) ) + 3 ) * sizeof ( char ) );
 }
 
-DWORD GenericHTTPClient::GetMultiPartsFormDataLength(){
+DWORD GenericHTTPClient::GetMultiPartsFormDataLength()
+{
 	std::vector<GenericHTTPArgument>::iterator itArgv;
 
 	DWORD	dwLength=0;
 
-	for(itArgv=_vArguments.begin(); itArgv<_vArguments.end(); ++itArgv){
+	for(itArgv=_vArguments.begin(); itArgv<_vArguments.end(); ++itArgv)
+	{
 
-		switch(itArgv->dwType){
+		switch(itArgv->dwType)
+		{
 		case	GenericHTTPClient::TypeNormal:
 			dwLength+=__SIZE_HTTP_HEAD_LINE*4;
 			break;
@@ -602,9 +700,12 @@ LPCTSTR GenericHTTPClient::GetContentType(LPCTSTR szName)
 	LONG	dwLen=1024;
 	DWORD	dwDot=0;
 
-	for(dwDot=_tcslen(szName);dwDot>0;dwDot--){
+	for ( dwDot = _tcsclen ( szName ); dwDot > 0; dwDot-- )
+	{
 		if(!_tcsncmp((szName+dwDot),TEXT("."), 1))
+		{
 			break;
+		}
 	}
 
 	HKEY	hKEY;
@@ -621,7 +722,7 @@ LPCTSTR GenericHTTPClient::GetContentType(LPCTSTR szName)
 	}
 	else
 	{
-		_tcsncpy(szReturn, TEXT("application/octet-stream"), _tcslen(TEXT("application/octet-stream")));
+		_tcsncpy ( szReturn, _T ( "application/octet-stream" ), _tcsclen ( _T ( "application/octet-stream" ) ) );
 	}
 
 	return szReturn;
@@ -632,22 +733,29 @@ DWORD GenericHTTPClient::GetLastError()
 	return m_dwError;
 }
 
-VOID GenericHTTPClient::ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddress, WORD &wPort, LPTSTR szURI){
+VOID GenericHTTPClient::ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddress, WORD &wPort, LPTSTR szURI)
+{
 
 	TCHAR szPort[__SIZE_BUFFER]= { 0 };
 	DWORD dwPosition=0;
 	BOOL bFlag=FALSE;
 
-	while(_tcslen(szURL)>0 && dwPosition<_tcslen(szURL) && _tcsncmp((szURL+dwPosition), TEXT(":"), 1))
+	while ( _tcsclen ( szURL ) > 0 && dwPosition < _tcsclen ( szURL ) && _tcsncmp ( ( szURL + dwPosition ), _T ( ":" ), 1 ) )
+	{
 		++dwPosition;
+	}
 
-	if(!_tcsncmp((szURL+dwPosition+1), TEXT("/"), 1)){	// is PROTOCOL
-		if(szProtocol){
+	if(!_tcsncmp((szURL+dwPosition+1), TEXT("/"), 1))
+	{	// is PROTOCOL
+		if(szProtocol)
+		{
 			_tcsncpy(szProtocol, szURL, dwPosition);
 			szProtocol[dwPosition]=0;
 		}
 		bFlag=TRUE;
-	}else{	// is HOST 
+	}
+	else
+	{	// is HOST 
 		if(szProtocol){
 			_tcsncpy(szProtocol, TEXT("http"), 4);
 			szProtocol[5]=0;
@@ -663,24 +771,27 @@ VOID GenericHTTPClient::ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddr
 	}
 
 	bFlag=FALSE;
-	while(_tcslen(szURL)>0 && dwPosition<_tcslen(szURL) && _tcsncmp((szURL+dwPosition), TEXT("/"), 1))
+	while(_tcslen(szURL)>0 && dwPosition<_tcsclen(szURL) && _tcsncmp((szURL+dwPosition), TEXT("/"), 1))
 		++dwPosition;
 
 	DWORD dwFind=dwStartPosition;
 
-	for(;dwFind<=dwPosition;dwFind++){
-		if(!_tcsncmp((szURL+dwFind), TEXT(":"), 1)){ // find PORT
+	for(;dwFind<=dwPosition;dwFind++)
+	{
+		if(!_tcsncmp((szURL+dwFind), TEXT(":"), 1))
+		{ // find PORT
 			bFlag=TRUE;
 			break;
 		}
 	}
 
-	if(bFlag){
+	if(bFlag)
+	{
 		TCHAR sztmp[__SIZE_BUFFER]= { 0 };
 		_tcsncpy(sztmp, (szURL+dwFind+1), dwPosition-dwFind);
 		wPort=_ttol(sztmp);
 		_tcsncpy(szAddress, (szURL+dwStartPosition), dwFind-dwStartPosition);
-	}else if(!_tcscmp(szProtocol,TEXT("https"))){
+	}else if(!lstrcmp(szProtocol,TEXT("https"))){
 		wPort=INTERNET_DEFAULT_HTTPS_PORT;
 		_tcsncpy(szAddress, (szURL+dwStartPosition), dwPosition-dwStartPosition);
 	}else {
@@ -688,7 +799,8 @@ VOID GenericHTTPClient::ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddr
 		_tcsncpy(szAddress, (szURL+dwStartPosition), dwPosition-dwStartPosition);
 	}
 
-	if(dwPosition<_tcslen(szURL)){ // find URI
+	if(dwPosition<_tcsclen(szURL))
+	{ // find URI
 		_tcsncpy(szURI, (szURL+dwPosition), _tcslen(szURL)-dwPosition);
 	}else{
 		szURI[0]=0;
@@ -697,10 +809,25 @@ VOID GenericHTTPClient::ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddr
 	return;
 }
 
-LPCTSTR GenericHTTPClient::QueryHTTPResponseHeader(){
+LPCTSTR GenericHTTPClient::QueryHTTPResponseHeader()
+{
 	return m_szHTTPResponseHeader;
 }
 
-LPCTSTR GenericHTTPClient::QueryHTTPResponse(){
+LPCTSTR GenericHTTPClient::QueryHTTPResponse()
+{
 	return m_szHTTPResponseHTML;
+}
+DWORD GenericHTTPClient::QueryHTTPResponseSize()
+{
+	return _dwResultSize;
+}
+
+LPCSTR GenericHTTPClient::ConvertWCtoC ( LPCTSTR str )
+{
+	char* pStr ;
+	int strSize = WideCharToMultiByte ( CP_ACP, 0, str, -1, NULL, 0, NULL, NULL );
+	pStr = new char[strSize];
+	WideCharToMultiByte ( CP_ACP, 0, str, -1, pStr, strSize, 0, 0 );
+	return pStr;
 }

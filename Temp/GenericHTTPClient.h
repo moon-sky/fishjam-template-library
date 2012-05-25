@@ -54,18 +54,20 @@ public:
 	};
 
 	enum RequestMethod
-	{											// REQUEST METHOD
-		RequestUnknown=0,
-		RequestGetMethod=1,
-		RequestPostMethod=2,
-		RequestPostMethodMultiPartsFormData=3
+	{
+		// REQUEST METHOD
+		RequestUnknown = 0,
+		RequestGetMethod = 1,
+		RequestPostMethod = 2,
+		RequestPostMethodMultiPartsFormData = 3
 	};
 
 	enum TypePostArgument
-	{													// POST TYPE 
-		TypeUnknown=0,
-		TypeNormal=1,
-		TypeBinary=2
+	{
+		// POST TYPE
+		TypeUnknown = 0,
+		TypeNormal = 1,
+		TypeBinary = 2
 	};
 
 	// CONSTRUCTOR & DESTRUCTOR
@@ -88,13 +90,17 @@ public:
 	VOID AddPostArguments(LPCTSTR szName, DWORD nValue);
 	VOID AddPostArguments(LPCTSTR szName, LPCTSTR szValue, BOOL bBinary = FALSE);
 
+	VOID InitilizeRequestHeaders();
+	VOID AddRequestHeader(LPCTSTR pszName);
+	BOOL SendRequestHeaders();
 	// HTTP Method handler 
 	BOOL Request(LPCTSTR szURL, LPCTSTR szAgent,
 		int nMethod = GenericHTTPClient::RequestGetMethod);
 	BOOL RequestOfURI(LPCTSTR szURI, int nMethod = GenericHTTPClient::RequestGetMethod);
-	BOOL Response(PBYTE pHeaderBuffer, DWORD dwHeaderBufferLength, PBYTE pBuffer, DWORD dwBufferLength, DWORD &dwResultSize);	
+	BOOL Response(PWORD pHeaderBuffer, DWORD dwHeaderBufferLength, PWORD pBuffer, DWORD dwBufferLength, DWORD &dwResultSize);
 
 	LPCTSTR QueryHTTPResponse();
+	DWORD	QueryHTTPResponseSize();
 	LPCTSTR QueryHTTPResponseHeader();	
 
 	// General Handler
@@ -102,8 +108,10 @@ public:
 	LPCTSTR GetContentType(LPCTSTR szName);
 	VOID ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddress, WORD &wPort, LPTSTR szURI);
 	
+	LPCSTR ConvertWCtoC(LPCTSTR str);
 protected:				
 	std::vector<GenericHTTPArgument> _vArguments;				// POST ARGUMENTS VECTOR
+	std::vector<CAtlString>			_vRequestHeaders;
 
 	HINTERNET m_hOpen;				// internet open handle
 	HINTERNET m_hConnection;		// internet connection hadle
@@ -115,6 +123,7 @@ protected:
 	DWORD		m_dwError;					// LAST ERROR CODE
 	//LPCTSTR		m_szHost;					 //	 HOST NAME
 	//DWORD		m_dwPort;					//  PORT
+	DWORD		_dwResultSize;
 
 	// HTTP Method handler
 	DWORD ResponseOfBytes(PBYTE pBuffer, DWORD dwSize);

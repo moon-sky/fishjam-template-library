@@ -130,7 +130,7 @@
 #  elif _MSC_VER == 1500
 #    pragma message( "     IDE is VS2008")
 #  elif _MSC_VER == 1600
-#    pragma message( "     IDE is VS2010 ???")
+#    pragma message( "     IDE is VS2010")
 #  else
 #    pragma message( "     IDE is Unknow Type")
 #  endif
