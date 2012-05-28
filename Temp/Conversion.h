@@ -2,7 +2,7 @@
 #include <wtypes.h>
 #include <crtdbg.h>
 #include "WtlCustomDefile.h"
-#define CP_NAVERTOOLBAR CP_ACP //949 // CP_NAVERTOOLBAR
+#define CP_MYCODE CP_ACP //949
 
 class CMemAllocator
 {

@@ -76,6 +76,21 @@ POST(RFC1867), 每个描述部分用"\r\n"分开，结束处有两个"\r\n"
   [M]Content-Length: 内容长度（包括 头 + 数据 + 尾）
   [O]Content-Transfer-Encoding: binary
   []Connection: Keep-Alive
+  []Cookie : 
   [O]Host: 192.168.0.8
-  []User-Agent: Mozilla/4.0 (compatible; MSIE 5.00; Windows 98) 或自定义的名字
-  
+  []Referer: http://引用地址
+  []User-Agent: User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0) 或自定义的名字
+                
+GET /文件地址 HTTP/1.1
+  []Range: bytes=388136960-   (格式是怎么样的?)
+  []Content-Range: bytes 开始位置-结束位置/总位置 (不确定是否是这个格式)
+
+返回信息
+  []Date: Sat, 26 May 2012 00:42:19 GMT
+  []Server: Apache/2.2.11 (Unix)
+  []Last-Modified: Wed, 23 May 2012 21:38:23 GMT
+  []ETag: "1d2d6-5c896800-4c0baf45c91c0"
+  []Accept-Ranges: bytes
+  []Content-Length: 1164371968
+  []Content-Range: bytes 388136960-1552508927/1552508928
+  []Keep-Alive: timeout=5, max=100

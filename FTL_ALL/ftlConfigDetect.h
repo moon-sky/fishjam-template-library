@@ -114,6 +114,8 @@
 //判断目标程序的类型
 #if defined(_WINDLL)
 #  pragma message( "  Configuration Type is 'Dynamic Library (.dll)' " )
+#elif defined(_LIB)
+#  pragma message( "  Configuration Type is 'Static Library (.lib)' " )
 #else
 #  pragma message( "  Configuration Type is 'Application (.exe)' or 'Static Library (.lib)' " )
 #endif 

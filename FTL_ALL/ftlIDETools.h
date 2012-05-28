@@ -17,7 +17,12 @@
 *     具有 LINQ、Silverlight 等新特性
 *   VS2010()--
 * 版本
-*   
+* 
+* Windows SDK
+*   7.0 -- Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1
+*          http://www.microsoft.com/en-us/download/details.aspx?id=18950
+*   7.1 -- Microsoft Windows SDK for Windows 7 and .NET Framework 4
+*          http://www.microsoft.com/en-us/download/details.aspx?id=8442
 ************************************************************************************************/
 
 /************************************************************************************************
