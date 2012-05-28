@@ -325,7 +325,7 @@ namespace FTL
 
 				long bCanEdit = 0;
 				COM_VERIFY(spTextRange->CanEdit(&bCanEdit));
-				COM_VERIFY(pInfoOutput->OnOutput(TEXT("CanEdit"), bCanEdit));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("CanEdit"), CFControlUtil::GetRichEditTomBoolString(bCanEdit)));
 
 				CComPtr<IUnknown>	spEmbeddedObject;
 				hr = spTextRange->GetEmbeddedObject(&spEmbeddedObject);

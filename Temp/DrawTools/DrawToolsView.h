@@ -22,6 +22,7 @@ public:
 		MSG_WM_LBUTTONUP(OnLButtonUp)
 		MSG_WM_KEYDOWN(OnKeyDown)
 		MSG_WM_CHAR(OnChar)
+		MSG_WM_ERASEBKGND(OnEraseBkgnd)
 	END_MSG_MAP()
 
 	int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -30,6 +31,7 @@ public:
 	void OnMouseMove(UINT nFlags, CPoint point);
 	void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+	BOOL OnEraseBkgnd(CDCHandle dc);
 
 	LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 

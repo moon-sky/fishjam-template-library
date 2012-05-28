@@ -369,6 +369,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\FTL_ALL\ftlConfigDetect.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\FTL_ALL\ftlControls.h"
 				>
 			</File>

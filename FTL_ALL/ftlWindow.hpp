@@ -8,18 +8,36 @@
 
 #include <prsht.h>
 #include <CommCtrl.h>
+#include <zmouse.h>
 
 namespace FTL
 {
-#define GET_MESSAGE_INFO_ENTRY(msg) GET_MESSAGE_INFO_ENTRY_EX( msg, CFDummyMsgInfo )
 
-#define GET_MESSAGE_INFO_ENTRY_EX(msg, classDumpInfo ) HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), msg)
+#define GET_MESSAGE_INFO_ENTRY(msg, classMsgInfo ) \
+	case (msg): { StringCchCopy(m_bufInfo, _countof(m_bufInfo), classMsgInfo().GetMsgInfo(msg, TEXT(#msg), m_wParam, m_lParam)); break; }
 
-
-    class CFDummyMsgInfo
+    class CFDefaultMsgInfo
     {
     public:
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			return pszMsgName;
+		}
     };
+
+	class CFMouseMsgInfo : CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			WORD xPos = LOWORD(lParam);
+			WORD yPos = HIWORD(lParam);
+			m_strFormater.Format(TEXT("%s{KeyCode=%d, Pos=[%d,%d]}"), pszMsgName, wParam, xPos, yPos );
+			return m_strFormater;
+		}
+	private:
+		CFStringFormater	m_strFormater;
+	};
 
 	CFRegistedMessageInfo::CFRegistedMessageInfo()
 	{
@@ -68,12 +86,12 @@ namespace FTL
 		if(NULL == m_bufInfo[0])
 		{
 			StringCchPrintf(m_bufInfo, _countof(m_bufInfo), 
-				TEXT("Unknown RegisterWindowMessage %d(0x%08x), wParam=%d, lParam=%d"), msg, wParam, lParam);
+				TEXT("Unknown RegisterWindowMessage %d(0x%08x), wParam=%d, lParam=%d"), msg, msg, wParam, lParam);
 		}
 		return m_bufInfo;
 	}
 
-	CFRegistedMessageInfo   CFMessageInfo::s_RegistedMessageInfo;
+	__declspec(selectany) CFRegistedMessageInfo   CFMessageInfo::s_RegistedMessageInfo;
 
     CFMessageInfo::CFMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam) 
         : CFConvertInfoT<CFMessageInfo,UINT>(msg)
@@ -89,78 +107,79 @@ namespace FTL
         {
             switch(m_Info)
             {
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CREATE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DESTROY);  //关闭窗口时,如果是主窗口,必须PostQuitMessage,否则进程还在运行(只是没有窗体)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOVE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SIZE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ACTIVATE); //窗口被激活或失去激活状态, 可用于查看窗体是否最小化，及前一窗体
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETFOCUS);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_KILLFOCUS);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ENABLE); //将禁止或激活时
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETREDRAW); //设置窗口是否能重画 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETTEXT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETTEXT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETTEXTLENGTH); //得到与一个窗口有关的文本的长度（不包含空字符）
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PAINT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CLOSE);
+                GET_MESSAGE_INFO_ENTRY(WM_CREATE, CFDefaultMsgInfo);
+				//GET_MESSAGE_INFO_ENTRY(WM_CREATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DESTROY, CFDefaultMsgInfo);  //关闭窗口时,如果是主窗口,必须PostQuitMessage,否则进程还在运行(只是没有窗体)
+                GET_MESSAGE_INFO_ENTRY(WM_MOVE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_ACTIVATE, CFDefaultMsgInfo); //窗口被激活或失去激活状态, 可用于查看窗体是否最小化，及前一窗体
+                GET_MESSAGE_INFO_ENTRY(WM_SETFOCUS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_KILLFOCUS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_ENABLE, CFDefaultMsgInfo); //将禁止或激活时
+                GET_MESSAGE_INFO_ENTRY(WM_SETREDRAW, CFDefaultMsgInfo); //设置窗口是否能重画 
+                GET_MESSAGE_INFO_ENTRY(WM_SETTEXT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_GETTEXT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_GETTEXTLENGTH, CFDefaultMsgInfo); //得到与一个窗口有关的文本的长度（不包含空字符）
+                GET_MESSAGE_INFO_ENTRY(WM_PAINT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CLOSE, CFDefaultMsgInfo);
 #ifndef _WIN32_WCE
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUERYENDSESSION); //当用户选择结束对话框或程序自己调用ExitWindows函数
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUERYOPEN);     //当用户窗口恢复以前的大小位置时，把此消息发送给某个图标
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ENDSESSION);    //当系统进程发出WM_QUERYENDSESSION消息后，此消息发送给应用程序，通知它对话是否结束
+                GET_MESSAGE_INFO_ENTRY(WM_QUERYENDSESSION, CFDefaultMsgInfo); //当用户选择结束对话框或程序自己调用ExitWindows函数
+                GET_MESSAGE_INFO_ENTRY(WM_QUERYOPEN, CFDefaultMsgInfo);     //当用户窗口恢复以前的大小位置时，把此消息发送给某个图标
+                GET_MESSAGE_INFO_ENTRY(WM_ENDSESSION, CFDefaultMsgInfo);    //当系统进程发出WM_QUERYENDSESSION消息后，此消息发送给应用程序，通知它对话是否结束
 #endif
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUIT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ERASEBKGND); //当窗口背景必须被擦除时（例在窗口改变大小时）
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SYSCOLORCHANGE);    //当系统颜色改变时，发送此消息给所有顶级窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SHOWWINDOW);
+                GET_MESSAGE_INFO_ENTRY(WM_QUIT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_ERASEBKGND, CFDefaultMsgInfo); //当窗口背景必须被擦除时（例在窗口改变大小时
+                GET_MESSAGE_INFO_ENTRY(WM_SYSCOLORCHANGE, CFDefaultMsgInfo);    //当系统颜色改变时，发送此消息给所有顶级窗口
+                GET_MESSAGE_INFO_ENTRY(WM_SHOWWINDOW, CFDefaultMsgInfo);
 
 #ifndef WM_CTLCOLOR
 #  define WM_CTLCOLOR                             0x0019
 #endif
                 //子窗口总在绘制客户区之前，将其发送给父窗口，委托父窗口为自己准备一个画刷，同时父窗口（如对话框）也给自己发送该消息(为什么？)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CTLCOLOR);  
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLOR, CFDefaultMsgInfo);  
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_WININICHANGE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DEVMODECHANGE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ACTIVATEAPP);//属于另一App的窗体将激活时
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_FONTCHANGE);    //当系统的字体资源库变化时发送此消息给所有顶级窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_TIMECHANGE);    //当系统的时间变化时发送此消息给所有顶级窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CANCELMODE);    //取消系统模式时
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETCURSOR);     //如果鼠标引起光标在某个窗口中移动且鼠标输入没有被捕获时，就发消息给某个窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSEACTIVATE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CHILDACTIVATE); //送此消息给MDI子窗口当用户点击此窗口的标题栏，或当窗口被激活，移动，改变大小
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUEUESYNC);     //此消息由基于计算机的"训练?"程序发送，通过 WH_JOURNALPALYBACK 的hook程序分离出用户输入消息
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETMINMAXINFO); //处理该消息可以得到一个改变最大和最小的窗口缺省值的机会
+                GET_MESSAGE_INFO_ENTRY(WM_WININICHANGE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DEVMODECHANGE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_ACTIVATEAPP, CFDefaultMsgInfo);//属于另一App的窗体将激活时
+                GET_MESSAGE_INFO_ENTRY(WM_FONTCHANGE, CFDefaultMsgInfo);    //当系统的字体资源库变化时发送此消息给所有顶级窗口
+                GET_MESSAGE_INFO_ENTRY(WM_TIMECHANGE, CFDefaultMsgInfo);    //当系统的时间变化时发送此消息给所有顶级窗口
+                GET_MESSAGE_INFO_ENTRY(WM_CANCELMODE, CFDefaultMsgInfo);    //取消系统模式时
+                GET_MESSAGE_INFO_ENTRY(WM_SETCURSOR, CFDefaultMsgInfo);     //如果鼠标引起光标在某个窗口中移动且鼠标输入没有被捕获时，就发消息给某个窗口
+                GET_MESSAGE_INFO_ENTRY(WM_MOUSEACTIVATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CHILDACTIVATE, CFDefaultMsgInfo); //送此消息给MDI子窗口当用户点击此窗口的标题栏，或当窗口被激活，移动，改变大小
+                GET_MESSAGE_INFO_ENTRY(WM_QUEUESYNC, CFDefaultMsgInfo);     //此消息由基于计算机的"训练?"程序发送，通过 WH_JOURNALPALYBACK 的hook程序分离出用户输入消息
+                GET_MESSAGE_INFO_ENTRY(WM_GETMINMAXINFO, CFDefaultMsgInfo); //处理该消息可以得到一个改变最大和最小的窗口缺省值的机会
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PAINTICON);     //发送给最小化窗口当它图标将要被重画
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ICONERASEBKGND);//此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NEXTDLGCTL);    //此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SPOOLERSTATUS); //每当打印管理列队增加或减少一条作业时发出此消息
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DRAWITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MEASUREITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DELETEITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_VKEYTOITEM);    //由一个LBS_WANTKEYBOARDINPUT风格的发出给它的所有者来响应WM_KEYDOWN消息
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CHARTOITEM);    //由一个LBS_WANTKEYBOARDINPUT风格的列表框发送给他的所有者来响应WM_CHAR消息
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETFONT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETFONT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETHOTKEY);     //应用程序发送此消息让一个窗口与一个热键相关连
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETHOTKEY);     //应用程序发送此消息来判断热键与某个窗口是否有关联
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUERYDRAGICON); //送给最小化窗口，当此窗口将要被拖放而它的类中没有定义图标，应用程序能返回一个图标或光标的句柄，
+                GET_MESSAGE_INFO_ENTRY(WM_PAINTICON, CFDefaultMsgInfo);     //发送给最小化窗口当它图标将要被重画
+                GET_MESSAGE_INFO_ENTRY(WM_ICONERASEBKGND, CFDefaultMsgInfo);//此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
+                GET_MESSAGE_INFO_ENTRY(WM_NEXTDLGCTL, CFDefaultMsgInfo);    //此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
+                GET_MESSAGE_INFO_ENTRY(WM_SPOOLERSTATUS, CFDefaultMsgInfo); //每当打印管理列队增加或减少一条作业时发出此消息
+                GET_MESSAGE_INFO_ENTRY(WM_DRAWITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MEASUREITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DELETEITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_VKEYTOITEM, CFDefaultMsgInfo);    //由一个LBS_WANTKEYBOARDINPUT风格的发出给它的所有者来响应WM_KEYDOWN消息
+                GET_MESSAGE_INFO_ENTRY(WM_CHARTOITEM, CFDefaultMsgInfo);    //由一个LBS_WANTKEYBOARDINPUT风格的列表框发送给他的所有者来响应WM_CHAR消息
+                GET_MESSAGE_INFO_ENTRY(WM_SETFONT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_GETFONT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SETHOTKEY, CFDefaultMsgInfo);     //应用程序发送此消息让一个窗口与一个热键相关连
+                GET_MESSAGE_INFO_ENTRY(WM_GETHOTKEY, CFDefaultMsgInfo);     //应用程序发送此消息来判断热键与某个窗口是否有关联
+                GET_MESSAGE_INFO_ENTRY(WM_QUERYDRAGICON, CFDefaultMsgInfo); //送给最小化窗口，当此窗口将要被拖放而它的类中没有定义图标，应用程序能返回一个图标或光标的句柄，
                 //当用户拖放图标时系统显示这个图标或光标
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_COMPAREITEM);   //发送此消息来判定combobox或listbox新增加的项的相对位置
+                GET_MESSAGE_INFO_ENTRY(WM_COMPAREITEM, CFDefaultMsgInfo);   //发送此消息来判定combobox或listbox新增加的项的相对位置
 #if(WINVER >= 0x0500)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETOBJECT);
+                GET_MESSAGE_INFO_ENTRY(WM_GETOBJECT, CFDefaultMsgInfo);
 #endif
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_COMPACTING);    //显示内存已经很少了
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_COMMNOTIFY);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_WINDOWPOSCHANGING);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_WINDOWPOSCHANGED);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_POWER);         //当系统将要进入暂停状态时发送此消息
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_COPYDATA);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CANCELJOURNAL); //当某个用户取消程序日志激活状态，提交此消息给程序
+                GET_MESSAGE_INFO_ENTRY(WM_COMPACTING, CFDefaultMsgInfo);    //显示内存已经很少了
+                GET_MESSAGE_INFO_ENTRY(WM_COMMNOTIFY, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGING, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGED, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_POWER, CFDefaultMsgInfo);         //当系统将要进入暂停状态时发送此消息
+                GET_MESSAGE_INFO_ENTRY(WM_COPYDATA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CANCELJOURNAL, CFDefaultMsgInfo); //当某个用户取消程序日志激活状态，提交此消息给程序
 #if(WINVER >= 0x0400)
             case WM_NOTIFY:
                 {
-                    //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NOTIFY);
+                    //GET_MESSAGE_INFO_ENTRY(WM_NOTIFY, CFDefaultMsgInfo);
                     StringCchCopy(m_bufInfo,_countof(m_bufInfo),TEXT("WM_NOTIFY,"));
                     int len = lstrlen(m_bufInfo);
                     int nIdCtrl = (int)m_wParam;
@@ -170,534 +189,534 @@ namespace FTL
                     break;
                 }
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INPUTLANGCHANGEREQUEST);    //当用户选择某种输入语言，或输入语言的热键改变
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INPUTLANGCHANGE);   //当平台现场已经被改变后发送此消息给受影响的最顶级窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_TCARD);         //当程序已经初始化windows帮助例程时发送此消息给应用程序
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_HELP);          //此消息显示用户按下了F1，如果某个菜单是激活的，就发送此消息个此窗口关联的菜单，
+                GET_MESSAGE_INFO_ENTRY(WM_INPUTLANGCHANGEREQUEST, CFDefaultMsgInfo);    //当用户选择某种输入语言，或输入语言的热键改变
+                GET_MESSAGE_INFO_ENTRY(WM_INPUTLANGCHANGE, CFDefaultMsgInfo);   //当平台现场已经被改变后发送此消息给受影响的最顶级窗口
+                GET_MESSAGE_INFO_ENTRY(WM_TCARD, CFDefaultMsgInfo);         //当程序已经初始化windows帮助例程时发送此消息给应用程序
+                GET_MESSAGE_INFO_ENTRY(WM_HELP, CFDefaultMsgInfo);          //此消息显示用户按下了F1，如果某个菜单是激活的，就发送此消息个此窗口关联的菜单，
                 //  否则就发送给有焦点的窗口，如果当前都没有焦点，就把此消息发送给当前激活的窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_USERCHANGED);   //当用户已经登入或退出后发送此消息给所有的窗口，当用户登入或退出时系统更新用户的具体
+                GET_MESSAGE_INFO_ENTRY(WM_USERCHANGED, CFDefaultMsgInfo);   //当用户已经登入或退出后发送此消息给所有的窗口，当用户登入或退出时系统更新用户的具体
                 //  设置信息，在用户更新设置时系统马上发送此消息
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NOTIFYFORMAT);  //通过此消息来判断控件是使用ANSI还是UNICODE结构
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CONTEXTMENU);   //当用户某个窗口中点击了一下右键就发送此消息给这个窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_STYLECHANGING); //当调用SETWINDOWLONG函数 将要改变 一个或多个 窗口的风格时发送此消息给那个窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_STYLECHANGED);  //当调用SETWINDOWLONG函数 改变 一个或多个窗口的风格后发送此消息给那个窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DISPLAYCHANGE); //当显示器的分辨率改变后发送此消息给所有的窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETICON);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETICON);
+                GET_MESSAGE_INFO_ENTRY(WM_NOTIFYFORMAT, CFDefaultMsgInfo);  //通过此消息来判断控件是使用ANSI还是UNICODE结构
+                GET_MESSAGE_INFO_ENTRY(WM_CONTEXTMENU, CFDefaultMsgInfo);   //当用户某个窗口中点击了一下右键就发送此消息给这个窗口
+                GET_MESSAGE_INFO_ENTRY(WM_STYLECHANGING, CFDefaultMsgInfo); //当调用SETWINDOWLONG函数 将要改变 一个或多个 窗口的风格时发送此消息给那个窗口
+                GET_MESSAGE_INFO_ENTRY(WM_STYLECHANGED, CFDefaultMsgInfo);  //当调用SETWINDOWLONG函数 改变 一个或多个窗口的风格后发送此消息给那个窗口
+                GET_MESSAGE_INFO_ENTRY(WM_DISPLAYCHANGE, CFDefaultMsgInfo); //当显示器的分辨率改变后发送此消息给所有的窗口
+                GET_MESSAGE_INFO_ENTRY(WM_GETICON, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SETICON, CFDefaultMsgInfo);
 #endif
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCCREATE);      //当某个窗口第一次被创建时，此消息在WM_CREATE消息发送前发送
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCDESTROY);     //此消息通知某个窗口，非客户区正在销毁
+                GET_MESSAGE_INFO_ENTRY(WM_NCCREATE, CFDefaultMsgInfo);      //当某个窗口第一次被创建时，此消息在WM_CREATE消息发送前发送
+                GET_MESSAGE_INFO_ENTRY(WM_NCDESTROY, CFDefaultMsgInfo);     //此消息通知某个窗口，非客户区正在销毁
                 
                 //需要计算窗口客户区的大小和位置时发送，通过处理该消息，可以在窗口大小或位置改变时控制客户区的内容     
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCCALCSIZE);    
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCHITTEST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCPAINT);       //程序发送此消息给某个窗口当它（窗口）的框架必须被绘制时
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCACTIVATE);    //此消息发送给某个窗口 仅当它的非客户区需要被改变来显示是激活还是非激活状态
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETDLGCODE);    //发送此消息给某个与对话框程序关联的控件，widdows控制方位键和TAB键使输入进入此控件
+                GET_MESSAGE_INFO_ENTRY(WM_NCCALCSIZE, CFDefaultMsgInfo);    
+                GET_MESSAGE_INFO_ENTRY(WM_NCHITTEST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCPAINT, CFDefaultMsgInfo);       //程序发送此消息给某个窗口当它（窗口）的框架必须被绘制时
+                GET_MESSAGE_INFO_ENTRY(WM_NCACTIVATE, CFDefaultMsgInfo);    //此消息发送给某个窗口 仅当它的非客户区需要被改变来显示是激活还是非激活状态
+                GET_MESSAGE_INFO_ENTRY(WM_GETDLGCODE, CFDefaultMsgInfo);    //发送此消息给某个与对话框程序关联的控件，widdows控制方位键和TAB键使输入进入此控件
                 //  通过响应WM_GETDLGCODE消息，应用程序可以把他当成一个特殊的输入控件并能处理它
 #ifndef _WIN32_WCE
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SYNCPAINT);
+                GET_MESSAGE_INFO_ENTRY(WM_SYNCPAINT, CFDefaultMsgInfo);
 #endif
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCMOUSEMOVE);   //非客户区内移动时发送此消息给这个窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCLBUTTONDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCLBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCLBUTTONDBLCLK);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCRBUTTONDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCRBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCRBUTTONDBLCLK);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCMBUTTONDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCMBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCMBUTTONDBLCLK);
+                GET_MESSAGE_INFO_ENTRY(WM_NCMOUSEMOVE, CFDefaultMsgInfo);   //非客户区内移动时发送此消息给这个窗口
+                GET_MESSAGE_INFO_ENTRY(WM_NCLBUTTONDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCLBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCLBUTTONDBLCLK, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCRBUTTONDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCRBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCRBUTTONDBLCLK, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCMBUTTONDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCMBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCMBUTTONDBLCLK, CFDefaultMsgInfo);
 
 #if(_WIN32_WINNT >= 0x0500)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCXBUTTONDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCXBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCXBUTTONDBLCLK);
+                GET_MESSAGE_INFO_ENTRY(WM_NCXBUTTONDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCXBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCXBUTTONDBLCLK, CFDefaultMsgInfo);
 #endif
 
 #if(_WIN32_WINNT >= 0x0501)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INPUT);
+                GET_MESSAGE_INFO_ENTRY(WM_INPUT, CFDefaultMsgInfo);
 #endif
-                //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_KEYFIRST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_KEYDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_KEYUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CHAR);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DEADCHAR); //当用 translatemessage 函数翻译WM_KEYUP消息时发送此消息给拥有焦点的窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SYSKEYDOWN);    //当用户按住ALT键同时按下其它键时提交此消息给拥有焦点的窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SYSKEYUP);      //当用户释放一个键同时ALT 键还按着时提交此消息给拥有焦点的窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SYSCHAR);       //当WM_SYSKEYDOWN消息被TRANSLATEMESSAGE函数翻译后提交此消息给拥有焦点的窗
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SYSDEADCHAR);   //
+                //GET_MESSAGE_INFO_ENTRY(WM_KEYFIRST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_KEYDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_KEYUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CHAR, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DEADCHAR, CFDefaultMsgInfo); //当用 translatemessage 函数翻译WM_KEYUP消息时发送此消息给拥有焦点的窗口
+                GET_MESSAGE_INFO_ENTRY(WM_SYSKEYDOWN, CFDefaultMsgInfo);    //当用户按住ALT键同时按下其它键时提交此消息给拥有焦点的窗口
+                GET_MESSAGE_INFO_ENTRY(WM_SYSKEYUP, CFDefaultMsgInfo);      //当用户释放一个键同时ALT 键还按着时提交此消息给拥有焦点的窗口
+                GET_MESSAGE_INFO_ENTRY(WM_SYSCHAR, CFDefaultMsgInfo);       //当WM_SYSKEYDOWN消息被TRANSLATEMESSAGE函数翻译后提交此消息给拥有焦点的窗
+                GET_MESSAGE_INFO_ENTRY(WM_SYSDEADCHAR, CFDefaultMsgInfo);   //
 #if(_WIN32_WINNT >= 0x0501)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_UNICHAR);
-                //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_KEYLAST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),UNICODE_NOCHAR);
+                GET_MESSAGE_INFO_ENTRY(WM_UNICHAR, CFDefaultMsgInfo);
+                //GET_MESSAGE_INFO_ENTRY(WM_KEYLAST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(UNICODE_NOCHAR, CFDefaultMsgInfo);
 #else
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_KEYLAST);
+                GET_MESSAGE_INFO_ENTRY(WM_KEYLAST, CFDefaultMsgInfo);
 #endif
 
 #if(WINVER >= 0x0400)
 #endif
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_STARTCOMPOSITION);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_ENDCOMPOSITION);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_COMPOSITION);
-                //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_KEYLAST);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_STARTCOMPOSITION, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_ENDCOMPOSITION, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_COMPOSITION, CFDefaultMsgInfo);
+                //GET_MESSAGE_INFO_ENTRY(WM_IME_KEYLAST, CFDefaultMsgInfo);
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INITDIALOG); //在一个对话框程序被显示前发送此消息给它，通常用此消息初始化控件和执行其它任务
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_COMMAND);
+                GET_MESSAGE_INFO_ENTRY(WM_INITDIALOG, CFDefaultMsgInfo); //在一个对话框程序被显示前发送此消息给它，通常用此消息初始化控件和执行其它任务
+                GET_MESSAGE_INFO_ENTRY(WM_COMMAND, CFDefaultMsgInfo);
 
                 //可用于屏蔽屏幕保护和显示器节电模式(SC_SCREENSAVE/SC_MONITORPOWER),返回0
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SYSCOMMAND);    //当用户选择窗口菜单的一条命令或当用户选择最大化或最小化时那个窗口会收到此消息
+                GET_MESSAGE_INFO_ENTRY(WM_SYSCOMMAND, CFDefaultMsgInfo);    //当用户选择窗口菜单的一条命令或当用户选择最大化或最小化时那个窗口会收到此消息
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_TIMER);     //发生了定时器事件
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_HSCROLL);   //水平滚动条产生一个滚动事件
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_VSCROLL);   //垂直滚动条产生一个滚动事件
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INITMENU);  //当一个菜单将要被激活时发送此消息，它发生在用户菜单条中的某项或按下某个菜单键，
+                GET_MESSAGE_INFO_ENTRY(WM_TIMER, CFDefaultMsgInfo);     //发生了定时器事件
+                GET_MESSAGE_INFO_ENTRY(WM_HSCROLL, CFDefaultMsgInfo);   //水平滚动条产生一个滚动事件
+                GET_MESSAGE_INFO_ENTRY(WM_VSCROLL, CFDefaultMsgInfo);   //垂直滚动条产生一个滚动事件
+                GET_MESSAGE_INFO_ENTRY(WM_INITMENU, CFDefaultMsgInfo);  //当一个菜单将要被激活时发送此消息，它发生在用户菜单条中的某项或按下某个菜单键，
                 //  它允许程序在显示前更改菜单
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INITMENUPOPUP);
+                GET_MESSAGE_INFO_ENTRY(WM_INITMENUPOPUP, CFDefaultMsgInfo);
 #ifdef WM_SYSTIMER
 #error Already define WM_SYSTIMER
 #endif 
 
 #ifndef WM_SYSTIMER
 #define WM_SYSTIMER 0x0118
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SYSTIMER);  //UnDocument Message
+                GET_MESSAGE_INFO_ENTRY(WM_SYSTIMER, CFDefaultMsgInfo);  //UnDocument Message
 #endif
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MENUSELECT); //当用户选择一条菜单项时发送此消息给菜单的所有者（一般是窗口）
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MENUCHAR);  //当菜单已被激活用户按下了某个键（不同于加速键），发送此消息给菜单的所有者
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ENTERIDLE); //当一个模态对话框或菜单进入空载状态时(处理完一条或几条先前的消息后没有消息它的列队中等待)发送此消息给它的所有者，
+                GET_MESSAGE_INFO_ENTRY(WM_MENUSELECT, CFDefaultMsgInfo); //当用户选择一条菜单项时发送此消息给菜单的所有者（一般是窗口）
+                GET_MESSAGE_INFO_ENTRY(WM_MENUCHAR, CFDefaultMsgInfo);  //当菜单已被激活用户按下了某个键（不同于加速键），发送此消息给菜单的所有者
+                GET_MESSAGE_INFO_ENTRY(WM_ENTERIDLE, CFDefaultMsgInfo); //当一个模态对话框或菜单进入空载状态时(处理完一条或几条先前的消息后没有消息它的列队中等待)发送此消息给它的所有者，
 #if(WINVER >= 0x0500)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MENURBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MENUDRAG);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MENUGETOBJECT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_UNINITMENUPOPUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MENUCOMMAND);
+                GET_MESSAGE_INFO_ENTRY(WM_MENURBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MENUDRAG, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MENUGETOBJECT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_UNINITMENUPOPUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MENUCOMMAND, CFDefaultMsgInfo);
 #  if(_WIN32_WINNT >= 0x0500)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CHANGEUISTATE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_UPDATEUISTATE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUERYUISTATE);
+                GET_MESSAGE_INFO_ENTRY(WM_CHANGEUISTATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_UPDATEUISTATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_QUERYUISTATE, CFDefaultMsgInfo);
 #  endif //_WIN32_WINNT >= 0x0500
 
 #endif //WINVER >= 0x0500
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CTLCOLORMSGBOX);    //在windows绘制消息框前发送此消息给消息框的所有者窗口，通过响应这条消息，所有者窗口可以
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORMSGBOX, CFDefaultMsgInfo);    //在windows绘制消息框前发送此消息给消息框的所有者窗口，通过响应这条消息，所有者窗口可以
                 //  通过使用给定的相关显示设备的句柄来设置消息框的文本和背景颜色
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CTLCOLOREDIT);      //当一个编辑型控件将要被绘制时发送此消息给它的父窗口 -- 可以设置编辑框的文本和背景颜色
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CTLCOLORLISTBOX);   //当一个列表框控件将要被绘制前发送此消息给它的父窗口 -- 可以设置列表框的文本和背景颜色
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CTLCOLORBTN);       //当一个按钮  控件将要被绘制时发送此消息给它的父窗口 -- 可以设置按纽的文本和背景颜色
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CTLCOLORDLG);       //当一个对话框控件将要被绘制前发送此消息给它的父窗口 -- 可以设置对话框的文本背景颜色
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CTLCOLORSCROLLBAR); //当一个滚动条控件将要被绘制时发送此消息给它的父窗口 -- 可以设置滚动条的背景颜色
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CTLCOLORSTATIC);    //当一个静态控件将要被绘制时发送此消息给它的父窗口 -- 可以设置静态控件的文本和背景颜色
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),MN_GETHMENU);
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLOREDIT, CFDefaultMsgInfo);      //当一个编辑型控件将要被绘制时发送此消息给它的父窗口 -- 可以设置编辑框的文本和背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORLISTBOX, CFDefaultMsgInfo);   //当一个列表框控件将要被绘制前发送此消息给它的父窗口 -- 可以设置列表框的文本和背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORBTN, CFDefaultMsgInfo);       //当一个按钮  控件将要被绘制时发送此消息给它的父窗口 -- 可以设置按纽的文本和背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORDLG, CFDefaultMsgInfo);       //当一个对话框控件将要被绘制前发送此消息给它的父窗口 -- 可以设置对话框的文本背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORSCROLLBAR, CFDefaultMsgInfo); //当一个滚动条控件将要被绘制时发送此消息给它的父窗口 -- 可以设置滚动条的背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORSTATIC, CFDefaultMsgInfo);    //当一个静态控件将要被绘制时发送此消息给它的父窗口 -- 可以设置静态控件的文本和背景颜色
+                GET_MESSAGE_INFO_ENTRY(MN_GETHMENU, CFDefaultMsgInfo);
 
 
-                //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSEFIRST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSEMOVE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_LBUTTONDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_LBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_LBUTTONDBLCLK);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RBUTTONDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RBUTTONDBLCLK);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MBUTTONDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MBUTTONDBLCLK);
+                //GET_MESSAGE_INFO_ENTRY(WM_MOUSEFIRST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MOUSEMOVE, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONDBLCLK, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONDBLCLK, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONDBLCLK, CFDefaultMsgInfo);
 
 #if (_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSEWHEEL);        //当鼠标轮子转动时发送此消息个当前有焦点的控件
+                GET_MESSAGE_INFO_ENTRY(WM_MOUSEWHEEL, CFDefaultMsgInfo);        //当鼠标轮子转动时发送此消息个当前有焦点的控件
 #endif
 
 #if (_WIN32_WINNT >= 0x0500)                
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_XBUTTONDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_XBUTTONUP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_XBUTTONDBLCLK);
+                GET_MESSAGE_INFO_ENTRY(WM_XBUTTONDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_XBUTTONUP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_XBUTTONDBLCLK, CFDefaultMsgInfo);
 #endif
 
 #if (_WIN32_WINNT >= 0x0600)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSEHWHEEL);
+                GET_MESSAGE_INFO_ENTRY(WM_MOUSEHWHEEL, CFDefaultMsgInfo);
 #endif
-                //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSELAST);
+                //GET_MESSAGE_INFO_ENTRY(WM_MOUSELAST, CFDefaultMsgInfo);
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PARENTNOTIFY); //当MDI子窗口被创建或被销毁，或用户按了一下鼠标键而光标在子窗口上时发送此消息给它的父窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ENTERMENULOOP); //发送此消息通知应用程序的主窗口 已经进入了菜单循环模式 -- ?
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_EXITMENULOOP);  //发送此消息通知应用程序的主窗口 已经退出了菜单循环模式 -- ?
+                GET_MESSAGE_INFO_ENTRY(WM_PARENTNOTIFY, CFDefaultMsgInfo); //当MDI子窗口被创建或被销毁，或用户按了一下鼠标键而光标在子窗口上时发送此消息给它的父窗口
+                GET_MESSAGE_INFO_ENTRY(WM_ENTERMENULOOP, CFDefaultMsgInfo); //发送此消息通知应用程序的主窗口 已经进入了菜单循环模式 -- ?
+                GET_MESSAGE_INFO_ENTRY(WM_EXITMENULOOP, CFDefaultMsgInfo);  //发送此消息通知应用程序的主窗口 已经退出了菜单循环模式 -- ?
 
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NEXTMENU);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SIZING);        //当用户正在调整窗口大小时发送此消息给窗口；通过此消息应用程序可以监视和修改窗口大小和位置
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CAPTURECHANGED);//窗口失去捕获的鼠标时
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOVING);        //当用户在移动窗口时发送此消息
+                GET_MESSAGE_INFO_ENTRY(WM_NEXTMENU, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SIZING, CFDefaultMsgInfo);        //当用户正在调整窗口大小时发送此消息给窗口；通过此消息应用程序可以监视和修改窗口大小和位置
+                GET_MESSAGE_INFO_ENTRY(WM_CAPTURECHANGED, CFDefaultMsgInfo);//窗口失去捕获的鼠标时
+                GET_MESSAGE_INFO_ENTRY(WM_MOVING, CFDefaultMsgInfo);        //当用户在移动窗口时发送此消息
 #endif
 
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_POWERBROADCAST);//送给应用程序来通知它有关电源管理事件
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DEVICECHANGE);  //当设备的硬件配置改变时发送此消息给应用程序或设备驱动程序
+                GET_MESSAGE_INFO_ENTRY(WM_POWERBROADCAST, CFDefaultMsgInfo);//送给应用程序来通知它有关电源管理事件
+                GET_MESSAGE_INFO_ENTRY(WM_DEVICECHANGE, CFDefaultMsgInfo);  //当设备的硬件配置改变时发送此消息给应用程序或设备驱动程序
 #endif
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDICREATE);     //要求创建一个MDI 子窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDIDESTROY);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDIACTIVATE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDIRESTORE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDINEXT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDIMAXIMIZE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDITILE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDICASCADE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDIICONARRANGE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDIGETACTIVE);
+                GET_MESSAGE_INFO_ENTRY(WM_MDICREATE, CFDefaultMsgInfo);     //要求创建一个MDI 子窗口
+                GET_MESSAGE_INFO_ENTRY(WM_MDIDESTROY, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDIACTIVATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDIRESTORE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDINEXT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDIMAXIMIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDITILE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDICASCADE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDIICONARRANGE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDIGETACTIVE, CFDefaultMsgInfo);
 
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDISETMENU);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ENTERSIZEMOVE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_EXITSIZEMOVE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DROPFILES);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MDIREFRESHMENU);
+                GET_MESSAGE_INFO_ENTRY(WM_MDISETMENU, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_ENTERSIZEMOVE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_EXITSIZEMOVE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DROPFILES, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MDIREFRESHMENU, CFDefaultMsgInfo);
 
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_SETCONTEXT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_NOTIFY);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_CONTROL);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_COMPOSITIONFULL);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_SELECT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_CHAR);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_SETCONTEXT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_NOTIFY, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_CONTROL, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_COMPOSITIONFULL, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_SELECT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_CHAR, CFDefaultMsgInfo);
 #endif
 
 #if(WINVER >= 0x0500)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_REQUEST);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_REQUEST, CFDefaultMsgInfo);
 #endif
 
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_KEYDOWN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IME_KEYUP);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_KEYDOWN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_KEYUP, CFDefaultMsgInfo);
 #endif
 
 #if((_WIN32_WINNT >= 0x0400) || (WINVER >= 0x0500))
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSEHOVER); //
+                GET_MESSAGE_INFO_ENTRY(WM_MOUSEHOVER, CFDefaultMsgInfo); //
 
 				//默认情况下，鼠标移开消息是不会发送的，需要通过 TrackMouseEvent( {TME_LEAVE|TME_CANCEL } 注册
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_MOUSELEAVE); //鼠标移开时，需要用 ON_MESSAGE 响应
+                GET_MESSAGE_INFO_ENTRY(WM_MOUSELEAVE, CFDefaultMsgInfo); //鼠标移开时，需要用 ON_MESSAGE 响应
 #endif
 
 #if(WINVER >= 0x0500)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCMOUSEHOVER);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_NCMOUSELEAVE);
+                GET_MESSAGE_INFO_ENTRY(WM_NCMOUSEHOVER, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_NCMOUSELEAVE, CFDefaultMsgInfo);
 #endif
 
 
 #if(_WIN32_WINNT >= 0x0501)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_WTSSESSION_CHANGE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_TABLET_FIRST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_TABLET_LAST);
+                GET_MESSAGE_INFO_ENTRY(WM_WTSSESSION_CHANGE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_TABLET_FIRST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_TABLET_LAST, CFDefaultMsgInfo);
 #endif
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CUT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_COPY);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PASTE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CLEAR);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_UNDO);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RENDERFORMAT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RENDERALLFORMATS);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DESTROYCLIPBOARD);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DRAWCLIPBOARD); //当剪贴板的内容变化时发送此消息给剪贴板观察链的第一个窗口；它允许用剪贴板观察窗口来显示剪贴板的新内容
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PAINTCLIPBOARD);//当剪贴板包含CF_OWNERDIPLAY格式的数据并且剪贴板观察窗口的客户区需要重画
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_VSCROLLCLIPBOARD);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SIZECLIPBOARD);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ASKCBFORMATNAME);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CHANGECBCHAIN); //当一个窗口从剪贴板观察链中移去时发送此消息给剪贴板观察链的第一个窗口
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_HSCROLLCLIPBOARD);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUERYNEWPALETTE);   //此消息能使窗口在收到焦点时同时有机会实现他的逻辑调色板
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PALETTEISCHANGING);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PALETTECHANGED);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_HOTKEY);        //当用户按下由REGISTERHOTKEY函数注册的热键时提交此消息
+                GET_MESSAGE_INFO_ENTRY(WM_CUT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_COPY, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_PASTE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CLEAR, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_UNDO, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RENDERFORMAT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RENDERALLFORMATS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DESTROYCLIPBOARD, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DRAWCLIPBOARD, CFDefaultMsgInfo); //当剪贴板的内容变化时发送此消息给剪贴板观察链的第一个窗口；它允许用剪贴板观察窗口来显示剪贴板的新内容
+                GET_MESSAGE_INFO_ENTRY(WM_PAINTCLIPBOARD, CFDefaultMsgInfo);//当剪贴板包含CF_OWNERDIPLAY格式的数据并且剪贴板观察窗口的客户区需要重画
+                GET_MESSAGE_INFO_ENTRY(WM_VSCROLLCLIPBOARD, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SIZECLIPBOARD, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_ASKCBFORMATNAME, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CHANGECBCHAIN, CFDefaultMsgInfo); //当一个窗口从剪贴板观察链中移去时发送此消息给剪贴板观察链的第一个窗口
+                GET_MESSAGE_INFO_ENTRY(WM_HSCROLLCLIPBOARD, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_QUERYNEWPALETTE, CFDefaultMsgInfo);   //此消息能使窗口在收到焦点时同时有机会实现他的逻辑调色板
+                GET_MESSAGE_INFO_ENTRY(WM_PALETTEISCHANGING, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_PALETTECHANGED, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_HOTKEY, CFDefaultMsgInfo);        //当用户按下由REGISTERHOTKEY函数注册的热键时提交此消息
 
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PRINT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PRINTCLIENT);
+                GET_MESSAGE_INFO_ENTRY(WM_PRINT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_PRINTCLIENT, CFDefaultMsgInfo);
 #endif
 
 #if(_WIN32_WINNT >= 0x0500)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_APPCOMMAND);
+                GET_MESSAGE_INFO_ENTRY(WM_APPCOMMAND, CFDefaultMsgInfo);
 #endif
 
 #if(_WIN32_WINNT >= 0x0501)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_THEMECHANGED);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_CLIPBOARDUPDATE); // 0x031D          
+                GET_MESSAGE_INFO_ENTRY(WM_THEMECHANGED, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CLIPBOARDUPDATE, CFDefaultMsgInfo); // 0x031D          
 #endif /* _WIN32_WINNT >= 0x0501 */
 
 #if(_WIN32_WINNT >= 0x0600)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DWMCOMPOSITIONCHANGED);          //0x031E
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DWMNCRENDERINGCHANGED);          //0x031F
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DWMCOLORIZATIONCOLORCHANGED);    //0x0320
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DWMWINDOWMAXIMIZEDCHANGE);       //0x0321
+                GET_MESSAGE_INFO_ENTRY(WM_DWMCOMPOSITIONCHANGED, CFDefaultMsgInfo);          //0x031E
+                GET_MESSAGE_INFO_ENTRY(WM_DWMNCRENDERINGCHANGED, CFDefaultMsgInfo);          //0x031F
+                GET_MESSAGE_INFO_ENTRY(WM_DWMCOLORIZATIONCOLORCHANGED, CFDefaultMsgInfo);    //0x0320
+                GET_MESSAGE_INFO_ENTRY(WM_DWMWINDOWMAXIMIZEDCHANGE, CFDefaultMsgInfo);       //0x0321
 #endif /* _WIN32_WINNT >= 0x0600 */
 
 #if(WINVER >= 0x0600)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_GETTITLEBARINFOEX);              //0x033F
+                GET_MESSAGE_INFO_ENTRY(WM_GETTITLEBARINFOEX, CFDefaultMsgInfo);              //0x033F
 #endif /* WINVER >= 0x0600 */
 
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_HANDHELDFIRST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_HANDHELDLAST);
+                GET_MESSAGE_INFO_ENTRY(WM_HANDHELDFIRST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_HANDHELDLAST, CFDefaultMsgInfo);
 #ifdef __AFXPRIV_H__
                 //#  ifdef USING_MFC
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUERYAFXWNDPROC);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SIZEPARENT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SETMESSAGESTRING);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_IDLEUPDATECMDUI);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_INITIALUPDATE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_COMMANDHELP);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_HELPHITTEST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_EXITHELPMODE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RECALCPARENT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SIZECHILD);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_KICKIDLE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUERYCENTERWND);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DISABLEMODAL);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_FLOATSTATUS);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_ACTIVATETOPLEVEL);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RESERVED_036F);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RESERVED_0370);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RESERVED_0371);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RESERVED_0372);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SOCKET_NOTIFY);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_SOCKET_DEAD);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_POPMESSAGESTRING);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_HELPPROMPTADDR);
-                //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_OCC_LOADFROMSTREAM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_OCC_LOADFROMSTORAGE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_OCC_INITNEW);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_OCC_LOADFROMSTREAM_EX);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_OCC_LOADFROMSTORAGE_EX);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_QUEUE_SENTINEL);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RESERVED_037C);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RESERVED_037D);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_RESERVED_037E);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_FORWARDMSG);
+                GET_MESSAGE_INFO_ENTRY(WM_QUERYAFXWNDPROC, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SIZEPARENT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SETMESSAGESTRING, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IDLEUPDATECMDUI, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_INITIALUPDATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_COMMANDHELP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_HELPHITTEST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_EXITHELPMODE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RECALCPARENT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SIZECHILD, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_KICKIDLE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_QUERYCENTERWND, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DISABLEMODAL, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_FLOATSTATUS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_ACTIVATETOPLEVEL, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RESERVED_036F, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RESERVED_0370, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RESERVED_0371, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RESERVED_0372, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SOCKET_NOTIFY, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SOCKET_DEAD, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_POPMESSAGESTRING, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_HELPPROMPTADDR, CFDefaultMsgInfo);
+                //GET_MESSAGE_INFO_ENTRY(WM_OCC_LOADFROMSTREAM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_OCC_LOADFROMSTORAGE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_OCC_INITNEW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_OCC_LOADFROMSTREAM_EX, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_OCC_LOADFROMSTORAGE_EX, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_QUEUE_SENTINEL, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RESERVED_037C, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RESERVED_037D, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RESERVED_037E, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_FORWARDMSG, CFDefaultMsgInfo);
 #  else
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_AFXFIRST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_AFXLAST);
+                GET_MESSAGE_INFO_ENTRY(WM_AFXFIRST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_AFXLAST, CFDefaultMsgInfo);
 
 #  endif //end __AFXPRIV_H__
 
 #endif
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PENWINFIRST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_PENWINLAST);
+                GET_MESSAGE_INFO_ENTRY(WM_PENWINFIRST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_PENWINLAST, CFDefaultMsgInfo);
 #  ifdef _DDEHEADER_INCLUDED_
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_INITIATE);  //一个DDE客户程序提交此消息开始一个与服务器程序的会话来响应那个指定的程序和主题名
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_TERMINATE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_ADVISE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_UNADVISE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_ACK);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_DATA);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_REQUEST);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_POKE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_EXECUTE);
-                //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_DDE_LAST);
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_INITIATE, CFDefaultMsgInfo);  //一个DDE客户程序提交此消息开始一个与服务器程序的会话来响应那个指定的程序和主题名
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_TERMINATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_ADVISE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_UNADVISE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_ACK, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_DATA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_REQUEST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_POKE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DDE_EXECUTE, CFDefaultMsgInfo);
+                //GET_MESSAGE_INFO_ENTRY(WM_DDE_LAST, CFDefaultMsgInfo);
 #  endif
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),WM_APP);
+                GET_MESSAGE_INFO_ENTRY(WM_APP, CFDefaultMsgInfo);
 #endif
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DM_GETDEFID);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DM_SETDEFID);
+                GET_MESSAGE_INFO_ENTRY(DM_GETDEFID, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(DM_SETDEFID, CFDefaultMsgInfo);
 #if(WINVER >= 0x0400)
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DM_REPOSITION);
+                GET_MESSAGE_INFO_ENTRY(DM_REPOSITION, CFDefaultMsgInfo);
 #endif
 
 				//Edit Control Messages
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETRECT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETRECT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETRECTNP);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SCROLL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LINESCROLL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SCROLLCARET);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETMODIFY);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETMODIFY);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETLINECOUNT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LINEINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETHANDLE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETHANDLE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETTHUMB);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LINELENGTH);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_REPLACESEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETLINE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LIMITTEXT); //EM_SETLIMITTEXT
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_CANUNDO);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_UNDO);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_FMTLINES);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_LINEFROMCHAR);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETTABSTOPS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETPASSWORDCHAR);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_EMPTYUNDOBUFFER);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETFIRSTVISIBLELINE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETREADONLY);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETWORDBREAKPROC);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETWORDBREAKPROC);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETPASSWORDCHAR);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETMARGINS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETMARGINS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETLIMITTEXT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_POSFROMCHAR);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_CHARFROMPOS);
+				GET_MESSAGE_INFO_ENTRY(EM_GETSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETRECT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETRECT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETRECTNP, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SCROLL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_LINESCROLL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SCROLLCARET, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETMODIFY, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETMODIFY, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETLINECOUNT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_LINEINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETHANDLE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETHANDLE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETTHUMB, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_LINELENGTH, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_REPLACESEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETLINE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_LIMITTEXT, CFDefaultMsgInfo); //EM_SETLIMITTEXT
+				GET_MESSAGE_INFO_ENTRY(EM_CANUNDO, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_UNDO, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_FMTLINES, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_LINEFROMCHAR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETTABSTOPS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETPASSWORDCHAR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_EMPTYUNDOBUFFER, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETFIRSTVISIBLELINE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETREADONLY, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETWORDBREAKPROC, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETWORDBREAKPROC, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETPASSWORDCHAR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_SETMARGINS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETMARGINS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETLIMITTEXT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_POSFROMCHAR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_CHARFROMPOS, CFDefaultMsgInfo);
 #if(WINVER >= 0x0500)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_SETIMESTATUS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EM_GETIMESTATUS);
+				GET_MESSAGE_INFO_ENTRY(EM_SETIMESTATUS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETIMESTATUS, CFDefaultMsgInfo);
 #endif /* WINVER >= 0x0500 */
 
 				//Button Control Messages
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_GETCHECK);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETCHECK);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_GETSTATE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETSTATE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETSTYLE);
+				GET_MESSAGE_INFO_ENTRY(BM_GETCHECK, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BM_SETCHECK, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BM_GETSTATE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BM_SETSTATE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BM_SETSTYLE, CFDefaultMsgInfo);
 #if(WINVER >= 0x0400)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_CLICK);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_GETIMAGE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETIMAGE);
+				GET_MESSAGE_INFO_ENTRY(BM_CLICK, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BM_GETIMAGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BM_SETIMAGE, CFDefaultMsgInfo);
 #endif /* WINVER >= 0x0400 */
 
 #if(WINVER >= 0x0600)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),BM_SETDONTCLICK);
+				GET_MESSAGE_INFO_ENTRY(BM_SETDONTCLICK, CFDefaultMsgInfo);
 #endif /* WINVER >= 0x0600 */
 
 				//Listbox messages
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_ADDSTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_INSERTSTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_DELETESTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SELITEMRANGEEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_RESETCONTENT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETCURSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETCURSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETTEXT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETTEXTLEN);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETCOUNT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SELECTSTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_DIR);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETTOPINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_FINDSTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETSELCOUNT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETSELITEMS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETTABSTOPS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETHORIZONTALEXTENT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETHORIZONTALEXTENT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETCOLUMNWIDTH);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_ADDFILE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETTOPINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETITEMRECT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETITEMDATA);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETITEMDATA);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SELITEMRANGE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETANCHORINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETANCHORINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETCARETINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETCARETINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETITEMHEIGHT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETITEMHEIGHT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_FINDSTRINGEXACT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETLOCALE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETLOCALE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_SETCOUNT);
+				GET_MESSAGE_INFO_ENTRY(LB_ADDSTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_INSERTSTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_DELETESTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SELITEMRANGEEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_RESETCONTENT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETCURSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETCURSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETTEXT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETTEXTLEN, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETCOUNT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SELECTSTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_DIR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETTOPINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_FINDSTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETSELCOUNT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETSELITEMS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETTABSTOPS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETHORIZONTALEXTENT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETHORIZONTALEXTENT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETCOLUMNWIDTH, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_ADDFILE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETTOPINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETITEMRECT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETITEMDATA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETITEMDATA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SELITEMRANGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETANCHORINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETANCHORINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETCARETINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETCARETINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETITEMHEIGHT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETITEMHEIGHT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_FINDSTRINGEXACT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETLOCALE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_GETLOCALE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_SETCOUNT, CFDefaultMsgInfo);
 #if(WINVER >= 0x0400)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_INITSTORAGE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_ITEMFROMPOINT);
+				GET_MESSAGE_INFO_ENTRY(LB_INITSTORAGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LB_ITEMFROMPOINT, CFDefaultMsgInfo);
 #endif /* WINVER >= 0x0400 */
 
 #if(_WIN32_WCE >= 0x0400)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_MULTIPLEADDSTRING);
+				GET_MESSAGE_INFO_ENTRY(LB_MULTIPLEADDSTRING, CFDefaultMsgInfo);
 #endif //_WIN32_WCE >= 0x0400
 
 #if(_WIN32_WINNT >= 0x0501)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_GETLISTBOXINFO);
+				GET_MESSAGE_INFO_ENTRY(LB_GETLISTBOXINFO, CFDefaultMsgInfo);
 #endif /* _WIN32_WINNT >= 0x0501 */
 
 //#if(_WIN32_WINNT >= 0x0501)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),LB_MSGMAX);
+				GET_MESSAGE_INFO_ENTRY(LB_MSGMAX, CFDefaultMsgInfo);
 //#endif //_WIN32_WINNT
 
 				//Combo Box messages
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETEDITSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_LIMITTEXT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETEDITSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_ADDSTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_DELETESTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_DIR);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETCOUNT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETCURSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETLBTEXT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETLBTEXTLEN);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_INSERTSTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_RESETCONTENT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_FINDSTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SELECTSTRING);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETCURSEL);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SHOWDROPDOWN);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETITEMDATA);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETITEMDATA);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETDROPPEDCONTROLRECT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETITEMHEIGHT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETITEMHEIGHT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETEXTENDEDUI);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETEXTENDEDUI);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETDROPPEDSTATE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_FINDSTRINGEXACT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETLOCALE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETLOCALE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETTOPINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETTOPINDEX);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETHORIZONTALEXTENT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETHORIZONTALEXTENT);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETDROPPEDWIDTH);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_SETDROPPEDWIDTH);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_INITSTORAGE);
+				GET_MESSAGE_INFO_ENTRY(CB_GETEDITSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_LIMITTEXT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETEDITSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_ADDSTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_DELETESTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_DIR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETCOUNT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETCURSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETLBTEXT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETLBTEXTLEN, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_INSERTSTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_RESETCONTENT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_FINDSTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SELECTSTRING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETCURSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SHOWDROPDOWN, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETITEMDATA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETITEMDATA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETDROPPEDCONTROLRECT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETITEMHEIGHT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETITEMHEIGHT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETEXTENDEDUI, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETEXTENDEDUI, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETDROPPEDSTATE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_FINDSTRINGEXACT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETLOCALE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETLOCALE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETTOPINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETTOPINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETHORIZONTALEXTENT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETHORIZONTALEXTENT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_GETDROPPEDWIDTH, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_SETDROPPEDWIDTH, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_INITSTORAGE, CFDefaultMsgInfo);
 #if(_WIN32_WCE >= 0x0400)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_MULTIPLEADDSTRING);
+				GET_MESSAGE_INFO_ENTRY(CB_MULTIPLEADDSTRING, CFDefaultMsgInfo);
 #endif //_WIN32_WCE >= 0x0400
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_GETCOMBOBOXINFO);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),CB_MSGMAX);
+				GET_MESSAGE_INFO_ENTRY(CB_GETCOMBOBOXINFO, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(CB_MSGMAX, CFDefaultMsgInfo);
 
 				//Scroll bar messages
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_SETPOS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETPOS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_SETRANGE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_SETRANGEREDRAW);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETRANGE);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_ENABLE_ARROWS);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_SETSCROLLINFO);
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETSCROLLINFO);
+				GET_MESSAGE_INFO_ENTRY(SBM_SETPOS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(SBM_GETPOS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(SBM_SETRANGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(SBM_SETRANGEREDRAW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(SBM_GETRANGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(SBM_ENABLE_ARROWS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(SBM_SETSCROLLINFO, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(SBM_GETSCROLLINFO, CFDefaultMsgInfo);
 
 #if(_WIN32_WINNT >= 0x0501)
-				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),SBM_GETSCROLLBARINFO);
+				GET_MESSAGE_INFO_ENTRY(SBM_GETSCROLLBARINFO, CFDefaultMsgInfo);
 #endif /* _WIN32_WINNT >= 0x0501 */
 
                 //Reflected Window Message IDs
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_COMMAND);
+                GET_MESSAGE_INFO_ENTRY(OCM_COMMAND, CFDefaultMsgInfo);
 
 #ifdef _WIN32
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORBTN);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLOREDIT);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORDLG);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORLISTBOX);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORMSGBOX);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORSCROLLBAR);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLORSTATIC);
+                GET_MESSAGE_INFO_ENTRY(OCM_CTLCOLORBTN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_CTLCOLOREDIT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_CTLCOLORDLG, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_CTLCOLORLISTBOX, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_CTLCOLORMSGBOX, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_CTLCOLORSCROLLBAR, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_CTLCOLORSTATIC, CFDefaultMsgInfo);
 #else 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CTLCOLOR);
+                GET_MESSAGE_INFO_ENTRY(OCM_CTLCOLOR, CFDefaultMsgInfo);
 #endif //ifndef _WIN32
 
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_DRAWITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_MEASUREITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_DELETEITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_VKEYTOITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_CHARTOITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_COMPAREITEM);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_HSCROLL);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_VSCROLL);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_PARENTNOTIFY);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),OCM_NOTIFY);
-				//HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),XXXXXXXXXXXXXXXXX);
+                GET_MESSAGE_INFO_ENTRY(OCM_DRAWITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_MEASUREITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_DELETEITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_VKEYTOITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_CHARTOITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_COMPAREITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_HSCROLL, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_VSCROLL, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_PARENTNOTIFY, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_NOTIFY, CFDefaultMsgInfo);
+				//GET_MESSAGE_INFO_ENTRY(XXXXXXXXXXXXXXXXX, CFDefaultMsgInfo);
             default:
 				if (m_Info >= WM_USER && m_Info <= 0x7FFF)
 				{

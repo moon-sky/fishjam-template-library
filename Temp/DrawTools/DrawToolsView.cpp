@@ -84,3 +84,9 @@ void CDrawToolsView::_RefreshDrawCanvasInfo()
 	strObjectSize.Format(TEXT("Objects:%d"), m_allObjects.size());
 	GetParent().SetWindowText(strObjectSize);
 }
+
+BOOL CDrawToolsView::OnEraseBkgnd(CDCHandle dc)
+{
+	//SetMsgHandled(FALSE);
+	return FALSE;
+}

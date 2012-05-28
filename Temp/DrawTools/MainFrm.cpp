@@ -8,6 +8,7 @@
 #include "aboutdlg.h"
 #include "DrawToolsView.h"
 #include "MainFrm.h"
+#include <atldlgs.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
@@ -105,8 +106,11 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	CAboutDlg dlg;
-	dlg.DoModal();
+	//CAboutDlg dlg;
+	//dlg.DoModal();
+	HRESULT hr = E_FAIL;
+	TCHAR buf[5];
+	COM_VERIFY(StringCchCopy(buf, _countof(buf), TEXT("fishjam")));
 	return 0;
 }
 
@@ -130,13 +134,23 @@ LRESULT CMainFrame::OnToolText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT CMainFrame::OnEditFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
+	HRESULT hr = E_FAIL;
 	if (m_view.GetSelection().size() > 0)
 	{
 		CTextObject* pTextObject = dynamic_cast<CTextObject*>(m_view.GetSelection().front());
 		if (pTextObject)
 		{
-			LOGFONT logFont = {0};
-			pTextObject->m_pRichEditPanel->SetTextFont(0, 0, &logFont);
+			LOGFONT		defaultFont = {0};
+			StringCchCopy(defaultFont.lfFaceName, _countof(defaultFont.lfFaceName), TEXT("Times New Roman"));
+			defaultFont.lfHeight = 18;
+
+			//HFONT hDefaultFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
+			CFontDialog dlg;
+			dlg.DoModal();
+			
+			COM_VERIFY(pTextObject->GetRichEditPanel()->SetTextFont(0, 0, dlg.m_cf.lpLogFont , 0xFFFFFFFF));
+
+			COM_VERIFY(pTextObject->GetRichEditPanel()->SetTextForeColor(0, 0, dlg.m_cf.rgbColors));
 		}
 	}
 	return 0;

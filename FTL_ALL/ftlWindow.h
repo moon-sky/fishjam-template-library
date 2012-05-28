@@ -275,10 +275,13 @@ namespace FTL
 #define DUMP_FILTER_PAINT					((DWORD)(0x0008L))
 #define DUMP_FILTER_IDLE					((DWORD)(0x0010L))
 
+#define DUMP_FILTER_KEYDOWN					((DWORD)(0x0100L))
+
 #define DUMP_FILTER_TIMER                   ((DWORD)(0x1000L))
 
 #define DEFAULT_DUMP_FILTER_MESSAGE \
     DUMP_FILTER_MOUSE_MOVE\
+	|DUMP_FILTER_KEYDOWN\
     |DUMP_FILTER_NCHITTEST\
     |DUMP_FILTER_SETCURSOR\
 	|DUMP_FILTER_PAINT\
@@ -309,6 +312,10 @@ namespace FTL
 		{\
 			bFilterd = (WM_ENTERIDLE == uMsg) ? TRUE : bFilterd;\
 		}\
+		if( (filters) & DUMP_FILTER_KEYDOWN)\
+		{\
+			bFilterd = (WM_KEYDOWN == uMsg) ? TRUE : bFilterd; \
+		}\
         if( (filters) & DUMP_FILTER_TIMER )\
         {\
             bFilterd = (WM_TIMER == uMsg || WM_SYSTIMER == uMsg) ? TRUE : bFilterd;\
@@ -329,7 +336,7 @@ namespace FTL
 	class CFRegistedMessageInfo
 	{
 	public:
-		BOOL Init();
+		FTLINLINE BOOL Init();
 
 		FTLINLINE explicit CFRegistedMessageInfo();
 		FTLINLINE virtual LPCTSTR GetMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam);

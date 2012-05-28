@@ -33,6 +33,8 @@ namespace FTL
 
 		//tomeTrue 或 tomFalse
 		FTLINLINE static LPCTSTR GetRichEditTomBoolString(long nValue);
+
+		//获取Story的类型（MainText、Comments、Footnotes 等)
 		FTLINLINE static LPCTSTR GetRichEditStoryTypeString(long nStoryType);
 		FTLINLINE static LPCTSTR GetRichEditAnimationTypeString(long nAnimation);
 		FTLINLINE static LPCTSTR GetRichEditUnderLineStyleString(long nUnderLine);
@@ -82,7 +84,7 @@ namespace FTL
 		LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
 			m_tooltip.Create(m_hWnd);
-			CToolInfo ti(0, m_hWnd, m_nToolTipID, &rcClient, NULL);
+			//CToolInfo ti(0, m_hWnd, m_nToolTipID, &rcClient, NULL);
 			//DrawText 的 DT_CALCRECT 可计算Rect的返回值，确认是否要 Tooltip::UpdateTipText 和 Active
 			//后期可用 DT_PATH_ELLIPSIS 绘制，
 			//父窗体处理鼠标消息，给 Tooltip 处理： if(m_tooltip.IsWindow()) { m_tooltip.RelayEvent(...); }

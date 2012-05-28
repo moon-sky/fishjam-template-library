@@ -297,6 +297,11 @@
 #  endif
 #endif //NTDDI_VERSION
 
+//各种库的版本
+#ifdef _RICHEDIT_VER
+#  pragma message( "  _RICHEDIT_VER = " QQUOTE(_RICHEDIT_VER) )
+#endif 
+
 //判断使用的各种库：如MFC、ATL、WTL等
 #ifdef __AFX_H__
 #  pragma message( "  Use MFC, _MFC_VER = " QQUOTE(_MFC_VER) )

@@ -1,4 +1,6 @@
 #pragma once
+
+#include "DrawTypeDefine.h"
 #include "DrawObject.h"
 #include "RichEditPanel.h"
 
@@ -8,7 +10,7 @@ class CTextObject
 {
 public:
 	CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType);
-	~CTextObject();
+	virtual ~CTextObject();
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg)
 	{
@@ -19,13 +21,19 @@ public:
 		return FALSE;
 	}
 
-	// Implementation
 public:
 	virtual void Draw(HDC hDC, BOOL bOriginal);
 	virtual void MoveHandleTo(int nHandle, CPoint point);
 	virtual CDrawObject* Clone();
 	virtual void SetActive(BOOL bActive);
+	virtual void MoveTo(const CRect& position);
 
-public:
+	CRichEditPanel* GetRichEditPanel()
+	{
+		FTLASSERT(m_pRichEditPanel);
+		return m_pRichEditPanel;
+	}
+protected:
 	CRichEditPanel*	m_pRichEditPanel;	
 };
+

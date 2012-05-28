@@ -88,7 +88,8 @@ namespace FTL
                     fontInfo.lfWidth,           //字体平均宽度的逻辑值,为0时,会自动选择一个与高度最匹配的值
                     fontInfo.lfEscapement,      //字符串底线与水平线的夹角(单位为0.1度)
                     fontInfo.lfOrientation,     //每个字符的底线与水平线的夹角（单位为0.1度）
-                    fontInfo.lfWeight,          //字体的粗细,单位为千分比，取值范围为0(默认)~1000(全黑),有 FW_THIN 等宏
+                    fontInfo.lfWeight,          //字体的粗细,单位为千分比，取值范围为0(DONTCARE)~1000(全黑),
+												//如果为 FW_BOLD(700), 就是默认的粗体字, 系统默认的是 FW_NORMAL(400)
                     fontInfo.lfItalic,          //TRUE则字体为斜体字
                     fontInfo.lfUnderline,       //TRUE则字体带下划线
                     fontInfo.lfStrikeOut,       //TRUE则字体带删除线

@@ -115,7 +115,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 /*****************************************************************************************************
 * 绘图性能(避免闪烁 -- flick)
 *   1.只绘制一次
-*   2.WM_ERASEBKGND -- 直接返回TRUE，不清除背景色
+*   2.WM_ERASEBKGND -- 在WTL中，处理该消息后，似乎无论返回TRUE或FALSE，都不会闪烁？(只要不调用系统默认的处理即可)
 *   3.不要绘制不需要的(Clip) -- Windows会自动剪切掉外面的？测试Invalidate后绘制到外面？怎么测试的？忘了
 *     GetClipBox -- 始终和 PAINTSTRUCT::rcPaint 一致
 *     GetUpdateRgn --
@@ -468,7 +468,7 @@ namespace FTL
         int     m_nDeviceCapsPhysicalHeight;    //(PHYSICALHEIGHT), 如 0
         int     m_nDeviceCapsPhysicalOffsetX;   //(PHYSICALOFFSETX), 如 0
         int     m_nDeviceCapsPhysicalOffsetY;   //(PHYSICALOFFSETY), 如 0
-        int     m_nDeviceCapsVRefresh;          //(VREFRESH), 如 60
+        int     m_nDeviceCapsVRefresh;          //(垂直刷新率), 如 60
         int     m_nDeviceCapsScalingFactorX;    //(SCALINGFACTORX), 如 0
         int     m_nDeviceCapsScalingFactorY;    //(SCALINGFACTORY), 如 0
         int     m_nDeviceCapsBltAlignment;      //(BLTALIGNMENT), 如 0

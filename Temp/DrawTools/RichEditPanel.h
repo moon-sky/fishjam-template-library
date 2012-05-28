@@ -6,6 +6,19 @@
 
 typedef void (* PNOTIFY_CALLBACK)(int iNotify, void* pParam);
 
+#define RICH_EDIT_PANEL_FONT_MASK_NAME		(DWORD)(0x00000001)
+#define RICH_EDIT_PANEL_FONT_MASK_SIZE		(DWORD)(0x00000002)
+#define RICH_EDIT_PANEL_FONT_MASK_BOLD		(DWORD)(0x00000004)
+#define RICH_EDIT_PANEL_FONT_MASK_ITALIC	(DWORD)(0x00000008)
+#define RICH_EDIT_PANEL_FONT_MASK_UNDERLINE	(DWORD)(0x00000010)
+//#define RICH_EDIT_PANEL_FONT_MASK_WEIGHT	(DWORD)(0x00000080)
+
+#define RICH_EDIT_PANEL_FONT_MASK_ALL		\
+	RICH_EDIT_PANEL_FONT_MASK_NAME | RICH_EDIT_PANEL_FONT_MASK_SIZE|RICH_EDIT_PANEL_FONT_MASK_BOLD\
+	| RICH_EDIT_PANEL_FONT_MASK_ITALIC | RICH_EDIT_PANEL_FONT_MASK_UNDERLINE
+	
+	
+
 class CRichEditPanel
 	: public ITextHost
 	, public CMessageFilter
@@ -13,18 +26,23 @@ class CRichEditPanel
 public:
 	CRichEditPanel();
 	~CRichEditPanel();
-	BOOL Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBACK pNotifyCallback = NULL);
+	HRESULT Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBACK pNotifyCallback = NULL);
 	BOOL SetActive(BOOL bActive);
 	BOOL IsActive();
 
-	HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont);
-	HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont);
+	//dwFontMask see RICH_EDIT_PANEL_FONT_MASK_XXXX
+	HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask);
+	HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask);
+
+	
+	//if clr is COLORREF(-1), then will be tomAutoColor
+	HRESULT SetTextForeColor(long nStart, long nEnd, COLORREF clr);
+	HRESULT SetTextBackColor(long nStart, long nEnd, COLORREF clr);
 
 	HRESULT GetTextStream(long nStart, long nEnd, IStream** ppStream);
 	HRESULT SetTextStream(long nStart, long nEnd, IStream* pStream);
 
 	void DoPaint(CDCHandle dcParent);
-
 
 	HRESULT GetTextServices(ITextServices** ppTextServices)
 	{
@@ -77,10 +95,12 @@ public:
 	HRESULT OnTxInPlaceDeactivate();
 
 	BEGIN_MSG_MAP_EX(CRichEditPanel)
-		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, OnLButtonDblClk)
-		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
-		MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
-		MESSAGE_HANDLER(WM_CHAR, OnChar)
+		//MESSAGE_HANDLER(WM_LBUTTONDBLCLK, OnLButtonDblClk)
+		//MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
+		//MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
+		//MESSAGE_HANDLER(WM_CHAR, OnChar)
+		MESSAGE_RANGE_HANDLER(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseMessageHandler)
+		MESSAGE_RANGE_HANDLER(WM_KEYFIRST, WM_KEYLAST, OnKeyMessageHandler)
 	END_MSG_MAP()
 
 	//BEGIN_COM_MAP(CRichEditPanel)
@@ -138,14 +158,23 @@ public:
 
 	//Message Handle
 
-	LRESULT OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+
+	//LRESULT OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	//LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	//LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	//LRESULT OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 private:
 	HRESULT InitDefaultCharFormat(HFONT hfont);
 	HRESULT InitDefaultParaFormat();
-
+	
+	// nStart => nEnd
+	//   0    =>   0   -- Current Select
+	//   0    =>  -1   -- All Text
+	//   n    =>   m   -- From n To m
+	HRESULT _GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>& spTextRange);
+	BOOL	_IsNeedHandleMsg(MSG* pMsg);
 private:
 	//this must be the first member variable
 	ULONG					m_cRefs;
@@ -161,6 +190,8 @@ private:
 	PARAFORMAT				m_paraFormat;
 	COLORREF 				m_crBackground;			//background color
 	COLORREF				m_crAuto;
+	LONG					m_xPixPerInch;
+	LONG					m_yPixPerInch;
 	LONG					m_lAcceleratorPos;
 	LONG					m_cchTextMost;
 	LONG					m_lSelBarWidth;			//width of the selection bar
@@ -190,4 +221,5 @@ private:
 	unsigned	m_fInplaceActive		:1; // Whether control is inplace active
 	unsigned	m_fTransparent			:1; // Whether control is transparent
 	unsigned	m_fTimer				:1;	// A timer is set
+	unsigned	m_fCapture				:1;	// Captured
 };
