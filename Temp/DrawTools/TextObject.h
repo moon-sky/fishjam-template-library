@@ -7,6 +7,7 @@
 class CTextObject 
 	: public CDrawObject
 	, public CMessageFilter
+	, public INotifyCallBack
 {
 public:
 	CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType);
@@ -28,6 +29,7 @@ public:
 	virtual void SetActive(BOOL bActive);
 	virtual void MoveTo(const CRect& position);
 
+	virtual void OnNotify(int iNotify, void* pParam);
 	CRichEditPanel* GetRichEditPanel()
 	{
 		FTLASSERT(m_pRichEditPanel);

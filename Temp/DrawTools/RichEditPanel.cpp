@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "RichEditPanel.h"
 
-#ifdef FTL_DEBUG
+//#ifdef FTL_DEBUG
 #include <ftlwindow.h>
 #include <ftlComDetect.h>
 #include <ftlControls.h>
 #include <ftlGdi.h>
 #include <ftlSystem.h>
-#endif 
+//#endif 
 
 #include <limits>
 
@@ -216,7 +216,7 @@ HRESULT CRichEditPanel::InitDefaultParaFormat()
 	return S_OK;
 }
 
-HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBACK pNotifyCallback /* = NULL */)
+HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, INotifyCallBack* pNotifyCallback /* = NULL */)
 {
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
@@ -242,7 +242,7 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALL
 	{
 		COM_VERIFY(spUnknown->QueryInterface(IID_ITextServices, (void**)&m_spTextServices));
 		COM_VERIFY(spUnknown->QueryInterface(__uuidof(ITextDocument), (void**)&m_spTextDocument));
-		
+		m_spTextServices->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, 0);
 		//COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETOLECALLBACK, NULL, (LPARAM)this, &lResult));
 
 
@@ -439,6 +439,7 @@ HRESULT CRichEditPanel::SetTextBackColor(long nStart, long nEnd, COLORREF clr)
 void CRichEditPanel::DoPaint(CDCHandle dcParent)
 {
 	HRESULT hr = E_FAIL;
+	BOOL bRet = FALSE;
 	//CDCHandle dcHandle(hDC);
 	//dcParent.DrawText(TEXT("CRichEditPanel::Draw"), -1, m_rcClient, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 
@@ -463,9 +464,13 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 	//	prc = &rcClient;
 	//	lViewId = TXTVIEW_ACTIVE;//TXTVIEW_INACTIVE;
 	//}
-
+	DVTARGETDEVICE	dvTargetDevice = {0};
+	dvTargetDevice.tdSize = sizeof(dvTargetDevice);
 	CRect rcNewClient = rcClient;
+
 	//rcNewClient.SetRectEmpty();
+	//CDC dcTemp;
+	//API_VERIFY(!dcTemp.CreateCompatibleDC(dcParent));
 
 	COM_VERIFY(m_spTextServices->TxDraw(
 		DVASPECT_CONTENT,  		// Draw Aspect
@@ -481,6 +486,11 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 		0,					// Call back parameter
 		lViewId));				// What view of the object				
 	
+	//FTL::HDCProperty	hdcProperty;
+	//FTL::CFGdiUtil::GetHDCProperty(dcTemp, &hdcProperty);
+
+	//FTLTRACE(TEXT("CRichEditPanel::DoPaint, dcTemp=%s\n"), hdcProperty.GetPropertyString());
+
 	if (rcNewClient.Height() > m_rcClient.Height())
 	{
 		SetClientRect(&rcNewClient, TRUE);
@@ -519,11 +529,9 @@ void CRichEditPanel::SetExtent(SIZEL *psizelExtent, BOOL fNotify)
 	}
 }
 
-PNOTIFY_CALLBACK CRichEditPanel::SetNotifyCallback(PNOTIFY_CALLBACK pNotifyCallback)
+VOID CRichEditPanel::SetNotifyCallback(INotifyCallBack* pNotifyCallback)
 {
-	PNOTIFY_CALLBACK pOldCallback = m_pNotifyCallback;
 	m_pNotifyCallback = pNotifyCallback;
-	return pOldCallback;
 }
 
 HRESULT CRichEditPanel::OnTxInPlaceActivate(LPCRECT prcClient)
@@ -568,29 +576,33 @@ INT CRichEditPanel::TxReleaseDC( HDC hdc )
 BOOL CRichEditPanel::TxShowScrollBar( INT fnBar, BOOL fShow )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxShowScrollBar\n"));
-	FTLASSERT(FALSE);
-	return FALSE;
+	BOOL bRet = FALSE;
+	API_VERIFY(::ShowScrollBar(m_hWndOwner, fnBar, fShow));
+	return bRet;
 }
 
 BOOL CRichEditPanel::TxEnableScrollBar( INT fuSBFlags, INT fuArrowflags )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxEnableScrollBar\n"));
-	FTLASSERT(FALSE);
-	return FALSE;
+	BOOL bRet = FALSE;
+	API_VERIFY(::EnableScrollBar(m_hWndOwner, fuSBFlags, fuArrowflags));
+	return bRet;
 }
 
 BOOL CRichEditPanel::TxSetScrollRange( INT fnBar, LONG nMinPos, INT nMaxPos, BOOL fRedraw )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxSetScrollRange\n"));
-	FTLASSERT(FALSE);
-	return FALSE;
+	BOOL bRet = FALSE;
+	API_VERIFY(::SetScrollRange(m_hWndOwner, fnBar, nMinPos, nMaxPos, fRedraw));
+	return bRet;
 }
 
 BOOL CRichEditPanel::TxSetScrollPos( INT fnBar, INT nPos, BOOL fRedraw )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxSetScrollPos\n"));
-	FTLASSERT(FALSE);
-	return FALSE;
+	BOOL bRet = FALSE;
+	API_VERIFY(SetScrollPos(m_hWndOwner, fnBar, nPos, fRedraw));
+	return bRet;
 }
 
 void CRichEditPanel::TxInvalidateRect( LPCRECT prc, BOOL fMode )
@@ -841,7 +853,7 @@ COLORREF CRichEditPanel::TxGetSysColor( int nIndex )
 HRESULT CRichEditPanel::TxGetBackStyle( TXTBACKSTYLE *pstyle )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxGetBackStyle, m_fTransparent=%d\n"), m_fTransparent);
-	*pstyle = TXTBACK_OPAQUE;// !m_fTransparent ? TXTBACK_OPAQUE : TXTBACK_TRANSPARENT;
+	*pstyle = TXTBACK_TRANSPARENT; //TXTBACK_OPAQUE;// !m_fTransparent ? TXTBACK_OPAQUE : TXTBACK_TRANSPARENT;
 	return S_OK;
 }
 
@@ -857,13 +869,13 @@ HRESULT CRichEditPanel::TxGetMaxLength( DWORD *plength )
 HRESULT CRichEditPanel::TxGetScrollBars( DWORD *pdwScrollBar )
 {
 	//if return 0, then do not allow scrollbars
-	*pdwScrollBar = 0; 
+	*pdwScrollBar = ES_AUTOVSCROLL; //WS_VSCROLL
 
 	//*pdwScrollBar =  m_dwStyle & (WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL | 
 	//	ES_AUTOHSCROLL | ES_DISABLENOSCROLL);
 
 
-	//FTLTRACE(TEXT("CRichEditPanel::TxGetScrollBars, *pdwScrollBar=0x%x\n"), *pdwScrollBar);
+	FTLTRACE(TEXT("CRichEditPanel::TxGetScrollBars, *pdwScrollBar=0x%x\n"), *pdwScrollBar);
 
 	return S_OK;
 }
@@ -972,15 +984,15 @@ HRESULT CRichEditPanel::TxGetPropertyBits( DWORD dwMask, DWORD *pdwBits )
 
 HRESULT CRichEditPanel::TxNotify( DWORD iNotify, void *pv )
 {
-	//FTLTRACE(TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
-	//	FTL::CFControlUtil::GetEditNotifyCodeString(iNotify), pv);
+	FTLTRACE(TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
+		FTL::CFControlUtil::GetEditNotifyCodeString(iNotify), pv);
 
 	//dwBits := dwBits and TXTBIT_ALL_NOTIFICATIONS;
 	//FServices.OnTxPropertyBitsChange(dwBits, dwBits);
 
 	if (m_pNotifyCallback)
 	{
-		(*m_pNotifyCallback)(iNotify, pv);
+		m_pNotifyCallback->OnNotify(iNotify, pv);
 	}
 	// Claim to have handled the notifcation, even though we always ignore it
 	return S_OK;
@@ -1009,11 +1021,12 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 {
 	BOOL bRet = FALSE;
 
-	if (m_fCapture)
-	{
-		bRet = TRUE;
-	}
-	else if (IsActive())
+	//if (m_fCapture)
+	//{
+	//	bRet = TRUE;
+	//}
+	//else 
+	if (IsActive())
 	{
 		if (WM_MOUSEFIRST <= pMsg->message && pMsg->message <= WM_MOUSELAST)
 		{

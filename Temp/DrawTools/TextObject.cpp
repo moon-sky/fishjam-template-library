@@ -10,7 +10,7 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	HRESULT hr = E_FAIL;
 
 	m_pRichEditPanel = new CRichEditPanel();
-	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position);
+	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, this);
 	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
 }
 
@@ -79,4 +79,9 @@ void CTextObject::MoveTo(const CRect& position)
 	m_pRichEditPanel->SetClientRect(&rcRichEditPanel, FALSE);
 	m_pDrawCanvas->InvalObject(this);
 	//m_pDocument->SetModifiedFlag();
+}
+
+void CTextObject::OnNotify(int iNotify, void* pParam)
+{
+	FTLTRACE(TEXT("In CTextObject::OnNotify, iNotify=%d, pParam=0x%x\n"), iNotify, pParam);
 }
