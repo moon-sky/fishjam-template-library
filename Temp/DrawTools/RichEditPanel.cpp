@@ -6,6 +6,7 @@
 #include <ftlComDetect.h>
 #include <ftlControls.h>
 #include <ftlGdi.h>
+#include <ftlSystem.h>
 #endif 
 
 #include <limits>
@@ -51,6 +52,7 @@ CRichEditPanel::CRichEditPanel()
 	m_fRich = TRUE;
 	m_cchTextMost = cInitTextMax;
 	m_chPasswordChar = TEXT('*');
+	m_fCapture = TRUE;
 }
 
 CRichEditPanel::~CRichEditPanel()
@@ -68,10 +70,16 @@ HRESULT STDMETHODCALLTYPE CRichEditPanel::QueryInterface(REFIID riid, void **ppv
 	
 	//{13E670F5-1A5A-11CF-ABEB-00AA00B65EA1}  -- ?
 	if (IsEqualIID(riid, IID_IUnknown) 
-		|| IsEqualIID(riid, IID_ITextHost)) 
+		|| IsEqualIID(riid, IID_ITextHost))
 	{
 		AddRef();
 		*ppvObject = (ITextHost *) this;
+		hr = S_OK;
+	}
+	if(IsEqualIID(riid, IID_IRichEditOleCallback))
+	{
+		AddRef();
+		*ppvObject = (IRichEditOleCallback*) this;
 		hr = S_OK;
 	}
 	return hr;
@@ -120,14 +128,18 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(HFONT hfont)
 		return E_FAIL;
 	}
 	// Set CHARFORMAT structure
+	ZeroMemory(&m_charFormat, sizeof(m_charFormat));
 	m_charFormat.cbSize = sizeof(CHARFORMAT);
 
 	hWnd = GetDesktopWindow();
 	hDC = GetDC(hWnd);
 
-	FTL::HDCProperty	hDCProperty;
-	API_VERIFY(FTL::CFGdiUtil::GetHDCProperty(hDC, &hDCProperty));
-	FTLTRACE(TEXT("HDCProperty=%s\n"), hDCProperty.GetPropertyString(HDC_PROPERTY_GET_ALL));
+	FTL::CFGdiObjectInfoDump	fontDumper;
+	API_VERIFY(fontDumper.GetGdiObjectInfo(hfont));
+	FTLTRACE(TEXT("Font Property=%s\n"), fontDumper.GetGdiObjectInfoString());
+	//FTL::HDCProperty	hDCProperty;
+	//API_VERIFY(FTL::CFGdiUtil::GetHDCProperty(hDC, &hDCProperty));
+	//FTLTRACE(TEXT("HDCProperty=%s\n"), hDCProperty.GetPropertyString(HDC_PROPERTY_GET_ALL));
 
 	m_xPixPerInch = GetDeviceCaps(hDC, LOGPIXELSX);
 	m_yPixPerInch = GetDeviceCaps(hDC, LOGPIXELSY);
@@ -138,8 +150,8 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(HFONT hfont)
 	m_charFormat.yOffset = 0;
 	m_charFormat.crTextColor = m_crAuto;
 
-	m_charFormat.dwEffects = CFM_ALL | CFE_AUTOBACKCOLOR; //CFM_EFFECTS | CFE_AUTOBACKCOLOR;
-	m_charFormat.dwEffects &= ~(CFE_PROTECTED | CFE_LINK);
+	m_charFormat.dwEffects = 0; //CFM_ALL;// | CFE_AUTOBACKCOLOR; //CFM_EFFECTS | CFE_AUTOBACKCOLOR;
+	//m_charFormat.dwEffects &= ~(CFE_PROTECTED | CFE_LINK | CFE_BOLD | CFE_ITALIC);
 
 	//if(lf.lfWeight < FW_BOLD)
 	//	m_charFormat.dwEffects &= ~CFE_BOLD;
@@ -150,8 +162,8 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(HFONT hfont)
 	//if(!lf.lfStrikeOut)
 	//	m_charFormat.dwEffects &= ~CFE_STRIKEOUT;
 
-	m_charFormat.dwMask = CFM_ALL | CFM_BACKCOLOR;
-	m_charFormat.bCharSet = lf.lfCharSet;
+	m_charFormat.dwMask = 0;// CFM_ALL | CFM_BACKCOLOR;
+	//m_charFormat.bCharSet = lf.lfCharSet;
 	m_charFormat.bPitchAndFamily = lf.lfPitchAndFamily;
 	COM_VERIFY(StringCchCopy(m_charFormat.szFaceName, _countof(m_charFormat.szFaceName),  lf.lfFaceName));
 #else
@@ -197,7 +209,7 @@ HRESULT CRichEditPanel::InitDefaultParaFormat()
 #else
 	::ZeroMemory(&m_paraFormat ,sizeof(PARAFORMAT));
 	m_paraFormat.cbSize = sizeof(PARAFORMAT);
-	m_paraFormat.dwMask = PFM_ALL; 
+	m_paraFormat.dwMask = 0;// PFM_ALL; 
 		//PFM_ALIGNMENT|PFM_NUMBERING|PFM_OFFSET|PFM_OFFSETINDENT|PFM_RIGHTINDENT|PFM_RTLPARA|PFM_STARTINDENT|PFM_TABSTOPS;
 	m_paraFormat.wAlignment = PFA_LEFT;
 #endif 
@@ -207,6 +219,7 @@ HRESULT CRichEditPanel::InitDefaultParaFormat()
 HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALLBACK pNotifyCallback /* = NULL */)
 {
 	HRESULT hr = E_FAIL;
+	LRESULT lResult = 0;
 
 	FTLTRACE(TEXT("CRichEditPanel::Init, hWndOwner=0x%x, prcClient=[%d,%d]-[%d,%d]\n"),
 		hWndOwner, prcClient->left, prcClient->top, prcClient->right, prcClient->bottom);
@@ -229,6 +242,10 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient, PNOTIFY_CALL
 	{
 		COM_VERIFY(spUnknown->QueryInterface(IID_ITextServices, (void**)&m_spTextServices));
 		COM_VERIFY(spUnknown->QueryInterface(__uuidof(ITextDocument), (void**)&m_spTextDocument));
+		
+		//COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETOLECALLBACK, NULL, (LPARAM)this, &lResult));
+
+
 		//COM_DETECT_INTERFACE_FROM_REGISTER(m_spTextServices);
 		//COM_DETECT_INTERFACE_FROM_LIST(m_spTextServices);
 
@@ -309,6 +326,8 @@ HRESULT CRichEditPanel::_GetTextRange(long nStart, long nEnd, CComPtr<ITextRange
 
 HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask)
 {
+	FTL::CFSystemMetricsProperty	sysMetrics;
+
 	CHECK_POINTER_READABLE_DATA_RETURN_VALUE_IF_FAIL(pLogFont, sizeof(LOGFONT), FALSE);
 
 	HRESULT hr = E_FAIL;
@@ -354,6 +373,7 @@ HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, D
 
 HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask)
 {
+
 	HRESULT hr = E_FAIL;
 	BOOL bRet = FALSE;
 
@@ -422,20 +442,20 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 	//CDCHandle dcHandle(hDC);
 	//dcParent.DrawText(TEXT("CRichEditPanel::Draw"), -1, m_rcClient, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 
-	CMemoryDC	memDC(dcParent, m_rcClient);
+	//CMemoryDC	memDC(dcParent, m_rcClient);
 
 	CRect rcClient = m_rcClient;
 	rcClient.NormalizeRect();
+	
+	dcParent.Draw3dRect(rcClient, RGB(255,0,0), RGB(0,0,255));
+	//rcClient.DeflateRect(1, 1);
 
-	memDC.Draw3dRect(rcClient, RGB(255,0,0), RGB(0,0,255));
-	rcClient.DeflateRect(1, 1);
-
-	memDC.FillSolidRect(&rcClient, RGB(255,0,0));
+	//memDC.FillSolidRect(&rcClient, RGB(255,0,0));
 
 	//rcClient.DeflateRect(5, 5);
-	RECT *prc = &rcClient;
+	//RECT *prc = &rcClient;
 	RECTL rcL = { rcClient.left, rcClient.top, rcClient.right, rcClient.bottom };
-	LONG lViewId = TXTVIEW_ACTIVE;
+	LONG lViewId = TXTVIEW_ACTIVE;  //TXTVIEW_INACTIVE
 
 	//if (!m_fInplaceActive)
 	//{
@@ -444,19 +464,19 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 	//	lViewId = TXTVIEW_ACTIVE;//TXTVIEW_INACTIVE;
 	//}
 
-	CRect rcNewClient;
-	rcNewClient.SetRectEmpty();
+	CRect rcNewClient = rcClient;
+	//rcNewClient.SetRectEmpty();
 
 	COM_VERIFY(m_spTextServices->TxDraw(
 		DVASPECT_CONTENT,  		// Draw Aspect
-		/*-1*/0,						// Lindex
+		/*-1*/0,				// Lindex
 		NULL,					// Info for drawing optimazation
 		NULL,					// target device information
-		memDC,				// Draw device HDC
+		dcParent,				// Draw device HDC
 		NULL, 				   	// Target device HDC
-		&rcL,			// Bounding client rectangle
+		&rcL,					// Bounding client rectangle
 		NULL, 					// Clipping rectangle for metafiles
-		NULL, //&rcNewClient, //(RECT *) m_rcClient,	// Update rectangle
+		&rcNewClient, //(RECT *) m_rcClient,	// Update rectangle
 		NULL, 	   				// Call back function
 		0,					// Call back parameter
 		lViewId));				// What view of the object				
@@ -577,6 +597,11 @@ void CRichEditPanel::TxInvalidateRect( LPCRECT prc, BOOL fMode )
 {
 	if (prc)
 	{
+		CRect rcNew(*prc);
+		if (rcNew.Height() >= m_rcClient.Height())
+		{
+			m_rcClient.bottom += 100;
+		}
 		FTLTRACE(TEXT("CRichEditPanel::TxInvalidateRect, *pRC=[%d,%d]-[%d,%d], fMode=%d\n"),
 			prc->left, prc->top, prc->right, prc->bottom, fMode);
 	}
@@ -609,23 +634,23 @@ BOOL CRichEditPanel::TxCreateCaret( HBITMAP hbmp, INT xWidth, INT yHeight )
 
 BOOL CRichEditPanel::TxShowCaret( BOOL fShow )
 {
-	FTLTRACE(TEXT("CRichEditPanel::TxShowCaret, fShow=%d\n"), fShow);
+	//FTLTRACE(TEXT("CRichEditPanel::TxShowCaret, fShow=%d\n"), fShow);
 
 	BOOL bRet = FALSE;
 	if (fShow)
 	{
-		API_VERIFY_EXCEPT1(::ShowCaret(m_hWndOwner), ERROR_ACCESS_DENIED);
+		API_VERIFY_EXCEPT1(::ShowCaret(m_hWndOwner), ERROR_ACCESS_DENIED);//, ERROR_INVALID_WINDOW_HANDLE);
 	}
 	else
 	{
-		API_VERIFY_EXCEPT1(::HideCaret(m_hWndOwner), ERROR_ACCESS_DENIED);
+		API_VERIFY_EXCEPT1(::HideCaret(m_hWndOwner), ERROR_ACCESS_DENIED);//, ERROR_INVALID_WINDOW_HANDLE);
 	}
 	return bRet;	
 }
 
 BOOL CRichEditPanel::TxSetCaretPos( INT x, INT y )
 {
-	FTLTRACE(TEXT("CRichEditPanel::TxSetCaretPos, x=%d, y=%d\n"), x, y);
+	//FTLTRACE(TEXT("CRichEditPanel::TxSetCaretPos, x=%d, y=%d\n"), x, y);
 	BOOL bRet = FALSE;
 	API_VERIFY(::SetCaretPos(x, y));
 	return bRet;
@@ -765,9 +790,12 @@ HRESULT CRichEditPanel::Range(long cpFirst, long cpLim, ITextRange** ppRange)
 //
 HRESULT CRichEditPanel::TxGetViewInset( LPRECT prc )
 {
-	*prc = CRect(0, 0, 0, 0);//100 ,200, 300, 400);
-	//FTLTRACE(TEXT("CRichEditPanel::TxGetViewInset, prc=[%d,%d]-[%d,%d]\n"),
-	//	prc->left, prc->top, prc->right, prc->bottom);
+	LONG nRet = ::MulDiv(1, HIMETRIC_INCH, m_xPixPerInch);
+
+	*prc = CRect(nRet, nRet, nRet, nRet);
+
+	FTLTRACE(TEXT("CRichEditPanel::TxGetViewInset, prc=[%d,%d]-[%d,%d]\n"),
+		prc->left, prc->top, prc->right, prc->bottom);
 	return S_OK;
 }
 
@@ -813,7 +841,7 @@ COLORREF CRichEditPanel::TxGetSysColor( int nIndex )
 HRESULT CRichEditPanel::TxGetBackStyle( TXTBACKSTYLE *pstyle )
 {
 	FTLTRACE(TEXT("CRichEditPanel::TxGetBackStyle, m_fTransparent=%d\n"), m_fTransparent);
-	*pstyle = !m_fTransparent ? TXTBACK_OPAQUE : TXTBACK_TRANSPARENT;
+	*pstyle = TXTBACK_OPAQUE;// !m_fTransparent ? TXTBACK_OPAQUE : TXTBACK_TRANSPARENT;
 	return S_OK;
 }
 
@@ -831,9 +859,9 @@ HRESULT CRichEditPanel::TxGetScrollBars( DWORD *pdwScrollBar )
 	//if return 0, then do not allow scrollbars
 	*pdwScrollBar = 0; 
 
-
-	//m_dwStyle & (WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL | 
+	//*pdwScrollBar =  m_dwStyle & (WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL | 
 	//	ES_AUTOHSCROLL | ES_DISABLENOSCROLL);
+
 
 	//FTLTRACE(TEXT("CRichEditPanel::TxGetScrollBars, *pdwScrollBar=0x%x\n"), *pdwScrollBar);
 
@@ -881,7 +909,10 @@ HRESULT CRichEditPanel::TxGetPropertyBits( DWORD dwMask, DWORD *pdwBits )
 	FTL::CFStringFormater propertyFormater;
 	FTLTRACE(TEXT("CRichEditPanel::TxGetPropertyBits, dwMask=%s\n"),
 		FTL::CFControlUtil::GetRichEditPropertyBits(propertyFormater, dwMask, TEXT("|")));
-	DWORD dwProperties =  TXTBIT_MULTILINE | TXTBIT_RICHTEXT | TXTBIT_WORDWRAP | TXTBIT_SHOWACCELERATOR;
+	DWORD dwProperties =  TXTBIT_RICHTEXT|TXTBIT_MULTILINE|TXTBIT_SHOWACCELERATOR|TXTBIT_WORDWRAP |
+		TXTBIT_VERTICAL | TXTBIT_DISABLEDRAG;
+		
+		//TXTBIT_RICHTEXT | TXTBIT_MULTILINE | TXTBIT_SHOWACCELERATOR | TXTBIT_WORDWRAP;
 
 #if 0
 	if (m_fRich)
@@ -941,8 +972,11 @@ HRESULT CRichEditPanel::TxGetPropertyBits( DWORD dwMask, DWORD *pdwBits )
 
 HRESULT CRichEditPanel::TxNotify( DWORD iNotify, void *pv )
 {
-	FTLTRACE(TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
-		FTL::CFControlUtil::GetEditNotifyCodeString(iNotify), pv);
+	//FTLTRACE(TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
+	//	FTL::CFControlUtil::GetEditNotifyCodeString(iNotify), pv);
+
+	//dwBits := dwBits and TXTBIT_ALL_NOTIFICATIONS;
+	//FServices.OnTxPropertyBitsChange(dwBits, dwBits);
 
 	if (m_pNotifyCallback)
 	{
@@ -981,7 +1015,7 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 	}
 	else if (IsActive())
 	{
-		if (pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
+		if (WM_MOUSEFIRST <= pMsg->message && pMsg->message <= WM_MOUSELAST)
 		{
 			POINT ptLocalClient = pMsg->pt;
 			TxScreenToClient(&ptLocalClient);
@@ -1007,10 +1041,11 @@ LRESULT CRichEditPanel::OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lPa
 	{
 		bHandled = FALSE;
 	}
-	else
-	{
-		//COM_VERIFY(m_spTextServices->OnTxPropertyBitsChange(TXTBIT_SCROLLBARCHANGE, TXTBIT_SCROLLBARCHANGE));
-	}
+	//else
+	//{
+	//	bHandled = FALSE;
+	//	//COM_VERIFY(m_spTextServices->OnTxPropertyBitsChange(TXTBIT_SCROLLBARCHANGE, TXTBIT_SCROLLBARCHANGE));
+	//}
 	return lResult;
 }
 
@@ -1030,7 +1065,7 @@ BOOL CRichEditPanel::PreTranslateMessage(MSG* pMsg)
 {
 #ifdef FTL_DEBUG
 	//DEFAULT_DUMP_FILTER_MESSAGE | 
-	DUMP_WINDOWS_MSG(__FILE__LINE__, (DEFAULT_DUMP_FILTER_MESSAGE | DUMP_FILTER_TIMER) &~ DUMP_FILTER_MOUSE_MOVE, pMsg->message, pMsg->wParam, pMsg->lParam);
+	DUMP_WINDOWS_MSG(__FILE__LINE__, (DEFAULT_DUMP_FILTER_MESSAGE | DUMP_FILTER_TIMER), pMsg->message, pMsg->wParam, pMsg->lParam);
 #endif 
 	BOOL bRet = FALSE;
 	HRESULT hr = E_FAIL;
@@ -1046,6 +1081,10 @@ BOOL CRichEditPanel::PreTranslateMessage(MSG* pMsg)
 			{
 				return TRUE;
 			}
+			//if (S_FALSE == hr)
+			//{
+			//	return FALSE;
+			//}
 		}
 
 	//	if (WM_MOUSEMOVE != pMsg->message)
@@ -1133,42 +1172,99 @@ BOOL CRichEditPanel::PreTranslateMessage(MSG* pMsg)
 //	return lResult;
 //}
 
+HRESULT CRichEditPanel::_SetPropertyBits(DWORD dwProperty)
+{
+//	var
+//dwMask: DWORD;
+//	begin
+//Value := Value and TXTBIT_ALL_PROPERTIES;
+//	if FPropertyBits <> Value then
+//		begin
+//dwMask := FPropertyBits xor Value;
+//FPropertyBits := Value;
+//	FServices.OnTxPropertyBitsChange(dwMask, Value and dwMask);
+//	end;
+	return E_NOTIMPL;
+}
 
-DWORD CALLBACK EditStreamCallback(DWORD_PTR dwCookie,
+DWORD CALLBACK EditStreamOutCallback(DWORD_PTR dwCookie,
 						 LPBYTE pbBuff,
 						 LONG cb,
 						 LONG *pcb
 						 )
 {
-	CStringA strInfo((CHAR*)pbBuff);
-	USES_CONVERSION;
-	FTLTRACE(TEXT("On EditStreamCallback, cb=%d, pbBufff=%s\n"), cb, CA2T(strInfo));
+	HRESULT hr = E_FAIL;
+
+	HGLOBAL hGlobalStream = GlobalAlloc(GMEM_FIXED | GMEM_ZEROINIT, cb);
+	if (hGlobalStream)
+	{
+		CopyMemory((hGlobalStream), pbBuff, cb);
+		IStream** ppStream = reinterpret_cast<IStream**>(dwCookie);
+		COM_VERIFY(CreateStreamOnHGlobal(hGlobalStream, TRUE, ppStream));
+		if (FAILED(hr))
+		{
+			GlobalFree(hGlobalStream);
+		}
+	}
+	return 0;
+	//USES_CONVERSION;
+	//CStringA strInfo((CHAR*)pbBuff);
+	//FTLTRACE(TEXT("On EditStreamCallback, cb=%d, pbBufff=%s\n"), cb, CA2T(strInfo));
+	//return 0;
+}
+
+
+HRESULT CRichEditPanel::GetTextStream(long nStart, long nEnd, IStream** ppStream)
+{
+	CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppStream, E_POINTER);
+	HRESULT hr = E_FAIL;
+
+	EDITSTREAM	editStream = {0};
+	editStream.dwCookie = DWORD_PTR(ppStream);
+	editStream.dwError = 0;
+	editStream.pfnCallback = EditStreamOutCallback;
+
+	COM_VERIFY(m_spTextServices->TxSendMessage(EM_STREAMOUT, (WPARAM)(SF_RTF), (LPARAM)&editStream, NULL));
+
+	return hr;
+}
+
+DWORD CALLBACK EditStreamInCallback(DWORD_PTR dwCookie,
+									 LPBYTE pbBuff,
+									 LONG cb,
+									 LONG *pcb
+									 )
+{
+	HRESULT hr = E_FAIL;
+	IStream* pStream = reinterpret_cast<IStream*>(dwCookie);
+	if (pStream)
+	{
+		ULARGE_INTEGER nLength;
+		nLength.QuadPart = 0L;
+
+		LARGE_INTEGER nStart;
+		nStart.LowPart = 0;
+		nStart.HighPart = 0;
+		COM_VERIFY(pStream->Seek(nStart, STREAM_SEEK_END, &nLength));
+		COM_VERIFY(pStream->Seek(nStart, STREAM_SEEK_SET, NULL));
+
+		ULONG unWrite = 0;
+		COM_VERIFY(pStream->Read(pbBuff, FTL_MIN(cb, nLength.LowPart), &unWrite));
+		*pcb = (LONG)unWrite;
+	}
 	return 0;
 }
 
-//LRESULT CRichEditPanel::OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-//{
-//	HRESULT hr = E_FAIL;
-//
-//	//CComVariant varFileName(CComBSTR(TEXT("DocumentRtf.dat")));
-//	//COM_VERIFY(m_spTextDocuemtn->Save(&varFileName, tomCreateNew|tomRTF ,0 ));
-//	
-//	EDITSTREAM	editStream = {0};
-//	editStream.dwCookie = DWORD_PTR(this);
-//	editStream.dwError = 0;
-//	editStream.pfnCallback = EditStreamCallback;
-//
-//	COM_VERIFY(m_spTextServices->TxSendMessage(EM_STREAMOUT, (WPARAM)(SF_RTF), (LPARAM)&editStream, NULL));
-//	return 0;
-//}
+HRESULT CRichEditPanel::SetTextStream(long nStart, long nEnd, IStream* pStream)
+{
+	HRESULT hr = E_FAIL;
 
+	EDITSTREAM	editStream = {0};
+	editStream.dwCookie = DWORD_PTR(pStream);
+	editStream.dwError = 0;
+	editStream.pfnCallback = EditStreamInCallback;
+	LRESULT lResult = 0;
+	COM_VERIFY(m_spTextServices->TxSendMessage(EM_STREAMIN, (WPARAM)(SF_RTF), (LPARAM)&editStream, &lResult));
 
-//HRESULT CRichEditPanel::GetTextStream(long nStart, long nEnd, IStream** ppStream)
-//{
-//	CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppStream, E_POINTER);
-//	HRESULT hr = E_FAIL;
-//
-//
-//	FTLASSERT(FALSE);
-//	return hr;
-//}
+	return hr;
+}

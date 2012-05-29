@@ -460,42 +460,42 @@ namespace FTL
     {
         m_dwOldGetProperty = 0;
         
-        m_cxScreen = GetSystemMetrics(SM_CXSCREEN);				//主显示屏幕宽度(1280像素)，等价于 GetDeviceCaps( hdcPrimaryMonitor, HORZRES).
-        m_cyScreen = GetSystemMetrics(SM_CYSCREEN);				//主显示屏幕高度(1024像素)         
-        m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);			//垂直滚动条的宽度(16像素)
-        m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);			//水平滚动条的高度(16像素)
-        m_cyCaption = GetSystemMetrics(SM_CYCAPTION);			//标题栏的高度(19像素)
+        m_cxScreen = GetSystemMetrics(SM_CXSCREEN);				//主显示屏幕宽度(1280像素/1440像素)，等价于 GetDeviceCaps( hdcPrimaryMonitor, HORZRES).
+        m_cyScreen = GetSystemMetrics(SM_CYSCREEN);				//主显示屏幕高度(1024像素/900像素)         
+        m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);			//垂直滚动条的宽度(XP -- 16像素, Win7 -- 17像素)
+        m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);			//水平滚动条的高度(XP -- 16像素, Win7 -- 17像素)
+        m_cyCaption = GetSystemMetrics(SM_CYCAPTION);			//标题栏的高度(XP -- 19像素, Win7 -- 22 像素)
         m_cxBorder = GetSystemMetrics(SM_CXBORDER);				//窗体边框的宽度(1像素)
         m_cyBorder = GetSystemMetrics(SM_CYBORDER);				//窗体边框的高度(1像素)
         m_cxDlgFrame = GetSystemMetrics(SM_CXDLGFRAME);			//对话框边框的宽度(3像素)
         m_cyDlgFrame = GetSystemMetrics(SM_CYDLGFRAME);			//对话框边框的高度(3像素)
-        m_cyVThumb = GetSystemMetrics(SM_CYVTHUMB);				//垂直滚动条中 thumb box 的高度(16像素?)
-        m_cxHThumb = GetSystemMetrics(SM_CXHTHUMB);				//水平滚动条中 thumb box 的宽度(16像素?)
+        m_cyVThumb = GetSystemMetrics(SM_CYVTHUMB);				//垂直滚动条中 thumb box 的高度(XP -- 16像素, Win7 -- 17像素)
+        m_cxHThumb = GetSystemMetrics(SM_CXHTHUMB);				//水平滚动条中 thumb box 的宽度(XP -- 16像素, Win7 -- 17像素)
         m_cxIcon = GetSystemMetrics(SM_CXICON);					//Icon的缺省宽度(32像素)
         m_cyIcon = GetSystemMetrics(SM_CYICON);					//Icon的缺省高度(32像素)
         m_cxCursor = GetSystemMetrics(SM_CXCURSOR);				//Cursor的宽度(32像素)
         m_cyCursor = GetSystemMetrics(SM_CYCURSOR);				//Cursor的高度(32像素)
-        m_cyMenu = GetSystemMetrics(SM_CYMENU);					//菜单的高度(19像素)
+        m_cyMenu = GetSystemMetrics(SM_CYMENU);					//菜单的高度(XP -- 19像素, Win7 -- 20像素)
         m_cxFullScreen = GetSystemMetrics(SM_CXFULLSCREEN);		//主显示器上全屏时的客户区宽度(1280像素)
         m_cyFullScreen = GetSystemMetrics(SM_CYFULLSCREEN);		//主显示器上全屏时的客户区高度(975) -- 任务条在下方时
         m_cyKanjiWindow = GetSystemMetrics(SM_CYKANJIWINDOW);	//double byte character 版本的Windows上屏幕底端 Kanji 窗体的高度(0像素)
         m_MousePresent = GetSystemMetrics(SM_MOUSEPRESENT);		//非0(1)表示有鼠标,0表示没有鼠标
-        m_cyVscroll = GetSystemMetrics(SM_CYVSCROLL);			//垂直滚动条中箭头位图的高度(16像素)
-        m_cxHscroll = GetSystemMetrics(SM_CXHSCROLL);			//水平滚动条中箭头位图的宽度(16像素)
+        m_cyVscroll = GetSystemMetrics(SM_CYVSCROLL);			//垂直滚动条中箭头位图的高度(XP -- 16像素, Win7 -- 17像素)
+        m_cxHscroll = GetSystemMetrics(SM_CXHSCROLL);			//水平滚动条中箭头位图的宽度(XP -- 16像素, Win7 -- 17像素)
         m_Debug = GetSystemMetrics(SM_DEBUG);					//非0(1)表示安装的是调试版的 User.exe(0)
         m_SwapButton = GetSystemMetrics(SM_SWAPBUTTON);			//非0表示交换了鼠标的左右键
         m_Reserved1 = GetSystemMetrics(SM_RESERVED1);			//0
         m_Reserved2 = GetSystemMetrics(SM_RESERVED2);			//0
         m_Reserved3 = GetSystemMetrics(SM_RESERVED3);			//0
         m_Reserved4 = GetSystemMetrics(SM_RESERVED4);			//0
-        m_cxMin = GetSystemMetrics(SM_CXMIN);					//窗体的最小宽度(112像素)
-        m_cyMin = GetSystemMetrics(SM_CYMIN);					//窗体的最小高度(27像素)
-        m_cxSize = GetSystemMetrics(SM_CXSIZE);					//窗体Caption或任务栏上按钮的宽度(18像素)
-        m_cySize = GetSystemMetrics(SM_CYSIZE);					//窗体Caption或任务栏上按钮的高度(18像素)
-        m_cxFrame = GetSystemMetrics(SM_CXFRAME);				//可改变大小的框体的边界的宽度(4像素) -- 右下角的拖动区的宽度?
-        m_cyFrame = GetSystemMetrics(SM_CYFRAME);				//可改变大小的框体的边界的高度(4像素) -- 右下角的拖动区的高度?
-        m_cxMinTrack = GetSystemMetrics(SM_CXMINTRACK);			//Windows能拖到的的最小宽度(112像素) -- 可通过 WM_GETMINMAXINFO 重设置
-        m_cyMinTrack = GetSystemMetrics(SM_CYMINTRACK);			//Windows能拖到的的最小高(27像素) -- 可通过 WM_GETMINMAXINFO 重设置
+        m_cxMin = GetSystemMetrics(SM_CXMIN);					//窗体的最小宽度(XP -- 112像素, Win7 -- 132像素)
+        m_cyMin = GetSystemMetrics(SM_CYMIN);					//窗体的最小高度(XP -- 27像素, Win7 -- 38像素)
+        m_cxSize = GetSystemMetrics(SM_CXSIZE);					//窗体Caption或任务栏上按钮的宽度(XP -- 18像素, Win7 -- 35像素)
+        m_cySize = GetSystemMetrics(SM_CYSIZE);					//窗体Caption或任务栏上按钮的高度(XP -- 18像素, Win7 -- 21像素)
+        m_cxFrame = GetSystemMetrics(SM_CXFRAME);				//可改变大小的框体的边界的宽度(XP -- 4像素, Win7 -- 8像素) -- 右下角的拖动区的宽度?
+        m_cyFrame = GetSystemMetrics(SM_CYFRAME);				//可改变大小的框体的边界的高度(XP -- 4像素, Win7 -- 8像素) -- 右下角的拖动区的高度?
+        m_cxMinTrack = GetSystemMetrics(SM_CXMINTRACK);			//Windows能拖到的的最小宽度(XP -- 112像素, Win7 -- 132像素) -- 可通过 WM_GETMINMAXINFO 重设置
+        m_cyMinTrack = GetSystemMetrics(SM_CYMINTRACK);			//Windows能拖到的的最小高度(XP -- 27像素, Win7 -- 38像素) -- 可通过 WM_GETMINMAXINFO 重设置
         m_cxDoubleClk = GetSystemMetrics(SM_CXDOUBLECLK);		//双击有效区域的宽度(4像素)
         m_cyDoubleClk = GetSystemMetrics(SM_CYDOUBLECLK);		//双击有效区域的高度(4像素)
         m_cxIconSpacing = GetSystemMetrics(SM_CXICONSPACING);	//large icon view时Grid Cell的宽度(75像素)
@@ -515,20 +515,20 @@ namespace FTL
         m_cxEdge = GetSystemMetrics(SM_CXEDGE);					//3D边框的宽度(2像素)
         m_cyEdge = GetSystemMetrics(SM_CYEDGE);					//3D边框的高度(2像素)
         m_cxMinSpacing = GetSystemMetrics(SM_CXMINSPACING);		//最小化窗体在表格上的宽度(160像素) -- 多文档最小化还是任务栏上最小化?
-        m_cyMinSpacing = GetSystemMetrics(SM_CYMINSPACING);		//最小化窗体在表格上的高度(24像素) -- 多文档最小化还是任务栏上最小化?
+        m_cyMinSpacing = GetSystemMetrics(SM_CYMINSPACING);		//最小化窗体在表格上的高度(XP--24像素, Win7--27像素) -- 多文档最小化还是任务栏上最小化?
         m_cxSMIcon = GetSystemMetrics(SM_CXSMICON);				//小Icon的建议宽度(16像素)
         m_cySMIcon = GetSystemMetrics(SM_CYSMICON);				//小Icon的建议高度(16像素)
-        m_cySMCaption = GetSystemMetrics(SM_CYSMCAPTION);		//小标题栏(Caption)的高度(16像素)
-        m_cxSMSize = GetSystemMetrics(SM_CXSMSIZE);				//小标题栏上的按钮宽度(12像素)
-        m_cySMSize = GetSystemMetrics(SM_CYSMSIZE);				//小标题栏上的按钮高度(15像素)
+        m_cySMCaption = GetSystemMetrics(SM_CYSMCAPTION);		//小标题栏(Caption)的高度(XP--16像素,Win7--20像素)
+        m_cxSMSize = GetSystemMetrics(SM_CXSMSIZE);				//小标题栏上的按钮宽度(XP--12像素,Win7--19像素)
+        m_cySMSize = GetSystemMetrics(SM_CYSMSIZE);				//小标题栏上的按钮高度(XP--15像素,Win7--19像素)
         m_cxMenuSize = GetSystemMetrics(SM_CXMENUSIZE);			//MenuBar上按钮(如多文档窗体中子窗体的关闭按钮)的宽度(18像素)
         m_cyMenuSize = GetSystemMetrics(SM_CYMENUSIZE);			//MenuBar上按钮(如多文档窗体中子窗体的关闭按钮)的高(18像素)
         m_Arrange = GetSystemMetrics(SM_ARRANGE);				//指示系统如何配列最小化窗体( 8 -- ARW_HIDE )
         m_cxMinimized = GetSystemMetrics(SM_CXMINIMIZED);		//最小化窗体的宽度(160像素)
-        m_cyMinimized = GetSystemMetrics(SM_CYMINIMIZED);		//最小化窗体的高度(24像素)
+        m_cyMinimized = GetSystemMetrics(SM_CYMINIMIZED);		//最小化窗体的高度(XP--24像素,Win7--27像素)
         m_cxMaxTrack = GetSystemMetrics(SM_CXMAXTRACK);			//有标题、可改变大小边框的窗体的缺省最大宽度,通常是窗体能达到的最大值
-																//  (1292像素 = SM_CXFULLSCREEN + (SM_CXEDGE + SM_CXFRAME) * 2 )
-																//            = 1280            + (     2    +      4    ) * 2 )
+																//  (1292像素 = SM_CXFULLSCREEN + (SM_CXEDGE + SM_CXFRAME) * 2 )，如有多个屏幕，则会更大，如 2736
+																//            = 1280            + (     2    +      4    ) * 2 )，
         m_cyMaxTrack = GetSystemMetrics(SM_CYMAXTRACK);			//有标题、可改变大小边框的窗体的缺省最大高度,通常是窗体能达到的最大值(1036 = 1024 + (2+4)*2 )
         m_cxMaximized = GetSystemMetrics(SM_CXMAXIMIZED);		//主显示器上，最大化的顶层窗体的宽度(1288 = 1280 + 4 * 2)
         m_cyMaximized = GetSystemMetrics(SM_CYMAXIMIZED);		//主显示器上，最大化的顶层窗体的高度(1002 = )
@@ -553,14 +553,14 @@ namespace FTL
 #if(WINVER >= 0x0500)
         m_XVirtualScreen = GetSystemMetrics(SM_XVIRTUALSCREEN);		//虚拟屏幕的左边界(0)
         m_YVirtualScreen = GetSystemMetrics(SM_YVIRTUALSCREEN);		//虚拟屏幕的顶边界(0)
-        m_cxVirtualScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);	//虚拟屏幕的宽度(1280像素)
-        m_cyVirtualScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);	//虚拟屏幕的高度(1280像素)
-        m_CMonitors = GetSystemMetrics(SM_CMONITORS);				//计算用于显示的显示器的个数(1)
-        m_SameDisplayFormat = GetSystemMetrics(SM_SAMEDISPLAYFORMAT);	//非0表示所有的显示器有相同的颜色格式
+        m_cxVirtualScreen = GetSystemMetrics(SM_CXVIRTUALSCREEN);	//虚拟屏幕的宽度(1280像素，有多个屏幕时更大，如 2720 = 1280 + 1440)
+        m_cyVirtualScreen = GetSystemMetrics(SM_CYVIRTUALSCREEN);	//虚拟屏幕的高度(1024像素，有多个屏幕且竖直排列时时可能更大)
+        m_CMonitors = GetSystemMetrics(SM_CMONITORS);				//计算用于显示的显示器的个数(1，2个屏幕时2)
+        m_SameDisplayFormat = GetSystemMetrics(SM_SAMEDISPLAYFORMAT);	//非0表示所有的显示器有相同的颜色格式(Win7--1)
 #endif /* WINVER >= 0x0500 */
 
 #if(_WIN32_WINNT >= 0x0500)
-        m_IMMEnabled = GetSystemMetrics(SM_IMMENABLED);			//非0表示 Input Method Manager/Input Method Editor 有效
+        m_IMMEnabled = GetSystemMetrics(SM_IMMENABLED);			//非0表示 Input Method Manager/Input Method Editor 有效(Win7--1)
 #endif /* _WIN32_WINNT >= 0x0500 */
 #if(_WIN32_WINNT >= 0x0501)
         m_cxFocusBorder = GetSystemMetrics(SM_CXFOCUSBORDER);	//DrawFocusRect 绘制Focus矩形时的左、右边界的宽度(1像素)
@@ -569,7 +569,7 @@ namespace FTL
 
 #if(_WIN32_WINNT >= 0x0501)
         m_TabletPc = GetSystemMetrics(SM_TABLETPC);				//(0)
-        m_MediaCenter = GetSystemMetrics(SM_MEDIACENTER);		//(0)
+        m_MediaCenter = GetSystemMetrics(SM_MEDIACENTER);		//(XP--0, Win7--1)
         m_Starter = GetSystemMetrics(SM_STARTER);				//(0)
         m_Serverr2 = GetSystemMetrics(SM_SERVERR2);				//(0)
 #endif /* _WIN32_WINNT >= 0x0501 */

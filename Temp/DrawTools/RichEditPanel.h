@@ -21,6 +21,7 @@ typedef void (* PNOTIFY_CALLBACK)(int iNotify, void* pParam);
 
 class CRichEditPanel
 	: public ITextHost
+	, public IRichEditOleCallback
 	, public CMessageFilter
 {
 public:
@@ -39,6 +40,7 @@ public:
 	HRESULT SetTextForeColor(long nStart, long nEnd, COLORREF clr);
 	HRESULT SetTextBackColor(long nStart, long nEnd, COLORREF clr);
 
+	//nStart and nEnd does not use now, must be zero
 	HRESULT GetTextStream(long nStart, long nEnd, IStream** ppStream);
 	HRESULT SetTextStream(long nStart, long nEnd, IStream* pStream);
 
@@ -153,11 +155,131 @@ public:
 	virtual void TxImmReleaseContext( HIMC himc );
 	virtual HRESULT TxGetSelectionBarWidth( LONG *lSelBarWidth );
 
+	//IRichEditOleCallback
+	//virtual HRESULT ContextSensitiveHelp( BOOL fEnterMode) 
+	//{
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT DeleteObject(          LPOLEOBJECT lpoleobj)
+	//{
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT GetClipboardData(          CHARRANGE *lpchrg,
+	//	DWORD reco,
+	//	LPDATAOBJECT *lplpdataobj
+	//	) 
+	//{
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT GetContextMenu(          WORD seltype,
+	//	LPOLEOBJECT lpoleobj,
+	//	CHARRANGE *lpchrg,
+	//	HMENU *lphmenu
+	//	) 
+	//{
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT GetDragDropEffect(          BOOL fDrag,
+	//	DWORD grfKeyState,
+	//	LPDWORD pdwEffect
+	//	) 
+	//{
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT GetInPlaceContext(          LPOLEINPLACEFRAME *lplpFrame,
+	//	LPOLEINPLACEUIWINDOW *lplpDoc,
+	//	LPOLEINPLACEFRAMEINFO lpFrameInfo
+	//	) 
+	//{
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT GetNewStorage(          LPSTORAGE *lplpstg
+	//	) 
+	//{
+	//	// LockBytes: ILockBytes;
+	//	//Result := CreateILockBytesOnHGlobal(0, True, LockBytes);
+	//	//if Result = S_OK then
+	//	//	Result := StgCreateDocfileOnILockBytes(LockBytes,
+	//	//STGM_READWRITE or STGM_SHARE_EXCLUSIVE or STGM_CREATE, 0, stg);
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT QueryAcceptData(          LPDATAOBJECT lpdataobj,
+	//	CLIPFORMAT *lpcfFormat,
+	//	DWORD reco,
+	//	BOOL fReally,
+	//	HGLOBAL hMetaPict
+	//	) 
+	//{
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT QueryInsertObject(          LPCLSID lpclsid,
+	//	LPSTORAGE lpstg,
+	//	LONG cp
+	//	) 
+	//{
+	//	return E_NOTIMPL; 
+	//}
+	//virtual HRESULT ShowContainerUI(          BOOL fShow
+	//	) 
+	//{
+	//	return E_NOTIMPL; 
+	//}
+
+	STDMETHOD(GetNewStorage) (THIS_ LPSTORAGE FAR * lplpstg)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(GetInPlaceContext) (THIS_ LPOLEINPLACEFRAME FAR * lplpFrame,
+		LPOLEINPLACEUIWINDOW FAR * lplpDoc,
+		LPOLEINPLACEFRAMEINFO lpFrameInfo)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ShowContainerUI) (THIS_ BOOL fShow)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(QueryInsertObject) (THIS_ LPCLSID lpclsid, LPSTORAGE lpstg,
+		LONG cp)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(DeleteObject) (THIS_ LPOLEOBJECT lpoleobj)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(QueryAcceptData) (THIS_ LPDATAOBJECT lpdataobj,
+		CLIPFORMAT FAR * lpcfFormat, DWORD reco,
+		BOOL fReally, HGLOBAL hMetaPict)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(ContextSensitiveHelp) (THIS_ BOOL fEnterMode)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(GetClipboardData) (THIS_ CHARRANGE FAR * lpchrg, DWORD reco,
+		LPDATAOBJECT FAR * lplpdataobj)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(GetDragDropEffect) (THIS_ BOOL fDrag, DWORD grfKeyState,
+		LPDWORD pdwEffect)
+	{
+		return E_NOTIMPL;
+	}
+	STDMETHOD(GetContextMenu) (THIS_ WORD seltype, LPOLEOBJECT lpoleobj,
+		CHARRANGE FAR * lpchrg,
+		HMENU FAR * lphmenu)
+	{
+		return E_NOTIMPL;
+	}
+
+
 	//CMessageFilter
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	//Message Handle
-
 	LRESULT OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
@@ -175,6 +297,8 @@ private:
 	//   n    =>   m   -- From n To m
 	HRESULT _GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>& spTextRange);
 	BOOL	_IsNeedHandleMsg(MSG* pMsg);
+
+	HRESULT _SetPropertyBits(DWORD dwProperty);
 private:
 	//this must be the first member variable
 	ULONG					m_cRefs;

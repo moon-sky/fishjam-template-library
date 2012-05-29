@@ -106,11 +106,11 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	//CAboutDlg dlg;
-	//dlg.DoModal();
-	HRESULT hr = E_FAIL;
-	TCHAR buf[5];
-	COM_VERIFY(StringCchCopy(buf, _countof(buf), TEXT("fishjam")));
+	CAboutDlg dlg;
+	dlg.DoModal();
+	//HRESULT hr = E_FAIL;
+	//TCHAR buf[5];
+	//COM_VERIFY(StringCchCopy(buf, _countof(buf), TEXT("fishjam")));
 	return 0;
 }
 
@@ -153,5 +153,63 @@ LRESULT CMainFrame::OnEditFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 			COM_VERIFY(pTextObject->GetRichEditPanel()->SetTextForeColor(0, 0, dlg.m_cf.rgbColors));
 		}
 	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnStreamIn(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	if (m_spStream)
+	{
+		m_spStream.Release();
+	}
+
+	HRESULT hr = E_FAIL;
+	if (m_view.GetSelection().size() > 0)
+	{
+		CTextObject* pTextObject = dynamic_cast<CTextObject*>(m_view.GetSelection().front());
+		if (pTextObject)
+		{
+			COM_VERIFY(pTextObject->GetRichEditPanel()->GetTextStream(0, 0, &m_spStream));
+			if (m_spStream)
+			{
+				ULARGE_INTEGER nLength;
+				nLength.QuadPart = 0L;
+
+				LARGE_INTEGER nStart;
+				nStart.LowPart = 0;
+				nStart.HighPart = 0;
+				COM_VERIFY(m_spStream->Seek(nStart, STREAM_SEEK_END, &nLength));
+				COM_VERIFY(m_spStream->Seek(nStart, STREAM_SEEK_SET, NULL));
+
+				std::vector<CHAR> vStreamInfo(nLength.QuadPart);
+				COM_VERIFY(m_spStream->Read(&vStreamInfo[0], nLength.QuadPart, NULL));
+				CStringA strInfo(&vStreamInfo[0]);
+
+				ATLTRACE(TEXT("Read: %s\n"), CA2T(strInfo));
+			}
+		}
+	}
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnStreamOut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	if (m_spStream)
+	{
+		HRESULT hr = E_FAIL;
+		if (m_view.GetSelection().size() > 0)
+		{
+			CTextObject* pTextObject = dynamic_cast<CTextObject*>(m_view.GetSelection().front());
+			if (pTextObject)
+			{
+				LARGE_INTEGER nStart;
+				nStart.QuadPart = 0;
+				COM_VERIFY(m_spStream->Seek(nStart,STREAM_SEEK_SET, NULL ));
+				pTextObject->GetRichEditPanel()->SetTextStream(0, 0, m_spStream);
+			}
+		}
+	}
+
 	return 0;
 }

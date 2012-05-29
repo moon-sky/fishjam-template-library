@@ -142,12 +142,26 @@ namespace FTL
             }\
             SetLastError(dwLastError);\
         }
+	# define API_VERIFY_EXCEPT2(x,e1,e2)\
+		bRet = (x);\
+		if(FALSE == bRet)\
+		{\
+			DWORD dwLastError = GetLastError();\
+			if(dwLastError != e1 && dwLastError != e2)\
+			{\
+				REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, dwLastError,x);\
+			}\
+			SetLastError(dwLastError);\
+		}
+
     #else //没有定义 FTL_DEBUG 的时候 -- 不进行 GetLastError/SetLastError 的调用
     # define API_ASSERT(x)  
     # define API_VERIFY(x)   \
         bRet = (x);
     # define API_VERIFY_EXCEPT1(x,e1)\
         bRet = (x);
+	# define API_VERIFY_EXCEPT2(x,e1,e2)\
+		bRet = (x);
     #endif //FTL_DEBUG
 
     //如果返回 E_FAIL，并且支持 ISupportErrorInfo 的话，需要取得Rich Error 错误信息

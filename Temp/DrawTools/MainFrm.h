@@ -37,6 +37,8 @@ public:
 		COMMAND_ID_HANDLER(ID_TOOL_RECT, OnToolRect)
 		COMMAND_ID_HANDLER(ID_TOOL_TEXT, OnToolText)
 		COMMAND_ID_HANDLER(ID_EDIT_FONT, OnEditFont)
+		COMMAND_ID_HANDLER(ID_STREAM_IN, OnStreamIn)
+		COMMAND_ID_HANDLER(ID_STREAM_OUT, OnStreamOut)
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 	END_MSG_MAP()
@@ -57,4 +59,9 @@ public:
 	LRESULT OnToolRect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnToolText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnStreamIn(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnStreamOut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+private:
+	CComPtr<IStream> m_spStream;
+
 };

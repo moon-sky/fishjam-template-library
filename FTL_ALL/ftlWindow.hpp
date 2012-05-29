@@ -23,6 +23,8 @@ namespace FTL
 		{
 			return pszMsgName;
 		}
+	protected:
+		CFStringFormater	m_strFormater;
     };
 
 	class CFMouseMsgInfo : CFDefaultMsgInfo
@@ -30,13 +32,26 @@ namespace FTL
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
+			UINT nFlags = (UINT)wParam;
 			WORD xPos = LOWORD(lParam);
 			WORD yPos = HIWORD(lParam);
-			m_strFormater.Format(TEXT("%s{KeyCode=%d, Pos=[%d,%d]}"), pszMsgName, wParam, xPos, yPos );
+			
+			m_strFormater.Format(TEXT("%s{nFlag=%d(0x%x), Pos=[%d,%d]}"), pszMsgName, nFlags, nFlags, xPos, yPos );
 			return m_strFormater;
 		}
-	private:
-		CFStringFormater	m_strFormater;
+	};
+
+	class CFKeyMsgInfo : CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			TCHAR nChar = (TCHAR)wParam;
+			UINT nRepCnt = LOWORD(lParam);
+			UINT nFlags = HIWORD(lParam);
+			m_strFormater.Format(TEXT("%s{nChar=0x%x(%c), nRepCnt=%d, nFlags=0x%x}"),pszMsgName, nChar, nChar, nRepCnt, nFlags);
+			return m_strFormater;
+		}
 	};
 
 	CFRegistedMessageInfo::CFRegistedMessageInfo()
@@ -238,14 +253,14 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_INPUT, CFDefaultMsgInfo);
 #endif
                 //GET_MESSAGE_INFO_ENTRY(WM_KEYFIRST, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_KEYDOWN, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_KEYUP, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_CHAR, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_DEADCHAR, CFDefaultMsgInfo); //当用 translatemessage 函数翻译WM_KEYUP消息时发送此消息给拥有焦点的窗口
-                GET_MESSAGE_INFO_ENTRY(WM_SYSKEYDOWN, CFDefaultMsgInfo);    //当用户按住ALT键同时按下其它键时提交此消息给拥有焦点的窗口
-                GET_MESSAGE_INFO_ENTRY(WM_SYSKEYUP, CFDefaultMsgInfo);      //当用户释放一个键同时ALT 键还按着时提交此消息给拥有焦点的窗口
-                GET_MESSAGE_INFO_ENTRY(WM_SYSCHAR, CFDefaultMsgInfo);       //当WM_SYSKEYDOWN消息被TRANSLATEMESSAGE函数翻译后提交此消息给拥有焦点的窗
-                GET_MESSAGE_INFO_ENTRY(WM_SYSDEADCHAR, CFDefaultMsgInfo);   //
+                GET_MESSAGE_INFO_ENTRY(WM_KEYDOWN, CFKeyMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_KEYUP, CFKeyMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CHAR, CFKeyMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DEADCHAR, CFKeyMsgInfo); //当用 translatemessage 函数翻译WM_KEYUP消息时发送此消息给拥有焦点的窗口
+                GET_MESSAGE_INFO_ENTRY(WM_SYSKEYDOWN, CFKeyMsgInfo);    //当用户按住ALT键同时按下其它键时提交此消息给拥有焦点的窗口
+                GET_MESSAGE_INFO_ENTRY(WM_SYSKEYUP, CFKeyMsgInfo);      //当用户释放一个键同时ALT 键还按着时提交此消息给拥有焦点的窗口
+                GET_MESSAGE_INFO_ENTRY(WM_SYSCHAR, CFKeyMsgInfo);       //当WM_SYSKEYDOWN消息被TRANSLATEMESSAGE函数翻译后提交此消息给拥有焦点的窗
+                GET_MESSAGE_INFO_ENTRY(WM_SYSDEADCHAR, CFKeyMsgInfo);   //
 #if(_WIN32_WINNT >= 0x0501)
                 GET_MESSAGE_INFO_ENTRY(WM_UNICHAR, CFDefaultMsgInfo);
                 //GET_MESSAGE_INFO_ENTRY(WM_KEYLAST, CFDefaultMsgInfo);
@@ -312,15 +327,15 @@ namespace FTL
 
                 //GET_MESSAGE_INFO_ENTRY(WM_MOUSEFIRST, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_MOUSEMOVE, CFMouseMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONDOWN, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONUP, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONDBLCLK, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONDOWN, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONUP, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONDBLCLK, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONDOWN, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONUP, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONDBLCLK, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONDOWN, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONUP, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_LBUTTONDBLCLK, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONDOWN, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONUP, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_RBUTTONDBLCLK, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONDOWN, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONUP, CFMouseMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MBUTTONDBLCLK, CFMouseMsgInfo);
 
 #if (_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400)
                 GET_MESSAGE_INFO_ENTRY(WM_MOUSEWHEEL, CFDefaultMsgInfo);        //当鼠标轮子转动时发送此消息个当前有焦点的控件
