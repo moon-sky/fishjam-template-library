@@ -29,7 +29,10 @@ public:
 	virtual void SetActive(BOOL bActive);
 	virtual void MoveTo(const CRect& position);
 
+	//INotifyCallBack
 	virtual void OnNotify(int iNotify, void* pParam);
+	virtual void OnExpand(int nDir, int nValue);
+
 	CRichEditPanel* GetRichEditPanel()
 	{
 		FTLASSERT(m_pRichEditPanel);

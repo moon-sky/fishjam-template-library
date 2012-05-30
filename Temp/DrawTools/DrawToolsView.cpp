@@ -28,7 +28,7 @@ LRESULT CDrawToolsView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		//GetClientRect(&rcClient);
 
 		CMemoryDC memDC(dc, rcClip);
-		memDC.FillSolidRect(rcClip, RGB(255, 255, 255));
+		memDC.FillSolidRect(rcClip, RGB(0, 0, 255));
 		DrawLogicalInfo(memDC);
 		DrawDeviceInfo(memDC);
 	}
@@ -68,6 +68,7 @@ void CDrawToolsView::OnLButtonUp(UINT nFlags, CPoint point)
 void CDrawToolsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	CDrawCanvas<CDrawToolsView>::OnKeyDown(nChar, nRepCnt, nFlags);
+	
 	_RefreshDrawCanvasInfo();
 	SetMsgHandled(FALSE);
 }

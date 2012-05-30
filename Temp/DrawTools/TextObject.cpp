@@ -2,7 +2,7 @@
 #include "TextObject.h"
 #include "DrawCanvas.h"
 #include <ftlGdi.h>
-#include <ftlControls.h>
+//#include <ftlControls.h>
 
 CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType)
 : CDrawObject(pDrawCanvas, position, objType)
@@ -10,7 +10,7 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	HRESULT hr = E_FAIL;
 
 	m_pRichEditPanel = new CRichEditPanel();
-	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, this);
+	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, this);
 	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
 }
 
@@ -25,10 +25,19 @@ CTextObject::~CTextObject()
 
 void CTextObject::Draw(HDC hDC, BOOL bOriginal)
 {
-	CRect rcClient = m_position;
-	CDCHandle dc(hDC);
-	dc.Rectangle(rcClient);
-
+	if (m_bActive)
+	{
+		CRect rcClient = m_position;
+		CDCHandle dc(hDC);
+		HBRUSH hOldBrush = dc.SelectBrush((HBRUSH)GetStockObject(NULL_BRUSH));
+		CPen pen;
+		pen.CreatePen(PS_DOT, 1, RGB(0, 0, 0));
+		HPEN hOldPen = dc.SelectPen(pen);
+		dc.Rectangle(rcClient);
+		dc.SelectPen(hOldPen);
+		dc.SelectBrush(hOldBrush);
+	}
+	
 	m_pRichEditPanel->DoPaint(hDC);
 	//CDCHandle dc(hDC);
 	//dc.DrawText(TEXT("In CTextObject Draw"), -1, m_position, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -37,10 +46,8 @@ void CTextObject::Draw(HDC hDC, BOOL bOriginal)
 void CTextObject::MoveHandleTo(int nHandle, CPoint point)
 {
 	CDrawObject::MoveHandleTo(nHandle, point);
-	CRect rcRichEditPanel = m_position;
-	rcRichEditPanel.DeflateRect(1, 1);
 
-	m_pRichEditPanel->SetClientRect(&rcRichEditPanel, FALSE);
+	m_pRichEditPanel->SetClientRect(&m_position, FALSE);
 	m_pDrawCanvas->InvalObject(this);
 }
 
@@ -74,9 +81,7 @@ void CTextObject::MoveTo(const CRect& position)
 
 	m_pDrawCanvas->InvalObject(this);
 	m_position = position;
-	CRect rcRichEditPanel = m_position;
-	rcRichEditPanel.DeflateRect(1, 1);
-	m_pRichEditPanel->SetClientRect(&rcRichEditPanel, FALSE);
+	m_pRichEditPanel->SetClientRect(&m_position, FALSE);
 	m_pDrawCanvas->InvalObject(this);
 	//m_pDocument->SetModifiedFlag();
 }
@@ -84,4 +89,15 @@ void CTextObject::MoveTo(const CRect& position)
 void CTextObject::OnNotify(int iNotify, void* pParam)
 {
 	FTLTRACE(TEXT("In CTextObject::OnNotify, iNotify=%d, pParam=0x%x\n"), iNotify, pParam);
+}
+
+void CTextObject::OnExpand(int nDir, int nValue)
+{
+	if (nValue > m_position.Height())
+	{
+		m_position.bottom = m_position.top + nValue;
+
+		m_pRichEditPanel->SetClientRect(m_position, FALSE);
+		m_pDrawCanvas->InvalObject(this);
+	}
 }

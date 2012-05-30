@@ -190,6 +190,11 @@ public:
 
 	void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	{
+		if (VK_ESCAPE == nChar)
+		{
+			this->Select(NULL, FALSE);
+			this->m_pFoucsTextObject = NULL;
+		}
 		CDrawTool* pTool = GetCurrentTool();
 		if (pTool)
 		{

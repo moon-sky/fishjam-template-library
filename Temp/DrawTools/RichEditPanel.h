@@ -3,11 +3,12 @@
 #include <textserv.h>
 #include <tom.h>
 
-
+#include "DrawTypeDefine.h"
 class INotifyCallBack
 {
 public:
 	virtual void OnNotify(int iNotify, void* pParam) = 0;
+	virtual void OnExpand(int nDir, int nValue) = 0;
 };
 
 #define RICH_EDIT_PANEL_FONT_MASK_NAME		(DWORD)(0x00000001)
@@ -25,13 +26,14 @@ public:
 
 class CRichEditPanel
 	: public ITextHost
-	, public IRichEditOleCallback
+	//, public IRichEditOleCallback
 	, public CMessageFilter
 {
 public:
 	CRichEditPanel();
 	~CRichEditPanel();
-	HRESULT Init(HWND hWndOwner, const RECT* prcClient, INotifyCallBack* pNotifyCallback = NULL);
+	HRESULT Init(HWND hWndOwner, const RECT* prcClient, IDrawCanvas* pDrawCanvas,
+		INotifyCallBack* pNotifyCallback = NULL);
 	BOOL SetActive(BOOL bActive);
 	BOOL IsActive();
 
@@ -65,40 +67,40 @@ public:
 
 
 	//property
-	BOOL GetWordWrap(void);
-	void SetWordWrap(BOOL fWordWrap);
-	BOOL GetReadOnly();
-	void SetReadOnly(BOOL fReadOnly);
-	BOOL GetAllowBeep();
-	void SetAllowBeep(BOOL fAllowBeep);
-	RECT* GetViewInset(void);
-	void SetViewInset(RECT *prc);
-	WORD GetDefaultAlign();
-	void SetDefaultAlign(WORD wNewAlign);
-	BOOL GetRichTextFlag();
-	void SetRichTextFlag(BOOL fNew);
-	LONG GetDefaultLeftIndent();
-	void SetDefaultLeftIndent(LONG lNewIndent);
-	
-	BOOL SetSaveSelection(BOOL fSaveSelection);
+	//BOOL GetWordWrap(void);
+	//void SetWordWrap(BOOL fWordWrap);
+	//BOOL GetReadOnly();
+	//void SetReadOnly(BOOL fReadOnly);
+	//BOOL GetAllowBeep();
+	//void SetAllowBeep(BOOL fAllowBeep);
+	//RECT* GetViewInset(void);
+	//void SetViewInset(RECT *prc);
+	//WORD GetDefaultAlign();
+	//void SetDefaultAlign(WORD wNewAlign);
+	//BOOL GetRichTextFlag();
+	//void SetRichTextFlag(BOOL fNew);
+	//LONG GetDefaultLeftIndent();
+	//void SetDefaultLeftIndent(LONG lNewIndent);
+	//
+	//BOOL SetSaveSelection(BOOL fSaveSelection);
 	SIZEL *GetExtent(void);
 	void SetExtent(SIZEL *psizelExtent, BOOL fNotify);
-
-	BOOL GetActiveState(void);
-	BOOL DoSetCursor(RECT *prc, POINT *pt);
-	void SetTransparent(BOOL fTransparent);
-	void GetControlRect(LPRECT prc);
-	LONG SetAccelPos(LONG laccelpos);
-	WCHAR SetPasswordChar(WCHAR chPasswordChar);
-	void SetDisabled(BOOL fOn);
-	LONG SetSelBarWidth(LONG lSelBarWidth);
-	BOOL GetTimerState();
+	void SetZoom(UINT Numerator, UINT Denominator);
+	//BOOL GetActiveState(void);
+	//BOOL DoSetCursor(RECT *prc, POINT *pt);
+	//void SetTransparent(BOOL fTransparent);
+	//void GetControlRect(LPRECT prc);
+	//LONG SetAccelPos(LONG laccelpos);
+	//WCHAR SetPasswordChar(WCHAR chPasswordChar);
+	//void SetDisabled(BOOL fOn);
+	//LONG SetSelBarWidth(LONG lSelBarWidth);
+	//BOOL GetTimerState();
 
 	//static LONG GetXPerInch(void) { return xPerInch; }
 	//static LONG	GetYPerInch(void) { return yPerInch; }
 
-	HRESULT OnTxInPlaceActivate(LPCRECT prcClient);
-	HRESULT OnTxInPlaceDeactivate();
+	//HRESULT OnTxInPlaceActivate(LPCRECT prcClient);
+	//HRESULT OnTxInPlaceDeactivate();
 
 	BEGIN_MSG_MAP_EX(CRichEditPanel)
 		//MESSAGE_HANDLER(WM_LBUTTONDBLCLK, OnLButtonDblClk)
@@ -159,127 +161,6 @@ public:
 	virtual void TxImmReleaseContext( HIMC himc );
 	virtual HRESULT TxGetSelectionBarWidth( LONG *lSelBarWidth );
 
-	//IRichEditOleCallback
-	//virtual HRESULT ContextSensitiveHelp( BOOL fEnterMode) 
-	//{
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT DeleteObject(          LPOLEOBJECT lpoleobj)
-	//{
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT GetClipboardData(          CHARRANGE *lpchrg,
-	//	DWORD reco,
-	//	LPDATAOBJECT *lplpdataobj
-	//	) 
-	//{
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT GetContextMenu(          WORD seltype,
-	//	LPOLEOBJECT lpoleobj,
-	//	CHARRANGE *lpchrg,
-	//	HMENU *lphmenu
-	//	) 
-	//{
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT GetDragDropEffect(          BOOL fDrag,
-	//	DWORD grfKeyState,
-	//	LPDWORD pdwEffect
-	//	) 
-	//{
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT GetInPlaceContext(          LPOLEINPLACEFRAME *lplpFrame,
-	//	LPOLEINPLACEUIWINDOW *lplpDoc,
-	//	LPOLEINPLACEFRAMEINFO lpFrameInfo
-	//	) 
-	//{
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT GetNewStorage(          LPSTORAGE *lplpstg
-	//	) 
-	//{
-	//	// LockBytes: ILockBytes;
-	//	//Result := CreateILockBytesOnHGlobal(0, True, LockBytes);
-	//	//if Result = S_OK then
-	//	//	Result := StgCreateDocfileOnILockBytes(LockBytes,
-	//	//STGM_READWRITE or STGM_SHARE_EXCLUSIVE or STGM_CREATE, 0, stg);
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT QueryAcceptData(          LPDATAOBJECT lpdataobj,
-	//	CLIPFORMAT *lpcfFormat,
-	//	DWORD reco,
-	//	BOOL fReally,
-	//	HGLOBAL hMetaPict
-	//	) 
-	//{
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT QueryInsertObject(          LPCLSID lpclsid,
-	//	LPSTORAGE lpstg,
-	//	LONG cp
-	//	) 
-	//{
-	//	return E_NOTIMPL; 
-	//}
-	//virtual HRESULT ShowContainerUI(          BOOL fShow
-	//	) 
-	//{
-	//	return E_NOTIMPL; 
-	//}
-
-	STDMETHOD(GetNewStorage) (THIS_ LPSTORAGE FAR * lplpstg)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(GetInPlaceContext) (THIS_ LPOLEINPLACEFRAME FAR * lplpFrame,
-		LPOLEINPLACEUIWINDOW FAR * lplpDoc,
-		LPOLEINPLACEFRAMEINFO lpFrameInfo)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(ShowContainerUI) (THIS_ BOOL fShow)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(QueryInsertObject) (THIS_ LPCLSID lpclsid, LPSTORAGE lpstg,
-		LONG cp)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(DeleteObject) (THIS_ LPOLEOBJECT lpoleobj)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(QueryAcceptData) (THIS_ LPDATAOBJECT lpdataobj,
-		CLIPFORMAT FAR * lpcfFormat, DWORD reco,
-		BOOL fReally, HGLOBAL hMetaPict)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(ContextSensitiveHelp) (THIS_ BOOL fEnterMode)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(GetClipboardData) (THIS_ CHARRANGE FAR * lpchrg, DWORD reco,
-		LPDATAOBJECT FAR * lplpdataobj)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(GetDragDropEffect) (THIS_ BOOL fDrag, DWORD grfKeyState,
-		LPDWORD pdwEffect)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(GetContextMenu) (THIS_ WORD seltype, LPOLEOBJECT lpoleobj,
-		CHARRANGE FAR * lpchrg,
-		HMENU FAR * lphmenu)
-	{
-		return E_NOTIMPL;
-	}
-
-
 	//CMessageFilter
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
@@ -307,11 +188,11 @@ private:
 	//this must be the first member variable
 	ULONG					m_cRefs;
 	INotifyCallBack*		m_pNotifyCallback;
-
+	
 	HWND					m_hWndOwner;
 	CRect					m_rcClient;
+	IDrawCanvas*			m_pDrawCanvas;
 	//CRect					m_rcViewInset;
-	SIZEL					m_sizelExtent;
 	SIZEL					m_szlExtent;
 	DWORD					m_dwStyle;
 	CHARFORMAT				m_charFormat;
@@ -350,4 +231,5 @@ private:
 	unsigned	m_fTransparent			:1; // Whether control is transparent
 	unsigned	m_fTimer				:1;	// A timer is set
 	unsigned	m_fCapture				:1;	// Captured
+	unsigned	m_fAutoVExpand			:1; // Will Auto Expand
 };
