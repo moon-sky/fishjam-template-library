@@ -5,8 +5,14 @@
 #include "CapImageObj.h"
 #include "ZoomScrollMemDC.h"
 #include "MainFrm.h"
-#include "StringResouceMgr.h"
+#include "../Capture/StringResouceMgr.h"
 #include <ftlGdi.h>
+
+#include <SilverlightCpp.h>
+using namespace SilverlightCpp;
+#include <SilverlightExCpp.h>
+using namespace SilverlightExCpp;
+
 
 const float CNCaptureView::s_FixedZoomScales[ZOOM_COUNT] = 
 {
@@ -124,6 +130,17 @@ VOID CNCaptureView::Finalize()
 
 BOOL CNCaptureView::PreTranslateMessage(MSG* pMsg)
 {
+	if (GetSelection().size() == 1)
+	{
+		CDrawObject* pActiveObject = GetSelection().front();
+		if (pActiveObject)
+		{
+			if(pActiveObject->PreTranslateMessage(pMsg))
+			{
+				return TRUE;
+			}
+		}
+	}
 	//FTLTRACE(TEXT("In CNCaptureView::PreTranslateMessage, msg=%d\n"), pMsg->message);
 	if (WM_MOUSEWHEEL == pMsg->message)
 	{
@@ -137,35 +154,35 @@ BOOL CNCaptureView::PreTranslateMessage(MSG* pMsg)
 BOOL CNCaptureView::_SetSelectRectClipInfo(const CPoint& point)
 {
 	BOOL bRet = FALSE;
-	if (ttSelection == m_nCurToolType && m_pSelectRect && this->IsSelected(m_pSelectRect))
-	{
-		m_bClipCursor = TRUE;
-		CRect rcSelect = m_pSelectRect->GetPosition();
-		DocToClient(&rcSelect);
+	//if (ttSelection == m_nCurToolType && m_pSelectRect && this->IsSelected(m_pSelectRect))
+	//{
+	//	m_bClipCursor = TRUE;
+	//	CRect rcSelect = m_pSelectRect->GetPosition();
+	//	DocToClient(&rcSelect);
 
-		CRect rcClipTarget = m_rcDrawTarget;
-		rcClipTarget.OffsetRect( -rcClipTarget.TopLeft());
-		DocToClient(&rcClipTarget);
-		ClientToScreen(&rcClipTarget);
+	//	CRect rcClipTarget = m_rcDrawTarget;
+	//	rcClipTarget.OffsetRect( -rcClipTarget.TopLeft());
+	//	DocToClient(&rcClipTarget);
+	//	ClientToScreen(&rcClipTarget);
 
-		if (smMove == m_nCurrentSelectMode )
-		{
-			rcClipTarget.right -= rcSelect.Width() ;
-			rcClipTarget.bottom -= rcSelect.Height();
-			rcClipTarget.OffsetRect(point.x - rcSelect.left, point.y - rcSelect.top);
-		}
-		else if(smSize == m_nCurrentSelectMode || smNetSelectSize == m_nCurrentSelectMode)
-		{
-			//now do nothing
-		}
-		rcClipTarget.right += 1;
-		rcClipTarget.bottom += 1;
+	//	if (smMove == m_nCurrentSelectMode )
+	//	{
+	//		rcClipTarget.right -= rcSelect.Width() ;
+	//		rcClipTarget.bottom -= rcSelect.Height();
+	//		rcClipTarget.OffsetRect(point.x - rcSelect.left, point.y - rcSelect.top);
+	//	}
+	//	else if(smSize == m_nCurrentSelectMode || smNetSelectSize == m_nCurrentSelectMode)
+	//	{
+	//		//now do nothing
+	//	}
+	//	rcClipTarget.right += 1;
+	//	rcClipTarget.bottom += 1;
 
-		//FTLTRACE(TEXT("rcClipTarget= [%d,%d], [%d,%d], {%dx%d}\n"), rcClipTarget.left, rcClipTarget.top,
-		//	rcClipTarget.right, rcClipTarget.bottom, 
-		//	rcClipTarget.Width(), rcClipTarget.Height());
-		API_VERIFY(::ClipCursor(&rcClipTarget));
-	}
+	//	//FTLTRACE(TEXT("rcClipTarget= [%d,%d], [%d,%d], {%dx%d}\n"), rcClipTarget.left, rcClipTarget.top,
+	//	//	rcClipTarget.right, rcClipTarget.bottom, 
+	//	//	rcClipTarget.Width(), rcClipTarget.Height());
+	//	API_VERIFY(::ClipCursor(&rcClipTarget));
+	//}
 	return bRet;
 }
 
@@ -301,30 +318,34 @@ void CNCaptureView::OnMouseLeave()
 
 void CNCaptureView::OnLButtonUp(UINT nFlags, CPoint point)
 {
+	BOOL bHandle = FALSE;
 	if (m_pImage)
 	{
-		CDrawCanvas<CNCaptureView>::OnLButtonUp(nFlags, point);
+		bHandle = CDrawCanvas<CNCaptureView>::OnLButtonUp(nFlags, point);
 		if (m_bClipCursor)
 		{
 			ClipCursor(NULL);
 			m_bClipCursor = FALSE;
 		}
 	}
-	SetMsgHandled(FALSE);
+	SetMsgHandled(bHandle);
 }
 
 void CNCaptureView::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	if (m_pImage)
 	{
-		if (!FTL::IsSameNumber(GetZoomScale(), s_FixedZoomScales[s_NormalZoomIndex], 0.01f))
+		if (!CDrawCanvas<CNCaptureView>::OnLButtonDblClk(nFlags, point))
 		{
-			m_fLastZoomFactor = GetZoomScale();
-			SetZoom(s_FixedZoomScales[s_NormalZoomIndex]);
-		}
-		else
-		{
-			SetZoom(m_fLastZoomFactor);
+			if (!FTL::IsSameNumber(GetZoomScale(), s_FixedZoomScales[s_NormalZoomIndex], 0.01f))
+			{
+				m_fLastZoomFactor = GetZoomScale();
+				SetZoom(s_FixedZoomScales[s_NormalZoomIndex]);
+			}
+			else
+			{
+				SetZoom(m_fLastZoomFactor);
+			}
 		}
 	}
 }
@@ -438,6 +459,24 @@ void CNCaptureView::DoPaint(CDCHandle dc)
 	
 		    //DrawObjects(dcDraw, FALSE, TRUE);
 			{
+//#define USE_GDI_PLUS
+#if 0
+				Gdiplus::Graphics graphics(memDC);
+				graphics.SetSmoothingMode(SmoothingModeInvalid);
+				graphics.SetInterpolationMode(InterpolationModeHighQualityBilinear); //InterpolationModeInvalid);
+				graphics.SetCompositingMode(CompositingModeSourceCopy);
+				graphics.SetCompositingQuality(CompositingQualityInvalid);
+
+				Gdiplus::Bitmap bmp(m_canvasImage.GetBitmap(), NULL);
+				graphics.DrawImage(&bmp,m_rcDrawTarget.left,m_rcDrawTarget.top, 
+					0,0, rcImage.Width(), rcImage.Height(),UnitPixel);
+
+				//memDC.SetStretchBltMode(COLORONCOLOR); //HALFTONE);
+				//bRet = memDC.StretchBlt(m_rcDrawTarget.left,m_rcDrawTarget.top,m_rcDrawTarget.Width(),
+				//	m_rcDrawTarget.Height(), 
+				//	m_canvasImage.GetMemoryDC(), 
+				//	0,0, rcImage.Width(), rcImage.Height(), SRCCOPY);
+#else
 				//When Capture image size multiply by zoom bigger than 32767, GDI CAN NOT display the image
 				memDC.SetStretchBltMode(COLORONCOLOR); //HALFTONE);
 
@@ -452,28 +491,24 @@ void CNCaptureView::DoPaint(CDCHandle dc)
 				{
 					FTLTRACE(TEXT("%s StretchBlt Failed, LastError=%d\n"), __FILE__LINE__, ::GetLastError());
 				}
-
+#endif 
 			}
-			DrawLogicalInfo(memDC);
-		}
-
-		{
-			CFMMTextDCGuard mmTextDCGuard(memDC);
-
-			if (!m_pImage && m_pDefaultImage)
+			DrawObjects(memDC.m_hDC);
 			{
-				//no image ,just draw default image
-				CRect rcClientDevice;
-				GetClientRect(&rcClientDevice);
-				CSize szDefaultImage(m_pDefaultImage->GetWidth(), m_pDefaultImage->GetHeight());
-				CRect rcDefaultImageTarget = m_pCalcRect->GetPhotoRect(rcClientDevice, &szDefaultImage, 1.0f, FALSE, FALSE);
-				NDGraphics::DrawGdiplusImage(memDC, m_pDefaultImage, rcDefaultImageTarget.left, rcDefaultImageTarget.top,
-					rcDefaultImageTarget.Width(), rcDefaultImageTarget.Height());
-			}
-			//Draw Select Object
-			this->DrawDeviceInfo(memDC.m_hDC);
+				CFMMTextDCGuard mmTextDCGuard(memDC);
 
-			//DrawObjects(memDC.m_hDC, FALSE, TRUE);
+				if (!m_pImage && m_pDefaultImage)
+				{
+					//no image ,just draw default image
+					CRect rcClientDevice;
+					GetClientRect(&rcClientDevice);
+					CSize szDefaultImage(m_pDefaultImage->GetWidth(), m_pDefaultImage->GetHeight());
+					CRect rcDefaultImageTarget = m_pCalcRect->GetPhotoRect(rcClientDevice, &szDefaultImage, 1.0f, FALSE, FALSE);
+					NDGraphics::DrawGdiplusImage(memDC, m_pDefaultImage, rcDefaultImageTarget.left, rcDefaultImageTarget.top,
+						rcDefaultImageTarget.Width(), rcDefaultImageTarget.Height());
+				}
+				DrawObjectsTracker(memDC.m_hDC);
+			}
 		}
 	}
 
@@ -575,6 +610,21 @@ void CNCaptureView::_SetScrollInfo(float newZoomScale, BOOL bUseCenterPoint)
 		ptNewOffset.Offset(-ptMouseDevice);
 		SetScrollOffset(ptNewOffset.x, ptNewOffset.y);
 
+/*
+		if (!GetSelection().empty())
+		{
+			CTextObject* pTextObject = dynamic_cast<CTextObject*>(GetSelection().front());
+			if (pTextObject)
+			{
+				//SIZEL newExtent = {0};
+				//newExtent.cy = (double)pTextObject->GetPosition().Height() * 2540 * newZoomScale * 96;
+				//newExtent.cx = (double)pTextObject->GetPosition().Width() * 2540 * newZoomScale * 96;
+
+				pTextObject->GetRichEditPanel()->SetZoom(m_sizeAll.cx, m_sizeLogAll.cx);
+				//pTextObject->GetRichEditPanel()->SetExtent(&newExtent, TRUE);
+			}
+		}
+*/
 		//FTLTRACE(TEXT("ptMouseDevice=[%d,%d], ptOldLogical=[%d,%d], ptNewClient=[%d,%d], ptNewOffset=[%d,%d]\n"),
 		//	ptMouseDevice.x, ptMouseDevice.y, ptOldLogical.x, ptOldLogical.y, ptNewClient.x, ptNewClient.y,
 		//	ptNewOffset.x, ptNewOffset.y);
@@ -630,7 +680,7 @@ void CNCaptureView::OnCaptureImageChanged()
 		m_bImageChanged = TRUE;
 	}
 	//m_iFixedZoomIndex = s_NormalZoomIndex;
-	ReleaseSelectRect();
+	//ReleaseSelectRect();
 	_CalcImageSize();
 	//make scrollbar disappear and set statusbar text unvisible
 	if (NULL == m_pImage)
@@ -652,9 +702,10 @@ void CNCaptureView::OnCaptureImageChanged()
 		//first capture
 		if (1 == pDoc->GetCaptureCount() )
 		{
-			SetCurrentToolType(ttSelection);
+			SetCurrentToolType(ttRect);
 		}
 		SetZoom(m_pImage->GetZoom(), TRUE, TRUE);
+		m_pImage->GetCurrentObjectInfo(m_allObjects, m_selection);
 	}
 		
 	Invalidate();
@@ -674,14 +725,14 @@ void CNCaptureView::InvalidateFrame(LPRECT lpRect, BOOL bRePaint)
 BOOL CNCaptureView::SelectAll()
 {
 	BOOL bRet = FALSE;
-	if (m_pImage)
-	{
-		API_VERIFY(ReleaseSelectRect());
-		SetCurrentToolType(ttSelection);
-		CRect rcSelectAll = m_rcDrawTarget;
-		rcSelectAll.OffsetRect(-m_rcDrawTarget.TopLeft());
-		API_VERIFY(CreateSelectRect(rcSelectAll));
-	}
+	//if (m_pImage)
+	//{
+	//	API_VERIFY(ReleaseSelectRect());
+	//	SetCurrentToolType(ttSelection);
+	//	CRect rcSelectAll = m_rcDrawTarget;
+	//	rcSelectAll.OffsetRect(-m_rcDrawTarget.TopLeft());
+	//	API_VERIFY(CreateSelectRect(rcSelectAll));
+	//}
 	return bRet;
 }
 
@@ -988,6 +1039,15 @@ void CNCaptureView::DocToClient(CRect* pRect)
 	dc.LPtoDP((LPPOINT)pRect, 2);
 }
 
+void CNCaptureView::SetCurrentOffsetPoint(LPPOINT lpPoint)
+{
+	SetScrollOffset(lpPoint->x, lpPoint->y, TRUE);
+}
+
+void CNCaptureView::GetCurrentOffsetPoint(LPPOINT lpPoint)
+{
+	GetScrollOffset(*lpPoint);
+}
 CRect CNCaptureView::_GetPhotoRect( CRect rcClient, LPSIZE lpSize)
 {
 	CRect rcTarget( 0, 0, 0, 0 );
@@ -1008,6 +1068,20 @@ CRect CNCaptureView::_GetPhotoRect( CRect rcClient, LPSIZE lpSize)
 	//	ptOriginalLogical.x, ptOriginalLogical.y, ptOriginalDevice.x, ptOriginalDevice.y);
 
 	return 	rcTarget;
+}
+
+BOOL CNCaptureView::GetImageByRect(const CRect& rcSrc, CImage& Image)
+{
+	if (m_pImage)
+	{
+		CImageDC dcImage(Image);
+		DrawObjects(m_canvasImage.GetMemoryDC());
+		BitBlt(dcImage, 0, 0, rcSrc.Width(), rcSrc.Height(), m_canvasImage.GetMemoryDC(), rcSrc.left, rcSrc.top, SRCCOPY);
+		CRect rcImage(0, 0, m_pImage->GetWidth(), m_pImage->GetHeight());
+		m_pImage->Draw(m_canvasImage, rcImage);
+		return TRUE;
+	}
+	return FALSE;
 }
 
 void CNCaptureView::PrepareDC(CDCHandle dc)
@@ -1036,4 +1110,62 @@ void CNCaptureView::PrepareDC(CDCHandle dc)
 	}
 
 	dc.SetWindowOrg(-m_rcDrawTarget.left, -m_rcDrawTarget.top);
+}
+
+
+void CNCaptureView::SelectToolTypeByMenu(const CPoint& ptPoint)
+{
+	CMenu PopMenu;
+	if(PopMenu.CreatePopupMenu())
+	{
+		UINT nID = 500;
+
+		ToolType emToolType = GetCurrentToolType();
+		for (DrawToolList::iterator it = m_tools.begin(); it != m_tools.end(); ++it)
+		{
+			UINT uFlags = MF_STRING;
+			if (emToolType == (*it)->GetToolType())
+			{
+				uFlags |= MF_CHECKED;
+			}
+			PopMenu.AppendMenu(uFlags, nID ++, (*it)->GetToolName());
+		}
+		
+
+		UINT uRetID = PopMenu.TrackPopupMenuEx(TPM_RETURNCMD | TPM_RIGHTALIGN, ptPoint.x, ptPoint.y, m_hWnd);
+		if (uRetID >= 500)
+		{
+			size_t uIndex = uRetID - 500;
+			if (uIndex < m_tools.size() && emToolType != m_tools[uIndex]->GetToolType())
+			{
+				SetCurrentToolType(m_tools[uIndex]->GetToolType());
+			}
+		}
+		PopMenu.DestroyMenu();
+	}
+}
+
+BOOL CNCaptureView::BackupDrawObjectData(LPCTSTR strName)
+{
+	if (m_pImage)
+	{
+		return m_pImage->PushDrawObjectInfo(m_allObjects, m_selection, strName);
+	}
+	return FALSE;
+}
+
+void CNCaptureView::Undo()
+{
+	if(m_pImage && m_pImage->GetPrevDrawObjectInfo(m_allObjects, m_selection))
+	{
+		Invalidate();
+	}
+}
+
+void CNCaptureView::Redo()
+{
+	if(m_pImage && m_pImage->GetNextDrawObjectInfo(m_allObjects, m_selection))
+	{
+		Invalidate();
+	}
 }

@@ -27,6 +27,78 @@ namespace FTL
 		CFStringFormater	m_strFormater;
     };
 
+	//RichEdit 有不少使用 WM_USER 的消息
+	class CFRichEditCtrlMsgInfo : CFDefaultMsgInfo
+	{
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			switch (uMsg)
+			{
+				//TODO:不全，而且没有使用来检测
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_CANPASTE);//决定控件是否识别某种指定的格式
+
+				//通过反复使用EM_FORMATRANGE和EM_DISPLAYBAND消息，打印Rich Text控件内容的应用程序可以实现条带化操作
+				//（条带化操作指的是将输出分割为较小部分用于打印目的的操作。）
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_DISPLAYBAND);//在输出设备文本格式化完成后，将输出发送至设备
+
+				//选择内容指的是选中字符的范围，或者表示没有字符选中时的插入点位置
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_EXGETSEL);//确定当前选中内容
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_EXLIMITTEXT);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_EXLINEFROMCHAR);//判断给定字符属于哪一行
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_EXSETSEL);//设置当前选择区域
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_FINDTEXT);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_FORMATRANGE);//对于特殊设备而言，要格式化Rich Edit控件中部分内容
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETCHARFORMAT);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETEVENTMASK);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETOLEINTERFACE);//从控件获取一个IRichEditOle接口，该接口允许它控制OLE对象
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETPARAFORMAT);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETSELTEXT);//获取Rich Edit控件中的选中文本(拷贝的字符数组中)
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_HIDESELECTION);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_PASTESPECIAL);//粘贴指定的剪贴板格式
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_REQUESTRESIZE);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SELECTIONTYPE);//获取当前选中内容的相关信息
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETBKGNDCOLOR);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETCHARFORMAT);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETEVENTMASK);//设置EventMask(如 EN_PROTECTED)
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETOLECALLBACK);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETPARAFORMAT);//
+
+				//指定一个用于文本格式化的目标设备, 该消息对于WYSIWYG（所见即所得）模式非常有用，
+				//  在该模式下应用程序采用默认打印机字体规格而非屏幕字体规格来定位文本
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETTARGETDEVICE);
+
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_STREAMIN);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_STREAMOUT);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETTEXTRANGE);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_FINDWORDBREAK);//查找断字符或者确定一个字符类和断字标志位
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETOPTIONS);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETOPTIONS);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_FINDTEXTEX);//查找字符串
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETWORDBREAKPROCEX);//
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETWORDBREAKPROCEX);//自定义"断字处理函数"
+
+				// RichEdit 2.0 messages 
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETUNDOLIMIT);//设置Undo队列的最大动作数目
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_REDO);//重做Redo队列中的下一动作
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_CANREDO);//判断是否在Redo队列中有一些动作
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETUNDONAME);//获取Undo队列中的下一动作的类型名称
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETREDONAME);//获取Redo队列中的下一动作的类型名称
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_STOPGROUPTYPING);//终止当前Undo动作的连续键入动作的组合
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETTEXTMODE);//设置文本模式或者Undo级别
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETTEXTMODE);//获取文本模式或者Undo级别
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_AUTOURLDETECT);//是否开启/关闭自动URL检测
+
+
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETLANGOPTIONS);//设置IME和远东语言支持选项
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETLANGOPTIONS);//获取IME和远东语言支持选项
+				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_GETIMECOMPMODE);//获取当前输入方式编辑(IME)模式
+				break;
+			}
+			//m_strFormater.Format(TEXT("%s{nFlag=%d(0x%x), Pos=[%d,%d]}"), pszMsgName, nFlags, nFlags, xPos, yPos );
+			return m_strFormater;
+		}
+	};
+
 	class CFMouseMsgInfo : CFDefaultMsgInfo
 	{
 	public:
@@ -47,9 +119,16 @@ namespace FTL
 		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
 			TCHAR nChar = (TCHAR)wParam;
+			TCHAR nPrintChar = nChar;
+			if(!IsCharAlphaNumeric(nPrintChar))
+			{
+				nPrintChar = TEXT('.');
+			}
+
 			UINT nRepCnt = LOWORD(lParam);
 			UINT nFlags = HIWORD(lParam);
-			m_strFormater.Format(TEXT("%s{nChar=0x%x(%c), nRepCnt=%d, nFlags=0x%x}"),pszMsgName, nChar, nChar, nRepCnt, nFlags);
+			
+			m_strFormater.Format(TEXT("%s{nChar=0x%x(%c), nRepCnt=%d, nFlags=0x%x}"),pszMsgName, nChar, nPrintChar, nRepCnt, nFlags);
 			return m_strFormater;
 		}
 	};
@@ -538,7 +617,7 @@ namespace FTL
 #endif
 
 				//Edit Control Messages
-				GET_MESSAGE_INFO_ENTRY(EM_GETSEL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(EM_GETSEL, CFDefaultMsgInfo); //最多获取到32KB(16Bit)的选中文本(RichEdit中使用 EM_EXGETSEL 来突破这个限制)
 				GET_MESSAGE_INFO_ENTRY(EM_SETSEL, CFDefaultMsgInfo);
 				GET_MESSAGE_INFO_ENTRY(EM_GETRECT, CFDefaultMsgInfo);
 				GET_MESSAGE_INFO_ENTRY(EM_SETRECT, CFDefaultMsgInfo);

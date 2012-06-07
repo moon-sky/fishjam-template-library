@@ -3,13 +3,9 @@
 
 #ifdef FTL_DEBUG
 //#include <ftlwindow.h>
-//#include <ftlComDetect.h>
 //#include <ftlControls.h>
-//#include <ftlGdi.h>
-//#include <ftlSystem.h>
+//#include <ftlGdi.h> 
 #endif 
- 
-#include <limits>
 
 #pragma comment(lib, "riched20.lib")
 
@@ -18,11 +14,37 @@
 #define LY_PER_INCH   1440
 // HIMETRIC units per inch (used for conversion)
 #define HIMETRIC_PER_INCH	2540
-#define MARGIN_LEFT			1
-#define MARGIN_TOP			1
-#define MARGIN_RIGHT		1
-#define MARGIN_BOTTOM		1
+#define MARGIN_LEFT			0
+#define MARGIN_TOP			0
+#define MARGIN_RIGHT		0
+#define MARGIN_BOTTOM		0
 
+// HIMETRIC units per inch (used for conversion)
+#define HIMETRIC_PER_INCH 2540
+
+// Convert Himetric along the X axis to X pixels
+LONG HimetricXtoDX(LONG xHimetric, LONG xPerInch)
+{
+	return (LONG) MulDiv(xHimetric, xPerInch, HIMETRIC_PER_INCH);
+}
+
+// Convert Himetric along the Y axis to Y pixels
+LONG HimetricYtoDY(LONG yHimetric, LONG yPerInch)
+{
+	return (LONG) MulDiv(yHimetric, yPerInch, HIMETRIC_PER_INCH);
+}
+
+// Convert Pixels on the X axis to Himetric
+LONG DXtoHimetricX(LONG dx, LONG xPerInch)
+{
+	return (LONG) MulDiv(dx, HIMETRIC_PER_INCH, xPerInch);
+}
+
+// Convert Pixels on the Y axis to Himetric
+LONG DYtoHimetricY(LONG dy, LONG yPerInch)
+{
+	return (LONG) MulDiv(dy, HIMETRIC_PER_INCH, yPerInch);
+}
 
 // These constants are for backward compatibility. They are the 
 // sizes used for initialization and reset in RichEdit 1.0
@@ -106,7 +128,7 @@ ULONG STDMETHODCALLTYPE CRichEditPanel::Release(void)
 
 HRESULT CRichEditPanel::InitDefaultCharFormat(HFONT hfont) 
 {
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::InitDefaultCharFormat\n"));
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::InitDefaultCharFormat, hFont=0x%x\n"), hfont);
 
 #if 1 
 	HRESULT hr = E_FAIL;
@@ -241,12 +263,14 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient,
 	m_pNotifyCallback = pNotifyCallback;
 
 	//m_rcViewInset = m_rcClient;
-#pragma TODO(szlExtent is Himetric)
-	m_szlExtent.cx = m_rcClient.Width();
-	m_szlExtent.cy = m_rcClient.Height();
 
 	COM_VERIFY(InitDefaultCharFormat(NULL));
 	COM_VERIFY(InitDefaultParaFormat());
+
+#pragma TODO(szlExtent is Himetric)
+	// The extent matches the full client rectangle in HIMETRIC
+	m_szlExtent.cx = DXtoHimetricX(m_rcClient.Width(), m_xPixPerInch);
+	m_szlExtent.cy = DYtoHimetricY(m_rcClient.Height(), m_yPixPerInch);
 
 	CComPtr<IUnknown>	spUnknown;
 	COM_VERIFY(CreateTextServices(NULL, this, &spUnknown));
@@ -254,7 +278,19 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient,
 	{
 		COM_VERIFY(spUnknown->QueryInterface(IID_ITextServices, (void**)&m_spTextServices));
 		COM_VERIFY(spUnknown->QueryInterface(__uuidof(ITextDocument), (void**)&m_spTextDocument));
-		m_spTextServices->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, TXTBIT_BACKSTYLECHANGE);
+		COM_VERIFY(m_spTextServices->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, TXTBIT_BACKSTYLECHANGE));
+
+		LRESULT eventMask = 0;
+		LRESULT oldEventMask = 0;
+		COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETEVENTMASK, 0, 0, &eventMask));
+		//eventMask |= ENM_CHANGE | ENM_UPDATE | ENM_SCROLL | ENM_SCROLLEVENTS | ENM_PARAGRAPHEXPANDED| ENM_PAGECHANGE| ENM_KEYEVENTS | ENM_MOUSEEVENTS
+		//	| ENM_REQUESTRESIZE| ENM_SELCHANGE| ENM_DROPFILES| ENM_PROTECTED| ENM_CORRECTTEXT| ENM_IMECHANGE
+		//	| ENM_LANGCHANGE | ENM_OBJECTPOSITIONS | ENM_LINK | ENM_LOWFIRTF; 
+		eventMask = 0xFFFFFFFF;
+		COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETEVENTMASK, 0, (LPARAM)eventMask, &oldEventMask));
+
+		COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETEVENTMASK, 0, 0, &oldEventMask));
+		int i = 0;
 		//COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETOLECALLBACK, NULL, (LPARAM)this, &lResult));
 
 
@@ -452,9 +488,9 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 	HRESULT hr = E_FAIL;
 	BOOL bRet = FALSE;
 #ifdef FTL_DEBUG
-	//FTL::HDCProperty	hdcProperty;
-	//FTL::CFGdiUtil::GetHDCProperty(dcParent, &hdcProperty);
-	//FTLTRACEEX(FTL::tlDetail, TEXT("hdcParent = %s\n"), hdcProperty.GetPropertyString(HDC_PROPERTY_GET_ALL));
+	FTL::HDCProperty	hdcProperty;
+	FTL::CFGdiUtil::GetHDCProperty(dcParent, &hdcProperty);
+	FTLTRACEEX(FTL::tlDetail, TEXT("hdcParent = %s\n"), hdcProperty.GetPropertyString(HDC_PROPERTY_GET_ALL));
 #endif 
 	
 	//FTL::CFMMTextDCGuard mmTextDCGuard(dcParent);
@@ -528,9 +564,14 @@ HRESULT CRichEditPanel::SetClientRect(const RECT *prc, BOOL fUpdateExtent /* = T
 	m_rcClient.NormalizeRect();
 	m_rcClient.DeflateRect(MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM);
 
-	//m_rcViewInset = m_rcClient;
-	m_szlExtent.cx = m_rcClient.Width();
-	m_szlExtent.cy = m_rcClient.Height();
+	if (fUpdateExtent)
+	{
+		m_szlExtent.cx = DXtoHimetricX((prc->bottom - prc->top), m_xPixPerInch);
+		m_szlExtent.cy = DYtoHimetricY((prc->right - prc->left), m_yPixPerInch);
+	}
+	////m_rcViewInset = m_rcClient;
+	//m_szlExtent.cx = m_rcClient.Width();
+	//m_szlExtent.cy = m_rcClient.Height();
 
 	return S_OK;
 }
@@ -562,16 +603,31 @@ void CRichEditPanel::SetExtent(SIZEL *psizelExtent, BOOL fNotify)
 void CRichEditPanel::SetZoom(UINT Numerator, UINT Denominator)
 {
 	HRESULT hr = E_FAIL;
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::SetZoom,newZoom=%f( %d/%d )\n"),
-		(float)Numerator/Denominator, Numerator, Denominator);
+#if 0 
+	UINT nOldNnumerator = 1;
+	UINT nOldDenominator = 1;
+	LRESULT lResult = 0;
+	COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETZOOM, (WPARAM)nOldDenominator, (WPARAM)nOldDenominator, &lResult));
+
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::SetZoom,newZoom=%f( %d/%d ), oldZoom=%f( %d/%d )\n"),
+		(float)Numerator/Denominator, Numerator, Denominator,
+		(float)nOldNnumerator/nOldDenominator, nOldNnumerator, nOldDenominator);
 	
-	COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETZOOM, Numerator, Denominator, NULL));
+	COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETZOOM, Numerator, Denominator, &lResult));
+#endif 
 }
 
 HRESULT CRichEditPanel::TxGetExtent( LPSIZEL lpExtent )
 {
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxGetExtent, m_szlExtent={%d,%d}\n"), 
-		m_szlExtent.cx, m_szlExtent.cy);
+#ifdef FTL_DEBUG
+	static SIZEL oldExtent = {0};
+	if (oldExtent.cx != m_szlExtent.cx || oldExtent.cy != m_szlExtent.cy)
+	{
+		FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxGetExtent, m_szlExtent={%d,%d}\n"), 
+			m_szlExtent.cx, m_szlExtent.cy);
+		oldExtent = m_szlExtent;
+	}
+#endif 
 	*lpExtent = m_szlExtent;
 	return E_NOTIMPL;
 }
@@ -642,6 +698,7 @@ BOOL CRichEditPanel::TxSetScrollRange( INT fnBar, LONG nMinPos, INT nMaxPos, BOO
 	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxSetScrollRange, fnBar=%d, nMinPos=%d, nMaxPos=%d, fRedraw=%d, m_rcClient.Height=%d\n"),
 		fnBar, nMinPos, nMaxPos, fRedraw, m_rcClient.Height());
 	FTLASSERT(SB_VERT == fnBar);
+	FTLASSERT(FALSE);  //TxGetScrollBars return 0
 
 	BOOL bRet = FALSE;
 	if (m_fAutoVExpand && nMaxPos - nMinPos > m_rcClient.Height())
@@ -782,7 +839,7 @@ BOOL CRichEditPanel::TxScreenToClient( LPPOINT lppt )
 	BOOL bRet = FALSE;
 	POINT ptOld = *lppt;
 	API_VERIFY(::ScreenToClient(m_hWndOwner, lppt));
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxScreenToClient, [%d,%d] => [%d,%d]\n"), ptOld.x, ptOld.y, lppt->x, lppt->y);
+	//FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxScreenToClient, [%d,%d] => [%d,%d]\n"), ptOld.x, ptOld.y, lppt->x, lppt->y);
 	return bRet;
 }
 
@@ -792,7 +849,7 @@ BOOL CRichEditPanel::TxClientToScreen( LPPOINT lppt )
 	API_VERIFY(::ClientToScreen(m_hWndOwner, lppt));
 
 	POINT ptOld = *lppt;
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxClientToScreen, [%d,%d] => [%d,%d]\n"), ptOld.x, ptOld.y, lppt->x, lppt->y);
+	//FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxClientToScreen, [%d,%d] => [%d,%d]\n"), ptOld.x, ptOld.y, lppt->x, lppt->y);
 	return bRet;
 }
 
@@ -928,7 +985,7 @@ HRESULT CRichEditPanel::TxGetMaxLength( DWORD *plength )
 HRESULT CRichEditPanel::TxGetScrollBars( DWORD *pdwScrollBar )
 {
 	//if return 0, then do not allow scrollbars
-	*pdwScrollBar = WS_VSCROLL ; //ES_AUTOVSCROLL
+	*pdwScrollBar = 0; //WS_VSCROLL ; //ES_AUTOVSCROLL
 
 	//*pdwScrollBar =  m_dwStyle & (WS_VSCROLL | WS_HSCROLL | ES_AUTOVSCROLL | 
 	//	ES_AUTOHSCROLL | ES_DISABLENOSCROLL);
@@ -1035,9 +1092,12 @@ HRESULT CRichEditPanel::TxGetPropertyBits( DWORD dwMask, DWORD *pdwBits )
 
 HRESULT CRichEditPanel::TxNotify( DWORD iNotify, void *pv )
 {
-	//FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
-	//	FTL::CFControlUtil::GetEditNotifyCodeString(iNotify), pv);
-
+#if 0
+	FTL::CFStringFormater formater;
+	FTL::CFControlUtil::GetEditNotifyCodeString(formater, iNotify, pv);
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
+		formater.GetString(), pv);
+#endif 
 	//dwBits := dwBits and TXTBIT_ALL_NOTIFICATIONS;
 	//FServices.OnTxPropertyBitsChange(dwBits, dwBits);
 
@@ -1078,16 +1138,19 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 	//else 
 	if (IsActive())
 	{
+#if 1
 		if (WM_MOUSEFIRST <= pMsg->message && pMsg->message <= WM_MOUSELAST)
 		{
 			CPoint ptLocalClient = pMsg->pt;
 			TxScreenToClient(&ptLocalClient);
 			m_pDrawCanvas->ClientToDoc(&ptLocalClient);
-			if (m_rcClient.PtInRect(ptLocalClient))
+			if (GetCapture() == m_pDrawCanvas->GetHWnd() && m_rcClient.PtInRect(ptLocalClient))
 			{
+				//now is capture
 				bRet = TRUE;
 			}
 		}
+#endif 
 		if(WM_KEYFIRST <= pMsg->message && pMsg->message <= WM_KEYLAST)
 		{
 			bRet = TRUE;
@@ -1135,7 +1198,7 @@ LRESULT CRichEditPanel::OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM l
 
 BOOL CRichEditPanel::PreTranslateMessage(MSG* pMsg)
 {
-	//DUMP_WINDOWS_MSG(__FILE__LINE__, (DEFAULT_DUMP_FILTER_MESSAGE | DUMP_FILTER_TIMER), pMsg->message, pMsg->wParam, pMsg->lParam);
+	//DUMP_WINDOWS_MSG(__FILE__LINE__, (DEFAULT_DUMP_FILTER_MESSAGE | DUMP_FILTER_TIMER | DUMP_FILTER_KEYDOWN), pMsg->message, pMsg->wParam, pMsg->lParam);
 
 	BOOL bRet = FALSE;
 	HRESULT hr = E_FAIL;

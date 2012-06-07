@@ -6,11 +6,10 @@
 
 class CTextObject 
 	: public CDrawObject
-	, public CMessageFilter
 	, public INotifyCallBack
 {
 public:
-	CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType);
+	CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual ~CTextObject();
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg)
@@ -32,6 +31,11 @@ public:
 	//INotifyCallBack
 	virtual void OnNotify(int iNotify, void* pParam);
 	virtual void OnExpand(int nDir, int nValue);
+
+	virtual BOOL HitTestMove(CPoint point);
+	virtual BOOL HitTestActive(CPoint point);
+
+	void CheckTextRect();
 
 	CRichEditPanel* GetRichEditPanel()
 	{

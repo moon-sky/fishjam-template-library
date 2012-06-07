@@ -4,13 +4,11 @@
 
 #pragma once
 #include "NPVPhotoCalcRect.h"
-#include "./AlphaBitmapUI/Canvas.h"
+#include "../Capture/AlphaBitmapUI/Canvas.h"
 #include "./DrawTools/DrawCanvas.h"
 #include "CapImageObj.h"
 #include <atlscrl.h>
-#ifdef FTL_DEBUG
-#include <ftlWindow.h>
-#endif 
+//#include <ftlWindow.h>
 
 #define ZOOM_COUNT	17
 
@@ -27,9 +25,7 @@ public:
 	~CNCaptureView();
 
 	BEGIN_MSG_MAP_EX(CNCaptureView)
-#ifdef FTL_DEBUG
 		//DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE, uMsg, wParam, lParam)
-#endif 
 		//MSG_WM_CREATE(OnCreate)
 		MSG_WM_DESTROY(OnDestroy)
 		MSG_WM_ERASEBKGND(OnEraseBkgnd)
@@ -112,10 +108,20 @@ public:
 	virtual void DocToClient(CPoint* pPoint);
 	virtual void DocToClient(CRect* pRect);
 
+	virtual void SetCurrentOffsetPoint(LPPOINT lpPoint);
+	virtual void GetCurrentOffsetPoint(LPPOINT lpPoint);
+
+	virtual BOOL GetImageByRect(const CRect& rcSrc, CImage& Image);
+
 	//virtual void OnPrepareDC(HDC hDC);
 
 	//void CNCaptureView::PrepareDC(CDCHandle dc);
+	void SelectToolTypeByMenu(const CPoint& ptPoint);
 
+	virtual BOOL BackupDrawObjectData(LPCTSTR strName);
+
+	void Undo();
+	void Redo();
 private:
 	BOOL				m_bInited;
 	BOOL				m_bIsDrawing;

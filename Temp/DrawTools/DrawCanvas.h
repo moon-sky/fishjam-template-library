@@ -9,10 +9,28 @@
 #include "DrawRect.h"
 #include "SelectTool.h"
 #include "RectTool.h"
+#include "TextTool.h"
 #include "SelectTool.h"
-#include "TextObject.h"
+#include "MoveTool.h"
+#include "PolyTool.h"
+#include "FreeDrawTool.h"
 
 #include "DrawTypeDefine.h"
+
+static DRAWOBJBASEINFO s_stDrawObjInfo;
+static CMoveTool   s_MoveTool(&s_stDrawObjInfo);
+static CSelectTool s_SelectTool(&s_stDrawObjInfo);
+static CRectTool   s_RectTool(&s_stDrawObjInfo, ttRect, _T("Rect"));
+static CRectTool   s_LineTool(&s_stDrawObjInfo, ttLine, _T("Line"));
+static CRectTool   s_RoundRectTool(&s_stDrawObjInfo, ttRoundRect, _T("RoundRect"));
+static CRectTool   s_EllipseTool(&s_stDrawObjInfo, ttEllipse, _T("Ellipse"));
+static CRectTool   s_ArrowTool(&s_stDrawObjInfo, ttArrow, _T("Arrow"));
+static CRectTool   s_BalloonTool(&s_stDrawObjInfo, ttBalloon, _T("Balloon"));
+//static CRectTool   s_TextTool(ttText, _T("Text"));
+static CTextTool   s_TextTool(&s_stDrawObjInfo, _T("Text"));
+static CRectTool   s_LineArrowTool(&s_stDrawObjInfo, ttLineArrow, _T("LineArrow"));
+static CFreeDrawTool   s_FreeLineTool(&s_stDrawObjInfo, ttFreeObject, _T("FreeLine"));
+static CPolyTool       s_PolyTool(&s_stDrawObjInfo, ttPoly, _T("Poly"));
 
 template <typename T>
 class CDrawCanvas : public IDrawCanvas
@@ -23,16 +41,19 @@ protected:
 	DrawObjectList	m_allObjects;
 	DrawObjectList	m_selection;
 
-	CSelectTool*	m_pSelectTool;
-	CDrawRect*		m_pSelectRect;
-	CTextObject*	m_pFoucsTextObject;
+	//CSelectTool*	m_pSelectTool;
+	//CDrawRect*		m_pSelectRect;
 	ToolType		m_nCurToolType;
-	SelectMode		m_nCurrentSelectMode;
+	
 	DrawToolList	m_tools;
 	//BOOL			m_bActive;
 	//BOOL			m_bCaptured;
 	int				m_nDragHandle;
 	float			m_zoomFactor;
+
+	SelectMode      m_nCurrentSelectMode;
+
+	LPDRAWOBJBASEINFO m_pDrawInfo;
 public:
 	CDrawCanvas()
 	{
@@ -41,24 +62,36 @@ public:
 
 		//m_bActive = FALSE;
 		m_nCurToolType = ttNone;
+		m_nDragHandle = 0;
+		m_zoomFactor = 0;
 		m_nCurrentSelectMode = smNone;
-		m_pSelectRect = NULL;
-		m_pFoucsTextObject = NULL;
-
+		//m_pSelectRect = NULL;
 		//m_bCaptured = FALSE;
-		m_pSelectTool = new CSelectTool();
-		m_tools.push_back(m_pSelectTool);
-		m_tools.push_back(new CRectTool(ttRect));
-		m_tools.push_back(new CRectTool(ttText));
+		//m_pSelectTool = new CSelectTool();
+
+		m_tools.push_back(&s_MoveTool);
+		s_SelectTool.InitResource();
+		m_tools.push_back(&s_SelectTool);
+		m_tools.push_back(&s_RectTool);
+		m_tools.push_back(&s_LineTool);
+		m_tools.push_back(&s_RoundRectTool);
+		m_tools.push_back(&s_EllipseTool);
+		m_tools.push_back(&s_PolyTool);
+		m_tools.push_back(&s_ArrowTool);
+		m_tools.push_back(&s_FreeLineTool);
+		m_tools.push_back(&s_TextTool);
+		m_tools.push_back(&s_LineArrowTool);
+		m_tools.push_back(&s_BalloonTool);
+		m_pDrawInfo = &s_stDrawObjInfo;
 	}
 	virtual ~CDrawCanvas()
 	{
 		m_selection.clear();
-		std::for_each(m_allObjects.begin(), m_allObjects.end(), FTL::ObjecteDeleter<CDrawObject*>());
+		//std::for_each(m_allObjects.begin(), m_allObjects.end(), FTL::ObjecteDeleter<CDrawObject*>());
 		m_allObjects.clear();
 
-		m_pSelectTool = NULL;
-		std::for_each(m_tools.begin(), m_tools.end(), FTL::ObjecteDeleter<CDrawTool*>() );
+		//m_pSelectTool = NULL;
+		//std::for_each(m_tools.begin(), m_tools.end(), FTL::ObjecteDeleter<CDrawTool*>() );
 		m_tools.clear();
 	}
 
@@ -73,75 +106,53 @@ public:
 		return bRet;
 	}
 
+	BOOL OnLButtonDblClk(UINT nFlags, const CPoint& point)
+	{
+		CDrawTool* pTool = GetCurrentTool();
+		if (pTool)
+		{
+			if (_IsValidateScreenPoint(point))
+			{
+				return pTool->OnLButtonDblClk(this, nFlags, point);
+			}
+		}
+		return FALSE;;
+	}
+
 	void OnLButtonDown(UINT nFlags, const CPoint& point)
 	{
 		//fix Win+D lost focus
 		SetFocus(GetHWnd());
-
-		BOOL bHandle = FALSE;
-		if (m_pFoucsTextObject && m_pFoucsTextObject->IsActive())
+		CDrawTool* pTool = GetCurrentTool();
+		if (pTool)
 		{
-			MSG msg = {0};
-			msg.hwnd = this->GetHWnd();
-			msg.message = WM_LBUTTONDOWN;
-			msg.wParam = (WPARAM)nFlags;
-			msg.lParam = MAKELPARAM(point.x, point.y);
-			GetCursorPos(&(msg.pt));
-			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
+			if (_IsValidateScreenPoint(point))
 			{
-				bHandle = TRUE;
+				pTool->OnLButtonDown(this, nFlags, point);
 			}
-		}
-		if (!bHandle)
-		{
-			CDrawTool* pTool = GetCurrentTool();
-			if (pTool)
-			{
-				if (_IsValidateScreenPoint(point))
-				{
-					pTool->OnLButtonDown(this, nFlags, point);
-				}
-				//else
-				//{
-				//	pTool->OnLButtonDown(this, nFlags, m_ptLastValidateDevice);
-				//}
-			}
+			//else
+			//{
+			//	pTool->OnLButtonDown(this, nFlags, m_ptLastValidateDevice);
+			//}
 		}
 	}
 
 	void OnMouseMove(UINT nFlags, const CPoint& point)
 	{
-		BOOL bHandled = FALSE;
-		if (m_pFoucsTextObject && m_pFoucsTextObject->IsActive())
+		CDrawTool* pTool = GetCurrentTool();
+		if (pTool)
 		{
-			MSG msg = {0};
-			msg.hwnd = this->GetHWnd();
-			msg.message = WM_MOUSEMOVE;
-			msg.wParam = (WPARAM)nFlags;
-			msg.lParam = MAKELPARAM(point.x, point.y);
-			GetCursorPos(&(msg.pt));
-			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
+			if (_IsValidateScreenPoint(point))
 			{
-				bHandled = TRUE;
+				pTool->OnMouseMove(this, nFlags, point);
 			}
-		}
-		if (!bHandled)
-		{
-			CDrawTool* pTool = GetCurrentTool();
-			if (pTool)
-			{
-				if (_IsValidateScreenPoint(point))
-				{
-					pTool->OnMouseMove(this, nFlags, point);
-				}
-				//else
-				//{
-				//	CPoint ptDownDevice = m_ptMouseDownLogical;
-				//	this->DocToClient(&ptDownDevice);
-				//	//If this happen, must be Win + D when drag mouse in view
-				//	pTool->OnCancel(this);
-				//}
-			}
+			//else
+			//{
+			//	CPoint ptDownDevice = m_ptMouseDownLogical;
+			//	this->DocToClient(&ptDownDevice);
+			//	//If this happen, must be Win + D when drag mouse in view
+			//	pTool->OnCancel(this);
+			//}
 		}
 	}
 
@@ -154,72 +165,32 @@ public:
 		}
 	}
 
-	void OnLButtonUp(UINT nFlags, const CPoint& point)
-	{
-		BOOL bHandled = FALSE;
-		if (m_pFoucsTextObject && m_pFoucsTextObject->IsActive())
-		{
-			MSG msg = {0};
-			msg.hwnd = this->GetHWnd();
-			msg.message = WM_LBUTTONUP;
-			msg.wParam = (WPARAM)nFlags;
-			msg.lParam = MAKELPARAM(point.x, point.y);
-			GetCursorPos(&(msg.pt));
-			if(m_pFoucsTextObject->PreTranslateMessage(&msg))
-			{
-				bHandled = TRUE;
-			}
-		}
-
-		if (!bHandled)
-		{
-			CDrawTool* pTool = GetCurrentTool();
-			if (pTool)
-			{
-				if (_IsValidateScreenPoint(point))
-				{
-					pTool->OnLButtonUp(this, nFlags, point);
-				}
-				//else
-				//{
-				//	pTool->OnLButtonUp(this, nFlags, m_ptLastValidateDevice);
-				//}
-			}
-		}
-	}
-
-	void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-	{
-		if (VK_ESCAPE == nChar)
-		{
-			this->Select(NULL, FALSE);
-			this->m_pFoucsTextObject = NULL;
-		}
-		CDrawTool* pTool = GetCurrentTool();
-		if (pTool)
-		{
-			pTool->OnKeyDown(this, nChar, nRepCnt, nFlags);
-		}
-	}
-
-	void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+	BOOL OnLButtonUp(UINT nFlags, const CPoint& point)
 	{
 		CDrawTool* pTool = GetCurrentTool();
 		if (pTool)
 		{
-			pTool->OnChar(this, nChar, nRepCnt, nFlags);
+			if (_IsValidateScreenPoint(point))
+			{
+				return pTool->OnLButtonUp(this, nFlags, point);
+			}
+			//else
+			//{
+			//	pTool->OnLButtonUp(this, nFlags, m_ptLastValidateDevice);
+			//}
 		}
+		return FALSE;
 	}
 
-	//BOOL OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
-	//{
-	//	CDrawTool* pTool = GetCurrentTool();
-	//	if (pTool)
-	//	{
-	//		return pTool->OnSetCursor(hWnd, nHitTest, message);
-	//	}
-	//	return FALSE;
-	//}
+	BOOL OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
+	{
+		CDrawTool* pTool = GetCurrentTool();
+		if (pTool)
+		{
+			return pTool->OnSetCursor(hWnd, nHitTest, message);
+		}
+		return FALSE;
+	}
 
 	virtual CPoint GetMouseDownLogicalPoint()
 	{
@@ -254,12 +225,6 @@ public:
 		return NULL;
 	}
 
-	virtual CSelectTool* GetSelectTool()
-	{
-		FTLASSERT(m_pSelectTool);
-		return m_pSelectTool;
-	}
-
 	virtual ToolType   GetCurrentToolType()
 	{
 		return m_nCurToolType;
@@ -267,10 +232,10 @@ public:
 
 	virtual VOID SetCurrentToolType(ToolType nToolType)
 	{
-		if (m_nCurToolType == ttSelection && nToolType != ttSelection)
-		{
-			ReleaseSelectRect();
-		}
+		//if (m_nCurToolType == ttSelection && nToolType != ttSelection)
+		//{
+		//	ReleaseSelectRect();
+		//}
 		m_nCurToolType = nToolType;
 	}
 
@@ -299,53 +264,60 @@ public:
 		m_nDragHandle = nDragHandle;
 	}
 
-	virtual BOOL CreateSelectRect(const CRect& rcPosition, BOOL bSelect = TRUE)
-	{
-		FTLASSERT(NULL == m_pSelectRect);
-		//FTLTRACE(TEXT("CreateSelectRect, pos=[%d,%d]x[%d,%d]\n"),
-		//	rcPosition.left, rcPosition.top, rcPosition.right, rcPosition.bottom);
+	//virtual BOOL CreateSelectRect(const CRect& rcPosition, BOOL bSelect = TRUE)
+	//{
+	//	FTLASSERT(NULL == m_pSelectRect);
+	//	//FTLTRACE(TEXT("CreateSelectRect, pos=[%d,%d]x[%d,%d]\n"),
+	//	//	rcPosition.left, rcPosition.top, rcPosition.right, rcPosition.bottom);
 
-		ReleaseSelectRect();
-		m_pSelectRect = new CDrawRect(this, rcPosition, dotSelectRect);
-		Add(m_pSelectRect);
-		if (bSelect)
-		{
-			Select(m_pSelectRect, TRUE);
-		}
-		InvalObject(m_pSelectRect);
-		return TRUE;
-	}
-	virtual BOOL ReleaseSelectRect()
-	{
-		if (m_pSelectRect)
-		{
-			//CRect rcSelect = m_pSelectRect->GetPosition();
-			//FTLTRACE(TEXT("ReleaseSelectRect For:[%d,%d]x[%d,%d]\n"), rcSelect.left,
-			//	rcSelect.top, rcSelect.right, rcSelect.bottom);
+	//	ReleaseSelectRect();
+	//	m_pSelectRect = new CDrawRect(this, rcPosition, dotSelectRect);
+	//	Add(m_pSelectRect);
+	//	if (bSelect)
+	//	{
+	//		Select(m_pSelectRect, TRUE);
+	//	}
+	//	InvalObject(m_pSelectRect);
+	//	return TRUE;
+	//}
+	//virtual BOOL ReleaseSelectRect()
+	//{
+	//	if (m_pSelectRect)
+	//	{
+	//		//CRect rcSelect = m_pSelectRect->GetPosition();
+	//		//FTLTRACE(TEXT("ReleaseSelectRect For:[%d,%d]x[%d,%d]\n"), rcSelect.left,
+	//		//	rcSelect.top, rcSelect.right, rcSelect.bottom);
 
-			InvalObject(m_pSelectRect);
-			Remove(m_pSelectRect);
-			SAFE_DELETE(m_pSelectRect);
-		}
-		return TRUE;
-	}
-	virtual CDrawRect* GetSelectRect()
+	//		InvalObject(m_pSelectRect);
+	//		Remove(m_pSelectRect);
+	//		SAFE_DELETE(m_pSelectRect);
+	//	}
+	//	return TRUE;
+	//}
+	virtual CDrawObject* GetSelectRect()
 	{
-		return m_pSelectRect;
+		//return m_pSelectRect;
+		DrawObjectList::iterator iter  = m_selection.begin();
+		while(iter != m_selection.end())
+		{
+			CDrawObject* pObject = *iter;
+			if (pObject->GetDrawObjType() == dotSelectRect)
+			{
+				return *iter;
+			}
+			iter++;
+		}
+		return NULL;
 	}
 
 	virtual void Add(CDrawObject* pObj)
 	{
+		RemoveUnavialObect();
 		m_allObjects.push_back(pObj);
 	}
 
-	virtual void Remove(CDrawObject* pObj)
+	virtual void Remove(CDrawObject* pObj, BOOL bPaint = FALSE)
 	{
-		if (m_pFoucsTextObject == pObj)
-		{
-			m_pFoucsTextObject = NULL;
-		}
-
 		DrawObjectList::iterator iter = std::find(m_allObjects.begin(), m_allObjects.end(), pObj);
 		if (iter != m_allObjects.end())
 		{
@@ -358,29 +330,80 @@ public:
 			pObj->SetActive(FALSE);
 			m_selection.erase(iter2);
 		}
+		if (bPaint)
+		{
+			T* pThis = static_cast<T*>(this);
+			pThis->Invalidate();
+		}
+	}
+
+	virtual void DeleteSelectObjects(BOOL bPaint = FALSE)
+	{
+		DrawObjectList::iterator iter = m_selection.begin();
+		while (iter != m_selection.end())
+		{
+			CDrawObject* pObject = *iter;
+			if (pObject)
+			{
+				m_selection.erase(iter++);
+
+				DrawObjectList::iterator iter2 = std::find(m_allObjects.begin(), m_allObjects.end(), pObject);
+				if (iter2 != m_allObjects.end())
+				{
+					m_allObjects.erase(iter2);
+				}
+				delete pObject;
+				pObject = NULL;
+			}
+		}
+		if (bPaint)
+		{
+			T* pThis = static_cast<T*>(this);
+			pThis->Invalidate();
+		}
+	}
+
+	void SetActive(CDrawObject* pObj, BOOL bActive = TRUE)
+	{
+		//if (bActive)
+		{
+			DrawObjectList::iterator iter = m_allObjects.begin();
+			while (iter != m_allObjects.end())
+			{
+				if ((*iter) == pObj)
+				{
+					(*iter)->SetActive(bActive);
+				}
+				else
+				{
+					(*iter)->SetActive(FALSE);
+				}
+				iter ++;
+			}
+		}
+		//else
+		//{
+		//	pObj->SetActive(FALSE);
+		//}
 	}
 
 	void InvalObject(CDrawObject* pObj)
 	{
 		CRect rect = pObj->GetPosition();
-		rect.NormalizeRect();
-		rect.InflateRect(1, 1);
-
 		DocToClient(&rect);
-		rect.InflateRect(TRACK_MARGIN, TRACK_MARGIN);
-		//if (IsSelected(pObj)) //m_bActive && 
-		//{
-		//	rect.left -= 4;
-		//	rect.top -= 5;
-		//	rect.right += 5;
-		//	rect.bottom += 4;
-		//}
-		//rect.InflateRect(1, 1); // handles CDrawOleObj objects
+		if (IsSelected(pObj)) //m_bActive && 
+		{
+			rect.left -= 4;
+			rect.top -= 5;
+			rect.right += 5;
+			rect.bottom += 4;
+		}
+		rect.InflateRect(1, 1); // handles CDrawOleObj objects
 		//rect.InflateRect(4, 4); // handles CDrawOleObj objects
 
 		T* pThis = static_cast<T*>(this);
-		//pThis->Invalidate();
-		::InvalidateRect(pThis->m_hWnd, rect, FALSE);
+		pThis->Invalidate();
+		//::InvalidateRect(pThis->m_hWnd, rect, FALSE);
 	}
 
 	virtual BOOL IsSelected(const CDrawObject* pDrawObj) const
@@ -405,10 +428,6 @@ public:
 		{
 			return;
 		}
-		if (pObj->GetDrawObjType() == dotText)
-		{
-			m_pFoucsTextObject = dynamic_cast<CTextObject*>(pObj);
-		}
 		m_selection.push_back(pObj);
 		InvalObject(pObj);
 	}
@@ -426,7 +445,9 @@ public:
 	{
 		BOOL bRet = FALSE;
 		T* pt = static_cast<T*>(this);
-		if (::GetCapture() == pt->m_hWnd)
+		HWND hCaptureWnd = ::GetCapture();
+		//ATLTRACE(_T("CaptureWnd %x\n"), hCaptureWnd);
+		if (hCaptureWnd == pt->m_hWnd)
 		{
 			bRet = TRUE;
 		}
@@ -435,15 +456,25 @@ public:
 	void BeginCapture() 
 	{
 		//m_bCaptured = TRUE;
+		//ATLTRACE(_T("BeginCapture \n"));
 		T* pt = static_cast<T*>(this);
 		pt->SetCapture();
 	}
-	void EndCapture()
+	void EndCapture(BOOL bBackupData = TRUE)
 	{
 		//m_bCaptured = FALSE;
-		FTLASSERT(IsCapture());
-		BOOL bRet = FALSE;
-		API_VERIFY(::ReleaseCapture());
+		//ATLTRACE(_T("EndCapture \n"));
+		//FTLASSERT(IsCapture());
+		if (IsCapture())
+		{
+			BOOL bRet = FALSE;
+			API_VERIFY(::ReleaseCapture());
+			//RemoveUnavialObect();
+			if (bBackupData)
+			{
+				BackupDrawObjectData(_T("Naver Capture"));
+			}
+		}
 	}
 
 	HWND GetHWnd()
@@ -457,8 +488,11 @@ public:
 	{
 		//logical unit
 		CRect rect(point, CSize(1, 1));
-		for (DrawObjectList::iterator iter = m_allObjects.begin();
-			iter != m_allObjects.end();
+		//for (DrawObjectList::iterator iter = m_allObjects.begin();
+		//	iter != m_allObjects.end();
+		//	++iter)
+		for (DrawObjectList::reverse_iterator iter = m_allObjects.rbegin();
+			iter != m_allObjects.rend();
 			++iter)
 		{
 			CDrawObject* pObj = *iter;
@@ -476,69 +510,6 @@ public:
 		return m_selection;
 	}
 
-	virtual void DeleteSelectObjects()
-	{
-		for (DrawObjectList::iterator iter = m_selection.begin(); iter != m_selection.end(); ++iter)
-		{
-			CDrawObject* pObj = *iter;
-			DrawObjectList::iterator iterInAll = std::find(m_allObjects.begin(), m_allObjects.end(), pObj);
-			
-			if (m_pFoucsTextObject == pObj)
-			{
-				m_pFoucsTextObject = NULL;
-			}
-
-			FTLASSERT(iterInAll != m_allObjects.end());
-			if (iterInAll != m_allObjects.end())
-			{
-				m_allObjects.erase(iterInAll);
-			}
-			InvalObject(pObj);
-
-			//delete Object self
-			pObj->Remove();
-		}
-		m_selection.clear();
-	}
-
-	//draw info(object/select tracker) on device unit, this will not be effect by ZoomIn or ZoomOut
-	//TODO: position ?
-	void DrawDeviceInfo(HDC hDC)
-	{
-		for (DrawObjectList::iterator iter = m_allObjects.begin();
-			iter != m_allObjects.end();
-			++iter)
-		{
-			CDrawObject* pObj = *iter;
-			//select object -- draw on device 
-			if (pObj->GetDrawObjType() == dotSelectRect)
-			{
-				pObj->Draw(hDC, FALSE);
-			}
-
-			//select tracker will draw on device
-			if (IsSelected(pObj))
-			{
-				pObj->DrawTracker(hDC, CDrawObject::selected, TRUE);
-			}
-		}
-	}
-
-	//draw info(objects) on logical unit, will be effect by ZoomIn and ZoomOut
-	void DrawLogicalInfo(HDC hDC)
-	{
-		for (DrawObjectList::iterator iter = m_allObjects.begin();
-			iter != m_allObjects.end();
-			++iter)
-		{
-			CDrawObject* pObj = *iter;
-			//normal object -- draw on logical device
-			if (pObj->GetDrawObjType() != dotSelectRect)
-			{
-				pObj->Draw(hDC, FALSE);
-			}
-		}
-	}
 	//void DrawObjects(HDC hDC, BOOL bOriginal, BOOL bDrawSelectTool)
 	//{
 	//	for (DrawObjectList::iterator iter = m_allObjects.begin();
@@ -558,6 +529,50 @@ public:
 	//		}
 	//	}
 	//}
+
+	//draw info(object/select tracker) on device unit, this will not be effect by ZoomIn or ZoomOut
+	//TODO: position ?
+	void DrawObjectsTracker(HDC hDC)
+	{
+		for (DrawObjectList::iterator iter = m_allObjects.begin();
+			iter != m_allObjects.end();
+			++iter)
+		{
+			CDrawObject* pObj = *iter;
+			//select object -- draw on device 
+			//if (pObj->GetDrawObjType() == dotSelectRect)
+			//{
+			//	pObj->Draw(hDC, FALSE);
+			//}
+
+			//select tracker will draw on device
+			if (IsSelected(pObj))
+			{
+				pObj->DrawTracker(hDC, CDrawObject::selected, TRUE);
+			}
+		}
+	}
+
+	//draw info(objects) on logical unit, will be effect by ZoomIn and ZoomOut
+	void DrawObjects(HDC hDC)
+	{
+		for (DrawObjectList::iterator iter = m_allObjects.begin();
+			iter != m_allObjects.end();
+			++iter)
+		{
+			CDrawObject* pObj = *iter;
+			//normal object -- draw on logical device
+			//if (pObj->GetDrawObjType() != dotSelectRect)
+			//{
+			//	pObj->Draw(hDC, FALSE);
+			//}
+			if (pObj)
+			{
+				pObj->Draw(hDC, FALSE);
+			}
+		}
+	}
+
 	BOOL _IsValidateScreenPoint(const CPoint& point)
 	{
 		BOOL bRet = FALSE;
@@ -573,5 +588,54 @@ public:
 		}
 
 		return bRet;
+	}
+
+	void RemoveUnavialObect()
+	{
+		DrawObjectList::iterator it = m_allObjects.begin();
+		while(it != m_allObjects.end())
+		{
+			CDrawObject* pObject = *it;
+			if (!pObject->CheckAvailObject())
+			{
+				DrawObjectList::iterator selIt = std::find(m_selection.begin(), m_selection.end(), pObject);
+				if (selIt != m_selection.end())
+				{
+					m_selection.erase(selIt);
+				}
+
+				m_allObjects.erase(it++);
+				delete pObject;
+				pObject = NULL;
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
+
+	void GetDrawObjectBaseInfo(DRAWOBJBASEINFO& stDrawInfo)
+	{
+		stDrawInfo = *m_pDrawInfo;
+	}
+
+	void SetDrawObjectBaseInfo(const DRAWOBJBASEINFO& stDrawInfo, BOOL bPaint = FALSE)
+	{
+		*m_pDrawInfo = stDrawInfo;
+		for (DrawObjectList::iterator iter = m_selection.begin();
+			iter != m_selection.end();
+			++iter)
+		{
+			CDrawObject* pObj = *iter;
+			if (pObj && pObj->CheckAvailObject())
+			{
+				pObj->UpdateDrawInfo(*m_pDrawInfo);
+				if (bPaint)
+				{
+					InvalObject(pObj);
+				}
+			}
+		}
 	}
 };

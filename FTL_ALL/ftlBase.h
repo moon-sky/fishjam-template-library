@@ -208,9 +208,9 @@ namespace FTL
 
     #ifndef tstring
     #  if defined UNICODE 
-    #     define tstring wstring
+	#     define tstring std::wstring
     #  else
-    #     define tstring string
+	#     define tstring std::string
     #  endif 
     #endif
 

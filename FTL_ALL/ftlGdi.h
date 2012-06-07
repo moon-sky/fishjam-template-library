@@ -8,7 +8,6 @@
 #endif
 #include <atlimage.h>
 
-//CImage DLL Deadlock -- http://support.microsoft.com/kb/322909
 //http://www.codeproject.com/KB/GDI/anieffect.aspx
 /*
 DOS等传统字符界面用点阵模板显示文字
@@ -18,6 +17,7 @@ GUI中的文字一般是利用轮廓字体中的控制点数据经计算后再�
 1物理英寸 = 25.4mm; 1磅 = 1/72 英寸 = 25.4/72mm
 VGA中, 1逻辑英寸=96像素, 300dpi的打印机，1英寸300像素
 
+gdiplus 中有
 COLORREF -- 0x00bbggrr, 四字节，RGB 只能设置3个字节，自定义一个扩展的 RGBA, 测试向Canvas上手动生成RGBA的数据
 默认的绘图模式为 MM_TEXT(逻辑单位为像素，不打印输出时屏幕绘图的最佳绘图模式 -- 不用转换)
 CScrollView中是通过改变逻辑坐标原点的相对位置、改变ViewportExt等的大小来实现移动、放大缩小的
@@ -277,6 +277,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 *       其Draw方法自动支持透明色或Alpha通道(综合了StretchBlt、TransparentBlt、AlphaBlend等函数)
 *       注意：如果在DLL中使用 CImage，可能会造成死锁 --静态的 CImage::CInitGDIPlus 变量，如果没有在 DllMain 调用前调用
 *             CImage::ReleaseGDIPlus 进行释放的话，会因为析构该变量时在 DLLMain 中调用 GdiplusShutdown 死锁。
+*             参见:http://support.microsoft.com/kb/322909
 *     AlphaBlend -- 支持象素级的颜色混合(源位图和目标位图使用Alpha混合功能)，实现透明和半透明的效果
 *       AlphaFormat为0 -- 所有像素使用同样的常量Alpha
 *                  为AC_SRC_ALPHA -- 每一个像素必须有自己的alpha通道，即是32-bpp的DC

@@ -1,11 +1,11 @@
 #pragma once
 #include "DrawTool.h"
 
-class CRectTool : public CDrawTool
+class CTextTool : public CDrawTool
 {
 	// Constructors
 public:
-	CRectTool(LPDRAWOBJBASEINFO pInfo, ToolType nToolType, LPCTSTR strName);
+	CTextTool(LPDRAWOBJBASEINFO pDrawObjInfo, LPCTSTR strName);
 
 	// Implementation
 	virtual BOOL OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point);

@@ -203,6 +203,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DrawPoly.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DrawRect.cpp"
 				>
 			</File>
@@ -219,7 +223,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FreeDrawTool.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MainFrm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MoveTool.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PolyTool.cpp"
 				>
 			</File>
 			<File
@@ -228,6 +244,10 @@
 			</File>
 			<File
 				RelativePath=".\RichEditPanel.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectObject.cpp"
 				>
 			</File>
 			<File
@@ -258,6 +278,10 @@
 				RelativePath=".\TextObject.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TextTool.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -273,6 +297,10 @@
 			</File>
 			<File
 				RelativePath=".\DrawObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DrawPoly.h"
 				>
 			</File>
 			<File
@@ -292,7 +320,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FreeDrawTool.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MainFrm.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MoveTool.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PolyTool.h"
 				>
 			</File>
 			<File
@@ -308,6 +348,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelectObject.h"
+				>
+			</File>
+			<File
 				RelativePath=".\SelectTool.h"
 				>
 			</File>
@@ -317,6 +361,10 @@
 			</File>
 			<File
 				RelativePath=".\TextObject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TextTool.h"
 				>
 			</File>
 		</Filter>

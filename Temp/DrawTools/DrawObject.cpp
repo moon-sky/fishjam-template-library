@@ -2,7 +2,7 @@
 #include "DrawObject.h"
 #include "DrawCanvas.h"
 
-CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType)
+CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 {
 	m_pDrawCanvas = pDrawCanvas;
 	m_position = position;
@@ -10,18 +10,19 @@ CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	m_zoomFactor = 1.0f;
 
 	m_objType = objType;
-	m_bActive = FALSE;
 
 	m_bPen = TRUE;
-	m_logpen.lopnStyle = PS_INSIDEFRAME;
-	m_logpen.lopnWidth.x = 1;
-	m_logpen.lopnWidth.y = 1;
-	m_logpen.lopnColor = RGB(0, 0, 0);
+	//m_logpen.lopnStyle = PS_INSIDEFRAME;
+	//m_logpen.lopnWidth.x = 1;
+	//m_logpen.lopnWidth.y = 1;
+	//m_logpen.lopnColor = RGB(0, 0, 0);
+	m_logpen = stDrawObjInfo.logpen;
 
 	m_bBrush = TRUE;
-	m_logbrush.lbStyle = BS_SOLID;
-	m_logbrush.lbColor = RGB(192, 192, 192);
-	m_logbrush.lbHatch = HS_HORIZONTAL;
+	m_logbrush = stDrawObjInfo.logbrush;
+	//m_logbrush.lbStyle = BS_SOLID;
+	//m_logbrush.lbColor = RGB(192, 192, 192);
+	//m_logbrush.lbHatch = HS_HORIZONTAL;
 }
 
 CDrawObject::~CDrawObject()
@@ -31,16 +32,6 @@ CDrawObject::~CDrawObject()
 void CDrawObject::Remove()
 {
 	delete this;
-}
-
-void CDrawObject::SetActive(BOOL bActive)
-{
-	m_bActive = TRUE;
-}
-
-BOOL CDrawObject::IsActive()
-{
-	return m_bActive;
 }
 
 void CDrawObject::Draw(HDC hDC, BOOL bOriginal)
@@ -66,6 +57,7 @@ void CDrawObject::DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool)
 					CRect rect(handle.x - TRACK_MARGIN, handle.y - TRACK_MARGIN, 
 						handle.x + TRACK_MARGIN + 1, handle.y + TRACK_MARGIN + 1);
 					::Rectangle(hDC, rect.left, rect.top, rect.right, rect.bottom);
+					//ATLTRACE(_T("rect.left %d, rect.top %d, rect.right %d, rect.bottom %d nHandle %d\n"), rect.left, rect.top, rect.right, rect.bottom, nHandle);
 				}
 			}
 			break;
@@ -134,6 +126,20 @@ int CDrawObject::HitTest(CPoint point, BOOL bSelected)
 		}
 	}
 	return 0;
+}
+
+BOOL CDrawObject::HitTestMove(CPoint point)
+{
+	if (m_position.PtInRect(point))
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CDrawObject::HitTestActive(CPoint point)
+{
+	return FALSE;
 }
 
 //int CDrawObject::HitTest2(CPoint point)
@@ -438,11 +444,14 @@ CDrawObject* CDrawObject::Clone()
 {
 	FTLASSERT(this);
 
-	CDrawObject* pClone = new CDrawObject(m_pDrawCanvas, m_position, m_objType);
+	DRAWOBJBASEINFO stDrawInfo;
+	stDrawInfo.logpen = m_logpen;
+	stDrawInfo.logbrush = m_logbrush;
+	CDrawObject* pClone = new CDrawObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
 	pClone->m_bPen = m_bPen;
-	pClone->m_logpen = m_logpen;
+	//pClone->m_logpen = m_logpen;
 	pClone->m_bBrush = m_bBrush;
-	pClone->m_logbrush = m_logbrush;
+	//pClone->m_logbrush = m_logbrush;
 	FTLASSERT(pClone);
 
 	return pClone;
@@ -480,27 +489,240 @@ void CDrawObject::OnOpen()
 	OnEditProperties();
 }
 
-void CDrawObject::SetLineColor(COLORREF color)
+void CDrawObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
 {
 	FTLASSERT(this);
 
-	m_logpen.lopnColor = color;
+	m_logbrush = stDrawObjInfo.logbrush;
+	m_logpen   = stDrawObjInfo.logpen;
 	//Invalidate();
 	//m_pDocument->SetModifiedFlag();
 }
 
-void CDrawObject::SetFillColor(COLORREF color)
+BOOL CDrawObject::PreTranslateMessage(MSG* pMsg)
 {
-	FTLASSERT(this);
-
-	m_logbrush.lbColor = color;
-	
-	//Invalidate();
-	//m_pDocument->SetModifiedFlag();
+	return FALSE;
 }
 
 void CDrawObject::NormalizePosition()
 {
 	m_position.NormalizeRect();
 	m_originalPos.NormalizeRect();
+}
+
+void CDrawObject::EndMoveHandle()
+{
+
+}
+
+BOOL CDrawObject::CheckAvailObject()
+{
+	return TRUE;
+}
+
+void CDrawObject::SetActive(BOOL bActive)
+{
+	m_bActive = bActive;
+}
+
+BOOL CDrawObject::IsActive()
+{
+	return m_bActive;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////  CDrawFreeObject  ///////////////////////////////////////////////
+CDrawFreeObject::CDrawFreeObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawInfo)
+: CDrawObject(pDrawCanvas, position, objType, stDrawInfo)
+{
+	m_points = NULL;
+	m_nPoints = 0;
+	m_nAllocPoints = 0;
+}
+
+CDrawFreeObject::~CDrawFreeObject()
+{
+	if (m_points)
+	{
+		delete[] m_points;
+	}
+}
+
+
+void CDrawFreeObject::AddPoint(const CPoint& point)
+{
+	if (m_nPoints == m_nAllocPoints)
+	{
+		CPoint* newPoints = new CPoint[m_nAllocPoints + 10];
+		if (m_points != NULL)
+		{
+			memcpy_s(newPoints, sizeof(CPoint) * (m_nAllocPoints + 10), m_points, sizeof(CPoint) * m_nAllocPoints);
+			delete[] m_points;
+		}
+		m_points = newPoints;
+		m_nAllocPoints += 10;
+	}
+
+	if (m_nPoints == 0 || m_points[m_nPoints - 1] != point)
+	{
+		m_points[m_nPoints++] = point;
+		//if(RecalcBounds())
+		{
+			m_pDrawCanvas->InvalObject(this);
+		}
+	}
+}
+
+BOOL CDrawFreeObject::RecalcBounds(CRect& rect)
+{
+	if (m_nPoints == 0)
+		return FALSE;
+
+	//rect(m_points[0], CSize(0, 0));
+	rect.top = m_points[0].y;
+	rect.left = m_points[0].x;
+	rect.bottom = m_points[0].y;
+	rect.right = m_points[0].x;
+	for (int i = 1; i < m_nPoints; ++i)
+	{
+		if (m_points[i].x < rect.left)
+			rect.left = m_points[i].x;
+		if (m_points[i].x > rect.right)
+			rect.right = m_points[i].x;
+		if (m_points[i].y < rect.top)
+			rect.top = m_points[i].y;
+		if (m_points[i].y > rect.bottom)
+			rect.bottom = m_points[i].y;
+	}
+
+	if (rect == m_position)
+		return FALSE;
+
+	return TRUE;
+}
+
+
+void CDrawFreeObject::Draw(HDC hDC, BOOL bOriginal)
+{
+	CDCHandle dc(hDC);
+	CBrush brush;
+	if (!brush.CreateBrushIndirect(&m_logbrush))
+		return;
+	CPen pen;
+	if (!pen.CreatePenIndirect(&m_logpen))
+		return;
+
+	CBrush pOldBrush;
+	CPen pOldPen;
+
+	if (m_bBrush)
+		pOldBrush = dc.SelectBrush(brush);
+	else
+		pOldBrush = dc.SelectStockBrush(NULL_BRUSH);
+
+	if (m_bPen)
+		pOldPen = dc.SelectPen(pen);
+	else
+		pOldPen = dc.SelectStockPen(NULL_PEN);
+
+	//dc.Polygon(m_points, m_nPoints);
+	for (int i = 0; i < m_nPoints; i++)
+	{
+		if (i == 0)
+		{
+			dc.MoveTo(m_points[i]);
+		}
+		else
+		{
+			dc.LineTo(m_points[i]);
+		}
+	}
+
+	dc.SelectBrush(pOldBrush);
+	dc.SelectPen(pOldPen);
+}
+
+int CDrawFreeObject::GetHandleCount()
+{
+	return 2;
+}
+
+CPoint CDrawFreeObject::GetHandle(int nHandle)
+{
+	ATLASSERT(nHandle >= 1 && nHandle <= m_nPoints);
+	if (nHandle == 1)
+	{
+		CPoint ptRet = m_points[0];
+		m_pDrawCanvas->DocToClient(&ptRet);
+		return ptRet;
+	}
+	else
+	{
+		CPoint ptRet = m_points[m_nPoints - 1];
+		m_pDrawCanvas->DocToClient(&ptRet);
+		return ptRet;
+	}
+}
+
+HCURSOR CDrawFreeObject::GetHandleCursor(int nHandle)
+{
+	return ::LoadCursor(NULL, IDC_CROSS);
+}
+
+void CDrawFreeObject::MoveTo(const CRect& position)
+{
+	if (position == m_position)
+		return;
+
+	for (int i = 0; i < m_nPoints; i += 1)
+	{
+		m_points[i].x += position.left - m_position.left;
+		m_points[i].y += position.top - m_position.top;
+	}
+
+	m_position = position;
+	m_pDrawCanvas->InvalObject(this);
+}
+
+void CDrawFreeObject::MoveHandleTo(int nHandle, CPoint point)
+{
+	return;
+}
+
+CDrawObject* CDrawFreeObject::Clone()
+{
+	DRAWOBJBASEINFO stDrawInfo;
+	stDrawInfo.logpen = m_logpen;
+	stDrawInfo.logbrush = m_logbrush;
+	CDrawFreeObject* pClone = new CDrawFreeObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
+	pClone->m_bPen = m_bPen;
+	//pClone->m_logpen = m_logpen;
+	pClone->m_bBrush = m_bBrush;
+	//pClone->m_logbrush = m_logbrush;
+	pClone->m_points = new CPoint[m_nAllocPoints];
+
+	memcpy_s(pClone->m_points, sizeof(CPoint) * m_nAllocPoints, m_points, sizeof(CPoint) * m_nPoints);
+	pClone->m_nAllocPoints = m_nAllocPoints;
+	pClone->m_nPoints = m_nPoints;
+	return pClone;
+}
+
+BOOL CDrawFreeObject::Intersects(const CRect& rect)
+{
+	CRect fixed;
+	RecalcBounds(fixed);
+	fixed.NormalizeRect();
+	CRect rectT = rect;
+	rectT.NormalizeRect();
+	return !(rectT & fixed).IsRectEmpty();
+}
+
+void CDrawFreeObject::DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool)
+{
+	//nothing to do
+}
+
+BOOL CDrawFreeObject::HitTestMove(CPoint point)
+{
+	return FALSE;
 }

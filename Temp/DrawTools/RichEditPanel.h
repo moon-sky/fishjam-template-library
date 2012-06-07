@@ -38,9 +38,11 @@ public:
 	BOOL IsActive();
 
 	//dwFontMask see RICH_EDIT_PANEL_FONT_MASK_XXXX
+	
 	HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask);
 	HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask);
-
+	HRESULT SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName);
+	HRESULT SetTextFontSize(long nStart, long nEnd, int nSize);
 	
 	//if clr is COLORREF(-1), then will be tomAutoColor
 	HRESULT SetTextForeColor(long nStart, long nEnd, COLORREF clr);

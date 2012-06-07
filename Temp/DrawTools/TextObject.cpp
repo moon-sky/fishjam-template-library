@@ -4,8 +4,8 @@
 #include <ftlGdi.h>
 //#include <ftlControls.h>
 
-CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType)
-: CDrawObject(pDrawCanvas, position, objType)
+CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
+: CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo)
 {
 	HRESULT hr = E_FAIL;
 
@@ -53,12 +53,15 @@ void CTextObject::MoveHandleTo(int nHandle, CPoint point)
 
 CDrawObject* CTextObject::Clone()
 {
-	CTextObject* pClone = new CTextObject(m_pDrawCanvas, m_position, m_objType);
+	DRAWOBJBASEINFO stDrawInfo;
+	stDrawInfo.logbrush = m_logbrush;
+	stDrawInfo.logpen   = m_logpen;
+	CTextObject* pClone = new CTextObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
 
 	pClone->m_bPen = m_bPen;
-	pClone->m_logpen = m_logpen;
+	//pClone->m_logpen = m_logpen;
 	pClone->m_bBrush = m_bBrush;
-	pClone->m_logbrush = m_logbrush;
+	//pClone->m_logbrush = m_logbrush;
 
 	return pClone;
 }
@@ -88,11 +91,36 @@ void CTextObject::MoveTo(const CRect& position)
 
 void CTextObject::OnNotify(int iNotify, void* pParam)
 {
-	FTLTRACE(TEXT("In CTextObject::OnNotify, iNotify=%d, pParam=0x%x\n"), iNotify, pParam);
+	switch (iNotify)
+	{
+	case EN_REQUESTRESIZE:
+		{
+			REQRESIZE* pReqResize = (REQRESIZE*)pParam;
+			int nNewHeight = pReqResize->rc.bottom - pReqResize->rc.top;
+			FTLASSERT(nNewHeight >= 0);
+			int nOldHeight = FTL_ABS(m_position.Height());
+			if ( nNewHeight > nOldHeight)
+			{
+				if (m_position.top < m_position.bottom)
+				{
+					m_position.bottom = m_position.top + nNewHeight;
+				}
+				else
+				{
+					m_position.top = m_position.bottom - nNewHeight;
+				}
+				m_pRichEditPanel->SetClientRect(m_position, FALSE);
+				m_pDrawCanvas->InvalObject(this);
+			}
+		}
+		break;
+	}
+	//FTLTRACE(TEXT("In CTextObject::OnNotify, iNotify=%d, pParam=0x%x\n"), iNotify, pParam);
 }
 
 void CTextObject::OnExpand(int nDir, int nValue)
 {
+	FTLASSERT(FALSE); //TODO: will delete this
 	if (nValue > m_position.Height())
 	{
 		m_position.bottom = m_position.top + nValue;
@@ -100,4 +128,32 @@ void CTextObject::OnExpand(int nDir, int nValue)
 		m_pRichEditPanel->SetClientRect(m_position, FALSE);
 		m_pDrawCanvas->InvalObject(this);
 	}
+}
+
+BOOL CTextObject::HitTestMove(CPoint point)
+{
+	if (m_position.PtInRect(point))
+	{
+		CRect rect = m_position;
+		if (abs(rect.top - point.y) <= 3 || abs(rect.left - point.x) <= 3
+			|| abs(rect.bottom - point.y) <= 3 || abs(rect.right - point.x) <= 3)
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+BOOL CTextObject::HitTestActive(CPoint point)
+{
+	if (m_position.PtInRect(point) && ! HitTestMove(point))
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CTextObject::CheckTextRect()
+{
+
 }

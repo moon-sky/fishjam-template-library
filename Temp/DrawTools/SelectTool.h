@@ -7,17 +7,18 @@ class CSelectTool : public CDrawTool
 {
 	// Constructors
 public:
-	CSelectTool();
+	CSelectTool(LPDRAWOBJBASEINFO pInfo);
 	// Implementation
-	virtual void OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
-	virtual void OnLButtonDblClk(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
-	virtual void OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	virtual BOOL OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	virtual BOOL OnLButtonDblClk(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	virtual BOOL OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	virtual void OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	virtual void OnEditProperties(IDrawCanvas* pView);
-	virtual void OnCancel(IDrawCanvas* pView);
+
+	void InitResource();
 private:
-	void _OnCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
-	void _OnNotCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	//void _OnCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	//void _OnNotCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 
 	void _LimitSelectPoint(IDrawCanvas* pView, CPoint& ptClient);
 	void _ScrollForSelect(IDrawCanvas* pView, const CPoint& point);
@@ -25,6 +26,6 @@ private:
 	HCURSOR	m_hCursorSelect;
 	HCURSOR m_hCursorSelecting;
 
-	CRect m_rcLast;
+	CRect      m_rcLast;
 };
 

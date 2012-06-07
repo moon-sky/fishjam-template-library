@@ -12,6 +12,37 @@
 #include <ftlWindow.h>
 #include <ftlcom.h>
 /***********************************************************************************************************
+* Rich Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 有多个版本(可能不对，需要确认)
+*   1.0 -- RichEd32.dll (Win95)
+*   2.0 -- RICHED20.DLL (Win95/Win98), 不再支持一些在亚洲语言版本的Rich Edit 1.0中支持的消息
+*          (如 EM_CONVPOSITION、EM_SETIMECOLOR、EM_SETPUNCTUATION 等)
+*   3.0 -- 
+*   4.1 -- Msftedit.DLL (WinXP SP1)
+*   6.1 -- Win7 
+*   
+*   CHARFORMAT2(EM_SETCHARFORMAT) -- 字符格式，如 字体、尺寸、颜色以及如粗体、斜体和保护(父窗口接受到EN_PROTECTED的通知)等
+*   PARAFORMAT2(EM_SETPARAFORMAT) -- 段落格式，如 对齐、跳格、缩进和编号
+*   包含嵌入的COM对象
+*   消息(EM_) -- 
+*     EM_EXLIMITTEXT -- 一个Rich Edit控件不可能包含超过32K字节的文本，除非你使用EM_EXLIMITTEXT消息扩展了这个限制
+*   通知（EN_) -- 注意需要用 EM_SETEVENTMASK 设置能发送的通知类型, 标准控件是父窗口处理，无窗口是 ITextHost::TxNotify
+*     注意：有两种类型的通知， direct and delayed
+*     EN_MSGFILTER -- 过滤所有的键盘和鼠标输入，父窗体可以防止键盘和鼠标消息被处理(在ITextHost中不发送,参见MSDN)
+*     EN_SELCHANGE -- 父窗口可检测当前选中内容何时被改变
+*     EN_REQUESTRESIZE(无底,bottomless) -- 在任何时候若其内容大小改变，它将向其父窗体发送EN_REQUESTRESIZE通知，
+*        可调整控件的大小以便它总是与其内容大小匹配，可通过发送 EM_REQUESTRESIZE 消息强制发送该通知(在 WM_SIZE 时很有用)
+*   断字处理函数 -- (用户可通过 EM_SETWORDBREAKPROC 自定义) 查找单词间分隔符以及判断何处可以换行
+*   
+*   剪贴板格式(注册了两种)
+*     1.富文本格式(CF_RTF)
+*     2.RichEdit 文本与对象(CF_RETEXTOBJ)
+*   流(Stream) -- 向控件传入或者传出数据
+*     EM_STREAMIN -- 将数据读入控件(数据传入)，控件将重复调用应用程序的回调函数，该函数每次传入数据的一部分到缓冲区中
+*     EM_STREAMOUT -- 保存控件内容(数据传出)，控件将重复写入缓冲区然后调用应用程序的回调函数。
+*     
+*     
+* ITextHost -- 无窗口
+* 
 * CToolTipCtrl -- 
 ***********************************************************************************************************/
 
@@ -29,7 +60,7 @@ namespace FTL
 	FTLEXPORT class CFControlUtil
 	{
 	public:
-		FTLINLINE static LPCTSTR GetEditNotifyCodeString(DWORD iNotify);
+		FTLINLINE static LPCTSTR GetEditNotifyCodeString(CFStringFormater& formater, DWORD iNotify, void *pv);
 
 		//tomeTrue 或 tomFalse
 		FTLINLINE static LPCTSTR GetRichEditTomBoolString(long nValue);

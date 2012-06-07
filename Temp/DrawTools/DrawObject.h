@@ -2,10 +2,10 @@
 
 #include "DrawTypeDefine.h"
 
-class CDrawObject
+class CDrawObject : public CMessageFilter
 {
 public:
-	CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType);
+	CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual ~CDrawObject();
 
 	CRect GetPosition() const
@@ -26,7 +26,8 @@ public:
 	{
 		return m_objType;
 	}
-	
+
+
 	void SetZoomFactor(float zoomFactor);
 	//void CalcZoomRect( const CRect& rcOriginal, float zoomFactor, CRect& rcTarget);
 
@@ -34,8 +35,8 @@ public:
 	virtual CPoint GetHandle(int nHandle);
 	CRect GetHandleRect(int nHandleID);
 	virtual HCURSOR GetHandleCursor(int nHandle);
-	virtual void SetLineColor(COLORREF color);
-	virtual void SetFillColor(COLORREF color);
+	//virtual void SetLineColor(COLORREF color);
+	virtual void UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
 
 	// Operations
 	virtual void Draw(HDC hDC, BOOL bOriginal);
@@ -46,10 +47,14 @@ public:
 		active 
 	};
 
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+
 	virtual void NormalizePosition();
 	virtual void DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool);
-	virtual void MoveTo(const CRect& positon);
-	virtual int HitTest(CPoint point, BOOL bSelected);
+	virtual void MoveTo(const CRect& position);
+	virtual int  HitTest(CPoint point, BOOL bSelected);
+	virtual BOOL HitTestMove(CPoint point);
+	virtual BOOL HitTestActive(CPoint point);
 	// virtual int HitTest2(CPoint point);
 	virtual int SizingHitTest(CPoint ptLogic, CPoint ptOrigLogic);
 	virtual BOOL Intersects(const CRect& rect);
@@ -58,9 +63,11 @@ public:
 	virtual void OnEditProperties();
 	virtual CDrawObject* Clone();
 	virtual void Remove();
-	//void Invalidate();
+	virtual void EndMoveHandle();
+	virtual BOOL CheckAvailObject();
 	virtual void SetActive(BOOL bActive);
 	virtual BOOL IsActive();
+	//void Invalidate();
 
 protected:
 	// Attributes
@@ -70,9 +77,38 @@ protected:
 	DrawObjectType m_objType;
 
 	IDrawCanvas*	m_pDrawCanvas;
-	BOOL			m_bActive;
 	BOOL			m_bPen;
 	BOOL			m_bBrush;
 	LOGPEN			m_logpen;
 	LOGBRUSH		m_logbrush;
+	BOOL			m_bActive;
+};
+
+
+
+class CDrawFreeObject : public CDrawObject
+{
+public:
+	CDrawFreeObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawInfo);
+	virtual ~CDrawFreeObject();
+
+
+	void AddPoint(const CPoint& point);
+	BOOL RecalcBounds(CRect& rect);
+
+	virtual void Draw(HDC hDC, BOOL bOriginal);
+	virtual int GetHandleCount();
+	virtual CPoint GetHandle(int nHandle);
+	virtual HCURSOR GetHandleCursor(int nHandle);
+	virtual void MoveTo(const CRect& position);
+	virtual void MoveHandleTo(int nHandle, CPoint point);
+	virtual CDrawObject* Clone();
+	virtual BOOL Intersects(const CRect& rect);
+	virtual void DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool);
+	virtual BOOL HitTestMove(CPoint point);
+	void RemoveHandle();
+protected:
+	int m_nPoints;
+	int m_nAllocPoints;
+	CPoint* m_points;
 };

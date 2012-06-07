@@ -9,6 +9,7 @@
 #include "DrawToolsView.h"
 #include "MainFrm.h"
 #include <atldlgs.h>
+#include <ftlgdi.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
@@ -104,10 +105,54 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
+BOOL CALLBACK EnumFamCallBack(LPLOGFONT lplf, LPNEWTEXTMETRIC lpntm, DWORD FontType, LPVOID aFontCount) 
+{ 
+	int far * aiFontCount = (int far *) aFontCount; 
+
+	// Record the number of raster, TrueType, and vector 
+	// fonts in the font-count array. 
+
+	FTLTRACE(TEXT("Font -- %s\n"), lplf->lfFaceName);
+
+	if (FontType & RASTER_FONTTYPE) 
+		aiFontCount[0]++; 
+	else if (FontType & TRUETYPE_FONTTYPE) 
+		aiFontCount[2]++; 
+	else 
+		aiFontCount[1]++; 
+
+	if (aiFontCount[0] || aiFontCount[1] || aiFontCount[2]) 
+		return TRUE; 
+	else 
+		return FALSE; 
+
+	UNREFERENCED_PARAMETER( lplf ); 
+	UNREFERENCED_PARAMETER( lpntm ); 
+} 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	CAboutDlg dlg;
-	dlg.DoModal();
+	std::list<LOGFONT> lstFont;
+
+	HDC hdc = GetDC();
+	UINT uAlignPrev; 
+	int aFontCount[] = { 0, 0, 0 }; 
+	char szCount[8];
+	HRESULT hr;
+	size_t * pcch; 
+
+	EnumFontFamilies(hdc, (LPCTSTR) NULL, 
+		(FONTENUMPROC) EnumFamCallBack, (LPARAM) aFontCount); 
+
+	uAlignPrev = SetTextAlign(hdc, TA_UPDATECP); 
+
+	FTLTRACE(TEXT("Number of raster fonts =%d\n"), aFontCount[0]);
+	FTLTRACE(TEXT("Number of vector fonts =%d\n"), aFontCount[1]);
+	FTLTRACE(TEXT("Number of TrueType fonts =%d\n"), aFontCount[2]);
+
+	ReleaseDC(hdc);
+
+	//CAboutDlg dlg;
+	//dlg.DoModal();
 	//HRESULT hr = E_FAIL;
 	//TCHAR buf[5];
 	//COM_VERIFY(StringCchCopy(buf, _countof(buf), TEXT("fishjam")));

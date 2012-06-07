@@ -6,16 +6,14 @@ class CDrawTool
 {
 	// Constructors
 public:
-	CDrawTool(ToolType nToolType);
+	CDrawTool(LPDRAWOBJBASEINFO pDrawObjInfo, ToolType nToolType, LPCTSTR strName);
 
 	// Overridables
 	virtual BOOL OnSetCursor(HWND hWnd, UINT nHitTest, UINT message);
-	virtual void OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
-	virtual void OnLButtonDblClk(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
-	virtual void OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	virtual BOOL OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	virtual BOOL OnLButtonDblClk(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
+	virtual BOOL OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	virtual void OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
-	virtual void OnKeyDown(IDrawCanvas* pView, UINT nChar, UINT nRepCnt, UINT nFlags);
-	virtual void OnChar(IDrawCanvas* pView, UINT nChar, UINT nRepCnt, UINT nFlags);
 	virtual void OnEditProperties(IDrawCanvas* pView);
 	virtual void OnCancel(IDrawCanvas* pView);
 
@@ -23,9 +21,21 @@ public:
 	{
 		return m_nToolType;
 	}
+
+	LPCTSTR GetToolName() const
+	{
+		return m_strToolName;
+	}
 protected:
 	// Attributes
 	HCURSOR		m_hCursor;
 	ToolType	m_nToolType;
 	void _CheckSelectPostion(IDrawCanvas* pView);
+	CString     m_strToolName;
+	LPDRAWOBJBASEINFO m_pDrawObjInfo;
+
+private:
+	void _ScrollForSelect(IDrawCanvas* pView, const CPoint& point);
 };
+
+

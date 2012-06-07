@@ -2,127 +2,99 @@
 #include "SelectTool.h"
 #include "DrawCanvas.h"
 #include "DrawRect.h"
-#include "resource.h"
+#include "../resource.h"
 
-#if 0 //fishjam
+#include "SelectObject.h"
+
 #include <SilverlightCpp.h>
 using namespace SilverlightCpp;
-#endif
+//#include <SilverlightExCpp.h>
+//using namespace SilverlightExCpp;
 
-CSelectTool::CSelectTool()
-: CDrawTool(ttSelection)
+CSelectTool::CSelectTool(LPDRAWOBJBASEINFO pInfo)
+: CDrawTool(pInfo, ttSelection, _T("Selection"))
 {
 	//TODO: IDrawCanvas is better ?
 	
-#if 0 //fishjam
-	NDGraphics::CGDIPImage imgCursorSelect;
-	imgCursorSelect.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
-		_T( "/Assets/Images/Main/CaptureView/select_cursor_1.png" ) ), ImageFormatPNG ); // NS
-	m_hCursorSelect = (HCURSOR)imgCursorSelect.GetHICON();
-	FTLASSERT(m_hCursorSelect);
-	NDGraphics::CGDIPImage imgCursorSelecting;
-	imgCursorSelecting.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
-		_T( "/Assets/Images/Main/CaptureView/select_cursor_2.png" ) ), ImageFormatPNG ); // NS
-	m_hCursorSelecting = (HCURSOR)imgCursorSelecting.GetHICON();
-	FTLASSERT(m_hCursorSelecting);
-	m_hCursor = m_hCursorSelect;
-#else
-	m_hCursorSelect = LoadCursor(NULL, IDC_CROSS);
-	m_hCursorSelecting = LoadCursor(NULL, IDC_CROSS);
-#endif
+
 }
 
-void CSelectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
+BOOL CSelectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
 {
+	//CPoint ptLogical = point;
+	//pView->ClientToDoc(&ptLogical);
+
+	//CDrawObject* pObj = NULL;
+	//pView->SetCurrentSelectMode(smNone);
+
+	//// Check for resizing (only allowed on single selections)
+	//if (pView->GetSelection().size() == 1)
+	//{
+	//	pObj = pView->GetSelection().front();
+	//	int nDragHandle = pObj->HitTest(point, TRUE);
+	//	pView->SetDragHandle(nDragHandle);
+	//	if (nDragHandle != 0)
+	//	{
+	//		pView->SetCurrentSelectMode(smSize);
+	//	}
+	//		//g_selectMode = size;
+	//}
+
+	//// See if the click was on an object, select and start move if so
+	//if (pView->GetCurrentSelectMode() == smNone)
+	//{
+	//	pObj = pView->ObjectAt(ptLogical);
+
+	//	if (pObj != NULL)
+	//	{
+	//		//g_selectMode = move;
+	//		pView->SetCurrentSelectMode(smMove);
+	//		pView->SetActive(pObj, TRUE);
+	//		if (!pView->IsSelected(pObj))
+	//		{
+	//			pView->Select(pObj, (nFlags & MK_SHIFT) != 0);
+	//		}
+	//		// Ctrl+Click clones the selection...
+	//		if ((nFlags & MK_CONTROL) != 0)
+	//		{
+	//			pView->CloneSelection();
+	//		}
+	//	}
+	//	else
+	//	{
+	//		CRect rcSelect;
+	//		rcSelect.SetRect(ptLogical.x, ptLogical.y, ptLogical.x + 1, ptLogical.y + 1);
+	//		
+	//		CSelectObject* pSelectObject = new CSelectObject(pView, rcSelect, dotSelectRect, *m_pDrawObjInfo);
+	//		//CDrawRect* pSelectObject = new CDrawRect(pView, rcSelect, dotSelectRect);
+	//		pView->Add(pSelectObject);
+	//		pView->SetDragHandle(5);
+	//		pView->SetCurrentSelectMode(smSize);
+	//		pView->Select(pSelectObject);
+	//	}
+	//}
+	//return CDrawTool::OnLButtonDown(pView, nFlags, point);
+
+	if (CDrawTool::OnLButtonDown(pView, nFlags, point))
+	{
+		return TRUE;
+	}
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
-
-	CDrawObject* pObj = NULL;
-	pView->SetCurrentSelectMode(smNone);
-
-	// Check for resizing (only allowed on single selections)
-	if (pView->GetSelection().size() == 1)
-	{
-		pObj = pView->GetSelection().front();
-		int nDragHandle = pObj->HitTest(point, TRUE);
-		pView->SetDragHandle(nDragHandle);
-		if (nDragHandle != 0)
-		{
-			pView->SetCurrentSelectMode(smSize);
-		}
-			//g_selectMode = size;
-	}
-
-	// See if the click was on an object, select and start move if so
-	if (pView->GetCurrentSelectMode() == smNone)
-	{
-		pObj = pView->ObjectAt(ptLogical);
-
-		if (pObj != NULL)
-		{
-			//g_selectMode = move;
-			pView->SetCurrentSelectMode(smMove);
-
-			if (!pView->IsSelected(pObj))
-			{
-				pView->Select(pObj, (nFlags & MK_SHIFT) != 0);
-			}
-
-			// Ctrl+Click clones the selection...
-			if ((nFlags & MK_CONTROL) != 0)
-			{
-				pView->CloneSelection();
-			}
-		}
-		else
-		{
-			pView->ReleaseSelectRect();
-			CRect rcSelect;
-			rcSelect.SetRect(ptLogical.x, ptLogical.y, ptLogical.x + 1, ptLogical.y + 1);
-			pView->CreateSelectRect(rcSelect, FALSE);
-			pView->SetDragHandle(5);
-			pView->SetCurrentSelectMode(smNetSelectSize);
-		}
-	}
-
-	// Click on background, start a net-selection
-	if (pView->GetCurrentSelectMode() == smNone)
-	{
-		m_hCursor = m_hCursorSelecting; // m_hCursorSelect;
-		SetCursor(m_hCursor);
-
-		if (pView->GetSelectRect())
-		{
-			pView->ReleaseSelectRect();
-		}
-
-		if ((nFlags & MK_SHIFT) == 0)
-		{
-			pView->Select(NULL);
-		}
-
-		pView->SetCurrentSelectMode(smNetSelect);
-		
-		//CPoint ptOriginalDevice(0,0);
-		//pView->DocToClient(&ptOriginalDevice);
-
-		//CPoint ptOffset = pView->GetOffset();
-		//pView->DocToClient(&ptOffset);
-
-		CRect rect(point, point);
-		//CRect rect(ptLogical,ptLogical);
-		//pView->DocToClient(&rect);
-		//rect.OffsetRect(-ptOriginalDevice);
-		//rect.OffsetRect(ptOffset);
-
-		//rect.NormalizeRect();
-		//CClientDC dc(pView->GetHWnd());
-		//dc.DrawFocusRect(rect);
-	}
-	CDrawTool::OnLButtonDown(pView, nFlags, point);
+	CRect rcSelect;
+	rcSelect.SetRect(ptLogical.x, ptLogical.y, ptLogical.x + 1, ptLogical.y + 1);
+	
+	CSelectObject* pSelectObject = new CSelectObject(pView, rcSelect, dotSelectRect, *m_pDrawObjInfo);
+	//CDrawRect* pSelectObject = new CDrawRect(pView, rcSelect, dotSelectRect);
+	//pView->RemoveUnavialObect();
+	pView->Add(pSelectObject);
+	pView->SetDragHandle(5);
+	pView->SetCurrentSelectMode(smSize);
+	pView->Select(pSelectObject);
+	return TRUE;
 }
 
-void CSelectTool::OnLButtonDblClk(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
+BOOL CSelectTool::OnLButtonDblClk(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
 {
 	if ((nFlags & MK_SHIFT) != 0)
 	{
@@ -144,7 +116,7 @@ void CSelectTool::OnLButtonDblClk(IDrawCanvas* pView, UINT nFlags, const CPoint&
 		}
 	}
 
-	CDrawTool::OnLButtonDblClk(pView, nFlags, point);
+	return CDrawTool::OnLButtonDblClk(pView, nFlags, point);
 }
 
 void CSelectTool::OnEditProperties(IDrawCanvas* pView)
@@ -155,133 +127,143 @@ void CSelectTool::OnEditProperties(IDrawCanvas* pView)
 	}
 }
 
-void CSelectTool::OnCancel(IDrawCanvas* pView)
+void CSelectTool::InitResource()
 {
-	//if (pView->IsCapture())
-	{
-		SelectMode curSelectMode = pView->GetCurrentSelectMode();
-		if (smNetSelectSize == curSelectMode)
-		{
-			pView->ReleaseSelectRect();
+	NDGraphics::CGDIPImage imgCursorSelect;
+	imgCursorSelect.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
+		_T( "/Assets/Images/Main/CaptureView/select_cursor_1.png" ) ), ImageFormatPNG ); // NS
+	m_hCursorSelect = (HCURSOR)imgCursorSelect.GetHICON();
+	FTLASSERT(m_hCursorSelect);
 
-			//CRect rcSelectBox;
-			//rcSelectBox.SetRect(pView->GetMouseDownLogicalPoint(), pView->GetMouseLastLogicalPoint());
-			//rcSelectBox.NormalizeRect();
-			//pView->CreateSelectRect(rcSelectBox);
-			//pView->SelectWithinRect(rcSelectBox, TRUE);
-		}
-		else if (smSize == curSelectMode && smMove == curSelectMode)
-		{
-			//do nothing ?
-			//pView->SetCurrentToolType(ttSelection);
-		}
-		else if(smNetSelect == curSelectMode)
-		{
-			FTLASSERT(FALSE); //do not use smNetSelect now
-		}
-	}
+
+	NDGraphics::CGDIPImage imgCursorSelecting;
+	imgCursorSelecting.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
+		_T( "/Assets/Images/Main/CaptureView/select_cursor_2.png" ) ), ImageFormatPNG ); // NS
+	m_hCursorSelecting = (HCURSOR)imgCursorSelecting.GetHICON();
+	FTLASSERT(m_hCursorSelecting);
+	m_hCursor = m_hCursorSelect;
 }
 
-void CSelectTool::OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
+BOOL CSelectTool::OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
 {
 	if(pView->IsCapture())
 	{
-		if (pView->GetCurrentSelectMode() == smNetSelect)
-		{
-			CPoint ptLogical = point;
-			pView->ClientToDoc(&ptLogical);
-			//FTLTRACE(TEXT("OnLButtonUp, ptDevice=[%d,%d], ptLogical=[%d,%d]\n"), 
-			//	point.x, point.y,
-			//	ptLogical.x, ptLogical.y);
+		//if (pView->GetCurrentSelectMode() == smNetSelect)
+		//{
+		//	CPoint ptLogical = point;
+		//	pView->ClientToDoc(&ptLogical);
+		//	//FTLTRACE(TEXT("OnLButtonUp, ptDevice=[%d,%d], ptLogical=[%d,%d]\n"), 
+		//	//	point.x, point.y,
+		//	//	ptLogical.x, ptLogical.y);
 
-			CPoint ptOriginalDevice(0, 0);
-			pView->DocToClient(&ptOriginalDevice);
+		//	CPoint ptOriginalDevice(0, 0);
+		//	pView->DocToClient(&ptOriginalDevice);
 
-			//CPoint ptOffset = pView->GetOffset();
-			//pView->DocToClient(&ptOffset);
+		//	//CPoint ptOffset = pView->GetOffset();
+		//	//pView->DocToClient(&ptOffset);
 
-			CRect rectBefore(pView->GetMouseDownLogicalPoint(), pView->GetMouseLastLogicalPoint());
-			pView->DocToClient(&rectBefore);
-			//rectBefore.OffsetRect(-ptOriginalDevice);
-			//rectBefore.OffsetRect(ptOffset);
-			rectBefore.NormalizeRect();
+		//	CRect rectBefore(pView->GetMouseDownLogicalPoint(), pView->GetMouseLastLogicalPoint());
+		//	pView->DocToClient(&rectBefore);
+		//	//rectBefore.OffsetRect(-ptOriginalDevice);
+		//	//rectBefore.OffsetRect(ptOffset);
+		//	rectBefore.NormalizeRect();
 
-			CRect rectAfter(pView->GetMouseDownLogicalPoint(), ptLogical);
-			pView->DocToClient(&rectAfter);
-			//rectAfter.OffsetRect(-ptOriginalDevice);
-			//rectAfter.OffsetRect(ptOffset);
-			rectAfter.NormalizeRect();
+		//	CRect rectAfter(pView->GetMouseDownLogicalPoint(), ptLogical);
+		//	pView->DocToClient(&rectAfter);
+		//	//rectAfter.OffsetRect(-ptOriginalDevice);
+		//	//rectAfter.OffsetRect(ptOffset);
+		//	rectAfter.NormalizeRect();
 
-			CRect rcSelectBox;
-			rcSelectBox.SetRect(pView->GetMouseDownLogicalPoint(), ptLogical);
-			ptLogical.Offset(pView->GetOffset());
-			rcSelectBox.NormalizeRect();
+		//	CRect rcSelectBox;
+		//	rcSelectBox.SetRect(pView->GetMouseDownLogicalPoint(), ptLogical);
+		//	ptLogical.Offset(pView->GetOffset());
+		//	rcSelectBox.NormalizeRect();
 
-			//CPoint ptOriginalLogical(0,0);
-			//pView->DocToClient(&ptOriginalLogical);
-			//rcSelectBox.OffsetRect(ptOriginalLogical);
+		//	//CPoint ptOriginalLogical(0,0);
+		//	//pView->DocToClient(&ptOriginalLogical);
+		//	//rcSelectBox.OffsetRect(ptOriginalLogical);
 
-			pView->CreateSelectRect(rcSelectBox);
-			pView->SelectWithinRect(rcSelectBox, TRUE);
+		//	//pView->CreateSelectRect(rcSelectBox);
+		//	pView->SelectWithinRect(rcSelectBox, TRUE);
 
-			//CClientDC dc(pView->GetHWnd());
-			////dc.OffsetViewportOrg(-ptOriginal.x, -ptOriginal.y);
-			//dc.DrawFocusRect(rectBefore);
-			//dc.DrawFocusRect(rectAfter);
-		}
-		else if (pView->GetCurrentSelectMode() == smNetSelectSize)
-		{
-			CDrawObject *pObj = pView->GetSelectRect();
-			if (pObj)
-			{
-				pView->Select(pObj);
-			}
-		}
-		else
-		{
-			FTLTRACE(TEXT("TODO: pView->GetCurrentSelectMode()=%d\n"), pView->GetCurrentSelectMode());
+		//	//CClientDC dc(pView->GetHWnd());
+		//	////dc.OffsetViewportOrg(-ptOriginal.x, -ptOriginal.y);
+		//	//dc.DrawFocusRect(rectBefore);
+		//	//dc.DrawFocusRect(rectAfter);
+		//}
+		//else 
+		//if (pView->GetCurrentSelectMode() == smNetSelectSize)
+		//{
+		//	CDrawObject *pObj = pView->GetSelectRect();
+		//	if (pObj)
+		//	{
+		//		pView->Select(pObj);
+		//	}
+		//}
+		//else
+		//{
+		//	FTLTRACE(TEXT("TODO: pView->GetCurrentSelectMode()=%d\n"), pView->GetCurrentSelectMode());
 			//::InvalidateRect(pView->GetHWnd(), NULL, TRUE);
 			//::UpdateWindow(pView->GetHWnd());
-		}
+		//}
 		//else if (m_selectMode != none)
 		//{
 		//    pView->UpdateAllViews(pView);
 		//}
 
+		CPoint ptDevice = pView->GetMouseDownLogicalPoint();
+		pView->DocToClient(&ptDevice);
+		if (point == ptDevice && pView->GetCurrentSelectMode() == smSize)
+		{
+			CDrawObject* pObj = pView->GetSelection().front();
+			pView->Remove(pObj, TRUE);
+			pObj->Remove();
+		}
 		m_hCursor = m_hCursorSelect;// ::LoadCursor(NULL, IDC_ARROW);
-
-		CDrawTool::OnLButtonUp(pView, nFlags, point);
+		for(DrawObjectList::iterator iter = pView->GetSelection().begin();
+			iter != pView->GetSelection().end();
+			++iter)
+		{
+			CDrawObject* pObj = *iter;
+			if (smSize == pView->GetCurrentSelectMode())
+			{
+				pObj->EndMoveHandle();
+			}
+		}
+		pView->EndCapture(FALSE);
+		//CDrawTool::OnLButtonUp(pView, nFlags, point);
 	}
+	return FALSE;
 }
 
-void CSelectTool::_OnNotCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
-{
-	CPoint ptLogical = point;
-	pView->ClientToDoc(&ptLogical);
-
-	if (pView->GetCurrentToolType() == ttSelection && pView->GetSelection().size() == 1)
-	{
-		CDrawObject* pObj = pView->GetSelection().front();
-
-		int nHandle = pObj->HitTest(point, TRUE);
-		if (nHandle != 0)
-		{
-			m_hCursor = pObj->GetHandleCursor(nHandle);
-			return; // bypass CDrawTool
-		}
-
-		if (pObj->GetPosition().PtInRect(ptLogical))
-		{
-			m_hCursor = ::LoadCursor(NULL, IDC_SIZEALL);
-		}
-		////if (pView->GetCurrentToolType() == ttSelection)
-		//{
-		//	//SetCursor(::LoadCursor(NULL, IDC_CROSS));
-		//	CDrawTool::OnMouseMove(pView, nFlags, point);
-		//	return;
-		//}
-	}
-}
+//void CSelectTool::_OnNotCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
+//{
+//	CPoint ptLogical = point;
+//	pView->ClientToDoc(&ptLogical);
+//
+//	if (pView->GetCurrentToolType() == ttSelection && pView->GetSelection().size() == 1)
+//	{
+//		CDrawObject* pObj = pView->GetSelection().front();
+//
+//		int nHandle = pObj->HitTest(point, TRUE);
+//		if (nHandle != 0)
+//		{
+//			m_hCursor = pObj->GetHandleCursor(nHandle);
+//			return; // bypass CDrawTool
+//		}
+//
+//		if (pObj->GetPosition().PtInRect(ptLogical))
+//		{
+//			m_hCursor = ::LoadCursor(NULL, IDC_SIZEALL);
+//		}
+//		////if (pView->GetCurrentToolType() == ttSelection)
+//		//{
+//		//	//SetCursor(::LoadCursor(NULL, IDC_CROSS));
+//		//	CDrawTool::OnMouseMove(pView, nFlags, point);
+//		//	return;
+//		//}
+//	}
+//}
 
 void CSelectTool::_LimitSelectPoint(IDrawCanvas* pView, CPoint& ptClient)
 {
@@ -329,143 +311,64 @@ BOOL CSelectTool::_OffView(IDrawCanvas* pView, const CPoint& point)
 	return !PtInRect(&rcClient, point);
 }
 
-void CSelectTool::_OnCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
-{
-	_ScrollForSelect(pView, point);
-	CPoint ptLogical = point;
-	pView->ClientToDoc(&ptLogical);
-
-	if (pView->GetCurrentSelectMode() == smNetSelect && _OffView(pView, point))
-	{
-		CRect rcSelectBox;
-		rcSelectBox.SetRect(pView->GetMouseDownLogicalPoint(), ptLogical);
-		ptLogical.Offset(pView->GetOffset());
-		rcSelectBox.NormalizeRect();
-
-		if (rcSelectBox.IsRectEmpty())
-		{
-			return;
-		}
-		pView->CreateSelectRect(rcSelectBox, FALSE);
-		pView->SelectWithinRect(rcSelectBox, TRUE);
-		pView->SetCurrentSelectMode(smNetSelectSize);
-
-		CDrawObject* pObj = pView->GetSelectRect();
-		if (pObj)
-		{
-			int nDragHandle = pObj->SizingHitTest(ptLogical, pView->GetMouseDownLogicalPoint());
-			pView->SetDragHandle(nDragHandle);
-		}
-	}
-	
-	if (pView->GetCurrentSelectMode() == smNetSelect)
-	{
-		CPoint ptOffset = pView->GetOffset();
-		pView->DocToClient(&ptOffset);
-		
-		//CPoint ptOriginalDevice(0,0);
-		//pView->DocToClient(&ptOriginalDevice);
-
-		CRect rectBefore(pView->GetMouseDownLogicalPoint(), pView->GetMouseLastLogicalPoint());
-		pView->DocToClient(&rectBefore);
-		//rectBefore.OffsetRect(-ptOriginalDevice);
-		//rectBefore.OffsetRect(ptOffset);
-		rectBefore.NormalizeRect();
-
-		CRect rectAfter(pView->GetMouseDownLogicalPoint(), ptLogical);
-		pView->DocToClient(&rectAfter);
-		//rectAfter.OffsetRect(-ptOriginalDevice);
-		//rectAfter.OffsetRect(ptOffset);
-		rectAfter.NormalizeRect();
-
-		//CClientDC dc(pView->GetHWnd());
-		//dc.DrawFocusRect(rectBefore);
-		//dc.DrawFocusRect(rectAfter);
-		//FTLTRACE(TEXT("_OnCapturedMouseMove, ptLogical=[%d,%d]\n"), ptLogical.x, ptLogical.y);
-
-		//m_hCursor = m_hCursorSelect;// ::LoadCursor(NULL, IDC_CROSS);
-		//::SetCursor(m_hCursor); //refresh current cursor
-		CDrawTool::OnMouseMove(pView, nFlags, point);
-		return;
-	}
-
-	CPoint ptLastLogical = pView->GetMouseLastLogicalPoint();
-	CPoint delta = (CPoint)(ptLogical - ptLastLogical);
-
-	if (smNetSelectSize == pView->GetCurrentSelectMode())
-	{
-		CDrawObject* pObj = pView->GetSelectRect();
-		if (pObj)
-		{
-			pObj->MoveHandleTo(pView->GetDragHandle(), ptLogical);
-		}
-	}
-
-	for(DrawObjectList::iterator iter = pView->GetSelection().begin();
-		iter != pView->GetSelection().end();
-		++iter)
-	{
-		CDrawObject* pObj = *iter;
-		CRect position = pObj->GetPosition();
-
-		if (smMove == pView->GetCurrentSelectMode())
-		{
-			position += delta;
-			pObj->MoveTo(position);
-		}
-		else if (pView->GetDragHandle()!= 0)
-		{
-			pObj->MoveHandleTo(pView->GetDragHandle(), ptLogical);
-		}
-
-		//FTLTRACE(TEXT("pObj Pos=[%d,%d] X [%d,%d]\n"), pObj->m_position.left,
-		//    pObj->m_position.top,
-		//    pObj->m_position.right,
-		//    pObj->m_position.bottom);
-	}
-
-	pView->SetMouseLastLogicalPoint(ptLogical);
-
-	if (pView->GetCurrentSelectMode() == smMove)
-	{
-		m_hCursor = ::LoadCursor(NULL, IDC_SIZEALL);
-	}
-	if (pView->GetCurrentSelectMode() == smSize && pView->GetCurrentToolType() == ttSelection)
-	{
-		m_hCursor = pView->GetSelection().front()->GetHandleCursor(pView->GetDragHandle());
-		return; // bypass CDrawTool
-	}
-
-	if (pView->GetCurrentToolType() == ttSelection)
-	{
-		CDrawTool::OnMouseMove(pView, nFlags, point);
-	}
-}
+//void CSelectTool::_OnCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
+//{
+//	_ScrollForSelect(pView, point);
+//	CPoint ptLogical = point;
+//	pView->ClientToDoc(&ptLogical);
+//
+//	CPoint ptLastLogical = pView->GetMouseLastLogicalPoint();
+//	CPoint delta = (CPoint)(ptLogical - ptLastLogical);
+//
+//	for(DrawObjectList::iterator iter = pView->GetSelection().begin();
+//		iter != pView->GetSelection().end();
+//		++iter)
+//	{
+//		CDrawObject* pObj = *iter;
+//		CRect position = pObj->GetPosition();
+//
+//		if (smMove == pView->GetCurrentSelectMode())
+//		{
+//			position += delta;
+//			pObj->MoveTo(position);
+//		}
+//		else if (pView->GetDragHandle()!= 0)
+//		{
+//			pObj->MoveHandleTo(pView->GetDragHandle(), ptLogical);
+//		}
+//	}
+//	pView->SetMouseLastLogicalPoint(ptLogical);
+//
+//	if (pView->GetCurrentSelectMode() == smMove)
+//	{
+//		m_hCursor = ::LoadCursor(NULL, IDC_SIZEALL);
+//	}
+//	if (pView->GetCurrentSelectMode() == smSize && pView->GetCurrentToolType() == ttSelection)
+//	{
+//		m_hCursor = pView->GetSelection().front()->GetHandleCursor(pView->GetDragHandle());
+//		return; // bypass CDrawTool
+//	}
+//
+//	if (pView->GetCurrentToolType() == ttSelection)
+//	{
+//		CDrawTool::OnMouseMove(pView, nFlags, point);
+//	}
+//}
 
 void CSelectTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
 {
-	CPoint ptLogical = point;
-	pView->ClientToDoc(&ptLogical);
+	//CPoint ptLogical = point;
+	//pView->ClientToDoc(&ptLogical);
 
-	//init cursor for default value
-	CRect rcDrawTarget = pView->GetDrawTarget();
-	rcDrawTarget.OffsetRect(-rcDrawTarget.TopLeft());
-
-	if (rcDrawTarget.PtInRect(ptLogical))
-	{
-		m_hCursor = m_hCursorSelect;
-	}
-	else
-	{
-		m_hCursor = ::LoadCursor(NULL, IDC_ARROW);
-	}
-
-	if (!pView->IsCapture())
-	{
-		_OnNotCapturedMouseMove(pView, nFlags, point);
-	}
-	else
-	{
-		_OnCapturedMouseMove(pView, nFlags, point);		
-	}
+	//if (!pView->IsCapture())
+	//{
+	//	//ATLTRACE(_T("No Capture \n"));
+	//	_OnNotCapturedMouseMove(pView, nFlags, point);
+	//}
+	//else
+	//{
+	//	//ATLTRACE(_T("Is Capture \n"));
+	//	_OnCapturedMouseMove(pView, nFlags, point);		
+	//}
+	CDrawTool::OnMouseMove(pView, nFlags, point);
 }
