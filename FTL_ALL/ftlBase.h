@@ -523,19 +523,38 @@ namespace FTL
         //matMalloca,         //使用_malloca在栈上分配
     };
 
-    template <typename T, MemoryAllocType allocType  = matNew>
-    class CFTempMemoryHolder
+#ifndef DEFAULT_MEMALLOCATOR_FIXED_COUNT
+    #define DEFAULT_MEMALLOCATOR_FIXED_COUNT 256
+#endif 
+    template <typename T, MemoryAllocType allocType  = matNew, UINT DefaultFixedCount = DEFAULT_MEMALLOCATOR_FIXED_COUNT>
+    class CFMemAllocator
     {
+        DISABLE_COPY_AND_ASSIGNMENT(CFMemAllocator);
     public:
-        FTLINLINE CFTempMemoryHolder(DWORD dwCount);
-        FTLINLINE ~CFTempMemoryHolder();
-        //FTLINLINE T* ReAlloc(DWORD dwCount);
+        FTLINLINE CFMemAllocator();
+        FTLINLINE CFMemAllocator(DWORD nCount);
+        FTLINLINE ~CFMemAllocator();
+        FTLINLINE VOID Init(DWORD nCount);
+        FTLINLINE T* GetMemory( UINT nMaxSize );
+        FTLINLINE operator T*()
+        {
+            if ( !m_pMem && m_nCount <= DefaultFixedCount )
+            {
+                return m_FixedMem;
+            }
+            return m_pMem;
+        }
+
         FTLINLINE T* Detatch(); 
-        FTLINLINE DWORD GetCount() const;
-        FTLINLINE operator T*() const;
+        FTLINLINE UINT GetCount() const;
     protected:
-        T*              m_pMemory;
-        DWORD           m_dwCount;
+        FTLINLINE VOID _FreeMemory();
+        FTLINLINE UINT _GetBlockSize(UINT nMaxCount);
+    private:
+        T*              m_pMem;
+        T               m_FixedMem[DefaultFixedCount];
+        MemoryAllocType m_allocType;
+        UINT            m_nCount;
     };
 
     //! 字符串格式化，可以根据传入的格式化字符长度自动调整，析构时释放分配的内存

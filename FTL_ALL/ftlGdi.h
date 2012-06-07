@@ -17,7 +17,6 @@ GUI中的文字一般是利用轮廓字体中的控制点数据经计算后再�
 1物理英寸 = 25.4mm; 1磅 = 1/72 英寸 = 25.4/72mm
 VGA中, 1逻辑英寸=96像素, 300dpi的打印机，1英寸300像素
 
-gdiplus 中有
 COLORREF -- 0x00bbggrr, 四字节，RGB 只能设置3个字节，自定义一个扩展的 RGBA, 测试向Canvas上手动生成RGBA的数据
 默认的绘图模式为 MM_TEXT(逻辑单位为像素，不打印输出时屏幕绘图的最佳绘图模式 -- 不用转换)
 CScrollView中是通过改变逻辑坐标原点的相对位置、改变ViewportExt等的大小来实现移动、放大缩小的
@@ -576,7 +575,7 @@ namespace FTL
     public:
         FTLINLINE CFCanvas();
         FTLINLINE ~CFCanvas();
-        FTLINLINE BOOL Create(int width, int heigth, int bpp = 32);//bpp -- bits-per-pixel
+        FTLINLINE BOOL Create(HWND hWnd, int width, int heigth, int bpp = 32);//bpp -- bits-per-pixel
         FTLINLINE VOID Release();
         FTLINLINE int GetWidth() const { return m_width; }
         FTLINLINE int GetHeight() const { return m_height; }
@@ -587,7 +586,7 @@ namespace FTL
         FTLINLINE HDC   GetCanvasDC() const { return m_hCanvasDC; }
         FTLINLINE  operator HDC() const { return m_hCanvasDC; }
         FTLINLINE HBITMAP GetMemoryBitmap() const { return m_hMemBitmap; }
-        FTLINLINE HANDLE CopyyToHandle();
+        FTLINLINE HANDLE CopyToHandle();
         FTLINLINE DWORD GetSize();
     private:
         HDC     m_hCanvasDC;
@@ -666,7 +665,7 @@ namespace FTL
 	class CFMMTextDCGuard
 	{
 	public:
-		CFMMTextDCGuard(HDC hdc)
+		explicit CFMMTextDCGuard(HDC hdc)
 			:m_hDC(hdc)
 		{
 			BOOL bRet = FALSE;

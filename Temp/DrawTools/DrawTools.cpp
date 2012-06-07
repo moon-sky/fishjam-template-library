@@ -5,7 +5,7 @@
 
 #include "resource.h"
 
-#include "DrawToolsView.h"
+#include "nCaptureView.h"
 #include "aboutdlg.h"
 #include "MainFrm.h"
 

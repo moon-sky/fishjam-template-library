@@ -1,7 +1,10 @@
 #include "StdAfx.h"
 #include "CapImageObj.h"
 #include "NPVPhotoCalcRect.h"
+#ifdef DRAW_TOOL_TEST
+#else
 #include "../Capture/AlphaBitmapUI/Canvas.h"
+#endif
 #include "ftlBase.h"
 
 #include "ftlFunctional.h"

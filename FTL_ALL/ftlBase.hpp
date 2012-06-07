@@ -211,33 +211,37 @@ namespace FTL
         return m_bufInfo;
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    template <typename T, MemoryAllocType allocType>
-    CFTempMemoryHolder<T,allocType>::CFTempMemoryHolder(DWORD dwCount)
+
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    CFMemAllocator<T, allocType, DefaultFixedCount>::CFMemAllocator()
+        :m_pMem(NULL)
+        ,m_allocType(matNew)
+        ,m_nCount(DefaultFixedCount)
     {
-        FTLASSERT(dwCount > 0);        
-        m_pMemory = NULL;
-        m_dwCount = dwCount;
-        switch(allocType)
-        {
-        case matNew:
-            m_pMemory = new T[dwCount];
-            ZeroMemory(m_pMemory,sizeof(T) * dwCount); //先清除内存，保证没有垃圾数据--性能影响？
-            break;
-        default:
-            FTLASSERT(FALSE);
-            break;
-        }
+        Init(DefaultFixedCount);
     }
 
-    template <typename T, MemoryAllocType allocType>
-    CFTempMemoryHolder<T,allocType>::~CFTempMemoryHolder()
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    CFMemAllocator<T, allocType, DefaultFixedCount>::CFMemAllocator(DWORD nCount)
+        :m_pMem(NULL)
+        ,m_allocType(allocType)
+        ,m_nCount(nCount)
     {
-        if (m_pMemory)
+        FTLASSERT(nCount > 0);
+        Init(nCount);
+    }
+
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    VOID CFMemAllocator<T, allocType, DefaultFixedCount>::Init(DWORD nCount)
+    {
+        if (nCount > DefaultFixedCount)
         {
-            switch (allocType)
+            switch(allocType)
             {
             case matNew:
-                SAFE_DELETE_ARRAY(m_pMemory);
+                m_pMem = new T[nCount];
+                m_nCount = nCount;
+                ZeroMemory(m_pMem,sizeof(T) * nCount); //先清除内存，保证没有垃圾数据--性能影响？
                 break;
             default:
                 FTLASSERT(FALSE);
@@ -246,25 +250,70 @@ namespace FTL
         }
     }
 
-    template <typename T, MemoryAllocType allocType>
-    T* CFTempMemoryHolder<T,allocType>::Detatch()
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    VOID CFMemAllocator<T, allocType, DefaultFixedCount>::_FreeMemory()
     {
-        T* pTempMemory = m_pMemory;
-        m_pMemory = NULL;
-        return pTempMemory;
+        if (m_pMem)
+        {
+            switch (allocType)
+            {
+            case matNew:
+                SAFE_DELETE_ARRAY(m_pMem);
+                break;
+            default:
+                FTLASSERT(FALSE);
+                break;
+            }
+        }
     }
 
-    template <typename T, MemoryAllocType allocType>
-     CFTempMemoryHolder<T,allocType>::operator T*() const
-     {
-         return m_pMemory;
-     }
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    CFMemAllocator<T, allocType, DefaultFixedCount>::~CFMemAllocator()
+    {
+        _FreeMemory();
+    }
 
-     template <typename T, MemoryAllocType allocType>
-     DWORD CFTempMemoryHolder<T,allocType>::GetCount() const
-     {
-         return m_dwCount;
-     }
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    T* CFMemAllocator<T, allocType, DefaultFixedCount>::Detatch()
+    {
+        T* pTmpMem = m_pMem;
+        m_pMem = NULL;
+        m_nCount = DefaultFixedCount;
+        return pTmpMem;
+    }
+
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    T* CFMemAllocator<T, allocType, DefaultFixedCount>::GetMemory( UINT nMaxSize )
+    {
+        if ( !m_pMem && nMaxSize <= DefaultFixedCount )
+        {
+            return m_FixedMem;
+        }
+
+        if ( m_nCount < nMaxSize || NULL == m_pMem )
+        {
+            _FreeMemory();
+            m_nCount = _GetBlockSize( nMaxSize );
+            Init(m_nCount);
+        }
+    }
+
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    UINT CFMemAllocator<T,allocType, DefaultFixedCount>::GetCount() const
+    {
+        return m_nCount;
+    }
+
+    template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+    UINT CFMemAllocator<T,allocType, DefaultFixedCount>::_GetBlockSize(UINT nMaxCount)
+    {
+        UINT TempSize = m_nCount;
+        while ( TempSize < nMaxCount )
+        {
+            TempSize *= 2;
+        }
+        return TempSize;
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     CFStringFormater::CFStringFormater(DWORD dwInitAllocLength/* = MAX_BUFFER_LENGTH*/)

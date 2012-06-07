@@ -1080,7 +1080,7 @@ namespace FTL
         Release();
     }
 
-    BOOL CFCanvas::Create(int width, int heigth, int bpp /* = 32 */)
+    BOOL CFCanvas::Create(HWND hWnd, int width, int heigth, int bpp /* = 32 */)
     {
         FTLASSERT( NULL == m_hCanvasDC );
         FTLASSERT( 32 == bpp && TEXT("Now just support 32 bit"));
@@ -1153,7 +1153,7 @@ namespace FTL
         return bRet;
     }
 
-    HANDLE CFCanvas::CopyyToHandle()
+    HANDLE CFCanvas::CopyToHandle()
     {
         HANDLE hDib = NULL;
         if (m_pBuffer)

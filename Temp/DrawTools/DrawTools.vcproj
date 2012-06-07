@@ -50,8 +50,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="E:\Code\ncapture2\trunk\src\third_party\WTL80;F:\Fujie\FTL_Google\FTL_ALL"
-				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;_DEBUG"
+				AdditionalIncludeDirectories="..\..\FTL_ALL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;_DEBUG;DRAW_TOOL_TEST"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -134,8 +134,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="E:\Code\ncapture2\trunk\src\third_party\WTL80;F:\Fujie\FTL_Google\FTL_ALL"
-				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;NDEBUG"
+				AdditionalIncludeDirectories="..\..\FTL_ALL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;NDEBUG;DRAW_TOOL_TEST"
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
@@ -195,7 +195,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CapImageObj.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DrawCanvas.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\DrawDataInfo.cpp"
 				>
 			</File>
 			<File
@@ -219,10 +227,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DrawToolsView.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\FreeDrawTool.cpp"
 				>
 			</File>
@@ -232,6 +236,14 @@
 			</File>
 			<File
 				RelativePath=".\MoveTool.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\nCaptureView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NPVPhotoCalcRect.cpp"
 				>
 			</File>
 			<File
@@ -292,7 +304,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CapImageObj.h"
+				>
+			</File>
+			<File
 				RelativePath=".\DrawCanvas.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DrawDataInfo.h"
 				>
 			</File>
 			<File
@@ -312,10 +332,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DrawToolsView.h"
-				>
-			</File>
-			<File
 				RelativePath=".\DrawTypeDefine.h"
 				>
 			</File>
@@ -329,6 +345,14 @@
 			</File>
 			<File
 				RelativePath=".\MoveTool.h"
+				>
+			</File>
+			<File
+				RelativePath=".\nCaptureView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NPVPhotoCalcRect.h"
 				>
 			</File>
 			<File

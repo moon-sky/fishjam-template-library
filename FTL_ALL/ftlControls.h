@@ -145,7 +145,9 @@ namespace FTL
         }
 
         BEGIN_MSG_MAP_EX(CFSkinComboBox)
+#ifdef FTL_DEBUG
             DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE, uMsg, wParam, lParam)
+#endif 
             REFLECTED_COMMAND_CODE_HANDLER_EX(CBN_DROPDOWN, OnCbnDropDown)
             REFLECTED_COMMAND_CODE_HANDLER_EX(CBN_CLOSEUP, OnCbnCloseup)
             MSG_WM_CTLCOLORLISTBOX(OnCtlColorListBox)

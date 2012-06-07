@@ -2,9 +2,9 @@
 #include "RichEditPanel.h"
 
 #ifdef FTL_DEBUG
-//#include <ftlwindow.h>
-//#include <ftlControls.h>
-//#include <ftlGdi.h> 
+#include <ftlwindow.h>
+#include <ftlControls.h>
+#include <ftlGdi.h> 
 #endif 
 
 #pragma comment(lib, "riched20.lib")

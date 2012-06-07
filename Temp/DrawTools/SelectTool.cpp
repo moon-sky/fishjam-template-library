@@ -2,12 +2,17 @@
 #include "SelectTool.h"
 #include "DrawCanvas.h"
 #include "DrawRect.h"
-#include "../resource.h"
 
 #include "SelectObject.h"
 
+#ifdef DRAW_TOOL_TEST
+#include "./resource.h"
+#else
+#include "../resource.h"
 #include <SilverlightCpp.h>
 using namespace SilverlightCpp;
+#endif 
+
 //#include <SilverlightExCpp.h>
 //using namespace SilverlightExCpp;
 
@@ -129,6 +134,11 @@ void CSelectTool::OnEditProperties(IDrawCanvas* pView)
 
 void CSelectTool::InitResource()
 {
+#ifdef DRAW_TOOL_TEST
+	m_hCursorSelect = LoadCursor(NULL, IDC_SIZEALL);
+	m_hCursorSelecting = LoadCursor(NULL, IDC_HAND);
+	m_hCursor = m_hCursor;
+#else
 	NDGraphics::CGDIPImage imgCursorSelect;
 	imgCursorSelect.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
 		_T( "/Assets/Images/Main/CaptureView/select_cursor_1.png" ) ), ImageFormatPNG ); // NS
@@ -142,6 +152,8 @@ void CSelectTool::InitResource()
 	m_hCursorSelecting = (HCURSOR)imgCursorSelecting.GetHICON();
 	FTLASSERT(m_hCursorSelecting);
 	m_hCursor = m_hCursorSelect;
+#endif 
+
 }
 
 BOOL CSelectTool::OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point)

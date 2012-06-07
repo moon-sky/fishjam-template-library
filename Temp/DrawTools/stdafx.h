@@ -33,7 +33,7 @@ extern CAppModule _Module;
 #include <atlimage.h>
 #include <atltime.h>
 
-#include <ftlbase.h>
+#include "ftlbase.h"
 #include <cmath>
 
 #if defined _M_IX86
@@ -45,3 +45,6 @@ extern CAppModule _Module;
 #else
   #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
+
+#define DRAW_TOOL_TEST
+#include "resource.h"

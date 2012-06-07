@@ -6,10 +6,12 @@
 #include "resource.h"
 
 #include "aboutdlg.h"
-#include "DrawToolsView.h"
+#include "nCaptureView.h"
 #include "MainFrm.h"
 #include <atldlgs.h>
 #include <ftlgdi.h>
+#include "NPVPhotoCalcRect.h"
+#include "TextObject.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
@@ -27,6 +29,8 @@ BOOL CMainFrame::OnIdle()
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+	CNCaptureApplication::Instance()->m_pMainFrame = this;
+
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	// attach menu
@@ -45,6 +49,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CreateSimpleStatusBar();
 
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+	m_view.Initialize();
 
 	UIAddToolBar(hWndToolBar);
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
@@ -56,6 +61,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
+	
 	return 0;
 }
 
@@ -70,6 +76,23 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	bHandled = FALSE;
 	return 1;
 }
+
+LRESULT CMainFrame::OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	CFileDialog dlg(TRUE);
+	if (dlg.DoModal() == IDOK)
+	{
+		HRESULT hr = E_FAIL;
+		CCapImageObj* pImageObj = new CCapImageObj(dlg.m_szFileName);
+		COM_VERIFY(pImageObj->Load(dlg.m_szFileName));
+		if (SUCCEEDED(hr))
+		{
+			CNCaptureApplication::Instance()->GetDocument()->SetCurCaptureImage(pImageObj);
+		}
+	}
+	return 0;
+}
+
 
 LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
@@ -131,25 +154,29 @@ BOOL CALLBACK EnumFamCallBack(LPLOGFONT lplf, LPNEWTEXTMETRIC lpntm, DWORD FontT
 } 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	std::list<LOGFONT> lstFont;
+	//std::list<LOGFONT> lstFont;
 
-	HDC hdc = GetDC();
-	UINT uAlignPrev; 
-	int aFontCount[] = { 0, 0, 0 }; 
-	char szCount[8];
-	HRESULT hr;
-	size_t * pcch; 
+	//HDC hdc = GetDC();
+	//UINT uAlignPrev; 
+	//int aFontCount[] = { 0, 0, 0 }; 
+	//char szCount[8];
+	//HRESULT hr;
+	//size_t * pcch; 
 
-	EnumFontFamilies(hdc, (LPCTSTR) NULL, 
-		(FONTENUMPROC) EnumFamCallBack, (LPARAM) aFontCount); 
+	//EnumFontFamilies(hdc, (LPCTSTR) NULL, 
+	//	(FONTENUMPROC) EnumFamCallBack, (LPARAM) aFontCount); 
 
-	uAlignPrev = SetTextAlign(hdc, TA_UPDATECP); 
+	//uAlignPrev = SetTextAlign(hdc, TA_UPDATECP); 
 
-	FTLTRACE(TEXT("Number of raster fonts =%d\n"), aFontCount[0]);
-	FTLTRACE(TEXT("Number of vector fonts =%d\n"), aFontCount[1]);
-	FTLTRACE(TEXT("Number of TrueType fonts =%d\n"), aFontCount[2]);
+	//FTLTRACE(TEXT("Number of raster fonts =%d\n"), aFontCount[0]);
+	//FTLTRACE(TEXT("Number of vector fonts =%d\n"), aFontCount[1]);
+	//FTLTRACE(TEXT("Number of TrueType fonts =%d\n"), aFontCount[2]);
 
-	ReleaseDC(hdc);
+	//ReleaseDC(hdc);
+
+	CPoint ptMouse;
+	GetCursorPos(&ptMouse);
+	m_view.SelectToolTypeByMenu(ptMouse);
 
 	//CAboutDlg dlg;
 	//dlg.DoModal();
