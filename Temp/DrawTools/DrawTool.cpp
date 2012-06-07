@@ -24,6 +24,10 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 {
 	BOOL bRet = FALSE;
 	pView->BeginCapture();
+
+	//clear old active
+	pView->SetActive(NULL, FALSE);
+
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
 

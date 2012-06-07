@@ -313,22 +313,26 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcClient,
 
 BOOL CRichEditPanel::SetActive(BOOL bActive)
 {
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::SetActive, bActive=%d, m_fInplaceActive=%d\n"), bActive, m_fInplaceActive);
+	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::SetActive, bActive=%d, m_fInplaceActive=%d\n"), bActive, m_fInplaceActive);
 	BOOL bRet = TRUE;
 	if (bActive != m_fInplaceActive)
 	{
 		HRESULT hr = E_FAIL;
 		if (bActive)
 		{
-			CRect rcClient = m_rcClient;
-			m_pDrawCanvas->DocToClient(&rcClient);
+			CRect rcClient;
+			TxGetClientRect(&rcClient);
+			//rcClient = m_rcClient;
+			//m_pDrawCanvas->DocToClient(&rcClient);
 			COM_VERIFY(m_spTextServices->OnTxInPlaceActivate(&rcClient));
-			COM_VERIFY(m_spTextServices->TxSendMessage(WM_SETFOCUS, 0, 0, NULL));
+			COM_VERIFY(m_spTextServices->OnTxUIActivate());
+			COM_VERIFY(m_spTextServices->TxSendMessage(WM_SETFOCUS, NULL, 0, NULL));
 		}
 		else
 		{
-			COM_VERIFY(m_spTextServices->OnTxInPlaceDeactivate());
 			COM_VERIFY(m_spTextServices->TxSendMessage(WM_KILLFOCUS, (WPARAM)NULL, 0, NULL));
+			COM_VERIFY(m_spTextServices->OnTxUIDeactivate());
+			COM_VERIFY(m_spTextServices->OnTxInPlaceDeactivate());
 		}
 		//if (SUCCEEDED(hr))
 		{

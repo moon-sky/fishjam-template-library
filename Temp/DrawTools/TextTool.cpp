@@ -20,14 +20,14 @@ BOOL CTextTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	{
 		return TRUE;
 	}
-	
+
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
 
 	CDrawObject* pObj = new CTextObject(pView, CRect(ptLogical, pView->GetMouseDownLogicalPoint()), dotText, *m_pDrawObjInfo);
 	pView->Add(pObj);
 	pView->Select(pObj);
-
+	
 
 	pView->SetCurrentSelectMode(smSize);
 	pView->SetDragHandle(5);
