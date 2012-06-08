@@ -52,9 +52,9 @@ BOOL CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 			//objType = dotLine;
 			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotLine, *m_pDrawObjInfo);
 			break;
-		case ttText:
-			pObj = new CTextObject(pView, CRect(ptLogical, CSize(0, 0)), dotText, *m_pDrawObjInfo);
-			break;
+		//case ttText:
+		//	pObj = new CTextObject(pView, CRect(ptLogical, CSize(0, 0)), dotText, *m_pDrawObjInfo);
+		//	break;
 		case ttLineArrow:
 			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotLineArrow, *m_pDrawObjInfo);
 			break;

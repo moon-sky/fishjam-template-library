@@ -383,6 +383,11 @@ HCURSOR CDrawObject::GetHandleCursor(int nHandle)
 	return ::LoadCursor(NULL, id);
 }
 
+HCURSOR CDrawObject::GetActiveCursor()
+{
+	return ::LoadCursor(NULL, IDC_SIZEALL);
+}
+
 // point must be in logical
 void CDrawObject::MoveHandleTo(int nHandle, CPoint point)
 {

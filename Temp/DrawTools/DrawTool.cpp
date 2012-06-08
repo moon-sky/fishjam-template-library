@@ -25,9 +25,6 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	BOOL bRet = FALSE;
 	pView->BeginCapture();
 
-	//clear old active
-	pView->SetActive(NULL, FALSE);
-
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
 
@@ -37,7 +34,14 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	// Check for resizing (only allowed on single selections)
 	if (pView->GetSelection().size() == 1)
 	{
+		CDrawObject* pOldActiveObject = pView->ObjectAt(ptLogical);
 		pObj = pView->GetSelection().front();
+		if (pObj != pOldActiveObject)
+		{
+			//if is not the same, then clear old active
+			pView->SetActive(NULL, FALSE);
+		}
+
 		int nDragHandle = pObj->HitTest(point, TRUE);
 		pView->SetDragHandle(nDragHandle);
 		if (nDragHandle != 0)
@@ -56,6 +60,7 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 		{
 			if (pObj->HitTestMove(ptLogical))
 			{
+				pView->SetActive(NULL, FALSE);
 				pView->SetCurrentSelectMode(smMove);
 				
 				if (!pView->IsSelected(pObj))
@@ -69,8 +74,7 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 				}
 				bRet = TRUE;
 			}
-
-			if (pObj->HitTestActive(ptLogical))
+			else if (pObj->HitTestActive(ptLogical))
 			{
 				pView->SetActive(pObj, TRUE);
 				pView->SetCurrentSelectMode(smNone);
@@ -91,6 +95,10 @@ BOOL CDrawTool::OnLButtonDblClk(IDrawCanvas* /*pView*/, UINT /*nFlags*/, const C
 
 BOOL CDrawTool::OnLButtonUp(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& point)
 {
+	if (!pView->GetSelection().empty())
+	{
+		pView->GetSelection().front()->NormalizePosition();
+	}
 	pView->EndCapture();
 	return FALSE;
 }
@@ -110,7 +118,11 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 				m_hCursor = pObj->GetHandleCursor(nHandle);
 				return; // bypass CDrawTool
 			}
-			if (pObj->HitTestMove(ptLogical))
+			if (pObj->HitTestActive(point))
+			{
+				m_hCursor = pObj->GetActiveCursor();
+			}
+			else if (pObj->HitTestMove(ptLogical))
 			{
 				m_hCursor = ::LoadCursor(NULL, IDC_SIZEALL);
 			}

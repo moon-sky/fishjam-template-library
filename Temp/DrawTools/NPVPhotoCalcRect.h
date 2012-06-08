@@ -43,8 +43,13 @@ public:
 	{
 		E_ZOOM_ORIGINAL,
 	};
-	CRect GetPhotoRect(CRect rc, SIZE* pSize, float zoom, BOOL b1, BOOL b2);
+	CNPVPhotoCalcRect(const CRect& rect);
+	CRect GetPhotoRect(CRect rcClient, LPSIZE lpSize, DOUBLE dZoomFactor, BOOL bFirst, BOOL bFirstView);
 	static CNPVPhotoCalcRect* GetPhotoCalcRectObject(ZoomType, CRect* pRect);
+private:
+	CRect m_rcView;
+	BOOL		m_bZoomFirstView;
+	DOUBLE	m_dOldFactor;
 };
 
 class CStringResouceMgr

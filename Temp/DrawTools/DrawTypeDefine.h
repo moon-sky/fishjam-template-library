@@ -92,6 +92,7 @@ public:
 	virtual CPoint GetOffset() = 0;
 	virtual CRect GetDrawTarget() = 0;
 
+	virtual void PrepareDC(CDCHandle dc) = 0;
 	virtual void ClientToDoc(CPoint* pPoint) = 0;
 	virtual void ClientToDoc(CRect* pRect) = 0;
 	virtual void DocToClient(CPoint* pPoint) = 0;

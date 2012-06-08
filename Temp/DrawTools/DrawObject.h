@@ -35,6 +35,7 @@ public:
 	virtual CPoint GetHandle(int nHandle);
 	CRect GetHandleRect(int nHandleID);
 	virtual HCURSOR GetHandleCursor(int nHandle);
+	virtual HCURSOR GetActiveCursor();
 	//virtual void SetLineColor(COLORREF color);
 	virtual void UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
 

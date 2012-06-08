@@ -8,8 +8,15 @@ class INotifyCallBack
 {
 public:
 	virtual void OnNotify(int iNotify, void* pParam) = 0;
-	virtual void OnExpand(int nDir, int nValue) = 0;
+	//virtual void OnExpand(int nDir, int nValue) = 0;
 };
+
+#define RTPANEL_MARGIN_LEFT			3
+#define RTPANEL_MARGIN_TOP			3
+#define RTPANEL_MARGIN_RIGHT		3
+#define RTPANEL_MARGIN_BOTTOM		3
+#define RTPANEL_MIN_ROW_COUNT		2
+#define RTPANEL_MIN_COL_COUNT		5
 
 #define RICH_EDIT_PANEL_FONT_MASK_NAME		(DWORD)(0x00000001)
 #define RICH_EDIT_PANEL_FONT_MASK_SIZE		(DWORD)(0x00000002)
@@ -32,8 +39,8 @@ class CRichEditPanel
 public:
 	CRichEditPanel();
 	~CRichEditPanel();
-	HRESULT Init(HWND hWndOwner, const RECT* prcClient, IDrawCanvas* pDrawCanvas,
-		INotifyCallBack* pNotifyCallback = NULL);
+	HRESULT Init(HWND hWndOwner, const RECT* prcBound, IDrawCanvas* pDrawCanvas,
+		LPLOGFONT pLogFont, INotifyCallBack* pNotifyCallback = NULL);
 	BOOL SetActive(BOOL bActive);
 	BOOL IsActive();
 
@@ -53,15 +60,20 @@ public:
 	HRESULT SetTextStream(long nStart, long nEnd, IStream* pStream);
 
 	void DoPaint(CDCHandle dcParent);
-
+	
 	HRESULT GetTextServices(ITextServices** ppTextServices)
 	{
 		*ppTextServices = m_spTextServices;
 		(*ppTextServices)->AddRef();
 		return S_OK;
 	}
-	HRESULT SetClientRect(const RECT *prc, BOOL fUpdateExtent = TRUE);
-	RECT* GetClientRect() { return &m_rcClient; }
+
+	
+	HRESULT SetClientBound(const RECT *pRcBound, RECT* pNewRcBound = NULL, BOOL fUpdateExtent = TRUE);
+	SIZE	GetMinBoundSize(int nRow, int nCol);
+	//CRect   CheckClientBoundRect();
+
+	//RECT* GetClientRect() { return &m_rcClient; }
 
 	HRESULT SetText(LPCTSTR pszText);		//TODO:change to RTF?
 	HRESULT Range(long cpFirst, long cpLim, ITextRange** ppRange);
@@ -175,9 +187,10 @@ public:
 	//LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 private:
-	HRESULT InitDefaultCharFormat(HFONT hfont);
+	HRESULT InitDefaultCharFormat(LPLOGFONT pLogFont);
 	HRESULT InitDefaultParaFormat();
-	
+
+
 	// nStart => nEnd
 	//   0    =>   0   -- Current Select
 	//   0    =>  -1   -- All Text
@@ -186,6 +199,7 @@ private:
 	BOOL	_IsNeedHandleMsg(MSG* pMsg);
 
 	HRESULT _SetPropertyBits(DWORD dwProperty);
+	
 private:
 	//this must be the first member variable
 	ULONG					m_cRefs;
@@ -193,6 +207,7 @@ private:
 	
 	HWND					m_hWndOwner;
 	CRect					m_rcClient;
+	CRect					m_rcBound;
 	IDrawCanvas*			m_pDrawCanvas;
 	//CRect					m_rcViewInset;
 	SIZEL					m_szlExtent;
@@ -212,6 +227,7 @@ private:
 	CComPtr<ITextDocument>	m_spTextDocument;
 	LONG					m_lState;
 
+	unsigned    m_fNotify				:1;
 	unsigned	m_fBorder				:1;	// control has border
 	unsigned	m_fCustRect				:1;	// client changed format rect
 	unsigned	m_fInBottomless			:1;	// inside bottomless callback

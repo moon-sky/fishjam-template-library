@@ -163,6 +163,7 @@ public:
 		{
 			pTool->OnCancel(this);
 		}
+		SetCurrentSelectMode(smNone);
 	}
 
 	BOOL OnLButtonUp(UINT nFlags, const CPoint& point)
@@ -390,20 +391,22 @@ public:
 	void InvalObject(CDrawObject* pObj)
 	{
 		CRect rect = pObj->GetPosition();
+		rect.NormalizeRect();
+		rect.InflateRect(1, 1);
 		DocToClient(&rect);
+
 		if (IsSelected(pObj)) //m_bActive && 
 		{
-			rect.left -= 4;
-			rect.top -= 5;
-			rect.right += 5;
-			rect.bottom += 4;
+			rect.left -= (TRACK_MARGIN + 1); // 4;
+			rect.top -= (TRACK_MARGIN + 2); // 5;
+			rect.right += (TRACK_MARGIN + 2); //5;
+			rect.bottom += (TRACK_MARGIN + 1); //4;
 		}
 		rect.InflateRect(1, 1); // handles CDrawOleObj objects
-		//rect.InflateRect(4, 4); // handles CDrawOleObj objects
 
 		T* pThis = static_cast<T*>(this);
-		pThis->Invalidate();
-		//::InvalidateRect(pThis->m_hWnd, rect, FALSE);
+		//pThis->Invalidate();
+		::InvalidateRect(pThis->m_hWnd, rect, FALSE);
 	}
 
 	virtual BOOL IsSelected(const CDrawObject* pDrawObj) const
@@ -475,6 +478,7 @@ public:
 				BackupDrawObjectData(_T("Naver Capture"));
 			}
 		}
+		SetCurrentSelectMode(smNone);
 	}
 
 	HWND GetHWnd()

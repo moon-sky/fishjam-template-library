@@ -50,7 +50,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\FTL_ALL"
+				AdditionalIncludeDirectories="..\..\FTL_ALL;F:\Fujie\FJSDK_Export20120528\WTL\SDK\WTL80\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;_DEBUG;DRAW_TOOL_TEST"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -513,6 +513,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\res\bg_pattern.png"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
