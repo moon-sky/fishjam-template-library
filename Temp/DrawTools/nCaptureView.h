@@ -5,11 +5,10 @@
 #pragma once
 #include "NPVPhotoCalcRect.h"
 #ifdef DRAW_TOOL_TEST
-#include "DrawCanvas.h"
 #else
 #include "../Capture/AlphaBitmapUI/Canvas.h"
-#include "./DrawTools/DrawCanvas.h"
 #endif 
+#include "./DrawTools/DrawCanvas.h"
 
 #include "CapImageObj.h"
 #include <atlscrl.h>

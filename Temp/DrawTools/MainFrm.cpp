@@ -11,7 +11,7 @@
 #include <atldlgs.h>
 #include <ftlgdi.h>
 #include "NPVPhotoCalcRect.h"
-#include "TextObject.h"
+//#include "TextObject.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
@@ -209,6 +209,7 @@ LRESULT CMainFrame::OnEditFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	HRESULT hr = E_FAIL;
 	if (m_view.GetSelection().size() > 0)
 	{
+#ifndef DRAW_TOOL_TEST
 		CTextObject* pTextObject = dynamic_cast<CTextObject*>(m_view.GetSelection().front());
 		if (pTextObject)
 		{
@@ -224,6 +225,7 @@ LRESULT CMainFrame::OnEditFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 			COM_VERIFY(pTextObject->GetRichEditPanel()->SetTextForeColor(0, 0, dlg.m_cf.rgbColors));
 		}
+#endif 
 	}
 	return 0;
 }
@@ -238,6 +240,7 @@ LRESULT CMainFrame::OnStreamIn(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	HRESULT hr = E_FAIL;
 	if (m_view.GetSelection().size() > 0)
 	{
+#ifndef DRAW_TOOL_TEST
 		CTextObject* pTextObject = dynamic_cast<CTextObject*>(m_view.GetSelection().front());
 		if (pTextObject)
 		{
@@ -260,6 +263,7 @@ LRESULT CMainFrame::OnStreamIn(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 				ATLTRACE(TEXT("Read: %s\n"), CA2T(strInfo));
 			}
 		}
+#endif
 	}
 
 	return 0;
@@ -272,6 +276,7 @@ LRESULT CMainFrame::OnStreamOut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		HRESULT hr = E_FAIL;
 		if (m_view.GetSelection().size() > 0)
 		{
+#ifndef DRAW_TOOL_TEST
 			CTextObject* pTextObject = dynamic_cast<CTextObject*>(m_view.GetSelection().front());
 			if (pTextObject)
 			{
@@ -280,6 +285,7 @@ LRESULT CMainFrame::OnStreamOut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 				COM_VERIFY(m_spStream->Seek(nStart,STREAM_SEEK_SET, NULL ));
 				pTextObject->GetRichEditPanel()->SetTextStream(0, 0, m_spStream);
 			}
+#endif 
 		}
 	}
 

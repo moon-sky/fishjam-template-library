@@ -2,11 +2,7 @@
 #include "DrawDataInfo.h"
 #include "ftlFunctional.h"
 
-#ifdef DRAW_TOOL_TEST
-#include "DrawObject.h"
-#else
 #include "DrawTools/DrawObject.h"
-#endif 
 using namespace std;
 #include <algorithm>
 

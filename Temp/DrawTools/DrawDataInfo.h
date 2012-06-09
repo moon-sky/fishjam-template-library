@@ -1,10 +1,6 @@
 #pragma once
 
-#ifdef DRAW_TOOL_TEST
-#include "DrawTypeDefine.h"
-#else
 #include "DrawTools/DrawTypeDefine.h"
-#endif 
 
 #include <list>
 

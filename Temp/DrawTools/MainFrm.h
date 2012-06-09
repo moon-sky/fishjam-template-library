@@ -71,7 +71,10 @@ public:
 	}
 	void SyncViewImageScale()
 	{
-
+		float fCurZoom = m_view.GetZoom();
+		CString strInfo;
+		strInfo.Format(TEXT("ZOOM:%.2f"), fCurZoom);
+		SetWindowText(strInfo);
 	}
 private:
 	CComPtr<IStream> m_spStream;

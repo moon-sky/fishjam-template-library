@@ -5,10 +5,8 @@
 
 #include "SelectObject.h"
 
-#ifdef DRAW_TOOL_TEST
-#include "./resource.h"
-#else
 #include "../resource.h"
+#ifndef DRAW_TOOL_TEST
 #include <SilverlightCpp.h>
 using namespace SilverlightCpp;
 #endif 
