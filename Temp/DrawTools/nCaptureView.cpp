@@ -426,7 +426,7 @@ void CNCaptureView::OnDestroy()
 
 void CNCaptureView::DoPaint(CDCHandle dc)
 {
-	//FUNCTION_BLOCK_TRACE(20);
+	FUNCTION_BLOCK_TRACE(20);
 	if ( m_bIsDrawing )
 	{
 		return;

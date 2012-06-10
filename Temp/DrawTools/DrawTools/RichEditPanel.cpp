@@ -520,7 +520,7 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 
 	RECTL rcL = { rcClient.left, rcClient.top, rcClient.right, rcClient.bottom };
 	LONG lViewId = TXTVIEW_ACTIVE;  //TXTVIEW_INACTIVE
-	dcParent.FillSolidRect(rcClient, RGB(255,0,0));
+	//dcParent.FillSolidRect(rcClient, RGB(255,0,0));
 
 	if (m_fInplaceActive)
 	{
@@ -701,10 +701,10 @@ HRESULT CRichEditPanel::TxGetExtent( LPSIZEL lpExtent )
 	{
 		*lpExtent = m_szlExtent;
 
-		float fCurZoom = 1.0f;
+		//float fCurZoom = 1.0f;
 
-		FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::TxGetExtent, fCurZoom=%f, lpExtent={%d,%d}\n"), 
-			fCurZoom, lpExtent->cx, lpExtent->cy);
+		FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxGetExtent, lpExtent={%d,%d}\n"), 
+			lpExtent->cx, lpExtent->cy);
 		//oldExtent = m_szlExtent;
 	}
 //#endif 
@@ -1194,14 +1194,16 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 		do 
 		{
 #if 1
-			CPoint ptLocalClient = pMsg->pt;
-			TxScreenToClient(&ptLocalClient);
-			m_pDrawCanvas->ClientToDoc(&ptLocalClient);
-
-			if (m_rcClient.PtInRect(ptLocalClient))
+			CPoint ptClient = pMsg->pt;
+			TxScreenToClient(&ptClient);
+			//m_pDrawCanvas->ClientToDoc(&ptLocalClient);
+			CRect rcDevice = m_rcClient;
+			m_pDrawCanvas->DocToClient(&rcDevice);
+			if (rcDevice.PtInRect(ptClient))
 			{
 				if (WM_LBUTTONDOWN == pMsg->message)
 				{
+					
 					//make sure canvas capture
 					//if (m_pDrawCanvas->GetCurrentTool())
 					//{
@@ -1212,7 +1214,7 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 				}
 				else if (WM_MOUSEWHEEL == pMsg->message)
 				{
-					bRet = TRUE;
+					bRet = FALSE ;//TRUE;
 					break;
 				}
 			}
@@ -1264,6 +1266,15 @@ LRESULT CRichEditPanel::OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM l
 {
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
+
+	if (WM_LBUTTONDOWN == uMsg)
+	{
+		//SetActive(FALSE);
+		//SetActive(TRUE);
+		//TxSetCapture(TRUE);
+	}
+
+
 	hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
 	if (S_OK != hr)
 	{

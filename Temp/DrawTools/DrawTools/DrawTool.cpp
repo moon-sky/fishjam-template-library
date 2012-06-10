@@ -135,8 +135,8 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 	else
 	{
 		_ScrollForSelect(pView, point);
-		CPoint ptLogical = point;
-		pView->ClientToDoc(&ptLogical);
+		//CPoint ptLogical = point;
+		//pView->ClientToDoc(&ptLogical);
 
 		CPoint ptLastLogical = pView->GetMouseLastLogicalPoint();
 		CPoint delta = (CPoint)(ptLogical - ptLastLogical);
