@@ -125,6 +125,8 @@ typedef struct stu_DrawObjBaseInfo
 {
 	LOGPEN			logpen;
 	LOGBRUSH		logbrush;
+	LOGFONT			logfont;
+	COLORREF		clrFontFore;
 	stu_DrawObjBaseInfo()
 	{
 		logpen.lopnStyle = PS_INSIDEFRAME;
@@ -135,12 +137,21 @@ typedef struct stu_DrawObjBaseInfo
 		logbrush.lbStyle = BS_SOLID;
 		logbrush.lbColor = RGB(255, 255, 184);
 		logbrush.lbHatch = HS_HORIZONTAL;
+
+		ZeroMemory(&logfont, sizeof(logfont));
+		StringCchCopy(logfont.lfFaceName, _countof(logfont.lfFaceName), TEXT("ËÎÌו"));
+
+		CWindowDC screenDC(NULL);
+		logfont.lfHeight = - ::MulDiv(9, screenDC.GetDeviceCaps(LOGPIXELSY), 72);
+		clrFontFore = RGB(255, 0, 0);
 	}
 
 	stu_DrawObjBaseInfo& operator = (const stu_DrawObjBaseInfo& other)
 	{
 		logpen   = other.logpen;
 		logbrush = other.logbrush;
+		logfont = other.logfont;
+		clrFontFore = other.clrFontFore;
 		return *this;
 	}
 }DRAWOBJBASEINFO, *LPDRAWOBJBASEINFO;

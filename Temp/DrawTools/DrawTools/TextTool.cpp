@@ -25,7 +25,7 @@ BOOL CTextTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	pView->ClientToDoc(&ptLogical);
 	CRect rcPosition = CRect(ptLogical, CSize(1,1));
 
-	CTextObject* pObj = new CTextObject(pView, rcPosition, dotText, *m_pDrawObjInfo, NULL);
+	CTextObject* pObj = new CTextObject(pView, rcPosition, dotText, *m_pDrawObjInfo);
 	pView->Add(pObj);
 	pView->Select(pObj);
 

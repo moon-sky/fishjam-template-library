@@ -122,7 +122,7 @@ ULONG STDMETHODCALLTYPE CRichEditPanel::Release(void)
 	return c_Refs;
 }
 
-HRESULT CRichEditPanel::InitDefaultCharFormat(LPLOGFONT pLogFont) 
+HRESULT CRichEditPanel::InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF clrTextFore) 
 {
 	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::InitDefaultCharFormat, hFont=0x%x\n"), pLogFont);
 
@@ -131,19 +131,22 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(LPLOGFONT pLogFont)
 	BOOL bRet = FALSE;
 	HWND hWnd = NULL;
 	HDC hDC = NULL;
-	LOGFONT defaultLogFont = {0};
+	LOGFONT logFont = {0};
 	//LONG yPixPerInch = 0;
-
+	
 	// Get LOGFONT for default font
 	if (!pLogFont)
 	{
 		HFONT hDefaultFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-		API_VERIFY(0 != GetObject(hDefaultFont, sizeof(LOGFONT), &defaultLogFont));
+		API_VERIFY(0 != GetObject(hDefaultFont, sizeof(LOGFONT), &logFont));
 		if (!bRet)
 		{
 			return E_FAIL;
 		}
-		pLogFont = &defaultLogFont;
+	}
+	else
+	{
+		logFont = *pLogFont;
 	}
 
 	// Get LOGFONT for passed hfont
@@ -164,11 +167,13 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(LPLOGFONT pLogFont)
 	m_xPixPerInch = GetDeviceCaps(hDC, LOGPIXELSX);
 	m_yPixPerInch = GetDeviceCaps(hDC, LOGPIXELSY);
 
-	m_charFormat.yHeight = pLogFont->lfHeight * LY_PER_INCH / m_yPixPerInch;
+	int iPointSize = -1 * ::MulDiv(logFont.lfHeight, 72, m_yPixPerInch);
+	m_charFormat.yHeight = iPointSize * 20;
+	//m_charFormat.yHeight = -MulDiv(pLogFont->lfHeight, 72, m_yPixPerInch);//  * LY_PER_INCH / m_yPixPerInch;
 	ReleaseDC(hWnd, hDC);
 
 	m_charFormat.yOffset = 0;
-	m_charFormat.crTextColor = m_crAuto;
+	m_charFormat.crTextColor = clrTextFore;
 
 	m_charFormat.dwEffects = CFM_BOLD | CFM_COLOR; // CFM_EFFECTS | CFE_AUTOBACKCOLOR;
 	//m_charFormat.dwEffects &= ~(CFE_PROTECTED | CFE_LINK);
@@ -182,9 +187,10 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(LPLOGFONT pLogFont)
 	//if(!lf.lfStrikeOut)
 	//	m_charFormat.dwEffects &= ~CFE_STRIKEOUT;
 
-	m_charFormat.dwMask = CFM_ALL | CFM_BACKCOLOR;
-	m_charFormat.bCharSet = pLogFont->lfCharSet;
-	m_charFormat.bPitchAndFamily = pLogFont->lfPitchAndFamily;
+	m_charFormat.dwMask = CFM_ALL | CFM_COLOR | CFM_BACKCOLOR;
+	m_charFormat.bCharSet = logFont.lfCharSet;
+	m_charFormat.bPitchAndFamily = logFont.lfPitchAndFamily;
+	m_charFormat.crTextColor = clrTextFore;
 	COM_VERIFY(StringCchCopy(m_charFormat.szFaceName, _countof(m_charFormat.szFaceName),  pLogFont->lfFaceName));
 #else
 	// Get the current font settings
@@ -237,7 +243,8 @@ HRESULT CRichEditPanel::InitDefaultParaFormat()
 
 HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcBound,
 							 IDrawCanvas* pDrawCanvas,
-							 LPLOGFONT pLogFont,
+							 const LOGFONT* pLogFont,
+							 COLORREF clrFontFore,
 							 INotifyCallBack* pNotifyCallback /* = NULL */)
 {
 	HRESULT hr = E_FAIL;
@@ -270,7 +277,7 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcBound,
 
 	//m_rcViewInset = m_rcClient;
 
-	COM_VERIFY(InitDefaultCharFormat(pLogFont));
+	COM_VERIFY(InitDefaultCharFormat(pLogFont, clrFontFore));
 	COM_VERIFY(InitDefaultParaFormat());
 
 #pragma TODO(szlExtent is Himetric)
@@ -287,16 +294,16 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcBound,
 		COM_VERIFY(m_spTextServices->OnTxPropertyBitsChange(TXTBIT_BACKSTYLECHANGE, TXTBIT_BACKSTYLECHANGE));
 
 		LRESULT eventMask = 0;
-		LRESULT oldEventMask = 0;
-		COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETEVENTMASK, 0, 0, &eventMask));
+		//LRESULT oldEventMask = 0;
+		//COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETEVENTMASK, 0, 0, &eventMask));
 		//eventMask |= ENM_CHANGE | ENM_UPDATE | ENM_SCROLL | ENM_SCROLLEVENTS | ENM_PARAGRAPHEXPANDED| ENM_PAGECHANGE| ENM_KEYEVENTS | ENM_MOUSEEVENTS
 		//	| ENM_REQUESTRESIZE| ENM_SELCHANGE| ENM_DROPFILES| ENM_PROTECTED| ENM_CORRECTTEXT| ENM_IMECHANGE
 		//	| ENM_LANGCHANGE | ENM_OBJECTPOSITIONS | ENM_LINK | ENM_LOWFIRTF; 
-		eventMask = 0xFFFFFFFF;
-		COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETEVENTMASK, 0, (LPARAM)eventMask, &oldEventMask));
+		eventMask = ENM_SELCHANGE | ENM_REQUESTRESIZE;
+		COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETEVENTMASK, 0, (LPARAM)eventMask, NULL));
 
-		COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETEVENTMASK, 0, 0, &oldEventMask));
-		int i = 0;
+		//COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETEVENTMASK, 0, 0, &oldEventMask));
+		//int i = 0;
 		//COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETOLECALLBACK, NULL, (LPARAM)this, &lResult));
 
 
@@ -400,8 +407,8 @@ HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, D
 		}
 		if (dwFontMask & RICH_EDIT_PANEL_FONT_MASK_SIZE)
 		{
-#pragma TODO(Height sign)
-			COM_VERIFY(spFont->SetSize(FTL_ABS(pLogFont->lfHeight)));
+			LONG nSize = -MulDiv(pLogFont->lfHeight, m_yPixPerInch, 72);
+			COM_VERIFY(spFont->SetSize(nSize));
 		}
 		//if (RICH_EDIT_PANEL_FONT_MASK_WEIGHT & dwFontMask)
 		//{
@@ -544,7 +551,7 @@ HRESULT CRichEditPanel::GetTextFontName(long nStart, long nEnd, LPTSTR pszFontNa
 		}
 
 	}
-	FTLTRACEEX(FTL::tlInfo, TEXT("GetTextFontName %d to %d is %s\n"),
+	FTLTRACEEX(FTL::tlDetail, TEXT("GetTextFontName %d to %d is %s\n"),
 		nStart, nEnd, pszFontName);
 
 	return hr;
@@ -578,7 +585,7 @@ HRESULT CRichEditPanel::GetTextFontSize(long nStart, long nEnd, int* pFontSize)
 				hr = S_FALSE;
 			}
 
-			FTLTRACEEX(FTL::tlInfo, TEXT("GetTextFontSize %d to %d FontSize is %d\n"),
+			FTLTRACEEX(FTL::tlDetail, TEXT("GetTextFontSize %d to %d FontSize is %d\n"),
 				nStart, nEnd, *pFontSize);
 		}
 	}
@@ -629,7 +636,7 @@ HRESULT CRichEditPanel::GetTextForeColor(long nStart, long nEnd, COLORREF* pClr)
 			*pClr = nColor;
 #ifdef FTL_DEBUG
 			FTL::CFStringFormater formater;
-			FTLTRACEEX(FTL::tlInfo, TEXT("GetTextForeColor %d to %d Color is %s\n"),
+			FTLTRACEEX(FTL::tlDetail, TEXT("GetTextForeColor %d to %d Color is %s\n"),
 				nStart, nEnd, FTL::CFControlUtil::GetRichEditColorString(formater, *pClr));
 #endif
 		}
@@ -788,8 +795,8 @@ HRESULT CRichEditPanel::SetClientBound(const RECT *pRcBound, RECT* pNewRcBound /
 
 	if (fUpdateExtent)
 	{
-		m_szlExtent.cx = DXtoHimetricX(m_rcBound.Width() , m_xPixPerInch);
-		m_szlExtent.cy = DYtoHimetricY(m_rcBound.Height(), m_yPixPerInch);
+		m_szlExtent.cx = DXtoHimetricX(m_rcClient.Width() , m_xPixPerInch);
+		m_szlExtent.cy = DYtoHimetricY(m_rcClient.Height(), m_yPixPerInch);
 
 		UINT nOldNnumerator = 1;
 		UINT nOldDenominator = 1;
@@ -797,6 +804,7 @@ HRESULT CRichEditPanel::SetClientBound(const RECT *pRcBound, RECT* pNewRcBound /
 		COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETZOOM, (WPARAM)&nOldNnumerator, (WPARAM)&nOldDenominator, &lResult));
 		if (nOldDenominator != 0)
 		{
+			FTLASSERT(FALSE);
 			fCurZoom = (float)nOldNnumerator/nOldDenominator;
 			FTLTRACEEX(FTL::tlInfo, TEXT("SetClientBound fCurZoom=%f( %d/%d )\n"),
 				(float)nOldNnumerator/nOldDenominator, nOldNnumerator, nOldDenominator);
@@ -868,12 +876,13 @@ HRESULT CRichEditPanel::TxGetExtent( LPSIZEL lpExtent )
 	//static SIZEL oldExtent = {0};
 	//if (oldExtent.cx != m_szlExtent.cx || oldExtent.cy != m_szlExtent.cy)
 	{
+		FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::TxGetExtent, lpExtent={%d,%d}, m_szlExtent= {%d,%d}\n"), 
+			lpExtent->cx, lpExtent->cy, m_szlExtent.cx, m_szlExtent.cy);
+
 		*lpExtent = m_szlExtent;
 
 		//float fCurZoom = 1.0f;
 
-		FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxGetExtent, lpExtent={%d,%d}\n"), 
-			lpExtent->cx, lpExtent->cy);
 		//oldExtent = m_szlExtent;
 	}
 //#endif 
@@ -974,7 +983,7 @@ void CRichEditPanel::TxViewChange( BOOL fUpdate )
 
 BOOL CRichEditPanel::TxCreateCaret( HBITMAP hbmp, INT xWidth, INT yHeight )
 {
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxCreateCaret, hbmp=0x%x, xWidth=%d, yHeight=%d\n"),
+	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::TxCreateCaret, hbmp=0x%x, xWidth=%d, yHeight=%d\n"),
 		hbmp, xWidth, yHeight);
 	BOOL bRet = FALSE;
 	API_VERIFY(::CreateCaret (m_hWndOwner, hbmp, xWidth, yHeight));
@@ -1322,7 +1331,7 @@ HRESULT CRichEditPanel::TxNotify( DWORD iNotify, void *pv )
 #ifdef FTL_DEBUG
 	FTL::CFStringFormater formater;
 	FTL::CFControlUtil::GetEditNotifyCodeString(formater, iNotify, pv);
-	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
 		formater.GetString(), pv);
 #endif 
 	//dwBits := dwBits and TXTBIT_ALL_NOTIFICATIONS;
@@ -1383,7 +1392,7 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 				}
 				else if (WM_MOUSEWHEEL == pMsg->message)
 				{
-					bRet = FALSE ;//TRUE;
+					bRet = FALSE; //TRUE;
 					break;
 				}
 			}

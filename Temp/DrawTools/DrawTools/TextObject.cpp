@@ -5,17 +5,22 @@
 //#include <ftlControls.h>
 
 CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, 
-						 const DRAWOBJBASEINFO& stDrawObjInfo, LPLOGFONT pLogFont)
+						 const DRAWOBJBASEINFO& stDrawObjInfo)
 : CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo)
 {
 	HRESULT hr = E_FAIL;
 
 	m_pRichEditPanel = new CRichEditPanel();
-	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, pLogFont, this);
+	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, &stDrawObjInfo.logfont, 
+		stDrawObjInfo.clrFontFore, this);
 
+#ifdef FTL_DEBUG
 	CString strTest;
 	strTest.Format(TEXT("Demo String %d"), GetTickCount());
 	m_pRichEditPanel->SetText(strTest);
+	m_pRichEditPanel->SetTextForeColor(0, -1, RGB(0, 0, 255));
+	m_pRichEditPanel->SetTextFontSize(0, -1, 10);
+#endif 
 
 	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
 }
@@ -85,8 +90,13 @@ CDrawObject* CTextObject::Clone()
 	DRAWOBJBASEINFO stDrawInfo;
 	stDrawInfo.logbrush = m_logbrush;
 	stDrawInfo.logpen   = m_logpen;
-	CTextObject* pClone = new CTextObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo, NULL);
-
+	CTextObject* pClone = new CTextObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
+	
+	HRESULT hr = E_FAIL;
+	CComPtr<IStream>	spStream;
+	COM_VERIFY(m_pRichEditPanel->GetTextStream(0, -1, &spStream));
+	COM_VERIFY(pClone->m_pRichEditPanel->SetTextStream(0, -1, spStream));
+		
 	pClone->m_bPen = m_bPen;
 	//pClone->m_logpen = m_logpen;
 	pClone->m_bBrush = m_bBrush;
@@ -164,7 +174,7 @@ void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 
 	if (bWillSetBound)
 	{
-		m_pRichEditPanel->SetClientBound(m_position, NULL, TRUE);//FALSE);
+		m_pRichEditPanel->SetClientBound(m_position, NULL, TRUE);
 		m_pDrawCanvas->InvalObject(this);
 	}
 }

@@ -53,8 +53,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	
 #ifdef FTL_DEBUG
 	HRESULT hr = E_FAIL;
-	CCapImageObj* pImageObj = new CCapImageObj(TEXT("G:\\FJSDK\\CsdnSnap.PNG"));
-	COM_VERIFY(pImageObj->Load(TEXT("G:\\FJSDK\\CsdnSnap.PNG")));
+	CCapImageObj* pImageObj = new CCapImageObj(TEXT("G:\\TestImage.PNG"));
+	COM_VERIFY(pImageObj->Load(TEXT("G:\\TestImage.PNG")));
 	if (SUCCEEDED(hr))
 	{
 		CNCaptureApplication::Instance()->GetDocument()->SetCurCaptureImage(pImageObj);

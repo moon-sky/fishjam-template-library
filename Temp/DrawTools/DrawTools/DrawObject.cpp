@@ -530,7 +530,12 @@ BOOL CDrawObject::CheckAvailObject()
 
 void CDrawObject::SetActive(BOOL bActive)
 {
+	BOOL bNeedUpdate = (m_bActive != bActive);
 	m_bActive = bActive;
+	if (bNeedUpdate)
+	{
+		m_pDrawCanvas->InvalObject(this);
+	}
 }
 
 BOOL CDrawObject::IsActive()

@@ -40,7 +40,7 @@ public:
 	CRichEditPanel();
 	~CRichEditPanel();
 	HRESULT Init(HWND hWndOwner, const RECT* prcBound, IDrawCanvas* pDrawCanvas,
-		LPLOGFONT pLogFont, INotifyCallBack* pNotifyCallback = NULL);
+		const LOGFONT* pLogFont, COLORREF clrFontFore, INotifyCallBack* pNotifyCallback = NULL);
 	BOOL SetActive(BOOL bActive);
 	BOOL IsActive();
 
@@ -193,7 +193,7 @@ public:
 	//LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 private:
-	HRESULT InitDefaultCharFormat(LPLOGFONT pLogFont);
+	HRESULT InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF clrTextFore);
 	HRESULT InitDefaultParaFormat();
 
 

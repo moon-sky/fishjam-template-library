@@ -10,8 +10,7 @@ class CTextObject
 {
 public:
 	CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType,
-		const DRAWOBJBASEINFO& stDrawObjInfo,
-		LPLOGFONT pLogFont);
+		const DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual ~CTextObject();
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);

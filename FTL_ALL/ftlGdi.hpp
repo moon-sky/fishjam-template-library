@@ -80,7 +80,7 @@ namespace FTL
                     TEXT("Quality=%d,PitchAndFamily=%d,")
                     TEXT("FaceName=%s"),
                     
-					//字体的高度是一个叫em的单位，和逻辑坐标有关
+					//字体的高度是一个叫em (twips?) 的单位，和逻辑坐标有关
                     //字体的逻辑高度，如 MM_TEXT 时, lfHeight = -MulDiv(nPointSize, pDC->GetDeviceCaps(LOGPIXELSY), 72);
                     // >0时,高度被转化为设备单位,大小相对于字体的网格高度, 如 nPointSize 为8, LOGPIXELSY 为96，计算出来为 -10.666?
                     // =0时,使用合理的默认高度
@@ -1235,8 +1235,8 @@ namespace FTL
 
         API_VERIFY(0 !=::SetMapMode(m_hDC, ::GetMapMode(m_hDCOriginal)));
 
-#pragma TODO(是否需要这部分的代码--似乎不需要)
 #if 0
+#pragma TODO(是否需要这部分的代码--Capture中没有)
         SIZE szWindowExt = {0,0};
         API_VERIFY(::GetWindowExtEx(m_hDCOriginal, &szWindowExt));
         API_VERIFY(::SetWindowExtEx(m_hDC, szWindowExt.cx, szWindowExt.cy, NULL));
