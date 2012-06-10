@@ -50,6 +50,16 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 	m_view.Initialize();
+	
+#ifdef FTL_DEBUG
+	HRESULT hr = E_FAIL;
+	CCapImageObj* pImageObj = new CCapImageObj(TEXT("G:\\FJSDK\\CsdnSnap.PNG"));
+	COM_VERIFY(pImageObj->Load(TEXT("G:\\FJSDK\\CsdnSnap.PNG")));
+	if (SUCCEEDED(hr))
+	{
+		CNCaptureApplication::Instance()->GetDocument()->SetCurCaptureImage(pImageObj);
+	}
+#endif
 
 	UIAddToolBar(hWndToolBar);
 	UISetCheck(ID_VIEW_TOOLBAR, 1);

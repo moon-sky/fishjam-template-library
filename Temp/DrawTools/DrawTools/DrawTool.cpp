@@ -58,7 +58,7 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 
 		if (pObj != NULL && pView->IsSelected(pObj))
 		{
-			if (pObj->HitTestMove(ptLogical))
+			if (pObj->HitTestMove(point))
 			{
 				pView->SetActive(NULL, FALSE);
 				pView->SetCurrentSelectMode(smMove);
@@ -74,7 +74,7 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 				}
 				bRet = TRUE;
 			}
-			else if (pObj->HitTestActive(ptLogical))
+			else if (pObj->HitTestActive(point))
 			{
 				pView->SetActive(pObj, TRUE);
 				pView->SetCurrentSelectMode(smNone);
@@ -122,7 +122,7 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 			{
 				m_hCursor = pObj->GetActiveCursor();
 			}
-			else if (pObj->HitTestMove(ptLogical))
+			else if (pObj->HitTestMove(point))
 			{
 				m_hCursor = ::LoadCursor(NULL, IDC_SIZEALL);
 			}

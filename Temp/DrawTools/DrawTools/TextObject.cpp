@@ -12,6 +12,11 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 
 	m_pRichEditPanel = new CRichEditPanel();
 	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, pLogFont, this);
+
+	CString strTest;
+	strTest.Format(TEXT("Demo String %d"), GetTickCount());
+	m_pRichEditPanel->SetText(strTest);
+
 	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
 }
 
@@ -71,7 +76,7 @@ void CTextObject::MoveHandleTo(int nHandle, CPoint point)
 {
 	CDrawObject::MoveHandleTo(nHandle, point);
 
-	m_pRichEditPanel->SetClientBound(&m_position, NULL, FALSE);
+	m_pRichEditPanel->SetClientBound(&m_position, NULL, TRUE); //FALSE);
 	m_pDrawCanvas->InvalObject(this);
 }
 
@@ -108,9 +113,60 @@ void CTextObject::MoveTo(const CRect& position)
 
 	m_pDrawCanvas->InvalObject(this);
 	m_position = position;
-	m_pRichEditPanel->SetClientBound(&m_position, NULL, FALSE);
+	m_pRichEditPanel->SetClientBound(&m_position, NULL, TRUE);//FALSE);
 	m_pDrawCanvas->InvalObject(this);
 	//m_pDocument->SetModifiedFlag();
+}
+
+void CTextObject::_CheckTextRequestResize(REQRESIZE* pReqResize)
+{
+	if (m_pDrawCanvas->IsCapture())
+	{
+		return;
+	}
+	FTLASSERT(pReqResize->rc.bottom > pReqResize->rc.top);
+	int nWantHeight = pReqResize->rc.bottom - pReqResize->rc.top + RTPANEL_MARGIN_TOP + RTPANEL_MARGIN_BOTTOM;
+
+	CSize szMin = m_pRichEditPanel->GetMinBoundSize(RTPANEL_MIN_ROW_COUNT, RTPANEL_MIN_COL_COUNT);
+	if (nWantHeight < szMin.cy )
+	{
+		nWantHeight = szMin.cy;
+	}
+	BOOL bWillSetBound = FALSE;
+
+	int nOldHeight = FTL_ABS(m_position.Height());
+	if ( nWantHeight > nOldHeight)
+	{
+		if (m_position.top < m_position.bottom)
+		{
+			m_position.bottom = m_position.top + nWantHeight;
+		}
+		else
+		{
+			m_position.top = m_position.bottom - nWantHeight;
+		}
+		bWillSetBound = TRUE;
+	}
+
+	int nOldWidth = FTL_ABS(m_position.Width());
+	if (szMin.cx > nOldWidth)
+	{
+		if (m_position.left < m_position.right)
+		{
+			m_position.right = m_position.left + szMin.cx;
+		}
+		else 
+		{
+			m_position.left = m_position.right - szMin.cx;
+		}
+		bWillSetBound = TRUE;
+	}
+
+	if (bWillSetBound)
+	{
+		m_pRichEditPanel->SetClientBound(m_position, NULL, TRUE);//FALSE);
+		m_pDrawCanvas->InvalObject(this);
+	}
 }
 
 void CTextObject::OnNotify(int iNotify, void* pParam)
@@ -119,30 +175,7 @@ void CTextObject::OnNotify(int iNotify, void* pParam)
 	{
 	case EN_REQUESTRESIZE:
 		{
-			REQRESIZE* pReqResize = (REQRESIZE*)pParam;
-			FTLASSERT(pReqResize->rc.bottom > pReqResize->rc.top);
-			int nWantHeight = pReqResize->rc.bottom - pReqResize->rc.top + RTPANEL_MARGIN_TOP + RTPANEL_MARGIN_BOTTOM;
-
-			CSize szMin = m_pRichEditPanel->GetMinBoundSize(RTPANEL_MIN_ROW_COUNT, RTPANEL_MIN_COL_COUNT);
-			if (nWantHeight < szMin.cy )
-			{
-				nWantHeight = szMin.cy;
-			}
-
-			int nOldHeight = FTL_ABS(m_position.Height());
-			if ( nWantHeight > nOldHeight)
-			{
-				if (m_position.top < m_position.bottom)
-				{
-					m_position.bottom = m_position.top + nWantHeight;
-				}
-				else
-				{
-					m_position.top = m_position.bottom - nWantHeight;
-				}
-				m_pRichEditPanel->SetClientBound(m_position, NULL, FALSE);
-				m_pDrawCanvas->InvalObject(this);
-			}
+			_CheckTextRequestResize((REQRESIZE*)pParam);
 		}
 		break;
 	}
@@ -151,11 +184,17 @@ void CTextObject::OnNotify(int iNotify, void* pParam)
 
 BOOL CTextObject::HitTestMove(CPoint point)
 {
-	if (m_position.PtInRect(point))
+	CRect rcDevice = m_position;
+	m_pDrawCanvas->DocToClient(&rcDevice);
+
+	if (rcDevice.PtInRect(point))
 	{
-		CRect rect = m_position;
-		if (abs(rect.top - point.y) <= 3 || abs(rect.left - point.x) <= 3
-			|| abs(rect.bottom - point.y) <= 3 || abs(rect.right - point.x) <= 3)
+		//CRect rect = m_position;
+		if ( abs(rcDevice.left - point.x) <= TRACK_MARGIN
+			|| abs(rcDevice.top - point.y) <= TRACK_MARGIN 
+			|| abs(rcDevice.right - point.x) <= TRACK_MARGIN
+			|| abs(rcDevice.bottom - point.y) <= TRACK_MARGIN 
+			)
 		{
 			return TRUE;
 		}
@@ -165,10 +204,9 @@ BOOL CTextObject::HitTestMove(CPoint point)
 
 BOOL CTextObject::HitTestActive(CPoint point)
 {
-	CPoint ptLogical = point;
-	m_pDrawCanvas->ClientToDoc(&ptLogical);
-
-	if (m_position.PtInRect(ptLogical) && ! HitTestMove(ptLogical))
+	CRect rcDevice = m_position;
+	m_pDrawCanvas->DocToClient(&rcDevice);
+	if (rcDevice.PtInRect(point) && ! HitTestMove(point))
 	{
 		return TRUE;
 	}

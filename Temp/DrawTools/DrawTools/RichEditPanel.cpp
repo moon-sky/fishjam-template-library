@@ -508,19 +508,25 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 	//dcParent.DrawText(TEXT("CRichEditPanel::Draw"), -1, m_rcClient, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 	//m_pDrawCanvas->DocToClient(&rcClient);
 
-	//CZoomScrollMemDC memDC ( dcParent.m_hDC, rcClient);
-	//m_pDrawCanvas->PrepareDC(memDC.m_hDC);
-	//memDC.SetBrushOrg( -m_ptOffset.x , -m_ptOffset.y);
+	CRect rcClient = m_rcClient;
+	rcClient.NormalizeRect();
 
-	RECTL rcL = { m_rcClient.left, m_rcClient.top, m_rcClient.right, m_rcClient.bottom };
+	//CRect rcMemory = rcClient;
+	//rcMemory.OffsetRect(rcMemory.TopLeft());
+	//CMemoryDC memDC ( dcParent.m_hDC, rcClient);
+	//memDC.SetStretchBltMode(HALFTONE);
+	//m_pDrawCanvas->PrepareDC(memDC.m_hDC);
+	//memDC.FillSolidRect(rcClient, RGB(0, 255, 0));
+
+	RECTL rcL = { rcClient.left, rcClient.top, rcClient.right, rcClient.bottom };
 	LONG lViewId = TXTVIEW_ACTIVE;  //TXTVIEW_INACTIVE
-	dcParent.FillSolidRect(m_rcClient, RGB(255,0,0));
+	dcParent.FillSolidRect(rcClient, RGB(255,0,0));
 
 	if (m_fInplaceActive)
 	{
-		CRect rcClient = m_rcClient;
-		m_pDrawCanvas->ClientToDoc(&rcClient);
-		COM_VERIFY(m_spTextServices->OnTxInPlaceActivate(&rcClient));
+		//CRect rcDevice = rcClient;
+		//m_pDrawCanvas->DocToClient(&rcDevice);
+		//COM_VERIFY(m_spTextServices->OnTxInPlaceActivate(&rcDevice));
 	}
 	//if (!m_fInplaceActive)
 	//{
@@ -553,15 +559,21 @@ void CRichEditPanel::DoPaint(CDCHandle dcParent)
 		/*-1*/0,				// Lindex
 		NULL,					// Info for drawing optimazation
 		NULL,					// target device information
-		dcParent,				// Draw device HDC
+		dcParent.m_hDC,				// Draw device HDC
 		NULL, 				   	// Target device HDC
 		&rcL,					// Bounding client rectangle
 		NULL, 					// Clipping rectangle for metafiles
-		NULL, //&m_rcClient, //(RECT *) m_rcClient,	// Update rectangle
+		&rcClient, //(RECT *) m_rcClient,	// Update rectangle
 		NULL, 	   				// Call back function
 		0,					// Call back parameter
 		lViewId));				// What view of the object				
 	
+#ifdef FTL_DEBUG
+	//CString strTmpFileName;
+	//strTmpFileName.Format(TEXT("G:\\FJCODE_GOOGLE\\TmpTxDrawFile_%d.PNG"), GetTickCount());
+	//API_VERIFY(FTL::CFGdiUtil::SaveDCImageToFile(memDC, strTmpFileName));
+#endif 
+
 	//FTL::HDCProperty	hdcProperty;
 	//FTL::CFGdiUtil::GetHDCProperty(dcTemp, &hdcProperty);
 
@@ -581,6 +593,7 @@ HRESULT CRichEditPanel::SetClientBound(const RECT *pRcBound, RECT* pNewRcBound /
 	//FTLASSERT(pRcBound->top < pRcBound->bottom);
 	HRESULT hr = S_OK;
 	m_rcBound = *pRcBound;
+	m_rcBound.NormalizeRect();
 #if 0
 	m_rcBound.NormalizeRect();
 	CSize szMin = GetMinBoundSize(MIN_ROW_COUNT, MIN_COL_COUNT);
@@ -601,20 +614,39 @@ HRESULT CRichEditPanel::SetClientBound(const RECT *pRcBound, RECT* pNewRcBound /
 	{
 		*pNewRcBound = m_rcBound;
 	}
+	
+	float fCurZoom = 1.0f;
 
 	if (fUpdateExtent)
 	{
 		m_szlExtent.cx = DXtoHimetricX(m_rcBound.Width() , m_xPixPerInch);
 		m_szlExtent.cy = DYtoHimetricY(m_rcBound.Height(), m_yPixPerInch);
+
+		UINT nOldNnumerator = 1;
+		UINT nOldDenominator = 1;
+		LRESULT lResult = 0;
+		COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETZOOM, (WPARAM)&nOldNnumerator, (WPARAM)&nOldDenominator, &lResult));
+		if (nOldDenominator != 0)
+		{
+			fCurZoom = (float)nOldNnumerator/nOldDenominator;
+			FTLTRACEEX(FTL::tlInfo, TEXT("currentZoom=%f( %d/%d )\n"),
+				(float)nOldNnumerator/nOldDenominator, nOldNnumerator, nOldDenominator);
+			m_szlExtent.cx = m_szlExtent.cx / fCurZoom;
+			m_szlExtent.cy = m_szlExtent.cy / fCurZoom;
+		}
+
 		//TODO: property change ?
 		COM_VERIFY(m_spTextServices->OnTxPropertyBitsChange(TXTBIT_EXTENTCHANGE, TXTBIT_EXTENTCHANGE));
 	}
 
 
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::SetClientBound, inRect=(%d,%d)-(%d,%d), %dx%d, outRect=(%d,%d)-(%d,%d), %dx%d\n"),
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::SetClientBound, fUpdateExtent=%d, inRect=(%d,%d)-(%d,%d), %dx%d,")
+		TEXT("outRect=(%d,%d)-(%d,%d), %dx%d, m_szExtent=%dx%d\n"),
+		fUpdateExtent,
 		pRcBound->left, pRcBound->top, pRcBound->right, pRcBound->bottom, 
 		pRcBound->right- pRcBound->left, pRcBound->bottom - pRcBound->top,
-		m_rcBound.left, m_rcBound.top, m_rcBound.right, m_rcBound.bottom, m_rcBound.Width(), m_rcBound.Height());
+		m_rcBound.left, m_rcBound.top, m_rcBound.right, m_rcBound.bottom, m_rcBound.Width(), m_rcBound.Height(),
+		m_szlExtent.cx, m_szlExtent.cy);
 
 	return hr;
 }
@@ -662,19 +694,21 @@ void CRichEditPanel::SetZoom(UINT Numerator, UINT Denominator)
 
 HRESULT CRichEditPanel::TxGetExtent( LPSIZEL lpExtent )
 {
-
+	HRESULT hr = S_OK;
 //#ifdef FTL_DEBUG
 	//static SIZEL oldExtent = {0};
 	//if (oldExtent.cx != m_szlExtent.cx || oldExtent.cy != m_szlExtent.cy)
 	{
 		*lpExtent = m_szlExtent;
 
-		FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::TxGetExtent, m_szlExtent={%d,%d}\n"), 
-			m_szlExtent.cx, m_szlExtent.cy);
+		float fCurZoom = 1.0f;
+
+		FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::TxGetExtent, fCurZoom=%f, lpExtent={%d,%d}\n"), 
+			fCurZoom, lpExtent->cx, lpExtent->cy);
 		//oldExtent = m_szlExtent;
 	}
 //#endif 
-	return E_NOTIMPL;
+	return hr;
 }
 
 VOID CRichEditPanel::SetNotifyCallback(INotifyCallBack* pNotifyCallback)
@@ -828,7 +862,7 @@ void CRichEditPanel::TxScrollWindowEx( INT dx, INT dy, LPCRECT lprcScroll, LPCRE
 
 void CRichEditPanel::TxSetCapture( BOOL fCapture )
 {
-	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::TxSetCapture, fCapture=%d\n"), fCapture);
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxSetCapture, fCapture=%d\n"), fCapture);
 	BOOL bRet = FALSE;
 	if (fCapture)
 	{

@@ -1139,7 +1139,11 @@ void CNCaptureView::SelectToolTypeByMenu(const CPoint& ptPoint)
 		}
 		
 
+#ifdef DRAW_TOOL_TEST
+		UINT uRetID = PopMenu.TrackPopupMenuEx(TPM_RETURNCMD, ptPoint.x, ptPoint.y, m_hWnd);
+#else
 		UINT uRetID = PopMenu.TrackPopupMenuEx(TPM_RETURNCMD | TPM_RIGHTALIGN, ptPoint.x, ptPoint.y, m_hWnd);
+#endif 
 		if (uRetID >= 500)
 		{
 			size_t uIndex = uRetID - 500;

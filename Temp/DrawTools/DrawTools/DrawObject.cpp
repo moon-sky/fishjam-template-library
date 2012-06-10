@@ -103,7 +103,8 @@ int CDrawObject::HitTest(CPoint point, BOOL bSelected)
 		{
 			// GetHandleRect returns in device coords
 			CRect rc = GetHandleRect(nHandle);
-			rc.NormalizeRect();
+			FTLASSERT(!rc.IsRectEmpty());
+			//rc.NormalizeRect();
 			//if (1 == nHandle || 2 == nHandle)
 			//{
 			//	FTLTRACE(TEXT("rcHandle[%d]=[%d,%d]x[%d,%d], point =[%d,%d]\n"),
@@ -130,7 +131,9 @@ int CDrawObject::HitTest(CPoint point, BOOL bSelected)
 
 BOOL CDrawObject::HitTestMove(CPoint point)
 {
-	if (m_position.PtInRect(point))
+	CRect rcDevice = m_position;
+	m_pDrawCanvas->DocToClient(&rcDevice);
+	if (rcDevice.PtInRect(point))
 	{
 		return TRUE;
 	}
