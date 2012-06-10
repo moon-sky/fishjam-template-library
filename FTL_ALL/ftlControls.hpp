@@ -162,6 +162,10 @@ namespace FTL
 		{
 			formater.Format(TEXT("tomAutoColor"));
 		}
+		else if (tomUndefined == nColor)
+		{
+			formater.Format(TEXT("tomUndefined")); //Maybe multi select
+		}
 		else if((nColor & TEXT_FONT_COLOR_TYPE_MASK) == 0)
 		{
 			//The high-order byte is zero, and the three low-order bytes specify an RGB color

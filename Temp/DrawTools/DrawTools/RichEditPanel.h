@@ -48,12 +48,18 @@ public:
 	
 	HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask);
 	HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask);
+
 	HRESULT SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName);
+	HRESULT GetTextFontName(long nStart, long nEnd, LPTSTR pszFontName, int nCount);
 	HRESULT SetTextFontSize(long nStart, long nEnd, int nSize);
-	
+	HRESULT GetTextFontSize(long nStart, long nEnd, int* pFontSize);
+
 	//if clr is COLORREF(-1), then will be tomAutoColor
 	HRESULT SetTextForeColor(long nStart, long nEnd, COLORREF clr);
+	HRESULT GetTextForeColor(long nStart, long nEnd, COLORREF* pClr);
+
 	HRESULT SetTextBackColor(long nStart, long nEnd, COLORREF clr);
+	HRESULT GetTextBackColor(long nStart, long nEnd, COLORREF* pClr);
 
 	//nStart and nEnd does not use now, must be zero
 	HRESULT GetTextStream(long nStart, long nEnd, IStream** ppStream);

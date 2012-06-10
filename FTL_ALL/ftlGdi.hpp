@@ -80,8 +80,9 @@ namespace FTL
                     TEXT("Quality=%d,PitchAndFamily=%d,")
                     TEXT("FaceName=%s"),
                     
-                    //字体的逻辑高度，如 MM_TEXT 时, lfHeight = -MulDiv(nPointSize, pDC->GetDeviceCaps(LOGPIXELSY), 720);
-                    // >0时,高度被转化为设备单位,大小相对于字体的网格高度
+					//字体的高度是一个叫em的单位，和逻辑坐标有关
+                    //字体的逻辑高度，如 MM_TEXT 时, lfHeight = -MulDiv(nPointSize, pDC->GetDeviceCaps(LOGPIXELSY), 72);
+                    // >0时,高度被转化为设备单位,大小相对于字体的网格高度, 如 nPointSize 为8, LOGPIXELSY 为96，计算出来为 -10.666?
                     // =0时,使用合理的默认高度
                     // <0时,高度被转化为设备单位，大小相对于字体的字符高度
                     fontInfo.lfHeight,          
@@ -1034,6 +1035,31 @@ namespace FTL
         return bRet;
     }
 
+	BOOL CFGdiUtil::SaveBitmapToFile(HBITMAP hBmp, LPCTSTR pszFilePath)
+	{
+		BOOL bRet = FALSE;
+		HRESULT hr = E_FAIL;
+		
+		CImage img;
+		img.Attach(hBmp);//, DIBOR_DEFAULT);
+		COM_VERIFY(img.Save(pszFilePath, GUID_NULL));
+		if (SUCCEEDED(hr))
+		{
+			bRet = TRUE;
+		}
+		return bRet;
+	}
+	BOOL CFGdiUtil::SaveDCImageToFile(HDC hdc, LPCTSTR pszFilePath)
+	{
+		BOOL bRet = FALSE;
+		HBITMAP hBmp = (HBITMAP)GetCurrentObject(hdc, OBJ_BITMAP);
+		if (hBmp)
+		{
+			bRet = SaveBitmapToFile(hBmp, pszFilePath);
+		}
+		return bRet;
+	}
+
     BitmapProperty::BitmapProperty(const BITMAP& bitmap)
     {
         m_bitmap = bitmap;
@@ -1192,9 +1218,11 @@ namespace FTL
         {
             m_rcPaint = *pRectPaint;
         }
+		FTLASSERT(m_rcPaint.right > m_rcPaint.left);
+		FTLASSERT(m_rcPaint.bottom > m_rcPaint.top);
 
         m_hDC = ::CreateCompatibleDC(m_hDCOriginal);
-        API_ASSERT(m_hDC != NULL);
+        API_ASSERT(NULL != m_hDC);
 
 		//change to device and create bitmap
         API_VERIFY(::LPtoDP(m_hDCOriginal, (LPPOINT)&m_rcPaint, 2));
@@ -1207,8 +1235,8 @@ namespace FTL
 
         API_VERIFY(0 !=::SetMapMode(m_hDC, ::GetMapMode(m_hDCOriginal)));
 
-#pragma TODO(是否需要这部分的代码)
-#if 1
+#pragma TODO(是否需要这部分的代码--似乎不需要)
+#if 0
         SIZE szWindowExt = {0,0};
         API_VERIFY(::GetWindowExtEx(m_hDCOriginal, &szWindowExt));
         API_VERIFY(::SetWindowExtEx(m_hDC, szWindowExt.cx, szWindowExt.cy, NULL));
@@ -1218,15 +1246,13 @@ namespace FTL
         API_VERIFY(::SetViewportExtEx(m_hDC, szViewportExt.cx, szViewportExt.cy, NULL));
 #endif
 
-        ::DPtoLP(m_hDCOriginal, (LPPOINT)&m_rcPaint, 2);
+        API_VERIFY(::DPtoLP(m_hDCOriginal, (LPPOINT)&m_rcPaint, 2));
 
 
-        //CMemDC Use this -- Maybe better, because WTL::CScrollZoomImpl will Call SetViewportOrg
+        //也不需要? CMemDC Use this -- Maybe better, because WTL::CScrollZoomImpl will Call SetViewportOrg
         //SetWindowOrg(m_rcPaint.left, m_rcPaint.top);
-
         ////CMemoryDC Use this
         //SetViewportOrg(-m_rcPaint.left, -m_rcPaint.top);
-
         //WTL.CZoomScrollImpl.PrepareDC will Use this
         //dc.SetViewportOrg(-m_ptOffset.x, -m_ptOffset.y);
     }

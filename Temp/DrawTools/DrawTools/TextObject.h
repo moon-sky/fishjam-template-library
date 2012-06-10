@@ -41,8 +41,8 @@ public:
 		return m_pRichEditPanel;
 	}
 protected:
-	void _CheckTextRequestResize(REQRESIZE* pReqResize);
-
+	void _OnTextRequestResizeNotify(REQRESIZE* pReqResize);
+	void _OnTextSelectChangeNotify(SELCHANGE* pSelChange);
 protected:
 	CRichEditPanel*	m_pRichEditPanel;	
 };

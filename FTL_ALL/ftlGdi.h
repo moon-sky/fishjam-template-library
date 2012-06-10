@@ -568,6 +568,9 @@ namespace FTL
         //注意实现中的 xWinExt/yWinExt 等参数可以取正负，即能转换 X/Y 轴的方向，
         //然后可通过 OffsetWindowOrg(-x,y)移动原点，使得屏幕平均显示四个象限等(参见 MFC 中的 DrawClient )
         FTLINLINE static BOOL   SetLogicalMapMode(HDC hdc, LogicalMapMode logicalMapmode);
+
+		FTLINLINE static BOOL SaveBitmapToFile(HBITMAP hBmp, LPCTSTR pszFilePath);
+		FTLINLINE static BOOL SaveDCImageToFile(HDC hdc, LPCTSTR pszFilePath);
     };
 
     FTLEXPORT class CFCanvas

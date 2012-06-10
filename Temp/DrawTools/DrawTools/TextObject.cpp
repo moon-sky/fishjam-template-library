@@ -118,7 +118,7 @@ void CTextObject::MoveTo(const CRect& position)
 	//m_pDocument->SetModifiedFlag();
 }
 
-void CTextObject::_CheckTextRequestResize(REQRESIZE* pReqResize)
+void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 {
 	if (m_pDrawCanvas->IsCapture())
 	{
@@ -169,14 +169,46 @@ void CTextObject::_CheckTextRequestResize(REQRESIZE* pReqResize)
 	}
 }
 
+void CTextObject::_OnTextSelectChangeNotify(SELCHANGE* pSelChange)
+{
+	const int _cchStyleName = 64;
+	TCHAR szFontName[_cchStyleName] = {0};
+	int nFontSize = 0;
+
+	HRESULT hr = E_FAIL;
+	long nStart = pSelChange->chrg.cpMin;
+	long nEnd = pSelChange->chrg.cpMax;
+
+	COM_VERIFY_EXCEPT1(m_pRichEditPanel->GetTextFontName(nStart, nEnd,
+		szFontName, _countof(szFontName)), S_FALSE);
+	if (S_FALSE == hr)
+	{
+		//multi select, szFontName is NULL
+	}
+	COM_VERIFY_EXCEPT1(m_pRichEditPanel->GetTextFontSize(nStart, nEnd, &nFontSize), S_FALSE)
+	if (S_FALSE == hr)
+	{
+		//multi select , nFontSize is -1
+	}
+	COLORREF clrText = RGB(0, 0, 0);
+	COM_VERIFY_EXCEPT1(m_pRichEditPanel->GetTextForeColor(nStart, nEnd, &clrText), S_FALSE);
+}
+
 void CTextObject::OnNotify(int iNotify, void* pParam)
 {
 	switch (iNotify)
 	{
 	case EN_REQUESTRESIZE:
 		{
-			_CheckTextRequestResize((REQRESIZE*)pParam);
+			_OnTextRequestResizeNotify((REQRESIZE*)pParam);
+			break;
 		}
+	case EN_SELCHANGE:
+		{
+			_OnTextSelectChangeNotify((SELCHANGE*)pParam);
+			break;
+		}
+	default:
 		break;
 	}
 	//FTLTRACE(TEXT("In CTextObject::OnNotify, iNotify=%d, pParam=0x%x\n"), iNotify, pParam);

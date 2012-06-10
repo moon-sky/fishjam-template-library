@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "RichEditPanel.h"
 
-//#ifdef FTL_DEBUG
+#ifdef FTL_DEBUG
 //#include <ftlwindow.h>
-//#include <ftlControls.h>
-//#endif 
+#include <ftlControls.h>
+#endif 
 #include <ftlGdi.h> 
 
 #pragma comment(lib, "riched20.lib")
@@ -66,7 +66,7 @@ const IID IID_ITextServices =
 
 CRichEditPanel::CRichEditPanel()
 {
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::CRichEditPanel\n"));
+	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::CRichEditPanel, new for 0x%x\n"), this);
 
 	ZeroMemory(&m_cRefs, sizeof(CRichEditPanel) - offsetof(CRichEditPanel, m_cRefs));
 
@@ -85,7 +85,7 @@ CRichEditPanel::~CRichEditPanel()
 	m_spTextDocument.Release();
 	m_spTextServices.Release();
 	
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::~CRichEditPanel\n"));
+	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::~CRichEditPanel, destrcutor for 0x%x\n"), this);
 }
 
 HRESULT STDMETHODCALLTYPE CRichEditPanel::QueryInterface(REFIID riid, void **ppvObject)
@@ -243,7 +243,7 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcBound,
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
 
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::Init, hWndOwner=0x%x, prcBound=[%d,%d]-[%d,%d]\n"),
+	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::Init, hWndOwner=0x%x, prcBound=[%d,%d]-[%d,%d]\n"),
 		hWndOwner, prcBound->left, prcBound->top, prcBound->right, prcBound->bottom);
 
 	m_hWndOwner = hWndOwner;
@@ -447,8 +447,150 @@ HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD d
 	return hr;
 }
 
+HRESULT CRichEditPanel::SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName)
+{
+	HRESULT hr = E_FAIL;
+	CComPtr<ITextRange>		spRange;
+
+	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextFontName %d to %d Name is %s\n"),
+		nStart, nEnd, pszFontName);
+
+
+	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	if (SUCCEEDED(hr) && spRange)
+	{
+		CComPtr<ITextFont> spFont;
+		COM_VERIFY(spRange->GetFont(&spFont));
+		//FTL::CFTextFontDumper fontDumper(spFont, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+
+		if (spFont)
+		{
+			COM_VERIFY(spFont->SetName(CComBSTR(pszFontName)));
+		}
+	}
+	return hr;
+}
+
+HRESULT CRichEditPanel::SetTextFontSize(long nStart, long nEnd, int nSize)
+{
+	HRESULT hr = E_FAIL;
+	CComPtr<ITextRange>		spRange;
+	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextFontSize %d to %d Size if %d\n"),
+		nStart, nEnd, nSize);
+
+	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	if (SUCCEEDED(hr) && spRange)
+	{
+		CComPtr<ITextFont> spFont;
+		COM_VERIFY(spRange->GetFont(&spFont));
+		//FTL::CFTextFontDumper fontDumper(spFont, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+
+		if (spFont)
+		{
+			long lFontHeight = -::MulDiv(nSize, m_yPixPerInch, 72);
+			COM_VERIFY(spFont->SetSize(lFontHeight));
+		}
+	}
+	return hr;
+
+}
+
+HRESULT CRichEditPanel::GetTextFontName(long nStart, long nEnd, LPTSTR pszFontName, int nCount)
+{
+	HRESULT hr = E_FAIL;
+	CComPtr<ITextRange>		spRange;
+
+	//Get Want Range and check every character for multi format selection -- font can not return tomUndefined
+	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(spRange->GetStart(&nStart));
+	COM_VERIFY(spRange->GetEnd(&nEnd));
+
+	BOOL isSameFont = TRUE;
+	BOOL isFirstCharFontName = TRUE;
+	CComBSTR bstrFirstCharFontName;
+
+	for (long nIndex = nStart; nIndex <= nEnd; nIndex++)
+	{
+		CComPtr<ITextRange>		spSubRange;
+		COM_VERIFY(_GetTextRange(nIndex, nIndex, spSubRange));
+
+		if (SUCCEEDED(hr) && spSubRange)
+		{
+			CComPtr<ITextFont> spFont;
+			COM_VERIFY(spSubRange->GetFont(&spFont));
+
+			//FTL::CFTextFontDumper fontDumper(spFont, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+			if (spFont)
+			{
+				CComBSTR bstrName;
+				COM_VERIFY(spFont->GetName(&bstrName));
+				if (SUCCEEDED(hr))
+				{
+					if (isFirstCharFontName)
+					{
+						isFirstCharFontName = FALSE;
+						bstrFirstCharFontName = bstrName;
+						COM_VERIFY(StringCchCopy(pszFontName, nCount, bstrName));
+					}
+					else if(bstrFirstCharFontName != bstrName)
+					{
+						isSameFont = FALSE;
+						hr = S_FALSE;
+						COM_VERIFY(StringCchCopy(pszFontName, nCount, TEXT("")));
+						break;
+					}
+				}
+			}
+		}
+
+	}
+	FTLTRACEEX(FTL::tlInfo, TEXT("GetTextFontName %d to %d is %s\n"),
+		nStart, nEnd, pszFontName);
+
+	return hr;
+}
+
+HRESULT CRichEditPanel::GetTextFontSize(long nStart, long nEnd, int* pFontSize)
+{
+	CHECK_POINTER_WRITABLE_RETURN_VALUE_IF_FAIL(pFontSize, E_POINTER);
+
+	HRESULT hr = E_FAIL;
+	CComPtr<ITextRange>		spRange;
+	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	if (SUCCEEDED(hr) && spRange)
+	{
+		CComPtr<ITextFont> spFont;
+		COM_VERIFY(spRange->GetFont(&spFont));
+		//FTL::CFTextFontDumper fontDumper(spFont, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+
+		if (spFont)
+		{
+			float fSize = 0.0f;
+			COM_VERIFY(spFont->GetSize(&fSize));
+			if (tomUndefined != (int)fSize)
+			{
+				*pFontSize = -::MulDiv(fSize, 72, m_yPixPerInch);
+				//tomUndefined == -9999999 -- When choose multi size font
+			}
+			else
+			{
+				*pFontSize = -1;
+				hr = S_FALSE;
+			}
+
+			FTLTRACEEX(FTL::tlInfo, TEXT("GetTextFontSize %d to %d FontSize is %d\n"),
+				nStart, nEnd, *pFontSize);
+		}
+	}
+	return hr;
+
+}
+
 HRESULT CRichEditPanel::SetTextForeColor(long nStart, long nEnd, COLORREF clr)
 {
+	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextForeColor %d to %d Color is 0x%x\n"),
+		nStart, nEnd, clr);
+
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
 	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
@@ -468,6 +610,33 @@ HRESULT CRichEditPanel::SetTextForeColor(long nStart, long nEnd, COLORREF clr)
 	}
 	return hr;
 }
+
+HRESULT CRichEditPanel::GetTextForeColor(long nStart, long nEnd, COLORREF* pClr)
+{
+	CHECK_POINTER_WRITABLE_RETURN_VALUE_IF_FAIL(pClr, E_INVALIDARG);
+
+	HRESULT hr = E_FAIL;
+	CComPtr<ITextRange>		spRange;
+	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	if (SUCCEEDED(hr) && spRange)
+	{
+		CComPtr<ITextFont> spFont;
+		COM_VERIFY(spRange->GetFont(&spFont));
+		LONG nColor = 0;
+		COM_VERIFY(spFont->GetForeColor(&nColor));
+		if (SUCCEEDED(hr))
+		{
+			*pClr = nColor;
+#ifdef FTL_DEBUG
+			FTL::CFStringFormater formater;
+			FTLTRACEEX(FTL::tlInfo, TEXT("GetTextForeColor %d to %d Color is %s\n"),
+				nStart, nEnd, FTL::CFControlUtil::GetRichEditColorString(formater, *pClr));
+#endif
+		}
+	}
+	return hr;
+}
+
 
 HRESULT CRichEditPanel::SetTextBackColor(long nStart, long nEnd, COLORREF clr)
 {
@@ -629,7 +798,7 @@ HRESULT CRichEditPanel::SetClientBound(const RECT *pRcBound, RECT* pNewRcBound /
 		if (nOldDenominator != 0)
 		{
 			fCurZoom = (float)nOldNnumerator/nOldDenominator;
-			FTLTRACEEX(FTL::tlInfo, TEXT("currentZoom=%f( %d/%d )\n"),
+			FTLTRACEEX(FTL::tlInfo, TEXT("SetClientBound fCurZoom=%f( %d/%d )\n"),
 				(float)nOldNnumerator/nOldDenominator, nOldNnumerator, nOldDenominator);
 			m_szlExtent.cx = m_szlExtent.cx / fCurZoom;
 			m_szlExtent.cy = m_szlExtent.cy / fCurZoom;
@@ -640,9 +809,9 @@ HRESULT CRichEditPanel::SetClientBound(const RECT *pRcBound, RECT* pNewRcBound /
 	}
 
 
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::SetClientBound, fUpdateExtent=%d, inRect=(%d,%d)-(%d,%d), %dx%d,")
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::SetClientBound, fUpdateExtent=%d, fCurZoom=%f, inRect=(%d,%d)-(%d,%d), %dx%d,")
 		TEXT("outRect=(%d,%d)-(%d,%d), %dx%d, m_szExtent=%dx%d\n"),
-		fUpdateExtent,
+		fUpdateExtent, fCurZoom, 
 		pRcBound->left, pRcBound->top, pRcBound->right, pRcBound->bottom, 
 		pRcBound->right- pRcBound->left, pRcBound->bottom - pRcBound->top,
 		m_rcBound.left, m_rcBound.top, m_rcBound.right, m_rcBound.bottom, m_rcBound.Width(), m_rcBound.Height(),
@@ -1150,10 +1319,10 @@ HRESULT CRichEditPanel::TxGetPropertyBits( DWORD dwMask, DWORD *pdwBits )
 
 HRESULT CRichEditPanel::TxNotify( DWORD iNotify, void *pv )
 {
-#if 0
+#ifdef FTL_DEBUG
 	FTL::CFStringFormater formater;
 	FTL::CFControlUtil::GetEditNotifyCodeString(formater, iNotify, pv);
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
+	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
 		formater.GetString(), pv);
 #endif 
 	//dwBits := dwBits and TXTBIT_ALL_NOTIFICATIONS;

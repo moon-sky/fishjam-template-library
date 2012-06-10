@@ -11,7 +11,7 @@
 #include <atldlgs.h>
 #include <ftlgdi.h>
 #include "NPVPhotoCalcRect.h"
-//#include "TextObject.h"
+#include "DrawTools/TextObject.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
@@ -219,23 +219,24 @@ LRESULT CMainFrame::OnEditFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	HRESULT hr = E_FAIL;
 	if (m_view.GetSelection().size() > 0)
 	{
-#ifndef DRAW_TOOL_TEST
 		CTextObject* pTextObject = dynamic_cast<CTextObject*>(m_view.GetSelection().front());
 		if (pTextObject)
 		{
-			LOGFONT		defaultFont = {0};
-			StringCchCopy(defaultFont.lfFaceName, _countof(defaultFont.lfFaceName), TEXT("Times New Roman"));
-			defaultFont.lfHeight = 18;
+			//LOGFONT		defaultFont = {0};
+			//StringCchCopy(defaultFont.lfFaceName, _countof(defaultFont.lfFaceName), TEXT("Times New Roman"));
+			//defaultFont.lfHeight = 18;
 
 			//HFONT hDefaultFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 			CFontDialog dlg;
 			dlg.DoModal();
-			
-			COM_VERIFY(pTextObject->GetRichEditPanel()->SetTextFont(0, 0, dlg.m_cf.lpLogFont , 0xFFFFFFFF));
+			LONG nFontHeight = -MulDiv(dlg.m_cf.lpLogFont->lfHeight, 72, 96);
+			pTextObject->GetRichEditPanel()->SetTextFontName(0, 0, dlg.m_cf.lpLogFont->lfFaceName);
+			pTextObject->GetRichEditPanel()->SetTextFontSize(0, 0, nFontHeight);
+			pTextObject->GetRichEditPanel()->SetTextForeColor(0, 0, dlg.m_cf.rgbColors);
+			//COM_VERIFY(pTextObject->GetRichEditPanel()->SetTextFont(0, 0, dlg.m_cf.lpLogFont , 0xFFFFFFFF));
 
-			COM_VERIFY(pTextObject->GetRichEditPanel()->SetTextForeColor(0, 0, dlg.m_cf.rgbColors));
+			//COM_VERIFY(pTextObject->GetRichEditPanel()->SetTextForeColor(0, 0, dlg.m_cf.rgbColors));
 		}
-#endif 
 	}
 	return 0;
 }
