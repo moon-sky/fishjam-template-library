@@ -35,10 +35,10 @@ void CDrawPoly::AddPoint(const CPoint& point)
 	if (m_nPoints == 0 || m_points[m_nPoints - 1] != point)
 	{
 		m_points[m_nPoints++] = point;
-		//if(RecalcBounds())
-		//{
+		if(RecalcBounds())
+		{
 			m_pDrawCanvas->InvalObject(this);
-		//}
+		}
 	}
 }
 
@@ -172,6 +172,6 @@ BOOL CDrawPoly::RecalcBounds()
 	{
 		return FALSE;
 	}
-
+	m_position = bounds;
 	return TRUE;
 }

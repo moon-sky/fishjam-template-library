@@ -209,6 +209,27 @@ namespace FTL
         return bRet;
     }
 
+	SystemParamProperty::SystemParamProperty()
+	{
+		Init();
+	}
+	SystemParamProperty::~SystemParamProperty()
+	{
+
+	}
+	BOOL SystemParamProperty::Init()
+	{
+		BOOL bRet = FALSE;
+		API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &m_nKeyboardSpeed, 0));
+
+		return bRet;
+	}
+
+	LPCTSTR SystemParamProperty::GetPropertyString()
+	{
+
+	}
+
 	LPCTSTR CFSystemUtil::GetClipboardFormatString(UINT uFormat, LPTSTR lpszFormatName, int cchMaxCount)
 	{
 		CHECK_POINTER_RETURN_VALUE_IF_FAIL(lpszFormatName, NULL);

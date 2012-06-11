@@ -27,6 +27,36 @@ namespace FTL
 		CFStringFormater	m_strFormater;
     };
 
+	class CFCommandMsgInfo: public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			BOOL bRet = FALSE;
+			WORD wNotifyCode = HIWORD(wParam);
+			WORD wID = LOWORD(wParam);
+			HWND hWndCtrl = HWND(lParam);
+
+			TCHAR szCommandMsgInfo[256] = {0};
+			if (NULL == hWndCtrl) 
+			{
+				//Menu or Accelerator
+				m_strFormater.Format(TEXT("%s{ Menu or Accelerator, wID=%d(0x%x)"), pszMsgName, wID, wID);
+			}
+			else
+			{
+				//Control
+				TCHAR szClassName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
+				GetClassName(hWndCtrl, szClassName, _countof(szClassName));
+
+				CFWinUtil::GetCommandNotifyString(hWndCtrl, wNotifyCode, szCommandMsgInfo, _countof(szCommandMsgInfo));
+				m_strFormater.Format(TEXT("%s{ Control(%s) wID=%d(0x%x), NotifyCode=%s(%d, 0x%x), hWndCtrl=0x%x"),
+					pszMsgName, szClassName, wID, wID, szCommandMsgInfo, wNotifyCode, wNotifyCode, hWndCtrl);
+			}
+			return m_strFormater;
+		}
+
+	};
 	//RichEdit 有不少使用 WM_USER 的消息
 	class CFRichEditCtrlMsgInfo : CFDefaultMsgInfo
 	{
@@ -356,7 +386,7 @@ namespace FTL
                 //GET_MESSAGE_INFO_ENTRY(WM_IME_KEYLAST, CFDefaultMsgInfo);
 
                 GET_MESSAGE_INFO_ENTRY(WM_INITDIALOG, CFDefaultMsgInfo); //在一个对话框程序被显示前发送此消息给它，通常用此消息初始化控件和执行其它任务
-                GET_MESSAGE_INFO_ENTRY(WM_COMMAND, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_COMMAND, CFCommandMsgInfo);
 
                 //可用于屏蔽屏幕保护和显示器节电模式(SC_SCREENSAVE/SC_MONITORPOWER),返回0
                 GET_MESSAGE_INFO_ENTRY(WM_SYSCOMMAND, CFDefaultMsgInfo);    //当用户选择窗口菜单的一条命令或当用户选择最大化或最小化时那个窗口会收到此消息
@@ -387,7 +417,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_MENUCOMMAND, CFDefaultMsgInfo);
 #  if(_WIN32_WINNT >= 0x0500)
                 GET_MESSAGE_INFO_ENTRY(WM_CHANGEUISTATE, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_UPDATEUISTATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_UPDATEUISTATE, CFDefaultMsgInfo); //TODO: 可能导致没有 WM_PAINT 的重绘? 参见 WTL.CBitmapButtonImpl.OnUpdateUiState 
                 GET_MESSAGE_INFO_ENTRY(WM_QUERYUISTATE, CFDefaultMsgInfo);
 #  endif //_WIN32_WINNT >= 0x0500
 
@@ -673,6 +703,13 @@ namespace FTL
 #if(WINVER >= 0x0600)
 				GET_MESSAGE_INFO_ENTRY(BM_SETDONTCLICK, CFDefaultMsgInfo);
 #endif /* WINVER >= 0x0600 */
+
+				//Static Control Mesages
+				GET_MESSAGE_INFO_ENTRY(STM_SETICON, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(STM_GETICON, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(STM_SETIMAGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(STM_GETIMAGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(STM_MSGMAX, CFDefaultMsgInfo);
 
 				//Listbox messages
 				GET_MESSAGE_INFO_ENTRY(LB_ADDSTRING, CFDefaultMsgInfo);
@@ -1905,29 +1942,79 @@ namespace FTL
         return TEXT("Unknown");
     }
 
-    LPCTSTR CFWinUtil::GetCommandNotifyString(HWND hWnd, UINT nCode)
+    LPCTSTR CFWinUtil::GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength)
     {
-        UNREFERENCED_PARAMETER(hWnd);
-		//TCHAR szClassName[MAX_PATH] = {0};
-        switch(nCode)
-        {
-            //Combo Box Notification Codes
-            HANDLE_CASE_RETURN_STRING(CBN_ERRSPACE);
-            HANDLE_CASE_RETURN_STRING(CBN_SELCHANGE);
-            HANDLE_CASE_RETURN_STRING(CBN_DBLCLK);
-            HANDLE_CASE_RETURN_STRING(CBN_SETFOCUS);
-            HANDLE_CASE_RETURN_STRING(CBN_KILLFOCUS);
-            HANDLE_CASE_RETURN_STRING(CBN_EDITCHANGE);
-            HANDLE_CASE_RETURN_STRING(CBN_EDITUPDATE);
-            HANDLE_CASE_RETURN_STRING(CBN_DROPDOWN);
-            HANDLE_CASE_RETURN_STRING(CBN_CLOSEUP);
-            HANDLE_CASE_RETURN_STRING(CBN_SELENDOK);
-            HANDLE_CASE_RETURN_STRING(CBN_SELENDCANCEL);
-        default:
-            FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Command Code, %d\n"), nCode);
-            FTLASSERT(FALSE);
-            return TEXT("Unknown");
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pszCommandNotify, NULL);
+		BOOL bRet = FALSE;
+		HRESULT hr = E_FAIL;
+
+		pszCommandNotify[0] = 0;
+		TCHAR szClassName[256] = {0};
+		API_VERIFY( 0 != GetClassName(hWnd, szClassName, _countof(szClassName)));
+		
+		if (0 == lstrcmpi(szClassName, TEXT("BUTTON")))
+		{
+			switch(nCode)
+			{
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, BN_CLICKED);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, BN_PAINT);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, BN_HILITE);	//BN_PUSHED
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, BN_UNHILITE);	//BN_UNPUSHED
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, BN_DISABLE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, BN_DOUBLECLICKED);	//BN_DBLCLK
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, BN_SETFOCUS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, BN_KILLFOCUS);
+			default:
+				break;
+			}
+		}
+		else if (0 == lstrcmpi(szClassName, TEXT("EDIT")))
+		{
+			switch(nCode)
+			{
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_SETFOCUS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_KILLFOCUS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_CHANGE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_UPDATE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ERRSPACE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_MAXTEXT);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_HSCROLL);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_VSCROLL);
+#if(_WIN32_WINNT >= 0x0500)
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ALIGN_LTR_EC);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ALIGN_RTL_EC);
+#endif /* _WIN32_WINNT >= 0x0500 */
+			default:
+				break;
+			}
+		}
+		else if (0 == lstrcmpi(szClassName, TEXT("COMBOBOX")))
+		{
+			//Combo Box Notification Codes
+			switch(nCode)
+			{
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_ERRSPACE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_SELCHANGE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_DBLCLK);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_SETFOCUS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_KILLFOCUS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_EDITCHANGE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_EDITUPDATE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_DROPDOWN);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_CLOSEUP);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_SELENDOK);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, CBN_SELENDCANCEL);
+			default:
+				break;
+			}
         }
+
+		if ( 0 == pszCommandNotify[0] )
+		{
+			FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Command Code %d For Class %s"), nCode, szClassName);
+			COM_VERIFY(StringCchPrintf(pszCommandNotify, nLength, TEXT("Unknown Command Code %d For Class %s"), nCode, szClassName));
+		}
+		return pszCommandNotify;
     }
 
     LPCTSTR CFWinUtil::GetWindowClassString(FTL::CFStringFormater& formater, HWND hWnd,LPCTSTR pszDivide/* = TEXT("|") */)
@@ -2011,7 +2098,7 @@ namespace FTL
 				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_DEFSPLITBUTTON, pszDivide);
 				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_SPLITBUTTON, pszDivide);
 #endif //_WIN32_WINNT >= 0x0600
-				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_OWNERDRAW, pszDivide);
+				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_OWNERDRAW, pszDivide); //按钮的自绘
 				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_PUSHBOX, pszDivide);
 				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_AUTORADIOBUTTON, pszDivide);
 				HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, BS_USERBUTTON, pszDivide);

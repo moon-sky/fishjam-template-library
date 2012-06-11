@@ -18,10 +18,10 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	CString strTest;
 	strTest.Format(TEXT("Demo String %d"), GetTickCount());
 	m_pRichEditPanel->SetText(strTest);
-	m_pRichEditPanel->SetTextForeColor(0, -1, RGB(0, 0, 255));
-	m_pRichEditPanel->SetTextFontSize(0, -1, 10);
+/*	m_pRichEditPanel->SetTextForeColor(0, -1, RGB(0, 0, 255));
+	m_pRichEditPanel->SetTextFontSize(0, -1, 10)*/;
 #endif 
-
+	UpdateDrawInfo(stDrawObjInfo);
 	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
 }
 
@@ -228,7 +228,7 @@ BOOL CTextObject::HitTestMove(CPoint point)
 {
 	CRect rcDevice = m_position;
 	m_pDrawCanvas->DocToClient(&rcDevice);
-
+	rcDevice.NormalizeRect();
 	if (rcDevice.PtInRect(point))
 	{
 		//CRect rect = m_position;
@@ -273,4 +273,14 @@ void CTextObject::NormalizePosition()
 
 void CTextObject::CheckTextRect()
 {
+}
+
+void CTextObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
+{
+	if (m_pRichEditPanel)
+	{
+		m_pRichEditPanel->SetTextForeColor(0, 0, stDrawObjInfo.clrFontFore);
+		LOGFONT stLogFont = stDrawObjInfo.logfont;
+		m_pRichEditPanel->SetTextFont(0, 0, &stLogFont, RICH_EDIT_PANEL_FONT_MASK_ALL);
+	}
 }

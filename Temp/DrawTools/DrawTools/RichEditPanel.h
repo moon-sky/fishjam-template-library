@@ -61,6 +61,9 @@ public:
 	HRESULT SetTextBackColor(long nStart, long nEnd, COLORREF clr);
 	HRESULT GetTextBackColor(long nStart, long nEnd, COLORREF* pClr);
 
+	HRESULT GetTextForeColor(long nStart, long nEnd, COLORREF& clr);
+	HRESULT GetTextFont(long nStart, long nEnd, PLOGFONT pLogFont);
+
 	//nStart and nEnd does not use now, must be zero
 	HRESULT GetTextStream(long nStart, long nEnd, IStream** ppStream);
 	HRESULT SetTextStream(long nStart, long nEnd, IStream* pStream);

@@ -31,6 +31,7 @@ public:
 	virtual BOOL HitTestActive(CPoint point);
 	virtual HCURSOR GetActiveCursor();
 	virtual void NormalizePosition();
+	virtual void UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
 
 	void CheckTextRect();
 

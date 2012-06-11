@@ -25,7 +25,7 @@ WinSxs(native assembly cache)
 
 R6034错误 -- 不使用清单来加载 C 运行库会报这个错误， 要使用VC++的动态库(ATL,CRT, MFC, OpenMP)，必须使用manifest
 * An application has made an attempt to load the C runtime library incorrectly
-* 
+* http://msdn.microsoft.com/zh-cn/library/ms235560(vs.80).aspx
 
 以类型 RT_MANIFEST, ID 为 1，设置进程的 res\XXX.exe.manifest(如果直接在工程配置里，如何区分Debug和Release?)
 
@@ -58,3 +58,19 @@ Marker --
   Visual Assist X Brace Error, Visual Assist X Brace Matching, Visual Assist X Find Reference (Modified),
   Visual Assist X Find Result,Visual Assist X Find Reference, 等
 HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\9.0\Text Editor\External Markers\
+
+WTL -- 很多类都是重载 void DoPaint(CDCHandle dc) ?
+  CToolTipCtrl m_tip;  
+    Activate -- 激活或取消激活
+    AddTool(m_hWnd, 提示字符)
+    IsWindow/DestroyWindow -- 
+    RelayEvent -- 一般在鼠标消息(WM_MOUSEFIRST -> WM_MOUSELAST) 中调用该方法, MSG msg = { m_hWnd, uMsg, wParam, lParam };
+    
+    
+注册鼠标的移出消息 (if ::GetCapture() != m_hWnd && m_fMouseOver == 0)
+    m_fMouseOver = 1;
+	TRACKMOUSEEVENT tme = { 0 };
+	tme.cbSize = sizeof(tme);
+	tme.dwFlags = TME_LEAVE;
+	tme.hwndTrack = m_hWnd;
+	_TrackMouseEvent(&tme);

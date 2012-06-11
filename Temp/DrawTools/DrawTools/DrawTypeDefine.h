@@ -127,6 +127,7 @@ typedef struct stu_DrawObjBaseInfo
 	LOGBRUSH		logbrush;
 	LOGFONT			logfont;
 	COLORREF		clrFontFore;
+	int             nLogpixelsy;
 	stu_DrawObjBaseInfo()
 	{
 		logpen.lopnStyle = PS_INSIDEFRAME;
@@ -138,12 +139,18 @@ typedef struct stu_DrawObjBaseInfo
 		logbrush.lbColor = RGB(255, 255, 184);
 		logbrush.lbHatch = HS_HORIZONTAL;
 
-		ZeroMemory(&logfont, sizeof(logfont));
-		StringCchCopy(logfont.lfFaceName, _countof(logfont.lfFaceName), TEXT("ËÎÌו"));
-
+        ZeroMemory(&logfont, sizeof(logfont));
 		CWindowDC screenDC(NULL);
-		logfont.lfHeight = - ::MulDiv(9, screenDC.GetDeviceCaps(LOGPIXELSY), 72);
-		clrFontFore = RGB(255, 0, 0);
+		nLogpixelsy = screenDC.GetDeviceCaps(LOGPIXELSY);
+		logfont.lfHeight = - ::MulDiv(18, nLogpixelsy, 72);
+		logfont.lfItalic = FALSE;	
+		logfont.lfUnderline = FALSE;
+		logfont.lfWeight    = FW_BOLD;
+		logfont.lfStrikeOut = FALSE;
+		logfont.lfCharSet   = DEFAULT_CHARSET;
+		StringCchCopy(logfont.lfFaceName, LF_FACESIZE, _T("Arial"));
+
+		clrFontFore = RGB(128, 0, 64);
 	}
 
 	stu_DrawObjBaseInfo& operator = (const stu_DrawObjBaseInfo& other)

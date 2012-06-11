@@ -530,7 +530,7 @@ namespace FTL
         FTLINLINE static LPCTSTR GetNotifyCodeString(UINT nCode);
 
         //获取 WM_COMMAND 消息的 notifyCode
-        FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode);
+        FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength);
 
         //获取 Windows 窗体属性对应的字符串信息 
         FTLINLINE static LPCTSTR GetWindowClassString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));

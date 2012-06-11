@@ -11,6 +11,25 @@
 #include <atlimage.h>
 #include <ftlWindow.h>
 #include <ftlcom.h>
+
+//控件内部处理 LButtonUp 时，可以通过以下代码向父窗体发送点击消息
+/*
+//参见 WTL.CBitmapButtonImpl.OnLButtonUp
+bool bHover = IsHoverMode();
+if(!bHover)
+{
+   lRet = DefWindowProc(uMsg, wParam, lParam);
+}
+if(::GetCapture() == m_hWnd)
+{
+	if(bHover && m_fPressed == 1)
+	{
+		::SendMessage(GetParent(), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(), BN_CLICKED), (LPARAM)m_hWnd);
+    }
+	::ReleaseCapture();
+}
+*/
+
 /***********************************************************************************************************
 * Rich Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 有多个版本(可能不对，需要确认)
 *   1.0 -- RichEd32.dll (Win95)

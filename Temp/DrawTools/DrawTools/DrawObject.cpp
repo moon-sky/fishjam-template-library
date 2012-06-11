@@ -133,6 +133,7 @@ BOOL CDrawObject::HitTestMove(CPoint point)
 {
 	CRect rcDevice = m_position;
 	m_pDrawCanvas->DocToClient(&rcDevice);
+	rcDevice.NormalizeRect();
 	if (rcDevice.PtInRect(point))
 	{
 		return TRUE;
@@ -610,7 +611,7 @@ BOOL CDrawFreeObject::RecalcBounds(CRect& rect)
 
 	if (rect == m_position)
 		return FALSE;
-
+	m_position = rect;
 	return TRUE;
 }
 

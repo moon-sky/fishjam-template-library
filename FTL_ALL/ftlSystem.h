@@ -132,6 +132,18 @@ namespace FTL
         //RegDeleteKey -- 删除没有下级子键的子键,如果要递归删除，可以使用 CRegKey::RecurseDeleteKey 
     };
 
+	class SystemParamProperty
+	{
+	public:
+		FTLINLINE SystemParamProperty();
+		FTLINLINE ~SystemParamProperty();
+		FTLINLINE LPCTSTR GetPropertyString();
+	public:
+		int		m_nKeyboardSpeed;
+	private:
+		CFStringFormater	m_strFormater;
+		BOOL Init();
+	};
 
     FTLEXPORT class CFSystemUtil
     {

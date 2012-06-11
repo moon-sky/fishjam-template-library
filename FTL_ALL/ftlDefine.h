@@ -52,6 +52,7 @@ namespace FTL
     #define KEY_DOWN(vk_code)   ( (GetAsyncKeyState(vk_code) & 0x8000) ? TRUE  : FALSE ) 
     #define KEY_UP(vk_code)     ( (GetAsyncKeyState(vk_code) & 0x8000) ? FALSE : TRUE  )
 
+	#define FTL_MAX_CLASS_NAME_LENGTH	256
 
     //»»ÐÐ·û(10,A)
     #define LF  '\n'

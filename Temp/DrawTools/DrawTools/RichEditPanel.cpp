@@ -3,7 +3,7 @@
 
 #ifdef FTL_DEBUG
 //#include <ftlwindow.h>
-#include <ftlControls.h>
+//#include <ftlControls.h>
 #endif 
 #include <ftlGdi.h> 
 
@@ -167,7 +167,8 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF 
 	m_xPixPerInch = GetDeviceCaps(hDC, LOGPIXELSX);
 	m_yPixPerInch = GetDeviceCaps(hDC, LOGPIXELSY);
 
-	int iPointSize = -1 * ::MulDiv(logFont.lfHeight, 72, m_yPixPerInch);
+	//int iPointSize = -1 * ::MulDiv(logFont.lfHeight, 72, m_yPixPerInch);
+	int iPointSize = -1 * ::MulDiv(logFont.lfHeight, m_yPixPerInch, 72);
 	m_charFormat.yHeight = iPointSize * 20;
 	//m_charFormat.yHeight = -MulDiv(pLogFont->lfHeight, 72, m_yPixPerInch);//  * LY_PER_INCH / m_yPixPerInch;
 	ReleaseDC(hWnd, hDC);
@@ -190,7 +191,6 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF 
 	m_charFormat.dwMask = CFM_ALL | CFM_COLOR | CFM_BACKCOLOR;
 	m_charFormat.bCharSet = logFont.lfCharSet;
 	m_charFormat.bPitchAndFamily = logFont.lfPitchAndFamily;
-	m_charFormat.crTextColor = clrTextFore;
 	COM_VERIFY(StringCchCopy(m_charFormat.szFaceName, _countof(m_charFormat.szFaceName),  pLogFont->lfFaceName));
 #else
 	// Get the current font settings
@@ -326,7 +326,7 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcBound,
 
 BOOL CRichEditPanel::SetActive(BOOL bActive)
 {
-	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::SetActive, bActive=%d, m_fInplaceActive=%d\n"), bActive, m_fInplaceActive);
+	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::SetActive, bActive=%d, m_fInplaceActive=%d\n"), bActive, m_fInplaceActive);
 	BOOL bRet = TRUE;
 	if (bActive != m_fInplaceActive)
 	{
@@ -633,11 +633,25 @@ HRESULT CRichEditPanel::GetTextForeColor(long nStart, long nEnd, COLORREF* pClr)
 		COM_VERIFY(spFont->GetForeColor(&nColor));
 		if (SUCCEEDED(hr))
 		{
-			*pClr = nColor;
+			if (tomUndefined == nColor)
+			{
+				*pClr = (COLORREF)(-1);
+				hr = S_FALSE;
+			}
+			else if (tomAutoColor == nColor)
+			{
+				*pClr = (COLORREF)(-2);
+				hr = S_FALSE;
+			}
+			else
+			{
+				*pClr = nColor;
+			}
+			
 #ifdef FTL_DEBUG
-			FTL::CFStringFormater formater;
-			FTLTRACEEX(FTL::tlDetail, TEXT("GetTextForeColor %d to %d Color is %s\n"),
-				nStart, nEnd, FTL::CFControlUtil::GetRichEditColorString(formater, *pClr));
+			//FTL::CFStringFormater formater;
+			//FTLTRACEEX(FTL::tlDetail, TEXT("GetTextForeColor %d to %d Color is %s\n"),
+			//	nStart, nEnd, FTL::CFControlUtil::GetRichEditColorString(formater, *pClr));
 #endif
 		}
 	}
@@ -664,6 +678,27 @@ HRESULT CRichEditPanel::SetTextBackColor(long nStart, long nEnd, COLORREF clr)
 			COM_VERIFY(spFont->SetForeColor(clr));
 		}
 	}
+	return hr;
+}
+
+HRESULT CRichEditPanel::GetTextForeColor(long nStart, long nEnd, COLORREF& clr)
+{
+	HRESULT hr = E_FAIL;
+	CComPtr<ITextRange>		spRange;
+	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	if (SUCCEEDED(hr) && spRange)
+	{
+		CComPtr<ITextFont> spFont;
+		COM_VERIFY(spRange->GetFont(&spFont));
+	}
+	return hr;
+}
+
+HRESULT CRichEditPanel::GetTextFont(long nStart, long nEnd, PLOGFONT pLogFont)
+{
+	CHECK_POINTER_READABLE_DATA_RETURN_VALUE_IF_FAIL(pLogFont, sizeof(LOGFONT), FALSE);
+
+	HRESULT hr = E_FAIL;
 	return hr;
 }
 
@@ -1328,7 +1363,7 @@ HRESULT CRichEditPanel::TxGetPropertyBits( DWORD dwMask, DWORD *pdwBits )
 
 HRESULT CRichEditPanel::TxNotify( DWORD iNotify, void *pv )
 {
-#ifdef FTL_DEBUG
+#if 0
 	FTL::CFStringFormater formater;
 	FTL::CFControlUtil::GetEditNotifyCodeString(formater, iNotify, pv);
 	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),

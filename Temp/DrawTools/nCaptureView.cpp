@@ -1,23 +1,17 @@
 #include "stdafx.h"
 #include "nCaptureView.h"
-#include "MainFrm.h"
-
-#ifdef DRAW_TOOL_TEST
-#else
 #include "nCaptureDoc.h"
 #include "NCaptureApplication.h"
+#include "CapImageObj.h"
+#include "ZoomScrollMemDC.h"
+#include "MainFrm.h"
 #include "../Capture/StringResouceMgr.h"
+#include <ftlGdi.h>
+
 #include <SilverlightCpp.h>
 using namespace SilverlightCpp;
 #include <SilverlightExCpp.h>
 using namespace SilverlightExCpp;
-#endif 
-
-#include "CapImageObj.h"
-#include "ZoomScrollMemDC.h"
-
-#include <ftlGdi.h>
-
 
 
 const float CNCaptureView::s_FixedZoomScales[ZOOM_COUNT] = 
@@ -94,7 +88,6 @@ BOOL CNCaptureView::Initialize()
 		m_brBackground.CreatePatternBrush(bmpBackGround);
 		dcMemory.SelectBitmap(holdBitmap);
 	}
-
 	//else
 	//{
 	//	bmpBackGround.CreateCompatibleBitmap(dcOwner, 10, 10);
@@ -426,7 +419,7 @@ void CNCaptureView::OnDestroy()
 
 void CNCaptureView::DoPaint(CDCHandle dc)
 {
-	FUNCTION_BLOCK_TRACE(20);
+	FUNCTION_BLOCK_TRACE(1);
 	if ( m_bIsDrawing )
 	{
 		return;

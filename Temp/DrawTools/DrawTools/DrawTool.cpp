@@ -95,10 +95,10 @@ BOOL CDrawTool::OnLButtonDblClk(IDrawCanvas* /*pView*/, UINT /*nFlags*/, const C
 
 BOOL CDrawTool::OnLButtonUp(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& point)
 {
-	if (!pView->GetSelection().empty())
-	{
-		pView->GetSelection().front()->NormalizePosition();
-	}
+	//if (!pView->GetSelection().empty())
+	//{
+	//	pView->GetSelection().front()->NormalizePosition();
+	//}
 	pView->EndCapture();
 	return FALSE;
 }
