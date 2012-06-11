@@ -6,6 +6,10 @@
 #  include "ftlControls.h"
 #endif
 
+#include <Richedit.h>
+#include <textserv.h>
+#include <tom.h>
+
 namespace FTL
 {
 	LPCTSTR CFControlUtil::GetEditNotifyCodeString(CFStringFormater& formater, DWORD iNotify, void *pv)

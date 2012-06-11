@@ -1108,6 +1108,7 @@ namespace FTL
 
     BOOL CFCanvas::Create(HWND hWnd, int width, int heigth, int bpp /* = 32 */)
     {
+		UNREFERENCED_PARAMETER(hWnd);
         FTLASSERT( NULL == m_hCanvasDC );
         FTLASSERT( 32 == bpp && TEXT("Now just support 32 bit"));
         
@@ -1130,7 +1131,7 @@ namespace FTL
         //bmpInfo.bmiHeader.biYPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSY);
         //bmpInfo.bmiHeader.biClrUsed = 0;
         //bmpInfo.bmiHeader.biClrImportant = 0;
-
+		
         m_hCanvasDC = ::CreateCompatibleDC(NULL);
 
         API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(

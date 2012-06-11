@@ -505,7 +505,9 @@ namespace FTL
 		ctCtrlColor,
 		ctSysColor,
 	};
-
+	
+	typedef BOOL (CALLBACK* TranslateWndClassProc)(LPCTSTR pszOriClassName, LPTSTR pszNewClass, UINT nLength);
+	
     FTLEXPORT class CFWinUtil
     {
     public:
@@ -527,10 +529,10 @@ namespace FTL
         FTLINLINE static LPCTSTR GetScrollBarCodeString(UINT  nSBCode);
 
         //获取 WM_NOTIFY 消息 Code 对应的字符串信息
-        FTLINLINE static LPCTSTR GetNotifyCodeString(UINT nCode);
+        FTLINLINE static LPCTSTR GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc = NULL);
 
         //获取 WM_COMMAND 消息的 notifyCode
-        FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength);
+        FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc = NULL);
 
         //获取 Windows 窗体属性对应的字符串信息 
         FTLINLINE static LPCTSTR GetWindowClassString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));

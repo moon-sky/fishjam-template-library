@@ -9,8 +9,11 @@
 #endif //__ATLCTRLS_H__
 #include <atlbase.h>
 #include <atlimage.h>
+
 #include <ftlWindow.h>
 #include <ftlcom.h>
+
+#include <atlcrack.h>
 
 //控件内部处理 LButtonUp 时，可以通过以下代码向父窗体发送点击消息
 /*
@@ -98,7 +101,6 @@ namespace FTL
 
 		//获得 RichEditCtrl 中的 PropertyBits 信息(TxGetPropertyBits)
 		FTLINLINE static LPCTSTR GetRichEditPropertyBits(FTL::CFStringFormater& formater, DWORD dwBits, LPCTSTR pszDivide = TEXT("|"));
-
 	};
 
 	//RichEdit 中的 ITextRange
@@ -165,7 +167,7 @@ namespace FTL
 
         BEGIN_MSG_MAP_EX(CFSkinComboBox)
 #ifdef FTL_DEBUG
-            DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE, uMsg, wParam, lParam)
+            //DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE, uMsg, wParam, lParam)
 #endif 
             REFLECTED_COMMAND_CODE_HANDLER_EX(CBN_DROPDOWN, OnCbnDropDown)
             REFLECTED_COMMAND_CODE_HANDLER_EX(CBN_CLOSEUP, OnCbnCloseup)

@@ -304,6 +304,11 @@
 #  pragma message( "  _RICHEDIT_VER = " QQUOTE(_RICHEDIT_VER) )
 #endif 
 
+//GdiPlus 的版本
+#ifdef GDIPVER
+#  pragma message( "  GDIPVER = " QQUOTE(GDIPVER) )
+#endif 
+
 //判断使用的各种库：如MFC、ATL、WTL等
 #ifdef __AFX_H__
 #  pragma message( "  Use MFC, _MFC_VER = " QQUOTE(_MFC_VER) )

@@ -131,6 +131,7 @@ namespace FTL
             REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, dwLastError,x);\
             SetLastError(dwLastError);\
         }
+
     # define API_VERIFY_EXCEPT1(x,e1)\
         bRet = (x);\
         if(FALSE == bRet)\

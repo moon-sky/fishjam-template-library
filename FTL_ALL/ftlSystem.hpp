@@ -233,7 +233,7 @@ namespace FTL
 	LPCTSTR CFSystemUtil::GetClipboardFormatString(UINT uFormat, LPTSTR lpszFormatName, int cchMaxCount)
 	{
 		CHECK_POINTER_RETURN_VALUE_IF_FAIL(lpszFormatName, NULL);
-		lpszFormatName[0] = TEXT('\\0');
+		lpszFormatName[0] = TEXT('\0');
 		switch (uFormat)
 		{
 			HANDLE_CASE_TO_STRING(lpszFormatName, cchMaxCount, CF_TEXT);
@@ -624,6 +624,7 @@ namespace FTL
 
 	LPCTSTR CFSystemMetricsProperty::GetPropertyString(DWORD dwPropertyGet /* = SYSTEM_METRICS_PROPERTY_GET_DEFAULT */)
 	{
+		UNREFERENCED_PARAMETER(dwPropertyGet);
 		m_strFormater.Format(TEXT("%d"), 100);
 		return m_strFormater.GetString();
 	}

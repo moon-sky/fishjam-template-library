@@ -19,7 +19,7 @@ namespace FTL
     class CFDefaultMsgInfo
     {
     public:
-		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM /*wParam*/, LPARAM /*lParam*/)
 		{
 			return pszMsgName;
 		}
@@ -32,6 +32,8 @@ namespace FTL
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
+			FTLASSERT(WM_COMMAND == uMsg);
+
 			BOOL bRet = FALSE;
 			WORD wNotifyCode = HIWORD(wParam);
 			WORD wID = LOWORD(wParam);
@@ -47,20 +49,45 @@ namespace FTL
 			{
 				//Control
 				TCHAR szClassName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
-				GetClassName(hWndCtrl, szClassName, _countof(szClassName));
+				API_VERIFY(0 != GetClassName(hWndCtrl, szClassName, _countof(szClassName)));
 
 				CFWinUtil::GetCommandNotifyString(hWndCtrl, wNotifyCode, szCommandMsgInfo, _countof(szCommandMsgInfo));
-				m_strFormater.Format(TEXT("%s{ Control(%s) wID=%d(0x%x), NotifyCode=%s(%d, 0x%x), hWndCtrl=0x%x"),
+				m_strFormater.Format(TEXT("%s{ Control(\"%s\") wID=%d(0x%x), NotifyCode=%s(%d, 0x%x), hWndCtrl=0x%x"),
 					pszMsgName, szClassName, wID, wID, szCommandMsgInfo, wNotifyCode, wNotifyCode, hWndCtrl);
 			}
 			return m_strFormater;
 		}
-
 	};
+
+	class CFNotifyMsgInfo: public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			FTLASSERT(WM_NOTIFY == uMsg);
+			BOOL bRet = FALSE;
+
+			int nIdCtrl = (int)wParam;
+			LPNMHDR pNmHdr = (LPNMHDR)lParam;
+
+			TCHAR szClassName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
+			API_VERIFY(0 != GetClassName(pNmHdr->hwndFrom, szClassName, _countof(szClassName)));
+
+			TCHAR szNotifyCodeString[MAX_PATH] = {0};
+
+			m_strFormater.Format(TEXT("%s{ Control(\"%s\"), idCtrl=%d(0x%x), idFrom=%d(0x%x), code=%s(%d, 0x%x), hwndFrom=0x%x"),
+				pszMsgName, szClassName, nIdCtrl, nIdCtrl, pNmHdr->idFrom, pNmHdr->idFrom,
+				CFWinUtil::GetNotifyCodeString(pNmHdr->hwndFrom, pNmHdr->code, szNotifyCodeString, _countof(szNotifyCodeString), NULL),
+				pNmHdr->code, pNmHdr->code, pNmHdr->hwndFrom);
+
+			return m_strFormater;
+		}
+	};
+
 	//RichEdit 有不少使用 WM_USER 的消息
 	class CFRichEditCtrlMsgInfo : CFDefaultMsgInfo
 	{
-		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR /*pszMsgName*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 		{
 			switch (uMsg)
 			{
@@ -132,7 +159,7 @@ namespace FTL
 	class CFMouseMsgInfo : CFDefaultMsgInfo
 	{
 	public:
-		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
 			UINT nFlags = (UINT)wParam;
 			WORD xPos = LOWORD(lParam);
@@ -146,7 +173,7 @@ namespace FTL
 	class CFKeyMsgInfo : CFDefaultMsgInfo
 	{
 	public:
-		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
 			TCHAR nChar = (TCHAR)wParam;
 			TCHAR nPrintChar = nChar;
@@ -301,18 +328,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_COPYDATA, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_CANCELJOURNAL, CFDefaultMsgInfo); //当某个用户取消程序日志激活状态，提交此消息给程序
 #if(WINVER >= 0x0400)
-            case WM_NOTIFY:
-                {
-                    //GET_MESSAGE_INFO_ENTRY(WM_NOTIFY, CFDefaultMsgInfo);
-                    StringCchCopy(m_bufInfo,_countof(m_bufInfo),TEXT("WM_NOTIFY,"));
-                    int len = lstrlen(m_bufInfo);
-                    int nIdCtrl = (int)m_wParam;
-                    LPNMHDR pNmHdr = (LPNMHDR)m_lParam;
-                    StringCchPrintf(m_bufInfo + len, _countof(m_bufInfo) - len, 
-                        TEXT("id=%d,code=%s"), nIdCtrl, CFWinUtil::GetNotifyCodeString(pNmHdr->code));
-                    break;
-                }
-
+				GET_MESSAGE_INFO_ENTRY(WM_NOTIFY, CFNotifyMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_INPUTLANGCHANGEREQUEST, CFDefaultMsgInfo);    //当用户选择某种输入语言，或输入语言的热键改变
                 GET_MESSAGE_INFO_ENTRY(WM_INPUTLANGCHANGE, CFDefaultMsgInfo);   //当平台现场已经被改变后发送此消息给受影响的最顶级窗口
                 GET_MESSAGE_INFO_ENTRY(WM_TCARD, CFDefaultMsgInfo);         //当程序已经初始化windows帮助例程时发送此消息给应用程序
@@ -805,7 +821,9 @@ namespace FTL
 #if(_WIN32_WCE >= 0x0400)
 				GET_MESSAGE_INFO_ENTRY(CB_MULTIPLEADDSTRING, CFDefaultMsgInfo);
 #endif //_WIN32_WCE >= 0x0400
+#if(_WIN32_WINNT >= 0x0501)
 				GET_MESSAGE_INFO_ENTRY(CB_GETCOMBOBOXINFO, CFDefaultMsgInfo);
+#endif //_WIN32_WINNT >= 0x0501
 				GET_MESSAGE_INFO_ENTRY(CB_MSGMAX, CFDefaultMsgInfo);
 
 				//Scroll bar messages
@@ -1595,11 +1613,10 @@ namespace FTL
         }
     }
 
-    LPCTSTR CFWinUtil::GetNotifyCodeString(UINT nCode)
+    LPCTSTR CFWinUtil::GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc/* = NULL*/)
     {
         switch(nCode)
         {
-
             // generic to all controls
             HANDLE_CASE_RETURN_STRING(NM_FIRST);
             HANDLE_CASE_RETURN_STRING(NM_OUTOFMEMORY);
@@ -1617,12 +1634,14 @@ namespace FTL
             HANDLE_CASE_RETURN_STRING(NM_RELEASEDCAPTURE);
             HANDLE_CASE_RETURN_STRING(NM_SETCURSOR);
             HANDLE_CASE_RETURN_STRING(NM_CHAR);
+#if (_WIN32_IE >= 0x0401)
             HANDLE_CASE_RETURN_STRING(NM_TOOLTIPSCREATED);
+#endif //_WIN32_IE >= 0x0401
 #if (_WIN32_IE >= 0x0500)
             HANDLE_CASE_RETURN_STRING(NM_LDOWN);
             HANDLE_CASE_RETURN_STRING(NM_RDOWN);
             HANDLE_CASE_RETURN_STRING(NM_THEMECHANGED);
-#endif
+#endif //_WIN32_IE >= 0x0500
 
 #if (_WIN32_WINNT >= 0x0600)
             HANDLE_CASE_RETURN_STRING(NM_FONTCHANGED);
@@ -1938,20 +1957,28 @@ namespace FTL
 #endif //_WIN32_WINNT >= 0x0600
         }
 
-        FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Notify Code, %d\n"), nCode);
+        //FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Notify Code, %d\n"), nCode);
         return TEXT("Unknown");
     }
 
-    LPCTSTR CFWinUtil::GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength)
+    LPCTSTR CFWinUtil::GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc/* = NULL*/)
     {
 		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pszCommandNotify, NULL);
 		BOOL bRet = FALSE;
 		HRESULT hr = E_FAIL;
 
 		pszCommandNotify[0] = 0;
-		TCHAR szClassName[256] = {0};
+		TCHAR szClassName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
 		API_VERIFY( 0 != GetClassName(hWnd, szClassName, _countof(szClassName)));
-		
+		if (pTransProc)
+		{
+			TCHAR szNewClassName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
+			API_VERIFY((*pTransProc)(szClassName, szNewClassName, _countof(szNewClassName)));
+			if (bRet)
+			{
+				StringCchCopy(szClassName, _countof(szClassName), szNewClassName);
+			}
+		}
 		if (0 == lstrcmpi(szClassName, TEXT("BUTTON")))
 		{
 			switch(nCode)
@@ -2013,6 +2040,7 @@ namespace FTL
 		{
 			FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Command Code %d For Class %s"), nCode, szClassName);
 			COM_VERIFY(StringCchPrintf(pszCommandNotify, nLength, TEXT("Unknown Command Code %d For Class %s"), nCode, szClassName));
+			FTLASSERT(FALSE);
 		}
 		return pszCommandNotify;
     }
@@ -2257,7 +2285,10 @@ namespace FTL
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_HIDDEN, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_DRAGDROP, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_FULLDRAG, pszDivide);
+#if (_WIN32_IE >= 0x0500)
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_FILTERBAR, pszDivide);
+#endif //_WIN32_IE >= 0x0500
+
 #if (_WIN32_WINNT >= 0x0501)
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, HDS_FLAT, pszDivide);
 #endif //_WIN32_WINNT >= 0x0501
