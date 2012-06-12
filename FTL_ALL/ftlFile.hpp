@@ -393,6 +393,65 @@ namespace FTL
 		return 0;   // no support
 	}
 
+	BOOL CFPath::CreateDir(LPTSTR szPath)
+	{
+		TCHAR szDirName[FULL_PATH_BUFF] = { NULL };
+		TCHAR* p = szPath;
+		TCHAR* q = szDirName;
+
+		while(*p)
+		{
+			if (('\\' == *p) || ('/' == *p))
+			{
+				if (':' != *(p - 1))
+				{
+					if (TRUE == ATLPath::FileExists(szDirName))
+					{
+						if (FALSE == ATLPath::IsDirectory(szDirName))
+						{
+							return FALSE;
+						}
+					}
+					else
+					{
+						if (FALSE == CreateDirectory(szDirName, NULL))
+						{
+							FTLTRACEEX(tlError, _T("CreateDirectory fail %s\n"), szDirName);
+							return FALSE;
+						}
+					}
+				}
+			}
+			*q++ = *p++;
+			*q = '\0';
+		}
+
+		int nPathLen = _tcslen(szPath);
+		if (nPathLen > 3)
+		{
+			if (('\\' != *(q - 1)) && ('/' != *(q - 1)))
+			{
+				if (TRUE == ATLPath::FileExists(szDirName))
+				{
+					if (FALSE == ATLPath::IsDirectory(szDirName))
+					{
+						return FALSE;
+					}
+				}
+				else
+				{
+					if (FALSE == CreateDirectory(szDirName, NULL))
+					{
+						return FALSE;
+					}
+				}
+			}
+		}
+
+		return TRUE;
+	}
+
+
     CFStructuredStorageFile::CFStructuredStorageFile()
     {
         m_pRootStg = NULL;

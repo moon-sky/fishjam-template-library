@@ -132,6 +132,7 @@ namespace FTL
     class CFPath
     {
     public:
+		FTLINLINE static BOOL CreateDir(LPTSTR szPath);
     private:
         
     };
