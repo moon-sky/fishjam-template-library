@@ -68,8 +68,9 @@
 *    分析：Debug 中 XXX.exe.embed.manifest 和 XXX.exe.intermediate.manifest 中依赖了本机上不存在的 Microsoft.VC90.DebugCRT 版本
 *         (本机的 WinSXS 中只有 9.0.21022.8 和 9.0.30729.1 的 x86_microsoft.vc90.debugcrt 版本，但清单文件中依赖了 9.0.30729.6161 版本)
 *    原因：所链接的静态库使用了 9.0.30729.6161(可通过 dumpbin /all 并重定向结果后查找 manifestdependency 确认)
-*       http://www.microsoft.com/en-us/download/details.aspx?id=26368
-*
+*      
+*      9.0.30729.1(VS2008 SP1) -- http://www.microsoft.com/en-us/download/confirmation.aspx?id=5582
+*      9.0.30729.6161 -- http://www.microsoft.com/en-us/download/details.aspx?id=26368
 *   
 ************************************************************************************************/
 
@@ -504,8 +505,77 @@ namespace FTL
     ******************************************************************************************************************************/
 
     /******************************************************************************************************************************
-    * NSIS(Nullsoft Scriptable Install System) -- http://nsis.sf.net
-    *   
+    * NSIS(Nullsoft Scriptable Install System) -- http://nsis.sf.net, 开源的 Windows 系统下免费安装程序制作程序，通过脚本配置
+	*   注意：
+	*     1.函数没有参数传递。
+	*       参数传递是通过 全局变量 或 堆栈操作 Pop，Push 和 20 个寄存器变量 $0～$9、$R0～$R9 进行
+	*      
+	*   脚本(nsh -- 如 makensis 同目录下有 nsisconf.nsh 头文件，会自动包含)
+	*     第三方的脚本开发集成环境：
+	*       HM NIS EDIT -- http://hmne.sourceforge.net/
+	*       Venis IX -- http://www.spaceblue.com/products/venis/
+	*     语法(属性、页面、区段、函数)
+	*       0.基本语法
+	*         转义字符 -- $前缀，如 $\n 表示换行， $$ 表示美元符"$"
+	*         !define 常量名 "常量值"   -- Name 和 OutFile ?
+	*         !macro 宏名 
+	*         var 变量名, 引用时 $变量名
+	*             颜色 -- 类似HTML中的RGB表示法，但不用井号"#"
+	*         常用的预定义系统变量：
+	*           $INSTDIR，$OUTDIR，$CMDLINE，$LANGUAGE
+	*           $PROGRAMFILES、$COMMONFILES，$DESKTOP，$STARTMENU
+	*           $MUSIC，$FONTS，$APPDATA
+	*           $RESOURCES、$RESOURCES_LOCALIZED
+	*       1.Page/UninstPage/PageEx 页面名 -- 指定特定的安装/卸载页面, 可通过回调函数进行验证,如没有回调，则对应的位置用 ""
+	*         内置界面(??) -- license，components，directory， uninstConfirm
+	*           Page <页面名> [pre_function] [show_function] [leave_function]
+	*         定制界面
+	*           Page <页面名> [creator_function] [leave_function] [caption]
+	*       2.Section "[un.]区段名"
+	*            区段内容，对应某种安装/卸载选项的处理逻辑
+	*         SectionEnd
+	*         区段有修饰符，如 RO 
+	*         子区段：SubSection 
+	*       3.用户自定义函数(使用 Call 指定调用) 和 回调函数（ 如 .onInit ) 
+	*         a.用户自定义函数：
+	*           Function <函数名>
+	*             函数体
+	*           FunctionEnd
+	*         b.NSIS 预定义的回调函数（安装和卸载）
+	*             .onGUIInit
+	*             .onInit
+	*             .onInstFailed
+	*             .onInstSuccess
+	*             .onGUIEnd
+	*             .onMouseOverSection
+	*             .onRebootFailed
+	*             .onSelChange
+	*             .onUserAbort
+	*             .onVerifyInstDir
+	*             un.onGUIInit
+	*             un.onInit
+	*             un.onUninstFailed
+	*             un.onUninstSuccess
+	*             un.onGUIEnd
+	*             un.onRebootFailed
+	*             un.onUserAbort
+	*       4.指令 -- 可带参数，如 /REBOOTOK
+	*           基本指令：Delete、Exec、ExecShell、ExecWait、Rename、RMDir
+	*             File -- 指定文件, /r 递归， /x 排除指定文件， 如 File /r *.exe
+	*             
+	*           分支判断：IfErrors、IfFileExists、StrCmp 等
+	*           注册表：ReadRegStr
+	*           调试函数：
+	*              MessageBox MB_YESNO "提示信息"
+	*              DetailPrint
+	*              Dumpstate
+	*           
+	*           SetOutPath -- 指定目的位置
+	*       6.插件(扩展NSIS安装程序的DLL，系统预安装的在 Plugins 目录下，用户可用 !addplugindir 增加目录位置)
+	*         使用语法： DllName::FunctionName "参数1" 参数2" "参数3"
+	&         如（下载文件）： NSISdl::download http://download.nullsoft.com/winamp/client/winamp291_lite.exe $R0
+	*   工具程序：makensis/makensisw 
+	*
     ******************************************************************************************************************************/
 
     /******************************************************************************************************************************
