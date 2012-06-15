@@ -13,7 +13,7 @@ public:
 		const DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual ~CTextObject();
 
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	//virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 public:
 	virtual void Draw(HDC hDC, BOOL bOriginal);

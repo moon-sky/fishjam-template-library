@@ -116,9 +116,10 @@ void CPolyTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 {
 	if (m_pCurPolyObject != NULL && (nFlags & MK_LBUTTON) != 0)
 	{
+		OutputDebugString(_T("CPolyTool::OnMouseMove\r\n"));
 		CPoint local = point;
 		pView->ClientToDoc(&local);
-		m_pCurPolyObject->AddPoint(local);
+		m_pCurPolyObject->AddPoint(local, TRUE);
 		pView->SetDragHandle(m_pCurPolyObject->GetHandleCount());
 		pView->SetMouseLastLogicalPoint(local);
 		pView->InvalObject(m_pCurPolyObject);

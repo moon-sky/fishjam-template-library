@@ -29,13 +29,26 @@ public:
 	~CNCaptureView();
 
 	BEGIN_MSG_MAP_EX(CNCaptureView)
-		//DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE, uMsg, wParam, lParam)
+		{
+			//DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE, uMsg, wParam, lParam)
+			CDrawTool* pActiveTool = CDrawCanvas<CNCaptureView>::GetCurrentTool();
+			if (pActiveTool)
+			{
+				LRESULT lResult = 0;
+				bHandled = pActiveTool->HandleControlMessage(this, uMsg, wParam, lParam, lResult);
+				if (bHandled)
+				{
+					return TRUE;
+				}
+			}
+		}
+
 		//MSG_WM_CREATE(OnCreate)
 		MSG_WM_DESTROY(OnDestroy)
 		MSG_WM_ERASEBKGND(OnEraseBkgnd)
 		//MSG_WM_SIZE(OnSize)
-		MSG_WM_SETFOCUS(OnSetFocus)
-		MSG_WM_KILLFOCUS(OnKillFocus)
+		//MSG_WM_SETFOCUS(OnSetFocus)
+		//MSG_WM_KILLFOCUS(OnKillFocus)
 		MSG_WM_LBUTTONDOWN(OnLButtonDown)
 		MSG_WM_MOUSEMOVE(OnMouseMove)
 		MSG_WM_MOUSELEAVE(OnMouseLeave)
@@ -53,7 +66,7 @@ public:
 public:
 	BOOL Initialize();
 	VOID Finalize();
-	void SetNotifyWnd( const HWND hWndNotify );
+	//void SetNotifyWnd( const HWND hWndNotify );
 	VOID InvalidateFrame(LPRECT lpRect, BOOL bRePaint);
 	BOOL CopyImageToClipboard();
 	BOOL CropImage();
@@ -79,8 +92,8 @@ public:
 	void OnDestroy();
 	BOOL OnEraseBkgnd(CDCHandle dc);
 	//void OnSize(UINT nType, CSize size);
-	void OnSetFocus(CWindow wndOld);
-	void OnKillFocus(CWindow wndFocus);
+	//void OnSetFocus(CWindow wndOld);
+	//void OnKillFocus(CWindow wndFocus);
 	void OnLButtonDown(UINT nFlags, CPoint point);
 	void OnLButtonUp(UINT nFlags, CPoint point);
 	void OnMouseMove(UINT nFlags, CPoint point);
@@ -123,6 +136,9 @@ public:
 	void SelectToolTypeByMenu(const CPoint& ptPoint);
 
 	virtual BOOL BackupDrawObjectData(LPCTSTR strName);
+	BOOL IsCanRedo();
+	BOOL IsCanUndo();
+	BOOL IsCanEdit();
 
 	void Undo();
 	void Redo();
@@ -133,7 +149,7 @@ private:
 	BOOL				m_bClipCursor;
 	//int					m_iFixedZoomIndex;
 	float				m_fLastZoomFactor;
-	HWND				m_hWndNotify;
+	//HWND				m_hWndNotify;
 
 	CCapImageObj*		m_pImage;
 	NDGraphics::CGDIPImage* m_pDefaultImage;

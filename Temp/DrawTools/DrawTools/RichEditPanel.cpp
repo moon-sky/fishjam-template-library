@@ -132,7 +132,6 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF 
 	HWND hWnd = NULL;
 	HDC hDC = NULL;
 	LOGFONT logFont = {0};
-	//LONG yPixPerInch = 0;
 	
 	// Get LOGFONT for default font
 	if (!pLogFont)
@@ -149,21 +148,12 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF 
 		logFont = *pLogFont;
 	}
 
-	// Get LOGFONT for passed hfont
-	// Set CHARFORMAT structure
+	//Set m_charFormat structure
 	ZeroMemory(&m_charFormat, sizeof(m_charFormat));
-	m_charFormat.cbSize = sizeof(CHARFORMAT);
+	m_charFormat.cbSize = sizeof(m_charFormat);
 
 	hWnd = GetDesktopWindow();
 	hDC = GetDC(hWnd);
-
-	//FTL::CFGdiObjectInfoDump	fontDumper;
-	//API_VERIFY(fontDumper.GetGdiObjectInfo(hfont));
-	//FTLTRACEEX(FTL::tlDetail, TEXT("Font Property=%s\n"), fontDumper.GetGdiObjectInfoString());
-	//FTL::HDCProperty	hDCProperty;
-	//API_VERIFY(FTL::CFGdiUtil::GetHDCProperty(hDC, &hDCProperty));
-	//FTLTRACEEX(FTL::tlDetail, TEXT("HDCProperty=%s\n"), hDCProperty.GetPropertyString(HDC_PROPERTY_GET_ALL));
-
 	m_xPixPerInch = GetDeviceCaps(hDC, LOGPIXELSX);
 	m_yPixPerInch = GetDeviceCaps(hDC, LOGPIXELSY);
 
@@ -341,6 +331,16 @@ BOOL CRichEditPanel::SetActive(BOOL bActive)
 		}
 		else
 		{
+			//Clear Select
+			CComPtr<ITextSelection>	spSelection;
+			COM_VERIFY(m_spTextDocument->GetSelection(&spSelection));
+			if (spSelection)
+			{
+				long nEnd = 0;
+				COM_VERIFY(spSelection->GetEnd(&nEnd));
+				COM_VERIFY_EXCEPT1(spSelection->SetStart(nEnd), S_FALSE);
+			}
+
 			COM_VERIFY(m_spTextServices->TxSendMessage(WM_KILLFOCUS, (WPARAM)NULL, 0, NULL));
 			COM_VERIFY(m_spTextServices->OnTxUIDeactivate());
 			COM_VERIFY(m_spTextServices->OnTxInPlaceDeactivate());
@@ -1399,7 +1399,7 @@ HRESULT CRichEditPanel::TxGetSelectionBarWidth( LONG *lSelBarWidth )
 	return E_NOTIMPL;
 }
 
-BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
+BOOL CRichEditPanel::_IsNeedHandleMsg(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL bRet = FALSE;
 	if (IsActive())
@@ -1407,14 +1407,16 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 		do 
 		{
 #if 1
-			CPoint ptClient = pMsg->pt;
+			
+			CPoint ptClient;
+			GetCursorPos(&ptClient);
 			TxScreenToClient(&ptClient);
 			//m_pDrawCanvas->ClientToDoc(&ptLocalClient);
 			CRect rcDevice = m_rcClient;
 			m_pDrawCanvas->DocToClient(&rcDevice);
 			if (rcDevice.PtInRect(ptClient))
 			{
-				if (WM_LBUTTONDOWN == pMsg->message)
+				if (WM_LBUTTONDOWN == uMsg)
 				{
 					
 					//make sure canvas capture
@@ -1425,7 +1427,7 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 					bRet = TRUE;
 					break;
 				}
-				else if (WM_MOUSEWHEEL == pMsg->message)
+				else if (WM_MOUSEWHEEL == uMsg)
 				{
 					bRet = FALSE; //TRUE;
 					break;
@@ -1433,12 +1435,12 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 			}
 			if (m_fCapture) // && selMode == smNone)
 			{
-				if (WM_MOUSEFIRST <= pMsg->message && pMsg->message <= WM_MOUSELAST)
+				if (WM_MOUSEFIRST <= uMsg && uMsg <= WM_MOUSELAST)
 				{
 
-					if (WM_MOUSEMOVE == pMsg->message
-						|| WM_LBUTTONDOWN == pMsg->message
-						|| WM_LBUTTONUP == pMsg->message)
+					if (WM_MOUSEMOVE == uMsg
+						|| WM_LBUTTONDOWN == uMsg
+						|| WM_LBUTTONUP == uMsg)
 					{
 						bRet = TRUE;
 						break;
@@ -1446,9 +1448,9 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(MSG* pMsg)
 				}
 			}
 #endif 
-			if(WM_KEYFIRST <= pMsg->message && pMsg->message <= WM_KEYLAST)
+			if(WM_KEYFIRST <= uMsg && uMsg <= WM_KEYLAST)
 			{
-				if(VK_ESCAPE != pMsg->wParam)
+				if(VK_ESCAPE != uMsg)
 				{
 					bRet = TRUE;
 				}
@@ -1482,6 +1484,37 @@ LRESULT CRichEditPanel::OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM l
 
 	if (WM_LBUTTONDOWN == uMsg)
 	{
+		//CComPtr<ITextSelection> spSelection;
+		//COM_VERIFY(m_spTextDocument->GetSelection(&spSelection));
+		//if (spSelection)
+		//{
+			//long nFlags = 0;
+			//COM_VERIFY(spSelection->GetFlags(&nFlags));
+
+			//long nType = 0;
+			//COM_VERIFY(spSelection->GetType(&nType));
+			//COM_VERIFY(m_spTextDocument->BeginEditCollection());
+
+			//if (nFlags & tomSelStartActive == 0)
+			//{
+			//	nFlags |= tomSelStartActive;
+			//	//COM_VERIFY(spSelection->SetFlags(nFlags));
+			//}
+		//}
+
+		//BOOL bRet = FALSE;
+		//POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+		//API_VERIFY(TxSetCaretPos(pt.x, pt.y));
+		//API_VERIFY(TxClientToScreen(&pt));
+		//CComPtr<ITextRange> spRange;
+		//COM_VERIFY(m_spTextDocument->RangeFromPoint(pt.x, pt.y, &spRange));
+		//if (spRange)
+		//{
+		//	
+		//	COM_VERIFY(spRange->Select());
+		//}
+
+
 		//SetActive(FALSE);
 		//SetActive(TRUE);
 		//TxSetCapture(TRUE);
@@ -1496,20 +1529,18 @@ LRESULT CRichEditPanel::OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM l
 	return lResult;
 }
 
-BOOL CRichEditPanel::PreTranslateMessage(MSG* pMsg)
+BOOL CRichEditPanel::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult)
 {
 	//DUMP_WINDOWS_MSG(__FILE__LINE__, (DEFAULT_DUMP_FILTER_MESSAGE | DUMP_FILTER_TIMER | DUMP_FILTER_KEYDOWN), pMsg->message, pMsg->wParam, pMsg->lParam);
-
 	BOOL bRet = FALSE;
 	HRESULT hr = E_FAIL;
-	LONG lResult = 0;
 	//BOOL bWillHandle = FALSE;
-	if (_IsNeedHandleMsg(pMsg))
+	if (_IsNeedHandleMsg(uMsg, wParam, lParam))
 	{
-		bRet = ProcessWindowMessage(pMsg->hwnd, pMsg->message, pMsg->wParam, pMsg->lParam, lResult, 0);
+		bRet = ProcessWindowMessage(pView->GetHWnd(), uMsg, wParam, lParam, lResult, 0);
 		if (!bRet)
 		{
-			hr = m_spTextServices->TxSendMessage(pMsg->message, pMsg->wParam, pMsg->lParam, &lResult);
+			hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
 			if (S_OK == hr)
 			{
 				return TRUE;

@@ -7,7 +7,7 @@ public:
 	CDrawPoly(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual ~CDrawPoly(void);
 
-	void AddPoint(const CPoint& point);
+	void AddPoint(const CPoint& point, BOOL bInvalidate = FALSE);
 	BOOL RecalcBounds();
 
 	virtual void Draw(HDC hDC, BOOL bOriginal);

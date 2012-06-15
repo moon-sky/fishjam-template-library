@@ -13,14 +13,6 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	m_pRichEditPanel = new CRichEditPanel();
 	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, &stDrawObjInfo.logfont, 
 		stDrawObjInfo.clrFontFore, this);
-
-#ifdef FTL_DEBUG
-	CString strTest;
-	strTest.Format(TEXT("Demo String %d"), GetTickCount());
-	m_pRichEditPanel->SetText(strTest);
-/*	m_pRichEditPanel->SetTextForeColor(0, -1, RGB(0, 0, 255));
-	m_pRichEditPanel->SetTextFontSize(0, -1, 10)*/;
-#endif 
 	UpdateDrawInfo(stDrawObjInfo);
 	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
 }
@@ -34,24 +26,25 @@ CTextObject::~CTextObject()
 	}
 }
 
-BOOL CTextObject::PreTranslateMessage(MSG* pMsg)
-{
-	if (m_pRichEditPanel && m_pRichEditPanel->IsActive())
-	{
-		BOOL bWillTranslateToRTPanel = TRUE;
-		//if (WM_MOUSEFIRST <= pMsg->message && pMsg->message <= WM_MOUSELAST)
-		//{
-		//	CPoint ptClient = pMsg->pt;
-		//	ScreenToClient(m_pDrawCanvas->GetHWnd(), &ptClient);
-		//	bWillTranslateToRTPanel = HitTestActive(ptClient);
-		//}
-		if (bWillTranslateToRTPanel)
-		{
-			return m_pRichEditPanel->PreTranslateMessage(pMsg);
-		}
-	}
-	return FALSE;
-}
+//BOOL CTextObject::PreTranslateMessage(MSG* pMsg)
+//{
+//	//FTLASSERT(pMsg->hwnd == m_pDrawCanvas->GetHWnd());
+//	if (pMsg->hwnd == m_pDrawCanvas->GetHWnd() &&  m_pRichEditPanel && m_pRichEditPanel->IsActive())
+//	{
+//		BOOL bWillTranslateToRTPanel = TRUE;
+//		//if (WM_MOUSEFIRST <= pMsg->message && pMsg->message <= WM_MOUSELAST)
+//		//{
+//		//	CPoint ptClient = pMsg->pt;
+//		//	ScreenToClient(m_pDrawCanvas->GetHWnd(), &ptClient);
+//		//	bWillTranslateToRTPanel = HitTestActive(ptClient);
+//		//}
+//		if (bWillTranslateToRTPanel)
+//		{
+//			return m_pRichEditPanel->PreTranslateMessage(pMsg);
+//		}
+//	}
+//	return FALSE;
+//}
 
 void CTextObject::Draw(HDC hDC, BOOL bOriginal)
 {
@@ -130,10 +123,10 @@ void CTextObject::MoveTo(const CRect& position)
 
 void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 {
-	if (m_pDrawCanvas->IsCapture())
-	{
-		return;
-	}
+	//if (m_pDrawCanvas->IsCapture())
+	//{
+	//	return;
+	//}
 	FTLASSERT(pReqResize->rc.bottom > pReqResize->rc.top);
 	int nWantHeight = pReqResize->rc.bottom - pReqResize->rc.top + RTPANEL_MARGIN_TOP + RTPANEL_MARGIN_BOTTOM;
 
@@ -143,37 +136,30 @@ void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 		nWantHeight = szMin.cy;
 	}
 	BOOL bWillSetBound = FALSE;
+	CRect rcPosition = m_position;
+	rcPosition.NormalizeRect();
 
-	int nOldHeight = FTL_ABS(m_position.Height());
-	if ( nWantHeight > nOldHeight)
+	//if (!rcTarget.IsRectEmpty())
 	{
-		if (m_position.top < m_position.bottom)
+		int nOldHeight = FTL_ABS(rcPosition.Height());
+		if ( nWantHeight > nOldHeight)
 		{
-			m_position.bottom = m_position.top + nWantHeight;
+			rcPosition.bottom = rcPosition.top + nWantHeight;
+			bWillSetBound = TRUE;
 		}
-		else
+
+		int nOldWidth = FTL_ABS(rcPosition.Width());
+		if (szMin.cx > nOldWidth)
 		{
-			m_position.top = m_position.bottom - nWantHeight;
+			rcPosition.right = rcPosition.left + szMin.cx;
+			bWillSetBound = TRUE;
 		}
-		bWillSetBound = TRUE;
 	}
-
-	int nOldWidth = FTL_ABS(m_position.Width());
-	if (szMin.cx > nOldWidth)
+	CRect rcTarget = m_pDrawCanvas->GetDrawTarget();
+	rcTarget.IntersectRect(rcTarget, rcPosition);
+	if (rcTarget != m_position && bWillSetBound)
 	{
-		if (m_position.left < m_position.right)
-		{
-			m_position.right = m_position.left + szMin.cx;
-		}
-		else 
-		{
-			m_position.left = m_position.right - szMin.cx;
-		}
-		bWillSetBound = TRUE;
-	}
-
-	if (bWillSetBound)
-	{
+		m_position = rcTarget;
 		m_pRichEditPanel->SetClientBound(m_position, NULL, TRUE);
 		m_pDrawCanvas->InvalObject(this);
 	}

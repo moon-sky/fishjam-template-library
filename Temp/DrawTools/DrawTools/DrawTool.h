@@ -16,6 +16,8 @@ public:
 	virtual void OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	virtual void OnEditProperties(IDrawCanvas* pView);
 	virtual void OnCancel(IDrawCanvas* pView);
+	virtual BOOL IsNeedClip();
+	virtual BOOL HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
 
 	ToolType GetToolType() const
 	{

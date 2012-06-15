@@ -382,3 +382,8 @@ void CSelectTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	//}
 	CDrawTool::OnMouseMove(pView, nFlags, point);
 }
+
+BOOL CSelectTool::IsNeedClip()
+{
+	return TRUE;
+}

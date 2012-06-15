@@ -112,3 +112,8 @@ void CTextTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 	//s_SelectTool.OnMouseMove(pView, nFlags, point);
 	return CDrawTool::OnMouseMove(pView, nFlags, point);
 }
+
+BOOL CTextTool::IsNeedClip()
+{
+	return TRUE;
+}

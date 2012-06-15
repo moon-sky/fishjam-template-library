@@ -60,7 +60,7 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 		{
 			if (pObj->HitTestMove(point))
 			{
-				pView->SetActive(NULL, FALSE);
+				//pView->SetActive(NULL, FALSE);
 				pView->SetCurrentSelectMode(smMove);
 				
 				if (!pView->IsSelected(pObj))
@@ -95,11 +95,31 @@ BOOL CDrawTool::OnLButtonDblClk(IDrawCanvas* /*pView*/, UINT /*nFlags*/, const C
 
 BOOL CDrawTool::OnLButtonUp(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& point)
 {
-	//if (!pView->GetSelection().empty())
-	//{
-	//	pView->GetSelection().front()->NormalizePosition();
-	//}
-	pView->EndCapture();
+	if(pView->IsCapture())
+	{
+		CPoint ptDevice = pView->GetMouseDownLogicalPoint();
+		pView->DocToClient(&ptDevice);
+		BOOL bBackupData = TRUE;
+		if (point == ptDevice && pView->GetCurrentSelectMode() == smSize)
+		{
+			CDrawObject* pObj = pView->GetSelection().front();
+			pView->Remove(pObj, TRUE);
+			pObj->Remove();
+			bBackupData = FALSE;
+		}
+		
+		for(DrawObjectList::iterator iter = pView->GetSelection().begin();
+			iter != pView->GetSelection().end();
+			++iter)
+		{
+			CDrawObject* pObj = *iter;
+			if (smSize == pView->GetCurrentSelectMode())
+			{
+				pObj->EndMoveHandle();
+			}
+		}
+		pView->EndCapture(bBackupData);
+	}
 	return FALSE;
 }
 
@@ -177,6 +197,11 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 	}
 }
 
+BOOL CDrawTool::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult)
+{
+	return FALSE;
+}
+
 void CDrawTool::OnEditProperties(IDrawCanvas* /*pView*/)
 {
 }
@@ -184,6 +209,11 @@ void CDrawTool::OnEditProperties(IDrawCanvas* /*pView*/)
 void CDrawTool::OnCancel(IDrawCanvas* pView)
 {
 	//pView->SetCurrentToolType(ttSelection);
+}
+
+BOOL CDrawTool::IsNeedClip()
+{
+	return FALSE;
 }
 
 void CDrawTool::_CheckSelectPostion(IDrawCanvas* pView)

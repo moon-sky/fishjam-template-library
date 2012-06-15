@@ -2,7 +2,7 @@
 
 #include "DrawTypeDefine.h"
 
-class CDrawObject : public CMessageFilter
+class CDrawObject// : public CMessageFilter
 {
 public:
 	CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
@@ -48,7 +48,7 @@ public:
 		active 
 	};
 
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	//virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	virtual void NormalizePosition();
 	virtual void DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool);
@@ -95,7 +95,7 @@ public:
 
 
 	void AddPoint(const CPoint& point);
-	BOOL RecalcBounds(CRect& rect);
+	BOOL RecalcBounds();
 
 	virtual void Draw(HDC hDC, BOOL bOriginal);
 	virtual int GetHandleCount();

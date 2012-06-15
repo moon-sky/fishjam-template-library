@@ -26,7 +26,23 @@
 ************************************************************************************************/
 
 /************************************************************************************************
-* 缺少 DebugCRT.9.0.30729.6161 无法运行程序的临时解决方式(需要更改 WinSxs 的所有者才能修改)
+* 依赖于 CRT、MFC 等多个版本时的重定向 -- 缺少 DebugCRT.9.0.30729.6161 等无法运行程序的问题
+* 1.拷贝对应版本的  Microsoft.VC90.CRT.manifest、 msvcr90.dll、msvcp90.dll 等文件到 可执行程序目录 -- 可解决大部分问题
+* 2.生成 程序名.exe.config 文件(即 Application Config File，应用程序运行时的配置信息)，内容框架如下（调整其中的 name , oldVersion, newVersion 等）：
+*   <?xml version="1.0"?>
+*   <configuration>
+*     <windows>    <!-- 注意此处原来是 runtime(指定  .NET assemblies ?) -->
+*       <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+*         <dependentAssembly>
+*           <assemblyIdentity type="win32" name="Microsoft.VC90.DebugCRT" processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b"  /> 
+*             <bindingRedirect oldVersion="9.0.30729.6161" newVersion="9.0.21022.8"/>  
+*             <bindingRedirect oldVersion="9.0.30729.1" newVersion="9.0.21022.8"/>  
+*           </dependentAssembly>
+*       </assemblyBinding>
+*     </windows>
+*   </configuration>
+*
+* 以前测试过但影响面太大的方法是更改 winsxs 中的文件（(需要更改 WinSxs 的所有者才能修改)
 * 修改 C:\Windows\winsxs\Manifests\x86_policy.9.0.microsoft.vc90.debugcrt_1fc8b3b9a1e18e3b_9.0.30729.1_none_61305e07e4f1bc01.manifest 文件，
 *   原来只有两行：
 *  		<bindingRedirect  oldVersion="9.0.20718.0-9.0.21022.8" newVersion="9.0.30729.1"/>
@@ -34,10 +50,29 @@
 *   加入了新的 
 *       <bindingRedirect  oldVersion="9.0.30729.6161-9.0.30729.6161" newVersion="9.0.30729.1"/>
 *   注：这个文件是从 SxsTrace 生成的日志文件中找出来的。
-*   
+*       bindingRedirect 指定 所有旧版本范围的客户需求映射到指定的新版本库，也可对别的字段进行映射？方式为 old + 关键字 ?
 * WinSxs(Windows Side-by-Side)
 *
-* ManiFest 
+* 本地加载
+*   A.拷贝系统的 manifest 文件到应用程序本地文件夹中,更名为 <assemblyName>.manifest， 如 Microsoft.VC90.CRT.manifest，将对应的 DLL 文件(如 msvcr90.dll,msvcp90.dll 等）拷贝到相同的目录
+*   B.也可以建立 <assemblyName> 文件夹，并拷贝如  <assemblyName>.manifest 和 对应的 DLL 文件
+* 
+* ManiFest -- 有两部分
+*   客户端 -- 开发编译的Exe、Dll等，指定该文件依赖的DLL信息，主要有 type,version, processorArchitecture, publicKeyToken 等信息
+*   服务器端 -- 微软等开发的 DLL, 指定该文件的强命名信息，里面通过 file( hashalg/hash/DigestValue 等) 指定了相关的身份验证信息
+*
+* policy（策略文件来确认映射关系）-- 
+*  
+* 强命名的信息
+*   type -- 系统类型，如 win32、win32-policy
+*   name -- 该 assemblyIdentity  的名称信息， 如 Microsoft.VC80.CRT 或 policy.8.0.Microsoft.VC80.CRT 等
+*   version -- 版本号（这个就是多个版本的 DLL， 改这个？）
+*   processorArchitecture -- 平台环境, 如 x86, ia64 等
+*   publicKeyToken -- 公钥(用于对软件签名的？相同开发部的相同? 微软的 ATL/CRT/OPENMP 等 都是 "1fc8b3b9a1e18e3b"，但 Common-Controls 是 6595b64144ccf1df)
+*
+*   hash -- 文件的Hash签名，每个文件唯一，确保文件的完整性 -- 如果想多个版本合一(bindingRedirect), 是否必须更改这个？
+* 
+* 
 *   对于应用程序而言，Manifest可以是一个和exe/dll文件同一目录下的. manifest 文件，
 *   也可以是作为一个资源嵌入可执行文件中(Embed Manifest)：
 *     Exe 中资源ID为 1( CREATEPROCESS_MANIFEST_RESOURCE_ID )
@@ -52,11 +87,11 @@
 *         也可以在文件中通过如下的代码指定 -- #pragma comment(linker, "/manifestdependency  ...)
 *           如 stdafx.h 中指定 Microsoft.Windows.Common-Controls
 *   
-* manifest 中的 assemblyIdentity 信息和 winsxs 中文件的关系
+* manifest 中的 assemblyIdentity 信息和 winsxs 中文件的关系( 强文件名信息 -- 系统中可以有多个不同版本的相同的库共存而不会发生冲突)
 *   xml中的信息：<assemblyIdentity type="win32" name="Microsoft.VC90.CRT" version="9.0.21022.8" processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b"></assemblyIdentity>
 *   对应文件为 ：C:\Windows\winsxs\x86_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.21022.8_none_bcb86ed6ac711f91\msvcp90.dll
 *            即：C:\Windows\winsxs\<processorArchitecture>_<name>_<publicKeyToken>_<version>_<???>_<???>\xxx.dll
-
+*
 * "Unable to start program" 问题的解决(使用 SxsTrace 工具，只有 Vista/Win7 下有 ?)
 *  1.以管理员账号启动 cmd.exe，并切换到目的程序的目录下
 *  2.SxsTrace Trace -logfile:SxsTrace.etl
@@ -69,9 +104,11 @@
 *         (本机的 WinSXS 中只有 9.0.21022.8 和 9.0.30729.1 的 x86_microsoft.vc90.debugcrt 版本，但清单文件中依赖了 9.0.30729.6161 版本)
 *    原因：所链接的静态库使用了 9.0.30729.6161(可通过 dumpbin /all 并重定向结果后查找 manifestdependency 确认)
 *      
+*   vcredist_x86.exe 文件各版本的下载路径
 *      9.0.30729.1(VS2008 SP1) -- http://www.microsoft.com/en-us/download/confirmation.aspx?id=5582
 *      9.0.30729.6161 -- http://www.microsoft.com/en-us/download/details.aspx?id=26368
 *   
+* Fuslogvw.exe -- Assembly Binding Log Viewer,怎么用？
 ************************************************************************************************/
 
 /******************************************************************************************************************************

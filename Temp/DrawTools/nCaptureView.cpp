@@ -49,7 +49,7 @@ CNCaptureView::CNCaptureView()
 	m_bTrackMouse = FALSE;
 	//m_iFixedZoomIndex = s_NormalZoomIndex;
 	m_fLastZoomFactor = s_FixedZoomScales[s_NormalZoomIndex];
-	m_hWndNotify = NULL;
+	//m_hWndNotify = NULL;
 	SetZoomScaleMin(s_FixedZoomScales[0]);
 
 	m_rcDrawTarget.SetRectEmpty();
@@ -130,17 +130,18 @@ VOID CNCaptureView::Finalize()
 
 BOOL CNCaptureView::PreTranslateMessage(MSG* pMsg)
 {
-	if (GetSelection().size() == 1)
-	{
-		CDrawObject* pActiveObject = GetSelection().front();
-		if (pActiveObject)
-		{
-			if(pActiveObject->PreTranslateMessage(pMsg))
-			{
-				return TRUE;
-			}
-		}
-	}
+	DUMP_WINDOWS_MSG(TEXT("CNCaptureView::PreTranslateMessage"), DEFAULT_DUMP_FILTER_MESSAGE, pMsg->message, pMsg->wParam, pMsg->lParam)
+	//if (GetSelection().size() == 1)
+	//{
+	//	CDrawObject* pActiveObject = GetSelection().front();
+	//	if (pActiveObject)
+	//	{
+	//		//if(pActiveObject->PreTranslateMessage(pMsg))
+	//		//{
+	//		//	return TRUE;
+	//		//}
+	//	}
+	//}
 	//FTLTRACE(TEXT("In CNCaptureView::PreTranslateMessage, msg=%d\n"), pMsg->message);
 	if (WM_MOUSEWHEEL == pMsg->message)
 	{
@@ -154,35 +155,44 @@ BOOL CNCaptureView::PreTranslateMessage(MSG* pMsg)
 BOOL CNCaptureView::_SetSelectRectClipInfo(const CPoint& point)
 {
 	BOOL bRet = FALSE;
-	//if (ttSelection == m_nCurToolType && m_pSelectRect && this->IsSelected(m_pSelectRect))
-	//{
-	//	m_bClipCursor = TRUE;
-	//	CRect rcSelect = m_pSelectRect->GetPosition();
-	//	DocToClient(&rcSelect);
+	CDrawTool* pCurDrawTools = CDrawCanvas<CNCaptureView>::GetCurrentTool();
+	if (pCurDrawTools->IsNeedClip())
+	{
+		if(!GetSelection().empty())
+		{
+			CDrawObject* pActiveDrawObject = GetSelection().front();
+			if (pActiveDrawObject)
+			{
+				m_bClipCursor = TRUE;
+				CRect rcSelect = pActiveDrawObject->GetPosition();
+				rcSelect.NormalizeRect();
+				DocToClient(&rcSelect);
 
-	//	CRect rcClipTarget = m_rcDrawTarget;
-	//	rcClipTarget.OffsetRect( -rcClipTarget.TopLeft());
-	//	DocToClient(&rcClipTarget);
-	//	ClientToScreen(&rcClipTarget);
+				CRect rcClipTarget = m_rcDrawTarget;
+				rcClipTarget.OffsetRect( -rcClipTarget.TopLeft());
+				DocToClient(&rcClipTarget);
+				ClientToScreen(&rcClipTarget);
 
-	//	if (smMove == m_nCurrentSelectMode )
-	//	{
-	//		rcClipTarget.right -= rcSelect.Width() ;
-	//		rcClipTarget.bottom -= rcSelect.Height();
-	//		rcClipTarget.OffsetRect(point.x - rcSelect.left, point.y - rcSelect.top);
-	//	}
-	//	else if(smSize == m_nCurrentSelectMode || smNetSelectSize == m_nCurrentSelectMode)
-	//	{
-	//		//now do nothing
-	//	}
-	//	rcClipTarget.right += 1;
-	//	rcClipTarget.bottom += 1;
+				if (smMove == m_nCurrentSelectMode )
+				{
+					rcClipTarget.right -= rcSelect.Width() ;
+					rcClipTarget.bottom -= rcSelect.Height();
+					rcClipTarget.OffsetRect(point.x - rcSelect.left, point.y - rcSelect.top);
+				}
+				else if(smSize == m_nCurrentSelectMode)// || smNetSelectSize == m_nCurrentSelectMode)
+				{
+					//now do nothing
+				}
+				rcClipTarget.right += 1;
+				rcClipTarget.bottom += 1;
 
-	//	//FTLTRACE(TEXT("rcClipTarget= [%d,%d], [%d,%d], {%dx%d}\n"), rcClipTarget.left, rcClipTarget.top,
-	//	//	rcClipTarget.right, rcClipTarget.bottom, 
-	//	//	rcClipTarget.Width(), rcClipTarget.Height());
-	//	API_VERIFY(::ClipCursor(&rcClipTarget));
-	//}
+				//FTLTRACE(TEXT("rcClipTarget= [%d,%d], [%d,%d], {%dx%d}\n"), rcClipTarget.left, rcClipTarget.top,
+				//	rcClipTarget.right, rcClipTarget.bottom, 
+				//	rcClipTarget.Width(), rcClipTarget.Height());
+				API_VERIFY(::ClipCursor(&rcClipTarget));
+			}
+		}
+	}
 	return bRet;
 }
 
@@ -400,10 +410,10 @@ BOOL CNCaptureView::OnSetCursor(CWindow wnd, UINT nHitTest, UINT message)
 	return bRet;
 }
 
-void CNCaptureView::SetNotifyWnd( const HWND hWndNotify )
-{
-	m_hWndNotify = hWndNotify;
-}
+//void CNCaptureView::SetNotifyWnd( const HWND hWndNotify )
+//{
+//	m_hWndNotify = hWndNotify;
+//}
 
 void CNCaptureView::OnDestroy()
 {
@@ -419,7 +429,7 @@ void CNCaptureView::OnDestroy()
 
 void CNCaptureView::DoPaint(CDCHandle dc)
 {
-	FUNCTION_BLOCK_TRACE(1);
+	FUNCTION_BLOCK_TRACE(20);
 	if ( m_bIsDrawing )
 	{
 		return;
@@ -454,10 +464,10 @@ void CNCaptureView::DoPaint(CDCHandle dc)
 				API_VERIFY(m_canvasImage.Create(m_hWnd, rcImage.Width(), rcImage.Height()));
 
 				m_bImageChanged = FALSE;
-				API_VERIFY(m_pImage->Draw(m_canvasImage, rcImage));
+				//API_VERIFY(m_pImage->Draw(m_canvasImage, rcImage));
 			}
-	
-		    //DrawObjects(dcDraw, FALSE, TRUE);
+			API_VERIFY(m_pImage->Draw(m_canvasImage, rcImage));
+			DrawObjects(m_canvasImage.GetMemoryDC());
 			{
 //#define USE_GDI_PLUS
 #if 0
@@ -493,7 +503,7 @@ void CNCaptureView::DoPaint(CDCHandle dc)
 				}
 #endif 
 			}
-			DrawObjects(memDC.m_hDC);
+			DrawTextObject(memDC.m_hDC);
 			{
 				CFMMTextDCGuard mmTextDCGuard(memDC);
 
@@ -538,22 +548,22 @@ BOOL CNCaptureView::OnEraseBkgnd(CDCHandle dc)
 //	SetMsgHandled(FALSE);
 //}
 
-void CNCaptureView::OnSetFocus(CWindow wndOld)
-{
-	if ( m_hWndNotify )
-	{
-		::SetFocus( m_hWndNotify );
-	}
-}
-
-void CNCaptureView::OnKillFocus(CWindow wndFocus)
-{
-	if ( m_hWndNotify )
-	{
-		::SetFocus( m_hWndNotify );
-	}
-	SetMsgHandled(FALSE);
-}
+//void CNCaptureView::OnSetFocus(CWindow wndOld)
+//{
+//	if ( m_hWndNotify )
+//	{
+//		::SetFocus( m_hWndNotify );
+//	}
+//}
+//
+//void CNCaptureView::OnKillFocus(CWindow wndFocus)
+//{
+//	if ( m_hWndNotify )
+//	{
+//		::SetFocus( m_hWndNotify );
+//	}
+//	SetMsgHandled(FALSE);
+//}
 
 void CNCaptureView::_EventHook()
 {
@@ -1113,47 +1123,70 @@ void CNCaptureView::PrepareDC(CDCHandle dc)
 }
 
 
-void CNCaptureView::SelectToolTypeByMenu(const CPoint& ptPoint)
-{
-	CMenu PopMenu;
-	if(PopMenu.CreatePopupMenu())
-	{
-		UINT nID = 500;
-
-		ToolType emToolType = GetCurrentToolType();
-		for (DrawToolList::iterator it = m_tools.begin(); it != m_tools.end(); ++it)
-		{
-			UINT uFlags = MF_STRING;
-			if (emToolType == (*it)->GetToolType())
-			{
-				uFlags |= MF_CHECKED;
-			}
-			PopMenu.AppendMenu(uFlags, nID ++, (*it)->GetToolName());
-		}
-		
-
-#ifdef DRAW_TOOL_TEST
-		UINT uRetID = PopMenu.TrackPopupMenuEx(TPM_RETURNCMD, ptPoint.x, ptPoint.y, m_hWnd);
-#else
-		UINT uRetID = PopMenu.TrackPopupMenuEx(TPM_RETURNCMD | TPM_RIGHTALIGN, ptPoint.x, ptPoint.y, m_hWnd);
-#endif 
-		if (uRetID >= 500)
-		{
-			size_t uIndex = uRetID - 500;
-			if (uIndex < m_tools.size() && emToolType != m_tools[uIndex]->GetToolType())
-			{
-				SetCurrentToolType(m_tools[uIndex]->GetToolType());
-			}
-		}
-		PopMenu.DestroyMenu();
-	}
-}
+//void CNCaptureView::SelectToolTypeByMenu(const CPoint& ptPoint)
+//{
+//	CMenu PopMenu;
+//	if(PopMenu.CreatePopupMenu())
+//	{
+//		UINT nID = 500;
+//
+//		ToolType emToolType = GetCurrentToolType();
+//		for (DrawToolList::iterator it = m_tools.begin(); it != m_tools.end(); ++it)
+//		{
+//			UINT uFlags = MF_STRING;
+//			if (emToolType == (*it)->GetToolType())
+//			{
+//				uFlags |= MF_CHECKED;
+//			}
+//			PopMenu.AppendMenu(uFlags, nID ++, (*it)->GetToolName());
+//		}
+//		
+//
+//		UINT uRetID = PopMenu.TrackPopupMenuEx(TPM_RETURNCMD | TPM_RIGHTALIGN, ptPoint.x, ptPoint.y, m_hWnd);
+//		if (uRetID >= 500)
+//		{
+//			size_t uIndex = uRetID - 500;
+//			if (uIndex < m_tools.size() && emToolType != m_tools[uIndex]->GetToolType())
+//			{
+//				SetCurrentToolType(m_tools[uIndex]->GetToolType());
+//			}
+//		}
+//		PopMenu.DestroyMenu();
+//	}
+//}
 
 BOOL CNCaptureView::BackupDrawObjectData(LPCTSTR strName)
 {
 	if (m_pImage)
 	{
 		return m_pImage->PushDrawObjectInfo(m_allObjects, m_selection, strName);
+	}
+	return FALSE;
+}
+
+BOOL CNCaptureView::IsCanRedo()
+{
+	if (m_pImage && !m_pImage->IsFinalDrawObjectInfo())
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CNCaptureView::IsCanUndo()
+{
+	if (m_pImage && !m_pImage->IsFirstDrawObjectInfo())
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CNCaptureView::IsCanEdit()
+{
+	if (m_pImage)
+	{
+		return TRUE;
 	}
 	return FALSE;
 }
@@ -1171,5 +1204,37 @@ void CNCaptureView::Redo()
 	if(m_pImage && m_pImage->GetNextDrawObjectInfo(m_allObjects, m_selection))
 	{
 		Invalidate();
+	}
+}
+
+void CNCaptureView::SelectToolTypeByMenu(const CPoint& ptPoint)
+{
+	CMenu PopMenu;
+	if(PopMenu.CreatePopupMenu())
+	{
+		UINT nID = 500;
+
+		ToolType emToolType = GetCurrentToolType();
+		for (DrawToolList::iterator it = m_tools.begin(); it != m_tools.end(); ++it)
+		{
+			UINT uFlags = MF_STRING;
+			if (emToolType == (*it)->GetToolType())
+			{
+				uFlags |= MF_CHECKED;
+			}
+			PopMenu.AppendMenu(uFlags, nID ++, (*it)->GetToolName());
+		}
+
+
+		UINT uRetID = PopMenu.TrackPopupMenuEx(TPM_RETURNCMD | TPM_RIGHTALIGN, ptPoint.x, ptPoint.y, m_hWnd);
+		if (uRetID >= 500)
+		{
+			size_t uIndex = uRetID - 500;
+			if (uIndex < m_tools.size() && emToolType != m_tools[uIndex]->GetToolType())
+			{
+				SetCurrentToolType(m_tools[uIndex]->GetToolType());
+			}
+		}
+		PopMenu.DestroyMenu();
 	}
 }

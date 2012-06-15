@@ -508,10 +508,10 @@ void CDrawObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
 	//m_pDocument->SetModifiedFlag();
 }
 
-BOOL CDrawObject::PreTranslateMessage(MSG* pMsg)
-{
-	return FALSE;
-}
+//BOOL CDrawObject::PreTranslateMessage(MSG* pMsg)
+//{
+//	return FALSE;
+//}
 
 void CDrawObject::NormalizePosition()
 {
@@ -580,19 +580,19 @@ void CDrawFreeObject::AddPoint(const CPoint& point)
 	if (m_nPoints == 0 || m_points[m_nPoints - 1] != point)
 	{
 		m_points[m_nPoints++] = point;
-		//if(RecalcBounds())
+		if(!RecalcBounds())
 		{
 			m_pDrawCanvas->InvalObject(this);
 		}
 	}
 }
 
-BOOL CDrawFreeObject::RecalcBounds(CRect& rect)
+BOOL CDrawFreeObject::RecalcBounds()
 {
 	if (m_nPoints == 0)
 		return FALSE;
 
-	//rect(m_points[0], CSize(0, 0));
+	CRect rect(m_points[0], CSize(0, 0));
 	rect.top = m_points[0].y;
 	rect.left = m_points[0].x;
 	rect.bottom = m_points[0].y;
@@ -723,12 +723,7 @@ CDrawObject* CDrawFreeObject::Clone()
 
 BOOL CDrawFreeObject::Intersects(const CRect& rect)
 {
-	CRect fixed;
-	RecalcBounds(fixed);
-	fixed.NormalizeRect();
-	CRect rectT = rect;
-	rectT.NormalizeRect();
-	return !(rectT & fixed).IsRectEmpty();
+	return FALSE;
 }
 
 void CDrawFreeObject::DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool)

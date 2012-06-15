@@ -390,23 +390,31 @@ public:
 
 	void InvalObject(CDrawObject* pObj)
 	{
-		CRect rect = pObj->GetPosition();
-		rect.NormalizeRect();
-		rect.InflateRect(1, 1);
-		DocToClient(&rect);
-
-		if (IsSelected(pObj)) //m_bActive && 
+		if (pObj)
 		{
-			rect.left -= (TRACK_MARGIN + 1); // 4;
-			rect.top -= (TRACK_MARGIN + 2); // 5;
-			rect.right += (TRACK_MARGIN + 2); //5;
-			rect.bottom += (TRACK_MARGIN + 1); //4;
-		}
-		rect.InflateRect(1, 1); // handles CDrawOleObj objects
+			CRect rect = pObj->GetPosition();
+			rect.NormalizeRect();
+			rect.InflateRect(1, 1);
+			DocToClient(&rect);
 
-		T* pThis = static_cast<T*>(this);
-		//pThis->Invalidate();
-		::InvalidateRect(pThis->m_hWnd, rect, FALSE);
+			if (IsSelected(pObj)) //m_bActive && 
+			{
+				rect.left -= (TRACK_MARGIN + 1); // 4;
+				rect.top -= (TRACK_MARGIN + 2); // 5;
+				rect.right += (TRACK_MARGIN + 2); //5;
+				rect.bottom += (TRACK_MARGIN + 1); //4;
+			}
+			rect.InflateRect(1, 1); // handles CDrawOleObj objects
+
+			T* pThis = static_cast<T*>(this);
+			pThis->InvalidateRect(rect, FALSE);
+		}
+		else
+		{
+			T* pThis = static_cast<T*>(this);
+			pThis->Invalidate();
+		}
+
 	}
 
 	virtual BOOL IsSelected(const CDrawObject* pDrawObj) const
@@ -570,13 +578,31 @@ public:
 			//{
 			//	pObj->Draw(hDC, FALSE);
 			//}
-			if (pObj)
+
+			if (pObj && (pObj->GetDrawObjType() == dotText && pObj->IsActive()))
+			{
+				continue;
+			}
+			//else(pObj && pObj->GetDrawObjType() != dotText)
 			{
 				pObj->Draw(hDC, FALSE);
 			}
 		}
 	}
 
+	void DrawTextObject(HDC hDC)
+	{
+		for (DrawObjectList::iterator iter = m_allObjects.begin();
+			iter != m_allObjects.end();
+			++iter)
+		{
+			CDrawObject* pObj = *iter;
+			if (pObj && pObj->GetDrawObjType() == dotText && pObj->IsActive())
+			{
+				pObj->Draw(hDC, FALSE);
+			}
+		}
+	}
 	BOOL _IsValidateScreenPoint(const CPoint& point)
 	{
 		BOOL bRet = FALSE;
@@ -602,12 +628,12 @@ public:
 			CDrawObject* pObject = *it;
 			if (!pObject->CheckAvailObject())
 			{
+				InvalObject(pObject);
 				DrawObjectList::iterator selIt = std::find(m_selection.begin(), m_selection.end(), pObject);
 				if (selIt != m_selection.end())
 				{
 					m_selection.erase(selIt);
 				}
-
 				m_allObjects.erase(it++);
 				delete pObject;
 				pObject = NULL;

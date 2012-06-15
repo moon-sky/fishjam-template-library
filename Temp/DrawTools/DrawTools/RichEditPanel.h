@@ -34,7 +34,7 @@ public:
 class CRichEditPanel
 	: public ITextHost
 	//, public IRichEditOleCallback
-	, public CMessageFilter
+	//, public CMessageFilter
 {
 public:
 	CRichEditPanel();
@@ -87,7 +87,7 @@ public:
 	HRESULT SetText(LPCTSTR pszText);		//TODO:change to RTF?
 	HRESULT Range(long cpFirst, long cpLim, ITextRange** ppRange);
 	VOID SetNotifyCallback(INotifyCallBack* pNotifyCallback);
-
+	BOOL HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
 
 	//property
 	//BOOL GetWordWrap(void);
@@ -185,7 +185,7 @@ public:
 	virtual HRESULT TxGetSelectionBarWidth( LONG *lSelBarWidth );
 
 	//CMessageFilter
-	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	//virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	//Message Handle
 	LRESULT OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -205,7 +205,7 @@ private:
 	//   0    =>  -1   -- All Text
 	//   n    =>   m   -- From n To m
 	HRESULT _GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>& spTextRange);
-	BOOL	_IsNeedHandleMsg(MSG* pMsg);
+	BOOL	_IsNeedHandleMsg(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	HRESULT _SetPropertyBits(DWORD dwProperty);
 	

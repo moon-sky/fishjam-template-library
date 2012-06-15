@@ -49,7 +49,7 @@ public:
 	virtual CPoint GetHandle(int nHandle);
 	virtual HCURSOR GetHandleCursor(int nHandle);
 	virtual void MoveHandleTo(int nHandle, CPoint point);
-	virtual BOOL Intersects(const CRect& rect);
+	//virtual BOOL Intersects(const CRect& rect);
 	virtual CDrawObject* Clone();
 	virtual void MoveTo(const CRect& positon);
 

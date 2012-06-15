@@ -18,7 +18,7 @@ CDrawPoly::~CDrawPoly(void)
 		delete[] m_points;
 }
 
-void CDrawPoly::AddPoint(const CPoint& point)
+void CDrawPoly::AddPoint(const CPoint& point, BOOL bInvalidate)
 {
 	if (m_nPoints == m_nAllocPoints)
 	{
@@ -35,9 +35,19 @@ void CDrawPoly::AddPoint(const CPoint& point)
 	if (m_nPoints == 0 || m_points[m_nPoints - 1] != point)
 	{
 		m_points[m_nPoints++] = point;
-		if(RecalcBounds())
+
+		if(!RecalcBounds())
 		{
-			m_pDrawCanvas->InvalObject(this);
+			if (bInvalidate)
+			{
+				//m_pDrawCanvas->inv()
+				//T* pThis = static_cast<T*>(m_pDrawCanvas);
+				m_pDrawCanvas->InvalObject(NULL);
+			}
+			else
+			{
+				m_pDrawCanvas->InvalObject(this);
+			}
 		}
 	}
 }
@@ -104,7 +114,7 @@ void CDrawPoly::MoveTo(const CRect& position)
 	}
 
 	m_position = position;
-	m_pDrawCanvas->InvalObject(this);
+	m_pDrawCanvas->InvalObject(NULL);
 }
 
 void CDrawPoly::MoveHandleTo(int nHandle, CPoint point)
@@ -114,7 +124,14 @@ void CDrawPoly::MoveHandleTo(int nHandle, CPoint point)
 		return;
 
 	m_points[nHandle - 1] = point;
-	m_pDrawCanvas->InvalObject(this);
+	if (!RecalcBounds())
+	{
+		m_pDrawCanvas->InvalObject(NULL);
+	}
+	else
+	{
+		m_pDrawCanvas->InvalObject(this);
+	}
 }
 
 // rect must be in logical coordinates

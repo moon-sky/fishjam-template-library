@@ -345,6 +345,7 @@ BOOL CDrawRect::Intersects(const CRect& rect)
 	switch (m_objType)
 	{
 		case dotRect:
+		case dotArrow:
 			return TRUE;
 
 		case dotRoundRect:
@@ -577,13 +578,6 @@ void CDrawArrow::MoveHandleTo(int nHandle, CPoint point)
 }
 
 
-BOOL CDrawArrow::Intersects(const CRect& rect)
-{
-	CRgn rgn;
-	rgn.CreatePolygonRgn(m_ptArrow, 7, ALTERNATE);
-	return rgn.RectInRegion(rect);
-}
-
 CDrawObject* CDrawArrow::Clone()
 {
 	DRAWOBJBASEINFO stDrawInfo;
@@ -613,7 +607,7 @@ void CDrawArrow::MoveTo(const CRect& position)
 		m_ptArrow[i].x += position.left - m_position.left;
 		m_ptArrow[i].y += position.top - m_position.top;
 	}
-
+	m_pDrawCanvas->InvalObject(this);
 	m_position = position;
 	m_pDrawCanvas->InvalObject(this);
 }
