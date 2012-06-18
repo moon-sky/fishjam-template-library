@@ -2035,12 +2035,39 @@ namespace FTL
 				break;
 			}
         }
+		else if(0 == lstrcmpi(szClassName, TEXT("RichEdit20W")))
+		{
+			switch (nCode)
+			{
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_MSGFILTER);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_REQUESTRESIZE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_SELCHANGE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_DROPFILES);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_PROTECTED);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_CORRECTTEXT);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_STOPNOUNDO);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_IMECHANGE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_SAVECLIPBOARD);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_OLEOPFAILED);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_OBJECTPOSITIONS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_LINK);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_DRAGDROPDONE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_PARAGRAPHEXPANDED);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_PAGECHANGE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_LOWFIRTF);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ALIGNLTR);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ALIGNRTL);
+			default:
+				//StringCchCopy(pszCommandNotify,nLength,TEXT("Unknown RichEdit Notify"));
+				break;
+			}
+		}
 
 		if ( 0 == pszCommandNotify[0] )
 		{
-			FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Command Code %d For Class %s"), nCode, szClassName);
+			FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Command Code %d For Class %s\n"), nCode, szClassName);
 			COM_VERIFY(StringCchPrintf(pszCommandNotify, nLength, TEXT("Unknown Command Code %d For Class %s"), nCode, szClassName));
-			FTLASSERT(FALSE);
+			//FTLASSERT(FALSE);
 		}
 		return pszCommandNotify;
     }

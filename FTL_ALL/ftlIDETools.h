@@ -150,6 +150,7 @@ namespace FTL
     *   nmake
     *   dumpbin 输出可执行文件(EXE、DLL)的信息。
 	*   mt.exe -- manifest 的控制工具
+	*     mt.exe -inputresource:ExePath;#1 -out:extracted.manifest <== 导出 Exe 中的 manifest
     *   系统设备扫描工具 -- gmer.exe
     *   命名管道扫描工具 -- pipelist.exe(http://technet.microsoft.com/zh-cn/sysinternals/dd581625)
     *************************************************************************************************************************/

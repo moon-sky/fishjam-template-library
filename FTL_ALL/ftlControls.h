@@ -34,14 +34,19 @@ if(::GetCapture() == m_hWnd)
 */
 
 /***********************************************************************************************************
-* Rich Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 有多个版本(可能不对，需要确认)
+* Rich Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 
+* 为了使用RichEdit，需要先加载对应的DLL，MFC下调用AfxInitRichEdit ，
+*                                        WTL下调用(可能不对) LoadLibrary(CRichEditCtrl::GetLibraryName());
+* 
+* 有多个版本(可能不对，需要确认)
 *   1.0 -- RichEd32.dll (Win95)
 *   2.0 -- RICHED20.DLL (Win95/Win98), 不再支持一些在亚洲语言版本的Rich Edit 1.0中支持的消息
 *          (如 EM_CONVPOSITION、EM_SETIMECOLOR、EM_SETPUNCTUATION 等)
 *   3.0 -- 
 *   4.1 -- Msftedit.DLL (WinXP SP1)
 *   6.1 -- Win7 
-*   
+*
+*
 *   CHARFORMAT2(EM_SETCHARFORMAT) -- 字符格式，如 字体、尺寸、颜色以及如粗体、斜体和保护(父窗口接受到EN_PROTECTED的通知)等
 *   PARAFORMAT2(EM_SETPARAFORMAT) -- 段落格式，如 对齐、跳格、缩进和编号
 *   包含嵌入的COM对象
