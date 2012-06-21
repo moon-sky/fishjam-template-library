@@ -5,15 +5,28 @@
 //#include <ftlControls.h>
 
 CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, 
-						 const DRAWOBJBASEINFO& stDrawObjInfo)
+						 DRAWOBJBASEINFO& stDrawObjInfo)
 : CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo)
 {
 	HRESULT hr = E_FAIL;
 
 	m_pRichEditPanel = new CRichEditPanel();
-	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, &stDrawObjInfo.logfont, 
+	LOGFONT stFont;
+
+	if (stDrawObjInfo.strFontName == _T(""))
+	{
+		stDrawObjInfo.strFontName = _T("Arial");
+	}
+	if (stDrawObjInfo.nFontSize == -1)
+	{
+		stDrawObjInfo.nFontSize = 18;
+	}
+
+	StringCchCopy(stFont.lfFaceName, LF_FACESIZE, stDrawObjInfo.strFontName);
+	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, &stFont, 
 		stDrawObjInfo.clrFontFore, this);
 	UpdateDrawInfo(stDrawObjInfo);
+	m_bAvailObject = FALSE;
 	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
 }
 
@@ -53,6 +66,43 @@ void CTextObject::Draw(HDC hDC, BOOL bOriginal)
 	//dc.DrawText(TEXT("In CTextObject Draw"), -1, m_position, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }
 
+BOOL CTextObject::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult)
+{
+	if (m_pRichEditPanel)
+	{
+		return m_pRichEditPanel->HandleControlMessage(pView, uMsg, wParam, lParam, lResult);
+	}
+	return FALSE;
+}
+
+void CTextObject::SetPosition(const CRect& pos)
+{
+	CRect rect = pos;
+	if (abs(rect.Width()) < 100)
+	{
+		if (rect.left > rect.right)
+		{
+			rect.right = rect.left - 100;
+		}
+		else
+		{
+			rect.right = rect.left + 100;
+		}
+	}
+	if (abs(rect.Height()) < 30)
+	{
+		if (rect.top > rect.bottom)
+		{
+			rect.bottom = rect.top - 30;
+		}
+		else
+		{
+			rect.bottom = rect.top + 30;
+		}
+	}
+	m_position = rect;
+}
+
 void CTextObject::DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool)
 {
 	CRect rcClient = m_position;
@@ -83,6 +133,15 @@ CDrawObject* CTextObject::Clone()
 	DRAWOBJBASEINFO stDrawInfo;
 	stDrawInfo.logbrush = m_logbrush;
 	stDrawInfo.logpen   = m_logpen;
+	stDrawInfo.bBrush   = m_bBrush;
+	stDrawInfo.bPen     = m_bPen;
+
+	//TCHAR lfFaceName[LF_FACESIZE] = {0};
+	//m_pRichEditPanel->GetTextFontName(0, 0, lfFaceName, LF_FACESIZE);
+	//stDrawInfo.strFontName = lfFaceName;
+	//m_pRichEditPanel->GetTextFontSize(0, 0, &stDrawInfo.nFontSize);
+	//m_pRichEditPanel->GetTextForeColor(0, 0, stDrawInfo.clrFontFore);
+
 	CTextObject* pClone = new CTextObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
 	
 	HRESULT hr = E_FAIL;
@@ -94,7 +153,8 @@ CDrawObject* CTextObject::Clone()
 	//pClone->m_logpen = m_logpen;
 	pClone->m_bBrush = m_bBrush;
 	//pClone->m_logbrush = m_logbrush;
-
+	pClone->m_bAvailObject = m_bAvailObject;
+	pClone->m_bActive      = m_bActive;
 	return pClone;
 }
 
@@ -115,7 +175,8 @@ void CTextObject::MoveTo(const CRect& position)
 	}
 
 	m_pDrawCanvas->InvalObject(this);
-	m_position = position;
+	//m_position = position;
+	SetPosition(position);
 	m_pRichEditPanel->SetClientBound(&m_position, NULL, TRUE);//FALSE);
 	m_pDrawCanvas->InvalObject(this);
 	//m_pDocument->SetModifiedFlag();
@@ -123,12 +184,15 @@ void CTextObject::MoveTo(const CRect& position)
 
 void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 {
-	//if (m_pDrawCanvas->IsCapture())
-	//{
-	//	return;
-	//}
+	if (m_pDrawCanvas->IsCapture())
+	{
+		return;
+	}
+	//want size is device unit
 	FTLASSERT(pReqResize->rc.bottom > pReqResize->rc.top);
-	int nWantHeight = pReqResize->rc.bottom - pReqResize->rc.top + RTPANEL_MARGIN_TOP + RTPANEL_MARGIN_BOTTOM;
+	CRect rcWantRect = pReqResize->rc;
+	m_pDrawCanvas->ClientToDoc(&rcWantRect);
+	int nWantHeight = rcWantRect.Height() + RTPANEL_MARGIN_TOP + RTPANEL_MARGIN_BOTTOM;
 
 	CSize szMin = m_pRichEditPanel->GetMinBoundSize(RTPANEL_MIN_ROW_COUNT, RTPANEL_MIN_COL_COUNT);
 	if (nWantHeight < szMin.cy )
@@ -155,11 +219,13 @@ void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 			bWillSetBound = TRUE;
 		}
 	}
-	CRect rcTarget = m_pDrawCanvas->GetDrawTarget();
-	rcTarget.IntersectRect(rcTarget, rcPosition);
-	if (rcTarget != m_position && bWillSetBound)
+	CRect rcDrawTarget = m_pDrawCanvas->GetDrawTarget();
+	rcDrawTarget.OffsetRect(-rcDrawTarget.TopLeft());
+
+	rcPosition.IntersectRect(rcPosition, rcDrawTarget);
+	if (rcPosition != m_position && bWillSetBound)
 	{
-		m_position = rcTarget;
+		m_position = rcPosition;
 		m_pRichEditPanel->SetClientBound(m_position, NULL, TRUE);
 		m_pDrawCanvas->InvalObject(this);
 	}
@@ -167,6 +233,7 @@ void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 
 void CTextObject::_OnTextSelectChangeNotify(SELCHANGE* pSelChange)
 {
+	DRAWOBJBASEINFO stDrawObjectInfo;
 	const int _cchStyleName = 64;
 	TCHAR szFontName[_cchStyleName] = {0};
 	int nFontSize = 0;
@@ -179,15 +246,42 @@ void CTextObject::_OnTextSelectChangeNotify(SELCHANGE* pSelChange)
 		szFontName, _countof(szFontName)), S_FALSE);
 	if (S_FALSE == hr)
 	{
-		//multi select, szFontName is NULL
+		stDrawObjectInfo.strFontName = _T("");
 	}
+	if (szFontName[0] == _T('\0'))
+	{
+		stDrawObjectInfo.strFontName = _T("");
+	}
+	else
+	{
+		stDrawObjectInfo.strFontName = szFontName;
+	}
+	
 	COM_VERIFY_EXCEPT1(m_pRichEditPanel->GetTextFontSize(nStart, nEnd, &nFontSize), S_FALSE)
 	if (S_FALSE == hr)
 	{
 		//multi select , nFontSize is -1
+		stDrawObjectInfo.nFontSize = -1;
+	}		
+	if (nFontSize == NULL)
+	{
+		stDrawObjectInfo.nFontSize = -1;
+	}
+	else
+	{
+		stDrawObjectInfo.nFontSize = nFontSize;
 	}
 	COLORREF clrText = RGB(0, 0, 0);
 	COM_VERIFY_EXCEPT1(m_pRichEditPanel->GetTextForeColor(nStart, nEnd, &clrText), S_FALSE);
+	if (S_FALSE == hr)
+	{
+		stDrawObjectInfo.clrFontFore = clrText;
+	}
+	stDrawObjectInfo.dwDrawMask = DRAWOBJECT_BASE_FONTCLR | 
+		DRAWOBJECT_BASE_FONTSIZE | DRAWOBJECT_BASE_FONTNAME;
+	stDrawObjectInfo.clrFontFore = clrText;
+	m_pDrawCanvas->NotifyDrawObjectBaseInfo(stDrawObjectInfo);
+	//m_pDrawCanvas->SetDrawObjectBaseInfo(stDrawObjectInfo, FALSE);
 }
 
 void CTextObject::OnNotify(int iNotify, void* pParam)
@@ -204,10 +298,43 @@ void CTextObject::OnNotify(int iNotify, void* pParam)
 			_OnTextSelectChangeNotify((SELCHANGE*)pParam);
 			break;
 		}
+	case EN_KILLFOCUS:
+		{
+			HRESULT hr = E_FAIL;
+			CComPtr<ITextRange> spRange;
+			COM_VERIFY(m_pRichEditPanel->GetTextRange(0, -1, spRange));
+			long nLength = 0;
+			COM_VERIFY(spRange->GetStoryLength(&nLength));
+			_OnKillFocus(nLength);
+			break;
+		}
+	case EN_SETFOCUS:
+		{
+
+			break;
+		}
 	default:
 		break;
 	}
 	//FTLTRACE(TEXT("In CTextObject::OnNotify, iNotify=%d, pParam=0x%x\n"), iNotify, pParam);
+}
+
+void CTextObject::_OnKillFocus(long nCount)
+{
+	if (nCount > 0)
+	{
+		m_bAvailObject = TRUE;
+		m_pDrawCanvas->BackupDrawObjectData(_T("Edit KillFocus"));
+	}
+	else
+	{
+		m_bAvailObject = FALSE;
+	}
+}
+
+void CTextObject::_OnSetFocus()
+{
+
 }
 
 BOOL CTextObject::HitTestMove(CPoint point)
@@ -257,16 +384,30 @@ void CTextObject::NormalizePosition()
 	m_pRichEditPanel->SetClientBound(&m_position, NULL, TRUE);
 }
 
-void CTextObject::CheckTextRect()
+BOOL CTextObject::CheckAvailObject()
 {
+	return m_bAvailObject;
 }
 
-void CTextObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
+BOOL CTextObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
 {
 	if (m_pRichEditPanel)
 	{
-		m_pRichEditPanel->SetTextForeColor(0, 0, stDrawObjInfo.clrFontFore);
-		LOGFONT stLogFont = stDrawObjInfo.logfont;
-		m_pRichEditPanel->SetTextFont(0, 0, &stLogFont, RICH_EDIT_PANEL_FONT_MASK_ALL);
+		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTNAME)
+		{
+			m_pRichEditPanel->SetTextFontName(0, 0, stDrawObjInfo.strFontName);
+		}
+
+		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTCLR)
+		{
+			m_pRichEditPanel->SetTextForeColor(0, 0, stDrawObjInfo.clrFontFore);
+		}
+
+		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTSIZE)
+		{
+			m_pRichEditPanel->SetTextFontSize(0, 0, stDrawObjInfo.nFontSize);
+		}
+		return TRUE;
 	}
+	return FALSE;
 }

@@ -44,6 +44,9 @@ public:
 	BOOL SetActive(BOOL bActive);
 	BOOL IsActive();
 
+	BOOL Undo();
+	BOOL Redo();
+
 	//dwFontMask see RICH_EDIT_PANEL_FONT_MASK_XXXX
 	
 	HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask);
@@ -191,6 +194,12 @@ public:
 	LRESULT OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
+	// nStart => nEnd
+	//   0    =>   0   -- Current Select
+	//   0    =>  -1   -- All Text
+	//   n    =>   m   -- From n To m
+	HRESULT GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>& spTextRange);
+
 	//LRESULT OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -200,11 +209,7 @@ private:
 	HRESULT InitDefaultParaFormat();
 
 
-	// nStart => nEnd
-	//   0    =>   0   -- Current Select
-	//   0    =>  -1   -- All Text
-	//   n    =>   m   -- From n To m
-	HRESULT _GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>& spTextRange);
+
 	BOOL	_IsNeedHandleMsg(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	HRESULT _SetPropertyBits(DWORD dwProperty);

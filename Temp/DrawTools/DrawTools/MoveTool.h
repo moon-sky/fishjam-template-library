@@ -12,4 +12,5 @@ public:
 	virtual void OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 private:
 	CPoint m_ptBegin;
+	BOOL   m_bDrag;
 };

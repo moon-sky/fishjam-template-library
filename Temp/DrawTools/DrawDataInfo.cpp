@@ -3,16 +3,82 @@
 #include "ftlFunctional.h"
 
 #include "DrawTools/DrawObject.h"
+
 using namespace std;
 #include <algorithm>
 
 
-CDrawDataInfo::CDrawDataInfo()
+//////////////////////////////////////////////////////
+/////////////// CTempFileManager   //////////////////////
+
+CTempFileManager::CTempFileManager()
 {
 
 }
 
-CDrawDataInfo::CDrawDataInfo(const DrawObjectList& listDrawObject, const DrawObjectList& listSelectObject, LPCTSTR strName)
+CTempFileManager::~CTempFileManager()
+{
+	std::vector<TEMPFILEINFO>::iterator it = m_arFile.begin();
+	for (; it != m_arFile.end(); it++)
+	{
+		DeleteFile(it->strFileName);
+	}
+	m_arFile.clear();
+}
+
+CTempFileManager* CTempFileManager::Instance()
+{
+	static CTempFileManager TempFileManager;
+	return &TempFileManager;
+}
+
+void CTempFileManager::AddTempFile(CString strFile)
+{
+	std::vector<TEMPFILEINFO>::iterator it = m_arFile.begin();
+	for (; it != m_arFile.end(); it++)
+	{
+		if (it->strFileName.CompareNoCase(strFile) == 0)
+		{
+			it->nRefCount ++;
+			break;
+		}
+	}
+	if (it == m_arFile.end())
+	{
+		TEMPFILEINFO stTempFileInfo(strFile);
+		m_arFile.push_back(stTempFileInfo);
+	}
+}
+
+void CTempFileManager::RemoveTempFile(CString strFile)
+{
+	std::vector<TEMPFILEINFO>::iterator it = m_arFile.begin();
+	for (; it != m_arFile.end(); it++)
+	{
+		if (it->strFileName.CompareNoCase(strFile) == 0)
+		{
+			it->nRefCount --;
+			if (it->nRefCount == 0)
+			{
+				DeleteFile(it->strFileName);
+				m_arFile.erase(it);
+			}
+			break;
+		}
+	}
+}
+
+//////////////////////////////////////////////////////
+/////////////// CDrawDataInfo   //////////////////////
+
+
+CDrawDataInfo::CDrawDataInfo(LPCTSTR strTempFileName)
+{
+	m_strTempFileName = strTempFileName;
+	CTempFileManager::Instance()->AddTempFile(m_strTempFileName);
+}
+
+CDrawDataInfo::CDrawDataInfo(const DrawObjectList& listDrawObject, const DrawObjectList& listSelectObject, LPCTSTR strName, LPCTSTR strTempFileName)
 {
 	for (DrawObjectList::const_iterator itObject = listDrawObject.begin(); 
 		itObject != listDrawObject.end(); ++itObject)
@@ -26,6 +92,8 @@ CDrawDataInfo::CDrawDataInfo(const DrawObjectList& listDrawObject, const DrawObj
 			m_listSelectObject.push_back(pNewObject);
 		}
 	}
+	m_strTempFileName = strTempFileName;
+	CTempFileManager::Instance()->AddTempFile(m_strTempFileName);
 	m_strName = strName;
 }
 
@@ -36,6 +104,8 @@ CDrawDataInfo::~CDrawDataInfo(void)
 	m_listDrawObject.clear();
 
 	m_listSelectObject.clear();
+	//DeleteFile(m_strTempFileName);
+	CTempFileManager::Instance()->RemoveTempFile(m_strTempFileName);
 }
 
 
@@ -44,10 +114,8 @@ LPCTSTR CDrawDataInfo::GetDataInfoName()
 	return m_strName;
 }
 
-BOOL CDrawDataInfo::CopyDataInfo(DrawObjectList& listDrawObject,  DrawObjectList& listSelectObject)
+BOOL CDrawDataInfo::CopyDataInfo(DrawObjectList& listDrawObject,  DrawObjectList& listSelectObject, CString& strTempFileName)
 {
-	listSelectObject.clear();
-
 	for_each(listDrawObject.begin(), listDrawObject.end(), FTL::ObjecteDeleter<CDrawObject*>());
 	listDrawObject.clear();
 
@@ -67,6 +135,8 @@ BOOL CDrawDataInfo::CopyDataInfo(DrawObjectList& listDrawObject,  DrawObjectList
 			}
 		}
 	}
+	listSelectObject.clear();
+	strTempFileName = m_strTempFileName;
 	return TRUE;
 
 }

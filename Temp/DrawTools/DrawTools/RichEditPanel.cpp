@@ -270,7 +270,7 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcBound,
 	COM_VERIFY(InitDefaultCharFormat(pLogFont, clrFontFore));
 	COM_VERIFY(InitDefaultParaFormat());
 
-#pragma TODO(szlExtent is Himetric)
+//#pragma TODO(szlExtent is Himetric)
 	// The extent matches the full client rectangle in HIMETRIC
 	//m_szlExtent.cx = DXtoHimetricX(m_rcClient.Width(), m_xPixPerInch);
 	//m_szlExtent.cy = DYtoHimetricY(m_rcClient.Height(), m_yPixPerInch);
@@ -354,12 +354,49 @@ BOOL CRichEditPanel::SetActive(BOOL bActive)
 	return bRet;
 }
 
+BOOL CRichEditPanel::Undo()
+{
+	BOOL bRet = FALSE;
+	HRESULT hr = E_FAIL;
+	long prop = 0;
+	COM_VERIFY_EXCEPT1(m_spTextDocument->Undo(1, &prop), S_FALSE);
+	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::Undo, prop=%d, result=0x%x\n"), prop, hr);
+	if (S_OK == hr)
+	{
+		return TRUE;
+	}
+	if (S_FALSE == hr)
+	{
+		return FALSE;
+	}
+	return FALSE;
+}
+
+BOOL CRichEditPanel::Redo()
+{
+	BOOL bRet = FALSE;
+	HRESULT hr = E_FAIL;
+	long prop = 0;
+	COM_VERIFY_EXCEPT1(m_spTextDocument->Redo(1, &prop), S_FALSE);
+	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::Redo, prop=%d, result=0x%x\n"), prop, hr);
+	if (S_OK == hr)
+	{
+		return TRUE;
+	}
+	if (S_FALSE == hr)
+	{
+		return FALSE;
+	}
+	return FALSE;
+}
+
+
 BOOL CRichEditPanel::IsActive()
 {
 	return m_fInplaceActive;
 }
 
-HRESULT CRichEditPanel::_GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>& spTextRange)
+HRESULT CRichEditPanel::GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>& spTextRange)
 {
 	HRESULT hr = E_FAIL;
 	if (0 == nStart && 0 == nEnd)
@@ -394,7 +431,7 @@ HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, D
 
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
@@ -463,7 +500,7 @@ HRESULT CRichEditPanel::SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontN
 		nStart, nEnd, pszFontName);
 
 
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
@@ -485,7 +522,7 @@ HRESULT CRichEditPanel::SetTextFontSize(long nStart, long nEnd, int nSize)
 	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextFontSize %d to %d Size if %d\n"),
 		nStart, nEnd, nSize);
 
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
@@ -508,7 +545,7 @@ HRESULT CRichEditPanel::GetTextFontName(long nStart, long nEnd, LPTSTR pszFontNa
 	CComPtr<ITextRange>		spRange;
 
 	//Get Want Range and check every character for multi format selection -- font can not return tomUndefined
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	COM_VERIFY(spRange->GetStart(&nStart));
 	COM_VERIFY(spRange->GetEnd(&nEnd));
 
@@ -519,7 +556,7 @@ HRESULT CRichEditPanel::GetTextFontName(long nStart, long nEnd, LPTSTR pszFontNa
 	for (long nIndex = nStart; nIndex <= nEnd; nIndex++)
 	{
 		CComPtr<ITextRange>		spSubRange;
-		COM_VERIFY(_GetTextRange(nIndex, nIndex, spSubRange));
+		COM_VERIFY(GetTextRange(nIndex, nIndex, spSubRange));
 
 		if (SUCCEEDED(hr) && spSubRange)
 		{
@@ -563,7 +600,7 @@ HRESULT CRichEditPanel::GetTextFontSize(long nStart, long nEnd, int* pFontSize)
 
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
@@ -600,7 +637,7 @@ HRESULT CRichEditPanel::SetTextForeColor(long nStart, long nEnd, COLORREF clr)
 
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
@@ -624,7 +661,7 @@ HRESULT CRichEditPanel::GetTextForeColor(long nStart, long nEnd, COLORREF* pClr)
 
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
@@ -663,7 +700,7 @@ HRESULT CRichEditPanel::SetTextBackColor(long nStart, long nEnd, COLORREF clr)
 {
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
@@ -685,7 +722,7 @@ HRESULT CRichEditPanel::GetTextForeColor(long nStart, long nEnd, COLORREF& clr)
 {
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	COM_VERIFY(_GetTextRange(nStart, nEnd, spRange));
+	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
 	{
 		CComPtr<ITextFont> spFont;
@@ -911,7 +948,7 @@ HRESULT CRichEditPanel::TxGetExtent( LPSIZEL lpExtent )
 	//static SIZEL oldExtent = {0};
 	//if (oldExtent.cx != m_szlExtent.cx || oldExtent.cy != m_szlExtent.cy)
 	{
-		FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::TxGetExtent, lpExtent={%d,%d}, m_szlExtent= {%d,%d}\n"), 
+		FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxGetExtent, lpExtent={%d,%d}, m_szlExtent= {%d,%d}\n"), 
 			lpExtent->cx, lpExtent->cy, m_szlExtent.cx, m_szlExtent.cy);
 
 		*lpExtent = m_szlExtent;
@@ -1018,7 +1055,7 @@ void CRichEditPanel::TxViewChange( BOOL fUpdate )
 
 BOOL CRichEditPanel::TxCreateCaret( HBITMAP hbmp, INT xWidth, INT yHeight )
 {
-	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::TxCreateCaret, hbmp=0x%x, xWidth=%d, yHeight=%d\n"),
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxCreateCaret, hbmp=0x%x, xWidth=%d, yHeight=%d\n"),
 		hbmp, xWidth, yHeight);
 	BOOL bRet = FALSE;
 	API_VERIFY(::CreateCaret (m_hWndOwner, hbmp, xWidth, yHeight));
@@ -1412,8 +1449,9 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetCursorPos(&ptClient);
 			TxScreenToClient(&ptClient);
 			//m_pDrawCanvas->ClientToDoc(&ptLocalClient);
-			CRect rcDevice = m_rcClient;
+			CRect rcDevice = m_rcBound;
 			m_pDrawCanvas->DocToClient(&rcDevice);
+			rcDevice.DeflateRect(TRACK_MARGIN, TRACK_MARGIN, TRACK_MARGIN, TRACK_MARGIN);
 			if (rcDevice.PtInRect(ptClient))
 			{
 				if (WM_LBUTTONDOWN == uMsg)
@@ -1654,7 +1692,7 @@ HRESULT CRichEditPanel::_SetPropertyBits(DWORD dwProperty)
 SIZE CRichEditPanel::GetMinBoundSize(int nRow, int nCol)
 {
 	//TODO:check font height
-	return CSize(100, 50);
+	return CSize(100, 30);
 }
 
 DWORD CALLBACK EditStreamOutCallback(DWORD_PTR dwCookie,
@@ -1668,6 +1706,8 @@ DWORD CALLBACK EditStreamOutCallback(DWORD_PTR dwCookie,
 	HGLOBAL hGlobalStream = GlobalAlloc(GMEM_FIXED | GMEM_ZEROINIT, cb);
 	if (hGlobalStream)
 	{
+		FTLTRACEEX(FTL::tlInfo, TEXT("EditStreamOutCallback(%d) = %s\n"), cb, CA2T((CHAR*)pbBuff));
+
 		CopyMemory((hGlobalStream), pbBuff, cb);
 		IStream** ppStream = reinterpret_cast<IStream**>(dwCookie);
 		COM_VERIFY(CreateStreamOnHGlobal(hGlobalStream, TRUE, ppStream));
@@ -1721,6 +1761,8 @@ DWORD CALLBACK EditStreamInCallback(DWORD_PTR dwCookie,
 		ULONG unWrite = 0;
 		COM_VERIFY(pStream->Read(pbBuff, FTL_MIN(cb, nLength.LowPart), &unWrite));
 		*pcb = (LONG)unWrite;
+
+		FTLTRACEEX(FTL::tlInfo, TEXT("EditStreamInCallback(%d) = %s\n"), *pcb, CA2T((CHAR*)pbBuff));
 	}
 	return 0;
 }

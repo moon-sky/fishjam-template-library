@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "DrawTools/DrawTypeDefine.h"
 
 #include "DrawDataInfo.h"
@@ -7,7 +8,7 @@
 class CCapImageObj : public ATL::CImage   //now just inherited from CImage
 {
 public:
-	CCapImageObj(LPCTSTR pszObjectName);
+	CCapImageObj(LPCTSTR pszObjectName, HBITMAP hbmp);
 	~CCapImageObj();
 	CPoint GetPosition();
 	void SetPosition( INT32 x, INT32 y );
@@ -18,20 +19,20 @@ public:
 	HANDLE	CopyToHandle(const CRect& rcSrc);
 
 	BOOL SaveImageFile(LPCTSTR pszFilePath, BOOL bChanageState = TRUE);
+	BOOL SaveImageFile();
 	BOOL IsNeedSaveImage() { return m_bImageSaved; }
 	BOOL SetCapImageObjActive(BOOL bActive = TRUE);
 
 	LPCTSTR GetCaptureImageObjectName();
 	void    SetCaptureImageObjectName(LPCTSTR strObjectName);
 
-	LPCTSTR GetFileName();
+	CString GetFileName();
 	void    SetFileName(LPCTSTR strFileName);
 
 	BOOL    CropImage(CRect& rcSrc);
 	void    SetEditTmpFile(LPCTSTR strEditTmpFile);
 
-	//void    SetDrawObjectInfo(const DrawObjectList& arDrawObject, const DrawObjectList& arSelectObject);
-	//void    GetDrawObjectInfo(DrawObjectList& arDrawObject, DrawObjectList& arSelectObject);
+	void    CaptureImageObjectChanaged();
 
 	BOOL    PushDrawObjectInfo(const DrawObjectList& arDrawObject, const DrawObjectList& arSelectObject, LPCTSTR strName);
 
@@ -41,8 +42,11 @@ public:
 
 	BOOL    IsFirstDrawObjectInfo();
 	BOOL    IsFinalDrawObjectInfo();
+
+	void    SycDrawObjects();
 private:
-	BOOL _SaveImageToCache();
+	BOOL _SaveImageToCache(BOOL bNewFile = FALSE);
+	void _DrawCurrentEditObject(HDC hDC);
 
 	float			m_flZoom;
 	INT				m_nZoomMode;
@@ -52,11 +56,13 @@ private:
 	BOOL            m_bActive;
 	CString         m_strCacheFileName;
 	CString         m_strObjectName;
-	CString         m_strEditTmpFile;
+	CString         m_strEditTmpFile;;
 	CString         m_strFileName;
 
 	//DrawObjectList  m_DrawObjectList;
 	//DrawObjectList	m_SelectObjectList;
 	size_t          m_uDrawDataIndex;
 	CDrawDataArray  m_arDrawData;
+
+	CString         m_strLastSaveName;
 };

@@ -1,18 +1,18 @@
 #include "StdAfx.h"
 #include "CapImageObj.h"
 #include "NPVPhotoCalcRect.h"
-#ifdef DRAW_TOOL_TEST
-#else
 #include "../Capture/AlphaBitmapUI/Canvas.h"
-#endif
 #include "ftlBase.h"
-
 #include "ftlFunctional.h"
 #include <algorithm>
-
 #include <atltime.h>
+#include "Util.h"
+#include "DrawTools/DrawObject.h"
+#include "NCaptureApplication.h"
+#include "nCaptureDoc.h"
+#include "nCaptureView.h"
 
-CCapImageObj::CCapImageObj(LPCTSTR pszObjectName)
+CCapImageObj::CCapImageObj(LPCTSTR pszObjectName, HBITMAP hbmp)
 {
 	m_flZoom	= 1.00;
 	m_nZoomMode = CNPVPhotoCalcRect::E_ZOOM_ORIGINAL;
@@ -26,20 +26,19 @@ CCapImageObj::CCapImageObj(LPCTSTR pszObjectName)
 	m_strFileName    = _T("");
 	m_uDrawDataIndex = 1;
 	m_arDrawData.clear();
-	CDrawDataInfo* pDataInfo = new CDrawDataInfo();
+
+	Attach(hbmp, CImage::DIBOR_BOTTOMUP);
+
+	_SaveImageToCache();
+
+	CDrawDataInfo* pDataInfo = new CDrawDataInfo(m_strCacheFileName);
 	m_arDrawData.push_back(pDataInfo);
+	m_strLastSaveName = _T("");
 }
 
 CCapImageObj::~CCapImageObj(void)
 {
-	if (!m_bActive)
-	{
-		DeleteFile(m_strCacheFileName);
-	}
-	else
-	{
-		Destroy();
-	}
+	SetCapImageObjActive(FALSE);
 
 	if (!m_strEditTmpFile.IsEmpty())
 	{
@@ -96,8 +95,8 @@ HANDLE CCapImageObj::CopyToHandle(const CRect& rcSrc)
 	rcRealSrc.IntersectRect(&rcSrc, rcImage);
 	if (!rcRealSrc.IsRectEmpty())
 	{
-		 CCanvas canvas;
-		 bRet = canvas.Create(NULL, rcRealSrc.Width(), rcRealSrc.Height());
+		CCanvas canvas;
+		bRet = canvas.Create(NULL, rcRealSrc.Width(), rcRealSrc.Height());
 		if (bRet)
 		{
 			BitBlt(canvas.GetMemoryDC(), CRect(CPoint(0), rcRealSrc.Size()), rcRealSrc.TopLeft());
@@ -111,35 +110,26 @@ BOOL CCapImageObj::SaveImageFile(LPCTSTR pszFilePath, BOOL bChanageState/* = TRU
 {
 	BOOL bRet = FALSE;
 
-	if (!m_bActive)
+	BOOL bActive = m_bActive; 
+	if (!m_bActive && !SetCapImageObjActive(TRUE))
 	{
-		if(m_strCacheFileName.IsEmpty() || Load(m_strCacheFileName) != S_OK)
-		{
-			return FALSE;
-		}
+		return FALSE;
 	}
-	if (Save(pszFilePath, GUID_NULL) == S_OK)
+
+	SycDrawObjects();
+
+	CaptureUtil::BmpSetAlpha((HBITMAP)*this, 255);
+
+	if (Save(pszFilePath, ImageFormatPNG) == S_OK)
 	{
 		bRet = TRUE;
 	}
-	//CCanvas canvas24;
-	//CRect rectImage(0, 0, GetWidth(), GetHeight());
-	//API_VERIFY(canvas24.Create(NULL, rectImage.Width(), rectImage.Height(), 24));
-	//if (bRet)
-	//{
-	//	API_VERIFY(BitBlt(canvas24.GetMemoryDC(), 0, 0));
-	//	CImage image;
-	//	image.Attach(canvas24.GetBitmap());
-	//	HRESULT hr = E_FAIL;
-	//	COM_VERIFY(image.Save(pszFilePath, GUID_NULL));
-	//	if (SUCCEEDED(hr))
-	//	{
-	//		bRet = TRUE;
-	//	}
-	//	image.Detach();
-	//}
+	SetCapImageObjActive(FALSE);
+	SetCapImageObjActive(bActive);
+
 	if (bChanageState)
 	{
+		m_strLastSaveName = pszFilePath;
 		m_bImageSaved = !bRet;
 	}
 	
@@ -147,8 +137,22 @@ BOOL CCapImageObj::SaveImageFile(LPCTSTR pszFilePath, BOOL bChanageState/* = TRU
 	return bRet;
 }
 
-BOOL CCapImageObj::_SaveImageToCache()
+BOOL CCapImageObj::SaveImageFile()
 {
+	if (!m_strLastSaveName.IsEmpty())
+	{
+		return SaveImageFile(m_strLastSaveName, TRUE);
+	}
+	return FALSE;
+}
+
+
+BOOL CCapImageObj::_SaveImageToCache(BOOL bNewFile)
+{
+	if (!bNewFile && !m_strCacheFileName.IsEmpty() && !_taccess(m_strCacheFileName, 0))
+	{
+		return TRUE;
+	}
 	BOOL bRet = FALSE;
 	TCHAR appDataPath[MAX_PATH] = {0};
 	API_VERIFY(SHGetSpecialFolderPath(NULL, appDataPath, CSIDL_APPDATA , TRUE));
@@ -172,15 +176,15 @@ BOOL CCapImageObj::_SaveImageToCache()
 		// if (SaveImageFile(strFilePath, FALSE))
 		if (SUCCEEDED(Save(strFilePath, Gdiplus::ImageFormatPNG)))
 		{
-			m_bActive = FALSE;
+			//m_bActive = FALSE;
 			m_strCacheFileName = strFilePath;
 			bRet = TRUE;
-			Destroy();
+			//Destroy();
 		}
 		else
 		{
-			m_bActive = TRUE;
-			//m_strCacheFileName = strFilePath;
+			//m_bActive = TRUE;
+			m_strCacheFileName = _T("");
 			bRet = FALSE;
 		}
 	}
@@ -192,19 +196,23 @@ BOOL CCapImageObj::SetCapImageObjActive(BOOL bActive/* = TRUE*/)
 {
 	if (bActive)
 	{
-		if(!m_strCacheFileName.IsEmpty() && Load(m_strCacheFileName) == S_OK)
+		if(!m_bActive && Load(m_strCacheFileName) == S_OK)
 		{
 			m_bActive = TRUE;
-			DeleteFile(m_strCacheFileName);
-			m_strCacheFileName = _T("");
 			return TRUE;
 		}
 		return FALSE;
 	}
 	else
 	{
-		return _SaveImageToCache();
+		if (_SaveImageToCache())
+		{
+			m_bActive = FALSE;
+			Destroy();
+			return TRUE;
+		}
 	}
+	return FALSE;
 }
 
 LPCTSTR CCapImageObj::GetCaptureImageObjectName()
@@ -217,11 +225,13 @@ void CCapImageObj::SetCaptureImageObjectName(LPCTSTR strObjectName)
 	m_strObjectName = strObjectName;
 }
 
-LPCTSTR CCapImageObj::GetFileName()
+CString CCapImageObj::GetFileName()
 {
 	if (m_strFileName.IsEmpty())
 	{
-		m_strFileName = m_strObjectName + _T(".png");
+		const GUID& defaultSaveFormat = CNCaptureApplication::Instance()->GetDocument()->GetSettingInfo()->guidDefaultSaveFileFormat;
+		CString strTempName = m_strObjectName + _T(".") +  CUtil::GetSaveImageExtByGuid(defaultSaveFormat);
+		return strTempName;
 	}
 	return m_strFileName;
 }
@@ -233,19 +243,31 @@ void CCapImageObj::SetFileName(LPCTSTR strFileName)
 
 BOOL CCapImageObj::CropImage(CRect& rcSrc)
 {
-	if (rcSrc.IsRectNull() && rcSrc.Width() > GetWidth() && rcSrc.Height() > GetHeight())
+	if (rcSrc.IsRectEmpty() && rcSrc.Width() > GetWidth() && rcSrc.Height() > GetHeight())
 	{
 		return FALSE;
 	}
+	SycDrawObjects();
+
 	CImage tmpImage;
-	tmpImage.Create(GetWidth(), GetHeight(), 32, CImage::createAlphaChannel);
-	Draw(CImageDC(tmpImage), 0, 0);
+	tmpImage.Create(rcSrc.Width(), rcSrc.Height(), 32, CImage::excludePNG);
+	Draw(CImageDC(tmpImage), 0, 0, rcSrc.Width(), rcSrc.Height(), rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+
 	Destroy();
-	Create(rcSrc.Width(), rcSrc.Height(), 32, CImage::createAlphaChannel);
-	int xSrc = rcSrc.left;
-	tmpImage.Draw(CImageDC(*this), 0, 0, GetWidth(), GetHeight(), rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+	Attach(tmpImage.Detach(), CImage::DIBOR_BOTTOMUP);
+	_SaveImageToCache(TRUE);
+
+	DrawObjectList arDrawObject, arSelectObject;
+	CDrawDataInfo* pDataInfo = new CDrawDataInfo(arDrawObject, arSelectObject, _T("Crop"), m_strCacheFileName);
+	m_arDrawData.push_back(pDataInfo);
+	m_uDrawDataIndex ++;
 	m_bImageSaved = TRUE;
 	return TRUE;
+}
+
+void CCapImageObj::CaptureImageObjectChanaged()
+{
+	m_bImageSaved = FALSE;
 }
 
 void CCapImageObj::SetEditTmpFile(LPCTSTR strEditTmpFile)
@@ -293,16 +315,20 @@ BOOL CCapImageObj::PushDrawObjectInfo(const DrawObjectList& arDrawObject, const 
 			//}
 			std::for_each(it, m_arDrawData.end(), FTL::ObjecteDeleter<CDrawDataInfo*>());
 			m_arDrawData.erase(it, m_arDrawData.end());
-			CDrawDataInfo* pDataInfo = new CDrawDataInfo(arDrawObject, arSelectObject, strName);
+			CDrawDataInfo* pDataInfo = new CDrawDataInfo(arDrawObject, arSelectObject, strName, m_strCacheFileName);
 			m_arDrawData.push_back(pDataInfo);
 			m_uDrawDataIndex = m_arDrawData.size();
+			CaptureImageObjectChanaged();
+			return TRUE;
 		}
 	}
 	else
 	{
-		CDrawDataInfo* pDataInfo = new CDrawDataInfo(arDrawObject, arSelectObject, strName);
+		CDrawDataInfo* pDataInfo = new CDrawDataInfo(arDrawObject, arSelectObject, strName, m_strCacheFileName);
 		m_arDrawData.push_back(pDataInfo);
 		m_uDrawDataIndex = m_arDrawData.size();
+		CaptureImageObjectChanaged();
+		return TRUE;
 	}
 
 	return FALSE;
@@ -310,30 +336,50 @@ BOOL CCapImageObj::PushDrawObjectInfo(const DrawObjectList& arDrawObject, const 
 
 BOOL CCapImageObj::GetPrevDrawObjectInfo(DrawObjectList& arDrawObject, DrawObjectList& arSelectObject)
 {
+	BOOL bRet = FALSE;
 	if (!IsFirstDrawObjectInfo())
 	{
 		m_uDrawDataIndex --;
 		CDrawDataInfo* pDataInfo = m_arDrawData[m_uDrawDataIndex - 1];
 		if (pDataInfo)
 		{
-			return pDataInfo->CopyDataInfo(arDrawObject, arSelectObject);
+			CString strFileName = m_strCacheFileName;
+			bRet = pDataInfo->CopyDataInfo(arDrawObject, arSelectObject, strFileName);
+			if (bRet && m_strCacheFileName.CompareNoCase(strFileName) != 0)
+			{
+				BOOL bActive = m_bActive;
+				SetCapImageObjActive(FALSE);
+				m_strCacheFileName = strFileName;
+				SetCapImageObjActive(bActive);
+				CNCaptureApplication::Instance()->GetDocument()->SetCaptureImage(this);
+			}
 		}
 	}
-	return FALSE;
+	return bRet;
 }
 
 BOOL CCapImageObj::GetNextDrawObjectInfo(DrawObjectList& arDrawObject, DrawObjectList& arSelectObject)
 {
+	BOOL bRet = FALSE;
 	if (!IsFinalDrawObjectInfo())
 	{
 		m_uDrawDataIndex ++;
 		CDrawDataInfo* pDataInfo = m_arDrawData[m_uDrawDataIndex - 1];
 		if (pDataInfo)
 		{
-			return pDataInfo->CopyDataInfo(arDrawObject, arSelectObject);
+			CString strFileName = m_strCacheFileName;
+			bRet = pDataInfo->CopyDataInfo(arDrawObject, arSelectObject, strFileName);
+			if (bRet && m_strCacheFileName.CompareNoCase(strFileName) != 0)
+			{
+				BOOL bActive = m_bActive;
+				SetCapImageObjActive(FALSE);
+				m_strCacheFileName = strFileName;
+				SetCapImageObjActive(bActive);
+				CNCaptureApplication::Instance()->GetDocument()->SetCaptureImage(this);
+			}
 		}
 	}
-	return FALSE;
+	return bRet;
 }
 
 BOOL CCapImageObj::GetCurrentObjectInfo(DrawObjectList& arDrawObject, DrawObjectList& arSelectObject)
@@ -348,7 +394,7 @@ BOOL CCapImageObj::GetCurrentObjectInfo(DrawObjectList& arDrawObject, DrawObject
 		CDrawDataInfo* pDataInfo = m_arDrawData[m_uDrawDataIndex - 1];
 		if (pDataInfo)
 		{
-			return pDataInfo->CopyDataInfo(arDrawObject, arSelectObject);
+			return pDataInfo->CopyDataInfo(arDrawObject, arSelectObject, m_strCacheFileName);
 		}
 	}
 	return FALSE;
@@ -370,4 +416,29 @@ BOOL CCapImageObj::IsFinalDrawObjectInfo()
 		return TRUE;
 	}
 	return FALSE;
+}
+
+void CCapImageObj::_DrawCurrentEditObject(HDC hDC)
+{
+	//CNCaptureApplication::Instance()->GetView()->DrawAllObjects(hDC);
+	DrawObjectList listDrawObject, listSelectObject;
+	if (GetCurrentObjectInfo(listDrawObject, listSelectObject))
+	{	
+		for (DrawObjectList::iterator iter = listDrawObject.begin();
+			iter != listDrawObject.end();
+			++iter)
+		{
+			CDrawObject* pObj = *iter;
+			if (pObj)
+			{
+				pObj->Draw(hDC, FALSE);
+			}
+		}
+	}
+}
+
+void CCapImageObj::SycDrawObjects()
+{
+	CImageDC dcImage(*this);
+	_DrawCurrentEditObject((HDC)dcImage);
 }

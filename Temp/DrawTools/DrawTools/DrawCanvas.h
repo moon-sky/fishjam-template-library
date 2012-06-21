@@ -31,6 +31,7 @@ static CTextTool   s_TextTool(&s_stDrawObjInfo, _T("Text"));
 static CRectTool   s_LineArrowTool(&s_stDrawObjInfo, ttLineArrow, _T("LineArrow"));
 static CFreeDrawTool   s_FreeLineTool(&s_stDrawObjInfo, ttFreeObject, _T("FreeLine"));
 static CPolyTool       s_PolyTool(&s_stDrawObjInfo, ttPoly, _T("Poly"));
+static CRectTool      s_ImageTool(&s_stDrawObjInfo, ttImage, _T("Image"));
 
 template <typename T>
 class CDrawCanvas : public IDrawCanvas
@@ -82,6 +83,9 @@ public:
 		m_tools.push_back(&s_TextTool);
 		m_tools.push_back(&s_LineArrowTool);
 		m_tools.push_back(&s_BalloonTool);
+		m_tools.push_back(&s_ImageTool);
+
+		s_stDrawObjInfo.dwDrawMask = 0xffffffff;
 		m_pDrawInfo = &s_stDrawObjInfo;
 	}
 	virtual ~CDrawCanvas()
@@ -346,6 +350,11 @@ public:
 			CDrawObject* pObject = *iter;
 			if (pObject)
 			{
+				if (pObject->IsActive() && pObject->GetDrawObjType() == dotText)
+				{
+					iter++;
+					continue;
+				}
 				m_selection.erase(iter++);
 
 				DrawObjectList::iterator iter2 = std::find(m_allObjects.begin(), m_allObjects.end(), pObject);
@@ -394,7 +403,7 @@ public:
 		{
 			CRect rect = pObj->GetPosition();
 			rect.NormalizeRect();
-			rect.InflateRect(1, 1);
+			rect.InflateRect(2, 2);
 			DocToClient(&rect);
 
 			if (IsSelected(pObj)) //m_bActive && 
@@ -404,7 +413,7 @@ public:
 				rect.right += (TRACK_MARGIN + 2); //5;
 				rect.bottom += (TRACK_MARGIN + 1); //4;
 			}
-			rect.InflateRect(1, 1); // handles CDrawOleObj objects
+			rect.InflateRect(2, 2); // handles CDrawOleObj objects
 
 			T* pThis = static_cast<T*>(this);
 			pThis->InvalidateRect(rect, FALSE);
@@ -437,10 +446,21 @@ public:
 
 		if (pObj == NULL || IsSelected(pObj))
 		{
+			T* pt = static_cast<T*>(this);
+			pt->Invalidate(FALSE);
 			return;
 		}
 		m_selection.push_back(pObj);
-		InvalObject(pObj);
+		//InvalObject(pObj);
+		if (bAdd)
+		{
+			InvalObject(pObj);
+		}
+		else
+		{
+			T* pt = static_cast<T*>(this);
+			pt->Invalidate(FALSE);
+		}
 	}
 
 	void Deselect(CDrawObject* pObj) 
@@ -486,7 +506,8 @@ public:
 				BackupDrawObjectData(_T("Naver Capture"));
 			}
 		}
-		SetCurrentSelectMode(smNone);
+		SetCurrentToolType(CalcCurrentToolType());
+		//SetCurrentSelectMode(smNone);
 	}
 
 	HWND GetHWnd()
@@ -511,6 +532,18 @@ public:
 			if (pObj->Intersects(rect))
 			{
 				return pObj;
+			}
+
+			CPoint ptClient = point;
+			DocToClient(&ptClient);
+			int nHandleCount = pObj->GetHandleCount();
+			for (int i = 1; i <= nHandleCount; i++)
+			{
+				CRect rcHandle = pObj->GetHandleRect(i);
+				if (rcHandle.PtInRect(ptClient))
+				{
+					return pObj;
+				}
 			}
 		}
 		return NULL;
@@ -650,22 +683,21 @@ public:
 		stDrawInfo = *m_pDrawInfo;
 	}
 
-	void SetDrawObjectBaseInfo(const DRAWOBJBASEINFO& stDrawInfo, BOOL bPaint = FALSE)
+	virtual void SetDrawObjectBaseInfo(const DRAWOBJBASEINFO& stDrawInfo, BOOL bPaintObject = FALSE)
 	{
-		*m_pDrawInfo = stDrawInfo;
 		for (DrawObjectList::iterator iter = m_selection.begin();
 			iter != m_selection.end();
 			++iter)
 		{
 			CDrawObject* pObj = *iter;
-			if (pObj && pObj->CheckAvailObject())
+			if (pObj && pObj->GetDrawObjType() != dotSelectRect && pObj->UpdateDrawInfo(stDrawInfo))
 			{
-				pObj->UpdateDrawInfo(*m_pDrawInfo);
-				if (bPaint)
+				if (bPaintObject)
 				{
 					InvalObject(pObj);
 				}
 			}
 		}
+		*m_pDrawInfo = stDrawInfo;
 	}
 };

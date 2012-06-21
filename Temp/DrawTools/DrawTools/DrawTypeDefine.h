@@ -30,6 +30,7 @@ enum ToolType
 	ttPoly,
 	ttFreeObject,
 	ttText,
+	ttImage,
 };
 
 enum DrawObjectType
@@ -46,6 +47,7 @@ enum DrawObjectType
 	dotFreeObject,
 	dotText,
 	dotBalloon,
+	dotImage,
 };
 
 
@@ -57,6 +59,105 @@ enum SelectMode
 	smMove,
 	smSize
 };
+
+#define DRAWOBJECT_BASE_PENCLR     0x00000001
+#define DRAWOBJECT_BASE_PENWIDTH   0x00000002
+#define DRAWOBJECT_BASE_FONTNAME   0x00000004
+#define DRAWOBJECT_BASE_FONTCLR    0x00000008
+#define DRAWOBJECT_BASE_FONTSIZE   0x0000000f
+#define DRAWOBJECT_BASE_BPEN       0x00000010
+#define DRAWOBJECT_BASE_BBRUSH     0x00000020
+#define DRAWOBJECT_BASE_IMAGEFILE  0x00000040
+#define DRAWOBJECT_BASE_BRUSHCLR   0x00000080
+
+typedef struct stu_DrawObjBaseInfo
+{
+	LOGPEN			logpen;
+	LOGBRUSH		logbrush;
+	CString         strFontName;
+	COLORREF		clrFontFore;
+	int             nFontSize;
+
+	CString         strImageFileName;
+
+	BOOL            bPen;
+	BOOL            bBrush;
+
+	DWORD_PTR       dwDrawMask;
+	stu_DrawObjBaseInfo()
+	{
+		logpen.lopnStyle = PS_INSIDEFRAME;
+		logpen.lopnWidth.x = 1;
+		logpen.lopnWidth.y = 1;
+		logpen.lopnColor = RGB(255, 0,  0);
+
+		logbrush.lbStyle = BS_SOLID;
+		logbrush.lbColor = RGB(255, 0, 0);
+		logbrush.lbHatch = HS_HORIZONTAL;
+
+		strFontName =  _T("Arial");
+		nFontSize   = 18;
+		clrFontFore = RGB(255, 0, 0);
+
+		strImageFileName = _T("");
+
+		bPen   = TRUE;
+		bBrush = FALSE;
+
+		dwDrawMask = 0;
+	}
+
+	stu_DrawObjBaseInfo& operator = (const stu_DrawObjBaseInfo& other)
+	{
+		if (other.dwDrawMask & DRAWOBJECT_BASE_PENCLR)
+		{
+			logpen.lopnColor = other.logpen.lopnColor;
+		}
+
+		if (other.dwDrawMask & DRAWOBJECT_BASE_BRUSHCLR)
+		{
+			logbrush.lbColor = other.logbrush.lbColor;
+		}
+
+		if (other.dwDrawMask & DRAWOBJECT_BASE_PENWIDTH)
+		{
+			logpen.lopnWidth.x = other.logpen.lopnWidth.x;
+			logpen.lopnWidth.y = other.logpen.lopnWidth.y;
+		}
+		
+
+		if (other.dwDrawMask & DRAWOBJECT_BASE_FONTNAME)
+		{
+			strFontName = other.strFontName;
+		}
+
+		if (other.dwDrawMask & DRAWOBJECT_BASE_FONTCLR)
+		{
+			clrFontFore = other.clrFontFore;
+		}
+
+		if (other.dwDrawMask & DRAWOBJECT_BASE_FONTSIZE)
+		{
+			nFontSize   = other.nFontSize;
+		}
+
+		if (other.dwDrawMask & DRAWOBJECT_BASE_BPEN)
+		{
+			bPen   = other.bPen;
+		}
+		
+		if (other.dwDrawMask & DRAWOBJECT_BASE_BBRUSH)
+		{
+			bBrush = other.bBrush;
+		}
+		
+		if (other.dwDrawMask & DRAWOBJECT_BASE_IMAGEFILE)
+		{
+			strImageFileName = other.strImageFileName;
+		}
+		return *this;
+	}
+}DRAWOBJBASEINFO, *LPDRAWOBJBASEINFO;
 
 class IDrawCanvas
 {
@@ -70,6 +171,7 @@ public:
 	//virtual BOOL IsNearByPoint(const CPoint& pt1, const CPoint& pt2, int Diff);
 
 	//virtual CSelectTool* GetSelectTool() = 0;
+	virtual ToolType CalcCurrentToolType() = 0;
 	virtual ToolType   GetCurrentToolType() = 0;
 	virtual CDrawTool*  GetCurrentTool() = 0;
 	virtual VOID SetCurrentToolType(ToolType nToolType) = 0;
@@ -118,47 +220,7 @@ public:
 	virtual BOOL GetImageByRect(const CRect& rcSrc, CImage& Image) = 0;
 
 	virtual BOOL BackupDrawObjectData(LPCTSTR strName) = 0;
+	virtual void SetDrawObjectBaseInfo(const DRAWOBJBASEINFO& stDrawInfo, BOOL bPaintObject = FALSE) = 0;
+	virtual void NotifyDrawObjectBaseInfo(const DRAWOBJBASEINFO& stDrawInfo) = 0;
 };
 
-
-typedef struct stu_DrawObjBaseInfo
-{
-	LOGPEN			logpen;
-	LOGBRUSH		logbrush;
-	LOGFONT			logfont;
-	COLORREF		clrFontFore;
-	int             nLogpixelsy;
-	stu_DrawObjBaseInfo()
-	{
-		logpen.lopnStyle = PS_INSIDEFRAME;
-		logpen.lopnWidth.x = 1;
-		logpen.lopnWidth.y = 1;
-		logpen.lopnColor = RGB(128,   0,  64);
-
-		logbrush.lbStyle = BS_SOLID;
-		logbrush.lbColor = RGB(255, 255, 184);
-		logbrush.lbHatch = HS_HORIZONTAL;
-
-        ZeroMemory(&logfont, sizeof(logfont));
-		CWindowDC screenDC(NULL);
-		nLogpixelsy = screenDC.GetDeviceCaps(LOGPIXELSY);
-		logfont.lfHeight = - ::MulDiv(18, nLogpixelsy, 72);
-		logfont.lfItalic = FALSE;	
-		logfont.lfUnderline = FALSE;
-		logfont.lfWeight    = FW_BOLD;
-		logfont.lfStrikeOut = FALSE;
-		logfont.lfCharSet   = DEFAULT_CHARSET;
-		StringCchCopy(logfont.lfFaceName, LF_FACESIZE, _T("Arial"));
-
-		clrFontFore = RGB(128, 0, 64);
-	}
-
-	stu_DrawObjBaseInfo& operator = (const stu_DrawObjBaseInfo& other)
-	{
-		logpen   = other.logpen;
-		logbrush = other.logbrush;
-		logfont = other.logfont;
-		clrFontFore = other.clrFontFore;
-		return *this;
-	}
-}DRAWOBJBASEINFO, *LPDRAWOBJBASEINFO;

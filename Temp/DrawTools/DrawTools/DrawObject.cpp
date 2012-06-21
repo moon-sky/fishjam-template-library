@@ -5,20 +5,21 @@
 CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 {
 	m_pDrawCanvas = pDrawCanvas;
-	m_position = position;
+	SetPosition(position);
+	//m_position = position;
 	m_originalPos = m_position;
 	m_zoomFactor = 1.0f;
 
 	m_objType = objType;
 
-	m_bPen = TRUE;
+	m_bPen = stDrawObjInfo.bPen;
 	//m_logpen.lopnStyle = PS_INSIDEFRAME;
 	//m_logpen.lopnWidth.x = 1;
 	//m_logpen.lopnWidth.y = 1;
 	//m_logpen.lopnColor = RGB(0, 0, 0);
 	m_logpen = stDrawObjInfo.logpen;
 
-	m_bBrush = TRUE;
+	m_bBrush = stDrawObjInfo.bBrush;
 	m_logbrush = stDrawObjInfo.logbrush;
 	//m_logbrush.lbStyle = BS_SOLID;
 	//m_logbrush.lbColor = RGB(192, 192, 192);
@@ -29,6 +30,11 @@ CDrawObject::~CDrawObject()
 {
 }
 
+void CDrawObject::SetPosition(const CRect & pos)
+{
+	m_position = pos;
+}
+
 void CDrawObject::Remove()
 {
 	delete this;
@@ -37,6 +43,7 @@ void CDrawObject::Remove()
 void CDrawObject::Draw(HDC hDC, BOOL bOriginal)
 {
 }
+
 
 void CDrawObject::DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool)
 {
@@ -75,7 +82,8 @@ void CDrawObject::MoveTo(const CRect& position)
 	}
 
 	m_pDrawCanvas->InvalObject(this);
-	m_position = position;
+	//m_position = position;
+	SetPosition(position);
 	//CalcZoomRect(m_position, 1.0f / m_zoomFactor, m_originalPos);
 	m_pDrawCanvas->InvalObject(this);
 	//m_pDocument->SetModifiedFlag();
@@ -278,6 +286,7 @@ CPoint CDrawObject::GetHandle(int nHandle)
 	int x = 0, y = 0, xCenter, yCenter;
 	CRect rcLogical = m_position;
 
+	//rcLogical.NormalizeRect();
 	//rcLogical.OffsetRect(m_pDrawCanvas->GetOffset());
 	m_pDrawCanvas->DocToClient(&rcLogical);
 
@@ -498,12 +507,37 @@ void CDrawObject::OnOpen()
 	OnEditProperties();
 }
 
-void CDrawObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
+BOOL CDrawObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
 {
 	FTLASSERT(this);
 
-	m_logbrush = stDrawObjInfo.logbrush;
-	m_logpen   = stDrawObjInfo.logpen;
+	if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_PENCLR)
+	{
+		m_logpen.lopnColor = stDrawObjInfo.logpen.lopnColor;
+	}
+
+	if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_PENWIDTH)
+	{
+		m_logpen.lopnWidth.x = stDrawObjInfo.logpen.lopnWidth.x;
+		m_logpen.lopnWidth.y = stDrawObjInfo.logpen.lopnWidth.y;
+	}
+
+	if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_BRUSHCLR)
+	{
+		m_logbrush.lbColor = stDrawObjInfo.logbrush.lbColor;
+	}
+
+
+	if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_BPEN)
+	{
+		m_bPen     = stDrawObjInfo.bPen;
+	}
+
+	if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_BBRUSH)
+	{
+		m_bBrush   = stDrawObjInfo.bBrush;
+	}
+	return TRUE;
 	//Invalidate();
 	//m_pDocument->SetModifiedFlag();
 }
@@ -694,7 +728,8 @@ void CDrawFreeObject::MoveTo(const CRect& position)
 		m_points[i].y += position.top - m_position.top;
 	}
 
-	m_position = position;
+	//m_position = position;
+	SetPosition(position);
 	m_pDrawCanvas->InvalObject(this);
 }
 

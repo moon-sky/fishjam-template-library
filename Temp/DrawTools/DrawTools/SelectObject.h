@@ -41,7 +41,7 @@ public:
 	virtual void DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectTool);
 	virtual void EndMoveHandle();
 	virtual BOOL CheckAvailObject();
-	virtual void UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
+	virtual BOOL UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
 
 //private:
 //	CRect m_rcSrc; //logical

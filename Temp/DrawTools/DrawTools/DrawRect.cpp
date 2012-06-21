@@ -3,6 +3,11 @@
 #include "DrawCanvas.h"
 #include <ftlGdi.h>
 
+#include <SilverlightCpp.h>
+using namespace SilverlightCpp;
+#include <SilverlightExCpp.h>
+using namespace SilverlightExCpp;
+
 CDrawRect::CDrawRect(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 : CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo)
 {
@@ -59,25 +64,25 @@ void ArrowTo(HDC hDC, const CPoint& ptTo, LPARROWINFO pA)
 	MoveToEx(hDC, pFrom.x, pFrom.y, NULL);
 
 	// draw we're fillin'...
-	if(pA->bFill) 
+	//if(pA->bFill) 
 	{
 		LineTo(hDC, aptPoly[0].x, aptPoly[0].y);
 		Polygon(hDC, aptPoly, 3);
 	}
 
 	// ... or even jes chillin'...
-	else 
-	{
-		CDCHandle dc(hDC);
-		dc.LineTo(aptPoly[0]);
-		dc.MoveTo(aptPoly[0]);
-		dc.LineTo(aptPoly[1]);
-		
-		dc.MoveTo(aptPoly[0]);
-		dc.LineTo(aptPoly[2]);
-		//LineTo(hDC, pBase.x, pBase.y);
-		//MoveToEx(hDC, aptPoly[0].x, aptPoly[0].y, NULL);
-	}
+	//else 
+	//{
+	//	CDCHandle dc(hDC);
+	//	dc.LineTo(aptPoly[0]);
+	//	dc.MoveTo(aptPoly[0]);
+	//	dc.LineTo(aptPoly[1]);
+	//	
+	//	dc.MoveTo(aptPoly[0]);
+	//	dc.LineTo(aptPoly[2]);
+	//	//LineTo(hDC, pBase.x, pBase.y);
+	//	//MoveToEx(hDC, aptPoly[0].x, aptPoly[0].y, NULL);
+	//}
 }
 
 
@@ -210,7 +215,17 @@ void CDrawRect::Draw(HDC hDC, BOOL bOriginal)
 			CPoint ptBottomRight = rect.BottomRight();
 			CPoint ptTopLeft     = rect.TopLeft();
 			dc.MoveTo(ptTopLeft);
-			ArrowTo(hDC, ptBottomRight, &m_stArrowInfo);
+			
+			if (m_bPen)
+			{
+				LOGBRUSH logbrush = m_logbrush;
+				logbrush.lbColor = m_logpen.lopnColor;
+				CBrush Arrowbrush;
+				API_VERIFY(NULL != Arrowbrush.CreateBrushIndirect(&logbrush));
+				HBRUSH OldBrush = dc.SelectBrush(Arrowbrush);
+				ArrowTo(hDC, ptBottomRight, &m_stArrowInfo);
+				dc.SelectBrush(OldBrush);
+			}
 			break;
 		}
 		default:
@@ -244,13 +259,28 @@ int CDrawRect::GetHandleCount()
 // returns center of handle in device coordinates
 CPoint CDrawRect::GetHandle(int nHandle)
 {
-	if ( dotLine == m_objType && 2 == nHandle )
+	//if ( dotLine == m_objType && 2 == nHandle )
+	//{
+	//	nHandle = 5;
+	//}
+	//else if (dotLineArrow == m_objType && 2 == nHandle )
+	//{
+	//	nHandle = 5;
+	//}
+	if (dotLineArrow == m_objType || dotLine == m_objType)
 	{
-		nHandle = 5;
-	}
-	else if (dotLineArrow == m_objType && 2 == nHandle )
-	{
-		nHandle = 5;
+		if (1 == nHandle)
+		{
+			CPoint point = m_position.TopLeft();
+			m_pDrawCanvas->DocToClient(&point);
+			return point;
+		}
+		else if (2 == nHandle)
+		{
+			CPoint point = m_position.BottomRight();
+			m_pDrawCanvas->DocToClient(&point);
+			return point;
+		}
 	}
 	else if (dotRoundRect == m_objType && 9 == nHandle )
 	{
@@ -346,6 +376,7 @@ BOOL CDrawRect::Intersects(const CRect& rect)
 	{
 		case dotRect:
 		case dotArrow:
+		case dotImage:
 			return TRUE;
 
 		case dotRoundRect:
@@ -426,8 +457,48 @@ CDrawObject* CDrawRect::Clone()
 	return pClone;
 }
 
+void CDrawRect::SetPosition(const CRect& pos)
+{
+	CRect rect = pos;
+	if (m_objType != dotLine && m_objType != dotLineArrow)
+	{
+		if (abs(rect.Width()) < 40)
+		{
+			if (rect.left > rect.right)
+			{
+				rect.right = rect.left - 40;
+			}
+			else
+			{
+				rect.right = rect.left + 40;
+			}
+		}
+		if (abs(rect.Height()) < 40)
+		{
+			if (rect.top > rect.bottom)
+			{
+				rect.bottom = rect.top - 40;
+			}
+			else
+			{
+				rect.bottom = rect.top + 40;
+			}
+		}
+	}
+	m_position = rect;
+}
 
-
+BOOL CDrawRect::CheckAvailObject()
+{
+	if (m_objType == dotLine || m_objType == dotLineArrow)
+	{
+		if (abs(m_position.Width() < 5) && abs(m_position.Height()) < 5)
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 ///////////////////          CDrawArrow                   ////////////////////////
@@ -608,9 +679,11 @@ void CDrawArrow::MoveTo(const CRect& position)
 		m_ptArrow[i].y += position.top - m_position.top;
 	}
 	m_pDrawCanvas->InvalObject(this);
-	m_position = position;
+	//m_position = position;
+	SetPosition(position);
 	m_pDrawCanvas->InvalObject(this);
 }
+
 
 void CDrawArrow::_UpdateArrowPoint()
 {
@@ -700,8 +773,25 @@ void CDrawBalloon::Draw(HDC hDC, BOOL bOriginal)
 		m_rgnObject.CreateRectRgn(1, 1, 2, 2);
 	}
 	m_rgnObject.CombineRgn(hRgnPoly, hClient, RGN_OR);
-	dc.FillRgn(m_rgnObject, brush);
-	dc.FrameRgn(m_rgnObject, FrameBrush, m_logpen.lopnWidth.x, m_logpen.lopnWidth.x);
+	if (m_bBrush)
+	{
+		dc.FillRgn(m_rgnObject, brush);
+	}
+	else 
+	{
+		dc.FillRgn(m_rgnObject, (HBRUSH)::GetStockObject(NULL_BRUSH));
+	}
+	
+
+	if (m_bPen)
+	{
+		dc.FrameRgn(m_rgnObject, FrameBrush, m_logpen.lopnWidth.x, m_logpen.lopnWidth.x);
+	}
+	else
+	{
+		dc.FrameRgn(m_rgnObject, (HBRUSH)::GetStockObject(NULL_BRUSH), m_logpen.lopnWidth.x, m_logpen.lopnWidth.x);
+	}
+	
 	hRgnPoly.DeleteObject();
 	hClient.DeleteObject();
 }
@@ -728,11 +818,92 @@ BOOL CDrawBalloon::Intersects(const CRect& rect)
 CDrawObject* CDrawBalloon::Clone()
 {
 	DRAWOBJBASEINFO stDrawInfo;
-	stDrawInfo.logpen = m_logpen;
+	stDrawInfo.logpen   = m_logpen;
 	stDrawInfo.logbrush = m_logbrush;
+	stDrawInfo.bBrush   = m_bBrush;
+	stDrawInfo.bPen     = m_bPen;
 	CDrawBalloon* pClone = new CDrawBalloon(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
 
 	m_flPolyScale = pClone->m_flPolyScale;
 	m_flRectScale = pClone->m_flRectScale;
 	return pClone;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////
+///////////////////////        CDrawImage                    ///////////////////////
+CDrawImage::CDrawImage(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
+ : CDrawRect(pDrawCanvas, position, objType, stDrawObjInfo)
+{
+	m_strImageFile = stDrawObjInfo.strImageFileName;
+}	
+
+void CDrawImage::Draw(HDC hDC, BOOL bOriginal)
+{
+	if (!m_strImageFile.IsEmpty())
+	{
+		NDGraphics::CGDIPImage GdiImage;
+		SilverlightCpp::ZipManager* pZipManager = SilverlightCpp::ZipManager::get_Current();
+		FTLASSERT(pZipManager); 
+		CImage* pImage = pZipManager->LoadCImage(m_strImageFile);
+		CRect rect = m_position;
+		rect.NormalizeRect();
+		if (pImage)
+		{
+			GdiImage.Load(pZipManager->LoadCImage(m_strImageFile), ImageFormatPNG);
+			GdiImage.Draw(hDC, rect.left, rect.top, rect.Width(), rect.Height());
+		}
+	}
+}
+
+CDrawObject* CDrawImage::Clone()
+{
+	DRAWOBJBASEINFO stDrawInfo;
+	stDrawInfo.logpen   = m_logpen;
+	stDrawInfo.logbrush = m_logbrush;
+	stDrawInfo.bBrush   = m_bBrush;
+	stDrawInfo.bPen     = m_bPen;
+	stDrawInfo.strImageFileName = m_strImageFile;
+	CDrawImage* pClone = new CDrawImage(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
+	return pClone;
+}
+
+BOOL CDrawImage::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
+{
+	if ((stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_IMAGEFILE) &&
+		stDrawObjInfo.strImageFileName.CompareNoCase(m_strImageFile) != 0)
+	{
+		m_strImageFile = stDrawObjInfo.strImageFileName;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CDrawImage::SetPosition(const CRect& pos)
+{
+	CRect rect = pos;
+	if (abs(rect.Width()) < 20)
+	{
+		if (rect.left > rect.right)
+		{
+			rect.right = rect.left - 20;
+		}
+		else
+		{
+			rect.right = rect.left + 20;
+		}
+	}
+	if (abs(rect.Height()) < 20)
+	{
+		if (rect.top > rect.bottom)
+		{
+			rect.bottom = rect.top - 20;
+		}
+		else
+		{
+			rect.bottom = rect.top + 20;
+		}
+	}
+	m_position = rect;
 }

@@ -23,7 +23,7 @@ BOOL CTextTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
-	CRect rcPosition = CRect(ptLogical, CSize(1,1));
+	CRect rcPosition = CRect(ptLogical, CSize(50,20));
 
 	CTextObject* pObj = new CTextObject(pView, rcPosition, dotText, *m_pDrawObjInfo);
 	pView->Add(pObj);
@@ -99,7 +99,6 @@ BOOL CTextTool::OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 		if (pObject != NULL && pObject->GetDrawObjType() == dotText)
 		{
 			CTextObject* pText = (CTextObject*)pObject;
-			pText->CheckTextRect();
 			pView->SetActive(pObject, TRUE);
 		}
 	}
@@ -116,4 +115,10 @@ void CTextTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 BOOL CTextTool::IsNeedClip()
 {
 	return TRUE;
+}
+
+BOOL CTextTool::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult)
+{
+	BOOL bRet = FALSE;
+	return bRet;
 }

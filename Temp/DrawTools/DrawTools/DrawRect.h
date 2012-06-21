@@ -30,6 +30,8 @@ public:
 	virtual BOOL Intersects(const CRect& rect);
 	virtual CDrawObject* Clone();
 
+	virtual void SetPosition(const CRect& pos);
+	virtual BOOL CheckAvailObject();
 protected:
 	CPoint m_roundness; // for roundRect corners
 
@@ -52,7 +54,7 @@ public:
 	//virtual BOOL Intersects(const CRect& rect);
 	virtual CDrawObject* Clone();
 	virtual void MoveTo(const CRect& positon);
-
+	
 protected:
 	CPoint m_ptArrow[7];
 	double m_dbVertical;
@@ -77,4 +79,19 @@ protected:
 	float m_flRectScale;
 	float m_flPolyScale;
 	CRgn  m_rgnObject;
+};
+
+class CDrawImage : public CDrawRect
+{
+public:
+	CDrawImage(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
+
+public:
+	virtual void Draw(HDC hDC, BOOL bOriginal);
+	virtual CDrawObject* Clone();
+	virtual BOOL UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
+	virtual void SetPosition(const CRect& pos);
+
+protected:
+	CString m_strImageFile;
 };

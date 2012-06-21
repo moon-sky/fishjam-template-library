@@ -30,22 +30,22 @@ BOOL CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	{
 		case ttRect:
 			//objType = dotRect;
-			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotRect, *m_pDrawObjInfo);
+			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(40, 40)), dotRect, *m_pDrawObjInfo);
 			break;
 
 		case ttRoundRect:
 			//objType = dotRoundRect;
-			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotRoundRect, *m_pDrawObjInfo);
+			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(40, 40)), dotRoundRect, *m_pDrawObjInfo);
 			break;
 
 		case ttEllipse:
 			//objType = dotEllipse;
-			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotEllipse, *m_pDrawObjInfo);
+			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(40, 40)), dotEllipse, *m_pDrawObjInfo);
 			break;
 
 		case ttArrow:
 			//objType = dotArrow;
-			pObj = new CDrawArrow(pView, CRect(ptLogical, CSize(0, 0)), dotArrow, *m_pDrawObjInfo);
+			pObj = new CDrawArrow(pView, CRect(ptLogical, CSize(40, 40)), dotArrow, *m_pDrawObjInfo);
 			break;
 
 		case ttLine:
@@ -59,7 +59,10 @@ BOOL CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotLineArrow, *m_pDrawObjInfo);
 			break;
 		case ttBalloon:
-			pObj = new CDrawBalloon(pView, CRect(ptLogical, CSize(0, 0)), dotBalloon, *m_pDrawObjInfo);
+			pObj = new CDrawBalloon(pView, CRect(ptLogical, CSize(40, 40)), dotBalloon, *m_pDrawObjInfo);
+			break;
+		case ttImage:
+			pObj = new CDrawImage(pView, CRect(ptLogical, CSize(20, 20)), dotImage, *m_pDrawObjInfo);
 			break;
 		default:
 			FTLASSERT(FALSE); // unsupported shape!

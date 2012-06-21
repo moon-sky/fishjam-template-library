@@ -10,7 +10,7 @@ class CTextObject
 {
 public:
 	CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType,
-		const DRAWOBJBASEINFO& stDrawObjInfo);
+		DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual ~CTextObject();
 
 	//virtual BOOL PreTranslateMessage(MSG* pMsg);
@@ -31,19 +31,24 @@ public:
 	virtual BOOL HitTestActive(CPoint point);
 	virtual HCURSOR GetActiveCursor();
 	virtual void NormalizePosition();
-	virtual void UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
+	virtual BOOL UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
+	virtual BOOL HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
 
-	void CheckTextRect();
+	virtual void SetPosition(const CRect& pos);
 
 	CRichEditPanel* GetRichEditPanel()
 	{
 		FTLASSERT(m_pRichEditPanel);
 		return m_pRichEditPanel;
 	}
+	virtual BOOL CheckAvailObject();
 protected:
 	void _OnTextRequestResizeNotify(REQRESIZE* pReqResize);
 	void _OnTextSelectChangeNotify(SELCHANGE* pSelChange);
+	void _OnKillFocus(long nCount);
+	void _OnSetFocus();
 protected:
-	CRichEditPanel*	m_pRichEditPanel;	
+	CRichEditPanel*	m_pRichEditPanel;
+	BOOL            m_bAvailObject;
 };
 

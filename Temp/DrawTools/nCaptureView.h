@@ -72,6 +72,7 @@ public:
 	BOOL CropImage();
 	BOOL SelectAll();
 	BOOL ShowImageInMsPaint();
+	BOOL ShowImageInPhotoEditor();
 
 	void DoPaint(CDCHandle dc);
 	
@@ -106,7 +107,9 @@ public:
 	void OnCancelMode();
 	BOOL OnSetCursor(CWindow wnd, UINT nHitTest, UINT message);
 	BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	//void OnCaptureChanged(CWindow wnd);
+
+	virtual ToolType CalcCurrentToolType();
+	virtual void NotifyDrawObjectBaseInfo(const DRAWOBJBASEINFO& stDrawInfo);
 //Override
 	void PrepareDC(CDCHandle dc);
 
@@ -142,6 +145,8 @@ public:
 
 	void Undo();
 	void Redo();
+
+	HANDLE CopyRectToHandle(const CRect& rect);
 private:
 	BOOL				m_bInited;
 	BOOL				m_bIsDrawing;
@@ -174,5 +179,6 @@ private:
 	CRect _GetSelectRect(const CPoint& ptLogical);
 	void _SyncFrameScaleInfo();
 	BOOL _EditWithMspaint(LPCTSTR lpszImagePath);
+	BOOL _EditWithPhotoEditor(LPCTSTR lpszImagePath);
 	BOOL _SetSelectRectClipInfo(const CPoint& point);
 };

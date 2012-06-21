@@ -13,10 +13,7 @@ public:
 		return m_position;
 	}
 
-	void SetPosition(CRect & pos)
-	{
-		m_position = pos;
-	}
+	virtual void SetPosition(const CRect & pos);
 	
 	CRect GetOriginalPosition() const
 	{
@@ -37,7 +34,7 @@ public:
 	virtual HCURSOR GetHandleCursor(int nHandle);
 	virtual HCURSOR GetActiveCursor();
 	//virtual void SetLineColor(COLORREF color);
-	virtual void UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
+	virtual BOOL UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
 
 	// Operations
 	virtual void Draw(HDC hDC, BOOL bOriginal);
@@ -72,7 +69,7 @@ public:
 
 protected:
 	// Attributes
-	CRect	 m_position; //logical
+	CRect	m_position; //logical
 	CRect	m_originalPos; //logical
 	float	m_zoomFactor;
 	DrawObjectType m_objType;

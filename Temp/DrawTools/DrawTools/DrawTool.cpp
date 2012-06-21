@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DrawTool.h"
 #include "DrawCanvas.h"
+#include "TextObject.h"
 
 CDrawTool::CDrawTool(LPDRAWOBJBASEINFO pDrawObjInfo, ToolType nToolType, LPCTSTR strName)
 {
@@ -24,7 +25,6 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 {
 	BOOL bRet = FALSE;
 	pView->BeginCapture();
-
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
 
@@ -35,11 +35,13 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	if (pView->GetSelection().size() == 1)
 	{
 		CDrawObject* pOldActiveObject = pView->ObjectAt(ptLogical);
+		BOOL bSelectChanage = FALSE;
 		pObj = pView->GetSelection().front();
 		if (pObj != pOldActiveObject)
 		{
 			//if is not the same, then clear old active
 			pView->SetActive(NULL, FALSE);
+			bSelectChanage = TRUE;
 		}
 
 		int nDragHandle = pObj->HitTest(point, TRUE);
@@ -48,6 +50,11 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 		{
 			pView->SetCurrentSelectMode(smSize);
 			bRet = TRUE;
+			bSelectChanage = FALSE;
+		}
+		if(bSelectChanage)
+		{
+			pView->Select(NULL); // add for temp
 		}
 	}
 
@@ -60,7 +67,7 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 		{
 			if (pObj->HitTestMove(point))
 			{
-				//pView->SetActive(NULL, FALSE);
+				pView->SetActive(pObj, FALSE);
 				pView->SetCurrentSelectMode(smMove);
 				
 				if (!pView->IsSelected(pObj))
@@ -82,7 +89,6 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 			}
 		}
 	}
-	pView->BeginCapture();
 	pView->SetMouseDownLogicalPoint(ptLogical);
 	pView->SetMouseLastLogicalPoint(ptLogical);
 	return bRet;
@@ -103,9 +109,13 @@ BOOL CDrawTool::OnLButtonUp(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 		if (point == ptDevice && pView->GetCurrentSelectMode() == smSize)
 		{
 			CDrawObject* pObj = pView->GetSelection().front();
-			pView->Remove(pObj, TRUE);
-			pObj->Remove();
-			bBackupData = FALSE;
+			if (pObj->GetDrawObjType() == dotSelectRect || 
+				(!pObj->CheckAvailObject() && pObj->GetDrawObjType() != dotText))
+			{
+				pView->Remove(pObj, TRUE);
+				pObj->Remove();
+				bBackupData = FALSE;
+			}
 		}
 		
 		for(DrawObjectList::iterator iter = pView->GetSelection().begin();
@@ -116,6 +126,11 @@ BOOL CDrawTool::OnLButtonUp(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 			if (smSize == pView->GetCurrentSelectMode())
 			{
 				pObj->EndMoveHandle();
+			}
+
+			if (pObj->GetDrawObjType() == dotText && pObj->IsActive())
+			{
+				bBackupData = FALSE;
 			}
 		}
 		pView->EndCapture(bBackupData);
@@ -189,7 +204,7 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 			m_hCursor = pView->GetSelection().front()->GetHandleCursor(pView->GetDragHandle());
 			return; // bypass CDrawTool
 		}
-		m_hCursor = ::LoadCursor(NULL, IDC_ARROW);
+		//m_hCursor = ::LoadCursor(NULL, IDC_ARROW);
 		if (pView->GetCurrentToolType() == ttSelection)
 		{
 			pView->SetMouseLastLogicalPoint(ptLogical);
@@ -199,7 +214,20 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 
 BOOL CDrawTool::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult)
 {
-	return FALSE;
+	BOOL bRet = FALSE;
+	if (!pView->GetSelection().empty())
+	{
+		CDrawObject* pActiveObject = pView->GetSelection().front();
+		if (pActiveObject && pActiveObject->GetDrawObjType() == dotText)
+		{
+			CTextObject* pActiveTexObject = dynamic_cast<CTextObject*>(pActiveObject);
+			if (pActiveTexObject)
+			{
+				bRet = pActiveTexObject->HandleControlMessage(pView, uMsg, wParam, lParam, lResult);
+			}
+		}
+	}
+	return bRet;
 }
 
 void CDrawTool::OnEditProperties(IDrawCanvas* /*pView*/)

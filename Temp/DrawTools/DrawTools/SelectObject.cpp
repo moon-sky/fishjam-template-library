@@ -131,13 +131,13 @@ BOOL CSelectObject::Intersects(const CRect& rect)
 CDrawObject* CSelectObject::Clone()
 {
 	DRAWOBJBASEINFO stDrawInfo;
-	stDrawInfo.logbrush = m_logbrush;
-	stDrawInfo.logpen   = m_logpen;
+	//stDrawInfo.logbrush = m_logbrush;
+	//stDrawInfo.logpen   = m_logpen;
 	CSelectObject* pClone = new CSelectObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
-	pClone->m_bPen = m_bPen;
-	//pClone->m_logpen = m_logpen;
-	pClone->m_bBrush = m_bBrush;
-	//pClone->m_logbrush = m_logbrush;
+	//pClone->m_bPen = m_bPen;
+	////pClone->m_logpen = m_logpen;
+	//pClone->m_bBrush = m_bBrush;
+	////pClone->m_logbrush = m_logbrush;
 	//pClone->m_rcSrc    = m_rcSrc;
 	//pClone->m_bClipImage = m_bClipImage;
 	//if (m_bClipImage)
@@ -154,22 +154,19 @@ void CSelectObject::DrawTracker(HDC hDC, TrackerState state, BOOL bDrawSelectToo
 	BOOL bRet = FALSE;
 	CDCHandle dc(hDC);
 
-	CBrush brush;
+	LOGPEN logPen;
+	logPen.lopnStyle = PS_DOT;
+	logPen.lopnColor = RGB(0, 0, 0);
+	logPen.lopnWidth.x = 1;
+	logPen.lopnWidth.y = 1;
 	CPen pen;
-	API_VERIFY(NULL != brush.CreateBrushIndirect(&m_logbrush));
-	API_VERIFY(NULL != pen.CreatePenIndirect(&m_logpen));
+	API_VERIFY(NULL != pen.CreatePenIndirect(&logPen));
 
 	CBrushHandle pOldBrush;
 	CPenHandle pOldPen;
 
-	if (m_bBrush)
-	{
-		pOldBrush = dc.SelectBrush(brush);
-	}
-	else
-	{
-		pOldBrush = dc.SelectStockBrush(NULL_BRUSH);
-	}
+	pOldBrush = dc.SelectStockBrush(NULL_BRUSH);
+
 
 	if (m_bPen)
 	{
@@ -220,7 +217,7 @@ BOOL CSelectObject::CheckAvailObject()
 	return FALSE;
 }
 
-void CSelectObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
+BOOL CSelectObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
 {
-
+	return FALSE;
 }
