@@ -8,6 +8,7 @@
 #include <ftlGdi.h> 
 
 #pragma comment(lib, "riched20.lib")
+#pragma comment(lib, "Imm32.lib")
 
 //#include <ftlConfigDetect.h>
 
@@ -157,9 +158,7 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF 
 	m_xPixPerInch = GetDeviceCaps(hDC, LOGPIXELSX);
 	m_yPixPerInch = GetDeviceCaps(hDC, LOGPIXELSY);
 
-	//int iPointSize = -1 * ::MulDiv(logFont.lfHeight, 72, m_yPixPerInch);
-	int iPointSize = -1 * ::MulDiv(logFont.lfHeight, m_yPixPerInch, 72);
-	m_charFormat.yHeight = iPointSize * 20;
+	m_charFormat.yHeight = logFont.lfHeight * LY_PER_INCH / m_yPixPerInch;
 	//m_charFormat.yHeight = -MulDiv(pLogFont->lfHeight, 72, m_yPixPerInch);//  * LY_PER_INCH / m_yPixPerInch;
 	ReleaseDC(hWnd, hDC);
 
@@ -289,7 +288,7 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcBound,
 		//eventMask |= ENM_CHANGE | ENM_UPDATE | ENM_SCROLL | ENM_SCROLLEVENTS | ENM_PARAGRAPHEXPANDED| ENM_PAGECHANGE| ENM_KEYEVENTS | ENM_MOUSEEVENTS
 		//	| ENM_REQUESTRESIZE| ENM_SELCHANGE| ENM_DROPFILES| ENM_PROTECTED| ENM_CORRECTTEXT| ENM_IMECHANGE
 		//	| ENM_LANGCHANGE | ENM_OBJECTPOSITIONS | ENM_LINK | ENM_LOWFIRTF; 
-		eventMask = ENM_SELCHANGE | ENM_REQUESTRESIZE;
+		eventMask = ENM_SELCHANGE | ENM_REQUESTRESIZE | ENM_IMECHANGE;
 		COM_VERIFY(m_spTextServices->TxSendMessage(EM_SETEVENTMASK, 0, (LPARAM)eventMask, NULL));
 
 		//COM_VERIFY(m_spTextServices->TxSendMessage(EM_GETEVENTMASK, 0, 0, &oldEventMask));
@@ -425,71 +424,71 @@ HRESULT CRichEditPanel::GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>
 	return hr;
 }
 
-HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask)
-{
-	CHECK_POINTER_READABLE_DATA_RETURN_VALUE_IF_FAIL(pLogFont, sizeof(LOGFONT), FALSE);
-
-	HRESULT hr = E_FAIL;
-	CComPtr<ITextRange>		spRange;
-	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
-	if (SUCCEEDED(hr) && spRange)
-	{
-		CComPtr<ITextFont> spFont;
-		COM_VERIFY(spRange->GetFont(&spFont));
-		//FTL::CFTextFontDumper fontDumper(spFont, FTL::CFOutputWindowInfoOutput::Instance(), 0);
-
-		if (dwFontMask & RICH_EDIT_PANEL_FONT_MASK_NAME)
-		{
-			COM_VERIFY(spFont->SetName(CComBSTR(pLogFont->lfFaceName)));
-		}
-		if (dwFontMask & RICH_EDIT_PANEL_FONT_MASK_SIZE)
-		{
-			LONG nSize = -MulDiv(pLogFont->lfHeight, m_yPixPerInch, 72);
-			COM_VERIFY(spFont->SetSize(nSize));
-		}
-		//if (RICH_EDIT_PANEL_FONT_MASK_WEIGHT & dwFontMask)
-		//{
-		//	COM_VERIFY(spFont->SetWeight(pLogFont->lfWidth));
-		//}
-		if (RICH_EDIT_PANEL_FONT_MASK_BOLD & dwFontMask)
-		{
-			long isBold = (FW_BOLD == pLogFont->lfWeight ? tomTrue : tomFalse);
-			COM_VERIFY(spFont->SetBold( isBold ));
-		}
-		if (RICH_EDIT_PANEL_FONT_MASK_ITALIC & dwFontMask)
-		{
-			long isItalic = (0 != pLogFont->lfItalic ? tomTrue : tomFalse);
-			COM_VERIFY(spFont->SetItalic( isItalic ));
-		}
-		if (RICH_EDIT_PANEL_FONT_MASK_UNDERLINE & dwFontMask)
-		{
-			long isUnderLine = (0 != pLogFont->lfUnderline ? tomTrue : tomFalse);
-			COM_VERIFY(spFont->SetUnderline( isUnderLine ));
-		}
-	}
-	return hr;
-}
-
-HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask)
-{
-
-	HRESULT hr = E_FAIL;
-	BOOL bRet = FALSE;
-
-//#ifdef FTL_DEBUG
-//	FTL::CFGdiObjectInfoDump fontInfoDump;
-//	fontInfoDump.GetGdiObjectInfo(hFont);
-//	FTLTRACEEX(FTL::tlDetail, TEXT("hFont Info = %s\n"), fontInfoDump.GetGdiObjectInfoString());
-//#endif 
-
-	LOGFONT logFont = {0};
-	API_VERIFY(0 != ::GetObject(hFont, sizeof(LOGFONT), &logFont));
-	if (bRet)
-	{
-		COM_VERIFY(SetTextFont(nStart, nEnd, &logFont, dwFontMask));
-	}
-	return hr;
-}
+//HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask)
+//{
+//	CHECK_POINTER_READABLE_DATA_RETURN_VALUE_IF_FAIL(pLogFont, sizeof(LOGFONT), FALSE);
+//
+//	HRESULT hr = E_FAIL;
+//	CComPtr<ITextRange>		spRange;
+//	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
+//	if (SUCCEEDED(hr) && spRange)
+//	{
+//		CComPtr<ITextFont> spFont;
+//		COM_VERIFY(spRange->GetFont(&spFont));
+//		//FTL::CFTextFontDumper fontDumper(spFont, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+//
+//		if (dwFontMask & RICH_EDIT_PANEL_FONT_MASK_NAME)
+//		{
+//			COM_VERIFY(spFont->SetName(CComBSTR(pLogFont->lfFaceName)));
+//		}
+//		if (dwFontMask & RICH_EDIT_PANEL_FONT_MASK_SIZE)
+//		{
+//			LONG nSize = -MulDiv(pLogFont->lfHeight, m_yPixPerInch, 72);
+//			COM_VERIFY(spFont->SetSize(nSize));
+//		}
+//		//if (RICH_EDIT_PANEL_FONT_MASK_WEIGHT & dwFontMask)
+//		//{
+//		//	COM_VERIFY(spFont->SetWeight(pLogFont->lfWidth));
+//		//}
+//		if (RICH_EDIT_PANEL_FONT_MASK_BOLD & dwFontMask)
+//		{
+//			long isBold = (FW_BOLD == pLogFont->lfWeight ? tomTrue : tomFalse);
+//			COM_VERIFY(spFont->SetBold( isBold ));
+//		}
+//		if (RICH_EDIT_PANEL_FONT_MASK_ITALIC & dwFontMask)
+//		{
+//			long isItalic = (0 != pLogFont->lfItalic ? tomTrue : tomFalse);
+//			COM_VERIFY(spFont->SetItalic( isItalic ));
+//		}
+//		if (RICH_EDIT_PANEL_FONT_MASK_UNDERLINE & dwFontMask)
+//		{
+//			long isUnderLine = (0 != pLogFont->lfUnderline ? tomTrue : tomFalse);
+//			COM_VERIFY(spFont->SetUnderline( isUnderLine ));
+//		}
+//	}
+//	return hr;
+//}
+//
+//HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask)
+//{
+//
+//	HRESULT hr = E_FAIL;
+//	BOOL bRet = FALSE;
+//
+////#ifdef FTL_DEBUG
+////	FTL::CFGdiObjectInfoDump fontInfoDump;
+////	fontInfoDump.GetGdiObjectInfo(hFont);
+////	FTLTRACEEX(FTL::tlDetail, TEXT("hFont Info = %s\n"), fontInfoDump.GetGdiObjectInfoString());
+////#endif 
+//
+//	LOGFONT logFont = {0};
+//	API_VERIFY(0 != ::GetObject(hFont, sizeof(LOGFONT), &logFont));
+//	if (bRet)
+//	{
+//		COM_VERIFY(SetTextFont(nStart, nEnd, &logFont, dwFontMask));
+//	}
+//	return hr;
+//}
 
 HRESULT CRichEditPanel::SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName)
 {
@@ -519,7 +518,7 @@ HRESULT CRichEditPanel::SetTextFontSize(long nStart, long nEnd, int nSize)
 {
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextFontSize %d to %d Size if %d\n"),
+	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextFontSize %d to %d Size is %d\n"),
 		nStart, nEnd, nSize);
 
 	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
@@ -728,14 +727,6 @@ HRESULT CRichEditPanel::GetTextForeColor(long nStart, long nEnd, COLORREF& clr)
 		CComPtr<ITextFont> spFont;
 		COM_VERIFY(spRange->GetFont(&spFont));
 	}
-	return hr;
-}
-
-HRESULT CRichEditPanel::GetTextFont(long nStart, long nEnd, PLOGFONT pLogFont)
-{
-	CHECK_POINTER_READABLE_DATA_RETURN_VALUE_IF_FAIL(pLogFont, sizeof(LOGFONT), FALSE);
-
-	HRESULT hr = E_FAIL;
 	return hr;
 }
 
@@ -1419,13 +1410,15 @@ HRESULT CRichEditPanel::TxNotify( DWORD iNotify, void *pv )
 
 HIMC CRichEditPanel::TxImmGetContext()
 {
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxImmGetContext\n"));
-	return NULL;
+	HIMC himc = ::ImmGetContext(m_hWndOwner);
+	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxImmGetContext, himc=0x%x\n"), himc);
+	return himc;
 }
 
 void CRichEditPanel::TxImmReleaseContext( HIMC himc )
 {
 	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxImmReleaseContext, himc=0x%x\n"), himc);
+	::ImmReleaseContext(m_hWndOwner, himc);
 }
 
 HRESULT CRichEditPanel::TxGetSelectionBarWidth( LONG *lSelBarWidth )
@@ -1493,6 +1486,14 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(UINT uMsg, WPARAM wParam, LPARAM lParam)
 					bRet = TRUE;
 				}
 			}
+
+			if ((WM_IME_SETCONTEXT <= uMsg && uMsg <= WM_IME_KEYUP)
+				|| WM_IME_STARTCOMPOSITION == uMsg
+				|| WM_IME_ENDCOMPOSITION == uMsg
+				|| WM_IME_COMPOSITION == uMsg)
+			{
+				bRet = TRUE;
+			}
 		} while (0);
 	}
 	return bRet;
@@ -1503,67 +1504,35 @@ LRESULT CRichEditPanel::OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lPa
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
 	hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
-	if (S_OK != hr)
-	{
-		bHandled = FALSE;
-	}
-	//else
+	//if (S_OK != hr)
 	//{
 	//	bHandled = FALSE;
-	//	//COM_VERIFY(m_spTextServices->OnTxPropertyBitsChange(TXTBIT_SCROLLBARCHANGE, TXTBIT_SCROLLBARCHANGE));
 	//}
 	return lResult;
 }
+
+LRESULT CRichEditPanel::OnIMEMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	HRESULT hr = E_FAIL;
+	LRESULT lResult = 0;
+	hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
+	//if (S_OK != hr)
+	//{
+	//	bHandled = FALSE;
+	//}
+	return lResult;
+}
+
 
 LRESULT CRichEditPanel::OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
-
-	if (WM_LBUTTONDOWN == uMsg)
-	{
-		//CComPtr<ITextSelection> spSelection;
-		//COM_VERIFY(m_spTextDocument->GetSelection(&spSelection));
-		//if (spSelection)
-		//{
-			//long nFlags = 0;
-			//COM_VERIFY(spSelection->GetFlags(&nFlags));
-
-			//long nType = 0;
-			//COM_VERIFY(spSelection->GetType(&nType));
-			//COM_VERIFY(m_spTextDocument->BeginEditCollection());
-
-			//if (nFlags & tomSelStartActive == 0)
-			//{
-			//	nFlags |= tomSelStartActive;
-			//	//COM_VERIFY(spSelection->SetFlags(nFlags));
-			//}
-		//}
-
-		//BOOL bRet = FALSE;
-		//POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-		//API_VERIFY(TxSetCaretPos(pt.x, pt.y));
-		//API_VERIFY(TxClientToScreen(&pt));
-		//CComPtr<ITextRange> spRange;
-		//COM_VERIFY(m_spTextDocument->RangeFromPoint(pt.x, pt.y, &spRange));
-		//if (spRange)
-		//{
-		//	
-		//	COM_VERIFY(spRange->Select());
-		//}
-
-
-		//SetActive(FALSE);
-		//SetActive(TRUE);
-		//TxSetCapture(TRUE);
-	}
-
-
 	hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
-	if (S_OK != hr)
-	{
-		bHandled = FALSE;
-	}
+	//if (S_OK != hr)
+	//{
+	//	bHandled = FALSE;
+	//}
 	return lResult;
 }
 
@@ -1706,7 +1675,7 @@ DWORD CALLBACK EditStreamOutCallback(DWORD_PTR dwCookie,
 	HGLOBAL hGlobalStream = GlobalAlloc(GMEM_FIXED | GMEM_ZEROINIT, cb);
 	if (hGlobalStream)
 	{
-		FTLTRACEEX(FTL::tlInfo, TEXT("EditStreamOutCallback(%d) = %s\n"), cb, CA2T((CHAR*)pbBuff));
+		FTLTRACEEX(FTL::tlInfo, TEXT("In EditStreamOutCallback cb=%d, buffer = %s\n"), cb, CA2T((CHAR*)pbBuff));
 
 		CopyMemory((hGlobalStream), pbBuff, cb);
 		IStream** ppStream = reinterpret_cast<IStream**>(dwCookie);
@@ -1762,7 +1731,7 @@ DWORD CALLBACK EditStreamInCallback(DWORD_PTR dwCookie,
 		COM_VERIFY(pStream->Read(pbBuff, FTL_MIN(cb, nLength.LowPart), &unWrite));
 		*pcb = (LONG)unWrite;
 
-		FTLTRACEEX(FTL::tlInfo, TEXT("EditStreamInCallback(%d) = %s\n"), *pcb, CA2T((CHAR*)pbBuff));
+		FTLTRACEEX(FTL::tlDetail, TEXT("In EditStreamInCallback , *pcb=%d, buff = %s\n"), *pcb, CA2T((CHAR*)pbBuff));
 	}
 	return 0;
 }

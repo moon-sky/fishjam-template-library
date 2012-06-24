@@ -43,6 +43,8 @@ if(::GetCapture() == m_hWnd)
 *   2.0 -- RICHED20.DLL (Win95/Win98), 不再支持一些在亚洲语言版本的Rich Edit 1.0中支持的消息
 *          (如 EM_CONVPOSITION、EM_SETIMECOLOR、EM_SETPUNCTUATION 等)
 *   3.0 -- 
+*          Rich Edit 3.0支持Hex To Unicode IME，允许用户采用一种或两种热键方式在十六进制字符和Unicode字符间互换。
+*          Word 使用 Alt+x 可将光标前的文字转换成 UNICODE 对应的值；
 *   4.1 -- Msftedit.DLL (WinXP SP1)
 *   6.1 -- Win7 
 *
@@ -149,6 +151,30 @@ namespace FTL
 		
 	private:
 		CToolTipCtrl	m_tooltip;
+	};
+
+	//自动出现垂直滚动条的 EDIT，需要先将属性设置为： ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN
+	class CFEditEx : public CWindowImpl<CFEditEx, CEdit> //<ATL::CWindowImpl>
+	{
+		enum  {	UWM_CHECKTEXT = WM_USER + 100 };
+	public:
+		CFEditEx(void);
+		~CFEditEx(void);
+	public:
+		BEGIN_MSG_MAP_EX(CFEditEx)
+			//DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE | DUMP_FILTER_KEYDOWN, uMsg, wParam, lParam)
+			MSG_WM_CHAR(OnChar)
+			MESSAGE_HANDLER(UWM_CHECKTEXT, OnCheckText)
+		END_MSG_MAP()
+	private:
+		FTLINLINE void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+		FTLINLINE LRESULT OnCheckText(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
+		FTLINLINE void ShowHorizScrollBar(BOOL bShow = TRUE);
+		FTLINLINE void ShowVertScrollBar(BOOL bShow = TRUE);
+	private:
+		BOOL m_bShowHoriz;
+		BOOL m_bShowVert;
 	};
 
     struct FScrollSkinInfo

@@ -67,7 +67,7 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 		{
 			if (pObj->HitTestMove(point))
 			{
-				pView->SetActive(pObj, FALSE);
+				//pView->SetActive(pObj, FALSE);
 				pView->SetCurrentSelectMode(smMove);
 				
 				if (!pView->IsSelected(pObj))

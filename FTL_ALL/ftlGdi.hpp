@@ -80,14 +80,9 @@ namespace FTL
                     TEXT("Quality=%d,PitchAndFamily=%d,")
                     TEXT("FaceName=%s"),
                     
-					//字体的高度是一个叫em (twips?) 的单位，和逻辑坐标有关
-                    //字体的逻辑高度，如 MM_TEXT 时, lfHeight = -MulDiv(nPointSize, pDC->GetDeviceCaps(LOGPIXELSY), 72);
-                    // >0时,高度被转化为设备单位,大小相对于字体的网格高度, 如 nPointSize 为8, LOGPIXELSY 为96，计算出来为 -10.666?
-                    // =0时,使用合理的默认高度
-                    // <0时,高度被转化为设备单位，大小相对于字体的字符高度
-                    fontInfo.lfHeight,          
+                    fontInfo.lfHeight,			//参见头文件中的"字体大小单位"
                     fontInfo.lfWidth,           //字体平均宽度的逻辑值,为0时,会自动选择一个与高度最匹配的值
-                    fontInfo.lfEscapement,      //字符串底线与水平线的夹角(单位为0.1度)
+                    fontInfo.lfEscapement,      //字符串底线与水平线的夹角(单位为0.1角度)
                     fontInfo.lfOrientation,     //每个字符的底线与水平线的夹角（单位为0.1度）
                     fontInfo.lfWeight,          //字体的粗细,单位为千分比，取值范围为0(DONTCARE)~1000(全黑),
 												//如果为 FW_BOLD(700), 就是默认的粗体字, 系统默认的是 FW_NORMAL(400)
@@ -747,27 +742,82 @@ namespace FTL
         }
     }
 
-    LPCTSTR CFGdiUtil::GetFontNumberByPointSize(int nFontSize) 
+	LPCTSTR CFGdiUtil::GetTextMetricsInfo(HDC hdc, CFStringFormater& strFormater , HFONT hFont /*= NULL*/)
+	{
+		BOOL bRet = FALSE;
+		HFONT hOldFont = NULL;
+		if (hFont)
+		{
+			hOldFont = (HFONT)::SelectObject(hdc, hFont);
+			FTLASSERT(NULL != hOldFont);
+		}
+
+		TEXTMETRIC	tm = {0};
+		API_VERIFY(::GetTextMetrics(hdc, &tm));
+		if (bRet)
+		{
+			//未确认!
+			//字体的高度 = tmHeight + mExternalLeading
+			//一行的高度 = tmInternalLeading + tmHeight + mExternalLeading
+			//             tmAscent + tmDescent 等价于正的 LOGFONT::lfHeight?
+			HRESULT hr = E_FAIL;
+			COM_VERIFY(strFormater.Format(TEXT("tmHeight=%d, tmAscent=%d, tmDescent=%d, tmInternalLeading=%d, ")
+				TEXT("tmExternalLeading=%d, tmAveCharWidth=%d, tmMaxCharWidth=%d, tmWeight=%d, ")
+				TEXT("tmOverhang=%d, tmDigitizedAspectX=%d, tmDigitizedAspectY=%d, ")
+				TEXT("tmFirstChar=%d, tmLastChar=%d, tmDefaultChar=%d, tmBreakChar=%d, ")
+				TEXT("tmItalic=%d, tmUnderlined=%d, tmStruckOut=%d, tmPitchAndFamily=%d, tmCharSet=%d"),
+				tm.tmHeight,
+				tm.tmAscent,
+				tm.tmDescent,
+				tm.tmInternalLeading,
+				tm.tmExternalLeading,	//两行之间的额外高度,通常在输出多行文本时使用
+				tm.tmAveCharWidth,
+				tm.tmMaxCharWidth,
+				tm.tmWeight,
+				tm.tmOverhang,			//斜体时的倾斜宽度?
+				tm.tmDigitizedAspectX,
+				tm.tmDigitizedAspectY,
+				tm.tmFirstChar,
+				tm.tmLastChar,
+				tm.tmDefaultChar,
+				tm.tmBreakChar,
+				tm.tmItalic,
+				tm.tmUnderlined,
+				tm.tmStruckOut,
+				tm.tmPitchAndFamily,
+				tm.tmCharSet));
+		}
+		if (hFont)
+		{
+			//restore
+			::SelectObject(hdc, hOldFont);
+		}
+		return strFormater.GetString();
+	}
+
+    LPCTSTR CFGdiUtil::GetFontNumberByPointSize(int nPointSize) 
     {
-        //注意：nFontSize / 10 就是磅数
-        switch(nFontSize)
+        //注意：nPointSize / 10 就是磅数
+        switch(nPointSize)
         {
-        case 420: return TEXT("初号");
-        case 360: return TEXT("小初");
-        case 260: return TEXT("一号");
-        case 240: return TEXT("小一");
-        case 220: return TEXT("二号");
-        case 180: return TEXT("小二");
-        case 160: return TEXT("三号");
-        case 150: return TEXT("小三");
-        case 140: return TEXT("四号");
-        case 120: return TEXT("小四");
-        case 105: return TEXT("五号");
-        case  90: return TEXT("小五");
-        case  75: return TEXT("六号");
-        case  65: return TEXT("小六");
-        case  55: return TEXT("七号");
-        case  50: return TEXT("八号");
+		//计算对应的像素值： nPointSize * dipY / 72 = nPointSize*96/72
+		//对应的毫米数？？：     nPointSize * 25.4 /72 -- 好像对应高度刚好错了一行？
+        case 420: return TEXT("初号");  //像素值：56, 毫米数：? 12.7
+        case 360: return TEXT("小初");	//像素值：48, 毫米数：? 11.1
+        case 260: return TEXT("一号");	//像素值：34, 毫米数：? 9.66
+        case 240: return TEXT("小一");	//像素值：32, 毫米数：? 8.42
+        case 220: return TEXT("二号");	//像素值：29, 毫米数：? 7.80
+        case 180: return TEXT("小二");	//像素值：24, 毫米数：? 6.39
+        case 160: return TEXT("三号");	//像素值：21, 毫米数：? 5.55
+        case 150: return TEXT("小三");	//像素值：20, 毫米数：? 5.23
+        case 140: return TEXT("四号");	//像素值：18, 毫米数：? 4.93
+        case 120: return TEXT("小四");	//像素值：16, 毫米数：? 4.25
+        case 105: return TEXT("五号");	//像素值：14, 毫米数：? 3.70
+        case  90: return TEXT("小五");	//像素值：12, 毫米数：? 3.15
+        case  75: return TEXT("六号");	//像素值：10, 毫米数：? 2.81
+        case  65: return TEXT("小六");	//像素值：8,  毫米数：? 2.45
+        case  55: return TEXT("七号");	//像素值：7,  毫米数：? 2.12
+        case  50: return TEXT("八号");	//像素值：6,  毫米数：? 1.74
         default:
             return TEXT("Unknown");
         }

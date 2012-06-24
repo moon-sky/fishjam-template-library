@@ -1,15 +1,18 @@
 #include "StdAfx.h"
 #include "CapImageObj.h"
 #include "NPVPhotoCalcRect.h"
+#ifndef DRAW_TOOL_TEST
 #include "../Capture/AlphaBitmapUI/Canvas.h"
+#include "NCaptureApplication.h"
+#include "nCaptureDoc.h"
+#include "Util.h"
+#else
+#endif
 #include "ftlBase.h"
 #include "ftlFunctional.h"
 #include <algorithm>
 #include <atltime.h>
-#include "Util.h"
 #include "DrawTools/DrawObject.h"
-#include "NCaptureApplication.h"
-#include "nCaptureDoc.h"
 #include "nCaptureView.h"
 
 CCapImageObj::CCapImageObj(LPCTSTR pszObjectName, HBITMAP hbmp)
@@ -120,7 +123,7 @@ BOOL CCapImageObj::SaveImageFile(LPCTSTR pszFilePath, BOOL bChanageState/* = TRU
 
 	CaptureUtil::BmpSetAlpha((HBITMAP)*this, 255);
 
-	if (Save(pszFilePath, ImageFormatPNG) == S_OK)
+	if (Save(pszFilePath, Gdiplus::ImageFormatPNG) == S_OK)
 	{
 		bRet = TRUE;
 	}

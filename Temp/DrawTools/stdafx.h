@@ -48,3 +48,7 @@ extern CAppModule _Module;
 
 #define DRAW_TOOL_TEST
 #include "resource.h"
+#include "NPVPhotoCalcRect.h"
+
+#include <GdiPlus.h>
+using namespace Gdiplus;

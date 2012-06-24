@@ -451,6 +451,64 @@ namespace FTL
 		return hr;
 	}
 
+	CFEditEx::CFEditEx(void)
+	{
+	}
+
+	CFEditEx::~CFEditEx(void)
+	{
+	}
+
+	void CFEditEx::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+	{
+		PostMessage(UWM_CHECKTEXT);
+		SetMsgHandled(FALSE);
+	}
+
+	LRESULT CFEditEx::OnCheckText(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		CRect rcClient;
+		GetClientRect(&rcClient);
+		int iHeight=0;
+
+		//BOOL bHoriz = FALSE;
+		CClientDC dcClient(m_hWnd);
+		CFontHandle hEdtFont = GetFont();
+		FTLASSERT(hEdtFont);
+		HFONT hOldFont = dcClient.SelectFont(hEdtFont);
+
+		SIZE oSize = {0};
+		////Determine the line Height
+		dcClient.GetTextExtent(CString(_T(" ")), -1, &oSize);
+
+		////Text Height
+		iHeight = oSize.cy * GetLineCount();
+
+		dcClient.SelectFont(hOldFont);
+		//ShowHorizScrollBar(bHoriz);
+		ShowVertScrollBar(iHeight >= rcClient.Height());
+
+		return 0;
+	}
+
+	void CFEditEx::ShowHorizScrollBar(BOOL bShow)
+	{
+		if(m_bShowHoriz != bShow)
+		{
+			ShowScrollBar(SB_HORZ, bShow);
+			m_bShowHoriz = bShow;
+		}
+	}
+
+	void CFEditEx::ShowVertScrollBar(BOOL bShow)
+	{
+		if(m_bShowVert != bShow)
+		{
+			ShowScrollBar(SB_VERT, bShow);
+			m_bShowVert = bShow;
+		}
+	}
+
 	//////////////////////////////////////////////////////////////////////////
     LRESULT CFSkinComboBox::OnCbnDropDown(UINT uNotifyCode, int nID, CWindow wndCtl)
     {

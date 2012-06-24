@@ -9,6 +9,7 @@
 #include <prsht.h>
 #include <CommCtrl.h>
 #include <zmouse.h>
+#include "ftlNLS.h"
 
 namespace FTL
 {
@@ -85,7 +86,7 @@ namespace FTL
 	};
 
 	//RichEdit 有不少使用 WM_USER 的消息
-	class CFRichEditCtrlMsgInfo : CFDefaultMsgInfo
+	class CFRichEditCtrlMsgInfo : public CFDefaultMsgInfo
 	{
 		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR /*pszMsgName*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 		{
@@ -156,7 +157,7 @@ namespace FTL
 		}
 	};
 
-	class CFMouseMsgInfo : CFDefaultMsgInfo
+	class CFMouseMsgInfo : public CFDefaultMsgInfo
 	{
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
@@ -170,7 +171,7 @@ namespace FTL
 		}
 	};
 
-	class CFKeyMsgInfo : CFDefaultMsgInfo
+	class CFKeyMsgInfo : public CFDefaultMsgInfo
 	{
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
@@ -190,6 +191,63 @@ namespace FTL
 		}
 	};
 
+	class CFIMENotifyMsgInfo : public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			UINT nCommand = (UINT)wParam;
+			CFStringFormater formater;
+			
+			m_strFormater.Format(TEXT("%s{NotifyInfo=%s}"),pszMsgName, CFIMEUtil::GetIMENotifyInfoString(formater, wParam, lParam));
+			return m_strFormater;
+		}
+	};
+
+	class CFIMECompositionMsgInfo : public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			//DBCS
+			LPCSTR pszLastChange = (LPCSTR)wParam;
+			CFStringFormater strLastChange;
+			if (pszLastChange)
+			{
+				 CFConversion cov;
+				 strLastChange.Format(TEXT("%s"), cov.MBCS_TO_TCHAR(pszLastChange));
+			}
+			CFStringFormater changeTypeFormater;
+			m_strFormater.Format(
+				TEXT("%s{pszLastChange=%s, changeType=%s}"),
+				pszMsgName, 
+				strLastChange, CFIMEUtil::GetCompositionValueString(changeTypeFormater, (UINT)lParam, TEXT("|"))
+			);
+			return m_strFormater;
+		}
+	};
+
+	class CFIMECharMsgInfo : public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			TCHAR nChar = (TCHAR)wParam;
+			TCHAR nPrintChar = nChar;
+			if(!IsCharAlphaNumeric(nPrintChar))
+			{
+				nPrintChar = TEXT('.');
+			}
+
+			UINT nRepCnt = LOWORD(lParam);
+			UINT nFlags = HIWORD(lParam);
+
+			m_strFormater.Format(TEXT("%s{nChar=0x%x(%c), nRepCnt=%d, nFlags=0x%x}"),pszMsgName, nChar, nPrintChar, nRepCnt, nFlags);
+			return m_strFormater;
+		}
+	};
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 	CFRegistedMessageInfo::CFRegistedMessageInfo()
 	{
 		m_bInited = FALSE;
@@ -396,11 +454,6 @@ namespace FTL
 
 #if(WINVER >= 0x0400)
 #endif
-                GET_MESSAGE_INFO_ENTRY(WM_IME_STARTCOMPOSITION, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_IME_ENDCOMPOSITION, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_IME_COMPOSITION, CFDefaultMsgInfo);
-                //GET_MESSAGE_INFO_ENTRY(WM_IME_KEYLAST, CFDefaultMsgInfo);
-
                 GET_MESSAGE_INFO_ENTRY(WM_INITDIALOG, CFDefaultMsgInfo); //在一个对话框程序被显示前发送此消息给它，通常用此消息初始化控件和执行其它任务
                 GET_MESSAGE_INFO_ENTRY(WM_COMMAND, CFCommandMsgInfo);
 
@@ -511,13 +564,17 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_DROPFILES, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_MDIREFRESHMENU, CFDefaultMsgInfo);
 
+				GET_MESSAGE_INFO_ENTRY(WM_IME_STARTCOMPOSITION, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(WM_IME_ENDCOMPOSITION, CFDefaultMsgInfo);
+				//通知程序录入字串的改变，通常在 if(lParam & GCS_RESULTSTR) 时调用 ImmGetCompositionString 检索指示串或数据
+				GET_MESSAGE_INFO_ENTRY(WM_IME_COMPOSITION, CFIMECompositionMsgInfo);	
 #if(WINVER >= 0x0400)
                 GET_MESSAGE_INFO_ENTRY(WM_IME_SETCONTEXT, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_IME_NOTIFY, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_IME_CONTROL, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_NOTIFY, CFIMENotifyMsgInfo);		//通知程序IME视窗状态的通用变化
+                GET_MESSAGE_INFO_ENTRY(WM_IME_CONTROL, CFDefaultMsgInfo);		//指示IME窗体执行命令
                 GET_MESSAGE_INFO_ENTRY(WM_IME_COMPOSITIONFULL, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_IME_SELECT, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_IME_CHAR, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_IME_CHAR, CFIMECharMsgInfo);			//IME获取到转换后的结果
 #endif
 
 #if(WINVER >= 0x0500)
@@ -719,6 +776,23 @@ namespace FTL
 #if(WINVER >= 0x0600)
 				GET_MESSAGE_INFO_ENTRY(BM_SETDONTCLICK, CFDefaultMsgInfo);
 #endif /* WINVER >= 0x0600 */
+				
+				//Button control messages
+				GET_MESSAGE_INFO_ENTRY(BCM_GETIDEALSIZE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_SETIMAGELIST, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_GETIMAGELIST, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_SETTEXTMARGIN, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_GETTEXTMARGIN, CFDefaultMsgInfo);
+
+#if _WIN32_WINNT >= 0x0600
+				GET_MESSAGE_INFO_ENTRY(BCM_SETDROPDOWNSTATE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_SETSPLITINFO, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_GETSPLITINFO, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_SETNOTE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_GETNOTE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_GETNOTELENGTH, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(BCM_SETSHIELD, CFDefaultMsgInfo);
+#endif // _WIN32_WINNT >= 0x0600
 
 				//Static Control Mesages
 				GET_MESSAGE_INFO_ENTRY(STM_SETICON, CFDefaultMsgInfo);
@@ -782,6 +856,97 @@ namespace FTL
 //#if(_WIN32_WINNT >= 0x0501)
 				GET_MESSAGE_INFO_ENTRY(LB_MSGMAX, CFDefaultMsgInfo);
 //#endif //_WIN32_WINNT
+
+				//ListView messages
+				GET_MESSAGE_INFO_ENTRY(LVM_GETBKCOLOR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETBKCOLOR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETIMAGELIST, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETIMAGELIST, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMCOUNT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETITEMA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETITEMW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_INSERTITEMA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_INSERTITEMW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_DELETEITEM, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_DELETEALLITEMS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETCALLBACKMASK, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETCALLBACKMASK, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETNEXTITEM, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_FINDITEMA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_FINDITEMW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMRECT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETITEMPOSITION, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMPOSITION, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETSTRINGWIDTHA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETSTRINGWIDTHW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_HITTEST, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_ENSUREVISIBLE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SCROLL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_REDRAWITEMS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_ARRANGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_EDITLABELA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_EDITLABELW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETEDITCONTROL, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETCOLUMNA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETCOLUMNW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETCOLUMNA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETCOLUMNW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_INSERTCOLUMNA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_INSERTCOLUMNW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_DELETECOLUMN, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETCOLUMNWIDTH, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETCOLUMNWIDTH, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETHEADER, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_CREATEDRAGIMAGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETVIEWRECT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETTEXTCOLOR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETTEXTCOLOR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETTEXTBKCOLOR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETTEXTBKCOLOR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETTOPINDEX, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETCOUNTPERPAGE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETORIGIN, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_UPDATE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETITEMSTATE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMSTATE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMTEXTA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMTEXTW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETITEMTEXTA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETITEMTEXTW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETITEMCOUNT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SORTITEMS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETITEMPOSITION32, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETSELECTEDCOUNT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETITEMSPACING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETISEARCHSTRINGA, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETISEARCHSTRINGW, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETICONSPACING, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETEXTENDEDLISTVIEWSTYLE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETEXTENDEDLISTVIEWSTYLE, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETSUBITEMRECT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SUBITEMHITTEST, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETCOLUMNORDERARRAY, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETCOLUMNORDERARRAY, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETHOTITEM, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETHOTITEM, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETHOTCURSOR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETHOTCURSOR, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_APPROXIMATEVIEWRECT, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETWORKAREAS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETWORKAREAS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETNUMBEROFWORKAREAS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETSELECTIONMARK, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETSELECTIONMARK, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETHOVERTIME, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETHOVERTIME, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SETTOOLTIPS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_GETTOOLTIPS, CFDefaultMsgInfo);
+				GET_MESSAGE_INFO_ENTRY(LVM_SORTITEMSEX, CFDefaultMsgInfo);
+				//GET_MESSAGE_INFO_ENTRY(XXXXXXXXXXXX, CFDefaultMsgInfo);
+				//GET_MESSAGE_INFO_ENTRY(XXXXXXXXXXXX, CFDefaultMsgInfo);
+				//GET_MESSAGE_INFO_ENTRY(XXXXXXXXXXXX, CFDefaultMsgInfo);
 
 				//Combo Box messages
 				GET_MESSAGE_INFO_ENTRY(CB_GETEDITSEL, CFDefaultMsgInfo);
@@ -1615,6 +1780,8 @@ namespace FTL
 
     LPCTSTR CFWinUtil::GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc/* = NULL*/)
     {
+		UNREFERENCED_PARAMETER(pTransProc);
+
         switch(nCode)
         {
             // generic to all controls

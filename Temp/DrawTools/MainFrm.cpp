@@ -53,7 +53,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	
 #ifdef FTL_DEBUG
 	HRESULT hr = E_FAIL;
-	CCapImageObj* pImageObj = new CCapImageObj(TEXT("G:\\TestImage.PNG"));
+	CWindowDC dcScreen(NULL);
+	m_bitmap.CreateCompatibleBitmap(dcScreen, 100, 100);
+	CCapImageObj* pImageObj = new CCapImageObj(TEXT("G:\\TestImage.PNG"), NULL);
 	COM_VERIFY(pImageObj->Load(TEXT("G:\\TestImage.PNG")));
 	if (SUCCEEDED(hr))
 	{
@@ -93,7 +95,7 @@ LRESULT CMainFrame::OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	if (dlg.DoModal() == IDOK)
 	{
 		HRESULT hr = E_FAIL;
-		CCapImageObj* pImageObj = new CCapImageObj(dlg.m_szFileName);
+		CCapImageObj* pImageObj = new CCapImageObj(dlg.m_szFileName, m_bitmap);
 		COM_VERIFY(pImageObj->Load(dlg.m_szFileName));
 		if (SUCCEEDED(hr))
 		{
@@ -184,12 +186,8 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 	//ReleaseDC(hdc);
 
-	CPoint ptMouse;
-	GetCursorPos(&ptMouse);
-	m_view.SelectToolTypeByMenu(ptMouse);
-
-	//CAboutDlg dlg;
-	//dlg.DoModal();
+	CAboutDlg dlg;
+	dlg.DoModal();
 	//HRESULT hr = E_FAIL;
 	//TCHAR buf[5];
 	//COM_VERIFY(StringCchCopy(buf, _countof(buf), TEXT("fishjam")));
@@ -198,7 +196,11 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT CMainFrame::OnToolSelect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	m_view.SetCurrentToolType(ttSelection);
+	//m_view.SetCurrentToolType(ttSelection);
+	CPoint ptMouse;
+	GetCursorPos(&ptMouse);
+	m_view.SelectToolTypeByMenu(ptMouse);
+
 	return 0;
 }
 

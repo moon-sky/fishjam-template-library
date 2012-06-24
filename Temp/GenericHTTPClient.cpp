@@ -1,167 +1,40 @@
-// GenericHTTPClient.cpp: implementation of the GenericHTTPClient class.
+// CFGenericHTTPClient.cpp: implementation of the CFGenericHTTPClient class.
 //
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "GenericHTTPClient.h"
+#include "CFGenericHTTPClient.h"
 #include <winreg.h>
 #include "../../Common/Conversion.h"
 
 const TCHAR *HTTP_MIME[]    = { _T ( "*/*" ), _T ( "text/*" ), NULL } ;
 
-GenericHTTPClient::GenericHTTPClient()
-{
-	m_hOpen = NULL;
-	m_hConnection = NULL;
-	m_hRequest=NULL;
-	
-	ZeroMemory(m_szHTTPResponseHeader, sizeof(m_szHTTPResponseHeader));
-	ZeroMemory(m_szHTTPResponseHTML, sizeof(m_szHTTPResponseHTML));
 
-	m_dwError = 0;
-	//m_szHost = NULL;
-	//m_dwPort = 0;
-}
-
-GenericHTTPClient::~GenericHTTPClient()
-{
-	Close();
-}
-
-//GenericHTTPClient::RequestMethod GenericHTTPClient::GetMethod(int nMethod)
+//CFGenericHTTPClient::RequestMethod CFGenericHTTPClient::GetMethod(int nMethod)
 //{	
-//	return nMethod <=0 ? GenericHTTPClient::RequestGetMethod : 
-//		static_cast<GenericHTTPClient::RequestMethod>(nMethod);
+//	return nMethod <=0 ? CFGenericHTTPClient::RequestGetMethod : 
+//		static_cast<CFGenericHTTPClient::RequestMethod>(nMethod);
 //}
 
-//GenericHTTPClient::TypePostArgument GenericHTTPClient::GetPostArgumentType(int nType)
+//CFGenericHTTPClient::TypePostArgument CFGenericHTTPClient::GetPostArgumentType(int nType)
 //{
-//	return nType<=0 ? GenericHTTPClient::TypeNormal : static_cast<GenericHTTPClient::TypePostArgument>(nType);
+//	return nType<=0 ? CFGenericHTTPClient::TypeNormal : static_cast<CFGenericHTTPClient::TypePostArgument>(nType);
 //}
 
-BOOL GenericHTTPClient::Connect(LPCTSTR szAgent,
-								LPCTSTR szAddress, 
-								WORD nPort /* = INTERNET_DEFAULT_HTTP_PORT */, 
-								LPCTSTR pszCookie /* = NULL */, 
-								LPCTSTR szUserAccount /* = NULL */, 
-								LPCTSTR szPassword /* = NULL */)
-{
-	BOOL bRet = FALSE;
 
-	m_hOpen =::InternetOpen(szAgent,	// agent name
-		INTERNET_OPEN_TYPE_PRECONFIG,	// proxy option
-		NULL,   // proxy
-		NULL,	// proxy bypass
-		0);		// flags
-
-	API_ASSERT(m_hOpen);
-
-	if(!m_hOpen)
-	{
-		m_dwError=::GetLastError();
-		return FALSE;
-	}	
-
-	m_hConnection=::InternetConnect(	m_hOpen,	// internet opened handle
-		szAddress, // server name
-		nPort, // ports
-		szUserAccount, // user name
-		szPassword, // password 
-		INTERNET_SERVICE_HTTP, // service type
-											0, //	INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_CACHE_WRITE,	// service option
-		0);	// context call-back option
-
-	API_ASSERT(_hHTTPConnection);
-	if(!m_hConnection){		
-		m_dwError=::GetLastError();
-		SAFE_CLOSE_INTERNET_HANDLE(m_hOpen);
-		return FALSE;
-	}
-#if 0
-	if(::InternetAttemptConnect(NULL)!=ERROR_SUCCESS){		
-		API_ASSERT(FALSE);
-		m_dwError=::GetLastError();
-		SAFE_CLOSE_INTERNET_HANDLE(m_hConnection);
-		SAFE_CLOSE_INTERNET_HANDLE(m_hOpen);
-		return FALSE;
-	}
-#endif 
-
-#if 0
-	if ( szCookie != NULL && lstrcmp ( szCookie, _T ( "INVALID_COOKIE" ) ) != 0 )
-	{
-		CString szURL = _T ( "http://" );
-		szURL += szAddress;
-		BOOL bRes = ::InternetSetCookie ( szURL, NULL, szCookie );
-	}
-#endif 
-	return TRUE;															
-}
-
-BOOL GenericHTTPClient::Close()
-{
-	BOOL bRet = FALSE;
-	SAFE_CLOSE_INTERNET_HANDLE(m_hRequest);
-	SAFE_CLOSE_INTERNET_HANDLE(m_hConnection);
-	SAFE_CLOSE_INTERNET_HANDLE(m_hOpen);
-
-	return bRet;
-}
-
-BOOL GenericHTTPClient::Request(LPCTSTR szURL, 
-								LPCTSTR szAgent, 
-								int nMethod)
-{
-
-	BOOL bReturn=TRUE;
-	WORD wPort=0;
-	TCHAR szProtocol[__SIZE_BUFFER]= { 0 };
-	TCHAR szAddress[__SIZE_BUFFER]= { 0 };	
-	TCHAR szURI[__SIZE_BUFFER]= {0};
-	//DWORD dwSize=0;
-	_dwResultSize = 0;
-
-	ParseURL(szURL, szProtocol, szAddress, wPort, szURI);
-
-	if(Connect(szAddress, szAgent, wPort))
-	{
-		if(!RequestOfURI(szURI, nMethod))
-		{
-			bReturn=FALSE;
-		}
-		else
-		{
-			if (	!Response (
-						( PWORD ) _szHTTPResponseHeader, __SIZE_HTTP_BUFFER,
-						( PWORD ) _szHTTPResponseHTML, __SIZE_HTTP_BUFFER, _dwResultSize
-					) )
-			{
-				bReturn=FALSE;		
-			}
-		}
-		Close();
-	}
-	else
-	{
-		bReturn=FALSE;
-	}
-
-	return bReturn;
-}
-
-BOOL GenericHTTPClient::RequestOfURI(LPCTSTR szURI, int nMethod)
+BOOL CFGenericHTTPClient::RequestOfURI(LPCTSTR szURI, int nMethod)
 {
 
 	BOOL bRet=TRUE;
 	switch(nMethod)
 	{
-	case GenericHTTPClient::RequestPostMethod:		
+	case CFGenericHTTPClient::RequestPostMethod:		
 		API_VERIFY(RequestPost(szURI));
 		break;
-	case GenericHTTPClient::RequestPostMethodMultiPartsFormData:
+	case CFGenericHTTPClient::RequestPostMethodMultiPartsFormData:
 		API_VERIFY(RequestPostMultiPartsFormData(szURI));
 		break;
-	case GenericHTTPClient::RequestGetMethod:
+	case CFGenericHTTPClient::RequestGetMethod:
 	default:
 		API_VERIFY(RequestGet(szURI));
 		break;
@@ -170,53 +43,8 @@ BOOL GenericHTTPClient::RequestOfURI(LPCTSTR szURI, int nMethod)
 	return bRet;
 }
 
-BOOL GenericHTTPClient::RequestGet(LPCTSTR szURI)
-{
-	BOOL bRet = FALSE;
 
-	CONST TCHAR *szAcceptType=__HTTP_ACCEPT_TYPE;
-
-	m_hRequest =::HttpOpenRequest(	m_hConnection,
-		__HTTP_VERB_GET, // HTTP Verb
-		szURI, // Object Name
-		HTTP_VERSION, // Version
-										/*""*/NULL, // Reference
-										&HTTP_MIME[1], // Accept Type
-		INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NO_CACHE_WRITE,
-		0); // context call-back point
-
-	API_ASSERT(!!m_hRequest);
-	if(!m_hRequest)
-	{
-		m_dwError=::GetLastError();
-		return FALSE;
-	}
-
-	// REPLACE HEADER
-	API_VERIFY(::HttpAddRequestHeaders( m_hRequest, __HTTP_ACCEPT, 
-		_tcslen(__HTTP_ACCEPT), HTTP_ADDREQ_FLAG_ADD_IF_NEW));
-	if (!bRet)
-	{
-		m_dwError=::GetLastError();
-		return FALSE;
-	}
-
-	// SEND REQUEST
-	API_VERIFY(::HttpSendRequest( m_hRequest,	// handle by returned HttpOpenRequest
-		NULL, // additional HTTP header
-		0, // additional HTTP header length
-		NULL, // additional data in HTTP Post or HTTP Put
-		0)); // additional data length
-	//if(!bRet)
-	//{
-	//	m_dwError=::GetLastError();
-	//	return FALSE;
-	//}
-
-	return TRUE;
-}
-
-BOOL GenericHTTPClient::RequestPost(LPCTSTR szURI)
+BOOL CFGenericHTTPClient::RequestPost(LPCTSTR szURI)
 {
 	BOOL bRet = FALSE;
 
@@ -268,7 +96,7 @@ BOOL GenericHTTPClient::RequestPost(LPCTSTR szURI)
 	return TRUE;
 }
 
-BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
+BOOL CFGenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 {
 	BOOL bRet = FALSE;
 
@@ -409,7 +237,7 @@ BOOL GenericHTTPClient::RequestPostMultiPartsFormData(LPCTSTR szURI)
 	return TRUE;
 }
 
-DWORD GenericHTTPClient::ResponseOfBytes(PBYTE pBuffer, DWORD dwSize)
+DWORD CFGenericHTTPClient::ResponseOfBytes(PBYTE pBuffer, DWORD dwSize)
 {
 	BOOL bRet = FALSE;
 	FTLTRACE(TEXT("Enter ResponseOfBytes\n"));
@@ -434,7 +262,7 @@ DWORD GenericHTTPClient::ResponseOfBytes(PBYTE pBuffer, DWORD dwSize)
 	return dwBytes;
 }
 
-BOOL GenericHTTPClient::Response ( PWORD pHeaderBuffer,
+BOOL CFGenericHTTPClient::Response ( PWORD pHeaderBuffer,
 								   DWORD dwHeaderBufferLength,
 								   PWORD pBuffer,
 								   DWORD dwBufferLength,
@@ -472,7 +300,7 @@ BOOL GenericHTTPClient::Response ( PWORD pHeaderBuffer,
 	return (dwResultSize? TRUE: FALSE);
 }
 
-VOID GenericHTTPClient::AddPostArguments(LPCTSTR szName, LPCTSTR szValue, BOOL bBinary)
+VOID CFGenericHTTPClient::AddPostArguments(LPCTSTR szName, LPCTSTR szValue, BOOL bBinary)
 {
 
 	GenericHTTPArgument	arg;
@@ -480,27 +308,27 @@ VOID GenericHTTPClient::AddPostArguments(LPCTSTR szName, LPCTSTR szValue, BOOL b
 	arg.szValue = szValue;
 	
 	if(!bBinary)
-		arg.dwType = GenericHTTPClient::TypeNormal;
+		arg.dwType = CFGenericHTTPClient::TypeNormal;
 	else
-		arg.dwType = GenericHTTPClient::TypeBinary;	
+		arg.dwType = CFGenericHTTPClient::TypeBinary;	
 
 	_vArguments.push_back(arg);
 
 	return;
 }
 
-VOID GenericHTTPClient::AddPostArguments(LPCTSTR szName, DWORD nValue){
+VOID CFGenericHTTPClient::AddPostArguments(LPCTSTR szName, DWORD nValue){
 
 	GenericHTTPArgument	arg;
 	arg.szName = szName;
 	arg.szValue.Format(TEXT("%d"), nValue);
-	arg.dwType = GenericHTTPClient::TypeNormal;
+	arg.dwType = CFGenericHTTPClient::TypeNormal;
 
 	_vArguments.push_back(arg);
 	return;
 }
 
-DWORD GenericHTTPClient::GetPostArguments(LPTSTR szArguments, DWORD dwLength)
+DWORD CFGenericHTTPClient::GetPostArguments(LPTSTR szArguments, DWORD dwLength)
 {
 	::ZeroMemory(szArguments, dwLength);
 	ATL::CAtlString	strTemp;
@@ -521,23 +349,23 @@ DWORD GenericHTTPClient::GetPostArguments(LPTSTR szArguments, DWORD dwLength)
 }
 
 
-VOID GenericHTTPClient::InitilizePostArguments()
+VOID CFGenericHTTPClient::InitilizePostArguments()
 {
 	_vArguments.clear();
 	return;
 }
 
-VOID GenericHTTPClient::InitilizeRequestHeaders()
+VOID CFGenericHTTPClient::InitilizeRequestHeaders()
 {
 	_vRequestHeaders.clear();
 }
 
-VOID GenericHTTPClient::AddRequestHeader(LPCTSTR pszName)
+VOID CFGenericHTTPClient::AddRequestHeader(LPCTSTR pszName)
 {
 	_vRequestHeaders.push_back(pszName);
 }
 
-BOOL GenericHTTPClient::SendRequestHeaders()
+BOOL CFGenericHTTPClient::SendRequestHeaders()
 {
 	BOOL bRet = FALSE;
 	std::vector<CAtlString>::iterator iter = _vRequestHeaders.begin();
@@ -553,7 +381,7 @@ BOOL GenericHTTPClient::SendRequestHeaders()
 	return bRet;
 }
 
-VOID GenericHTTPClient::FreeMultiPartsFormData(PBYTE &pBuffer)
+VOID CFGenericHTTPClient::FreeMultiPartsFormData(PBYTE &pBuffer)
 {
 
 	if(pBuffer)
@@ -565,7 +393,7 @@ VOID GenericHTTPClient::FreeMultiPartsFormData(PBYTE &pBuffer)
 	return;
 }
 
-DWORD GenericHTTPClient::AllocMultiPartsFormData(PBYTE &pInBuffer, LPCTSTR szBoundary)
+DWORD CFGenericHTTPClient::AllocMultiPartsFormData(PBYTE &pInBuffer, LPCTSTR szBoundary)
 {
 	if(pInBuffer)
 	{
@@ -587,7 +415,7 @@ DWORD GenericHTTPClient::AllocMultiPartsFormData(PBYTE &pInBuffer, LPCTSTR szBou
 		// SET MULTI_PRATS FORM DATA BUFFER
 		switch(itArgv->dwType)
 		{
-		case	GenericHTTPClient::TypeNormal:
+		case	CFGenericHTTPClient::TypeNormal:
 			pBuffer=(PBYTE)::LocalAlloc(LPTR, __SIZE_HTTP_HEAD_LINE*4);
 				StringCchPrintfA(( char* ) pBuffer, __SIZE_HTTP_HEAD_LINE * 4,
 								 "--%s\r\n"
@@ -601,7 +429,7 @@ DWORD GenericHTTPClient::AllocMultiPartsFormData(PBYTE &pInBuffer, LPCTSTR szBou
 				dwBufferSize = strlen ( ( char* ) pBuffer );
 
 			break;
-		case	GenericHTTPClient::TypeBinary:
+		case	CFGenericHTTPClient::TypeBinary:
 			DWORD	dwNumOfBytesToRead=0;
 			DWORD	dwTotalBytes=0;
 
@@ -661,7 +489,7 @@ DWORD GenericHTTPClient::AllocMultiPartsFormData(PBYTE &pInBuffer, LPCTSTR szBou
 	return dwPosition + ( ( 2 + strlen ( ConvertWCtoC ( szBoundary ) ) + 3 ) * sizeof ( char ) );
 }
 
-DWORD GenericHTTPClient::GetMultiPartsFormDataLength()
+DWORD CFGenericHTTPClient::GetMultiPartsFormDataLength()
 {
 	std::vector<GenericHTTPArgument>::iterator itArgv;
 
@@ -672,10 +500,10 @@ DWORD GenericHTTPClient::GetMultiPartsFormDataLength()
 
 		switch(itArgv->dwType)
 		{
-		case	GenericHTTPClient::TypeNormal:
+		case	CFGenericHTTPClient::TypeNormal:
 			dwLength+=__SIZE_HTTP_HEAD_LINE*4;
 			break;
-		case	GenericHTTPClient::TypeBinary:
+		case	CFGenericHTTPClient::TypeBinary:
 			HANDLE hFile=::CreateFile(itArgv->szValue, 
 				GENERIC_READ, // desired access
 				FILE_SHARE_READ, // share mode
@@ -694,7 +522,7 @@ DWORD GenericHTTPClient::GetMultiPartsFormDataLength()
 	return dwLength;
 }
 
-LPCTSTR GenericHTTPClient::GetContentType(LPCTSTR szName)
+LPCTSTR CFGenericHTTPClient::GetContentType(LPCTSTR szName)
 {
 	static TCHAR	szReturn[1024]= { 0 };
 	LONG	dwLen=1024;
@@ -728,12 +556,12 @@ LPCTSTR GenericHTTPClient::GetContentType(LPCTSTR szName)
 	return szReturn;
 }
 
-DWORD GenericHTTPClient::GetLastError()
+DWORD CFGenericHTTPClient::GetLastError()
 {
 	return m_dwError;
 }
 
-VOID GenericHTTPClient::ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddress, WORD &wPort, LPTSTR szURI)
+VOID CFGenericHTTPClient::ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddress, WORD &wPort, LPTSTR szURI)
 {
 
 	TCHAR szPort[__SIZE_BUFFER]= { 0 };
@@ -809,21 +637,21 @@ VOID GenericHTTPClient::ParseURL(LPCTSTR szURL, LPTSTR szProtocol, LPTSTR szAddr
 	return;
 }
 
-LPCTSTR GenericHTTPClient::QueryHTTPResponseHeader()
+LPCTSTR CFGenericHTTPClient::QueryHTTPResponseHeader()
 {
 	return m_szHTTPResponseHeader;
 }
 
-LPCTSTR GenericHTTPClient::QueryHTTPResponse()
+LPCTSTR CFGenericHTTPClient::QueryHTTPResponse()
 {
 	return m_szHTTPResponseHTML;
 }
-DWORD GenericHTTPClient::QueryHTTPResponseSize()
+DWORD CFGenericHTTPClient::QueryHTTPResponseSize()
 {
-	return _dwResultSize;
+	return m_dwResultSize;
 }
 
-LPCSTR GenericHTTPClient::ConvertWCtoC ( LPCTSTR str )
+LPCSTR CFGenericHTTPClient::ConvertWCtoC ( LPCTSTR str )
 {
 	char* pStr ;
 	int strSize = WideCharToMultiByte ( CP_ACP, 0, str, -1, NULL, 0, NULL, NULL );

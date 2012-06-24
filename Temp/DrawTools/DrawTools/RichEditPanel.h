@@ -49,8 +49,8 @@ public:
 
 	//dwFontMask see RICH_EDIT_PANEL_FONT_MASK_XXXX
 	
-	HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask);
-	HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask);
+	//HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask);
+	//HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask);
 
 	HRESULT SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName);
 	HRESULT GetTextFontName(long nStart, long nEnd, LPTSTR pszFontName, int nCount);
@@ -65,7 +65,6 @@ public:
 	HRESULT GetTextBackColor(long nStart, long nEnd, COLORREF* pClr);
 
 	HRESULT GetTextForeColor(long nStart, long nEnd, COLORREF& clr);
-	HRESULT GetTextFont(long nStart, long nEnd, PLOGFONT pLogFont);
 
 	//nStart and nEnd does not use now, must be zero
 	HRESULT GetTextStream(long nStart, long nEnd, IStream** ppStream);
@@ -129,12 +128,9 @@ public:
 	//HRESULT OnTxInPlaceDeactivate();
 
 	BEGIN_MSG_MAP_EX(CRichEditPanel)
-		//MESSAGE_HANDLER(WM_LBUTTONDBLCLK, OnLButtonDblClk)
-		//MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
-		//MESSAGE_HANDLER(WM_KEYDOWN, OnKeyDown)
-		//MESSAGE_HANDLER(WM_CHAR, OnChar)
 		MESSAGE_RANGE_HANDLER(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseMessageHandler)
 		MESSAGE_RANGE_HANDLER(WM_KEYFIRST, WM_KEYLAST, OnKeyMessageHandler)
+		//MESSAGE_RANGE_HANDLER(WM_IME_SETCONTEXT, WM_IME_KEYUP, OnIMEMessageHandler)
 	END_MSG_MAP()
 
 	//BEGIN_COM_MAP(CRichEditPanel)
@@ -193,6 +189,7 @@ public:
 	//Message Handle
 	LRESULT OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnIMEMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
 	// nStart => nEnd
 	//   0    =>   0   -- Current Select

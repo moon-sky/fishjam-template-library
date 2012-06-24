@@ -523,7 +523,7 @@ namespace FTL
         m_cyIconSpacing = GetSystemMetrics(SM_CYICONSPACING);	//large icon view时Grid Cell的高度(75像素)
         m_MenuDropAlignment = GetSystemMetrics(SM_MENUDROPALIGNMENT);	//非0表示下拉菜单相对于Menu-Bar Item是右对齐， 0表示是左对齐 (0)
         m_PenWindows = GetSystemMetrics(SM_PENWINDOWS);			//非0表示安装了 Pen computing extensions(0)
-        m_DBCSEnabled = GetSystemMetrics(SM_DBCSENABLED);		//非0表示User32.dll支持 DBCS(1)
+        m_DBCSEnabled = GetSystemMetrics(SM_DBCSENABLED);		//非0表示User32.dll支持 DBCS(1), IMM支持(亚洲语言输入法)
         m_CMouseButtons = GetSystemMetrics(SM_CMOUSEBUTTONS);	//表示鼠标上按钮的个数(3)
 
 #if(WINVER >= 0x0400)

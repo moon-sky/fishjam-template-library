@@ -14,7 +14,8 @@ DOS等传统字符界面用点阵模板显示文字
 GUI中的文字一般是利用轮廓字体中的控制点数据经计算后再绘制出来,
   Windows采用基于二次贝塞尔曲线的TrueType轮廓字体(*.ttf)
 
-1物理英寸 = 25.4mm; 1磅 = 1/72 英寸 = 25.4/72mm
+DPI　-- dots per Inch(每英寸的像素数,LOGPIXELSY)，一般来说是 96dpi 或 120 dpi
+1物理英寸 = 25.4mm; 1磅 = 1/72 英寸 = 25.4/72 mm
 VGA中, 1逻辑英寸=96像素, 300dpi的打印机，1英寸300像素
 
 COLORREF -- 0x00bbggrr, 四字节，RGB 只能设置3个字节，自定义一个扩展的 RGBA, 测试向Canvas上手动生成RGBA的数据
@@ -78,8 +79,28 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 
 *   CFont -- 设备无关的字体(TrueType类型的轮廓字体),其创建函数并不"创建"一个全新的字体，
 *     而是从Windows的物理字体库中选择一个与所设置参数最匹配的字体.
-*     nPointSize(CreatePointFont) -- 字体大小,以0.1点（像素/墨点/磅数）为单位。
-*       5号宋体字的该值是105,磅数为 10.5
+*     字体大小单位( WTL::CDialogBaseUnits::InitDialogBaseUnits ):
+*       1.point(磅,1/72逻辑英寸) -- 96DPI时一个像素为 72/96=0.75磅， 如 ITextFont::SetSize 等
+*         nPointSize -- 通常是十分之一磅， 如 CreatePointFont 时的单位
+*       2.twips(1/1440 逻辑英寸或 1/20磅) -- 如 CHARFORMAT::yHeight
+*       3.字号 -- 如 初号、小初 等，优点是使用简单方便（无需关心字体的实际尺寸），缺点是字体的大小受字号的限制，
+*                 太小、太大或字号等级间的字体无法用字号表示
+*       4.逻辑单位，如 LOGONT::lfHeight， 注意：使用正的高度得到的字体比使用负值得到的字体小
+*           <0 时,高度被转化为设备单位，大小相对于字体的字符高度 -- ? Windows 根据绝对值查找
+*                 查找的字体高度 = lfHeight - InternalLeading ???
+*           =0 时,使用合理的默认高度
+*           >0 时,高度被转化为设备单位,大小相对于字体的网格高度, 如 nPointSize 为8, LOGPIXELSY 为96，计算出来为 -10.666?
+*                 查找的字体高度 = -lfHeight ???
+*       转换(MM_TEXT)：
+*          逻辑坐标 => 磅: nPointSize = LOGFONT::lfHeight * 72 / dpiY;
+*          磅 => 逻辑坐标: LOGFONT::lfHeight = -MulDiv(nPointSize, pDC->GetDeviceCaps(LOGPIXELSY), 72) = nPointSize*dpiY/72
+*          磅 => twips:    nTwips = nPointSize * 20;
+* 
+*       2.Em(twips?) -- 字体的逻辑坐标高度, LOGFONT::lfHeight 为负值时(如字体对话框中选择 8 等)，
+*           
+*       //对话框上的单位： http://blog.csdn.net/dclchj/article/details/5938497
+*       nPointSize(CreatePointFont) -- 字体大小,以0.1点（像素/墨点/磅数）为单位。
+*         5号宋体字的该值是105,磅数为 10.5
 *     lpszFaceName -- 字体名称字符串的指针，常用的有"宋体","Times New Roman"等
 *   CRgn
 *   CPallete
@@ -448,8 +469,8 @@ namespace FTL
         int     m_nDeviceCapsVertsize;          //(VERTSIZE), 如 270
         int     m_nDeviceCapsHorzres;           //屏幕宽(HORZSIZE),如 1024
         int     m_nDeviceCapsVertres;           //屏幕高(VERTSIZE),如 768
-        int     m_nDeviceCapsLogPixelsX;        //(LOGPIXELSX), 如 96
-        int     m_nDeviceCapsLogPixelsY;        //(LOGPIXELSY), 如 96
+        int     m_nDeviceCapsLogPixelsX;        //水平上每逻辑英寸的像素数, 如 96 或 120
+        int     m_nDeviceCapsLogPixelsY;        //垂直上每逻辑英寸的像素数, 如 96 或 120
         int     m_nDeviceCapsBitsPixel;         //颜色深度(BITSPIXEL),如 32
         int     m_nDeviceCapsPlanes;            //(PLANES), 如 1
         int     m_nDeviceCapsNumBrushes;        //(NUMBRUSHES), 如 -1
@@ -549,7 +570,10 @@ namespace FTL
         FTLINLINE static LPCTSTR GetTextAlignString(int nFlags);
         FTLINLINE static BOOL    GetHDCProperty(HDC hdc, HDCProperty* pProperty);
 
-        FTLINLINE static LPCTSTR CFGdiUtil::GetFontNumberByPointSize(int nFontSize);
+		FTLINLINE static LPCTSTR GetTextMetricsInfo(HDC hdc, CFStringFormater& strFormater , HFONT hFont = NULL);
+
+		//根据传入的 10*磅， 得到对应的字号(如 初号、小初等)
+		FTLINLINE static LPCTSTR GetFontNumberByPointSize(int nPointSize);
 
         //在HDC上绘制坐标系统的信息(映射模式、9个标准点的坐标)，从而帮助调试
         FTLINLINE static BOOL   DrawCoordinate(HDC hdc, const RECT& rcClient, BOOL bDrawText = TRUE,

@@ -76,7 +76,15 @@ public:
 		strInfo.Format(TEXT("ZOOM:%.2f"), fCurZoom);
 		SetWindowText(strInfo);
 	}
+	void UpdateImageBoard()
+	{
+
+	}
+	void UpdateToolbarButtomState()
+	{
+
+	}
 private:
 	CComPtr<IStream> m_spStream;
-
+	CBitmap			m_bitmap;
 };

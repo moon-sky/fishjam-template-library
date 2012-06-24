@@ -11,18 +11,22 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	HRESULT hr = E_FAIL;
 
 	m_pRichEditPanel = new CRichEditPanel();
-	LOGFONT stFont;
 
 	if (stDrawObjInfo.strFontName == _T(""))
 	{
 		stDrawObjInfo.strFontName = _T("Arial");
+
 	}
 	if (stDrawObjInfo.nFontSize == -1)
 	{
 		stDrawObjInfo.nFontSize = 18;
 	}
 
-	StringCchCopy(stFont.lfFaceName, LF_FACESIZE, stDrawObjInfo.strFontName);
+	LOGFONT stFont = {0};
+	#pragma TODO(Font Height)
+	stFont.lfHeight = stDrawObjInfo.nFontSize;
+	StringCchCopy(stFont.lfFaceName, _countof(stFont.lfFaceName), stDrawObjInfo.strFontName);
+
 	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, &stFont, 
 		stDrawObjInfo.clrFontFore, this);
 	UpdateDrawInfo(stDrawObjInfo);

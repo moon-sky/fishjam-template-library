@@ -2,11 +2,12 @@
 #include "DrawRect.h"
 #include "DrawCanvas.h"
 #include <ftlGdi.h>
+#include "../NPVPhotoCalcRect.h"
 
-#include <SilverlightCpp.h>
-using namespace SilverlightCpp;
-#include <SilverlightExCpp.h>
-using namespace SilverlightExCpp;
+//#include <SilverlightCpp.h>
+//using namespace SilverlightCpp;
+//#include <SilverlightExCpp.h>
+//using namespace SilverlightExCpp;
 
 CDrawRect::CDrawRect(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 : CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo)
@@ -851,8 +852,8 @@ void CDrawImage::Draw(HDC hDC, BOOL bOriginal)
 		rect.NormalizeRect();
 		if (pImage)
 		{
-			GdiImage.Load(pZipManager->LoadCImage(m_strImageFile), ImageFormatPNG);
-			GdiImage.Draw(hDC, rect.left, rect.top, rect.Width(), rect.Height());
+			//GdiImage.Load(pZipManager->LoadCImage(m_strImageFile), Gdiplus::ImageFormatPNG);
+			//GdiImage.Draw(hDC, rect.left, rect.top, rect.Width(), rect.Height());
 		}
 	}
 }

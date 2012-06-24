@@ -59,6 +59,29 @@ public:
 	tstring GetStringData(LPCTSTR pszName);
 };
 
+class CUtil
+{
+public:
+	static LPCTSTR GetSaveImageExtByGuid(const GUID& guid)
+	{
+		return TEXT("PNG");
+	}
+	static CString GetPhotoViewerInstallDir()
+	{
+		return TEXT("");
+	}
+};
+class SettingInfo
+{
+public:
+	SettingInfo()
+	{
+		guidDefaultSaveFileFormat = Gdiplus::ImageFormatPNG;
+	}
+	GUID	guidDefaultSaveFileFormat;
+
+};
+
 class CNCaptureDoc
 {
 public:
@@ -68,8 +91,14 @@ public:
 	CCapImageObj* GetCurCaptureImage();
 	void SetCurCaptureImage(CCapImageObj* pCapImageObj);
 	int GetCaptureCount();
+	SettingInfo* GetSettingInfo() { return &m_SettingInfo; }
+	void SetCaptureImage(CCapImageObj* pImageObj)
+	{
+
+	}
 private:
 	CCapImageObj*	m_pCapImageObj;
+	SettingInfo		m_SettingInfo;
 };
 
 class CNCaptureApplication
@@ -93,4 +122,10 @@ class CCanvas : public FTL::CFCanvas
 {
 public:
 	HDC GetMemoryDC();
+};
+
+class CaptureUtil
+{
+public:
+	void static BmpSetAlpha(HBITMAP hBmp, INT nValue);
 };

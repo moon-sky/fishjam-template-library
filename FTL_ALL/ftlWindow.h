@@ -320,9 +320,9 @@ namespace FTL
         }\
         if(!bFilterd)\
         {\
-            FTLTRACE(TEXT("%s %s(%d),Tick=%d, wParam=0x%x, lParam=0x%x\n"),\
-            pszName, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(),\
-			uMsg, GetTickCount(), wParam, lParam );\
+            FTLTRACE(TEXT("%s(%d) %s, wParam=0x%x, lParam=0x%x, Tick=%d\n"),\
+            pszName,uMsg, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(),\
+			wParam, lParam, GetTickCount() );\
         }\
     }
 #else

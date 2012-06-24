@@ -73,6 +73,9 @@ namespace FTL
 #ifndef STATUS_DLL_NOT_FOUND
 #  define STATUS_DLL_NOT_FOUND      ((DWORD )0xC0000135L)
 #endif 
+				//Side By Side Error
+			    HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),ERROR_SXS_CANT_GEN_ACTCTX);
+				
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),STATUS_DLL_NOT_FOUND);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),EXCEPTION_ACCESS_VIOLATION);
             default:
@@ -91,19 +94,40 @@ namespace FTL
                     0,
                     NULL);
 
+				static LPCTSTR pszErrorModule[] = {
+					TEXT("netmsg.dll"),
+					TEXT("WinINet.dll"),
+				};
                 // Is it a network-related error?
                 if (0 == dwCount)
                 {
                     HMODULE hDll = LoadLibraryEx(TEXT("netmsg.dll"), NULL, 
                         DONT_RESOLVE_DLL_REFERENCES);
                     if (hDll != NULL) {
-                        dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE 
+                        dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE |FORMAT_MESSAGE_ALLOCATE_BUFFER
                             | FORMAT_MESSAGE_FROM_SYSTEM,
                             hDll, m_Info, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
                             (LPTSTR)&pszMsgBuf, 0, NULL);
                         FreeLibrary(hDll);
                     }
                 }
+
+				// Is it a WININET error?
+				if (0 == dwCount)
+				{
+					TCHAR tmpBuf[1024] = {0};
+					DWORD dwCount = 1024;
+					HMODULE hDll = LoadLibraryEx(TEXT("WinINet.dll"), NULL, 
+						DONT_RESOLVE_DLL_REFERENCES);
+					if (hDll != NULL) {
+						dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+							//| FORMAT_MESSAGE_FROM_SYSTEM,
+							hDll, m_Info, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+							tmpBuf, dwCount, NULL);
+						FreeLibrary(hDll);
+					}
+				}
+
 
                 if(0 != dwCount && NULL != pszMsgBuf )
                 {
@@ -241,7 +265,7 @@ namespace FTL
             case matNew:
                 m_pMem = new T[nCount];
                 m_nCount = nCount;
-                ZeroMemory(m_pMem,sizeof(T) * nCount); //先清除内存，保证没有垃圾数据--性能影响？
+                //ZeroMemory(m_pMem,sizeof(T) * nCount); //先清除内存，保证没有垃圾数据--是否会造成类指针问题？性能影响？
                 break;
             default:
                 FTLASSERT(FALSE);
@@ -471,6 +495,7 @@ namespace FTL
         }
         return 0;
     }
+	
     LPTSTR CFStringFormater::Detach()
     {
         LPTSTR pBuf = m_pBuf;

@@ -5,6 +5,8 @@
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
 #define IDB_PNG1                        201
+#define IDC_EDIT1                       1000
+#define IDC_RICHEDIT21                  1001
 #define ID_TOOL_TEXT                    32775
 #define ID_TOOL_SELECT                  32776
 #define ID_TOOL_RECT                    32777
@@ -21,7 +23,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        202
 #define _APS_NEXT_COMMAND_VALUE         32783
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

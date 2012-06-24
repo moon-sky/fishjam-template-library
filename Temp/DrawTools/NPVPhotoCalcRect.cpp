@@ -179,3 +179,8 @@ HDC CCanvas::GetMemoryDC()
 {
 	return GetCanvasDC();
 }
+
+void CaptureUtil::BmpSetAlpha(HBITMAP hBmp, INT nValue)
+{
+
+}
