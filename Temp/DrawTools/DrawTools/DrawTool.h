@@ -18,7 +18,7 @@ public:
 	virtual void OnCancel(IDrawCanvas* pView);
 	virtual BOOL IsNeedClip();
 	virtual BOOL HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
-
+	virtual void InitResource();
 	ToolType GetToolType() const
 	{
 		return m_nToolType;

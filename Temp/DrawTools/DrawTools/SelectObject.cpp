@@ -130,7 +130,7 @@ BOOL CSelectObject::Intersects(const CRect& rect)
 
 CDrawObject* CSelectObject::Clone()
 {
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	//stDrawInfo.logbrush = m_logbrush;
 	//stDrawInfo.logpen   = m_logpen;
 	CSelectObject* pClone = new CSelectObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);

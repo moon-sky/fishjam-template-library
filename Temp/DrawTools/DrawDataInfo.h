@@ -41,6 +41,7 @@ public:
 	LPCTSTR GetDataInfoName();
 
 	BOOL CopyDataInfo(DrawObjectList& listDrawObject,  DrawObjectList& listSelectObject, CString& strTempFileName);
+	BOOL GetDateInfo(DrawObjectList& listDrawObject,  DrawObjectList& listSelectObject, CString& strTempFileName);
 	void GetClipRect(CRect& rcClip);
 private:
 	DrawObjectList m_listDrawObject;

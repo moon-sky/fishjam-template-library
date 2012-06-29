@@ -79,10 +79,14 @@ CRichEditPanel::CRichEditPanel()
 	m_fCapture = FALSE;
 	m_fAutoVExpand = TRUE;
 	m_fTransparent = TRUE;
+	m_maxUndoRedoCount = 50;
+	m_bFirstInput = FALSE;
 }
 
 CRichEditPanel::~CRichEditPanel()
 {
+	ClearUndoRedoInfo(TRUE, TRUE);
+
 	m_spTextDocument.Release();
 	m_spTextServices.Release();
 	
@@ -158,7 +162,7 @@ HRESULT CRichEditPanel::InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF 
 	m_xPixPerInch = GetDeviceCaps(hDC, LOGPIXELSX);
 	m_yPixPerInch = GetDeviceCaps(hDC, LOGPIXELSY);
 
-	m_charFormat.yHeight = logFont.lfHeight * LY_PER_INCH / m_yPixPerInch;
+	m_charFormat.yHeight = -480;//default font //  -logFont.lfHeight * LY_PER_INCH / m_yPixPerInch;
 	//m_charFormat.yHeight = -MulDiv(pLogFont->lfHeight, 72, m_yPixPerInch);//  * LY_PER_INCH / m_yPixPerInch;
 	ReleaseDC(hWnd, hDC);
 
@@ -310,6 +314,10 @@ HRESULT CRichEditPanel::Init(HWND hWndOwner, const RECT* prcBound,
 		//FTLTRACEEX(FTL::tlDetail, TEXT("After Call m_spTextServices->OnTxInPlaceActivate\n"));
 	}
 	SetClientBound(prcBound, NULL, TRUE);
+
+	//Save First Undo Redo Info -- will make color error
+	//BeginEdit();
+	//EndEdit();
 	return hr;
 }
 
@@ -353,42 +361,171 @@ BOOL CRichEditPanel::SetActive(BOOL bActive)
 	return bRet;
 }
 
-BOOL CRichEditPanel::Undo()
+BOOL CRichEditPanel::CanUndo()
 {
-	BOOL bRet = FALSE;
+	return (!m_undoCounts.empty());
+}
+
+BOOL CRichEditPanel::CanRedo()
+{
+	return (!m_redoCounts.empty());
+}
+
+CAtlString CRichEditPanel::_GetStreamText(IStream* pStream)
+{
 	HRESULT hr = E_FAIL;
-	long prop = 0;
-	COM_VERIFY_EXCEPT1(m_spTextDocument->Undo(1, &prop), S_FALSE);
-	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::Undo, prop=%d, result=0x%x\n"), prop, hr);
-	if (S_OK == hr)
+	//CStringA strInfo;
+	CComPtr<ITextRange> spRange;
+	GetTextRange(0, -1, spRange);
+	CComBSTR bstrText;
+	spRange->GetText(&bstrText);
+	return bstrText;
+	//CComPtr<IStream> spStream;
+	//if (!pStream)
+	//{
+	//	COM_VERIFY(GetTextStream(0, -1, &spStream));
+	//}
+	//else
+	//{
+	//	spStream = pStream;
+	//}
+	//if (spStream)
+	//{
+	//	ULARGE_INTEGER nLength;
+	//	nLength.QuadPart = 0L;
+
+	//	LARGE_INTEGER nStart;
+	//	nStart.LowPart = 0;
+	//	nStart.HighPart = 0;
+	//	COM_VERIFY(spStream->Seek(nStart, STREAM_SEEK_END, &nLength));
+	//	COM_VERIFY(spStream->Seek(nStart, STREAM_SEEK_SET, NULL));
+
+	//	std::vector<CHAR> vStreamInfo(nLength.QuadPart);
+	//	COM_VERIFY(spStream->Read(&vStreamInfo[0], nLength.QuadPart, NULL));
+	//	strInfo.SetString(&vStreamInfo[0] , nLength.QuadPart);
+	//}
+	//return strInfo;
+}
+
+HRESULT CRichEditPanel::_GetCurrentEditInfo(UNDO_REDO_INFO& stEditInfo)
+{
+	HRESULT hr = E_FAIL;
+
+	CComPtr<IStream> spStream;
+	COM_VERIFY(GetTextStream(0, -1, &spStream));
+	if (spStream)
+	{
+		CComPtr<ITextSelection> spSelection;
+
+		COM_VERIFY(m_spTextDocument->GetSelection(&spSelection));
+		long nSelectStart = 0;
+		long nSelectEnd = 0;
+		if (spSelection)
+		{
+			COM_VERIFY(spSelection->GetStart(&nSelectStart)); 
+			COM_VERIFY(spSelection->GetEnd(&nSelectEnd));
+		}
+		stEditInfo.nSelectStart = nSelectStart;
+		stEditInfo.nSelectEnd   = nSelectEnd;
+		stEditInfo.nEnd         = -1;
+		stEditInfo.nStart       = 0;
+		stEditInfo.spStream     = spStream;
+	}
+	return hr;
+}
+
+BOOL CRichEditPanel::_IsDocumentChanged()
+{
+	CAtlString strNew  = _GetStreamText(NULL);
+	if (strNew != m_strOldText)
 	{
 		return TRUE;
 	}
-	if (S_FALSE == hr)
-	{
-		return FALSE;
-	}
 	return FALSE;
+}
+
+BOOL CRichEditPanel::Undo()
+{
+	HRESULT hr = E_FAIL;
+	long prop = 0;
+	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::Undo, m_undoCounts.size = %d\n"), m_undoCounts.size());
+	//if (m_redoCounts.empty() && _IsDocumentChanged())
+	//{
+	//	//Save Current Status
+	//	_CheckAndPushRedoInfo();
+	//}
+
+	if (!m_undoCounts.empty())
+	{
+		_GetCurrentEditInfo(m_stCurrentEditInfo);
+		UNDO_REDO_INFO	info = m_undoCounts.front();
+		m_undoCounts.pop_front();
+		COM_VERIFY(SetTextStream(info.nStart, info.nEnd, info.spStream));
+		m_strOldText = _GetStreamText(NULL);//info.spStream);
+
+		CComPtr<ITextRange> spRange;
+		COM_VERIFY(GetTextRange(info.nSelectStart, info.nSelectEnd, spRange));
+		if (spRange)
+		{
+			COM_VERIFY(spRange->Select());
+		}
+		if (m_redoCounts.size() >= m_maxUndoRedoCount)
+		{
+			m_redoCounts.pop_back();
+		}
+
+		
+		m_redoCounts.push_front(m_stCurrentEditInfo);
+		m_stCurrentEditInfo = info;
+	}
+	//if (m_undoCounts.empty())
+	//{
+	//	//TODO: more test
+	//	m_bFirstInput = TRUE;
+	//}
+	return (!m_undoCounts.empty());
 }
 
 BOOL CRichEditPanel::Redo()
 {
-	BOOL bRet = FALSE;
 	HRESULT hr = E_FAIL;
-	long prop = 0;
-	COM_VERIFY_EXCEPT1(m_spTextDocument->Redo(1, &prop), S_FALSE);
-	FTLTRACEEX(FTL::tlInfo, TEXT("CRichEditPanel::Redo, prop=%d, result=0x%x\n"), prop, hr);
-	if (S_OK == hr)
+	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::Undo, m_undoCounts.size = %d\n"), m_redoCounts.size());
+	if (!m_redoCounts.empty())
 	{
-		return TRUE;
+		_GetCurrentEditInfo(m_stCurrentEditInfo);
+		UNDO_REDO_INFO	info = m_redoCounts.front();
+		m_redoCounts.pop_front();
+		SetTextStream(info.nStart, info.nEnd, info.spStream);
+		m_strOldText = _GetStreamText(NULL);//info.spStream);
+
+		CComPtr<ITextRange> spRange;
+		COM_VERIFY(GetTextRange(info.nSelectStart , info.nSelectEnd, spRange));
+		if (spRange)
+		{
+			COM_VERIFY(spRange->Select());
+		}
+		if (m_undoCounts.size() >= m_maxUndoRedoCount)
+		{
+			m_undoCounts.pop_back();
+		}
+		m_undoCounts.push_front(m_stCurrentEditInfo);
+		m_stCurrentEditInfo = info;
 	}
-	if (S_FALSE == hr)
-	{
-		return FALSE;
-	}
-	return FALSE;
+	return (!m_redoCounts.empty());
 }
 
+BOOL CRichEditPanel::ClearUndoRedoInfo(BOOL bUndo, BOOL bRedo)
+{
+	if (bUndo)
+	{
+		m_undoCounts.clear();
+	}
+	if (bRedo)
+	{
+		m_redoCounts.clear();
+	}
+	return TRUE;
+}
 
 BOOL CRichEditPanel::IsActive()
 {
@@ -422,6 +559,11 @@ HRESULT CRichEditPanel::GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>
 		//FTL::CFTextRangeDumper rangeDumper(spTextRange, FTL::CFOutputWindowInfoOutput::Instance(), 0);
 	}
 	return hr;
+}
+
+void CRichEditPanel::InitEmptyUndoInfo()
+{
+	_GetCurrentEditInfo(m_stEmptyEditInfo);
 }
 
 //HRESULT CRichEditPanel::SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask)
@@ -490,12 +632,12 @@ HRESULT CRichEditPanel::GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>
 //	return hr;
 //}
 
-HRESULT CRichEditPanel::SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName)
+HRESULT CRichEditPanel::SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName, BOOL bPreview)
 {
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
 
-	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextFontName %d to %d Name is %s\n"),
+	FTLTRACEEX(FTL::tlTrace, TEXT("SetTextFontName %d to %d Name is %s\n"),
 		nStart, nEnd, pszFontName);
 
 
@@ -508,18 +650,33 @@ HRESULT CRichEditPanel::SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontN
 
 		if (spFont)
 		{
+			if (bPreview)
+			{
+				//COM_VERIFY(m_spTextDocument->Undo(tomFalse, NULL));
+			}
 			COM_VERIFY(spFont->SetName(CComBSTR(pszFontName)));
+			if (bPreview)
+			{
+				//m_spTextDocument->Undo(tomTrue, NULL);
+			}
+			//m_nUndoRedoCount++;
 		}
 	}
 	return hr;
 }
 
-HRESULT CRichEditPanel::SetTextFontSize(long nStart, long nEnd, int nSize)
+HRESULT CRichEditPanel::SetTextFontSize(long nStart, long nEnd, int nSize, BOOL bPreview)
 {
 	HRESULT hr = E_FAIL;
 	CComPtr<ITextRange>		spRange;
-	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextFontSize %d to %d Size is %d\n"),
+	FTLTRACEEX(FTL::tlTrace, TEXT("SetTextFontSize %d to %d Size is %d\n"),
 		nStart, nEnd, nSize);
+
+	FTLASSERT(nSize > 0);
+	if (nSize == -1)
+	{
+		return E_INVALIDARG;
+	}
 
 	COM_VERIFY(GetTextRange(nStart, nEnd, spRange));
 	if (SUCCEEDED(hr) && spRange)
@@ -530,8 +687,16 @@ HRESULT CRichEditPanel::SetTextFontSize(long nStart, long nEnd, int nSize)
 
 		if (spFont)
 		{
+			if (bPreview)
+			{
+				//COM_VERIFY(m_spTextDocument->Undo(tomFalse, NULL));
+			}
 			long lFontHeight = -::MulDiv(nSize, m_yPixPerInch, 72);
 			COM_VERIFY(spFont->SetSize(lFontHeight));
+			if (bPreview)
+			{
+				//COM_VERIFY_EXCEPT1(m_spTextDocument->Undo(tomTrue, NULL), S_FALSE);
+			}
 		}
 	}
 	return hr;
@@ -587,7 +752,7 @@ HRESULT CRichEditPanel::GetTextFontName(long nStart, long nEnd, LPTSTR pszFontNa
 		}
 
 	}
-	FTLTRACEEX(FTL::tlDetail, TEXT("GetTextFontName %d to %d is %s\n"),
+	FTLTRACEEX(FTL::tlTrace, TEXT("GetTextFontName %d to %d is %s\n"),
 		nStart, nEnd, pszFontName);
 
 	return hr;
@@ -629,7 +794,43 @@ HRESULT CRichEditPanel::GetTextFontSize(long nStart, long nEnd, int* pFontSize)
 
 }
 
-HRESULT CRichEditPanel::SetTextForeColor(long nStart, long nEnd, COLORREF clr)
+HRESULT CRichEditPanel::BeginEdit()
+{
+	return _GetCurrentEditInfo(m_stBeginEditInfo);
+}
+
+HRESULT CRichEditPanel::EndEdit(BOOL bPushUndo)
+{
+	HRESULT hr = S_OK;
+	
+	//CComPtr<IStream> spStream;
+	//COM_VERIFY(GetTextStream(0, -1, &spStream));
+	if (m_stBeginEditInfo.IsValid())
+	{
+		if (bPushUndo)
+		{
+			if (m_undoCounts.size() > m_maxUndoRedoCount)
+			{
+				m_undoCounts.pop_back();
+			}
+			m_undoCounts.push_front(m_stBeginEditInfo);
+
+			m_redoCounts.clear();
+			m_stBeginEditInfo.Reset();
+			m_strOldText = _GetStreamText(NULL);
+		}
+		//FTLTRACEEX(FTL::tlTrace, TEXT("EndEdit(bPushUndo=%d), nSelectStart=%d, nSelectEnd=%d, pStream=0x%x\n"), 
+		//	bPushUndo, nSelectStart, nSelectEnd, spStream);
+	}
+	_GetCurrentEditInfo(m_stCurrentEditInfo);
+	if (m_undoCounts.empty())
+	{
+		m_undoCounts.push_back(m_stEmptyEditInfo);
+	}
+	return hr;
+}
+
+HRESULT CRichEditPanel::SetTextForeColor(long nStart, long nEnd, COLORREF clr, BOOL bPreview)
 {
 	FTLTRACEEX(FTL::tlInfo, TEXT("SetTextForeColor %d to %d Color is 0x%x\n"),
 		nStart, nEnd, clr);
@@ -642,6 +843,10 @@ HRESULT CRichEditPanel::SetTextForeColor(long nStart, long nEnd, COLORREF clr)
 		CComPtr<ITextFont> spFont;
 		COM_VERIFY(spRange->GetFont(&spFont));
 
+		if (bPreview)
+		{
+			//COM_VERIFY(m_spTextDocument->Undo(tomFalse, NULL));
+		}
 		if ((COLORREF)(-1) == clr)
 		{
 			COM_VERIFY(spFont->SetForeColor(tomAutoColor));
@@ -650,6 +855,13 @@ HRESULT CRichEditPanel::SetTextForeColor(long nStart, long nEnd, COLORREF clr)
 		{
 			COM_VERIFY(spFont->SetForeColor(clr));
 		}
+
+		if (bPreview)
+		{
+			//COM_VERIFY_EXCEPT1(m_spTextDocument->Undo(tomTrue, NULL), S_FALSE);
+		}
+
+		//m_nUndoRedoCount++;
 	}
 	return hr;
 }
@@ -711,8 +923,9 @@ HRESULT CRichEditPanel::SetTextBackColor(long nStart, long nEnd, COLORREF clr)
 		}
 		else
 		{
-			COM_VERIFY(spFont->SetForeColor(clr));
+			COM_VERIFY(spFont->SetBackColor(clr));
 		}
+		//m_nUndoRedoCount++;
 	}
 	return hr;
 }
@@ -1394,12 +1607,11 @@ HRESULT CRichEditPanel::TxNotify( DWORD iNotify, void *pv )
 #if 0
 	FTL::CFStringFormater formater;
 	FTL::CFControlUtil::GetEditNotifyCodeString(formater, iNotify, pv);
-	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
+	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::TxNotify, iNotify=%s, pv=0x%x\n"),
 		formater.GetString(), pv);
 #endif 
 	//dwBits := dwBits and TXTBIT_ALL_NOTIFICATIONS;
 	//FServices.OnTxPropertyBitsChange(dwBits, dwBits);
-
 	if (m_pNotifyCallback && m_fNotify)
 	{
 		m_pNotifyCallback->OnNotify(iNotify, pv);
@@ -1503,11 +1715,21 @@ LRESULT CRichEditPanel::OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lPa
 {
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
+	BOOL bWillCheckEditInfo = (
+		//array key will close candidate window, so skip
+		//VK_LEFT == wParam || VK_RIGHT == wParam 
+		//|| VK_UP == wParam || VK_DOWN == wParam ||
+		VK_RETURN == wParam || VK_DELETE == wParam);
+	if (bWillCheckEditInfo)
+	{
+		BeginEdit();
+	}
 	hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
-	//if (S_OK != hr)
-	//{
-	//	bHandled = FALSE;
-	//}
+
+	if (bWillCheckEditInfo)
+	{
+		EndEdit(_IsDocumentChanged());
+	}
 	return lResult;
 }
 
@@ -1523,12 +1745,58 @@ LRESULT CRichEditPanel::OnIMEMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lPa
 	return lResult;
 }
 
+BOOL CRichEditPanel::_CheckAndPushRedoInfo()
+{
+	CAtlString strNewText = _GetStreamText(NULL);
+	if (strNewText != m_strOldText)
+	{
+		m_strOldText = strNewText;
+		HRESULT hr = E_FAIL;
+
+		CComPtr<IStream> spStream;
+		COM_VERIFY(GetTextStream(0, -1, &spStream));
+		if (spStream)
+		{
+			CComPtr<ITextSelection> spSelection;
+
+			COM_VERIFY(m_spTextDocument->GetSelection(&spSelection));
+			long nSelectStart = 0;
+			long nSelectEnd = 0;
+			if (spSelection)
+			{
+				COM_VERIFY(spSelection->GetStart(&nSelectStart)); 
+				COM_VERIFY(spSelection->GetEnd(&nSelectEnd));
+			}
+			UNDO_REDO_INFO stUnRedoInfo(spStream, nSelectStart, nSelectEnd);
+			if (stUnRedoInfo.IsValid())
+			{
+				m_redoCounts.push_front(stUnRedoInfo);
+			}
+		}
+		return hr;
+	}
+	return TRUE;
+}
 
 LRESULT CRichEditPanel::OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
+	//if (WM_LBUTTONDOWN == uMsg || WM_LBUTTONDBLCLK == uMsg|| WM_RBUTTONDOWN == uMsg)
+	//{
+	//	_CheckAndPushUndoInfo();
+	//}
+	BeginEdit();
 	hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
+	switch (uMsg)
+	{
+	case WM_LBUTTONDOWN:
+		EndEdit(_IsDocumentChanged());
+		break;
+	default:
+		EndEdit(FALSE);
+		break;
+	}
 	//if (S_OK != hr)
 	//{
 	//	bHandled = FALSE;
@@ -1675,7 +1943,7 @@ DWORD CALLBACK EditStreamOutCallback(DWORD_PTR dwCookie,
 	HGLOBAL hGlobalStream = GlobalAlloc(GMEM_FIXED | GMEM_ZEROINIT, cb);
 	if (hGlobalStream)
 	{
-		FTLTRACEEX(FTL::tlInfo, TEXT("In EditStreamOutCallback cb=%d, buffer = %s\n"), cb, CA2T((CHAR*)pbBuff));
+		FTLTRACEEX(FTL::tlTrace, TEXT("In EditStreamOutCallback cb=%d, buffer = %s\n"), cb, CA2T((CHAR*)pbBuff));
 
 		CopyMemory((hGlobalStream), pbBuff, cb);
 		IStream** ppStream = reinterpret_cast<IStream**>(dwCookie);
@@ -1703,7 +1971,7 @@ HRESULT CRichEditPanel::GetTextStream(long nStart, long nEnd, IStream** ppStream
 	editStream.dwError = 0;
 	editStream.pfnCallback = EditStreamOutCallback;
 
-	COM_VERIFY(m_spTextServices->TxSendMessage(EM_STREAMOUT, (WPARAM)(SF_RTF), (LPARAM)&editStream, NULL));
+	COM_VERIFY(m_spTextServices->TxSendMessage(EM_STREAMOUT, (WPARAM)((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF), (LPARAM)&editStream, NULL));
 
 	return hr;
 }
@@ -1731,7 +1999,7 @@ DWORD CALLBACK EditStreamInCallback(DWORD_PTR dwCookie,
 		COM_VERIFY(pStream->Read(pbBuff, FTL_MIN(cb, nLength.LowPart), &unWrite));
 		*pcb = (LONG)unWrite;
 
-		FTLTRACEEX(FTL::tlDetail, TEXT("In EditStreamInCallback , *pcb=%d, buff = %s\n"), *pcb, CA2T((CHAR*)pbBuff));
+		FTLTRACEEX(FTL::tlTrace, TEXT("In EditStreamInCallback , *pcb=%d, buff = %s\n"), *pcb, CA2T((CHAR*)pbBuff));
 	}
 	return 0;
 }
@@ -1745,7 +2013,7 @@ HRESULT CRichEditPanel::SetTextStream(long nStart, long nEnd, IStream* pStream)
 	editStream.dwError = 0;
 	editStream.pfnCallback = EditStreamInCallback;
 	LRESULT lResult = 0;
-	COM_VERIFY(m_spTextServices->TxSendMessage(EM_STREAMIN, (WPARAM)(SF_RTF), (LPARAM)&editStream, &lResult));
+	COM_VERIFY(m_spTextServices->TxSendMessage(EM_STREAMIN, (WPARAM)((CP_UTF8 << 16) | SF_USECODEPAGE | SF_RTF), (LPARAM)&editStream, &lResult));
 
 	return hr;
 }

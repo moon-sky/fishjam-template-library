@@ -162,8 +162,7 @@ BOOL CNCaptureView::_SetSelectRectClipInfo(const CPoint& point)
 		if(!GetSelection().empty())
 		{
 			CDrawObject* pActiveDrawObject = GetSelection().front();
-			if (pActiveDrawObject && (pActiveDrawObject->GetDrawObjType() == dotSelectRect
-				|| pActiveDrawObject->GetDrawObjType() == dotText))
+			if (pActiveDrawObject)
 			{
 				m_bClipCursor = TRUE;
 				CRect rcSelect = pActiveDrawObject->GetPosition();
@@ -438,7 +437,7 @@ void CNCaptureView::OnDestroy()
 
 void CNCaptureView::DoPaint(CDCHandle dc)
 {
-	FUNCTION_BLOCK_TRACE(100);
+	FUNCTION_BLOCK_TRACE(20);
 	if ( m_bIsDrawing )
 	{
 		return;
@@ -467,8 +466,8 @@ void CNCaptureView::DoPaint(CDCHandle dc)
 		memDC.SetBrushOrg( -m_ptOffset.x , -m_ptOffset.y);
 
 		//API_VERIFY(memDC.FillRect(&rcClip, m_brBackground));
-		API_VERIFY(memDC.FillRect(&rcClientLogical, m_brBackground));
-
+		//API_VERIFY(memDC.FillRect(&rcClientLogical, m_brBackground));
+		memDC.FillSolidRect(&rcClientLogical, NCAPTUREVIEW_BACKGROUND_CLR);
 		if (m_pImage)
 		{
 			CRect rcImage(0, 0, m_pImage->GetWidth(), m_pImage->GetHeight());
@@ -709,7 +708,7 @@ void CNCaptureView::OnCaptureImageChanged()
 			SetCurrentToolType(CalcCurrentToolType());
 		}
 		SetZoom(m_pImage->GetZoom(), TRUE, TRUE);
-		m_pImage->GetCurrentObjectInfo(m_allObjects, m_selection);
+		m_pImage->GetCurrentObjectInfo(m_allObjects, m_selection, TRUE);
 	}
 		
 	Invalidate();
@@ -799,12 +798,9 @@ BOOL CNCaptureView::CropImage()
 BOOL CNCaptureView::_EditWithPhotoEditor(LPCTSTR lpszImagePath)
 {
 	BOOL bRet = TRUE;
-	CString strPhotoViewerInstallDir = CUtil::GetPhotoViewerInstallDir();
-	if (!strPhotoViewerInstallDir.IsEmpty())
+	CString strPhotoEditorPath = CUtil::GetPhotoEditorExePath();
+	if (!strPhotoEditorPath.IsEmpty())
 	{
-		ATL::CPath	pathPhotoEditor(strPhotoViewerInstallDir);
-		pathPhotoEditor.Append(TEXT("NPhotoEditor.exe"));
-
 		CString strCommand;
 		strCommand.Format(TEXT(" -add \"%s\""), lpszImagePath);
 
@@ -812,8 +808,7 @@ BOOL CNCaptureView::_EditWithPhotoEditor(LPCTSTR lpszImagePath)
 		StringCchCopy(szWorkDir, _countof(szWorkDir), lpszImagePath);
 		ATLPath::RemoveFileSpec(szWorkDir); 
 
-		DWORD dwError = (DWORD)ShellExecute(NULL, NULL, pathPhotoEditor.m_strPath, 
-			strCommand , szWorkDir, SW_SHOW);
+		DWORD dwError = (DWORD)ShellExecute(NULL, NULL, strPhotoEditorPath, strCommand , szWorkDir, SW_SHOW);
 
 		if (dwError < 32)
 		{
@@ -919,7 +914,7 @@ BOOL CNCaptureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	{
 		if (m_pImage)
 		{
-			float curZoomScale = GetZoomScale();
+			/*float curZoomScale = GetZoomScale();
 			if (zDelta > 0)
 			{
 				curZoomScale *= 1.1f;
@@ -933,7 +928,9 @@ BOOL CNCaptureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			if (bRet)
 			{
 				_SyncFrameScaleInfo();
-			}
+			}*/
+
+			NextZoom( (BOOL)(zDelta > 0));
 		}
 		return TRUE;
 	}
@@ -1219,6 +1216,24 @@ BOOL CNCaptureView::BackupDrawObjectData(LPCTSTR strName)
 
 BOOL CNCaptureView::IsCanRedo()
 {
+	DrawObjectList::iterator it = m_selection.begin();
+	while(it != m_selection.end())
+	{
+		CDrawObject* pObject = *it;
+		if (pObject && pObject->GetDrawObjType() == dotText && pObject->IsActive())
+		{
+			if (pObject->IsCanRedo())
+			{
+				return TRUE;
+			}
+			else
+			{
+				return FALSE;
+			}
+		}
+		it++;
+	}
+
 	if (m_pImage && !m_pImage->IsFinalDrawObjectInfo())
 	{
 		return TRUE;
@@ -1228,6 +1243,24 @@ BOOL CNCaptureView::IsCanRedo()
 
 BOOL CNCaptureView::IsCanUndo()
 {
+	DrawObjectList::iterator it = m_selection.begin();
+	while(it != m_selection.end())
+	{
+		CDrawObject* pObject = *it;
+		if (pObject && pObject->GetDrawObjType() == dotText && pObject->IsActive())
+		{
+			if (pObject->IsCanUndo())
+			{
+				return TRUE;
+			}
+			else
+			{
+				return FALSE;
+			}
+		}
+		it++;
+	}
+
 	if (m_pImage && !m_pImage->IsFirstDrawObjectInfo())
 	{
 		return TRUE;
@@ -1246,8 +1279,24 @@ BOOL CNCaptureView::IsCanEdit()
 
 void CNCaptureView::Undo()
 {
+	DrawObjectList::iterator it = m_selection.begin();
+	while(it != m_selection.end())
+	{
+		CDrawObject* pObject = *it;
+		if (pObject && pObject->GetDrawObjType() == dotText && pObject->IsActive())
+		{
+			pObject->Undo();
+			return;
+		}
+		it++;
+	}
+
 	if(m_pImage && m_pImage->GetPrevDrawObjectInfo(m_allObjects, m_selection))
 	{
+		m_pImage->SycDrawObjects();
+		CNCaptureApplication::Instance()->GetMainFrame()->UpdateImageBoard();
+		m_pImage->SetCapImageObjActive(FALSE);
+		m_pImage->SetCapImageObjActive(TRUE);
 		m_pImage->CaptureImageObjectChanaged();
 		Invalidate(FALSE);
 	}
@@ -1255,8 +1304,24 @@ void CNCaptureView::Undo()
 
 void CNCaptureView::Redo()
 {
+	DrawObjectList::iterator it = m_selection.begin();
+	while(it != m_selection.end())
+	{
+		CDrawObject* pObject = *it;
+		if (pObject && pObject->GetDrawObjType() == dotText && pObject->IsActive())
+		{
+			pObject->Redo();
+			return;
+		}
+		it++;
+	}
+
 	if(m_pImage && m_pImage->GetNextDrawObjectInfo(m_allObjects, m_selection))
 	{
+		m_pImage->SycDrawObjects();
+		CNCaptureApplication::Instance()->GetMainFrame()->UpdateImageBoard();
+		m_pImage->SetCapImageObjActive(FALSE);
+		m_pImage->SetCapImageObjActive(TRUE);
 		m_pImage->CaptureImageObjectChanaged();
 		Invalidate(FALSE);
 	}
@@ -1294,6 +1359,37 @@ HANDLE CNCaptureView::CopyRectToHandle(const CRect& rect)
 		}
 	}
 	return hMem;
+}
+
+BOOL CNCaptureView::BeignObejectEdit()
+{
+	DrawObjectList::iterator it = m_allObjects.begin();
+	while(it != m_allObjects.end())
+	{
+		CDrawObject* pObject = *it;
+		if (pObject && pObject->IsActive())
+		{
+			return pObject->BeginEdit();
+		}
+		it++;
+	}
+	return FALSE;
+}
+
+
+BOOL CNCaptureView::EndObjectEdit(BOOL bIsPushUndo)
+{
+	DrawObjectList::iterator it = m_allObjects.begin();
+	while(it != m_allObjects.end())
+	{
+		CDrawObject* pObject = *it;
+		if (pObject && pObject->IsActive())
+		{
+			return pObject->EndEdit(bIsPushUndo);
+		}
+		it++;
+	}
+	return FALSE;
 }
 
 void CNCaptureView::SelectToolTypeByMenu(const CPoint& ptPoint)

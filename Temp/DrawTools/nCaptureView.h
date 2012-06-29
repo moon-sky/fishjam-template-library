@@ -113,7 +113,6 @@ public:
 //Override
 	void PrepareDC(CDCHandle dc);
 
-
 	virtual	CPoint GetOffset()
 	{
 		return m_rcDrawTarget.TopLeft();
@@ -137,7 +136,8 @@ public:
 
 	//void CNCaptureView::PrepareDC(CDCHandle dc);
 	void SelectToolTypeByMenu(const CPoint& ptPoint);
-
+	BOOL BeignObejectEdit();
+	BOOL EndObjectEdit(BOOL bIsPushUndo);
 	virtual BOOL BackupDrawObjectData(LPCTSTR strName);
 	BOOL IsCanRedo();
 	BOOL IsCanUndo();

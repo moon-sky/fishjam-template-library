@@ -158,72 +158,9 @@ BOOL CSelectTool::OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 {
 	if(pView->IsCapture())
 	{
-		//if (pView->GetCurrentSelectMode() == smNetSelect)
-		//{
-		//	CPoint ptLogical = point;
-		//	pView->ClientToDoc(&ptLogical);
-		//	//FTLTRACE(TEXT("OnLButtonUp, ptDevice=[%d,%d], ptLogical=[%d,%d]\n"), 
-		//	//	point.x, point.y,
-		//	//	ptLogical.x, ptLogical.y);
-
-		//	CPoint ptOriginalDevice(0, 0);
-		//	pView->DocToClient(&ptOriginalDevice);
-
-		//	//CPoint ptOffset = pView->GetOffset();
-		//	//pView->DocToClient(&ptOffset);
-
-		//	CRect rectBefore(pView->GetMouseDownLogicalPoint(), pView->GetMouseLastLogicalPoint());
-		//	pView->DocToClient(&rectBefore);
-		//	//rectBefore.OffsetRect(-ptOriginalDevice);
-		//	//rectBefore.OffsetRect(ptOffset);
-		//	rectBefore.NormalizeRect();
-
-		//	CRect rectAfter(pView->GetMouseDownLogicalPoint(), ptLogical);
-		//	pView->DocToClient(&rectAfter);
-		//	//rectAfter.OffsetRect(-ptOriginalDevice);
-		//	//rectAfter.OffsetRect(ptOffset);
-		//	rectAfter.NormalizeRect();
-
-		//	CRect rcSelectBox;
-		//	rcSelectBox.SetRect(pView->GetMouseDownLogicalPoint(), ptLogical);
-		//	ptLogical.Offset(pView->GetOffset());
-		//	rcSelectBox.NormalizeRect();
-
-		//	//CPoint ptOriginalLogical(0,0);
-		//	//pView->DocToClient(&ptOriginalLogical);
-		//	//rcSelectBox.OffsetRect(ptOriginalLogical);
-
-		//	//pView->CreateSelectRect(rcSelectBox);
-		//	pView->SelectWithinRect(rcSelectBox, TRUE);
-
-		//	//CClientDC dc(pView->GetHWnd());
-		//	////dc.OffsetViewportOrg(-ptOriginal.x, -ptOriginal.y);
-		//	//dc.DrawFocusRect(rectBefore);
-		//	//dc.DrawFocusRect(rectAfter);
-		//}
-		//else 
-		//if (pView->GetCurrentSelectMode() == smNetSelectSize)
-		//{
-		//	CDrawObject *pObj = pView->GetSelectRect();
-		//	if (pObj)
-		//	{
-		//		pView->Select(pObj);
-		//	}
-		//}
-		//else
-		//{
-		//	FTLTRACE(TEXT("TODO: pView->GetCurrentSelectMode()=%d\n"), pView->GetCurrentSelectMode());
-			//::InvalidateRect(pView->GetHWnd(), NULL, TRUE);
-			//::UpdateWindow(pView->GetHWnd());
-		//}
-		//else if (m_selectMode != none)
-		//{
-		//    pView->UpdateAllViews(pView);
-		//}
-
 		CPoint ptDevice = pView->GetMouseDownLogicalPoint();
 		pView->DocToClient(&ptDevice);
-		if (point == ptDevice && pView->GetCurrentSelectMode() == smSize)
+		if (point == ptDevice && pView->GetCurrentSelectMode() == smSize && !pView->GetSelection().empty())
 		{
 			CDrawObject* pObj = pView->GetSelection().front();
 			pView->Remove(pObj, TRUE);
@@ -240,7 +177,19 @@ BOOL CSelectTool::OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 				pObj->EndMoveHandle();
 			}
 		}
-		pView->EndCapture(FALSE);
+		BOOL bBackUp = FALSE;
+		if (pView->GetCurrentSelectMode() == smSize || pView->GetCurrentSelectMode() == smMove)
+		{
+			if (pView->GetSelection().size() > 0)
+			{
+				CDrawObject* pObj = pView->GetSelection().front();
+				if (pObj->CheckAvailObject())
+				{
+					bBackUp = TRUE;
+				}
+			}
+		}
+		pView->EndCapture(bBackUp);
 		//CDrawTool::OnLButtonUp(pView, nFlags, point);
 	}
 	return FALSE;
@@ -380,6 +329,15 @@ void CSelectTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	//	//ATLTRACE(_T("Is Capture \n"));
 	//	_OnCapturedMouseMove(pView, nFlags, point);		
 	//}
+	if (!pView->IsCapture())
+	{
+		m_hCursor = m_hCursorSelect;
+	}
+	else
+	{
+		m_hCursor = m_hCursorSelecting;
+	}
+	
 	CDrawTool::OnMouseMove(pView, nFlags, point);
 }
 

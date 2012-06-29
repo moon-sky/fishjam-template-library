@@ -44,7 +44,13 @@ public:
 		selected, 
 		active 
 	};
-
+	enum eTypePointInRect
+	{
+		PIRLEFT   = 0,
+		PIRRIGHT  = 1,
+		PIRTOP    = 2,
+		PIRBUTTOM = 3
+	};
 	//virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	virtual void NormalizePosition();
@@ -57,6 +63,10 @@ public:
 	virtual int SizingHitTest(CPoint ptLogic, CPoint ptOrigLogic);
 	virtual BOOL Intersects(const CRect& rect);
 	virtual void MoveHandleTo(int nHandle, CPoint point);
+	virtual void MoveHandleToWithShift(int nHandle, CPoint point);
+	virtual void MoveLineHandleToWithShift(int nHandle, CPoint point);
+	virtual void RegulateRectToSquare(CRect& rcDraw, eTypePointInRect eType);
+	virtual void RegulateLine(CRect& rcDraw, eTypePointInRect eType);
 	virtual void OnOpen();
 	virtual void OnEditProperties();
 	virtual CDrawObject* Clone();
@@ -66,6 +76,15 @@ public:
 	virtual void SetActive(BOOL bActive);
 	virtual BOOL IsActive();
 	//void Invalidate();
+
+	virtual BOOL Undo();
+	virtual BOOL Redo();
+
+	virtual BOOL IsCanUndo();
+	virtual BOOL IsCanRedo();
+
+	virtual BOOL BeginEdit();
+	virtual BOOL EndEdit(BOOL bIsPushUndo = TRUE);
 
 protected:
 	// Attributes
@@ -80,6 +99,7 @@ protected:
 	LOGPEN			m_logpen;
 	LOGBRUSH		m_logbrush;
 	BOOL			m_bActive;
+	BOOL            m_bAvailObject;
 };
 
 

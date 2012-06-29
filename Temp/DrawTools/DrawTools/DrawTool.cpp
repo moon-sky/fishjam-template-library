@@ -67,7 +67,7 @@ BOOL CDrawTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 		{
 			if (pObj->HitTestMove(point))
 			{
-				//pView->SetActive(pObj, FALSE);
+				pView->SetActive(pObj, FALSE);
 				pView->SetCurrentSelectMode(smMove);
 				
 				if (!pView->IsSelected(pObj))
@@ -110,7 +110,8 @@ BOOL CDrawTool::OnLButtonUp(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 		{
 			CDrawObject* pObj = pView->GetSelection().front();
 			if (pObj->GetDrawObjType() == dotSelectRect || 
-				(!pObj->CheckAvailObject() && pObj->GetDrawObjType() != dotText))
+				(!pObj->CheckAvailObject() && pObj->GetDrawObjType() != dotText && pObj->IsActive())
+				&& (pObj->GetDrawObjType() == dotLineArrow && !pObj->CheckAvailObject()))
 			{
 				pView->Remove(pObj, TRUE);
 				pObj->Remove();
@@ -162,10 +163,6 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 				m_hCursor = ::LoadCursor(NULL, IDC_SIZEALL);
 			}
 		}
-		else
-		{
-			m_hCursor = ::LoadCursor(NULL, IDC_ARROW);
-		}
 	}
 	else
 	{
@@ -199,7 +196,8 @@ void CDrawTool::OnMouseMove(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 		{
 			m_hCursor = ::LoadCursor(NULL, IDC_SIZEALL);
 		}
-		if (pView->GetCurrentSelectMode() == smSize && pView->GetCurrentToolType() == ttSelection)
+		if (pView->GetCurrentSelectMode() == smSize && pView->GetCurrentToolType() == ttSelection
+			&& !pView->GetSelection().empty())
 		{
 			m_hCursor = pView->GetSelection().front()->GetHandleCursor(pView->GetDragHandle());
 			return; // bypass CDrawTool
@@ -230,6 +228,11 @@ BOOL CDrawTool::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wPara
 	return bRet;
 }
 
+void CDrawTool::InitResource()
+{
+
+}
+
 void CDrawTool::OnEditProperties(IDrawCanvas* /*pView*/)
 {
 }
@@ -241,7 +244,7 @@ void CDrawTool::OnCancel(IDrawCanvas* pView)
 
 BOOL CDrawTool::IsNeedClip()
 {
-	return FALSE;
+	return TRUE;
 }
 
 void CDrawTool::_CheckSelectPostion(IDrawCanvas* pView)

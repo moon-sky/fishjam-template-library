@@ -20,7 +20,7 @@ public:
 
 	BOOL SaveImageFile(LPCTSTR pszFilePath, BOOL bChanageState = TRUE);
 	BOOL SaveImageFile();
-	BOOL IsNeedSaveImage() { return m_bImageSaved; }
+	BOOL IsNeedSaveImage() { return m_bImageChanaged; }
 	BOOL SetCapImageObjActive(BOOL bActive = TRUE);
 
 	LPCTSTR GetCaptureImageObjectName();
@@ -38,7 +38,7 @@ public:
 
 	BOOL    GetPrevDrawObjectInfo(DrawObjectList& arDrawObject, DrawObjectList& arSelectObject);
 	BOOL    GetNextDrawObjectInfo(DrawObjectList& arDrawObject, DrawObjectList& arSelectObject);
-	BOOL    GetCurrentObjectInfo(DrawObjectList& arDrawObject, DrawObjectList& arSelectObject);
+	BOOL    GetCurrentObjectInfo(DrawObjectList& arDrawObject, DrawObjectList& arSelectObject, BOOL bCopy);
 
 	BOOL    IsFirstDrawObjectInfo();
 	BOOL    IsFinalDrawObjectInfo();
@@ -52,7 +52,7 @@ private:
 	INT				m_nZoomMode;
 	CPoint			m_ptPosition;
 
-	BOOL            m_bImageSaved;
+	BOOL            m_bImageChanaged;
 	BOOL            m_bActive;
 	CString         m_strCacheFileName;
 	CString         m_strObjectName;

@@ -15,7 +15,7 @@ public:
 	virtual void OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	virtual void OnEditProperties(IDrawCanvas* pView);
 	virtual BOOL IsNeedClip();
-	void InitResource();
+	virtual void InitResource();
 private:
 	//void _OnCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	//void _OnNotCapturedMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);

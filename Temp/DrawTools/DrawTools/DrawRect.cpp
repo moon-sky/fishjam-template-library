@@ -2,12 +2,12 @@
 #include "DrawRect.h"
 #include "DrawCanvas.h"
 #include <ftlGdi.h>
-#include "../NPVPhotoCalcRect.h"
+#include <gdiplus.h>
 
-//#include <SilverlightCpp.h>
-//using namespace SilverlightCpp;
-//#include <SilverlightExCpp.h>
-//using namespace SilverlightExCpp;
+#include <SilverlightCpp.h>
+using namespace SilverlightCpp;
+#include <SilverlightExCpp.h>
+using namespace SilverlightExCpp;
 
 CDrawRect::CDrawRect(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 : CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo)
@@ -19,13 +19,88 @@ CDrawRect::CDrawRect(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObject
 	//}
 	m_roundness.x = 16;
 	m_roundness.y = 16;
+
+	m_stArrowInfo.fTheta = 0.5f;
 }
 
-void ArrowTo(HDC hDC, const CPoint& ptTo, LPARROWINFO pA) 
+//void CDrawRect::ArrowTo(HDC hDC, const CPoint& ptFrom,const CPoint& ptTo, LPARROWINFO pA) 
+//{
+//	POINT pFrom;
+//	POINT pBase;
+//	POINT aptPoly[3];
+//	float vecLine[2];
+//	float vecLeft[2];
+//	float fLength;
+//	float th;
+//	float ta;
+//
+//	// get from point
+//	MoveToEx(hDC, 0, 0, &pFrom);
+//
+//	// set to point
+//	aptPoly[0].x = ptTo.x;
+//	aptPoly[0].y = ptTo.y;
+//
+//	// build the line vector
+//	vecLine[0] = (float) aptPoly[0].x - pFrom.x;
+//	vecLine[1] = (float) aptPoly[0].y - pFrom.y;
+//
+//	// build the arrow base vector - normal to the line
+//	vecLeft[0] = -vecLine[1];
+//	vecLeft[1] = vecLine[0];
+//
+//	// setup length parameters
+//	fLength = (float) sqrt(vecLine[0] * vecLine[0] + vecLine[1] * vecLine[1]);
+//	th = pA->nWidth / (2.0f * fLength);
+//	ta = pA->nWidth / (2.0f * (tanf(pA->fTheta) / 2.0f) * fLength);
+//
+//	// find the base of the arrow
+//	pBase.x = (int) (aptPoly[0].x + -ta * vecLine[0]);
+//	pBase.y = (int) (aptPoly[0].y + -ta * vecLine[1]);
+//
+//	// build the points on the sides of the arrow
+//	aptPoly[1].x = (int) (pBase.x + th * vecLeft[0]);
+//	aptPoly[1].y = (int) (pBase.y + th * vecLeft[1]);
+//	aptPoly[2].x = (int) (pBase.x + -th * vecLeft[0]);
+//	aptPoly[2].y = (int) (pBase.y + -th * vecLeft[1]);
+//
+//	MoveToEx(hDC, pFrom.x, pFrom.y, NULL);
+//
+//	// draw we're fillin'...
+//	//if(pA->bFill) 
+//	{
+//		LineTo(hDC, pBase.x, pBase.y);
+//
+//		LOGPEN logArrowPen = m_logpen;
+//		logArrowPen.lopnWidth.x = 1;
+//		logArrowPen.lopnWidth.y = 1;
+//		CPen ArrowPen;
+//		ArrowPen.CreatePenIndirect(&logArrowPen);
+//		CDCHandle dc(hDC);
+//		HPEN hOldPen = dc.SelectPen(ArrowPen);
+//		Polygon(hDC, aptPoly, 3);
+//		dc.SelectPen(hOldPen);
+//	}
+//
+//	// ... or even jes chillin'...
+//	//else 
+//	//{
+//	//	CDCHandle dc(hDC);
+//	//	dc.LineTo(aptPoly[0]);
+//	//	dc.MoveTo(aptPoly[0]);
+//	//	dc.LineTo(aptPoly[1]);
+//	//	
+//	//	dc.MoveTo(aptPoly[0]);
+//	//	dc.LineTo(aptPoly[2]);
+//	//	//LineTo(hDC, pBase.x, pBase.y);
+//	//	//MoveToEx(hDC, aptPoly[0].x, aptPoly[0].y, NULL);
+//	//}
+//}
+
+void CDrawRect::ArrowTo(HDC hDC, const CPoint& ptFrom,const CPoint& ptTo, LPARROWINFO pA) 
 {
-	POINT pFrom;
-	POINT pBase;
-	POINT aptPoly[3];
+	Point pBase;
+	Point aptPoly[3];
 	float vecLine[2];
 	float vecLeft[2];
 	float fLength;
@@ -33,15 +108,13 @@ void ArrowTo(HDC hDC, const CPoint& ptTo, LPARROWINFO pA)
 	float ta;
 
 	// get from point
-	MoveToEx(hDC, 0, 0, &pFrom);
-
 	// set to point
-	aptPoly[0].x = ptTo.x;
-	aptPoly[0].y = ptTo.y;
+	aptPoly[0].X = ptTo.x;
+	aptPoly[0].Y = ptTo.y;
 
 	// build the line vector
-	vecLine[0] = (float) aptPoly[0].x - pFrom.x;
-	vecLine[1] = (float) aptPoly[0].y - pFrom.y;
+	vecLine[0] = (float) aptPoly[0].X - ptFrom.x;
+	vecLine[1] = (float) aptPoly[0].Y - ptFrom.y;
 
 	// build the arrow base vector - normal to the line
 	vecLeft[0] = -vecLine[1];
@@ -49,76 +122,194 @@ void ArrowTo(HDC hDC, const CPoint& ptTo, LPARROWINFO pA)
 
 	// setup length parameters
 	fLength = (float) sqrt(vecLine[0] * vecLine[0] + vecLine[1] * vecLine[1]);
+	if (fLength <= pA->nWidth)
+	{
+		m_bAvailObject = FALSE;
+		return;
+	}
 	th = pA->nWidth / (2.0f * fLength);
 	ta = pA->nWidth / (2.0f * (tanf(pA->fTheta) / 2.0f) * fLength);
 
 	// find the base of the arrow
-	pBase.x = (int) (aptPoly[0].x + -ta * vecLine[0]);
-	pBase.y = (int) (aptPoly[0].y + -ta * vecLine[1]);
+	pBase.X = (int) (aptPoly[0].X + -ta * vecLine[0]);
+	pBase.Y = (int) (aptPoly[0].Y + -ta * vecLine[1]);
 
 	// build the points on the sides of the arrow
-	aptPoly[1].x = (int) (pBase.x + th * vecLeft[0]);
-	aptPoly[1].y = (int) (pBase.y + th * vecLeft[1]);
-	aptPoly[2].x = (int) (pBase.x + -th * vecLeft[0]);
-	aptPoly[2].y = (int) (pBase.y + -th * vecLeft[1]);
+	aptPoly[1].X = (int) (pBase.X + th * vecLeft[0]);
+	aptPoly[1].Y = (int) (pBase.Y + th * vecLeft[1]);
+	aptPoly[2].X = (int) (pBase.X + -th * vecLeft[0]);
+	aptPoly[2].Y = (int) (pBase.Y + -th * vecLeft[1]);
 
-	MoveToEx(hDC, pFrom.x, pFrom.y, NULL);
+	Graphics graphic(hDC);
+	graphic.SetSmoothingMode(SmoothingModeAntiAlias);
+	Color clrArrow;
+	clrArrow.SetFromCOLORREF(m_logpen.lopnColor);
+	Pen ArrowPen(clrArrow, m_logpen.lopnWidth.x);
+	graphic.DrawLine(&ArrowPen, ptFrom.x, ptFrom.y, pBase.X, pBase.Y);
 
-	// draw we're fillin'...
-	//if(pA->bFill) 
-	{
-		LineTo(hDC, aptPoly[0].x, aptPoly[0].y);
-		Polygon(hDC, aptPoly, 3);
-	}
-
-	// ... or even jes chillin'...
-	//else 
-	//{
-	//	CDCHandle dc(hDC);
-	//	dc.LineTo(aptPoly[0]);
-	//	dc.MoveTo(aptPoly[0]);
-	//	dc.LineTo(aptPoly[1]);
-	//	
-	//	dc.MoveTo(aptPoly[0]);
-	//	dc.LineTo(aptPoly[2]);
-	//	//LineTo(hDC, pBase.x, pBase.y);
-	//	//MoveToEx(hDC, aptPoly[0].x, aptPoly[0].y, NULL);
-	//}
+	SolidBrush ArrowBrush(clrArrow);
+	graphic.FillPolygon(&ArrowBrush, aptPoly, 3, FillModeAlternate);
 }
 
+//void CDrawRect::Draw(HDC hDC, BOOL bOriginal)
+//{
+//	BOOL bRet = FALSE;
+//	CDCHandle dc(hDC);
+//
+//	CBrush brush;
+//	CPen pen;
+//
+//	API_VERIFY(NULL != brush.CreateBrushIndirect(&m_logbrush));
+//	API_VERIFY(NULL != pen.CreatePenIndirect(&m_logpen));
+//
+//	CBrushHandle pOldBrush;
+//	CPenHandle pOldPen;
+//
+//	if (m_bBrush)
+//	{
+//		pOldBrush = dc.SelectBrush(brush);
+//	}
+//	else
+//	{
+//		pOldBrush = dc.SelectStockBrush(NULL_BRUSH);
+//	}
+//
+//	if (m_bPen)
+//	{
+//		pOldPen = dc.SelectPen(pen);
+//	}
+//	else
+//	{
+//		pOldPen = dc.SelectStockPen(NULL_PEN);
+//	}
+//
+//	CRect rect;
+//	if (bOriginal)
+//	{
+//		rect = m_originalPos;
+//	}
+//	else
+//	{
+//		rect = m_position;
+//	}
+//	
+//	switch (m_objType)
+//	{
+//		//case dotArrow:
+//		//{
+//			////draw on device units
+//			//m_pDrawCanvas->DocToClient(&rect);
+//
+//			////FTLTRACE(TEXT("On Draw SelectRect, rcOld=[%d,%d]x[%d,%d], rect=[%d,%d]x[%d,%d]\n"),
+//			////	rcOld.left, rcOld.top, rcOld.right, rcOld.bottom,
+//			////	rect.left, rect.top, rect.right, rect.bottom);
+//
+//			//HBRUSH hOldBrush = dc.SelectStockBrush(NULL_BRUSH);
+//			//dc.Rectangle(rect);
+//			//dc.SelectBrush(hOldBrush);
+//		//	break;
+//		//}
+//		case dotRect:
+//			dc.Rectangle(rect);
+//			break;
+//
+//		case dotRoundRect:
+//			dc.RoundRect(rect, m_roundness);
+//			break;
+//
+//		case dotEllipse:
+//			dc.Ellipse(rect);
+//			break;
+//
+//		case dotLine:
+//		{
+//			if (rect.top > rect.bottom)
+//			{
+//				rect.top -= m_logpen.lopnWidth.y / 2;
+//				rect.bottom += (m_logpen.lopnWidth.y + 1) / 2;
+//			}
+//			else
+//			{
+//				rect.top += (m_logpen.lopnWidth.y + 1) / 2;
+//				rect.bottom -= m_logpen.lopnWidth.y / 2;
+//			}
+//
+//			if (rect.left > rect.right)
+//			{
+//				rect.left -= m_logpen.lopnWidth.x / 2;
+//				rect.right += (m_logpen.lopnWidth.x + 1) / 2;
+//			}
+//			else
+//			{
+//				rect.left += (m_logpen.lopnWidth.x + 1) / 2;
+//				rect.right -= m_logpen.lopnWidth.x / 2;
+//			}
+//
+//			Graphics graphics(hDC);
+//			graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+//			Color clrPen;
+//			clrPen.SetFromCOLORREF(m_logpen.lopnColor);
+//			Pen LinePen(clrPen, m_logpen.lopnWidth.x);
+//			graphics.DrawLine(&LinePen, rect.TopLeft().x, rect.TopLeft().y, rect.BottomRight().x, rect.BottomRight().y);
+//
+//			break;
+//		}
+//		case dotLineArrow:
+//		{
+//			if (rect.top > rect.bottom)
+//			{
+//				rect.top -= m_logpen.lopnWidth.y / 2;
+//				rect.bottom += (m_logpen.lopnWidth.y + 1) / 2;
+//			}
+//			else
+//			{
+//				rect.top += (m_logpen.lopnWidth.y + 1) / 2;
+//				rect.bottom -= m_logpen.lopnWidth.y / 2;
+//			}
+//
+//			if (rect.left > rect.right)
+//			{
+//				rect.left -= m_logpen.lopnWidth.x / 2;
+//				rect.right += (m_logpen.lopnWidth.x + 1) / 2;
+//			}
+//			else
+//			{
+//				rect.left += (m_logpen.lopnWidth.x + 1) / 2;
+//				rect.right -= m_logpen.lopnWidth.x / 2;
+//			}
+//			//CPoint ptBottomRight = rect.BottomRight();
+//			//CPoint ptTopLeft     = rect.TopLeft();
+//			//dc.MoveTo(ptTopLeft);
+//			//
+//			//if (m_bPen)
+//			//{
+//			//	LOGBRUSH logbrush = m_logbrush;
+//			//	logbrush.lbColor   = m_logpen.lopnColor;
+//			//	CBrush Arrowbrush;
+//			//	API_VERIFY(NULL != Arrowbrush.CreateBrushIndirect(&logbrush));
+//			//	HBRUSH OldBrush = dc.SelectBrush(Arrowbrush);
+//			//	m_stArrowInfo.nWidth = max(3 * m_logpen.lopnWidth.x, 5);
+//			//	ArrowTo(hDC, ptBottomRight, &m_stArrowInfo);
+//			//	dc.SelectBrush(OldBrush);
+//			//}
+//			ArrowTo(hDC, rect.TopLeft(), rect.BottomRight(), &m_stArrowInfo);
+//
+//			break;
+//		}
+//		default:
+//			FTLASSERT(FALSE);
+//			break;
+//	}
+//
+//	dc.SelectBrush(pOldBrush);
+//	dc.SelectPen(pOldPen);
+//}
+//
 
 
 void CDrawRect::Draw(HDC hDC, BOOL bOriginal)
 {
 	BOOL bRet = FALSE;
-	CDCHandle dc(hDC);
-
-	CBrush brush;
-	CPen pen;
-
-	API_VERIFY(NULL != brush.CreateBrushIndirect(&m_logbrush));
-	API_VERIFY(NULL != pen.CreatePenIndirect(&m_logpen));
-
-	CBrushHandle pOldBrush;
-	CPenHandle pOldPen;
-
-	if (m_bBrush)
-	{
-		pOldBrush = dc.SelectBrush(brush);
-	}
-	else
-	{
-		pOldBrush = dc.SelectStockBrush(NULL_BRUSH);
-	}
-
-	if (m_bPen)
-	{
-		pOldPen = dc.SelectPen(pen);
-	}
-	else
-	{
-		pOldPen = dc.SelectStockPen(NULL_PEN);
-	}
 
 	CRect rect;
 	if (bOriginal)
@@ -129,113 +320,127 @@ void CDrawRect::Draw(HDC hDC, BOOL bOriginal)
 	{
 		rect = m_position;
 	}
-
-
 	
+	Graphics graphics(hDC);
+	graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+	Color clrPen;
+	clrPen.SetFromCOLORREF(m_logpen.lopnColor);
+	Pen penObject(clrPen, m_logpen.lopnWidth.x);
+
+	Color clrBrush;
+	if(m_bBrush)
+	{
+		clrBrush.SetFromCOLORREF(m_logbrush.lbColor);
+	}
+	else
+	{
+		clrBrush.SetValue(Color::MakeARGB(0, GetRValue(m_logbrush.lbColor), 
+			GetGValue(m_logbrush.lbColor), GetBValue(m_logbrush.lbColor)));
+	}
+	SolidBrush brhObject(clrBrush);
 	switch (m_objType)
 	{
-		//case dotArrow:
-		//{
-			////draw on device units
-			//m_pDrawCanvas->DocToClient(&rect);
-
-			////FTLTRACE(TEXT("On Draw SelectRect, rcOld=[%d,%d]x[%d,%d], rect=[%d,%d]x[%d,%d]\n"),
-			////	rcOld.left, rcOld.top, rcOld.right, rcOld.bottom,
-			////	rect.left, rect.top, rect.right, rect.bottom);
-
-			//HBRUSH hOldBrush = dc.SelectStockBrush(NULL_BRUSH);
-			//dc.Rectangle(rect);
-			//dc.SelectBrush(hOldBrush);
-		//	break;
-		//}
 		case dotRect:
-			dc.Rectangle(rect);
-			break;
+			{
+				rect.NormalizeRect();
+				
+				Rect rcRect(rect.left, rect.top, rect.Width(), rect.Height());
+				graphics.FillRectangle(&brhObject, rcRect);
 
+				rect.top  += (m_logpen.lopnWidth.x / 2 - (m_logpen.lopnWidth.x - 1) % 2);
+				rect.left += (m_logpen.lopnWidth.x / 2 - (m_logpen.lopnWidth.x - 1) % 2);
+				rect.right -= (m_logpen.lopnWidth.x / 2 + m_logpen.lopnWidth.x % 2);
+				rect.bottom -= (m_logpen.lopnWidth.x / 2 + m_logpen.lopnWidth.x % 2);
+				Rect rcFrame(rect.left, rect.top, rect.Width(), rect.Height());
+				//rcRect.Inflate(-m_logpen.lopnWidth.x / 2 - m_logpen.lopnWidth.x % 2, -m_logpen.lopnWidth.x / 2 - m_logpen.lopnWidth.x % 2);
+				graphics.DrawRectangle(&penObject, rcFrame);
+				//dc.Rectangle(rect);
+				break;
+			}
 		case dotRoundRect:
-			dc.RoundRect(rect, m_roundness);
-			break;
-
+			{
+				//dc.RoundRect(rect, m_roundness);
+				break;
+			}
 		case dotEllipse:
-			dc.Ellipse(rect);
-			break;
+			{
+				//dc.Ellipse(rect);
+				rect.NormalizeRect();
+				Rect rcEllipse(rect.left, rect.top, rect.Width(), rect.Height());
+				graphics.FillEllipse(&brhObject, rcEllipse);
 
+				rect.top  += (m_logpen.lopnWidth.x / 2 - (m_logpen.lopnWidth.x - 1) % 2);
+				rect.left += (m_logpen.lopnWidth.x / 2 - (m_logpen.lopnWidth.x - 1) % 2);
+				rect.right -= (m_logpen.lopnWidth.x / 2 + m_logpen.lopnWidth.x % 2);
+				rect.bottom -= (m_logpen.lopnWidth.x / 2 + m_logpen.lopnWidth.x % 2);
+				Rect rcFrame(rect.left, rect.top, rect.Width(), rect.Height());
+				graphics.DrawEllipse(&penObject, rcFrame);
+				break;
+			}
 		case dotLine:
 		{
-			if (rect.top > rect.bottom)
-			{
-				rect.top -= m_logpen.lopnWidth.y / 2;
-				rect.bottom += (m_logpen.lopnWidth.y + 1) / 2;
-			}
-			else
-			{
-				rect.top += (m_logpen.lopnWidth.y + 1) / 2;
-				rect.bottom -= m_logpen.lopnWidth.y / 2;
-			}
+			//if (rect.top > rect.bottom)
+			//{
+			//	rect.top -= m_logpen.lopnWidth.y / 2;
+			//	rect.bottom += (m_logpen.lopnWidth.y + 1) / 2;
+			//}
+			//else
+			//{
+			//	rect.top += (m_logpen.lopnWidth.y + 1) / 2;
+			//	rect.bottom -= m_logpen.lopnWidth.y / 2;
+			//}
 
-			if (rect.left > rect.right)
-			{
-				rect.left -= m_logpen.lopnWidth.x / 2;
-				rect.right += (m_logpen.lopnWidth.x + 1) / 2;
-			}
-			else
-			{
-				rect.left += (m_logpen.lopnWidth.x + 1) / 2;
-				rect.right -= m_logpen.lopnWidth.x / 2;
-			}
+			//if (rect.left > rect.right)
+			//{
+			//	rect.left -= m_logpen.lopnWidth.x / 2;
+			//	rect.right += (m_logpen.lopnWidth.x + 1) / 2;
+			//}
+			//else
+			//{
+			//	rect.left += (m_logpen.lopnWidth.x + 1) / 2;
+			//	rect.right -= m_logpen.lopnWidth.x / 2;
+			//}
+			Point ptBegin;
+			Point ptEnd;
+			ptBegin.X = rect.TopLeft().x;
+			ptBegin.Y = rect.TopLeft().y;
 
-			dc.MoveTo(rect.TopLeft());
-			dc.LineTo(rect.BottomRight());
-
-			//ATLTRACE(_T("top %d, left %d bottom %d right %d\r\n"), rect.top, rect.left, rect.bottom, rect.right);
+			ptEnd.X = rect.BottomRight().x;
+			ptEnd.Y = rect.BottomRight().y;
+			graphics.DrawLine(&penObject, ptBegin, ptEnd);
+			
 			break;
 		}
 		case dotLineArrow:
 		{
-			if (rect.top > rect.bottom)
-			{
-				rect.top -= m_logpen.lopnWidth.y / 2;
-				rect.bottom += (m_logpen.lopnWidth.y + 1) / 2;
-			}
-			else
-			{
-				rect.top += (m_logpen.lopnWidth.y + 1) / 2;
-				rect.bottom -= m_logpen.lopnWidth.y / 2;
-			}
+			//if (rect.top > rect.bottom)
+			//{
+			//	rect.top -= m_logpen.lopnWidth.y / 2;
+			//	rect.bottom += (m_logpen.lopnWidth.y + 1) / 2;
+			//}
+			//else
+			//{
+			//	rect.top += (m_logpen.lopnWidth.y + 1) / 2;
+			//	rect.bottom -= m_logpen.lopnWidth.y / 2;
+			//}
 
-			if (rect.left > rect.right)
-			{
-				rect.left -= m_logpen.lopnWidth.x / 2;
-				rect.right += (m_logpen.lopnWidth.x + 1) / 2;
-			}
-			else
-			{
-				rect.left += (m_logpen.lopnWidth.x + 1) / 2;
-				rect.right -= m_logpen.lopnWidth.x / 2;
-			}
-			CPoint ptBottomRight = rect.BottomRight();
-			CPoint ptTopLeft     = rect.TopLeft();
-			dc.MoveTo(ptTopLeft);
-			
-			if (m_bPen)
-			{
-				LOGBRUSH logbrush = m_logbrush;
-				logbrush.lbColor = m_logpen.lopnColor;
-				CBrush Arrowbrush;
-				API_VERIFY(NULL != Arrowbrush.CreateBrushIndirect(&logbrush));
-				HBRUSH OldBrush = dc.SelectBrush(Arrowbrush);
-				ArrowTo(hDC, ptBottomRight, &m_stArrowInfo);
-				dc.SelectBrush(OldBrush);
-			}
+			//if (rect.left > rect.right)
+			//{
+			//	rect.left -= m_logpen.lopnWidth.x / 2;
+			//	rect.right += (m_logpen.lopnWidth.x + 1) / 2;
+			//}
+			//else
+			//{
+			//	rect.left += (m_logpen.lopnWidth.x + 1) / 2;
+			//	rect.right -= m_logpen.lopnWidth.x / 2;
+			//}
+			ArrowTo(hDC, rect.TopLeft(), rect.BottomRight(), &m_stArrowInfo);
 			break;
 		}
 		default:
 			FTLASSERT(FALSE);
 			break;
 	}
-
-	dc.SelectBrush(pOldBrush);
-	dc.SelectPen(pOldPen);
 }
 
 
@@ -355,7 +560,6 @@ void CDrawRect::MoveHandleTo(int nHandle, CPoint point)
 		m_pDrawCanvas->InvalObject(this);
 		return;
 	}
-
 	CDrawObject::MoveHandleTo(nHandle, point);
 }
 
@@ -445,7 +649,7 @@ BOOL CDrawRect::Intersects(const CRect& rect)
 
 CDrawObject* CDrawRect::Clone()
 {
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	stDrawInfo.logbrush = m_logbrush;
 	stDrawInfo.logpen   = m_logpen;
 	CDrawRect* pClone = new CDrawRect(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
@@ -458,36 +662,6 @@ CDrawObject* CDrawRect::Clone()
 	return pClone;
 }
 
-void CDrawRect::SetPosition(const CRect& pos)
-{
-	CRect rect = pos;
-	if (m_objType != dotLine && m_objType != dotLineArrow)
-	{
-		if (abs(rect.Width()) < 40)
-		{
-			if (rect.left > rect.right)
-			{
-				rect.right = rect.left - 40;
-			}
-			else
-			{
-				rect.right = rect.left + 40;
-			}
-		}
-		if (abs(rect.Height()) < 40)
-		{
-			if (rect.top > rect.bottom)
-			{
-				rect.bottom = rect.top - 40;
-			}
-			else
-			{
-				rect.bottom = rect.top + 40;
-			}
-		}
-	}
-	m_position = rect;
-}
 
 BOOL CDrawRect::CheckAvailObject()
 {
@@ -652,7 +826,7 @@ void CDrawArrow::MoveHandleTo(int nHandle, CPoint point)
 
 CDrawObject* CDrawArrow::Clone()
 {
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	stDrawInfo.logbrush = m_logbrush;
 	stDrawInfo.logpen   = m_logpen;
 	CDrawArrow* pClone = new CDrawArrow(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
@@ -749,7 +923,7 @@ void CDrawBalloon::Draw(HDC hDC, BOOL bOriginal)
 		rect = m_position;
 	}
 	rect.NormalizeRect();
-
+	rect.right += 1;
 	CPoint ptPoly[3];
 
 	ptPoly[0].x = rect.left + rect.Width() * m_flPolyScale;
@@ -797,6 +971,7 @@ void CDrawBalloon::Draw(HDC hDC, BOOL bOriginal)
 	hClient.DeleteObject();
 }
 
+
 BOOL CDrawBalloon::Intersects(const CRect& rect)
 {
 	CRect rectT = rect;
@@ -818,7 +993,7 @@ BOOL CDrawBalloon::Intersects(const CRect& rect)
 
 CDrawObject* CDrawBalloon::Clone()
 {
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	stDrawInfo.logpen   = m_logpen;
 	stDrawInfo.logbrush = m_logbrush;
 	stDrawInfo.bBrush   = m_bBrush;
@@ -852,15 +1027,15 @@ void CDrawImage::Draw(HDC hDC, BOOL bOriginal)
 		rect.NormalizeRect();
 		if (pImage)
 		{
-			//GdiImage.Load(pZipManager->LoadCImage(m_strImageFile), Gdiplus::ImageFormatPNG);
-			//GdiImage.Draw(hDC, rect.left, rect.top, rect.Width(), rect.Height());
+			GdiImage.Load(pZipManager->LoadCImage(m_strImageFile), ImageFormatPNG);
+			GdiImage.Draw(hDC, rect.left, rect.top, rect.Width(), rect.Height());
 		}
 	}
 }
 
 CDrawObject* CDrawImage::Clone()
 {
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	stDrawInfo.logpen   = m_logpen;
 	stDrawInfo.logbrush = m_logbrush;
 	stDrawInfo.bBrush   = m_bBrush;
@@ -879,32 +1054,4 @@ BOOL CDrawImage::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
 		return TRUE;
 	}
 	return FALSE;
-}
-
-void CDrawImage::SetPosition(const CRect& pos)
-{
-	CRect rect = pos;
-	if (abs(rect.Width()) < 20)
-	{
-		if (rect.left > rect.right)
-		{
-			rect.right = rect.left - 20;
-		}
-		else
-		{
-			rect.right = rect.left + 20;
-		}
-	}
-	if (abs(rect.Height()) < 20)
-	{
-		if (rect.top > rect.bottom)
-		{
-			rect.bottom = rect.top - 20;
-		}
-		else
-		{
-			rect.bottom = rect.top + 20;
-		}
-	}
-	m_position = rect;
 }

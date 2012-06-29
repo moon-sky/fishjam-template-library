@@ -29,9 +29,8 @@ public:
 	virtual void MoveHandleTo(int nHandle, CPoint point);
 	virtual BOOL Intersects(const CRect& rect);
 	virtual CDrawObject* Clone();
-
-	virtual void SetPosition(const CRect& pos);
 	virtual BOOL CheckAvailObject();
+	void ArrowTo(HDC hDC, const CPoint& ptFrom, const CPoint& ptTo, LPARROWINFO pA);
 protected:
 	CPoint m_roundness; // for roundRect corners
 
@@ -90,7 +89,6 @@ public:
 	virtual void Draw(HDC hDC, BOOL bOriginal);
 	virtual CDrawObject* Clone();
 	virtual BOOL UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
-	virtual void SetPosition(const CRect& pos);
 
 protected:
 	CString m_strImageFile;

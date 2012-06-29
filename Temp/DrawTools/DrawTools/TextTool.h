@@ -15,4 +15,7 @@ public:
 	virtual BOOL HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
 
 	virtual BOOL IsNeedClip();
+	virtual void InitResource();
+protected:
+	HCURSOR m_hTextCursor;
 };

@@ -6,11 +6,17 @@
 #include "SelectTool.h"
 #include "TextObject.h"
 
+
+#include <SilverlightCpp.h>
+using namespace SilverlightCpp;
+
 // CRectTool (does rectangles, round-rectangles, and ellipses)
 
 CRectTool::CRectTool(LPDRAWOBJBASEINFO pInfo, ToolType nToolType, LPCTSTR strName)
 : CDrawTool(pInfo, nToolType, strName)
 {
+	m_hDrawCursor = NULL;
+	m_hStamplistCursor = NULL;
 }
 
 BOOL CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
@@ -23,47 +29,72 @@ BOOL CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
-
+	CRect rcRectObject;
+	rcRectObject.bottom = ptLogical.y;
+	rcRectObject.right  = ptLogical.x;
 	//DrawObjectType objType = dotNone;
 	CDrawObject* pObj = NULL;
 	switch (m_nToolType)
 	{
 		case ttRect:
 			//objType = dotRect;
-			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(40, 40)), dotRect, *m_pDrawObjInfo);
-			break;
-
+			{
+				rcRectObject.top = ptLogical.y - 40;
+				rcRectObject.left = ptLogical.x - 40;
+				pObj = new CDrawRect(pView, rcRectObject, dotRect, *m_pDrawObjInfo);
+				break;
+			}
 		case ttRoundRect:
 			//objType = dotRoundRect;
-			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(40, 40)), dotRoundRect, *m_pDrawObjInfo);
-			break;
-
+			{
+				rcRectObject.top = ptLogical.y - 40;
+				rcRectObject.left = ptLogical.x - 40;
+				pObj = new CDrawRect(pView, rcRectObject, dotRoundRect, *m_pDrawObjInfo);
+				break;
+			}
 		case ttEllipse:
-			//objType = dotEllipse;
-			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(40, 40)), dotEllipse, *m_pDrawObjInfo);
-			break;
-
+			{	
+				//objType = dotEllipse;
+				rcRectObject.top = ptLogical.y - 40;
+				rcRectObject.left = ptLogical.x - 40;
+				pObj = new CDrawRect(pView, rcRectObject, dotEllipse, *m_pDrawObjInfo);
+				break;
+			}
 		case ttArrow:
 			//objType = dotArrow;
-			pObj = new CDrawArrow(pView, CRect(ptLogical, CSize(40, 40)), dotArrow, *m_pDrawObjInfo);
-			break;
+			{
+				rcRectObject.top = ptLogical.y - 40;
+				rcRectObject.left = ptLogical.x - 40;
+				pObj = new CDrawArrow(pView, rcRectObject, dotArrow, *m_pDrawObjInfo);
+				break;
+			}
 
 		case ttLine:
-			//objType = dotLine;
-			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotLine, *m_pDrawObjInfo);
-			break;
-		//case ttText:
-		//	pObj = new CTextObject(pView, CRect(ptLogical, CSize(0, 0)), dotText, *m_pDrawObjInfo);
-		//	break;
+			{
+				//objType = dotLine;
+				pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotLine, *m_pDrawObjInfo);
+				break;
+			}
 		case ttLineArrow:
-			pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotLineArrow, *m_pDrawObjInfo);
-			break;
+			{
+				pObj = new CDrawRect(pView, CRect(ptLogical, CSize(0, 0)), dotLineArrow, *m_pDrawObjInfo);
+				break;
+			}
 		case ttBalloon:
-			pObj = new CDrawBalloon(pView, CRect(ptLogical, CSize(40, 40)), dotBalloon, *m_pDrawObjInfo);
-			break;
+			{
+				rcRectObject.top = ptLogical.y - 40;
+				rcRectObject.left = ptLogical.x - 40;
+				pObj = new CDrawBalloon(pView, rcRectObject, dotBalloon, *m_pDrawObjInfo);
+				break;
+			}
 		case ttImage:
-			pObj = new CDrawImage(pView, CRect(ptLogical, CSize(20, 20)), dotImage, *m_pDrawObjInfo);
-			break;
+			{
+				rcRectObject.top = ptLogical.y - 30;
+				rcRectObject.left = ptLogical.x - 30;
+				pObj = new CDrawImage(pView, rcRectObject, dotImage, *m_pDrawObjInfo);
+				break;
+			}
+
 		default:
 			FTLASSERT(FALSE); // unsupported shape!
 			break;    
@@ -116,5 +147,41 @@ void CRectTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 {
 	//pView->GetSelectTool()->OnMouseMove(pView, nFlags, point);
 	//s_SelectTool.OnMouseMove(pView, nFlags, point);
+
+	switch (m_nToolType)
+	{
+	case ttRect:
+	case ttRoundRect:
+	case ttEllipse:
+	case ttArrow:
+	case ttLine:
+	case ttLineArrow:
+	case ttBalloon:
+		{
+			m_hCursor = m_hDrawCursor;
+			break;
+		}
+	case ttImage:
+		{
+			m_hCursor = m_hStamplistCursor;
+			break;
+		}
+	default:
+		FTLASSERT(FALSE); // unsupported shape!
+		break;    
+	}
 	return CDrawTool::OnMouseMove(pView, nFlags, point);
+}
+
+void CRectTool::InitResource()
+{
+	NDGraphics::CGDIPImage imgCursor1;
+	imgCursor1.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
+		_T( "/Assets/Images/Main/CaptureView/draw_curve.png" ) ), ImageFormatPNG ); // NS
+	m_hDrawCursor = (HCURSOR)imgCursor1.GetHICON();
+
+	NDGraphics::CGDIPImage imgCursor2;
+	imgCursor2.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
+		_T( "/Assets/Images/Main/CaptureView/cursor_stamp.png" ) ), ImageFormatPNG ); // NS
+	m_hStamplistCursor = (HCURSOR)imgCursor2.GetHICON();
 }

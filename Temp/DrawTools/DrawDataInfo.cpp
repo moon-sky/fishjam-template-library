@@ -138,5 +138,23 @@ BOOL CDrawDataInfo::CopyDataInfo(DrawObjectList& listDrawObject,  DrawObjectList
 	listSelectObject.clear();
 	strTempFileName = m_strTempFileName;
 	return TRUE;
+}
 
+BOOL CDrawDataInfo::GetDateInfo(DrawObjectList& listDrawObject, DrawObjectList& listSelectObject, CString& strTempFileName)
+{
+	for_each(listDrawObject.begin(), listDrawObject.end(), FTL::ObjecteDeleter<CDrawObject*>());
+	listDrawObject.clear();
+
+	for (DrawObjectList::const_iterator itObject = m_listDrawObject.begin(); 
+		itObject != m_listDrawObject.end(); ++itObject)
+	{
+		CDrawObject* pObject = *itObject;
+		if (pObject)
+		{
+			listDrawObject.push_back(pObject);
+		}
+	}
+	listSelectObject.clear();
+	strTempFileName = m_strTempFileName;
+	return TRUE;
 }

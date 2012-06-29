@@ -6,11 +6,15 @@
 #include "SelectTool.h"
 #include "TextObject.h"
 
+#include <SilverlightCpp.h>
+using namespace SilverlightCpp;
+
 // CTextTool (does rectangles, round-rectangles, and ellipses)
 
 CTextTool::CTextTool(LPDRAWOBJBASEINFO pDrawObjInfo, LPCTSTR strName)
 : CDrawTool(pDrawObjInfo, ttText, strName)
 {
+	m_hTextCursor = NULL;
 }
 
 BOOL CTextTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
@@ -23,7 +27,7 @@ BOOL CTextTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 	
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
-	CRect rcPosition = CRect(ptLogical, CSize(50,20));
+	CRect rcPosition = CRect(ptLogical, CSize(100,30));
 
 	CTextObject* pObj = new CTextObject(pView, rcPosition, dotText, *m_pDrawObjInfo);
 	pView->Add(pObj);
@@ -109,7 +113,17 @@ void CTextTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 {
 	//pView->GetSelectTool()->OnMouseMove(pView, nFlags, point);
 	//s_SelectTool.OnMouseMove(pView, nFlags, point);
+	m_hCursor = m_hTextCursor;
 	return CDrawTool::OnMouseMove(pView, nFlags, point);
+}
+
+void CTextTool::InitResource()
+{
+	NDGraphics::CGDIPImage imgCursor;
+	imgCursor.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
+		_T( "/Assets/Images/Main/CaptureView/draw_text_box.png" ) ), ImageFormatPNG ); // NS
+	m_hTextCursor = (HCURSOR)imgCursor.GetHICON();
+	m_hCursor = m_hTextCursor;
 }
 
 BOOL CTextTool::IsNeedClip()

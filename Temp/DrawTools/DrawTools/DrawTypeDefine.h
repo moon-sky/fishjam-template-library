@@ -64,11 +64,11 @@ enum SelectMode
 #define DRAWOBJECT_BASE_PENWIDTH   0x00000002
 #define DRAWOBJECT_BASE_FONTNAME   0x00000004
 #define DRAWOBJECT_BASE_FONTCLR    0x00000008
-#define DRAWOBJECT_BASE_FONTSIZE   0x0000000f
-#define DRAWOBJECT_BASE_BPEN       0x00000010
-#define DRAWOBJECT_BASE_BBRUSH     0x00000020
-#define DRAWOBJECT_BASE_IMAGEFILE  0x00000040
-#define DRAWOBJECT_BASE_BRUSHCLR   0x00000080
+#define DRAWOBJECT_BASE_FONTSIZE   0x00000010
+#define DRAWOBJECT_BASE_BPEN       0x00000020
+#define DRAWOBJECT_BASE_BBRUSH     0x00000040
+#define DRAWOBJECT_BASE_IMAGEFILE  0x00000080
+#define DRAWOBJECT_BASE_BRUSHCLR   0x00000100
 
 typedef struct stu_DrawObjBaseInfo
 {
@@ -84,7 +84,7 @@ typedef struct stu_DrawObjBaseInfo
 	BOOL            bBrush;
 
 	DWORD_PTR       dwDrawMask;
-	stu_DrawObjBaseInfo()
+	stu_DrawObjBaseInfo(LPCTSTR strFaceName)
 	{
 		logpen.lopnStyle = PS_INSIDEFRAME;
 		logpen.lopnWidth.x = 1;
@@ -95,7 +95,7 @@ typedef struct stu_DrawObjBaseInfo
 		logbrush.lbColor = RGB(255, 0, 0);
 		logbrush.lbHatch = HS_HORIZONTAL;
 
-		strFontName =  _T("Arial");
+		strFontName = strFaceName;
 		nFontSize   = 18;
 		clrFontFore = RGB(255, 0, 0);
 

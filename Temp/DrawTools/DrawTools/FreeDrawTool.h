@@ -11,6 +11,8 @@ public:
 	virtual BOOL OnLButtonUp(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 	virtual void OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point);
 
+	virtual void InitResource();
+
 private:
-	CDrawFreeObject* m_pCurObject;
+	HCURSOR m_hFreeDrawCur;
 };

@@ -2,6 +2,7 @@
 
 #include <textserv.h>
 #include <tom.h>
+#include <stack>
 
 #include "DrawTypeDefine.h"
 class INotifyCallBack
@@ -29,7 +30,60 @@ public:
 	RICH_EDIT_PANEL_FONT_MASK_NAME | RICH_EDIT_PANEL_FONT_MASK_SIZE|RICH_EDIT_PANEL_FONT_MASK_BOLD\
 	| RICH_EDIT_PANEL_FONT_MASK_ITALIC | RICH_EDIT_PANEL_FONT_MASK_UNDERLINE
 	
-	
+
+struct UNDO_REDO_INFO
+{
+	UNDO_REDO_INFO()
+	{
+		spStream = NULL;
+		nStart = 0;
+		nEnd = -1; 
+		nSelectStart = 0;
+		nSelectEnd = 0;
+	}
+	UNDO_REDO_INFO(CComPtr<IStream>& spStream, long nSelectStart, long nSelectEnd)
+	{
+		//default is select all
+		this->spStream = spStream;
+		nStart = 0;
+		nEnd = -1; 
+		this->nSelectStart = nSelectStart;
+		this->nSelectEnd = nSelectEnd;
+	}
+	UNDO_REDO_INFO&	operator = (const UNDO_REDO_INFO& r)
+	{
+		if (this != &r)
+		{
+			this->spStream = r.spStream;
+			this->nStart = r.nStart;
+			this->nEnd = r.nEnd;
+			//this->nPos = r.nPos;
+			this->nSelectStart = r.nSelectStart;
+			this->nSelectEnd = r.nSelectEnd;
+		}
+		return *this;
+	}
+
+	void Reset()
+	{
+		spStream.Release();
+	}
+
+	BOOL IsValid()
+	{
+		return (!!spStream);
+	}
+public:
+	CComPtr<IStream>	spStream;
+	//CAtlStringA			strRTF;
+	long				nStart;
+	long				nEnd;
+	long				nSelectStart;
+	long				nSelectEnd;
+	//long				nPos;
+};
+
+typedef std::list<UNDO_REDO_INFO>	UNDO_REDO_COLLECTION;
 
 class CRichEditPanel
 	: public ITextHost
@@ -38,27 +92,33 @@ class CRichEditPanel
 {
 public:
 	CRichEditPanel();
-	~CRichEditPanel();
+	virtual ~CRichEditPanel();
 	HRESULT Init(HWND hWndOwner, const RECT* prcBound, IDrawCanvas* pDrawCanvas,
 		const LOGFONT* pLogFont, COLORREF clrFontFore, INotifyCallBack* pNotifyCallback = NULL);
 	BOOL SetActive(BOOL bActive);
 	BOOL IsActive();
 
+	BOOL CanUndo();
+	BOOL CanRedo();
 	BOOL Undo();
 	BOOL Redo();
+	BOOL ClearUndoRedoInfo(BOOL bUndo, BOOL bRedo);
 
 	//dwFontMask see RICH_EDIT_PANEL_FONT_MASK_XXXX
 	
 	//HRESULT SetTextFont(long nStart, long nEnd, PLOGFONT pLogFont, DWORD dwFontMask);
 	//HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask);
 
-	HRESULT SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName);
+	HRESULT BeginEdit();
+	HRESULT EndEdit(BOOL bPushUndo = TRUE);
+
+	HRESULT SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName, BOOL bPreview = FALSE);
 	HRESULT GetTextFontName(long nStart, long nEnd, LPTSTR pszFontName, int nCount);
-	HRESULT SetTextFontSize(long nStart, long nEnd, int nSize);
+	HRESULT SetTextFontSize(long nStart, long nEnd, int nSize, BOOL bPreview = FALSE);
 	HRESULT GetTextFontSize(long nStart, long nEnd, int* pFontSize);
 
 	//if clr is COLORREF(-1), then will be tomAutoColor
-	HRESULT SetTextForeColor(long nStart, long nEnd, COLORREF clr);
+	HRESULT SetTextForeColor(long nStart, long nEnd, COLORREF clr, BOOL bPreview = FALSE);
 	HRESULT GetTextForeColor(long nStart, long nEnd, COLORREF* pClr);
 
 	HRESULT SetTextBackColor(long nStart, long nEnd, COLORREF clr);
@@ -197,6 +257,8 @@ public:
 	//   n    =>   m   -- From n To m
 	HRESULT GetTextRange(long nStart, long nEnd, CComPtr<ITextRange>& spTextRange);
 
+	void    InitEmptyUndoInfo();
+
 	//LRESULT OnSetFocus(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -205,13 +267,22 @@ private:
 	HRESULT InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF clrTextFore);
 	HRESULT InitDefaultParaFormat();
 
-
-
 	BOOL	_IsNeedHandleMsg(UINT uMsg, WPARAM wParam, LPARAM lParam);
-
+	BOOL	_CheckAndPushRedoInfo();
+	BOOL	_IsDocumentChanged();	
 	HRESULT _SetPropertyBits(DWORD dwProperty);
-	
+	CAtlString _GetStreamText(IStream* pStream);
+	HRESULT    _GetCurrentEditInfo(UNDO_REDO_INFO& stEditInfo);
+
 private:
+	UNDO_REDO_COLLECTION	m_undoCounts;
+	UNDO_REDO_COLLECTION	m_redoCounts;
+	CComPtr<ITextServices>	m_spTextServices;
+	CComPtr<ITextDocument>	m_spTextDocument;
+	CAtlString				m_strOldText;
+	UNDO_REDO_INFO          m_stBeginEditInfo;
+	UNDO_REDO_INFO          m_stCurrentEditInfo;
+	UNDO_REDO_INFO          m_stEmptyEditInfo;
 	//this must be the first member variable
 	ULONG					m_cRefs;
 	INotifyCallBack*		m_pNotifyCallback;
@@ -232,11 +303,11 @@ private:
 	LONG					m_lAcceleratorPos;
 	LONG					m_cchTextMost;
 	LONG					m_lSelBarWidth;			//width of the selection bar
-
 	TCHAR					m_chPasswordChar;
-	CComPtr<ITextServices>	m_spTextServices;
-	CComPtr<ITextDocument>	m_spTextDocument;
 	LONG					m_lState;
+	//UINT					m_nUndoRedoCount;
+	UINT					m_maxUndoRedoCount;
+	BOOL					m_bFirstInput;
 
 	unsigned    m_fNotify				:1;
 	unsigned	m_fBorder				:1;	// control has border

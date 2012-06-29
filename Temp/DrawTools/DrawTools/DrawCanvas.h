@@ -16,8 +16,11 @@
 #include "FreeDrawTool.h"
 
 #include "DrawTypeDefine.h"
+#include "TextObject.h"
 
-static DRAWOBJBASEINFO s_stDrawObjInfo;
+#include "..\..\..\Capture\StringResouceMgr.h"
+
+static DRAWOBJBASEINFO s_stDrawObjInfo(CStringResouceMgr::Instance()->GetEditFontName().c_str());
 static CMoveTool   s_MoveTool(&s_stDrawObjInfo);
 static CSelectTool s_SelectTool(&s_stDrawObjInfo);
 static CRectTool   s_RectTool(&s_stDrawObjInfo, ttRect, _T("Rect"));
@@ -42,6 +45,7 @@ protected:
 	DrawObjectList	m_allObjects;
 	DrawObjectList	m_selection;
 
+	//CDrawObject*	m_pCurDrawingObject;
 	//CSelectTool*	m_pSelectTool;
 	//CDrawRect*		m_pSelectRect;
 	ToolType		m_nCurToolType;
@@ -61,6 +65,7 @@ public:
 		m_ptMouseDownLogical.SetPoint(INVALID_POS_X, INVALID_POS_Y);
 		m_ptMouseLastLogical.SetPoint(INVALID_POS_X, INVALID_POS_Y);
 
+		//m_pCurDrawingObject = NULL;
 		//m_bActive = FALSE;
 		m_nCurToolType = ttNone;
 		m_nDragHandle = 0;
@@ -71,7 +76,6 @@ public:
 		//m_pSelectTool = new CSelectTool();
 
 		m_tools.push_back(&s_MoveTool);
-		s_SelectTool.InitResource();
 		m_tools.push_back(&s_SelectTool);
 		m_tools.push_back(&s_RectTool);
 		m_tools.push_back(&s_LineTool);
@@ -85,13 +89,24 @@ public:
 		m_tools.push_back(&s_BalloonTool);
 		m_tools.push_back(&s_ImageTool);
 
+		DrawToolList::iterator it = m_tools.begin();
+		while(it != m_tools.end())
+		{
+			CDrawTool* pTool = *it;
+			if (pTool)
+			{
+				pTool->InitResource();
+			}
+			++it;
+		}
+
 		s_stDrawObjInfo.dwDrawMask = 0xffffffff;
 		m_pDrawInfo = &s_stDrawObjInfo;
 	}
 	virtual ~CDrawCanvas()
 	{
 		m_selection.clear();
-		//std::for_each(m_allObjects.begin(), m_allObjects.end(), FTL::ObjecteDeleter<CDrawObject*>());
+		std::for_each(m_allObjects.begin(), m_allObjects.end(), FTL::ObjecteDeleter<CDrawObject*>());
 		m_allObjects.clear();
 
 		//m_pSelectTool = NULL;
@@ -334,6 +349,9 @@ public:
 		{
 			pObj->SetActive(FALSE);
 			m_selection.erase(iter2);
+
+			SetCurrentSelectMode(smNone);
+			SetCurrentToolType(CalcCurrentToolType());
 		}
 		if (bPaint)
 		{
@@ -341,6 +359,33 @@ public:
 			pThis->Invalidate();
 		}
 	}
+
+	//virtual void DeleteCurrentObject(BOOL bPaint = FALSE)
+	//{
+	//	CDrawObject* pObj = m_pCurDrawingObject;
+	//	if( NULL != m_pCurDrawingObject)
+	//	{
+	//		DrawObjectList::iterator iter = std::find(m_allObjects.begin(), m_allObjects.end(), pObj);
+	//		if (iter != m_allObjects.end())
+	//		{
+	//			m_allObjects.erase(iter);
+	//		}
+
+	//		DrawObjectList::iterator iter2 = std::find(m_selection.begin(), m_selection.end(), pObj);
+	//		if (iter2 != m_selection.end())
+	//		{
+	//			m_selection.erase(iter2);
+	//		}
+	//		delete pObj;
+	//		pObj = NULL;
+	//	}
+
+	//	if (bPaint)
+	//	{
+	//		T* pThis = static_cast<T*>(this);
+	//		pThis->Invalidate();
+	//	}
+	//}
 
 	virtual void DeleteSelectObjects(BOOL bPaint = FALSE)
 	{
@@ -366,6 +411,9 @@ public:
 				pObject = NULL;
 			}
 		}
+		SetCurrentSelectMode(smNone);
+		SetCurrentToolType(CalcCurrentToolType());
+		//Select(NULL, FALSE);
 		if (bPaint)
 		{
 			T* pThis = static_cast<T*>(this);

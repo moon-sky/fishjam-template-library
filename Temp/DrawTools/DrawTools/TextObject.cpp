@@ -4,18 +4,32 @@
 #include <ftlGdi.h>
 //#include <ftlControls.h>
 
+#include "..\..\..\Capture\StringResouceMgr.h"
+
 CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, 
-						 DRAWOBJBASEINFO& stDrawObjInfo)
+						 DRAWOBJBASEINFO& stDrawObjInfo, CShareEditPtr pEditPanel)
 : CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo)
 {
 	HRESULT hr = E_FAIL;
 
-	m_pRichEditPanel = new CRichEditPanel();
+	m_pShareEditPtr = pEditPanel;
+
+	m_bAvailObject = FALSE;
+	//m_bIsCanUndo = TRUE;
+	//m_bIsCanRedo = FALSE;
+}
+
+CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType,
+			DRAWOBJBASEINFO& stDrawObjInfo)
+: CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo), m_pShareEditPtr(new CRichEditPanel())
+{
+	HRESULT hr = E_FAIL;
+
+	//m_pRichEditPanel = new CRichEditPanel();
 
 	if (stDrawObjInfo.strFontName == _T(""))
 	{
-		stDrawObjInfo.strFontName = _T("Arial");
-
+		stDrawObjInfo.strFontName = CStringResouceMgr::Instance()->GetEditFontName().c_str();
 	}
 	if (stDrawObjInfo.nFontSize == -1)
 	{
@@ -23,24 +37,24 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	}
 
 	LOGFONT stFont = {0};
-	#pragma TODO(Font Height)
-	stFont.lfHeight = stDrawObjInfo.nFontSize;
+	stFont.lfHeight = -stDrawObjInfo.nFontSize;//TODO:not user now, -::MulDiv( stDrawObjInfo.nFontSize, wndDC.GetDeviceCaps(LOGPIXELSY), 72);
 	StringCchCopy(stFont.lfFaceName, _countof(stFont.lfFaceName), stDrawObjInfo.strFontName);
 
-	m_pRichEditPanel->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, &stFont, 
+	m_pShareEditPtr->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, &stFont, 
 		stDrawObjInfo.clrFontFore, this);
-	UpdateDrawInfo(stDrawObjInfo);
+	_InitDrawInfo(stDrawObjInfo);
+	m_pShareEditPtr->BeginEdit();
+	m_pShareEditPtr->EndEdit();
+	m_pShareEditPtr->InitEmptyUndoInfo();
 	m_bAvailObject = FALSE;
-	//m_pRichEditPanel->OnTxInPlaceActivate(&position);
+	//m_bIsCanUndo = TRUE;
+	//m_bIsCanRedo = FALSE;
 }
+
 
 CTextObject::~CTextObject()
 {
-	if (m_pRichEditPanel)
-	{
-		m_pRichEditPanel->Release();
-		m_pRichEditPanel = NULL;
-	}
+
 }
 
 //BOOL CTextObject::PreTranslateMessage(MSG* pMsg)
@@ -65,16 +79,16 @@ CTextObject::~CTextObject()
 
 void CTextObject::Draw(HDC hDC, BOOL bOriginal)
 {
-	m_pRichEditPanel->DoPaint(hDC);
+	m_pShareEditPtr->DoPaint(hDC);
 	//CDCHandle dc(hDC);
 	//dc.DrawText(TEXT("In CTextObject Draw"), -1, m_position, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 }
 
 BOOL CTextObject::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult)
 {
-	if (m_pRichEditPanel)
+	if (m_pShareEditPtr && m_pShareEditPtr.get())
 	{
-		return m_pRichEditPanel->HandleControlMessage(pView, uMsg, wParam, lParam, lResult);
+		return m_pShareEditPtr->HandleControlMessage(pView, uMsg, wParam, lParam, lResult);
 	}
 	return FALSE;
 }
@@ -84,25 +98,11 @@ void CTextObject::SetPosition(const CRect& pos)
 	CRect rect = pos;
 	if (abs(rect.Width()) < 100)
 	{
-		if (rect.left > rect.right)
-		{
-			rect.right = rect.left - 100;
-		}
-		else
-		{
-			rect.right = rect.left + 100;
-		}
+		return;
 	}
 	if (abs(rect.Height()) < 30)
 	{
-		if (rect.top > rect.bottom)
-		{
-			rect.bottom = rect.top - 30;
-		}
-		else
-		{
-			rect.bottom = rect.top + 30;
-		}
+		return;
 	}
 	m_position = rect;
 }
@@ -128,13 +128,13 @@ void CTextObject::MoveHandleTo(int nHandle, CPoint point)
 {
 	CDrawObject::MoveHandleTo(nHandle, point);
 
-	m_pRichEditPanel->SetClientBound(&m_position, NULL, TRUE); //FALSE);
+	m_pShareEditPtr->SetClientBound(&m_position, NULL, TRUE); //FALSE);
 	m_pDrawCanvas->InvalObject(this);
 }
 
 CDrawObject* CTextObject::Clone()
 {
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	stDrawInfo.logbrush = m_logbrush;
 	stDrawInfo.logpen   = m_logpen;
 	stDrawInfo.bBrush   = m_bBrush;
@@ -146,13 +146,9 @@ CDrawObject* CTextObject::Clone()
 	//m_pRichEditPanel->GetTextFontSize(0, 0, &stDrawInfo.nFontSize);
 	//m_pRichEditPanel->GetTextForeColor(0, 0, stDrawInfo.clrFontFore);
 
-	CTextObject* pClone = new CTextObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
+	CTextObject* pClone = new CTextObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo, m_pShareEditPtr);
 	
-	HRESULT hr = E_FAIL;
-	CComPtr<IStream>	spStream;
-	COM_VERIFY(m_pRichEditPanel->GetTextStream(0, -1, &spStream));
-	COM_VERIFY(pClone->m_pRichEditPanel->SetTextStream(0, -1, spStream));
-		
+
 	pClone->m_bPen = m_bPen;
 	//pClone->m_logpen = m_logpen;
 	pClone->m_bBrush = m_bBrush;
@@ -165,9 +161,9 @@ CDrawObject* CTextObject::Clone()
 void CTextObject::SetActive(BOOL bActive)
 {
 	CDrawObject::SetActive(bActive);
-	if (m_pRichEditPanel)
+	if (m_pShareEditPtr && m_pShareEditPtr.get())
 	{
-		m_pRichEditPanel->SetActive(bActive);
+		m_pShareEditPtr->SetActive(bActive);
 	}
 }
 
@@ -181,7 +177,7 @@ void CTextObject::MoveTo(const CRect& position)
 	m_pDrawCanvas->InvalObject(this);
 	//m_position = position;
 	SetPosition(position);
-	m_pRichEditPanel->SetClientBound(&m_position, NULL, TRUE);//FALSE);
+	m_pShareEditPtr->SetClientBound(&m_position, NULL, TRUE);//FALSE);
 	m_pDrawCanvas->InvalObject(this);
 	//m_pDocument->SetModifiedFlag();
 }
@@ -198,7 +194,7 @@ void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 	m_pDrawCanvas->ClientToDoc(&rcWantRect);
 	int nWantHeight = rcWantRect.Height() + RTPANEL_MARGIN_TOP + RTPANEL_MARGIN_BOTTOM;
 
-	CSize szMin = m_pRichEditPanel->GetMinBoundSize(RTPANEL_MIN_ROW_COUNT, RTPANEL_MIN_COL_COUNT);
+	CSize szMin = m_pShareEditPtr->GetMinBoundSize(RTPANEL_MIN_ROW_COUNT, RTPANEL_MIN_COL_COUNT);
 	if (nWantHeight < szMin.cy )
 	{
 		nWantHeight = szMin.cy;
@@ -230,14 +226,15 @@ void CTextObject::_OnTextRequestResizeNotify(REQRESIZE* pReqResize)
 	if (rcPosition != m_position && bWillSetBound)
 	{
 		m_position = rcPosition;
-		m_pRichEditPanel->SetClientBound(m_position, NULL, TRUE);
+		m_pShareEditPtr->SetClientBound(m_position, NULL, TRUE);
 		m_pDrawCanvas->InvalObject(this);
 	}
 }
 
 void CTextObject::_OnTextSelectChangeNotify(SELCHANGE* pSelChange)
 {
-	DRAWOBJBASEINFO stDrawObjectInfo;
+	DRAWOBJBASEINFO stDrawObjectInfo(CStringResouceMgr::Instance()->GetEditFontName().c_str());
+	stDrawObjectInfo.dwDrawMask = 0;
 	const int _cchStyleName = 64;
 	TCHAR szFontName[_cchStyleName] = {0};
 	int nFontSize = 0;
@@ -246,11 +243,16 @@ void CTextObject::_OnTextSelectChangeNotify(SELCHANGE* pSelChange)
 	long nStart = pSelChange->chrg.cpMin;
 	long nEnd = pSelChange->chrg.cpMax;
 
-	COM_VERIFY_EXCEPT1(m_pRichEditPanel->GetTextFontName(nStart, nEnd,
+	COM_VERIFY_EXCEPT1(m_pShareEditPtr->GetTextFontName(nStart, nEnd,
 		szFontName, _countof(szFontName)), S_FALSE);
 	if (S_FALSE == hr)
 	{
 		stDrawObjectInfo.strFontName = _T("");
+		stDrawObjectInfo.dwDrawMask |= DRAWOBJECT_BASE_FONTNAME;
+	}
+	else
+	{
+		stDrawObjectInfo.dwDrawMask |= DRAWOBJECT_BASE_FONTNAME;
 	}
 	if (szFontName[0] == _T('\0'))
 	{
@@ -261,29 +263,32 @@ void CTextObject::_OnTextSelectChangeNotify(SELCHANGE* pSelChange)
 		stDrawObjectInfo.strFontName = szFontName;
 	}
 	
-	COM_VERIFY_EXCEPT1(m_pRichEditPanel->GetTextFontSize(nStart, nEnd, &nFontSize), S_FALSE)
+	COM_VERIFY_EXCEPT1(m_pShareEditPtr->GetTextFontSize(nStart, nEnd, &nFontSize), S_FALSE)
 	if (S_FALSE == hr)
 	{
 		//multi select , nFontSize is -1
 		stDrawObjectInfo.nFontSize = -1;
-	}		
-	if (nFontSize == NULL)
-	{
-		stDrawObjectInfo.nFontSize = -1;
+		stDrawObjectInfo.dwDrawMask |= DRAWOBJECT_BASE_FONTSIZE;
 	}
 	else
 	{
+		stDrawObjectInfo.dwDrawMask |= DRAWOBJECT_BASE_FONTSIZE;
 		stDrawObjectInfo.nFontSize = nFontSize;
 	}
+
 	COLORREF clrText = RGB(0, 0, 0);
-	COM_VERIFY_EXCEPT1(m_pRichEditPanel->GetTextForeColor(nStart, nEnd, &clrText), S_FALSE);
+	COM_VERIFY_EXCEPT1(m_pShareEditPtr->GetTextForeColor(nStart, nEnd, &clrText), S_FALSE);
 	if (S_FALSE == hr)
 	{
 		stDrawObjectInfo.clrFontFore = clrText;
+
 	}
-	stDrawObjectInfo.dwDrawMask = DRAWOBJECT_BASE_FONTCLR | 
-		DRAWOBJECT_BASE_FONTSIZE | DRAWOBJECT_BASE_FONTNAME;
-	stDrawObjectInfo.clrFontFore = clrText;
+	else
+	{
+		stDrawObjectInfo.clrFontFore = clrText;
+		stDrawObjectInfo.dwDrawMask |= DRAWOBJECT_BASE_FONTCLR;
+	}
+	
 	m_pDrawCanvas->NotifyDrawObjectBaseInfo(stDrawObjectInfo);
 	//m_pDrawCanvas->SetDrawObjectBaseInfo(stDrawObjectInfo, FALSE);
 }
@@ -306,10 +311,11 @@ void CTextObject::OnNotify(int iNotify, void* pParam)
 		{
 			HRESULT hr = E_FAIL;
 			CComPtr<ITextRange> spRange;
-			COM_VERIFY(m_pRichEditPanel->GetTextRange(0, -1, spRange));
+			COM_VERIFY(m_pShareEditPtr->GetTextRange(0, -1, spRange));
 			long nLength = 0;
 			COM_VERIFY(spRange->GetStoryLength(&nLength));
 			_OnKillFocus(nLength);
+			m_pShareEditPtr->ClearUndoRedoInfo(TRUE, TRUE);
 			break;
 		}
 	case EN_SETFOCUS:
@@ -385,7 +391,7 @@ HCURSOR CTextObject::GetActiveCursor()
 void CTextObject::NormalizePosition()
 {
 	CDrawObject::NormalizePosition();
-	m_pRichEditPanel->SetClientBound(&m_position, NULL, TRUE);
+	m_pShareEditPtr->SetClientBound(&m_position, NULL, TRUE);
 }
 
 BOOL CTextObject::CheckAvailObject()
@@ -393,25 +399,110 @@ BOOL CTextObject::CheckAvailObject()
 	return m_bAvailObject;
 }
 
+BOOL CTextObject::Undo()
+{
+	if (m_pShareEditPtr.get() && m_pShareEditPtr->Undo())
+	{
+		//m_bIsCanRedo = TRUE;
+		return TRUE;
+	}
+	//m_bIsCanUndo = FALSE;
+	return FALSE;
+}
+
+BOOL CTextObject::Redo()
+{
+	if (m_pShareEditPtr.get() && m_pShareEditPtr->Redo())
+	{
+		//m_bIsCanUndo = TRUE;
+		return TRUE;
+	}
+	//m_bIsCanRedo = FALSE;
+	return FALSE;
+}
+
+BOOL CTextObject::IsCanUndo()
+{
+	if (m_pShareEditPtr)
+	{
+		return m_pShareEditPtr->CanUndo();
+	}
+	return FALSE;
+}
+BOOL CTextObject::IsCanRedo()
+{
+	if (m_pShareEditPtr)
+	{
+		return m_pShareEditPtr->CanRedo();
+	}
+	return FALSE;
+	//return m_bIsCanRedo;
+}
+
+BOOL CTextObject::BeginEdit()
+{
+	if (m_pShareEditPtr.get())
+	{
+		if(m_pShareEditPtr->BeginEdit() == S_OK)
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+BOOL CTextObject::EndEdit(BOOL bIsPushUndo)
+{
+	if (m_pShareEditPtr.get())
+	{
+		if(m_pShareEditPtr->EndEdit(bIsPushUndo) == S_OK)
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 BOOL CTextObject::UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
 {
-	if (m_pRichEditPanel)
+	if (m_pShareEditPtr.get())
 	{
 		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTNAME)
 		{
-			m_pRichEditPanel->SetTextFontName(0, 0, stDrawObjInfo.strFontName);
+			m_pShareEditPtr->SetTextFontName(0, 0, stDrawObjInfo.strFontName);
 		}
 
 		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTCLR)
 		{
-			m_pRichEditPanel->SetTextForeColor(0, 0, stDrawObjInfo.clrFontFore);
+			m_pShareEditPtr->SetTextForeColor(0, 0, stDrawObjInfo.clrFontFore);
 		}
 
 		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTSIZE)
 		{
-			m_pRichEditPanel->SetTextFontSize(0, 0, stDrawObjInfo.nFontSize);
+			m_pShareEditPtr->SetTextFontSize(0, 0, stDrawObjInfo.nFontSize);
 		}
 		return TRUE;
 	}
 	return FALSE;
+}
+
+void CTextObject::_InitDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo)
+{
+	if (m_pShareEditPtr.get())
+	{
+		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTNAME)
+		{
+			m_pShareEditPtr->SetTextFontName(0, -1, stDrawObjInfo.strFontName);
+		}
+
+		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTCLR)
+		{
+			m_pShareEditPtr->SetTextForeColor(0, -1, stDrawObjInfo.clrFontFore);
+		}
+
+		if (stDrawObjInfo.dwDrawMask & DRAWOBJECT_BASE_FONTSIZE)
+		{
+			m_pShareEditPtr->SetTextFontSize(0, -1, stDrawObjInfo.nFontSize);
+		}
+	}
 }

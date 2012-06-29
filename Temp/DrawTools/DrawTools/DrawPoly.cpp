@@ -150,7 +150,7 @@ void CDrawPoly::RemoveHandle()
 
 CDrawObject* CDrawPoly::Clone()
 {
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	stDrawInfo.logpen = m_logpen;
 	stDrawInfo.logbrush = m_logbrush;
 	CDrawPoly* pClone = new CDrawPoly(m_pDrawCanvas, m_position, m_objType, stDrawInfo);

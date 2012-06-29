@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DrawObject.h"
 #include "DrawCanvas.h"
+#include "ftlDefine.h"
 
 CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 {
@@ -24,6 +25,7 @@ CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	//m_logbrush.lbStyle = BS_SOLID;
 	//m_logbrush.lbColor = RGB(192, 192, 192);
 	//m_logbrush.lbHatch = HS_HORIZONTAL;
+	m_bAvailObject = TRUE;
 }
 
 CDrawObject::~CDrawObject()
@@ -401,17 +403,284 @@ HCURSOR CDrawObject::GetActiveCursor()
 	return ::LoadCursor(NULL, IDC_SIZEALL);
 }
 
-// point must be in logical
-void CDrawObject::MoveHandleTo(int nHandle, CPoint point)
+void CDrawObject::RegulateRectToSquare(CRect& rcPos, eTypePointInRect eType )
+{
+	switch(eType)
+	{
+	case PIRLEFT:
+		 {
+
+			 if(abs(rcPos.Width()) > abs(rcPos.Height()))
+			 {
+				 if(rcPos.right > rcPos.left)
+				 {	
+					 rcPos.left = rcPos.right - abs(rcPos.Height());
+				 }
+				 else
+				 {
+					 rcPos.left = rcPos.right + abs(rcPos.Height());
+				 }
+			 }
+		 }break;
+
+	case PIRRIGHT:
+		{
+			if(abs(rcPos.Width()) > abs(rcPos.Height()))
+			{
+				if(rcPos.right > rcPos.left)
+				{	
+					rcPos.right = rcPos.left + abs(rcPos.Height());
+				}
+				else
+				{
+					rcPos.right = rcPos.left - abs(rcPos.Height());
+				}
+			}
+		}break;
+	case PIRTOP:
+		{
+			if(abs(rcPos.Width()) < abs(rcPos.Height()))
+			{
+				if(rcPos.bottom > rcPos.top)
+				{
+					rcPos.top = rcPos.bottom - abs(rcPos.Width());
+				}
+				else
+				{
+					rcPos.top = rcPos.bottom + abs(rcPos.Width());
+				}
+			}
+		}break;
+	case PIRBUTTOM:
+		{
+			if(abs(rcPos.Width()) < abs(rcPos.Height()))
+			{
+				if(rcPos.bottom > rcPos.top)
+				{
+					rcPos.bottom = rcPos.top + abs(rcPos.Width());
+				}
+				else
+				{
+					rcPos.bottom = rcPos.top - abs(rcPos.Width());
+				}
+			}
+		}break;
+	}
+}
+void CDrawObject::RegulateLine( CRect& rcPos, eTypePointInRect eType )
+{
+	switch(eType)
+	{
+	case PIRLEFT:
+		{	
+			if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
+			{
+				rcPos.left = rcPos.right;
+				break;
+			}
+
+			if( abs(rcPos.Width()) > 2 *  abs(rcPos.Height()))
+			{
+				break;
+			}
+			if(abs(rcPos.Width()) > abs(rcPos.Height()))
+			{
+				if(rcPos.right > rcPos.left)
+				{	
+					rcPos.left = rcPos.right - abs(rcPos.Height());
+				}
+				else
+				{
+					rcPos.left = rcPos.right + abs(rcPos.Height());
+				}
+			}
+		}break;
+
+	case PIRRIGHT:
+		{
+			if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
+			{
+				rcPos.right = rcPos.left;
+				break;
+			}
+
+			if( abs(rcPos.Width()) > 2 *  abs(rcPos.Height()))
+			{
+				break;
+			}
+			if(abs(rcPos.Width()) > abs(rcPos.Height()))
+			{
+				if(rcPos.right > rcPos.left)
+				{	
+					rcPos.right = rcPos.left + abs(rcPos.Height());
+				}
+				else
+				{
+					rcPos.right = rcPos.left - abs(rcPos.Height());
+				}
+			}
+		}break;
+	case PIRTOP:
+		{
+			if(2 * abs(rcPos.Height()) < abs(rcPos.Width()))
+			{
+				rcPos.top = rcPos.bottom;
+				break;
+			}
+
+			if(2* abs(rcPos.Width()) <  abs(rcPos.Height()))
+			{
+				break;
+			}
+			if(abs(rcPos.Width()) < abs(rcPos.Height()))
+			{
+				if(rcPos.bottom > rcPos.top)
+				{
+					rcPos.top = rcPos.bottom - abs(rcPos.Width());
+				}
+				else
+				{
+					rcPos.top = rcPos.bottom + abs(rcPos.Width());
+				}
+			}
+		}break;
+	case PIRBUTTOM:
+		{
+			ATLTRACE("Height:%d--Width:%d\n", rcPos.Height(), rcPos.Width());
+			if(2 * abs(rcPos.Height()) < abs(rcPos.Width()))
+			{
+				rcPos.bottom = rcPos.top;
+				break;
+			}
+
+			if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
+			{
+				break;
+			}
+			if(abs(rcPos.Width()) < abs(rcPos.Height()))
+			{
+				if(rcPos.bottom > rcPos.top)
+				{
+					rcPos.bottom = rcPos.top + abs(rcPos.Width());
+				}
+				else
+				{
+					rcPos.bottom = rcPos.top - abs(rcPos.Width());
+				}
+			}
+		}break;
+	}
+}
+void CDrawObject::MoveLineHandleToWithShift( int nHandle, CPoint point )
 {
 	FTLASSERT(this);
 
 	CRect position = m_position;
 	switch (nHandle)
 	{
-		case 1:
+	case 1:
+		{
 			position.left = point.x;
 			position.top = point.y;
+			RegulateLine(position,PIRLEFT);
+			RegulateLine(position,PIRTOP);
+		}break;
+	case 5:
+		{
+			position.right = point.x;
+			position.bottom = point.y;
+			RegulateLine(position,PIRRIGHT);
+			RegulateLine(position,PIRBUTTOM);
+		}break;
+	}
+	MoveTo(position);
+}
+
+void CDrawObject::MoveHandleToWithShift( int nHandle, CPoint point )
+{
+	FTLASSERT(this);
+
+	CRect position = m_position;
+	switch (nHandle)
+	{
+	case 2:
+	case 4:
+	case 6:
+	case 8:
+		{
+			return;
+		}
+		break;
+
+	case 1:
+		{
+			position.left = point.x;
+			position.top = point.y;
+			RegulateRectToSquare(position, PIRLEFT);
+			RegulateRectToSquare(position, PIRTOP);
+		}
+		break;
+
+	case 3:
+		{
+			position.right = point.x;
+			position.top = point.y;
+			RegulateRectToSquare(position,PIRRIGHT);
+			RegulateRectToSquare(position,PIRTOP);
+		}
+		break;
+
+	case 5:
+		{
+			position.right = point.x;
+			position.bottom = point.y;
+			RegulateRectToSquare(position,PIRRIGHT);
+			RegulateRectToSquare(position,PIRBUTTOM);
+		}
+		break;
+
+	case 7:
+		{
+			position.left = point.x;
+			position.bottom = point.y;
+			RegulateRectToSquare(position,PIRLEFT);
+			RegulateRectToSquare(position,PIRBUTTOM);
+		}
+		
+		break;
+	default:
+		FTLASSERT(FALSE);
+		break;
+	}
+
+	MoveTo(position);
+}
+
+// point must be in logical
+void CDrawObject::MoveHandleTo(int nHandle, CPoint point)
+{
+	FTLASSERT(this);
+
+	if(KEY_DOWN(VK_SHIFT))
+	{
+		if(dotLine == m_objType || dotLineArrow == m_objType)
+		{
+			return MoveLineHandleToWithShift(nHandle, point);
+		}
+		else
+		{
+			return MoveHandleToWithShift(nHandle, point);
+		}
+		
+	}
+	CRect position = m_position;
+	switch (nHandle)
+	{
+		case 1:
+			{
+				position.left = point.x;
+				position.top = point.y;
+			}
 			break;
 
 		case 2:
@@ -428,8 +697,10 @@ void CDrawObject::MoveHandleTo(int nHandle, CPoint point)
 			break;
 
 		case 5:
-			position.right = point.x;
-			position.bottom = point.y;
+			{
+				position.right = point.x;
+				position.bottom = point.y;
+			}
 			break;
 
 		case 6:
@@ -462,7 +733,7 @@ CDrawObject* CDrawObject::Clone()
 {
 	FTLASSERT(this);
 
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	stDrawInfo.logpen = m_logpen;
 	stDrawInfo.logbrush = m_logbrush;
 	CDrawObject* pClone = new CDrawObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
@@ -560,7 +831,7 @@ void CDrawObject::EndMoveHandle()
 
 BOOL CDrawObject::CheckAvailObject()
 {
-	return TRUE;
+	return m_bAvailObject;
 }
 
 void CDrawObject::SetActive(BOOL bActive)
@@ -576,6 +847,36 @@ void CDrawObject::SetActive(BOOL bActive)
 BOOL CDrawObject::IsActive()
 {
 	return m_bActive;
+}
+
+BOOL CDrawObject::Undo()
+{
+	return FALSE;
+}
+
+BOOL CDrawObject::Redo()
+{
+	return FALSE;
+}
+
+BOOL CDrawObject::IsCanUndo()
+{
+	return FALSE;
+}
+
+BOOL CDrawObject::IsCanRedo()
+{
+	return FALSE;
+}
+
+BOOL CDrawObject::BeginEdit()
+{
+	return FALSE;
+}
+
+BOOL CDrawObject::EndEdit(BOOL bIsPushUndo)
+{
+	return FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -652,42 +953,31 @@ BOOL CDrawFreeObject::RecalcBounds()
 
 void CDrawFreeObject::Draw(HDC hDC, BOOL bOriginal)
 {
-	CDCHandle dc(hDC);
-	CBrush brush;
-	if (!brush.CreateBrushIndirect(&m_logbrush))
-		return;
-	CPen pen;
-	if (!pen.CreatePenIndirect(&m_logpen))
-		return;
+	Graphics graphics(hDC);
+	graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+	Color clrPen;
+	clrPen.SetFromCOLORREF(m_logpen.lopnColor);
+	Pen penObject(clrPen, m_logpen.lopnWidth.x);
 
-	CBrush pOldBrush;
-	CPen pOldPen;
-
-	if (m_bBrush)
-		pOldBrush = dc.SelectBrush(brush);
-	else
-		pOldBrush = dc.SelectStockBrush(NULL_BRUSH);
-
-	if (m_bPen)
-		pOldPen = dc.SelectPen(pen);
-	else
-		pOldPen = dc.SelectStockPen(NULL_PEN);
-
-	//dc.Polygon(m_points, m_nPoints);
+	Point ptBegin;
+	Point ptEnd;
 	for (int i = 0; i < m_nPoints; i++)
 	{
 		if (i == 0)
 		{
-			dc.MoveTo(m_points[i]);
+			//dc.MoveTo(m_points[i]);
+			ptBegin.X = m_points[i].x;
+			ptBegin.Y = m_points[i].y;
 		}
 		else
 		{
-			dc.LineTo(m_points[i]);
+			ptEnd.X = m_points[i].x;
+			ptEnd.Y = m_points[i].y;
+			graphics.DrawLine(&penObject, ptBegin, ptEnd);
+			ptBegin = ptEnd;
 		}
 	}
 
-	dc.SelectBrush(pOldBrush);
-	dc.SelectPen(pOldPen);
 }
 
 int CDrawFreeObject::GetHandleCount()
@@ -740,7 +1030,7 @@ void CDrawFreeObject::MoveHandleTo(int nHandle, CPoint point)
 
 CDrawObject* CDrawFreeObject::Clone()
 {
-	DRAWOBJBASEINFO stDrawInfo;
+	DRAWOBJBASEINFO stDrawInfo(_T(""));
 	stDrawInfo.logpen = m_logpen;
 	stDrawInfo.logbrush = m_logbrush;
 	CDrawFreeObject* pClone = new CDrawFreeObject(m_pDrawCanvas, m_position, m_objType, stDrawInfo);
