@@ -71,7 +71,7 @@ namespace FTL
 
     LANGID CFNLS::DetectUILanguage()
     {
-        OSVERSIONINFO		VersionInfo;
+        //OSVERSIONINFO		VersionInfo;
         LANGID				uiLangID = 0;
         HKEY				hKey;
         DWORD				Type, BuffLen = MAX_BUFFER_LENGTH;

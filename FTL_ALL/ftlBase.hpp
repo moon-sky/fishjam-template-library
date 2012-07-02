@@ -320,6 +320,7 @@ namespace FTL
             m_nCount = _GetBlockSize( nMaxSize );
             Init(m_nCount);
         }
+		return m_pMem;
     }
 
     template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
