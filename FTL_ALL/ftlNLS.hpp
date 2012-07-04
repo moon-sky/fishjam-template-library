@@ -250,7 +250,10 @@ namespace FTL
 
 	LPCTSTR CFIMEUtil::GetIMENotifyInfoString(CFStringFormater& formater, WPARAM wParam, LPARAM lParam)
 	{
-		switch (wParam)
+		UINT nNotifyCmd = (UINT)(wParam);
+		nNotifyCmd &= 0xF;		//根据实测，输入韩文时 nNotifyCmd 为 0x010X, 多了 0x0100(但MSDN中没有写)
+		//FTLASSERT(nNotifyCmd == wParam);
+		switch (nNotifyCmd)
 		{
 			HANDLE_CASE_TO_STRING_FORMATER(formater, IMN_CLOSESTATUSWINDOW);
 			HANDLE_CASE_TO_STRING_FORMATER(formater, IMN_OPENSTATUSWINDOW);
@@ -267,7 +270,9 @@ namespace FTL
 			HANDLE_CASE_TO_STRING_FORMATER(formater, IMN_GUIDELINE);
 			HANDLE_CASE_TO_STRING_FORMATER(formater, IMN_PRIVATE);
 		default:
-			FTLASSERT(FALSE);
+			//FTLASSERT(FALSE);
+			 
+			formater.Format(TEXT("Unknown, 0x%x"), nNotifyCmd);
 			break;
 		}
 		return formater.GetString();

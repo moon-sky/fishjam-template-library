@@ -37,7 +37,18 @@ if(::GetCapture() == m_hWnd)
 * Rich Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 
 * 为了使用RichEdit，需要先加载对应的DLL，MFC下调用AfxInitRichEdit ，
 *                                        WTL下调用(可能不对) LoadLibrary(CRichEditCtrl::GetLibraryName());
-* 
+*   IID_ITextServices 
+*     系统在textserv.h预定义的（E_NOINTERFACE）                -- {957C25FF-0149-25FF-7895-4901FF25AC8A}
+*     自定义或通过GetProcAddress(IID_ITextServices)得到的  -- 8D33F740-CF58-11CE-A89D-00AA006CADC5
+*     
++		IID_ITS         	{3B032DE9-017F-25FF-AC2A-7F01FF25B02A}	-- 会返回 E_NOINTERFACE
++		IID_ITextServices	{357825FF-017F-25FF-AC2A-7F01FF25B02A}	_GUID
+
+
+*     CreateTextServices 
+*       riched20.dll!CTxtEdit::Init 中会通过QI查询这个接口：{13E670F5-1A5A-11CF-ABEB-00AA00B65EA1}
+*       msftedit.dll!CTxtEdit::Init                         {13E670F5-1A5A-11CF-ABEB-00AA00B65EA1}
+*
 * 有多个版本(可能不对，需要确认)
 *   1.0 -- RichEd32.dll (Win95)
 *   2.0 -- RICHED20.DLL (Win95/Win98), 不再支持一些在亚洲语言版本的Rich Edit 1.0中支持的消息

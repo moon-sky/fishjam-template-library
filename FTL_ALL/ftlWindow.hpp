@@ -210,13 +210,17 @@ namespace FTL
 		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
 			//DBCS
-			LPCSTR pszLastChange = (LPCSTR)wParam;
+			
+			//CopyMemory(szLastChange, (VOID*)wParam, sizeof(wParam));
 			CFStringFormater strLastChange;
-			if (pszLastChange)
+			strLastChange.Format(TEXT("0x%x"), wParam);
+			//if (wParam)
 			{
-				 CFConversion cov;
-				 strLastChange.Format(TEXT("%s"), cov.MBCS_TO_TCHAR(pszLastChange));
+				 // CHAR* szLastChange = (CHAR*)wParam;
+				 ////CFConversion cov;
+				 //strLastChange.Format(TEXT("%c%c"), szLastChange[0], szLastChange[1]);//  cov.MBCS_TO_TCHAR(pszLastChange));
 			}
+			
 			CFStringFormater changeTypeFormater;
 			m_strFormater.Format(
 				TEXT("%s{pszLastChange=%s, changeType=%s}"),

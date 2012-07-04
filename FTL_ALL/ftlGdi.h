@@ -280,7 +280,17 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 *     TabbedTextOut(hdc, 20, 170, TEXT("Tabbed\t\tText\tOut"), 16, 3, tabList, 1);
 * 
 * RTF -- Rich Text Format,由微软公司开发的跨平台文档格式,是一个很好的文件格式转换工具，用于在不同应用程序之间进行格式化文本文档的传送
-* 
+*   使用 wordpad.exe 可以很方便的生成RTF文档，标准的RTF文件应该仅包含7位ASCII码字符。 
+*   四种格式
+*     a.未格式化文本(unformatted text)
+*     b.控制字(control words) -- 标记打印机控制符的格式化命令, "\[a-z的小写字母字符], 如文件开始处的 "\rtf1" 等
+*     c.控制符号(control symbols)
+*     d.组(group)
+*   文件组成（三部分)
+*     a.标志: \rtf1 或 \urtf1
+*     b.文件头 -- 字体表，文件表，颜色表等，每个表由一对大括号括起来
+*     c.正文
+*
 * 位图 -- 
 *   注意：创建兼容位图时，兼容DC不能是才创建好的内存DC -- 否则位图只有黑白两色
 *   CBitmap -- 功能较弱，只能显示出在资源中的图标、位图、光标及图元文件
