@@ -523,7 +523,9 @@ namespace FTL
 	class CUrlComponents : public URL_COMPONENTS
 	{
 	public:
-		CUrlComponents();
+		FTLINLINE CUrlComponents();
+		FTLINLINE BOOL ParseUrl( LPCTSTR pstrURL, DWORD& dwServiceType,
+			WORD& nPort, DWORD dwFlags );
 	private:
 		TCHAR m_szScheme[INTERNET_MAX_SCHEME_LENGTH];
 		TCHAR m_szHostName[INTERNET_MAX_HOST_NAME_LENGTH];
@@ -617,6 +619,37 @@ namespace FTL
 		
 		DWORD		m_dwError;				// LAST ERROR CODE
 		DWORD		m_dwResultSize;
+	};
+
+	enum DOWMLOAD_END_CODE
+	{
+		DOWN_OK = 0,
+		DOWN_ERROR,
+		DOWN_CANCEL
+	};
+
+	class IFDownloadCallbackEvent
+	{
+	public:
+
+		virtual void OnDownloadProgress( LPCTSTR URL, LPCTSTR Path, int nCurrent ) = 0;
+		virtual void OnDownloadEnd( LPCTSTR URL, LPCTSTR Path, DOWMLOAD_END_CODE errorCode ) = 0;
+	};
+
+	class CFHttpDownloader
+	{
+	public:
+		CFHttpDownloader( void );
+		~CHttpDownloader( void );
+		void	HttpDownAsync();
+		BOOL	HttpDown();
+
+		//다운로드 중 취소 명령
+		void	Cancel()
+		{
+			m_bContinue = FALSE;
+		}
+
 	};
 }
 

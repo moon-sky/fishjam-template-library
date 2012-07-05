@@ -872,6 +872,48 @@ namespace FTL
 		ZeroMemory(m_szExtraInfo, _countof(m_szExtraInfo));
 	}
 
+	BOOL CUrlComponents::ParseUrl( LPCTSTR pstrURL, DWORD& dwServiceType, WORD& nPort, DWORD dwFlags )
+	{
+		//未测试 -- 用 WinHttpCrackUrl 有什么问题？
+		BOOL bRet = FALSE;
+		LPTSTR pstrCanonicalizedURL = NULL;
+		TCHAR szCanonicalizedURL[INTERNET_MAX_URL_LENGTH] = {0};
+		DWORD dwNeededLength = INTERNET_MAX_URL_LENGTH;
+		
+		// Decoding is done in InternetCrackUrl/UrlUnescape
+		// so we don't need the ICU_DECODE flag here.
+
+		DWORD dwCanonicalizeFlags = dwFlags & ( ICU_NO_ENCODE | ICU_NO_META | ICU_ENCODE_SPACES_ONLY | ICU_BROWSER_MODE );
+
+		DWORD dwCrackFlags = 0;
+
+		BOOL bUnescape = FALSE;
+
+		if ( ( dwFlags & ( ICU_ESCAPE | ICU_DECODE ) ) && ( dwUrlPathLength != 0 ) )
+		{
+			// We use only the ICU_ESCAPE flag for decoding even if
+			// ICU_DECODE is passed.
+			// Also, if ICU_BROWSER_MODE is passed we do the unescaping
+			// manually because InternetCrackUrl doesn't do
+			// Browser mode unescaping
+			if ( dwFlags & ICU_BROWSER_MODE )
+			{
+				bUnescape = TRUE;
+			}
+			else
+			{
+				dwCrackFlags = ICU_ESCAPE;
+			}
+		}
+		API_VERIFY(InternetCanonicalizeUrl( pstrURL, szCanonicalizedURL,
+			&dwNeededLength, dwCanonicalizeFlags ));
+		pstrCanonicalizedURL = szCanonicalizedURL;
+
+		API_VERIFY( InternetCrackUrl( pstrCanonicalizedURL, 0, dwCrackFlags, this ));
+		API_VERIFY(UrlUnescape( lpComponents->lpszUrlPath, NULL, NULL, URL_UNESCAPE_INPLACE | URL_DONT_UNESCAPE_EXTRA_INFO ));
+
+		return bRet;
+	}
 	//////////////////////////////////////////////////////////////////////////
 
 	CFGenericHTTPClient::CFGenericHTTPClient()

@@ -34,6 +34,23 @@ if(::GetCapture() == m_hWnd)
 */
 
 /***********************************************************************************************************
+* http://www.functionx.com/visualc/applications/deskpad.htm
+* http://blog.csdn.net/takikoyx/article/details/6311807
+* 
+* riched32.dll -> riched20.dll/riched32.dll(模拟) -> msftedit.dll/riched20.dll  -- 98以后的系统， riched20.dll 都好用？
+* 为了使用新版本的RichEdit -- 通过定义 _RICHEDIT_VER 宏并包含 RichEdit.H 是否可以？ afxwin 定义为 0x0210
+*   1.需要手工更改RC文件： 如 RichEdit20w（RICHED20.DLL 中的 2.0 控件） -> RICHEDIT50W(Msftedit 中的 4.1 控件)
+*     或直接放一个 "Custom Control"，然后将ClassName 改为 RICHEDIT50W ? RichEdit20a(哪个版本？）
+*   2.在 App 的构造中 LoadLibrary(_T("msftedit.dll")); 析构中 FreeLibrary,
+*   3.在 InitInstance 中仍然需要调用 AfxInitRichEdit2 ? -- 实测表明不需要，而且其实现也是加载 RICHED20.DLL 或 RICHED32.DLL
+* 
+* 默认时，当用户切换键盘布局(keyboard layout -- 比如中英韩等？)，会自动切换字体(auto font feature)，造成程序出现问题，为了关闭该功能：
+*   LRESULT lres = SendMessage(hRE, EM_GETLANGOPTIONS, 0, 0);
+*   lres &= ~( IMF_AUTOFONT | IMF_AUTOFONTSIZEADJUST) ;
+*   SendMessage(hRE, EM_SETLANGOPTIONS, 0, lres);
+*   缺省时是：IMF_AUTOFONT 
+IMF_DUALFONT |   
+*
 * Rich Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 
 * 为了使用RichEdit，需要先加载对应的DLL，MFC下调用AfxInitRichEdit ，
 *                                        WTL下调用(可能不对) LoadLibrary(CRichEditCtrl::GetLibraryName());

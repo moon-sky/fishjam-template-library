@@ -11,7 +11,8 @@ namespace FTL
     CFOSInfo::CFOSInfo()
     {
         BOOL bRet = FALSE;
-        m_OsInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		ZeroMemory(&m_OsInfo, sizeof(m_OsInfo));
+        m_OsInfo.dwOSVersionInfoSize = sizeof(m_OsInfo);
         API_VERIFY(::GetVersionEx(&m_OsInfo));
         FTLTRACEEX(tlTrace,_T("GetVersionEx :{ dwPlatformId=%d, dwMajorVersion=%d, dwMinorVersion=%d,dwBuildNumber=%d,szCSDVersion=%s}\r\n"),
             m_OsInfo.dwPlatformId,m_OsInfo.dwMajorVersion,m_OsInfo.dwMinorVersion,m_OsInfo.dwBuildNumber,m_OsInfo.szCSDVersion);
@@ -63,7 +64,7 @@ namespace FTL
         case 20600:
             osType = ostVista;
             break;
-        case 20700:
+        case 20700:  //20601?
             osType = ostWindows7;
             break;
         default:
@@ -227,6 +228,30 @@ namespace FTL
 
 	LPCTSTR SystemParamProperty::GetPropertyString()
 	{
+
+	}
+
+	BOOL CFSystemUtil::GetCurrentUserID( LPTSTR pszUserName, int iSize)
+	{
+		const TCHAR SUBKEY_LOGON_INFO[] = _T( "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI" );
+		CRegKey RegUsers;
+		if ( RegUsers.Open( HKEY_LOCAL_MACHINE, SUBKEY_LOGON_INFO, KEY_READ ) != ERROR_SUCCESS )
+		{
+			return FALSE;
+		}
+
+		ULONG ul = MAX_PATH;
+		TCHAR szBuf[MAX_PATH] = { 0 };
+		if ( RegUsers.QueryStringValue( _T("LastLoggedOnUser"), szBuf, &ul ) != ERROR_SUCCESS )
+		{
+			return FALSE;
+		}
+
+		HRESULT hr = E_FAIL;
+		ZeroMemory( pszUserName, iSize );
+		COM_VERIFY(StringCchCopy( pszUserName, iSize, ::PathFindFileName( szBuf )));
+
+		return TRUE;
 
 	}
 

@@ -74,3 +74,20 @@ WTL -- 很多类都是重载 void DoPaint(CDCHandle dc) ?
 	tme.dwFlags = TME_LEAVE;
 	tme.hwndTrack = m_hWnd;
 	_TrackMouseEvent(&tme);
+
+文件版本信息：
+  GetFileVersionInfoSize
+  GetFileVersionInfo
+  
+  	struct LANGCODEPAGE
+	{
+		WORD wLanguage;
+		WORD wCodePage;
+	};
+	LANGCODEPAGE* lpLang = NULL;
+	UINT uiTranslate = 0;
+	if ( !VerQueryValue( buffer, _T( "\\VarFileInfo\\Translation" ), ( LPVOID* )&lpLang, &uiTranslate ) )
+	{
+		delete [] buffer;
+		return false;
+	}

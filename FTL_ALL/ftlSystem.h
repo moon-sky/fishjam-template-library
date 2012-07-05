@@ -118,7 +118,7 @@ namespace FTL
         FTLINLINE BOOL GetPhysicalBytes(DWORDLONG* pAvailablePhysicalBytes, DWORDLONG *pTotalPhysicalBytes) const;
         FTLINLINE BOOL GetVolumeVisibleName(LPCTSTR pszVolume, LPTSTR pszBuf, DWORD bufSize) const;
     private:
-        OSVERSIONINFO m_OsInfo;
+        OSVERSIONINFOEX m_OsInfo;
     };
 
     class CFRegUtil
@@ -149,6 +149,9 @@ namespace FTL
     FTLEXPORT class CFSystemUtil
     {
     public:
+		//获取当前登录的用户名
+		FTLINLINE static BOOL GetCurrentUserID( LPTSTR pszUserName, int iSize );
+
 		FTLINLINE static LPCTSTR GetClipboardFormatString(UINT uFormat, LPTSTR lpszFormatName, int cchMaxCount);
 
         FTLINLINE static BOOL Is64BitWindows();
