@@ -54,3 +54,22 @@ http://hi.baidu.com/xlrtx/blog/item/12c312332d07f8f01a4cff8b.html
        每一部分用 --{boundary} 分开(注意前面多两个 "--" )
     3. 使用 --{boundary}-- 表示结束(注意前后各多两个 "--" )
     
+ffmpeg -- 开源且跨平台的音视频解决方案，具有采集、解码、流化等功能
+   模块
+     libavcodec -- 编解码
+     libavformat -- 媒体格式
+     
+  无法使用VC编译(实际上可以？)，只能用MSys+MinGW编译，但是编译出来的DLL是可以被VC使用的
+     http://www.cnblogs.com/mcodec/articles/1659671.html -- 使用VC编译的方法
+     http://ffmpeg.zeranoe.com/blog/  -- 自动下载和编译ffmpeg的脚本
+     http://ffmpeg.zeranoe.com/builds/ -- 编解码的库
+  ./configure --enable-shared --disable-static --enable-memalign-hack --disable-yasm
+     --enable-shared      启用共享库
+     --disable-static     禁用静态库
+     --enable-memalign-hack     启用内存对其，Windows下必须
+     --enable-libx264     使用x264作为h264编码器,表示要使用第3方库x264,此时mingw include 和 lib内必须已经有x264.h和libx264.a
+     --enable-libmp3lame     使用mp3lame作为mp3编码器（http://sourceforge.net/projects/lame/files/）
+     --enable-gpl      遵循gpl协议,必须指定，因为x264是gpl协议
+     --disable-debug   禁用调试信息
+     --enable-small    启用文件最小功能
+  

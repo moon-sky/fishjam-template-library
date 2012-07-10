@@ -118,7 +118,7 @@ namespace FTL
         FTLINLINE BOOL GetPhysicalBytes(DWORDLONG* pAvailablePhysicalBytes, DWORDLONG *pTotalPhysicalBytes) const;
         FTLINLINE BOOL GetVolumeVisibleName(LPCTSTR pszVolume, LPTSTR pszBuf, DWORD bufSize) const;
     private:
-        OSVERSIONINFOEX m_OsInfo;
+        OSVERSIONINFO m_OsInfo;
     };
 
     class CFRegUtil
