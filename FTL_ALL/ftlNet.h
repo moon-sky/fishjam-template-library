@@ -644,7 +644,6 @@ namespace FTL
 		void	HttpDownAsync();
 		BOOL	HttpDown();
 
-		//다운로드 중 취소 명령
 		void	Cancel()
 		{
 			m_bContinue = FALSE;

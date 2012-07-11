@@ -637,7 +637,10 @@ namespace FTL
 	*       4.指令 -- 可带参数，如 /REBOOTOK
 	*           基本指令：Delete、Exec、ExecShell、ExecWait、Rename、RMDir
 	*             File -- 指定文件, /r 递归， /x 排除指定文件， 如 File /r *.exe
-	*             
+	*           标号：使用Goto、IfErrors等语句进行程序控制，语法为"标号: 语句", 标号必须定义在函数和区段中，其作用范围仅限于定义它的区段或函数。
+	*              以点号"."开头的标号是全局标号（如 .onInit 等预定义的回调函数?）
+	*           相对跳转：语法为 "[+-][1-9]"，加号表示从当前位置往前跳转，减号则表示从当前位置往后跳转。数字表示跳转的语句条数
+	*              如 Goto +4
 	*           分支判断：IfErrors、IfFileExists、StrCmp 等
 	*           注册表：ReadRegStr
 	*           调试函数：

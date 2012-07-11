@@ -51,7 +51,7 @@ if(::GetCapture() == m_hWnd)
 *   缺省时是：IMF_AUTOFONT 
 IMF_DUALFONT |   
 *
-* Rich Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 
+* Rich Text Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 
 * 为了使用RichEdit，需要先加载对应的DLL，MFC下调用AfxInitRichEdit ，
 *                                        WTL下调用(可能不对) LoadLibrary(CRichEditCtrl::GetLibraryName());
 *   IID_ITextServices 
@@ -64,17 +64,20 @@ IMF_DUALFONT |
 
 *     CreateTextServices 
 *       riched20.dll!CTxtEdit::Init 中会通过QI查询这个接口：{13E670F5-1A5A-11CF-ABEB-00AA00B65EA1}
-*       msftedit.dll!CTxtEdit::Init                         {13E670F5-1A5A-11CF-ABEB-00AA00B65EA1}
+*       MsftEdit.dll!CTxtEdit::Init                         {13E670F5-1A5A-11CF-ABEB-00AA00B65EA1}
 *
 * 有多个版本(可能不对，需要确认)
 *   1.0 -- RichEd32.dll (Win95)
 *   2.0 -- RICHED20.DLL (Win95/Win98), 不再支持一些在亚洲语言版本的Rich Edit 1.0中支持的消息
 *          (如 EM_CONVPOSITION、EM_SETIMECOLOR、EM_SETPUNCTUATION 等)
-*   3.0 -- 
+*   3.0 -- RichEd20.dll(WinXP)
 *          Rich Edit 3.0支持Hex To Unicode IME，允许用户采用一种或两种热键方式在十六进制字符和Unicode字符间互换。
 *          Word 使用 Alt+x 可将光标前的文字转换成 UNICODE 对应的值；
-*   4.1 -- Msftedit.DLL (WinXP SP1)
-*   6.1 -- Win7 
+*   1.0包装(Wrapper Dll for Richedit 1.0) -- riched32.dll(XP/Vista)
+*  
+*   4.1 -- MsftEdit.dll (WinXP SP1/Vista)
+*   5.?? -- Win7(MsftEdit.dll)
+*   6.1 -- Win7
 *
 *
 *   CHARFORMAT2(EM_SETCHARFORMAT) -- 字符格式，如 字体、尺寸、颜色以及如粗体、斜体和保护(父窗口接受到EN_PROTECTED的通知)等
