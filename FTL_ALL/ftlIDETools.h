@@ -573,6 +573,7 @@ namespace FTL
 
     /******************************************************************************************************************************
     * NSIS(Nullsoft Scriptable Install System) -- http://nsis.sf.net, 开源的 Windows 系统下免费安装程序制作程序，通过脚本配置
+    *   NSIS帮助文档(蓝色网际)： 
 	*   注意：
 	*     1.函数没有参数传递。
 	*       参数传递是通过 全局变量 或 堆栈操作 Pop，Push 和 20 个寄存器变量 $0～$9、$R0～$R9 进行
@@ -581,14 +582,15 @@ namespace FTL
 	* 
 	*   脚本(.nsh/.nsi -- 如 makensis 同目录下有 nsisconf.nsh 头文件，会自动包含)
 	*     第三方的脚本开发集成环境：
-	*       HM NIS EDIT -- http://hmne.sourceforge.net/
+	*       HM NIS EDIT(有创建基础脚本的向导，F9预览结果) -- http://hmne.sourceforge.net/
 	*       Venis IX -- http://www.spaceblue.com/products/venis/
 	*     语法(基本结构包括 安装程序属性属性、页面、区段、函数 )
 	*       0.基本语法
 	*         转义字符 -- $前缀，如 $\n 表示换行， $$ 表示美元符"$", $\"表示双引号（？）
-	*         !define 常量名 "常量值"   -- Name 和 OutFile ?
+	*         !define 常量名 "常量值"   -- Name 和 OutFile ?, 引用时(?)： ${常量名}
+    *         !macro 宏名 -- 定义宏
 	*         !include 头文件名 -- 包含指定的头文件
-	*         !macro 宏名 
+    *         !insertmacro -- 在当前位置插入定义的宏（如系统预订的 MUI_PAGE_WELCOME 等各个Page页面都是宏 -- \Modern UI\System.nsh 文件中） 
 	*         var 变量名, 引用时 $变量名
 	*             颜色 -- 类似HTML中的RGB表示法，但不用井号"#"
 	*         常用的预定义系统变量：
@@ -646,7 +648,11 @@ namespace FTL
 	*           SetOutPath -- 指定目的位置
 	*       6.插件(扩展NSIS安装程序的DLL，系统预安装的在 Plugins 目录下，用户可用 !addplugindir 增加目录位置)
 	*         使用语法： DllName::FunctionName "参数1" 参数2" "参数3"
-	&         如（下载文件）： NSISdl::download http://download.nullsoft.com/winamp/client/winamp291_lite.exe $R0
+	*         如（下载文件）： NSISdl::download http://download.nullsoft.com/winamp/client/winamp291_lite.exe $R0
+    *       7.更改默认的UI -- 在 "MUI Settings" 后通过 !define MUI_XXXX_YYY "文字或位图地址" 的方式指定特定时刻所使用的文字或位图等信息
+    *         MUI_WELCOMEPAGE_TITLE -- 安装包标题(字符串)  
+    *         MUI_WELCOMEFINISHPAGE_BITMAP -- 
+    *         MUI_WELCOMEPAGE_TEXT -- 
 	*   工具程序：makensis/makensisw 
 	*
     ******************************************************************************************************************************/
