@@ -54,17 +54,19 @@ http://hi.baidu.com/xlrtx/blog/item/12c312332d07f8f01a4cff8b.html
        每一部分用 --{boundary} 分开(注意前面多两个 "--" )
     3. 使用 --{boundary}-- 表示结束(注意前后各多两个 "--" )
     
-ffmpeg -- 开源且跨平台的音视频解决方案，具有采集、解码、流化等功能
+ffmpeg -- 开源且跨平台的音视频解决方案，是一套编解码的框架，具有采集、解码、流化等功能（http://www.ffmpeg.org/）
    模块
-     libavcodec -- 编解码
-     libavformat -- 媒体格式
+     ffmpeg -i 输入文件 输出文件 -- 视频文件转换命令行工具,也支持经过实时电视卡抓取和编码成视频文件
+     ffserver -- 基于HTTP(RTSP正在开发中)用于实时广播的多媒体服务器.也支持时间平移 
+     ffplay -- 用 SDL和FFmpeg库开发的一个简单的媒体播放器(需要先安装 SDL 库才能编译)
+     libavcodec -- 包含了所有FFmpeg音视频编解码器的库.为了保证最优性能和高可复用性,大多数编解码器从头开发的
+     libavformat -- 包含了所有的普通音视格式的解析器和产生器的库
      
   无法使用VC编译(实际上可以？)，只能用MSys+MinGW编译，但是编译出来的DLL是可以被VC使用的
      http://www.cnblogs.com/mcodec/articles/1659671.html -- 使用VC编译的方法
      http://ffmpeg.zeranoe.com/blog/  -- 自动下载和编译ffmpeg的脚本
-     http://ffmpeg.zeranoe.com/builds/ -- 编解码的库
   ./configure --enable-shared --disable-static --enable-memalign-hack --disable-yasm
-     --enable-shared      启用共享库
+     --enable-shared      编译动态库
      --disable-static     禁用静态库
      --enable-memalign-hack     启用内存对其，Windows下必须
      --enable-libx264     使用x264作为h264编码器,表示要使用第3方库x264,此时mingw include 和 lib内必须已经有x264.h和libx264.a
@@ -72,4 +74,23 @@ ffmpeg -- 开源且跨平台的音视频解决方案，具有采集、解码、流化等功能
      --enable-gpl      遵循gpl协议,必须指定，因为x264是gpl协议
      --disable-debug   禁用调试信息
      --enable-small    启用文件最小功能
-  
+     
+   编解码库（ffmpeg 只是一个框架，不同的编解码库在不同的网站？http://ffmpeg.zeranoe.com/builds/），
+     可通过 --extra-cflags 来指定头文件的文件夹?
+     libx264 
+     libfaac 
+     libmp3lame -- linux 下支持mp3
+     libogg 
+     libspeex 
+     libvorbis 
+     libtheora  
+     
+   源码分析
+     Demuxer -- 媒体格式解码器
+     struct AVCodec -- codec 的数据结构，全局变量 *first_avcodec, avcodec_register_all 方法注册全部 codec
+     解码播放：Media -> ByteIOContext -> Demuxer -> Decode -> YUV -> Display
+     格式转换：Media -> ByteIOContext -> Demuxer -> Decode -> YUV -> Encode -> Muxer -> ByteIOContex -> Media
+       格式转换，如 文件类型从 .flv -> mp4
+       编码类型，如 codec 从 mpeg4 -> H264
+     媒体录制：YUV -> Encode -> Muxer -> ByteIOContex -> Media
+       
