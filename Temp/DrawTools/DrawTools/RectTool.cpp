@@ -29,9 +29,9 @@ BOOL CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 
 	CPoint ptLogical = point;
 	pView->ClientToDoc(&ptLogical);
-	CRect rcRectObject;
-	rcRectObject.bottom = ptLogical.y;
-	rcRectObject.right  = ptLogical.x;
+	CRect rcRectObject(0, 0, 0, 0);
+	rcRectObject.left = ptLogical.x;
+	rcRectObject.top  = ptLogical.y;
 	//DrawObjectType objType = dotNone;
 	CDrawObject* pObj = NULL;
 	switch (m_nToolType)
@@ -39,32 +39,32 @@ BOOL CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 		case ttRect:
 			//objType = dotRect;
 			{
-				rcRectObject.top = ptLogical.y - 40;
-				rcRectObject.left = ptLogical.x - 40;
+				rcRectObject.right = ptLogical.x + 1;	//40
+				rcRectObject.bottom = ptLogical.y + 1;	//40
 				pObj = new CDrawRect(pView, rcRectObject, dotRect, *m_pDrawObjInfo);
 				break;
 			}
 		case ttRoundRect:
 			//objType = dotRoundRect;
 			{
-				rcRectObject.top = ptLogical.y - 40;
-				rcRectObject.left = ptLogical.x - 40;
+				rcRectObject.right = ptLogical.x + 1;	//40
+				rcRectObject.bottom = ptLogical.y + 1;	//40
 				pObj = new CDrawRect(pView, rcRectObject, dotRoundRect, *m_pDrawObjInfo);
 				break;
 			}
 		case ttEllipse:
 			{	
 				//objType = dotEllipse;
-				rcRectObject.top = ptLogical.y - 40;
-				rcRectObject.left = ptLogical.x - 40;
+				rcRectObject.right = ptLogical.x + 1;	//40
+				rcRectObject.bottom = ptLogical.y + 1;	//40
 				pObj = new CDrawRect(pView, rcRectObject, dotEllipse, *m_pDrawObjInfo);
 				break;
 			}
 		case ttArrow:
 			//objType = dotArrow;
 			{
-				rcRectObject.top = ptLogical.y - 40;
-				rcRectObject.left = ptLogical.x - 40;
+				rcRectObject.right = ptLogical.x + 1;	//40
+				rcRectObject.bottom = ptLogical.y + 1;	//40
 				pObj = new CDrawArrow(pView, rcRectObject, dotArrow, *m_pDrawObjInfo);
 				break;
 			}
@@ -82,15 +82,15 @@ BOOL CRectTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 			}
 		case ttBalloon:
 			{
-				rcRectObject.top = ptLogical.y - 40;
-				rcRectObject.left = ptLogical.x - 40;
+				rcRectObject.right = ptLogical.x + 1;	//40
+				rcRectObject.bottom = ptLogical.y + 1;	//40
 				pObj = new CDrawBalloon(pView, rcRectObject, dotBalloon, *m_pDrawObjInfo);
 				break;
 			}
 		case ttImage:
 			{
-				rcRectObject.top = ptLogical.y - 30;
-				rcRectObject.left = ptLogical.x - 30;
+				rcRectObject.right = ptLogical.x + 1;	//30
+				rcRectObject.bottom = ptLogical.y + 1;	//30
 				pObj = new CDrawImage(pView, rcRectObject, dotImage, *m_pDrawObjInfo);
 				break;
 			}
@@ -150,25 +150,25 @@ void CRectTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 
 	switch (m_nToolType)
 	{
-	case ttRect:
-	case ttRoundRect:
-	case ttEllipse:
-	case ttArrow:
-	case ttLine:
-	case ttLineArrow:
-	case ttBalloon:
-		{
-			m_hCursor = m_hDrawCursor;
-			break;
-		}
-	case ttImage:
-		{
-			m_hCursor = m_hStamplistCursor;
-			break;
-		}
-	default:
-		FTLASSERT(FALSE); // unsupported shape!
-		break;    
+		case ttRect:
+		case ttRoundRect:
+		case ttEllipse:
+		case ttArrow:
+		case ttLine:
+		case ttLineArrow:
+		case ttBalloon:
+			{
+				m_hCursor = m_hDrawCursor;
+				break;
+			}
+		case ttImage:
+			{
+				m_hCursor = m_hStamplistCursor;
+				break;
+			}
+		default:
+			FTLASSERT(FALSE); // unsupported shape!
+			break;    
 	}
 	return CDrawTool::OnMouseMove(pView, nFlags, point);
 }
@@ -177,7 +177,7 @@ void CRectTool::InitResource()
 {
 	NDGraphics::CGDIPImage imgCursor1;
 	imgCursor1.Load( SilverlightCpp::ZipManager::get_Current()->LoadCImage(
-		_T( "/Assets/Images/Main/CaptureView/draw_curve.png" ) ), ImageFormatPNG ); // NS
+		_T( "/Assets/Images/Main/CaptureView/draw_image.png" ) ), ImageFormatPNG ); // NS
 	m_hDrawCursor = (HCURSOR)imgCursor1.GetHICON();
 
 	NDGraphics::CGDIPImage imgCursor2;

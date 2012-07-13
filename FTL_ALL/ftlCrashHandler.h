@@ -28,8 +28,8 @@ namespace FTL
     **********************************************************************************************/
 }
 
-
-extern CComModule _Module;  //CFResourcelessDlg需要使用
+#pragma TODO(_Module type)
+extern CServerAppModule _Module;  //CFResourcelessDlg需要使用
 
 #include <vector>
 //#include <atlbase.h>

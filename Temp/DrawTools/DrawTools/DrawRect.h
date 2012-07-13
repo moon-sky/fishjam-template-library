@@ -19,9 +19,11 @@ typedef struct stu_ArrowInfo
 class CDrawRect : public CDrawObject
 {
 public:	
-	CDrawRect(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
+	CDrawRect(IDrawCanvas* pDrawCanvas, const CRect& position, 
+		DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 	// Implementation
 public:
+	virtual CSize GetMinSize();
 	virtual void Draw(HDC hDC, BOOL bOriginal);
 	virtual int GetHandleCount();
 	virtual CPoint GetHandle(int nHandle);
@@ -42,7 +44,8 @@ protected:
 class CDrawArrow : public CDrawRect
 {
 public:
-	CDrawArrow(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
+	CDrawArrow(IDrawCanvas* pDrawCanvas, const CRect& position, 
+		DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 
 public:
 	virtual void Draw(HDC hDC, BOOL bOriginal);
@@ -67,7 +70,8 @@ private:
 class CDrawBalloon : public CDrawRect
 {
 public:
-	CDrawBalloon(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
+	CDrawBalloon(IDrawCanvas* pDrawCanvas, const CRect& position, 
+		DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 
 public:
 	virtual void Draw(HDC hDC, BOOL bOriginal);
@@ -83,7 +87,8 @@ protected:
 class CDrawImage : public CDrawRect
 {
 public:
-	CDrawImage(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
+	CDrawImage(IDrawCanvas* pDrawCanvas, const CRect& position, 
+		DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 
 public:
 	virtual void Draw(HDC hDC, BOOL bOriginal);

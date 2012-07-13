@@ -5,7 +5,8 @@
 class CDrawObject// : public CMessageFilter
 {
 public:
-	CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
+	CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, 
+		DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual ~CDrawObject();
 
 	CRect GetPosition() const
@@ -13,8 +14,15 @@ public:
 		return m_position;
 	}
 
-	virtual void SetPosition(const CRect & pos);
-	
+	virtual void SetPosition(const CRect & pos, BOOL bCheckSize);
+	virtual CSize GetMinSize();
+
+	//indicate whether user create a new object and has drag it size
+	BOOL HasBeenSized()
+	{
+		return m_bHasBeenSized;
+	}
+
 	CRect GetOriginalPosition() const
 	{
 		return m_originalPos;
@@ -23,7 +31,6 @@ public:
 	{
 		return m_objType;
 	}
-
 
 	void SetZoomFactor(float zoomFactor);
 	//void CalcZoomRect( const CRect& rcOriginal, float zoomFactor, CRect& rcTarget);
@@ -100,14 +107,17 @@ protected:
 	LOGBRUSH		m_logbrush;
 	BOOL			m_bActive;
 	BOOL            m_bAvailObject;
+	BOOL			m_bHasBeenSized;
 };
 
 
 
 class CDrawFreeObject : public CDrawObject
 {
+	DISABLE_COPY_AND_ASSIGNMENT(CDrawFreeObject);
 public:
-	CDrawFreeObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawInfo);
+	CDrawFreeObject(IDrawCanvas* pDrawCanvas, const CRect& position, 
+		DrawObjectType objType, const DRAWOBJBASEINFO& stDrawInfo);
 	virtual ~CDrawFreeObject();
 
 

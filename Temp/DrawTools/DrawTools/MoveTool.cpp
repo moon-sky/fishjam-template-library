@@ -51,6 +51,7 @@ BOOL CMoveTool::OnLButtonDown(IDrawCanvas* pView, UINT nFlags, const CPoint& poi
 
 void CMoveTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point)
 {
+	FUNCTION_BLOCK_TRACE(0);
 	if (m_bDrag && (nFlags & MK_LBUTTON))
 	{
 		m_hCursor = m_hCursorMoving;
@@ -59,8 +60,8 @@ void CMoveTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 		GetClientRect(pView->GetHWnd(), &rcClient);
 
 		pView->GetCurrentOffsetPoint(&ptOffset);
-		if (rcClient.PtInRect(point))
-		{
+	//	if (rcClient.PtInRect(point))
+	//	{
 			//CPoint ptOffset1 = pView->GetOffset();
 			//ATLTRACE(_T("ptOffset11.x %d, ptOffset11.y %d   "), ptOffset1.x, ptOffset1.y);
 			ptOffset.x = max(0, ptOffset.x - point.x + m_ptBegin.x);
@@ -68,7 +69,7 @@ void CMoveTool::OnMouseMove(IDrawCanvas* pView, UINT nFlags, const CPoint& point
 
 			pView->SetCurrentOffsetPoint(&ptOffset);
 			m_ptBegin = point;
-		}
+	//	}
 	}
 	else
 	{

@@ -111,7 +111,7 @@ BOOL CDrawTool::OnLButtonUp(IDrawCanvas* pView, UINT /*nFlags*/, const CPoint& p
 			CDrawObject* pObj = pView->GetSelection().front();
 			if (pObj->GetDrawObjType() == dotSelectRect || 
 				(!pObj->CheckAvailObject() && pObj->GetDrawObjType() != dotText && pObj->IsActive())
-				&& (pObj->GetDrawObjType() == dotLineArrow && !pObj->CheckAvailObject()))
+				&& ((pObj->GetDrawObjType() == dotLineArrow || pObj->GetDrawObjType() == dotLine) && !pObj->CheckAvailObject()))
 			{
 				pView->Remove(pObj, TRUE);
 				pObj->Remove();
@@ -269,7 +269,7 @@ void CDrawTool::_CheckSelectPostion(IDrawCanvas* pView)
 			}
 			else if(rcOldSelectPos != rcSelectPos)
 			{
-				pObj->SetPosition(rcSelectPos);
+				pObj->SetPosition(rcSelectPos, FALSE);
 				pView->InvalObject(pObj);
 			}
 		}

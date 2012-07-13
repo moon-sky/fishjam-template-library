@@ -3,8 +3,10 @@
 
 class CDrawPoly : public CDrawObject
 {
+	DISABLE_COPY_AND_ASSIGNMENT(CDrawPoly);
 public:
-	CDrawPoly(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
+	CDrawPoly(IDrawCanvas* pDrawCanvas, const CRect& position, 
+		DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual ~CDrawPoly(void);
 
 	void AddPoint(const CPoint& point, BOOL bInvalidate = FALSE);

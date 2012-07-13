@@ -3,7 +3,8 @@
 #include "DrawTypeDefine.h"
 #include <ftlGdi.h>
 
-CDrawPoly::CDrawPoly(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
+CDrawPoly::CDrawPoly(IDrawCanvas* pDrawCanvas, const CRect& position, 
+					 DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 : CDrawObject(pDrawCanvas, position, objType, stDrawObjInfo)
 {
 	m_points = NULL;
@@ -15,7 +16,9 @@ CDrawPoly::CDrawPoly(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObject
 CDrawPoly::~CDrawPoly(void)
 {
 	if (m_points != NULL)
+	{
 		delete[] m_points;
+	}
 }
 
 void CDrawPoly::AddPoint(const CPoint& point, BOOL bInvalidate)
@@ -58,23 +61,35 @@ void CDrawPoly::Draw(HDC hDC, BOOL bOriginal)
 	CDCHandle dc(hDC);
 	CBrush brush;
 	if (!brush.CreateBrushIndirect(&m_logbrush))
+	{
 		return;
+	}
 	CPen pen;
 	if (!pen.CreatePenIndirect(&m_logpen))
+	{
 		return;
+	}
 
 	CBrush pOldBrush;
 	CPen pOldPen;
 
 	if (m_bBrush)
+	{
 		pOldBrush = dc.SelectBrush(brush);
+	}
 	else
+	{
 		pOldBrush = dc.SelectStockBrush(NULL_BRUSH);
+	}
 
 	if (m_bPen)
+	{
 		pOldPen = dc.SelectPen(pen);
+	}
 	else
+	{
 		pOldPen = dc.SelectStockPen(NULL_PEN);
+	}
 
 	dc.Polygon(m_points, m_nPoints);
 
@@ -105,7 +120,9 @@ HCURSOR CDrawPoly::GetHandleCursor(int nHandle)
 void CDrawPoly::MoveTo(const CRect& position)
 {
 	if (position == m_position)
+	{
 		return;
+	}
 
 	for (int i = 0; i < m_nPoints; i += 1)
 	{
@@ -121,7 +138,9 @@ void CDrawPoly::MoveHandleTo(int nHandle, CPoint point)
 {	
 	ATLASSERT(nHandle >= 1 && nHandle <= m_nPoints);
 	if (m_points[nHandle - 1] == point)
+	{
 		return;
+	}
 
 	m_points[nHandle - 1] = point;
 	if (!RecalcBounds())
@@ -170,19 +189,29 @@ CDrawObject* CDrawPoly::Clone()
 BOOL CDrawPoly::RecalcBounds()
 {
 	if (m_nPoints == 0)
+	{
 		return FALSE;
+	}
 
 	CRect bounds(m_points[0], CSize(0, 0));
 	for (int i = 1; i < m_nPoints; ++i)
 	{
 		if (m_points[i].x < bounds.left)
+		{
 			bounds.left = m_points[i].x;
+		}
 		if (m_points[i].x > bounds.right)
+		{
 			bounds.right = m_points[i].x;
+		}
 		if (m_points[i].y < bounds.top)
+		{
 			bounds.top = m_points[i].y;
+		}
 		if (m_points[i].y > bounds.bottom)
+		{
 			bounds.bottom = m_points[i].y;
+		}
 	}
 
 	if (bounds == m_position)

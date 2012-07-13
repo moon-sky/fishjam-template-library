@@ -4,7 +4,8 @@
 #include "DrawCanvas.h"
 #include "DrawTool.h"
 
-CPolyTool::CPolyTool(LPDRAWOBJBASEINFO pInfo, ToolType nToolType, LPCTSTR strName) : CDrawTool(pInfo, nToolType, strName)
+CPolyTool::CPolyTool(LPDRAWOBJBASEINFO pInfo, ToolType nToolType, LPCTSTR strName) 
+: CDrawTool(pInfo, nToolType, strName)
 {
 	m_pCurPolyObject = NULL;
 }

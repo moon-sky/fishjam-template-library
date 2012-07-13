@@ -37,7 +37,7 @@ CTextObject::CTextObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	}
 
 	LOGFONT stFont = {0};
-	stFont.lfHeight = -stDrawObjInfo.nFontSize;//TODO:not user now, -::MulDiv( stDrawObjInfo.nFontSize, wndDC.GetDeviceCaps(LOGPIXELSY), 72);
+	stFont.lfHeight = -stDrawObjInfo.nFontSize;
 	StringCchCopy(stFont.lfFaceName, _countof(stFont.lfFaceName), stDrawObjInfo.strFontName);
 
 	m_pShareEditPtr->Init(pDrawCanvas->GetHWnd(), &position, pDrawCanvas, &stFont, 
@@ -93,7 +93,7 @@ BOOL CTextObject::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wPa
 	return FALSE;
 }
 
-void CTextObject::SetPosition(const CRect& pos)
+void CTextObject::SetPosition(const CRect& pos, BOOL bCheckSize)
 {
 	CRect rect = pos;
 	if (abs(rect.Width()) < 100)
@@ -176,8 +176,8 @@ void CTextObject::MoveTo(const CRect& position)
 
 	m_pDrawCanvas->InvalObject(this);
 	//m_position = position;
-	SetPosition(position);
-	m_pShareEditPtr->SetClientBound(&m_position, NULL, TRUE);//FALSE);
+	SetPosition(position, FALSE);
+	m_pShareEditPtr->SetClientBound(&m_position, NULL, TRUE);
 	m_pDrawCanvas->InvalObject(this);
 	//m_pDocument->SetModifiedFlag();
 }

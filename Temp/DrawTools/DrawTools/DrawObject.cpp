@@ -3,10 +3,11 @@
 #include "DrawCanvas.h"
 #include "ftlDefine.h"
 
-CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
+CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, 
+						 DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 {
 	m_pDrawCanvas = pDrawCanvas;
-	SetPosition(position);
+	SetPosition(position, FALSE);
 	//m_position = position;
 	m_originalPos = m_position;
 	m_zoomFactor = 1.0f;
@@ -26,15 +27,69 @@ CDrawObject::CDrawObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawOb
 	//m_logbrush.lbColor = RGB(192, 192, 192);
 	//m_logbrush.lbHatch = HS_HORIZONTAL;
 	m_bAvailObject = TRUE;
+	m_bHasBeenSized = FALSE;
 }
 
 CDrawObject::~CDrawObject()
 {
 }
 
-void CDrawObject::SetPosition(const CRect & pos)
+void CDrawObject::SetPosition(const CRect & pos, BOOL bCheckSize)
 {
 	m_position = pos;
+
+	if (!m_bHasBeenSized)
+	{
+		//check new width or height
+		int minMargin = 2 * TRACK_MARGIN + 1;
+		if (abs(pos.Width()) >= minMargin || abs(pos.Height()) >= minMargin )
+		{
+			m_bHasBeenSized = TRUE;
+		}
+	}
+	
+	if (bCheckSize && ! HasBeenSized())
+	{
+		BOOL bWillInvalidate = FALSE;
+
+		CSize szMin = GetMinSize();
+		if (abs(m_position.Width()) < szMin.cx )
+		{
+			bWillInvalidate = TRUE;
+			if (m_position.left < m_position.right)
+			{
+				m_position.right = m_position.left + szMin.cx;
+			}
+			else 
+			{
+				m_position.left = m_position.right;
+				m_position.right =m_position.left + szMin.cx;
+			}
+		}
+		if (abs(m_position.Height()) < szMin.cy)
+		{
+			bWillInvalidate = TRUE;
+			if (m_position.top < m_position.bottom)
+			{
+				m_position.bottom = m_position.top + szMin.cy;
+			}
+			else
+			{
+				m_position.top = m_position.bottom;
+				m_position.bottom = m_position.top + szMin.cy;
+			}
+		}
+
+		if (bWillInvalidate)
+		{
+			m_pDrawCanvas->InvalObject(this);
+		}
+	}
+}
+
+CSize CDrawObject::GetMinSize()
+{
+	return CSize(0, 0);
 }
 
 void CDrawObject::Remove()
@@ -85,7 +140,7 @@ void CDrawObject::MoveTo(const CRect& position)
 
 	m_pDrawCanvas->InvalObject(this);
 	//m_position = position;
-	SetPosition(position);
+	SetPosition(position, FALSE);
 	//CalcZoomRect(m_position, 1.0f / m_zoomFactor, m_originalPos);
 	m_pDrawCanvas->InvalObject(this);
 	//m_pDocument->SetModifiedFlag();
@@ -407,168 +462,168 @@ void CDrawObject::RegulateRectToSquare(CRect& rcPos, eTypePointInRect eType )
 {
 	switch(eType)
 	{
-	case PIRLEFT:
-		 {
-
-			 if(abs(rcPos.Width()) > abs(rcPos.Height()))
+		case PIRLEFT:
 			 {
-				 if(rcPos.right > rcPos.left)
-				 {	
-					 rcPos.left = rcPos.right - abs(rcPos.Height());
-				 }
-				 else
-				 {
-					 rcPos.left = rcPos.right + abs(rcPos.Height());
-				 }
-			 }
-		 }break;
 
-	case PIRRIGHT:
-		{
-			if(abs(rcPos.Width()) > abs(rcPos.Height()))
+				 if(abs(rcPos.Width()) > abs(rcPos.Height()))
+				 {
+					 if(rcPos.right > rcPos.left)
+					 {	
+						 rcPos.left = rcPos.right - abs(rcPos.Height());
+					 }
+					 else
+					 {
+						 rcPos.left = rcPos.right + abs(rcPos.Height());
+					 }
+				 }
+			 }break;
+
+		case PIRRIGHT:
 			{
-				if(rcPos.right > rcPos.left)
-				{	
-					rcPos.right = rcPos.left + abs(rcPos.Height());
-				}
-				else
+				if(abs(rcPos.Width()) > abs(rcPos.Height()))
 				{
-					rcPos.right = rcPos.left - abs(rcPos.Height());
+					if(rcPos.right > rcPos.left)
+					{	
+						rcPos.right = rcPos.left + abs(rcPos.Height());
+					}
+					else
+					{
+						rcPos.right = rcPos.left - abs(rcPos.Height());
+					}
 				}
-			}
-		}break;
-	case PIRTOP:
-		{
-			if(abs(rcPos.Width()) < abs(rcPos.Height()))
+			}break;
+		case PIRTOP:
 			{
-				if(rcPos.bottom > rcPos.top)
+				if(abs(rcPos.Width()) < abs(rcPos.Height()))
 				{
-					rcPos.top = rcPos.bottom - abs(rcPos.Width());
+					if(rcPos.bottom > rcPos.top)
+					{
+						rcPos.top = rcPos.bottom - abs(rcPos.Width());
+					}
+					else
+					{
+						rcPos.top = rcPos.bottom + abs(rcPos.Width());
+					}
 				}
-				else
-				{
-					rcPos.top = rcPos.bottom + abs(rcPos.Width());
-				}
-			}
-		}break;
-	case PIRBUTTOM:
-		{
-			if(abs(rcPos.Width()) < abs(rcPos.Height()))
+			}break;
+		case PIRBUTTOM:
 			{
-				if(rcPos.bottom > rcPos.top)
+				if(abs(rcPos.Width()) < abs(rcPos.Height()))
 				{
-					rcPos.bottom = rcPos.top + abs(rcPos.Width());
+					if(rcPos.bottom > rcPos.top)
+					{
+						rcPos.bottom = rcPos.top + abs(rcPos.Width());
+					}
+					else
+					{
+						rcPos.bottom = rcPos.top - abs(rcPos.Width());
+					}
 				}
-				else
-				{
-					rcPos.bottom = rcPos.top - abs(rcPos.Width());
-				}
-			}
-		}break;
+			}break;
 	}
 }
 void CDrawObject::RegulateLine( CRect& rcPos, eTypePointInRect eType )
 {
 	switch(eType)
 	{
-	case PIRLEFT:
-		{	
-			if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
-			{
-				rcPos.left = rcPos.right;
-				break;
-			}
+		case PIRLEFT:
+			{	
+				if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
+				{
+					rcPos.left = rcPos.right;
+					break;
+				}
 
-			if( abs(rcPos.Width()) > 2 *  abs(rcPos.Height()))
-			{
-				break;
-			}
-			if(abs(rcPos.Width()) > abs(rcPos.Height()))
-			{
-				if(rcPos.right > rcPos.left)
-				{	
-					rcPos.left = rcPos.right - abs(rcPos.Height());
-				}
-				else
+				if( abs(rcPos.Width()) > 2 *  abs(rcPos.Height()))
 				{
-					rcPos.left = rcPos.right + abs(rcPos.Height());
+					break;
 				}
-			}
-		}break;
+				if(abs(rcPos.Width()) > abs(rcPos.Height()))
+				{
+					if(rcPos.right > rcPos.left)
+					{	
+						rcPos.left = rcPos.right - abs(rcPos.Height());
+					}
+					else
+					{
+						rcPos.left = rcPos.right + abs(rcPos.Height());
+					}
+				}
+			}break;
 
-	case PIRRIGHT:
-		{
-			if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
+		case PIRRIGHT:
 			{
-				rcPos.right = rcPos.left;
-				break;
-			}
+				if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
+				{
+					rcPos.right = rcPos.left;
+					break;
+				}
 
-			if( abs(rcPos.Width()) > 2 *  abs(rcPos.Height()))
-			{
-				break;
-			}
-			if(abs(rcPos.Width()) > abs(rcPos.Height()))
-			{
-				if(rcPos.right > rcPos.left)
-				{	
-					rcPos.right = rcPos.left + abs(rcPos.Height());
-				}
-				else
+				if( abs(rcPos.Width()) > 2 *  abs(rcPos.Height()))
 				{
-					rcPos.right = rcPos.left - abs(rcPos.Height());
+					break;
 				}
-			}
-		}break;
-	case PIRTOP:
-		{
-			if(2 * abs(rcPos.Height()) < abs(rcPos.Width()))
+				if(abs(rcPos.Width()) > abs(rcPos.Height()))
+				{
+					if(rcPos.right > rcPos.left)
+					{	
+						rcPos.right = rcPos.left + abs(rcPos.Height());
+					}
+					else
+					{
+						rcPos.right = rcPos.left - abs(rcPos.Height());
+					}
+				}
+			}break;
+		case PIRTOP:
 			{
-				rcPos.top = rcPos.bottom;
-				break;
-			}
+				if(2 * abs(rcPos.Height()) < abs(rcPos.Width()))
+				{
+					rcPos.top = rcPos.bottom;
+					break;
+				}
 
-			if(2* abs(rcPos.Width()) <  abs(rcPos.Height()))
-			{
-				break;
-			}
-			if(abs(rcPos.Width()) < abs(rcPos.Height()))
-			{
-				if(rcPos.bottom > rcPos.top)
+				if(2* abs(rcPos.Width()) <  abs(rcPos.Height()))
 				{
-					rcPos.top = rcPos.bottom - abs(rcPos.Width());
+					break;
 				}
-				else
+				if(abs(rcPos.Width()) < abs(rcPos.Height()))
 				{
-					rcPos.top = rcPos.bottom + abs(rcPos.Width());
+					if(rcPos.bottom > rcPos.top)
+					{
+						rcPos.top = rcPos.bottom - abs(rcPos.Width());
+					}
+					else
+					{
+						rcPos.top = rcPos.bottom + abs(rcPos.Width());
+					}
 				}
-			}
-		}break;
-	case PIRBUTTOM:
-		{
-			ATLTRACE("Height:%d--Width:%d\n", rcPos.Height(), rcPos.Width());
-			if(2 * abs(rcPos.Height()) < abs(rcPos.Width()))
+			}break;
+		case PIRBUTTOM:
 			{
-				rcPos.bottom = rcPos.top;
-				break;
-			}
+				ATLTRACE("Height:%d--Width:%d\n", rcPos.Height(), rcPos.Width());
+				if(2 * abs(rcPos.Height()) < abs(rcPos.Width()))
+				{
+					rcPos.bottom = rcPos.top;
+					break;
+				}
 
-			if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
-			{
-				break;
-			}
-			if(abs(rcPos.Width()) < abs(rcPos.Height()))
-			{
-				if(rcPos.bottom > rcPos.top)
+				if(2 * abs(rcPos.Width()) < abs(rcPos.Height()))
 				{
-					rcPos.bottom = rcPos.top + abs(rcPos.Width());
+					break;
 				}
-				else
+				if(abs(rcPos.Width()) < abs(rcPos.Height()))
 				{
-					rcPos.bottom = rcPos.top - abs(rcPos.Width());
+					if(rcPos.bottom > rcPos.top)
+					{
+						rcPos.bottom = rcPos.top + abs(rcPos.Width());
+					}
+					else
+					{
+						rcPos.bottom = rcPos.top - abs(rcPos.Width());
+					}
 				}
-			}
-		}break;
+			}break;
 	}
 }
 void CDrawObject::MoveLineHandleToWithShift( int nHandle, CPoint point )
@@ -578,20 +633,20 @@ void CDrawObject::MoveLineHandleToWithShift( int nHandle, CPoint point )
 	CRect position = m_position;
 	switch (nHandle)
 	{
-	case 1:
-		{
-			position.left = point.x;
-			position.top = point.y;
-			RegulateLine(position,PIRLEFT);
-			RegulateLine(position,PIRTOP);
-		}break;
-	case 5:
-		{
-			position.right = point.x;
-			position.bottom = point.y;
-			RegulateLine(position,PIRRIGHT);
-			RegulateLine(position,PIRBUTTOM);
-		}break;
+		case 1:
+			{
+				position.left = point.x;
+				position.top = point.y;
+				RegulateLine(position, PIRLEFT);
+				RegulateLine(position, PIRTOP);
+			}break;
+		case 5:
+			{
+				position.right = point.x;
+				position.bottom = point.y;
+				RegulateLine(position, PIRRIGHT);
+				RegulateLine(position, PIRBUTTOM);
+			}break;
 	}
 	MoveTo(position);
 }
@@ -603,54 +658,54 @@ void CDrawObject::MoveHandleToWithShift( int nHandle, CPoint point )
 	CRect position = m_position;
 	switch (nHandle)
 	{
-	case 2:
-	case 4:
-	case 6:
-	case 8:
-		{
-			return;
-		}
-		break;
+		case 2:
+		case 4:
+		case 6:
+		case 8:
+			{
+				return;
+			}
+			break;
 
-	case 1:
-		{
-			position.left = point.x;
-			position.top = point.y;
-			RegulateRectToSquare(position, PIRLEFT);
-			RegulateRectToSquare(position, PIRTOP);
-		}
-		break;
+		case 1:
+			{
+				position.left = point.x;
+				position.top = point.y;
+				RegulateRectToSquare(position, PIRLEFT);
+				RegulateRectToSquare(position, PIRTOP);
+			}
+			break;
 
-	case 3:
-		{
-			position.right = point.x;
-			position.top = point.y;
-			RegulateRectToSquare(position,PIRRIGHT);
-			RegulateRectToSquare(position,PIRTOP);
-		}
-		break;
+		case 3:
+			{
+				position.right = point.x;
+				position.top = point.y;
+				RegulateRectToSquare(position, PIRRIGHT);
+				RegulateRectToSquare(position, PIRTOP);
+			}
+			break;
 
-	case 5:
-		{
-			position.right = point.x;
-			position.bottom = point.y;
-			RegulateRectToSquare(position,PIRRIGHT);
-			RegulateRectToSquare(position,PIRBUTTOM);
-		}
-		break;
+		case 5:
+			{
+				position.right = point.x;
+				position.bottom = point.y;
+				RegulateRectToSquare(position, PIRRIGHT);
+				RegulateRectToSquare(position, PIRBUTTOM);
+			}
+			break;
 
-	case 7:
-		{
-			position.left = point.x;
-			position.bottom = point.y;
-			RegulateRectToSquare(position,PIRLEFT);
-			RegulateRectToSquare(position,PIRBUTTOM);
-		}
-		
-		break;
-	default:
-		FTLASSERT(FALSE);
-		break;
+		case 7:
+			{
+				position.left = point.x;
+				position.bottom = point.y;
+				RegulateRectToSquare(position, PIRLEFT);
+				RegulateRectToSquare(position, PIRBUTTOM);
+			}
+			
+			break;
+		default:
+			FTLASSERT(FALSE);
+			break;
 	}
 
 	MoveTo(position);
@@ -826,7 +881,7 @@ void CDrawObject::NormalizePosition()
 
 void CDrawObject::EndMoveHandle()
 {
-
+	SetPosition(m_position, TRUE);
 }
 
 BOOL CDrawObject::CheckAvailObject()
@@ -881,7 +936,8 @@ BOOL CDrawObject::EndEdit(BOOL bIsPushUndo)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////  CDrawFreeObject  ///////////////////////////////////////////////
-CDrawFreeObject::CDrawFreeObject(IDrawCanvas* pDrawCanvas, const CRect& position, DrawObjectType objType, const DRAWOBJBASEINFO& stDrawInfo)
+CDrawFreeObject::CDrawFreeObject(IDrawCanvas* pDrawCanvas, const CRect& position, 
+								 DrawObjectType objType, const DRAWOBJBASEINFO& stDrawInfo)
 : CDrawObject(pDrawCanvas, position, objType, stDrawInfo)
 {
 	m_points = NULL;
@@ -894,6 +950,7 @@ CDrawFreeObject::~CDrawFreeObject()
 	if (m_points)
 	{
 		delete[] m_points;
+		m_points = NULL;
 	}
 }
 
@@ -907,6 +964,7 @@ void CDrawFreeObject::AddPoint(const CPoint& point)
 		{
 			memcpy_s(newPoints, sizeof(CPoint) * (m_nAllocPoints + 10), m_points, sizeof(CPoint) * m_nAllocPoints);
 			delete[] m_points;
+			m_points = NULL;
 		}
 		m_points = newPoints;
 		m_nAllocPoints += 10;
@@ -925,7 +983,9 @@ void CDrawFreeObject::AddPoint(const CPoint& point)
 BOOL CDrawFreeObject::RecalcBounds()
 {
 	if (m_nPoints == 0)
+	{
 		return FALSE;
+	}
 
 	CRect rect(m_points[0], CSize(0, 0));
 	rect.top = m_points[0].y;
@@ -935,17 +995,27 @@ BOOL CDrawFreeObject::RecalcBounds()
 	for (int i = 1; i < m_nPoints; ++i)
 	{
 		if (m_points[i].x < rect.left)
+		{
 			rect.left = m_points[i].x;
+		}
 		if (m_points[i].x > rect.right)
+		{
 			rect.right = m_points[i].x;
+		}
 		if (m_points[i].y < rect.top)
+		{
 			rect.top = m_points[i].y;
+		}
 		if (m_points[i].y > rect.bottom)
+		{
 			rect.bottom = m_points[i].y;
+		}
 	}
 
 	if (rect == m_position)
+	{
 		return FALSE;
+	}
 	m_position = rect;
 	return TRUE;
 }
@@ -954,11 +1024,13 @@ BOOL CDrawFreeObject::RecalcBounds()
 void CDrawFreeObject::Draw(HDC hDC, BOOL bOriginal)
 {
 	Graphics graphics(hDC);
-	graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+	graphics.SetSmoothingMode(SmoothingModeHighQuality);
 	Color clrPen;
 	clrPen.SetFromCOLORREF(m_logpen.lopnColor);
 	Pen penObject(clrPen, m_logpen.lopnWidth.x);
 
+	
+	GraphicsPath FreePath;
 	Point ptBegin;
 	Point ptEnd;
 	for (int i = 0; i < m_nPoints; i++)
@@ -973,11 +1045,12 @@ void CDrawFreeObject::Draw(HDC hDC, BOOL bOriginal)
 		{
 			ptEnd.X = m_points[i].x;
 			ptEnd.Y = m_points[i].y;
-			graphics.DrawLine(&penObject, ptBegin, ptEnd);
+			//graphics.DrawLine(&penObject, ptBegin, ptEnd);
+			FreePath.AddLine(ptBegin, ptEnd);
 			ptBegin = ptEnd;
 		}
 	}
-
+	graphics.DrawPath(&penObject, &FreePath);
 }
 
 int CDrawFreeObject::GetHandleCount()
@@ -1010,7 +1083,9 @@ HCURSOR CDrawFreeObject::GetHandleCursor(int nHandle)
 void CDrawFreeObject::MoveTo(const CRect& position)
 {
 	if (position == m_position)
+	{
 		return;
+	}
 
 	for (int i = 0; i < m_nPoints; i += 1)
 	{
@@ -1019,7 +1094,7 @@ void CDrawFreeObject::MoveTo(const CRect& position)
 	}
 
 	//m_position = position;
-	SetPosition(position);
+	SetPosition(position, FALSE);
 	m_pDrawCanvas->InvalObject(this);
 }
 

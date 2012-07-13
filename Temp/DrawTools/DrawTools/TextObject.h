@@ -39,7 +39,7 @@ public:
 	virtual BOOL UpdateDrawInfo(const DRAWOBJBASEINFO& stDrawObjInfo);
 	virtual BOOL HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
 
-	virtual void SetPosition(const CRect& pos);
+	virtual void SetPosition(const CRect& pos, BOOL bCheckSize);
 
 	//CRichEditPanel* GetRichEditPanel()
 	//{

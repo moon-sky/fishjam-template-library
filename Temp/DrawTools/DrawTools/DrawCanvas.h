@@ -105,13 +105,20 @@ public:
 	}
 	virtual ~CDrawCanvas()
 	{
-		m_selection.clear();
-		std::for_each(m_allObjects.begin(), m_allObjects.end(), FTL::ObjecteDeleter<CDrawObject*>());
-		m_allObjects.clear();
-
+		//m_selection.clear();
+		//std::for_each(m_allObjects.begin(), m_allObjects.end(), FTL::ObjecteDeleter<CDrawObject*>());
+		//m_allObjects.clear();
+		ResetObjects();
 		//m_pSelectTool = NULL;
 		//std::for_each(m_tools.begin(), m_tools.end(), FTL::ObjecteDeleter<CDrawTool*>() );
 		m_tools.clear();
+	}
+
+	void ResetObjects()
+	{
+		m_selection.clear();
+		std::for_each(m_allObjects.begin(), m_allObjects.end(), FTL::ObjecteDeleter<CDrawObject*>());
+		m_allObjects.clear();
 	}
 
 	BOOL OnSetCursor(CWindow wnd, UINT nHitTest, UINT message)
@@ -135,7 +142,7 @@ public:
 				return pTool->OnLButtonDblClk(this, nFlags, point);
 			}
 		}
-		return FALSE;;
+		return FALSE;
 	}
 
 	void OnLButtonDown(UINT nFlags, const CPoint& point)
@@ -387,8 +394,9 @@ public:
 	//	}
 	//}
 
-	virtual void DeleteSelectObjects(BOOL bPaint = FALSE)
+	virtual void DeleteSelectObjects(BOOL bPaint = FALSE, BOOL bDeleteActive = FALSE)
 	{
+		BOOL bDelete = FALSE;
 		DrawObjectList::iterator iter = m_selection.begin();
 		while (iter != m_selection.end())
 		{
@@ -397,8 +405,12 @@ public:
 			{
 				if (pObject->IsActive() && pObject->GetDrawObjType() == dotText)
 				{
-					iter++;
-					continue;
+					if(!bDeleteActive)
+					{
+						iter++;
+						continue;
+					}
+					
 				}
 				m_selection.erase(iter++);
 
@@ -409,7 +421,12 @@ public:
 				}
 				delete pObject;
 				pObject = NULL;
+				bDelete = TRUE;
 			}
+		}
+		if (bDelete)
+		{
+			BackupDrawObjectData(_T("Delete"));
 		}
 		SetCurrentSelectMode(smNone);
 		SetCurrentToolType(CalcCurrentToolType());

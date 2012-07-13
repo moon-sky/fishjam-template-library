@@ -27,7 +27,7 @@ public:
 //#define RICH_EDIT_PANEL_FONT_MASK_WEIGHT	(DWORD)(0x00000080)
 
 #define RICH_EDIT_PANEL_FONT_MASK_ALL		\
-	RICH_EDIT_PANEL_FONT_MASK_NAME | RICH_EDIT_PANEL_FONT_MASK_SIZE|RICH_EDIT_PANEL_FONT_MASK_BOLD\
+	RICH_EDIT_PANEL_FONT_MASK_NAME | RICH_EDIT_PANEL_FONT_MASK_SIZE | RICH_EDIT_PANEL_FONT_MASK_BOLD\
 	| RICH_EDIT_PANEL_FONT_MASK_ITALIC | RICH_EDIT_PANEL_FONT_MASK_UNDERLINE
 	
 
@@ -110,7 +110,7 @@ public:
 	//HRESULT SetTextFont(long nStart, long nEnd, HFONT	hFont, DWORD dwFontMask);
 
 	HRESULT BeginEdit();
-	HRESULT EndEdit(BOOL bPushUndo = TRUE);
+	HRESULT EndEdit(BOOL bPushUndo = TRUE, BOOL bCanPushEmpty = TRUE);
 
 	HRESULT SetTextFontName(long nStart, long nEnd, LPCTSTR pszFontName, BOOL bPreview = FALSE);
 	HRESULT GetTextFontName(long nStart, long nEnd, LPTSTR pszFontName, int nCount);
@@ -216,7 +216,9 @@ public:
 	virtual BOOL TxSetCaretPos( INT x, INT y );
 	virtual BOOL TxSetTimer( UINT idTimer, UINT uTimeout );
 	virtual void TxKillTimer( UINT idTimer );
-	virtual void TxScrollWindowEx( INT dx, INT dy, LPCRECT lprcScroll, LPCRECT lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate, UINT fuScroll );
+	virtual void TxScrollWindowEx( INT dx, INT dy, LPCRECT lprcScroll, 
+									LPCRECT lprcClip, HRGN hrgnUpdate, 
+									LPRECT lprcUpdate, UINT fuScroll );
 	virtual void TxSetCapture( BOOL fCapture );
 	virtual void TxSetFocus();
 	virtual void TxSetCursor( HCURSOR hcur, BOOL fText );
@@ -263,17 +265,18 @@ public:
 	//LRESULT OnKeyDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	//LRESULT OnLButtonDblClk(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-private:
+protected:
 	HRESULT InitDefaultCharFormat(const LOGFONT* pLogFont, COLORREF clrTextFore);
 	HRESULT InitDefaultParaFormat();
-
+private:
 	BOOL	_IsNeedHandleMsg(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	BOOL	_CheckAndPushRedoInfo();
 	BOOL	_IsDocumentChanged();	
+	BOOL    _IsUserChangeCaretPosMsg(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	HRESULT _SetPropertyBits(DWORD dwProperty);
 	CAtlString _GetStreamText(IStream* pStream);
 	HRESULT    _GetCurrentEditInfo(UNDO_REDO_INFO& stEditInfo);
-
+	
 private:
 	UNDO_REDO_COLLECTION	m_undoCounts;
 	UNDO_REDO_COLLECTION	m_redoCounts;
@@ -307,7 +310,12 @@ private:
 	LONG					m_lState;
 	//UINT					m_nUndoRedoCount;
 	UINT					m_maxUndoRedoCount;
-	BOOL					m_bFirstInput;
+	//BOOL					m_bFirstInput;
+	BOOL					m_bKeyPressed;
+	BOOL					m_bHaveUndo;
+	BOOL					m_bHaveRedo;
+	BOOL                    m_bKeyReturn;
+	BOOL					m_bUserChangeCaretPos;
 
 	unsigned    m_fNotify				:1;
 	unsigned	m_fBorder				:1;	// control has border
