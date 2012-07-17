@@ -13,7 +13,7 @@ public:
 	{
 		return m_position;
 	}
-
+	virtual CRect GetInvalidRect();
 	virtual void SetPosition(const CRect & pos, BOOL bCheckSize);
 	virtual CSize GetMinSize();
 

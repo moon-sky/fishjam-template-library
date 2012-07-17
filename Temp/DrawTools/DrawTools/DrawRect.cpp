@@ -3,6 +3,7 @@
 #include "DrawCanvas.h"
 #include <ftlGdi.h>
 #include <gdiplus.h>
+#include "GraphicsRoundRectPath.h"
 
 #include <SilverlightCpp.h>
 using namespace SilverlightCpp;
@@ -930,30 +931,555 @@ void CDrawArrow::_UpdateArrowPoint()
 
 ////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////        CDrawBalloon                  ///////////////////////
+//          _____________ 
+//         |             |
+//         |_______    __|
+//               0 \  /1    
+//                  \/  
+//                   2
+////////////////////////////////////////////////////////////////////////////////////
 
 CDrawBalloon::CDrawBalloon(IDrawCanvas* pDrawCanvas, const CRect& position, 
 						   DrawObjectType objType, const DRAWOBJBASEINFO& stDrawObjInfo)
 : CDrawRect(pDrawCanvas, position, objType, stDrawObjInfo)
 {
-	m_flRectScale = 0.125f;
+	m_bUserChangedArrowPos[0] = FALSE;
+	m_bUserChangedArrowPos[1] = FALSE;
+	m_bUserChangedArrowPos[2] = FALSE;
+	m_bJustCreated = TRUE;
+
+	m_flRectScale = 0.25f;
 	m_flPolyScale = 0.25f;
+	m_flArrowScale = 0.1f;
+	m_ArrowPosType = posBottomLeft;
+	_CalcArrowPoint();
+}
+
+LPCTSTR GetPosString(CDrawBalloon::PointPosType pos)
+{
+	switch (pos)
+	{
+		HANDLE_CASE_RETURN_STRING(CDrawBalloon::posTopRight);
+		HANDLE_CASE_RETURN_STRING(CDrawBalloon::posRightTop);
+		HANDLE_CASE_RETURN_STRING(CDrawBalloon::posRightBottom);
+		HANDLE_CASE_RETURN_STRING(CDrawBalloon::posBottomRight);
+		HANDLE_CASE_RETURN_STRING(CDrawBalloon::posBottomLeft);
+		HANDLE_CASE_RETURN_STRING(CDrawBalloon::posLeftBottom);
+		HANDLE_CASE_RETURN_STRING(CDrawBalloon::posLeftTop);
+		HANDLE_CASE_RETURN_STRING(CDrawBalloon::posTopLeft);
+	default:
+		ATLASSERT(FALSE);
+		break;
+	}
+	return TEXT("Unknown");
+}
+
+CDrawBalloon::PointPosType CDrawBalloon::_CalcArrowPos(const CRect& rect, const CPoint& ptArrow)
+{
+	//Bit Array?
+	//static CDrawBalloon::PointPosType posTypees[2][2][2] = 
+	//{
+	//	posTopRight, posRightTop, posRightBottom, posBottomRight,
+	//	posBottomLeft, posLeftBottom, posLeftTop, posTopLeft
+	//};
+	CDrawBalloon::PointPosType posType = posTopRight;
+	
+	CRect rectCheck = rect;
+	rectCheck.NormalizeRect();
+	CPoint ptCenter = rectCheck.CenterPoint();
+
+	rectCheck.OffsetRect(-ptCenter);
+	CPoint ptCheck = ptArrow;
+	ptCheck.Offset(-ptCenter);
+
+	if (ptCheck.x > 0)
+	{
+		if (ptCheck.y > 0)
+		{
+			CPoint ptCorner(rectCheck.right, rectCheck.bottom);
+			//if (abs(ptCheck.x) < abs(ptCheck.y))
+			if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
+			{
+				posType = posBottomRight;
+			}
+			else
+			{
+				posType = posRightBottom;
+			}
+		}
+		else
+		{
+			CPoint ptCorner(rectCheck.right, rectCheck.top);
+			if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
+			//if (abs(ptCheck.x) < abs(ptCheck.y))
+			{
+				posType = posTopRight;
+			}
+			else
+			{
+				posType = posRightTop;
+			}
+		}
+	}
+	else
+	{
+		if (ptCheck.y > 0)
+		{
+			CPoint ptCorner(rectCheck.left, rectCheck.bottom);
+			if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
+			//if (abs(ptCheck.x) < abs(ptCheck.y))
+			{
+				posType = posBottomLeft;
+			}
+			else
+			{
+				posType = posLeftBottom;
+			}
+		}
+		else
+		{
+			CPoint ptCorner(rectCheck.left, rectCheck.top);
+			if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
+			//if (abs(ptCheck.x) < abs(ptCheck.y))
+			{
+				posType = posTopLeft;
+			}
+			else
+			{
+				posType = posLeftTop;
+			}
+		}
+	}
+	ATLTRACE(TEXT("posType=%d(%s)\n"), posType, GetPosString(posType));
+	return posType;
+}
+
+BOOL CDrawBalloon::_IsChangeSide(PointPosType posOld, PointPosType posNew)
+{
+	BOOL isChangeSide = TRUE;
+	switch (posOld)
+	{
+	case posTopRight:
+		isChangeSide = (posNew != posTopLeft);
+		break;
+	case posRightTop:
+		isChangeSide = (posNew != posRightBottom);
+		break;
+	case posRightBottom:
+		isChangeSide = (posNew != posRightTop);
+		break;
+	case posBottomRight:
+		isChangeSide = (posNew != posBottomLeft);
+		break;
+	case posBottomLeft:
+		isChangeSide = (posNew != posBottomRight);
+		break;
+	case posLeftBottom:
+		isChangeSide = (posNew != posLeftTop);
+		break;
+	case posLeftTop:
+		isChangeSide = (posNew != posLeftBottom);
+		break;
+	case posTopLeft:
+		isChangeSide = (posNew != posTopRight);
+		break;
+	default:
+		break;
+	}
+	return isChangeSide;
+}
+
+void CDrawBalloon::_CalcArrowPoint()
+{
+	CRect rect = m_position;
+	rect.NormalizeRect();
+	int nRoundness = min(rect.Width(), rect.Height()) * m_flRectScale;
+	int nArrowWidth = rect.Width() * m_flArrowScale;
+	int nArrowHeight = rect.Height() * m_flArrowScale;
+	switch (m_ArrowPosType)
+	{
+	case posTopRight:
+		{
+			if (!m_bUserChangedArrowPos[2])
+			{
+				m_ptArraow[2].x = rect.right - rect.Width() * m_flPolyScale;
+				m_ptArraow[2].y = rect.top - rect.Height() * (1 - m_flRectScale);
+			}
+			if (!m_bUserChangedArrowPos[0])
+			{
+				m_ptArraow[0].x = rect.right - max(nRoundness, 2 * nArrowWidth);
+				m_ptArraow[0].y = rect.top;// - m_logpen.lopnWidth.x;
+			}
+			if (!m_bUserChangedArrowPos[1])
+			{
+				m_ptArraow[1].x = rect.right - max(nRoundness, 3 * nArrowWidth);// 
+				m_ptArraow[1].y = rect.top;// - m_logpen.lopnWidth.x;
+			}
+			break;
+		}
+	case posRightTop:
+		{
+			if (!m_bUserChangedArrowPos[2])
+			{
+				m_ptArraow[2].x = rect.right + rect.Width() * (1 - m_flPolyScale);
+				m_ptArraow[2].y = rect.top + rect.Height() * m_flRectScale;
+			}
+			if (!m_bUserChangedArrowPos[0])
+			{
+				m_ptArraow[0].x = rect.right;// m_ptArraow[2].x - rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[0].y = rect.top + max(nRoundness, 3 * nArrowHeight);
+			}
+			if (!m_bUserChangedArrowPos[1])
+			{
+				m_ptArraow[1].x = rect.right; //m_ptArraow[2].x + rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[1].y = rect.top + max(nRoundness, 2 * nArrowHeight);
+			}
+			break;
+		}
+	case posRightBottom:
+		{
+			if (!m_bUserChangedArrowPos[2])
+			{
+				m_ptArraow[2].x = rect.right + rect.Width() * (1 - m_flPolyScale);
+				m_ptArraow[2].y = rect.top + rect.Height() * m_flRectScale;
+			}
+			if (!m_bUserChangedArrowPos[0])
+			{
+				m_ptArraow[0].x = rect.right;// m_ptArraow[2].x - rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[0].y = rect.bottom - max(nRoundness, 2 * nArrowHeight);
+			}
+			if (!m_bUserChangedArrowPos[1])
+			{
+				m_ptArraow[1].x = rect.right; //m_ptArraow[2].x + rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[1].y = rect.bottom - max(nRoundness, 3 * nArrowHeight);
+			}
+			break;
+		}
+	case posBottomRight:
+		{
+			if (!m_bUserChangedArrowPos[2])
+			{
+				m_ptArraow[2].x = rect.right - rect.Width() * m_flPolyScale;
+				m_ptArraow[2].y = rect.bottom + rect.Height() * (1 - m_flRectScale);
+			}
+			if (!m_bUserChangedArrowPos[0])
+			{
+				m_ptArraow[0].x = rect.right - max(nRoundness, 3 * nArrowWidth);
+				m_ptArraow[0].y = rect.bottom;// - m_logpen.lopnWidth.x;
+			}
+			if (!m_bUserChangedArrowPos[1])
+			{
+				m_ptArraow[1].x = rect.right - max(nRoundness, 2 * nArrowWidth);
+				m_ptArraow[1].y = rect.bottom;// - m_logpen.lopnWidth.x;
+			}
+			break;
+		}
+	case posBottomLeft:
+		{
+			if (!m_bUserChangedArrowPos[2])
+			{
+				m_ptArraow[2].x = rect.left + rect.Width() * m_flPolyScale;
+				m_ptArraow[2].y = rect.bottom + rect.Height() * (1 - m_flRectScale);
+			}
+			if (!m_bUserChangedArrowPos[0])
+			{
+				m_ptArraow[0].x = rect.left + max(nRoundness, 2 * nArrowWidth);// m_ptArraow[2].x - rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[0].y = rect.bottom;// - m_logpen.lopnWidth.x;
+			}
+			if (!m_bUserChangedArrowPos[1])
+			{
+				m_ptArraow[1].x = rect.left + max(nRoundness, 3 * nArrowWidth);
+				m_ptArraow[1].y = rect.bottom;// - m_logpen.lopnWidth.x;
+			}
+			break;
+		}
+	case posLeftBottom:
+		{
+			if (!m_bUserChangedArrowPos[2])
+			{
+				m_ptArraow[2].x = rect.right + rect.Width() * (1 - m_flPolyScale);
+				m_ptArraow[2].y = rect.top + rect.Height() * m_flRectScale;
+			}
+			if (!m_bUserChangedArrowPos[0])
+			{
+				m_ptArraow[0].x = rect.left;// m_ptArraow[2].x - rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[0].y = rect.bottom - max(nRoundness, 3 * nArrowHeight);
+			}
+			if (!m_bUserChangedArrowPos[1])
+			{
+				m_ptArraow[1].x = rect.left; //m_ptArraow[2].x + rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[1].y =rect.bottom - max(nRoundness, 2 * nArrowHeight);
+			}
+			break;
+		}
+	case posLeftTop:
+		{
+			if (!m_bUserChangedArrowPos[2])
+			{
+				m_ptArraow[2].x = rect.right + rect.Width() * (1 - m_flPolyScale);
+				m_ptArraow[2].y = rect.top + rect.Height() * m_flRectScale;
+			}
+			if (!m_bUserChangedArrowPos[0])
+			{
+				m_ptArraow[0].x = rect.left;// m_ptArraow[2].x - rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[0].y = rect.top + max(nRoundness, 2 * nArrowHeight);
+			}
+			if (!m_bUserChangedArrowPos[1])
+			{
+				m_ptArraow[1].x = rect.left; //m_ptArraow[2].x + rect.Width() * m_flPolyScale / 2;
+				m_ptArraow[1].y = rect.top + max(nRoundness, 3 * nArrowHeight);
+			}
+			break;
+		}
+	case posTopLeft:
+		{
+			if (!m_bUserChangedArrowPos[2])
+			{
+				m_ptArraow[2].x = rect.left + rect.Width() * m_flPolyScale;
+				m_ptArraow[2].y = rect.top - rect.Height() * (1 - m_flRectScale);
+			}
+			if (!m_bUserChangedArrowPos[0])
+			{
+				m_ptArraow[0].x = rect.left + max(nRoundness, 3 * nArrowWidth);// 
+				m_ptArraow[0].y = rect.top;// - m_logpen.lopnWidth.x;
+			}
+			if (!m_bUserChangedArrowPos[1])
+			{
+				m_ptArraow[1].x = rect.left + max(nRoundness, 2 * nArrowWidth);// 
+				m_ptArraow[1].y = rect.top;// - m_logpen.lopnWidth.x;
+			}
+			break;
+		}
+	default:
+		//ATLASSERT(FALSE);
+		break;
+	}
+}
+
+int CDrawBalloon::GetHandleCount()
+{
+	return 11; //8 + 3
+}
+
+CPoint CDrawBalloon::GetHandle(int nHandle)
+{
+	CPoint ptHandle(0, 0);
+	switch (nHandle)
+	{
+	case 9:
+		ptHandle = m_ptArraow[0];
+		break;
+	case 10:
+		ptHandle = m_ptArraow[1];
+		break;
+	case 11:
+		ptHandle = m_ptArraow[2];
+		break;
+	default:
+		return CDrawRect::GetHandle(nHandle);
+	}
+	m_pDrawCanvas->DocToClient(&ptHandle);
+	return ptHandle;
+}
+
+
+HCURSOR CDrawBalloon::GetHandleCursor(int nHandle)
+{
+	switch (nHandle)
+	{
+	case 9:
+	case 10:
+	case 11:
+		return ::LoadCursor(NULL, IDC_SIZENS);
+	default:
+		return CDrawRect::GetHandleCursor(nHandle);	
+	}
+}
+
+void CDrawBalloon::MoveHandleTo(int nHandle, CPoint point)
+{
+	CRect rect = m_position;
+	rect.NormalizeRect();
+	m_pDrawCanvas->InvalObject(this);
+	int nRoundness = min(rect.Width(), rect.Height()) * m_flRectScale;
+
+	switch (nHandle)
+	{
+	case 9:
+		{
+			m_bUserChangedArrowPos[0] = TRUE;
+			switch (m_ArrowPosType)
+			{
+			case posTopLeft:
+			case posTopRight:
+				m_ptArraow[0].x = max(m_ptArraow[1].x, min(rect.right - nRoundness, point.x));
+				break;
+			case posBottomLeft:
+			case posBottomRight:
+				m_ptArraow[0].x = min(m_ptArraow[1].x, max(rect.left + nRoundness, point.x));
+				break;
+			case posLeftBottom:
+			case posLeftTop:
+				m_ptArraow[0].y = min(m_ptArraow[1].y, max(rect.top + nRoundness, point.y));
+				break;
+			case posRightTop:
+			case posRightBottom:
+				m_ptArraow[0].y = max(m_ptArraow[1].y, min(rect.bottom - nRoundness, point.y));
+				break;
+			default:
+				ATLASSERT(FALSE);
+				break;
+			}
+			break;
+		}
+	case 10:
+		{
+			m_bUserChangedArrowPos[1] = TRUE;
+			switch (m_ArrowPosType)
+			{
+			case posTopLeft:
+			case posTopRight:
+				m_ptArraow[1].x = min(m_ptArraow[0].x, max(rect.left + nRoundness, point.x));
+				break;
+			case posBottomLeft:
+			case posBottomRight:
+				m_ptArraow[1].x = max(m_ptArraow[0].x, min(rect.right - nRoundness, point.x));				
+				break;
+			case posLeftBottom:
+			case posLeftTop:
+				m_ptArraow[1].y = max(m_ptArraow[0].y, min(rect.bottom - nRoundness, point.y));
+				break;
+			case posRightTop:
+			case posRightBottom:
+				m_ptArraow[1].y = min(m_ptArraow[0].y, max(rect.top + nRoundness, point.y));				
+				break;
+			default:
+				ATLASSERT(FALSE);
+				break;
+			}
+			break;
+		}
+		break;
+	case 11:
+		{
+			//m_bUserChangedArrowPos[0] = TRUE;
+			//m_bUserChangedArrowPos[1] = TRUE;
+			m_bUserChangedArrowPos[2] = TRUE;
+			PointPosType posType = _CalcArrowPos(rect, point);
+			if (posType != m_ArrowPosType)
+			{
+				if (_IsChangeSide(m_ArrowPosType, posType))
+				{
+					m_bUserChangedArrowPos[0] = FALSE;
+					m_bUserChangedArrowPos[1] = FALSE;
+				}
+				m_ArrowPosType = posType;
+				_CalcArrowPoint();
+			}
+			else
+			{
+				m_ptArraow[2] = point;
+			}
+		}
+		break;
+	default:
+		CDrawRect::MoveHandleTo(nHandle, point);
+	}
+	m_pDrawCanvas->InvalObject(this);
+}
+void CDrawBalloon::MoveTo(const CRect& position)
+{
+	if (!m_bJustCreated)
+	{
+		m_bUserChangedArrowPos[0] = FALSE;
+		m_bUserChangedArrowPos[1] = FALSE;
+		m_bUserChangedArrowPos[2] = TRUE;
+
+		m_ArrowPosType = _CalcArrowPos(position, m_ptArraow[2]);
+		_CalcArrowPoint();
+	}
+
+	switch (m_ArrowPosType)
+	{
+	case posTopLeft:
+	case posTopRight:
+		m_ptArraow[0].y = position.top;
+		m_ptArraow[1].y = position.top;
+		break;
+	case posBottomLeft:
+	case posBottomRight:
+		m_ptArraow[0].y = position.bottom;
+		m_ptArraow[1].y = position.bottom;
+		break;
+	case posLeftTop:
+	case posLeftBottom:
+		m_ptArraow[0].x = position.left;
+		m_ptArraow[1].x = position.left;
+		break;
+	case posRightTop:
+	case posRightBottom:
+		m_ptArraow[0].x = position.right;
+		m_ptArraow[1].x = position.right;
+		break;
+	}
+	CDrawRect::MoveTo(position);
+}
+
+CRect CDrawBalloon::GetInvalidRect()
+{
+	CRect rect = m_position;
+	rect.NormalizeRect();
+
+	switch (m_ArrowPosType)
+	{
+	case posTopRight:
+	case posRightTop:
+		rect.right = max(rect.right, m_ptArraow[2].x);
+		rect.top = min(rect.top, m_ptArraow[2].y);
+		break;
+	case posRightBottom:
+	case posBottomRight:
+		rect.right = max(rect.right, m_ptArraow[2].x);
+		rect.bottom = max(rect.bottom, m_ptArraow[2].y);
+		break;
+	case posBottomLeft:
+	case posLeftBottom:
+		rect.left = min(rect.left, m_ptArraow[2].x);
+		rect.bottom = max(rect.bottom, m_ptArraow[2].y);
+		break;
+	case posLeftTop:
+	case posTopLeft:
+		rect.left = min( rect.left, m_ptArraow[2].x);
+		rect.top = min( rect.top, m_ptArraow[2].y);
+		break;
+	}
+	rect.InflateRect( 2 * m_logpen.lopnWidth.x, 2 * m_logpen.lopnWidth.y);
+	return rect;
 }
 
 void CDrawBalloon::Draw(HDC hDC, BOOL bOriginal)
 {
 	BOOL bRet = FALSE;
-	CDCHandle dc(hDC);
+	CRect rcInvalid = GetInvalidRect();
 
-	CBrush brush;
-	CBrush FrameBrush;
+	Graphics graphics(hDC);
+	graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+	Color clrPen;
+	clrPen.SetFromCOLORREF(m_logpen.lopnColor);
+	Pen penObject(clrPen, m_logpen.lopnWidth.x);
 
-	API_VERIFY(NULL != brush.CreateBrushIndirect(&m_logbrush));
-	LOGBRUSH logFrameBrush;
-	logFrameBrush.lbColor = m_logpen.lopnColor;
-	logFrameBrush.lbStyle = BS_SOLID;
-	logFrameBrush.lbHatch =  HS_HORIZONTAL;
-	API_VERIFY(NULL != FrameBrush.CreateBrushIndirect(&logFrameBrush));
-	CBrushHandle pOldBrush;
+	Color clrBrush;
+	if(m_bBrush)
+	{
+		clrBrush.SetFromCOLORREF(m_logbrush.lbColor);
+	}
+	else
+	{
+		clrBrush.SetValue(Color::MakeARGB(0, GetRValue(m_logbrush.lbColor), 
+			GetGValue(m_logbrush.lbColor), GetBValue(m_logbrush.lbColor)));
+	}
+	SolidBrush brhObject(clrBrush);
+	_CalcArrowPoint();
 
 	CRect rect;
 	if (bOriginal)
@@ -965,53 +1491,91 @@ void CDrawBalloon::Draw(HDC hDC, BOOL bOriginal)
 		rect = m_position;
 	}
 	rect.NormalizeRect();
-	rect.right += 1;
-	CPoint ptPoly[3];
-
-	ptPoly[0].x = rect.left + rect.Width() * m_flPolyScale;
-	ptPoly[0].y = rect.bottom;
-	int nRoundness = rect.Width() * m_flRectScale;
-	rect.bottom = rect.top + rect.Height() * (1 - m_flRectScale);
-
-	ptPoly[1].x = ptPoly[0].x - rect.Width() * m_flPolyScale / 2;
-	ptPoly[1].y = rect.bottom - m_logpen.lopnWidth.x;
-
-	ptPoly[2].x = ptPoly[0].x + rect.Width() * m_flPolyScale / 2;
-	ptPoly[2].y = rect.bottom - m_logpen.lopnWidth.x;
-
-	CRgn hRgnPoly;
-	hRgnPoly.CreatePolygonRgn(ptPoly, 3, ALTERNATE);
-
-	CRgn hClient;
-	hClient.CreateRoundRectRgn(rect.TopLeft().x, rect.TopLeft().y, rect.BottomRight().x, 
-		rect.BottomRight().y, nRoundness, nRoundness);
 	
-	if (m_rgnObject.IsNull())
+	GraphicsRoundRectPath	ballonPath;
+	int nRoundness = min(rect.Width(), rect.Height()) * m_flRectScale;
+	if (rect.PtInRect(m_ptArraow[2]))
 	{
-		m_rgnObject.CreateRectRgn(1, 1, 2, 2);
-	}
-	m_rgnObject.CombineRgn(hRgnPoly, hClient, RGN_OR);
-	if (m_bBrush)
-	{
-		dc.FillRgn(m_rgnObject, brush);
-	}
-	else 
-	{
-		dc.FillRgn(m_rgnObject, (HBRUSH)::GetStockObject(NULL_BRUSH));
-	}
-	
-
-	if (m_bPen)
-	{
-		dc.FrameRgn(m_rgnObject, FrameBrush, m_logpen.lopnWidth.x, m_logpen.lopnWidth.x);
+		ballonPath.AddRoundRect(rect.left, rect.top, rect.Width(), rect.Height(), nRoundness, nRoundness);
 	}
 	else
 	{
-		dc.FrameRgn(m_rgnObject, (HBRUSH)::GetStockObject(NULL_BRUSH), m_logpen.lopnWidth.x, m_logpen.lopnWidth.x);
+		ballonPath.AddRoundRectEx(rect.left, rect.top, rect.Width(), rect.Height(), nRoundness, nRoundness, 
+			m_ptArraow[0].x, m_ptArraow[0].y, m_ptArraow[1].x, m_ptArraow[1].y);
+
+		ballonPath.AddLine( m_ptArraow[1].x, m_ptArraow[1].y, m_ptArraow[2].x, m_ptArraow[2].y);
+		ballonPath.AddLine( m_ptArraow[2].x, m_ptArraow[2].y, m_ptArraow[0].x, m_ptArraow[0].y);
 	}
+
+	graphics.DrawPath(&penObject, &ballonPath);
+	graphics.FillPath(&brhObject, &ballonPath);
+	//graphics.FillRegion()
+
+	if (m_rgnObject.IsNull())
+	{
+		API_VERIFY(NULL != m_rgnObject.CreateRectRgn(1, 1, 2, 2));
+	}
+	CRgn hClient;
+	API_VERIFY(NULL != hClient.CreateRoundRectRgn(rect.left, rect.top, rect.right, rect.bottom, nRoundness, nRoundness));
+
+	CRgn hRgnPoly;
+	API_VERIFY(NULL != hRgnPoly.CreatePolygonRgn(m_ptArraow, 3, ALTERNATE));
+
+	m_rgnObject.CombineRgn(hRgnPoly, hClient, RGN_OR);
+
+
+#if 0
+	//CDCHandle dc(hDC);
+
+	//CBrush brush;
+	//CBrush FrameBrush;
+
+	//API_VERIFY(NULL != brush.CreateBrushIndirect(&m_logbrush));
+	//LOGBRUSH logFrameBrush;
+	//logFrameBrush.lbColor = m_logpen.lopnColor;
+	//logFrameBrush.lbStyle = BS_SOLID;
+	//logFrameBrush.lbHatch =  HS_HORIZONTAL;
+	//API_VERIFY(NULL != FrameBrush.CreateBrushIndirect(&logFrameBrush));
+	//CBrushHandle pOldBrush;
+
+	rect.NormalizeRect();
+	rect.right += 1;
+	CPoint ptPoly[3];
+
+
+
+	
+	Point ptPlusPoly[4];
+	for (int i = 0; i < _countof(ptPlusPoly); i++)
+	{
+		ptPlusPoly[i].X = ptPoly[i].x;
+		ptPlusPoly[i].Y = ptPoly[i].y;
+	}
+	ptPlusPoly[3] = ptPlusPoly[0];
+
+	
+	//if (m_bBrush)
+	//{
+	//	dc.FillRgn(m_rgnObject, brush);
+	//}
+	//else 
+	//{
+	//	dc.FillRgn(m_rgnObject, (HBRUSH)::GetStockObject(NULL_BRUSH));
+	//}
+	//
+
+	//if (m_bPen)
+	//{
+	//	dc.FrameRgn(m_rgnObject, FrameBrush, m_logpen.lopnWidth.x, m_logpen.lopnWidth.x);
+	//}
+	//else
+	//{
+	//	dc.FrameRgn(m_rgnObject, (HBRUSH)::GetStockObject(NULL_BRUSH), m_logpen.lopnWidth.x, m_logpen.lopnWidth.x);
+	//}
 	
 	hRgnPoly.DeleteObject();
 	hClient.DeleteObject();
+#endif 
 }
 
 
@@ -1031,7 +1595,13 @@ BOOL CDrawBalloon::Intersects(const CRect& rect)
 	{
 		return TRUE;
 	}
+	
 	return FALSE;
+}
+
+void CDrawBalloon::EndMoveHandle()
+{
+	//m_bJustCreated = FALSE;
 }
 
 CDrawObject* CDrawBalloon::Clone()

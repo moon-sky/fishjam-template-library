@@ -34,6 +34,11 @@ CDrawObject::~CDrawObject()
 {
 }
 
+CRect CDrawObject::GetInvalidRect()
+{
+	return m_position;
+}
+
 void CDrawObject::SetPosition(const CRect & pos, BOOL bCheckSize)
 {
 	m_position = pos;
@@ -1024,7 +1029,7 @@ BOOL CDrawFreeObject::RecalcBounds()
 void CDrawFreeObject::Draw(HDC hDC, BOOL bOriginal)
 {
 	Graphics graphics(hDC);
-	graphics.SetSmoothingMode(SmoothingModeHighQuality);
+	graphics.SetSmoothingMode(SmoothingModeAntiAlias);
 	Color clrPen;
 	clrPen.SetFromCOLORREF(m_logpen.lopnColor);
 	Pen penObject(clrPen, m_logpen.lopnWidth.x);

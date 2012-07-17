@@ -466,7 +466,7 @@ public:
 	{
 		if (pObj)
 		{
-			CRect rect = pObj->GetPosition();
+			CRect rect = pObj->GetInvalidRect();
 			rect.NormalizeRect();
 			rect.InflateRect(2, 2);
 			DocToClient(&rect);

@@ -75,13 +75,47 @@ public:
 
 public:
 	virtual void Draw(HDC hDC, BOOL bOriginal);
+	virtual int GetHandleCount();
+	virtual CPoint GetHandle(int nHandle);
+	virtual HCURSOR GetHandleCursor(int nHandle);
+	virtual void MoveHandleTo(int nHandle, CPoint point);
+	virtual void MoveTo(const CRect& position);
+	virtual CRect GetInvalidRect();
 	virtual BOOL Intersects(const CRect& rect);
 	virtual CDrawObject* Clone();
+	virtual void EndMoveHandle();
+
+	enum PointPosType
+	{
+		posTopRight = 0,
+		posRightTop,
+		posRightBottom,
+		posBottomRight,
+		posBottomLeft,
+		posLeftBottom,
+		posLeftTop,
+		posTopLeft,
+
+		//posTop,
+		//posRight,
+		//posBottom,
+		//posLeft,
+		//posCenter,
+	};
 
 protected:
+	BOOL	m_bUserChangedArrowPos[3];
+	BOOL	m_bJustCreated;
+	CPoint m_ptArraow[3];
 	float m_flRectScale;
 	float m_flPolyScale;
+	float m_flArrowScale;
 	CRgn  m_rgnObject;
+	PointPosType	m_ArrowPosType;
+private:
+	BOOL			_IsChangeSide(PointPosType posOld, PointPosType posNew);
+	void			_CalcArrowPoint();
+	PointPosType	_CalcArrowPos(const CRect& rect, const CPoint& ptArrow);
 };
 
 class CDrawImage : public CDrawRect

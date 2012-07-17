@@ -4,6 +4,8 @@
 #include "DrawObject.h"
 #include "RichEditPanel.h"
 
+#define MIN_TEXT_OBJECT_WIDTH	100
+#define MIN_TEXT_OBJECT_HEIGHT	30
 
 typedef std::tr1::shared_ptr<CRichEditPanel> CShareEditPtr;
 

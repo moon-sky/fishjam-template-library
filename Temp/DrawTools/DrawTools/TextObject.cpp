@@ -96,11 +96,11 @@ BOOL CTextObject::HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wPa
 void CTextObject::SetPosition(const CRect& pos, BOOL bCheckSize)
 {
 	CRect rect = pos;
-	if (abs(rect.Width()) < 100)
+	if (abs(rect.Width()) < MIN_TEXT_OBJECT_WIDTH)
 	{
 		return;
 	}
-	if (abs(rect.Height()) < 30)
+	if (abs(rect.Height()) < MIN_TEXT_OBJECT_HEIGHT)
 	{
 		return;
 	}
