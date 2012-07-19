@@ -2250,6 +2250,34 @@ namespace FTL
 		return pszCommandNotify;
     }
 
+	LPCTSTR CFWinUtil::GetWindowDescriptionInfo(FTL::CFStringFormater& formater, HWND hWnd)
+	{
+		BOOL bRet = FALSE;
+		HRESULT hr = E_FAIL;
+		if (::IsWindow(hWnd))
+		{
+			TCHAR szClass[FTL_MAX_CLASS_NAME_LENGTH] = {0};
+			API_VERIFY(0 != GetClassName(hWnd, szClass, _countof(szClass)));
+
+			TCHAR szName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
+			API_VERIFY_EXCEPT1(0 != GetWindowText(hWnd, szName, _countof(szName)), ERROR_SUCCESS);
+
+			RECT rcWindow = {0};
+			API_VERIFY(GetWindowRect(hWnd, &rcWindow));
+
+			COM_VERIFY(formater.Format(TEXT("0x%x(%d), Class=%s, Name=%s, WinPos=(%d,%d)-(%d,%d) %dx%d"),
+				hWnd, hWnd, szClass, szName, 
+				rcWindow.left, rcWindow.top, rcWindow.right, rcWindow.bottom,
+				rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top));
+		}
+		else
+		{
+			COM_VERIFY(formater.Format(TEXT("0x%x(%d) NOT valid Window"), hWnd, hWnd));
+		}
+
+		return formater.GetString();
+	}
+
     LPCTSTR CFWinUtil::GetWindowClassString(FTL::CFStringFormater& formater, HWND hWnd,LPCTSTR pszDivide/* = TEXT("|") */)
     {
         FTLASSERT(::IsWindow(hWnd));
@@ -2620,7 +2648,7 @@ namespace FTL
 	}
 
 
-    LPCTSTR CFWinUtil::GetOwnerDrawAction(FTL::CFStringFormater& formater, UINT itemAction, LPCTSTR pszDivide)
+    LPCTSTR CFWinUtil::GetOwnerDrawAction(CFStringFormater& formater, UINT itemAction, LPCTSTR pszDivide)
     {
         //UINT    oldItemAction = itemAction;
 
@@ -2632,6 +2660,58 @@ namespace FTL
         return formater.GetString();
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	LPCTSTR CFWinHookUtil::GetCBTCodeInfo(CFStringFormater& formater, int nCode, WPARAM wParam, LPARAM lParam)
+	{
+		//FTLTRACE(TEXT("Enter GetCBTCodeInfo,TickCount=%d, nCode=%d\n"),GetTickCount(), nCode);
+		switch(nCode)
+		{
+			HANDLE_CASE_TO_STRING_FORMATER(formater, HCBT_MOVESIZE);
+			HANDLE_CASE_TO_STRING_FORMATER(formater, HCBT_MINMAX);
+			HANDLE_CASE_TO_STRING_FORMATER(formater, HCBT_QS);
+			HANDLE_CASE_TO_STRING_FORMATER(formater, HCBT_CREATEWND);
+			HANDLE_CASE_TO_STRING_FORMATER(formater, HCBT_DESTROYWND);
+		case HCBT_ACTIVATE:
+			{
+				CFStringFormater formaterActivae;
+				CFStringFormater formaterActivateStruct;
+				formaterActivateStruct.Format(TEXT("%s"), TEXT(""));
+
+				HWND hWndActive = (HWND)wParam;
+				CFWinUtil::GetWindowDescriptionInfo(formaterActivae, hWndActive);
+
+				CBTACTIVATESTRUCT * pCBTActivateStruct = (CBTACTIVATESTRUCT*)lParam;
+				if (pCBTActivateStruct)
+				{
+					CFStringFormater formaterActivaeInStruct;
+					formaterActivateStruct.Format(TEXT("fMouse=%d, hWndActive=%s"),
+						pCBTActivateStruct->fMouse, 
+						CFWinUtil::GetWindowDescriptionInfo(formaterActivaeInStruct, pCBTActivateStruct->hWndActive));
+				}
+				formater.Format(TEXT("HCBT_ACTIVATE -- Active=%s, Struct=%s"), formaterActivae.GetString(), formaterActivateStruct.GetString());
+				break;
+			}
+			HANDLE_CASE_TO_STRING_FORMATER(formater,HCBT_CLICKSKIPPED);
+			HANDLE_CASE_TO_STRING_FORMATER(formater,HCBT_KEYSKIPPED);
+			HANDLE_CASE_TO_STRING_FORMATER(formater,HCBT_SYSCOMMAND);
+		case HCBT_SETFOCUS:
+			{
+				HWND hWndGetFocus = (HWND)wParam;
+				HWND hWndLostFocus = (HWND)lParam;
+				CFStringFormater formaterGetFocus, formaterLostFocus;
+				formater.Format(TEXT("HCBT_SETFOCUS -- GetFocus=%s, LostFocus=%s"), 
+					CFWinUtil::GetWindowDescriptionInfo(formaterGetFocus, hWndGetFocus),
+					CFWinUtil::GetWindowDescriptionInfo(formaterLostFocus, hWndLostFocus));
+				break;
+			}
+
+		default:
+			break;
+		}
+		return formater.GetString();
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 
     __declspec(selectany) HHOOK CFMessageBoxHook::s_hHook = NULL;
     __declspec(selectany) HWND  CFMessageBoxHook::s_ProphWnd = NULL;

@@ -501,7 +501,7 @@ namespace FTL
     *
     * 代码质量维度及统计插件
     *   Coding Convention(代码规范) -- N'SIQ CppStyle(http://nsiqcppstyle.appspot.com)
-    *   Static Analysis(静态分析) -- klockwork, http://devcafe.nhncorp.com/QPTalk/205688
+    *   Static Analysis(静态分析) -- klocwork, http://devcafe.nhncorp.com/QPTalk/205688
     *     配置 Host:klocwork9.nhncorp.com, Port:27000, 安装时版本为 9.X, 有单独的build，
     *     Linux:设置Config FileName 为编译的命令脚本（并删除编译中的命令，免得重复编译?）
     *     Windows:设置Config FileName 为 xxx.sln, Build Parameter 中输入 --config Debug 等
@@ -561,6 +561,43 @@ namespace FTL
     *     f. 矢量统计库（Vector Statistical Library，VSL）——随机数生成器
     * 
     *******************************************************************************************************************************/
+
+	/*******************************************************************************************************************************
+	* Klocwork -- 服务器+客户端，BS架构，有 Windows/linux/Unix 等多个版本
+	*   功能模块
+	*     Klocwork for C/C++ And Java
+	*     Klocwork Architectural Analysis
+	*     Klocwork Metrics and Trending -- 度量和趋势分析
+	*     Klocwork Project Central -- 查看分析结果的Web服务
+	*   服务(server_name)
+	*     lm(license服务器，端口号27000) -- 
+	*     tomcat(Web服务器，端口号8068) -- 
+	*     mysql(数据库服务器，端口号3311) --
+	*     rmimanager(分析引擎调度服务器，端口号1103) -- 
+	*   命令工具
+	*     kwservice [check|start|stop] <projects_root> <server_name> -- 查看|启动|停止 服务
+	*     KMC -- 
+	*   设置分析的缺陷和安全漏洞类型：
+	*     1.System configuration -> problems_default.pconf.xml -> Edit in advanced editor -> Klocwork Configuration Editor;
+	*     2.<projects_root>\projects\workspace\rules 下的 metrics_default.mconf、usagerules_default.uconf 等
+	*   用Klocwork分析C/C++项目(五种方法)
+	*     1.命令 kwinforce 或 kwinforce plugin 分析 -- 通常是在开发人员开发过程中分析一个或几个文件
+	*     2.用Source Root Directories分析 -- 分析指定目录下所有指定后缀的源文件（不推荐：须手工设置文件类型、不能确定头文件调用的正确顺序）
+	*     3.用Build Specification Files分析 -- 首选方法（真实体现了构建的过程和配置选项）
+	*         VS20XX -- kwVcprojParser<vcproj/slnfile> -c <build_config> -o <spec_name>.out
+	*         make -- kwinject-o <spec_name>.out <make/build batch cmmand>
+	*       然后使用 kwinject 生成的 .out 文件作为输入
+	*     4.用Visual Studio Project,Solutionor Workspace分析 -- VS程序首选，输入为 dsp/dsw/vcproj/sln 等
+	*     5.用Tables分析 -- 从中间文件进行分析，适用于没有更改源码，仅仅改变了要分析的缺陷和安全漏洞类型的分析，可节省分析时间
+	*   Options
+	*     Generate problem filter：创建一个过滤文件用于隐藏不希望看到的缺陷
+	*   构建失败 -- 查找信息"parse error","syntax error","can not include"
+	*   分析常用的知识库定制(*.kb 文件)
+	*     BPS -- 缓冲区属性设置信息描述一个函数如何修改缓冲区属性
+	*     NPD -- 声明一个函数在不进行NULL检查的情况下，会发生空指针引用
+	*     DMEM -- 声明自己的内存管理函数（函数如何分配或释放内存）
+	*     FREE -- 声明释放内存的函数
+	*******************************************************************************************************************************/
 
     /******************************************************************************************************************************
     * LoadRunner -- HP网站下载，支持Win和Linux，试用版只有10天

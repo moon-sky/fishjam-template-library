@@ -534,7 +534,9 @@ namespace FTL
         //获取 WM_COMMAND 消息的 notifyCode
         FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc = NULL);
 
-        //获取 Windows 窗体属性对应的字符串信息 
+		//获取窗体的类型、名字、位置、大小等最基本的信息
+		FTLINLINE static LPCTSTR GetWindowDescriptionInfo(FTL::CFStringFormater& formater, HWND hWnd);
+		//获取 Windows 窗体属性对应的字符串信息 
         FTLINLINE static LPCTSTR GetWindowClassString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetWindowStyleString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetWindowExStyleString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
@@ -546,6 +548,13 @@ namespace FTL
         FTLINLINE static BOOL CenterWindow(HWND hWndCenter , HWND hWndParent, BOOL bCurrMonitor);
 #endif
     };//CFWinUtil
+
+	//SetWindowHook 时的一些辅助方法
+	FTLEXPORT class CFWinHookUtil
+	{
+	public:
+		FTLINLINE static HWND GetCBTCodeInfo(CFStringFormater& formater, int nCode, WPARAM wParam, LPARAM lParam);
+	};
 
     //DI项目中使用来适配Notification的基类
     template <typename T>
