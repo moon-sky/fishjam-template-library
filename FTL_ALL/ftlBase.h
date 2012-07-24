@@ -480,6 +480,9 @@ namespace FTL
     template<typename T>
     BOOL IsSameNumber(const T& expected, const T& actual, const T& delta);
 
+	template<typename T>
+	void SwapValue(T& value1, T& value2, T& temp);
+
     FTLEXPORT template<typename TBase, typename INFO_TYPE,LONG bufLen = MAX_BUFFER_LENGTH>
     class CFConvertInfoT
     {

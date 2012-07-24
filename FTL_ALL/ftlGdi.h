@@ -545,9 +545,29 @@ namespace FTL
         LPCTSTR     m_pszProperty;
     };
 
+	//X坐标向右，Y坐标向下
+	enum PointPosType
+	{
+		//posTop,
+		posTopRight = 0,
+		posRightTop,
+		//posRight,
+		posRightBottom,
+		posBottomRight,
+		//posBottom,
+		posBottomLeft,
+		posLeftBottom,
+		//posLeft,
+		posLeftTop,
+		posTopLeft,
+	};
+
     FTLEXPORT class CFGdiUtil
     {
     public:
+		//计算一个点对应特定矩形的相对关系
+		FTLINLINE static PointPosType CalcPointPosType(const RECT& rect, const POINT& point);
+
 		FTLINLINE static BOOL LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType);
 
         FTLINLINE static LPCTSTR GetGraphicsModeString(int nGraphicsMode);

@@ -29,6 +29,14 @@ namespace FTL
         return FALSE;
     }
 
+	template<typename T>
+	void SwapValue(T& value1, T& value2, T& temp)
+	{
+		temp = value1;
+		value1 = value2;
+		value2 = temp;
+	}
+
     template<typename TBase, typename INFO_TYPE, LONG bufLen>
     CFConvertInfoT<TBase,INFO_TYPE,bufLen>::CFConvertInfoT(INFO_TYPE info)
         :m_Info(info)

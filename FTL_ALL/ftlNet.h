@@ -10,6 +10,7 @@
 #include "ftlBase.h"
 #include "ftlthread.h"
 #include <WinInet.h>
+
 /*************************************************************************************************************************
 * 网络抓包工具
 *   Wireshark -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
@@ -235,8 +236,23 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
-* WebBrowser (CLSID_WebBrowser--内嵌; CLSID_InternetExplorer--外部Exe)
-*   WebBrowser Host +  shdocvw.dll(contains WebBrowser control) + mshtml.dll
+* WebBrowser(CLSID_WebBrowser--内嵌的控件; CLSID_InternetExplorer--外部宿主Exe)
+*   架构
+*     WebBrowser Host -- 宿主,即想重用WebBrowser Control的应用程序，如 CLSID_InternetExplorer
+*     Shdocvw.dll(contains WebBrowser control) -- 包装并控制Webbrowser control，给上层宿主提供浏览能力
+*     mshtml.dll -- 显示HTML文档的组件，也是一个active 文档服务器和其他控件(如脚本引擎、Plugin)的容器
+*     ActiveXControl/Plugin/HTML
+*  接口
+*    IWebBrowser -- WebBrowser Control，提供加载和显示Web、Word等页面的基本功能
+*      Navigate--导航到指定页面或文件，
+*        PostData -- 将指定的数据(如 ?)通过POST事务发送到服务器，如不指定任何数据，将使用Get方法
+*        Headers -- 发送HTTP头信息(如?)到服务器
+*    IWebBrowserApp -- Internet Explorer,继承自 IWebBrowser，可以控制状态条,工具条等用户接口
+*      GetProperty/PutProperty -- 获取或设置IE属性包(property bag),具体的属性包有哪些? 
+*    IWebBrowser2 -- WebBrowser Control and Internet Explorer,继承自 IWebBrowserApp(操作IE时优选该接口)
+*      ExecWB -- IOleCommandTarget::Exec的包装实现,允许WebBrowser开发者增加新的功能而不用创建新的接口，
+*                如通过 ExecWB(OLECMDID_ZOOM, OLECMDEXECOPT_DONTPROMPTUSER, 4, NULL) 实现"将字体改为最大"的功能
+*    DWebBrowserEvents2 -- 事件
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -542,6 +558,7 @@ namespace FTL
 	#define __HTTP_ACCEPT			TEXT("Accept: */*\r\n")
 	#define __SIZE_BUFFER			1024
 
+#if 0
 	class CFGenericHTTPClient
 	{
 	public:
@@ -620,7 +637,7 @@ namespace FTL
 		DWORD		m_dwError;				// LAST ERROR CODE
 		DWORD		m_dwResultSize;
 	};
-
+#endif 
 	enum DOWMLOAD_END_CODE
 	{
 		DOWN_OK = 0,
@@ -636,20 +653,53 @@ namespace FTL
 		virtual void OnDownloadEnd( LPCTSTR URL, LPCTSTR Path, DOWMLOAD_END_CODE errorCode ) = 0;
 	};
 
+#if 0
 	class CFHttpDownloader
 	{
 	public:
 		CFHttpDownloader( void );
-		~CHttpDownloader( void );
+		~CFHttpDownloader( void );
 		void	HttpDownAsync();
 		BOOL	HttpDown();
 
 		void	Cancel()
 		{
-			m_bContinue = FALSE;
+			//m_bContinue = FALSE;
 		}
-
 	};
+#endif
+
+	class CFWebBrowserDumper : public CFInterfaceDumperBase<CFWebBrowserDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFWebBrowserDumper);
+	public:
+		FTLINLINE explicit CFWebBrowserDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFWebBrowserDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	//仅在IE中实现
+	class CFWebBrowserAppDumper : public CFInterfaceDumperBase<CFWebBrowserAppDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFWebBrowserAppDumper);
+	public:
+		FTLINLINE explicit CFWebBrowserAppDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFWebBrowserAppDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFWebBrowser2Dumper : public CFInterfaceDumperBase<CFWebBrowser2Dumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFWebBrowser2Dumper);
+	public:
+		FTLINLINE explicit CFWebBrowser2Dumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFWebBrowser2Dumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
 }
 
 #ifndef USE_EXPORT

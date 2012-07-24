@@ -499,6 +499,98 @@ namespace FTL
         return m_pszProperty;
     }
 
+	//////////////////////////////////////////////////////////////////////////
+	
+	PointPosType	CFGdiUtil::CalcPointPosType(const RECT& rect, const POINT& point)
+	{
+		//Bit Array?
+		//static CDrawBalloon::PointPosType posTypees[2][2][2] = 
+		//{
+		//	posTopRight, posRightTop, posRightBottom, posBottomRight,
+		//	posBottomLeft, posLeftBottom, posLeftTop, posTopLeft
+		//};
+		PointPosType posType = posTopRight;
+
+		RECT rectCheck = rect;
+		LONG nTemp = 0; 
+		//Normalize
+		if (rectCheck.left < rectCheck.right)
+		{
+			SwapValue(rectCheck.left, rectCheck.right, nTemp);
+		}
+		if (rectCheck.top < rectCheck.right)
+		{
+			SwapValue(rectCheck.left, rectCheck.right, nTemp);
+		}
+		//rectCheck.NormalizeRect();
+		POINT ptCenter = { (rectCheck.left + rectCheck.right) / 2, (rectCheck.top + rectCheck.bottom) / 2 };
+		::OffsetRect(&rectCheck, -ptCenter.x, -ptCenter.y);
+		POINT ptCheck = point;
+		ptCheck.x += -ptCenter.x;
+		ptCheck.y += -ptCenter.y;
+
+		if (ptCheck.x > 0)
+		{
+			if (ptCheck.y > 0)
+			{
+				POINT ptCorner = {rectCheck.right, rectCheck.bottom};
+				//if (abs(ptCheck.x) < abs(ptCheck.y))
+				if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
+				{
+					posType = posBottomRight;
+				}
+				else
+				{
+					posType = posRightBottom;
+				}
+			}
+			else
+			{
+				POINT ptCorner = {rectCheck.right, rectCheck.top};
+				if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
+					//if (abs(ptCheck.x) < abs(ptCheck.y))
+				{
+					posType = posTopRight;
+				}
+				else
+				{
+					posType = posRightTop;
+				}
+			}
+		}
+		else
+		{
+			if (ptCheck.y > 0)
+			{
+				POINT ptCorner = {rectCheck.left, rectCheck.bottom};
+				if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
+					//if (abs(ptCheck.x) < abs(ptCheck.y))
+				{
+					posType = posBottomLeft;
+				}
+				else
+				{
+					posType = posLeftBottom;
+				}
+			}
+			else
+			{
+				POINT ptCorner = {rectCheck.left, rectCheck.top};
+				if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
+					//if (abs(ptCheck.x) < abs(ptCheck.y))
+				{
+					posType = posTopLeft;
+				}
+				else
+				{
+					posType = posLeftTop;
+				}
+			}
+		}
+		//ATLTRACE(TEXT("posType=%d(%s)\n"), posType, GetPosString(posType));
+		return posType;
+	}
+
 	BOOL CFGdiUtil::LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType)
 	{
 		BOOL bRet = FALSE;

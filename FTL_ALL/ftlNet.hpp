@@ -910,12 +910,12 @@ namespace FTL
 		pstrCanonicalizedURL = szCanonicalizedURL;
 
 		API_VERIFY( InternetCrackUrl( pstrCanonicalizedURL, 0, dwCrackFlags, this ));
-		API_VERIFY(UrlUnescape( lpComponents->lpszUrlPath, NULL, NULL, URL_UNESCAPE_INPLACE | URL_DONT_UNESCAPE_EXTRA_INFO ));
+		API_VERIFY(UrlUnescape( lpszUrlPath, NULL, NULL, URL_UNESCAPE_INPLACE | URL_DONT_UNESCAPE_EXTRA_INFO ));
 
 		return bRet;
 	}
 	//////////////////////////////////////////////////////////////////////////
-
+#if 0
 	CFGenericHTTPClient::CFGenericHTTPClient()
 	{
 		m_hOpen = NULL;
@@ -1095,7 +1095,65 @@ namespace FTL
 
 		return TRUE;
 	}
+#endif
 
+	HRESULT CFWebBrowserDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("WebBrowser")));
+		if (m_pObj)
+		{
+			//能QI到
+			CComQIPtr<IWebBrowser>     spWebBrowser(m_pObj);
+			if (spWebBrowser)
+			{
+				CComBSTR bstrLocationName;//当前显示的资源名称的字符串(如 HTML标题、文件名等)
+				COM_VERIFY(spWebBrowser->get_LocationName(&bstrLocationName));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("LocationName"), &bstrLocationName));
+
+				CComBSTR bstrLocationURL; //WebBrowser正在显示的资源的URL
+				COM_VERIFY(spWebBrowser->get_LocationURL(&bstrLocationURL));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("LocationURL"), &bstrLocationURL));
+			}
+		}
+		return hr;
+	}
+	
+	HRESULT CFWebBrowserAppDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("WebBrowserApp")));
+		if (m_pObj)
+		{
+			//能QI到
+			CComQIPtr<IWebBrowserApp>     spWebBrowserApp(m_pObj);
+			if (spWebBrowserApp)
+			{
+				CComBSTR bstrName;
+				COM_VERIFY(spWebBrowserApp->get_Name(&bstrName));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Name"), &bstrName));
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFWebBrowser2Dumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("WebBrowser2")));
+		if (m_pObj)
+		{
+			//能QI到
+			CComQIPtr<IWebBrowser2>     spWebBrowser2(m_pObj);
+			if (spWebBrowser2)
+			{
+				VARIANT_BOOL bOffline = VARIANT_FALSE;
+				COM_VERIFY(spWebBrowser2->get_Offline(&)bOffline);
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Offline"), bOffline));
+			}
+		}
+		return hr;
+	}
 
 }//namespace FTL
 

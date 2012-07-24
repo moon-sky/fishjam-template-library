@@ -63,6 +63,7 @@
 * 相关类:
 *   Graphics(核心)--可在构造函数中通过HDC或静态的FromImage等初始化，具有用于绘制直线、矩形、路径、图形、图像和文本的方法
 *     DrawPath -- 绘制路径对象(可以一次性绘制出整个路径对象序列包含的直线、矩形、多边形和曲线等)
+*     DrawImage -- 绘制图像，但性能似乎很差(最好用GDI绘制?)
 *     质量属性
 *       CompositingMode -- 
 *       CompositingQuality --
@@ -82,9 +83,9 @@
 *   Image -- 抽象基类
 *     >DrawImage -- 其中的 UnitPixel 等参数意义?
 *     Bitmap -- 加载、保存和处理光栅图像，如 BMP、JPEG、PNG、ICON 等
-*       Clone -- 制作副本，可指定原矩形参数
-*       BitmapData
-*     Metafile -- 记录、显示和保存图元文件(图形命令的序列)，如 EMF
+*       Clone -- 制作副本，可指定原矩形参数来指定要复制的原始位图的部分，返回的结果需要delete?
+*       BitmapData的
+*     Metafile -- 记录、显示和保存图元文件(图形命令的序列，矢量图像)，如 EMF
 *       MetafileHeader、MetaHeader -- 检查图元文件头中存储的数据
 *       注意：GDI+支持EMF/EMF+，但不支持WMF
 *
@@ -104,8 +105,6 @@
 *     Xor -- 异或，只属于一个区域或另一个区域但不同时属于两个区域的所有点。
 *   StringFormat -- 
 *   LineJoin -- 指定用于连接两个线条的样式
-* 
-*  
 * 
 * ImageEncoder -- GetImageEncoders,可获得对应的CLSID
 * Gdi+的错误码， Gdiplus::OK 
