@@ -94,3 +94,79 @@ ffmpeg -- 开源且跨平台的音视频解决方案，是一套编解码的框架，具有采集、解码、流化
        编码类型，如 codec 从 mpeg4 -> H264
      媒体录制：YUV -> Encode -> Muxer -> ByteIOContex -> Media
        
+Firefox
+  两种扩展方式
+  1.插件（Plugins/Plug-ins) -- 让Firefox能够显示特殊格式的文件而由相应的第三方应用程序提供的二进制文件
+    (如显示Flash的Adobe shockwave flash等)
+  2.扩展（extensions）-- 修改或者增强Firefox本身的功能而提供的一种打包格式,通常由包含功能代码的js脚本、包含界面的xul
+    文件以及包含皮肤的css文件和各种图像文件组成。扩展名xpi的zip压缩包。
+
+扩展(产品的策略：只支持最近的3个版本) -- firefox extension tutorial
+  1.早期的基于JavaScript和XUL的方式： FF->JS->XpCom->C++ Dll
+    JavaScript -- FF内核调用编译性程序的粘和剂，完成业务逻辑，通过它来调用编译性的程序（比如c++的动态库，API）
+    XUL，应用XML来描述使用者界面的标示语言，完成UI定制
+    CSS -- xul和css配合表示界面
+  2.FF4 以后 add on builder 和 add on sdk  的方式, 就是XPCOM?
+    XPCOM -- Mozilla构建的跨平台组件结构，原理类似于微软的Com组件。编译性的，提供主要的逻辑处理。
+             目前Mozilla 已不想支持XPCom， 从firefox4.0开始，每个版本的firefox 有一套自己的SDK。
+    
+    Gecko SDK(XulRunner SDK)9.0.1 -- https://developer.mozilla.org/en/Gecko_SDK
+                                https://developer.mozilla.org/en/XPCOM/XPCOM_changes_in_Gecko_2.0
+                                https://developer.mozilla.org/en/How_to_build_a_binary_XPCOM_component_using_Visual_Studio
+    Python -- 
+       从 idl 生成头文件 -- header.py -I  yourGecokSDKfolder \idl -o yourheader.h youridl.idl".
+       从 idl 生成 typelib(.xpt) -- typelib.py -I  yourGecokSDKfolder \idl -o yourtypelib.xpt youridl.idl
+    
+    
+通过js-ctypes在addon中直接调用dll中的函数，参考URL： https://developer.mozilla.org/en/js-ctypes/Using_js-ctypes
+
+开发工具：aptana
+There is an extension name XPComViewer which could check if your XPCom register to FF.
+几个帮助开发的扩展，分别是 Venkman、Extension Developer's Extension 、Console2 、Chrome List 和 Firebug。
+
+Firefox 把用户的个人信息，包括设置、已安装的扩展等，都保存在一个概要文件中，默认是使用名为 default 的概要文件。
+通过创建一个专门为开发使用的概要文件，可以不影响正常的使用，也不会破坏个人信息。为了创建另外一个概要文件，
+运行 firefox –P，在弹出的“选择概要文件”的对话框中，新建一个名为 dev 的概要文件，并使用此概要文件来运行 Firefox。
+在地址栏输入 about:config 可以打开 Firefox 的参数设置页面
+  javascript.options.showInConsole = true //把 JavaScript 的出错信息显示在错误控制台
+  nglayout.debug.disable_xul_cache = true //禁用 XUL 缓存，使得对窗口和对话框的修改不需要重新加载 XUL 文件
+  browser.dom.window.dump.enabled　= true //允许使用 dump() 语句向标准控制台输出信息
+  javascript.options.strict　　　　= true //在错误控制台中启用严格的 JavaScript 警告信息
+当需要进行扩展开发时，运行 firefox -P dev 启动 Firefox 即可
+
+在扩展中可以使用覆盖（Overlay）来向已有的界面中添加元素(如系统 Tools菜单 <menupopup id="menu_ToolsPopup"> )
+
+扩展的基本目录结构
+  chrome.manifest -- Chrome 注册的清单文件,
+  install.rdf -- 包含了扩展安装的信息
+  [chrome] -- Chrome指的是应用程序窗口的内容区域之外的用户界面元素的集合，
+      这些用户界面元素包括工具条，菜单，进度条和窗口的标题栏等。三种基本的chrome提供者
+    [content] -- 扩展的描述界面的 XUL 文件和增加行为的 JavaScript 文件。
+    [locale] -- 存放的是本地化相关的文件, 如  en-US、zh-CN、ko-KR、vi-VN 目录
+    [skin] -- 存放CSS 文件，用来定义扩展的外观
+  [components]
+  [defaults]
+  
+JS -- 调用: SomeClass.someFun();
+  var SomeClass = { 
+    someFun : function( param1, param2 ) {
+      var ....
+    }
+  }；
+
+  //打开一个新的窗口，或是使得已经创建的窗口获得焦点
+　openWindow : function(windowName, url, flags, params) {
+　　var windowsMediator = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+　　　.getService(Components.interfaces.nsIWindowMediator);
+　　var aWindow = windowsMediator.getMostRecentWindow(windowName);
+　　if (aWindow) {
+　　　aWindow.focus();
+　　}　　　
+　　else {
+　　　aWindow = window.openDialog(url, windowName, flags, params);
+　　}
+　　return aWindow;
+　}
+　
+UAC Elevation
+实际上一个软件在用不同的模块运行，因Virtualization映射到其他位置的Data文件，所以在操作磁盘文件以及注册表的时候，实际上是一个软件在用不同的模块运行。
