@@ -170,3 +170,13 @@ JS -- 调用: SomeClass.someFun();
 　
 UAC Elevation
 实际上一个软件在用不同的模块运行，因Virtualization映射到其他位置的Data文件，所以在操作磁盘文件以及注册表的时候，实际上是一个软件在用不同的模块运行。
+
+Win8
+  两种不同的用户接口，需要分别运行不同类型的应用程序（如IE有对应的 Metro style 和 Desktop style)
+    经典 -- 桌面应用程序
+    Metro -- 专门的 Metro 程序或 Metro-style enabled desktop browsers (MEDB).
+              Metro模式下的IE只有Flash插件，不能安装或运行其他的任何插件?
+  WinRT -- ARM平台上的Window8，只能运行纯粹的Metro程序，不能使用Win32API，需要使用专门的 WinRT API?
+  
+  Enhanced Protected Mode(EPM)-- 启用后很多插件都无法正确运行。Metro类型的始终运行于EPM, Desktop类型的可选(Internet Options->Advanced),
+  Web网站的开发者在 Http Header 中通过"X-UA-Compatible:requiresActiveX=true" 选项要求plugin(即要求经典模式?)

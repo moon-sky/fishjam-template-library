@@ -314,11 +314,14 @@ namespace FTL
 					case cdtInterface:
 						hr = _innerCoDtectInterfaceFromRegister(pUnknown, guidInfo);
 						break;
-#if INCLUDE_DETECT_VSIP
 					case cdtViewInterface:
+#if INCLUDE_DETECT_VSIP
 						hr = _innerCoDtectViewInterfaceFromRegister(pVsWindowFrame, guidInfo);
-						break;
+#else
+						hr = E_FAIL;
 #endif
+
+						break;
 					case cdtService:
 						hr = _innerCoDtectServiceFromRegister(pServiceProvider, guidInfo);
 						break;

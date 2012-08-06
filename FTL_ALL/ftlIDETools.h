@@ -8,6 +8,12 @@
 #endif
 
 /***********************************************************************************************
+* 常见功能的 Tip --http://www.watch-life.net/visual-studio/visual-studio-2008-tip-day-index.html
+*   选择矩形代码区域(列模式)：Alt + 鼠标
+*   格式化当前文档：Ctrl+K, Ctrl+D; 格式化选中文本：Ctrl+K, Ctrl+F -- 问题：怎么设置格式化的规则?
+*   折叠到定义：Ctrl+M, Ctrl+O，可以快速浏览所有的方法
+*   在Tooltip中显示快捷键：自定义->工具栏->在屏幕提示中显示快捷键
+*
 * IDE -- 统一开发环境
 *   VS6--Windows 9x平台下VS的最后版本
 *   VS2002(7.0)--.NET Framework 1.0,引入了托管代码，在.NET环境下程序编译为MSIL（微软中间语言）而不是机器语言
@@ -152,7 +158,10 @@ namespace FTL
 	*   mt.exe -- manifest 的控制工具
 	*     mt.exe -inputresource:ExePath;#1 -out:extracted.manifest <== 导出 Exe 中的 manifest
     *   系统设备扫描工具 -- gmer.exe
+	*   Inspect -- MS提供的类似Spy的工具，能看到窗体、IAccessible 等信息
+	*   AccExplorer32窗口属性查看工具(类似Spy++) -- 可查看DirectUI界面(如 MSN)
     *   命名管道扫描工具 -- pipelist.exe(http://technet.microsoft.com/zh-cn/sysinternals/dd581625)
+	*   
     *************************************************************************************************************************/
 
     /*************************************************************************************************************************

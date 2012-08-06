@@ -553,7 +553,7 @@ namespace FTL
 	FTLEXPORT class CFWinHookUtil
 	{
 	public:
-		FTLINLINE static HWND GetCBTCodeInfo(CFStringFormater& formater, int nCode, WPARAM wParam, LPARAM lParam);
+		FTLINLINE static LPCTSTR GetCBTCodeInfo(CFStringFormater& formater, int nCode, WPARAM wParam, LPARAM lParam);
 	};
 
     //DI项目中使用来适配Notification的基类

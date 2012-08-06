@@ -138,7 +138,7 @@ namespace FTL
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_EMPTY);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_NULL);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I2);
-			//HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I4);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I4);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_R4);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_R8);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_CY);
@@ -153,7 +153,7 @@ namespace FTL
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I1);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI1);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI2);
-			//HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI4);
+			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI4);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_I8);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_UI8);
 			HANDLE_CASE_TO_STRING(szType,_countof(szType),VT_INT);
@@ -249,7 +249,7 @@ namespace FTL
 			case VT_I4:
 			case VT_INT:
 				//case VT_INT_PTR:
-				formaterValue.Format(TEXT("%d"), V_INT(&m_Info));
+				formaterValue.Format(TEXT("%d(0x%x)"), V_INT(&m_Info), V_INT(&m_Info));
 				break;
 			case VT_R4:
 				formaterValue.Format(TEXT("%f"), V_R4(&m_Info));
@@ -488,17 +488,24 @@ namespace FTL
 
     HRESULT CFOutputWindowInfoOutput::SetIndent(int nIndent)
     {
-        m_nIndent = nIndent;
-        SAFE_DELETE_ARRAY(m_pszIndentSpace);
-        m_pszIndentSpace  = new TCHAR[m_nIndent + 1];
-        for (int i = 0; i < m_nIndent; i++)
-        {
-            m_pszIndentSpace[i] = ' ';
-        }
-        m_pszIndentSpace[m_nIndent] = '\0';
-
+		if (m_nIndent != nIndent)
+		{
+			m_nIndent = nIndent;
+			SAFE_DELETE_ARRAY(m_pszIndentSpace);
+			m_pszIndentSpace  = new TCHAR[m_nIndent + 1];
+			for (int i = 0; i < m_nIndent; i++)
+			{
+				m_pszIndentSpace[i] = ' ';
+			}
+			m_pszIndentSpace[m_nIndent] = '\0';
+		}
         return S_OK;
     }
+
+	int CFOutputWindowInfoOutput::GetIndent()
+	{
+		return m_nIndent;
+	}
 
     VOID CFOutputWindowInfoOutput::OutputIndentSpace()
     {
@@ -677,7 +684,7 @@ namespace FTL
 	CFInterfaceDumperBase<T>::CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
 		:m_pObj(pObj)
 		,m_pInfoOutput(pInfoOutput)
-		,m_nIndent(nIndent)
+		,m_nIndent(pInfoOutput->GetIndent())
 	{
 		if(m_pObj)
         {

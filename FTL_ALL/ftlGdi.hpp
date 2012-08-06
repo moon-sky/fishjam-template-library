@@ -512,15 +512,14 @@ namespace FTL
 		PointPosType posType = posTopRight;
 
 		RECT rectCheck = rect;
-		LONG nTemp = 0; 
 		//Normalize
 		if (rectCheck.left < rectCheck.right)
 		{
-			SwapValue(rectCheck.left, rectCheck.right, nTemp);
+			SwapValue(rectCheck.left, rectCheck.right);
 		}
 		if (rectCheck.top < rectCheck.right)
 		{
-			SwapValue(rectCheck.left, rectCheck.right, nTemp);
+			SwapValue(rectCheck.left, rectCheck.right);
 		}
 		//rectCheck.NormalizeRect();
 		POINT ptCenter = { (rectCheck.left + rectCheck.right) / 2, (rectCheck.top + rectCheck.bottom) / 2 };

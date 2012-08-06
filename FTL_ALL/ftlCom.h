@@ -14,8 +14,6 @@
 /*************************************************************************************************************
 * INITGUID -- 包含 guiddef.h ？ 中定义的所有 GUID(使用库编译已经编译好的),更好的方式是直接包含 InitGuid.h
 *
-* IAccessible -- MSAA, 活动的可访问兼容性应用，
-*   可用于对象抓图
 *************************************************************************************************************/
 
 #ifndef FTL_BASE_H
@@ -85,6 +83,7 @@ namespace FTL
     {
     public:
         virtual HRESULT SetIndent(int nIndent) = 0;
+		virtual int GetIndent() = 0;
         virtual HRESULT OutputInfoName(LPCTSTR pszInfoName) = 0;
 		virtual HRESULT OnOutput(LPCTSTR pszPrompInfo) = 0;
         virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue) = 0;
@@ -107,6 +106,7 @@ namespace FTL
         FTLINLINE CFOutputWindowInfoOutput();
         FTLINLINE ~CFOutputWindowInfoOutput();
         FTLINLINE virtual HRESULT SetIndent(int nIndent);
+		FTLINLINE virtual int GetIndent();
         FTLINLINE virtual HRESULT OutputInfoName(LPCTSTR pszInfoName);
 		FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszPrompInfo);
         FTLINLINE virtual HRESULT OnOutput(LPCTSTR pszKey, LPCTSTR pValue);
