@@ -231,7 +231,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlWebInterfaceDetect.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlWindow.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlWinIntDetect.hpp"
 				>
 			</File>
 		</Filter>
@@ -325,7 +333,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlWebInterfaceDetect.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlWindow.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlWinIntDetect.h"
 				>
 			</File>
 			<File

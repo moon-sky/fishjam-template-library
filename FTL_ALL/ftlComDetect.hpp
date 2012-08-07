@@ -14,7 +14,9 @@
 
 namespace FTL
 {
-    FTLINLINE HRESULT GetInterfaceNameByIID(REFIID rclsid, BSTR * pszName)
+	#define TYPELIB_MAX_NAMES   64
+
+	FTLINLINE HRESULT GetInterfaceNameByIID(REFIID rclsid, BSTR * pszName)
     {
         HRESULT hr = E_FAIL;
         BOOL bRet = FALSE;
@@ -64,8 +66,12 @@ namespace FTL
             HRESULT hr = E_FAIL;
             TYPEATTR*   pta = NULL; 
 			ATL::CComQIPtr<ITypeInfo> pTypeInfo(pUnknown);
-            COM_VERIFY(pTypeInfo-> GetTypeAttr(&pta));
+
+            COM_VERIFY(pTypeInfo->GetTypeAttr(&pta));
             USES_CONVERSION;
+
+			FTLTRACEEX(FTL::tlTrace, TEXT("\t\tVersion: %d, %d\n"), pta->wMajorVerNum, pta->wMinorVerNum);
+			
 
             if(TKIND_COCLASS == pta->typekind)
             {
@@ -89,15 +95,86 @@ namespace FTL
             }
 
             //获取函数的信息 -- 3(IUnknown) + 4(IDispatch) + 业务接口
-            for(int i = 0; i< pta->cFuncs;++i)
+            for(int i = 0; i< pta->cFuncs; ++i)
             {
-                FUNCDESC* pfd = NULL; 
+				CFStringFormater strFormaterFuncDesc;
+
+				FUNCDESC* pfd = NULL; 
                 COM_VERIFY(pTypeInfo->GetFuncDesc(i,&pfd));
-                BSTR   bstrName = NULL;
-                COM_VERIFY(pTypeInfo->GetDocumentation(pfd->memid,&bstrName,NULL,NULL,NULL));
-                FTLTRACEEX(FTL::tlTrace,TEXT("\t\t\tFun[%d in %d] = %s\n"), i, pta->cFuncs, OLE2T(bstrName));
-                SysFreeString(bstrName);
-                pTypeInfo->ReleaseFuncDesc(pfd);
+				if (!pfd)
+				{
+					continue;
+				}
+				switch (pfd->invkind)
+				{
+				case INVOKE_FUNC:
+					strFormaterFuncDesc.Format(TEXT("Fun -- "));
+					break;
+				case INVOKE_PROPERTYGET:
+					strFormaterFuncDesc.Format(TEXT("PropGet -- "));
+					break;
+				case INVOKE_PROPERTYPUT:
+					strFormaterFuncDesc.Format(TEXT("PropPut -- "));
+					break;
+				case INVOKE_PROPERTYPUTREF:
+					strFormaterFuncDesc.Format(TEXT("PropPutRef -- "));
+					break;
+				default:
+					FTLASSERT(FALSE);
+					break;
+				}
+				//BSTR   bstrName = NULL;
+				//COM_VERIFY(pTypeInfo->GetDocumentation(pfd->memid,&bstrName, NULL,NULL,NULL));
+				//strFormaterFuncDesc.Format(TEXT("%s("), OLE2T(bstrName));
+				//SysFreeString(bstrName);
+
+
+				BSTR bstrNames[TYPELIB_MAX_NAMES] = {0};
+				UINT nWantNamesCount = 1 + pfd->cParams; // FunctionName + ParamsCount
+				UINT nRetNamesCount = 0;
+				COM_VERIFY(pTypeInfo->GetNames(pfd->memid, bstrNames, nWantNamesCount, &nRetNamesCount));
+				
+				// Problem:  If a property has the propput or propputref attributes the
+				// 'right hand side' (rhs) is *always* the last parameter and MkTypeLib
+				// strips the parameter name.  Thus you will always get 1 less name
+				// back from ::GetNames than normal.
+				// fix for 'rhs' problem
+				if ((int)nRetNamesCount < nWantNamesCount)
+				{
+					bstrNames[nRetNamesCount] = ::SysAllocString(OLESTR("rhs")) ;
+					nRetNamesCount++ ;
+				}
+				FTLASSERT(nWantNamesCount == nRetNamesCount);
+
+				for (UINT nNameIndex = 0; nNameIndex < nRetNamesCount; nNameIndex++)
+				{
+					if (0 == nNameIndex)
+					{
+						if (nRetNamesCount -1 == nNameIndex)
+						{
+							//no param, just function name
+							strFormaterFuncDesc.AppendFormat(TEXT("%s( )"), COLE2T(bstrNames[nNameIndex]));
+						}
+						else
+						{
+							strFormaterFuncDesc.AppendFormat(TEXT("%s( "), COLE2T(bstrNames[nNameIndex]));
+						}
+						
+					}
+					else if(nRetNamesCount -1 == nNameIndex)
+					{
+						strFormaterFuncDesc.AppendFormat(TEXT("%s )"), COLE2T(bstrNames[nNameIndex]));
+					}
+					else
+					{	
+						strFormaterFuncDesc.AppendFormat(TEXT("%s, "), COLE2T(bstrNames[nNameIndex]));
+					}
+					SysFreeString(bstrNames[nNameIndex]);
+				}
+
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t\tVar[%d in %d] = %s\n"), i, pta->cFuncs, strFormaterFuncDesc.GetString());
+
+				pTypeInfo->ReleaseFuncDesc(pfd);
             }
             pTypeInfo->ReleaseTypeAttr(pta);
             return hr;
@@ -113,7 +190,7 @@ namespace FTL
             unsigned int infoCount = 0;
 			ATL::CComQIPtr<IDispatch> pDisp(pUnknown);
             COM_VERIFY(pDisp->GetTypeInfoCount(&infoCount));
-            FTLTRACEEX(FTL::tlTrace,TEXT("\t\tIn CDispatchDump, TypeInfoCount=%d\n"), infoCount);
+            FTLTRACEEX(FTL::tlTrace,TEXT("\t\tIn CFDispatchDump, TypeInfoCount=%d\n"), infoCount);
 
             for (unsigned int infoIndex = 0; infoIndex < infoCount; ++infoIndex)
             {
@@ -122,6 +199,8 @@ namespace FTL
                 COM_VERIFY_EXCEPT1(pDisp->GetTypeInfo(infoIndex, LOCALE_SYSTEM_DEFAULT, &spTypeInfo), TYPE_E_LIBNOTREGISTERED);
 				if (SUCCEEDED(hr) && spTypeInfo)
 				{
+					//COM_DETECT_INTERFACE_FROM_LIST(spTypeInfo);
+					//COM_DETECT_INTERFACE_FROM_REGISTER(spTypeInfo);
 					COM_VERIFY(CFTypeInfoDump::DumpInterfaceInfo(spTypeInfo));
 				}
             }

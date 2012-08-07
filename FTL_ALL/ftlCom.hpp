@@ -316,6 +316,7 @@ namespace FTL
 		return m_bufInfo;
 	}
 
+#if 0
     __declspec(selectany) CModulesHolder g_modulesHolder;
 
     HRESULT /*__stdcall*/ CFSideBySide::SbsCreateInstance(LPCTSTR szModule, REFCLSID rclsid, LPUNKNOWN pUnkOuter, 
@@ -371,6 +372,7 @@ namespace FTL
 
         return hr;
     }
+#endif
 
     CFIExplorerDispidInfo::CFIExplorerDispidInfo(DISPID id) : CFConvertInfoT<CFIExplorerDispidInfo ,DISPID>(id)
     {

@@ -1191,6 +1191,7 @@ namespace FTL
 
 #endif //FTL_DEBUG
 
+#if 0
     CModulesHolder::CModulesHolder()
     {
     }
@@ -1239,7 +1240,7 @@ namespace FTL
         pr = m_allModules.insert(hModule);
         return pr.second;
     }
-
+#endif
 
     int FormatMessageBox(HWND hWnd, LPCTSTR lpCaption, UINT uType, LPCTSTR lpszFormat, ...)
     {

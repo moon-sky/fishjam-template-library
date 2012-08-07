@@ -828,7 +828,8 @@ namespace FTL
 #endif //FTL_DEBUG
 
     //注意：目前用于SideBySide，注意：本类不是线程安全的
-    class CModulesHolder  
+#if 0
+    class CModulesHolder
     {
     public:
         FTLINLINE CModulesHolder();
@@ -842,6 +843,7 @@ namespace FTL
         typedef std::pair<ModeulesHolderIterator , bool > ModeulesHolderPair;
         std::set<HMODULE> m_allModules;
     };
+#endif
 
     //Function
     //显示Message前获取当前程序的活动窗体

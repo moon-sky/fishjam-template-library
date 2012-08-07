@@ -1,6 +1,75 @@
-http://upload.blog.naver.com/upload/upload.nhn?blogId=
-http://blog.naver.com/ToolbarPostWriteForm.nhn?blogId=
-return: 0<@nhn@><@nhn@>452454<@nhn@>/20120524_36/fishjam2000_1337854375890_CLJ7L2_jpg<@nhn@>bleach_51_094.jpg<@nhn@>bleach_51_094.jpg<@nhn@>1931<@nhn@>1461
+WTL 中处理Web:
+class CBrowserView : public CWindowImpl<CBrowserView, CAxWindow>, 
+                     public IDispEventSimpleImpl<标识ID, CBrowserView, &DIID_DWebBrowserEvents2>
+{
+public:
+  DECLARE_WND_SUPERCLASS(_T("TabBrowser_TabPageWindow"), CAxWindow::GetWndClassName())
+}
+
+IDispatchImpl <== 提供自动化/双接口的实现支持(IDispatch接口实现)
+
+IDispEventSimpleImpl <== 事件处理的基本实现，但需要自己手工(重载 GetFuncInfoFromId 或 使用 SINK_ENTRY_INFO)提供函数的调用原型(SINK_INFO)
+  <= IDispEventImpl <== 可以在定义类时指定对应的类型库(LibId和版本)，自动加载对应的Lib获得函数的调用原型，可以直接使用 SINK_ENTRY_EX/SINK_ENTRY
+                        版本可用 AtlGetObjectSourceInterface 获得(有没有工具?)，然后对应构造
+
+ISimpleEventImpl  -- 没有这个类?
+
+ITypeInfo::Invoke是把DispID使用TypeLibrary中的接口定义，换算成虚函数的Index，然后通过虚函数表(Vtable)来直接调用接口的函数
+ATL连接点客户端 "注意：不能直接用 AtlAdvise/AtlUnadvise"的理由：
+  IDispEventImpl和IDispEventSimpleImpl这两个类并没有直接继承IDispatch，无法通过QueryInterface来直接获得对应事件回调接口,
+  内部强制Cast到IUnknown（IDispEventSimpleImpl虽然不是从IUnknown继承，但定义了IUnknown和IDispatch的所有方法，VTable的布局一致）
+
+两种方法(目前总结还不对)：
+1.继承自:IDispEventImpl<标识ID, MyClassName, &DIID_DWebBrowserEvents2, &LIBID_SHDocVw, 1, 0>
+  
+2.继承自:IDispEventSimpleImpl,
+  需要自己实现 GetFuncInfoFromId ?
+IDispEventSimpleImpl<标识ID, MyClassName, &DIID_DWebBrowserEvents2> -- ATL中连接点的客户端(如处理WebBrowser的事件)
+	//提供DISPID和函数实现的对应关系(表格)
+	SINK_ENTRY_INFO -- 需要根据对应函数类型_ATL_FUNC_INFO类型的变量，如 
+      __declspec(selectany) _ATL_FUNC_INFO CBrowserView::DocumentComplete2_Info = { CC_STDCALL, VT_EMPTY, 2, { VT_DISPATCH, VT_BYREF | VT_VARIANT } };
+	SINK_ENTRY_EX -- 需要对应的 
+	
+	BEGIN_SINK_MAP ( MyClassName )
+		SINK_ENTRY_INFO(标识ID, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete, &DocumentComplete2_Info)
+		SINK_ENTRY_EX ( 标识ID, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete )
+		SINK_ENTRY(标识ID, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete)
+	END_SINK_MAP()
+
+
+//IDispEventSimpleImpl 子类重载的方法，可以指定调用方式，默认是通过 AtlGetFuncInfoFromId 实现该功能
+virtual HRESULT GetFuncInfoFromId ( const IID&, DISPID, LCID, _ATL_FUNC_INFO& )
+{
+	if ( !InlineIsEqualGUID ( iid, DIID_DWebBrowserEvents2 ) )
+	{
+		return E_FAIL ;
+	}
+	HRESULT hr = E_FAIL ;
+	info.cc = CC_STDCALL ;
+	switch ( dispid )
+	{
+		case DISPID_DOCUMENTCOMPLETE :
+		{
+			info.vtReturn = VT_EMPTY ;
+			info.nParams = 2 ;
+			info.pVarTypes[0] = VT_DISPATCH ;
+			info.pVarTypes[1] = VT_VARIANT | VT_BYREF ;
+			hr = S_OK ;
+			break ;
+		}
+		default :
+		{
+			break ;
+		}
+	}
+	return hr ;
+}
+void __stdcall OnDocumentComplete ( IDispatch* pDispatch, VARIANT* /*pvUrl*/) ;
+
+atlcom.h 的 CComTypeInfoHolder::GetTI 中 "Module LIBID not initialized" 断言的原因：？？
+AtlGetObjectSourceInterface(XXXXX) <== 获得默认类型信息，并存起来
+
+CAxWindow::CreateControlEx("http://www.xxx", NULL, NULL, xxx) -- 即可创建 WebBrowser
 
 GenericHTTPClient
 
