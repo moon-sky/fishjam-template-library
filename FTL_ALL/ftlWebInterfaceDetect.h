@@ -44,6 +44,28 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	//可以控制 focus 等状态
+	class CFHTMLWindowDumper: public CFInterfaceDumperBase<CFHTMLWindowDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLWindowDumper);
+	public:
+		FTLINLINE explicit CFHTMLWindowDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFHTMLWindowDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	//可以通过 IHTMLWindow2::get_event 获取到 IHTMLEventObj，然后通过 IHTMLEventObj::get_srcElement 获取激发事件的元素(如点击的按钮等)
+	class CFHTMLEventObjDumper : public CFInterfaceDumperBase<CFHTMLEventObjDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLEventObjDumper);
+	public:
+		FTLINLINE explicit CFHTMLEventObjDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+			:CFInterfaceDumperBase<CFHTMLEventObjDumper>(pObj, pInfoOutput, nIndent){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
 	class CFHTMLStyleDumper : public CFInterfaceDumperBase<CFHTMLStyleDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLStyleDumper);

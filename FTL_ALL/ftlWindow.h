@@ -342,16 +342,20 @@ namespace FTL
 		BOOL m_bInited;
 		TCHAR m_bufInfo[128];
 
-		UINT RWM_MSH_MOUSEWHEEL;
+		UINT RWM_ATL_CREATE_OBJECT;		//ATL.CAtlAutoThreadModuleT.CreateInstance 创建COM对象时使用(内部使用的套间线程同步?)
+		UINT RWM_ATLGETCONTROL;			//AtlAxGetControl 获取Control的IUnknown接口(返回值)
+		UINT RWM_ATLGETHOST;			//AtlAxGetHost 获取Host的IUnknown接口(返回值）
 		UINT RWM_COLOROKSTRING;
+		UINT RWM_COMMDLG_FIND;
 		UINT RWM_FILEOKSTRING;
 		UINT RWM_FINDMSGSTRING;
-		UINT RWM_HELPMSGSTRING;
 		UINT RWM_LBSELCHSTRING;
+		UINT RWM_MSH_MOUSEWHEEL;
+		UINT RWM_HELPMSGSTRING;
+		UINT RWM_HTML_GETOBJECT;		//从IE窗体中获取对应的IHTMLDocument2接口
 		UINT RWM_SETRGBSTRING;
 		UINT RWM_SHAREVISTRING;
-		UINT RWM_COMMDLG_FIND;
-		UINT RWM_HTML_GETOBJECT;
+		UINT RWM_TASKBARBUTTONCREATED;	//任务栏重新创建?(没有确认)
 	};
 
     //! 将消息( WM_XXX )转换为易读的格式，类似于 ",wm"
@@ -492,10 +496,13 @@ namespace FTL
         FTLINLINE BOOL AutoPositionControl(int cxWidth, int cyHeight, RECT& rectGroup, _WindowResizeData& data, bool bGroup, 
             _WindowResizeData* pDataPrev = NULL);
     };
+
     //管理显示器的信息(如双显)
+	//  使用如下的API(multimon.h，需要定义 COMPILE_MULTIMON_STUBS 宏?)： MonitorFromWindow/MonitorFromPoint/EnumDisplayMonitors 等
     class CFMonitorManager
     {
     public:
+		
     private:
         //static BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData);
     };
@@ -507,15 +514,17 @@ namespace FTL
 	};
 	
 	typedef BOOL (CALLBACK* TranslateWndClassProc)(LPCTSTR pszOriClassName, LPTSTR pszNewClass, UINT nLength);
-	
+	__declspec(selectany) TranslateWndClassProc g_pTranslateWndClassProc = NULL;
+
     FTLEXPORT class CFWinUtil
     {
     public:
 		//查找指定ProcessId的主窗口ID
 		FTLINLINE static HWND GetProcessMainWindow(DWORD dwProcessId);
 
-        //激活并将指定窗体放在最前方 -- 解决在状态栏闪烁但不到前台的Bug
+        //激活并将指定窗体放在最前方 -- 解决在状态栏闪烁但不到前台的Bug(win98/2000?)
         //常用于二重启动时将窗体显示在前台
+		//注意：Windows 98/2000 doesn't want to foreground a window when some other window has keyboard focus
         FTLINLINE static BOOL ActiveAndForegroundWindow(HWND hWnd);
 
         //全屏窗口：WS_POPUP|WS_VISIBLE 属性(不能是 WS_OVERLAPPEDWINDOW ), 0,0 ~ CxScreen, CyScreen
@@ -529,10 +538,12 @@ namespace FTL
         FTLINLINE static LPCTSTR GetScrollBarCodeString(UINT  nSBCode);
 
         //获取 WM_NOTIFY 消息 Code 对应的字符串信息
-        FTLINLINE static LPCTSTR GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc = NULL);
+        FTLINLINE static LPCTSTR GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, 
+			TranslateWndClassProc pTransProc = g_pTranslateWndClassProc);
 
         //获取 WM_COMMAND 消息的 notifyCode
-        FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc = NULL);
+        FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, 
+			TranslateWndClassProc pTransProc = g_pTranslateWndClassProc);
 
 		//获取窗体的类型、名字、位置、大小等最基本的信息
 		FTLINLINE static LPCTSTR GetWindowDescriptionInfo(FTL::CFStringFormater& formater, HWND hWnd);

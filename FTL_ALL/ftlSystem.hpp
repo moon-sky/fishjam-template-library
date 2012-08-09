@@ -64,13 +64,13 @@ namespace FTL
         case 20600:
             osType = ostVista;
             break;
-        case 20700:  //20601?
+        case 20601:
             osType = ostWindows7;
             break;
         default:
             {
-                _ASSERT(FALSE);                        
-                if (dwOsVersion > 20600)
+                _ASSERT(FALSE);
+                if (dwOsVersion > 20601)
                 {
                     osType = ostHighUnknown;
                 }
@@ -229,6 +229,48 @@ namespace FTL
 	LPCTSTR SystemParamProperty::GetPropertyString()
 	{
 
+	}
+
+	BOOL CFSystemUtil::GetVersionFromString(VERSIONINFO& ver, LPCTSTR pszVersion)
+	{
+		if ( NULL  == pszVersion )
+		{
+			return FALSE;
+		}
+
+		const TCHAR szToken[] = _T(",.");
+		const int  MAX_VERSION_SIZE	= 64 ;
+		DWORD dwTemp[4] = { 0 };
+		//memset(dwTemp, 0x00, sizeof(dwTemp));
+
+		TCHAR *pszTok = NULL;
+		TCHAR szVersion[MAX_VERSION_SIZE] = { 0 };
+		StringCchCopy(szVersion, _countof(szVersion), pszVersion) ;
+		pszTok = _tcstok(szVersion, szToken) ;
+		if (pszTok == NULL)
+		{
+			return FALSE;
+		}
+
+		*dwTemp = DWORD(_ttoi(pszTok)) ;
+
+		for (int nIndex = 1; nIndex < 4; nIndex++)
+		{
+			pszTok = _tcstok(NULL, szToken) ;
+			if (pszTok == NULL)
+			{
+				return FALSE;
+			}
+
+			*(dwTemp + nIndex) = DWORD(_ttoi(pszTok)) ;
+		}
+
+		ver.dwVer0 = dwTemp[0];
+		ver.dwVer1 = dwTemp[1];
+		ver.dwVer2 = dwTemp[2];
+		ver.dwVer3 = dwTemp[3];
+
+		return TRUE;
 	}
 
 	BOOL CFSystemUtil::GetCurrentUserID( LPTSTR pszUserName, int iSize)

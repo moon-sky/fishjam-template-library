@@ -545,8 +545,8 @@ namespace FTL
         LPCTSTR     m_pszProperty;
     };
 
-	//X坐标向右，Y坐标向下
-	enum PointPosType
+	//X坐标向右，Y坐标向下 -- 点相对于矩形的象限位置
+	enum PointPosQuadrant
 	{
 		//posTop,
 		posTopRight = 0,
@@ -566,7 +566,7 @@ namespace FTL
     {
     public:
 		//计算一个点对应特定矩形的相对关系
-		FTLINLINE static PointPosType CalcPointPosType(const RECT& rect, const POINT& point);
+		FTLINLINE static PointPosQuadrant CalcPointPosQuadrant(const RECT& rect, const POINT& point);
 
 		FTLINLINE static BOOL LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType);
 

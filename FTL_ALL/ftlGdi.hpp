@@ -501,15 +501,15 @@ namespace FTL
 
 	//////////////////////////////////////////////////////////////////////////
 	
-	PointPosType	CFGdiUtil::CalcPointPosType(const RECT& rect, const POINT& point)
+	PointPosQuadrant	CFGdiUtil::CalcPointPosQuadrant(const RECT& rect, const POINT& point)
 	{
 		//Bit Array?
-		//static CDrawBalloon::PointPosType posTypees[2][2][2] = 
+		//static CDrawBalloon::PointPosQuadrant posTypees[2][2][2] = 
 		//{
 		//	posTopRight, posRightTop, posRightBottom, posBottomRight,
 		//	posBottomLeft, posLeftBottom, posLeftTop, posTopLeft
 		//};
-		PointPosType posType = posTopRight;
+		PointPosQuadrant posQuadrant = posTopRight;
 
 		RECT rectCheck = rect;
 		//Normalize
@@ -536,11 +536,11 @@ namespace FTL
 				//if (abs(ptCheck.x) < abs(ptCheck.y))
 				if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
 				{
-					posType = posBottomRight;
+					posQuadrant = posBottomRight;
 				}
 				else
 				{
-					posType = posRightBottom;
+					posQuadrant = posRightBottom;
 				}
 			}
 			else
@@ -549,11 +549,11 @@ namespace FTL
 				if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
 					//if (abs(ptCheck.x) < abs(ptCheck.y))
 				{
-					posType = posTopRight;
+					posQuadrant = posTopRight;
 				}
 				else
 				{
-					posType = posRightTop;
+					posQuadrant = posRightTop;
 				}
 			}
 		}
@@ -565,11 +565,11 @@ namespace FTL
 				if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
 					//if (abs(ptCheck.x) < abs(ptCheck.y))
 				{
-					posType = posBottomLeft;
+					posQuadrant = posBottomLeft;
 				}
 				else
 				{
-					posType = posLeftBottom;
+					posQuadrant = posLeftBottom;
 				}
 			}
 			else
@@ -578,16 +578,16 @@ namespace FTL
 				if (abs(ptCheck.y * ptCorner.x) > abs(ptCheck.x * ptCorner.y))
 					//if (abs(ptCheck.x) < abs(ptCheck.y))
 				{
-					posType = posTopLeft;
+					posQuadrant = posTopLeft;
 				}
 				else
 				{
-					posType = posLeftTop;
+					posQuadrant = posLeftTop;
 				}
 			}
 		}
-		//ATLTRACE(TEXT("posType=%d(%s)\n"), posType, GetPosString(posType));
-		return posType;
+		//ATLTRACE(TEXT("posType=%d(%s)\n"), posQuadrant, GetPosString(posQuadrant));
+		return posQuadrant;
 	}
 
 	BOOL CFGdiUtil::LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType)

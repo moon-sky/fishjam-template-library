@@ -236,7 +236,10 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
-* WebBrowser(CLSID_WebBrowser--内嵌的控件; CLSID_InternetExplorer--外部宿主Exe)
+* WebBrowser
+*   使用方式
+*     CLSID_WebBrowser--内嵌的控件，对应的ActiveX为"Microsoft Web Browser"
+*     CLSID_InternetExplorer--外部宿主Exe，即IE
 *   架构
 *     WebBrowser Host -- 宿主,即想重用WebBrowser Control的应用程序，如 CLSID_InternetExplorer
 *     Shdocvw.dll(contains WebBrowser control) -- 包装并控制Webbrowser control，给上层宿主提供浏览能力
@@ -252,6 +255,7 @@
 *    IWebBrowser2 -- WebBrowser Control and Internet Explorer,继承自 IWebBrowserApp(操作IE时优选该接口)
 *      ExecWB -- IOleCommandTarget::Exec的包装实现,允许WebBrowser开发者增加新的功能而不用创建新的接口，
 *                如通过 ExecWB(OLECMDID_ZOOM, OLECMDEXECOPT_DONTPROMPTUSER, 4, NULL) 实现"将字体改为最大"的功能
+*                其他有 OLECMDID_PAGESETUP(打印设置)、OLECMDID_PRINT(打印) 等
 *    DWebBrowserEvents2 -- 事件
 *************************************************************************************************************************/
 

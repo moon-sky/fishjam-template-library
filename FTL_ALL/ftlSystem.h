@@ -146,9 +146,35 @@ namespace FTL
 		FTLINLINE BOOL Init();
 	};
 
+	struct VERSIONINFO
+	{
+		VERSIONINFO()
+		{
+			dwVer0 = 0;
+			dwVer1 = 0;
+			dwVer2 = 0;
+			dwVer3 = 0;
+		}
+		bool operator < (const VERSIONINFO & other) const
+		{
+			COMPARE_MEM_LESS(dwVer0, other);
+			COMPARE_MEM_LESS(dwVer1, other);
+			COMPARE_MEM_LESS(dwVer2, other);
+			COMPARE_MEM_LESS(dwVer3, other);
+			return false;
+		}
+		DWORD dwVer0;
+		DWORD dwVer1;
+		DWORD dwVer2;
+		DWORD dwVer3;
+	};
+
     FTLEXPORT class CFSystemUtil
     {
     public:
+		//从版本信息字符串里获取对应的版本号
+		FTLINLINE static BOOL GetVersionFromString(VERSIONINFO& ver, LPCTSTR pszVersion);
+
 		//获取当前登录的用户名
 		FTLINLINE static BOOL GetCurrentUserID( LPTSTR pszUserName, int iSize );
 

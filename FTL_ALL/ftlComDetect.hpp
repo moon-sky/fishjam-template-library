@@ -195,8 +195,9 @@ namespace FTL
             for (unsigned int infoIndex = 0; infoIndex < infoCount; ++infoIndex)
             {
                 ATL::CComPtr<ITypeInfo>  spTypeInfo;
-				//比如 VSIP 中的 IVsHierarchy 会返回 Library not registered
-                COM_VERIFY_EXCEPT1(pDisp->GetTypeInfo(infoIndex, LOCALE_SYSTEM_DEFAULT, &spTypeInfo), TYPE_E_LIBNOTREGISTERED);
+                COM_VERIFY_EXCEPT2(pDisp->GetTypeInfo(infoIndex, LOCALE_SYSTEM_DEFAULT, &spTypeInfo), 
+					TYPE_E_LIBNOTREGISTERED,	//VSIP 中的 IVsHierarchy 会返回 Library not registered
+					TYPE_E_CANTLOADLIBRARY);	//CAxWindow.QueryHost 出来的接口(只有事件处理接口，没有对应的类型库)会返回  Error loading type library/DLL
 				if (SUCCEEDED(hr) && spTypeInfo)
 				{
 					//COM_DETECT_INTERFACE_FROM_LIST(spTypeInfo);
@@ -502,6 +503,20 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(AsyncIUnknown)
             DETECT_INTERFACE_ENTRY(IClassFactory) //客户端不知道COM组件具体的类名，组件对应的类工厂知道，因此可以创建
             //ATL中每一个组件都有一个类工厂(this指针不同)
+
+            //Atliface.h
+            DETECT_INTERFACE_ENTRY(IRegistrarBase)
+            DETECT_INTERFACE_ENTRY(IRegistrar)
+            DETECT_INTERFACE_ENTRY(IDocHostUIHandlerDispatch)
+            DETECT_INTERFACE_ENTRY(IAxWinHostWindow)
+            DETECT_INTERFACE_ENTRY(IAxWinHostWindowLic)
+			//可以控制是否显示内部控件(如WebBrowser)是否显示右键菜单(ContextMenu)等 
+			//  -- AxWindow.QueryHost(IID_IAxWinAmbientDispatch, (LPVOID*) &spHost); spHost->put_AllowContextMenu(VARIANT_FALSE);
+            DETECT_INTERFACE_ENTRY(IAxWinAmbientDispatch)
+            DETECT_INTERFACE_ENTRY(IAxWinAmbientDispatchEx)
+            DETECT_INTERFACE_ENTRY(IInternalConnection)
+            DETECT_INTERFACE_ENTRY(IAccessibleProxy)
+            DETECT_INTERFACE_ENTRY(IAccessibleServer)
 
             //ComCat.h
             DETECT_INTERFACE_ENTRY(IEnumGUID)
@@ -1827,8 +1842,13 @@ namespace FTL
 
 			//CLSID_TaskbarList
             DETECT_INTERFACE_ENTRY_IID(ITaskbarList, IID_ITaskbarList)      //任务栏的Item管理(可以隐藏任务栏按钮，重新显示窗体后又会出现，为什么？)
-            DETECT_INTERFACE_ENTRY_IID(ITaskbarList2, IID_ITaskbarList2)    //了可以设置全屏标志 -- 有什么用？
-            DETECT_INTERFACE_ENTRY_IID(IThumbnailCapture, IID_IThumbnailCapture)
+            DETECT_INTERFACE_ENTRY_IID(ITaskbarList2, IID_ITaskbarList2)    //可以设置全屏标志 -- 有什么用？
+			
+			//Win7以后的系统中，可以在任务栏上增加进度条，控制按钮等 -- 例子:TaskbarThumbnailToolbar
+			DETECT_INTERFACE_ENTRY(ITaskbarList3)
+			DETECT_INTERFACE_ENTRY(ITaskbarList4)
+
+			DETECT_INTERFACE_ENTRY_IID(IThumbnailCapture, IID_IThumbnailCapture)
             DETECT_INTERFACE_ENTRY_IID(IURLSearchHook, IID_IURLSearchHook)
             DETECT_INTERFACE_ENTRY_IID(IURLSearchHook2, IID_IURLSearchHook2)
             DETECT_INTERFACE_ENTRY_IID(IUserNotification, IID_IUserNotification)

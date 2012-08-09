@@ -1,4 +1,50 @@
+TODO: 发邮件 COMStudy 比较
+
+ATL 中对文件映射的封装：CAtlFileMapping
+  #import <shdocvw.dll> exclude("OLECMDID", "OLECMDF") rename("FindText", "shFindText")
+  
+
+  
+ATL 中调试宏 -- _ATL_DEBUG_INTERFACES ， 作用？
+
+调试重载 Invoke 时: 
+	//注意：pdispparams->rgvarg 的顺序和函数签名中参数的顺序是反着的，因此需要从后向前输出信息
+	FTL::CFIExplorerDispidInfo IExplorerDispId(dispidMember);
+	FTLTRACE(TEXT("%s:\n"), IExplorerDispId.GetConvertedInfo());
+	for(UINT index = 0; index < pdispparams->cArgs ; index++) 
+	{ 
+		FTL::CFVariantInfo varInfo(pdispparams->rgvarg[pdispparams->cArgs - index - 1]);
+		FTLTRACE(TEXT("\t %d, %s\n"), (index + 1), varInfo.GetConvertedInfo());
+	}
+    return __super::Invoke(xxxx);
+
+浏览网页时的顺序：
+  DISPID_ONVISIBLE(OnVisible)
+  DISPID_BEFORENAVIGATE2(BeforeNavigate2)
+  DISPID_DOWNLOADBEGIN(DownloadBegin)
+  DISPID_COMMANDSTATECHANGE(CommandStateChange) -- 指示 Toolbar/Forward/Back 等按钮的状态改变
+  DISPID_STATUSTEXTCHANGE(StatusTextChange) -- 状态条文本改变,如"检测代理、连接信息"等
+  DISPID_PROGRESSCHANGE(ProgressChange) -- 进度改变
+  DISPID_FILEDOWNLOAD(FileDownload) -- 指示开始下载文件，可以通过 bCancel 取消
+  DISPID_DOWNLOADCOMPLETE(DownloadComplete) -- 浏览完成时（或挂起，失败时) -- 这个发生了两次，和 NavigateComplete2 的关系和顺序？
+  DISPID_SETSECURELOCKICON(SetSecureLockIcon) -- 加密等级变化
+  DISPID_TITLECHANGE(TitleChange) -- 标题改变
+  DISPID_NAVIGATECOMPLETE2(NavigateComplete2) -- 导航结束(为什么没有发生 NavigateComplete?)
+  DISPID_PROGRESSCHANGE(ProgressChange) -- 进度改变(ProgressMax/ProgressMax ，然后 -1/ProgressMax 表示完全结束 )
+  DISPID_DOCUMENTCOMPLETE(DocumentComplete) -- 文档完全加载(一般在这个事件中进行后续处理), 
+         Url 是规范化后的URL，也可能经过服务器重定位后的，在没有frame的页面中，加载完成后只触发一次，有多个frame时，每个frame均触发；
+         highest frame 触发最终的事件，此时 pDisp 指向 highest frame。
+  
+客户区拖动：
+  1.OnLButtonDown 中，SendMessage ( m_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0 ); return 0;
+
+
 WTL 中处理Web:
+方法1:
+CAxWindow::CreateControlEx("http://www.xxx", NULL, NULL, NULL, DIID_DWebBrowserEvents2, spUnknown) -- 即可创建 WebBrowser，且处理相关事件
+           可通过 CAxWindow::QueryControl 获取对应的控件
+                  CAxWindow::QueryHost 获取控件宿主(IAxWinAmbientDispatch)
+方法2:
 class CBrowserView : public CWindowImpl<CBrowserView, CAxWindow>, 
                      public IDispEventSimpleImpl<标识ID, CBrowserView, &DIID_DWebBrowserEvents2>
 {
@@ -36,6 +82,9 @@ IDispEventSimpleImpl<标识ID, MyClassName, &DIID_DWebBrowserEvents2> -- ATL中连接
 		SINK_ENTRY(标识ID, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete)
 	END_SINK_MAP()
 
+// OnDocumentComplete 签名(签名可以通过 OleView 查看对应的 tlb 等文件
+void __stdcall OnDocumentComplete ( IDispatch* pDispatch, VARIANT* /*pvUrl*/) ;
+
 
 //IDispEventSimpleImpl 子类重载的方法，可以指定调用方式，默认是通过 AtlGetFuncInfoFromId 实现该功能
 virtual HRESULT GetFuncInfoFromId ( const IID&, DISPID, LCID, _ATL_FUNC_INFO& )
@@ -64,12 +113,9 @@ virtual HRESULT GetFuncInfoFromId ( const IID&, DISPID, LCID, _ATL_FUNC_INFO& )
 	}
 	return hr ;
 }
-void __stdcall OnDocumentComplete ( IDispatch* pDispatch, VARIANT* /*pvUrl*/) ;
 
 atlcom.h 的 CComTypeInfoHolder::GetTI 中 "Module LIBID not initialized" 断言的原因：？？
 AtlGetObjectSourceInterface(XXXXX) <== 获得默认类型信息，并存起来
-
-CAxWindow::CreateControlEx("http://www.xxx", NULL, NULL, xxx) -- 即可创建 WebBrowser
 
 GenericHTTPClient
 
@@ -170,6 +216,15 @@ Firefox
   2.扩展（extensions）-- 修改或者增强Firefox本身的功能而提供的一种打包格式,通常由包含功能代码的js脚本、包含界面的xul
     文件以及包含皮肤的css文件和各种图像文件组成。扩展名xpi的zip压缩包。
 
+https://developer.mozilla.org/en-US/docs/Code_snippets
+XPCOM(Cross Platform Component Object Module) -- 跨平台组件对象模型，仿MS 的 COM实现
+调试(使用helloworld测试通过, http://kb.mozillazine.org/Getting_started_with_extension_development , 搜索 "download" ):
+  1.安装的扩展的路径: %USERPROFILE%\Application Data\Mozilla\Firefox\Profiles\<profile_id>.default\extensions\
+    Win7 -- C:\Users\user\AppData\Roaming\Mozilla\Firefox\Profiles\XXXX\extensions\
+  2.创建一个新的文本文件，用扩展ID做为文件名来保存文件，没有文件扩展名。如果使用ID是GUID值，那么文件名也必须包含‘{}’。
+  3.文本文件中输入开发目录的全路径(如：c:\extensions\my_extension\)，路径必须以‘\’结尾并且之后不能有空格。
+  4.启动Firefox，Firefox将检测到文本链接扩展目录，并安装扩展。这种方法的优点就是修改了代码后，重启Firefox可以立即生效，不必打包压缩XPI文件。
+  
 扩展(产品的策略：只支持最近的3个版本) -- firefox extension tutorial
   1.早期的基于JavaScript和XUL的方式： FF->JS->XpCom->C++ Dll
     JavaScript -- FF内核调用编译性程序的粘和剂，完成业务逻辑，通过它来调用编译性的程序（比如c++的动态库，API）
@@ -178,10 +233,31 @@ Firefox
   2.FF4 以后 add on builder 和 add on sdk  的方式, 就是XPCOM?
     XPCOM -- Mozilla构建的跨平台组件结构，原理类似于微软的Com组件。编译性的，提供主要的逻辑处理。
              目前Mozilla 已不想支持XPCom， 从firefox4.0开始，每个版本的firefox 有一套自己的SDK。
-    
+             XPCOM 并不直接支持 C++ 的异常处理. 在 XPCOM 中, 所有的异常必须在组件内部处理, 而不能跨越接口的边界，返回 nsresult(类似 HRESULT)
+             契约 ID(类似ProgID?) -- 用于访问组件的可读(to humen)的字符串
+             XPCOM 的 组件管理器 ?
+       refp = do_CreateInstance( "@mozilla.org/accessibleRetrieval;1", &rv);
+       智能指针：nsCOMPtr、nsAutoPtr、nsAutoArrayPtr、nsRefPtr
+       服务：nsCOMPtr<nsIPrefService> prefService = do_GetService (NS_PREFSERVICE_CONTRACTID);
+         写跨平台组件所需要的其他服务
+           跨平台文件抽象：向 XPCOM 开发人员提供同一而强大的文件访问功能.
+           目录服务, 提供应用和特定系统定位信息.
+           内存管理, 保证所有对象使用同样的内存分配器. 
+           事件通知机制, 允许传递简单消息.
+       nsIServiceManager -- 
+       编译 idl 的工具是 xpidl.exe,
+         -I 目录 包含系统或第三方idl的目录
+         -m typelib 生成以 .xpt 为后缀的类型库，类型库可以通过XPConnect向类似JavaScript的语言提供组件访问的Wrapper
+         -m header 生成头文件
+            
+    Gecko -- 一个开源的, 遵循标准的, 嵌入式 web 浏览器和 工具包.
     Gecko SDK(XulRunner SDK)9.0.1 -- https://developer.mozilla.org/en/Gecko_SDK
                                 https://developer.mozilla.org/en/XPCOM/XPCOM_changes_in_Gecko_2.0
                                 https://developer.mozilla.org/en/How_to_build_a_binary_XPCOM_component_using_Visual_Studio
+
+      nsISupports -- 基础接口，类似 IUnknown
+     
+      
     Python -- 
        从 idl 生成头文件 -- header.py -I  yourGecokSDKfolder \idl -o yourheader.h youridl.idl".
        从 idl 生成 typelib(.xpt) -- typelib.py -I  yourGecokSDKfolder \idl -o yourtypelib.xpt youridl.idl

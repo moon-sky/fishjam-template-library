@@ -260,16 +260,20 @@ namespace FTL
 		{
 			m_bInited = TRUE;
 
-			RWM_MSH_MOUSEWHEEL	= RegisterWindowMessage(MSH_MOUSEWHEEL);
+			RWM_ATL_CREATE_OBJECT = RegisterWindowMessage(TEXT("ATL_CREATE_OBJECT"));
+			RWM_ATLGETCONTROL	= RegisterWindowMessage(TEXT("WM_ATLGETCONTROL"));
+			RWM_ATLGETHOST		= RegisterWindowMessage(TEXT("WM_ATLGETHOST"));
 			RWM_COLOROKSTRING	= RegisterWindowMessage(COLOROKSTRING);
+			RWM_COMMDLG_FIND	= RegisterWindowMessage(TEXT("COMMDLG_FIND"));
 			RWM_FILEOKSTRING	= RegisterWindowMessage(FILEOKSTRING);
 			RWM_FINDMSGSTRING	= RegisterWindowMessage(FINDMSGSTRING);
-			RWM_HELPMSGSTRING	= RegisterWindowMessage(HELPMSGSTRING);
 			RWM_LBSELCHSTRING	= RegisterWindowMessage(LBSELCHSTRING);
+			RWM_MSH_MOUSEWHEEL	= RegisterWindowMessage(MSH_MOUSEWHEEL);
+			RWM_HELPMSGSTRING	= RegisterWindowMessage(HELPMSGSTRING);
+			RWM_HTML_GETOBJECT	= RegisterWindowMessage(TEXT("WM_HTML_GETOBJECT"));
 			RWM_SETRGBSTRING	= RegisterWindowMessage(SETRGBSTRING);
 			RWM_SHAREVISTRING	= RegisterWindowMessage(SHAREVISTRING);
-			RWM_COMMDLG_FIND	= RegisterWindowMessage(TEXT("COMMDLG_FIND"));
-			RWM_HTML_GETOBJECT	= RegisterWindowMessage(TEXT("WM_HTML_GETOBJECT"));
+			RWM_TASKBARBUTTONCREATED	= RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
 		}
 		return m_bInited;
 	}
@@ -280,16 +284,21 @@ namespace FTL
 
 	LPCTSTR CFRegistedMessageInfo::GetMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_MSH_MOUSEWHEEL);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_ATL_CREATE_OBJECT);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_ATLGETCONTROL);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_ATLGETHOST);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_COLOROKSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_COMMDLG_FIND);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_FILEOKSTRING);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_FINDMSGSTRING);
-		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HELPMSGSTRING);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_LBSELCHSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_MSH_MOUSEWHEEL);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HELPMSGSTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HTML_GETOBJECT);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_SETRGBSTRING);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_SHAREVISTRING);
-		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_COMMDLG_FIND);
-		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HTML_GETOBJECT);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_TASKBARBUTTONCREATED);
+
 		//HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, XXXXXXXX);
 
 		if(NULL == m_bufInfo[0])
@@ -687,6 +696,10 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_RESERVED_037C, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_RESERVED_037D, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_RESERVED_037E, CFDefaultMsgInfo);
+                //将消息转发给其他窗体先进行处理 -- 典型用法：PreTranslateMessage 中 将鼠标、键盘消息给子窗体优先处理
+                //BOOL bRet = FALSE; 
+                //if(pMsg->hwnd == m_hWnd || IsChild(pMsg->hwnd))
+                //  {	bRet = (BOOL)SendMessage(WM_FORWARDMSG, 0, (LPARAM)pMsg);} return bRet;
                 GET_MESSAGE_INFO_ENTRY(WM_FORWARDMSG, CFDefaultMsgInfo);
 #  else
                 GET_MESSAGE_INFO_ENTRY(WM_AFXFIRST, CFDefaultMsgInfo);
@@ -955,8 +968,6 @@ namespace FTL
 				GET_MESSAGE_INFO_ENTRY(LVM_SETTOOLTIPS, CFDefaultMsgInfo);
 				GET_MESSAGE_INFO_ENTRY(LVM_GETTOOLTIPS, CFDefaultMsgInfo);
 				GET_MESSAGE_INFO_ENTRY(LVM_SORTITEMSEX, CFDefaultMsgInfo);
-				//GET_MESSAGE_INFO_ENTRY(XXXXXXXXXXXX, CFDefaultMsgInfo);
-				//GET_MESSAGE_INFO_ENTRY(XXXXXXXXXXXX, CFDefaultMsgInfo);
 				//GET_MESSAGE_INFO_ENTRY(XXXXXXXXXXXX, CFDefaultMsgInfo);
 
 				//Combo Box messages
@@ -1644,25 +1655,27 @@ namespace FTL
             return TRUE;
         }
 
-        DWORD   dwCurID   =   ::GetCurrentThreadId();   
-        DWORD   dwForeID   =   ::GetWindowThreadProcessId(hForegdWnd,NULL);
-        if (dwCurID != dwForeID)
+        DWORD   dwThisThreadID   =   ::GetWindowThreadProcessId(hWnd, NULL);
+        DWORD   dwForeThreadID   =   ::GetWindowThreadProcessId(hForegdWnd,NULL);
+        if (dwThisThreadID != dwForeThreadID)
         {
-            API_VERIFY(::AttachThreadInput(dwCurID,dwForeID,TRUE));
+            API_VERIFY(::AttachThreadInput(dwThisThreadID,dwForeThreadID,TRUE));
 
             //备份以前的值，然后设置为0
             DWORD sp_time = 0;
             SystemParametersInfo( SPI_GETFOREGROUNDLOCKTIMEOUT,0,&sp_time,0);
-            SystemParametersInfo( SPI_SETFOREGROUNDLOCKTIMEOUT,0,(LPVOID)0,0);
+            SystemParametersInfo( SPI_SETFOREGROUNDLOCKTIMEOUT,0,(LPVOID)NULL, SPIF_SENDCHANGE); //0);
 
+			API_VERIFY(::BringWindowToTop( hWnd ));
             API_VERIFY(::SetForegroundWindow(hWnd));
 
-            SystemParametersInfo( SPI_SETFOREGROUNDLOCKTIMEOUT,0,&sp_time,0);
-            API_VERIFY(::AttachThreadInput(dwCurID,dwForeID,FALSE));
+            SystemParametersInfo( SPI_SETFOREGROUNDLOCKTIMEOUT,0,&sp_time, SPIF_SENDCHANGE); //0);
+            API_VERIFY(::AttachThreadInput(dwThisThreadID,dwForeThreadID,FALSE));
             //ShowWindow(hWnd,...)?
         }
         else
         {
+			API_VERIFY(::BringWindowToTop( hWnd ));
             API_VERIFY(::SetForegroundWindow(hWnd));
             //ShowWindow(hWnd,...)?
         }
@@ -1677,6 +1690,14 @@ namespace FTL
 //        {
 //            API_VERIFY(ShowWindow(hWnd,SW_SHOW));
 //        }
+
+		//是否需要这些代码
+#if 0
+		if ( TRUE ==  ::IsIconic ( hWnd ) )
+		{
+			::SendMessage ( hWnd, WM_SYSCOMMAND, SC_RESTORE, 0 );
+		}
+#endif 
 
         return bRet;
     }
@@ -1789,7 +1810,8 @@ namespace FTL
         }
     }
 
-    LPCTSTR CFWinUtil::GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc/* = NULL*/)
+    LPCTSTR CFWinUtil::GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, 
+		TranslateWndClassProc pTransProc/* = g_pTranslateWndClassProc*/)
     {
 		UNREFERENCED_PARAMETER(pTransProc);
 
@@ -2135,11 +2157,12 @@ namespace FTL
 #endif //_WIN32_WINNT >= 0x0600
         }
 
-        //FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Notify Code, %d\n"), nCode);
+        FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Notify Code, %d\n"), nCode);
         return TEXT("Unknown");
     }
 
-    LPCTSTR CFWinUtil::GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, TranslateWndClassProc pTransProc/* = NULL*/)
+    LPCTSTR CFWinUtil::GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, 
+		TranslateWndClassProc pTransProc/* = g_pTranslateWndClassProc*/)
     {
 		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pszCommandNotify, NULL);
 		BOOL bRet = FALSE;
@@ -2154,6 +2177,7 @@ namespace FTL
 			API_VERIFY((*pTransProc)(szClassName, szNewClassName, _countof(szNewClassName)));
 			if (bRet)
 			{
+				FTLTRACEEX(FTL::tlInfo, TEXT("Translate Window Class Name From %s to %s\n"), szClassName, szNewClassName);
 				StringCchCopy(szClassName, _countof(szClassName), szNewClassName);
 			}
 		}

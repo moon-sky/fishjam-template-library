@@ -192,48 +192,70 @@ namespace FTL
 		USES_CONVERSION;
         //有 V_BSTR 等宏辅助操作, V_VT 获取Variant的类型
 		VARTYPE varType = V_VT(&m_Info);
+		VARTYPE typeMask = (varType & VT_ILLEGAL) & (~VT_TYPEMASK);
 
+		BOOL bCheckType = TRUE;
 		if (
-			(VT_ARRAY == (VT_ARRAY & varType ))||    //ATL::CComSafeArray
-			(VT_VECTOR == (VT_VECTOR & varType))||
-			(VT_BYREF == (VT_BYREF & varType))
+			(VT_ARRAY == (VT_ARRAY & typeMask ))||    //ATL::CComSafeArray
+			(VT_VECTOR == (VT_VECTOR & typeMask))||
+			(VT_BYREF == (VT_BYREF & typeMask))
 			)
 		{
-			if (VT_ARRAY == (VT_ARRAY & varType))
+			if (VT_ARRAY == (VT_ARRAY & typeMask))
 			{
-				if (NULL != V_ARRAY(&m_Info) && VT_BSTR == V_VT(&m_Info))
-				{
-					ATL::CComSafeArray<VARIANT> varArray(V_ARRAY(&m_Info));
-					LONG nLowerBound = varArray.GetLowerBound();
-					LONG nUpperBound = varArray.GetUpperBound();
-					formaterValue.AppendFormat(TEXT("[%d-%d]"), nLowerBound, nUpperBound);
+				FTLASSERT(FALSE);  //need check
 
-					for (LONG nIndex = nLowerBound; nIndex < nUpperBound; ++nIndex)
+				if (NULL != V_ARRAY(&m_Info))
+				{
+					//是否能通过模板方式打印内容?
+					if (VT_BSTR == V_VT(&m_Info))
 					{
-						VARIANT& varItem = varArray.GetAt(nIndex);
-						if (V_VT(&varItem) == VT_BSTR)
+						ATL::CComSafeArray<VARIANT> varArray(V_ARRAY(&m_Info));
+						LONG nLowerBound = varArray.GetLowerBound();
+						LONG nUpperBound = varArray.GetUpperBound();
+						formaterValue.AppendFormat(TEXT("[%d-%d]"), nLowerBound, nUpperBound);
+						bCheckType = FALSE;
+
+						for (LONG nIndex = nLowerBound; nIndex < nUpperBound; ++nIndex)
 						{
-							formaterValue.AppendFormat(TEXT("%s,"), COLE2T(V_BSTR(&varItem)));
+							VARIANT& varItem = varArray.GetAt(nIndex);
+							if (V_VT(&varItem) == VT_BSTR)
+							{
+								formaterValue.AppendFormat(TEXT("%s,"), COLE2T(V_BSTR(&varItem)));
+							}
+							else
+							{
+								FTLASSERT(!TEXT("NOT BSTR"));
+							}
 						}
-						else
-						{
-							FTLASSERT(!TEXT("NOT BSTR"));
-						}
+					}
+					else
+					{
+						FTLASSERT(!TEXT("NOT BSTR"));
 					}
 				}
 				else
 				{
-					formaterValue.Format(TEXT("NULL BSTR ARRAY"));
+					formaterValue.Format(TEXT("NULL ARRAY"));
 				}
+			}
+			else if(VT_BYREF == (VT_BYREF & varType))
+			{
+				//formaterValue.Format(TEXT("%s"), VARIANT_FALSE == *V_BOOLREF(&m_Info) ? TEXT("FALSE") : TEXT("TRUE") );
 			}
 			else
 			{
-				FTLASSERT(!TEXT("VT_VECTOR OR VT_BYREF"));
+				FTLASSERT(!TEXT("VT_VECTOR"));
 			}
 		}
-		else
+		
+		if (bCheckType)
 		{
 			varType &= VT_TYPEMASK;  //Get Type
+			if (varType != VT_BOOL && varType != VT_VARIANT)
+			{
+				FTLASSERT(typeMask == 0); //目前只处理了这些 REF，通过这个宏判断是否有遗漏的
+			}
 
 			switch(varType)
 			{
@@ -279,16 +301,35 @@ namespace FTL
 					break;
 				}
 			case VT_BOOL:
-				formaterValue.Format(TEXT("%s"), VARIANT_FALSE == V_BOOL(&m_Info) ? TEXT("FALSE") : TEXT("TRUE") );
+				if (VT_BYREF == typeMask)
+				{
+					formaterValue.Format(TEXT("%s"), VARIANT_FALSE == *(V_BOOLREF(&m_Info)) ? TEXT("FALSE") : TEXT("TRUE") );
+				}
+				else
+				{
+					FTLASSERT(0 == typeMask);
+					formaterValue.Format(TEXT("%s"), VARIANT_FALSE == V_BOOL(&m_Info) ? TEXT("FALSE") : TEXT("TRUE") );
+				}
+				
 				break;
 			case VT_VARIANT:
+				{
+					FTLASSERT(VT_BYREF == typeMask);
+					CFVariantInfo variantRef(*V_VARIANTREF(&m_Info));
+					formaterValue.Format(TEXT("%s"), variantRef.GetConvertedInfo());
+				}
+				break;
 			case VT_DECIMAL:
 				FTLASSERT(FALSE);
+				break;
+			case VT_UI1:
+				formaterValue.Format(TEXT("%c"), V_UI1(&m_Info));
 				break;
 			case VT_UI4:
 				formaterValue.Format(TEXT("%d"), V_UI4(&m_Info));
 				break;
 			default:
+				FTLTRACEEX(tlWarning, TEXT("Unknown VarType %d\n"), varType);
 				formaterValue.Format(TEXT("WARNING,TODO: %lld"), V_I8(&m_Info));
 				//FTLASSERT(FALSE);
 				break;
@@ -435,6 +476,7 @@ namespace FTL
                 //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWREGISTERED);
                 //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWREVOKED);
             default:
+				FTLTRACEEX(tlWarning, TEXT("CFIExplorerDispidInfo Unknown Id: %d(0x%x)\n"), m_Info, m_Info);
                 StringCchPrintf(m_bufInfo,_countof(m_bufInfo),TEXT("Unknown Id:%d"),m_Info);
                 break;
             }

@@ -39,7 +39,8 @@
 *     以下注册表进行控制？：HKLM\SYSTEM\CurrentControlSet\services\luafv
 *   SFP -- 系统文件保护, Win2K 以前的文件保护机制
 *   UAC(User Account Control) -- 用户帐户控制， 让管理员帐户自动获得一个标准用户的访问令牌，以减少Windows Vista系统的受攻击面
-*   UIPI(User Interface Privilege Isolation) -- 用户界面特权隔离，完整性级别低的进程，不能向完整性级别高的进程发送Window消息。
+*   UIPI(User Interface Privilege Isolation) -- 用户界面特权隔离，完整性级别低(lower integrity)的进程，不能向完整性级别高的进程发送Window消息。
+*     默认情况下，所有在 WM_USER 以上的消息都会被屏蔽，可以通过 ChangeWindowMessageFilter(WM_xxx, MSGFLT_ADD) 允许从低完整性进程处接受消息
 *   WFP -- Windows文件保护, Win2K时引入，只保护文件
 *   WRP -- Windows资源保护，对关键文件、文件夹和注册表值进行保护
 *

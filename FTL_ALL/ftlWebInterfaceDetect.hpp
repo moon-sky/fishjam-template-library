@@ -71,6 +71,13 @@ namespace FTL
 			CComQIPtr<IHTMLDocument2>	spHTMLDocument2(m_pObj);
 			if (spHTMLDocument2)
 			{
+				CComPtr<IHTMLWindow2>	spHTMLWindow;
+				COM_VERIFY(spHTMLDocument2->get_parentWindow(&spHTMLWindow));
+				if (spHTMLWindow)
+				{
+					CFHTMLWindowDumper	htmlWindowDumper(spHTMLWindow, pInfoOutput, m_nIndent);
+				}
+
 				CComPtr<IHTMLElement>	spBodyHtmlElement;
 				COM_VERIFY(spHTMLDocument2->get_body(&spBodyHtmlElement));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("HTMLDocument Body")));
@@ -97,6 +104,54 @@ namespace FTL
 		}
 		return hr;
 	}
+
+	HRESULT CFHTMLWindowDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		//可以QI到()
+		//	等
+		//连接点有：
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("HTMLWindow2")));
+		if (m_pObj)
+		{
+			CComQIPtr<IHTMLWindow2>	spHTMLWindow2(m_pObj);
+			if (spHTMLWindow2)
+			{
+				CComBSTR bstrName;
+				COM_VERIFY(spHTMLWindow2->get_name(&bstrName));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("HTML Window Name"), &bstrName));
+
+
+				CComPtr<IHTMLEventObj>	spHtmlEventObj;
+				COM_VERIFY(spHTMLWindow2->get_event(&spHtmlEventObj));
+				if (spHtmlEventObj)
+				{
+					CFHTMLEventObjDumper htmlEventObjDumper(spHtmlEventObj, pInfoOutput, m_nIndent + 2);
+				}
+			}
+		}
+		return hr;
+
+	}
+
+	HRESULT CFHTMLEventObjDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		//可以QI到()
+		//	等
+		//连接点有：
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("HTMLEventObj")));
+		if (m_pObj)
+		{
+			CComQIPtr<IHTMLEventObj>	spHtmlEventObj(m_pObj);
+			if (spHtmlEventObj)
+			{
+				
+			}
+		}
+		return hr;
+	}
+
 
 	HRESULT CFHTMLStyleDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{

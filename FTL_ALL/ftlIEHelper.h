@@ -13,6 +13,8 @@
 
 
 /********************************************************************************************
+* <iepmapi.h> -- IE Protected Mode API, 其中有 IEIsProtectedModeProcess 等函数的定义(但考虑到 WinXP 等得运行，最好动态加载)
+* 
 * IE 7 的保护模式(Protected Mode) -- 也叫IE低权利(Low Rights)，通过 Process Explorer 查看进程的"安全"属性，可看到有
 *   "Mandatory Label\Low Mandatory Level"的SID(相应的标志位是"Integrity")，这表明IE进程的完整性级别是"Low"。
 *   "Virtualized" 为 Yes
@@ -40,6 +42,11 @@
 *
 ********************************************************************************************/
 
+/********************************************************************************************
+* IWebBrowser2::Navigate 的 PostData 是个 VT_ARRAY 的 Variant，例子 MakeNavigatePosData（未确认）
+*  
+********************************************************************************************/
+
 namespace FTL
 {
     class CFIEUtils
@@ -49,6 +56,45 @@ namespace FTL
 		FTLINLINE static HRESULT GetIEDocumentFromHWnd(HWND hWnd, IHTMLDocument** ppDocument);
 
 		FTLINLINE static BOOL IsProtectedModeProcess();
+
+		FTLINLINE static BOOL MakeNavigatePosData(LPCTSTR pszPostInfo)
+		{
+			if (!pszPostInfo)
+			{
+				return FALSE;
+			}
+			int nSrcLength = lstrlen(pszPostInfo);
+			VARIANT vtPost = {0};
+			::VariantInit(&vtPost);
+
+			LPSAFEARRAY psa = SafeArrayCreateVector ( VT_UI1, 0, nSrcLength );
+			if (psa)
+			{
+				LPSTR pszPostData = NULL;
+				SafeArrayAccessData ( psa, ( void** ) &pszPostData );
+#ifdef _UNICODE
+				USES_CONVERSION;
+				int nLength = WideCharToMultiByte ( CP_ACP, 0, pszPostInfo, 
+					nSrcLength, NULL, 0, NULL, NULL );
+				CopyMemory ( pszPostData, CT2A ( pszPostInfo ), nLength );
+#else
+				CopyMemory ( pszPostData, pszPostInfo, nSrcLength );
+#endif
+				SafeArrayUnaccessData ( psa );
+				V_VT ( &vtPost ) = VT_ARRAY | VT_UI1;
+				V_ARRAY ( &vtPost ) = psa;
+
+				//CFVariantInfo varInfo(vtPost);
+				//FTLTRACE(TEXT("vtPost=%s\n"), varInfo.GetConvertedInfo());
+
+				//使用 vtPost
+				 //pWebBrowser->Navigate ( bsURL, &varFlags, &varTarget, &vtPost, &varHeader );
+
+				VariantClear ( &vtPost );
+				SafeArrayDestroyData ( psa );
+			}
+
+		}
     };
 
 }//namespace FTL
