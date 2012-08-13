@@ -170,6 +170,8 @@
 *   CScrollView 中有 m_totalDev, m_pageDev 等参数
 *   CScrollView 的 SetScrollSize 是逻辑坐标
 *
+* 客户区拖动
+*   1.OnLButtonDown 中，SendMessage ( m_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0 ); return 0;
 *
 * ShowWindow 
 *   SW_HIDE -- 隐藏，失活

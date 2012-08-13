@@ -946,6 +946,7 @@ namespace FTL
 	{
 		BOOL bRet = FALSE;
 
+		//bRet = ::InternetGetCookie(IDS_LOGIN_COOKIE_DOMAIN, NULL, szCookie, &len); 
 		m_hOpen =::InternetOpen(szAgent,	// agent name
 			INTERNET_OPEN_TYPE_PRECONFIG,	// proxy option
 			NULL,   // proxy
@@ -1073,19 +1074,27 @@ namespace FTL
 		}
 
 		// REPLACE HEADER
-		API_VERIFY(::HttpAddRequestHeaders( m_hRequest, __HTTP_ACCEPT, 
-			-1, HTTP_ADDREQ_FLAG_ADD_IF_NEW));
-		if (!bRet)
+		//获取参数列表(比如 Content-Type、Accept、Content-Length、 User-Agent、Connection、Cookie 等)，循环发送出去
+		//while(xxxx)
 		{
-			m_dwError=::GetLastError();
-			return FALSE;
+			API_VERIFY(::HttpAddRequestHeaders( m_hRequest, 
+				strHeader.GetBuffer(), strHeader.GetLength(), //__HTTP_ACCEPT, -1, 
+				HTTP_ADDREQ_FLAG_ADD_IF_NEW));
+			if (!bRet)
+			{
+				m_dwError=::GetLastError();
+				//return FALSE;
+			}
 		}
 
 		// SEND REQUEST
-		API_VERIFY(::HttpSendRequest( m_hRequest,	// handle by returned HttpOpenRequest
+		INTERNET_BUFFERS InternetBufferIn = {0};
+		InternetBufferIn.dwStructSize = sizeof(INTERNET_BUFFERS);
+		InternetBufferIn.Next = NULL;
+		API_VERIFY(::HttpSendRequestEx( m_hRequest,	// handle by returned HttpOpenRequest
 			NULL, // additional HTTP header
 			0, // additional HTTP header length
-			NULL, // additional data in HTTP Post or HTTP Put
+			HSR_INITIATE, // additional data in HTTP Post or HTTP Put
 			0)); // additional data length
 		//if(!bRet)
 		//{
@@ -1093,7 +1102,22 @@ namespace FTL
 		//	return FALSE;
 		//}
 
-		return TRUE;
+		//循环 发送数据
+		while(...)
+		{
+			DWORD dwOutPostBufferLength = 0;
+			bRet = ::InternetWriteFile(m_hRequest, buffToPost.GetCurrentBuffer(), nBufferSize, &dwOutPostBufferLength);
+		}
+
+		bRet = ::HttpEndRequest(m_hRequest, NULL, HSR_INITIATE, 0);
+
+		//获取结果
+		const int RESPONSE_MAX_LENGTH = 1024;
+		char byData[RESPONSE_MAX_LENGTH + 1];
+		DWORD dwReadByte = 0;
+		bRet = ::InternetReadFile(m_hRequest, byData, RESPONSE_MAX_LENGTH, &dwReadByte) ;
+
+		return bRet;
 	}
 #endif
 

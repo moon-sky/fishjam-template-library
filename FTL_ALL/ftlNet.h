@@ -12,6 +12,8 @@
 #include <WinInet.h>
 
 /*************************************************************************************************************************
+* 上传图片和参数：http://hi.baidu.com/xlrtx/blog/item/12c312332d07f8f01a4cff8b.html
+*
 * 网络抓包工具
 *   Wireshark -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
 *************************************************************************************************************************/
@@ -262,6 +264,15 @@
 /*************************************************************************************************************************
 * HTTP(Hypertext Transport Protocol) -- 超文本传输协议, RFC1945定义1.0, RFC2616定义广为使用的 1.1。是无状态的协议。
 *   通常承载于TCP、TLS或SSL(即HTTPS，默认端口443)协议层之上，分为 POST(RFC1867) 和 GET(RFC???)
+*
+*  协议由三部分组成：协议头，具体内容以及协议尾， 必须是ASCII格式？
+*    协议类型：
+*    使用多个表单项（同时传?）传递数据(HTTP POST-MultiPartFormData)
+*    1. 使用 "Content-Type: multipart/form-data; boundary=--XXXXXXXXXXXX" 声明使用多表单分，且指定分割符号
+*       (可自定义，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
+*    2. 多个部分内容，有 Content-Disposition 和 Content-Type， 如(参数信息、二进制原始信息)，
+*       每一部分用 --{boundary} 分开(注意前面多两个 "--" )
+*    3. 使用 --{boundary}-- 表示结束(注意前后各多两个 "--" )
 *
 * HTML VERBS(字符串)
 *   POST

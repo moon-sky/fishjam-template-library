@@ -13,8 +13,15 @@
 
 
 /********************************************************************************************
+* Win8 -- 两种不同的用户接口，需要分别运行不同类型的应用程序（如IE有对应的 Metro style 和 Desktop style)
+*   1.经典 -- 桌面应用程序
+*   2.Metro -- 专门的 Metro 程序或 Metro-style enabled desktop browsers (MEDB).Metro模式下的IE只有Flash插件，不能安装或运行其他的任何插件?
+*     WinRT -- ARM平台上的Window8，只能运行纯粹的Metro程序，不能使用Win32API，需要使用专门的 WinRT API?
+*
 * <iepmapi.h> -- IE Protected Mode API, 其中有 IEIsProtectedModeProcess 等函数的定义(但考虑到 WinXP 等得运行，最好动态加载)
-* 
+* EPM(Enhanced Protected Mode) -- 启用后很多插件都无法正确运行。Metro类型的始终运行于EPM, Desktop类型的可选(Internet Options->Advanced),
+*   Web网站的开发者在 Http Header 中通过"X-UA-Compatible:requiresActiveX=true" 选项要求plugin(即要求经典模式?)
+
 * IE 7 的保护模式(Protected Mode) -- 也叫IE低权利(Low Rights)，通过 Process Explorer 查看进程的"安全"属性，可看到有
 *   "Mandatory Label\Low Mandatory Level"的SID(相应的标志位是"Integrity")，这表明IE进程的完整性级别是"Low"。
 *   "Virtualized" 为 Yes
@@ -31,7 +38,7 @@
 *     2.SHGetSpecialFolderPath(NULL, szSavePath, CSIDL_LOCAL_APPDATA , TRUE); //取得 %UserProfile%\AppData\Local
 *       CString strFilePath(szSavePath); 
 *       strFilePath += TEXT("\\Temp\\Low\\nCapture\\IEToobar\\");  -- 之后的访问都在具有 Low 完整性等级的目录下
-*   
+* 
 * 代理进程(特权分离思想) -- 把传统的IE进程一分为三，分别负责不同安全等级的任务.
 *   IE进程本身 -- 完成最常用的、无需特权的网页浏览任务
 *   IeUser.exe(用户级代理进程) -- 完成中等特权的任务(例如保存图片等)
@@ -45,6 +52,25 @@
 /********************************************************************************************
 * IWebBrowser2::Navigate 的 PostData 是个 VT_ARRAY 的 Variant，例子 MakeNavigatePosData（未确认）
 *  
+********************************************************************************************/
+
+/********************************************************************************************
+* 浏览网页时的事件顺序(DISPID_XXX)
+*   DISPID_ONVISIBLE(OnVisible)
+*   DISPID_BEFORENAVIGATE2(BeforeNavigate2)
+*   DISPID_DOWNLOADBEGIN(DownloadBegin)
+*   DISPID_COMMANDSTATECHANGE(CommandStateChange) -- 指示 Toolbar/Forward/Back 等按钮的状态改变
+*   DISPID_STATUSTEXTCHANGE(StatusTextChange) -- 状态条文本改变,如"检测代理、连接信息"等
+*   DISPID_PROGRESSCHANGE(ProgressChange) -- 进度改变
+*   DISPID_FILEDOWNLOAD(FileDownload) -- 指示开始下载文件，可以通过 bCancel 取消
+*   DISPID_DOWNLOADCOMPLETE(DownloadComplete) -- 浏览完成时（或挂起，失败时) -- 这个发生了两次，和 NavigateComplete2 的关系和顺序？
+*   DISPID_SETSECURELOCKICON(SetSecureLockIcon) -- 加密等级变化
+*   DISPID_TITLECHANGE(TitleChange) -- 标题改变
+*   DISPID_NAVIGATECOMPLETE2(NavigateComplete2) -- 导航结束(为什么没有发生 NavigateComplete?)
+*   DISPID_PROGRESSCHANGE(ProgressChange) -- 进度改变(ProgressMax/ProgressMax ，然后 -1/ProgressMax 表示完全结束 )
+*   DISPID_DOCUMENTCOMPLETE(DocumentComplete) -- 文档完全加载(一般在这个事件中进行后续处理), 
+*     Url 是规范化后的URL，也可能经过服务器重定位后的，在没有frame的页面中，加载完成后只触发一次，有多个frame时，每个frame均触发；
+*     highest frame 触发最终的事件，此时 pDisp 指向 highest frame。
 ********************************************************************************************/
 
 namespace FTL
