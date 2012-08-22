@@ -488,7 +488,6 @@ namespace FTL
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFConvertInfoT);
     public:
-		typedef TBase	baseType;
         FTLINLINE explicit CFConvertInfoT(INFO_TYPE info);
         FTLINLINE virtual ~CFConvertInfoT();
         FTLINLINE LPCTSTR GetConvertedInfo();

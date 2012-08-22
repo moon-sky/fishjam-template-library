@@ -31,9 +31,10 @@
 *   Skin: 定义程序外观的CSS和图像档
 *   Locale: 定义界面字串的DTD档（为了软件本地化）
 *   
-* 安全性
-*   1.基于安全性的原则，很多需要特权的XPCOM物件在无特权的XUL文件上都不能使用。唯有使用数码签署的脚本才享有此种特权 -- 签名怎么做？
-*   2.不能加载远端的XUL、DTD和RDF文件，一般是通过 chrome:// 的方式使用安装包或系统中的
+* Overlay -- 可以将多个XUL 文档联合起来，并当做一个单独的XUL文档来处理。FF中用来对各种功能进行模块化并实现了扩展。
+*   可设置<xul-overlay>处理指令(类似xml-stylesheet?)来主动要求合并其他的XUL文件?
+*   如 <?xul-overlay href="overlayDocument.xul"?>， 对应的"overlayDocument.xul"文档需要用 <overlay>做为根元素
+*   
 * 
 * 工具
 *   xulrunner.exe -- 
@@ -41,6 +42,14 @@
 * XUL(https://developer.mozilla.org/En/XUL)
 *   在线的XUL编辑器(不过实测发现不再可用？) -- http://ted.mielczarek.org/code/mozilla/xuledit/xuledit.xul
 *                                              http://www.hevanet.com/acorbin/xul/top.xul
+*
+* XUL 可以内嵌JS脚本(但最好还是写在独立的外部文件中)，需要将代码括在 CDATA 段中
+*   (可以避免由读取&加其他字符开头的实体引用时出现错误)，如：
+*   <script type="application/javascript"><![CDATA[
+*     var nodes = gBrowser.mTabContainer.childNodes;
+*     for (var i = 0; i < nodes.length; i++)
+*     alert(nodes[i].label);
+*   ]]></script>
 *******************************************************************************************************/
 
 /*******************************************************************************************************
@@ -50,6 +59,7 @@
 *      align属性定义为与orient属性相垂直的方向，而pack属性与orient属性的操作方向一致。组合起来即可在9方位上进行布局。
 *   [class] -- 为元素分类
 *   [collapsed] -- 如果设置为"true" 表示将一个元素的高和宽设置为0， 但是这个元素还是会被认为是存在的，与 CSS 中设置"visibility:collapse"效果相同。
+*   [crop] -- 文本宽度大于其父元素的宽度时被省略号(…)代替
 *   [disabled] -- 禁用对象，通常显示成浅灰色或者透明的
 *   [flex] -- 说明了一个元素应该扩展以占据一个窗口的高度和宽度的比例，值为正整数，表示在父元素的orient属性方向上的增长倍数。
 *   [height/width] -- 设置准确的尺寸
@@ -69,8 +79,13 @@
 * 常见Widget
 *   <arrowscrollbox> -- 带箭头的滚动框，其内部可以放置任何元素(系统会自动使用？)
 *   <box> -- orient 属性可选 horizental(水平，等价于 hbox) 或  vertical(垂直, 等价于 vbox)
+*   <browser> -- 功能比<iframe>更强大的内联帧，具有网页浏览器的所有基本功能(前进/后退/阻止内部脚本访问外部资源)
+*     [type] <== 如设置为"content"会设置访问限制(所有打开的网页都将其视为最顶层的帧，不能访问父帧?)
+*                如设置为"content-primary"，表示与其他XUL文档不同的特殊浏览器，窗口对象可使用"window.content"来访问
 *   <button> -- 按钮，可以通过 type="menu" 且内嵌 <menupopup> 来实现具有下拉菜单的按钮，如果type设置为 menu-button ?
+*      通过[icon]或[image]属性显示图像?
 *   <caption> -- ?
+*   <checkbox> -- 复选框，选中时 [checked]为true
 *   <command> -- 统一处理来自多个源(如菜单项、快捷键等 )的命令，需要设置 id属性，然后设置源的 command 属性。
 *                如果包含了 "chrome://global/content/globalOverlay.js"后即可通过 goDoCommand 调用命令
 *     [oncommand] -- 事件处理程序
@@ -79,26 +94,31 @@
 *      <content> -- 只能写一次。用来将包含模板的元素中的rel所指的起始根对应到一个变量中
 *      <member>  -- 用来映射每条资源的变量
 *      <triple>  -- 三元组，用来定义匹配规则,一个triple由三要素组成：主题(subject), 谓词(predicate), object(目标)。
+*   <context> -- 上下文菜单，需要放在 <popupset> 里且其他元素通过 [context] = contextId 进行引用
 *   <dialog> -- 对话框窗口的根元素
 *      [buttons] <== 用逗号分隔的设置在其底部显示的按钮( accept,cancel,help,disclosure--其他信息)，会自动根据OS进行布局(如Mac OS 将Cancel放在左边?)
 *                    两个特殊按钮, extra1 使用标签 buttonlabelextra1， extra2 使用标签 buttonlabelextra2。
 *                    处理事件: ondialog<buttonname>，需要 "XPConnect privileges" ,
 *   <deck> -- 可容纳多个子元素，但一次只有一个子元素是可见的。通过 selectedindex 属性来切换可见的子元素，第一个子元素的索引为0。
 *   <description> -- 长段的描述文档
-*   <grid> -- 表格布局，其内嵌 <columns><column>(记录每条记录的字段信息，一般不放内容，主要用来控制外观,如 [flex]) 和 <rows><row>(一般用于放置内容) 控件来显示
+*   <frame> -- 内嵌帧?
+*   <grid> -- 表格布局，其内嵌 <columns><column>(记录每条记录的字段信息，一般不放内容，主要用来控制外观,如 [flex]) 
+*             和 <rows><row>(一般用于放置内容) 控件来显示
 *             使用grid比嵌套的box的最大好处是可以让创建的单元格在水平和垂直方向同时扩展时要方便得多
 *   <groupbox> -- 组框，可以摆放多个元素，显示一个框和标题
-*   <iframe> -- 显示其他的页面,
-*     [src] <== 指定其他页面的URL地址(如 http://xxx)
+*   <iframe> -- 显示其他的页面( 用的很少，实际上常用<browser> ?)
+*     [src] <== 指定其他页面的URL地址(如 http://xxx, chrome://xxx)
 *   <image> -- 通过 src="image.jpg" 使用图片(更好的方式是使用CSS?)
 *     list-style-image <== 提会自动旋转做动画?(如 url("chrome://browser/skin/tabbrowser/loading.png") )
 *     list-style-type: square <== 图像不可用时?
-*   <key> -- 定义 window 全局的快捷键，
+*   <key> -- 定义 window 全局的快捷键，可以设置<menu>或<menuitem>的 [key]为本元素的id
 *     [command] <== 设置 command 元素的id，这样可以多个源统一处理； 也可以设置 [oncommand] 属性
-*     [modifiers] <== 设置功能键，如 "accel,alt", 其中 accel 表示根据系统来确认功能键(Win下是Ctrl)
-*     [key] <== 对应的按键，如 "C"
+*     [modifiers] <== 设置功能键，如 "accel,alt", 其中 accel 表示根据系统来确认功能键(Win下是Ctrl,Mac上是command)
+*     [key] <== 对应的按键，如 "C",注意：不区分大小写
+*     [keycode] <== 特殊按键的虚拟键，如 "VK_UP","VK_DELETE" 等
 *   <keyset> -- 不可见元素，内嵌 <key>对象，设置快捷键
-*   <label> -- value="显示字符",通过 control="myControl-Id" 指定关联的控件，点击label会使控件的输入焦点激活
+*   <label> --  独立的文本标签，[value]="显示字符"，如要显示长文本，需要采用设置[flex]="1"且内嵌文本的方式(不设置[value]属性)
+*     [control] ="myControlId" <== 指定关联的控件，点击label会使控件的输入焦点激活
 *   <listbox> -- 列表框，通过 <listhead><listheader label="XXX">(定义表头) 和 <listcols><listcol>(定义列的外观) 设置外观，通过 <listitem> 设置内容，
 *      其内部可以包含任何元素。
 *   <menu> -- 系统菜单栏中的一项，如 "File",内嵌 <menupopup> 提供下拉菜单， 也可以作为二级菜单的 父元素(即替换对应的 <menuitem>,然后内嵌 <menupopup>
@@ -106,24 +126,30 @@
 *   <menuitem> -- 弹出菜单中的菜单项，其父元素通常是 <menupopup>，通过 label 提供显示的文本
 *      如果 class="menuitem-iconic", 则可以通过 image 属性设置菜单图标
 *      [type] <== checkbox(选中标记，选中项的"checked"=true),radio(多个name属性相同的为一组，选中项的selected="true")
-*   <menulist> -- 下拉列表框，其内嵌 menupopup 。如果设置editable为"true"，则也可以不从下拉列表中选择，而手工输入
+*   <menulist> -- 下拉列表框，其内嵌 menupopup 。
+*     [editable] <== 如设置为"true"，则也可以不从下拉列表中选择，而手工输入(如文本选择器)
 *   <menupopup> -- 弹出菜单，不可见(即不需要设置 label 属性)，内嵌 <menuitem> 和 <menuseparator> 等
 *   <menuseparator> -- 菜单的分割条
+*   <overlay> -- 可以合并到其他XUL中去的XUL文件的根元素？
 *   <page> -- 侧边栏以及其他在窗口框架内部打开的XUL文档等的根元素，需要内嵌 iframe 指向 XUL 文件 来提供内容
 *   <popupset> -- 弹出内容，其内部包含 <menupopup>,<panel>,<tooltip> 三种元素，分别对应 上下文菜单([context]),普通弹出(左键点击),工具提示([tooltip])。
 *      注意：在设置的位置不可见，需要通过其id关联弹出方式，当条件满足时才显示出来。
 *   <prefwindow> -- 设置窗体? 具有确定和取消的按钮
 *   <progressmeter> -- 进度条，通过 mode="determined(确定的)|undetermined(不确定的)" 选择类型;
 *      当模式为确定时，可以通过 value="50%" 设置进度位置; 当为不确定的时，进度持续更新表示处理正在继续
+*   <radio> -- 单选按钮，当前选择的元素[selected]="true",且所在<radiogroup>的[value]属性为选择<radio>对应的值
 *   <radiogroup> -- 内嵌 radio 按钮，只有一个能选中
 *   <rule> -- 在处理模板生成的数据时指定规则？可以内嵌 <conditions>,<bindings>,<action>三个子元素。
 *      模板生成器会先根据conditions中的条件对资源进行匹配，如果匹配成功，则调用相应的action中的内容进行复制处理
+*   <scale> -- 滑动条(类似音量控制滑块)
 *   <scrollbar> -- 滚动条，可通过 orient 设置方向，
+*      [slider?]
 *   <spacer> -- 占位空白。如果flex属性为"1"且当前父元素中只有一个元素有该属性时则当窗口变化时自动变化，通常可放在需要右对齐的按钮前。
 *   <splitter> -- 分割条，通过拖动可以用来改变并列元素的大小。
 *      [state] <== 在初始显示时，collapse所指明的元素是打开还是关闭。当state值为"open"是为打开。state为"collapsed"时为关闭。
 *      [collapse] <== 指明哪个元素可以被关闭(隐藏)，可选值是 before|after|both|none 
-*   <stack> -- 栈容器，其内部的元素是按创建的顺序重叠摆放，新创建的放在最上面，用途：把颜色不同的字错开重叠可以实现一些阴影效果
+*   <stack> -- 栈容器，其内部的元素是按创建的顺序重叠摆放，新创建的放在最上面，
+*      用途：把颜色不同的字错开重叠可以实现一些阴影效果；<progressmeter>和<label>一起显示带文本的进度条
 *   <stringbundle> -- 通过 src="chrome://xxx/locale/xxxx.properties" 的方式指定属性文件，属性文件是一串 Key=Value 对的文本文件。
 *      然后 JS 中即可通过如下方法获得响应的本地字符资源：
 *        var bundleString = document.getElementById("bundle的ID"); var strValue = bundleString.getString("想要的资源Key");
@@ -131,13 +157,19 @@
 *   <tabbox> -- 标签页, 需要组合 <tabs><tab label="标签页的标题"/>  和 <tabpanels><tabpanel>标签页的内容</tabpanel> 才能显示出来，
 *      两者的个数和顺序需要对应。TODO: 有没有办法在 tabpanel 中引用到别的 xul 文件？
 *      <tab> 使用 selected="true" 来选定
-*   <textbox> -- 文本输入
+*   <tabbrowser> -- 比<browser>更强大，包含了标签处理特性的基本内容，需要 XPConnect 权限
+*   <textbox> -- 文本输入框
 *     [multiline] <== 为"true"时可以输入多行文本
-*     [type] <== 为"password"时可以输入口令, 为 "autocomplete" 则支持自动完成，为"search"时会对搜索功能扩展。
-*     
+*     [type] <== 为"password"时可以输入口令, 为"search"时会对搜索功能扩展，
+*        为"number"时输入数字且有数字微调按钮，通过[min][max][increment]设置更详细的信息
+*        为"autocomplete" 则支持自动完成，还需要设置[autocompletesearch]属性指定搜索目标，如"history"表地址栏历史,
+*        "form-history"表其他表格的输入历史(然后怎么做?)。注意：需要 XPConnect 权限
+*     [oninput] <== 处理用户输入的实时事件
 *   <toolbar id="xxx"> -- 工具条，内部组合 <toolbarbutton> 等
 *      [defaultset] -- 指定用逗号分隔开的多个 <toolbarpalette>
 *      [grippyhidden] -- 设置为 true 表示关闭工具条的小槽(toolbargrippy)
+*   <toolbarbutton> -- ?定义工具栏按钮的元素
+*      [type] <== 可选"checkbox","menu","menu-button(如后退/前进按钮)" 等
 *   <toolbargrippy> -- 
 *   <toolbaritem> -- 可以自嵌套
 *   <toolbarpalette> -- 用在<toolbar>中的一个面板，可以内嵌 <toolbarbutton> 等按钮。本身不可见，但被<toolbar>用来定制items的显示。

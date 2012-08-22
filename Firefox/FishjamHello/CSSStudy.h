@@ -15,11 +15,18 @@
 *   <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>  <== global.css 文件包含了所有XUL元素的缺省声明，主要是和当前主题匹配
 * 
 * 同一个HTML元素被多个样式定义时，所有的样式会根据规则层叠于一个虚拟样式表中，优先顺序为（由低到高）：
-*   1.浏览器缺省设置(如 userChrome.css ? )
+*   1.浏览器缺省设置(如 userChrome.css ? 放到用户profile文件目录下的chrome目录)
+*     一个将tab 工具条放到底部的用户样式表：
+*     tabbrowser .tabbrowser-strip { -moz-box-ordinal-group: 2; }
+*     tabbrowser tabpanels { -moz-box-ordinal-group: 1; }
 *   2.外部样式表 ( 在<head>处引入 .css 文件 )，如 <link rel="stylesheet" type="text/css" href="mystyle.css" />
 *   3.内部样式表（在<head> 标签内部定义), 如：<head><style type="text/css">样式列表</style></head>
 *   4.内联样式（在 HTML 元素内部），在相关的标签内使用样式(style)属性，如 <p style="color:red; margin:20px"> xxxx </p>
 *     注意：尽量不要使用这种方式。
+*
+* Gecko 渲染引擎包含很多"-moz-"开头的CSS 属性 -- XUL 的自定义属性
+*   moz-icon -- 特殊的URI结构，产生文件类型的图标。
+*   如 "moz-icon://.PDF?size=16" 表示为后缀为.pdf的文件显示一个16×16 的图标(具体的图标是什么?)
 *******************************************************************************************/
 
 
