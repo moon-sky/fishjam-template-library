@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://fishjamTest/skin/infoDialog.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://fishjamTest/locale/infoDialog.dtd">
+
+<dialog type="normalwindow" 
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  title="&title.label;" sizemode="normal" width="800" height="600"
+  buttons ="accept,cancel,help,disclosure" 
+  ondialogaccept="close(); return false;" ondialogcancel="window.close();"
+  chromehidden="location directories" id ="fishjamTestMainWindow" 
+  persist="screenX screenY width height"
+  onclick="dump(event.target.tagName); dump('\n'); return false;"
+  onload="sizeToContent();"
+  >
+
+  <script type="application/x-javascript" src="chrome://fishjamTest/content/trace.js"/>
+  <script type="application/x-javascript" src="chrome://fishjamTest/content/my-math.js"/>
+  <script>
+    var myMathObject = new MyMath();
+  </script>
+  
+  <!-- invisible objects begin -->
+  <commandset>
+    <command id="cmd_calculate" oncommand="myMathObject.AddNumber(100,200);"/>
+  </commandset>
+  
+  <popupset>
+    <menupopup id="mycontextmenu">
+      <menuitem label="MyCut"/>
+      <menuitem label="MyCopy"/>
+      <menuitem label="MyPaste"/>
+    </menupopup>
+  </popupset>
+
+  <popupset>
+    <tooltip id="myTooltip" orient="vertical" style="background-color: #33DD00;">
+      <label value="Click here to see more information"/>
+      <label value="Really!" style="color: red;"/>
+    </tooltip>
+  </popupset>
+
+  <!-- invisible objects end -->
+
+  <menubar>
+    <menu label="File" accesskey="F">
+      <menupopup>
+        <menuitem label="New"/>
+        <menu label="Open">
+          <menupopup>
+            <menuitem label="Open From File"/>
+            <menuitem label="Open From Web"/>
+          </menupopup>
+        </menu>
+        <menuitem label="Save" disabled="true" accesskey="S"/>
+        <menuseparator/>
+        <menuitem label="&close.label;" accesskey="Q" oncommand="close();" />
+      </menupopup>
+    </menu>
+    <menu label="Help" accesskey="H">
+      <menupopup >
+        <menuitem label="About" accesskey="A"/>
+      </menupopup>
+    </menu>
+  </menubar>
+
+  <!--
+  <toolbox>
+  
+ <toolbar id="findfiles-toolbar" grippyhidden="false">
+      <toolbarbutton id="btnFile" label="File"/>
+      <toolbarbutton id="btnHelp" label="Help"/>
+    </toolbar>
+  </toolbox>
+  -->
+  
+  <tabbox>
+    
+    <tabs >
+      <tab label="Standard" selected="true" />
+      <tab label="Splliter" />
+      <tab label="Grid" />
+      <tab label="Container" />
+      <tab label="Template" />
+      <tab label="extern" />
+    </tabs>
+    
+    <tabpanels>
+      <tabpanel id="standardPanel">
+        <vbox id="vboxMain" align="center">
+          <description flex="1">&separate.label;</description>
+          <hbox>
+            <label value ="Click SetFocus" control ="input-text"/>
+            <textbox id="input-text" value="{Right click to see context menu}" context="mycontextmenu" style="color:red; background-color:yellow" />
+          </hbox>
+          <button label="ShowToolTip" default="true" tooltip="myTooltip" oncommand="myShowErrorInfo();"/>
+          <button id="dropmenu-button" type="menu" label="&dropmenu.label;" >
+            <menupopup>
+              <menuitem label="Calcute" command="cmd_calculate"/>
+              <menuitem label="Second"/>
+              <menuitem label="Third"/>
+            </menupopup>
+          </button>
+          <progressmeter id="identifier" mode="undetermined"/>
+          <image id="myImage" />  <!-- url value will set by css -->
+          <button id="close-button" label="&close.label;" oncommand="close();"/>
+        </vbox>
+      </tabpanel>
+
+      <tabpanel id="splliterPanel">
+        <vbox flex="1">
+          <spacer flex="1"/>
+          <button label="Button1" />
+          <splitter state="open"  collapse="both" resizebefore="closest" resizeafter="closest">
+            <grippy ></grippy>
+          </splitter>
+          <button label="Button2" />
+        </vbox>
+      </tabpanel>
+
+      <tabpanel id="gridPanel">
+        <grid flex="1">
+          <columns>
+            <column />
+            <column flex="1"/>
+          </columns>
+
+          <rows>
+            <row>
+              <label control="doctitle" value="Document Title:"/>
+              <textbox id="doctitle" flex="1"/>
+            </row>
+            <row>
+              <label control="docpath" value="Path:"/>
+              <box flex="1">
+                <textbox id="docpath" flex="1"/>
+                <button label="Browse…"/>
+              </box>
+            </row>
+          </rows>
+        </grid>
+      </tabpanel>
+
+      <tabpanel id="containerPanel">
+        <!--Template -->
+        <!--<iframe src="chrome://fishjamTest/skin/infoDialog.css" flex="1" /> -->
+      </tabpanel>
+      
+      <tabpanel id="templatePanel">
+        <arrowscrollbox>
+          <vbox datasources="rdf:files" ref="file:///C:/" >
+            <template>
+              <rule rdf:type="http://home.netscape.com/NC-rdf#BookmarkSeparator">
+                <!-- dir rule, how ? -->
+                <spacer uri="rdf:*" height="16"/>
+              </rule>
+
+              <rule>
+                <!-- file rule -->
+                <hbox uri="rdf:*">
+                  <button label="rdf:http://home.netscape.com/NC-rdf#Name"/>
+                  <label value="rdf:http://home.netscape.com/WEB-rdf#LastModifiedDate"/>
+                </hbox>
+              </rule>
+            </template>
+          </vbox>
+        </arrowscrollbox>
+      </tabpanel>
+      
+      <tabpanel id="externPanel">
+        <iframe src="extern.xul">
+        </iframe>
+      </tabpanel>
+      
+    </tabpanels>
+  </tabbox>
+</dialog>

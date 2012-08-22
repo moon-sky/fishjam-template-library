@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<script language="JavaScript">
+    function traceStr(str){
+    var oOption = document.createElement("OPTION");
+    form1.traceList.options.add(oOption);
+    oOption.innerText = str;
+    oOption.selected=true;
+    //form1.btnClose.focus();
+    }
+    function traceInfoClick(){
+      var nIndex=form1.traceList.selectedIndex;
+      if(nIndex!=-1)
+      {
+        form1.txtComments.value=form1.traceList.options[nIndex].innerText;
+        form1.btnCopy.disabled=false;
+      }
+      else
+      {
+        form1.txtComments.value='';
+        form1.btnCopy.disabled=true;
+      }
+    }
+    function CopyData()
+    {
+      var nIndex=form1.traceList.selectedIndex;
+      if(nIndex!=-1)
+      {  
+        strSelect = form1.traceList.options[nIndex].innerText;
+        window.clipboardData.setData('text',strSelect.substr(strSelect.indexOf(':')+1));
+       }
+    }
+	function ClearData()
+	{
+		form1.traceList.innerHTML="";
+	}
+  </script>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<title>JavaScript Tracer;</title>
+</head>
+<body>
+<form name="form1">
+  <center>
+    <select name="traceList" style="width:80%;height:40%" size="2"
+      onclick="traceInfoClick()">
+    </select><br/>
+    <TEXTAREA style="width:80%;overflow:scroll" name="txtComments" rows="10">
+    </TEXTAREA>
+  </center>
+  <p align="right">
+      <input type="button" value="Clear" name="btnClear" 
+      onclick="ClearData()"/>
+    <input type="button" value="Copy" name="btnCopy" 
+      onclick="CopyData()" disabled="disabled"/>
+    <input type="button" value="Close" name="btnClose"
+      onclick="window.close()" align="right" />
+  </p>
+  </form>
+</body>
+</html>

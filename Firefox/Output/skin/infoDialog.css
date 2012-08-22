@@ -1,0 +1,10 @@
+﻿/* This is just an example. You shouldn't do this. */
+#vboxMain {
+  background-color: yellow;
+}
+
+
+#myImage 
+{
+    list-style-image: url("chrome://browser/skin/tabbrowser/loading.png");
+}

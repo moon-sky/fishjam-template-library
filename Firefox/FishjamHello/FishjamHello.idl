@@ -1,0 +1,58 @@
+//包含其他 idl 文件
+#include "nsISupports.idl"
+//#include "nsIFile.idl"
+
+//前向声明 -- 似乎是必须的?
+interface nsIHelloFishjam;
+
+%{C++
+/*
+	Code will copy to generated files
+*/
+%} 
+
+[ 
+	scriptable,				//表示接口可以被脚本化， 对应的 [noscript] 表示某个方法不可被脚本化
+	uuid(7db47219-fba5-4e22-b542-405e45440c88)		//定义接口的uuid, 会自动生成 NS_IXXX_IID 的对应宏
+]
+interface nsIHelloFishjam: nsISupports
+{
+	//接口内部用const修饰某个常量，那么映射到C++代码的话会变为enum类型 -- const只能用来修饰整型
+	const long ID	= 1234;
+
+	//enum ErrType
+	//{
+	//	long Err_NotInit,
+	//	long Err_Pointer,
+	//};
+
+
+	//常见类型及 C++ 对应：
+    //boolean       PRBool
+    //octet         PRUint8
+    //short         PRInt16
+    //long          PRInt32
+    //long long     PRInt64
+    //char          char
+    //wchar         PRUnichar
+    //string        char*
+    //wstring       PRUnichar*
+    //AString	
+
+	//使用 native name(native_type) 定义自己的类型，并在 XPIDL 中使用，类似 typedef ? -- 但对应的方法通常不能给脚本调用
+	//可以 在native之前增加[ref]或者[ptr]修饰符表示这个变量类型为引用或者指针。
+	//native myFileNameType(nsFileSpec);		//启用这个，会照成 xpidl 异常(Error: unexpected node type)
+	//[ptr] native nsFileSpecPtr(nsFileSpec);	//在本地类型声明中表示类型为指针
+	//[ref] native nsFileSpecRef(nsFileSpec);	//在本地类型声明中表示类型为引用
+
+
+	//定义方法 -- 方法可以有带 in, out 或者 inout 修饰符的任意数目的参数
+    //注意：接口中一般都把返回值定义为 void, 编译成头文件时自动生成返回 nsresult 的函数原型，
+	//      如果指定返回值不为void的方法，生成的C++代码会自动把返回值添加到方法的形参中的最后
+	void		Hello(in AString url) ;
+	long		Add(in long num1, in long num2);
+	void		AddEx(in long num1, in long num2, [retval] out  long result); //[retval]标志方法中的某个形参为返回值，有 out 即可？
+
+	//定义属性, 可以用 readonly 修饰只读属性
+	readonly attribute AString Version;
+};

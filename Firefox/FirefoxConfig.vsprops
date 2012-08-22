@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="Firefox Config"
+	>
+  <Tool
+    Name="VCCLCompilerTool"
+    AdditionalIncludeDirectories="$(XPSDK_DIR)include;$(XPSDK_DIR)idl"
+	/>
+  <Tool
+  Name="VCLinkerTool"
+  AdditionalLibraryDirectories="$(XPSDK_DIR)lib"
+	/>
+  <UserMacro
+		  Name="XPSDK_DIR"
+		  Value="E:\Code\GeckoSDK\xulrunner-14.0.1.en-US.win32.sdk\xulrunner-sdk\"
+	/>
+<!-- Value="E:\Code\Toolbar\vietnam-naver-ff\gecko_sdk\xulrunner-14.0.1.en-US.win32.sdk\xulrunner-sdk\" -->
+</VisualStudioPropertySheet>

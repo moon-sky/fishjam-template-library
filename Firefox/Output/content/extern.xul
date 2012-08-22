@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+
+  <script type="application/x-javascript" src="chrome://fishjamTest/content/trace.js"/>
+  <script type="application/x-javascript" src="chrome://fishjamTest/content/myAddon.js"/>
+
+  <html:div>
+    <html:object id="mypluginobj" type="application/npcodeproject" background-color="red"></html:object>
+  </html:div>
+
+  <vbox align="stretch">
+    <button label="show js-ctype" onclick="ShowWin32APIMessage();"/>
+    <button label="show npapi" onclick="traceObj(this); ShowNpAPIMessage();"/>
+  </vbox>
+
+ 
+</window>

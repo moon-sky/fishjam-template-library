@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FishjamHello", "FishjamHello\FishjamHello.vcproj", "{CB878905-2534-4549-9E0E-A379A26F5404}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0C24988D-66EB-4C13-87D5-31C83289E840}"
+	ProjectSection(SolutionItems) = preProject
+		FirefoxConfig.vsprops = FirefoxConfig.vsprops
+		FirefoxStudy.h = FirefoxStudy.h
+		FishjamHello\xpidl-build.bat = FishjamHello\xpidl-build.bat
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Output", "Output\Output.vcproj", "{9BB72EB3-DC86-4430-A146-27A1D7E81A5A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "npapidemo", "npapidemo\npapidemo.vcproj", "{7D69F22F-0922-456B-8077-ED75D314B988}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CB878905-2534-4549-9E0E-A379A26F5404}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CB878905-2534-4549-9E0E-A379A26F5404}.Debug|Win32.Build.0 = Debug|Win32
+		{CB878905-2534-4549-9E0E-A379A26F5404}.Release|Win32.ActiveCfg = Release|Win32
+		{CB878905-2534-4549-9E0E-A379A26F5404}.Release|Win32.Build.0 = Release|Win32
+		{9BB72EB3-DC86-4430-A146-27A1D7E81A5A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9BB72EB3-DC86-4430-A146-27A1D7E81A5A}.Release|Win32.ActiveCfg = Release|Win32
+		{7D69F22F-0922-456B-8077-ED75D314B988}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7D69F22F-0922-456B-8077-ED75D314B988}.Debug|Win32.Build.0 = Debug|Win32
+		{7D69F22F-0922-456B-8077-ED75D314B988}.Release|Win32.ActiveCfg = Release|Win32
+		{7D69F22F-0922-456B-8077-ED75D314B988}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
