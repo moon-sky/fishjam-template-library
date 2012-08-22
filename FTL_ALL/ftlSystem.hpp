@@ -6,6 +6,8 @@
 #  include "ftlsystem.h"
 #endif
 
+#include <ShlObj.h>
+
 namespace FTL
 {
     CFOSInfo::CFOSInfo()

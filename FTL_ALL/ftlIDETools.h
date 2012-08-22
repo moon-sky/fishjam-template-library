@@ -630,17 +630,18 @@ namespace FTL
 	*     2.三种压缩算法(ZLib, BZip2, LZMA) -- LZMA 压缩具有比其它通用压缩方法更好的效果
 	*     3.可通过"XXXX"实现自定义对话框和界面
 	* 
-	*   脚本(.nsh/.nsi -- 如 makensis 同目录下有 nsisconf.nsh 头文件，会自动包含)
+	*   脚本(.nsh/.nsi -- 如果 makensis 同目录下有 nsisconf.nsh 头文件，会自动包含)
 	*     第三方的脚本开发集成环境：
 	*       HM NIS EDIT(有创建基础脚本的向导，F9预览结果) -- http://hmne.sourceforge.net/
 	*       Venis IX -- http://www.spaceblue.com/products/venis/
 	*     语法(基本结构包括 安装程序属性属性、页面、区段、函数 )
 	*       0.基本语法
 	*         转义字符 -- $前缀，如 $\n 表示换行， $$ 表示美元符"$", $\"表示双引号（？）
+	*         命令很长时，可以用 "/"(还是 "\" ?) 来换行继续写，如 Messagebox MB_OK / <CR> "This is line breaks demo" 
 	*         !define 常量名 "常量值"   -- Name 和 OutFile ?, 引用时(?)： ${常量名}
-    *         !macro 宏名 -- 定义宏
+    *         !macro 宏名  XXX !macroend -- 定义宏，然后通过 !insertmacro 宏名 引用
 	*         !include 头文件名 -- 包含指定的头文件
-    *         !insertmacro -- 在当前位置插入定义的宏（如系统预订的 MUI_PAGE_WELCOME 等各个Page页面都是宏 -- \Modern UI\System.nsh 文件中） 
+    *         !insertmacro 宏名 -- 在当前位置插入定义的宏（如系统预订的 MUI_PAGE_WELCOME 等各个Page页面都是宏 -- \Modern UI\System.nsh 文件中） 
 	*         var 变量名, 引用时 $变量名
 	*             颜色 -- 类似HTML中的RGB表示法，但不用井号"#"
 	*         常用的预定义系统变量：

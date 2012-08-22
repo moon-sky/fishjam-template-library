@@ -113,7 +113,7 @@ namespace FTL
 
 	//////////////////////////////////////////////////////////////////////////
 
-	CFVariantInfo::CFVariantInfo(VARIANT info) : CFConvertInfoT<CFVariantInfo, VARIANT>(info)
+	CFVariantInfo::CFVariantInfo(const VARIANT& info) : CFConvertInfoT<CFVariantInfo, const VARIANT&>(info)
 	{
 	}
 

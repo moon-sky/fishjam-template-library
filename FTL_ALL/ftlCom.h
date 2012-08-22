@@ -37,11 +37,11 @@ namespace FTL
         FTLINLINE static HRESULT DisplayObjectPropertyPage(HWND hWndOwner,LPCOLESTR lpszCaption, IUnknown *pUnk);
     };
 
-    FTLEXPORT class CFVariantInfo : public CFConvertInfoT<CFVariantInfo, VARIANT>
+    FTLEXPORT class CFVariantInfo : public CFConvertInfoT<CFVariantInfo, const VARIANT&>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFVariantInfo);
     public:
-        FTLINLINE explicit CFVariantInfo(VARIANT info);
+        FTLINLINE explicit CFVariantInfo(const VARIANT& info);
         FTLINLINE virtual LPCTSTR ConvertInfo();
 	private:
 		FTLINLINE VOID GetTypeInfo(CFStringFormater& formaterType);
