@@ -7,8 +7,8 @@ var fishjam = {
         //1.打开一个新的对话框(infoDialog.xul)
         //window.open("chrome://fishjamTest/content/infoDialog.xul", "", "chrome");
         //打开一个没有Firefox 固有GUI 的Firefox 窗口
-        //window.openDialog("chrome://fishjamTest/content/infoDialog.xul", "_blank", "chrome, all, dialog=no");
-        window.openDialog("chrome://fishjamTest/content/infoDialog.xul", "_blank", "chrome, centerscreen,modal");
+        window.openDialog("chrome://fishjamTest/content/infoDialog.xul", "_blank", "chrome, all, dialog=no");
+        //window.openDialog("chrome://fishjamTest/content/infoDialog.xul", "_blank", "chrome, centerscreen,modal");
         
         //2.使用系统提供的组件 将当前文档的标题拷贝到剪贴板
         /*

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://fishjamTest/skin/infoDialog.css" type="text/css"?>
-<!DOCTYPE dialog SYSTEM "chrome://fishjamTest/locale/infoDialog.dtd">
+<!DOCTYPE window SYSTEM "chrome://fishjamTest/locale/infoDialog.dtd">
 
-<dialog  
+<window  
   id ="fishjamTestMainWindow" 
   type="normalwindow" 
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
@@ -192,4 +192,4 @@
       
     </tabpanels>
   </tabbox>
-</dialog>
+</window>
