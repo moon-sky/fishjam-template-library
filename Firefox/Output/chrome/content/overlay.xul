@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://fishjamTest/skin/overlay.css" type="text/css"?>
+<!--
+<!DOCTYPE overlay [
+  <!ENTRITY % fishjamDTD SYSTEM "chrome://fishjamTest/locale/overlay.dtd">
+    %fishjamDTD;
+  <!ENTITY % globalDTD SYSTEM "chrome://global/locale/global.dtd">
+    %globalDTD;
+]>
+-->
+
+<!DOCTYPE overlay SYSTEM "chrome://fishjamTest/locale/overlay.dtd">
+
+
+<overlay id="fishjam-overlay" 
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/x-javascript" src="chrome://browser/content/browser.js"/>
+  <script type="application/x-javascript" src="chrome://global/content/nsDragAndDrop.js"/>
+  <script type="application/x-javascript" src="chrome://global/content/nsTransferable.js"/>
+  <script type="application/x-javascript" src="chrome://global/content/nsTransferable.js"/>
+
+  <script type="application/x-javascript" src="chrome://fishjamTest/content/define.js"/>
+  <script type="application/x-javascript" src="chrome://fishjamTest/content/trace.js"/>
+  <script type="application/x-javascript" src="chrome://fishjamTest/content/overlay.js"/>
+
+  <script type="application/javascript">
+    function clickfun(){
+      alert("Object click");
+    }
+  </script>
+
+  <commandset id="mainCommandSet">
+    <command id="cmd_fishjamTest" oncommand="fishjam.onMenuItemCommand(event);" />
+  </commandset>
+
+  <textbox id="urlbar">
+    <html:div>
+      <html:embed id="npApiPluginObj" type="application/npapidemo" width="0" height="0"></html:embed>
+    </html:div>
+  </textbox>
+
+  <menupopup id="menu_ToolsPopup">   <!--merge point-->
+    <menuitem id="fishjamTestMenu" label="&fishjam.menu;" 
+              oncommand="fishjam.onMenuItemCommand(event);"/>
+    <menuitem id="npApiPluginDemoCaller" label="npApiPluginDemoCaller"
+              oncommand="var obj = document.getElementById('npApiPluginObj'); obj.test();"/>
+  </menupopup>
+
+  <!--
+  <toolbarpalette id="BrowserToolbarPalette">
+    <toolbarbutton id="btn_fishjamTest" label="fishjamTest" class="toolbarbutton-1"
+    command="cmd_fishjamTest" />
+  </toolbarpalette>
+  -->
+  
+  <toolbar id="addon-bar">   <!--merge point-->
+    <toolbarbutton id="fishjam-testbutton" command="cmd_fishjamTest">
+      <image src="chrome://browser/skin/preferences/alwaysAsk.png"></image>
+      <label value="fishjamTest"></label>
+    </toolbarbutton>
+  </toolbar>
+</overlay>

@@ -7,12 +7,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		FirefoxConfig.vsprops = FirefoxConfig.vsprops
 		FirefoxStudy.h = FirefoxStudy.h
+		targetver.h = targetver.h
 		FishjamHello\xpidl-build.bat = FishjamHello\xpidl-build.bat
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Output", "Output\Output.vcproj", "{9BB72EB3-DC86-4430-A146-27A1D7E81A5A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "npapidemo", "npapidemo\npapidemo.vcproj", "{7D69F22F-0922-456B-8077-ED75D314B988}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tbTrace", "tbTrace\tbTrace.vcproj", "{9C8B46E7-AB0D-4199-B877-9DE3653C4115}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +33,10 @@ Global
 		{7D69F22F-0922-456B-8077-ED75D314B988}.Debug|Win32.Build.0 = Debug|Win32
 		{7D69F22F-0922-456B-8077-ED75D314B988}.Release|Win32.ActiveCfg = Release|Win32
 		{7D69F22F-0922-456B-8077-ED75D314B988}.Release|Win32.Build.0 = Release|Win32
+		{9C8B46E7-AB0D-4199-B877-9DE3653C4115}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9C8B46E7-AB0D-4199-B877-9DE3653C4115}.Debug|Win32.Build.0 = Debug|Win32
+		{9C8B46E7-AB0D-4199-B877-9DE3653C4115}.Release|Win32.ActiveCfg = Release|Win32
+		{9C8B46E7-AB0D-4199-B877-9DE3653C4115}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

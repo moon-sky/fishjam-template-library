@@ -168,114 +168,114 @@
 		<Filter
 			Name="chrome"
 			>
-		</Filter>
-		<Filter
-			Name="content"
-			>
-			<File
-				RelativePath=".\content\define.js"
-				>
-			</File>
-			<File
-				RelativePath=".\content\extern.xul"
-				>
-			</File>
-			<File
-				RelativePath=".\content\infoDialog.xul"
-				>
-			</File>
-			<File
-				RelativePath=".\content\localize.js"
-				>
-			</File>
-			<File
-				RelativePath=".\content\localize.xul"
-				>
-			</File>
-			<File
-				RelativePath=".\content\my-math.js"
-				>
-			</File>
-			<File
-				RelativePath=".\content\myAddon.js"
-				>
-			</File>
-			<File
-				RelativePath=".\content\overlay.js"
-				>
-			</File>
-			<File
-				RelativePath=".\content\overlay.xul"
-				>
-			</File>
-			<File
-				RelativePath=".\content\trace.js"
-				>
-			</File>
-			<File
-				RelativePath=".\content\xpcomtest.js"
-				>
-			</File>
-			<File
-				RelativePath=".\content\xpcomtest.xul"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="locale"
-			>
 			<Filter
-				Name="en-US"
+				Name="content"
 				>
 				<File
-					RelativePath=".\locale\en-US\infoDialog.dtd"
+					RelativePath=".\chrome\content\define.js"
 					>
 				</File>
 				<File
-					RelativePath=".\locale\en-US\localize.dtd"
+					RelativePath=".\chrome\content\extern.xul"
 					>
 				</File>
 				<File
-					RelativePath=".\locale\en-US\overlay.dtd"
+					RelativePath=".\chrome\content\infoDialog.xul"
 					>
 				</File>
 				<File
-					RelativePath=".\locale\en-US\res.properties"
+					RelativePath=".\chrome\content\localize.js"
+					>
+				</File>
+				<File
+					RelativePath=".\chrome\content\localize.xul"
+					>
+				</File>
+				<File
+					RelativePath=".\chrome\content\my-math.js"
+					>
+				</File>
+				<File
+					RelativePath=".\chrome\content\myAddon.js"
+					>
+				</File>
+				<File
+					RelativePath=".\chrome\content\overlay.js"
+					>
+				</File>
+				<File
+					RelativePath=".\chrome\content\overlay.xul"
+					>
+				</File>
+				<File
+					RelativePath=".\chrome\content\trace.js"
+					>
+				</File>
+				<File
+					RelativePath=".\chrome\content\xpcomtest.js"
+					>
+				</File>
+				<File
+					RelativePath=".\chrome\content\xpcomtest.xul"
 					>
 				</File>
 			</Filter>
 			<Filter
-				Name="zh-CN"
+				Name="locale"
+				>
+				<Filter
+					Name="en-US"
+					>
+					<File
+						RelativePath=".\chrome\locale\en-US\infoDialog.dtd"
+						>
+					</File>
+					<File
+						RelativePath=".\chrome\locale\en-US\localize.dtd"
+						>
+					</File>
+					<File
+						RelativePath=".\chrome\locale\en-US\overlay.dtd"
+						>
+					</File>
+					<File
+						RelativePath=".\chrome\locale\en-US\res.properties"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="zh-CN"
+					>
+					<File
+						RelativePath=".\chrome\locale\zh-CN\infoDialog.dtd"
+						>
+					</File>
+					<File
+						RelativePath=".\chrome\locale\zh-CN\localize.dtd"
+						>
+					</File>
+					<File
+						RelativePath=".\chrome\locale\zh-CN\overlay.dtd"
+						>
+					</File>
+					<File
+						RelativePath=".\chrome\locale\zh-CN\res.properties"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="skin"
 				>
 				<File
-					RelativePath=".\locale\zh-CN\infoDialog.dtd"
+					RelativePath=".\chrome\skin\infoDialog.css"
 					>
 				</File>
 				<File
-					RelativePath=".\locale\zh-CN\localize.dtd"
-					>
-				</File>
-				<File
-					RelativePath=".\locale\zh-CN\overlay.dtd"
-					>
-				</File>
-				<File
-					RelativePath=".\locale\zh-CN\res.properties"
+					RelativePath=".\chrome\skin\overlay.css"
 					>
 				</File>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="skin"
-			>
-			<File
-				RelativePath=".\skin\infoDialog.css"
-				>
-			</File>
-			<File
-				RelativePath=".\skin\overlay.css"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="components"

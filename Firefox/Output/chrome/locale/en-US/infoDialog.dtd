@@ -1,0 +1,5 @@
+<!ENTITY title.label "Hello World">
+<!ENTITY separate.label "read from dtd!">
+<!ENTITY find.label "Find">
+<!ENTITY dropmenu.label "dropmenu">
+<!ENTITY close.label "Close">

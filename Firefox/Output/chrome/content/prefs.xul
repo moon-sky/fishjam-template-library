@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<prefwindow 
+  id="fishjamTestPrefs"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  title="Fishjam Preferences">
+  <prefpane>
+    <preferences>
+      <preference id="extensions.fishjam.warnOnClear"
+      name="extensions.fishjam.warnOnClear"
+      type="bool" />
+      <preference id="extensions.fishjam.replaceTabs"
+      name="extensions.fishjam.replaceTabs"
+      type="int" />
+    </preferences>
+    <checkbox label="Confirm before clearing sessions"
+    preference="extensions.fishjam.warnOnClear" />
+    <groupbox>
+      <caption label="When restoring session:" />
+      <radiogroup preference="extensions.fishjam.replaceTabs">
+        <radio value="0" label="Keep current tabs" />
+        <radio value="1" label="Replace current tabs"/>
+        <radio value="2" label="Ask me every time" />
+      </radiogroup>
+    </groupbox>
+  </prefpane>
+</prefwindow>

@@ -1,0 +1,5 @@
+<!ENTITY title.label "测试1">
+<!ENTITY separate.label "从DTD文件读到的字符串资源">
+<!ENTITY find.label "查找">
+<!ENTITY dropmenu.label "下拉">
+<!ENTITY close.label "关闭">
