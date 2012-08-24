@@ -3,8 +3,9 @@ locale	fishjamTest	en-US	locale/en-US/
 locale	fishjamTest	zh-CN	locale/zh-CN/
 skin	fishjamTest	classic/1.0	skin/
 
-overlay	chrome://browser/content/browser.xul	chrome://fishjamTest/content/overlay.xul
+overlay	chrome://browser/content/browser.xul			chrome://fishjamTest/content/overlay.xul
+style	chrome://browser/content/browser.xul			chrome://fishjamTest/skin/overlay.css
 style	chrome://global/content/customizeToolbar.xul	chrome://fishjamTest/skin/overlay.css
 
 interfaces components/FishjamHello.xpt
-binary-component components/FishjamHello.dll ABI=WINNT_x86-msvc appversion>=14.0
+binary-component libraries/FishjamHello.dll ABI=WINNT_x86-msvc appversion>=14.0

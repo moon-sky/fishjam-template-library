@@ -1,7 +1,7 @@
  var tracewin = null;
  var tracenum=1;
  function trace(str) {
- /*
+    /*
    if(tracewin==null || tracewin.closed)
      {
       //tracewin = window.open('trace.html','tracewindow',
@@ -15,16 +15,29 @@
        tracenum++;
    }
    */
-     dump(str + "\n");
+    //以"消息"的类型输出到"错误控制台"(可以支持中文等?)
+     var console = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
+     console.logStringMessage(str);
+
+    //以"错误"的类型输出?
+     //Components.utils.reportError(str);
+     
+     //输出到 -console 的命令行控制台(不支持中文等?) 
+     //dump(str + "\n");
 }
 
 function traceObj(obj){
   //return;
     var strObj='obj:'+obj+'\n\r';
-    for(prop in obj)
-    {
-        if(obj[prop])
-            strObj += ('\t'+prop +'='+obj[prop]+';\n\r');
+    for(prop in obj) {
+        try
+        {
+            if (obj[prop]) {
+                //strObj += ('\t' + prop + ';\n\r');
+                strObj += (prop + '=' + obj[prop] +";");// + ';\n\r');
+            }
+        }
+        catch(err){}
     }   
     trace(strObj);
     return strObj;

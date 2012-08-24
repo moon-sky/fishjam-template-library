@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://fishjamTest/skin/infoDialog.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://fishjamTest/locale/infoDialog.dtd">
+<!DOCTYPE dialog SYSTEM "chrome://fishjamTest/locale/infoDialog.dtd">
 
-<dialog type="normalwindow" 
-  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+<dialog  
+  id ="fishjamTestMainWindow" 
+  type="normalwindow" 
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
   xmlns:html="http://www.w3.org/1999/xhtml"
-  title="&title.label;" sizemode="normal" width="800" height="600"
+  title="&title.label;" 
+  width="800" height="600"
   buttons ="accept,cancel,help,disclosure" 
-  ondialogaccept="close(); return false;" ondialogcancel="window.close();"
-  chromehidden="location directories" id ="fishjamTestMainWindow" 
   persist="screenX screenY width height"
-  onclick="dump(event.target.tagName); dump('\n'); return false;"
-  onload="sizeToContent();"
+  onclick="dump(event.target.tagName); dump('\n'); return true;"
   >
+  <!-- 
+  onload="sizeToContent();" 
+  ondialogaccept="close(); return false;"
+  ondialogcancel="window.close();"
+  chromehidden="location directories" 
+  sizemode="normal" 
+  -->
 
   <script type="application/x-javascript" src="chrome://fishjamTest/content/trace.js"/>
   <script type="application/x-javascript" src="chrome://fishjamTest/content/my-math.js"/>
-  <script>
-    var myMathObject = new MyMath();
-  </script>
   
   <!-- invisible objects begin -->
   <commandset>
-    <command id="cmd_calculate" oncommand="myMathObject.AddNumber(100,200);"/>
+    <command id="cmd_calculate" oncommand="var myMathObject = new MyMath(); myMathObject.AddNumber(100,200);"/>
   </commandset>
   
   <popupset>
@@ -76,20 +80,22 @@
   </toolbox>
   -->
   
-  <tabbox>
+  <tabbox flex="1">
     
-    <tabs >
+    <tabs>
       <tab label="Standard" selected="true" />
+      <tab label="Local"/>
       <tab label="Splliter" />
       <tab label="Grid" />
       <tab label="Container" />
       <tab label="Template" />
       <tab label="extern" />
+      <tab label="xpcomtest"/>
     </tabs>
     
-    <tabpanels>
+    <tabpanels flex="1">
       <tabpanel id="standardPanel">
-        <vbox id="vboxMain" align="center">
+        <vbox id="vboxMain" flex="1">
           <description flex="1">&separate.label;</description>
           <hbox>
             <label value ="Click SetFocus" control ="input-text"/>
@@ -99,8 +105,8 @@
           <button id="dropmenu-button" type="menu" label="&dropmenu.label;" >
             <menupopup>
               <menuitem label="Calcute" command="cmd_calculate"/>
-              <menuitem label="Second"/>
-              <menuitem label="Third"/>
+              <menuitem label="Helloworld" oncommand="alert('hello world');"/>
+              <menuitem label="Third" oncommand="traceObj(this);"/>
             </menupopup>
           </button>
           <progressmeter id="identifier" mode="undetermined"/>
@@ -109,6 +115,11 @@
         </vbox>
       </tabpanel>
 
+      <tabpanel id="localPanel">
+        <iframe src="localize.xul" flex="1">
+        </iframe>
+      </tabpanel>
+      
       <tabpanel id="splliterPanel">
         <vbox flex="1">
           <spacer flex="1"/>
@@ -170,7 +181,12 @@
       </tabpanel>
       
       <tabpanel id="externPanel">
-        <iframe src="extern.xul">
+        <iframe src="extern.xul" flex="1">
+        </iframe>
+      </tabpanel>
+
+      <tabpanel id="xpcomtestPanel">
+        <iframe src="xpcomtest.xul" flex="1">
         </iframe>
       </tabpanel>
       

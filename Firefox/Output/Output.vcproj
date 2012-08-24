@@ -173,11 +173,23 @@
 			Name="content"
 			>
 			<File
+				RelativePath=".\content\define.js"
+				>
+			</File>
+			<File
 				RelativePath=".\content\extern.xul"
 				>
 			</File>
 			<File
 				RelativePath=".\content\infoDialog.xul"
+				>
+			</File>
+			<File
+				RelativePath=".\content\localize.js"
+				>
+			</File>
+			<File
+				RelativePath=".\content\localize.xul"
 				>
 			</File>
 			<File
@@ -200,6 +212,14 @@
 				RelativePath=".\content\trace.js"
 				>
 			</File>
+			<File
+				RelativePath=".\content\xpcomtest.js"
+				>
+			</File>
+			<File
+				RelativePath=".\content\xpcomtest.xul"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="locale"
@@ -212,7 +232,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\locale\en-US\localize.dtd"
+					>
+				</File>
+				<File
 					RelativePath=".\locale\en-US\overlay.dtd"
+					>
+				</File>
+				<File
+					RelativePath=".\locale\en-US\res.properties"
 					>
 				</File>
 			</Filter>
@@ -224,7 +252,15 @@
 					>
 				</File>
 				<File
+					RelativePath=".\locale\zh-CN\localize.dtd"
+					>
+				</File>
+				<File
 					RelativePath=".\locale\zh-CN\overlay.dtd"
+					>
+				</File>
+				<File
+					RelativePath=".\locale\zh-CN\res.properties"
 					>
 				</File>
 			</Filter>
@@ -243,6 +279,22 @@
 		</Filter>
 		<Filter
 			Name="components"
+			>
+		</Filter>
+		<Filter
+			Name="defaults"
+			>
+			<Filter
+				Name="preferences"
+				>
+				<File
+					RelativePath=".\defaults\preferences\prefs.js"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="libraries"
 			>
 		</Filter>
 		<File

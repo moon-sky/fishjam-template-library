@@ -19,7 +19,7 @@ nsHelloFishjam::~nsHelloFishjam()
 
 NS_IMETHODIMP nsHelloFishjam::Hello(const nsAString & url)
 {
-	MessageBox(NULL, TEXT("In nsHelloFishjam::Hello"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("In nsHelloFishjam::Hello"), NULL, MB_OK);
 	OutputDebugString(TEXT("In nsHelloFishjam::Hello\n"));
 	return NS_OK;
 }

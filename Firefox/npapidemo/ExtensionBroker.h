@@ -2,22 +2,21 @@
 
 #include <string>
 #include "ScriptablePluginObjectBase.h"
-//#include "NaverLogManager.h"
 //#include "DDBBitmap.h"
 //#include "Thread.h"
-//#include "ntbdownloader_define.h"
+//#include "downloader_define.h"
 //#include "IPCServer.h"
 //#include "MsgWnd.h"
 
 using namespace std;
 
-class NaverExtensionBroker : public ScriptablePluginObjectBase //ConstructablePluginObject
+class ExtensionBroker : public ScriptablePluginObjectBase //ConstructablePluginObject
 {
 public:
-	NaverExtensionBroker(NPP npp);
-	virtual ~NaverExtensionBroker(void);
+	ExtensionBroker(NPP npp);
+	virtual ~ExtensionBroker(void);
 
-	DECLARE_EXPORT_METHOD_MAP(NaverExtensionBroker);
+	DECLARE_EXPORT_METHOD_MAP(ExtensionBroker);
 
 	virtual bool HasMethod(NPIdentifier name);
 	virtual bool HasProperty(NPIdentifier name);
@@ -84,7 +83,7 @@ public:
 	//IPCServer			m_server;
 	BOOL				m_bGestureEnabled;
 
-	//CNaverLogManager	m_logManager;
+	//CLogManager	m_logManager;
 	BOOL				m_bAnableSendLog;	
 
 	std::wstring		m_szDownloaderPath;

@@ -3,20 +3,22 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
   <Description about="urn:mozilla:install-manifest">
-  
     <em:id>fishjamTest@fishjam.com</em:id>
+    <em:type>2</em:type>   <!--2(Extensions),4(Themes),8(Locale),32(Multiple Item Package),64(Spell check dictionary)-->
     <em:name>Test Firefox extension from fishjam</em:name>
     <em:version>1.0</em:version>
-    <em:type>2</em:type>   <!--2(Extensions),4(Themes),8(Locale),32(Multiple Item Package),64(Spell check dictionary)-->
-    <em:description>Test Extension</em:description>
+    <em:description>fishjam test extension</em:description>
     <em:creator>fishjam</em:creator>
     <!-- optional items -->
     <em:contributor>fishjam</em:contributor>
     <em:homepageURL>http://www.fishjam.com</em:homepageURL>
-    <!--em:optionsURL>chrome://sampleext/content/settings.xul</em:optionsURL>
+    <em:optionsURL>chrome://fishjamTest/content/prefs.xul</em:optionsURL>
+    <!--
+    
     <em:aboutURL>chrome://sampleext/content/about.xul</em:aboutURL>
     <em:iconURL>chrome://sampleext/skin/mainicon.png</em:iconURL>
-    <em:updateURL>http://sampleextension.mozdev.org/update.rdf</em:updateURL-->
+    <em:updateURL>http://www.fishjam.com/firefox/extension/update.rdf</em:updateURL>
+    -->
 
     <!-- Firefox -->
     <em:targetApplication>

@@ -12,16 +12,14 @@
 #include "plugin.h"
 #include "npfunctions.h"
 
-#include "NaverExtensionBroker.h"
+#include "ExtensionBroker.h"
 
-// SubclassWindow 정의
 #include <windowsx.h>
 
 
 #define PR_TRUE		true
 #define PR_FALSE	false
 
-// SubclassWindow 정의
 #define     SubclassWindow(hwnd, lpfn)       \
               ((WNDPROC)SetWindowLongPtr((hwnd), GWLP_WNDPROC, (LPARAM)(WNDPROC)(lpfn)))
 
@@ -38,12 +36,12 @@ static NPIdentifier sPluginType_id;
 //////////////////////////////////////////////////////////////////////////
 
 static NPObject *
-AllocateNaverExtensionBroker(NPP npp, NPClass *aClass)
+AllocateExtensionBroker(NPP npp, NPClass *aClass)
 {
-	return new NaverExtensionBroker(npp);
+	return new ExtensionBroker(npp);
 }
 
-DECLARE_NPOBJECT_CLASS_WITH_BASE(NaverExtensionBroker, AllocateNaverExtensionBroker);
+DECLARE_NPOBJECT_CLASS_WITH_BASE(ExtensionBroker, AllocateExtensionBroker);
 //////////////////////////////////////////////////////////////////////////
 
 
@@ -193,7 +191,7 @@ CPlugin::GetScriptableObject()
 {
 	if (!m_pScriptableObject) 
 	{
-		m_pScriptableObject = NPN_CreateObject(m_pNPInstance, GET_NPOBJECT_CLASS(NaverExtensionBroker));
+		m_pScriptableObject = NPN_CreateObject(m_pNPInstance, GET_NPOBJECT_CLASS(ExtensionBroker));
 
 		NPVariant v;
 		NPIdentifier n = NPN_GetStringIdentifier("Instance");

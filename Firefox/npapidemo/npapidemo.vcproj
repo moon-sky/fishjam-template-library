@@ -198,7 +198,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\NaverExtensionBroker.cpp"
+				RelativePath=".\ExtensionBroker.cpp"
 				>
 			</File>
 			<File
@@ -260,11 +260,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\global.h"
+				RelativePath=".\ExtensionBroker.h"
 				>
 			</File>
 			<File
-				RelativePath=".\NaverExtensionBroker.h"
+				RelativePath=".\global.h"
 				>
 			</File>
 			<File

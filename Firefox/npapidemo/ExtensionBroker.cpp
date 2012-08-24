@@ -1,5 +1,5 @@
 ﻿#include "stdafx.h"
-#include "NaverExtensionBroker.h"
+#include "ExtensionBroker.h"
 #include "Tchar.h"
 #include "ftlnpAPI.h"
 #include <ShellAPI.h>
@@ -10,7 +10,7 @@
 #include <Shlobj.h>
 #include <WinInet.h>
 
-//#include "NaverHook.h"
+//#include "Hook.h"
 //
 //#include "Log.h"
 //#include "ApplicationConfig.h"
@@ -22,7 +22,7 @@
 //#include "ByteArray.h"
 //#include "StringUtil.h"
 
-NaverExtensionBroker::NaverExtensionBroker(NPP npp)
+ExtensionBroker::ExtensionBroker(NPP npp)
 	: ScriptablePluginObjectBase(npp) //ConstructablePluginObject(npp) //
 	, m_activeWindow(NULL)
 //	, m_server(this)
@@ -33,50 +33,50 @@ NaverExtensionBroker::NaverExtensionBroker(NPP npp)
 
 	m_pJsCallBackObj = NULL;
 	m_bGestureEnabled = FALSE;
-	//MessageBox(NULL, TEXT("NaverExtensionBroker::NaverExtensionBroker"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("ExtensionBroker::ExtensionBroker"), NULL, MB_OK);
 
 }
 
-NaverExtensionBroker::~NaverExtensionBroker(void)
+ExtensionBroker::~ExtensionBroker(void)
 {
 	FUNCTION_BLOCK_TRACE(0);
-	//MessageBox(NULL, TEXT("NaverExtensionBroker::~NaverExtensionBroker"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("ExtensionBroker::~ExtensionBroker"), NULL, MB_OK);
 	Stop();
 }
 
-BEGIN_EXPORT_METHOD_MAP(NaverExtensionBroker)
-	REGISTER_EXPORT_METHOD("Initialize",			&NaverExtensionBroker::Initialize);	
+BEGIN_EXPORT_METHOD_MAP(ExtensionBroker)
+	REGISTER_EXPORT_METHOD("Initialize",			&ExtensionBroker::Initialize);	
 
-	REGISTER_EXPORT_METHOD("OutputLog",				&NaverExtensionBroker::OutputLog);
-	REGISTER_EXPORT_METHOD("CaptureRegion",			&NaverExtensionBroker::CaptureRegion);
-	REGISTER_EXPORT_METHOD("CaptureWindow",			&NaverExtensionBroker::CaptureWindow);
-	REGISTER_EXPORT_METHOD("CaptureAllDocument",	&NaverExtensionBroker::CaptureAllDocument);
-	REGISTER_EXPORT_METHOD("CaptureShowDocument",	&NaverExtensionBroker::CaptureShowDocument);
-	REGISTER_EXPORT_METHOD("SaveCaptureImage",		&NaverExtensionBroker::SaveCaptureImage);
-	REGISTER_EXPORT_METHOD("GetDefaultPicturePath",	&NaverExtensionBroker::GetDefaultPicturePath);
+	REGISTER_EXPORT_METHOD("OutputLog",				&ExtensionBroker::OutputLog);
+	REGISTER_EXPORT_METHOD("CaptureRegion",			&ExtensionBroker::CaptureRegion);
+	REGISTER_EXPORT_METHOD("CaptureWindow",			&ExtensionBroker::CaptureWindow);
+	REGISTER_EXPORT_METHOD("CaptureAllDocument",	&ExtensionBroker::CaptureAllDocument);
+	REGISTER_EXPORT_METHOD("CaptureShowDocument",	&ExtensionBroker::CaptureShowDocument);
+	REGISTER_EXPORT_METHOD("SaveCaptureImage",		&ExtensionBroker::SaveCaptureImage);
+	REGISTER_EXPORT_METHOD("GetDefaultPicturePath",	&ExtensionBroker::GetDefaultPicturePath);
 
-	REGISTER_EXPORT_METHOD("ChangeInfo",			&NaverExtensionBroker::ChangeInfo);
-	REGISTER_EXPORT_METHOD("StartUtility",			&NaverExtensionBroker::StartUtility);
-	REGISTER_EXPORT_METHOD("Is64BitOS",				&NaverExtensionBroker::Is64BitOS);
-	REGISTER_EXPORT_METHOD("SelectDir",				&NaverExtensionBroker::SelectDir);
-	REGISTER_EXPORT_METHOD("SyncPreferences",		&NaverExtensionBroker::SyncPreferences);
+	REGISTER_EXPORT_METHOD("ChangeInfo",			&ExtensionBroker::ChangeInfo);
+	REGISTER_EXPORT_METHOD("StartUtility",			&ExtensionBroker::StartUtility);
+	REGISTER_EXPORT_METHOD("Is64BitOS",				&ExtensionBroker::Is64BitOS);
+	REGISTER_EXPORT_METHOD("SelectDir",				&ExtensionBroker::SelectDir);
+	REGISTER_EXPORT_METHOD("SyncPreferences",		&ExtensionBroker::SyncPreferences);
 
-	REGISTER_EXPORT_METHOD("OnActiveChaged",		&NaverExtensionBroker::OnActiveChaged);
-	REGISTER_EXPORT_METHOD("onCreated",				&NaverExtensionBroker::onCreated);
-	REGISTER_EXPORT_METHOD("onBeforeNavigate",		&NaverExtensionBroker::onBeforeNavigate);	
-	REGISTER_EXPORT_METHOD("onCommitted",			&NaverExtensionBroker::onCommitted);	
-	REGISTER_EXPORT_METHOD("onCompleted",			&NaverExtensionBroker::onCompleted);	
-	REGISTER_EXPORT_METHOD("onclick",   			&NaverExtensionBroker::onClickFun);	
-	REGISTER_EXPORT_METHOD("test",   			    &NaverExtensionBroker::onTest);	
+	REGISTER_EXPORT_METHOD("OnActiveChaged",		&ExtensionBroker::OnActiveChaged);
+	REGISTER_EXPORT_METHOD("onCreated",				&ExtensionBroker::onCreated);
+	REGISTER_EXPORT_METHOD("onBeforeNavigate",		&ExtensionBroker::onBeforeNavigate);	
+	REGISTER_EXPORT_METHOD("onCommitted",			&ExtensionBroker::onCommitted);	
+	REGISTER_EXPORT_METHOD("onCompleted",			&ExtensionBroker::onCompleted);	
+	REGISTER_EXPORT_METHOD("onclick",   			&ExtensionBroker::onClickFun);	
+	REGISTER_EXPORT_METHOD("test",   			    &ExtensionBroker::onTest);	
 
 END_EXPORT_METHOD_MAP()
 
-bool NaverExtensionBroker::HasMethod(NPIdentifier name)
+bool ExtensionBroker::HasMethod(NPIdentifier name)
 {
 	std::string strName = NPN_UTF8FromIdentifier(name);
 	FTLTRACE(TEXT("%s, name=%s\n"), TEXT(__FUNCTION__), CFConversion().UTF8_TO_TCHAR(strName.c_str()));
 
-	FTL::FormatMessageBox(NULL, TEXT("NaverExtensionBroker::HasMethod"),MB_OK, 
+	FTL::FormatMessageBox(NULL, TEXT("ExtensionBroker::HasMethod"),MB_OK, 
 		TEXT("name=%s"),  CFConversion().UTF8_TO_TCHAR(strName.c_str()));
 
 	if(NPN_IdentifierIsString(name))
@@ -88,7 +88,7 @@ bool NaverExtensionBroker::HasMethod(NPIdentifier name)
 	return false;
 }
 
-bool NaverExtensionBroker::HasProperty(NPIdentifier name)
+bool ExtensionBroker::HasProperty(NPIdentifier name)
 {
 	std::string strPropName = NPN_UTF8FromIdentifier(name);
 	FTLTRACE(TEXT("%s, name=%s\n"), TEXT(__FUNCTION__), CFConversion().UTF8_TO_TCHAR(strPropName.c_str()));
@@ -111,7 +111,7 @@ bool NaverExtensionBroker::HasProperty(NPIdentifier name)
 	}
 	return false;
 }
-bool NaverExtensionBroker::Deallocate()
+bool ExtensionBroker::Deallocate()
 {
 	FUNCTION_BLOCK_TRACE(0);
 	if(m_pJsCallBackObj)  
@@ -122,7 +122,7 @@ bool NaverExtensionBroker::Deallocate()
 
 	return false;
 }
-bool NaverExtensionBroker::GetProperty(NPIdentifier name, NPVariant *result)
+bool ExtensionBroker::GetProperty(NPIdentifier name, NPVariant *result)
 {
 	FUNCTION_BLOCK_TRACE(0);
 	std::string strPropName = NPN_UTF8FromIdentifier(name);
@@ -130,7 +130,7 @@ bool NaverExtensionBroker::GetProperty(NPIdentifier name, NPVariant *result)
 	return false;
 }
 
-bool NaverExtensionBroker::SetProperty(NPIdentifier name, const NPVariant *pValue)
+bool ExtensionBroker::SetProperty(NPIdentifier name, const NPVariant *pValue)
 {
 	std::string strPropName = NPN_UTF8FromIdentifier(name);
 	FTLTRACE(TEXT("%s, name=%s\n"), TEXT(__FUNCTION__), CFConversion().UTF8_TO_TCHAR(strPropName.c_str()));
@@ -159,7 +159,7 @@ bool NaverExtensionBroker::SetProperty(NPIdentifier name, const NPVariant *pValu
 	return false;
 }
 
-bool NaverExtensionBroker::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::Invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	FUNCTION_BLOCK_TRACE(0);
 	if(NPN_IdentifierIsString(name))
@@ -171,17 +171,17 @@ bool NaverExtensionBroker::Invoke(NPIdentifier name, const NPVariant *args, uint
 	return false;
 }
 
-bool NaverExtensionBroker::InvokeDefault(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::InvokeDefault(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	FUNCTION_BLOCK_TRACE(0);
 	return true;
 }
 
-bool NaverExtensionBroker::Initialize(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::Initialize(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	FUNCTION_BLOCK_TRACE(0);
 	BOOL _retval = FALSE;
-	//Log::OutPut(L"NaverExtensionBroker::Initialize");
+	//Log::OutPut(L"ExtensionBroker::Initialize");
 
 	if (argCount == 1)
 	{
@@ -205,7 +205,7 @@ bool NaverExtensionBroker::Initialize(const NPVariant *args, uint32_t argCount, 
 
 	OnActiveChaged(NULL, 0, &temp);
 
-	//m_MsgWnd.Create(GetModuleHandle(L"npNaverExtension.dll"),this);
+	//m_MsgWnd.Create(GetModuleHandle(L"npExtension.dll"),this);
 
 //	MessageBox(NULL,L"Initialize start",L"tip",MB_OK);
 
@@ -215,7 +215,7 @@ bool NaverExtensionBroker::Initialize(const NPVariant *args, uint32_t argCount, 
 	return true;
 }
 
-void NaverExtensionBroker::EnableGesture(bool enable)
+void ExtensionBroker::EnableGesture(bool enable)
 {
 	//if (enable)
 	//	SetHookType(HOOKTYPE_GESTURE);
@@ -223,7 +223,7 @@ void NaverExtensionBroker::EnableGesture(bool enable)
 	//	SetHookType(HOOKTYPE_NOTHING);
 }
 
-bool NaverExtensionBroker::Start()
+bool ExtensionBroker::Start()
 {
 	//if (m_bGestureEnabled)
 	//	return true;
@@ -239,7 +239,7 @@ bool NaverExtensionBroker::Start()
 	return true;
 }
 
-bool NaverExtensionBroker::Stop()
+bool ExtensionBroker::Stop()
 {
 	//if (m_bGestureEnabled == FALSE)
 	//	return true;
@@ -252,9 +252,9 @@ bool NaverExtensionBroker::Stop()
 	return true;
 }
 
-bool NaverExtensionBroker::OutputLog(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::OutputLog(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
-	//MessageBox(NULL, TEXT("In NaverExtensionBroker::OutputLog"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("In ExtensionBroker::OutputLog"), NULL, MB_OK);
 	return true;
 
 	BOOL _retval = TRUE;
@@ -267,7 +267,7 @@ bool NaverExtensionBroker::OutputLog(const NPVariant *args, uint32_t argCount, N
 	return true;
 }
 
-bool NaverExtensionBroker::CaptureRegion(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::CaptureRegion(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = TRUE;
 
@@ -278,7 +278,7 @@ bool NaverExtensionBroker::CaptureRegion(const NPVariant *args, uint32_t argCoun
 	return true;
 }
 
-bool NaverExtensionBroker::CaptureWindow(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::CaptureWindow(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = TRUE;
 
@@ -288,7 +288,7 @@ bool NaverExtensionBroker::CaptureWindow(const NPVariant *args, uint32_t argCoun
 	return true;
 }
 
-bool NaverExtensionBroker::CaptureAllDocument(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::CaptureAllDocument(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = TRUE;
 
@@ -297,7 +297,7 @@ bool NaverExtensionBroker::CaptureAllDocument(const NPVariant *args, uint32_t ar
 	return true;
 }
 
-bool NaverExtensionBroker::SaveCaptureImage(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::SaveCaptureImage(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = TRUE;
 
@@ -309,30 +309,11 @@ bool NaverExtensionBroker::SaveCaptureImage(const NPVariant *args, uint32_t argC
 	std::string crypt = data.substr(ts + 1, cs - ts - 1);
 	data = data.substr(cs + 1);
 
-	//// Decrypt
-	//ByteArray by = BBase64::Decrypt(data.c_str(), data.size());
-
-	//// save
-	//std::wstring path = Util::GetTempPath(L"Naver");
-	//path.append(L"naverCapture.png");
-	//std::fstream file;
-	//file.open(path.c_str(), std::fstream::binary | std::fstream::out | std::fstream::trunc);
-
-	//if (file.is_open())
-	//{
-	//	file.write(by.Data(), by.Length());
-	//	file.close();
-
-	//	DDBBitmap bmp;
-	//	bmp.LoadPng(path);
-	//	ShowCapturePreview(bmp);
-	//}
-
 	BOOLEAN_TO_NPVARIANT(_retval, *result);
 	return true;
 }
 
-bool NaverExtensionBroker::CaptureShowDocument(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::CaptureShowDocument(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = TRUE;
 
@@ -341,7 +322,7 @@ bool NaverExtensionBroker::CaptureShowDocument(const NPVariant *args, uint32_t a
 	BOOLEAN_TO_NPVARIANT(_retval, *result);
 	return true;
 }
-BOOL  NaverExtensionBroker::OnMsgReceive(UINT Message,WPARAM wParam,LPARAM lParam)
+BOOL  ExtensionBroker::OnMsgReceive(UINT Message,WPARAM wParam,LPARAM lParam)
 {
 	switch(Message)
 	{
@@ -355,7 +336,7 @@ BOOL  NaverExtensionBroker::OnMsgReceive(UINT Message,WPARAM wParam,LPARAM lPara
 	}
 	return FALSE;
 }
-void    NaverExtensionBroker::ShowCaptureDocment()
+void    ExtensionBroker::ShowCaptureDocment()
 {
 	//Sleep(500);
 	//std::wstring path = Util::GetTempPath(L"Naver");
@@ -366,11 +347,11 @@ void    NaverExtensionBroker::ShowCaptureDocment()
 
 	//ShowCapturePreview(bitmap);
 }
-bool NaverExtensionBroker::OnActiveChaged(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::OnActiveChaged(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = TRUE;
 
-	//Log::OutPut(L">>>>>>>>>> [NaverExtensionBroker::OnActiveChaged 1]");
+	//Log::OutPut(L">>>>>>>>>> [ExtensionBroker::OnActiveChaged 1]");
 
 	m_activeWindow = ::FindWindowEx(NULL, NULL, TEXT("Chrome_WidgetWin_1") , NULL);
 	while (m_activeWindow != NULL) 
@@ -389,7 +370,7 @@ bool NaverExtensionBroker::OnActiveChaged(const NPVariant *args, uint32_t argCou
 	return true;
 }
 
-HWND NaverExtensionBroker::GetActiveBrowser()
+HWND ExtensionBroker::GetActiveBrowser()
 {
 	HWND rtn = NULL;
 	if (m_activeWindow)
@@ -402,30 +383,7 @@ HWND NaverExtensionBroker::GetActiveBrowser()
 	return rtn;
 }
 
-void NaverExtensionBroker::ShowCapturePreview(const std::string& bitmapPath)
-{
-#if _DEBUG
-	HINSTANCE instance = GetModuleHandle(TEXT("npNaverExtension.dll"));
-#else
-	HINSTANCE instance = GetModuleHandle(TEXT("npNaverExtension.dll"));
-#endif	
-
-	//DDBBitmap bitmap;
-	//if (bitmap.Load(instance, StringUtil::Utf8ToWString(bitmapPath)))
-	//{
-	//	ShowCapturePreview(bitmap);
-	//}
-}
-
-//#include "CapturePreview.h"
-//void NaverExtensionBroker::ShowCapturePreview(const DDBBitmap& bitmap)
-//{
-//	//CapturePreview dlg(m_activeWindow, bitmap);
-//	//dlg.SetValue(m_PicFormart,m_sDefaultFilePath,m_indexNameFormart);
-//	//dlg.DoModal(this);
-//}
-
-bool NaverExtensionBroker::onCreated(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::onCreated(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = TRUE;
 
@@ -450,7 +408,7 @@ bool NaverExtensionBroker::onCreated(const NPVariant *args, uint32_t argCount, N
 	return true;
 }
 
-bool NaverExtensionBroker::ChangeInfo(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::ChangeInfo(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 
 	BOOL _retval = TRUE;
@@ -544,7 +502,7 @@ BOOL CALLBACK EnumWindowsProc(
 }
 #endif 
 
-bool NaverExtensionBroker::StartUtility(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::StartUtility(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 
 	//BOOL _retval = FALSE;
@@ -627,7 +585,7 @@ bool NaverExtensionBroker::StartUtility(const NPVariant *args, uint32_t argCount
 	//BOOLEAN_TO_NPVARIANT(_retval, *result);
 	return true;
 }
-bool NaverExtensionBroker::GetDefaultPicturePath(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::GetDefaultPicturePath(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	//std::wstring wPath= Util::GetMyPictures();
 	//wPath.append(L"\\");
@@ -638,7 +596,7 @@ bool NaverExtensionBroker::GetDefaultPicturePath(const NPVariant *args, uint32_t
 
 	return TRUE;
 }
-bool NaverExtensionBroker::Is64BitOS(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::Is64BitOS(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL bIs64BitOS = FALSE;
 	typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
@@ -652,7 +610,7 @@ bool NaverExtensionBroker::Is64BitOS(const NPVariant *args, uint32_t argCount, N
 	return true;
 }
 
-bool NaverExtensionBroker::SelectDir(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::SelectDir(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = FALSE;
 
@@ -678,7 +636,7 @@ bool NaverExtensionBroker::SelectDir(const NPVariant *args, uint32_t argCount, N
 	return false;
 }
 
-bool NaverExtensionBroker::SetCommandList()
+bool ExtensionBroker::SetCommandList()
 {
 	//HWND activeBrowser = GetActiveBrowser();
 
@@ -721,7 +679,7 @@ bool NaverExtensionBroker::SetCommandList()
 
 	return false;
 }
-bool NaverExtensionBroker::SyncPreferences(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::SyncPreferences(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	//BOOL _retval = FALSE;
 	//BOOLEAN_TO_NPVARIANT(_retval, *result);
@@ -746,7 +704,7 @@ bool NaverExtensionBroker::SyncPreferences(const NPVariant *args, uint32_t argCo
 	return true;
 }
 
-bool NaverExtensionBroker::onBeforeNavigate(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::onBeforeNavigate(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 
 	BOOL _retval = TRUE;
@@ -755,7 +713,7 @@ bool NaverExtensionBroker::onBeforeNavigate(const NPVariant *args, uint32_t argC
 	return true;
 }
 
-bool NaverExtensionBroker::onClickFun(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::onClickFun(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	bool bRet = NPN_InvokeDefault(mNpp,m_pJsCallBackObj,NULL,0,result);  
 	return bRet;
@@ -764,21 +722,21 @@ bool NaverExtensionBroker::onClickFun(const NPVariant *args, uint32_t argCount, 
 void OnTestAsyncCall(void* pBroker)
 {
 	NPError err = NPERR_NO_ERROR;
-	NaverExtensionBroker* pThis = (NaverExtensionBroker*)pBroker;
+	ExtensionBroker* pThis = (ExtensionBroker*)pBroker;
 	NPAPI_VERIFY(NPN_GetURL(pThis->m_pNPInstance,"javascript:clickfun()","_self"));
 }
 
-unsigned int __stdcall NaverExtensionBroker::myTestThread(void* pParam)
+unsigned int __stdcall ExtensionBroker::myTestThread(void* pParam)
 {
 	//MessageBox(NULL, TEXT("in myTestThread"), NULL, MB_OK);
 	NPError err = NPERR_NO_ERROR;
-	NaverExtensionBroker* pThis = (NaverExtensionBroker*)(pParam);
+	ExtensionBroker* pThis = (ExtensionBroker*)(pParam);
 
 	NPN_PluginThreadAsyncCall(pThis->m_pNPInstance, OnTestAsyncCall, pThis);
 	return 0;
 }
 
-bool NaverExtensionBroker::onTest(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::onTest(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	
 	//NPError err = NPERR_NO_ERROR;
@@ -798,7 +756,7 @@ bool NaverExtensionBroker::onTest(const NPVariant *args, uint32_t argCount, NPVa
 	return true;
 }
 
-bool NaverExtensionBroker::onCompleted(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::onCompleted(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 
 	BOOL _retval = TRUE;
@@ -821,7 +779,7 @@ bool NaverExtensionBroker::onCompleted(const NPVariant *args, uint32_t argCount,
 	return true;
 }
 
-bool NaverExtensionBroker::onCommitted(const NPVariant *args, uint32_t argCount, NPVariant *result)
+bool ExtensionBroker::onCommitted(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
 	BOOL _retval = TRUE;
 
@@ -850,11 +808,11 @@ bool NaverExtensionBroker::onCommitted(const NPVariant *args, uint32_t argCount,
 	return true;
 }
 
-void NaverExtensionBroker::OnEventCall(LPCTSTR sContentsURL, int nType, int nErrorCode, LPCTSTR sMsg)
+void ExtensionBroker::OnEventCall(LPCTSTR sContentsURL, int nType, int nErrorCode, LPCTSTR sMsg)
 {
 }
 
-void NaverExtensionBroker::CallBackFunc(int itype,std::string &path)
+void ExtensionBroker::CallBackFunc(int itype,std::string &path)
 {
 	NPError err = NPERR_NO_ERROR;
 	if (m_pJsCallBackObj)
@@ -868,7 +826,7 @@ void NaverExtensionBroker::CallBackFunc(int itype,std::string &path)
 		 NPAPI_VERIFY(NPN_GetURL(m_pNPInstance,sBuf.str().c_str(),"_self")); //vivid
 	 }
 }
-int NaverExtensionBroker::ChangCode(char *buf)
+int ExtensionBroker::ChangCode(char *buf)
 {
 	int code = 0;
 	std::string strBuf(buf);

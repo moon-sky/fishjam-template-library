@@ -129,12 +129,19 @@
 *   <menulist> -- 下拉列表框，其内嵌 menupopup 。
 *     [editable] <== 如设置为"true"，则也可以不从下拉列表中选择，而手工输入(如文本选择器)
 *   <menupopup> -- 弹出菜单，不可见(即不需要设置 label 属性)，内嵌 <menuitem> 和 <menuseparator> 等
+*     [onpopupshowing] -- 弹出子菜单时的事件，可以动态改变菜单项.
 *   <menuseparator> -- 菜单的分割条
 *   <overlay> -- 可以合并到其他XUL中去的XUL文件的根元素？
 *   <page> -- 侧边栏以及其他在窗口框架内部打开的XUL文档等的根元素，需要内嵌 iframe 指向 XUL 文件 来提供内容
 *   <popupset> -- 弹出内容，其内部包含 <menupopup>,<panel>,<tooltip> 三种元素，分别对应 上下文菜单([context]),普通弹出(左键点击),工具提示([tooltip])。
 *      注意：在设置的位置不可见，需要通过其id关联弹出方式，当条件满足时才显示出来。
-*   <prefwindow> -- 设置窗体? 具有确定和取消的按钮
+*   <preference> -- 不可见的首选项，在各种界面元素(如 <checkbox>、<radiogroup> 等) 中设置 [preference]=首选项ID 即可自动关联。
+*      [id] -- 一般设置为和[name]一样的?
+*      [name] -- 设置为首选项的名称(即about:config)中看到的项?
+*      [type] -- 类型，有 "bool", "int" 等
+*   <preferences> -- 包含多个首选项，不可见元素 ?
+*   <prefwindow> -- 特殊的用于创建首选项面板的根元素? 内嵌 <prefpane><preferences><preference>。
+*      设置完毕后，需要在 install.rdf 文件中增加 <em:optionsURL> 的项，然后即可在“附加组件管理器”的扩展中看到“选项”按钮了
 *   <progressmeter> -- 进度条，通过 mode="determined(确定的)|undetermined(不确定的)" 选择类型;
 *      当模式为确定时，可以通过 value="50%" 设置进度位置; 当为不确定的时，进度持续更新表示处理正在继续
 *   <radio> -- 单选按钮，当前选择的元素[selected]="true",且所在<radiogroup>的[value]属性为选择<radio>对应的值
@@ -151,8 +158,12 @@
 *   <stack> -- 栈容器，其内部的元素是按创建的顺序重叠摆放，新创建的放在最上面，
 *      用途：把颜色不同的字错开重叠可以实现一些阴影效果；<progressmeter>和<label>一起显示带文本的进度条
 *   <stringbundle> -- 通过 src="chrome://xxx/locale/xxxx.properties" 的方式指定属性文件，属性文件是一串 Key=Value 对的文本文件。
-*      然后 JS 中即可通过如下方法获得响应的本地字符资源：
-*        var bundleString = document.getElementById("bundle的ID"); var strValue = bundleString.getString("想要的资源Key");
+*      JS 中可通过如下方法获得响应的本地字符资源：
+*            var gBundleService = Cc["@mozilla.org/intl/stringbundle;1"].getService(Ci.nsIStringBundleService);
+*            var gBundles = gBundleService.createBundle("chrome://xxx/locale/xxxx.properties")
+*        或 
+*            var gBundles = document.getElementById("bundle的ID"); 
+*        var strValue = gBundles.GetStringFromName("想要的资源Key");
 *   <stringbundleset> -- 内嵌 <stringbundle> 元素，在JavaScript中提供本地化
 *   <tabbox> -- 标签页, 需要组合 <tabs><tab label="标签页的标题"/>  和 <tabpanels><tabpanel>标签页的内容</tabpanel> 才能显示出来，
 *      两者的个数和顺序需要对应。TODO: 有没有办法在 tabpanel 中引用到别的 xul 文件？
