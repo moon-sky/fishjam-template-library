@@ -1,10 +1,3 @@
-/**
-* @file plugin.cpp
-* @brief NPAPI use class implementation file
-* @author : Woo Chang-Hee(changhee.woo@nhn.com)
-* @date : 2011-06-20
-* Copyright (c) 2011 NHN / NBP Corporation. All Rights Reserved.
-*/
 /* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 
 
@@ -60,7 +53,8 @@ m_pNPStream(NULL),
 m_bInitialized(FALSE),
 m_pScriptableObject(NULL)
 {
-	MessageBox(NULL, TEXT("CPlugin::CPlugin"), NULL, MB_OK);
+	FUNCTION_BLOCK_TRACE(0);
+	//MessageBox(NULL, TEXT("CPlugin::CPlugin"), NULL, MB_OK);
 #ifdef XP_WIN
 	m_hWnd = NULL;
 #endif

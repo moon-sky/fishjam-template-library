@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)Output\components"
+			OutputDirectory="$(SolutionDir)Output\libraries"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\FirefoxConfig.vsprops;$(FJSDK)FJSDK.vsprops"
@@ -91,7 +91,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)Output\components"
+			OutputDirectory="$(SolutionDir)Output\libraries"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\FirefoxConfig.vsprops;$(FJSDK)FJSDK.vsprops"

@@ -1,10 +1,3 @@
-/**
-* @file npentry.cpp
-* @brief NPAPI use class implementation file
-* @author : Woo Chang-Hee(changhee.woo@nhn.com)
-* @date : 2011-06-20
-* Copyright (c) 2011 NHN / NBP Corporation. All Rights Reserved.
-*/
 /* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 
 
@@ -42,7 +35,7 @@ NPError OSCALL NP_GetEntryPoints(NPPluginFuncs* pFuncs)
 {
 	FUNCTION_BLOCK_TRACE(0);
 
-	MessageBox(NULL, TEXT("NP_GetEntryPoints"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("NP_GetEntryPoints"), NULL, MB_OK);
 
 	if(pFuncs == NULL)
 	{
@@ -88,7 +81,8 @@ NPError
 NP_GetValue(void* future, NPPVariable variable, void *value)
 {
 	FUNCTION_BLOCK_TRACE(0);
-	::MessageBox(NULL, TEXT("NP_GetValue"), CFnpAPIUtil::GetNPPVariableString(variable), MB_OK);
+	FTLTRACE(TEXT("NP_GetValue, variable=%s\n"), CFnpAPIUtil::GetNPPVariableString(variable));
+	//::MessageBox(NULL, TEXT("NP_GetValue"), CFnpAPIUtil::GetNPPVariableString(variable), MB_OK);
 	return NPP_GetValue((NPP_t *)future, variable, value);
 }
 
@@ -100,7 +94,7 @@ NP_Initialize(NPNetscapeFuncs* pFuncs
 			  )
 {
 	FUNCTION_BLOCK_TRACE(0);
-	MessageBox(NULL, TEXT("NP_Initialize"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("NP_Initialize"), NULL, MB_OK);
 
 	if(pFuncs == NULL)
 	{

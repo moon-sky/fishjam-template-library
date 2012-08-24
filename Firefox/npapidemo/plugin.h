@@ -1,10 +1,3 @@
-/**
-* @file plugin.h
-* @brief NPAPI use class implementation file
-* @author : Woo Chang-Hee(changhee.woo@nhn.com)
-* @date : 2011-06-20
-* Copyright (c) 2011 NHN / NBP Corporation. All Rights Reserved.
-*/
 /* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: NPL 1.1/GPL 2.0/LGPL 2.1

@@ -29,19 +29,18 @@ NaverExtensionBroker::NaverExtensionBroker(NPP npp)
 	, m_bAnableSendLog(true)
 {
 	FUNCTION_BLOCK_TRACE(0);
-
 	INIT_EXPORT_METHOD_MAP();
 
 	m_pJsCallBackObj = NULL;
 	m_bGestureEnabled = FALSE;
-	MessageBox(NULL, TEXT("NaverExtensionBroker::NaverExtensionBroker"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("NaverExtensionBroker::NaverExtensionBroker"), NULL, MB_OK);
 
 }
 
 NaverExtensionBroker::~NaverExtensionBroker(void)
 {
 	FUNCTION_BLOCK_TRACE(0);
-	MessageBox(NULL, TEXT("NaverExtensionBroker::~NaverExtensionBroker"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("NaverExtensionBroker::~NaverExtensionBroker"), NULL, MB_OK);
 	Stop();
 }
 
@@ -76,6 +75,9 @@ bool NaverExtensionBroker::HasMethod(NPIdentifier name)
 {
 	std::string strName = NPN_UTF8FromIdentifier(name);
 	FTLTRACE(TEXT("%s, name=%s\n"), TEXT(__FUNCTION__), CFConversion().UTF8_TO_TCHAR(strName.c_str()));
+
+	FTL::FormatMessageBox(NULL, TEXT("NaverExtensionBroker::HasMethod"),MB_OK, 
+		TEXT("name=%s"),  CFConversion().UTF8_TO_TCHAR(strName.c_str()));
 
 	if(NPN_IdentifierIsString(name))
 	{
@@ -252,7 +254,7 @@ bool NaverExtensionBroker::Stop()
 
 bool NaverExtensionBroker::OutputLog(const NPVariant *args, uint32_t argCount, NPVariant *result)
 {
-	MessageBox(NULL, TEXT("In NaverExtensionBroker::OutputLog"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("In NaverExtensionBroker::OutputLog"), NULL, MB_OK);
 	return true;
 
 	BOOL _retval = TRUE;
@@ -768,7 +770,7 @@ void OnTestAsyncCall(void* pBroker)
 
 unsigned int __stdcall NaverExtensionBroker::myTestThread(void* pParam)
 {
-	MessageBox(NULL, TEXT("in myTestThread"), NULL, MB_OK);
+	//MessageBox(NULL, TEXT("in myTestThread"), NULL, MB_OK);
 	NPError err = NPERR_NO_ERROR;
 	NaverExtensionBroker* pThis = (NaverExtensionBroker*)(pParam);
 
