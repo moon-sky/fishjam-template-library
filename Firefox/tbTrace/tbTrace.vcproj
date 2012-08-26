@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="Output"
-	ProjectGUID="{9BB72EB3-DC86-4430-A146-27A1D7E81A5A}"
-	RootNamespace="Output"
+	Name="tbTrace"
+	ProjectGUID="{9C8B46E7-AB0D-4199-B877-9DE3653C4115}"
+	RootNamespace="tbTrace"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -18,9 +18,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)output\libraries"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,11 +42,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;TBTRACE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -89,9 +90,10 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)output\libraries"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -114,10 +116,10 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;TBTRACE_EXPORTS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -166,157 +168,161 @@
 	</References>
 	<Files>
 		<Filter
-			Name="chrome"
+			Name="output"
 			>
-			<Filter
-				Name="content"
+			<File
+				RelativePath=".\output\chrome.manifest"
 				>
-				<File
-					RelativePath=".\chrome\content\define.js"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\extern.xul"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\infoDialog.xul"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\localize.js"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\localize.xul"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\my-math.js"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\myAddon.js"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\overlay.js"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\overlay.xul"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\prefs.xul"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\trace.html"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\trace.js"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\xpcomtest.js"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\content\xpcomtest.xul"
-					>
-				</File>
-			</Filter>
+			</File>
+			<File
+				RelativePath=".\output\install.rdf"
+				>
+			</File>
 			<Filter
-				Name="locale"
+				Name="chrome"
 				>
 				<Filter
-					Name="en-US"
+					Name="content"
 					>
 					<File
-						RelativePath=".\chrome\locale\en-US\infoDialog.dtd"
+						RelativePath=".\output\chrome\content\define.js"
 						>
 					</File>
 					<File
-						RelativePath=".\chrome\locale\en-US\localize.dtd"
+						RelativePath=".\output\chrome\content\overlay.js"
 						>
 					</File>
 					<File
-						RelativePath=".\chrome\locale\en-US\overlay.dtd"
+						RelativePath=".\output\chrome\content\overlay.xul"
 						>
 					</File>
 					<File
-						RelativePath=".\chrome\locale\en-US\res.properties"
+						RelativePath=".\output\chrome\content\prefs.xul"
+						>
+					</File>
+					<File
+						RelativePath=".\output\chrome\content\tbTrace.js"
+						>
+					</File>
+					<File
+						RelativePath=".\output\chrome\content\tbTrace_FF.js"
 						>
 					</File>
 				</Filter>
 				<Filter
-					Name="zh-CN"
+					Name="locale"
+					>
+					<Filter
+						Name="zh-CN"
+						>
+						<File
+							RelativePath=".\output\chrome\locale\zh-CN\overlay.dtd"
+							>
+						</File>
+						<File
+							RelativePath=".\output\chrome\locale\zh-CN\res.properties"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="skin"
 					>
 					<File
-						RelativePath=".\chrome\locale\zh-CN\infoDialog.dtd"
-						>
-					</File>
-					<File
-						RelativePath=".\chrome\locale\zh-CN\localize.dtd"
-						>
-					</File>
-					<File
-						RelativePath=".\chrome\locale\zh-CN\overlay.dtd"
-						>
-					</File>
-					<File
-						RelativePath=".\chrome\locale\zh-CN\res.properties"
+						RelativePath=".\output\chrome\skin\overlay.css"
 						>
 					</File>
 				</Filter>
 			</Filter>
 			<Filter
-				Name="skin"
+				Name="components"
 				>
-				<File
-					RelativePath=".\chrome\skin\infoDialog.css"
-					>
-				</File>
-				<File
-					RelativePath=".\chrome\skin\overlay.css"
-					>
-				</File>
+			</Filter>
+			<Filter
+				Name="defaults"
+				>
+			</Filter>
+			<Filter
+				Name="libraries"
+				>
 			</Filter>
 		</Filter>
 		<Filter
-			Name="components"
-			>
-		</Filter>
-		<Filter
-			Name="defaults"
+			Name="src"
 			>
 			<Filter
-				Name="preferences"
+				Name="Header Files"
+				Filter="h;hpp;hxx;hm;inl;inc;xsd"
+				UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 				>
 				<File
-					RelativePath=".\defaults\preferences\prefs.js"
+					RelativePath=".\stdafx.h"
+					>
+				</File>
+				<File
+					RelativePath=".\tbTrace.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Resource Files"
+				Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+				UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+				>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+				UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+				>
+				<File
+					RelativePath=".\dllmain.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAsManaged="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+							CompileAsManaged="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\stdafx.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="1"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\tbTrace.cpp"
 					>
 				</File>
 			</Filter>
 		</Filter>
-		<Filter
-			Name="libraries"
-			>
-		</Filter>
-		<File
-			RelativePath=".\chrome.manifest"
-			>
-		</File>
-		<File
-			RelativePath=".\install.rdf"
-			>
-		</File>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

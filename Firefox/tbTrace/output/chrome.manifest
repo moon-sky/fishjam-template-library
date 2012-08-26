@@ -1,0 +1,7 @@
+content	tbTrace				chrome/content/
+locale	tbTrace	zh-CN		chrome/locale/zh-CN/
+skin	tbTrace	classic/1.0	chrome/skin/
+
+overlay	chrome://browser/content/browser.xul			chrome://tbTrace/content/overlay.xul
+style	chrome://browser/content/browser.xul			chrome://tbTrace/skin/overlay.css
+

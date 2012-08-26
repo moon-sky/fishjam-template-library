@@ -38,7 +38,8 @@ function traceObj(obj){
             }
         }
         catch(err){}
-    }   
+    }
+    alert(strObj);   
     trace(strObj);
     return strObj;
 }

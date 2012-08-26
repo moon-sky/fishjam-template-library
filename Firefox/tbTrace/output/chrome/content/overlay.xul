@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://tbTrace/skin/overlay.css" type="text/css"?>
+
+<!DOCTYPE overlay SYSTEM "chrome://tbTrace/locale/overlay.dtd">
+
+
+<overlay id="tbtrace-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+		 xmlns:html="http://www.w3.org/1999/xhtml"
+		 >
+
+	<script type="application/x-javascript" src="chrome://browser/content/browser.js"/>
+	<script type="application/x-javascript" src="chrome://global/content/nsDragAndDrop.js"/>
+	<script type="application/x-javascript" src="chrome://global/content/nsTransferable.js"/>
+
+	<script type="application/x-javascript" src="chrome://fishjamTest/content/trace.js"/>
+
+	<script type="application/x-javascript" src="chrome://tbTrace/content/define.js"/>
+	<script type="application/x-javascript" src="chrome://tbTrace/content/overlay.js"/>
+	<script type="application/x-javascript" src="chrome://tbTrace/content/tbTrace.js"/>
+	<script type="application/x-javascript" src="chrome://tbTrace/content/tbTrace_FF.js"/>
+
+	<menupopup id="menu_ToolsPopup">
+		<menuitem id="tbTraceShow" label="&tbTrace.menu.show;" oncommand="tbTrace.init(); tbTrace.trace('this is in tbTrace Test');"/>
+	</menupopup>
+</overlay>
