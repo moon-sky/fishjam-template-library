@@ -122,7 +122,8 @@
 * Event	代表事件的状态
 * Form	代表 <form> 元素
 * Frame	代表 <frame> 元素
-* Frameset	代表 <frameset> 元素
+* Frameset	代表 <frameset> 元素， 框架可以使一个页面划分为功能独立的多个模块，每个模块之间彼此独立，但又可以通过window对象的引用来建立联系，
+*   内嵌 <frame> 对象，可以通过 cols="20%,80%" 的方式来设置多个frame的高宽比
 * Iframe	代表 <iframe> 元素, 不是同域也是可以操控的
 * Image	代表 <img> 元素
 * Input button	代表 HTML 表单中的按钮

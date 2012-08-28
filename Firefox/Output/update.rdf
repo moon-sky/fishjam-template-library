@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
+         xmlns:NC="http://home.netscape.com/NC-rdf#"
+         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <RDF:Description RDF:about="rdf:#$4nsG61"
+                   em:id="fishjamTest@fishjam.com"
+                   em:minVersion="1.0"
+                   em:maxVersion="14.0.*"
+                   em:updateLink="http://127.0.0.1/fishjamTest.1.0.0.1.xpi"
+                   em:updateHash="sha1:D5171A740CE588348CF2141B846F9273B34C2923" />
+  <RDF:Description RDF:about="urn:mozilla:extension: fishjamTest@fishjam.com"
+                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAI1ABVyZdwXiEANLcDTd5REIcRE5YdtPjI6sdSMKSARf5Y3Yn2D/+AnXjtBLQOZ6STCU7tyTUyy8RZ8+il0rYhLOXWteaiOMybNNl7RXtM984aZDt4Ii4kxgpIxi8Ng5ss9E72OQLm7yUKxQ3raJWXZdlfIHlCkxFkgKbGMFCmKb">
+    <em:updates RDF:resource="rdf:#$TmsG61"/>
+  </RDF:Description>
+  <RDF:Seq RDF:about="rdf:#$TmsG61">
+    <RDF:li RDF:resource="rdf:#$UmsG61"/>
+    <RDF:li RDF:resource="rdf:#$1nsG61"/>
+  </RDF:Seq>
+  <RDF:Description RDF:about="rdf:#$1nsG61"
+                   em:version="7.0.0.1">
+    <em:targetApplication RDF:resource="rdf:#$4nsG61"/>
+  </RDF:Description>
+</RDF:RDF>

@@ -97,17 +97,25 @@
 * 使用方式(HTML中)
 *   是  <object id="myPluginID" type="application/x-yyy" > <param name="xxx" value="yyy"/></object>
 *   还是 <embed id="myPluginID" type="application/x-yyy" color="FFFF0000"></embed>
-* 
 *   然后在JS中即可通过 "myPluginID.xxx" 访问，内部过程：
 *   1.NPP_GetValue 得到 NPClass;
 *   2.hasMethod/hasProperty 确认是否有对应的函数/属性;
 *   3.Invoke/GetProperty 进行触发;
 *   4.插件内部的实现;
-*     * 函数回调(myPluginID.somecallback = func): 通过 SetProperty(回调指针) 设置，插件内部通过 *   NPN_DefaultInvoke(回调指针) 触发回调.回调函数是 NPObject* 类型的变量(m_playOver), *   调用:NPN_InvokeDefault(0, m_playOver, 0, 0, &result); 
+*  
+*   动态创建：
+*     var newNode = document.createElement("embed");
+*     newNode.setAttribute("type","application/x-yyy");
+*     newNode.setAttribute("id", xxx"); //width, height
+*     
+* 函数回调(myPluginID.somecallback = func): 通过 SetProperty(回调指针) 设置，插件内部通过 
+*   NPN_DefaultInvoke(回调指针) 触发回调.回调函数是 NPObject* 类型的变量(m_playOver), 
+*   调用:NPN_InvokeDefault(0, m_playOver, 0, 0, &result); 
 *        NPN_ReleaseVariantValue(&result); 
 *   析构时需要 :if(m_playOver){ NPN_ReleaseObject(m_playOver); }
 *
-* NPAPI Scriptable Plugin(JavaScript 可以将 Plugin 当作 JavaScript Object 来使用) -- *   需要添加plugin的函数与属性(static NPIdentifier 类型的?通过 NPN_GetStringIdentifier("名字") 初始化?)
+* NPAPI Scriptable Plugin(JavaScript 可以将 Plugin 当作 JavaScript Object 来使用) -- 
+*   需要添加plugin的函数与属性(static NPIdentifier 类型的?通过 NPN_GetStringIdentifier("名字") 初始化?)
 *   
 *   若要支持属性枚举(traceObj 或 DOM Inspector等), 需要支持以下方法或属性
 *     __iterator__

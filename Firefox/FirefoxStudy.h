@@ -48,7 +48,7 @@ zip  ..\xxxxx.xpi META-INF\zigbert.rsa				<== 先把 zigbert.rsa 压缩进xpi包
 zip -r -D ..\xxxxx.xpi * -x META-INF\zigbert.rsa	<== 然后把除 zigbert.rsa 外的其他文件压缩进xpi包
 
 
-setlocal EnableDelayedExpansion  <== 什么意思?
+setlocal EnableDelayedExpansion  <== 设置本地为延迟扩展。其实也就是：延迟变量，全称延迟环境变量扩展, 
 
 for /f "delims=" %%i in ('dir  /a-d/b *.xpi') do ( xxx )
 
