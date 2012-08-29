@@ -32,8 +32,9 @@ namespace FTL
     #ifndef QQUOTE
     #  define    QUOTE(x)        #x
     #  define    QQUOTE(y)       QUOTE(y)
-    #  define     __FILE__LINE__  TEXT(__FILE__) TEXT("(") TEXT(QQUOTE(__LINE__)) TEXT(") :")
     #endif //QQUOTE
+
+	#define     __FILE__LINE__  TEXT(__FILE__) TEXT("(") TEXT(QQUOTE(__LINE__)) TEXT(") :")
 
     /**********************************************************************************************
     * 宏展开是按字符顺序扫描的

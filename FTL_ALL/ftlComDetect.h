@@ -272,7 +272,14 @@ namespace FTL
         DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromRegister(pUnknown, GUID_NULL,FTL::CFComDetect::cdtInterface);\
         FTLTRACEEX(FTL::tlTrace,TEXT("%s's Interfaces Count are at least %d\n\n"),TEXT(#pUnknown),dwIntCount);\
     }
-	
+
+# define COM_DETECT_MONIKER_BIND_TO_OBJECT_FROM_REGISTER(pMoniker) \
+	{\
+		FTLTRACEEX(FTL::tlTrace,TEXT("%s(%d) : Begin Detect Moniker Can Bind to Object %s( 0x%p ) From Register\n"),TEXT(__FILE__),__LINE__,TEXT(#pMoniker),pMoniker);\
+		DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromRegister(pMoniker, GUID_NULL,FTL::CFComDetect::cdtMonikerBind);\
+		FTLTRACEEX(FTL::tlTrace,TEXT("%s's Can Bind to at least %d\n\n"),TEXT(#pMoniker),dwIntCount);\
+	}
+
 //IVsWindowFrame::QueryViewInterface
 # define COM_DETECT_VIEW_INTERFACE_FROM_REGISTER(pUnknown) \
 	{\

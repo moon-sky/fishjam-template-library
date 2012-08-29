@@ -6,8 +6,11 @@
 #  include "ftlfile.h"
 #endif
 
+#include <atlpath.h>
+
 namespace FTL
 {
+#if 0
     CFConsoleFile::CFConsoleFile()
     {
         AllocConsole(); 
@@ -25,6 +28,7 @@ namespace FTL
     {
         FreeConsole(); 
     }
+#endif 
 
 	//-----------------------------------------------------------------------------
 	// Construction/Destruction
@@ -58,8 +62,9 @@ namespace FTL
 			::GetCurrentProcess(), &hFile, 0, FALSE, DUPLICATE_SAME_ACCESS))
 		{
 			delete pFile;
-			CFFileException ex((long)::GetLastError());
-			throw ex;
+			//CFFileException ex((long)::GetLastError());
+			//throw ex;
+			return NULL;
 		}
 
 		pFile->m_hFile = hFile;
@@ -71,7 +76,7 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Creates or opens a file
 	//-----------------------------------------------------------------------------
-	void CFFile::Open(LPCTSTR pszFileName,			// file name 
+	BOOL CFFile::Open(LPCTSTR pszFileName,			// file name 
 		DWORD dwAccess,				// access mode
 		DWORD dwShareMode,				// share mode
 		LPSECURITY_ATTRIBUTES lpSA,	// poiner to SECURITY_ATTRIBUTES
@@ -109,8 +114,9 @@ namespace FTL
 
 		if (hFile == INVALID_HANDLE_VALUE)
 		{
-			CFFileException ex((long)::GetLastError());
-			throw ex;
+			//CFFileException ex((long)::GetLastError());
+			//throw ex;
+			return FALSE;
 		}
 
 		// See if the file already exists and if it does move the file pointer 
@@ -119,6 +125,7 @@ namespace FTL
 			::SetFilePointer(hFile, 0, 0, FILE_END);
 
 		m_hFile = hFile;
+		return TRUE;
 	}
 
 	//-----------------------------------------------------------------------------
@@ -137,11 +144,12 @@ namespace FTL
 		_ASSERT(lpBuf);
 
 		// Read data from the file
-		DWORD dwRead;
+		DWORD dwRead = 0;
 		if (!::ReadFile(m_hFile, lpBuf, nCount, &dwRead, lpOverlapped))
 		{
-			CXFileException ex((long)::GetLastError());
-			throw ex;
+			//CXFileException ex((long)::GetLastError());
+			//throw ex;
+			FTLASSERT(FALSE);
 		}
 
 		return dwRead;
@@ -150,7 +158,7 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Writes data from a buffer to the file associated with the CFFile object
 	//-----------------------------------------------------------------------------
-	void CFFile::Write(const void* lpBuf, DWORD nCount)
+	BOOL CFFile::Write(const void* lpBuf, DWORD nCount)
 	{
 		_ASSERT(m_hFile && ((m_hFile) != INVALID_HANDLE_VALUE));
 		_ASSERT(lpBuf);
@@ -158,21 +166,25 @@ namespace FTL
 		// Avoid a null write operation, since the behavior of a null
 		// write operation depends on the underlying file system
 		if (nCount == 0)
-			return;
+		{
+			return TRUE;
+		}
 
 		// Write data to a file
 		DWORD dwWritten;
 		if (!::WriteFile(m_hFile, lpBuf, nCount, &dwWritten, NULL))
 		{
-			CXFileException ex((long)::GetLastError());
-			throw ex;
+			//CXFileException ex((long)::GetLastError());
+			//throw ex;
+			return FALSE;
 		}
+		return TRUE;
 	}
 
 	//-----------------------------------------------------------------------------
 	// Writes "\r\n" combination at the end of the line
 	//-----------------------------------------------------------------------------
-	void CFFile::WriteEndOfLine()
+	BOOL  CFFile::WriteEndOfLine()
 	{
 		_ASSERT(m_hFile && ((m_hFile) != INVALID_HANDLE_VALUE));
 
@@ -182,9 +194,11 @@ namespace FTL
 		// Append CR-LF pair 
 		if (!::WriteFile(m_hFile, strCRLF, strCRLF.GetLength(), &dwWritten, NULL))
 		{
-			CXFileException ex((long)::GetLastError());
-			throw ex;
+			//CXFileException ex((long)::GetLastError());
+			//throw ex;
+			return FALSE;
 		}
+		return TRUE;
 	}
 
 	//-----------------------------------------------------------------------------
@@ -346,10 +360,12 @@ namespace FTL
 		int nPos = strNewName.Find(TEXT(":\\"));
 		if (nPos == -1)
 		{
-			FTLASSERT(FALSE);	
+			FTLASSERT(FALSE);
+			return FALSE;
 		}
 
 		m_strFileName = strNewName;
+		return TRUE;
 	}
 
 	//-----------------------------------------------------------------------------
@@ -395,7 +411,7 @@ namespace FTL
 
 	BOOL CFPath::CreateDir(LPTSTR szPath)
 	{
-		TCHAR szDirName[FULL_PATH_BUFF] = { NULL };
+		TCHAR szDirName[MAX_PATH] = { NULL };
 		TCHAR* p = szPath;
 		TCHAR* q = szDirName;
 
@@ -458,7 +474,7 @@ namespace FTL
         m_pCurrentStg = NULL;
     }
 
-    virtual CFStructuredStorageFile::~CFStructuredStorageFile()
+    CFStructuredStorageFile::~CFStructuredStorageFile()
     {
         Close();
     }

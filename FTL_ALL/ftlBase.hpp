@@ -56,7 +56,7 @@ namespace FTL
     }
 
     template<typename TBase, typename INFO_TYPE, LONG bufLen>
-    const INFO_TYPE CFConvertInfoT<TBase,INFO_TYPE,bufLen>::GetInfo() const
+    INFO_TYPE CFConvertInfoT<TBase,INFO_TYPE,bufLen>::GetInfo() const
     {
         return m_Info;
     }

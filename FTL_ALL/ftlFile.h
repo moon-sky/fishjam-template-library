@@ -59,32 +59,34 @@ namespace FTL
 	* CreateFile 时如果有 FILE_FLAG_SEQUENTIAL_SCAN， 表示优化Cache，适用于从头到尾顺序访问，不会随机跳
     **************************************************************************************************/
 	
+#if 0
     class CFConsoleFile
     {
     public:
         FTLINLINE CFConsoleFile();
         virtual ~CFConsoleFile();
     };
+#endif 
 
     class CFFile
     {
 	public:
 		enum SeekPosition { begin = 0x0, current = 0x1, end = 0x2 };
 		// Constructors, destructor
-		CFFile();
-		CFFile(HANDLE hFile);
-		virtual ~CFFile();
+		FTLINLINE CFFile();
+		FTLINLINE CFFile(HANDLE hFile);
+		FTLINLINE virtual ~CFFile();
 
 		// Attributes
 		HANDLE m_hFile;
 
 		// Operations
-		virtual DWORD GetPosition() const;
-		virtual CString GetFileName() const;
-		virtual CString GetFilePath() const;
-		virtual BOOL SetFilePath(CString strNewName);
+		FTLINLINE virtual DWORD GetPosition() const;
+		FTLINLINE virtual CString GetFileName() const;
+		FTLINLINE virtual CString GetFilePath() const;
+		FTLINLINE virtual BOOL SetFilePath(CString strNewName);
 
-		virtual BOOL Open(LPCTSTR pszFileName, 
+		FTLINLINE virtual BOOL Open(LPCTSTR pszFileName, 
 			DWORD dwAccess = GENERIC_WRITE | GENERIC_READ,
 			DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE,
 			LPSECURITY_ATTRIBUTES lpSA = NULL,
@@ -93,27 +95,27 @@ namespace FTL
 			HANDLE hTemplateFile = NULL
 			);
 
-		static BOOL Rename(CString strOldName, CString strNewName);
-		static BOOL Remove(CString strFileName);
+		FTLINLINE static BOOL Rename(CString strOldName, CString strNewName);
+		FTLINLINE static BOOL Remove(CString strFileName);
 
-		DWORD SeekToEnd();
-		DWORD SeekToBegin();
+		FTLINLINE DWORD SeekToEnd();
+		FTLINLINE DWORD SeekToBegin();
 
-		virtual CFFile * Duplicate() const;
+		FTLINLINE virtual CFFile * Duplicate() const;
 
-		virtual DWORD Seek(LONG lOff, UINT nFrom);
-		virtual BOOL SetLength(DWORD dwNewLen);
-		virtual DWORD GetLength() const;
+		FTLINLINE virtual DWORD Seek(LONG lOff, UINT nFrom);
+		FTLINLINE virtual BOOL SetLength(DWORD dwNewLen);
+		FTLINLINE virtual DWORD GetLength() const;
 
-		virtual DWORD Read(void* lpBuf, DWORD nCount, LPOVERLAPPED lpOverlapped = NULL);
-		virtual BOOL Write(const void* lpBuf, DWORD nCount);
-		BOOL WriteEndOfLine();
+		FTLINLINE virtual DWORD Read(void* lpBuf, DWORD nCount, LPOVERLAPPED lpOverlapped = NULL);
+		FTLINLINE virtual BOOL Write(const void* lpBuf, DWORD nCount);
+		FTLINLINE BOOL WriteEndOfLine();
 
-		virtual BOOL LockRange(DWORD dwPos, DWORD dwCount) throw(CXFileException);
-		virtual BOOL UnlockRange(DWORD dwPos, DWORD dwCount) throw(CXFileException);
+		FTLINLINE virtual BOOL LockRange(DWORD dwPos, DWORD dwCount);
+		FTLINLINE virtual BOOL UnlockRange(DWORD dwPos, DWORD dwCount);
 
-		virtual BOOL Flush();
-		virtual BOOL Close();
+		FTLINLINE virtual BOOL Flush();
+		FTLINLINE virtual BOOL Close();
 
 		enum BufferCommand { 
 			bufferRead, 
@@ -123,7 +125,7 @@ namespace FTL
 			bufferBlocking,
 			bufferDirect
 		};
-		virtual UINT GetBufferPtr(UINT nCommand, UINT nCount = 0, void** ppBufStart = NULL, void** ppBufMax = NULL);
+		FTLINLINE virtual UINT GetBufferPtr(UINT nCommand, UINT nCount = 0, void** ppBufStart = NULL, void** ppBufMax = NULL);
 
 	protected:
 		CString m_strFileName;	// stores the file name for the current file
@@ -187,3 +189,7 @@ namespace FTL
 }//namespace FTL
 
 #endif //FTL_FILE_H
+
+#ifndef USE_EXPORT
+#  include "ftlFile.hpp"
+#endif

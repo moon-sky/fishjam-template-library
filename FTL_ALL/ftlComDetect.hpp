@@ -402,6 +402,10 @@ namespace FTL
 #endif
 
 						break;
+					case cdtMonikerBind:
+						//hr = _innerCoDtectMonikerBindFromRegister();
+						FTLASSERT(FALSE);
+						break;
 					case cdtService:
 						hr = _innerCoDtectServiceFromRegister(pServiceProvider, guidInfo);
 						break;
@@ -552,12 +556,13 @@ namespace FTL
 #if INCLUDE_DETECT_CONTROL
             DETECT_INTERFACE_ENTRY(IAMCollection)   //FilterGraph对象集合，例如Filter或Pin
 
-            //!自动化接口，进行媒体播放控制,能获取Filter的集合
+            //!自动化接口，进行媒体播放控制,能获取Filter的集合，具有智能连接的功能
             // Run/Stop/GetState/StopWhenReady/get_FilterCollection/...
             // Stop后，通常需要使用 IMediaSeeking->SetPosition 到开始，并且调用IMediaControl->Pause 来显示第一帧 
             DETECT_INTERFACE_ENTRY(IMediaControl)
 
             //!进行媒体事件管理。GetEvent/WaitForCompletion/FreeEventParams/RestoreDefaultHandling/...
+			//管理 ITypeInfo，可以Invoke
             DETECT_INTERFACE_ENTRY(IMediaEvent)     //包含用来检索事件通知和用于重写FilterGraph管理器的默认事件处理的方法
 
             //!从IMediaEvent 派生并添加方法通过自定义的Windows消息进行回调通知

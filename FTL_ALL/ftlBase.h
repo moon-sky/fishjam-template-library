@@ -491,7 +491,7 @@ namespace FTL
         FTLINLINE explicit CFConvertInfoT(INFO_TYPE info);
         FTLINLINE virtual ~CFConvertInfoT();
         FTLINLINE LPCTSTR GetConvertedInfo();
-        FTLINLINE const INFO_TYPE GetInfo() const;
+        FTLINLINE INFO_TYPE GetInfo() const;
         FTLINLINE void SetInfo(INFO_TYPE info);
     public:
         FTLINLINE virtual LPCTSTR ConvertInfo() = 0;
