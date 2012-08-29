@@ -134,6 +134,11 @@
 *        Text Editor\External Markers жа ForceRemove '%GUID_MyMakerService%' = s 'MyMakerServiceName'
 *           { val DisplayName='xxx'; var Package='%CLSID_Package%'; var Service='%GUID_MyMakerService%' }
 *
+* TODO:
+*   MarkerOperator
+*     <== MarkRangeOp
+*     <== AddHighlightOp
+*     <== DeleteMarkerOp
 ********************************************************************************************/
 
 /********************************************************************************************
