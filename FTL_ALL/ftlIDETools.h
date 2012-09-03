@@ -629,36 +629,42 @@ namespace FTL
 	*       参数传递是通过 全局变量 或 堆栈操作 Pop，Push 和 20 个寄存器变量 $0～$9、$R0～$R9 进行
 	*     2.三种压缩算法(ZLib, BZip2, LZMA) -- LZMA 压缩具有比其它通用压缩方法更好的效果
 	*     3.可通过"XXXX"实现自定义对话框和界面
-	* 
+	*
+	*   静默安装(silent installations) -- 程序全部按照NSIS给予的默认配置进行安装，安装过程也不显示，全部后台运行
+	*     启动参数 /silent ?
+	*   
 	*   脚本(.nsh/.nsi -- 如果 makensis 同目录下有 nsisconf.nsh 头文件，会自动包含)
 	*     第三方的脚本开发集成环境：
 	*       HM NIS EDIT(有创建基础脚本的向导，F9预览结果) -- http://hmne.sourceforge.net/
 	*       Venis IX -- http://www.spaceblue.com/products/venis/
+	*       HM VNISEdit -- 
 	*     语法(基本结构包括 安装程序属性属性、页面、区段、函数 )
 	*       0.基本语法
 	*         转义字符 -- $前缀，如 $\n 表示换行， $$ 表示美元符"$", $\"表示双引号（？）
 	*         命令很长时，可以用 "/"(还是 "\" ?) 来换行继续写，如 Messagebox MB_OK / <CR> "This is line breaks demo" 
 	*         !define 常量名 "常量值"   -- Name 和 OutFile ?, 引用时(?)： ${常量名}
     *         !macro 宏名  XXX !macroend -- 定义宏，然后通过 !insertmacro 宏名 引用
-	*         !include 头文件名 -- 包含指定的头文件
+	*         !include 头文件名 -- 包含指定的头文件，如 !include LogicLib.nsh
     *         !insertmacro 宏名 -- 在当前位置插入定义的宏（如系统预订的 MUI_PAGE_WELCOME 等各个Page页面都是宏 -- \Modern UI\System.nsh 文件中） 
-	*         var 变量名, 引用时 $变量名
+	*         var [/GLOBAL] 变量名, 引用时 $变量名，变量以字符串方式存储？有1024字节的限制，定义的变量都是全局的(即使在区段或函数类定义？)
 	*             颜色 -- 类似HTML中的RGB表示法，但不用井号"#"
 	*         常用的预定义系统变量：
-	*           $INSTDIR，$OUTDIR，$CMDLINE，$LANGUAGE
-	*           $PROGRAMFILES、$COMMONFILES，$DESKTOP，$STARTMENU
+	*           $INSTDIR，$OUTDIR(目标系统的工作路径)，$CMDLINE，$LANGUAGE
+	*           $PROGRAMFILES、$COMMONFILES，$DESKTOP，$STARTMENU(开始菜单目录), $TEMP(系统临时目录)
 	*           $MUSIC，$FONTS，$APPDATA
 	*           $RESOURCES、$RESOURCES_LOCALIZED
 	*       0.5安装程序属性（如 Name、InstallDir 等)
 	*          确定安装程序的性能、外观和习惯，控制显示的文本、安装类型的数量等，大多数在运行时只读，
 	*       1.页面 -- 非静默安装所需要的向导页面，用于指导用户进行安装。
 	*         Page/UninstPage/PageEx 页面名 -- 指定特定的安装/卸载页面, 可通过回调函数进行验证,如没有回调，则对应的位置用 ""
-	*         内置界面(??) -- license，components，directory， uninstConfirm
+	*         内置界面(??) -- license(许可协议)，components(组件选择)，directory(安装目录选择)，instfiles(安装进行中)，uninstConfirm
 	*           Page <页面名> [pre_function] [show_function] [leave_function]
 	*         定制界面
 	*           Page <页面名> [creator_function] [leave_function] [caption]
-	*       2.Section "[un.]区段名"
-	*            区段内容，对应某种安装/卸载选项的处理逻辑
+	*       2.区段 -- 一般把属于一组功能或者相互关联的功能，放在一个区段中，并可以给区段娶个名字，
+	*                 这样在组建页面就可以显示这个名字供用户选择(组件？）
+	*         Section "[un.]区段名"
+	*            区段内容，对应某种安装/卸载选项的处理逻辑，如 解压文件、读取和写入注册表、INI文件或普通文件，创建目录、快捷方式等
 	*         SectionEnd
 	*         区段有修饰符，如 RO 
 	*         子区段：SubSection 
@@ -687,22 +693,29 @@ namespace FTL
 	*             un.onUserAbort
 	*       4.指令 -- 可带参数，如 /REBOOTOK
 	*           基本指令：Delete、Exec、ExecShell、ExecWait、Rename、RMDir
-	*             File -- 指定文件, /r 递归， /x 排除指定文件， 如 File /r *.exe
+	*             Abort -- 中断当前操作，如在 .onInit 中表示停止安装并退出
+	*             File -- 释放文件到当前输出路径($OUTDIR) ，通常需要配合SetOutPath使用
+	*               参数: /r 递归， /x 排除指定文件， 如 File /r *.dll
+	*             SetOutPath -- 设置输出路径，当路径不存在时会自动创建。常用的路径有  $INSTDIR、$SYSDIR、
 	*           标号：使用Goto、IfErrors等语句进行程序控制，语法为"标号: 语句", 标号必须定义在函数和区段中，其作用范围仅限于定义它的区段或函数。
 	*              以点号"."开头的标号是全局标号（如 .onInit 等预定义的回调函数?）
-	*           相对跳转：语法为 "[+-][1-9]"，加号表示从当前位置往前跳转，减号则表示从当前位置往后跳转。数字表示跳转的语句条数
+	*           相对跳转：语法为 "[+-][1-9]"，加号表示从当前位置(为0?)往前跳转，减号则表示从当前位置往后跳转。数字表示跳转的语句条数。
+	*              代码改动的时候通常需要修改相对跳转，容易出错。因此推荐使用 LogicLib.nsh 代替。
 	*              如 Goto +4
-	*           分支判断：IfErrors、IfFileExists、StrCmp 等
+	*           分支判断：IfErrors、IfFileExists、StrCmp，
+	*                     LogicLib.nsh 文件中提供很多简单的宏便于构造复杂的逻辑结构(条件或联合逻辑判断),不需要格外的跳转标记(★推荐用法★)，如：
+	*                       ${If} $0 == 'some string' ${ElseIf} xxx ${Else} yyy {EndIf}
+	*                       ${Switch} $0 ${Case} 'some string' xxx ${Break} ${Default} yyy ${Break} ${EndSwitch}
 	*           注册表：ReadRegStr
 	*           调试函数：
-	*              MessageBox MB_YESNO "提示信息"
-	*              DetailPrint
+	*              MessageBox MB_YESNO "提示信息" IDYES 跳转标号
+	*              DetailPrint 变量 -- 如 DetailPrint $R0
 	*              Dumpstate
 	*           
-	*           SetOutPath -- 指定目的位置
 	*       6.插件(扩展NSIS安装程序的DLL，系统预安装的在 Plugins 目录下，用户可用 !addplugindir 增加目录位置)
 	*         使用语法： DllName::FunctionName "参数1" 参数2" "参数3"
 	*         如（下载文件）： NSISdl::download http://download.nullsoft.com/winamp/client/winamp291_lite.exe $R0
+	*            (调用DLL函数): System::Call '不带扩展名的Dll名::函数() 参数'
     *       7.更改默认的UI -- 在 "MUI Settings" 后通过 !define MUI_XXXX_YYY "文字或位图地址" 的方式指定特定时刻所使用的文字或位图等信息
     *         MUI_WELCOMEPAGE_TITLE -- 安装包标题(字符串)  
     *         MUI_WELCOMEFINISHPAGE_BITMAP -- 
