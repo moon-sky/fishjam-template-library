@@ -105,9 +105,9 @@
 *         最后会生成什么文件？ -- mycredentials.spc, myprivatekey.pvk, cert.cert, cert.pfx, cert2.cert,cert.pem, cert.p12
 *         signtool -G myTestCert -d . -p"证书存储库管理密码"  <== 会生成 "x509.raw" and "x509.cacert"，
 *           需要提供"certificate common name", "organization","organization unit","state or province","country","username","email address" 等证书信息.
-*           生成后可通过 certutil -d . -L 查看
+*           生成后可通过 certutil -d . -L 查看, 类型为 "u,u,Cu"
 *       1.6 将测试用的证书加入信任
-*           x509.cacert 改名为 x509.cert => FF14中：工具->选项->高级->加密->查看证书->服务器->导入->编辑信任->编辑CA信任(软件)
+*           x509.cacert 改名为 x509.cert => FF14中：工具->选项->高级->加密->查看证书->证书机构-->导入->编辑信任->编辑CA信任(软件)
 *       2.将根证书( .cer/.pfx -- .pfx最好? )和XPI文件签名时使用的证书(不带密钥)导入到NSS数据库中
 *         certutil -A -n "Intermediate CA Certificate" -t "TC,TC,TC" -d . -i "cert.cert"
 *         certutil -A -n "Code Signing Certificate" -t "c,c,C" -d . -i "cert2.cert"
