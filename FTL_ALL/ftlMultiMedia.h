@@ -172,11 +172,11 @@
 *********************************************************************************************/
 
 /*********************************************************************************************
-* ffdshow -- 一套免费的编解码软件，使用 libavcodec library 以及其他各种开放源代码的软件包，
-*   可支持H.264、FLV、MPEG-4等格式视频。
+* ffdshow -- 一套免费的编解码软件，封装成了DirectShow的标准组件。
+*   使用 libavcodec library 以及其他各种开放源代码的软件包(如 DivX、)，可支持H.264、FLV、MPEG-4等格式视频
 *  
 * ffmpeg -- 开源且跨平台的音视频解决方案，是一套编解码的框架，具有采集、解码、流化等功能（http://www.ffmpeg.org/）
-*   http://www.ffmpeg.com.cn
+*   http://www.ffmpeg.com.cn, http://ffmpeg.zeranoe.com/builds/
 * 模块
 *   ffmpeg -i 输入文件 输出文件 -- 视频文件转换命令行工具,也支持经过实时电视卡抓取和编码成视频文件
 *   ffserver -- 基于HTTP(RTSP正在开发中)用于实时广播的多媒体服务器.也支持时间平移(Time-Shifting)
@@ -184,8 +184,16 @@
 *   libavcodec -- 包含了所有FFmpeg音视频编解码器的库.为了保证最优性能和高可复用性,大多数编解码器从头开发的
 *   libavformat -- 包含了所有的普通音视格式的解析器和产生器的库
 * 
-* 编译和调试(无法使用VC编译？使用eclipse可以？)，可以用MSys+MinGW编译，但是编译出来的DLL是可以被VC使用的
+* 编译和调试(无法使用VC编译？)，可以用MSys+MinGW编译，但是编译出来的DLL是可以被VC使用的
 *   http://www.cnblogs.com/mcodec/articles/1659671.html -- 使用VC编译的方法
+*   http://ffmpeg.org/trac/ffmpeg/wiki/How%20to%20setup%20Eclipse%20IDE%20for%20FFmpeg%20development -- 设置eclipse的环境
+*     1.从 http://www.eclipse.org/downloads/ 下载 "Eclipse Classic"，或直接下载带 C/C++ 的版本
+*     2.在线安装CDT插件: Help -> Install New Software -> http://download.eclipse.org/releases/indigo -> 搜索CDT
+*     3.在线安装Git插件(http://www.vogella.de/articles/EGit/article.html), 
+*     4.安装MinGW
+*     4.Clone FFMpeg 的Git仓库: File->Import->Git->Projects From Git(git://source.ffmpeg.org/ffmpeg.git)
+*     5.创建工程: File->New->Project-> C/C++ -> Makefile Project with Existing Code 
+* 
 *   http://ffmpeg.zeranoe.com/blog/  -- 自动下载和编译ffmpeg的脚本
 *   编译选项
 *     ./configure --enable-shared --disable-static --enable-memalign-hack --disable-yasm

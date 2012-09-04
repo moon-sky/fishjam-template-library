@@ -76,8 +76,8 @@ namespace FTL
     //! DirectShow的功能函数，但基本都没有测试
     HRESULT DirectShowUtility::AddGraphToRot(IUnknown* pUnkGraph,DWORD* pdwRegister)
     {
-        CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnkGraph,E_INVALIDARG);
-        CHECK_POINTER_RETURN_VALUE_IF_FAIL(pdwRegister,E_INVALIDARG);
+        CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnkGraph,E_POINTER);
+        CHECK_POINTER_RETURN_VALUE_IF_FAIL(pdwRegister,E_POINTER);
 
         HRESULT hr = E_FAIL;
         CComPtr<IMoniker> pMoniker = NULL;
@@ -88,7 +88,7 @@ namespace FTL
         {
             FTLASSERT(pROT);
             WCHAR wsz[256] = { 0 };
-            COM_VERIFY(StringCchPrintfW(wsz,_countof(wsz), L"FilterGraph %08x pid %08x",//FilterGraph %08p pid %p",
+            COM_VERIFY(StringCchPrintfW(wsz,_countof(wsz), L"FilterGraph %08x pid %08x\0",//FilterGraph %08p pid %p",
                 (DWORD_PTR)pUnkGraph, GetCurrentProcessId()));
             COM_VERIFY(CreateItemMoniker(L"!", wsz, &pMoniker));
             if (SUCCEEDED(hr)) 
