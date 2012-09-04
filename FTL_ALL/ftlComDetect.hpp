@@ -1998,7 +1998,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IAMOpenProgress)
             DETECT_INTERFACE_ENTRY(IMpeg2Demultiplexer)
             DETECT_INTERFACE_ENTRY(IEnumStreamIdMap)
-            DETECT_INTERFACE_ENTRY(IMPEG2StreamIdMap)
+            DETECT_INTERFACE_ENTRY(IMPEG2StreamIdMap)	//在MPEG2 Demux的输出Pin上实现
             DETECT_INTERFACE_ENTRY(IRegisterServiceProvider)
             DETECT_INTERFACE_ENTRY(IAMDecoderCaps)
             DETECT_INTERFACE_ENTRY(IAMClockSlave)

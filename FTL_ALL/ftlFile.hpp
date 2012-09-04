@@ -527,7 +527,7 @@ namespace FTL
 
     void CFStructuredStorageFile::Close()
     {
-        HRESULT hr = S_OK;
+        //HRESULT hr = S_OK;
         if (m_pRootStg)
         {
             // Release all pointers in the open tree:
