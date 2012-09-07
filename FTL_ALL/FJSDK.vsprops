@@ -7,11 +7,18 @@
 	<Tool
 		  Name="VCCLCompilerTool"
 		  AdditionalIncludeDirectories="$(FJSDK)Windows\FTL;$(FJSDK)WTL\SDK\WTL80\include;$(FJSDK)Library\CPPUnit\Windows\Include"
-		  AdditionalLibraryDirectories="$(FJSDK)Library\CPPUnit\Windows\Lib"
 	/>
-	<Tool
+  <Tool
 			Name="VCResourceCompilerTool"
 			AdditionalIncludeDirectories="$(FJSDK)WTL\SDK\WTL80\include"
+	/>
+  <Tool
+      Name="VCLinkerTool"
+		  AdditionalLibraryDirectories="$(FJSDK)Library\CPPUnit\Windows\Lib"
+	/>
+  <Tool
+      Name="VCLibrarianTool"
+      AdditionalLibraryDirectories="Where?"
 	/>
 	<UserMacro
 		  Name="CPPUNITPATH"

@@ -743,7 +743,7 @@ namespace FTL
         //! 运行状态，获取当前时间到开始的时间
         //! 暂停状态，获取暂停结束时间到开始的时间
         //! 停止状态，获取结束到开始的时间
-        FTLINLINE LONGLONG GetElapseTime(); //返回单位是纳秒(NS)
+        FTLINLINE LONGLONG GetElapseTime(); //返回单位是纳秒(NS) 10^-9
     private:
         LARGE_INTEGER   m_Frequency;
         LARGE_INTEGER   m_StartTime;

@@ -259,7 +259,7 @@ namespace FTL
         DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromList(NULL,riid,FTL::CFComDetect::cdtIID);\
         if(0 == dwIntCount)\
         {\
-            FTLTRACEEX(tlWarning, TEXT("Can't Detect RIID %s(%s).\n"),TEXT(#riid),OLE2T(lpszRIID));\
+			FTLTRACEEX(FTL::tlWarning, TEXT("Can't Detect RIID %s(%s).\n"),TEXT(#riid),OLE2T(lpszRIID));\
         }\
         CoTaskMemFree(lpszRIID);\
     }

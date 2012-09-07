@@ -499,7 +499,10 @@ namespace FTL
     //本方法同时支持检测多种COM信息 -- 虽然不是好的编程习惯，但能减少维护量
     DWORD CFComDetect::CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType)
     {
-        CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnknown, (DWORD)(-1));
+		if (detectType != cdtIID)
+		{
+			CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnknown, (DWORD)(-1));
+		}
         BEGIN_DETECT_INTERFACE()
 
             //Unknwn.h  //IUnknown

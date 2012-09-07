@@ -5,6 +5,7 @@
 #ifdef USE_EXPORT
 #  include "ftlnpAPI.h"
 #endif
+#include "ftlNLS.h"
 
 namespace FTL
 {

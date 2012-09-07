@@ -306,6 +306,7 @@ namespace FTL
 
         ::ZeroMemory(&m_xForm, sizeof(m_xForm));
 
+		m_TextAlign  = -1;
         m_rcClipBox.left = -1;
         m_rcClipBox.top = -1;
         m_rcClipBox.top = -1;
