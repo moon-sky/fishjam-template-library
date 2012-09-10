@@ -6,6 +6,11 @@
 #  include "ftlComDetect.h"
 #endif
 
+//#if INCLUDE_DETECT_DDRAW
+//#include <ddraw.h>
+//#pragma comment(lib, "ddraw.lib")
+//#endif
+
 #pragma TODO(unhandled interface)
 //IVsFontAndColorDefaultsProvider
 //IVsCodePageSelection
@@ -332,9 +337,11 @@ namespace FTL
     class CFMediaSeekingDump
     {
     public:
-        static HRESULT DumpInterfaceInfo(IMediaSeeking* pMediaSeeking)
+        static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
         {
             HRESULT hr = S_OK;
+            ATL::CComQIPtr<IMediaSeeking> pMediaSeeking(pUnknown);
+
             //pMediaSeeking->IsFormatSupported();
             return hr;
         }
@@ -499,10 +506,10 @@ namespace FTL
     //本方法同时支持检测多种COM信息 -- 虽然不是好的编程习惯，但能减少维护量
     DWORD CFComDetect::CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType)
     {
-		if (detectType != cdtIID)
-		{
-			CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnknown, (DWORD)(-1));
-		}
+        if (cdtIID != detectType )
+        {
+            CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnknown, (DWORD)(-1));
+        }
         BEGIN_DETECT_INTERFACE()
 
             //Unknwn.h  //IUnknown
@@ -944,7 +951,8 @@ namespace FTL
 
 #if INCLUDE_DETECT_KSPROXY  //STATIC_CLSID_Proxy
             DETECT_INTERFACE_ENTRY(IKsAggregateControl)
-            DETECT_INTERFACE_ENTRY_IID(IKsAllocator,IID_IKsAllocator)
+            //DETECT_INTERFACE_ENTRY_IID(IKsAllocator,IID_IKsAllocator)
+            DETECT_INTERFACE_ENTRY(IKsAllocator)
             DETECT_INTERFACE_ENTRY(IKsAllocatorEx)
             DETECT_INTERFACE_ENTRY(IKsClockPropertySet)
             DETECT_INTERFACE_ENTRY(IKsControl)
@@ -1929,7 +1937,8 @@ namespace FTL
             //!从IFilterGraph继承，并可进行智能连接，设置日志文件等。Connect/Render/RenderFile/SetLogFile/...
             DETECT_INTERFACE_ENTRY(IGraphBuilder)
             DETECT_INTERFACE_ENTRY(ICaptureGraphBuilder)
-            DETECT_INTERFACE_ENTRY(IAMCopyCaptureFileProgress)
+			//! 视频捕捉时保存文件的进度反馈,用于 ICaptureGraphBuilder2::CopyCaptureFile
+			DETECT_INTERFACE_ENTRY(IAMCopyCaptureFileProgress)
             //! 辅助创建音视频采集的FilterGraph
             DETECT_INTERFACE_ENTRY(ICaptureGraphBuilder2)
             DETECT_INTERFACE_ENTRY(IFilterGraph2)

@@ -140,7 +140,10 @@
 * 图像处理原理：
 *   DIB/DDB -- 是针对使用调色板(4、8位色)的系统来说的，在16、24、32位颜色时，存储的是实际的颜色，都是设备无关的
 *   逻辑调色板(CDC中)修改后，需要 realize 使最终颜色映射到系统调色板(Windows中)，才能生效产生效果
-*
+*   获取系统调色板的信息：
+*     PALETTEENTRY m_Palette[iPALETTE_COLORS];
+*     GetSystemPaletteEntries(hdc, 0, iPALETTE_COLORS, (LPPALETTEENTRY) &m_Palette);
+* 
 * 图像透明  -- (? TrueColor + Alpha, 共 32 bit )
 *    支持的文件件格式：CUR、GIF(256色)、ICO、PNG(推荐，从GIF扩展而来?)
 *********************************************************************************************/

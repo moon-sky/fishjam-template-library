@@ -2320,7 +2320,9 @@ namespace FTL
 
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_NOCLOSE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_SAVEBITS, pszDivide);
+		//在字节边界上定位窗口的用户区域的位置 -- 有什么用？
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_BYTEALIGNCLIENT, pszDivide);
+		//在字节边界上定位窗口的位置 -- 有什么用？
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_BYTEALIGNWINDOW, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_GLOBALCLASS, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_IME, pszDivide);
@@ -2353,7 +2355,7 @@ namespace FTL
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_VISIBLE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_DISABLED, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CLIPSIBLINGS, pszDivide); //兄弟子窗口互相裁剪(只用于WS_CHILD)
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CLIPCHILDREN, pszDivide); //父窗口中不绘制子窗口
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CLIPCHILDREN, pszDivide); //父窗口中不绘制子窗口(裁剪视频播放窗体)
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_MAXIMIZE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_CAPTION, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, WS_BORDER, pszDivide);

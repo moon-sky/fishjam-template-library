@@ -79,7 +79,7 @@ namespace FTL
 # define INCLUDE_DETECT_CONTROL     1
 
 #ifndef INCLUDE_DETECT_DDRAW
-#    define INCLUDE_DETECT_DDRAW    0
+# define INCLUDE_DETECT_DDRAW    0
 #endif //INCLUDE_DETECT_DDRAW
 
 # define INCLUDE_DETECT_DISPEX      1
@@ -90,36 +90,82 @@ namespace FTL
 #   define INCLUDE_DETECT_DTE       0
 #endif 
 
+#ifndef INCLUDE_DETECT_EXDISP
 # define INCLUDE_DETECT_EXDISP      1
+#endif
+
+#ifndef INCLUDE_DETECT_KSPROXY
 # define INCLUDE_DETECT_KSPROXY     0
+#endif
+
+#ifndef INCLUDE_DETECT_MEDIAOBJ
 # define INCLUDE_DETECT_MEDIAOBJ    0
+#endif
+
+#ifndef INCLUDE_DETECT_MSHTMLC
 # define INCLUDE_DETECT_MSHTMLC     1
+#endif  
+
+#ifndef INCLUDE_DETECT_MSXML
 # define INCLUDE_DETECT_MSXML       1
+#endif
+
+#ifndef INCLUDE_DETECT_OAIDL
 # define INCLUDE_DETECT_OAIDL       1
+#endif 
+
+#ifndef INCLUDE_DETECT_OBJIDL
 # define INCLUDE_DETECT_OBJIDL      1
+#endif
+
+#ifndef INCLUDE_DETECT_OBJSAFE
 # define INCLUDE_DETECT_OBJSAFE     1
+#endif
+
+#ifndef INCLUDE_DETECT_OCIDL
 # define INCLUDE_DETECT_OCIDL       1
+#endif 
+
+#ifndef INCLUDE_DETECT_OLEIDL
 # define INCLUDE_DETECT_OLEIDL      1
+#endif
+
+#ifndef INCLUDE_DETECT_QEDIT
 # define INCLUDE_DETECT_QEDIT       0
+#endif
+
+#ifndef INCLUDE_DETECT_SERVPROV
 # define INCLUDE_DETECT_SERVPROV    1
+#endif 
+
+#ifndef INCLUDE_DETECT_SHLOBJ
 # define INCLUDE_DETECT_SHLOBJ      0
+#endif
+
+#ifndef INCLUDE_DETECT_STRMIF
 # define INCLUDE_DETECT_STRMIF      0
+#endif
+
+#ifndef INCLUDE_DETECT_URLMON
 # define INCLUDE_DETECT_URLMON      1
+#endif
 
 #ifndef INCLUDE_DETECT_VSIP
 #    define INCLUDE_DETECT_VSIP     0
 #endif 
 
+#ifndef INCLUDE_DETECT_WMF
 //Windows Media Format(asf,wma,wmv)
 # define INCLUDE_DETECT_WMF         0
+#endif
 
-# if INCLUDE_DETECT_WMF
+#if INCLUDE_DETECT_WMF
 #   define INCLUDE_DETECT_DSHOWASF  1
 #   define INCLUDE_DETECT_WMSDKIDL  1
 # else
 #   define INCLUDE_DETECT_DSHOWASF  0
 #   define INCLUDE_DETECT_WMSDKIDL  0
-# endif
+#endif
 
                                       
 //#include <initguid.h>
@@ -259,7 +305,7 @@ namespace FTL
         DWORD dwIntCount = FTL::CFComDetect::CoDetectInterfaceFromList(NULL,riid,FTL::CFComDetect::cdtIID);\
         if(0 == dwIntCount)\
         {\
-			FTLTRACEEX(FTL::tlWarning, TEXT("Can't Detect RIID %s(%s).\n"),TEXT(#riid),OLE2T(lpszRIID));\
+            FTLTRACEEX(FTL::tlWarning, TEXT("Can't Detect RIID %s(%s).\n"),TEXT(#riid),OLE2T(lpszRIID));\
         }\
         CoTaskMemFree(lpszRIID);\
     }
