@@ -140,8 +140,8 @@ namespace FTL
 		FTLINLINE CFAutoGdiplus();
 		FTLINLINE ~CFAutoGdiplus();
 	private:
-		Gdiplus::GdiplusStartupInput m_gdiplusStartupInput;
-		ULONG_PTR           m_gdiplusToken;
+		Gdiplus::GdiplusStartupInput	m_gdiplusStartupInput;
+		ULONG_PTR						m_gdiplusToken;
 
 	};
 }

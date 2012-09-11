@@ -7,6 +7,7 @@
 #endif
 
 #include <ShlObj.h>
+#include <atlbase.h>
 
 namespace FTL
 {
@@ -278,7 +279,7 @@ namespace FTL
 	BOOL CFSystemUtil::GetCurrentUserID( LPTSTR pszUserName, int iSize)
 	{
 		const TCHAR SUBKEY_LOGON_INFO[] = _T( "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI" );
-		CRegKey RegUsers;
+        ATL::CRegKey RegUsers;
 		if ( RegUsers.Open( HKEY_LOCAL_MACHINE, SUBKEY_LOGON_INFO, KEY_READ ) != ERROR_SUCCESS )
 		{
 			return FALSE;

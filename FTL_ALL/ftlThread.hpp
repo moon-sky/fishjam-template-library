@@ -1249,7 +1249,7 @@ namespace FTL
                 bRet = TRUE;
                 break;
             case WAIT_TIMEOUT:
-				FTLTRACEEX(tlWarning, TEXT("WARNING!!!: Wait For Thread %d TimeOut, Handle=0x%x\n"), 
+				FTLTRACEEX(tlWarning, TEXT("WARNING!!!: Wait For Thread %d(ms) TimeOut, Handle=0x%x\n"), 
 					dwTimeOut, m_hThread);
 				if (bTerminateIfTimeOut)
 				{

@@ -6,7 +6,8 @@
 #  include "ftlNLS.h"
 #endif
 
-#include <ftlsystem.h>
+#include "ftlSystem.h"
+#include <imm.h>
 
 namespace FTL
 {
@@ -54,7 +55,7 @@ namespace FTL
     BOOL CFNLS::IsHongKongVersion()
     {
         HMODULE hMod;
-        BOOL bRet=FALSE;
+        BOOL bRet = FALSE;
         typedef BOOL (WINAPI *IMMRELEASECONTEXT)(HWND,HIMC);
         IMMRELEASECONTEXT pImmReleaseContext;
 
