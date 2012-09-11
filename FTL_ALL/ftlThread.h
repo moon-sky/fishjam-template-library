@@ -383,6 +383,7 @@ namespace FTL
     FTLEXPORT 
     class CFEventChecker
     {
+		DISABLE_COPY_AND_ASSIGNMENT(CFEventChecker);
     public:
         FTLINLINE CFEventChecker(HANDLE hEventStop,HANDLE hEventContinue);
         FTLINLINE ~CFEventChecker();
@@ -438,6 +439,7 @@ namespace FTL
     FTLEXPORT template <typename ThreadTraits = DefaultThreadTraits>
     class CFThread
     {
+		DISABLE_COPY_AND_ASSIGNMENT(CFThread);
     public:
         /// 构造函数，创建线程类实例
         /// @param [in] hEventStop 外部传入的在线程停止时激发的事件，如果为NULL，线程内部会自己创建一个。

@@ -8,7 +8,14 @@
 
 namespace FTL
 {
-
+	CFAutoGdiplus::CFAutoGdiplus()
+	{
+		Gdiplus::GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);
+	}
+	CFAutoGdiplus::~CFAutoGdiplus()
+	{
+		Gdiplus::GdiplusShutdown(m_gdiplusToken);
+	}
 }
 
 #endif //FTL_GDIPLUS_HPP

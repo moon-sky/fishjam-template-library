@@ -1163,7 +1163,8 @@ namespace FTL
         }
         
         BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(s_dwTLSIndex);
-        FTLASSERT(pInfo);
+        //FTLASSERT(pInfo);  -- 
+#pragma TODO(一个线程创建对象，另外的线程来释放，怎么处理，如GraphEdt)
         if (pInfo)
         {
             LONG curLevel = FTL_MIN(pInfo->indent,MAX_TRACE_INDICATE_LEVEL);

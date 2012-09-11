@@ -77,6 +77,40 @@ namespace FTL
         }
     };
 
+#pragma TODO(尝试编写一个带迭代器的容器基类)
+#if 0
+	template <typename T, typename C>
+	class CFContainerIter
+	{
+	public:
+		CFContainerIter(C& c)
+			:m_rContainer(c)
+		{
+
+		}
+		//BOOL	SetContainer(C& c);
+		BOOL	MoveToFirst()
+		{
+			m_iterator = m_rContainer.begin();
+		}
+		BOOL	MoveToNext()
+		{
+			if (m_iterator != m_rContainer.end())
+			{
+				++m_iterator;
+				return TRUE;
+			}
+			else
+			{
+				return FALSE;
+			}
+		}
+	private:
+		C&				m_rContainer;
+		C::const_iter	m_iterator;
+	};
+#endif
+
     //之前使用了VS中特有的 static _Kfn 函数，但在linux上不通用，因此自己写一个
     template <class K>
     const K& ftl_Kfn(const K& Val)

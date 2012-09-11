@@ -7,6 +7,8 @@
 #  error ftlGdiPlus.h requires ftlbase.h to be included first
 #endif
 
+#include <GdiPlus.h>
+
 /*****************************************************************************************************
 * 使用GDI+前需要 GdiplusStartup 初始化， 使用完毕后通过 GdiplusShutdown 终止化
 * Gdi+ 有 1.0 和 1.1 两个版本(现在是否有更新的?)
@@ -132,7 +134,16 @@
 
 namespace FTL
 {
-    
+    class CFAutoGdiplus
+	{
+	public:
+		FTLINLINE CFAutoGdiplus();
+		FTLINLINE ~CFAutoGdiplus();
+	private:
+		Gdiplus::GdiplusStartupInput m_gdiplusStartupInput;
+		ULONG_PTR           m_gdiplusToken;
+
+	};
 }
 
 #endif //FTL_GDIPLUS_H
