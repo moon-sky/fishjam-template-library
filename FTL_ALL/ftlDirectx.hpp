@@ -59,6 +59,122 @@ namespace FTL
         return m_bufInfo;
     }
 
+#define GET_EVENT_CODE_INFO_ENTRY(lEvent, classEventCodeInfo ) \
+	case (lEvent): { StringCchCopy(m_bufInfo, _countof(m_bufInfo), classEventCodeInfo().GetCodeInfo(lEvent, TEXT(#lEvent), m_lParam1, m_lParam2)); break; }
+
+	class CFDefaultEventCodeInfo
+	{
+	public:
+		virtual LPCTSTR GetCodeInfo(LONG /*lEvent*/, LPCTSTR pszEventCodeName, LONG_PTR /*lparam1*/, LONG_PTR /*lParam2*/)
+		{
+			return pszEventCodeName;
+		}
+	protected:
+		CFStringFormater	m_strFormater;
+	};
+
+
+	CFDirectShowEventInfo::CFDirectShowEventInfo(LONG lEvent, LONG_PTR lParam1, LONG_PTR lParam2)
+		: CFConvertInfoT<CFDirectShowEventInfo,LONG>(lEvent)
+		, m_lParam1(lParam1)
+		, m_lParam2(lParam2)
+	{
+	
+	}
+
+	LPCTSTR CFDirectShowEventInfo::ConvertInfo()
+	{
+		if (NULL == m_bufInfo[0])
+		{
+			switch(m_Info)
+			{
+				GET_EVENT_CODE_INFO_ENTRY(EC_COMPLETE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_USERABORT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_ERRORABORT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_TIME, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_REPAINT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_STREAM_ERROR_STOPPED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_STREAM_ERROR_STILLPLAYING, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_ERROR_STILLPLAYING, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_PALETTE_CHANGED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_VIDEO_SIZE_CHANGED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_QUALITY_CHANGE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_SHUTTING_DOWN, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_CLOCK_CHANGED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_PAUSED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_OPENING_FILE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_BUFFERING_DATA, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_FULLSCREEN_LOST, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_ACTIVATE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_NEED_RESTART, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_WINDOW_DESTROYED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_DISPLAY_CHANGED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_STARVATION, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_OLE_EVENT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_NOTIFY_WINDOW, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_STREAM_CONTROL_STOPPED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_STREAM_CONTROL_STARTED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_END_OF_SEGMENT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_SEGMENT_STARTED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_LENGTH_CHANGED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_DEVICE_LOST, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_SAMPLE_NEEDED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_PROCESSING_LATENCY, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_SAMPLE_LATENCY, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_SCRUB_TIME, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_STEP_COMPLETE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_TIMECODE_AVAILABLE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_EXTDEVICE_MODE_CHANGE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_STATE_CHANGE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_GRAPH_CHANGED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_CLOCK_UNSET, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_VMR_RENDERDEVICE_SET, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_VMR_SURFACE_FLIPPED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_VMR_RECONNECTION_FAILED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_PREPROCESS_COMPLETE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_CODECAPI_EVENT, CFDefaultEventCodeInfo);
+
+				//WindowsMedia SDK filter-specific events
+				GET_EVENT_CODE_INFO_ENTRY(EC_WMT_INDEX_EVENT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_WMT_EVENT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_BUILT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_UNBUILT, CFDefaultEventCodeInfo);
+
+				//Other miscellaneous events used by various components
+				GET_EVENT_CODE_INFO_ENTRY(EC_SKIP_FRAMES, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_PLEASE_REOPEN, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_STATUS, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_MARKER_HIT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_LOADSTATUS, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_FILE_CLOSED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_ERRORABORTEX, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_EOS_SOON, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_CONTENTPROPERTY_CHANGED, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_BANDWIDTHCHANGE, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_VIDEOFRAMEREADY, CFDefaultEventCodeInfo);
+				
+				//GET_EVENT_CODE_INFO_ENTRY(XXXX, CFDefaultEventCodeInfo);
+			default:
+				{
+					if (m_Info >= EC_USER)
+					{
+						//private window classes
+						LONG userMsg = m_Info - EC_USER;
+						StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
+							TEXT("0x%08x = (EC_USER+%d[0x%x])"),m_Info, userMsg, userMsg );
+					}
+					else
+					{
+						StringCchPrintf(m_bufInfo,_countof(m_bufInfo),
+							TEXT("Unknown Event Code %d(0x%08x)"),m_Info,m_Info);
+					}
+				}
+				break;
+			}
+		}
+		return m_bufInfo;
+	}
+
     MediaSampleProperty::MediaSampleProperty()
     {
         IsSyncPoint = FALSE;

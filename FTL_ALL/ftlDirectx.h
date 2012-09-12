@@ -92,6 +92,17 @@ namespace FTL
         FTLINLINE virtual LPCTSTR ConvertInfo();
     };
 
+	//DirectShow жа IMediaEvent::GetEvent 
+	FTLEXPORT class CFDirectShowEventInfo : public CFConvertInfoT<CFDirectShowEventInfo, LONG>
+	{
+	public:
+		FTLINLINE explicit CFDirectShowEventInfo(LONG lEvent, LONG_PTR lParam1, LONG_PTR lParam2);
+		FTLINLINE virtual LPCTSTR ConvertInfo();
+	public:
+		LONG_PTR m_lParam1;
+		LONG_PTR m_lParam2;
+	};
+
     struct MediaSampleProperty
     {
     public:
