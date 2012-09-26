@@ -199,7 +199,9 @@
 //判断要求最小的系统和IE版本
 #ifdef WINVER
 #  pragma message( "  WINVER = " QQUOTE(WINVER) )
-#  if WINVER >= 0x0600
+#  if WINVER >= 0x0601
+#    pragma message( "     Minimum system required: Windows 7")
+#  elif WINVER >= 0x0600
 #    pragma message( "     Minimum system required: Windows Vista")
 #  elif WINVER >= 0x0502
 #    pragma message( "     Minimum system required: Windows Server 2003")
@@ -244,7 +246,9 @@
 
 #ifdef _WIN32_IE
 #  pragma message( "  _WIN32_IE = " QQUOTE(_WIN32_IE) )
-#  if _WIN32_IE >= 0x0700
+#  if _WIN32_IE >= 0x0800
+#    pragma message( "     Minimum Internet Explorer required: 8.0")
+#  elif _WIN32_IE >= 0x0700
 #    pragma message( "     Minimum Internet Explorer required: 7.0")
 #  elif _WIN32_IE >= 0x0603
 #    pragma message( "     Minimum Internet Explorer required: 6.0 SP2")
@@ -272,7 +276,9 @@
 //NTDDI_WINXP、NTDDI_LONGHORN、
 #ifdef NTDDI_VERSION
 #  pragma message( "  NTDDI_VERSION = " QQUOTE(NTDDI_VERSION) )
-#  if defined(NTDDI_LONGHORN) && (NTDDI_VERSION >= NTDDI_LONGHORN)
+#  if (NTDDI_VERSION >= 0x06010000)
+#    pragma message( "     Minimum system required: Windows 7")
+#  elif defined(NTDDI_LONGHORN) && (NTDDI_VERSION >= NTDDI_LONGHORN)
 #    pragma message( "     Minimum system required: Windows Vista")
 #  elif defined(NTDDI_WS03SP1) && (NTDDI_VERSION >= NTDDI_WS03SP1)
 #    pragma message( "     Minimum system required: Windows Server 2003 SP1")

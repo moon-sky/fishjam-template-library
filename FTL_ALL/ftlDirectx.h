@@ -8,11 +8,11 @@
 #  error ftldirectx.h requires ftlbase.h to be included first
 #endif
 
-
 #include <DShow.h>
 #pragma comment( lib, "Quartz.lib" )
 
 #include <d3d9.h>
+#include <list>
 
 //#ifdef _D3D9_H_
 //如果包含了 <d3d9.h> 文件，就定义使用 D3D9 的宏(使用D3D的错误处理等)
@@ -124,6 +124,7 @@ namespace FTL
     class DirectShowUtility
     {
 	public:
+		//把IGraphBuilder 注册到 Running Object Table (ROT)中，然后可通过 GraphEdt 进行查看
         FTLINLINE static HRESULT AddGraphToRot(IUnknown* pUnkGraph,DWORD* pdwRegister);
         FTLINLINE static HRESULT RemoveGraphFromRot(DWORD dwRegister);
 
@@ -196,6 +197,55 @@ namespace FTL
         //调试时使用的函数
         FTLINLINE static DWORD DumpAdapterModes(IDirect3D9* pD3D);
     };
+
+	struct HardwareMonikerInfo
+	{
+		//std::wstring	strFriendlyName;
+		WCHAR			wachFriendlyName[120];
+		IMoniker*		pMoniker;
+		HardwareMonikerInfo()
+		{
+			wachFriendlyName[0] = 0;
+			pMoniker = NULL;
+		}
+		~HardwareMonikerInfo()
+		{
+			SAFE_RELEASE(pMoniker);
+		}
+	};
+
+	//typedef CFSharePtr<HardwareMonikerInfo>	HardwareMonikerInfoPtr;
+
+	typedef std::list<HardwareMonikerInfo*> HardwareMonikerInfoContainer;
+	typedef HardwareMonikerInfoContainer::iterator	HardwareMonikerInfoContainerIter;
+
+	class CFDShowHardwareMgr
+	{
+	public:
+		FTLINLINE CFDShowHardwareMgr();
+		FTLINLINE ~CFDShowHardwareMgr();
+
+		FTLINLINE HRESULT Refresh(const CLSID* pDevClsid);
+		FTLINLINE HRESULT Clear();
+		FTLINLINE HRESULT GetBindObject(LPCWSTR pszName, REFIID riidResult, void **ppvResult);
+
+		//TODO: Enum
+		HardwareMonikerInfoContainer& GetAllHardwares()
+		{
+			return m_Hardwares;
+		}
+	protected:
+		FTLINLINE HRESULT _AddNewMoniker(IMoniker* pMoniker);
+	private:
+		HardwareMonikerInfoContainer	m_Hardwares;
+
+		enum
+		{
+			//DirectShow枚举器中枚举出来的 FriendlyName 的最大长度(包括结束符),会照成无法读取全部名称的问题
+			//IMMDeviceEnumerator 接口能读取出完整的名称
+			DS_FRIENDLY_NAME_MAX_LENGTH = 32,
+		};
+	};
 
 //#endif //USE_DIRECTX_9
 }

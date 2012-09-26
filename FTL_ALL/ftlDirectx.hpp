@@ -6,7 +6,15 @@
 #  include "ftlDirectx.h"
 #endif
 
+#ifdef _DXERR_H_
 #pragma comment( lib, "DxErr.lib" )
+#else
+#include <errors.h>
+#pragma comment( lib, "Quartz.lib")
+#endif 
+#include <evcode.h>
+#include <algorithm>
+#include "ftlFunctional.h"
 
 namespace FTL
 {
@@ -650,6 +658,7 @@ namespace FTL
         if (SUCCEEDED(hr))
         {   
             IPin *pPin = NULL;
+			DX_VERIFY(pEnumPins->Reset());
             while (bPass && ((hr = pEnumPins->Next(1,&pPin,NULL)) == S_OK))
             {
                 PIN_DIRECTION thisDir = PINDIR_INPUT;
@@ -676,6 +685,11 @@ namespace FTL
                 }
                 SAFE_RELEASE(pPin);
             }
+			if (S_FALSE == hr)
+			{
+				//IEnumPins::Next 枚举完毕
+				hr = S_OK;
+			}
             SAFE_RELEASE(pEnumPins);
         }
         return hr;
@@ -1086,6 +1100,112 @@ namespace FTL
         return dwCount;
     }
 
+
+	CFDShowHardwareMgr::CFDShowHardwareMgr()
+	{
+
+	}
+
+	CFDShowHardwareMgr::~CFDShowHardwareMgr()
+	{
+		Clear();
+	}
+
+	HRESULT CFDShowHardwareMgr::Refresh(const CLSID* pDevClsid)
+	{
+		HRESULT hr = E_FAIL;
+		CComPtr<ICreateDevEnum> pSysDevEnum;
+		COM_VERIFY(CoCreateInstance(CLSID_SystemDeviceEnum,NULL,CLSCTX_INPROC,IID_ICreateDevEnum,(void**)&pSysDevEnum));
+		if (SUCCEEDED(hr))
+		{
+			CComPtr<IEnumMoniker> pEnumCat;
+			COM_VERIFY_EXCEPT1(pSysDevEnum->CreateClassEnumerator(*pDevClsid, &pEnumCat,0), S_FALSE); //如果类型下没有对象，则会返回S_FALSE
+			if (pEnumCat)
+			{
+				//if create class Enumerator Success, then clear old, otherwise will remain
+				Clear();
+
+				COM_VERIFY(pEnumCat->Reset());
+				CComPtr<IMoniker> pMoniker;
+				ULONG ulFetched = 0;
+				while (pEnumCat->Next(1, &pMoniker, &ulFetched) == S_OK)
+				{
+					COM_VERIFY(_AddNewMoniker(pMoniker));
+					pMoniker.Release();
+				}
+
+				//If CreateClassEnumerator Success then result is Success, even there are no Item
+				hr = S_OK;
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFDShowHardwareMgr::Clear()
+	{
+		std::for_each(m_Hardwares.begin(), m_Hardwares.end(), FTL::ObjecteDeleter<HardwareMonikerInfo*>());
+		m_Hardwares.clear();
+		return S_OK;
+	}
+
+	HRESULT CFDShowHardwareMgr::_AddNewMoniker(IMoniker* pMoniker)
+	{
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pMoniker, E_POINTER);
+
+		HRESULT hr = E_FAIL;
+		CComPtr<IPropertyBag> spPropertyBag;
+		COM_VERIFY(pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&spPropertyBag));
+		if (spPropertyBag)
+		{
+			VARIANT var;
+			var.vt = VT_BSTR;
+			COM_VERIFY(spPropertyBag->Read(L"FriendlyName", &var, NULL));
+			if (S_OK == hr)
+			{
+				HardwareMonikerInfo* pHardwareMonikerInfo = new HardwareMonikerInfo();
+				//pHardwareMonikerInfo->strFriendlyName = var.bstrVal;
+				StringCchCopyW(pHardwareMonikerInfo->wachFriendlyName, _countof(pHardwareMonikerInfo->wachFriendlyName), 
+					var.bstrVal);
+				pHardwareMonikerInfo->pMoniker = pMoniker;
+				pMoniker->AddRef();
+				//m_Hardwares[pHardwareMonikerInfo->strFriendlyName] = pHardwareMonikerInfo;
+				m_Hardwares.push_back(pHardwareMonikerInfo);
+				SysFreeString(var.bstrVal);
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFDShowHardwareMgr::GetBindObject(LPCWSTR pszName, REFIID riidResult, void **ppvResult)
+	{
+		HRESULT hr = E_FAIL;
+		HardwareMonikerInfoContainerIter iter = m_Hardwares.begin();
+		for ( ;	iter != m_Hardwares.end(); ++iter)
+		{
+			if (lstrcmpW(pszName, (*iter)->wachFriendlyName) == 0)
+			{
+				//Found
+				break;
+			}
+			else
+			{
+				//Because IPropertyBag::Read(L"FriendlyName") limit 32 TCHAR, so just check part of the string
+				if (lstrlen((*iter)->wachFriendlyName) > DS_FRIENDLY_NAME_MAX_LENGTH - 2
+					&& NULL != wcsstr(pszName, (*iter)->wachFriendlyName))
+				{
+					//Found
+					break;
+				}
+			}
+		}
+		if (iter != m_Hardwares.end())
+		{
+			//Found
+			IMoniker* pMoniker = (*iter)->pMoniker;
+			COM_VERIFY(pMoniker->BindToObject(NULL, NULL, riidResult, (void**)ppvResult));
+		}
+		return hr;
+	}
 
 //#endif //USE_DIRECTX_9
 }

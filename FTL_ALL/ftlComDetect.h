@@ -38,7 +38,7 @@ Option Explicit Off
 Imports EnvDTE
 Imports System.Diagnostics
 
-Public Module RecordingModule
+Public Module InsertInterfaceDetectEntry
 Sub GetInterfaceName()
 DTE.ExecuteCommand("Edit.Find")
 DTE.Find.FindWhat = "typedef interface "
@@ -154,6 +154,11 @@ namespace FTL
 #    define INCLUDE_DETECT_VSIP     0
 #endif 
 
+#ifndef INCLUDE_DETECT_WM_CODEC_DSP
+#    define INCLUDE_DETECT_WM_CODEC_DSP     1
+#endif 
+
+
 #ifndef INCLUDE_DETECT_WMF
 //Windows Media Format(asf,wma,wmv)
 # define INCLUDE_DETECT_WMF         0
@@ -260,6 +265,10 @@ namespace FTL
 #  include <textmgr.h>
 #  include <vsshell.h>
 #  include <vssplash.h>
+#endif 
+
+#if INCLUDE_DETECT_WM_CODEC_DSP
+#  include <wmcodecdsp.h>
 #endif 
 
 #if INCLUDE_DETECT_WMSDKIDL

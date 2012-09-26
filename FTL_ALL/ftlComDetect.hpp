@@ -1937,7 +1937,8 @@ namespace FTL
             //!从IFilterGraph继承，并可进行智能连接，设置日志文件等。Connect/Render/RenderFile/SetLogFile/...
             DETECT_INTERFACE_ENTRY(IGraphBuilder)
             DETECT_INTERFACE_ENTRY(ICaptureGraphBuilder)
-			//! 视频捕捉时保存文件的进度反馈,用于 ICaptureGraphBuilder2::CopyCaptureFile
+			//! 视频捕捉时保存文件的进度反馈(用户需要实现该接口, Progress 参数为百分比?),
+			//  用于 ICaptureGraphBuilder2::CopyCaptureFile
 			DETECT_INTERFACE_ENTRY(IAMCopyCaptureFileProgress)
             //! 辅助创建音视频采集的FilterGraph
             DETECT_INTERFACE_ENTRY(ICaptureGraphBuilder2)
@@ -2350,6 +2351,37 @@ namespace FTL
             //}
 
 #endif //INCLUDE_DETECT_VSIP
+
+#if INCLUDE_DETECT_WM_CODEC_DSP
+			//{
+			//wmcodecdsp.h
+				DETECT_INTERFACE_ENTRY(IWMValidate)
+				DETECT_INTERFACE_ENTRY(IValidateBinding)
+				DETECT_INTERFACE_ENTRY(IWMVideoDecoderHurryup)
+				DETECT_INTERFACE_ENTRY(IWMVideoForceKeyFrame)
+				DETECT_INTERFACE_ENTRY(IWMCodecStrings)
+				DETECT_INTERFACE_ENTRY(IWMCodecProps)
+				DETECT_INTERFACE_ENTRY(IWMCodecLeakyBucket)
+				DETECT_INTERFACE_ENTRY(IWMCodecOutputTimestamp)
+				DETECT_INTERFACE_ENTRY(IWMVideoDecoderReconBuffer)
+				DETECT_INTERFACE_ENTRY(IWMCodecPrivateData)
+				DETECT_INTERFACE_ENTRY(IWMSampleExtensionSupport)
+				DETECT_INTERFACE_ENTRY(IWMResamplerProps)
+				DETECT_INTERFACE_ENTRY(IWMResizerProps)
+				DETECT_INTERFACE_ENTRY(IWMColorLegalizerProps)
+				DETECT_INTERFACE_ENTRY(IWMInterlaceProps)
+				DETECT_INTERFACE_ENTRY(IWMFrameInterpProps)
+				DETECT_INTERFACE_ENTRY(IWMColorConvProps)
+				DETECT_INTERFACE_ENTRY(ITocEntry)
+				DETECT_INTERFACE_ENTRY(ITocEntryList)
+				DETECT_INTERFACE_ENTRY(IToc)
+				DETECT_INTERFACE_ENTRY(ITocCollection)
+				DETECT_INTERFACE_ENTRY(ITocParser)
+				DETECT_INTERFACE_ENTRY(IFileIo)
+				DETECT_INTERFACE_ENTRY(IFileClient)
+				DETECT_INTERFACE_ENTRY(IClusterDetector)
+			//}
+#endif //INCLUDE_DETECT_WM_CODEC_DSP
 
 #if INCLUDE_DETECT_WMSDKIDL
             DETECT_INTERFACE_ENTRY(IWMMediaProps)

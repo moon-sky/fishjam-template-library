@@ -207,6 +207,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlGdiPlus.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlHardware.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlIEHelper.hpp"
 				>
 			</File>
@@ -240,6 +248,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlWinIntDetect.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlWow.hpp"
 				>
 			</File>
 		</Filter>
@@ -301,6 +313,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlGdiPlus.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlHardware.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlIDETools.h"
 				>
 			</File>
@@ -342,6 +362,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlWinIntDetect.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlWow.h"
 				>
 			</File>
 			<File
