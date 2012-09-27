@@ -346,6 +346,36 @@ namespace FTL
             return hr;
         }
     };
+
+	class CFAMStreamConfigDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IAMStreamConfig> spAMStreamConfig(pUnknown);
+			if (spAMStreamConfig)
+			{
+				int nCount = 0, nSize = 0;
+				COM_VERIFY(spAMStreamConfig->GetNumberOfCapabilities(&nCount, &nSize));
+				for (int i = 0; i < nCount; i++) 
+				{
+					AM_MEDIA_TYPE* pMediaType = NULL;
+					AUDIO_STREAM_CONFIG_CAPS confCaps;
+					//hr = spAMStreamConfig->GetStreamCaps(i, &pMediaType, (BYTE*)&confCaps);
+					//if (SUCCEEDED(hr)) 
+					//{
+					//	FreeMediaType(*pMediaType);
+					//}
+				}
+
+			}
+			//pMediaSeeking->IsFormatSupported();
+			return hr;
+		}
+	};
+
+
 #endif //INCLUDE_DETECT_STRMIF
 
     DWORD CFComDetect::CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID /*checkRIID*/, ComDetectType detectType)
@@ -1954,7 +1984,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IAMStreamControl)
             DETECT_INTERFACE_ENTRY(ISeekingPassThru)
             //! 采集时设置输出数据的媒体类型(具体格式使用 WAVEFORMATEX 等描述)
-            DETECT_INTERFACE_ENTRY(IAMStreamConfig)
+            DETECT_INTERFACE_ENTRY_EX(IAMStreamConfig, CFAMStreamConfigDump)
             DETECT_INTERFACE_ENTRY(IConfigInterleaving)
             DETECT_INTERFACE_ENTRY(IConfigAviMux)
             DETECT_INTERFACE_ENTRY(IAMVideoCompression)

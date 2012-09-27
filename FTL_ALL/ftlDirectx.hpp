@@ -14,6 +14,7 @@
 #endif 
 #include <evcode.h>
 #include <algorithm>
+#include <MMReg.h>
 #include "ftlFunctional.h"
 
 namespace FTL
@@ -80,6 +81,18 @@ namespace FTL
 	protected:
 		CFStringFormater	m_strFormater;
 	};
+	class CFErrorAbortEventCodeInfo : public CFDefaultEventCodeInfo
+	{
+	public:
+		virtual LPCTSTR GetCodeInfo(LONG /*lEvent*/, LPCTSTR pszEventCodeName, LONG_PTR lparam1, LONG_PTR /*lParam2*/)
+		{
+			HRESULT hrError = (HRESULT)(lparam1);
+			CFDirectXErrorInfo dxErrInfo(hrError);
+			m_strFormater.Format(TEXT("%s, Error=0x%x(%s)"), 
+				pszEventCodeName, hrError, dxErrInfo.GetConvertedInfo());
+			return m_strFormater.GetString();
+		}
+	};
 
 
 	CFDirectShowEventInfo::CFDirectShowEventInfo(LONG lEvent, LONG_PTR lParam1, LONG_PTR lParam2)
@@ -98,7 +111,7 @@ namespace FTL
 			{
 				GET_EVENT_CODE_INFO_ENTRY(EC_COMPLETE, CFDefaultEventCodeInfo);
 				GET_EVENT_CODE_INFO_ENTRY(EC_USERABORT, CFDefaultEventCodeInfo);
-				GET_EVENT_CODE_INFO_ENTRY(EC_ERRORABORT, CFDefaultEventCodeInfo);
+				GET_EVENT_CODE_INFO_ENTRY(EC_ERRORABORT, CFErrorAbortEventCodeInfo);
 				GET_EVENT_CODE_INFO_ENTRY(EC_TIME, CFDefaultEventCodeInfo);
 				GET_EVENT_CODE_INFO_ENTRY(EC_REPAINT, CFDefaultEventCodeInfo);
 				GET_EVENT_CODE_INFO_ENTRY(EC_STREAM_ERROR_STOPPED, CFDefaultEventCodeInfo);
@@ -198,7 +211,7 @@ namespace FTL
     }
 
     //! DirectShow的功能函数，但基本都没有测试
-    HRESULT DirectShowUtility::AddGraphToRot(IUnknown* pUnkGraph,DWORD* pdwRegister)
+    HRESULT CFDirectShowUtility::AddGraphToRot(IUnknown* pUnkGraph,DWORD* pdwRegister)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnkGraph,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pdwRegister,E_POINTER);
@@ -226,7 +239,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT DirectShowUtility::RemoveGraphFromRot(DWORD dwRegister)
+    HRESULT CFDirectShowUtility::RemoveGraphFromRot(DWORD dwRegister)
     {
         HRESULT hr = E_FAIL;
         CComPtr<IRunningObjectTable> pROT = NULL;
@@ -241,7 +254,7 @@ namespace FTL
 
     //注意：IVideoWindow::put_MessageDrain 指定窗体来接收并处理Video窗口的鼠标和键盘消息
     //调用(尚未测试)：ToggleFullScreen(m_pVW,hMain,&hVideo); 和 ToggleFullScreen(m_pVW,hVideo,NULL); 
-    HRESULT DirectShowUtility::ToggleFullScreen(IVideoWindow *pVW,HWND hDrain, HWND *phOldDrain)
+    HRESULT CFDirectShowUtility::ToggleFullScreen(IVideoWindow *pVW,HWND hDrain, HWND *phOldDrain)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pVW,E_POINTER);
 
@@ -286,7 +299,7 @@ namespace FTL
     }
 
     //加入一个指定CLSID的Filter
-    HRESULT DirectShowUtility::AddFilterByCLSID(IGraphBuilder* pGraph, REFGUID clsid,
+    HRESULT CFDirectShowUtility::AddFilterByCLSID(IGraphBuilder* pGraph, REFGUID clsid,
         LPCWSTR pName, IBaseFilter** ppFilter)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
@@ -309,7 +322,7 @@ namespace FTL
     }
 
     //得到Filter上未连接的第一个满足majorType的Pin(如果 majorTyte 为 MEDIATYPE_NULL 则不判断majorType)
-    HRESULT DirectShowUtility::GetUnconnectedPin(IBaseFilter* pFilter,PIN_DIRECTION dir, REFGUID majorType, IPin ** ppPin)
+    HRESULT CFDirectShowUtility::GetUnconnectedPin(IBaseFilter* pFilter,PIN_DIRECTION dir, REFGUID majorType, IPin ** ppPin)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilter,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppPin,E_POINTER);
@@ -386,7 +399,7 @@ namespace FTL
     }
 
     //!获得Filter上指定方向的第 dirIndex 个Pin -- 不管是否连接
-    HRESULT DirectShowUtility::GetPin(IBaseFilter* pFilter, PIN_DIRECTION dirRequest ,DWORD dirIndex, IPin** ppFoundPin)
+    HRESULT CFDirectShowUtility::GetPin(IBaseFilter* pFilter, PIN_DIRECTION dirRequest ,DWORD dirIndex, IPin** ppFoundPin)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilter,E_INVALIDARG);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppFoundPin,E_INVALIDARG);
@@ -430,7 +443,7 @@ namespace FTL
 
 
     //!智能连接输出Pin到Filter(第一个未用的输入Pin) -- IGraphBuilder::Connect 是智能连接两个Pin
-    HRESULT DirectShowUtility::ConnectFilters(IGraphBuilder* pGraph, IPin *pOut, IBaseFilter* pDest)
+    HRESULT CFDirectShowUtility::ConnectFilters(IGraphBuilder* pGraph, IPin *pOut, IBaseFilter* pDest)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pOut,E_POINTER);
@@ -456,7 +469,7 @@ namespace FTL
     }
 
     //! 智能连接两个Filter(第一个Filter的未用输出Pin -> 第二个Filter未用的输入Pin)
-    HRESULT DirectShowUtility::ConnectFilters(IGraphBuilder* pGraph, IBaseFilter* pSrc, IBaseFilter* pDest)
+    HRESULT CFDirectShowUtility::ConnectFilters(IGraphBuilder* pGraph, IBaseFilter* pSrc, IBaseFilter* pDest)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pSrc,E_POINTER);
@@ -476,7 +489,7 @@ namespace FTL
     }
 
     //! 在Filter Graph 中的Filter中查找特定的某种接口(如DV视频解码的 IIPDVDec 等)
-    HRESULT DirectShowUtility::FindFilterInterface(IFilterGraph* pGraph,REFIID riid, void** ppUnk)
+    HRESULT CFDirectShowUtility::FindFilterInterface(IFilterGraph* pGraph,REFIID riid, void** ppUnk)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppUnk,E_POINTER);
@@ -506,7 +519,7 @@ namespace FTL
     }
 
     //!查找指定Filter的Pin上实现的特定接口
-    HRESULT DirectShowUtility::FindPinInterface(IBaseFilter* pFilter, REFIID riid,void** ppUnk)
+    HRESULT CFDirectShowUtility::FindPinInterface(IBaseFilter* pFilter, REFIID riid,void** ppUnk)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilter,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppUnk,E_POINTER);
@@ -536,7 +549,7 @@ namespace FTL
     }
 
     //! 在Graph中的 Filter 和 Pin 上查找指定接口
-    HRESULT DirectShowUtility::FindInterfaceAnywhere(IFilterGraph *pGraph, REFIID riid, void** ppUnk)
+    HRESULT CFDirectShowUtility::FindInterfaceAnywhere(IFilterGraph *pGraph, REFIID riid, void** ppUnk)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppUnk,E_POINTER);
@@ -573,7 +586,7 @@ namespace FTL
 
     //! 获取指定Filter连接着的 上/下 一个Filter
     //! 注意：只能找第一个满足要求(方向)的
-    HRESULT DirectShowUtility::GetNextFilter(IBaseFilter* pFilter, PIN_DIRECTION dir, IBaseFilter** ppNext)
+    HRESULT CFDirectShowUtility::GetNextFilter(IBaseFilter* pFilter, PIN_DIRECTION dir, IBaseFilter** ppNext)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilter,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppNext,E_POINTER);
@@ -613,7 +626,7 @@ namespace FTL
     }
 
     //! 清除掉Filter Graph中所有的Filter
-    HRESULT DirectShowUtility::ClearAllFilters(IFilterGraph *pGraph)
+    HRESULT CFDirectShowUtility::ClearAllFilters(IFilterGraph *pGraph)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
         HRESULT hr = E_FAIL;
@@ -646,7 +659,7 @@ namespace FTL
     }
 
     //从指定Filter开始，清除指定方向的所有Filter -- 会递归
-    HRESULT DirectShowUtility::ClearDirFilters(IFilterGraph* pGraph, IBaseFilter* pFilter, PIN_DIRECTION dir)
+    HRESULT CFDirectShowUtility::ClearDirFilters(IFilterGraph* pGraph, IBaseFilter* pFilter, PIN_DIRECTION dir)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilter,E_POINTER);
@@ -697,7 +710,7 @@ namespace FTL
 
     //! 在进行格式转换时，如果不需要预览，可以设置不使用参考时钟，以使数据流中的Sample以最快速度传送。
     //  使用 IFilterGraph::SetDefaultSyncSource 恢复缺省的
-    HRESULT DirectShowUtility::SetNoClock(IFilterGraph *pGraph, IReferenceClock ** pOldClock/* = NULL*/)
+    HRESULT CFDirectShowUtility::SetNoClock(IFilterGraph *pGraph, IReferenceClock ** pOldClock/* = NULL*/)
     {
         CHECK_POINTER_READABLE_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
 
@@ -716,7 +729,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT DirectShowUtility::RenderOutputPins(IGraphBuilder *pGB, IBaseFilter *pFilter)
+    HRESULT CFDirectShowUtility::RenderOutputPins(IGraphBuilder *pGB, IBaseFilter *pFilter)
     {
         HRESULT         hr = S_OK;
         IEnumPins *     pEnumPin = NULL;
@@ -760,7 +773,7 @@ namespace FTL
     }
 
 
-    HRESULT DirectShowUtility::GetMediaSampleProperty(IMediaSample* pSample,MediaSampleProperty* pProperty)
+    HRESULT CFDirectShowUtility::GetMediaSampleProperty(IMediaSample* pSample,MediaSampleProperty* pProperty)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pSample,E_POINTER);    
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pProperty,E_POINTER);
@@ -779,7 +792,7 @@ namespace FTL
     }
 
     //TODO:接口设计
-    HRESULT DirectShowUtility::GetMediaTime(IMediaSeeking *pMS)
+    HRESULT CFDirectShowUtility::GetMediaTime(IMediaSeeking *pMS)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pMS,E_POINTER);
         HRESULT hr;
@@ -829,7 +842,7 @@ namespace FTL
     }
 
     //从Filter上抓图
-    HRESULT DirectShowUtility::SnapShotBitmap(IBasicVideo* pBasicVideo, LPCTSTR pszOutFile)
+    HRESULT CFDirectShowUtility::SnapShotBitmap(IBasicVideo* pBasicVideo, LPCTSTR pszOutFile)
     {
         CHECK_POINTER_READABLE_RETURN_VALUE_IF_FAIL(pBasicVideo,E_POINTER);
         CHECK_POINTER_ISSTRING_PTR_RETURN_VALUE_IF_FAIL(pszOutFile,E_POINTER);
@@ -874,7 +887,7 @@ namespace FTL
         return hr;
     }
 
-    HRESULT DirectShowUtility::InitCaptureGraphBuilder(IGraphBuilder **ppGraph, 
+    HRESULT CFDirectShowUtility::InitCaptureGraphBuilder(IGraphBuilder **ppGraph, 
         ICaptureGraphBuilder2 ** ppCapture)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppGraph,E_POINTER);
@@ -912,6 +925,170 @@ namespace FTL
         SAFE_RELEASE(pCapture);
         return hr;
     }
+
+
+	LPCTSTR CFDirectShowUtility::GetWaveFormatExTagString(WORD wWaveFormatTag)
+	{
+		switch (wWaveFormatTag)
+		{
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_UNKNOWN);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_PCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_IEEE_FLOAT);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VSELP);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_IBM_CVSD);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ALAW);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MULAW);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DTS);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DRM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_WMAVOICE9);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_WMAVOICE10);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_OKI_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DVI_ADPCM | WAVE_FORMAT_IMA_ADPCM);
+			//HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_IMA_ADPCM);  //WAVE_FORMAT_DVI_ADPCM
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MEDIASPACE_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SIERRA_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_G723_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DIGISTD);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DIGIFIX);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DIALOGIC_OKI_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MEDIAVISION_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CU_CODEC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_YAMAHA_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SONARC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DSPGROUP_TRUESPEECH);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ECHOSC1);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_AUDIOFILE_AF36);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_APTX);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_AUDIOFILE_AF10);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_PROSODY_1612);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_LRC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DOLBY_AC2);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_GSM610);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MSNAUDIO);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ANTEX_ADPCME);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CONTROL_RES_VQLPC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DIGIREAL);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DIGIADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CONTROL_RES_CR10);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_NMS_VBXADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CS_IMAADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ECHOSC3);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ROCKWELL_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ROCKWELL_DIGITALK);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_XEBEC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_G721_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_G728_CELP);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MSG723);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_RT24);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_PAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEGLAYER3);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_LUCENT_G723);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CIRRUS);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ESPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CANOPUS_ATRAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_G726_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_G722_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DSAT_DISPLAY);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_BYTE_ALIGNED);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_AC8);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_AC10);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_AC16);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_AC20);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_RT24);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_RT29);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_RT29HW);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_VR12);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_VR18);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_TQ40);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SOFTSOUND);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VOXWARE_TQ60);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MSRT24);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_G729A);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MVI_MVI2);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DF_G726);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DF_GSM610);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ISIAUDIO);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ONLIVE);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SBC24);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DOLBY_AC3_SPDIF);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MEDIASONIC_G723);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_PROSODY_8KBPS);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ZYXEL_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_PHILIPS_LPCBB);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_PACKED);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MALDEN_PHONYTALK);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_RAW_AAC1);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_RHETOREX_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_IRAT);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VIVO_G723);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VIVO_SIREN);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DIGITAL_G723);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SANYO_LD_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SIPROLAB_ACEPLNET);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SIPROLAB_ACELP4800);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SIPROLAB_ACELP8V3);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SIPROLAB_G729);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SIPROLAB_G729A);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SIPROLAB_KELVIN);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_G726ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_QUALCOMM_PUREVOICE);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_QUALCOMM_HALFRATE);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_TUBGSM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MSAUDIO1);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_WMAUDIO2);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_WMAUDIO3);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_WMAUDIO_LOSSLESS);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_WMASPDIF);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_UNISYS_NAP_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_UNISYS_NAP_ULAW);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_UNISYS_NAP_ALAW);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_UNISYS_NAP_16K);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CREATIVE_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CREATIVE_FASTSPEECH8);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CREATIVE_FASTSPEECH10);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_UHER_ADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_QUARTERDECK);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ILINK_VC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_RAW_SPORT);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_ESST_AC3);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_GENERIC_PASSTHRU);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_IPI_HSX);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_IPI_RPELP);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_CS2);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SONY_SCX);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_FM_TOWNS_SND);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_BTV_DIGITAL);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_QDESIGN_MUSIC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VME_VMPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_TPC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_OLIGSM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_OLIADPCM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_OLICELP);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_OLISBC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_OLIOPR);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_LH_CODEC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_NORRIS);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SOUNDSPACE_MUSICOMPRESS);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG_ADTS_AAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG_RAW_AAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG_LOAS);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_NOKIA_MPEG_ADTS_AAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_NOKIA_MPEG_RAW_AAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VODAFONE_MPEG_ADTS_AAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VODAFONE_MPEG_RAW_AAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG_HEAAC);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DVM);
+			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DTS2);
+			
+			//HANDLE_CASE_RETURN_STRING(XXXXXXXX);
+		default:
+			FTLASSERT(FALSE);
+			return TEXT("");
+		}
+	}
 
 //#ifdef USE_DIRECTX_9
     //////////////////////////////////////////////////////////////////////////
@@ -1126,12 +1303,12 @@ namespace FTL
 				Clear();
 
 				COM_VERIFY(pEnumCat->Reset());
-				CComPtr<IMoniker> pMoniker;
+				CComPtr<IMoniker> spMoniker;
 				ULONG ulFetched = 0;
-				while (pEnumCat->Next(1, &pMoniker, &ulFetched) == S_OK)
+				while (pEnumCat->Next(1, &spMoniker, &ulFetched) == S_OK)
 				{
-					COM_VERIFY(_AddNewMoniker(pMoniker));
-					pMoniker.Release();
+					COM_VERIFY(_AddNewMoniker(spMoniker));
+					spMoniker.Release();
 				}
 
 				//If CreateClassEnumerator Success then result is Success, even there are no Item
@@ -1154,23 +1331,29 @@ namespace FTL
 
 		HRESULT hr = E_FAIL;
 		CComPtr<IPropertyBag> spPropertyBag;
-		COM_VERIFY(pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&spPropertyBag));
+		COM_VERIFY(pMoniker->BindToStorage(NULL, NULL, IID_IPropertyBag, (void **)&spPropertyBag));
 		if (spPropertyBag)
 		{
-			VARIANT var;
-			var.vt = VT_BSTR;
-			COM_VERIFY(spPropertyBag->Read(L"FriendlyName", &var, NULL));
+			CComVariant varFriendlyName;
+			COM_VERIFY(spPropertyBag->Read(L"FriendlyName", &varFriendlyName, NULL));
 			if (S_OK == hr)
 			{
 				HardwareMonikerInfo* pHardwareMonikerInfo = new HardwareMonikerInfo();
 				//pHardwareMonikerInfo->strFriendlyName = var.bstrVal;
 				StringCchCopyW(pHardwareMonikerInfo->wachFriendlyName, _countof(pHardwareMonikerInfo->wachFriendlyName), 
-					var.bstrVal);
+					varFriendlyName.bstrVal);
+				
+				CComVariant varClsid;
+				COM_VERIFY(spPropertyBag->Read(L"CLSID", &varClsid, NULL));
+				if (SUCCEEDED(hr))
+				{
+					//pHardwareMonikerInfo->clsid = varClsid.clsid
+				}
 				pHardwareMonikerInfo->pMoniker = pMoniker;
 				pMoniker->AddRef();
+
 				//m_Hardwares[pHardwareMonikerInfo->strFriendlyName] = pHardwareMonikerInfo;
 				m_Hardwares.push_back(pHardwareMonikerInfo);
-				SysFreeString(var.bstrVal);
 			}
 		}
 		return hr;
@@ -1190,7 +1373,7 @@ namespace FTL
 			else
 			{
 				//Because IPropertyBag::Read(L"FriendlyName") limit 32 TCHAR, so just check part of the string
-				if (lstrlen((*iter)->wachFriendlyName) > DS_FRIENDLY_NAME_MAX_LENGTH - 2
+				if (lstrlenW((*iter)->wachFriendlyName) > DS_FRIENDLY_NAME_MAX_LENGTH - 2
 					&& NULL != wcsstr(pszName, (*iter)->wachFriendlyName))
 				{
 					//Found

@@ -121,7 +121,7 @@ namespace FTL
     };
 
     //! DirectShow的功能函数，但基本都没有测试
-    class DirectShowUtility
+    class CFDirectShowUtility
     {
 	public:
 		//把IGraphBuilder 注册到 Running Object Table (ROT)中，然后可通过 GraphEdt 进行查看
@@ -184,6 +184,11 @@ namespace FTL
         //! 初始化进行音视频捕获的 Capture Graph Builder
         FTLINLINE static HRESULT InitCaptureGraphBuilder(IGraphBuilder **ppGraph, 
             ICaptureGraphBuilder2 ** ppCapture);
+
+	public:
+		//获取 WAVEFORMATEX::wFormatTag 对应的字符信息
+        FTLINLINE static LPCTSTR GetWaveFormatExTagString(WORD wWaveFormatTag);
+
     };//DirectShowUtility
 
 //#ifdef USE_DIRECTX_9
@@ -201,10 +206,12 @@ namespace FTL
 	struct HardwareMonikerInfo
 	{
 		//std::wstring	strFriendlyName;
-		WCHAR			wachFriendlyName[120];
+		CLSID			clsid;
+		WCHAR			wachFriendlyName[120];	//实际上DShow只能找到32字符长(注册表)
 		IMoniker*		pMoniker;
 		HardwareMonikerInfo()
 		{
+			clsid = CLSID_NULL;
 			wachFriendlyName[0] = 0;
 			pMoniker = NULL;
 		}
