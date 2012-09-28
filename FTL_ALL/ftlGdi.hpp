@@ -122,7 +122,8 @@ namespace FTL
                         TEXT("dsBitfields=[%d,%d,%d],")
                         TEXT("dshSection=0x%p,dsOffset=%d"),
                         dibInfo.dsBmih.biSize,dibInfo.dsBmih.biWidth, dibInfo.dsBmih.biHeight,
-                        dibInfo.dsBmih.biPlanes, dibInfo.dsBmih.biBitCount,dibInfo.dsBmih.biCompression,
+                        dibInfo.dsBmih.biPlanes, dibInfo.dsBmih.biBitCount,
+						dibInfo.dsBmih.biCompression,  //未压缩时为0，压缩时可以是压缩格式的字符串，如 "FMP4"?
                         dibInfo.dsBmih.biSizeImage, dibInfo.dsBmih.biXPelsPerMeter, dibInfo.dsBmih.biYPelsPerMeter,
                         dibInfo.dsBmih.biClrUsed, dibInfo.dsBmih.biClrImportant,
                         dibInfo.dsBitfields[0], dibInfo.dsBitfields[1], dibInfo.dsBitfields[2],
