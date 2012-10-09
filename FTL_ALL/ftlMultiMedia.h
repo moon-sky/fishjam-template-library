@@ -199,17 +199,22 @@
 * 
 *   http://ffmpeg.zeranoe.com/blog/  -- 自动下载和编译ffmpeg的脚本
 *   编译选项
-*     ./configure --enable-shared --disable-static --enable-memalign-hack --disable-yasm
+*     ./configure --enable-shared --enable-w32threads --disable-static --enable-memalign-hack --disable-yasm
 *     --disable-debug			禁用调试信息,编译发布版本
-*     --disable-optimizations	
-*     --enable-shared			编译动态库
+*     --disable-mmx             
+*     --disable-optimizations	禁止优化，一般用于调试版本
 *     --disable-static			禁用静态库
+*     --disable-stripping       一般用于调试版本
 *     --enable-gpl				遵循gpl协议,必须指定，因为x264是gpl协议
-*     --enable-libfaac     
+*     --enable-libfaac          支持aac(不是免费的),需要先到 faac 目录下编译, ./bootstrap<CR> ./configure xxx<CR> make
 *     --enable-libx264			使用x264作为h264编码器,表示要使用第3方库x264,此时mingw include 和 lib内必须已经有x264.h和libx264.a
-*     --enable-libmp3lame		使用mp3lame作为mp3编码器（http://sourceforge.net/projects/lame/files/）
-*     --enable-memalign-hack    启用内存对其，Windows下必须
+*     --enable-libmp3lame		使用mp3lame作为mp3编码器，需要先到 lame 目录下编译（http://sourceforge.net/projects/lame/files/）
+*     --enable-memalign-hack    启用内存对齐，Windows下必须
+*     --enable-shared			编译动态库
 *     --enable-small			启用文件最小功能
+*     --enable-w32threads       加入多线程支持，会大大提升处理效率
+*     --extra-cflags=-O0        额外的编译参数，如 -O0 表示不优化， -I/usr/local/include 表示头文件目录
+*     --extra-ldflags=xxx       额外的链接参数，如 -L/usr/local/lib 表示链接目录
 *  调试
 *    av_log_set_callback
 *    
