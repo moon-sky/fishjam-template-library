@@ -92,11 +92,44 @@ namespace FTL
     *     return 0L;
     *   }
     *****************************************************************************************************/
+
+    //注册并处理硬件消息(WM_DEVICECHANGE),
+    /*
+        case WM_DEVICECHANGE:
+        // We are interested in only device arrival & removal events
+        if(DBT_DEVICEARRIVAL != wParam && DBT_DEVICEREMOVECOMPLETE != wParam)
+            break;
+
+        PDEV_BROADCAST_HDR pdbh = (PDEV_BROADCAST_HDR) lParam;
+        if(pdbh->dbch_devicetype != DBT_DEVTYP_DEVICEINTERFACE)
+        {
+            break;
+        }
+
+        PDEV_BROADCAST_DEVICEINTERFACE pdbi = (PDEV_BROADCAST_DEVICEINTERFACE) lParam;
+        // Check for capture devices.
+        if(pdbi->dbcc_classguid != AM_KSCATEGORY_CAPTURE)
+        {
+            break;
+        }
+
+        // Check for device arrival/removal.
+        if(DBT_DEVICEARRIVAL == wParam || DBT_DEVICEREMOVECOMPLETE == wParam)
+        {
+            gcap.fDeviceMenuPopulated = false;
+        }
+        break;
+
+    }
+    */
     class CFDeviceNotification
     {
     public:
         CFDeviceNotification();
         ~CFDeviceNotification();
+
+        //NotificationFilter = DEV_BROADCAST_DEVICEINTERFACE  -- sizeof(), DBT_DEVTYP_DEVICEINTERFACE, AM_KSCATEGORY_CAPTURE
+        //Flags = DEVICE_NOTIFY_WINDOW_HANDLE
         BOOL Register(HANDLE hRecipient,LPVOID NotificationFilter,DWORD Flags);
         BOOL UnRegister();
     private:

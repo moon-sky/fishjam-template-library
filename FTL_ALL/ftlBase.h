@@ -483,7 +483,7 @@ namespace FTL
 	template<typename T>
 	void SwapValue(T& value1, T& value2);
 
-    FTLEXPORT template<typename TBase, typename INFO_TYPE,LONG bufLen = MAX_BUFFER_LENGTH>
+    FTLEXPORT template<typename TBase, typename INFO_TYPE, LONG bufLen = MAX_BUFFER_LENGTH>
     class CFConvertInfoT
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFConvertInfoT);

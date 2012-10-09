@@ -617,7 +617,8 @@ namespace FTL
             //! 包含用于设置窗口所有者、窗口的位置和尺寸及其他窗口属性的方法
             //! 控制Video窗体的Dispatch接口，可以设置各种属性（Caption,Style,AutoShow,FullScreen,WindowPosition,HideCursor 等）
             //! 如: pVW->put_Owner((OAHWND)m_hWnd);
-            //!     pVW->put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+            //!     pVW->put_WindowStyle(WS_CHILD);// | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+            //!     pVW->put_Visible(OATRUE);
             DETECT_INTERFACE_ENTRY(IVideoWindow)    
 
             //! 允许应用程序设置视频属性，例如目标矩形和源矩形,能对挡前播放的位置进行抓图
@@ -1991,6 +1992,7 @@ namespace FTL
             //! 判断并显示VFW卡上的对话框
             DETECT_INTERFACE_ENTRY(IAMVfwCaptureDialogs)
             DETECT_INTERFACE_ENTRY(IAMVfwCompressDialogs)
+            //! 可以得到捕捉时丢弃或得到了多少帧
             DETECT_INTERFACE_ENTRY(IAMDroppedFrames)
             DETECT_INTERFACE_ENTRY(IAMAudioInputMixer)
             //! 设置缓冲大小
@@ -2411,6 +2413,7 @@ namespace FTL
 				DETECT_INTERFACE_ENTRY(IWMInterlaceProps)
 				DETECT_INTERFACE_ENTRY(IWMFrameInterpProps)
 				DETECT_INTERFACE_ENTRY(IWMColorConvProps)
+#if 0
 				DETECT_INTERFACE_ENTRY(ITocEntry)
 				DETECT_INTERFACE_ENTRY(ITocEntryList)
 				DETECT_INTERFACE_ENTRY(IToc)
@@ -2419,6 +2422,7 @@ namespace FTL
 				DETECT_INTERFACE_ENTRY(IFileIo)
 				DETECT_INTERFACE_ENTRY(IFileClient)
 				DETECT_INTERFACE_ENTRY(IClusterDetector)
+#endif 
 			//}
 #endif //INCLUDE_DETECT_WM_CODEC_DSP
 

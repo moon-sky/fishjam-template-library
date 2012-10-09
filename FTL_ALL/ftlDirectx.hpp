@@ -81,6 +81,7 @@ namespace FTL
 	protected:
 		CFStringFormater	m_strFormater;
 	};
+	
 	class CFErrorAbortEventCodeInfo : public CFDefaultEventCodeInfo
 	{
 	public:
@@ -252,6 +253,68 @@ namespace FTL
         return hr;
     }
 
+	HRESULT CFDirectShowUtility::CopyMediaSample(IMediaSample *pSource, IMediaSample *pDest)
+	{
+		CheckPointer(pSource,E_POINTER);
+		CheckPointer(pDest,E_POINTER);
+
+		HRESULT hr = E_FAIL;
+
+		// Copy the sample data
+		long lSourceSize = pSource->GetActualDataLength();
+
+#ifdef _DEBUG    
+		long lDestSize = pDest->GetSize();
+		ASSERT(lDestSize >= lSourceSize);
+
+		AM_MEDIA_TYPE* pMtSource = NULL, *pMtDest = NULL;
+		if(SUCCEEDED(pSource->GetMediaType(&pMtSource)))
+		{
+			if (SUCCEEDED(pDest->GetMediaType(&pMtDest)))
+			{
+                //TODO:compare
+				DeleteMediaType(pMtDest);
+			}
+			DeleteMediaType(pMtSource);				
+		}
+#endif
+
+		BYTE *pSourceBuffer = NULL, *pDestBuffer = NULL;
+		DX_VERIFY(pSource->GetPointer(&pSourceBuffer));
+		DX_VERIFY(pDest->GetPointer(&pDestBuffer));
+
+		CopyMemory((PVOID) pDestBuffer,(PVOID) pSourceBuffer, lSourceSize);
+
+		// Copy the sample times
+		REFERENCE_TIME rtStart = 0, rtEnd = 0;
+		if(NOERROR == pSource->GetTime(&rtStart, &rtEnd))
+		{
+			DX_VERIFY(pDest->SetTime(&rtStart, &rtEnd));
+		}
+
+		LONGLONG MediaStart = 0, MediaEnd = 0;
+		if(NOERROR == pSource->GetMediaTime(&MediaStart,&MediaEnd))
+		{
+			DX_VERIFY(pDest->SetMediaTime(&MediaStart,&MediaEnd));
+		}
+
+		// Copy the actual data length
+		long lDataLength = pSource->GetActualDataLength();
+		DX_VERIFY(pDest->SetActualDataLength(lDataLength));
+
+		BOOL bIsSyncPoint = (S_OK == pSource->IsSyncPoint());
+		DX_VERIFY(pDest->SetSyncPoint(bIsSyncPoint));
+
+		BOOL bIsPreroll = (S_OK == pSource->IsPreroll());
+		DX_VERIFY(pDest->SetPreroll(bIsPreroll));
+
+		BOOL bIsDiscontinuity = (S_OK == pSource->IsDiscontinuity());
+		DX_VERIFY(pDest->SetDiscontinuity(bIsDiscontinuity));
+
+
+		return NOERROR;	
+	}
+
     //注意：IVideoWindow::put_MessageDrain 指定窗体来接收并处理Video窗口的鼠标和键盘消息
     //调用(尚未测试)：ToggleFullScreen(m_pVW,hMain,&hVideo); 和 ToggleFullScreen(m_pVW,hVideo,NULL); 
     HRESULT CFDirectShowUtility::ToggleFullScreen(IVideoWindow *pVW,HWND hDrain, HWND *phOldDrain)
@@ -308,11 +371,11 @@ namespace FTL
         HRESULT hr = E_FAIL;
         *ppFilter = NULL;
         CComPtr<IBaseFilter> pTmpFilter = NULL;
-        hr = CoCreateInstance(clsid,0,CLSCTX_INPROC_SERVER,IID_IBaseFilter,
+        hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, IID_IBaseFilter,
             reinterpret_cast<void**>(&pTmpFilter));
         if (SUCCEEDED(hr))
         {
-            DX_VERIFY(pGraph->AddFilter(pTmpFilter,pName));
+            DX_VERIFY(pGraph->AddFilter(pTmpFilter, pName));
             if (SUCCEEDED(hr))
             {
                 *ppFilter = pTmpFilter.Detach();
@@ -532,7 +595,7 @@ namespace FTL
             IPin *pPin = NULL;
             while ((hr = pEnumPins->Next(1,&pPin,NULL)) == S_OK)
             {
-                DX_VERIFY_EXCEPT1(pPin->QueryInterface(riid,ppUnk),E_NOINTERFACE);
+                DX_VERIFY_EXCEPT1(pPin->QueryInterface(riid, ppUnk), E_NOINTERFACE);
                 SAFE_RELEASE(pPin);
                 if (SUCCEEDED(hr))
                 {
@@ -542,13 +605,13 @@ namespace FTL
             SAFE_RELEASE(pEnumPins);
             if (S_FALSE == hr)
             {
+                //枚举完所有的Pin都没有找到
                 hr = E_NOINTERFACE;
             }
         }
         return hr;
     }
 
-    //! 在Graph中的 Filter 和 Pin 上查找指定接口
     HRESULT CFDirectShowUtility::FindInterfaceAnywhere(IFilterGraph *pGraph, REFIID riid, void** ppUnk)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
@@ -658,39 +721,43 @@ namespace FTL
         return hr;
     }
 
-    //从指定Filter开始，清除指定方向的所有Filter -- 会递归
-    HRESULT CFDirectShowUtility::ClearDirFilters(IFilterGraph* pGraph, IBaseFilter* pFilter, PIN_DIRECTION dir)
+    HRESULT CFDirectShowUtility::DisconnectDirFilters(IFilterGraph* pGraph, IBaseFilter* pFilter, 
+        PIN_DIRECTION dir, BOOL bRemoveFromGraph/* = FALSE */)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraph,E_POINTER);
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilter,E_POINTER);
         HRESULT hr = E_FAIL;
         IEnumPins *pEnumPins = NULL;
-        BOOL bPass = TRUE;
+        //BOOL bPass = TRUE;
         //枚举Filter上的所有Pin
         DX_VERIFY(pFilter->EnumPins(&pEnumPins));
         if (SUCCEEDED(hr))
         {   
             IPin *pPin = NULL;
 			DX_VERIFY(pEnumPins->Reset());
-            while (bPass && ((hr = pEnumPins->Next(1,&pPin,NULL)) == S_OK))
+            while ((hr = pEnumPins->Next(1,&pPin,NULL)) == S_OK)
             {
                 PIN_DIRECTION thisDir = PINDIR_INPUT;
                 DX_VERIFY(pPin->QueryDirection(&thisDir));
                 if (dir == thisDir)  //是我们想删除方向的Pin，看是否有连接
                 {
                     IPin *pConnectedPin = NULL;
-                    DX_VERIFY_EXCEPT1(pPin->ConnectedTo(&pConnectedPin),VFW_E_NOT_CONNECTED);
+                    DX_VERIFY_EXCEPT1(pPin->ConnectedTo(&pConnectedPin), VFW_E_NOT_CONNECTED);
                     if (SUCCEEDED(hr)) //有连接的Pin，获取该Pin所在的Filter，递归调用
                     {
                         PIN_INFO pinInfo = {0};
                         DX_VERIFY(pConnectedPin->QueryPinInfo(&pinInfo));
 
-                        DX_VERIFY(ClearDirFilters(pGraph,pinInfo.pFilter,dir));
+                        DX_VERIFY(DisconnectDirFilters(pGraph, pinInfo.pFilter, dir, bRemoveFromGraph));
 
                         //断开当前Pin连接
                         DX_VERIFY(pGraph->Disconnect(pConnectedPin));
                         DX_VERIFY(pGraph->Disconnect(pPin));
-                        DX_VERIFY(pGraph->RemoveFilter(pinInfo.pFilter));
+
+                        if (bRemoveFromGraph)
+                        {
+                            DX_VERIFY(pGraph->RemoveFilter(pinInfo.pFilter));
+                        }
 
                         SAFE_RELEASE(pinInfo.pFilter);
                         SAFE_RELEASE(pConnectedPin);
@@ -1020,7 +1087,9 @@ namespace FTL
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_PHILIPS_LPCBB);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_PACKED);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MALDEN_PHONYTALK);
+#if 0
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_RAW_AAC1);
+#endif 
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_RHETOREX_ADPCM);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_IRAT);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VIVO_G723);
@@ -1074,14 +1143,20 @@ namespace FTL
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_SOUNDSPACE_MUSICOMPRESS);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG_ADTS_AAC);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG_RAW_AAC);
+#if 0
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG_LOAS);
+#endif 
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_NOKIA_MPEG_ADTS_AAC);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_NOKIA_MPEG_RAW_AAC);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VODAFONE_MPEG_ADTS_AAC);
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_VODAFONE_MPEG_RAW_AAC);
+#if 0
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_MPEG_HEAAC);
+#endif 
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DVM);
+#if 0
 			HANDLE_CASE_RETURN_STRING(WAVE_FORMAT_DTS2);
+#endif
 			
 			//HANDLE_CASE_RETURN_STRING(XXXXXXXX);
 		default:
@@ -1373,7 +1448,7 @@ namespace FTL
 			else
 			{
 				//Because IPropertyBag::Read(L"FriendlyName") limit 32 TCHAR, so just check part of the string
-				if (lstrlenW((*iter)->wachFriendlyName) > DS_FRIENDLY_NAME_MAX_LENGTH - 2
+				if (lstrlenW((*iter)->wachFriendlyName) >= DS_FRIENDLY_NAME_MAX_LENGTH - 1
 					&& NULL != wcsstr(pszName, (*iter)->wachFriendlyName))
 				{
 					//Found

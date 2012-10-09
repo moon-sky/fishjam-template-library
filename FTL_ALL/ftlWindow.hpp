@@ -343,7 +343,10 @@ namespace FTL
 #ifndef _WIN32_WCE
                 GET_MESSAGE_INFO_ENTRY(WM_QUERYENDSESSION, CFDefaultMsgInfo); //当用户选择结束对话框或程序自己调用ExitWindows函数
                 GET_MESSAGE_INFO_ENTRY(WM_QUERYOPEN, CFDefaultMsgInfo);     //当用户窗口恢复以前的大小位置时，把此消息发送给某个图标
-                GET_MESSAGE_INFO_ENTRY(WM_ENDSESSION, CFDefaultMsgInfo);    //当系统进程发出WM_QUERYENDSESSION消息后，此消息发送给应用程序，通知它对话是否结束
+                //当系统进程发出WM_QUERYENDSESSION消息后，此消息发送给应用程序，通知它对话是否结束,
+                //一半来说，过滤了 WM_CLOSE 消息的程序都需要处理这个消息，否则可能导致系统无法关闭
+                // if(wParam || (lParam & ENDSESSION_LOGOFF)) { OnClose(); } 
+                GET_MESSAGE_INFO_ENTRY(WM_ENDSESSION, CFDefaultMsgInfo);
 #endif
                 GET_MESSAGE_INFO_ENTRY(WM_QUIT, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_ERASEBKGND, CFDefaultMsgInfo); //当窗口背景必须被擦除时（例在窗口改变大小时

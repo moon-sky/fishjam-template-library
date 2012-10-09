@@ -128,6 +128,9 @@ namespace FTL
         FTLINLINE static HRESULT AddGraphToRot(IUnknown* pUnkGraph,DWORD* pdwRegister);
         FTLINLINE static HRESULT RemoveGraphFromRot(DWORD dwRegister);
 
+		//拷贝MediaSample的数据
+		FTLINLINE static HRESULT CopyMediaSample(IMediaSample *pSource, IMediaSample *pDest);
+
         //注意：IVideoWindow::put_MessageDrain 指定窗体来接收并处理Video窗口的鼠标和键盘消息
         //调用(尚未测试)：ToggleFullScreen(m_pVW,hMain,&hVideo); 和 ToggleFullScreen(m_pVW,hVideo,NULL); 
         FTLINLINE static HRESULT ToggleFullScreen(IVideoWindow *pVW,HWND hDrain, HWND *phOldDrain);
@@ -149,10 +152,10 @@ namespace FTL
         FTLINLINE static HRESULT ConnectFilters(IGraphBuilder* pGraph, IBaseFilter* pSrc, IBaseFilter* pDest);
 
         //! 在Filter Graph 中的Filter中查找特定的某种接口(如DV视频解码的 IIPDVDec 等)
-        FTLINLINE static HRESULT FindFilterInterface(IFilterGraph* pGraph,REFIID riid, void** ppUnk);
+        FTLINLINE static HRESULT FindFilterInterface(IFilterGraph* pGraph, REFIID riid, void** ppUnk);
 
-        //!查找指定Filter的Pin上实现的特定接口
-        FTLINLINE static HRESULT FindPinInterface(IBaseFilter* pFilter, REFIID riid,void** ppUnk);
+        //!查找指定Filter的Pin上实现的特定接口(如 IID_IReferenceClock 等)
+        FTLINLINE static HRESULT FindPinInterface(IBaseFilter* pFilter, REFIID riid, void** ppUnk);
 
         //! 在Graph中的 Filter 和 Pin 上查找指定接口
         FTLINLINE static HRESULT FindInterfaceAnywhere(IFilterGraph *pGraph, REFIID riid, void** ppUnk);
@@ -164,8 +167,9 @@ namespace FTL
         //! 清除掉Filter Graph中所有的Filter
         FTLINLINE static HRESULT ClearAllFilters(IFilterGraph *pGraph);
 
-        //从指定Filter开始，清除指定方向的所有Filter -- 会递归
-        FTLINLINE static HRESULT ClearDirFilters(IFilterGraph* pGraph, IBaseFilter* pFilter, PIN_DIRECTION dir);
+        //从指定Filter开始，断开指定方向的所有Filter(并且可以从Graph中移除) -- 会递归
+        FTLINLINE static HRESULT DisconnectDirFilters(IFilterGraph* pGraph, IBaseFilter* pFilter, 
+            PIN_DIRECTION dir, BOOL bRemoveFromGraph = FALSE);
 
         //! 在进行格式转换时，如果不需要预览，可以设置不使用参考时钟，以使数据流中的Sample以最快速度传送。
         //  使用 IFilterGraph::SetDefaultSyncSource 恢复缺省的
@@ -234,6 +238,8 @@ namespace FTL
 
 		FTLINLINE HRESULT Refresh(const CLSID* pDevClsid);
 		FTLINLINE HRESULT Clear();
+
+        //一般来说 riidResult 都是 IID_IBaseFilter
 		FTLINLINE HRESULT GetBindObject(LPCWSTR pszName, REFIID riidResult, void **ppvResult);
 
 		//TODO: Enum

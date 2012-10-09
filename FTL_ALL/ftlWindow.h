@@ -358,6 +358,8 @@ namespace FTL
 		UINT RWM_SETRGBSTRING;
 		UINT RWM_SHAREVISTRING;
 		UINT RWM_TASKBARBUTTONCREATED;	//任务栏重新创建?(没有确认)
+
+        //WM_DEVICECHANGE; //这个消息需要通过 RegisterDeviceNotification 注册才能获得?
 	};
 
     //! 将消息( WM_XXX )转换为易读的格式，类似于 ",wm"

@@ -50,6 +50,7 @@ namespace FTL
     //使用方式：pragma TODO(Fix this later)
     #define TODO(desc) message(__FILE__ "(" QQUOTE(__LINE__) ") : TODO: " #desc)
 
+    //处理虚拟按键(如 VK_ESCAPE )， 或者在 WM_KEYDOWN 中 (GetAsyncKeyState(vk_code) & 0x01) ?
     #define KEY_DOWN(vk_code)   ( (GetAsyncKeyState(vk_code) & 0x8000) ? TRUE  : FALSE ) 
     #define KEY_UP(vk_code)     ( (GetAsyncKeyState(vk_code) & 0x8000) ? FALSE : TRUE  )
 
