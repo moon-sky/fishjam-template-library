@@ -4,21 +4,25 @@
 	Version="8.00"
 	Name="FJSDK Defaults"
 	>
+	<Tool 
+		  Name="VCDebugSettings"
+		  WorkingDirectory="$(FJSDK)Windows\FJUtility\Lib"
+	/>
 	<Tool
 		  Name="VCCLCompilerTool"
 		  AdditionalIncludeDirectories="$(FJSDK)Windows\FTL;$(FJSDK)WTL\SDK\WTL80\include;$(FJSDK)Library\CPPUnit\Windows\Include"
 	/>
-  <Tool
+	<Tool
 			Name="VCResourceCompilerTool"
 			AdditionalIncludeDirectories="$(FJSDK)WTL\SDK\WTL80\include"
 	/>
-  <Tool
-      Name="VCLinkerTool"
-		  AdditionalLibraryDirectories="$(FJSDK)Library\CPPUnit\Windows\Lib"
+  	<Tool
+		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="$(FJSDK)Library\CPPUnit\Windows\Lib"
 	/>
-  <Tool
-      Name="VCLibrarianTool"
-      AdditionalLibraryDirectories="Where?"
+	  <Tool
+		Name="VCLibrarianTool"
+      		AdditionalLibraryDirectories="Where?"
 	/>
 	<UserMacro
 		  Name="CPPUNITPATH"
