@@ -227,6 +227,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlShell.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlSystem.hpp"
 				>
 			</File>
@@ -334,6 +338,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlNLS.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlShell.h"
 				>
 			</File>
 			<File

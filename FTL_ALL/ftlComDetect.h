@@ -266,6 +266,8 @@ namespace FTL
 
 #if INCLUDE_DETECT_VFW
 #  include <vfw.h>
+#  pragma comment(lib, "Vfw32.Lib")
+#  pragma comment(lib, "msvfw32.Lib")
 #endif 
 
 #if INCLUDE_DETECT_VSIP
@@ -560,7 +562,7 @@ struct CFInterfaceEntryExIID
 					pServiceUnknown->Release();\
 					pServiceUnknown = NULL;\
 				}\
-				else if(E_NOINTERFACE != hr)\
+				else if(E_NOINTERFACE != hr && E_FAIL != hr)\
 				{\
 					FTLTRACEEX(tlWarning,TEXT("Warning: Detect Service %s ,return 0x%p\n"),pEntry->pszInterfaceName,hr);\
 				}\
