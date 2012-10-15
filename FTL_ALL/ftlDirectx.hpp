@@ -255,8 +255,8 @@ namespace FTL
 
 	HRESULT CFDirectShowUtility::CopyMediaSample(IMediaSample *pSource, IMediaSample *pDest)
 	{
-		CheckPointer(pSource,E_POINTER);
-		CheckPointer(pDest,E_POINTER);
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pSource,E_POINTER);
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pDest,E_POINTER);
 
 		HRESULT hr = E_FAIL;
 
@@ -265,18 +265,18 @@ namespace FTL
 
 #ifdef _DEBUG    
 		long lDestSize = pDest->GetSize();
-		ASSERT(lDestSize >= lSourceSize);
+		FTLASSERT(lDestSize >= lSourceSize);
 
-		AM_MEDIA_TYPE* pMtSource = NULL, *pMtDest = NULL;
-		if(SUCCEEDED(pSource->GetMediaType(&pMtSource)))
-		{
-			if (SUCCEEDED(pDest->GetMediaType(&pMtDest)))
-			{
-                //TODO:compare
-				DeleteMediaType(pMtDest);
-			}
-			DeleteMediaType(pMtSource);				
-		}
+		//AM_MEDIA_TYPE* pMtSource = NULL, *pMtDest = NULL;
+		//if(SUCCEEDED(pSource->GetMediaType(&pMtSource)))
+		//{
+		//	if (SUCCEEDED(pDest->GetMediaType(&pMtDest)))
+		//	{
+		//		//TODO:compare
+		//		DeleteMediaType(pMtDest);
+		//	}
+		//	DeleteMediaType(pMtSource);				
+		//}
 #endif
 
 		BYTE *pSourceBuffer = NULL, *pDestBuffer = NULL;

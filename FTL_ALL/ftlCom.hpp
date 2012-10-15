@@ -364,7 +364,8 @@ namespace FTL
         DWORD dwClsContext, REFIID riid, LPVOID FAR* ppv)
     {
         HRESULT hr = S_OK;
-        HMODULE hModule = ::LoadLibraryEx(szModule, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+		HMODULE hModule = ::CoLoadLibrary(szModule, TRUE);
+        //HMODULE hModule = ::LoadLibraryEx(szModule, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
         if (NULL == hModule)
         {
             DWORD dwLastError = ::GetLastError();

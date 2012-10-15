@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlDirectx.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlDTEHelper.hpp"
 				>
 			</File>
@@ -219,11 +223,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlMultiMedia.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlNet.hpp"
 				>
 			</File>
 			<File
 				RelativePath=".\ftlNLS.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlnpAPI.hpp"
 				>
 			</File>
 			<File
@@ -240,6 +252,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlVSIPHelper.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlWeb.hpp"
 				>
 			</File>
 			<File
@@ -301,6 +317,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlDirectx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlDTEHelper.h"
 				>
 			</File>
@@ -333,11 +353,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlMultiMedia.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlNet.h"
 				>
 			</File>
 			<File
 				RelativePath=".\ftlNLS.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlnpAPI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlSharePtr.h"
 				>
 			</File>
 			<File
@@ -358,6 +390,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlVSIPHelper.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlWeb.h"
 				>
 			</File>
 			<File

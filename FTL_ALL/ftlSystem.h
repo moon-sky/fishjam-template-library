@@ -15,6 +15,11 @@
 #include <list>
 #include <functional>
 
+//控制面板的选项：
+//http://msdn.microsoft.com/en-us/library/windows/desktop/cc144191(v=vs.85).aspx
+//http://msdn.microsoft.com/en-us/library/windows/desktop/ee330741(v=vs.85).aspx
+//https://wiki.mst.edu/deskinst/info/windows/vista/control_panel
+
 /*****************************************************************************************************
 * 操作系统
 *   4个特性：并发性、共享性、虚拟性 和 不确定性。

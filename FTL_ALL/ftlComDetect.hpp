@@ -1983,6 +1983,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IResourceManager)
             DETECT_INTERFACE_ENTRY(IDistributorNotify)
             DETECT_INTERFACE_ENTRY(IAMStreamControl)
+			//! 将 Seeking 操作 PassThrough 到上一个Filter ?
             DETECT_INTERFACE_ENTRY(ISeekingPassThru)
             //! 采集时设置输出数据的媒体类型(具体格式使用 WAVEFORMATEX 等描述)
             DETECT_INTERFACE_ENTRY_EX(IAMStreamConfig, CFAMStreamConfigDump)
