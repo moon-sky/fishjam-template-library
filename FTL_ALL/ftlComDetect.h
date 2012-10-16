@@ -266,7 +266,7 @@ namespace FTL
 
 #if INCLUDE_DETECT_VFW
 #  include <vfw.h>
-#  pragma comment(lib, "Vfw32.Lib")
+#  pragma comment(lib, "Vfw32.lib")
 #  pragma comment(lib, "msvfw32.Lib")
 #endif 
 

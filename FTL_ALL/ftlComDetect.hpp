@@ -1935,7 +1935,7 @@ namespace FTL
 
             //!在输入Pin上实现，管理分配器，并且传送 IMediaSample
             DETECT_INTERFACE_ENTRY(IMemInputPin)
-            DETECT_INTERFACE_ENTRY(IAMovieSetup)
+            DETECT_INTERFACE_ENTRY(IAMovieSetup)	//注册和取消注册Filter，但现在已经不使用了
 
             //!获取并设置 格式、定位信息的 UnKnown 接口。
             //!  Capabilities/PreferredFormat/TimeFormat/Duration/CurrentPosition/Positions/Rate/Preroll/...
@@ -1983,7 +1983,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IResourceManager)
             DETECT_INTERFACE_ENTRY(IDistributorNotify)
             DETECT_INTERFACE_ENTRY(IAMStreamControl)
-			//! 将 Seeking 操作 PassThrough 到上一个Filter ?
+			//! 在 CLSID_SeekingPassThru 中, 将 Seeking 操作 PassThrough 到上一个Filter ?
             DETECT_INTERFACE_ENTRY(ISeekingPassThru)
             //! 采集时设置输出数据的媒体类型(具体格式使用 WAVEFORMATEX 等描述)
             DETECT_INTERFACE_ENTRY_EX(IAMStreamConfig, CFAMStreamConfigDump)

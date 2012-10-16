@@ -357,8 +357,7 @@ namespace FTL
 		return m_bufInfo;
 	}
 
-#if 0
-    __declspec(selectany) CModulesHolder g_modulesHolder;
+    //__declspec(selectany) CModulesHolder g_modulesHolder;
 
     HRESULT /*__stdcall*/ CFSideBySide::SbsCreateInstance(LPCTSTR szModule, REFCLSID rclsid, LPUNKNOWN pUnkOuter, 
         DWORD dwClsContext, REFIID riid, LPVOID FAR* ppv)
@@ -384,10 +383,10 @@ namespace FTL
         //BOOL bRet = FALSE;
         UNREFERENCED_PARAMETER(dwClsContext); // --如果不需要这个参数，那么外部就不应该传入
 
-        if (g_modulesHolder.Find(hModule))
-        {
-            g_modulesHolder.Erase(hModule);
-        }
+        //if (g_modulesHolder.Find(hModule))
+        //{
+        //    g_modulesHolder.Erase(hModule);
+        //}
 
         typedef HRESULT (_stdcall *DLLGETCLASSOBJECT_FUNC)(REFCLSID, REFIID, void**);
         DLLGETCLASSOBJECT_FUNC pfDllGetClassObject = NULL;
@@ -409,12 +408,11 @@ namespace FTL
         hr = pFactory->CreateInstance(pUnkOuter, riid, (void**)ppv);
         SAFE_RELEASE(pFactory);
 
-        g_modulesHolder.Insert(hModule);
+        //g_modulesHolder.Insert(hModule);
 
 
         return hr;
     }
-#endif
 
     CFIExplorerDispidInfo::CFIExplorerDispidInfo(DISPID id) : CFConvertInfoT<CFIExplorerDispidInfo ,DISPID>(id)
     {

@@ -51,12 +51,14 @@ namespace FTL
             SHCNF_PATHA;
 #endif
 
+#if 0
         SHChangeNotifyEntry notifyEntry = {0};
         notifyEntry.fRecursive = bRecursive;
         notifyEntry.pidl = GetPidlFromPath(pszMonitorPath);
         m_uiChangeNotifyID = ::SHChangeNotifyRegister(m_hWndNotify, fSources, SHCNE_ALLEVENTS | SHCNE_INTERRUPT, 
 			m_uiNotifyMsg,   
 			1, &notifyEntry);
+#endif 
         return bRet;
     }
 
@@ -79,7 +81,8 @@ namespace FTL
         WNDCLASS wndClass = {0};
         
         //::RegisterClass()
-        ::CreateWindow()
+        //::CreateWindow()
+        return FALSE;
     }
 
     LRESULT CALLBACK CFShellChangeMonitor::MainMonitorWndProc(HWND hwnd,UINT uMsg, 
@@ -89,16 +92,16 @@ namespace FTL
         {
         case WM_CREATE:
             break;
-		case m_uiNotifyMsg:
-			//处理这个消息获得变化通知
-			{
-				LPCITEMIDLIST* pItemList = (LPCITEMIDLIST*)wParam;
-				pItemList[0]; // Dst
-				pItemList[1]; // Src
-				
-				//然后调用 SHChangeNotify ?
-				break;
-			}
+		//case m_uiNotifyMsg:
+		//	//处理这个消息获得变化通知
+		//	{
+		//		LPCITEMIDLIST* pItemList = (LPCITEMIDLIST*)wParam;
+		//		pItemList[0]; // Dst
+		//		pItemList[1]; // Src
+		//		
+		//		//然后调用 SHChangeNotify ?
+		//		break;
+		//	}
         default: 
             return DefWindowProc(hwnd, uMsg, wParam, lParam); 
         }

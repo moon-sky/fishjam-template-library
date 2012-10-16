@@ -1172,7 +1172,7 @@ namespace FTL
 			if (spWebBrowser2)
 			{
 				VARIANT_BOOL bOffline = VARIANT_FALSE;
-				COM_VERIFY(spWebBrowser2->get_Offline(&)bOffline);
+				COM_VERIFY(spWebBrowser2->get_Offline(&bOffline));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Offline"), bOffline));
 			}
 		}
