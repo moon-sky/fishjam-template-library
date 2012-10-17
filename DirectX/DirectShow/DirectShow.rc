@@ -1,0 +1,174 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "windows.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DEBUG_FILTER_PAGE DIALOGEX 0, 0, 377, 260
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "InputPin:",IDC_STATIC,7,7,30,8
+    LISTBOX         IDC_LIST_INPUT,7,17,363,91,LBS_NOINTEGRALHEIGHT | LBS_DISABLENOSCROLL | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    LTEXT           "OutputPin:",IDC_STATIC,7,110,36,8
+    LISTBOX         IDC_LIST_OUTPUT,7,122,363,91,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_DISABLENOSCROLL | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    CONTROL         "DumpSampleToFile",IDC_CHECK_DUMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,221,83,10
+    LTEXT           "LimitCount:",IDC_STATIC,241,222,37,8
+    EDITTEXT        IDC_EDIT_LIMIT_COUNT,281,217,67,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN_LIMIT_COUNT,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY,347,217,11,14
+    PUSHBUTTON      "...",IDC_BTN_CHOOSE_DUMP_FILE_PATH,351,235,18,17,BS_FLAT
+    EDITTEXT        IDC_EDIT_DUMP_FILE_PATH,7,236,341,17,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "StartIndex:",IDC_STATIC,117,222,38,8
+    EDITTEXT        IDC_EDIT_START_INDEX,157,217,67,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "InputPinInfo",IDC_INPUT_PIN_INFO,44,7,326,8
+    LTEXT           "OutputPinInfo",IDC_OUTPUT_PIN_INFO,48,110,322,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DEBUG_FILTER_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 370
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 253
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""windows.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 9,0,0,0
+ PRODUCTVERSION 9,0,0,0
+ FILEFLAGSMASK 0x30003fL
+#ifdef _DEBUG
+ FILEFLAGS 0xbL
+#else
+ FILEFLAGS 0xaL
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "Microsoft Corporation"
+            VALUE "Comment", "DirectShow Sample"
+            VALUE "FileDescription", "Debug Info Filter"
+            VALUE "FileVersion", "9.00"
+            VALUE "InternalName", "DirectShow.ax"
+            VALUE "LegalCopyright", "Copyright (C) 1992-2002 Microsoft Corporation"
+            VALUE "OriginalFilename", "DirectShow.ax"
+            VALUE "ProductName", "DirectShow Debug Information Filter"
+            VALUE "ProductVersion", "1.00"
+            VALUE "ActiveMovie", "Filter dll"
+            VALUE "OLESelfRegister", "AM20"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_TITLE               "DebugInfoFilter"
+    IDS_DEBUG_INFO_PAGE     "DebugProperty"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

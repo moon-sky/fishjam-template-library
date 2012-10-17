@@ -1,0 +1,84 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectShow", "DirectShow\DirectShow.vcproj", "{781B0346-0128-4260-BF94-DFF718D22D27}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectDrawTimeSaver", "DirectDrawTimeSaver\DirectDrawTimeSaver.vcproj", "{CAC03B51-592E-490F-9359-92EB78C4A008}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Direct3DDemo", "Direct3DDemo\Direct3DDemo.vcproj", "{1A376E34-4C41-4786-8029-DEE5D7CA1F9C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StorageFile", "StorageFile\StorageFile.vcproj", "{96ADB3F9-9A67-4B46-9938-981538D8E2B7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D7606D03-9C39-4E0D-AB7E-F6F865114D85}"
+	ProjectSection(SolutionItems) = preProject
+		DirectX.vsprops = DirectX.vsprops
+		DirectXStudy.h = DirectXStudy.h
+		GameDevelopStudy.h = GameDevelopStudy.h
+		Resource\tiger.bmp = Resource\tiger.bmp
+		Resource\tiger.x = Resource\tiger.x
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectSoundDemo", "DirectSoundDemo\DirectSoundDemo.vcproj", "{D7954851-AD26-4853-8A27-222360F7FCBA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameDemo", "GameDemo\GameDemo.vcproj", "{5480E68D-E213-4462-90E9-B4AA359F0B0E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScreenCaptureFilter", "ScreenCaptureFilter\ScreenCaptureFilter.vcproj", "{402F7DF2-B5E6-4BA4-ABF0-CC2689A4D01F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScreenCapture", "ScreenCapture\ScreenCapture.vcproj", "{2BD90E1E-D3F4-4057-A47E-350B95D87609}"
+	ProjectSection(ProjectDependencies) = postProject
+		{402F7DF2-B5E6-4BA4-ABF0-CC2689A4D01F} = {402F7DF2-B5E6-4BA4-ABF0-CC2689A4D01F}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AsyncTransFilter", "AsyncTransFilter\AsyncTransFilter.vcproj", "{6E6690D7-FBEC-471E-AF70-31D251B5E64B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseClasses", "F:\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\baseclasses.vcproj", "{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BaseClasses", "BaseClasses", "{68BF0444-B974-4D9E-896F-579D22D60D0C}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{781B0346-0128-4260-BF94-DFF718D22D27}.Debug|Win32.ActiveCfg = Debug|Win32
+		{781B0346-0128-4260-BF94-DFF718D22D27}.Debug|Win32.Build.0 = Debug|Win32
+		{781B0346-0128-4260-BF94-DFF718D22D27}.Release|Win32.ActiveCfg = Release|Win32
+		{781B0346-0128-4260-BF94-DFF718D22D27}.Release|Win32.Build.0 = Release|Win32
+		{CAC03B51-592E-490F-9359-92EB78C4A008}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CAC03B51-592E-490F-9359-92EB78C4A008}.Release|Win32.ActiveCfg = Release|Win32
+		{1A376E34-4C41-4786-8029-DEE5D7CA1F9C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1A376E34-4C41-4786-8029-DEE5D7CA1F9C}.Release|Win32.ActiveCfg = Release|Win32
+		{96ADB3F9-9A67-4B46-9938-981538D8E2B7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{96ADB3F9-9A67-4B46-9938-981538D8E2B7}.Debug|Win32.Build.0 = Debug|Win32
+		{96ADB3F9-9A67-4B46-9938-981538D8E2B7}.Release|Win32.ActiveCfg = Release|Win32
+		{96ADB3F9-9A67-4B46-9938-981538D8E2B7}.Release|Win32.Build.0 = Release|Win32
+		{D7954851-AD26-4853-8A27-222360F7FCBA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D7954851-AD26-4853-8A27-222360F7FCBA}.Release|Win32.ActiveCfg = Release|Win32
+		{5480E68D-E213-4462-90E9-B4AA359F0B0E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5480E68D-E213-4462-90E9-B4AA359F0B0E}.Release|Win32.ActiveCfg = Release|Win32
+		{402F7DF2-B5E6-4BA4-ABF0-CC2689A4D01F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{402F7DF2-B5E6-4BA4-ABF0-CC2689A4D01F}.Debug|Win32.Build.0 = Debug|Win32
+		{402F7DF2-B5E6-4BA4-ABF0-CC2689A4D01F}.Release|Win32.ActiveCfg = Release|Win32
+		{402F7DF2-B5E6-4BA4-ABF0-CC2689A4D01F}.Release|Win32.Build.0 = Release|Win32
+		{2BD90E1E-D3F4-4057-A47E-350B95D87609}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2BD90E1E-D3F4-4057-A47E-350B95D87609}.Debug|Win32.Build.0 = Debug|Win32
+		{2BD90E1E-D3F4-4057-A47E-350B95D87609}.Release|Win32.ActiveCfg = Release|Win32
+		{2BD90E1E-D3F4-4057-A47E-350B95D87609}.Release|Win32.Build.0 = Release|Win32
+		{6E6690D7-FBEC-471E-AF70-31D251B5E64B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6E6690D7-FBEC-471E-AF70-31D251B5E64B}.Debug|Win32.Build.0 = Debug|Win32
+		{6E6690D7-FBEC-471E-AF70-31D251B5E64B}.Release|Win32.ActiveCfg = Release|Win32
+		{6E6690D7-FBEC-471E-AF70-31D251B5E64B}.Release|Win32.Build.0 = Release|Win32
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.Release|Win32.ActiveCfg = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA} = {68BF0444-B974-4D9E-896F-579D22D60D0C}
+	EndGlobalSection
+EndGlobal

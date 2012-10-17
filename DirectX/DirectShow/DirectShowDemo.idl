@@ -1,0 +1,93 @@
+import "unknwn.idl";
+
+//DirectShow 使用的接口也可以通过 IDL 定义 -- 问题：Property的 CLSID ?
+
+cpp_quote("#if 0")
+// This is temporary workaround to to persuade
+// MIDL to allow forward declarations.
+typedef LPVOID*  IBaseFilter;
+typedef LPVOID*  IFilterGraph;
+typedef LPVOID*  IPin;
+//typedef LPVOID*  ISpecifyPropertyPages;
+cpp_quote("#endif //if 0")
+
+// This is temporary workaround for VC6
+//typedef DWORD DWORD_PTR;
+
+//cpp_quote("#include <d3d9.h>")
+cpp_quote("#include <dshow.h>")
+//cpp_quote("#include <vmr9.h>")
+
+//cpp_quote("#ifndef DWORD_PTR")
+//cpp_quote("#define DWORD_PTR DWORD")
+//cpp_quote("#endif")
+
+// public interfaces supported by DirectShowDemo
+interface IFilterDebugInfo;
+
+//[
+//	uuid(F62AD8B9-AFA6-41bf-9ADE-5A83D80FF3BC),	
+//	helpstring("FilterDebugParam struct"),
+//]
+typedef struct FilterDebugParam
+{
+    BOOL    bDumpSample;
+	DWORD   dwDumpSampleStartIndex;
+    DWORD   dwDumpSampleLimitCount;
+    BSTR    pstrDumpFilePath;
+}FilterDebugParam;
+
+[
+    local,
+	object,
+	uuid(F62AD8B9-AFA6-41bf-9ADE-5A83D80FF3BD),	
+	helpstring("IFilterDebugInfo Interface"),
+	pointer_default(unique)
+]
+interface IFilterDebugInfo : IUnknown{
+    [helpstring("method GetConnectedPin")] 
+    HRESULT GetConnectedPin([in] BOOL bIsInput, [out,retval] IPin** ppPin);
+    HRESULT GetFilterDebugParam([in,out] FilterDebugParam* pFilterDebugParam);
+    HRESULT SetFilterDebugParam([in] FilterDebugParam* pFilterDebugParam);
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+//   Library and objects
+//
+//////////////////////////////////////////////////////////////////////////////
+[
+    uuid(3CAF42E8-0CBF-45b6-9A6E-E6ABE8639D2D),
+    version(1.0),
+   	helpstring("DirectShowDemo 1.0 Type Library"),
+]
+
+library DirectShowDemoLib
+{
+
+    //importlib("stdole32.tlb");
+    //importlib("stdole2.tlb");
+    //importlib ("Msvidctl.tlb");
+
+    //DebugInfoFilter
+    [
+        uuid(205769BC-B121-4ca8-A4E6-84A20EF253B7),
+        helpstring("FilterDebugInfo Class")
+    ]
+    coclass DebugInfoFilter
+    {
+        [default] interface IFilterDebugInfo;
+    };
+    
+    //[
+    //    uuid(205769BD-B121-4ca8-A4E6-84A20EF253B7),
+    //    helpstring("DebugInfoFilterProperty Class")
+    //]
+    //coclass DebugInfoFilterProperty
+    //{
+    //    [default] interface ISpecifyPropertyPages;
+    //};
+}
+
+

@@ -1,0 +1,67 @@
+import "unknwn.idl";
+
+cpp_quote("#if 0")
+// This is temporary workaround to to persuade
+// MIDL to allow forward declarations.
+typedef LPVOID*  IBaseFilter;
+typedef LPVOID*  IFilterGraph;
+typedef LPVOID*  IPin;
+//typedef LPVOID*  ISpecifyPropertyPages;
+cpp_quote("#endif //if 0")
+
+cpp_quote("#include <dshow.h>")
+
+//cpp_quote("const REFERENCE_TIME FPS_25 = UNITS / 25;")
+
+
+interface IFScreenCaptureConfig;
+
+[
+	// {51F208B6-B9B3-483e-8359-780B2ACC234F}
+	//IMPLEMENT_OLECREATE(<<class>>, <<external_name>>, 
+	//0x51f208b6, 0xb9b3, 0x483e, 0x83, 0x59, 0x78, 0xb, 0x2a, 0xcc, 0x23, 0x4f);
+    local,
+	object,
+	uuid(51F208B6-B9B3-483e-8359-780B2ACC234F),	
+	helpstring("IFScreenCaptureConfig Interface"),
+	pointer_default(unique)
+]
+interface IFScreenCaptureConfig : IUnknown{
+	//MediaType(VideoStreamConfigCaps) 相关的信息可以通过 IAMStreamConfig 接口进行设置
+	HRESULT SetCaptureRect ([in] int nLeft, [in] int nTop, [in] int nWidth, [in] int nHeight);
+	//HRESULT SetFrameRate ([in] int nFPS);
+	HRESULT SetShowMousePointer ([in] BOOL bShowMousePointer);
+};
+
+//////////////////////////////////////////////////////////////////////////////
+//
+//   Library and objects
+//
+//////////////////////////////////////////////////////////////////////////////
+[
+	// {7876AE74-3C50-46b8-AD68-ADA1EF7CF9A2}
+	//IMPLEMENT_OLECREATE(<<class>>, <<external_name>>, 
+	//0x7876ae74, 0x3c50, 0x46b8, 0xad, 0x68, 0xad, 0xa1, 0xef, 0x7c, 0xf9, 0xa2);
+
+    uuid(7876AE74-3C50-46b8-AD68-ADA1EF7CF9A2),
+    version(1.0),
+   	helpstring("Fishjam Screen Capture Filter 1.0 Type Library"),
+]
+
+library FScreenCaptureLib
+{
+    //FishjamScreenCaptureFilter
+    [
+		// {E4DB0B81-4288-425d-B25E-D107A16FEC62}
+		//DEFINE_GUID(CLSID_FishjamScreenCapture, 
+		//	0xe4db0b81, 0x4288, 0x425d, 0xb2, 0x5e, 0xd1, 0x7, 0xa1, 0x6f, 0xec, 0x62);
+
+        uuid(E4DB0B81-4288-425d-B25E-D107A16FEC62),
+        helpstring("FishjamScreenCapture Class")
+    ]
+    coclass FishjamScreenCapture
+    {
+        [default] interface IFScreenCaptureConfig;
+    };
+}
+

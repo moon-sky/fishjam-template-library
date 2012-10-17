@@ -1,0 +1,61 @@
+import "unknwn.idl";
+
+//import "oaidl.idl";
+//import "ocidl.idl";
+
+cpp_quote("#if 0")
+// This is temporary workaround to to persuade
+// MIDL to allow forward declarations.
+typedef LPVOID*  IBaseFilter;
+typedef LPVOID*  IFilterGraph;
+typedef LPVOID*  IPin;
+//typedef LPVOID*  ISpecifyPropertyPages;
+cpp_quote("#endif //if 0")
+
+cpp_quote("#include <dshow.h>")
+
+interface IAsyncTransformFilter;
+
+// {8786C230-FAA1-4a92-A660-A31D666D7F98}
+//IMPLEMENT_OLECREATE(<<class>>, <<external_name>>, 
+//0x8786c230, 0xfaa1, 0x4a92, 0xa6, 0x60, 0xa3, 0x1d, 0x66, 0x6d, 0x7f, 0x98);
+//static const GUID <<name>> = { 0x8786c230, 0xfaa1, 0x4a92, { 0xa6, 0x60, 0xa3, 0x1d, 0x66, 0x6d, 0x7f, 0x98 } };
+
+[
+    local,
+	object,
+	uuid(8786C230-FAA1-4a92-A660-A31D666D7F98),	
+	helpstring("IAsyncTransformFilter Interface"),
+	pointer_default(unique)
+]
+interface IAsyncTransformFilter : IUnknown{
+	HRESULT Hello();
+    //[helpstring("method GetConnectedPin")] 
+    //HRESULT GetConnectedPin([in] BOOL bIsInput, [out,retval] IPin** ppPin);
+    //HRESULT GetFilterDebugParam([in,out] FilterDebugParam* pFilterDebugParam);
+    //HRESULT SetFilterDebugParam([in] FilterDebugParam* pFilterDebugParam);
+};
+
+
+[
+	// {F5774CF6-BBAA-45b1-B2FE-770E4F9AC75A}
+	//IMPLEMENT_OLECREATE(<<class>>, <<external_name>>, 0xf5774cf6, 0xbbaa, 0x45b1, 0xb2, 0xfe, 0x77, 0xe, 0x4f, 0x9a, 0xc7, 0x5a);
+    uuid(F5774CF6-BBAA-45b1-B2FE-770E4F9AC75A),
+    version(1.0),
+   	helpstring("Async Trans Filter 1.0 Type Library"),
+]
+
+library AsyncTransFilterLib
+{
+    //AsyncTransformFilter
+    [
+		// {A35B87E2-2E8B-4a3c-BBBF-D741F5CDC6B4}
+		// IMPLEMENT_OLECREATE(<<class>>, <<external_name>>, 0xa35b87e2, 0x2e8b, 0x4a3c, 0xbb, 0xbf, 0xd7, 0x41, 0xf5, 0xcd, 0xc6, 0xb4);
+        uuid(A35B87E2-2E8B-4a3c-BBBF-D741F5CDC6B4),
+        helpstring("AsyncTransformFilter Class")
+    ]
+    coclass AsyncTransformFilter
+    {
+        [default] interface IAsyncTransformFilter;
+    };
+}
