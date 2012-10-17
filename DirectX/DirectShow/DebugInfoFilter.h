@@ -62,10 +62,10 @@ public:
     //STDMETHODIMP Pause();
 
     //这两个函数可以用于初始化和终止化
-    HRESULT StartStreaming();
-    HRESULT StopStreaming();
+    virtual HRESULT StartStreaming();
+    virtual HRESULT StopStreaming();
 
-    HRESULT CompleteConnect(PIN_DIRECTION dir,IPin *pReceivePin);
+    virtual HRESULT CompleteConnect(PIN_DIRECTION dir,IPin *pReceivePin);
 
     //ISpecifyPropertyPages
     STDMETHOD(GetPages)(/* [out] */ CAUUID *pPages);

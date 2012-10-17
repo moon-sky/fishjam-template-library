@@ -448,7 +448,7 @@ namespace FTL
 
 	/******************************************************************************************************************************
 	* GNU 环境(Windows 下的),
-	*   MinGW(http://mingw.sourceforge.net/) -- 可以在没有第三方动态链接库的情况下使用GCC产生Win32程序
+	*   MinGW(http://sourceforge.net/projects/mingw/) -- 可以在没有第三方动态链接库的情况下使用GCC产生Win32程序
 	*     C/C++ 编译环境：binutils/mingw-runtime-dev/mingw-runtime/w32api/gcc-core/gcc-c++/libstdc++ 等
 	*     安装：
 	*       1.设置 MINGW_HOME 环境变量指向其根目录，将 %MINGW_HOME%\bin 加入Path
