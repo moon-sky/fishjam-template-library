@@ -29,7 +29,10 @@ namespace FTL
 }
 
 //extern CServerAppModule _Module;
-extern CComModule _Module;  //CFResourcelessDlg需要使用
+//extern CComModule _Module;
+extern CAppModule _Module;  //CFResourcelessDlg需要使用
+
+
 
 #include <vector>
 //#include <atlbase.h>
@@ -278,8 +281,9 @@ namespace FTL
     {
     public:
         BEGIN_MSG_MAP(CFCrashHandlerDialog)
-            CHAIN_MSG_MAP(CFResourcelessDlg<CFCrashHandlerDialog>)
+			COMMAND_HANDLER(IDC_BTN_CREATE_DUMP, BN_CLICKED, OnSaveCommandClick)
             MESSAGE_HANDLER(WM_INITDIALOG,OnInitDialog)
+			CHAIN_MSG_MAP(CFResourcelessDlg<CFCrashHandlerDialog>)
             //MESSAGE_HANDLER(WM_SIZE, OnSize)
         END_MSG_MAP()
         enum 
@@ -296,6 +300,8 @@ namespace FTL
         //FTLINLINE LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
         FTLINLINE LPTSTR GetFaultReason(DWORD ExceptionCode);
         FTLINLINE void CreateDlg();
+		FTLINLINE LRESULT OnSaveCommandClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
     protected:
         PEXCEPTION_POINTERS m_pException;
         TCHAR m_FaultReason[MAX_BUFFER_LENGTH];

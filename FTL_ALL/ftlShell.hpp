@@ -115,7 +115,7 @@ namespace FTL
         return hr;
     }
 
-	HRESULT CFShellUtil::ExecuteOpenWithDialog(LPCTSTR pszFile, HWND hWndParent)
+	HRESULT CFShellUtil::ExecuteOrOpenWithDialog(LPCTSTR pszFile, HWND hWndParent)
 	{
 		HRESULT hr = S_OK;
 		//先使用 ShellExecute 执行，如果有错误不会弹出错误信息
@@ -139,7 +139,7 @@ namespace FTL
 					openAsInfo.pcszFile = pszFile;
 					openAsInfo.oaifInFlags = OAIF_ALLOW_REGISTRATION | OAIF_EXEC;
 
-					COM_VERIFY_EXCEPT2((*pShOpenWithDialog)(m_hWnd, &openAsInfo), S_FALSE, ERROR_CANCELLED);
+					COM_VERIFY_EXCEPT2((*pShOpenWithDialog)(hWndParent, &openAsInfo), S_FALSE, ERROR_CANCELLED);
 					//Notice: Does not need call FreeLibrary
 				}
 				else

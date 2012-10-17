@@ -85,7 +85,7 @@ namespace FTL
 
 		//使用ShellExecute的方法打开文件执行，但如果没有建立连接，则弹出"OpenWith"的对话框
 		//  TODO: 是否有其他标准的函数来完成该功能
-		FTLINLINE static HRESULT ExecuteOpenWithDialog(LPCTSTR pszFile, HWND hWndParent);
+		FTLINLINE static HRESULT ExecuteOrOpenWithDialog(LPCTSTR pszFile, HWND hWndParent);
     };
 }
 

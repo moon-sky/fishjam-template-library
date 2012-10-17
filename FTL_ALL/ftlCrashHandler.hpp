@@ -5,7 +5,9 @@
 #ifdef USE_EXPORT
 #  include "ftlCrashHandler.h"
 #endif
-
+#include <atlfile.h>
+#include <atldlgs.h>
+#include <WindowsX.h>
 namespace FTL
 {
     // Dailog creation functions
@@ -872,16 +874,71 @@ namespace FTL
     {
         CreateDlgTemplate(TEXT("Crash Handler"), DS_SETFONT|DS_MODALFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_POPUP|WS_CAPTION|WS_SYSMENU,
             0, 0, 0, 420, 274, 8, TEXT("MS Shell Dlg"), TEXT(""), TEXT(""));
-        AddButton(TEXT("Close"), 0|BS_DEFPUSHBUTTON, 0, 261, 253, 50, 14, IDOK);
-        AddButton(TEXT("Debug"), 0, 0, 181, 253, 50, 14, IDC_BTN_DEBUG);
-        AddListBox(TEXT(""), LBS_NOINTEGRALHEIGHT|WS_VSCROLL|WS_HSCROLL|WS_TABSTOP, 0, 7, 21, 406, 221, IDC_LIST_STACK);
-        AddButton(TEXT("CreateDump"), 0, 0, 90, 253, 50, 14, IDC_BTN_CREATE_DUMP);
+        AddButton(TEXT("Close"), 0|BS_DEFPUSHBUTTON , 0, 261, 253, 50, 14, IDOK);
+        AddButton(TEXT("Debug"), WS_DISABLED, 0, 181, 253, 50, 14, IDC_BTN_DEBUG);
+        AddListBox(TEXT(""), LBS_NOINTEGRALHEIGHT|LBS_DISABLENOSCROLL|WS_VSCROLL|WS_HSCROLL|WS_TABSTOP, 
+			0, 7, 21, 406, 221, IDC_LIST_STACK);
+        AddButton(TEXT("Save"), 0, 0, 90, 253, 50, 14, IDC_BTN_CREATE_DUMP);
         AddStatic(TEXT("Address:"), 0, 0, 7, 7, 38, 11, IDC_STATIC);
         AddStatic(TEXT("%s:%s"), 0, 0, 48, 7, 106, 11, IDC_STATIC_ADDRESS);
         AddStatic(TEXT("Reason Info"), 0, 0, 167, 7, 246, 11, IDC_STATIC_REASON);
         AddStatic(TEXT("Reason:"), 0, 0, 129, 7, 37, 11, IDC_STATIC);
         // End generated dialog        
     }
+
+
+	LRESULT CFCrashHandlerDialog::OnSaveCommandClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	{
+		CFileDialog dlgSave(FALSE, TEXT("txt"), TEXT("StackList.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, TEXT("Text File\0*.txt\0\0"));
+		if (dlgSave.DoModal() == IDOK)
+		{
+			CAtlFile fileDump;
+			if (SUCCEEDED(fileDump.Create(dlgSave.m_szFileName, GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
+			{
+				TCHAR szInfo[128] = {0};
+				//WORD wdStart = 0xFEFF;
+				//fileDump.Write(&wdStart, sizeof(wdStart));
+				//HWND hWndAddress = GetDlgItem(IDC_STATIC_ADDRESS);
+				UINT nLenght = GetDlgItemText(IDC_STATIC_ADDRESS, szInfo, _countof(szInfo));
+				CString strInfo;
+				strInfo.Format(TEXT("Address:%s\r\n"), szInfo);
+				fileDump.Write((LPCTSTR)strInfo, strInfo.GetLength()* sizeof(TCHAR));
+
+				GetDlgItemText(IDC_STATIC_REASON, szInfo, _countof(szInfo));
+				strInfo.Format(TEXT("Reason:%s\r\n"), szInfo);
+				fileDump.Write((LPCTSTR)strInfo, strInfo.GetLength()* sizeof(TCHAR));
+
+				HWND hListStack = GetDlgItem(IDC_LIST_STACK);
+				FTLASSERT(::IsWindow(hListStack));
+				if (::IsWindow(hListStack))
+				{
+					int nMaxBuff = 1024;
+					TCHAR* pszBuf = new TCHAR[nMaxBuff];
+					ZeroMemory(pszBuf, sizeof(TCHAR) * nMaxBuff);
+
+					int nCount = ListBox_GetCount(hListStack);
+					for (int i = 0; i < nCount; i++)
+					{
+						int nSize = ListBox_GetTextLen(hListStack, i);
+						if (nSize > nMaxBuff - 1)
+						{
+							delete [] pszBuf;
+							nMaxBuff = nSize + 1;
+							pszBuf = new TCHAR[nMaxBuff];
+							
+						}
+						ListBox_GetText(hListStack, i, pszBuf);
+						DWORD dwCount = nSize * sizeof(TCHAR);
+						HRESULT hr = fileDump.Write((LPCVOID)pszBuf, dwCount); 
+						fileDump.Write(TEXT("\r\n"), lstrlen(TEXT("\r\n")));
+					}
+					delete [] pszBuf;
+					fileDump.Close();
+				}
+			}
+		}
+		return 0;
+	}
 
     LPTSTR CFCrashHandlerDialog::GetFaultReason(DWORD ExceptionCode)
     {
@@ -1036,6 +1093,8 @@ namespace FTL
                 //ListBox_AddString(hListStack,pszStack);
                 ::SendMessage(hListStack,LB_ADDSTRING,0L,(LPARAM)(LPCTSTR)(pszStack));
             }
+
+			ListBox_SetHorizontalExtent(hListStack, 1024); //add for magin
         }
         return 0;
     }
@@ -1088,6 +1147,7 @@ namespace FTL
         switch (dlg.DoModal())
         {
         case CFCrashHandlerDialog::IDC_BTN_CREATE_DUMP:
+
             break;
         case CFCrashHandlerDialog::IDC_BTN_DEBUG:
             break;

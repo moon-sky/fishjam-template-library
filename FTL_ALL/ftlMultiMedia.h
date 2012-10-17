@@ -6,6 +6,11 @@
 #  error ftlMultiMedia.h requires ftlbase.h to be included first
 #endif
 
+//媒体格式检查工具
+//  mediaInfo -- http://mediainfo.sourceforge.net/
+//  KMP 等播放器自带
+//  Fresh View ?
+
 /*********************************************************************************************
 * 为了使用OEM资源(如 LoadOEMIcon等)，需要在 stdafx.h 的开始处 #define OEMRESOURCE
 * 
@@ -175,6 +180,8 @@
 *********************************************************************************************/
 
 /*********************************************************************************************
+* MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
+* 
 * ffdshow -- 一套免费的编解码软件，封装成了DirectShow的标准组件。
 *   使用 libavcodec library 以及其他各种开放源代码的软件包(如 DivX、)，可支持H.264、FLV、MPEG-4等格式视频
 *  
@@ -182,6 +189,21 @@
 *   http://www.ffmpeg.com.cn, http://ffmpeg.zeranoe.com/builds/
 * 模块
 *   ffmpeg -i 输入文件 输出文件 -- 视频文件转换命令行工具,也支持经过实时电视卡抓取和编码成视频文件
+*     例子： ffmpeg.exe -i snatch_1.vob -f avi -vcodec mpeg4 -acodec mp3 snatch.avi
+*     -acodec codec		<== 指定音频编码，如 aac 
+*     -an				<== 禁止audio
+*     -aspect 16:9		<== 设置长宽比，如 4:3 或 16:9 等
+*     -bf <int>			<== 使用B帧
+*     -f format			<== 指定文件格式, 如 avi/mp4 等(可用格式可通过 -formats 查看)
+*     -g groupSize		<== 设置GOP大小，如设置成 300 意味着29.97帧频下每10秒就有INTRA帧
+*     -qblur <float>	<== 指定视频量化规模，0. ~ 1.0
+*     -s WxH			<== 指定大小(宽x高)
+*     -strict <int>     <== 指定对codec等的使用限制，实验性的codec(如mpeg4)默认是不启用的(Codec is experimental)，需要使用 -2 来启用
+*     -t 持续时间		<== 指定时间长度，如 20.000 表示 20s
+*     -threads <int>    <== 指定线程个数，默认为 auto ?
+*     -vcodec codec		<== 指定视频编码，如 mpeg4/h264/msmpeg4v2 等(可用编码可通过 -codecs 查看)
+*     -target type		<== 指定文件类型，如 vcd/dvd 等，很大程度上可以决定质量
+*     -y                <== 直接覆盖输出文件，不再提示
 *   ffserver -- 基于HTTP(RTSP正在开发中)用于实时广播的多媒体服务器.也支持时间平移(Time-Shifting)
 *   ffplay -- 用 SDL和FFmpeg库开发的一个简单的媒体播放器(需要先安装 SDL 库才能编译)
 *   libavcodec -- 包含了所有FFmpeg音视频编解码器的库.为了保证最优性能和高可复用性,大多数编解码器从头开发的
@@ -205,9 +227,13 @@
 *     --disable-optimizations	禁止优化，一般用于调试版本
 *     --disable-static			禁用静态库
 *     --disable-stripping       一般用于调试版本
-*     --enable-gpl				遵循gpl协议,必须指定，因为x264是gpl协议
+*     --disable-yasm            禁止使用yasm，否则可以安装 yasm后使用，(汇编编译器?)
+*     --enable-gpl				遵循gpl协议,当使用 x264/xvid 等遵循gpl协议的库时必须指定
 *     --enable-libfaac          支持aac(不是免费的),需要先到 faac 目录下编译, ./bootstrap<CR> ./configure xxx<CR> make
 *     --enable-libx264			使用x264作为h264编码器,表示要使用第3方库x264,此时mingw include 和 lib内必须已经有x264.h和libx264.a
+*                               ftp://ftp.videolan.org/pub/x264/snapshots/ 下载，然后 ./configure --enable-shared --enable-w32threads && make && make install
+*                               
+*     --enable-libxvid			启用 Xvid 编码器
 *     --enable-libmp3lame		使用mp3lame作为mp3编码器，需要先到 lame 目录下编译（http://sourceforge.net/projects/lame/files/）
 *     --enable-memalign-hack    启用内存对齐，Windows下必须
 *     --enable-shared			编译动态库
