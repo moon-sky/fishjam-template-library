@@ -181,6 +181,7 @@
 
 /*********************************************************************************************
 * MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
+*   TechSmith Screen Capture Codec(C:\Windows\System32\tsccvid.dll)
 * 
 * ffdshow -- 一套免费的编解码软件，封装成了DirectShow的标准组件。
 *   使用 libavcodec library 以及其他各种开放源代码的软件包(如 DivX、)，可支持H.264、FLV、MPEG-4等格式视频
@@ -207,9 +208,13 @@
 *   ffserver -- 基于HTTP(RTSP正在开发中)用于实时广播的多媒体服务器.也支持时间平移(Time-Shifting)
 *   ffplay -- 用 SDL和FFmpeg库开发的一个简单的媒体播放器(需要先安装 SDL 库才能编译)
 *   libavcodec -- 包含了所有FFmpeg音视频编解码器的库.为了保证最优性能和高可复用性,大多数编解码器从头开发的
-*   libavformat -- 包含了所有的普通音视格式的解析器和产生器的库
+*   libavformat -- 包含了所有的普通音视频格式的解析器和产生器的库
+*   libavutil -- 函数库，实现了CRC校验码的产生，128位整数数学，最大公约数，整数开方，整数取对数，内存分配，大端小端格式的转换等功能。
+*   libswscale -- 
+*   libpostproc -- 
 * 
 * 编译和调试(无法使用VC编译？)，可以用MSys+MinGW编译，但是编译出来的DLL是可以被VC使用的
+*   http://blog.csdn.net/jszj/article/details/4028716  -- Windows 下编译
 *   http://www.cnblogs.com/mcodec/articles/1659671.html -- 使用VC编译的方法
 *   http://ffmpeg.org/trac/ffmpeg/wiki/How%20to%20setup%20Eclipse%20IDE%20for%20FFmpeg%20development -- 设置eclipse的环境
 *     1.从 http://www.eclipse.org/downloads/ 下载 "Eclipse Classic"，或直接下载带 C/C++ 的版本
@@ -243,7 +248,8 @@
 *     --extra-ldflags=xxx       额外的链接参数，如 -L/usr/local/lib 表示链接目录
 *  调试
 *    av_log_set_callback
-*    
+*    av_dump_format -- 导出 FormatCtx,
+* 
 *  编解码库（ffmpeg 只是一个框架，不同的编解码库在不同的网站？http://ffmpeg.zeranoe.com/builds/），
 *    可通过 --extra-cflags 来指定头文件的文件夹?
 *    libavfilter -- 替代libswscale，用于做图像的pixel format转换，基于DirectShow 机制？
@@ -260,7 +266,27 @@
 *    libvorbis 
 *    libtheora  
 * 
+*
+*  基本概念
+*    播放流程: video.avi(Container) -> 打开得到 Video_stream -> 读取Packet -> 解析到 Frame -> 显示Frame
+*    Container -- 在音视频中的容器，一般指的是一种特定的文件格式(如 AVI/QT )，里面指明了所包含的音视频，字幕等相关信息
+*    Stream -- 可理解为单纯的音频数据或者视频数据等
+*    Frame -- Stream中的一个数据单元(AVFrame?)
+*    Packet -- Stream中的Raw数据,包含了可以被解码成方便我们最后在应用程序中操作的帧的原始数据(注意Packet和Frame不一定相等)
+*    CODEC -- 编解码器(Code 和 Decode)，如 Divx和 MP3
+*     
+*
 *  源码分析
+*    AVPicture
+*     +-AVFrame
+*    AVPacket -- av_read_frame读取一个包并且把它保存到AVPacket::data指针指向的内存中(ffmpeg分配?)
+*    
+*    AVFormatContext -- 通过其 ->streams->codec->codec_type 判断类型，如 CODEC_TYPE_VIDEO
+*    AVCodecContext -- 编解码器上下文，包含了流中所使用的关于编解码器的所有信息，
+*      time_base -- 采用分数(num/den)保存了帧率的信息,如 NTSC的 29.97fps(num/den= (framenum / 17982) / (framenum % 17982)) ?
+*    AVCodec -- 通过 avcodec_find_decoder 查找， avcodec_open2 打开
+*    SwsContext -- ?
+* 
 *    Demuxer -- 媒体格式解码器
 *    struct AVCodec -- codec 的数据结构，全局变量 *first_avcodec, avcodec_register_all 方法注册全部 codec
 *    解码播放：Media -> ByteIOContext -> Demuxer -> Decode -> YUV -> Display
@@ -270,21 +296,27 @@
 *    媒体录制：YUV -> Encode -> Muxer -> ByteIOContex -> Media
 *
 * 编码流程
-*   av_register_all();
+*   av_register_all();  //注册了所有可用的文件格式和编解码器的库(可以通过 XXXPolicy.xml 文件来指定支持的格式 ?)
 *   avcodec_register_all();
 *   AVFrame *m_pRGBFrame = avcodec_alloc_frame();  //RGB帧数据
 *   AVCodec *pCodecH264 = avcodec_find_encoder(CODEC_ID_H264); //查找h264编码器
 *   AVCodecContext *pContext = avcodec_alloc_context3(pCodecH264); //获取初始的编码器上下文，后面可以更改
 *   pContext->bit_rate = 3000000; pContext->width=nWidth;
+*   numBytes=avpicture_get_size(PIX_FMT_RGB24, pCodecCtx->width, pCodecCtx->height); //计算需要的空间
+*   rgb_buff = av_malloc(numBytes*sizeof(uint8_t));  //分配内存, av_malloc 可以保证内存对齐
+*   //填充原始的RGB数据
 *   AVRational rate; rate.num = 1; rate.den = 25;  pContext->time_base = rate; //每秒25帧
 *   pContext->gop_size = 10; //每10帧放一个GOP
 *   pContext->thread_count = 1; //多线程个数(TODO?有什么限制)
-*   avcodec_open2(pContext, pCodecH264, NULL); //打开编码库
+*   avcodec_open2(pContext, pCodecH264, NULL); //打开编码库，使用完毕后需要 avcodec_close
 *   SwsContext * scxt = sws_getContext(pContext->width, pContext->height, PIX_FMT_BGR24, 
-*      pContext->width, pContext->height, PIX_FMT_YUV420P, SWS_POINT, NULL, NULL, NULL);
+*      pContext->width, pContext->height, PIX_FMT_YUV420P, SWS_POINT, NULL, NULL, NULL);  //旧的方式是 img_convert ?
+*      sws_scale( ctx,pFrameRGB->data,pFrameRGB->linesize,0,pCodecCtx->height,pFrame->data,pFrame->linesize);//
 *   avpicture_fill((AVPicture*)m_pRGBFrame, (uint8_t*)rgb_buff, PIX_FMT_RGB24, nWidth, nHeight); 
 *   avcodec_encode_video2(c, &avpkt, m_pYUVFrame, &got_packet_ptr); //编码
-*
+*   //avcodec_decode_video/avcodec_decode_video2 把包转换为帧，得到完整的一帧时，会设置了帧结束标志frameFinished
+*   av_free_packet(&packet);
+*   
 *
 * libavFilter 使用流程
 *   AVFilterGraph *graph = avfilter_graph_alloc();
