@@ -57,7 +57,8 @@
 * DLNA(Digital Living Network Alliance) --
 * DRM(Digital Rights Management) -- 数字权限保护
 * DSC(Digital Still Camera)--数码照相机。
-* DTS(Decode Time Stamp) -- 标识读入内存中的Bit流在什么时候开始送入解码器中进行解码，在解码阶段使用，受GOP中B-帧的影响
+* DTS(Decode Time Stamp) -- 解码时间戳，标识读入内存中的Bit流在什么时候开始送入解码器中进行解码，在解码阶段使用，受GOP中B-帧的影响,
+*   声音的DTS和PTS相同，某些视频编码格式（采用了双向预测技术，即有B帧时）DTS和PTS不一致
 * DV(Digital Video?) -- 数字摄像机，使用 DV-AVI 2.0 + LPCM 的形式保存？
 * DVD(Digital Video Disc) -- 数字视频光盘。采用650纳米波长的红光读写器。可用分辨率为：720x480(NTSC制式)、720x576(PAL制式)等。
 *   DVD-5 -- 容量4.7GB的单面单层DVD片。DVD-9 -- 容量为8.5GB的单面双层DVD片。
@@ -76,7 +77,7 @@
 *   B-帧采用双向预测内插编码，既考虑与源图像序列前面已编码帧，也顾及源图像序列后面已编码帧之间的时间冗余信息来
 *     压缩传输数据量的编码图像，
 *   I帧编码是为了减少空间域冗余，P帧和B帧是为了减少时间域冗余。
-*   在没有B帧存在的情况下DTS的顺序和PTS的顺序应该是一样的。
+*   在没有B帧存在的情况下DTS的顺序和PTS的顺序应该是一样的。对于存在双向预测帧的情况，通常要求解码器对图像重排序，以保证输出的图像顺序为显示顺序
 * Handycam(Handy Camera) -- Sony的数码摄相机品牌，具有袖珍、轻巧、方便使用和携带的特点。存储介质包括磁带(Type)、
 *   DVD光盘、硬盘(HDD)和闪存(Memore Stick)等，现在已经支持高清(SD使用M2PS格式，HD使用AVCHD格式[m2ts?]，静止画使用DCF)。
 * HD DVD(High Definition DVD) -- 东芝主导的高清标准，已经失败给Blu-ray。
@@ -121,7 +122,7 @@
 *   在接入Windows XP系统之后可以更好地被系统和应用程序所共享，系统可以直接访问这些设备用于建立网络相册时图
 *   片的上传、网上聊天时图片的传送等。
 *   自动检出时启动的对话框(不要最后的GUID?)：HKLM\SYSTEM\ControlSet001\Control\StillImage\Events\Connected\{00F3CDFD-5D2E-439F-8900-3F56A0C1C8BA}
-* PTS(Presentation Time Stamp) -- 用于度量解码后的视频帧什么时候被显示出来，用于视频的同步和输出，（通常就是显示顺序？）
+* PTS(Presentation Time Stamp) -- 显示时间戳，用于度量解码后的视频帧什么时候被显示出来，用于视频的同步和输出，（通常就是显示顺序？）
 * PureVideo -- Nvidia 发布的显卡影片解码以及加速计算技术，GPU内建的可编程视频处理引擎可以对MEPG-2、HD Video视频播放进行硬件加速，
 *   达成家庭影院级别的720p和1080i视频画质。需要安装nVIDIA DVD Decoder。支持格式为MEPG2、WMV、H.264、VC-1等。
 *   软件方面有两部分：图形处理器驱动(免费) 和 PureVideo DVD解码器(收费)

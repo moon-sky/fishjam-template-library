@@ -30,17 +30,25 @@
 *     TODO:如果是实时的采集，一般不打时间戳(原因在SDK里有说明) ？ 
 *   2.拉模式的Parser Filter -- 从文件中解析出时间信息(如AVI的索引表)，每一帧有时间戳
 *
-* 音视频同步 -- latency (mostly used for configuring audio video sync -- IAMLatency ) ???
-*   TODO?: AVI压缩时需要IConfigAviMux::MasterStream设置以哪个流(None[-1]、Video[0]、Audio[1])作为时间基准？ 
-*          如果音频、视频采集不是同一个设备，采集一段时间后可能出现偏差，因此保存时需要以一个为基准，
-*          调整另一个的帧率(一般是以音频为基准?)。
+* 时间同步
+*   1.流内同步 -- 保证单个媒体流内的时间关系，以满足感知要求，如按照规定的帧率播放一段视频
+*   2.流间同步 -- 保证不同媒体流之间的时间关系，如音视频、字幕流之间的关系
+*     音视频同步 -- latency (mostly used for configuring audio video sync -- IAMLatency ) ???
+*       TODO?: AVI压缩时需要IConfigAviMux::MasterStream设置以哪个流(None[-1]、Video[0]、Audio[1])作为时间基准？ 
+*              如果音频、视频采集不是同一个设备，采集一段时间后可能出现偏差，因此保存时需要以一个为基准，
+*              调整另一个的帧率(一般是以音频为基准?)。
+* 
 *   传送到 Renderer Filter 的每个Sample都需要打时间戳(TimeStamp)，参考时钟以100ns为计时精度。
 *   Video Renderer根据其TimeStamp来安排何时进行显示，或者丢弃一些sample。早了则等待，晚了则加快播放或丢弃。
 *   但为了性能考虑(如实时抓取)，有时需要通过质量控制的方式，通知SourceFilter进行跳帧(丢包),
 *   跳帧后为了不引起花屏现像，必须选择关键帧进行跳帧。
 *   Seek之后Sample的时间戳会进行突变，流时间会有一个动态调整来确保Stream Time与新起始的Sample时间戳相吻合，
 *   一般采取超前请求点Seek关键帧（这样得到的Samples对于Video Renderer而言是“迟到”的）
-*   
+* 
+* 时间信息
+*   1.固定速率的媒体(固定帧率的视频或固定比特率的音频),将时间信息（帧率或比特率）置于文件首部，如 AVI::hdrl, MP4::moov box
+*   2.变速率的媒体(MPEG TS和Real video),将时间信息嵌入媒体流的内部，而且可有效避免同步过程中的时间漂移
+* 
 * IMediaSample
 *   SetTime(Presentation time) -- 设置时间戳(使用的是Stream Time)，用来同步音视频，表示Sample的有效时间范围(开始 -> 结束)。
 *     不是所有的Sample都要求打时间戳(比如压缩数据)。

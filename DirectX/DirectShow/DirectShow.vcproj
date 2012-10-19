@@ -389,6 +389,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FFMpegStudy.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FilterDebug.h"
 				>
 			</File>
