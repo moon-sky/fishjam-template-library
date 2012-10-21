@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DebugInfoFilter.h"
 #include "DebugInfoFilterProperty.h"
+#include "GraphInfoPropertyPage.h"
 
 //关联OLE的入口函数和对象创建方式，由类工厂调用 static CreateInstance
 CFactoryTemplate g_Templates[] = 
@@ -19,6 +20,14 @@ CFactoryTemplate g_Templates[] =
         NULL, 
         NULL 
     },
+	{ 
+		L"Graph Info Property", 
+		&CLSID_GraphInfoProperty, 
+		CGraphInfoPropertyPage::CreateInstance,
+		NULL, 
+		NULL 
+	},
+
 };
 int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]);
 

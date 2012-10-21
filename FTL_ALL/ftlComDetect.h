@@ -258,6 +258,7 @@ namespace FTL
 
 #if INCLUDE_DETECT_STRMIF
 #  include <strmif.h>
+#  include <dmodshow.h>
 #endif 
 
 #if INCLUDE_DETECT_URLMON
@@ -267,7 +268,7 @@ namespace FTL
 #if INCLUDE_DETECT_VFW
 #  include <vfw.h>
 #  pragma comment(lib, "Vfw32.lib")
-#  pragma comment(lib, "msvfw32.Lib")
+//#  pragma comment(lib, "msvfw32.Lib")
 #endif 
 
 #if INCLUDE_DETECT_VSIP
@@ -378,97 +379,6 @@ namespace FTL
 	#define DETECT_INTERFACE_ENTRY_EX(IntType,classDumpInfo) \
 		DETECT_INTERFACE_ENTRY_EX_IID(IntType,__uuidof(IntType),classDumpInfo)
 
-//旧的方式 -- 效率非常差，但可以使用对应接口的实例
-#if 0
-    #define BEGIN_DETECT_INTERFACE() \
-        {\
-            HRESULT hr = E_FAIL;\
-            DWORD dwInterfaceCount = 0;\
-            DWORD dwTotalCheckCount = 0;\
-            IMoniker* pMoniker = NULL;\
-            IServiceProvider* pSvrProvider = NULL;\
-            if(CFComDetect::cdtMonikerBind == detectType)\
-            {\
-                COM_VERIFY((pUnknown)->QueryInterface(IID_IMoniker,(void**)(&pMoniker)));\
-            }\
-            else if(CFComDetect::cdtService == detectType)\
-            {\
-                COM_VERIFY((pUnknown)->QueryInterface(IID_IServiceProvider,(void**)(&pSvrProvider)));\
-            }
-
-    #define DETECT_INTERFACE_ENTRY_EX_IID(IntType,riid,classDumpInfo)\
-            {\
-                dwTotalCheckCount++;\
-                if(FTL::CFComDetect::cdtInterface == detectType)\
-                {\
-                    IntType* p##IntType = NULL;\
-                    hr = (pUnknown)->QueryInterface(riid,(void**)(&p##IntType));\
-                    if(SUCCEEDED(hr) && p##IntType != NULL)\
-                    {\
-                        dwInterfaceCount++;\
-                        FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,TEXT(#IntType));\
-                        classDumpInfo::DumpInterfaceInfo((IntType*)(p##IntType));\
-                        p##IntType->Release();\
-                        p##IntType = NULL;\
-                    }\
-                    else if(E_NOINTERFACE != hr)\
-                    {\
-                        FTLTRACEEX(tlWarning,TEXT("Warning: Detect %s ,return 0x%p\n"),TEXT(#IntType),hr);\
-                    }\
-                }\
-                else if(FTL::CFComDetect::cdtIID == detectType)\
-                {\
-                    if(riid == checkRIID)\
-                    {\
-                        dwInterfaceCount++;\
-                        FTLTRACEEX(FTL::tlTrace,TEXT("\tRiid is %s\n"),TEXT(#IntType));\
-                    }\
-                }\
-                else if(FTL::CFComDetect::cdtMonikerBind == detectType)\
-                {\
-                    IntType* p##IntType = NULL;\
-                    hr = (pMoniker)->BindToObject(NULL,NULL,riid,(void**)(&p##IntType));\
-                    if(SUCCEEDED(hr) && p##IntType != NULL)\
-                    {\
-                        dwInterfaceCount++;\
-                        FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,TEXT(#IntType));\
-                        p##IntType->Release();\
-                        p##IntType = NULL;\
-                    }\
-                }\
-                else if(FTL::CFComDetect::cdtService == detectType)\
-                {\
-                    IntType* p##IntType = NULL;\
-                    hr = (pSvrProvider)->QueryService(riid, riid,(void**)(&p##IntType));\
-                    if(SUCCEEDED(hr) && p##IntType != NULL)\
-                    {\
-                        dwInterfaceCount++;\
-                        FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,TEXT(#IntType));\
-                        p##IntType->Release();\
-                        p##IntType = NULL;\
-                    }\
-                    else if(E_NOINTERFACE != hr)\
-                    {\
-                        FTLTRACEEX(tlWarning,TEXT("Warning: Detect %s ,return 0x%p\n"),TEXT(#IntType),hr);\
-                    }\
-                }\
-                else\
-                {\
-                    FTLTRACEEX(tlError,TEXT("\tUnknown Operation \n"));\
-                }\
-            }
-
-    #define END_DETECT_INTERFACE()\
-            SAFE_RELEASE(pMoniker);\
-            SAFE_RELEASE(pSvrProvider);\
-            if(CFComDetect::cdtInterface == detectType || CFComDetect::cdtService == detectType)\
-            {\
-                FTLTRACEEX(FTL::tlTrace,TEXT("\tTotal Check %d Interfaces\n"),dwTotalCheckCount);\
-            }\
-            return dwInterfaceCount;\
-        }
-
-#else
 
 //新的方式 -- 效率高(每个接口对应的宏只是数组中的一项)，但不能使用接口的实例
 //  怎么在数组中存储 接口 的类型，或者尝试在接口的数组中保存接口的实例指针 ?
@@ -521,6 +431,7 @@ struct CFInterfaceEntryExIID
 				if(SUCCEEDED(hr) && pQueryUnknown)\
 				{\
 					dwInterfaceCount++;\
+					if(pCallback){ (*pCallback)(pCallbackParm, pQueryUnknown, pEntry->id, pEntry->pszInterfaceName); } \
 					FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,pEntry->pszInterfaceName);\
 					pEntry->m_pDumpInfoProc(pQueryUnknown);\
 					pQueryUnknown->Release();\
@@ -582,11 +493,11 @@ struct CFInterfaceEntryExIID
 		return dwInterfaceCount;
 
 	
-#endif 
-
 namespace FTL
 {
-    class CFComDetect
+	typedef HRESULT (*DetectInterfaceCallBackProc)(DWORD_PTR pParam, IUnknown* pUnknwon, REFIID checkedRIIF, LPCTSTR pszInterfaceName);
+
+	class CFComDetect
     {
     public:
         typedef enum ComDetectType
@@ -598,9 +509,10 @@ namespace FTL
             cdtService,         //QueryService(利用 SID_XXX 一般定义为 IID_XXX 的机制判断)
         }ComDetectType;
 
-		FTLINLINE static DWORD CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType);
+		FTLINLINE static DWORD CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID checkRIID, 
+			ComDetectType detectType);
         FTLINLINE static DWORD CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, 
-            ComDetectType detectType);
+			ComDetectType detectType, DetectInterfaceCallBackProc pCallback = NULL, DWORD_PTR pCallbackParm = NULL);
 	private:
 		FTLINLINE static HRESULT _innerCoDtectInterfaceFromRegister(IUnknown* pUnknown, REFGUID guidInfo);
 		FTLINLINE static HRESULT _innerCoDtectServiceFromRegister(IServiceProvider* pServiceProvider, REFGUID guidInfo);

@@ -2,6 +2,7 @@
 #define SCREEN_CAPTURE_SOURCE_PIN_H
 
 #include "ScreenCaptureImpl.h"
+#include <ftlThread.h>
 
 // ‰≥ˆPin¿‡–Õ RGB video out
 class CScreenCaptureSourcePin 
@@ -187,9 +188,11 @@ protected:
     virtual HRESULT OnThreadCreate(void);
     virtual HRESULT OnThreadDestroy(void);
     virtual HRESULT OnThreadStartPlay(void);
-private:
+protected:
 	FTL::FTLThreadWaitType _GetWaitType(DWORD dwTimeOut = INFINITE);
 private:
+	BOOL			m_bFirstFrame;
+	BOOL			m_bMouseOverlay;
 	HANDLE			m_hEventContinue;
 	HANDLE			m_hEventStop;
 	//CMediaType     m_MediaType;

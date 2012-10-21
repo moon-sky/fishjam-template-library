@@ -5,8 +5,7 @@
 #include <ftlDebug.h>
 #endif
 
-CGdiScreenCaptureImpl::CGdiScreenCaptureImpl(INT nWidth, INT nHeight, INT nBitCount)
-:CScreenCaptureImplBase(nWidth, nHeight, nBitCount)
+CGdiScreenCaptureImpl::CGdiScreenCaptureImpl()
 {
 	m_hScreenDC = CreateDC(TEXT("DISPLAY"), NULL, NULL, NULL);
 	m_hMemDC = CreateCompatibleDC(m_hScreenDC);

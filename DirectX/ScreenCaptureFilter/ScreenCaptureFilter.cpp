@@ -26,15 +26,18 @@ CScreenCaptureFilter::CScreenCaptureFilter(IUnknown *pUnk, HRESULT *phr)
     CAutoLock cAutoLock(&m_cStateLock);
 	m_hEventContinue = ::CreateEvent(NULL, TRUE, TRUE, NULL);
 	m_hEventStop	 = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_paStreams = (CSourceStream **)new CSourceStream*[1];
-	if (m_paStreams)
-	{
-		m_paStreams[0] = new CScreenCaptureSourcePin(phr, this, m_hEventContinue, m_hEventStop);
-	}
+	//CSourceStream will add pin to Filter, so needn't handle m_paStreams
+	CScreenCaptureSourcePin* pSourcePin = new CScreenCaptureSourcePin(phr, this, m_hEventContinue, m_hEventStop);
+	
+	//m_paStreams = (CSourceStream **)new CSourceStream*[1];
+	//if (m_paStreams)
+	//{
+	//	m_paStreams[0] = new CScreenCaptureSourcePin(phr, this, m_hEventContinue, m_hEventStop);
+	//}
 
 	if (phr)
 	{
-		if (!m_paStreams || !m_paStreams[0])
+		if(!pSourcePin) // (!m_paStreams || !m_paStreams[0])
 		{
 			*phr = E_OUTOFMEMORY;
 		}
@@ -94,12 +97,12 @@ STDMETHODIMP CScreenCaptureFilter::NonDelegatingQueryInterface(REFIID riid, __de
     //COM_DETECT_RIID_FROM_LIST(riid);
     HRESULT hr = E_NOINTERFACE; 
     //FUNCTION_BLOCK_TRACE(1);
-	//if (riid == IID_IScreenCaptureCfg)
-	//{
-	//	hr = m_paStreams[0]->QueryInterface(riid, ppv);
-	//}
+	if (riid == IID_IScreenCaptureCfg)
+	{
+		hr = m_paStreams[0]->QueryInterface(riid, ppv);
+	}
 
-	if (riid == IID_IUnknown)
+	else if (riid == IID_IUnknown)
 	{
 		hr = __super::NonDelegatingQueryInterface(riid, ppv);
 	}

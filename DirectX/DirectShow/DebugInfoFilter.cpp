@@ -14,6 +14,10 @@
 DEFINE_GUID(CLSID_FilterDebugInfoProperty, 
             0x205769bd, 0xb121, 0x4ca8, 0xa4, 0xe6, 0x84, 0xa2, 0xe, 0xf2, 0x53, 0xb7);
 
+// {205769BE-B121-4ca8-A4E6-84A20EF253B7}
+DEFINE_GUID(CLSID_GraphInfoProperty, 
+			0x205769be, 0xb121, 0x4ca8, 0xa4, 0xe6, 0x84, 0xa2, 0xe, 0xf2, 0x53, 0xb7);
+
 // {F62AD8B9-AFA6-41bf-9ADE-5A83D80FF3BD}
 //DEFINE_GUID(IID_IFilterDebugInfo,
 //            0xF62AD8B9,0xAFA6,0x41bf,0x9A,0xDE,0x5A,0x83,0xD8,0x0F,0xF3,0xBD);
@@ -286,9 +290,10 @@ HRESULT CDebugInfoFilter::StopStreaming()
 //ISpecifyPropertyPages
 STDMETHODIMP CDebugInfoFilter::GetPages(CAUUID *pPages)
 {
-    pPages->cElems = 1;  
-    pPages->pElems = (GUID *) CoTaskMemAlloc(sizeof(GUID) * 1);
+    pPages->cElems = 2;  
+    pPages->pElems = (GUID *) CoTaskMemAlloc(sizeof(GUID) * pPages->cElems);
     pPages->pElems[0] = CLSID_FilterDebugInfoProperty; //指定属性页的GUID
+	pPages->pElems[1] = CLSID_GraphInfoProperty; //指定属性页的GUID
     return S_OK;
 }
 

@@ -19,8 +19,9 @@
 *  +-Gargle     -- 修改通过的声音频率的 In-Place Transform Filter(可以用属性页调节频率)
 *  +-Grabber    -- 
 *  +-InfTee     -- 未看 -- 从CBaseFilter继承的，将单输入分割为很多输出。
+*  +-Synth      -- 音频SourceFilter
 *  +-WavDest    -- 采集结束时，将PCM数据全部写入文件后，再在文件头位置插入一个Wave格式的数据块。
-*
+* 
 * Misc
 *  +- ASFCopy   -- 未看 -- 使用指定的系统配置讲文件转化为ASF格式的文件，包括认证服务、枚举ASF配置等。
 *                  其中定义了ASF的错误码(ASFErr.h 和 nserror.h)。

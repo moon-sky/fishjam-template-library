@@ -373,7 +373,7 @@ namespace FTL
 
                 GET_MESSAGE_INFO_ENTRY(WM_PAINTICON, CFDefaultMsgInfo);     //发送给最小化窗口当它图标将要被重画
                 GET_MESSAGE_INFO_ENTRY(WM_ICONERASEBKGND, CFDefaultMsgInfo);//此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
-                GET_MESSAGE_INFO_ENTRY(WM_NEXTDLGCTL, CFDefaultMsgInfo);    //此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
+                GET_MESSAGE_INFO_ENTRY(WM_NEXTDLGCTL, CFDefaultMsgInfo);    //切换到下一个控件( 模拟Tab 或 禁用一个Focus的控件时 需要手工发送这个?)
                 GET_MESSAGE_INFO_ENTRY(WM_SPOOLERSTATUS, CFDefaultMsgInfo); //每当打印管理列队增加或减少一条作业时发出此消息
                 GET_MESSAGE_INFO_ENTRY(WM_DRAWITEM, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_MEASUREITEM, CFDefaultMsgInfo);
@@ -2186,7 +2186,7 @@ namespace FTL
 				StringCchCopy(szClassName, _countof(szClassName), szNewClassName);
 			}
 		}
-		if (0 == lstrcmpi(szClassName, TEXT("BUTTON")))
+		if (0 == lstrcmpi(szClassName, TEXT("Button")))
 		{
 			switch(nCode)
 			{
@@ -2202,27 +2202,7 @@ namespace FTL
 				break;
 			}
 		}
-		else if (0 == lstrcmpi(szClassName, TEXT("EDIT")))
-		{
-			switch(nCode)
-			{
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_SETFOCUS);
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_KILLFOCUS);
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_CHANGE);
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_UPDATE);
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ERRSPACE);
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_MAXTEXT);
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_HSCROLL);
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_VSCROLL);
-#if(_WIN32_WINNT >= 0x0500)
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ALIGN_LTR_EC);
-				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ALIGN_RTL_EC);
-#endif /* _WIN32_WINNT >= 0x0500 */
-			default:
-				break;
-			}
-		}
-		else if (0 == lstrcmpi(szClassName, TEXT("COMBOBOX")))
+		else if (0 == lstrcmpi(szClassName, TEXT("ComboBox")))
 		{
 			//Combo Box Notification Codes
 			switch(nCode)
@@ -2242,6 +2222,40 @@ namespace FTL
 				break;
 			}
         }
+		else if (0 == lstrcmpi(szClassName, TEXT("ListBox")))
+		{
+			//Combo Box Notification Codes
+			switch(nCode)
+			{
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, LBN_SELCHANGE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, LBN_DBLCLK);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, LBN_SELCANCEL);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, LBN_SETFOCUS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, LBN_KILLFOCUS);
+			default:
+				break;
+			}
+		}
+		else if (0 == lstrcmpi(szClassName, TEXT("Edit")))
+		{
+			switch(nCode)
+			{
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_SETFOCUS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_KILLFOCUS);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_CHANGE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_UPDATE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ERRSPACE);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_MAXTEXT);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_HSCROLL);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_VSCROLL);
+#if(_WIN32_WINNT >= 0x0500)
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ALIGN_LTR_EC);
+				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_ALIGN_RTL_EC);
+#endif /* _WIN32_WINNT >= 0x0500 */
+			default:
+				break;
+			}
+		}
 		else if(0 == lstrcmpi(szClassName, TEXT("RichEdit20W")))
 		{
 			switch (nCode)
@@ -2272,7 +2286,7 @@ namespace FTL
 
 		if ( 0 == pszCommandNotify[0] )
 		{
-			FTLTRACEEX(FTL::tlWarning, TEXT("Unknown Command Code %d For Class %s\n"), nCode, szClassName);
+			FTLTRACEEX(FTL::tlWarning, TEXT("Warning -- Unknown Command Code %d For Class %s\n"), nCode, szClassName);
 			COM_VERIFY(StringCchPrintf(pszCommandNotify, nLength, TEXT("Unknown Command Code %d For Class %s"), nCode, szClassName));
 			//FTLASSERT(FALSE);
 		}

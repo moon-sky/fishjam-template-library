@@ -9,11 +9,13 @@
 #endif //__ATLCTRLS_H__
 #include <atlbase.h>
 #include <atlimage.h>
+#include <atlgdi.h>
 
 #include <ftlWindow.h>
 #include <ftlcom.h>
 
 #include <atlcrack.h>
+#include <atlctrls.h>
 
 //控件内部处理 LButtonUp 时，可以通过以下代码向父窗体发送点击消息
 /*
@@ -139,6 +141,9 @@ namespace FTL
 
 		//获得 RichEditCtrl 中的 PropertyBits 信息(TxGetPropertyBits)
 		FTLINLINE static LPCTSTR GetRichEditPropertyBits(FTL::CFStringFormater& formater, DWORD dwBits, LPCTSTR pszDivide = TEXT("|"));
+
+		//设置ListBox水平滚动范围
+		FTLINLINE static BOOL UpdateListboxHorizontalExtent(HWND hwndListbox, INT nPadding = 0);
 	};
 
 	//RichEdit 中的 ITextRange

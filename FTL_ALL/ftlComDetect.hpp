@@ -378,7 +378,8 @@ namespace FTL
 
 #endif //INCLUDE_DETECT_STRMIF
 
-    DWORD CFComDetect::CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID /*checkRIID*/, ComDetectType detectType)
+    DWORD CFComDetect::CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID /*checkRIID*/, 
+		ComDetectType detectType)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(pUnknown, (DWORD)(-1));
 
@@ -534,7 +535,10 @@ namespace FTL
 #endif 
 
     //本方法同时支持检测多种COM信息 -- 虽然不是好的编程习惯，但能减少维护量
-    DWORD CFComDetect::CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, ComDetectType detectType)
+    DWORD CFComDetect::CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, 
+		ComDetectType detectType, 
+		DetectInterfaceCallBackProc pCallback /* = NULL */,
+		DWORD_PTR pCallbackParm /* = NULL */)
     {
         if (cdtIID != detectType )
         {
@@ -1909,6 +1913,9 @@ namespace FTL
 #endif //INCLUDE_DETECT_SHLOBJ
 
 #if INCLUDE_DETECT_STRMIF
+			//DMO对Filter的Wrapper
+			DETECT_INTERFACE_ENTRY(IDMOWrapperFilter)
+
             //! 进行系统设备的枚举 -- CLSID_SystemDeviceEnum
             DETECT_INTERFACE_ENTRY(ICreateDevEnum)
             DETECT_INTERFACE_ENTRY(IPin)

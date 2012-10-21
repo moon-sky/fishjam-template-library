@@ -20,7 +20,7 @@
 //#endif 
 
 //#ifdef USE_DIRECTX_9
-#  include <dxerr.h>
+//#  include <dxerr.h>
 //#  pragma comment( lib, "dxerr9.lib" )
 //#endif //USE_DIRECTX_9
 

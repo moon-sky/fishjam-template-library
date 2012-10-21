@@ -6,6 +6,7 @@
 #ifndef FTL_BASE_H
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
+//窗体中保存自定义数据：可以通过  _SetWindowLongPtr(hDlg, DWLP_USER, (this)); 的方法把this指针传入
 /******************************************************************************************************
 * Monitor -- MonitorFromPoint ，系统有一个 multimon.h 文件
 *   

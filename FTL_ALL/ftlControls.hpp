@@ -321,6 +321,41 @@ namespace FTL
 		return formater.GetString();
 	}
 
+	BOOL CFControlUtil::UpdateListboxHorizontalExtent(HWND hwndListbox, INT nPadding /* = 0 */)
+	{
+		BOOL bRet = FALSE;
+		bRet = ::IsWindow(hwndListbox);
+		if (bRet)
+		{
+			CListBox	listBox(hwndListbox);
+			FTLASSERT(listBox.GetStyle() & WS_HSCROLL == WS_HSCROLL);
+
+			CDCHandle	dcList = listBox.GetDC();
+			CFontHandle fontList = listBox.GetFont();
+			HFONT hOldFont = (HFONT)::SelectObject(dcList, fontList);
+
+			int nMaxWidth = 0;
+			int nCount = listBox.GetCount();
+			for(int i = 0; i < nCount; i++)
+			{
+				CSize szText(0, 0);
+				CString strText;
+				listBox.GetText(i, strText);
+				API_VERIFY(dcList.GetTextExtent(strText, -1, &szText));
+				//int nWidth = strText.GetLength() * tm.tmAveCharWidth;
+				if (szText.cx > nMaxWidth)
+				{
+					nMaxWidth = szText.cx;
+				}
+			}
+			listBox.SetHorizontalExtent(nMaxWidth + nPadding);
+
+			::SelectObject(dcList, hOldFont);
+			//dcList.SelectFont(hOldFont);
+			listBox.ReleaseDC(dcList.Detach());
+		}
+		return bRet;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	HRESULT CFTextRangeDumper::GetObjInfo(IInformationOutput* pInfoOutput)
@@ -469,22 +504,20 @@ namespace FTL
 	{
 		CRect rcClient;
 		GetClientRect(&rcClient);
-		int iHeight=0;
+		int iHeight = 0;
 
 		//BOOL bHoriz = FALSE;
-		CClientDC dcClient(m_hWnd);
-		CFontHandle hEdtFont = GetFont();
-		FTLASSERT(hEdtFont);
-		HFONT hOldFont = dcClient.SelectFont(hEdtFont);
+		WTL::CClientDC dcClient(m_hWnd);
+		HFONT hOldFont = (HFONT)::SelectObject(dcClient.m_hDC, GetFont());
 
 		SIZE oSize = {0};
-		////Determine the line Height
+		//Determine the line Height
 		dcClient.GetTextExtent(CString(_T(" ")), -1, &oSize);
 
 		////Text Height
 		iHeight = oSize.cy * GetLineCount();
 
-		dcClient.SelectFont(hOldFont);
+		::SelectObject(dcClient.m_hDC, hOldFont);
 		//ShowHorizScrollBar(bHoriz);
 		ShowVertScrollBar(iHeight >= rcClient.Height());
 

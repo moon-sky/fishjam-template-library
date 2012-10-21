@@ -19,6 +19,7 @@ DPI　-- dots per Inch(每英寸的像素数,LOGPIXELSY)，一般来说是 96dpi
 VGA中, 1逻辑英寸=96像素, 300dpi的打印机，1英寸300像素
 
 COLORREF -- 0x00bbggrr, 四字节，RGB 只能设置3个字节，自定义一个扩展的 RGBA, 测试向Canvas上手动生成RGBA的数据
+RGB(r,g,b)==#bbggrr
 默认的绘图模式为 MM_TEXT(逻辑单位为像素，不打印输出时屏幕绘图的最佳绘图模式 -- 不用转换)
 CScrollView中是通过改变逻辑坐标原点的相对位置、改变ViewportExt等的大小来实现移动、放大缩小的
 
@@ -79,6 +80,9 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 
 *   CFont -- 设备无关的字体(TrueType类型的轮廓字体),其创建函数并不"创建"一个全新的字体，
 *     而是从Windows的物理字体库中选择一个与所设置参数最匹配的字体.
+*     ClearType -- Vista/Win7使用的技术，让显示器RGB各个次像素也放光，对色调进行微调，可达到实际分辨率以上的文字显示效果。
+*       使得字体更加平滑(WinXP默认未启用:显示->外观->效果->使用下列方式使屏幕字体的边缘平滑)
+*     MacType(前身为GDI++) -- 可以接管Windows系统的字体渲染功能，让文字看起来更加平滑、清晰。
 *     字体大小单位( WTL::CDialogBaseUnits::InitDialogBaseUnits ):
 *       1.point(磅,1/72逻辑英寸) -- 96DPI时一个像素为 72/96=0.75磅， 如 ITextFont::SetSize 等
 *         nPointSize -- 通常是十分之一磅， 如 CreatePointFont 时的单位

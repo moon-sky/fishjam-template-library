@@ -23,6 +23,7 @@ CScreenCaptureSourcePin::CScreenCaptureSourcePin(HRESULT *phr, CSource *pFilter,
 	//m_pBlockElapse = new FTL::CFBlockElapse(TEXT(__FILE__), __LINE__, TEXT(__FUNCDNAME__), FTL::_ReturnAddress());
 	//CAutoLock cAutoLock(&m_cSharedState);
 	    
+	m_bMouseOverlay = TRUE;
 	m_nWidth = DEFAULT_WIDTH;
 	m_nHeight = DEFAULT_HEIGTH;
 	m_nMaxWidth = ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -48,16 +49,16 @@ CScreenCaptureSourcePin::CScreenCaptureSourcePin(HRESULT *phr, CSource *pFilter,
 	m_bStartNotified = FALSE;
 	m_bStopNotified = FALSE;
 	m_pProperties = NULL;
-	m_pClock = NULL;
+	//m_pClock = NULL;
 	m_hSemaphore = NULL;
 	m_rfMaxRecordTime = 0;
-	
+
 	m_mt.majortype = GUID_NULL;
 	m_pScreenCaptureImpl = NULL;
 
 	m_rtClockStart = 0;
 	m_rtClockStop = 0;
-
+	m_bFirstFrame = TRUE;
 	GetMediaType(0, &m_mt);
 	m_hEventAfterFilterRun = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 }
@@ -421,12 +422,12 @@ HRESULT CScreenCaptureSourcePin::FillBuffer(IMediaSample *pSample)
 
 	if (hDib)
 	{
-		//if (m_bFirstFrame)
-		//{
-		//	m_bFirstFrame = FALSE;
-		//	DX_VERIFY(m_pFilter->NotifyEvent(FIRST_FRAME, (LONG_PTR)(hDib), NULL));
-		//}
-		//else
+		if (m_bFirstFrame)
+		{
+			m_bFirstFrame = FALSE;
+			DX_VERIFY(m_pFilter->NotifyEvent(FIRST_FRAME, (LONG_PTR)(hDib), NULL));
+		}
+		else
 		{
 			DeleteObject(hDib);
 		}
@@ -450,6 +451,8 @@ HRESULT CScreenCaptureSourcePin::FillBuffer(IMediaSample *pSample)
 	DX_VERIFY(pSample->SetSyncPoint(TRUE));
 
 	return S_OK;
+
+	return hr;
 }
 
 HRESULT CScreenCaptureSourcePin::DecideBufferSize(
@@ -531,7 +534,7 @@ HRESULT CScreenCaptureSourcePin::SetMediaType(const CMediaType *pMediaType)
 		return VFW_E_INVALIDMEDIATYPE;
 	}
 	HRESULT hr = E_FAIL;
-	CAutoLock cAutoLock(m_pFilter->pStateLock());
+	//CAutoLock cAutoLock(m_pFilter->pStateLock());
 
 #ifdef _DEBUG
 	DX_VERIFY(CheckMediaType(pMediaType));
@@ -569,7 +572,7 @@ HRESULT CScreenCaptureSourcePin::SetMediaType(const CMediaType *pMediaType)
 		m_bmpInfo.bmiHeader.biBitCount = m_nBitCount;
 		m_bmpInfo.bmiHeader.biCompression = BI_RGB;
 		m_bmpInfo.bmiHeader.biPlanes = 1;
-		m_bmpInfo.bmiHeader.biSizeImage = DIBSIZE(pvi->bmiHeader); //GetBitmapSize(&pvi->bmiHeader);
+		m_bmpInfo.bmiHeader.biSizeImage = GetBitmapSize(&pvi->bmiHeader);
 		}
 	}
 	return NOERROR;
@@ -578,10 +581,10 @@ HRESULT CScreenCaptureSourcePin::SetMediaType(const CMediaType *pMediaType)
 
 HRESULT CScreenCaptureSourcePin::CheckMediaType(const CMediaType* pMediaType)
 {
-	HRESULT hr = E_FAIL;
 	CHECK_POINTER_RETURN_VALUE_IF_FAIL(pMediaType, E_POINTER);
 	CHECK_POINTER_RETURN_VALUE_IF_FAIL(pMediaType->Format(), VFW_E_INVALIDMEDIATYPE);
 
+	HRESULT hr = E_FAIL;
 	if ((pMediaType->majortype != MEDIATYPE_Video)    //only output video
 		|| !(pMediaType->IsFixedSize()))              //in fixed size samples
 	{
@@ -675,11 +678,11 @@ HRESULT CScreenCaptureSourcePin::GetMediaType(int iPosition, CMediaType *pmt)
 	}
 
 	CAutoLock(m_pFilter->pStateLock());
-	VIDEO_STREAM_CONFIG_CAPS	videoCaps = {0};
-	GetDefaultCaps(0, &videoCaps);
+	//VIDEO_STREAM_CONFIG_CAPS	videoCaps = {0};
+	//GetDefaultCaps(0, &videoCaps);
 
 	//hr = m_pInput->ConnectionMediaType(pmt);  //TransformFilter 时
-	VIDEOINFO *pOldVideInfo = (VIDEOINFO *)pmt->Format();
+	//VIDEOINFO *pOldVideInfo = (VIDEOINFO *)pmt->Format();
 	VIDEOINFO *pvi = (VIDEOINFO*) pmt->AllocFormatBuffer(sizeof(VIDEOINFO));
 	if (NULL == pvi)
 	{
@@ -716,7 +719,7 @@ HRESULT CScreenCaptureSourcePin::GetMediaType(int iPosition, CMediaType *pmt)
 	pvi->bmiHeader.biWidth      = m_nWidth;
 	pvi->bmiHeader.biHeight     = m_nHeight;
 	pvi->bmiHeader.biPlanes     = 1;
-	pvi->bmiHeader.biSizeImage  = DIBSIZE(pvi->bmiHeader);// GetBitmapSize(&pvi->bmiHeader);
+	pvi->bmiHeader.biSizeImage  = GetBitmapSize(&pvi->bmiHeader);
 	pvi->bmiHeader.biClrImportant = 0;
 	
 	pvi->AvgTimePerFrame = m_nAvgTimePerFrame;//
@@ -743,10 +746,11 @@ HRESULT CScreenCaptureSourcePin::Active(void)    // Starts up the worker thread
 	m_bStopNotified = false;
 	{
 		CAutoLock lock(m_pFilter->pStateLock()); // Get's the filter clock
-		DX_VERIFY(m_pFilter->GetSyncSource(&m_pClock)); //如果调用了 SetSyncSource，则可能为NULL
+		//DX_VERIFY(m_pFilter->GetSyncSource(&m_pClock)); //如果调用了 SetSyncSource，则可能为NULL
 		m_hSemaphore = CreateSemaphore(NULL, 0, 0x7FFFFFFF, NULL);
 	}
 	hr = __super::Active();
+	//::SetEvent(m_hEventAfterFilterRun);
 	return hr;
 }
 
@@ -832,11 +836,12 @@ HRESULT CScreenCaptureSourcePin::OnThreadCreate(void)
 	CAutoLock cAutoLockShared(&m_cSharedState);
 
 	FTLASSERT(NULL == m_pScreenCaptureImpl);
-	m_pScreenCaptureImpl = new CGdiScreenCaptureImpl(m_nWidth, m_nHeight, m_nBitCount);
+	m_pScreenCaptureImpl = new CGdiScreenCaptureImpl();
 	if (!m_pScreenCaptureImpl)
 	{
 		return E_OUTOFMEMORY;
 	}
+	m_pScreenCaptureImpl->SetMouseOverLay(m_bMouseOverlay);
 
     //m_rtSampleTime = 0;
 	//m_iRepeatTime = m_rtFrameLength / 10000;  //change from 100ns to ms
@@ -908,10 +913,14 @@ STDMETHODIMP CScreenCaptureSourcePin::NonDelegatingQueryInterface(REFIID riid, _
     HRESULT hr = E_NOINTERFACE;
     //FUNCTION_BLOCK_TRACE(1);
 
-    if (riid == IID_IUnknown)
+    if (riid == IID_IScreenCaptureCfg)
     {
-        hr = __super::NonDelegatingQueryInterface(riid, ppv);
+		hr = GetInterface((IScreenCaptureCfg*) this, ppv);
     }
+	else if (riid == IID_IAMLatency)
+	{
+		hr = GetInterface((IAMLatency*) this, ppv);
+	}
 	//else if(riid == IID_IAMStreamConfig)
 	//{
 	//	hr = GetInterface((IAMStreamConfig *) this, ppv);   
@@ -936,3 +945,38 @@ STDMETHODIMP CScreenCaptureSourcePin::NonDelegatingQueryInterface(REFIID riid, _
     return hr;
 }
 
+
+STDMETHODIMP CScreenCaptureSourcePin::SetCaptureRect(IN INT nLeft, IN INT nTop, IN INT nWidth, IN INT nHeight)
+{
+	m_rcCapture.left = nLeft;
+	m_rcCapture.top = nTop;
+	m_rcCapture.right = m_rcCapture.left + nWidth;
+	m_rcCapture.bottom = m_rcCapture.top + nHeight;
+
+	m_nWidth  = nWidth;
+	m_nHeight = nHeight;
+
+	return S_OK;
+}
+
+STDMETHODIMP CScreenCaptureSourcePin::SetFrameRate (IN INT nFPS)
+{
+	if (nFPS <= 0)
+	{
+		return E_INVALIDARG;
+	}
+	m_nAvgTimePerFrame = UNITS / nFPS;
+	return S_OK;
+}
+
+STDMETHODIMP CScreenCaptureSourcePin::SetMouseOverlay(IN BOOL bOverlay)
+{
+	m_bMouseOverlay = bOverlay;
+	return S_OK;
+}
+
+STDMETHODIMP CScreenCaptureSourcePin::SetMaxRecordTime(IN INT nMillSecs)
+{
+	m_rfMaxRecordTime = MILLISECONDS_TO_100NS_UNITS(nMillSecs);
+	return S_OK;
+}

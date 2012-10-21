@@ -13,6 +13,7 @@
 //extern const IID IID_IFilterDebugInfo;
 //extern const GUID CLSID_FilterDebugInfo;
 extern const GUID CLSID_FilterDebugInfoProperty;
+extern const GUID CLSID_GraphInfoProperty;
 
 extern const AMOVIESETUP_FILTER sudDebugInfoFilter;
 

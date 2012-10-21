@@ -1147,7 +1147,6 @@ namespace FTL
         switch (dlg.DoModal())
         {
         case CFCrashHandlerDialog::IDC_BTN_CREATE_DUMP:
-
             break;
         case CFCrashHandlerDialog::IDC_BTN_DEBUG:
             break;

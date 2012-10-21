@@ -18,6 +18,9 @@ GUID_STRING_ENTRY g_OtherGuidNames[] = {
     #define OUR_GUID_ENTRY(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
         { #name, { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } } },
 
+	//以下内容是DirectShow中的Sample Filter
+	#include "DShowSampleUuids.h"
+
     // MPEG4 AAC
     // wFormatTag   0x0278
     // Format Block [WAVEFORMAT_EX][ES_ID(16bit)]

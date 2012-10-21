@@ -46,6 +46,14 @@ BEGIN
     LTEXT           "OutputPinInfo",IDC_OUTPUT_PIN_INFO,48,110,322,8
 END
 
+IDD_GRPAH_INFO_PAGE DIALOGEX 0, 0, 383, 216
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LISTBOX         IDC_LIST_FILTERS,7,18,166,166,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Filters:",IDC_STATIC,9,8,94,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -61,6 +69,14 @@ BEGIN
         RIGHTMARGIN, 370
         TOPMARGIN, 7
         BOTTOMMARGIN, 253
+    END
+
+    IDD_GRPAH_INFO_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 376
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 209
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -155,6 +171,7 @@ STRINGTABLE
 BEGIN
     IDS_TITLE               "DebugInfoFilter"
     IDS_DEBUG_INFO_PAGE     "DebugProperty"
+    IDS_GRAPH_INFO_PAGE     "Graph Info"
 END
 
 #endif    // English (U.S.) resources
