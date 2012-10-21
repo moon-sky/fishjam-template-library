@@ -97,7 +97,7 @@ STDMETHODIMP CScreenCaptureFilter::NonDelegatingQueryInterface(REFIID riid, __de
     //COM_DETECT_RIID_FROM_LIST(riid);
     HRESULT hr = E_NOINTERFACE; 
     //FUNCTION_BLOCK_TRACE(1);
-	if (riid == IID_IScreenCaptureCfg)
+	if (riid == IID_IFScreenCaptureConfig)
 	{
 		hr = m_paStreams[0]->QueryInterface(riid, ppv);
 	}

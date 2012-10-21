@@ -45,6 +45,12 @@ protected:
 
 	//IAMLatency
 	virtual HRESULT STDMETHODCALLTYPE GetLatency(REFERENCE_TIME* pOutLatency);
+
+	//IFScreenCaptureConfig
+	STDMETHODIMP SetCaptureRect(IN INT nLeft, IN INT nTop, IN INT nWidth, IN INT nHeight);
+	STDMETHODIMP SetFrameRate (IN INT nFPS);
+	STDMETHODIMP SetMouseOverlay(IN BOOL bOverlay);
+	STDMETHODIMP CScreenCaptureSourcePin::SetMaxRecordTime(IN INT nMillSecs);
 public:
 	/////////////////////////      IKsPropertySet       /////////////////////////////////////////////////
 	virtual /* [local] */ HRESULT STDMETHODCALLTYPE Set( 

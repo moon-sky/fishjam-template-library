@@ -34,10 +34,10 @@ STDMETHODIMP CAsyncTransformFilter::NonDelegatingQueryInterface(REFIID riid, voi
 	{
 		return GetInterface((IAsyncTransformFilter *) this, ppv);
 	} 
-	else if (riid == IID_ISpecifyPropertyPages) 
-	{
-		return GetInterface((ISpecifyPropertyPages *) this, ppv);
-	}
+	//else if (riid == IID_ISpecifyPropertyPages) 
+	//{
+	//	return GetInterface((ISpecifyPropertyPages *) this, ppv);
+	//}
 	else 
 	{
 		return __super::NonDelegatingQueryInterface(riid, ppv);

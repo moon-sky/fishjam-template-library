@@ -913,9 +913,9 @@ STDMETHODIMP CScreenCaptureSourcePin::NonDelegatingQueryInterface(REFIID riid, _
     HRESULT hr = E_NOINTERFACE;
     //FUNCTION_BLOCK_TRACE(1);
 
-    if (riid == IID_IScreenCaptureCfg)
+    if (riid == IID_IFScreenCaptureConfig)
     {
-		hr = GetInterface((IScreenCaptureCfg*) this, ppv);
+		hr = GetInterface((IFScreenCaptureConfig*) this, ppv);
     }
 	else if (riid == IID_IAMLatency)
 	{
@@ -944,7 +944,6 @@ STDMETHODIMP CScreenCaptureSourcePin::NonDelegatingQueryInterface(REFIID riid, _
 	}
     return hr;
 }
-
 
 STDMETHODIMP CScreenCaptureSourcePin::SetCaptureRect(IN INT nLeft, IN INT nTop, IN INT nWidth, IN INT nHeight)
 {

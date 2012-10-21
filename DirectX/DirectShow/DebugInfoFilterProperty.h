@@ -52,7 +52,6 @@ private:
 	CWindow				m_wndOutputInfo;
 	FilterDebugParam    m_FilterDebugParam;
 	BOOL                OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam);
-	HRESULT				_UpdateListboxHorizontalExtent(HWND hwndListbox);
 	HRESULT             _DisplayPinInfo(IPin* pPin, HWND hwndListbox, HWND hwndInfo, int& nCurIndex);
 	HRESULT				_ClearDisplayPinInfo(HWND hwndListbox);
 };

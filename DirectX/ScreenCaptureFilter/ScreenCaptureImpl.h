@@ -13,10 +13,7 @@ public:
 class CScreenCaptureImplBase : public IScreenCaptureImpl
 {
 public:
-	CScreenCaptureImplBase(INT nWidth, INT nHeight, INT nBitCount)
-		:m_nWidth(nWidth)
-		,m_nHeight(nHeight)
-		,m_nBitCount(nBitCount)
+	CScreenCaptureImplBase()
 	{
 		m_bMouseOverlay = FALSE;
 	}
@@ -24,9 +21,6 @@ public:
 	virtual VOID SetMouseOverLay(BOOL bMouseOverLay);
 protected:
 	BOOL	m_bMouseOverlay;
-	INT		m_nWidth;
-	INT		m_nHeight;
-	INT		m_nBitCount;
 	
 protected:
 	virtual BOOL _OverlayMouseToScreen(HDC hdc, LPRECT lpRect);

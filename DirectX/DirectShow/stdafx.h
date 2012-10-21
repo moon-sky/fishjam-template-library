@@ -51,13 +51,24 @@
 #include <atlctrlw.h>
 #include <atlctrlx.h>
 
+#include <streams.h>
+
 // π”√FTL
+//#define INCLUDE_DETECT_DDRAW	1
+#define INCLUDE_DETECT_MEDIAOBJ	1
+//#define INCLUDE_DETECT_KSPROXY	1
+//#define	INCLUDE_DETECT_QEDIT	1
+//#define INCLUDE_DETECT_SHLOBJ	1
+#define INCLUDE_DETECT_STRMIF	1
+#define	INCLUDE_DETECT_WM_CODEC_DSP	1
+#define INCLUDE_DETECT_WMF		1
+
 #include <ftlbase.h>
 #include <ftlcom.h>
 #include <ftlComDetect.h>
 #include <ftlDirectx.h>
+#include <ftlControls.h>
 
 //#include <ftlhardware.h>
 using namespace FTL;
 
-#include <streams.h>

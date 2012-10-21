@@ -507,8 +507,10 @@ namespace FTL
 		int iHeight = 0;
 
 		//BOOL bHoriz = FALSE;
-		WTL::CClientDC dcClient(m_hWnd);
-		HFONT hOldFont = (HFONT)::SelectObject(dcClient.m_hDC, GetFont());
+		CClientDC dcClient(m_hWnd);
+		CFontHandle hEdtFont = GetFont();
+		FTLASSERT(hEdtFont);
+        HFONT hOldFont = (HFONT)::SelectObject(dcClient.m_hDC, hEdtFont);
 
 		SIZE oSize = {0};
 		//Determine the line Height
@@ -517,7 +519,7 @@ namespace FTL
 		////Text Height
 		iHeight = oSize.cy * GetLineCount();
 
-		::SelectObject(dcClient.m_hDC, hOldFont);
+        ::SelectObject(dcClient.m_hDC, hOldFont);
 		//ShowHorizScrollBar(bHoriz);
 		ShowVertScrollBar(iHeight >= rcClient.Height());
 

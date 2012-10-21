@@ -2,7 +2,8 @@
 #define DIRECT_SHOW_HARDWARE_H
 #pragma once
 
-
+//注意：一些第三方的Filter会在Debug中枚举时抛出异常(int 3)来防止破解
+//  
 /*********************************************************************************************
 * 自己创建的Filter可以在 DllRegisterServer 函数实现中通过 CLSID_FilterMapper2 的 
 *   IFilterMapper2::RegisterFilter 注册到系统的Category中
@@ -43,11 +44,14 @@
 * 
 * 在程序中可以通过系统枚举器来枚举系统中安装的所有硬件，创建这些代表硬件的Filter，也需要通过枚举(不能直接创建)。
 * 枚举过程 [ HKEY_CURRENT_USER\Software\Microsoft\ActiveMovie\devenum ]
-*   1.创建系统枚举器组件对象(CLSID_SystemDeviceEnum),并获得 ICreateDevEnum 接口；
+*   1.创建系统枚举器组件对象(CLSID_SystemDeviceEnum),并获得 ICreateDevEnum 接口，如返回S_FALSE表示类型下数据为空(或不存在?)
 *   2.使用其 CreateClassEnumerator 方法，为指定的Filter注册类型目录创建一个枚举器，获得IEnumMoniker接口；
 *     其他的注册类型目录有很多，如：
+*     CLSID_ActiveMovieCategories -- 所有注册类型的目录(GraphEdt的类型树)
+*     CLSID_LegacyAmFilterCategory -- 所有注册的DirectShowFilter
 *     CLSID_AudioCompressorCategory -- 音频压缩
 *     CLSID_AudioInputDeviceCategory -- 音频捕捉设备
+*     CLSID_AudioRendererCategory -- 音频输出
 *     CLSID_LegacyAmFilterCategory -- DirectShow Filters
 *     CLSID_VideoCompressorCategory -- 视屏压缩
 *     CLSID_VideoInputDeviceCategory -- 视屏捕捉设备

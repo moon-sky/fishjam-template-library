@@ -1,3 +1,13 @@
+//以下内容是DirectShow中使用的一些Filter(但没有定义具体的CLSID_XXX
+//  注意：这些都不是系统定义的
+
+
+// D51BD5A1-7548-11CF-A520-0080C77EF58A 
+OUR_GUID_ENTRY(CLSID_WaveParser,
+			   0xD51BD5A1, 0x7548, 0x11CF, 0xA5, 0x20, 0x00, 0x80, 0xC7, 0x7E, 0xF5, 0x8A)
+
+			   
+
 //以下内容是DirectShow中的Sample
 
 // 79A98DE0-BC00-11ce-AC2E-444553540000 

@@ -4,7 +4,7 @@
 class CGdiScreenCaptureImpl : public CScreenCaptureImplBase
 {
 public:
-	CGdiScreenCaptureImpl(INT nWidth, INT nHeight, INT nBitCount);
+	CGdiScreenCaptureImpl();
 	virtual ~CGdiScreenCaptureImpl(void);
 
 public:
@@ -14,6 +14,8 @@ protected:
 	HDC m_hScreenDC;
 	HDC m_hMemDC;
 	HBITMAP m_hBitmap;
+	INT		m_nWidth;
+	INT		m_nHeight;
 protected:
 	VOID	_ReleaseResource();
 };

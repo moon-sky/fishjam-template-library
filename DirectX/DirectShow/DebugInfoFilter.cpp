@@ -292,6 +292,10 @@ STDMETHODIMP CDebugInfoFilter::GetPages(CAUUID *pPages)
 {
     pPages->cElems = 2;  
     pPages->pElems = (GUID *) CoTaskMemAlloc(sizeof(GUID) * pPages->cElems);
+	if (NULL == pPages->pElems)
+	{
+		return E_OUTOFMEMORY;
+	}
     pPages->pElems[0] = CLSID_FilterDebugInfoProperty; //指定属性页的GUID
 	pPages->pElems[1] = CLSID_GraphInfoProperty; //指定属性页的GUID
     return S_OK;

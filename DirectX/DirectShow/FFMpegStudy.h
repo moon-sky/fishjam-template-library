@@ -74,7 +74,7 @@ extern "C" {
 *********************************************************************************************/
 
 /**********************************************************************************************
-MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
+* MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
 *   TechSmith Screen Capture Codec(C:\Windows\System32\tsccvid.dll)
 * 
 * ffdshow -- 一套免费的编解码软件，封装成了DirectShow的标准组件。
@@ -88,6 +88,7 @@ MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
 *   http://dranger.com/ffmpeg <== 英文的入门教材，但有些过时
 * 模块
 *   ffmpeg -i 输入文件 输出文件 -- 视频文件转换命令行工具,也支持经过实时电视卡抓取和编码成视频文件
+*     ffmpeg.exe -h 显示详细帮助
 *     例子： ffmpeg.exe -i snatch_1.vob -f avi -vcodec mpeg4 -acodec mp3 snatch.avi
 *     -acodec codec		<== 指定音频编码，如 aac 
 *     -an				<== 禁止audio
@@ -131,6 +132,7 @@ MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
 *     --disable-static			禁用静态库
 *     --disable-stripping       一般用于调试版本
 *     --disable-yasm            禁止使用yasm，否则可以安装 yasm后使用，(汇编编译器?)
+*     --enable-avisynth			加入 avisynth(视频文件后期处理工具)
 *     --enable-gpl				遵循gpl协议,当使用 x264/xvid 等遵循gpl协议的库时必须指定
 *     --enable-libfaac          支持aac(不是免费的),需要先到 faac 目录下编译, ./bootstrap<CR> ./configure xxx<CR> make
 *     --enable-libx264			使用x264作为h264编码器,表示要使用第3方库x264,此时mingw include 和 lib内必须已经有x264.h和libx264.a
@@ -144,6 +146,7 @@ MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
 *     --enable-w32threads       加入多线程支持，会大大提升处理效率
 *     --extra-cflags=-O0        额外的编译参数，如 -O0 表示不优化， -I/usr/local/include 表示头文件目录
 *     --extra-ldflags=xxx       额外的链接参数，如 -L/usr/local/lib 表示链接目录
+*     --enable-pthreads         linux下启用线程?
 *  调试
 *    av_log_set_callback -- 设置日志的回调函数
 *    av_log_set_level -- 设置日志等级(如 AV_LOG_DEBUG )
@@ -166,22 +169,46 @@ MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
 *    libtheora  
 * 
 *
+*********************************************************************************************/
+
+/*********************************************************************************************
 *  基本概念
 *    播放流程: video.avi(Container) -> 打开得到 Video_stream -> 读取Packet -> 解析到 Frame -> 显示Frame
 *    Container -- 在音视频中的容器，一般指的是一种特定的文件格式(如 AVI/QT )，里面指明了所包含的音视频，字幕等相关信息
-*    Stream -- 可理解为单纯的音频数据或者视频数据等
+*    Stream -- 媒体流，指时间轴上的一段连续数据，如一段声音、视频或字幕数据
 *    Frame -- Stream中的一个数据单元(AVFrame?)
 *    Packet -- Stream中的Raw数据,包含了可以被解码成方便我们最后在应用程序中操作的帧的原始数据(注意Packet和Frame不一定相等)
-*    CODEC -- 编解码器(Code 和 Decode)，如 Divx和 MP3
+*    CODEC -- 编解码器(Code 和 Decode)，如 Divx和 MP3,以帧为单位实现压缩数据和原始数据之间的相互转换
 *     
 *
+*********************************************************************************************/
+
+/*********************************************************************************************
+* 函数说明
+*   av_register_all     -- 注册所有容器格式(Format)和CODEC
+*   av_open_input_file  -- 打开文件，avformat_close_input_file 关闭
+*   av_find_stream_info -- 从文件中提取流信息
+*     avformat_find_stream_info ?
+*   avcodec_find_decoder-- 查找 decoder /encoder?
+*   avcodec_open        -- 打开编解码器，使用完毕后需要通过 avcodec_close 关闭释放
+*   avcodec_alloc_frame -- 为解码帧分配内存
+*   av_read_frame       -- 从码流中提取出帧数据，一般需要在循环中进行
+*   avcodec_decode_video-- 判断帧的类型，对于视频帧调用:
+
+
+* 
 *  源码分析
 *    AVPicture
 *     +-AVFrame
 *    AVPacket -- av_read_frame读取一个包并且把它保存到AVPacket::data指针指向的内存中(ffmpeg分配?)
 *    
 *    AVFormatContext -- 通过其 ->streams->codec->codec_type 判断类型，如 CODEC_TYPE_VIDEO
+*      AVInputFormat
+*      AVOutputFormat
 *    AVCodecContext -- 编解码器上下文，包含了流中所使用的关于编解码器的所有信息，
+*      bits_per_coded_sample -- 
+*      codec_name[32]、codec_type、codec_id、codec_tag -- 编解码器的名字、类型、ID、FOURCC 等信息
+*      sample_fmt -- 音频的原始采样格式, 是 SampleFormat 枚举
 *      time_base -- 采用分数(den/num)保存了帧率的信息,如 25fps(25/1) NTSC的 29.97fps(den/num= (framenum / 17982) / (framenum % 17982)) ?
 *    AVCodec -- 通过 avcodec_find_decoder 查找， avcodec_open2 打开
 *    SwsContext -- ?
@@ -250,4 +277,4 @@ m_pRGBFrame->linesize[1] *= -1;
 m_pRGBFrame->data[2]  += m_pRGBFrame->linesize[2] * (nHeight / 2 - 1);  
 m_pRGBFrame->linesize[2] *= -1; 
 sws_scale(scxt,m_pRGBFrame->data,m_pRGBFrame->linesize,0,c->height,m_pYUVFrame->data,m_pYUVFrame->linesize);
-#endif 
+#endif

@@ -28,6 +28,7 @@
 *     c.当前的DES(DirectShow Editing Services)不支持DMO的效果(Effect)和过渡(Transition)
 *
 * 通过系统枚举的方法创建DMO -- DMOEnum
+*   通过 IDMOWrapperFilter 接口使用(<dmodshow.h>)
 *   
 * DMO的开发 -- ATL方式的COM组件(有没有辅助开发的类？)
 *  1.支持聚合(可以被DMOWrapperFilter聚合)，线程模型为Both;

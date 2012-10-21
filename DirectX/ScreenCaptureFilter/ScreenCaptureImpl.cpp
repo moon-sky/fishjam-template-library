@@ -1,24 +1,6 @@
 #include "StdAfx.h"
 #include "ScreenCaptureImpl.h"
 
-//CScreenCaptureImpl::CScreenCaptureImpl(void)
-//    : m_bOverlay(true)
-//{
-//}
-//
-//CScreenCaptureImpl::~CScreenCaptureImpl(void)
-//{
-//}
-//
-//void CScreenCaptureImpl::SetOverlay(bool bOverlay)
-//{
-//    m_bOverlay = bOverlay;
-//}
-//
-//HBITMAP CScreenCaptureImpl::CopyScreenToBitmap(LPRECT lpRect, BYTE *pData, BITMAPINFO *pHeader)
-//{
-//
-//}
 
 BOOL CScreenCaptureImplBase::GetMouseOverLay()
 { 

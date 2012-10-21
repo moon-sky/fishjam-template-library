@@ -33,15 +33,21 @@ extern const AMOVIESETUP_FILTER sudDebugInfoFilter;
 //}
 //#endif
 
-class CDebugInfoInputPin : public CTransInPlaceInputPin
-{
+//class CDebugInfoInputPin : public CTransInPlaceInputPin
+//{
+//public:
+//	CDebugInfoInputPin(CTransInPlaceFilter *pFilter, HRESULT *phr) 
+//		: CTransInPlaceInputPin(TEXT("Input"), pFilter, phr, TEXT("Input"))
+//	{
+//
+//	}
+//
+//};
 
-};
-
-class CDebugInfoOutputPin : public CTransInPlaceOutputPin
-{
-
-};
+//class CDebugInfoOutputPin : public CTransInPlaceOutputPin
+//{
+//
+//};
 
 class CDebugInfoFilter : public CTransInPlaceFilter,
     public ISpecifyPropertyPages,

@@ -153,43 +153,13 @@ HRESULT CDebugInfoFilterProperty::_DisplayPinInfo(IPin* pPin, HWND hwndListbox, 
 		nCurIndex = 0;
 	}
 	SendMessage (hwndListbox, LB_SETCURSEL, nCurIndex, 0);
-	_UpdateListboxHorizontalExtent(hwndListbox);
+	FTL::CFControlUtil::UpdateListboxHorizontalExtent(hwndListbox, 4);
 	
 	CString strFilterInfo;
 	strFilterInfo.Format(TEXT("Name= %s , ActiveIndex= %03d"), szFilterName, nCurIndex + 1);
 	stInfo.SetWindowText(strFilterInfo);
 
 	return hr;
-}
-
-HRESULT CDebugInfoFilterProperty::_UpdateListboxHorizontalExtent(HWND hwndListbox)
-{
-	CListBox	listBox(hwndListbox);
-	CDCHandle	dcList = listBox.GetDC();
-	CFontHandle fontList = listBox.GetFont();
-	HFONT hOldFont = (HFONT)::SelectObject(dcList, fontList);
-
-	int nMaxWidth = 0;
-	int nCount = listBox.GetCount();
-	for(int i = 0; i < nCount; i++)
-	{
-		CSize szText(0, 0);
-		CString strText;
-		listBox.GetText(i, strText);
-		dcList.GetTextExtent(strText, -1, &szText);
-		//int nWidth = strText.GetLength() * tm.tmAveCharWidth;
-		if (szText.cx > nMaxWidth)
-		{
-			nMaxWidth = szText.cx;
-		}
-	}
-	listBox.SetHorizontalExtent(nMaxWidth + 4); //add for magin
-
-	::SelectObject(dcList, hOldFont);
-	//dcList.SelectFont(hOldFont);
-	listBox.ReleaseDC(dcList.Detach());
-
-	return S_OK;
 }
 
 HRESULT CDebugInfoFilterProperty::_ClearDisplayPinInfo(HWND hwndListbox)

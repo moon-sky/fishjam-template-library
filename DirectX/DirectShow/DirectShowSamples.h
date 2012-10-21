@@ -1,6 +1,25 @@
 #ifndef DIRECTSHOW_SAMPLES_H
 #define DIRECTSHOW_SAMPLES_H
 
+#error(测试并放入FTL) -- SysEnum --
+void CBaseDialog::RedrawControl(int nID)
+{
+    // Find the dialog rect and the control rect, both relative to the display
+    RECT rcDlg, rcControl;
+    GetWindowRect(m_hDlg, &rcDlg);
+    GetWindowRect(GetDlgItem(nID), &rcControl);
+
+    // Adjust the dialog rect by the size of the border and caption 
+    rcDlg.top += NonClientTop();
+    rcDlg.left += NonClientWidth();
+
+    // Find the control rect relative to the dialog position
+    OffsetRect(&rcControl, - rcDlg.left, - rcDlg.top);
+
+    InvalidateRect(m_hDlg, &rcControl, TRUE);
+    UpdateWindow(m_hDlg);
+}
+
 /************************************************************************************************
 * 介绍DirectShow中的Sample
 * Capture
@@ -26,6 +45,10 @@
 *  +- ASFCopy   -- 未看 -- 使用指定的系统配置讲文件转化为ASF格式的文件，包括认证服务、枚举ASF配置等。
 *                  其中定义了ASF的错误码(ASFErr.h 和 nserror.h)。
 *                  控制台方式，如：ASFCopy.exe /v /p 22 C:\WINDOWS\Media\tada.wav c:\testasf.asf
+*  +- SysEnum   -- 枚举系统中注册的各种Filter，类似GraphEdt显示各种Filter时枚举的功能
+*                  其中使用 CLSID_ActiveMovieCategories 得到了DShow相关的所有类型(如压缩、解压、Filter等)
+*                  展示了使用自定义的 _SetWindowLongPtr 模板函数来解决 SetWindowLongPtr 函数编译错误的方法 
+*                  注意：其RedrawControl方法演示了计算Control相对Dialog位置的方法
 * Players
 *  +-AudioBox   -- 使用MFC的音频播放程序，有播放列表，实现 IServiceProvider 接口 对WMF文件进行支持
 *  +-BGMusic    -- 使用Win32播放MP3的音乐播放程序，其 SwapSourceFilter 方法具有动态改变 Source Filter 的能力

@@ -272,6 +272,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GraphInfoPropertyPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Setup.cpp"
 				>
 			</File>
@@ -389,6 +393,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DShowSampleUuids.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FFMpegStudy.h"
 				>
 			</File>
@@ -409,11 +417,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GraphInfoPropertyPage.h"
+				>
+			</File>
+			<File
 				RelativePath=".\IntelMediaSDK.h"
 				>
 			</File>
 			<File
 				RelativePath=".\MultiMediaGlossary.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OpenSourceUuids.h"
 				>
 			</File>
 			<File
@@ -430,6 +446,10 @@
 			</File>
 			<File
 				RelativePath=".\WIAStudy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WinSDKUuids.h"
 				>
 			</File>
 		</Filter>
