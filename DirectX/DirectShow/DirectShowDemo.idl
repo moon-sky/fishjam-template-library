@@ -37,6 +37,12 @@ typedef struct FilterDebugParam
     BSTR    pstrDumpFilePath;
 }FilterDebugParam;
 
+typedef struct FilterRunningInfo
+{
+	DWORD		dwSampleCount;
+	LONGLONG	llElapse; //ns
+}FilterRunningInfo;
+
 [
     local,
 	object,
@@ -47,8 +53,12 @@ typedef struct FilterDebugParam
 interface IFilterDebugInfo : IUnknown{
     [helpstring("method GetConnectedPin")] 
     HRESULT GetConnectedPin([in] BOOL bIsInput, [out,retval] IPin** ppPin);
-    HRESULT GetFilterDebugParam([in,out] FilterDebugParam* pFilterDebugParam);
+    
+	HRESULT GetFilterDebugParam([in,out] FilterDebugParam* pFilterDebugParam);
     HRESULT SetFilterDebugParam([in] FilterDebugParam* pFilterDebugParam);
+	
+	HRESULT GetFilterRunningInfo([in, out] FilterRunningInfo* pFilterRunningInfo);
+	HRESULT SetFilterRunningInfo([in] FilterRunningInfo* pFilterRunningInfo);
 };
 
 

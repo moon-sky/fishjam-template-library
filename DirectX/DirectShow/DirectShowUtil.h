@@ -13,6 +13,7 @@
 * CEnumPins -- 枚举Filter上的PIn
 * CEnumMediaTypes -- Pin上的首选媒体类型枚举
 * CGenericList -- 通用的List模板基类
+* CImageDisplay -- Video Renderer 使用的工具类，可以获取显示媒体的格式等信息？
 * CMediaSample -- 封装了指向数据内存的指针及相关的属性。Sample由Pin上的Sample管理器创建，并维持
 *   在一个空闲Sample队列中(CBaseAllocator管理?)，需要使用时，通过GetBuffer获得一个空Sample(如果当前没有空Sample的话，等待)。
 *   使用完毕后，Release，如果引用计数变为0，会自动调用IMemAllocator::ReleaseBuffer，把自己重新加入

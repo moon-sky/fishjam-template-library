@@ -16,11 +16,11 @@
 
 	<!-- 
 	DirectShow 
- 		  Value="C:\Program Files\Microsoft SDKs\Windows\v7.1\Samples\multimedia\directshow\baseclasses\"
+      Value="F:\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\" 		  
 	-->
 	<UserMacro
 		  Name="DirectShowBaseClassesPath"
-      Value="F:\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\"
+      Value="C:\Program Files\Microsoft SDKs\Windows\v7.1\Samples\multimedia\directshow\baseclasses\"
 	/>
 	
   <UserMacro

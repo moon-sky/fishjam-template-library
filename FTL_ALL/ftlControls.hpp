@@ -328,7 +328,7 @@ namespace FTL
 		if (bRet)
 		{
 			CListBox	listBox(hwndListbox);
-			FTLASSERT(listBox.GetStyle() & WS_HSCROLL == WS_HSCROLL);
+			//FTLASSERT(listBox.GetStyle() & WS_HSCROLL == WS_HSCROLL);
 
 			CDCHandle	dcList = listBox.GetDC();
 			CFontHandle fontList = listBox.GetFont();

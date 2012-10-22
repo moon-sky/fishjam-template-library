@@ -26,10 +26,15 @@ public:
 	END_DDX_MAP()
 
 	BEGIN_MSG_MAP_EX(CDebugInfoFilterProperty)
-		MSG_WM_COMMAND(OnCommand)
+		MSG_WM_COMMAND(_OnCommand)
+		COMMAND_HANDLER_EX(IDC_BTN_RESET_RUNNING_INFO, BN_CLICKED, _OnBtnResetRunningInfoClicked)
 	END_MSG_MAP()
 
-	void OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void _OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void _OnBtnResetRunningInfoClicked(UINT uNotifyCode, int nID, CWindow wndCtl);
+
+	HRESULT _CheckAndReconnectUseMediaType();
+	HRESULT _ReConnectUseMediaType(AM_MEDIA_TYPE* pMediaType);
 
 	HWND GetDlgItem(int nID) const throw()
 	{

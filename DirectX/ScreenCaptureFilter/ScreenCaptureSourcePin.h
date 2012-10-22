@@ -233,7 +233,10 @@ protected:
 	INT		m_nWidth;
 	INT		m_nHeight;
 	INT		m_nBitCount;
-	BITMAPINFO  m_bmpInfo;
+	//BITMAPINFO  m_bmpInfo;
+	//BITMAPINFO *m_pBmpInfo;		// Pointer to the bitmap header
+	//DWORD       m_cbBitmapInfo;	// Size of the bitmap header
+
 	REFERENCE_TIME		m_nAvgTimePerFrame; //Average time per frame (100ns units), UNITS / DEFAULT_FPS
 
 

@@ -86,6 +86,7 @@
 *         mids -- MIDI Stream
 *         txts -- Text Stream
 *         JUNK -- 表示特殊的数据块，用于内部数据的队齐（填充），应用程序应该忽略这些数据块的实际意义
+*         INFO -- 字符串信息? 其下有 ICMT 块(比如 野生动物.wmv 转出来的avi文件)
 *   BDAV
 *   Div3~Div5 -- 
 *   Divx -- 

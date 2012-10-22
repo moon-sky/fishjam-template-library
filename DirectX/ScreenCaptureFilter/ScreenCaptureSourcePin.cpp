@@ -4,6 +4,10 @@
 #include "GdiScreenCaptureImpl.h"
 #include "EventParamDefine.h"
 
+// UNITS = 10 ^ 7  
+// UNITS / 25 = 25 fps;
+//const REFERENCE_TIME FPS_25 = UNITS / 25;
+
 CScreenCaptureSourcePin::CScreenCaptureSourcePin(HRESULT *phr, CSource *pFilter, HANDLE hEventContinue, HANDLE hEventStop)
 	:CSourceStream(NAME("Fishjam Screen Capture Pin"), phr, pFilter, L"Out")
 	, m_hEventContinue(hEventContinue)
@@ -34,8 +38,8 @@ CScreenCaptureSourcePin::CScreenCaptureSourcePin(HRESULT *phr, CSource *pFilter,
 
 	m_nBitCount = DEFAULT_BIT_COUNT;
 	m_nAvgTimePerFrame = UNITS / DEFAULT_FPS;
-	ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
-	m_bmpInfo.bmiHeader.biSize = sizeof(m_bmpInfo.bmiHeader);
+	//ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
+	//m_bmpInfo.bmiHeader.biSize = sizeof(m_bmpInfo.bmiHeader);
 
 	m_rtStart = 0;
 	m_rtStreamOffset = 0;
@@ -566,13 +570,14 @@ HRESULT CScreenCaptureSourcePin::SetMediaType(const CMediaType *pMediaType)
 			m_nHeight = FTL_ABS(pvi->bmiHeader.biHeight);
 		m_nBitCount = pvi->bmiHeader.biBitCount;
 
-			m_nAvgTimePerFrame = pvi->AvgTimePerFrame;
-			m_bmpInfo.bmiHeader.biWidth = pvi->bmiHeader.biWidth;
-			m_bmpInfo.bmiHeader.biHeight = pvi->bmiHeader.biHeight;
-		m_bmpInfo.bmiHeader.biBitCount = m_nBitCount;
-		m_bmpInfo.bmiHeader.biCompression = BI_RGB;
-		m_bmpInfo.bmiHeader.biPlanes = 1;
-		m_bmpInfo.bmiHeader.biSizeImage = GetBitmapSize(&pvi->bmiHeader);
+		m_nAvgTimePerFrame = pvi->AvgTimePerFrame;
+
+		//m_bmpInfo.bmiHeader.biWidth = pvi->bmiHeader.biWidth;
+		//m_bmpInfo.bmiHeader.biHeight = pvi->bmiHeader.biHeight;
+		//m_bmpInfo.bmiHeader.biBitCount = m_nBitCount;
+		//m_bmpInfo.bmiHeader.biCompression = BI_RGB;
+		//m_bmpInfo.bmiHeader.biPlanes = 1;
+		//m_bmpInfo.bmiHeader.biSizeImage = GetBitmapSize(&pvi->bmiHeader);
 		}
 	}
 	return NOERROR;

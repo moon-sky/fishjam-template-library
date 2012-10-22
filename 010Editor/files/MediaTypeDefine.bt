@@ -10,7 +10,7 @@ typedef struct
 
 typedef struct
 { 
-  WORD  wFormatTag <format=hex, comment="0x1=PCM, 0x55=MP3">; 
+  WORD  wFormatTag <format=hex, comment="0x1=PCM,0x55=MP3,See MMReg.h WAVE_FORMAT_XXX">; 
   WORD  nChannels; 
   DWORD nSamplesPerSec; 
   DWORD nAvgBytesPerSec; 

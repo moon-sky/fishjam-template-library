@@ -89,10 +89,11 @@ CDebugInfoFilter::CDebugInfoFilter( IUnknown * pUnk, HRESULT * phr )
 ,m_dwDumpSampleStartIndex(0)
 ,m_dwDumpSampleLimitCount(10)
 ,m_dwCurrentDumpSampleIndex(0)
+,m_dwSampleCount(0)
 {
     //DbgSetModuleLevel(LOG_TIMING|LOG_TRACE|LOG_LOCKING|LOG_ERROR, //LOG_MEMORY
     //    1);
-
+	m_ElapseCounter.Stop();
     m_bModifiesData = false;  //不会修改Sample，输入/输出Pin使用同一个Allocator
     ZeroMemory(&m_bufDumpFilePath,sizeof(TCHAR) * _countof(m_bufDumpFilePath));
 }
@@ -177,7 +178,7 @@ HRESULT CDebugInfoFilter::Transform(IMediaSample *pSample)
 	}
 
 	m_dwCurrentDumpSampleIndex++;//TODO:Maybe Overflow?
-
+	m_dwSampleCount++;
     return S_OK;
 }
 
@@ -226,6 +227,7 @@ HRESULT CDebugInfoFilter::StartStreaming()
     HRESULT hr = S_OK;
     DX_VERIFY(CTransInPlaceFilter::StartStreaming());
     CAutoLock cObjectLock(&m_DebugInfoLock);
+	m_ElapseCounter.Start();
     if (m_bDumpSample && m_bufDumpFilePath[0] != TEXT('\0'))
     {
         //if (!m_StorageFile.IsOpen())
@@ -240,6 +242,8 @@ HRESULT CDebugInfoFilter::StopStreaming()
 {
     HRESULT hr = S_OK;
     CAutoLock cObjectLock(&m_DebugInfoLock);
+	m_ElapseCounter.Stop();
+
     if (m_bDumpSample && m_StorageFile.IsOpen())
     {
         m_StorageFile.Close();
@@ -374,6 +378,25 @@ STDMETHODIMP CDebugInfoFilter::SetFilterDebugParam(/* [in] */FilterDebugParam* p
     return hr;
 }
 
+STDMETHODIMP CDebugInfoFilter::GetFilterRunningInfo(/*[in, out]*/ FilterRunningInfo* pFilterRunningInfo)
+{
+	CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilterRunningInfo, E_POINTER);
+	CAutoLock lock(&m_DebugInfoLock);
+
+	pFilterRunningInfo->llElapse = m_ElapseCounter.GetElapseTime();
+	pFilterRunningInfo->dwSampleCount = m_dwSampleCount;
+	return S_OK;
+}
+
+STDMETHODIMP CDebugInfoFilter::SetFilterRunningInfo(/*[in]*/ FilterRunningInfo* pFilterRunningInfo)
+{
+	CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilterRunningInfo, E_POINTER);
+	CAutoLock lock(&m_DebugInfoLock);
+	m_dwSampleCount = pFilterRunningInfo->dwSampleCount;
+	m_ElapseCounter.Reset();
+
+	return S_OK;
+}
 
 // CPersistStream overrides
 HRESULT CDebugInfoFilter::WriteToStream(IStream *pStream)

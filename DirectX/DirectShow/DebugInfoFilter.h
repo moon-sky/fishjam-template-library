@@ -82,6 +82,9 @@ public:
     STDMETHOD(GetFilterDebugParam)(/* [out][in] */FilterDebugParam* pFilterDebugParam);
     STDMETHOD(SetFilterDebugParam)(/* [in] */FilterDebugParam* pFilterDebugParam);
 
+	STDMETHOD(GetFilterRunningInfo)(/*[in, out]*/ FilterRunningInfo* pFilterRunningInfo);
+	STDMETHOD(SetFilterRunningInfo)(/*[in]*/ FilterRunningInfo* pFilterRunningInfo);
+
     // CPersistStream overrides
     HRESULT WriteToStream(IStream *pStream);
     HRESULT ReadFromStream(IStream *pStream);
@@ -106,6 +109,8 @@ private:
     DWORD               m_dwDumpSampleLimitCount;   //Dump时的限制个数
     DWORD               m_dwCurrentDumpSampleIndex;
     TCHAR               m_bufDumpFilePath[MAX_PATH];//Dump到的文件路径
+	DWORD				m_dwSampleCount;
+	FTL::CFElapseCounter	m_ElapseCounter;
 
     CFStructuredStorageFile  m_StorageFile;
     //CFThread<>          m_DumpThread;

@@ -734,6 +734,7 @@ namespace FTL
     public:
         FTLINLINE CFElapseCounter();
         FTLINLINE ~CFElapseCounter();
+		FTLINLINE BOOL Reset();
         FTLINLINE BOOL Start();
         FTLINLINE BOOL Pause();
         FTLINLINE BOOL Resume();

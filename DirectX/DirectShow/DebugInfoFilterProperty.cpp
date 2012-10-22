@@ -228,6 +228,17 @@ HRESULT CDebugInfoFilterProperty::OnActivate()
 			OLE2T(m_FilterDebugParam.pstrDumpFilePath)));
 	}
 
+	FilterRunningInfo runningInfo;
+	runningInfo.dwSampleCount = 0;
+	runningInfo.llElapse = 0;
+	DX_VERIFY(m_pFilterInfo->GetFilterRunningInfo(&runningInfo));
+	if (SUCCEEDED(hr))
+	{
+		SetDlgItemInt(m_hwnd, IDC_STATIC_SAMPLE_COUNT, runningInfo.dwSampleCount, FALSE);
+		CString strRunningTime;
+		strRunningTime.Format(TEXT("%.3f"), (float)runningInfo.llElapse/1000000);
+		SetDlgItemText(m_hwnd, IDC_STATIC_RUNNING_TIME, strRunningTime);
+	}
 	return S_OK;
 }
 
@@ -250,27 +261,60 @@ HRESULT CDebugInfoFilterProperty::OnDeactivate()
 	return hr;
 }
 
+HRESULT CDebugInfoFilterProperty::_ReConnectUseMediaType(AM_MEDIA_TYPE* pMediaType)
+{
+#pragma TODO("_ReConnectUseMediaType")
+	return S_OK;
+
+	HRESULT hr = E_FAIL;
+	//use change input media type
+	CComQIPtr<IBaseFilter> spFilter(m_pFilterInfo);
+	if (spFilter)
+	{
+		FILTER_INFO filterInfo = {0};
+		DX_VERIFY(spFilter->QueryFilterInfo(&filterInfo));
+		if (SUCCEEDED(hr))
+		{
+			CComQIPtr<IFilterGraph2> spFilterGraph2(filterInfo.pGraph);
+			m_pInputConnectedPin->Disconnect();
+			m_pOutputConnectedPin->Disconnect();
+
+			DX_VERIFY(spFilterGraph2->ReconnectEx(m_pInputConnectedPin, pMediaType));
+			QueryFilterInfoReleaseGraph(filterInfo);
+		}
+	}
+	return hr;
+}
+
+HRESULT CDebugInfoFilterProperty::_CheckAndReconnectUseMediaType()
+{
+	HRESULT hr = E_FAIL;
+	int nNewInputSelIndex = m_listInput.GetCurSel();
+	if(m_nInputIndex != nNewInputSelIndex)
+	{
+		AM_MEDIA_TYPE* pNewMediaType = static_cast<AM_MEDIA_TYPE*> (m_listInput.GetItemDataPtr(nNewInputSelIndex));
+		DX_VERIFY(_ReConnectUseMediaType(pNewMediaType));
+		if (FAILED(hr))
+		{
+			HRESULT hrError = hr;
+			FormatMessageBox(m_hwnd, TEXT("Error"),
+				MB_OK, TEXT("Use New MediaType Connect Failed(0x%x)"), hr);
+			AM_MEDIA_TYPE* pOldMediaType = static_cast<AM_MEDIA_TYPE*> (m_listInput.GetItemDataPtr(m_nInputIndex));
+			DX_VERIFY(_ReConnectUseMediaType(pOldMediaType));
+			return hrError;
+		}
+	}
+
+	return hr;
+}
+
 HRESULT CDebugInfoFilterProperty::OnApplyChanges()
 {
 	HRESULT hr = E_FAIL;
-
-	int nNewSelIndex = m_listInput.GetCurSel();
-	if(m_nInputIndex != nNewSelIndex)
+	DX_VERIFY(_CheckAndReconnectUseMediaType());
+	if (FAILED(hr))
 	{
-		//use change input media type
-		//AM_MEDIA_TYPE* pMediaType = static_cast<AM_MEDIA_TYPE*> (m_listInput.GetItemDataPtr(nNewSelIndex));
-		//CComQIPtr<IBaseFilter> spFilter(m_pFilterInfo);
-		//if (spFilter)
-		//{
-		//	FILTER_INFO filterInfo = {0};
-		//	DX_VERIFY(spFilter->QueryFilterInfo(&filterInfo));
-		//	if (SUCCEEDED(hr))
-		//	{
-		//		CComQIPtr<IFilterGraph2> spFilterGraph2(filterInfo.pGraph);
-		//		DX_VERIFY(spFilterGraph2->ReconnectEx(m_pInputConnectedPin, pMediaType));
-		//		QueryFilterInfoReleaseGraph(filterInfo);
-		//	}
-		//}
+		return hr;
 	}
 
 	TCHAR bufDumpFilePath[MAX_PATH] = {0};
@@ -284,10 +328,14 @@ HRESULT CDebugInfoFilterProperty::OnApplyChanges()
 	m_FilterDebugParam.dwDumpSampleLimitCount = GetDlgItemInt(m_hwnd,IDC_EDIT_LIMIT_COUNT,NULL,FALSE);
 
 	DX_VERIFY(m_pFilterInfo->SetFilterDebugParam(&m_FilterDebugParam));
-	return CBasePropertyPage::OnApplyChanges();
+	if (SUCCEEDED(hr))
+	{
+		DX_VERIFY(CBasePropertyPage::OnApplyChanges());
+	}
+	return hr;
 }
 
-void CDebugInfoFilterProperty::OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
+void CDebugInfoFilterProperty::_OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	BOOL bRet = FALSE;
 	if ((IDC_LIST_INPUT == nID) || IDC_LIST_OUTPUT == nID)
@@ -330,6 +378,29 @@ void CDebugInfoFilterProperty::OnCommand(UINT uNotifyCode, int nID, CWindow wndC
 	}
 	SetMsgHandled(FALSE);
 
+}
+
+void CDebugInfoFilterProperty::_OnBtnResetRunningInfoClicked(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	HRESULT hr = E_FAIL;
+	FilterRunningInfo runningInfo;
+	runningInfo.dwSampleCount = 0;
+	runningInfo.llElapse = 0;
+	DX_VERIFY(m_pFilterInfo->SetFilterRunningInfo(&runningInfo));
+
+	//refresh running info
+	DX_VERIFY(m_pFilterInfo->GetFilterRunningInfo(&runningInfo));
+	if (SUCCEEDED(hr))
+	{
+		SetDlgItemInt(m_hwnd, IDC_STATIC_SAMPLE_COUNT, runningInfo.dwSampleCount, FALSE);
+		CString strRunningTime;
+		strRunningTime.Format(TEXT("%.3f"), (float)runningInfo.llElapse/1000000);
+		SetDlgItemText(m_hwnd, IDC_STATIC_RUNNING_TIME, strRunningTime);
+	}
+
+	//DX_VERIFY(m_pFilterInfo->ResetCurrentFrameCount());
+	//LONG nCount = m_pFilterInfo->GetCurrentFrameCount();
+	//SetDlgItemInt(m_hwnd, IDC_STATIC_FRAME_COUNT, nCount, FALSE);
 }
 
 INT_PTR CDebugInfoFilterProperty::OnReceiveMessage(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)

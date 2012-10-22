@@ -1008,6 +1008,16 @@ namespace FTL
     {
         return m_Status;
     }
+
+	BOOL CFElapseCounter::Reset()
+	{        
+		m_Status = rsStopped;
+		m_StartTime.QuadPart = 0;
+		m_PauseTime.QuadPart = 0;
+		m_StopTime.QuadPart = 0;
+		return TRUE;
+	}
+
     BOOL CFElapseCounter::Start()
     {
         BOOL bRet = FALSE;
@@ -1091,7 +1101,7 @@ namespace FTL
             break;
         }
 
-        FTLASSERT(elapseNs > 0);
+        FTLASSERT(elapseNs >= 0);
         return elapseNs;
     }
 
