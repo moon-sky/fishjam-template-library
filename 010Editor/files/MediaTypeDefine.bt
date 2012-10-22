@@ -1,0 +1,76 @@
+//Windows Media Type Define
+
+typedef struct
+{
+    DWORD left;
+    DWORD top;
+    DWORD right;
+    DWORD bottom;
+}RECT;
+
+typedef struct
+{ 
+  WORD  wFormatTag; 
+  WORD  nChannels; 
+  DWORD nSamplesPerSec; 
+  DWORD nAvgBytesPerSec; 
+  WORD  nBlockAlign; 
+  WORD  wBitsPerSample; 
+  WORD  cbSize; 
+} WAVEFORMATEX;
+
+// head structure info
+typedef struct 
+{
+    DWORD  dwMicroSecPerFrame <comment="FPS is 10^7 / this">;
+    DWORD  dwMaxBytesPerSec;
+    DWORD  dwReserved1 <format=hex>;
+    DWORD  dwFlags <format=hex>;
+    DWORD  dwTotalFrames;
+    DWORD  dwInitialFrames;
+    DWORD  dwStreams;
+    DWORD  dwSuggestedBufferSize;
+    DWORD  dwWidth;
+    DWORD  dwHeight;
+    DWORD  dwScale;
+    DWORD  dwRate;
+    DWORD  dwStart;
+    DWORD  dwLength;
+} MainAVIHeader;
+
+typedef struct
+{
+  uint32 biSize;
+  uint32 biWidth;
+  uint32 biHeight;
+  uint16 biPlanes;
+  uint16 biBitCount;
+  uint32 biCompression;
+  uint32 biSizeImage;
+  uint32 biXPelsPerMeter;
+  uint32 biYPelsPerMeter;
+  uint32 biClrUsed;
+  uint32 biClrImportant;
+} BITMAPINFOHEADER;
+
+typedef struct 
+{
+  unsigned char rgbBlue;
+  unsigned char rgbGreen;
+  unsigned char rgbRed;
+  unsigned char rgbReserved;
+} RGBQUAD;
+
+typedef struct 
+{
+  BITMAPINFOHEADER bmiHeader;
+  RGBQUAD bmiColors;
+} BITMAPINFO;
+
+typedef struct 
+{
+  char id[4];
+  uint32 datalen;
+  MainAVIHeader data;
+} avihHEADER;
+
