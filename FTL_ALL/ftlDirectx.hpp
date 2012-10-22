@@ -1419,10 +1419,11 @@ namespace FTL
 					varFriendlyName.bstrVal);
 				
 				CComVariant varClsid;
-				COM_VERIFY(spPropertyBag->Read(L"CLSID", &varClsid, NULL));
-				if (SUCCEEDED(hr))
+				HRESULT hrTemp = spPropertyBag->Read(L"CLSID", &varClsid, NULL);
+				if(SUCCEEDED(hrTemp))
 				{
-					//pHardwareMonikerInfo->clsid = varClsid.clsid
+					CLSIDFromString(varClsid.bstrVal, &pHardwareMonikerInfo->clsid);
+					//pHardwareMonikerInfo->clsid = varClsid.clsid;
 				}
 				pHardwareMonikerInfo->pMoniker = pMoniker;
 				pMoniker->AddRef();

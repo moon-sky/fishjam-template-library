@@ -33,8 +33,9 @@
 #define IDC_STATIC_RUNNING_TIME         1019
 #define VERSION_RES_LANGUAGE            0x409
 #define VERSION_RES_CHARSET             1252
-#define IDC_STATIC                      -1
-
+#ifndef IDC_STATIC
+#  define IDC_STATIC                      -1
+#endif 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

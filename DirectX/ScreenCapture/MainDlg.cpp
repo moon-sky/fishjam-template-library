@@ -154,10 +154,36 @@ VOID CMainDlg::_SetButtonStatus(RecordStatus status)
 	::EnableWindow(GetDlgItem(IDC_BTN_STOP), bCanStop);
 	::EnableWindow(GetDlgItem(IDC_BTN_UNINIT), bCanUninit);
 }
-
+//#include <ftlDirectx.h>
+//#include "../DirectShow/TextMediaType.h"
 void CMainDlg::OnInitCapture(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = E_FAIL;
+/*
+	FTL::CFDShowHardwareMgr hardwareMgr;
+	DX_VERIFY(hardwareMgr.Refresh(&CLSID_LegacyAmFilterCategory));
+	FTL::HardwareMonikerInfoContainer& container = hardwareMgr.GetAllHardwares();
+	TCHAR szName[MAX_PATH] = {0};
+	for (FTL::HardwareMonikerInfoContainer::iterator iter = container.begin();
+		iter != container.end(); ++iter)
+	{
+		FTL::HardwareMonikerInfo* pMonikerInfo = *iter;
+		if (pMonikerInfo->clsid == CLSID_NULL)
+		{
+			CComPtr<IBaseFilter> spBaseFilter;
+			if(pMonikerInfo->pMoniker->BindToObject(NULL, NULL,IID_IBaseFilter,(void**)&spBaseFilter))
+			{
+				DX_VERIFY(spBaseFilter->GetClassID(&(pMonikerInfo->clsid)));
+			}
+		}
+		CTextMediaType::CLSID2String(szName, _countof(szName), &(pMonikerInfo->clsid));
+		TCHAR szClsid[40] = {0};
+		StringFromGUID2(pMonikerInfo->clsid, szClsid, _countof(szClsid));
+		FTLTRACE(TEXT("FriendlyName=%s, szName=%s, clsid=%s\n"), pMonikerInfo->wachFriendlyName, szName, szClsid);
+		//pMonikerInfo->clsid
+	}
+	return;
+*/	
 	NRecordParam	param;
 	//param.hWndOwner = m_hWnd;
 	//param.hWndTarget = m_hWnd;
