@@ -4,8 +4,8 @@
 // header stream structure info
 typedef struct 
 {
-    char   fccType[4];
-    char   fccHandler[4];
+    char   fccType[4] <comment="vids=VideoStream">;
+    char   fccHandler[4] <comment="Codec Id">;  
     DWORD  dwFlags;
     DWORD  dwReserved1;
     DWORD  dwInitialFrames;
@@ -16,18 +16,69 @@ typedef struct
     DWORD  dwSuggestedBufferSize;
     DWORD  dwQuality;
     DWORD  dwSampleSize;
-    //DWORD  xdwQuality;
-    //DWORD  xdwSampleSize;
-    RECT   rcFrame;
-} AVIStreamHeader;
+    DWORD  xdwQuality;
+    DWORD  xdwSampleSize;
+    //RECT   rcFrame;
+} AVIStreamHeader;    //TODO: this is difference from C++ define
 
+// strfHEADER with BITMAPINFOHEADER
 typedef struct 
 {
   char id[4];
   uint32  datalen;
-  AVIStreamHeader data;
-}strhHEADER;
+  BITMAPINFOHEADER bmiHeader;
+  local int sz = sizeof(bmiHeader);
+  local int sizeofStruct = (sizeof(unsigned char));
+  Printf("strfHEADER_BIH, id=%s, datalen=%d, sz=%d, sizeof(xx)=%d\n", 
+    id, datalen, sz, sizeofStruct);
+  //if (datalen == (sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)))
+  //{
+  //  RGBQUAD bmiColors;
+  //  sz += sizeof(RGBQUAD);
+  //}
+  //Printf("left: %d\n", sz);
+  //char exData[datalen - sz];
+} strfHEADER_BIH;
 
+// strfHEADER with WAVEFORMAT
+typedef struct 
+{
+  char id[4];
+  uint32  datalen;
+  Printf("strfHEADER_WAVE, id=%s, datalen=%d\n", id, datalen);
+  WAVEFORMATEX wave;
+  char exData[datalen - sizeof(WAVEFORMATEX)];
+} strfHEADER_WAVE;
+
+typedef struct 
+{
+  char id[4] <comment="strh">;
+  uint32  datalen <comment="video is 56">;
+  local char fccType[4];
+  ReadBytes(fccType, FTell(), 4);
+  Printf("StreamListHeader::fccType=%s\n", fccType);
+  if( 0 == Memcmp(fccType, "vids", 4))
+  {
+    AVIStreamHeader data;
+    strfHEADER_BIH strf;
+  }
+  else if(0 == Memcmp(fccType, "auds", 4))
+  {
+     AVIStreamHeader data;
+     strfHEADER_WAVE auds;
+  }
+  else 
+  {
+     Printf("Unknown fcctype, %s\n", fccType);
+  }
+}StreamListHeader;
+
+typedef struct 
+{
+  char id[4] <comment="should be avih">;
+  uint32 datalen <comment="should be 56">;
+  MainAVIHeader data;
+} AviListHeader;
 
 // Generic strfHEADER
 typedef struct 
@@ -40,31 +91,6 @@ typedef struct
 	  char data[datalen];
 } strfHEADER;
 
-// strfHEADER with BITMAPINFOHEADER
-typedef struct 
-{
-  char id[4];
-  uint32  datalen;
-  BITMAPINFOHEADER bmiHeader;
-  local int sz = sizeof(bmiHeader);
-  if (datalen == (sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD)))
-  {
-    RGBQUAD bmiColors;
-    sz += sizeof(RGBQUAD);
-  }
-  Printf("left: %d\n", sz);
-  char exData[datalen - sz];
-} strfHEADER_BIH;
-
-
-// strfHEADER with WAVEFORMAT
-typedef struct 
-{
-  char id[4];
-  uint32  datalen;
-  WAVEFORMATEX wave;
-  char exData[datalen - sizeof(WAVEFORMATEX)];
-} strfHEADER_WAVE;
 
 //
 typedef struct 
@@ -77,15 +103,80 @@ typedef struct
     char data[datalen];
 } strnHEADER;
 
-//
+typedef struct 
+{
+  char id[4];
+  uint32  blocklen;
+  char listType[4];  //hdrl, strl
+  local uint32 remainlen = blocklen - sizeof(listType);
+  Printf("AviListBlock, id=%s, blocklen=%d\n", id, blocklen);
+
+  if(!Memcmp(id, "LIST", 4)) //reverse
+  {
+    if (0 == Memcmp(listType,"strl",4))  //Stream List
+    {
+        StreamListHeader strh;
+        remainlen -= sizeof(strh);
+        //Printf("strh.data.fccHandler=%s, remainlen=%u\n", strh.data.fccHandler, remainlen);
+    }
+  }
+  
+  if ( remainlen % 2 )
+    char data[remainlen+1];
+  else
+    char data[remainlen];
+}AviListBlock;
+
+//genericblock
 typedef struct 
 {
   char id[4];
   uint32  datalen;
-  if ( datalen % 2 )
-    char data[datalen+1];
+  //if(0 != Memcmp(id, "JUNK", 4))
+  //{
+  //  Printf("genericblock id=%s, datalen=%u, type=%s\n", id, datalen, listType);
+  //}
+  //else
+  //{
+    Printf("genericblock id=%s, datalen=%u\n", id, datalen);
+  //}
+
+  //char listType[4];
+  local uint32 remainlen = datalen;// - 4;
+  /*
+  if (!Memcmp(listType,"strl",4))
+  {
+    StreamListHeader strh;
+    remainlen -= sizeof(strh);
+    Printf("===>%c%c%c%c\n", strh.data.fccHandler[0], strh.data.fccHandler[1],strh.data.fccHandler[2],strh.data.fccHandler[3]);
+    Printf("remainlen is %d\n", remainlen);    
+    if (Memcmp(strh.data.fccType, "vids", 4) == 0)
+    {
+      Printf("before strfHEADER_BIH, remainlen=%d\n", remainlen);
+      strfHEADER_BIH strf;
+      remainlen -= sizeof(strf);
+      Printf("after strfHEADER_BIH, remainlen=%d\n", remainlen);
+    }
+    else if (Memcmp(strh.data.fccType, "auds", 4) == 0)
+    {
+      strfHEADER_WAVE strf;
+      remainlen -= sizeof(strf);
+      Printf("after strfHEADER_WAVE, remainlen=%d\n", remainlen);
+    }
+    else
+    {
+      strfHEADER strf;
+      remainlen -= sizeof(strf);
+      Printf("after strfHEADER, remainlen=%d\n", remainlen);
+    }
+    //strnHEADER strn;
+  }
+  Printf("Before calc remain data in genericblock, remainlen=%d\n", remainlen);
+  */
+  if ( remainlen % 2 )
+    char data[remainlen+1];
   else
-    char data[datalen];
+    char data[remainlen];
 } genericblock;
 
 
@@ -94,40 +185,21 @@ typedef struct
 {
   char id[4] <comment="should be 'LIST'">;
   uint32 listSize;
-  char listType[4];  //hdrl , strl,  etc
-  Printf("ListHeader id=%s, listSize=%u, type=%s\n", id, listSize, listType);
+  char listType[4];  //hdrl, movi , strl,  etc
+  Printf("AVILIST id=%s, listSize=%u, type=%s\n", id, listSize, listType);
 
   if (!Memcmp(listType,"hdrl",4))
   {
-    avihHEADER avhi;
-    local int32 pointer = sizeof(avhi);
+    AviListHeader header;
+    local int32 pointer = sizeof(header);
     local int32 stopPos = listSize - 4;
     Printf("pointer =%d, stopPos=%d\n", pointer, stopPos);
     do
     {
-      genericblock gb;
-      pointer += sizeof(gb);
-      Printf("+8+%d = %d\n", gb.datalen, pointer);
+      AviListBlock block;
+      pointer += sizeof(block);
+      //Printf("+8+%d = %d\n", gb.datalen, pointer);
     } while (pointer < stopPos);
-  }
-  else if (!Memcmp(listType,"strl",4))
-  {
-    strhHEADER strh;
-
-    Printf("===>%c%c%c%c\n", strh.data.fccHandler[0], strh.data.fccHandler[1],strh.data.fccHandler[2],strh.data.fccHandler[3]);
-    if (Memcmp(strh.data.fccType, "vids", 4) == 0)
-    {
-      strfHEADER_BIH strf;
-    }
-    else if (Memcmp(strh.data.fccType, "auds", 4) == 0)
-    {
-      strfHEADER_WAVE strf;
-    }
-    else
-    {
-      strfHEADER strf;
-    }
-    strnHEADER strn;
   }
   else if (Memcmp(listType,"movi",4) == 0)
   {
@@ -147,7 +219,7 @@ typedef struct
   {
     char data[listSize-4];
   }
-} LISTHEADER;
+} AVILIST;
 
 
 // junk structure info
@@ -166,7 +238,7 @@ typedef struct
 typedef struct 
 {
     DWORD  ckid;
-    DWORD  dwFlags;
+    DWORD  dwFlags;// <read=AvIndexFlagsRead>;
     DWORD  dwChunkOffset;
     DWORD  dwChunkLength;
 } AVIINDEXENTRY;
@@ -185,7 +257,7 @@ typedef struct
 typedef struct xroot 
 {
   char id[4]; // RIFF
-  if (root.id[3] == 'X')
+  if (id[3] == 'X')
   {
     Printf("Motorola format\n");
     BigEndian();
@@ -199,7 +271,7 @@ typedef struct xroot
   uint32  datalen <comment="filesize-8">;
   char form[4] <comment="should be 'AVI '">;
 
-  Printf("root datalen=%u, form=%s\n", datalen, form);
+  Printf("root datalen=%u, form=\'%s\'\n", datalen, form);
   if (Strcmp(form, "AVI "))
   {
     Warning("Not a valid AVI file");
@@ -222,7 +294,7 @@ while (!FEof())
 
   if (Memcmp(nheader,"LIST",4) == 0)
   {
-    LISTHEADER list;
+    AVILIST list;
   }
   else if (Memcmp(nheader, "JUNK",4) == 0)
   {
@@ -236,8 +308,9 @@ while (!FEof())
   {
     if (!FEof())
     {  
-        Printf("unknown chunk: %c%c%c%c", nheader[0],nheader[1],nheader[2],nheader[3]);
+        Printf("unknown chunk: %c%c%c%c\n", nheader[0],nheader[1],nheader[2],nheader[3]);
         return -1;
+        return 0;
     }
     else
     {

@@ -10,7 +10,7 @@ typedef struct
 
 typedef struct
 { 
-  WORD  wFormatTag; 
+  WORD  wFormatTag <format=hex, comment="0x1=PCM, 0x55=MP3">; 
   WORD  nChannels; 
   DWORD nSamplesPerSec; 
   DWORD nAvgBytesPerSec; 
@@ -22,9 +22,9 @@ typedef struct
 // head structure info
 typedef struct 
 {
-    DWORD  dwMicroSecPerFrame <comment="FPS is 10^7 / this">;
+    DWORD  dwMicroSecPerFrame <comment="40000 is 25FPS">;
     DWORD  dwMaxBytesPerSec;
-    DWORD  dwReserved1 <format=hex>;
+    DWORD  dwPaddingGranularity; //<format=hex>
     DWORD  dwFlags <format=hex>;
     DWORD  dwTotalFrames;
     DWORD  dwInitialFrames;
@@ -45,8 +45,8 @@ typedef struct
   uint32 biHeight;
   uint16 biPlanes;
   uint16 biBitCount;
-  uint32 biCompression;
-  uint32 biSizeImage;
+  uint32 biCompression <format=hex>;
+  uint32 biSizeImage <comment="? biWidth*biHeight*biBitCount/8">;
   uint32 biXPelsPerMeter;
   uint32 biYPelsPerMeter;
   uint32 biClrUsed;
@@ -67,10 +67,4 @@ typedef struct
   RGBQUAD bmiColors;
 } BITMAPINFO;
 
-typedef struct 
-{
-  char id[4];
-  uint32 datalen;
-  MainAVIHeader data;
-} avihHEADER;
 
