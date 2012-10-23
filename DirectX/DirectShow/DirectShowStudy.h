@@ -85,19 +85,19 @@
 *   输出Pin -> 输入Pin，主要由CBasePin实现)：  TryMediaTypes、QueryAccept ?
 *   IPin(出Pin)::Connect(入Pin)
 *     -> 检查是否已经连接 和 是否能在非停状态下动态连接
-*     -> AgreeMediaType(协商双方都支持的媒体类型，如不满足条件通常返回 VFW_E_TYPE_NOT_ACCEPTED )，失败的话BreakConnect
-*       -> 如果是完全指定的媒体类型，调用 AttemptConnection 直接连接；
+*     -> 出Pin::AgreeMediaType(协商双方都支持的媒体类型，如不满足条件通常返回 VFW_E_TYPE_NOT_ACCEPTED )，失败的话BreakConnect
+*       -> 如果是完全指定的媒体类型，调用 出Pin::AttemptConnection 直接连接；
 *          否则按 输入Pin、输出Pin的顺序 枚举Pin上的媒体类型(EnumMediaTypes)，然后尝试连接 TryMediaType -- 内部调用 AttemptConnection )
-*          在枚举时，会调用CBasePin子类重载的 GetMediaType 方法，查看支持的类型，应该按照顺序安排可支持的格式(最优先的在0位置)
-*         ->AttemptConnection内部调用顺序（可以看出基类CBasePin的虚函数调用）：
+*          在枚举时，会调用 出Pin::GetMediaType 方法，查看支持的类型，应该按照顺序安排可支持的格式(最优先的在0位置)
+*         ->出Pin::AttemptConnection内部调用顺序（可以看出基类CBasePin的虚函数调用）：
 *           ->出Pin::CheckConnect(检查两个Pin是否可以连接，如方向必须不同)[->失败的话BreakConnect]
 *           ->出Pin::CheckMediaType(子类必须重载，检查是否能接收这种媒体类型)，如成功会设置m_Connected(连接的Pin)变量
 *           ->出Pin::SetMediaType(子类可以重载，但需要先调用基类的方法，保存最后确定的媒体类型m_mt，然后再做处理)
 *           ->入Pin::ReceiveConnection(查看连接的Pin是否能接收本Pin和对应的类型，内部逻辑和出Pin的AttemptConnection差不多)
-*             ->CheckConnect(先检查连接方向)
-*             ->CheckMediaType(子类必须重载，检查是否能接收这种媒体类型)
-*             ->SetMediaType(子类可以重载，但需要先调用基类的方法，保存最后确定的媒体类型，然后再根据类型m_mt做处理)
-*             ->CompleteConnect（输入Pin上的Complete)
+*             ->入Pin::CheckConnect(先检查连接方向)
+*             ->入Pin::CheckMediaType(子类必须重载，检查是否能接收这种媒体类型)
+*             ->入Pin::SetMediaType(子类可以重载，但需要先调用基类的方法，保存最后确定的媒体类型，然后再根据类型m_mt做处理)
+*             ->入Pin::CompleteConnect（输入Pin上的Complete)
 *           ->出Pin::CompleteConnect(调用输出Pin上的CompleteConnect协商使用的MediaSample)。已由 CBaseOutputPin重载
 *
 * Pin使用的的MediaSample数据协商
