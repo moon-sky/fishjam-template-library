@@ -18,6 +18,7 @@ extern "C" {
 
 //http://blog.sina.com.cn/s/blog_51396f890100o1yf.html
 //http://www.cnblogs.com/billcoco/archive/2012/06/18/2553939.html -- FFMpeg写MP4文件例子分析
+//http://hi.baidu.com/y11022053/item/6d4c34ba87c7b5f362388e9a  ffmpeg编码h264
 /*********************************************************************************************
 * 缓冲区内存分配
 *   1.av_image_alloc -- 推荐方式?
@@ -136,7 +137,8 @@ extern "C" {
 *     --enable-gpl				遵循gpl协议,当使用 x264/xvid 等遵循gpl协议的库时必须指定
 *     --enable-libfaac          支持aac(不是免费的),需要先到 faac 目录下编译, ./bootstrap<CR> ./configure xxx<CR> make
 *     --enable-libx264			使用x264作为h264编码器,表示要使用第3方库x264,此时mingw include 和 lib内必须已经有x264.h和libx264.a
-*                               ftp://ftp.videolan.org/pub/x264/snapshots/ 下载，然后 ./configure --enable-shared --enable-w32threads && make && make install
+*                               ftp://ftp.videolan.org/pub/x264/snapshots/ 下载(或者 git clone git://git.videolan.org/x264.git)
+*                               然后 ./configure --enable-shared --enable-win32thread && make && make install
 *                               
 *     --enable-libxvid			启用 Xvid 编码器
 *     --enable-libmp3lame		使用mp3lame作为mp3编码器，需要先到 lame 目录下编译（http://sourceforge.net/projects/lame/files/）
