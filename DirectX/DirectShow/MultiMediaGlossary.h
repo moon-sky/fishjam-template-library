@@ -59,7 +59,7 @@
 * DSC(Digital Still Camera)--数码照相机。
 * DTS(Decode Time Stamp) -- 解码时间戳，标识读入内存中的Bit流在什么时候开始送入解码器中进行解码，在解码阶段使用，受GOP中B-帧的影响,
 *   声音的DTS和PTS相同，某些视频编码格式（采用了双向预测技术，即有B帧时）DTS和PTS不一致
-* DV(Digital Video?) -- 数字摄像机，使用 DV-AVI 2.0 + LPCM 的形式保存？
+* DV(Digital Video) -- 数字摄像机，使用 DV-AVI 2.0 + LPCM 的形式保存？
 * DVD(Digital Video Disc) -- 数字视频光盘。采用650纳米波长的红光读写器。可用分辨率为：720x480(NTSC制式)、720x576(PAL制式)等。
 *   DVD-5 -- 容量4.7GB的单面单层DVD片。DVD-9 -- 容量为8.5GB的单面双层DVD片。
 *   ? 播放时有 Video/Audio/SubPicture三部分。解码后CC由Line21Dec处理，音频由DolbyDigital、LinerPCM解码
@@ -103,6 +103,7 @@
 * Modd(MOvie aDditional Data) -- 保存动画文件的附加信息的附属文件。使用SfCommonLib::SfModdXML类进行读写。
 * Moff(MOvie Filmroll File) -- 动画缩略图文件。从MOFF文件中取得缩略图比直接从动画文件中取得要快，提高了效率。
 * Motion JPEG -- 将多个AVI连起来？是AVI的一种
+* MP3(MPEG Audio Layer-3) --
 * MPLS(Movie PlayLists) -- (AVCHD 上的一种文件？ AVIndex 管理的一种Content)
 * MultiLUN(Multiple Logical Unit Number)--逻辑单元号（LUN）指的是一个用于SCSI总线的唯一的识别号，它总线使得
 *   能区别其他八个设备（它们每个都是一个逻辑单元）。每个LUN是一个能够识别特定逻辑单元的唯一识别号，

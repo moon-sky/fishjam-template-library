@@ -4,7 +4,7 @@
 #pragma once
 
 /**************************************************************************************************
-* Filter 默认都是Both型的COM组件( AMovieSetupRegisterServer )
+* Filter 默认都是Both型的COM组件，可通过 COINIT_MULTITHREADED 初始化COM( AMovieSetupRegisterServer )
 * 使用 CAutoLock + CCritSec 的方式进行同步处理
 *   CBaseFilter、CBasePin 都有保护成员变量 CCritSec *m_pLock; 该变量通常由子类定义后通过构造函数传入使用
 *   CTransformFilter 拥有 m_csFilter(状态锁)、m_csReceive(数据锁) 两个锁变量，

@@ -50,9 +50,6 @@ namespace FTL
         return hr;
     }
 
-
-#ifdef FTL_DEBUG
-
     class CFDummyDump
     {
     public:
@@ -2501,8 +2498,6 @@ namespace FTL
 
             END_DETECT_INTERFACE()
     }//CoDetectInterfaceFromList 
-
-#endif //FTL_DEBUG
 }
 
 #endif //FTL_COM_DETECT_HPP

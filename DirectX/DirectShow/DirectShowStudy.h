@@ -8,6 +8,7 @@
 //COM => Filters => Pins => MediaTypes
 
 /*************************************************************************************************
+* 其前身是 ActiveMovie, 所以很多结构命名为 AM_XXX
 * TODO: CSourceStream 等中的 pObjectName 和 pName 分别代表什么?
 *
 * 调试工具：

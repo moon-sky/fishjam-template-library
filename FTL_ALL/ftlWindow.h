@@ -329,7 +329,7 @@ namespace FTL
         }\
     }
 #else
-#  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) __noop
+#  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) __noop;
 #endif 
 
 	//通过 RegisterWindowMessage 注册的消息

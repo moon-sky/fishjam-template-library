@@ -73,8 +73,6 @@ namespace FTL
     FTLINLINE HRESULT GetInterfaceNameByIID(REFIID rclsid, BSTR * pszName);
 }
 
-#ifdef FTL_DEBUG
-
 # define INCLUDE_DETECT_ACTIVSCP    1
 # define INCLUDE_DETECT_CONTROL     1
 
@@ -175,9 +173,6 @@ namespace FTL
 #   define INCLUDE_DETECT_DSHOWASF  0
 #   define INCLUDE_DETECT_WMSDKIDL  0
 #endif
-
-                                      
-//#include <initguid.h>
 
 #if INCLUDE_DETECT_ACTIVSCP
 #  include <ActivScp.h>
@@ -286,6 +281,7 @@ namespace FTL
 #  include <wmsdkidl.h>
 #endif 
 
+#ifdef FTL_DEBUG
 //从自定义列表中检测接口指针支持(能进行QI)的接口
 # define COM_DETECT_INTERFACE_FROM_LIST(pUnk) \
     {\
@@ -367,8 +363,6 @@ namespace FTL
 # define COM_DETECT_RIID_FROM_LIST(riid)             (void)riid;
 # define COM_DETECT_INTERFACE_FROM_REGISTER(pUnk)    (void)pUnk;
 #endif  //NONE FTL_DEBUG
-
-#ifdef FTL_DEBUG
 
 	#define DETECT_INTERFACE_ENTRY_IID(IntType, riid) \
 		DETECT_INTERFACE_ENTRY_EX_IID(IntType,riid,CFDummyDump)
@@ -521,8 +515,6 @@ namespace FTL
 #endif 
     }; //class CFComDetect
 }//namespace FTL
-
-#endif //FTL_DEBUG
 
 #endif //FTL_COM_DETECT_H
 

@@ -133,7 +133,8 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     4.VMR-9 -- 使用Direct3D 9技术。在任何安装了DirectX9的操作系统上都能使用，不是默认的Renderer
 *       (Merit=0x00200000)。不支持Video Port(视频数据在内核模式下直接传送到显卡的显存)的使用
 * 
-* Muxer Filter -- 一个Muxer的例子，其中有可重用的 BaseMux，svn://dev.monogram.sk/public/libmonodshow/trunk
+* Muxer Filter -- 将多路输入流合并成一路。如AVI Mux将视频和音频流合成为一个AVI格式的字节流
+*   一个Muxer的例子，其中有可重用的 BaseMux，svn://dev.monogram.sk/public/libmonodshow/trunk
 *   http://blog.monogram.sk/janos/2008/08/23/how-to-make-a-directshow-muxer-filter-part-1/
 *   多个输入Pin，一个Muxing Thread从连接到输入Pin的 Interleaver unit的Queue 中获取数据，处理后传输到输出Pin中
 *   输出Pin必须实现IStream接口(能在访问输出文件时进行随即访问)
@@ -144,6 +145,7 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *   2.Audio Sample先到达Muxer，给Resume后第一帧的Video Sample的时间戳进行调整，否则播放该文件时会出现某处被卡住的现象
 *
 * Splitter Filter
+*   分析数据并将其分解成多个流(如音频、视频)，常见的有 CLSID_MPEG1Splitter、CLSID_AviSplitter 等，
 *   
 * 
 * Filter可以实现的系统接口（加入GE后，系统会进行QI的接口）
@@ -179,9 +181,12 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     http://msdn.microsoft.com/en-us/library/windows/desktop/hh162907(v=vs.85).aspx
 *   CLSID_SampleGrabber 
 *   CLSID_SmartTee -- 分路Filter，一般用于多路同时输出，如 预览 + 文件保存
-*   CLSID_VideoRenderer -- 视频输出，似乎选这个?
-*   CLSID_VideoRendererDefault -- TODO: 两个的区别 
+*   CLSID_VideoRenderer  -- 视频输出
+*   CLSID_VideoRendererDefault -- VMR(DirectShow Filter列表中没有看到,莫非代码中会自动选择?)
+*   CLSID_VideoMixingRenderer -- 其Pin名为VMR，Pin上多了 IVMRVideoStreamControl
+*   CLSID_VideoMixingRenderer9 -- VMR For DX9
 *   CLSID_Colour -- Colour space convertor, 颜色控件转换?(但好像不支持属性页?)
 ******************************************************************************************************/
 //Render uses Direct3D or DirectDraw for rendering samples
-
+//Video Mixing Renderer 7（只支持WINXP）使用 DirectDraw7 表面
+//Video Mixing Renderer 9使用 Directx9 Direct3D API函数(参考Texture3D Sample)
