@@ -1,6 +1,16 @@
 
 #ifndef MULTI_MEDIA_GLOSSARY_H
 #define MULTI_MEDIA_GLOSSARY_H
+//多媒体基本概念 --  http://blog.csdn.net/hhhbbb/article/details/7619857
+
+/******************************************************************************************************
+* 音视频编码基本概念
+*   在相同的采样率下，记录低频的信息远比高频的详细(低频时每次振动采样的次数比高频时多)，
+*   较高的采样率只有相对模拟信号的时候才有用，而对数字信号无用(即用48KHz对44.1KHz的CD采样无法提高音质,保持相同的44.1KHz效果最好)
+*   人耳能听到声音的频率介于 20Hz~20KHz 之间，最容易听到的就是4KHz，音频编码时通常过滤很多听不到的声音，
+*   以简化信息复杂度，增加压缩比 -- 根据“人耳听觉心理模型”，采用VBR技术进行编码
+*
+******************************************************************************************************/
 
 /******************************************************************************************************
 * 1080/50i -- ???电视原本都是隔行的,N制60HZ,就是60I了,P制50HZ,就是50I
@@ -14,11 +24,13 @@
 * ABR(Average Bitrate) -- 平均比特率，是VBR的一种插值参数。LAME针对CBR不佳的文件体积比和VBR生成文件大小不定的特点独创了这种编码模式。
 *   在指定的文件大小内，低频和不敏感频率使用相对低的流量，高频和大动态表现时使用高流量，作为VBR和CBR的一种折衷选择。
 * ADSL(Asymmetrical Digital Subscriber Line) -- 非对称数字用户线。
-* ASF(Advanced Systems Format)--微软定义的媒体文件类型，只是一种容器，本身没有规定音视频的压缩格式，在ASF文件中，
+* ASF(Advanced Streaming Format)--高级流媒体格式，微软定义的媒体文件类型，只是一种容器，本身没有规定音视频的压缩格式，在ASF文件中，
 *   可以包含任何格式的压缩(包括MPEG-4)或非压缩的数据。需要使用专门的Windows Media Format SDK 开发。
 *   如果生成的Windows Media 文件只包含音频，一般使用.wma扩展名，如果包含了视频，一般使用.wmv扩展名
+* ASP(Advanced Simple Profile) -- [MPEG4]高级简洁框架，其中有 Baseline/Main/High 等多种?
 * AVCHD(Advanced Video Codec High Definition) -- 用摄像机纪录高清影像的一个规格，通过文件系统对应各种各样的媒体。
 *   在向BD、DVD刻录时Bitrate有上限：BD 24Mbps 以下；DVD 18Mbps 以下。
+* AVI -- 
 * AVIndex(?) --管理Sony制DSC、HandyCam拍摄的Contents的Database。
 *   管理内容分为 Content(AVCHD HD、MPEG2 SD、DCF静止画和 MPLS ) 和 PlayList(AVCHD HD、MPEG2 SD)。
 *   可以保存 用户信息(收藏、ShareMark、Event) 和 系统信息(笑脸、小孩、连写1~N)
@@ -48,6 +60,8 @@
 *   分割点到EPMap边界之间用Null Packet(除Header以外全部0xFF的Packet)覆盖。
 * CD -- 采用780纳米波长
 * ConvertedContent -- 管理实际进行写返回处理的类，(即目的？)
+* CUDA(Compute Unified Device Architecture) -- 显卡厂商NVidia推出的运算平台。
+*   nVidia的H.264/AVC 硬件GPU编码? 解码是 DXVA? ATI 的是 OpenCL? Intel第三代CPU上是Quick Sync Video?
 * DCF(Design rule for Camera File system)--数码相机的统一记录格式。
 *   http://it.jeita.or.jp/document/publica/standard/exif/english/jeida49e.htm#a
 * DCIM(Digital Camera In Memory ?)--数码相机用于存储照片的文件夹
@@ -103,7 +117,7 @@
 * Modd(MOvie aDditional Data) -- 保存动画文件的附加信息的附属文件。使用SfCommonLib::SfModdXML类进行读写。
 * Moff(MOvie Filmroll File) -- 动画缩略图文件。从MOFF文件中取得缩略图比直接从动画文件中取得要快，提高了效率。
 * Motion JPEG -- 将多个AVI连起来？是AVI的一种
-* MP3(MPEG Audio Layer-3) --
+* MPEG(Motion Picture Experts Group) 
 * MPLS(Movie PlayLists) -- (AVCHD 上的一种文件？ AVIndex 管理的一种Content)
 * MultiLUN(Multiple Logical Unit Number)--逻辑单元号（LUN）指的是一个用于SCSI总线的唯一的识别号，它总线使得
 *   能区别其他八个设备（它们每个都是一个逻辑单元）。每个LUN是一个能够识别特定逻辑单元的唯一识别号，
@@ -111,14 +125,17 @@
 * NTSC(National Television System Committee)--全国电视制式委员会。由美国国家电视标准委员会（NTSC）制定的
 *   彩色电视广播标准。两大主要分支是NTSC-J与NTSC-US。美国、日本等地使用。
 *   属于同时制，帧频为每秒29.97fps，525条扫描线，逐行扫描，画面比例为4：3，分辨率为720x480。
+* OGG -- 一个庞大的多媒体开发计划的项目名称， 将涉及视频音频等方面的编码开发，提供完全免费多媒体编码方案
 * PAL(Phase Alternating Line) -- 逐行倒相，电视广播中色彩调频的一种方法。625条扫瞄线，25fps，隔行扫瞄，PAL色彩调频。
 *   兼容原有黑白电视广播格式的情况下加入彩色讯号。中国、英国、香港等地使用(欧洲标准)。
 * PanoramaJPEG -- 360度全景摄影(パノラマ撮影)产生的JPEG
+* PCM(Pulse Code Modulation) --  脉冲编码调制，音质好但体积大。
 * PlayListMark -- (AVCHD中的手动分割点？)
 * PMB(Picture Motion Brower) -- 也称为Foothold，PictureGear Studio
 * PND(Personal Navigation Device) -- 
 * Progressive() -- ?
 * Progressive JPEG -- 一种高级JPEG格式，在装入图像时，开始只显示一个模糊的图像，随着数据的装入，图像逐步变得清晰。
+* PSNR -- 峰值信噪比,表示信号最大可能功率和影响它的表示精度的破坏性噪声功率的比值的工程术语，常用对数分贝单位来表示。
 * PTP(Picture Transfer Protocol) -- 图片传输协议，由柯达公司与微软协商制定的一种标准，符合这种标准的图像设备
 *   在接入Windows XP系统之后可以更好地被系统和应用程序所共享，系统可以直接访问这些设备用于建立网络相册时图
 *   片的上传、网上聊天时图片的传送等。
@@ -140,6 +157,8 @@
 * RODD(ROw aDditional Data) -- 保存RAW文件的附加信息的附属文件，格式同MODD完全一样。
 * ROM Mark -- 是一个密码封锁资料，附加于蓝光光碟的内容之中，负责监控及阻止蓝光光碟的内容受到未得到授权的
 *   播放程式进行解码内容。
+* SBR(Spectral Band Replication) -- 频段复制,一种新的音频编码增强算法，在mp3PRO中使用，可以在指定的位率下增加音频的带宽或改善编码效率，
+*   但 解码器的算法的优劣直接影响到音质的好坏(SBR编码的数据更像是一种产生高频的命令集)
 * ScrapBook -- Sony相机中的剪贴簿功能，可将保存的照片自动创建成相册。激活后，可根据拍照日期和频率在屏幕上自动配上背景画面。
 *   轻触剪贴簿中显示的某张小尺寸照片，即可回放该照片。相机提供16种背景，可以挑选背景画面来装点您的照片，或使用随机背景。
 * SD -- 标准清晰

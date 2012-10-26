@@ -9,6 +9,8 @@
 #include <atlimage.h>
 
 //http://www.codeproject.com/KB/GDI/anieffect.aspx
+//字体模拟 http://html.nhndesign.com/markup_tools/preview
+
 /*
 DOS等传统字符界面用点阵模板显示文字
 GUI中的文字一般是利用轮廓字体中的控制点数据经计算后再绘制出来,

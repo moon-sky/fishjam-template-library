@@ -19,6 +19,9 @@ extern "C" {
 //http://blog.sina.com.cn/s/blog_51396f890100o1yf.html
 //http://www.cnblogs.com/billcoco/archive/2012/06/18/2553939.html -- FFMpeg写MP4文件例子分析
 //http://hi.baidu.com/y11022053/item/6d4c34ba87c7b5f362388e9a  ffmpeg编码h264
+
+//视频共享网站: fms(在线录制、播放)+ffmpeg(后台格式转换)
+
 /*********************************************************************************************
 * 缓冲区内存分配
 *   1.av_image_alloc -- 推荐方式?
@@ -75,14 +78,14 @@ extern "C" {
 *********************************************************************************************/
 
 /**********************************************************************************************
-* MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com
+* MainConcept -- 商业的编解码库，Camtasia 即在使用) http://www.mainconcept.com, 似乎是 DivX 的所有者?
 *   TechSmith Screen Capture Codec(C:\Windows\System32\tsccvid.dll)
 * 
 * ffdshow -- 一套免费的编解码软件，封装成了DirectShow的标准组件。
 *   使用 libavcodec library 以及其他各种开放源代码的软件包(如 DivX、)，可支持H.264、FLV、MPEG-4等格式视频
 *  
 * ffmpeg -- 开源且跨平台的音视频解决方案，是一套编解码的框架，具有采集、解码、流化等功能
-*   http://www.ffmpeg.org/ <== 正式官网
+*   http://www.ffmpeg.org/ <== 正式官网 (git clone git://source.ffmpeg.org/ffmpeg.git ffmpeg)
 *   http://www.ffmpeg.com.cn <== 中文网站，提供编译好的 FFmpeg SDK下载，有 FFmpeg SDK 开发手册
 *   http://ffmpeg.zeranoe.com/builds/
 *   http://bbs.chinavideo.org/viewthread.php?tid=1897&extra=page=1 <== Windows 下安装和编译
@@ -94,15 +97,17 @@ extern "C" {
 *     -acodec codec		<== 指定音频编码，如 aac 
 *     -an				<== 禁止audio
 *     -aspect 16:9		<== 设置长宽比，如 4:3 或 16:9 等
+*     -b <比特率>       <== 设置视频的比特率，分为 -b:a(自动?) 和 -b:v 两种
 *     -bf <int>			<== 使用B帧
 *     -f format			<== 指定文件格式, 如 avi/mp4 等(可用格式可通过 -formats 查看)
 *     -g groupSize		<== 设置GOP大小，如设置成 300 意味着29.97帧频下每10秒就有INTRA帧
-*     -qblur <float>	<== 指定视频量化规模，0. ~ 1.0
+*     -qblur <float>	<== 指定视频量化规模，0. ~ 1.0(越小质量越好?)
+*     -qscale <float>   <== 0.01~255 ?
 *     -s WxH			<== 指定大小(宽x高)
 *     -strict <int>     <== 指定对codec等的使用限制，实验性的codec(如mpeg4)默认是不启用的(Codec is experimental)，需要使用 -2 来启用
 *     -t 持续时间		<== 指定时间长度，如 20.000 表示 20s
 *     -threads <int>    <== 指定线程个数，默认为 auto ?
-*     -vcodec codec		<== 指定视频编码，如 mpeg4/h264/msmpeg4v2 等(可用编码可通过 -codecs 查看)
+*     -vcodec codec		<== 指定视频编码，如 mpeg4/h264/libxvid 等(可用编码可通过 -codecs 查看)
 *     -target type		<== 指定文件类型，如 vcd/dvd 等，很大程度上可以决定质量
 *     -y                <== 直接覆盖输出文件，不再提示
 *   ffserver -- 基于HTTP(RTSP正在开发中)用于实时广播的多媒体服务器.也支持时间平移(Time-Shifting)
@@ -110,7 +115,7 @@ extern "C" {
 *   libavcodec -- 包含了所有FFmpeg音视频编解码器的库.为了保证最优性能和高可复用性,大多数编解码器从头开发的
 *   libavformat -- 包含了所有的普通音视频格式的解析器和产生器的库
 *   libavutil -- 函数库，实现了CRC校验码的产生，128位整数数学，最大公约数，整数开方，整数取对数，内存分配，大端小端格式的转换等功能。
-*   libswscale -- 
+*   libswscale -- 格式转换的库，比如需要将 RGB 转换为 YUV
 *   libpostproc -- 
 * 
 * 编译和调试(无法使用VC编译？)，可以用MSys+MinGW编译，但是编译出来的DLL是可以被VC使用的
@@ -125,25 +130,33 @@ extern "C" {
 *     5.创建工程: File->New->Project-> C/C++ -> Makefile Project with Existing Code 
 * 
 *   http://ffmpeg.zeranoe.com/blog/  -- 自动下载和编译ffmpeg的脚本
-*   编译选项
-*     ./configure --enable-shared --enable-w32threads --disable-static --enable-memalign-hack --disable-yasm
+*   编译选项 -- 注意：编译安装第三方库时，推荐使用 --prefix=/usr(默认是 /usr/local)，这样ffmpeg可以自动找到相关的库(否则需要手工指定)
+*     ./configure --enable-w32threads --enable-shared --enable-static --enable-memalign-hack --enable-libx264 
+*        --enable-libxvid --enable-gpl --extra-cflags=-I/usr/local/include --extra-ldflags=-L/usr/local/lib
+*        && make && make install
+*     --prefix=PREFIX           设置安装路径
 *     --disable-debug			禁用调试信息,编译发布版本
 *     --disable-mmx             
 *     --disable-optimizations	禁止优化，一般用于调试版本
 *     --disable-static			禁用静态库
 *     --disable-stripping       一般用于调试版本
 *     --disable-yasm            禁止使用yasm，否则可以安装 yasm后使用，(汇编编译器?)
+*     --enable-amr_nb/--enable-amr_wb 支持手机的3gp格式(www.3gpp.org/ftp/Specs/archive/26_series/26.204/26204-510.zip，解压后的文件需要拷贝到 libavcodec/amrwb_float )
 *     --enable-avisynth			加入 avisynth(视频文件后期处理工具)
+*     --enable-faad				支持 faad2和faac(www.audiocoding.com), ./configure --prefix=/usr --with-mp4v2 --enable-shared
 *     --enable-gpl				遵循gpl协议,当使用 x264/xvid 等遵循gpl协议的库时必须指定
 *     --enable-libfaac          支持aac(不是免费的),需要先到 faac 目录下编译, ./bootstrap<CR> ./configure xxx<CR> make
 *     --enable-libx264			使用x264作为h264编码器,表示要使用第3方库x264,此时mingw include 和 lib内必须已经有x264.h和libx264.a
 *                               ftp://ftp.videolan.org/pub/x264/snapshots/ 下载(或者 git clone git://git.videolan.org/x264.git)
-*                               然后 ./configure --enable-shared --enable-win32thread && make && make install
-*                               
-*     --enable-libxvid			启用 Xvid 编码器
-*     --enable-libmp3lame		使用mp3lame作为mp3编码器，需要先到 lame 目录下编译（http://sourceforge.net/projects/lame/files/）
+*                               然后 ./configure --prefix=/usr --enable-shared --enable-static --enable-win32thread && make && make install
+*                               注意：在配置ffmpeg时需要通过 -I 和 -L 指定搜索目录，否则可能会报告"libx264 not found"的问题。
+*     --enable-libxvid			启用 Xvid 编码器(www.xvid.org), MPEG-4 video的编解码方案
+*                               其 build/win32 目录下有VC的工程, MingGw 下编译有 "process_begin: CreateProcess(NULL" 的错误,原因 ?
+*     --enable-libmp3lame		使用mp3lame作为mp3编码器，需要先到 lame 目录下编译（sourceforge.net/projects/lame/files/）
+*                               ./configure --enable-shared --prefix=/usr 
 *     --enable-memalign-hack    启用内存对齐，Windows下必须
 *     --enable-shared			编译动态库
+*     --enable-static           编译静态库
 *     --enable-small			启用文件最小功能
 *     --enable-w32threads       加入多线程支持，会大大提升处理效率
 *     --extra-cflags=-O0        额外的编译参数，如 -O0 表示不优化， -I/usr/local/include 表示头文件目录
@@ -267,6 +280,16 @@ extern "C" {
 *     static AVFilter input_filter = { .name="ffplay_input", .priv_size=sizeof(FilterPriv), .init=input_init, xxx};
 *     
 *   
+*********************************************************************************************/
+
+/*********************************************************************************************
+* H264 -- 各种开源H264解码器评测(http://blog.csdn.net/sunshine1314/article/details/712401)
+*   解码速度：CoreAVC decoder > ffmpeg > IPP simple player > x264 decoder > t264 decoder > jm86 decoder
+*   1.JM decoder -- H.264的官方源码(校验模型),支持特性好，但实用性差
+*   2.T264 decoder -- 国内的开源项目，做过汇编优化，但只能解T264本身的码流，
+*   3.x264 decoder -- (ffmpeg 的早期雏形?)
+*   4.ffmpeg libavcodec -- 
+*   5.Intel IPP(Integrated Performance Primitives)
 *********************************************************************************************/
 
 // 填充RGB然后翻转，好转换为YUV  

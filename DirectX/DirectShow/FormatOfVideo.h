@@ -50,7 +50,8 @@
 *     目前 AVCHD 支持硬盘、光盘、闪存等(非线性存储)存储介质，而采用 DVD 光盘介质 AVCHD 摄像机拍出的光盘
 *     可以直接在蓝光播放机和 PS3 上播放(目录格式采用 BDMV 格式)。
 *     在向BD、DVD刻录时规定系统Bitrate的上限：BD--24M bps 以下，DVD--18M bps 以下。
-*   AVI(Audio Video Interleave) -- AVI文件标准未规定如何对视频进行捕获、压缩及播放，仅规定了视频和音频在硬盘上。
+*   AVI(Audio Video Interleave) -- AVI文件标准未规定如何对视频进行捕获、压缩及播放，仅规定了视频和音频在硬盘上，
+*     因此可以采用DivX、MP3等多种编码来压缩音视频流
 *     问题：
 *       1.分析文件的结果和 010Editor 看出来的不一致？AviRiff.h 文件中有定义，查看确认
 *       2.交互格式 什么意思(非交互格式时  MainAVIHeader::dwInitialFrames 为0)
@@ -88,8 +89,9 @@
 *         JUNK -- 表示特殊的数据块，用于内部数据的队齐（填充），应用程序应该忽略这些数据块的实际意义
 *         INFO -- 字符串信息? 其下有 ICMT 块(比如 野生动物.wmv 转出来的avi文件)
 *   BDAV
-*   Div3~Div5 -- 
-*   Divx -- 
+*   Div3~Div5 -- DivX 3.11是黑客破解MS MPEG4后编写的，
+*   Divx -- DivX公司具有专利的一种MPEG-4技术视频编解码器(codec),只有免费（不是自由）的版本和商用版本，
+*     其最初的开发者(DXN)利用LGPL协议窃取了开源社区的贡献，因此开源社区在其最后一个版本基础上开发出了 XVid。
 *   H.26x -- 由ITU-T国际组织发布，有H.261(满足ISDN视频服务)、H.263(满足局域网、无线网络视频服务)、
 *     H.264等多种标准体系。数据流具备严格的语法规则，各标准之间具有兼容性，是一个开放体系，可以对其进行改进，
 *     提高其性能。
@@ -98,13 +100,13 @@
 *     相对于先期的视频压缩标准，引入了很多先进的技术，包括4x4证书变换、空域内的帧内预测等。
 *   HDV -- 以Mini DV磁带为存储介质
 *   HDV 1080i
+*   HEVC -- 下一代HDTV上的格式?也就是H.265?支持 QVGA(320x240)到Ultra HDTV 4320p(7680x4320).
 *   MICROMV
 *   MPEG(Moving Pictures Experts Group)--动态图象专家组，专门负责指定视频和音频标准。其制定了MPEG-1、MPEG-2、
 *     MPEG-4、MPEG-7 等标准(注：MPEG-3是为HDTV设计的，但MPEG-2已经能支持，所以被放弃了)。
 *     MPEG的兼容性好，压缩比高(200:1)，音视频失真小。
 *   MPEG-1(动态图象和伴音的编码) -- 1992年为工业标准而设计。适用于CD-ROM、Video-CD等，针对SIF标准的分辩率
 *     (NTSC为 352x240 pixel，PAL为352x288 pixel)的图象进行压缩。也用于数字电话网络上的视频传输(如ADSL、VOD等)。
-*   MPEG-1 Audio layer 3 -- 这是MP3的全称?( MP3 属于MPEG1 家族?)
 *   MPEG2(运动图象及其伴音的编码)--由MPEG工作组1994年发布的视频和音频压缩国际标准，向后兼容MPEG1,
 *     通常用来为广播信号提供视频和音频编码(用于数字电视)。经少量修改后，也成为DVD产品的核心技术。NTSC制式下分辩率可达720x486.
 *     一个MPEG-2系统流一般包括两个基本元素：视频数据 + 时间戳 和 音频数据 + 时间戳。
@@ -112,14 +114,18 @@
 *   MPEG2-PS(Program Stream)--程序流，存储具有固定时长的节目，如DVD电影，可添加字幕等一些程序操作，SD使用MPEG2-PS格式？
 *   MPEG2-TS(Transport Stream)--传输流，主要应用于实时传送的节目，比如实时广播的电视节目。从视频流的
 *     任一片段开始都是可以独立解码的。（还可细分为 HDV、MMV、AVC，AVCHD和BDAV使用TS_AVC格式？)
-*   MPEG-4(MP4?) -- 由MPEG工作组1998年发布的用于音频、视频信息的压缩编码标准。包含了MPEG-1及MPEG-2的绝大部份功能。
+*   MPEG-4 -- 由MPEG工作组1998年发布的用于音频、视频信息的压缩编码标准。包含了MPEG-1及MPEG-2的绝大部份功能。
 *     主要应用于视频电话(Video Phone)等。是★第一个★具有交互性的动态图象标准，更适于交互式音视频服务及远程监控。
+*     是一个公开的平台，各公司、机构均可以根据MPEG-4标准开发不同的制式，因此出现了WMV 9、Quick Time、DivX、Xvid 等基于MPEG-4技术的视频格式。
+*     有配置(profile)和级别(level)的概念，定义了MPEG-4应用于不同平台时的功能集合。
+*     ？MS 开发的 MPEG-4 Codec(MS MPEG4 V1、MS MPEG4 V2、MS MPEG4 V3）-- V3画质最好
 *   MPEG-7(Multimedia Content Description Interface) -- 多媒体内容描述接口，可以对各种不同类型的多媒体信息进行标准化的描述，并将该描述与所描述的内容相
 *     联系，以实现快速有效的搜索。
 *   NTSC/PAL -- 非HD素材，NTSC制式，Height / Width = 720 / 480, Framerate / FramerateBase = 30000 / 1001; 
 *                         PAL 制式, Height / Width = 720 / 576, Framerate / FramerateBase = 25000 / 1000
 *   OGG/OGM -- 
-*   XVid
+*   Xvid -- 一个开放源代码(GPL V2)的MPEG-4视频编解码器,主要竞争对手是DivX，官方站点只提供源代码下载。
+*     Xvid提供了一些配置方案(Profile)来对编码复杂度进行一定的限制，如 Simple Profile(SP)、Advanced Simple Profile(ASP)、Unrestricted等
 ***********************************************************************************************/
 
 /***********************************************************************************************
