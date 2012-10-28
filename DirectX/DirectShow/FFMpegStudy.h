@@ -19,8 +19,12 @@ extern "C" {
 //http://blog.sina.com.cn/s/blog_51396f890100o1yf.html
 //http://www.cnblogs.com/billcoco/archive/2012/06/18/2553939.html -- FFMpeg写MP4文件例子分析
 //http://hi.baidu.com/y11022053/item/6d4c34ba87c7b5f362388e9a  ffmpeg编码h264
-
 //视频共享网站: fms(在线录制、播放)+ffmpeg(后台格式转换)
+
+/* -- 带 h264 的编译方式
+$ ./configure --enable-shared --enable-w32threads --disable-static --enable-memalign-hack 
+--disable-yasm --enable-libx264 --enable-gpl --extra-ldflags="-L/usr/local/lib -W1,-add-stdcall-alies" --extra-cflags="-I/usr/local/include" --enable-swscale
+*/
 
 /*********************************************************************************************
 * 缓冲区内存分配

@@ -5,13 +5,19 @@
 //注意：一些第三方的Filter会在Debug中枚举时抛出异常(int 3)来防止破解
 //  
 /*********************************************************************************************
+* 内核流
+*    WDM设备支持内核流，在内核流中数据在内核模式下被彻底流化而永远不需要切换到用户模式下去，
+*    从而避免了在内核模式和用户模式之间切换的巨大开销，内核流允许高的比特率而不消耗CPU的时间。
+*    比如:硬件采集视频 -> 硬件压缩 -> D3D硬件加速显示 (整个流中的数据不会传入到用户模式)
+*
 * 自己创建的Filter可以在 DllRegisterServer 函数实现中通过 CLSID_FilterMapper2 的 
 *   IFilterMapper2::RegisterFilter 注册到系统的Category中
 *   需要声明 REGFILTER2 rf2FilterReg 变量
 *
 * 
-* DirectShow 通过对硬件提供包装(Wrapper)Filter，使得用户模式(Ring3)下的应用程序能操作内核模式
-*   (Ring0)的硬件。
+* DirectShow 通过对硬件提供WrapperFilter(CLSID_AVICo/CLSID_ACMWrapper 等)，使得用户模式(Ring3)下的应用程序能操作内核模式(Ring0)的硬件。
+*   DirectShow提供一个叫KsProxy的filter，它可以实现任何类型的WDM流驱动,硬件商通过提供一个Ksproxy plug-in(被聚合的COM对象，
+*     通过 IKsPropertySet 接口来支持驱动的自定义属性)来扩展KsProxy,以使其支持自己的功能
 *
 * CLSID_CaptureGraphBuilder2 -- 进行音视频采集,获得ICaptureGraphBuilder2接口，使用SetFilterGraphg关联到IGraphBuilder上.
 *   1.使用 SetOutputFileName 设置输出文件的路径，可以得到 multiplexer 和 FileWriter 的Filter

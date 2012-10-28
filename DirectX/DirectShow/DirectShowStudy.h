@@ -31,7 +31,7 @@
 *   IMediaSample -- 进行实际内存传输和管理，其中包括 媒体类型、时间(Time)、媒体时间(MediaTime)、
 *     SyncPoint(同步点) -- IsSyncPoint 返回 S_OK 表 TRUE，S_FALSE 表 FALSE)
 *     Preroll(预转移) -- 传输速率与解码或者显示需要的数据速度不匹配而产生的buffer需求
-*     Discontinuity -- 是否是连续数据,即判断是否存在Seek操作?
+*     Discontinuity -- 是否是连续数据,可判断是否存在Seek操作、丢帧等?
 *   IMemAllocator -- 管理 IMediaSample 的内存池 
 *   IMemInputPin -- （注意：不是从IPin上继承）管理 IMemAllocator，并能接收 IMediaSample
 
@@ -82,7 +82,8 @@
 * 智能连接(Intelligent Connect)
 *   优先使用Cache中的(IGraphConfig::AddFilterToCache 将 Filter 从FilterGraph中移入Cache，智能连接成功的话再移回 FilterGraph)
 *     -> 接着使用 Filter Graph 中的 
-*       -> 最后通过注册表查找高于 MERIT_DO_NOT_USE 的
+*       -> 最后通过注册表查找高于 MERIT_DO_NOT_USE 的且可以接受合适的媒体类型的Filter,值越大，越容易选中
+*          逐个列出Filter的输出pin上支持的媒体类型，并搜索哪个已注册的filter的输入Pin接受该媒体类型。
 *   输出Pin -> 输入Pin，主要由CBasePin实现)：  TryMediaTypes、QueryAccept ?
 *   IPin(出Pin)::Connect(入Pin)
 *     -> 检查是否已经连接 和 是否能在非停状态下动态连接
@@ -101,18 +102,6 @@
 *             ->入Pin::CompleteConnect（输入Pin上的Complete)
 *           ->出Pin::CompleteConnect(调用输出Pin上的CompleteConnect协商使用的MediaSample)。已由 CBaseOutputPin重载
 *
-* Pin使用的的MediaSample数据协商
-*   CBaseOutputPin::CompleteConnect
-*     ->DecideAllocator(协商内存分配器)
-*       ->InputPin::GetAllocatorRequirements(获取输入Pin上的需求)
-*       ->InputPin::GetAllocator (优先获取输入Pin的分配器，如果成功则返回)
-*       ->DecideBufferSize(输出Pin子类必须重载，根据最后的m_mt，确定使用的分配器属性--内存大小、使用的
-*         Sample数量等--通过 IMemAllocator::SetProperties 设置)
-*       ->InputPin::NotifyAllocator(成功分配后调用输入Pin的NotifyAllocator通知最终使用的分配器)
-*       如果输入Pin不提供分配器或者设置分配器失败
-*       ->InitAllocator(由输出Pin创建标准的分配器，再执行相同的逻辑)
-*         DecideBufferSize->InputPin::NotifyAllocator)
-*
 * 源Filter开始数据传输（推模式的 CSourceStream）
 *   CAMThread::InitialThreadProc //源Filter的线程函数入口
 *     ->CSourceStream::ThreadProc //进行数据传输的工作线程函数
@@ -125,7 +114,7 @@
 *             ->m_pAllocator->GetBuffer
 *           ->FillBuffer(子类必须重载，根据媒体类型是Video或Audio等填充数据)
 *           ->CBaseOutputPin::Deliver(向输出Pin传送Sample)
-*             ->m_pInputPin->Receive(调用所连接的输入Pin上的Receive方法，传送数据)
+*             ->m_pInputPin->Receive(调用所连接的输入Pin上的IMemInputPin::Receive方法，传送数据)
 *       ->OnThreadDestroy (停止时进行终止化，释放分配的资源)
 * 
 * 数据传输结束

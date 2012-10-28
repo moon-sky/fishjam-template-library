@@ -6,7 +6,7 @@
 //CBasePin::NewSegment -- 什么用处?
 //  时间的最大(或初始值)一般可以设置为 MAX_TIME
 /****************************************************************************************************
-* 参考时钟(IReferenceClock) -- 所有的Filter采用统一的参考时钟，
+* 参考时钟(IReferenceClock) -- 所有的Filter采用统一的参考时钟，参考时钟保证了所有流的同步。
 *   1.优先使用应用程序通过 IMediaFilter:: SetSyncSource 设置的参考时钟，如设置为NULL，表示以最快的速度处理Sample
 *   2.支持 IReferenceClock 接口的 Live Source
 *   3.从Render向上找实现了 IReferenceClock 的Filter，优先采用AudioRender(基于声卡硬件的时钟);

@@ -27,26 +27,40 @@
 *     MEDIASUBTYPE_MPEG2_AUDIO -- 
 *     MEDIASUBTYPE_MP3 -- 
 *     MEDIASUBTYPE_PCM
+*     MEDIASUBTYPE_RGB24 -- 
 *     MEDIASUBTYPE_RGB8 -- 
 *     MEDIASUBTYPE_RGB565 -- 
+*     MEDIASUBTYPE_UYVY --  
 *   formattype -- 格式细节，通过 pbFormat指针指向具体的数据结构(大小为cbFormat)，
 *                其中包含了视频图象的大小、帧率，音频的采样频率、量化精度等
 *     FORMAT_AnalogVideo   -- 
-*     FORMAT_DvInfo        --  DVINFO(DV stream)
-*     FORMAT_MPEGVideo     --  MPEG1VIDEOINFO
-*     FORMAT_MPEG2Video    --  MPEG2VIDEOINFO
-*     FORMAT_MPEGStreams   
-*     FORMAT_VideoInfo     --  VIDEOINFOHEADER, 通过 HEADER 宏可以直接访问其中的BITMAPINFOHEADER
-*     FORMAT_VideoInfo2    --  VIDEOINFOHEADER2
-*     FORMAT_WaveFormatEx
+*     FORMAT_DvInfo        -- DVINFO(DV stream)
+*     FORMAT_MPEGVideo     -- MPEG1VIDEOINFO
+*     FORMAT_MPEG2Video    -- MPEG2VIDEOINFO
+*     FORMAT_MPEGStreams   --   
+*     FORMAT_VideoInfo     -- VIDEOINFOHEADER, 通常用于 MEDIATYPE_Video + MEDIASUBTYPE_RGBXXX时，通过 HEADER 宏可以直接访问其中的BITMAPINFOHEADER
+*     FORMAT_VideoInfo2    -- VIDEOINFOHEADER2，增加了 dwPictAspectRatioX x dwPictAspectRatioY（显示比例，如 16x9） 等,
+*     FORMAT_WaveFormatEx  -- PCM音频使用
 *
+*   bFixdSizeSamples -- 如为TRUE，表示ISampleSize有效，是每个Sample的大小固定；否则忽略lSampleSize值
+*   lSampleSize -- 表示每个Sample的大小，如为0表示大小可变
+*   bTemporalCompression -- 如值为FALSE，表示所有帧都是关键帧
+*   pUnk -- ?
 *************************************************************************************************/
+
 /*************************************************************************************************
 * 动态格式改变
 *   在 Transform 等方法内部调用检查 MediaType ?
 *   CBasePin 有 CanReconnectWhenActive 方法，判断是否可以在激活(Paused/Running)状态下重连，默认情况下为 FALSE
 *               BreakConnect
-*   需要重连接 -- 
-*     IFilterGraph::Reconnect -- 重连接指定的Pin
-*     IFilterGraph2::ReconnectEx -- 以指定的媒体类型重连接指定的Pin
+* 连接 -- 
+*   IFilterMapper::EnumMatchingFilters -- 从系统中枚举出满足要求(Merit,Major,Sub等)的Filter
+*   IGraphBuilder::AddSourceFilter -- 
+*   IGraphBuilder::Render -- 从某个输出Pin处开始完成余下的graph构建。该方法会自动在输出pin后面添加必须的filter，直到renderer filter为止
+*   IGraphBuilder::RenderFile -- 构建一个完整的文件回放graph
+*   IFilterGraph::ConnectDirect -- 在两个pin之间进行直接连接，如果连接失败，则返回失败
+*   IFilterGraph::Connect（GraphEdt上的方式?） -- 连接两个Pin，如果可能的话，直接连接它们，否则，在中间加入其它的filter来完成连接
+*   IFilterGraph::Reconnect -- 重连接指定的Pin
+*   IFilterGraph2::ReconnectEx -- 以指定的媒体类型重连接指定的Pin
 *************************************************************************************************/
+IFilterMapper::EnumMatchingFilters

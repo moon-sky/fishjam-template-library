@@ -3,7 +3,7 @@
 #pragma once
 
 /****************************************************************************************************
-* CLSID_DvdGraphBuilder -- DVD播放
+* CLSID_DvdGraphBuilder -- DVD播放和导航，支持 IDvdGraphBuilder 接口；也可以使用 MSWebDVD ActiveX 控件
 * CLSID_FilterGraph -- DirectShow 的播放组件库，播放、截取、转换等都需要创建，支持如下接口：
 *   IAMGraphStreams
 *   IAMOpenProgress
@@ -80,6 +80,7 @@
 *              DIB_RGB_COLORS);
 *
 * 事件通知处理(Event Notification) -- 由FilterGraphManager处理或转发给应用程序处理。使用IMediaEvent(Ex)接口
+*   FilterGraphManager使用一个消息队列来通知应用程序发生在Filter Graph中的事件?
 *   事件处理流程：
 *     1.Filter在发生特殊事件时，向FilterGraphManager发出一个事件 -- 使用 CBaseFilter::NotifyEvent
 *     2.FGManager对一些特殊的事件有默认的处理方法(可以使用IMediaEvent::CancelDefaultHandling取消默认处理),

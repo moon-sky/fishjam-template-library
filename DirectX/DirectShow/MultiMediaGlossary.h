@@ -179,7 +179,7 @@
 * VCD -- 数字激光视盘
 * VCEG() -- 视频编码专家组，属于ITU-T
 * VBI(Vertical Blanking Interval) -- 视频采集中使用的
-* VFW(Video for Windows) -- 微软92年推出的关于数字视频的一个  VFW logo软件开发包，VFW的核心是AVI文件标准。
+* VFW(Video for Windows) -- 微软92年推出的关于数字视频的一个VFW logo软件开发包(目前已被WDM代替)，VFW的核心是AVI文件标准。
 *    围绕AVI文件，VFW推出了一整套完整的视频采集、压缩、解压缩、回放和编辑的API。
 * VHS(Video Home System) -- 家用录像系统。
 * VOB(Video OBjects) -- 视频目标文件,DVD的视频文件，由一个视频(MPEG2)、多个声音(AC3/LPCM等)和字幕数据流组成。
@@ -190,6 +190,7 @@
 *   NVOD(Near VOD)--准实时点播；
 *   IVOD(Interactive VOD)--交互式点播
 * WDM(Windows Driver Model)--
+*   WDM视频采集卡支持许多VFW所没有的功能，包括枚举采集的格式、编程控制视频参数（如对比度、亮度）、编程选择输入端和电视调谐支持
 * WIA(Windows Image Acquisition)--Windows 图象采集，WinME、WinXP等系统引入。提供广泛的支持以启用Imaging设备
 *   (如扫描仪和数码相机)。与图像应用程序(如PhotoShop)对接。使用WIA，制造商只需要写 WIA microdriver(使用WIA DDI？)
 *   以允许设备使用，而其他WIA组件由操作系统实现。WIA 是使用进程外服务实现的COM组件,提供自己的数据传送机制
