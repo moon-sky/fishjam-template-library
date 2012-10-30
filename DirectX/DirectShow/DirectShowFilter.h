@@ -131,7 +131,8 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     3.VMR-7 -- 使用DirectDraw7技术，仅在WinXP中(后？)获得，WinXP的默认视频显示Renderer(Merit=0x00800001)。
 *       实现了真正的无窗口模式显示
 *     4.VMR-9 -- 使用Direct3D 9技术。在任何安装了DirectX9的操作系统上都能使用，不是默认的Renderer
-*       (Merit=0x00200000)。不支持Video Port(视频数据在内核模式下直接传送到显卡的显存)的使用
+*       (Merit=0x00200000)。不支持Video Port(视频数据在内核模式下直接传送到显卡的显存)的使用。
+*       比如 KMPlayer 不能截图
 * 
 * Muxer Filter -- 将多路输入流合并成一路。如AVI Mux将视频和音频流合成为一个AVI格式的字节流
 *   一个Muxer的例子，其中有可重用的 BaseMux，svn://dev.monogram.sk/public/libmonodshow/trunk

@@ -167,6 +167,7 @@ HRESULT CDebugInfoFilter::Transform(IMediaSample *pSample)
 
 		if (llTimeStart < m_llLastTimeEnd)
 		{
+			// StartTime 必须 >= m_llLastTimeEnd, 否则在 AVI Mux 时会导致 VFW_E_START_TIME_AFTER_END 的错误
 			FTLTRACEEX(FTL::tlWarning, TEXT("%s Warning!! -- VFW_E_START_TIME_AFTER_END, m_llLastTimeEnd(%lld) Should < llTimeStart(%lld)\n"),
 				__FILE__LINE__,
 				m_llLastTimeEnd, llTimeStart);
