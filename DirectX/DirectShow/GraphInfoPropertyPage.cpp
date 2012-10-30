@@ -166,7 +166,7 @@ HRESULT CGraphInfoPropertyPage::_GetFilterList()
 				DX_VERIFY(pFilter->QueryFilterInfo(&filterInfo));
 				
 				CString strFilterInfo;
-				strFilterInfo.Format(TEXT("%s : %s"), szFilterClsidInfo, filterInfo.achName);
+				strFilterInfo.Format(TEXT("%s(0x%x) : %s"), szFilterClsidInfo, pFilter, filterInfo.achName);
 				int nIndex = m_listFilters.AddString(strFilterInfo);
 				QueryFilterInfoReleaseGraph(filterInfo);
 				if (nIndex >= 0)
@@ -236,9 +236,9 @@ HRESULT CGraphInfoPropertyPage::_GetPinList(IBaseFilter* pFilter)
 			DX_VERIFY(pPin->QueryPinInfo(&pinInfo));
 			QueryPinInfoReleaseFilter(pinInfo);
 			CString strPinInfo;
-			strPinInfo.Format(TEXT("%s:%s"), 
-				pinInfo.dir == PINDIR_INPUT ? TEXT("In") : TEXT("Out"),
-				CW2T(pinInfo.achName));
+			strPinInfo.Format(TEXT("[%s, 0x%x]:%s"), 
+				pinInfo.dir == PINDIR_INPUT ? TEXT("IN") : TEXT("OUT"),
+				pPin, CW2T(pinInfo.achName));
 			int nIndex = m_listPins.AddString(strPinInfo);
 			if (nIndex >= 0)
 			{
@@ -311,7 +311,7 @@ HRESULT CGraphInfoPropertyPage::_GetMediaTypeList(IPin* pPin)
 
 	if (pPin)
 	{
-		DX_VERIFY(pPin->EnumMediaTypes(&spEnumMediaTypes));
+		DX_VERIFY_EXCEPT1(pPin->EnumMediaTypes(&spEnumMediaTypes), VFW_E_NOT_CONNECTED);
 	}
 	if (spEnumMediaTypes)
 	{
@@ -359,7 +359,6 @@ void CGraphInfoPropertyPage::OnListPinSelChange(UINT uNotifyCode, int nID, CWind
 	}
 }
 
-
 HRESULT CGraphInfoPropertyPage::_ClearInterfaceList()
 {
 	HRESULT hr = E_FAIL;
@@ -378,7 +377,8 @@ HRESULT CGraphInfoPropertyPage::_ClearInterfaceList()
 	return hr;
 }
 
-HRESULT CGraphInfoPropertyPage::OnDetectInterfaceCallBack(DWORD_PTR pParam, IUnknown* pUnknwon, REFIID checkedRIIF, LPCTSTR pszInterfaceName)
+HRESULT CGraphInfoPropertyPage::OnDetectInterfaceCallBack(DWORD_PTR pParam, IUnknown* pUnknwon, 
+														  DWORD dwInterfaceCount, REFIID checkedRIIF, LPCTSTR pszInterfaceName)
 {
 	if (pParam)
 	{
@@ -397,6 +397,10 @@ HRESULT CGraphInfoPropertyPage::_GetInterfaceList(IUnknown* pUnknown)
 	{
 		FTL::CFComDetect::CoDetectInterfaceFromList(pUnknown, GUID_NULL, CFComDetect::cdtInterface,
 			OnDetectInterfaceCallBack, reinterpret_cast<DWORD_PTR>(this));
+
+		CString strInterfaces;
+		strInterfaces.Format(TEXT("Interfaces:%d"), m_listInterfaces.GetCount());
+		m_stInterfaces.SetWindowText(strInterfaces);
 
 		FTL::CFControlUtil::UpdateListboxHorizontalExtent(m_listMediaTypes, LIST_BOX_MARGIN);
 	}

@@ -8,6 +8,7 @@ cpp_quote("#if 0")
 typedef LPVOID*  IBaseFilter;
 typedef LPVOID*  IFilterGraph;
 typedef LPVOID*  IPin;
+typedef LPVOID*  AM_MEDIA_TYPE;
 //typedef LPVOID*  ISpecifyPropertyPages;
 cpp_quote("#endif //if 0")
 
@@ -54,6 +55,7 @@ interface IFilterDebugInfo : IUnknown{
     [helpstring("method GetConnectedPin")] 
     HRESULT GetConnectedPin([in] BOOL bIsInput, [out,retval] IPin** ppPin);
     
+	HRESULT SetAcceptMediaType([in] AM_MEDIA_TYPE* pMediaType);
 	HRESULT GetFilterDebugParam([in,out] FilterDebugParam* pFilterDebugParam);
     HRESULT SetFilterDebugParam([in] FilterDebugParam* pFilterDebugParam);
 	

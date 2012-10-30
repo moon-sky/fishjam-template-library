@@ -83,11 +83,6 @@ CUnknown* CDebugInfoFilter::CreateInstance(LPUNKNOWN lpunk, HRESULT *phr)
 CDebugInfoFilter::CDebugInfoFilter( IUnknown * pUnk, HRESULT * phr )
 :CTransInPlaceFilter(NAME("Debug Info Filter"),pUnk,CLSID_DebugInfoFilter,phr)
 ,CPersistStream(pUnk, phr)
-,m_nInputPinTypeIndex(-1)
-,m_nOutputPinTypeIndex(-1)
-,m_bDumpSample(FALSE)
-,m_dwDumpSampleStartIndex(0)
-,m_dwDumpSampleLimitCount(10)
 ,m_dwCurrentDumpSampleIndex(0)
 ,m_dwSampleCount(0)
 {
@@ -95,12 +90,14 @@ CDebugInfoFilter::CDebugInfoFilter( IUnknown * pUnk, HRESULT * phr )
     //    1);
 	m_ElapseCounter.Stop();
     m_bModifiesData = false;  //不会修改Sample，输入/输出Pin使用同一个Allocator
-    ZeroMemory(&m_bufDumpFilePath,sizeof(TCHAR) * _countof(m_bufDumpFilePath));
+	m_llLastTimeStart = 0;
+	m_llLastTimeEnd = 0;
+	m_pAcceptMediaType = NULL;
 }
 
 CDebugInfoFilter::~CDebugInfoFilter( )
 {
-
+	SAFE_DELETE(m_pAcceptMediaType);
 }
 
 HRESULT CDebugInfoFilter::CheckInputType(const CMediaType* mtIn)
@@ -112,16 +109,29 @@ HRESULT CDebugInfoFilter::CheckInputType(const CMediaType* mtIn)
     //}
 	HRESULT hr = S_OK;
 	DisplayType(TEXT("CheckInputType"), mtIn);
-
-	//如果输出Pin上有连接，则让输出pin连接的输入Pin检查，否则直接返回S_OK接受连接
-	if(m_pOutput && m_pOutput->IsConnected())
+	if (m_pAcceptMediaType)
 	{
-		CComPtr<IPin> pConnected = m_pOutput->GetConnected();
-		if (pConnected)
+		//if set accept mediatype, then check it
+		if(*m_pAcceptMediaType == *mtIn)
 		{
-			hr = pConnected->QueryAccept(mtIn);
+			hr = S_OK;
+		}
+		else
+		{
+			hr = VFW_E_NO_ACCEPTABLE_TYPES;
 		}
 	}
+
+	//如果输出Pin上有连接，则让输出pin连接的输入Pin检查，否则直接返回S_OK接受连接
+
+	//if(m_pOutput && m_pOutput->IsConnected())
+	//{
+	//	CComPtr<IPin> pConnected = m_pOutput->GetConnected();
+	//	if (pConnected)
+	//	{
+	//		hr = pConnected->QueryAccept(mtIn);
+	//	}
+	//}
     return hr;
 }
 
@@ -134,6 +144,7 @@ HRESULT CDebugInfoFilter::CompleteConnect(PIN_DIRECTION dir,IPin *pReceivePin)
     {
         ASSERT(m_pInput);
         CMediaType mt = m_pInput->CurrentMediaType();
+		DisplayType(TEXT("CDebugInfoFilter::CompleteConnect"), &mt);
     }
     return hr;
 }
@@ -144,11 +155,31 @@ HRESULT CDebugInfoFilter::Transform(IMediaSample *pSample)
     CAutoLock cObjectLock(&m_csReceive);
 
     HRESULT hr = S_OK;
-    if(m_bDumpSample && m_StorageFile.IsOpen())
+
+	REFERENCE_TIME llTimeStart = 0;
+	REFERENCE_TIME llTimeEnd = 0;
+	DX_VERIFY_EXCEPT1(pSample->GetTime(&llTimeStart, &llTimeEnd), VFW_E_SAMPLE_TIME_NOT_SET);
+	if (SUCCEEDED(hr))
 	{
-		if((0 == m_dwDumpSampleLimitCount
-			|| (m_dwDumpSampleStartIndex <= m_dwCurrentDumpSampleIndex 
-			&& m_dwCurrentDumpSampleIndex < m_dwDumpSampleStartIndex + m_dwDumpSampleLimitCount)))
+		long nDataLength = pSample->GetActualDataLength();
+		FTLTRACEEX(FTL::tlTrace, TEXT("CDebugInfoFilter::Transform, length=%d, StartTime=%f ms, EndTime=%f ms, Start-LastEnd=%lld\n"),
+			nDataLength, float(llTimeStart)/10000, float(llTimeEnd)/10000, llTimeStart - m_llLastTimeEnd);
+
+		if (llTimeStart < m_llLastTimeEnd)
+		{
+			FTLTRACEEX(FTL::tlWarning, TEXT("%s Warning!! -- VFW_E_START_TIME_AFTER_END, m_llLastTimeEnd(%lld) Should < llTimeStart(%lld)\n"),
+				__FILE__LINE__,
+				m_llLastTimeEnd, llTimeStart);
+		}
+		m_llLastTimeStart = llTimeStart;
+		m_llLastTimeEnd = llTimeEnd;
+	}
+
+    if(m_DebugInfoParam.m_bDumpSample && m_StorageFile.IsOpen())
+	{
+		if((0 == m_DebugInfoParam.m_dwDumpSampleLimitCount
+			|| (m_DebugInfoParam.m_dwDumpSampleStartIndex <= m_dwCurrentDumpSampleIndex 
+			&& m_dwCurrentDumpSampleIndex < m_DebugInfoParam.m_dwDumpSampleStartIndex + m_DebugInfoParam.m_dwDumpSampleLimitCount)))
 		{
 			//IMediaSample2 pSample2; //优先使用该接口？
 			LONG lDataLength = pSample->GetActualDataLength();
@@ -228,13 +259,15 @@ HRESULT CDebugInfoFilter::StartStreaming()
     DX_VERIFY(CTransInPlaceFilter::StartStreaming());
     CAutoLock cObjectLock(&m_DebugInfoLock);
 	m_ElapseCounter.Start();
-    if (m_bDumpSample && m_bufDumpFilePath[0] != TEXT('\0'))
+	if (m_DebugInfoParam.m_bDumpSample && m_DebugInfoParam.m_bufDumpFilePath[0] != TEXT('\0'))
     {
         //if (!m_StorageFile.IsOpen())
         {
-            COM_VERIFY(m_StorageFile.CreateDocFile(m_bufDumpFilePath));
+            COM_VERIFY(m_StorageFile.CreateDocFile(m_DebugInfoParam.m_bufDumpFilePath));
         }
     }
+	m_llLastTimeStart = 0;
+	m_llLastTimeEnd = 0;
     return hr;
 }
 
@@ -244,7 +277,7 @@ HRESULT CDebugInfoFilter::StopStreaming()
     CAutoLock cObjectLock(&m_DebugInfoLock);
 	m_ElapseCounter.Stop();
 
-    if (m_bDumpSample && m_StorageFile.IsOpen())
+    if (m_StorageFile.IsOpen())
     {
         m_StorageFile.Close();
     }
@@ -337,6 +370,24 @@ STDMETHODIMP CDebugInfoFilter::GetConnectedPin(BOOL bIsInput, IPin** ppPin)
     return VFW_E_NOT_CONNECTED;
 }
 
+STDMETHODIMP CDebugInfoFilter::SetAcceptMediaType(AM_MEDIA_TYPE* pMediaType)
+{
+	HRESULT hr = S_OK;
+
+	CMediaType* pNewAcceptMediaType = new CMediaType(*pMediaType);
+	if (!pNewAcceptMediaType)
+	{
+		hr = E_OUTOFMEMORY;
+	}
+	else
+	{
+		SAFE_DELETE(m_pAcceptMediaType);
+		m_pAcceptMediaType = pNewAcceptMediaType;
+	}
+
+	return hr;
+}
+
 STDMETHODIMP CDebugInfoFilter::GetFilterDebugParam(/* [out][in] */FilterDebugParam* pFilterDebugParam)
 {
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilterDebugParam,E_POINTER);
@@ -346,13 +397,13 @@ STDMETHODIMP CDebugInfoFilter::GetFilterDebugParam(/* [out][in] */FilterDebugPar
 
     SAFE_FREE_BSTR(pFilterDebugParam->pstrDumpFilePath);
 
-    if (m_bufDumpFilePath[0] != TEXT('\0'))
+    if (m_DebugInfoParam.m_bufDumpFilePath[0] != TEXT('\0'))
     {
-        pFilterDebugParam->pstrDumpFilePath = T2BSTR(m_bufDumpFilePath);
+        pFilterDebugParam->pstrDumpFilePath = T2BSTR(m_DebugInfoParam.m_bufDumpFilePath);
     }
-    pFilterDebugParam->bDumpSample = m_bDumpSample;
-	pFilterDebugParam->dwDumpSampleStartIndex = m_dwDumpSampleStartIndex;
-    pFilterDebugParam->dwDumpSampleLimitCount = m_dwDumpSampleLimitCount;
+    pFilterDebugParam->bDumpSample = m_DebugInfoParam.m_bDumpSample;
+	pFilterDebugParam->dwDumpSampleStartIndex = m_DebugInfoParam.m_dwDumpSampleStartIndex;
+    pFilterDebugParam->dwDumpSampleLimitCount = m_DebugInfoParam.m_dwDumpSampleLimitCount;
 
     return hr;
 }
@@ -364,13 +415,13 @@ STDMETHODIMP CDebugInfoFilter::SetFilterDebugParam(/* [in] */FilterDebugParam* p
 
     CAutoLock lock(&m_DebugInfoLock);
 
-    m_bDumpSample = pFilterDebugParam->bDumpSample;
+    m_DebugInfoParam.m_bDumpSample = pFilterDebugParam->bDumpSample;
 
-	m_dwDumpSampleStartIndex = pFilterDebugParam->dwDumpSampleStartIndex;
-	m_dwDumpSampleLimitCount = pFilterDebugParam->dwDumpSampleLimitCount;
+	m_DebugInfoParam.m_dwDumpSampleStartIndex = pFilterDebugParam->dwDumpSampleStartIndex;
+	m_DebugInfoParam.m_dwDumpSampleLimitCount = pFilterDebugParam->dwDumpSampleLimitCount;
     if (pFilterDebugParam->pstrDumpFilePath)
     {
-        COM_VERIFY(StringCchCopy(m_bufDumpFilePath,_countof(m_bufDumpFilePath),
+        COM_VERIFY(StringCchCopy(m_DebugInfoParam.m_bufDumpFilePath,_countof(m_DebugInfoParam.m_bufDumpFilePath),
             OLE2CT(pFilterDebugParam->pstrDumpFilePath)));
     }
     
@@ -404,12 +455,13 @@ HRESULT CDebugInfoFilter::WriteToStream(IStream *pStream)
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pStream,E_POINTER);
 
     HRESULT hr = E_FAIL;
-    DX_VERIFY(pStream->Write(&m_nInputPinTypeIndex,sizeof(m_nInputPinTypeIndex),NULL));
-    DX_VERIFY(pStream->Write(&m_nOutputPinTypeIndex,sizeof(m_nOutputPinTypeIndex),NULL));
-    DX_VERIFY(pStream->Write(&m_bDumpSample,sizeof(m_bDumpSample),NULL));
-	DX_VERIFY(pStream->Write(&m_dwDumpSampleStartIndex,sizeof(m_dwDumpSampleStartIndex),NULL));
-    DX_VERIFY(pStream->Write(&m_dwDumpSampleLimitCount,sizeof(m_dwDumpSampleLimitCount),NULL));
-    DX_VERIFY(pStream->Write(m_bufDumpFilePath,_countof(m_bufDumpFilePath)*sizeof(TCHAR),NULL));
+	DX_VERIFY(pStream->Write(&m_DebugInfoParam, sizeof(m_DebugInfoParam), NULL));
+ //   DX_VERIFY(pStream->Write(&m_nInputPinTypeIndex,sizeof(m_nInputPinTypeIndex),NULL));
+ //   DX_VERIFY(pStream->Write(&m_nOutputPinTypeIndex,sizeof(m_nOutputPinTypeIndex),NULL));
+ //   DX_VERIFY(pStream->Write(&m_bDumpSample,sizeof(m_bDumpSample),NULL));
+ //	  DX_VERIFY(pStream->Write(&m_dwDumpSampleStartIndex,sizeof(m_dwDumpSampleStartIndex),NULL));
+ //   DX_VERIFY(pStream->Write(&m_dwDumpSampleLimitCount,sizeof(m_dwDumpSampleLimitCount),NULL));
+ //   DX_VERIFY(pStream->Write(m_bufDumpFilePath,_countof(m_bufDumpFilePath)*sizeof(TCHAR),NULL));
     return hr;
 }
 
@@ -418,20 +470,22 @@ HRESULT CDebugInfoFilter::ReadFromStream(IStream *pStream)
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pStream,E_POINTER);
 
     HRESULT hr = E_FAIL;
-    DX_VERIFY(pStream->Read(&m_nInputPinTypeIndex,sizeof(m_nInputPinTypeIndex),NULL));
-    DX_VERIFY(pStream->Read(&m_nOutputPinTypeIndex,sizeof(m_nOutputPinTypeIndex),NULL));
-    DX_VERIFY(pStream->Read(&m_bDumpSample,sizeof(m_bDumpSample),NULL));
-	DX_VERIFY(pStream->Read(&m_dwDumpSampleStartIndex,sizeof(m_dwDumpSampleStartIndex),NULL));
-	DX_VERIFY(pStream->Read(&m_dwDumpSampleLimitCount,sizeof(m_dwDumpSampleLimitCount),NULL));
-    DX_VERIFY(pStream->Read(m_bufDumpFilePath,_countof(m_bufDumpFilePath)*sizeof(TCHAR),NULL));
+	DX_VERIFY(pStream->Read(&m_DebugInfoParam, sizeof(m_DebugInfoParam), NULL));
+ //   DX_VERIFY(pStream->Read(&m_nInputPinTypeIndex,sizeof(m_nInputPinTypeIndex),NULL));
+ //   DX_VERIFY(pStream->Read(&m_nOutputPinTypeIndex,sizeof(m_nOutputPinTypeIndex),NULL));
+ //   DX_VERIFY(pStream->Read(&m_bDumpSample,sizeof(m_bDumpSample),NULL));
+ //   DX_VERIFY(pStream->Read(&m_dwDumpSampleStartIndex,sizeof(m_dwDumpSampleStartIndex),NULL));
+ //	  DX_VERIFY(pStream->Read(&m_dwDumpSampleLimitCount,sizeof(m_dwDumpSampleLimitCount),NULL));
+ //   DX_VERIFY(pStream->Read(m_bufDumpFilePath,_countof(m_bufDumpFilePath)*sizeof(TCHAR),NULL));
     return hr;
 }
 
 int CDebugInfoFilter::SizeMax()
 {
-    int sizeMax = sizeof(m_nInputPinTypeIndex) + sizeof(m_nOutputPinTypeIndex)
-        + sizeof(m_bDumpSample) + sizeof(m_dwDumpSampleStartIndex) + sizeof(m_dwDumpSampleLimitCount) 
-        + _countof(m_bufDumpFilePath) * sizeof(TCHAR);
+	int sizeMax = sizeof(m_DebugInfoParam);
+    //int sizeMax = sizeof(m_nInputPinTypeIndex) + sizeof(m_nOutputPinTypeIndex)
+    //    + sizeof(m_bDumpSample) + sizeof(m_dwDumpSampleStartIndex) + sizeof(m_dwDumpSampleLimitCount) 
+    //    + _countof(m_bufDumpFilePath) * sizeof(TCHAR);
 
     return sizeMax;
 }

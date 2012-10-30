@@ -49,6 +49,25 @@ extern const AMOVIESETUP_FILTER sudDebugInfoFilter;
 //
 //};
 
+struct DebugInfoParam
+{
+	DebugInfoParam()
+	{
+		m_nInputPinTypeIndex = -1;
+		m_nOutputPinTypeIndex = -1;
+		m_bDumpSample = FALSE;
+		m_dwDumpSampleStartIndex = 0;
+		m_dwDumpSampleLimitCount = 10;
+		ZeroMemory(&m_bufDumpFilePath,sizeof(TCHAR) * _countof(m_bufDumpFilePath));
+	}
+	int                 m_nInputPinTypeIndex;       //用户选择的输入Pin的媒体类型索引
+	int                 m_nOutputPinTypeIndex;      //用户选择的输出Pin的媒体类型索引
+	BOOL                m_bDumpSample;              //是否进行Dump
+	DWORD				m_dwDumpSampleStartIndex;   //开始Dump时的序号
+	DWORD               m_dwDumpSampleLimitCount;   //Dump时的限制个数
+	TCHAR               m_bufDumpFilePath[MAX_PATH];//Dump到的文件路径
+};
+
 class CDebugInfoFilter : public CTransInPlaceFilter,
     public ISpecifyPropertyPages,
     public IFilterDebugInfo,
@@ -79,6 +98,7 @@ public:
 
     //IFilterDebugInfo
     STDMETHOD(GetConnectedPin)(BOOL bIsInput, IPin** ppPin);
+	STDMETHOD(SetAcceptMediaType)(AM_MEDIA_TYPE* pMediaType);
     STDMETHOD(GetFilterDebugParam)(/* [out][in] */FilterDebugParam* pFilterDebugParam);
     STDMETHOD(SetFilterDebugParam)(/* [in] */FilterDebugParam* pFilterDebugParam);
 
@@ -102,17 +122,16 @@ public:
 
 private:
     CCritSec            m_DebugInfoLock;
-    int                 m_nInputPinTypeIndex;       //用户选择的输入Pin的媒体类型索引
-    int                 m_nOutputPinTypeIndex;      //用户选择的输出Pin的媒体类型索引
-    BOOL                m_bDumpSample;              //是否进行Dump
-	DWORD				m_dwDumpSampleStartIndex;   //开始Dump时的序号
-    DWORD               m_dwDumpSampleLimitCount;   //Dump时的限制个数
-    DWORD               m_dwCurrentDumpSampleIndex;
-    TCHAR               m_bufDumpFilePath[MAX_PATH];//Dump到的文件路径
-	DWORD				m_dwSampleCount;
+	REFERENCE_TIME		m_llLastTimeStart;			//上一次MediaSample的开始时间
+	REFERENCE_TIME		m_llLastTimeEnd;			//上一次MediaSample的结束时间
 	FTL::CFElapseCounter	m_ElapseCounter;
+	DebugInfoParam			m_DebugInfoParam;
+	DWORD               m_dwCurrentDumpSampleIndex;
+	DWORD				m_dwSampleCount;
+	CMediaType*			m_pAcceptMediaType;
 
     CFStructuredStorageFile  m_StorageFile;
+
     //CFThread<>          m_DumpThread;
     //static DWORD __stdcall DumpThreadFun(void* pParam);
 

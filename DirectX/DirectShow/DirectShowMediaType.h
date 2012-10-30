@@ -49,7 +49,7 @@
 *************************************************************************************************/
 
 /*************************************************************************************************
-* 动态格式改变
+* 动态格式改变(Dynamic Format Change)
 *   在 Transform 等方法内部调用检查 MediaType ?
 *   CBasePin 有 CanReconnectWhenActive 方法，判断是否可以在激活(Paused/Running)状态下重连，默认情况下为 FALSE
 *               BreakConnect
@@ -63,4 +63,3 @@
 *   IFilterGraph::Reconnect -- 重连接指定的Pin
 *   IFilterGraph2::ReconnectEx -- 以指定的媒体类型重连接指定的Pin
 *************************************************************************************************/
-IFilterMapper::EnumMatchingFilters

@@ -253,13 +253,29 @@ HRESULT CTextMediaType::_GetVideoInfoHeaderInfo(LPTSTR szBuffer,
 
 	if (pVideoFormat)
 	{
-		COM_VERIFY(StringCchPrintf(szBuffer, iLength, TEXT("%s %dx%d, %d bits")
-			, (pVideoFormat->bmiHeader.biCompression == 0) ? TEXT("RGB") :
-			((pVideoFormat->bmiHeader.biCompression == BI_BITFIELDS) ? TEXT("BITF") :
-			(LPTSTR) &pVideoFormat->bmiHeader.biCompression )
+		CString strCompression;
+		DWORD dwCompression = pVideoFormat->bmiHeader.biCompression;
+		if (0 == dwCompression)
+		{
+			strCompression = TEXT("RGB");
+		}
+		else if(BI_BITFIELDS == dwCompression)
+		{
+			strCompression = TEXT("BITF");
+		}
+		else
+		{
+			CHAR* pchCompression = (CHAR*)&dwCompression;
+			strCompression.Format(TEXT("%c%c%c%c(0x%x)"), 
+				pchCompression[0], pchCompression[1],pchCompression[2], pchCompression[3],
+				dwCompression);
+		}
+		COM_VERIFY(StringCchPrintf(szBuffer, iLength, TEXT("%s %dx%d, %d bits, %d SizeImage")
+			, strCompression
 			, pVideoFormat->bmiHeader.biWidth
 			, pVideoFormat->bmiHeader.biHeight
-			, pVideoFormat->bmiHeader.biBitCount));
+			, pVideoFormat->bmiHeader.biBitCount
+			, pVideoFormat->bmiHeader.biSizeImage));
 	}
 	return hr;
 }

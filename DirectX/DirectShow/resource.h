@@ -31,11 +31,11 @@
 #define IDC_BTN_CLEAR_LOG               1017
 #define IDC_STATIC_SAMPLE_COUNT         1018
 #define IDC_STATIC_RUNNING_TIME         1019
+#define IDC_STATIC_INTERFACES           1019
 #define VERSION_RES_LANGUAGE            0x409
 #define VERSION_RES_CHARSET             1252
-#ifndef IDC_STATIC
-#  define IDC_STATIC                      -1
-#endif 
+#define IDC_STATIC                      -1
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
@@ -43,7 +43,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        105
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1019
+#define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

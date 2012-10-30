@@ -531,6 +531,14 @@ namespace FTL
 	}
 #endif 
 
+	HRESULT CFComDetect::_DefaultDetectInterfaceCallBackProc(DWORD_PTR pParam, IUnknown* pUnknwon, 
+		DWORD dwInterfaceCount, REFIID checkedRIIF, LPCTSTR pszInterfaceName)
+	{
+		FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount, pszInterfaceName);\
+		//OutputDebugString(pszInterfaceName);
+		return S_OK;
+	}
+
     //本方法同时支持检测多种COM信息 -- 虽然不是好的编程习惯，但能减少维护量
     DWORD CFComDetect::CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, 
 		ComDetectType detectType, 
@@ -2075,6 +2083,8 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IVMRMixerControl)
             DETECT_INTERFACE_ENTRY(IVMRMonitorConfig)
             DETECT_INTERFACE_ENTRY(IVMRFilterConfig)
+			DETECT_INTERFACE_ENTRY(IVMRAspectRatioControl)
+			DETECT_INTERFACE_ENTRY(IVMRDeinterlaceControl)
             DETECT_INTERFACE_ENTRY(IVMRMixerBitmap)
             DETECT_INTERFACE_ENTRY(IVMRImageCompositor)
             DETECT_INTERFACE_ENTRY(IVMRVideoStreamControl)
@@ -2082,6 +2092,13 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IVMRImagePresenterConfig)
             DETECT_INTERFACE_ENTRY(IVMRImagePresenterExclModeConfig)
             DETECT_INTERFACE_ENTRY(IVPManager)
+
+			//amvideo.h
+			DETECT_INTERFACE_ENTRY_IID(IDirectDrawVideo, IID_IDirectDrawVideo)
+			DETECT_INTERFACE_ENTRY_IID(IQualProp, IID_IQualProp)
+			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideo, IID_IFullScreenVideo)
+			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideoEx, IID_IFullScreenVideoEx)
+			DETECT_INTERFACE_ENTRY_IID(IBaseVideoMixer, IID_IBaseVideoMixer)
 #endif //INCLUDE_DETECT_STRMIF
 
 #if INCLUDE_DETECT_URLMON

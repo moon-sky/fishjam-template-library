@@ -254,6 +254,7 @@ namespace FTL
 #if INCLUDE_DETECT_STRMIF
 #  include <strmif.h>
 #  include <dmodshow.h>
+#  include <amvideo.h>
 #endif 
 
 #if INCLUDE_DETECT_URLMON
@@ -425,8 +426,7 @@ struct CFInterfaceEntryExIID
 				if(SUCCEEDED(hr) && pQueryUnknown)\
 				{\
 					dwInterfaceCount++;\
-					if(pCallback){ (*pCallback)(pCallbackParm, pQueryUnknown, pEntry->id, pEntry->pszInterfaceName); } \
-					FTLTRACEEX(FTL::tlTrace,TEXT("\t%d: %s\n"),dwInterfaceCount,pEntry->pszInterfaceName);\
+					if(pCallback){ (*pCallback)(pCallbackParm, pQueryUnknown, dwInterfaceCount, pEntry->id, pEntry->pszInterfaceName); } \
 					pEntry->m_pDumpInfoProc(pQueryUnknown);\
 					pQueryUnknown->Release();\
 					pQueryUnknown = NULL;\
@@ -489,7 +489,8 @@ struct CFInterfaceEntryExIID
 	
 namespace FTL
 {
-	typedef HRESULT (*DetectInterfaceCallBackProc)(DWORD_PTR pParam, IUnknown* pUnknwon, REFIID checkedRIIF, LPCTSTR pszInterfaceName);
+	typedef HRESULT (*DetectInterfaceCallBackProc)(DWORD_PTR pParam, IUnknown* pUnknwon, 
+		DWORD dwInterfaceCount, REFIID checkedRIIF, LPCTSTR pszInterfaceName);
 
 	class CFComDetect
     {
@@ -506,13 +507,16 @@ namespace FTL
 		FTLINLINE static DWORD CoDetectInterfaceFromRegister(IUnknown* pUnknown, REFIID checkRIID, 
 			ComDetectType detectType);
         FTLINLINE static DWORD CoDetectInterfaceFromList(IUnknown* pUnknown, REFIID checkRIID, 
-			ComDetectType detectType, DetectInterfaceCallBackProc pCallback = NULL, DWORD_PTR pCallbackParm = NULL);
+			ComDetectType detectType, DetectInterfaceCallBackProc pCallback = _DefaultDetectInterfaceCallBackProc, DWORD_PTR pCallbackParm = NULL);
 	private:
 		FTLINLINE static HRESULT _innerCoDtectInterfaceFromRegister(IUnknown* pUnknown, REFGUID guidInfo);
 		FTLINLINE static HRESULT _innerCoDtectServiceFromRegister(IServiceProvider* pServiceProvider, REFGUID guidInfo);
 #if INCLUDE_DETECT_VSIP
 		FTLINLINE static HRESULT _innerCoDtectViewInterfaceFromRegister(IVsWindowFrame* pVsWindowFrame, REFGUID guidInfo);
 #endif 
+
+		FTLINLINE static HRESULT _DefaultDetectInterfaceCallBackProc(DWORD_PTR pParam, IUnknown* pUnknwon, 
+			DWORD dwInterfaceCount, REFIID checkedRIIF, LPCTSTR pszInterfaceName);
     }; //class CFComDetect
 }//namespace FTL
 

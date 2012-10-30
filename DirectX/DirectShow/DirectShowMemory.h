@@ -14,9 +14,9 @@
 *       如果输入Pin不提供分配器或者设置分配器失败
 *       ->InitAllocator(由输出Pin创建标准的分配器，再执行相同的逻辑)
 *         DecideBufferSize->InputPin::NotifyAllocator)
-
+*
 * IMemAllocator -- 负责分配内存空间, 管理 IMediaSample 的内存池，所有的Filter都释放了Samle后，
-*   才能返回给分配器的缓冲池(即不要随便在filter中保存IMediaSample的指针)
+*   才能返回给分配器的缓冲池(即不要随便在filter中保存IMediaSample的指针?)
 * IMemInputPin -- （注意：不是从IPin上继承）管理 IMemAllocator，并能接收 IMediaSample
 * IMediaSample
 *************************************************************************************************/

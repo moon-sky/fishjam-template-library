@@ -46,6 +46,7 @@ HRESULT CDebugInfoFilterProperty::OnConnect(IUnknown *pUnknown)
 	//COM_DETECT_INTERFACE_FROM_REGISTER(pUnknown);
 	//COM_DETECT_INTERFACE_FROM_LIST(pUnknown);
 
+	//IBaseFilter
 	ASSERT(NULL == m_pFilterInfo);
 	DX_VERIFY(pUnknown->QueryInterface(IID_IFilterDebugInfo, (LPVOID*)&m_pFilterInfo));
 	if (SUCCEEDED(hr))
@@ -263,24 +264,72 @@ HRESULT CDebugInfoFilterProperty::OnDeactivate()
 
 HRESULT CDebugInfoFilterProperty::_ReConnectUseMediaType(AM_MEDIA_TYPE* pMediaType)
 {
-#pragma TODO("_ReConnectUseMediaType")
-	return S_OK;
-
 	HRESULT hr = E_FAIL;
 	//use change input media type
-	CComQIPtr<IBaseFilter> spFilter(m_pFilterInfo);
-	if (spFilter)
+	//FTLASSERT(spFilter);
+	//if (spFilter)
 	{
-		FILTER_INFO filterInfo = {0};
-		DX_VERIFY(spFilter->QueryFilterInfo(&filterInfo));
+		DX_VERIFY(m_pFilterInfo->SetAcceptMediaType(pMediaType));
 		if (SUCCEEDED(hr))
 		{
-			CComQIPtr<IFilterGraph2> spFilterGraph2(filterInfo.pGraph);
-			m_pInputConnectedPin->Disconnect();
-			m_pOutputConnectedPin->Disconnect();
+			CComPtr<IPin> spFilterInputPin;
+			CComPtr<IPin> spFilterOutputPin;
 
-			DX_VERIFY(spFilterGraph2->ReconnectEx(m_pInputConnectedPin, pMediaType));
-			QueryFilterInfoReleaseGraph(filterInfo);
+			if (m_pInputConnectedPin)
+			{
+				DX_VERIFY(m_pInputConnectedPin->ConnectedTo(&spFilterInputPin));
+				if(spFilterInputPin)
+				{
+					DX_VERIFY(m_pInputConnectedPin->Disconnect());
+				}
+				DX_VERIFY(spFilterInputPin->Disconnect());
+			}
+			if (m_pOutputConnectedPin)
+			{
+				DX_VERIFY(m_pOutputConnectedPin->ConnectedTo(&spFilterOutputPin));
+				if (spFilterOutputPin)
+				{
+					DX_VERIFY(spFilterOutputPin->Disconnect());
+				}
+				DX_VERIFY(m_pOutputConnectedPin->Disconnect());
+			}
+
+#if 0
+			if (m_pInputConnectedPin)
+			{
+				if (spFilterInputPin)
+				{
+					//DX_VERIFY(spLastOutput->Disconnect());
+					DX_VERIFY(m_pInputConnectedPin->Connect(spFilterInputPin, pMediaType));
+				}
+			}
+			if (m_pOutputConnectedPin)
+			{
+				if (spFilterOutputPin)
+				{
+					//DX_VERIFY(spLastOutput->Disconnect());
+					DX_VERIFY(spFilterOutputPin->Connect(m_pOutputConnectedPin, pMediaType));
+				}
+			}
+
+#else
+			CComQIPtr<IBaseFilter> spFilter(m_pFilterInfo);
+			FILTER_INFO filterInfo = {0};
+			DX_VERIFY(spFilter->QueryFilterInfo(&filterInfo));
+			if (SUCCEEDED(hr))
+			{
+				CComQIPtr<IFilterGraph2> spFilterGraph2(filterInfo.pGraph);
+				if(spFilterInputPin)
+				{
+					DX_VERIFY(spFilterGraph2->ConnectDirect(m_pInputConnectedPin, spFilterInputPin, pMediaType));
+				}
+				if (spFilterOutputPin)
+				{
+					DX_VERIFY(spFilterGraph2->ConnectDirect(spFilterOutputPin, m_pOutputConnectedPin, pMediaType));
+				}
+				QueryFilterInfoReleaseGraph(filterInfo);
+			}
+#endif
 		}
 	}
 	return hr;
@@ -288,7 +337,7 @@ HRESULT CDebugInfoFilterProperty::_ReConnectUseMediaType(AM_MEDIA_TYPE* pMediaTy
 
 HRESULT CDebugInfoFilterProperty::_CheckAndReconnectUseMediaType()
 {
-	HRESULT hr = E_FAIL;
+	HRESULT hr = S_OK;
 	int nNewInputSelIndex = m_listInput.GetCurSel();
 	if(m_nInputIndex != nNewInputSelIndex)
 	{
@@ -299,8 +348,8 @@ HRESULT CDebugInfoFilterProperty::_CheckAndReconnectUseMediaType()
 			HRESULT hrError = hr;
 			FormatMessageBox(m_hwnd, TEXT("Error"),
 				MB_OK, TEXT("Use New MediaType Connect Failed(0x%x)"), hr);
-			AM_MEDIA_TYPE* pOldMediaType = static_cast<AM_MEDIA_TYPE*> (m_listInput.GetItemDataPtr(m_nInputIndex));
-			DX_VERIFY(_ReConnectUseMediaType(pOldMediaType));
+			//AM_MEDIA_TYPE* pOldMediaType = static_cast<AM_MEDIA_TYPE*> (m_listInput.GetItemDataPtr(m_nInputIndex));
+			//DX_VERIFY(_ReConnectUseMediaType(pOldMediaType));
 			return hrError;
 		}
 	}

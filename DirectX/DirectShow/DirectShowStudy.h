@@ -50,7 +50,7 @@
 *         其格式为"offset,cb,mask,val" -- 从 offset 开始的 cb 个字节，和 mask 进行位与后，同 val 是否相等
 *       4.创建名为 File Source(Async.) 的Filter，其 MediaType 使用 { MEDIATYPE_Stream, MEDIASUBTYPE_None }
 *     Render -- 从指定输出Pin开始进行智能连接
-*       1.如果输入Pin支持 IStreamBuilder 接口，则由 IStreamBuilder::Render 完成智能连接
+*       1.如果输入Pin支持 IStreamBuilder 接口，则由 IStreamBuilder::Render 完成智能连接(pin承担了构建graph剩余部分的全部工作)
 *       2.使用 IGraphConfig::AddFilterToCache 加入内部缓冲中的Filter进行试连接;
 *       3.使用当前 Filter Graph 中还没有完全连接的Filter进行试连接；
 *       4.使用 IFilterMapper2::EnumMatchingFilters 搜索大于 MERIT_DO_NOT_USE 的所有Filter进行试连接；

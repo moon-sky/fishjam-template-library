@@ -32,11 +32,13 @@
 *
 *      Control                     Filter                     
 *         Run                      Pause 方法, 从 State_Stopped(0) => State_Paused(1)，对所有连接着的Pin调用 Active 方法
+*                                    如是Transform，会调用 StartStreaming
 *                                  Run   方法, 从 State_Paused(1) => State_Running(2)，对所有连接着的Pin调用 Run 方法
 *         Pause                    Pause 方法，从 State_Running(2) => State_Paused(1)
 *         Resume(实际是Run?)       Run   方法，从 State_Paused(1) => State_Running(2)
 *         Stop                     Pause 方法，从 State_Running(2) => State_Paused(1)
 *                                  Stop  方法，从 State_Paused(1) => State_Stopped(0)，对所有连接着的Pin调用 Inactive 方法
+*                                    如是Transform，会调用 StopStreaming
 **************************************************************************************************/
 
 #endif //FILTER_THREAD_H
