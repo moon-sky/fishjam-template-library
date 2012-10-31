@@ -34,6 +34,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseClasses", "C:\Program F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BaseClasses", "BaseClasses", "{68BF0444-B974-4D9E-896F-579D22D60D0C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MediaFoundationDemo", "MediaFoundationDemo\MediaFoundationDemo.vcproj", "{0D43F893-CE41-43B8-9BDC-98FFB7610E8E}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -74,6 +76,10 @@ Global
 		{6E6690D7-FBEC-471E-AF70-31D251B5E64B}.Release|Win32.Build.0 = Release|Win32
 		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.Release|Win32.ActiveCfg = Release|Win32
+		{0D43F893-CE41-43B8-9BDC-98FFB7610E8E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0D43F893-CE41-43B8-9BDC-98FFB7610E8E}.Debug|Win32.Build.0 = Debug|Win32
+		{0D43F893-CE41-43B8-9BDC-98FFB7610E8E}.Release|Win32.ActiveCfg = Release|Win32
+		{0D43F893-CE41-43B8-9BDC-98FFB7610E8E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
