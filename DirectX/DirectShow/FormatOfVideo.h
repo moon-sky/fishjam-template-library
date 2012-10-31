@@ -98,6 +98,9 @@
 *   H.264/MPEG-4 AVC（Advanced Video Coding) -- 由ITU-T与ISO/IEC联合进行开发的视频编解码方案，通常音频使用AAC,
 *     是MPEG-4标准的扩展(采用更高压缩率)。H.264影片的“容器”可以是AVI，MP4，MPG等(如MOV更改扩展名后可以播放)。
 *     相对于先期的视频压缩标准，引入了很多先进的技术，包括4x4证书变换、空域内的帧内预测等。
+*     问题：
+*       1.有很多种SubType：MEDIASUBTYPE_AVC1、MEDIASUBTYPE_H264、MEDIASUBTYPE_h264、MEDIASUBTYPE_X264、MEDIASUBTYPE_x264 等
+*         http://technet.microsoft.com/zh-cn/library/dd757808
 *   HDV -- 以Mini DV磁带为存储介质
 *   HDV 1080i
 *   HEVC -- 下一代HDTV上的格式?也就是H.265?支持 QVGA(320x240)到Ultra HDTV 4320p(7680x4320).

@@ -125,9 +125,9 @@
 * 
 * IMediaSample：数据传送单元，由分配器(Allocator管理)
 * 数据传送：
-*   推模式(Live Source等) -- CAMThread, Down Filter 的输入Pin上实现 IMemInputPin 接口
+*   推模式(Live Source等) -- 驱动为CAMThread, Down Filter 的输入Pin上实现 IMemInputPin 接口(最常见的模式)
 *   拉模式(File Source等) -- CPullPin，输出Pin上实现 IAsyncReader 接口，通常由 Splitter的输入Pin上的线程“拉”
-*   通过 IOverlay/IOverlayNotify 接口(传统的Video Renderer) -- 没有实际的数据传输？
+*   通过 IOverlay/IOverlayNotify 接口(传统的Video Renderer) -- 通过硬件途径来传递数据，主存中没有实际的数据传输
 *
 * 传送
 *   COutputQueue -- 实现了Sample的队列式传送，可以工作在同步模式，也可以工作在异步模式(使用一个独立的线程)

@@ -15,8 +15,10 @@
 *       ->InitAllocator(由输出Pin创建标准的分配器，再执行相同的逻辑)
 *         DecideBufferSize->InputPin::NotifyAllocator)
 *
-* IMemAllocator -- 负责分配内存空间, 管理 IMediaSample 的内存池，所有的Filter都释放了Samle后，
-*   才能返回给分配器的缓冲池(即不要随便在filter中保存IMediaSample的指针?)
+* IMemAllocator -- 负责分配内存空间, 管理 IMediaSample 的内存池，通过 GetBuffer 返回可以使用的IMediaSample，
+*   所有的Filter都释放了Samle后，才能返回给分配器的缓冲池
+*     (即不要随便在filter中保存IMediaSample的指针?如想要异步处理数据，需要增加引用计数，处理完毕后再减少)
+*   使用引用计数的机制减少了总的内存分配过程(可以重复使用同样的缓冲)，而且防止了数据在被处理前意外地被覆盖写入。
 * IMemInputPin -- （注意：不是从IPin上继承）管理 IMemAllocator，并能接收 IMediaSample
 * IMediaSample
 *************************************************************************************************/

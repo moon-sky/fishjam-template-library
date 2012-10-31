@@ -228,7 +228,10 @@ HRESULT CTextMediaType::Format2String(LPTSTR szBuffer,
     // Video Format
     //
     if (IsEqualGUID(*pFormatType, FORMAT_VideoInfo) ||
-        IsEqualGUID(*pFormatType, FORMAT_MPEGVideo)) 
+		//IsEqualGUID(*pFormatType, FORMAT_VideoInfo2) ||
+        IsEqualGUID(*pFormatType, FORMAT_MPEGVideo) ||
+		IsEqualGUID(*pFormatType, FORMAT_MPEG2Video)  //MPEG2VIDEOINFO
+		)
     {
 		return _GetVideoInfoHeaderInfo(szBuffer, iLength, szName, pFormat, lFormatLength);
     }

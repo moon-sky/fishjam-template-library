@@ -80,6 +80,7 @@
 * DVR -- 数字摄像机
 * DVR-MS(*.dvr-ms) -- 由 Windows XP Service Pack 1 引入的流缓冲引擎（Stream Buffer Engine，SBE）创建的媒体文件，Media Center 
 *   用它存储录制的电视节目。
+* EVR(Enhanced Video Renderer) -- Media Foundation 使用EVR作为渲染器。它可以组合多达16个同步流（simultaneous streams）
 * Exif(Exchangeable Image File Format)--可交换图像文件格式。是专门为数码相机的照片设定的，可以记录
 *   数字照片的属性信息和拍摄数据。http://www.exif.org
 * Filmroll -- 将动画按缩略图展开。
@@ -111,6 +112,7 @@
 *   注意：默认情况下lame编码每次输出的数据不是刚好一帧，如果解码程序把每一个数据包都作为一帧进行解析，会无法解析。
 *         可以在写AVI时对Lame数据进行缓存，查找每一帧再写入AVI。
 * MasterContent -- 管理 BD Author时的源素材(PMB 或 Set内BDMV文件夹内)，主要用于UI显示等。对应于ConvertedContent。
+* MMCSS -- 多媒体类型计划程序服务, Vista 下的一个新的系统服务
 * Mode -- 视频源的模式。分为VideMode和FilmMode。
 *   Video Mode 通常指用摄像机拍摄的，NTSC(29.97fps) 和 PAL(25fps)。
 *   Film Mode 是电影模式，按每秒24帧(fps)拍摄

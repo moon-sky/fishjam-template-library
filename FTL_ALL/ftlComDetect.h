@@ -96,8 +96,18 @@ namespace FTL
 # define INCLUDE_DETECT_KSPROXY     0
 #endif
 
+//MainConcept SDK
+#ifndef INCLUDE_DETECT_MAINCONCEPT
+# define INCLUDE_DETECT_MAINCONCEPT     0
+#endif
+
 #ifndef INCLUDE_DETECT_MEDIAOBJ
 # define INCLUDE_DETECT_MEDIAOBJ    0
+#endif
+
+//Media Foundation
+#ifndef INCLUDE_DETECT_MFIDL
+# define INCLUDE_DETECT_MFIDL    0
 #endif
 
 #ifndef INCLUDE_DETECT_MSHTMLC
@@ -207,9 +217,17 @@ namespace FTL
 #  include <ksproxy.h>
 #endif 
 
+#if INCLUDE_DETECT_MAINCONCEPT
+#  include <ModuleConfig.h>
+#endif 
+
 #if INCLUDE_DETECT_MEDIAOBJ
 #  include <mediaobj.h>
 #endif 
+
+#if INCLUDE_DETECT_MFIDL
+#  include <mfidl.h>
+#endif
 
 #if INCLUDE_DETECT_MSHTMLC
 #  include <Mshtmlc.h>
@@ -406,7 +424,7 @@ struct CFInterfaceEntryExIID
 			COM_VERIFY((pUnknown)->QueryInterface(IID_IServiceProvider,(void**)(&pSvrProvider)));\
 			if(!pSvrProvider) {return DWORD(-1);}\
 		}\
-		CFInterfaceEntryExIID allInterfaceEntries[] = \
+		static CFInterfaceEntryExIID allInterfaceEntries[] = \
 		{\
 
 #define DETECT_INTERFACE_ENTRY_EX_IID(IntType,riid,classDumpInfo) \

@@ -425,6 +425,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MediaFoundationStudy.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MultiMediaGlossary.h"
 				>
 			</File>
@@ -442,6 +446,10 @@
 			</File>
 			<File
 				RelativePath=".\TextMediaType.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ThirdPartyUuids.h"
 				>
 			</File>
 			<File

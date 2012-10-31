@@ -19,8 +19,10 @@
 *     MEDIATYPE_Stream -- 数据流，比如 MPEG2?
 *     MEDIATYPE_Video -- 纯Video, 
 *   subtype    -- 格式类型：
+*     MEDIASUBTYPE_AVC1 -- H.264 bitstream without start codes
 *     MEDIASUBTYPE_Avi -- 
 *     MEDIASUBTYPE_ARGB32
+*     MEDIASUBTYPE_H264 -- H.264 bitstream with start codes.
 *     MEDIASUBTYPE_MPEG1Audio -- 属于MEDIATYPE_Stream
 *     MEDIASUBTYPE_MPEG1AudioPayload -- 属于 MEDIATYPE_Audio
 *     MEDIASUBTYPE_Mpeg2 -- 属于 MEDIATYPE_Stream，其中同时包含音视频?
