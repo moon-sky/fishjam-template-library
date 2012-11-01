@@ -11,6 +11,7 @@
 #define IDS_GRAPH_INFO_PAGE             102
 #define IDD_GRPAH_INFO_PAGE             103
 #define IDD_DEBUG_FILTER_PAGE           104
+#define IDR_MENU_CONTEXT                105
 #define IDC_LIST_INPUT                  1002
 #define IDC_LIST_OUTPUT                 1003
 #define IDC_BTN_CHOOSE_DUMP_FILE_PATH   1004
@@ -32,8 +33,14 @@
 #define IDC_STATIC_SAMPLE_COUNT         1018
 #define IDC_STATIC_RUNNING_TIME         1019
 #define IDC_STATIC_INTERFACES           1019
+#define IDC_STATIC_MEDIATYPES           1020
+#define IDC_STATIC_CONNECT_MEDIATYPE    1021
+#define IDC_EDIT1                       1023
+#define IDC_EDIT_CONNECT_MEDIATYPE      1023
 #define VERSION_RES_LANGUAGE            0x409
 #define VERSION_RES_CHARSET             1252
+#define ID_DEBUGPROPERTYLISTPOP_COPY    40001
+#define ID_CONTEXT_MENU_COPY            40002
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -41,9 +48,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        105
-#define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1020
+#define _APS_NEXT_RESOURCE_VALUE        106
+#define _APS_NEXT_COMMAND_VALUE         40003
+#define _APS_NEXT_CONTROL_VALUE         1024
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

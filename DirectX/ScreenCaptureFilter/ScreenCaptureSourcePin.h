@@ -9,7 +9,8 @@ class CScreenCaptureSourcePin
 	: public CSourceStream
 	//, public IAMStreamControl // Start Stop notify 
 	, public IKsPropertySet   // For expose pin category -- ICaptureGraphBuilder2:: 
-	//, public IAMPushSource    // For push source settings and configuring
+#pragma TODO(add IAMPushSource)
+	//, public IAMPushSource    // 实时源(推模式源), For push source settings and configuring
 	, public IAMLatency       // Latency 
 	, public IAMStreamConfig  // Format configuring 
 	//, public IAMBufferNegotiation  // Allocator configuring

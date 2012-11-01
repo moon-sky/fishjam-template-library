@@ -1,12 +1,6 @@
-//------------------------------------------------------------------------------
-// File: TextType.h
-//
-// Desc: DirectShow sample code - definition of CTextMediaType class.  This
-//       is a class that can return itself as text.
-//
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-//------------------------------------------------------------------------------
+#pragma once
 
+//可以通过 http://mikolajapp.appspot.com/uuid/ 网站查询各种 GUID
 
 class CTextMediaType : public CMediaType {
 

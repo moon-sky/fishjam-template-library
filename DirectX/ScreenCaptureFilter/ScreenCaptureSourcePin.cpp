@@ -341,8 +341,8 @@ HRESULT CScreenCaptureSourcePin::FillBuffer(IMediaSample *pSample)
 
 			//m_rtSampleTime = rtStop;
 
-			ATLTRACE(TEXT("CScreenCaptureSourcePin::FillBuffer , start=%lld(%f ms), stop=%lld(%f ms)\n"),
-				rtStart, float(rtStart) / 10000,  rtStop, float(rtStop) / 10000);
+			//ATLTRACE(TEXT("CScreenCaptureSourcePin::FillBuffer , start=%lld(%f ms), stop=%lld(%f ms)\n"),
+			//	rtStart, float(rtStart) / 10000,  rtStop, float(rtStop) / 10000);
 
 			DX_VERIFY(pSample->SetTime((REFERENCE_TIME *)&rtStart, (REFERENCE_TIME *)&rtStop));
 

@@ -1,9 +1,9 @@
 #include "StdAfx.h"
 #include "GdiScreenCaptureImpl.h"
-#ifndef DEBUG
-//更新 ftlDebug.h
-#include <ftlDebug.h>
-#endif
+//#ifndef DEBUG
+////更新 ftlDebug.h
+//#include <ftlDebug.h>
+//#endif
 
 CGdiScreenCaptureImpl::CGdiScreenCaptureImpl()
 {

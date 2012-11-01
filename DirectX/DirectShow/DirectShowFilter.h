@@ -68,6 +68,11 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     IBasicAudio
 *     IAMDeviceRemoval
 *     IAMOpenProgress
+*   5.实时源(Live Source) -- 实时地接收数据，比如视频采集和网络广播。要求:
+*     a.IAMFilterMiscFlags::GetMiscFlags 返回 AM_FILTER_MISC_FLAGS_IS_SOURCE；
+*     b.至少有一个输出 pin 暴露 IAMPushSource，可通过该接口来进行同步
+*     c.filter暴露 IKsPropertySet 接口，并具有一个 Capture pin（PIN_CATEGORY_CAPTURE）
+*     
 * 
 * CTransformFilter
 *   1.概要说明 -- 使用单独的输出和输入缓冲区(copy-transform filter)，接收一个输入采样后，改写新的数据到一个输出采样
@@ -171,7 +176,10 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *   wmcodecdsp.h 头文件中包含了系统默认可用的编解码器, 对应的 CLSID_XXX 可以通过 GraphEdt 找到后 UuidFromString 得到
 *     UuidFromString(TEXT("205769BC-B121-4CA8-A4E6-84A20EF253B7"), &CLSID_DebugInfoFilter);
 *
-*   CLSID_AviDest(AVI Mux Filter) -- 接收多个输入流，转换为AVI格式，设置其输出Pin
+*   CLSID_AsyncReader(File Srouce(Async.)) -- 完成一般的文件读操作并将数据作为字节流传递下去.通过输出Pin上的 IAsyncReader 提供数据
+*   CLSID_AviDest(AVI Mux Filter) -- 接收多个输入流，转换为AVI格式，设置其输出Pin。
+*     因为AVI文件格式使用固定的帧率而没有时间戳，所以Filter假设Sample在近似正确的时间内到达。
+*     如果Sample没有在合适的时间间隔内到达，Filter会插入一个长度为0的空样本，来表示一个丢失的帧。
 *   CLSID_AviSplitter -- 从文件的源过滤器（File Source(Async)）拉数据，然后分解到视频和音频流。
 *   CLSID_CMP3DecMediaObject -- Windows Media MP3 Decoder ?
 *   CLSID_CMPEG2AudioEncoderMFT -- MPEG2 Audio Encoder ?

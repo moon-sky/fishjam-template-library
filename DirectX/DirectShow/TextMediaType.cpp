@@ -17,11 +17,12 @@
 GUID_STRING_ENTRY g_OtherGuidNames[] = {
     #define OUR_GUID_ENTRY(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
         { #name, { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } } },
+	// 00000000-0000-0000-0000-000000000000
+	OUR_GUID_ENTRY(GUID_NULL, 0L, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 	//{205769BC-B121-4ca8-A4E6-84A20EF253B7}
 	OUR_GUID_ENTRY(CLSID_DebugInfoFilter,
 		0x205769BC,0xB121,0x4ca8,0xA4,0xE6,0x84,0xA2,0x0E,0xF2,0x53,0xB7)
-
 
 	//以下内容是DirectShow中的Sample Filter
 	#include "DShowSampleUuids.h"
@@ -69,7 +70,7 @@ HRESULT CTextMediaType::AsText(LPTSTR szType, unsigned int iLen)
 	TCHAR szMajorType[100] = {0};
     UINT  iMajorType = 100;
 
-    COM_VERIFY(CLSID2String(szMajorType, iMajorType, &majortype));
+    COM_VERIFY_EXCEPT1(CLSID2String(szMajorType, iMajorType, &majortype), S_FALSE);
     szMajorType[99] = 0;        // Ensure null-termination
 
     //
@@ -77,7 +78,7 @@ HRESULT CTextMediaType::AsText(LPTSTR szType, unsigned int iLen)
     //
 	TCHAR szSubType[100] = {0};
     UINT  iSubType = 100;
-    COM_VERIFY(CLSID2String(szSubType, iSubType, &subtype));
+    COM_VERIFY_EXCEPT1(CLSID2String(szSubType, iSubType, &subtype), S_FALSE);
     szSubType[99] = 0;        // Ensure null-termination
 
     //
@@ -99,6 +100,13 @@ HRESULT CTextMediaType::AsText(LPTSTR szType, unsigned int iLen)
 //
 // Find a string description for a given GUID
 //
+
+inline bool IS_ALNUM( char c)
+{
+	bool bRet = (c != 0) && ((c >='a' && c <='z') ||(c >='Z' && c <='Z') ||	(c >='0' && c <='9'));
+	return bRet;
+}
+
 HRESULT CTextMediaType::CLSID2String(LPTSTR szBuffer,
                                   UINT iLength,
                                   const GUID* pGuid)
@@ -118,6 +126,7 @@ HRESULT CTextMediaType::CLSID2String(LPTSTR szBuffer,
     for (int i = 0; i < g_cOtherGuidNames; i++) {
         if (g_OtherGuidNames[i].guid == *pGuid) {
             pszGuidName =  A2T(g_OtherGuidNames[i].szName);
+			break;
         }
     }
 #endif //DETECT_OTHER_GUID_NAMES
@@ -131,10 +140,30 @@ HRESULT CTextMediaType::CLSID2String(LPTSTR szBuffer,
 	TCHAR szGuidString[160] = {0};
 	if (_tcscmp(pszGuidName, TEXT("Unknown GUID Name")) == 0)
 	{
-		StringFromGUID2(*pGuid, szGuidString, _countof(szGuidString));
-		FTLTRACE(TEXT("CTextMediaType Unknown GUID %s\n"), szGuidString);
-		pszGuidName = szGuidString;
-		hr = S_FALSE;
+		BOOL bIsSpecialGuid = FALSE;
+
+		//这是 VideoFormat 的基础类型，其他的类型都是更改其 Data1 的值(参见 mfapi.h MFVideoFormat_Base)
+		static const GUID MEDIASUBTYPE_VideoBase = {0x00000000, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 }};
+		if(0 == memcmp(&(pGuid->Data2), &(MEDIASUBTYPE_VideoBase.Data2), (sizeof(GUID) - sizeof(MEDIASUBTYPE_VideoBase.Data1))))
+		{
+			//如果发现是Video的话，再判断Data1部分是否是字符串格式，是的话以对应字符串作为名字
+			
+			const char* const pData1Info = (const char* const)&pGuid->Data1;
+			if (IS_ALNUM(pData1Info[0]) && IS_ALNUM(pData1Info[1]))
+			{
+				StringCchPrintf(szGuidString, _countof(szGuidString), TEXT("MEDIASUBTYPE_VideoBase + %c%c%c%c"),
+					pData1Info[0], (pData1Info[1]), (pData1Info[2]), (pData1Info[3]));
+				pszGuidName = szGuidString;
+				bIsSpecialGuid = TRUE;
+			}
+		}
+		if (!bIsSpecialGuid)
+		{
+			StringFromGUID2(*pGuid, szGuidString, _countof(szGuidString));
+			FTLTRACE(TEXT("CTextMediaType Unknown GUID %s\n"), szGuidString);
+			pszGuidName = szGuidString;
+			hr = S_FALSE;
+		}
 	}
     size_t nLength = _tcslen(pszGuidName);
 
@@ -221,7 +250,7 @@ HRESULT CTextMediaType::Format2String(LPTSTR szBuffer,
     //
 	TCHAR szName[50] = {0};
     UINT iName = 50;
-    COM_VERIFY(CLSID2String(szName, iName, pFormatType));
+    COM_VERIFY_EXCEPT1(CLSID2String(szName, iName, pFormatType), S_FALSE);
     szName[49] = 0;     // Ensure null-termination
 
     //

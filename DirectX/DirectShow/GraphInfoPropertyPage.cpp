@@ -91,10 +91,13 @@ HRESULT CGraphInfoPropertyPage::OnDeactivate()
 	_ClearPinList();
 	_ClearFilterList();
 
+	m_stInterfaces.Detach();
+	m_stMediaTypes.Detach();
 	m_listInterfaces.Detach();
 	m_listMediaTypes.Detach();
 	m_listPins.Detach();
 	m_listFilters.Detach();
+	m_edtConnectMediaType.Detach();
 
 	COM_VERIFY(__super::OnDeactivate());
 	return hr;
@@ -279,6 +282,8 @@ void CGraphInfoPropertyPage::OnListFilterSelChange(UINT uNotifyCode, int nID, CW
 		{
 			_GetPinList(pFilter);
 			_GetInterfaceList(pFilter);
+			_ClearMediaTypeList();
+			m_edtConnectMediaType.SetWindowText(TEXT(""));
 		}
 	}
 }
@@ -308,11 +313,15 @@ HRESULT CGraphInfoPropertyPage::_GetMediaTypeList(IPin* pPin)
 {
 	HRESULT hr = S_OK;
 	CComPtr<IEnumMediaTypes> spEnumMediaTypes;
-
+	CMediaType ConnectionMediaType;
+	BOOL bHasConnectionMediaType = FALSE;
 	if (pPin)
 	{
 		DX_VERIFY_EXCEPT1(pPin->EnumMediaTypes(&spEnumMediaTypes), VFW_E_NOT_CONNECTED);
+		DX_VERIFY_EXCEPT1(pPin->ConnectionMediaType(&ConnectionMediaType), VFW_E_NOT_CONNECTED); //得到Pin上连接的媒体类型
+		bHasConnectionMediaType = SUCCEEDED(hr);
 	}
+
 	if (spEnumMediaTypes)
 	{
 		AM_MEDIA_TYPE* pMediaType = NULL;
@@ -338,7 +347,42 @@ HRESULT CGraphInfoPropertyPage::_GetMediaTypeList(IPin* pPin)
 			//enum over
 			hr = S_OK;
 		}
+
+		if (bHasConnectionMediaType)
+		{
+			CTextMediaType connectMediaTypeText(ConnectionMediaType);
+			DX_VERIFY(connectMediaTypeText.AsText(szMediaInfo, _countof(szMediaInfo)));
+			m_edtConnectMediaType.SetWindowText(szMediaInfo);
+		}
+		else
+		{
+			m_edtConnectMediaType.SetWindowText(TEXT("<None>"));
+		}
 	}
+
+	int nCount = m_listMediaTypes.GetCount();
+	int nIndex = 0;
+	for ( ; nIndex < nCount; nIndex++)
+	{
+		AM_MEDIA_TYPE* pMediaType = (AM_MEDIA_TYPE*)m_listMediaTypes.GetItemDataPtr(nIndex);
+		if (ConnectionMediaType == *pMediaType)
+		{
+			break;
+		}
+	}
+
+	CString strMediaTypes;
+	if (nIndex < nCount)
+	{
+		m_listMediaTypes.SetCurSel(nIndex);
+		strMediaTypes.Format(TEXT("MediaTypes: ActiveIndex=%d"), nIndex);
+	}
+	else
+	{
+		strMediaTypes.Format(TEXT("MediaTypes: ActiveIndex=%d"), -1);
+	}
+	m_stMediaTypes.SetWindowText(strMediaTypes);
+	
 	FTL::CFControlUtil::UpdateListboxHorizontalExtent(m_listMediaTypes, LIST_BOX_MARGIN);
 	return hr;
 }
@@ -405,4 +449,70 @@ HRESULT CGraphInfoPropertyPage::_GetInterfaceList(IUnknown* pUnknown)
 		FTL::CFControlUtil::UpdateListboxHorizontalExtent(m_listMediaTypes, LIST_BOX_MARGIN);
 	}
 	return hr;
+}
+
+void CGraphInfoPropertyPage::_OnContextMenu(CWindow wnd, CPoint point)
+{
+	BOOL bRet = TRUE;
+	if (wnd.IsWindow())
+	{
+		TCHAR szWndClassName[128] = {0};
+		::GetClassName(wnd.m_hWnd, szWndClassName, _countof(szWndClassName));
+		if (lstrcmpi(szWndClassName, TEXT("ListBox")) == 0)
+		{
+			CMenu menuMain;
+			API_VERIFY(menuMain.LoadMenu(MAKEINTRESOURCE(IDR_MENU_CONTEXT)));
+			CMenuHandle menuContext = menuMain.GetSubMenu(0);
+			API_VERIFY(menuContext.TrackPopupMenu(TPM_LEFTALIGN|TPM_TOPALIGN, point.x, point.y, m_hwnd, NULL ));
+		}
+	}
+}
+
+void CGraphInfoPropertyPage::_OnMenuCopyClicked(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	BOOL bRet = FALSE;
+	CPoint ptCursor(0, 0);
+	CString strSelect;
+	API_VERIFY(GetCursorPos(&ptCursor));
+	if (bRet)
+	{
+		CListBox listBox;
+		HWND hWndList = WindowFromPoint(ptCursor);
+		listBox.Attach(hWndList);
+		if (listBox.IsWindow())
+		{
+			int nCurSelect = listBox.GetCurSel();
+			if (nCurSelect != -1)
+			{
+				listBox.GetText(nCurSelect, strSelect);
+			}
+			listBox.Detach();
+		}
+	}
+	if (strSelect)
+	{
+		API_VERIFY(OpenClipboard(m_hwnd));
+		if (bRet)
+		{
+			EmptyClipboard();
+			int cch = strSelect.GetLength() ;
+			HGLOBAL hglbCopy = GlobalAlloc(GMEM_FIXED,(cch + 1) * sizeof(TCHAR)); 
+			if (hglbCopy) 
+			{ 
+				LPTSTR  lptstrCopy = (LPTSTR)GlobalLock(hglbCopy); 
+				CopyMemory(lptstrCopy,  (LPCTSTR)strSelect, cch * sizeof(TCHAR)); 
+				lptstrCopy[cch] = (TCHAR)0;// null character 
+				GlobalUnlock(hglbCopy);
+#ifdef _UNICODE
+				API_VERIFY(NULL != SetClipboardData(CF_UNICODETEXT, hglbCopy));
+#else
+				API_VERIFY(NULL != SetClipboardData(CF_TEXT, hglbCopy));
+#endif 
+
+				GlobalFree(hglbCopy);
+			} 
+			API_VERIFY(CloseClipboard());
+		}
+	}
+	//MessageBox(m_hwnd, TEXT("_OnMenuCopyClicked"), TEXT("aaa"), MB_OK);
 }

@@ -82,7 +82,7 @@ HRESULT CDebugInfoFilterProperty::_DisplayPinInfo(IPin* pPin, HWND hwndListbox, 
 		CComQIPtr<IPersist> spFilterPersist(pinInfo.pFilter);
 		if (spFilterPersist)
 		{
-			DX_VERIFY(spFilterPersist->GetClassID(&clsidFilter));
+			DX_VERIFY_EXCEPT1(spFilterPersist->GetClassID(&clsidFilter), S_FALSE);
 			if(S_OK != CTextMediaType::CLSID2String(szFilterName, _countof(szFilterName), &clsidFilter))
 			{
 				StringFromGUID2(clsidFilter, szFilterName, _countof(szFilterName));
@@ -284,6 +284,11 @@ HRESULT CDebugInfoFilterProperty::_ReConnectUseMediaType(AM_MEDIA_TYPE* pMediaTy
 				}
 				DX_VERIFY(spFilterInputPin->Disconnect());
 			}
+			if (FAILED(hr))
+			{
+				return hr;
+			}
+			
 			if (m_pOutputConnectedPin)
 			{
 				DX_VERIFY(m_pOutputConnectedPin->ConnectedTo(&spFilterOutputPin));
@@ -293,7 +298,11 @@ HRESULT CDebugInfoFilterProperty::_ReConnectUseMediaType(AM_MEDIA_TYPE* pMediaTy
 				}
 				DX_VERIFY(m_pOutputConnectedPin->Disconnect());
 			}
-
+			
+			if (FAILED(hr))
+			{
+				return hr;
+			}
 #if 0
 			if (m_pInputConnectedPin)
 			{
@@ -347,7 +356,8 @@ HRESULT CDebugInfoFilterProperty::_CheckAndReconnectUseMediaType()
 		{
 			HRESULT hrError = hr;
 			FormatMessageBox(m_hwnd, TEXT("Error"),
-				MB_OK, TEXT("Use New MediaType Connect Failed(0x%x)"), hr);
+				MB_OK, TEXT("Use New MediaType Connect Failed(0x%x)\r\n%s"), 
+				hr, FTL::CFDirectXErrorInfo(hr).GetConvertedInfo());
 			//AM_MEDIA_TYPE* pOldMediaType = static_cast<AM_MEDIA_TYPE*> (m_listInput.GetItemDataPtr(m_nInputIndex));
 			//DX_VERIFY(_ReConnectUseMediaType(pOldMediaType));
 			return hrError;
@@ -464,6 +474,76 @@ INT_PTR CDebugInfoFilterProperty::OnReceiveMessage(HWND hwnd,UINT uMsg,WPARAM wP
 		nRet = __super::OnReceiveMessage(hwnd,uMsg,wParam,lParam);
 	}
 	return nRet;
+}
+
+void CDebugInfoFilterProperty::_OnContextMenu(CWindow wnd, CPoint point)
+{
+	BOOL bRet = TRUE;
+	if (wnd.IsWindow())
+	{
+		if (wnd.m_hWnd == m_listInput.m_hWnd || wnd.m_hWnd == m_listOutput.m_hWnd)
+		{
+			CMenu menuMain;
+			API_VERIFY(menuMain.LoadMenu(MAKEINTRESOURCE(IDR_MENU_CONTEXT)));
+			CMenuHandle menuContext = menuMain.GetSubMenu(0);
+			API_VERIFY(menuContext.TrackPopupMenu(TPM_LEFTALIGN|TPM_TOPALIGN, point.x, point.y, m_hwnd, NULL ));
+		}
+	}
+}
+
+void CDebugInfoFilterProperty::_OnMenuCopyClicked(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	BOOL bRet = FALSE;
+	CPoint ptCursor(0, 0);
+	CString strSelect;
+	API_VERIFY(GetCursorPos(&ptCursor));
+	if (bRet)
+	{
+		CListBox* pListBox = NULL;
+		HWND hWndList = WindowFromPoint(ptCursor);
+		if (hWndList == m_listInput.m_hWnd)
+		{
+			pListBox = &m_listInput;
+		}
+		else if(hWndList == m_listOutput.m_hWnd)
+		{
+			pListBox = &m_listOutput;
+		}
+		if (pListBox)
+		{
+			int nCurSelect = pListBox->GetCurSel();
+			if (nCurSelect != -1)
+			{
+				pListBox->GetText(nCurSelect, strSelect);
+			}
+		}
+	}
+	if (strSelect)
+	{
+		API_VERIFY(OpenClipboard(m_hwnd));
+		if (bRet)
+		{
+			EmptyClipboard();
+			int cch = strSelect.GetLength() ;
+			HGLOBAL hglbCopy = GlobalAlloc(GMEM_FIXED,(cch + 1) * sizeof(TCHAR)); 
+			if (hglbCopy) 
+			{ 
+				LPTSTR  lptstrCopy = (LPTSTR)GlobalLock(hglbCopy); 
+				CopyMemory(lptstrCopy,  (LPCTSTR)strSelect, cch * sizeof(TCHAR)); 
+				lptstrCopy[cch] = (TCHAR)0;// null character 
+				GlobalUnlock(hglbCopy);
+#ifdef _UNICODE
+				API_VERIFY(NULL != SetClipboardData(CF_UNICODETEXT, hglbCopy));
+#else
+				API_VERIFY(NULL != SetClipboardData(CF_TEXT, hglbCopy));
+#endif 
+				
+				GlobalFree(hglbCopy);
+			} 
+			API_VERIFY(CloseClipboard());
+		}
+	}
+	//MessageBox(m_hwnd, TEXT("_OnMenuCopyClicked"), TEXT("aaa"), MB_OK);
 }
 
 //////////////////////////////////////////////////////////////////////////

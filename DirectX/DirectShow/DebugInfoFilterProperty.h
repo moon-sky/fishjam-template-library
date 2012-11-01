@@ -26,15 +26,12 @@ public:
 	END_DDX_MAP()
 
 	BEGIN_MSG_MAP_EX(CDebugInfoFilterProperty)
-		MSG_WM_COMMAND(_OnCommand)
+		//DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE, uMsg, wParam, lParam)
+		COMMAND_HANDLER_EX(ID_CONTEXT_MENU_COPY, BN_CLICKED, _OnMenuCopyClicked)
 		COMMAND_HANDLER_EX(IDC_BTN_RESET_RUNNING_INFO, BN_CLICKED, _OnBtnResetRunningInfoClicked)
+		MSG_WM_COMMAND(_OnCommand)
+		MSG_WM_CONTEXTMENU(_OnContextMenu)
 	END_MSG_MAP()
-
-	void _OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
-	void _OnBtnResetRunningInfoClicked(UINT uNotifyCode, int nID, CWindow wndCtl);
-
-	HRESULT _CheckAndReconnectUseMediaType();
-	HRESULT _ReConnectUseMediaType(AM_MEDIA_TYPE* pMediaType);
 
 	HWND GetDlgItem(int nID) const throw()
 	{
@@ -56,7 +53,16 @@ private:
 	CWindow				m_wndInputInfo;
 	CWindow				m_wndOutputInfo;
 	FilterDebugParam    m_FilterDebugParam;
-	BOOL                OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam);
+	//BOOL                OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam);
 	HRESULT             _DisplayPinInfo(IPin* pPin, HWND hwndListbox, HWND hwndInfo, int& nCurIndex);
 	HRESULT				_ClearDisplayPinInfo(HWND hwndListbox);
+
+	void _OnContextMenu(CWindow wnd, CPoint point);
+	void _OnCommand(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void _OnBtnResetRunningInfoClicked(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void _OnMenuCopyClicked(UINT uNotifyCode, int nID, CWindow wndCtl);
+
+	HRESULT _CheckAndReconnectUseMediaType();
+	HRESULT _ReConnectUseMediaType(AM_MEDIA_TYPE* pMediaType);
+
 };

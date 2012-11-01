@@ -3,6 +3,8 @@
 #pragma once
 
 //浅析DirectShow音视频同步解决方案 http://www.yesky.com/143/1805143.shtml
+// Win8开发报名 http://msdn.microsoft.com/zh-cn/Hackathon 
+
 //CBasePin::NewSegment -- 什么用处?
 //  时间的最大(或初始值)一般可以设置为 MAX_TIME
 /****************************************************************************************************
@@ -33,7 +35,10 @@
 * 时间同步
 *   1.流内同步 -- 保证单个媒体流内的时间关系，以满足感知要求，如按照规定的帧率播放一段视频
 *   2.流间同步 -- 保证不同媒体流之间的时间关系，如音视频、字幕流之间的关系
-*     音视频同步 -- latency (mostly used for configuring audio video sync -- IAMLatency ) ???
+*     音视频同步 -- latency (延时，mostly used for configuring audio video sync -- IAMLatency ) 
+*       一个Filter的延时是这个Filter处理一个样本所需的时间总和，。在实时源中，延时取决于保存样本的缓冲区大小。
+*         如 Graph 有一个33ms延时的视频源和一个具有500ms延时的音频源，则每个到达Renderer的视频帧要比与之匹配的音频样本到达音频renderer早470ms，
+*            Graph 需要对这个差别进行补偿.
 *       TODO?: AVI压缩时需要IConfigAviMux::MasterStream设置以哪个流(None[-1]、Video[0]、Audio[1])作为时间基准？ 
 *              如果音频、视频采集不是同一个设备，采集一段时间后可能出现偏差，因此保存时需要以一个为基准，
 *              调整另一个的帧率(一般是以音频为基准?)。
@@ -58,11 +63,11 @@
 *       1.文件回放(Playback) -- 第一个Sample的时间戳从0开始打起，后面Sample的时间戳根据Sample有效数据的长度和回放速率来定;
 *       2.音视频捕捉(Capture) -- 原则上，采集到的每一个Sample的开始时间都打上采集时刻的Stream time，
 *                       视频采集，Preview Pin出来Sample不打时间戳，否则每个时间戳到Render都是晚了的(会因为质量控制照成丢帧)；
-*                       音频采集，Audio Capture Filter与声卡驱动程序两者各自使用了不同的缓存，采集的数据是定时从驱动程序缓存拷贝到Filter的缓存的，
-*                         这里面有一定时间的消耗（会造成同步问题?）
-*       3.合成(Mux) -- 取决于Mux后输出的数据类型，可以打时间戳，也可以不打时间戳
-*   SetMediaTime -- 不是必须的，取决于实现。可打递增的序号，来判断是否有Sample丢失，依赖于程序实现
-*
+*                       音频采集，Audio Capture Filter与声卡驱动程序两者各自使用了不同的缓存，音频驱动以固定的时间间隔(如10ms)来填充采集filter的缓冲。
+*                         在音频样本上的时间戳反映的是驱动填充采集filter时的时间，因此会有偏差，但媒体时间可以精确地反映缓冲区中音频样本的数量
+*       3.合成(Mux) -- 取决于Mux后输出的数据类型，可以打时间戳，也可以不打时间戳（如 AVI文件格式使用固定的帧率而没有时间戳、
+*   SetMediaTime -- 不是必须的，取决于实现。可打递增的序号，来判断是否有Sample丢失，依赖于程序实现。
+*                   如 在视频流中，media time表示视频帧的数量。在音频流中，media time表示包中的样本数量。
 * TIMECODE_SAMPLE(时间编码)
 *   
 *   

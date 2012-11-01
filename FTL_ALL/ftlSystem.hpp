@@ -430,7 +430,8 @@ namespace FTL
 
         BOOL bRet = TRUE ;
         BOOL bOpenedCB = FALSE ;
-        if ( TRUE == ::OpenClipboard ( hWndOwner ) )
+		API_VERIFY(::OpenClipboard ( hWndOwner ))
+        if ( bRet )
         {
             bOpenedCB = TRUE ;
             if ( TRUE == ::EmptyClipboard ( ) )

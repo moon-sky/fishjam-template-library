@@ -4,6 +4,11 @@
 #pragma once
 
 /**************************************************************************************************
+* 通常来说，一个Filter应该暂停(阻塞)于以下俩个位置:
+*   IMemAllocator::GetBuffer(本Filter使用的MediaSample被占完了) 
+*   IMemInputPin::Receive(推模式中下级Filter不能接收数据)
+*   IAsyncReader::Request?(拉模式中是否有类似的?)
+*
 * Filter 默认都是Both型的COM组件，可通过 COINIT_MULTITHREADED 初始化COM( AMovieSetupRegisterServer )
 * 使用 CAutoLock + CCritSec 的方式进行同步处理
 *   CBaseFilter、CBasePin 都有保护成员变量 CCritSec *m_pLock; 该变量通常由子类定义后通过构造函数传入使用
@@ -25,6 +30,7 @@
 *     CBallStream::OnThreadCreate
 *   
 * Filter 通过m_State保存三种状态(FILTER_STATE)，可以通过重载的 CBaseFilter::Stop、Pause、Run 等方法来支持暂停、继续等.
+*   Filter Graph Manager按从下游Filter到上游Filter的次序来完成所有的状态转换(即从Render开始，Source 结束)，这种顺序可以防止数据丢失或Graph死锁
 *   1. State_Stopped
 *   2. State_Paused
 *   3. State_Running

@@ -60,14 +60,22 @@ const AMOVIESETUP_FILTER sudDebugInfoFilter =
 {
     &CLSID_DebugInfoFilter, // Filter CLSID
     L"Debug Info Filter",     // Filter name
-    MERIT_DO_NOT_USE,       // Its merit
+	MERIT_DO_NOT_USE,
+    //MERIT_PREFERRED + 0x88888,       // Its merit
     2,                      // Number of pins
     psudPins                // Pin details
 };
 
+static int g_Count = 0;
 CUnknown* CDebugInfoFilter::CreateInstance(LPUNKNOWN lpunk, HRESULT *phr)
 {
     ASSERT(phr);
+	if (g_Count > 0)
+	{
+		*phr = E_OUTOFMEMORY;
+		return NULL;
+	}
+	g_Count++;
 
     CDebugInfoFilter *pNewDebugInfoFilter = new CDebugInfoFilter(lpunk, phr);
     if (pNewDebugInfoFilter == NULL) 
@@ -162,7 +170,7 @@ HRESULT CDebugInfoFilter::Transform(IMediaSample *pSample)
 	if (SUCCEEDED(hr))
 	{
 		long nDataLength = pSample->GetActualDataLength();
-		FTLTRACEEX(FTL::tlTrace, TEXT("CDebugInfoFilter::Transform, length=%d, StartTime=%f ms, EndTime=%f ms, Start-LastEnd=%lld\n"),
+		FTLTRACEEX(FTL::tlDetail, TEXT("CDebugInfoFilter::Transform, length=%d, StartTime=%f ms, EndTime=%f ms, Start-LastEnd=%lld\n"),
 			nDataLength, float(llTimeStart)/10000, float(llTimeEnd)/10000, llTimeStart - m_llLastTimeEnd);
 
 		if (llTimeStart < m_llLastTimeEnd)

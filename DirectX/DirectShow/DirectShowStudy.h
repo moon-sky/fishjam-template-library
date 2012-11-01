@@ -197,12 +197,16 @@
 * 在Filtr Graph运行状态下，可以动态加入新的Filter，但不能删掉Filter，也不能断开Filter之间的Pin连接。
 *   Filter从Filter Graph中删除必须在Stopped状态，删除前将这个Filter的Pin断开不是必要的！（连接着的Pin
 *   可以通过IFilterGraph::Disconnect断开，并且连接两头的Pin都要调用一次！）
-* 动态重建技术 -- 保持 Filter Graph 运行状态的同时实现重建
-*   1.媒体类型的动态改变：
-*   2.增加或删除Filter，重新进行相关Filter之间的连接：
+* 动态重建技术(Dynamic Graph Building) -- 保持 Filter Graph 运行状态的同时实现重建
+*   1.播放过程中媒体类型的动态改变，需要加入新的解码Filter：
+*   2.增加或删除Filter(如 Video Effect)，重新进行相关Filter之间的连接：
 *   3.对一条Filter链路(Filter Chain)进行操作：
-*   
-*
+*     Filter Chain(IFilterChain):相互连接着的一条Filter链路，并且链路中的每个Filter至多有一个Input pin，至多有一个Output pin
+*   需要的技术：
+*     IPinFlowControl -- 阻塞和重启数据流，可同步或异步调用，但需要小心同步调用时可能发生死锁
+*     IGraphConfig -- Reconnect 或 Reconfigure
+*     IPinConnection  -- 动态重连
+*  
 * 压缩/解压 -- ACM（Audio Compression Manager）和VCM（Video Compression Manager），可以通过 Windows Multimedia API 调用？
 *   在DirectShow中都是通过包装Filter(Wrapper Filter)应用的，作为压缩用时，只能通过系统枚举取得。
 *   ACM 作为解压用时注册在"DirectShow Filters"目录下，作为压缩用时注册在"Audio Compressors"目录
@@ -215,8 +219,15 @@
 * 问题
 *   1.为什么BaseClass中需要特意处理 UNICODE 宏？非UNICODE时不是成了重复定义？
 *   
+* Plug-in Distributors(PIDs) -- 通过聚合COM对象来扩展FilterGraphManager，
+*   Graph被要求查询一个它不支持的接口时,会查询 HKEY_CLASSES_ROOT\\Interface\\{IID}\\Distributor,
+*   如果注册项存在，那么键值便是支持该接口的PID类标识(CLSID)， 
+*   如 {877E4352-6FEA-11d0-B863-00AA00A216A1} 下关联的 "Plug In Distributor: IKsClock"，
+*   需要支持 IDistributorNotify 接口(可得知GraphManager的各种状态变化)
+*   PID实现时，构造函数中需要检查IUnknown指针，如果其为NULL，返回错误码 VFW_E_NEED_OWNER，并检查是否有 IGraphBuilder接口，从而保证被正确聚合使用。
+*   
 *************************************************************************************************/
 GetSubtypeName
 TODO:看看系统提供的Filter有哪些
- 
+ IGraphConfig
 #endif //DIRECT_SHOW_STUDY_H

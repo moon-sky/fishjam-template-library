@@ -354,18 +354,20 @@ namespace FTL
 			if (spAMStreamConfig)
 			{
 				int nCount = 0, nSize = 0;
-				COM_VERIFY(spAMStreamConfig->GetNumberOfCapabilities(&nCount, &nSize));
-				for (int i = 0; i < nCount; i++) 
+				COM_VERIFY_EXCEPT1(spAMStreamConfig->GetNumberOfCapabilities(&nCount, &nSize), E_NOTIMPL);
+				if (SUCCEEDED(hr))
 				{
-					AM_MEDIA_TYPE* pMediaType = NULL;
-					AUDIO_STREAM_CONFIG_CAPS confCaps;
-					//hr = spAMStreamConfig->GetStreamCaps(i, &pMediaType, (BYTE*)&confCaps);
-					//if (SUCCEEDED(hr)) 
-					//{
-					//	FreeMediaType(*pMediaType);
-					//}
+					for (int i = 0; i < nCount; i++) 
+					{
+						AM_MEDIA_TYPE* pMediaType = NULL;
+						AUDIO_STREAM_CONFIG_CAPS confCaps;
+						//hr = spAMStreamConfig->GetStreamCaps(i, &pMediaType, (BYTE*)&confCaps);
+						//if (SUCCEEDED(hr)) 
+						//{
+						//	FreeMediaType(*pMediaType);
+						//}
+					}
 				}
-
 			}
 			//pMediaSeeking->IsFormatSupported();
 			return hr;
@@ -2087,12 +2089,13 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY(IFilterGraph3)
             DETECT_INTERFACE_ENTRY(IStreamBuilder)
 
-            //!在Source Filter的输出Pin上实现拉模式的接口
+            //!在Source Filter的输出Pin上实现拉模式的接口,通常连接 parser Filter
+			// 有Request(异步调用，支持多重读操作);SyncRead/SyncReadAligned(同步调用)
             DETECT_INTERFACE_ENTRY(IAsyncReader)
             DETECT_INTERFACE_ENTRY(IGraphVersion)
             DETECT_INTERFACE_ENTRY(IResourceConsumer)
             DETECT_INTERFACE_ENTRY(IResourceManager)
-            DETECT_INTERFACE_ENTRY(IDistributorNotify)
+            DETECT_INTERFACE_ENTRY(IDistributorNotify) //PID支持时
             DETECT_INTERFACE_ENTRY(IAMStreamControl)
 			//! 在 CLSID_SeekingPassThru 中, 将 Seeking 操作 PassThrough 到上一个Filter ?
             DETECT_INTERFACE_ENTRY(ISeekingPassThru)
@@ -2143,13 +2146,19 @@ namespace FTL
             //!  控制视频的单步播放, Step/CanStep/...
             DETECT_INTERFACE_ENTRY(IVideoFrameStep)
             DETECT_INTERFACE_ENTRY(IAMLatency)
-            DETECT_INTERFACE_ENTRY(IAMPushSource)
+            DETECT_INTERFACE_ENTRY(IAMPushSource)	//实时源(推模式源)的输出Pin需要实现这个接口
             DETECT_INTERFACE_ENTRY(IAMDeviceRemoval)
             DETECT_INTERFACE_ENTRY(IDVEnc)
             DETECT_INTERFACE_ENTRY(IIPDVDec)
             DETECT_INTERFACE_ENTRY(IDVRGB219)
             DETECT_INTERFACE_ENTRY(IDVSplitter)
             DETECT_INTERFACE_ENTRY(IAMAudioRendererStats)
+
+			//! 当通过其SyncUsingStreamOffset激活同步后(默认非激活)，Graph会查询支持IAMPushSource的SourceFilter，
+			//  并通过其 GetLatency 来得到filter预期的延时，并计算决定Graph中最大的预期延时(如音+视频)
+			//  然后调用IAMPushSource::SetStreamOffset来给每一个source filter一个流偏移，以后filter会在产生时间戳时加上这个偏移
+			//  目的是实现“实时预览”
+			//	  问题：实时采集设备（比如摄像头）的preview pin上是没有时间戳的，因此必须在Capture pin上进行视频预览
             DETECT_INTERFACE_ENTRY(IAMGraphStreams)
             DETECT_INTERFACE_ENTRY(IAMOverlayFX)
             DETECT_INTERFACE_ENTRY(IAMOpenProgress)
