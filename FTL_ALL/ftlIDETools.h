@@ -489,20 +489,68 @@ namespace FTL
     ******************************************************************************************************************************/
 
     /******************************************************************************************************************************
+	* .pn9 目录下有大量文件，什么生成的?
+	*
+	* CI的环境配置(C:\hudson\tools\apache-tomcat-5.5.35\bin)
+	*   ANT_HOME=C:\hudson\tools\apache-ant-1.8.2
+	*   classpath=.;%JAVA_HOME%\lib\tools.jar;%JAVA_HOME%\lib\dt.jar
+	*   COVFILE=C:\Users\hudson\Documents\test.cov
+	*   GIT_HOME=C:\Program Files (x86)\Git
+	*   GTEST_HOME=C:\gtest-1.6.0
+	*   HUDSON_HOME=C:\hudson\workspace
+    *   JAVA_HOME=C:\Program Files\Java\jdk1.6.0_30
+	*   MAVEN_HOME=C:\hudson\tools\apache-maven-2.2.1
+	*   Path=C:\Program Files (x86)\BullseyeCoverage\bin;
+	*        C:\hudson\util\klocwork\bin;C:\Program Files\Java\jdk1.6.0_30\bin;
+	*        %MAVEN%\bin;%ANT%\bin;C:\Program Files (x86)\Cppcheck\;
+	*        C:\hudson\util\nsiqcppstyle\nsiqcppstyle;C:\hudson\util\bullshtml;
+	*        C:\hudson\tools\apache-ant-1.8.2\bin;
+	*        C:\Program Files (x86)\Git\binC:\Program Files (x86)\PHP\;C:\Windows\system32;
+	*        C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;
+	*        c:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\;
+	         c:\Program Files\Microsoft SQL Server\100\Tools\Binn\;
+	*        c:\Program Files\Microsoft SQL Server\100\DTS\Binn\;C:\Program Files (x86)\Git\cmd;
+	*        C:\Program Files\TortoiseSVN\bin;C:\Python27;c:\Program Files (x86)\Microsoft SQL Server\90\Tools\binn\;
+	*        C:\Program Files\Microsoft Windows Performance Toolkit\;
+	*        C:\Program Files (x86)\Mozilla Firefox;C:\cygwin\bin;
+	*   PHPRC=C:\Program Files (x86)\PHP\
+	*   PROCESSOR_ARCHITECTURE=AMD64
+	*   PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 44 Stepping 2, GenuineIntel
+	*   PSModulePath=%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules\
+	*   PYTHON_HOME=C:\Python27
+	*   VS100COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\Tools\
+	*   VS90COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\Tools\
+	*
+	*
     * Hudson -- 持续集成(Continuous Integration)的工具
     *   NHN的帮助：http://devcafe.nhncorp.com/QPTalk/529396
     * 执行流程：Svn Update->Build(batch/shell)->PostBuild(生成gtest测试报告等)
     * 
     * 下载安装：
     *   1.http://jdk6.java.net/download.html, 中下载安装JDK(6.0),设置 JAVA_HOME 
-    *   2.http://tomcat.apache.org/ <== 6.0, Binaray Distribution, Core zip，解压设置 TOMCAT_HOME 
-    *   3.http://hudson-ci.org/downloads/war/  <== 在 1.395版本以后分为 hudson 和 JeXXXX ? 两个分支，
-    *     将 hudson.war 放在 TOMCAT 的 webapps 目录中，
+    *   2.http://tomcat.apache.org/ <== 60, Binaray Distribution, Core zip，解压设置 TOMCAT_HOME, 
+	*     a. 更改 conf\server.xml 文件，在每个 "<Connector port=" 部分增加 URIEncoding="UTF-8" 的属性，可避免Jobs名中包含非ASCII字符时出错。
+	*     b. 怎么改?
+	*     JAVA_OPTS="$JAVA_OPTS -Xms2048m -Xmx2048m -Dfile.encoding=UTF-8 -server -Dnet.mdns.interface=0.0.0.0"
+	*     JAVA_OPTS="$JAVA_OPTS -server -Xms256m -Xmx2048m -XX:PermSize=600m -XX:MaxPermSize=2048m -Dcom.sun.management.jmxremote"
+	*     JAVA_OPTS="$JAVA_OPTS -DHUDSON_HOME=C:\hudson\workspace -Xmx2048m"
+	*     CATALINA_OPTS="-DHUDSON_HOME=C:\hudson\workspace -Xmx2048m"
+    *   3.http://hudson-ci.org/downloads/war/  <== 在 1.395版本以后分为 hudson 和 JeXXXX ? 两个分支，目前最新的是 1.395.1
+    *     将 hudson.war 放在 TOMCAT 的 webapps 目录中，也可解压成 hudson 子目录
     *     设置 HUDSON_HOME 变量到指定的工作目录(放置下载的源码进行编译)，默认为 CSIDL_APPDATA
     *   4.下载解压 apache-maven ? ， 设置 MAVEN_HOME 
+	*   5.安装 Python27, 设置 PYTHON_HOME 环境变量
     *   通过 startup.bat 批处理启动Tomcat,然后访问 http://localhost:8080/hudson/， 停止时是 shutdown.bat
-    *
-    * 配置
+    *     启动后(选择Jenkins版本)， 一般先安装必要的Plugins，然后在系统管理中进行配置
+	*     注意：需要在Plugin Manager的Advanced中需要将 Update Site改为： http://updates.hudson-labs.org/update-center.json
+	*           原来的默认地址是：http://updates.jenkins-ci.org/update-center.json
+	*     a.全局属性中，增加"Environment variables"的键值对
+	*       gcovr -- ${PYTHON_HOME}\Scripts\gcovr (需要解压 gcovr-2.3.1.tar.gz, 然后将 scripts\gcovr 更改 python的路径后放到 Python27 下)
+	*       GTEST_HOME -- C:\gtest-1.6.0
+	*       NSIQCPPSTYLEPATH -- C:\hudson\util\nsiqcppcheckstyle\nsiqcppcheckstyle  <== 似乎路径不对
+	*       path -- C:\hudson\util\nsiqcppcheckstyle\nsiqcppcheckstyle;${path}      <== 似乎路径不对
+	*
+    * CI配置(tomcat5.5.36,安装出来后是5.5.35?)
     *   Build Triggers -- schedule 中依次表示 分钟/小时/天/月/周， 如 X/10 * * * * 表示每10分钟触发一次 
     *     Commit Build -- 轮询(如10分钟)，有变动时则编译和单元测试，保证及时发现编译问题
     *     Integration Build -- 定时(如每晚),进行完整编译和全部检查(UT、静态、CC等)
@@ -511,29 +559,50 @@ namespace FTL
     * 
     * 文件路径: ** 表示目录及子目录，如 JUnit 结果文件应该设置为 xx/test_detail.xml 表示搜索当前目录及子目录中的该文件
     * 
-    * 常见Plugin -- http://wiki.hudson-ci.org/display/HUDSON/Plugins
-    *   Publish JUnit test result report -- 可以查看 JUnit/GTest测试后的 xml(如 gtest默认 的test_detail.xml)
+    * 常见Plugin(勾选后在最下面选择 Install，会自动下载 *.hpi文件并安装) -- http://wiki.hudson-ci.org/display/HUDSON/Plugins
+	*   安装以后可以通过 http://localhost:8080/hudson/restart 重启(不过Windows下有问题，不能重启成功)
+	*   SimpleUpdateSite(NHN) -- 定制化的Plugin升级工具,http://devcode.nhncorp.com/projects/updatecenter/downoad,
+	*     在 Advanced 中选择 simpleupdatesite.hpi 文件，上传后安装，然后进行设置：
+	*     New RSS URL为 http://devcafe.nhncorp.com/QPTalk/notice/rss
+	*     UpdateSiteURL 为 http://hudson02.nhncorp.com:9080/update/simpleupdatesite.json
+	*   Publish JUnit test result report -- 可以查看 JUnit/GTest测试后的 xml(如 gtest默认 的test_detail.xml)
     *   locale <== 本地化(防止部分显示中韩文、部分显示英文等), 设置为 en_us 且选中"Ignore XXX"
-    *   E-mail Notification -- 程序集成有问题时发送邮件通知（需要先配置邮件服务器）
+    *   E-mail Notification -- 程序集成有问题时发送邮件通知（需要先配置邮件服务器）,然后其中地址以空格区分(可通如 D0478@XXX 的方式发送邮件组里的)
+	*     SMTP server:mexcn01.nhncorp.cn
+	*     Default user e-mail suffix: @nhn.com
+	*     System Admin E-mail Address: xxxx@nhn.com
     *   Quality Dashboard(NHN) -- 通过plugin从各个Hudson服务器上报指标到统一的QD服务器，进行统一的展示。
     *     http://nsiq.nhncorp.com/, 每个项目有唯一的API KEY进行区分
     *     选择结果输出时：
     *       Analysis Defect Density 选择 klocwork
     *       Coding Standard Conformence Rate 选择 NSIQ cppstyle
     *       CC 选择 NSIQ Collector for Complexity
-    *   SimpleUpdateSite(NHN) -- 定制化的Plugin升级工具,http://devcode.nhncorp.com/projects/updatecenter/downoad,
-    *     下载安装后设置其 New RSS URL为 http://devcafe.nhncorp.com/QPTalk/notice/rss
-    *     设置 UpdateSiteURL 为 http://hudson02.nhncorp.com:9080/update/SimpleUpdateSite.json
     *   JUnit test result report-- 可以查看JUint、Gtest等生成的结果XML(如GTest对应的 xx/test_detail.xml--注:是星号)
     *   CovComplPort(NHN) -- 同时显示比较复杂度和覆盖率的插件,越复杂的越要测试，目前只支持Clover，
     *     输出时为 Publish Coverage/Complexity Scatter Plot
-    *
+    *   analysis-core -- 安完以后显示 Static Analysis Utilities，静态代码解析的核心(Core)插件，要进行静态解析(比如 klocwork/CheckStyle 等时必须安装该Plugin)
+	*     http://wiki.jenkins-ci.org/x/CwDgAQ ,http://hudson-ci.org/download/plugins/analysis-core/ 
+	*   checkstyle-- 安完后显示"Checkstyle Plug-in", 收集CheckStyle的分析结果并进行显示
+	*     http://wiki.jenkins-ci.org/x/GYCGAQ
+	*   Clover plugin -- integrates Clover code coverage reports to Jenkins.
+	*     http://wiki.jenkins-ci.org/display/JENKINS/Clover+Plugin
+	*   MSBuild Plugin -- 支持使用 MSBuild 编译Visual Studio的 .proj and .sln，需要在配置中指定相关信息(然后在项目中怎么使用?)
+	*     Name: MSBuild, Path: C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe
+	*     Name: MSBuild_64, Path: C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe
+	*     http://wiki.hudson-ci.org/display/HUDSON/MSBuild+Plugin
+	*   MSTest plugin -- 把 MSTest TRX测试报告格式转换为JUnit XML格式
+	*     http://wiki.hudson-ci.org/display/HUDSON/MSTest+Plugin
     * 代码质量维度及统计插件
     *   Coding Convention(代码规范) -- N'SIQ CppStyle(http://nsiqcppstyle.appspot.com)
-    *   Static Analysis(静态分析) -- klocwork, http://devcafe.nhncorp.com/QPTalk/205688
-    *     配置 Host:klocwork9.nhncorp.com, Port:27000, 安装时版本为 9.X, 有单独的build，
-    *     Linux:设置Config FileName 为编译的命令脚本（并删除编译中的命令，免得重复编译?）
-    *     Windows:设置Config FileName 为 xxx.sln, Build Parameter 中输入 --config Debug 等
+    *   Static Analysis(静态分析) -- klocwork
+	*      1.通过 kw-user-installer.9.2.2.10679.windows.exe 安装程序先安装客户端软件;
+	*      2.通过 SimpleUpdateSite 安装插件, http://devcafe.nhncorp.com/QPTalk/205688
+	*      3.Hudson系统配置中设置相关信息
+	*        Version:9.0, Path:客户端软件的安装路径
+	*        Host:klocwork9.nhncorp.com, Port:27000
+	*      4.具体项目中启用klocwork的检查
+    *        Linux:设置Config FileName 为编译的命令脚本（并删除编译中的命令，免得重复编译?）
+    *        Windows:设置Config FileName 为 xxx.sln, Build Parameter 中输入 --config Debug 等
     *   Code Coverage(代码覆盖率,要求语句>50%,分支>40%) -- BullsEye/GCov, 收集工具是 Clover/Cobertura
     *     实现机制有两种：1.插入二进制(GCov); 2.插入源码再进行编译(BullsEye Coverage)
     *     1.GCov(Linux) -- 编译链接选项中加入: -fprofie-arcs -ftest-coverage -lgcov
@@ -542,8 +611,9 @@ namespace FTL
     *       VS2008 中可以通过 Tools->Enable/Disable Bullseye Coverage Build 命令打开或关闭其功能
     *       cov01 -1(打开选项); make clean all; cov01 -0(关闭); 执行测试程序; bullshtml target/coverage(在指定目录下生成覆盖率结果);
     *       用Clover采集结果，其report directory 中填 target/coverage, file name 为 cover.xml
+	*       Bullseye 可以通过 COVFILE 环境变量指定全局的覆盖率分析文件(扩展名为 .gov )
     *   LOC/CC(圈复杂度,要求<30) -- N'SIQ Collector, 注意需要排除第三方代码、Lex/Yacc等自动生成、Windows的消息映射等
-    *     http://dev.naver.com/projects/nsiqCollector, 下载后在配置时输入可执行文件的路径，有单独的Build Step
+    *     http://dev.naver.com/projects/nsiqCollector, 下载后在配置时输入可执行文件(nsiqcollector.exe)的路径，有单独的Build Step
     *   CQ -- Code Quality
     *   Code Duplication Analysis(代码重复分析) -- CPD
     *   Defect density(缺陷密度,要求 < 4/KLOC)
