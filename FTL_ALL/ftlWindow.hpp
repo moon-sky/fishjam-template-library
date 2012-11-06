@@ -393,7 +393,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_COMPACTING, CFDefaultMsgInfo);    //显示内存已经很少了
                 GET_MESSAGE_INFO_ENTRY(WM_COMMNOTIFY, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGING, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGED, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGED, CFDefaultMsgInfo);	//当窗体的位置、大小或位置变化以后
                 GET_MESSAGE_INFO_ENTRY(WM_POWER, CFDefaultMsgInfo);         //当系统将要进入暂停状态时发送此消息
                 GET_MESSAGE_INFO_ENTRY(WM_COPYDATA, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_CANCELJOURNAL, CFDefaultMsgInfo); //当某个用户取消程序日志激活状态，提交此消息给程序
@@ -2594,15 +2594,20 @@ namespace FTL
         LONG_PTR    lOldExStyle = lExStyle;
 
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_DLGMODALFRAME, pszDivide);
+		//当该窗体(Child Window)创建或销毁时不会给父窗体发送 WM_PARENTNOTIFY 
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_NOPARENTNOTIFY, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TOPMOST, pszDivide);
+		//可以接收 drag-and-drop 文件(会收到什么消息?)
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_ACCEPTFILES, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TRANSPARENT, pszDivide);  //鼠标会穿透此窗体(如阴影)
+		//透明的，不会掩盖其下方的窗体，鼠标消息会穿透此窗体(典型应用是阴影)，会在其下发的所有窗体都更新完毕后收到 WM_PAINT 消息
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TRANSPARENT, pszDivide);	
 #if(WINVER >= 0x0400)
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_MDICHILD, pszDivide);
+
+		//通常用于浮动工具条(floating toolbar) -- 小的标题栏，不出现在任务栏和 Alt+Tab 列表中
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TOOLWINDOW, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_WINDOWEDGE, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_CLIENTEDGE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_CLIENTEDGE, pszDivide);	//有3D客户区外观，即有一个凹边(sunken edge)
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_CONTEXTHELP, pszDivide);
 		if (0 != (lExStyle & WS_EX_RIGHT) )
 		{
@@ -2633,7 +2638,7 @@ namespace FTL
 		}
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_CONTROLPARENT, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_STATICEDGE, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_APPWINDOW, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_APPWINDOW, pszDivide);	//当激活时，任务条上会出现 Top-Level窗体
 #endif /* WINVER >= 0x0400 */
 
 #if(_WIN32_WINNT >= 0x0500)

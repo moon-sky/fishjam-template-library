@@ -287,13 +287,25 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 *********************************************************************************************/
 
 /*********************************************************************************************
-* H264 -- 各种开源H264解码器评测(http://blog.csdn.net/sunshine1314/article/details/712401)
-*   解码速度：CoreAVC decoder > ffmpeg > IPP simple player > x264 decoder > t264 decoder > jm86 decoder
-*   1.JM decoder -- H.264的官方源码(校验模型),支持特性好，但实用性差
-*   2.T264 decoder -- 国内的开源项目，做过汇编优化，但只能解T264本身的码流，
-*   3.x264 decoder -- (ffmpeg 的早期雏形?)
-*   4.ffmpeg libavcodec -- 
-*   5.Intel IPP(Integrated Performance Primitives)
+* H264
+*   影响编解码效率的维度：
+*     1.不同分辨率(Qcif/Cif)
+*     2.不同纹理复杂程度 -- 帧内压缩?
+*     3.不同运动剧烈程度 -- 帧间压缩?
+*
+*   各种开源H264编码器评测(http://wenku.baidu.com/view/1d65a3717fd5360cba1adbc1.html)
+*     1.JM encoder -- H.264的官方源码(校验模型)。编码复杂度极高，不宜实用
+*     2.T264 encoder -- 中国视频编码自由组织联合开发的264编解码器，编码器编码输出标准的264码流(其他解码器能用吗?)
+*     3.x264 encoder -- 兼容264标准码流的编码器，注重实用。在不明显降低编码性能的前提下，降低编码的计算复杂度
+*           (抛弃了264中一些对编码性能贡献微小但计算复杂度高的特性 -- 如多参考帧、证件预测中不必要的块模式、CABAC等)
+*   各种开源H264解码器评测(http://blog.csdn.net/sunshine1314/article/details/712401)
+*     解码速度：CoreAVC decoder > ffmpeg > IPP simple player > x264 decoder > t264 decoder > jm86 decoder
+*     1.JM decoder -- H.264的官方源码(校验模型),支持特性好，但实用性差
+*     2.T264 decoder -- 中国的开源项目，做过汇编优化，解码器只能解T264编码器生成的码流，
+*     3.x264 decoder -- (ffmpeg 的早期雏形?)
+*     4.ffmpeg libavcodec -- 
+*     5.Intel IPP(Integrated Performance Primitives)
+
 *********************************************************************************************/
 
 // 填充RGB然后翻转，好转换为YUV  

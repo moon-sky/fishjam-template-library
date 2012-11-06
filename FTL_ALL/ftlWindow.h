@@ -36,17 +36,6 @@
 * UAC(User Account Control)
 *   Button_SetElevationRequiredState --好像无效?
 *
-* 分层窗口(WS_EX_LAYERED) -- 允许控制窗体的透明度。分层窗体提供了两种截然不同的编程模型
-*   SetLayeredWindowAttributes(简单) -- 允许设置一个RGB颜色(通常是窗体中不会出现的颜色)，然后所有以该颜色绘出的像素都将呈现为透明
-*     SetLayeredWindowAttributes( 0, 150, LWA_ALPHA);  //设置透明度为150(窗体整体透明,子控件也透明)
-*     SetLayeredWindowAttributes( RGB(240,240,240), 0, LWA_COLORKEY); //窗体整体透明,子控件不透明 
-*       设置指定颜色的部分透明(Dialog背景颜色),如要设置其他颜色，需要在 OnCtlColor 或 WM_ERASEBKGND 中指定颜色
-*     TODO: 组合使用 LWA_ALPHA 和 LWA_COLORKEY ?
-*   UpdateLayeredWindow(困难) -- 提供一个与设备无关的位图，完整定义屏幕上窗体的整体样式，会将指定的位图完整地保留Alpha通道信息并拷贝到窗体上
-*     ::UpdateLayeredWindow( m_hWnd, NULL, &ptDst, &WndSize, dcMem.m_hDC, &ptSrc, 0, &blendPixelFunction, ULW_ALPHA );
-*     这种窗体不支持子控件，不支持OnPaint()，但可以通过PNG图片中的Alpha值来 完全控制屏幕上窗体的透明情况
-*   通过两个窗体重合且分别使用 SetLayeredXXX(,LWA_COLORKEY) 和 UpdateXXX 的方法来提供异形窗体
-* 
 * DWM(Desktop Window Manager,窗口管理器) -- 负责组合桌面上的各个窗体, 允许开发者设置某个窗体在于其它窗体组合/重叠时的显示效果，
 *   即能用来实现“半透明玻璃(Glass)”特效（允许控制窗体范围内部分区域的透明度)
 *     窗体区域(Window Region) -- 指操作系统允许窗体在其中进行绘制的区域，除非切换回Basic主题，否则Vista已不再使用
@@ -94,17 +83,6 @@
 * UAC(User Account Control)
 *   Button_SetElevationRequiredState --好像无效?
 *
-* 分层窗口(WS_EX_LAYERED) -- 允许控制窗体的透明度。分层窗体提供了两种截然不同的编程模型
-*   SetLayeredWindowAttributes(简单) -- 允许设置一个RGB颜色(通常是窗体中不会出现的颜色)，然后所有以该颜色绘出的像素都将呈现为透明
-*     SetLayeredWindowAttributes( 0, 150, LWA_ALPHA);  //设置透明度为150(窗体整体透明,子控件也透明)
-*     SetLayeredWindowAttributes( RGB(240,240,240), 0, LWA_COLORKEY); //窗体整体透明,子控件不透明 
-*       设置指定颜色的部分透明(Dialog背景颜色),如要设置其他颜色，需要在 OnCtlColor 或 WM_ERASEBKGND 中指定颜色
-*     TODO: 组合使用 LWA_ALPHA 和 LWA_COLORKEY ?
-*   UpdateLayeredWindow(困难) -- 提供一个与设备无关的位图，完整定义屏幕上窗体的整体样式，会将指定的位图完整地保留Alpha通道信息并拷贝到窗体上
-*     ::UpdateLayeredWindow( m_hWnd, NULL, &ptDst, &WndSize, dcMem.m_hDC, &ptSrc, 0, &blendPixelFunction, ULW_ALPHA );
-*     这种窗体不支持子控件，不支持OnPaint()，但可以通过PNG图片中的Alpha值来 完全控制屏幕上窗体的透明情况
-*   通过两个窗体重合且分别使用 SetLayeredXXX(,LWA_COLORKEY) 和 UpdateXXX 的方法来提供异形窗体
-* 
 * DWM(Desktop Window Manager,窗口管理器) -- 负责组合桌面上的各个窗体, 允许开发者设置某个窗体在于其它窗体组合/重叠时的显示效果，
 *   即能用来实现“半透明玻璃(Glass)”特效（允许控制窗体范围内部分区域的透明度)
 *     窗体区域(Window Region) -- 指操作系统允许窗体在其中进行绘制的区域，除非切换回Basic主题，否则Vista已不再使用
@@ -226,13 +204,25 @@
 ******************************************************************************************************/
 
 /******************************************************************************************************
-* Windows 2000分层窗口 -- SetLayeredWindowAttributes, 可以实现窗体透明特效
+* 分层窗口(WS_EX_LAYERED) -- 允许控制窗体的透明度。分层窗体提供了两种截然不同的编程模型
 *   WS_EX_LAYERED 扩展窗口风格 -- 窗体将具备复合形状、动画、Alpha混合等方面的视觉特效
-*   创建圆形窗体：在Windows 9x下的正确做法是通过 SetWindowRgn 函数指出需要的窗体形状，但是这种处理在频繁更改窗体形状
-*     或是在屏幕上拖拽时仍有缺陷存在：前台窗体将要求位于其下的窗体重绘整个区域，这将生过多的消息和计算量。
-*     而且使用 SetWindowRgn 只能实现窗体的全透明而无法实现半透明效果。
+*     注意：不能用于Child窗体，也不能用于有 CS_OWNDC or CS_CLASSDC 属性的窗体。
+*     透明度最大为255，如果要设置透明度 X%, bAlpha = X * 255 / 100;
+*   SetLayeredWindowAttributes(简单) -- 允许设置一个RGB颜色(通常是窗体中不会出现的颜色)，然后所有以该颜色绘出的像素都将呈现为透明
+*     SetLayeredWindowAttributes( 0, 150, LWA_ALPHA);  //设置透明度为150(窗体整体透明,子控件也透明)
+*     SetLayeredWindowAttributes( RGB(240,240,240), 0, LWA_COLORKEY); //窗体整体透明,子控件不透明 
+*       设置指定颜色的部分透明(Dialog背景颜色),如要设置其他颜色，需要在 OnCtlColor 或 WM_ERASEBKGND 中指定颜色
+*     TODO: 组合使用 LWA_ALPHA 和 LWA_COLORKEY ?
+*       ::SetClassLongPtr(m_hWnd, GCL_HBRBACKGROUND, (LONG_PTR)GetStockObject(BLACK_BRUSH));
+*       SetLayeredWindowAttributes(m_hWnd, RGB(0xFF, 0, 0), 100, LWA_ALPHA | LWA_COLORKEY); //设置透明度为 100
+*   UpdateLayeredWindow(困难) -- 提供一个与设备无关的位图，完整定义屏幕上窗体的整体样式，会将指定的位图完整地保留Alpha通道信息并拷贝到窗体上
+*     ::UpdateLayeredWindow( m_hWnd, NULL, &ptDst, &WndSize, dcMem.m_hDC, &ptSrc, 0, &blendPixelFunction, ULW_ALPHA );
+*     这种窗体不支持子控件，不支持OnPaint()，但可以通过PNG图片中的Alpha值来 完全控制屏幕上窗体的透明情况
+*
 *   分层窗口真正实现了两个截然不同的概念：分层和重定向。
 *     1. 设置 WS_EX_LAYERED 属性;
+*          class ScreenRgnSelector : public CWindowImpl<ScreenRgnSelector, CWindow, 
+*              CWinTraits<WS_VISIBLE | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW> >
 *     2. 通过 UpdateLayeredWindow 函数来更新分层窗口 -- 需要在位图中绘制出可视区域，并将其与关键色、
 *        Alpha混合参数等一起提供给 UpdateLayeredWindow 函数,此时应用程序并不需要响应WM_PAINT或其他绘制消息.
 *     或: 使用传统的Win32绘制机制 -- 调用 SetLayeredWindowAttributes 完成对关键色(COLORREF crKey)或阿尔法(BYTE bAlpha)混合参数值的设定,
@@ -243,7 +233,20 @@
 *     SetLayeredWindowAttributes(GetSysColor(COLOR_BTNFACE),127,LWA_COLORKEY|LWA_ALPHA); 
 *     //RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
 *   异形窗体 -- 编辑出具有特定KeyColor的图片,使用 SetLayeredWindowAttributes 设置KeyColor
+*     通过两个窗体重合且分别使用 SetLayeredXXX(,LWA_COLORKEY) 和 UpdateXXX 的方法来提供异形窗体
+* 
 *   阴影效果 -- http://www.codeproject.com/Articles/16362/Bring-your-frame-window-a-shadow
+*   
+*   创建圆形窗体：在Windows 9x下的正确做法是通过 SetWindowRgn 函数指出需要的窗体形状，但是这种处理在频繁更改窗体形状
+*     或是在屏幕上拖拽时仍有缺陷存在：前台窗体将要求位于其下的窗体重绘整个区域，这将生过多的消息和计算量。
+*     而且使用 SetWindowRgn 只能实现窗体的全透明而无法实现半透明效果。
+*  
+* 纯消息窗体(Message-Only Window)
+*   允许收发消息，但不可见，没有Z序，不能被枚举，不能接收广播(broadcast)消息，
+*   创建方法：在 CreateWindowEx 方法中，指定 hWndParent 参数为 HWND_MESSAGE 常量
+*             或 SetParent 方法中，指定 hWndParent 参数为 HWND_MESSAGE 常量 将存在的窗体转换为纯消息窗体
+*   找窗体：FindWindowEx(HWND_MESSAGE,xxxx);
+*
 * MoveWindow
 *  WM_WINDOWPOSCHANGING => WM_WINDOWPOSCHANGED => WM_MOVE=> WM_SIZE => WM_NCCALCSIZE
 * SetWindowPos -- 改变一个窗口的尺寸，位置和Z序

@@ -792,7 +792,7 @@ namespace FTL
 	*           相对跳转：语法为 "[+-][1-9]"，加号表示从当前位置(为0?)往前跳转，减号则表示从当前位置往后跳转。数字表示跳转的语句条数。
 	*              代码改动的时候通常需要修改相对跳转，容易出错。因此推荐使用 LogicLib.nsh 代替。
 	*              如 Goto +4
-	*           分支判断：IfErrors、IfFileExists、StrCmp，
+	*           分支判断：IfErrors、IfSilent、IfFileExists、StrCmp，
 	*                     LogicLib.nsh 文件中提供很多简单的宏便于构造复杂的逻辑结构(条件或联合逻辑判断),不需要格外的跳转标记(★推荐用法★)，如：
 	*                       ${If} $0 == 'some string' ${ElseIf} xxx ${Else} yyy {EndIf}
 	*                       ${Switch} $0 ${Case} 'some string' xxx ${Break} ${Default} yyy ${Break} ${EndSwitch}

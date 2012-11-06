@@ -2,3 +2,18 @@ dell -- http://www.amazon.com/Dell-Inspiron-i15R-2105sLV-15-Inch-Laptop/dp/B0081
 忍者印记 -- http://kuai.xunlei.com/d/ZIMRQXUWPOSB
 
 TODO: 发邮件 COMStudy 比较
+
+1.Intel Media SDK
+  http://software.intel.com/en-us/articles/intel-media-software-development-kit-intel-media-sdk/
+  支持 H.264 和 MPEG-2 格式编码,提供了 Encoder/Decoder Filter
+  支持Intel显卡的硬编码
+  授权协议： 免费，非开源
+  问题：
+     1.目前尚未测试通过(不能生成文件)， 需要进一步研究测试。
+     2.发布时需要包含Intel Media SDK相关的文件(有一个 11.5M的 libmfxsw32.dll, 使用最高压缩比的ZIP压缩后为 3.6M)
+  
+2.Media Foundation
+  http://msdn.microsoft.com/library/windows/desktop/dd757927(v=vs.85).aspx
+  支持 H264 Video Encoder
+  授权协议：Windows自带，但 需要 Windows 7 OS
+  其他：Snagit 11 Video Record 在 Windows7 的实现似乎就是这种方式

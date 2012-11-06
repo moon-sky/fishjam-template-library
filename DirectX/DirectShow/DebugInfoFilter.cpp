@@ -75,7 +75,6 @@ CUnknown* CDebugInfoFilter::CreateInstance(LPUNKNOWN lpunk, HRESULT *phr)
 		*phr = E_OUTOFMEMORY;
 		return NULL;
 	}
-	g_Count++;
 
     CDebugInfoFilter *pNewDebugInfoFilter = new CDebugInfoFilter(lpunk, phr);
     if (pNewDebugInfoFilter == NULL) 
@@ -101,10 +100,12 @@ CDebugInfoFilter::CDebugInfoFilter( IUnknown * pUnk, HRESULT * phr )
 	m_llLastTimeStart = 0;
 	m_llLastTimeEnd = 0;
 	m_pAcceptMediaType = NULL;
+	g_Count++;
 }
 
 CDebugInfoFilter::~CDebugInfoFilter( )
 {
+	g_Count--;
 	SAFE_DELETE(m_pAcceptMediaType);
 }
 
