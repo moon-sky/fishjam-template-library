@@ -330,6 +330,24 @@ namespace FTL
         }
     };
 
+#if INCLUDE_DETECT_MEDIA_FOUNDATION
+	class CFMFGetServiceDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IMFGetService> spGetService(pUnknown);
+			if (spGetService)
+			{
+				//CComPtr<IMFVideoDisplayControl> pConfig = NULL; 
+				//spGetService->GetService(MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl, (void**)&pConfig);
+			}
+			return hr;
+		}
+	};
+#endif //INCLUDE_DETECT_MEDIA_FOUNDATION
+
 #if INCLUDE_DETECT_STRMIF
     class CFMediaSeekingDump
     {
@@ -1030,7 +1048,34 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IDMOVideoOutputOptimizations)
 #endif //INCLUDE_DETECT_MEDIAOBJ
 
-#if INCLUDE_DETECT_MFIDL
+#if INCLUDE_DETECT_MEDIA_FOUNDATION
+#if  defined(_D3D9_H_) || defined(_d3d9P_H_)
+			//dxva2api.h
+			DETECT_INTERFACE_ENTRY_IID(IDirect3DDeviceManager9, IID_IDirect3DDeviceManager9)
+			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoAccelerationService, IID_IDirectXVideoAccelerationService)
+			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoDecoderService, IID_IDirectXVideoDecoderService)
+			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoProcessorService, IID_IDirectXVideoProcessorService)
+			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoDecoder, IID_IDirectXVideoDecoder)
+			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoProcessor, IID_IDirectXVideoProcessor)
+			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoMemoryConfiguration, IID_IDirectXVideoMemoryConfiguration)
+#  endif //_D3D9_H_ || _d3d9P_H_
+
+			//evr.h
+			DETECT_INTERFACE_ENTRY(IMFVideoPositionMapper)
+			DETECT_INTERFACE_ENTRY(IMFVideoDeviceID)
+			DETECT_INTERFACE_ENTRY(IMFVideoDisplayControl)
+			DETECT_INTERFACE_ENTRY(IMFVideoPresenter)
+			DETECT_INTERFACE_ENTRY(IMFDesiredSample)
+			DETECT_INTERFACE_ENTRY(IMFTrackedSample)
+			DETECT_INTERFACE_ENTRY(IMFVideoMixerControl)
+			DETECT_INTERFACE_ENTRY(IMFVideoMixerControl2)
+			DETECT_INTERFACE_ENTRY(IMFVideoRenderer)
+			DETECT_INTERFACE_ENTRY(IEVRFilterConfig)
+			DETECT_INTERFACE_ENTRY(IEVRFilterConfigEx)
+			DETECT_INTERFACE_ENTRY(IMFTopologyServiceLookup)
+			DETECT_INTERFACE_ENTRY(IMFTopologyServiceLookupClient)
+			DETECT_INTERFACE_ENTRY(IEVRTrustedVideoPlugin)
+
 			//mfidl.h
 			DETECT_INTERFACE_ENTRY(IMFMediaSession)
 			DETECT_INTERFACE_ENTRY(IMFSourceResolver)
@@ -1041,7 +1086,7 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY(IMFVideoSampleAllocator)
 			DETECT_INTERFACE_ENTRY(IMFTopology)
 			DETECT_INTERFACE_ENTRY(IMFTopologyNode)
-			DETECT_INTERFACE_ENTRY(IMFGetService)
+			DETECT_INTERFACE_ENTRY_EX(IMFGetService, CFMFGetServiceDump)
 			DETECT_INTERFACE_ENTRY(IMFClock)
 			DETECT_INTERFACE_ENTRY(IMFPresentationClock)
 			DETECT_INTERFACE_ENTRY(IMFPresentationTimeSource)
@@ -1114,7 +1159,7 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY(IMFLocalMFTRegistration)
 #endif //WINVER >= _WIN32_WINNT_WIN7
 
-#endif //INCLUDE_DETECT_MFIDL
+#endif //INCLUDE_DETECT_MEDIA_FOUNDATION
 
 
 #if INCLUDE_DETECT_MSHTMLC

@@ -60,17 +60,17 @@ const AMOVIESETUP_FILTER sudDebugInfoFilter =
 {
     &CLSID_DebugInfoFilter, // Filter CLSID
     L"Debug Info Filter",     // Filter name
-	MERIT_DO_NOT_USE,
-    //MERIT_PREFERRED + 0x88888,       // Its merit
+	//MERIT_DO_NOT_USE,
+    MERIT_PREFERRED + 0x88888,       // Its merit
     2,                      // Number of pins
     psudPins                // Pin details
 };
 
-static int g_Count = 0;
+INT CDebugInfoFilter::s_InstanceCount = 0;
 CUnknown* CDebugInfoFilter::CreateInstance(LPUNKNOWN lpunk, HRESULT *phr)
 {
     ASSERT(phr);
-	if (g_Count > 0)
+	if (s_InstanceCount > 0)
 	{
 		*phr = E_OUTOFMEMORY;
 		return NULL;
@@ -88,26 +88,51 @@ CUnknown* CDebugInfoFilter::CreateInstance(LPUNKNOWN lpunk, HRESULT *phr)
 }
 
 CDebugInfoFilter::CDebugInfoFilter( IUnknown * pUnk, HRESULT * phr )
-:CTransInPlaceFilter(NAME("Debug Info Filter"),pUnk,CLSID_DebugInfoFilter,phr)
+:CTransInPlaceFilter(NAME("Debug Info Filter"), pUnk, CLSID_DebugInfoFilter,phr)
 ,CPersistStream(pUnk, phr)
 ,m_dwCurrentDumpSampleIndex(0)
 ,m_dwSampleCount(0)
 {
     //DbgSetModuleLevel(LOG_TIMING|LOG_TRACE|LOG_LOCKING|LOG_ERROR, //LOG_MEMORY
     //    1);
+	m_dwRegister = 0;
 	m_ElapseCounter.Stop();
     m_bModifiesData = false;  //不会修改Sample，输入/输出Pin使用同一个Allocator
 	m_llLastTimeStart = 0;
 	m_llLastTimeEnd = 0;
 	m_pAcceptMediaType = NULL;
-	g_Count++;
+	s_InstanceCount++;
 }
 
 CDebugInfoFilter::~CDebugInfoFilter( )
 {
-	g_Count--;
+	HRESULT hr = S_OK;
+	s_InstanceCount--;
+	if (0 == s_InstanceCount)
+	{
+		if (0 != m_dwRegister)
+		{
+			DX_VERIFY(FTL::CFDirectShowUtility::RemoveGraphFromRot(m_dwRegister));
+			m_dwRegister = 0;
+		}
+	}
 	SAFE_DELETE(m_pAcceptMediaType);
 }
+
+HRESULT STDMETHODCALLTYPE CDebugInfoFilter::JoinFilterGraph(__in_opt  IFilterGraph *pGraph,	__in_opt  LPCWSTR pName)
+{
+	HRESULT hrResult = __super::JoinFilterGraph(pGraph, pName);
+	if (SUCCEEDED(hrResult))
+	{
+		//if (1 == s_InstanceCount)
+		//{
+		//	HRESULT hr = E_FAIL;
+		//	DX_VERIFY(FTL::CFDirectShowUtility::AddGraphToRot(pGraph, &m_dwRegister));
+		//}
+	}
+	return hrResult;
+}
+
 
 HRESULT CDebugInfoFilter::CheckInputType(const CMediaType* mtIn)
 {

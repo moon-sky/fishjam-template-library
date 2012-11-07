@@ -96,6 +96,11 @@ namespace FTL
 # define INCLUDE_DETECT_KSPROXY     0
 #endif
 
+//Intel Media SDK
+#ifndef INCLUDE_DETECT_INTEL_MEDIA_SDK
+# define INCLUDE_DETECT_INTEL_MEDIA_SDK     0
+#endif
+
 //MainConcept SDK
 #ifndef INCLUDE_DETECT_MAINCONCEPT
 # define INCLUDE_DETECT_MAINCONCEPT     0
@@ -106,8 +111,8 @@ namespace FTL
 #endif
 
 //Media Foundation
-#ifndef INCLUDE_DETECT_MFIDL
-# define INCLUDE_DETECT_MFIDL    0
+#ifndef INCLUDE_DETECT_MEDIA_FOUNDATION
+# define INCLUDE_DETECT_MEDIA_FOUNDATION    0
 #endif
 
 #ifndef INCLUDE_DETECT_MSHTMLC
@@ -217,6 +222,11 @@ namespace FTL
 #  include <ksproxy.h>
 #endif 
 
+#if INCLUDE_DETECT_INTEL_MEDIA_SDK
+#  include <mfxvideo.h>
+#  include <mfxvideo++.h>
+#endif 
+
 #if INCLUDE_DETECT_MAINCONCEPT
 #  include <ModuleConfig.h>
 #endif 
@@ -225,7 +235,10 @@ namespace FTL
 #  include <mediaobj.h>
 #endif 
 
-#if INCLUDE_DETECT_MFIDL
+#if INCLUDE_DETECT_MEDIA_FOUNDATION
+#  include <d3d9types.h>
+#  include <dxva2api.h>
+#  include <evr.h>
 #  include <mfidl.h>
 #endif
 

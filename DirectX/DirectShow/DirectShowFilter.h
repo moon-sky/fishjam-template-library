@@ -194,6 +194,7 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *   CLSID_VideoRendererDefault -- VMR(DirectShow Filter列表中没有看到,莫非代码中会自动选择?)
 *   CLSID_VideoMixingRenderer -- 其Pin名为VMR，Pin上多了 IVMRVideoStreamControl
 *   CLSID_VideoMixingRenderer9 -- VMR For DX9
+*   CLSID_EnhancedVideoRenderer -- Media Foundation 使用的Render(EVR)
 *   CLSID_Colour -- Colour space convertor, 颜色控件转换?(但好像不支持属性页?)
 ******************************************************************************************************/
 //Render uses Direct3D or DirectDraw for rendering samples

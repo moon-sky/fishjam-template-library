@@ -3,6 +3,8 @@ dell -- http://www.amazon.com/Dell-Inspiron-i15R-2105sLV-15-Inch-Laptop/dp/B0081
 
 TODO: 发邮件 COMStudy 比较
 
+http://wenku.baidu.com/view/6243ee2f2af90242a895e555.html
+
 1.Intel Media SDK
   http://software.intel.com/en-us/articles/intel-media-software-development-kit-intel-media-sdk/
   支持 H.264 和 MPEG-2 格式编码,提供了 Encoder/Decoder Filter
@@ -17,3 +19,5 @@ TODO: 发邮件 COMStudy 比较
   支持 H264 Video Encoder
   授权协议：Windows自带，但 需要 Windows 7 OS
   其他：Snagit 11 Video Record 在 Windows7 的实现似乎就是这种方式
+  
+  

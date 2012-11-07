@@ -232,7 +232,13 @@ namespace FTL
             if (SUCCEEDED(hr)) 
             {
                 //ROTFLAGS_REGISTRATIONKEEPSALIVE 参数保证只要没有调用Remove方法，即使重启GE，注册也有效
-                COM_VERIFY(pROT->Register(ROTFLAGS_REGISTRATIONKEEPSALIVE, pUnkGraph, pMoniker, pdwRegister));
+                COM_VERIFY_EXCEPT1(pROT->Register(ROTFLAGS_REGISTRATIONKEEPSALIVE, pUnkGraph, pMoniker, pdwRegister), 
+					MK_S_MONIKERALREADYREGISTERED);
+				if (MK_S_MONIKERALREADYREGISTERED == hr)
+				{
+					//已经注册了，就不再注册了
+					hr = S_OK;
+				}
                 //pMoniker->Release();
             }
             //pROT->Release();

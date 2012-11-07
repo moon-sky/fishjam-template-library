@@ -78,6 +78,9 @@ public:
     static CUnknown * WINAPI CreateInstance(LPUNKNOWN lpunk, HRESULT *phr);
     STDMETHOD(NonDelegatingQueryInterface)(REFIID riid, void ** ppv);
     
+	//重载该方法，知道Filter被加入 Graph
+	virtual HRESULT STDMETHODCALLTYPE JoinFilterGraph(__in_opt  IFilterGraph *pGraph, __in_opt  LPCWSTR pName);
+
     //必须重载的基类纯虚函数
     virtual HRESULT CheckInputType(const CMediaType* mtIn); //UpStream Filter判断本Filter是否支持该媒体类型
     virtual HRESULT Transform(IMediaSample *pSample);
@@ -121,7 +124,9 @@ public:
    //     /* [out] */ AM_MEDIA_TYPE *pmt);
 
 private:
+	static				INT		s_InstanceCount;
     CCritSec            m_DebugInfoLock;
+	DWORD				m_dwRegister;
 	REFERENCE_TIME		m_llLastTimeStart;			//上一次MediaSample的开始时间
 	REFERENCE_TIME		m_llLastTimeEnd;			//上一次MediaSample的结束时间
 	FTL::CFElapseCounter	m_ElapseCounter;
@@ -129,7 +134,7 @@ private:
 	DWORD               m_dwCurrentDumpSampleIndex;
 	DWORD				m_dwSampleCount;
 	CMediaType*			m_pAcceptMediaType;
-
+	
     CFStructuredStorageFile  m_StorageFile;
 
     //CFThread<>          m_DumpThread;

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="DirectX Defaults"
+	>
+	<Tool
+		  Name="VCCLCompilerTool"
+		  AdditionalIncludeDirectories="D:\Intel\Media SDK 2012 R3\include"
+	/>
+  <Tool
+      Name="VCLinkerTool"
+		  AdditionalLibraryDirectories="D:\Intel\Media SDK 2012 R3\lib\win32"
+	/>
+</VisualStudioPropertySheet>

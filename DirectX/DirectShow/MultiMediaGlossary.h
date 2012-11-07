@@ -24,9 +24,11 @@
 * ABR(Average Bitrate) -- 平均比特率，是VBR的一种插值参数。LAME针对CBR不佳的文件体积比和VBR生成文件大小不定的特点独创了这种编码模式。
 *   在指定的文件大小内，低频和不敏感频率使用相对低的流量，高频和大动态表现时使用高流量，作为VBR和CBR的一种折衷选择。
 * ADSL(Asymmetrical Digital Subscriber Line) -- 非对称数字用户线。
-* ASF(Advanced Streaming Format)--高级流媒体格式，微软定义的媒体文件类型，只是一种容器，本身没有规定音视频的压缩格式，在ASF文件中，
-*   可以包含任何格式的压缩(包括MPEG-4)或非压缩的数据。需要使用专门的Windows Media Format SDK 开发。
+* ASF(Advanced Streaming Format)--高级流媒体格式，微软定义的媒体文件类型，只是一种容器，本身没有规定音视频的压缩格式，
+*   在ASF文件中，可以包含任何格式的压缩(包括MPEG-4)或非压缩的数据，可扩充的媒体类型
+*   需要使用专门的Windows Media Format SDK 开发。
 *   如果生成的Windows Media 文件只包含音频，一般使用.wma扩展名，如果包含了视频，一般使用.wmv扩展名
+*   编码器(编译成ASF流) + NetShow服务器(广播) + NetShow播放器
 * ASP(Advanced Simple Profile) -- [MPEG4]高级简洁框架，其中有 Baseline/Main/High 等多种?
 * AVCHD(Advanced Video Codec High Definition) -- 用摄像机纪录高清影像的一个规格，通过文件系统对应各种各样的媒体。
 *   在向BD、DVD刻录时Bitrate有上限：BD 24Mbps 以下；DVD 18Mbps 以下。
@@ -60,8 +62,9 @@
 *   分割点到EPMap边界之间用Null Packet(除Header以外全部0xFF的Packet)覆盖。
 * CD -- 采用780纳米波长
 * ConvertedContent -- 管理实际进行写返回处理的类，(即目的？)
-* CUDA(Compute Unified Device Architecture) -- 显卡厂商NVidia推出的运算平台。
-*   nVidia的H.264/AVC 硬件GPU编码? 解码是 DXVA? ATI 的是 OpenCL? Intel第三代CPU上是Quick Sync Video?
+* CUDA(Compute Unified Device Architecture) -- 统一计算设备架构, 显卡厂商NVidia推出的运算平台。
+*   nVidia的H.264/AVC 硬件GPU编码? 解码是 DXVA? ATI 的是 OpenCL? 
+*   Intel第三代CPU上是Quick Sync Video? Intel Media SDK 2012中,Intel显卡也可以使用 OpenCL(Intel SDK for OpenCL Applications 2012)
 * DCF(Design rule for Camera File system)--数码相机的统一记录格式。
 *   http://it.jeita.or.jp/document/publica/standard/exif/english/jeida49e.htm#a
 * DCIM(Digital Camera In Memory ?)--数码相机用于存储照片的文件夹
@@ -104,9 +107,12 @@
 *   通信应用程序的，而且被优化的函数。
 * ISO(International Standards Organization) -- 国际标准化组织。
 * ISO 9660--当前唯一通用的光盘文件系统，任何类型的计算机都支持它，所有的烧录软件也都支持它。
+* ISV(Independent Software Vendors) -- 独立软件开发商，通常指 利用已有的软硬件平台开发特定应用程序的厂商。
 * ITU(International Telecommunications Union)-- 国际电信联盟。
 * ITU-T(TforITU Telecommunication Standardization Sector) -- 国际电信联盟远程通信标准化组。国际电信联盟管理下的
 *   专门制定远程通信相关国际标准的组织。
+* JPEG(Joint Photographic Experts Group) -- 联合图像专家小组，一种有损压缩(lossy compression)格式。
+*   有一种以其为基础的无损压缩格式(Progressive JPEG),但应用较少。
 * JVT()--联合视频组。有ISO/IEC 与 ITU-T联合组成，制定视频压缩编码标准。
 * LAME -- 目前最好的MP3编码引擎,免费，可以设置VBR、ABR、CBR多种编码模式.
 *   注意：默认情况下lame编码每次输出的数据不是刚好一帧，如果解码程序把每一个数据包都作为一帧进行解析，会无法解析。
@@ -147,6 +153,13 @@
 *   达成家庭影院级别的720p和1080i视频画质。需要安装nVIDIA DVD Decoder。支持格式为MEPG2、WMV、H.264、VC-1等。
 *   软件方面有两部分：图形处理器驱动(免费) 和 PureVideo DVD解码器(收费)
 * Re-Mux -- ？(MPEG-2 TS的文件的一部分存在Audio和Video没有同步的情况，需要进行Re-mux取得同步)
+* RM(Real Media) -- RealNetworks公司开发的一种新型流式视频文件格式，可以根据网络数据传输速率的不同制定
+*   不同的压缩比率，从而实现在低速率的广域网上进行影像数据的实时传送和实时播放。
+*   RealEncoder(实时转换) + RealServer(广播媒体文件) + RealPlayer(播放)
+*   主要有三种类型：
+*   RealAudio -- 传输接近CD音质的音频数据
+*   RealVideo -- 传输连续视频数据
+*   RealFlash -- 与 Macromedia 公司合作推出的高压缩比的动画格式。
 * RIFF(Resource Interchange File Format) -- 使用四字符码FOURCC(小端表示?)来表征数据类型。
 *   文件格式为: "RIFF" + 四字节数据大小(实际数据长度加4) + FOURCC的类型(如 "AVI ") + 实际数据，
 *     注意：数据大小不包括RIFF和数据大小区域，等于文件大小-8
@@ -165,6 +178,7 @@
 *   轻触剪贴簿中显示的某张小尺寸照片，即可回放该照片。相机提供16种背景，可以挑选背景画面来装点您的照片，或使用随机背景。
 * SD -- 标准清晰
 * SDTV -- 数字标准高清晰度电视，采用MPEG-2压缩(同DVD一样)，用于卫星和有线电视地面广播。
+* SMPTE -- ? 电影及电视学会
 * Seamless -- （SD 和静止画时有效，具体是什么意思？)
 * SOI(Start Of Image)--SOI在Exif中被定义为一个Marker Segments，每个Marker的单位是2个字节，即一个word类型
 *   的数值，SOI Marker在文件起始的位置。JPEG格式文件的SOI值为FFD8，通常SOI!=FFD8的JPEG文件是不被支持的格式。

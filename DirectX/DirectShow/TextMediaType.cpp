@@ -30,6 +30,9 @@ GUID_STRING_ENTRY g_OtherGuidNames[] = {
 	//以下内容是网上的一些开源软件的GUID
 	#include "OpenSourceUuids.h"
 
+	//一些第三方软件定义的GUID, 如 Intel Media SDK， MainConcept 等
+	#include "ThirdPartyUuids.h"
+
 	//以下内容是Windows SDK 中得到的，如 <wmsdkidl.h>
 	#include "WinSDKUuids.h"
 
@@ -119,51 +122,60 @@ HRESULT CTextMediaType::CLSID2String(LPTSTR szBuffer,
 
     // Read the GUID name from the global table.  Use A2T macro
     // to convert to UNICODE string if necessary.
-
     TCHAR *pszGuidName = NULL;
 
-#ifdef DETECT_OTHER_GUID_NAMES
-    for (int i = 0; i < g_cOtherGuidNames; i++) {
-        if (g_OtherGuidNames[i].guid == *pGuid) {
-            pszGuidName =  A2T(g_OtherGuidNames[i].szName);
-			break;
-        }
-    }
-#endif //DETECT_OTHER_GUID_NAMES
-
-    if (NULL == pszGuidName)
-    {
-        //CBasePin::DisplayTypeInfo 中为什么是 %hs 
-        pszGuidName = A2T(GuidNames[*pGuid]);
-    }
-
+	//优先使用系统预定义的值 
+    //CBasePin::DisplayTypeInfo 中为什么是 %hs 
+    pszGuidName = A2T(GuidNames[*pGuid]);
+	
 	TCHAR szGuidString[160] = {0};
 	if (_tcscmp(pszGuidName, TEXT("Unknown GUID Name")) == 0)
 	{
-		BOOL bIsSpecialGuid = FALSE;
+		//如果系统预定义的值中没有找到，才比较自定义的
+		pszGuidName = NULL;
 
-		//这是 VideoFormat 的基础类型，其他的类型都是更改其 Data1 的值(参见 mfapi.h MFVideoFormat_Base)
-		static const GUID MEDIASUBTYPE_VideoBase = {0x00000000, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 }};
-		if(0 == memcmp(&(pGuid->Data2), &(MEDIASUBTYPE_VideoBase.Data2), (sizeof(GUID) - sizeof(MEDIASUBTYPE_VideoBase.Data1))))
-		{
-			//如果发现是Video的话，再判断Data1部分是否是字符串格式，是的话以对应字符串作为名字
-			
-			const char* const pData1Info = (const char* const)&pGuid->Data1;
-			if (IS_ALNUM(pData1Info[0]) && IS_ALNUM(pData1Info[1]))
-			{
-				StringCchPrintf(szGuidString, _countof(szGuidString), TEXT("MEDIASUBTYPE_VideoBase + %c%c%c%c"),
-					pData1Info[0], (pData1Info[1]), (pData1Info[2]), (pData1Info[3]));
-				pszGuidName = szGuidString;
-				bIsSpecialGuid = TRUE;
+#ifdef DETECT_OTHER_GUID_NAMES
+		for (int i = 0; i < g_cOtherGuidNames; i++) {
+			if (g_OtherGuidNames[i].guid == *pGuid) {
+				pszGuidName =  A2T(g_OtherGuidNames[i].szName);
+				break;
 			}
 		}
-		if (!bIsSpecialGuid)
+#endif //DETECT_OTHER_GUID_NAMES
+		if (NULL == pszGuidName)
 		{
-			StringFromGUID2(*pGuid, szGuidString, _countof(szGuidString));
-			FTLTRACE(TEXT("CTextMediaType Unknown GUID %s\n"), szGuidString);
-			pszGuidName = szGuidString;
-			hr = S_FALSE;
+			BOOL bIsSpecialGuid = FALSE;
+
+			//这是 VideoFormat 的基础类型，其他的类型都是更改其 Data1 的值(参见 mfapi.h MFVideoFormat_Base)
+			static const GUID MEDIASUBTYPE_VideoBase = {0x00000000, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 }};
+			if(0 == memcmp(&(pGuid->Data2), &(MEDIASUBTYPE_VideoBase.Data2), (sizeof(GUID) - sizeof(MEDIASUBTYPE_VideoBase.Data1))))
+			{
+				//如果发现是Video的话，再判断Data1部分是否是字符串格式，是的话以对应字符串作为名字
+
+				const char* const pData1Info = (const char* const)&pGuid->Data1;
+				if (IS_ALNUM(pData1Info[0]) && IS_ALNUM(pData1Info[1]))
+				{
+					StringCchPrintf(szGuidString, _countof(szGuidString), TEXT("MEDIASUBTYPE_VideoBase + %c%c%c%c"),
+						pData1Info[0], (pData1Info[1]), (pData1Info[2]), (pData1Info[3]));
+					pszGuidName = szGuidString;
+					bIsSpecialGuid = TRUE;
+				}
+			}
+			if (!bIsSpecialGuid)
+			{
+				StringFromGUID2(*pGuid, szGuidString, _countof(szGuidString));
+				FTLTRACE(TEXT("CTextMediaType Unknown GUID %s\n"), szGuidString);
+				pszGuidName = szGuidString;
+				hr = S_FALSE;
+			}
 		}
+	}
+
+	FTLASSERT(pszGuidName);
+	
+	if (_tcscmp(pszGuidName, TEXT("TIME_FORMAT_NONE")) == 0)
+	{
+		pszGuidName = TEXT("GUID_NULL");
 	}
     size_t nLength = _tcslen(pszGuidName);
 
