@@ -37,6 +37,7 @@ int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]);
 //
 STDAPI DllRegisterServer()
 { 
+	LPCTSTR pszCommandLine = GetCommandLine();
     return AMovieDllRegisterServer2( TRUE );
 
 } // DllRegisterServer
@@ -47,6 +48,7 @@ STDAPI DllRegisterServer()
 //
 STDAPI DllUnregisterServer()
 {
+	LPCTSTR pszCommandLine = GetCommandLine();
     return AMovieDllRegisterServer2( FALSE );
 
 } // DllUnregisterServer

@@ -125,6 +125,7 @@ public:
 
 private:
 	static				INT		s_InstanceCount;
+	static				BOOL	s_HasAddtoRot;
     CCritSec            m_DebugInfoLock;
 	DWORD				m_dwRegister;
 	REFERENCE_TIME		m_llLastTimeStart;			//上一次MediaSample的开始时间

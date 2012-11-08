@@ -21,7 +21,8 @@
 *   subtype    -- 格式类型：
 *     MEDIASUBTYPE_AVC1 -- H.264 bitstream without start codes
 *     MEDIASUBTYPE_Avi -- 
-*     MEDIASUBTYPE_ARGB32
+*     MEDIASUBTYPE_ARGB32 -- 每个像素用32位表示，RGB分量各使用8位（剩下的8位用于表示Alpha通道值），
+*       在内存中RGB各分量的排列顺序为：BGRA,通常可以使用RGBQUAD数据结构来操作一个像素
 *     MEDIASUBTYPE_H264 -- H.264 bitstream with start codes.
 *     MEDIASUBTYPE_MPEG1Audio -- 属于MEDIATYPE_Stream
 *     MEDIASUBTYPE_MPEG1AudioPayload -- 属于 MEDIATYPE_Audio
@@ -29,10 +30,11 @@
 *     MEDIASUBTYPE_MPEG2_AUDIO -- 
 *     MEDIASUBTYPE_MP3 -- 
 *     MEDIASUBTYPE_PCM
-*     MEDIASUBTYPE_RGB24 -- 
+*     MEDIASUBTYPE_RGB24 -- 内存中RGB各分量的排列顺序为 BGR， 通常可以使用RGBTRIPLE数据结构来操作一个像素
 *     MEDIASUBTYPE_RGB8 -- 
 *     MEDIASUBTYPE_RGB565 -- 
 *     MEDIASUBTYPE_UYVY --  
+*     MEDIASUBTYPE_AYUV --  带有一个Alpha通道，并且为每个像素都提取YUV分量(4:4:4)，图像数据格式为 A0 Y0 U0 V0 
 *   formattype -- 格式细节，通过 pbFormat指针指向具体的数据结构(大小为cbFormat)，
 *                其中包含了视频图象的大小、帧率，音频的采样频率、量化精度等
 *     FORMAT_AnalogVideo   -- 
@@ -48,6 +50,7 @@
 *   lSampleSize -- 表示每个Sample的大小，如为0表示大小可变
 *   bTemporalCompression -- 如值为FALSE，表示所有帧都是关键帧
 *   pUnk -- ?
+*
 *************************************************************************************************/
 
 /*************************************************************************************************

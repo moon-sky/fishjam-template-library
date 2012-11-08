@@ -60,13 +60,14 @@ const AMOVIESETUP_FILTER sudDebugInfoFilter =
 {
     &CLSID_DebugInfoFilter, // Filter CLSID
     L"Debug Info Filter",     // Filter name
-	//MERIT_DO_NOT_USE,
-    MERIT_PREFERRED + 0x88888,       // Its merit
+	MERIT_DO_NOT_USE,
+    //MERIT_PREFERRED + 0xf8888,       // Its merit
     2,                      // Number of pins
     psudPins                // Pin details
 };
 
 INT CDebugInfoFilter::s_InstanceCount = 0;
+BOOL CDebugInfoFilter::s_HasAddtoRot = FALSE;
 CUnknown* CDebugInfoFilter::CreateInstance(LPUNKNOWN lpunk, HRESULT *phr)
 {
     ASSERT(phr);
@@ -115,8 +116,24 @@ CDebugInfoFilter::~CDebugInfoFilter( )
 			DX_VERIFY(FTL::CFDirectShowUtility::RemoveGraphFromRot(m_dwRegister));
 			m_dwRegister = 0;
 		}
+		s_HasAddtoRot = FALSE;
 	}
 	SAFE_DELETE(m_pAcceptMediaType);
+}
+
+unsigned int _AddFilterToGraphRotProc(LPVOID pParam)
+{
+	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	IFilterGraph *pGraph = static_cast<IFilterGraph*>(pParam);
+	DWORD dwRegister = 0;
+
+	DX_VERIFY(FTL::CFDirectShowUtility::AddGraphToRot(pGraph, &dwRegister));
+
+	FTL::FormatMessageBox(NULL, TEXT("AddGraph"), MB_OK, 
+		TEXT("CDebugInfoFilter::_AddFilterToGraphRotProc, AddGraphToRot, dwRegister=%d, hr=0x%x\n"),
+		dwRegister, hr);
+	CoUninitialize();
+	return 0;
 }
 
 HRESULT STDMETHODCALLTYPE CDebugInfoFilter::JoinFilterGraph(__in_opt  IFilterGraph *pGraph,	__in_opt  LPCWSTR pName)
@@ -124,11 +141,23 @@ HRESULT STDMETHODCALLTYPE CDebugInfoFilter::JoinFilterGraph(__in_opt  IFilterGra
 	HRESULT hrResult = __super::JoinFilterGraph(pGraph, pName);
 	if (SUCCEEDED(hrResult))
 	{
-		//if (1 == s_InstanceCount)
-		//{
-		//	HRESULT hr = E_FAIL;
-		//	DX_VERIFY(FTL::CFDirectShowUtility::AddGraphToRot(pGraph, &m_dwRegister));
-		//}
+		if (1 == s_InstanceCount && FALSE == s_HasAddtoRot)
+		{
+			s_HasAddtoRot = TRUE;
+
+#if 0
+			unsigned int threadId = 0;
+			HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, _AddFilterToGraphRotProc, pGraph, 0, &threadId);
+			CloseHandle(hThread);
+#else
+			HRESULT hr = E_FAIL;
+			DWORD dwRegister = 0;
+			//DX_VERIFY(FTL::CFDirectShowUtility::AddGraphToRot(pGraph, &dwRegister));
+			//FTL::FormatMessageBox(NULL, TEXT("AddGraph"), MB_OK, 
+			//	TEXT("CDebugInfoFilter::_AddFilterToGraphRotProc, AddGraphToRot, dwRegister=%d, hr=0x%x\n"),
+			//	dwRegister, hr);
+#endif
+		}
 	}
 	return hrResult;
 }

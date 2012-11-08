@@ -74,7 +74,7 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     c.filter暴露 IKsPropertySet 接口，并具有一个 Capture pin（PIN_CATEGORY_CAPTURE）
 *     
 * 
-* CTransformFilter
+* CTransformFilter -- 主要是Encoder和Decoder，对应媒体类型
 *   1.概要说明 -- 使用单独的输出和输入缓冲区(copy-transform filter)，接收一个输入采样后，改写新的数据到一个输出采样
 *     并且传递到下一个filter，有保护的成员变量 m_pInput、m_pOutput指明输入、输出Pin（如果有多个Pin应该如何？），
 *     默认实现在GetPin函数中如果不存在就会创建，如果需要使用自己的Pin，可以在构造或GetPin中创建并赋值给 m_pInput/m_pOuput。
@@ -150,9 +150,8 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *   1.Video Sample先到达Muxer，没法从Audio中得到正确的偏移，
 *   2.Audio Sample先到达Muxer，给Resume后第一帧的Video Sample的时间戳进行调整，否则播放该文件时会出现某处被卡住的现象
 *
-* Splitter Filter
-*   分析数据并将其分解成多个流(如音频、视频)，常见的有 CLSID_MPEG1Splitter、CLSID_AviSplitter 等，
-*   
+* Splitter(分离器) Filter
+*   对应封装格式, 分析数据并将其分解成多个流(如音频、视频)，常见的有 CLSID_MPEG1Splitter、CLSID_AviSplitter 等，
 * 
 * Filter可以实现的系统接口（加入GE后，系统会进行QI的接口）
 *   #.IAMDeviceRemoval
@@ -190,11 +189,20 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     http://msdn.microsoft.com/en-us/library/windows/desktop/hh162907(v=vs.85).aspx
 *   CLSID_SampleGrabber 
 *   CLSID_SmartTee -- 分路Filter，一般用于多路同时输出，如 预览 + 文件保存
-*   CLSID_VideoRenderer  -- 视频输出
-*   CLSID_VideoRendererDefault -- VMR(DirectShow Filter列表中没有看到,莫非代码中会自动选择?)
-*   CLSID_VideoMixingRenderer -- 其Pin名为VMR，Pin上多了 IVMRVideoStreamControl
-*   CLSID_VideoMixingRenderer9 -- VMR For DX9
-*   CLSID_EnhancedVideoRenderer -- Media Foundation 使用的Render(EVR)
+*
+*   CLSID_VideoRenderer -- 最原始的渲染器，它接收到来自解码器解码后的数据流，在显示设备上显示，基本上不能调用到显卡硬件特性，
+*      全靠CPU来完成渲染任务，但Win7下能获取到 IDriectDrawVideo 接口
+*   CLSID_VideoRendererDefault -- 会自动根据操作系统选择，
+*     Win7 下是 CLSID_VideoMixingRenderer
+*   VMR(Video Mixing Renderer) -- 能够将若干路视频流合并输出到显示设备上，并且能够很好地调用显卡硬件的拉伸，
+*     颜色空间变换等硬件功能，以减少对 CPU 资源的占用率。画面质量取决于显卡硬件。无法直接对正在播放的视频截图。
+*     根据渲染模式的不同分为"窗口化(Windowed),"无窗口"(Windowless),"未渲染"(Renderless)模式。
+*     根据 DirectX 版本的不同，可以分为：
+*       CLSID_VideoMixingRenderer -- ?VMR7,基于2D的DirectDraw7, 其Pin名为VMR，Pin上多了 IVMRVideoStreamControl
+*       CLSID_VideoMixingRenderer9 -- 基于3D的Direct3D9, 可以支持视频特效（Video Effects）和视频变换(Video Transitions)
+*   CLSID_EnhancedVideoRenderer -- Media Foundation 使用的Render(EVR), 支持 DXVA 2.0，支持 IEVRFilterConfig 等接口，
+*     可通过 IMFGetService 进一步获取其他接口
+*
 *   CLSID_Colour -- Colour space convertor, 颜色控件转换?(但好像不支持属性页?)
 ******************************************************************************************************/
 //Render uses Direct3D or DirectDraw for rendering samples

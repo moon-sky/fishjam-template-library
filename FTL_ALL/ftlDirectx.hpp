@@ -226,6 +226,9 @@ namespace FTL
         {
             FTLASSERT(pROT);
             WCHAR wsz[256] = { 0 };
+
+			//ROT表中 monikers 的格式为 !FilterGraph X pid Y
+			//DirectSpy 显示出来的格式为 pid 0xXXXX(nnnn) IFilterGraph = xxxxx
             COM_VERIFY(StringCchPrintfW(wsz,_countof(wsz), L"FilterGraph %08x pid %08x\0",//FilterGraph %08p pid %p",
                 (DWORD_PTR)pUnkGraph, GetCurrentProcessId()));
             COM_VERIFY(CreateItemMoniker(L"!", wsz, &pMoniker));

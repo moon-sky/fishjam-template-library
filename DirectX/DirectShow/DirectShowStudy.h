@@ -12,10 +12,13 @@
 * TODO: CSourceStream 等中的 pObjectName 和 pName 分别代表什么?
 *
 * 调试工具：
-*   1. GraphEdit(graphedt.exe) <== DirectShow Graph Tool, 在 Vista或安装了Vista SDK 后需要注册SDK中 proppage.dll 才能远程连接。
-*      TODO: 是否需要重新注册 System32 下的 quartz.dll ?
-*   2. DXCapsViewer.exe -- 查看当前系统中DirectX设备(显卡、DSound声卡、DInput等) 的能力
-*   3. VideoInspector(http://www.kcsoftwares.com) -- 可以查看各种媒体的信息
+*   1. GraphEdit(graphedt.exe) <== DirectShow Graph Tool, 在Vista或安装了Vista SDK后需要注册SDK中 proppage.dll 才能远程连接。
+*      TODO: 是否需要重新注册 System32 下的 quartz.dll ? GraphEdt在Win7下需要管理员权限
+*   2. DSGraphEdit -- 使用.NET 的 GraphEdit
+*      http://www.codeproject.com/Articles/21105/DSGraphEdit-A-Reasonable-Facsimile-of-Microsoft-s
+*   3. DirectSpy.dll -- 注册后可以查看绝大部分 DirectShow Filter Graph，即使程序没有添加到 ROT。MERIT 为 MERIT_PREFERRED + 0x20000
+*   3. DXCapsViewer.exe -- 查看当前系统中DirectX设备(显卡、DSound声卡、DInput等) 的能力
+*   4. VideoInspector(http://www.kcsoftwares.com) -- 可以查看各种媒体的信息
 *
 * DirectShow是一套完全基于COM的应用系统，SDK基类源代码中已经实现了Filter中的COM基本特性
 * DirectShow 运行库的核心库是 quartz.dll，其中包含用于音频和视频播放的最重要的 COM 接口和 coclass。

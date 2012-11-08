@@ -83,6 +83,7 @@
 * DVR -- 数字摄像机
 * DVR-MS(*.dvr-ms) -- 由 Windows XP Service Pack 1 引入的流缓冲引擎（Stream Buffer Engine，SBE）创建的媒体文件，Media Center 
 *   用它存储录制的电视节目。
+* DXVA(DirectX Video Acceleration) -- 硬件加速,微软公司专门定制的视频加速规范
 * EVR(Enhanced Video Renderer) -- Media Foundation 使用EVR作为渲染器。它可以组合多达16个同步流（simultaneous streams）
 * Exif(Exchangeable Image File Format)--可交换图像文件格式。是专门为数码相机的照片设定的，可以记录
 *   数字照片的属性信息和拍摄数据。http://www.exif.org
