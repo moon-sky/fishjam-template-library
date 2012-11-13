@@ -6,7 +6,7 @@
 	>
 	<Tool
 		  Name="VCCLCompilerTool"
-		  AdditionalIncludeDirectories="D:\Intel\Media SDK 2012 R3\include"
+		  AdditionalIncludeDirectories="D:\Intel\Media SDK 2012 R3;D:\Intel\Media SDK 2012 R3\include"
 	/>
   <Tool
       Name="VCLinkerTool"

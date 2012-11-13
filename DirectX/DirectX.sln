@@ -38,6 +38,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MediaFoundationDemo", "Medi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IntelMediaSDKDemo", "IntelMediaSDKDemo\IntelMediaSDKDemo.vcproj", "{364AE7D0-B503-4A87-A66C-3E205C156864}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColourExFilter", "ColourExFilter\ColourExFilter.vcproj", "{3B7349B4-F729-4514-9D46-412082B7BAFF}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -86,6 +88,10 @@ Global
 		{364AE7D0-B503-4A87-A66C-3E205C156864}.Debug|Win32.Build.0 = Debug|Win32
 		{364AE7D0-B503-4A87-A66C-3E205C156864}.Release|Win32.ActiveCfg = Release|Win32
 		{364AE7D0-B503-4A87-A66C-3E205C156864}.Release|Win32.Build.0 = Release|Win32
+		{3B7349B4-F729-4514-9D46-412082B7BAFF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3B7349B4-F729-4514-9D46-412082B7BAFF}.Debug|Win32.Build.0 = Debug|Win32
+		{3B7349B4-F729-4514-9D46-412082B7BAFF}.Release|Win32.ActiveCfg = Release|Win32
+		{3B7349B4-F729-4514-9D46-412082B7BAFF}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

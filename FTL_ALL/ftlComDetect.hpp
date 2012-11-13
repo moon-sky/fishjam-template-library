@@ -197,9 +197,10 @@ namespace FTL
             for (unsigned int infoIndex = 0; infoIndex < infoCount; ++infoIndex)
             {
                 ATL::CComPtr<ITypeInfo>  spTypeInfo;
-                COM_VERIFY_EXCEPT2(pDisp->GetTypeInfo(infoIndex, LOCALE_SYSTEM_DEFAULT, &spTypeInfo), 
-					TYPE_E_LIBNOTREGISTERED,	//VSIP 中的 IVsHierarchy 会返回 Library not registered
-					TYPE_E_CANTLOADLIBRARY);	//CAxWindow.QueryHost 出来的接口(只有事件处理接口，没有对应的类型库)会返回  Error loading type library/DLL
+                hr = pDisp->GetTypeInfo(infoIndex, LOCALE_SYSTEM_DEFAULT, &spTypeInfo);
+					//TYPE_E_LIBNOTREGISTERED	//VSIP 中的 IVsHierarchy 会返回 Library not registered
+					//TYPE_E_CANTLOADLIBRARY	//CAxWindow.QueryHost 出来的接口(只有事件处理接口，没有对应的类型库)会返回  Error loading type library/DLL
+					//E_INVALIDARG				//DebugFilter 检查一些Filter的接口(Techsmith Encoder Color Source)时会返回这个错误
 				if (SUCCEEDED(hr) && spTypeInfo)
 				{
 					//COM_DETECT_INTERFACE_FROM_LIST(spTypeInfo);
@@ -1032,6 +1033,28 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IKsPropertySet)
             DETECT_INTERFACE_ENTRY(IKsTopology)
 #endif //INCLUDE_DETECT_KSPROXY
+
+#if INCLUDE_DETECT_INTEL_MEDIA_SDK
+			//设置或读取参数(Param),其中包括：Profile、Level、Picture Sequence Control(GOP,Slice数,Buffer等)、Frame的高宽、比特率等
+			DETECT_INTERFACE_ENTRY_IID(IConfigureVideoEncoder, IID_IConfigureVideoEncoder)
+			DETECT_INTERFACE_ENTRY_IID(IConfigureVideoDecoder, IID_IConfigureVideoDecoder)
+
+			DETECT_INTERFACE_ENTRY_IID(IExposeMfxMemTypeFlags, IID_IExposeMfxMemTypeFlags)
+			DETECT_INTERFACE_ENTRY_IID(IShareMfxSession, IID_IShareMfxSession)
+
+			//在 mfx_video_enc_proppage.h 文件中
+			//DETECT_INTERFACE_ENTRY_IID(IVideoPropertyPage, IID_IVideoPropertyPage)
+			//DETECT_INTERFACE_ENTRY_IID(IAboutPropertyPage, IID_IAboutPropertyPage)
+
+			//没有这个接口?
+			//DETECT_INTERFACE_ENTRY_IID(IAudioEncoderProperty, IID_IAudioEncoderProperty)
+
+			//DETECT_INTERFACE_ENTRY_IID(XXXXXXXXXX, IID_XXXXXXXXXXXXX)
+			//DETECT_INTERFACE_ENTRY_IID(XXXXXXXXXX, IID_XXXXXXXXXXXXX)
+			//DETECT_INTERFACE_ENTRY_IID(XXXXXXXXXX, IID_XXXXXXXXXXXXX)
+			//DETECT_INTERFACE_ENTRY_IID(XXXXXXXXXX, IID_XXXXXXXXXXXXX)
+
+#endif //INCLUDE_DETECT_INTEL_MEDIA_SDK
 
 #if INCLUDE_DETECT_MAINCONCEPT
 			//MIDL_INTERFACE("486F726E-4D43-49B9-8A0C-C22A2B0524E8")

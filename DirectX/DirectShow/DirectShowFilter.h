@@ -183,13 +183,22 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *   CLSID_CMP3DecMediaObject -- Windows Media MP3 Decoder ?
 *   CLSID_CMPEG2AudioEncoderMFT -- MPEG2 Audio Encoder ?
 *     http://msdn.microsoft.com/en-us/library/windows/desktop/hh162908(v=VS.85).aspx
-*   CLSID_Colour -- Colour space convertor, RGB颜色空间转换?
+*   CLSID_Colour(Colour space convertor) -- 颜色空间转换，似乎无法控制（自动选择适配的颜色空间），而且输出主要是RGB和YV12。
+*     http://msdn.microsoft.com/en-us/library/aa926076.aspx
 *   CLSID_FileWriter -- 文件输出，其中实现了 IFileSinkFilter
+*   CLSID_FrameRateKeeper -- 没有找到这个Filter！按照IMediaSample的MediaTime速率往下层filter传输数据。
 *   CLSID_MP3ACMCodecWrapper -- MS的MP3编码器,Win8才支持
-*     http://msdn.microsoft.com/en-us/library/windows/desktop/hh162907(v=vs.85).aspx
+*      http://msdn.microsoft.com/en-us/library/windows/desktop/hh162907(v=vs.85).aspx
+*   CLSID_NullInPlace
+*   CLSID_NullRenderer -- 只进不出的Filter
+*   CLSID_InfTee -- 一进多出的filter，把Input Pin传过来的IMediaSample拷贝多份到Output Pin，输出Pin的数据同输入完全一样
 *   CLSID_SampleGrabber 
-*   CLSID_SmartTee -- 分路Filter，一般用于多路同时输出，如 预览 + 文件保存
-*
+*   CLSID_SmartTee -- 智能的一入二出的分路Filter，用于 Capture(数据完全等同于输入) + Preview(数据视系统资源、上下层filter流量而做适当丢弃)。
+*   CLSID_Tee -- 标准的一进二出分路Filter
+*   CLSID_VideoMixer -- 没有找到这个Filter！把两个Input按照时间戳合成为一路视频
+******************************************************************************************************/
+
+/******************************************************************************************************
 *   CLSID_VideoRenderer -- 最原始的渲染器，它接收到来自解码器解码后的数据流，在显示设备上显示，基本上不能调用到显卡硬件特性，
 *      全靠CPU来完成渲染任务，但Win7下能获取到 IDriectDrawVideo 接口
 *   CLSID_VideoRendererDefault -- 会自动根据操作系统选择，
@@ -203,7 +212,6 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *   CLSID_EnhancedVideoRenderer -- Media Foundation 使用的Render(EVR), 支持 DXVA 2.0，支持 IEVRFilterConfig 等接口，
 *     可通过 IMFGetService 进一步获取其他接口
 *
-*   CLSID_Colour -- Colour space convertor, 颜色控件转换?(但好像不支持属性页?)
 ******************************************************************************************************/
 //Render uses Direct3D or DirectDraw for rendering samples
 //Video Mixing Renderer 7（只支持WINXP）使用 DirectDraw7 表面

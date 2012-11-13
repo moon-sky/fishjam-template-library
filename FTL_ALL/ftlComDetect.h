@@ -225,6 +225,10 @@ namespace FTL
 #if INCLUDE_DETECT_INTEL_MEDIA_SDK
 #  include <mfxvideo.h>
 #  include <mfxvideo++.h>
+#  include <samples/sample_dshow_plugins/utils/include/mfx_filter_externals.h>
+//#  include <samples/sample_common/include/sample_utils.h>
+//#  include <samples/sample_dshow_plugins/common/include/codec_presets.h>
+//#  include <samples/sample_dshow_plugins/video_enc_filter/include/mfx_video_enc_proppage.h>
 #endif 
 
 #if INCLUDE_DETECT_MAINCONCEPT

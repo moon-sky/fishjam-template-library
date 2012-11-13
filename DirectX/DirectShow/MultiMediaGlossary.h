@@ -83,7 +83,7 @@
 * DVR -- 数字摄像机
 * DVR-MS(*.dvr-ms) -- 由 Windows XP Service Pack 1 引入的流缓冲引擎（Stream Buffer Engine，SBE）创建的媒体文件，Media Center 
 *   用它存储录制的电视节目。
-* DXVA(DirectX Video Acceleration) -- 硬件加速,微软公司专门定制的视频加速规范
+* DXVA(DirectX Video Acceleration) -- DirectX视频加速,微软公司专门定制的视频加速规范，Vista版本1, Win7版本2
 * EVR(Enhanced Video Renderer) -- Media Foundation 使用EVR作为渲染器。它可以组合多达16个同步流（simultaneous streams）
 * Exif(Exchangeable Image File Format)--可交换图像文件格式。是专门为数码相机的照片设定的，可以记录
 *   数字照片的属性信息和拍摄数据。http://www.exif.org
@@ -104,8 +104,10 @@
 * HDV -- 可以在传统 Mini DV 磁带上记录 1080i(AVC) 的高清视频，并同时兼容标清 DV 拍摄和输出。使用 MPEG2-TS + MPEG-1 Audio Layer II 保存。
 * HDTV  -- High Definition TV,高清电视，利用数字压缩技术可以把HDTV的地面广播谱压缩到现有的模拟电视频道范围内
 *   (6MHz或8MHz)，是新世纪的电视。
-* IPP(Intel Performance Primitive) -- 对应多核并且功能丰富的一个Library。包括一些面向多媒体、数据处理、
-*   通信应用程序的，而且被优化的函数。
+* HRD(Hypothetical Reference Decoder) -- 假设性参考解码器?
+* IDR(Instantaneous decoding fresh picture) -- H.264中使用的技术术语
+* IPP(Intel Integrated Performance Primitives) --Intel 集成性能原件，跨平台的软件库，提供了广泛的多媒体功能：
+*   音视频加解码、图像处理(JPEG)、信号处理、语音压缩、加密机制 等
 * ISO(International Standards Organization) -- 国际标准化组织。
 * ISO 9660--当前唯一通用的光盘文件系统，任何类型的计算机都支持它，所有的烧录软件也都支持它。
 * ISV(Independent Software Vendors) -- 独立软件开发商，通常指 利用已有的软硬件平台开发特定应用程序的厂商。
@@ -131,10 +133,12 @@
 * MultiLUN(Multiple Logical Unit Number)--逻辑单元号（LUN）指的是一个用于SCSI总线的唯一的识别号，它总线使得
 *   能区别其他八个设备（它们每个都是一个逻辑单元）。每个LUN是一个能够识别特定逻辑单元的唯一识别号，
 *   它可能是一个最终用户、一个文件或者一个程序。如一个USB硬盘可能会有N个分区。
+* NAL(Network Abstraction Layer) -- 网络抽象层
 * NTSC(National Television System Committee)--全国电视制式委员会。由美国国家电视标准委员会（NTSC）制定的
 *   彩色电视广播标准。两大主要分支是NTSC-J与NTSC-US。美国、日本等地使用。
 *   属于同时制，帧频为每秒29.97fps，525条扫描线，逐行扫描，画面比例为4：3，分辨率为720x480。
 * OGG -- 一个庞大的多媒体开发计划的项目名称， 将涉及视频音频等方面的编码开发，提供完全免费多媒体编码方案
+* OpenCV(Open Computer Vision Library) -- 
 * PAL(Phase Alternating Line) -- 逐行倒相，电视广播中色彩调频的一种方法。625条扫瞄线，25fps，隔行扫瞄，PAL色彩调频。
 *   兼容原有黑白电视广播格式的情况下加入彩色讯号。中国、英国、香港等地使用(欧洲标准)。
 * PanoramaJPEG -- 360度全景摄影(パノラマ撮影)产生的JPEG
@@ -179,6 +183,7 @@
 *   轻触剪贴簿中显示的某张小尺寸照片，即可回放该照片。相机提供16种背景，可以挑选背景画面来装点您的照片，或使用随机背景。
 * SD -- 标准清晰
 * SDTV -- 数字标准高清晰度电视，采用MPEG-2压缩(同DVD一样)，用于卫星和有线电视地面广播。
+* SEI(Supplemental Enhancement Information) -- 
 * SMPTE -- ? 电影及电视学会
 * Seamless -- （SD 和静止画时有效，具体是什么意思？)
 * SOI(Start Of Image)--SOI在Exif中被定义为一个Marker Segments，每个Marker的单位是2个字节，即一个word类型
@@ -219,6 +224,7 @@
 * WMT(Windows Media Technology)--
 * WST(World Standard Teletext)
 * x.v.Colour色域标准 -- 索尼提出的针对xvYCC国际色域标准的一种术语，该标准涉及的色彩范围比目前使用的广播电视标准（sRGB）更广
+* YUV(Video Usability Information) -- 视频可用性信息
 * xdb()--(Sony)实机的信息管理数据库，其中保存了Meta data、albums和favorite等信息。
 *******************************************************************************************************/
 

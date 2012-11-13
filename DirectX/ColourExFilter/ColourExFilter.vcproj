@@ -2,9 +2,10 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="IntelMediaSDKDemo"
-	ProjectGUID="{364AE7D0-B503-4A87-A66C-3E205C156864}"
-	RootNamespace="IntelMediaSDKDemo"
+	Name="ColourExFilter"
+	ProjectGUID="{3B7349B4-F729-4514-9D46-412082B7BAFF}"
+	RootNamespace="ColourExFilter"
+	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -19,9 +20,8 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(SolutionDir)IntelMediaSDK.vsprops"
-			ATLMinimizesCRunTimeLibraryUsage="false"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(SolutionDir)DirectX.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -38,23 +38,14 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="false"
-				TargetEnvironment="1"
-				GenerateStublessProxies="true"
-				TypeLibraryName="$(IntDir)/IntelMediaSDKDemo.tlb"
-				HeaderFileName="IntelMediaSDKDemo.h"
-				DLLDataFileName=""
-				InterfaceIdentifierFileName="IntelMediaSDKDemo_i.c"
-				ProxyFileName="IntelMediaSDKDemo_p.c"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;_DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;COLOUREXFILTER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="4"
@@ -64,16 +55,17 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="true"
+				AdditionalDependencies="strmbasd.lib winmm.lib"
+				OutputFile="$(OutDir)\$(ProjectName).ax"
 				LinkIncremental="2"
+				ModuleDefinitionFile="ColourExFilter.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -104,10 +96,10 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(SolutionDir)IntelMediaSDK.vsprops"
-			ATLMinimizesCRunTimeLibraryUsage="true"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(SolutionDir)DirectX.vsprops"
 			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -123,41 +115,38 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="false"
-				TargetEnvironment="1"
-				GenerateStublessProxies="true"
-				TypeLibraryName="$(IntDir)/IntelMediaSDKDemo.tlb"
-				HeaderFileName="IntelMediaSDKDemo.h"
-				DLLDataFileName=""
-				InterfaceIdentifierFileName="IntelMediaSDKDemo_i.c"
-				ProxyFileName="IntelMediaSDKDemo_p.c"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;NDEBUG"
-				ExceptionHandling="0"
-				RuntimeLibrary="0"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;COLOUREXFILTER_EXPORTS"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="true"
+				AdditionalDependencies="strmbase.lib winmm.lib"
+				OutputFile="$(OutDir)\$(ProjectName).ax"
 				LinkIncremental="1"
+				ModuleDefinitionFile="ColourExFilter.def"
+				GenerateDebugInformation="true"
 				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -188,14 +177,49 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\IntelMediaSDKDemo.cpp"
+				RelativePath=".\ColorSpaceConverterImpl.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MainDlg.cpp"
+				RelativePath=".\ColourExFilter.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ColourExFilter.def"
+				>
+			</File>
+			<File
+				RelativePath=".\ColourExFilter.idl"
+				>
+			</File>
+			<File
+				RelativePath=".\dllmain.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Setup.cpp"
 				>
 			</File>
 			<File
@@ -221,42 +245,40 @@
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\IntelIPPStudy.h"
+				RelativePath=".\ColorSpaceConverter.h"
 				>
 			</File>
 			<File
-				RelativePath=".\IntelMediaSDKStudy.h"
+				RelativePath=".\ColorSpaceConverterImpl.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MainDlg.h"
-				>
-			</File>
-			<File
-				RelativePath=".\resource.h"
+				RelativePath=".\ColourExFilter.h"
 				>
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
+			<File
+				RelativePath="..\targetver.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
-			<File
-				RelativePath=".\res\IntelMediaSDKDemo.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\IntelMediaSDKDemo.rc"
-				>
-			</File>
 		</Filter>
+		<File
+			RelativePath=".\ReadMe.txt"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

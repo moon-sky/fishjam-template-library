@@ -1,0 +1,58 @@
+import "unknwn.idl";
+
+//import "oaidl.idl";
+//import "ocidl.idl";
+
+cpp_quote("#if 0")
+// This is temporary workaround to to persuade
+// MIDL to allow forward declarations.
+typedef LPVOID*  IBaseFilter;
+typedef LPVOID*  IFilterGraph;
+typedef LPVOID*  IPin;
+typedef LPVOID*  AM_MEDIA_TYPE;
+//typedef LPVOID*  ISpecifyPropertyPages;
+cpp_quote("#endif //if 0")
+
+cpp_quote("#include <dshow.h>")
+
+interface IColourExConfig;
+
+// {B8C2E728-D7AD-4bd9-8313-69DB41C66BB8}
+//static const GUID <<name>> = 
+//{ 0xb8c2e728, 0xd7ad, 0x4bd9, { 0x83, 0x13, 0x69, 0xdb, 0x41, 0xc6, 0x6b, 0xb8 } };
+
+[
+    local,
+	object,
+	uuid(B8C2E728-D7AD-4bd9-8313-69DB41C66BB8),	
+	helpstring("IColourExConfig Interface"),
+	pointer_default(unique)
+]
+interface IColourExConfig : IUnknown{
+	HRESULT SetConvertParam([in] AM_MEDIA_TYPE* pMediaTypeInput, [in] AM_MEDIA_TYPE* pMediaTypeOutput);
+};
+
+
+[
+	// {01FC54C0-EE84-4ab0-BE20-429687DA9E8E}
+	//IMPLEMENT_OLECREATE(<<class>>, <<external_name>>, 
+	//0x1fc54c0, 0xee84, 0x4ab0, 0xbe, 0x20, 0x42, 0x96, 0x87, 0xda, 0x9e, 0x8e);
+    uuid(01FC54C0-EE84-4ab0-BE20-429687DA9E8E),
+    version(1.0),
+   	helpstring("Colour Space Convertor Ex 1.0 Type Library"),
+]
+
+library ColourExFilterLib
+{
+    //ColourExFilter
+    [
+		// {88EB94FA-D06E-449f-8FEA-EDC15AD43405}
+		//IMPLEMENT_OLECREATE(<<class>>, <<external_name>>, 0x88eb94fa, 0xd06e, 0x449f, 0x8f, 0xea, 0xed, 0xc1, 0x5a, 0xd4, 0x34, 0x5);
+        uuid(88EB94FA-D06E-449f-8FEA-EDC15AD43405),
+        helpstring("ColourExFilter Class")
+    ]
+    coclass ColourExFilter
+    {
+        [default] interface IColourExConfig;
+    };
+}
