@@ -127,7 +127,7 @@
 *   Film Mode 是电影模式，按每秒24帧(fps)拍摄
 * Modd(MOvie aDditional Data) -- 保存动画文件的附加信息的附属文件。使用SfCommonLib::SfModdXML类进行读写。
 * Moff(MOvie Filmroll File) -- 动画缩略图文件。从MOFF文件中取得缩略图比直接从动画文件中取得要快，提高了效率。
-* Motion JPEG -- 将多个AVI连起来？是AVI的一种
+* Motion JPEG -- 将多个JPEG连起来？是AVI的一种? IntelMediaSDK中CLSID_JPEGDecFilter可以处理
 * MPEG(Motion Picture Experts Group) 
 * MPLS(Movie PlayLists) -- (AVCHD 上的一种文件？ AVIndex 管理的一种Content)
 * MultiLUN(Multiple Logical Unit Number)--逻辑单元号（LUN）指的是一个用于SCSI总线的唯一的识别号，它总线使得

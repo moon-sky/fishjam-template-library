@@ -29,8 +29,8 @@ namespace FTL
 }
 
 //extern CServerAppModule _Module;
-//extern CComModule _Module;
-extern CAppModule _Module;  //CFResourcelessDlg需要使用
+extern CComModule _Module;
+//extern CAppModule _Module;  //CFResourcelessDlg需要使用
 
 
 

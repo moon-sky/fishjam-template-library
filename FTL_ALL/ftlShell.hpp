@@ -118,6 +118,7 @@ namespace FTL
 	HRESULT CFShellUtil::ExecuteOrOpenWithDialog(LPCTSTR pszFile, HWND hWndParent)
 	{
 		HRESULT hr = S_OK;
+		BOOL bRet = FALSE;
 		//先使用 ShellExecute 执行，如果有错误不会弹出错误信息
 		DWORD dwResult = (DWORD) ::ShellExecute(hWndParent, TEXT("open") , pszFile , NULL, NULL, SW_NORMAL);
 		if (dwResult < 32)
@@ -147,14 +148,21 @@ namespace FTL
 					//WinXP
 					TCHAR szSysDir[MAX_PATH] = {0};
 					GetSystemDirectory(szSysDir, _countof(szSysDir));
-					CPath pathRundll32(szSysDir);
-					pathRundll32.Append(TEXT("Rundll32.exe"));
 
-					CPath pathRunParam(szSysDir);
-					pathRunParam.Append(TEXT("Shell32.dll,OpenAs_RunDLL"));
+					//CPath pathRundll32(szSysDir);
+					//pathRundll32.Append(TEXT("Rundll32.exe"));
+					TCHAR pathRundll32[MAX_PATH] = {0};
+					StringCchCopy(pathRundll32, _countof(pathRundll32), szSysDir);
+					PathAppend(pathRundll32, TEXT("Rundll32.exe"));
+
+					//CPath pathRunParam(szSysDir);
+					//pathRunParam.Append(TEXT("Shell32.dll,OpenAs_RunDLL"));
+					TCHAR pathRunParam[MAX_PATH] = {0};
+					StringCchCopy(pathRunParam, _countof(pathRunParam), szSysDir);
+					PathAppend(pathRunParam, TEXT("Shell32.dll,OpenAs_RunDLL"));
 
 					CString strCmd;  
-					strCmd.Format(_T("%s %s %s"), pathRundll32.m_strPath, pathRunParam.m_strPath, pszFile);
+					strCmd.Format(_T("%s %s %s"), pathRundll32, pathRunParam, pszFile);
 					FTLTRACE(TEXT("ExecuteOpenWithDialog, Cmd=%s\n"), strCmd);
 					//MessageBox( strCmd, TEXT("OpenAs_RunDLL in XP"), MB_OK);
 
@@ -189,9 +197,9 @@ namespace FTL
 				SHELLEXECUTEINFO ExecuteInfo= {0};
 				ExecuteInfo.cbSize = sizeof(ExecuteInfo);
 				ExecuteInfo.fMask = 0;// SEE_MASK_NOCLOSEPROCESS;
-				ExecuteInfo.hwnd = m_hWnd;
+				ExecuteInfo.hwnd = hWndParent;
 				ExecuteInfo.lpVerb = TEXT("open");
-				ExecuteInfo.lpFile =  strFile;
+				ExecuteInfo.lpFile =  pszFile;
 				ExecuteInfo.nShow = SW_NORMAL;
 				API_VERIFY(ShellExecuteEx(&ExecuteInfo));
 				if (!bRet)

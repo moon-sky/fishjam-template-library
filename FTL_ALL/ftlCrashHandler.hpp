@@ -6,7 +6,7 @@
 #  include "ftlCrashHandler.h"
 #endif
 #include <atlfile.h>
-#include <atldlgs.h>
+//#include <atldlgs.h>
 #include <WindowsX.h>
 namespace FTL
 {
@@ -893,7 +893,11 @@ namespace FTL
 		if (dlgSave.DoModal() == IDOK)
 		{
 			CAtlFile fileDump;
-			if (SUCCEEDED(fileDump.Create(dlgSave.m_szFileName, GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
+#ifdef __AFXDLGS_H__
+			if (SUCCEEDED(fileDump.Create(dlgSave.GetPathName(), GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
+#else
+			if (SUCCEEDED(fileDump.Create(dlgSave.GetPathName(), GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
+#endif 
 			{
 				TCHAR szInfo[128] = {0};
 				//WORD wdStart = 0xFEFF;
