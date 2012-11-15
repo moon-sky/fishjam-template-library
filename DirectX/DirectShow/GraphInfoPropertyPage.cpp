@@ -93,11 +93,12 @@ HRESULT CGraphInfoPropertyPage::OnDeactivate()
 
 	m_stInterfaces.Detach();
 	m_stMediaTypes.Detach();
+	m_stDetail.Detach();
 	m_listInterfaces.Detach();
 	m_listMediaTypes.Detach();
 	m_listPins.Detach();
 	m_listFilters.Detach();
-	m_edtConnectMediaType.Detach();
+	m_edtDetail.Detach();
 
 	COM_VERIFY(__super::OnDeactivate());
 	return hr;
@@ -268,6 +269,27 @@ HRESULT CGraphInfoPropertyPage::_GetPinList(IBaseFilter* pFilter)
 	return hr;
 }
 
+HRESULT CGraphInfoPropertyPage::_GetFilterDetailInfo(IBaseFilter* pFilter)
+{
+	CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilter, E_POINTER);
+
+	HRESULT hr = E_FAIL;
+	CString strDetail;
+
+	CLSID clsidFilter = CLSID_NULL;
+	DX_VERIFY(pFilter->GetClassID(&clsidFilter));
+	TCHAR szFilterClsid[128] = {0};
+	StringFromGUID2(clsidFilter, szFilterClsid, _countof(szFilterClsid));
+
+	TCHAR szFileName[MAX_PATH] = {0};
+	DX_VERIFY(CTextMediaType::GetFilenameByCLSIDString(szFilterClsid, szFileName, _countof(szFileName)));
+
+	strDetail.Format(TEXT("CLSID: \r\n\t%s\r\nFilePath:\r\n\t%s\r\n"), szFilterClsid, szFileName);
+	m_edtDetail.SetWindowText(strDetail);
+
+	return hr;
+}
+
 void CGraphInfoPropertyPage::OnListFilterSelChange(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = S_OK;
@@ -281,9 +303,9 @@ void CGraphInfoPropertyPage::OnListFilterSelChange(UINT uNotifyCode, int nID, CW
 		if (pFilter)
 		{
 			_GetPinList(pFilter);
+			_GetFilterDetailInfo(pFilter);
 			_GetInterfaceList(pFilter);
 			_ClearMediaTypeList();
-			m_edtConnectMediaType.SetWindowText(TEXT(""));
 		}
 	}
 }
@@ -313,13 +335,9 @@ HRESULT CGraphInfoPropertyPage::_GetMediaTypeList(IPin* pPin)
 {
 	HRESULT hr = S_OK;
 	CComPtr<IEnumMediaTypes> spEnumMediaTypes;
-	CMediaType ConnectionMediaType;
-	BOOL bHasConnectionMediaType = FALSE;
 	if (pPin)
 	{
 		DX_VERIFY_EXCEPT1(pPin->EnumMediaTypes(&spEnumMediaTypes), VFW_E_NOT_CONNECTED);
-		DX_VERIFY_EXCEPT1(pPin->ConnectionMediaType(&ConnectionMediaType), VFW_E_NOT_CONNECTED); //得到Pin上连接的媒体类型
-		bHasConnectionMediaType = SUCCEEDED(hr);
 	}
 
 	if (spEnumMediaTypes)
@@ -347,43 +365,81 @@ HRESULT CGraphInfoPropertyPage::_GetMediaTypeList(IPin* pPin)
 			//enum over
 			hr = S_OK;
 		}
+	}
+	FTL::CFControlUtil::UpdateListboxHorizontalExtent(m_listMediaTypes, LIST_BOX_MARGIN);
+	return hr;
+}
 
-		if (bHasConnectionMediaType)
+HRESULT CGraphInfoPropertyPage::_GetPinDetailInfo(IPin* pPin)
+{
+	HRESULT hr = S_OK;
+	CHECK_POINTER_RETURN_VALUE_IF_FAIL(pPin, E_POINTER);
+	
+	CString strDetail;
+	
+	CMediaType ConnectionMediaType;
+	DX_VERIFY_EXCEPT1(pPin->ConnectionMediaType(&ConnectionMediaType), VFW_E_NOT_CONNECTED); //得到Pin上连接的媒体类型
+	BOOL bHasConnectionMediaType = SUCCEEDED(hr);
+
+	CString strConnectMediaType;
+	if (bHasConnectionMediaType)
+	{
+		TCHAR szMediaInfo[1024] = {0};
+		CTextMediaType connectMediaTypeText(ConnectionMediaType);
+		DX_VERIFY(connectMediaTypeText.AsText(szMediaInfo, _countof(szMediaInfo)));
+		strConnectMediaType = szMediaInfo;
+		//m_edtDetail.SetWindowText(szMediaInfo);
+
+		int nCount = m_listMediaTypes.GetCount();
+		int nIndex = 0;
+		for ( ; nIndex < nCount; nIndex++)
 		{
-			CTextMediaType connectMediaTypeText(ConnectionMediaType);
-			DX_VERIFY(connectMediaTypeText.AsText(szMediaInfo, _countof(szMediaInfo)));
-			m_edtConnectMediaType.SetWindowText(szMediaInfo);
+			AM_MEDIA_TYPE* pMediaType = (AM_MEDIA_TYPE*)m_listMediaTypes.GetItemDataPtr(nIndex);
+			if (ConnectionMediaType == *pMediaType)
+			{
+				break;
+			}
+		}
+
+		CString strMediaTypes;
+		if (nIndex < nCount)
+		{
+			m_listMediaTypes.SetCurSel(nIndex);
+			strMediaTypes.Format(TEXT("MediaTypes: ActiveIndex=%d"), nIndex);
 		}
 		else
 		{
-			m_edtConnectMediaType.SetWindowText(TEXT("<None>"));
+			strMediaTypes.Format(TEXT("MediaTypes: ActiveIndex=%d"), -1);
 		}
-	}
-
-	int nCount = m_listMediaTypes.GetCount();
-	int nIndex = 0;
-	for ( ; nIndex < nCount; nIndex++)
-	{
-		AM_MEDIA_TYPE* pMediaType = (AM_MEDIA_TYPE*)m_listMediaTypes.GetItemDataPtr(nIndex);
-		if (ConnectionMediaType == *pMediaType)
-		{
-			break;
-		}
-	}
-
-	CString strMediaTypes;
-	if (nIndex < nCount)
-	{
-		m_listMediaTypes.SetCurSel(nIndex);
-		strMediaTypes.Format(TEXT("MediaTypes: ActiveIndex=%d"), nIndex);
+		m_stMediaTypes.SetWindowText(strMediaTypes);
 	}
 	else
 	{
-		strMediaTypes.Format(TEXT("MediaTypes: ActiveIndex=%d"), -1);
+		strConnectMediaType = TEXT("NOT");
+		//m_edtDetail.SetWindowText(TEXT("<None>"));
 	}
-	m_stMediaTypes.SetWindowText(strMediaTypes);
-	
-	FTL::CFControlUtil::UpdateListboxHorizontalExtent(m_listMediaTypes, LIST_BOX_MARGIN);
+
+	CString strAllocatorProp;
+	CComQIPtr<IMemInputPin>	spMemInputPin(pPin);
+	if (spMemInputPin)
+	{
+		CComPtr<IMemAllocator>	spMemAllocator;
+		DX_VERIFY(spMemInputPin->GetAllocator(&spMemAllocator));
+		if (spMemAllocator)
+		{
+			ALLOCATOR_PROPERTIES	allocatorProp = {0};
+			DX_VERIFY(spMemAllocator->GetProperties(&allocatorProp));
+			if (SUCCEEDED(hr))
+			{
+				strAllocatorProp.Format(TEXT("cBuffers=%ld, cbBuffer=%ld, cbAlign=%ld, cbPrefix=%ld"), 
+					allocatorProp.cBuffers, allocatorProp.cbBuffer, allocatorProp.cbAlign, allocatorProp.cbPrefix);
+			}
+		}
+	}
+
+	strDetail.Format(TEXT("ConnectMediaType:\r\n\t%s\r\nAllocator:\r\n\t%s"), 
+		strConnectMediaType, strAllocatorProp);
+	m_edtDetail.SetWindowText(strDetail);
 	return hr;
 }
 
@@ -399,6 +455,7 @@ void CGraphInfoPropertyPage::OnListPinSelChange(UINT uNotifyCode, int nID, CWind
 		{
 			_GetMediaTypeList(pPin);
 			_GetInterfaceList(pPin);
+			_GetPinDetailInfo(pPin);
 		}
 	}
 }

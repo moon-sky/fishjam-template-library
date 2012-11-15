@@ -34,9 +34,9 @@
 #define IDC_STATIC_RUNNING_TIME         1019
 #define IDC_STATIC_INTERFACES           1019
 #define IDC_STATIC_MEDIATYPES           1020
-#define IDC_STATIC_CONNECT_MEDIATYPE    1021
-#define IDC_EDIT1                       1023
+#define IDC_STATIC_DETAIL               1021
 #define IDC_EDIT_CONNECT_MEDIATYPE      1023
+#define IDC_EDIT_DETAIL                 1023
 #define VERSION_RES_LANGUAGE            0x409
 #define VERSION_RES_CHARSET             1252
 #define ID_DEBUGPROPERTYLISTPOP_COPY    40001

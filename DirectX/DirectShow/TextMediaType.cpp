@@ -91,8 +91,8 @@ HRESULT CTextMediaType::AsText(LPTSTR szType, unsigned int iLen)
     COM_VERIFY(Format2String(szFormat, _countof(szFormat), FormatType(), Format(), FormatLength()));
     szFormat[_countof(szFormat) -1 ] = 0;        // Ensure null-termination
 
-    COM_VERIFY(StringCchPrintf(szType, iLen, TEXT("Major:%s;  Sub:%s;  Format:%s"),
-        szMajorType,szSubType, szFormat)); //GetSubtypeName(&subtype)
+    COM_VERIFY(StringCchPrintf(szType, iLen, TEXT("Major:%s;  Sub:%s;  Format(%d):%s, Fixed=%d, Size=%d"),
+        szMajorType,szSubType, cbFormat, szFormat, bFixedSizeSamples, lSampleSize)); //GetSubtypeName(&subtype)
 
     return hr;
 }

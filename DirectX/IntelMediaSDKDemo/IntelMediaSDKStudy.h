@@ -1,7 +1,7 @@
 #ifndef INTEL_MEDIA_SDK
 #define INTEL_MEDIA_SDK
 #pragma once
-
+IMemAllocator
 /*************************************************************************************************
 * 术语
 *   MVC(Multi-View Video Coding)
@@ -12,9 +12,11 @@
 *   介绍信息：http://software.intel.com/en-us/articles/intel-media-software-development-kit-intel-media-sdk/
 * 
 * 注意：
-*   1.Intel Media SDK 目前只支持NV12(英特尔定义的视频格式，它在英特尔硬件平台上是原生态支持)
+*   1.Intel Media SDK 似乎只支持NV12(英特尔定义的视频格式，它在英特尔硬件平台上是原生态支持)
 *     MSDK格式转化: http://software.intel.com/zh-cn/blogs/2010/07/26/msdkyv12nv12/
-*
+*   2.其Filter 对 ALLOCATOR_PROPERTIES 要求比较高，比如 cBuffers 一般都要10左右(为了异步时能多处理几个)，
+*     cbBuffer 一般都要比算出来的理论值大，否则就过不了 CheckInput，
+*     而且似乎Sample的Enc中会自动更改高宽(32字节对齐，比如 320x240=> 320x256)
 *
 * Media SDK支持 VC1,H264 和 MPEG2 格式在Intel显卡平台的硬件加速。
 * 在Media SDk中，对数字视频的一些关键核心的编码、解码算法来自于Intel IPP库，并在此基础上对处理性能进行了优化和提高。
@@ -45,9 +47,18 @@
 *   IsDecodePartiallyAccelerated/IsEncodePartiallyAccelerated -- 是否并行加速?(MFX_WRN_PARTIAL_ACCELERATION)
 *   FramesEncoded -- (已?)编码的帧数(限制还是统计值？)
 *   RealBitrate -- 编码流中的真实比特率
+*
+* 插件扩展
+*   通过 mfxPlugin(C++是MFXPlugin)给用户提供扩展的机会,Sample 中提供了 CSCPlugin(从 RGB32 => NV12 转换)
+*   
 **************************************************************************************************/
 
 /**************************************************************************************************
+* 使用特殊的 MFX_TIME_STAMP, 通过 ConvertReferenceTime2MFXTime / xxxx 转换，
+*   定义了 MFX_TIME_STAMP_FREQUENCY(90000) 常量
+*   
+* CSCProcessor -- Color Space Converter - converts frames from RGB4 to NV12,
+* 
 * 源码分析
 *   1.mfxSession -- MediaSDK的核心,通过 MFXInit初始化,使用完毕后通过MFXClose关闭,可通过MFXVideoSession类操作。
 *     其函数分为以下几个部分（各部分被封装成对应的 MFXVideoXXX 类进行简化处理）
@@ -56,10 +67,47 @@
 *     VideoEncode:进行Encode的操作，通过 mfxVideoParam 设置相关参数，通过 EncodeFrameAsync 启动异步编码？
 *     VideoDecode:进行Decode的操作，通过 DecodeHeader 先解码头部？通过 DecodeFrameAsync 启动异步解码？
 *       其输入可支持 部分帧、单帧或多帧，比特流中的time stamp必须是帧数据的第一个字节[的位置]
-*     VideoVPP:   通过 RunFrameVPPAsync 启动异步 VPP?  
-*   2.mfxHandleType/mfxHDL -- 似乎是控制是否使用硬件、及硬件类型的东西?
-*   3.mfxSyncPoint -- 
-*   4.mfxBitstream -- 数据流?
+*     VideoVPP:   通过 RunFrameVPPAsync 启动异步 VPP，会返回一个同步点  
+*   n.mfxBitstream -- 数据流?
+*   n.mfxHandleType/mfxHDL -- 似乎是控制是否使用硬件、及硬件类型(D3D9,D3D11,VA_DISPLAY)的东西?
+*     mfxIMPL 对应的 MFX_IMPL_XXX 枚举值
+*   n.mfxInfoMFX -- 是很多配置编解码信息的结构体(其中包括了 H264、MPEG-2、JPEG配置的union)
+*       CodecId -- 编解码的ID
+*       CodecProfile -- MFX_PROFILE_AVC_STEREO_HIGH | xxx;
+*       TargetUsage --
+*       RateControlMethod -- MFX_RATECONTROL_CBR|
+*       mfxU32  reserved[3];
+*   n.mfxInfoVPP -- 其内部包含了两个 mfxFrameInfo 结构体，分别表示输入和输出的媒体帧信息。
+*   n.mfxFrameInfo -- 媒体的帧信息(其作用类DS中的Format?)
+*       AspectRatioW/AspectRatioH -- 比例?
+*       ChromaFormat -- MFX_CHROMAFORMAT_YUV420
+*       FourCC -- MFX_FOURCC_NV12
+*       FrameRateExtN/FrameRateExtD -- 帧率的分数表示，可以通过SDK中提供的 ConvertFrameRate 函数设置
+*       Height/Width -- MSDK_ALIGN16 或 MSDK_ALIGN32 宏 调整后的高度和宽度
+*       PicStruct -- ?
+*   n.mfxSyncPoint -- 同步点，是一个指针，
+*   n.mfxVideoParam
+*       IOPattern -- 指定内存模型？
+*         启动了D3D的话，一般是：MFX_IOPATTERN_IN_VIDEO_MEMORY|MFX_IOPATTERN_OUT_VIDEO_MEMORY;
+*         没有启动D3D的话，一般是：MFX_IOPATTERN_IN_SYSTEM_MEMORY|MFX_IOPATTERN_OUT_SYSTEM_MEMORY;
+*
+* Pipeline
+*   Init{
+*     FileRead::Init -> InitFileWrite -> Session::init -> CreateAllocator -> InitMfxEncParams 
+*     -> InitMfxVppParams -> new  MFXVideoENCODE -> [new MFXVideoVPP(如果需要更改大小或FourCC) -> ] 
+*     -> ResetMFXComponents { MFXVideoENCODE::Init -> MFXVideoVPP::Init -> CEncTaskPool::Init }
+*   }
+*   for(...) 
+*   {
+*     Run{
+*       GetFreeTask -> GetFreeSurface(输入的空闲surface) -> FileReader::LoadNextFrame(读入文件数据)
+*       -> MFXVideoVPP::RunFrameVPPAsync(&m_pVppSurfaces[nVppSurfIdx],调用VPP处理) -> MFXVideoENCODE::EncodeFrameAsync(编码)
+*       -> MFXVideoVPP::RunFrameVPPAsync(NULL,再次调用VPP处理) -> MFXVideoENCODE::EncodeFrameAsync(再次编码)
+*     }
+*   }
+*   Close{
+*     DeleteFrames -> DeleteAllocator -> Close TaskPool/Session/FileReader
+*   }
 **************************************************************************************************/
 
 

@@ -684,6 +684,23 @@ namespace FTL
             DETECT_INTERFACE_ENTRY_IID(IDirectDrawGammaControl,IID_IDirectDrawGammaControl)
 #endif //INCLUDE_DETECT_DDRAW
 
+#if INCLUDE_DETECT_DIRECT3D
+			DETECT_INTERFACE_ENTRY(IDXGIObject)
+			DETECT_INTERFACE_ENTRY(IDXGIDeviceSubObject)
+			DETECT_INTERFACE_ENTRY(IDXGIResource)
+			DETECT_INTERFACE_ENTRY(IDXGIKeyedMutex)
+			DETECT_INTERFACE_ENTRY(IDXGISurface)
+			DETECT_INTERFACE_ENTRY(IDXGISurface1)
+			DETECT_INTERFACE_ENTRY(IDXGIAdapter)
+			DETECT_INTERFACE_ENTRY(IDXGIOutput)
+			DETECT_INTERFACE_ENTRY(IDXGISwapChain)
+			DETECT_INTERFACE_ENTRY(IDXGIFactory)
+			DETECT_INTERFACE_ENTRY(IDXGIDevice)
+			DETECT_INTERFACE_ENTRY(IDXGIFactory1)
+			DETECT_INTERFACE_ENTRY(IDXGIAdapter1)
+			DETECT_INTERFACE_ENTRY(IDXGIDevice1)
+#endif //INCLUDE_DETECT_DIRECT3D
+
 #if INCLUDE_DETECT_DISPEX
             DETECT_INTERFACE_ENTRY(IDispatchEx)     //增加了对成员的管理，尤其是动态增加和删除成员的特性
             DETECT_INTERFACE_ENTRY(IDispError)
@@ -1042,6 +1059,9 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY_IID(IExposeMfxMemTypeFlags, IID_IExposeMfxMemTypeFlags)
 			DETECT_INTERFACE_ENTRY_IID(IShareMfxSession, IID_IShareMfxSession)
 
+			DETECT_INTERFACE_ENTRY_IID(IMFXSample, IID_IMFXSample)
+			DETECT_INTERFACE_ENTRY_IID(IMFXAllocator, IID_IMFXAllocator)
+
 			//在 mfx_video_enc_proppage.h 文件中
 			//DETECT_INTERFACE_ENTRY_IID(IVideoPropertyPage, IID_IVideoPropertyPage)
 			//DETECT_INTERFACE_ENTRY_IID(IAboutPropertyPage, IID_IAboutPropertyPage)
@@ -1077,13 +1097,13 @@ namespace FTL
 #if INCLUDE_DETECT_MEDIA_FOUNDATION
 #if  defined(_D3D9_H_) || defined(_d3d9P_H_)
 			//dxva2api.h
-			DETECT_INTERFACE_ENTRY_IID(IDirect3DDeviceManager9, IID_IDirect3DDeviceManager9)
-			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoAccelerationService, IID_IDirectXVideoAccelerationService)
-			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoDecoderService, IID_IDirectXVideoDecoderService)
-			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoProcessorService, IID_IDirectXVideoProcessorService)
-			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoDecoder, IID_IDirectXVideoDecoder)
-			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoProcessor, IID_IDirectXVideoProcessor)
-			DETECT_INTERFACE_ENTRY_IID(IDirectXVideoMemoryConfiguration, IID_IDirectXVideoMemoryConfiguration)
+			DETECT_INTERFACE_ENTRY(IDirect3DDeviceManager9)
+			DETECT_INTERFACE_ENTRY(IDirectXVideoAccelerationService)
+			DETECT_INTERFACE_ENTRY(IDirectXVideoDecoderService)
+			DETECT_INTERFACE_ENTRY(IDirectXVideoProcessorService)
+			DETECT_INTERFACE_ENTRY(IDirectXVideoDecoder)
+			DETECT_INTERFACE_ENTRY(IDirectXVideoProcessor)
+			DETECT_INTERFACE_ENTRY(IDirectXVideoMemoryConfiguration)
 #  endif //_D3D9_H_ || _d3d9P_H_
 
 			//evr.h
@@ -1183,6 +1203,10 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY(IMFTranscodeSinkInfoProvider)
 			DETECT_INTERFACE_ENTRY(IMFFieldOfUseMFTUnlock)
 			DETECT_INTERFACE_ENTRY(IMFLocalMFTRegistration)
+
+			//mftransform.h
+			DETECT_INTERFACE_ENTRY(IMFTransform)
+			  
 #endif //WINVER >= _WIN32_WINNT_WIN7
 
 #endif //INCLUDE_DETECT_MEDIA_FOUNDATION
@@ -1863,6 +1887,36 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IDropTarget)
             DETECT_INTERFACE_ENTRY(IEnumOLEVERB)
 #endif //INCLUDE_DETECT_OLEIDL
+
+#if INCLUDE_DETECT_PROPSYS
+			DETECT_INTERFACE_ENTRY(IInitializeWithFile)
+			DETECT_INTERFACE_ENTRY(IInitializeWithStream)
+			DETECT_INTERFACE_ENTRY(IPropertyStore)
+			DETECT_INTERFACE_ENTRY(INamedPropertyStore)
+			DETECT_INTERFACE_ENTRY(IObjectWithPropertyKey)
+			DETECT_INTERFACE_ENTRY(IPropertyChange)
+			DETECT_INTERFACE_ENTRY(IPropertyChangeArray)
+			DETECT_INTERFACE_ENTRY(IPropertyStoreCapabilities)
+			DETECT_INTERFACE_ENTRY(IPropertyStoreCache)
+			DETECT_INTERFACE_ENTRY(IPropertyEnumType)
+			DETECT_INTERFACE_ENTRY(IPropertyEnumType2)
+			DETECT_INTERFACE_ENTRY(IPropertyEnumTypeList)
+			DETECT_INTERFACE_ENTRY(IPropertyDescription)
+			DETECT_INTERFACE_ENTRY(IPropertyDescription2)
+			DETECT_INTERFACE_ENTRY(IPropertyDescriptionAliasInfo)
+			DETECT_INTERFACE_ENTRY(IPropertyDescriptionSearchInfo)
+			DETECT_INTERFACE_ENTRY(IPropertyDescriptionRelatedPropertyInfo)
+			DETECT_INTERFACE_ENTRY(IPropertySystem)
+			DETECT_INTERFACE_ENTRY(IPropertyDescriptionList)
+			DETECT_INTERFACE_ENTRY(IPropertyStoreFactory)
+			DETECT_INTERFACE_ENTRY(IDelayedPropertyStoreFactory)
+			DETECT_INTERFACE_ENTRY(IPersistSerializedPropStorage)
+			DETECT_INTERFACE_ENTRY(IPersistSerializedPropStorage2)
+			DETECT_INTERFACE_ENTRY(IPropertySystemChangeNotify)
+			DETECT_INTERFACE_ENTRY(ICreateObject)
+#endif //INCLUDE_DETECT_PROPSYS
+
+
 
 #if INCLUDE_DETECT_QEDIT
             DETECT_INTERFACE_ENTRY(IPropertySetter)

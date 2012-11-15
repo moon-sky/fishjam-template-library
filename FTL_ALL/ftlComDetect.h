@@ -80,9 +80,17 @@ namespace FTL
 # define INCLUDE_DETECT_DDRAW    0
 #endif //INCLUDE_DETECT_DDRAW
 
-# define INCLUDE_DETECT_DISPEX      1
+#ifndef INCLUDE_DETECT_DIRECT3D
+#  define INCLUDE_DETECT_DIRECT3D 1
+#endif //INCLUDE_DETECT_DIRECT3D
 
+#ifndef INCLUDE_DETECT_DISPEX
+# define INCLUDE_DETECT_DISPEX      1
+#endif //INCLUDE_DETECT_DISPEX
+
+#ifndef INCLUDE_DETECT_DOCOBJ
 # define INCLUDE_DETECT_DOCOBJ      1
+#endif //INCLUDE_DETECT_DOCOBJ
 
 #ifndef INCLUDE_DETECT_DTE
 #   define INCLUDE_DETECT_DTE       0
@@ -143,6 +151,10 @@ namespace FTL
 # define INCLUDE_DETECT_OLEIDL      1
 #endif
 
+#ifndef INCLUDE_DETECT_PROPSYS
+# define INCLUDE_DETECT_PROPSYS      1
+#endif
+
 #ifndef INCLUDE_DETECT_QEDIT
 # define INCLUDE_DETECT_QEDIT       0
 #endif
@@ -201,6 +213,11 @@ namespace FTL
 #  include <ddraw.h>
 #endif
 
+#if INCLUDE_DETECT_DIRECT3D
+#  include <d3d9types.h>
+#  include <dxgi.h>
+#endif
+
 #if INCLUDE_DETECT_DISPEX
 #  include <DispEx.h>
 #endif
@@ -225,7 +242,9 @@ namespace FTL
 #if INCLUDE_DETECT_INTEL_MEDIA_SDK
 #  include <mfxvideo.h>
 #  include <mfxvideo++.h>
-#  include <samples/sample_dshow_plugins/utils/include/mfx_filter_externals.h>
+#  include <d3d_allocator.h>
+#  include <mfx_filter_externals.h>
+#  include <memory_allocator.h>
 //#  include <samples/sample_common/include/sample_utils.h>
 //#  include <samples/sample_dshow_plugins/common/include/codec_presets.h>
 //#  include <samples/sample_dshow_plugins/video_enc_filter/include/mfx_video_enc_proppage.h>
@@ -240,10 +259,10 @@ namespace FTL
 #endif 
 
 #if INCLUDE_DETECT_MEDIA_FOUNDATION
-#  include <d3d9types.h>
 #  include <dxva2api.h>
 #  include <evr.h>
 #  include <mfidl.h>
+#  include <mftransform.h>
 #endif
 
 #if INCLUDE_DETECT_MSHTMLC
@@ -272,6 +291,10 @@ namespace FTL
 
 #if INCLUDE_DETECT_OLEIDL
 #  include <OleIdl.h>
+#endif 
+
+#if INCLUDE_DETECT_PROPSYS
+#  include <propsys.h>
 #endif 
 
 #if INCLUDE_DETECT_QEDIT

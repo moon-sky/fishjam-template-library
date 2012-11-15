@@ -25,6 +25,6 @@ HRESULT CBaseColorSpaceConvertImpl::SetConvertParam(GUID& rSubMediaTypeIn, GUID&
 HRESULT CColorSpaceConvertRGB32ToNV12Impl::ConvertCoverSpace(IMediaSample* pMediaSampeIn, IMediaSample* pMediaSampleOut)
 {
 	HRESULT hr = E_FAIL;
-
+	return hr;
 }
 

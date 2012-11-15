@@ -1,10 +1,10 @@
 #pragma once
 
-class IColorSpaceConverter
+class IFColorSpaceConverter
 {
 public:
-	virtual ~IColorSpaceConverter() {}
+	virtual ~IFColorSpaceConverter() {}
 public:
-	HRESULT SetConvertParam(GUID& rSubMediaTypeIn, GUID& rSubMediaTypeOut) = 0;
-	HRESULT ConvertCoverSpace(IMediaSample* pMediaSampeIn, IMediaSample* pMediaSampleOut) = 0;
-}
+	virtual HRESULT SetConvertParam(GUID& rSubMediaTypeIn, GUID& rSubMediaTypeOut) = 0;
+	virtual HRESULT ConvertCoverSpace(IMediaSample* pMediaSampeIn, IMediaSample* pMediaSampleOut) = 0;
+};

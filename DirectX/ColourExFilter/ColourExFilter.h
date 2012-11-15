@@ -2,7 +2,7 @@
 
 #include "ColourExFilter_h.h"
 
-#define COLOUREX_FILTER_NAME		NAME("Color Space Convertor Ex")
+#define COLOUREX_FILTER_NAME		L"Color Space Convertor Ex"
 
 class CColourExFilter : public CTransformFilter,
 	//public ISpecifyPropertyPages,

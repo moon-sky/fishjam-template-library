@@ -4,12 +4,23 @@
 	Version="8.00"
 	Name="DirectX Defaults"
 	>
-	<Tool
+  <Tool
 		  Name="VCCLCompilerTool"
-		  AdditionalIncludeDirectories="D:\Intel\Media SDK 2012 R3;D:\Intel\Media SDK 2012 R3\include"
-	/>
+		  AdditionalIncludeDirectories="$(IntelMediaSDKPath);$(IntelMediaSDKPath)\include;$(IntelMediaSDKSamplesPath)\sample_common\include;$(IntelMediaSDKSamplesPath)\sample_dshow_plugins\utils\include;$(IntelMediaSDKSamplesPath)\sample_dshow_plugins\common\include\;"
+  />
   <Tool
       Name="VCLinkerTool"
 		  AdditionalLibraryDirectories="D:\Intel\Media SDK 2012 R3\lib\win32"
 	/>
+
+  <UserMacro
+    Name="IntelMediaSDKPath"
+    Value="D:\Intel\Media SDK 2012 R3"
+	/>
+  
+  <UserMacro
+    Name="IntelMediaSDKSamplesPath"
+    Value="$(IntelMediaSDKPath)\samples"
+	/>
+
 </VisualStudioPropertySheet>
