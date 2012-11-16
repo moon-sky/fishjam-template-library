@@ -130,7 +130,8 @@
 *   3.DMO(DirectX Media Object) codecs
 *
 * 视频编码压缩(VideoCodec) -- 通过 CLSID_VideoCompressorCategory 枚举
-*     Microsoft RLE -- MS为AVI格式开发的一种编码，使用RLE无损压缩算法
+*     Microsoft RLE -- MS为AVI格式开发的一种编码，使用RLE无损压缩算法，采用8位的编码方式，只能支持到256色，
+*       通常只用于压缩动画或者是计算机合成的图像等具有大面积色块的素材
 *     Microsoft Video 1 -- 用于对模拟视频进行压缩，是一种有损压缩方案，最高仅达到256色,一般不用于编码
 *   设置音视频压缩属性
 *     IAMStreamConfig -- 

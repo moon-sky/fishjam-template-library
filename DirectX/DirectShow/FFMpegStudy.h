@@ -22,7 +22,7 @@ extern "C" {
 //视频共享网站: fms(在线录制、播放)+ffmpeg(后台格式转换)
 
 /* -- 带 h264 的编译方式
-$ ./configure --enable-shared --enable-w32threads --disable-static --enable-memalign-hack 
+$ ./configure --enable-shared --enable-w32threads --disable-static --enable-memalign-hack --disable-debug
 --disable-yasm --enable-libx264 --enable-gpl --extra-ldflags="-L/usr/local/lib -W1,-add-stdcall-alies" --extra-cflags="-I/usr/local/include" --enable-swscale
 */
 
@@ -30,41 +30,68 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 * 缓冲区内存分配
 *   1.av_image_alloc -- 推荐方式?
 *   2.avpicture_get_size 获取大小后 av_malloc
-
+*
+* AVCodec -- 编解码器，采用链表维护，每一个都有其对应的名字、类型、CodecID和对数据进行处理的编解码函数指针
+*   avcodec_find_decoder/avcodec_find_encoder -- 根据给定的codec id或解码器名称从系统中搜寻并返回一个AVCodec结构的指针
+*   avcodec_alloc_context3 -- 根据 AVCodec 分配合适的 AVCodecContext
+*   avcodec_open/avcodec_open2/avcodec_close -- 根据给定的 AVCodec 打开对应的Codec，并初始化 AVCodecContext/ 关闭Codec。
+*   avcodec_alloc_frame -- 分配编解码需要的 AVFrame 结构
+*   avcodec_decode_video/avcodec_decode_video2 -- 解码一个视频帧，输入数据在AVPacket结构中，输出数据在AVFrame结构中。
+*   avcodec_decode_audio4 -- 解码一个音频帧。输入数据在AVPacket结构中，输出数据在AVFrame结构中
+*   avcodec_encode_video/avcodec_encode_video2 -- 编码一个视频帧，输入数据在AVFrame结构中，输出数据在AVPacket结构中
+*
+* AVCodecContext -- 和具体媒体数据相关的编解码器上下文，保存AVCodec指针和与codec相关的数据，包含了流中所使用的关于编解码器的所有信息，
+*   bits_per_coded_sample -- 
+*   codec_name[32]、codec_type(AVMediaType)、codec_id(CodecID)、codec_tag -- 
+*     编解码器的名字、类型(音频/视频/字幕等)、ID(H264/MPEG4等)、FOURCC 等信息
+*   hight/width,coded_width/coded_height -- Video的高宽
+*   sample_fmt -- 音频的原始采样格式, 是 SampleFormat 枚举
+*   time_base -- 采用分数(den/num)保存了帧率的信息,如 25fps(25/1) NTSC的 29.97fps(den/num= (framenum / 17982) / (framenum % 17982)) ?
+*
 * AVDictionary -- 一个键值对的数组，通常在获取或设置参数时使用
 * 
 * AVFrame
-*   data/linesize -- FFMpeg内部以平面的方式存储原始图像数据，即将图像像素分为多个平面（R/G/B或Y/U/V），
-*      data数组内的指针指向各个像素平面的起始位置，linesize数组则存放各个存贮各个平面的缓冲区的行宽
-*   key_frame -- 该图像是否是关键帧
-*   pict_type -- 该图像的编码类型：I(1)/P(2)/B(3)
-*		
-* AVStream -- 描述一个媒体流，其大部分信息可通过 avformat_open_input 根据文件头信息确定，其他信息可通过 avformat_find_stream_info 获取
-*   典型的有 视频流、中英文音频流、中英文字幕流(Subtitle)，可通过 av_new_stream、avformat_new_stream 等创建
-*   index -- 在AVFormatContext中流的索引，其值自动生成(AVFormatContext::streams[index])
-*   nb_frames -- 流内的帧数目
-*   r_frame_rate -- 
-*   time_base -- 流的时间基准，是一个实数，该流中媒体数据的pts和dts都将以这个时间基准为粒度。通常，使用av_rescale/av_rescale_q可以实现不同时间基准的转换
-* AVFormatContext -- 描述了一个媒体文件或媒体流的构成和基本信息，由 avformat_open_input 创建并初始化部分值，
-*   但其他一些值(如 mux_rate、key 等)需要手工设置初始值，否则可能出现异常。
-*   debug -- 调试标志
-*   nb_streams/streams -- AVStream结构指针数组, 包含了所有内嵌媒体流的描述
+*   data/linesize -- FFMpeg内部以平面的方式存储原始图像数据，即将图像像素分为多个平面（R/G/B或Y/U/V）数组，
+*      data数组 -- 其中的指针指向各个像素平面的起始位置，编码时需要用户设置数据，
+*      linesize数组 -- 存放各个存贮各个平面的缓冲区的行宽，编码时需要用户设置数据，
+*      (未确认)如：从AVFrame::data[0]里获取 RGB24/YUYV422/UYVY422 都只是从data[0]里获取就可以了，忽略data[1], data[2], data[3];
+*                  YUV420好像用到了 [0][1][2]
+*   key_frame -- 该图像是否是关键帧，由 libavcodec 设置
+*   pict_type -- 该图像的编码类型：Intra(1)/Predicted(2)/Bi-dir(3) 等，默认值是 NONE(0)，其值由libavcodec设置
+*   pts -- 呈现时间，编码时由用户设置，默认是 AV_NOPTS_VALUE(0x800....)
+*   quality -- 从1(最好)到FF_LAMBDA_MAX(256*128-1,最差)，编码时用户设置，默认值是0
+*   mb_type -- (宏块层？具体的作用？是整数的数组？)其中的值根据图像的类型(I/P/B)等有不同的值，如 MB_TYPE_SKIP、 MB_TYPE_16x16 等宏的组合，
+*     编码时需要用户设置？
+*     http://blog.csdn.net/david412306524/article/details/7359614
+*   interlaced_frame -- 表明是否是隔行扫描的,编码时用户指定，默认0
+*
+* AVFormatContext -- 格式转换过程中实现输入和输出功能、保存相关数据的主要结构，描述了一个媒体文件或媒体流的构成和基本信息，
+*     debug -- 调试标志
+*     nb_streams/streams -- AVStream结构指针数组, 包含了所有内嵌媒体流的描述
+*     其内部有 AVInputFormat + AVOutputFormat 结构体，来表示输入输出的文件格式
+*   avformat_open_input -- 创建并初始化部分值，但其他一些值(如 mux_rate、key 等)需要手工设置初始值，否则可能出现异常。
+*   avformat_alloc_output_context2 -- 根据文件的输出格式、扩展名或文件名等分配合适的 AVFormatContext 结构
+*
+* AVInputFormat/AVOutputFormat -- 输入/输出文件格式，用于 Demuxer/Muxer，
+* 
 * AVPacket -- 暂存解码之前的媒体数据（一个音/视频帧、一个字幕包等）及附加信息（解码时间戳、显示时间戳、时长等),
 *   主要用于建立缓冲区并装载数据，
 *   data/size/pos -- 数据缓冲区指针、长度和媒体流中的字节偏移量
 *   flags -- 标志域的组合，1(AV_PKT_FLAG_KEY)表示该数据是一个关键帧, 2(AV_PKT_FLAG_CORRUPT)表示该数据已经损坏
 *   destruct -- 释放数据缓冲区的函数指针，其值可为 [av_destruct_packet]/av_destruct_packet_nofree, 会被 av_free_packet 调用
 *
+* AVStream -- 描述一个媒体流，其大部分信息可通过 avformat_open_input 根据文件头信息确定，其他信息可通过 avformat_find_stream_info 获取
+*   典型的有 视频流、中英文音频流、中英文字幕流(Subtitle)，可通过 av_new_stream、avformat_new_stream 等创建
+*   index -- 在AVFormatContext中流的索引，其值自动生成(AVFormatContext::streams[index])
+*   nb_frames -- 流内的帧数目
+*   r_frame_rate -- 
+*   time_base -- 流的时间基准，是一个实数，该流中媒体数据的pts和dts都将以这个时间基准为粒度。通常，使用av_rescale/av_rescale_q可以实现不同时间基准的转换
+*
 * avformat_find_stream_info -- 获取必要的编解码器参数(如 AVMediaType、CodecID )，设置到 AVFormatContext::streams[i]::codec 中
 * av_read_frame -- 从多媒体文件或多媒体流中读取媒体数据，获取的数据由 AVPacket 来存放
 * av_seek_frame -- 改变媒体文件的读写指针来实现对媒体文件的随机访问，通常支持基于时间、文件偏移、帧号(AVSEEK_FLAG_FRAME)的随机访问方式，
-* AVCodec
-*   avcodec_find_decoder/avcodec_find_encoder -- 根据给定的codec id或解码器名称从系统中搜寻并返回一个AVCodec结构的指针
-*   avcodec_alloc_context -- 
-*   avcodec_open/avcodec_open2/avcodec_close -- 根据给定的 AVCodec 打开对应的Codec，并初始化 AVCodecContext/ 关闭Codec。
-*   avcodec_alloc_frame -- 分配编解码时的 AVFrame 结构
-*   avcodec_decode_video2 -- 解码一个视频帧，输入数据在AVPacket结构中，输出数据在AVFrame结构中。
-*   avcodec_decode_audio4 -- 解码一个音频帧。输入数据在AVPacket结构中，输出数据在AVFrame结构中
+* 
+
 *   
 * 图像缩放和格式转换(sws_scale，早期是 img_convert)，如 RGB24 <-> YUV420P
 *   转换算法的对比：http://www.cnblogs.com/acloud/archive/2011/10/29/sws_scale.html
@@ -88,15 +115,15 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 * ffdshow -- 一套免费的编解码软件，封装成了DirectShow的标准组件。
 *   使用 libavcodec library 以及其他各种开放源代码的软件包(如 DivX、)，可支持H.264、FLV、MPEG-4等格式视频
 *  
-* ffmpeg -- 开源且跨平台的音视频解决方案，是一套编解码的框架，具有采集、解码、流化等功能
+* ffmpeg -- 开源且跨平台的音视频解决方案，是一套编解码的框架，具有采集、解码、流化等功能，TCPMP, VLC, MPlayer等开源播放器都用到了FFmpeg。
 *   http://www.ffmpeg.org/ <== 正式官网 (git clone git://source.ffmpeg.org/ffmpeg.git ffmpeg)
 *   http://www.ffmpeg.com.cn <== 中文网站，提供编译好的 FFmpeg SDK下载，有 FFmpeg SDK 开发手册
 *   http://ffmpeg.zeranoe.com/builds/
 *   http://bbs.chinavideo.org/viewthread.php?tid=1897&extra=page=1 <== Windows 下安装和编译
 *   http://dranger.com/ffmpeg <== 英文的入门教材，但有些过时
 * 模块
-*   ffmpeg -i 输入文件 输出文件 -- 视频文件转换命令行工具,也支持经过实时电视卡抓取和编码成视频文件
-*     ffmpeg.exe -h 显示详细帮助
+*   ffmpeg.exe -i 输入文件 输出文件 -- 视频文件转换命令行工具,也支持经过实时电视卡抓取和编码成视频文件(linux?)
+*     ffmpeg.exe -h 显示详细帮助，会生成带调试信息的 ffmpeg_g.exe 文件
 *     例子： ffmpeg.exe -i snatch_1.vob -f avi -vcodec mpeg4 -acodec mp3 snatch.avi
 *     -acodec codec		<== 指定音频编码，如 aac 
 *     -an				<== 禁止audio
@@ -114,13 +141,13 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 *     -vcodec codec		<== 指定视频编码，如 mpeg4/h264/libxvid 等(可用编码可通过 -codecs 查看)
 *     -target type		<== 指定文件类型，如 vcd/dvd 等，很大程度上可以决定质量
 *     -y                <== 直接覆盖输出文件，不再提示
-*   ffserver -- 基于HTTP(RTSP正在开发中)用于实时广播的多媒体服务器.也支持时间平移(Time-Shifting)
-*   ffplay -- 用 SDL和FFmpeg库开发的一个简单的媒体播放器(需要先安装 SDL 库才能编译)
-*   libavcodec -- 包含了所有FFmpeg音视频编解码器的库.为了保证最优性能和高可复用性,大多数编解码器从头开发的
-*   libavformat -- 包含了所有的普通音视频格式的解析器和产生器的库
-*   libavutil -- 函数库，实现了CRC校验码的产生，128位整数数学，最大公约数，整数开方，整数取对数，内存分配，大端小端格式的转换等功能。
-*   libswscale -- 格式转换的库，比如需要将 RGB 转换为 YUV
-*   libpostproc -- 
+*   ffserver.exe -- 基于HTTP(RTSP正在开发中)用于实时广播的多媒体服务器.也支持时间平移(Time-Shifting)
+*   ffplay.exe -- 用 SDL和FFmpeg库开发的一个简单的媒体播放器(需要先安装 SDL 库才能编译)
+*   libavcodec.dll -- (encode/decode,使用 AVCodec 结构体)包含了所有FFmpeg音视频编解码器的库.为了保证最优性能和高可复用性,大多数编解码器从头开发的
+*   libavformat.dll -- (muxer/demuxer,使用 AVOutputFormat/AVInputFormat结构体)包含了所有的普通音视频格式的解析器和产生器的库
+*   libavutil.dll -- 函数库，实现了CRC校验码的产生，128位整数数学，最大公约数，整数开方，整数取对数，内存分配，大端小端格式的转换等功能。
+*   libswscale.dll -- 格式转换的库，比如需要将 RGB 转换为 YUV
+*   libpostproc.dll -- 
 * 
 * 编译和调试(无法使用VC编译？)，可以用MSys+MinGW编译，但是编译出来的DLL是可以被VC使用的
 *   http://blog.csdn.net/jszj/article/details/4028716  -- Windows 下编译
@@ -132,7 +159,7 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 *     4.安装MinGW
 *     4.Clone FFMpeg 的Git仓库: File->Import->Git->Projects From Git(git://source.ffmpeg.org/ffmpeg.git)
 *     5.创建工程: File->New->Project-> C/C++ -> Makefile Project with Existing Code 
-* 
+*     
 *   http://ffmpeg.zeranoe.com/blog/  -- 自动下载和编译ffmpeg的脚本
 *   编译选项 -- 注意：编译安装第三方库时，推荐使用 --prefix=/usr(默认是 /usr/local)，这样ffmpeg可以自动找到相关的库(否则需要手工指定)
 *     ./configure --enable-w32threads --enable-shared --enable-static --enable-memalign-hack --enable-libx264 
@@ -166,6 +193,11 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 *     --extra-cflags=-O0        额外的编译参数，如 -O0 表示不优化， -I/usr/local/include 表示头文件目录
 *     --extra-ldflags=xxx       额外的链接参数，如 -L/usr/local/lib 表示链接目录
 *     --enable-pthreads         linux下启用线程?
+*    补充：
+*      1.为了在 ffmpeg.exe 中支持dshow设备，需要在MinGW中增加DShow的头文件，
+*        a.http://sourceforge.net/projects/mingw-w64/ 下载头文件包;
+*        b.将 strmif.h、rpcndr.h、uuids.h、ksuuids.h、control.h 等拷贝到 MinGW/include 下覆盖
+*        
 *  调试
 *    av_log_set_callback -- 设置日志的回调函数
 *    av_log_set_level -- 设置日志等级(如 AV_LOG_DEBUG )
@@ -204,19 +236,16 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 
 /*********************************************************************************************
 * 函数说明
-*   av_register_all     -- 注册所有容器格式(Format)和CODEC
 *   av_open_input_file  -- 打开文件，avformat_close_input_file 关闭
 *   av_find_stream_info -- 从文件中提取流信息
-*     avformat_find_stream_info ?
-*   avcodec_find_decoder-- 查找 decoder /encoder?
-*   avcodec_open        -- 打开编解码器，使用完毕后需要通过 avcodec_close 关闭释放
-*   avcodec_alloc_frame -- 为解码帧分配内存
+*   av_guess_codec		-- 根据上层的muxer和输出的文件，猜测可能会使用的Codec
+*   av_guess_format     -- 根据文件名后缀猜测可能的输出格式(AVOutputFormat)
 *   av_read_frame       -- 从码流中提取出帧数据，一般需要在循环中进行
-*   avcodec_decode_video-- 判断帧的类型，对于视频帧调用:
-
-
+*   av_register_all     -- 注册所有CODEC/容器格式(Format)/Protocol，其内部实现为 avcodec_register_all + Register Muxer/Demuxer + Register Protocol
+*     avformat_find_stream_info ?
+*
 * 
-*  源码分析
+*  源码分析 -- ffmpeg在AVCodec、AVInputFormat等结构体中定义函数指针，各种编解码、容器给指针赋值成对应的函数，实现扩展。
 *    AVPicture
 *     +-AVFrame
 *    AVPacket -- av_read_frame读取一个包并且把它保存到AVPacket::data指针指向的内存中(ffmpeg分配?)
@@ -224,11 +253,6 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 *    AVFormatContext -- 通过其 ->streams->codec->codec_type 判断类型，如 CODEC_TYPE_VIDEO
 *      AVInputFormat
 *      AVOutputFormat
-*    AVCodecContext -- 编解码器上下文，包含了流中所使用的关于编解码器的所有信息，
-*      bits_per_coded_sample -- 
-*      codec_name[32]、codec_type、codec_id、codec_tag -- 编解码器的名字、类型、ID、FOURCC 等信息
-*      sample_fmt -- 音频的原始采样格式, 是 SampleFormat 枚举
-*      time_base -- 采用分数(den/num)保存了帧率的信息,如 25fps(25/1) NTSC的 29.97fps(den/num= (framenum / 17982) / (framenum % 17982)) ?
 *    AVCodec -- 通过 avcodec_find_decoder 查找， avcodec_open2 打开
 *    SwsContext -- ?
 * 
@@ -284,6 +308,22 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 *     static AVFilter input_filter = { .name="ffplay_input", .priv_size=sizeof(FilterPriv), .init=input_init, xxx};
 *     
 *   
+*********************************************************************************************/
+
+/*********************************************************************************************
+* ffmpeg.exe 中 av_encode(编解码和输出等大部分功能都在此函数内完成) 函数的调用流程
+*   1.input streams initializing
+*   2.output streams initializing
+*   3.encoders and decoders initializing
+*   4.set meta data information from input file if required.
+*   5.write output files header
+*   6.loop of handling each frame
+*     a.read frame from input file:
+*     b.decode frame data
+*     c.encode new frame data
+*     d.write new frame to output file
+*   7.write output files trailer
+*   8.close each encoder and decoder
 *********************************************************************************************/
 
 /*********************************************************************************************
