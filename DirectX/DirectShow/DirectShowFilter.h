@@ -187,6 +187,7 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     http://msdn.microsoft.com/en-us/library/aa926076.aspx
 *   CLSID_FileWriter -- 文件输出，其中实现了 IFileSinkFilter
 *   CLSID_FrameRateKeeper -- 没有找到这个Filter！按照IMediaSample的MediaTime速率往下层filter传输数据。
+*     只有一个 CLSID_CFrameRateConvertDmo
 *   CLSID_MP3ACMCodecWrapper -- MS的MP3编码器,Win8才支持
 *      http://msdn.microsoft.com/en-us/library/windows/desktop/hh162907(v=vs.85).aspx
 *   CLSID_NullInPlace

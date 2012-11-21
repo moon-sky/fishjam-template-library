@@ -27,6 +27,8 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 */
 
 /*********************************************************************************************
+* 使用 vhook module 的方式扩展?
+* 
 * 缓冲区内存分配
 *   1.av_image_alloc -- 推荐方式?
 *   2.avpicture_get_size 获取大小后 av_malloc
@@ -124,22 +126,35 @@ $ ./configure --enable-shared --enable-w32threads --disable-static --enable-mema
 * 模块
 *   ffmpeg.exe -i 输入文件 输出文件 -- 视频文件转换命令行工具,也支持经过实时电视卡抓取和编码成视频文件(linux?)
 *     ffmpeg.exe -h 显示详细帮助，会生成带调试信息的 ffmpeg_g.exe 文件
-*     例子： ffmpeg.exe -i snatch_1.vob -f avi -vcodec mpeg4 -acodec mp3 snatch.avi
+*       时间格式(-t/-ss等参数使用)：hh:mm:ss[.xxx], 如 20.00 表示 20 秒
+*     例子： ffmpeg.exe -i snatch_1.vob -f avi -vcodec mpeg4   snatch.avi
+*     -ab 64            <== 音频比特率，一般是 32/64/128 等
+*     -ac 2             <== 音频声道数
 *     -acodec codec		<== 指定音频编码，如 aac 
 *     -an				<== 禁止audio
-*     -aspect 16:9		<== 设置长宽比，如 4:3 或 16:9 等
-*     -b <比特率>       <== 设置视频的比特率，分为 -b:a(自动?) 和 -b:v 两种
+*     -ar 24000         <== 音频采样率(PSP只能支持 24000Hz?)
+*     -aspect 16:9		<== 设置长宽比，如 4:3 或 16:9 或 1.3333 等
+*     -b <比特率>       <== 设置视频的比特率(缺省是200kbs -- 所以默认时质量很差？)，-b 1500 指定固定码率，
+*                           -qscale 4/6 指定动态码率(值越低质量越高)
+*     -benchmark        <== 为基准测试加入时间
 *     -bf <int>			<== 使用B帧
-*     -f format			<== 指定文件格式, 如 avi/mp4 等(可用格式可通过 -formats 查看)
+*     -debug            <== 打印特定调试信息
+*     -f format			<== 指定文件格式, 如 avi/mp4/psp 等(可用格式可通过 -formats 查看)
 *     -g groupSize		<== 设置GOP大小，如设置成 300 意味着29.97帧频下每10秒就有INTRA帧
+*     -muxvb 768        <== 给PSP机器识别的码率？
+*     -pass n           <==  选择处理遍数（1或者2）。两遍编码非常有用。第一遍生成统计信息，第二遍生成精确的请求的码率
+*     -passlogfile prefix <== 选择两遍的纪录文件名前缀
 *     -qblur <float>	<== 指定视频量化规模，0. ~ 1.0(越小质量越好?)
 *     -qscale <float>   <== 0.01~255 ?
+*     -r 29.97          <== 帧率[25]，一般PSP中用这个
 *     -s WxH			<== 指定大小(宽x高)
 *     -strict <int>     <== 指定对codec等的使用限制，实验性的codec(如mpeg4)默认是不启用的(Codec is experimental)，需要使用 -2 来启用
 *     -t 持续时间		<== 指定时间长度，如 20.000 表示 20s
 *     -threads <int>    <== 指定线程个数，默认为 auto ?
-*     -vcodec codec		<== 指定视频编码，如 mpeg4/h264/libxvid 等(可用编码可通过 -codecs 查看)
-*     -target type		<== 指定文件类型，如 vcd/dvd 等，很大程度上可以决定质量
+*     -vcodec codec		<== 指定视频编码，如 mpeg4/h264/libxvid/xvid 等(可用编码可通过 -codecs 查看)
+*     -vframes n        <== 指定处理的帧数
+*     -vol n            <== 指定音量为原音量的 n% 
+*     -target type		<== 指定文件类型，如 vcd/svcd/dvd 等，很大程度上可以决定质量(其他的格式选项会自动设置)
 *     -y                <== 直接覆盖输出文件，不再提示
 *   ffserver.exe -- 基于HTTP(RTSP正在开发中)用于实时广播的多媒体服务器.也支持时间平移(Time-Shifting)
 *   ffplay.exe -- 用 SDL和FFmpeg库开发的一个简单的媒体播放器(需要先安装 SDL 库才能编译)
