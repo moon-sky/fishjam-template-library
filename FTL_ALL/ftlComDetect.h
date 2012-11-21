@@ -262,6 +262,7 @@ namespace FTL
 #  include <dxva2api.h>
 #  include <evr.h>
 #  include <mfidl.h>
+#  include <mfobjects.h>
 #  include <mftransform.h>
 #endif
 

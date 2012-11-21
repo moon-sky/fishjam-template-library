@@ -1203,12 +1203,27 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY(IMFTranscodeSinkInfoProvider)
 			DETECT_INTERFACE_ENTRY(IMFFieldOfUseMFTUnlock)
 			DETECT_INTERFACE_ENTRY(IMFLocalMFTRegistration)
-
-			//mftransform.h
-			DETECT_INTERFACE_ENTRY(IMFTransform)
-			  
 #endif //WINVER >= _WIN32_WINNT_WIN7
 
+            //mfobjects.h
+            DETECT_INTERFACE_ENTRY(IMFAttributes)
+            DETECT_INTERFACE_ENTRY(IMFMediaBuffer)
+            DETECT_INTERFACE_ENTRY(IMFSample)
+            DETECT_INTERFACE_ENTRY(IMF2DBuffer)
+            DETECT_INTERFACE_ENTRY(IMFMediaType)
+            DETECT_INTERFACE_ENTRY(IMFAudioMediaType)
+            DETECT_INTERFACE_ENTRY(IMFVideoMediaType)
+            DETECT_INTERFACE_ENTRY(IMFAsyncResult)
+            DETECT_INTERFACE_ENTRY(IMFAsyncCallback)
+            DETECT_INTERFACE_ENTRY(IMFMediaEvent)
+            DETECT_INTERFACE_ENTRY(IMFMediaEventGenerator)
+            DETECT_INTERFACE_ENTRY(IMFRemoteAsyncCallback)
+            DETECT_INTERFACE_ENTRY(IMFByteStream)
+            DETECT_INTERFACE_ENTRY(IMFCollection)
+            DETECT_INTERFACE_ENTRY(IMFMediaEventQueue)
+
+            //mftransform.h
+            DETECT_INTERFACE_ENTRY(IMFTransform)
 #endif //INCLUDE_DETECT_MEDIA_FOUNDATION
 
 

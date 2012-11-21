@@ -340,13 +340,16 @@ namespace FTL
 			{
 				CSize szText(0, 0);
 				CString strText;
-				listBox.GetText(i, strText);
+				int iLen = listBox.GetTextLen(i);
+				listBox.GetText(i, strText.GetBuffer(iLen));
 				API_VERIFY(dcList.GetTextExtent(strText, -1, &szText));
+				strText.ReleaseBuffer();
 				//int nWidth = strText.GetLength() * tm.tmAveCharWidth;
 				if (szText.cx > nMaxWidth)
 				{
 					nMaxWidth = szText.cx;
 				}
+
 			}
 			listBox.SetHorizontalExtent(nMaxWidth + nPadding);
 
