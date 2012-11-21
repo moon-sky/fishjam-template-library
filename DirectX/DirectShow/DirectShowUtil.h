@@ -5,8 +5,10 @@
 * CAutoLock + CCritSec -- 范围锁，进行资源保护
 * CBaseAllocator -- 管理IMediaSample列表的抽象基类，子类实现Alloc和Free函数,Add时是加在列表的最前面(使用效率高?)
 *    其实现时使用了一些小技巧(lazy signalling mechanism),只在必要时才进入OS等待模式，从而提高多线程时的效率
-* +- CMemAllocator -- 默认的Sample管理器(使用new在主存储器中分配内存)，包括分配/释放Sample的内存，维持Sample队列等
+*  +-CMemAllocator -- 默认的Sample管理器(使用new在主存储器中分配内存)，包括分配/释放Sample的内存，维持Sample队列等
 *     通过全局函数 CreateMemoryAllocator 创建 CLSID_MemoryAllocator
+*  +-CImageAllocator -- 在共享内存上创建的Allocator，这样在使用BitBlt时不会真正的拷贝内存
+*
 * CBaseReferenceClock -- 继承了 IReferenceClock 接口，
 * CBaseWindow -- 可以用作 Render 的窗体，其中有自己的工作线程。
 * CDrawImage -- 

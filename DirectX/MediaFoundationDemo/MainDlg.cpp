@@ -9,6 +9,11 @@
 
 LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+    HRESULT hr = E_FAIL;
+    COM_VERIFY(MFStartup(MF_VERSION));
+
+	DlgResize_InitEx();
+
 	// center the dialog on the screen
 	CenterWindow();
 
@@ -17,6 +22,9 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SetIcon(hIcon, TRUE);
 	HICON hIconSmall = AtlLoadIconImage(IDR_MAINFRAME, LR_DEFAULTCOLOR, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
 	SetIcon(hIconSmall, FALSE);
+
+	DoDataExchange();
+	m_tabControls.Init();
 
 	return TRUE;
 }
@@ -57,5 +65,16 @@ LRESULT CMainDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /
 LRESULT CMainDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	EndDialog(wID);
+	return 0;
+}
+
+LRESULT CMainDlg::OnDestroy(void)
+{
+	//You should call SetMsgHandled(FALSE) or set bHandled = FALSE for the main window of your application
+	m_tabControls.UnInit();
+	SetMsgHandled(FALSE);
+
+    MFShutdown();
+
 	return 0;
 }

@@ -182,6 +182,88 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="ReleaseS|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			ATLMinimizesCRunTimeLibraryUsage="true"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="false"
+				TargetEnvironment="1"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(IntDir)/MediaFoundationDemo.tlb"
+				HeaderFileName="MediaFoundationDemo.h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="MediaFoundationDemo_i.c"
+				ProxyFileName="MediaFoundationDemo_p.c"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;NDEBUG"
+				ExceptionHandling="0"
+				RuntimeLibrary="0"
+				UsePrecompiledHeader="2"
+				WarningLevel="3"
+				DebugInformationFormat="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories="$(IntDir)"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkIncremental="1"
+				SubSystem="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -191,11 +273,19 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm"
 			>
 			<File
+				RelativePath=".\DlgTranscode.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MainDlg.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\MediaFoundationDemo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MFTranscode.cpp"
 				>
 			</File>
 			<File
@@ -217,6 +307,22 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseS|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\TabCtrlEx.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WTLControlsTabCtrl.cpp"
+				>
 			</File>
 		</Filter>
 		<Filter
@@ -224,11 +330,27 @@
 			Filter="h;hpp;hxx;hm;inl;inc"
 			>
 			<File
+				RelativePath=".\DialogResizeEx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DlgTranscode.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MainDlg.h"
 				>
 			</File>
 			<File
+				RelativePath=".\MediaFoundationDemo.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MediaFoundationStudy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MFTranscode.h"
 				>
 			</File>
 			<File
@@ -237,6 +359,14 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TabCtrlEx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WTLControlsTabCtrl.h"
 				>
 			</File>
 		</Filter>

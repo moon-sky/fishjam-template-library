@@ -11,7 +11,7 @@
 * 优点 -- 微软推荐使用DMO替换Filter(编码器和解码器的推荐解决方案)
 *   1.可以不用加入FilterGraph就能使用其功能。
 *   2.在DirectShow中可以使用DMO Wrapper Filter 包装具体的DMO参与到FilterGraph中。
-*   3.基于DirectSound的应用程序也可以使用各种声音效果的DMO
+*   3.基于DirectSound的应用程序也可以使用各种声音效果的DMO(参见 dmodemo 程序)
 * 
 * 设置媒体类型注意：
 *   1.对于解码DMO，一般先设置输入流上的媒体类型，然后在输出流上选择一种输出格式；
@@ -21,7 +21,7 @@
 *   1.使用CoCreateInstance创建DMO Wrapper Filter实例(CLSID_DMOWrapperFilter),
 *     获得IBaseFilter接口，以后通过该接口和Graph交互；
 *   2.获取 IDMOWrapperFilter 接口，并调用其 Init 方法，指定DMO的CLSID和类型目录
-*     (如 DMOCATEGORY_VIDEO_ENCODER )
+*     (如 DMOCATEGORY_VIDEO_ENCODER / DMOCATEGORY_AUDIO_EFFECT )
 *   限制：
 *     a.DMOWrapperFilter只支持单输入、单输出的Transform型DMO;
 *     b.DMOWrapperFilter的输入Pin只支持使用IMemInputPin接口传送数据(推模式);

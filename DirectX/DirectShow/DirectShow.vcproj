@@ -223,6 +223,109 @@
 				CommandLine="echo &quot;$(TargetPath)&quot;&#x0D;&#x0A;regsvr32 /s &quot;$(TargetPath)&quot;&#x0D;&#x0A;rem echo regsvr32 exec. time &gt; &quot;$(TargetDir)\$(TargetName).trg&quot;&#x0D;&#x0A;rem echo  &quot;$(TargetDir)\$(TargetName).trg&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
+		<Configuration
+			Name="ReleaseS|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(SolutionDir)DirectX.vsprops;$(SolutionDir)IntelMediaSDK.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName="./DirectShow.tlb"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/Oxs"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="DBG=0;INC_OLE2;STRICT;WIN32;_WIN32;_MT;_DLL;_X86_=1"
+				StringPooling="true"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="StdAfx.h"
+				PrecompiledHeaderFile="$(IntDir)\$(TargetName).pch"
+				AssemblerListingLocation=".\Release/"
+				ObjectFile=".\Release/"
+				ProgramDataBaseFileName=".\Release/"
+				WarningLevel="4"
+				SuppressStartupBanner="true"
+				CallingConvention="2"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG,WIN32"
+				Culture="2052"
+				AdditionalIncludeDirectories="..\..\BaseClasses"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				RegisterOutput="true"
+				AdditionalOptions="/MACHINE:I386 /IGNORE:4089 /IGNORE:4098"
+				AdditionalDependencies="strmbase.lib msvcrt.lib quartz.lib winmm.lib version.lib comctl32.lib olepro32.lib"
+				OutputFile="$(OutDir)\DebugFilter.ax"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="false"
+				ModuleDefinitionFile=".\DirectShow.def"
+				OptimizeReferences="0"
+				EnableCOMDATFolding="2"
+				SetChecksum="true"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="./DirectShow.lib"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Register Filter"
+				CommandLine="echo &quot;$(TargetPath)&quot;&#x0D;&#x0A;regsvr32 /s &quot;$(TargetPath)&quot;&#x0D;&#x0A;rem echo regsvr32 exec. time &gt; &quot;$(TargetDir)\$(TargetName).trg&quot;&#x0D;&#x0A;rem echo  &quot;$(TargetDir)\$(TargetName).trg&quot;&#x0D;&#x0A;"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -266,6 +369,14 @@
 						MkTypLibCompatible="false"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseS|Win32"
+					>
+					<Tool
+						Name="VCMIDLTool"
+						MkTypLibCompatible="false"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\DirectShowUtil.cpp"
@@ -292,6 +403,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseS|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

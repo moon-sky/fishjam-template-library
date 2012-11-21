@@ -30,7 +30,10 @@ void CBaseDialog::RedrawControl(int nID)
 * 
 * Editing
 *  +-CompressView -- 未看 -- 演示如何将媒体文件转换为AVI格式(通过系统枚举压缩器来完成)，哪个有效？
-*  
+* 
+* DMO
+*  +-dmodemo    -- 使用各种 DirectSound Audio Effect DMOs 效果，通过 DirectSound 播放Wav文件
+* 
 * Filters
 *  +-Ball       -- 使用未压缩格式的视频，显示运动小球的 Live Source Filter，每一个Sample都是一张BMP图片
 *  +-Dump       -- 把接收到的Sample输出到Txt文件的 Render Filter(支持IFileSinkFilter接口，GE会自动创建SaveFile对话框)
