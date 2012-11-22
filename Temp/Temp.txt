@@ -21,3 +21,20 @@ http://wenku.baidu.com/view/6243ee2f2af90242a895e555.html
   其他：Snagit 11 Video Record 在 Windows7 的实现似乎就是这种方式
   
   
+	static const GUID CLSID_H264EncMs = 
+	{ 0x6ca50344, 0x051a, 0x4ded, { 0x97, 0x79, 0xa4, 0x33, 0x05, 0x16, 0x5e, 0x35 } };
+
+	CComPtr<IUnknown> spUnknown;
+	COM_VERIFY(CoCreateInstance(CLSID_H264EncMs, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (LPVOID*)&spUnknown));
+	if (spUnknown)
+	{
+		COM_VERIFY(spUnknown->QueryInterface(IID_IMFTransform, (void**)&m_spTransformH264));
+	}
+	VIDEOINFOHEADER* pHeader = NULL;
+
+	//{98230571-0087-4204-b020-3282538e57d3}
+	static const GUID CLISD_ColorConvertDMO = 
+	{ 0x98230571, 0x0087, 0x4204, { 0xb0, 0x20, 0x32, 0x82, 0x53, 0x8e, 0x57, 0xd3 } };
+	CComPtr<IUnknown> spColorConvertDMO;
+	COM_VERIFY(CoCreateInstance(CLISD_ColorConvertDMO, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (LPVOID*)&spColorConvertDMO));
+	if (spColorConvertDMO)

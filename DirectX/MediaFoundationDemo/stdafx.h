@@ -15,6 +15,10 @@
 #define _WTL_NO_WTYPES
 #define _WTL_NO_UNION_CLASSES
 
+#define INCLUDE_DETECT_MEDIA_FOUNDATION	1
+#define INCLUDE_DETECT_STRMIF			1
+#define INCLUDE_DETECT_WM_CODEC_DSP		1
+
 #include <atlbase.h>
 #include <atlstr.h>         // °üº¬ATLµÄCString
 #include <atltypes.h>
@@ -35,6 +39,11 @@ extern CAppModule _Module;
 
 #include <mfapi.h>
 #include <mfidl.h>
+
+#pragma comment(lib, "mfplat")
+#pragma comment(lib, "mf")
+#pragma comment(lib, "mfuuid")
+#pragma comment(lib, "shlwapi")
 
 #include <ftlBase.h>
 #include <ftlCom.h>

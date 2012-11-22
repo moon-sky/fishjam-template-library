@@ -17,6 +17,63 @@ LRESULT CDlgTranscode::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 {
 	DoDataExchange();//m_BtnSt.SubclassWindow(GetDlgItem(IDC_BTN_ST));
     DlgResize_Init(FALSE);
+	
+	HRESULT hr = E_FAIL;
+	static const GUID CLSID_H264EncMs = 
+	{ 0x6ca50344, 0x051a, 0x4ded, { 0x97, 0x79, 0xa4, 0x33, 0x05, 0x16, 0x5e, 0x35 } };
+
+
+	//{98230571-0087-4204-b020-3282538e57d3}
+	static const GUID CLISD_ColorConvertDMO = 
+	{ 0x98230571, 0x0087, 0x4204, { 0xb0, 0x20, 0x32, 0x82, 0x53, 0x8e, 0x57, 0xd3 } };
+	CComPtr<IUnknown> spColorConvertDMO;
+	COM_VERIFY(CoCreateInstance(CLISD_ColorConvertDMO, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (LPVOID*)&spColorConvertDMO));
+	if (spColorConvertDMO)
+	{
+		COM_DETECT_INTERFACE_FROM_LIST(spColorConvertDMO);
+
+	}
+			
+
+	CComPtr<IUnknown> spUnknown;
+	COM_VERIFY(CoCreateInstance(CLSID_H264EncMs, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (LPVOID*)&spUnknown));
+	if (spUnknown)
+	{
+		COM_DETECT_INTERFACE_FROM_LIST(spUnknown);
+		CComQIPtr<IMFTransform> spTransform(spUnknown);
+
+		//COM_DETECT_INTERFACE_FROM_REGISTER(spUnknown);
+	}
+
+	//DMO_PARTIAL_MEDIATYPE mediaType;
+	CComPtr<IEnumDMO> spDMOList;
+
+	//mediaType.type = GUID_NULL;
+	//mediaType.subtype = GUID_NULL;
+
+	IMFActivate** ppActivates = NULL;
+	UINT32 cMFTs = 0;
+	::MFTEnumEx(MFT_CATEGORY_VIDEO_ENCODER, MFT_ENUM_FLAG_ALL, NULL, NULL, &ppActivates, &cMFTs);
+
+	for(DWORD i = 0; i < cMFTs; i++)
+	{
+		//m_Activates.Add(ppActivates[i]);
+
+		LPWSTR pszName = NULL;
+		ppActivates[i]->GetAllocatedString(MFT_FRIENDLY_NAME_Attribute, &pszName, NULL);
+
+		//m_strNames.Add(CAtlStringW(pszName));
+		//item.pszText = m_strNames.GetAt(m_strNames.GetCount() - 1).GetBuffer();
+		//item.lParam = (LPARAM)  m_Activates.GetCount() - 1;
+
+		//treeInserter.item = item;
+
+		//TreeView_InsertItem(m_hList, &treeInserter);
+
+		CoTaskMemFree(pszName);
+	}
+
+	CoTaskMemFree(ppActivates);
 
 	return 1;  // Let the system set the focus
 }

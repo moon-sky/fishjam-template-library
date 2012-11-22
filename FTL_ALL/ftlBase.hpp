@@ -250,6 +250,7 @@ namespace FTL
         ,m_allocType(matNew)
         ,m_nCount(DefaultFixedCount)
     {
+		ZeroMemory(m_FixedMem, sizeof(m_FixedMem));
         Init(DefaultFixedCount);
     }
 
@@ -260,6 +261,7 @@ namespace FTL
         ,m_nCount(nCount)
     {
         FTLASSERT(nCount > 0);
+		ZeroMemory(m_FixedMem, sizeof(m_FixedMem));
         Init(nCount);
     }
 
@@ -273,7 +275,7 @@ namespace FTL
             case matNew:
                 m_pMem = new T[nCount];
                 m_nCount = nCount;
-                //ZeroMemory(m_pMem,sizeof(T) * nCount); //先清除内存，保证没有垃圾数据--是否会造成类指针问题？性能影响？
+                ZeroMemory(m_pMem,sizeof(T) * nCount); //先清除内存，保证没有垃圾数据--是否会造成类指针问题？性能影响？
                 break;
             default:
                 FTLASSERT(FALSE);

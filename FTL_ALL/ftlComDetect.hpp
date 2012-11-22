@@ -347,6 +347,104 @@ namespace FTL
 			return hr;
 		}
 	};
+
+	class CFMFAttributesDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IMFAttributes> spMFAttributes(pUnknown);
+			if (spMFAttributes)
+			{
+				UINT32 nCount = 0;
+				MF_VERIFY(spMFAttributes->GetCount(&nCount));
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t Count = %d\n"), nCount);
+				for (UINT32 nIndex = 0; nIndex< nCount; nIndex++)
+				{
+					GUID guidKey = GUID_NULL;
+					PROPVARIANT propValue;
+					MF_VERIFY(spMFAttributes->GetItemByIndex(nIndex, &guidKey, &propValue));
+					//CFVariantInfo	varInfo(propValue);
+					//FTLTRACEEX(FTL::tlTrace,TEXT("\t\t [%d] = %s\n"), nIndex, varInfo.GetConvertedInfo());
+				}
+			}
+			return hr;
+		}
+	};
+	class CFMFTransformDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IMFTransform> spMFTransform(pUnknown);
+			if (spMFTransform)
+			{
+				DWORD dwInputMinimum = 0;
+				DWORD dwInputMaximum = 0;
+				DWORD dwOutputMinimum = 0;
+				DWORD dwOutputMaximum = 0;
+				MF_VERIFY(spMFTransform->GetStreamLimits(&dwInputMinimum, &dwInputMaximum, &dwOutputMinimum, &dwOutputMaximum));
+				if (SUCCEEDED(hr))
+				{
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t StreamLimits Input[%d-%d], Output[%d-%d]\n"),
+						dwInputMinimum, dwInputMaximum, dwOutputMinimum, dwOutputMaximum);
+				}
+
+				DWORD dwNumInputs = 0;
+				DWORD dwNumOutputs = 0;
+				MF_VERIFY(spMFTransform->GetStreamCount(&dwNumInputs, &dwNumOutputs));
+				if (SUCCEEDED(hr))
+				{
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t StreamCount, Input[%d], Output[%d]\n"),
+						dwNumInputs, dwNumOutputs);
+
+					CFMemAllocator<DWORD> spInputStreamIDs(dwNumInputs);
+					CFMemAllocator<DWORD> spOutputStreamIDs(dwNumOutputs);
+
+					MF_VERIFY_EXCEPT1(spMFTransform->GetStreamIDs(dwNumInputs, spInputStreamIDs, dwNumOutputs, spOutputStreamIDs), E_NOTIMPL);
+					if (FAILED(hr))
+					{
+						if (E_NOTIMPL == hr)
+						{
+							for(DWORD i = 0; i < dwNumInputs; ++i)
+							{
+								spInputStreamIDs[i] = i;
+							}
+							for (DWORD i = 0; i < dwNumOutputs; ++i)
+							{
+								spOutputStreamIDs[i] = i;
+							}
+						}
+					}
+					for(DWORD i = 0; i < dwNumInputs; ++i)
+					{
+						CComPtr<IMFMediaType> spType;
+						MF_VERIFY_EXCEPT1(spMFTransform->GetInputCurrentType(spInputStreamIDs[i], &spType), MF_E_TRANSFORM_TYPE_NOT_SET);
+					}
+					for(DWORD i = 0; i < dwNumOutputs; ++i)
+					{
+						CComPtr<IMFMediaType> spType;
+						MF_VERIFY_EXCEPT1( spMFTransform->GetOutputCurrentType(spOutputStreamIDs[i], &spType), MF_E_TRANSFORM_TYPE_NOT_SET);
+					}
+
+				}
+				CComPtr<IMFAttributes>	spMFAttributes;
+				MF_VERIFY_EXCEPT1(spMFTransform->GetAttributes(&spMFAttributes), E_NOTIMPL);
+				if (SUCCEEDED(hr))
+				{
+					CFMFAttributesDump	mfAttributesDump;
+					mfAttributesDump.DumpInterfaceInfo(spMFAttributes);
+				}
+
+				//CComPtr<IMFVideoDisplayControl> pConfig = NULL; 
+				//spGetService->GetService(MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl, (void**)&pConfig);
+			}
+			return hr;
+		}
+	};
+
 #endif //INCLUDE_DETECT_MEDIA_FOUNDATION
 
 #if INCLUDE_DETECT_STRMIF
@@ -1223,7 +1321,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IMFMediaEventQueue)
 
             //mftransform.h
-            DETECT_INTERFACE_ENTRY(IMFTransform)
+            DETECT_INTERFACE_ENTRY_EX(IMFTransform, CFMFTransformDump)
 #endif //INCLUDE_DETECT_MEDIA_FOUNDATION
 
 
@@ -2350,11 +2448,13 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IVPManager)
 
 			//amvideo.h
-			DETECT_INTERFACE_ENTRY_IID(IDirectDrawVideo, IID_IDirectDrawVideo)
-			DETECT_INTERFACE_ENTRY_IID(IQualProp, IID_IQualProp)
-			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideo, IID_IFullScreenVideo)
-			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideoEx, IID_IFullScreenVideoEx)
-			DETECT_INTERFACE_ENTRY_IID(IBaseVideoMixer, IID_IBaseVideoMixer)
+#if 0
+			DETECT_INTERFACE_ENTRY(IDirectDrawVideo)//, IID_IDirectDrawVideo)
+			DETECT_INTERFACE_ENTRY(IQualProp)//, IID_IQualProp)
+			DETECT_INTERFACE_ENTRY(IFullScreenVideo)//, IID_IFullScreenVideo)
+			DETECT_INTERFACE_ENTRY(IFullScreenVideoEx)//, IID_IFullScreenVideoEx)
+			DETECT_INTERFACE_ENTRY(IBaseVideoMixer)//, IID_IBaseVideoMixer)
+#endif 
 #endif //INCLUDE_DETECT_STRMIF
 
 #if INCLUDE_DETECT_URLMON

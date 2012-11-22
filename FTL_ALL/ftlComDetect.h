@@ -264,6 +264,7 @@ namespace FTL
 #  include <mfidl.h>
 #  include <mfobjects.h>
 #  include <mftransform.h>
+#  include <ftlMediaFoundation.h>
 #endif
 
 #if INCLUDE_DETECT_MSHTMLC

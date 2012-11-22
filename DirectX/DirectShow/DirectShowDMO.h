@@ -1,6 +1,10 @@
 #ifndef DIRECT_SHOW_DMO_H
 #define DIRECT_SHOW_DMO_H
 #pragma once
+//MPEG4 license 
+//  http://www.microsoft.com/windows/windowsmedia/licensing/mpeg4faq.aspx#MPEG4VideoFAQ_2_6
+//Microsoft Expression Encoder 4 with Service Pack 2
+//  http://www.microsoft.com/en-us/download/details.aspx?id=27870 
 
 /*************************************************************************************************
 * DMO(DirectX Media Objects)：另一种数据流处理解决方案，实现了 IMediaObject 接口。

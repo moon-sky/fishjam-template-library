@@ -27,7 +27,7 @@ HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
 *   核心层(Core layer)，也称为 媒体管道(pipeline)?
 *     分三个组成部分：
 *       a.媒体来源(Media Source)
-*       b.媒体接收器(Media Sink)
+*       b.媒体接收器(Media Sink) -- 分为 renderer(显示或呈现) 和 archive(保存) 两类
 *       c.媒体平台变换(Media Foundation Transforms -- MFT)
 *   平台层(Platform layer)
 *     Media Streams
@@ -61,8 +61,8 @@ HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
 *   {
 *     1.得到文件对应的 IMFMediaSource
 *       MFCreateSourceResolver -> IMFSourceResolver::CreateObjectFromURL -> QueryInterface 得到 IMFMediaSource
-*     2.通过 MFCreateMediaSession 和 MFCreateTranscodeProfile 得到空的 Session 和 Profile
-*       
+*     2.通过 MFCreateMediaSession 和 MFCreateTranscodeProfile 得到空的 Session 和 Profile，并设置合适的值
+*     3.运行 Encoding Session 进行编码
 *     
 *   }
 *   MFShutdown();
