@@ -25,7 +25,7 @@ extern "C" {
 $ ./configure --enable-shared --enable-w32threads --disable-static --enable-memalign-hack --disable-debug
 --disable-yasm --enable-libx264 --enable-gpl --extra-ldflags="-L/usr/local/lib -W1,-add-stdcall-alies" --extra-cflags="-I/usr/local/include" --enable-swscale
 */
-
+//转换视频为 NV12 ： ffmpeg -i myVideo.wmv -an -pix_fmt nv12 clip_nv12.yuv
 /*********************************************************************************************
 * 使用 vhook module 的方式扩展?
 * 

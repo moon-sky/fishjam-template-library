@@ -372,6 +372,34 @@ namespace FTL
 			return hr;
 		}
 	};
+
+    class CFMFMediaTypeDump
+    {
+    public:
+        static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+        {
+            HRESULT hr = S_OK;
+            ATL::CComQIPtr<IMFMediaType> spMFMediaType(pUnknown);
+            if (spMFMediaType)
+            {
+                COM_VERIFY(CFMFAttributesDump::DumpInterfaceInfo(spMFMediaType));
+
+                GUID guidMajorType = GUID_NULL;
+                MF_VERIFY(spMFMediaType->GetMajorType(&guidMajorType));
+                TCHAR szGuid[40] = {0};
+                StringFromGUID2(guidMajorType, szGuid, _countof(szGuid));
+
+                BOOL bCompressed = FALSE;
+                MF_VERIFY(spMFMediaType->IsCompressedFormat(&bCompressed));
+
+                FTLTRACEEX(FTL::tlTrace,TEXT("\t\t MajorType [%s], IsCompressedFormat[%d]\n"),
+                    szGuid, bCompressed);
+            }
+            return hr;
+        }
+
+    };
+
 	class CFMFTransformDump
 	{
 	public:
@@ -421,7 +449,14 @@ namespace FTL
 					for(DWORD i = 0; i < dwNumInputs; ++i)
 					{
 						CComPtr<IMFMediaType> spType;
-						MF_VERIFY_EXCEPT1(spMFTransform->GetInputCurrentType(spInputStreamIDs[i], &spType), MF_E_TRANSFORM_TYPE_NOT_SET);
+						DWORD dwTypeIndex = 0;
+						while (S_OK == (hr = spMFTransform->GetInputAvailableType(spInputStreamIDs[i], dwTypeIndex, &spType)))
+						{
+							FTLTRACEEX(FTL::tlTrace,TEXT("\t\t InputAvailableType, Index[%d]\n"),
+								dwTypeIndex);
+                            dwTypeIndex++;
+                            spType.Release();
+						}
 					}
 					for(DWORD i = 0; i < dwNumOutputs; ++i)
 					{
@@ -2791,7 +2826,6 @@ namespace FTL
 				DETECT_INTERFACE_ENTRY(IWMInterlaceProps)
 				DETECT_INTERFACE_ENTRY(IWMFrameInterpProps)
 				DETECT_INTERFACE_ENTRY(IWMColorConvProps)
-#if 1
 				DETECT_INTERFACE_ENTRY(ITocEntry)
 				DETECT_INTERFACE_ENTRY(ITocEntryList)
 				DETECT_INTERFACE_ENTRY(IToc)
@@ -2800,7 +2834,6 @@ namespace FTL
 				DETECT_INTERFACE_ENTRY(IFileIo)
 				DETECT_INTERFACE_ENTRY(IFileClient)
 				DETECT_INTERFACE_ENTRY(IClusterDetector)
-#endif 
 			//}
 #endif //INCLUDE_DETECT_WM_CODEC_DSP
 

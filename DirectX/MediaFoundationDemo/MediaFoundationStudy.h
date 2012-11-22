@@ -1,15 +1,30 @@
 #pragma once
 //Media Foundation 介绍 http://hi.baidu.com/neil_danky/item/79b5b15f5a735111da1635af
 //http://blogs.msdn.com/b/mf/archive/2009/12/02/mfsimpleencode.aspx
+//mfcopy http://blogs.msdn.com/b/mf/archive/2009/12/16/mfcopy.aspx
 
 //设置内存出现错误时，弹出错误信息，然后结束
 HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
 
 //其中的 mfh264enc.dll 可以进行 H264 编码, mfAACEnc.dll 进行 AAC 编码?
+
+//硬件编解码: MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS
+
 /*************************************************************************************************
 * 调试
-*   Sample 中有 TopoEdit 工具(类似 GraphEdt 工具)
-*   
+*   1.Sample 中有 TopoEdit 工具(类似 GraphEdt 工具)
+*   2.MFTrace.exe  MyProgram.exe >> trace.txt
+*     http://social.msdn.microsoft.com/Forums/zh-SG/mediafoundationdevelopment/thread/137b2208-8601-4633-88f9-30cc79cb7794
+*   3.ParseTopologies.cmd  -- ？same url as up
+*   4.TextAnalysisTool.NET
+*     http://blogs.msdn.com/b/mf/archive/2010/09/09/analyzing-media-foundation-traces.aspx
+*
+*************************************************************************************************/
+
+
+/*************************************************************************************************
+*
+* 
 * Media Foundation -- 微软所推出新一代的基于COM的多媒体应用平台，用来替代 DirectShow, Windows Media SDK,DMO 等，
 *   在Vista之后作为DirectShow的替代被引入，需要 .NET4的支持 ??
 * 
@@ -24,16 +39,17 @@ HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
 *     Media Session
 *     Topology
 *     Sequencer
-*   核心层(Core layer)，也称为 媒体管道(pipeline)?
+*   核心层(Core layer)，也称为 媒体管道(pipeline,异步处理媒体数据)
 *     分三个组成部分：
 *       a.媒体来源(Media Source)
-*       b.媒体接收器(Media Sink) -- 分为 renderer(显示或呈现) 和 archive(保存) 两类
-*       c.媒体平台变换(Media Foundation Transforms -- MFT)
+*       b.媒体平台变换(Media Foundation Transforms -- MFT)
+*       c.媒体接收器(Media Sink) -- 分为 renderer(显示或呈现) 和 archive(保存) 两类
 *   平台层(Platform layer)
 *     Media Streams
 *     Presentation Clock
 *
-* MFT -- 应用程序可以使用MFTs内的管道，或直接使用它们作为独立的对象，
+* MFT -- 实现IMFTransform的COM对象，替代DMO，常见的MFT CLSID定义在 wmcodecdsp.h 中
+*   应用程序可以在pipeline中使用，或直接使用它们作为独立的对象，
 *   其种类如下(TopoEdit.exe -> Topology -> Add Transform 可查看):
 *     音频和视频编解码器, 如 "H264 Encoder MFT"
 *     音频和视频效果
@@ -67,3 +83,15 @@ HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
 *   }
 *   MFShutdown();
 *************************************************************************************************/
+
+//IMFAttributes *pMFAttributes = NULL;
+//hr_SW = MFCreateAttributes( &pMFAttributes, 100 );
+//hr_SW = pMFAttributes->SetGUID( MF_TRANSCODE_CONTAINERTYPE, MFTranscodeContainerType_MPEG4 );//video
+//hr_SW = pMFAttributes->SetUINT32( MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true ); //==> for hardware encode
+//hr_SW = pMFAttributes->SetUINT32( MF_READWRITE_DISABLE_CONVERTERS , false );
+  //==> for hardware encode, msdn says if I would like set MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS true, this parameter should be false.
+
+//hr_SW = MFCreateFile( MF_ACCESSMODE_READWRITE, MF_OPENMODE_DELETE_IF_EXIST, MF_FILEFLAGS_NONE, L"c:\\xxx.mp4", &pStream );
+//hr_SW = MFCreateSinkWriterFromURL( NULL, pStream, pMFAttributes, &pSinkWriter ); // ==> Here, I got wrong return value.
+
+//hr = MFTRegisterLocalByCLSID( CLSID_MF_H264EncFilter, MFT_CATEGORY_VIDEO_ENCODER, L"Intel\xae Media SDK H.264 Encoder MFT", NULL, 0, NULL, 0, NULL);

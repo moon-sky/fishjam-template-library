@@ -14,6 +14,7 @@ IMemAllocator
 * 注意：
 *   1.Intel Media SDK 似乎只支持NV12(英特尔定义的视频格式，它在英特尔硬件平台上是原生态支持)
 *     MSDK格式转化: http://software.intel.com/zh-cn/blogs/2010/07/26/msdkyv12nv12/
+*                   http://software.intel.com/en-us/articles/using-unsupported-color-formats-with-the-intel-media-software-development-kit/
 *   2.其Filter 对 ALLOCATOR_PROPERTIES 要求比较高，比如 cBuffers 一般都要10左右(为了异步时能多处理几个)，
 *     cbBuffer 一般都要比算出来的理论值大，否则就过不了 CheckInput，
 *     而且似乎Sample的Enc中会自动更改高宽(32字节对齐，比如 320x240=> 320x256)
