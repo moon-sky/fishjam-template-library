@@ -275,17 +275,6 @@ namespace FTL
 #ifdef _DEBUG    
 		long lDestSize = pDest->GetSize();
 		FTLASSERT(lDestSize >= lSourceSize);
-
-		//AM_MEDIA_TYPE* pMtSource = NULL, *pMtDest = NULL;
-		//if(SUCCEEDED(pSource->GetMediaType(&pMtSource)))
-		//{
-		//	if (SUCCEEDED(pDest->GetMediaType(&pMtDest)))
-		//	{
-		//		//TODO:compare
-		//		DeleteMediaType(pMtDest);
-		//	}
-		//	DeleteMediaType(pMtSource);				
-		//}
 #endif
 
 		BYTE *pSourceBuffer = NULL, *pDestBuffer = NULL;
@@ -293,24 +282,39 @@ namespace FTL
 		DX_VERIFY(pDest->GetPointer(&pDestBuffer));
 
 		CopyMemory((PVOID) pDestBuffer,(PVOID) pSourceBuffer, lSourceSize);
+		// Copy the actual data length
+		DX_VERIFY(pDest->SetActualDataLength(lSourceSize));
 
 		// Copy the sample times
 		REFERENCE_TIME rtStart = 0, rtEnd = 0;
-		if(NOERROR == pSource->GetTime(&rtStart, &rtEnd))
+		if(S_OK == pSource->GetTime(&rtStart, &rtEnd))
 		{
 			DX_VERIFY(pDest->SetTime(&rtStart, &rtEnd));
 		}
 
 		LONGLONG MediaStart = 0, MediaEnd = 0;
-		if(NOERROR == pSource->GetMediaTime(&MediaStart,&MediaEnd))
+		if(S_OK == pSource->GetMediaTime(&MediaStart,&MediaEnd))
 		{
 			DX_VERIFY(pDest->SetMediaTime(&MediaStart,&MediaEnd));
 		}
 
-		// Copy the actual data length
-		long lDataLength = pSource->GetActualDataLength();
-		DX_VERIFY(pDest->SetActualDataLength(lDataLength));
+#if 0
+		// Copy the media type
+		AM_MEDIA_TYPE* pMediaType = NULL, *pMediaType = NULL;
+		if(SUCCEEDED(pSource->GetMediaType(&pMediaType)))
+		{
+			DX_VERIFY(pDest->SetMediaType(pMediaType));
+			//if (SUCCEEDED(pDest->GetMediaType(&pMtDest)))
+			//{
+			//	//TODO:compare
+			//	DeleteMediaType(pMtDest);
+			//}
+			DeleteMediaType(pMediaType);				
+		}
+#endif 
 
+
+		// Copy the Sync point property
 		BOOL bIsSyncPoint = (S_OK == pSource->IsSyncPoint());
 		DX_VERIFY(pDest->SetSyncPoint(bIsSyncPoint));
 

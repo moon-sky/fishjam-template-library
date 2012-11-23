@@ -43,10 +43,21 @@ namespace FTL
     public:
         FTLINLINE explicit CFVariantInfo(const VARIANT& info);
         FTLINLINE virtual LPCTSTR ConvertInfo();
-	private:
+	public:
 		FTLINLINE VOID GetTypeInfo(CFStringFormater& formaterType);
 		FTLINLINE VOID GetValueInfo(CFStringFormater& formaterValue);
     };
+
+	FTLEXPORT class CFPropVariantInfo : public CFConvertInfoT<CFPropVariantInfo, const PROPVARIANT&>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFPropVariantInfo);
+	public:
+		FTLINLINE explicit CFPropVariantInfo(const PROPVARIANT& info);
+		FTLINLINE virtual LPCTSTR ConvertInfo();
+	public:
+		FTLINLINE VOID GetTypeInfo(CFStringFormater& formaterType);
+		FTLINLINE VOID GetValueInfo(CFStringFormater& formaterValue);
+	};
 
     class CFSideBySide //从指定文件中产生COM对象(从sbs中拷贝)
     {

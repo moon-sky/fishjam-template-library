@@ -355,6 +355,78 @@ namespace FTL
 		}
 		return m_bufInfo;
 	}
+
+	HRESULT CFMediaFoundationUtil::CopyMediaSample2MFMediaBuffer(IMediaSample* pSrcMediaSample, IMFMediaBuffer* pTargetMFMediaBuffer)
+	{
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pSrcMediaSample, E_POINTER);
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pTargetMFMediaBuffer, E_POINTER);
+		HRESULT hr = E_NOTIMPL;
+		
+		BYTE* pSrcBuffer = NULL;
+		LONG nSrcSize = pSrcMediaSample->GetSize();
+		LONG nSrcDataLenght = pSrcMediaSample->GetActualDataLength();
+		MF_VERIFY(pSrcMediaSample->GetPointer(&pSrcBuffer));
+		
+		BYTE* pTargetBuffer = NULL;
+		DWORD dwTargetSize = 0;
+		DWORD dwTargetDataLength = 0;
+		MF_VERIFY(pTargetMFMediaBuffer->Lock(&pTargetBuffer, &dwTargetSize, &dwTargetDataLength));
+		DWORD dwTargetMaxLength = 0;
+		MF_VERIFY(pTargetMFMediaBuffer->GetMaxLength(&dwTargetMaxLength));
+
+		ATLASSERT(dwTargetMaxLength == dwTargetSize);
+		ATLASSERT(nSrcDataLenght <= dwTargetMaxLength);
+		if (nSrcDataLenght <= dwTargetMaxLength)
+		{
+			CopyMemory(pTargetBuffer, pSrcBuffer, nSrcDataLenght);
+			pTargetMFMediaBuffer->SetCurrentLength(nSrcDataLenght);
+			MF_VERIFY(pTargetMFMediaBuffer->Unlock());
+		}
+		else
+		{
+			MF_VERIFY(pTargetMFMediaBuffer->Unlock());
+			hr = E_NOT_SUFFICIENT_BUFFER;
+		}
+		return hr;
+	}
+
+	HRESULT CFMediaFoundationUtil::CopyMFMediaBuffer2MediaSample(IMFMediaBuffer* pSrcMFMediaBuffer, IMediaSample* pTargetMediaSample)
+	{
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pSrcMFMediaBuffer, E_POINTER);
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pTargetMediaSample, E_POINTER);
+
+		HRESULT hr = E_NOTIMPL;
+
+		BYTE* pSrcBuffer = NULL;
+		DWORD dwSrcSize = 0;
+		DWORD dwSrcDataLength = 0;
+		DWORD dwSrcCurrentLength = 0;
+		MF_VERIFY(pSrcMFMediaBuffer->Lock(&pSrcBuffer, &dwSrcSize, &dwSrcDataLength));
+		DWORD dwSrcMaxLength = 0;
+		MF_VERIFY(pSrcMFMediaBuffer->GetMaxLength(&dwSrcMaxLength));
+		MF_VERIFY(pSrcMFMediaBuffer->GetCurrentLength(&dwSrcCurrentLength));
+		ATLASSERT(dwSrcDataLength == dwSrcCurrentLength);
+		ATLASSERT(dwSrcMaxLength == dwSrcSize);
+		
+		BYTE* pTargetBuffer = NULL;
+		LONG nTargetMaxSize = pTargetMediaSample->GetSize();
+		MF_VERIFY(pTargetMediaSample->GetPointer(&pTargetBuffer));
+		
+		ATLASSERT(dwSrcDataLength <= nTargetMaxSize);
+		if (dwSrcDataLength <= nTargetMaxSize)
+		{
+			CopyMemory(pTargetBuffer, pSrcBuffer, dwSrcDataLength);
+			MF_VERIFY(pTargetMediaSample->SetActualDataLength(dwSrcDataLength));
+			MF_VERIFY(pSrcMFMediaBuffer->Unlock());
+		}
+		else
+		{
+			MF_VERIFY(pSrcMFMediaBuffer->Unlock());
+			hr = E_NOT_SUFFICIENT_BUFFER;
+		}
+		return hr;
+	}
+
 }
 
 #endif //FTL_MEDIA_FOUNDATION_HPP

@@ -40,6 +40,14 @@ namespace FTL
 		FTLINLINE virtual LPCTSTR ConvertInfo();
 	};
 
+	FTLEXPORT class CFMediaFoundationUtil
+	{
+	public:
+		//DShow => MF
+		FTLINLINE static HRESULT CopyMediaSample2MFMediaBuffer(IMediaSample* pSrcMediaSample, IMFMediaBuffer* pTargetMFMediaBuffer);
+		//MF => DShow
+		FTLINLINE static HRESULT CopyMFMediaBuffer2MediaSample(IMFMediaBuffer* pSrcMFMediaBuffer, IMediaSample* pTargetMediaSample);
+	};
 }//FTL
 
 #endif //FTL_MEDIA_FOUNDATION_H

@@ -359,14 +359,19 @@ namespace FTL
 			{
 				UINT32 nCount = 0;
 				MF_VERIFY(spMFAttributes->GetCount(&nCount));
-				FTLTRACEEX(FTL::tlTrace,TEXT("\t Count = %d\n"), nCount);
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t MF Attributes Count = %d\n"), nCount);
 				for (UINT32 nIndex = 0; nIndex< nCount; nIndex++)
 				{
 					GUID guidKey = GUID_NULL;
 					PROPVARIANT propValue;
+					PropVariantInit(&propValue);
+
+					
 					MF_VERIFY(spMFAttributes->GetItemByIndex(nIndex, &guidKey, &propValue));
-					//CFVariantInfo	varInfo(propValue);
-					//FTLTRACEEX(FTL::tlTrace,TEXT("\t\t [%d] = %s\n"), nIndex, varInfo.GetConvertedInfo());
+					CFPropVariantInfo propVarInfo(propValue);
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t [%d] Type = %d\n"), nIndex, propVarInfo.GetConvertedInfo());
+					 
+					PropVariantClear(&propValue);
 				}
 			}
 			return hr;
@@ -460,8 +465,9 @@ namespace FTL
 					}
 					for(DWORD i = 0; i < dwNumOutputs; ++i)
 					{
-						CComPtr<IMFMediaType> spType;
-						MF_VERIFY_EXCEPT1( spMFTransform->GetOutputCurrentType(spOutputStreamIDs[i], &spType), MF_E_TRANSFORM_TYPE_NOT_SET);
+						//CComPtr<IMFMediaType> spType;
+						MFT_OUTPUT_STREAM_INFO outputStreamInfo = {0};
+						MF_VERIFY( spMFTransform->GetOutputStreamInfo(spOutputStreamIDs[i], &outputStreamInfo));
 					}
 
 				}
@@ -1343,7 +1349,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IMFMediaBuffer)
             DETECT_INTERFACE_ENTRY(IMFSample)
             DETECT_INTERFACE_ENTRY(IMF2DBuffer)
-            DETECT_INTERFACE_ENTRY(IMFMediaType)
+            DETECT_INTERFACE_ENTRY_EX(IMFMediaType, CFMFMediaTypeDump)
             DETECT_INTERFACE_ENTRY(IMFAudioMediaType)
             DETECT_INTERFACE_ENTRY(IMFVideoMediaType)
             DETECT_INTERFACE_ENTRY(IMFAsyncResult)

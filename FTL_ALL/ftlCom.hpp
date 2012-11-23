@@ -357,6 +357,105 @@ namespace FTL
 		return m_bufInfo;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+	CFPropVariantInfo::CFPropVariantInfo(const PROPVARIANT& info) : CFConvertInfoT<CFPropVariantInfo, const PROPVARIANT&>(info)
+	{
+	}
+	VOID CFPropVariantInfo::GetTypeInfo(CFStringFormater& formaterType)
+	{
+		VARIANT var;
+		var.vt = m_Info.vt;
+		CFVariantInfo variantInfo(var);
+		variantInfo.GetTypeInfo(formaterType);
+	}
+	VOID CFPropVariantInfo::GetValueInfo(CFStringFormater& formaterValue)
+	{
+		USES_CONVERSION;
+		//有 V_BSTR 等宏辅助操作, V_VT 获取Variant的类型
+		VARTYPE varType = V_VT(&m_Info);
+		VARTYPE typeMask = (varType & VT_ILLEGAL) & (~VT_TYPEMASK);
+		//CFVariantInfo variantInfo(m_Info.)
+		BOOL bCheckType = TRUE;
+		switch (varType)
+		{
+		case VT_I1:
+			formaterValue.Format(TEXT("%d"), m_Info.cVal);
+			break;
+		case VT_UI1:
+			formaterValue.Format(TEXT("%d"), m_Info.bVal);
+			break;
+		case VT_I2:
+			formaterValue.Format(TEXT("%d"), m_Info.iVal);
+			break;
+		case VT_UI2:
+			formaterValue.Format(TEXT("%d"), m_Info.uiVal);
+			break;
+		case VT_I4:
+			formaterValue.Format(TEXT("%d"), m_Info.lVal);
+			break;
+		case VT_UI4:
+			formaterValue.Format(TEXT("0x%x"), m_Info.ulVal);
+			break;
+		case VT_UI8:
+			//if(MF_MT_FRAME_RATE == key ||MF_MT_PIXEL_ASPECT_RATIO == key || MF_MT_FRAME_SIZE == key)
+			{
+				UINT32 numerator, denominator;
+				denominator = m_Info.uhVal.LowPart;
+				numerator = m_Info.uhVal.HighPart;
+				formaterValue.Format(TEXT("%ld(%d/%d)"), m_Info.uhVal.QuadPart, numerator, denominator);
+			}
+			break;
+		case VT_INT:
+			formaterValue.Format(TEXT("%d"), m_Info.intVal);
+			break;
+		case VT_UINT:
+			formaterValue.Format(TEXT("%d"), m_Info.uintVal);
+			break;
+		case VT_R4:
+			formaterValue.Format(TEXT("%f"), m_Info.fltVal);
+			break;
+		case VT_R8:
+			formaterValue.Format(TEXT("%f"), m_Info.dblVal);
+			break;
+		case VT_BOOL:
+			if(VARIANT_TRUE == m_Info.boolVal)
+			{
+				formaterValue.Format(TEXT("%s"), TEXT("True"));
+			}
+			else
+			{
+				formaterValue.Format(TEXT("%s"), TEXT("False"));
+			}
+			break;
+		case VT_LPSTR:
+			formaterValue.Format(TEXT("%s"), CA2W(propVal.pszVal));
+			break;
+		default:
+			ATLASSERT(FALSE);
+			break;
+		}
+	}
+
+	LPCTSTR CFPropVariantInfo::ConvertInfo()
+	{
+		if (NULL == m_bufInfo[0])
+		{
+			//VARIANT m_Info;
+
+			//Get VARIANT Type
+			FTL::CFStringFormater formaterType;
+			GetTypeInfo(formaterType);
+
+			//Get Variant Value
+			FTL::CFStringFormater formaterValue;
+			GetValueInfo(formaterValue);
+
+			StringCchPrintf(m_bufInfo, _countof(m_bufInfo),TEXT("Type = %s, Value = %s"),
+				formaterType.GetString(),formaterValue.GetString());
+		}
+		return m_bufInfo;
+	}
+
     //__declspec(selectany) CModulesHolder g_modulesHolder;
 
     HRESULT /*__stdcall*/ CFSideBySide::SbsCreateInstance(LPCTSTR szModule, REFCLSID rclsid, LPUNKNOWN pUnkOuter, 
