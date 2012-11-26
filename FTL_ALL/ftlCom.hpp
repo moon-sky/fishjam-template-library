@@ -402,7 +402,7 @@ namespace FTL
 				UINT32 numerator, denominator;
 				denominator = m_Info.uhVal.LowPart;
 				numerator = m_Info.uhVal.HighPart;
-				formaterValue.Format(TEXT("%ld(%d/%d)"), m_Info.uhVal.QuadPart, numerator, denominator);
+				formaterValue.Format(TEXT("%ld(%d - %d)"), m_Info.uhVal.QuadPart, numerator, denominator);
 			}
 			break;
 		case VT_INT:
@@ -420,16 +420,25 @@ namespace FTL
 		case VT_BOOL:
 			if(VARIANT_TRUE == m_Info.boolVal)
 			{
-				formaterValue.Format(TEXT("%s"), TEXT("True"));
+				formaterValue.Format(TEXT("%s"), TEXT("TRUE"));
 			}
 			else
 			{
-				formaterValue.Format(TEXT("%s"), TEXT("False"));
+				formaterValue.Format(TEXT("%s"), TEXT("FALSE"));
 			}
 			break;
 		case VT_LPSTR:
-			formaterValue.Format(TEXT("%s"), CA2W(propVal.pszVal));
+			formaterValue.Format(TEXT("%s"), CA2T(m_Info.pszVal));
 			break;
+        case VT_LPWSTR:
+            formaterValue.Format(TEXT("%s"), CW2T(m_Info.pwszVal));
+            break;
+        case VT_UNKNOWN:
+            formaterValue.Format(TEXT("0x%x"), m_Info.punkVal);
+            break;
+        case VT_CLSID:
+            ATLASSERT(FALSE);
+            break;
 		default:
 			ATLASSERT(FALSE);
 			break;

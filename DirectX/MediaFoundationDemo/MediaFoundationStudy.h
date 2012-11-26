@@ -1,3 +1,7 @@
+several YUV formats (YUY2, UYVY, NV12)
+
+
+
 #pragma once
 //Media Foundation ΩÈ…‹ http://hi.baidu.com/neil_danky/item/79b5b15f5a735111da1635af
 //http://blogs.msdn.com/b/mf/archive/2009/12/02/mfsimpleencode.aspx

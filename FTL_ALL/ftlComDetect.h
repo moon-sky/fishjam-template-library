@@ -73,8 +73,18 @@ namespace FTL
     FTLINLINE HRESULT GetInterfaceNameByIID(REFIID rclsid, BSTR * pszName);
 }
 
+#ifndef INCLUDE_DETECT_ACTIVSCP
 # define INCLUDE_DETECT_ACTIVSCP    1
+#endif
+
+#pragma TODO(Audiopolicy)
+#ifndef INCLUDE_DETECT_AUDIOPOLICY
+# define INCLUDE_DETECT_AUDIOPOLICY    1
+#endif
+
+#ifndef INCLUDE_DETECT_CONTROL
 # define INCLUDE_DETECT_CONTROL     1
+#endif
 
 #ifndef INCLUDE_DETECT_DDRAW
 # define INCLUDE_DETECT_DDRAW    0
