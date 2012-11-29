@@ -128,16 +128,25 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *   3.可选的重载函数
 *
 * Video Render
-*   1.Video Render(传统的,Merit=0x00400000) -- 显示时总是创建一个视频窗口，如要显示在指定的UI窗口中，
-*     需要修改视频窗口的风格，并将其指定为UI窗口的子窗口。
+*   1.Video Render(传统的,Merit=0x00400000) -- 显示时总是创建一个视频窗口(即只能工作在 Windowed Mode)，缺省是 top-level + Border + Title，
+*     如要显示在指定的UI窗口中，需要通过 IVideoWindow 修改视频窗口的风格，并将其指定为UI窗口的子窗口。
 *   2.Overlay Mixer -- 
-*   VMR(Video Mixing Renderer) -- 通过DirectX使用了显卡的图形处理能力(视频合成和显示时不占用CPU),
-*     有些显卡在设置为24位色的情况下不能执行Direct3D操作。
-*     3.VMR-7 -- 使用DirectDraw7技术，仅在WinXP中(后？)获得，WinXP的默认视频显示Renderer(Merit=0x00800001)。
+*     VMR(Video Mixing Renderer) -- 能够将若干路视频流合并输出到显示设备上，并且能够很好地调用显卡硬件的拉伸，
+*     颜色空间变换等硬件功能，以减少对 CPU 资源的占用率。画面质量取决于显卡硬件，有些显卡在设置为24位色的情况下不能执行Direct3D操作。
+*     无法直接对正在播放的视频截图。
+*     可以通过实现IVMRImageCompositor接口的插件(Plug-in)方式来扩展Video Effects。
+*     必须在连接以前配置好，
+*     根据渲染模式( VMRMode / VMR9Mode )的不同分为:
+*       窗口化(Windowed)   -- 兼容模型(创建自己的窗体显示视频，同传统Render)，只支持一个视频流，支持 IBasicVideo2/IVideoWindow/IVMRMonitorConfig 等接口
+*       无窗口(Windowless) -- 更多功能，性能更好，支持 IVMRWindowlessControl / IVMRMonitorConfig 等接口
+*       未渲染(Renderless) -- 支持 IVMRSurfaceAllocatorNotify 等接口
+*       Mixer()            -- 支持 IVMRMixerControl 等接口
+*     a.VMR-7 -- 使用DirectDraw7技术，仅在WinXP中(后？)获得，WinXP的默认视频显示Renderer(Merit=0x00800001)。
 *       实现了真正的无窗口模式显示
-*     4.VMR-9 -- 使用Direct3D 9技术。在任何安装了DirectX9的操作系统上都能使用，不是默认的Renderer
+*     b.VMR-9 -- 使用Direct3D 9技术。在任何安装了DirectX9的操作系统上都能使用，不是默认的Renderer
 *       (Merit=0x00200000)。不支持Video Port(视频数据在内核模式下直接传送到显卡的显存)的使用。
 *       比如 KMPlayer 不能截图
+*  3.EVR
 * 
 * Muxer Filter -- 将多路输入流合并成一路。如AVI Mux将视频和音频流合成为一个AVI格式的字节流
 *   一个Muxer的例子，其中有可重用的 BaseMux，svn://dev.monogram.sk/public/libmonodshow/trunk
@@ -203,18 +212,21 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 /******************************************************************************************************
 *   CLSID_VideoRenderer -- 最原始的渲染器，它接收到来自解码器解码后的数据流，在显示设备上显示，基本上不能调用到显卡硬件特性，
 *      全靠CPU来完成渲染任务，但Win7下能获取到 IDriectDrawVideo 接口
+*
 *   CLSID_VideoRendererDefault -- 会自动根据操作系统选择，
-*     Win7 下是 CLSID_VideoMixingRenderer
-*   VMR(Video Mixing Renderer) -- 能够将若干路视频流合并输出到显示设备上，并且能够很好地调用显卡硬件的拉伸，
-*     颜色空间变换等硬件功能，以减少对 CPU 资源的占用率。画面质量取决于显卡硬件。无法直接对正在播放的视频截图。
-*     根据渲染模式的不同分为"窗口化(Windowed),"无窗口"(Windowless),"未渲染"(Renderless)模式。
+*     优先创建 CLSID_VideoMixingRenderer(Win7/WinXP?)，如果失败则创建 CLSID_VideoRenderer
+* 
+*   VMR(Video Mixing Renderer)
 *     根据 DirectX 版本的不同，可以分为：
-*       CLSID_VideoMixingRenderer -- ?VMR7,基于2D的DirectDraw7, 其Pin名为VMR，Pin上多了 IVMRVideoStreamControl
-*       CLSID_VideoMixingRenderer9 -- 基于3D的Direct3D9, 可以支持视频特效（Video Effects）和视频变换(Video Transitions)
+*       CLSID_VideoMixingRenderer -- 即VMR-7(基于2D的DirectDraw7), WinXP上缺省，其Pin名为VMR，Pin上多了 IVMRVideoStreamControl
+*       CLSID_VideoMixingRenderer9 -- 即VMR-9(基于3D的Direct3D9),任何时候都不是缺省的，可以支持视频特效（Video Effects）和视频变换(Video Transitions),
+*         XP虚拟机上添加时返回 VFW_E_DDRAW_CAPS_NOT_SUITABLE，
+*   
 *   CLSID_EnhancedVideoRenderer -- Media Foundation 使用的Render(EVR), 支持 DXVA 2.0，支持 IEVRFilterConfig 等接口，
-*     可通过 IMFGetService 进一步获取其他接口
+*     可通过 IMFGetService 进一步获取其他接口,如 pService->GetService(MR_VIDEO_RENDER_SERVICE, __uuidof(IMFVideoDisplayControl),(void**)&pDisplay);
 *
 ******************************************************************************************************/
 //Render uses Direct3D or DirectDraw for rendering samples
 //Video Mixing Renderer 7（只支持WINXP）使用 DirectDraw7 表面
 //Video Mixing Renderer 9使用 Directx9 Direct3D API函数(参考Texture3D Sample)
+

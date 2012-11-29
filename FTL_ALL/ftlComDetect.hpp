@@ -489,14 +489,49 @@ namespace FTL
 #endif //INCLUDE_DETECT_MEDIA_FOUNDATION
 
 #if INCLUDE_DETECT_STRMIF
+	class CFBasicVideoDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IBasicVideo> spBasicVideo(pUnknown);
+			if (spBasicVideo)
+			{
+				CString strInfo;
+				long nVideoWidth = 0, nVideoHeight = 0;
+				DX_VERIFY(spBasicVideo->GetVideoSize(&nVideoWidth, &nVideoHeight));
+				if (SUCCEEDED(hr))
+				{
+					strInfo.AppendFormat(TEXT("VideoSize(%dx%d)"), nVideoWidth, nVideoHeight);
+				}
+				long nSourceLeft = 0, nSourceTop = 0, nSourceWidth = 0, nSourceHeight = 0;
+				DX_VERIFY(spBasicVideo->GetSourcePosition(&nSourceLeft, &nSourceTop, &nSourceWidth, &nSourceHeight));
+				if (SUCCEEDED(hr))
+				{
+					
+				}
+
+				long nDestLeft = 0, nDestTop = 0, nDestWidth = 0, nDestHeight = 0;
+				DX_VERIFY(spBasicVideo->GetDestinationPosition(&nDestLeft, &nDestTop, &nDestWidth, &nDestHeight));
+				if (SUCCEEDED(hr))
+				{
+				}
+			}
+			return hr;
+		}
+	};
+
     class CFMediaSeekingDump
     {
     public:
         static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
         {
             HRESULT hr = S_OK;
-            ATL::CComQIPtr<IMediaSeeking> pMediaSeeking(pUnknown);
-
+            ATL::CComQIPtr<IMediaSeeking> spMediaSeeking(pUnknown);
+			if (spMediaSeeking)
+			{
+			}
             //pMediaSeeking->IsFormatSupported();
             return hr;
         }
@@ -532,6 +567,25 @@ namespace FTL
 		}
 	};
 
+	class CFVMRAspectRatioControlDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IVMRAspectRatioControl> spVMRAspectRatioControl(pUnknown);
+			if (spVMRAspectRatioControl)
+			{
+				DWORD dwARMode = 0;
+				//0(VMR_ARMODE_NONE) -- 不保持高宽比，播放时会填充
+				//1(VMR_ARMODE_LETTER_BOX) -- 保持高宽比
+				DX_VERIFY(spVMRAspectRatioControl->GetAspectRatioMode(&dwARMode));
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t IVMRAspectRatioControl, AspectRatioMode =%d\n"),
+					dwARMode);
+			}
+			return hr;
+		}
+	};
 
 #endif //INCLUDE_DETECT_STRMIF
 
@@ -792,7 +846,7 @@ namespace FTL
 
             //! 允许应用程序设置视频属性，例如目标矩形和源矩形,能对挡前播放的位置进行抓图
             //  BitRate/VideoWidth/SourceWidth/DestinationWidth/SourcePosition/DestinationPosition/VideoSize
-            DETECT_INTERFACE_ENTRY(IBasicVideo)     
+            DETECT_INTERFACE_ENTRY_EX(IBasicVideo, CFBasicVideoDump)
 
             DETECT_INTERFACE_ENTRY(IBasicVideo2)    //从 IBasicVideo 接口派生，为应用程序提供了一个附加方法，通过它可以检索视频流的首选纵横比
             DETECT_INTERFACE_ENTRY(IDeferredCommand)//允许应用程序取消或修改该应用程序先前使用 IQueueCommand 接口排入队列的图形-控制命令
@@ -2478,7 +2532,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IVMRMixerControl)
             DETECT_INTERFACE_ENTRY(IVMRMonitorConfig)
             DETECT_INTERFACE_ENTRY(IVMRFilterConfig)
-            DETECT_INTERFACE_ENTRY(IVMRAspectRatioControl)
+            DETECT_INTERFACE_ENTRY_EX(IVMRAspectRatioControl, CFVMRAspectRatioControlDump)
             DETECT_INTERFACE_ENTRY(IVMRDeinterlaceControl)
             DETECT_INTERFACE_ENTRY(IVMRMixerBitmap)
             DETECT_INTERFACE_ENTRY(IVMRImageCompositor)
@@ -2488,13 +2542,14 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IVMRImagePresenterExclModeConfig)
             DETECT_INTERFACE_ENTRY(IVPManager)
 
+#if 1
 			//amvideo.h
-#if 0
-			DETECT_INTERFACE_ENTRY(IDirectDrawVideo)//, IID_IDirectDrawVideo)
-			DETECT_INTERFACE_ENTRY(IQualProp)//, IID_IQualProp)
-			DETECT_INTERFACE_ENTRY(IFullScreenVideo)//, IID_IFullScreenVideo)
-			DETECT_INTERFACE_ENTRY(IFullScreenVideoEx)//, IID_IFullScreenVideoEx)
-			DETECT_INTERFACE_ENTRY(IBaseVideoMixer)//, IID_IBaseVideoMixer)
+			//need include <uuids.h>
+			DETECT_INTERFACE_ENTRY_IID(IDirectDrawVideo, IID_IDirectDrawVideo)
+			DETECT_INTERFACE_ENTRY_IID(IQualProp, IID_IQualProp)
+			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideo, IID_IFullScreenVideo)
+			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideoEx, IID_IFullScreenVideoEx)
+			DETECT_INTERFACE_ENTRY_IID(IBaseVideoMixer, IID_IBaseVideoMixer)
 #endif 
 #endif //INCLUDE_DETECT_STRMIF
 

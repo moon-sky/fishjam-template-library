@@ -58,6 +58,7 @@ void CBaseDialog::RedrawControl(int nID)
 *  +-BGMusic    -- 使用Win32播放MP3的音乐播放程序，其 SwapSourceFilter 方法具有动态改变 Source Filter 的能力
 *                  (停止Graph -> 移除旧的SourceFilter -> 加入新的SourceFilter -> 对其OutputPin 进行Render)
 *  +-Cutscene   -- 命令行模式的 Movie Player，通过命令行传入媒体文件，进行全屏播放(创建了一个0大小的"隐藏"窗体来处理键盘输入)
+*  +-DShowPlayer-- Video播放的GUI程序，可以使用 EVR/VM7/VMR9 等多种 Render
 *  +-PlayWnd    -- 使用Win32的音频/视频媒体文件播放程序，只能播放一个文件
 *  +-PlayWndASF -- 未看 -- 媒体播放器,可以播放受DRM保护的WMF类型的文件 -- 参考DRM的处理方式
 *************************************************************************************************/

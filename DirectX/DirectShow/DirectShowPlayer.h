@@ -43,22 +43,23 @@
 * 媒体文件的播放 -- 都是使用 COINIT_APARTMENTTHREADED 初始化COM库(主线程？)
 *   #.音频控制(IBasicAudio)
 *     VOLUME_FULL=0L;VOLUME_SILENCE=-10000L; 要设置音量，需要使用对数方法计算 log10(vol)/pow(10.0,pos)
-*   #.视频控制
+*   #.视频控制(Windowed Mode时嵌套在APP UI中的方式)
 *     1.播放前的初始化
-*       1.1.使用 IVideoWindow 的 put_Owner((OAHWND)m_hWnd)
-*       1.2.put_WindowStyle(WS_CHILD);// | WS_CLIPSIBLINGS | WS_CLIPCHILDREN) 
-*       1.3.m_StaticVideoWindow.ModifyStyle(0,WS_CLIPCHILDREN); 防止显示菜单时重绘视频窗口(全屏时回来无法正常显示)
-*       1.4.处理父对话框的WM_ERASEBKGND消息 -- 否则可能会被频繁的刷新成 Gray 背景色(ShinEmon的菜单Bug？)
-*           直接返回即可？
+*       1.1.使用 IVideoWindow 的 put_Owner((OAHWND)m_hWnd); //设置播放窗体的父窗体,
+*       1.2.put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS);// | WS_CLIPCHILDREN); //更改播放窗体的风格
+*       1.3.m_StaticVideoWindow.ModifyStyle(0,WS_CLIPCHILDREN); 防止绘制视频窗口(如避免菜单等，但全屏时回来无法正常显示?需要刷新?)
+*       1.4.处理父对话框的WM_ERASEBKGND消息 -- 否则可能会被频繁的刷新成 Gray 背景色， 直接返回即可？
 *           CRect rect;
 *           m_StaticVideoWindow.GetWindowRect(&rect);  //获取Video播放窗体的范围
 *           ScreenToClient(&rect);
 *           pDC->ExcludeClipRect(&rect);    //排除视频的播放区域 -- 不要刷背景
 *           return CDialog::OnEraseBkgnd(pDC);
-*       1.5.处理父对话框的WM_SIZE消息，计算视频窗口的大小和位置，并通过 SetWindowPosition 设置
+*       1.5.处理父窗体的 WM_MOVE 消息，并传递到VideoWindow中(如果使用硬件overlay时,使得Render更新Overlay位置，避免黑屏?)
+*            IVideoWindow::NotifyOwnerMessage((OAHWND)hWnd, msg, wParam, lParam);
+*       1.6.处理父对话框的WM_SIZE消息，计算视频窗口的大小和位置，并通过 SetWindowPosition 设置(初始化时需要直接设置一次?)
 *     2.使用 IVideoFrameStep 步进(先用 CanStep 方法进行检查)，必须处在暂停状态下(Paused)才能工作
 *     3.停止播放后(IMediaControl::Stop)，对 IVideoWindow 调用 put_Visible(OAFALSE); put_Owner(NULL); 来释放窗体；
-*     4.需要将一些系统消息传给Video窗体(见 PlayWnd Sample)
+*     4.在消息循环中将消息传给Video窗体以便其处理一些系统消息(见 PlayWnd Sample)
 *       //Pass this message to the video window for notification of system changes
 *       IVideoWindow::NotifyOwnerMessage((LONG_PTR) hWnd, message, wParam, lParam); 
 *     5.播放位置调节
@@ -66,7 +67,7 @@
 *       hr = g_pMediaSeeking->SetPositions(&rtNew, AM_SEEKING_AbsolutePositioning, NULL,AM_SEEKING_NoPositioning);
 *     6.图片抓取
 *       6.1. 使用 CFDirectShowUtility::SnapShotBitmap 方法，如果使用的是传统的VideoRenderer，抓图是不可靠的(使用了
-*            DirectDraw加速，返回码为？？)，必须处于暂停状态。但如果使用的是VMR，这没有该限制。
+*            DirectDraw加速，返回码为？？)，必须处于暂停状态。但如果使用的是VMR，就没有该限制。
 *       6.2. 使用Sample中的GrabbleFilter，抓其中的IMediaSample -- 注意后面不要连接标准的VideoRenderer，Grabble是
 *            TransInPlace，输入和输出Pin使用相同的数据缓存，可能位于显存上，从显存读取数据比直接从主存中慢很多。
 *       6.3. 将抓去的数据直使用GDI函数显示出来
