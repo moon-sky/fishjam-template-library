@@ -489,6 +489,29 @@ namespace FTL
 #endif //INCLUDE_DETECT_MEDIA_FOUNDATION
 
 #if INCLUDE_DETECT_STRMIF
+	class CFVideoWindowDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IVideoWindow> spVideoWindow(pUnknown);
+			if (spVideoWindow)
+			{
+				CFStringFormater strInfo;
+				OAHWND hWndMessageDrain = NULL;
+				DX_VERIFY(spVideoWindow->get_MessageDrain(&hWndMessageDrain));
+				if (SUCCEEDED(hr))
+				{
+					//使得应用程序可以处理视频窗体内的鼠标、键盘事件的 消息通道(Graph会将相关消息传递给该窗体)
+					strInfo.AppendFormat(TEXT("CurMsgDrain=0x%x, "), hWndMessageDrain);
+				}
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+			}
+			return hr;
+		}
+	};
+
 	class CFBasicVideoDump
 	{
 	public:
@@ -498,12 +521,13 @@ namespace FTL
 			ATL::CComQIPtr<IBasicVideo> spBasicVideo(pUnknown);
 			if (spBasicVideo)
 			{
-				CString strInfo;
+				CFStringFormater strInfo;
 				long nVideoWidth = 0, nVideoHeight = 0;
 				DX_VERIFY(spBasicVideo->GetVideoSize(&nVideoWidth, &nVideoHeight));
 				if (SUCCEEDED(hr))
 				{
-					strInfo.AppendFormat(TEXT("VideoSize(%dx%d)"), nVideoWidth, nVideoHeight);
+					//视频本身的尺寸大小
+					strInfo.AppendFormat(TEXT("VideoSize(%dx%d), "), nVideoWidth, nVideoHeight);
 				}
 				long nSourceLeft = 0, nSourceTop = 0, nSourceWidth = 0, nSourceHeight = 0;
 				DX_VERIFY(spBasicVideo->GetSourcePosition(&nSourceLeft, &nSourceTop, &nSourceWidth, &nSourceHeight));
@@ -517,6 +541,7 @@ namespace FTL
 				if (SUCCEEDED(hr))
 				{
 				}
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
 			}
 			return hr;
 		}
@@ -563,6 +588,83 @@ namespace FTL
 				}
 			}
 			//pMediaSeeking->IsFormatSupported();
+			return hr;
+		}
+	};
+
+	class CFVMRWindowlessControlDump
+	{
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IVMRWindowlessControl> spVMRWindowlessControl(pUnknown);
+			if (spVMRWindowlessControl)
+			{
+				CFStringFormater strInfo;
+				RECT srcRect = {0};
+				RECT dstRect = {0};
+				DX_VERIFY(spVMRWindowlessControl->GetVideoPosition(&srcRect, &dstRect));
+				if (SUCCEEDED(hr))
+				{
+					//VMR从Src把图像按Dest的尺寸匹配后显示出来
+					strInfo.AppendFormat(TEXT("SrcRect={%d,%d}-{%d,%d}, DstRect={%d,%d}-{%d,%d} "),
+						srcRect.left, srcRect.top, srcRect.right, srcRect.bottom,
+						dstRect.left, dstRect.top, dstRect.right, dstRect.bottom);
+				}
+
+				LONG nNativeVideoWidth = 0, nNativeVideoHeight = 0;
+				LONG nArWidth = 0, nArHeight = 0;
+				DX_VERIFY(spVMRWindowlessControl->GetNativeVideoSize(&nNativeVideoWidth, &nNativeVideoHeight, 
+					&nArWidth, &nArHeight));
+				if (SUCCEEDED(hr))
+				{
+					strInfo.AppendFormat(TEXT("NativeVideoSize=%dx%d, Ar=%dx%d, "),
+						nNativeVideoWidth, nNativeVideoHeight, nArWidth, nArHeight);
+
+				}
+
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+			}
+			return hr;
+		}
+	};
+
+	class CFVMRFilterConfigDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IVMRFilterConfig> spVMRFilterConfig(pUnknown);
+			if (spVMRFilterConfig)
+			{
+				CFStringFormater strInfo;
+				DWORD dwRenderingMode = 0;
+				//0x1(VMRMode_Windowed) 
+				//0x2(VMRMode_Windowless)
+				//0x4(VMRMode_Renderless)
+				//0x7(VMRMode_Mask)
+				DX_VERIFY(spVMRFilterConfig->GetRenderingMode(&dwRenderingMode));
+				if (SUCCEEDED(hr))
+				{
+					strInfo.AppendFormat(TEXT("RenderingMode=%d, "), dwRenderingMode);
+				}
+
+				DWORD dwMaxStreams = 0;
+				DX_VERIFY(spVMRFilterConfig->GetNumberOfStreams(&dwMaxStreams));
+				if (SUCCEEDED(hr))
+				{
+					strInfo.AppendFormat(TEXT("NumberOfStreams=%d, "), dwMaxStreams);
+				}
+
+				DWORD dwRenderFlags = 0;
+				DX_VERIFY(spVMRFilterConfig->GetRenderingPrefs(&dwRenderFlags));
+				if (SUCCEEDED(hr))
+				{
+					strInfo.AppendFormat(TEXT("RenderingPrefs=%d, "), dwRenderFlags);
+				}
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+			}
 			return hr;
 		}
 	};
@@ -842,7 +944,7 @@ namespace FTL
             //! 如: pVW->put_Owner((OAHWND)m_hWnd);
             //!     pVW->put_WindowStyle(WS_CHILD);// | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
             //!     pVW->put_Visible(OATRUE);
-            DETECT_INTERFACE_ENTRY(IVideoWindow)    
+            DETECT_INTERFACE_ENTRY_EX(IVideoWindow, CFVideoWindowDump)
 
             //! 允许应用程序设置视频属性，例如目标矩形和源矩形,能对挡前播放的位置进行抓图
             //  BitRate/VideoWidth/SourceWidth/DestinationWidth/SourcePosition/DestinationPosition/VideoSize
@@ -2528,10 +2630,10 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IVMRImagePresenter)
             DETECT_INTERFACE_ENTRY(IVMRSurfaceAllocator)
             DETECT_INTERFACE_ENTRY(IVMRSurfaceAllocatorNotify)
-            DETECT_INTERFACE_ENTRY(IVMRWindowlessControl)
+            DETECT_INTERFACE_ENTRY_EX(IVMRWindowlessControl, CFVMRWindowlessControlDump)
             DETECT_INTERFACE_ENTRY(IVMRMixerControl)
             DETECT_INTERFACE_ENTRY(IVMRMonitorConfig)
-            DETECT_INTERFACE_ENTRY(IVMRFilterConfig)
+            DETECT_INTERFACE_ENTRY_EX(IVMRFilterConfig, CFVMRFilterConfigDump)
             DETECT_INTERFACE_ENTRY_EX(IVMRAspectRatioControl, CFVMRAspectRatioControlDump)
             DETECT_INTERFACE_ENTRY(IVMRDeinterlaceControl)
             DETECT_INTERFACE_ENTRY(IVMRMixerBitmap)

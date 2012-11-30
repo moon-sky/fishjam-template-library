@@ -43,8 +43,8 @@
 * 媒体文件的播放 -- 都是使用 COINIT_APARTMENTTHREADED 初始化COM库(主线程？)
 *   #.音频控制(IBasicAudio)
 *     VOLUME_FULL=0L;VOLUME_SILENCE=-10000L; 要设置音量，需要使用对数方法计算 log10(vol)/pow(10.0,pos)
-*   #.视频控制(Windowed Mode时嵌套在APP UI中的方式)
-*     1.播放前的初始化
+*   #.视频控制
+*     1A.播放前的初始化(Windowed Mode时嵌套在APP UI中的方式)
 *       1.1.使用 IVideoWindow 的 put_Owner((OAHWND)m_hWnd); //设置播放窗体的父窗体,
 *       1.2.put_WindowStyle(WS_CHILD | WS_CLIPSIBLINGS);// | WS_CLIPCHILDREN); //更改播放窗体的风格
 *       1.3.m_StaticVideoWindow.ModifyStyle(0,WS_CLIPCHILDREN); 防止绘制视频窗口(如避免菜单等，但全屏时回来无法正常显示?需要刷新?)
@@ -53,10 +53,20 @@
 *           m_StaticVideoWindow.GetWindowRect(&rect);  //获取Video播放窗体的范围
 *           ScreenToClient(&rect);
 *           pDC->ExcludeClipRect(&rect);    //排除视频的播放区域 -- 不要刷背景
+*             //或者 CombineRgn(rgnClient, rgnClient, rgnVideo, RGN_DIFF);  //排除视频的播放区域
 *           return CDialog::OnEraseBkgnd(pDC);
 *       1.5.处理父窗体的 WM_MOVE 消息，并传递到VideoWindow中(如果使用硬件overlay时,使得Render更新Overlay位置，避免黑屏?)
 *            IVideoWindow::NotifyOwnerMessage((OAHWND)hWnd, msg, wParam, lParam);
 *       1.6.处理父对话框的WM_SIZE消息，计算视频窗口的大小和位置，并通过 SetWindowPosition 设置(初始化时需要直接设置一次?)
+*     1B.播放前的初始化(Windowless Mode 时)
+*        IVMRFilterConfig::SetRenderingMode(VMRMode_Windowless); -- 设置为Windowless模式
+*        IVMRWindowlessControl::SetVideoClippingWindow -- 指定视频将要显示的窗体句柄
+*        IVMRWindowlessControl::SetAspectRatioMode(VMR_ARMODE_LETTER_BOX); -- 设置比例模式(可选)
+*        因为VMR没有窗体，所以在需要重画或尺寸改变等时，需要：
+*          WM_PAINT -- if(在播放）{ 排除Video的Region进行绘制; IVMRWindowlessControl::RepaintVideo } 
+*                      else { 直接绘制整个客户区; }
+*          WM_DISPLAYCHANGE -- IVMRWindowlessControl::DisplayModeChanged
+*          WM_SIZE -- IVMRWindowlessControl::SetVideoPosition
 *     2.使用 IVideoFrameStep 步进(先用 CanStep 方法进行检查)，必须处在暂停状态下(Paused)才能工作
 *     3.停止播放后(IMediaControl::Stop)，对 IVideoWindow 调用 put_Visible(OAFALSE); put_Owner(NULL); 来释放窗体；
 *     4.在消息循环中将消息传给Video窗体以便其处理一些系统消息(见 PlayWnd Sample)

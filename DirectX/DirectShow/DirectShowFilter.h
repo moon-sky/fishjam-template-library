@@ -127,7 +127,7 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     CheckMediaType(const CMediaType *pmt);
 *   3.可选的重载函数
 *
-* Video Render
+* Video Render(一般的选择优先级： EVR > VMR9 > VMR7 > 传统Render )
 *   1.Video Render(传统的,Merit=0x00400000) -- 显示时总是创建一个视频窗口(即只能工作在 Windowed Mode)，缺省是 top-level + Border + Title，
 *     如要显示在指定的UI窗口中，需要通过 IVideoWindow 修改视频窗口的风格，并将其指定为UI窗口的子窗口。
 *   2.Overlay Mixer -- 
@@ -137,15 +137,20 @@ hr = m_pCaptureBuilder2->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Interlea
 *     可以通过实现IVMRImageCompositor接口的插件(Plug-in)方式来扩展Video Effects。
 *     必须在连接以前配置好，
 *     根据渲染模式( VMRMode / VMR9Mode )的不同分为:
-*       窗口化(Windowed)   -- 兼容模型(创建自己的窗体显示视频，同传统Render)，只支持一个视频流，支持 IBasicVideo2/IVideoWindow/IVMRMonitorConfig 等接口
-*       无窗口(Windowless) -- 更多功能，性能更好，支持 IVMRWindowlessControl / IVMRMonitorConfig 等接口
+*       窗体模式(Windowed)   -- 兼容模型(创建自己的窗体显示视频，同传统Render，若要在指定窗体中显示，需要更改为子窗体)，
+*         只支持一个视频流，支持 IBasicVideo2/IVideoWindow/IVMRMonitorConfig 等接口
+*         ★问题★：http://msdn.microsoft.com/en-us/library/windows/desktop/dd407299(v=vs.85).aspx
+*                   如果窗体的消息在线程间发送可能导致消息死锁(即用子线程初始化Graph并创建窗体可能导致死锁?)
+*                   Most importantly, there is a potential for deadlocks if window messages are sent between threads.
+*       非窗体模式(Windowless) -- 更多功能，性能更好，支持 IVMRWindowlessControl / IVMRMonitorConfig 等接口
+*         ★注意★：极大程度的减少了死锁的偶然发生（但不彻底？）
 *       未渲染(Renderless) -- 支持 IVMRSurfaceAllocatorNotify 等接口
 *       Mixer()            -- 支持 IVMRMixerControl 等接口
-*     a.VMR-7 -- 使用DirectDraw7技术，仅在WinXP中(后？)获得，WinXP的默认视频显示Renderer(Merit=0x00800001)。
+*     a.VMR-7 -- 使用DirectDraw7技术，仅在WinXP及其后获得，WinXP的默认视频显示Renderer(Merit=0x00800001)。
 *       实现了真正的无窗口模式显示
 *     b.VMR-9 -- 使用Direct3D 9技术。在任何安装了DirectX9的操作系统上都能使用，不是默认的Renderer
-*       (Merit=0x00200000)。不支持Video Port(视频数据在内核模式下直接传送到显卡的显存)的使用。
-*       比如 KMPlayer 不能截图
+*       (Merit=0x00200000)。不支持Video Port(视频数据在内核模式下直接传送到显卡的显存)的使用(比如KMPlayer不能截图).
+*       最好的性能。
 *  3.EVR
 * 
 * Muxer Filter -- 将多路输入流合并成一路。如AVI Mux将视频和音频流合成为一个AVI格式的字节流
