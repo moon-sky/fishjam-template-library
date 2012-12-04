@@ -58,7 +58,7 @@
 *       1.5.处理父窗体的 WM_MOVE 消息，并传递到VideoWindow中(如果使用硬件overlay时,使得Render更新Overlay位置，避免黑屏?)
 *            IVideoWindow::NotifyOwnerMessage((OAHWND)hWnd, msg, wParam, lParam);
 *       1.6.处理父对话框的WM_SIZE消息，计算视频窗口的大小和位置，并通过 SetWindowPosition 设置(初始化时需要直接设置一次?)
-*     1B.播放前的初始化(Windowless Mode 时)
+*     1B.播放前的初始化(Windowless Mode 时) , 似乎无法全屏? http://bbs.csdn.net/topics/100170366
 *        IVMRFilterConfig::SetRenderingMode(VMRMode_Windowless); -- 设置为Windowless模式
 *        IVMRWindowlessControl::SetVideoClippingWindow -- 指定视频将要显示的窗体句柄
 *        IVMRWindowlessControl::SetAspectRatioMode(VMR_ARMODE_LETTER_BOX); -- 设置比例模式(可选)
@@ -125,6 +125,10 @@
 *   循环等待
 *     1.使用 IMediaEvent::WaitForCompletion(等待时间, 返回值) -- 如果结束会返回 EC_COMPLETE
 *
+* 视频截图
+*   1.IMediaDet::GetBitmaps(已被淘汰，和D3D7及其后版本不兼容, SDK7以后已经没有 qedit.h 文件) -- 速度快,但Video类型有限，
+*   2.IBasicVideo::GetCurrentImage -- 几乎可以处理所有的视频类型，但每次截图都有一个短暂的停顿(需要暂停?并占用CPU)
+*   3.IVMRWindowlessControl9::GetCurrentImage -- 
 ****************************************************************************************************/
 
 // File filter for OpenFile dialog

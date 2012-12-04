@@ -1190,6 +1190,7 @@ namespace FTL
 		{
 			bRet = TRUE;
 		}
+		img.Detach();
 		return bRet;
 	}
 	BOOL CFGdiUtil::SaveDCImageToFile(HDC hdc, LPCTSTR pszFilePath)

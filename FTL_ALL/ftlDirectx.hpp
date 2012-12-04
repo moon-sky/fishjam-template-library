@@ -418,7 +418,7 @@ namespace FTL
                 if (thisDir == dir)
                 {
                     CComPtr<IPin> pConnectedPin = NULL;
-                    DX_VERIFY(pTmpPin->ConnectedTo(&pConnectedPin));//VFW_E_NOT_CONNECTED
+                    DX_VERIFY_EXCEPT1(pTmpPin->ConnectedTo(&pConnectedPin), VFW_E_NOT_CONNECTED);
                     if (SUCCEEDED(hr))  //已经连接上了，不是想要的，释放掉
                     {
                         //SAFE_RELEASE(pConnectedPin);
@@ -921,7 +921,86 @@ namespace FTL
         return hr;
     }
 
-    //从Filter上抓图
+	HRESULT CFDirectShowUtility::GrapFirstFrameFromMediaFile(CString strFilePath, HBITMAP& hBmpSnap)
+	{
+		HRESULT hr = E_FAIL;
+		CComPtr<IGraphBuilder>	spGraphBuilder;
+		COM_VERIFY(spGraphBuilder.CoCreateInstance(CLSID_FilterGraph));
+		CComPtr<IBaseFilter>	spSource;
+		COM_VERIFY(spGraphBuilder->AddSourceFilter(strFilePath, NULL, &spSource));
+		if (SUCCEEDED(hr))
+		{
+			CComPtr<IBaseFilter>	spVideoRender;
+			COM_VERIFY(spVideoRender.CoCreateInstance(CLSID_VideoRendererDefault));
+			COM_VERIFY(spGraphBuilder->AddFilter(spVideoRender, L"VideoRender"));
+
+			CComPtr<IPin>	spSourceOutputPin;
+			CComPtr<IPin>	spVideoInputPin;
+			DX_VERIFY(FTL::CFDirectShowUtility::GetUnconnectedPin(spSource, PINDIR_OUTPUT, MEDIATYPE_NULL, &spSourceOutputPin));
+			DX_VERIFY(FTL::CFDirectShowUtility::GetUnconnectedPin(spVideoRender, PINDIR_INPUT, MEDIATYPE_NULL, &spVideoInputPin));
+			if (spSourceOutputPin && spVideoInputPin)
+			{
+				DX_VERIFY_EXCEPT1(spGraphBuilder->Connect(spSourceOutputPin, spVideoInputPin), VFW_S_PARTIAL_RENDER);
+				if (SUCCEEDED(hr))
+				{
+					CComQIPtr<IBasicVideo>	spBasicVideo(spGraphBuilder);
+					//DX_VERIFY(FTL::CFDirectShowUtility::SnapShotBitmap(spBasicVideo, L"C:\\Users\\user\\Videos\\test.BMP"));
+					DX_VERIFY(FTL::CFDirectShowUtility::SnapShotBitmap(spBasicVideo, hBmpSnap));
+				}
+			}
+		}
+
+		return hr;
+	}
+
+	//从Filter上抓图
+	HRESULT CFDirectShowUtility::SnapShotBitmap(IBasicVideo* pBasicVideo, HBITMAP& hBmpSnap)
+	{
+		CHECK_POINTER_READABLE_RETURN_VALUE_IF_FAIL(pBasicVideo,E_POINTER);
+		HRESULT hr = E_FAIL;
+		long bitmapSize = 0;
+		DX_VERIFY(pBasicVideo->GetCurrentImage(&bitmapSize,NULL));
+
+		if (SUCCEEDED(hr))
+		{
+			//分配内存
+			BYTE* pBuffer = new BYTE[bitmapSize];
+			if (pBuffer)
+			{
+				ZeroMemory(pBuffer, bitmapSize);
+
+				DX_VERIFY(pBasicVideo->GetCurrentImage(&bitmapSize,(long*)pBuffer));
+
+				BITMAPINFO *pbmi = (BITMAPINFO *)pBuffer;
+				BYTE *pBits = (BYTE *)pBuffer + sizeof(BITMAPINFOHEADER);
+
+				int nSizeRgbQuad = sizeof(pbmi->bmiColors);
+				int nSizeBitmapInfo = sizeof(BITMAPINFO);
+				int nSizeBmpInfoHeader = sizeof(BITMAPINFOHEADER);
+
+				void **ppvBits = (void **)&pBits;
+				//LPBITMAPINFOHEADER lpBitmapInfoHeader = (LPBITMAPINFOHEADER)pBuffer;
+				//hBmpSnap = ::CreateDIBSection(NULL, pbmi, DIB_RGB_COLORS, ppvBits, NULL, 0);
+				VOID* pOutBits = NULL;
+				hBmpSnap = ::CreateDIBSection(NULL, pbmi, DIB_RGB_COLORS, &pOutBits, NULL, 0);
+				DIBSECTION ds = {0};
+				::GetObject(hBmpSnap, sizeof(ds), &ds);
+
+				ZeroMemory(pOutBits, pbmi->bmiHeader.biSizeImage);
+				CopyMemory(pOutBits, ppvBits, pbmi->bmiHeader.biSizeImage);
+				API_ASSERT(NULL != hBmpSnap);
+
+				SAFE_DELETE_ARRAY(pBuffer);
+			}
+			else
+			{
+				hr = E_OUTOFMEMORY;
+			}
+		}
+		return hr;
+	}
+
+    
     HRESULT CFDirectShowUtility::SnapShotBitmap(IBasicVideo* pBasicVideo, LPCTSTR pszOutFile)
     {
         CHECK_POINTER_READABLE_RETURN_VALUE_IF_FAIL(pBasicVideo,E_POINTER);
@@ -937,11 +1016,12 @@ namespace FTL
             if (SUCCEEDED(hr))
             {
                 LPBITMAPINFOHEADER lpBitmapInfoHeader = (LPBITMAPINFOHEADER)pBuffer;
-                int nColors = 1 << lpBitmapInfoHeader->biBitCount;
-                if (nColors > 256 ) //如果颜色数大于256，就不需要调色板了
-                {
-                    nColors = 0;
-                }
+				int nColors = 0;
+				if (lpBitmapInfoHeader->biBitCount <= 8)
+				{
+					//如果颜色数大于256，就不需要调色板了
+					nColors = 1 << lpBitmapInfoHeader->biBitCount;
+				}
                 BITMAPFILEHEADER bmpFileHeader = {0};
                 bmpFileHeader.bfType = ((DWORD)('M' << 8) | 'B' ); //标记为 "BM"
                 bmpFileHeader.bfSize = bitmapSize + sizeof(bmpFileHeader);
@@ -953,8 +1033,9 @@ namespace FTL
                 if (INVALID_HANDLE_VALUE != hFile)
                 {
                     BOOL bRet = FALSE;
-                    API_VERIFY(::WriteFile(hFile,&bmpFileHeader,sizeof(BITMAPFILEHEADER),NULL,NULL));
-                    API_VERIFY(::WriteFile(hFile,pBuffer,bitmapSize,NULL,NULL));
+					DWORD dwWriteSize = 0;
+                    API_VERIFY(::WriteFile(hFile,&bmpFileHeader,sizeof(BITMAPFILEHEADER), &dwWriteSize, NULL));
+                    API_VERIFY(::WriteFile(hFile,pBuffer,bitmapSize, &dwWriteSize, NULL));
                     SAFE_CLOSE_HANDLE(hFile,INVALID_HANDLE_VALUE);
                     if (!bRet)
                     {

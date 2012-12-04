@@ -331,6 +331,66 @@ namespace FTL
         }
     };
 
+#if INCLUDE_DETECT_CONTROL
+	class CFVideoWindowDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IVideoWindow> spVideoWindow(pUnknown);
+			if (spVideoWindow)
+			{
+				CFStringFormater strInfo;
+				OAHWND hWndMessageDrain = NULL;
+				DX_VERIFY(spVideoWindow->get_MessageDrain(&hWndMessageDrain));
+				if (SUCCEEDED(hr))
+				{
+					//使得应用程序可以处理视频窗体内的鼠标、键盘事件的 消息通道(Graph会将相关消息传递给该窗体)
+					strInfo.AppendFormat(TEXT("CurMsgDrain=0x%x, "), hWndMessageDrain);
+				}
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+			}
+			return hr;
+		}
+	};
+
+	class CFBasicVideoDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IBasicVideo> spBasicVideo(pUnknown);
+			if (spBasicVideo)
+			{
+				CFStringFormater strInfo;
+				long nVideoWidth = 0, nVideoHeight = 0;
+				DX_VERIFY(spBasicVideo->GetVideoSize(&nVideoWidth, &nVideoHeight));
+				if (SUCCEEDED(hr))
+				{
+					//视频本身的尺寸大小
+					strInfo.AppendFormat(TEXT("VideoSize(%dx%d), "), nVideoWidth, nVideoHeight);
+				}
+				long nSourceLeft = 0, nSourceTop = 0, nSourceWidth = 0, nSourceHeight = 0;
+				DX_VERIFY(spBasicVideo->GetSourcePosition(&nSourceLeft, &nSourceTop, &nSourceWidth, &nSourceHeight));
+				if (SUCCEEDED(hr))
+				{
+
+				}
+
+				long nDestLeft = 0, nDestTop = 0, nDestWidth = 0, nDestHeight = 0;
+				DX_VERIFY(spBasicVideo->GetDestinationPosition(&nDestLeft, &nDestTop, &nDestWidth, &nDestHeight));
+				if (SUCCEEDED(hr))
+				{
+				}
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+			}
+			return hr;
+		}
+	};
+#endif //INCLUDE_DETECT_CONTROL
+
 #if INCLUDE_DETECT_MEDIA_FOUNDATION
 	class CFMFGetServiceDump
 	{
@@ -489,63 +549,6 @@ namespace FTL
 #endif //INCLUDE_DETECT_MEDIA_FOUNDATION
 
 #if INCLUDE_DETECT_STRMIF
-	class CFVideoWindowDump
-	{
-	public:
-		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
-		{
-			HRESULT hr = S_OK;
-			ATL::CComQIPtr<IVideoWindow> spVideoWindow(pUnknown);
-			if (spVideoWindow)
-			{
-				CFStringFormater strInfo;
-				OAHWND hWndMessageDrain = NULL;
-				DX_VERIFY(spVideoWindow->get_MessageDrain(&hWndMessageDrain));
-				if (SUCCEEDED(hr))
-				{
-					//使得应用程序可以处理视频窗体内的鼠标、键盘事件的 消息通道(Graph会将相关消息传递给该窗体)
-					strInfo.AppendFormat(TEXT("CurMsgDrain=0x%x, "), hWndMessageDrain);
-				}
-				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
-			}
-			return hr;
-		}
-	};
-
-	class CFBasicVideoDump
-	{
-	public:
-		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
-		{
-			HRESULT hr = S_OK;
-			ATL::CComQIPtr<IBasicVideo> spBasicVideo(pUnknown);
-			if (spBasicVideo)
-			{
-				CFStringFormater strInfo;
-				long nVideoWidth = 0, nVideoHeight = 0;
-				DX_VERIFY(spBasicVideo->GetVideoSize(&nVideoWidth, &nVideoHeight));
-				if (SUCCEEDED(hr))
-				{
-					//视频本身的尺寸大小
-					strInfo.AppendFormat(TEXT("VideoSize(%dx%d), "), nVideoWidth, nVideoHeight);
-				}
-				long nSourceLeft = 0, nSourceTop = 0, nSourceWidth = 0, nSourceHeight = 0;
-				DX_VERIFY(spBasicVideo->GetSourcePosition(&nSourceLeft, &nSourceTop, &nSourceWidth, &nSourceHeight));
-				if (SUCCEEDED(hr))
-				{
-					
-				}
-
-				long nDestLeft = 0, nDestTop = 0, nDestWidth = 0, nDestHeight = 0;
-				DX_VERIFY(spBasicVideo->GetDestinationPosition(&nDestLeft, &nDestTop, &nDestWidth, &nDestHeight));
-				if (SUCCEEDED(hr))
-				{
-				}
-				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
-			}
-			return hr;
-		}
-	};
 
     class CFMediaSeekingDump
     {
@@ -2229,6 +2232,7 @@ namespace FTL
 
 
 #if INCLUDE_DETECT_QEDIT
+			//注意：qedit.h 这个文件似乎已经被淘汰了， 它和 D3D7 以后的版本不兼容(因此在 SDK 7 以后看不到)
             DETECT_INTERFACE_ENTRY(IPropertySetter)
             DETECT_INTERFACE_ENTRY(IDxtCompositor)
             DETECT_INTERFACE_ENTRY(IDxtAlphaSetter)
