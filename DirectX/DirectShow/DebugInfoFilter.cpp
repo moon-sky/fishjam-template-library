@@ -138,6 +138,8 @@ unsigned int _AddFilterToGraphRotProc(LPVOID pParam)
 
 HRESULT STDMETHODCALLTYPE CDebugInfoFilter::JoinFilterGraph(__in_opt  IFilterGraph *pGraph,	__in_opt  LPCWSTR pName)
 {
+	CAutoLock cObjectLock(m_pLock);
+
 	HRESULT hrResult = __super::JoinFilterGraph(pGraph, pName);
 	if (SUCCEEDED(hrResult))
 	{
@@ -165,6 +167,7 @@ HRESULT STDMETHODCALLTYPE CDebugInfoFilter::JoinFilterGraph(__in_opt  IFilterGra
 
 HRESULT CDebugInfoFilter::CheckInputType(const CMediaType* mtIn)
 {
+	CAutoLock cObjectLock(m_pLock);
     //if (FALSE == IsStopped())
     //{
     //    //不允许动态改变媒体格式
@@ -202,6 +205,8 @@ HRESULT CDebugInfoFilter::CheckInputType(const CMediaType* mtIn)
 HRESULT CDebugInfoFilter::CompleteConnect(PIN_DIRECTION dir,IPin *pReceivePin)
 {
     HRESULT hr = E_FAIL;
+	CAutoLock cObjectLock(m_pLock);
+
     DX_VERIFY(__super::CompleteConnect(dir,pReceivePin));
     if (SUCCEEDED(hr) && dir == PINDIR_INPUT)// && m_pInput->IsConnected())
     {
@@ -215,7 +220,9 @@ HRESULT CDebugInfoFilter::CompleteConnect(PIN_DIRECTION dir,IPin *pReceivePin)
 HRESULT CDebugInfoFilter::Transform(IMediaSample *pSample)
 {
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pSample,E_POINTER);
-    CAutoLock cObjectLock(&m_csReceive);
+
+	CAutoLock cObjectLock(m_pLock);
+	CAutoLock cObjectLockReceive(&m_csReceive);
 
     HRESULT hr = S_OK;
 
@@ -280,6 +287,8 @@ HRESULT CDebugInfoFilter::Transform(IMediaSample *pSample)
 HRESULT CDebugInfoFilter::SetMediaType(PIN_DIRECTION direction,const CMediaType *pmt)
 {
     HRESULT hr = E_FAIL;
+	CAutoLock cObjectLock(m_pLock);
+
     DisplayType(TEXT("SetMediaType"),pmt);
     DX_VERIFY(__super::SetMediaType(direction,pmt));
     return hr;
@@ -288,6 +297,7 @@ HRESULT CDebugInfoFilter::SetMediaType(PIN_DIRECTION direction,const CMediaType 
 STDMETHODIMP CDebugInfoFilter::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
 {
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppv,E_POINTER);
+	CAutoLock cObjectLock(m_pLock);
 
     HRESULT hr = E_FAIL;
     if (IID_IFilterDebugInfo == riid)
@@ -321,7 +331,9 @@ HRESULT CDebugInfoFilter::StartStreaming()
 {
     HRESULT hr = S_OK;
     DX_VERIFY(CTransInPlaceFilter::StartStreaming());
-    CAutoLock cObjectLock(&m_DebugInfoLock);
+	CAutoLock cObjectLock(m_pLock);
+    //CAutoLock cObjectLock(&m_DebugInfoLock);
+
 	m_ElapseCounter.Start();
 	if (m_DebugInfoParam.m_bDumpSample && m_DebugInfoParam.m_bufDumpFilePath[0] != TEXT('\0'))
     {
@@ -338,7 +350,8 @@ HRESULT CDebugInfoFilter::StartStreaming()
 HRESULT CDebugInfoFilter::StopStreaming()
 {
     HRESULT hr = S_OK;
-    CAutoLock cObjectLock(&m_DebugInfoLock);
+	CAutoLock cObjectLock(m_pLock);
+	//CAutoLock cObjectLock(&m_DebugInfoLock);
 	m_ElapseCounter.Stop();
 
     if (m_StorageFile.IsOpen())
@@ -391,7 +404,8 @@ HRESULT CDebugInfoFilter::StopStreaming()
 //ISpecifyPropertyPages
 STDMETHODIMP CDebugInfoFilter::GetPages(CAUUID *pPages)
 {
-    pPages->cElems = 2;  
+	CAutoLock cObjectLock(m_pLock);
+	pPages->cElems = 2;  
     pPages->pElems = (GUID *) CoTaskMemAlloc(sizeof(GUID) * pPages->cElems);
 	if (NULL == pPages->pElems)
 	{
@@ -407,7 +421,8 @@ STDMETHODIMP CDebugInfoFilter::GetConnectedPin(BOOL bIsInput, IPin** ppPin)
 {
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppPin,E_POINTER);
     
-    CAutoLock   locker(&m_DebugInfoLock);
+	CAutoLock cObjectLock(m_pLock);
+	//CAutoLock cObjectLock(&m_DebugInfoLock);
 
     FTLASSERT(m_pInput);
     FTLASSERT(m_pOutput);
@@ -436,6 +451,7 @@ STDMETHODIMP CDebugInfoFilter::GetConnectedPin(BOOL bIsInput, IPin** ppPin)
 
 STDMETHODIMP CDebugInfoFilter::SetAcceptMediaType(AM_MEDIA_TYPE* pMediaType)
 {
+	CAutoLock cObjectLock(m_pLock);
 	HRESULT hr = S_OK;
 
 	CMediaType* pNewAcceptMediaType = new CMediaType(*pMediaType);
@@ -457,7 +473,8 @@ STDMETHODIMP CDebugInfoFilter::GetFilterDebugParam(/* [out][in] */FilterDebugPar
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilterDebugParam,E_POINTER);
     HRESULT hr = S_OK;
 
-    CAutoLock   locker(&m_DebugInfoLock);
+	CAutoLock cObjectLock(m_pLock);
+	//CAutoLock cObjectLock(&m_DebugInfoLock);
 
     SAFE_FREE_BSTR(pFilterDebugParam->pstrDumpFilePath);
 
@@ -477,7 +494,8 @@ STDMETHODIMP CDebugInfoFilter::SetFilterDebugParam(/* [in] */FilterDebugParam* p
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilterDebugParam,E_POINTER);
     HRESULT hr = S_OK;
 
-    CAutoLock lock(&m_DebugInfoLock);
+	CAutoLock cObjectLock(m_pLock);
+	//CAutoLock cObjectLock(&m_DebugInfoLock);
 
     m_DebugInfoParam.m_bDumpSample = pFilterDebugParam->bDumpSample;
 
@@ -496,7 +514,8 @@ STDMETHODIMP CDebugInfoFilter::SetFilterDebugParam(/* [in] */FilterDebugParam* p
 STDMETHODIMP CDebugInfoFilter::GetFilterRunningInfo(/*[in, out]*/ FilterRunningInfo* pFilterRunningInfo)
 {
 	CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilterRunningInfo, E_POINTER);
-	CAutoLock lock(&m_DebugInfoLock);
+	CAutoLock cObjectLock(m_pLock);
+	//CAutoLock cObjectLock(&m_DebugInfoLock);
 
 	pFilterRunningInfo->llElapse = m_ElapseCounter.GetElapseTime();
 	pFilterRunningInfo->dwSampleCount = m_dwSampleCount;
@@ -506,7 +525,10 @@ STDMETHODIMP CDebugInfoFilter::GetFilterRunningInfo(/*[in, out]*/ FilterRunningI
 STDMETHODIMP CDebugInfoFilter::SetFilterRunningInfo(/*[in]*/ FilterRunningInfo* pFilterRunningInfo)
 {
 	CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFilterRunningInfo, E_POINTER);
-	CAutoLock lock(&m_DebugInfoLock);
+
+	CAutoLock cObjectLock(m_pLock);
+	//CAutoLock cObjectLock(&m_DebugInfoLock);
+
 	m_dwSampleCount = pFilterRunningInfo->dwSampleCount;
 	m_ElapseCounter.Reset();
 
@@ -517,6 +539,7 @@ STDMETHODIMP CDebugInfoFilter::SetFilterRunningInfo(/*[in]*/ FilterRunningInfo* 
 HRESULT CDebugInfoFilter::WriteToStream(IStream *pStream)
 {
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pStream,E_POINTER);
+	CAutoLock cObjectLock(m_pLock);
 
     HRESULT hr = E_FAIL;
 	DX_VERIFY(pStream->Write(&m_DebugInfoParam, sizeof(m_DebugInfoParam), NULL));
@@ -532,6 +555,7 @@ HRESULT CDebugInfoFilter::WriteToStream(IStream *pStream)
 HRESULT CDebugInfoFilter::ReadFromStream(IStream *pStream)
 {
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pStream,E_POINTER);
+	CAutoLock cObjectLock(m_pLock);
 
     HRESULT hr = E_FAIL;
 	DX_VERIFY(pStream->Read(&m_DebugInfoParam, sizeof(m_DebugInfoParam), NULL));
@@ -546,6 +570,7 @@ HRESULT CDebugInfoFilter::ReadFromStream(IStream *pStream)
 
 int CDebugInfoFilter::SizeMax()
 {
+	CAutoLock cObjectLock(m_pLock);
 	int sizeMax = sizeof(m_DebugInfoParam);
     //int sizeMax = sizeof(m_nInputPinTypeIndex) + sizeof(m_nOutputPinTypeIndex)
     //    + sizeof(m_bDumpSample) + sizeof(m_dwDumpSampleStartIndex) + sizeof(m_dwDumpSampleLimitCount) 
@@ -558,7 +583,8 @@ int CDebugInfoFilter::SizeMax()
 STDMETHODIMP CDebugInfoFilter::GetClassID(CLSID *pClsid)
 {
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(pClsid,E_POINTER);
-    *pClsid = CLSID_DebugInfoFilter;
+	CAutoLock cObjectLock(m_pLock);
+	*pClsid = CLSID_DebugInfoFilter;
     return NOERROR;
 }
 

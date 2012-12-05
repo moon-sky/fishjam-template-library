@@ -10,6 +10,7 @@
 
 //http://www.codeproject.com/KB/GDI/anieffect.aspx
 //字体模拟 http://html.nhndesign.com/markup_tools/preview
+//调试工具：GdiWatch, http://www.189works.com/article-9611-1.html
 
 /*
 DOS等传统字符界面用点阵模板显示文字
@@ -638,6 +639,42 @@ namespace FTL
 		FTLINLINE static BOOL SaveBitmapToFile(HBITMAP hBmp, LPCTSTR pszFilePath);
 		FTLINLINE static BOOL SaveDCImageToFile(HDC hdc, LPCTSTR pszFilePath);
     };
+
+	//根据指定的方式，计算一个RECT内(居中)包含一个SIZE时的RECT位置，通常用于窗体内居中显示图片或视频
+	FTLEXPORT class CFCalcRect
+	{
+	public:
+		enum ZoomMode
+		{
+			modeAutoFitIfBigSize,		
+			modeAutoFit,					//根据高宽比例自动内填充矩形
+			//modeWidthFit,
+			//modeHeightFit,
+			//modeOriginal,
+			//E_ZOOM_AUTO_FIT_IF_BIGSIZE,
+			//E_ZOOM_AUTO_FIT,
+			//E_ZOOM_WIDTH_FIT,
+			//E_ZOOM_HEIGHT_FIT,
+			//E_ZOOM_ORIGINAL,
+			//E_ZOOM_NORMAL
+		};
+		static 	CFCalcRect*	GetCalcRectObject( ZoomMode nZoomMode );
+	public:
+		//只计算居中对其时的值，非居中(如左上角对其)的方式很简单
+		virtual CRect GetFitRect( const CRect& rcMargin, const CSize& szContent ) = 0; 
+	};
+
+	FTLEXPORT class CFAutoFitIfBigSizeCalcRect : public CFCalcRect
+	{
+	public:
+		FTLINLINE virtual CRect GetFitRect( const CRect& rcMargin, const CSize& szContent );
+	};
+
+	FTLEXPORT class CFAutoFitCalcRect : public CFCalcRect
+	{
+	public:
+		FTLINLINE virtual CRect GetFitRect( const CRect& rcMargin, const CSize& szContent );
+	};
 
     FTLEXPORT class CFCanvas
     {

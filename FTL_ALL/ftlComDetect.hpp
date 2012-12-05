@@ -343,7 +343,7 @@ namespace FTL
 			{
 				CFStringFormater strInfo;
 				OAHWND hWndMessageDrain = NULL;
-				DX_VERIFY(spVideoWindow->get_MessageDrain(&hWndMessageDrain));
+				COM_VERIFY(spVideoWindow->get_MessageDrain(&hWndMessageDrain));
 				if (SUCCEEDED(hr))
 				{
 					//使得应用程序可以处理视频窗体内的鼠标、键盘事件的 消息通道(Graph会将相关消息传递给该窗体)
@@ -354,7 +354,7 @@ namespace FTL
 			return hr;
 		}
 	};
-
+	
 	class CFBasicVideoDump
 	{
 	public:
@@ -366,21 +366,21 @@ namespace FTL
 			{
 				CFStringFormater strInfo;
 				long nVideoWidth = 0, nVideoHeight = 0;
-				DX_VERIFY(spBasicVideo->GetVideoSize(&nVideoWidth, &nVideoHeight));
+				COM_VERIFY(spBasicVideo->GetVideoSize(&nVideoWidth, &nVideoHeight));
 				if (SUCCEEDED(hr))
 				{
 					//视频本身的尺寸大小
 					strInfo.AppendFormat(TEXT("VideoSize(%dx%d), "), nVideoWidth, nVideoHeight);
 				}
 				long nSourceLeft = 0, nSourceTop = 0, nSourceWidth = 0, nSourceHeight = 0;
-				DX_VERIFY(spBasicVideo->GetSourcePosition(&nSourceLeft, &nSourceTop, &nSourceWidth, &nSourceHeight));
+				COM_VERIFY(spBasicVideo->GetSourcePosition(&nSourceLeft, &nSourceTop, &nSourceWidth, &nSourceHeight));
 				if (SUCCEEDED(hr))
 				{
 
 				}
 
 				long nDestLeft = 0, nDestTop = 0, nDestWidth = 0, nDestHeight = 0;
-				DX_VERIFY(spBasicVideo->GetDestinationPosition(&nDestLeft, &nDestTop, &nDestWidth, &nDestHeight));
+				COM_VERIFY(spBasicVideo->GetDestinationPosition(&nDestLeft, &nDestTop, &nDestWidth, &nDestHeight));
 				if (SUCCEEDED(hr))
 				{
 				}
@@ -389,6 +389,7 @@ namespace FTL
 			return hr;
 		}
 	};
+
 #endif //INCLUDE_DETECT_CONTROL
 
 #if INCLUDE_DETECT_MEDIA_FOUNDATION
@@ -549,7 +550,6 @@ namespace FTL
 #endif //INCLUDE_DETECT_MEDIA_FOUNDATION
 
 #if INCLUDE_DETECT_STRMIF
-
     class CFMediaSeekingDump
     {
     public:
@@ -597,6 +597,7 @@ namespace FTL
 
 	class CFVMRWindowlessControlDump
 	{
+	public:
 		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
 		{
 			HRESULT hr = S_OK;
@@ -606,7 +607,7 @@ namespace FTL
 				CFStringFormater strInfo;
 				RECT srcRect = {0};
 				RECT dstRect = {0};
-				DX_VERIFY(spVMRWindowlessControl->GetVideoPosition(&srcRect, &dstRect));
+				COM_VERIFY(spVMRWindowlessControl->GetVideoPosition(&srcRect, &dstRect));
 				if (SUCCEEDED(hr))
 				{
 					//VMR从Src把图像按Dest的尺寸匹配后显示出来
@@ -617,7 +618,7 @@ namespace FTL
 
 				LONG nNativeVideoWidth = 0, nNativeVideoHeight = 0;
 				LONG nArWidth = 0, nArHeight = 0;
-				DX_VERIFY(spVMRWindowlessControl->GetNativeVideoSize(&nNativeVideoWidth, &nNativeVideoHeight, 
+				COM_VERIFY(spVMRWindowlessControl->GetNativeVideoSize(&nNativeVideoWidth, &nNativeVideoHeight, 
 					&nArWidth, &nArHeight));
 				if (SUCCEEDED(hr))
 				{
@@ -647,21 +648,22 @@ namespace FTL
 				//0x2(VMRMode_Windowless)
 				//0x4(VMRMode_Renderless)
 				//0x7(VMRMode_Mask)
-				DX_VERIFY(spVMRFilterConfig->GetRenderingMode(&dwRenderingMode));
+				COM_VERIFY(spVMRFilterConfig->GetRenderingMode(&dwRenderingMode));
 				if (SUCCEEDED(hr))
 				{
 					strInfo.AppendFormat(TEXT("RenderingMode=%d, "), dwRenderingMode);
 				}
 
 				DWORD dwMaxStreams = 0;
-				DX_VERIFY(spVMRFilterConfig->GetNumberOfStreams(&dwMaxStreams));
+				//VFW_E_VMR_NOT_IN_MIXER_MODE
+				COM_VERIFY(spVMRFilterConfig->GetNumberOfStreams(&dwMaxStreams));
 				if (SUCCEEDED(hr))
 				{
 					strInfo.AppendFormat(TEXT("NumberOfStreams=%d, "), dwMaxStreams);
 				}
 
 				DWORD dwRenderFlags = 0;
-				DX_VERIFY(spVMRFilterConfig->GetRenderingPrefs(&dwRenderFlags));
+				COM_VERIFY(spVMRFilterConfig->GetRenderingPrefs(&dwRenderFlags));
 				if (SUCCEEDED(hr))
 				{
 					strInfo.AppendFormat(TEXT("RenderingPrefs=%d, "), dwRenderFlags);
@@ -684,7 +686,7 @@ namespace FTL
 				DWORD dwARMode = 0;
 				//0(VMR_ARMODE_NONE) -- 不保持高宽比，播放时会填充
 				//1(VMR_ARMODE_LETTER_BOX) -- 保持高宽比
-				DX_VERIFY(spVMRAspectRatioControl->GetAspectRatioMode(&dwARMode));
+				COM_VERIFY(spVMRAspectRatioControl->GetAspectRatioMode(&dwARMode));
 				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t IVMRAspectRatioControl, AspectRatioMode =%d\n"),
 					dwARMode);
 			}
@@ -2212,21 +2214,23 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY(IPropertyStoreCapabilities)
 			DETECT_INTERFACE_ENTRY(IPropertyStoreCache)
 			DETECT_INTERFACE_ENTRY(IPropertyEnumType)
-			DETECT_INTERFACE_ENTRY(IPropertyEnumType2)
 			DETECT_INTERFACE_ENTRY(IPropertyEnumTypeList)
 			DETECT_INTERFACE_ENTRY(IPropertyDescription)
-			DETECT_INTERFACE_ENTRY(IPropertyDescription2)
 			DETECT_INTERFACE_ENTRY(IPropertyDescriptionAliasInfo)
 			DETECT_INTERFACE_ENTRY(IPropertyDescriptionSearchInfo)
-			DETECT_INTERFACE_ENTRY(IPropertyDescriptionRelatedPropertyInfo)
 			DETECT_INTERFACE_ENTRY(IPropertySystem)
 			DETECT_INTERFACE_ENTRY(IPropertyDescriptionList)
 			DETECT_INTERFACE_ENTRY(IPropertyStoreFactory)
 			DETECT_INTERFACE_ENTRY(IDelayedPropertyStoreFactory)
 			DETECT_INTERFACE_ENTRY(IPersistSerializedPropStorage)
-			DETECT_INTERFACE_ENTRY(IPersistSerializedPropStorage2)
 			DETECT_INTERFACE_ENTRY(IPropertySystemChangeNotify)
 			DETECT_INTERFACE_ENTRY(ICreateObject)
+#  ifdef __IPropertyEnumType2_FWD_DEFINED__
+            DETECT_INTERFACE_ENTRY(IPropertyEnumType2)
+            DETECT_INTERFACE_ENTRY(IPropertyDescription2)
+            DETECT_INTERFACE_ENTRY(IPropertyDescriptionRelatedPropertyInfo)
+            DETECT_INTERFACE_ENTRY(IPersistSerializedPropStorage2)
+#  endif //__IPropertyEnumType2_FWD_DEFINED__
 #endif //INCLUDE_DETECT_PROPSYS
 
 
@@ -2648,7 +2652,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IVMRImagePresenterExclModeConfig)
             DETECT_INTERFACE_ENTRY(IVPManager)
 
-#if 1
+#  if 1
 			//amvideo.h
 			//need include <uuids.h>
 			DETECT_INTERFACE_ENTRY_IID(IDirectDrawVideo, IID_IDirectDrawVideo)
@@ -2656,7 +2660,7 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideo, IID_IFullScreenVideo)
 			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideoEx, IID_IFullScreenVideoEx)
 			DETECT_INTERFACE_ENTRY_IID(IBaseVideoMixer, IID_IBaseVideoMixer)
-#endif 
+#  endif 
 #endif //INCLUDE_DETECT_STRMIF
 
 #if INCLUDE_DETECT_URLMON
@@ -2695,6 +2699,11 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IWrappedProtocol)
 #endif //INCLUDE_DETECT_URLMON
 
+#if INCLUDE_DETECT_VIDEOACC
+			DETECT_INTERFACE_ENTRY(IAMVideoAcceleratorNotify)
+			DETECT_INTERFACE_ENTRY(IAMVideoAccelerator)
+#endif //INCLUDE_DETECT_VIDEOACC
+ 
 #if INCLUDE_DETECT_VFW
 			DETECT_INTERFACE_ENTRY_IID(IAVIFile, IID_IAVIFile)
 			DETECT_INTERFACE_ENTRY_IID(IAVIStream, IID_IAVIStream)
@@ -2993,6 +3002,7 @@ namespace FTL
 				DETECT_INTERFACE_ENTRY(IWMInterlaceProps)
 				DETECT_INTERFACE_ENTRY(IWMFrameInterpProps)
 				DETECT_INTERFACE_ENTRY(IWMColorConvProps)
+# ifdef __ITocEntry_FWD_DEFINED__
 				DETECT_INTERFACE_ENTRY(ITocEntry)
 				DETECT_INTERFACE_ENTRY(ITocEntryList)
 				DETECT_INTERFACE_ENTRY(IToc)
@@ -3001,7 +3011,7 @@ namespace FTL
 				DETECT_INTERFACE_ENTRY(IFileIo)
 				DETECT_INTERFACE_ENTRY(IFileClient)
 				DETECT_INTERFACE_ENTRY(IClusterDetector)
-			//}
+# endif //__ITocEntry_FWD_DEFINED__
 #endif //INCLUDE_DETECT_WM_CODEC_DSP
 
 #if INCLUDE_DETECT_WMSDKIDL

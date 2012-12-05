@@ -257,7 +257,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Oxs"
 				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="DBG=0;INC_OLE2;STRICT;WIN32;_WIN32;_MT;_DLL;_X86_=1"
+				PreprocessorDefinitions="DBG=0;INC_OLE2;STRICT;WIN32;_WIN32;_X86_=1;FTL_DEBUG"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"

@@ -921,13 +921,13 @@ namespace FTL
         return hr;
     }
 
-	HRESULT CFDirectShowUtility::GrapFirstFrameFromMediaFile(CString strFilePath, HBITMAP& hBmpSnap)
+	HRESULT CFDirectShowUtility::GrapFrameFromMediaFile(LPCTSTR pszFilePath, HBITMAP& hBmpSnap, LONGLONG nUnits /* = 0 */)
 	{
 		HRESULT hr = E_FAIL;
 		CComPtr<IGraphBuilder>	spGraphBuilder;
 		COM_VERIFY(spGraphBuilder.CoCreateInstance(CLSID_FilterGraph));
 		CComPtr<IBaseFilter>	spSource;
-		COM_VERIFY(spGraphBuilder->AddSourceFilter(strFilePath, NULL, &spSource));
+		COM_VERIFY(spGraphBuilder->AddSourceFilter(CT2W(pszFilePath), NULL, &spSource));
 		if (SUCCEEDED(hr))
 		{
 			CComPtr<IBaseFilter>	spVideoRender;
@@ -943,9 +943,19 @@ namespace FTL
 				DX_VERIFY_EXCEPT1(spGraphBuilder->Connect(spSourceOutputPin, spVideoInputPin), VFW_S_PARTIAL_RENDER);
 				if (SUCCEEDED(hr))
 				{
-					CComQIPtr<IBasicVideo>	spBasicVideo(spGraphBuilder);
-					//DX_VERIFY(FTL::CFDirectShowUtility::SnapShotBitmap(spBasicVideo, L"C:\\Users\\user\\Videos\\test.BMP"));
-					DX_VERIFY(FTL::CFDirectShowUtility::SnapShotBitmap(spBasicVideo, hBmpSnap));
+					if (nUnits!=0)
+					{
+						CComQIPtr<IMediaSeeking> spMediaSeeing(spGraphBuilder);
+						if (spMediaSeeing)
+						{
+							//spMediaSeeing->SetPositions()
+						}
+					}
+					if (SUCCEEDED(hr))
+					{
+						CComQIPtr<IBasicVideo>	spBasicVideo(spGraphBuilder);
+						DX_VERIFY(FTL::CFDirectShowUtility::SnapShotBitmap(spBasicVideo, hBmpSnap));
+					}
 				}
 			}
 		}
@@ -960,36 +970,25 @@ namespace FTL
 		HRESULT hr = E_FAIL;
 		long bitmapSize = 0;
 		DX_VERIFY(pBasicVideo->GetCurrentImage(&bitmapSize,NULL));
-
 		if (SUCCEEDED(hr))
 		{
 			//分配内存
 			BYTE* pBuffer = new BYTE[bitmapSize];
 			if (pBuffer)
 			{
-				ZeroMemory(pBuffer, bitmapSize);
-
 				DX_VERIFY(pBasicVideo->GetCurrentImage(&bitmapSize,(long*)pBuffer));
-
 				BITMAPINFO *pbmi = (BITMAPINFO *)pBuffer;
+				//LPBITMAPINFOHEADER lpBitmapInfoHeader = (LPBITMAPINFOHEADER)pBuffer;
 				BYTE *pBits = (BYTE *)pBuffer + sizeof(BITMAPINFOHEADER);
 
-				int nSizeRgbQuad = sizeof(pbmi->bmiColors);
-				int nSizeBitmapInfo = sizeof(BITMAPINFO);
-				int nSizeBmpInfoHeader = sizeof(BITMAPINFOHEADER);
-
-				void **ppvBits = (void **)&pBits;
-				//LPBITMAPINFOHEADER lpBitmapInfoHeader = (LPBITMAPINFOHEADER)pBuffer;
-				//hBmpSnap = ::CreateDIBSection(NULL, pbmi, DIB_RGB_COLORS, ppvBits, NULL, 0);
-				VOID* pOutBits = NULL;
-				hBmpSnap = ::CreateDIBSection(NULL, pbmi, DIB_RGB_COLORS, &pOutBits, NULL, 0);
-				DIBSECTION ds = {0};
-				::GetObject(hBmpSnap, sizeof(ds), &ds);
-
-				ZeroMemory(pOutBits, pbmi->bmiHeader.biSizeImage);
-				CopyMemory(pOutBits, ppvBits, pbmi->bmiHeader.biSizeImage);
+				//截图是32位颜色的,不包含调色板
+				void *pOutBuf = NULL;
+				hBmpSnap = ::CreateDIBSection(NULL, pbmi, DIB_RGB_COLORS, &pOutBuf, NULL, 0);
+				if (pOutBuf)
+				{
+					CopyMemory(pOutBuf, pBits, bitmapSize);
+				}
 				API_ASSERT(NULL != hBmpSnap);
-
 				SAFE_DELETE_ARRAY(pBuffer);
 			}
 			else

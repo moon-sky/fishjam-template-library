@@ -1180,17 +1180,130 @@ namespace FTL
 
 	BOOL CFGdiUtil::SaveBitmapToFile(HBITMAP hBmp, LPCTSTR pszFilePath)
 	{
+		//BOOL bRet = FALSE;
+		//HRESULT hr = E_FAIL;
+		//
+		//CImage img;
+		//img.Attach(hBmp);//, DIBOR_DEFAULT);
+		//COM_VERIFY(img.Save(pszFilePath, GUID_NULL));
+		//if (SUCCEEDED(hr))
+		//{
+		//	bRet = TRUE;
+		//}
+		//img.Detach();
+		//return bRet;
+
 		BOOL bRet = FALSE;
-		HRESULT hr = E_FAIL;
+		HDC            hDC;        //设备描述表
+		int            iBits;      //当前显示分辨率下每个像素所占字节数
+		WORD            wBitCount; //位图中每个像素所占字节数
+			
 		
-		CImage img;
-		img.Attach(hBmp);//, DIBOR_DEFAULT);
-		COM_VERIFY(img.Save(pszFilePath, GUID_NULL));
-		if (SUCCEEDED(hr))
-		{
-			bRet = TRUE;
+		DWORD           dwPaletteSize=0,	//定义调色板大小
+			dwBmBitsSize,					//位图中像素字节大小
+			dwDIBSize, dwWritten;			//位图文件大小 ， 写入文件字节数
+		BITMAP          Bitmap = {0};
+		//位图属性结构
+		BITMAPFILEHEADER   bmfHdr = {0};
+		//位图文件头结构
+		BITMAPINFOHEADER   bi = {0};            
+		//位图信息头结构 
+		LPBITMAPINFOHEADER lpbi = NULL;       
+		//指向位图信息头结构
+		HANDLE          fh = NULL, hDib = NULL;
+		HPALETTE        hPal,hOldPal=NULL;
+		//定义文件，分配内存句柄，调色板句柄
+
+		//计算位图文件每个像素所占字节数
+		hDC = CreateDC(_T("DISPLAY"),NULL,NULL,NULL);
+		iBits = GetDeviceCaps(hDC, BITSPIXEL) * 
+			GetDeviceCaps(hDC, PLANES);
+		API_VERIFY(DeleteDC(hDC));
+		if (iBits <= 1)
+			wBitCount = 1;
+		else if (iBits <= 4)
+			wBitCount = 4;
+		else if (iBits <= 8)
+			wBitCount = 8;
+		else if (iBits <= 24)
+			wBitCount = 24;
+		else {
+			wBitCount = 32;
 		}
-		img.Detach();
+		//计算调色板大小
+		if (wBitCount <= 8)
+		{
+			dwPaletteSize = (1 <<  wBitCount) *	sizeof(RGBQUAD);
+		}
+		//设置位图信息头结构
+		GetObject(hBmp, sizeof(BITMAP), (LPSTR)&Bitmap);
+		bi.biSize            = sizeof(BITMAPINFOHEADER);
+		bi.biWidth           = Bitmap.bmWidth;
+		bi.biHeight          = Bitmap.bmHeight;
+		bi.biPlanes          = 1;
+		bi.biBitCount         = wBitCount;
+		bi.biCompression      = BI_RGB;
+		bi.biSizeImage        = 0;
+		bi.biXPelsPerMeter     = 0;
+		bi.biYPelsPerMeter     = 0;
+		bi.biClrUsed         = 0;
+		bi.biClrImportant      = 0;
+
+		dwBmBitsSize = ((Bitmap.bmWidth *
+			wBitCount+31)/32)* 4
+			*Bitmap.bmHeight ;
+		//为位图内容分配内存
+		hDib  = GlobalAlloc(GHND,dwBmBitsSize+
+			dwPaletteSize+sizeof(BITMAPINFOHEADER));
+		lpbi = (LPBITMAPINFOHEADER)GlobalLock(hDib);
+		*lpbi = bi;
+		// 处理调色板   
+		hPal = (HPALETTE)GetStockObject(DEFAULT_PALETTE);
+		if (hPal)
+		{
+			hDC  = GetDC(NULL);
+			hOldPal = SelectPalette(hDC, hPal, FALSE);
+			RealizePalette(hDC);
+		}
+		// 获取该调色板下新的像素值
+		GetDIBits(hDC, hBmp, 0, (UINT) Bitmap.bmHeight,
+			(LPSTR)lpbi + sizeof(BITMAPINFOHEADER)
+			+dwPaletteSize,(LPBITMAPINFO)lpbi, DIB_RGB_COLORS);
+		//恢复调色板   
+		if (hOldPal)
+		{
+			SelectPalette(hDC, hOldPal, TRUE);
+			RealizePalette(hDC);
+			ReleaseDC(NULL, hDC);
+		}
+		//创建位图文件    
+		fh = CreateFile(pszFilePath, GENERIC_WRITE, 
+			0, NULL, CREATE_ALWAYS,
+			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+		if (fh == INVALID_HANDLE_VALUE)
+			return FALSE;
+		// 设置位图文件头
+		bmfHdr.bfType = 0x4D42;  // "BM"
+		dwDIBSize    = sizeof(BITMAPFILEHEADER) 
+			+ sizeof(BITMAPINFOHEADER)
+			+ dwPaletteSize + dwBmBitsSize;  
+		bmfHdr.bfSize = dwDIBSize;
+		bmfHdr.bfReserved1 = 0;
+		bmfHdr.bfReserved2 = 0;
+		bmfHdr.bfOffBits = (DWORD)sizeof
+			(BITMAPFILEHEADER) 
+			+ (DWORD)sizeof(BITMAPINFOHEADER)
+			+ dwPaletteSize;
+		// 写入位图文件头
+		API_VERIFY(WriteFile(fh, (LPSTR)&bmfHdr, sizeof
+			(BITMAPFILEHEADER), &dwWritten, NULL));
+		// 写入位图文件其余内容
+		API_VERIFY(WriteFile(fh, (LPSTR)lpbi, dwDIBSize, 
+			&dwWritten, NULL));
+		//清除   
+		GlobalUnlock(hDib);
+		GlobalFree(hDib);
+		CloseHandle(fh);
 		return bRet;
 	}
 	BOOL CFGdiUtil::SaveDCImageToFile(HDC hdc, LPCTSTR pszFilePath)
@@ -1232,6 +1345,90 @@ namespace FTL
         }
         return m_pszProperty;
     }
+
+	//////////////////////////////////////////////////////////////////////////
+	CFCalcRect* CFCalcRect::GetCalcRectObject( ZoomMode nZoomMode )
+	{
+		CFCalcRect* pCalcRectObject = NULL;
+		switch (nZoomMode)
+		{
+		case modeAutoFitIfBigSize:
+			pCalcRectObject = new CFAutoFitIfBigSizeCalcRect();
+			break;
+		case modeAutoFit:
+			pCalcRectObject = new CFAutoFitCalcRect();
+			break;
+		default:
+			FTLASSERT(FALSE);
+			break;
+		}
+		return pCalcRectObject;
+	}
+
+	CRect CFAutoFitCalcRect::GetFitRect( const CRect& rcMargin, const CSize& szContent )
+	{
+		CRect rcResult = rcMargin;
+
+		INT nWidthAllowed = rcMargin.Width();
+		INT nHeightAllowed = rcMargin.Height();
+		INT nWidthFactor = szContent.cx;
+		INT nHeightFactor = szContent.cy;
+
+		if ( MulDiv( nWidthAllowed, nHeightFactor, nWidthFactor ) < nHeightAllowed )
+		{
+			INT nHeight = MulDiv( nWidthAllowed, nHeightFactor, nWidthFactor );
+			INT nDiff = ( nHeightAllowed - nHeight ) / 2;
+			rcResult.top = rcResult.top + nDiff;
+			rcResult.bottom = rcResult.bottom - nDiff;
+		}
+		else
+		{
+			INT nWidth = MulDiv( nHeightAllowed, nWidthFactor, nHeightFactor );
+			INT nDiff = ( nWidthAllowed - nWidth ) / 2;
+			rcResult.left = rcResult.left + nDiff;
+			rcResult.right = rcResult.right - nDiff;
+		}
+		return rcResult;
+	}
+
+	CRect CFAutoFitIfBigSizeCalcRect::GetFitRect( const CRect& rcMargin, const CSize& szContent )
+	{
+		CRect rcResult = rcMargin;
+		//INT nWidthAllowed, nHeightAllowed, nWidthFactor, nHeightFactor;
+		//INT nWidth, nHeight, nDiff;
+
+		INT nWidthAllowed = rcMargin.Width();
+		INT nHeightAllowed = rcMargin.Height();
+		INT nWidthFactor = szContent.cx;
+		INT nHeightFactor = szContent.cy;
+
+		if ( ( nWidthAllowed >= nWidthFactor ) && ( nHeightAllowed >= nHeightFactor ) )
+		{
+			rcResult.left = rcMargin.left + ( rcMargin.Width() - szContent.cx ) / 2;
+			rcResult.top = rcMargin.top + (rcMargin.Height() - szContent.cy ) / 2;
+			rcResult.right = rcResult.left + szContent.cx;
+			rcResult.bottom = rcResult.top + szContent.cy;
+		}
+		else
+		{
+			if ( MulDiv( nWidthAllowed, nHeightFactor, nWidthFactor ) < nHeightAllowed )
+			{
+				INT nHeight = MulDiv( nWidthAllowed, nHeightFactor, nWidthFactor );
+				INT nDiff = ( nHeightAllowed - nHeight ) / 2;
+				rcResult.top = rcResult.top + nDiff;
+				rcResult.bottom = rcResult.bottom - nDiff;
+			}
+			else
+			{
+				INT nWidth = MulDiv( nHeightAllowed, nWidthFactor, nHeightFactor );
+				INT nDiff = ( nWidthAllowed - nWidth ) / 2;
+				rcResult.left = rcResult.left + nDiff;
+				rcResult.right = rcResult.right - nDiff;
+			}
+		}
+		return rcResult;
+	}
+	//////////////////////////////////////////////////////////////////////////
 
     CFCanvas::CFCanvas()
     {

@@ -185,6 +185,10 @@ namespace FTL
 # define INCLUDE_DETECT_URLMON      1
 #endif
 
+#ifndef INCLUDE_DETECT_VIDEOACC
+# define INCLUDE_DETECT_VIDEOACC	0
+#endif 
+
 #ifndef INCLUDE_DETECT_VFW
 #    define INCLUDE_DETECT_VFW     1
 #endif 
@@ -329,6 +333,10 @@ namespace FTL
 
 #if INCLUDE_DETECT_URLMON
 #  include <UrlMon.h>
+#endif 
+
+#if INCLUDE_DETECT_VIDEOACC
+#  include <videoacc.h>
 #endif 
 
 #if INCLUDE_DETECT_VFW

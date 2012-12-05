@@ -182,7 +182,7 @@ namespace FTL
         //TODO:接口设计
         FTLINLINE static HRESULT GetMediaTime(IMediaSeeking *pMS);
         
-		FTLINLINE static HRESULT GrapFirstFrameFromMediaFile(CString strFilePath, HBITMAP& hBmp);
+		FTLINLINE static HRESULT GrapFrameFromMediaFile(LPCTSTR pszFilePath, HBITMAP& hBmp, LONGLONG nUnits = 0);
         //从Filter上抓图
 		FTLINLINE static HRESULT SnapShotBitmap(IBasicVideo* pBasicVideo, HBITMAP& hBmpSnap);
         FTLINLINE static HRESULT SnapShotBitmap(IBasicVideo* pBasicVideo, LPCTSTR pszOutFile);

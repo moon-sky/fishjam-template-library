@@ -129,6 +129,10 @@
 *   1.IMediaDet::GetBitmaps(已被淘汰，和D3D7及其后版本不兼容, SDK7以后已经没有 qedit.h 文件) -- 速度快,但Video类型有限，
 *   2.IBasicVideo::GetCurrentImage -- 几乎可以处理所有的视频类型，但每次截图都有一个短暂的停顿(需要暂停?并占用CPU)
 *   3.IVMRWindowlessControl9::GetCurrentImage -- 
+*
+* 全屏显示
+*   1.注意从VideoFilter中获取的 IVideoWindow 可能无法控制全屏，需要通过 Graph::Query 到的才能控制;
+*   2.VMR 的 Filter Config 属性页中可以设置两种全屏方式(非窗体和窗体模式), 但如何实现的?
 ****************************************************************************************************/
 
 // File filter for OpenFile dialog
