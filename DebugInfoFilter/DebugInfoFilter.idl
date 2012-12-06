@@ -1,0 +1,102 @@
+import "unknwn.idl";
+
+//import "oaidl.idl";
+//import "ocidl.idl";
+
+cpp_quote("#if 0")
+// This is temporary workaround to to persuade
+// MIDL to allow forward declarations.
+typedef LPVOID*  IBaseFilter;
+typedef LPVOID*  IFilterGraph;
+typedef LPVOID*  IPin;
+typedef LPVOID*  AM_MEDIA_TYPE;
+typedef LPVOID*	 IPropertyPage;
+//typedef LPVOID*  ISpecifyPropertyPages;
+cpp_quote("#endif //if 0")
+
+cpp_quote("#include <dshow.h>")
+
+interface IDebugInfoFilter;
+
+//[
+//	uuid(F62AD8B9-AFA6-41bf-9ADE-5A83D80FF3BC),	
+//	helpstring("FilterDebugParam struct"),
+//]
+typedef struct FilterDebugParam
+{
+    BOOL    bDumpSample;
+	DWORD   dwDumpSampleStartIndex;
+    DWORD   dwDumpSampleLimitCount;
+    BSTR    pstrDumpFilePath;
+}FilterDebugParam;
+
+typedef struct FilterRunningInfo
+{
+	DWORD		dwSampleCount;
+	LONGLONG	llElapse; //ns
+}FilterRunningInfo;
+
+
+[
+    local,
+	object,
+	uuid(F62AD8B9-AFA6-41bf-9ADE-5A83D80FF3BD),	
+	helpstring("IDebugInfoFilter Interface"),
+	pointer_default(unique)
+]
+interface IDebugInfoFilter : IUnknown{
+    [helpstring("method GetConnectedPin")] 
+    HRESULT GetConnectedPin([in] BOOL bIsInput, [out,retval] IPin** ppPin);
+    
+	HRESULT SetAcceptMediaType([in] AM_MEDIA_TYPE* pMediaType);
+	HRESULT GetFilterDebugParam([in,out] FilterDebugParam* pFilterDebugParam);
+    HRESULT SetFilterDebugParam([in] FilterDebugParam* pFilterDebugParam);
+	
+	HRESULT GetFilterRunningInfo([in, out] FilterRunningInfo* pFilterRunningInfo);
+	HRESULT SetFilterRunningInfo([in] FilterRunningInfo* pFilterRunningInfo);
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+//   Library and objects
+//
+//////////////////////////////////////////////////////////////////////////////
+[
+    uuid(3CAF42E8-0CBF-45b6-9A6E-E6ABE8639D2D),
+    version(1.0),
+   	helpstring("Debug Info Filter 1.0 Type Library"),
+]
+
+library DebugInfoFilterLib
+{
+    //DebugInfoFilter
+    [
+        uuid(205769BC-B121-4ca8-A4E6-84A20EF253B7),
+        helpstring("Debug Info Filter Class")
+    ]
+    coclass DebugInfoFilter
+    {
+        [default] interface IDebugInfoFilter;
+    };
+
+    //[
+    //    uuid(205769BD-B121-4ca8-A4E6-84A20EF253B7),
+    //    helpstring("Debug Info Property Class")
+    //]
+    //coclass DebugInfoFilterProperty
+    //{
+    //    [default] interface IUnknown;
+    //};
+
+	//[
+ //       uuid(205769BE-B121-4ca8-A4E6-84A20EF253B7),
+ //       helpstring("Graph Info Property Class")
+ //   ]
+ //   coclass GraphInfoProperty
+ //   {
+	//	[default] interface IUnknown;
+ //       //[default] interface IPropertyPage;
+ //   };
+
+}
