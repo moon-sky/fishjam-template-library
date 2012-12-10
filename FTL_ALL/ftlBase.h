@@ -101,7 +101,7 @@ namespace FTL
              USES_CONVERSION;\
              FAST_TRACE_EX(FTL::tlError, TEXT("%s(%d) :\t Error!!! Reason = 0x%08x(%d,%s),Code:\"%s\" \n"),\
                TEXT(__FILE__),__LINE__, e, e, _err.GetConvertedInfo(),TEXT(#x));\
-             (1 != DBG_REPORT(_CRT_ASSERT, __FILE__, __LINE__, NULL, T2CA(_err.GetConvertedInfo()))) || \
+             (1 != DBG_REPORT(_CRT_ASSERT, __FILE__, __LINE__, NULL, "%s(0x%x)", T2CA(_err.GetConvertedInfo()), e)) || \
                (DBG_BREAK(), 0);\
          }while(0)
     #else //Not Define FTL_DEBUG

@@ -343,7 +343,8 @@ namespace FTL
 			{
 				CFStringFormater strInfo;
 				OAHWND hWndMessageDrain = NULL;
-				COM_VERIFY(spVideoWindow->get_MessageDrain(&hWndMessageDrain));
+				//EVR调用这个方法会返回 E_NOINTERFACE
+				COM_VERIFY_EXCEPT1(spVideoWindow->get_MessageDrain(&hWndMessageDrain), E_NOINTERFACE);
 				if (SUCCEEDED(hr))
 				{
 					//使得应用程序可以处理视频窗体内的鼠标、键盘事件的 消息通道(Graph会将相关消息传递给该窗体)
@@ -361,30 +362,39 @@ namespace FTL
 		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
 		{
 			HRESULT hr = S_OK;
+			//EVR比较怪，能获取到接口，但在调用实际的方法时会返回E_NOINTERFACE
 			ATL::CComQIPtr<IBasicVideo> spBasicVideo(pUnknown);
 			if (spBasicVideo)
 			{
 				CFStringFormater strInfo;
 				long nVideoWidth = 0, nVideoHeight = 0;
-				COM_VERIFY(spBasicVideo->GetVideoSize(&nVideoWidth, &nVideoHeight));
+				//EVR会返回E_NOINTERFACE
+				COM_VERIFY_EXCEPT1(spBasicVideo->GetVideoSize(&nVideoWidth, &nVideoHeight), E_NOINTERFACE);
 				if (SUCCEEDED(hr))
 				{
 					//视频本身的尺寸大小
 					strInfo.AppendFormat(TEXT("VideoSize(%dx%d), "), nVideoWidth, nVideoHeight);
 				}
 				long nSourceLeft = 0, nSourceTop = 0, nSourceWidth = 0, nSourceHeight = 0;
-				COM_VERIFY(spBasicVideo->GetSourcePosition(&nSourceLeft, &nSourceTop, &nSourceWidth, &nSourceHeight));
+				COM_VERIFY_EXCEPT1(spBasicVideo->GetSourcePosition(&nSourceLeft, &nSourceTop, &nSourceWidth, &nSourceHeight), E_NOINTERFACE);
 				if (SUCCEEDED(hr))
 				{
 
 				}
 
 				long nDestLeft = 0, nDestTop = 0, nDestWidth = 0, nDestHeight = 0;
-				COM_VERIFY(spBasicVideo->GetDestinationPosition(&nDestLeft, &nDestTop, &nDestWidth, &nDestHeight));
+				COM_VERIFY_EXCEPT1(spBasicVideo->GetDestinationPosition(&nDestLeft, &nDestTop, &nDestWidth, &nDestHeight), E_NOINTERFACE);
 				if (SUCCEEDED(hr))
 				{
 				}
-				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+				if (NULL == strInfo.GetString())
+				{
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), TEXT("May be EVR interface, can nnot get information"));
+				}
+				else
+				{
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+				}
 			}
 			return hr;
 		}
@@ -656,7 +666,7 @@ namespace FTL
 
 				DWORD dwMaxStreams = 0;
 				//VFW_E_VMR_NOT_IN_MIXER_MODE
-				COM_VERIFY(spVMRFilterConfig->GetNumberOfStreams(&dwMaxStreams));
+				COM_VERIFY_EXCEPT1(spVMRFilterConfig->GetNumberOfStreams(&dwMaxStreams), VFW_E_VMR_NOT_IN_MIXER_MODE);
 				if (SUCCEEDED(hr))
 				{
 					strInfo.AppendFormat(TEXT("NumberOfStreams=%d, "), dwMaxStreams);

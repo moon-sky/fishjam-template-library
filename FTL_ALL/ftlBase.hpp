@@ -139,22 +139,21 @@ namespace FTL
 
                 if(0 != dwCount && NULL != pszMsgBuf )
                 {
-                    int length = (int)_tcsclen(pszMsgBuf);
+					int length = _tcsclen(pszMsgBuf);
+					while (length > 0 
+						&& (pszMsgBuf[length - 1] == _T('\r') || pszMsgBuf[length - 1] == _T('\n')))
+					{
+						pszMsgBuf[length - 1]=_T('\0');
+						length--;
+					}
 
-                    lstrcpyn(m_bufInfo,pszMsgBuf,_countof(m_bufInfo) - 1);
-                    LocalFree(pszMsgBuf);
-                    if(length > 0  && length < _countof(m_bufInfo))
-                    {
-                        if(m_bufInfo[length - 2 ] == _T('\r') 
-                            && m_bufInfo[length - 1] == _T('\n'))
-                        {
-                            m_bufInfo[length - 2]=_T('\0');
-                        }
-                    }
+					//lstrcpyn(m_bufInfo,pszMsgBuf,_countof(m_bufInfo) - 1);
+					StringCchPrintf(m_bufInfo, _countof(m_bufInfo) - 1, TEXT("%s"), pszMsgBuf);
+					LocalFree(pszMsgBuf);
                 }
                 else //无法获取错误值
                 {
-                    StringCchPrintf(m_bufInfo,_countof(m_bufInfo),TEXT("Unknown Error:0x%0.8x"),m_Info);
+                    StringCchPrintf(m_bufInfo,_countof(m_bufInfo),TEXT("Unknown Error:0x%08x"),m_Info);
                 }
             }
         }

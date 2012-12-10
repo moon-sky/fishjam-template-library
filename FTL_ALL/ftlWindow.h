@@ -7,6 +7,39 @@
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
 //窗体中保存自定义数据：可以通过  _SetWindowLongPtr(hDlg, DWLP_USER, (this)); 的方法把this指针传入
+
+//CWndClassInfo & MagnifierLayer::GetWndClassInfo()
+//{
+//	//
+//	// ATL Internals pp 419
+//	//
+//	static CWndClassInfo wc =
+//	{
+//		{
+//			sizeof( WNDCLASSEX ),
+//				0,
+//				StartWindowProc,
+//				0,
+//				0,
+//				NULL,
+//				NULL,
+//				NULL,
+//				(HBRUSH)GetStockObject(NULL_BRUSH),
+//				NULL,
+//				_T( "TestClassInfo"),
+//				NULL
+//		},
+//		NULL,
+//		NULL,
+//		IDC_ARROW,
+//		TRUE,
+//		0,
+//		_T( "TestClassInfo")
+//	};
+//
+//	return wc;
+//}
+
 /******************************************************************************************************
 * Monitor -- MonitorFromPoint ，系统有一个 multimon.h 文件
 *   

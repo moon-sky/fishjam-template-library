@@ -1,4 +1,6 @@
 docfileview http://blog.tinybrowser.net/archives/442
+视频解码器和render之间增加一个内容透传的filter，需要处理颜色空间的差异及显卡内存自动对齐问题
+  http://bbs.csdn.net/topics/340218555
 
 dell -- http://www.amazon.com/Dell-Inspiron-i15R-2105sLV-15-Inch-Laptop/dp/B0081YPVHE/ref=lh_ni_t
 忍者印记 -- http://kuai.xunlei.com/d/ZIMRQXUWPOSB

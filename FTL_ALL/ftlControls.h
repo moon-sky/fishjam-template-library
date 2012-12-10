@@ -194,8 +194,8 @@ namespace FTL
 	{
 		enum  {	UWM_CHECKTEXT = WM_USER + 100 };
 	public:
-		CFEditEx(void);
-		~CFEditEx(void);
+		FTLINLINE CFEditEx(void);
+		FTLINLINE ~CFEditEx(void);
 	public:
 		BEGIN_MSG_MAP_EX(CFEditEx)
 			//DUMP_WINDOWS_MSG(__FILE__LINE__, DEFAULT_DUMP_FILTER_MESSAGE | DUMP_FILTER_KEYDOWN, uMsg, wParam, lParam)

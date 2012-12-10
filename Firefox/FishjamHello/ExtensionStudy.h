@@ -82,7 +82,7 @@
 *   签名结果说明( META-INF 目录下)
 *     manifest.mf -- 包含XPI中每一个文件的 MD5/SHA1 验证码
 *     zigbert.sf --  包含XPI中每一个文件的 MD5/SHA1 + XPI本身 验证码(值和 manifest.mf 中的不一样)
-*     zigbert.rsa -- 签名信息(如公司、网址等），是二进制文件，用什么查看?
+*     zigbert.rsa -- 签名信息(如公司、网址、证书的有效期 等），是二进制文件，用什么查看?
 *
 *   NSS(Network Security Services) -- 下载：https://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/NSS_3_12_4_RTM/msvc9/WINNT5.1_OPT.OBJ/nss-3.12.4.zip)
 *   NSPR(Netscape Portable Runtime) -- 使用 NSS 3.12.4 即可不用这个工具？
@@ -116,6 +116,7 @@
 *             -t "信任参数"
 *             -i "证书文件"
 *           -L 列出证书，可以查看导入结果
+*           -D 删除证书(通常用于更新的情况，但测试时发现无法删除，所以采用了重新创建证书数据库的方式)
 *       3.导入代码签名证书 [TODO:还是密钥?]( .pfx 或 pkcs12 等文件)，需要输入"证书存储库管理密码" + "导出PFX证书时设置的密码"
 *         pk12util -i "XPICA.pfx" -d .
 *       4.检查根证书和代码签名证书是否成功导入证书存储库中(即签名使用的证书链是否完整)
