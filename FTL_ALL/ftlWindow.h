@@ -2,7 +2,6 @@
 #define FTL_WINDOW_H
 #pragma once
 
-
 #ifndef FTL_BASE_H
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
@@ -42,7 +41,35 @@
 
 /******************************************************************************************************
 * Monitor -- MonitorFromPoint ，系统有一个 multimon.h 文件
+* 
+* 窗体类型 -- Child必有父窗口,必无Onwer窗口。Overlapped/Popup可能有Onwer窗口,一般无Parent窗口
+*     Combobox的下拉列表框listbox的Parent是NULL(能显示在Dialog外)，但Owner是Combobox的第一个非子窗口Owner(如Dialog，生存期管理)
+*   Child   -- WS_CHILD， （子窗口可以是一个重叠窗口,但不能是一个弹出窗口？），注意：Child窗口没有维持其Owner属性(即自动认为非Child的Parent为其Owner)
+*              子窗口在父窗口销毁前被销毁,在父窗口隐藏前被隐藏,在父窗口显示后被显示
+*   Owner   -- 所有者，进行生存期控制(销毁)，Owner必须是Overlapped或Popup(WS_CHILD不能是Owner窗口)，被拥有的显示在Owner的前面，
+*              Onwer最小化时其所拥有的窗口都被隐藏；但隐藏Owner时不会影响拥有者的可见状态(如 A > B > C, 则 A 最小化时B会隐藏，但C仍可见)
+*                即： 当Owner窗口隐藏时他的所有Owned窗口不会隐藏。但当Owner最小化是他的Owned窗口会被隐藏。
+*              运行时只读( GetWindow(GW_OWNER) )，对Child窗口调用该函数会返回NULL(父窗口即Owner?)，MFC中虽然有CWnd::SetOwner，但只更改了其成员变量 m_hWndOwner
+*              CreateWindow函数中的hWndParent若非Child，则也会成为其Owner，否则递归向上找；GetWindowLong(GWL_HWNDPARENT) 得到传入的hWndParent属性
+*   Parent  -- 父窗口，控制显示(left/top 等坐标系统)，Parent移动时子窗口也会移动；Parent隐藏时所有子窗口也被隐藏；
+*              父窗口最小化时，子窗口也会最小化，但其WS_VISIBLE属性不变；
+*              可通过 GetParent/SetParent 获取或动态改变，可设置为NULL(桌面，所有Top-Level窗口的Parent即是NULL)和HWND_MESSAGE(只处理消息的窗体message-only)
+*              通常会把通知消息发送给Parent(但Toolbar是发送给Owner)，
+*              MSDN中虽然说明了SetParent只能在同一进程中进行，但实际上可以多进程的HWND上调用（如IE多进程模式时多个进程通过IEBarHost组合在一起；但Chrome是主进程显示UI，其他子进程只有线程）
+*      将Child设置为Top-Level: SetParent(NULL); ModifyStyle(WS_CHILD, WS_POPUP);
+*      将Top-Level设置为Child: ModifyStyle(WS_POPUP, WS_CHILD); SetParent(hWndNewParent);
+*   Sibling -- 
 *   
+* 窗体链表
+*   Desktop <== 唯一的桌面窗口
+*    +- top-level <== 所有非child、父窗口是NULL(desktop)的窗口，可拥有其他top-level或被其他top-level所拥有
+*      +- Overlapped <== 重叠窗口，有标题栏和边框，一般用作程序的主窗口，（重叠窗口可以是Child窗口？）
+*        +- Child <== 
+*      +- Popup <== 带WS_POPUP的窗口，可现实在屏幕任何地方，一般没有父窗口，可以没有标题栏
+*
+******************************************************************************************************/
+
+/******************************************************************************************************
 * CHAIN_MSG_MAP(__super)
 * 
 * Vista/Win7
@@ -87,51 +114,7 @@
 * 
 * RGB --  0x00BBGGRR
 * Gdiplus::ARGB -- 0xAARRGGBB  <== 注意：颜色顺序和RGB的相反
-******************************************************************************************************/
-
-/******************************************************************************************************
-* CHAIN_MSG_MAP(__super)
 * 
-* Vista/Win7
-*   Aero向导(CPropertySheetImpl<>, CPropertyPageImpl<>)
-*     由属性页变为经典样式的向导:  m_psh.dwFlags |= PSH_WIZARD97; Areo 向导 PSH_AEROWIZARD
-*     消息 PSM_SHOWWIZBUTTONS -- 显示或隐藏向导中的标准按钮， 有 PropSheet_ShowWizButtons 辅助宏
-*          PSM_ENABLEWIZBUTTONS -- 启用或禁用某个标准按钮，有 PropSheet_EnableWizButtons 辅助宏
-*          PSM_SETBUTTONTEXT -- 修改按钮上的文字，有 PropSheet_SetButtonText  辅助宏
-* 任务对话框(TaskDialog/TaskDialogIndirect) -- 
-*   TASKDIALOGCONFIG::pfCallback 回调函数，用来响应任务对话框所触发的事件
-*     通知顺序: TDN_DIALOG_CONSTRUCTED -> TDN_CREATED 
-*   消息：TDM_SET_ELEMENT_TEXT -- 设置任务对话框上控件的文本
-*         TDM_SET_BUTTON_ELEVATION_REQUIRED_STATE -- 在链接旁显示出UAC盾形图标
-*   Flags
-*     TDF_USE_COMMAND_LINKS -- 将自定义按钮显示为命令链接(不能控制标准按钮TDCBF_OK_BUTTON等)
-*     TDF_SHOW_PROGRESS_BAR -- 显示进度条
-*     用TDF_SHOW_MARQUEE_PROGRESS_BAR -- 显示走马灯样式(不停的从左到右)的进度条
-*   进度条()
-*     TDM_SET_PROGRESS_BAR_RANGE -- 指定进度条的指示范围的消息
-*     TDM_SET_PROGRESS_BAR_POS -- 指定进度条在指示范围中的位置
-*     TDM_SET_PROGRESS_BAR_STATE -- 改变进度条的状态
-*     
-* 
-* UAC(User Account Control)
-*   Button_SetElevationRequiredState --好像无效?
-*
-* DWM(Desktop Window Manager,窗口管理器) -- 负责组合桌面上的各个窗体, 允许开发者设置某个窗体在于其它窗体组合/重叠时的显示效果，
-*   即能用来实现“半透明玻璃(Glass)”特效（允许控制窗体范围内部分区域的透明度)
-*     窗体区域(Window Region) -- 指操作系统允许窗体在其中进行绘制的区域，除非切换回Basic主题，否则Vista已不再使用
-*     桌面合成(Desktop Composition) -- DWM所提供的一个功能，可以实现诸如玻璃、3D窗口变换等视觉效果，
-*       启用时，DWM默认将把窗体的非客户区域以玻璃效果呈现，而客户区域默认为不透明。
-*       DwmIsCompositionEnabled -- 判断是否启用了合成效果
-*       DwmEnableComposition -- 暂时禁用/启用桌面合成功能，不需要管理员权限？程序退出时自动恢复
-*       DwmGetColorizationColor -- 检测到合成效果是半透明的还是不透明的，以及合成颜色
-*       DwmEnableBlurBehindWindow -- 让客户区域完全或某部分实现玻璃效果
-*       DwmExtendFrameIntoClientArea -- 可让框架(Window Frame)向客户区扩展
-*         MARGINS margins={-1}; -- 将框架扩展为整个客户区，即可将整个客户区域和非客户区域作为一个无缝的整体进行显示(如玻璃效果)
-*     极光效果(aurora effect) -- 
-*
-* 
-* RGB --  0x00BBGGRR
-* Gdiplus::ARGB -- 0xAARRGGBB  <== 注意：颜色顺序和RGB的相反
 ******************************************************************************************************/
 
 /******************************************************************************************************
@@ -146,7 +129,7 @@
 *   1.本窗口的 Z-Order 最高子窗口句柄 <== GetTopWindow
 *   2.本窗口的下一兄弟窗口句柄 <== GetNextWindow
 *   3.本窗口的父窗口的句柄   <== GetParent
-*   4.本窗口的所有者窗口句柄 <== 
+*   4.本窗口的所有者窗口句柄 <== GetWindow(GW_OWNER)
 *
 * SendMessage 后执行体是UI线程(后台线程会等待，直到UI线程执行完毕)
 *   如果收到Send消息时，UI线程还在消息处理体中,则★不会立即强制抢断执行★,需要等待执行体结束后，
@@ -196,6 +179,9 @@
 *   SW_SHOWNA -- 显示并保持原激活状态
 *   SW_SHOWNOACTIVATE -- 用最近的大小和位置显示并保持原激活状态
 *   SW_SHOWNORMAL -- 激活并显示，必要时从最大最小化中恢复
+*
+* ShowOwnedPopups -- 设置或者删除当前窗口所拥有的所有窗口的WS_VISIBLE属性，然后发送 WM_SHOWWINDOW 消息更新窗口显示
+*   用处：如想隐藏Owned窗口但并不想最小化其Owner时 -- 但为什么不直接最小化或ShowWindow(SW_HIDE) ?
 *
 * 反射消息
 *  WM_COMMAND -- 消息的参数中既有发送消息的控件的 ID，又有控件的 HWND，还有通知代码
@@ -275,7 +261,7 @@
 *     而且使用 SetWindowRgn 只能实现窗体的全透明而无法实现半透明效果。
 *  
 * 纯消息窗体(Message-Only Window)
-*   允许收发消息，但不可见，没有Z序，不能被枚举，不能接收广播(broadcast)消息，
+*   允许收发消息，但不可见(不能接受键盘和鼠标消息)，没有Z序，不能被枚举，不能接收广播(broadcast)消息，
 *   创建方法：在 CreateWindowEx 方法中，指定 hWndParent 参数为 HWND_MESSAGE 常量
 *             或 SetParent 方法中，指定 hWndParent 参数为 HWND_MESSAGE 常量 将存在的窗体转换为纯消息窗体
 *   找窗体：FindWindowEx(HWND_MESSAGE,xxxx);

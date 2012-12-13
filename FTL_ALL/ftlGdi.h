@@ -658,7 +658,7 @@ namespace FTL
 			//E_ZOOM_ORIGINAL,
 			//E_ZOOM_NORMAL
 		};
-		static 	CFCalcRect*	GetCalcRectObject( ZoomMode nZoomMode );
+		FTLINLINE static 	CFCalcRect*	GetCalcRectObject( ZoomMode nZoomMode );
 	public:
 		//只计算居中对其时的值，非居中(如左上角对其)的方式很简单
 		virtual CRect GetFitRect( const CRect& rcMargin, const CSize& szContent ) = 0; 
