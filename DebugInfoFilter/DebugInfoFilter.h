@@ -71,7 +71,7 @@ public:
     STDMETHODIMP GetClassID(CLSID *pClsid);
 
 private:
-	static				INT		s_InstanceCount;
+	static				LONG	s_InstanceCount;
 	static				BOOL	s_HasAddtoRot;
     CCritSec            m_DebugInfoLock;
 	DWORD				m_dwRegister;
@@ -88,6 +88,7 @@ private:
 	CDebugInfoFilter(LPUNKNOWN pUnk, HRESULT *phr);
     ~CDebugInfoFilter( );
 	HRESULT SetMediaType(PIN_DIRECTION direction,const CMediaType *pmt);
+
     //// override these to receive indication of when we change
     //// to Pause/Play (Active) or Stop (Inactive) state.
     //HRESULT Active();

@@ -322,6 +322,22 @@
 #    pragma message( "    not defined _ATL_NO_AUTOMATIC_NAMESPACE")
 #endif
 
+//合并代理/存根
+#  ifdef _MERGE_PROXYSTUB
+#    pragma message( "    defined _MERGE_PROXYSTUB")
+#else
+#    pragma message( "    not defined _MERGE_PROXYSTUB")
+#endif 
+
+//代理/存根的DLL中会定义这个宏，有什么用?
+#  ifdef REGISTER_PROXY_DLL
+#    pragma message( "    defined REGISTER_PROXY_DLL")
+#else
+#    pragma message( "    not defined REGISTER_PROXY_DLL")
+#endif 
+
+
+
 #  ifdef _ATL_DLL
 //   链接 atl.lib, 运行时依赖 ATL.dll
 #    pragma message( "    defined _ATL_DLL")

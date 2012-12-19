@@ -6,16 +6,16 @@
 #include "DebugInfoFilter.h"
 #include "DebugInfoFilter_i.c"
 
-INT CDebugInfoFilter::s_InstanceCount = 0;
+LONG CDebugInfoFilter::s_InstanceCount = 0;
 BOOL CDebugInfoFilter::s_HasAddtoRot = FALSE;
 CUnknown *CDebugInfoFilter::CreateInstance(LPUNKNOWN punk, HRESULT *phr)
 {
 	ASSERT(phr);
-	if (s_InstanceCount > 0)
-	{
-		*phr = E_OUTOFMEMORY;
-		return NULL;
-	}
+	//if (s_InstanceCount > 0)
+	//{
+	//	*phr = E_OUTOFMEMORY;
+	//	return NULL;
+	//}
 
 	CDebugInfoFilter *pNewObject = new CDebugInfoFilter(punk, phr);
 
@@ -43,14 +43,14 @@ CDebugInfoFilter::CDebugInfoFilter(LPUNKNOWN pUnk, HRESULT *phr)
 	m_llLastTimeStart = 0;
 	m_llLastTimeEnd = 0;
 	m_pAcceptMediaType = NULL;
-	s_InstanceCount++;
+	InterlockedIncrement(&s_InstanceCount);
 }
 
 CDebugInfoFilter::~CDebugInfoFilter( )
 {
 	HRESULT hr = S_OK;
-	s_InstanceCount--;
-	if (0 == s_InstanceCount)
+	LONG nCount = InterlockedDecrement(&s_InstanceCount);
+	if (0 == nCount && s_HasAddtoRot)
 	{
 		if (0 != m_dwRegister)
 		{
@@ -81,27 +81,37 @@ HRESULT STDMETHODCALLTYPE CDebugInfoFilter::JoinFilterGraph(__in_opt  IFilterGra
 {
 	CAutoLock cObjectLock(m_pLock);
 
-	HRESULT hrResult = __super::JoinFilterGraph(pGraph, pName);
-	if (SUCCEEDED(hrResult))
+#if 0
+	if (NULL == pGraph)
+	{
+		//remove
+		if (0 != m_dwRegister)
+		{
+			ATLASSERT(1 == s_InstanceCount);
+			ATLASSERT(s_HasAddtoRot);
+			HRESULT hr = E_FAIL;
+			DX_VERIFY(FTL::CFDirectShowUtility::RemoveGraphFromRot(m_dwRegister));
+			m_dwRegister = 0;
+		}
+	}
+	else
 	{
 		if (1 == s_InstanceCount && FALSE == s_HasAddtoRot)
 		{
 			s_HasAddtoRot = TRUE;
 
-#if 0
-			unsigned int threadId = 0;
-			HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, _AddFilterToGraphRotProc, pGraph, 0, &threadId);
-			CloseHandle(hThread);
-#else
 			HRESULT hr = E_FAIL;
 			DWORD dwRegister = 0;
-			//DX_VERIFY(FTL::CFDirectShowUtility::AddGraphToRot(pGraph, &dwRegister));
-			//FTL::FormatMessageBox(NULL, TEXT("AddGraph"), MB_OK, 
-			//	TEXT("CDebugInfoFilter::_AddFilterToGraphRotProc, AddGraphToRot, dwRegister=%d, hr=0x%x\n"),
-			//	dwRegister, hr);
-#endif
+			DX_VERIFY(FTL::CFDirectShowUtility::AddGraphToRot(pGraph, &dwRegister));
+			FTL::FormatMessageBox(NULL, TEXT("AddGraph"), MB_OK, 
+				TEXT("CDebugInfoFilter::_AddFilterToGraphRotProc, AddGraphToRot, dwRegister=%d, hr=0x%x\n"),
+				dwRegister, hr);
 		}
+
 	}
+#endif 
+
+	HRESULT hrResult = __super::JoinFilterGraph(pGraph, pName);
 	return hrResult;
 }
 
@@ -240,7 +250,7 @@ STDMETHODIMP CDebugInfoFilter::NonDelegatingQueryInterface(REFIID riid, void ** 
     CHECK_POINTER_RETURN_VALUE_IF_FAIL(ppv,E_POINTER);
 	CAutoLock cObjectLock(m_pLock);
 
-    HRESULT hr = E_FAIL;
+	HRESULT hr = E_FAIL;
 	if (IID_IDebugInfoFilter == riid) 
 	{
 		DX_VERIFY(GetInterface((IDebugInfoFilter *) this, ppv));
