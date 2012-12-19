@@ -56,7 +56,7 @@
 *              可通过 GetParent/SetParent 获取或动态改变，可设置为NULL(桌面，所有Top-Level窗口的Parent即是NULL)和HWND_MESSAGE(只处理消息的窗体message-only)
 *              通常会把通知消息发送给Parent(但Toolbar是发送给Owner)，
 *              MSDN中虽然说明了SetParent只能在同一进程中进行，但实际上可以多进程的HWND上调用（如IE多进程模式时多个进程通过IEBarHost组合在一起；但Chrome是主进程显示UI，其他子进程只有线程）
-*      将Child设置为Top-Level: SetParent(NULL); ModifyStyle(WS_CHILD, WS_POPUP);
+*      将Child设置为Top-Level: SetParent(NULL); ModifyStyle(WS_CHILD, WS_POPUP, 0); ModifyStyleEx(0, WS_EX_TOPMOST | WS_EX_TOOLWINDOW, 0);
 *      将Top-Level设置为Child: ModifyStyle(WS_POPUP, WS_CHILD); SetParent(hWndNewParent);
 *   Sibling -- 
 *   
@@ -578,6 +578,7 @@ namespace FTL
         FTLINLINE static LPCTSTR GetWindowClassString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetWindowStyleString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetWindowExStyleString(FTL::CFStringFormater& formater, HWND hWnd, LPCTSTR pszDivide = TEXT("|"));
+		FTLINLINE static LPCTSTR GetWindowPosFlagsString(FTL::CFStringFormater& formater, UINT flags, LPCTSTR pszDivide = TEXT("|"));
 
 		FTLINLINE static LPCTSTR GetOwnerDrawState(FTL::CFStringFormater& formater, UINT itemState, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetOwnerDrawAction(FTL::CFStringFormater& formater, UINT itemAction, LPCTSTR pszDivide = TEXT("|"));

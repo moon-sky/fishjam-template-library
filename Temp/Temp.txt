@@ -1,11 +1,52 @@
+TODO: 
+  通过类型库进行ComDetect?
+  ComStudy 中增加 IConnectionPointContainerImpl 的描述 -- 连接点容器基本实现，支持查找和枚举连接点
+  Html中使用COM: <object classid="clsid:xxxx-bbbb-ddd" id=objName> 
+                    <param name=xxxx value=100>
+                 </object>
+                 <input type=button name=cmdTest value="test">
+                 <script language=vbscript> 
+                   sub .cmdTest_onClick 
+                     objName.xxxx = 100
+                   end sub
+                   sub objName._onXXX(value)
+                      //脚本中处理连接点激发的事件 -- 对象需要实现 IProvideClassInfo2 接口
+                   end sub 
+                 </script>
+   属性的持续性=>更名为"持久化"; 
+   只要从 IPersistStreamInitImpl、IPersistStorageImpl、IPersistPropertyBagImpl 三个接口实现中任意一个继承，
+     并且增加名为 m_bRequiresSave 的成员变量，再把接口添加到 COM_MAP 中，COM对象就支持持久化
+     -- 自动对对象属性表(PROP_MAP)中的数据进行持久化
+   
+ATL
+ATL通过大量的 IxxxImpl 接口实现模板类提供接口的基本实现和扩展 --
+ProgID -- Programmatic identifier，和版本无关的程序标识符，
+  版本相关的ProgID由版本无关的ProgID加后缀(如 ".1" 组成)
+向导中
+  线程模型将决定进程内服务器自注册设置中的ThreadingModel值，同时也决定了对象AddRef和Release方法的实现需要怎样的线程安全性
+  聚合 -- 对象是否能够作为受控的内部对象参与聚合，不影响类的对象是否能作为外部控制对象使用聚合？
+  ISupportErrorInfo -- 通过COM异常(错误信息对象)传递的细节错误信息比单独一个HRESULT所能提供的信息更多。
+    COM的错误处理？ATL::CComCoClass::Error(L"提示信息", ...);
+  连接点 -- 用于向它的容器激发事件
+  Free Threaded Marshaler(FTM) -- Tooltip中所说的太夸大(创建一个自由线程列集器对象，能有效地在同一个进程的不同线程之间列集接口指针)
+
+骗出ATL对象向导(如在Win32程序中加入COM对象)，要求：
+  1.必须是DLL或Win32应用 -- 非控制台
+  2.<project>.cpp 文件中必须有 BEGIN_OBJECT_MAP(ObjectMap) .... END_OBJECT_MAP()
+    但新的映射方式已经更改为 OBJECT_ENTRY_AUTO ?
+  3.工程中必须有 <project>.idl 文件,且最下面必须有 library xxxx { ... }
+CComBSTR bstrText = OLESTR("xxxx"); OLE2CT(bstrXXX);
+Implement Interface wizard(实现接口向导) -- 实现类型库(TypeLib)中已有定义的接口
+连接点：为了使脚本客户(如IE)接收事件，对象需要从 IProvideClassInfo2Impl 继承，对应接口允许客户查询对象的
+        缺省接口标识符(default interface identifier),然后用它通过 IConnectPointContainer 接口建立联系
+
+
+
+
+
 docfileview http://blog.tinybrowser.net/archives/442
 视频解码器和render之间增加一个内容透传的filter，需要处理颜色空间的差异及显卡内存自动对齐问题
   http://bbs.csdn.net/topics/340218555
-
-dell -- http://www.amazon.com/Dell-Inspiron-i15R-2105sLV-15-Inch-Laptop/dp/B0081YPVHE/ref=lh_ni_t
-忍者印记 -- http://kuai.xunlei.com/d/ZIMRQXUWPOSB
-
-TODO: 发邮件 COMStudy 比较
 
 http://wenku.baidu.com/view/6243ee2f2af90242a895e555.html
 

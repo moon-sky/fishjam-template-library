@@ -2668,6 +2668,39 @@ namespace FTL
         return formater.GetString();
     }
 
+	LPCTSTR CFWinUtil::GetWindowPosFlagsString(FTL::CFStringFormater& formater, UINT flags, LPCTSTR pszDivide /* = TEXT */)
+	{
+		UINT    nOldFlags = flags;
+
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOSIZE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOMOVE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOZORDER, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOREDRAW, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOACTIVATE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_FRAMECHANGED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_SHOWWINDOW, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_HIDEWINDOW, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOCOPYBITS, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOOWNERZORDER, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOSENDCHANGING, pszDivide);
+
+
+#if(WINVER >= 0x0400)
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_DEFERERASE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_ASYNCWINDOWPOS, pszDivide);
+#endif /* WINVER >= 0x0400 */
+
+
+		//不知道 0x1800 是什么的参数，msdn中没有找到
+		FTLASSERT( 0 == flags || flags == 0x1800);
+		if (0 != flags)
+		{
+			FTLTRACEEX(FTL::tlWarning, TEXT("%s: Check Set Window Pos String Not Complete, total=0x%08x, remain=0x%08x\n"),
+				__FILE__LINE__, nOldFlags, flags);
+		}
+		return formater.GetString();
+	}
+
 	LPCTSTR CFWinUtil::GetOwnerDrawState(FTL::CFStringFormater& formater, UINT itemState, LPCTSTR pszDivide)
 	{
 		UINT    oldItemState = itemState;
