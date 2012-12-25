@@ -19,18 +19,22 @@
 *   C++ 字符串是以null结束的ASCII或Unicode字符数组
 *   Visual Basic字符串是一个ASCII字符数组加上表示长度的前缀。
 *   Java字符串是以0结束的Unicode字符数组
+*
 * 
 * COM的基本字符数据类型是OLECHAR，与平台无关的字符表示法，其C++体现即为BSTR
 *   BSTR(Basic STRing) <== 带长度(BSTR指针的前4个字节,不包括结束NULL字符的字符串的字节数，如 SysAllocString(L"Hello")长度为10)的宽字符(16bit)数组，
-*     可以存贮NULL字节进行分段，并且进行Marshal时更高效 -- 不需要扫描来确定字符串长度；
+*     可以存贮NULL字节进行分段，并且 解释型环境 和 进行Marshal时更高效 -- 不需要扫描来确定字符串长度；
 *     SysAllocString返回的指针指向BSTR的第一个字符(而不是BSTR在内存的第一个字节 -- 长度位置)，因此可直接用于大部分需要 LPCWSTR 或 const OLECHAR*  的地方，
 *       但是不能用于 非const 的地方，否则可能照成错误
 *     所有的BSTR都必须使用SysFreeString()释放,否则会造成内存泄漏。
+*     有一个构造函数，可以接收REFGUID，将其转换为易读的字符串格式
 *     使用规则（COM接口中推荐使用，但其他时候尽量避免）
 *       1.COM接口定义(推荐) -- 可以不用自定义Marshal
 *       2.不要在在IDL结构体中定义BSTR成员(避免使用) -- 会给结构体的复制和释放带来麻烦，最好直接使用最大长度的TCHAR数组
 *       3.类的成员变量和非COM接口的函数参数不使用BSTR,局部变量要尽快释放
 *       4.在对BSTR进行修改（包括创建和释放时），必须使用BSTR的专用函数 -- SysAllocString / SysAllocStringByteLen / SysFreeString / SysStringLen 等
+*       5.在VB等中NULL指针是一个空BSTR字符串的合法值，但SysStringLen等函数认为NULL不合法，因此要正确获取BSTR长度的话，需要：
+*         UINT nLength = bstrInput ? SysStringLen(bstrInput) : 0;
 *     转换
 *       1.LPSTR   => BSTR  -- a.WCHAR wstr[MAX_WSTR_LEN]; MultiByteToWideChar(CP_ACP, 0, str, strlen(str)+1, wstr, xxx); BSTR bstr1 = ::SysAllocString(wstr);
 *                             b._bstr_t("xxxx");
@@ -46,7 +50,7 @@
 *     辅助类: 
 *       CComBSTR -- 只有一个m_str成员，常用于服务器程序，默认构造器将值设置为NULL，析构自动回收BSTR，也可用Empty手动释放，
 *         通常需要把值设置为空串，避免客户程序使用未赋值的字串抛出异常，能接受ANSI，但只能输出UNICODE
-*         CComBSTR bstrBad(NULL) -- 调用CComBSTR(int nSize)生成长度为0的字符串，等价于CComBSTR bstr2(L(“”))， CComBSTR::m_str 需要释放
+*         CComBSTR bstrBad(NULL) -- 调用CComBSTR(int nSize)生成长度为0的字符串，等价于CComBSTR bstr2(L(""))， CComBSTR::m_str 需要释放
 *         CComBSTR bstrGood / CComBSTR bstrGood(static_cast< LPCOLESTR> (NULL))才调用 CComBSTR(LPCOLESTR pSrc) 把CComBSTR::m_str 生成NULL
 *       _bstr_t -- 有引用计数，要求异常处理，适合于客户程序，提供了到wchar_t和char的转换输出，可以完成简单的BSTR字符串比较等操作
 *       std::string/wstring -- 功能最完善，可移植性最好。推荐使用
@@ -57,6 +61,9 @@
 *         但对于相同的代码，如果参数类型是[in, out]，就不会有泄漏。因为被调函数应该会在复制之前，Free原有的串
 *       3.把一个CComBSTR类型的类成员变量返回给传出[out]参数，需要用 Copy 或 Detach
 *       4.避免用CComBSTR在内循环进行频繁字符串修改操作，BSTR的效率较低
+* 
+* CComVariant(VARIANT)
+* 
 *************************************************************************************************************/
 
 #ifndef FTL_BASE_H

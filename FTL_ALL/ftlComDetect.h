@@ -329,6 +329,7 @@ namespace FTL
 #  include <strmif.h>
 #  include <dmodshow.h>
 #  include <amvideo.h>
+#  include <qnetwork.h>
 #endif 
 
 #if INCLUDE_DETECT_URLMON

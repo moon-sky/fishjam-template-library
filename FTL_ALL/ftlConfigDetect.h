@@ -22,6 +22,13 @@
 #  pragma message(__FILE__ "(" QQUOTE(__LINE__) ") : Begin IDE Config Detect.................................." )
 
 
+//是否遵从ANSI标准
+#  if defined(__STDC__)
+#    pragma message( "  defined __STDC__" )
+#  else
+#    pragma message( "  not defined __STDC__" )
+#  endif
+
 //判断当前编译环境下的 Manifest 信息
 #  pragma message( "  Manifest Info:")
 
@@ -65,7 +72,7 @@
 //目标平台(目前不完全)
 #if defined(_WIN32) || defined(WIN32) || defined(_WIN64)         // Windows
 #  pragma message( "  Target Platform is Windows" )
-#elif defined(__APPLE__)    //Mac OS X
+#elif defined(__APPLE__) || defined(_MAC)   //Mac OS X
 #  pragma message( "  Target Platform is Mac OS" )
 
 //注意：以下的定义都是M2000中的，不一定在别的地方适用
@@ -140,13 +147,13 @@
 
 //判断是否是Unicode版本
 //  UNICODE is used by Windows headers
-//  _UNICODE is used by C-runtime/MFC headers
+//  _UNICODE is used by C/C++ runtime/MFC headers
 #if defined (UNICODE) || defined (_UNICODE)
-#  pragma message( "  Use Unicode Character Set" )
+#  pragma message( "  Use Unicode Character Set" )			//wchar_t
 #elif defined (_MBCS)
-#  pragma message( "  Use Multi-Byte Character Set" )
+#  pragma message( "  Use Multi-Byte Character Set" )		//unsigned char 还是 char ?
 #else
-#  pragma message( "  Not Set Character Set" )
+#  pragma message( "  Not Set Character Set" )				//char
 #endif //UNICODE
 
 

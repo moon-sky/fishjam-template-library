@@ -1,3 +1,43 @@
+BitBlt 的 CAPTUREBLT
+
+全局变量：
+  _pModule(在 CComModule::Init 中初始化) 变量，就不需要再定义 ftlWindow.h 中的 ATL对象了 ?
+  _AtlBaseModule
+  
+字符类型(ANSI/Unicode) + 字符集()
+  ANSI(也称为 SBCS -- Single-Byte Character Set)
+  UNICODE
+  EBCDIC(Extended Binary Coded Decimal Interchange Code) -- IBM推出的，通常用于大型机
+  MBCS/DBCS(Multi/Double -Byte Character Set) -- 多/双字节字符集，混合长度的字符集，有些字符由多个字节组成，
+    Win9x使用，DBCS是MBCS的一种特殊类型(有些字符由两个字节组成，表示一个指定地区的符号，如 中日韩)
+    在VC6中，MBCS总是意味着DBCS(它不支持超过两个字节的字符集)
+注意：ANSI字符是有符号的(char)，MBCS字符是无符号的(unsigned char) -- ANSI字符的表达式取值和使用MBCS字符的不同
+
+ATL字符串转换宏(如 T2W，T2BSTR 等)
+  当源字符集和目的字符集不同并且目的类型不是BSTR时，会使用运行库函数 _alloca 在栈上分配内存，因此：
+    1.不要在循环中使用
+    2.当目的类型是BSTR时，会使用 SysAllocString 和 SysAllocStringLen 函数来分配目标字符串，必须使用 
+      SysFreeString 显示地释放
+  但 CT2W 等宏似乎没有这个问题了?
+  ATL::ocscpy -- 拷贝 OLESTR 字符串，而不要用 lstrcpyW(Win9X上没有实现)， 对应的有 ocslen/CharNextO 等
+  
+
+AVI Mux 中写入属性
+   http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
+   http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/RIFF.html
+ CComQIPtr<IPersistMediaPropertyBag> pPersist;
+ CComPtr<IMediaPropertyBag> pBag;
+ VARIANT val; 
+ // Query the AVI Mux filter for IPersistMediaPropertyBag (not shown).
+ pPersist = m_spMuxFilter;
+ CoCreateInstance(CLSID_MediaPropertyBag, NULL, CLSCTX_INPROC, IID_IMediaPropertyBag, (LPVOID *)&pBag);
+ val.vt = VT_BSTR;
+ val.bstrVal = SysAllocString(OLESTR("MyProperty"));
+ pBag->Write(OLESTR("INFO/IART"), &val);  //RIFFINFO_IART
+ pPersist->Load(pBag, NULL);
+ VariantClear(&val);
+  
+  
 TODO: 
   通过类型库进行ComDetect?
 
@@ -5,9 +45,15 @@ Implement Interface wizard(实现接口向导) -- 实现类型库(TypeLib)中已有定义的接口
 连接点：为了使脚本客户(如IE)接收事件，对象需要从 IProvideClassInfo2Impl 继承，对应接口允许客户查询对象的
         缺省接口标识符(default interface identifier),然后用它通过 IConnectPointContainer 接口建立联系
 
+不能使用CComBSTR代替BSTR的场景：？
+CComVariant
 
+UI
+  向导生成的对话框从 CAxDialogImpl 派生,
 
-
+组件类别(使用 BEGIN_CATEGORY_MAP/END_CATEGORY_MAP 声明 )
+  CATID_SafeForScripting -- 安全脚本
+  CATID_SafeForInitializing -- 安全初始化，有什么用？
 
 docfileview http://blog.tinybrowser.net/archives/442
 视频解码器和render之间增加一个内容透传的filter，需要处理颜色空间的差异及显卡内存自动对齐问题

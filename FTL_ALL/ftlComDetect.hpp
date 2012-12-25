@@ -350,7 +350,7 @@ namespace FTL
 					//使得应用程序可以处理视频窗体内的鼠标、键盘事件的 消息通道(Graph会将相关消息传递给该窗体)
 					strInfo.AppendFormat(TEXT("CurMsgDrain=0x%x, "), hWndMessageDrain);
 				}
-				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+				FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo.GetString());
 			}
 			return hr;
 		}
@@ -393,7 +393,7 @@ namespace FTL
 				}
 				else
 				{
-					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo);
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo.GetString());
 				}
 			}
 			return hr;
@@ -403,6 +403,57 @@ namespace FTL
 #endif //INCLUDE_DETECT_CONTROL
 
 #if INCLUDE_DETECT_MEDIA_FOUNDATION
+	class CFMFVideoDisplayControlDump
+	{
+	public:
+		static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+		{
+			HRESULT hr = S_OK;
+			ATL::CComQIPtr<IMFVideoDisplayControl> spVideoDisplayControl(pUnknown);
+			if (spVideoDisplayControl)
+			{
+				CFStringFormater strInfo;
+
+				SIZE szVideo = {0};
+				SIZE szARVideo = {0};
+				COM_VERIFY(spVideoDisplayControl->GetNativeVideoSize(&szVideo, &szARVideo));
+				if (SUCCEEDED(hr))
+				{
+					strInfo.AppendFormat(TEXT("NativeVideoSize, szVideo=%dx%d, szARVideo=%dx%d\n"), 
+						szVideo.cx, szVideo.cy, szARVideo.cx, szARVideo.cy);
+				}
+
+				SIZE szMin = {0};
+				SIZE szMax = {0};
+				COM_VERIFY(spVideoDisplayControl->GetIdealVideoSize(&szMin, &szMax));
+				if (SUCCEEDED(hr))
+				{
+					strInfo.AppendFormat(TEXT("IdealVideoSize, szMin=%dx%d, szMax=%dx%d\n"), 
+						szMin.cx, szMin.cy, szMax.cx, szMax.cy);
+				}
+
+				MFVideoNormalizedRect videoNormalizeRect = {0};
+				RECT rcDest = {0};
+				COM_VERIFY(spVideoDisplayControl->GetVideoPosition(&videoNormalizeRect, &rcDest));
+				if (SUCCEEDED(hr))
+				{
+					strInfo.AppendFormat(TEXT("VideoPosition, videoNormalizeRect=(%d, %d)-(%d,%d), rcDest=(%d,%d)-(%d,%d)\n"), 
+						videoNormalizeRect.left, videoNormalizeRect.top, videoNormalizeRect.right, videoNormalizeRect.bottom,
+						rcDest.left, rcDest.top, rcDest.right, rcDest.bottom);
+				}
+				
+				if (NULL == strInfo.GetString())
+				{
+					//FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), TEXT("May be EVR interface, can nnot get information"));
+				}
+				else
+				{
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t %s\n"), strInfo.GetString());
+				}
+			}
+			return hr;
+		}
+	};
 	class CFMFGetServiceDump
 	{
 	public:
@@ -1419,7 +1470,7 @@ namespace FTL
 			//evr.h
 			DETECT_INTERFACE_ENTRY(IMFVideoPositionMapper)
 			DETECT_INTERFACE_ENTRY(IMFVideoDeviceID)
-			DETECT_INTERFACE_ENTRY(IMFVideoDisplayControl)
+			DETECT_INTERFACE_ENTRY_EX(IMFVideoDisplayControl, CFMFVideoDisplayControlDump)
 			DETECT_INTERFACE_ENTRY(IMFVideoPresenter)
 			DETECT_INTERFACE_ENTRY(IMFDesiredSample)
 			DETECT_INTERFACE_ENTRY(IMFTrackedSample)
@@ -2671,6 +2722,18 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY_IID(IFullScreenVideoEx, IID_IFullScreenVideoEx)
 			DETECT_INTERFACE_ENTRY_IID(IBaseVideoMixer, IID_IBaseVideoMixer)
 #  endif 
+			//qnetwork.h
+			DETECT_INTERFACE_ENTRY_IID(IAMNetShowConfig, IID_IAMNetShowConfig)
+			DETECT_INTERFACE_ENTRY_IID(IAMChannelInfo, IID_IAMChannelInfo)
+			DETECT_INTERFACE_ENTRY_IID(IAMNetworkStatus, IID_IAMNetworkStatus)
+			DETECT_INTERFACE_ENTRY_IID(IAMExtendedSeeking, IID_IAMExtendedSeeking)
+			DETECT_INTERFACE_ENTRY_IID(IAMNetShowExProps, IID_IAMNetShowExProps)
+			DETECT_INTERFACE_ENTRY_IID(IAMExtendedErrorInfo, IID_IAMExtendedErrorInfo)
+			DETECT_INTERFACE_ENTRY_IID(IAMMediaContent, IID_IAMMediaContent)
+			DETECT_INTERFACE_ENTRY_IID(IAMMediaContent2, IID_IAMMediaContent2)
+			DETECT_INTERFACE_ENTRY_IID(IAMNetShowPreroll, IID_IAMNetShowPreroll)
+			DETECT_INTERFACE_ENTRY_IID(IDShowPlugin, IID_IDShowPlugin)
+
 #endif //INCLUDE_DETECT_STRMIF
 
 #if INCLUDE_DETECT_URLMON

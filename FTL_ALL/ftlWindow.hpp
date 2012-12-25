@@ -349,7 +349,9 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_ENDSESSION, CFDefaultMsgInfo);
 #endif
                 GET_MESSAGE_INFO_ENTRY(WM_QUIT, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_ERASEBKGND, CFDefaultMsgInfo); //当窗口背景必须被擦除时（例在窗口改变大小时
+				//当窗口背景必须被擦除时（例在窗口改变大小时),如果实现中擦除了背景，则返回TRUE；如返回FALSE，则 PAINTSTRUCT::fErase 会为TRUE
+				//缺省实现是使用窗体类结构中的Brush擦除
+                GET_MESSAGE_INFO_ENTRY(WM_ERASEBKGND, CFDefaultMsgInfo); 
                 GET_MESSAGE_INFO_ENTRY(WM_SYSCOLORCHANGE, CFDefaultMsgInfo);    //当系统颜色改变时，发送此消息给所有顶级窗口
                 GET_MESSAGE_INFO_ENTRY(WM_SHOWWINDOW, CFDefaultMsgInfo);
 
