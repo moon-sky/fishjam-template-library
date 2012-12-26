@@ -533,6 +533,7 @@ namespace FTL
     template <typename T, MemoryAllocType allocType  = matNew, UINT DefaultFixedCount = DEFAULT_MEMALLOCATOR_FIXED_COUNT>
     class CFMemAllocator
     {
+#pragma TODO(ATL中已经有 CTempBuffer 模板类了)
         DISABLE_COPY_AND_ASSIGNMENT(CFMemAllocator);
     public:
         FTLINLINE CFMemAllocator();

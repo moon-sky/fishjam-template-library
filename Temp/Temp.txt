@@ -1,5 +1,13 @@
 BitBlt 的 CAPTUREBLT
 
+C运行时本地语言设置(runtime locale setting) -- 如 wcscmp 缺省时仅比较52个不带重音的字母字符，
+  要想使用操作系统的本地设置来比较字符串，必须调用 setlocale(LC_ALL, "");
+
+C++语言定义bool数据类型是一个8位的值(0或者1)， BOOL 是long(32/64位)的
+
+CComDispatchDriver -- 是IDispatch接口的智能指针，可获取和设置对象的属性
+  CComDispatchDriver pDisp = XXX; pDisp->GetProperty(DISPID_COUNT, &var);
+
 全局变量：
   _pModule(在 CComModule::Init 中初始化) 变量，就不需要再定义 ftlWindow.h 中的 ATL对象了 ?
   _AtlBaseModule

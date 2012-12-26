@@ -24,6 +24,14 @@
 * COM的基本字符数据类型是OLECHAR，与平台无关的字符表示法，其C++体现即为BSTR
 *   BSTR(Basic STRing) <== 带长度(BSTR指针的前4个字节,不包括结束NULL字符的字符串的字节数，如 SysAllocString(L"Hello")长度为10)的宽字符(16bit)数组，
 *     可以存贮NULL字节进行分段，并且 解释型环境 和 进行Marshal时更高效 -- 不需要扫描来确定字符串长度；
+*     注意使用BSTR时，如果包含内嵌NULL字符的字符串时很有可能出错 -- BSTR 会被编译器视为 OLECHAR*(即以NULL结尾的字符串)，
+*       但实际上两者不同（前面是否有长度、是否可以内嵌NULL字符 等）
+*       即：CComBSTR::Append(BSTR) 错误 -- 正确的方法是 CComBSTR::AppendBSTR(BSTR).
+*           CComBSTR::Append(LPCOLESTR 或 LPCSTR) 正确
+*           CComBSTR bstrTest(BSTR); 错误 -- 如果BSTR中包含NULL字符，会被认为是参数 LPCOLESTR 的重载，从而丢失数据，
+*           CComBSTR bstrTest(SysStringLen(BSTR), BSTR); 正确 -- 指定长度
+*           CComBSTR bstrTest = BSTR; 错误 -- 吧一个包含内嵌NULL字符的BSTR赋值给一个CComBSTR对象永远无法正常工作
+*           CComBSTR bstrTest; bstrTest.AppendBSTR(BSTR); 错误, AppendBSTR 以前可以先 Empty
 *     SysAllocString返回的指针指向BSTR的第一个字符(而不是BSTR在内存的第一个字节 -- 长度位置)，因此可直接用于大部分需要 LPCWSTR 或 const OLECHAR*  的地方，
 *       但是不能用于 非const 的地方，否则可能照成错误
 *     所有的BSTR都必须使用SysFreeString()释放,否则会造成内存泄漏。
@@ -35,7 +43,7 @@
 *       4.在对BSTR进行修改（包括创建和释放时），必须使用BSTR的专用函数 -- SysAllocString / SysAllocStringByteLen / SysFreeString / SysStringLen 等
 *       5.在VB等中NULL指针是一个空BSTR字符串的合法值，但SysStringLen等函数认为NULL不合法，因此要正确获取BSTR长度的话，需要：
 *         UINT nLength = bstrInput ? SysStringLen(bstrInput) : 0;
-*     转换
+*     转换(对编译器来说， BSTR 是 OLECHAR* 或 LPCOLESTR )
 *       1.LPSTR   => BSTR  -- a.WCHAR wstr[MAX_WSTR_LEN]; MultiByteToWideChar(CP_ACP, 0, str, strlen(str)+1, wstr, xxx); BSTR bstr1 = ::SysAllocString(wstr);
 *                             b._bstr_t("xxxx");
 *       2.BSTR    => LPSTR -- a.WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)bstr,xxx); 
@@ -63,6 +71,13 @@
 *       4.避免用CComBSTR在内循环进行频繁字符串修改操作，BSTR的效率较低
 * 
 * CComVariant(VARIANT)
+*   VariantInit
+*   VariantCopy -- 根据类型正确的进行浅拷贝或深拷贝
+*   VariantCopyInd -- VARIANT可以有选择地表示最多一层的间接性(VT_BYREF 还是 VT_ARRAY?)， 这个函数可以去除VARIANT的这一层间接性
+*   VariantClear -- 根据类型正确的释放，如包含BSTR的SAFEARRAY会先释放数组中每个BSTR，然后释放数组本身
+*   注意：CComVariant 针对字符串有几个重载构造，稍一不注意，可能就会出错(深入解析ATL.pdf中写了还有 BSTR 参数的构造，但VS2008中没有)
+*     1.CComVariant(LPCOLESTR lpszSrc) 
+*     2.CComVariant(LPCSTR lpszSrc)
 * 
 *************************************************************************************************************/
 
