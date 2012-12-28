@@ -1,3 +1,13 @@
+TODO: 
+  1.Ğ´ CComBSTR/CComVariant µÄUT
+  2.Í¨¹ıÀàĞÍ¿â½øĞĞComDetect?
+  3.CComPtr<IShellBrowser>  spShellBrowser; ±È½Ï if (NULL == spShellBrowser) if(spShellBrowser == NULL) µÄÇø±ğ
+    ¾İËµ²»ÄÜ±àÒë£¬µ«VC2008ÖĞOK
+  4.²é¾ÛºÏÏà¹ØµÄÔ´ÂëºÍDemo³ÌĞò -- m_pUnkOuter¡¢CComObjectRootBase::OuterAddRef µÈ£¬
+
+ËµÃ÷ĞÔ±àÒë±êÊ¾·û(declspec, declarative specifier), Èç struct __declspec(uuid("xxxxxx")) IUnknown {...};
+  È»ºó¿ÉÒÔÊ¹ÓÃ __uuidof ²Ù×÷·ûÀ´µÃµ½Ò»¸öÀàĞÍµÄUUID
+
 BitBlt µÄ CAPTUREBLT
 
 CÔËĞĞÊ±±¾µØÓïÑÔÉèÖÃ(runtime locale setting) -- Èç wcscmp È±Ê¡Ê±½ö±È½Ï52¸ö²»´øÖØÒôµÄ×ÖÄ¸×Ö·û£¬
@@ -5,9 +15,20 @@ CÔËĞĞÊ±±¾µØÓïÑÔÉèÖÃ(runtime locale setting) -- Èç wcscmp È±Ê¡Ê±½ö±È½Ï52¸ö²»´øÖØÒ
 
 C++ÓïÑÔ¶¨ÒåboolÊı¾İÀàĞÍÊÇÒ»¸ö8Î»µÄÖµ(0»òÕß1)£¬ BOOL ÊÇlong(32/64Î»)µÄ
 
-CComDispatchDriver -- ÊÇIDispatch½Ó¿ÚµÄÖÇÄÜÖ¸Õë£¬¿É»ñÈ¡ºÍÉèÖÃ¶ÔÏóµÄÊôĞÔ
+CComPtr<T>::Release ²ÉÓÃ½«Ö¸Õë³ÉÔ±±äÁ¿¸³Öµµ½Ò»¸öÁÙÊ±±äÁ¿ÖĞ£¬²¢°Ñ³ÉÔ±±äÁ¿ÖØÖÃÎªNULLºó£¬²ÅÊ¹ÓÃÁÙÊ±±äÁ¿ÊÍ·Å½Ó¿ÚÖ¸Õë£¬
+  Õâ¸ö·½·¨±ÜÃâÁËÖ»ÄÜÖ¸Õë±£´æµÄ½Ó¿Ú¿ÉÄÜ±»ÊÍ·ÅÁ½´ÎµÄÎÊÌâ£¨Á½¸öÖÇÄÜÖ¸Õë»¥ÏàÓĞÒıÓÃ£¬ReleaseÖĞÊÍ·ÅÊ±Ôì³É¶Ô·½Îö¹¹£¬
+  ·´Ïòµ÷ÓÃ±¾Ö¸ÕëµÄÎö¹¹£¬Îö¹¹ÖĞ»á¼ì²â³ÉÔ±±äÁ¿ÊÇ·ñÎªNULL£¬Èç·ÇNULLÔò¿ÉÄÜÖØ¸´ÊÍ·Å£©
+  CComPtr<T>::operator->() ²Ù×÷·û·µ»Ø _NoAddRefReleaseOnCComPtr Ä£°åÀà£¬½ûÖ¹(±àÒë´íÎó)Ö±½ÓÊ¹ÓÃÖ¸Õë³ÉÔ±±äÁ¿µÄ AddRef/Release
+  SetSite -- °ÑÄÚ²¿Ö¸ÕëÒıÓÃµÄ¶ÔÏóÓëÒ»¸ösite¶ÔÏó(²ÎÊıpunkParent)ÁªÏµÆğÀ´£¬Ö»ÄÜÖ¸Õë±ØĞëÖ¸ÏòÒ»¸öÊµÏÖÁË IObjectWithSite ½Ó¿ÚµÄ¶ÔÏó
+  Advise(Sink) -- °ÑÒ»¸öÁ¬½Óµã½ÓÊÕÆ÷¶ÔÏóÓëÖÇÄÜ½Ó¿ÚÖ¸ÕëÒıÓÃµÄ¶ÔÏó(ÊÂ¼şÔ´¶ÔÏó)ÁªÏµÆğÀ´
+  
+CComDispatchDriver -- ÊÇIDispatch½Ó¿ÚµÄÖÇÄÜÖ¸Õë(typedef CComQIPtr<IDispatch>)£¬¿É»ñÈ¡ºÍÉèÖÃ¶ÔÏóµÄÊôĞÔ
   CComDispatchDriver pDisp = XXX; pDisp->GetProperty(DISPID_COUNT, &var);
-
+    GetIDOfName -- ¿ÉÒÔ¸ù¾İÊôĞÔÃû×ÖµÄ×Ö·û´®»ñµÃÊôĞÔµÄDISPID
+    GetProperty/PutProperty -- »ñÈ¡»òÉèÖÃÊôĞÔµÄÖµ
+    GetPropertyByName/PutPropertyByName -- ¸ù¾İÊôĞÔÃû×ÖÀ´»ñÈ¡»òÉèÖÃÊôĞÔÖµ
+    InvokeN -- Ìá¹©ÁË¶à¸öÖØÔØµÄ·½·¨£¬·½±ã¶ÔInvokeµÄµ÷ÓÃ
+    
 È«¾Ö±äÁ¿£º
   _pModule(ÔÚ CComModule::Init ÖĞ³õÊ¼»¯) ±äÁ¿£¬¾Í²»ĞèÒªÔÙ¶¨Òå ftlWindow.h ÖĞµÄ ATL¶ÔÏóÁË ?
   _AtlBaseModule
@@ -28,7 +49,61 @@ ATL×Ö·û´®×ª»»ºê(Èç T2W£¬T2BSTR µÈ)
       SysFreeString ÏÔÊ¾µØÊÍ·Å
   µ« CT2W µÈºêËÆºõÃ»ÓĞÕâ¸öÎÊÌâÁË?
   ATL::ocscpy -- ¿½±´ OLESTR ×Ö·û´®£¬¶ø²»ÒªÓÃ lstrcpyW(Win9XÉÏÃ»ÓĞÊµÏÖ)£¬ ¶ÔÓ¦µÄÓĞ ocslen/CharNextO µÈ
+
+¶àÏß³ÌÄ£ĞÍ(Ïòµ¼)
+  Apartment -- ÎŞĞèÍ¬²½¶ÔÊµÀıÊı¾İµÄ·ÃÎÊ¾ÍÄÜ±£»¤¶ÔÏó£¬µ«Õâ¸öÀàµÄ¶ÔÏó¿ÉÔÚ²»Í¬µÄSTAÖĞ±»´´½¨£¬ËùÒÔ¾²Ì¬ºÍÈ«¾ÖÊı¾İÈÔÈ»ĞèÒªÍ¬²½¡£
+  Free -- Õâ¸öÀàµÄ¶ÔÏóÖ»ÄÜ´æÔÚÓÚMTAÖĞ(Èç¹ûÃ»ÓĞ£¬ÏµÍ³»á×Ô¶¯´´½¨Ò»¸ö£¬²¢×Ô¶¯Í¬²½£¿)ÔÚMTAÖĞµÄ¶ÔÏó±ØĞëÍ¬²½¶ÔÊµÀı¡¢È«¾ÖÊı¾İµÄ·ÃÎÊ
+  Both -- Ï£Íû¹²Ïí¿Í»§Ì×¼äµÄ¶ÔÏó¿É°ÑËûÃÇµÄÀà±ê¼ÇÎªBoth£¬ÒâÎ¶×ÅÃ»ÓĞ²»¼æÈİµÄÏß³ÌÄ£ĞÍ¡£µ±Ïë±ÜÃâ´úÀí/´æ¸ù¿ªÏúµÄÊ±ºò¿ÉÒÔÊ¹ÓÃÕâ¸öÖµ¡£
+
+  ÊµÀıÊı¾İµÄÍ¬²½:¶ÔÏó¼¶µÄËø(·½±ã°²È«µ«²¢·¢ĞÔµÍ) ºÍ Ï¸Á£¶ÈµÄÊı¾İËø(ÔÊĞí¸ß²¢·¢µ«ĞèÒªĞ¡ĞÄÊ¹ÓÃ·ÀÖ¹ËÀËø)
+    CComCriticalSection -- ĞèÒªÊÖ¶¯ Init/Term µÄ CRITICAL_SECTION, Init->Lock->Unlock->Term
+      ÓÃÓÚĞèÒªÒ»¸öÈ«¾Ö»òÕß¾²Ì¬µÄÁÙ½çÇø£¬²¢ÇÒCÔËĞĞ¿â(CRT)²»ÄÜ×Ô¶¯Íê³É¹¹ÔìºÍÎö¹¹¹¤×÷Ê±£¨ÎªÊ²Ã´»áÕâÑù?²»Ê¹ÓÃCRT?£©
+    CComAutoCriticalSection -- ¹¹ÔìÖĞ×Ô¶¯³õÊ¼»¯£¬Îö¹¹ÖĞ×Ô¶¯ÖÕÖ¹£¬ Lock->Unlock
+    CComAutoDeleteCriticalSection -- ´Ó CComCriticalSection ¼Ì³Ğ£¬¿ÉÒÔ·ÀÖ¹¶à´Îµ÷ÓÃ Init/Term ?
+    CComFakeCriticalSection -- Í¨³£ÓÃÓÚµ¥Ïß³ÌÄ£ĞÍÊ±£¬±ÜÃâËø¶¨µÄ¿ªÏú
+  ×Ô¶¯µÄ·¶Î§Ëø£ºCComObjectLockT<>£¬ÔÚ CComObjectRootEx ÖĞtypedef Îª ObjectLock£¬Ê¹ÓÃ·½·¨£ºObjectLock lock(this);
+    
+CComObjectRootEx Ìá¹©Ç¡ºÃ×ã¹»Ïß³Ì°²È«(just-safe-thread-enough)µÄ¶ÔÏóÉúÃüÖÜÆÚ¹ÜÀíºÍ¶ÔÏóËø¶¨¹¦ÄÜ¡£
+
+CComXXXThreadModel -- ¶¨ÒåÁË¾²Ì¬µÄ Increment/Decrement£¬ÓÃÓÚ³éÏó³ö¹ÜÀíÒ»¸ö¶ÔÏóµÄÉúÃüÖÜÆÚ¼ÆËãÆ÷ÔÚµ¥Ïß³ÌºÍ¶àÏß³Ì·½Ê½ÏÂµÄ²îÒì
+  CComMultiThreadModelNoCS -- ÒıÓÃ¼ÆÊıÊ±²ÉÓÃÏß³Ì°²È«µÄ·½Ê½£¬µ«²»Ê¹ÓÃ¶ÔÏó¼¶Ëø(¼´Ã»ÓĞ³ıÒıÓÃ¼ÆÊıÍâĞèÒª±£»¤µÄ³ÉÔ±±äÁ¿ »ò Ê¹ÓÃÏ¸Á£¶ÈµÄÊı¾İËø ?)
+
+·şÎñÆ÷µÄ¡°È±Ê¡¡±Ïß³ÌÄ£ĞÍ(ÎªÊ²Ã´Ã»ÓĞ¿´µ½¶ÔÓ¦µÄºê), ATL Ê¹ÓÃÕâĞ©ºêÀ´typedef CComObjectThreadModel/CComGlobalsThreadModel£¬
+  ATLÔÚÄÚ²¿Ê¹ÓÃ CComObjectThreadModel ±£»¤ÊµÀıÊı¾İ£¬ CComGlobalsThreadModel À´±£»¤È«¾ÖºÍ¾²Ì¬Êı¾İ¡£
+  ÎªÁË±£Ö¤³ÌĞòÔËĞĞÕıÈ·£¬ÄÄÅÂ·şÎñÆ÷ÖĞÖ»ÓĞÒ»¸ö¶àÏß³ÌÀà£¬Ò²±ØĞë°ÑÏòµ¼Éú³ÉµÂ¶û _ATL_APARTMENT_THREADED ¸ÄÎª _ATL_FREE_THREADED
+  _ATL_SINGLE_THREADED
+  _ATL_APARTMENT_THREADED  -- ftlConfigDetect.h ÖĞÓĞ¶ÔÆäµÄÅĞ¶Ï
+  _ATL_FREE_THREADED
   
+MMC(Microsoft Management Console) -- Î¢Èí¹ÜÀí¿ØÖÆÌ¨¡£¿ÉÒÔĞ´ extensions(À©Õ¹) ?
+
+IDispatchÖĞ¶ÔÓÚTypeLibµÄÊÖ¶¯ÊµÏÖ(¼´ IDispatchImpl µÄÊµÏÖ·½Ê½ ?)
+  a.¹¹ÔìÖĞ´Ó×¢²áĞÅÏ¢ÖĞ»ñµÃ ITypeInfoÖ¸ÕëµÄ³ÉÔ±±äÁ¿ m_pTypeInfo£¬ ÔÚIDispatchµÄ·½·¨ÊµÏÖÖĞ¼´¿Éµ÷ÓÃ¸Ã½Ó¿ÚÊµÏÖ
+    IID*		pIID = &IID_IPenguin;
+    GUID*		pLibID = &LIBID_BIRDSERVERLib;
+    WORD		wMajor = 1;
+    WORD		wMinor = 0;
+    ITypeLib* pTl = NULL;
+    HRESULT hr = LoadRegTypeLib(*pLibID, wMajor, wMinor, 0, &pTl);
+    if(SUCCEEDED(hr))
+    {  hr = pTl->GetTypeInfoOfGuid(*pIID, &m_pTypeInfo); pTl->Release(); }
+  b.GetTypeInfoCount º¯Êı·µ»Ø 1;
+  c.GetTypeInfo ÖĞ 
+    { 
+      if ctInfo != 0; { *ppti= NULL; return DISP_E_BADINDEX; }
+      *ppti = m_pTypeInfo; m_pTypeInfo->AddRef(); return S_OK;
+    }
+
+×Ô¶¯»¯½Ó¿ÚµÄ½¨Òé
+  1.²»ÒªÔÚÒ»¸öµ¥¶ÀµÄÊµÏÖÖĞÖ§³Ö¶à¸öË«½Ó¿Ú
+  2.²»Òª°Ñ¿ÉÖØÓÃµÄ¡¢¶àÌ¬µÄCOM½Ó¿ÚÉè¼Æ³ÉË«½Ó¿Ú(¼´ÆÕÍ¨½Ó¿Ú²»ÒªÊÇË«½Ó¿Ú)
+  3.Èç¹ûÏëÖ§³Ö½Å±¾¿Í»§£¬½¨Òé¶¨ÒåÒ»¸öµ¥¶ÀµÄË«½Ó¿ÚÀ´±©Â¶ÀàµÄËùÓĞ¹¦ÄÜ
+    ÀíÓÉ£º½Å±¾¿Í»§½öÄÜ»ñµÃÈ±Ê¡Ë«½Ó¿ÚµÄ·½·¨ºÍÊôĞÔ
+    
+COM¶ÔÏó×îºÃ²»Òª¼Ì³Ğ×Ô¶à¸öIDispatch½Ó¿Ú -- 
+
+CComObjectRootBase::InternalQueryInterface -- ¾²Ì¬º¯Êı£¬¶ÔÓÚ±»ÇëÇóµÄ½Ó¿Ú£¬ÓÃÒ»¸öÖ¸ÏòÊÊµ±VPTR(virtual function table pointerĞéº¯Êı±íÖ¸Õë)
+  µÄÖ¸ÕëÀ´Ìî³ä²ÎÊı ppvObject ·µ»Ø£¬
 
 AVI Mux ÖĞĞ´ÈëÊôĞÔ
    http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
@@ -46,12 +121,11 @@ AVI Mux ÖĞĞ´ÈëÊôĞÔ
  VariantClear(&val);
   
   
-TODO: 
-  Í¨¹ıÀàĞÍ¿â½øĞĞComDetect?
-
 Implement Interface wizard(ÊµÏÖ½Ó¿ÚÏòµ¼) -- ÊµÏÖÀàĞÍ¿â(TypeLib)ÖĞÒÑÓĞ¶¨ÒåµÄ½Ó¿Ú
 Á¬½Óµã£ºÎªÁËÊ¹½Å±¾¿Í»§(ÈçIE)½ÓÊÕÊÂ¼ş£¬¶ÔÏóĞèÒª´Ó IProvideClassInfo2Impl ¼Ì³Ğ£¬¶ÔÓ¦½Ó¿ÚÔÊĞí¿Í»§²éÑ¯¶ÔÏóµÄ
         È±Ê¡½Ó¿Ú±êÊ¶·û(default interface identifier),È»ºóÓÃËüÍ¨¹ı IConnectPointContainer ½Ó¿Ú½¨Á¢ÁªÏµ
+
+IViewObjectExImpl -- 
 
 ²»ÄÜÊ¹ÓÃCComBSTR´úÌæBSTRµÄ³¡¾°£º£¿
 CComVariant
