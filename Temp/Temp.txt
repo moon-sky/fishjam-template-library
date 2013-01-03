@@ -14,20 +14,7 @@ CÔËÐÐÊ±±¾µØÓïÑÔÉèÖÃ(runtime locale setting) -- Èç wcscmp È±Ê¡Ê±½ö±È½Ï52¸ö²»´øÖØÒ
   ÒªÏëÊ¹ÓÃ²Ù×÷ÏµÍ³µÄ±¾µØÉèÖÃÀ´±È½Ï×Ö·û´®£¬±ØÐëµ÷ÓÃ setlocale(LC_ALL, "");
 
 C++ÓïÑÔ¶¨ÒåboolÊý¾ÝÀàÐÍÊÇÒ»¸ö8Î»µÄÖµ(0»òÕß1)£¬ BOOL ÊÇlong(32/64Î»)µÄ
-
-CComPtr<T>::Release ²ÉÓÃ½«Ö¸Õë³ÉÔ±±äÁ¿¸³Öµµ½Ò»¸öÁÙÊ±±äÁ¿ÖÐ£¬²¢°Ñ³ÉÔ±±äÁ¿ÖØÖÃÎªNULLºó£¬²ÅÊ¹ÓÃÁÙÊ±±äÁ¿ÊÍ·Å½Ó¿ÚÖ¸Õë£¬
-  Õâ¸ö·½·¨±ÜÃâÁËÖ»ÄÜÖ¸Õë±£´æµÄ½Ó¿Ú¿ÉÄÜ±»ÊÍ·ÅÁ½´ÎµÄÎÊÌâ£¨Á½¸öÖÇÄÜÖ¸Õë»¥ÏàÓÐÒýÓÃ£¬ReleaseÖÐÊÍ·ÅÊ±Ôì³É¶Ô·½Îö¹¹£¬
-  ·´Ïòµ÷ÓÃ±¾Ö¸ÕëµÄÎö¹¹£¬Îö¹¹ÖÐ»á¼ì²â³ÉÔ±±äÁ¿ÊÇ·ñÎªNULL£¬Èç·ÇNULLÔò¿ÉÄÜÖØ¸´ÊÍ·Å£©
-  CComPtr<T>::operator->() ²Ù×÷·û·µ»Ø _NoAddRefReleaseOnCComPtr Ä£°åÀà£¬½ûÖ¹(±àÒë´íÎó)Ö±½ÓÊ¹ÓÃÖ¸Õë³ÉÔ±±äÁ¿µÄ AddRef/Release
-  SetSite -- °ÑÄÚ²¿Ö¸ÕëÒýÓÃµÄ¶ÔÏóÓëÒ»¸ösite¶ÔÏó(²ÎÊýpunkParent)ÁªÏµÆðÀ´£¬Ö»ÄÜÖ¸Õë±ØÐëÖ¸ÏòÒ»¸öÊµÏÖÁË IObjectWithSite ½Ó¿ÚµÄ¶ÔÏó
-  Advise(Sink) -- °ÑÒ»¸öÁ¬½Óµã½ÓÊÕÆ÷¶ÔÏóÓëÖÇÄÜ½Ó¿ÚÖ¸ÕëÒýÓÃµÄ¶ÔÏó(ÊÂ¼þÔ´¶ÔÏó)ÁªÏµÆðÀ´
   
-CComDispatchDriver -- ÊÇIDispatch½Ó¿ÚµÄÖÇÄÜÖ¸Õë(typedef CComQIPtr<IDispatch>)£¬¿É»ñÈ¡ºÍÉèÖÃ¶ÔÏóµÄÊôÐÔ
-  CComDispatchDriver pDisp = XXX; pDisp->GetProperty(DISPID_COUNT, &var);
-    GetIDOfName -- ¿ÉÒÔ¸ù¾ÝÊôÐÔÃû×ÖµÄ×Ö·û´®»ñµÃÊôÐÔµÄDISPID
-    GetProperty/PutProperty -- »ñÈ¡»òÉèÖÃÊôÐÔµÄÖµ
-    GetPropertyByName/PutPropertyByName -- ¸ù¾ÝÊôÐÔÃû×ÖÀ´»ñÈ¡»òÉèÖÃÊôÐÔÖµ
-    InvokeN -- Ìá¹©ÁË¶à¸öÖØÔØµÄ·½·¨£¬·½±ã¶ÔInvokeµÄµ÷ÓÃ
     
 È«¾Ö±äÁ¿£º
   _pModule(ÔÚ CComModule::Init ÖÐ³õÊ¼»¯) ±äÁ¿£¬¾Í²»ÐèÒªÔÙ¶¨Òå ftlWindow.h ÖÐµÄ ATL¶ÔÏóÁË ?
@@ -54,27 +41,7 @@ ATL×Ö·û´®×ª»»ºê(Èç T2W£¬T2BSTR µÈ)
   Apartment -- ÎÞÐèÍ¬²½¶ÔÊµÀýÊý¾ÝµÄ·ÃÎÊ¾ÍÄÜ±£»¤¶ÔÏó£¬µ«Õâ¸öÀàµÄ¶ÔÏó¿ÉÔÚ²»Í¬µÄSTAÖÐ±»´´½¨£¬ËùÒÔ¾²Ì¬ºÍÈ«¾ÖÊý¾ÝÈÔÈ»ÐèÒªÍ¬²½¡£
   Free -- Õâ¸öÀàµÄ¶ÔÏóÖ»ÄÜ´æÔÚÓÚMTAÖÐ(Èç¹ûÃ»ÓÐ£¬ÏµÍ³»á×Ô¶¯´´½¨Ò»¸ö£¬²¢×Ô¶¯Í¬²½£¿)ÔÚMTAÖÐµÄ¶ÔÏó±ØÐëÍ¬²½¶ÔÊµÀý¡¢È«¾ÖÊý¾ÝµÄ·ÃÎÊ
   Both -- Ï£Íû¹²Ïí¿Í»§Ì×¼äµÄ¶ÔÏó¿É°ÑËûÃÇµÄÀà±ê¼ÇÎªBoth£¬ÒâÎ¶×ÅÃ»ÓÐ²»¼æÈÝµÄÏß³ÌÄ£ÐÍ¡£µ±Ïë±ÜÃâ´úÀí/´æ¸ù¿ªÏúµÄÊ±ºò¿ÉÒÔÊ¹ÓÃÕâ¸öÖµ¡£
-
-  ÊµÀýÊý¾ÝµÄÍ¬²½:¶ÔÏó¼¶µÄËø(·½±ã°²È«µ«²¢·¢ÐÔµÍ) ºÍ Ï¸Á£¶ÈµÄÊý¾ÝËø(ÔÊÐí¸ß²¢·¢µ«ÐèÒªÐ¡ÐÄÊ¹ÓÃ·ÀÖ¹ËÀËø)
-    CComCriticalSection -- ÐèÒªÊÖ¶¯ Init/Term µÄ CRITICAL_SECTION, Init->Lock->Unlock->Term
-      ÓÃÓÚÐèÒªÒ»¸öÈ«¾Ö»òÕß¾²Ì¬µÄÁÙ½çÇø£¬²¢ÇÒCÔËÐÐ¿â(CRT)²»ÄÜ×Ô¶¯Íê³É¹¹ÔìºÍÎö¹¹¹¤×÷Ê±£¨ÎªÊ²Ã´»áÕâÑù?²»Ê¹ÓÃCRT?£©
-    CComAutoCriticalSection -- ¹¹ÔìÖÐ×Ô¶¯³õÊ¼»¯£¬Îö¹¹ÖÐ×Ô¶¯ÖÕÖ¹£¬ Lock->Unlock
-    CComAutoDeleteCriticalSection -- ´Ó CComCriticalSection ¼Ì³Ð£¬¿ÉÒÔ·ÀÖ¹¶à´Îµ÷ÓÃ Init/Term ?
-    CComFakeCriticalSection -- Í¨³£ÓÃÓÚµ¥Ïß³ÌÄ£ÐÍÊ±£¬±ÜÃâËø¶¨µÄ¿ªÏú
-  ×Ô¶¯µÄ·¶Î§Ëø£ºCComObjectLockT<>£¬ÔÚ CComObjectRootEx ÖÐtypedef Îª ObjectLock£¬Ê¹ÓÃ·½·¨£ºObjectLock lock(this);
     
-CComObjectRootEx Ìá¹©Ç¡ºÃ×ã¹»Ïß³Ì°²È«(just-safe-thread-enough)µÄ¶ÔÏóÉúÃüÖÜÆÚ¹ÜÀíºÍ¶ÔÏóËø¶¨¹¦ÄÜ¡£
-
-CComXXXThreadModel -- ¶¨ÒåÁË¾²Ì¬µÄ Increment/Decrement£¬ÓÃÓÚ³éÏó³ö¹ÜÀíÒ»¸ö¶ÔÏóµÄÉúÃüÖÜÆÚ¼ÆËãÆ÷ÔÚµ¥Ïß³ÌºÍ¶àÏß³Ì·½Ê½ÏÂµÄ²îÒì
-  CComMultiThreadModelNoCS -- ÒýÓÃ¼ÆÊýÊ±²ÉÓÃÏß³Ì°²È«µÄ·½Ê½£¬µ«²»Ê¹ÓÃ¶ÔÏó¼¶Ëø(¼´Ã»ÓÐ³ýÒýÓÃ¼ÆÊýÍâÐèÒª±£»¤µÄ³ÉÔ±±äÁ¿ »ò Ê¹ÓÃÏ¸Á£¶ÈµÄÊý¾ÝËø ?)
-
-·þÎñÆ÷µÄ¡°È±Ê¡¡±Ïß³ÌÄ£ÐÍ(ÎªÊ²Ã´Ã»ÓÐ¿´µ½¶ÔÓ¦µÄºê), ATL Ê¹ÓÃÕâÐ©ºêÀ´typedef CComObjectThreadModel/CComGlobalsThreadModel£¬
-  ATLÔÚÄÚ²¿Ê¹ÓÃ CComObjectThreadModel ±£»¤ÊµÀýÊý¾Ý£¬ CComGlobalsThreadModel À´±£»¤È«¾ÖºÍ¾²Ì¬Êý¾Ý¡£
-  ÎªÁË±£Ö¤³ÌÐòÔËÐÐÕýÈ·£¬ÄÄÅÂ·þÎñÆ÷ÖÐÖ»ÓÐÒ»¸ö¶àÏß³ÌÀà£¬Ò²±ØÐë°ÑÏòµ¼Éú³ÉµÂ¶û _ATL_APARTMENT_THREADED ¸ÄÎª _ATL_FREE_THREADED
-  _ATL_SINGLE_THREADED
-  _ATL_APARTMENT_THREADED  -- ftlConfigDetect.h ÖÐÓÐ¶ÔÆäµÄÅÐ¶Ï
-  _ATL_FREE_THREADED
-  
 MMC(Microsoft Management Console) -- Î¢Èí¹ÜÀí¿ØÖÆÌ¨¡£¿ÉÒÔÐ´ extensions(À©Õ¹) ?
 
 IDispatchÖÐ¶ÔÓÚTypeLibµÄÊÖ¶¯ÊµÏÖ(¼´ IDispatchImpl µÄÊµÏÖ·½Ê½ ?)
@@ -94,13 +61,7 @@ IDispatchÖÐ¶ÔÓÚTypeLibµÄÊÖ¶¯ÊµÏÖ(¼´ IDispatchImpl µÄÊµÏÖ·½Ê½ ?)
       *ppti = m_pTypeInfo; m_pTypeInfo->AddRef(); return S_OK;
     }
 
-×Ô¶¯»¯½Ó¿ÚµÄ½¨Òé
-  1.²»ÒªÔÚÒ»¸öµ¥¶ÀµÄÊµÏÖÖÐÖ§³Ö¶à¸öË«½Ó¿Ú
-  2.²»Òª°Ñ¿ÉÖØÓÃµÄ¡¢¶àÌ¬µÄCOM½Ó¿ÚÉè¼Æ³ÉË«½Ó¿Ú(¼´ÆÕÍ¨½Ó¿Ú²»ÒªÊÇË«½Ó¿Ú)
-  3.Èç¹ûÏëÖ§³Ö½Å±¾¿Í»§£¬½¨Òé¶¨ÒåÒ»¸öµ¥¶ÀµÄË«½Ó¿ÚÀ´±©Â¶ÀàµÄËùÓÐ¹¦ÄÜ
-    ÀíÓÉ£º½Å±¾¿Í»§½öÄÜ»ñµÃÈ±Ê¡Ë«½Ó¿ÚµÄ·½·¨ºÍÊôÐÔ
-    
-COM¶ÔÏó×îºÃ²»Òª¼Ì³Ð×Ô¶à¸öIDispatch½Ó¿Ú -- 
+
 
 CComObjectRootBase::InternalQueryInterface -- ¾²Ì¬º¯Êý£¬¶ÔÓÚ±»ÇëÇóµÄ½Ó¿Ú£¬ÓÃÒ»¸öÖ¸ÏòÊÊµ±VPTR(virtual function table pointerÐéº¯Êý±íÖ¸Õë)
   µÄÖ¸ÕëÀ´Ìî³ä²ÎÊý ppvObject ·µ»Ø£¬
