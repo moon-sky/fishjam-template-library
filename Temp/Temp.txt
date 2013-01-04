@@ -1,3 +1,5 @@
+high-dpi -- http://technet.microsoft.com/zh-cn/library/dd464646 
+
 TODO: 
   1.写 CComBSTR/CComVariant 的UT
   2.通过类型库进行ComDetect?
