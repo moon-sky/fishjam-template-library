@@ -11,8 +11,15 @@
 //http://www.codeproject.com/KB/GDI/anieffect.aspx
 //字体模拟 http://html.nhndesign.com/markup_tools/preview
 //调试工具：GdiWatch, http://www.189works.com/article-9611-1.html
+//字体工具(FontCreator/FontForge) -- 可以创建或编辑 ttf 等字体文件
 
 /*
+.FON(光栅字体)--针对特定的显示分辨率以不同大小存储的位图,并不是以矢量描述的,放大以后会出现锯齿,但显示速度非常快
+.FON(矢量字体)--基于矢量的数学模型定义,一些windows应用程序会在较大尺寸的屏幕显示中自动使用矢量字体来代替光栅字体的显示
+.PFM(PostScript字体)--基于Adobe PostScript矢量语言的描述,需要安装"Adobe Type Manger"(ATM)软件才能使用
+.TTF(TrueType字体)--用的最多,由一种数学模式来进行定义的基于轮廓技术的字体，比基于矢量的字体更容易处理，保证了屏幕与打印输出的一致性。
+                    可以随意缩放、旋转而不必担心会出现锯齿
+
 DOS等传统字符界面用点阵模板显示文字
 GUI中的文字一般是利用轮廓字体中的控制点数据经计算后再绘制出来,
   Windows采用基于二次贝塞尔曲线的TrueType轮廓字体(*.ttf)
@@ -51,6 +58,8 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和�
 
 字体 -- 设备无关的,主要是TrueType类型的轮廓字体
   CreatePointXXX -- 从Windows的物理字体库中选择一个与所设置参数最匹配的字体
+  AddFontResourceEx -- 从ttf等字体文件中加载字体到系统，返回加到系统中的字体个数
+  GetStockObject(DEVICE_DEFAULT_FONT/DEFAULT_GUI_FONT/SYSTEM_FONT) -- 获取系统中的默认字体
   */
 
 /*****************************************************************************************************

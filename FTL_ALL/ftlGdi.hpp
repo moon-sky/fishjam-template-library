@@ -599,6 +599,16 @@ namespace FTL
 		API_ASSERT(NULL != hrSrc);
 		if (hrSrc)
 		{
+#if 0 
+			//或者 -- 没有测试
+			HGLOBAL hRes = LoadResource( hModule, hrSrc );
+			DWORD dwSize = SizeofResource( hModule, hrSrc );
+			BYTE* pResData = (BYTE*)LockResource( hRes );
+			//使用数据
+			UnlockResource( hRes );
+			FreeResource( hrSrc );
+#endif 
+
 			DWORD dwResSize = SizeofResource(hModule, hrSrc);
 			BYTE* lpRsrc = (BYTE*)LoadResource(hModule, hrSrc);
 			API_ASSERT(NULL != lpRsrc);

@@ -1,4 +1,21 @@
+注意：
+  自动构造和析构全局和静态对象需要链接CRT，但这正是建立局域ATL的COM服务器经常要回避的地方
+  CRT -- C++异常、全局对象的初始化和终止化
+   
+ATL的多步骤构造 -- 方便进行错误处理
+  new() -- 构造函数，Construct
+  CComObjectRootBase::FinalConstruct -- 可在其中进行可能会失败的调用，并返回结果。
+    当重载该方法时，需要声明 DECLARE_PROTECT_FINAL_CONSTRUCT 宏(保证调用 FinalConstruct 时引用计数不为0 )
+  FinalRelease -- ATL对象最后一个接口引用被释放后，析构函数调用前，会调用这个函数
+  
+_declspec(novtbl) -- 禁止构造期间对vptr进行调整， ATL_NO_VTBL 宏
+   
 high-dpi -- http://technet.microsoft.com/zh-cn/library/dd464646 
+
+Chrome : eclipse + JavaScript Plugin
+a. 中文 http://open.chrome.360.cn/extension_dev/overview.html
+b. 英文 https://sites.google.com/site/crxdoczh/reference/api_index/extension  （需要使用代理访问）
+c. JavaScript，Html，CSS , JQuery http://www.w3school.com.cn/
 
 TODO: 
   1.写 CComBSTR/CComVariant 的UT
@@ -63,10 +80,25 @@ IDispatch中对于TypeLib的手动实现(即 IDispatchImpl 的实现方式 ?)
       *ppti = m_pTypeInfo; m_pTypeInfo->AddRef(); return S_OK;
     }
 
-
-
 CComObjectRootBase::InternalQueryInterface -- 静态函数，对于被请求的接口，用一个指向适当VPTR(virtual function table pointer虚函数表指针)
   的指针来填充参数 ppvObject 返回，
+
+CComObject -- 用于独立对象
+CComAggObject -- 用于聚合对象
+CComPolyObject -- 可以同时支持 独立或被聚合对象(可以节省一套vtbl) ?在CreateInstance实现中
+  *ppv = 0; CComPolyObject<CMyClass>* pObj = new CComPolyObject<CMyClass>(pUnkOuter);
+CComObjectCached -- 用于创建一个在整个服务器生命周期中存在的实例，通常可用于进程内的全局的全局变量
+CComObjectNoLock -- 对象的存在不影响服务器的生命周期(即不会调用 _Module.Lock 一类的函数)
+CComObjectGlobal -- 对象的生命周期等同于服务器的生命周期，通常用于全局或静态对象。在实现进程内类对象时，全局对象可以替代缓冲对象使用。
+CComObjectStack -- 在栈上分配一个COM对象， 如 CComObjectStack<CMyClass> myObject; myObject.xxxx();
+
+
+ATL创建者(Creator) -- 有静态的CreateInstance函数
+  CComCreator -- 既可创建独立实例又可创建聚合实例的创建者，模板参数是被创建的C++类
+    typedef CComCreator<CComPolyObject<CMyClass> > MyClassPolyCreator; MyClassPolyCreator::CreateInstance(pUnkOuter, riid, ppv);
+  
+
+CoRegisterClassObject <--> CoRevokeClassObject
 
 AVI Mux 中写入属性
    http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
