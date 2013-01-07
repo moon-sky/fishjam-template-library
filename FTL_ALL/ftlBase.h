@@ -583,6 +583,8 @@ namespace FTL
         FTLINLINE LPTSTR Detach();
     protected:
         LPTSTR  m_pBuf;
+		//TODO:
+		//TCHAR	m_szInitBuf[MAX_BUFFER_LENGTH];
         DWORD   m_dwTotalSpaceSize;
         const DWORD m_dwInitAllocLength;
     };
@@ -607,13 +609,13 @@ namespace FTL
         {
             bWriteThrough   = FALSE;
             bWriteToFile    = FALSE;
-            bDoTimings      = TRUE;
+            bWriteDetail    = FALSE;
             traceThreshold  = tlTrace;
             pDebugOut       = OutputDebugString;
         }
         BOOL        bWriteToFile;           //是否写入文件，默认情况下关闭
         BOOL        bWriteThrough;          //如果写入文件的话，是否直接写出(效率低，但不会丢掉信息)
-        BOOL        bDoTimings;             //是否写入当时的时间
+        BOOL        bWriteDetail;           //是否输出当时的时间，线程ID，日志等级等，只用于 pDebugOut
         TraceLevel  traceThreshold;         //控制输出的阈值 -- 只有大于等于该阈值的才能输出，默认为 tlTrace
         PFNDEBUGOUT pDebugOut;              //扩展的输出方式，默认为 OutputDebugString;
     } FAST_TRACE_OPTIONS , * LPFAST_TRACE_OPTIONS ;
@@ -667,6 +669,7 @@ namespace FTL
         FTLINLINE BOOL CheckLevel(TraceLevel level);
         FTLINLINE BOOL SetTraceOptions(LPFAST_TRACE_OPTIONS pOptions);
         FTLINLINE BOOL GetTraceOptions(LPFAST_TRACE_OPTIONS pOptions);
+		FTLINLINE LPCTSTR GetLevelName(TraceLevel level);
         //FTLINLINE BOOL FlushAllFiles();
         //FTLINLINE BOOL SnapAllFiles();
         //默认使用 tlTrace 进行输出
@@ -812,6 +815,7 @@ namespace FTL
         //使用毫秒作为判断是否超时
         FTLINLINE CFBlockElapse(LPCTSTR pszFileName,DWORD line, 
             LPCTSTR pBlockName, LPVOID pReturnAddr, DWORD MinElapse = 0);
+		FTLINLINE void SetLeaveLine(DWORD line);
         FTLINLINE ~CFBlockElapse(void);
     private:
         struct BlockElapseInfo

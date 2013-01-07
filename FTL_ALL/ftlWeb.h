@@ -23,7 +23,7 @@
 namespace FTL
 {
 }
-#endif //FTL_XML_H
+#endif //FTL_WEB_H
 
 #ifndef USE_EXPORT
 #  include "ftlWeb.hpp"

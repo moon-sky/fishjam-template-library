@@ -705,17 +705,16 @@ namespace FTL
                     sizeof(m_Options.bWriteToFile));
             }
 
-            lRet = RegQueryValueEx(hKey,TEXT("DoTimings"),NULL,&dwType,reinterpret_cast<LPBYTE>(&dwValue),&dwBufLen);
+            lRet = RegQueryValueEx(hKey,TEXT("WriteDetail"),NULL,&dwType,reinterpret_cast<LPBYTE>(&dwValue),&dwBufLen);
             if (ERROR_SUCCESS == lRet && REG_DWORD == dwType)
             {
-                m_Options.bDoTimings = (BOOL)dwValue;
+                m_Options.bWriteDetail = (BOOL)dwValue;
             }
             else
             {
-                ::RegSetValueEx(hKey,TEXT("DoTimings"),0,REG_DWORD,reinterpret_cast<LPBYTE>(&m_Options.bDoTimings),
-                    sizeof(m_Options.bDoTimings));
+                ::RegSetValueEx(hKey,TEXT("WriteDetail"),0,REG_DWORD,reinterpret_cast<LPBYTE>(&m_Options.bWriteDetail),
+                    sizeof(m_Options.bWriteDetail));
             }
-
 
             lRet = RegQueryValueEx(hKey,TEXT("traceThreshold"),NULL,&dwType,reinterpret_cast<LPBYTE>(&dwValue),&dwBufLen);
             if (ERROR_SUCCESS == lRet && REG_DWORD == dwType)
@@ -763,7 +762,7 @@ namespace FTL
     BOOL CFFastTrace::SetTraceOptions(LPFAST_TRACE_OPTIONS pOptions)
     {
         EnterCriticalSection(&m_CsLock);
-        m_Options.bDoTimings = pOptions->bDoTimings;
+        m_Options.bWriteDetail = pOptions->bWriteDetail;
         m_Options.bWriteThrough = pOptions->bWriteThrough;
         m_Options.bWriteToFile = pOptions->bWriteToFile;
         m_Options.traceThreshold = pOptions->traceThreshold;
@@ -775,7 +774,7 @@ namespace FTL
     BOOL CFFastTrace::GetTraceOptions(LPFAST_TRACE_OPTIONS pOptions)
     {
         EnterCriticalSection(&m_CsLock);
-        pOptions->bDoTimings = m_Options.bDoTimings ;
+        pOptions->bWriteDetail = m_Options.bWriteDetail;
         pOptions->bWriteThrough = m_Options.bWriteThrough;
         pOptions->bWriteToFile = m_Options.bWriteToFile;
         pOptions->traceThreshold = m_Options.traceThreshold;
@@ -791,6 +790,33 @@ namespace FTL
         return bRet;
     }
 
+	LPCTSTR CFFastTrace::GetLevelName(TraceLevel level)
+	{
+		LPCTSTR pszLevelName = TEXT("Unknown");
+		switch(level)
+		{
+		case tlDetail:
+			pszLevelName = TEXT("Detail");
+			break;
+		case tlInfo:
+			pszLevelName = TEXT("Info");
+			break;
+		case tlTrace:
+			pszLevelName = TEXT("Trace");
+			break;
+		case tlWarning:
+			pszLevelName = TEXT("Warn");
+			break;
+		case tlError:
+			pszLevelName = TEXT("Error");
+			break;
+		default:
+			FTLASSERT(FALSE);
+			break;
+		}
+		return pszLevelName;
+	}
+
     void CFFastTrace::InternalWriteLogData(TraceLevel level, LPCTSTR pStrInfo)
     {
         BOOL bRet = FALSE;
@@ -799,7 +825,24 @@ namespace FTL
             //EnterCriticalSection(&m_CsLock);
             if (m_Options.pDebugOut)
             {
-                m_Options.pDebugOut(pStrInfo);
+				if (m_Options.bWriteDetail)
+				{
+					CFStringFormater formater;
+					SYSTEMTIME st = {0};
+					GetLocalTime(&st);
+					DWORD dwCurThreadId = GetCurrentThreadId();
+					TCHAR chLevelNamePrefix = *GetLevelName(level);
+					formater.Format(TEXT("[%02d:%02d %02d:%03d,%c,TID(%d)] %s"), 
+						st.wHour, st.wMinute, st.wSecond, st.wMilliseconds,
+						chLevelNamePrefix,
+						dwCurThreadId,
+						pStrInfo);
+					m_Options.pDebugOut(formater.GetString());
+				}
+				else
+				{
+					m_Options.pDebugOut(pStrInfo);
+				}
             }
             //LeaveCriticalSection(&m_CsLock);
         }
@@ -810,15 +853,7 @@ namespace FTL
             if ((CFTFileWriter*)INVALID_HANDLE_VALUE != pFileWriter)
             {
 				FTDATA ftdata = {0} ;
-                if ( TRUE == m_Options.bDoTimings )
-                {
-                    GetSystemTimeAsFileTime ( &ftdata.stTime ) ;// Get the current time stamp.
-                }
-                else
-                {
-                    ftdata.stTime.dwHighDateTime = 0 ;
-                    ftdata.stTime.dwLowDateTime = 0 ;
-                }
+                GetSystemTimeAsFileTime ( &ftdata.stTime ) ;// Get the current time stamp.
                 ftdata.level = level;
                 ftdata.nTraceInfoLen =  (LONG)(_tcslen(pStrInfo) + 1); //包括后面的结束符
                 ftdata.pszTraceInfo = pStrInfo;
@@ -839,9 +874,9 @@ namespace FTL
     void CFFastTrace::WriteLogInfo(const LPCTSTR lpszFormat,...)
     {
         CFStringFormater formater;
-        va_list argList;
+		va_list argList;
         va_start(argList, lpszFormat);
-        formater.FormatV(lpszFormat,argList);
+		formater.FormatV(lpszFormat,argList);
         va_end(argList);
         InternalWriteLogData(tlTrace, formater.GetString());
     }
@@ -929,6 +964,8 @@ namespace FTL
     BOOL CFFastTrace::BuildThreadFileName ( LPTSTR szFileNameBuff ,size_t iBuffLen,DWORD dwTID)
     {
         CHECK_POINTER_WRITABLE_DATA_RETURN_VALUE_IF_FAIL(szFileNameBuff,iBuffLen,FALSE);
+
+		//TODO:放到 SHGetFolderPath(CSIDL_LOCAL_APPDATA) 得到的子目录下，避免无法写本地文件的问题
 
         BOOL bRet = FALSE ;
         // Get the process directory and name and peel off the .EXE extension.
@@ -1164,6 +1201,7 @@ namespace FTL
             m_pszBlkName);
         m_StartTime = GetTickCount();
     }
+
     CFBlockElapse::~CFBlockElapse()
     {
         DWORD dwElapseTime = GetTickCount() - m_StartTime;

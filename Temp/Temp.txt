@@ -1,3 +1,9 @@
+内存泄漏
+  1.MFC 的 
+#define new				DEBUG_NEW
+#define malloc( param_size_t )		_malloc_dbg(param_size_t, _NORMAL_BLOCK, __FILE__, __LINE__)
+#define free( param_ptr )			_free_dbg(param_ptr, _NORMAL_BLOCK)
+
 注意：
   自动构造和析构全局和静态对象需要链接CRT，但这正是建立局域ATL的COM服务器经常要回避的地方
   CRT -- C++异常、全局对象的初始化和终止化

@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlDesignPattern.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlDirectx.hpp"
 				>
 			</File>
@@ -318,6 +322,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlDefine.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlDesignPattern.h"
 				>
 			</File>
 			<File
