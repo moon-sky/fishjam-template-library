@@ -2345,6 +2345,7 @@ namespace FTL
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_BYTEALIGNCLIENT, pszDivide);
 		//在字节边界上定位窗口的位置 -- 有什么用？
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_BYTEALIGNWINDOW, pszDivide);
+		//应用程序全局的窗体类--可以被Exe或Dll注册，对进程内所有模块都有效，通常在提供UI的DLL中注册
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_GLOBALCLASS, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, clsStyle, CS_IME, pszDivide);
 #if(_WIN32_WINNT >= 0x0501)

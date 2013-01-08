@@ -323,6 +323,37 @@ namespace FTL
         return rc;
     }
 
+	template<typename T>
+	int CFSocketT<T>::Send(const BYTE* pBuf, INT len, DWORD flags)
+	{
+		int rc = NO_ERROR;
+		WSABUF sendBuf = {0};
+		sendBuf.len = (ULONG)len;
+		sendBuf.buf = (char*)pBuf;
+		DWORD dwNumberOfSend = 0;
+		NET_VERIFY(WSASend(m_socket,&sendBuf, 1,&dwNumberOfSend,flags, NULL, NULL));
+		return rc;
+	}
+
+	template<typename T>
+	int CFSocketT<T>::Recv(BYTE* pBuf, INT len, DWORD flags)
+	{
+		int rc = NO_ERROR;
+
+		if (m_socketType == stUDP)
+		{
+			//WSAEMSGSIZE
+		}
+
+		WSABUF recvBuf = {0};
+		recvBuf.len = len;
+		recvBuf.buf = (char*)pBuf;
+		DWORD dwNumberOfRecv = 0;
+
+		NET_VERIFY(WSARecv(m_socket,&recvBuf, 1, &dwNumberOfRecv, &flags ,NULL,NULL));
+		return rc;
+	}
+
     //////////////////////////////////////////////////////////////////////////
     template<typename T>
     int CFClientSocketT<T>::Connect(LPCTSTR pszAddr, INT nSocketPort)
@@ -340,37 +371,6 @@ namespace FTL
 
         NET_VERIFY(WSAConnect(m_socket,(sockaddr*)&addrConnect,nLength,NULL,NULL,NULL,NULL));
 
-        return rc;
-    }
-
-    template<typename T>
-    int CFClientSocketT<T>::Send(const BYTE* pBuf, INT len, DWORD flags)
-    {
-        int rc = NO_ERROR;
-        WSABUF sendBuf = {0};
-        sendBuf.len = (ULONG)len;
-        sendBuf.buf = (char*)pBuf;
-        DWORD dwNumberOfSend = 0;
-        NET_VERIFY(WSASend(m_socket,&sendBuf, 1,&dwNumberOfSend,flags, NULL, NULL));
-        return rc;
-    }
-
-    template<typename T>
-    int CFClientSocketT<T>::Recv(BYTE* pBuf, INT len, DWORD flags)
-    {
-        int rc = NO_ERROR;
-
-        if (m_socketType == stUDP)
-        {
-            //WSAEMSGSIZE
-        }
-
-        WSABUF recvBuf = {0};
-        recvBuf.len = len;
-        recvBuf.buf = (char*)pBuf;
-        DWORD dwNumberOfRecv = 0;
-
-        NET_VERIFY(WSARecv(m_socket,&recvBuf, 1, &dwNumberOfRecv, &flags ,NULL,NULL));
         return rc;
     }
 

@@ -13,22 +13,31 @@
 #include <WinInet.h>
 
 /*************************************************************************************************************************
-* 上传图片和参数：http://hi.baidu.com/xlrtx/blog/item/12c312332d07f8f01a4cff8b.html
+* RFC -- http://www.rfc-editor.org/ 
+*  RFC2616 -- Hypertext Transfer Protocol(HTTP)
 *
 * 网络抓包工具
 *   Wireshark -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
+*
+* CAsyncSocketEx -- 代替MFC::CAsyncSocket的异步Socket类，可以通过从 CAsyncSocketExLayer 继承子类并AddLayer(xxx)
+*   来支持代理(CAsyncProxySocketLayer) 和 SSL(CAsyncSslSocketLayer) 等, Layer通过链表结构保存，可支持多个。
+*   http://www.codeproject.com/internet/casyncsocketex.asp
+*   注意：1.目前代理实现中只有 SOCKS5 支持 用户名/密码 ?
+*         2.其中重用时 closesocket 可能有Bug? MFC中的版本有 KillSocket 静态方法
+*         3.在其原始实现里，每一个有CAsyncSocketEx的线程都会关联一个CAsyncSocketExHelperWindow，可以管理 1~N 个CAsyncSocketEx，
+*           通过其静态的 m_spAsyncSocketExThreadDataList 链表变量管理(细节上的过度优化?)
 *************************************************************************************************************************/
 
 
 /*************************************************************************************************************************
 * 通信软件要考虑的：服务的初始化和分布,并发控制,流控制,错误处理,事件循环继承,容错等
-* 设计上考虑无连接和面向连接协议的时，主要涉及：延迟(latency)、可伸缩性(scalability)、可靠性(reliability)
+* 设计上考虑无连接和面向连接协议时，主要涉及：延迟(latency)、可伸缩性(scalability)、可靠性(reliability)
 *   无连接协议 -- 面向消息，每条消息独立寻址和发送，常用的有UDP和IP，常用于多媒体直播等允许一定程度数据丢失，但要求实时性的场合
 *   面向连接协议 -- 提供可靠、有序、不重复的发送服务，为保证可靠性采用了对传送的每个数据字节编号、校验和计算、数据确认(ACK)、
-*     超时重传、流量控制(通过滑动窗口由接受方控制发送方发送的数据量) 等一系列措施。
-*     常用于电子邮件等不允许数据丢失的场合，还要作出如下设计选择：
-*     数据成帧策略--面向消息(如 TP4和XTP)；面向字节流(如 TCP)，不保护消息边界
-*     连接多路复用策略--多路复用(多个线程共享TCP连接，难于编程)；非多路复用(每个线程使用不同的连接，同步开销小，但伸缩性不好)
+*     超时重传、流量控制(通过滑动窗口由接受方控制发送方发送的数据量) 等一系列措施，常用于电子邮件等不允许数据丢失的场合。
+*     还要作出如下设计选择：
+*       数据成帧策略--面向消息(如 TP4和XTP)；面向字节流(如 TCP)，不保护消息边界
+*       连接多路复用策略--多路复用(多个线程共享TCP连接，难于编程)；非多路复用(每个线程使用不同的连接，同步开销小，但伸缩性不好)
 *   
 *   同步请求/应答协议 -- 每一个请求必须同步地收到一个应答，才能发送下一个请求，实现简单，适用于请求结果决定后续请求的情况；
 *   异步请求/应答协议 -- 可以将请求连续发送至服务器，无需同步等待应答。能有效利用网络，大大提高性能，
@@ -40,6 +49,8 @@
 *     0 ~ 1023 由 IANA(互联网编号分配认证)控制，是为固定服务保留的。
 *     1024 ~ 49151 是 IANA 列出来的、已注册的端口，供普通用户的普通用户进程或程序使用。
 *     49152 ~ 65535 是动态和（或）私用端口。
+*
+* 代理(Proxy) -- 分为 SOCKS4/5, HTTP/1.1 等
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -49,7 +60,7 @@
 *   接收方原因：接收方用户进程不及时从系统接收缓冲区接收数据，下一包数据到来时就接到前一包数据之后
 * 
 * 较好的对策：
-*   接收方创建一预处理线程，对接收到的数据包进行预处理，将粘连的包分开
+*   接收方创建一预处理线程针对接收到的数据包进行预处理,将粘连的包分开
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -97,7 +108,7 @@
 
 
 /*************************************************************************************************************************
-* Socket模式 -- 决定在随一个套接字调用时，那些WinSock函数的行为
+* Socket模式 -- 决定在对一个套接字调用时，那些WinSock函数的行为
 *   阻塞模式(缺省)：在I/O操作完成前，执行操作的Winsock函数(如send和recv)会一直等下去，不会立即返回程序。
 *   非阻塞模式：Winsock函数无论成功了(返回0)还是失败都会立即返回，失败时返回SOCKET_ERROR，错误码为 WSAEWOULDBLOCK，
       通常需要频繁的调用判断(效率低，应该使用Socket模型进行异步)。
@@ -108,10 +119,12 @@
 *   select(选择) -- 利用select函数判断套接字上是否存在数据，或者能否向一个套接字写入数据。
 *     分三种：可读性、可写性、例外。函数返回后，通过再次判断socket是否是集合的一部分来确定是否可读写。
 *     缺点：不能动态的调整(如增加、删除)Socket，如进程捕获一个信号并从信号处理程序返回，等待一般会被中断（除非信号处理程序指定 SA_RESTART 且系统支持）
-*   WSAAsyncSelect(异步选择) -- 接收以Windows消息为基础的网络事件通知(即网络事件来了后用消息进行处理)，MFC中CAsyncSocket的方式，模式自动变为非锁定。
+*   WSAAsyncSelect(异步选择) -- 接收以Windows消息为基础的网络事件通知(即网络事件来了后用消息进行处理)，MFC中CAsyncSocket的方式，模式自动变为非阻塞。
 *     如IPMsg中tcp用于建立连接，UDP用于读取数据：
 *       ::WSAAsyncSelect(udp_sd, hWnd, WM_UDPEVENT, FD_READ)
 *       ::WSAAsyncSelect(tcp_sd, hWnd, WM_TCPEVENT, FD_ACCEPT|FD_CLOSE)
+*       然后在消息循环中处理对应消息时，使用宏 WSAGETSELECTERROR 和 WSAGETSELECTEVENT 从lParam获取 ErrCode 和 Event(如 FD_READ)，
+*         进行对应的处理(如 OnReceive )，在结束前需要再次以 0作为 lEvent 参数调用 WSAAsyncSelect 以取消事件通知
 *   WSAEventSelect(事件选择) -- 针对每一个套接字，使用WSACreateEvent创建一个事件(默认是手动重置)，并进行关联。
 *     可用 WSAWaitForMultipleEvents 进行等待，最多支持64个；再用 WSAEnumNetworkEvents 获取发生的事件
 *   Overlapped I/O(重叠式I/O) -- 具有较好的性能，使用 WSA_FLAG_OVERLAPPED 创建Socket((默认设置)，
@@ -189,9 +202,14 @@
 *         SO_SNDBUF       发送缓冲区的大小
 *         SO_RCVBUF       接收缓冲区的大小
 *         SO_RCVTIMEO     接收超时的时间(Windows 不支持？)
-*     2.ioctlsocket -- 控制socket的IO模式，比如 FIONBIO(控制是否采用阻塞模式)
+*     2.ioctlsocket/WSAIoctl -- 控制socket的IO模式，
+*         FIONBIO -- 控制是否采用阻塞模式, &1 表非阻塞模式，
+*         FIONREAD -- 确认等待读取的数据长度
+*         SIOCATMARK -- 确认是否所有的OOB数据都已经读取完毕
 *   E.网络地址 -- 在可读性的名称(如域名)和低级网络地址(如IP)之间进行转换
 *     1.gethostbyname/gethostbyaddr -- 处理主机名和 IPV4 地址之间的网络地址映射
+*       WSAAsyncGetHostByName/WSAAsyncGetHostByAddr  -- 异步获取 主机/地址 信息，避免线程阻塞
+*         sockAddr.sin_addr.s_addr = ((LPIN_ADDR)((LPHOSTENT)pAsyncGetHostByNameBuffer)->h_addr)->s_addr;
 *     2.getipnodebyname/getipnodebyaddr -- 处理主机名和 IPV6 地址之间的网络地址映射
 *     3.getservbyname -- 通过具有可读性的名称标识服务
 *       getpeername -- 
@@ -451,6 +469,10 @@ namespace FTL
         FTLINLINE int Close();
         FTLINLINE int Shutdown(INT how);
 
+		//Data
+		FTLINLINE int Send(const BYTE* pBuf, INT len, DWORD flags);
+		FTLINLINE int Recv(BYTE* pBuf, INT len, DWORD flags);
+
         FTLINLINE int IoCtl(long cmd, u_long* argp);
 
     //protected:
@@ -468,9 +490,6 @@ namespace FTL
         //Client
         FTLINLINE int Connect(LPCTSTR pszAddr, INT nSocketPort);
 
-        //Data
-        FTLINLINE int Send(const BYTE* pBuf, INT len, DWORD flags);
-        FTLINLINE int Recv(BYTE* pBuf, INT len, DWORD flags);
         FTLINLINE int Associate(SOCKET socket, struct sockaddr_in * pForeignAddr);
     protected:
         struct sockaddr_in		m_foreignAddr;
