@@ -207,7 +207,7 @@
 *         FIONREAD -- 确认等待读取的数据长度
 *         SIOCATMARK -- 确认是否所有的OOB数据都已经读取完毕
 *   E.网络地址 -- 在可读性的名称(如域名)和低级网络地址(如IP)之间进行转换
-*     1.gethostbyname/gethostbyaddr -- 处理主机名和 IPV4 地址之间的网络地址映射
+*     1.gethostbyname/gethostbyaddr -- 处理主机名和 IPV4 地址之间的网络地址映射, buffer的 最大长度为 MAXGETHOSTSTRUCT
 *       WSAAsyncGetHostByName/WSAAsyncGetHostByAddr  -- 异步获取 主机/地址 信息，避免线程阻塞
 *         sockAddr.sin_addr.s_addr = ((LPIN_ADDR)((LPHOSTENT)pAsyncGetHostByNameBuffer)->h_addr)->s_addr;
 *     2.getipnodebyname/getipnodebyaddr -- 处理主机名和 IPV6 地址之间的网络地址映射

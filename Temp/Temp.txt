@@ -138,6 +138,24 @@ UI
   CATID_SafeForScripting -- 安全脚本
   CATID_SafeForInitializing -- 安全初始化，有什么用？
 
+//DShow中的音量控制转换, 底层的 -10000~0 <==> 0%~100%
+	long CalcVolumeToPercent(long lVolume)
+	{
+		long nVolumePercent = (long)pow(10, (2.0 * double(lVolume + 10000) / 10000.0));
+
+		return nVolumePercent;
+	}
+
+	long CalcPercentToVolume(long lVolumePercent)
+	{
+		long nVolume = -10000;
+		if (0 != lVolumePercent)
+		{
+			nVolume = (long)((10000.0 * log10((double)lVolumePercent) / 2.0) - 10000);
+		}
+		return nVolume;
+	}
+
 docfileview http://blog.tinybrowser.net/archives/442
 视频解码器和render之间增加一个内容透传的filter，需要处理颜色空间的差异及显卡内存自动对齐问题
   http://bbs.csdn.net/topics/340218555
