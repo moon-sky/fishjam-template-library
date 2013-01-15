@@ -16,16 +16,18 @@
 * RFC -- http://www.rfc-editor.org/ 
 *  RFC2616 -- Hypertext Transfer Protocol(HTTP)
 *
-* 网络抓包工具
-*   Wireshark -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
+* Fiddler(http调试代理) -- 记录并检查所有你的电脑和互联网之间的http通讯，查看所有进出数据
+* Wireshark(网络抓包工具) -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
+* 
 *
 * CAsyncSocketEx -- 代替MFC::CAsyncSocket的异步Socket类，可以通过从 CAsyncSocketExLayer 继承子类并AddLayer(xxx)
 *   来支持代理(CAsyncProxySocketLayer) 和 SSL(CAsyncSslSocketLayer) 等, Layer通过链表结构保存，可支持多个。
 *   http://www.codeproject.com/internet/casyncsocketex.asp
-*   注意：1.目前代理实现中只有 SOCKS5 支持 用户名/密码 ?
+*   注意：1.目前代理实现中只有 SOCKS5/HTTP11 支持 用户名/密码 ?
 *         2.其中重用时 closesocket 可能有Bug? MFC中的版本有 KillSocket 静态方法
 *         3.在其原始实现里，每一个有CAsyncSocketEx的线程都会关联一个CAsyncSocketExHelperWindow，可以管理 1~N 个CAsyncSocketEx，
 *           通过其静态的 m_spAsyncSocketExThreadDataList 链表变量管理(细节上的过度优化?)
+*         4.pProxyUser 等字符串数组的释放上有问题，应该是 delete []
 *************************************************************************************************************************/
 
 
@@ -66,7 +68,7 @@
 /*************************************************************************************************************************
 * ARP(Address Resolution Protocol)--地址转换协议，用于动态地完成IP地址向物理地址的转换。
 * BOOTP(BooTstrap Protocol)--可选安全启动协议，使用UDP消息，提供一个有附加信息的无盘工作站，通过文件服务器上的内存影像来启动。
-* Cookie(Cookies) -- 网站为了辨别用户身份、进行session跟踪而储存在用户本地终端上的键值对数据（通常经过加密）。
+* Cookie(Cookies) -- 网站为了辨别用户身份、进行session跟踪而储存在用户本地终端上用分号(";")分开的键值对数据（通常经过加密）。
 *   定义为 RFC2109（已废弃）和 RFC2965。最典型的应用是自动登录、购物车等
 *   服务器端生成 -> 发送给UserAgent(浏览器) -> 浏览器保存成文本 -> 下次访问时发送 -> 服务器验证
 *   生存周期 -- Cookie生成时指定的Expire，超出周期Cookie就会被清除。单位为？生存周期设置为"0"或负值表示关闭页面时马上清除。
@@ -283,7 +285,13 @@
 
 /*************************************************************************************************************************
 * HTTP(Hypertext Transport Protocol) -- 超文本传输协议, RFC1945定义1.0, RFC2616定义广为使用的 1.1。是无状态的协议。
-*   通常承载于TCP、TLS或SSL(即HTTPS，默认端口443)协议层之上，分为 POST(RFC1867) 和 GET(RFC???)
+*   通常承载于TCP、TLS或SSL(即HTTPS，默认端口443)协议层之上，属于应用层协议，分为 POST(RFC1867)、GET(RFC???) 等
+*   C#中使用 HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://www.baidu.com");
+*            request.AddRange //可以指定资源的范围
+*            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+*            Stream stream = response.GetResponseStream();
+*            StreamReader sr = new StreamReader(stream);
+*            string content = sr.ReadToEnd();
 *
 *  协议由三部分组成：协议头，具体内容以及协议尾， 必须是ASCII格式？
 *    协议类型：
@@ -294,72 +302,119 @@
 *       每一部分用 --{boundary} 分开(注意前面多两个 "--" )
 *    3. 使用 --{boundary}-- 表示结束(注意前后各多两个 "--" )
 *
-* HTML VERBS(字符串)
-*   POST
-*   GET
-*   HEAD
-*   PUT
-*   LINK
-*   DELETE
-*   UNLINK
+*  连接类型( HTTP/1.1 默认使用带流水线的持久连接 )
+*    非持久连接(NonPersistent Connection) -- HTTP/1.0，每一次数据传送都需要重新打开/关闭TCP连接
+*    持久连接(Persistent Connection,长连接) -- 服务器在发出响应后让TCP连接持续打开，同一对客户/服务器之间的
+*      后续请求和响应可通过这个连接发送，在连接闲置一段时间后关闭。又分为：
+*      a.不带流水线 -- 收到前一个请求的响应后才发出新的请求
+*      b.带流水线 两个版本
+*
+* HTML VERBS(字符串) -- 请求类型，在协议头部分，可以指定HTTP版本信息
+*   CONNECT(1.1) -- 预留给能够将连接改为管道方式的代理服务器
+*   DELETE(1.1) -- 请求删除指定的资源
+*   GET(1.0) -- 请求获取特定的资源，如请求一个Web页面，通常只包含URL中的 网页地址部分，如 GET /index.html HTTP/1.1\r\n
+*   HEAD(1.0) -- 向服务器请求获取与GET请求相一致的响应，只不过响应体不会被返回。
+*                该方法可在不必传输整个响应内容的情况下，就获取包含在响应消息头中的元信息，
+*                通常用于辅助作用(如搜索引擎获取信息，安全认证时传递认证信息，下载文件前判断资源是否有效 等)
+*   LINK(1.1)
+*   OPTIONS(1.1) -- 返回服务器针对特定资源所支持的HTTP请求方法
+*   POST(1.0) -- 向指定资源提交数据，请求进行处理，如提交表单或上传文件，请求的数据(如上传的文件内容)被包含在请求主体中
+*   PUT(1.1) -- 向指定资源位置上传其最新内容，如请求存储一个Web页面， 能替代POST中上传文件吗？
+*   TRACE(1.1) -- 回显服务器收到的请求
+*   UNLINK(1.1)
 *
 *
 * 使用HTTP获取数据的步骤: 
-*   1.客户端建立连接
-*   2.客户端发送请求
+*   1.客户端建立连接(TCP)
+*   2.客户端发送请求(HTTP/HTTPS)
 *     内容包括：统一资源标识符（URL）、协议版本号，后边是MIME信息包括请求修饰符、客户机信息和可能的内容
 *   3.服务器返回响应信息，格式为一个状态行，包括信息的协议版本号、一个成功或错误的代码，后边是MIME信息包括服务器信息、实体信息和可能的内容
 * 
-* 头域(域名:域值)，每个描述部分用"\r\n"分开，结束处有两个"\r\n"
-*   [M]Accept: text/plain, x/x(注意：此处本来是*号)
+* 头域(Headers)，主要数据前的原信息(Meta Information)，用于向服务器提供本次请求的相关信息，格式为 "域名:域值"
+*   每个描述部分用"\r\n"分开，结束处有两个"\r\n"
+*   [M]Accept: text/plain, x/x(注意：此处本来是*号)，表示Client能够接收得种类和类型
+*   [O]Accept-Charset: GBK, utf-8
 *   [O]Accept-Encoding: gzip, deflate
 *   [O]Accept-Language: zh-cn
-*   [O]Cache-Control: 指定请求和响应遵循的缓存机制，如 no-cache, max-age 等
-*   [M]Content-Type: multipart/form-data; boundary=--MULTI-PARTS-FORM-DATA-BOUNDARY
-*     类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
-*     //AVI video/avi
-*     //JPG image/jpeg
-*     //PNG image/x-png
-*     //BMP image/bmp
-*     //TIF image/tiff
-*     //GIF image/gif
-*     //TXT text/plain
-*     //XML text/xml
+*   [O]Accept-Ranges: bytes
+*   [O]Cache-Control: 指定请求和响应遵循的缓存机制，如 no-cache, max-age, private 等
+*   [M]Content-Type: 请求或返回的内容类型
+*      application/x-www-form-urlencoded
+*      application/octet-stream 网络上多线程分块下载二进制文件时?
+*      multipart/form-data; boundary=--MULTI-PARTS-FORM-DATA-BOUNDARY
+*        类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
+*        //AVI video/avi
+*        //JPG image/jpeg
+*        //PNG image/x-png
+*        //BMP image/bmp
+*        //TIF image/tiff
+*        //GIF image/gif
+*        //TXT text/plain
+*        //XML text/xml
+*        //HTML text/html;charset=gb2312
+*        
 *   []Content-Disposition: -- 可传输二进制文件(前面必须有 ----MULTI-PARTS-FORM-DATA-BOUNDARY )
       协议头时：form-data; name=\"attach_file\"; filename=\"xxxx\"    -- 其中的 "attach_file" 是各个网站不同的?
       协议尾时：form-data; name=\"icount\" + CRLF + CRLF + _T("1") + CRLF + 
       \"submitted\"
-*   [M]Content-Length: 内容长度（包括 头 + 数据 + 尾）
+*   [M]Content-Length: 内容长度（包括 头 + 数据 + 尾），如果直接访问文件地址的话，返回的是文件大小？
 *   [O]Content-Transfer-Encoding: binary
-*   []Connection: Keep-Alive
-*   []Cookie : ?? 是分号";"分开的多个 "变量名=值" 的键值对
+*   []Connection: Keep-Alive(持久连接), Close(非持久连接)
+*   []Cookie : 分号";"分开的多个 "变量名=值" 的键值对
 *   []Date: 表示消息发送的时间，由RFC822定义，是世界标准时。如 Sat, 26 May 2012 00:42:19 GMT
-*   [O]Host: 192.168.0.8，连接请求中必须包含该域?
+*   [O]Host: www.google.com[:80]，请求目标的网站，和 GET 等请求类型后的地址连起来就是目标地址
 *   []Referer: http://源资源地址， 这可以允许服务器生成回退链表，可用来登陆、优化、cache等
-*   []User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0) 或自定义的名字，是发出请求的用户信息
-                
+*   []User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0) 或自定义的名字，是发出请求的用户身份信息
+*                
 * GET /文件地址 HTTP/1.1
 *   []Range: bytes=388136960-   (格式是怎么样的?)
-*   []Content-Range: bytes 开始位置-结束位置/总位置 (不确定是否是这个格式)
-
-* 返回信息
-*   
-*   []Server: Apache/2.2.11 (Unix)
-*   []Last-Modified: Wed, 23 May 2012 21:38:23 GMT
-*   []ETag: "1d2d6-5c896800-4c0baf45c91c0"
-*   []Accept-Ranges: bytes
-*   []Content-Length: 1164371968
-*   []Content-Range: bytes 388136960-1552508927/1552508928
-*   []Keep-Alive: timeout=5, max=100
-*
+*   []Content-Range: bytes 开始位置-结束位置/总大小,通常可用于多线程Http分块并行下载，然后合并
+* 
+* 请求主体(request-body)
+*   其中可包含任意的数据，
+* 
+* 返回信息: 状态行(HTTP版本号 + 3位状态码 + 状态描述) + 头 + 响应体
+*   状态码
+*     1xx消息 -- 请求已被服务器接收，继续处理
+*     2xx成功 -- 请求已成功被服务器接收、理解并接受，如 200(OK)
+*     3xx重定向 -- 需要后续操作才能完成这一请求，如 304(NOT MODIFIED--该资源在上次请求之后没有任何修改，通常用于浏览器的缓存机制)
+*     4xx请求错误 -- 请求含有语法错误或无法被执行，如 401(UNAUTHORIZED),403(FORBIDDEN),404(NOT FOUND)
+*     5xx服务器错误 -- 服务器在处理某个正确请求时发生错误，如 501(Not Implemented--服务器不能识别请求或未实现指定的请求)
+*   返回的状态头
+*     []Server: Apache/2.2.11 (Unix)
+*     []Last-Modified: Wed, 23 May 2012 21:38:23 GMT
+*     []ETag: "1d2d6-5c896800-4c0baf45c91c0"
+*     []Accept-Ranges: bytes
+*     []Content-Encoding: gzip, 响应体的编码方式，如gzip表示服务器端使用了gzip压缩，利于下载，但是必须client端支持gzip的解码操作
+*     []Content-Length: 1164371968
+*     []Content-Range: bytes 388136960-1552508927/1552508928
+*     []Expires: 告诉client绝对的过期时间，在这个时间内client都可以不用发送请求而直接从client的cache中获取，
+*                可用于js/css/image的缓存性能
+*     []Keep-Alive: timeout=5, max=100
+*     []Last-Modified: 会后一次修改响应内容的日期和时间
+*     []Server: BWS/1.0 响应客户端的服务器，可以看出是什么类型的Web服务
+* API函数
+*   属性/状态
 *     InternetGetConnectedState()
+*     InternetQueryOption -- 
+*     InternetSetOption -- 
+*     InternetGetCookie
+*     InternetSetCookie
+*     HttpQueryInfo
+*   连接控制
 *     InternetOpen
 *     InternetConnect
 *     InternetAttemptConnect
-*     HttpOpenRequest
-*     HttpSendRequest
-*     HttpQueryInfo
 *     InternetCloseHandle(hRequest,hConnect, hOpen)
+*     HttpOpenRequest 
+*   数据传递
+*     InternetWriteFile -- 
+*     InternetReadFile -- 
+*     InternetQueryDataAvailable
+*     HttpAddRequestHeaders
+*     HttpSendRequest
+*     HttpSendRequestEx
+*     HttpEndRequest
 *************************************************************************************************************************/
 
 namespace FTL
@@ -595,6 +650,7 @@ namespace FTL
 	#define __SIZE_BUFFER			1024
 
 #if 0
+	//TODO:TimeOut
 	class CFGenericHTTPClient
 	{
 	public:

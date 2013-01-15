@@ -1,3 +1,35 @@
+wxWidget -- http://www.wxwidgets.org/, C++ 的跨平台UI库
+
+123 -- 07fishjamaaabdCdigaBBffdaahFaagbaaaEaahFaafEaafFaaedaacAaaciaafeaafiaaeFaafhaafAaadaaafBaafcaafhaafD
+
+C#中调试: System.Diagnostics.Trace.Write
+Encoding.UTF8.GetBytes(content);  将字符串content变为字节形式(网络发送)
+多线程同步 Mutex，Monitor，Interlocked和AutoResetEvent，简化的 lock， CountdownEvent ?
+  线程池： ThreadPool.QueueUserWorkItem(new WaitCallback(helper.DoTransactions));
+    .NET 4 中: System.Threading.Tasks 命名空间，用于并行计算，其中有 Parallel(Invoke/for/forEach)、Task 等类
+   Parallel.For(0, 20000000, i =>
+   {
+     bag.Add(i);
+   });
+   并行计算时的异常是 AggregateExcepation(可通过 foreach 获取其中的每个异常)
+	var task1 = new Task(() =>
+	{
+	  Run1();   //创建 task1 后，还需要 task1.Start 才能运行
+	});
+	var task2 = Task.Factory.StartNew(() =>
+	{
+       Run2();  //创建 task2 后，已经自动运行
+    });
+
+  Stopwatch watch = Stopwatch.StartNew();  watch.Elapsed; //测试花费时间的？
+  
+  //每个线程下载的字节数，方便最后合并
+  public static ConcurrentDictionary<long, byte[]> dic = new ConcurrentDictionary<long, byte[]>();          
+          
+          
+C++中分析json采用jsoncpp
+
+
 内存泄漏
   1.MFC 的 
 #define new				DEBUG_NEW
@@ -195,3 +227,5 @@ http://wenku.baidu.com/view/6243ee2f2af90242a895e555.html
 	CComPtr<IUnknown> spColorConvertDMO;
 	COM_VERIFY(CoCreateInstance(CLISD_ColorConvertDMO, NULL, CLSCTX_INPROC_SERVER, IID_IUnknown, (LPVOID*)&spColorConvertDMO));
 	if (spColorConvertDMO)
+
+http://www.fishlee.net/soft/44/download.html
