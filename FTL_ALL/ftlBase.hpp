@@ -70,7 +70,15 @@ namespace FTL
 
     CFAPIErrorInfo::CFAPIErrorInfo(DWORD dwError) : CFConvertInfoT<CFAPIErrorInfo,DWORD>(dwError)
     {
+		m_LanguageID = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
     }
+
+	DWORD CFAPIErrorInfo::SetLanguageID(DWORD dwLanguageID)
+	{
+		DWORD dwOldLanguageID = m_LanguageID;
+		m_LanguageID = dwLanguageID;
+		return dwOldLanguageID;
+	}
 
     LPCTSTR CFAPIErrorInfo::ConvertInfo()
     {
@@ -97,7 +105,7 @@ namespace FTL
                     | FORMAT_MESSAGE_IGNORE_INSERTS,
                     NULL,
                     m_Info,
-                    MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+                    m_LanguageID,
                     (LPTSTR)&pszMsgBuf,
                     0,
                     NULL);
@@ -106,36 +114,27 @@ namespace FTL
 					TEXT("netmsg.dll"),
 					TEXT("WinINet.dll"),
 				};
-                // Is it a network-related error?
-                if (0 == dwCount)
-                {
-                    HMODULE hDll = LoadLibraryEx(TEXT("netmsg.dll"), NULL, 
-                        DONT_RESOLVE_DLL_REFERENCES);
-                    if (hDll != NULL) {
-                        dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE |FORMAT_MESSAGE_ALLOCATE_BUFFER
-                            | FORMAT_MESSAGE_FROM_SYSTEM,
-                            hDll, m_Info, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-                            (LPTSTR)&pszMsgBuf, 0, NULL);
-                        FreeLibrary(hDll);
-                    }
-                }
 
-				// Is it a WININET error?
-				if (0 == dwCount)
+				
+				for (int i = 0; i < _countof(pszErrorModule); i++)
 				{
-					TCHAR tmpBuf[1024] = {0};
-					DWORD dwCount = 1024;
-					HMODULE hDll = LoadLibraryEx(TEXT("WinINet.dll"), NULL, 
+					HMODULE hDll = LoadLibraryEx(pszErrorModule[i], NULL, 
 						DONT_RESOLVE_DLL_REFERENCES);
-					if (hDll != NULL) {
-						dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_ALLOCATE_BUFFER,
-							//| FORMAT_MESSAGE_FROM_SYSTEM,
-							hDll, m_Info, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
-							tmpBuf, dwCount, NULL);
+					if (hDll != NULL) 
+					{
+						dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE |FORMAT_MESSAGE_ALLOCATE_BUFFER
+							| FORMAT_MESSAGE_FROM_SYSTEM,
+							hDll, m_Info, m_LanguageID,
+							(LPTSTR)&pszMsgBuf, 0, NULL);
 						FreeLibrary(hDll);
+
+						if (pszMsgBuf)
+						{
+							//find message
+							break;
+						}
 					}
 				}
-
 
                 if(0 != dwCount && NULL != pszMsgBuf )
                 {
@@ -466,7 +465,7 @@ namespace FTL
             ,STRSAFE_E_INSUFFICIENT_BUFFER);
 
         //如果内存空间不够，每次扩大2倍内存长度，重新尝试，直到成功或内存分配失败
-        while (hr == STRSAFE_E_INSUFFICIENT_BUFFER)
+        while (hr == STRSAFE_E_INSUFFICIENT_BUFFER && dwLength < 8 * m_dwInitAllocLength)
         {
             SAFE_DELETE_ARRAY(m_pBuf);
             dwLength *= 2;

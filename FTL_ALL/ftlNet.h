@@ -295,9 +295,14 @@
 *
 *  协议由三部分组成：协议头，具体内容以及协议尾， 必须是ASCII格式？
 *    协议类型：
-*    使用多个表单项（同时传?）传递数据(HTTP POST-MultiPartFormData)
-*    1. 使用 "Content-Type: multipart/form-data; boundary=--XXXXXXXXXXXX" 声明使用多表单分，且指定分割符号
-*       (可自定义，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
+*    使用多个表单项（同时传?）传递数据(HTTP POST-MultiPartFormData),典型情况是写邮件时的多个附件。
+*      HTML 中通常是 <form action="http://xxx" method="post" enctype="multipart/form-data">
+*                       <input type="file" name="uploadfile1"/>
+*                       <input type="file" name="uploadfile2"/>
+*                       <input type="submit" value="uploadfile"/>
+*                    </form>
+*    1. 使用 "Content-Type: multipart/form-data; boundary=--{boundary}" 声明使用多表单分，且指定分割表单中不同部分数据的符号
+*       (可自定义或随即产生，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
 *    2. 多个部分内容，有 Content-Disposition 和 Content-Type， 如(参数信息、二进制原始信息)，
 *       每一部分用 --{boundary} 分开(注意前面多两个 "--" )
 *    3. 使用 --{boundary}-- 表示结束(注意前后各多两个 "--" )
@@ -331,7 +336,7 @@
 *   3.服务器返回响应信息，格式为一个状态行，包括信息的协议版本号、一个成功或错误的代码，后边是MIME信息包括服务器信息、实体信息和可能的内容
 * 
 * 头域(Headers)，主要数据前的原信息(Meta Information)，用于向服务器提供本次请求的相关信息，格式为 "域名:域值"
-*   每个描述部分用"\r\n"分开，结束处有两个"\r\n"
+*   每个描述部分用"\r\n"分开，结束处有两个"\r\n"，通过 HttpAddRequestHeaders 加入?
 *   [M]Accept: text/plain, x/x(注意：此处本来是*号)，表示Client能够接收得种类和类型
 *   [O]Accept-Charset: GBK, utf-8
 *   [O]Accept-Encoding: gzip, deflate
@@ -339,23 +344,24 @@
 *   [O]Accept-Ranges: bytes
 *   [O]Cache-Control: 指定请求和响应遵循的缓存机制，如 no-cache, max-age, private 等
 *   [M]Content-Type: 请求或返回的内容类型
-*      application/x-www-form-urlencoded
-*      application/octet-stream 网络上多线程分块下载二进制文件时?
-*      multipart/form-data; boundary=--MULTI-PARTS-FORM-DATA-BOUNDARY
-*        类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
-*        //AVI video/avi
-*        //JPG image/jpeg
-*        //PNG image/x-png
-*        //BMP image/bmp
-*        //TIF image/tiff
-*        //GIF image/gif
-*        //TXT text/plain
-*        //XML text/xml
-*        //HTML text/html;charset=gb2312
+*      类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
+*        application/x-www-form-urlencoded <== 
+*        application/octet-stream <== 网络上多线程分块下载二进制文件时?
+*        multipart/form-data; boundary=--{boundary} <== 表单数据传输文件内容
+*        video/avi   <== AVI 
+*        image/jpeg  <== JPG
+*        image/x-png <== PNG
+*        image/bmp   <== BMP
+*        image/tiff  <== TIF
+*        image/gif   <== GIF
+*        text/plain  <== TXT
+*        text/xml    <== XML
+*        text/html;charset=gb2312  <== HTML
 *        
-*   []Content-Disposition: -- 可传输二进制文件(前面必须有 ----MULTI-PARTS-FORM-DATA-BOUNDARY )
-      协议头时：form-data; name=\"attach_file\"; filename=\"xxxx\"    -- 其中的 "attach_file" 是各个网站不同的?
-      协议尾时：form-data; name=\"icount\" + CRLF + CRLF + _T("1") + CRLF + 
+*   []Content-Disposition: -- 不是HTTP标准，但广泛实现。
+*     可传输二进制文件(前面必须有 ----{boundary}), 其后接保存时的建议文件名。
+      协议头时：form-data; name=\"attach_file\"; filename=\"xxxx\"    -- 其中的 "attach_file" 是HTML元素名(和服务器有关)
+      协议尾时：form-data; name=\"icount\" + CRLF + CRLF + _T("1") + CRLF +   -- 其中的 icount 也是服务器相关的?
       \"submitted\"
 *   [M]Content-Length: 内容长度（包括 头 + 数据 + 尾），如果直接访问文件地址的话，返回的是文件大小？
 *   [O]Content-Transfer-Encoding: binary
@@ -393,28 +399,37 @@
 *     []Keep-Alive: timeout=5, max=100
 *     []Last-Modified: 会后一次修改响应内容的日期和时间
 *     []Server: BWS/1.0 响应客户端的服务器，可以看出是什么类型的Web服务
+*
 * API函数
+*   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):
+*     1.InternetOpen 初始化的 WinINet 函数库句柄
+*     2.InternetConnect 连接到指定 Server:Port 上的连接Session，其后的数据交换在该句柄上进行，可以指定用户名和密码
+*     3.HttpOpenRequest 在连接Session上打开的HTTP请求句柄，要指定是 POST/GET 等
+*   发送文件数据流程
+*     HttpOpenRequest => HttpAddRequestHeaders => HttpSendRequestEx => loop InternetWriteFile => HttpEndRequest
+*    
 *   属性/状态
 *     InternetGetConnectedState()
 *     InternetQueryOption -- 
 *     InternetSetOption -- 
 *     InternetGetCookie
-*     InternetSetCookie
+*     InternetSetCookie[Ex] -- 设置Cookie
 *     HttpQueryInfo
 *   连接控制
-*     InternetOpen
-*     InternetConnect
+*     InternetOpen -- 初始化WinINet函数库，其返回的句柄用于后续的Connect,使用完毕后需要Close
+*     InternetConnect -- 指定URL建立一个连接,
 *     InternetAttemptConnect
 *     InternetCloseHandle(hRequest,hConnect, hOpen)
 *     HttpOpenRequest 
+*       Https时dwFlags参数需要加上 INTERNET_FLAG_SECURE|INTERNET_FLAG_IGNORE_CERT_CN_INVALID|INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
 *   数据传递
 *     InternetWriteFile -- 
-*     InternetReadFile -- 
+*     InternetReadFile -- 向打开的Http请求句柄中写入数据，通常在循环中进行
 *     InternetQueryDataAvailable
-*     HttpAddRequestHeaders
+*     HttpAddRequestHeaders(xxx, HTTP_ADDREQ_FLAG_ADD) -- 向HTTP请求句柄中增加请求头，
 *     HttpSendRequest
-*     HttpSendRequestEx
-*     HttpEndRequest
+*     HttpSendRequestEx -- 通过 INTERNET_BUFFERS(注意要设置 dwStructSize) 结构体发送请求数据
+*     HttpEndRequest -- 结束HttpSendRequestEx初始化的HTTP请求
 *************************************************************************************************************************/
 
 namespace FTL
@@ -486,6 +501,18 @@ namespace FTL
 
         FTLINLINE LPCTSTR GetServiceFlagsType(DWORD dwServiceFlags);
         FTLINLINE LPCTSTR GetProviderFlagsType(DWORD dwProviderFlags);
+
+		FTLINLINE LPCTSTR GetPerConnOptionListInfo(CFStringFormater& formater, const INTERNET_PER_CONN_OPTION_LIST& optList);
+		FTLINLINE LPCTSTR GetHInternetHandleType(CFStringFormater& formater, const ULONG& HandleType);
+		FTLINLINE LPCTSTR GetProxyInfoString(CFStringFormater& formater, const INTERNET_PROXY_INFO& proxyInfo);
+		FTLINLINE LPCTSTR GetDiagnosticSocketInfoString(CFStringFormater& formater, const INTERNET_DIAGNOSTIC_SOCKET_INFO& diagSocketInfo);
+		FTLINLINE LPCTSTR GetCacheTimeStampsString(CFStringFormater& formater, const INTERNET_CACHE_TIMESTAMPS& cacheTimeStamps);
+		FTLINLINE LPCTSTR GetCertChainContextString(CFStringFormater& formater, const PCCERT_CHAIN_CONTEXT& certChainContext);
+		FTLINLINE LPCTSTR GetReqestFlagString(CFStringFormater& formater, DWORD dwRequestFlags);
+
+		//获取 HINTERNET 的配置信息, 如果 dwOption 是-1， 则获取全部
+		FTLINLINE LPCTSTR GetHInternetOption(CFStringFormater& formater, HINTERNET hInternet, DWORD dwOption = -1);
+
 
         //获取本地的IP地址
         FTLINLINE LONG GetLocalIPAddress();
@@ -619,12 +646,12 @@ namespace FTL
         static FTLINLINE size_t writen(int fd, const void* vptr, size_t n);
     };
 
-	typedef std::map<tstring, tstring> CookiKeyValueMap;
+	typedef std::map<tstring, tstring> CookieKeyValueMap;
 	class CFNetUtil
 	{
 	public:
 		FTLINLINE static LPCTSTR GetCookieInfo(CFStringFormater& formater, LPCTSTR lpszUrl, LPCTSTR lpszCookieName);
-		FTLINLINE static DWORD GetCookieInfoMap(LPCTSTR pszCookies, CookiKeyValueMap& cookieMap);
+		FTLINLINE static DWORD GetCookieInfoMap(LPCTSTR pszCookies, CookieKeyValueMap& cookieMap);
 	};
 
 	class CUrlComponents : public URL_COMPONENTS

@@ -13,7 +13,14 @@
 #include <Af_irda.h>
 #include <io.h>
 
+#include <ftlFunctional.h>
+#include <ftlDebug.h>
+
 #pragma comment(lib, "Wininet.lib")
+#ifdef __WINCRYPT_H__
+#  pragma comment(lib, "Crypt32.lib")
+#endif 
+
 //#include <WinSock2.h>
 
 #pragma warning( push )
@@ -237,6 +244,364 @@ namespace FTL
 
         //LPCTSTR GetServiceFlagsType(DWORD dwServiceFlags);
         //LPCTSTR GetProviderFlagsType(DWORD dwProviderFlags);
+
+		LPCTSTR GetPerConnOptionListInfo(CFStringFormater& formater, const INTERNET_PER_CONN_OPTION_LIST& optList)
+		{
+			formater.AppendFormat(TEXT("dwSize=%d, pszConnection=%s, dwOptionCount=%d, dwOptionError=%d,"),
+				optList.dwSize,
+				optList.pszConnection,
+				optList.dwOptionCount,
+				optList.dwOptionError
+				);
+#pragma TODO(LPINTERNET_PER_CONN_OPTIONA  pOptions)
+
+			return formater.GetString();
+		}
+
+		LPCTSTR GetHInternetHandleType(CFStringFormater& formater, const ULONG& HandleType)
+		{
+			UNREFERENCED_PARAMETER(formater);
+			LPCTSTR pszType = NULL;
+			switch (HandleType)
+			{
+			case INTERNET_HANDLE_TYPE_INTERNET:			pszType = TEXT("Internet");		break;
+			case INTERNET_HANDLE_TYPE_CONNECT_FTP:		pszType = TEXT("ConnectFtp");	break;
+			case INTERNET_HANDLE_TYPE_CONNECT_GOPHER:	pszType = TEXT("ConnectGopher");break;
+			case INTERNET_HANDLE_TYPE_CONNECT_HTTP:		pszType = TEXT("ConnectHttp");	break;
+			case INTERNET_HANDLE_TYPE_FTP_FIND:			pszType = TEXT("FtpFind");		break;
+			case INTERNET_HANDLE_TYPE_FTP_FIND_HTML:	pszType = TEXT("FtpFindHtml");	break;
+			case INTERNET_HANDLE_TYPE_FTP_FILE:			pszType = TEXT("FtpFile");		break;
+			case INTERNET_HANDLE_TYPE_FTP_FILE_HTML:	pszType = TEXT("FtpFileHtml");	break;
+			case INTERNET_HANDLE_TYPE_GOPHER_FIND:		pszType = TEXT("GhopherFind");	break;
+			case INTERNET_HANDLE_TYPE_GOPHER_FIND_HTML: pszType = TEXT("GhopherFindHtml"); break;
+			case INTERNET_HANDLE_TYPE_GOPHER_FILE:		pszType = TEXT("GopherFile");	break;
+			case INTERNET_HANDLE_TYPE_GOPHER_FILE_HTML: pszType = TEXT("GopherFileHtml"); break;
+			case INTERNET_HANDLE_TYPE_HTTP_REQUEST:		pszType = TEXT("HttpRequest");	break;
+			case INTERNET_HANDLE_TYPE_FILE_REQUEST:		pszType = TEXT("FileRequest");	break;
+			default:
+				FTLASSERT(FALSE);
+				break;
+			}
+			return pszType;
+		}
+
+		LPCTSTR GetProxyInfoString(CFStringFormater& formater, const INTERNET_PROXY_INFO& proxyInfo)
+		{
+			formater.Format(TEXT("AccessType=%d, Proxy=%s, proxyBypass=%s"),
+				proxyInfo.dwAccessType,
+				proxyInfo.lpszProxy,
+				proxyInfo.lpszProxyBypass);
+			return formater.GetString();
+			
+		}
+
+		LPCTSTR GetDiagnosticSocketInfoString(CFStringFormater& formater, const INTERNET_DIAGNOSTIC_SOCKET_INFO& diagSocketInfo)
+		{
+			formater.AppendFormat(TEXT("Socket=%d, SourcePort=%d, DestPort=%d, Flags=%d"),
+				diagSocketInfo.Socket,
+				diagSocketInfo.SourcePort,
+				diagSocketInfo.DestPort,
+				diagSocketInfo.Flags);
+			return formater.GetString();
+		}
+
+		LPCTSTR GetCacheTimeStampsString(CFStringFormater& formater, const INTERNET_CACHE_TIMESTAMPS& cacheTimeStamps)
+		{
+			formater.AppendFormat(TEXT("Expires=%s, LastModified=%s"),
+				CFFILETIMEDumpInfo(cacheTimeStamps.ftExpires).GetConvertedInfo(),
+				CFFILETIMEDumpInfo(cacheTimeStamps.ftLastModified).GetConvertedInfo()
+				);
+			return formater.GetString();
+		}
+
+		LPCTSTR GetCertChainContextString(CFStringFormater& formater, const PCCERT_CHAIN_CONTEXT& certChainContext)
+		{
+			FTLASSERT(FALSE);
+			return formater.GetString();
+		}
+
+		LPCTSTR GetReqestFlagString(CFStringFormater& formater, DWORD dwRequestFlags)
+		{
+			formater.Format(TEXT("0x%x, "), dwRequestFlags);
+
+			DWORD dwOldRequestFlags = dwRequestFlags;
+
+			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_FROM_CACHE, TEXT("FROM_CACHE"), TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_ASYNC, TEXT("ASYNC"), TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_VIA_PROXY, TEXT("VIA_PROXY"), TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_NO_HEADERS, TEXT("NO_HEADERS"), TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_PASSIVE, TEXT("PASSIVE"), TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_CACHE_WRITE_DISABLED, TEXT("CACHE_WRITE_DISABLED"), TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_NET_TIMEOUT, TEXT("NET_TIMEOUT"), TEXT("|"));
+
+			FTLASSERT(0 == dwRequestFlags);
+			return formater.GetString();
+		}
+
+		LPCTSTR GetHInternetOption(CFStringFormater& formater, HINTERNET hInternet, DWORD dwOption /* = -1 */)
+		{
+			BOOL bRet = FALSE;
+			DWORD dwValOption;
+			ULONG ulValOption;
+			BOOL  bValOption = FALSE;
+			DWORD dwSize = sizeof(ulValOption);
+			TCHAR szDefaultFileStringBuf[MAX_PATH] = {0};
+
+
+#define GET_HINTERNET_OPTION_STRING_EX(opt, pVal, ex1, ex2, info)\
+		dwSize = sizeof(*pVal);\
+		ZeroMemory(pVal, dwSize);\
+		API_VERIFY_EXCEPT2(InternetQueryOption(hInternet, opt, pVal, &dwSize), ex1, ex2);\
+		if(bRet)\
+		{\
+			formater.AppendFormat(info, *pVal);\
+		}
+
+#define GET_HINTERNET_OPTION_STRING(opt, pVal, info)	GET_HINTERNET_OPTION_STRING_EX(opt, pVal, 0, 0, info)
+
+#define GET_HINTERNET_OPTION_STRING_TRANSLATE_EX(opt, pVal, ex1, ex2, info, tran)\
+		dwSize = sizeof(*pVal);\
+		ZeroMemory(pVal, dwSize);\
+		API_VERIFY_EXCEPT2(InternetQueryOption(hInternet, opt, pVal, &dwSize), ex1, ex2);\
+		if(bRet)\
+		{\
+			CFStringFormater localFormater;\
+			formater.AppendFormat(info, tran(localFormater, *pVal));\
+		}
+
+
+//获取字符串型的参数
+#define GET_HINTERNET_STRING_OPTION_STRING_EX(opt, ex1, ex2, info)\
+		dwSize = 0;\
+		bRet = InternetQueryOption(hInternet, opt, NULL, &dwSize);\
+		if(!bRet && GetLastError() == ERROR_INSUFFICIENT_BUFFER)\
+		{\
+			LPTSTR pszData = new TCHAR[dwSize];\
+			ZeroMemory(pszData, dwSize);\
+			API_VERIFY_EXCEPT2(InternetQueryOption(hInternet, opt, pszData, &dwSize), ex1, ex2);\
+			if(bRet)\
+			{\
+				formater.AppendFormat(info, pszData);\
+			}\
+			delete [] pszData;\
+		}
+
+			if (-1 == dwOption)
+			{
+				API_VERIFY(InternetQueryOption(hInternet, INTERNET_OPTION_CALLBACK, &dwValOption, &dwSize));
+
+				//连接超时，默认60m
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_CONNECT_TIMEOUT, &ulValOption, TEXT("ConnectTimeout:%d(ms)\n"));
+				//连接重试次数，默认
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_CONNECT_RETRIES, &ulValOption, TEXT("ConnectRetries:%d\n"));
+
+				API_VERIFY(InternetQueryOption(hInternet, INTERNET_OPTION_CONNECT_BACKOFF, &dwValOption, &dwSize));
+
+				//发送超时，默认30m
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_SEND_TIMEOUT, &ulValOption, TEXT("SendTimeOut:%d(ms)\n"));//INTERNET_OPTION_CONTROL_SEND_TIMEOUT
+				//接收超时，默认30m
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_RECEIVE_TIMEOUT, &ulValOption, TEXT("ReceiveTimeOut:%d(ms)\n"));//INTERNET_OPTION_CONTROL_RECEIVE_TIMEOUT
+				//数据发送超时，默认30m
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_DATA_SEND_TIMEOUT, &ulValOption, TEXT("DataSendTimeOut:%d(ms)\n"));
+				//数据接收超时，默认30m
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_DATA_RECEIVE_TIMEOUT, &ulValOption, TEXT("DataSendReceiveTimeOut:%d(ms)\n"));
+
+				//获取指定 HINTERNET 句柄的连接类型
+				GET_HINTERNET_OPTION_STRING_TRANSLATE_EX(INTERNET_OPTION_HANDLE_TYPE, &ulValOption, 0, 0, TEXT("HandleType:%s\n"), GetHInternetHandleType);
+
+				//10
+				//msdn上说是 ERROR_NOT_SUPPORTED，但实测是 ERROR_INVALID_PARAMETER
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_LISTEN_TIMEOUT, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("ListenTimeOut:%d\n"));
+				
+				//本地读数据缓冲区大小，默认 4K(4096)
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_READ_BUFFER_SIZE, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("ReadBufferSize:%d\n"));
+				//本地发数据缓冲区大小，默认 4K(4096)
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_WRITE_BUFFER_SIZE, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("WriteBufferSize:%d\n"));
+				//14
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_ASYNC_ID, &ulValOption, ERROR_INVALID_PARAMETER, 
+					ERROR_CALL_NOT_IMPLEMENTED, TEXT("AsyncId:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_ASYNC_PRIORITY, &ulValOption, 
+					ERROR_INVALID_PARAMETER, ERROR_CALL_NOT_IMPLEMENTED, TEXT("AsyncPriority:%d\n"));
+				//17~20
+
+				//
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_PARENT_HANDLE, &ulValOption, TEXT("ParentHandle:0x%x\n"));
+
+				//msdn中写的是未实现，但返回TRUE，其值为乱码
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_KEEP_CONNECTION, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("KeepConnection:0x%x\n"));
+				
+				GET_HINTERNET_OPTION_STRING_TRANSLATE_EX(INTERNET_OPTION_REQUEST_FLAGS, &ulValOption, 
+					ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("RequestFlags:%s\n"), GetReqestFlagString);
+
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_EXTENDED_ERROR, &ulValOption, TEXT("ExtendedError:%d\n"));
+				//25
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_OFFLINE_MODE, &ulValOption, ERROR_CALL_NOT_IMPLEMENTED, 0, TEXT("OfflineMode:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_CACHE_STREAM_HANDLE, &ulValOption,
+					ERROR_INVALID_FUNCTION, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, TEXT("CacheStreamHandle:%d\n"));
+
+				//InternetConnect 时设置的用户名和密码(明文)
+				GET_HINTERNET_STRING_OPTION_STRING_EX(INTERNET_OPTION_USERNAME, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("UserName:%s\n"));
+				GET_HINTERNET_STRING_OPTION_STRING_EX(INTERNET_OPTION_PASSWORD, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("Password:%s\n"));
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_ASYNC, &ulValOption, ERROR_CALL_NOT_IMPLEMENTED, 0, TEXT("Async:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SECURITY_FLAGS, &ulValOption,
+					ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("SecurityFlags:%d\n"));
+
+				INTERNET_CERTIFICATE_INFO certInfo = {0};
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SECURITY_CERTIFICATE_STRUCT, &certInfo,
+					ERROR_INTERNET_INVALID_OPERATION, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, TEXT("SecurityCertificateStruct:%d\n"));
+
+				GET_HINTERNET_STRING_OPTION_STRING_EX(INTERNET_OPTION_DATAFILE_NAME, ERROR_INTERNET_INCORRECT_HANDLE_TYPE,
+					ERROR_INTERNET_ITEM_NOT_FOUND, TEXT("DataFileName:%s\n"));
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_URL, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, ERROR_INTERNET_INVALID_URL, TEXT("Url:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SECURITY_CERTIFICATE, &ulValOption, 
+					ERROR_INTERNET_INVALID_OPERATION, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, TEXT("SecurityCertificate:%d\n"));
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SECURITY_KEY_BITNESS, &ulValOption, 
+					ERROR_INTERNET_INVALID_OPERATION, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, TEXT("SecurityKeyBitness:%d\n"));
+				
+#if 0
+				//强制刷新的选项，只用于Set
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_REFRESH, &ulValOption, TEXT("Refresh:%d\n"));
+#endif 			
+				{
+					INTERNET_PROXY_INFO  internetProxyInfo = {0};
+					GET_HINTERNET_OPTION_STRING_TRANSLATE_EX(INTERNET_OPTION_PROXY, &internetProxyInfo, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, 
+						TEXT("Proxy:%s\n"), GetProxyInfoString);
+
+				}
+#if 0
+				//通知系统设置改变，只用于Set
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_SETTINGS_CHANGED, &ulValOption, TEXT("SettingsChanged:%d\n"));
+#endif 
+				{
+					//Win7 下的版本是 1.2
+					INTERNET_VERSION_INFO internetVersionInfo = {0};
+					dwSize = sizeof(internetVersionInfo);
+					API_VERIFY(InternetQueryOption(hInternet, INTERNET_OPTION_VERSION, &internetVersionInfo, &dwSize));
+					if (bRet)
+					{
+						formater.AppendFormat(TEXT("InternetVersion: %d.%d\n"), internetVersionInfo.dwMajorVersion, internetVersionInfo.dwMinorVersion);
+					}
+				}
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_USER_AGENT, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("UserAgent:%d\n"));
+#if 0
+				//只用于Set
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_END_BROWSER_SESSION, &ulValOption, TEXT("EndBrowserSession:%d\n"));
+#endif 
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_PROXY_USERNAME, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("ProxyUserName:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_PROXY_PASSWORD, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("ProxyPassword:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_CONTEXT_VALUE, &ulValOption, TEXT("ConnectValue:%d\n"));
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_CONNECT_LIMIT, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("ConnectLimit:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SECURITY_SELECT_CLIENT_CERT, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("SecuritySelectClientCert:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_POLICY, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("Policy:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_DISCONNECTED_TIMEOUT, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("DisconnectedTimeout:%d\n"));
+
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_CONNECTED_STATE, &ulValOption, TEXT("ConnectedState:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_IDLE_STATE, &ulValOption, TEXT("IdleState:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_OFFLINE_SEMANTICS, &ulValOption, TEXT("OfflineSemantics:%d\n"));
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SECONDARY_CACHE_KEY, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("SecondaryCacheKey:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_CALLBACK_FILTER, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, ERROR_NOT_SUPPORTED, TEXT("CallbackFilter:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_CONNECT_TIME, &ulValOption, ERROR_NOT_SUPPORTED, 0, TEXT("ConnectTime:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SEND_THROUGHPUT, &ulValOption, ERROR_NOT_SUPPORTED, 0, TEXT("SendThroughput:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_RECEIVE_THROUGHPUT, &ulValOption, ERROR_NOT_SUPPORTED, 0, TEXT("ReceiveThroughput:%d\n"));
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_REQUEST_PRIORITY, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("RequestPriority:%d\n"));
+
+				{
+					//Win7下的版本是 1.1 
+					HTTP_VERSION_INFO httpVersionInfo = {0};
+					dwSize = sizeof(httpVersionInfo);
+					API_VERIFY(InternetQueryOption(hInternet, INTERNET_OPTION_HTTP_VERSION, &httpVersionInfo, &dwSize));
+					if (bRet)
+					{
+						formater.AppendFormat(TEXT("HttpVersion: %d.%d\n"), httpVersionInfo.dwMajorVersion, httpVersionInfo.dwMinorVersion);
+					}
+				}
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_RESET_URLCACHE_SESSION, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("ResetUrlCacheSession:%d\n"));
+				//61
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_ERROR_MASK, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("ErrorMask:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_FROM_CACHE_TIMEOUT, &ulValOption, TEXT("FromCacheTimeout:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_BYPASS_EDITED_ENTRY, &ulValOption, TEXT("BypassEditedEntry:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_HTTP_DECODING, &ulValOption, TEXT("HttpDecoding:%d\n"));
+				//66
+				{
+					INTERNET_DIAGNOSTIC_SOCKET_INFO diagSocketInfo = {0};
+					GET_HINTERNET_OPTION_STRING_TRANSLATE_EX(INTERNET_OPTION_DIAGNOSTIC_SOCKET_INFO, &diagSocketInfo, 
+						ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("DiagnosticSocketInfo:%s\n"), GetDiagnosticSocketInfoString);
+				}
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_CODEPAGE, &ulValOption, TEXT("CodePage:%d\n"));
+				{
+					INTERNET_CACHE_TIMESTAMPS cacheTimeStamps = {0};
+					GET_HINTERNET_OPTION_STRING_TRANSLATE_EX(INTERNET_OPTION_CACHE_TIMESTAMPS, &cacheTimeStamps, 
+						ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("CacheTimeStamps:%s\n"), GetCacheTimeStampsString);
+				}
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_DISABLE_AUTODIAL, &ulValOption, ERROR_NOT_SUPPORTED, 0, TEXT("DisableAutoDial:%d\n"));
+				//71~73
+
+				//每服务器允许的最大连接数， P2P破解的就是这个? 默认值是 10
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_MAX_CONNS_PER_SERVER, &ulValOption, 
+					ERROR_INTERNET_INCORRECT_HANDLE_TYPE, ERROR_INTERNET_INVALID_OPERATION, TEXT("MaxConnsPerServer:%d\n"));
+
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_MAX_CONNS_PER_1_0_SERVER, &ulValOption, 
+					ERROR_INTERNET_INVALID_OPERATION, 0, TEXT("MaxConnsPer10Server:%d\n"));
+
+				{
+					INTERNET_PER_CONN_OPTION_LIST connOptionList = {0};
+					GET_HINTERNET_OPTION_STRING_TRANSLATE_EX(INTERNET_OPTION_PER_CONNECTION_OPTION, &connOptionList, 0, 0, TEXT("PerConnectionOption:%s\n"),
+						GetPerConnOptionListInfo);
+				}
+				
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_DIGEST_AUTH_UNLOAD, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("DigestAuthUnload:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_IGNORE_OFFLINE, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("IgnoreOffline:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_IDENTITY, &ulValOption, ERROR_CALL_NOT_IMPLEMENTED, 0, TEXT("Identity:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_REMOVE_IDENTITY, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("RemoveIdentity:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_ALTER_IDENTITY, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("AlterIdentity:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SUPPRESS_BEHAVIOR, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("SuppressBehavior:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_AUTODIAL_MODE, &ulValOption, TEXT("AutoDialMode:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_AUTODIAL_CONNECTION, &ulValOption, TEXT("AutoDialConnection:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_CLIENT_CERT_CONTEXT, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("ClientCertContext:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_AUTH_FLAGS, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("AuthFlags:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_COOKIES_3RD_PARTY, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, 0, TEXT("Cookies3rdParty:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_DISABLE_PASSPORT_AUTH, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("DisablePassportAuth:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SEND_UTF8_SERVERNAME_TO_PROXY, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("SendUTF8ServerNameToProxy:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_EXEMPT_CONNECTION_LIMIT, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("ExemptConnectionLimit:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_ENABLE_PASSPORT_AUTH, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("EnablePassportAuth:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_HIBERNATE_INACTIVE_WORKER_THREADS, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("HibernateInactiveWorkerThreads:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_ACTIVATE_WORKER_THREADS, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("ActivateWorkerThreads:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_RESTORE_WORKER_THREAD_DEFAULTS, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("RestoreWorkerThreadDefaults:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SOCKET_SEND_BUFFER_LENGTH, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("SocketSendBufferLength:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_PROXY_SETTINGS_CHANGED, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("ProxySettingChanged:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_DATAFILE_EXT, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("DataFileExt:%d\n"));
+				
+				//97~99
+				//返回的是-1，用字符串会出错 ?
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_CODEPAGE_PATH, &ulValOption, 0, 0, TEXT("CodePagePath:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_CODEPAGE_EXTRA, &ulValOption, 0, 0, TEXT("CodePageExtra:%d\n"));
+				GET_HINTERNET_OPTION_STRING(INTERNET_OPTION_IDN, &ulValOption, TEXT("IDN:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_MAX_CONNS_PER_PROXY, &ulValOption, ERROR_INTERNET_INVALID_OPERATION, 0, TEXT("MaxConnsPerProxy:%d\n"));
+				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SUPPRESS_SERVER_AUTH, &ulValOption, ERROR_INVALID_PARAMETER, 0, TEXT("SuppressServerAuth:%d\n"));
+				{
+#ifdef __WINCRYPT_H__				
+					PCCERT_CHAIN_CONTEXT pCertChainContext= NULL;
+					GET_HINTERNET_OPTION_STRING_TRANSLATE_EX(INTERNET_OPTION_SERVER_CERT_CHAIN_CONTEXT, &pCertChainContext, 
+						ERROR_INTERNET_INCORRECT_HANDLE_TYPE, ERROR_INTERNET_INCORRECT_HANDLE_STATE, TEXT("ServerCertChainContext:%s\n"), GetCertChainContextString);
+					if (pCertChainContext)
+					{
+						 CertFreeCertificateChain(pCertChainContext);
+						 pCertChainContext = NULL;
+					}
+#endif 
+				}
+			}
+
+			return formater.GetString();
+		}
 
         LONG GetLocalIPAddress()
         {
@@ -841,8 +1206,72 @@ namespace FTL
 		return formater.GetString();
 	}
 
-	DWORD CFNetUtil::GetCookieInfoMap(LPCTSTR pszCookies, CookiKeyValueMap& cookieMap)
+	DWORD CFNetUtil::GetCookieInfoMap(LPCTSTR pszCookies, CookieKeyValueMap& cookieMap)
 	{
+		FTLASSERT(pszCookies);
+		if (pszCookies)
+		{
+			typedef std::list<tstring>	ListCookies;
+			ListCookies lstCookies;
+#pragma TODO(Cookie Split Delimiter)
+			//按照标准应该是分号分隔，但实测(baidu)似乎也有冒号分隔?
+			FTL::Split(pszCookies, TEXT(";:"), false, lstCookies);
+			for (ListCookies::iterator iter = lstCookies.begin();
+				iter != lstCookies.end();
+				++iter)
+			{
+				const tstring& strCookie = *iter;
+				ListCookies	lstCookieKeyValue;
+				FTL::Split(strCookie, TEXT("="), false, lstCookieKeyValue);
+				FTLASSERT(lstCookieKeyValue.size() == 2);
+				if (lstCookieKeyValue.size() == 2)
+				{
+					const tstring& strKey = lstCookieKeyValue.front();
+					const tstring& strValue = lstCookieKeyValue.back();
+					cookieMap[strKey] = strValue;
+				}
+			}
+		}
+		return cookieMap.size();
+		//DWORD dwCount = 0;
+		//const char * pSingleCookieStart = szCookiesString;
+		//char szCookieName[1024];
+		//char szCookieValue[1024];
+		//int nCookieNameLen;
+		//int nCookieValueLen;
+
+		//SKIP_WHITESPACE( pSingleCookieStart );
+
+		//while( *pSingleCookieStart != '\0' )
+		//{
+		//	const char * pSingleCookieEnd = strchr( pSingleCookieStart, ';' );
+		//	if( pSingleCookieEnd == NULL )
+		//		pSingleCookieEnd = szCookiesString + strlen(szCookiesString);
+
+		//	const char * pchEqual = _ik_str_find_chr(pSingleCookieStart, pSingleCookieEnd, '=');
+		//	if( pchEqual == NULL )
+		//		return true;
+
+		//	nCookieNameLen = pchEqual - pSingleCookieStart;
+		//	strncpy(szCookieName, pSingleCookieStart, nCookieNameLen);
+		//	szCookieName[nCookieNameLen] = '\0';
+
+		//	TRIM_RIGHT( szCookieName );
+
+		//	pchEqual++;
+		//	SKIP_WHITESPACE_1( pchEqual, pSingleCookieEnd );
+
+		//	nCookieValueLen = pSingleCookieEnd - pchEqual;
+		//	strncpy(szCookieValue, pchEqual, nCookieValueLen);
+		//	szCookieValue[nCookieValueLen] = '\0';
+
+		//	if( SetCookieValue( szCookieName, szCookieValue ) == false )
+		//		return false;
+
+		//	pSingleCookieStart = pSingleCookieEnd + 1;
+		//	SKIP_WHITESPACE( pSingleCookieStart );
+		//}
+
 		return 0;
 	}
 

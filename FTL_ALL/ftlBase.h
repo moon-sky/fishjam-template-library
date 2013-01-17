@@ -101,7 +101,7 @@ namespace FTL
              USES_CONVERSION;\
              FAST_TRACE_EX(FTL::tlError, TEXT("%s(%d) :\t Error!!! Reason = 0x%08x(%d,%s),Code:\"%s\" \n"),\
                TEXT(__FILE__),__LINE__, e, e, _err.GetConvertedInfo(),TEXT(#x));\
-             (1 != DBG_REPORT(_CRT_ASSERT, __FILE__, __LINE__, NULL, "%s(0x%x)", T2CA(_err.GetConvertedInfo()), e)) || \
+             (1 != DBG_REPORT(_CRT_ASSERT, __FILE__, __LINE__, NULL, "%s(0x%x, %d)", T2CA(_err.GetConvertedInfo()), e, e)) || \
                (DBG_BREAK(), 0);\
          }while(0)
     #else //Not Define FTL_DEBUG
@@ -293,15 +293,17 @@ namespace FTL
     //f is CFStringFormater
     //v is combine value(such as GetStyle return value), 
     //c is check type, such as WS_VISIBLE
+	//s is append string, such as Visible
     //d is append string, such as "," or "|"
-    #ifndef HANDLE_COMBINATION_VALUE_TO_STRING
-    #define HANDLE_COMBINATION_VALUE_TO_STRING(f,v,c, d) \
-        if(((v) & (c)) == (c))\
-        {\
-            f.AppendFormat(TEXT("%s%s"), TEXT(#c), d);\
-            v &= ~c;\
-        }
-    #endif 
+	#ifndef HANDLE_COMBINATION_VALUE_TO_STRING_EX
+	#  define HANDLE_COMBINATION_VALUE_TO_STRING_EX(f, v, c, s, d) \
+		if(((v) & (c)) == (c))\
+		{\
+			f.AppendFormat(TEXT("%s%s"), s, d);\
+			v &= ~c;\
+		}
+	#  define HANDLE_COMBINATION_VALUE_TO_STRING(f, v, c, d)	HANDLE_COMBINATION_VALUE_TO_STRING_EX(f, v, c, TEXT(#c), d) 
+	#endif 
 
     #ifndef HANDLE_CASE_TO_STRING
     # define HANDLE_CASE_TO_STRING(buf,len,c)\
@@ -505,7 +507,10 @@ namespace FTL
         DISABLE_COPY_AND_ASSIGNMENT(CFAPIErrorInfo);
     public:
         FTLINLINE explicit CFAPIErrorInfo(DWORD dwError);
+		FTLINLINE DWORD SetLanguageID(DWORD dwLanguageID);
         FTLINLINE virtual LPCTSTR ConvertInfo();
+	protected:
+		DWORD	m_LanguageID;
     };
 
     FTLEXPORT class CFComErrorInfo : public CFConvertInfoT<CFComErrorInfo,HRESULT>

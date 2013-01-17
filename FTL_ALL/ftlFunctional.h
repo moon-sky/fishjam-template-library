@@ -255,10 +255,10 @@ namespace FTL
         return &obj;
     }
 
-    FTLINLINE size_t Split(const std::string& text, 
-        const std::string& delimiter,
+    FTLINLINE size_t Split(const tstring& text, 
+        const tstring& delimiter,
         bool bWithDelimeter,
-        std::list<std::string>& tokens)
+        std::list<tstring>& tokens)
     {
         size_t len = text.length();
         size_t start = text.find_first_not_of(delimiter); //找到第一个不是分隔符的

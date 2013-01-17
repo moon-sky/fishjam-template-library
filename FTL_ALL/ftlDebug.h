@@ -43,6 +43,14 @@ namespace FTL
 		FTLINLINE explicit CFRectDumpInfo(const RECT& rect);
 		FTLINLINE virtual LPCTSTR ConvertInfo();
 	};
+
+	FTLEXPORT class CFFILETIMEDumpInfo : public CFConvertInfoT<CFFILETIMEDumpInfo, const FILETIME&, 64>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFFILETIMEDumpInfo);
+	public:
+		FTLINLINE explicit CFFILETIMEDumpInfo(const FILETIME& fileTime);
+		FTLINLINE virtual LPCTSTR ConvertInfo();
+	};
 }
 
 #endif //FTL_DEBUG_H
