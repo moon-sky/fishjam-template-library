@@ -12,6 +12,12 @@
 #include "ftlCom.h"
 #include <WinInet.h>
 
+//默认的网络数据BufferSize
+#ifndef INTERNET_BUFFER_SIZE
+#  define	INTERNET_BUFFER_SIZE	4096
+#endif //INTERNET_BUFFER_SIZE
+
+
 /*************************************************************************************************************************
 * RFC -- http://www.rfc-editor.org/ 
 *  RFC2616 -- Hypertext Transfer Protocol(HTTP)
@@ -19,7 +25,7 @@
 * Fiddler(http调试代理) -- 记录并检查所有你的电脑和互联网之间的http通讯，查看所有进出数据
 * Wireshark(网络抓包工具) -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
 * 
-*
+* 
 * CAsyncSocketEx -- 代替MFC::CAsyncSocket的异步Socket类，可以通过从 CAsyncSocketExLayer 继承子类并AddLayer(xxx)
 *   来支持代理(CAsyncProxySocketLayer) 和 SSL(CAsyncSslSocketLayer) 等, Layer通过链表结构保存，可支持多个。
 *   http://www.codeproject.com/internet/casyncsocketex.asp
@@ -28,6 +34,8 @@
 *         3.在其原始实现里，每一个有CAsyncSocketEx的线程都会关联一个CAsyncSocketExHelperWindow，可以管理 1~N 个CAsyncSocketEx，
 *           通过其静态的 m_spAsyncSocketExThreadDataList 链表变量管理(细节上的过度优化?)
 *         4.pProxyUser 等字符串数组的释放上有问题，应该是 delete []
+*
+* AtlUtil.h 中有不少辅助类
 *************************************************************************************************************************/
 
 
@@ -317,7 +325,7 @@
 * HTML VERBS(字符串) -- 请求类型，在协议头部分，可以指定HTTP版本信息
 *   CONNECT(1.1) -- 预留给能够将连接改为管道方式的代理服务器
 *   DELETE(1.1) -- 请求删除指定的资源
-*   GET(1.0) -- 请求获取特定的资源，如请求一个Web页面，通常只包含URL中的 网页地址部分，如 GET /index.html HTTP/1.1\r\n
+*   GET(1.0) -- 请求获取特定的资源，不会向服务器提交数据(INTERNET_REQFLAG_NO_HEADERS)，如请求一个Web页面，通常只包含URL中的 网页地址部分，如 GET /index.html HTTP/1.1\r\n
 *   HEAD(1.0) -- 向服务器请求获取与GET请求相一致的响应，只不过响应体不会被返回。
 *                该方法可在不必传输整个响应内容的情况下，就获取包含在响应消息头中的元信息，
 *                通常用于辅助作用(如搜索引擎获取信息，安全认证时传递认证信息，下载文件前判断资源是否有效 等)
@@ -400,14 +408,19 @@
 *     []Last-Modified: 会后一次修改响应内容的日期和时间
 *     []Server: BWS/1.0 响应客户端的服务器，可以看出是什么类型的Web服务
 *
-* API函数
+* WinINet API 函数(MFC 封装: CHttpFile) -- 通常只适用于客户端程序，服务器程序开发需要用 WinHTTP(升级版? 参见 "Porting WinINet Applications to WinHTTP" )
 *   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):
-*     1.InternetOpen 初始化的 WinINet 函数库句柄
-*     2.InternetConnect 连接到指定 Server:Port 上的连接Session，其后的数据交换在该句柄上进行，可以指定用户名和密码
-*     3.HttpOpenRequest 在连接Session上打开的HTTP请求句柄，要指定是 POST/GET 等
+*     1.InternetOpen 初始化的 WinINet 函数库句柄,得到Session句柄
+*     2.InternetConnect/InternetOpenUrl  连接到指定 Server:Port 上的Connect句柄，可以指定用户名和密码
+*     3.HttpOpenRequest 在连接句柄上打开的Request句柄，要指定是 POST/GET 等，其后的数据交换在该句柄上进行，
 *   发送文件数据流程
-*     HttpOpenRequest => HttpAddRequestHeaders => HttpSendRequestEx => loop InternetWriteFile => HttpEndRequest
-*    
+*     HttpOpenRequest => HttpAddRequestHeaders => HttpSendRequestEx => loop InternetWriteFile( Fire OnProgress ) => HttpEndRequest
+*   接收数据流程
+*     HttpQueryInfo(HTTP_QUERY_CONTENT_LENGTH)     获取大小，静态网页可获取到大小，但asp/php等动态网页无法获取
+*     HttpQueryInfo(HTTP_QUERY_STATUS_CODE)   获取当前的状态码
+*     Loop InternetReadFile( Fire OnProgress ) ,如获取到大小，读取到指定大小；否则读取到 出错或 lpdwNumberOfBytesRead 返回 0
+*     InternetQueryDataAvailable 判断是否还有数据（函数调用成功，且返回值为0 表示读取完毕）
+* 
 *   属性/状态
 *     InternetGetConnectedState()
 *     InternetQueryOption -- 
@@ -425,7 +438,7 @@
 *   数据传递
 *     InternetWriteFile -- 
 *     InternetReadFile -- 向打开的Http请求句柄中写入数据，通常在循环中进行
-*     InternetQueryDataAvailable
+*     InternetQueryDataAvailable -- 获取网络上还有的数据量，如果函数成功且返回的大小为0，表示没有数据了。
 *     HttpAddRequestHeaders(xxx, HTTP_ADDREQ_FLAG_ADD) -- 向HTTP请求句柄中增加请求头，
 *     HttpSendRequest
 *     HttpSendRequestEx -- 通过 INTERNET_BUFFERS(注意要设置 dwStructSize) 结构体发送请求数据
@@ -509,10 +522,13 @@ namespace FTL
 		FTLINLINE LPCTSTR GetCacheTimeStampsString(CFStringFormater& formater, const INTERNET_CACHE_TIMESTAMPS& cacheTimeStamps);
 		FTLINLINE LPCTSTR GetCertChainContextString(CFStringFormater& formater, const PCCERT_CHAIN_CONTEXT& certChainContext);
 		FTLINLINE LPCTSTR GetReqestFlagString(CFStringFormater& formater, DWORD dwRequestFlags);
+		FTLINLINE LPCTSTR GetSecurityFlagsString(CFStringFormater& formater, DWORD dwSecurityFlags);
 
 		//获取 HINTERNET 的配置信息, 如果 dwOption 是-1， 则获取全部
-		FTLINLINE LPCTSTR GetHInternetOption(CFStringFormater& formater, HINTERNET hInternet, DWORD dwOption = -1);
+		FTLINLINE LPCTSTR GetHInternetOption(CFStringFormater& formater, HINTERNET hInternet, DWORD dwOption = DWORD(-1));
 
+		//通过 HttpQueryInfo 获取HTTP信息
+		FTLINLINE LPCTSTR GetHttpQueryInfoString(CFStringFormater& formater, HINTERNET hInternet, DWORD dwInfoLevel = DWORD(-1));
 
         //获取本地的IP地址
         FTLINLINE LONG GetLocalIPAddress();

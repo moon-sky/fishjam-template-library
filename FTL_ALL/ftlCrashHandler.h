@@ -25,11 +25,25 @@ namespace FTL
     * StackWalk的回调可用dbghelp实现好的函数
     * SymFromAddr获取栈位置的函数名
     * SymGetLineFromAddr -- 获取源代码文件名和行
+	*
+	* RaiseException(EXCEPTION_BREAKPOINT, 0, 0, NULL);  -- 主动抛出异常
+	* 
+	* __try { ...} 
+	* __except( 
+	*           code=GetExceptionCode(), 
+	*           MyMiniDump(hFile, GetExceptionInformation() ),
+	*           EXCEPTION_EXECUTE_HANDLER 
+	*          ) { 异常处理代码 } 
+	*
+	* 
+	* DbgHelp中的DumpAPI例子: http://www.debuginfo.com/examples/src/effminidumps/MiniDump.cpp 
+	* CrashReport: 程序出现异常的时候显示发送错误的对话框, 并把Dump文件发送到指定的地址. http://code.google.com/p/crashrpt/
+	* XCrashReport: 与上面的类似的一个开源项目. http://www.codeproject.com/KB/debug/XCrashReportPt1.aspx
     **********************************************************************************************/
 }
 
 //extern CServerAppModule _Module;
-extern CComModule _Module;
+//extern CComModule _Module;
 //extern CAppModule _Module;  //CFResourcelessDlg需要使用
 
 
@@ -281,7 +295,8 @@ namespace FTL
     {
     public:
         BEGIN_MSG_MAP(CFCrashHandlerDialog)
-			COMMAND_HANDLER(IDC_BTN_CREATE_DUMP, BN_CLICKED, OnSaveCommandClick)
+			COMMAND_HANDLER(IDC_BTN_CREATE_MINIDUMP, BN_CLICKED, OnCreateMiniDumpClick)
+			COMMAND_HANDLER(IDC_BTN_SAVE_STACK, BN_CLICKED, OnSaveStackClick)
             MESSAGE_HANDLER(WM_INITDIALOG,OnInitDialog)
 			CHAIN_MSG_MAP(CFResourcelessDlg<CFCrashHandlerDialog>)
             //MESSAGE_HANDLER(WM_SIZE, OnSize)
@@ -289,10 +304,11 @@ namespace FTL
         enum 
         {
             IDC_STATIC_ADDRESS  = 1000,
-            IDC_STATIC_REASON   = 1001,
-            IDC_BTN_DEBUG       = 1002,
-            IDC_BTN_CREATE_DUMP = 1003,
-            IDC_LIST_STACK      = 1004,
+            IDC_STATIC_REASON,
+			IDC_LIST_STACK,
+            IDC_BTN_DEBUG,
+            IDC_BTN_CREATE_MINIDUMP,
+			IDC_BTN_SAVE_STACK,
         };
         FTLINLINE CFCrashHandlerDialog(PEXCEPTION_POINTERS pExcption);
         FTLINLINE virtual ~CFCrashHandlerDialog();
@@ -300,9 +316,10 @@ namespace FTL
         //FTLINLINE LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
         FTLINLINE LPTSTR GetFaultReason(DWORD ExceptionCode);
         FTLINLINE void CreateDlg();
-		FTLINLINE LRESULT OnSaveCommandClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
+		FTLINLINE LRESULT OnCreateMiniDumpClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+		FTLINLINE LRESULT OnSaveStackClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     protected:
+		FTLINLINE BOOL _GetCrashFilePrefix(LPTSTR pszBuffer, DWORD dwSize);		
         PEXCEPTION_POINTERS m_pException;
         TCHAR m_FaultReason[MAX_BUFFER_LENGTH];
     };

@@ -874,29 +874,56 @@ namespace FTL
     {
         CreateDlgTemplate(TEXT("Crash Handler"), DS_SETFONT|DS_MODALFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_POPUP|WS_CAPTION|WS_SYSMENU,
             0, 0, 0, 420, 274, 8, TEXT("MS Shell Dlg"), TEXT(""), TEXT(""));
-        AddButton(TEXT("Close"), 0|BS_DEFPUSHBUTTON , 0, 261, 253, 50, 14, IDOK);
-        AddButton(TEXT("Debug"), WS_DISABLED, 0, 181, 253, 50, 14, IDC_BTN_DEBUG);
+
         AddListBox(TEXT(""), LBS_NOINTEGRALHEIGHT|LBS_DISABLENOSCROLL|WS_VSCROLL|WS_HSCROLL|WS_TABSTOP, 
 			0, 7, 21, 406, 221, IDC_LIST_STACK);
-        AddButton(TEXT("Save"), 0, 0, 90, 253, 50, 14, IDC_BTN_CREATE_DUMP);
-        AddStatic(TEXT("Address:"), 0, 0, 7, 7, 38, 11, IDC_STATIC);
-        AddStatic(TEXT("%s:%s"), 0, 0, 48, 7, 106, 11, IDC_STATIC_ADDRESS);
-        AddStatic(TEXT("Reason Info"), 0, 0, 167, 7, 246, 11, IDC_STATIC_REASON);
-        AddStatic(TEXT("Reason:"), 0, 0, 129, 7, 37, 11, IDC_STATIC);
+
+		AddStatic(TEXT("Address:"), 0, 0, 7, 7, 38, 11, IDC_STATIC);
+		AddStatic(TEXT("%s:%s"), 0, 0, 48, 7, 106, 11, IDC_STATIC_ADDRESS);
+		AddStatic(TEXT("Reason Info"), 0, 0, 167, 7, 246, 11, IDC_STATIC_REASON);
+		AddStatic(TEXT("Reason:"), 0, 0, 129, 7, 37, 11, IDC_STATIC);
+
+		AddButton(TEXT("MiniDump"), 0, 0, 50, 253, 50, 14, IDC_BTN_CREATE_MINIDUMP);
+		AddButton(TEXT("SaveStack"), 0, 0, 120, 253, 50, 14, IDC_BTN_SAVE_STACK);
+		AddButton(TEXT("Debug"), WS_DISABLED, 0, 190, 253, 50, 14, IDC_BTN_DEBUG);
+		AddButton(TEXT("Close"), 0| BS_DEFPUSHBUTTON , 0, 261, 253, 50, 14, IDOK);
+
         // End generated dialog        
     }
 
-
-	LRESULT CFCrashHandlerDialog::OnSaveCommandClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	BOOL CFCrashHandlerDialog::_GetCrashFilePrefix(LPTSTR pszBuffer, DWORD dwSize)
 	{
-		CFileDialog dlgSave(FALSE, TEXT("txt"), TEXT("StackList.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, TEXT("Text File\0*.txt\0\0"));
+		BOOL bRet = FALSE;
+
+		FILETIME curFileTime = {0};
+		SYSTEMTIME	curSysTime = {0};
+		GetSystemTimeAsFileTime(&curFileTime);
+		bRet = FileTimeToSystemTime(&curFileTime, &curSysTime);
+		if (bRet)
+		{
+			
+			HRESULT hr = StringCchPrintf(pszBuffer, dwSize, TEXT("%04d%02d%02d-%02d%02d%02d"), 
+				curSysTime.wYear, curSysTime.wMonth, curSysTime.wDay,
+				curSysTime.wHour, curSysTime.wMinute, curSysTime.wSecond);
+			bRet = SUCCEEDED(hr);
+		}
+		return bRet;
+	}
+
+	LRESULT CFCrashHandlerDialog::OnSaveStackClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	{
+		TCHAR szCrashFile[MAX_PATH] = {0};
+		_GetCrashFilePrefix(szCrashFile, _countof(szCrashFile));
+		StringCchCat(szCrashFile, _countof(szCrashFile), TEXT("_StackList.txt"));
+
+		CFileDialog dlgSave(FALSE, TEXT("txt"), szCrashFile, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, TEXT("Text File\0*.txt\0\0"));
 		if (dlgSave.DoModal() == IDOK)
 		{
 			CAtlFile fileDump;
 #ifdef __AFXDLGS_H__
 			if (SUCCEEDED(fileDump.Create(dlgSave.GetPathName(), GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
 #else
-			if (SUCCEEDED(fileDump.Create(dlgSave.GetPathName(), GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
+			if (SUCCEEDED(fileDump.Create(dlgSave.m_szFileName, GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
 #endif 
 			{
 				TCHAR szInfo[128] = {0};
@@ -940,6 +967,48 @@ namespace FTL
 					fileDump.Close();
 				}
 			}
+		}
+		return 0;
+	}
+
+	LRESULT CFCrashHandlerDialog::OnCreateMiniDumpClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	{
+		BOOL bRet = FALSE;
+
+		TCHAR szCrashFile[MAX_PATH] = {0};
+		_GetCrashFilePrefix(szCrashFile, _countof(szCrashFile));
+		StringCchCat(szCrashFile, _countof(szCrashFile), TEXT("_Dump.dmp"));
+
+		CFileDialog dlgSave(FALSE, TEXT("dmp"), szCrashFile, 
+			OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, 
+			TEXT("MiniDump Files\0*.dmp\0\0"));
+		if (dlgSave.DoModal() == IDOK)
+		{
+			CAtlFile fileDump;
+#ifdef __AFXDLGS_H__
+			if (SUCCEEDED(fileDump.Create(dlgSave.GetPathName(), GENERIC_WRITE, 0, CREATE_ALWAYS)))
+#else
+			if (SUCCEEDED(fileDump.Create(dlgSave.m_szFileName, GENERIC_WRITE, 0, CREATE_ALWAYS)))
+#endif 
+			{
+				MINIDUMP_EXCEPTION_INFORMATION eInfo;
+				eInfo.ThreadId = GetCurrentThreadId(); //把需要的信息添进去
+				eInfo.ExceptionPointers = m_pException;
+				eInfo.ClientPointers = FALSE;
+
+				//Dump的类型是小型的, 节省空间. 可以参考MSDN生成更详细的Dump.
+				bRet = MiniDumpWriteDump(
+					GetCurrentProcess(),
+					GetCurrentProcessId(),
+					fileDump.m_h,
+					MiniDumpNormal,
+					&eInfo,
+					NULL,
+					NULL);
+
+				fileDump.Close();
+			}
+
 		}
 		return 0;
 	}
@@ -1135,7 +1204,9 @@ namespace FTL
     __declspec(selectany) CFCrashHandler* CFCrashHandler::s_pSingleCrashHandler = NULL;
     LONG __stdcall CFCrashHandler::DefaultCrashHandlerFilter( PEXCEPTION_POINTERS pExPtrs )
     {
-        FTLASSERT(NULL != s_pSingleCrashHandler);
+		OutputDebugString(_T("Enter CFCrashHandler::DefaultCrashHandlerFilter\r\n"));
+
+		FTLASSERT(NULL != s_pSingleCrashHandler);
         if ( EXCEPTION_STACK_OVERFLOW == pExPtrs->ExceptionRecord->ExceptionCode )
         {
             OutputDebugString(_T("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\r\n"));
@@ -1150,7 +1221,7 @@ namespace FTL
         //dlg.SetFaultReason()
         switch (dlg.DoModal())
         {
-        case CFCrashHandlerDialog::IDC_BTN_CREATE_DUMP:
+        case CFCrashHandlerDialog::IDC_BTN_CREATE_MINIDUMP:
             break;
         case CFCrashHandlerDialog::IDC_BTN_DEBUG:
             break;

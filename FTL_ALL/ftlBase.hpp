@@ -447,11 +447,9 @@ namespace FTL
             return hr;
         }
 
-        //备份原来的字符串
+        
         DWORD dwOldStringLen = static_cast<DWORD>(_tcslen(m_pBuf));
-        LPTSTR pszOldString = new TCHAR[dwOldStringLen + 1];
-        COM_VERIFY(::StringCchCopy(pszOldString,dwOldStringLen + 1,m_pBuf));
-        pszOldString[dwOldStringLen] = NULL;
+		LPTSTR pszOldString = NULL;
 
         LPTSTR pszDestEnd = NULL;
         size_t cchRemaining = 0;
@@ -463,6 +461,14 @@ namespace FTL
         DWORD dwLength = m_dwTotalSpaceSize;
         COM_VERIFY_EXCEPT1(StringCchVPrintfEx(pszAppendPos,dwLength - dwOldStringLen, &pszDestEnd,&cchRemaining,dwFlags,lpszFormat,argList)
             ,STRSAFE_E_INSUFFICIENT_BUFFER);
+
+		if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
+		{
+			//备份原来的字符串
+			pszOldString = new TCHAR[dwOldStringLen + 1];
+			CopyMemory(pszOldString, m_pBuf, sizeof(TCHAR) * dwOldStringLen);
+			pszOldString[dwOldStringLen] = NULL;
+		}
 
         //如果内存空间不够，每次扩大2倍内存长度，重新尝试，直到成功或内存分配失败
         while (hr == STRSAFE_E_INSUFFICIENT_BUFFER && dwLength < 8 * m_dwInitAllocLength)
