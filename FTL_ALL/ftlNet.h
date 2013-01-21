@@ -142,16 +142,21 @@
 *     调用 WSAResetEvent 重置事件(其事件是手动重置的)，通过 WSAGetOverlappedResult 获取
 *     执行结果(其结果和不使用Overlapped调用ReadFile等函数时返回的结果一样)。
 *     注意：请求Overlapped后，函数通常返回失败，错误码为WSA_IO_PENDING，但如果请求的数据已经在Cache中，会直接返回成功
-*   IO Completion Port(完成端口) -- 和 Overlapped I/O 协同工作，可以在一个“受制于I/O的程序”中获得最佳性能。
+*
+*   IO Completion Port(完成端口) -- 和 Overlapped I/O 协同工作，可以在一个“管理众多的句柄且受制于I/O的程序(如Web服务器)”中获得最佳性能。
 *     没有64个HANDLE的限制，使用一堆线程(通常可设置为 CPU个数*2+2 )服务一堆Events的性质，自动支持 scalable。
 *     操作系统把已经完成的重叠I/O请求的通知放入完成端口的通知队列(一个线程将一个请求暂时保存下来)，等待另一个线程为它做实际服务。
 *     线程池的所有线程 = 目前正在执行的 + 被阻塞的 + 在完成端口上等待的。
+*     微软例子：web\Wininet\Async
 *     使用流程：
 *       1.产生一个I/O completion port -- hPort=CreateIoCompletionPort(INVALID_HANDLE_VALUE,NULL...)。产生一个没有和任何文件Handle有关系的port
 *       2.让它和文件handle产生关联 -- CreateIoCompletionPort(hFile,hPort...)，为每一个欲附加的文件Handle进行关联
 *       3.产生一堆线程 -- for(CPU*2+2){ _beginthreadex }
-*       4.让每一个线程在Completion Port上等待 -- GetQueuedCompletionStatus，可通过 CONTAINING_RECORD 宏取出其中指向扩展结构的指针
+*       4.让每一个线程在Completion Port上等待，返回后根据情况进行处理
+*         GetQueuedCompletionStatus(,INFINITE)，可通过 CONTAINING_RECORD 宏取出其中指向扩展结构的指针
 *       5.开始对着那个文件handle发出一些overlapped I/O请求 -- 如 ReadFile、WriteFile、DeviceIoControl等，
+*       6.其他线程如果需要交互(如通知程序结束)，需要通过 PostQueuedCompletionStatus 向完成端口放入事件通知，从而唤醒各个线程,
+*         然后 WaitForSingleObject(hPort, 超时时间)
 *   epool -- 通过系统核上的虚设备控制数据，通过预注册的回调函数，由内核并发调度  
 *       
 *     临时关闭完成通知(想忽略结果时)：将 OVERLAPPED 的hEvent 的最低位置为1
@@ -336,7 +341,14 @@
 *   TRACE(1.1) -- 回显服务器收到的请求
 *   UNLINK(1.1)
 *
-*
+* 判断连接 HINTERNET 是否需要认证信息
+*   1.HttpQueryInfo(hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatus, &cbStatus, NULL);  //获取状态码
+*   2.switch(dwStatus) {   //查询状态码
+*       case HTTP_STATUS_DENIED:			// 拒绝访问，再查询 dwFlags = HTTP_QUERY_WWW_AUTHENTICATE
+*       case HTTP_STATUS_PROXY_AUTH_REQ:	// 代理需要身份信息，再查询 dwFlags = HTTP_QUERY_PROXY_AUTHENTICATE
+*     }
+*     do  { bRet = HttpQueryInfo( hRequest, dwFlags, szScheme, &cbScheme, &dwIndex ); } while(bRet);  //可能有多次验证，因此需要循环？
+
 * 使用HTTP获取数据的步骤: 
 *   1.客户端建立连接(TCP)
 *   2.客户端发送请求(HTTP/HTTPS)
@@ -410,7 +422,10 @@
 *
 * WinINet API 函数(MFC 封装: CHttpFile) -- 通常只适用于客户端程序，服务器程序开发需要用 WinHTTP(升级版? 参见 "Porting WinINet Applications to WinHTTP" )
 *   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):
-*     1.InternetOpen 初始化的 WinINet 函数库句柄,得到Session句柄
+*     1.InternetOpen 初始化的 WinINet 函数库句柄,得到Session句柄, 如果Flags有 INTERNET_FLAG_ASYNC 则表明是异步连接，
+*       其后的连接、数据交换都需要是异步的(需要通过 InternetSetStatusCallback 设置回调 且 通过完成端口来进行 ?)
+*         需要在 INTERNET_STATUS_REQUEST_COMPLETE 事件响应中，根据状态进行处理
+*       异步时，HTTP 的 InternetConnect 会同步返回，FTP的 InternetConnect 会异步返回(ERROR_IO_PENDING)
 *     2.InternetConnect/InternetOpenUrl  连接到指定 Server:Port 上的Connect句柄，可以指定用户名和密码
 *     3.HttpOpenRequest 在连接句柄上打开的Request句柄，要指定是 POST/GET 等，其后的数据交换在该句柄上进行，
 *   发送文件数据流程
@@ -428,20 +443,25 @@
 *     InternetGetCookie
 *     InternetSetCookie[Ex] -- 设置Cookie
 *     HttpQueryInfo
+*     InternetSetStatusCallback  -- 设置网络连接时各种事件的回调接口
+*     InternetErrorDlg -- 弹出网络相关的错误对话框，如认证失败(httpauth 例子中测试没有出现):
+*       dwFlags = FLAGS_ERROR_UI_FILTER_FOR_ERRORS | FLAGS_ERROR_UI_FLAGS_CHANGE_OPTIONS | FLAGS_ERROR_UI_FLAGS_GENERATE_DATA;
+*       InternetErrorDlg(GetDesktopWindow(), hRequest, GetLastError(), dwFlags, NULL);
 *   连接控制
 *     InternetOpen -- 初始化WinINet函数库，其返回的句柄用于后续的Connect,使用完毕后需要Close
-*     InternetConnect -- 指定URL建立一个连接,
+*     InternetConnect -- 指定URL建立一个连接, 可知指定供 InternetSetStatusCallback 使用的回调参数(设计比较怪，为什么不在 InternetSetStatusCallback 中提供?)
 *     InternetAttemptConnect
 *     InternetCloseHandle(hRequest,hConnect, hOpen)
 *     HttpOpenRequest 
-*       Https时dwFlags参数需要加上 INTERNET_FLAG_SECURE|INTERNET_FLAG_IGNORE_CERT_CN_INVALID|INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
+*       Https时dwFlags参数需要加上 INTERNET_FLAG_SECURE，并可以忽略特殊错误，如 INTERNET_FLAG_IGNORE_CERT_CN_INVALID|INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
 *   数据传递
 *     InternetWriteFile -- 
 *     InternetReadFile -- 向打开的Http请求句柄中写入数据，通常在循环中进行
 *     InternetQueryDataAvailable -- 获取网络上还有的数据量，如果函数成功且返回的大小为0，表示没有数据了。
 *     HttpAddRequestHeaders(xxx, HTTP_ADDREQ_FLAG_ADD) -- 向HTTP请求句柄中增加请求头，
-*     HttpSendRequest
-*     HttpSendRequestEx -- 通过 INTERNET_BUFFERS(注意要设置 dwStructSize) 结构体发送请求数据
+*     HttpSendRequest -- 
+*     HttpSendRequestEx -- 通过 INTERNET_BUFFERS(注意要设置 dwStructSize) 结构体发送请求数据，
+*       通常可用于 POST 发送文件(将 dwBufferTotal 设置为 文件大小[+ 其他头信息]? )
 *     HttpEndRequest -- 结束HttpSendRequestEx初始化的HTTP请求
 *************************************************************************************************************************/
 
@@ -501,8 +521,12 @@ namespace FTL
         FTLINLINE virtual LPCTSTR ConvertInfo();
     };
 
-    namespace NetInfo
+	typedef std::map<tstring, tstring> CookieKeyValueMap;
+    namespace FNetInfo
     {
+		FTLINLINE LPCTSTR GetCookieInfo(CFStringFormater& formater, LPCTSTR lpszUrl, LPCTSTR lpszCookieName);
+		FTLINLINE DWORD GetCookieInfoMap(LPCTSTR pszCookies, CookieKeyValueMap& cookieMap);
+
         //获取协议的地址家族：如 AF_INET / AF_INET6
         FTLINLINE LPCTSTR GetAddressFamily(int iAddressFamily);
 
@@ -533,6 +557,68 @@ namespace FTL
         //获取本地的IP地址
         FTLINLINE LONG GetLocalIPAddress();
     }
+
+	//默认实现只是打印出事件日志，该类的变量必须作为 InternetConnect(dwContext) 参数传入
+	//template<class T>
+	FTLEXPORT class CFInternetStatusCallbackImpl
+	{
+	public:
+		FTLINLINE CFInternetStatusCallbackImpl();
+		FTLINLINE virtual ~CFInternetStatusCallbackImpl();
+
+		FTLINLINE void SetParam(DWORD_PTR param);
+		FTLINLINE BOOL Attach(HINTERNET hInternet);
+		FTLINLINE BOOL Detach();
+	protected:
+		DWORD_PTR					m_param;
+		HINTERNET					m_hInternet;
+		FTLINLINE virtual void InnerTraceCallback(LPCTSTR pszCallbackInfo);
+
+		FTLINLINE virtual void OnResolvingName(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnNameResolved(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnConnectingToServer(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnConnectedToServer(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnSendingRequest(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnRequestSent(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnReceivingResponse(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext,
+			DWORD* pdwResponse, DWORD dwLength);
+		FTLINLINE virtual void OnCtlResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnPrefetch(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnClosingConnection(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnConnectionClosed(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnHandleCreated(HINTERNET hInternet, DWORD_PTR dwContext,
+			INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLenght);
+		FTLINLINE virtual void OnHandleClosing(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnDetectingProxy(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnRequestComplete(HINTERNET hInternet, DWORD_PTR dwContext,
+			INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLength);
+		FTLINLINE virtual void OnRedirect(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnIntermediateResponse(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnUserInputRequired(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnStateChange(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnCookieSent(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnCookieReceived(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnPrivacyImpacted(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnP3pHeader(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnP3pPolicyRef(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnCookieHistory(HINTERNET hInternet, DWORD_PTR dwContext, 
+			InternetCookieHistory* pCookieHistory, DWORD dwLength);
+	private:
+		INTERNET_STATUS_CALLBACK	m_pOldCallBack;
+		FTLINLINE static VOID	CALLBACK _StatusCallbackProc(
+			HINTERNET hInternet,
+			DWORD_PTR dwContext,
+			DWORD dwInternetStatus,
+			LPVOID lpvStatusInformation,
+			DWORD dwStatusInformationLength
+			);
+		FTLINLINE VOID	_InnerStatusCallbackProc(
+			HINTERNET hInternet,
+			DWORD dwInternetStatus, 
+			LPVOID lpvStatusInformation, 
+			DWORD dwStatusInformationLength);
+	};
 
     enum FSocketType
     {
@@ -661,14 +747,6 @@ namespace FTL
         static FTLINLINE size_t readn(int fd, void* vptr, size_t n);
         static FTLINLINE size_t writen(int fd, const void* vptr, size_t n);
     };
-
-	typedef std::map<tstring, tstring> CookieKeyValueMap;
-	class CFNetUtil
-	{
-	public:
-		FTLINLINE static LPCTSTR GetCookieInfo(CFStringFormater& formater, LPCTSTR lpszUrl, LPCTSTR lpszCookieName);
-		FTLINLINE static DWORD GetCookieInfoMap(LPCTSTR pszCookies, CookieKeyValueMap& cookieMap);
-	};
 
 	class CUrlComponents : public URL_COMPONENTS
 	{

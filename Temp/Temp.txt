@@ -1,5 +1,9 @@
 wxWidget -- http://www.wxwidgets.org/, C++ 的跨平台UI库
 
+C方式往命令行上输出二进制：
+ _setmode(_fileno(stdout), _O_BINARY);
+ fwrite(pBuff, 1, cbCount, stdout);
+
 123 -- 07fishjamaaabdCdigaBBffdaahFaagbaaaEaahFaafEaafFaaedaacAaaciaafeaafiaaeFaafhaafAaadaaafBaafcaafhaafD
 
 C#中调试: System.Diagnostics.Trace.Write

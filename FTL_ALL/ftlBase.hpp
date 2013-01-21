@@ -111,22 +111,23 @@ namespace FTL
                     NULL);
 
 				static LPCTSTR pszErrorModule[] = {
+					TEXT("wininet.dll"),
 					TEXT("netmsg.dll"),
-					TEXT("WinINet.dll"),
 				};
 
 				
 				for (int i = 0; i < _countof(pszErrorModule); i++)
 				{
-					HMODULE hDll = LoadLibraryEx(pszErrorModule[i], NULL, 
-						DONT_RESOLVE_DLL_REFERENCES);
-					if (hDll != NULL) 
+					//Just get loaded module in the calling process 
+					HMODULE hModule = GetModuleHandle(pszErrorModule[i]);//
+						//LoadLibraryEx(pszErrorModule[i], NULL, DONT_RESOLVE_DLL_REFERENCES);
+					if (hModule != NULL) 
 					{
-						dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE |FORMAT_MESSAGE_ALLOCATE_BUFFER
-							| FORMAT_MESSAGE_FROM_SYSTEM,
-							hDll, m_Info, m_LanguageID,
+						dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE |FORMAT_MESSAGE_ALLOCATE_BUFFER,
+							//| FORMAT_MESSAGE_FROM_SYSTEM,
+							hModule, m_Info, m_LanguageID,
 							(LPTSTR)&pszMsgBuf, 0, NULL);
-						FreeLibrary(hDll);
+						//FreeLibrary(hModule);
 
 						if (pszMsgBuf)
 						{

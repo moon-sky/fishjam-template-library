@@ -100,8 +100,58 @@ namespace FTL
         return m_bufInfo;
     }
 
-    namespace NetInfo
+    namespace FNetInfo
     {
+		LPCTSTR GetCookieInfo(CFStringFormater& formater, LPCTSTR lpszUrl, LPCTSTR lpszCookieName)
+		{
+			BOOL bRet = FALSE;
+			DWORD dwLength = 0;
+
+			//InternetGetCookie只读取COOKIES目录下生成的COOKIE，遇到HTTPONLY属性则不生成本地COOKIES中的文件，而是直接通过HTTP头来传输
+			//有生存周期的保存在磁盘，否则保存在内存
+			API_VERIFY(InternetGetCookie(lpszUrl, lpszCookieName, NULL, &dwLength));
+			if (bRet)
+			{
+				dwLength += 1;
+				CFMemAllocator<TCHAR>	memAlloc(dwLength);
+				API_VERIFY(InternetGetCookie(lpszUrl, lpszCookieName, (TCHAR*)memAlloc, &dwLength));
+				if (bRet)
+				{
+					formater.Format(TEXT("%s"), (TCHAR*)memAlloc);
+				}
+			}
+			return formater.GetString();
+		}
+
+		DWORD GetCookieInfoMap(LPCTSTR pszCookies, CookieKeyValueMap& cookieMap)
+		{
+			FTLASSERT(pszCookies);
+			if (pszCookies)
+			{
+				typedef std::list<tstring>	ListCookies;
+				ListCookies lstCookies;
+#pragma TODO(Cookie Split Delimiter)
+				//按照标准应该是分号分隔，但实测(baidu)似乎也有冒号分隔?
+				FTL::Split(pszCookies, TEXT(";:"), false, lstCookies);
+				for (ListCookies::iterator iter = lstCookies.begin();
+					iter != lstCookies.end();
+					++iter)
+				{
+					const tstring& strCookie = *iter;
+					ListCookies	lstCookieKeyValue;
+					FTL::Split(strCookie, TEXT("="), false, lstCookieKeyValue);
+					FTLASSERT(lstCookieKeyValue.size() == 2);
+					if (lstCookieKeyValue.size() == 2)
+					{
+						const tstring& strKey = lstCookieKeyValue.front();
+						const tstring& strValue = lstCookieKeyValue.back();
+						cookieMap[strKey] = strValue;
+					}
+				}
+			}
+			return cookieMap.size();
+		}
+
         LPCTSTR GetAddressFamily(int iAddressFamily)
         {
             switch(iAddressFamily)
@@ -637,7 +687,7 @@ namespace FTL
 		{
 			BOOL bRet = FALSE;
 			//DWORD dwValOption = 0;
-			//ULONG ulValOption = 0;
+			ULONG ulValOption = 0;
 			//BOOL  bValOption = FALSE;
 			DWORD dwIndex = 0;
 			TCHAR szDefaultFileStringBuf[MAX_PATH] = {0};
@@ -709,7 +759,10 @@ namespace FTL
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_LINK, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Link:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_PRAGMA, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Pragma:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_VERSION, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Version:%s\n"));
-				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_STATUS_CODE, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("StatusCode:%s\n"));
+
+				//状态码
+				GET_HTTP_QUERY_INFO_STRING_EX(HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &ulValOption, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("StatusCode:%d\n"));
+
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_STATUS_TEXT, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("StatusText:%s\n"));
 
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_RAW_HEADERS, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("RawHeaders:%s\n"));
@@ -798,6 +851,266 @@ namespace FTL
         }
     }//namespace .NetInfo 
 
+	CFInternetStatusCallbackImpl::CFInternetStatusCallbackImpl()
+	{
+		m_param = NULL;
+		m_hInternet = NULL;
+		m_pOldCallBack = NULL;	
+	}
+
+	CFInternetStatusCallbackImpl::~CFInternetStatusCallbackImpl()
+	{
+		Detach();
+	}
+	
+	VOID CFInternetStatusCallbackImpl::SetParam(DWORD_PTR param)
+	{
+		m_param = param;
+	}
+
+	BOOL CFInternetStatusCallbackImpl::Attach(HINTERNET hInternet)
+	{
+		ATLASSERT(NULL == m_pOldCallBack);  //just call once
+
+		BOOL bRet = TRUE;
+		INTERNET_STATUS_CALLBACK pOldCallback = NULL;
+		pOldCallback = InternetSetStatusCallback(hInternet, _StatusCallbackProc);
+		API_ASSERT(INTERNET_INVALID_STATUS_CALLBACK  != pOldCallback );
+
+		if (INTERNET_INVALID_STATUS_CALLBACK != pOldCallback)
+		{
+			m_pOldCallBack = pOldCallback;
+			m_hInternet = hInternet;
+		}
+		return bRet;
+	}
+
+	BOOL CFInternetStatusCallbackImpl::Detach()
+	{
+		if (m_pOldCallBack && m_hInternet)
+		{
+			InternetSetStatusCallback(m_hInternet, m_pOldCallBack);
+			m_pOldCallBack = NULL;
+			m_hInternet = NULL;
+		}
+		return TRUE;
+	}
+
+	VOID CFInternetStatusCallbackImpl::_InnerStatusCallbackProc(
+		HINTERNET hInternet, 
+		DWORD dwInternetStatus, 
+		LPVOID lpvStatusInformation, 
+		DWORD dwStatusInformationLength)
+	{
+		switch (dwInternetStatus)
+		{
+		case INTERNET_STATUS_RESOLVING_NAME: OnResolvingName(hInternet, m_param); break;
+		case INTERNET_STATUS_NAME_RESOLVED: OnNameResolved(hInternet, m_param); break;
+		case INTERNET_STATUS_CONNECTING_TO_SERVER: OnConnectingToServer(hInternet, m_param); break;
+		case INTERNET_STATUS_CONNECTED_TO_SERVER: OnConnectedToServer(hInternet, m_param); break;
+		case INTERNET_STATUS_SENDING_REQUEST: OnSendingRequest(hInternet, m_param); break;
+		case INTERNET_STATUS_REQUEST_SENT: OnRequestSent(hInternet, m_param); break;
+		case INTERNET_STATUS_RECEIVING_RESPONSE: OnReceivingResponse(hInternet, m_param); break;
+		case INTERNET_STATUS_RESPONSE_RECEIVED: 
+			OnResponseReceived(hInternet, m_param, (DWORD*)lpvStatusInformation, dwStatusInformationLength); 
+			break;
+		case INTERNET_STATUS_CTL_RESPONSE_RECEIVED: OnCtlResponseReceived(hInternet, m_param); break;
+		case INTERNET_STATUS_PREFETCH: OnPrefetch(hInternet, m_param); break;
+		case INTERNET_STATUS_CLOSING_CONNECTION: OnClosingConnection(hInternet, m_param); break;
+		case INTERNET_STATUS_CONNECTION_CLOSED: OnConnectionClosed(hInternet, m_param); break;
+		case INTERNET_STATUS_HANDLE_CREATED: 
+			OnHandleCreated(hInternet, m_param, (INTERNET_ASYNC_RESULT*)lpvStatusInformation, dwStatusInformationLength); 
+			break;
+		case INTERNET_STATUS_HANDLE_CLOSING: OnHandleClosing(hInternet, m_param); break;
+		case INTERNET_STATUS_DETECTING_PROXY: OnDetectingProxy(hInternet, m_param); break;
+		case INTERNET_STATUS_REQUEST_COMPLETE: 
+			OnRequestComplete(hInternet, m_param, (INTERNET_ASYNC_RESULT*)lpvStatusInformation, dwStatusInformationLength); 
+			break;
+		case INTERNET_STATUS_REDIRECT: OnRedirect(hInternet, m_param); break;
+		case INTERNET_STATUS_INTERMEDIATE_RESPONSE: OnIntermediateResponse(hInternet, m_param); break;
+		case INTERNET_STATUS_USER_INPUT_REQUIRED: OnUserInputRequired(hInternet, m_param); break;
+		case INTERNET_STATUS_STATE_CHANGE: OnStateChange(hInternet, m_param); break;
+		case INTERNET_STATUS_COOKIE_SENT: OnCookieSent(hInternet, m_param); break;
+		case INTERNET_STATUS_COOKIE_RECEIVED: OnCookieReceived(hInternet, m_param); break;
+		case INTERNET_STATUS_PRIVACY_IMPACTED: OnPrivacyImpacted(hInternet, m_param); break;
+		case INTERNET_STATUS_P3P_HEADER: OnP3pHeader(hInternet, m_param); break;
+		case INTERNET_STATUS_P3P_POLICYREF: OnP3pPolicyRef(hInternet, m_param); break;
+		case INTERNET_STATUS_COOKIE_HISTORY: 
+			OnCookieHistory(hInternet, m_param, (InternetCookieHistory*)lpvStatusInformation, dwStatusInformationLength) ; break;
+			//case INTERNET_STATUS_XXXXXXXXXXXX: OnXXXXXXXXXXXXX(dwContext); break;
+		default:
+			FTLTRACEEX(FTL::tlWarning, TEXT("%s: Unknown Internet Status %d(0x%x)\n"), 
+				__FILE__LINE__, dwInternetStatus, dwInternetStatus);
+			break;
+		}
+	}
+
+	VOID CFInternetStatusCallbackImpl::_StatusCallbackProc( 
+		HINTERNET hInternet, 
+		DWORD_PTR dwContext, 
+		DWORD dwInternetStatus, 
+		LPVOID lpvStatusInformation, 
+		DWORD dwStatusInformationLength )
+	{
+		//ATLASSERT(m_hInternet == hInternet);
+		ATLASSERT(NULL != dwContext);
+		if (NULL != dwContext)
+		{
+			CFInternetStatusCallbackImpl* pThis = (CFInternetStatusCallbackImpl*)dwContext;
+
+			ATLASSERT(pThis);
+
+			pThis->_InnerStatusCallbackProc(hInternet, dwInternetStatus, lpvStatusInformation, dwStatusInformationLength);
+		}
+	}
+
+	void CFInternetStatusCallbackImpl::InnerTraceCallback(LPCTSTR pszCallbackInfo)
+	{	
+		FTLTRACEEX(FTL::tlTrace, pszCallbackInfo);
+	}
+
+	void CFInternetStatusCallbackImpl::OnResolvingName(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnResolvingName\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnNameResolved(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnNameResolved\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnConnectingToServer(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnConnectingToServer\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnConnectedToServer(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnConnectedToServer\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnSendingRequest(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnSendingRequest\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnRequestSent(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnRequestSent\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnReceivingResponse(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnReceivingResponse\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pdwResponse, DWORD dwLength)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnResponseReceived\n"));
+		if (pdwResponse)
+		{
+			FTLASSERT(sizeof(DWORD) == dwLength);
+			CFStringFormater formater;
+			formater.Format(TEXT("\tResponse, Received %d Bytes\n"), *pdwResponse);
+			InnerTraceCallback(formater.GetString());
+
+		}
+	}
+	void CFInternetStatusCallbackImpl::OnCtlResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnCtlResponseReceived\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnPrefetch(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnPrefetch\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnClosingConnection(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnClosingConnection\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnConnectionClosed(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnConnectionClosed\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnHandleCreated(HINTERNET hInternet, DWORD_PTR dwContext, 
+		INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLenght)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnHandleCreated\n"));
+		if (pAsyncResult)
+		{
+			FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLenght);
+			CFStringFormater formater;
+			//dwResult 是 HINTERNET 句柄
+			formater.Format(TEXT("\tAsyncResult, dwResult=0x%x, dwError=%d\n"),
+				pAsyncResult->dwResult, pAsyncResult->dwError);
+			InnerTraceCallback(formater.GetString());
+		}
+	}
+
+	void CFInternetStatusCallbackImpl::OnHandleClosing(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		//最后一个事件?
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnHandleClosing\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnDetectingProxy(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnDetectingProxy\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnRequestComplete(HINTERNET hInternet, DWORD_PTR dwContext, INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLength)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnRequestComplete\n"));
+		if (pAsyncResult)
+		{
+			FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLenght);
+			CFStringFormater formater;
+			formater.Format(TEXT("\tAsyncResult, dwResult=0x%x, dwError=%d\n"),
+				pAsyncResult->dwResult, pAsyncResult->dwError);
+			InnerTraceCallback(formater.GetString());
+		}
+
+	}
+	void CFInternetStatusCallbackImpl::OnRedirect(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnRedirect\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnIntermediateResponse(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnIntermediateResponse\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnUserInputRequired(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnUserInputRequired\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnStateChange(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnStateChange\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnCookieSent(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnCookieSent\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnCookieReceived(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnCookieReceived\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnPrivacyImpacted(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnPrivacyImpacted\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnP3pHeader(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnP3pHeader\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnP3pPolicyRef(HINTERNET hInternet, DWORD_PTR dwContext)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnP3pPolicyRef\n"));
+	}
+	void CFInternetStatusCallbackImpl::OnCookieHistory(HINTERNET hInternet, DWORD_PTR dwContext, 
+		InternetCookieHistory* pCookieHistory, DWORD dwLenght)
+	{
+		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnCookieHistory\n"));
+		if (pCookieHistory)
+		{
+			FTLASSERT(sizeof(InternetCookieHistory) == dwLenght);
+			CFStringFormater formater;
+			formater.Format(TEXT("\tCookieInfo = Accepted =%d, Leashed=%d, Downgraded=%d, Rejected=%d\n"),
+				pCookieHistory->fAccepted, pCookieHistory->fLeashed, pCookieHistory->fDowngraded, pCookieHistory->fRejected);
+			InnerTraceCallback(formater.GetString());
+		}
+	}
 
     //////////////////////////////////////////////////////////////////////////
     template<typename T>
@@ -1132,7 +1445,7 @@ namespace FTL
         BOOL bRet = FALSE;
         for (;;)
         {
-            //分三种情况：
+            //分三种情况(注意对 PostQueuedCompletionStatus 的调用也会唤醒，需要判断并处理)：
             //1.成功取出一个Completion Packet，返回TRUE，并填写各个参数;
             //2.返回FALSE，但取出Completion Packet，pOverLapped指向失败的操作，具体GetLastError
             //3.返回FALSE，并且没有取出 Completion Packet, pOverLapped 为NULL
@@ -1209,8 +1522,7 @@ namespace FTL
                     break;
                 }
             }
-
-
+			
             //2.使用线程池创建为IO完成端口服务的工作者线程
             //m_pIoServerThreadPool = new CFThreadPool<DWORD>(0,0);
 
@@ -1363,97 +1675,6 @@ namespace FTL
         } 
         return n;
     }
-
-
-	LPCTSTR CFNetUtil::GetCookieInfo(CFStringFormater& formater, LPCTSTR lpszUrl, LPCTSTR lpszCookieName)
-	{
-		BOOL bRet = FALSE;
-		DWORD dwLength = 0;
-
-		//InternetGetCookie只读取COOKIES目录下生成的COOKIE，遇到HTTPONLY属性则不生成本地COOKIES中的文件，而是直接通过HTTP头来传输
-		//有生存周期的保存在磁盘，否则保存在内存
-		API_VERIFY(InternetGetCookie(lpszUrl, lpszCookieName, NULL, &dwLength));
-		if (bRet)
-		{
-			dwLength += 1;
-			CFMemAllocator<TCHAR>	memAlloc(dwLength);
-			API_VERIFY(InternetGetCookie(lpszUrl, lpszCookieName, (TCHAR*)memAlloc, &dwLength));
-			if (bRet)
-			{
-				formater.Format(TEXT("%s"), (TCHAR*)memAlloc);
-			}
-		}
-		return formater.GetString();
-	}
-
-	DWORD CFNetUtil::GetCookieInfoMap(LPCTSTR pszCookies, CookieKeyValueMap& cookieMap)
-	{
-		FTLASSERT(pszCookies);
-		if (pszCookies)
-		{
-			typedef std::list<tstring>	ListCookies;
-			ListCookies lstCookies;
-#pragma TODO(Cookie Split Delimiter)
-			//按照标准应该是分号分隔，但实测(baidu)似乎也有冒号分隔?
-			FTL::Split(pszCookies, TEXT(";:"), false, lstCookies);
-			for (ListCookies::iterator iter = lstCookies.begin();
-				iter != lstCookies.end();
-				++iter)
-			{
-				const tstring& strCookie = *iter;
-				ListCookies	lstCookieKeyValue;
-				FTL::Split(strCookie, TEXT("="), false, lstCookieKeyValue);
-				FTLASSERT(lstCookieKeyValue.size() == 2);
-				if (lstCookieKeyValue.size() == 2)
-				{
-					const tstring& strKey = lstCookieKeyValue.front();
-					const tstring& strValue = lstCookieKeyValue.back();
-					cookieMap[strKey] = strValue;
-				}
-			}
-		}
-		return cookieMap.size();
-		//DWORD dwCount = 0;
-		//const char * pSingleCookieStart = szCookiesString;
-		//char szCookieName[1024];
-		//char szCookieValue[1024];
-		//int nCookieNameLen;
-		//int nCookieValueLen;
-
-		//SKIP_WHITESPACE( pSingleCookieStart );
-
-		//while( *pSingleCookieStart != '\0' )
-		//{
-		//	const char * pSingleCookieEnd = strchr( pSingleCookieStart, ';' );
-		//	if( pSingleCookieEnd == NULL )
-		//		pSingleCookieEnd = szCookiesString + strlen(szCookiesString);
-
-		//	const char * pchEqual = _ik_str_find_chr(pSingleCookieStart, pSingleCookieEnd, '=');
-		//	if( pchEqual == NULL )
-		//		return true;
-
-		//	nCookieNameLen = pchEqual - pSingleCookieStart;
-		//	strncpy(szCookieName, pSingleCookieStart, nCookieNameLen);
-		//	szCookieName[nCookieNameLen] = '\0';
-
-		//	TRIM_RIGHT( szCookieName );
-
-		//	pchEqual++;
-		//	SKIP_WHITESPACE_1( pchEqual, pSingleCookieEnd );
-
-		//	nCookieValueLen = pSingleCookieEnd - pchEqual;
-		//	strncpy(szCookieValue, pchEqual, nCookieValueLen);
-		//	szCookieValue[nCookieValueLen] = '\0';
-
-		//	if( SetCookieValue( szCookieName, szCookieValue ) == false )
-		//		return false;
-
-		//	pSingleCookieStart = pSingleCookieEnd + 1;
-		//	SKIP_WHITESPACE( pSingleCookieStart );
-		//}
-
-		return 0;
-	}
 
 	CUrlComponents::CUrlComponents()
 	{
