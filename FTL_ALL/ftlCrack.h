@@ -21,6 +21,7 @@
 *   Security Principal -- Windows信任的安装安全主体
 * 
 *   DEP -- 数据执行保护
+*   NTLM -- NT LAN Manager(win2000早期版本中的一种验证身份方式), 基于一种"提问-答复"机制来进行客户端验证
 *   MIC(Mandatory Integrity Control) -- 强制完整性控制。Vista中的所有安全性对象和进程都有一个完整性级别，
 *     完整性级别(Integrity Level -- IL)低的进程不能修改(可以读取?)级别高的文件或注册表表项。
 *     注意：Win2K/XP 下，安全子系统只把进程的访问令牌和资源的访问控制列表进行匹配比较，以确认该进程是否具有访问该资源的权限。
