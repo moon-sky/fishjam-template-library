@@ -86,7 +86,6 @@ C++语言定义bool数据类型是一个8位的值(0或者1)， BOOL 是long(32/64位)的
   
     
 全局变量：
-  _pModule(在 CComModule::Init 中初始化) 变量，就不需要再定义 ftlWindow.h 中的 ATL对象了 ?
   _AtlBaseModule
   
 字符类型(ANSI/Unicode) + 字符集()

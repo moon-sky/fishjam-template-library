@@ -364,11 +364,13 @@ namespace FTL
 			return formater.GetString();
 		}
 
+#ifdef __WINCRYPT_H__
 		LPCTSTR GetCertChainContextString(CFStringFormater& formater, const PCCERT_CHAIN_CONTEXT& certChainContext)
 		{
 			FTLASSERT(FALSE);
 			return formater.GetString();
 		}
+#endif 
 
 		LPCTSTR GetReqestFlagString(CFStringFormater& formater, DWORD dwRequestFlags)
 		{

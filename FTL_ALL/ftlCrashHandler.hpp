@@ -82,8 +82,14 @@ namespace FTL
             ZeroMemory(m_pTemplate,m_iSize);
 
             // Add window data
+			ATLASSERT(_pModule);
+			if (_pModule)
+			{
+				_pModule->AddCreateWndData(&m_thunk.cd, (CDialogImplBase*)this);
+			}
+#if 0
             _Module.AddCreateWndData(&m_thunk.cd, (CDialogImplBase*)this);
-
+#endif
             m_pOffset = &m_iOffset;
             pT->CreateDlg();
 
@@ -1217,23 +1223,34 @@ namespace FTL
         //s_pExPtrs = pExPtrs;
         CFSystemUtil::SuspendProcess(GetCurrentProcessId(),TRUE,GetCurrentThreadId());
 
-        CFCrashHandlerDialog dlg(pExPtrs);
-        //dlg.SetFaultReason()
-        switch (dlg.DoModal())
-        {
-        case CFCrashHandlerDialog::IDC_BTN_CREATE_MINIDUMP:
-            break;
-        case CFCrashHandlerDialog::IDC_BTN_DEBUG:
-            break;
-        default:
-            lRet = EXCEPTION_EXECUTE_HANDLER;//EXCEPTION_CONTINUE_SEARCH;
-            break;
-        }
+#pragma TODO(这种方法是否合理)
+		CComModule* pLocalModule = NULL;
+		if (!_pModule)
+		{
+			//MessageBox(NULL, TEXT("Before new ComModule"), TEXT("Info"), MB_OK);
+			pLocalModule = new CComModule();
+		}
+
+		CFCrashHandlerDialog dlg(pExPtrs);
+		//dlg.SetFaultReason()
+		switch (dlg.DoModal())
+		{
+		case CFCrashHandlerDialog::IDC_BTN_CREATE_MINIDUMP:
+			break;
+		case CFCrashHandlerDialog::IDC_BTN_DEBUG:
+			break;
+		default:
+			lRet = EXCEPTION_EXECUTE_HANDLER;//EXCEPTION_CONTINUE_SEARCH;
+			break;
+		}
+		SAFE_DELETE(pLocalModule);
+
         //if (s_pfnOrigFilt)
         //{
         //    (*s_pfnOrigFilt)(pExPtrs);
         //}
         CFSystemUtil::SuspendProcess(GetCurrentProcessId(),FALSE,GetCurrentThreadId());
+		OutputDebugString(_T("Leave CFCrashHandler::DefaultCrashHandlerFilter\r\n"));
         return ( lRet ) ;
     }
 
