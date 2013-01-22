@@ -984,6 +984,17 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IActiveScriptSIPInfo)
 #endif //INCLUDE_DETECT_ACTIVSCP
 
+#if INCLUDE_DETECT_AUDIOPOLICY
+			DETECT_INTERFACE_ENTRY(IAudioSessionEvents)
+			DETECT_INTERFACE_ENTRY(IAudioSessionControl)
+			DETECT_INTERFACE_ENTRY(IAudioSessionControl2)
+			DETECT_INTERFACE_ENTRY(IAudioSessionManager)
+			DETECT_INTERFACE_ENTRY(IAudioVolumeDuckNotification)
+			DETECT_INTERFACE_ENTRY(IAudioSessionNotification)
+			DETECT_INTERFACE_ENTRY(IAudioSessionEnumerator)
+			DETECT_INTERFACE_ENTRY(IAudioSessionManager2)
+#endif //INCLUDE_DETECT_AUDIOPOLICY
+
 #if INCLUDE_DETECT_CONTROL
             DETECT_INTERFACE_ENTRY(IAMCollection)   //FilterGraph对象集合，例如Filter或Pin
 

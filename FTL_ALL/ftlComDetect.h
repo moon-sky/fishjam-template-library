@@ -79,7 +79,7 @@ namespace FTL
 
 #pragma TODO(Audiopolicy)
 #ifndef INCLUDE_DETECT_AUDIOPOLICY
-# define INCLUDE_DETECT_AUDIOPOLICY    1
+# define INCLUDE_DETECT_AUDIOPOLICY    0
 #endif
 
 #ifndef INCLUDE_DETECT_CONTROL
@@ -218,6 +218,10 @@ namespace FTL
 #if INCLUDE_DETECT_ACTIVSCP
 #  include <ActivScp.h>
 #endif
+
+#if INCLUDE_DETECT_AUDIOPOLICY
+#  include <audiopolicy.h>
+#endif 
 
 #if INCLUDE_DETECT_CONTROL
 #  include <control.h>

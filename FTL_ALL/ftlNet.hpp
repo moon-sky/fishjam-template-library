@@ -902,14 +902,25 @@ namespace FTL
 		LPVOID lpvStatusInformation, 
 		DWORD dwStatusInformationLength)
 	{
+		FTLTRACE(TEXT("_InnerStatusCallbackProc, hInternet=0x%x, dwInternetStatus=%d, lpvStatusInformation=0x%p, length=%d\n"),
+			hInternet, dwInternetStatus, lpvStatusInformation, dwStatusInformationLength);
+
 		switch (dwInternetStatus)
 		{
-		case INTERNET_STATUS_RESOLVING_NAME: OnResolvingName(hInternet, m_param); break;
-		case INTERNET_STATUS_NAME_RESOLVED: OnNameResolved(hInternet, m_param); break;
-		case INTERNET_STATUS_CONNECTING_TO_SERVER: OnConnectingToServer(hInternet, m_param); break;
+		case INTERNET_STATUS_RESOLVING_NAME: 
+			OnResolvingName(hInternet, m_param, (LPCTSTR)lpvStatusInformation, dwStatusInformationLength);
+			break;
+		case INTERNET_STATUS_NAME_RESOLVED: 
+			OnNameResolved(hInternet, m_param, CA2T((LPCSTR)lpvStatusInformation), dwStatusInformationLength); 
+			break;
+		case INTERNET_STATUS_CONNECTING_TO_SERVER: 
+			OnConnectingToServer(hInternet, m_param, (SOCKADDR*)lpvStatusInformation, dwStatusInformationLength); 
+			break;
 		case INTERNET_STATUS_CONNECTED_TO_SERVER: OnConnectedToServer(hInternet, m_param); break;
 		case INTERNET_STATUS_SENDING_REQUEST: OnSendingRequest(hInternet, m_param); break;
-		case INTERNET_STATUS_REQUEST_SENT: OnRequestSent(hInternet, m_param); break;
+		case INTERNET_STATUS_REQUEST_SENT: 
+			OnRequestSent(hInternet, m_param, (DWORD*)lpvStatusInformation, dwStatusInformationLength); 
+			break;
 		case INTERNET_STATUS_RECEIVING_RESPONSE: OnReceivingResponse(hInternet, m_param); break;
 		case INTERNET_STATUS_RESPONSE_RECEIVED: 
 			OnResponseReceived(hInternet, m_param, (DWORD*)lpvStatusInformation, dwStatusInformationLength); 
@@ -921,7 +932,9 @@ namespace FTL
 		case INTERNET_STATUS_HANDLE_CREATED: 
 			OnHandleCreated(hInternet, m_param, (INTERNET_ASYNC_RESULT*)lpvStatusInformation, dwStatusInformationLength); 
 			break;
-		case INTERNET_STATUS_HANDLE_CLOSING: OnHandleClosing(hInternet, m_param); break;
+		case INTERNET_STATUS_HANDLE_CLOSING: 
+			OnHandleClosing(hInternet, m_param, (DWORD*)lpvStatusInformation, dwStatusInformationLength); 
+			break;
 		case INTERNET_STATUS_DETECTING_PROXY: OnDetectingProxy(hInternet, m_param); break;
 		case INTERNET_STATUS_REQUEST_COMPLETE: 
 			OnRequestComplete(hInternet, m_param, (INTERNET_ASYNC_RESULT*)lpvStatusInformation, dwStatusInformationLength); 
@@ -930,7 +943,9 @@ namespace FTL
 		case INTERNET_STATUS_INTERMEDIATE_RESPONSE: OnIntermediateResponse(hInternet, m_param); break;
 		case INTERNET_STATUS_USER_INPUT_REQUIRED: OnUserInputRequired(hInternet, m_param); break;
 		case INTERNET_STATUS_STATE_CHANGE: OnStateChange(hInternet, m_param); break;
-		case INTERNET_STATUS_COOKIE_SENT: OnCookieSent(hInternet, m_param); break;
+		case INTERNET_STATUS_COOKIE_SENT: 
+			OnCookieSent(hInternet, m_param, (DWORD*)lpvStatusInformation, dwStatusInformationLength); 
+			break;
 		case INTERNET_STATUS_COOKIE_RECEIVED: OnCookieReceived(hInternet, m_param); break;
 		case INTERNET_STATUS_PRIVACY_IMPACTED: OnPrivacyImpacted(hInternet, m_param); break;
 		case INTERNET_STATUS_P3P_HEADER: OnP3pHeader(hInternet, m_param); break;
@@ -964,152 +979,127 @@ namespace FTL
 		}
 	}
 
-	void CFInternetStatusCallbackImpl::InnerTraceCallback(LPCTSTR pszCallbackInfo)
-	{	
-		FTLTRACEEX(FTL::tlTrace, pszCallbackInfo);
-	}
-
-	void CFInternetStatusCallbackImpl::OnResolvingName(HINTERNET hInternet, DWORD_PTR dwContext)
+	void CFInternetStatusCallbackImpl::OnResolvingName(HINTERNET hInternet, DWORD_PTR dwContext, LPCTSTR lpszName, DWORD dwLength)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnResolvingName\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnResolvingName, dwLength=%d, Name=%s\n"), 
+			dwLength, lpszName);
 	}
-	void CFInternetStatusCallbackImpl::OnNameResolved(HINTERNET hInternet, DWORD_PTR dwContext)
+	void CFInternetStatusCallbackImpl::OnNameResolved(HINTERNET hInternet, DWORD_PTR dwContext, LPCTSTR lpszName, DWORD dwLength)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnNameResolved\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnNameResolved, dwLength=%d, Name=%s\n"),
+			dwLength, lpszName);
 	}
-	void CFInternetStatusCallbackImpl::OnConnectingToServer(HINTERNET hInternet, DWORD_PTR dwContext)
+	void CFInternetStatusCallbackImpl::OnConnectingToServer(HINTERNET hInternet, DWORD_PTR dwContext, SOCKADDR* pSockAddr, DWORD dwLength)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnConnectingToServer\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnConnectingToServer, dwLength=%d, SockAddr=%s\n"),
+			dwLength, CA2T(pSockAddr->sa_data));
 	}
 	void CFInternetStatusCallbackImpl::OnConnectedToServer(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnConnectedToServer\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnConnectedToServer\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnSendingRequest(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnSendingRequest\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnSendingRequest\n"));
 	}
-	void CFInternetStatusCallbackImpl::OnRequestSent(HINTERNET hInternet, DWORD_PTR dwContext)
+	void CFInternetStatusCallbackImpl::OnRequestSent(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pdwSend, DWORD dwLength)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnRequestSent\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnRequestSent, Send %d Bytes to Server\n"),
+			*pdwSend);
 	}
 	void CFInternetStatusCallbackImpl::OnReceivingResponse(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnReceivingResponse\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnReceivingResponse\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pdwResponse, DWORD dwLength)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnResponseReceived\n"));
-		if (pdwResponse)
-		{
-			FTLASSERT(sizeof(DWORD) == dwLength);
-			CFStringFormater formater;
-			formater.Format(TEXT("\tResponse, Received %d Bytes\n"), *pdwResponse);
-			InnerTraceCallback(formater.GetString());
-
-		}
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnResponseReceived, Received %d Bytes\n"),
+			*pdwResponse);
 	}
 	void CFInternetStatusCallbackImpl::OnCtlResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnCtlResponseReceived\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnCtlResponseReceived\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnPrefetch(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnPrefetch\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnPrefetch\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnClosingConnection(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnClosingConnection\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnClosingConnection\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnConnectionClosed(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnConnectionClosed\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnConnectionClosed\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnHandleCreated(HINTERNET hInternet, DWORD_PTR dwContext, 
 		INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLenght)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnHandleCreated\n"));
-		if (pAsyncResult)
-		{
-			FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLenght);
-			CFStringFormater formater;
-			//dwResult 是 HINTERNET 句柄
-			formater.Format(TEXT("\tAsyncResult, dwResult=0x%x, dwError=%d\n"),
-				pAsyncResult->dwResult, pAsyncResult->dwError);
-			InnerTraceCallback(formater.GetString());
-		}
+		//dwResult 是 HINTERNET 句柄
+
+		FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLenght);
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnHandleCreated, AsyncResult, dwResult=0x%x, dwError=%d\n"),
+			pAsyncResult->dwResult, pAsyncResult->dwError);
 	}
 
-	void CFInternetStatusCallbackImpl::OnHandleClosing(HINTERNET hInternet, DWORD_PTR dwContext)
+	void CFInternetStatusCallbackImpl::OnHandleClosing(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pdwTemp, DWORD dwLength)
 	{
 		//最后一个事件?
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnHandleClosing\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnHandleClosing, dwLength=%d, tmpValue=%d,\n"),
+			dwLength, *pdwTemp);
 	}
 	void CFInternetStatusCallbackImpl::OnDetectingProxy(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnDetectingProxy\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnDetectingProxy\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnRequestComplete(HINTERNET hInternet, DWORD_PTR dwContext, INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLength)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnRequestComplete\n"));
-		if (pAsyncResult)
-		{
-			FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLenght);
-			CFStringFormater formater;
-			formater.Format(TEXT("\tAsyncResult, dwResult=0x%x, dwError=%d\n"),
-				pAsyncResult->dwResult, pAsyncResult->dwError);
-			InnerTraceCallback(formater.GetString());
-		}
-
+		FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLength);
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnRequestComplete, AsyncResult, dwResult=0x%x, dwError=%d\n"),
+			pAsyncResult->dwResult, pAsyncResult->dwError);
 	}
 	void CFInternetStatusCallbackImpl::OnRedirect(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnRedirect\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnRedirect\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnIntermediateResponse(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnIntermediateResponse\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnIntermediateResponse\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnUserInputRequired(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnUserInputRequired\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnUserInputRequired\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnStateChange(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnStateChange\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnStateChange\n"));
 	}
-	void CFInternetStatusCallbackImpl::OnCookieSent(HINTERNET hInternet, DWORD_PTR dwContext)
+	void CFInternetStatusCallbackImpl::OnCookieSent(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pTmpValue, DWORD dwLength)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnCookieSent\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnCookieSent\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnCookieReceived(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnCookieReceived\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnCookieReceived\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnPrivacyImpacted(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnPrivacyImpacted\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnPrivacyImpacted\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnP3pHeader(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnP3pHeader\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnP3pHeader\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnP3pPolicyRef(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnP3pPolicyRef\n"));
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnP3pPolicyRef\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnCookieHistory(HINTERNET hInternet, DWORD_PTR dwContext, 
 		InternetCookieHistory* pCookieHistory, DWORD dwLenght)
 	{
-		InnerTraceCallback(TEXT("CFInternetStatusCallbackImpl::OnCookieHistory\n"));
-		if (pCookieHistory)
-		{
-			FTLASSERT(sizeof(InternetCookieHistory) == dwLenght);
-			CFStringFormater formater;
-			formater.Format(TEXT("\tCookieInfo = Accepted =%d, Leashed=%d, Downgraded=%d, Rejected=%d\n"),
-				pCookieHistory->fAccepted, pCookieHistory->fLeashed, pCookieHistory->fDowngraded, pCookieHistory->fRejected);
-			InnerTraceCallback(formater.GetString());
-		}
+		FTLASSERT(sizeof(InternetCookieHistory) == dwLenght);
+		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnCookieHistory, CookieInfo = Accepted =%d, Leashed=%d, Downgraded=%d, Rejected=%d\n"),
+			pCookieHistory->fAccepted, pCookieHistory->fLeashed, pCookieHistory->fDowngraded, pCookieHistory->fRejected);
 	}
 
     //////////////////////////////////////////////////////////////////////////

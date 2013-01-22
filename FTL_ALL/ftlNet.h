@@ -17,7 +17,6 @@
 #  define	INTERNET_BUFFER_SIZE	4096
 #endif //INTERNET_BUFFER_SIZE
 
-
 /*************************************************************************************************************************
 * RFC -- http://www.rfc-editor.org/ 
 *  RFC2616 -- Hypertext Transfer Protocol(HTTP)
@@ -424,7 +423,7 @@
 *   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):
 *     1.InternetOpen 初始化的 WinINet 函数库句柄,得到Session句柄, 如果Flags有 INTERNET_FLAG_ASYNC 则表明是异步连接，
 *       其后的连接、数据交换都需要是异步的(需要通过 InternetSetStatusCallback 设置回调 且 通过完成端口来进行 ?)
-*         需要在 INTERNET_STATUS_REQUEST_COMPLETE 事件响应中，根据状态进行处理
+*         需要在 INTERNET_STATUS_REQUEST_COMPLETE 事件响应中，根据状态进行处理(比如 )
 *       异步时，HTTP 的 InternetConnect 会同步返回，FTP的 InternetConnect 会异步返回(ERROR_IO_PENDING)
 *     2.InternetConnect/InternetOpenUrl  连接到指定 Server:Port 上的Connect句柄，可以指定用户名和密码
 *     3.HttpOpenRequest 在连接句柄上打开的Request句柄，要指定是 POST/GET 等，其后的数据交换在该句柄上进行，
@@ -572,14 +571,14 @@ namespace FTL
 	protected:
 		DWORD_PTR					m_param;
 		HINTERNET					m_hInternet;
-		FTLINLINE virtual void InnerTraceCallback(LPCTSTR pszCallbackInfo);
 
-		FTLINLINE virtual void OnResolvingName(HINTERNET hInternet, DWORD_PTR dwContext);
-		FTLINLINE virtual void OnNameResolved(HINTERNET hInternet, DWORD_PTR dwContext);
-		FTLINLINE virtual void OnConnectingToServer(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnResolvingName(HINTERNET hInternet, DWORD_PTR dwContext, LPCTSTR lpszName, DWORD dwLength);
+		FTLINLINE virtual void OnNameResolved(HINTERNET hInternet, DWORD_PTR dwContext, LPCTSTR lpszName, DWORD dwLength);
+		FTLINLINE virtual void OnConnectingToServer(HINTERNET hInternet, DWORD_PTR dwContext, SOCKADDR* pSockAddr, DWORD dwLength);
 		FTLINLINE virtual void OnConnectedToServer(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnSendingRequest(HINTERNET hInternet, DWORD_PTR dwContext);
-		FTLINLINE virtual void OnRequestSent(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnRequestSent(HINTERNET hInternet, DWORD_PTR dwContext, 
+			DWORD* pdwSend, DWORD dwLength);
 		FTLINLINE virtual void OnReceivingResponse(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext,
 			DWORD* pdwResponse, DWORD dwLength);
@@ -589,7 +588,7 @@ namespace FTL
 		FTLINLINE virtual void OnConnectionClosed(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnHandleCreated(HINTERNET hInternet, DWORD_PTR dwContext,
 			INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLenght);
-		FTLINLINE virtual void OnHandleClosing(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnHandleClosing(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pTmpValue, DWORD dwLength);
 		FTLINLINE virtual void OnDetectingProxy(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnRequestComplete(HINTERNET hInternet, DWORD_PTR dwContext,
 			INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLength);
@@ -597,7 +596,7 @@ namespace FTL
 		FTLINLINE virtual void OnIntermediateResponse(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnUserInputRequired(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnStateChange(HINTERNET hInternet, DWORD_PTR dwContext);
-		FTLINLINE virtual void OnCookieSent(HINTERNET hInternet, DWORD_PTR dwContext);
+		FTLINLINE virtual void OnCookieSent(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pTmpValue, DWORD dwLength);
 		FTLINLINE virtual void OnCookieReceived(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnPrivacyImpacted(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnP3pHeader(HINTERNET hInternet, DWORD_PTR dwContext);
