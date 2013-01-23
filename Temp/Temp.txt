@@ -240,3 +240,78 @@ http://wenku.baidu.com/view/6243ee2f2af90242a895e555.html
 	if (spColorConvertDMO)
 
 http://www.fishlee.net/soft/44/download.html
+
+
+
+
+void bin_dump( LPCSTR pData, int len )
+{
+	if( len <= 0 )
+		return;
+
+	int nTotalSize = 1024 + (len * 4) + (len/10 * 64) + 1;
+	char *pBuffer = (char*)malloc( nTotalSize );
+	if( pBuffer == NULL )
+		return;
+	int nCurrSize = 0;
+	pBuffer[0] = '\0';
+
+	nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, 
+		"\r\n[DUMP BIN BEGIN] pData=%p, len=%d---------------------------------\r\n", pData, len );
+
+	const int ONE_LINE_COUNT	= 20;
+
+	nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, 
+		"\t%c\t", '/' );
+
+	for( int i=0 ; i < ONE_LINE_COUNT ; i++ )
+	{
+		nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, " %2d", i );
+	}
+
+	nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, "\r\n" );
+
+	int nLineCount = (len-1) / ONE_LINE_COUNT + 1;
+
+	for( int i=0 ; i < nLineCount ; i++ )
+	{
+		nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, "\t%d\t", i );
+
+		int nLineEnd = ONE_LINE_COUNT;
+		
+		if( i == nLineCount - 1 )
+		{
+			nLineEnd = len % ONE_LINE_COUNT;
+			if( nLineEnd == 0 )
+				nLineEnd = ONE_LINE_COUNT;
+		}
+
+		int j;
+		for( j=0 ; j < nLineEnd ; j++ )
+		{
+			int n = (pData[i*ONE_LINE_COUNT + j] & 0x000000ff);
+			nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, " %02X", n );
+		}
+
+		for( ; j < ONE_LINE_COUNT ; j++ )
+		{
+			nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, "   " );
+		}
+
+		nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, "         [" );
+
+		for( j=0 ; j < nLineEnd ; j++ )
+		{
+			nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, "%c", pData[i*ONE_LINE_COUNT + j] );
+		}
+
+		nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, "]\r\n" );
+	}
+
+	nCurrSize += _snprintf(pBuffer+nCurrSize, nTotalSize-nCurrSize, "[DUMP BIN END] pData=%p, len=%d---------------------------------\r\n", pData, len );
+
+#if defined(WIN32)
+	WRITE_DEBUG_LOG( "%s", pBuffer );
+#endif
+	free(pBuffer);
+}
