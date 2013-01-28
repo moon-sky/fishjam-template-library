@@ -141,6 +141,11 @@ namespace FTL
 # define INCLUDE_DETECT_MSXML       1
 #endif
 
+//Net Firewall
+#ifndef INCLUDE_DETECT_NETFW
+# define INCLUDE_DETECT_NETFW       1
+#endif
+
 #ifndef INCLUDE_DETECT_OAIDL
 # define INCLUDE_DETECT_OAIDL       1
 #endif 
@@ -291,6 +296,10 @@ namespace FTL
 
 #if INCLUDE_DETECT_MSXML
 #  include <msxml.h>
+#endif 
+
+#if INCLUDE_DETECT_NETFW
+#  include <netfw.h>
 #endif 
 
 #if INCLUDE_DETECT_OAIDL

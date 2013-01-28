@@ -102,6 +102,25 @@ namespace FTL
 
     namespace FNetInfo
     {
+		
+		unsigned short CheckSum(USHORT *pBuffer, int size)
+		{
+			unsigned long cksum = 0;
+
+			while (size > 1) 
+			{
+				cksum += *pBuffer++;
+				size -= sizeof(USHORT);
+			}
+			if (size) 
+			{
+				cksum += *(UCHAR*)pBuffer;
+			}
+			cksum = (cksum >> 16) + (cksum & 0xffff);
+			cksum += (cksum >>16);
+			return (USHORT)(~cksum);
+		}
+
 		LPCTSTR GetCookieInfo(CFStringFormater& formater, LPCTSTR lpszUrl, LPCTSTR lpszCookieName)
 		{
 			BOOL bRet = FALSE;
@@ -282,7 +301,7 @@ namespace FTL
             {
                 HANDLE_CASE_RETURN_STRING( SOCK_STREAM );
                 HANDLE_CASE_RETURN_STRING( SOCK_DGRAM );
-                HANDLE_CASE_RETURN_STRING( SOCK_RAW );
+                HANDLE_CASE_RETURN_STRING( SOCK_RAW );	//原生Socket，可以制作 Ping 等(参见 Samples\netds\winsock\ping)
                 HANDLE_CASE_RETURN_STRING( SOCK_RDM );
                 HANDLE_CASE_RETURN_STRING( SOCK_SEQPACKET );
             default:
@@ -1667,6 +1686,111 @@ namespace FTL
         } 
         return n;
     }
+
+	//////////////////////////////////////////////////////////////////////////
+	//template<typename PACKET_T>
+	CFTCPReceiver::CFTCPReceiver(IReceiveAdapter* pReceiveAdapter, IPacketParserAdapter* pParserAdapter, 
+		INT nBufferSize /* = INTERNET_BUFFER_SIZE */)
+	{
+		m_pReceiveAdapter = pReceiveAdapter;
+		m_pParserAdapter = pParserAdapter;
+
+		m_pBufferHeader = new BYTE[nBufferSize];
+		if (m_pBufferHeader)
+		{
+			ZeroMemory(m_pBufferHeader, nBufferSize);
+
+			m_nBufferSize = nBufferSize;
+			m_pRead = m_pBufferHeader;
+			m_pWrite = m_pBufferHeader;
+		}
+		else
+		{
+			m_nBufferSize = 0;
+			m_pRead = NULL;
+			m_pWrite = NULL;
+		}
+	}
+
+	CFTCPReceiver::~CFTCPReceiver()
+	{
+		m_pRead = NULL;
+		m_pWrite = NULL;
+		SAFE_DELETE_ARRAY(m_pBufferHeader);
+	}
+
+	INT CFTCPReceiver::ReceiveData()
+	{
+		FTLASSERT(m_pReceiveAdapter);
+		FTLASSERT(m_pBufferHeader);
+
+		CFAutoLock<CFLockObject> locker(&m_LockObject);
+		INT nLength = 0;
+
+		if (m_pReceiveAdapter && m_pBufferHeader)
+		{
+			INT nAvailableWriteLength = m_nBufferSize - INT(m_pWrite - m_pBufferHeader);
+			FTLASSERT(nAvailableWriteLength >= 0);
+			if (nAvailableWriteLength > 0)
+			{
+				nLength = m_pReceiveAdapter->ReceiveData(m_pWrite,  nAvailableWriteLength);
+			}
+			if (nLength > 0)
+			{
+				m_pWrite += nLength;
+			}
+		}
+		return nLength;
+	}
+
+	INT CFTCPReceiver::ParsePacket()
+	{
+		FTLASSERT(m_pParserAdapter);
+		FTLASSERT(m_pRead <= m_pWrite);
+
+		CFAutoLock<CFLockObject> locker(&m_LockObject);
+
+		INT nLength = 0;
+		INT nTotalParseLength = 0;
+
+		INT dwAvailableReadLength = INT(m_pWrite - m_pRead);
+
+		while (dwAvailableReadLength > 0 )
+		{
+			nLength = m_pParserAdapter->ParsePacket(m_pRead, dwAvailableReadLength);
+			if (nLength > 0)
+			{
+				nTotalParseLength += nLength;
+				m_pRead += nLength;
+				dwAvailableReadLength -= nLength;
+
+				FTLASSERT(m_pRead <= m_pWrite);
+				FTLASSERT(dwAvailableReadLength >= 0);
+			}
+			else
+			{
+				//nLength <= 0
+				break;
+			}
+		}
+
+		FTLASSERT(m_pRead <= m_pWrite);
+		
+		if (m_pRead != m_pBufferHeader)
+		{
+			DWORD dwRemainLength = (DWORD)(m_pWrite - m_pRead);
+			BYTE* pOldRead = m_pRead;
+			m_pRead = m_pBufferHeader;
+
+			if (dwRemainLength > 0)
+			{
+				CopyMemory(m_pRead, pOldRead, dwRemainLength);
+			}
+			m_pWrite = m_pRead + dwRemainLength;
+		}
+		return nTotalParseLength;
+	}
+	//////////////////////////////////////////////////////////////////////////
 
 	CUrlComponents::CUrlComponents()
 	{

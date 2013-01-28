@@ -76,7 +76,7 @@
 *       TCP作为流，是远远不断的到目的地，接收方必须组包；UDP作为消息或数据报，一定是整包到达接收方，不会出现粘包问题。
 *   
 * 产生原因（ 注意：短连接时不可能出现粘包现象？如 Http 协议 ？)
-*   发送方：TCP为提高传输效率，会收集到足够多数据后才发送(Nagle算法)
+*   发送方：TCP为提高传输效率，会收集到足够多数据后才发送(Nagle算法[、延迟应答?] 等)
 *   接收方：接收方用户进程不及时从系统接收缓冲区接收数据，下一包数据到来时就接到前一包数据之后
 *   
 * 较好的对策：
@@ -95,6 +95,7 @@
 * ICMP(Internet Control Message Protocol)--互连控制消息协议，主要用来供主机或路由器报告IP数据报载传输中可能出现的不正常情况。
 * IP(Internet Protocol)--互联协议，规定了数据传输的基本单元(报文分组)以及所有数据在网际传递时的确切格式规范。
 * LANA(LAN Adapter)Number -- 对应于网卡及传输协议的唯一组合
+* MSS() -- 最大报文段长度，表示TCP传往另一端的最大块数据的长度。三次握手时，
 * MTU(Maximum Transmission Unit) -- 最大传输单元 
 * NetBios Name -- 微软网络中的机器名采用的便是NetBIOS名字，机器启动时，会将名字注册到本地的WINS。
 *   通过 nbtstat 命令可以列出信息。
@@ -128,6 +129,7 @@
 * 组播用的是D类IP地址224.0.0.0 -- 需要对方加入你的组播组
 * 子网广播 -- 广播得看你的网络号是几位的，现在都是CIDR标记路由，主机号全1就是广播地址
 *   分为单路广播和多路广播?
+* 广播和多播不能用于TCP?
 *************************************************************************************************************************/
 
 
@@ -257,7 +259,8 @@
 *     缓解网络拥塞，但可能增加延迟并降低吞吐量。可通过 TCP_NODELAY 选项关闭，禁止数据合并。
 *     适用于经常单向发送小数据报(比如 IPMsg )
 *       :setsockopt(info->sd, SOL_SOCKET, TCP_NODELAY, (char *)&flg, sizeof(flg));
-
+*   4.延迟应答(数据捎带ACK) -- 通常TCP在接收到数据时并不立即发送ACK。实际是推迟发送，以便将ACK与需要沿该方向发送的数据一起发送。
+*     绝大多数实现采用的时延为200ms
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -539,6 +542,9 @@ namespace FTL
 	typedef std::map<tstring, tstring> CookieKeyValueMap;
     namespace FNetInfo
     {
+		//头中的CheckSum
+		FTLINLINE USHORT CheckSum(USHORT *pBuffer, int size);
+
 		FTLINLINE LPCTSTR GetCookieInfo(CFStringFormater& formater, LPCTSTR lpszUrl, LPCTSTR lpszCookieName);
 		FTLINLINE DWORD GetCookieInfoMap(LPCTSTR pszCookies, CookieKeyValueMap& cookieMap);
 
@@ -548,7 +554,7 @@ namespace FTL
         //获取套接字类型
         FTLINLINE LPCTSTR GetSocketType(int iSocketType);
 
-        //获取指定地址家族的协议： 如 AF_INETx 中的 IPROTO_IP/IPROTO_TCP/IPROTO_UDP 等
+        //获取指定地址家族的协议： 如 AF_INETx 中的 IPPROTO_IP/IPPROTO_TCP/IPPROTO_UDP 等
         FTLINLINE LPCTSTR GetProtocolType(int iAddressFamily,int iProtocol);
 
         FTLINLINE LPCTSTR GetServiceFlagsType(DWORD dwServiceFlags);
@@ -772,22 +778,46 @@ namespace FTL
 	class IReceiveAdapter
 	{
 	public:
+		//返回收到的包的长度
+		virtual INT ReceiveData(BYTE* pBuffer, INT nLength) = 0;
 	};
 	
 	class IPacketParserAdapter
 	{
 	public:
+		//返回分析出的包的长度，每次分析一个包即可，会在 CFTCPReceiver::ParsePacket 中循环调用
+		//注意：该函数会锁定 CFTCPReceiver，且 Buffer 不会拷贝(该函数退出后，可能被覆盖)
+		//      因此需要尽快处理完毕，如果后续需要数据，需要自己拷贝保存
+		virtual INT ParsePacket(BYTE* pBuffer, INT nLength) = 0;
+
 	};
 
-	//环形缓冲跟每个TCP套接字绑定
+	//TCP缓冲，和每个数据接收端( 如 TCP Socket )绑定，作为接受数据的缓冲，目前提供了如下功能
+	//a. TCP粘包问题处理
+	//
+	//通常的使用方式是
+	//  1.TCP接收类包含作为成员变量，并指定对应的 IReceiveAdapter、IPacketParserAdapter 实例
+	//  2.if(tcpReceiver.ReceiveData() > 0 { tcpReceiver.ParsePacket(); } )
 	class CFTCPReceiver
 	{
 	public:
-		CRITICAL_SECTION	m_csLock;		//保护环形缓冲的临界区
-		UINT8*				m_pRingBuf;		//缓冲区起始位置
-		UINT8*				m_pRead;		//当前未处理数据的起始位置
-		UINT*				m_pWrite;		//当前未处理数据的结束位置
-		UINT*				m_pLastWrite;	//当前缓冲区的结束位置
+		FTLINLINE CFTCPReceiver(IReceiveAdapter* pReceiveAdapter, IPacketParserAdapter* pParserAdapter, INT nBufferSize = INTERNET_BUFFER_SIZE);
+		FTLINLINE ~CFTCPReceiver();
+
+		BOOL IsBufferAvalibe() const { return m_pBufferHeader ? TRUE : FALSE; }
+
+		INT ReceiveData();
+
+		//循环处理Packet，处理完毕后会重新拷贝分析剩余的数据到Buffer头部
+		INT ParsePacket();
+	private:
+		CFCriticalSection	m_LockObject;		//保护环形缓冲的临界区
+		IReceiveAdapter*		m_pReceiveAdapter;
+		IPacketParserAdapter*	m_pParserAdapter;
+		INT					m_nBufferSize;
+		BYTE*				m_pBufferHeader;//缓冲区起始位置
+		BYTE*				m_pRead;		//当前未处理数据的起始位置
+		BYTE*				m_pWrite;		//当前未处理数据的结束位置
 	};
 
 
