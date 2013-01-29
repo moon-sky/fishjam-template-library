@@ -145,7 +145,11 @@
 *  算法模式?
 *     ede -- 该加密算法采用了加密、解密、加密的方式，第一个密钥和最后一个密钥是相同的 
 *     ede3——该加密算法采用了加密、解密、加密的方式，但是三个密钥都不相同
-*
+* 编码方法
+*   流式编码 -- 在明码文本的每一位上创建编码位，速度较快，但安全性较低
+*   块编码   -- 在一个完整的块上(如64位)上工作，需要使用填充的方法对要编码的数据进行舍入，以组成多个完整的块。
+*               这种算法速度较慢，但更安全。
+*   
 * 1.对称密钥(对称加密算法，常用的是 AES/DES 等)：私钥加密和解密，速度快，但密钥管理困难
 *   常见对称加密算法
 *     [AES](Advanced Encryption Standard) -- 高级加密标准，是美国联邦政府采用的一种区块加密标准，用于替代原先的DES，
@@ -155,7 +159,7 @@
 *     DES
 *     IDEA
 *     RC2
-*     RC4 -- 流加密算法
+*     RC4 -- 流式编码
 *     RC5 -- OpenSSL中 缺省的是128位密钥，加密次数为12次
 *
 * 2.非对称密钥(非对称加密算法)：公钥(PK -- Public Key)加密，私钥(SK -- )解密，加密算法(E)和解密算法(D)也是公开的，机制灵活，但速度慢。
@@ -182,18 +186,44 @@
 * 4.MAC 算法 -- 这是什么？
 *     HMAC
 * 
-* 5.密钥和证书管理
+* 5.密钥和证书(Certificate)管理
 *   ASN.1
 *   X.509
 *   PKCS#12
 * 数字证书：有公钥信息，从而确认了拥有密钥对的用户的身份
+*    
 * 公钥位于 ~/.ssh/ 目录中，该目录有以下限制：除本账户的其他所有账户(包括root)都只读，否则无法登录。特殊需求时可在 sshd_config 配置
 *   文件中用 StrictMode no 来取消该限制(man sshd_config)
 *
 **********************************************************************************************************************************/
 
 /**********************************************************************************************************************************
-* Crypto API -- 微软的加解密API ?
+* Crypto API -- 微软的加解密API(wincrypt.h), AtlServer中的 AtlCrypt.h 进行了封装
+*   Crypto API 的配置信息存储在注册表中( HKLM\SOFTWARE\Microsoft\Cryptography )
+*   支持：
+*     会话密钥(对称算法) -- 
+*     公钥/私钥对 -- 
+*   编程
+*     CSP(Cryptographic Service Provider)
+*     CryptAcquireContext -- 连接缺省的CSP，如果最后的参数是 CRYPT_NEWKEYSET 则会创建缺省CSP，使用完毕后需要通过 CryptReleaseContext 释放
+*     CryptCreateHash -- 产生一个空的HASH对象
+*     CryptDeriveKey(..,CRYPT_EXPORTABLE) -- 从某一固定数据(如密码)产生会话密钥，
+*     CryptEncrypt/CryptDecrypt -- 
+*     CryptExportKey -- 导出密钥，其中 hExpKey 表示将待导出密钥用交换密钥进行加密，如导出公钥，则设置为 NULL
+*     CryptGetUserKey -- 返回所获取密钥类型的句柄，可以指定 AT_KEYEXCHANGE(交换密钥，可导出会话密钥) 或 AT_SIGNATURE(签名密钥)
+*     CryptGenRandom -- 为空间产生随机字节,生成的随即数据可用于 CryptSetKeyParam
+*     CryptGenKey -- 产生一个随机的会话密钥或者公钥/私钥对，ALG_ID 表明产生私钥所使用的算法(如 CALG_AES、CALG_RSA_KEYX 等)
+*     CryptHashData -- 对密码进行HASH处理
+*     CryptImportKey -- 将密钥从BLOB转换到CSP中
+*     CryptMsgUpdate -- 增加内容到加密信息中
+*     CryptSetKeyParam/CryptGetKeyParam -- 设置/获取 会话密钥的参数
+*     证书(Certificate)
+*       CertCreateCertificateContext/ -- 创建证书上下文
+*       CryptUIDlgCertMgr -- 可以显示系统提供的证书管理对话框(WinXp后才提供?)
+*       
+*   常见密码相关流程(流程中不包括异常和资源清理)
+*     1.通过密码生成会话密钥: CryptAcquireContext=>CryptCreateHash=>CryptHashData
+*     2.加解密消息: 
 * .NET的加解密类： System.Security.Cryptography
 **********************************************************************************************************************************/
 
@@ -227,14 +257,23 @@
 * 编程API
 *   EVP(evp.h) -- OpenSSL自定义的一组高层算法封装函数，是对具体算法的封装。可以在同一类加密算法框架下，通过相同的接口去调用不同的加密算法，且方便扩展。
 *     通过 struct evp_cipher_st 中的回调函数来调用对应的各种算法函数( init -> [ctrl -> ] do_cipher -> cleanup )?
-*     
+*
 *     EVP_Encrypt -- 对称加密算法
 *     EVP_Seal/EVP_Open -- 非对称加密算法
 *     EVP_Digest  -- 信息摘要算法
 *     EVP_Sign/EVP_Verify -- 签名算法
 *     EVP_Encode/EVP_Decode -- BASE64(等?)编码算法
 *     EVP_PKEY/EVP_BytesToKey -- 不同类型密钥结构的管理/加密密钥和IV值提取功能
-*     
+* 
+*   加解密：
+*     1.EVP_CIPHER_CTX_init
+*        E.1. EVP_EncryptInit(ctx, EVP_aes_128_cbc(), pKey, pIV);
+*        E.2. EVP_EncryptUpdate
+*        E.3. EVP_EncryptFinal
+*        D.1. EVP_DecryptInit(ctx, EVP_aes_128_cbc(), pKey, pIV);
+*        D.2. EVP_DecryptUpdate
+*        D.3. EVP_DecryptFinal
+*     3.EVP_CIPHER_CTX_cleanup
 **********************************************************************************************************************************/
 
 

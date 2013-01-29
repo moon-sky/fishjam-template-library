@@ -2061,13 +2061,17 @@ namespace FTL
 #endif //INCLUDE_DETECT_MSXML
 
 #if INCLUDE_DETECT_NETFW
+			//CoCreateInstance(__uuidof(NetFwMgr),...__uuidof(INetFwMgr), (void**)&pNetFwMgr);
 			DETECT_INTERFACE_ENTRY(INetFwRemoteAdminSettings)
 			DETECT_INTERFACE_ENTRY(INetFwIcmpSettings)
 			DETECT_INTERFACE_ENTRY(INetFwOpenPort)
 			DETECT_INTERFACE_ENTRY(INetFwOpenPorts)
 			DETECT_INTERFACE_ENTRY(INetFwService)
 			DETECT_INTERFACE_ENTRY(INetFwServices)
+
+			//CoCreateInstance(__uuidof(NetFwAuthorizedApplication),...,__uuidof(INetFwAuthorizedApplication),(void**)&fwApp);
 			DETECT_INTERFACE_ENTRY(INetFwAuthorizedApplication)
+
 			DETECT_INTERFACE_ENTRY(INetFwAuthorizedApplications)
 			DETECT_INTERFACE_ENTRY(INetFwRule)
 			DETECT_INTERFACE_ENTRY(INetFwRule2)
