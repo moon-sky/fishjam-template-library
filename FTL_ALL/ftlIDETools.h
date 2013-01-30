@@ -1055,7 +1055,7 @@ namespace FTL
     *   编辑 UTF-8格式的文档（Linux同步开发）：
     *     Options->Text Editor->General->Auto-detect UTF-8 encoding without signature
     * 
-    * 查找中输入 :a+ 且选中"正则表达式", 可以搜索 文档内硬编码的字符串
+    * 查找中输入 ":a+" 且选中"正则表达式", 可以搜索 文档内硬编码的字符串
     * 利用正则表达式去除 .ini 文件中 = 前后的空格和Tab： 查找： ^{[^ \t=]*}{[ \t]*}={[ \t]*}{.*}$ ，替换成：\1=\4 
 	*
     * Visual Studio Team System(VSTS)

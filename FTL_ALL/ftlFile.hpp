@@ -10,6 +10,50 @@
 
 namespace FTL
 {
+
+ 	TextFileEncoding CFFileUtil::GetTextFileEncoding(LPCTSTR pszFileName)
+	{
+		BOOL bRet = FALSE;
+		TextFileEncoding encoding = tfeError;
+		if (pszFileName)
+		{
+			BYTE header[3] = {0};
+			HANDLE hFile = ::CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			API_VERIFY(hFile != INVALID_HANDLE_VALUE);
+
+			if (hFile != INVALID_HANDLE_VALUE)
+			{
+				DWORD dwFileSize = ::GetFileSize( hFile, NULL );
+				DWORD dwReadSize = FTL_MIN(sizeof(header), dwFileSize);
+				API_VERIFY(ReadFile(hFile, header, dwReadSize, &dwReadSize, NULL));
+				CloseHandle(hFile);
+
+				if (bRet)
+				{
+					//read success
+					if (memcmp(TEXT_FILE_HEADER_UTF8, header, sizeof(TEXT_FILE_HEADER_UTF8)) == 0)
+					{
+						encoding = tfeUTF8;
+					}
+					else if(memcmp(TEXT_FILE_HEADER_UNICODE, header, sizeof(TEXT_FILE_HEADER_UNICODE)) == 0)
+					{
+						encoding = tfeUnicode;
+					}
+					else if(memcmp(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN, header, sizeof(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN)) == 0)
+					{
+						encoding = tfeUnicodeBigEndian;
+					}
+					else
+					{
+						encoding = tfeUnknown;
+					}
+				}
+			}
+		}
+		return encoding;
+	}
+
 #if 0
     CFConsoleFile::CFConsoleFile()
     {

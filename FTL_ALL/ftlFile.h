@@ -25,6 +25,27 @@ namespace FTL
     #define BYTES_PER_TERABYTE      (BYTES_PER_GIGABYTE * 1000)
     #define BYTES_PER_PETABYTE      (BYTES_PER_TERABYTE * 1000)
 
+	/**************************************************************************************************
+	* 文本文件：
+	*   ANSI[没有标识字符] -- 采用当前语言编码保存(如中文936, 韩文949)，文件头没有标识符，在不同语言的OS下会显示成乱码。
+	*   UTF-8 without signature[65001] -- UTF8 编码，文件头没有标识符(记事本不支持)
+	*   UTF-8 with signature[65001, 0xEFBBBF] -- UTF8编码，文件头有标识符，英文对应的是 0xXX
+	*   Unicode[1200, 0xFFFE] -- Unicode 编码，英文对应的是 0xXX00
+	*   Unicode Big-Endian[1201, 0xFEFF] -- Unicode 编码，英文对应的是 0x00XX
+	*   UTF-7[65000] -- UTF7编码？文件头没有标识符
+	**************************************************************************************************/
+	enum TextFileEncoding
+	{
+		tfeError = -1,
+		tfeUnknown = 0,
+
+		tfeUTF8,					//0xEF BB BF
+		tfeUnicode,					//0xFF FE
+		tfeUnicodeBigEndian,		//0xFE FF
+	}
+	const BYTE TEXT_FILE_HEADER_UTF8[]				= { 0xEF, 0xBB, 0xBF };
+	const BYTE TEXT_FILE_HEADER_UNICODE[]			= { 0xFF, 0xFE };
+	const BYTE TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN	= { 0xFE, 0xFF };
 
     /**************************************************************************************************
 	* OVERLAPPED -- 异步I/O是创建高性能可伸缩的应用程序的秘诀，因为它允许单个线程处理来自不同客户机的请求。
@@ -65,7 +86,12 @@ namespace FTL
 	* CreateFile 时如果有 FILE_FLAG_SEQUENTIAL_SCAN， 表示优化Cache，适用于从头到尾顺序访问，不会随机跳
 	* GetTempFileName -- 生成指定目录下临时文件的名字，通常用于生成临时文件
     **************************************************************************************************/
-	
+	class CFFileUtil
+	{
+	public:
+		FTLINLINE static TextFileEncoding GetTextFileEncoding(LPCTSTR pszFileName);
+	}
+
 #if 0
     class CFConsoleFile
     {
