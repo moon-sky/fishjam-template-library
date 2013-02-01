@@ -145,6 +145,7 @@
 *   select(选择) -- 利用select函数判断套接字上是否存在数据，或者能否向一个套接字写入数据。
 *     分三种：可读性、可写性、例外。函数返回后，通过再次判断socket是否是集合的一部分来确定是否可读写。
 *     缺点：不能动态的调整(如增加、删除)Socket，如进程捕获一个信号并从信号处理程序返回，等待一般会被中断（除非信号处理程序指定 SA_RESTART 且系统支持）
+*     通过 FD_ZERO、 FD_SET 等宏对socket句柄设置监听的事件， 然后select(socket+1,xxx) 返回后通过 FD_ISSET 等宏判断是否有事件
 *   WSAAsyncSelect(异步选择) -- 接收以Windows消息为基础的网络事件通知(即网络事件来了后用消息进行处理)，MFC中CAsyncSocket的方式，模式自动变为非阻塞。
 *     如IPMsg中tcp用于建立连接，UDP用于读取数据：
 *       ::WSAAsyncSelect(udp_sd, hWnd, WM_UDPEVENT, FD_READ)
@@ -205,8 +206,10 @@
 *     4.getpeername -- 返回socket绑定的远程地址
 *     5.close/closesocket -- 释放socket句柄，使其可复用
 *   B.连接的建立和终止
-*     1.connect -- 主动在一个socket句柄上建立连接，如果想设置超时，利用ioctlsocket把socket设置为非堵塞的，在connect时会立即返回，
-*         然后利用select函数等待 readfd 并设置超时值
+*     1.connect -- 主动在一个socket句柄上建立连接，如果想设置超时，利用ioctlsocket(socket, FIONBIO, &1)把socket设置为非堵塞的，
+*         在connect时会立即返回，然后利用select函数等待 readfd 并设置超时值
+*         fd_set rdevents; FD_ZERO(&rdevents); FD_SET(socket, &rdevents); struct timeval tv(nTimeOutSec, 0); 
+*         nResult = select (socket+1, &rdevents, NULL, NULL);
 *     2.listen -- 表示愿意被动侦听来自客户的连接请求
 *     3.accept -- 工厂函数，响应客户请求，创建一个新的连接，如果没有请求，将阻塞
 *     4.shutdown -- 有选择地终止双向连接中读取方或写入方的数据流
@@ -477,8 +480,9 @@
 *     HttpQueryInfo
 *     InternetSetStatusCallback  -- 设置网络连接时各种事件的回调接口
 *     InternetErrorDlg -- 弹出网络相关的错误对话框，如认证失败(httpauth 例子中测试没有出现):
+*       dwError = ERROR_INTERNET_INCORRECT_PASSWORD; //GetLastError()
 *       dwFlags = FLAGS_ERROR_UI_FILTER_FOR_ERRORS | FLAGS_ERROR_UI_FLAGS_CHANGE_OPTIONS | FLAGS_ERROR_UI_FLAGS_GENERATE_DATA;
-*       InternetErrorDlg(GetDesktopWindow(), hRequest, GetLastError(), dwFlags, NULL);
+*       if(InternetErrorDlg(GetDesktopWindow(), hRequest, dwError, dwFlags, NULL) == ERROR_INTERNET_FORCE_RETRY){ retry; }
 *   连接控制
 *     InternetOpen -- 初始化WinINet函数库，其返回的句柄用于后续的Connect,使用完毕后需要Close
 *     InternetConnect -- 指定URL建立一个连接, 可知指定供 InternetSetStatusCallback 使用的回调参数(设计比较怪，为什么不在 InternetSetStatusCallback 中提供?)
@@ -819,12 +823,12 @@ namespace FTL
 		FTLINLINE CFTCPReceiver(IReceiveAdapter* pReceiveAdapter, IPacketParserAdapter* pParserAdapter, INT nBufferSize = INTERNET_BUFFER_SIZE);
 		FTLINLINE ~CFTCPReceiver();
 
-		BOOL IsBufferAvalibe() const { return m_pBufferHeader ? TRUE : FALSE; }
+		FTLINLINE BOOL IsBufferAvalibe() const { return m_pBufferHeader ? TRUE : FALSE; }
 
-		INT ReceiveData();
+		FTLINLINE INT ReceiveData();
 
 		//循环处理Packet，处理完毕后会重新拷贝分析剩余的数据到Buffer头部
-		INT ParsePacket();
+		FTLINLINE INT ParsePacket();
 	private:
 		CFCriticalSection	m_LockObject;		//保护环形缓冲的临界区
 		IReceiveAdapter*		m_pReceiveAdapter;
@@ -835,6 +839,111 @@ namespace FTL
 		BYTE*				m_pWrite;		//当前未处理数据的结束位置
 	};
 
+	class IFDownloadCallback
+	{
+	public:
+		enum STATUS
+		{
+			sStart,
+			sDownloading,
+			sComplete,
+		};
+
+		enum END_CODE
+		{
+			ecOK,
+			ecERROR,
+			ecCANCEL,
+		};
+
+		virtual void OnProgress(LONG64 nId, IFDownloadCallback::STATUS status, ULONG64 nCurPos, ULONG64 nTotalSize) = 0;
+		virtual void OnEnd(LONG64 nId, IFDownloadCallback::END_CODE endCode, DWORD dwErrorCode) = 0;
+	};
+
+	//TODO: change to interface(Job?)
+	//  1. Download - Upload
+	//  
+	class CFInternetDownloader
+	{
+	public:
+		FTLINLINE CFInternetDownloader( IFDownloadCallback* pCallBack );
+		FTLINLINE virtual ~CFInternetDownloader( void );
+
+		FTLINLINE BOOL IsStarted();
+		FTLINLINE BOOL Start(LPCTSTR pszAgent, LONG nMaxParallelCount);
+		FTLINLINE BOOL Stop();
+		FTLINLINE void Close();
+
+		FTLINLINE LONG64 AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );
+		FTLINLINE LONG64 CancelTask(LONG64 nId);
+	protected:
+	private:
+		struct DownloadJobInfo
+		{
+			DISABLE_COPY_AND_ASSIGNMENT(DownloadJobInfo);
+		public:
+			HINTERNET				m_hSession;
+			IFDownloadCallback*		m_pCallback;
+			CAtlString				m_strServerName;
+			CAtlString				m_strObjectName;
+			CAtlString				m_strLocalFilePath;
+			USHORT					m_nPort;
+
+			LONG64					m_nId;
+			LONG64					m_nTotalSize; //if is MAXLONG64, then donot known the real size
+			LONG64					m_nCurPos;
+			BOOL					m_bCancel;
+			HINTERNET				m_hConnection;
+			HINTERNET				m_hRequest;
+			//HANDLE					m_hLocalFile;
+
+			FTLINLINE DownloadJobInfo(IFDownloadCallback* pCallBack, 
+				LPCTSTR pszServerName, 
+				LPCTSTR pszObjectName, 
+				USHORT nPort,
+				LPCTSTR pszLocalFilePath
+				)
+				:m_pCallback(pCallBack)
+				,m_strServerName(pszServerName)
+				,m_strObjectName(pszObjectName)
+				,m_strLocalFilePath(pszLocalFilePath)
+				,m_nPort(nPort)
+			{
+				BOOL bRet = FALSE;
+
+				//LARGE_INTEGER counter = {0};
+				//API_VERIFY(	QueryPerformanceCounter(&counter));
+				m_nId = GetTickCount();// counter.QuadPart;
+				m_nTotalSize = (-1);
+				m_nCurPos = 0;
+				m_bCancel = FALSE;
+				m_hConnection = NULL;
+				m_hRequest = NULL;
+				//m_hLocalFile = NULL;
+			}
+		};
+
+		class CFDownloadJob : public CFJobBase<DownloadJobInfo*>
+		{
+		public:
+			FTLINLINE virtual void Run(DownloadJobInfo* pParam);
+		private:
+			FTLINLINE BOOL _SendRequest(DownloadJobInfo& param);
+			FTLINLINE BOOL _ReceiveFileData(DownloadJobInfo& param);
+
+			FTLINLINE void _NotifyProgress(DownloadJobInfo& param, IFDownloadCallback::STATUS status);
+			FTLINLINE void _NotifyResult(DownloadJobInfo& param, IFDownloadCallback::END_CODE endCode, DWORD dwError, LPCTSTR pszErrorInfo = NULL);
+			FTLINLINE void _FreeResource(DownloadJobInfo& param);
+		};
+
+		IFDownloadCallback*	m_pCallBack;
+		//HINTERNET		m_hSession;
+
+		//typedef std::map<DWORD, DownloadJobInfo*>	DownloadInfoContainer;
+		FTL::CFThreadPool<DownloadJobInfo*>*		m_pThreadPool;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
 
 	class CUrlComponents : public URL_COMPONENTS
 	{
@@ -939,36 +1048,6 @@ namespace FTL
 		DWORD		m_dwResultSize;
 	};
 #endif 
-	enum DOWMLOAD_END_CODE
-	{
-		DOWN_OK = 0,
-		DOWN_ERROR,
-		DOWN_CANCEL
-	};
-
-	class IFDownloadCallbackEvent
-	{
-	public:
-
-		virtual void OnDownloadProgress( LPCTSTR URL, LPCTSTR Path, int nCurrent ) = 0;
-		virtual void OnDownloadEnd( LPCTSTR URL, LPCTSTR Path, DOWMLOAD_END_CODE errorCode ) = 0;
-	};
-
-#if 0
-	class CFHttpDownloader
-	{
-	public:
-		CFHttpDownloader( void );
-		~CFHttpDownloader( void );
-		void	HttpDownAsync();
-		BOOL	HttpDown();
-
-		void	Cancel()
-		{
-			//m_bContinue = FALSE;
-		}
-	};
-#endif
 
 	class CFWebBrowserDumper : public CFInterfaceDumperBase<CFWebBrowserDumper>
 	{

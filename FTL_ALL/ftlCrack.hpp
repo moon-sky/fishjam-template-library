@@ -9,7 +9,7 @@
 
 namespace FTL
 {
-    LPCTSTR CFCrackUtility::s_csKiloString = 
+    __declspec(selectany) LPCTSTR CFCrackUtility::s_csKiloString = 
         _T("\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30")  //0x0010(16)	0
         _T("\x31\x31\x31\x31\x31\x31\x31\x31\x31\x31\x31\x31\x31\x31\x31\x31")  //0x0020(32)	1
         _T("\x32\x32\x32\x32\x32\x32\x32\x32\x32\x32\x32\x32\x32\x32\x32\x32")	//0x0030(48)	2	
@@ -79,7 +79,7 @@ namespace FTL
         _T("\x22\x22\x22\x22\x22\x22\x22\x22\x22\x22\x22\x22\x22\x22\x22\x22");	//0x03e0(1024)	"
 
 
-    LPCTSTR CFCrackUtility::s_csPlaceString =
+    __declspec(selectany) LPCTSTR CFCrackUtility::s_csPlaceString =
         _T("\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f\x50");
 
     CFCrackUtility::CFCrackUtility()

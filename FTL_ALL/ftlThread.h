@@ -23,8 +23,11 @@
 #  include <process.h>    //for _beginthreadex
 #endif
 
+#include <ftlFunctional.h>
+
 #include <queue>
 #include <vector>
+#include <set>
 #include <map>
 #include <list>
 #include <algorithm>
@@ -486,6 +489,7 @@ namespace FTL
     public:
         CFJobBase();
         virtual ~CFJobBase();
+		INT	 GetJobIndex() const;
         //! 如果是new出来的，一定要在结束时调用 delete this（包括参数 pParam） -- 是否可以增加 m_bAutoDelete？
         virtual void Run(T param) = 0;
         virtual void OnCancelJob(T param)
@@ -500,7 +504,9 @@ namespace FTL
         //! 通过该函数，获取线程池的状态 -- Stop/Pause，用法同 CFThread:GetThreadWaitType:
         FTLINLINE FTLThreadWaitType GetThreadPoolWaitType(DWORD dwMilliseconds = INFINITE) const;
     private:
-        CFThreadPool<T>* m_pThreadPool;     //设置为私有变量，即使是子类也不要直接更改
+		//设置为私有变量，即使是子类也不要直接更改
+		INT m_nJobIndex;
+        CFThreadPool<T>* m_pThreadPool;     
     };
 
     /*********************************************************************************************
@@ -576,6 +582,22 @@ namespace FTL
     public:
         struct JobInfo
         {
+			JobInfo()
+			{
+				nJobPriority = 0;
+				nJobIndex = 0;
+				pJob = NULL;
+				param = T();
+			}
+			bool operator < (const JobInfo & other) const
+			{
+				COMPARE_MEM_LESS(nJobPriority, other);
+				COMPARE_MEM_LESS(nJobIndex, other);
+				return true;
+			}
+			
+			INT nJobPriority;		//优先级，值越小，优先级越高，默认是0，可在 OnSubmitJob 中调整(尚不支持动态调整)
+			INT nJobIndex;
             CFJobBase<T> *pJob;
             T param;
         };
@@ -602,9 +624,15 @@ namespace FTL
 
         //! 向线程池中注册工作 -- 如果当前没有空闲的线程，并且当前线程数小于最大线程数，则会自动创建新的线程，
         //! 每一个线程创建是会调用 OnAddThread
-        FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob,const T& param);
+		//! 成功后会通过 outJobIndex 返回Job的索引号，可通过该索引定位、取消特定的Job
+        FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob,const T& param, INT* pOutJobIndex);
+
+		//取消指定的Job
+		FTLINLINE BOOL CancelJob(INT nJobIndex);
+
         //! 获取当前运行着的线程个数 -- 是否需要增加获取 最小、最大线程的函数？不需要
         FTLINLINE LONG GetActiveThreadCount() const;
+
         //! 请求暂停线程池的操作
         FTLINLINE BOOL Pause();
         //! 请求继续线程池的操作
@@ -629,15 +657,20 @@ namespace FTL
         const LONG m_nMinNumThreads;            //! 线程池中最少的线程个数
         const LONG m_nMaxNumThreads;            //! 线程池中最大的线程个数
         LONG m_nCurNumThreads;                  //! 当前运行着的线程个数
-        //LONG m_nCanSubtractThreadNum;
+
+		//LONG m_nCanSubtractThreadNum;
         HANDLE* m_pThreadHandles;               //! 保存线程句柄的数组(为了方便Wait)
         DWORD*  m_pThreadIds;                   //! 保存线程 Id 的数组(为了在线程结束后调整数组中的位置)
-        std::queue<JobInfo*>    m_JobsQueue;    //! 保存Job的信息,由于会频繁加入、删除，因此使用queue
+		//! 保存Job的信息,由于会频繁加入、删除，且需要按照JobIndex查找，因此保存成set，且以JobIndex排序
+		typedef std::set<JobInfo*, UnreferenceLess<JobInfo*> >	JobInfoContainer;
+		JobInfoContainer		  m_Jobs;
+        //std::queue<JobInfo*>    m_JobsQueue;    
         HANDLE m_hSemaphoreJobToDo;             //! 保存还有多少个Job的信号量，每Submit一个Job，就增加一个
         HANDLE m_hEventStop;                    
         HANDLE m_hEventContinue;
         HANDLE m_hSemaphoreSubtractThread;      //! 用于减少线程个数时的信标,初始时个数为0，每要释放一个，就增加一个，
                                                 //! 最大个数为 m_nMaxNumThreads - m_nMinNumThreads
+		INT               m_nJobIndex;
         CFCriticalSection m_lockJobs;             //访问 m_JobsQueue 时互斥
         CFCriticalSection m_lockThreads;          //访问 m_pThreadHandles/m_pThreadIds 时互斥
         
