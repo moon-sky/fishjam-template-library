@@ -110,29 +110,31 @@ namespace FTL
                     0,
                     NULL);
 
-				static LPCTSTR pszErrorModule[] = {
-					TEXT("wininet.dll"),
-					TEXT("netmsg.dll"),
-				};
-
-				
-				for (int i = 0; i < _countof(pszErrorModule); i++)
+				if (!pszMsgBuf)
 				{
-					//Just get loaded module in the calling process 
-					HMODULE hModule = GetModuleHandle(pszErrorModule[i]);//
-						//LoadLibraryEx(pszErrorModule[i], NULL, DONT_RESOLVE_DLL_REFERENCES);
-					if (hModule != NULL) 
-					{
-						dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE |FORMAT_MESSAGE_ALLOCATE_BUFFER,
-							//| FORMAT_MESSAGE_FROM_SYSTEM,
-							hModule, m_Info, m_LanguageID,
-							(LPTSTR)&pszMsgBuf, 0, NULL);
-						//FreeLibrary(hModule);
+					static LPCTSTR pszErrorModule[] = {
+						TEXT("wininet.dll"),
+						TEXT("netmsg.dll"),
+					};
 
-						if (pszMsgBuf)
+					for (int i = 0; i < _countof(pszErrorModule); i++)
+					{
+						//Just get loaded module in the calling process 
+						HMODULE hModule = GetModuleHandle(pszErrorModule[i]);//
+						//LoadLibraryEx(pszErrorModule[i], NULL, DONT_RESOLVE_DLL_REFERENCES);
+						if (hModule != NULL) 
 						{
-							//find message
-							break;
+							dwCount = FormatMessage(FORMAT_MESSAGE_FROM_HMODULE |FORMAT_MESSAGE_ALLOCATE_BUFFER,
+								//| FORMAT_MESSAGE_FROM_SYSTEM,
+								hModule, m_Info, m_LanguageID,
+								(LPTSTR)&pszMsgBuf, 0, NULL);
+							//FreeLibrary(hModule);
+
+							if (pszMsgBuf)
+							{
+								//find message
+								break;
+							}
 						}
 					}
 				}

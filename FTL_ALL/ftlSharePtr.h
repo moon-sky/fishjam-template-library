@@ -2,40 +2,40 @@
 #define FTL_SHAREPTR_H
 #pragma once
 
-#include <ftlThread.h>
+//#include <ftlThread.h>
 
-#if defined(WIN32) || defined(WIN64)
-    FTLINLINE void FTLInterlockedIncrement(LONG *pLong, FTL::CFCriticalSection *)
+//#if defined(WIN32) || defined(WIN64)
+    FTLINLINE void FTLInterlockedIncrement(LONG *pLong) //, FTL::CFCriticalSection *)
 	{
 		::InterlockedIncrement(pLong);
 	}
-	FTLINLINE LONG FTLInterlockedDecrement(LONG *pLong, FTL::CFCriticalSection *)
+	FTLINLINE LONG FTLInterlockedDecrement(LONG *pLong) //, FTL::CFCriticalSection *)
 	{
 		return ::InterlockedDecrement(pLong);
 	}
-#else
-	FTLINLINE void FTLInterlockedIncrement(LONG *pLong, FTL::CFCriticalSection *pCS)
-	{
-		CFAutoLock<CFLockObject> lock(pCS);
-		++(*pLong);
-	}
-	FTLINLINE LONG FTLInterlockedDecrement(LONG *pLong, FTL::CFCriticalSection *pCS)
-	{
-		CFAutoLock<CFLockObject> lock(pCS);
-		return --(*pLong);
-	}
-#endif
+//#else
+//	FTLINLINE void FTLInterlockedIncrement(LONG *pLong, FTL::CFCriticalSection *pCS)
+//	{
+//		CFAutoLock<CFLockObject> lock(pCS);
+//		++(*pLong);
+//	}
+//	FTLINLINE LONG FTLInterlockedDecrement(LONG *pLong, FTL::CFCriticalSection *pCS)
+//	{
+//		CFAutoLock<CFLockObject> lock(pCS);
+//		return --(*pLong);
+//	}
+//#endif
 
 
 namespace CFSharedPtrDetail
 {
-#if defined(WIN32) || defined(WIN64)
-#define FTL_SHARED_PTR_CRITICAL_SECTION(var)
-#define FTL_SHARED_PTR_CRITICAL_SECTION_PTR(var)	0
-#else
-#define FTL_SHARED_PTR_CRITICAL_SECTION(var)		CFCriticalSection	var
-#define FTL_SHARED_PTR_CRITICAL_SECTION_PTR(var)	&var
-#endif
+//#if defined(WIN32) || defined(WIN64)
+//#define FTL_SHARED_PTR_CRITICAL_SECTION(var)
+//#define FTL_SHARED_PTR_CRITICAL_SECTION_PTR(var)	0
+//#else
+//#define FTL_SHARED_PTR_CRITICAL_SECTION(var)		CRITICAL_SECTION	var
+//#define FTL_SHARED_PTR_CRITICAL_SECTION_PTR(var)	&var
+//#endif
 
 	class _CFSharedCounterBase
 	{
@@ -49,12 +49,12 @@ namespace CFSharedPtrDetail
 		}
 		void addRef()
 		{
-			FTLInterlockedIncrement(&useCount, FTL_SHARED_PTR_CRITICAL_SECTION_PTR(cs));
+			FTLInterlockedIncrement(&useCount); //, FTL_SHARED_PTR_CRITICAL_SECTION_PTR(cs));
 		}
 		virtual void release() = 0;
 		void weakAddRef()
 		{
-			FTLInterlockedIncrement(&weakCount, FTL_SHARED_PTR_CRITICAL_SECTION_PTR(cs));
+			FTLInterlockedIncrement(&weakCount); //, FTL_SHARED_PTR_CRITICAL_SECTION_PTR(cs));
 		}
 		virtual void weakRelease() = 0;
 		LONG use_count() const
@@ -64,7 +64,7 @@ namespace CFSharedPtrDetail
 	protected:
 		LONG				useCount;
 		LONG				weakCount;
-		FTL_SHARED_PTR_CRITICAL_SECTION(cs);
+		//FTL_SHARED_PTR_CRITICAL_SECTION(cs);
 	};
 	template <class T>
 	class _FTLSharedCounter :
@@ -77,7 +77,7 @@ namespace CFSharedPtrDetail
 		}
 		virtual void release()
 		{
-			LONG _useCount = FTLInterlockedDecrement(&useCount, FTL_SHARED_PTR_CRITICAL_SECTION_PTR(cs));
+			LONG _useCount = FTLInterlockedDecrement(&useCount); //, FTL_SHARED_PTR_CRITICAL_SECTION_PTR(cs));
 			if (_useCount == 0)
 			{
 				delete ptr;
@@ -87,7 +87,7 @@ namespace CFSharedPtrDetail
 		}
 		virtual void weakRelease()
 		{
-			LONG _weakCount = FTLInterlockedDecrement(&weakCount, FTL_SHARED_PTR_CRITICAL_SECTION_PTR(cs));
+			LONG _weakCount = FTLInterlockedDecrement(&weakCount);//, FTL_SHARED_PTR_CRITICAL_SECTION_PTR(cs));
 			if (_weakCount == 0)
 			{
 				FTLASSERT(useCount <= 1);

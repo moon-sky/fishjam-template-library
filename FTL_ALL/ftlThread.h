@@ -24,6 +24,7 @@
 #endif
 
 #include <ftlFunctional.h>
+//#include <ftlSharePtr.h>
 
 #include <queue>
 #include <vector>
@@ -490,8 +491,16 @@ namespace FTL
         CFJobBase();
         virtual ~CFJobBase();
 		INT	 GetJobIndex() const;
+
         //! 如果是new出来的，一定要在结束时调用 delete this（包括参数 pParam） -- 是否可以增加 m_bAutoDelete？
+		// 在这个Run中通常寻妖循环判断 m_bCancel 变量
         virtual void Run(T param) = 0;
+		virtual void NotifyCancel( T param)
+		{
+			UNREFERENCED_PARAMETER(param);
+			//如果Job正在运行过程中被取消，会调用这个方法，默认是更改 m_bCancel 变量
+			m_bCancel = TRUE;
+		}
         virtual void OnCancelJob(T param)
         {
             UNREFERENCED_PARAMETER(param);
@@ -501,6 +510,7 @@ namespace FTL
             //注意：此处是个空实现
         }
     protected:
+		volatile BOOL	m_bCancel;
         //! 通过该函数，获取线程池的状态 -- Stop/Pause，用法同 CFThread:GetThreadWaitType:
         FTLINLINE FTLThreadWaitType GetThreadPoolWaitType(DWORD dwMilliseconds = INFINITE) const;
     private:
@@ -578,6 +588,8 @@ namespace FTL
     FTLEXPORT template <typename T>  
     class CFThreadPool
     {
+		//typedef CFSharePtr<CFJobBase< T> > CFJobBasePtr;
+		//friend class CFJobBasePtr;
         friend class CFJobBase<T>;  //允许Job获取StopEventHandle -- 两边互为friend，是否合适？
     public:
         struct JobInfo
@@ -596,9 +608,10 @@ namespace FTL
 				return true;
 			}
 			
-			INT nJobPriority;		//优先级，值越小，优先级越高，默认是0，可在 OnSubmitJob 中调整(尚不支持动态调整)
+			INT nJobPriority;		//优先级，值越小，优先级越高，越早被调用，默认是0，可在 OnSubmitJob 中调整(尚不支持动态调整)
 			INT nJobIndex;
             CFJobBase<T> *pJob;
+			//CFJobBasePtr *pJob;
             T param;
         };
         //! 会在 nMinNumThreads -- nMaxNumThreads 之间自行调节线程的个数
@@ -627,7 +640,7 @@ namespace FTL
 		//! 成功后会通过 outJobIndex 返回Job的索引号，可通过该索引定位、取消特定的Job
         FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob,const T& param, INT* pOutJobIndex);
 
-		//取消指定的Job
+		//取消指定的Job, TODO:如果取出Job给客户，可能调用者得到指针时，Job执行完毕delete this，会照成野指针异常
 		FTLINLINE BOOL CancelJob(INT nJobIndex);
 
         //! 获取当前运行着的线程个数 -- 是否需要增加获取 最小、最大线程的函数？不需要
@@ -662,8 +675,9 @@ namespace FTL
         HANDLE* m_pThreadHandles;               //! 保存线程句柄的数组(为了方便Wait)
         DWORD*  m_pThreadIds;                   //! 保存线程 Id 的数组(为了在线程结束后调整数组中的位置)
 		//! 保存Job的信息,由于会频繁加入、删除，且需要按照JobIndex查找，因此保存成set，且以JobIndex排序
-		typedef std::set<JobInfo*, UnreferenceLess<JobInfo*> >	JobInfoContainer;
-		JobInfoContainer		  m_Jobs;
+		typedef std::map<INT, JobInfo* >	JobInfoContainer;
+		JobInfoContainer		  m_WaitingJobs;//! 等待运行的Job
+		JobInfoContainer		  m_DoingJobs;  //! 正在运行的Job
         //std::queue<JobInfo*>    m_JobsQueue;    
         HANDLE m_hSemaphoreJobToDo;             //! 保存还有多少个Job的信号量，每Submit一个Job，就增加一个
         HANDLE m_hEventStop;                    
@@ -671,8 +685,9 @@ namespace FTL
         HANDLE m_hSemaphoreSubtractThread;      //! 用于减少线程个数时的信标,初始时个数为0，每要释放一个，就增加一个，
                                                 //! 最大个数为 m_nMaxNumThreads - m_nMinNumThreads
 		INT               m_nJobIndex;
-        CFCriticalSection m_lockJobs;             //访问 m_JobsQueue 时互斥
-        CFCriticalSection m_lockThreads;          //访问 m_pThreadHandles/m_pThreadIds 时互斥
+		CFCriticalSection m_lockDoingJobs;		//访问 m_DoingJobs 时互斥
+        CFCriticalSection m_lockWaitingJobs;    //访问 m_WaitingJobs 时互斥
+        CFCriticalSection m_lockThreads;        //访问 m_pThreadHandles/m_pThreadIds 时互斥
         
         static unsigned int CALLBACK ThreadExecute(void *pThis);    //线程池中线程的执行函数
         //static unsigned int CALLBACK StopAsyncProc(void *pAsyncProxyParam);

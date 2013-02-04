@@ -1816,12 +1816,14 @@ namespace FTL
 		return bRet;
 	}
 
-	BOOL CFInternetDownloader::Start(LPCTSTR pszAgent, LONG nMaxParallelCount)
+	BOOL CFInternetDownloader::Start(LPCTSTR pszAgent, LONG nMinParallelCount /* = 1 */, LONG nMaxParallelCount /* = 4 */)
 	{
 		BOOL bRet = FALSE;
 		FTLASSERT( NULL == m_pThreadPool );
-		
-		m_pThreadPool = new CFThreadPool<DownloadJobInfo*>(1, nMaxParallelCount);
+		FTLASSERT(nMinParallelCount >= 1);
+		FTLASSERT(nMinParallelCount <= nMaxParallelCount);
+
+		m_pThreadPool = new CFThreadPool<DownloadJobInfo*>(nMinParallelCount, nMaxParallelCount);
 		if (m_pThreadPool)
 		{
 			API_VERIFY(m_pThreadPool->Start());
@@ -1844,10 +1846,10 @@ namespace FTL
 
 	void CFInternetDownloader::Close()
 	{
-
+		SAFE_DELETE(m_pThreadPool);
 	}
 
-	LONG64 CFInternetDownloader::AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath )
+	INT CFInternetDownloader::AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath )
 	{
 		FTLASSERT(m_pThreadPool);
 
@@ -1856,19 +1858,27 @@ namespace FTL
 		FTLASSERT(pszLocalFilePath);
 
 		BOOL bRet = FALSE;
-		LONG64 nId = -1;
+		//LONG64 nId = -1;
+		INT nJobIndex = 0;
 		if (pszServerName && pszObjectName && pszLocalFilePath)
 		{
 			DownloadJobInfo* pJobInfo = new DownloadJobInfo(m_pCallBack, pszServerName, pszObjectName, nPort, pszLocalFilePath);
 			CFDownloadJob* pJob = new CFDownloadJob();
 
-			API_VERIFY(m_pThreadPool->SubmitJob(pJob, pJobInfo, NULL));
-			if (bRet)
-			{
-				nId = pJobInfo->m_nId;
-			}
+			API_VERIFY(m_pThreadPool->SubmitJob(pJob, pJobInfo, &nJobIndex));
 		}
-		return nId;
+		return nJobIndex;
+	}
+
+	BOOL CFInternetDownloader::CancelTask(INT nJobIndex)
+	{
+		FTLASSERT(m_pThreadPool);
+		BOOL bRet = FALSE;
+		if (m_pThreadPool)
+		{
+			API_VERIFY(m_pThreadPool->CancelJob(nJobIndex));
+		}
+		return bRet;
 	}
 
 	BOOL CFInternetDownloader::CFDownloadJob::_SendRequest(DownloadJobInfo& param)
@@ -1947,21 +1957,22 @@ namespace FTL
 						param.m_nCurPos += dwRead;
 						_NotifyProgress(param, IFDownloadCallback::sDownloading);
 					}
-				} while (dwRead >0 && !param.m_bCancel);
+				} while (dwRead >0 && !m_bCancel);
 				SAFE_DELETE_ARRAY(pBuffer);
 
-				if (dwRead == 0 && !param.m_bCancel)
+				if (dwRead == 0 && !m_bCancel)
 				{
 					_NotifyProgress(param, IFDownloadCallback::sComplete);
 					bRet = TRUE;
 				}
 				else
 				{
+					SetLastError(ERROR_CANCELLED);
 					bRet = FALSE;
 				}
 				CloseHandle(hLocalFile);
 			}
-			if (param.m_bCancel)
+			if (m_bCancel)
 			{
 				BOOL bTempRet = ::DeleteFile(param.m_strLocalFilePath);
 				API_ASSERT(bTempRet);
@@ -1981,12 +1992,12 @@ namespace FTL
 				INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)));
 
 			API_VERIFY(_SendRequest(*pParam));
-			if (bRet && !pParam->m_bCancel)
+			if (bRet && !m_bCancel)
 			{
-				API_VERIFY(_ReceiveFileData(*pParam));
+				API_VERIFY_EXCEPT1(_ReceiveFileData(*pParam), ERROR_CANCELLED);
 			}
 
-			if (bRet && !pParam->m_bCancel)
+			if (bRet && !m_bCancel)
 			{
 				_NotifyProgress(*pParam, IFDownloadCallback::sComplete);
 				_NotifyResult(*pParam, IFDownloadCallback::ecOK, 0, TEXT("DonwloadComplete"));
@@ -1994,7 +2005,7 @@ namespace FTL
 			}
 			else
 			{
-				if (pParam->m_bCancel)
+				if (m_bCancel)
 				{
 					_NotifyResult(*pParam, IFDownloadCallback::ecCANCEL, 0, TEXT("Cancel"));
 				}
@@ -2013,13 +2024,13 @@ namespace FTL
 	void CFInternetDownloader::CFDownloadJob::_NotifyResult(DownloadJobInfo& param, IFDownloadCallback::END_CODE endCode,
 		DWORD dwError, LPCTSTR pszErrorInfo)
 	{
-		FTLTRACEEX(tlError, TEXT("CFDownloadJob Error(%d, %s), nId=%ld, ErrorInfo=%s\n"), 
-			dwError, CFAPIErrorInfo(dwError).GetConvertedInfo(), param.m_nId, 
+		FTLTRACEEX(tlError, TEXT("CFDownloadJob Result(%d, %s), nId=%d, ErrorInfo=%s\n"), 
+			dwError, CFAPIErrorInfo(dwError).GetConvertedInfo(), GetJobIndex(), 
 			pszErrorInfo ? pszErrorInfo : _TEXT("Unknown"));
 
 		if (param.m_pCallback)
 		{
-			param.m_pCallback->OnEnd(param.m_nId, endCode, dwError);
+			param.m_pCallback->OnEnd(GetJobIndex(), endCode, dwError);
 		}
 	}
 
@@ -2027,7 +2038,7 @@ namespace FTL
 	{
 		if (param.m_pCallback)
 		{
-			param.m_pCallback->OnProgress(param.m_nId, status, param.m_nCurPos, param.m_nTotalSize);
+			param.m_pCallback->OnProgress(GetJobIndex(), status, param.m_nCurPos, param.m_nTotalSize);
 		}
 	}
 	void CFInternetDownloader::CFDownloadJob::_FreeResource(DownloadJobInfo& param)

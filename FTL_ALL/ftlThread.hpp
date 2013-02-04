@@ -1277,6 +1277,7 @@ namespace FTL
     {
 		m_nJobIndex = 0;
         m_pThreadPool = NULL;
+		m_bCancel = FALSE;
     }
     template <typename T>
     CFJobBase<T>::~CFJobBase()
@@ -1374,7 +1375,7 @@ namespace FTL
         API_VERIFY(ResetEvent(m_hEventStop));   //重设Stop事件
         API_VERIFY(SetEvent(m_hEventContinue)); //重设继续事件
         {
-            CFAutoLock<CFCriticalSection>   locker(&m_lockJobs);
+            CFAutoLock<CFCriticalSection>   locker(&m_lockThreads); //m_lockJobs);
             if(NULL == m_pThreadHandles)    //防止多次调用Start
             {
                 unsigned int threadId = 0;
@@ -1425,7 +1426,7 @@ namespace FTL
         LONG  nTempNumThreads = 0;
         {
             //由于线程结束后会自动调整 m_pThreadHandles 数组，因此，这里生成临时变量
-            CFAutoLock<CFLockObject> locker(&m_lockJobs);
+            CFAutoLock<CFLockObject> locker(&m_lockThreads); //m_lockJobs);
             if(m_pThreadHandles) //The threads have started;
             {
                 nTempNumThreads = m_nCurNumThreads;
@@ -1454,7 +1455,7 @@ namespace FTL
         }
         if (bCloseHandle)
         {
-            CFAutoLock<CFLockObject> locker(&m_lockJobs);
+            CFAutoLock<CFLockObject> locker(&m_lockThreads);
             for (LONG i = 0; i < m_nCurNumThreads; i++)
             {
                 SAFE_CLOSE_HANDLE(m_pThreadHandles[i],NULL);
@@ -1488,17 +1489,18 @@ namespace FTL
         FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
         BOOL bRet = TRUE;
         {
-            CFAutoLock<CFLockObject> locker(&m_lockJobs);
-            while (!m_Jobs.empty())
+            CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
+            while (!m_WaitingJobs.empty())
             {
                 DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo,INFINITE); //用于释放对应的信标对象
                 API_VERIFY(dwResult == WAIT_OBJECT_0);
 
-                JobInfo* pInfo = *(m_Jobs.begin());
+				JobInfoContainer::iterator iterBegin = m_WaitingJobs.begin();
+                JobInfo* pInfo = iterBegin->second;
                 FTLASSERT(pInfo);
                 pInfo->pJob->OnCancelJob(pInfo->param);
                 delete pInfo;
-                m_Jobs.erase(m_Jobs.begin());
+                m_WaitingJobs.erase(iterBegin);
             }
         }
         return bRet;
@@ -1565,7 +1567,7 @@ namespace FTL
         {
             //加入Job并且唤醒一个等待线程
             {
-                CFAutoLock<CFLockObject> locker(&m_lockJobs);
+                CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
 				m_nJobIndex++;
                 pJob->m_pThreadPool = this;         //访问私有变量，并将自己赋值过去
 				pJob->m_nJobIndex = m_nJobIndex;	//访问私有变量，设置JobIndex
@@ -1579,14 +1581,18 @@ namespace FTL
 				}
                 if (!OnSubmitJob(pInfo))
                 {
-                    m_Jobs.insert(pInfo);
+					m_WaitingJobs.insert(JobInfoContainer::value_type(m_nJobIndex, pInfo));
+                    //m_WaitingJobs[m_nJobIndex] = pInfo;
                 }
                 API_VERIFY(ReleaseSemaphore(m_hSemaphoreJobToDo,1L,NULL));
             }
+
             SwitchToThread();//唤醒等待的线程，使得其他线程可以获取Job -- 注意 CFAutoLock 的范围
+
             {
-                CFAutoLock<CFLockObject> locker(&m_lockJobs);
-                BOOL bNeedMoreThread = (!m_Jobs.empty() && (m_nCurNumThreads < m_nMaxNumThreads));
+				//检查是否需要增加线程
+                CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
+                BOOL bNeedMoreThread = (!m_WaitingJobs.empty() && (m_nCurNumThreads < m_nMaxNumThreads));
                 {
                     if (bNeedMoreThread)
                     {
@@ -1601,37 +1607,57 @@ namespace FTL
 	template <typename T>  
 	BOOL CFThreadPool<T>::CancelJob(INT nJobIndex)
 	{
-		BOOL bFound = FALSE;
+		//本函数尚未测试
+		BOOL bRet = FALSE;
+		BOOL bFoundWaiting = FALSE;
+		BOOL bFoundDoing = FALSE;
 		{
-			CFAutoLock<CFLockObject> locker(&m_lockJobs);
-			//首先查找未启动的Job
-			JobInfoContainer::iterator iter = m_Jobs.find(nJobIndex);
-			if (iter != m_Jobs.end())
+			//首先查找未启动的任务
+			CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
+			JobInfoContainer::iterator iterWaiting = m_WaitingJobs.find(nJobIndex);
+			if (iterWaiting != m_WaitingJobs.end())
 			{
-#pragma TODO(取消Job时 m_hSemaphoreJobToDo 的处理)  //未测试确认，应该先获取Semaphore 还是先删除Job?
 				DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo, INFINITE); //释放对应的信标对象，避免再次找到
-				API_VERIFY(dwResult == WAIT_OBJECT_0);
+				API_ASSERT(dwResult == WAIT_OBJECT_0);
 
 				//找到,说明这个Job还没有启动
-				JobInfo* pInfo = *iter;
+				JobInfo* pInfo = iterWaiting->second;
 				FTLASSERT(pInfo);
 				FTLASSERT(pInfo->pJob->GetJobIndex() == nJobIndex);
 				pInfo->pJob->OnCancelJob(pInfo->param);
 				delete pInfo;
-				m_Jobs.erase(iter);
+				m_WaitingJobs.erase(iterWaiting);
 
-				bFound = TRUE;
-			}
-			else
-			{
-				//没有找到，说明可能是正在执行或已经执行完毕
-				FTLASSERT(FALSE);
+				bFoundWaiting = TRUE;
 			}
 		}
-		if (bFound)
+		if (!bFoundWaiting)
 		{
+			//查找正在运行的任务
+			CFAutoLock<CFLockObject> locker(&m_lockDoingJobs);
+			JobInfoContainer::iterator iterDoing = m_DoingJobs.find(nJobIndex);
+			if (iterDoing != m_DoingJobs.end())
+			{
+				JobInfo* pInfo = iterDoing->second;
+				FTLASSERT(pInfo);
+				FTLASSERT(pInfo->pJob->GetJobIndex() == nJobIndex);
+				pInfo->pJob->NotifyCancel(pInfo->param);
+				//注意：这里只是请求Cancel，实际上任务是否能真正Cancel，需要依赖Job的实现，
 
+				//不要 delete pInfo 和 m_DoingJobs.erase -- Job 结束后再取消
+				////delete pInfo;
+				////m_DoingJobs.erase(iterDoing);
+				
+				bFoundDoing = TRUE;
+			}
 		}
+		if (!bFoundWaiting && !bFoundDoing)
+		{
+			//Waiting 和 Doing 中都没有找到，已经执行完毕
+			//do nothing
+		}
+
+		return TRUE; //(bFoundDoing || bFoundWaiting);
 	}
 
     template <typename T>  
@@ -1686,15 +1712,20 @@ namespace FTL
             break;
         }
         {
-            CFAutoLock<CFLockObject> locker(&m_lockJobs);
-            JobInfo* pInfo = *m_Jobs.begin();
-            _ASSERT(pInfo);
+            CFAutoLock<CFLockObject> lockerWating(&m_lockWaitingJobs);
+			FTLASSERT(!m_WaitingJobs.empty());
+			JobInfoContainer::iterator iterBegin = m_WaitingJobs.begin();
+			INT nJobIndex = iterBegin->first;
+            JobInfo* pInfo = iterBegin->second;
+            FTLASSERT(pInfo);
 
             *ppJob = pInfo->pJob;
-            *pParam = pInfo->param;
-            m_Jobs.erase(m_Jobs.begin());
-
-            delete pInfo;
+			*pParam = pInfo->param;
+            m_WaitingJobs.erase(iterBegin);
+			{
+				CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
+				m_DoingJobs.insert(JobInfoContainer::value_type(nJobIndex, pInfo));			
+			}
         }
         return typeGetJob;	
     }
@@ -1710,16 +1741,32 @@ namespace FTL
         {
             try
             {
-				FTLTRACEEX(tlTrace, TEXT("CFThreadPool Begin Run Job %d\n"), pJob->GetJobIndex());
+				INT nJobIndex = pJob->GetJobIndex();
+				FTLTRACEEX(tlTrace, TEXT("CFThreadPool Begin Run Job %d\n"), nJobIndex);
+                pJob->Run(param); //执行Job，这个函数返回后, pJob 一般已经被 delete this 了, 不能再调用其方法
 
-                pJob->Run(param); //执行Job
+				FTLTRACEEX(tlTrace, TEXT("CFThreadPool End Run Job %d\n"), nJobIndex);
 
-                //退出Run说明一个Job结束，此时可以检查一下是否需要减少线程
+                //退出Run说明一个Job结束
+				{
+					//首先从运行列表中删除
+					CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
+					JobInfoContainer::iterator iter = m_DoingJobs.find(nJobIndex);
+					FTLASSERT(m_DoingJobs.end() != iter);
+					if (m_DoingJobs.end() != iter)
+					{
+						JobInfo* pInfo = iter->second;
+						m_DoingJobs.erase(iter);
+						delete pInfo;
+					}
+				}
+
+				//检查一下是否需要减少线程
                 BOOL bNeedSubtractThread = FALSE;
                 {
-                    CFAutoLock<CFLockObject> locker(&m_lockJobs);
+                    CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
                     //当队列中没有Job，并且当前线程数大于最小线程数时
-                    bNeedSubtractThread = (m_Jobs.empty() && (m_nCurNumThreads > m_nMinNumThreads) && !HadRequestStop());
+                    bNeedSubtractThread = (m_WaitingJobs.empty() && (m_nCurNumThreads > m_nMinNumThreads) && !HadRequestStop());
                     if (bNeedSubtractThread)
                     {
                         //通知减少一个线程

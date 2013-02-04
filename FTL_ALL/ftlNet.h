@@ -814,9 +814,9 @@ namespace FTL
 	//TCP缓冲，和每个数据接收端( 如 TCP Socket )绑定，作为接受数据的缓冲，目前提供了如下功能
 	//a. TCP粘包问题处理
 	//
-	//通常的使用方式是
+	//通常的使用方式是?
 	//  1.TCP接收类包含作为成员变量，并指定对应的 IReceiveAdapter、IPacketParserAdapter 实例
-	//  2.if(tcpReceiver.ReceiveData() > 0 { tcpReceiver.ParsePacket(); } )
+	//  2.if(tcpReceiver.ReceiveData() > 0 ) { tcpReceiver.ParsePacket(); } 
 	class CFTCPReceiver
 	{
 	public:
@@ -829,12 +829,15 @@ namespace FTL
 
 		//循环处理Packet，处理完毕后会重新拷贝分析剩余的数据到Buffer头部
 		FTLINLINE INT ParsePacket();
+
+		//TODO:跳过指定长度的字节，不分析
+		FTLINLINE INT SkipParseData(INT nLength); 
 	private:
 		CFCriticalSection	m_LockObject;		//保护环形缓冲的临界区
 		IReceiveAdapter*		m_pReceiveAdapter;
 		IPacketParserAdapter*	m_pParserAdapter;
 		INT					m_nBufferSize;
-		BYTE*				m_pBufferHeader;//缓冲区起始位置
+		BYTE*				m_pBufferHeader;//缓冲区起始位置,会分配 nBufferSize 长度的Buffer
 		BYTE*				m_pRead;		//当前未处理数据的起始位置
 		BYTE*				m_pWrite;		//当前未处理数据的结束位置
 	};
@@ -870,29 +873,29 @@ namespace FTL
 		FTLINLINE virtual ~CFInternetDownloader( void );
 
 		FTLINLINE BOOL IsStarted();
-		FTLINLINE BOOL Start(LPCTSTR pszAgent, LONG nMaxParallelCount);
+		FTLINLINE BOOL Start(LPCTSTR pszAgent, LONG nMinParallelCount = 1, LONG nMaxParallelCount = 4);
 		FTLINLINE BOOL Stop();
 		FTLINLINE void Close();
 
-		FTLINLINE LONG64 AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );
-		FTLINLINE LONG64 CancelTask(LONG64 nId);
+		FTLINLINE INT AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );
+		FTLINLINE BOOL CancelTask(INT nJobIndex);
 	protected:
 	private:
 		struct DownloadJobInfo
 		{
 			DISABLE_COPY_AND_ASSIGNMENT(DownloadJobInfo);
 		public:
-			HINTERNET				m_hSession;
 			IFDownloadCallback*		m_pCallback;
 			CAtlString				m_strServerName;
 			CAtlString				m_strObjectName;
 			CAtlString				m_strLocalFilePath;
 			USHORT					m_nPort;
 
-			LONG64					m_nId;
+			//LONG64					m_nId;
 			LONG64					m_nTotalSize; //if is MAXLONG64, then donot known the real size
 			LONG64					m_nCurPos;
-			BOOL					m_bCancel;
+			//BOOL					m_bCancel;
+			HINTERNET				m_hSession;
 			HINTERNET				m_hConnection;
 			HINTERNET				m_hRequest;
 			//HANDLE					m_hLocalFile;
@@ -913,10 +916,11 @@ namespace FTL
 
 				//LARGE_INTEGER counter = {0};
 				//API_VERIFY(	QueryPerformanceCounter(&counter));
-				m_nId = GetTickCount();// counter.QuadPart;
+				//m_nId = GetTickCount();// counter.QuadPart;
 				m_nTotalSize = (-1);
 				m_nCurPos = 0;
-				m_bCancel = FALSE;
+				//m_bCancel = FALSE;
+				m_hSession = NULL;
 				m_hConnection = NULL;
 				m_hRequest = NULL;
 				//m_hLocalFile = NULL;
