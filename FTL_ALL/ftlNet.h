@@ -793,14 +793,12 @@ namespace FTL
     };
 
 	//解决TCP粘包的一些类
-	
 	class IReceiveAdapter
 	{
 	public:
 		//返回收到的包的长度
 		virtual INT ReceiveData(BYTE* pBuffer, INT nLength) = 0;
 	};
-	
 	class IPacketParserAdapter
 	{
 	public:
@@ -808,7 +806,6 @@ namespace FTL
 		//注意：该函数会锁定 CFTCPReceiver，且 Buffer 不会拷贝(该函数退出后，可能被覆盖)
 		//      因此需要尽快处理完毕，如果后续需要数据，需要自己拷贝保存
 		virtual INT ParsePacket(BYTE* pBuffer, INT nLength) = 0;
-
 	};
 
 	//TCP缓冲，和每个数据接收端( 如 TCP Socket )绑定，作为接受数据的缓冲，目前提供了如下功能
@@ -842,109 +839,191 @@ namespace FTL
 		BYTE*				m_pWrite;		//当前未处理数据的结束位置
 	};
 
-	class IFDownloadCallback
+	class IFInternetCallback
 	{
 	public:
 		enum STATUS
 		{
 			sStart,
-			sDownloading,
+			sDoing,
 			sComplete,
 		};
-
 		enum END_CODE
 		{
 			ecOK,
 			ecERROR,
 			ecCANCEL,
 		};
-
-		virtual void OnProgress(LONG64 nId, IFDownloadCallback::STATUS status, ULONG64 nCurPos, ULONG64 nTotalSize) = 0;
-		virtual void OnEnd(LONG64 nId, IFDownloadCallback::END_CODE endCode, DWORD dwErrorCode) = 0;
+		virtual void OnProgress(INT nId, IFInternetCallback::STATUS status, ULONG64 nCurPos, ULONG64 nTotalSize) = 0;
+		virtual void OnEnd(INT nId, IFInternetCallback::END_CODE endCode, DWORD dwErrorCode) = 0;
 	};
 
-	//TODO: change to interface(Job?)
-	//  1. Download - Upload
-	//  
-	class CFInternetDownloader
+	enum FTransferParamType
+	{
+		tptUnknown,
+		tptText,
+		tptPostArgument,	//目前唯一需要外界提供的是 Cookie,
+		tptRequestHeader,	//HttpAddRequestHeaders
+		tptLocalFile,		//本地文件，Value是文件路径
+	};
+	struct FTransferParam
+	{
+		FTransferParamType	paramType;
+		UINT				CodePage;	//Change Code Page, if is 0, then will not change, CP_UTF8
+		CAtlString			strName;
+		CAtlString			strValue;
+		FTransferParam()
+		{
+			paramType = tptUnknown;
+			CodePage = CP_UTF8;
+			strName.Empty();
+			strValue.Empty();
+		}
+	};
+
+	typedef std::list<FTransferParam>	TransferParamContainer;
+	struct FTransferJobInfo
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(FTransferJobInfo);
+	public:
+		FTLINLINE FTransferJobInfo();
+		FTLINLINE FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, USHORT nPort);
+		FTLINLINE ~FTransferJobInfo();
+
+		CAtlString	m_strServerName;
+		CAtlString	m_strObjectName;
+		USHORT		m_nPort;
+
+		BOOL		m_bUploadJob;
+		TransferParamContainer	m_transferParams;
+	};
+
+	class CFTransferJobBase : public CFJobBase<FTransferJobInfo*>
 	{
 	public:
-		FTLINLINE CFInternetDownloader( IFDownloadCallback* pCallBack );
-		FTLINLINE virtual ~CFInternetDownloader( void );
+		FTLINLINE CFTransferJobBase(IFInternetCallback* pCallback, const CAtlString& strAgent);
+		FTLINLINE virtual ~CFTransferJobBase();
+
+		FTLINLINE virtual void Run(FTransferJobInfo* pJobInfo);
+	protected:
+		IFInternetCallback*		m_pCallback;
+		CAtlString				m_strAgent;
+		FTransferJobInfo*		m_pJobInfo;
+
+		INT			m_nJobIndex;
+		LONG64		m_nTotalSize;
+		LONG64		m_nCurPos;
+
+		HINTERNET	m_hSession;
+		HINTERNET	m_hConnection;
+		HINTERNET	m_hRequest;
+
+	protected:
+		FTLINLINE virtual BOOL _CheckParams() = 0;
+		FTLINLINE virtual BOOL _SendRequest() = 0;
+		FTLINLINE virtual BOOL _ReceiveResponse() = 0;
+	protected:
+		FTLINLINE BOOL _Connect();
+		FTLINLINE void _NotifyProgress(IFInternetCallback::STATUS status);
+		FTLINLINE void _NotifyResult(IFInternetCallback::END_CODE endCode, DWORD dwError, LPCTSTR pszErrorInfo = NULL);
+		FTLINLINE void _Close();
+	};
+
+	class CFUploadJob : public CFTransferJobBase
+	{
+	public:
+		FTLINLINE CFUploadJob(IFInternetCallback* pCallback, const CAtlString& strAgent);
+	protected:
+		FTLINLINE virtual BOOL _CheckParams();
+		FTLINLINE virtual BOOL _SendRequest();
+		FTLINLINE virtual BOOL _ReceiveResponse();
+	private:
+		struct PostArgumentParam
+		{
+			DISABLE_COPY_AND_ASSIGNMENT(PostArgumentParam);
+		public:
+			LPSTR	pBuffer;
+			INT		nBufferSize;
+			PostArgumentParam()
+			{
+				pBuffer = NULL;
+				nBufferSize = 0;
+			}
+			~PostArgumentParam()
+			{
+				SAFE_DELETE_ARRAY(pBuffer);
+			}
+		};
+		struct PostFileParam
+		{
+			DISABLE_COPY_AND_ASSIGNMENT(PostFileParam);
+		public:
+			LPSTR   pBuffer;
+			DWORD	nBufferSize;
+
+			DWORD   dwFileSize;
+			CString strFilePath;
+			PostFileParam()
+			{
+				pBuffer = NULL;
+				nBufferSize = 0;
+				dwFileSize = 0;
+			}
+			~PostFileParam()
+			{
+				SAFE_DELETE_ARRAY(pBuffer);
+			}
+		};
+		std::list<PostArgumentParam*>	m_postArgumentParams;
+		std::list<PostFileParam*>		m_postFileParams;
+
+		//translate m_transferParams to m_postArgumentParams and m_postFileParams
+		FTLINLINE BOOL  _TranslatePostParams();
+		FTLINLINE void  _ClearPostParams();
+		FTLINLINE void	_AddRequestHeader(LPCTSTR pszName, LPCTSTR pszValue);
+
+		FTLINLINE LPCTSTR _GetMultiPartBoundary(BOOL bEnd) const;
+
+		FTLINLINE LONG64 _CalcContentLength();
+		FTLINLINE BOOL	_SendRequestHeader();
+		FTLINLINE BOOL  _SendUploadData();
+		FTLINLINE BOOL  _SendPosArgument(PBYTE pBuffer, DWORD dwBufferSize);
+		FTLINLINE BOOL	_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize);
+		FTLINLINE LPSTR _AllocMultiCharBuffer(LPCWSTR pwszInfo, UINT nCodePage);
+	};
+
+	class CFDownloadJob : public CFTransferJobBase
+	{
+	public:
+		FTLINLINE CFDownloadJob(IFInternetCallback* pCallback, const CAtlString& strAgent, LPCTSTR pszLocalFilePath);
+	protected:
+		CAtlString	m_strLocalFilePath;
+		FTLINLINE virtual BOOL _CheckParams();
+		FTLINLINE virtual BOOL _SendRequest();
+		FTLINLINE virtual BOOL _ReceiveResponse();
+	};
+
+	class CFInternetTransfer
+	{
+	public:
+		FTLINLINE CFInternetTransfer( IFInternetCallback* pCallBack );
+		FTLINLINE virtual ~CFInternetTransfer( void );
 
 		FTLINLINE BOOL IsStarted();
-		FTLINLINE BOOL Start(LPCTSTR pszAgent, LONG nMinParallelCount = 1, LONG nMaxParallelCount = 4);
+		FTLINLINE BOOL Start(LONG nMinParallelCount = 1, LONG nMaxParallelCount = 4, LPCTSTR pszAgent = NULL);
 		FTLINLINE BOOL Stop();
 		FTLINLINE void Close();
+		
+		FTLINLINE INT AddDownloadTask(FTransferJobInfo* pDownloadJobInfo);
+		FTLINLINE INT AddUploadTask(FTransferJobInfo* pUploadJobInfo);
 
 		FTLINLINE INT AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );
 		FTLINLINE BOOL CancelTask(INT nJobIndex);
 	protected:
 	private:
-		struct DownloadJobInfo
-		{
-			DISABLE_COPY_AND_ASSIGNMENT(DownloadJobInfo);
-		public:
-			IFDownloadCallback*		m_pCallback;
-			CAtlString				m_strServerName;
-			CAtlString				m_strObjectName;
-			CAtlString				m_strLocalFilePath;
-			USHORT					m_nPort;
-
-			//LONG64					m_nId;
-			LONG64					m_nTotalSize; //if is MAXLONG64, then donot known the real size
-			LONG64					m_nCurPos;
-			//BOOL					m_bCancel;
-			HINTERNET				m_hSession;
-			HINTERNET				m_hConnection;
-			HINTERNET				m_hRequest;
-			//HANDLE					m_hLocalFile;
-
-			FTLINLINE DownloadJobInfo(IFDownloadCallback* pCallBack, 
-				LPCTSTR pszServerName, 
-				LPCTSTR pszObjectName, 
-				USHORT nPort,
-				LPCTSTR pszLocalFilePath
-				)
-				:m_pCallback(pCallBack)
-				,m_strServerName(pszServerName)
-				,m_strObjectName(pszObjectName)
-				,m_strLocalFilePath(pszLocalFilePath)
-				,m_nPort(nPort)
-			{
-				BOOL bRet = FALSE;
-
-				//LARGE_INTEGER counter = {0};
-				//API_VERIFY(	QueryPerformanceCounter(&counter));
-				//m_nId = GetTickCount();// counter.QuadPart;
-				m_nTotalSize = (-1);
-				m_nCurPos = 0;
-				//m_bCancel = FALSE;
-				m_hSession = NULL;
-				m_hConnection = NULL;
-				m_hRequest = NULL;
-				//m_hLocalFile = NULL;
-			}
-		};
-
-		class CFDownloadJob : public CFJobBase<DownloadJobInfo*>
-		{
-		public:
-			FTLINLINE virtual void Run(DownloadJobInfo* pParam);
-		private:
-			FTLINLINE BOOL _SendRequest(DownloadJobInfo& param);
-			FTLINLINE BOOL _ReceiveFileData(DownloadJobInfo& param);
-
-			FTLINLINE void _NotifyProgress(DownloadJobInfo& param, IFDownloadCallback::STATUS status);
-			FTLINLINE void _NotifyResult(DownloadJobInfo& param, IFDownloadCallback::END_CODE endCode, DWORD dwError, LPCTSTR pszErrorInfo = NULL);
-			FTLINLINE void _FreeResource(DownloadJobInfo& param);
-		};
-
-		IFDownloadCallback*	m_pCallBack;
-		//HINTERNET		m_hSession;
-
-		//typedef std::map<DWORD, DownloadJobInfo*>	DownloadInfoContainer;
-		FTL::CFThreadPool<DownloadJobInfo*>*		m_pThreadPool;
+		IFInternetCallback*	m_pCallBack;
+		CAtlString		m_strAgent;
+		FTL::CFThreadPool<FTransferJobInfo*>*		m_pThreadPool;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

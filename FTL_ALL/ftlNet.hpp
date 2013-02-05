@@ -15,6 +15,7 @@
 
 #include <ftlFunctional.h>
 #include <ftlDebug.h>
+#include <ftlMultiMedia.h>
 
 #pragma comment(lib, "Wininet.lib")
 #ifdef __WINCRYPT_H__
@@ -1795,38 +1796,654 @@ namespace FTL
 		return nTotalParseLength;
 	}
 	//////////////////////////////////////////////////////////////////////////
-	CFInternetDownloader::CFInternetDownloader(  IFDownloadCallback* pCallBack )
+
+	FTransferJobInfo::FTransferJobInfo()
+	{
+		m_strServerName.Empty();
+		m_strObjectName.Empty();
+		m_nPort = 0;
+		m_bUploadJob = FALSE;
+		m_transferParams.clear();
+	}
+	FTransferJobInfo::FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, USHORT nPort)
+	{
+		FTLASSERT(pszServerName);
+		FTLASSERT(pszObjectName);
+		
+		if (pszServerName)
+		{
+			m_strServerName = pszServerName;
+		}
+		if (pszObjectName)
+		{
+			m_strObjectName = pszObjectName;
+		}
+		m_nPort = nPort;
+		
+		m_bUploadJob = FALSE;
+		m_transferParams.clear();
+	}
+	FTransferJobInfo::~FTransferJobInfo()
+	{
+
+	}
+
+	CFTransferJobBase::CFTransferJobBase(IFInternetCallback* pCallback, const CAtlString& strAgent)
+	{
+		m_pCallback = pCallback;
+		m_strAgent = strAgent;
+		m_pJobInfo = NULL;
+
+		m_nJobIndex = 0;
+		m_nTotalSize = (LONG64)(-1);
+		m_nCurPos = 0;
+
+		m_hSession = NULL;
+		m_hConnection = NULL;
+		m_hRequest = NULL;
+	}
+
+	CFTransferJobBase::~CFTransferJobBase()
+	{
+		FTLASSERT(NULL == m_hRequest);
+		FTLASSERT(NULL == m_hConnection);
+		FTLASSERT(NULL == m_hSession);
+		
+		//avoid leak
+		_Close();
+	}
+
+	BOOL CFTransferJobBase::_Connect()
+	{
+		FTLASSERT(NULL == m_hSession);
+		BOOL bRet = FALSE;
+
+		API_VERIFY(NULL != (m_hSession = ::InternetOpen(m_strAgent,
+			INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)));
+		if (bRet)
+		{
+			API_VERIFY(NULL !=(m_hConnection = ::InternetConnect(m_hSession, m_pJobInfo->m_strServerName, m_pJobInfo->m_nPort, 
+				NULL, NULL, //username and password
+				INTERNET_SERVICE_HTTP, 0, NULL)));
+		}
+		return bRet;
+	}
+
+	void CFTransferJobBase::_Close()
+	{
+		BOOL bRet = FALSE;
+		SAFE_CLOSE_INTERNET_HANDLE(m_hRequest);
+		SAFE_CLOSE_INTERNET_HANDLE(m_hConnection);
+		SAFE_CLOSE_INTERNET_HANDLE(m_hSession);
+	}
+
+	void CFTransferJobBase::_NotifyResult(IFInternetCallback::END_CODE endCode,
+		DWORD dwError, LPCTSTR pszErrorInfo)
+	{
+		FTLTRACEEX(tlError, TEXT("CFTransferJobBase::_NotifyResult(%d, %s), nId=%d, ErrorInfo=%s\n"), 
+			dwError, CFAPIErrorInfo(dwError).GetConvertedInfo(), GetJobIndex(), 
+			pszErrorInfo ? pszErrorInfo : _TEXT("Unknown"));
+
+		if (m_pCallback)
+		{
+			m_pCallback->OnEnd(GetJobIndex(), endCode, dwError);
+		}
+	}
+
+	void CFTransferJobBase::_NotifyProgress(IFInternetCallback::STATUS status)
+	{
+		if (m_pCallback)
+		{
+			m_pCallback->OnProgress(GetJobIndex(), status, m_nCurPos, m_nTotalSize);
+		}
+	}
+
+	void CFTransferJobBase::Run(FTransferJobInfo* pJobInfo)
+	{
+		BOOL bRet = FALSE;
+		FTLASSERT(pJobInfo);
+		DWORD dwError = 0;
+		CString strErrInfo = TEXT("");
+
+		if (pJobInfo)
+		{
+			m_pJobInfo = pJobInfo;
+			do 
+			{
+				API_VERIFY(_CheckParams());
+				if (!bRet)
+				{
+					dwError = ERROR_INVALID_PARAMETER;
+					strErrInfo = TEXT("CheckParam");
+					break;
+				}
+				API_VERIFY(_Connect());
+				if (!bRet)
+				{
+					dwError = GetLastError();
+					strErrInfo = TEXT("Connect");
+				}
+				API_VERIFY_EXCEPT1(_SendRequest(), ERROR_CANCELLED);
+				if (!bRet)
+				{
+					dwError = GetLastError();
+					strErrInfo = TEXT("SendRequest");
+				}
+				API_VERIFY_EXCEPT1(_ReceiveResponse(), ERROR_CANCELLED);
+				if (!bRet)
+				{
+					dwError = GetLastError();
+					strErrInfo = TEXT("ReceiveResponse");
+				}
+			} while (FALSE);
+
+			//error handle, notify callback			
+			if (dwError)
+			{
+				IFInternetCallback::END_CODE endCode = IFInternetCallback::ecERROR;
+				if (dwError == ERROR_CANCELLED || m_bCancel)
+				{
+					endCode = IFInternetCallback::ecCANCEL;
+				}
+				_NotifyResult(endCode, dwError, strErrInfo);
+			}
+			else
+			{
+				_NotifyProgress(IFInternetCallback::sComplete);
+				_NotifyResult(IFInternetCallback::ecOK, 0, TEXT("Complete"));
+			}
+
+		}
+
+		//free resource
+		SAFE_DELETE(pJobInfo);
+		_Close();
+		delete this;
+	}
+
+
+	CFUploadJob::CFUploadJob(IFInternetCallback* pCallback, const CAtlString& strAgent)
+		:CFTransferJobBase(pCallback, strAgent)
+	{
+
+	}
+
+	LPCTSTR CFUploadJob::_GetMultiPartBoundary(BOOL bEnd) const
+	{
+		if (bEnd)
+		{
+			return TEXT("--MULTI-PARTS-FORM-DATA-BOUNDARY--");
+		}
+		else
+		{
+			return TEXT("--MULTI-PARTS-FORM-DATA-BOUNDARY");
+		}
+	}
+
+	BOOL CFUploadJob::_CheckParams()
+	{
+		BOOL bRet = TRUE;
+		m_nTotalSize = 0;
+
+		for (TransferParamContainer::iterator iter = m_pJobInfo->m_transferParams.begin();
+			iter != m_pJobInfo->m_transferParams.end();
+			++iter)
+		{
+			FTransferParam& transParam = *iter;
+		}
+
+		LONG64 nTotalSize = _CalcContentLength();
+
+		if (bRet && nTotalSize > 0)
+		{
+			m_nTotalSize = nTotalSize;
+			_AddRequestHeader(TEXT("Content-Type"), TEXT("multipart/form-data"));
+			_AddRequestHeader(TEXT("boundary"), _GetMultiPartBoundary(FALSE));
+			_AddRequestHeader(TEXT("Accept"), TEXT("*/*"));
+
+			CAtlString strContentLength;
+			strContentLength.Format(TEXT("%d"), (LONG32)nTotalSize); //×î´ó4G?
+			_AddRequestHeader(TEXT("Content-Length"), strContentLength);
+
+			_AddRequestHeader(TEXT("Connection"), TEXT("Keep-Alive"));
+			_AddRequestHeader(TEXT("Cache-Control"), TEXT("no-cache"));
+		}
+		return bRet;
+	}
+
+	LPSTR CFUploadJob::_AllocMultiCharBuffer(LPCWSTR pwszInfo, UINT nCodePage)
+	{
+		LPSTR pszBuffer = NULL;
+		int nSize = WideCharToMultiByte( nCodePage, 0, pwszInfo, -1, NULL, 0, NULL, NULL );
+		if (nSize > 0)
+		{
+			LPSTR pszBuffer = new CHAR[nSize];
+			ZeroMemory(pszBuffer, nSize);
+			WideCharToMultiByte( nCodePage, 0, pwszInfo, -1, pszBuffer, nSize, 0, 0 );
+		}
+		return pszBuffer;
+	}
+	BOOL CFUploadJob::_TranslatePostParams()
+	{
+		for (TransferParamContainer::iterator iter = m_pJobInfo->m_transferParams.begin();
+			iter != m_pJobInfo->m_transferParams.end();
+			++iter)
+		{
+			FTransferParam& transParam = *iter;
+			switch(transParam.paramType)
+			{
+			case tptPostArgument:
+				{
+					CAtlStringA strParam;
+					strParam.Format(
+						"--%s\r\n"
+						"Content-Disposition: form-data; name=\"%s\"\r\n"
+						"\r\n"
+						"%s\r\n", 
+						CT2AEX<>(_GetMultiPartBoundary(FALSE), transParam.CodePage),
+						CT2AEX<>(transParam.strName, transParam.CodePage),
+						CT2AEX<>(transParam.strValue, transParam.CodePage));
+					PostArgumentParam* pPostArgument = new PostArgumentParam();
+					if (pPostArgument)
+					{
+						int nLength = strParam.GetLength() + sizeof(CHAR);
+						pPostArgument->nBufferSize = nLength;
+						pPostArgument->pBuffer = new CHAR[ nLength ];
+						StringCchCopyA(pPostArgument->pBuffer, nLength, strParam);
+
+						m_postArgumentParams.push_back(pPostArgument);
+					}
+					break;
+				}
+			case tptLocalFile:
+				{
+					HANDLE hFile=::CreateFile(transParam.strValue, 
+						GENERIC_READ, 0, // share mode
+						NULL, // security attribute
+						OPEN_EXISTING, // create disposition
+						FILE_ATTRIBUTE_NORMAL, // flag and attributes
+						NULL); // template file handle
+					API_ASSERT(INVALID_HANDLE_VALUE != hFile);
+
+					if (INVALID_HANDLE_VALUE != hFile)
+					{
+						PostFileParam* pFileParam = new PostFileParam();
+						pFileParam->dwFileSize= ::GetFileSize(hFile, NULL);
+						CloseHandle(hFile);
+
+						CAtlStringA strParam;
+						strParam.Format(
+							"--%s\r\n"
+							"Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n"
+							"Content-Type: %s\r\n"
+							"\r\n",
+							CT2AEX<>(_GetMultiPartBoundary(FALSE), transParam.CodePage),
+							CT2AEX<>(transParam.strName, transParam.CodePage),
+							CT2AEX<>(transParam.strValue, transParam.CodePage),
+							CT2AEX<>(CFMultiMediaUtil::GetContentType(transParam.strValue), transParam.CodePage)
+							);
+
+						int nLength = strParam.GetLength() + sizeof(CHAR);
+						pFileParam->nBufferSize = nLength;
+						pFileParam->pBuffer = new CHAR[ nLength ];
+						StringCchCopyA(pFileParam->pBuffer, nLength, strParam);
+
+						m_postFileParams.push_back(pFileParam);
+					}
+
+					break;
+				}
+			}
+		}
+
+	}
+
+	void CFUploadJob::_ClearPostParams()
+	{
+		for (std::list<PostArgumentParam*>::iterator iterArgument = m_postArgumentParams.begin();
+			iterArgument != m_postArgumentParams.end();
+			++iterArgument)
+		{
+			PostArgumentParam* pArgumentParam = *iterArgument;
+			SAFE_DELETE_ARRAY(pArgumentParam->pBuffer);
+			SAFE_DELETE(pArgumentParam);
+		}
+		m_postArgumentParams.clear();
+
+		for (std::list<PostFileParam*>::iterator iterFile = m_postFileParams.begin();
+			iterFile != m_postFileParams.end();
+			++iterFile)
+		{
+			PostFileParam* pFileParam = *iterFile;
+			SAFE_DELETE_ARRAY(pFileParam->pBuffer);
+			SAFE_DELETE(pFileParam);
+		}
+		m_postFileParams.clear();
+	}
+
+	void CFUploadJob::_AddRequestHeader(LPCTSTR pszName, LPCTSTR pszValue)
+	{
+		FTransferParam param;
+		param.CodePage = CP_UTF8;
+		param.paramType = tptPostArgument;
+		param.strName = pszName;
+		param.strValue = pszValue;
+		m_pJobInfo->m_transferParams.push_back(param);
+	}
+
+	BOOL CFUploadJob::_SendPosArgument(PBYTE pBuffer, DWORD dwBufferSize)
+	{
+		BOOL bRet = FALSE;
+		for (std::list<PostArgumentParam*>::iterator iterArgument = m_postArgumentParams.begin();
+			iterArgument != m_postArgumentParams.end();
+			++iterArgument)
+		{
+			if (m_bCancel)
+			{
+				break;
+			}
+			PostArgumentParam* pArgumentParam = *iterArgument;
+			FTLASSERT(pArgumentParam);
+			DWORD dwPostSize = 0;
+			API_VERIFY(InternetWriteFile(m_hRequest, pArgumentParam->pBuffer, pArgumentParam->nBufferSize, &dwPostSize));
+		}
+
+		return bRet;
+	}
+
+	BOOL CFUploadJob::_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize)
+	{
+		BOOL bRet = FALSE;
+		BOOL bRet = FALSE;
+		for (std::list<PostFileParam*>::iterator iterFile = m_postFileParams.begin();
+			iterFile != m_postFileParams.end();
+			++iterFile)
+		{
+			if (m_bCancel)
+			{
+				break;
+			}
+			PostFileParam* pFileParam = *iterFile;
+			FTLASSERT(pFileParam);
+			DWORD dwPostSize = 0;
+			API_VERIFY(InternetWriteFile(m_hRequest, pFileParam->pBuffer, pFileParam->nBufferSize, &dwPostSize));
+			if (bRet)
+			{
+				HANDLE hFile=::CreateFile(transParam.strValue, 
+					GENERIC_READ, 0, // share mode
+					NULL, // security attribute
+					OPEN_EXISTING, // create disposition
+					FILE_ATTRIBUTE_NORMAL, // flag and attributes
+					NULL); // template file handle
+				API_ASSERT(INVALID_HANDLE_VALUE != hFile);
+				if (INVALID_HANDLE_VALUE != hFile)
+				{
+
+				}
+			}
+		}
+
+		return bRet;
+	}
+
+	BOOL CFUploadJob::_SendUploadData()
+	{
+		BOOL bRet = FALSE;
+		DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
+
+		PBYTE pBuffer = new BYTE[dwBufferSize];
+		ZeroMemory(pBuffer, dwBufferSize);
+
+		INTERNET_BUFFERS InternetBufferIn = {0};
+		InternetBufferIn.dwStructSize = sizeof ( INTERNET_BUFFERS );
+		InternetBufferIn.Next = NULL;
+		
+		API_VERIFY(HttpSendRequestEx(m_hRequest, &InternetBufferIn, NULL, HSR_INITIATE, 0));
+		if (bRet)
+		{
+		    API_VERIFY(_SendPosArgument(pBuffer, dwBufferSize));
+			API_VERIFY(_SendLocalFile(pBuffer, dwBufferSize));
+		}
+		if (bRet)
+		{
+			API_VERIFY(HttpEndRequest( m_hRequest, NULL, HSR_INITIATE, 0 ));
+		}
+		
+
+		SAFE_DELETE_ARRAY(pBuffer);
+		return bRet;
+	}
+
+	BOOL CFUploadJob::_SendRequest()
+	{
+		BOOL bRet = FALSE;
+		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE
+
+		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection, _T("POST"), m_pJobInfo->m_strObjectName, 
+			NULL, NULL, NULL, dwFlags, NULL)));
+		if (bRet)
+		{
+			API_VERIFY(_SendRequestHeader());
+		}
+		if (bRet)
+		{
+			API_VERIFY(_SendUploadData());
+		}
+
+		return bRet;
+	}
+
+	BOOL CFUploadJob::_ReceiveResponse()
+	{
+		BOOL bRet = FALSE;
+
+		return bRet;
+	}
+
+	LONG64 CFUploadJob::_CalcContentLength()
+	{
+		BOOL bRet = FALSE;
+
+		//first clear old post param;
+		_ClearPostParams();
+
+		LONG64 nContentLength = 0;
+		for (TransferParamContainer::iterator iter = m_pJobInfo->m_transferParams.begin();
+			iter != m_pJobInfo->m_transferParams.end();
+			++iter)
+		{
+			FTransferParam& transParam = *iter;
+			switch (transParam.paramType)
+			{
+			case tptLocalFile:
+				{
+				}
+				break;
+			default:
+				ATLASSERT(FALSE);
+				break;
+			}
+		}
+		return nContentLength;
+	}
+
+	BOOL CFUploadJob::_SendRequestHeader()
+	{
+		BOOL bRet = TRUE;
+
+		for (TransferParamContainer::iterator iter = m_pJobInfo->m_transferParams.begin();
+			iter != m_pJobInfo->m_transferParams.end();
+			++iter)
+		{
+			FTransferParam& transParam = *iter;
+			switch (transParam.paramType)
+			{
+			case tptRequestHeader:
+				{
+					if (!transParam.strName.IsEmpty())
+					{
+						CAtlString strHeader;
+						strHeader.Format(TEXT("%s: %s\r\n"), transParam.strName, transParam.strValue);
+						FTLTRACE(TEXT("_SendRequestHeader >>>>  %s"), strHeader);
+
+						API_VERIFY(::HttpAddRequestHeaders(m_hRequest, strHeader, 
+							strHeader.GetLength(), HTTP_ADDREQ_FLAG_ADD_IF_NEW));
+						if (!bRet)
+						{
+							break;
+						}
+					}
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		return bRet;
+	}
+
+	CFDownloadJob::CFDownloadJob(IFInternetCallback* pCallback, const CAtlString& strAgent, LPCTSTR pszLocalFilePath)
+	:CFTransferJobBase(pCallback, strAgent)
+	{
+		m_strLocalFilePath = pszLocalFilePath;
+	}
+
+	BOOL CFDownloadJob::_CheckParams()
+	{
+		return TRUE;
+	}
+
+	BOOL CFDownloadJob::_SendRequest()
+	{
+		BOOL bRet = FALSE;
+
+		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE
+		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection, _T("GET"), m_pJobInfo->m_strObjectName, 
+			NULL, NULL, NULL, dwFlags, NULL)));
+		if (!bRet)
+		{
+			return bRet;
+		}
+
+		API_VERIFY(::HttpSendRequest(m_hRequest, NULL, 0, NULL, 0));
+		if (bRet)
+		{
+			DWORD dwStatusCode = 0;
+			DWORD dwInfoSize = sizeof(dwStatusCode);
+			API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatusCode,
+				&dwInfoSize, NULL));
+			if (dwStatusCode != HTTP_STATUS_OK)
+			{
+				//HTTP_STATUS_PROXY_AUTH_REQ
+				//HTTP_STATUS_DENIED
+				bRet = FALSE;
+
+				//_NotifyResult(jobInfo, IFInternetCallback::ecERROR, dwStatusCode, TEXT("HttpOpenRequest"));
+			}
+		}
+		return bRet;
+	}
+
+	BOOL CFDownloadJob::_ReceiveResponse()
+	{
+		BOOL bRet = FALSE;
+		DWORD nContentLength = 0; //4G  -- HTTP_QUERY_FLAG_NUMBER64
+		DWORD dwInfoSize = sizeof(nContentLength);
+		FTLASSERT(!m_strLocalFilePath.IsEmpty());
+
+		API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
+			&nContentLength, &dwInfoSize, NULL));
+		if (bRet)
+		{
+			m_nTotalSize = nContentLength;
+			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, GENERIC_WRITE, 0, NULL,
+				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			API_VERIFY(INVALID_HANDLE_VALUE != hLocalFile);
+
+			if (INVALID_HANDLE_VALUE != hLocalFile)
+			{
+				_NotifyProgress(IFInternetCallback::sStart);
+
+				DWORD dwRead = INTERNET_BUFFER_SIZE;
+				DWORD dwWriteToLocal = 0;
+				BYTE* pBuffer = new BYTE[INTERNET_BUFFER_SIZE];
+				do 
+				{
+					dwRead = INTERNET_BUFFER_SIZE;
+					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwRead, &dwRead));
+					if (bRet && dwRead > 0)
+					{
+						API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
+						if (!bRet || dwRead != dwWriteToLocal)
+						{
+							_NotifyResult(IFInternetCallback::ecERROR, GetLastError(), TEXT("WriteFile"));
+							break;
+						}
+						m_nCurPos += dwRead;
+						_NotifyProgress(IFInternetCallback::sDoing);
+					}
+				} while (dwRead >0 && !m_bCancel);
+				SAFE_DELETE_ARRAY(pBuffer);
+
+				if (dwRead == 0 && !m_bCancel)
+				{
+					_NotifyProgress(IFInternetCallback::sComplete);
+					bRet = TRUE;
+				}
+				else if(m_bCancel)
+				{
+					SetLastError(ERROR_CANCELLED);
+					bRet = FALSE;
+				}
+				CloseHandle(hLocalFile);
+			}
+			if (m_bCancel)
+			{
+				BOOL bTempRet = ::DeleteFile(m_strLocalFilePath);
+				API_ASSERT(bTempRet);
+			}
+		}
+		return bRet;
+	}
+
+
+	CFInternetTransfer::CFInternetTransfer(  IFInternetCallback* pCallBack )
 		:m_pCallBack(pCallBack)
 	{
 		//m_hSession = NULL;
 		m_pThreadPool = NULL;
-		
+		m_strAgent = TEXT("InternetTransfer");
+
 		BOOL bRet = FALSE;
 	}
 
-	CFInternetDownloader::~CFInternetDownloader()
+	CFInternetTransfer::~CFInternetTransfer()
 	{
 		Stop();
 		Close();
 	}
 	
-	BOOL CFInternetDownloader::IsStarted()
+	BOOL CFInternetTransfer::IsStarted()
 	{
 		BOOL bRet = ((NULL != m_pThreadPool));
 		return bRet;
 	}
 
-	BOOL CFInternetDownloader::Start(LPCTSTR pszAgent, LONG nMinParallelCount /* = 1 */, LONG nMaxParallelCount /* = 4 */)
+	BOOL CFInternetTransfer::Start(LONG nMinParallelCount /* = 1 */, LONG nMaxParallelCount /* = 4 */, LPCTSTR pszAgent /* = NULL*/)
 	{
 		BOOL bRet = FALSE;
 		FTLASSERT( NULL == m_pThreadPool );
 		FTLASSERT(nMinParallelCount >= 1);
 		FTLASSERT(nMinParallelCount <= nMaxParallelCount);
-
-		m_pThreadPool = new CFThreadPool<DownloadJobInfo*>(nMinParallelCount, nMaxParallelCount);
+		
+		m_pThreadPool = new CFThreadPool<FTransferJobInfo*>(nMinParallelCount, nMaxParallelCount);
 		if (m_pThreadPool)
 		{
 			API_VERIFY(m_pThreadPool->Start());
+			if (pszAgent)
+			{
+				m_strAgent = pszAgent;
+			}
 		}
 		else
 		{
@@ -1837,19 +2454,35 @@ namespace FTL
 		return bRet;
 	}
 
-	BOOL CFInternetDownloader::Stop()
+	BOOL CFInternetTransfer::Stop()
 	{
 		BOOL bRet = FALSE;
 
 		return bRet;
 	}
 
-	void CFInternetDownloader::Close()
+	void CFInternetTransfer::Close()
 	{
 		SAFE_DELETE(m_pThreadPool);
 	}
 
-	INT CFInternetDownloader::AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath )
+	INT CFInternetTransfer::AddUploadTask(FTransferJobInfo* pUploadJobInfo)
+	{
+		FTLASSERT(m_pThreadPool);
+		FTLASSERT(pUploadJobInfo);
+		FTLASSERT(!pUploadJobInfo->m_bUploadJob);
+
+		BOOL bRet = FALSE;
+		INT nJobIndex = 0;
+		if (m_pThreadPool)
+		{
+			CFUploadJob* pJob = new CFUploadJob(m_pCallBack, m_strAgent);
+			API_VERIFY(m_pThreadPool->SubmitJob(pJob, pUploadJobInfo, &nJobIndex));
+		}
+		return nJobIndex;
+	}
+
+	INT CFInternetTransfer::AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath )
 	{
 		FTLASSERT(m_pThreadPool);
 
@@ -1862,15 +2495,15 @@ namespace FTL
 		INT nJobIndex = 0;
 		if (pszServerName && pszObjectName && pszLocalFilePath)
 		{
-			DownloadJobInfo* pJobInfo = new DownloadJobInfo(m_pCallBack, pszServerName, pszObjectName, nPort, pszLocalFilePath);
-			CFDownloadJob* pJob = new CFDownloadJob();
+			FTransferJobInfo* pJobInfo = new FTransferJobInfo(pszServerName, pszObjectName, nPort);
+			CFDownloadJob* pJob = new CFDownloadJob(m_pCallBack, m_strAgent, pszLocalFilePath);
 
 			API_VERIFY(m_pThreadPool->SubmitJob(pJob, pJobInfo, &nJobIndex));
 		}
 		return nJobIndex;
 	}
 
-	BOOL CFInternetDownloader::CancelTask(INT nJobIndex)
+	BOOL CFInternetTransfer::CancelTask(INT nJobIndex)
 	{
 		FTLASSERT(m_pThreadPool);
 		BOOL bRet = FALSE;
@@ -1881,173 +2514,6 @@ namespace FTL
 		return bRet;
 	}
 
-	BOOL CFInternetDownloader::CFDownloadJob::_SendRequest(DownloadJobInfo& param)
-	{
-		BOOL bRet = FALSE;
-
-		param.m_hConnection = ::InternetConnect(param.m_hSession, param.m_strServerName, 
-			param.m_nPort, NULL, NULL, INTERNET_SERVICE_HTTP, 0, NULL);	
-		API_VERIFY( NULL != param.m_hConnection );
-		if (!bRet)
-		{
-			_NotifyResult(param, IFDownloadCallback::ecERROR, GetLastError(), TEXT("InternetConnect"));
-			return bRet;
-		}
-
-		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE
-		param.m_hRequest = ::HttpOpenRequest(param.m_hConnection, _T("GET"), param.m_strObjectName, 
-			NULL, NULL, NULL, dwFlags, NULL);
-		API_VERIFY( NULL != param.m_hRequest );
-		if (!bRet)
-		{
-			_NotifyResult(param, IFDownloadCallback::ecERROR, GetLastError(), TEXT("HttpOpenRequest"));
-			return bRet;
-		}
-
-		API_VERIFY(::HttpSendRequest(param.m_hRequest, NULL, 0, NULL, 0));
-		if (bRet)
-		{
-			DWORD dwStatusCode = 0;
-			DWORD dwInfoSize = sizeof(dwStatusCode);
-			API_VERIFY(::HttpQueryInfo(param.m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatusCode,
-				&dwInfoSize, NULL));
-			if (dwStatusCode != HTTP_STATUS_OK)
-			{
-				//HTTP_STATUS_PROXY_AUTH_REQ
-				//HTTP_STATUS_DENIED
-				bRet = FALSE;
-				_NotifyResult(param, IFDownloadCallback::ecERROR, dwStatusCode, TEXT("HttpOpenRequest"));
-			}
-		}
-		return bRet;
-	}
-
-	BOOL CFInternetDownloader::CFDownloadJob::_ReceiveFileData(DownloadJobInfo& param)
-	{
-		BOOL bRet = FALSE;
-		DWORD nContentLength = 0; //4G  -- HTTP_QUERY_FLAG_NUMBER64
-		DWORD dwInfoSize = sizeof(nContentLength);
-
-		API_VERIFY(::HttpQueryInfo(param.m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
-			&nContentLength, &dwInfoSize, NULL));
-		if (bRet)
-		{
-			param.m_nTotalSize = nContentLength;
-			HANDLE hLocalFile = ::CreateFile(param.m_strLocalFilePath, GENERIC_WRITE, 0, NULL,
-				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-			if (hLocalFile != INVALID_HANDLE_VALUE)
-			{
-				_NotifyProgress(param, IFDownloadCallback::sStart);
-
-				DWORD dwRead = INTERNET_BUFFER_SIZE;
-				DWORD dwWriteToLocal = 0;
-				BYTE* pBuffer = new BYTE[INTERNET_BUFFER_SIZE];
-				do 
-				{
-					dwRead = INTERNET_BUFFER_SIZE;
-					API_VERIFY(::InternetReadFile(param.m_hRequest, pBuffer, dwRead, &dwRead));
-					if (bRet && dwRead > 0)
-					{
-						API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
-						if (!bRet || dwRead != dwWriteToLocal)
-						{
-							_NotifyResult(param, IFDownloadCallback::ecERROR, GetLastError(), TEXT("WriteFile"));
-							break;
-						}
-						param.m_nCurPos += dwRead;
-						_NotifyProgress(param, IFDownloadCallback::sDownloading);
-					}
-				} while (dwRead >0 && !m_bCancel);
-				SAFE_DELETE_ARRAY(pBuffer);
-
-				if (dwRead == 0 && !m_bCancel)
-				{
-					_NotifyProgress(param, IFDownloadCallback::sComplete);
-					bRet = TRUE;
-				}
-				else
-				{
-					SetLastError(ERROR_CANCELLED);
-					bRet = FALSE;
-				}
-				CloseHandle(hLocalFile);
-			}
-			if (m_bCancel)
-			{
-				BOOL bTempRet = ::DeleteFile(param.m_strLocalFilePath);
-				API_ASSERT(bTempRet);
-			}
-		}
-		return bRet;
-	}
-
-	void CFInternetDownloader::CFDownloadJob::Run(DownloadJobInfo* pParam)
-	{
-		FTLASSERT(pParam);
-		if (pParam)
-		{
-			BOOL bRet = FALSE;
-
-			API_VERIFY(NULL != (pParam->m_hSession = ::InternetOpen(TEXT("InternetDownloader"), 
-				INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)));
-
-			API_VERIFY(_SendRequest(*pParam));
-			if (bRet && !m_bCancel)
-			{
-				API_VERIFY_EXCEPT1(_ReceiveFileData(*pParam), ERROR_CANCELLED);
-			}
-
-			if (bRet && !m_bCancel)
-			{
-				_NotifyProgress(*pParam, IFDownloadCallback::sComplete);
-				_NotifyResult(*pParam, IFDownloadCallback::ecOK, 0, TEXT("DonwloadComplete"));
-				
-			}
-			else
-			{
-				if (m_bCancel)
-				{
-					_NotifyResult(*pParam, IFDownloadCallback::ecCANCEL, 0, TEXT("Cancel"));
-				}
-				else
-				{
-					_NotifyResult(*pParam, IFDownloadCallback::ecERROR, GetLastError());
-				}
-			}
-			_FreeResource(*pParam);
-		}
-
-		SAFE_DELETE(pParam);
-		delete this;
-	}
-
-	void CFInternetDownloader::CFDownloadJob::_NotifyResult(DownloadJobInfo& param, IFDownloadCallback::END_CODE endCode,
-		DWORD dwError, LPCTSTR pszErrorInfo)
-	{
-		FTLTRACEEX(tlError, TEXT("CFDownloadJob Result(%d, %s), nId=%d, ErrorInfo=%s\n"), 
-			dwError, CFAPIErrorInfo(dwError).GetConvertedInfo(), GetJobIndex(), 
-			pszErrorInfo ? pszErrorInfo : _TEXT("Unknown"));
-
-		if (param.m_pCallback)
-		{
-			param.m_pCallback->OnEnd(GetJobIndex(), endCode, dwError);
-		}
-	}
-
-	void CFInternetDownloader::CFDownloadJob::_NotifyProgress(DownloadJobInfo& param, IFDownloadCallback::STATUS status)
-	{
-		if (param.m_pCallback)
-		{
-			param.m_pCallback->OnProgress(GetJobIndex(), status, param.m_nCurPos, param.m_nTotalSize);
-		}
-	}
-	void CFInternetDownloader::CFDownloadJob::_FreeResource(DownloadJobInfo& param)
-	{
-		BOOL bRet = FALSE;
-		SAFE_CLOSE_INTERNET_HANDLE(param.m_hRequest);
-		SAFE_CLOSE_INTERNET_HANDLE(param.m_hConnection);
-		SAFE_CLOSE_INTERNET_HANDLE(param.m_hSession);
-	}
 	//////////////////////////////////////////////////////////////////////////
 
 	CUrlComponents::CUrlComponents()

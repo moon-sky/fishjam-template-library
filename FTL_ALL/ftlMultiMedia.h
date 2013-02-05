@@ -181,6 +181,13 @@
 
 namespace FTL
 {
+	class CFMultiMediaUtil
+	{
+	public:
+		//从注册表 HCRT 下根据文件扩展名，读取类型, 如 .jpg 是 image/jpeg
+		FTLINLINE static CAtlString GetContentType(LPCTSTR pszFileName);
+	};
+
 }//namespace FTL
 
 #endif //FTL_FILE_H
