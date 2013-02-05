@@ -8,11 +8,18 @@
 
 namespace FTL
 {
-	CAtlString CFMultiMediaUtil::GetContentType(LPCTSTR pszFileName)
+	BOOL CFMultiMediaUtil::GetContentType(LPCTSTR pszFileName, LPTSTR pszContentType, DWORD dwCharSize)
 	{
 		FTLASSERT(pszFileName);
-		CAtlString strContentType = TEXT("application/octet-stream");
 
+		if (!pszFileName)
+		{
+			SetLastError(ERROR_INVALID_PARAMETER);
+			return FALSE;
+		}
+
+		//Set Default Value
+		StringCchCopy(pszContentType, dwCharSize, TEXT("application/octet-stream"));
 		if (pszFileName)
 		{
 			HRESULT hr = E_FAIL;
@@ -27,16 +34,13 @@ namespace FTL
 				REG_VERIFY(RegOpenKeyEx(HKEY_CLASSES_ROOT, pszExtName, 0, KEY_QUERY_VALUE, &hKey));
 				if (ERROR_SUCCESS == lRet)
 				{
-					REG_VERIFY(RegQueryValueEx(hKey, TEXT("Content Type"), NULL, NULL, (BYTE*)&szReturn, &dwLength));
-					if (ERROR_SUCCESS == lRet)
-					{
-						strContentType = szReturn;
-					}
+					DWORD dwBufferSize = dwCharSize * sizeof(TCHAR);
+					REG_VERIFY(RegQueryValueEx(hKey, TEXT("Content Type"), NULL, NULL, (BYTE*)pszContentType, &dwBufferSize));
 					RegCloseKey(hKey);
 				}
 			}
 		}
-		return strContentType;
+		return TRUE;
 	}
 }
 

@@ -1444,6 +1444,7 @@ namespace FTL
                 break;
             case WAIT_TIMEOUT:
                 FTLTRACEEX(tlError,TEXT("!!!CFThreadPool::Wait, Not all thread over in %d millisec\n"),dwTimeOut);
+				SetLastError(ERROR_TIMEOUT);
                 bRet = FALSE;
                 break;
             default:
@@ -1607,8 +1608,7 @@ namespace FTL
 	template <typename T>  
 	BOOL CFThreadPool<T>::CancelJob(INT nJobIndex)
 	{
-		//±æ∫Ø ˝…–Œ¥≤‚ ‘
-		BOOL bRet = FALSE;
+		BOOL bRet = TRUE;
 		BOOL bFoundWaiting = FALSE;
 		BOOL bFoundDoing = FALSE;
 		{
@@ -1657,7 +1657,7 @@ namespace FTL
 			//do nothing
 		}
 
-		return TRUE; //(bFoundDoing || bFoundWaiting);
+		return bRet; //(bFoundDoing || bFoundWaiting);
 	}
 
     template <typename T>  

@@ -185,7 +185,7 @@ namespace FTL
 	{
 	public:
 		//从注册表 HCRT 下根据文件扩展名，读取类型, 如 .jpg 是 image/jpeg
-		FTLINLINE static CAtlString GetContentType(LPCTSTR pszFileName);
+		FTLINLINE static BOOL GetContentType(LPCTSTR pszFileName, LPTSTR pszContentType, DWORD dwCharSize);
 	};
 
 }//namespace FTL

@@ -493,7 +493,7 @@ namespace FTL
 		INT	 GetJobIndex() const;
 
         //! 如果是new出来的，一定要在结束时调用 delete this（包括参数 pParam） -- 是否可以增加 m_bAutoDelete？
-		// 在这个Run中通常寻妖循环判断 m_bCancel 变量
+		// 在这个Run中通常需要循环判断 m_bCancel 变量
         virtual void Run(T param) = 0;
 		virtual void NotifyCancel( T param)
 		{

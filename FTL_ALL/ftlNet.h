@@ -18,6 +18,10 @@
 #  include <WinInet.h>	//基础版
 #endif
 
+#pragma TODO(now just use CAtlString)
+#include <atlbase.h>
+#include <atlstr.h>
+
 //默认的网络数据BufferSize
 #ifndef INTERNET_BUFFER_SIZE
 #  define	INTERNET_BUFFER_SIZE	4096
@@ -889,12 +893,21 @@ namespace FTL
 		FTLINLINE FTransferJobInfo();
 		FTLINLINE FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, USHORT nPort);
 		FTLINLINE ~FTransferJobInfo();
+		FTLINLINE void AddTransferParam(FTransferParamType paramType, CAtlString strName, CAtlString strValue, UINT codePage = CP_UTF8)
+		{
+			FTransferParam param;
+			param.paramType = paramType;
+			param.strName = strName;
+			param.strValue = strValue;
+			param.CodePage = codePage;
+			m_transferParams.push_back(param);
+		}
 
 		CAtlString	m_strServerName;
 		CAtlString	m_strObjectName;
 		USHORT		m_nPort;
 
-		BOOL		m_bUploadJob;
+		//BOOL		m_bUploadJob;
 		TransferParamContainer	m_transferParams;
 	};
 
@@ -922,11 +935,15 @@ namespace FTL
 		FTLINLINE virtual BOOL _CheckParams() = 0;
 		FTLINLINE virtual BOOL _SendRequest() = 0;
 		FTLINLINE virtual BOOL _ReceiveResponse() = 0;
+		FTLINLINE virtual void _OnClose() {}
 	protected:
 		FTLINLINE BOOL _Connect();
+		FTLINLINE void _Close();
 		FTLINLINE void _NotifyProgress(IFInternetCallback::STATUS status);
 		FTLINLINE void _NotifyResult(IFInternetCallback::END_CODE endCode, DWORD dwError, LPCTSTR pszErrorInfo = NULL);
-		FTLINLINE void _Close();
+
+		//循环保证发送指定的 N 个字节数据
+		FTLINLINE BOOL _SendN(PBYTE pBuffer, DWORD nCount, DWORD* pSend);
 	};
 
 	class CFUploadJob : public CFTransferJobBase
@@ -937,6 +954,7 @@ namespace FTL
 		FTLINLINE virtual BOOL _CheckParams();
 		FTLINLINE virtual BOOL _SendRequest();
 		FTLINLINE virtual BOOL _ReceiveResponse();
+		FTLINLINE virtual void _OnClose();
 	private:
 		struct PostArgumentParam
 		{
@@ -1014,7 +1032,7 @@ namespace FTL
 		FTLINLINE BOOL Stop();
 		FTLINLINE void Close();
 		
-		FTLINLINE INT AddDownloadTask(FTransferJobInfo* pDownloadJobInfo);
+		FTLINLINE INT AddDownloadTask(FTransferJobInfo* pDownloadJobInfo, LPCTSTR pszLocalFilePath);
 		FTLINLINE INT AddUploadTask(FTransferJobInfo* pUploadJobInfo);
 
 		FTLINLINE INT AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );

@@ -16,6 +16,7 @@
 #include <ftlFunctional.h>
 #include <ftlDebug.h>
 #include <ftlMultiMedia.h>
+#include <ftlNLS.h>
 
 #pragma comment(lib, "Wininet.lib")
 #ifdef __WINCRYPT_H__
@@ -1802,7 +1803,7 @@ namespace FTL
 		m_strServerName.Empty();
 		m_strObjectName.Empty();
 		m_nPort = 0;
-		m_bUploadJob = FALSE;
+		//m_bUploadJob = FALSE;
 		m_transferParams.clear();
 	}
 	FTransferJobInfo::FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, USHORT nPort)
@@ -1820,7 +1821,7 @@ namespace FTL
 		}
 		m_nPort = nPort;
 		
-		m_bUploadJob = FALSE;
+		//m_bUploadJob = FALSE;
 		m_transferParams.clear();
 	}
 	FTransferJobInfo::~FTransferJobInfo()
@@ -1835,6 +1836,7 @@ namespace FTL
 		m_pJobInfo = NULL;
 
 		m_nJobIndex = 0;
+		m_bCancel = FALSE;
 		m_nTotalSize = (LONG64)(-1);
 		m_nCurPos = 0;
 
@@ -1875,6 +1877,32 @@ namespace FTL
 		SAFE_CLOSE_INTERNET_HANDLE(m_hRequest);
 		SAFE_CLOSE_INTERNET_HANDLE(m_hConnection);
 		SAFE_CLOSE_INTERNET_HANDLE(m_hSession);
+	}
+
+	BOOL CFTransferJobBase::_SendN(PBYTE pBuffer, DWORD nCount, DWORD* pSend)
+	{
+		FTLASSERT(m_hRequest);
+		BOOL bRet = FALSE;
+
+		DWORD nLeft = nCount;
+		DWORD nSend = 0;
+		PBYTE pSendData = pBuffer;
+		while (nLeft > 0)
+		{
+			API_VERIFY(::InternetWriteFile(m_hRequest, pSendData, nLeft, &nSend));
+			if (!bRet)
+			{
+				//TODO:
+				break;
+			}
+			nLeft -= nSend;
+			pSendData += nSend;
+		} 
+		if (pSend)
+		{
+			*pSend = nSend;
+		}
+		return bRet;
 	}
 
 	void CFTransferJobBase::_NotifyResult(IFInternetCallback::END_CODE endCode,
@@ -1922,18 +1950,21 @@ namespace FTL
 				{
 					dwError = GetLastError();
 					strErrInfo = TEXT("Connect");
+					break;
 				}
 				API_VERIFY_EXCEPT1(_SendRequest(), ERROR_CANCELLED);
 				if (!bRet)
 				{
 					dwError = GetLastError();
 					strErrInfo = TEXT("SendRequest");
+					break;
 				}
 				API_VERIFY_EXCEPT1(_ReceiveResponse(), ERROR_CANCELLED);
 				if (!bRet)
 				{
 					dwError = GetLastError();
 					strErrInfo = TEXT("ReceiveResponse");
+					break;
 				}
 			} while (FALSE);
 
@@ -1970,14 +2001,12 @@ namespace FTL
 
 	LPCTSTR CFUploadJob::_GetMultiPartBoundary(BOOL bEnd) const
 	{
-		if (bEnd)
-		{
-			return TEXT("--MULTI-PARTS-FORM-DATA-BOUNDARY--");
-		}
-		else
+		if (!bEnd)
 		{
 			return TEXT("--MULTI-PARTS-FORM-DATA-BOUNDARY");
+			
 		}
+		return TEXT("--MULTI-PARTS-FORM-DATA-BOUNDARY--");
 	}
 
 	BOOL CFUploadJob::_CheckParams()
@@ -1992,8 +2021,9 @@ namespace FTL
 			FTransferParam& transParam = *iter;
 		}
 
-		LONG64 nTotalSize = _CalcContentLength();
+		API_VERIFY(_TranslatePostParams());
 
+		LONG64 nTotalSize = _CalcContentLength();
 		if (bRet && nTotalSize > 0)
 		{
 			m_nTotalSize = nTotalSize;
@@ -2002,7 +2032,7 @@ namespace FTL
 			_AddRequestHeader(TEXT("Accept"), TEXT("*/*"));
 
 			CAtlString strContentLength;
-			strContentLength.Format(TEXT("%d"), (LONG32)nTotalSize); //最大4G?
+			strContentLength.Format(TEXT("%d"), (LONG32)nTotalSize);		//最大4G?
 			_AddRequestHeader(TEXT("Content-Length"), strContentLength);
 
 			_AddRequestHeader(TEXT("Connection"), TEXT("Keep-Alive"));
@@ -2025,6 +2055,10 @@ namespace FTL
 	}
 	BOOL CFUploadJob::_TranslatePostParams()
 	{
+		//first clear old param
+		_ClearPostParams();
+
+		BOOL bRet = TRUE;
 		for (TransferParamContainer::iterator iter = m_pJobInfo->m_transferParams.begin();
 			iter != m_pJobInfo->m_transferParams.end();
 			++iter)
@@ -2040,9 +2074,9 @@ namespace FTL
 						"Content-Disposition: form-data; name=\"%s\"\r\n"
 						"\r\n"
 						"%s\r\n", 
-						CT2AEX<>(_GetMultiPartBoundary(FALSE), transParam.CodePage),
-						CT2AEX<>(transParam.strName, transParam.CodePage),
-						CT2AEX<>(transParam.strValue, transParam.CodePage));
+						CFConversion(transParam.CodePage).TCHAR_TO_UTF8(_GetMultiPartBoundary(FALSE)),
+						CFConversion(transParam.CodePage).TCHAR_TO_UTF8(transParam.strName),
+						CFConversion(transParam.CodePage).TCHAR_TO_UTF8(transParam.strValue));
 					PostArgumentParam* pPostArgument = new PostArgumentParam();
 					if (pPostArgument)
 					{
@@ -2071,19 +2105,23 @@ namespace FTL
 						pFileParam->dwFileSize= ::GetFileSize(hFile, NULL);
 						CloseHandle(hFile);
 
+						TCHAR szContentType[MAX_PATH] = {0};
+						API_VERIFY(CFMultiMediaUtil::GetContentType(transParam.strValue, szContentType, _countof(szContentType)));
+
 						CAtlStringA strParam;
 						strParam.Format(
 							"--%s\r\n"
 							"Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n"
 							"Content-Type: %s\r\n"
 							"\r\n",
-							CT2AEX<>(_GetMultiPartBoundary(FALSE), transParam.CodePage),
-							CT2AEX<>(transParam.strName, transParam.CodePage),
-							CT2AEX<>(transParam.strValue, transParam.CodePage),
-							CT2AEX<>(CFMultiMediaUtil::GetContentType(transParam.strValue), transParam.CodePage)
+							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(_GetMultiPartBoundary(FALSE)),
+							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(transParam.strName),
+							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(transParam.strValue),
+							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(szContentType)
 							);
 
 						int nLength = strParam.GetLength() + sizeof(CHAR);
+						pFileParam->strFilePath = transParam.strValue;
 						pFileParam->nBufferSize = nLength;
 						pFileParam->pBuffer = new CHAR[ nLength ];
 						StringCchCopyA(pFileParam->pBuffer, nLength, strParam);
@@ -2095,7 +2133,7 @@ namespace FTL
 				}
 			}
 		}
-
+		return bRet;
 	}
 
 	void CFUploadJob::_ClearPostParams()
@@ -2125,7 +2163,7 @@ namespace FTL
 	{
 		FTransferParam param;
 		param.CodePage = CP_UTF8;
-		param.paramType = tptPostArgument;
+		param.paramType = tptRequestHeader;
 		param.strName = pszName;
 		param.strValue = pszValue;
 		m_pJobInfo->m_transferParams.push_back(param);
@@ -2134,6 +2172,7 @@ namespace FTL
 	BOOL CFUploadJob::_SendPosArgument(PBYTE pBuffer, DWORD dwBufferSize)
 	{
 		BOOL bRet = FALSE;
+		DWORD dwPostSize = 0;
 		for (std::list<PostArgumentParam*>::iterator iterArgument = m_postArgumentParams.begin();
 			iterArgument != m_postArgumentParams.end();
 			++iterArgument)
@@ -2144,16 +2183,20 @@ namespace FTL
 			}
 			PostArgumentParam* pArgumentParam = *iterArgument;
 			FTLASSERT(pArgumentParam);
-			DWORD dwPostSize = 0;
-			API_VERIFY(InternetWriteFile(m_hRequest, pArgumentParam->pBuffer, pArgumentParam->nBufferSize, &dwPostSize));
-		}
 
+			API_VERIFY(_SendN((PBYTE)pArgumentParam->pBuffer, pArgumentParam->nBufferSize, NULL));
+			if (!bRet)
+			{
+				break;
+			}
+			m_nCurPos += dwPostSize;
+			_NotifyProgress(IFInternetCallback::sDoing);
+		}
 		return bRet;
 	}
 
 	BOOL CFUploadJob::_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize)
 	{
-		BOOL bRet = FALSE;
 		BOOL bRet = FALSE;
 		for (std::list<PostFileParam*>::iterator iterFile = m_postFileParams.begin();
 			iterFile != m_postFileParams.end();
@@ -2161,25 +2204,46 @@ namespace FTL
 		{
 			if (m_bCancel)
 			{
+				SetLastError(ERROR_CANCELLED);
 				break;
 			}
+
 			PostFileParam* pFileParam = *iterFile;
 			FTLASSERT(pFileParam);
-			DWORD dwPostSize = 0;
-			API_VERIFY(InternetWriteFile(m_hRequest, pFileParam->pBuffer, pFileParam->nBufferSize, &dwPostSize));
-			if (bRet)
+			DWORD dwOutPostBufferLength = 0;
+			API_VERIFY(_SendN((PBYTE)pFileParam->pBuffer, pFileParam->nBufferSize, NULL));
+			//API_VERIFY(InternetWriteFile(m_hRequest, pFileParam->pBuffer, pFileParam->nBufferSize, &dwOutPostBufferLength));
+			if (!bRet)
 			{
-				HANDLE hFile=::CreateFile(transParam.strValue, 
-					GENERIC_READ, 0, // share mode
-					NULL, // security attribute
-					OPEN_EXISTING, // create disposition
-					FILE_ATTRIBUTE_NORMAL, // flag and attributes
-					NULL); // template file handle
-				API_ASSERT(INVALID_HANDLE_VALUE != hFile);
-				if (INVALID_HANDLE_VALUE != hFile)
-				{
+				break;
+			}
 
+			HANDLE hFile=::CreateFile(pFileParam->strFilePath, 
+				GENERIC_READ, 0, // share mode
+				NULL, // security attribute
+				OPEN_EXISTING, // create disposition
+				FILE_ATTRIBUTE_NORMAL, // flag and attributes
+				NULL); // template file handle
+			API_ASSERT(INVALID_HANDLE_VALUE != hFile);
+			if (INVALID_HANDLE_VALUE != hFile)
+			{
+				DWORD dwReadSize = 0;
+				while (ReadFile(hFile, pBuffer, dwBufferSize, &dwReadSize, NULL) && dwReadSize > 0)
+				{
+					if (m_bCancel)
+					{
+						SetLastError(ERROR_CANCELLED);
+						break;
+					}
+
+					API_VERIFY(_SendN(pBuffer, dwReadSize, NULL));
+					if (!bRet)
+					{
+						break;
+					}
+					m_nCurPos += dwReadSize;
 				}
+				CloseHandle(hFile);
 			}
 		}
 
@@ -2236,34 +2300,71 @@ namespace FTL
 	BOOL CFUploadJob::_ReceiveResponse()
 	{
 		BOOL bRet = FALSE;
+		DWORD nContentLength = 0; //4G  -- HTTP_QUERY_FLAG_NUMBER64
+		DWORD dwInfoSize = sizeof(nContentLength);
+		//FTLASSERT(!m_strLocalFilePath.IsEmpty());
 
+		API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
+			&nContentLength, &dwInfoSize, NULL));
+		if (bRet)
+		{
+			DWORD dwRead = 0;
+			DWORD dwWriteToLocal = 0;
+			DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
+			BYTE* pBuffer = new BYTE[dwBufferSize];
+			do 
+			{
+#ifdef FTL_DEBUG
+				ZeroMemory(pBuffer, dwBufferSize);
+#endif
+				dwRead = INTERNET_BUFFER_SIZE;
+				API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwRead, &dwRead));
+				if (bRet && dwRead > 0)
+				{
+					//API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
+					if (!bRet)// || dwRead != dwWriteToLocal)
+					{
+						_NotifyResult(IFInternetCallback::ecERROR, GetLastError(), TEXT("WriteFile"));
+						break;
+					}
+					FTLTRACEEX(tlError,TEXT("Upload Response= %s\n"), CFConversion().MBCS_TO_TCHAR((LPCSTR)pBuffer));
+					//m_nCurPos += dwRead;
+					//_NotifyProgress(IFInternetCallback::sDoing);
+				}
+			} while (dwRead >0 && !m_bCancel);
+			SAFE_DELETE_ARRAY(pBuffer);
+		}
 		return bRet;
+	}
+
+	void CFUploadJob::_OnClose()
+	{
+		_ClearPostParams();
 	}
 
 	LONG64 CFUploadJob::_CalcContentLength()
 	{
 		BOOL bRet = FALSE;
 
-		//first clear old post param;
-		_ClearPostParams();
-
 		LONG64 nContentLength = 0;
-		for (TransferParamContainer::iterator iter = m_pJobInfo->m_transferParams.begin();
-			iter != m_pJobInfo->m_transferParams.end();
-			++iter)
+
+		for (std::list<PostArgumentParam*>::iterator iterArgument = m_postArgumentParams.begin();
+			iterArgument != m_postArgumentParams.end();
+			++iterArgument)
 		{
-			FTransferParam& transParam = *iter;
-			switch (transParam.paramType)
-			{
-			case tptLocalFile:
-				{
-				}
-				break;
-			default:
-				ATLASSERT(FALSE);
-				break;
-			}
+			PostArgumentParam* pArgumentParam = *iterArgument;
+			nContentLength += pArgumentParam->nBufferSize;
 		}
+
+		for (std::list<PostFileParam*>::iterator iterFile = m_postFileParams.begin();
+			iterFile != m_postFileParams.end();
+			++iterFile)
+		{
+			PostFileParam* pFileParam = *iterFile;
+			nContentLength += (pFileParam->nBufferSize + pFileParam->dwFileSize);
+		}
+
+		FTLTRACEEX(tlTrace, TEXT("CFUploadJob::_CalcContentLength nJobId=%d, ContentLength=%ld\n"), m_nJobIndex, nContentLength);
 		return nContentLength;
 	}
 
@@ -2334,10 +2435,12 @@ namespace FTL
 				&dwInfoSize, NULL));
 			if (dwStatusCode != HTTP_STATUS_OK)
 			{
-				//HTTP_STATUS_PROXY_AUTH_REQ
-				//HTTP_STATUS_DENIED
+				//401 -- HTTP_STATUS_PROXY_AUTH_REQ
+				//403 -- HTTP_STATUS_FORBIDDEN
+				//407 -- HTTP_STATUS_DENIED
+				FTLTRACEEX(tlError, TEXT("CFDownloadJob::_SendRequest, StatusCode is Error %d\n"), dwStatusCode);
+				//SetLastError(dwStatusCode);
 				bRet = FALSE;
-
 				//_NotifyResult(jobInfo, IFInternetCallback::ecERROR, dwStatusCode, TEXT("HttpOpenRequest"));
 			}
 		}
@@ -2363,12 +2466,15 @@ namespace FTL
 			if (INVALID_HANDLE_VALUE != hLocalFile)
 			{
 				_NotifyProgress(IFInternetCallback::sStart);
-
-				DWORD dwRead = INTERNET_BUFFER_SIZE;
+				DWORD dwRead = 0;
 				DWORD dwWriteToLocal = 0;
-				BYTE* pBuffer = new BYTE[INTERNET_BUFFER_SIZE];
+				DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
+				BYTE* pBuffer = new BYTE[dwBufferSize];
 				do 
 				{
+#ifdef FTL_DEBUG
+					ZeroMemory(pBuffer, dwBufferSize);
+#endif
 					dwRead = INTERNET_BUFFER_SIZE;
 					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwRead, &dwRead));
 					if (bRet && dwRead > 0)
@@ -2456,8 +2562,11 @@ namespace FTL
 
 	BOOL CFInternetTransfer::Stop()
 	{
-		BOOL bRet = FALSE;
-
+		BOOL bRet = TRUE;
+		if (m_pThreadPool)
+		{
+			API_VERIFY(m_pThreadPool->StopAndWait());
+		}
 		return bRet;
 	}
 
@@ -2470,7 +2579,7 @@ namespace FTL
 	{
 		FTLASSERT(m_pThreadPool);
 		FTLASSERT(pUploadJobInfo);
-		FTLASSERT(!pUploadJobInfo->m_bUploadJob);
+		//FTLASSERT(pUploadJobInfo->m_bUploadJob);
 
 		BOOL bRet = FALSE;
 		INT nJobIndex = 0;
@@ -2480,6 +2589,23 @@ namespace FTL
 			API_VERIFY(m_pThreadPool->SubmitJob(pJob, pUploadJobInfo, &nJobIndex));
 		}
 		return nJobIndex;
+	}
+
+	INT CFInternetTransfer::AddDownloadTask(FTransferJobInfo* pDownloadJobInfo, LPCTSTR pszLocalFilePath)
+	{
+		FTLASSERT(m_pThreadPool);
+		FTLASSERT(pDownloadJobInfo);
+		//FTLASSERT(!pDownloadJobInfo->m_bUploadJob);
+
+		BOOL bRet = FALSE;
+		INT nJobIndex = 0;
+		if (m_pThreadPool)
+		{
+			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_pCallBack, m_strAgent, pszLocalFilePath);
+			API_VERIFY(m_pThreadPool->SubmitJob(pDownloadJob, pDownloadJobInfo, &nJobIndex));
+		}
+		return nJobIndex;
+
 	}
 
 	INT CFInternetTransfer::AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath )
