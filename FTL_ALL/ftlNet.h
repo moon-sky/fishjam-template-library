@@ -24,7 +24,7 @@
 
 //默认的网络数据BufferSize
 #ifndef INTERNET_BUFFER_SIZE
-#  define	INTERNET_BUFFER_SIZE	4096
+#  define	INTERNET_BUFFER_SIZE	(4096 * 4)
 #endif //INTERNET_BUFFER_SIZE
 
 /*************************************************************************************************************************
@@ -353,11 +353,12 @@
 *                       <input type="file" name="uploadfile2"/>
 *                       <input type="submit" value="uploadfile"/>
 *                    </form>
-*    1. 使用 "Content-Type: multipart/form-data; boundary=--{boundary}" 声明使用多表单分，且指定分割表单中不同部分数据的符号
+*    1. HttpAddRequestHeaders部分
+*       使用 "Content-Type: multipart/form-data; boundary={boundary}" 声明使用多表单分，且指定分割表单中不同部分数据的符号
 *       (可自定义或随即产生，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
-*    2. 多个部分内容，有 Content-Disposition 和 Content-Type， 如(参数信息、二进制原始信息)，
-*       每一部分用 --{boundary} 分开(注意前面多两个 "--" )
-*    3. 使用 --{boundary}-- 表示结束(注意前后各多两个 "--" )
+*    2. Post参数部分：多个部分内容，有 Content-Disposition 和 Content-Type， 如(参数信息、二进制原始信息)，
+*       每一部分用 {boundary} CRLF 分开, 注意二进制文件尾部也需要 CRLF，(二进制数据开始时需要两个 CRLF ?)
+*    3. 使用 {boundary}-- 表示结束(注意后面多两个 "--" )
 *
 *  连接类型( HTTP/1.1 默认使用带流水线的持久连接 )
 *    非持久连接(NonPersistent Connection) -- HTTP/1.0，每一次数据传送都需要重新打开/关闭TCP连接
@@ -395,7 +396,7 @@
 *   3.服务器返回响应信息，格式为一个状态行，包括信息的协议版本号、一个成功或错误的代码，后边是MIME信息包括服务器信息、实体信息和可能的内容
 * 
 * 头域(Headers)，主要数据前的原信息(Meta Information)，用于向服务器提供本次请求的相关信息，格式为 "域名:域值"
-*   每个描述部分用"\r\n"分开，结束处有两个"\r\n"，通过 HttpAddRequestHeaders 加入?
+*   每个描述部分用"CRLF"分开，结束处有两个"CRLF"，通过 HttpAddRequestHeaders 加入?
 *   [M]Accept: text/plain, x/x(注意：此处本来是*号)，表示Client能够接收得种类和类型
 *   [O]Accept-Charset: GBK, utf-8
 *   [O]Accept-Encoding: gzip, deflate
@@ -418,7 +419,7 @@
 *        text/html;charset=gb2312  <== HTML
 *        
 *   []Content-Disposition: -- 不是HTTP标准，但广泛实现。
-*     可传输二进制文件(前面必须有 ----{boundary}), 其后接保存时的建议文件名。
+*     可传输二进制文件(前面必须有 --{boundary}), 其后接保存时的建议文件名。
       协议头时：form-data; name=\"attach_file\"; filename=\"xxxx\"    -- 其中的 "attach_file" 是HTML元素名(和服务器有关)
       协议尾时：form-data; name=\"icount\" + CRLF + CRLF + _T("1") + CRLF +   -- 其中的 icount 也是服务器相关的?
       \"submitted\"
@@ -865,9 +866,9 @@ namespace FTL
 	enum FTransferParamType
 	{
 		tptUnknown,
-		tptText,
-		tptPostArgument,	//目前唯一需要外界提供的是 Cookie,
-		tptRequestHeader,	//HttpAddRequestHeaders
+		//tptText,
+		tptPostArgument,
+		tptRequestHeader,	//HttpAddRequestHeaders,目前唯一需要外界提供的是 Cookie,
 		tptLocalFile,		//本地文件，Value是文件路径
 	};
 	struct FTransferParam
@@ -994,6 +995,7 @@ namespace FTL
 		};
 		std::list<PostArgumentParam*>	m_postArgumentParams;
 		std::list<PostFileParam*>		m_postFileParams;
+		PostArgumentParam*				m_pEndBoundaryPostParam;
 
 		//translate m_transferParams to m_postArgumentParams and m_postFileParams
 		FTLINLINE BOOL  _TranslatePostParams();
@@ -1005,9 +1007,10 @@ namespace FTL
 		FTLINLINE LONG64 _CalcContentLength();
 		FTLINLINE BOOL	_SendRequestHeader();
 		FTLINLINE BOOL  _SendUploadData();
-		FTLINLINE BOOL  _SendPosArgument(PBYTE pBuffer, DWORD dwBufferSize);
+		FTLINLINE BOOL  _SendPostArgument(PBYTE pBuffer, DWORD dwBufferSize);
 		FTLINLINE BOOL	_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize);
-		FTLINLINE LPSTR _AllocMultiCharBuffer(LPCWSTR pwszInfo, UINT nCodePage);
+		FTLINLINE BOOL  _SendEndBoundary(PBYTE pBuffer, DWORD dwBufferSize);
+		//FTLINLINE LPSTR _AllocMultiCharBuffer(LPCWSTR pwszInfo, UINT nCodePage);
 	};
 
 	class CFDownloadJob : public CFTransferJobBase
@@ -1024,11 +1027,11 @@ namespace FTL
 	class CFInternetTransfer
 	{
 	public:
-		FTLINLINE CFInternetTransfer( IFInternetCallback* pCallBack );
+		FTLINLINE CFInternetTransfer( );
 		FTLINLINE virtual ~CFInternetTransfer( void );
 
 		FTLINLINE BOOL IsStarted();
-		FTLINLINE BOOL Start(LONG nMinParallelCount = 1, LONG nMaxParallelCount = 4, LPCTSTR pszAgent = NULL);
+		FTLINLINE BOOL Start(IFInternetCallback* pCallBack, LONG nMinParallelCount = 1, LONG nMaxParallelCount = 4, LPCTSTR pszAgent = NULL);
 		FTLINLINE BOOL Stop();
 		FTLINLINE void Close();
 		
@@ -1062,13 +1065,13 @@ namespace FTL
 	};
 
 	//////////////////////////////////////////////////////////////////////////
+#if 0
 	#define __HTTP_VERB_GET			TEXT("GET")
 	#define __HTTP_VERB_POST		TEXT("POST")
 	#define __HTTP_ACCEPT_TYPE		TEXT("*/*")
 	#define __HTTP_ACCEPT			TEXT("Accept: */*\r\n")
 	#define __SIZE_BUFFER			1024
 
-#if 0
 	//TODO:TimeOut
 	class CFGenericHTTPClient
 	{

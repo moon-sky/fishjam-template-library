@@ -14,7 +14,7 @@
 #include <list>
 #include <sstream>
 #include "ftlTypes.h"
-#include <WinSock2.h>
+//#include <WinSock2.h>
 namespace FTL
 {
     //STL中没有实现 copy_if -- 为什么？
