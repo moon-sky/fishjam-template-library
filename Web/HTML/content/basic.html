@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title> basic </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <meta name="Generator" content="EditPlus" />
+    <meta name="Author" content="" />
+    <meta name="Keywords" content="" />
+    <meta name="Description" content="" />
+    
+    <link rel="stylesheet" type="text/css" href="../css/c3.css" />
+  </head>
+
+  <body>
+    <h2>定义</h2>
+    <table class="dataintable">
+      <tr>
+        <!-- 表格头 -->
+        <th>格式</th>
+        <th>描述</th>
+      </tr>
+      
+      <tr><td>块级元素</td><td>block level element(如 h1,p,ul,table 等)， 浏览器显示时，通常会以新行来开始和结束</td></tr>
+      <tr><td>内联元素</td><td>inline element(如 b,td,a,img 等)， 浏览器显示时，通常不会以新行开始</td></tr>
+    </table>
+    
+    <br />
+    
+    <h2>常见元素</h2>
+    <table class="dataintable">
+      <tr>
+        <!-- 表格头 -->
+        <th>格式</th>
+        <th>描述</th>
+      </tr>
+      
+      <tr><td>a</td>
+        <td>
+          超链接(anchor), "URL#锚名" 的方式可以直接跳转到指定 URL 的指定书签位置 <br />
+          &lt;href=<a href="http://www.baidu.com" target="_blank">"http://www.baidu.com"&gt;</a>指向另一个文档<br />
+          &lt;id="pageBottom"&gt; 创建文档内的书签(也称为锚, 不可见,只用于定位)，然后通过 <a href="#pageBottom">pageBottom</a>链接跳转 <br />
+          MailSample: <a href="mailto:fishjam@163.com?cc=fishjam@qq.com&subject=Hello%20World&body=This%20is%20a%20sample%20EMail.">
+            EMail Send "Hello World"</a>
+        </td>
+      </tr>
+      <tr><td>br/</td><td>换行</td></tr>
+      <tr><td>div[块级]</td><td>文档中的节或区域(块级)，可以组合其他HTML元素，常用于 文档布局</td></tr>
+      <tr><td>h1~h6</td><td>标题</td></tr>
+      <tr><td>hr/</td><td>水平线</td></tr>
+      <tr><td>img</td>
+      <td>图像高级用法(图像映射image-map -- 带有可供点击区域的图像地图。其中的每个星球都是一个超级链接) <br />
+        <img src="../img/planets.jpg" border="0" usemap="#planetmap" alt="Planets" />
+        <map name="planetmap" id="planetmap">
+          <area shape="circle" coords="180,139,14" href ="../etc/venus.html" target ="_blank" alt="Venus" title="金星" />
+          <area shape="circle" coords="129,161,10" href ="../etc/mercur.html" target ="_blank" alt="Mercury" title="水星" />
+          <area shape="rect" coords="0,0,110,260" href ="../etc/sun.html" target ="_blank" alt="Sun" title="太阳" />
+        </map>
+        </td>
+      </tr>
+      <tr><td>list(ul/ol/dl)</td>
+        <td>
+          <ul type="circle"><li>无序列表(ul -> li)</li></ul>
+          <ol type="a"><li>有序列表(ol -> li)</li></ol>
+          <dl><dt>自定义列表</dt><dd>(dl -> dd/dt)</dd></dl>
+        </td>
+      </tr>
+      <tr><td>p</td><td>段落,浏览器会自动地在段落的前后添加空行</td></tr>
+      <tr><td>span[内联]</td><td>通常用作文本的容器</td></tr>
+      <tr><td>table</td><td>表格, tr(表格行) -- th(表格头) / td(表格数据), 属性中 colspan/rowspan 可跨行或跨列</td></tr>
+    </table>
+  
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    
+    <a id="pageBottom">pageBottom</a>
+    
+  </body>
+</html>
