@@ -7,10 +7,20 @@
     <meta name="Author" content="fishjam" />
     <meta name="Keywords" content="" />
     <meta name="Description" content="HTML Test Framework" />
+    
   </head>
 
-  <frameset cols="10%,90%">
-    <frame src="list.html">
-    <frame id="content" src="content/default_content.html">
+  <frameset rows="10%,85%,5%">
+    <frame noresize="noresize" src="header.html">
+    <frameset cols="150,*">
+      <frame name="contentList" src="list.html">
+      <frame name="contentViewer" src="default_content.html">
+    </frameset>
+    <frame src="footer.html">
   </frameset>
+  
+  <noframes>
+    <!--不支持框架的浏览器的异常处理 -->
+    <body>您的浏览器无法处理框架！</body>
+  </noframes>
 </html>

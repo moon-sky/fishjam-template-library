@@ -44,9 +44,13 @@
         </td>
       </tr>
       <tr><td>br/</td><td>换行</td></tr>
-      <tr><td>div[块级]</td><td>文档中的节或区域(块级)，可以组合其他HTML元素，常用于 文档布局</td></tr>
+      <tr><td>div[块级]</td><td>文档中的节或区域(块级)，可以组合其他HTML元素，常用于 文档布局(如通过 float:left 等指定布局位置)</td></tr>
+      <tr><td><a href="form.html" target="_self">form</a></td><td>表单</td></tr>
+      <tr><td><a href="form.html#fieldset_demo" target="_self">fieldset + legend</td><td>带标题的框,类似GroupBox,甚至可以增加子表单</td></tr>
+      <tr><td>frameset + frame</td><td><p>框架，可以在同一个浏览器窗口中显示不止一个页面(垂直:cols; 水平:rows)</p><p>坏处：很难打印整张页面</p></td></tr>
       <tr><td>h1~h6</td><td>标题</td></tr>
       <tr><td>hr/</td><td>水平线</td></tr>
+      <tr><td>iframe</td><td>内联框架(HTML 页中的框架)，可通过 src 属性指向其他的 html 等</td></tr>
       <tr><td>img</td>
       <td>图像高级用法(图像映射image-map -- 带有可供点击区域的图像地图。其中的每个星球都是一个超级链接) <br />
         <img src="../img/planets.jpg" border="0" usemap="#planetmap" alt="Planets" />
@@ -55,6 +59,12 @@
           <area shape="circle" coords="129,161,10" href ="../etc/mercur.html" target ="_blank" alt="Mercury" title="水星" />
           <area shape="rect" coords="0,0,110,260" href ="../etc/sun.html" target ="_blank" alt="Sun" title="太阳" />
         </map>
+        </td>
+      </tr>
+      <tr><td>label</td>
+        <td>如果在label元素内点击文本,则会触发对应的控件( for属性=控件的id )<br />
+           <label for="male">男</label><input type="radio" name="sex" id="male" />
+           <label for="female">女</label><input type="radio" name="sex" id="female" />
         </td>
       </tr>
       <tr><td>list(ul/ol/dl)</td>
