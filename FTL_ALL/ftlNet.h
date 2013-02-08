@@ -24,7 +24,7 @@
 
 //默认的网络数据BufferSize
 #ifndef INTERNET_BUFFER_SIZE
-#  define	INTERNET_BUFFER_SIZE	(4096 * 4)
+#  define	INTERNET_BUFFER_SIZE	4096
 #endif //INTERNET_BUFFER_SIZE
 
 /*************************************************************************************************************************

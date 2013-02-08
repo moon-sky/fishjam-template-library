@@ -2361,9 +2361,9 @@ namespace FTL
 		DWORD dwInfoSize = sizeof(nContentLength);
 		//FTLASSERT(!m_strLocalFilePath.IsEmpty());
 
-		//API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
-		//	&nContentLength, &dwInfoSize, NULL));
-		//if (bRet)
+		API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
+			&nContentLength, &dwInfoSize, NULL));
+		if (bRet)
 		{
 			DWORD dwRead = 0;
 			DWORD dwWriteToLocal = 0;
