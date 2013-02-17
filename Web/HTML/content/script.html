@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>JavaScript</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <meta http-equiv="Content-Language" content="zh-cn" />
+    <meta name="Generator" content="EditPlus" />
+    <meta name="Author" content="fishjam" />
+    <meta name="Keywords" content="HTML Tester" />
+    <meta name="Description" content="HTML, DHTML, XML, XHTML" />
+    
+    <link rel="stylesheet" type="text/css" href="../css/c3.css" />
+  </head>
+
+  <body>
+    <h2 align="center">Script使 HTML 页面具有更强的动态和交互性，常用于图片操作、表单验证以及内容动态更新</h2>
+
+    <table class="dataintable">
+      <tr>
+        <th>格式</th>
+        <th>描述</th>
+      </tr>
+      <tr><td>&lt;script type="text/xxx" [src="xxx"] &gt;</td><td>定义客户端脚本，比如 JavaScript，可内联也可通过 src 属性指向外部脚本文件</td></tr>
+      <tr><td>&lt;noscript&gt; 显示内容 &lt;/noscript&gt;</td><td>不支持或禁用脚本的浏览器将显示 noscript 元素中的文本</td></tr>
+      <tr><td>JavaScript(各种浏览器都支持，推荐)</td>
+        <td>
+          <script type="text/javascript">
+            <!-- //通过使用注释的方式避免无法识别 script 标签的老浏览器直接将脚本内容显示出来
+              document.write("<h3>Hello World!</h3>")
+            //-->
+          </script>
+          <noscript>不支持或禁用JavaScript的浏览器</noscript>
+        </td>
+      </tr>
+
+      <tr><td>VBScript(只有IE才支持)</td>
+        <td>
+          <noscript>不支持或禁用VBScript的浏览器</noscript>
+          <script type="text/vbscript">
+            document.write("<h3>Hello World!</h3>")
+          </script>
+        </td>
+      </tr>
+
+    </table>
+
+    
+  </body>
+
+</html>

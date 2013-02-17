@@ -3,63 +3,86 @@
 
   <head>
     <title>表单</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
     <meta http-equiv="Content-Language" content="zh-cn" />
     <meta name="Generator" content="EditPlus" />
-    <meta name="Author" content="" />
-    <meta name="Keywords" content="" />
-    <meta name="Description" content="" />
+    <meta name="Author" content="fishjam" />
+    <meta name="Keywords" content="HTML Tester" />
+    <meta name="Description" content="HTML, DHTML, XML, XHTML" />
+    <link rel="stylesheet" type="text/css" href="../css/c3.css" />
   </head>
   
   <body>
-    <form action="http://www.w3school.com.cn/html/html_form_action.asp" method="get">
-    <a id="fieldset_demo"></a>
-    <fieldset>
-    <legend>表单动作确认测试(http://www.w3school.com.cn/html/html_form_action.asp)</legend>
-    
-      用户名：<input type="text" name="user" size="40"/>文本域的缺省宽度是20个字符，这里改成了40<br />
-      提交按钮：<button type ="submit"> Submit </button><br />
-      取消按钮：<button type="reset" >Reset</button><br />
-      普通按钮：<input type="button" value="Hello world!"/><br />
-    </fieldset>
-      <br />
-    
-      密码区域：<input type="password" name="pwdInput" /><br />
-      长文本输入：<textarea rows="10" cols="30"></textarea><br />
+    <div>
+      <h2>比较 GET 与 POST</h2>      <table class="dataintable">
+        <tr>
+          <th style="width:20%;">&nbsp;</th>          <th>GET</th>
+          <th>POST</th>
+        </tr>
+        <tr><td>后退按钮/刷新</td><td>无害</td><td>数据会被重新提交（浏览器应该告知用户数据会被重新提交）。</td></tr>        <tr><td>书签</td><td>可收藏为书签</td><td>不可收藏为书签</td></tr>
+        <tr><td>缓存</td><td>能被缓存</td><td>不能缓存</td></tr>
+        <tr><td>编码类型</td><td>application/x-www-form-urlencoded</td><td>application/x-www-form-urlencoded 或 multipart/form-data。为二进制数据使用多重编码。</td></tr>
+        <tr><td>历史</td><td>参数保留在浏览器历史中。</td><td>参数不会保存在浏览器历史中。</td></tr>
+        <tr><td>对数据长度的限制</td><td>有。最大长度2048个字符）。</td><td>无限制。</td></tr>
+        <tr><td>对数据类型的限制</td><td>只允许ASCII字符。</td><td>没有限制。也允许二进制数据。</td></tr>
+        <tr><td>安全性</td><td>所发送的数据是URL的一部分，安全性很差，</td><td>参数不会被保存在浏览器历史或web服务器日志中。更安全</td></tr>
+        <tr><td>可见性</td><td>数据在 URL 中对所有人都是可见的。</td><td>数据不会显示在 URL 中。</td></tr>      </table>
+    </div>
+  
+    <br />
+    <dir>
+      <h2>常见的Form控件</h2>            <form action="http://www.w3school.com.cn/html/html_form_action.asp" method="get">
+      <a id="fieldset_demo"></a>
+      <fieldset>
+      <legend>表单动作确认测试(http://www.w3school.com.cn/html/html_form_action.asp)</legend>
+      
+        用户名(text)：<input type="text" name="user" size="40" maxlength="100" value="fishjam"/>文本域的缺省宽度是20个字符，这里改成了40<br />
+        提交按钮(submit)：<button type ="submit"> Submit </button><br />
+        取消按钮(reset)：<button type="reset" >Reset</button><br />
+        普通按钮(button)：<input type="button" value="Hello world!"/><br />
+        隐藏输入(hidden)：<input type="hidden" name="hiddenname" value="hiddenvalue" /><br />
+        文件(file)：<input type="file" name="srcFile" /><br />
+      </fieldset>
+        <br />
+      
+        密码区域(password)：<input type="password" name="pwdInput" /><br />
+        长文本输入(textarea)：<textarea rows="10" cols="50"></textarea><br />
 
-      单选按钮(支持标签切换)：
-        <label for="male"><input type="radio" name="sex" value="male" id="male" checked="checked"/>男</label>
-        <label for="female"><input type="radio" name="sex" value="female" id="female" />女</label>
-      <br />
-      复选按钮：
-        <input type="checkbox" name="bike" />自行车
-        <input type="checkbox" name="car" />汽车
-        <input type="checkbox" name="plane" />飞机
-      <br />
-      下拉列表：
-        <select name="星期">
-          <option value="0">星期日</option>
-          <option value="1">星期一</option>
-          <option value="2">星期二</option>
-          <option value="3">星期三</option>
-          <option value="4">星期四</option>
-          <option value="5" selected="selected">星期五</option>
-          <option value="6">星期六</option>
-         </select>
-       <br />
-      选项组：
-        <select>
-          <optgroup label="瑞典车">
-            <option value="volvo">Volvo</option>
-            <option value="saab">Saab</option>
-          </optgroup>
-          <optgroup label="德国车">
-            <option value="mercedes">Mercedes</option>
-            <option value="audi">Audi</option>
-          </optgroup>
-        </select>
-      <br />
-    </form>
+        单选按钮(radio,支持标签切换)：
+          <label for="male"><input type="radio" name="sex" value="male" id="male" checked="checked"/>男</label>
+          <label for="female"><input type="radio" name="sex" value="female" id="female" />女</label>
+        <br />
+        复选按钮(checkbox)：
+          <input type="checkbox" name="bike" />自行车
+          <input type="checkbox" name="car" />汽车
+          <input type="checkbox" name="plane" />飞机
+        <br />
+        下拉列表(select-option)：
+          <select name="星期">
+            <option value="0">星期日</option>
+            <option value="1">星期一</option>
+            <option value="2">星期二</option>
+            <option value="3">星期三</option>
+            <option value="4">星期四</option>
+            <option value="5" selected="selected">星期五</option>
+            <option value="6">星期六</option>
+           </select>
+         <br />
+        选项组(select-optgroup)：
+          <select>
+            <optgroup label="瑞典车">
+              <option value="volvo">Volvo</option>
+              <option value="saab">Saab</option>
+            </optgroup>
+            <optgroup label="德国车">
+              <option value="mercedes">Mercedes</option>
+              <option value="audi">Audi</option>
+            </optgroup>
+          </select>
+        <br />
+      </form>
+    </dir>
+
     
   </body>
 </html>

@@ -4,9 +4,9 @@
     <title> basic </title>
     <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
     <meta name="Generator" content="EditPlus" />
-    <meta name="Author" content="" />
-    <meta name="Keywords" content="" />
-    <meta name="Description" content="" />
+    <meta name="Author" content="fishjam" />
+    <meta name="Keywords" content="HTML Tester" />
+    <meta name="Description" content="HTML, DHTML, XML, XHTML" />
     
     <link rel="stylesheet" type="text/css" href="../css/c3.css" />
   </head>
@@ -43,6 +43,9 @@
             EMail Send "Hello World"</a>
         </td>
       </tr>
+      <tr><td>address</td><td><address>地址信息 1<br>地址信息 2<br>城市<br></address></td></tr>
+      <tr><td>blockquote</td><td>Text quoted from some source</td></tr>
+      <tr><td>body</td><td>内容区域</td></tr>
       <tr><td>br/</td><td>换行</td></tr>
       <tr><td>div[块级]</td><td>文档中的节或区域(块级)，可以组合其他HTML元素，常用于 文档布局(如通过 float:left 等指定布局位置)</td></tr>
       <tr><td><a href="form.html" target="_self">form</a></td><td>表单</td></tr>
@@ -50,7 +53,18 @@
       <tr><td>frameset + frame</td><td><p>框架，可以在同一个浏览器窗口中显示不止一个页面(垂直:cols; 水平:rows)</p><p>坏处：很难打印整张页面</p></td></tr>
       <tr><td>h1~h6</td><td>标题</td></tr>
       <tr><td>hr/</td><td>水平线</td></tr>
-      <tr><td>iframe</td><td>内联框架(HTML 页中的框架)，可通过 src 属性指向其他的 html 等</td></tr>
+      <tr><td>iframe</td>
+        <td>
+          内联框架(HTML 页中的框架)，可通过 src 属性指向其他的 html 等
+          <ul>
+            <li>设置name属性后，可作为链接的target</li>
+            <li>有些老的浏览器不支持iframe</li>
+            <li>可通过height和width设置高宽</li>
+            <li>frameborder=0 可移除边框</li>
+            <li>scrolling=yes|no|auto, 控制是否显示滚动条</li>
+          </ul>
+        </td>
+      </tr>
       <tr><td>img</td>
       <td>图像高级用法(图像映射image-map -- 带有可供点击区域的图像地图。其中的每个星球都是一个超级链接) <br />
         <img src="../img/planets.jpg" border="0" usemap="#planetmap" alt="Planets" />

@@ -1,17 +1,57 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>advance</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=gb2312">
-    <meta http-equiv="Content-Language" content="zh-cn" />
-    <meta name="Generator" content="EditPlus" />
-    <meta name="Author" content="" />
-    <meta name="Keywords" content="" />
-    <meta name="Description" content="" />
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312"></meta>
+    <meta http-equiv="Content-Language" content="zh-cn"></meta>
+    <meta name="Generator" content="EditPlus"></meta>
+    <meta name="Author" content="fishjam"></meta>
+    <meta name="Keywords" content="HTML Tester"></meta>
+    <meta name="Description" content="HTML, DHTML, XML, XHTML"></meta>
+    <link rel="stylesheet" type="text/css" href="../css/c3.css"></link>
   </head>
   
   <body>
-    advance
+
+    <h2>高级内容</h2>
+    <table class="dataintable">
+      <tr>
+        <!-- 表格头 -->
+        <th>格式</th>
+        <th>描述</th>
+      </tr>
+      <tr><td>applet</td><td>Java的小程序?</td></tr>
+      <tr><td>&lt;!DOCTYPE &gt;</td>
+        <td>告知浏览器该文档使用哪种 <strong>HTML</strong> 或 <strong>XHTML</strong> 规范。该标签可声明三种 DTD 类型，分别表示不同的HTML 文档
+          <ul  style="text-align:left">
+            <li>严格版本( strict.dtd | xhtml1-strict.dtd )</li>
+            <li>过渡版本( loose.dtd | xhtml1-transitional.dtd )</li>
+            <li>基于框架( frameset.dtd | xhtml1-frameset.dtd )</li>
+          </ul>
+          如 &lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Strict//EN&quot; &quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&quot;&gt; <br />
+          声明了文档的根元素是 html，它在公共标识符被定义为 "-//W3C//DTD XHTML 1.0 Strict//EN" 的 DTD 中进行了定义，<br />
+          浏览器将明白如何寻找匹配此公共标识符的 DTD。如果找不到，浏览器将使用公共标识符后面的 URL 作为寻找 DTD 的位置。
+        </td>
+      </tr>
+      <tr><td>head</td>
+        <td>
+          <h3>所有头部元素的容器，可包含脚本，样式表，元信息等等</h3>
+          <table class="dataintable">
+            <tr><td>&lt;base target="_blank" /&gt;</td><td>为页面上的所有链接规定默认地址(<strong>href</strong>)或默认目标(<strong>target</strong>),如本例在新窗口中打开,可参见<strong> list.html </strong></td></tr>
+            <tr><td>&lt;link type=xxx href=xxx &gt;</td><td>定义文档与外部资源之间的关系，常用于连接CSS</td></tr>
+            <tr><td>&lt;meta name=xxx content=xxx &gt;</td><td>提供关于 HTML 文档的元数据，提供 描述、关键词(Keywords)、作者(Author)、最后修改时间(revised) 等信息 </td></tr>
+            <tr><td>&lt;script &gt;</td><td>定义客户端脚本，如 JavaScript 等</td></tr>
+            <tr><td>&lt;style &gt;</td><td>定义HTML 元素在浏览器中呈现的样式</td></tr>
+          </table>
+        </td>
+      </tr>
+      <tr><td>meta中的refresh</td><td>重定向到新的网址：如<code> &lt;meta http-equiv="refresh" content="5;url=http://www.w3school.com.cn" &gt;</code> 将在5秒后重定向</td></tr>
+
+      <tr><td>object 或 embed</td><td>插件,扩展浏览器标准功能，如 播放音乐、显示地图、验证银行账号，控制输入等</td></tr>
+      
+    </table>
+    
+    <br />
+
   </body>
 </html>
