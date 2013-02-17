@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>MultiMedia</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <meta http-equiv="Content-Language" content="zh-cn" />
+    <meta name="Generator" content="EditPlus" />
+    <meta name="Author" content="fishjam" />
+    <meta name="Keywords" content="HTML Tester" />
+    <meta name="Description" content="HTML, DHTML, XML, XHTML" />
+    
+    <link rel="stylesheet" type="text/css" href="../css/c3.css" />
+  </head>
+
+  <body>
+    <!-- http://www.w3school.com.cn/xhtml/index.asp -->
+    <ul style="text-align:left">
+      <li>为了解决兼容性问题(参见“最佳实例”)，最好的方式是 audio/video + object/embed + 多种媒体文件类型 的嵌套方式 -- 优先尝试HTML5能播放的各种source，如果失败会回退使用旧的插件方式 </li>
+    </ul>
+    
+    <table class="dataintable">
+      <tr>
+        <th>方式</th>
+        <th>示例</th>
+      </tr>
+      <tr><td>最佳实例</td>
+        <td>
+          <audio controls="controls">
+            <source src="../media/song.ogg" type="audio/ogg">
+            <source src="../media/song.mp3" type="audio/mpeg">
+            <object data="../media/song.mp3">
+              <embed src="../media/song.mp3" />
+            </object>
+            不能播放音频文件
+          </audio>
+        </td>
+      </tr>
+      <tr><td><a href="http://www.w3school.com.cn/tiy/t.asp?f=html_audio_yahoo" target="_blank" >雅虎媒体播放器</a></td><td>在网页中插入JavaScript的地址，把音乐文件通过 &lt;a&gt; 链接到网页中即可</td></tr>
+      <tr><td><a href="http://www.w3school.com.cn/tiy/t.asp?f=html_video_youku" target="_blank" >使用Youku显示视频</a></td><td>把视频上传到优酷等视频网站，通过 embed src="视频.swf的URL地址" type="application/x-shockwave-flash"即可</td></tr>
+      <tr><td>object，QuickTime 播放 MP4</td>
+        <td>
+          <object width="320" height="240" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab">
+            <param name="src" value="../media/movie.mp4" />
+            <param name="controller" value="true" />
+            不能使用object元素
+          </object> 
+        </td>
+      </tr>
+      
+      <tr><td>object，Flash 播放 SWF</td>
+        <td> 
+          <object width="400" height="40" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab">
+            <param name="src" value="../media/bookmark.swf" />
+            <param name="controller" value="true" />
+            不能使用object元素
+          </object> 
+        </td>
+      </tr>
+
+      <tr><td>object，Windows Media Player 来播放 WMV</td>
+        <td> 
+          <object width="100%" height="100%" type="video/x-ms-asf" url="../media/wmv.wmv" data="../media/wmv.wmv" classid="CLSID:6BF52A52-394A-11d3-B153-00C04F79FAA6">
+            <param name="url" value="../media/wmv.wmv">
+            <param name="filename" value="wmv.wmv">
+            <param name="autostart" value="1">
+            <param name="uiMode" value="full" />
+            <param name="autosize" value="1">
+            <param name="playcount" value="1">                              
+            <embed type="application/x-mplayer2" src="wmv.wmv" width="100%" height="100%" autostart="true" showcontrols="true" pluginspage="http://www.microsoft.com/Windows/MediaPlayer/"></embed>
+            不能使用object元素
+          </object>
+        </td>
+        
+      </tr>
+    </table>
+  </body>
+
+</html>
