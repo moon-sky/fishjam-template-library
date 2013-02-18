@@ -3,6 +3,13 @@
 
 #pragma once
 
+/*************************************************************************************************************************
+* 已读例子
+*   netds\http\server -- HTPP 服务器
+*   netds\winsock\mcastip -- 多播，有两个版本，分别使用 setsockopt 和 WSAJoinLeaf 实现
+*************************************************************************************************************************/
+#pragma TODO(wsock32.lib 和 ws2_32.lib 的区别)
+
 #ifndef FTL_BASE_H
 #  error ftlNet.h requires ftlbase.h to be included first
 #endif
@@ -13,9 +20,9 @@
 
 //目前两个版本有冲突，可以通过删除 winhttp.h 中冲突的部分，并将改后的文件放在工程中的方法来解决
 #ifdef USE_WIN_HTTP
-#  include <winhttp.h>	//加强版
+#  include <winhttp.h>	//加强版，通常编写需要 特别功能的客户端(如？) 和 服务器
 #else
-#  include <WinInet.h>	//基础版
+#  include <WinInet.h>	//基础版，通常编写客户端
 #endif
 
 #pragma TODO(now just use CAtlString)
@@ -130,10 +137,56 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
-* 组播用的是D类IP地址224.0.0.0 -- 需要对方加入你的组播组
-* 子网广播 -- 广播得看你的网络号是几位的，现在都是CIDR标记路由，主机号全1就是广播地址
-*   分为单路广播和多路广播?
-* 广播和多播不能用于TCP?
+* 广播和多播必须使用 UDP 套接字才能实现
+*   
+* 多播/组播(multicast) -- 一(多播源)对多(加入多播组中的主机)，典型应用是多人(音视频)会议，
+*   多播地址：
+*     IPV4 -- D类(224.0.0.0 ~ 239.255.255.255)，具体分为三种：局部链接多播地址、预留多播地址、管理权限多播地址
+*       NTP(网络时间协议组) -- 224.0.1.1
+*     IPV6 -- 前面是 ff12:: ?
+*   编码流程
+*   1.创建多播的Socket
+*     WinSock1.1: socket(AF_INET[6], SOCK_DGRAM, IPPROTO_UDP);
+*     WinSock2.2: WSASocket(AF_INET[6], SOCK_DGRAM, IPPROTO_UDP, NULL, 0, 
+*        WSA_FLAG_MULTIPOINT_C_LEAF | WSA_FLAG_MULTIPOINT_D_LEAF); //WSA_FLAG_OVERLAPPED
+*        在控制层面和数据层面都是"无根的"，只存在叶节点，可以任意加入一个多播组；从一个叶节点发送的数据会传送到每一个叶节点（包括它自己）
+*   2.bind -- 将创建好的套接字与本地地址和本地端口绑定起来
+*   3.通过本地的一个网络接口加入指定的多播组
+*     方法1:setsockopt -- 可以在一个socket上加入多个多播组
+*       IPV4:ip_mreq   mreqv4;
+*            mreqv4.imr_multiaddr.s_addr = ((SOCKADDR_IN *)group->ai_addr)->sin_addr.s_addr;
+*		     mreqv4.imr_interface.s_addr = ((SOCKADDR_IN *)iface->ai_addr)->sin_addr.s_addr;
+*            setsockopt(, IPPROTO_IP, IP_ADD_MEMBERSHIP, mreqv4); 
+*       IPV6:ipv6_mreq mreqv6;
+*			 mreqv6.ipv6mr_multiaddr = ((SOCKADDR_IN6 *)group->ai_addr)->sin6_addr;
+*            mreqv6.ipv6mr_interface = ((SOCKADDR_IN6 *)iface->ai_addr)->sin6_scope_id;
+*            setsockopt(, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, mreqv6); 
+*     方法2: WSAJoinLeaf -- 只能加入一个多播组(因此可以直接 connect ?)
+*            SOCKET rs = WSAJoinLeaf(xxx); 会返回一个socket(有什么用?)
+*   4.设置发送数据的网络接口 -- 和 4 中的本地网络接口 有什么区别？
+*       IPV4: optval = (char *) &((SOCKADDR_IN *)iface->ai_addr)->sin_addr.s_addr;
+*             optlen = sizeof(((SOCKADDR_IN *)iface->ai_addr)->sin_addr.s_addr);
+*             setsockopt(, IPPROTO_IP, IP_MULTICAST_IF, optval, optlen);
+*       IPV6: optval = (char *) &((SOCKADDR_IN6 *)iface->ai_addr)->sin6_scope_id;
+*             optlen   = sizeof(((SOCKADDR_IN6 *)iface->ai_addr)->sin6_scope_id);
+*             setsockopt(, IPPROTO_IPV6, IPV6_MULTICAST_IF, optval, optlen);
+*   5.其他可选项 -- setsockopt
+*     IP_MULTICAST_LOOP|IPV6_MULTICAST_LOOP  -- 允许或禁止多播通信时发送出去的通信流量是否也能够在同一个套接字上被接收（即多播返回）
+*     IP_MULTICAST_TTL|IPV6_MULTICAST_HOPS -- 设置多播传播的范围(TTL，缺省值是1 ?)
+*   6.connect[可选] -- 连接到多播服务器。如果是 2.2 必须连接？然后可以通过 send/recv 来传递数据？
+*   7.sendto/recvfrom(1.1) 或 send/recv(2.2) -- 向多播组地址发送或接受数据
+*     注意：IPV6的sendto时，多播组地址的sin6_scope_id必须是0. ((SOCKADDR_IN6 *)resmulti->ai_addr)->sin6_scope_id = 0;
+*   8.退出多播组：setsockopt(, IP_DROP_MEMBERSHIP
+*    
+* 广播(broadcast) -- 发送到网上所有的节点，网络广播有直播和点播两种主要播放形式
+*   子网广播 -- 广播得看你的网络号是几位的，现在都是CIDR标记路由，主机号全1就是广播地址，分为单路广播和多路广播？
+*    编码流程：
+*    setsockopt(sock, SOL_SOCKET, SO_BROADCAST, 1); -- 服务器端设置允许广播
+*    sendto(xxx.255)
+* 
+* 多播路由协议 -- 如 PIM(协议独立多播)、DVMRP等
+*   路由器可建立起从多播源节点到所有目的节点的多播路由表，从而实现在子网间转发多播数据包
+* Internet组管理协议 -- IGMP
 *************************************************************************************************************************/
 
 
@@ -201,6 +254,7 @@
 * 结构
 *   sockaddr_in/sockaddr_in6 -- 最基本的套接口地址结构，每个协议族都定义了它自己的套接口地址结构。其中地址和端口号必须以网络字节序保存
 *     AF_INET/AF_INET6
+*   SOCKADDR_STORAGE -- 代替 sockaddr ?拥有更多的信息
 *
 * socket API大致可以分为五类：
 *   A.本地环境管理，其信息通常保存在OS内核或系统库中
@@ -245,7 +299,8 @@
 *         FIONREAD -- 确认等待读取的数据长度
 *         SIOCATMARK -- 确认是否所有的OOB数据都已经读取完毕
 *   E.网络地址 -- 在可读性的名称(如域名)和低级网络地址(如IP)之间进行转换
-*     1.gethostbyname/gethostbyaddr -- 处理主机名和 IPV4 地址之间的网络地址映射, buffer的 最大长度为 MAXGETHOSTSTRUCT
+*     1.getaddrinfo(需要freeaddrinfo释放)/getnameinfo -- HOST名 和 地址(IPV4/IPV6) 之间 协议无关的转换
+*       gethostbyname/gethostbyaddr -- 处理主机名和 IPV4 地址之间的网络地址映射, buffer的 最大长度为 MAXGETHOSTSTRUCT
 *       WSAAsyncGetHostByName/WSAAsyncGetHostByAddr  -- 异步获取 主机/地址 信息，避免线程阻塞
 *         sockAddr.sin_addr.s_addr = ((LPIN_ADDR)((LPHOSTENT)pAsyncGetHostByNameBuffer)->h_addr)->s_addr;
 *     2.getipnodebyname/getipnodebyaddr -- 处理主机名和 IPV6 地址之间的网络地址映射
@@ -348,6 +403,7 @@
 *  协议由三部分组成：协议头，具体内容以及协议尾， 必须是ASCII格式？
 *    协议类型：
 *    使用多个表单项（同时传?）传递数据(HTTP POST-MultiPartFormData),典型情况是写邮件时的多个附件。
+*      此时服务器端 HTTP_REQUEST::Flags 会有 HTTP_REQUEST_FLAG_MORE_ENTITY_BODY_EXISTS
 *      HTML 中通常是 <form action="http://xxx" method="post" enctype="multipart/form-data">
 *                       <input type="file" name="uploadfile1"/>
 *                       <input type="file" name="uploadfile2"/>
@@ -359,6 +415,7 @@
 *    2. Post参数部分：多个部分内容，有 Content-Disposition 和 Content-Type， 如(参数信息、二进制原始信息)，
 *       每一部分用 {boundary} CRLF 分开, 注意二进制文件尾部也需要 CRLF，(二进制数据开始时需要两个 CRLF ?)
 *    3. 使用 {boundary}-- 表示结束(注意后面多两个 "--" )
+*    
 *
 *  连接类型( HTTP/1.1 默认使用带流水线的持久连接 )
 *    非持久连接(NonPersistent Connection) -- HTTP/1.0，每一次数据传送都需要重新打开/关闭TCP连接
@@ -427,7 +484,7 @@
       协议尾时：form-data; name=\"icount\" + CRLF + CRLF + _T("1") + CRLF +   -- 其中的 icount 也是服务器相关的?
       \"submitted\"
 *   [M]Content-Length: 内容长度（包括 头 + 数据 + 尾），如果直接访问文件地址的话，返回的是文件大小？
-*   [O]Content-Transfer-Encoding: binary
+*   [O]Content-Transfer-Encoding: binary | Chunked(表示输出的内容长度不确定)
 *   []Connection: Keep-Alive(持久连接), Close(非持久连接)
 *   []Cookie : 分号";"分开的多个 "变量名=值" 的键值对
 *   []Date: 表示消息发送的时间，由RFC822定义，是世界标准时。如 Sat, 26 May 2012 00:42:19 GMT
@@ -464,6 +521,9 @@
 *     []Keep-Alive: timeout=5, max=100
 *     []Last-Modified: 会后一次修改响应内容的日期和时间
 *     []Server: BWS/1.0 响应客户端的服务器，可以看出是什么类型的Web服务
+*
+* 封装函数
+*   URLDownloadToFile -- 指定URL直接下载文件，缺点：同步调用，不能下载大文件。
 *
 * WinINet API 函数(MFC 封装: CHttpFile) -- 通常只适用于客户端程序，服务器程序开发需要用 WinHTTP(升级版? 参见 "Porting WinINet Applications to WinHTTP" )
 *   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):
@@ -510,6 +570,17 @@
 *     HttpSendRequestEx -- 通过 INTERNET_BUFFERS(注意要设置 dwStructSize) 结构体发送请求数据，
 *       通常可用于 POST 发送文件(将 dwBufferTotal 设置为 文件大小[+ 其他头信息]? )
 *     HttpEndRequest -- 结束HttpSendRequestEx初始化的HTTP请求
+*
+* HTTP服务器函数(winHttp)，目前有两个版本：1.0(XPSP2/Win2003)和2.0(Vista/Win2008)
+*   HttpInitialize -- 初始化服务器API，可以选择 配置 或 服务器 初始化。
+*   HttpCreateHttpHandle(1.0)/HttpCreateRequestQueue(2.0) -- 创建HTTP请求队列的句柄，结束时需要 CloseHandle
+*   HttpAddUrl(1.0)/HttpAddUrlToUrlGroup(2.0) -- 向请求队列中注册需要处理的URL
+*     HttpReceiveHttpRequest -- 从请求队列中获取可用的HTTP请求(可选择同步或异步)，根据 HTTP_REQUEST::Verb 等进行处理
+*       HttpReceiveRequestEntityBody -- 接收关联在HTTP请求上的实体数据(如客户端上传的文件数据)
+*       HttpSendHttpResponse -- 发送响应，如果后续还有更多内容(如文件)需要发送，需要指定 HTTP_SEND_RESPONSE_FLAG_MORE_DATA
+*       HttpSendResponseEntityBody -- 发送关联到HTTP响应上的实体数据(如通过文件句柄指定的文件)
+*       HttpRemoveUrl(1.0)/HttpRemoveUrlFromUrlGroup(2.0) -- 从请求队列中停止URL的处理
+*   HttpTerminate -- 清除HTTP服务器API的资源
 *************************************************************************************************************************/
 
 namespace FTL
@@ -571,6 +642,8 @@ namespace FTL
 	typedef std::map<tstring, tstring> CookieKeyValueMap;
     namespace FNetInfo
     {
+		FTLINLINE LPCTSTR GetSockAddrString(CFStringFormater& formater, SOCKADDR *sa, int len);
+
 		//头中的CheckSum
 		FTLINLINE USHORT CheckSum(USHORT *pBuffer, int size);
 
