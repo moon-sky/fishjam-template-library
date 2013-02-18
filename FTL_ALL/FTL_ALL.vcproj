@@ -207,6 +207,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlDUI.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlFile.hpp"
 				>
 			</File>
@@ -334,6 +338,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlDTEHelper.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlDUI.h"
 				>
 			</File>
 			<File
