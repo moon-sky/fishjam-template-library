@@ -12,6 +12,7 @@
 #include <WS2atm.h>
 #include <Af_irda.h>
 #include <io.h>
+//#include <WS2tcpip.h>
 
 #include <ftlFunctional.h>
 #include <ftlDebug.h>
@@ -104,36 +105,35 @@ namespace FTL
 
     namespace FNetInfo
     {
-		LPCTSTR GetSockAddrString(CFStringFormater& formater, SOCKADDR *sa, int len)
-		{
-			ATLASSERT(sa);
-			if (NULL == sa)
-			{
-				return NULL;
-			}
-
-			int rc = SOCKET_ERROR;
-			TCHAR    host[NI_MAXHOST] = {0}, serv[NI_MAXSERV] = {0};
-			int     hostlen = NI_MAXHOST, servlen = NI_MAXSERV;
-			NET_VERIFY(GetNameInfo(sa, len, host, hostlen, serv, servlen, 
-				NI_NUMERICHOST | NI_NUMERICSERV )); //Convert to numeric representation
-			if (0 == rc)
-			{
-				if (sa->sa_family == AF_INET6)
-				{
-					formater.Format(TEXT("[%s]:%s"), host, serv)
-				}
-				else
-				{
-					formater.Format(TEXT("%s:%s"), host, serv)
-				}
-			}
-			else
-			{
-				ATLASSERT(FALSE);
-			}
-			return formater.GetString();
-		}
+		//LPCTSTR GetSockAddrString(CFStringFormater& formater, SOCKADDR *sa, int len)
+		//{
+		//	ATLASSERT(sa);
+		//	if (NULL == sa)
+		//	{
+		//		return NULL;
+		//	}
+		//	int rc = SOCKET_ERROR;
+		//	TCHAR    host[NI_MAXHOST] = {0}, serv[NI_MAXSERV] = {0};
+		//	int     hostlen = NI_MAXHOST, servlen = NI_MAXSERV;
+		//	NET_VERIFY(GetNameInfo(sa, len, host, hostlen, serv, servlen, 
+		//		NI_NUMERICHOST | NI_NUMERICSERV )); //Convert to numeric representation
+		//	if (0 == rc)
+		//	{
+		//		if (sa->sa_family == AF_INET6)
+		//		{
+		//			formater.Format(TEXT("[%s]:%s"), host, serv)
+		//		}
+		//		else
+		//		{
+		//			formater.Format(TEXT("%s:%s"), host, serv)
+		//		}
+		//	}
+		//	else
+		//	{
+		//		ATLASSERT(FALSE);
+		//	}
+		//	return formater.GetString();
+		//}
 
 
 		unsigned short CheckSum(USHORT *pBuffer, int size)

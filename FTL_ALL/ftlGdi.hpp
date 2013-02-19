@@ -33,9 +33,13 @@ namespace FTL
         switch(objType)
         {
         case 0:
-            FTLTRACEEX(FTL::tlWarning, TEXT("GetGdiObjectInfo Call GetObjectType(0x%p) Failed, Maybe Already Call DeletedObject!!!\n"));
-            FTLASSERT(ERROR_INSUFFICIENT_BUFFER == GetLastError());  //目前测试了 HBitmap，返回值是这个
-            break;
+			{
+				DWORD dwLastError = GetLastError();
+				FTLTRACEEX(FTL::tlWarning, TEXT("GetGdiObjectInfo Call GetObjectType(0x%p) Failed(Err=%d), Maybe Already Call DeletedObject!!!\n"), 
+					hgdiObj, dwLastError);
+				FTLASSERT(ERROR_INSUFFICIENT_BUFFER == dwLastError || ERROR_NOT_ENOUGH_MEMORY == dwLastError);  //目前测试了 HBitmap，返回值是这个
+				break;
+			}
         case OBJ_PEN:
             {
                 LOGPEN penInfo = {0};

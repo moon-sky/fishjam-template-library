@@ -53,7 +53,7 @@
 *   注意：1.目前代理实现中只有 SOCKS5/HTTP11 支持 用户名/密码 ?
 *         2.其中重用时 closesocket 可能有Bug? MFC中的版本有 KillSocket 静态方法
 *         3.在其原始实现里，每一个有CAsyncSocketEx的线程都会关联一个CAsyncSocketExHelperWindow，可以管理 1~N 个CAsyncSocketEx，
-*           通过其静态的 m_spAsyncSocketExThreadDataList 链表变量管理(细节上的过度优化?)
+*           通过其静态的 m_spAsyncSocketExThreadDataList 链表变量管理(表面上是为了性能，但可能是细节上的过度优化?--数据传递比线程同步花的时间更多)
 *         4.pProxyUser 等字符串数组的释放上有问题，应该是 delete []
 *
 * AtlUtil.h 中有不少辅助类
@@ -673,7 +673,7 @@ namespace FTL
 	typedef std::map<tstring, tstring> CookieKeyValueMap;
     namespace FNetInfo
     {
-		FTLINLINE LPCTSTR GetSockAddrString(CFStringFormater& formater, SOCKADDR *sa, int len);
+		//FTLINLINE LPCTSTR GetSockAddrString(CFStringFormater& formater, SOCKADDR *sa, int len);
 
 		//头中的CheckSum
 		FTLINLINE USHORT CheckSum(USHORT *pBuffer, int size);

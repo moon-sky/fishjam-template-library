@@ -446,6 +446,7 @@
 #    pragma message( "    not defined _ATL_NO_COMMODULE")
 #  endif
 
+//ºöÂÔÈ±Ê¡Àà¿âµÄÅäÖÃ?
 #  ifdef _ATL_NO_DEFAULT_LIBS
 #    pragma message( "    defined _ATL_NO_DEFAULT_LIBS")
 #  else
