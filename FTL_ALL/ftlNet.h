@@ -5,8 +5,13 @@
 
 /*************************************************************************************************************************
 * 已读例子
-*   netds\http\server -- HTPP 服务器
+*   netds\http\AsyncServer(未看完，需要先看线程池、IO完成端口) -- 使用 IO完成端口 + 线程池 实现的异步HttpV2服务器
+*   netds\http\httpauth -- HttpV2 服务器的身份认证流程(简单的NTLM)，调试时参数 http://localhost:80/
+*   netds\http\HttpV2Server -- HttpV2 服务器(Post时无法读取上传的文件内容？)
+*   netds\http\server -- 使用 winhttp 实现的简单 HTPPV1 服务器，支持GET和POST
+*   netds\uri -- 演示创建并显示IUri接口属性的用法(需要定义 _WIN32_IE=0x0700，且使用 7.0 以上的SDK)
 *   netds\winsock\mcastip -- 多播，有两个版本，分别使用 setsockopt 和 WSAJoinLeaf 实现
+*   web\Wininet\CacheEnumerate -- 使用Wininet的Cache API枚举、删除URL相关的内容(-d 参数很危险，可能会把cookie删掉)
 *************************************************************************************************************************/
 #pragma TODO(wsock32.lib 和 ws2_32.lib 的区别)
 
@@ -500,7 +505,7 @@
 *   其中可包含任意的数据，
 * 
 * 返回信息: 状态行(HTTP版本号 + 3位状态码 + 状态描述) + 头 + 响应体
-*   状态码( HTTP_STATUS_XXX )
+*   状态码( HTTP_STATUS_OK 等 )
 *     1xx消息 -- 请求已被服务器接收，继续处理
 *       100 Continue -- 服务器仅接收到部分请求，客户端应该继续发送其余的请求。
 *       101 Switching Protocols -- 服务器转换协议：服务器将遵从客户的请求转换到另外一种协议。
@@ -570,17 +575,34 @@
 *     HttpSendRequestEx -- 通过 INTERNET_BUFFERS(注意要设置 dwStructSize) 结构体发送请求数据，
 *       通常可用于 POST 发送文件(将 dwBufferTotal 设置为 文件大小[+ 其他头信息]? )
 *     HttpEndRequest -- 结束HttpSendRequestEx初始化的HTTP请求
+*   Cache管理
+*     分为两种类型？
+*       Groups -- ?
+*       Entries -- 可以查找 visited:/cookie/""(CONTENT)/NULL(全部) 等各种网络访问过的内容缓存
+*     FindFirstUrlCacheGroup -> 处理(如：DeleteUrlCacheGroup) -> FindNextUrlCacheGroup -> FindCloseUrlCache
+*     FindFirstUrlCacheEntry/FindFirstUrlCacheEntryEx( INTERNET_CACHE_ENTRY_INFO::dwStructSize 系统返回后设置的 *lpdwEntryInfo 设置的，可变)
+*       -> 处理(如：DeleteUrlCacheEntry) -> FindNextUrlCacheEntryEx -> FindCloseUrlCache
+*     GetUrlCacheEntryInfo -> 
 *
 * HTTP服务器函数(winHttp)，目前有两个版本：1.0(XPSP2/Win2003)和2.0(Vista/Win2008)
-*   HttpInitialize -- 初始化服务器API，可以选择 配置 或 服务器 初始化。
-*   HttpCreateHttpHandle(1.0)/HttpCreateRequestQueue(2.0) -- 创建HTTP请求队列的句柄，结束时需要 CloseHandle
-*   HttpAddUrl(1.0)/HttpAddUrlToUrlGroup(2.0) -- 向请求队列中注册需要处理的URL
+*   HttpInitialize(1.0/2.0) -- 初始化服务器API，可以选择 配置 或 服务器 初始化。
+*   创建HTTP请求队列的句柄并设置URL相关的资源(URL 必须满足 FullyQualifie，即带协议、端口、最后的斜线等，如 http://localhost:80/ )，分版本：
+*     1.0
+*       HttpCreateHttpHandle -- 创建请求队列，结束时需要 CloseHandle
+*       HttpAddUrl -- 向请求队列中注册需要处理的URL，可多个
+*     2.0:
+*       HttpCreateServerSession -- 使用完毕后需要 HttpCloseServerSession
+*       HttpCreateUrlGroup -- 创建UrlGroup，使用完毕后需要 HttpCloseUrlGroup
+*       HttpAddUrlToUrlGroup -- 向UrlGroup中注册需要处理的URL，可多个
+*       HttpCreateRequestQueue -- 创建请求队列，结束时需要 HttpCloseRequestQueue
+*       HttpSetUrlGroupProperty(,HttpServerBindingProperty,) -- 把UrlGroup和请求队列绑定起来，还可设置其他信息(如Authentication等)
+*   数据处理循环
 *     HttpReceiveHttpRequest -- 从请求队列中获取可用的HTTP请求(可选择同步或异步)，根据 HTTP_REQUEST::Verb 等进行处理
-*       HttpReceiveRequestEntityBody -- 接收关联在HTTP请求上的实体数据(如客户端上传的文件数据)
+*       HttpReceiveRequestEntityBody -- 接收关联在HTTP请求上的实体数据(如客户端上传的文件数据，但通过html实测发现没有读取到文件数据？)
 *       HttpSendHttpResponse -- 发送响应，如果后续还有更多内容(如文件)需要发送，需要指定 HTTP_SEND_RESPONSE_FLAG_MORE_DATA
 *       HttpSendResponseEntityBody -- 发送关联到HTTP响应上的实体数据(如通过文件句柄指定的文件)
-*       HttpRemoveUrl(1.0)/HttpRemoveUrlFromUrlGroup(2.0) -- 从请求队列中停止URL的处理
-*   HttpTerminate -- 清除HTTP服务器API的资源
+*   HttpRemoveUrl(1.0)/HttpRemoveUrlFromUrlGroup(2.0) -- 从请求队列中停止URL的处理
+*   HttpTerminate(1.0/2.0) -- 清除HTTP服务器API的资源
 *************************************************************************************************************************/
 
 namespace FTL
@@ -630,6 +652,15 @@ namespace FTL
             NET_VERIFY(closesocket((h)));\
             (h) = INVALID_SOCKET;\
         }\
+
+	//向HTTP响应中增加预定义好的头(如 HttpHeaderContentType 的 "text/html" )信息
+	#ifndef ADD_HTTP_RESPONSE_KNOWN_HEADER
+	#  define ADD_HTTP_RESPONSE_KNOWN_HEADER(Response, HeaderId, RawValue)\
+		{\
+			(Response).Headers.KnownHeaders[(HeaderId)].pRawValue = (RawValue);\
+			(Response).Headers.KnownHeaders[(HeaderId)].RawValueLength = (USHORT) strlen(RawValue);\
+		} 
+	#endif //ADD_HTTP_RESPONSE_KNOWN_HEADER
 
     FTLEXPORT class CFNetErrorInfo : public CFConvertInfoT<CFNetErrorInfo,int>
     {

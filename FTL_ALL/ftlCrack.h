@@ -18,6 +18,19 @@
 *********************************************************************************************************************************/
 
 /*********************************************************************************************************************************
+* 网络身份认证(Authentication) -- 通过分析 netds\http\httpauth 例子而来，可能不正确，其采用了 NTLM 认证
+*   0.服务器需要 HttpSetUrlGroupProperty(, HttpServerAuthenticationProperty, ); -- 允许认证
+*   1.客户端HTTP 初次连接时，循环查找到 HTTP_REQUEST::pRequestInfo[nIndex].InfoType == HttpRequestInfoTypeAuth，可通过 
+*     HTTP_REQUEST::pRequestInfo[nIndex].pInfo 转换为 PHTTP_REQUEST_AUTH_INFO，
+*     其 AuthStatus 为 HttpAuthStatusNotAuthenticated(表示尚未认证);
+*   2.Server发送 HTTP_STATUS_DENIED(401) 的 HTTP_RESPONSE 响应，其中需要通过 HttpHeaderWwwAuthenticate 指定认证方式的内容。
+*   3.客户端接到 401 响应后，设置认证信息(如用户名、密码），重新发送；
+*   4.再次连接时，判断 AuthStatus == HttpAuthStatusSuccess， 进行验证，如（流程是否这样？）：
+*       ImportSecurityContext -> ImpersonateLoggedOnUser -> RevertToSelf -> DeleteSecurityContext 等
+*   5.如果验证通过，则发送 HTTP_STATUS_OK(200) 的响应
+*********************************************************************************************************************************/
+
+/*********************************************************************************************************************************
 * 安全控制
 *   Security Principal -- Windows信任的安装安全主体
 * 

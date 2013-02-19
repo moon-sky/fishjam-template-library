@@ -103,9 +103,31 @@ namespace FTL
 
     DWORD CFOSInfo::GetNumberOfProcessors() const
     {
+		DWORD dwProcessCount1 = 0; 
+		DWORD dwProcessCount2 = 0; 
+
+		//第一种方法 -- 只能得到物理CPU?
         SYSTEM_INFO sysinfo = {0};
         ::GetSystemInfo(&sysinfo);
-        return sysinfo.dwNumberOfProcessors;
+		dwProcessCount1 = sysinfo.dwNumberOfProcessors;
+		
+		//第二种方法 -- 可以得到超线程 ?
+		BOOL bRet = FALSE;
+		DWORD_PTR dwProcessAffinityMask = 0, dwSystemAffinityMask = 0;
+		API_VERIFY(GetProcessAffinityMask(GetCurrentProcess(), &dwProcessAffinityMask, &dwSystemAffinityMask));
+		if (bRet)
+		{
+			for (; dwProcessAffinityMask; dwProcessAffinityMask >>= 1)
+			{
+				if (dwProcessAffinityMask & 0x1) 
+				{
+					dwProcessCount2++;
+				}
+			}
+		}
+
+		API_ASSERT(dwProcessCount1 == dwProcessCount2);
+        return dwProcessCount2;
     }
 
     BOOL CFOSInfo::GetPhysicalBytes(DWORDLONG* pAvailablePhysicalBytes, DWORDLONG *pTotalPhysicalBytes) const
