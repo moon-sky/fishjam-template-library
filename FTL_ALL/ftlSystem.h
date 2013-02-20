@@ -7,6 +7,13 @@
 #  error ftlsystem.h requires ftlbase.h to be included first
 #endif
 
+/*************************************************************************************************************************
+* 已读例子
+*   com\uac(权限分析未看完) -- 动态提升权限的例子(Button_SetElevationRequiredState 设置UAC盾形Shield标记),有个 ElevationManager 可以考虑重用?
+*************************************************************************************************************************/
+
+
+
 #include "ftlThread.h"
 
 #include <Shlwapi.h>    //IShellFolder

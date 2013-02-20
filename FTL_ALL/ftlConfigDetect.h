@@ -6,6 +6,10 @@
 #ifndef FTL_BASE_H
 #  error ftlConfigDetect.h requires ftlbase.h to be included first
 #endif
+/*************************************************************************************************************************
+* 已读例子
+*   begin\winsdkver_button\winsdkver_button -- 从 WinSDKVer.h 头文件中取得当前SDK支持的最大版本常量(_WIN32_MAXVER)，并对应编码
+*************************************************************************************************************************/
 
 
 //#include <atlassem.h>
@@ -13,7 +17,7 @@
 * 用于判断当前编译器的选项，通常放在 stdafx.h 文件的最下方
 * 可以使用如下方法进行智能Link -- _MFC_FILENAME_VER 是一个字符串的宏(VS2008 中是 "90")
 *   #pragma comment(lib, "mfc" _MFC_FILENAME_VER "d.lib")
-
+*
 ************************************************************************/
 
 
@@ -21,6 +25,30 @@
 
 #  pragma message(__FILE__ "(" QQUOTE(__LINE__) ") : Begin IDE Config Detect.................................." )
 
+#if defined(_INC_WINSDKVER)
+//<WinSDKVer.h> 头文件中定义了当前SDK支持的最大版本常量，如 _WIN32_MAXVER、_WIN32_IE_MAXVER 等
+#    pragma message( "_WIN32_MAXVER = "			QQUOTE(_WIN32_MAXVER))
+#    pragma message( "_WIN32_WINDOWS_MAXVER = " QQUOTE(_WIN32_WINDOWS_MAXVER))
+#    pragma message( "NTDDI_MAXVER = "			QQUOTE(NTDDI_MAXVER))
+#    pragma message( "_WIN32_IE_MAXVER = "		QQUOTE(_WIN32_IE_MAXVER))
+#    pragma message( "_WIN32_WINNT_MAXVER = "	QQUOTE(_WIN32_WINNT_MAXVER))
+#    pragma message( "WINVER_MAXVER = "			QQUOTE(WINVER_MAXVER))
+
+////通常可以在 targetver.h 中包含以下代码，使得获取到SDK支持的最大功能，并对应编码
+//#ifndef WINVER
+//#  define WINVER _WIN32_MAXVER
+//#endif
+//#ifndef _WIN32_WINNT
+//#  define _WIN32_WINNT _WIN32_WINNT_MAXVER
+//#endif
+//#ifndef _WIN32_WINDOWS
+//#  define _WIN32_WINDOWS _WIN32_WINDOWS_MAXVER
+//#endif
+//#ifndef _WIN32_IE
+//#  define _WIN32_IE _WIN32_IE_MAXVER
+//#endif
+
+#endif //_INC_WINSDKVER
 
 //是否遵从ANSI标准
 #  if defined(__STDC__)

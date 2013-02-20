@@ -263,6 +263,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlUser.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlVSIPHelper.hpp"
 				>
 			</File>
@@ -410,6 +414,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlTypes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlUser.h"
 				>
 			</File>
 			<File

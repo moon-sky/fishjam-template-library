@@ -12,6 +12,7 @@
 *   netds\uri -- 演示创建并显示IUri接口属性的用法(需要定义 _WIN32_IE=0x0700，且使用 7.0 以上的SDK)
 *   netds\winsock\mcastip -- 多播，有两个版本，分别使用 setsockopt 和 WSAJoinLeaf 实现
 *   web\Wininet\CacheEnumerate -- 使用Wininet的Cache API枚举、删除URL相关的内容(-d 参数很危险，可能会把cookie删掉)
+*   web\Wininet\httpauth -- 通过HTTP访问Web页面时，检测是否需要认证信息(代理、网页等) -- 不过没有测试出结果
 *************************************************************************************************************************/
 #pragma TODO(wsock32.lib 和 ws2_32.lib 的区别)
 
@@ -449,8 +450,8 @@
 * 判断连接 HINTERNET 是否需要认证信息
 *   1.HttpQueryInfo(hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatus, &cbStatus, NULL);  //获取状态码
 *   2.switch(dwStatus) {   //查询状态码
-*       case HTTP_STATUS_DENIED:			// 拒绝访问，再查询 dwFlags = HTTP_QUERY_WWW_AUTHENTICATE
-*       case HTTP_STATUS_PROXY_AUTH_REQ:	// 代理需要身份信息，再查询 dwFlags = HTTP_QUERY_PROXY_AUTHENTICATE
+*       case HTTP_STATUS_DENIED(401):			// 拒绝访问，再查询 dwFlags = HTTP_QUERY_WWW_AUTHENTICATE
+*       case HTTP_STATUS_PROXY_AUTH_REQ(407):	// 代理需要身份信息，再查询 dwFlags = HTTP_QUERY_PROXY_AUTHENTICATE
 *     }
 *     do  { bRet = HttpQueryInfo( hRequest, dwFlags, szScheme, &cbScheme, &dwIndex ); } while(bRet);  //可能有多次验证，因此需要循环？
 
@@ -566,8 +567,8 @@
 *     HttpOpenRequest 
 *       Https时dwFlags参数需要加上 INTERNET_FLAG_SECURE，并可以忽略特殊错误，如 INTERNET_FLAG_IGNORE_CERT_CN_INVALID|INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
 *   数据传递
-*     InternetWriteFile -- 
-*     InternetReadFile -- 向打开的Http请求句柄中写入数据，通常在循环中进行
+*     InternetWriteFile -- 向打开的Http请求句柄中写入数据，通常在循环中进行
+*     InternetReadFile -- 从Http请求句柄中读取数据，通常循环到 *lpdwNumberOfBytesRead 为 0 或 函数返回FALSE
 *     InternetQueryDataAvailable -- 获取网络上还有的数据量，如果函数成功且返回的大小为0，表示没有数据了。
 *     HttpAddRequestHeaders(xxx, HTTP_ADDREQ_FLAG_ADD) -- 向HTTP请求句柄中增加请求头，
 *     HttpSendRequest/WinHttpSendRequest -- 发送请求数据

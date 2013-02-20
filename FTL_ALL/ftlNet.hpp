@@ -2511,7 +2511,7 @@ namespace FTL
 	{
 		BOOL bRet = FALSE;
 
-		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE
+		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_KEEP_CONNECTION
 		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection, _T("GET"), m_pJobInfo->m_strObjectName, 
 			NULL, NULL, NULL, dwFlags, NULL)));
 		if (!bRet)
@@ -2528,6 +2528,7 @@ namespace FTL
 				&dwInfoSize, NULL));
 			if (dwStatusCode != HTTP_STATUS_OK)
 			{
+				//可能是需要身份验证(代理、服务器等) -- 需要提供给子类处理的机制
 				//401 -- HTTP_STATUS_PROXY_AUTH_REQ
 				//403 -- HTTP_STATUS_FORBIDDEN
 				//407 -- HTTP_STATUS_DENIED

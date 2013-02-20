@@ -1,3 +1,4 @@
+
 #ifndef FTL_WINDOW_HPP
 #define FTL_WINDOW_HPP
 #pragma once
@@ -85,6 +86,7 @@ namespace FTL
 		}
 	};
 
+#ifdef _RICHEDIT_
 	//RichEdit 有不少使用 WM_USER 的消息
 	class CFRichEditCtrlMsgInfo : public CFDefaultMsgInfo
 	{
@@ -156,6 +158,7 @@ namespace FTL
 			return m_strFormater;
 		}
 	};
+#endif //_RICHEDIT_
 
 	class CFMouseMsgInfo : public CFDefaultMsgInfo
 	{
@@ -506,16 +509,17 @@ namespace FTL
 
 #endif //WINVER >= 0x0500
 
+				//控件将要被绘制前发送此消息给它的父窗口 -- 可以设置控件的文本、背景(返回的画刷句柄)等颜色
                 GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORMSGBOX, CFDefaultMsgInfo);    //在windows绘制消息框前发送此消息给消息框的所有者窗口，通过响应这条消息，所有者窗口可以
                 //  通过使用给定的相关显示设备的句柄来设置消息框的文本和背景颜色
-                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLOREDIT, CFDefaultMsgInfo);      //当一个编辑型控件将要被绘制时发送此消息给它的父窗口 -- 可以设置编辑框的文本和背景颜色
-                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORLISTBOX, CFDefaultMsgInfo);   //当一个列表框控件将要被绘制前发送此消息给它的父窗口 -- 可以设置列表框的文本和背景颜色
-                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORBTN, CFDefaultMsgInfo);       //当一个按钮  控件将要被绘制时发送此消息给它的父窗口 -- 可以设置按纽的文本和背景颜色
-                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORDLG, CFDefaultMsgInfo);       //当一个对话框控件将要被绘制前发送此消息给它的父窗口 -- 可以设置对话框的文本背景颜色
-                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORSCROLLBAR, CFDefaultMsgInfo); //当一个滚动条控件将要被绘制时发送此消息给它的父窗口 -- 可以设置滚动条的背景颜色
-                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORSTATIC, CFDefaultMsgInfo);    //当一个静态控件将要被绘制时发送此消息给它的父窗口 -- 可以设置静态控件的文本和背景颜色
-                GET_MESSAGE_INFO_ENTRY(MN_GETHMENU, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLOREDIT, CFDefaultMsgInfo);      //可以设置编辑框的文本和背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORLISTBOX, CFDefaultMsgInfo);   //可以设置列表框的文本和背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORBTN, CFDefaultMsgInfo);       //可以设置按纽的文本和背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORDLG, CFDefaultMsgInfo);       //可以设置对话框的文本背景颜色(return CreateSolidBrush(xxx);
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORSCROLLBAR, CFDefaultMsgInfo); //可以设置滚动条的背景颜色
+                GET_MESSAGE_INFO_ENTRY(WM_CTLCOLORSTATIC, CFDefaultMsgInfo);    //可以设置静态控件的文本和背景颜色
 
+                GET_MESSAGE_INFO_ENTRY(MN_GETHMENU, CFDefaultMsgInfo);
 
                 //GET_MESSAGE_INFO_ENTRY(WM_MOUSEFIRST, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_MOUSEMOVE, CFMouseMsgInfo);
@@ -2260,6 +2264,7 @@ namespace FTL
 		}
 		else if(0 == lstrcmpi(szClassName, TEXT("RichEdit20W")))
 		{
+#ifdef _RICHEDIT_
 			switch (nCode)
 			{
 				HANDLE_CASE_TO_STRING(pszCommandNotify, nLength, EN_MSGFILTER);
@@ -2284,6 +2289,7 @@ namespace FTL
 				//StringCchCopy(pszCommandNotify,nLength,TEXT("Unknown RichEdit Notify"));
 				break;
 			}
+#endif	//_RICHEDIT_
 		}
 
 		if ( 0 == pszCommandNotify[0] )

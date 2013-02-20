@@ -579,7 +579,6 @@ namespace FTL
     *     
 	* 
     * 使用方式：参见 test_CFThreadPool
-    * TODO: 增加动态收缩功能 -- 根据负载自动调整线程池中线程的数量
     *********************************************************************************************/
     //觉得使用指针似乎更好？使用模板的话，保存时应该使用引用还是指针？或直接用值？ -- 用值，不要过分优化
     typedef enum tagGetJobType
@@ -612,6 +611,7 @@ namespace FTL
 				return true;
 			}
 			
+			//容器改成map后，优先级已经不起作用了
 			INT nJobPriority;		//优先级，值越小，优先级越高，越早被调用，默认是0，可在 OnSubmitJob 中调整(尚不支持动态调整)
 			INT nJobIndex;
             CFJobBase<T> *pJob;
@@ -678,7 +678,7 @@ namespace FTL
 		//LONG m_nCanSubtractThreadNum;
         HANDLE* m_pThreadHandles;               //! 保存线程句柄的数组(为了方便Wait)
         DWORD*  m_pThreadIds;                   //! 保存线程 Id 的数组(为了在线程结束后调整数组中的位置)
-		//! 保存Job的信息,由于会频繁加入、删除，且需要按照JobIndex查找，因此保存成set，且以JobIndex排序
+		//! 保存Job的信息,由于会频繁加入、删除，且需要按照JobIndex查找，因此保存成 map/set/queue ?
 		typedef std::map<INT, JobInfo* >	JobInfoContainer;
 		JobInfoContainer		  m_WaitingJobs;//! 等待运行的Job
 		JobInfoContainer		  m_DoingJobs;  //! 正在运行的Job

@@ -42,7 +42,7 @@
 * 代理进程(特权分离思想) -- 把传统的IE进程一分为三，分别负责不同安全等级的任务.
 *   IE进程本身 -- 完成最常用的、无需特权的网页浏览任务
 *   IeUser.exe(用户级代理进程) -- 完成中等特权的任务(例如保存图片等)
-*   IeInstal.exe(管理级代理进程) -- 完成高特权的任务(例如安装加载项)。
+*   IeInstal.exe(管理级代理进程) -- 完成高特权的任务(例如安装加载项，需要写INF文件?)。
 * 
 * IE中的多进程控制
 *   HKLM或HKCR \SOFTWARE\Microsoft\Internet Explorer\MAIN\TabProcGrowth  -- REG_SZ, 为 0 表示， 为 Medium 表示

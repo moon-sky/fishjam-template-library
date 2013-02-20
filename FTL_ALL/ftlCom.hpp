@@ -110,6 +110,29 @@ namespace FTL
         return hr;
     }
 
+	HRESULT CFComUtility::CreateElevatedComObject(HWND hwnd, REFCLSID rclsid, REFIID riid, __out void ** ppv)
+	{
+		HRESULT hr = E_FAIL;
+
+		WCHAR  wszCLSID[50] = {0};
+		WCHAR  wszMonikerName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
+
+		StringFromGUID2(rclsid, wszCLSID, _countof(wszCLSID)); 
+		COM_VERIFY(StringCchPrintf(wszMonikerName, _countof(wszMonikerName), 
+			L"Elevation:Administrator!new:%s",wszCLSID));
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		BIND_OPTS3 bo;
+		ZeroMemory(&bo, sizeof(bo));
+		bo.cbStruct = sizeof(bo);
+		bo.hwnd = hwnd;
+		bo.dwClassContext  = CLSCTX_LOCAL_SERVER;
+		COM_VERIFY(CoGetObject(wszMonikerName, &bo, riid, ppv));
+		return hr;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 

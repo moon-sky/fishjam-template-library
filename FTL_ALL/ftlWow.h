@@ -28,6 +28,9 @@ namespace FTL
 	*   if ( ERROR_SUCCESS == reg.Open(HKEY_LOCAL_MACHINE, _T("SOFTWARE\Microsoft\VisualStudio"),	KEY_READ) )
 	*   #endif
 	*
+	* 64位OS上注册DLL时(是不是反了?)：
+	*   32-bit DLL -- syswow64\regsvr32.exe
+	*   64-bit DLL -- system32\regsvr32.exe
 	*****************************************************************************************************/
     class CFWow
     {

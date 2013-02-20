@@ -12,6 +12,22 @@
 #pragma once
 
 #pragma TODO(Delete BSTR In COMStudy)
+ 
+//http://msdn.microsoft.com/en-us/library/ms679687(VS.85).aspx,  CoCreateInstanceAsAdmin -> CreateElevatedComObject
+//http://blogs.msdn.com/b/vistacompatteam/archive/2006/09/28/cocreateinstanceasadmin-or-createelevatedcomobject-sample.aspx
+#pragma TODO(The COM Elevation Moniker)
+
+//COM对象 .rgs --  val DllSurrogate = s ''
+//COM接口 .rgs -- 
+/*
+	  Elevation
+	  {
+		  val Enabled = d 1
+	  }
+	  val LocalizedString = s  '@%MODULE%,-101'
+*/
+
+
 /*************************************************************************************************************
 * INITGUID -- 包含 guiddef.h ？ 中定义的所有 GUID(使用库编译已经编译好的),更好的方式是直接包含 InitGuid.h
 *
@@ -100,6 +116,9 @@ namespace FTL
         FTLINLINE static BOOL IsComponentRegistered(REFCLSID clsid);
         FTLINLINE static BOOL RegisterComponent(LPCTSTR pszFilePath,BOOL bRegister);
         FTLINLINE static HRESULT DisplayObjectPropertyPage(HWND hWndOwner,LPCOLESTR lpszCaption, IUnknown *pUnk);
+
+		//创建一个进行过权限提升的COM对象(改COM对象必须满足特定的要求?)
+		FTLINLINE static HRESULT CreateElevatedComObject(HWND hwnd, REFCLSID rclsid, REFIID riid, __out void ** ppv);
     };
 
     FTLEXPORT class CFVariantInfo : public CFConvertInfoT<CFVariantInfo, const VARIANT&>

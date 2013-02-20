@@ -415,7 +415,7 @@ namespace FTL
             m_stream.read((char *)&temp, 2);
             if (!eof())
             {
-                u16 = ntohs(temp);
+                u16 = temp;
             }
             return *this;
         }
@@ -425,7 +425,7 @@ namespace FTL
             m_stream.read((char *)&temp, 4);
             if (!eof())
             {
-                u32 = ntohl(temp);
+                u32 = temp;
             }
             return *this;
         }
@@ -454,13 +454,11 @@ namespace FTL
         }
         binarystream &operator<<(u_int16_t u16)
         {
-            u16 = htons(u16);
             m_stream.write((const char*)&u16, 2);
             return *this;
         }
         binarystream &operator<<(u_int32_t u32)
         {
-            u32 = htonl(u32);
             m_stream.write((const char*)&u32, 4);
             return *this;
         }
