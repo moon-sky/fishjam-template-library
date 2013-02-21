@@ -1833,11 +1833,12 @@ namespace FTL
 	{
 		m_strServerName.Empty();
 		m_strObjectName.Empty();
-		m_nPort = 0;
+		m_nPort = INTERNET_DEFAULT_HTTP_PORT;
 		//m_bUploadJob = FALSE;
 		m_transferParams.clear();
 	}
-	FTransferJobInfo::FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, USHORT nPort)
+	FTransferJobInfo::FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, 
+		USHORT nPort /* = INTERNET_DEFAULT_HTTP_PORT */)
 	{
 		FTLASSERT(pszServerName);
 		FTLASSERT(pszObjectName);
@@ -1895,7 +1896,9 @@ namespace FTL
 			INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)));
 		if (bRet)
 		{
-			API_VERIFY(NULL !=(m_hConnection = ::InternetConnect(m_hSession, m_pJobInfo->m_strServerName, m_pJobInfo->m_nPort, 
+			API_VERIFY(NULL !=(m_hConnection = ::InternetConnect(m_hSession, 
+				m_pJobInfo->m_strServerName, 
+				m_pJobInfo->m_nPort, 
 				NULL, NULL, //username and password
 				INTERNET_SERVICE_HTTP, 0, NULL)));
 		}
@@ -2350,6 +2353,9 @@ namespace FTL
 		InternetBufferIn.dwStructSize = sizeof ( INTERNET_BUFFERS );
 		InternetBufferIn.Next = NULL;
 		
+		//TODO:如果使用 HttpSendRequestEx 来发送所有的数据，则可以一次全部发送？
+		//InternetBufferIn.dwBufferTotal = GetFileSize() + GetPostParamSize();
+
 		API_VERIFY(HttpSendRequestEx(m_hRequest, &InternetBufferIn, NULL, HSR_INITIATE, 0));
 		if (bRet)
 		{
@@ -2371,7 +2377,9 @@ namespace FTL
 		BOOL bRet = FALSE;
 		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE
 
-		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection, _T("POST"), m_pJobInfo->m_strObjectName, 
+		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection,
+			_T("POST"), 
+			m_pJobInfo->m_strObjectName, 
 			NULL, NULL, NULL, dwFlags, NULL)));
 		if (bRet)
 		{
@@ -2394,7 +2402,7 @@ namespace FTL
 
 		API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
 			&nContentLength, &dwInfoSize, NULL));
-		if (bRet)
+		//if (bRet)
 		{
 			DWORD dwRead = 0;
 			DWORD dwWriteToLocal = 0;

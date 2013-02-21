@@ -469,7 +469,7 @@
 *   [O]Accept-Language: zh-cn
 *   [O]Accept-Ranges: bytes
 *   [O]Cache-Control: 指定请求和响应遵循的缓存机制，如 no-cache, max-age, private 等
-*   [M]Content-Type: 请求或返回的内容类型
+*   [M]Content-Type: 请求或返回的内容类型，对应于 form 中的 enctype
 *      类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
 *        application/x-www-form-urlencoded <== 
 *        application/octet-stream <== 网络上多线程分块下载二进制文件时?
@@ -533,12 +533,12 @@
 *
 * WinINet API 函数(MFC 封装: CHttpFile) -- 通常只适用于客户端程序，服务器程序开发需要用 WinHTTP(升级版? 参见 "Porting WinINet Applications to WinHTTP" )
 *   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):
-*     1.InternetOpen/WinHttpOpen 初始化的 WinINet 函数库句柄,得到Session句柄, 如果Flags有 INTERNET_FLAG_ASYNC 则表明是异步连接，
-*       其后的连接、数据交换都需要是异步的(需要通过 InternetSetStatusCallback 设置回调 且 通过完成端口来进行 ?)
+*     1.InternetOpen/WinHttpOpen 初始化的 WinINet 函数库句柄,得到Session句柄(对应 CInternetSession ), 
+*       如果Flags有 INTERNET_FLAG_ASYNC 则表明是异步连接，其后的连接、数据交换都需要是异步的(需要通过 InternetSetStatusCallback 设置回调 且 通过完成端口来进行 ?)
 *         需要在 INTERNET_STATUS_REQUEST_COMPLETE 事件响应中，根据状态进行处理(比如 )
 *       异步时，HTTP 的 InternetConnect 会同步返回，FTP的 InternetConnect 会异步返回(ERROR_IO_PENDING)
-*     2.InternetConnect/InternetOpenUrl/WinHttpConnect  连接到指定 Server:Port 上的Connect句柄，可以指定用户名和密码
-*     3.HttpOpenRequest/WinHttpOpenRequest 在连接句柄上打开的Request句柄，要指定是 POST/GET 等，其后的数据交换在该句柄上进行，
+*     2.InternetConnect/InternetOpenUrl/WinHttpConnect  连接到指定 Server:Port 上的Connect句柄(对应 CHttpConnection )，可以指定用户名和密码
+*     3.HttpOpenRequest/WinHttpOpenRequest 在连接句柄上打开的Request句柄(对应 CHttpFile 等)，要指定是 POST/GET 等，其后的数据交换在该句柄上进行，
 *   发送文件数据流程
 *     HttpOpenRequest => HttpAddRequestHeaders => HttpSendRequestEx => loop InternetWriteFile( Fire OnProgress ) => HttpEndRequest
 *   接收数据流程
@@ -571,10 +571,12 @@
 *     InternetReadFile -- 从Http请求句柄中读取数据，通常循环到 *lpdwNumberOfBytesRead 为 0 或 函数返回FALSE
 *     InternetQueryDataAvailable -- 获取网络上还有的数据量，如果函数成功且返回的大小为0，表示没有数据了。
 *     HttpAddRequestHeaders(xxx, HTTP_ADDREQ_FLAG_ADD) -- 向HTTP请求句柄中增加请求头，
-*     HttpSendRequest/WinHttpSendRequest -- 发送请求数据
+*     HttpSendRequest -- 发送请求数据 (有一个限制? -- 所有需要发送的内容都要在一个buffer里面?)
+*     WinHttpSendRequest
 *     WinHttpReceiveResponse -- 接收响应
 *     HttpSendRequestEx -- 通过 INTERNET_BUFFERS(注意要设置 dwStructSize) 结构体发送请求数据，
 *       通常可用于 POST 发送文件(将 dwBufferTotal 设置为 文件大小[+ 其他头信息]? )
+*       使用的请求句柄需要带 INTERNET_FLAG_NO_CACHE_WRITE 参数获得
 *     HttpEndRequest -- 结束HttpSendRequestEx初始化的HTTP请求
 *   Cache管理
 *     分为两种类型？
@@ -1002,8 +1004,10 @@ namespace FTL
 		DISABLE_COPY_AND_ASSIGNMENT(FTransferJobInfo);
 	public:
 		FTLINLINE FTransferJobInfo();
-		FTLINLINE FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, USHORT nPort);
+		FTLINLINE FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, USHORT nPort = INTERNET_DEFAULT_HTTP_PORT);
 		FTLINLINE ~FTransferJobInfo();
+
+		//TODO: 参考 CHttpFile::AddRequestHeaders("Accept: */*");
 		FTLINLINE void AddTransferParam(FTransferParamType paramType, CAtlString strName, CAtlString strValue, UINT codePage = CP_UTF8)
 		{
 			FTransferParam param;

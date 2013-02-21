@@ -177,6 +177,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tests\Cookie.js"
+				>
+			</File>
+			<File
 				RelativePath=".\tests\JsClassTester.js"
 				>
 			</File>

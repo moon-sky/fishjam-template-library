@@ -13,6 +13,7 @@ module("JSLanguageTester", {
 
 //变量: 只包含字母、数字和/或下划线；要以字母开头；变量需要声明 没有声明的变量不能使用(undefined)
 //      JS对数据类型的要求不严格，声明类型可以用赋予初始值的方法做到，但之后可以给变量赋予其他类型的值
+//      通过 typeof(变量名) 或 typeof 变量名 的方式可以查询变量的类型，常见的类型有 string, number, array 等
 test("变量", function() {
     var varNull;
     equal(varNull, null, "变量未定义或定义之后未赋值，则值为\"null\"");
@@ -153,6 +154,7 @@ test("Date", function() {
     var d = new Date(2012, 11, 21, 1, 2, 3, 400);
     equal(d.getTimezoneOffset(), -480, "中国是东八区，与格林威治时间所差的分钟数为 -480(东方为负)");
     equal(d.getMonth(), 11, "注意月份是从 0 开始的");
+    equal(d.toGMTString(), "Thu, 20 Dec 2012 17:02:03 UTC", "获取GMT(格林威治时间)格式的日期型字符串");
     ok(d.getFullYear() == 2012);
 
     var dParser = Date.parse(d);
@@ -166,7 +168,7 @@ test("TODO: 全局函数", function() {
     var strSrcURL = "<>[]{}+-=,.;;'\"";
     var strTargetURL = "%3C%3E%5B%5D%7B%7D+-%3D%2C.%3B%3B%27%22";
     equal(escape(strSrcURL), strTargetURL, "escape 把字符串按URL编码方法来编码(如空格变为 %20 ),如要对'+'编码，需要加参数(1)");
-    equal(unescape(strTargetURL), strSrcURL, "unescape 解编括号中字符串成为一般字符串");
+    equal(unescape(strTargetURL), strSrcURL, "unescape 解码括号中字符串成为一般字符串");
     equal(isFinite(parseInt("abc")), false, "isFinite -- 如果括号内的数字是“有限”的(MIN_VALUE和MAX_VALUE之间)就返回true");
 
     equal(parseInt("123"), 123, "parseInt -- 把括号内的内容转换成整数之后的值");

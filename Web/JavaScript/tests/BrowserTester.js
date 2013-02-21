@@ -90,17 +90,6 @@ test("TODO: Window", function() {
     equal(window.location.hostname, "", "location.hostname");
 
     with (window.document) {
-        //每个 Cookie 都有失效日期，一旦电脑的时钟过了失效日期，这个 Cookie就会被删掉。
-        //不能直接删掉一个 Cookie，但是可以用设定失效日期早于现在时刻的方法来间接删掉它。
-        //  设定 Cookie 的时效日期都是用 GMT 格式的时间的
-        var expires = new Date();
-        expires.setTime(expires.getTime() + 3 * 30 * 24 * 60 * 60 * 1000); //设定大约三个月后过期
-
-        var strCookie = escape("name=fishjam,email=fishjam@163.com;expires=" + expires.toGMTString()); //TODO: 设置时最好使用 escape ?
-        cookie = strCookie;
-        equal(cookie, strCookie, "document.cookie， TODO: 多个cookie用什么分隔？普通是逗号, 失效时间前是分号?");
-        equal(0, 0, "TODO: 怎么判断、设置失效时期? expires ?");
-
         equal(characterSet, "GB2312", "字符集");
         equal(referrer, "", "referrer -- 如果当前文档是通过点击连接打开的,返回原来的URL");
 
