@@ -168,7 +168,8 @@ namespace FTL
     class CFPath
     {
     public:
-		FTLINLINE static BOOL CreateDir(LPTSTR szPath);
+		//创建指定路径中的全部目录
+		FTLINLINE static BOOL CreateDirTree(LPTSTR szPath);
     private:
         
     };

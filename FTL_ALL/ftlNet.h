@@ -15,6 +15,10 @@
 *   web\Wininet\httpauth -- 通过HTTP访问Web页面时，检测是否需要认证信息(代理、网页等) -- 不过没有测试出结果
 *************************************************************************************************************************/
 #pragma TODO(wsock32.lib 和 ws2_32.lib 的区别)
+//CHttpFile 中有一个 m_pbWriteBuffer 来缓冲需要发送的数据, Write 时并不一定会真正的发送出去
+//AfxParseURL -- MFC中解析，有没有ATL版本
+
+//? InternetConnect + HttpOpenRequest(Get/Post 等) == InternetOpenUrl(可以直接处理 URL，简单些，但只能用于HTTP URL?)
 
 #ifndef FTL_BASE_H
 #  error ftlNet.h requires ftlbase.h to be included first
@@ -28,7 +32,7 @@
 #ifdef USE_WIN_HTTP
 #  include <winhttp.h>	//加强版，通常编写需要 特别功能的客户端(如？) 和 服务器
 #else
-#  include <WinInet.h>	//基础版，通常编写客户端
+#  include <WinInet.h>	//基础版，通常编写客户端，抽象了Gopher，FTP，HTTP协议
 #endif
 
 #pragma TODO(now just use CAtlString)
@@ -418,8 +422,8 @@
 *    1. HttpAddRequestHeaders部分
 *       使用 "Content-Type: multipart/form-data; boundary={boundary}" 声明使用多表单分，且指定分割表单中不同部分数据的符号
 *       (可自定义或随即产生，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
-*    2. Post参数部分：多个部分内容，有 Content-Disposition 和 Content-Type， 如(参数信息、二进制原始信息)，
-*       每一部分用 {boundary} CRLF 分开, 注意二进制文件尾部也需要 CRLF，(二进制数据开始时需要两个 CRLF ?)
+*    2. Post参数部分：多个部分内容，有 Content-Disposition  和可选的 [Content-Type]， 如(参数信息、二进制原始信息)，
+*       每一部分用 {boundary} CRLF 和 "Content-Disposition: form-data;" 分开, 注意二进制文件尾部也需要 CRLF，(二进制数据开始时需要两个 CRLF ?)
 *    3. 使用 {boundary}-- 表示结束(注意后面多两个 "--" )
 *    
 *
@@ -520,6 +524,7 @@
 *     []ETag: "1d2d6-5c896800-4c0baf45c91c0"
 *     []Accept-Ranges: bytes
 *     []Content-Encoding: gzip, 响应体的编码方式，如gzip表示服务器端使用了gzip压缩，利于下载，但是必须client端支持gzip的解码操作
+*       Vista之后WinINet可以支持解码( InternetSetOption(INTERNET_OPTION_HTTP_DECODING) )
 *     []Content-Length: 1164371968
 *     []Content-Range: bytes 388136960-1552508927/1552508928
 *     []Expires: 告诉client绝对的过期时间，在这个时间内client都可以不用发送请求而直接从client的cache中获取，
@@ -530,22 +535,28 @@
 *
 * 封装函数
 *   URLDownloadToFile -- 指定URL直接下载文件，缺点：同步调用，不能下载大文件。
-*
+*   
 * WinINet API 函数(MFC 封装: CHttpFile) -- 通常只适用于客户端程序，服务器程序开发需要用 WinHTTP(升级版? 参见 "Porting WinINet Applications to WinHTTP" )
 *   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):
 *     1.InternetOpen/WinHttpOpen 初始化的 WinINet 函数库句柄,得到Session句柄(对应 CInternetSession ), 
 *       如果Flags有 INTERNET_FLAG_ASYNC 则表明是异步连接，其后的连接、数据交换都需要是异步的(需要通过 InternetSetStatusCallback 设置回调 且 通过完成端口来进行 ?)
 *         需要在 INTERNET_STATUS_REQUEST_COMPLETE 事件响应中，根据状态进行处理(比如 )
 *       异步时，HTTP 的 InternetConnect 会同步返回，FTP的 InternetConnect 会异步返回(ERROR_IO_PENDING)
-*     2.InternetConnect/InternetOpenUrl/WinHttpConnect  连接到指定 Server:Port 上的Connect句柄(对应 CHttpConnection )，可以指定用户名和密码
-*     3.HttpOpenRequest/WinHttpOpenRequest 在连接句柄上打开的Request句柄(对应 CHttpFile 等)，要指定是 POST/GET 等，其后的数据交换在该句柄上进行，
+*     2.InternetConnect(指定Server+Object+Port)/WinHttpConnect  
+*       连接到指定 Server:Port 上的Connect句柄(对应 CHttpConnection )，可以指定用户名和密码
+*     3.HttpOpenRequest/WinHttpOpenRequest 在连接句柄上打开的Request句柄(对应 CHttpFile 等)，要指定是 POST/GET 等，其后的数据交换在该句柄上进行
+*       其 lplpszAcceptTypes 参数是指向LPCTSTR数组的指针，数组以一个NULL指针结束，指定了程序接受的内容的类型(NULL 表不接受任何类型的内容，空字符串等价于"text/*")
+*   注意：如果采用 InternetOpen + InternetOpenUrl 的方式，则只需要两个句柄
+* 
 *   发送文件数据流程
-*     HttpOpenRequest => HttpAddRequestHeaders => HttpSendRequestEx => loop InternetWriteFile( Fire OnProgress ) => HttpEndRequest
+*     HttpOpenRequest => HttpAddRequestHeaders => HttpSendRequestEx => loop InternetWriteFile( Fire OnProgress ) 
+*       => HttpEndRequest => loop InternetReadFile(读取响应)
+*
 *   接收数据流程
 *     HttpQueryInfo(HTTP_QUERY_CONTENT_LENGTH)     获取大小，静态网页可获取到大小，但asp/php等动态网页无法获取
 *     HttpQueryInfo(HTTP_QUERY_STATUS_CODE)   获取当前的状态码
 *     Loop InternetReadFile( Fire OnProgress ) ,如获取到大小，读取到指定大小；否则读取到 出错或 lpdwNumberOfBytesRead 返回 0
-*     InternetQueryDataAvailable 判断是否还有数据（函数调用成功，且返回值为0 表示读取完毕）
+*     InternetQueryDataAvailable 判断是否还有数据（函数调用成功，且返回值为0 表示读取完毕，需要在 HttpSendRequest 之后才能调用）
 * 
 *   属性/状态
 *     InternetGetConnectedState()
@@ -564,18 +575,20 @@
 *     InternetConnect -- 指定URL建立一个连接, 可知指定供 InternetSetStatusCallback 使用的回调参数(设计比较怪，为什么不在 InternetSetStatusCallback 中提供?)
 *     InternetAttemptConnect
 *     InternetCloseHandle(hRequest,hConnect, hOpen)
-*     HttpOpenRequest 
+*     HttpOpenRequest -- 建立一个HTTP请求，不过这个函数不会自动把请求发送出去，需要调用 HttpSendRequest[Ex] 来发送
 *       Https时dwFlags参数需要加上 INTERNET_FLAG_SECURE，并可以忽略特殊错误，如 INTERNET_FLAG_IGNORE_CERT_CN_INVALID|INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
+*     InternetLockRequestFile/InternetUnlockRequestFile -- 锁定/解锁资源文件
 *   数据传递
 *     InternetWriteFile -- 向打开的Http请求句柄中写入数据，通常在循环中进行
 *     InternetReadFile -- 从Http请求句柄中读取数据，通常循环到 *lpdwNumberOfBytesRead 为 0 或 函数返回FALSE
 *     InternetQueryDataAvailable -- 获取网络上还有的数据量，如果函数成功且返回的大小为0，表示没有数据了。
-*     HttpAddRequestHeaders(xxx, HTTP_ADDREQ_FLAG_ADD) -- 向HTTP请求句柄中增加请求头，
+*     InternetSetFilePointer -- 可以指定读取的位置?
+*     HttpAddRequestHeaders(xxx, HTTP_ADDREQ_FLAG_ADD) -- 向HTTP请求句柄中增加请求头，每个头都要以一个 CRLF 结束
 *     HttpSendRequest -- 发送请求数据 (有一个限制? -- 所有需要发送的内容都要在一个buffer里面?)
 *     WinHttpSendRequest
 *     WinHttpReceiveResponse -- 接收响应
 *     HttpSendRequestEx -- 通过 INTERNET_BUFFERS(注意要设置 dwStructSize) 结构体发送请求数据，
-*       通常可用于 POST 发送文件(将 dwBufferTotal 设置为 文件大小[+ 其他头信息]? )
+*       通常可用于 POST 发送文件，将 dwBufferTotal 设置为 Post等信息长度 + 文件大小(等价于设置 Content-Length )
 *       使用的请求句柄需要带 INTERNET_FLAG_NO_CACHE_WRITE 参数获得
 *     HttpEndRequest -- 结束HttpSendRequestEx初始化的HTTP请求
 *   Cache管理
@@ -971,6 +984,9 @@ namespace FTL
 			ecERROR,
 			ecCANCEL,
 		};
+		//TODO:提供给调用方回调处理，比如文件重名后的处理
+		//virtual BOOL OnError(DWORD dwErrorCode) = 0;
+
 		virtual void OnProgress(INT nId, IFInternetCallback::STATUS status, ULONG64 nCurPos, ULONG64 nTotalSize) = 0;
 		virtual void OnEnd(INT nId, IFInternetCallback::END_CODE endCode, DWORD dwErrorCode) = 0;
 	};
@@ -979,9 +995,9 @@ namespace FTL
 	{
 		tptUnknown,
 		//tptText,
-		tptPostArgument,
+		tptPostArgument,    //Post 参数，每一个都格式化成 Content-Disposition: form-data; name=\"xxx\"\r\n\r\nValue 分开
 		tptRequestHeader,	//HttpAddRequestHeaders,目前唯一需要外界提供的是 Cookie,
-		tptLocalFile,		//本地文件，Value是文件路径
+		tptLocalFile,		//本地文件，Value是文件路径, 其本质也是一种 tptPostArgument
 	};
 	struct FTransferParam
 	{
@@ -1008,7 +1024,7 @@ namespace FTL
 		FTLINLINE ~FTransferJobInfo();
 
 		//TODO: 参考 CHttpFile::AddRequestHeaders("Accept: */*");
-		FTLINLINE void AddTransferParam(FTransferParamType paramType, CAtlString strName, CAtlString strValue, UINT codePage = CP_UTF8)
+		FTLINLINE void AddTransferParam(FTransferParamType paramType, const CAtlString& strName, const CAtlString& strValue, UINT codePage = CP_UTF8)
 		{
 			FTransferParam param;
 			param.paramType = paramType;
@@ -1033,6 +1049,8 @@ namespace FTL
 		FTLINLINE virtual ~CFTransferJobBase();
 
 		FTLINLINE virtual void Run(FTransferJobInfo* pJobInfo);
+
+		FTLINLINE const std::string& GetResponseData() const; //获取没有转换过的网络数据
 	protected:
 		IFInternetCallback*		m_pCallback;
 		CAtlString				m_strAgent;
@@ -1045,7 +1063,8 @@ namespace FTL
 		HINTERNET	m_hSession;
 		HINTERNET	m_hConnection;
 		HINTERNET	m_hRequest;
-
+		
+		std::string m_strResponse;
 	protected:
 		FTLINLINE virtual BOOL _CheckParams() = 0;
 		FTLINLINE virtual BOOL _SendRequest() = 0;
@@ -1091,8 +1110,9 @@ namespace FTL
 		{
 			DISABLE_COPY_AND_ASSIGNMENT(PostFileParam);
 		public:
+			//注意: pBuffer包括了最后的NULL(这样方便调试时查看), 但nBufferSize不包括最后的NULL(保证发送的数据不错误)
 			LPSTR   pBuffer;
-			DWORD	nBufferSize;
+			DWORD	nBufferSize;	
 
 			DWORD   dwFileSize;
 			CString strFilePath;
@@ -1119,7 +1139,7 @@ namespace FTL
 		FTLINLINE LPCTSTR _GetMultiPartBoundary(BOOL bEnd) const;
 
 		FTLINLINE LONG64 _CalcContentLength();
-		FTLINLINE BOOL	_SendRequestHeader();
+		FTLINLINE BOOL	_SetRequestHeader();
 		FTLINLINE BOOL  _SendUploadData();
 		FTLINLINE BOOL  _SendPostArgument(PBYTE pBuffer, DWORD dwBufferSize);
 		FTLINLINE BOOL	_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize);

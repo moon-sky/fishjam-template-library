@@ -1896,6 +1896,7 @@ namespace FTL
 			INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)));
 		if (bRet)
 		{
+			//TODO:换成 InternetOpenUrl ?
 			API_VERIFY(NULL !=(m_hConnection = ::InternetConnect(m_hSession, 
 				m_pJobInfo->m_strServerName, 
 				m_pJobInfo->m_nPort, 
@@ -1962,6 +1963,11 @@ namespace FTL
 		{
 			m_pCallback->OnProgress(GetJobIndex(), status, m_nCurPos, m_nTotalSize);
 		}
+	}
+
+	const std::string& CFTransferJobBase::GetResponseData() const
+	{
+		return m_strResponse;
 	}
 
 	void CFTransferJobBase::Run(FTransferJobInfo* pJobInfo)
@@ -2059,15 +2065,20 @@ namespace FTL
 			FTransferParam& transParam = *iter;
 		}
 
+		//转换Post的参数（1.LPCTSTR -> LPSTR; 2. localFile)，并计算总共需要的长度
 		API_VERIFY(_TranslatePostParams());
 
 		LONG64 nTotalSize = _CalcContentLength();
 		if (bRet && nTotalSize > 0)
 		{
 			m_nTotalSize = nTotalSize;
+			
+			//创建RequestHeader 的说明信息 -- 说明是 "multipart/form-data, 且指明 Boundary
 			CAtlString strContentTypeValue;
 			strContentTypeValue.Format(TEXT("multipart/form-data; boundary=%s"), _GetMultiPartBoundary(FALSE));
 			_AddRequestHeader(TEXT("Content-Type"), strContentTypeValue);
+
+			//增加其他可能需要的Header
 			_AddRequestHeader(TEXT("Accept"), TEXT("*/*"));
 
 			CAtlString strContentLength;
@@ -2151,10 +2162,11 @@ namespace FTL
 						strParam.Format(
 							"--%s\r\n"
 							"Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n"
-							"Content-Type: %s\r\n"
+#pragma TODO(ContentType now is jpeg)
+							"Content-Type: %s\r\n"   //似乎可以不要?
 							"\r\n",
 							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(_GetMultiPartBoundary(FALSE)),
-							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(transParam.strName),
+							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(transParam.strName),  //一般来说是 "file[1]"
 							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(transParam.strValue),
 							//CFConversion(transParam.CodePage).TCHAR_TO_UTF8(szContentType)
 							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(TEXT("image/jpeg"))
@@ -2383,7 +2395,7 @@ namespace FTL
 			NULL, NULL, NULL, dwFlags, NULL)));
 		if (bRet)
 		{
-			API_VERIFY(_SendRequestHeader());
+			API_VERIFY(_SetRequestHeader());
 		}
 		if (bRet)
 		{
@@ -2408,27 +2420,27 @@ namespace FTL
 			DWORD dwWriteToLocal = 0;
 			DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
 			BYTE* pBuffer = new BYTE[dwBufferSize];
-			do 
+			if (pBuffer)
 			{
-#ifdef FTL_DEBUG
-				ZeroMemory(pBuffer, dwBufferSize);
-#endif
-				dwRead = INTERNET_BUFFER_SIZE;
-				API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwRead, &dwRead));
-				if (bRet && dwRead > 0)
+				do 
 				{
-					//API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
-					if (!bRet)// || dwRead != dwWriteToLocal)
+#ifdef FTL_DEBUG
+					ZeroMemory(pBuffer, dwBufferSize);
+#endif
+					dwSize = INTERNET_BUFFER_SIZE;
+					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwBufferSize, &dwRead));
+					if (bRet && dwRead > 0)
 					{
-						_NotifyResult(IFInternetCallback::ecERROR, GetLastError(), TEXT("WriteFile"));
-						break;
+						m_strResponse += std::string((char)pBuffer, dwRead);
 					}
-					FTLTRACEEX(tlError,TEXT("Upload Response= %s\n"), CFConversion(949).UTF8_TO_TCHAR((LPCSTR)pBuffer));
-					//m_nCurPos += dwRead;
-					//_NotifyProgress(IFInternetCallback::sDoing);
-				}
-			} while (dwRead >0 && !m_bCancel);
-			SAFE_DELETE_ARRAY(pBuffer);
+				} while (dwRead >0 && !m_bCancel);
+				SAFE_DELETE_ARRAY(pBuffer);
+			}
+			else
+			{
+				SetLastError(ERROR_OUTOFMEMORY);
+				bRet = FALSE;
+			}
 		}
 		return bRet;
 	}
@@ -2441,6 +2453,7 @@ namespace FTL
 	LONG64 CFUploadJob::_CalcContentLength()
 	{
 		BOOL bRet = FALSE;
+		//计算总共的长度：post参数长度 + 文件长度(注意文件内容分割的长度) -- 和nTalk等其他项目的代码不一样(依赖于Post参数的创建方式中是否包含多余的CRLF等)
 
 		LONG64 nContentLength = 0;
 
@@ -2469,7 +2482,7 @@ namespace FTL
 		return nContentLength;
 	}
 
-	BOOL CFUploadJob::_SendRequestHeader()
+	BOOL CFUploadJob::_SetRequestHeader()
 	{
 		BOOL bRet = TRUE;
 
@@ -2486,7 +2499,7 @@ namespace FTL
 					{
 						CAtlString strHeader;
 						strHeader.Format(TEXT("%s: %s\r\n"), transParam.strName, transParam.strValue);
-						FTLTRACE(TEXT("_SendRequestHeader >>>>  %s"), strHeader);
+						FTLTRACE(TEXT("_SetRequestHeader >>>>  %s\n"), strHeader);
 
 						API_VERIFY(::HttpAddRequestHeaders(m_hRequest, strHeader, 
 							strHeader.GetLength(), HTTP_ADDREQ_FLAG_ADD_IF_NEW));
@@ -2534,11 +2547,12 @@ namespace FTL
 			DWORD dwInfoSize = sizeof(dwStatusCode);
 			API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatusCode,
 				&dwInfoSize, NULL));
-			if (dwStatusCode != HTTP_STATUS_OK)
+			if (dwStatusCode != HTTP_STATUS_OK) // && dwStatusCode != HTTP_STATUS_NOT_MODIFIED
 			{
 				//可能是需要身份验证(代理、服务器等) -- 需要提供给子类处理的机制
 				//401 -- HTTP_STATUS_PROXY_AUTH_REQ
 				//403 -- HTTP_STATUS_FORBIDDEN
+				//404 -- HTTP_STATUS_NOT_FOUND
 				//407 -- HTTP_STATUS_DENIED
 				FTLTRACEEX(tlError, TEXT("CFDownloadJob::_SendRequest, StatusCode is Error %d\n"), dwStatusCode);
 				//SetLastError(dwStatusCode);
@@ -2560,6 +2574,8 @@ namespace FTL
 			&nContentLength, &dwInfoSize, NULL));
 		if (bRet)
 		{
+#pragma TODO(考虑本地文件重复需要重命名或删除等)
+
 			m_nTotalSize = nContentLength;
 			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, GENERIC_WRITE, 0, NULL,
 				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -2568,7 +2584,9 @@ namespace FTL
 			if (INVALID_HANDLE_VALUE != hLocalFile)
 			{
 				_NotifyProgress(IFInternetCallback::sStart);
-				DWORD dwRead = 0;
+					
+
+				DWORD dwSize = 0, dwRead = 0;
 				DWORD dwWriteToLocal = 0;
 				DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
 				BYTE* pBuffer = new BYTE[dwBufferSize];
@@ -2577,8 +2595,11 @@ namespace FTL
 #ifdef FTL_DEBUG
 					ZeroMemory(pBuffer, dwBufferSize);
 #endif
-					dwRead = INTERNET_BUFFER_SIZE;
-					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwRead, &dwRead));
+					//TODO: 是否需要调用这个函数，及其作用和返回值? 如果真取得 dwRead 大小，还要和 INTERNET_BUFFER_SIZE 比较
+					//API_VERIFY(InternetQueryDataAvailable(m_hRequest, &dwRead, 0, 0));
+
+					dwSize = INTERNET_BUFFER_SIZE;
+					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwSize, &dwRead));
 					if (bRet && dwRead > 0)
 					{
 						API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
@@ -2587,10 +2608,10 @@ namespace FTL
 							_NotifyResult(IFInternetCallback::ecERROR, GetLastError(), TEXT("WriteFile"));
 							break;
 						}
-						m_nCurPos += dwRead;
+						m_nCurPos += dwWriteToLocal;
 						_NotifyProgress(IFInternetCallback::sDoing);
 					}
-				} while (dwRead >0 && !m_bCancel);
+				} while (dwRead != 0 && !m_bCancel);
 				SAFE_DELETE_ARRAY(pBuffer);
 
 				if (dwRead == 0 && !m_bCancel)

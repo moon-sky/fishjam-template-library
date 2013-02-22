@@ -453,7 +453,7 @@ namespace FTL
 		return 0;   // no support
 	}
 
-	BOOL CFPath::CreateDir(LPTSTR szPath)
+	BOOL CFPath::CreateDirTree(LPTSTR szPath)
 	{
 		TCHAR szDirName[MAX_PATH] = { NULL };
 		TCHAR* p = szPath;
