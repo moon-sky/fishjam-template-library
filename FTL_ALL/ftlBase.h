@@ -692,6 +692,7 @@ namespace FTL
             FTLINLINE BOOL Flush ();
             FTLINLINE BOOL SnapFile ( );
             FTLINLINE BOOL Close();
+			FTLINLINE bool operator < (const CFTFileWriter & other) const;
         protected:
             HANDLE m_hFile ;    // The actual file handle.
             LONG   m_lWrites ;  // The total number of writes to the file.
@@ -830,11 +831,13 @@ namespace FTL
             TCHAR  bufIndicate[MAX_TRACE_INDICATE_LEVEL + 1];//增加最后的NULL所占的空间
         };
         static DWORD  s_dwTLSIndex;
+		static LONG   s_lElapseId;
         const TCHAR* m_pszFileName;
         const TCHAR* m_pszBlkName;
         const LPVOID m_pReturnAdr;
         const DWORD  m_Line;
         const DWORD m_MinElapse;
+		LONG  m_nElapseId;
         DWORD m_StartTime;
     };
 #endif //FTL_DEBUG

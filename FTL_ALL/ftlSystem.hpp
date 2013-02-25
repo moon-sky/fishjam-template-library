@@ -734,8 +734,8 @@ namespace FTL
         strFormater.Format(TEXT("%s\\%s"), pszPluginPath, pszExtName);
 
         WIN32_FIND_DATA findData = {0};
-        HANDLE hFind = INVALID_HANDLE_VALUE;
-        API_VERIFY( INVALID_HANDLE_VALUE != (hFind = ::FindFirstFile(strFormater, &findData)));
+        HANDLE hFind = ::FindFirstFile(strFormater, &findData);
+        API_VERIFY_EXCEPT1( (INVALID_HANDLE_VALUE != (hFind)), ERROR_PATH_NOT_FOUND);
         if (INVALID_HANDLE_VALUE != hFind )
         {
             do 

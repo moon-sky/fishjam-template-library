@@ -16,7 +16,6 @@
 
 #include <ftlFunctional.h>
 #include <ftlDebug.h>
-#include <ftlMultiMedia.h>
 #include <ftlNLS.h>
 
 #pragma comment(lib, "Wininet.lib")
@@ -1868,7 +1867,7 @@ namespace FTL
 		m_pJobInfo = NULL;
 
 		m_nJobIndex = 0;
-		m_bCancel = FALSE;
+		//m_bCancel = FALSE;
 		m_nTotalSize = (LONG64)(-1);
 		m_nCurPos = 0;
 
@@ -1953,7 +1952,7 @@ namespace FTL
 
 		if (m_pCallback)
 		{
-			m_pCallback->OnEnd(GetJobIndex(), endCode, dwError);
+			m_pCallback->OnEnd(GetJobIndex(), endCode, dwError, m_pJobInfo->m_strResponseData);
 		}
 	}
 
@@ -1965,10 +1964,10 @@ namespace FTL
 		}
 	}
 
-	const std::string& CFTransferJobBase::GetResponseData() const
-	{
-		return m_strResponse;
-	}
+	//const std::string& CFTransferJobBase::GetResponseData() const
+	//{
+	//	return m_strResponse;
+	//}
 
 	void CFTransferJobBase::Run(FTransferJobInfo* pJobInfo)
 	{
@@ -2016,7 +2015,7 @@ namespace FTL
 			if (dwError)
 			{
 				IFInternetCallback::END_CODE endCode = IFInternetCallback::ecERROR;
-				if (dwError == ERROR_CANCELLED || m_bCancel)
+				if (dwError == ERROR_CANCELLED || GetJobWaitType(0) == ftwtStop)
 				{
 					endCode = IFInternetCallback::ecCANCEL;
 				}
@@ -2249,7 +2248,7 @@ namespace FTL
 			iterArgument != m_postArgumentParams.end();
 			++iterArgument)
 		{
-			if (m_bCancel)
+			if (GetJobWaitType(0) == ftwtStop)
 			{
 				break;
 			}
@@ -2266,9 +2265,12 @@ namespace FTL
 				pArgumentParam->nBufferSize, 
 				CFConversion(CP_UTF8).UTF8_TO_TCHAR(pArgumentParam->pBuffer));
 		}
-		API_VERIFY(_SendN((PBYTE)pBuffer, dwDestSize, NULL));
-		m_nCurPos += dwDestSize;
-		_NotifyProgress(IFInternetCallback::sDoing);
+		if (dwDestSize > 0)
+		{
+			API_VERIFY(_SendN((PBYTE)pBuffer, dwDestSize, NULL));
+			m_nCurPos += dwDestSize;
+			_NotifyProgress(IFInternetCallback::sDoing);
+		}
 
 		return bRet;
 	}
@@ -2281,7 +2283,7 @@ namespace FTL
 			iterFile != m_postFileParams.end();
 			++iterFile)
 		{
-			if (m_bCancel)
+			if (GetJobWaitType(0) == ftwtStop)
 			{
 				SetLastError(ERROR_CANCELLED);
 				break;
@@ -2318,7 +2320,7 @@ namespace FTL
 					&& dwReadSize > 0
 					&& dwRemainBytes > 0)
 				{
-					if (m_bCancel)
+					if (GetJobWaitType(0) == ftwtStop)
 					{
 						SetLastError(ERROR_CANCELLED);
 						break;
@@ -2427,13 +2429,14 @@ namespace FTL
 #ifdef FTL_DEBUG
 					ZeroMemory(pBuffer, dwBufferSize);
 #endif
-					dwSize = INTERNET_BUFFER_SIZE;
+					dwBufferSize = INTERNET_BUFFER_SIZE;
 					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwBufferSize, &dwRead));
 					if (bRet && dwRead > 0)
 					{
-						m_strResponse += std::string((char)pBuffer, dwRead);
+						m_pJobInfo->m_strResponseData += std::string((char)pBuffer, dwRead);
+						//m_strResponse += std::string((char)pBuffer, dwRead);
 					}
-				} while (dwRead >0 && !m_bCancel);
+				} while (dwRead >0 && (GetJobWaitType(0) != ftwtStop));
 				SAFE_DELETE_ARRAY(pBuffer);
 			}
 			else
@@ -2611,22 +2614,22 @@ namespace FTL
 						m_nCurPos += dwWriteToLocal;
 						_NotifyProgress(IFInternetCallback::sDoing);
 					}
-				} while (dwRead != 0 && !m_bCancel);
+				} while (dwRead != 0 && (GetJobWaitType(0) != ftwtStop));
 				SAFE_DELETE_ARRAY(pBuffer);
 
-				if (dwRead == 0 && !m_bCancel)
+				if (dwRead == 0 && (GetJobWaitType(0) != ftwtStop))
 				{
 					_NotifyProgress(IFInternetCallback::sComplete);
 					bRet = TRUE;
 				}
-				else if(m_bCancel)
+				else if(GetJobWaitType(0) == ftwtStop)
 				{
 					SetLastError(ERROR_CANCELLED);
 					bRet = FALSE;
 				}
 				CloseHandle(hLocalFile);
 			}
-			if (m_bCancel)
+			if (GetJobWaitType(0) == ftwtStop)
 			{
 				BOOL bTempRet = ::DeleteFile(m_strLocalFilePath);
 				API_ASSERT(bTempRet);

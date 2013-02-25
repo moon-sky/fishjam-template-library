@@ -26,6 +26,7 @@
 
 #include "ftlBase.h"
 #include "ftlthread.h"
+#include "ftlThreadPool.h"
 #include "ftlCom.h"
 
 //目前两个版本有冲突，可以通过删除 winhttp.h 中冲突的部分，并将改后的文件放在工程中的方法来解决
@@ -988,7 +989,7 @@ namespace FTL
 		//virtual BOOL OnError(DWORD dwErrorCode) = 0;
 
 		virtual void OnProgress(INT nId, IFInternetCallback::STATUS status, ULONG64 nCurPos, ULONG64 nTotalSize) = 0;
-		virtual void OnEnd(INT nId, IFInternetCallback::END_CODE endCode, DWORD dwErrorCode) = 0;
+		virtual void OnEnd(INT nId, IFInternetCallback::END_CODE endCode, DWORD dwErrorCode, const std::string& strResponseData) = 0;
 	};
 
 	enum FTransferParamType
@@ -1040,6 +1041,7 @@ namespace FTL
 
 		//BOOL		m_bUploadJob;
 		TransferParamContainer	m_transferParams;
+		std::string	m_strResponseData;		//没有转换过的网络反馈
 	};
 
 	class CFTransferJobBase : public CFJobBase<FTransferJobInfo*>
@@ -1050,7 +1052,7 @@ namespace FTL
 
 		FTLINLINE virtual void Run(FTransferJobInfo* pJobInfo);
 
-		FTLINLINE const std::string& GetResponseData() const; //获取没有转换过的网络数据
+		//FTLINLINE const std::string& GetResponseData() const; //获取没有转换过的网络数据
 	protected:
 		IFInternetCallback*		m_pCallback;
 		CAtlString				m_strAgent;
@@ -1064,7 +1066,7 @@ namespace FTL
 		HINTERNET	m_hConnection;
 		HINTERNET	m_hRequest;
 		
-		std::string m_strResponse;
+		//std::string m_strResponse;
 	protected:
 		FTLINLINE virtual BOOL _CheckParams() = 0;
 		FTLINLINE virtual BOOL _SendRequest() = 0;
@@ -1171,6 +1173,8 @@ namespace FTL
 		
 		FTLINLINE INT AddDownloadTask(FTransferJobInfo* pDownloadJobInfo, LPCTSTR pszLocalFilePath);
 		FTLINLINE INT AddUploadTask(FTransferJobInfo* pUploadJobInfo);
+
+		//FTLINLINE INT AddUploadTaskJob(CFUploadJob* pUploadJob);
 
 		FTLINLINE INT AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );
 		FTLINLINE BOOL CancelTask(INT nJobIndex);

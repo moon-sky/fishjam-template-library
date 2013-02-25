@@ -651,6 +651,12 @@ namespace FTL
         return ( bRet ) ;
     }
 
+	bool CFFastTrace::CFTFileWriter::operator < (const CFTFileWriter & other) const
+	{
+		COMPARE_MEM_LESS(m_hFile, other);
+		return true;
+	}
+	
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     CFFastTrace& CFFastTrace::GetInstance()
     {
@@ -1163,6 +1169,7 @@ namespace FTL
         {
             API_VERIFY(TlsSetValue(s_dwTLSIndex, NULL));
         }
+		s_lElapseId = 0;
         return bRet;
     }
     VOID CFBlockElapse::UnInit()
@@ -1187,12 +1194,13 @@ namespace FTL
         FTLASSERT(TLS_OUT_OF_INDEXES != s_dwTLSIndex && TEXT("Must Call Init"));
         FTLASSERT(pBlockName);
         FTLASSERT(pReturnAddr);
+		m_nElapseId = InterlockedIncrement(&s_lElapseId);
 
         BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(s_dwTLSIndex);
         if (NULL == pInfo)
         {
-            FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
-                __FILE__LINE__, GetCurrentThreadId());
+            //FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
+            //   __FILE__LINE__, GetCurrentThreadId());
             pInfo = new BlockElapseInfo();
             ZeroMemory(pInfo, sizeof(BlockElapseInfo));
             TlsSetValue(s_dwTLSIndex, pInfo);
@@ -1215,8 +1223,8 @@ namespace FTL
         DWORD dwElapseTime = GetTickCount() - m_StartTime;
         if (m_MinElapse != 0 && dwElapseTime >= m_MinElapse)
         {
-            FAST_TRACE_EX(tlWarning, TEXT("%s(%d) :\t TID(0x%04x) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
-                m_pszFileName,m_Line,GetCurrentThreadId(), m_pszBlkName,m_pReturnAdr,m_MinElapse,dwElapseTime);
+            FAST_TRACE_EX(tlWarning, TEXT("%s(%d) :\t TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
+                m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, m_pszBlkName,m_pReturnAdr,m_MinElapse,dwElapseTime);
         }
         
         BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(s_dwTLSIndex);
@@ -1231,12 +1239,12 @@ namespace FTL
             }
             pInfo->bufIndicate[curLevel] = 0;
             FAST_TRACE_EX(tlDetail,TEXT("%s(%d) :\t TID(0x%04x) %s (Leave \t%d): %s\n"),
-                m_pszFileName,m_Line,GetCurrentThreadId(),pInfo->bufIndicate,pInfo->indent,m_pszBlkName);
+                m_pszFileName,m_Line,GetCurrentThreadId(), pInfo->bufIndicate,pInfo->indent,m_pszBlkName);
             pInfo->indent--;
             if (0 == pInfo->indent)
             {
-                FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
-                    __FILE__LINE__, GetCurrentThreadId());
+                //FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
+                //    __FILE__LINE__, GetCurrentThreadId());
                 delete pInfo;
                 TlsSetValue(s_dwTLSIndex, NULL);
             }
@@ -1244,6 +1252,7 @@ namespace FTL
     }
 
     __declspec(selectany) DWORD   CFBlockElapse::s_dwTLSIndex = TLS_OUT_OF_INDEXES;
+	__declspec(selectany) LONG    CFBlockElapse::s_lElapseId = 0;
     //__declspec(selectany) LONG CFBlockElapse::s_Indent = 0;
     //__declspec(selectany) TCHAR CFBlockElapse::s_bufIndicate[MAX_TRACE_INDICATE_LEVEL + 1];
 
