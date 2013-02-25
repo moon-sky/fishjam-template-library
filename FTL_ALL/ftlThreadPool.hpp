@@ -538,6 +538,7 @@ namespace FTL
 			break;
 		}
 		{
+			//从等待容器中获取用户作业
 			CFAutoLock<CFLockObject> lockerWating(&m_lockWaitingJobs);
 			FTLASSERT(!m_WaitingJobs.empty());
 			JobInfoContainer::iterator iterBegin = m_WaitingJobs.begin();
@@ -549,6 +550,7 @@ namespace FTL
 			*pParam = pInfo->param;
 			m_WaitingJobs.erase(iterBegin);
 			{
+				//放到进行作业的容器中
 				CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
 				m_DoingJobs.insert(JobInfoContainer::value_type(nJobIndex, pInfo));			
 			}

@@ -1,4 +1,3 @@
-
 #ifndef FTL_WINDOW_HPP
 #define FTL_WINDOW_HPP
 #pragma once
