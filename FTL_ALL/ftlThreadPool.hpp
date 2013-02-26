@@ -127,7 +127,7 @@ namespace FTL
 		m_hEventContinue = ::CreateEvent(NULL,TRUE,TRUE,NULL);
 		FTLASSERT(NULL != m_hEventContinue);
 
-		m_hEventAllThreadComplete = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+		m_hEventAllThreadComplete = ::CreateEvent(NULL, TRUE, TRUE, NULL);
 		FTLASSERT(NULL != m_hEventAllThreadComplete);
 
 		if (m_nMinNumThreads < m_nMaxNumThreads)
