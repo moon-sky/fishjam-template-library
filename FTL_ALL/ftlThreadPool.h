@@ -78,6 +78,7 @@ namespace FTL
     * 使用方式：参见 test_CFThreadPool
     *********************************************************************************************/
 #pragma TODO(CreateThreadpoolIo)
+	//目前的线程池 SubmitJob 的实现方式可能会照成 Job 结束的时候，这个函数还没有返回的Bug ?
 	//http://m.blog.csdn.net/blog/ithzhang/8373243
 
 	template <typename T> class CFThreadPool;  //前向声明
@@ -178,11 +179,10 @@ namespace FTL
 		//! 每一个线程创建是会调用 OnAddThread
 		//! 成功后会通过 outJobIndex 返回Job的索引号，可通过该索引定位、取消特定的Job
 		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob,const T& param, INT* pOutJobIndex);
-		FTLINLINE BOOL SubmitJob(void (*pJobProc)(T& param), T& param, INT* pOutJobIndex);
+		//FTLINLINE BOOL SubmitJob(void (*pJobProc)(T& param), T& param, INT* pOutJobIndex);
 
-		//取消指定的Job, TODO:如果取出Job给客户，可能调用者得到指针时，Job执行完毕delete this，会照成野指针异常
+		//取消指定的Job, TODO:如果取出Job给客户，可能调用者得到指针时，Job执行完毕 delete this，会照成野指针异常
 		FTLINLINE BOOL CancelJob(INT nJobIndex);
-
 		//FTLINLINE BOOL PauseJob(INT nJobIndex);
 		//FTLINLINE BOOL ResumeJob(INT nJobIndex);
 

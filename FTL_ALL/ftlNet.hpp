@@ -1836,6 +1836,7 @@ namespace FTL
 		m_nPort = INTERNET_DEFAULT_HTTP_PORT;
 		//m_bUploadJob = FALSE;
 		m_transferParams.clear();
+		m_strResponseData = "";
 	}
 	FTransferJobInfo::FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, 
 		USHORT nPort /* = INTERNET_DEFAULT_HTTP_PORT */)
@@ -1855,6 +1856,7 @@ namespace FTL
 		
 		//m_bUploadJob = FALSE;
 		m_transferParams.clear();
+		m_strResponseData = "";
 	}
 	FTransferJobInfo::~FTransferJobInfo()
 	{
@@ -1865,7 +1867,7 @@ namespace FTL
 	{
 		m_pCallback = pCallback;
 		m_strAgent = strAgent;
-		m_pJobInfo = NULL;
+		//m_pJobInfo = NULL;
 
 		m_nJobIndex = 0;
 		//m_bCancel = FALSE;
@@ -1953,7 +1955,7 @@ namespace FTL
 
 		if (m_pCallback)
 		{
-			m_pCallback->OnEnd(GetJobIndex(), endCode, dwError, m_pJobInfo->m_strResponseData);
+			m_pCallback->OnTransferEnd(GetJobIndex(), endCode, dwError, m_pJobInfo->m_strResponseData);
 		}
 	}
 
@@ -1961,7 +1963,7 @@ namespace FTL
 	{
 		if (m_pCallback)
 		{
-			m_pCallback->OnProgress(GetJobIndex(), status, m_nCurPos, m_nTotalSize);
+			m_pCallback->OnTransferProgress(GetJobIndex(), status, m_nCurPos, m_nTotalSize);
 		}
 	}
 
@@ -1970,7 +1972,7 @@ namespace FTL
 	//	return m_strResponse;
 	//}
 
-	void CFTransferJobBase::Run(FTransferJobInfo* pJobInfo)
+	void CFTransferJobBase::Run(FTransferJobInfoPtr pJobInfo)
 	{
 		BOOL bRet = FALSE;
 		FTLASSERT(pJobInfo);
@@ -2031,7 +2033,7 @@ namespace FTL
 		}
 
 		//free resource
-		SAFE_DELETE(pJobInfo);
+		//SAFE_DELETE(pJobInfo);
 		_Close();
 		delete this;
 	}
@@ -2422,23 +2424,27 @@ namespace FTL
 			DWORD dwRead = 0;
 			DWORD dwWriteToLocal = 0;
 			DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
-			BYTE* pBuffer = new BYTE[dwBufferSize];
+			CHAR* pBuffer = new CHAR[dwBufferSize];
 			if (pBuffer)
 			{
+				CAtlStringA strResponse;
 				do 
 				{
 #ifdef FTL_DEBUG
 					ZeroMemory(pBuffer, dwBufferSize);
 #endif
 					dwBufferSize = INTERNET_BUFFER_SIZE;
-					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwBufferSize, &dwRead));
+					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwBufferSize - 1, &dwRead));
 					if (bRet && dwRead > 0)
 					{
-						m_pJobInfo->m_strResponseData += std::string((char)pBuffer, dwRead);
+						pBuffer[dwRead] = NULL;
+						strResponse.AppendFormat("%s", pBuffer);
+						//m_pJobInfo->m_strResponseData += std::string((char)pBuffer, dwRead);
 						//m_strResponse += std::string((char)pBuffer, dwRead);
 					}
 				} while (dwRead >0 && (GetJobWaitType(0) != ftwtStop));
 				SAFE_DELETE_ARRAY(pBuffer);
+				m_pJobInfo-> m_strResponseData = strResponse;
 			}
 			else
 			{
@@ -2671,7 +2677,7 @@ namespace FTL
 		FTLASSERT(nMinParallelCount <= nMaxParallelCount);
 		m_pCallBack = pCallBack;
 
-		m_pThreadPool = new CFThreadPool<FTransferJobInfo*>(nMinParallelCount, nMaxParallelCount);
+		m_pThreadPool = new CFThreadPool<FTransferJobInfoPtr>(nMinParallelCount, nMaxParallelCount);
 		if (m_pThreadPool)
 		{
 			API_VERIFY(m_pThreadPool->Start());
@@ -2704,7 +2710,7 @@ namespace FTL
 		SAFE_DELETE(m_pThreadPool);
 	}
 
-	INT CFInternetTransfer::AddUploadTask(FTransferJobInfo* pUploadJobInfo)
+	INT CFInternetTransfer::AddUploadTask(FTransferJobInfoPtr pUploadJobInfo)
 	{
 		FTLASSERT(m_pThreadPool);
 		FTLASSERT(pUploadJobInfo);
@@ -2720,7 +2726,7 @@ namespace FTL
 		return nJobIndex;
 	}
 
-	INT CFInternetTransfer::AddDownloadTask(FTransferJobInfo* pDownloadJobInfo, LPCTSTR pszLocalFilePath)
+	INT CFInternetTransfer::AddDownloadTask(FTransferJobInfoPtr pDownloadJobInfo, LPCTSTR pszLocalFilePath)
 	{
 		FTLASSERT(m_pThreadPool);
 		FTLASSERT(pDownloadJobInfo);
@@ -2737,26 +2743,26 @@ namespace FTL
 
 	}
 
-	INT CFInternetTransfer::AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath )
-	{
-		FTLASSERT(m_pThreadPool);
+	//INT CFInternetTransfer::AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath )
+	//{
+	//	FTLASSERT(m_pThreadPool);
 
-		FTLASSERT(pszServerName);
-		FTLASSERT(pszObjectName);
-		FTLASSERT(pszLocalFilePath);
+	//	FTLASSERT(pszServerName);
+	//	FTLASSERT(pszObjectName);
+	//	FTLASSERT(pszLocalFilePath);
 
-		BOOL bRet = FALSE;
-		//LONG64 nId = -1;
-		INT nJobIndex = 0;
-		if (pszServerName && pszObjectName && pszLocalFilePath)
-		{
-			FTransferJobInfo* pJobInfo = new FTransferJobInfo(pszServerName, pszObjectName, nPort);
-			CFDownloadJob* pJob = new CFDownloadJob(m_pCallBack, m_strAgent, pszLocalFilePath);
+	//	BOOL bRet = FALSE;
+	//	//LONG64 nId = -1;
+	//	INT nJobIndex = 0;
+	//	if (pszServerName && pszObjectName && pszLocalFilePath)
+	//	{
+	//		FTransferJobInfoPtr pJobInfo(new FTransferJobInfo(pszServerName, pszObjectName, nPort));
+	//		CFDownloadJob pJob = new CFDownloadJob(m_pCallBack, m_strAgent, pszLocalFilePath);
 
-			API_VERIFY(m_pThreadPool->SubmitJob(pJob, pJobInfo, &nJobIndex));
-		}
-		return nJobIndex;
-	}
+	//		API_VERIFY(m_pThreadPool->SubmitJob(pJob, pJobInfo, &nJobIndex));
+	//	}
+	//	return nJobIndex;
+	//}
 
 	BOOL CFInternetTransfer::CancelTask(INT nJobIndex)
 	{

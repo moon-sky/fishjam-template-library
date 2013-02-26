@@ -263,6 +263,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlThreadPool.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlUser.hpp"
 				>
 			</File>
@@ -410,6 +414,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlThread.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlThreadPool.h"
 				>
 			</File>
 			<File

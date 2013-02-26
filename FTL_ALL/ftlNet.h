@@ -24,9 +24,9 @@
 #  error ftlNet.h requires ftlbase.h to be included first
 #endif
 
-#include "ftlBase.h"
 #include "ftlthread.h"
 #include "ftlThreadPool.h"
+#include "ftlSharePtr.h"
 #include "ftlCom.h"
 
 //目前两个版本有冲突，可以通过删除 winhttp.h 中冲突的部分，并将改后的文件放在工程中的方法来解决
@@ -988,8 +988,8 @@ namespace FTL
 		//TODO:提供给调用方回调处理，比如文件重名后的处理
 		//virtual BOOL OnError(DWORD dwErrorCode) = 0;
 
-		virtual void OnProgress(INT nId, IFInternetCallback::STATUS status, ULONG64 nCurPos, ULONG64 nTotalSize) = 0;
-		virtual void OnEnd(INT nId, IFInternetCallback::END_CODE endCode, DWORD dwErrorCode, const std::string& strResponseData) = 0;
+		virtual void OnTransferProgress(INT nId, IFInternetCallback::STATUS status, ULONG64 nCurPos, ULONG64 nTotalSize) = 0;
+		virtual void OnTransferEnd(INT nId, IFInternetCallback::END_CODE endCode, DWORD dwErrorCode, const CAtlStringA& strResponseData) = 0;
 	};
 
 	enum FTransferParamType
@@ -1025,7 +1025,8 @@ namespace FTL
 		FTLINLINE ~FTransferJobInfo();
 
 		//TODO: 参考 CHttpFile::AddRequestHeaders("Accept: */*");
-		FTLINLINE void AddTransferParam(FTransferParamType paramType, const CAtlString& strName, const CAtlString& strValue, UINT codePage = CP_UTF8)
+		FTLINLINE void AddTransferParam(FTransferParamType paramType, const CAtlString& strName, const CAtlString& strValue, 
+			UINT codePage = CP_UTF8)
 		{
 			FTransferParam param;
 			param.paramType = paramType;
@@ -1039,24 +1040,27 @@ namespace FTL
 		CAtlString	m_strObjectName;
 		USHORT		m_nPort;
 
+		DWORD_PTR	m_dwUserParam;
 		//BOOL		m_bUploadJob;
 		TransferParamContainer	m_transferParams;
-		std::string	m_strResponseData;		//没有转换过的网络反馈
+		CAtlStringA		m_strResponseData;		//没有转换过的网络反馈
 	};
 
-	class CFTransferJobBase : public CFJobBase<FTransferJobInfo*>
+	typedef CFSharePtr<FTransferJobInfo> FTransferJobInfoPtr;
+
+	class CFTransferJobBase : public CFJobBase<FTransferJobInfoPtr>
 	{
 	public:
 		FTLINLINE CFTransferJobBase(IFInternetCallback* pCallback, const CAtlString& strAgent);
 		FTLINLINE virtual ~CFTransferJobBase();
 
-		FTLINLINE virtual void Run(FTransferJobInfo* pJobInfo);
+		FTLINLINE virtual void Run(FTransferJobInfoPtr pJobInfo);
 
 		//FTLINLINE const std::string& GetResponseData() const; //获取没有转换过的网络数据
 	protected:
 		IFInternetCallback*		m_pCallback;
 		CAtlString				m_strAgent;
-		FTransferJobInfo*		m_pJobInfo;
+		FTransferJobInfoPtr		m_pJobInfo;
 
 		INT			m_nJobIndex;
 		LONG64		m_nTotalSize;
@@ -1171,8 +1175,8 @@ namespace FTL
 		FTLINLINE BOOL Stop();
 		FTLINLINE void Close();
 		
-		FTLINLINE INT AddDownloadTask(FTransferJobInfo* pDownloadJobInfo, LPCTSTR pszLocalFilePath);
-		FTLINLINE INT AddUploadTask(FTransferJobInfo* pUploadJobInfo);
+		FTLINLINE INT AddDownloadTask(FTransferJobInfoPtr pDownloadJobInfo, LPCTSTR pszLocalFilePath);
+		FTLINLINE INT AddUploadTask(FTransferJobInfoPtr pUploadJobInfo);
 
 		//FTLINLINE INT AddUploadTaskJob(CFUploadJob* pUploadJob);
 
@@ -1182,7 +1186,7 @@ namespace FTL
 	private:
 		IFInternetCallback*	m_pCallBack;
 		CAtlString		m_strAgent;
-		FTL::CFThreadPool<FTransferJobInfo*>*		m_pThreadPool;
+		FTL::CFThreadPool<FTransferJobInfoPtr>*		m_pThreadPool;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
