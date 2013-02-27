@@ -197,7 +197,7 @@ namespace FTL
         HANDLE m_hEvent;
     };
 
-    //! 自动锁定同步对象
+    //! 自动锁定同步对象, MFC 中 CSingleLock(&m_lockObj, TRUE) 表示构造函数中自动锁，析构自动解锁
     FTLEXPORT template<typename T = CFLockObject>
     class CFAutoLock
     {

@@ -21,6 +21,7 @@
 #endif
 
 #include "ftlThread.h"
+//#include "ftlSharePtr.h"
 
 namespace FTL
 {
@@ -86,7 +87,45 @@ namespace FTL
 	//目前的线程池 SubmitJob 的实现方式可能会照成 Job 结束的时候，这个函数还没有返回的Bug ?
 	//http://m.blog.csdn.net/blog/ithzhang/8373243
 
-	template <typename T> class CFThreadPool;  //前向声明
+	//前向声明
+	template <typename T> class CFThreadPool;  
+
+	//FTLEXPORT template <typename T>
+	//struct JobInfo
+	//{
+	//	//容器改成map后，优先级已经不起作用了
+	//	LONG	nJobPriority;		//优先级，值越小，优先级越高，越早被调用，默认是0，可在 OnSubmitJob 中调整(尚不支持动态调整)
+	//	LONG	nJobIndex;
+	//	HANDLE	hEventJobStop;
+
+	//	CFJobBase<T> *pJob;
+	//	//CFJobBasePtr *pJob;
+	//	T param;
+
+	//	JobInfo()
+	//	{
+	//		nJobPriority = 0;
+	//		nJobIndex = 0;
+	//		hEventJobStop = NULL;
+	//		pJob = NULL;
+	//		param = T();
+	//	}
+	//	~JobInfo()
+	//	{
+	//		BOOL bRet = FALSE;
+	//		SAFE_CLOSE_HANDLE(hEventJobStop, NULL);
+	//	}
+	//	bool operator < (const JobInfo & other) const
+	//	{
+	//		COMPARE_MEM_LESS(nJobPriority, other);
+	//		COMPARE_MEM_LESS(nJobIndex, other);
+	//		return true;
+	//	}
+
+	//	//typedef CFSharePtr<JobInfo<T> >	JobInfoPtr;
+	//};
+	
+
 	//! 线程池类 -- 具有模板参数，通常可以方便参数传递，
 	//! 如果想实现多个具有不同参数类型的Job，可以将模板设为 DWORD_PTR 等可以转换为指针的类型即可
 	FTLEXPORT template <typename T>
@@ -96,7 +135,7 @@ namespace FTL
 	public:
 		CFJobBase();
 		virtual ~CFJobBase();
-		INT	 GetJobIndex() const;
+		LONG	 GetJobIndex() const;
 		//如果Job正在运行过程中被取消，会调用这个方法
 		BOOL NotifyStop();
 
@@ -112,13 +151,12 @@ namespace FTL
 		FTLINLINE FTLThreadWaitType GetJobWaitType(DWORD dwMilliseconds = INFINITE) const;
 	private:
 		//设置为私有的变量和方法，即使是子类也不要直接更改，由Pool调用进行控制
-		INT m_nJobIndex;
+		LONG m_nJobIndex;
 		HANDLE m_hEventJobStop;
 		CFThreadPool<T>* m_pThreadPool;
 		BOOL Initialize();
 		BOOL Finalize();
 	};
-
 
 	typedef enum tagGetJobType
 	{
@@ -127,6 +165,16 @@ namespace FTL
 		typeGetJob,
 		typeError,		//发生未知错误(目前尚不清楚什么情况下会发生)
 	}GetJobType;
+
+	FTLEXPORT template <typename T>
+	class IFThreadPoolCallBack
+	{
+	public:
+		virtual void OnJobStart(LONG nJobIndex, T& rJobParam) = 0;
+		virtual void OnJobProgress(LONG nJobIndex, T& rJobParam) = 0;
+		virtual void OnJobEnd(LONG nJobIndex, T& rJobParam) = 0;
+		virtual void OnJobError(LONG nJobIndex, T& rJobParam) = 0; 
+	};
 
 	//觉得使用指针似乎更好？使用模板的话，保存时应该使用引用还是指针？或直接用值？ -- 用值，不要过分优化
 	FTLEXPORT template <typename T>  
@@ -161,35 +209,34 @@ namespace FTL
 		};
 		//! 会在 nMinNumThreads -- nMaxNumThreads 之间自行调节线程的个数
 		//! 注意：nMaxNumThreads 必须小于 MAXIMUM_WAIT_OBJECTS
-		FTLINLINE CFThreadPool(LONG nMinNumThreads,LONG nMaxNumThreads);
+		FTLINLINE CFThreadPool(IFThreadPoolCallBack<T>* pCallBack = NULL);
 		FTLINLINE virtual ~CFThreadPool(void);
 
 		//! 开始线程池,此时会创建 nMinNumThreads 个线程
-		FTLINLINE BOOL Start();
+		FTLINLINE BOOL Start(LONG nMinNumThreads, LONG nMaxNumThreads);
 
 		//! 停止线程池 -- 每一个线程结束时会调用 OnSubtractThread
 		//! 注意：不会删除当前注册的但尚未进行的工作，如果需要删除，需要调用ClearUndoWork
 		FTLINLINE BOOL Stop();
 
-		FTLINLINE BOOL StopAndWait(DWORD dwTimeOut = FTL_MAX_THREAD_DEADLINE_CHECK ,
-			BOOL bCloseHandle = TRUE );
+		FTLINLINE BOOL StopAndWait(DWORD dwTimeOut = FTL_MAX_THREAD_DEADLINE_CHECK);
 
-		//! 等待所有线程都结束
-		FTLINLINE BOOL Wait(DWORD dwTimeOut,BOOL bCloseHandle);
+		//! 等待所有线程都结束并Start中分配的资源
+		FTLINLINE BOOL Wait(DWORD dwTimeOut = FTL_MAX_THREAD_DEADLINE_CHECK);
 
 		//! 清除当前未完成的工作，
 		FTLINLINE BOOL ClearUndoWork();
 
 		//! 向线程池中注册工作 -- 如果当前没有空闲的线程，并且当前线程数小于最大线程数，则会自动创建新的线程，
-		//! 每一个线程创建是会调用 OnAddThread
 		//! 成功后会通过 outJobIndex 返回Job的索引号，可通过该索引定位、取消特定的Job
-		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob,const T& param, INT* pOutJobIndex);
+
+		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob,const T& param, LONG* pOutJobIndex);
 		//FTLINLINE BOOL SubmitJob(void (*pJobProc)(T& param), T& param, INT* pOutJobIndex);
 
 		//取消指定的Job, TODO:如果取出Job给客户，可能调用者得到指针时，Job执行完毕 delete this，会照成野指针异常
-		FTLINLINE BOOL CancelJob(INT nJobIndex);
-		//FTLINLINE BOOL PauseJob(INT nJobIndex);
-		//FTLINLINE BOOL ResumeJob(INT nJobIndex);
+		FTLINLINE BOOL CancelJob(LONG nJobIndex);
+		//FTLINLINE BOOL PauseJob(LONG nJobIndex);
+		//FTLINLINE BOOL ResumeJob(LONG nJobIndex);
 
 		//! 获取当前运行着的线程个数 -- 是否需要增加获取 最小、最大线程的函数？不需要
 		FTLINLINE LONG GetActiveThreadCount() const;
@@ -202,46 +249,53 @@ namespace FTL
 		FTLINLINE BOOL HadRequestPause() const;
 		FTLINLINE BOOL HadRequestStop() const;
 	protected:
-		virtual BOOL OnAddThread();
-		virtual BOOL OnSubtractThread();
 		//! 在注册Job时调用，如果要实现带优先级的Job，可以重载该函数，将Job加入适当的位置，然后返回TRUE
 		virtual BOOL OnSubmitJob(const JobInfo* pJobInfo);
 	protected:
 		//! 增加运行的线程,如果 当前线程数 + nThreadNum <= m_nMaxNumThreads 时 会成功执行
-		FTLINLINE BOOL AddThread(LONG nThreadNum);
+		FTLINLINE BOOL AddJobThread(LONG nThreadNum);
 		FTLINLINE void DestroyPool();
 		FTLINLINE GetJobType GetJob(CFJobBase<T>** ppJob,T* pParam);
 		FTLINLINE void DoJobs();
 		//FTLINLINE BOOL InternalStop(DWORD dwMilliseconds);
 		//FTLINLINE BOOL InternalSubtractThread(LONG nThreadNum,DWORD dwMilliseconds);
 	protected:
-		const LONG m_nMinNumThreads;            //! 线程池中最少的线程个数
-		const LONG m_nMaxNumThreads;            //! 线程池中最大的线程个数
+		LONG m_nMinNumThreads;					//! 线程池中最少的线程个数
+		LONG m_nMaxNumThreads;					//! 线程池中最大的线程个数
+		IFThreadPoolCallBack<T>*	m_pCallBack;//! 
+		LONG m_nJobIndex;						//! Job的索引，每 SubmitJob 一次，则递增1
 
 		//TODO: 两个最好统一？
-		LONG m_nCurNumThreads;                  //! 当前的线程个数(主要用来维护 m_pThreadHandles 数组)
+		LONG m_nCurNumThreads;                  //! 当前的线程个数(主要用来维护 m_pJobThreadHandles 数组)
 		LONG m_nRunningThreadNum;				//! 当前运行着的线程个数(用来在所有的线程结束时激发 Complete 事件)
 
 		//LONG m_nCanSubtractThreadNum;
-		HANDLE* m_pThreadHandles;               //! 保存线程句柄的数组(为了方便Wait)
-		DWORD*  m_pThreadIds;                   //! 保存线程 Id 的数组(为了在线程结束后调整数组中的位置)
+		HANDLE* m_pJobThreadHandles;            //! 保存线程句柄的数组(为了方便Wait)
+		DWORD*  m_pJobThreadIds;                //! 保存线程 Id 的数组(为了在线程结束后调整数组中的位置)
+
+		//HANDLE	m_hMgrThread;					//! Pool管理线程的句柄
+
 		//! 保存Job的信息,由于会频繁加入、删除，且需要按照JobIndex查找，因此保存成 map/set/queue ?
-		typedef std::map<INT, JobInfo* >	JobInfoContainer;
+		//typedef std::set<JobInfo*, FTL::UnreferenceLess< JobInfo> > JobInfoContainer;
+
+		typedef std::map<LONG, JobInfo* >	JobInfoContainer;
 		JobInfoContainer		  m_WaitingJobs;//! 等待运行的Job
 		JobInfoContainer		  m_DoingJobs;  //! 正在运行的Job
 		//std::queue<JobInfo*>    m_JobsQueue;    
-		HANDLE m_hEventStop;                    
-		HANDLE m_hEventContinue;
+
+		HANDLE m_hEventStop;                    //! 停止Pool的事件
 		HANDLE m_hEventAllThreadComplete;		//! 所有的线程都结束时激发这个事件
+		HANDLE m_hEventContinue;				//! 整个Pool继续运行的事件
 		HANDLE m_hSemaphoreJobToDo;             //! 保存还有多少个Job的信号量，每Submit一个Job，就增加一个
 		HANDLE m_hSemaphoreSubtractThread;      //! 用于减少线程个数时的信标,初始时个数为0，每要释放一个，就增加一个，
-		//! 最大个数为 m_nMaxNumThreads - m_nMinNumThreads
-		INT               m_nJobIndex;
+
 		CFCriticalSection m_lockDoingJobs;		//访问 m_DoingJobs 时互斥
 		CFCriticalSection m_lockWaitingJobs;    //访问 m_WaitingJobs 时互斥
-		CFCriticalSection m_lockThreads;        //访问 m_pThreadHandles/m_pThreadIds 时互斥
+		CFCriticalSection m_lockThreads;        //访问 m_pJobThreadHandles/m_pJobThreadIds 时互斥
 
-		static unsigned int CALLBACK JobThreadExecute(void *pThis);    //线程池中线程的执行函数
+		static unsigned int CALLBACK JobThreadProc(void *pParam);    //! 工作线程的执行函数
+		//static unsigned int CALLBACK MgrThreadProc(void* pParam);	 //! 管理线程的执行函数
+
 		//static unsigned int CALLBACK StopAsyncProc(void *pAsyncProxyParam);
 		//static unsigned int CALLBACK SubtractThreadAsyncProc(void * pAsyncProxyParam);
 	};

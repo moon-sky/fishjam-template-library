@@ -306,12 +306,13 @@ namespace FTL
 	#  define HANDLE_COMBINATION_VALUE_TO_STRING(f, v, c, d)	HANDLE_COMBINATION_VALUE_TO_STRING_EX(f, v, c, TEXT(#c), d) 
 	#endif 
 
-    #ifndef HANDLE_CASE_TO_STRING
-    # define HANDLE_CASE_TO_STRING(buf,len,c)\
-        case (c):\
-        StringCchCopy(buf,len,TEXT(#c));\
-        break;
-    #endif
+	#ifndef HANDLE_CASE_TO_STRING_EX
+	# define HANDLE_CASE_TO_STRING_EX(buf,len,c, v)\
+			case (c):\
+			StringCchCopy(buf,len,v);\
+			break;
+	#endif
+	# define HANDLE_CASE_TO_STRING(buf,len,c) HANDLE_CASE_TO_STRING_EX(buf, len, c, TEXT(#c))
 
 	#ifndef HANDLE_CASE_TO_STRING_FORMATER
 	# define HANDLE_CASE_TO_STRING_FORMATER(f, c)\

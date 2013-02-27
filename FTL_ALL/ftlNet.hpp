@@ -2415,7 +2415,6 @@ namespace FTL
 		BOOL bRet = FALSE;
 		DWORD nContentLength = 0; //4G  -- HTTP_QUERY_FLAG_NUMBER64
 		DWORD dwInfoSize = sizeof(nContentLength);
-		//FTLASSERT(!m_strLocalFilePath.IsEmpty());
 
 		API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
 			&nContentLength, &dwInfoSize, NULL));
@@ -2527,15 +2526,28 @@ namespace FTL
 		return bRet;
 	}
 
-	CFDownloadJob::CFDownloadJob(IFInternetCallback* pCallback, const CAtlString& strAgent, LPCTSTR pszLocalFilePath)
+	CFDownloadJob::CFDownloadJob(IFInternetCallback* pCallback, const CAtlString& strAgent)
 	:CFTransferJobBase(pCallback, strAgent)
 	{
-		m_strLocalFilePath = pszLocalFilePath;
 	}
 
 	BOOL CFDownloadJob::_CheckParams()
 	{
-		return TRUE;
+		BOOL bHaveLocalFile = FALSE;
+		for (TransferParamContainer::iterator iter = m_pJobInfo->m_transferParams.begin();
+			iter != m_pJobInfo->m_transferParams.end();
+			++iter)
+		{
+			FTransferParam& transParam = *iter;
+			if (transParam.paramType == tptLocalFile)
+			{
+				bHaveLocalFile = TRUE;
+				m_strLocalFilePath = transParam.strValue;
+				SetLastError(ERROR_INVALID_PARAMETER);
+				break;
+			}
+		}
+		return bHaveLocalFile;
 	}
 
 	BOOL CFDownloadJob::_SendRequest()
@@ -2557,17 +2569,33 @@ namespace FTL
 			DWORD dwInfoSize = sizeof(dwStatusCode);
 			API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatusCode,
 				&dwInfoSize, NULL));
-			if (dwStatusCode != HTTP_STATUS_OK) // && dwStatusCode != HTTP_STATUS_NOT_MODIFIED
+			if (bRet)
 			{
-				//可能是需要身份验证(代理、服务器等) -- 需要提供给子类处理的机制
-				//401 -- HTTP_STATUS_PROXY_AUTH_REQ
-				//403 -- HTTP_STATUS_FORBIDDEN
-				//404 -- HTTP_STATUS_NOT_FOUND
-				//407 -- HTTP_STATUS_DENIED
-				FTLTRACEEX(tlError, TEXT("CFDownloadJob::_SendRequest, StatusCode is Error %d\n"), dwStatusCode);
-				//SetLastError(dwStatusCode);
+				FTLTRACEEX(tlError, TEXT("CFDownloadJob::_SendRequest, StatusCode is %d\n"), dwStatusCode);
 				bRet = FALSE;
-				//_NotifyResult(jobInfo, IFInternetCallback::ecERROR, dwStatusCode, TEXT("HttpOpenRequest"));
+				DWORD dwError = ERROR_SUCCESS;
+				switch (dwStatusCode)
+				{
+				case HTTP_STATUS_OK:				//200
+				case HTTP_STATUS_NOT_MODIFIED:		//304
+					bRet = TRUE;
+					break;
+				case HTTP_STATUS_NOT_FOUND:			//404
+					dwError = ERROR_NOT_FOUND;
+					break;
+				//需要身份验证(代理、服务器等) -- 需要提供给子类处理的机制
+				case HTTP_STATUS_DENIED:			//401
+				case HTTP_STATUS_FORBIDDEN:			//403
+				case HTTP_STATUS_PROXY_AUTH_REQ:	//407
+				default:
+					dwError = ERROR_NOT_AUTHENTICATED;
+					break;
+				}
+				if (!bRet)
+				{
+					FTLASSERT(FALSE);
+					//_NotifyResult(jobInfo, IFInternetCallback::ecERROR, dwStatusCode, TEXT("HttpOpenRequest"));
+				}
 			}
 		}
 		return bRet;
@@ -2578,14 +2606,11 @@ namespace FTL
 		BOOL bRet = FALSE;
 		DWORD nContentLength = 0; //4G  -- HTTP_QUERY_FLAG_NUMBER64
 		DWORD dwInfoSize = sizeof(nContentLength);
-		FTLASSERT(!m_strLocalFilePath.IsEmpty());
 
 		API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
 			&nContentLength, &dwInfoSize, NULL));
 		if (bRet)
 		{
-#pragma TODO(考虑本地文件重复需要重命名或删除等)
-
 			m_nTotalSize = nContentLength;
 			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, GENERIC_WRITE, 0, NULL,
 				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -2595,10 +2620,10 @@ namespace FTL
 			{
 				_NotifyProgress(IFInternetCallback::sStart);
 					
-
 				DWORD dwSize = 0, dwRead = 0;
 				DWORD dwWriteToLocal = 0;
 				DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
+				BOOL  bFirstBuffer = TRUE;
 				BYTE* pBuffer = new BYTE[dwBufferSize];
 				do 
 				{
@@ -2612,14 +2637,22 @@ namespace FTL
 					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwSize, &dwRead));
 					if (bRet && dwRead > 0)
 					{
-						API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
-						if (!bRet || dwRead != dwWriteToLocal)
+						//if (_CheckInternetBuffer(pBuffer, dwRead))
 						{
-							_NotifyResult(IFInternetCallback::ecERROR, GetLastError(), TEXT("WriteFile"));
-							break;
+#pragma TODO(_CheckInternetBuffer)
+							//对网络上读取到的数据进行检查, 防止各个流程都正确，但文件内容错误(比如：没有进行身份验证时往往会被重定向到登录网站)
+							API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
+							if (!bRet || dwRead != dwWriteToLocal)
+							{
+								_NotifyResult(IFInternetCallback::ecERROR, GetLastError(), TEXT("WriteFile"));
+								break;
+							}
+							m_nCurPos += dwWriteToLocal;
+							_NotifyProgress(IFInternetCallback::sDoing);
 						}
-						m_nCurPos += dwWriteToLocal;
-						_NotifyProgress(IFInternetCallback::sDoing);
+						//else
+						//{
+						//}
 					}
 				} while (dwRead != 0 && (GetJobWaitType(0) != ftwtStop));
 				SAFE_DELETE_ARRAY(pBuffer);
@@ -2677,10 +2710,10 @@ namespace FTL
 		FTLASSERT(nMinParallelCount <= nMaxParallelCount);
 		m_pCallBack = pCallBack;
 
-		m_pThreadPool = new CFThreadPool<FTransferJobInfoPtr>(nMinParallelCount, nMaxParallelCount);
+		m_pThreadPool = new CFThreadPool<FTransferJobInfoPtr>();
 		if (m_pThreadPool)
 		{
-			API_VERIFY(m_pThreadPool->Start());
+			API_VERIFY(m_pThreadPool->Start(nMinParallelCount, nMaxParallelCount));
 			if (pszAgent)
 			{
 				m_strAgent = pszAgent;
@@ -2710,14 +2743,14 @@ namespace FTL
 		SAFE_DELETE(m_pThreadPool);
 	}
 
-	INT CFInternetTransfer::AddUploadTask(FTransferJobInfoPtr pUploadJobInfo)
+	LONG CFInternetTransfer::AddUploadTask(FTransferJobInfoPtr pUploadJobInfo)
 	{
 		FTLASSERT(m_pThreadPool);
 		FTLASSERT(pUploadJobInfo);
 		//FTLASSERT(pUploadJobInfo->m_bUploadJob);
 
 		BOOL bRet = FALSE;
-		INT nJobIndex = 0;
+		LONG nJobIndex = 0;
 		if (m_pThreadPool)
 		{
 			CFUploadJob* pJob = new CFUploadJob(m_pCallBack, m_strAgent);
@@ -2726,17 +2759,17 @@ namespace FTL
 		return nJobIndex;
 	}
 
-	INT CFInternetTransfer::AddDownloadTask(FTransferJobInfoPtr pDownloadJobInfo, LPCTSTR pszLocalFilePath)
+	LONG CFInternetTransfer::AddDownloadTask(FTransferJobInfoPtr pDownloadJobInfo)
 	{
 		FTLASSERT(m_pThreadPool);
 		FTLASSERT(pDownloadJobInfo);
 		//FTLASSERT(!pDownloadJobInfo->m_bUploadJob);
 
 		BOOL bRet = FALSE;
-		INT nJobIndex = 0;
+		LONG nJobIndex = 0;
 		if (m_pThreadPool)
 		{
-			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_pCallBack, m_strAgent, pszLocalFilePath);
+			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_pCallBack, m_strAgent);
 			API_VERIFY(m_pThreadPool->SubmitJob(pDownloadJob, pDownloadJobInfo, &nJobIndex));
 		}
 		return nJobIndex;
@@ -2764,7 +2797,7 @@ namespace FTL
 	//	return nJobIndex;
 	//}
 
-	BOOL CFInternetTransfer::CancelTask(INT nJobIndex)
+	BOOL CFInternetTransfer::CancelTask(LONG nJobIndex)
 	{
 		FTLASSERT(m_pThreadPool);
 		BOOL bRet = FALSE;

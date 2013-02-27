@@ -380,7 +380,8 @@ namespace FTL
 		UINT RWM_HTML_GETOBJECT;		//从IE窗体中获取对应的IHTMLDocument2接口
 		UINT RWM_SETRGBSTRING;
 		UINT RWM_SHAREVISTRING;
-		UINT RWM_TASKBARBUTTONCREATED;	//任务栏重新创建?(没有确认)
+		UINT RWM_TASKBARBUTTONCREATED;	//任务栏重新创建?(没有确认，可以用于初始化Vista的 ITaskbarList3 接口?)
+		UINT RWM_TASKBARCREATED; 
 
         //WM_DEVICECHANGE; //这个消息需要通过 RegisterDeviceNotification 注册才能获得?
 	};

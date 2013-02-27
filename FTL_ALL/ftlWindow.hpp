@@ -276,6 +276,7 @@ namespace FTL
 			RWM_SETRGBSTRING	= RegisterWindowMessage(SETRGBSTRING);
 			RWM_SHAREVISTRING	= RegisterWindowMessage(SHAREVISTRING);
 			RWM_TASKBARBUTTONCREATED	= RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
+			RWM_TASKBARCREATED	= RegisterWindowMessage(TEXT("TaskbarCreated")); //系统托盘编程完全指南 -- http://www.vckbase.com/index.php/wv/310
 		}
 		return m_bInited;
 	}
@@ -286,6 +287,7 @@ namespace FTL
 
 	LPCTSTR CFRegistedMessageInfo::GetMessageInfo(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		//switch .. case 需要常量 -- 而 RWM_ 等是变量
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_ATL_CREATE_OBJECT);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_ATLGETCONTROL);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_ATLGETHOST);

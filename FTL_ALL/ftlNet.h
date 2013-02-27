@@ -998,7 +998,7 @@ namespace FTL
 		//tptText,
 		tptPostArgument,    //Post 参数，每一个都格式化成 Content-Disposition: form-data; name=\"xxx\"\r\n\r\nValue 分开
 		tptRequestHeader,	//HttpAddRequestHeaders,目前唯一需要外界提供的是 Cookie,
-		tptLocalFile,		//本地文件，Value是文件路径, 其本质也是一种 tptPostArgument
+		tptLocalFile,		//本地文件，Value是文件路径, 上传时是 tptPostArgument，下载时是文件的本地路径
 	};
 	struct FTransferParam
 	{
@@ -1021,7 +1021,8 @@ namespace FTL
 		DISABLE_COPY_AND_ASSIGNMENT(FTransferJobInfo);
 	public:
 		FTLINLINE FTransferJobInfo();
-		FTLINLINE FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, USHORT nPort = INTERNET_DEFAULT_HTTP_PORT);
+		FTLINLINE FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, 
+			USHORT nPort = INTERNET_DEFAULT_HTTP_PORT);
 		FTLINLINE ~FTransferJobInfo();
 
 		//TODO: 参考 CHttpFile::AddRequestHeaders("Accept: */*");
@@ -1153,12 +1154,13 @@ namespace FTL
 		//FTLINLINE LPSTR _AllocMultiCharBuffer(LPCWSTR pwszInfo, UINT nCodePage);
 	};
 
+	//下载时必须通过 tptLocalFile 指定文件保存的本地路径
 	class CFDownloadJob : public CFTransferJobBase
 	{
 	public:
-		FTLINLINE CFDownloadJob(IFInternetCallback* pCallback, const CAtlString& strAgent, LPCTSTR pszLocalFilePath);
+		FTLINLINE CFDownloadJob(IFInternetCallback* pCallback, const CAtlString& strAgent);
 	protected:
-		CAtlString	m_strLocalFilePath;
+		CAtlString m_strLocalFilePath;
 		FTLINLINE virtual BOOL _CheckParams();
 		FTLINLINE virtual BOOL _SendRequest();
 		FTLINLINE virtual BOOL _ReceiveResponse();
@@ -1175,13 +1177,13 @@ namespace FTL
 		FTLINLINE BOOL Stop();
 		FTLINLINE void Close();
 		
-		FTLINLINE INT AddDownloadTask(FTransferJobInfoPtr pDownloadJobInfo, LPCTSTR pszLocalFilePath);
-		FTLINLINE INT AddUploadTask(FTransferJobInfoPtr pUploadJobInfo);
+		FTLINLINE LONG AddDownloadTask(FTransferJobInfoPtr pDownloadJobInfo);
+		FTLINLINE LONG AddUploadTask(FTransferJobInfoPtr pUploadJobInfo);
 
 		//FTLINLINE INT AddUploadTaskJob(CFUploadJob* pUploadJob);
 
-		FTLINLINE INT AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );
-		FTLINLINE BOOL CancelTask(INT nJobIndex);
+		FTLINLINE LONG AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );
+		FTLINLINE BOOL CancelTask(LONG nJobIndex);
 	protected:
 	private:
 		IFInternetCallback*	m_pCallBack;
