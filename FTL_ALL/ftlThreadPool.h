@@ -20,7 +20,7 @@
 #  error ftlThreadPool.h requires ftlbase.h to be included first
 #endif
 
-//#include "ftlThread.h"
+#include "ftlThread.h"
 //#include "ftlSharePtr.h"
 
 namespace FTL
@@ -163,14 +163,40 @@ namespace FTL
 	{
 	public:
 		//当Job运行起来以后，会由 Pool 激发 Begin 和 End 两个函数
-		FTLINLINE virtual void OnJobBegin(LONG nJobIndex, CFJobBase<T>* pJob) {}
-		FTLINLINE virtual void OnJobEnd(LONG nJobIndex, CFJobBase<T>* pJob) {}
+		FTLINLINE virtual void OnJobBegin(LONG nJobIndex, CFJobBase<T>* pJob )
+		{
+			UNREFERENCED_PARAMETER(nJobIndex);
+			UNREFERENCED_PARAMETER(pJob);
+		} 
+		FTLINLINE virtual void OnJobEnd(LONG nJobIndex, CFJobBase<T>* pJob)
+		{
+			UNREFERENCED_PARAMETER(nJobIndex);
+			UNREFERENCED_PARAMETER(pJob);
+		}
+
 		//如果尚未到达运行状态就被取消的Job，会由Pool调用这个函数
-		FTLINLINE virtual void OnJobCancel(LONG nJobIndex, CFJobBase<T>* pJob) {}
+		FTLINLINE virtual void OnJobCancel(LONG nJobIndex, CFJobBase<T>* pJob)
+		{
+			UNREFERENCED_PARAMETER(nJobIndex);
+			UNREFERENCED_PARAMETER(pJob);
+		}
 
 		//Progress 和 Error 由 JobBase 的子类激发
-		FTLINLINE virtual void OnJobProgress(LONG nJobIndex, CFJobBase<T>* pJob, LONG64 nCurPos, LONG64 nTotalSize){};
-		FTLINLINE virtual void OnJobError(LONG nJobIndex, CFJobBase<T>* pJob, DWORD dwError, LPCTSTR pszDescription){}; 
+		FTLINLINE virtual void OnJobProgress(LONG nJobIndex , CFJobBase<T>* pJob, LONG64 nCurPos, LONG64 nTotalSize)
+		{
+			UNREFERENCED_PARAMETER(nJobIndex);
+			UNREFERENCED_PARAMETER(pJob);
+			UNREFERENCED_PARAMETER(nCurPos);
+			UNREFERENCED_PARAMETER(nTotalSize);
+		}
+		FTLINLINE virtual void OnJobError(LONG nJobIndex , CFJobBase<T>* pJob, DWORD dwError, LPCTSTR pszDescription)
+		{
+			UNREFERENCED_PARAMETER(nJobIndex);
+			UNREFERENCED_PARAMETER(pJob);
+			UNREFERENCED_PARAMETER(dwError);
+			UNREFERENCED_PARAMETER(pszDescription);
+
+		}
 	};
 
 	FTLEXPORT template <typename T>  

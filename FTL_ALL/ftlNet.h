@@ -763,7 +763,7 @@ namespace FTL
 		FTLINLINE virtual void OnClosingConnection(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnConnectionClosed(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnHandleCreated(HINTERNET hInternet, DWORD_PTR dwContext,
-			INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLenght);
+			INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLength);
 		FTLINLINE virtual void OnHandleClosing(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pTmpValue, DWORD dwLength);
 		FTLINLINE virtual void OnDetectingProxy(HINTERNET hInternet, DWORD_PTR dwContext);
 		FTLINLINE virtual void OnRequestComplete(HINTERNET hInternet, DWORD_PTR dwContext,

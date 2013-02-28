@@ -252,6 +252,8 @@ namespace FTL
 	LPCTSTR CFIMEUtil::GetIMENotifyInfoString(CFStringFormater& formater, WPARAM wParam, LPARAM lParam)
 	{
 		UINT nNotifyCmd = (UINT)(wParam);
+		UNREFERENCED_PARAMETER(lParam);
+
 		nNotifyCmd &= 0xF;		//根据实测，输入韩文时 nNotifyCmd 为 0x010X, 多了 0x0100(但MSDN中没有写)
 		//FTLASSERT(nNotifyCmd == wParam);
 		switch (nNotifyCmd)

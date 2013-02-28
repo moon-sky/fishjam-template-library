@@ -396,9 +396,9 @@ namespace FTL
 		USES_CONVERSION;
 		//有 V_BSTR 等宏辅助操作, V_VT 获取Variant的类型
 		VARTYPE varType = V_VT(&m_Info);
-		VARTYPE typeMask = (varType & VT_ILLEGAL) & (~VT_TYPEMASK);
+		//VARTYPE typeMask = (varType & VT_ILLEGAL) & (~VT_TYPEMASK);
 		//CFVariantInfo variantInfo(m_Info.)
-		BOOL bCheckType = TRUE;
+		//BOOL bCheckType = TRUE;
 		switch (varType)
 		{
 		case VT_I1:

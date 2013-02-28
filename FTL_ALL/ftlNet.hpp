@@ -429,6 +429,7 @@ namespace FTL
 			formater.Format(TEXT("0x%x, "), dwRequestFlags);
 
 			DWORD dwOldRequestFlags = dwRequestFlags;
+			UNREFERENCED_PARAMETER(dwOldRequestFlags);
 
 			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_FROM_CACHE, TEXT("FROM_CACHE"), TEXT("|"));
 			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwRequestFlags, INTERNET_REQFLAG_ASYNC, TEXT("ASYNC"), TEXT("|"));
@@ -447,6 +448,7 @@ namespace FTL
 			formater.Format(TEXT("0x%x, "), dwSecurityFlags);
 
 			DWORD dwOldSecurityFlags = dwSecurityFlags;
+			UNREFERENCED_PARAMETER(dwOldSecurityFlags);
 
 			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwSecurityFlags, SECURITY_FLAG_SECURE, TEXT("Secure"), TEXT("|"));
 			HANDLE_COMBINATION_VALUE_TO_STRING_EX(formater, dwSecurityFlags, SECURITY_FLAG_SSL, TEXT("SSL"), TEXT("|"));
@@ -1039,63 +1041,104 @@ namespace FTL
 
 	void CFInternetStatusCallbackImpl::OnResolvingName(HINTERNET hInternet, DWORD_PTR dwContext, LPCTSTR lpszName, DWORD dwLength)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(lpszName);
+		UNREFERENCED_PARAMETER(dwLength);
+
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnResolvingName, dwLength=%d, Name=%s\n"), 
 			dwLength, lpszName);
 	}
 	void CFInternetStatusCallbackImpl::OnNameResolved(HINTERNET hInternet, DWORD_PTR dwContext, LPCTSTR lpszName, DWORD dwLength)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(lpszName);
+		UNREFERENCED_PARAMETER(dwLength);
+
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnNameResolved, dwLength=%d, Name=%s\n"),
 			dwLength, lpszName);
 	}
 	void CFInternetStatusCallbackImpl::OnConnectingToServer(HINTERNET hInternet, DWORD_PTR dwContext, SOCKADDR* pSockAddr, DWORD dwLength)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(pSockAddr);
+		UNREFERENCED_PARAMETER(dwLength);
+
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnConnectingToServer, dwLength=%d, SockAddr=%s\n"),
 			dwLength, CA2T(pSockAddr->sa_data));
 	}
 	void CFInternetStatusCallbackImpl::OnConnectedToServer(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnConnectedToServer\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnSendingRequest(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnSendingRequest\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnRequestSent(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pdwSend, DWORD dwLength)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(pdwSend);
+		UNREFERENCED_PARAMETER(dwLength);
+
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnRequestSent, Send %d Bytes to Server\n"),
 			*pdwSend);
 	}
 	void CFInternetStatusCallbackImpl::OnReceivingResponse(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnReceivingResponse\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pdwResponse, DWORD dwLength)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(pdwResponse);
+		UNREFERENCED_PARAMETER(dwLength);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnResponseReceived, Received %d Bytes\n"),
 			*pdwResponse);
 	}
 	void CFInternetStatusCallbackImpl::OnCtlResponseReceived(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnCtlResponseReceived\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnPrefetch(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnPrefetch\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnClosingConnection(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnClosingConnection\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnConnectionClosed(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnConnectionClosed\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnHandleCreated(HINTERNET hInternet, DWORD_PTR dwContext, 
-		INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLenght)
+		INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLength)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(pAsyncResult);
+		UNREFERENCED_PARAMETER(dwLength);
 		//dwResult 是 HINTERNET 句柄
-
-		FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLenght);
+		FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLength);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnHandleCreated, AsyncResult, dwResult=0x%x, dwError=%d\n"),
 			pAsyncResult->dwResult, pAsyncResult->dwError);
 	}
@@ -1103,59 +1146,94 @@ namespace FTL
 	void CFInternetStatusCallbackImpl::OnHandleClosing(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pdwTemp, DWORD dwLength)
 	{
 		//最后一个事件?
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(pdwTemp);
+		UNREFERENCED_PARAMETER(dwLength);
+
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnHandleClosing, dwLength=%d, tmpValue=%d,\n"),
 			dwLength, *pdwTemp);
 	}
 	void CFInternetStatusCallbackImpl::OnDetectingProxy(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnDetectingProxy\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnRequestComplete(HINTERNET hInternet, DWORD_PTR dwContext, INTERNET_ASYNC_RESULT* pAsyncResult, DWORD dwLength)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(pAsyncResult);
+		UNREFERENCED_PARAMETER(dwLength);
 		FTLASSERT(sizeof(INTERNET_ASYNC_RESULT) == dwLength);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnRequestComplete, AsyncResult, dwResult=0x%x, dwError=%d\n"),
 			pAsyncResult->dwResult, pAsyncResult->dwError);
 	}
 	void CFInternetStatusCallbackImpl::OnRedirect(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnRedirect\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnIntermediateResponse(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnIntermediateResponse\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnUserInputRequired(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnUserInputRequired\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnStateChange(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnStateChange\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnCookieSent(HINTERNET hInternet, DWORD_PTR dwContext, DWORD* pTmpValue, DWORD dwLength)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(pTmpValue);
+		UNREFERENCED_PARAMETER(dwLength);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnCookieSent\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnCookieReceived(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnCookieReceived\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnPrivacyImpacted(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnPrivacyImpacted\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnP3pHeader(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnP3pHeader\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnP3pPolicyRef(HINTERNET hInternet, DWORD_PTR dwContext)
 	{
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnP3pPolicyRef\n"));
 	}
 	void CFInternetStatusCallbackImpl::OnCookieHistory(HINTERNET hInternet, DWORD_PTR dwContext, 
-		InternetCookieHistory* pCookieHistory, DWORD dwLenght)
+		InternetCookieHistory* pCookieHistory, DWORD dwLength)
 	{
-		FTLASSERT(sizeof(InternetCookieHistory) == dwLenght);
+		UNREFERENCED_PARAMETER(hInternet);
+		UNREFERENCED_PARAMETER(dwContext);
+		UNREFERENCED_PARAMETER(pCookieHistory);
+		UNREFERENCED_PARAMETER(dwLength);
+		FTLASSERT(sizeof(InternetCookieHistory) == dwLength);
 		FTLTRACE(TEXT("CFInternetStatusCallbackImpl::OnCookieHistory, CookieInfo = Accepted =%d, Leashed=%d, Downgraded=%d, Rejected=%d\n"),
 			pCookieHistory->fAccepted, pCookieHistory->fLeashed, pCookieHistory->fDowngraded, pCookieHistory->fRejected);
 	}
@@ -1866,7 +1944,7 @@ namespace FTL
 	CFTransferJobBase::CFTransferJobBase(const CAtlString& strAgent)
 	{
 		m_strAgent = strAgent;
-		m_nTotalSize = (LONGLONG)(-1);
+		m_nTotalSize = (LONG64)(-1);
 		m_nCurPos = 0;
 
 		m_hSession = NULL;
@@ -2034,6 +2112,7 @@ namespace FTL
 			++iter)
 		{
 			FTransferParam& transParam = *iter;
+			UNREFERENCED_PARAMETER(transParam);
 		}
 
 		//转换Post的参数（1.LPCTSTR -> LPSTR; 2. localFile)，并计算总共需要的长度
@@ -2134,8 +2213,7 @@ namespace FTL
 						strParam.Format(
 							"--%s\r\n"
 							"Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"\r\n"
-//#pragma TODO(ContentType now is jpeg)
-//							"Content-Type: %s\r\n"   //似乎可以不要?
+							//"Content-Type: %s\r\n"
 							"\r\n",
 							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(_GetMultiPartBoundary(FALSE)),
 							CFConversion(transParam.CodePage).TCHAR_TO_UTF8(transParam.strName),  //一般来说是 "file[1]"
@@ -2228,7 +2306,7 @@ namespace FTL
 			PostArgumentParam* pArgumentParam = *iterArgument;
 			
 			FTLASSERT(pArgumentParam);
-			ATLASSERT(dwBufferSize - dwDestSize > pArgumentParam->nBufferSize);
+			ATLASSERT((LONG)dwBufferSize - (LONG)dwDestSize > pArgumentParam->nBufferSize);
 
 			CopyMemory(pDestBuffer, pArgumentParam->pBuffer, pArgumentParam->nBufferSize);
 			pDestBuffer += pArgumentParam->nBufferSize;
@@ -2264,7 +2342,7 @@ namespace FTL
 
 			PostFileParam* pFileParam = *iterFile;
 			FTLASSERT(pFileParam);
-			DWORD dwOutPostBufferLength = 0;
+			//DWORD dwOutPostBufferLength = 0;
 
 			FTLTRACEEX(tlTrace, TEXT("_SendLocalFile:FileSize=%d, Len=%d, Buffer=%s\n"), 
 				pFileParam->dwFileSize,
@@ -2324,6 +2402,8 @@ namespace FTL
 		BOOL bRet = TRUE;
 		if (m_pEndBoundaryPostParam)
 		{
+			UNREFERENCED_PARAMETER(pBuffer);
+			UNREFERENCED_PARAMETER(dwBufferSize);
 			API_VERIFY(_SendN((PBYTE)m_pEndBoundaryPostParam->pBuffer, m_pEndBoundaryPostParam->nBufferSize, NULL));
 		}
 		return bRet;
@@ -2392,7 +2472,6 @@ namespace FTL
 		//if (bRet)
 		{
 			DWORD dwRead = 0;
-			DWORD dwWriteToLocal = 0;
 			DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
 			CHAR* pBuffer = new CHAR[dwBufferSize];
 			if (pBuffer)
@@ -2432,7 +2511,6 @@ namespace FTL
 
 	LONG64 CFUploadJob::_CalcContentLength()
 	{
-		BOOL bRet = FALSE;
 		//计算总共的长度：post参数长度 + 文件长度(注意文件内容分割的长度) -- 和nTalk等其他项目的代码不一样(依赖于Post参数的创建方式中是否包含多余的CRLF等)
 
 		LONG64 nContentLength = 0;
@@ -2586,6 +2664,8 @@ namespace FTL
 			&nContentLength, &dwInfoSize, NULL));
 		if (bRet)
 		{
+#pragma TODO(考虑本地文件重复需要重命名或删除等)
+
 			m_nTotalSize = nContentLength;
 			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, GENERIC_WRITE, 0, NULL,
 				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -2598,7 +2678,7 @@ namespace FTL
 				DWORD dwSize = 0, dwRead = 0;
 				DWORD dwWriteToLocal = 0;
 				DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
-				BOOL  bFirstBuffer = TRUE;
+				//BOOL  bFirstBuffer = TRUE;
 				BYTE* pBuffer = new BYTE[dwBufferSize];
 				do 
 				{
@@ -2658,8 +2738,6 @@ namespace FTL
 	{
 		m_pThreadPool = NULL;
 		m_strAgent = TEXT("InternetTransfer");
-
-		BOOL bRet = FALSE;
 	}
 
 	CFInternetTransfer::~CFInternetTransfer()
