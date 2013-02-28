@@ -230,7 +230,7 @@ namespace FTL
 	#  ifdef FTL_DEBUG
 	#    define SAFE_CLOSE_INTERNET_HANDLE(h) if(NULL != (h)) { BOOL oldbRet = bRet; API_VERIFY(::InternetCloseHandle((h))); (h) = NULL; bRet = oldbRet; }
 	#  else
-	#    define SAFE_CLOSE_INTERNET_HANDLE(h) if((v) != (h)) { ::InternetCloseHandle((h)); (h) = NULL; bRet = bRet; }
+	#    define SAFE_CLOSE_INTERNET_HANDLE(h) if((NULL) != (h)) { ::InternetCloseHandle((h)); (h) = NULL; bRet = bRet; }
 	#  endif
 	#endif
 

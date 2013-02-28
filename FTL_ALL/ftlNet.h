@@ -970,43 +970,21 @@ namespace FTL
 		BYTE*				m_pWrite;		//当前未处理数据的结束位置
 	};
 
-	class IFInternetCallback
-	{
-	public:
-		enum STATUS
-		{
-			sStart,
-			sDoing,
-			sComplete,
-		};
-		enum END_CODE
-		{
-			ecOK,
-			ecERROR,
-			ecCANCEL,
-		};
-		//TODO:提供给调用方回调处理，比如文件重名后的处理
-		//virtual BOOL OnError(DWORD dwErrorCode) = 0;
-
-		virtual void OnTransferProgress(INT nId, IFInternetCallback::STATUS status, ULONG64 nCurPos, ULONG64 nTotalSize) = 0;
-		virtual void OnTransferEnd(INT nId, IFInternetCallback::END_CODE endCode, DWORD dwErrorCode, const CAtlStringA& strResponseData) = 0;
-	};
-
+	//使用线程池进行 HTTP 通信的网络传输类
 	enum FTransferParamType
 	{
 		tptUnknown,
-		//tptText,
 		tptPostArgument,    //Post 参数，每一个都格式化成 Content-Disposition: form-data; name=\"xxx\"\r\n\r\nValue 分开
 		tptRequestHeader,	//HttpAddRequestHeaders,目前唯一需要外界提供的是 Cookie,
-		tptLocalFile,		//本地文件，Value是文件路径, 上传时是 tptPostArgument，下载时是文件的本地路径
+		tptLocalFile,		//本地文件，Value是文件路径, 上传时类似 tptPostArgument，下载时 vlaue 是文件的本地路径
 	};
 	struct FTransferParam
 	{
 		FTransferParamType	paramType;
-		UINT				CodePage;	//Change Code Page, if is 0, then will not change, CP_UTF8
+		UINT				CodePage;	//Change Code Page, default is CP_UTF8
 		CAtlString			strName;
 		CAtlString			strValue;
-		FTransferParam()
+		FTLINLINE FTransferParam()
 		{
 			paramType = tptUnknown;
 			CodePage = CP_UTF8;
@@ -1021,7 +999,8 @@ namespace FTL
 		DISABLE_COPY_AND_ASSIGNMENT(FTransferJobInfo);
 	public:
 		FTLINLINE FTransferJobInfo();
-		FTLINLINE FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, 
+		FTLINLINE FTransferJobInfo(LPCTSTR pszServerName, 
+			LPCTSTR pszObjectName, 
 			USHORT nPort = INTERNET_DEFAULT_HTTP_PORT);
 		FTLINLINE ~FTransferJobInfo();
 
@@ -1042,9 +1021,8 @@ namespace FTL
 		USHORT		m_nPort;
 
 		DWORD_PTR	m_dwUserParam;
-		//BOOL		m_bUploadJob;
 		TransferParamContainer	m_transferParams;
-		CAtlStringA		m_strResponseData;		//没有转换过的网络反馈
+		CAtlStringA		m_strResponseData;		//没有转换过的网络反馈(在Upload中使用, Download 的需要保存成文件)
 	};
 
 	typedef CFSharePtr<FTransferJobInfo> FTransferJobInfoPtr;
@@ -1052,26 +1030,24 @@ namespace FTL
 	class CFTransferJobBase : public CFJobBase<FTransferJobInfoPtr>
 	{
 	public:
-		FTLINLINE CFTransferJobBase(IFInternetCallback* pCallback, const CAtlString& strAgent);
+		FTLINLINE CFTransferJobBase(const CAtlString& strAgent);
 		FTLINLINE virtual ~CFTransferJobBase();
 
-		FTLINLINE virtual void Run(FTransferJobInfoPtr pJobInfo);
-
-		//FTLINLINE const std::string& GetResponseData() const; //获取没有转换过的网络数据
 	protected:
-		IFInternetCallback*		m_pCallback;
+		//CFJobBase virtual function
+		FTLINLINE virtual BOOL Initialize();
+		FTLINLINE virtual BOOL Run();
+		FTLINLINE virtual void Finalize();
+		FTLINLINE virtual void OnCancelJob();
+	protected:
 		CAtlString				m_strAgent;
-		FTransferJobInfoPtr		m_pJobInfo;
 
-		INT			m_nJobIndex;
 		LONG64		m_nTotalSize;
 		LONG64		m_nCurPos;
 
 		HINTERNET	m_hSession;
 		HINTERNET	m_hConnection;
 		HINTERNET	m_hRequest;
-		
-		//std::string m_strResponse;
 	protected:
 		FTLINLINE virtual BOOL _CheckParams() = 0;
 		FTLINLINE virtual BOOL _SendRequest() = 0;
@@ -1080,17 +1056,16 @@ namespace FTL
 	protected:
 		FTLINLINE BOOL _Connect();
 		FTLINLINE void _Close();
-		FTLINLINE void _NotifyProgress(IFInternetCallback::STATUS status);
-		FTLINLINE void _NotifyResult(IFInternetCallback::END_CODE endCode, DWORD dwError, LPCTSTR pszErrorInfo = NULL);
 
 		//循环保证发送指定的 N 个字节数据
+		//TODO: 参考 CHttpFile 的Buffer功能
 		FTLINLINE BOOL _SendN(PBYTE pBuffer, DWORD nCount, DWORD* pSend);
 	};
 
 	class CFUploadJob : public CFTransferJobBase
 	{
 	public:
-		FTLINLINE CFUploadJob(IFInternetCallback* pCallback, const CAtlString& strAgent);
+		FTLINLINE CFUploadJob(const CAtlString& strAgent);
 	protected:
 		FTLINLINE virtual BOOL _CheckParams();
 		FTLINLINE virtual BOOL _SendRequest();
@@ -1122,7 +1097,7 @@ namespace FTL
 			DWORD	nBufferSize;	
 
 			DWORD   dwFileSize;
-			CString strFilePath;
+			CAtlString strFilePath;
 			PostFileParam()
 			{
 				pBuffer = NULL;
@@ -1151,14 +1126,13 @@ namespace FTL
 		FTLINLINE BOOL  _SendPostArgument(PBYTE pBuffer, DWORD dwBufferSize);
 		FTLINLINE BOOL	_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize);
 		FTLINLINE BOOL  _SendEndBoundary(PBYTE pBuffer, DWORD dwBufferSize);
-		//FTLINLINE LPSTR _AllocMultiCharBuffer(LPCWSTR pwszInfo, UINT nCodePage);
 	};
 
 	//下载时必须通过 tptLocalFile 指定文件保存的本地路径
 	class CFDownloadJob : public CFTransferJobBase
 	{
 	public:
-		FTLINLINE CFDownloadJob(IFInternetCallback* pCallback, const CAtlString& strAgent);
+		FTLINLINE CFDownloadJob(const CAtlString& strAgent);
 	protected:
 		CAtlString m_strLocalFilePath;
 		FTLINLINE virtual BOOL _CheckParams();
@@ -1173,20 +1147,18 @@ namespace FTL
 		FTLINLINE virtual ~CFInternetTransfer( void );
 
 		FTLINLINE BOOL IsStarted();
-		FTLINLINE BOOL Start(IFInternetCallback* pCallBack, LONG nMinParallelCount = 1, LONG nMaxParallelCount = 4, LPCTSTR pszAgent = NULL);
+		FTLINLINE BOOL Start(IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack = NULL, 
+			LONG nMinParallelCount = 1, 
+			LONG nMaxParallelCount = 4, 
+			LPCTSTR pszAgent = NULL);
 		FTLINLINE BOOL Stop();
 		FTLINLINE void Close();
 		
 		FTLINLINE LONG AddDownloadTask(FTransferJobInfoPtr pDownloadJobInfo);
 		FTLINLINE LONG AddUploadTask(FTransferJobInfoPtr pUploadJobInfo);
 
-		//FTLINLINE INT AddUploadTaskJob(CFUploadJob* pUploadJob);
-
-		FTLINLINE LONG AddTask(LPCTSTR pszServerName, USHORT nPort, LPCTSTR pszObjectName, LPCTSTR pszLocalFilePath );
 		FTLINLINE BOOL CancelTask(LONG nJobIndex);
 	protected:
-	private:
-		IFInternetCallback*	m_pCallBack;
 		CAtlString		m_strAgent;
 		FTL::CFThreadPool<FTransferJobInfoPtr>*		m_pThreadPool;
 	};

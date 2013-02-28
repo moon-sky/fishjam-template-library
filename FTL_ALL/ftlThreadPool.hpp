@@ -11,15 +11,18 @@ namespace FTL
 	///////////////////////////////////////////// CFJobBase ///////////////////////////////////////////////////
 	template <typename T>
 	CFJobBase<T>::CFJobBase()
+		:m_JobParam(T())		//初始化
 	{
+		//m_nJobPriority = 0;
 		m_nJobIndex = 0;
 		m_pThreadPool = NULL;
 		m_hEventJobStop = NULL;
+		//m_JobStatus = jsWaiting;
 	}
 	template <typename T>
 	CFJobBase<T>::~CFJobBase()
 	{
-		Finalize();
+		FTLASSERT(NULL == m_hEventJobStop);
 	}
 
 	template <typename T>
@@ -27,9 +30,9 @@ namespace FTL
 	{
 		return m_nJobIndex;
 	}
-
+	
 	template <typename T>
-	BOOL CFJobBase<T>::NotifyStop()
+	BOOL CFJobBase<T>::RequestCancel()
 	{
 		BOOL bRet = FALSE;
 		API_VERIFY(SetEvent(m_hEventJobStop));
@@ -37,28 +40,29 @@ namespace FTL
 	}
 
 	template <typename T>
-	void CFJobBase<T>::OnCancelJob(T param)
+	void CFJobBase<T>::_NotifyProgress(LONG64 nCurPos, LONG64 nTotalSize)
 	{
-		UNREFERENCED_PARAMETER(param);
-		//delete pParam; //注意先转换
-		//delete this; 
-		//注意：此处是个空实现
+		FTLASSERT(m_pThreadPool);
+		m_pThreadPool->_NotifyJobProgress(this, nCurPos, nTotalSize);
+	}
+
+	template <typename T>
+	void CFJobBase<T>::_NotifyCancel()
+	{
+		m_pThreadPool->_NotifyJobCancel(this);
+	}
+
+	template <typename T>
+	void CFJobBase<T>::_NotifyError(DWORD dwError, LPCTSTR pszDescription)
+	{
+		m_pThreadPool->_NotifyJobError(this, dwError, pszDescription);
 	}
 
 	template <typename T>
 	BOOL CFJobBase<T>::Initialize()
 	{
 		FTLASSERT(NULL == m_hEventJobStop);
-		BOOL bRet = FALSE;
-		API_VERIFY(NULL != (m_hEventJobStop = CreateEvent(NULL, TRUE, FALSE, NULL))); 
-		return bRet;
-	}
-
-	template <typename T>
-	BOOL CFJobBase<T>::Finalize()
-	{
 		BOOL bRet = TRUE;
-		SAFE_CLOSE_HANDLE(m_hEventJobStop, NULL);
 		return bRet;
 	}
 
@@ -73,17 +77,17 @@ namespace FTL
 			m_pThreadPool->m_hEventStop,
 			m_pThreadPool->m_hEventContinue
 		};
-		DWORD dwResult = ::WaitForMultipleObjects(_countof(waitEvent),waitEvent,FALSE,dwMilliseconds);
+		DWORD dwResult = ::WaitForMultipleObjects(_countof(waitEvent), waitEvent, FALSE, dwMilliseconds);
 		switch (dwResult)
 		{
 		case WAIT_OBJECT_0:
 			waitType = ftwtStop;		//Job Stop Event
 			break;
 		case WAIT_OBJECT_0 + 1:
-			waitType = ftwtStop;		//Job Thread Stop Event
+			waitType = ftwtStop;		//Thread Pool Stop Event
 			break;
 		case WAIT_OBJECT_0 + 2:
-			waitType = ftwtContinue;	//Job Thread Continue Event
+			waitType = ftwtContinue;	//Thread Pool Continue Event
 			break;
 		case WAIT_TIMEOUT:
 			waitType = ftwtTimeOut;
@@ -106,6 +110,7 @@ namespace FTL
 		m_nMinNumThreads = 0;
 		m_nMaxNumThreads = 1;
 
+		m_nRunningJobNumber = 0;
 		m_nJobIndex = 0;
 		m_nCurNumThreads = 0;
 		m_nRunningThreadNum = 0;
@@ -126,7 +131,8 @@ namespace FTL
 		m_hSemaphoreJobToDo = ::CreateSemaphore(NULL, 0, MAXLONG, NULL);
 		FTLASSERT(NULL != m_hSemaphoreJobToDo);
 
-		//创建调整线程个数的信号量(尝试支持动态调整线程池最小、最大个数)
+#pragma TODO(尝试更改代码支持动态调整线程池最小最大个数)
+		//创建调整线程个数的信号量
 		m_hSemaphoreSubtractThread = CreateSemaphore(NULL, 0, MAXLONG, NULL);
 		FTLASSERT(NULL != m_hSemaphoreSubtractThread);
 	}
@@ -137,8 +143,10 @@ namespace FTL
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
 		BOOL bRet = FALSE;
 		API_VERIFY(StopAndWait(FTL_MAX_THREAD_DEADLINE_CHECK));
-		DestroyPool();
+		_DestroyPool();
 
+		FTLASSERT(m_WaitingJobs.empty());
+		FTLASSERT(m_DoingJobs.empty());
 		FTLASSERT(0 == m_nRunningThreadNum);  //析构时所有的线程都要结束
 	}
 
@@ -148,9 +156,9 @@ namespace FTL
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
 		FTLASSERT( 0 <= nMinNumThreads );
 		FTLASSERT( nMinNumThreads <= nMaxNumThreads );       
+		FTLTRACE(TEXT("CFThreadPool::Start, ThreadNum is [%d-%d]\n"), nMinNumThreads, nMaxNumThreads);
 
 		BOOL bRet = TRUE;
-		FTLTRACE(TEXT("CFThreadPool::Start, this=%p, ThreadNum is [%d-%d]\n"), this, nMinNumThreads, nMaxNumThreads);
 		m_nMinNumThreads = nMinNumThreads;
 		m_nMaxNumThreads = nMaxNumThreads;
 
@@ -160,6 +168,7 @@ namespace FTL
 		
 		{
 			CFAutoLock<CFLockObject>   locker(&m_lockThreads);
+			FTLASSERT(NULL == m_pJobThreadHandles);
 			if(NULL == m_pJobThreadHandles)    //防止多次调用Start
 			{
 				m_pJobThreadHandles = new HANDLE[m_nMaxNumThreads];  //分配m_nMaxNumThreads个线程的空间
@@ -168,11 +177,10 @@ namespace FTL
 				m_pJobThreadIds = new DWORD[m_nMaxNumThreads];
 				ZeroMemory(m_pJobThreadIds,sizeof(DWORD) * m_nMaxNumThreads);
 
-				AddJobThread(m_nMinNumThreads);		//开始时只创建 m_nMinNumThreads 个线程
+				_AddJobThread(m_nMinNumThreads);		//开始时只创建 m_nMinNumThreads 个线程
 				FTLASSERT(m_nCurNumThreads == m_nMinNumThreads);
 			}
 		}
-
 		return bRet;
 	}
 
@@ -180,7 +188,7 @@ namespace FTL
 	BOOL CFThreadPool<T>::Stop()
 	{
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
-		FTLTRACE(TEXT("CFThreadPool::Stop, this=%p\n"), this);
+		FTLTRACE(TEXT("CFThreadPool::Stop\n"));
 
 		BOOL bRet = TRUE;
 		API_VERIFY(SetEvent(m_hEventStop));
@@ -201,7 +209,7 @@ namespace FTL
 	BOOL CFThreadPool<T>::Wait(DWORD dwTimeOut /* = FTL_MAX_THREAD_DEADLINE_CHECK */)
 	{
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
-		FTLTRACE(TEXT("CFThreadPool::Wait, this=%p, dwTimeOut=%d\n"), this, dwTimeOut);
+		FTLTRACE(TEXT("CFThreadPool::Wait, dwTimeOut=%d\n"), dwTimeOut);
 
 		BOOL bRet = TRUE;
 		DWORD dwResult = WaitForSingleObject(m_hEventAllThreadComplete, dwTimeOut);
@@ -211,7 +219,8 @@ namespace FTL
 			bRet = TRUE;
 			break;
 		case WAIT_TIMEOUT:
-			FTLTRACEEX(tlError,TEXT("!!!CFThreadPool::Wait, Not all thread over in %d millisec\n"),dwTimeOut);
+			FTLTRACEEX(tlError,TEXT("!!!CFThreadPool::Wait, Not all thread over in %d millisec\n"), dwTimeOut);
+			FTLASSERT(FALSE);
 			SetLastError(ERROR_TIMEOUT);
 			bRet = FALSE;
 			break;
@@ -238,7 +247,7 @@ namespace FTL
 	template <typename T>
 	BOOL CFThreadPool<T>::Pause()
 	{
-		FTLTRACE(TEXT("CFThreadPool::Pause, this=%p\n"), this);
+		FTLTRACE(TEXT("CFThreadPool::Pause\n"));
 		BOOL bRet = FALSE;
 		API_VERIFY(::ResetEvent(m_hEventContinue));
 		return bRet;
@@ -247,7 +256,7 @@ namespace FTL
 	template <typename T>
 	BOOL CFThreadPool<T>::Resume()
 	{
-		FTLTRACE(TEXT("CFThreadPool::Resume, this=%p\n"), this);
+		FTLTRACE(TEXT("CFThreadPool::Resume\n"));
 		BOOL bRet = FALSE;
 		API_VERIFY(::SetEvent(m_hEventContinue));
 		return bRet;
@@ -261,19 +270,18 @@ namespace FTL
 		BOOL bRet = TRUE;
 		{
 			CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
-			FTLTRACE(TEXT("CFThreadPool::ClearUndoWork, waitingJob Number is %d\n"), m_WaitingJobs.size());
+			FTLTRACEEX(tlTrace, TEXT("CFThreadPool::ClearUndoWork, waitingJob Number is %d\n"), m_WaitingJobs.size());
 			while (!m_WaitingJobs.empty())
 			{
 				//释放对应的信标对象，其个数和 m_WaitingJobs 的个数是一致的
 				DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo, FTL_MAX_THREAD_DEADLINE_CHECK); 
 				API_VERIFY(dwResult == WAIT_OBJECT_0);
 
-				JobInfoContainer::iterator iterBegin = m_WaitingJobs.begin();
-				JobInfo* pInfo = iterBegin->second;
-				FTLASSERT(pInfo);
-				pInfo->pJob->OnCancelJob(pInfo->param);
-				delete pInfo;
-
+				JobContainer::iterator iterBegin = m_WaitingJobs.begin();
+				CFJobBase<T>* pJob = iterBegin->second;
+				FTLASSERT(pJob);
+				_NotifyJobCancel(pJob);
+				pJob->OnCancelJob();
 				m_WaitingJobs.erase(iterBegin);
 			}
 		}
@@ -281,7 +289,7 @@ namespace FTL
 	}
 
 	template <typename T>  
-	BOOL CFThreadPool<T>::AddJobThread(LONG nThreadNum)
+	BOOL CFThreadPool<T>::_AddJobThread(LONG nThreadNum)
 	{
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
 		BOOL bRet = TRUE;
@@ -289,6 +297,7 @@ namespace FTL
 			CFAutoLock<CFLockObject> locker(&m_lockThreads);
 			if (m_nCurNumThreads + nThreadNum > m_nMaxNumThreads)
 			{
+				FTLASSERT(FALSE);
 				//超过最大个数，不能再加了
 				SetLastError(ERROR_INVALID_PARAMETER);
 				bRet = FALSE;
@@ -305,8 +314,8 @@ namespace FTL
 					m_pJobThreadIds[m_nCurNumThreads] = threadId;
 					m_nCurNumThreads++;
 
-					FTLTRACEEX(tlTrace,TEXT("CFThreadPool<T>::AddThread,Thread id = %d,CurNumThreads = %d\n"),
-						threadId, m_nCurNumThreads);
+					FTLTRACEEX(tlTrace,TEXT("CFThreadPool::_AddJobThread, ThreadId=%d(0x%x), CurNumThreads=%d\n"),
+						threadId, threadId, m_nCurNumThreads);
 				}
 				bRet = TRUE;
 			}
@@ -314,106 +323,101 @@ namespace FTL
 		return bRet;
 	}
 
-	template <typename T>
-	BOOL CFThreadPool<T>::OnSubmitJob(const JobInfo* pJobInfo)
-	{
-		UNREFERENCED_PARAMETER(pJobInfo);
-		//TODO: 目前已经无效 -- 默认实现直接返回FALSE，在JobQueue的最后增加
-		return FALSE;
-	}
-
 	template <typename T>  
-	BOOL CFThreadPool<T>::SubmitJob(CFJobBase<T>* pJob, const T& param, LONG* pOutJobIndex)
+	BOOL CFThreadPool<T>::SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex)
 	{
-		FTLASSERT(NULL != m_hEventStop); //如果调用DestroyPool后，就不能再次调用该函数
+		FTLASSERT(NULL != m_hEventStop); //如果调用 _DestroyPool后，就不能再次调用该函数
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
 		BOOL bRet = FALSE;
+
+		//加入Job并且唤醒一个等待线程
 		{
-			//加入Job并且唤醒一个等待线程
+			CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
+			m_nJobIndex++;
+			pJob->m_pThreadPool = this;         //访问私有变量，并将自己赋值过去
+			pJob->m_nJobIndex = m_nJobIndex;	//访问私有变量，设置JobIndex
+
+			if (pOutJobIndex)
 			{
-				CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
-				m_nJobIndex++;
-				pJob->m_pThreadPool = this;         //访问私有变量，并将自己赋值过去
-				pJob->m_nJobIndex = m_nJobIndex;	//访问私有变量，设置JobIndex
-
-				JobInfo *pInfo = new JobInfo;
-				pInfo->pJob = pJob;
-				pInfo->param = param;
-				if (pOutJobIndex)
-				{
-					*pOutJobIndex = m_nJobIndex;
-				}
-				
-				if (!OnSubmitJob(pInfo))
-				{
-					m_WaitingJobs.insert(JobInfoContainer::value_type(pJob->m_nJobIndex, pInfo));
-					//m_WaitingJobs[m_nJobIndex] = pInfo;
-				}
+				*pOutJobIndex = pJob->m_nJobIndex;
 			}
-
-			API_VERIFY(ReleaseSemaphore(m_hSemaphoreJobToDo,1L,NULL));
-			//SwitchToThread();
-			Sleep(1);	//唤醒等待的线程，使得其他线程可以获取Job -- 注意 CFAutoLock 的范围
-
-			{
-				//检查是否需要增加线程
-				CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
-				BOOL bNeedMoreThread = (!m_WaitingJobs.empty() && (m_nCurNumThreads < m_nMaxNumThreads));
-				{
-					if (bNeedMoreThread)
-					{
-						API_VERIFY(AddJobThread(1L));      //每次增加一个线程
-					}
-				}
-			}
+			
+			m_WaitingJobs.insert(JobContainer::value_type(pJob->m_nJobIndex, pJob));
+			API_VERIFY(ReleaseSemaphore(m_hSemaphoreJobToDo, 1L, NULL));
 		}
+		SwitchToThread();//唤醒等待的线程，使得其他线程可以获取Job -- 注意 CFAutoLock 的范围
+
+		{
+			//当所有的线程都在运行Job时，则需要增加线程  -- 不对 m_nRunningJobNumber 加保护(只是读取)
+			//CFAutoLock<CFLockObject> locker(&m_lockThreads);
+			FTLASSERT(m_nRunningJobNumber <= m_nCurNumThreads);
+			BOOL bNeedMoreThread = (m_nRunningJobNumber == m_nCurNumThreads) && (m_nCurNumThreads < m_nMaxNumThreads); 
+			if (bNeedMoreThread)
+			{
+				API_VERIFY(_AddJobThread(1L));      //每次增加一个线程
+			}
+
+			FTLTRACEEX(tlTrace, TEXT("CFThreadPool::SubmitJob, pJob[%d] = %p, m_nRunningJobNumber=%d, m_nCurNumThreads=%d, bNeedMoreThread=%d\n"),
+				pJob->m_nJobIndex, pJob, m_nRunningJobNumber, m_nCurNumThreads, bNeedMoreThread);
+		}
+
 		return bRet;	
 	}
 
 	template <typename T>  
 	BOOL CFThreadPool<T>::CancelJob(LONG nJobIndex)
 	{
+		FTLTRACEEX(tlTrace, TEXT("CFThreadPool::CancelJob, JobIndex=%d\n"), nJobIndex);
+
+		if (nJobIndex <= 0 || nJobIndex > m_nJobIndex)
+		{
+			SetLastError(ERROR_INVALID_PARAMETER);
+			return FALSE;
+		}
+
 		BOOL bRet = TRUE;
 		BOOL bFoundWaiting = FALSE;
 		BOOL bFoundDoing = FALSE;
 		{
 			//首先查找未启动的任务
 			CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
-			JobInfoContainer::iterator iterWaiting = m_WaitingJobs.find(nJobIndex);
+			JobContainer::iterator iterWaiting = m_WaitingJobs.find(nJobIndex);
 			if (iterWaiting != m_WaitingJobs.end())
 			{
-				DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo, INFINITE); //释放对应的信标对象，避免再次找到
+				//找到,说明这个Job还没有启动
+				bFoundWaiting = TRUE;
+
+				DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo, INFINITE); //释放对应的信标对象，避免个数不匹配
 				API_ASSERT(dwResult == WAIT_OBJECT_0);
 
-				//找到,说明这个Job还没有启动
-				JobInfo* pInfo = iterWaiting->second;
-				FTLASSERT(pInfo);
-				FTLASSERT(pInfo->pJob->GetJobIndex() == nJobIndex);
-				pInfo->pJob->OnCancelJob(pInfo->param);
-				delete pInfo;
-				m_WaitingJobs.erase(iterWaiting);
+				CFJobBase<T>* pJob = iterWaiting->second;
+				FTLASSERT(pJob);
+				FTLASSERT(pJob->GetJobIndex() == nJobIndex);
 
-				bFoundWaiting = TRUE;
+				_NotifyJobCancel(pJob);
+				//pJob->m_JobStatus = jsCancel;
+				pJob->OnCancelJob();
+				
+				m_WaitingJobs.erase(iterWaiting);
 			}
 		}
+
 		if (!bFoundWaiting)
 		{
 			//查找正在运行的任务
 			CFAutoLock<CFLockObject> locker(&m_lockDoingJobs);
-			JobInfoContainer::iterator iterDoing = m_DoingJobs.find(nJobIndex);
+			JobContainer::iterator iterDoing = m_DoingJobs.find(nJobIndex);
 			if (iterDoing != m_DoingJobs.end())
 			{
-				JobInfo* pInfo = iterDoing->second;
-				FTLASSERT(pInfo);
-				FTLASSERT(pInfo->pJob->GetJobIndex() == nJobIndex);
-				pInfo->pJob->NotifyStop();
-				//注意：这里只是请求Cancel，实际上任务是否能真正Cancel，需要依赖Job的实现，
-
-				//不要 delete pInfo 和 m_DoingJobs.erase -- Job 结束后再取消
-				////delete pInfo;
-				////m_DoingJobs.erase(iterDoing);
-
 				bFoundDoing = TRUE;
+
+				CFJobBase<T>* pJob = iterDoing->second;
+				FTLASSERT(pJob);
+				FTLASSERT(pJob->GetJobIndex() == nJobIndex);
+				
+				//注意：这里只是请求Cancel，实际上任务是否能真正Cancel，需要依赖Job的实现，
+				pJob->RequestCancel();
+				//不要 m_DoingJobs.erase(iterDoing) -- Job 结束后会 erase
 			}
 		}
 		if (!bFoundWaiting && !bFoundDoing)
@@ -422,40 +426,26 @@ namespace FTL
 			//do nothing
 		}
 
-		return bRet; //(bFoundDoing || bFoundWaiting);
+		return bRet;
 	}
-
-	//template <typename T>  
-	//BOOL CFThreadPool<T>::PauseJob(INT nJobIndex)
-	//{
-	//	SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
-	//	return FALSE;
-	//}
-
-	//template <typename T>  
-	//BOOL CFThreadPool<T>::ResumeJob(INT nJobIndex)
-	//{
-	//	SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
-	//	return FALSE;
-	//}
 
 	template <typename T>  
 	BOOL CFThreadPool<T>::HadRequestStop() const
 	{
 		_ASSERT(NULL != m_hEventStop);
-		BOOL bRet = (WaitForSingleObject(m_hEventStop,0) == WAIT_OBJECT_0);
+		BOOL bRet = (WaitForSingleObject(m_hEventStop, 0) == WAIT_OBJECT_0);
 		return bRet;
 	}
 
 	template <typename T>
 	BOOL CFThreadPool<T>::HadRequestPause() const
 	{
-		BOOL bRet = (WaitForSingleObject(m_hEventContinue,0) == WAIT_TIMEOUT);
+		BOOL bRet = (WaitForSingleObject(m_hEventContinue, 0) == WAIT_TIMEOUT);
 		return bRet;
 	}
 
 	template <typename T>  
-	void CFThreadPool<T>::DestroyPool()
+	void CFThreadPool<T>::_DestroyPool()
 	{
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
 		BOOL bRet = FALSE;
@@ -469,78 +459,98 @@ namespace FTL
 	}
 
 	template <typename T>  
-	GetJobType CFThreadPool<T>::GetJob(CFJobBase<T>** ppJob, T* pParam)
+	GetJobType CFThreadPool<T>::_GetJob(CFJobBase<T>** ppJob)
 	{
 		FUNCTION_BLOCK_TRACE(0);
 		HANDLE hWaitHandles[] = 
 		{
-			m_hEventStop,                 //用户选择了停止
-			m_hSemaphoreJobToDo,          //还有未作的Job
-			m_hSemaphoreSubtractThread,   //需要减少线程
+			//TODO: 优先响应 m_hSemaphoreJobToDo 还是 m_hSemaphoreSubtractThread ?
+			//  1.优先响应 m_hSemaphoreJobToDo 可以避免线程的波动
+			//  2.优先响应 m_hSemaphoreSubtractThread 可以优先满足用户手动要求减少线程的需求(虽然目前尚未提供该接口)
+			m_hEventStop,                 //user stop thread pool
+			m_hSemaphoreJobToDo,          //there are waiting jobs
+			m_hSemaphoreSubtractThread,   //need subtract thread
 		};
 
-		DWORD dwResult = WaitForMultipleObjects(_countof(hWaitHandles),hWaitHandles,FALSE,INFINITE);
+		DWORD dwResult = WaitForMultipleObjects(_countof(hWaitHandles), hWaitHandles, FALSE, INFINITE);
 		switch(dwResult)
 		{
-		case WAIT_OBJECT_0: //Stop Event
+		case WAIT_OBJECT_0:				//m_hEventStop
 			return typeStop;
-		case WAIT_OBJECT_0 + 1: //Get Job
+		case WAIT_OBJECT_0 + 1:			//m_hSemaphoreJobToDo
 			break;
-		case WAIT_OBJECT_0 + 2://减少线程
+		case WAIT_OBJECT_0 + 2:			//m_hSemaphoreSubtractThread
 			return typeSubtractThread;
 		default:
 			FTLASSERT(FALSE);
-			break;
+			return typeStop;
 		}
+
 		{
 			//从等待容器中获取用户作业
 			CFAutoLock<CFLockObject> lockerWating(&m_lockWaitingJobs);
 			FTLASSERT(!m_WaitingJobs.empty());
-			JobInfoContainer::iterator iterBegin = m_WaitingJobs.begin();
+			JobContainer::iterator iterBegin = m_WaitingJobs.begin();
 			INT nJobIndex = iterBegin->first;
-			JobInfo* pInfo = iterBegin->second;
-			FTLASSERT(pInfo);
 
-			*ppJob = pInfo->pJob;
-			*pParam = pInfo->param;
+			CFJobBase<T>* pJob = iterBegin->second;
+			FTLASSERT(pJob);
+			FTLASSERT(pJob->GetJobIndex() == nJobIndex);
+
+			*ppJob = pJob;
 			m_WaitingJobs.erase(iterBegin);
 			{
 				//放到进行作业的容器中
 				CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
-				m_DoingJobs.insert(JobInfoContainer::value_type(nJobIndex, pInfo));			
+				m_DoingJobs.insert(JobContainer::value_type(nJobIndex, pJob));			
 			}
 		}
 		return typeGetJob;	
 	}
 
 	template <typename T>  
-	void CFThreadPool<T>::DoJobs()
+	void CFThreadPool<T>::_DoJobs()
 	{
 		BOOL bRet = FALSE;
 		FUNCTION_BLOCK_TRACE(0);
 		CFJobBase<T>* pJob = NULL;
-		T param = T(); //需要缺省构造
 		GetJobType getJobType = typeStop;
-		while(typeGetJob == (getJobType = GetJob(&pJob, &param)))
+		while(typeGetJob == (getJobType = _GetJob(&pJob)))
 		{
+			InterlockedIncrement(&m_nRunningJobNumber);
 			INT nJobIndex = pJob->GetJobIndex();
 			FTLTRACEEX(tlInfo, TEXT("CFThreadPool Begin Run Job %d\n"), nJobIndex);
+
 			API_VERIFY(pJob->Initialize());
-			pJob->Run(param); //执行Job，这个函数返回后, pJob 一般已经被 delete this 了, 不能再调用其方法
+			if (bRet)
+			{
+				//这个地方的设计和实现不是很好，是否有更好的方法?
+				FTLASSERT(NULL == pJob->m_hEventJobStop);
+				pJob->m_hEventJobStop = CreateEvent(NULL, TRUE, FALSE, NULL);
+				//pJob->m_JobStatus = jsDoing;
+
+				_NotifyJobBegin(pJob);
+				pJob->Run();
+				_NotifyJobEnd(pJob);
+
+				//if (jsDoing == pJob->m_JobStatus)
+				//{
+				//	pJob->m_JobStatus = jsDone;
+				//}
+				SAFE_CLOSE_HANDLE(pJob->m_hEventJobStop, NULL);
+				pJob->Finalize();
+			}
+			InterlockedDecrement(&m_nRunningJobNumber);
 
 			FTLTRACEEX(tlInfo, TEXT("CFThreadPool End Run Job %d\n"), nJobIndex);
-
-			//退出Run说明一个Job结束
 			{
-				//首先从运行列表中删除
+				//Job结束，首先从运行列表中删除
 				CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
-				JobInfoContainer::iterator iter = m_DoingJobs.find(nJobIndex);
+				JobContainer::iterator iter = m_DoingJobs.find(nJobIndex);
 				FTLASSERT(m_DoingJobs.end() != iter);
 				if (m_DoingJobs.end() != iter)
 				{
-					JobInfo* pInfo = iter->second;
 					m_DoingJobs.erase(iter);
-					delete pInfo;
 				}
 			}
 
@@ -548,25 +558,26 @@ namespace FTL
 			BOOL bNeedSubtractThread = FALSE;
 			{
 				CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
+				//CFAutoLock<CFLockObject> locker(&m_lockThreads);
 				//当队列中没有Job，并且当前线程数大于最小线程数时
 				bNeedSubtractThread = (m_WaitingJobs.empty() && (m_nCurNumThreads > m_nMinNumThreads) && !HadRequestStop());
 				if (bNeedSubtractThread)
 				{
 					//通知减少一个线程
-					ReleaseSemaphore(m_hSemaphoreSubtractThread,1L,NULL);
+					ReleaseSemaphore(m_hSemaphoreSubtractThread, 1L, NULL);
 				}
 			}
 		}
 		if (typeSubtractThread == getJobType)  //需要减少线程,应该把自己退出 -- 注意：通知退出的线程和实际退出的线程可能不是同一个
 		{
-			FUNCTION_BLOCK_NAME_TRACE(TEXT("typeSubtractThread == getJobType,will remove self thread"),
+			FUNCTION_BLOCK_NAME_TRACE(TEXT("typeSubtractThread, will remove self thread"),
 				DEFAULT_BLOCK_TRACE_THRESHOLD);
 			CFAutoLock<CFLockObject> locker(&m_lockThreads);
 			LONG index = 0;
 			DWORD dwCurrentThreadId = GetCurrentThreadId();
 			for (; index < m_nCurNumThreads; index++)
 			{
-				if (m_pJobThreadIds[index] == dwCurrentThreadId)  //找到自己
+				if (m_pJobThreadIds[index] == dwCurrentThreadId)  //找到自己线程对应的位置
 				{
 					break;
 				}
@@ -577,14 +588,16 @@ namespace FTL
 				//把最后一个线程的信息移到退出的线程位置 -- 如果退出的线程就是最后一个时也正确
 				HANDLE hOldTemp = m_pJobThreadHandles[index];
 				m_pJobThreadHandles[index] = m_pJobThreadHandles[m_nCurNumThreads - 1];
-				m_pJobThreadHandles[m_nCurNumThreads-1] = NULL;
+				m_pJobThreadHandles[m_nCurNumThreads - 1] = NULL;
+
 				m_pJobThreadIds[index] = m_pJobThreadIds[m_nCurNumThreads - 1];
 				m_pJobThreadIds[m_nCurNumThreads - 1] = 0;
+
 				m_nCurNumThreads--;
 				CloseHandle(hOldTemp);
 
-				FTLTRACEEX(tlTrace,TEXT("CFThreadPool Subtract a thread, thread id = %d, curThreadNum = %d\n"),
-					dwCurrentThreadId,m_nCurNumThreads);
+				FTLTRACEEX(tlTrace,TEXT("CFThreadPool Subtract a thread, thread id = %d(0x%x), curThreadNum = %d\n"),
+					dwCurrentThreadId, dwCurrentThreadId, m_nCurNumThreads);
 			}
 		}
 		else //typeStop
@@ -594,17 +607,65 @@ namespace FTL
 	}
 
 	template <typename T>  
+	void CFThreadPool<T>::_NotifyJobBegin(CFJobBase<T>* pJob)
+	{
+		FTLASSERT(pJob);
+		if (pJob && m_pCallBack)
+		{
+			m_pCallBack->OnJobBegin(pJob->GetJobIndex(), pJob);
+		}
+	}
+
+	template <typename T>  
+	void CFThreadPool<T>::_NotifyJobEnd(CFJobBase<T>* pJob)
+	{
+		FTLASSERT(pJob);
+		if (pJob && m_pCallBack)
+		{
+			m_pCallBack->OnJobEnd(pJob->GetJobIndex(), pJob);
+		}
+	}
+
+	template <typename T>  
+	void CFThreadPool<T>::_NotifyJobCancel(CFJobBase<T>* pJob)
+	{
+		FTLASSERT(pJob);
+		if (pJob && m_pCallBack)
+		{
+			m_pCallBack->OnJobCancel(pJob->GetJobIndex(), pJob);
+		}
+	}
+
+	template <typename T>  
+	void CFThreadPool<T>::_NotifyJobProgress(CFJobBase<T>* pJob, LONG64 nCurPos, LONG64 nTotalSize)
+	{
+		FTLASSERT(pJob);
+		if (pJob && m_pCallBack)
+		{
+			m_pCallBack->OnJobProgress(pJob->GetJobIndex(), pJob, nCurPos, nTotalSize);
+		}
+	}
+
+	template <typename T>  
+	void CFThreadPool<T>::_NotifyJobError(CFJobBase<T>* pJob, DWORD dwError, LPCTSTR pszDescription)
+	{
+		FTLASSERT(pJob);
+		if (pJob && m_pCallBack)
+		{
+			m_pCallBack->OnJobError(pJob->GetJobIndex(), pJob, dwError, pszDescription);
+		}
+	}
+
+	template <typename T>  
 	unsigned int CFThreadPool<T>::JobThreadProc(void *pThis)
 	{
 		FUNCTION_BLOCK_TRACE(0);
 		CFThreadPool<T>* pThreadPool = (CFThreadPool<T>*)pThis;
 		LONG nRunningNumber = InterlockedIncrement(&pThreadPool->m_nRunningThreadNum);
-		FTLTRACE(TEXT("ThreadId[%d] Increment, %ld\n"), GetCurrentThreadId(), nRunningNumber);
 
-		pThreadPool->DoJobs();
+		pThreadPool->_DoJobs();
 
 		nRunningNumber = InterlockedDecrement(&pThreadPool->m_nRunningThreadNum);
-		FTLTRACE(TEXT("ThreadId[%d] Decrement, %ld\n"), GetCurrentThreadId(), nRunningNumber);
 		if (0 == nRunningNumber)
 		{
 			//线程结束后判断是否是最后一个线程，如果是，激发事件
