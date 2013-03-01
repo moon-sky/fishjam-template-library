@@ -22,6 +22,7 @@
 
 #include "ftlThread.h"
 //#include "ftlSharePtr.h"
+#include "ftlFunctional.h"
 
 namespace FTL
 {
@@ -84,6 +85,9 @@ namespace FTL
     * 使用方式：参见 test_CFThreadPool
     *********************************************************************************************/
 #pragma TODO(CreateThreadpoolIo)
+	//WaitForThreadpoolWorkCallbacks -- 可以取消尚未运行的任务，但无法取消已经运行的任务
+	//http://www.cnblogs.com/wz19860913/articles/1274214.html --  Windows 线程池
+
 	//目前的线程池 SubmitJob 的实现方式可能会造成 Job 结束的时候，这个函数还没有返回的Bug ?
 	//可以在回调函数(如清除调用方的管理容器) 和 调用 SubmitJob 的函数(向调用方的管理容器中加入信息) 同步即可预防这个Bug
 
@@ -114,7 +118,16 @@ namespace FTL
 	public:
 		FTLINLINE CFJobBase();
 		FTLINLINE virtual ~CFJobBase();
-		FTLINLINE LONG	GetJobIndex() const;
+
+		//! 比较Job的大小，用于确定在 Waiting 容器中的队列， 排序依据为 Priority -> Index
+		bool operator < (const CFJobBase & other) const;
+
+		//! 获取或设置Job的优先级, 数字越小，优先级越高(在等待队列中拍在越前面)，缺省值是 0
+		//  注意：优先级必须在放入 Pool 前设置，放入后就不能再调整了
+		FTLINLINE LONG GetJobPriority() const { return m_nJobPriority; }
+		FTLINLINE LONG SetJobPriority(LONG nNewPriority);
+
+		FTLINLINE LONG GetJobIndex() const;
 		//FTLINLINE FJobStatus GetJobStatus() const;
 
 		T		m_JobParam;			//! Job会使用的参数，此处为了简化，直接采用公有变量的方式
@@ -143,6 +156,7 @@ namespace FTL
 		FTLINLINE FTLThreadWaitType GetJobWaitType(DWORD dwMilliseconds = INFINITE) const;
 	private:
 		//设置为私有的变量和方法，即使是子类也不要直接更改，由Pool调用进行控制
+		LONG		m_nJobPriority;
 		LONG		m_nJobIndex;
 		HANDLE		m_hEventJobStop;					//停止Job的事件，该变量将由Pool创建和释放(TODO:Pool中缓存?)
 		//FJobStatus	m_JobStatus;
@@ -280,11 +294,14 @@ namespace FTL
 
 		//HANDLE	m_hMgrThread;					//! Pool管理线程的句柄
 
-		//! 保存Job的信息,由于会频繁加入、删除，且需要按照JobIndex查找，因此保存成 map(set?)
-		typedef std::map<LONG, CFJobBase<T>* >	JobContainer;
-		//typedef std::set<CFJobBase*, FTL::UnreferenceLess< CFJobBase*> > JobContainer;
-		JobContainer		  m_WaitingJobs;	//! 等待运行的Job
-		JobContainer		  m_DoingJobs;		//! 正在运行的Job
+		//! 保存等待Job的信息，由于有优先级的问题，而且一般是从最前面开始取，因此保存成 set
+		typedef typename UnreferenceLess< CFJobBase<T> * >	JobBaseUnreferenceLess;
+		typedef std::set<CFJobBase<T>*, JobBaseUnreferenceLess > WaitingJobContainer;
+		WaitingJobContainer		m_WaitingJobs;	//! 等待运行的Job
+
+		//! 保存运行Job的信息， 由于会频繁加入、删除，且需要按照JobIndex查找，因此保存成 map
+		typedef std::map<LONG, CFJobBase<T>* >	DoingJobContainer;
+		DoingJobContainer		m_DoingJobs;	//! 正在运行的Job
 
 		HANDLE m_hEventStop;                    //! 停止Pool的事件
 		HANDLE m_hEventAllThreadComplete;		//! 所有的线程都结束时激发这个事件

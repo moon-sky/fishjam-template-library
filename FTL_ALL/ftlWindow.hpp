@@ -193,6 +193,46 @@ namespace FTL
 		}
 	};
 
+	class CFPowerBroadcastMsgInfo : public  CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			TCHAR szInfo[40] = {0};
+			UINT nEvent = (UINT)wParam;
+			switch (nEvent)
+			{
+				HANDLE_CASE_TO_STRING(PBT_APMQUERYSUSPEND, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMQUERYSTANDBY, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMQUERYSUSPENDFAILED, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMQUERYSTANDBYFAILED, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMSUSPEND, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMSTANDBY, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMRESUMECRITICAL, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMRESUMESUSPEND, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMRESUMESTANDBY, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMBATTERYLOW, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMPOWERSTATUSCHANGE, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMOEMEVENT, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(PBT_APMRESUMEAUTOMATIC, szInfo, _countof(szInfo));
+#if (_WIN32_WINNT >= 0x0502)
+				case PBT_POWERSETTINGCHANGE:
+				{
+					//TODO:POWERBROADCAST_SETTING 
+					HANDLE_CASE_TO_STRING(PBT_POWERSETTINGCHANGE, szInfo, _countof(szInfo));
+					break;
+				}
+#endif // (_WIN32_WINNT >= 0x0502)
+			default:
+				FTLASSERT(FALSE);
+				StringCchCopy(szInfo, _countof(szInfo), TEXT("Unknown-%d"), nReason);
+				break;
+			}
+			m_strFormater.Format(TEXT("%s{%s}"), pszMsgName, szInfo);
+			return m_strFormater;
+		}
+	};
+
 	class CFIMENotifyMsgInfo : public CFDefaultMsgInfo
 	{
 	public:
@@ -248,6 +288,36 @@ namespace FTL
 			return m_strFormater;
 		}
 	};
+
+#if(_WIN32_WINNT >= 0x0501)
+	class CFWtsSessionChangeMsgInfo : public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			TCHAR szInfo[40] = {0};
+			INT nReason = (INT)wParam;
+			switch (nReason)
+			{
+				HANDLE_CASE_TO_STRING(WTS_CONSOLE_CONNECT, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(WTS_CONSOLE_DISCONNECT, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(WTS_REMOTE_CONNECT, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(WTS_REMOTE_DISCONNECT, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(WTS_SESSION_LOGON, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(WTS_SESSION_LOGOFF, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(WTS_SESSION_LOCK, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(WTS_SESSION_UNLOCK, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(WTS_SESSION_REMOTE_CONTROL, szInfo, _countof(szInfo));
+			default:
+				FTLASSERT(FALSE);
+				StringCchCopy(szInfo, _countof(szInfo), TEXT("Unknown-%d"), nReason);
+				break;
+			}
+			m_strFormater.Format(TEXT("%s{%s}"), pszMsgName, szInfo);
+			return m_strFormater;
+		}
+	};
+#endif /* _WIN32_WINNT >= 0x0501 */
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	CFRegistedMessageInfo::CFRegistedMessageInfo()
@@ -561,7 +631,7 @@ namespace FTL
 #endif
 
 #if(WINVER >= 0x0400)
-                GET_MESSAGE_INFO_ENTRY(WM_POWERBROADCAST, CFDefaultMsgInfo);//送给应用程序来通知它有关电源管理事件
+                GET_MESSAGE_INFO_ENTRY(WM_POWERBROADCAST, CFPowerBroadcastMsgInfo);//送给应用程序来通知它有关电源管理事件
                 GET_MESSAGE_INFO_ENTRY(WM_DEVICECHANGE, CFDefaultMsgInfo);  //当设备的硬件配置改变时发送此消息给应用程序或设备驱动程序
 #endif
 
@@ -619,7 +689,7 @@ namespace FTL
 
 
 #if(_WIN32_WINNT >= 0x0501)
-                GET_MESSAGE_INFO_ENTRY(WM_WTSSESSION_CHANGE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_WTSSESSION_CHANGE, CFWtsSessionChangeMsgInfo); //Session改变(比如锁定、解锁、退出登录等)
                 GET_MESSAGE_INFO_ENTRY(WM_TABLET_FIRST, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_TABLET_LAST, CFDefaultMsgInfo);
 #endif

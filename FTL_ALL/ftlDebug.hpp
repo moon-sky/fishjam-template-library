@@ -43,8 +43,6 @@ namespace FTL
 		}
 		return m_bufInfo;
 	}
-
-	
-}
+}//FTL
 
 #endif //FTL_DEBUG_HPP

@@ -1160,7 +1160,7 @@ namespace FTL
 		FTLINLINE BOOL CancelTask(LONG nJobIndex);
 	protected:
 		CAtlString		m_strAgent;
-		FTL::CFThreadPool<FTransferJobInfoPtr>*		m_pThreadPool;
+		CFThreadPool<FTransferJobInfoPtr>*		m_pThreadPool;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

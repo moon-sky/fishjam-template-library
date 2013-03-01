@@ -1944,7 +1944,7 @@ namespace FTL
 	CFTransferJobBase::CFTransferJobBase(const CAtlString& strAgent)
 	{
 		m_strAgent = strAgent;
-		m_nTotalSize = (LONG64)(-1);
+		m_nTotalSize = (LONGLONG)(-1);
 		m_nCurPos = 0;
 
 		m_hSession = NULL;

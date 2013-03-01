@@ -146,9 +146,6 @@ namespace FTL
 
     LPSTR  CFConversion::UTF8_TO_MBCS( LPCSTR szUTF8 )
     {
-#ifdef _DEBUG
-        OutputDebugString( _T( "UTF8_TO_MBCS() start" ) );
-#endif
         int wcharsize = MultiByteToWideChar( CP_UTF8, 0,  szUTF8, -1, NULL, 0 );
         int size = wcharsize * sizeof( WCHAR );
         ATLVERIFY( MultiByteToWideChar( CP_UTF8, 0,  szUTF8, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );

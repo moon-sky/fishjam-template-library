@@ -13,7 +13,7 @@ namespace FTL
 	CFJobBase<T>::CFJobBase()
 		:m_JobParam(T())		//初始化
 	{
-		//m_nJobPriority = 0;
+		m_nJobPriority = 0;
 		m_nJobIndex = 0;
 		m_pThreadPool = NULL;
 		m_hEventJobStop = NULL;
@@ -23,6 +23,22 @@ namespace FTL
 	CFJobBase<T>::~CFJobBase()
 	{
 		FTLASSERT(NULL == m_hEventJobStop);
+	}
+
+	template <typename T>
+	bool CFJobBase<T>::operator < (const CFJobBase<T> & other) const
+	{
+		COMPARE_MEM_LESS(m_nJobPriority, other);
+		COMPARE_MEM_LESS(m_nJobIndex, other);
+		return true;
+	}
+	
+	template <typename T>
+	LONG CFJobBase<T>::SetJobPriority(LONG nNewPriority)
+	{
+		LONG nOldPriority = m_nJobPriority;
+		m_nJobPriority = nNewPriority;
+		return nOldPriority;
 	}
 
 	template <typename T>
@@ -277,8 +293,8 @@ namespace FTL
 				DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo, FTL_MAX_THREAD_DEADLINE_CHECK); 
 				API_VERIFY(dwResult == WAIT_OBJECT_0);
 
-				JobContainer::iterator iterBegin = m_WaitingJobs.begin();
-				CFJobBase<T>* pJob = iterBegin->second;
+				WaitingJobContainer::iterator iterBegin = m_WaitingJobs.begin();
+				CFJobBase<T>* pJob = *iterBegin;
 				FTLASSERT(pJob);
 				_NotifyJobCancel(pJob);
 				pJob->OnCancelJob();
@@ -342,7 +358,7 @@ namespace FTL
 				*pOutJobIndex = pJob->m_nJobIndex;
 			}
 			
-			m_WaitingJobs.insert(JobContainer::value_type(pJob->m_nJobIndex, pJob));
+			m_WaitingJobs.insert(pJob);
 			API_VERIFY(ReleaseSemaphore(m_hSemaphoreJobToDo, 1L, NULL));
 		}
 		SwitchToThread();//唤醒等待的线程，使得其他线程可以获取Job -- 注意 CFAutoLock 的范围
@@ -379,26 +395,32 @@ namespace FTL
 		BOOL bFoundWaiting = FALSE;
 		BOOL bFoundDoing = FALSE;
 		{
-			//首先查找未启动的任务
+			//首先查找未启动的任务 -- 因为传入的参数中没有Priority的信息，无法快速查找。
+			//因此采用遍历的方式 -- 用 boost::multi_index(依赖太大)
 			CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
-			JobContainer::iterator iterWaiting = m_WaitingJobs.find(nJobIndex);
-			if (iterWaiting != m_WaitingJobs.end())
+			for (WaitingJobContainer::iterator iterWaiting = m_WaitingJobs.begin();
+				iterWaiting != m_WaitingJobs.end();
+				++iterWaiting)
 			{
-				//找到,说明这个Job还没有启动
-				bFoundWaiting = TRUE;
+				if ((*iterWaiting)->GetJobIndex() == nJobIndex)
+				{
+					//找到,说明这个Job还没有启动
+					bFoundWaiting = TRUE;
 
-				DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo, INFINITE); //释放对应的信标对象，避免个数不匹配
-				API_ASSERT(dwResult == WAIT_OBJECT_0);
+					DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo, INFINITE); //释放对应的信标对象，避免个数不匹配
+					API_ASSERT(dwResult == WAIT_OBJECT_0);
 
-				CFJobBase<T>* pJob = iterWaiting->second;
-				FTLASSERT(pJob);
-				FTLASSERT(pJob->GetJobIndex() == nJobIndex);
+					CFJobBase<T>* pJob = *iterWaiting;
+					FTLASSERT(pJob);
+					FTLASSERT(pJob->GetJobIndex() == nJobIndex);
 
-				_NotifyJobCancel(pJob);
-				//pJob->m_JobStatus = jsCancel;
-				pJob->OnCancelJob();
-				
-				m_WaitingJobs.erase(iterWaiting);
+					_NotifyJobCancel(pJob);
+					//pJob->m_JobStatus = jsCancel;
+					pJob->OnCancelJob();
+					
+					m_WaitingJobs.erase(iterWaiting);
+					break;
+				}
 			}
 		}
 
@@ -406,7 +428,7 @@ namespace FTL
 		{
 			//查找正在运行的任务
 			CFAutoLock<CFLockObject> locker(&m_lockDoingJobs);
-			JobContainer::iterator iterDoing = m_DoingJobs.find(nJobIndex);
+			DoingJobContainer::iterator iterDoing = m_DoingJobs.find(nJobIndex);
 			if (iterDoing != m_DoingJobs.end())
 			{
 				bFoundDoing = TRUE;
@@ -490,19 +512,17 @@ namespace FTL
 			//从等待容器中获取用户作业
 			CFAutoLock<CFLockObject> lockerWating(&m_lockWaitingJobs);
 			FTLASSERT(!m_WaitingJobs.empty());
-			JobContainer::iterator iterBegin = m_WaitingJobs.begin();
-			INT nJobIndex = iterBegin->first;
+			WaitingJobContainer::iterator iterBegin = m_WaitingJobs.begin();
 
-			CFJobBase<T>* pJob = iterBegin->second;
+			CFJobBase<T>* pJob = *iterBegin;
 			FTLASSERT(pJob);
-			FTLASSERT(pJob->GetJobIndex() == nJobIndex);
 
 			*ppJob = pJob;
 			m_WaitingJobs.erase(iterBegin);
 			{
 				//放到进行作业的容器中
 				CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
-				m_DoingJobs.insert(JobContainer::value_type(nJobIndex, pJob));			
+				m_DoingJobs.insert(DoingJobContainer::value_type(pJob->GetJobIndex(), pJob));			
 			}
 		}
 		return typeGetJob;	
@@ -546,7 +566,7 @@ namespace FTL
 			{
 				//Job结束，首先从运行列表中删除
 				CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
-				JobContainer::iterator iter = m_DoingJobs.find(nJobIndex);
+				DoingJobContainer::iterator iter = m_DoingJobs.find(nJobIndex);
 				FTLASSERT(m_DoingJobs.end() != iter);
 				if (m_DoingJobs.end() != iter)
 				{
