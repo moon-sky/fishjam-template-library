@@ -731,6 +731,14 @@ namespace FTL
 
         //获取本地的IP地址
         FTLINLINE LONG GetLocalIPAddress();
+
+		//返回URL指定的文件大小和名字，如果
+		FTLINLINE BOOL GetUrlFileSizeAndFileName(
+			__in LPCTSTR pszUrl, 
+			__in LPCTSTR pszCookie, 
+			__out PLONGLONG pFileSize, 
+			__out LPTSTR pszOutFileName, 
+			__in INT nMaxFileNameSize); 
     }
 
 	//默认实现只是打印出事件日志，该类的变量必须作为 InternetConnect(dwContext) 参数传入
@@ -1042,8 +1050,9 @@ namespace FTL
 	protected:
 		CAtlString				m_strAgent;
 
-		LONG64		m_nTotalSize;
-		LONG64		m_nCurPos;
+		//如果想支持断点续传或多线程下载，需要使用 SetFilePointer，常用的 LARGE_INTEGER::QuadPart 是 LONGLONG
+		LONGLONG		m_nTotalSize;
+		LONGLONG		m_nCurPos;
 
 		HINTERNET	m_hSession;
 		HINTERNET	m_hConnection;
@@ -1120,7 +1129,7 @@ namespace FTL
 
 		FTLINLINE LPCTSTR _GetMultiPartBoundary(BOOL bEnd) const;
 
-		FTLINLINE LONG64 _CalcContentLength();
+		FTLINLINE LONGLONG _CalcContentLength();
 		FTLINLINE BOOL	_SetRequestHeader();
 		FTLINLINE BOOL  _SendUploadData();
 		FTLINLINE BOOL  _SendPostArgument(PBYTE pBuffer, DWORD dwBufferSize);
@@ -1165,6 +1174,7 @@ namespace FTL
 
 	//////////////////////////////////////////////////////////////////////////
 
+	//URL 地址解析似乎只用 URL_COMPONENTS(不需要定义成员?) + InternetCrackUrl 即可?
 	class CUrlComponents : public URL_COMPONENTS
 	{
 	public:

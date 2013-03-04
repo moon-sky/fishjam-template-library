@@ -117,6 +117,7 @@ namespace FTL
 		friend class CFThreadPool<T>;   //允许Threadpool设置 m_pThreadPool/m_nJobIndex 的值
 	public:
 		FTLINLINE CFJobBase();
+		FTLINLINE CFJobBase(T& rJobParam);
 		FTLINLINE virtual ~CFJobBase();
 
 		//! 比较Job的大小，用于确定在 Waiting 容器中的队列， 排序依据为 Priority -> Index
@@ -147,7 +148,7 @@ namespace FTL
 		//这个函数用于未运行的Job(直接取消或线程池停止), 用于清除内存等资源, 如 delete this 等
 		FTLINLINE virtual void OnCancelJob() = 0;
 	protected:
-		FTLINLINE void _NotifyProgress(LONG64 nCurPos, LONG64 nTotalSize);
+		FTLINLINE void _NotifyProgress(LONGLONG nCurPos, LONGLONG nTotalSize);
 		FTLINLINE void _NotifyError(DWORD dwError, LPCTSTR pszDescription);
 		FTLINLINE void _NotifyCancel();
 
@@ -196,7 +197,7 @@ namespace FTL
 		}
 
 		//Progress 和 Error 由 JobBase 的子类激发
-		FTLINLINE virtual void OnJobProgress(LONG nJobIndex , CFJobBase<T>* pJob, LONG64 nCurPos, LONG64 nTotalSize)
+		FTLINLINE virtual void OnJobProgress(LONG nJobIndex , CFJobBase<T>* pJob, LONGLONG nCurPos, LONGLONG nTotalSize)
 		{
 			UNREFERENCED_PARAMETER(nJobIndex);
 			UNREFERENCED_PARAMETER(pJob);
@@ -219,6 +220,7 @@ namespace FTL
 		//typedef CFSharePtr<CFJobBase< T> > CFJobBasePtr;
 		//friend class CFJobBasePtr;
 		friend class CFJobBase<T>;  //允许Job在 GetJobWaitType 中获取 m_hEventStop/m_hEventContinue
+		DISABLE_COPY_AND_ASSIGNMENT(CFThreadPool);
 	public:
 		FTLINLINE CFThreadPool(IFThreadPoolCallBack<T>* pCallBack = NULL);
 		FTLINLINE virtual ~CFThreadPool(void);
@@ -274,7 +276,7 @@ namespace FTL
 		FTLINLINE void _NotifyJobEnd(CFJobBase<T>* pJob);
 		FTLINLINE void _NotifyJobCancel(CFJobBase<T>* pJob);
 
-		FTLINLINE void _NotifyJobProgress(CFJobBase<T>* pJob, LONG64 nCurPos, LONG64 nTotalSize);
+		FTLINLINE void _NotifyJobProgress(CFJobBase<T>* pJob, LONGLONG nCurPos, LONGLONG nTotalSize);
 		FTLINLINE void _NotifyJobError(CFJobBase<T>* pJob, DWORD dwError, LPCTSTR pszDescription); 
 
 	protected:

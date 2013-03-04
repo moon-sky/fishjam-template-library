@@ -1,3 +1,4 @@
+http://companyadc.51job.com/companyads/2013/cd/shilian0301_8788wh/index.htm
 wxWidget -- http://www.wxwidgets.org/, C++ 的跨平台UI库
 
 C方式往命令行上输出二进制：

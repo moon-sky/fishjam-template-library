@@ -19,6 +19,17 @@ namespace FTL
 		m_hEventJobStop = NULL;
 		//m_JobStatus = jsWaiting;
 	}
+	
+	template <typename T>
+	CFJobBase<T>::CFJobBase(T& rJobParam)
+		:m_JobParam(rJobParam)
+	{
+		m_nJobIndex = 0;
+		m_pThreadPool = NULL;
+		m_hEventJobStop = NULL;
+		
+	}
+
 	template <typename T>
 	CFJobBase<T>::~CFJobBase()
 	{
@@ -56,7 +67,7 @@ namespace FTL
 	}
 
 	template <typename T>
-	void CFJobBase<T>::_NotifyProgress(LONG64 nCurPos, LONG64 nTotalSize)
+	void CFJobBase<T>::_NotifyProgress(LONGLONG nCurPos, LONGLONG nTotalSize)
 	{
 		FTLASSERT(m_pThreadPool);
 		m_pThreadPool->_NotifyJobProgress(this, nCurPos, nTotalSize);
@@ -657,7 +668,7 @@ namespace FTL
 	}
 
 	template <typename T>  
-	void CFThreadPool<T>::_NotifyJobProgress(CFJobBase<T>* pJob, LONG64 nCurPos, LONG64 nTotalSize)
+	void CFThreadPool<T>::_NotifyJobProgress(CFJobBase<T>* pJob, LONGLONG nCurPos, LONGLONG nTotalSize)
 	{
 		FTLASSERT(pJob);
 		if (pJob && m_pCallBack)

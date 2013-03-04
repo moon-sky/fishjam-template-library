@@ -801,7 +801,8 @@ namespace FTL
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_TRANSFER_ENCODING, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentTransferEncoding:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_ID, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentID:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_DESCRIPTION, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentDescription:%s\n"));
-				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_LENGTH, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentLength:%s\n"));
+				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_LENGTH, //获取内容(如下载的文件)大小
+					ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentLength:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_LANGUAGE, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentLanguage:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_ALLOW, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Allow:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_PUBLIC, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Public:%s\n"));
@@ -837,7 +838,9 @@ namespace FTL
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_FORWARDED, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Forwarded:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_FROM, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("From:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_IF_MODIFIED_SINCE, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("IfModifiedSince:%s\n"));
-				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_LOCATION, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Location:%s\n"));
+				
+				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_LOCATION, //获取文件名(优先级1)
+					ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Location:%s\n"));	
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_ORIG_URI, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("OrigUri:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_REFERER, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Buffer:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_RETRY_AFTER, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("RetryAfter:%s\n"));
@@ -851,7 +854,9 @@ namespace FTL
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_COOKIE, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Cookie:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_REQUEST_METHOD, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("RequestMethod:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_REFRESH, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Refresh:%s\n"));
-				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_DISPOSITION, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentDisposition:%s\n"));
+
+				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_DISPOSITION, //获取文件名(优先级2)
+					ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentDisposition:%s\n"));
 
 				// HTTP 1.1 defined headers
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_AGE, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Age:%s\n"));
@@ -909,6 +914,44 @@ namespace FTL
             //后续可以使用 inet_ntoa 等函数转换为 IP 的字符串
             return localIP;
         }
+
+		BOOL GetUrlFileSizeAndFileName(
+			__in LPCTSTR pszUrl, 
+			__in LPCTSTR pszCookie, 
+			__out PLONGLONG pFileSize, 
+			__out LPTSTR pszOutFileName, 
+			__in INT nMaxFileNameSize)
+		{
+			HINTERNET hInternet = NULL;
+			HINTERNET hConnect = NULL;
+			HINTERNET hRequest = NULL;
+
+			//TODO: Parse URL
+			LPCTSTR pszServer = NULL;
+			LPCTSTR pszObjectName = NULL;
+
+			hInternet = InternetOpen(TEXT("FTL"), 0, NULL, NULL, 0);
+			hConnect = InternetConnect(hInternet, pszServer, INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, 
+				INTERNET_SERVICE_HTTP, 0, 0);
+			hRequest = HttpOpenRequest(hConnect, TEXT("GET"), pszObjectName, 
+				HTTP_VERSIONW, 
+				NULL,
+				TEXT("HTTP/1.1"),
+				INTERNET_FLAG_RELOAD | INTERNET_FLAG_KEEP_CONNECTION // | INTERNET_FLAG_NO_COOKIES
+				);
+			HttpAddRequestHeaders(hRequest, TEXT("Accept: */*\r\n"), -1, HTTP_ADDREQ_FLAG_ADD|HTTP_ADDREQ_FLAG_REPLACE);
+			if (pszCookie)
+			{
+				HttpAddRequestHeaders(hRequest, pszCookie, -1, HTTP_ADDREQ_FLAG_ADD|HTTP_ADDREQ_FLAG_REPLACE);
+			}
+			HttpSendRequest(hRequest, NULL, 0, 0);
+
+			//获取文件大小 
+			//HttpQueryInfo(hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
+
+
+		}
+
     }//namespace .NetInfo 
 
 	CFInternetStatusCallbackImpl::CFInternetStatusCallbackImpl()
@@ -1944,7 +1987,7 @@ namespace FTL
 	CFTransferJobBase::CFTransferJobBase(const CAtlString& strAgent)
 	{
 		m_strAgent = strAgent;
-		m_nTotalSize = (LONG64)(-1);
+		m_nTotalSize = (LONGLONG)(-1);
 		m_nCurPos = 0;
 
 		m_hSession = NULL;
@@ -2118,7 +2161,7 @@ namespace FTL
 		//转换Post的参数（1.LPCTSTR -> LPSTR; 2. localFile)，并计算总共需要的长度
 		API_VERIFY(_TranslatePostParams());
 
-		LONG64 nTotalSize = _CalcContentLength();
+		LONGLONG nTotalSize = _CalcContentLength();
 		if (bRet && nTotalSize > 0)
 		{
 			m_nTotalSize = nTotalSize;
@@ -2509,11 +2552,11 @@ namespace FTL
 		_ClearPostParams();
 	}
 
-	LONG64 CFUploadJob::_CalcContentLength()
+	LONGLONG CFUploadJob::_CalcContentLength()
 	{
 		//计算总共的长度：post参数长度 + 文件长度(注意文件内容分割的长度) -- 和nTalk等其他项目的代码不一样(依赖于Post参数的创建方式中是否包含多余的CRLF等)
 
-		LONG64 nContentLength = 0;
+		LONGLONG nContentLength = 0;
 
 		for (std::list<PostArgumentParam*>::iterator iterArgument = m_postArgumentParams.begin();
 			iterArgument != m_postArgumentParams.end();
@@ -2667,17 +2710,23 @@ namespace FTL
 #pragma TODO(考虑本地文件重复需要重命名或删除等)
 
 			m_nTotalSize = nContentLength;
-			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, GENERIC_WRITE, 0, NULL,
-				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, 
+				GENERIC_WRITE, 
+				0,	//如果是多线程同时下载一个文件，需要设置为 FILE_SHARE_WRITE ?
+				NULL,
+				CREATE_ALWAYS, //如果支持断点或多线程下载，需要设置为 OPEN_ALWAYS?
+				FILE_ATTRIBUTE_NORMAL, 
+				NULL);
 			API_VERIFY(INVALID_HANDLE_VALUE != hLocalFile);
 
 			if (INVALID_HANDLE_VALUE != hLocalFile)
 			{
 				_NotifyProgress(m_nCurPos, m_nTotalSize);
-					
+
+				DWORD dwError = 0;
 				DWORD dwSize = 0, dwRead = 0;
 				DWORD dwWriteToLocal = 0;
-				DWORD dwBufferSize = INTERNET_BUFFER_SIZE;
+				DWORD dwBufferSize = INTERNET_BUFFER_SIZE; //引入一个 dwBufferSize 变量，方便以后可以动态设置
 				//BOOL  bFirstBuffer = TRUE;
 				BYTE* pBuffer = new BYTE[dwBufferSize];
 				do 
@@ -2688,7 +2737,7 @@ namespace FTL
 					//TODO: 是否需要调用这个函数，及其作用和返回值? 如果真取得 dwRead 大小，还要和 INTERNET_BUFFER_SIZE 比较
 					//API_VERIFY(InternetQueryDataAvailable(m_hRequest, &dwRead, 0, 0));
 
-					dwSize = INTERNET_BUFFER_SIZE;
+					dwSize = dwBufferSize;
 					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwSize, &dwRead));
 					if (bRet && dwRead > 0)
 					{
@@ -2708,6 +2757,19 @@ namespace FTL
 						//else
 						//{
 						//}
+					}
+					else if(!bRet)
+					{
+						//错误处理 -- TODO: 具体有哪些?
+						dwError = GetLastError();
+						switch (dwError)
+						{
+						case ERROR_INTERNET_TIMEOUT: //12002
+						default:
+							break;
+						}
+						SetLastError(dwError);
+						break;
 					}
 				} while (dwRead != 0 && (GetJobWaitType(0) != ftwtStop));
 				SAFE_DELETE_ARRAY(pBuffer);
@@ -2849,7 +2911,7 @@ namespace FTL
 
 		this->lpszScheme = m_szScheme;
 		this->dwSchemeLength = _countof(m_szScheme);
-		this->nScheme = INTERNET_SCHEME_UNKNOWN;
+		this->nScheme = INTERNET_SCHEME_UNKNOWN; //INTERNET_SCHEME_HTTP
 		this->lpszHostName = m_szHostName;
 		this->dwHostNameLength = _countof(m_szHostName);
 		this->lpszUserName = m_szUserName;
