@@ -732,7 +732,7 @@ namespace FTL
         //获取本地的IP地址
         FTLINLINE LONG GetLocalIPAddress();
 
-		//返回URL指定的文件大小和名字，如果
+		//返回URL指定的文件大小和名字
 		FTLINLINE BOOL GetUrlFileSizeAndFileName(
 			__in LPCTSTR pszUrl, 
 			__in LPCTSTR pszCookie, 

@@ -27,7 +27,6 @@ namespace FTL
 		m_nJobIndex = 0;
 		m_pThreadPool = NULL;
 		m_hEventJobStop = NULL;
-		
 	}
 
 	template <typename T>

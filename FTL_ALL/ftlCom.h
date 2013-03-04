@@ -11,8 +11,6 @@
 #define FTL_COM_H
 #pragma once
 
-#pragma TODO(Delete BSTR In COMStudy)
- 
 //http://msdn.microsoft.com/en-us/library/ms679687(VS.85).aspx,  CoCreateInstanceAsAdmin -> CreateElevatedComObject
 //http://blogs.msdn.com/b/vistacompatteam/archive/2006/09/28/cocreateinstanceasadmin-or-createelevatedcomobject-sample.aspx
 #pragma TODO(The COM Elevation Moniker)

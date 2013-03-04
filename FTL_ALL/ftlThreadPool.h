@@ -99,6 +99,7 @@ namespace FTL
 	//  2.能方便的对单个任务进行取消，如任务尚未运行则由框架代码处理，如任务已经运行，则需要 JobBase 的子类根据 GetJobWaitType 的返回值进行处理
 	//  3.能对整个线程池进行 暂停、继续、停止 处理 -- 需要 JobBase 的子类根据 GetJobWaitType 的返回值进行处理
 	//  4.支持回调方式的反馈通知( Progress/Error 等)
+	//  5.使用的是微软的基本API，能支持WinXP、Vista、Win7等各种操作系统
 	template <typename T> class CFThreadPool;  
 
 	//enum FJobStatus

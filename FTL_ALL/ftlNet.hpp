@@ -933,18 +933,25 @@ namespace FTL
 			hInternet = InternetOpen(TEXT("FTL"), 0, NULL, NULL, 0);
 			hConnect = InternetConnect(hInternet, pszServer, INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, 
 				INTERNET_SERVICE_HTTP, 0, 0);
+			 
+			const TCHAR* szAccept[] = {
+				TEXT("HTTP/1.1"),
+				NULL
+			};
+			
 			hRequest = HttpOpenRequest(hConnect, TEXT("GET"), pszObjectName, 
 				HTTP_VERSIONW, 
 				NULL,
-				TEXT("HTTP/1.1"),
-				INTERNET_FLAG_RELOAD | INTERNET_FLAG_KEEP_CONNECTION // | INTERNET_FLAG_NO_COOKIES
+				&szAccept[0],
+				INTERNET_FLAG_RELOAD | INTERNET_FLAG_KEEP_CONNECTION, // | INTERNET_FLAG_NO_COOKIES
+				NULL
 				);
 			HttpAddRequestHeaders(hRequest, TEXT("Accept: */*\r\n"), -1, HTTP_ADDREQ_FLAG_ADD|HTTP_ADDREQ_FLAG_REPLACE);
 			if (pszCookie)
 			{
 				HttpAddRequestHeaders(hRequest, pszCookie, -1, HTTP_ADDREQ_FLAG_ADD|HTTP_ADDREQ_FLAG_REPLACE);
 			}
-			HttpSendRequest(hRequest, NULL, 0, 0);
+			HttpSendRequest(hRequest, NULL, 0, NULL, 0);
 
 			//获取文件大小 
 			//HttpQueryInfo(hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 

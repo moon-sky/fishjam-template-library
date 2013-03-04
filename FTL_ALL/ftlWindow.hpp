@@ -198,34 +198,38 @@ namespace FTL
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
+			UNREFERENCED_PARAMETER(lParam);
+
 			TCHAR szInfo[40] = {0};
 			UINT nEvent = (UINT)wParam;
 			switch (nEvent)
 			{
-				HANDLE_CASE_TO_STRING(PBT_APMQUERYSUSPEND, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMQUERYSTANDBY, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMQUERYSUSPENDFAILED, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMQUERYSTANDBYFAILED, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMSUSPEND, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMSTANDBY, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMRESUMECRITICAL, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMRESUMESUSPEND, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMRESUMESTANDBY, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMBATTERYLOW, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMPOWERSTATUSCHANGE, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMOEMEVENT, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(PBT_APMRESUMEAUTOMATIC, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMQUERYSUSPEND);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMQUERYSTANDBY);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMQUERYSUSPENDFAILED);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMQUERYSTANDBYFAILED);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMSUSPEND);
+
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMSTANDBY);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMECRITICAL);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMESUSPEND);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMESTANDBY);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMBATTERYLOW);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMPOWERSTATUSCHANGE);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMOEMEVENT);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMEAUTOMATIC);
+
 #if (_WIN32_WINNT >= 0x0502)
 				case PBT_POWERSETTINGCHANGE:
 				{
 					//TODO:POWERBROADCAST_SETTING 
-					HANDLE_CASE_TO_STRING(PBT_POWERSETTINGCHANGE, szInfo, _countof(szInfo));
+					HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_POWERSETTINGCHANGE);
 					break;
 				}
 #endif // (_WIN32_WINNT >= 0x0502)
 			default:
 				FTLASSERT(FALSE);
-				StringCchCopy(szInfo, _countof(szInfo), TEXT("Unknown-%d"), nReason);
+				StringCchPrintf(szInfo, _countof(szInfo), TEXT("Unknown-%d"), nEvent);
 				break;
 			}
 			m_strFormater.Format(TEXT("%s{%s}"), pszMsgName, szInfo);
@@ -238,7 +242,7 @@ namespace FTL
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
-			UINT nCommand = (UINT)wParam;
+			//UINT nCommand = (UINT)wParam;
 			CFStringFormater formater;
 			
 			m_strFormater.Format(TEXT("%s{NotifyInfo=%s}"),pszMsgName, CFIMEUtil::GetIMENotifyInfoString(formater, wParam, lParam));
@@ -295,22 +299,24 @@ namespace FTL
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT /*uMsg*/, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
+			UNREFERENCED_PARAMETER(lParam);
+
 			TCHAR szInfo[40] = {0};
 			INT nReason = (INT)wParam;
 			switch (nReason)
 			{
-				HANDLE_CASE_TO_STRING(WTS_CONSOLE_CONNECT, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(WTS_CONSOLE_DISCONNECT, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(WTS_REMOTE_CONNECT, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(WTS_REMOTE_DISCONNECT, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(WTS_SESSION_LOGON, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(WTS_SESSION_LOGOFF, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(WTS_SESSION_LOCK, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(WTS_SESSION_UNLOCK, szInfo, _countof(szInfo));
-				HANDLE_CASE_TO_STRING(WTS_SESSION_REMOTE_CONTROL, szInfo, _countof(szInfo));
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_CONSOLE_CONNECT);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_CONSOLE_DISCONNECT);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_REMOTE_CONNECT);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_REMOTE_DISCONNECT);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_SESSION_LOGON);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_SESSION_LOGOFF);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_SESSION_LOCK);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_SESSION_UNLOCK);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), WTS_SESSION_REMOTE_CONTROL);
 			default:
 				FTLASSERT(FALSE);
-				StringCchCopy(szInfo, _countof(szInfo), TEXT("Unknown-%d"), nReason);
+				StringCchPrintf(szInfo, _countof(szInfo), TEXT("Unknown-%d"), nReason);
 				break;
 			}
 			m_strFormater.Format(TEXT("%s{%s}"), pszMsgName, szInfo);
@@ -1895,6 +1901,9 @@ namespace FTL
     LPCTSTR CFWinUtil::GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, 
 		TranslateWndClassProc pTransProc/* = g_pTranslateWndClassProc*/)
     {
+		UNREFERENCED_PARAMETER(hWnd);
+		UNREFERENCED_PARAMETER(pszCommandNotify);
+		UNREFERENCED_PARAMETER(nLength);
 		UNREFERENCED_PARAMETER(pTransProc);
 
         switch(nCode)
