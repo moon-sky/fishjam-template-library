@@ -15,6 +15,22 @@
 //    ★注意：memcpy 等函数相当慢(拷贝字节)，可以采用自己写的，进行DWORD等32位拷贝(注意边界)★
 //
 //  Win32SDK -> .Net WinForm -> WPF/Silverlight
+
+/************************************************************************
+* FTL中静态变量的设置(TODO)
+*   #pragma section("Session名$_段名", 属性) -- 建立一个section, 一个section可以包含多个名字不同的段
+*     如 #pragma section("ATL$__a", read, shared) -- 在名为ATL的Section中建立名为"_a"的段
+*   #pragma comment(linker, "/merge:ATL=.rdata") -- 合并两个Section(把ATL合并到 .rdata 中)
+*   __declspec(allocate("ATL$__a")) _ATL_OBJMAP_ENTRY* __pobjMapEntryFirst = NULL; -- allocate关键字指明 将指定的变量放在指定的section中的指定的段中
+*   __declspec(selectany) -- 加在初始化静态成员变量前面，编译器会自动剔除对该静态成员的重复定义
+* 
+* 共享段: 各个Exe包含定义了共享变量的DLL时，该变量在各个Exe之间唯一。而不是 Exe 和 Dll 共享变量
+*   #pragma data_seg(".MyShare")
+*   # 各种变量定义
+*   #pragma data_set()
+*   #pragma comment(linker,"/SECTION:.MyShare,RWS")
+* 如果 Exe 和 Dll 共享变量，必须是 Dll 定义后 export, Exe 通过 import 使用( 即 __declspec(dllexport)/ __declspec(dllimport) ? )
+************************************************************************/
 #ifndef FTL_BASE_H
 #define FTL_BASE_H
 #pragma once
@@ -487,6 +503,48 @@ namespace FTL
 	template<typename T>
 	void SwapValue(T& value1, T& value2);
 
+
+	//在 Exe 和 DLL 中共享变量的内存区域 -- T 必须是简单类型，能支持 CopyMemory, sizeof 等操作
+	template<typename T>
+	class CFSharedVariable
+	{
+	public:
+		typedef BOOL (CALLBACK* InitializeSharedVariableProc)(T& rValue);
+		typedef BOOL (CALLBACK* FinalizeSharedVariableProc)(T& rValue);
+
+		//pszShareName 如果是NULL，会自动根据 Exe 的名字创建进程相关的共享区，这样统一进程中的各个某块能够共享变量
+		FTLINLINE CFSharedVariable(InitializeSharedVariableProc pInitializeProc,
+			FinalizeSharedVariableProc pFinalizeProc,
+			LPCTSTR pszShareName = NULL);
+		FTLINLINE ~CFSharedVariable();
+
+		FTLINLINE T& GetShareValue();
+	private:
+		HANDLE		m_hMapping;
+		BOOL		m_bFirstCreate;
+		T*			m_pShareValue;
+		FinalizeSharedVariableProc	m_pFinalizeProc;
+	};
+
+	struct FTLGlobalShareInfo
+	{
+		DWORD	dwTraceTlsIndex;		//FastTrace中保存线程局部储存的index
+		ULONG   nTraceSequenceNumber;	//FastTrace中的序列号
+
+		//DWORD   dwBlockElapseTlsIndex;	//CFBlockElapse 中保存线程局部存储的Index
+		//static DWORD  s_dwTLSIndex;
+		//static LONG   s_lElapseId;
+	};
+	FTLINLINE BOOL CALLBACK _FtlGlobalShareInfoInitialize(FTLGlobalShareInfo& rShareInfo);
+	FTLINLINE BOOL CALLBACK _FtlGlobalShareInfoFinalize(FTLGlobalShareInfo& rShareInfo);
+
+	//定义
+	__declspec(selectany)	CFSharedVariable<FTLGlobalShareInfo>	g_GlobalShareInfo(
+		_FtlGlobalShareInfoInitialize, 
+		_FtlGlobalShareInfoFinalize,
+		NULL);
+
+
     FTLEXPORT template<typename TBase, typename INFO_TYPE, LONG bufLen = MAX_BUFFER_LENGTH>
     class CFConvertInfoT
     {
@@ -671,7 +729,8 @@ namespace FTL
         } FTDATA , * LPFTDATA ;
     public:
         FTLINLINE static CFFastTrace& GetInstance();
-        
+        //FTLINLINE static DWORD GetTraceTLSSlot();
+
         //设置可以进行日志输出的类型(组合项)和等级(大于该等级的输出)
         FTLINLINE BOOL CheckLevel(TraceLevel level);
         FTLINLINE BOOL SetTraceOptions(LPFAST_TRACE_OPTIONS pOptions);
@@ -701,8 +760,7 @@ namespace FTL
             FTLINLINE BOOL WriteHeader () ;
         };
     protected:
-        DWORD                   m_dwTLSSlot;            //保存线程局部储存的Slot值
-        ULONG                   m_SequenceNumber;       //序列号
+		BOOL					m_bAllocTls;
         FAST_TRACE_OPTIONS      m_Options;
         CRITICAL_SECTION        m_CsLock;               //在更改Option等时进行互斥
         typedef std::set<CFTFileWriter*>            AllFileWriterArrayType;

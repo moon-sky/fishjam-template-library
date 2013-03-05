@@ -1,3 +1,17 @@
+_WINDLL、_USRDLL(DLL工程)、
+_ATL_DLL(链接 atl.lib, 运行时依赖 ATL.dll)
+_DLL(CRT Dll version)
+_AFXDLL(Use MFC in a Shared DLL)
+
+WIN32;_WINDOWS;STRICT;_DEBUG
+WIN32;_DEBUG;_WINDOWS;_USRDLL;FTLDLLPROJ_EXPORTS
+
+
+//静态链接Vista中的哭，并使用 delayload 的方式放置在WinXp等上无法运行
+#pragma comment(lib, "dwmapi.lib")
+#pragma comment(lib, "delayimp.lib")
+#pragma comment(linker, "/delayload:dwmapi.dll")
+
 http://companyadc.51job.com/companyads/2013/cd/shilian0301_8788wh/index.htm
 wxWidget -- http://www.wxwidgets.org/, C++ 的跨平台UI库
 
