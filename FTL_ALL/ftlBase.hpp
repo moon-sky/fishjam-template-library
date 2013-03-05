@@ -57,7 +57,7 @@ namespace FTL
 			GetModuleFileName(NULL, szModuleFileName, _countof(szModuleFileName));
 			PathRemoveExtension(szModuleFileName);
 			LPCTSTR pszNamePos = PathFindFileName(szModuleFileName); // &szModuleFileName[nLength + 1];
-			StringCchPrintf(szMapName, _countof(szMapName), TEXT("FTLShare_%s"), pszNamePos);
+			StringCchPrintf(szMapName, _countof(szMapName), TEXT("FTLShare_%s_%d"), pszNamePos, GetCurrentProcessId());
 			pszShareName =  szMapName;
 		}
 
@@ -112,17 +112,41 @@ namespace FTL
 	{
 		BOOL bRet = TRUE;
 		FTLASSERT(rShareInfo.dwTraceTlsIndex == 0);
+		FTLASSERT(rShareInfo.dwBlockElapseTlsIndex == 0);
+
 		rShareInfo.dwTraceTlsIndex = TlsAlloc();
+		FTLASSERT(TLS_OUT_OF_INDEXES != rShareInfo.dwTraceTlsIndex);
+		if (TLS_OUT_OF_INDEXES != rShareInfo.dwTraceTlsIndex)
+		{
+			TlsSetValue(rShareInfo.dwTraceTlsIndex, NULL);		
+		}
+		rShareInfo.dwBlockElapseTlsIndex = TlsAlloc();
+		FTLASSERT(TLS_OUT_OF_INDEXES != rShareInfo.dwBlockElapseTlsIndex);
+		if (TLS_OUT_OF_INDEXES != rShareInfo.dwBlockElapseTlsIndex)
+		{
+			TlsSetValue(rShareInfo.dwBlockElapseTlsIndex, NULL);
+		}
+
 		rShareInfo.nTraceSequenceNumber = 0;
+		rShareInfo.nBlockElapseId = 0;
 		return bRet;
 	}
 
 	BOOL CALLBACK _FtlGlobalShareInfoFinalize(FTLGlobalShareInfo& rShareInfo)
 	{
-		if (rShareInfo.dwTraceTlsIndex != 0 && rShareInfo.dwTraceTlsIndex != TLS_OUT_OF_INDEXES)
+		if (TLS_OUT_OF_INDEXES != rShareInfo.dwTraceTlsIndex)
 		{
+			//CFFastTrace::CFTFileWriter*
+			FTLASSERT(NULL == TlsGetValue(rShareInfo.dwTraceTlsIndex));			//相关的资源必须已经释放
 			TlsFree(rShareInfo.dwTraceTlsIndex);
 			rShareInfo.dwTraceTlsIndex = TLS_OUT_OF_INDEXES;
+		}
+		if (TLS_OUT_OF_INDEXES != rShareInfo.dwBlockElapseTlsIndex)
+		{
+			//BlockElapseInfo*
+			FTLASSERT(NULL == TlsGetValue(rShareInfo.dwBlockElapseTlsIndex));	//相关的资源必须已经释放
+			TlsFree(rShareInfo.dwBlockElapseTlsIndex);
+			rShareInfo.dwBlockElapseTlsIndex = TLS_OUT_OF_INDEXES;
 		}
 		return TRUE;
 	}
@@ -763,16 +787,7 @@ namespace FTL
         //m_SequenceNumber = 0;
 		
 		DWORD& rTlsIndex = g_GlobalShareInfo.GetShareValue().dwTraceTlsIndex;
-		if (rTlsIndex == TLS_OUT_OF_INDEXES)
-		{
-			rTlsIndex = TlsAlloc();
-			API_VERIFY(TLS_OUT_OF_INDEXES != rTlsIndex);
-			if (TLS_OUT_OF_INDEXES != rTlsIndex)
-			{
-				API_VERIFY(TlsSetValue(rTlsIndex,NULL));
-				m_bAllocTls = TRUE;
-			}
-		}
+		FTLASSERT(rTlsIndex != TLS_OUT_OF_INDEXES);
         
         TCHAR szModuleName[MAX_PATH] = {0};
         if(GetModuleFileName(hModule,szModuleName,_countof(szModuleName)) > 0)
@@ -845,6 +860,7 @@ namespace FTL
     CFFastTrace::~CFFastTrace()
     {
         CloseAllFileWriters();
+#pragma TODO(TlsSetValue NULL when thread quit)
 #if 0
         if (TLS_OUT_OF_INDEXES != m_dwTLSSlot)
         {
@@ -972,14 +988,14 @@ namespace FTL
                 ftdata.nTraceInfoLen =  (LONG)(_tcslen(pStrInfo) + 1); //包括后面的结束符
                 ftdata.pszTraceInfo = pStrInfo;
 
-				ULONG rTraceSequenceNumber = g_GlobalShareInfo.GetShareValue().nTraceSequenceNumber;
-                ftdata.lSeqNum = InterlockedIncrement ( (LPLONG)&rTraceSequenceNumber) ;
+				LONG& rTraceSequenceNumber = g_GlobalShareInfo.GetShareValue().nTraceSequenceNumber;
+                ftdata.lSeqNum = InterlockedIncrement (&rTraceSequenceNumber) ;
 
                 API_VERIFY(pFileWriter->WriteData(&ftdata));
                 if (!bRet)
                 {   //写信息失败，清除TLS
 					DWORD& rTlsIndex = g_GlobalShareInfo.GetShareValue().dwTraceTlsIndex;
-                    TlsSetValue ( rTlsIndex ,(LPVOID)INVALID_HANDLE_VALUE ) ;
+                    TlsSetValue ( rTlsIndex ,NULL) ;
                     pFileWriter->Close() ;
                     RemoveFileFromArray ( pFileWriter ) ;
                     // Free the memory.
@@ -1018,12 +1034,12 @@ namespace FTL
         if (TLS_OUT_OF_INDEXES == rTlsIndex)
         {
             //此时 CFFastTrace 已经析构，但还有线程在写日志 -- 全局或静态变量，比 CFFastTrace 的生存期长(如 CModulesHolder)
-            return (CFFastTrace::CFTFileWriter*)(DWORD_PTR)(TLS_OUT_OF_INDEXES);
+            return (CFFastTrace::CFTFileWriter*)NULL;
         }
 
         CFFastTrace::CFTFileWriter* pFileWriter = (CFFastTrace::CFTFileWriter*) TlsGetValue(rTlsIndex);
         
-        //返回NULL表示第一次访问,但如果返回 INVALID_HANDLE_VALUE, 则说明文件出现错误,已经被关闭
+        //返回NULL表示第一次访问  -- TODO: 但如果返回 INVALID_HANDLE_VALUE, 则说明文件出现错误,已经被关闭
         if (NULL == pFileWriter)  
         {
             BOOL bRet = FALSE ;
@@ -1261,30 +1277,6 @@ namespace FTL
     }
 
 #ifdef FTL_DEBUG
-    BOOL CFBlockElapse::Init()
-    {
-        BOOL bRet = TRUE;
-		ATLTRACE(TEXT("Init: s_dwTLSIndex=%d, &s_dwTLSIndex=0x%p\n"), s_dwTLSIndex, &s_dwTLSIndex);
-        FTLASSERT(TLS_OUT_OF_INDEXES == s_dwTLSIndex);
-        s_dwTLSIndex = TlsAlloc();
-        API_VERIFY(TLS_OUT_OF_INDEXES != s_dwTLSIndex);
-        if (TLS_OUT_OF_INDEXES != s_dwTLSIndex)
-        {
-            API_VERIFY(TlsSetValue(s_dwTLSIndex, NULL));
-        }
-		s_lElapseId = 0;
-        return bRet;
-    }
-    VOID CFBlockElapse::UnInit()
-    {
-        if (TLS_OUT_OF_INDEXES != s_dwTLSIndex)
-        {
-            BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(s_dwTLSIndex);
-            FTLASSERT(NULL == pInfo);   //防止内存泄漏，必须释放掉
-        }
-        TlsFree(s_dwTLSIndex);
-        s_dwTLSIndex = TLS_OUT_OF_INDEXES;
-    }
     CFBlockElapse::CFBlockElapse(LPCTSTR pszFileName,DWORD line, 
         LPCTSTR pBlockName, LPVOID pReturnAddr, DWORD MinElapse/* = 0*/)
         :m_pszFileName(pszFileName)
@@ -1294,36 +1286,24 @@ namespace FTL
         ,m_MinElapse(MinElapse)
 
     {
-		//DWORD& rTlsIndex = g_GlobalShareInfo.GetShareValue().dwBlockElapseTlsIndex;
-		//if (TLS_OUT_OF_INDEXES == rTlsIndex)
-		//{
-		//	rTlsIndex = TlsAlloc();
-		//	API_VERIFY(TLS_OUT_OF_INDEXES != rTlsIndex);
-		//	if (TLS_OUT_OF_INDEXES != rTlsIndex)
-		//	{
-		//		API_VERIFY(TlsSetValue(rTlsIndex, NULL));
-		//		m_bAllocTls = TRUE;
-		//	}
-		//}
-
-		ATLTRACE(TEXT("CFBlockElapse: s_dwTLSIndex=%d, &s_dwTLSIndex=0x%p\n"), s_dwTLSIndex, &s_dwTLSIndex);
-
-        FTLASSERT(TLS_OUT_OF_INDEXES != s_dwTLSIndex && TEXT("Must Call Init"));
         FTLASSERT(pBlockName);
         FTLASSERT(pReturnAddr);
-		m_nElapseId = InterlockedIncrement(&s_lElapseId);
+		LONG& rElapseId = g_GlobalShareInfo.GetShareValue().nBlockElapseId;
+		m_nElapseId = InterlockedIncrement(&rElapseId);
 
-        BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(s_dwTLSIndex);
+		DWORD& rBlockElapseTlsIndex = g_GlobalShareInfo.GetShareValue().dwBlockElapseTlsIndex;
+		ATLASSERT(rBlockElapseTlsIndex != TLS_OUT_OF_INDEXES);
+        BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
         if (NULL == pInfo)
         {
             //FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
             //   __FILE__LINE__, GetCurrentThreadId());
             pInfo = new BlockElapseInfo();
             ZeroMemory(pInfo, sizeof(BlockElapseInfo));
-            TlsSetValue(s_dwTLSIndex, pInfo);
+            TlsSetValue(rBlockElapseTlsIndex, pInfo);
         }
         pInfo->indent++;
-        LONG curLevel = FTL_MIN(pInfo->indent,MAX_TRACE_INDICATE_LEVEL); //InterlockedIncrement(&s_Indent);
+        LONG curLevel = FTL_MIN(pInfo->indent, MAX_TRACE_INDICATE_LEVEL); //InterlockedIncrement(&s_Indent);
         for (LONG n = 0; n < curLevel; n++)
         {
             pInfo->bufIndicate[n] = TEXT('>');
@@ -1344,7 +1324,8 @@ namespace FTL
                 m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, m_pszBlkName,m_pReturnAdr,m_MinElapse,dwElapseTime);
         }
         
-        BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(s_dwTLSIndex);
+		DWORD& rBlockElapseTlsIndex = g_GlobalShareInfo.GetShareValue().dwBlockElapseTlsIndex;
+        BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
         //FTLASSERT(pInfo);  -- 
 #pragma TODO(一个线程创建对象，另外的线程来释放，怎么处理，如GraphEdt)
         if (pInfo)
@@ -1363,38 +1344,38 @@ namespace FTL
                 //FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
                 //    __FILE__LINE__, GetCurrentThreadId());
                 delete pInfo;
-                TlsSetValue(s_dwTLSIndex, NULL);
+                TlsSetValue(rBlockElapseTlsIndex, NULL);
             }
         }
     }
 
-#if defined(_M_IA64) || defined(_M_IX86) || defined (_M_AMD64)
-
-//#pragma data_seg(".FTL")
-#pragma section(".FTL", shared, read,write)
-	//extern "C"
-	//{
-		__declspec(allocate(".FTL")) __declspec(selectany)   DWORD CFBlockElapse::s_dwTLSIndex = TLS_OUT_OF_INDEXES;
-		__declspec(allocate(".FTL")) __declspec(selectany)  LONG  CFBlockElapse::s_lElapseId = 0;
-	//}
-//#pragma data_seg()
-
-#if !defined(_M_IA64)
-	 #pragma comment(linker,"/SECTION:.FTL,RWS") 
-//#pragma comment(linker, "/merge:FTL=.data")
-#endif
-
-#else
-	extern "C"
-	{
-		__declspec(selectany) CFBlockElapse::s_dwTLSIndex = TLS_OUT_OF_INDEXES; 
-		__declspec(selectany) CFBlockElapse::s_lElapseId = 0;
-	}
-
-#endif  // defined(_M_IA64) || defined(_M_IX86)
-    //__declspec(selectany) LONG CFBlockElapse::s_Indent = 0;
-    //__declspec(selectany) TCHAR CFBlockElapse::s_bufIndicate[MAX_TRACE_INDICATE_LEVEL + 1];
-
+//#if defined(_M_IA64) || defined(_M_IX86) || defined (_M_AMD64)
+//
+////#pragma data_seg(".FTL")
+//#pragma section(".FTL", shared, read,write)
+//	//extern "C"
+//	//{
+//		//__declspec(allocate(".FTL")) __declspec(selectany)   DWORD CFBlockElapse::s_dwTLSIndex = TLS_OUT_OF_INDEXES;
+//		//__declspec(allocate(".FTL")) __declspec(selectany)  LONG  CFBlockElapse::s_lElapseId = 0;
+//	//}
+////#pragma data_seg()
+//
+//#if !defined(_M_IA64)
+//	 #pragma comment(linker,"/SECTION:.FTL,RWS") 
+////#pragma comment(linker, "/merge:FTL=.data")
+//#endif
+//
+//#else
+//	extern "C"
+//	{
+//		__declspec(selectany) CFBlockElapse::s_dwTLSIndex = TLS_OUT_OF_INDEXES; 
+//		__declspec(selectany) CFBlockElapse::s_lElapseId = 0;
+//	}
+//
+//#endif  // defined(_M_IA64) || defined(_M_IX86)
+//    //__declspec(selectany) LONG CFBlockElapse::s_Indent = 0;
+//    //__declspec(selectany) TCHAR CFBlockElapse::s_bufIndicate[MAX_TRACE_INDICATE_LEVEL + 1];
+//
 #endif //FTL_DEBUG
 
 #if 0

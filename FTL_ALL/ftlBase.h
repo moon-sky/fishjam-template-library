@@ -79,8 +79,6 @@
 
 namespace FTL
 {
-
-
     //#if (!defined FTLTRACE) || (!defined FTLASSERT)
     //#  error must define FTLTRACE and  FTLASSERT, or use ATL/MFC
     //#endif 
@@ -528,17 +526,15 @@ namespace FTL
 
 	struct FTLGlobalShareInfo
 	{
-		DWORD	dwTraceTlsIndex;		//FastTrace中保存线程局部储存的index
-		ULONG   nTraceSequenceNumber;	//FastTrace中的序列号
-
-		//DWORD   dwBlockElapseTlsIndex;	//CFBlockElapse 中保存线程局部存储的Index
-		//static DWORD  s_dwTLSIndex;
-		//static LONG   s_lElapseId;
+		DWORD	dwTraceTlsIndex;			//FastTrace中保存线程局部储存的index
+		LONG    nTraceSequenceNumber;		//FastTrace中的序列号
+		DWORD   dwBlockElapseTlsIndex;		//CFBlockElapse 中保存线程局部存储的Index
+		LONG	nBlockElapseId;				//CFBlockElapse 中保存Id
 	};
 	FTLINLINE BOOL CALLBACK _FtlGlobalShareInfoInitialize(FTLGlobalShareInfo& rShareInfo);
 	FTLINLINE BOOL CALLBACK _FtlGlobalShareInfoFinalize(FTLGlobalShareInfo& rShareInfo);
 
-	//定义
+	//定义FTL中会用到全局共享变量 -- 可以在使用FTL的 Exe/Dll 之间共享变量
 	__declspec(selectany)	CFSharedVariable<FTLGlobalShareInfo>	g_GlobalShareInfo(
 		_FtlGlobalShareInfoInitialize, 
 		_FtlGlobalShareInfoFinalize,
@@ -729,8 +725,7 @@ namespace FTL
         } FTDATA , * LPFTDATA ;
     public:
         FTLINLINE static CFFastTrace& GetInstance();
-        //FTLINLINE static DWORD GetTraceTLSSlot();
-
+        
         //设置可以进行日志输出的类型(组合项)和等级(大于该等级的输出)
         FTLINLINE BOOL CheckLevel(TraceLevel level);
         FTLINLINE BOOL SetTraceOptions(LPFAST_TRACE_OPTIONS pOptions);
@@ -842,7 +837,7 @@ namespace FTL
 #ifdef FTL_DEBUG
     //注意:一般需要在 FUNCTION_BLOCK_INIT 后紧跟一个 FUNCTION_BLOCK_TRACE(0),但需要注意一定要让其生成的临时 elaplse 变量的生存周期
     //  早于FUNCTION_BLOCK_UNINIT, 这样可以避免KB118816 问题和频繁的 new/delete  BlockElapseInfo 对应
-#  define FUNCTION_BLOCK_INIT()     FTL::CFBlockElapse::Init()
+//#  define FUNCTION_BLOCK_INIT()     FTL::CFBlockElapse::Init()
 
     //CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__),__LINE__,TEXT(__FUNCTION__),FTL::_ReturnAddress(),(minElapse))
     // #pragma TODO(此处的写法有问题，无法根据行号生成唯一变量 -- "JOIN_TWO" 不支持带参数的构造)
@@ -851,12 +846,12 @@ namespace FTL
 #  define FUNCTION_BLOCK_NAME_TRACE(blockName,minElapse) \
     FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__),__LINE__,blockName,FTL::_ReturnAddress(),minElapse)
 
-#  define FUNCTION_BLOCK_UNINIT()   FTL::CFBlockElapse::UnInit()
+//#  define FUNCTION_BLOCK_UNINIT()   FTL::CFBlockElapse::UnInit()
 #else
-#  define  FUNCTION_BLOCK_INIT();                           __noop
+//#  define  FUNCTION_BLOCK_INIT();                           __noop
 #  define  FUNCTION_BLOCK_TRACE(minElapse)                  __noop
 #  define  FUNCTION_BLOCK_NAME_TRACE(blockName,minElapse)   __noop
-#  define  FUNCTION_BLOCK_UNINIT();                         __noop
+//#  define  FUNCTION_BLOCK_UNINIT();                         __noop
 #endif
 
 
@@ -876,8 +871,6 @@ namespace FTL
     class CFBlockElapse
     {
     public:
-        static FTLINLINE BOOL Init();
-        static FTLINLINE VOID UnInit();
         //使用毫秒作为判断是否超时
         FTLINLINE CFBlockElapse(LPCTSTR pszFileName,DWORD line, 
             LPCTSTR pBlockName, LPVOID pReturnAddr, DWORD MinElapse = 0);
@@ -889,8 +882,8 @@ namespace FTL
             LONG   indent;
             TCHAR  bufIndicate[MAX_TRACE_INDICATE_LEVEL + 1];//增加最后的NULL所占的空间
         };
-        static DWORD  s_dwTLSIndex;
-		static LONG   s_lElapseId;
+        //static DWORD  s_dwTLSIndex;
+		//static LONG   s_lElapseId;
         const TCHAR* m_pszFileName;
         const TCHAR* m_pszBlkName;
         const LPVOID m_pReturnAdr;
