@@ -781,7 +781,7 @@ namespace FTL
     CFFastTrace::CFFastTrace(LPCTSTR pszKey, HMODULE hModule)
     {
         BOOL bRet = FALSE;
-		m_bAllocTls = FALSE;
+		//m_bAllocTls = FALSE;
 
         InitializeCriticalSection(&m_CsLock);
         //m_SequenceNumber = 0;
@@ -861,13 +861,6 @@ namespace FTL
     {
         CloseAllFileWriters();
 #pragma TODO(TlsSetValue NULL when thread quit)
-#if 0
-        if (TLS_OUT_OF_INDEXES != m_dwTLSSlot)
-        {
-            TlsFree(m_dwTLSSlot);
-            m_dwTLSSlot = TLS_OUT_OF_INDEXES;
-        }
-#endif 
         DeleteCriticalSection ( &m_CsLock ) ;
     }
 
@@ -980,7 +973,7 @@ namespace FTL
         if (m_Options.bWriteToFile)
         {       
             CFTFileWriter* pFileWriter = GetCurrentThreadFile();
-            if (NULL != pFileWriter)
+            if ((CFTFileWriter*)INVALID_HANDLE_VALUE != pFileWriter)
             {
 				FTDATA ftdata = {0} ;
                 GetSystemTimeAsFileTime ( &ftdata.stTime ) ;// Get the current time stamp.
@@ -995,7 +988,7 @@ namespace FTL
                 if (!bRet)
                 {   //写信息失败，清除TLS
 					DWORD& rTlsIndex = g_GlobalShareInfo.GetShareValue().dwTraceTlsIndex;
-                    TlsSetValue ( rTlsIndex ,NULL) ;
+                    TlsSetValue ( rTlsIndex ,(LPVOID)INVALID_HANDLE_VALUE) ;
                     pFileWriter->Close() ;
                     RemoveFileFromArray ( pFileWriter ) ;
                     // Free the memory.
@@ -1034,7 +1027,7 @@ namespace FTL
         if (TLS_OUT_OF_INDEXES == rTlsIndex)
         {
             //此时 CFFastTrace 已经析构，但还有线程在写日志 -- 全局或静态变量，比 CFFastTrace 的生存期长(如 CModulesHolder)
-            return (CFFastTrace::CFTFileWriter*)NULL;
+            return (CFFastTrace::CFTFileWriter*)(DWORD_PTR)(TLS_OUT_OF_INDEXES);
         }
 
         CFFastTrace::CFTFileWriter* pFileWriter = (CFFastTrace::CFTFileWriter*) TlsGetValue(rTlsIndex);
@@ -1054,12 +1047,12 @@ namespace FTL
                     pFileWriter->Close();
                     delete pFileWriter;
                     hFile = INVALID_HANDLE_VALUE ;
-                    pFileWriter = NULL;
+                    pFileWriter = (CFFastTrace::CFTFileWriter *)INVALID_HANDLE_VALUE ;
                 }
             }
 			//将pFileWriter设置到TLS中，这样下次可以直接获取
 			API_VERIFY(TlsSetValue( rTlsIndex ,(LPVOID)pFileWriter)) ;
-            if (NULL != pFileWriter)
+            if (INVALID_HANDLE_VALUE != pFileWriter)
             {
                 AddFileToArray(pFileWriter);
             }
@@ -1326,7 +1319,7 @@ namespace FTL
         
 		DWORD& rBlockElapseTlsIndex = g_GlobalShareInfo.GetShareValue().dwBlockElapseTlsIndex;
         BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
-        //FTLASSERT(pInfo);  -- 
+        FTLASSERT(pInfo);
 #pragma TODO(一个线程创建对象，另外的线程来释放，怎么处理，如GraphEdt)
         if (pInfo)
         {

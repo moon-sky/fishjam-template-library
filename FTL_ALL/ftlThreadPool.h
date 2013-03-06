@@ -140,11 +140,11 @@ namespace FTL
 		FTLINLINE BOOL RequestCancel();
 	protected:
 		//这个三个函数一组, 用于运行起来的Job： if( Initialize ){ Run -> Finalize }
-		virtual BOOL Initialize();
+		virtual BOOL OnInitialize();
 		// 在这个Run中通常需要循环 调用 GetJobWaitType 方法检测
 		virtual BOOL Run() = 0;
 		//! 如果是new出来的，通常需要在 Finalize 中调用 delete this (除非又有另外的生存期管理容器)
-		virtual VOID Finalize() = 0;
+		virtual VOID OnFinalize() = 0;
 
 		//这个函数用于未运行的Job(直接取消或线程池停止), 用于清除内存等资源, 如 delete this 等
 		FTLINLINE virtual void OnCancelJob() = 0;
@@ -183,11 +183,13 @@ namespace FTL
 		{
 			UNREFERENCED_PARAMETER(nJobIndex);
 			UNREFERENCED_PARAMETER(pJob);
+			FTLTRACEEX(FTL::tlInfo, TEXT("IFThreadPoolCallBack[0x%x]::OnJobBegin[%d]\n"), this, nJobIndex);
 		} 
 		FTLINLINE virtual void OnJobEnd(LONG nJobIndex, CFJobBase<T>* pJob)
 		{
 			UNREFERENCED_PARAMETER(nJobIndex);
 			UNREFERENCED_PARAMETER(pJob);
+			FTLTRACEEX(FTL::tlInfo, TEXT("IFThreadPoolCallBack[0x%x]::OnJobEnd[%d]\n"), this, nJobIndex);
 		}
 
 		//如果尚未到达运行状态就被取消的Job，会由Pool调用这个函数
@@ -195,6 +197,7 @@ namespace FTL
 		{
 			UNREFERENCED_PARAMETER(nJobIndex);
 			UNREFERENCED_PARAMETER(pJob);
+			FTLTRACEEX(FTL::tlInfo, TEXT("IFThreadPoolCallBack[0x%x]::OnJobCancel[%d]\n"), this, nJobIndex);
 		}
 
 		//Progress 和 Error 由 JobBase 的子类激发
@@ -211,7 +214,8 @@ namespace FTL
 			UNREFERENCED_PARAMETER(pJob);
 			UNREFERENCED_PARAMETER(dwError);
 			UNREFERENCED_PARAMETER(pszDescription);
-
+			FTLTRACEEX(FTL::tlError, TEXT("IFThreadPoolCallBack[0x%x]::OnJobError[%d], dwError=%d, pszDesc=%s\n"), 
+				this, nJobIndex, dwError, pszDescription);
 		}
 	};
 
@@ -292,6 +296,7 @@ namespace FTL
 		LONG m_nCurNumThreads;                  //! 当前的线程个数(主要用来维护 m_pJobThreadHandles 数组)
 		LONG m_nRunningThreadNum;				//! 当前运行着的线程个数(用来在所有的线程结束时激发 Complete 事件)
 
+		//TODO: 调整成 list，这样可以方便动态调整最大、最小线程的个数 ?
 		HANDLE* m_pJobThreadHandles;            //! 保存线程句柄的数组
 		DWORD*  m_pJobThreadIds;                //! 保存线程 Id 的数组(为了在线程结束后调整数组中的位置)
 

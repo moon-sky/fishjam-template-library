@@ -8,6 +8,12 @@
 
 
 /*************************************************************************************************************************
+* DuiLib，一个中文的开源DUI分支 :http://duilib.googlecode.com/svn/trunk
+*  消息映射是通过字符串来的，参见 DUI_BEGIN_MESSAGE_MAP -> DUI_ON_MSGTYPE(DUI_MSGTYPE_CLICK,OnClick) -> DUI_END_MESSAGE_MAP
+*  事件代理: CEventSource OnNotify; OnNotify += MakeDelegate(this, &CFrameWindowWnd::OnHChanged);
+*************************************************************************************************************************/
+
+/*************************************************************************************************************************
 * DUI -- DirectUI
 *   DirectUI and Duser Architecture
 *   Resource Management and Build System
@@ -28,7 +34,7 @@
 * Resource Management -- System designed to allow for build time processing and packaging of resources, 
 *	runtime resource lookup, and extensions to the Win32 resource model.
 * RCXML -- Build time resource processing tool.
-
+*
 *************************************************************************************************************************/
 
 namespace FTL

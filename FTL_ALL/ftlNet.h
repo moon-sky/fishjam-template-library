@@ -1175,13 +1175,13 @@ namespace FTL
 	//////////////////////////////////////////////////////////////////////////
 
 	//URL 地址解析似乎只用 URL_COMPONENTS(不需要定义成员?) + InternetCrackUrl 即可?
-	class CUrlComponents : public URL_COMPONENTS
+	class CFUrlComponents : public URL_COMPONENTS
 	{
 	public:
-		FTLINLINE CUrlComponents();
+		FTLINLINE CFUrlComponents();
 		FTLINLINE BOOL ParseUrl( LPCTSTR pstrURL, DWORD& dwServiceType,
 			WORD& nPort, DWORD dwFlags );
-	private:
+	public:
 		TCHAR m_szScheme[INTERNET_MAX_SCHEME_LENGTH];
 		TCHAR m_szHostName[INTERNET_MAX_HOST_NAME_LENGTH];
 		TCHAR m_szUserName[INTERNET_MAX_USER_NAME_LENGTH];

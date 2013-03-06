@@ -85,7 +85,7 @@ namespace FTL
 	}
 
 	template <typename T>
-	BOOL CFJobBase<T>::Initialize()
+	BOOL CFJobBase<T>::OnInitialize()
 	{
 		FTLASSERT(NULL == m_hEventJobStop);
 		BOOL bRet = TRUE;
@@ -383,7 +383,7 @@ namespace FTL
 				API_VERIFY(_AddJobThread(1L));      //每次增加一个线程
 			}
 
-			FTLTRACEEX(tlTrace, TEXT("CFThreadPool::SubmitJob, pJob[%d] = %p, m_nRunningJobNumber=%d, m_nCurNumThreads=%d, bNeedMoreThread=%d\n"),
+			FTLTRACEEX(tlTrace, TEXT("CFThreadPool::SubmitJob, pJob[%d] = 0x%p, m_nRunningJobNumber=%d, m_nCurNumThreads=%d, bNeedMoreThread=%d\n"),
 				pJob->m_nJobIndex, pJob, m_nRunningJobNumber, m_nCurNumThreads, bNeedMoreThread);
 		}
 
@@ -551,7 +551,7 @@ namespace FTL
 			INT nJobIndex = pJob->GetJobIndex();
 			FTLTRACEEX(tlInfo, TEXT("CFThreadPool Begin Run Job %d\n"), nJobIndex);
 
-			API_VERIFY(pJob->Initialize());
+			API_VERIFY(pJob->OnInitialize());
 			if (bRet)
 			{
 				//这个地方的设计和实现不是很好，是否有更好的方法?
@@ -568,7 +568,7 @@ namespace FTL
 				//	pJob->m_JobStatus = jsDone;
 				//}
 				SAFE_CLOSE_HANDLE(pJob->m_hEventJobStop, NULL);
-				pJob->Finalize();
+				pJob->OnFinalize();
 			}
 			InterlockedDecrement(&m_nRunningJobNumber);
 

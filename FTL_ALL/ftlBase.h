@@ -755,7 +755,7 @@ namespace FTL
             FTLINLINE BOOL WriteHeader () ;
         };
     protected:
-		BOOL					m_bAllocTls;
+		//BOOL					m_bAllocTls;
         FAST_TRACE_OPTIONS      m_Options;
         CRITICAL_SECTION        m_CsLock;               //在更改Option等时进行互斥
         typedef std::set<CFTFileWriter*>            AllFileWriterArrayType;
