@@ -979,6 +979,14 @@ namespace FTL
 	};
 
 	//使用线程池进行 HTTP 通信的网络传输类
+	enum FTransferJobType
+	{
+		tjtUnknown = 0,
+		tjtGet = 1,		//Not Implement
+		tjtUpload,
+		tjtDownload,
+	};
+
 	enum FTransferParamType
 	{
 		tptUnknown,
@@ -1023,7 +1031,7 @@ namespace FTL
 			param.CodePage = codePage;
 			m_transferParams.push_back(param);
 		}
-
+		FTransferJobType	m_TransferJobType;
 		CAtlString	m_strServerName;
 		CAtlString	m_strObjectName;
 		USHORT		m_nPort;

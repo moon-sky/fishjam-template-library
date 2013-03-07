@@ -1962,7 +1962,8 @@ namespace FTL
 		m_strServerName.Empty();
 		m_strObjectName.Empty();
 		m_nPort = INTERNET_DEFAULT_HTTP_PORT;
-		//m_bUploadJob = FALSE;
+
+		m_TransferJobType = tjtUnknown;
 		m_transferParams.clear();
 		m_strResponseData = "";
 	}
@@ -1982,7 +1983,7 @@ namespace FTL
 		}
 		m_nPort = nPort;
 		
-		//m_bUploadJob = FALSE;
+		m_TransferJobType = tjtUnknown;
 		m_transferParams.clear();
 		m_strResponseData = "";
 	}
@@ -2378,7 +2379,7 @@ namespace FTL
 
 	BOOL CFUploadJob::_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize)
 	{
-		FUNCTION_BLOCK_TRACE(100);
+		FUNCTION_BLOCK_TRACE(0);
 		BOOL bRet = TRUE;
 		for (std::list<PostFileParam*>::iterator iterFile = m_postFileParams.begin();
 			iterFile != m_postFileParams.end();
@@ -2875,6 +2876,7 @@ namespace FTL
 		if (m_pThreadPool)
 		{
 			CFUploadJob* pJob = new CFUploadJob(m_strAgent);
+			pUploadJobInfo->m_TransferJobType = tjtUpload;
 			pJob->m_JobParam = pUploadJobInfo;
 			API_VERIFY(m_pThreadPool->SubmitJob(pJob, &nJobIndex));
 		}
@@ -2892,6 +2894,7 @@ namespace FTL
 		if (m_pThreadPool)
 		{
 			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_strAgent);
+			pDownloadJobInfo->m_TransferJobType = tjtDownload;
 			pDownloadJob->m_JobParam = pDownloadJobInfo;
 			API_VERIFY(m_pThreadPool->SubmitJob(pDownloadJob, &nJobIndex));
 		}
