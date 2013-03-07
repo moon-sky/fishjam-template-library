@@ -2067,7 +2067,7 @@ namespace FTL
 	}
 
 
-	BOOL CFTransferJobBase::Initialize()
+	BOOL CFTransferJobBase::OnInitialize()
 	{
 		return TRUE;
 	}
@@ -2127,7 +2127,7 @@ namespace FTL
 		return TRUE;
 	}
 
-	void CFTransferJobBase::Finalize()
+	void CFTransferJobBase::OnFinalize()
 	{
 		delete this;
 	}

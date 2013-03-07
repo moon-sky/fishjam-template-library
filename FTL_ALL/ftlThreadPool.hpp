@@ -246,7 +246,7 @@ namespace FTL
 			break;
 		case WAIT_TIMEOUT:
 			FTLTRACEEX(tlError,TEXT("!!!CFThreadPool::Wait, Not all thread over in %d millisec\n"), dwTimeOut);
-			FTLASSERT(FALSE);
+			FTLASSERT(FALSE && TEXT("CFThreadPool::Wait TimeOut"));
 			SetLastError(ERROR_TIMEOUT);
 			bRet = FALSE;
 			break;

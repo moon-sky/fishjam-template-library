@@ -1051,9 +1051,9 @@ namespace FTL
 
 	protected:
 		//CFJobBase virtual function
-		FTLINLINE virtual BOOL Initialize();
+		FTLINLINE virtual BOOL OnInitialize();
 		FTLINLINE virtual BOOL Run();
-		FTLINLINE virtual void Finalize();
+		FTLINLINE virtual void OnFinalize();
 		FTLINLINE virtual void OnCancelJob();
 	protected:
 		CAtlString				m_strAgent;
