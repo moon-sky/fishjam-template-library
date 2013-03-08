@@ -1039,6 +1039,7 @@ namespace FTL
 		DWORD_PTR	m_dwUserParam;
 		TransferParamContainer	m_transferParams;
 		CAtlStringA		m_strResponseData;		//没有转换过的网络反馈(在Upload中使用, Download 的需要保存成文件)
+		CAtlString		m_strVerb;
 	};
 
 	typedef CFSharePtr<FTransferJobInfo> FTransferJobInfoPtr;

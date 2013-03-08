@@ -1966,6 +1966,8 @@ namespace FTL
 		m_TransferJobType = tjtUnknown;
 		m_transferParams.clear();
 		m_strResponseData = "";
+		m_dwUserParam = 0;
+		m_strVerb = TEXT("GET");
 	}
 	FTransferJobInfo::FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, 
 		USHORT nPort /* = INTERNET_DEFAULT_HTTP_PORT */)
@@ -1986,6 +1988,8 @@ namespace FTL
 		m_TransferJobType = tjtUnknown;
 		m_transferParams.clear();
 		m_strResponseData = "";
+		m_dwUserParam = 0;
+		m_strVerb = TEXT("GET");
 	}
 	FTransferJobInfo::~FTransferJobInfo()
 	{
@@ -2494,6 +2498,8 @@ namespace FTL
 	BOOL CFUploadJob::_SendRequest()
 	{
 		BOOL bRet = FALSE;
+		FTLASSERT(m_JobParam->m_strVerb == _T("POST"));
+
 		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE
 
 		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection,
@@ -2659,7 +2665,7 @@ namespace FTL
 		BOOL bRet = FALSE;
 
 		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_KEEP_CONNECTION
-		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection, _T("GET"), m_JobParam->m_strObjectName, 
+		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection, m_JobParam->m_strVerb, m_JobParam->m_strObjectName, 
 			NULL, NULL, NULL, dwFlags, NULL)));
 		if (!bRet)
 		{
@@ -2777,6 +2783,7 @@ namespace FTL
 							break;
 						}
 						SetLastError(dwError);
+						_NotifyError(dwError, TEXT("CFDownloadJob::_ReceiveResponse"));
 						break;
 					}
 				} while (dwRead != 0 && (GetJobWaitType(0) != ftwtStop));
@@ -2877,6 +2884,7 @@ namespace FTL
 		{
 			CFUploadJob* pJob = new CFUploadJob(m_strAgent);
 			pUploadJobInfo->m_TransferJobType = tjtUpload;
+			pUploadJobInfo->m_strVerb = TEXT("POST");
 			pJob->m_JobParam = pUploadJobInfo;
 			API_VERIFY(m_pThreadPool->SubmitJob(pJob, &nJobIndex));
 		}
