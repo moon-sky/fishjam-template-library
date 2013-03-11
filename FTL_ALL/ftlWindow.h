@@ -375,7 +375,12 @@ namespace FTL
 		UINT RWM_FILEOKSTRING;
 		UINT RWM_FINDMSGSTRING;
 		UINT RWM_LBSELCHSTRING;
-		UINT RWM_MSH_MOUSEWHEEL;
+
+		//zmouse.h 中处理 MSWheel 的三个消息(有一个 MouseZ 窗体)
+		UINT RWM_MSH_MOUSEWHEEL;		//MouseWheel
+		UINT RWM_MSH_WHEELSUPPORT;		//3DSupport
+		UINT RWM_MSH_SCROLL_LINES;		//ScrollLines
+
 		UINT RWM_HELPMSGSTRING;
 		UINT RWM_HTML_GETOBJECT;		//从IE窗体中获取对应的IHTMLDocument2接口
 		UINT RWM_SETRGBSTRING;
@@ -547,6 +552,13 @@ namespace FTL
     FTLEXPORT class CFWinUtil
     {
     public:
+		//无Caption的窗体(如DUI::ListDemo)要实现大小改变、标题栏拖动时需要相应 WM_NCHITTEST 消息并返回对应的位置值
+		//pPtClient -- ScreenToClient(鼠标在客户区中的坐标)
+		//prcClient -- GetClientRect(因为是无Caption窗体，最大化、最小化、关闭等按钮都是在客户区中自绘的);
+		//prcCaption -- 自绘的Cpation的范围(TODO:怎么排除 关闭等按钮的区域， 用Region?)
+		//bZoomed -- IsZoomed
+		FTLINLINE static LRESULT CalcNcHitTestPostion(LPPOINT pPtClient, LPCRECT prcClient, LPCRECT prcCaption, BOOL bZoomed);
+
 		//查找指定ProcessId的主窗口ID
 		FTLINLINE static HWND GetProcessMainWindow(DWORD dwProcessId);
 

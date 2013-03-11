@@ -503,9 +503,9 @@
 *   []Referer: http://源资源地址， 这可以允许服务器生成回退链表，可用来登陆、优化、cache等
 *   []User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0) 或自定义的名字，是发出请求的用户身份信息
 *                
-* GET /文件地址 HTTP/1.1
-*   []Range: bytes=388136960-   (格式是怎么样的?)
-*   []Content-Range: bytes 开始位置-结束位置/总大小,通常可用于多线程Http分块并行下载，然后合并
+* GET /文件地址 HTTP/1.1 -- 分块/断点续传，如果请求成功会返回 206(HTTP_STATUS_PARTIAL_CONTENT) OK
+*   []Range: bytes=开始位置-结束位置, 请求实体的一个或者多个子范围，可通过逗号分隔多个范围
+*   []Content-Range: bytes 开始位置-结束位置/总大小, 对Range 的响应
 * 
 * 请求主体(request-body)
 *   其中可包含任意的数据，
@@ -516,6 +516,7 @@
 *       100 Continue -- 服务器仅接收到部分请求，客户端应该继续发送其余的请求。
 *       101 Switching Protocols -- 服务器转换协议：服务器将遵从客户的请求转换到另外一种协议。
 *     2xx成功 -- 请求已成功被服务器接收、理解并接受，如 200(OK，其后是对GET和POST请求的应答文档）
+*       206(PARTIAL_CONTENT) -- 表示成功获取到部分数据，用于Range指定范围下载
 *     3xx重定向 -- 需要后续操作才能完成这一请求，如 304(NOT MODIFIED--该资源在上次请求之后没有任何修改，通常用于浏览器的缓存机制)
 *     4xx请求错误 -- 请求含有语法错误或无法被执行，如 401(UNAUTHORIZED),403(FORBIDDEN),404(NOT FOUND)
 *     5xx服务器错误 -- 服务器在处理某个正确请求时发生错误，如 501(Not Implemented--服务器不能识别请求或未实现指定的请求)

@@ -220,7 +220,7 @@ namespace FTL
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMEAUTOMATIC);
 
 #if (_WIN32_WINNT >= 0x0502)
-				case PBT_POWERSETTINGCHANGE:
+				//case PBT_POWERSETTINGCHANGE:
 				{
 					//TODO:POWERBROADCAST_SETTING 
 					HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_POWERSETTINGCHANGE);
@@ -338,21 +338,23 @@ namespace FTL
 		{
 			m_bInited = TRUE;
 
-			RWM_ATL_CREATE_OBJECT = RegisterWindowMessage(TEXT("ATL_CREATE_OBJECT"));
-			RWM_ATLGETCONTROL	= RegisterWindowMessage(TEXT("WM_ATLGETCONTROL"));
-			RWM_ATLGETHOST		= RegisterWindowMessage(TEXT("WM_ATLGETHOST"));
-			RWM_COLOROKSTRING	= RegisterWindowMessage(COLOROKSTRING);
-			RWM_COMMDLG_FIND	= RegisterWindowMessage(TEXT("COMMDLG_FIND"));
-			RWM_FILEOKSTRING	= RegisterWindowMessage(FILEOKSTRING);
-			RWM_FINDMSGSTRING	= RegisterWindowMessage(FINDMSGSTRING);
-			RWM_LBSELCHSTRING	= RegisterWindowMessage(LBSELCHSTRING);
-			RWM_MSH_MOUSEWHEEL	= RegisterWindowMessage(MSH_MOUSEWHEEL);
-			RWM_HELPMSGSTRING	= RegisterWindowMessage(HELPMSGSTRING);
-			RWM_HTML_GETOBJECT	= RegisterWindowMessage(TEXT("WM_HTML_GETOBJECT"));
-			RWM_SETRGBSTRING	= RegisterWindowMessage(SETRGBSTRING);
-			RWM_SHAREVISTRING	= RegisterWindowMessage(SHAREVISTRING);
+			RWM_ATL_CREATE_OBJECT	= RegisterWindowMessage(TEXT("ATL_CREATE_OBJECT"));
+			RWM_ATLGETCONTROL		= RegisterWindowMessage(TEXT("WM_ATLGETCONTROL"));
+			RWM_ATLGETHOST			= RegisterWindowMessage(TEXT("WM_ATLGETHOST"));
+			RWM_COLOROKSTRING		= RegisterWindowMessage(COLOROKSTRING);
+			RWM_COMMDLG_FIND		= RegisterWindowMessage(TEXT("COMMDLG_FIND"));
+			RWM_FILEOKSTRING		= RegisterWindowMessage(FILEOKSTRING);
+			RWM_FINDMSGSTRING		= RegisterWindowMessage(FINDMSGSTRING);
+			RWM_LBSELCHSTRING		= RegisterWindowMessage(LBSELCHSTRING);
+			RWM_MSH_MOUSEWHEEL		= RegisterWindowMessage(MSH_MOUSEWHEEL);
+			RWM_MSH_WHEELSUPPORT	= RegisterWindowMessage(MSH_WHEELSUPPORT);
+			RWM_MSH_SCROLL_LINES	= RegisterWindowMessage(MSH_SCROLL_LINES);
+			RWM_HELPMSGSTRING		= RegisterWindowMessage(HELPMSGSTRING);
+			RWM_HTML_GETOBJECT		= RegisterWindowMessage(TEXT("WM_HTML_GETOBJECT"));
+			RWM_SETRGBSTRING		= RegisterWindowMessage(SETRGBSTRING);
+			RWM_SHAREVISTRING		= RegisterWindowMessage(SHAREVISTRING);
 			RWM_TASKBARBUTTONCREATED	= RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
-			RWM_TASKBARCREATED	= RegisterWindowMessage(TEXT("TaskbarCreated")); //系统托盘编程完全指南 -- http://www.vckbase.com/index.php/wv/310
+			RWM_TASKBARCREATED		= RegisterWindowMessage(TEXT("TaskbarCreated")); //系统托盘编程完全指南 -- http://www.vckbase.com/index.php/wv/310
 		}
 		return m_bInited;
 	}
@@ -373,6 +375,8 @@ namespace FTL
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_FINDMSGSTRING);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_LBSELCHSTRING);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_MSH_MOUSEWHEEL);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_MSH_WHEELSUPPORT);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_MSH_SCROLL_LINES);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HELPMSGSTRING);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HTML_GETOBJECT);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_SETRGBSTRING);
@@ -1714,6 +1718,45 @@ namespace FTL
     }
 
 #endif 
+
+	LRESULT CFWinUtil::CalcNcHitTestPostion(LPPOINT pPtClient, LPCRECT prcClient, LPCRECT prcCaption, BOOL bZoomed)
+	{
+		 //检测时各个方向的阈值(XP:4, Win7:8)
+		int nCxFrame = GetSystemMetrics(SM_CXFRAME);
+		int nCyFrame = GetSystemMetrics(SM_CYFRAME);
+		RECT rcSizeBox = {nCxFrame, nCyFrame, nCxFrame, nCyFrame}; 
+
+		POINT pt = *pPtClient;
+		RECT rcClient = *prcClient;
+
+		if( !bZoomed ) {
+			if( pt.y < rcClient.top + rcSizeBox.top ) {
+				if( pt.x < rcClient.left + rcSizeBox.left ) return HTTOPLEFT;
+				if( pt.x > rcClient.right - rcSizeBox.right ) return HTTOPRIGHT;
+				return HTTOP;
+			}
+			else if( pt.y > rcClient.bottom - rcSizeBox.bottom ) {
+				if( pt.x < rcClient.left + rcSizeBox.left ) return HTBOTTOMLEFT;
+				if( pt.x > rcClient.right - rcSizeBox.right ) return HTBOTTOMRIGHT;
+				return HTBOTTOM;
+			}
+			if( pt.x < rcClient.left + rcSizeBox.left ) return HTLEFT;
+			if( pt.x > rcClient.right - rcSizeBox.right ) return HTRIGHT;
+		}
+
+		RECT rcCaption = *prcCaption;
+		if( pt.x >= rcClient.left + rcCaption.left && pt.x < rcClient.right - rcCaption.right \
+			&& pt.y >= rcCaption.top && pt.y < rcCaption.bottom ) {
+#pragma TODO(需要排除 关闭、最小化、最大化、Option菜单等控件的位置)
+
+				//CControlUI* pControl = static_cast<CControlUI*>(m_pm.FindControl(pt));
+				//if( pControl && _tcscmp(pControl->GetClass(), _T("ButtonUI")) != 0 && 
+				//	_tcscmp(pControl->GetClass(), _T("OptionUI")) != 0 &&
+				//	_tcscmp(pControl->GetClass(), _T("TextUI")) != 0 )
+					return HTCAPTION;
+		}
+		return HTCLIENT;
+	}
 
 	HWND CFWinUtil::GetProcessMainWindow(DWORD dwProcessId)
 	{
