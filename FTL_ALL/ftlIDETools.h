@@ -714,6 +714,9 @@ namespace FTL
     /******************************************************************************************************************************
     * NSIS(Nullsoft Scriptable Install System) -- http://nsis.sf.net, 开源的 Windows 系统下免费安装程序制作程序，通过脚本配置
     *   NSIS帮助文档(蓝色网际)： 
+	*   编译方式：
+	*     makensis.exe [option | script.nsi ] -- 命令行的编译器
+	*     makensisw.exe -- GUI的编译器
 	*   注意：
 	*     1.函数没有参数传递。
 	*       参数传递是通过 全局变量 或 堆栈操作 Pop，Push 和 20 个寄存器变量 $0～$9、$R0～$R9 进行
@@ -721,18 +724,19 @@ namespace FTL
 	*     3.可通过"XXXX"实现自定义对话框和界面
 	*
 	*   静默安装(silent installations) -- 程序全部按照NSIS给予的默认配置进行安装，安装过程也不显示，全部后台运行
-	*     启动参数 /silent ?
+	*     启动参数 /silent ? 或 /M ?
 	*   
-	*   脚本(.nsh/.nsi -- 如果 makensis 同目录下有 nsisconf.nsh 头文件，会自动包含)
+	*   脚本(.nsh/.nsi -- 如果 makensis.exe 同目录下有 nsisconf.nsh 头文件，会自动包含)
 	*     第三方的脚本开发集成环境：
 	*       HM NIS EDIT(有创建基础脚本的向导，F9预览结果) -- http://hmne.sourceforge.net/
 	*       Venis IX -- http://www.spaceblue.com/products/venis/
 	*       HM VNISEdit -- 
+	*       makensisw -- NSIS提供的GUI编译程序，似乎只在 Unicode 版本下有?
 	*     语法(基本结构包括 安装程序属性属性、页面、区段、函数 )
 	*       0.基本语法
-	*         转义字符 -- $前缀，如 $\n 表示换行， $$ 表示美元符"$", $\"表示双引号（？）
-	*         命令很长时，可以用 "/"(还是 "\" ?) 来换行继续写，如 Messagebox MB_OK / <CR> "This is line breaks demo" 
-	*         !define 常量名 "常量值"   -- Name 和 OutFile ?, 引用时(?)： ${常量名}
+	*         转义字符 -- $前缀，如 $\n 表示换行， $$ 表示美元符"$", $\"表示双引号
+	*         命令很长时，可以用 "\" 来换行继续写，如 Messagebox MB_OK \<CR> "This is line breaks demo" 
+	*         !define 常量名 "常量值"   -- 引用时(?)： ${常量名}
     *         !macro 宏名  XXX !macroend -- 定义宏，然后通过 !insertmacro 宏名 引用
 	*         !include 头文件名 -- 包含指定的头文件，如 !include LogicLib.nsh
     *         !insertmacro 宏名 -- 在当前位置插入定义的宏（如系统预订的 MUI_PAGE_WELCOME 等各个Page页面都是宏 -- \Modern UI\System.nsh 文件中） 
@@ -743,8 +747,11 @@ namespace FTL
 	*           $PROGRAMFILES、$COMMONFILES，$DESKTOP，$STARTMENU(开始菜单目录), $TEMP(系统临时目录)
 	*           $MUSIC，$FONTS，$APPDATA
 	*           $RESOURCES、$RESOURCES_LOCALIZED
-	*       0.5安装程序属性（如 Name、InstallDir 等)
+	*    安装脚本
+	*       0.5安装程序属性（如 、InstallDir 等)
 	*          确定安装程序的性能、外观和习惯，控制显示的文本、安装类型的数量等，大多数在运行时只读，
+	*          Name "MyPrgramName" -- 设置安装程序运行时显示的标题栏名字(可能还有其他地方使用 ?)
+	*          OutFile "MyProgramSetup.exe" -- 设置编译后的安装程序名字
 	*       1.页面 -- 非静默安装所需要的向导页面，用于指导用户进行安装。
 	*         Page/UninstPage/PageEx 页面名 -- 指定特定的安装/卸载页面, 可通过回调函数进行验证,如没有回调，则对应的位置用 ""
 	*         内置界面(??) -- license(许可协议)，components(组件选择)，directory(安装目录选择)，instfiles(安装进行中)，uninstConfirm
@@ -810,7 +817,7 @@ namespace FTL
     *         MUI_WELCOMEPAGE_TITLE -- 安装包标题(字符串)  
     *         MUI_WELCOMEFINISHPAGE_BITMAP -- 
     *         MUI_WELCOMEPAGE_TEXT -- 
-	*   工具程序：makensis/makensisw 
+	* 
 	*
     ******************************************************************************************************************************/
 	

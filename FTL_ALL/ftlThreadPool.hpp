@@ -17,16 +17,18 @@ namespace FTL
 		m_nJobIndex = 0;
 		m_pThreadPool = NULL;
 		m_hEventJobStop = NULL;
-		//m_JobStatus = jsWaiting;
+		m_dwErrorStatus = ERROR_SUCCESS;
 	}
 	
 	template <typename T>
 	CFJobBase<T>::CFJobBase(T& rJobParam)
 		:m_JobParam(rJobParam)
 	{
+		m_nJobPriority = 0;
 		m_nJobIndex = 0;
 		m_pThreadPool = NULL;
 		m_hEventJobStop = NULL;
+		m_dwErrorStatus = ERROR_SUCCESS;
 	}
 
 	template <typename T>
@@ -58,11 +60,33 @@ namespace FTL
 	}
 	
 	template <typename T>
+	DWORD CFJobBase<T>::GetErrorStatus() const
+	{
+		return m_dwErrorStatus;
+	}
+
+	template <typename T>
+	LPCTSTR CFJobBase<T>::GetErrorInfo() const
+	{
+		return m_strFromatErrorInfo.GetString();
+	}
+
+	template <typename T>
 	BOOL CFJobBase<T>::RequestCancel()
 	{
 		BOOL bRet = FALSE;
 		API_VERIFY(SetEvent(m_hEventJobStop));
 		return bRet;
+	}
+
+	template <typename T>
+	void CFJobBase<T>::_SetErrorStatus(DWORD dwErrorStatus, LPCTSTR pszErrorInfo)
+	{
+		m_dwErrorStatus = dwErrorStatus;
+		if (pszErrorInfo)
+		{
+			m_strFormatErrorInfo.Format(TEXT("%s"), pszErrorInfo);
+		}
 	}
 
 	template <typename T>
@@ -79,8 +103,15 @@ namespace FTL
 	}
 
 	template <typename T>
+	void CFJobBase<T>::_NotifyError()
+	{
+		m_pThreadPool->_NotifyJobError(this, m_dwErrorStatus, m_strFormatErrorInfo);
+	}
+
+	template <typename T>
 	void CFJobBase<T>::_NotifyError(DWORD dwError, LPCTSTR pszDescription)
 	{
+		//TODO:Need _SetErrorStatus ?
 		m_pThreadPool->_NotifyJobError(this, dwError, pszDescription);
 	}
 
@@ -182,7 +213,7 @@ namespace FTL
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
 		FTLASSERT( 0 <= nMinNumThreads );
 		FTLASSERT( nMinNumThreads <= nMaxNumThreads );       
-		FTLTRACE(TEXT("CFThreadPool::Start, ThreadNum is [%d-%d]\n"), nMinNumThreads, nMaxNumThreads);
+		FTLTRACEEX(tlInfo, TEXT("CFThreadPool::Start, ThreadNum is [%d-%d]\n"), nMinNumThreads, nMaxNumThreads);
 
 		BOOL bRet = TRUE;
 		m_nMinNumThreads = nMinNumThreads;
@@ -214,7 +245,7 @@ namespace FTL
 	BOOL CFThreadPool<T>::Stop()
 	{
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
-		FTLTRACE(TEXT("CFThreadPool::Stop\n"));
+		FTLTRACEEX(tlInfo, TEXT("CFThreadPool::Stop\n"));
 
 		BOOL bRet = TRUE;
 		API_VERIFY(SetEvent(m_hEventStop));
@@ -235,7 +266,7 @@ namespace FTL
 	BOOL CFThreadPool<T>::Wait(DWORD dwTimeOut /* = FTL_MAX_THREAD_DEADLINE_CHECK */)
 	{
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
-		FTLTRACE(TEXT("CFThreadPool::Wait, dwTimeOut=%d\n"), dwTimeOut);
+		FTLTRACEEX(tlInfo, TEXT("CFThreadPool::Wait, dwTimeOut=%d\n"), dwTimeOut);
 
 		BOOL bRet = TRUE;
 		DWORD dwResult = WaitForSingleObject(m_hEventAllThreadComplete, dwTimeOut);
@@ -273,7 +304,7 @@ namespace FTL
 	template <typename T>
 	BOOL CFThreadPool<T>::Pause()
 	{
-		FTLTRACE(TEXT("CFThreadPool::Pause\n"));
+		FTLTRACEEX(tlInfo, TEXT("CFThreadPool::Pause\n"));
 		BOOL bRet = FALSE;
 		API_VERIFY(::ResetEvent(m_hEventContinue));
 		return bRet;
@@ -282,7 +313,7 @@ namespace FTL
 	template <typename T>
 	BOOL CFThreadPool<T>::Resume()
 	{
-		FTLTRACE(TEXT("CFThreadPool::Resume\n"));
+		FTLTRACEEX(tlInfo, TEXT("CFThreadPool::Resume\n"));
 		BOOL bRet = FALSE;
 		API_VERIFY(::SetEvent(m_hEventContinue));
 		return bRet;
@@ -296,7 +327,7 @@ namespace FTL
 		BOOL bRet = TRUE;
 		{
 			CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
-			FTLTRACEEX(tlTrace, TEXT("CFThreadPool::ClearUndoWork, waitingJob Number is %d\n"), m_WaitingJobs.size());
+			FTLTRACEEX(tlInfo, TEXT("CFThreadPool::ClearUndoWork, waitingJob Number is %d\n"), m_WaitingJobs.size());
 			while (!m_WaitingJobs.empty())
 			{
 				//释放对应的信标对象，其个数和 m_WaitingJobs 的个数是一致的

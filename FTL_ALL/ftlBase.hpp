@@ -1310,6 +1310,8 @@ namespace FTL
 
     CFBlockElapse::~CFBlockElapse()
     {
+		//Save old last error to avoid effect it
+		DWORD dwOldLastError = ::GetLastError();
         DWORD dwElapseTime = GetTickCount() - m_StartTime;
         if (m_MinElapse != 0 && dwElapseTime >= m_MinElapse)
         {
@@ -1340,6 +1342,7 @@ namespace FTL
                 TlsSetValue(rBlockElapseTlsIndex, NULL);
             }
         }
+		::SetLastError(dwOldLastError);
     }
 
 //#if defined(_M_IA64) || defined(_M_IX86) || defined (_M_AMD64)

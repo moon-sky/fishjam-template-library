@@ -2029,6 +2029,10 @@ namespace FTL
 				NULL, NULL, //username and password
 				INTERNET_SERVICE_HTTP, 0, NULL)));
 		}
+		if (!bRet)
+		{
+			_SetErrorStatus(GetLastError(), TEXT("Connect"));
+		}
 		return bRet;
 	}
 
@@ -2079,54 +2083,42 @@ namespace FTL
 	BOOL CFTransferJobBase::Run()
 	{
 		BOOL bRet = FALSE;
-		DWORD dwError = 0;
-		CAtlString strErrInfo = TEXT("");
-
 		do 
 		{
-			API_VERIFY(_CheckParams());
+			API_VERIFY_EXCEPT1(_CheckParams(), ERROR_CANCELLED);
 			if (!bRet)
 			{
-				dwError = ERROR_INVALID_PARAMETER;
-				strErrInfo = TEXT("CheckParam");
 				break;
 			}
-			API_VERIFY(_Connect());
+			API_VERIFY_EXCEPT1(_Connect(), ERROR_CANCELLED);
 			if (!bRet)
 			{
-				dwError = GetLastError();
-				strErrInfo = TEXT("Connect");
 				break;
 			}
 			API_VERIFY_EXCEPT1(_SendRequest(), ERROR_CANCELLED);
 			if (!bRet)
 			{
-				dwError = GetLastError();
-				strErrInfo = TEXT("SendRequest");
 				break;
 			}
 			API_VERIFY_EXCEPT1(_ReceiveResponse(), ERROR_CANCELLED);
 			if (!bRet)
 			{
-				dwError = GetLastError();
-				strErrInfo = TEXT("ReceiveResponse");
 				break;
 			}
 		} while (FALSE);
-
+		
 		//error handle, notify callback			
-		if (dwError)
+		if (!bRet)
 		{
-			if (dwError == ERROR_CANCELLED || GetJobWaitType(0) == ftwtStop)
+			if (GetErrorStatus() == ERROR_CANCELLED || GetJobWaitType(0) == ftwtStop)
 			{
 				_NotifyCancel();
 			}
 			else
 			{
-				_NotifyError(dwError, strErrInfo);
+				_NotifyError();
 			}
 		}
-
 		_Close();
 		return TRUE;
 	}
@@ -2235,11 +2227,13 @@ namespace FTL
 					PostArgumentParam* pPostArgument = new PostArgumentParam();
 					if (pPostArgument)
 					{
+						pPostArgument->transferOrder = transParam.transferOrder;
+
 						pPostArgument->nBufferSize = strParam.GetLength();
 						int nLength = strParam.GetLength() + sizeof(CHAR);
 						pPostArgument->pBuffer = new CHAR[ nLength ];
 						StringCchCopyA(pPostArgument->pBuffer, nLength, strParam);
-
+						
 						m_postArgumentParams.push_back(pPostArgument);
 					}
 					break;
@@ -2359,17 +2353,19 @@ namespace FTL
 				break;
 			}
 			PostArgumentParam* pArgumentParam = *iterArgument;
-			
 			FTLASSERT(pArgumentParam);
-			ATLASSERT((LONG)dwBufferSize - (LONG)dwDestSize > pArgumentParam->nBufferSize);
+			if (toNeedCallback != pArgumentParam->transferOrder)  //will skip need call back post argument(such as ticket)
+			{
+				ATLASSERT((LONG)dwBufferSize - (LONG)dwDestSize > pArgumentParam->nBufferSize);
 
-			CopyMemory(pDestBuffer, pArgumentParam->pBuffer, pArgumentParam->nBufferSize);
-			pDestBuffer += pArgumentParam->nBufferSize;
-			dwDestSize += pArgumentParam->nBufferSize;
+				CopyMemory(pDestBuffer, pArgumentParam->pBuffer, pArgumentParam->nBufferSize);
+				pDestBuffer += pArgumentParam->nBufferSize;
+				dwDestSize += pArgumentParam->nBufferSize;
 
-			FTLTRACEEX(tlTrace, TEXT("_SendPostArgument:Len=%d, Buffer=%s\n"), 
-				pArgumentParam->nBufferSize, 
-				CFConversion(CP_UTF8).UTF8_TO_TCHAR(pArgumentParam->pBuffer));
+				FTLTRACEEX(tlTrace, TEXT("_SendPostArgument:Len=%d, Buffer=%s\n"), 
+					pArgumentParam->nBufferSize, 
+					CFConversion(CP_UTF8).UTF8_TO_TCHAR(pArgumentParam->pBuffer));
+			}
 		}
 		if (dwDestSize > 0)
 		{
@@ -2377,7 +2373,10 @@ namespace FTL
 			m_nCurPos += dwDestSize;
 			_NotifyProgress(m_nCurPos, m_nTotalSize);
 		}
-
+		if (!bRet)
+		{
+			_SetErrorStatus(GetLastError(), TEXT("_SendPostArgument"));
+		}
 		return bRet;
 	}
 
@@ -2385,13 +2384,16 @@ namespace FTL
 	{
 		FUNCTION_BLOCK_TRACE(0);
 		BOOL bRet = TRUE;
+		DWORD dwLastError = ERROR_SUCCESS;
+
 		for (std::list<PostFileParam*>::iterator iterFile = m_postFileParams.begin();
-			iterFile != m_postFileParams.end();
+			iterFile != m_postFileParams.end() && ERROR_SUCCESS == dwLastError;
 			++iterFile)
 		{
 			if (GetJobWaitType(0) == ftwtStop)
 			{
-				SetLastError(ERROR_CANCELLED);
+				bRet = FALSE;
+				dwLastError = ERROR_CANCELLED;
 				break;
 			}
 
@@ -2408,8 +2410,10 @@ namespace FTL
 			//API_VERIFY(InternetWriteFile(m_hRequest, pFileParam->pBuffer, pFileParam->nBufferSize, &dwOutPostBufferLength));
 			if (!bRet)
 			{
+				dwLastError = GetLastError();
 				break;
 			}
+			m_nCurPos += pFileParam->nBufferSize;
 
 			HANDLE hFile=::CreateFile(pFileParam->strFilePath, 
 				GENERIC_READ, 
@@ -2429,13 +2433,14 @@ namespace FTL
 				{
 					if (GetJobWaitType(0) == ftwtStop)
 					{
-						SetLastError(ERROR_CANCELLED);
+						bRet = FALSE;
+						dwLastError = ERROR_CANCELLED;
 						break;
 					}
 					API_VERIFY(_SendN(pBuffer, dwReadSize, NULL));
-
 					if (!bRet)
 					{
+						dwLastError = GetLastError();
 						break;
 					}
 					dwRemainBytes -= dwReadSize;
@@ -2443,13 +2448,33 @@ namespace FTL
 
 					_NotifyProgress(m_nCurPos, m_nTotalSize);
 				}
-
-				//发送最后的 \r\n
-				API_VERIFY(_SendN((PBYTE)"\r\n", 2, NULL));
+				if (bRet)
+				{
+					//Send Last \r\n
+					API_VERIFY(_SendN((PBYTE)"\r\n", 2, NULL));
+					m_nCurPos += 2;
+					_NotifyProgress(m_nCurPos, m_nTotalSize);
+				}
 				CloseHandle(hFile);
 			}
+			else
+			{
+				dwLastError = GetLastError();
+			}
+		}
+
+		//FTLTRACE(TEXT("CFUploadJob::_SendLocalFile, bRet = %d\n"), bRet);
+		if (dwLastError != ERROR_SUCCESS)
+		{
+			::SetLastError(dwLastError);
+			_SetErrorStatus(dwLastError, TEXT("_SendLocalFile"));
 		}
 		return bRet;
+	}
+
+	BOOL  CFUploadJob::_SendCallbackParam(PBYTE pBuffer, DWORD dwBufferSize)
+	{
+		return TRUE;
 	}
 
 	BOOL  CFUploadJob::_SendEndBoundary(PBYTE pBuffer, DWORD dwBufferSize)
@@ -2460,6 +2485,11 @@ namespace FTL
 			UNREFERENCED_PARAMETER(pBuffer);
 			UNREFERENCED_PARAMETER(dwBufferSize);
 			API_VERIFY(_SendN((PBYTE)m_pEndBoundaryPostParam->pBuffer, m_pEndBoundaryPostParam->nBufferSize, NULL));
+			if (bRet)
+			{
+				m_nCurPos += m_pEndBoundaryPostParam->nBufferSize; 
+				_NotifyProgress(m_nCurPos, m_nTotalSize);
+			}
 		}
 		return bRet;
 	}
@@ -2479,16 +2509,21 @@ namespace FTL
 		//TODO:如果使用 HttpSendRequestEx 来发送所有的数据，则可以一次全部发送？
 		//InternetBufferIn.dwBufferTotal = GetFileSize() + GetPostParamSize();
 
-		API_VERIFY(HttpSendRequestEx(m_hRequest, &InternetBufferIn, NULL, HSR_INITIATE, 0));
+		API_VERIFY(HttpSendRequestEx(m_hRequest, &InternetBufferIn, NULL, HSR_SYNC | HSR_INITIATE, 0));
 		if (bRet)
 		{
-		    API_VERIFY(_SendPostArgument(pBuffer, dwBufferSize) 
+		    API_VERIFY_EXCEPT1(_SendPostArgument(pBuffer, dwBufferSize) 
 				&& _SendLocalFile(pBuffer, dwBufferSize)
-				&& _SendEndBoundary(pBuffer, dwBufferSize));
+				&& _SendCallbackParam(pBuffer, dwBufferSize)
+				&& _SendEndBoundary(pBuffer, dwBufferSize), ERROR_CANCELLED);
+		}
+		else
+		{
+			_SetErrorStatus(GetLastError(), TEXT("HttpSendRequestEx"));
 		}
 		if (bRet)
 		{
-			API_VERIFY(HttpEndRequest( m_hRequest, NULL, HSR_INITIATE, 0 ));
+			API_VERIFY(HttpEndRequest( m_hRequest, NULL, HSR_SYNC | HSR_INITIATE, 0 ));
 		}
 
 		SAFE_DELETE_ARRAY(pBuffer);
@@ -2512,7 +2547,7 @@ namespace FTL
 		}
 		if (bRet)
 		{
-			API_VERIFY(_SendUploadData());
+			API_VERIFY_EXCEPT1(_SendUploadData(), ERROR_CANCELLED);
 		}
 
 		return bRet;
@@ -2655,7 +2690,7 @@ namespace FTL
 		}
 		if(!bHaveLocalFile)
 		{
-			SetLastError(ERROR_INVALID_PARAMETER);
+			_SetErrorStatus(ERROR_INVALID_PARAMETER, TEXT("CheckParam"));
 		}
 		return bHaveLocalFile;
 	}
@@ -2663,50 +2698,54 @@ namespace FTL
 	BOOL CFDownloadJob::_SendRequest()
 	{
 		BOOL bRet = FALSE;
+		DWORD dwError = ERROR_SUCCESS;
 
 		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_KEEP_CONNECTION
 		API_VERIFY(NULL != (m_hRequest = ::HttpOpenRequest(m_hConnection, m_JobParam->m_strVerb, m_JobParam->m_strObjectName, 
 			NULL, NULL, NULL, dwFlags, NULL)));
-		if (!bRet)
-		{
-			return bRet;
-		}
-
-		API_VERIFY(::HttpSendRequest(m_hRequest, NULL, 0, NULL, 0));
 		if (bRet)
 		{
-			DWORD dwStatusCode = 0;
-			DWORD dwInfoSize = sizeof(dwStatusCode);
-			API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatusCode,
-				&dwInfoSize, NULL));
+			API_VERIFY(::HttpSendRequest(m_hRequest, NULL, 0, NULL, 0));
 			if (bRet)
 			{
-				FTLTRACEEX(tlError, TEXT("CFDownloadJob::_SendRequest, StatusCode is %d\n"), dwStatusCode);
-				bRet = FALSE;
-				DWORD dwError = ERROR_SUCCESS;
-				switch (dwStatusCode)
+				DWORD dwStatusCode = 0;
+				DWORD dwInfoSize = sizeof(dwStatusCode);
+				API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatusCode,
+					&dwInfoSize, NULL));
+				if (bRet)
 				{
-				case HTTP_STATUS_OK:				//200
-				case HTTP_STATUS_NOT_MODIFIED:		//304
-					bRet = TRUE;
-					break;
-				case HTTP_STATUS_NOT_FOUND:			//404
-					dwError = ERROR_NOT_FOUND;
-					break;
-				//需要身份验证(代理、服务器等) -- 需要提供给子类处理的机制
-				case HTTP_STATUS_DENIED:			//401
-				case HTTP_STATUS_FORBIDDEN:			//403
-				case HTTP_STATUS_PROXY_AUTH_REQ:	//407
-				default:
-					dwError = ERROR_NOT_AUTHENTICATED;
-					break;
-				}
-				if (!bRet)
-				{
-					FTLASSERT(FALSE);
-					//_NotifyResult(jobInfo, IFInternetCallback::ecERROR, dwStatusCode, TEXT("HttpOpenRequest"));
+					FTLTRACEEX(tlError, TEXT("CFDownloadJob::_SendRequest, StatusCode is %d\n"), dwStatusCode);
+					bRet = FALSE;
+					switch (dwStatusCode)
+					{
+					case HTTP_STATUS_OK:				//200
+					case HTTP_STATUS_NOT_MODIFIED:		//304
+						bRet = TRUE;
+						break;
+					case HTTP_STATUS_NOT_FOUND:			//404
+						dwError = ERROR_NOT_FOUND;
+						break;
+					case HTTP_STATUS_DENIED:			//401
+					case HTTP_STATUS_FORBIDDEN:			//403
+					case HTTP_STATUS_PROXY_AUTH_REQ:	//407
+					default:
+						dwError = ERROR_NOT_AUTHENTICATED;
+						break;
+					}
+					if (!bRet)
+					{
+						FTLASSERT(FALSE);
+					}
 				}
 			}
+		}
+		if (!bRet)
+		{
+			if (ERROR_SUCCESS == dwError)
+			{
+				dwError = GetLastError();
+			}
+			_SetErrorStatus(dwError, TEXT("CFDownloadJob::_SendRequest"));
 		}
 		return bRet;
 	}
@@ -2724,6 +2763,14 @@ namespace FTL
 #pragma TODO(考虑本地文件重复需要重命名或删除等)
 
 			m_nTotalSize = nContentLength;
+			FTLASSERT(m_nTotalSize >= 0);
+			if (0 == m_nTotalSize)
+			{
+				//download a empty file, set this to avoid divide by zero
+				//#pragma TODO(is there some web cannot get content length)
+				m_nTotalSize = 1;
+				m_nCurPos = 1;
+			}
 			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, 
 				GENERIC_WRITE, 
 				0,	//如果是多线程同时下载一个文件，需要设置为 FILE_SHARE_WRITE ?
@@ -2735,9 +2782,7 @@ namespace FTL
 
 			if (INVALID_HANDLE_VALUE != hLocalFile)
 			{
-				_NotifyProgress(m_nCurPos, m_nTotalSize);
-
-				DWORD dwError = 0;
+				//DWORD dwError = 0;
 				DWORD dwSize = 0, dwRead = 0;
 				DWORD dwWriteToLocal = 0;
 				DWORD dwBufferSize = INTERNET_BUFFER_SIZE; //引入一个 dwBufferSize 变量，方便以后可以动态设置
@@ -2752,64 +2797,53 @@ namespace FTL
 					//API_VERIFY(InternetQueryDataAvailable(m_hRequest, &dwRead, 0, 0));
 
 					dwSize = dwBufferSize;
+					dwRead = 0;
 					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwSize, &dwRead));
-					if (bRet && dwRead > 0)
+					if (bRet)
 					{
-						//if (_CheckInternetBuffer(pBuffer, dwRead))
+						if (dwRead > 0)
 						{
+							//API_VERIFY(_CheckInternetBuffer(pBuffer, dwRead));
+							//if (bRet)
+							{
 #pragma TODO(_CheckInternetBuffer)
 							//对网络上读取到的数据进行检查, 防止各个流程都正确，但文件内容错误(比如：没有进行身份验证时往往会被重定向到登录网站)
-							API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
-							if (!bRet || dwRead != dwWriteToLocal)
-							{
-								_NotifyError(GetLastError(), TEXT("WriteFile"));
-								break;
+								API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
+								if (!bRet || dwRead != dwWriteToLocal)
+								{
+									break;
+								}
+								m_nCurPos += dwWriteToLocal;
+								_NotifyProgress(m_nCurPos, m_nTotalSize);
 							}
-							m_nCurPos += dwWriteToLocal;
-							_NotifyProgress(m_nCurPos, m_nTotalSize);
 						}
-						//else
-						//{
-						//}
 					}
-					else if(!bRet)
-					{
-						//错误处理 -- TODO: 具体有哪些?
-						dwError = GetLastError();
-						switch (dwError)
-						{
-						case ERROR_INTERNET_TIMEOUT: //12002
-						default:
-							break;
-						}
-						SetLastError(dwError);
-						_NotifyError(dwError, TEXT("CFDownloadJob::_ReceiveResponse"));
-						break;
-					}
-				} while (dwRead != 0 && (GetJobWaitType(0) != ftwtStop));
+				} while (bRet && dwRead != 0 && (GetJobWaitType(0) != ftwtStop));
+				
+				if (!bRet)
+				{
+					_SetErrorStatus(GetLastError(), TEXT("_ReceiveResponse"));
+				}
+
 				SAFE_DELETE_ARRAY(pBuffer);
 
-				if (dwRead == 0 && (GetJobWaitType(0) != ftwtStop))
-				{
-					_NotifyProgress(m_nCurPos, m_nTotalSize);
-					bRet = TRUE;
-				}
-				else if(GetJobWaitType(0) == ftwtStop)
-				{
-					SetLastError(ERROR_CANCELLED);
-					bRet = FALSE;
-				}
+				_NotifyProgress(m_nCurPos, m_nTotalSize);
 				CloseHandle(hLocalFile);
 			}
-			if (GetJobWaitType(0) == ftwtStop)
-			{
-				BOOL bTempRet = ::DeleteFile(m_strLocalFilePath);
-				API_ASSERT(bTempRet);
-			}
+		}
+
+		//User Cancel
+		if(GetJobWaitType(0) == ftwtStop)
+		{
+			BOOL bTempRet = ::DeleteFile(m_strLocalFilePath);
+			API_ASSERT(bTempRet);
+
+			SetLastError(ERROR_CANCELLED);
+			_SetErrorStatus(ERROR_CANCELLED, TEXT("_ReceiveResponse"));
+			bRet = FALSE;
 		}
 		return bRet;
 	}
-
 
 	CFInternetTransfer::CFInternetTransfer(  )
 	{
@@ -2907,8 +2941,23 @@ namespace FTL
 			API_VERIFY(m_pThreadPool->SubmitJob(pDownloadJob, &nJobIndex));
 		}
 		return nJobIndex;
-
 	}
+
+	LONG CFInternetTransfer::AddTask(CFTransferJobBase* pTransferJob)
+	{
+		FTLASSERT(m_pThreadPool);
+		FTLASSERT(pTransferJob);
+		//FTLASSERT(!pDownloadJobInfo->m_bUploadJob);
+
+		BOOL bRet = FALSE;
+		LONG nJobIndex = 0;
+		if (m_pThreadPool)
+		{
+			API_VERIFY(m_pThreadPool->SubmitJob(pTransferJob, &nJobIndex));
+		}
+		return nJobIndex;
+	}
+
 
 	BOOL CFInternetTransfer::CancelTask(LONG nJobIndex)
 	{

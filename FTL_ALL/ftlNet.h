@@ -995,18 +995,25 @@ namespace FTL
 		tptRequestHeader,	//HttpAddRequestHeaders,目前唯一需要外界提供的是 Cookie,
 		tptLocalFile,		//本地文件，Value是文件路径, 上传时类似 tptPostArgument，下载时 vlaue 是文件的本地路径
 	};
+	enum FTransferOrder
+	{
+		toNormal,			//will send as normal order(post -> localfile -> End)
+		toNeedCallback,		//ticket in nTalk maybe expired, so must send after file send
+	};
 	struct FTransferParam
 	{
 		FTransferParamType	paramType;
-		UINT				CodePage;	//Change Code Page, default is CP_UTF8
 		CAtlString			strName;
 		CAtlString			strValue;
+		FTransferOrder		transferOrder;
+		UINT				CodePage;	//Change Code Page, default is CP_UTF8
 		FTLINLINE FTransferParam()
 		{
 			paramType = tptUnknown;
-			CodePage = CP_UTF8;
 			strName.Empty();
 			strValue.Empty();
+			transferOrder = toNormal;
+			CodePage = CP_UTF8;
 		}
 	};
 
@@ -1023,12 +1030,13 @@ namespace FTL
 
 		//TODO: 参考 CHttpFile::AddRequestHeaders("Accept: */*");
 		FTLINLINE void AddTransferParam(FTransferParamType paramType, const CAtlString& strName, const CAtlString& strValue, 
-			UINT codePage = CP_UTF8)
+			FTransferOrder transOrder = toNormal, UINT codePage = CP_UTF8)
 		{
 			FTransferParam param;
 			param.paramType = paramType;
 			param.strName = strName;
 			param.strValue = strValue;
+			param.transferOrder = transOrder;
 			param.CodePage = codePage;
 			m_transferParams.push_back(param);
 		}
@@ -1090,17 +1098,35 @@ namespace FTL
 		FTLINLINE virtual BOOL _SendRequest();
 		FTLINLINE virtual BOOL _ReceiveResponse();
 		FTLINLINE virtual void _OnClose();
-	private:
+	protected:
+		//translate m_transferParams to m_postArgumentParams and m_postFileParams
+		FTLINLINE virtual BOOL  _TranslatePostParams();
+		FTLINLINE virtual void  _ClearPostParams();
+		FTLINLINE virtual void	_AddRequestHeader(LPCTSTR pszName, LPCTSTR pszValue);
+
+		FTLINLINE virtual LPCTSTR _GetMultiPartBoundary(BOOL bEnd) const;
+		FTLINLINE virtual LONGLONG _CalcContentLength();
+		FTLINLINE virtual BOOL _SetRequestHeader();
+		FTLINLINE virtual BOOL _SendUploadData();
+
+		FTLINLINE virtual BOOL _SendPostArgument(PBYTE pBuffer, DWORD dwBufferSize);
+		FTLINLINE virtual BOOL _SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize);
+		FTLINLINE virtual BOOL _SendCallbackParam(PBYTE pBuffer, DWORD dwBufferSize);
+		FTLINLINE virtual BOOL _SendEndBoundary(PBYTE pBuffer, DWORD dwBufferSize);
+
+	protected:
 		struct PostArgumentParam
 		{
 			DISABLE_COPY_AND_ASSIGNMENT(PostArgumentParam);
 		public:
 			LPSTR	pBuffer;
 			INT		nBufferSize;
+			FTransferOrder		transferOrder;
 			PostArgumentParam()
 			{
 				pBuffer = NULL;
 				nBufferSize = 0;
+				transferOrder = toNormal;
 			}
 			~PostArgumentParam()
 			{
@@ -1131,20 +1157,6 @@ namespace FTL
 		std::list<PostArgumentParam*>	m_postArgumentParams;
 		std::list<PostFileParam*>		m_postFileParams;
 		PostArgumentParam*				m_pEndBoundaryPostParam;
-
-		//translate m_transferParams to m_postArgumentParams and m_postFileParams
-		FTLINLINE BOOL  _TranslatePostParams();
-		FTLINLINE void  _ClearPostParams();
-		FTLINLINE void	_AddRequestHeader(LPCTSTR pszName, LPCTSTR pszValue);
-
-		FTLINLINE LPCTSTR _GetMultiPartBoundary(BOOL bEnd) const;
-
-		FTLINLINE LONGLONG _CalcContentLength();
-		FTLINLINE BOOL	_SetRequestHeader();
-		FTLINLINE BOOL  _SendUploadData();
-		FTLINLINE BOOL  _SendPostArgument(PBYTE pBuffer, DWORD dwBufferSize);
-		FTLINLINE BOOL	_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize);
-		FTLINLINE BOOL  _SendEndBoundary(PBYTE pBuffer, DWORD dwBufferSize);
 	};
 
 	//下载时必须通过 tptLocalFile 指定文件保存的本地路径
@@ -1175,6 +1187,7 @@ namespace FTL
 		
 		FTLINLINE LONG AddDownloadTask(FTransferJobInfoPtr pDownloadJobInfo);
 		FTLINLINE LONG AddUploadTask(FTransferJobInfoPtr pUploadJobInfo);
+		FTLINLINE LONG AddTask(CFTransferJobBase* pTransferJob);
 
 		FTLINLINE BOOL CancelTask(LONG nJobIndex);
 	protected:

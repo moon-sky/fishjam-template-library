@@ -630,7 +630,9 @@ namespace FTL
         //在HDC上绘制坐标系统的信息(映射模式、9个标准点的坐标)，从而帮助调试
         FTLINLINE static BOOL   DrawCoordinate(HDC hdc, const RECT& rcClient, BOOL bDrawText = TRUE,
             BOOL bDrawClipbox = FALSE);
-        
+		
+		//通过九宫格图片的拉伸效果进行绘制
+		//FTLINLINE static BOOL DrawNineBlockImage(HDC hdc, )
 
         //设置基于 一逻辑单位对应的逻辑大小 进行映射
         enum LogicalMapMode

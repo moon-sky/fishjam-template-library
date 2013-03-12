@@ -130,6 +130,8 @@ namespace FTL
 		FTLINLINE LONG SetJobPriority(LONG nNewPriority);
 
 		FTLINLINE LONG GetJobIndex() const;
+		FTLINLINE DWORD GetErrorStatus() const;
+		FTLINLINE LPCTSTR GetErrorInfo() const;
 		//FTLINLINE FJobStatus GetJobStatus() const;
 
 		T		m_JobParam;			//! Job会使用的参数，此处为了简化，直接采用公有变量的方式
@@ -149,7 +151,9 @@ namespace FTL
 		//这个函数用于未运行的Job(直接取消或线程池停止), 用于清除内存等资源, 如 delete this 等
 		FTLINLINE virtual void OnCancelJob() = 0;
 	protected:
+		FTLINLINE void _SetErrorStatus(DWORD dwErrorStatus, LPCTSTR pszErrorInfo);
 		FTLINLINE void _NotifyProgress(LONGLONG nCurPos, LONGLONG nTotalSize);
+		FTLINLINE void _NotifyError();
 		FTLINLINE void _NotifyError(DWORD dwError, LPCTSTR pszDescription);
 		FTLINLINE void _NotifyCancel();
 
@@ -160,6 +164,8 @@ namespace FTL
 		//设置为私有的变量和方法，即使是子类也不要直接更改，由Pool调用进行控制
 		LONG		m_nJobPriority;
 		LONG		m_nJobIndex;
+		DWORD				m_dwErrorStatus;	//GetLastError
+		CFStringFormater	m_strFormatErrorInfo;		
 		HANDLE		m_hEventJobStop;					//停止Job的事件，该变量将由Pool创建和释放(TODO:Pool中缓存?)
 		//FJobStatus	m_JobStatus;
 		CFThreadPool<T>* m_pThreadPool;
