@@ -85,9 +85,6 @@
 #    pragma message( "    OpenMP Manifest = " __LIBRARIES_ASSEMBLY_NAME_PREFIX ".ATL_" _VC_ASSEMBLY_PUBLICKEYTOKEN "_" __OPENMP_ASSEMBLY_VERSION)
 #  endif 
 
-#  if defined(_AFX_PACKING)
-#    pragma message( "_AFX_PACKING = " QQUOTE(_AFX_PACKING))
-#  endif
 
 
 //判断编译器类型
@@ -394,14 +391,17 @@
 #    pragma message( "    not defined _AFX_NOFORCE_MANIFEST")
 #  endif 
 
-//ATL向导中控制 MIDL_DEFINE_GUID 是否生成定义
-#  ifdef _MIDL_USE_GUIDDEF_
-#    pragma message( "    defined _MIDL_USE_GUIDDEF_")
-#  else
-#    pragma message( "    not defined _MIDL_USE_GUIDDEF_")
-#  endif 
+#  if defined(_AFX_PACKING)
+#    pragma message( "    _AFX_PACKING = " QQUOTE(_AFX_PACKING))
+#  endif
 #endif //__AFX_H__
 
+//ATL向导中控制 MIDL_DEFINE_GUID 是否生成定义
+#ifdef _MIDL_USE_GUIDDEF_
+#  pragma message( "    defined _MIDL_USE_GUIDDEF_")
+#else
+#  pragma message( "    not defined _MIDL_USE_GUIDDEF_")
+#endif //_MIDL_USE_GUIDDEF_
 
 #ifdef __ATLBASE_H__
 #  pragma message( "  Use ATL, _ATL_VER = " QQUOTE(_ATL_VER))

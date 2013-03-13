@@ -129,26 +129,20 @@ namespace FTL
         FTLINLINE CFConversion(UINT CodePage = CP_ACP);
         FTLINLINE ~CFConversion();
 
-        FTLINLINE LPWSTR UTF8_TO_UTF16( LPCSTR szUTF8 );
-        FTLINLINE LPSTR  UTF8_TO_MBCS( LPCSTR szUTF8 );
-        FTLINLINE LPWSTR MBCS_TO_UTF16( LPCSTR szMBCS );
-        FTLINLINE LPSTR  MBCS_TO_UTF8( LPCSTR szMBCS );
-        FTLINLINE LPSTR  UTF16_TO_MBCS( LPCWSTR szUTF16 );
-        FTLINLINE LPSTR  WCS_TO_MBCS( const UINT CodePage, LPCWSTR szWcs );
-        FTLINLINE PWSTR  MBCS_TO_WCS( const UINT CodePage, LPCSTR szMBCS );
-        FTLINLINE LPSTR  UTF16_TO_UTF8( LPCWSTR szUTF16 );
+        FTLINLINE LPWSTR UTF8_TO_UTF16( LPCSTR szUTF8 , BOOL bDetached = FALSE);
+        FTLINLINE LPSTR  UTF8_TO_MBCS( LPCSTR szUTF8 , BOOL bDetached = FALSE);
+        FTLINLINE LPWSTR MBCS_TO_UTF16( LPCSTR szMBCS , BOOL bDetached = FALSE);
+        FTLINLINE LPSTR  MBCS_TO_UTF8( LPCSTR szMBCS , BOOL bDetached = FALSE);
+        FTLINLINE LPSTR  UTF16_TO_MBCS( LPCWSTR szUTF16 , BOOL bDetached = FALSE);
+        FTLINLINE LPSTR  WCS_TO_MBCS( const UINT CodePage, LPCWSTR szWcs , BOOL bDetached = FALSE);
+        FTLINLINE PWSTR  MBCS_TO_WCS( const UINT CodePage, LPCSTR szMBCS , BOOL bDetached = FALSE);
+        FTLINLINE LPSTR  UTF16_TO_UTF8( LPCWSTR szUTF16 , BOOL bDetached = FALSE);
 
 #ifdef _UNICODE
 #define UTF8_TO_TCHAR	UTF8_TO_UTF16
 #define TCHAR_TO_UTF8	UTF16_TO_UTF8
-        inline LPCTSTR UTF16_TO_TCHAR( LPCTSTR lp )
-        {
-            return lp;
-        }
-        inline LPCTSTR TCHAR_TO_UTF16( LPCTSTR lp )
-        {
-            return lp;
-        }
+        FTLINLINE LPCTSTR UTF16_TO_TCHAR( LPCTSTR lp , BOOL bDetached = FALSE);
+        FTLINLINE LPCTSTR TCHAR_TO_UTF16( LPCTSTR lp , BOOL bDetached = FALSE);
 
 #define MBCS_TO_TCHAR	MBCS_TO_UTF16
 #define TCHAR_TO_MBCS	UTF16_TO_MBCS
@@ -159,14 +153,8 @@ namespace FTL
 #define TCHAR_TO_UTF8	MBCS_TO_UTF8
 #define TCHAR_TO_UTF16	MBCS_TO_UTF16
 
-        inline LPCTSTR MBCS_TO_TCHAR( LPCTSTR lp )
-        {
-            return lp;
-        }
-        inline LPCTSTR TCHAR_TO_MBCS( LPCTSTR lp )
-        {
-            return lp;
-        }
+        FTLINLINE LPCTSTR MBCS_TO_TCHAR( LPCTSTR lp , BOOL bDetached = FALSE);
+        FTLINLINE LPCTSTR TCHAR_TO_MBCS( LPCTSTR lp , BOOL bDetached = FALSE);
 #endif
     private:
         UINT    m_codePage;
