@@ -602,6 +602,7 @@ namespace FTL
         FTLINLINE ~CFMemAllocator();
         FTLINLINE VOID Init(DWORD nCount);
         FTLINLINE T* GetMemory( UINT nMaxSize );
+		FTLINLINE T* GetMemory();
         FTLINLINE operator T*()
         {
             if ( !m_pMem && m_nCount <= DefaultFixedCount )

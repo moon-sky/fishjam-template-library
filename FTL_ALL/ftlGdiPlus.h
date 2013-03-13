@@ -152,7 +152,7 @@ namespace FTL
 		//m_pImgOtherBubble[i]  = new Image(GetImagePath(strFileName));
 
 
-		FTLINLINE static BOOL DrawNineBlockImage(Graphics pGraphics, Image* pImages[9], const Gdiplus::Rect* pRect);
+		FTLINLINE static BOOL DrawNineBlockImage(Gdiplus::Graphics* pGraphics, Gdiplus::Image* pImages[9], const Gdiplus::Rect* pRect);
 	};
 }
 

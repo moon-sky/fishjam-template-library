@@ -19,10 +19,10 @@ namespace FTL
 	}
 
 
-	BOOL CFGdiPlusUtil::DrawNineBlockImage(Graphics pGraphics, Image* pImages[9], const Gdiplus::Rect* pRect)
+	BOOL CFGdiPlusUtil::DrawNineBlockImage(Gdiplus::Graphics* pGraphics, Gdiplus::Image* pImages[9], const Gdiplus::Rect* pRect)
 	{
-		pGraphics->SetInterpolationMode(InterpolationModeNearestNeighbor);
-		pGraphics->SetPixelOffsetMode(PixelOffsetModeHalf);
+		pGraphics->SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor);
+		pGraphics->SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
 
 		//if (pRect->Width < MINIMUM_BUBBLE_WIDTH)
 		//{

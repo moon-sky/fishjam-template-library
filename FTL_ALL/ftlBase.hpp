@@ -447,6 +447,15 @@ namespace FTL
         }
 		return m_pMem;
     }
+	template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
+	T* CFMemAllocator<T, allocType, DefaultFixedCount>::GetMemory()
+	{
+		if ( !m_pMem && m_nCount <= DefaultFixedCount )
+		{
+			return m_FixedMem;
+		}
+		return m_pMem;
+	}
 
     template <typename T, MemoryAllocType allocType  /*= matNew*/, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/>
     UINT CFMemAllocator<T,allocType, DefaultFixedCount>::GetCount() const
