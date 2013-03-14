@@ -2,6 +2,12 @@
 //<a href="javascript:self.close()"> 关闭 </a>
 
 /***********************************************************************************************
+* JavaScript常见的封装类型
+*   DOM的选择和操作：经典的例子如jQuery的链式API。
+*   DOM事件处理：一个重点是简化事件的delegation，即利用事件冒泡机制在父元素上用一个侦听函数侦听触发在多个子元素上的事件。
+*   Ajax：简化烦琐的XMLHttpRequest API，并且加强其语义性。
+*   语言增强：主要提供一些对数组和对象进行操作的便利函数。jQuery包含一些，但更典型的有Underscore和Lodash。
+*
 * 帮助：MSDN -> Development Tools and Languages -> Visual Studio -> JScript
 *
 * 语法：

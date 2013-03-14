@@ -1,4 +1,3 @@
-
 #ifndef FTL_CRASH_HANDLER_H
 #define FTL_CRASH_HANDLER_H
 
@@ -8,11 +7,8 @@
 #  error ftlcrashhandler requires ftlbase.h to be included first
 #endif
 
-#ifndef __ATLWIN_H__
-#  error ftlwindow.h requires atlwin.h to be included first
+#include <atlwin.h>
 // 无资源对话框需要ATL
-#endif
-
 
 namespace FTL
 {

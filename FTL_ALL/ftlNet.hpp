@@ -1997,18 +1997,36 @@ namespace FTL
 	}
 
 	CFTransferJobBase::CFTransferJobBase(const CAtlString& strAgent)
+		:m_strAgent(strAgent)
 	{
-		m_strAgent = strAgent;
-		m_nTotalSize = (LONGLONG)(-1);
-		m_nCurPos = 0;
+		_InitValue();
+	}
 
+	void CFTransferJobBase::_InitValue()
+	{
 		m_hSession = NULL;
 		m_hConnection = NULL;
 		m_hRequest = NULL;
+
+		m_nTotalSize = (LONGLONG)(-1);
+		m_nCurPos = 0;
+
+		m_pbWriteBuffer = NULL;
+		m_pbReadBuffer = NULL;
+
+		m_nWriteBufferSize = 0;
+		m_nWriteBufferPos = 0;
+		m_nReadBufferSize = 0;
+		m_nReadBufferPos = 0;
+		m_nReadBufferBytes = 0;
 	}
 
 	CFTransferJobBase::~CFTransferJobBase()
 	{
+		//must close before destructor
+		SAFE_DELETE_ARRAY(m_pbWriteBuffer);
+		SAFE_DELETE_ARRAY(m_pbReadBuffer);
+		
 		FTLASSERT(NULL == m_hRequest);
 		FTLASSERT(NULL == m_hConnection);
 		FTLASSERT(NULL == m_hSession);
@@ -2039,12 +2057,139 @@ namespace FTL
 	void CFTransferJobBase::_Close()
 	{
 		BOOL bRet = FALSE;
+		if (m_hRequest)
+		{
+			API_VERIFY(_Flush(NULL));
+		}
 		SAFE_CLOSE_INTERNET_HANDLE(m_hRequest);
 		SAFE_CLOSE_INTERNET_HANDLE(m_hConnection);
 		SAFE_CLOSE_INTERNET_HANDLE(m_hSession);
 	}
 
-	BOOL CFTransferJobBase::_SendN(PBYTE pBuffer, DWORD nCount, DWORD* pSend)
+	BOOL CFTransferJobBase::_Flush(LONG* pWrite)
+	{
+		BOOL bRet = TRUE;
+		if (m_pbWriteBuffer != NULL && m_nWriteBufferPos > 0)
+		{
+			DWORD dwBytes = 0;
+			API_VERIFY(InternetWriteFile(m_hRequest, m_pbWriteBuffer, m_nWriteBufferPos, &dwBytes));
+			if (!bRet)
+			{
+				return bRet;
+			}
+			//FTLASSERT( dwBytes == m_nWriteBufferPos);
+			m_nWriteBufferPos = 0;
+
+			if (pWrite)
+			{
+				*pWrite = dwBytes;
+			}
+		}
+		return bRet;
+	}
+
+	BOOL CFTransferJobBase::SetReadBufferSize(LONG nReadSize)
+	{
+		BOOL bRet = TRUE;
+		//MS Bug: http://support.microsoft.com/kb/154895/en-us, 尝试更改掉,  (新版本已经没有了?)
+
+		if (nReadSize != m_nReadBufferSize)
+		{
+			//计算没有被读取的数据大小
+			LONG nDataSize = m_nReadBufferBytes - m_nReadBufferPos;
+			FTLASSERT(nDataSize >= 0);
+
+			if (nReadSize < nDataSize ) //m_dwReadBufferPos )
+			{
+				//还有大于设置的缓冲大小的数据没有被读取，没有办法保存
+				bRet = FALSE;
+			}
+			else
+			{
+				if (nReadSize == 0)
+				{
+					//请求删除读取Buffer
+					SAFE_DELETE_ARRAY(m_pbReadBuffer);
+					m_nReadBufferPos = 0;
+					m_nReadBufferBytes = 0;
+				}
+				else if (m_pbReadBuffer == NULL)
+				{
+					m_pbReadBuffer = new BYTE[nReadSize];
+					m_nReadBufferPos = 0; //TODO: VC2008中是CInternetFile::SetReadBufferSize 实现里 dwReadSize, 好像是Bug
+					m_nReadBufferBytes = 0;
+				}
+				else
+				{
+					//分配新的Buffer -- 先备份原来的指针，分配新的Buffer后拷贝数据
+					LPBYTE pbTemp = m_pbReadBuffer;
+					m_pbReadBuffer = new BYTE[nReadSize];
+
+					//原来的Buffer中有数据，拷贝到新的Buffer中，
+					if (nDataSize > 0) // && nDataSize <= nReadSize) //此处不用再和 nReadSize 比较 
+					{
+						//MS 这里有Bug，拷贝后 m_nReadBufferBytes 的值不对
+						Checked::memcpy_s(m_pbReadBuffer, nReadSize, pbTemp + m_nReadBufferPos, nDataSize);
+						m_nReadBufferPos = 0;
+						m_nReadBufferBytes = nDataSize;
+					}
+					else
+					{
+						m_nReadBufferBytes = 0;
+						m_nReadBufferPos = 0;//dwReadSize;
+					}
+					delete [] pbTemp;
+				}
+
+				m_nReadBufferSize = nReadSize;
+			}
+		}
+		return bRet;
+	}
+
+	BOOL CFTransferJobBase::SetWriteBufferSize(LONG nWriteSize)
+	{
+		BOOL bRet = TRUE;
+
+		if (nWriteSize != m_nWriteBufferSize)
+		{
+			if (m_nWriteBufferPos > nWriteSize)
+			{
+				//Buffer中已有数据比新的Buffer大
+				API_VERIFY(_Flush(NULL));
+				if (!bRet)
+				{
+					return bRet;
+				}
+			}
+			if (nWriteSize == 0)
+			{
+				SAFE_DELETE_ARRAY(m_pbWriteBuffer);
+				m_nWriteBufferPos = 0;
+			}
+			else if (m_pbWriteBuffer == NULL)
+			{
+				m_pbWriteBuffer = new BYTE[nWriteSize];
+				m_nWriteBufferPos = 0;
+			}
+			else
+			{
+				//备份以前的数据
+				LPBYTE pbTemp = m_pbWriteBuffer;
+				m_pbWriteBuffer = new BYTE[nWriteSize];
+				FTLASSERT(m_nWriteBufferPos <= nWriteSize);
+
+				Checked::memcpy_s(m_pbWriteBuffer, nWriteSize, pbTemp, m_nWriteBufferPos);
+				delete [] pbTemp;
+			}
+
+			m_nWriteBufferSize = nWriteSize;
+		}
+
+		return bRet;
+	}
+
+	BOOL CFTransferJobBase::_SendN(PBYTE pBuffer, LONG nCount, LONG* pSend)
 	{
 		FTLASSERT(m_hRequest);
 		FTLASSERT(pBuffer);
@@ -2074,6 +2219,57 @@ namespace FTL
 		return bRet;
 	}
 
+	BOOL CFTransferJobBase::_Write(const PBYTE pBuffer, LONG nCount, LONG* pWrite)
+	{
+		BOOL bRet = TRUE;
+		DWORD dwBytes = 0;
+		if (m_pbWriteBuffer == NULL)
+		{
+			//没有缓冲区，直接发送
+			API_VERIFY(InternetWriteFile(m_hRequest, pBuffer, nCount, &dwBytes));
+			if (!bRet)
+			{
+				return bRet;
+			}
+			FTLASSERT(nCount == dwBytes);
+		}
+		else
+		{
+			//使用缓冲区
+			if ((m_nWriteBufferPos + nCount) >= m_nWriteBufferSize)
+			{
+				//如果 旧的数据长度 + 新的数据长度 比 缓冲区的大小大，则马上把旧的数据发出去，并重设Pos
+				//直接用 Flush ?
+				API_VERIFY(InternetWriteFile( m_hRequest, m_pbWriteBuffer,	m_nWriteBufferPos, &dwBytes));
+				if (!bRet)
+				{
+					return bRet;
+				}
+				//FTLASSERT(nCount == dwBytes);
+				m_nWriteBufferPos = 0;
+			}
+
+			//如果需要发送的数据比缓冲区的还大，则直接发送；否则进行缓冲
+			if (nCount >= m_nWriteBufferSize)
+			{
+				API_VERIFY(InternetWriteFile(m_hRequest, (LPVOID) pBuffer, nCount, &dwBytes));
+			}
+			else
+			{
+				FTLASSERT(m_nWriteBufferPos + nCount < m_nWriteBufferSize);
+				//if (m_nWriteBufferPos + nCount < m_nWriteBufferSize)
+				Checked::memcpy_s(m_pbWriteBuffer + m_nWriteBufferPos, 
+					m_nWriteBufferSize - m_nWriteBufferPos, pBuffer, nCount);
+				m_nWriteBufferPos += nCount;
+			}
+		}
+
+		if (pWrite)
+		{
+			*pWrite = dwBytes;
+		}
+		return bRet;
+	}
 
 	BOOL CFTransferJobBase::OnInitialize()
 	{
@@ -2083,6 +2279,7 @@ namespace FTL
 	BOOL CFTransferJobBase::Run()
 	{
 		BOOL bRet = FALSE;
+		SetWriteBufferSize(10240);
 		do 
 		{
 			API_VERIFY_EXCEPT1(_CheckParams(), ERROR_CANCELLED);
@@ -2099,6 +2296,11 @@ namespace FTL
 			if (!bRet)
 			{
 				break;
+			}
+			API_VERIFY(_Flush(NULL));
+			if (!bRet)
+			{
+				break;;
 			}
 			API_VERIFY_EXCEPT1(_ReceiveResponse(), ERROR_CANCELLED);
 			if (!bRet)
@@ -2369,7 +2571,7 @@ namespace FTL
 		}
 		if (dwDestSize > 0)
 		{
-			API_VERIFY(_SendN((PBYTE)pBuffer, dwDestSize, NULL));
+			API_VERIFY(_Write(pBuffer, dwDestSize, NULL));// _SendN((PBYTE)pBuffer, dwDestSize, NULL));
 			m_nCurPos += dwDestSize;
 			_NotifyProgress(m_nCurPos, m_nTotalSize);
 		}
@@ -2406,8 +2608,8 @@ namespace FTL
 				pFileParam->nBufferSize, 
 				CFConversion(CP_UTF8).UTF8_TO_TCHAR(pFileParam->pBuffer));
 
-			API_VERIFY(_SendN((PBYTE)pFileParam->pBuffer, pFileParam->nBufferSize, NULL));
-			//API_VERIFY(InternetWriteFile(m_hRequest, pFileParam->pBuffer, pFileParam->nBufferSize, &dwOutPostBufferLength));
+			//API_VERIFY(_SendN((PBYTE)pFileParam->pBuffer, pFileParam->nBufferSize, NULL));
+			API_VERIFY(_Write((PBYTE)pFileParam->pBuffer, pFileParam->nBufferSize, NULL));
 			if (!bRet)
 			{
 				dwLastError = GetLastError();
@@ -2437,7 +2639,8 @@ namespace FTL
 						dwLastError = ERROR_CANCELLED;
 						break;
 					}
-					API_VERIFY(_SendN(pBuffer, dwReadSize, NULL));
+					//API_VERIFY(_SendN(pBuffer, dwReadSize, NULL));
+					API_VERIFY(_Write(pBuffer, dwReadSize, NULL));
 					if (!bRet)
 					{
 						dwLastError = GetLastError();
@@ -2451,7 +2654,8 @@ namespace FTL
 				if (bRet)
 				{
 					//Send Last \r\n
-					API_VERIFY(_SendN((PBYTE)"\r\n", 2, NULL));
+					//API_VERIFY(_SendN((PBYTE)"\r\n", 2, NULL));
+					API_VERIFY(_Write((PBYTE)"\r\n", 2, NULL));
 					m_nCurPos += 2;
 					_NotifyProgress(m_nCurPos, m_nTotalSize);
 				}
@@ -2484,7 +2688,8 @@ namespace FTL
 		{
 			UNREFERENCED_PARAMETER(pBuffer);
 			UNREFERENCED_PARAMETER(dwBufferSize);
-			API_VERIFY(_SendN((PBYTE)m_pEndBoundaryPostParam->pBuffer, m_pEndBoundaryPostParam->nBufferSize, NULL));
+			//API_VERIFY(_SendN((PBYTE)m_pEndBoundaryPostParam->pBuffer, m_pEndBoundaryPostParam->nBufferSize, NULL));
+			API_VERIFY(_Write((PBYTE)m_pEndBoundaryPostParam->pBuffer, m_pEndBoundaryPostParam->nBufferSize, NULL));
 			if (bRet)
 			{
 				m_nCurPos += m_pEndBoundaryPostParam->nBufferSize; 

@@ -14,6 +14,34 @@
 *   web\Wininet\CacheEnumerate -- 使用Wininet的Cache API枚举、删除URL相关的内容(-d 参数很危险，可能会把cookie删掉)
 *   web\Wininet\httpauth -- 通过HTTP访问Web页面时，检测是否需要认证信息(代理、网页等) -- 不过没有测试出结果
 *************************************************************************************************************************/
+
+/*************************************************************************************************************************
+* POST上传文件时的网络数据
+* 注意：PostArgument 的参数名 和 参数值 之间是两个 <CRLF>，文件的信息(路径/Content-Type)和文件内容之间也是两个 <CRLF>
+*       
+*   Command: POST
+*   URI: /api/file/upload.php
+*   {RequestHeader} -- 
+*     Content-Type: multipart/form-data; boundary=[Boundary]<CRLF> 
+*     Content-Length: [总长度]<CRLF>
+*     User-Agent:FTL Translate<CRLF>
+*     Host: upload.mytest.com <CRLF>
+*     Cookie: xxxxx <CRLF>
+*       其他如 Accept、Cache-Control等 <CRLF>
+*     <CRLF> -- 最后一项后还有一个 <CRLF> 表示 RequestHeader 的结束, 实际上这个地方多几个 <CRLF> 似乎也没有问题，只要长度计算正确就行
+*   [PostArgument]
+*     --[Boundary]<CRLF>Content-Disposition: form-data; name="参数名"<CRLF><CRLF>参数值<CRLF>
+*   [LocalFile]
+*     --[Boundary]<CRLF>Content-Disposition: form-data; name="file"; filename="文件路径"<CRLF>
+*                       Content-Type:application/octet-stream<CRLF>  -- 注意：本项可选
+*                 <CRLF>文件内容<CRLF>
+*   [结束]
+*     --[Boundary]--<CRLF>
+* 
+* 总长度计算方式: RequestHeader + PostArgument + 文件大小
+*************************************************************************************************************************/
+
+
 #pragma TODO(wsock32.lib 和 ws2_32.lib 的区别)
 //CHttpFile 中有一个 m_pbWriteBuffer 来缓冲需要发送的数据, Write 时并不一定会真正的发送出去
 //AfxParseURL -- MFC中解析，有没有ATL版本
@@ -1059,6 +1087,8 @@ namespace FTL
 		FTLINLINE CFTransferJobBase(const CAtlString& strAgent);
 		FTLINLINE virtual ~CFTransferJobBase();
 
+		FTLINLINE BOOL SetReadBufferSize(LONG nReadSize);
+		FTLINLINE BOOL SetWriteBufferSize(LONG nWriteSize);
 	protected:
 		//CFJobBase virtual function
 		FTLINLINE virtual BOOL OnInitialize();
@@ -1068,25 +1098,42 @@ namespace FTL
 	protected:
 		CAtlString				m_strAgent;
 
+		HINTERNET	m_hSession;
+		HINTERNET	m_hConnection;
+		HINTERNET	m_hRequest;
+
 		//如果想支持断点续传或多线程下载，需要使用 SetFilePointer，常用的 LARGE_INTEGER::QuadPart 是 LONGLONG
 		LONGLONG		m_nTotalSize;
 		LONGLONG		m_nCurPos;
 
-		HINTERNET	m_hSession;
-		HINTERNET	m_hConnection;
-		HINTERNET	m_hRequest;
+		//参照 CInternetFile 实现缓冲机制
+		//Read 比 Write 多一个 m_nReadBufferBytes(个人理解是指 Buffer 中有效数据的结尾) -- 因此和Write不一致, MS 在这里有Bug
+		LONG	m_nWriteBufferSize;
+		LONG	m_nWriteBufferPos;
+		LPBYTE	m_pbWriteBuffer;
+
+		LONG	m_nReadBufferSize;
+		LONG	m_nReadBufferPos;
+		LONG	m_nReadBufferBytes;
+		LPBYTE	m_pbReadBuffer;
 	protected:
 		FTLINLINE virtual BOOL _CheckParams() = 0;
 		FTLINLINE virtual BOOL _SendRequest() = 0;
 		FTLINLINE virtual BOOL _ReceiveResponse() = 0;
 		FTLINLINE virtual void _OnClose() {}
 	protected:
+		FTLINLINE void _InitValue();
+
 		FTLINLINE BOOL _Connect();
 		FTLINLINE void _Close();
 
 		//循环保证发送指定的 N 个字节数据
 		//TODO: 参考 CHttpFile 的Buffer功能
-		FTLINLINE BOOL _SendN(PBYTE pBuffer, DWORD nCount, DWORD* pSend);
+		FTLINLINE BOOL _SendN(PBYTE pBuffer, LONG nCount, LONG* pSend);
+		FTLINLINE BOOL _Read(PBYTE pBuffer, LONG nCount, LONG* pRead);
+		FTLINLINE BOOL _Write(const PBYTE pBuffer, LONG nCount, LONG* pWrite);
+
+		FTLINLINE BOOL _Flush(LONG* pWrite);
 	};
 
 	class CFUploadJob : public CFTransferJobBase
