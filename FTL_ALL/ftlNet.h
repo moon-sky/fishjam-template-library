@@ -1218,6 +1218,14 @@ namespace FTL
 		FTLINLINE virtual BOOL _ReceiveResponse();
 	};
 
+	class IInternetTransferCallBack : public IFThreadPoolCallBack<FTransferJobInfoPtr>
+	{
+	public:
+		//Download
+		FTLINLINE virtual BOOL OnPromptSaveFile(__in LONG nJobIndex, __inout CFJobBase<FTransferJobInfoPtr>* pJob , 
+			__in LONGLONG nTotalFileSize, __inout LPTSTR pszFileName, __in DWORD nBufferLenght) { return TRUE; }
+	};
+
 	class CFInternetTransfer
 	{
 	public:
@@ -1225,7 +1233,7 @@ namespace FTL
 		FTLINLINE virtual ~CFInternetTransfer( void );
 
 		FTLINLINE BOOL IsStarted();
-		FTLINLINE BOOL Start(IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack = NULL, 
+		FTLINLINE BOOL Start(IInternetTransferCallBack* pCallBack = NULL, // IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack = NULL, 
 			LONG nMinParallelCount = 1, 
 			LONG nMaxParallelCount = 4, 
 			LPCTSTR pszAgent = NULL);

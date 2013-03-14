@@ -250,9 +250,8 @@ namespace FTL
 	{
 		if (bDetached)
 		{
-			int nSrc = lstrlen(lp);
-			m_Mem.GetMemory(nSrc + 1);
-			lstrcpy((LPTSTR)(BYTE*)m_Mem, lp);
+			int nSrc = lstrlen(lp) + 1;
+			StringCchCopy((LPTSTR)m_Mem.GetMemory(nSrc * sizeof(TCHAR)), nSrc, lp);
 			return (LPCTSTR)m_Mem.Detatch();
 		}
 		else
@@ -262,16 +261,43 @@ namespace FTL
 	}
 	LPCTSTR CFConversion::TCHAR_TO_UTF16( LPCTSTR lp , BOOL bDetached /* = FALSE */)
 	{
-
+		if (bDetached)
+		{
+			int nSrc = lstrlen(lp) + 1;
+			StringCchCopy((LPTSTR)m_Mem.GetMemory(nSrc * sizeof(TCHAR)), nSrc, lp);
+			return (LPCTSTR)m_Mem.Detatch();
+		}
+		else
+		{
+			return lp;
+		}
 	}
 #else	//Non _UNICODE
 	LPCTSTR CFConversion::MBCS_TO_TCHAR( LPCTSTR lp , BOOL bDetached /* = FALSE */)
 	{
-
+		if (bDetached)
+		{
+			int nSrc = lstrlen(lp) + 1;
+			StringCchCopy((LPTSTR)m_Mem.GetMemory(nSrc * sizeof(TCHAR)), nSrc, lp);
+			return (LPCTSTR)m_Mem.Detatch();
+		}
+		else
+		{
+			return lp;
+		}
 	}
 	LPCTSTR CFConversion::TCHAR_TO_MBCS( LPCTSTR lp , BOOL bDetached /* = FALSE */)
 	{
-
+		if (bDetached)
+		{
+			int nSrc = lstrlen(lp) + 1;
+			StringCchCopy((LPTSTR)m_Mem.GetMemory(nSrc * sizeof(TCHAR)), nSrc, lp);
+			return (LPCTSTR)m_Mem.Detatch();
+		}
+		else
+		{
+			return lp;
+		}
 	}
 
 #endif //_UNICODE

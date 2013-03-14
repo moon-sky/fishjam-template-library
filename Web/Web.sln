@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HTML", "HTML\HTML.vcproj", "{C9E376CA-843E-4A05-8A68-CE58033204AD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JavaScript", "JavaScript\JavaScript.vcproj", "{D9EAD05E-021D-4771-8541-981E73BEC81E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSrc", "WebSrc", "{B530E5DF-58B6-4DE6-83F5-EA89CC4998AC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JQuery", "JQuery", "{36031838-69DD-4F16-AE7C-A3819AAA243A}"
+	ProjectSection(SolutionItems) = preProject
+		WebSrc\jquery\jquery.js = WebSrc\jquery\jquery.js
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Debug|Win32.Build.0 = Debug|Win32
+		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Release|Win32.ActiveCfg = Release|Win32
+		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Release|Win32.Build.0 = Release|Win32
+		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Debug|Win32.Build.0 = Debug|Win32
+		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Release|Win32.ActiveCfg = Release|Win32
+		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{36031838-69DD-4F16-AE7C-A3819AAA243A} = {B530E5DF-58B6-4DE6-83F5-EA89CC4998AC}
+	EndGlobalSection
+EndGlobal

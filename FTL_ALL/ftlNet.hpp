@@ -591,7 +591,7 @@ namespace FTL
 				GET_HINTERNET_STRING_OPTION_STRING_EX(INTERNET_OPTION_DATAFILE_NAME, ERROR_INTERNET_INCORRECT_HANDLE_TYPE,
 					ERROR_INTERNET_ITEM_NOT_FOUND, TEXT("DataFileName:%s\n"));
 
-				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_URL, &ulValOption, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, ERROR_INTERNET_INVALID_URL, TEXT("Url:%d\n"));
+				GET_HINTERNET_STRING_OPTION_STRING_EX(INTERNET_OPTION_URL, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, ERROR_INTERNET_INVALID_URL, TEXT("Url:%s\n"));
 				GET_HINTERNET_OPTION_STRING_EX(INTERNET_OPTION_SECURITY_CERTIFICATE, &ulValOption, 
 					ERROR_INTERNET_INVALID_OPERATION, ERROR_INTERNET_INCORRECT_HANDLE_TYPE, TEXT("SecurityCertificate:%d\n"));
 
@@ -751,7 +751,7 @@ namespace FTL
 
 		#define GET_HTTP_QUERY_INFO_STRING_EX(lv, pVal, ex1, ex2, info)\
 			dwSize = sizeof(*pVal);\
-			FTLTRACE(TEXT("Level=%d, dwSize=%d\n"), lv, dwSize);\
+			FTLTRACE(TEXT("  Level=0x%x, dwSize=%d, "), lv, dwSize);\
 			ZeroMemory(pVal, dwSize);\
 			API_VERIFY_EXCEPT2(HttpQueryInfo(hInternet, lv, pVal, &dwSize, &dwIndex), ex1, ex2);\
 			if(bRet)\
@@ -763,6 +763,7 @@ namespace FTL
 
 		#define GET_HTTP_QUERY_INFO_STRING_TRANSLATE_EX(lv, pVal, ex1, ex2, info, tran)\
 			dwSize = sizeof(*pVal);\
+			FTLTRACE(TEXT("  Level=0x%x, dwSize=%d, "), lv, dwSize);\
 			ZeroMemory(pVal, dwSize);\
 			API_VERIFY_EXCEPT2(HttpQueryInfo(hInternet, lv, pVal, &dwSize, &dwIndex), ex1, ex2);\
 			if(bRet)\
@@ -803,6 +804,10 @@ namespace FTL
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_DESCRIPTION, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentDescription:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_LENGTH, //获取内容(如下载的文件)大小
 					ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentLength:%s\n"));
+
+				GET_HTTP_QUERY_INFO_STRING_EX(HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, &ulValOption, //获取内容(如下载的文件)大小
+					ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentLength:%d\n"));
+
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_CONTENT_LANGUAGE, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("ContentLanguage:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_ALLOW, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Allow:%s\n"));
 				GET_HTTP_QUERY_INFO_STRING_OPTION_STRING_EX(HTTP_QUERY_PUBLIC, ERROR_HTTP_HEADER_NOT_FOUND, 0, TEXT("Public:%s\n"));
@@ -2297,11 +2302,6 @@ namespace FTL
 			{
 				break;
 			}
-			API_VERIFY(_Flush(NULL));
-			if (!bRet)
-			{
-				break;;
-			}
 			API_VERIFY_EXCEPT1(_ReceiveResponse(), ERROR_CANCELLED);
 			if (!bRet)
 			{
@@ -2726,6 +2726,12 @@ namespace FTL
 		{
 			_SetErrorStatus(GetLastError(), TEXT("HttpSendRequestEx"));
 		}
+
+		if (bRet)
+		{
+			API_VERIFY(_Flush(NULL));
+		}
+
 		if (bRet)
 		{
 			API_VERIFY(HttpEndRequest( m_hRequest, NULL, HSR_SYNC | HSR_INITIATE, 0 ));
@@ -2961,13 +2967,26 @@ namespace FTL
 		DWORD nContentLength = 0; //4G  -- HTTP_QUERY_FLAG_NUMBER64
 		DWORD dwInfoSize = sizeof(nContentLength);
 
+
+		CFStringFormater formater;
+		FTLTRACE(TEXT("CFDownloadJob::_ReceiveResponse, Option is :\n%s\n"), FNetInfo::GetHttpQueryInfoString(formater, m_hRequest, (DWORD)(-1)));
+
 		API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
 			&nContentLength, &dwInfoSize, NULL));
 		if (bRet)
 		{
 #pragma TODO(考虑本地文件重复需要重命名或删除等)
-
+			
 			m_nTotalSize = nContentLength;
+			
+			IInternetTransferCallBack* pInternetTransferCallback = dynamic_cast<IInternetTransferCallBack*>(m_pThreadPool->m_pCallBack);
+			if (pInternetTransferCallback)
+			{
+				TCHAR szPath[MAX_PATH] = {0};
+				StringCchCopy(szPath, _countof(szPath), TEXT("TestFile.dat"));
+				pInternetTransferCallback->OnPromptSaveFile(GetJobIndex(), this, m_nTotalSize, szPath, _countof(szPath));
+			}
+
 			FTLASSERT(m_nTotalSize >= 0);
 			if (0 == m_nTotalSize)
 			{
@@ -3068,7 +3087,7 @@ namespace FTL
 		return bRet;
 	}
 
-	BOOL CFInternetTransfer::Start(IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack /* = NULL */, 
+	BOOL CFInternetTransfer::Start(IInternetTransferCallBack* pCallBack , // IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack /* = NULL */, 
 		LONG nMinParallelCount /* = 1 */, 
 		LONG nMaxParallelCount /* = 4 */, 
 		LPCTSTR pszAgent /* = NULL*/)
