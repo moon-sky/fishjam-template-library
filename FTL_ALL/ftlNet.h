@@ -41,6 +41,19 @@
 * 总长度计算方式: RequestHeader + PostArgument + 文件大小
 *************************************************************************************************************************/
 
+/*************************************************************************************************************************
+* Http 下载性能测试(文件大小：12M) -- 有两个问题：1.下载 和 写文件在一起了
+*   系统下载Buffer       ReadBuffer         时间
+*      4K(默认)             64K              42S
+*      4K(默认)             16K              33S
+*      4K(默认)             4K               29S
+*      4K(默认)             0K               22S
+*
+*      16K                  0K               24S
+*      16K                 16K               28S
+*
+*      64K                 0K/4K             49S
+*************************************************************************************************************************/
 
 #pragma TODO(wsock32.lib 和 ws2_32.lib 的区别)
 //CHttpFile 中有一个 m_pbWriteBuffer 来缓冲需要发送的数据, Write 时并不一定会真正的发送出去
@@ -505,7 +518,7 @@
 *   [M]Content-Type: 请求或返回的内容类型，对应于 form 中的 enctype
 *      类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
 *        application/x-www-form-urlencoded <== 
-*        application/octet-stream <== 网络上多线程分块下载二进制文件时?
+*        application/octet-stream <== 网络上传递二进制数据时
 *        multipart/form-data; boundary=--{boundary} <== 表单数据传输文件内容
 *        video/avi   <== AVI 
 *        image/jpeg  <== JPG
@@ -1216,6 +1229,21 @@ namespace FTL
 		FTLINLINE virtual BOOL _CheckParams();
 		FTLINLINE virtual BOOL _SendRequest();
 		FTLINLINE virtual BOOL _ReceiveResponse();
+		FTLINLINE virtual BOOL _OnOpenTargetFile(HANDLE hFile) { return TRUE; }
+	};
+
+	//并行下载
+	class CFParallelDownloadJob : public CFDownloadJob
+	{
+	public:
+		FTLINLINE CFParallelDownloadJob(const CAtlString& strAgent);
+		FTLINLINE virtual BOOL _CheckParams();
+	protected:
+		LONG m_nBeginPos;
+		LONG m_nEndPos;
+		FTLINLINE virtual BOOL _OnOpenTargetFile(HANDLE hFile);
+
+
 	};
 
 	class IInternetTransferCallBack : public IFThreadPoolCallBack<FTransferJobInfoPtr>

@@ -160,7 +160,7 @@ namespace FTL
 		//! 通过该函数，获取线程池的状态(Stop/Pause)，以及Job自己的Stop, 用法同 CFThread:GetThreadWaitType:
 		//! 如果想支持暂停，参数是 INFINITE；如不想支持暂停(如网络传输)，则参数传 0
 		FTLINLINE FTLThreadWaitType GetJobWaitType(DWORD dwMilliseconds = INFINITE) const;
-	private:
+	public:
 		//设置为私有的变量和方法，即使是子类也不要直接更改，由Pool调用进行控制
 		LONG		m_nJobPriority;
 		LONG		m_nJobIndex;
@@ -290,7 +290,7 @@ namespace FTL
 		FTLINLINE void _NotifyJobProgress(CFJobBase<T>* pJob, LONGLONG nCurPos, LONGLONG nTotalSize);
 		FTLINLINE void _NotifyJobError(CFJobBase<T>* pJob, DWORD dwError, LPCTSTR pszDescription); 
 
-	protected:
+	public:
 		LONG m_nMinNumThreads;					//! 线程池中最少的线程个数
 		LONG m_nMaxNumThreads;					//! 线程池中最大的线程个数
 		IFThreadPoolCallBack<T>* m_pCallBack;	//! 回调接口

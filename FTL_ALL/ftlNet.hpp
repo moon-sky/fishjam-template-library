@@ -2028,10 +2028,10 @@ namespace FTL
 
 	CFTransferJobBase::~CFTransferJobBase()
 	{
-		//must close before destructor
 		SAFE_DELETE_ARRAY(m_pbWriteBuffer);
 		SAFE_DELETE_ARRAY(m_pbReadBuffer);
 		
+		//must close before destructor
 		FTLASSERT(NULL == m_hRequest);
 		FTLASSERT(NULL == m_hConnection);
 		FTLASSERT(NULL == m_hSession);
@@ -2087,7 +2087,7 @@ namespace FTL
 
 			if (pWrite)
 			{
-				*pWrite = dwBytes;
+				*pWrite = (LONG)dwBytes;
 			}
 		}
 		return bRet;
@@ -2236,7 +2236,7 @@ namespace FTL
 			{
 				return bRet;
 			}
-			FTLASSERT(nCount == dwBytes);
+			FTLASSERT(nCount == (LONG)dwBytes);
 		}
 		else
 		{
@@ -2271,7 +2271,87 @@ namespace FTL
 
 		if (pWrite)
 		{
-			*pWrite = dwBytes;
+			*pWrite = (LONG)dwBytes;
+		}
+		return bRet;
+	}
+
+	BOOL CFTransferJobBase::_Read(PBYTE pBuffer, LONG nCount, LONG* pRead)
+	{
+		DWORD dwBytes = 0;
+		BOOL bRet = TRUE;
+		
+		if (m_pbReadBuffer == NULL)
+		{
+			//没有缓冲，直接处理
+			API_VERIFY(InternetReadFile(m_hRequest, (LPVOID) pBuffer, nCount, &dwBytes));
+			if (bRet && pRead)
+			{
+				*pRead = (LONG)dwBytes;
+			}
+			return bRet;
+		}
+
+		//如果请求Buffer大于缓冲Buffer
+		if (nCount >= m_nReadBufferSize)
+		{
+			//先拷贝缓冲中的数据
+			LONG nDataSize = m_nReadBufferBytes - m_nReadBufferPos;
+			FTLASSERT(nDataSize >= 0);
+			if(nDataSize > 0)
+			{
+				Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nDataSize);
+				//此时有效数据已经全部读取完
+			}
+			m_nReadBufferPos = 0;
+			m_nReadBufferBytes = 0;
+
+			//继续从网络读取数据
+			API_VERIFY(InternetReadFile(m_hRequest, pBuffer + nDataSize, nCount - nDataSize, &dwBytes));
+			if (!bRet)
+			{
+				return bRet;
+			}
+			dwBytes += (DWORD)nDataSize;
+		}
+		else  //请求Buffer小于缓冲Buffer，优先从缓冲Buffer中读取
+		{
+			//如果读Buffer中剩余的数据比请求的数据少 -- 先将读Buffer中的全部数据都拷贝出来
+			LONG nDataSize = m_nReadBufferBytes - m_nReadBufferPos;
+			if (nDataSize <= nCount)  //			if (m_nReadBufferPos + nCount >= m_nReadBufferBytes)
+			{
+				if (nDataSize > 0)
+				{
+					Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nDataSize);
+				}
+				m_nReadBufferPos = 0;
+				m_nReadBufferBytes = 0;
+
+				//继续从网络读取数据 -- 这次直接读取到缓冲Buffer中，而且因为读Buffer中的有效数据已经全部读完，则从头开始缓冲
+				API_VERIFY(InternetReadFile(m_hRequest, m_pbReadBuffer, m_nReadBufferSize, &dwBytes));
+				if (bRet)
+				{
+					//增加刚读取到的数据到请求Buffer
+					LONG nMoveSize = FTL_MIN(nCount - nDataSize, (LONG)dwBytes); 
+					Checked::memcpy_s(pBuffer + nDataSize, nCount - nDataSize, 
+						m_pbReadBuffer, nMoveSize);
+					m_nReadBufferPos = nMoveSize;
+					m_nReadBufferBytes = (LONG)dwBytes;
+					
+					dwBytes = (DWORD)(nMoveSize + nDataSize);
+				}
+			}
+			else
+			{
+				//如果读Buffer中剩余的数据比请求的数据多，则本次只在内存中拷贝
+				Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nCount);
+				m_nReadBufferPos += nCount;
+				dwBytes = (DWORD)nCount;
+			}
+		}
+		if (pRead)
+		{
+			*pRead = (LONG)dwBytes;
 		}
 		return bRet;
 	}
@@ -2283,8 +2363,8 @@ namespace FTL
 
 	BOOL CFTransferJobBase::Run()
 	{
+		//FUNCTION_BLOCK_TRACE(10000);
 		BOOL bRet = FALSE;
-		SetWriteBufferSize(10240);
 		do 
 		{
 			API_VERIFY_EXCEPT1(_CheckParams(), ERROR_CANCELLED);
@@ -2584,7 +2664,7 @@ namespace FTL
 
 	BOOL CFUploadJob::_SendLocalFile(PBYTE pBuffer, DWORD dwBufferSize)
 	{
-		FUNCTION_BLOCK_TRACE(0);
+		//FUNCTION_BLOCK_TRACE(0);
 		BOOL bRet = TRUE;
 		DWORD dwLastError = ERROR_SUCCESS;
 
@@ -2601,7 +2681,6 @@ namespace FTL
 
 			PostFileParam* pFileParam = *iterFile;
 			FTLASSERT(pFileParam);
-			//DWORD dwOutPostBufferLength = 0;
 
 			FTLTRACEEX(tlTrace, TEXT("_SendLocalFile:FileSize=%d, Len=%d, Buffer=%s\n"), 
 				pFileParam->dwFileSize,
@@ -2670,6 +2749,10 @@ namespace FTL
 		//FTLTRACE(TEXT("CFUploadJob::_SendLocalFile, bRet = %d\n"), bRet);
 		if (dwLastError != ERROR_SUCCESS)
 		{
+			if (GetJobWaitType(0) == ftwtStop)
+			{
+				dwLastError = ERROR_CANCELLED;
+			}
 			::SetLastError(dwLastError);
 			_SetErrorStatus(dwLastError, TEXT("_SendLocalFile"));
 		}
@@ -2721,6 +2804,14 @@ namespace FTL
 				&& _SendLocalFile(pBuffer, dwBufferSize)
 				&& _SendCallbackParam(pBuffer, dwBufferSize)
 				&& _SendEndBoundary(pBuffer, dwBufferSize), ERROR_CANCELLED);
+			if (!bRet)
+			{
+				if (GetJobWaitType(0) == ftwtStop)
+				{
+					::SetLastError(ERROR_CANCELLED);
+					_SetErrorStatus(ERROR_CANCELLED, TEXT("_SendLocalFile"));
+				}
+			}
 		}
 		else
 		{
@@ -2916,6 +3007,11 @@ namespace FTL
 			NULL, NULL, NULL, dwFlags, NULL)));
 		if (bRet)
 		{
+			//ULONG nReadBuffer = 16 * 1024;
+			//DWORD dwBufferLength = sizeof(nReadBuffer);
+			//API_VERIFY(InternetSetOption(m_hRequest, INTERNET_OPTION_READ_BUFFER_SIZE, &nReadBuffer, dwBufferLength));
+			//FTLTRACE(TEXT("Request ReadBufferSize = %d\n"), nReadBuffer);
+
 			API_VERIFY(::HttpSendRequest(m_hRequest, NULL, 0, NULL, 0));
 			if (bRet)
 			{
@@ -2935,6 +3031,9 @@ namespace FTL
 						break;
 					case HTTP_STATUS_NOT_FOUND:			//404
 						dwError = ERROR_NOT_FOUND;
+						break;
+					case HTTP_STATUS_SERVER_ERROR:		//500
+						dwError = HTTP_STATUS_SERVER_ERROR;  //TODO
 						break;
 					case HTTP_STATUS_DENIED:			//401
 					case HTTP_STATUS_FORBIDDEN:			//403
@@ -2997,15 +3096,17 @@ namespace FTL
 			}
 			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, 
 				GENERIC_WRITE, 
-				0,	//如果是多线程同时下载一个文件，需要设置为 FILE_SHARE_WRITE ?
+				FILE_SHARE_READ | FILE_SHARE_WRITE,	//如果是多线程同时下载一个文件，需要设置为 FILE_SHARE_WRITE ?
 				NULL,
-				CREATE_ALWAYS, //如果支持断点或多线程下载，需要设置为 OPEN_ALWAYS?
+				OPEN_ALWAYS, //如果支持断点或多线程下载，需要设置为 OPEN_ALWAYS?
 				FILE_ATTRIBUTE_NORMAL, 
 				NULL);
 			API_VERIFY(INVALID_HANDLE_VALUE != hLocalFile);
 
 			if (INVALID_HANDLE_VALUE != hLocalFile)
 			{
+				_OnOpenTargetFile(hLocalFile);
+
 				//DWORD dwError = 0;
 				DWORD dwSize = 0, dwRead = 0;
 				DWORD dwWriteToLocal = 0;
@@ -3022,9 +3123,12 @@ namespace FTL
 
 					dwSize = dwBufferSize;
 					dwRead = 0;
-					API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwSize, &dwRead));
+					LONG nRead = 0;
+					API_VERIFY(_Read( pBuffer, dwSize, &nRead));
+					//API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwSize, &dwRead));
 					if (bRet)
 					{
+						dwRead = nRead;
 						if (dwRead > 0)
 						{
 							//API_VERIFY(_CheckInternetBuffer(pBuffer, dwRead));
@@ -3065,6 +3169,56 @@ namespace FTL
 			SetLastError(ERROR_CANCELLED);
 			_SetErrorStatus(ERROR_CANCELLED, TEXT("_ReceiveResponse"));
 			bRet = FALSE;
+		}
+		return bRet;
+	}
+
+	CFParallelDownloadJob::CFParallelDownloadJob(const CAtlString& strAgent)
+		:CFDownloadJob(strAgent)
+	{
+		m_nBeginPos = 0;
+		m_nEndPos = 0;
+	}
+
+	BOOL CFParallelDownloadJob::_CheckParams()
+	{
+		BOOL bRet = __super::_CheckParams();
+		if (bRet)
+		{
+			for (TransferParamContainer::iterator iter = m_JobParam->m_transferParams.begin();
+				iter != m_JobParam->m_transferParams.end();
+				++iter)
+			{
+				FTransferParam& transParam = *iter;
+				if (transParam.paramType == tptPostArgument)
+				{
+					if (transParam.strName.Compare(TEXT("Range")) == 0)
+					{
+						std::list<tstring> lstRange;
+						FTL::Split((LPCTSTR)transParam.strValue, TEXT("-"), false, lstRange);
+						if (lstRange.size() == 2)
+						{
+							const tstring& strBeginPos = *lstRange.begin();
+							const tstring& strEndPos = *lstRange.rbegin();
+							m_nBeginPos = _tstol(strBeginPos.c_str());
+							m_nEndPos = _tstol(strEndPos.c_str());
+						}
+					}
+					break;
+				}
+			}
+			
+			bRet = (m_nBeginPos != 0 || m_nEndPos != 0);
+		}
+		return bRet;
+	}
+	BOOL CFParallelDownloadJob::_OnOpenTargetFile(HANDLE hFile)
+	{
+		BOOL bRet = FALSE;
+		API_VERIFY(INVALID_SET_FILE_POINTER != SetFilePointer(hFile, m_nBeginPos, NULL, FILE_BEGIN));
+		if (bRet)
+		{
+			m_nTotalSize = (m_nEndPos - m_nBeginPos);
 		}
 		return bRet;
 	}
@@ -3141,10 +3295,14 @@ namespace FTL
 		if (m_pThreadPool)
 		{
 			CFUploadJob* pJob = new CFUploadJob(m_strAgent);
-			pUploadJobInfo->m_TransferJobType = tjtUpload;
-			pUploadJobInfo->m_strVerb = TEXT("POST");
-			pJob->m_JobParam = pUploadJobInfo;
-			API_VERIFY(m_pThreadPool->SubmitJob(pJob, &nJobIndex));
+			if (pJob)
+			{
+				pJob->SetWriteBufferSize(16 * 10240);  //16K
+				pUploadJobInfo->m_TransferJobType = tjtUpload;
+				pUploadJobInfo->m_strVerb = TEXT("POST");
+				pJob->m_JobParam = pUploadJobInfo;
+				API_VERIFY(m_pThreadPool->SubmitJob(pJob, &nJobIndex));
+			}
 		}
 		return nJobIndex;
 	}
@@ -3160,9 +3318,13 @@ namespace FTL
 		if (m_pThreadPool)
 		{
 			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_strAgent);
-			pDownloadJobInfo->m_TransferJobType = tjtDownload;
-			pDownloadJob->m_JobParam = pDownloadJobInfo;
-			API_VERIFY(m_pThreadPool->SubmitJob(pDownloadJob, &nJobIndex));
+			if (pDownloadJob)
+			{
+				//pDownloadJob->SetReadBufferSize(4 * 1024);  //16K
+				pDownloadJobInfo->m_TransferJobType = tjtDownload;
+				pDownloadJob->m_JobParam = pDownloadJobInfo;
+				API_VERIFY(m_pThreadPool->SubmitJob(pDownloadJob, &nJobIndex));
+			}
 		}
 		return nJobIndex;
 	}
