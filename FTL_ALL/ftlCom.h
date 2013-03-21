@@ -85,7 +85,7 @@
 *       4.避免用CComBSTR在内循环进行频繁字符串修改操作，BSTR的效率较低
 * 
 * CComVariant(VARIANT)
-*   VariantInit
+*   VariantInit -- 初始化,会设置成 (vt = VT_EMPTY )
 *   VariantCopy -- 根据类型正确的进行浅拷贝或深拷贝
 *   VariantCopyInd -- VARIANT可以有选择地表示最多一层的间接性(VT_BYREF 还是 VT_ARRAY?)， 这个函数可以去除VARIANT的这一层间接性
 *   VariantClear -- 根据类型正确的释放，如包含BSTR的SAFEARRAY会先释放数组中每个BSTR，然后释放数组本身

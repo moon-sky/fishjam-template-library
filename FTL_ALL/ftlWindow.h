@@ -5,6 +5,11 @@
 #ifndef FTL_BASE_H
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
+
+/******************************************************************************************************
+* 微软未公开的函数列表： http://undoc.airesoft.co.uk/index.php
+******************************************************************************************************/
+
 //窗体中保存自定义数据：可以通过  _SetWindowLongPtr(hDlg, DWLP_USER, (this)); 的方法把this指针传入
 
 //CWndClassInfo & MagnifierLayer::GetWndClassInfo()
@@ -156,7 +161,7 @@
 *   2.映射处理消息 WM_IDLEUPDATECMDUI (对话框中需要处理 WM_KICKIDLE )
 *   3.在实现中调用 UpdateDialogControls
 *
-* AdjustWindowRectEx -- 根据客户区的大小和窗口样式，计算并调整窗口的完整尺寸,然后MoveWindow进行调整即可
+* AdjustWindowRectEx -- 根据指定的客户区的大小和窗口样式，计算窗口的完整尺寸,然后MoveWindow进行调整即可
 *   RECT rcClient = { 0,0,800,600 };
 *   AdjustWindowRectEx( &rcClient, GetWindowStyle(hWnd), GetMenu(hWnd) != NULL, GetWindowExStyle(hWnd));
 * MapWindowPoints -- 把相对于一个窗口的坐标空间的一组点映射成相对于另一窗口的坐标空间的一组点
@@ -287,11 +292,46 @@
 *   keybd_event('V', MapVirtualKey('V', 0), 0, 0);
 *   keybd_event('V', MapVirtualKey('V', 0), KEYEVENTF_KEYUP, 0);
 *   keybd_event(VK_CONTROL, MapVirtualKey(VK_CONTROL, 0), KEYEVENTF_KEYUP, 0);
+* 鼠标模拟 mouse_event
 *
-* 鼠标位置检测(HitTest), 系统已经定义了 HTOBJECT、HTCLIENT 等宏
 ******************************************************************************************************/
 
-
+/******************************************************************************************************
+* 通用拖放(Drag & Drop)支持(最原始最通用的是使用 IDropTarget 接口) http://blog.csdn.net/vcbear/article/details/5990
+*   DoDragDrop -- 系统API，控制拖放的整个过程，一般不会直接调用(DUI中可以尝试直接调用)？ 在某数据源的数据被拖动的时候就被调用。
+*   RegisterDragDrop(HWND, IDropTarget*) -- 告诉系统HWnd窗口可以接受拖放，注意：调用前需要通过 CoLockObjectExternal 锁定？
+*     ->
+*   RevokeDragDrop()  
+*
+*   FORMATETC -- OLE数据交换的关键结构，对设备，数据，和相关媒体做了格式上的描述，
+*     如： FORMATETC cFmt = {(CLIPFORMAT) CF_TEXT, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+*   STDMEDIUM -- 由其 tymed 成员变量确定的一系列句柄或数据对象接口的联合，使用完毕需要通过 ReleaseStgMedium 释放
+*   
+*   IDropSource -- D&D时的数据源方?生成拖放时的 IDataObject ?
+*     QueryContinueDrag -- 
+*     GiveFeedback -- 
+*   IDropTarget -- D&D时的接收方接口，系统会在合适的时候依次调用对应方法，检查用户在这些函数里返回的标志(DROPEFFECT_COPY 等)，决定鼠标外观表现和拖放结果
+*     DragEnter -- 拖动对象初次进入窗体时调用，判断是否支持某具体类型的拖放，并根据 grfKeyState(鼠标/键盘) 设置 pdwEffect
+*     DragOver -- 窗口范围内移动时调用
+*     DragLeave -- 拖动对象离开窗口区域时调用，通常用于清理资源
+*     Drop -- 在窗口内释放拖动对象，实现“放”的逻辑
+*   IDropSourceNotify -- 
+*     DragEnterTarget
+*     DragLeaveTarget
+*   IDataObject -- 传送数据
+*     GetData/QueryGetData/SetData
+*     GetDataHere
+*     GetCanonicalFormatEtc
+*     EnumFormatEtc -- 枚举包含的所有数据类型(IEnumFORMATETC)，分为 GET 和 SET 两类
+*     DAdvise/DUnadvise/EnumDAdvise
+* 
+* 注意(未测试确认)：
+*   1.要调用OleInitialize而不是CoInitialize或CoInitializeEx对COM进行初始，否则RegisterDragDrop将不会成功，返回的错误是E_OUTOFMEMORY
+*   2.调用ReleaseStgMedium释放STGMEDIUM里的数据，而不是直接对其hGlobal成员调用CloseHandle
+*   3.拖放操作关系到两个进程的数据交换，会将两个进程都堵塞，直到拖放完成为止，所以，在接管拖放的接口方法中，不要进行过于耗时的运算
+*   4.如果只是通过 Shell 拖放文件，更简单的方法是响应 WM_DROPFILES 消息
+******************************************************************************************************/
+  
 namespace FTL
 {
 #define DUMP_FILTER_MOUSE_MOVE              ((DWORD)(0x0001L))

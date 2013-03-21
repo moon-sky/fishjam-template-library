@@ -38,7 +38,7 @@ namespace FTL
 
 	/*********************************************************************************************************************************
 	* IAccessible -- MSAA(Microsoft Active Accessibility), 活动的可访问兼容性应用。可通过微软的 Inspect.exe 工具查看
-	*   UI程序暴露出一个Interface，方便另一个程序对其进行控制，初衷是为了方便残疾人，可用于对象抓图、UI自动化测试等。
+	*   UI程序暴露出一个Interface，方便另一个程序对其进行控制，初衷是为了方便残疾人(盲人?)，可用于对象抓图、UI自动化测试等。
 	*   AccessibleObjectFromWindow(hwnd, OBJID_WINDOW, IID_IAccessible, (void**)&paccMainWindow)，
 	*     对应窗体会接收到 WM_GETOBJECT 消息，创建实现了IAccessible的内部类(MS在.NET WinForm Framework 中提供了IAccessible的默认实现,
 	*     其他的有 Local oleacc proxy?)，然后通过 LresultFromObject 返回该接口

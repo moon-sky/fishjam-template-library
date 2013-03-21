@@ -44,11 +44,25 @@ namespace FTL
 		FTLINLINE virtual LPCTSTR ConvertInfo();
 	};
 
-	FTLEXPORT class CFFILETIMEDumpInfo : public CFConvertInfoT<CFFILETIMEDumpInfo, const FILETIME&, 64>
+	FTLEXPORT class CFFileTimeDumpInfo : public CFConvertInfoT<CFFileTimeDumpInfo, const FILETIME&, 64>
 	{
-		DISABLE_COPY_AND_ASSIGNMENT(CFFILETIMEDumpInfo);
+		DISABLE_COPY_AND_ASSIGNMENT(CFFileTimeDumpInfo);
 	public:
-		FTLINLINE explicit CFFILETIMEDumpInfo(const FILETIME& fileTime);
+		FTLINLINE explicit CFFileTimeDumpInfo(const FILETIME& fileTime);
+		FTLINLINE virtual LPCTSTR ConvertInfo();
+	};
+
+	//双显示器时: dwFlags = 01(MONITORINFOF_PRIMARY) 表主显
+	//  rcMonitor 显示器的显示区域
+	//  rcWork    排除任务栏的区域
+	//程序在左边的主显(下方有任务栏)：cbSize= 40,dwFlags=0x1, rcMonitor=(0,0)-(1440,900), 1440x900, rcWork=(0,0)-(1440,869), 1440x869
+	//程序在右边的次显：              cbSize= 40,dwFlags=0x0, rcMonitor=(1440,-124)-(2720,900), 1280x1024, rcWork=(1440,-124)-(2720,900), 1280x1024
+
+	FTLEXPORT class CFMonitorInfoDumpInfo: public CFConvertInfoT<CFMonitorInfoDumpInfo, const MONITORINFO &>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFMonitorInfoDumpInfo);
+	public:
+		FTLINLINE explicit CFMonitorInfoDumpInfo(const MONITORINFO& monitorInfo);
 		FTLINLINE virtual LPCTSTR ConvertInfo();
 	};
 }

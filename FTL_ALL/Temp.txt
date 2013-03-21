@@ -4,6 +4,10 @@ http://passport.flashget.com/forgotpasswd.html
 IAssemblyCache
 http://dipplum.com/2009/11/09/side-by-side-assembly/
 
+zipstream -- http://www.codeproject.com/Articles/4457/zipstream-bzip2stream-iostream-wrappers-for-the-zl
+
+XZip/XUnzip -- 纯cpp代码，在不加入任何 .lib 或 .dll 的前提下，给程序增加 zip/unzip 功能
+
 VC8有两种方法来分发 CRT/MFC/ATL 的 DLL
 1.在程序相同目录下放置 manifest 和 DLL(policy redirections)
   Application.exe.manifest 中 remove the “publicKeyToken” attribute from the manifests

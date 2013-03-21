@@ -25,7 +25,7 @@
 *     如 #pragma section("ATL$__a", read, shared) -- 在名为ATL的Section中建立名为"_a"的段
 *   #pragma comment(linker, "/merge:ATL=.rdata") -- 合并两个Section(把ATL合并到 .rdata 中)
 *   __declspec(allocate("ATL$__a")) _ATL_OBJMAP_ENTRY* __pobjMapEntryFirst = NULL; -- allocate关键字指明 将指定的变量放在指定的section中的指定的段中
-*   __declspec(selectany) -- 加在初始化静态成员变量前面，编译器会自动剔除对该静态成员的重复定义
+*   __declspec(selectany) -- 加在初始化静态成员变量前面，编译器会自动剔除对该静态成员的重复定义(这种数据叫 COMDAT ?)
 * 
 * 共享段: 各个Exe包含定义了共享变量的DLL时，该变量在各个Exe之间唯一。而不是 Exe 和 Dll 共享变量
 *   #pragma data_seg(".MyShare")
@@ -635,11 +635,38 @@ namespace FTL
         FTLINLINE CFStringFormater(DWORD dwInitAllocLength = MAX_BUFFER_LENGTH);
         FTLINLINE virtual ~CFStringFormater();
         FTLINLINE VOID Reset();
-        FTLINLINE HRESULT __cdecl Format(LPCTSTR lpszFormat, ...);
+		FTLINLINE HRESULT __cdecl Format(LPCTSTR lpszFormat, ...);
         FTLINLINE HRESULT __cdecl FormatV(LPCTSTR lpszFormat, va_list argList);
         FTLINLINE HRESULT __cdecl AppendFormat(LPCTSTR lpszFormat, ...);
         FTLINLINE HRESULT __cdecl AppendFormatV(LPCTSTR lpszFormat, va_list argList);
-        FTLINLINE operator LPCTSTR() const
+
+//各种支持函数的定义
+#if 0
+		const CFStringFormater& operator=(const CFStringFormater& src);
+		const CFStringFormater& operator=(const TCHAR ch);
+		const CFStringFormater& operator=(LPCTSTR pstr);
+#  ifdef _UNICODE
+		const CFStringFormater& CFStringFormater::operator=(LPCSTR lpStr);
+		const CFStringFormater& CFStringFormater::operator+=(LPCSTR lpStr);
+#  else
+		const CFStringFormater& CFStringFormater::operator=(LPCWSTR lpwStr);
+		const CFStringFormater& CFStringFormater::operator+=(LPCWSTR lpwStr);
+#  endif
+		CFStringFormater operator+(const CFStringFormater& src) const;
+		CFStringFormater operator+(LPCTSTR pstr) const;
+		const CFStringFormater& operator+=(const CFStringFormater& src);
+		const CFStringFormater& operator+=(LPCTSTR pstr);
+		const CFStringFormater& operator+=(const TCHAR ch);
+		TCHAR operator[] (int nIndex) const;
+		bool operator == (LPCTSTR str) const;
+		bool operator != (LPCTSTR str) const;
+		bool operator <= (LPCTSTR str) const;
+		bool operator <  (LPCTSTR str) const;
+		bool operator >= (LPCTSTR str) const;
+		bool operator >  (LPCTSTR str) const;
+#endif 
+		
+		FTLINLINE operator LPCTSTR() const
         {
             return m_pBuf;
         }

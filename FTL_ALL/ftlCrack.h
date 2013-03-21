@@ -9,6 +9,14 @@
 #endif
 
 //代码页转换: http://bianma.911cha.com/
+//Cryptoapi说明: http://www.cnblogs.com/lzjsky/archive/2010/09/21/1832239.html
+
+/*********************************************************************************************************************************
+* certificate -- 证书
+* certificate revocation list -- 证书吊销列表
+* certificate trust list -- 证书信任列表
+*********************************************************************************************************************************/
+
 
 /*********************************************************************************************************************************
 * 权限检查工具：AccessChk -- 可知道指定账号对特定目录的权限和完整性级别等
@@ -184,20 +192,28 @@
 *     公钥/私钥对 -- 
 *   编程
 *     CSP(Cryptographic Service Provider)
-*     CryptAcquireContext -- 连接缺省的CSP，如果最后的参数是 CRYPT_NEWKEYSET 则会创建缺省CSP，使用完毕后需要通过 CryptReleaseContext 释放
+*     CryptAcquireContext -- 连接缺省的CSP，如果最后的参数是 CRYPT_NEWKEYSET 则会创建缺省CSP，使用完毕后需要通过 CryptReleaseContext 释放，
 *     CryptCreateHash -- 产生一个空的HASH对象
+*     CryptDecodeObject -- 解码对象 ?
+*     CryptDecrypt/CryptEncrypt -- 
 *     CryptDeriveKey(..,CRYPT_EXPORTABLE) -- 从某一固定数据(如密码)产生会话密钥，
-*     CryptEncrypt/CryptDecrypt -- 
 *     CryptExportKey -- 导出密钥，其中 hExpKey 表示将待导出密钥用交换密钥进行加密，如导出公钥，则设置为 NULL
 *     CryptGetUserKey -- 返回所获取密钥类型的句柄，可以指定 AT_KEYEXCHANGE(交换密钥，可导出会话密钥) 或 AT_SIGNATURE(签名密钥)
 *     CryptGenRandom -- 为空间产生随机字节,生成的随即数据可用于 CryptSetKeyParam
 *     CryptGenKey -- 产生一个随机的会话密钥或者公钥/私钥对，ALG_ID 表明产生私钥所使用的算法(如 CALG_AES、CALG_RSA_KEYX 等)
 *     CryptHashData -- 对密码进行HASH处理
 *     CryptImportKey -- 将密钥从BLOB转换到CSP中
+*     CryptMsgGetParam -- 从加密信息中获取特定参数的信息(比如签名证书信息 CMSG_SIGNER_INFO_PARAM)
 *     CryptMsgUpdate -- 增加内容到加密信息中
+*     CryptQueryObject -- 可以从文件、内存中 获取信息(如 证书/证书信任列表等)
+*       如：从文件中获取签名的证书信息 -- CryptQueryObject(CERT_QUERY_OBJECT_FILE, L"FilePath", CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED,
+*         CERT_QUERY_FORMAT_FLAG_BINARY, 0, &encodingType, ...) -- 
 *     CryptSetKeyParam/CryptGetKeyParam -- 设置/获取 会话密钥的参数
 *     证书(Certificate)
 *       CertCreateCertificateContext/ -- 创建证书上下文
+*       CertFindCertificateInStore  -- 从certificate store(证书存储)中查找证书?
+*       CertFreeCertificateContext -- 释放证书上下文
+*       CertGetNameString -- 从证书上下文中获取主题或者签发者，并且将他转化为易读的字符串(文档中未写的：dwFlags为0时表获取publisherName)
 *       CryptUIDlgCertMgr -- 可以显示系统提供的证书管理对话框(WinXp后才提供?)
 *       
 *   常见密码相关流程(流程中不包括异常和资源清理)

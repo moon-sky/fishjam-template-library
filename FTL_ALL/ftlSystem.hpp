@@ -254,7 +254,9 @@ namespace FTL
 	BOOL SystemParamProperty::Init()
 	{
 		BOOL bRet = FALSE;
+		RECT rcArea = {0};
 		API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &m_nKeyboardSpeed, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcArea ,NULL));
 
 		return bRet;
 	}
@@ -350,7 +352,7 @@ namespace FTL
 			HANDLE_CASE_TO_STRING(lpszFormatName, cchMaxCount, CF_WAVE);
 			HANDLE_CASE_TO_STRING(lpszFormatName, cchMaxCount, CF_UNICODETEXT);
 			HANDLE_CASE_TO_STRING(lpszFormatName, cchMaxCount, CF_ENHMETAFILE);
-			HANDLE_CASE_TO_STRING(lpszFormatName, cchMaxCount, CF_HDROP);
+			HANDLE_CASE_TO_STRING(lpszFormatName, cchMaxCount, CF_HDROP); //DragQueryFile»ñÈ¡
 			HANDLE_CASE_TO_STRING(lpszFormatName, cchMaxCount, CF_LOCALE);
 #if(WINVER >= 0x0500)
 			HANDLE_CASE_TO_STRING(lpszFormatName, cchMaxCount, CF_DIBV5);

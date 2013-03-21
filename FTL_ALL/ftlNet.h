@@ -578,7 +578,7 @@
 *
 * 封装函数
 *   URLDownloadToFile -- 指定URL直接下载文件，缺点：同步调用，不能下载大文件。
-*   
+*
 * WinINet API 函数(MFC 封装: CHttpFile) -- 通常只适用于客户端程序，服务器程序开发需要用 WinHTTP(升级版? 参见 "Porting WinINet Applications to WinHTTP" )
 *   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):
 *     1.InternetOpen/WinHttpOpen 初始化的 WinINet 函数库句柄,得到Session句柄(对应 CInternetSession ), 
@@ -1233,7 +1233,7 @@ namespace FTL
 	};
 
 	//并行下载
-	class CFParallelDownloadJob : public CFDownloadJob
+	class CFParallelDownloadJob : public CFUploadJob
 	{
 	public:
 		FTLINLINE CFParallelDownloadJob(const CAtlString& strAgent);

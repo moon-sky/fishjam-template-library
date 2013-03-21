@@ -10,6 +10,9 @@
 * cmd命令行中
 *   chcp [nnn] -- 显示或设置活动代码页编号，如中文是(936)
 * 
+* CodePage -- 国际化中 UNICODE 和 ANSI 的本地语言转换时指定的转换码?
+*   GetACP() -- 获取当前ANSI的 code page 的具体值，使用上 等价于 CP_ACP(常量 0)
+* 
 * http://blog.csdn.net/w8u/article/details/5773449  -- 不同codepage文件转换操作实录
 * NLS -- National Language Support，国际化支持
 * MUI --

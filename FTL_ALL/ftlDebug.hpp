@@ -24,12 +24,12 @@ namespace FTL
 		return m_bufInfo;
 	}
 
-	CFFILETIMEDumpInfo::CFFILETIMEDumpInfo(const FILETIME& fileTime) 
-		: CFConvertInfoT<CFFILETIMEDumpInfo, const FILETIME&, 64>(fileTime)
+	CFFileTimeDumpInfo::CFFileTimeDumpInfo(const FILETIME& fileTime) 
+		: CFConvertInfoT<CFFileTimeDumpInfo, const FILETIME&, 64>(fileTime)
 	{
 	}
 
-	LPCTSTR CFFILETIMEDumpInfo::ConvertInfo()
+	LPCTSTR CFFileTimeDumpInfo::ConvertInfo()
 	{
 		if (NULL == m_bufInfo[0])
 		{
@@ -43,6 +43,25 @@ namespace FTL
 		}
 		return m_bufInfo;
 	}
+
+	CFMonitorInfoDumpInfo::CFMonitorInfoDumpInfo(const MONITORINFO& monitorInfo) 
+		: CFConvertInfoT<CFMonitorInfoDumpInfo, const MONITORINFO&>(monitorInfo)
+	{
+	}
+
+	LPCTSTR CFMonitorInfoDumpInfo::ConvertInfo()
+	{
+		if (NULL == m_bufInfo[0])
+		{
+			StringCchPrintf(m_bufInfo,_countof(m_bufInfo),TEXT("cbSize= %d,dwFlags=0x%x, rcMonitor=%s, rcWork=%s"),
+				m_Info.cbSize, 
+				m_Info.dwFlags, 
+				CFRectDumpInfo(m_Info.rcMonitor).GetConvertedInfo(),
+				CFRectDumpInfo(m_Info.rcWork).GetConvertedInfo());
+		}
+		return m_bufInfo;
+	}
+
 }//FTL
 
 #endif //FTL_DEBUG_HPP

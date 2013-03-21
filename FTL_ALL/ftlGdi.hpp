@@ -605,11 +605,11 @@ namespace FTL
 		{
 #if 0 
 			//或者 -- 没有测试
-			HGLOBAL hRes = LoadResource( hModule, hrSrc );
+			HGLOBAL hGlobal = LoadResource( hModule, hrSrc );
 			DWORD dwSize = SizeofResource( hModule, hrSrc );
-			BYTE* pResData = (BYTE*)LockResource( hRes );
-			//使用数据
-			UnlockResource( hRes );
+			BYTE* pResData = (BYTE*)LockResource( hGlobal );
+			//使用数据， 比如 CopyMemory 到buffer中
+			UnlockResource( hGlobal );
 			FreeResource( hrSrc );
 #endif 
 

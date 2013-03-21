@@ -1050,7 +1050,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(AsyncIUnknown)
             DETECT_INTERFACE_ENTRY(IClassFactory) //客户端不知道COM组件具体的类名，组件对应的类工厂知道，因此可以创建
             //ATL中每一个组件都有一个类工厂(this指针不同)
-
+ 
 #if INCLUDE_DETECT_ATLIFACE
 			//Atliface.h
             DETECT_INTERFACE_ENTRY(IRegistrarBase)
@@ -2142,6 +2142,18 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IHostBehaviorInit)
 #endif //INCLUDE_DETECT_MSHTMLC
 
+#if INCLUDE_DETECT_MSHTMHST
+			//MsHtmHst.h
+			DETECT_INTERFACE_ENTRY(IHostDialogHelper)
+			//未测试确认：如 ShowContextMenu 返回E_NOTIMPL正常弹出系统右键菜单，返回S_OK则可屏蔽系统右键菜单
+			DETECT_INTERFACE_ENTRY(IDocHostUIHandler)
+			DETECT_INTERFACE_ENTRY(IDocHostUIHandler2)
+			DETECT_INTERFACE_ENTRY(ICustomDoc)
+			DETECT_INTERFACE_ENTRY(IDocHostShowUI)
+			DETECT_INTERFACE_ENTRY(IClassFactoryEx)
+			DETECT_INTERFACE_ENTRY(IHTMLOMWindowServices)
+			DETECT_INTERFACE_ENTRY(IHTMLWindow2)
+#endif //INCLUDE_DETECT_MSHTMHST
 
 #if INCLUDE_DETECT_MSXML
             //msxml.h

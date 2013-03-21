@@ -17,6 +17,20 @@
 //#include <WinSock2.h>
 namespace FTL
 {
+/*****************************************************************************************************
+* 定义类中的成员函数指针
+*   定义时：typedef 返回值 (T::* MyFunProc)(参数列表);
+*   使用时：(pObj->*pMyFunProc)(参数);
+*   常见的使用场景：
+*     a.成员函数指针数组(一般用于映射调用)；
+*     b.C++ 中实现 Delegate(参见 DuiLib 中的 UIDelegate.h) 等
+*     c.类似 MFC 中的消息映射时，通过一个有各种类型函数指针的 union(MessageMapFunctions) 进行函数调用方式转换
+*
+* 语法
+*   operator bool();   -- bool 操作符调用，比如 if( (bool) *pMyObj) { ... }
+*   bool operator()(); -- 返回值为 bool 的函数调用，参数个数为0， 如 bRet = （*pMyObj)(); 
+*****************************************************************************************************/
+
     //STL中没有实现 copy_if -- 为什么？
     //这个是书上写的，一个正确实现的copy_if
     template<typename InputIterator,typename OutputIterator,typename Predicate>
@@ -371,7 +385,7 @@ namespace FTL
         return 0;
     }
 
-    //二进制流输入输出
+    //二进制流输入输出 -- 从 google 的代码改造而来
     class binarystream
     {
     public:

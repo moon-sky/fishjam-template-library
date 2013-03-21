@@ -160,7 +160,7 @@ namespace FTL
 	*     mt.exe -inputresource:ExePath;#1 -out:extracted.manifest <== 导出 Exe 中的 manifest
     *   系统设备扫描工具 -- gmer.exe
 	*   Inspect -- MS提供的类似Spy的工具，能看到窗体、IAccessible 等信息
-	*   AccExplorer32窗口属性查看工具(类似Spy++) -- 可查看DirectUI界面(如 MSN)
+	*   AccExplorer32窗口属性查看工具(类似Spy++) -- 可查看DirectUI界面(如 MSN)，但查不了DUIlib 或 QQ等的
     *   命名管道扫描工具 -- pipelist.exe(http://technet.microsoft.com/zh-cn/sysinternals/dd581625)
 	*   
     *************************************************************************************************************************/
@@ -419,14 +419,14 @@ namespace FTL
 	*
 	*   相关命令(git, 使用 git help 命令 可以显示详细的HTML帮助)
 	*     add 文件或目录 [-A] -- 把想提交的文件add上, -A 表示添加未跟踪的文件
-	*     branch <分支名>-- 分支操作，如 创建分支[默认]，查看分支，删除分支[-d]
+	*     branch <分支名>-- 分支操作，如 创建分支[默认]，查看分支(--list)，删除分支[-d]
 	*     checkout [分支名] -- ★切换分支★，如刚用 branch 建立的 temp 分支， 或默认的 master 分支
 	*     clone 远程目录 本地目录 -- 从服务器上克隆数据库（包括代码和版本信息）到单机上
 	*     commit -m "注释信息" -- 提交到本地数据库
 	*     config -- 配置相关信息，例如 user.email 和 user.name，commit代码以前必须要设置"--global"范围的配置信息
 	*     diff [分支1] [分支2] > patch -- 比较两个分支，可通过重定向生成补丁
 	*     fetch -- 从服务器下载数据库，并放到新分支，不跟自己的数据库合并，通常用于解决冲突前先比较一下
-	*     init -- 创建一个数据库(会再目录下创建一个 .git 的子目录)
+	*     init -- 创建一个数据库(会在目录下创建一个 .git 的子目录)
 	*     log -- 查看版本历史
 	*     merge -- 合并分支，把目标分支合并到当前分支
 	*     mv -- 重命名文件或者文件夹
@@ -436,7 +436,7 @@ namespace FTL
 	*     reset -- 恢复到之前的版本
 	*     rm -- 删除文件或者文件夹
 	*     show -- 查看版本号对应版本的历史。如果参数是HEAD查看最新版本
-	*     status -- 显示当前的状态
+	*     status -- 显示当前的状态(比如 所在分支、文件更改)
 	*     update-index -- 内部命令，如 git add 对应于 git update-index --add
 	*     whatchanged [分支1] [分支2] -- 查看两个分支的变化
 	* 其他相关工具 -- 想开发一个 nGit(参考 Git 和 Gemit的使用，如在VS里打开IE View)
@@ -717,6 +717,8 @@ namespace FTL
 	*   编译方式：
 	*     makensis.exe [option | script.nsi ] -- 命令行的编译器
 	*     makensisw.exe -- GUI的编译器
+	*   调试方式：? 有没有日志一类的功能 ?
+	*   源码编译：使用 python + scons 编译
 	*   注意：
 	*     1.函数没有参数传递。
 	*       参数传递是通过 全局变量 或 堆栈操作 Pop，Push 和 20 个寄存器变量 $0～$9、$R0～$R9 进行
@@ -806,7 +808,7 @@ namespace FTL
 	*           注册表：ReadRegStr
 	*           调试函数：
 	*              MessageBox MB_YESNO "提示信息" IDYES 跳转标号
-	*              DetailPrint 变量 -- 如 DetailPrint $R0
+	*              DetailPrint 字符串信息或变量 -- 在安装的进度窗体显示信息，如 DetailPrint $R0
 	*              Dumpstate
 	*           
 	*       6.插件(扩展NSIS安装程序的DLL，系统预安装的在 Plugins 目录下，用户可用 !addplugindir 增加目录位置)
@@ -924,7 +926,24 @@ namespace FTL
     *   插件: http://code.google.com/p/reviewboardvsx/
     ******************************************************************************************************************************/
 
-    /******************************************************************************************************************************
+	/******************************************************************************************************************************
+	* scons(http://www.scons.org/) 
+	*   Python写的跨平台的下一代自动化构建工具(类似 GNU make，但更高效和可靠)，可以用来编译 NSIS/jsoncpp 等的源码
+	*   SConstruct -- python 格式的编译说明文件,scons可以根据该文件自动完成依赖关系的推导及编译链接等过程
+	*     Program('hello', ['hello.c']);  --  将hello.c(.cpp?) 编译成可执行文件hello
+	*     Library('foo',['f1.c','f2.c','f3.c']) -- 将文件f1.c,f2.c和f3.c编译成静态库libfoo.a
+	*     SharedLibrary('foo',['f1.c','f2.c','f3.c']) -- 编译成静态库libfoo.so
+	*   语法：
+	*     原始文件列表:
+    *       1.使用数组的方式列出所有需要编译的源文件 -- 如 ['f1.c','f2.c','f3.c']
+	*       2.使用 Glob 函数的正则表达式 -- 如 Glob('*.c')
+	*     参数:
+	*       LIBS=[依赖的静态、动态库]
+	*       LIBPATH='../lib'  -- 指定搜索lib的路径
+	*       CCFLAGS='D_DEBUG' -- 编译参数，如定义 _DEBUG 宏
+	******************************************************************************************************************************/
+
+	/******************************************************************************************************************************
     * 版本控制工具 SVN（CVS的替代，对于二进制文件只保存和上一版本不同之处），SVN一般有如下目录：branches、tgs、trunk
     *   服务器(Subversion/VisualSVN-Server 等)  -- http://subversion.tigris.org/
     *     自带命令行的 svn.exe 作为客户端

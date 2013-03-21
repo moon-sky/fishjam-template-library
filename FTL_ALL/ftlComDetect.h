@@ -145,6 +145,10 @@ namespace FTL
 # define INCLUDE_DETECT_MSHTMLC     1
 #endif  
 
+#ifndef INCLUDE_DETECT_MSHTMHST
+# define INCLUDE_DETECT_MSHTMHST	1
+#endif 
+
 #ifndef INCLUDE_DETECT_MSXML
 # define INCLUDE_DETECT_MSXML       1
 #endif
@@ -308,6 +312,10 @@ namespace FTL
 
 #if INCLUDE_DETECT_MSHTMLC
 #  include <Mshtmlc.h>
+#endif
+
+#if INCLUDE_DETECT_MSHTMHST
+#  include <MsHtmHst.h>
 #endif
 
 #if INCLUDE_DETECT_MSXML

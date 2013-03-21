@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlDebug.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlDesignPattern.hpp"
 				>
 			</File>
@@ -330,6 +334,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlCrashHandler.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlDebug.h"
 				>
 			</File>
 			<File

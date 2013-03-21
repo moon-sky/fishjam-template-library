@@ -410,8 +410,8 @@ namespace FTL
 		LPCTSTR GetCacheTimeStampsString(CFStringFormater& formater, const INTERNET_CACHE_TIMESTAMPS& cacheTimeStamps)
 		{
 			formater.AppendFormat(TEXT("Expires=%s, LastModified=%s"),
-				CFFILETIMEDumpInfo(cacheTimeStamps.ftExpires).GetConvertedInfo(),
-				CFFILETIMEDumpInfo(cacheTimeStamps.ftLastModified).GetConvertedInfo()
+				CFFileTimeDumpInfo(cacheTimeStamps.ftExpires).GetConvertedInfo(),
+				CFFileTimeDumpInfo(cacheTimeStamps.ftLastModified).GetConvertedInfo()
 				);
 			return formater.GetString();
 		}
@@ -2835,7 +2835,7 @@ namespace FTL
 	BOOL CFUploadJob::_SendRequest()
 	{
 		BOOL bRet = FALSE;
-		FTLASSERT(m_JobParam->m_strVerb == _T("POST"));
+		//FTLASSERT(m_JobParam->m_strVerb == _T("POST"));
 
 		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE
 
@@ -3174,7 +3174,7 @@ namespace FTL
 	}
 
 	CFParallelDownloadJob::CFParallelDownloadJob(const CAtlString& strAgent)
-		:CFDownloadJob(strAgent)
+		:CFUploadJob(strAgent)
 	{
 		m_nBeginPos = 0;
 		m_nEndPos = 0;
@@ -3190,7 +3190,7 @@ namespace FTL
 				++iter)
 			{
 				FTransferParam& transParam = *iter;
-				if (transParam.paramType == tptPostArgument)
+				if (transParam.paramType == tptRequestHeader)
 				{
 					if (transParam.strName.Compare(TEXT("Range")) == 0)
 					{

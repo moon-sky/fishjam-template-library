@@ -8,7 +8,7 @@
 #endif
 
 /*****************************************************************************************************
-* DropFile -- WM_DROPFILES 消息
+* DropFile -- WM_DROPFILES 消息，需要设置 WS_EX_ACCEPTFILES 风格
 *   nCount = DragQueryFile(hDropInfo, -1, NULL, 0);
 *   for( i < nCount; ) { 
 *     nSize = DragQueryFile(hDropInfo, i NULL, 0); 

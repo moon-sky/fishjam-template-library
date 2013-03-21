@@ -41,6 +41,7 @@
 *   UAC(User Account Control) -- 用户帐户控制， 管理员登录时会为该登录会话创建了两个不同的访问令牌，默认使用受限访问令牌(创建时指定了禁用SID并删除了某些权限)，
 *     以减少Windows Vista系统的受攻击面；需要权限提升时，会使用非限制访问令牌所提供的安全上下文来运行应用程序
 *     UAC Elevation -- 实际上一个软件在用不同的模块运行，因Virtualization映射到其他位置的Data文件，所以在操作磁盘文件以及注册表的时候，实际上是一个软件在用不同的模块运行。
+*       CheckElevationEnabled -- Kernel32.dll 中的未公开函数，typedef DWORD (WINAPI* CheckElevationEnabledProc)(BOOL* pResult);
 *   UIPI(User Interface Privilege Isolation) -- 用户界面特权隔离，完整性级别低(lower integrity)的进程，不能向完整性级别高的进程发送Window消息。
 *     默认情况下，所有在 WM_USER 以上的消息都会被屏蔽，可以通过 ChangeWindowMessageFilter[EX](WM_xxx, MSGFLT_ADD) 允许从低完整性进程处接受消息
 *   WFP -- Windows文件保护, Win2K时引入，只保护文件

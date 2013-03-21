@@ -1644,7 +1644,7 @@ namespace FTL
                 // Center based on the monitor containing the majority of
                 // the window.
                 HMONITOR hMon = MonitorFromWindow ( m_hWnd  ,
-                    MONITOR_DEFAULTTONEAREST);
+                    MONITOR_DEFAULTTONEAREST); //MONITOR_DEFAULTTOPRIMARY
 
                 MONITORINFO stMI ;
                 ZeroMemory ( &stMI , sizeof ( MONITORINFO ) ) ;
@@ -1729,6 +1729,12 @@ namespace FTL
 		POINT pt = *pPtClient;
 		RECT rcClient = *prcClient;
 
+		FTLASSERT(pt.x < 0xFFFF);
+		FTLASSERT(pt.y < 0xFFFF);
+		//什么时候会出现这种情况？一边拖拽，一边按 Win+D 等键?
+		if (pt.x >= 0xffff) { pt.x -= 0xffff; }
+		if (pt.y >= 0xffff) { pt.y -= 0xffff; }
+
 		if( !bZoomed ) {
 			if( pt.y < rcClient.top + rcSizeBox.top ) {
 				if( pt.x < rcClient.left + rcSizeBox.left ) return HTTOPLEFT;
@@ -1745,9 +1751,11 @@ namespace FTL
 		}
 
 		RECT rcCaption = *prcCaption;
-		if( pt.x >= rcClient.left + rcCaption.left && pt.x < rcClient.right - rcCaption.right \
+		if( pt.x >= rcClient.left + rcCaption.left && pt.x < rcClient.right - rcCaption.right
 			&& pt.y >= rcCaption.top && pt.y < rcCaption.bottom ) {
 #pragma TODO(需要排除 关闭、最小化、最大化、Option菜单等控件的位置)
+				//如果这些地方是按钮的话，按钮会优先处理，因此不需要排除
+				//但如果类似DUI，是自绘的话，则必须排除
 
 				//CControlUI* pControl = static_cast<CControlUI*>(m_pm.FindControl(pt));
 				//if( pControl && _tcscmp(pControl->GetClass(), _T("ButtonUI")) != 0 && 
@@ -2729,7 +2737,7 @@ namespace FTL
 		//当该窗体(Child Window)创建或销毁时不会给父窗体发送 WM_PARENTNOTIFY 
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_NOPARENTNOTIFY, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TOPMOST, pszDivide);
-		//可以接收 drag-and-drop 文件(会收到什么消息?)
+		//可以接收 drag-and-drop 文件(会收到 WM_DROPFILES 消息)
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_ACCEPTFILES, pszDivide);
 		//透明的，不会掩盖其下方的窗体，鼠标消息会穿透此窗体(典型应用是阴影)，会在其下发的所有窗体都更新完毕后收到 WM_PAINT 消息
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_TRANSPARENT, pszDivide);	
@@ -2809,7 +2817,10 @@ namespace FTL
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOZORDER, pszDivide);
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOREDRAW, pszDivide);
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOACTIVATE, pszDivide);
+		
+		//更改新的边框类型(比如 DUILib中去掉 WS_CAPTION 后)
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_FRAMECHANGED, pszDivide);
+
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_SHOWWINDOW, pszDivide);
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_HIDEWINDOW, pszDivide);
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOCOPYBITS, pszDivide);
