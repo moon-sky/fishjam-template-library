@@ -1,6 +1,18 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <!--
-	input 中新增类型:date-time(日期时间),date(日期),month(月份),week(星期),time(时间),datetime-local(本地时间)
+	HTML5 中新增了智能表单,且加入了一些新的 input 类型，如果浏览器无法识别新类型，会默认为 type=text 并显示为文本。
+	input 中新增类型:date-time(日期时间),date(日期),month(月份),week(星期),time(时间),datetime-local(本地时间),color,range
+	
+	HTML5 新增属性：
+	  autocomplete[on/off/default] -- 自动为表单填充存储数据
+	  autofocus -- 用在页面加载时自动获得焦点的元素上(一个页面中只能有一个)
+	  list -- 用于datalist 元素
+	  min/max/step -- 用于数值或日期控件
+	  multiple -- 多重(是非)选项
+	  pattern -- 验证其输入是否是有效的正则表达式,如 pattern="[A-Z]{1}[a-z,0-9]+\.txt" 
+	  placeholder -- 友好提示，通常用在文本、密码框中，提示用户需要输入的内容
+	  required -- 布尔型的属性，表示这是必填项
+	  title -- 鼠标移过时会显示的Tooltip提示信息
 -->
 <html>
 
@@ -38,18 +50,34 @@
       <a id="fieldset_demo"></a>
       <fieldset>
       <legend>表单动作确认测试(http://www.w3school.com.cn/html/html_form_action.asp)</legend>
-      
-        用户名(text)：<input type="text" name="user" size="40" maxlength="100" value="fishjam"/>文本域的缺省宽度是20个字符，这里改成了40<br />
-        提交按钮(submit)：<button type ="submit"> Submit </button><br />
-        取消按钮(reset)：<button type="reset" >Reset</button><br />
-        普通按钮(button)：<input type="button" value="Hello world!"/><br />
-        隐藏输入(hidden)：<input type="hidden" name="hiddenname" value="hiddenvalue" /><br />
-        文件(file)：<input type="file" name="srcFile" /><br />
+
+        不带时区的日期控件(date)：<input type="date" /><br />
+        使用UTC的日期和时间(datetime)：<input type="datetime" /><br />
         本地时间(datetime-local)：<input type="datetime-local" /><br />
+        时间控件(time)：<input type="time" /><br />
+        周控件(week)：<input type="week" /><br />
+        月控件：<input type="month" /><br />
+
+        颜色控件(color)：<input type="color" value="#ff0000" /><br />
+        数字控件(number)：<input type="number" min="0" max="10" value="5.0" step="0.1" /><br />
+        数值范围控件(range)：<input type="range" min="0" max="100" value="20" /><br />
+
+        文件(file)：<input type="file" name="srcFile" /><br />
+        隐藏输入(hidden)：<input type="hidden" name="hiddenname" value="hiddenvalue" /><br />
+        电子邮件(email)，可以检查是否满足格式?：<input type="email" value="fishjam@163.com"/><br />
+        普通文本输入(text)：<input type="text" name="user" size="40" maxlength="100"
+         required="required" autocomplete="on"/>文本域的缺省宽度是20个字符，这里改成了40<br />
+        搜索(search)，浏览器创建相应平台风格的搜索界面：<button type ="search"> search </button><br />
+        电话(tel)，浏览器能根据本地电话簿为其输入提供备选项(常用于手机?)：<button type ="tel"> +1234567890 </button><br />
+
+        普通按钮(button)：<input type="button" value="Hello world!"/><br />
+        取消按钮(reset)：<button type="reset" >Reset</button><br />
+        提交按钮(submit)：<button type ="submit"> Submit </button><br />
+
       </fieldset>
         <br />
       
-        密码区域(password)：<input type="password" name="pwdInput" /><br />
+        密码区域(password)：<input type="password" name="pwdInput" placeholder="please input password" /><br />
         长文本输入(textarea)：<textarea rows="10" cols="50"></textarea><br />
 
         单选按钮(radio,支持标签切换)：
@@ -61,7 +89,7 @@
           <input type="checkbox" name="car" />汽车
           <input type="checkbox" name="plane" />飞机
         <br />
-        下拉列表(select-option)：
+        下拉列表(select-option)，可用 multiple 支持多选：
           <select name="星期">
             <option value="0">星期日</option>
             <option value="1">星期一</option>

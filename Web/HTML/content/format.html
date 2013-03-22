@@ -21,16 +21,28 @@
       </tr>
       
       <tr><td>acronym</td><td><acronym title = "通过 title 属性设置鼠标hover时显示的全名称">缩略语,通过 title 属性设置鼠标hover时显示的全名称</acronym></td></tr>
-      <tr><td>b</td><td><b>粗体文本</b></td></tr>
+      <tr><td>abbr</td><td><abbr title="这里会通过Tooltip显示缩写对应的信息">缩写,可以用放鼠标在上面显示Tooltip</abbr></td></tr>
+      <tr><td>b</td><td><b>粗体文本，关键词</b></td></tr>
+      <tr><td>bdi</td><td>文本方向隔离，有什么用??? The is <bdi lang="">My Juice</bdi></td></tr>
       <tr><td>bdo</td><td>bi-directional override 控制文字显示方向，如 bdo dir="rtl" 表示从左到右显示，如 <bdo dir="rtl"> Hello World</bdo></td></tr>
-      <tr><td>blockquote</td><td>长引用段落，使用 blockquote 元素的话，浏览器会在引用内容前后插入换行和外边距，而 q 元素不会有任何特殊的呈现</td></tr>
-      <tr><td>del/ins</td><td><del>删除</del>(删除线)和<ins>插入</ins>(下划线)效果</td></tr>
-      <tr><td>strong</td><td><strong>加重语气</strong></td></tr>
-      <tr><td>em</td><td><em>emphasized/着重文字</em></td></tr>
-      <tr><td>i</td><td><i>italic(斜体)</i></td></tr>
       <tr><td>big/small</td><td>以较 <big>大</big>/<small>小</small> 的字体显示</td></tr>
-      <tr><td>sub/sup</td><td>显示在靠 <sub>下</sub>/<sup>上</sup> 的半部分</td></tr>
+      <tr><td>blockquote</td><td>长引用段落，使用 blockquote 元素的话，浏览器会在引用内容前后插入换行和外边距，而 q 元素不会有任何特殊的呈现</td></tr>
+      <tr><td>cite</td><td>作品标题 The case <cite>Hugo v. Danielle</cite> is relevant here</td></tr>
+      <tr><td>code</td><td>will display<br /> <code>int add(int a, int b);</code> </td></tr>
+      <tr><td>del/ins</td><td><del>删除</del>(删除线)和<ins>插入</ins>(下划线)效果</td></tr>
+      <tr><td>dfn</td><td><dfn>举例</dfn></td></tr>
+      <tr><td>em</td><td><em>emphasized/着重文字</em></td></tr>
+      <tr><td>i</td><td><i>italic(斜体,备选项)</i></td></tr>
+      <tr><td>mark</td><td>搜索到的关键字：<mark>fishjam</mark></td></tr>
+      <tr><td>kbd</td><td><kbd>用户输入： Hit<kbd> F1 </kbd>to continue</kbd></td></tr>
       <tr><td>pre</td><td>预格式文本，会保留空格和换行，通常适用于显示代码(但实测效果并不好 -- 通常HTML源码中会格式化成分层易读的，pre会保留这些信息)</td></tr>
+      <tr><td>q</td><td><q>引用文字，即前后会加双引号</q></td></tr>
+      <tr><td>ruby,rt,rp</td><td>注释(常用于东亚文字的拼音)：<ruby>北<rp>(</rp><rt>bei</rt><rp>)</rp>京<rp>(</rp><rt>jing</rt><rp>)</rp></ruby></td></tr>
+      <tr><td>s</td><td><s>错误的文本,即删除线</s></td></tr>
+      <tr><td>sub/sup</td><td>显示在靠 <sub>下</sub>/<sup>上</sup> 的半部分</td></tr>
+      <tr><td>strong</td><td><strong>加重语气</strong></td></tr>
+      <tr><td>var</td><td>变量，会斜体显示，variable<var> n </var> will double after <var>n</var>*2</td></tr>
+      <tr><td>wbr</td><td>可选折行,一般用于英文中长单词可断行的地方，www.simply<wbr>orange</wbr>juice.com</td></tr>
     </table>
   </body>
 </html>

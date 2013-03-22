@@ -346,6 +346,8 @@ namespace FTL
 
     #define FTL_MIN(a,b)                (((a) < (b)) ? (a) : (b))
     #define FTL_MAX(a,b)                (((a) > (b)) ? (a) : (b))
+	//如果x在 [a,b] 之间，则是x, 否则会是边沿值
+	#define FTL_CLAMP(x, a, b)			(FTL_MIN(b, FTL_MAX(a, x)))
     #define FTL_ABS(a)		            (((a) < 0) ? -(a) : (a))
     #define FTL_SIGN(a)		            (((a) > 0) ? 1 : (((a) < 0) ? -1 : 0))
     #define FTL_INRANGE(low, Num, High) (((low) <= (Num)) && ((Num) <= (High)))

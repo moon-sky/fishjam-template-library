@@ -28,6 +28,11 @@ DPI　-- dots per Inch(每英寸的像素数,LOGPIXELSY)，一般来说是 96dpi 或 120 dpi
 1物理英寸 = 25.4mm; 1磅 = 1/72 英寸 = 25.4/72 mm
 VGA中, 1逻辑英寸=96像素, 300dpi的打印机，1英寸300像素
 
+颜色空间(Color Space) -- 微软在 CDrawingManager 中提供了各种颜色空间转换的函数(如RGBtoHSL),但依赖于MFC
+  RGB -- Red, Green, Blue, 科学研究一般不采用RGB颜色空间(难以进行数字化的调整),是最通用的面向硬件的彩色模型
+  HSL -- Hue(色调 0~239), Saturation(饱和度,0~240), Lum(亮度,0~240)，能更好的数字化处理
+  CMY -- 工业印刷采用的颜色空间
+
 COLORREF -- 0x00bbggrr, 四字节，RGB 只能设置3个字节，自定义一个扩展的 RGBA, 测试向Canvas上手动生成RGBA的数据
 RGB(r,g,b)==#bbggrr
 
@@ -145,6 +150,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *   
 *   IntersectClipRect -- 合并当前裁减区域和客户区的矩形区域
 *   ExcludeClipRect -- 从当前裁减区中去除某矩形
+*   ExtSelectClipRgn -- 通过指定的方式(如 RGN_AND/RGN_OR 等)把一个特定的区域与当前的剪切区域合并在一起
 *
 * 图象空间变换 -- 使用 具有9个整数的局部像素域(称为模版)的来完成，通常是对 像素点及周围共9个点的颜色值依次乘以模版的值并相加、平均
 *   柔化(Smooth)--使图象上任一像素与其相邻像素的颜色值的大小不会出现陡变，常用于除去图象中点状噪声，会降低图象的对比度。
@@ -172,6 +178,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *   LockWindowUpdate
 *
 * 按需绘制
+*   0.if(!IntersectRect(xx)){return;} -- 判断本控件的坐标矩形和需要绘制的矩形是否有交集，如果没有直接返回，避免绘制
 *   1.OnDraw 中,pDC->GetClipBox 获得需要绘制的逻辑坐标
 *   2.生成rcClip的副本rect，转成设备坐标，用其高、宽创建位图
 *   3.offsetViewportOrg( - rect.left, -rect.right); -- 为了保证滚动窗体滚动后也OK。

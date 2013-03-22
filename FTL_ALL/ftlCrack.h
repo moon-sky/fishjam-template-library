@@ -12,6 +12,7 @@
 //Cryptoapi说明: http://www.cnblogs.com/lzjsky/archive/2010/09/21/1832239.html
 
 /*********************************************************************************************************************************
+* CA(Certificate Authority) -- 受信任的证书颁发机构
 * certificate -- 证书
 * certificate revocation list -- 证书吊销列表
 * certificate trust list -- 证书信任列表

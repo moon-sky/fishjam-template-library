@@ -1,20 +1,51 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <!-- 
+    HTML5规范定义了一种抽象语言，用描述网页文档和API形式的Web交互应用程序，以内存型(in-memory)DOM树作为表现形式。
+    只要浏览器支持，HTML5可以统一PC和手机等的界面。
+    目前来说，只有 Chrome 和 Opera 对 HTML5 的支持比较好。
+
     HTML5开发教程的配套网站：http://html5.komplett.cc/code/welcome.html
     验证HTML5规范：http://html5.validator.nu/
     
 	智能表单
-	新元素: article,section, header, hgroup, footer,nav, aside
+	新元素: 
+	  address(联系地址) -- 包括邮件地址、名字、公司等，作用于与其最近的article元素
+	  article(正文) -- 对应Web页面中的一个独立区域(可包含新闻、博客之类的内容),
+	  aside() -- 作用于页面上一些与主题联系不大而相对独立的区域,如 侧边栏 ?
+      datalis(数据列表)=> 为 input 元素生成数据列表(通过 list 属性指定 datalist 的 id)，如果为了兼容旧浏览器，
+        需要将数据包含在 select 中，并处理其 onchange 事件
+	  figure + figcaption -- 常用于组织图片、图像、图表及编码列表等，figure中内嵌N个img，1个figcaption进行描述
+	  footer(页脚) -- 不能嵌套,
+	  header(页眉) -- 包含标题、标题介绍或标题导航，比如包含作为 logo 的 img 元素 和 hgroup 元素的标题(h1,h2等), CSS 中应该被定义成 display:block 格式
+	  keygen -- 生成加密使用的 公私钥 对，但不能取代 SSL，所以好像没什么用？ keytype="RSA" challenge="密钥交换或称中增加安全性的信息"
+	    若浏览器支持，则会给用户提供一个列表以选择密钥长度，从而决定密钥的安全程度
+	  mark -- 高亮标记一段文字(如 搜索的关键字 等)
+	  meter -- 图形化表示已知范围内的测量标量，其 optimum 表示最佳值，若value超过该值，显示(如颜色)会改变?
+	    Google Chart API: http://chart.apis.google.com/chart?chs=200x125&cht=gom&chd=t:90  (大小:200x125,图标类型:gom, 百分比:90%)
+	  nav(导航区块) -- 可以包含一系列跳转链接的导航标签
+      output -- 为计算结果提供占位符，用于表现计算结果，其 for 属性可以指定用空格分开的多个需要计算的 input 的id
+      progress(进度) -- 
+	  ruby(表达式) + rt(支持ruby的Chrome浏览器上显示于上方的说明) + rp(不支持ruby的Firefox浏览器上进行视觉上的分割) 
+	    可视为一种排版注释系统,即位于横排基础文本上方的简短文字，主要是针对东亚语言(中、日文)的读音注释
+	  search -- 搜索
+	  section() -- 作用于同一主题下不同的文档部分，如 论文各章节 或 表单页面中的独立表格。
+	  time -- 一个可选时间和时区的组件，有 pubdate 和 datetime(如 2008-08-08T18:18:18) 属性
+	  wbr -- 用于让浏览器为长单词增加可选择的破折号，以便自动折行。注意：没有结束标签
+	  
+	,section, hgroup, footer(页脚),nav, ,sidebar(侧边栏)
 	        figure -- 为图形添加描述, summary -- 添加或隐藏额外的信息
-	        progress(进度),meter(刻度),date(时间)
+	        ,date(时间)
 	        
-	search(搜索), url(链接地址),email(电子邮件),tel(电话),number(数字),range(指定范围的数字),color(RGB颜色)
+	url(链接地址),email(电子邮件),tel(电话),number(数字),range(指定范围的数字),color(RGB颜色)
 	
-	datelis(标签) + list(属性) => 为 input 元素生成下拉菜单
 	sandbox,srcdoc,seamless 为 iframes 提供安全功能，可以将嵌入的内容与父页面隔离开来
 	可以通过 contenteditable 直接编辑元素
 
 	API编程: 画布API、视频音频播放API、离线应用
+	
+  注意：
+	1.HTML5中布尔型属性中,true或false并非有效的属性值，若解释器发现存在布尔型的属性时，直接解释为 true。
+	  若要将其设为false，只能把整个属性去掉 -- 也就是说：所有的布尔型属性的默认值都是false?
  -->
 <html>
   <head>
@@ -28,7 +59,14 @@
     
     <link rel="stylesheet" type="text/css" href="../css/c3.css" />
   </head>
-
+  
+  <header>
+	<hgroup>
+		<h1>主标题</h1>
+		<h2>副标题</h2>
+	</hgroup>
+  </header>
+  
   <body>
     <!-- http://www.w3school.com.cn/html5/index.asp -->
 
@@ -47,16 +85,43 @@
           <audio controls="controls"><source src="../media/song.mp3" type="audio/mp3" />浏览器不支持 audio</audio >
         </td>
       </tr>
-      
+     
+      <tr><td>datalist</td>
+        <td>
+			<label for="urlText">Goto：</label>
+			http://<input type="text" id="urlText" name="homepage" list=homepages />
+			<datalist id="homepages">
+				<select name="selhomepages">
+					<option value="www.baidu.com">www.baidu.com</option>
+					<option value="www.bing.com">www.bing.com</option>
+					<option value="www.google.com">www.google.com</option>
+				</select>
+			</datalist>
+        </td>
+      </tr>
+
+      <tr><td>kegen</td>
+        <td>
+			<kegen id="kg" name="kg" keytype="RSA" challenge="this is my challenge"></kegen>
+        </td>
+      </tr>
+
       <tr><td>meter</td>
         <td>
-			<meter></meter>
+			<meter id="idMeter" value="50" min="0" max="100" optimum="60"></meter>
+        </td>
+      </tr>
+
+      <tr><td>output</td>
+        <td>
+			meter's value is <output id="idOutput" ></output>% 
+			<input type="button" onclick="idMeter.value+=10; idMeter.value%=100; idOutput.value=Math.round(100 * (idMeter.value - idMeter.min)/(idMeter.max-idMeter.min))" value="click" />
         </td>
       </tr>
 
       <tr><td>progress</td>
         <td>
-			<progress></progress>
+			<progress max="100" value="50"></progress>
         </td>
       </tr>
       
@@ -85,6 +150,10 @@
         <td>在 HTML5 中，拖放是标准的一部分，任何元素都能够拖放</td>
       </tr>
       
+      <tr><td>time</td>
+        <td><time></time></td>
+      </tr>
+
       <tr><td>xxxx</td>
         <td>
           新的特殊内容元素：如 article、footer、header、nav、section<br />
@@ -98,14 +167,19 @@
       
       <tr><td>video</td>
         <td>HTML5播放视频的标准方法，支持类型有: mp4/ogg/webm 等，允许多个 source 元素。source 元素可以链接不同的视频文件。浏览器将使用第一个可识别的格式<br />
-          <video width="320" height="240" controls="controls" autoplay="autoplay" loop="loop">
+          <video width="320" height="240" controls="controls" autoplay="autoplay">
             <source src="../media/movie.mp4" type="video/mp4"><br />
             浏览器不支持 video
           </video>
         </td>
       </tr>
-
     </table>
+    
+    <footer>
+		<nav>
+			<a href="http://www.baidu.com" target="_blank">baidu</a>
+		</nav>
+    </footer>
   </body>
 
 </html>
