@@ -173,6 +173,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\content\applets.html"
+				>
+			</File>
+			<File
 				RelativePath=".\content\basic.html"
 				>
 			</File>
@@ -230,6 +234,10 @@
 			</File>
 			<File
 				RelativePath=".\content\script.html"
+				>
+			</File>
+			<File
+				RelativePath=".\content\webSecurity.html"
 				>
 			</File>
 			<File

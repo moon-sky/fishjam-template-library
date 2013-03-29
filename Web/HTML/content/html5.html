@@ -30,6 +30,13 @@
 	  search -- 搜索
 	  section() -- 作用于同一主题下不同的文档部分，如 论文各章节 或 表单页面中的独立表格。
 	  time -- 一个可选时间和时区的组件，有 pubdate 和 datetime(如 2008-08-08T18:18:18) 属性
+	  video -- 显示视频，JS中可以通过 HTMLMediaElement 接口直接控制(http://www.w3.org/2010/05/video/mediaevents.html)
+	    audio=[muted] -- 视频默认静音
+	    autoplay -- 是否自动播放视频
+	    poster -- 加载视频时，浏览器显示的图片的URL
+	    preload[none|metadata] --指定预加载的内容；none表示 只有单击了play按钮，浏览器才会加载视频；
+	      metadata 表仅加载视频元数据(如 长度、作者、版权等)
+	    networkState/readyState -- 网络状态/就绪状态 
 	  wbr -- 用于让浏览器为长单词增加可选择的破折号，以便自动折行。注意：没有结束标签
 	  
 	,section, hgroup, footer(页脚),nav, ,sidebar(侧边栏)
@@ -88,7 +95,7 @@
      
       <tr><td>datalist</td>
         <td>
-			<label for="urlText">Goto：</label>
+			<label for="urlText">Goto(双击出现下来列表):</label>
 			http://<input type="text" id="urlText" name="homepage" list=homepages />
 			<datalist id="homepages">
 				<select name="selhomepages">
@@ -166,7 +173,8 @@
       </tr>
       
       <tr><td>video</td>
-        <td>HTML5播放视频的标准方法，支持类型有: mp4/ogg/webm 等，允许多个 source 元素。source 元素可以链接不同的视频文件。浏览器将使用第一个可识别的格式<br />
+        <td>HTML5播放视频的标准方法，支持类型有: mp4/ogg/webm 等，允许多个 source 元素。source 元素可以链接不同的视频文件。
+        浏览器将使用第一个可识别的格式，而且可以通过 source中的media属性指定额外的选择条件(如最小显示宽度，利于移动设备播放小文件)<br />
           <video width="320" height="240" controls="controls" autoplay="autoplay">
             <source src="../media/movie.mp4" type="video/mp4"><br />
             浏览器不支持 video

@@ -1,7 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <!--
   JavaScript 工作线程实现方式 -- http://bbs.tech.ccidnet.com/forum.php?mod=viewthread&tid=1310561&extra=page%3D1
-  
+    window.onload = function() { .js 文件中定义的函数 }
+    
+  TODO: <script> 的 src 属性值可以是URL地址，但提供源文件的Web服务器必须指出，文件的 MIME 类型为 application/x-JavaScript，否则浏览器不会装入源文件 
+        -- Chrome测试JavaScript时Console中输出的"Resource interpreted as Script but transferred with MIME type text/plain"是不是也是这个原因？ 
+           注册表中更改 HKEY_CLASSES_ROOT\.js\Content Type 为 text/javascript 即可消除这个警告(只是本地)
 -->
 <html>
   <head>
@@ -14,6 +18,11 @@
     <meta name="Description" content="HTML, DHTML, XML, XHTML" />
     
     <link rel="stylesheet" type="text/css" href="../css/c3.css" />
+    <script type="text/javascript" language="javascript">
+        <!--
+            linkTo = "http://www.baidu.com"
+        //-->
+    </script>
   </head>
 
   <body>
@@ -24,11 +33,21 @@
         <th>格式</th>
         <th>描述</th>
       </tr>
+      <tr><td>基本</td>
+        <td>
+          <ul align="left">
+            <li>脚本文件最好放在文档头中，从而保证先定义后使用，防止出现未定义的错误</li>
+          </ul>
+        </td>
+      </tr>
+
+      <tr><td>Script中的后台执行</td><td>1.setTimeout/setInterval; 2. Google Gears; 3.Web Worker</td></tr>
       <tr><td>&lt;script type="text/xxx" [src="xxx"] &gt;</td><td>定义客户端脚本，比如 JavaScript，可内联也可通过 src 属性指向外部脚本文件</td></tr>
       <tr><td>&lt;noscript&gt; 显示内容 &lt;/noscript&gt;</td><td>不支持或禁用脚本的浏览器将显示 noscript 元素中的文本</td></tr>
+      <tr><td>JavaScript实体( &amp;{xxx}; )</td><td>其属性值由JavaScript表达式提供(已经不支持了？), <a href=&{linkTo};>由JavaScript提供的链接地址</a></td></tr>
       <tr><td>JavaScript(各种浏览器都支持，推荐)</td>
         <td>
-          <script type="text/javascript">
+          <script type="text/javascript" language="javascript">
             <!-- //通过使用注释的方式避免无法识别 script 标签的老浏览器直接将脚本内容显示出来
               document.write("<h3>Hello World!</h3>")
             //-->
@@ -39,10 +58,10 @@
 
       <tr><td>VBScript(只有IE才支持)</td>
         <td>
-          <noscript>不支持或禁用VBScript的浏览器</noscript>
           <script type="text/vbscript">
             document.write("<h3>Hello World!</h3>")
           </script>
+          <noscript>不支持或禁用VBScript的浏览器</noscript>
         </td>
       </tr>
 

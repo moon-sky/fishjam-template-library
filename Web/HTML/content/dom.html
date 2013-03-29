@@ -1,4 +1,10 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+	DOM(Document Object Model) -- 表达XML文档的常见方式，给开发者提供了一种定位XML层级结构的直观方法。
+	
+
+-->
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>DOM</title>
@@ -24,7 +30,10 @@
           TODO：<br />
           代码中创建对象：var videoObj=document.createElement("video");  <br />
           获取指定id的对象：var myVideo=document.getElementById("video1"); 
-          获取指定类型的所有对象：var inputs=document.getElementsByTagName("input"); 
+          获取指定类型的所有对象(数组)：var inputs=document.getElementsByTagName("input"); 
+          获取所有明确设置为 required 的元素？：document.querySelectorAll(":required");
+          对元素动态设置事件处理：inputs[i].addEventListener("invalid", function() {alert("input is invalid");}, false);
+          objName.parentNode.removeChild(objName); -- 从DOM中删除元素
         </td>
       </tr>
     </table>

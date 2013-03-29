@@ -25,14 +25,16 @@ test("TODO: Browser", function() {
     equal(navigator.appCodeName, "Mozilla", "返回浏览器的码名--IE、FF、Chrome全都返回 Mozilla");
     equal(navigator.appName, "Netscape", "返回浏览器名, FF/Chrome--Netscape, IE -- Microsoft Internet Explorer");
 
-    equal(navigator.appVersion, "5.0 (Windows)");       //浏览器版本
-    //Chrome -- 5.0 (Windows NT 5.1) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.52 Safari/536.5
+    equal(navigator.appVersion, // "5.0 (Windows)");       //浏览器版本
+     "5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22");  //Chrome -- 5.0 
     //FF --
     //IE -- 4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0;  <== 注意：还可能有其他的一下信息
 
     equal(navigator.language, "zh-CN", "语言")
     equal(navigator.platform, "Win32", "平台");
-    equal(navigator.userAgent, "Mozilla/5.0 (Windows NT 5.1; rv:14.0) Gecko/20100101 Firefox/14.0.1", "返回浏览器对象的全部信息，可以查找是否包含指定字符串来判断浏览器类型？")
+    equal(navigator.userAgent, 
+		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22", 
+		"返回浏览器对象的全部信息，可以查找是否包含指定字符串来判断浏览器类型？");
     //equal(navigator.plugins, "a");    //以数组表示已安装的外挂程序
 
     //ok(true, "tmp");
@@ -43,8 +45,8 @@ test("TODO: Screen", function() {
         equal(width, 1280, "屏幕宽度");
         equal(height, 1024, "屏幕高度"); //960
         equal(availWidth, 1280, "屏幕的可用宽度");
-        equal(availHeight, 994, "屏幕的可用高度（除去了一些不自动隐藏的类似任务栏的东西所占用的高度"); //960
-        equal(colorDepth, 24, "当前颜色设置所用的位数");
+        equal(availHeight, 1024, "屏幕的可用高度（除去了一些不自动隐藏的类似任务栏的东西所占用的高度"); //960
+        equal(colorDepth, 32, "当前颜色设置所用的位数");
     }
 });
 
@@ -52,7 +54,8 @@ test("TODO: Window", function() {
     //JavaScript 中最大的对象，它描述的是一个浏览器窗口，一个框架页面也是一个窗口
     //在一个页面内定义的所有全局变量和全局函数都是作为 window 对象的成员 -- 但为什么FF中jstrace不好用？
 
-    equal(window.name, "", "窗口的名称");
+    //equal(window.name, "test", "窗口的名称");
+
     equal(window.opener, null, "如果窗口不是由其他窗口打开的，Netscape中返回null;IE中返回undefined"); //
     equal(window.self, window, "self 指窗口本身，它返回的对象跟 window 对象是一模一样的,最常用的是\"self.close()\"");
 
@@ -89,8 +92,12 @@ test("TODO: Window", function() {
     equal(window.location.protocol, "file:", "location.protocol");
     equal(window.location.hostname, "", "location.hostname");
 
+    window.defaultStatus = "状态栏文字";
+
     with (window.document) {
-        equal(characterSet, "GB2312", "字符集");
+        //如果在 form 中指定其 name="xxx", 则可以通过 window.document.xxx 的方式引用?
+        
+        equal(characterSet, "GBK", "字符集");
         equal(referrer, "", "referrer -- 如果当前文档是通过点击连接打开的,返回原来的URL");
 
         equal(anchors.length, 0, "文档中所有锚标记(包含name属性的<a>标记)的数组");
@@ -129,5 +136,24 @@ test("TODO:iframe", function() {
 
 test("BrowserInfo", function() {
     equal(gBrowserInfo.IsNetscape, true, "是Netscape");
+});
+
+test("Event", function() {
+    //JavaScript 的事件处理功能可改变浏览器响应用户操作的处理方式
+    //  可以直接把代码写在 onxxx 后面；也可以写在 .js 文件后直接引用；也可以使用匿名函数 onxxx=function(){ callFun }
+    //
+    //事件处理函数的返回值
+    //  false -- 中断系统默认处理(比如 <a onclick="return false;" xxx/> 就不会跳转
+         
+    //常见事件(TODO: 事件都没有参数 ? 比如 onerror 怎么知道具体的错误原因 )：
+    //  onblur -- 失去输入焦点时
+    //  onabort -- 用户中断(如图形装入)操作时
+    //  onclick -- 点击对象时
+    //  onerror -- 出现错误
+    //  onfocus -- 获得输入焦点时
+    //  onload -- 装入图形、文档或frames(帧组)时
+    //  onselect -- 文本区或文本字段的文本被选中时
+    //  onsubmit -- 提交窗体时 
+    equal(1, 1, "TODO:事件");
 });
 

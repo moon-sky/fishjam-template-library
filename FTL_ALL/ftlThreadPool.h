@@ -95,11 +95,16 @@ namespace FTL
 
 	//前向声明
 	//! 具有模板参数的线程池类，除能可以方便的进行参数传递外，还拥有以下特点：
-	//  1.能自动根据任务和线程的多少在 最小/最大 线程个数之间调整
-	//  2.能方便的对单个任务进行取消，如任务尚未运行则由框架代码处理，如任务已经运行，则需要 JobBase 的子类根据 GetJobWaitType 的返回值进行处理
+	//  1.能自动根据任务和线程的多少在 最小/最大 线程个数之间调整(Vista后的系统有 SetThreadpoolThreadMaximum 等函数有类似功能)
+	//  2.能方便的对任一任务进行取消，如任务尚未运行则由框架代码处理，如任务已经运行，则需要 JobBase 的子类根据 GetJobWaitType 的返回值进行处理
+	//    (相比较而言，WaitForThreadpoolWorkCallbacks 函数只能取消尚未运行的任务)
 	//  3.能对整个线程池进行 暂停、继续、停止 处理 -- 需要 JobBase 的子类根据 GetJobWaitType 的返回值进行处理
 	//  4.支持回调方式的反馈通知( Progress/Error 等)
-	//  5.使用的是微软的基本API，能支持WinXP、Vista、Win7等各种操作系统
+	//  5.使用模版方式实现，能方便的进行参数传递
+	//  6.在加入任务时可以设置优先级(目前尚不支持动态调整)
+	//  7.使用的是微软的基本API，能支持WinXP、Vista、Win7等各种操作系统(CreateThreadpoolWork 等只能在Vista后才能使用)
+	//  8.可以有多个实例，方便进行控制(QueueUserWorkItem 等是单实例)
+	//  9.采用的是对称模式的线程池(没有管理线程)，运行成本低
 	template <typename T> class CFThreadPool;  
 
 	//enum FJobStatus

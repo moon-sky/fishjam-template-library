@@ -28,6 +28,21 @@ namespace FTL
 		CFStringFormater	m_strFormater;
     };
 
+	class CFScrollMsgInfo : public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			BOOL bRet = FALSE;
+			UINT nSBCode = LOWORD(wParam);
+			UINT nPos = HIWORD(wParam);
+			//nSBCode 为 SB_THUMBPOSITION 或 SB_THUMBTRACK 时, nPos 才有意义，其他时候(如 SB_ENDSCROLL)其值无意义 
+			m_strFormater.Format(TEXT("%s{nSBCode=%s, nPos=%d, lParam(HWND)=0x%x }"), 
+				pszMsgName, CFWinUtil::GetScrollBarCodeString(nSBCode), nPos, lParam);
+			return m_strFormater;
+		};
+	};
+
 	class CFCommandMsgInfo: public CFDefaultMsgInfo
 	{
 	public:
@@ -53,7 +68,7 @@ namespace FTL
 				API_VERIFY(0 != GetClassName(hWndCtrl, szClassName, _countof(szClassName)));
 
 				CFWinUtil::GetCommandNotifyString(hWndCtrl, wNotifyCode, szCommandMsgInfo, _countof(szCommandMsgInfo));
-				m_strFormater.Format(TEXT("%s{ Control(\"%s\") wID=%d(0x%x), NotifyCode=%s(%d, 0x%x), hWndCtrl=0x%x"),
+				m_strFormater.Format(TEXT("%s{ Control(\"%s\") wID=%d(0x%x), NotifyCode=%s(%d, 0x%x), hWndCtrl=0x%x }"),
 					pszMsgName, szClassName, wID, wID, szCommandMsgInfo, wNotifyCode, wNotifyCode, hWndCtrl);
 			}
 			return m_strFormater;
@@ -76,7 +91,7 @@ namespace FTL
 
 			TCHAR szNotifyCodeString[MAX_PATH] = {0};
 
-			m_strFormater.Format(TEXT("%s{ Control(\"%s\"), idCtrl=%d(0x%x), idFrom=%d(0x%x), code=%s(%d, 0x%x), hwndFrom=0x%x"),
+			m_strFormater.Format(TEXT("%s{ Control(\"%s\"), idCtrl=%d(0x%x), idFrom=%d(0x%x), code=%s(%d, 0x%x), hwndFrom=0x%x }"),
 				pszMsgName, szClassName, nIdCtrl, nIdCtrl, pNmHdr->idFrom, pNmHdr->idFrom,
 				CFWinUtil::GetNotifyCodeString(pNmHdr->hwndFrom, pNmHdr->code, szNotifyCodeString, _countof(szNotifyCodeString), NULL),
 				pNmHdr->code, pNmHdr->code, pNmHdr->hwndFrom);
@@ -124,6 +139,8 @@ namespace FTL
 
 				//指定一个用于文本格式化的目标设备, 该消息对于WYSIWYG（所见即所得）模式非常有用，
 				//  在该模式下应用程序采用默认打印机字体规格而非屏幕字体规格来定位文本
+				//  可用于控制 RichEdit 的自动换行功能(自动换行时 Line width 为 0, TODO:是否会出现其他问题?)：
+				//    http://my.oschina.net/wangjijian/blog/9416?from=rss
 				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_SETTARGETDEVICE);
 
 				HANDLE_CASE_TO_STRING_FORMATER(m_strFormater, EM_STREAMIN);//
@@ -559,8 +576,8 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_SYSCOMMAND, CFDefaultMsgInfo);    //当用户选择窗口菜单的一条命令或当用户选择最大化或最小化时那个窗口会收到此消息
 
                 GET_MESSAGE_INFO_ENTRY(WM_TIMER, CFDefaultMsgInfo);     //发生了定时器事件
-                GET_MESSAGE_INFO_ENTRY(WM_HSCROLL, CFDefaultMsgInfo);   //水平滚动条产生一个滚动事件
-                GET_MESSAGE_INFO_ENTRY(WM_VSCROLL, CFDefaultMsgInfo);   //垂直滚动条产生一个滚动事件
+                GET_MESSAGE_INFO_ENTRY(WM_HSCROLL, CFScrollMsgInfo);   //水平滚动条产生一个滚动事件
+                GET_MESSAGE_INFO_ENTRY(WM_VSCROLL, CFScrollMsgInfo);   //垂直滚动条产生一个滚动事件
                 GET_MESSAGE_INFO_ENTRY(WM_INITMENU, CFDefaultMsgInfo);  //当一个菜单将要被激活时发送此消息，它发生在用户菜单条中的某项或按下某个菜单键，
                 //  它允许程序在显示前更改菜单
                 GET_MESSAGE_INFO_ENTRY(WM_INITMENUPOPUP, CFDefaultMsgInfo);

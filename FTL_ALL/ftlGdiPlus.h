@@ -147,10 +147,9 @@ namespace FTL
 	class CFGdiPlusUtil
 	{
 	public:
-		//通过九宫格图片的拉伸效果进行绘制
+		//通过九宫格图片的拉伸效果进行绘制 -- TODO:验证和实现GDI版本
 		//strFileName.Format(_T("Chat_other_bubble_%d.png"), i);
 		//m_pImgOtherBubble[i]  = new Image(GetImagePath(strFileName));
-
 
 		FTLINLINE static BOOL DrawNineBlockImage(Gdiplus::Graphics* pGraphics, Gdiplus::Image* pImages[9], const Gdiplus::Rect* pRect);
 	};

@@ -19,11 +19,14 @@ namespace FTL
 
 namespace FTL
 {
+	//BYTE -> KB -> MB -> GB -> TB -> PB -> EB -> ZB -> YB
     #define BYTES_PER_KILOBYTE      (1024)
     #define BYTES_PER_MEGABYTE      (BYTES_PER_KILOBYTE * 1000)
     #define BYTES_PER_GIGABYTE      (BYTES_PER_MEGABYTE * 1000)
     #define BYTES_PER_TERABYTE      (BYTES_PER_GIGABYTE * 1000)
     #define BYTES_PER_PETABYTE      (BYTES_PER_TERABYTE * 1000)
+	// ? 
+	//#define BYTES_PER_ZETATABYTE	(BYTES_PER_PETABYTE * 1000)
 
 	/**************************************************************************************************
 	* 文本文件：

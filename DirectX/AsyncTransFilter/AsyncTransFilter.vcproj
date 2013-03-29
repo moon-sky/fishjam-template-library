@@ -21,7 +21,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(SolutionDir)DirectX.vsprops"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(FJSDK)DirectX.vsprops"
 			UseOfATL="1"
 			CharacterSet="1"
 			>
@@ -98,7 +98,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(SolutionDir)DirectX.vsprops"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(FJSDK)DirectX.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -177,7 +177,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(SolutionDir)DirectX.vsprops"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(FJSDK)DirectX.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>

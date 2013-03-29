@@ -69,7 +69,7 @@ function GetNumDisplay(num,digital){
 
 function LongNumAdd(num1,num2,digital){
   var result = AddTwoNum(GetSupNum(num1,digital),GetSupNum(num2,digital),digital);
-//  alert(result);
+  alert(result);
   result = GetNumDisplay(result,digital);
   tracefmt("%s+%s=%s", num1, num2, result);
   return result;

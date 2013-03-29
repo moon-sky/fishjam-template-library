@@ -32,7 +32,7 @@ test("读写Cookie", function() {
 
         var strCookie = "name=fishjam,email=fishjam@163.com;secure;path=/;domain=jstest.com;expires=" + expires.toGMTString();
         cookie = escape(strCookie); //设置时最好使用 escape -- cookie信息时不能包含空格，分号，逗号等特殊符号
-        equal(unescape(cookie), strCookie, "document.cookie， TODO: 多个cookie用什么分隔？普通是逗号, 失效时间前是分号?");
+        //equal(unescape(cookie), strCookie, "document.cookie， TODO: 多个cookie用什么分隔？普通是逗号, 失效时间前是分号?");
         equal(0, 0, "TODO: 怎么判断、设置失效时期? expires ?, 默认的生命周期是浏览器关闭时");
     }
     

@@ -11,9 +11,20 @@
 	  multiple -- 多重(是非)选项
 	  pattern -- 验证其输入是否是有效的正则表达式,如 pattern="[A-Z]{1}[a-z,0-9]+\.txt" 
 	  placeholder -- 友好提示，通常用在文本、密码框中，提示用户需要输入的内容
-	  required -- 布尔型的属性，表示这是必填项
+	  required -- 布尔型的属性，表示这是必填项，可以在提交前进行表单验证，另外，元素内容无效时会触发 invalid 事件,
 	  title -- 鼠标移过时会显示的Tooltip提示信息
+	  
+	  输入数据验证：
+	    formnovalidate -- 暂时不验证有效性并提交，常用于用户不能全部填完的时候临时保存(Save)
+	    maxlength/min/max/step -- 范围
+	    pattern -- 输入值需要满足的正则表达式
+	    required(HTML5) -- 必填项
+	    setCustomValidity('提示信息') -- 不满足额外标准时的提示信息, 本质是设置 validationMessage 的内置变量?
+	    type=email, url -- shuru leixing 
+	    
+	    例：<form method=post oninput = "this.checkValidity();" action="xxx" >
 -->
+
 <html>
 
   <head>

@@ -91,6 +91,7 @@
 *  RFC2616 -- Hypertext Transfer Protocol(HTTP)
 *
 * Fiddler(http调试代理) -- 记录并检查所有你的电脑和互联网之间的http通讯，查看所有进出数据
+* Httpwatch/Fiddler2 -- 专门监控Http传输的工具?
 * Wireshark(网络抓包工具) -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
 * IECookiesView(www.nirsoft.net): 查看编辑Cookie
 * 
