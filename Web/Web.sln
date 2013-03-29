@@ -11,20 +11,63 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JQuery", "JQuery", "{360318
 		WebSrc\jquery\jquery.js = WebSrc\jquery\jquery.js
 	EndProjectSection
 EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "ASP", "ASP\", "{AF09284A-88E0-4D36-95B9-596D43078877}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFramework = "3.5"
+		Debug.AspNetCompiler.VirtualPath = "/ASP"
+		Debug.AspNetCompiler.PhysicalPath = "ASP\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\ASP\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/ASP"
+		Release.AspNetCompiler.PhysicalPath = "ASP\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\ASP\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "2985"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|Win32 = Debug|Win32
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Debug|Win32.Build.0 = Debug|Win32
+		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Release|Any CPU.ActiveCfg = Release|Win32
+		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Release|Win32.ActiveCfg = Release|Win32
 		{C9E376CA-843E-4A05-8A68-CE58033204AD}.Release|Win32.Build.0 = Release|Win32
+		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Debug|Win32.Build.0 = Debug|Win32
+		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Release|Win32.ActiveCfg = Release|Win32
 		{D9EAD05E-021D-4771-8541-981E73BEC81E}.Release|Win32.Build.0 = Release|Win32
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Release|Mixed Platforms.Build.0 = Debug|Any CPU
+		{AF09284A-88E0-4D36-95B9-596D43078877}.Release|Win32.ActiveCfg = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
