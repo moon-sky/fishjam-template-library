@@ -47,10 +47,11 @@
       <tr><td>blockquote</td><td>Text quoted from some source</td></tr>
       <tr><td>body</td><td>内容区域</td></tr>
       <tr><td>br/</td><td>换行</td></tr>
-      <tr><td>div[块级]</td><td>文档中的节或区域(块级)，可以组合其他HTML元素，常用于 文档布局(如通过 float:left 等指定布局位置)</td></tr>
+      <tr><td>div[块级]</td><td>通用容器，文档中的节或区域(块级)，可以组合其他HTML元素，常用于 文档布局(如通过 float:left 等指定布局位置)，以便分别对这些区域进行格式化或精确定位</td></tr>
       <tr><td><a href="form.html" target="_self">form</a></td><td>表单</td></tr>
       <tr><td><a href="form.html#fieldset_demo" target="_self">fieldset + legend</td><td>带标题的框,类似GroupBox,甚至可以增加子表单</td></tr>
-      <tr><td>frameset + frame</td><td><p>框架，可以在同一个浏览器窗口中显示不止一个页面(垂直:cols; 水平:rows)</p><p>坏处：很难打印整张页面</p></td></tr>
+      <tr><td>frameset + frame</td><td><p>框架，可以在同一个浏览器窗口中显示不止一个页面(垂直:cols; 水平:rows)</p><p>坏处：很难打印整张页面</p>
+        现代Web开发中，不鼓励使用框架页，因为在不同的窗口尺寸时，框架页面可能无法很好地工作，且框架页不能被搜索引擎正确地查找。</td></tr>
       <tr><td>h1~h6</td><td>标题，爬虫机器人可以根据这些生成文档大纲(类似Word中的 文档结构图)</td></tr>
       <tr><td>hr/</td><td>水平线，可以利用 size 属性指定宽度</td></tr>
       <tr><td>iframe</td>
@@ -89,7 +90,7 @@
         </td>
       </tr>
       <tr><td>p</td><td>段落,浏览器会自动地在段落的前后添加空行</td></tr>
-      <tr><td>span[内联]</td><td>通常用作文本的容器</td></tr>
+      <tr><td>span[内联]</td><td>表示嵌套在其他元素中的部分文本内容(如包含在标题元素或段落元素中的部分文本), 通常用来格式化所包含的文本片段</td></tr>
       <tr><td>table</td><td>表格, tr(表格行) -- th(表格头) / td(表格数据), 属性中 colspan/rowspan 可跨行或跨列</td></tr>
     </table>
   

@@ -1,3 +1,5 @@
+thrift -- 进行可扩展且跨语言的服务的开发的框架。
+
 Windows 7 SDK http://www.microsoft.com/en-us/download/details.aspx?id=18950
 http://passport.flashget.com/forgotpasswd.html
 
