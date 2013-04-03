@@ -11,7 +11,6 @@
     <div>
     
     </div>
-    <asp:TextBox ID="TextBox1" runat="server" Font-Names="Aharoni"></asp:TextBox>
     </form>
 </body>
 </html>

@@ -18,7 +18,8 @@ using System.Web.UI.WebControls;
  *   HttpSessionState -- Session类
  *     IsCookieless -- 标识SessionID是使用cookie进行跟踪还是使用改写的URL进行跟踪。
  *     IsNewSession -- 表示会话是否是与当前请求一起创建的。
- *     Mode -- 表示如何存储会话状态信息，由web.config配置文件中的设置决定，如 InProc(缺省，最好的执行性能和最少的持久能力),
+ *     Mode -- 表示如何存储会话状态信息，由web.config配置文件中的设置决定，如:
+ *       InProc(缺省，最好的执行性能和最少的持久能力，不支持Web Farsm),
  *       StateServer(名为 "ASP.NET State Service"的服务进程进行状态管理,当Web进程被重启时，对状态不会造成影响，通过 stateConnectionString 字符串指定的Socket通信),
  *       SQLServer(使用 sqlConnectionString 指定的数据库保存会话信息，需要通过 aspnet_regsql.exe -ssadd 安装需要的存储过程和会话信息数据库)
  *       Custom(存储会话状态信息时将使用由 customProvider 属性设置的会话状态存储提供程序，如Oracle公司提供的保存在Oracle数据库中)

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 //ASP.NET2.0入门经典 -- P27(缺少第二章，且文档不全)  //http://www.wroxunited.net/, 用户名/密码：Lou/lou@123
-//ASP.NET.3.5从入门到精通(Csharp2008版) -- P285(IIS)
+//ASP.NET.3.5从入门到精通(Csharp2008版) -- P371(独立用户控件)
 
 //ASP.NET + WWF 开发采用 MVC模式(模型-视图-控制器)，由 工作流模型告诉ASP.NET控制器（自定义的WorkflowController)下一步怎么切换。
 
+//私有程序集 和 共享程序集(存储在 GAC,Global Assembly Cache, 全局程序集缓存中)
 
 //Decimal.TryParse 代替 Decimal.Parse 方法
 //Visual Studio 会把一个默认的隐藏 .sln 文件保存在 %USERPROFILE%\My Documents\Visual Studio 2008\Projects\工程名 下
@@ -15,6 +16,11 @@ using System.Web;
 //在一个元素(如 head,form 中) 加上 runat="server" 属性，且有唯一的ID属性，则可以在代码中操作该元素的信息。
 //视图状态(隐藏字段 __VIEWSTATE ) -- 以加密的格式来保存页面中每一个控件的状态信息，从而可以在代码中操作控件的属性，并且在浏览器与Web服务器的每一次请求和响应中，自动保持其属性状态。
 
+//常见的正则表达式
+//  E-Mail地址： \S+@\S+\.S+ <== 检查是否存在一个@字符和一个点号字符，并且其他字符仅允许为非空白字符
+//  高级密码：   [a-zA-Z]\w*\d+\w*  <== 有很多其他的写法
+//  
+//  
 /******************************************************************************************************************
   * ASP -- Active Server Pages，基于脚本的程序设计语言
  * ASP.NET -- 完全面向对象的程序设计模型
