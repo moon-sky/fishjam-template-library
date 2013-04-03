@@ -220,7 +220,7 @@ namespace FTL
 		m_nMaxNumThreads = nMaxNumThreads;
 
 		API_VERIFY(ResetEvent(m_hEventStop));
-		API_VERIFY(ResetEvent(m_hEventAllThreadComplete));
+		//API_VERIFY(ResetEvent(m_hEventAllThreadComplete));
 		API_VERIFY(SetEvent(m_hEventContinue));				//设置继续事件，保证各个工作线程能运行
 		
 		{
@@ -723,6 +723,10 @@ namespace FTL
 		FUNCTION_BLOCK_TRACE(0);
 		CFThreadPool<T>* pThreadPool = (CFThreadPool<T>*)pThis;
 		LONG nRunningNumber = InterlockedIncrement(&pThreadPool->m_nRunningThreadNum);
+		if (1 == nRunningNumber)
+		{
+			ResetEvent(pThreadPool->m_hEventAllThreadComplete);
+		}
 
 		pThreadPool->_DoJobs();
 

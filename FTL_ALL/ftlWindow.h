@@ -6,9 +6,14 @@
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
 
-/******************************************************************************************************
+/*************************************************************************************************************************
+* 已读例子
+*   winui\fulldrag -- (KBQ121541), 如果绘制比较花费时间，则在 WM_ENTERSIZEMOVE -> WM_EXITSIZEMOVE 时候缓冲，
+*     防止频繁变更窗体大小时频繁绘制而闪烁。但是这样会造成窗体变大时出现背景色的空白的Bug(可以考虑通过 CFCanvas 缓存最大窗体的绘图结果 ?)
+*   winui\shell\appplatform\DragDropVisuals -- ???, 只能在Vista后的平台运行
+*
 * 微软未公开的函数列表： http://undoc.airesoft.co.uk/index.php
-******************************************************************************************************/
+*************************************************************************************************************************/
 
 //窗体中保存自定义数据：可以通过  _SetWindowLongPtr(hDlg, DWLP_USER, (this)); 的方法把this指针传入
 
@@ -161,7 +166,7 @@
 *   2.映射处理消息 WM_IDLEUPDATECMDUI (对话框中需要处理 WM_KICKIDLE )
 *   3.在实现中调用 UpdateDialogControls
 *
-* AdjustWindowRectEx -- 根据指定的客户区的大小和窗口样式，计算窗口的完整尺寸,然后MoveWindow进行调整即可
+* AdjustWindowRectEx -- 根据客户区的大小和窗口样式，计算并调整窗口的完整尺寸,然后MoveWindow进行调整即可
 *   RECT rcClient = { 0,0,800,600 };
 *   AdjustWindowRectEx( &rcClient, GetWindowStyle(hWnd), GetMenu(hWnd) != NULL, GetWindowExStyle(hWnd));
 * MapWindowPoints -- 把相对于一个窗口的坐标空间的一组点映射成相对于另一窗口的坐标空间的一组点
@@ -194,6 +199,11 @@
 ******************************************************************************************************/
 
 /******************************************************************************************************
+* ListCtrl -- 列表控件
+*   LVS_OWNERDATA -- 序列表技术  //http://download.csdn.net/source/236507
+*     处理 LVN_GETDISPINFO 通知消息，填充需要显示的数据
+*     处理 NM_CUSTOMDRAW 通知 (父窗体中处理 ?),给 pResult 赋值
+*   LVIS_OVERLAYMASK -- 动态获取列表象的Overlay图标(类似TortoiseSVN在Shell中的各种状态图标?),INDEXTOOVERLAYMASK 设置 IShellIconOverlay 获取的索引?
 * RichEdit -- CWindowImple<CEditView, CRichEditCtrl>
 *   BitBlt 到 HDC 中，称为图片
 *   StreamOutRtf -- 到Buffer中持久化
@@ -294,6 +304,7 @@
 *   keybd_event(VK_CONTROL, MapVirtualKey(VK_CONTROL, 0), KEYEVENTF_KEYUP, 0);
 * 鼠标模拟 mouse_event
 *
+* 鼠标位置检测(HitTest), 系统已经定义了 HTOBJECT、HTCLIENT 等宏
 ******************************************************************************************************/
 
 /******************************************************************************************************

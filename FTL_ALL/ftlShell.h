@@ -20,7 +20,7 @@
 * ShellBrowser 窗体现在只需要用 SHBrowseForFolder 和 SHGetPathFromIDList 函数即可
 * SHGetDesktopFolder -- 获取Shell中桌面对应的IShellFolder接口
 *
-* LPITEMIDLIST -- Shell 中管理对象的唯一标识? 可以通过 ILCombine 等函数操纵，
+* LPITEMIDLIST -- Shell 中管理对象的唯一标识? 可以通过 ILCreateFromPath、ILClone、ILGetNext、ILCombine 等函数操纵，
 *   使用 IShellFolder::BindToObject 绑定到目标目录上， EnumObjects 枚举其下的所有子对象
 * LPENUMIDLIST
 * 
@@ -82,6 +82,13 @@ namespace FTL
     {
     public:
         FTLINLINE static HRESULT GetFileShellInfo(LPCTSTR pszPath, ShellFileInfo& outInfo);
+
+		//获取Shell的系统图标列表，之后可以通过 GetListCtrl().SetImageList(CImageList::FromHandle(hi),LVSIL_SMALL 或 LVSIL_NORMAL) 的方式使用
+		//获取文件信息时，可以获取到其在系统图标中的s索引 ?
+		FTLINLINE static HRESULT GetShellIconImageList(__out HIMAGELIST& rSmallIconList, __out HIMAGELIST& rLargeIconList);
+
+		//CLSID_ShellLink 组件有 IShellLink(提供快捷方式的参数读写功能)、IPersistFile(提供快捷方式持续性文件的读写功能)等接口。
+		FTLINLINE static HRESULT CreateLink(LPCTSTR szPathObj, LPCTSTR szPathLink, LPCTSTR szDesc, LPCTSTR szIconPath = NULL, int iIcon = -1);
 
 		//使用ShellExecute的方法打开文件执行，但如果没有建立连接，则弹出"OpenWith"的对话框
 		//  TODO: 是否有其他标准的函数来完成该功能

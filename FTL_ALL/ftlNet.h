@@ -65,6 +65,7 @@
 #  error ftlNet.h requires ftlbase.h to be included first
 #endif
 
+#include <list>
 #include "ftlthread.h"
 #include "ftlThreadPool.h"
 #include "ftlSharePtr.h"
@@ -165,14 +166,14 @@
 *   通过 nbtstat 命令可以列出信息。
 * OSI -- 开放系统互连，应用层、表示层、会话层、传输层、网络层、数据链路层、物理层；
 * OOB(Out Of Band) -- 带外数据(紧急数据)，通过独立的逻辑信道来接收和处理。尽量不要使用。
-* TCP(Transmission Control Protocol) -- 传输控制协议，面向连接
+* TCP(Transmission Control Protocol) -- 传输控制协议，面向连接，提供双向、有序、无重复并且无记录边界的数据流服务
 * RARP(Reverse Address Resolution Protocol)--用于动态完成物理地址向IP地址的转换。
 * SCTP(Stream Control Transmission Protocol) -- 流控制传输协议, 2000年新定义的面向连接的传输层协议，对TCP的缺陷进行了一些完善。
 *     在两个端点之间提供稳定、有序的数据传递服务（非常类似于 TCP），基于消息流, 可以保护数据消息边界(不会出现粘包现象)
 *     最初是被设计用于在IP上传输电话，其连接可以是多宿主连接的(连接双方可声明多个地址，若当前连接失败，可切换到另一个地址)。
 *     
 * TTL -- 生存时间，表示一个数据包在丢弃之前，可在网络上存在多长时间，值为0时，包被丢弃
-* UDP(User Datagram Protocol) -- 用户数据报协议，无连接
+* UDP(User Datagram Protocol) -- 用户数据报协议，无连接，支持双向的数据流，但并不保证可靠、有序、无重复
 * WINS -- Windows互联网命名服务器,维护着已注册的所有NetBIOS名字的一个列表
 * WinSock -- 是网络编程接口，而不是协议，与协议无关。可以针对一种具体协议（如IP、TCP、IPX、lrDA等）创建套接字。
 *  “面向消息”（保护消息边界--每次读取返回一个消息，如网络游戏的控制包）和 “面向流”（连续的数据传输，会尽量地读取有效数据）
@@ -1021,6 +1022,41 @@ namespace FTL
 		BYTE*				m_pWrite;		//当前未处理数据的结束位置
 	};
 
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	//网络的读写缓冲基类 -- 参照 CInternetFile::Read/Write 改写而来(原有代码有Bug，进行了更改)
+	template <typename T>
+	class CFRWBufferT 
+	{
+	public:
+		//T* pT = static_cast<T*>(this);
+		FTLINLINE CFRWBufferT();
+		FTLINLINE virtual ~CFRWBufferT();
+
+		FTLINLINE BOOL SetReadBufferSize(LONG nReadSize);
+		FTLINLINE BOOL SetWriteBufferSize(LONG nWriteSize);
+
+		//为了防止名称冲突，更改了名字，不使用太常见的 Read/Write/Flush 等
+		FTLINLINE BOOL ReadFromBuffer(PBYTE pBuffer, LONG nCount, LONG* pRead);
+		FTLINLINE BOOL WriteToBuffer(const PBYTE pBuffer, LONG nCount, LONG* pWrite);
+		FTLINLINE BOOL FlushFromBuffer(LONG* pWrite);
+	protected:
+		//BOOL ReadReal(PBYTE pBuffer, LONG nCount, LONG* pWrite) = 0;
+		//BOOL WriteReal(const PBYTE pBuffer, LONG nCount, LONG* pWrite) = 0;
+	protected:
+		//说明：Read 比 Write 多一个 m_nReadBufferBytes(个人理解是指 Buffer 中有效数据的结尾) -- 因此实现逻辑和Write不一致, MS 在这里有Bug
+		LONG	m_nWriteBufferSize;
+		LONG	m_nWriteBufferPos;
+		LPBYTE	m_pbWriteBuffer;
+
+		LONG	m_nReadBufferSize;
+		LONG	m_nReadBufferPos;
+		LONG	m_nReadBufferBytes;
+		LPBYTE	m_pbReadBuffer;
+
+	};
+
+
 	//使用线程池进行 HTTP 通信的网络传输类
 	enum FTransferJobType
 	{
@@ -1095,14 +1131,17 @@ namespace FTL
 
 	typedef CFSharePtr<FTransferJobInfo> FTransferJobInfoPtr;
 
-	class CFTransferJobBase : public CFJobBase<FTransferJobInfoPtr>
+	class CFTransferJobBase 
+		: public CFJobBase<FTransferJobInfoPtr>
+		, public CFRWBufferT<CFTransferJobBase>
 	{
 	public:
 		FTLINLINE CFTransferJobBase(const CAtlString& strAgent);
 		FTLINLINE virtual ~CFTransferJobBase();
-
-		FTLINLINE BOOL SetReadBufferSize(LONG nReadSize);
-		FTLINLINE BOOL SetWriteBufferSize(LONG nWriteSize);
+	public:
+		//CFRWBufferT
+		FTLINLINE BOOL ReadReal(PBYTE pBuffer, LONG nCount, LONG* pRead);
+		FTLINLINE BOOL WriteReal(const PBYTE pBuffer, LONG nCount, LONG* pWrite);
 	protected:
 		//CFJobBase virtual function
 		FTLINLINE virtual BOOL OnInitialize();
@@ -1120,21 +1159,11 @@ namespace FTL
 		LONGLONG		m_nTotalSize;
 		LONGLONG		m_nCurPos;
 
-		//参照 CInternetFile 实现缓冲机制
-		//Read 比 Write 多一个 m_nReadBufferBytes(个人理解是指 Buffer 中有效数据的结尾) -- 因此和Write不一致, MS 在这里有Bug
-		LONG	m_nWriteBufferSize;
-		LONG	m_nWriteBufferPos;
-		LPBYTE	m_pbWriteBuffer;
-
-		LONG	m_nReadBufferSize;
-		LONG	m_nReadBufferPos;
-		LONG	m_nReadBufferBytes;
-		LPBYTE	m_pbReadBuffer;
 	protected:
 		FTLINLINE virtual BOOL _CheckParams() = 0;
 		FTLINLINE virtual BOOL _SendRequest() = 0;
 		FTLINLINE virtual BOOL _ReceiveResponse() = 0;
-		FTLINLINE virtual void _OnClose() {}
+		FTLINLINE virtual void _OnClose(){}
 	protected:
 		FTLINLINE void _InitValue();
 
@@ -1144,10 +1173,7 @@ namespace FTL
 		//循环保证发送指定的 N 个字节数据
 		//TODO: 参考 CHttpFile 的Buffer功能
 		FTLINLINE BOOL _SendN(PBYTE pBuffer, LONG nCount, LONG* pSend);
-		FTLINLINE BOOL _Read(PBYTE pBuffer, LONG nCount, LONG* pRead);
-		FTLINLINE BOOL _Write(const PBYTE pBuffer, LONG nCount, LONG* pWrite);
 
-		FTLINLINE BOOL _Flush(LONG* pWrite);
 	};
 
 	class CFUploadJob : public CFTransferJobBase
@@ -1234,7 +1260,7 @@ namespace FTL
 	};
 
 	//并行下载
-	class CFParallelDownloadJob : public CFUploadJob
+	class CFParallelDownloadJob : public CFDownloadJob
 	{
 	public:
 		FTLINLINE CFParallelDownloadJob(const CAtlString& strAgent);
@@ -1282,6 +1308,7 @@ namespace FTL
 	//////////////////////////////////////////////////////////////////////////
 
 	//URL 地址解析似乎只用 URL_COMPONENTS(不需要定义成员?) + InternetCrackUrl 即可?
+	//URL中不能包含某些特殊字符，因此需要转换成 %十六进制数据 的形式， 如："%" => "%25"; "?" => "%3F", "#" => "%23", "&" => "%26" 等
 	class CFUrlComponents : public URL_COMPONENTS
 	{
 	public:

@@ -9,7 +9,8 @@
 #include <prsht.h>
 #include <CommCtrl.h>
 #include <zmouse.h>
-#include "ftlNLS.h"
+#include "ftlConversion.h"
+#include <ftlNLS.h>
 
 namespace FTL
 {
@@ -2672,6 +2673,8 @@ namespace FTL
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_NOLABELWRAP, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_AUTOARRANGE, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_EDITLABELS, pszDivide);
+
+			//序列表(虚拟列表)技术 -- 在显示的时候才获取具体的信息，可以大幅减少UI资源的消耗
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_OWNERDATA, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_NOSCROLL, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, LVS_TYPESTYLEMASK, pszDivide);

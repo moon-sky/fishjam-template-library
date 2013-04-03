@@ -46,7 +46,7 @@ namespace FTL
 	* 
 	*   能够执行下列操作
 	*     a.异步调用函数(服务器启动新线程服务每一个客户)
-	*       QueueUserWorkItem(异步调用函数) -- 将一个工作项目(回调函数的动作)排队放入线程池中的一个线程中并且立即返回，
+	*       QueueUserWorkItem(异步调用函数) -- 将一个工作项目(回调函数的动作)排队放入线程池中的一个线程中并且立即返回，放入后就不能取消
 	*         线程池中的某个线程将处理该工作项目，导致函数被调用。线程执行完后并不立即被撤消，而是返回线程池。
 	*         不必为每个客户机请求创建和撤消线程。内部使用 I/O 完成端口
 	*     b.按照规定的时间间隔调用函数 -- 等待定时器内核对象,方便地获得基于时间的通知.线程池的定时器组件创建等待定时器,给APC项目排队
@@ -161,7 +161,7 @@ namespace FTL
 		virtual VOID OnFinalize() = 0;
 
 		//这个函数用于未运行的Job(直接取消或线程池停止), 用于清除内存等资源, 如 delete this 等
-		FTLINLINE virtual void OnCancelJob() = 0;
+		FTLINLINE virtual VOID OnCancelJob() = 0;
 	protected:
 		FTLINLINE void _SetErrorStatus(DWORD dwErrorStatus, LPCTSTR pszErrorInfo);
 		FTLINLINE void _NotifyProgress(LONGLONG nCurPos, LONGLONG nTotalSize);

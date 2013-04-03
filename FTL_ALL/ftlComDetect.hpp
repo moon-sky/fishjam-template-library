@@ -2650,7 +2650,7 @@ namespace FTL
             //DETECT_INTERFACE_ENTRY_IID(IShellFolder2, IID_IShellFolder2)
             DETECT_INTERFACE_ENTRY_IID(IShellFolderBand, IID_IShellFolderBand)
             DETECT_INTERFACE_ENTRY_IID(IShellFolderViewCB, IID_IShellFolderViewCB)
-            DETECT_INTERFACE_ENTRY_IID(IShellIcon, IID_IShellIcon)
+            DETECT_INTERFACE_ENTRY_IID(IShellIcon, IID_IShellIcon)		//GetIconOf -- 获得 ITEMID 指定序号的IconIndex
             DETECT_INTERFACE_ENTRY_IID(IShellIconOverlay, IID_IShellIconOverlay)
             DETECT_INTERFACE_ENTRY_IID(IShellIconOverlayIdentifier, IID_IShellIconOverlayIdentifier)
             //DETECT_INTERFACE_ENTRY_IID(IShellImageStore, IID_IShellImageStore)

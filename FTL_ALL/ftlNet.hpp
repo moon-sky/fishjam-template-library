@@ -17,7 +17,7 @@
 #include <ftlFunctional.h>
 #include <ftlDebug.h>
 //#include <ftlMultiMedia.h>
-#include <ftlNLS.h>
+#include <ftlConversion.h>
 
 #pragma comment(lib, "Wininet.lib")
 #ifdef __WINCRYPT_H__
@@ -1960,62 +1960,12 @@ namespace FTL
 		}
 		return nTotalParseLength;
 	}
+
 	//////////////////////////////////////////////////////////////////////////
 
-	FTransferJobInfo::FTransferJobInfo()
+	template <typename T>
+	CFRWBufferT<T>::CFRWBufferT()
 	{
-		m_strServerName.Empty();
-		m_strObjectName.Empty();
-		m_nPort = INTERNET_DEFAULT_HTTP_PORT;
-
-		m_TransferJobType = tjtUnknown;
-		m_transferParams.clear();
-		m_strResponseData = "";
-		m_dwUserParam = 0;
-		m_strVerb = TEXT("GET");
-	}
-	FTransferJobInfo::FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, 
-		USHORT nPort /* = INTERNET_DEFAULT_HTTP_PORT */)
-	{
-		FTLASSERT(pszServerName);
-		FTLASSERT(pszObjectName);
-		
-		if (pszServerName)
-		{
-			m_strServerName = pszServerName;
-		}
-		if (pszObjectName)
-		{
-			m_strObjectName = pszObjectName;
-		}
-		m_nPort = nPort;
-		
-		m_TransferJobType = tjtUnknown;
-		m_transferParams.clear();
-		m_strResponseData = "";
-		m_dwUserParam = 0;
-		m_strVerb = TEXT("GET");
-	}
-	FTransferJobInfo::~FTransferJobInfo()
-	{
-
-	}
-
-	CFTransferJobBase::CFTransferJobBase(const CAtlString& strAgent)
-		:m_strAgent(strAgent)
-	{
-		_InitValue();
-	}
-
-	void CFTransferJobBase::_InitValue()
-	{
-		m_hSession = NULL;
-		m_hConnection = NULL;
-		m_hRequest = NULL;
-
-		m_nTotalSize = (LONGLONG)(-1);
-		m_nCurPos = 0;
-
 		m_pbWriteBuffer = NULL;
 		m_pbReadBuffer = NULL;
 
@@ -2026,74 +1976,15 @@ namespace FTL
 		m_nReadBufferBytes = 0;
 	}
 
-	CFTransferJobBase::~CFTransferJobBase()
+	template <typename T>
+	CFRWBufferT<T>::~CFRWBufferT()
 	{
 		SAFE_DELETE_ARRAY(m_pbWriteBuffer);
 		SAFE_DELETE_ARRAY(m_pbReadBuffer);
-		
-		//must close before destructor
-		FTLASSERT(NULL == m_hRequest);
-		FTLASSERT(NULL == m_hConnection);
-		FTLASSERT(NULL == m_hSession);
 	}
 
-	BOOL CFTransferJobBase::_Connect()
-	{
-		FTLASSERT(NULL == m_hSession);
-		BOOL bRet = FALSE;
-
-		API_VERIFY(NULL != (m_hSession = ::InternetOpen(m_strAgent,
-			INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)));
-		if (bRet)
-		{
-			API_VERIFY(NULL !=(m_hConnection = ::InternetConnect(m_hSession, 
-				m_JobParam->m_strServerName, 
-				m_JobParam->m_nPort, 
-				NULL, NULL, //username and password
-				INTERNET_SERVICE_HTTP, 0, NULL)));
-		}
-		if (!bRet)
-		{
-			_SetErrorStatus(GetLastError(), TEXT("Connect"));
-		}
-		return bRet;
-	}
-
-	void CFTransferJobBase::_Close()
-	{
-		BOOL bRet = FALSE;
-		if (m_hRequest)
-		{
-			API_VERIFY(_Flush(NULL));
-		}
-		SAFE_CLOSE_INTERNET_HANDLE(m_hRequest);
-		SAFE_CLOSE_INTERNET_HANDLE(m_hConnection);
-		SAFE_CLOSE_INTERNET_HANDLE(m_hSession);
-	}
-
-	BOOL CFTransferJobBase::_Flush(LONG* pWrite)
-	{
-		BOOL bRet = TRUE;
-		if (m_pbWriteBuffer != NULL && m_nWriteBufferPos > 0)
-		{
-			DWORD dwBytes = 0;
-			API_VERIFY(InternetWriteFile(m_hRequest, m_pbWriteBuffer, m_nWriteBufferPos, &dwBytes));
-			if (!bRet)
-			{
-				return bRet;
-			}
-			//FTLASSERT( dwBytes == m_nWriteBufferPos);
-			m_nWriteBufferPos = 0;
-
-			if (pWrite)
-			{
-				*pWrite = (LONG)dwBytes;
-			}
-		}
-		return bRet;
-	}
-
-	BOOL CFTransferJobBase::SetReadBufferSize(LONG nReadSize)
+	template <typename T>
+	BOOL CFRWBufferT<T>::SetReadBufferSize(LONG nReadSize)
 	{
 		BOOL bRet = TRUE;
 		//MS Bug: http://support.microsoft.com/kb/154895/en-us, 尝试更改掉,  (新版本已经没有了?)
@@ -2152,7 +2043,8 @@ namespace FTL
 		return bRet;
 	}
 
-	BOOL CFTransferJobBase::SetWriteBufferSize(LONG nWriteSize)
+	template <typename T>
+	BOOL CFRWBufferT<T>::SetWriteBufferSize(LONG nWriteSize)
 	{
 		BOOL bRet = TRUE;
 
@@ -2161,7 +2053,7 @@ namespace FTL
 			if (m_nWriteBufferPos > nWriteSize)
 			{
 				//Buffer中已有数据比新的Buffer大
-				API_VERIFY(_Flush(NULL));
+				API_VERIFY(FlushFromBuffer(NULL));
 				if (!bRet)
 				{
 					return bRet;
@@ -2194,6 +2086,301 @@ namespace FTL
 		return bRet;
 	}
 
+	template <typename T>
+	BOOL CFRWBufferT<T>::ReadFromBuffer(PBYTE pBuffer, LONG nCount, LONG* pRead)
+	{
+		LONG nBytes = 0;
+		BOOL bRet = TRUE;
+
+		T* pT = static_cast<T*>(this);
+
+		if (m_pbReadBuffer == NULL)
+		{
+			//没有缓冲，直接处理
+			API_VERIFY(pT->ReadReal(pBuffer, nCount, &nBytes));
+			//API_VERIFY(InternetReadFile(m_hRequest, (LPVOID) pBuffer, nCount, &nBytes));
+			if (bRet && pRead)
+			{
+				*pRead = nBytes;
+			}
+			return bRet;
+		}
+
+		//如果请求Buffer大于缓冲Buffer
+		if (nCount >= m_nReadBufferSize)
+		{
+			//先拷贝缓冲中的数据
+			LONG nDataSize = m_nReadBufferBytes - m_nReadBufferPos;
+			FTLASSERT(nDataSize >= 0);
+			if(nDataSize > 0)
+			{
+				Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nDataSize);
+				//此时有效数据已经全部读取完
+			}
+			m_nReadBufferPos = 0;
+			m_nReadBufferBytes = 0;
+
+			//继续从网络读取数据
+			API_VERIFY(pT->ReadReal(pBuffer + nDataSize, nCount - nDataSize, &nBytes));
+			//API_VERIFY(InternetReadFile(m_hRequest, pBuffer + nDataSize, nCount - nDataSize, &nBytes));
+			if (!bRet)
+			{
+				return bRet;
+			}
+			nBytes += nDataSize;
+		}
+		else  //请求Buffer小于缓冲Buffer，优先从缓冲Buffer中读取
+		{
+			//如果读Buffer中剩余的数据比请求的数据少 -- 先将读Buffer中的全部数据都拷贝出来
+			LONG nDataSize = m_nReadBufferBytes - m_nReadBufferPos;
+			if (nDataSize <= nCount)  //			if (m_nReadBufferPos + nCount >= m_nReadBufferBytes)
+			{
+				if (nDataSize > 0)
+				{
+					Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nDataSize);
+				}
+				m_nReadBufferPos = 0;
+				m_nReadBufferBytes = 0;
+
+				//继续从网络读取数据 -- 这次直接读取到缓冲Buffer中，而且因为读Buffer中的有效数据已经全部读完，则从头开始缓冲
+				API_VERIFY(pT->ReadReal(m_pbReadBuffer, m_nReadBufferSize, &nBytes));
+				//API_VERIFY(InternetReadFile(m_hRequest, m_pbReadBuffer, m_nReadBufferSize, &nBytes));
+				if (bRet)
+				{
+					//增加刚读取到的数据到请求Buffer
+					LONG nMoveSize = FTL_MIN(nCount - nDataSize, nBytes); 
+					Checked::memcpy_s(pBuffer + nDataSize, nCount - nDataSize, 
+						m_pbReadBuffer, nMoveSize);
+					m_nReadBufferPos = nMoveSize;
+					m_nReadBufferBytes = nBytes;
+
+					nBytes = (nMoveSize + nDataSize);
+				}
+			}
+			else
+			{
+				//如果读Buffer中剩余的数据比请求的数据多，则本次只在内存中拷贝
+				Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nCount);
+				m_nReadBufferPos += nCount;
+				nBytes = nCount;
+			}
+		}
+		if (pRead)
+		{
+			*pRead = nBytes;
+		}
+		return bRet;
+	}
+
+	template<typename T>
+	BOOL CFRWBufferT<T>::WriteToBuffer(const PBYTE pBuffer, LONG nCount, LONG* pWrite)
+	{
+		BOOL bRet = TRUE;
+		LONG nBytes = 0;
+		T* pT = static_cast<T*>(this);
+
+		if (m_pbWriteBuffer == NULL)
+		{
+			API_VERIFY(pT->WriteReal(pBuffer, nCount, &nBytes));
+			//没有缓冲区，直接发送
+			//API_VERIFY(InternetWriteFile(m_hRequest, pBuffer, nCount, &nBytes));
+			if (!bRet)
+			{
+				return bRet;
+			}
+			FTLASSERT(nCount == nBytes);
+		}
+		else
+		{
+			//使用缓冲区
+			if ((m_nWriteBufferPos + nCount) > m_nWriteBufferSize && m_nWriteBufferPos > 0)
+			{
+				//如果 旧的数据长度 + 新的数据长度 比 缓冲区的大小大，则马上把旧的数据发出去，并重设Pos
+				API_VERIFY(pT->WriteReal(m_pbWriteBuffer,	m_nWriteBufferPos, &nBytes));
+				//API_VERIFY(InternetWriteFile( m_hRequest, m_pbWriteBuffer,	m_nWriteBufferPos, &dwBytes));
+				if (!bRet)
+				{
+					return bRet;
+				}
+				//FTLASSERT(nCount == dwBytes);
+				m_nWriteBufferPos = 0;
+			}
+
+			//如果需要发送的数据比缓冲区的还大，则直接发送；否则进行缓冲
+			if (nCount >= m_nWriteBufferSize)
+			{
+				API_VERIFY(pT->WriteReal(pBuffer, nCount, &nBytes));
+				//API_VERIFY(InternetWriteFile(m_hRequest, (LPVOID) pBuffer, nCount, &dwBytes));
+			}
+			else
+			{
+				FTLASSERT(m_nWriteBufferPos + nCount < m_nWriteBufferSize);
+				//if (m_nWriteBufferPos + nCount < m_nWriteBufferSize)
+				Checked::memcpy_s(m_pbWriteBuffer + m_nWriteBufferPos, 
+					m_nWriteBufferSize - m_nWriteBufferPos, pBuffer, nCount);
+				m_nWriteBufferPos += nCount;
+			}
+		}
+
+		if (pWrite)
+		{
+			*pWrite = nBytes;
+		}
+		return bRet;
+	}
+
+	template <typename T>
+	BOOL CFRWBufferT<T>::FlushFromBuffer(LONG* pWrite)
+	{
+		BOOL bRet = TRUE;
+		if (m_pbWriteBuffer != NULL && m_nWriteBufferPos > 0)
+		{
+			T* pT = static_cast<T*>(this);
+
+			LONG nBytes = 0;
+			API_VERIFY(pT->WriteReal(m_pbWriteBuffer, m_nWriteBufferPos, &nBytes));
+			//API_VERIFY(InternetWriteFile(m_hRequest, m_pbWriteBuffer, m_nWriteBufferPos, &dwBytes));
+			if (!bRet)
+			{
+				return bRet;
+			}
+			//FTLASSERT( dwBytes == m_nWriteBufferPos);
+			m_nWriteBufferPos = 0;
+
+			if (pWrite)
+			{
+				*pWrite = nBytes;
+			}
+		}
+		return bRet;
+	}
+
+
+	FTransferJobInfo::FTransferJobInfo()
+	{
+		m_strServerName.Empty();
+		m_strObjectName.Empty();
+		m_nPort = INTERNET_DEFAULT_HTTP_PORT;
+
+		m_TransferJobType = tjtUnknown;
+		m_transferParams.clear();
+		m_strResponseData = "";
+		m_dwUserParam = 0;
+		m_strVerb = TEXT("GET");
+	}
+	FTransferJobInfo::FTransferJobInfo(LPCTSTR pszServerName, LPCTSTR pszObjectName, 
+		USHORT nPort /* = INTERNET_DEFAULT_HTTP_PORT */)
+	{
+		FTLASSERT(pszServerName);
+		FTLASSERT(pszObjectName);
+		
+		if (pszServerName)
+		{
+			m_strServerName = pszServerName;
+		}
+		if (pszObjectName)
+		{
+			m_strObjectName = pszObjectName;
+		}
+		m_nPort = nPort;
+		
+		m_TransferJobType = tjtUnknown;
+		m_transferParams.clear();
+		m_strResponseData = "";
+		m_dwUserParam = 0;
+		m_strVerb = TEXT("GET");
+	}
+	FTransferJobInfo::~FTransferJobInfo()
+	{
+
+	}
+
+	CFTransferJobBase::CFTransferJobBase(const CAtlString& strAgent)
+		:m_strAgent(strAgent)
+	{
+		_InitValue();
+	}
+
+	void CFTransferJobBase::_InitValue()
+	{
+		m_hSession = NULL;
+		m_hConnection = NULL;
+		m_hRequest = NULL;
+
+		m_nTotalSize = (LONGLONG)(-1);
+		m_nCurPos = 0;
+	}
+
+	CFTransferJobBase::~CFTransferJobBase()
+	{
+		//must close before destructor
+		FTLASSERT(NULL == m_hRequest);
+		FTLASSERT(NULL == m_hConnection);
+		FTLASSERT(NULL == m_hSession);
+	}
+
+	BOOL CFTransferJobBase::ReadReal(PBYTE pBuffer, LONG nCount, LONG* pRead)
+	{
+		BOOL bRet = FALSE;
+		DWORD dwRead = 0;
+		API_VERIFY(::InternetReadFile(m_hRequest, (LPVOID)pBuffer, nCount, &dwRead));
+		if (pRead)
+		{
+			*pRead  = (LONG)dwRead;
+		}
+		return bRet;
+	}
+
+	BOOL CFTransferJobBase::WriteReal(const PBYTE pBuffer, LONG nCount, LONG* pWrite)
+	{
+		BOOL bRet = FALSE;
+		DWORD dwWritten = 0;
+		API_VERIFY(::InternetWriteFile(m_hRequest, (LPVOID)pBuffer, nCount, &dwWritten));
+		if (pWrite)
+		{
+			*pWrite  = (LONG)dwWritten;
+		}
+		return bRet;
+	}
+
+
+	BOOL CFTransferJobBase::_Connect()
+	{
+		FTLASSERT(NULL == m_hSession);
+		BOOL bRet = FALSE;
+
+		API_VERIFY(NULL != (m_hSession = ::InternetOpen(m_strAgent,
+			INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0)));
+		if (bRet)
+		{
+			API_VERIFY(NULL !=(m_hConnection = ::InternetConnect(m_hSession, 
+				m_JobParam->m_strServerName, 
+				m_JobParam->m_nPort, 
+				NULL, NULL, //username and password
+				INTERNET_SERVICE_HTTP, 0, NULL)));
+		}
+		if (!bRet)
+		{
+			_SetErrorStatus(GetLastError(), TEXT("Connect"));
+		}
+		return bRet;
+	}
+
+	void CFTransferJobBase::_Close()
+	{
+		BOOL bRet = FALSE;
+		//if (m_hRequest)
+		//{
+		//	API_VERIFY(FlushFromBuffer(NULL));
+		//}
+
+		_OnClose();
+
+		SAFE_CLOSE_INTERNET_HANDLE(m_hRequest);
+		SAFE_CLOSE_INTERNET_HANDLE(m_hConnection);
+		SAFE_CLOSE_INTERNET_HANDLE(m_hSession);
+	}
+
 	BOOL CFTransferJobBase::_SendN(PBYTE pBuffer, LONG nCount, LONG* pSend)
 	{
 		FTLASSERT(m_hRequest);
@@ -2220,138 +2407,6 @@ namespace FTL
 		if (pSend)
 		{
 			*pSend = nSend;
-		}
-		return bRet;
-	}
-
-	BOOL CFTransferJobBase::_Write(const PBYTE pBuffer, LONG nCount, LONG* pWrite)
-	{
-		BOOL bRet = TRUE;
-		DWORD dwBytes = 0;
-		if (m_pbWriteBuffer == NULL)
-		{
-			//没有缓冲区，直接发送
-			API_VERIFY(InternetWriteFile(m_hRequest, pBuffer, nCount, &dwBytes));
-			if (!bRet)
-			{
-				return bRet;
-			}
-			FTLASSERT(nCount == (LONG)dwBytes);
-		}
-		else
-		{
-			//使用缓冲区
-			if ((m_nWriteBufferPos + nCount) >= m_nWriteBufferSize)
-			{
-				//如果 旧的数据长度 + 新的数据长度 比 缓冲区的大小大，则马上把旧的数据发出去，并重设Pos
-				//直接用 Flush ?
-				API_VERIFY(InternetWriteFile( m_hRequest, m_pbWriteBuffer,	m_nWriteBufferPos, &dwBytes));
-				if (!bRet)
-				{
-					return bRet;
-				}
-				//FTLASSERT(nCount == dwBytes);
-				m_nWriteBufferPos = 0;
-			}
-
-			//如果需要发送的数据比缓冲区的还大，则直接发送；否则进行缓冲
-			if (nCount >= m_nWriteBufferSize)
-			{
-				API_VERIFY(InternetWriteFile(m_hRequest, (LPVOID) pBuffer, nCount, &dwBytes));
-			}
-			else
-			{
-				FTLASSERT(m_nWriteBufferPos + nCount < m_nWriteBufferSize);
-				//if (m_nWriteBufferPos + nCount < m_nWriteBufferSize)
-				Checked::memcpy_s(m_pbWriteBuffer + m_nWriteBufferPos, 
-					m_nWriteBufferSize - m_nWriteBufferPos, pBuffer, nCount);
-				m_nWriteBufferPos += nCount;
-			}
-		}
-
-		if (pWrite)
-		{
-			*pWrite = (LONG)dwBytes;
-		}
-		return bRet;
-	}
-
-	BOOL CFTransferJobBase::_Read(PBYTE pBuffer, LONG nCount, LONG* pRead)
-	{
-		DWORD dwBytes = 0;
-		BOOL bRet = TRUE;
-		
-		if (m_pbReadBuffer == NULL)
-		{
-			//没有缓冲，直接处理
-			API_VERIFY(InternetReadFile(m_hRequest, (LPVOID) pBuffer, nCount, &dwBytes));
-			if (bRet && pRead)
-			{
-				*pRead = (LONG)dwBytes;
-			}
-			return bRet;
-		}
-
-		//如果请求Buffer大于缓冲Buffer
-		if (nCount >= m_nReadBufferSize)
-		{
-			//先拷贝缓冲中的数据
-			LONG nDataSize = m_nReadBufferBytes - m_nReadBufferPos;
-			FTLASSERT(nDataSize >= 0);
-			if(nDataSize > 0)
-			{
-				Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nDataSize);
-				//此时有效数据已经全部读取完
-			}
-			m_nReadBufferPos = 0;
-			m_nReadBufferBytes = 0;
-
-			//继续从网络读取数据
-			API_VERIFY(InternetReadFile(m_hRequest, pBuffer + nDataSize, nCount - nDataSize, &dwBytes));
-			if (!bRet)
-			{
-				return bRet;
-			}
-			dwBytes += (DWORD)nDataSize;
-		}
-		else  //请求Buffer小于缓冲Buffer，优先从缓冲Buffer中读取
-		{
-			//如果读Buffer中剩余的数据比请求的数据少 -- 先将读Buffer中的全部数据都拷贝出来
-			LONG nDataSize = m_nReadBufferBytes - m_nReadBufferPos;
-			if (nDataSize <= nCount)  //			if (m_nReadBufferPos + nCount >= m_nReadBufferBytes)
-			{
-				if (nDataSize > 0)
-				{
-					Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nDataSize);
-				}
-				m_nReadBufferPos = 0;
-				m_nReadBufferBytes = 0;
-
-				//继续从网络读取数据 -- 这次直接读取到缓冲Buffer中，而且因为读Buffer中的有效数据已经全部读完，则从头开始缓冲
-				API_VERIFY(InternetReadFile(m_hRequest, m_pbReadBuffer, m_nReadBufferSize, &dwBytes));
-				if (bRet)
-				{
-					//增加刚读取到的数据到请求Buffer
-					LONG nMoveSize = FTL_MIN(nCount - nDataSize, (LONG)dwBytes); 
-					Checked::memcpy_s(pBuffer + nDataSize, nCount - nDataSize, 
-						m_pbReadBuffer, nMoveSize);
-					m_nReadBufferPos = nMoveSize;
-					m_nReadBufferBytes = (LONG)dwBytes;
-					
-					dwBytes = (DWORD)(nMoveSize + nDataSize);
-				}
-			}
-			else
-			{
-				//如果读Buffer中剩余的数据比请求的数据多，则本次只在内存中拷贝
-				Checked::memcpy_s(pBuffer, nCount, m_pbReadBuffer + m_nReadBufferPos, nCount);
-				m_nReadBufferPos += nCount;
-				dwBytes = (DWORD)nCount;
-			}
-		}
-		if (pRead)
-		{
-			*pRead = (LONG)dwBytes;
 		}
 		return bRet;
 	}
@@ -2651,7 +2706,7 @@ namespace FTL
 		}
 		if (dwDestSize > 0)
 		{
-			API_VERIFY(_Write(pBuffer, dwDestSize, NULL));// _SendN((PBYTE)pBuffer, dwDestSize, NULL));
+			API_VERIFY(WriteToBuffer(pBuffer, dwDestSize, NULL));// _SendN((PBYTE)pBuffer, dwDestSize, NULL));
 			m_nCurPos += dwDestSize;
 			_NotifyProgress(m_nCurPos, m_nTotalSize);
 		}
@@ -2688,7 +2743,7 @@ namespace FTL
 				CFConversion(CP_UTF8).UTF8_TO_TCHAR(pFileParam->pBuffer));
 
 			//API_VERIFY(_SendN((PBYTE)pFileParam->pBuffer, pFileParam->nBufferSize, NULL));
-			API_VERIFY(_Write((PBYTE)pFileParam->pBuffer, pFileParam->nBufferSize, NULL));
+			API_VERIFY(WriteToBuffer((PBYTE)pFileParam->pBuffer, pFileParam->nBufferSize, NULL));
 			if (!bRet)
 			{
 				dwLastError = GetLastError();
@@ -2719,7 +2774,7 @@ namespace FTL
 						break;
 					}
 					//API_VERIFY(_SendN(pBuffer, dwReadSize, NULL));
-					API_VERIFY(_Write(pBuffer, dwReadSize, NULL));
+					API_VERIFY(WriteToBuffer(pBuffer, dwReadSize, NULL));
 					if (!bRet)
 					{
 						dwLastError = GetLastError();
@@ -2734,7 +2789,7 @@ namespace FTL
 				{
 					//Send Last \r\n
 					//API_VERIFY(_SendN((PBYTE)"\r\n", 2, NULL));
-					API_VERIFY(_Write((PBYTE)"\r\n", 2, NULL));
+					API_VERIFY(WriteToBuffer((PBYTE)"\r\n", 2, NULL));
 					m_nCurPos += 2;
 					_NotifyProgress(m_nCurPos, m_nTotalSize);
 				}
@@ -2772,7 +2827,7 @@ namespace FTL
 			UNREFERENCED_PARAMETER(pBuffer);
 			UNREFERENCED_PARAMETER(dwBufferSize);
 			//API_VERIFY(_SendN((PBYTE)m_pEndBoundaryPostParam->pBuffer, m_pEndBoundaryPostParam->nBufferSize, NULL));
-			API_VERIFY(_Write((PBYTE)m_pEndBoundaryPostParam->pBuffer, m_pEndBoundaryPostParam->nBufferSize, NULL));
+			API_VERIFY(WriteToBuffer((PBYTE)m_pEndBoundaryPostParam->pBuffer, m_pEndBoundaryPostParam->nBufferSize, NULL));
 			if (bRet)
 			{
 				m_nCurPos += m_pEndBoundaryPostParam->nBufferSize; 
@@ -2820,7 +2875,7 @@ namespace FTL
 
 		if (bRet)
 		{
-			API_VERIFY(_Flush(NULL));
+			API_VERIFY(FlushFromBuffer(NULL));
 		}
 
 		if (bRet)
@@ -2835,7 +2890,7 @@ namespace FTL
 	BOOL CFUploadJob::_SendRequest()
 	{
 		BOOL bRet = FALSE;
-		//FTLASSERT(m_JobParam->m_strVerb == _T("POST"));
+		FTLASSERT(m_JobParam->m_strVerb == _T("POST"));
 
 		DWORD dwFlags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE; //INTERNET_FLAG_DONT_CACHE
 
@@ -3032,9 +3087,9 @@ namespace FTL
 					case HTTP_STATUS_NOT_FOUND:			//404
 						dwError = ERROR_NOT_FOUND;
 						break;
-					case HTTP_STATUS_SERVER_ERROR:		//500
-						dwError = HTTP_STATUS_SERVER_ERROR;  //TODO
-						break;
+					//case HTTP_STATUS_SERVER_ERROR:		//500
+					//	dwError = HTTP_STATUS_SERVER_ERROR;  //TODO
+					//	break;
 					case HTTP_STATUS_DENIED:			//401
 					case HTTP_STATUS_FORBIDDEN:			//403
 					case HTTP_STATUS_PROXY_AUTH_REQ:	//407
@@ -3078,13 +3133,13 @@ namespace FTL
 			
 			m_nTotalSize = nContentLength;
 			
-			IInternetTransferCallBack* pInternetTransferCallback = dynamic_cast<IInternetTransferCallBack*>(m_pThreadPool->m_pCallBack);
-			if (pInternetTransferCallback)
-			{
-				TCHAR szPath[MAX_PATH] = {0};
-				StringCchCopy(szPath, _countof(szPath), TEXT("TestFile.dat"));
-				pInternetTransferCallback->OnPromptSaveFile(GetJobIndex(), this, m_nTotalSize, szPath, _countof(szPath));
-			}
+			//IInternetTransferCallBack* pInternetTransferCallback = dynamic_cast<IInternetTransferCallBack*>(m_pThreadPool->m_pCallBack);
+			//if (pInternetTransferCallback)
+			//{
+			//	TCHAR szPath[MAX_PATH] = {0};
+			//	StringCchCopy(szPath, _countof(szPath), TEXT("TestFile.dat"));
+			//	pInternetTransferCallback->OnPromptSaveFile(GetJobIndex(), this, m_nTotalSize, szPath, _countof(szPath));
+			//}
 
 			FTLASSERT(m_nTotalSize >= 0);
 			if (0 == m_nTotalSize)
@@ -3124,7 +3179,7 @@ namespace FTL
 					dwSize = dwBufferSize;
 					dwRead = 0;
 					LONG nRead = 0;
-					API_VERIFY(_Read( pBuffer, dwSize, &nRead));
+					API_VERIFY(ReadFromBuffer( pBuffer, dwSize, &nRead));
 					//API_VERIFY(::InternetReadFile(m_hRequest, pBuffer, dwSize, &dwRead));
 					if (bRet)
 					{
@@ -3164,7 +3219,7 @@ namespace FTL
 		if(GetJobWaitType(0) == ftwtStop)
 		{
 			BOOL bTempRet = ::DeleteFile(m_strLocalFilePath);
-			API_ASSERT(bTempRet);
+			//API_ASSERT(bTempRet);
 
 			SetLastError(ERROR_CANCELLED);
 			_SetErrorStatus(ERROR_CANCELLED, TEXT("_ReceiveResponse"));
@@ -3174,7 +3229,7 @@ namespace FTL
 	}
 
 	CFParallelDownloadJob::CFParallelDownloadJob(const CAtlString& strAgent)
-		:CFUploadJob(strAgent)
+		:CFDownloadJob(strAgent)
 	{
 		m_nBeginPos = 0;
 		m_nEndPos = 0;
@@ -3320,7 +3375,7 @@ namespace FTL
 			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_strAgent);
 			if (pDownloadJob)
 			{
-				//pDownloadJob->SetReadBufferSize(4 * 1024);  //16K
+				pDownloadJob->SetReadBufferSize(16 * 1024);  //16K
 				pDownloadJobInfo->m_TransferJobType = tjtDownload;
 				pDownloadJob->m_JobParam = pDownloadJobInfo;
 				API_VERIFY(m_pThreadPool->SubmitJob(pDownloadJob, &nJobIndex));

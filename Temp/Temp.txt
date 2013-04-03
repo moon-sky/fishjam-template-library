@@ -44,18 +44,7 @@ Encoding.UTF8.GetBytes(content);  将字符串content变为字节形式(网络发送)
   
   //每个线程下载的字节数，方便最后合并
   public static ConcurrentDictionary<long, byte[]> dic = new ConcurrentDictionary<long, byte[]>();          
-          
-          
-C++中分析json采用jsoncpp
-Json::Value jsonValue;
-Json::Reader jsonReader;
-if( jsonReader.parse( szResponseData, jsonValue ) )
-{
-  //{"returnCode":"00","returnValue":{"changeNoticeCount":0,"changeNotice":""},"returnMessage":"OK"}
-  std::string strJsonResult = jsonValue.get("returnMessage","").asString();
-  std::string strReason = jsonValue["returnValue"]["changeNotice"].get("checkReasonTw" , "").asString();
-  
-}
+
 
 内存泄漏
   1.MFC 的 

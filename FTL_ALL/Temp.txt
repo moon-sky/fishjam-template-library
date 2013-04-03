@@ -97,3 +97,5 @@ WTL -- 很多类都是重载 void DoPaint(CDCHandle dc) ?
 		delete [] buffer;
 		return false;
 	}
+
+scons-local distribution -- http://sourceforge.net/project/showfiles.php?group_id=30337&package_id=67375

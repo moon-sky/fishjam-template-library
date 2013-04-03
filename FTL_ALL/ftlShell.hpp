@@ -6,6 +6,8 @@
 #  include "ftlShell.h"
 #endif
 
+#include "ftlConversion.h"
+
 namespace FTL
 {
 #define FTL_SHELL_CHANGE_MONITOR_CLASS_NAME     TEXT("FTL_SHELL_CHANGE_MONITOR_CLASS")
@@ -110,10 +112,81 @@ namespace FTL
     HRESULT CFShellUtil::GetFileShellInfo(LPCTSTR pszPath, ShellFileInfo& outInfo)
     {
         HRESULT hr = E_NOTIMPL;
-#pragma TODO(Use SHGetFileInfo get all info);
+#pragma TODO(Use SHGetFileInfo get all info)
         
+		CComPtr<IMalloc> spMalloc;
+		CComPtr<IShellFolder> spShellFolder;
+		COM_VERIFY(SHGetMalloc(&spMalloc));
+		COM_VERIFY(SHGetDesktopFolder(&spShellFolder));
+		
+		if (spShellFolder && spMalloc)
+		{
+
+		}
+		
         return hr;
     }
+
+	HRESULT CFShellUtil::GetShellIconImageList(__out HIMAGELIST& rSmallIconList, __out HIMAGELIST& rLargeIconList)
+	{
+		FTLASSERT( NULL == rSmallIconList );
+		FTLASSERT( NULL == rLargeIconList );
+
+		HRESULT hr = E_FAIL;
+
+		SHFILEINFO shfi = {0};
+		rSmallIconList = (HIMAGELIST) SHGetFileInfo(NULL, 0, &shfi, sizeof(SHFILEINFO),
+			SHGFI_ICON | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
+		rLargeIconList = (HIMAGELIST) SHGetFileInfo(NULL, 0, &shfi, sizeof(SHFILEINFO),
+			SHGFI_ICON | SHGFI_SYSICONINDEX | SHGFI_LARGEICON);
+		
+		if (rSmallIconList != NULL && rLargeIconList != NULL)
+		{
+			hr = S_OK;
+		}
+		else
+		{
+			ImageList_Destroy(rSmallIconList);
+			rSmallIconList = NULL;
+			ImageList_Destroy(rLargeIconList);
+			rLargeIconList = NULL;
+
+			hr = E_FAIL;
+		}
+		return hr;
+	}
+
+	HRESULT CFShellUtil::CreateLink(LPCTSTR szPathObj, LPCTSTR szPathLink, LPCTSTR szDesc, LPCTSTR szIconPath /* = NULL */, int iIcon /* = -1 */)
+	{
+		HRESULT hr = E_FAIL;
+		CComPtr<IShellLink> spShellLink;
+
+		COM_VERIFY(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
+			IID_IShellLink, (void**)&spShellLink));
+		if (SUCCEEDED(hr)) 
+		{
+			CComPtr<IPersistFile> spPersistFile;
+			COM_VERIFY(spShellLink->QueryInterface(IID_IPersistFile, (void**)&spPersistFile));
+			if (SUCCEEDED(hr))
+			{
+				COM_VERIFY(spShellLink->SetPath(szPathObj));		// 全路径程序名
+				COM_VERIFY(spShellLink->SetDescription(szDesc));	// 备注
+				//spShellLink->SetArguments();						// 命令行参数
+				//spShellLink->SetHotkey();							// 快捷键
+				//spShellLink->SetIconLocation();					// 图标
+				//spShellLink->SetShowCmd();						// 窗口尺寸
+				//spShellLink->SetWorkingDirectory(...);			//设置 EXE 程序的默认工作目录
+				if (szIconPath && iIcon >= 0)
+				{
+					COM_VERIFY(spShellLink->SetIconLocation(szIconPath, iIcon));
+				}
+
+				COM_VERIFY(spPersistFile->Save(CFConversion().TCHAR_TO_UTF16(szPathLink), TRUE));
+			}
+		}
+
+		return hr;
+	}
 
 	HRESULT CFShellUtil::ExecuteOrOpenWithDialog(LPCTSTR pszFile, HWND hWndParent)
 	{
