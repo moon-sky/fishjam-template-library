@@ -1118,6 +1118,8 @@ namespace FTL
 
     /******************************************************************************************************************************
     * Visual Assist -- VC助手(类似的还有 DPack / Resharper 等)
+	* 1.更改缓存的默认位置( %APPDATA%\Visual Assist )
+	*   HKCU\Software\Whole Tomato 下增加名为 "UserDataDir" 的字符串键，其值为目录，如"F:\Visual Assist X\Cache"
     * 1.AutoText 中的宏 和 环境变量（在系统中定义）
     *   %FILE%              Full filename with path 
     *   %FILE_PATH%         Path of file

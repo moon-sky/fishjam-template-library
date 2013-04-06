@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<siteMap xmlns="http://schemas.microsoft.com/AspNet/SiteMap-File-1.0" >
+    <siteMapNode url="~/Default.aspx" title="ASP Study"  description="">
+        <siteMapNode url="~/AspStructureStudy.aspx" title="Asp Structure Study"  description="" />
+        <siteMapNode url="~/ConfigStudy.aspx" title="Config Study"  description="" />
+        <siteMapNode url="~/DataBindingStudy.aspx" title="Data Binding Study"  description="" />
+        <siteMapNode url="~/Deployment.aspx" title="Deployment"  description="" />
+        <siteMapNode url="~/HtmlControlStudy.aspx" title="HtmlControlStudy"  description="" />
+        <siteMapNode url="~/StateManager.aspx" title="StateManager"  description="" />
+        <siteMapNode url="~/WebControlsStudy.aspx" title="WebControlsStudy"  description="" />
+        <siteMapNode url="~/WebGraphStudy.aspx" title="WebGraphStudy"  description="" />
+        <siteMapNode url="~/WebPerformance.aspx" title="WebPerformance"  description="" />
+        <siteMapNode url="~/WebSecurity.aspx" title="WebSecurity"  description="" />
+        <siteMapNode url="~/WebStyleStudy.aspx" title="WebStyleStudy"  description="" />
+        <siteMapNode url="~/WebTools.aspx" title="WebTools"  description="" />
+        <siteMapNode url="~/WorkFlowStudy.aspx" title="WorkFlowStudy"  description="" />
+    </siteMapNode>
+</siteMap>

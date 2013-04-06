@@ -73,14 +73,17 @@ using System.Web.UI.WebControls;
  *     分组验证：将同一个分组中每一个控件的ValidationGroup属性设置为一个相同的组名即可( 如 LoginGroup, NewUserGroup )
  *     
  * Page
- *   IsPostBack -- 为false表示是第一次请求当前页面，为true表示该页面是响应应用控件事件而提交的回传请求，此时页面通常在试图状态中保存了页面的相关信息。一般用在 Page.Load 中
- *   EnableViewState -- 是否保持其视图状态，为false时页面上所包含的所有控件都不能维护状态信息。
  *   Application -- 保存应用程序级别信息的集合，保存当前Web网站中被所有用户共享的信息。
- *   Session -- 保存单个用户会话信息的集合，可在不同的多个页面之间共享，如 购物车信息。
  *   Cache -- 保存在创建时比较耗时的对象的集合，以便在其他用户访问页面时快速地重用这些对象，适当地使用该技术可以有效提高Web页面的执行性能。
+ *   EnableViewState -- 是否保持其视图状态，为false时页面上所包含的所有控件都不能维护状态信息。
+ *   IsPostBack -- 为false表示是第一次请求当前页面，为true表示该页面是响应应用控件事件而提交的回传请求，此时页面通常在试图状态中保存了页面的相关信息。一般用在 Page.Load 中
+ *   Master -- 访问母版页
  *   Request -- 对当前页面的HttpRequest对象的引用，包含了当前Web请求的相关信息，可获取Cookies, 浏览器信息等，使用查询字符串将在页面间传递信息等。
+ *     Params -- 请求参数，问号"?" 后的参数
  *   Response -- 对当前页面的HttpResponse对象的引用，表示将发回给客户端浏览器的响应(如 Cookies 对象等)，也可以对用户重定向(Redirect)。
+ *   Session -- 保存单个用户会话信息的集合，可在不同的多个页面之间共享，如 购物车信息。
  *   Server -- 对当前页面的HttpServerUtility 对象的引用，如 字符串编码, Transfer 等
+ *     MapPath -- 路径映射?
  *     Transfer -- 不向客户端浏览器回传的重定向，但该方法只允许同一Web中从一个ASP.NET页面跳转到另一个ASP.NET页面，客户端不知道实际已经跳转到另一个页面(可用于地址隐藏?)
  *     HtmlEncode -- 如 ctrl.innerHtml = Server.HtmlEncode("Enter a word <here>"); -- 常用于从数据库中获取到文本或字符字段的值时。
  *     HtmlDecode -- 将已编码的字符串转换为原来的形式。

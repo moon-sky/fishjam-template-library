@@ -11,6 +11,7 @@ using System.Web.UI.WebControls;
 * 配置文件 采用多层架构的方式 ： 
 *   machine.config(整个计算机的配置) + 根web.config + Web目录中的 web.config [ + 子目录中可选的 web.config]
 * 
+*
  ************************************************************************************************************/
 
 /************************************************************************************************************
@@ -53,6 +54,10 @@ using System.Web.UI.WebControls;
 * >
 * 
 * <trace> -- 启用用户级别的跟踪信息, 然后可通过Web访问虚拟的 trace.axd 文件查看跟踪信息
+* 
+* <urlMappings> -- URL映射，将一个请求的URL映射到另一个不同的URL上。注意：1.不区分大小写;2.查询字符串参数将被忽略。
+ *  <add url="~/mySrc.aspx" mappedUrl="~/myTarget.aspx?category=targetParam" />
+ *</urlMappings>
 ***********************************************************************************************************/
 
 public partial class ConfigStudy : System.Web.UI.Page

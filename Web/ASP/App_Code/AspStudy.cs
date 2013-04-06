@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 //ASP.NET2.0入门经典 -- P27(缺少第二章，且文档不全)  //http://www.wroxunited.net/, 用户名/密码：Lou/lou@123
-//ASP.NET.3.5从入门到精通(Csharp2008版) -- P371(独立用户控件)
+//ASP.NET.3.5从入门到精通(Csharp2008版) -- P428(网站导航)
 
 //ASP.NET + WWF 开发采用 MVC模式(模型-视图-控制器)，由 工作流模型告诉ASP.NET控制器（自定义的WorkflowController)下一步怎么切换。
 
@@ -48,9 +48,13 @@ using System.Web;
  *          xhtmlConformance -- 配置选项，可以改变 ASP.NET 的工作方式，使之应用HTML标准而不是XHTML标准(但一般不用)
  * 
  * 常见控件(ASP.NET 2.0 书籍中) -- 服务器端控件，运行时会转换成 标准HTML + 脚本 发给客户端，保证客户端可显示
- *   MasterPage + Theme -- 使得一个站点在标题、菜单和链接的布局上保持一致
  *   SiteMap/Navigation -- 导航控件，可以根据站点地图和当前页面的名称显示菜单和其他导航信息
- *   
+ *     1.确定网站的层次结构(如何将各个Web页面划分到各个逻辑分组中)
+ *     2.将网站地图信息保存在专用的XML文件中(Web.sitemap), 然后可通过 XmlSiteMapProvider 等提供网站地图的数据，可自定义 SiteMapProvider后从DB等中获取数据
+ *     3.将导航信息绑定到特定的导航控件上
+ *     关系：Web.sitemap => XmlSiteMapProvider => SiteMapDataSource => Navigation 中的控件(指定 DataSourceID 属性)
+ *     补充：ASP.NET提供了一些内置的导航控件，如 TreeView 和 Menu 
+ *     
  *   Login/CreateUserWizard 等 -- 登录、安全和角色管理等，可以通过电子邮件给出口令提示
  *   数据源(Data Source) + 数据绑定(Data bound) -- 连接到数据源 和 获取信息并显示
  *     底层的 ADO.NET(ActiveX Data Objects) 和数据源(MSSQL, MySQL, XML 等)交互

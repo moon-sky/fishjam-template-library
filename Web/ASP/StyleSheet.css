@@ -1,0 +1,18 @@
+﻿body {
+    color: #FF00FF;
+}
+area
+{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: small;
+    font-weight: bolder;
+    border-style: dashed;
+    border-width: thin;
+    display: block;
+    float: left;
+}
+.newStyle1
+{
+    color: #FFFF00;
+    font-variant: normal;
+}
