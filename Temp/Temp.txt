@@ -319,3 +319,29 @@ void bin_dump( LPCSTR pData, int len )
 #endif
 	free(pBuffer);
 }
+
+//FillDisk
+void CMainDlg::OnStartFill(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	HRESULT hr = E_FAIL;
+	CAtlFile file;
+	DoDataExchange(TRUE);
+
+	if (m_nFileSize < m_nMaxSize)
+	{
+		COM_VERIFY(file.Create(m_strFilePath, FILE_ALL_ACCESS|GENERIC_WRITE,
+			0, CREATE_ALWAYS));
+		if (SUCCEEDED(hr))
+		{
+			LONGLONG llFileSize = (LONGLONG)m_nFileSize * 1024 * 1024;
+			COM_VERIFY(file.SetSize( llFileSize - sizeof(DWORD)));
+			if (SUCCEEDED(hr))
+			{
+				//DWORD dwFill = 0x12345678;
+				//COM_VERIFY(file.Seek(-sizeof(dwFill), FILE_END));
+				//COM_VERIFY(file.Write(&dwFill, sizeof(dwFill)));
+			}
+			file.Close();
+		}
+	}
+}

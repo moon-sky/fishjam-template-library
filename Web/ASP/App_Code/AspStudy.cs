@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 //ASP.NET2.0入门经典 -- P27(缺少第二章，且文档不全)  //http://www.wroxunited.net/, 用户名/密码：Lou/lou@123
-//ASP.NET.3.5从入门到精通(Csharp2008版) -- P428(网站导航)
+//ASP.NET.3.5从入门到精通(Csharp2008版) -- P512(15.6.3 定义关系)
 
 //ASP.NET + WWF 开发采用 MVC模式(模型-视图-控制器)，由 工作流模型告诉ASP.NET控制器（自定义的WorkflowController)下一步怎么切换。
 
@@ -20,7 +20,8 @@ using System.Web;
 //  E-Mail地址： \S+@\S+\.S+ <== 检查是否存在一个@字符和一个点号字符，并且其他字符仅允许为非空白字符
 //  高级密码：   [a-zA-Z]\w*\d+\w*  <== 有很多其他的写法
 //  
-//  
+//using 语句声明了一个代码块，表示代码中所使用的是一个"用后即弃(disposable)"对象，代码块结束时，自动调用其 Dispose 方法释放对象。
+//
 /******************************************************************************************************************
   * ASP -- Active Server Pages，基于脚本的程序设计语言
  * ASP.NET -- 完全面向对象的程序设计模型

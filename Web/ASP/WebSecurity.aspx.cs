@@ -9,6 +9,11 @@ using System.Web.UI.WebControls;
  * 表单安全性(form security) -- 保护网站的页面，强制用户通过一个登陆页面后才能访问（20章)
  * 
  * SQL注入攻击(SQL injection attack) -- 使用参数化的数据库命令来彻底避免发生SQL注入攻击的危险。
+ *   SQL Server 包含了一个特殊的系统存储过程(具体是什么?),利用该存储过程可以执行服务器上的任何程序。
+ *   语法(注意：不同的数据提供程序，参数化数据命令的语法不同): 
+ *     SQLServer要求以 @ 开始命名，如 WHERE CustomeID = @CustomerID, 然后 cmd.Parameters.AddWithValue("@CustomerID", txtID.Text);
+ *     OLEDB要求以 ? 来表示，然后通过位置替换，如 WHERE CustomeID = ? 
+ *     
  **************************************************************************************************************/
 
 public partial class WebSecurity : System.Web.UI.Page

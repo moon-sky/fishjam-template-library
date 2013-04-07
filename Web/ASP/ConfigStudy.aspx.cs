@@ -23,16 +23,17 @@ using System.Web.UI.WebControls;
 
 /************************************************************************************************************
 * web.config 
-* 代码中通过 WebConfigurationManager 类 访问
+* 代码中通过 System.Web.Configuration.WebConfigurationManager 类访问, 如 string result = WebConfigurationManager.AppSettings.Get("FromAddress");
 *   web.config -- 配置文件,如出错信息如何显示给用户，如何禁止非法用户的安全设置等
 *    <appSetting> -- 自定义的应用程序设置，如 创建一个特殊的调试开关变量辅助调试 
 *      <add key="xxxx" value="yyyy"/>
-*    <connectionStrings> -- 定义和保存用于访问数据库的连接字符串(15章)
+*    <connectionStrings> -- 定义和保存用于访问数据库的连接字符串,然后: WebConfigurationManager.ConnectionStrings["Pubs"].ConnectionString;
+*      <add name="Pubs" connectionString="xxx"; Integrated Security=SSPI"/>
 *    <system.web> -- 保存各种ASP.NET的配置设置
 *      <authentication>
 *      <authorization>
 *      <compilation debug="true"> -- 设置调试(Debug)模式
-*    
+*      
 * <add type="System.Workflow.Runtime.Hosting.ASPNetThreadingService, System.Workflow.Runtime, Version=xxx"/> -- 更改WWF的工作流线程模型 ？
 * 
 * GUI的网站管理工具(WAT -- Website Administration Tool) : Web Site -> ASP.NET Configuration
@@ -64,6 +65,6 @@ public partial class ConfigStudy : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-
+        
     }
 }

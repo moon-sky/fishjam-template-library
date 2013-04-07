@@ -8,6 +8,7 @@
         <siteMapNode url="~/HtmlControlStudy.aspx" title="HtmlControlStudy"  description="" />
         <siteMapNode url="~/StateManager.aspx" title="StateManager"  description="" />
         <siteMapNode url="~/WebControlsStudy.aspx" title="WebControlsStudy"  description="" />
+        <siteMapNode url="~/WebFrameworksStudy.aspx" title="WebFrameworksStudy"  description="" />
         <siteMapNode url="~/WebGraphStudy.aspx" title="WebGraphStudy"  description="" />
         <siteMapNode url="~/WebPerformance.aspx" title="WebPerformance"  description="" />
         <siteMapNode url="~/WebSecurity.aspx" title="WebSecurity"  description="" />
