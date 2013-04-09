@@ -13,7 +13,10 @@ using System.Web.UI.WebControls;
  *   语法(注意：不同的数据提供程序，参数化数据命令的语法不同): 
  *     SQLServer要求以 @ 开始命名，如 WHERE CustomeID = @CustomerID, 然后 cmd.Parameters.AddWithValue("@CustomerID", txtID.Text);
  *     OLEDB要求以 ? 来表示，然后通过位置替换，如 WHERE CustomeID = ? 
- *     
+ * 
+ * 文件上传时的安全问题
+ *   1. 如果上传文件大于允许上传的上限，ASP.NET的服务器在接收到完整的请求后，才会拒绝上传，这会造成服务器的停顿(拒绝服务攻击)，
+ *      允许上传的文件越大，越容易受到这种攻击
  **************************************************************************************************************/
 
 public partial class WebSecurity : System.Web.UI.Page

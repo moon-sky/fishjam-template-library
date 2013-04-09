@@ -6,6 +6,40 @@ _AFXDLL(Use MFC in a Shared DLL)
 WIN32;_WINDOWS;STRICT;_DEBUG
 WIN32;_DEBUG;_WINDOWS;_USRDLL;FTLDLLPROJ_EXPORTS
 
+.NET XML相关类(System.Xml)
+  XmlTextWriter/XmlTextReader(序列读写，适合大文件) -- 像直接读写文本文件一样直接读取或写入XML文件。
+  XmlDocument(随机定位并读写，使用方便，但只适合小文件) -- 将Xml视为内存中的对象集合，进行各种处理
+    方法: Load/Save, CreateXxx, InsertXxx, AppendChild/PrependChild/RemoveChild, GetElementByXxx(搜索)
+      遍历: foreach(XmlElement element in doc.DocumentElement.ChildNodes) { xxx; }
+    相关类:XmlNode(NodeType区分) -> XmlElement/XmlAttribute/XmlComment/XmlDeclaration
+  Web 中的 XmlDataSource -- Web中的数据源，以最简单的方式显示XML数据
+  例:
+     FileStream fs = new FileStream(filePath, FileMode.Create);
+     XmlTextWriter xmlWriter = new XmlTextWriter(fs, null);
+     xmlWriter.Formatting = Formatting.Indented; xmlWriter.Indentation = 4; //设置缩进的方式进行输出，否则会是一行，不便阅读
+     xmlWriter.WriteStartDocument();
+     xmlWriter.WriteStartElement("xxxx");  ....; xmlWriter.WriteEndElement();
+     xmlWriter.EndDocument();
+     xmlWriter.Close();
+     fs.Close();  //?
+Xml的高级搜索: XPath
+XML名称空间(xmlns:前缀="URI") -- 核心思想是每一种XML标记语言都应该有一个自己的名称空间，用于标识此种标记语言之中的所有相关元素，
+  用于消除不同XML标记语言中同名元素的歧义，通常使用URI(Universal Resource Identifiers)作为名称空间的名称，
+XSD(XML Schema Definition, XML模式定义) -- 定义了XML文档必须遵循的XML文档结构规则，如哪些元素和属性可用、遵循的顺序、每一个元素的数据类型等。
+  其名称空间是 xmlns:xsd="http://www.w3.org/2001/XMLSchema", 学习地址: http://www.w3school.com.cn/schema/
+  1.每一个XSD必须以一个根元素<schema>开始;
+  2.在 <schema> 中，通过 targetNamespace 属性来定义要验证目标XML文档的名称空间
+XSL(eXtensible Stylesheet Language,可扩展样式语言) -- 用于搜索、格式化、转换XML文档的系列标准
+  XSLT(XSL转换) -- 可以创建样式表，以便从一个较大的XML文档中抽取部分XML文档，常用于将XML文档装换为HTML文档
+  .NET 使用: System.Xml.Xsl.XslCompiledTransform 对象
+
+C#中验证XML文档(System.Xml.Schema) -- 创建内建Schema验证功能的XmlReader对象(ASP.NET 3.5从入门到精通，P644)
+  XmlSchema
+  XmlShcemaCollection --
+
+XML序列化 -- 可以将XML文件中的信息取出，并填充到一个已经创建好的自定义类中。
+LINQ to XML -- 
+XmlDataDocument -- 融合了 XmlDocument + DataSet,可以同时以两种不同的方式来查看数据
 
 //静态链接Vista中的哭，并使用 delayload 的方式放置在WinXp等上无法运行
 #pragma comment(lib, "dwmapi.lib")
