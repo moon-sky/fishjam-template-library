@@ -354,6 +354,9 @@ namespace FTL
 #define DUMP_FILTER_KEYDOWN					((DWORD)(0x1000L))
 #define DUMP_FILTER_TIMER                   ((DWORD)(0x2000L))
 
+//对话框中的 WM_CTLCOLORDLG/WM_PRINTCLIENT/WM_CTLCOLORBTN 等 -- 一个简答的WTL Dialog工程中
+#define DUMP_FILTER_DIALOG_CTRL_NOTIFY		((DWORD)(0x4000L))
+
 #define DEFAULT_DUMP_FILTER_MESSAGE \
     DUMP_FILTER_MOUSE_MOVE\
     |DUMP_FILTER_NCHITTEST\
@@ -394,6 +397,11 @@ namespace FTL
         {\
             bFilterd = (WM_TIMER == uMsg || WM_SYSTIMER == uMsg) ? TRUE : bFilterd;\
         }\
+		if( (filters) & DUMP_FILTER_DIALOG_CTRL_NOTIFY )\
+		{\
+			bFilterd = (WM_CTLCOLORDLG == uMsg || WM_PRINTCLIENT == uMsg || WM_CTLCOLORBTN == uMsg || \
+			(WM_NOTIFY == uMsg && (LPNMHDR(lParam)->code == NM_CUSTOMDRAW))) ? TRUE : bFilterd;\
+		}\
         if(!bFilterd)\
         {\
             FTLTRACE(TEXT("%s(%d) %s, wParam=0x%x, lParam=0x%x, Tick=%d\n"),\

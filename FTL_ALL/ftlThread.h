@@ -686,6 +686,9 @@ namespace FTL
     };
 
 
+	//TODO: 参考 .NET 的 System.Web.Caching.Cache 类的特点
+	//  如果缓存项已经过期，或者缓存项所依赖的某个文件或对象发生了改变，或内存紧张时，自动移除缓存项 -- 使用前需要检查缓存项是否存在
+	//  缓存项支持缓存依赖性(CacheDependency) -- 链接到的文件、DB中的表或其他任何类型的资源，如发生变化，自动视为无效并被移除
     FTLEXPORT template<typename KEY, typename VALUE, typename CHILDCLASS>
     class CFItemCacheT
     {
@@ -704,6 +707,8 @@ namespace FTL
             clearByRandom,      //随机清除，不排序(可能是按照 map 中 KEY 的大小顺序排序)
         };
         BOOL GetItemByKey(const KEY key,VALUE& value);
+#pragma TODO(Add GetItmeByKeyAsync) //如果有则马上返回，否则通过指定的异步方法调用后，通过回调返回
+		//BOOL GetItmeByKeyAsync(const KEY key, ?)
         void SetClearMode(ClearMode mode);
         BOOL SetClearPercent(DWORD clearPercent);    //使用百分比进行清除
     protected:

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Data;
+
 //ASP.NET2.0入门经典 -- P27(缺少第二章，且文档不全)  //http://www.wroxunited.net/, 用户名/密码：Lou/lou@123
-//ASP.NET.3.5从入门到精通(Csharp2008版) -- P656(网站安全)
+//ASP.NET.3.5从入门到精通(Csharp2008版) -- P749(数据对象)
 
 //ASP.NET + WWF 开发采用 MVC模式(模型-视图-控制器)，由 工作流模型告诉ASP.NET控制器（自定义的WorkflowController)下一步怎么切换。
 
@@ -24,6 +25,8 @@ using System.Data;
 //using 语句声明了一个代码块，表示代码中所使用的是一个"用后即弃(disposable)"对象，代码块结束时，自动调用其 Dispose 方法释放对象。
 //泛型编程 -- 如 List<string> xxx = new List<string>();
 //  Hashtable不支持模版，存储 object; Dictionary 支持模版
+
+//定义名称空间名称的规则：公司名称.技术名.可选的特定功能， 如 Microsoft.Win32.SafeHandles
 
 /******************************************************************************************************************
   * ASP -- Active Server Pages，基于脚本的程序设计语言

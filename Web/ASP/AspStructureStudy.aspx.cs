@@ -19,6 +19,13 @@ using System.Web.UI.WebControls;
  *   Session_Start -- 新用户请求且一个会话开始时,
  *   Session_End -- 会话超时或使用程序代码来结束了一个会话时，注意：只在使用进程内(InProc)Session模式时才触发，在 StateServer/SQLServer 模式时不触发
  *
+ * 三层设计(Three-Tier Design)
+ *   用户界面(表示层,presentation tier) -- 显示控件、获取并验证用户输入
+ *   业务层(business tier) -- 包含应用程序特定的逻辑功能
+ *   数据层(data tier) -- 包含向文件、数据库或其他数据存储位置存放信息的逻辑
+ *   
+ * 数据对象(Data Objects) -- 典型实现只由属性组成，并不提供任何方法，对数据进行简单的包装即可。
+ *   
 ************************************************************************************************************/
 
 public partial class AspStructureStudy : System.Web.UI.Page

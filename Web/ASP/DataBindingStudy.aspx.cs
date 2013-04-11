@@ -42,7 +42,9 @@ using System.Collections;
  *   创建Connection和DataReader对象 -> 检索数据并显示在Web控件中 -> 关闭连接 -> 返回页面
  *   
  * 断开式数据访问技术(将检索的数据存储在DataSet中，并在关闭数据库连接后，仍然能访问和使用数据)
- *  
+ * 
+ * 连接池 -- ADO.NET(默认?)使用了连接池来保持一个已打开的数据库连接的集合，只要所使用的连接字符串没有发生变化，则每次调用
+ *   SqlConnection.Open 方法时，将从连接池中获取并使用一个已经打开的连接，来避免创建新连接带来的开销。
  * 
  * SQL Server中的命令行工具: sqlcmd.exe，常用语执行数据库任务，如安装中创建数据库的表
  *   -S 路径 : 指定数据库服务器的位置,如 localhost\SQLEXPRESS
@@ -92,6 +94,12 @@ using System.Collections;
  *   属性
  *     ProviderName -- 选择数据源(的工厂?), 如 "System.Data.SqlClient"
  *     SelectParameters 等 -- 支持参数化查询
+ *     
+ * ObjectDataSource -- 定义了Web页面和数据组件之间的连接，其对数据组件有如下要求(也是数据组件的最佳实践)：
+ *   1.数据访问类必须是无状态的 -- ObjectDataSource数据源控件会再需要时创建一个实例对象，并在每次请求结束时销毁该实例对象
+ *   2.数据访问类必须具有一个缺省的、无参数的构造函数;
+ *   3.所有的逻辑必须被放置在单个类中(其内部实现可以包含多个类)
+ *   4.查询的结果必须以一个DataSet、DataTable或某种对象集合的方式返回。
 ************************************************************************************************************/
 
 /************************************************************************************************************
@@ -111,7 +119,6 @@ public partial class DataBindingStudy : System.Web.UI.Page
     {
         if (!IsPostBack)
         {
-
             //可以查询数据库，并赋予 MyPropertyInfo 变量
             MyPropertyInfo = "Can Get Datas From DB";
 

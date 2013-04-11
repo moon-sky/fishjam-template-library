@@ -71,7 +71,11 @@ using System.Web.UI.WebControls;
  *       ClientValidationFunction -- 用户端验证函数，通常是 JavaScript函数， 如：
  *         function MyCustomValidation(objSource, objArgs) { if(objArgs.Value -- 比较) { objArgs.IsValid = false; } }
  *     分组验证：将同一个分组中每一个控件的ValidationGroup属性设置为一个相同的组名即可( 如 LoginGroup, NewUserGroup )
- *     
+ *   
+ *   安全控件
+ *     Login
+ *     LoginView -- 是一个多视图控件，会根据用户认证的状态来设置使用哪个视图(为已认证和匿名用户显示不同的内容),
+ *       通过 <RoleGroups> 可以根据已认证用户的不同角色来显示不同的内容
  * Page
  *   Application -- 保存应用程序级别信息的集合，保存当前Web网站中被所有用户共享的信息。
  *   Cache -- 保存在创建时比较耗时的对象的集合，以便在其他用户访问页面时快速地重用这些对象，适当地使用该技术可以有效提高Web页面的执行性能。
@@ -89,7 +93,9 @@ using System.Web.UI.WebControls;
  *     HtmlDecode -- 将已编码的字符串转换为原来的形式。
  *     UrlEncode/UrlDecode -- 将字符串转换为可用于URL的有效编码形式，常用于对附加在URL之后的字符串(如中文)进行编码 
  *   Trace -- 写跟踪信息
- *   User -- 对用户进行认证(authenticate)的信息 -- 20章
+ *   User -- 对用户进行认证(authenticate)的信息, 
+ *     如 User.Identity -- 可以获取已登录用户的帐户名及使用的认证类型等
+ *        User.IsInRole() -- 可以确定一个用户是否是某一个指定角色的成员
  *   Validate() -- 对页面上的验证控件(Page.Validators)进行验证，验证结束后会设置 IsValid 属性
  *   
  * Page的事件流程?：Init -> Load -> PreRender -> Unload

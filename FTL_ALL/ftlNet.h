@@ -88,9 +88,11 @@
 #endif //INTERNET_BUFFER_SIZE
 
 /*************************************************************************************************************************
-* RFC -- http://www.rfc-editor.org/ 
-*  RFC2616 -- Hypertext Transfer Protocol(HTTP)
-*
+* RFC -- http://www.rfc-editor.org/info/rfcXxx
+*  1889/3550 -- RTP(Real-time Transport Protocol)
+*  2616 -- HTTP(Hypertext Transfer Protocol)
+*  6443 -- RFB(Remote Framebuffer Protocol), 通常用于远程控制
+
 * Fiddler(http调试代理) -- 记录并检查所有你的电脑和互联网之间的http通讯，查看所有进出数据
 * Httpwatch/Fiddler2 -- 专门监控Http传输的工具?
 * Wireshark(网络抓包工具) -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
@@ -168,6 +170,9 @@
 * OOB(Out Of Band) -- 带外数据(紧急数据)，通过独立的逻辑信道来接收和处理。尽量不要使用。
 * TCP(Transmission Control Protocol) -- 传输控制协议，面向连接，提供双向、有序、无重复并且无记录边界的数据流服务
 * RARP(Reverse Address Resolution Protocol)--用于动态完成物理地址向IP地址的转换。
+* RTP(Real-time Transport Protocol) -- 实时传输协议，目前解决实时流媒体传输的标准协议和关键技术，通常使用UDP进行传输，
+*   开源实现由 LibRTP, JRtpLib 等，每一个RTP数据报都由头部(Header)和负载(Payload)两部分组成。
+* RTCP(Real-time Transport Control Protocol) -- 用于实时监控 RTP 数据传输和服务质量，
 * SCTP(Stream Control Transmission Protocol) -- 流控制传输协议, 2000年新定义的面向连接的传输层协议，对TCP的缺陷进行了一些完善。
 *     在两个端点之间提供稳定、有序的数据传递服务（非常类似于 TCP），基于消息流, 可以保护数据消息边界(不会出现粘包现象)
 *     最初是被设计用于在IP上传输电话，其连接可以是多宿主连接的(连接双方可声明多个地址，若当前连接失败，可切换到另一个地址)。
