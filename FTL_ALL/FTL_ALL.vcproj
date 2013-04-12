@@ -175,6 +175,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlBuffer.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlCom.hpp"
 				>
 			</File>
@@ -259,6 +263,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlSocket.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlSystem.hpp"
 				>
 			</File>
@@ -310,6 +318,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlBase.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlBuffer.h"
 				>
 			</File>
 			<File
@@ -414,6 +426,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlShell.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlSocket.h"
 				>
 			</File>
 			<File

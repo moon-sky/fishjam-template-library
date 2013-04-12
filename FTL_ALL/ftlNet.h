@@ -70,6 +70,7 @@
 #include "ftlThreadPool.h"
 #include "ftlSharePtr.h"
 #include "ftlCom.h"
+#include "ftlBuffer.h"
 
 //目前两个版本有冲突，可以通过删除 winhttp.h 中冲突的部分，并将改后的文件放在工程中的方法来解决
 #ifdef USE_WIN_HTTP
@@ -367,9 +368,9 @@
 *       getpeername -- 
 *     4.inet_aton/inet_ntoa -- 在点分十进制数串(如192.168.0.1)与对应的32位网络字节序二进制值间转换。只适用于IPv4
 *       注意 inet_ntoa 返回的字符串存储在静态内存中（非线程安全）
-*     5.inet_pton/inet_ntop <== presentaion(字符串表达)<->numeric(套接口地址结构中的二进制值)，适用于IPv4和IPv6。
-*         inet_ntop(AF_INET,&cliaddr.sin_addr, buff, sizeof(buff));
-*         inet_pton(AF_INET,"192.168.0.1", &addr.sin_addr, ...); 
+*     5.inet_pton/inet_ntop <== presentaion(字符串表达)<->numeric(套接口地址结构中的二进制值)，适用于IPv4和IPv6 -- Vista后才支持?
+*         InetNtop(AF_INET,&cliaddr.sin_addr, buff, sizeof(buff));
+*         InetPton/inet_pton(AF_INET,TEXT("192.168.0.1"), &addr.sin_addr, ...); 
 *
 * 注意：
 *   1.Socket API使用一种很基本的地址结构(sockaddr),根据地址簇不同，结构成员的占位也不同，
@@ -753,6 +754,8 @@ namespace FTL
         //获取套接字类型
         FTLINLINE LPCTSTR GetSocketType(int iSocketType);
 
+		FTLINLINE LPCTSTR GetSocketAddrInfoString(CFStringFormater& formater, const PSOCKADDR_IN pSockAddrIn);
+
         //获取指定地址家族的协议： 如 AF_INETx 中的 IPPROTO_IP/IPPROTO_TCP/IPPROTO_UDP 等
         FTLINLINE LPCTSTR GetProtocolType(int iAddressFamily,int iProtocol);
 
@@ -852,133 +855,6 @@ namespace FTL
 			DWORD dwStatusInformationLength);
 	};
 
-    enum FSocketType
-    {
-        stTCP,
-        stUDP,
-    };
-
-    enum FSocketMode
-    {
-        smClose,
-        smAccept,
-        smRead,
-        smWrite,
-        smPending
-    };
-
-    typedef struct tagFOVERLAPPED
-    {
-        OVERLAPPED				overLapped;
-        WSABUF					dataBuf;
-        FSocketMode             socketMode;
-        volatile UINT	        nSession;
-    }FOVERLAPPED, *LPFOVERLAPPED;
-
-    FTLEXPORT template <typename T>
-    class CFSocketT
-    {
-    public:
-        FTLINLINE CFSocketT();
-        FTLINLINE virtual ~CFSocketT();
-        FTLINLINE int Open(FSocketType st, BOOL bAsync);
-        FTLINLINE int Close();
-        FTLINLINE int Shutdown(INT how);
-
-		//Data
-		FTLINLINE int Send(const BYTE* pBuf, INT len, DWORD flags);
-		FTLINLINE int Recv(BYTE* pBuf, INT len, DWORD flags);
-
-        FTLINLINE int IoCtl(long cmd, u_long* argp);
-
-    //protected:
-        SOCKET              m_socket;
-        FSocketType         m_socketType;
-        BOOL                m_bASync;
-        CFCriticalSection   m_lockObject;
-        volatile UINT       m_nSession;
-    };
-
-    FTLEXPORT template <typename T>
-    class CFClientSocketT : public CFSocketT<T>
-    {
-    public:
-        //Client
-        FTLINLINE int Connect(LPCTSTR pszAddr, INT nSocketPort);
-
-        FTLINLINE int Associate(SOCKET socket, struct sockaddr_in * pForeignAddr);
-    protected:
-        struct sockaddr_in		m_foreignAddr;
-    };
-
-    FTLEXPORT template <typename T>
-    class CFServerSocketT : public CFSocketT< T >
-    {
-    public:
-        FTLINLINE CFServerSocketT();
-        FTLINLINE ~CFServerSocketT();
-        //Server
-        FTLINLINE int StartListen(INT backlog, INT nMaxClients);
-        FTLINLINE int Bind(USHORT listenPort, LPCTSTR pszBindAddr);
-        FTLINLINE CFClientSocketT<T>* Accept();
-    protected:
-        CFMemCacheT<CFClientSocketT <T> >*    m_pClientSocketPool;
-    };
-
-    FTLEXPORT template < typename T>
-    class CFNetClientT
-    {
-    public:
-        CFNetClientT(FSocketType st = stTCP);
-        virtual ~CFNetClientT();
-        int Create();
-        int Destroy();
-        int Connect(LPCTSTR pszAddr);
-    protected:
-        CFSocketT<T>*    m_pClientSocket;
-        FSocketType      m_socketType;
-    };
-
-    FTLEXPORT template< typename T >
-    class CFNetServerT
-    {
-    public:
-        CFNetServerT(FSocketType st = stTCP);
-        virtual ~CFNetServerT();
-    public:
-
-        /*
-        * param [in] listenPort 
-        * param [in] backlog 正在等待连接的最大队列长度
-        */
-        int Create(USHORT listenPort, LPCTSTR pszBindAddr = NULL );
-        //int Close();
-        int Destroy();
-        int Start(INT backlog, INT nMaxClients);
-        int Stop();
-        //CFSocketT<T>* Accept();
-    protected:
-        FSocketType                 m_socketType;
-        CFServerSocketT<T>*         m_pServerSocket;
-
-        //CFThreadPool<DWORD>*    m_pIoServerThreadPool;
-        HANDLE                  m_hIoCompletionPort;
-        HANDLE                  m_hServerThread;
-        HANDLE                  *m_pWorkerThreads;
-
-        DWORD                   getNumberOfConcurrentThreads();
-        static unsigned int __stdcall serverThreadProc( LPVOID lpThreadParameter );
-        static unsigned int __stdcall workerThreadProc( LPVOID lpThreadParameter );
-        unsigned int     doServerLoop();
-        unsigned int     doWorkerLoop();
-    };
-
-    class CFSocketUtils
-    {
-    public:
-        static FTLINLINE size_t readn(int fd, void* vptr, size_t n);
-        static FTLINLINE size_t writen(int fd, const void* vptr, size_t n);
-    };
 
 	//解决TCP粘包的一些类
 	class IReceiveAdapter
@@ -1028,39 +904,6 @@ namespace FTL
 	};
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	//网络的读写缓冲基类 -- 参照 CInternetFile::Read/Write 改写而来(原有代码有Bug，进行了更改)
-	template <typename T>
-	class CFRWBufferT 
-	{
-	public:
-		//T* pT = static_cast<T*>(this);
-		FTLINLINE CFRWBufferT();
-		FTLINLINE virtual ~CFRWBufferT();
-
-		FTLINLINE BOOL SetReadBufferSize(LONG nReadSize);
-		FTLINLINE BOOL SetWriteBufferSize(LONG nWriteSize);
-
-		//为了防止名称冲突，更改了名字，不使用太常见的 Read/Write/Flush 等
-		FTLINLINE BOOL ReadFromBuffer(PBYTE pBuffer, LONG nCount, LONG* pRead);
-		FTLINLINE BOOL WriteToBuffer(const PBYTE pBuffer, LONG nCount, LONG* pWrite);
-		FTLINLINE BOOL FlushFromBuffer(LONG* pWrite);
-	protected:
-		//BOOL ReadReal(PBYTE pBuffer, LONG nCount, LONG* pWrite) = 0;
-		//BOOL WriteReal(const PBYTE pBuffer, LONG nCount, LONG* pWrite) = 0;
-	protected:
-		//说明：Read 比 Write 多一个 m_nReadBufferBytes(个人理解是指 Buffer 中有效数据的结尾) -- 因此实现逻辑和Write不一致, MS 在这里有Bug
-		LONG	m_nWriteBufferSize;
-		LONG	m_nWriteBufferPos;
-		LPBYTE	m_pbWriteBuffer;
-
-		LONG	m_nReadBufferSize;
-		LONG	m_nReadBufferPos;
-		LONG	m_nReadBufferBytes;
-		LPBYTE	m_pbReadBuffer;
-
-	};
-
 
 	//使用线程池进行 HTTP 通信的网络传输类
 	enum FTransferJobType

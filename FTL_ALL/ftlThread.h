@@ -742,7 +742,7 @@ namespace FTL
     //模板内存池
     //  注意：Get后返回的指针将是上一次的值，需要自行进行初始化
     //        Get和Release都从list前部进行，减少page交换的次数
-    template <typename T>
+    template <typename T>  //, typename THREADLOCK = CFCriticalSection
     class CFMemCacheT
     {
     public:
@@ -751,7 +751,8 @@ namespace FTL
         T* Get();
         void Release( T* t );
     private:
-        CFCriticalSection   m_lockObject;
+        //typename THREADLOCK	m_lockObject;
+		CFCriticalSection	m_lockObject;
         std::list< T* >     m_allBlocks;
         std::list< T* >     m_freeBlocks;
         INT                 m_nMaxSize;
