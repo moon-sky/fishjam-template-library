@@ -937,6 +937,7 @@ namespace FTL
     //可以不遵守???设置线程名字的字符串在线程生存期间必须一直存在(可以是常数、全局变量或放在堆中 )
     BOOL CFThreadUtils::SetThreadName( DWORD dwThreadID, LPTSTR szThreadName)
     {
+		static const DWORD EXCEPTION_SET_THREAD_NAME = 0x406d1388;
         BOOL fOkay = TRUE;
         //char** ppszThreadName = NULL;
         //__asm                            //定位呼叫线程的 TIB 结构 （在TIB结构中的0x14偏移处  &pTIB->pvArbitrary ）
@@ -970,7 +971,7 @@ namespace FTL
         tni.dwThreadID = dwThreadID;  //if -1, then current Thread
         __try
         {
-            RaiseException(0x406d1388, 0, sizeof(tni) / sizeof(DWORD),(DWORD*)(&tni));      //该异常通知调试器将给定的字符串名字分配给指定的异常
+            RaiseException(EXCEPTION_SET_THREAD_NAME, 0, sizeof(tni) / sizeof(DWORD),(DWORD*)(&tni));      //该异常通知调试器将给定的字符串名字分配给指定的异常
         }__except(EXCEPTION_EXECUTE_HANDLER)
         {
             fOkay = FALSE;

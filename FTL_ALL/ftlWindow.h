@@ -354,7 +354,7 @@ namespace FTL
 #define DUMP_FILTER_KEYDOWN					((DWORD)(0x1000L))
 #define DUMP_FILTER_TIMER                   ((DWORD)(0x2000L))
 
-//对话框中的 WM_CTLCOLORDLG/WM_PRINTCLIENT/WM_CTLCOLORBTN 等 -- 一个简答的WTL Dialog工程中
+//对话框中的 WM_CTLCOLORDLG/WM_CTLCOLORBTN/WM_PRINTCLIENT/ 等 -- 一个简单的WTL Dialog工程中
 #define DUMP_FILTER_DIALOG_CTRL_NOTIFY		((DWORD)(0x4000L))
 
 #define DEFAULT_DUMP_FILTER_MESSAGE \
@@ -399,8 +399,10 @@ namespace FTL
         }\
 		if( (filters) & DUMP_FILTER_DIALOG_CTRL_NOTIFY )\
 		{\
-			bFilterd = (WM_CTLCOLORDLG == uMsg || WM_PRINTCLIENT == uMsg || WM_CTLCOLORBTN == uMsg || \
-			(WM_NOTIFY == uMsg && (LPNMHDR(lParam)->code == NM_CUSTOMDRAW))) ? TRUE : bFilterd;\
+			bFilterd = ((WM_CTLCOLORMSGBOX <= uMsg && uMsg <= WM_CTLCOLORSTATIC) \
+			|| (WM_PRINTCLIENT == || uMsg) \
+			|| (WM_NOTIFY == uMsg && (LPNMHDR(lParam)->code == NM_CUSTOMDRAW)) \
+			) ? TRUE : bFilterd;\
 		}\
         if(!bFilterd)\
         {\
@@ -635,6 +637,9 @@ namespace FTL
 
         //WM_HSCROLL 或 WM_VSCROLL 的通知码
         FTLINLINE static LPCTSTR GetScrollBarCodeString(UINT  nSBCode);
+
+		//获取按键对应的 VK_
+		FTLINLINE static LPCTSTR GetVirtualKeyString(int nVirtKey);
 
         //获取 WM_NOTIFY 消息 Code 对应的字符串信息
         FTLINLINE static LPCTSTR GetNotifyCodeString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, 

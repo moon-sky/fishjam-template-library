@@ -160,6 +160,7 @@
 *   生存周期 -- Cookie生成时指定的Expire，超出周期Cookie就会被清除。单位为？生存周期设置为"0"或负值表示关闭页面时马上清除。
 *   安全问题：1.识别不精确。在同一台计算机上使用同一浏览器的多用户群，cookie不会区分他们的身份（除非使用不用的用户名登录OS）
 *             2.网页臭虫的图片(透明且只有一个像素-以便隐藏)，将所有访问过此页面的计算机写入cookie，方便网站发送垃圾邮件
+* DHT(Distributed Hash Table 分散式杂凑表) -- 可以使P2P网络完全不使用服务器，典型的有eMule中使用的 Kad，
 * ICMP(Internet Control Message Protocol)--互连控制消息协议，主要用来供主机或路由器报告IP数据报载传输中可能出现的不正常情况。
 * IP(Internet Protocol)--互联协议，规定了数据传输的基本单元(报文分组)以及所有数据在网际传递时的确切格式规范。
 * LANA(LAN Adapter)Number -- 对应于网卡及传输协议的唯一组合
@@ -260,8 +261,10 @@
 *
 * Socket模型 -- 描述了一个应用程序如何对套接字上进行的I/O进行管理及处理
 *   select(选择) -- 利用select函数判断套接字上是否存在数据，或者能否向一个套接字写入数据。
-*     分三种：可读性、可写性、例外。函数返回后，通过再次判断socket是否是集合的一部分来确定是否可读写。
-*     缺点：不能动态的调整(如增加、删除)Socket，如进程捕获一个信号并从信号处理程序返回，等待一般会被中断（除非信号处理程序指定 SA_RESTART 且系统支持）
+*     分三种：可读性、可写性、例外。函数返回满足条件的套接口的数目，然后通过再次判断socket是否是集合的一部分来确定是否可读写。
+*     缺点：1.不能动态的调整(如增加、删除)Socket，
+*           2.如进程捕获一个信号并从信号处理程序返回，等待一般会被中断（除非信号处理程序指定 SA_RESTART 且系统支持）
+*           3.在Windows下缺省最多64个(FD_SETSIZE)，通过重定义宏可以扩大，Linux下是否有限制?
 *     通过 FD_ZERO、 FD_SET 等宏对socket句柄设置监听的事件， 然后select(socket+1,xxx) 返回后通过 FD_ISSET 等宏判断是否有事件
 *   WSAAsyncSelect(异步选择) -- 接收以Windows消息为基础的网络事件通知(即网络事件来了后用消息进行处理)，MFC中CAsyncSocket的方式，模式自动变为非阻塞。
 *     如IPMsg中tcp用于建立连接，UDP用于读取数据：
@@ -325,7 +328,7 @@
 *     5.close/closesocket -- 释放socket句柄，使其可复用
 *   B.连接的建立和终止
 *     1.connect -- 主动在一个socket句柄上建立连接，如果想设置超时，利用ioctlsocket(socket, FIONBIO, &1)把socket设置为非堵塞的，
-*         在connect时会立即返回，然后利用select函数等待 readfd 并设置超时值
+*         在connect时会立即返回，然后利用select函数等待 readfd 并设置超时值(TODO:是 writefd? )
 *         fd_set rdevents; FD_ZERO(&rdevents); FD_SET(socket, &rdevents); struct timeval tv(nTimeOutSec, 0); 
 *         nResult = select (socket+1, &rdevents, NULL, NULL);
 *     2.listen -- 表示愿意被动侦听来自客户的连接请求
@@ -424,6 +427,29 @@
 * 难点：
 *   1.维持应用层的连接 -- 有意（关机）或无意（拨号或网络断开）使P2P群体组发生频繁变化
 *   2.安全性 -- 
+*
+* Kad技术(eMule中使用,主要的类是 CKademlia) -- 是一种DHT(Distributed Hash Table 分散式杂凑表)的协议，可以使节点之间互相保留一些其他节点的联系信息，
+*   并且利用这样一个"关系网"寻找到整个网络中的任何一个节点以及上面的资源，整个过程不需要任何中心服务器。每个客户端负责处理一小部分
+*   search和source finding的工作，分配工作的原理是基于客户端的唯一ID和search或source的hash之间的匹配来确定的，然后用户即可定位
+*   发布或搜索时需要通知或访问的用户ID及地址 -- 将用户id异或值决定他们之间的逻辑距离。
+* eMule(开源的P2P)
+*   下载和编译(第三方库需要用户自己下载)，编译时注意编译选项一致
+*     1.zlib(http://www.gzip.org/zlib/; 
+*       ResizableLib(http://sourceforge.net/projects/resizablelib/  -- 缩放时自动调整UI的库
+*       Crypto++(http://www.eskimo.com/~weidai/cryptlib.html)
+*       pnglib(http://www.libpng.org/pub/png/libpng.html)
+*       AtlServer -- 似乎需要？SendMail.cpp 中使用了其中的 atlsmtpconnection.h
+*   分析:
+*     1.通过文件hash来区分文件(可判断出文件名不同而内容相同的文件) -- 不同内容的文件有相同的hash值很困难
+*     2.采用分块机制实现高效并发传输和验证(CKnownFile::CreateFromFile + CAICHRecoveryHashSet ), 采用了两层粒度的分块方式,
+*       (TODO:有什么好处？)先把大文件分隔成若干 9500K 的块，把这些块组织成一棵树状结构；再把每一个这样的块又分解成若干个 180K 的块,仍然按照树状结构组织
+*     3.AICH(Advanced Intelligent Corruption Handling,高级智能损坏处理) -- 分块计算hash，在文件传输时，即使发生错误，也可以不必重传整个文件
+*     4.ThrottledControlSocket + UploadBandwidthThrottler -- 实现网络全局限速的功能，将所有的套接字保存成发送队列，进行管理，其RunInternal中的逻辑：
+*       计算每个socket本次配额(能发送多少字节)->计算本次循环应该睡眠多少时间(通过睡眠进行限速)->操作控制信息队列发送队列中的数据
+*     5.通信协议(被设计成易于扩充的格式)，且利用了zlib进行压缩和解压缩
+*       TCP -- Header_Struct(协议簇 + 包长度 + 命令字 + 各个命令的结构数据)
+*       UDP -- UDPPack
+*       
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
