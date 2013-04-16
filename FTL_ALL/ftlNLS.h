@@ -7,6 +7,12 @@
 #endif
 
 /****************************************************************************************************************
+* TODO: eMule中的DataIO 加载了 WideCharLowerMap.bin 文件用于对宽字节的大小写映射(没有使用系统提供的)
+*    -- 是因为 LCMapStringW 不能在Win9X 下工作还是为了保证网络中所有的客户端，不论版本、OS、语言都能使用相同的转换？
+*       参见 s_awcLowerMap 静态变量
+*       但因为有大小的判断(if (SizeofResource(hInst, hResInfo) == sizeof s_awcLowerMap))，需要调试看是否真正的使用了
+*
+
 * cmd命令行中
 *   chcp [nnn] -- 显示或设置活动代码页编号，如中文是(936)
 * 
@@ -38,9 +44,9 @@
 *   12.do not put UI controls on string (?)
 *   13.do not allow UI controls to overlay each other.
 *   14.最好不要用CRT中的 _tcsxxx 等函数，而应用Win32 API的 lstrncpy 等，这样可使用 system locale of windows)
-*   15.字符串比较用 ?
+*   15.字符串比较或转换用 ?
 *      CompareString(LOCALE_USER_DEFAULT,
-*      LCID locale = MAKELCID(MAKELANGID(), SORT_DEFAULT); 然后用 LCMapString(...)
+*      LCID locale = MAKELCID(MAKELANGID(), SORT_DEFAULT); 然后用 LCMapString(locale, LCMAP_LOWERCASE, pwsz, -1, pwsz, iLen + 1);
 *   16.多参数字符串格式化： CString::FormatMessage("%1,%2,%3")
 *   17.在一个资源(如res[codepage].dll)中，可以保存多个语言的资源，通过 SetThreadLocale 切换，
 *      然后通过 LoadString 等函数获取不同语言的值

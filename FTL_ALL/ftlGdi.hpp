@@ -610,7 +610,7 @@ namespace FTL
 			BYTE* pResData = (BYTE*)LockResource( hGlobal );
 			//使用数据， 比如 CopyMemory 到buffer中
 			UnlockResource( hGlobal );
-			FreeResource( hrSrc );
+			FreeResource( hGlobal );
 #endif 
 
 			DWORD dwResSize = SizeofResource(hModule, hrSrc);
@@ -634,9 +634,10 @@ namespace FTL
 					}
 				}
 				GlobalUnlock(hMem);
+
+				UnlockResource(hrSrc);
+				FreeResource(hrSrc);
 			}
-			UnlockResource(hrSrc);
-			FreeResource(hrSrc);
 		}
 		return bRet;
 	}

@@ -88,6 +88,9 @@ namespace FTL
 	*
 	* CreateFile 时如果有 FILE_FLAG_SEQUENTIAL_SCAN， 表示优化Cache，适用于从头到尾顺序访问，不会随机跳
 	* GetTempFileName -- 生成指定目录下临时文件的名字，通常用于生成临时文件
+	*
+	* 读写文件(CFile) 时的性能
+	*   1.设置流使用缓冲区：setvbuf(fileLoad.m_pStream, NULL, _IOFBF, 32768);
     **************************************************************************************************/
 	class CFFileUtil
 	{

@@ -3,6 +3,12 @@ _ATL_DLL(链接 atl.lib, 运行时依赖 ATL.dll)
 _DLL(CRT Dll version)
 _AFXDLL(Use MFC in a Shared DLL)
 
+Library\STL\STLTester 中可以加入 MFC CMap 等容器的测试
+  map.InitHashTable(1031); //缺省是17
+  GetStartPosition -> GetNextAssoc
+
+尝试参考 CKeyEntry::SearchTermsMatch 和  CKademliaUDPListener::CreateSearchExpressionTree 写一个通用搜索?
+  
 WIN32;_WINDOWS;STRICT;_DEBUG
 WIN32;_DEBUG;_WINDOWS;_USRDLL;FTLDLLPROJ_EXPORTS
 

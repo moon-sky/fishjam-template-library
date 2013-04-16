@@ -93,6 +93,7 @@
 *     1.CComVariant(LPCOLESTR lpszSrc) 
 *     2.CComVariant(LPCSTR lpszSrc)
 * 
+* 程序中创建GUID: CoCreateGuid, 然后可通过其 Data1~Data4 访问具体的数据(可当成随机数来用)
 *************************************************************************************************************/
 
 #ifndef FTL_BASE_H

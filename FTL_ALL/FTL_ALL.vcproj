@@ -191,6 +191,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlConversion.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlCrack.hpp"
 				>
 			</File>
@@ -260,6 +264,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlnpAPI.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlP2P.hpp"
 				>
 			</File>
 			<File
@@ -345,6 +353,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlConversion.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlCrack.h"
 				>
 			</File>
@@ -426,6 +438,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlnpAPI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlP2P.h"
 				>
 			</File>
 			<File

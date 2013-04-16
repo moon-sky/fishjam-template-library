@@ -185,23 +185,6 @@ namespace FTL
 	}
 #endif //_UNICODE
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	LONG CFConvUtil::HexFromBinary(__in const BYTE* pBufSrc, __in LONG nSrcCount, 
-		__out LPTSTR pBufDest, __inout long* pDestCount, 
-		__in LPCTSTR pszDivision/* = NULL*/)
-	{
-		LPTSTR pLocalBuffTranslate = pBufDest;
-		pLocalBuffTranslate [0] = _T('\0');
-
-		for (long i = 0; i < nSrcCount; i++) {
-			//nSrcCount -= nTransCount;
-			//StringCchVPrintfEx(pLocalBuffTranslate, n)
-			//pLocalBuffTranslate += _stprintf(pLocalBuffTranslate, _T("%02X"), pBufSrc[i]);
-		}
-
-
-		return *pDestCount;
-	}
 }
 
 #endif //FTL_CONVERSION_HPP
