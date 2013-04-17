@@ -45,6 +45,10 @@ namespace FTL
 	{
 		Clear();
 		FTLASSERT(FALSE);
+		CFConversion conv;
+		sin_addr.s_addr = htonl(inet_addr(conv.TCHAR_TO_MBCS(sAddr)));
+
+		sin_family = nFamily;
 #if 0
 		sin_addr.s_addr = htonl( CSocketComm::GetIPAddress(sAddr) );
 		sin_port = htons( CSocketComm::GetPortNumber( sService ) );
@@ -129,6 +133,26 @@ namespace FTL
 	}
 
 	template<typename T>
+	int CFSocketT<T>::Connect(const CFSockAddrIn& addrConnect)// (LPCTSTR pszAddr, INT nSocketPort)
+	{
+		//FTLASSERT(pszAddr);
+		//FTLASSERT(nSocketPort);
+
+		int rc = NO_ERROR;
+		int nLength = sizeof(addrConnect);
+		//sockaddr_in addrConnect = {0};
+
+		//addrConnect.sin_family = AF_INET;
+		//addrConnect.sin_port = htons(nSocketPort);
+		//addrConnect.sin_addr.S_un.S_addr = inet_addr(CT2A(pszAddr));
+
+		NET_VERIFY(WSAConnect(m_socket, &addrConnect, nLength, NULL,NULL,NULL,NULL));
+
+		return rc;
+	}
+
+
+	template<typename T>
 	int CFSocketT<T>::Send(const BYTE* pBuf, INT len, DWORD flags)
 	{
 		int rc = NO_ERROR;
@@ -160,25 +184,6 @@ namespace FTL
 	}
 
 	//////////////////////////////////////////////////////////////////////////
-	template<typename T>
-	int CFClientSocketT<T>::Connect(LPCTSTR pszAddr, INT nSocketPort)
-	{
-		FTLASSERT(pszAddr);
-		FTLASSERT(nSocketPort);
-
-		int rc = NO_ERROR;
-		int nLength = sizeof(sockaddr_in);
-		sockaddr_in addrConnect = {0};
-
-		addrConnect.sin_family = AF_INET;
-		addrConnect.sin_port = htons(nSocketPort);
-		addrConnect.sin_addr.S_un.S_addr = inet_addr(CT2A(pszAddr));
-
-		NET_VERIFY(WSAConnect(m_socket,(sockaddr*)&addrConnect,nLength,NULL,NULL,NULL,NULL));
-
-		return rc;
-	}
-
 	template<typename T>
 	int CFClientSocketT<T>::Associate(SOCKET socket, PSOCKADDR_IN pForeignAddr)
 	{

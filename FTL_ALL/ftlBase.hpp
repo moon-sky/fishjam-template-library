@@ -229,6 +229,7 @@ namespace FTL
 					static LPCTSTR pszErrorModule[] = {
 						TEXT("wininet.dll"),
 						TEXT("netmsg.dll"),
+						//TEXT("p2p.dll"),  // HRESULT_FACILITY(hrError) == FACILITY_P2P
 					};
 
 					for (int i = 0; i < _countof(pszErrorModule); i++)

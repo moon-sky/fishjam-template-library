@@ -594,7 +594,7 @@ namespace FTL
     };
 
 #ifndef DEFAULT_MEMALLOCATOR_FIXED_COUNT
-    #define DEFAULT_MEMALLOCATOR_FIXED_COUNT 256
+    #define DEFAULT_MEMALLOCATOR_FIXED_COUNT 32
 #endif 
     template <typename T, MemoryAllocType allocType  = matNew, UINT DefaultFixedCount = DEFAULT_MEMALLOCATOR_FIXED_COUNT>
     class CFMemAllocator

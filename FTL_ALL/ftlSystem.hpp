@@ -243,23 +243,157 @@ namespace FTL
         return bRet;
     }
 
+
+	///////////////////////////////////////// SystemParamProperty ///////////////////////////////////////////////
 	SystemParamProperty::SystemParamProperty()
 	{
-		Init();
+		//Init();
+		GetParametersInfo();
 	}
 	SystemParamProperty::~SystemParamProperty()
 	{
 
 	}
-	BOOL SystemParamProperty::Init()
+	BOOL SystemParamProperty::GetParametersInfo()
 	{
 		BOOL bRet = FALSE;
-		RECT rcArea = {0};
-		API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &m_nKeyboardSpeed, 0));
-		API_VERIFY(::SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcArea ,NULL));
+
+		API_VERIFY(::SystemParametersInfo(SPI_GETBEEP, 0, &m_bBeep, 0));			//警告蜂鸣器是否是打开
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSE, 0, &m_MouseInfo[0], 0));	//鼠标的2个阈值和加速特性
+		API_VERIFY(::SystemParametersInfo(SPI_GETBORDER, 0, &m_nBorder, 0));		//窗口边界放大宽度的边界放大因子
+		API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &m_dwKeyboardSpeed, 0));	//键盘重复击键速度设置情况,0(约30次/秒)~31(约25次/秒)
+		API_VERIFY(::SystemParametersInfo(SPI_LANGDRIVER, 0, &m_dwUnknown, 0));		//未实现
+		API_VERIFY(::SystemParametersInfo(SPI_ICONHORIZONTALSPACING, 0, &m_nIconHorizontalSpacing, 0));	//在LargeIconView的时候Icon的宽度,设置必须大于SM_CXICON
+		API_VERIFY(::SystemParametersInfo(SPI_ICONVERTICALSPACING, 0, &m_nIconVerticalSpacing, 0));		//在LargeIconView的时候Icon的高度,设置必须大于SM_CXICON
+		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &m_nScreenSaveTimeout, 0));		//屏保超时的时间，单位为秒
+		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENSAVEACTIVE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETGRIDGRANULARITY, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDDELAY, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETICONTITLEWRAP, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMENUDROPALIGNMENT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFASTTASKSWITCH, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETDRAGFULLWINDOWS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMINIMIZEDMETRICS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETICONMETRICS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETWORKAREA, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDPREF, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENREADER, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETANIMATION, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETLOWPOWERTIMEOUT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETPOWEROFFTIMEOUT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETLOWPOWERACTIVE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETPOWEROFFACTIVE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETDEFAULTINPUTLANG, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETWINDOWSEXTENSION, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSETRAILS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFILTERKEYS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETTOGGLEKEYS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSEKEYS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSHOWSOUNDS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSTICKYKEYS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETACCESSTIMEOUT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSERIALKEYS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSOUNDSENTRY, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSNAPTODEFBUTTON, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSEHOVERWIDTH, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSEHOVERHEIGHT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSEHOVERTIME, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &XXXXX, 0));
+#if (_WIN32_WINNT >= 0x0600)
+		API_VERIFY(::SystemParametersInfo(SPI_GETWHEELSCROLLCHARS, 0, &XXXXX, 0));
+#endif //_WIN32_WINNT >= 0x0600
+
+		API_VERIFY(::SystemParametersInfo(SPI_GETSHOWIMEUI, 0, &XXXXX, 0));
+#if(WINVER >= 0x0500)
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSESPEED, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETDESKWALLPAPER, 0, &XXXXX, 0));
+#endif /* WINVER >= 0x0500 */
+
+#if(WINVER >= 0x0600)
+		API_VERIFY(::SystemParametersInfo(SPI_GETAUDIODESCRIPTION, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENSAVESECURE, 0, &XXXXX, 0));
+#endif /* WINVER >= 0x0600 */
+
+#if(_WIN32_WINNT >= 0x0601)
+		API_VERIFY(::SystemParametersInfo(SPI_GETHUNGAPPTIMEOUT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETWAITTOKILLTIMEOUT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETWAITTOKILLSERVICETIMEOUT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSEDOCKTHRESHOLD, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETPENDOCKTHRESHOLD, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETWINARRANGING, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSEDRAGOUTTHRESHOLD, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETPENDRAGOUTTHRESHOLD, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSESIDEMOVETHRESHOLD, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETPENSIDEMOVETHRESHOLD, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETDRAGFROMMAXIMIZE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSNAPSIZING, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETDOCKMOVING, 0, &XXXXX, 0));
+#endif /* _WIN32_WINNT >= 0x0601 */
+
+#if(WINVER >= 0x0500)
+		API_VERIFY(::SystemParametersInfo(SPI_GETACTIVEWINDOWTRACKING, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMENUANIMATION, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETCOMBOBOXANIMATION, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETLISTBOXSMOOTHSCROLLING, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDCUES, 0, &m_bKeyboardCues, 0)); //快捷键字符下是否一直显示下划线，如为FALSE表需要按下"Alt"后才显示
+		API_VERIFY(::SystemParametersInfo(SPI_GETMENUUNDERLINES, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETACTIVEWNDTRKZORDER, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETHOTTRACKING, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMENUFADE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSELECTIONFADE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETTOOLTIPANIMATION, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETTOOLTIPFADE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETCURSORSHADOW, 0, &XXXXX, 0));
+#if(_WIN32_WINNT >= 0x0501)
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSESONAR, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSECLICKLOCK, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSEVANISH, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFLATMENU, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETDROPSHADOW, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETBLOCKSENDINPUTRESETS, 0, &XXXXX, 0));
+#endif /* _WIN32_WINNT >= 0x0501 */
+		API_VERIFY(::SystemParametersInfo(SPI_GETUIEFFECTS, 0, &XXXXX, 0));
+#if(_WIN32_WINNT >= 0x0600)
+		API_VERIFY(::SystemParametersInfo(SPI_GETDISABLEOVERLAPPEDCONTENT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETCLEARTYPE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSPEECHRECOGNITION, 0, &XXXXX, 0));
+#endif /* _WIN32_WINNT >= 0x0600 */
+		API_VERIFY(::SystemParametersInfo(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETACTIVEWNDTRKTIMEOUT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFOREGROUNDFLASHCOUNT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETCARETWIDTH, 0, &XXXXX, 0));
+#if(_WIN32_WINNT >= 0x0501)
+		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSECLICKLOCKTIME, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFONTSMOOTHINGCONTRAST, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFOCUSBORDERWIDTH, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFOCUSBORDERHEIGHT, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETFONTSMOOTHINGORIENTATION, 0, &XXXXX, 0));
+#endif /* _WIN32_WINNT >= 0x0501 */
+
+#if(_WIN32_WINNT >= 0x0600)
+		API_VERIFY(::SystemParametersInfo(SPI_GETMINIMUMHITRADIUS, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETMESSAGEDURATION, 0, &XXXXX, 0));
+#endif /* _WIN32_WINNT >= 0x0600 */
+
+#endif /* WINVER >= 0x0500 */
+
+		//API_VERIFY(::SystemParametersInfo(SPI_XXX, 0, &XXXXX, 0));
+
+		//API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &m_nKeyboardSpeed, 0));
+		//API_VERIFY(::SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcArea ,NULL));
 
 		return bRet;
 	}
+	///////////////////////////////////////// SystemParamProperty ///////////////////////////////////////////////
 
 	LPCTSTR SystemParamProperty::GetPropertyString()
 	{

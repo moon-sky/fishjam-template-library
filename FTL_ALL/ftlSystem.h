@@ -144,7 +144,7 @@ namespace FTL
         //RegDeleteKey -- 删除没有下级子键的子键,如果要递归删除，可以使用 CRegKey::RecurseDeleteKey 
     };
 
-	//SystemParametersInfo
+	//SystemParametersInfo -- 查询当前系统的参数
 	class SystemParamProperty
 	{
 	public:
@@ -152,10 +152,19 @@ namespace FTL
 		FTLINLINE ~SystemParamProperty();
 		FTLINLINE LPCTSTR GetPropertyString();
 	public:
-		int		m_nKeyboardSpeed;
+		DWORD_PTR	m_dwUnknown;	//用于未实现的项(如 SPI_LANGDRIVER)
+		BOOL	m_bBeep;
+		BOOL    m_bKeyboardCues;
+		DWORD	m_dwKeyboardSpeed;
+		int		m_MouseInfo[3];
+		int		m_nBorder;
+		int		m_nIconHorizontalSpacing;
+		int		m_nIconVerticalSpacing;
+		int		m_nScreenSaveTimeout;
 	private:
 		CFStringFormater	m_strFormater;
-		FTLINLINE BOOL Init();
+		//FTLINLINE void Init();
+		FTLINLINE BOOL GetParametersInfo();
 	};
 
 	struct VERSIONINFO

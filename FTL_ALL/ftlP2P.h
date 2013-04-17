@@ -7,6 +7,9 @@
 #  error ftlP2P.h requires ftlbase.h to be included first
 #endif
 
+#include <p2p.h>
+#include <pnrpns.h>
+
 namespace FTL
 {
 	/*************************************************************************************************************************
@@ -15,6 +18,12 @@ namespace FTL
 	*     CPrefs::m_uClientID
 	*   2.CreateSearchExpressionTree 到底是创建搜索表达式还是创建节点的二叉树结构？
 	*   3.刚启动时需要找的第一个节点(是类似服务器的节点？)
+	*************************************************************************************************************************/
+
+	/*************************************************************************************************************************
+	* 已读例子
+	*   (未完)netds\peertopeer\graphchat\xp
+	*   (未完)netds\peertopeer\graphchat\vista -- Vista/Win7版本的P2P聊天程序
 	*************************************************************************************************************************/
 
 	/*************************************************************************************************************************
@@ -74,25 +83,90 @@ namespace FTL
 	*************************************************************************************************************************/
 
 	/*****************************************************************************************************
-	* 微软提供了 P2P 的SDK(p2p.h)
-	*   PNRP() -- 对等名称解析协议(构建在IPV6上?), 基于网格名等要素来解析物理地址,本身就是一个采用服务形式的P2P应用程序
+	* 微软提供了 P2P 的SDK(p2p.h) -- 构建在IPV6上，目前的使用有较大限制
+	*   PNRP --  基于网格名等要素来解析物理地址,本身就是一个采用服务形式的P2P应用程序
 	*     WinXP上安装：添加/删除 Windows 组件 -> 网络服务 -> 对等网络，然后在服务中启动 "对等网络" 服务 
 	*     通过 netsh 向PNRP注册一个新的PNRP名：netsh -> p2p phrp peer -> add 0.justtest(P2P名)
-	*   PNM(People Near Me) -- 
-	*     在PNM中注册程序，用户登录PNM后，p2phost.exe会在PNM网格中查找其他节点，找到后可以邀请
+	*   PNM(People Near Me) -- Peer的名字格式是 [authority].[classifier]
+	*     在PNM中注册程序，用户登录PNM后，p2phost.exe会在PNM网格中查找其他节点，找到后可以邀请, 
 	*   
-	*   相关API
-	*     PeerGraphStartup
-	*     PeerIdentityCreate
-	*     PeerCreateName
-	*     PeerGraphCreate
+	*   调用流程：
+	*     1.PeerGraphStartup -- 初始化整个P2P环境
+	*     2.PeerGraphCreate  -- 
+	*   相关概念
+	*     Group
+	*     Graph
+	*     Identity
+	*     PNRP(Peer Name Resolution Protocol) -- 对等名称解析协议，有对应的 PNRPsvc 服务
+	*       PeerPnrpGetCloudInfo -- 获取调用节点参与的云列表，如 "LinkLocal_ff00::%11/8" 等
+	*     Collaboration -- 
 	*
 	* Vista + .NET Framework 3.0 的WCF中引入了PeerChannel,
 	*****************************************************************************************************/
-    class CFP2PUtil
-    {
-    };
 
+	//微软P2P相关类的简单封装
+
+	class CFP2PUtil
+	{
+	public:
+		static void FreeData(LPCVOID pvData);
+	};
+
+	FTLEXPORT class CFP2PEnvInit
+	{
+	public:
+		CFP2PEnvInit(BOOL bInitGraph = TRUE, BOOL bInitPnrp = TRUE);
+		~CFP2PEnvInit();
+	protected:
+		//BOOL m_bStartup;
+		BOOL m_bInitGraph;
+		BOOL m_bInitPnrp;
+		PEER_VERSION_DATA	m_PeerVersion;
+	};
+
+	FTLEXPORT class CFPeerPnrp
+	{
+	public:
+		//need call FreeData to free ppCloudInfo
+	};
+
+	FTLEXPORT class CFPeerGraph
+	{
+	public:
+		FTLINLINE CFPeerGraph();
+		FTLINLINE virtual ~CFPeerGraph();
+		FTLINLINE HRESULT CreateOrOpen(PCWSTR pwzGraphId, PCWSTR pwzPeerId, PCWSTR pwzDatabaseName, PPEER_SECURITY_INTERFACE pSecurityInterface);
+
+		FTLINLINE HRESULT Create(PPEER_GRAPH_PROPERTIES pGraphProperties, PCWSTR pwzDatabaseName, PPEER_SECURITY_INTERFACE pSecurityInterface);
+		FTLINLINE HRESULT Open(PCWSTR pwzGraphId, PCWSTR pwzPeerId, PCWSTR pwzDatabaseName, PPEER_SECURITY_INTERFACE pSecurityInterface,
+			ULONG cRecordTypeSyncPrecedence, const GUID *pRecordTypeSyncPrecedence, PHGRAPH phGraph);
+
+		FTLINLINE HRESULT Close();
+	protected:
+
+	private:
+		HGRAPH	m_hGrpah;
+	};
+
+
+	FTLEXPORT class CFPeerIdentity
+	{
+	public: 
+		FTLINLINE CFPeerIdentity();
+		FTLINLINE virtual ~CFPeerIdentity();
+
+		FTLINLINE HRESULT Create(PCWSTR pwzClassifier, PCWSTR pwzFriendlyName, HCRYPTPROV hCryptProv);
+		FTLINLINE HRESULT Delete();
+
+		FTLINLINE PWSTR  GetIdentity();
+		//FTLINLINE PCWSTR GetFriendlyName();
+		//FTLINLINE HRESULT SetFriendlyName(PCWSTR pwzFriendlyName);
+		//FTLINLINE HCRYPTPROV GetCryptKey();
+		
+	private:
+		PWSTR	m_pwzIdentity;
+
+	};
 }
 
 #endif //FTL_P2P_H

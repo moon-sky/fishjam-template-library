@@ -10,6 +10,15 @@
 #include <ws2tcpip.h>
 #include <ftlNet.h>
 
+/*
+
+怎么划分？
+             CFClientSocket/CFServerSocket
+            / 
+CFSocketBase
+            \CFTCPSocket/CFUDPSocket
+*/
+
 /*************************************************************************************************************************
 *   
 *************************************************************************************************************************/
@@ -21,11 +30,15 @@ namespace FTL
 	public:
 		FTLINLINE CFWinsockEnvInit(WORD wVersionRequested = MAKEWORD(2, 2))
 		{
-			int rc = 0;
 			ZeroMemory(&m_wsaData, sizeof(m_wsaData));
-			NET_VERIFY(m_initResult = WSAStartup(wVersionRequested, &m_wsaData));
+			m_initResult = WSAStartup(wVersionRequested, &m_wsaData);
 
 			//Success
+			if (0 != m_initResult)
+			{
+				FTLTRACEEX(tlError, TEXT("WSAStartup Error: %d(%s)"), 
+					m_initResult, CFNetErrorInfo(m_initResult).GetConvertedInfo());
+			}
 			FTLASSERT(m_initResult == 0);
 			FTLASSERT(wVersionRequested == m_wsaData.wVersion);
 		}
@@ -42,8 +55,11 @@ namespace FTL
 	};
 
 	//兼容 IPV4/IPV6 的地址管理类
-	struct CFSockAddrIn : public SOCKADDR_IN {
+	class CFSockAddrIn : public SOCKADDR_IN 
+	{
 	public:
+		FTLINLINE static USHORT GetPortNumber(LPCTSTR strServiceName);
+
 		FTLINLINE CFSockAddrIn() { Clear(); }
 		FTLINLINE CFSockAddrIn(const CFSockAddrIn& sin) { Copy( sin ); }
 		FTLINLINE ~CFSockAddrIn() { }
@@ -66,6 +82,7 @@ namespace FTL
 		FTLINLINE operator LPSOCKADDR() { return (LPSOCKADDR)(this); }
 		FTLINLINE size_t  Size() const { return sizeof(SOCKADDR_IN); }
 		FTLINLINE void    SetAddr(SOCKADDR_IN* psin) { CopyMemory(this, psin, Size()); }
+
 	};
 
     enum FSocketType
@@ -102,6 +119,9 @@ namespace FTL
         FTLINLINE int Close();
         FTLINLINE int Shutdown(INT how);
 
+		//Connection
+		FTLINLINE int Connect(const CFSockAddrIn& addr);// LPCTSTR pszAddr, INT nSocketPort);
+
 		//Data
 		FTLINLINE int Send(const BYTE* pBuf, INT len, DWORD flags);
 		FTLINLINE int Recv(BYTE* pBuf, INT len, DWORD flags);
@@ -122,9 +142,6 @@ namespace FTL
     class CFClientSocketT : public CFSocketT<T>
     {
     public:
-        //Client
-        FTLINLINE int Connect(LPCTSTR pszAddr, INT nSocketPort);
-
         FTLINLINE int Associate(SOCKET socket, PSOCKADDR_IN pForeignAddr);
 		FTLINLINE SOCKADDR_IN& GetForeignAddr() { return m_foreignAddr; }
     protected:

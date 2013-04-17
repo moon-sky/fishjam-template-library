@@ -288,7 +288,7 @@
 *   WM_NCCALCSIZE(SWP_FRAMECHANGED)
 *   WM_WINDOWPOSCHANGING(!SWP_NOSENDCHANGING)
 *   WM_WINDOWPOSCHANGED 
-* BeginDeferWindowPos/DeferWindowPos/EndDeferWindowPos -- 一次性移动多个窗口
+* BeginDeferWindowPos/DeferWindowPos/EndDeferWindowPos -- 一次性移动多个窗口(参见 GraphChat.sln 中的 ResizeMainWindow)
 * SetForegroundWindow
 *
 * Z序
