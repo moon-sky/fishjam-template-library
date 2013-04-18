@@ -311,12 +311,14 @@ namespace FTL
 		LONG m_nRunningJobNumber;				//! 当前正在运行的Job个数
 
 		//TODO: 两个最好统一？
-		LONG m_nCurNumThreads;                  //! 当前的线程个数(主要用来维护 m_pJobThreadHandles 数组)
+		//LONG m_nCurNumThreads;                  //! 当前的线程个数(主要用来维护 m_pJobThreadHandles 数组)
 		LONG m_nRunningThreadNum;				//! 当前运行着的线程个数(用来在所有的线程结束时激发 Complete 事件)
 
+		typedef std::map<DWORD, HANDLE>   TaskThreadContrainer;
+		TaskThreadContrainer m_TaskThreads;
 		//TODO: 调整成 list，这样可以方便动态调整最大、最小线程的个数 ?
-		HANDLE* m_pJobThreadHandles;            //! 保存线程句柄的数组
-		DWORD*  m_pJobThreadIds;                //! 保存线程 Id 的数组(为了在线程结束后调整数组中的位置)
+		//HANDLE* m_pJobThreadHandles;            //! 保存线程句柄的数组
+		//DWORD*  m_pJobThreadIds;                //! 保存线程 Id 的数组(为了在线程结束后调整数组中的位置)
 
 		//HANDLE	m_hMgrThread;					//! Pool管理线程的句柄
 

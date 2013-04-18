@@ -410,9 +410,9 @@ namespace FTL
 			CFClientSocketT<T>* pClient = m_pServerSocket->Accept();
 			if (pClient)
 			{
-				HANDLE hbindIoPort = CreateIoCompletionPort((HANDLE)(pClient->m_socket),m_hIoCompletionPort,
-					(ULONG_PTR)(pClient), 0);
-				FTLASSERT( hbindIoPort == m_hIoCompletionPort);
+				//HANDLE hbindIoPort = CreateIoCompletionPort((HANDLE)(pClient->m_socket),m_hIoCompletionPort,
+				//	(ULONG_PTR)(pClient), 0);
+				//FTLASSERT( hbindIoPort == m_hIoCompletionPort);
 				//::PostQueuedCompletionStatus(m_hIoCompletionPort,1,pClient,)
 			}
 			//FOVERLAPPED*     pKey = new FOVERLAPPED();

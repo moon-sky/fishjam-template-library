@@ -373,6 +373,7 @@ namespace FTL
 		LPCTSTR GetSockAddrInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel)
 		{
 			TCHAR szAddrInfo[100] = {0};
+#if (NTDDI_VERSION >= NTDDI_VISTA)
 			//inet_ntoa(addrInfo.ai_addr);
 			if (addrInfo.ai_family == AF_INET)
 			{
@@ -388,7 +389,8 @@ namespace FTL
 				int nLen = lstrlen(szAddrInfo);
 				StringCchPrintf(&szAddrInfo[nLen], _countof(szAddrInfo) - nLen,TEXT(":%d"), pSockAddrIn6->sin6_port);
 			}
-			
+#endif 
+		
 			//formater.Format(TEXT("%s - %s:%d"), 
 			//	GetAddressFamily(pSockAddrIn->sin_family),
 			//	szAddrInfo, pSockAddrIn->sin_port

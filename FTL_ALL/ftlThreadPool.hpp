@@ -169,11 +169,11 @@ namespace FTL
 
 		m_nRunningJobNumber = 0;
 		m_nJobIndex = 0;
-		m_nCurNumThreads = 0;
+		//m_nCurNumThreads = 0;
 		m_nRunningThreadNum = 0;
 
-		m_pJobThreadHandles = NULL;
-		m_pJobThreadIds = NULL;
+		//m_pJobThreadHandles = NULL;
+		//m_pJobThreadIds = NULL;
 
 		m_hEventStop = CreateEvent(NULL, TRUE, FALSE, NULL);
 		FTLASSERT(NULL != m_hEventStop);
@@ -225,18 +225,16 @@ namespace FTL
 		
 		{
 			CFAutoLock<CFLockObject>   locker(&m_lockThreads);
-			FTLASSERT(NULL == m_pJobThreadHandles);
-			if(NULL == m_pJobThreadHandles)    //防止多次调用Start
-			{
-				m_pJobThreadHandles = new HANDLE[m_nMaxNumThreads];  //分配m_nMaxNumThreads个线程的空间
-				ZeroMemory(m_pJobThreadHandles,sizeof(HANDLE) * m_nMaxNumThreads);
-
-				m_pJobThreadIds = new DWORD[m_nMaxNumThreads];
-				ZeroMemory(m_pJobThreadIds,sizeof(DWORD) * m_nMaxNumThreads);
-
+			//FTLASSERT(NULL == m_pJobThreadHandles);
+			//if(NULL == m_pJobThreadHandles)    //防止多次调用Start
+			//{
+			//	m_pJobThreadHandles = new HANDLE[m_nMaxNumThreads];  //分配m_nMaxNumThreads个线程的空间
+			//	ZeroMemory(m_pJobThreadHandles,sizeof(HANDLE) * m_nMaxNumThreads);
+			//	m_pJobThreadIds = new DWORD[m_nMaxNumThreads];
+			//	ZeroMemory(m_pJobThreadIds,sizeof(DWORD) * m_nMaxNumThreads);
 				_AddJobThread(m_nMinNumThreads);		//开始时只创建 m_nMinNumThreads 个线程
-				FTLASSERT(m_nCurNumThreads == m_nMinNumThreads);
-			}
+			//	FTLASSERT(m_nCurNumThreads == m_nMinNumThreads);
+			//}
 		}
 		return bRet;
 	}
@@ -289,13 +287,12 @@ namespace FTL
 
 		{
 			CFAutoLock<CFLockObject> locker(&m_lockThreads);
-			for (LONG i = 0; i < m_nCurNumThreads; i++)
-			{
-				SAFE_CLOSE_HANDLE(m_pJobThreadHandles[i],NULL);
-			}
-			SAFE_DELETE_ARRAY(m_pJobThreadHandles);
-			SAFE_DELETE_ARRAY(m_pJobThreadIds);
-			m_nCurNumThreads = 0;
+            for (TaskThreadContrainer::iterator iter = m_TaskThreads.begin();
+                iter != m_TaskThreads.end(); ++iter)
+            {
+                CloseHandle(iter->second);
+            }
+            m_TaskThreads.clear();
 		}
 
 		return bRet;
@@ -352,7 +349,7 @@ namespace FTL
 		BOOL bRet = TRUE;
 		{
 			CFAutoLock<CFLockObject> locker(&m_lockThreads);
-			if (m_nCurNumThreads + nThreadNum > m_nMaxNumThreads)
+			if ((LONG)m_TaskThreads.size() + nThreadNum > m_nMaxNumThreads)
 			{
 				FTLASSERT(FALSE);
 				//超过最大个数，不能再加了
@@ -364,15 +361,13 @@ namespace FTL
 				unsigned int threadId = 0;
 				for(LONG i = 0;i < nThreadNum; i++)
 				{
-					FTLASSERT(NULL == m_pJobThreadHandles[m_nCurNumThreads]);
-					m_pJobThreadHandles[m_nCurNumThreads] = (HANDLE) _beginthreadex( NULL, 0, JobThreadProc, this, 0, &threadId);
-					FTLASSERT(NULL != m_pJobThreadHandles[m_nCurNumThreads]);
-
-					m_pJobThreadIds[m_nCurNumThreads] = threadId;
-					m_nCurNumThreads++;
+                    HANDLE hThread = (HANDLE) _beginthreadex( NULL, 0, JobThreadProc, this, 0, &threadId);
+                    FTLASSERT(hThread != NULL);
+                    FTLASSERT(m_TaskThreads.find(threadId) == m_TaskThreads.end());
+                    m_TaskThreads[threadId] = hThread;
 
 					FTLTRACEEX(tlTrace,TEXT("CFThreadPool::_AddJobThread, ThreadId=%d(0x%x), CurNumThreads=%d\n"),
-						threadId, threadId, m_nCurNumThreads);
+						threadId, threadId, m_TaskThreads.size());
 				}
 				bRet = TRUE;
 			}
@@ -406,16 +401,17 @@ namespace FTL
 
 		{
 			//当所有的线程都在运行Job时，则需要增加线程  -- 不对 m_nRunningJobNumber 加保护(只是读取)
-			//CFAutoLock<CFLockObject> locker(&m_lockThreads);
-			FTLASSERT(m_nRunningJobNumber <= m_nCurNumThreads);
-			BOOL bNeedMoreThread = (m_nRunningJobNumber == m_nCurNumThreads) && (m_nCurNumThreads < m_nMaxNumThreads); 
+			CFAutoLock<CFLockObject> locker(&m_lockThreads);
+            LONG nCurNumThreads = (LONG)m_TaskThreads.size();
+			FTLASSERT(m_nRunningJobNumber <= nCurNumThreads);
+			BOOL bNeedMoreThread = (m_nRunningJobNumber == nCurNumThreads) && (nCurNumThreads < m_nMaxNumThreads); 
 			if (bNeedMoreThread)
 			{
 				API_VERIFY(_AddJobThread(1L));      //每次增加一个线程
 			}
 
 			FTLTRACEEX(tlTrace, TEXT("CFThreadPool::SubmitJob, pJob[%d] = 0x%p, m_nRunningJobNumber=%d, m_nCurNumThreads=%d, bNeedMoreThread=%d\n"),
-				pJob->m_nJobIndex, pJob, m_nRunningJobNumber, m_nCurNumThreads, bNeedMoreThread);
+				pJob->m_nJobIndex, pJob, m_nRunningJobNumber, m_TaskThreads.size(), bNeedMoreThread);
 		}
 
 		return bRet;	
@@ -618,10 +614,10 @@ namespace FTL
 			//检查一下是否需要减少线程
 			BOOL bNeedSubtractThread = FALSE;
 			{
-				CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
-				//CFAutoLock<CFLockObject> locker(&m_lockThreads);
+				CFAutoLock<CFLockObject> lockerWaitingJobs(&m_lockWaitingJobs);
+				CFAutoLock<CFLockObject> lockerThreads(&m_lockThreads);
 				//当队列中没有Job，并且当前线程数大于最小线程数时
-				bNeedSubtractThread = (m_WaitingJobs.empty() && (m_nCurNumThreads > m_nMinNumThreads) && !HadRequestStop());
+				bNeedSubtractThread = (m_WaitingJobs.empty() && ((LONG)m_TaskThreads.size() > m_nMinNumThreads) && !HadRequestStop());
 				if (bNeedSubtractThread)
 				{
 					//通知减少一个线程
@@ -634,31 +630,14 @@ namespace FTL
 			FUNCTION_BLOCK_NAME_TRACE(TEXT("typeSubtractThread, will remove self thread"),
 				DEFAULT_BLOCK_TRACE_THRESHOLD);
 			CFAutoLock<CFLockObject> locker(&m_lockThreads);
-			LONG index = 0;
 			DWORD dwCurrentThreadId = GetCurrentThreadId();
-			for (; index < m_nCurNumThreads; index++)
 			{
-				if (m_pJobThreadIds[index] == dwCurrentThreadId)  //找到自己线程对应的位置
-				{
-					break;
-				}
-			}
-			FTLASSERT(index < m_nCurNumThreads);
-			if (index < m_nCurNumThreads)
-			{
-				//把最后一个线程的信息移到退出的线程位置 -- 如果退出的线程就是最后一个时也正确
-				HANDLE hOldTemp = m_pJobThreadHandles[index];
-				m_pJobThreadHandles[index] = m_pJobThreadHandles[m_nCurNumThreads - 1];
-				m_pJobThreadHandles[m_nCurNumThreads - 1] = NULL;
-
-				m_pJobThreadIds[index] = m_pJobThreadIds[m_nCurNumThreads - 1];
-				m_pJobThreadIds[m_nCurNumThreads - 1] = 0;
-
-				m_nCurNumThreads--;
+				HANDLE hOldTemp = m_TaskThreads[dwCurrentThreadId];
+                m_TaskThreads.erase(dwCurrentThreadId);
 				CloseHandle(hOldTemp);
 
 				FTLTRACEEX(tlTrace,TEXT("CFThreadPool Subtract a thread, thread id = %d(0x%x), curThreadNum = %d\n"),
-					dwCurrentThreadId, dwCurrentThreadId, m_nCurNumThreads);
+					dwCurrentThreadId, dwCurrentThreadId, m_TaskThreads.size());
 			}
 		}
 		else //typeStop

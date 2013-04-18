@@ -78,6 +78,7 @@
 #else
 #  include <WinInet.h>	//基础版，通常编写客户端，抽象了Gopher，FTP，HTTP协议
 #endif
+#include <ws2tcpip.h>
 
 #pragma TODO(now just use CAtlString)
 #include <atlbase.h>

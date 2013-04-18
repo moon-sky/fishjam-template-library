@@ -72,6 +72,8 @@
 *       InterpolationMode -- 
 *       PixelOffsetMode -- 
 *       SmoothingMode -- 控制平滑模式(是否使用消除锯齿的技术)，如 AntiAlias 反锯齿
+*       TextRenderingHint -- 柔化文本的锯齿边缘，如 SystemDefault(使用用户已经配置的任何字体平滑设置), SingleBitPerPixelGridFit(速度最快但质量最低),
+*         AntiAliasGridFit(更好的质量但较低的速度), ClearTypeGridFit(在LCD显示屏上具有最好的质量), 
 *     图形容器(BeginContainer/EndContainer) -- 对 Graphics 对象做出的任何状态更改都属于容器,
 *       不会改写Graphics对象的现有状态(如 剪辑区域、变形和质量设置 等)
 *
