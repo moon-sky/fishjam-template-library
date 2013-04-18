@@ -8,6 +8,30 @@
 
 namespace FTL
 {
+	CFWinsockEnvInit::CFWinsockEnvInit(WORD wVersionRequested /* = MAKEWORD(2, 2) */)
+	{
+		ZeroMemory(&m_wsaData, sizeof(m_wsaData));
+		m_initResult = WSAStartup(wVersionRequested, &m_wsaData);
+
+		//Success
+		if (0 != m_initResult)
+		{
+			FTLTRACEEX(tlError, TEXT("WSAStartup Error: %d(%s)"), 
+				m_initResult, CFNetErrorInfo(m_initResult).GetConvertedInfo());
+		}
+		FTLASSERT(m_initResult == 0);
+		FTLASSERT(wVersionRequested == m_wsaData.wVersion);
+	}
+	
+	CFWinsockEnvInit::~CFWinsockEnvInit()
+	{
+		if (0 == m_initResult)
+		{
+			WSACleanup();
+		}
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////
 
 	CFSockAddrIn& CFSockAddrIn::Copy(const CFSockAddrIn& sin)
 	{
@@ -15,7 +39,6 @@ namespace FTL
 		return *this;
 	}
 
-	///////////////////////////////////////////////////////////////////////////////
 	// IsEqual
 	bool CFSockAddrIn::IsEqual(const CFSockAddrIn& sin) const
 	{

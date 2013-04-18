@@ -98,7 +98,8 @@
 * Httpwatch/Fiddler2 -- 专门监控Http传输的工具?
 * Wireshark(网络抓包工具) -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
 * IECookiesView(www.nirsoft.net): 查看编辑Cookie
-* 
+* netstat -- 系统提供的查询监听、绑定等信息的工具
+*
 * CAsyncSocketEx -- 代替MFC::CAsyncSocket的异步Socket类，可以通过从 CAsyncSocketExLayer 继承子类并AddLayer(xxx)
 *   来支持代理(CAsyncProxySocketLayer) 和 SSL(CAsyncSslSocketLayer) 等, Layer通过链表结构保存，可支持多个。
 *   http://www.codeproject.com/internet/casyncsocketex.asp
@@ -364,6 +365,8 @@
 *         SIOCATMARK -- 确认是否所有的OOB数据都已经读取完毕
 *   E.网络地址 -- 在可读性的名称(如域名)和低级网络地址(如IP)之间进行转换
 *     1.getaddrinfo(需要freeaddrinfo释放)/getnameinfo -- HOST名 和 地址(IPV4/IPV6) 之间 协议无关的转换
+*         struct addrinfo hints = { 0 }; hints.ai_family = AF_UNSPEC; hints.ai_socktype=SOCK_DGRAM; hints.ai_flags=AI_PASSIVE;
+*         getaddrinfo("www.baidu.com", "http", &hints, &res);  // res 存放返回 addrinfo 结构链表的指针,然后可通过 res->ai_family/ai_socktype 等创建socket
 *       gethostbyname/gethostbyaddr -- 处理主机名和 IPV4 地址之间的网络地址映射, buffer的 最大长度为 MAXGETHOSTSTRUCT
 *       WSAAsyncGetHostByName/WSAAsyncGetHostByAddr  -- 异步获取 主机/地址 信息，避免线程阻塞
 *         sockAddr.sin_addr.s_addr = ((LPIN_ADDR)((LPHOSTENT)pAsyncGetHostByNameBuffer)->h_addr)->s_addr;
@@ -743,7 +746,10 @@ namespace FTL
         //获取套接字类型
         FTLINLINE LPCTSTR GetSocketType(int iSocketType);
 
-		FTLINLINE LPCTSTR GetSocketAddrInfoString(CFStringFormater& formater, const PSOCKADDR_IN pSockAddrIn);
+		//FTLINLINE LPCTSTR GetSocketAddrInfoString(CFStringFormater& formater, const PSOCKADDR_IN pSockAddrIn);
+		//获取 ADDRINFO.ai_flags 对应的字符串
+		FTLINLINE LPCTSTR GetAddrInfoFlagsString(CFStringFormater& formater, int aiFlags);
+		FTLINLINE LPCTSTR GetSockAddrInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel = 0);
 
         //获取指定地址家族的协议： 如 AF_INETx 中的 IPPROTO_IP/IPPROTO_TCP/IPPROTO_UDP 等
         FTLINLINE LPCTSTR GetProtocolType(int iAddressFamily,int iProtocol);

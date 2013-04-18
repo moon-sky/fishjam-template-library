@@ -346,24 +346,75 @@ namespace FTL
             return _T("UnknowSocketType");
         }
 
-		LPCTSTR GetSocketAddrInfoString(CFStringFormater& formater, const PSOCKADDR_IN pSockAddrIn)
+		LPCTSTR GetAddrInfoFlagsString(CFStringFormater& formater, int aiFlags)
 		{
-			if (pSockAddrIn)
+			int nOldFlags = aiFlags;
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_PASSIVE, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_CANONNAME, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_NUMERICHOST, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_NUMERICSERV, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_ALL, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_ADDRCONFIG, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_V4MAPPED, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_NON_AUTHORITATIVE, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_SECURE, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_RETURN_PREFERRED_NAMES, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_FQDN, TEXT("|"));
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, aiFlags, AI_FILESERVER, TEXT("|"));
+
+			if (aiFlags != 0)
 			{
-				TCHAR szAddrInfo[100] = {0};
-				InetNtop(pSockAddrIn->sin_family, pSockAddrIn, szAddrInfo, _countof(szAddrInfo) - 1);
-				formater.Format(TEXT("%s - %s:%d"), 
-					GetAddressFamily(pSockAddrIn->sin_family),
-					szAddrInfo, pSockAddrIn->sin_port
-					);
-				return formater.GetString();
+				FTLTRACEEX(FTL::tlWarning, TEXT("%s: GetAddrInfoFlagsString Not Complete, aiFlags=0x%x, remain=0x%x\n"),
+					__FILE__LINE__, nOldFlags, aiFlags);
 			}
-			else
-			{
-				return NULL;
-			}
+			return formater.GetString();
 		}
 
+		LPCTSTR GetSockAddrInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel)
+		{
+			TCHAR szAddrInfo[100] = {0};
+			//inet_ntoa(addrInfo.ai_addr);
+			if (addrInfo.ai_family == AF_INET)
+			{
+				sockaddr_in* pSockAddrIn4 =  (sockaddr_in*)addrInfo.ai_addr;
+				InetNtop(addrInfo.ai_family, &(pSockAddrIn4->sin_addr), szAddrInfo, _countof(szAddrInfo) - 1);
+				int nLen = lstrlen(szAddrInfo);
+				StringCchPrintf(&szAddrInfo[nLen], _countof(szAddrInfo) - nLen,TEXT(":%d"), pSockAddrIn4->sin_port);
+			}
+			else if(addrInfo.ai_family == AF_INET6)
+			{
+				sockaddr_in6* pSockAddrIn6 =  (sockaddr_in6*)addrInfo.ai_addr;
+				InetNtop(addrInfo.ai_family, &(pSockAddrIn6->sin6_addr), szAddrInfo, _countof(szAddrInfo) - 1);
+				int nLen = lstrlen(szAddrInfo);
+				StringCchPrintf(&szAddrInfo[nLen], _countof(szAddrInfo) - nLen,TEXT(":%d"), pSockAddrIn6->sin6_port);
+			}
+			
+			//formater.Format(TEXT("%s - %s:%d"), 
+			//	GetAddressFamily(pSockAddrIn->sin_family),
+			//	szAddrInfo, pSockAddrIn->sin_port
+			//	);
+			//return formater.GetString();
+
+			CFStringFormater tmpFormater;
+			formater.AppendFormat(TEXT("[%d] flags=%s, family=%s,Socket=%s, Protocol=%s, addrlen=%d, canonname=%s, addr=%s\n"),
+				nLevel,
+				GetAddrInfoFlagsString(tmpFormater, addrInfo.ai_flags), 
+				GetAddressFamily(addrInfo.ai_family),
+				GetSocketType(addrInfo.ai_socktype),
+				GetProtocolType(addrInfo.ai_family, addrInfo.ai_protocol),
+				addrInfo.ai_addrlen,
+				//addrInfo.ai_canonname ? CFConversion().MBCS_TO_TCHAR(addrInfo.ai_canonname) : TEXT(""), 
+				TEXT(""),
+				szAddrInfo
+				);
+
+			if (addrInfo.ai_next)
+			{
+				//µÝ¹éµ÷ÓÃ
+				GetSockAddrInfoString(formater, *addrInfo.ai_next, (nLevel + 1));
+			}
+			return formater.GetString();
+		}
         //LPCTSTR GetServiceFlagsType(DWORD dwServiceFlags);
         //LPCTSTR GetProviderFlagsType(DWORD dwProviderFlags);
 

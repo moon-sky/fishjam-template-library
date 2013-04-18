@@ -266,6 +266,7 @@ namespace FTL
 		API_VERIFY(::SystemParametersInfo(SPI_ICONHORIZONTALSPACING, 0, &m_nIconHorizontalSpacing, 0));	//在LargeIconView的时候Icon的宽度,设置必须大于SM_CXICON
 		API_VERIFY(::SystemParametersInfo(SPI_ICONVERTICALSPACING, 0, &m_nIconVerticalSpacing, 0));		//在LargeIconView的时候Icon的高度,设置必须大于SM_CXICON
 		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &m_nScreenSaveTimeout, 0));		//屏保超时的时间，单位为秒
+#if 0
 		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENSAVEACTIVE, 0, &XXXXX, 0));
 		API_VERIFY(::SystemParametersInfo(SPI_GETGRIDGRANULARITY, 0, &XXXXX, 0));
 		API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDDELAY, 0, &XXXXX, 0));
@@ -385,11 +386,11 @@ namespace FTL
 #endif /* _WIN32_WINNT >= 0x0600 */
 
 #endif /* WINVER >= 0x0500 */
-
 		//API_VERIFY(::SystemParametersInfo(SPI_XXX, 0, &XXXXX, 0));
 
 		//API_VERIFY(::SystemParametersInfo(SPI_GETKEYBOARDSPEED, 0, &m_nKeyboardSpeed, 0));
 		//API_VERIFY(::SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcArea ,NULL));
+#endif 
 
 		return bRet;
 	}
