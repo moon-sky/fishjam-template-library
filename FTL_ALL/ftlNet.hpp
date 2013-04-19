@@ -105,6 +105,31 @@ namespace FTL
         return m_bufInfo;
     }
 
+	CFSocketAddress::CFSocketAddress()
+	{
+		this->iSockaddrLength = 0;
+		this->lpSockaddr = NULL;
+	}
+	CFSocketAddress::CFSocketAddress(const SOCKET_ADDRESS& addr)
+	{
+		this->iSockaddrLength = 0;
+		this->lpSockaddr = NULL;
+
+		if (addr.iSockaddrLength > 0)
+		{
+			lpSockaddr = (LPSOCKADDR )new BYTE[addr.iSockaddrLength];
+			if (lpSockaddr)
+			{
+				CopyMemory(lpSockaddr, addr.lpSockaddr, addr.iSockaddrLength);
+				iSockaddrLength = addr.iSockaddrLength;
+			}
+		}
+	}
+	CFSocketAddress::~CFSocketAddress()
+	{
+		SAFE_DELETE_ARRAY(lpSockaddr);
+	}
+
     namespace FNetInfo
     {
 		//LPCTSTR GetSockAddrString(CFStringFormater& formater, SOCKADDR *sa, int len)
@@ -370,26 +395,53 @@ namespace FTL
 			return formater.GetString();
 		}
 
-		LPCTSTR GetSockAddrInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel)
+		LPCTSTR GetAddressInfoString(CFStringFormater& formater, LPSOCKADDR pSockAddr, DWORD dwAddressLength)
+		{
+			FTLASSERT(pSockAddr);
+			if (pSockAddr)
+			{
+				int rc = 0;
+				DWORD dwAddressStringLength = 0;
+				NET_VERIFY_EXCEPT1(WSAAddressToString(pSockAddr, dwAddressLength, NULL, NULL, &dwAddressStringLength), WSAEFAULT);
+				if (SOCKET_ERROR == rc)
+				{
+					int lastSocketError = WSAGetLastError();
+					if (WSAEFAULT == lastSocketError && dwAddressStringLength > 0)
+					{
+						formater.Reset(dwAddressStringLength);
+						NET_VERIFY(WSAAddressToString(pSockAddr, dwAddressLength, NULL, formater.GetString(), &dwAddressStringLength));
+					}
+				}
+			}
+			return formater.GetString();
+		}
+
+		LPCTSTR GetAddressInfoString(CFStringFormater& formater, SOCKET_ADDRESS& socketAddress)
+		{
+			return GetAddressInfoString(formater, socketAddress.lpSockaddr, socketAddress.iSockaddrLength);
+		}
+
+		LPCTSTR GetAddressInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel)
 		{
 			TCHAR szAddrInfo[100] = {0};
-#if (NTDDI_VERSION >= NTDDI_VISTA)
+//#if (NTDDI_VERSION >= NTDDI_VISTA)
 			//inet_ntoa(addrInfo.ai_addr);
 			if (addrInfo.ai_family == AF_INET)
 			{
 				sockaddr_in* pSockAddrIn4 =  (sockaddr_in*)addrInfo.ai_addr;
-				InetNtop(addrInfo.ai_family, &(pSockAddrIn4->sin_addr), szAddrInfo, _countof(szAddrInfo) - 1);
-				int nLen = lstrlen(szAddrInfo);
-				StringCchPrintf(&szAddrInfo[nLen], _countof(szAddrInfo) - nLen,TEXT(":%d"), pSockAddrIn4->sin_port);
+				DWORD dwLength = _countof(szAddrInfo);
+				WSAAddressToString((sockaddr*)pSockAddrIn4, sizeof(sockaddr_in), NULL, 
+					szAddrInfo, &dwLength);
 			}
 			else if(addrInfo.ai_family == AF_INET6)
 			{
+				//InetNtop 只在 Vista 后提供，暂时的替代方法
 				sockaddr_in6* pSockAddrIn6 =  (sockaddr_in6*)addrInfo.ai_addr;
-				InetNtop(addrInfo.ai_family, &(pSockAddrIn6->sin6_addr), szAddrInfo, _countof(szAddrInfo) - 1);
-				int nLen = lstrlen(szAddrInfo);
-				StringCchPrintf(&szAddrInfo[nLen], _countof(szAddrInfo) - nLen,TEXT(":%d"), pSockAddrIn6->sin6_port);
+				DWORD dwLength = _countof(szAddrInfo);
+				WSAAddressToString((sockaddr*)pSockAddrIn6, sizeof(sockaddr_in6), NULL, 
+					szAddrInfo, &dwLength);
 			}
-#endif 
+//#endif 
 		
 			//formater.Format(TEXT("%s - %s:%d"), 
 			//	GetAddressFamily(pSockAddrIn->sin_family),
@@ -413,7 +465,7 @@ namespace FTL
 			if (addrInfo.ai_next)
 			{
 				//递归调用
-				GetSockAddrInfoString(formater, *addrInfo.ai_next, (nLevel + 1));
+				GetAddressInfoString(formater, *addrInfo.ai_next, (nLevel + 1));
 			}
 			return formater.GetString();
 		}
@@ -986,8 +1038,42 @@ namespace FTL
 		}
 
 
-        LONG GetLocalIPAddress()
+		LONG GetLocalAddress(std::list<CFSocketAddress*>& lstAddress, ULONG Family /*= AF_INET */, ULONG Flags /*= 0 */)
         {
+			ULONG nSize = 0;
+			PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+			ULONG nResult = GetAdaptersAddresses(Family, Flags, NULL, NULL, &nSize);
+			FTLASSERT(ERROR_BUFFER_OVERFLOW == nResult);
+			if (ERROR_BUFFER_OVERFLOW == nResult && nSize > 0)
+			{
+				pAddresses = (PIP_ADAPTER_ADDRESSES)new BYTE[nSize];
+				if (pAddresses)
+				{
+					nResult = GetAdaptersAddresses(Family, Flags, NULL, pAddresses, &nSize);
+					if (NO_ERROR == nResult)
+					{
+						PIP_ADAPTER_ADDRESSES pCurrAddresses = pAddresses;
+						while (pCurrAddresses)
+						{
+							PIP_ADAPTER_UNICAST_ADDRESS pUnicast = pCurrAddresses->FirstUnicastAddress;
+							while (pUnicast)
+							{
+								CFSocketAddress* pNewSocketAddr = new CFSocketAddress(pUnicast->Address);
+								//INT nAddrSize = pUnicast->Address.iSockaddrLength + sizeof(INT);
+								//SOCKET_ADDRESS* pSocketAddress = (SOCKET_ADDRESS*)new BYTE[nAddrSize];
+								//pSocketAddress->iSockaddrLength = pUnicast->Address.iSockaddrLength;
+								//CopyMemory(pSocketAddress->lpSockaddr, pUnicast->Address.lpSockaddr, pUnicast->Address.iSockaddrLength)
+								lstAddress.push_back(pNewSocketAddr);
+								pUnicast = pUnicast->Next;
+							}
+							pCurrAddresses = pCurrAddresses->Next;
+						}
+					}
+
+					delete [] pAddresses;
+				}
+			}
+
             LONG localIP = 0;
             char host[MAX_BUFFER_LENGTH];
             ::gethostname(host, sizeof(host));

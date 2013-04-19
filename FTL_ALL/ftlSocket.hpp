@@ -206,37 +206,69 @@ namespace FTL
 		return rc;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
 	template<typename T>
-	int CFClientSocketT<T>::Associate(SOCKET socket, PSOCKADDR_IN pForeignAddr)
+	CFSocketT<T>*  CFSocketT<T>::Accept()
+	{
+		SOCKET soAccept = INVALID_SOCKET;
+		//CFSockAddrIn addrClient;
+		struct sockaddr_in addrClient = {0};
+		int nLength = sizeof(struct sockaddr_in);
+		CFSocketT<T> *pRetClient = NULL;
+
+		// Check if there is something in the listen queue.
+		soAccept = WSAAccept(m_socket, (struct sockaddr *) &addrClient, 
+			&nLength, NULL, NULL);
+
+		// Check for errors.
+		if (soAccept != INVALID_SOCKET) 
+		{
+			// Get a pointer to the free ClientSocket 
+			// instance from the pool.
+			pRetClient = new CFSocketT<T>();
+			if (pRetClient == NULL) 
+			{
+				// There are no free instances in the pool, maximum 
+				// number of accepted client connections is reached.
+				::shutdown(soAccept,2);
+				::closesocket(soAccept);
+			}
+			else 
+			{
+				// Everything is fine, so associate the instance 
+				// with the client socket.
+				pRetClient->Associate(soAccept,&addrClient);
+			}
+		}
+
+		return pRetClient;
+	}
+
+	template<typename T>
+	int CFSocketT<T>::Associate(SOCKET socket, PSOCKADDR_IN pForeignAddr)
 	{
 		FTLASSERT(m_socket == INVALID_SOCKET);
 		int rc = NO_ERROR;
-		this->m_socket = socket;
+		m_socket = socket;
 		memcpy(&m_foreignAddr, pForeignAddr, sizeof(SOCKADDR_IN));
 		return rc;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////////////////////
 	template<typename T>
 	CFServerSocketT<T>::CFServerSocketT()
 	{
-		m_pClientSocketPool = NULL;
 	}
 
 	template<typename T>
 	CFServerSocketT<T>::~CFServerSocketT()
 	{
-		SAFE_DELETE(m_pClientSocketPool);
 	}
 
 	template<typename T>
 	void CFServerSocketT<T>::OnClose()
 	{
-		if (m_pClientSocketPool)
-		{
-			
-		}
 	}
 
 	template<typename T>
@@ -272,42 +304,7 @@ namespace FTL
 		return rc;
 	}
 
-	template<typename T>
-	CFClientSocketT<T>*  CFServerSocketT<T>::Accept()
-	{
-		SOCKET soAccept = INVALID_SOCKET;
-		struct sockaddr_in addrClient = {0};
-		int nLength = sizeof(struct sockaddr_in);
-		CFClientSocketT<T> *pRetClient = NULL;
-
-		// Check if there is something in the listen queue.
-		soAccept = WSAAccept(m_socket, (struct sockaddr *) &addrClient, 
-			&nLength, NULL, NULL);
-
-		// Check for errors.
-		if (soAccept != INVALID_SOCKET) 
-		{
-			// Get a pointer to the free ClientSocket 
-			// instance from the pool.
-			pRetClient = m_pClientSocketPool->Get();
-			if (pRetClient == NULL) 
-			{
-				// There are no free instances in the pool, maximum 
-				// number of accepted client connections is reached.
-				::shutdown(soAccept,2);
-				::closesocket(soAccept);
-			}
-			else 
-			{
-				// Everything is fine, so associate the instance 
-				// with the client socket.
-				pRetClient->Associate(soAccept,&addrClient);
-			}
-		}
-
-		return pRetClient;
-	}
-
+#if 0
 	template<typename T>
 	void CFServerSocketT<T>::ReleaseClient(CFClientSocketT<T>* pClient)
 	{
@@ -322,6 +319,7 @@ namespace FTL
 			}
 		}
 	}
+#endif 
 	//////////////////////////////////////////////////////////////////////////
 	///                     CFNetClientT                                   ///
 	//////////////////////////////////////////////////////////////////////////

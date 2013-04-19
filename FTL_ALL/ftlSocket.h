@@ -51,7 +51,7 @@ CFSocketBase
 *   地址长度                            4字节
 *   地址长度宏                   INET_ADDRSTRLEN(22)                   INET6_ADDRSTRLEN(65)
 *   通配地址                      htonl(INADDR_ANY)                        in6addr_any 
-*   地址转换                  inet_aton/inet_ntoa/inet_addr                                              inet_pton/inet_ntop
+*   地址转换                  inet_aton/inet_ntoa/inet_addr                                              WSAAddressToString/InetNtop(Vista!!)
 *   主机名和地址转换           gethostbyname/gethostbyaddr                                         getaddrinfo/freeaddrinfo/getnameinfo
 *   包头长度(字节)                      20                                     40 
 *   DNS中的记录(什么意思?)             A记录                                 AAAA记录
@@ -177,6 +177,11 @@ namespace FTL
 
         FTLINLINE int IoCtl(long cmd, u_long* argp);
 		//FTLINLINE int SetOpt(xxxx); //setsocketopt 的封装
+
+
+		FTLINLINE CFSocketT<T>* Accept();
+		FTLINLINE int Associate(SOCKET socket, SOCKADDR_IN* pForeignAddr);
+		FTLINLINE SOCKADDR_IN& GetForeignAddr() { return m_foreignAddr; }
 	protected:
 		FTLINLINE virtual void OnOpen() {}
 		FTLINLINE virtual void OnClose() {}
@@ -185,17 +190,8 @@ namespace FTL
         FSocketType         m_socketType;
         BOOL                m_bASync;
         CFCriticalSection   m_lockObject;
+		SOCKADDR_IN		m_foreignAddr;
         volatile UINT       m_nSession;
-    };
-
-    FTLEXPORT template <typename T>
-    class CFClientSocketT : public CFSocketT<T>
-    {
-    public:
-        FTLINLINE int Associate(SOCKET socket, PSOCKADDR_IN pForeignAddr);
-		FTLINLINE SOCKADDR_IN& GetForeignAddr() { return m_foreignAddr; }
-    protected:
-        SOCKADDR_IN		m_foreignAddr;
     };
 
     FTLEXPORT template <typename T>
@@ -207,12 +203,10 @@ namespace FTL
         //Server
 		FTLINLINE int Bind(USHORT listenPort, LPCTSTR pszBindAddr);
         FTLINLINE int StartListen(INT backlog, INT nMaxClients);
-        FTLINLINE CFClientSocketT<T>* Accept();
-		FTLINLINE void ReleaseClient(CFClientSocketT<T>* pClient);
+		//FTLINLINE void ReleaseClient(CFClientSocketT<T>* pClient);
 	protected:
 		FTLINLINE virtual void OnClose();
     protected:
-        CFMemCacheT<CFClientSocketT <T> >*    m_pClientSocketPool;
     };
 
     FTLEXPORT template < typename T>

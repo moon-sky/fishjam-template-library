@@ -78,6 +78,7 @@
 #else
 #  include <WinInet.h>	//基础版，通常编写客户端，抽象了Gopher，FTP，HTTP协议
 #endif
+#include <Iphlpapi.h>
 #include <ws2tcpip.h>
 
 #pragma TODO(now just use CAtlString)
@@ -201,6 +202,8 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
+* TODO: GetAdaptersAddresses 的Flags中有 unicast/anycast/multicast 等多种定义,该方法的IP_ADAPTER_ADDRESSES参数分很多版本
+* 
 * 广播和多播必须使用 UDP 套接字才能实现
 *   
 * 多播/组播(multicast) -- 一(多播源)对多(加入多播组中的主机)，典型应用是多人(音视频)会议，
@@ -379,7 +382,7 @@
 *     5.inet_pton/inet_ntop <== presentaion(字符串表达)<->numeric(套接口地址结构中的二进制值)，适用于IPv4和IPv6 -- Vista后才支持?
 *         InetNtop(AF_INET,&cliaddr.sin_addr, buff, sizeof(buff));
 *         InetPton/inet_pton(AF_INET,TEXT("192.168.0.1"), &addr.sin_addr, ...); 
-*
+*     6.(推荐)WSAAddressToString/WSAStringToAddress -- 在字符和二进制方式之间转换地址，支持Xp
 * 注意：
 *   1.Socket API使用一种很基本的地址结构(sockaddr),根据地址簇不同，结构成员的占位也不同，
 *     如IPV4的 sockaddr_in,使用前一般要全部清零，否则容易出现错误
@@ -395,6 +398,7 @@
 
 /*************************************************************************************************************************
 * TransmitFile -- 在内核中高性能的传输文件数据
+* TransmitPackets -- 在已有的连接socket上传输内存块，似乎不能有反馈和取消？
 * WSAStartup/WSACleanup --初始化和清除
 * WSAEnumProtocols -- 获得系统中安装的网络协议的相关信息
 * WSASocket(地址家族,套接字类型,协议),如果前三个参数都是用 FROM_PROTOCOL_INFO ，并且指定 WSAPROTOCOL_INFO结构，则使用结构中的。
@@ -679,7 +683,7 @@ namespace FTL
                 WSASetLastError(lastSocketError);\
             }\
         }
-    #define FTL_DEBUG_EXCEPT1(x, e1) \
+    #define NET_VERIFY_EXCEPT1(x, e1) \
         {\
             rc = (x);\
             if(SOCKET_ERROR == rc)\
@@ -695,7 +699,7 @@ namespace FTL
     #else
         #define NET_VERIFY(x)	\
             rc = (x);
-        #define FTL_DEBUG_EXCEPT1(x, e1) \
+        #define NET_VERIFY_EXCEPT1(x, e1) \
             rc = (x);
     #endif
 
@@ -730,6 +734,16 @@ namespace FTL
         FTLINLINE virtual LPCTSTR ConvertInfo();
     };
 
+	//IPV4/IPV6 兼容的地址
+	class CFSocketAddress : public SOCKET_ADDRESS
+	{
+	public:
+		FTLINLINE explicit CFSocketAddress();
+		FTLINLINE explicit CFSocketAddress(const SOCKET_ADDRESS& addr);
+		FTLINLINE ~CFSocketAddress();
+	private:
+	};
+
 	typedef std::map<tstring, tstring> CookieKeyValueMap;
     namespace FNetInfo
     {
@@ -750,7 +764,10 @@ namespace FTL
 		//FTLINLINE LPCTSTR GetSocketAddrInfoString(CFStringFormater& formater, const PSOCKADDR_IN pSockAddrIn);
 		//获取 ADDRINFO.ai_flags 对应的字符串
 		FTLINLINE LPCTSTR GetAddrInfoFlagsString(CFStringFormater& formater, int aiFlags);
-		FTLINLINE LPCTSTR GetSockAddrInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel = 0);
+
+		FTLINLINE LPCTSTR GetAddressInfoString(CFStringFormater& formater, LPSOCKADDR pSockAddr, DWORD dwAddressLength);
+		FTLINLINE LPCTSTR GetAddressInfoString(CFStringFormater& formater, SOCKET_ADDRESS& socketAddress);
+		FTLINLINE LPCTSTR GetAddressInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel = 0);
 
         //获取指定地址家族的协议： 如 AF_INETx 中的 IPPROTO_IP/IPPROTO_TCP/IPPROTO_UDP 等
         FTLINLINE LPCTSTR GetProtocolType(int iAddressFamily,int iProtocol);
@@ -777,8 +794,8 @@ namespace FTL
 		//通过 HttpQueryInfo 获取HTTP信息
 		FTLINLINE LPCTSTR GetHttpQueryInfoString(CFStringFormater& formater, HINTERNET hInternet, DWORD dwInfoLevel = DWORD(-1));
 
-        //获取本地的IP地址
-        FTLINLINE LONG GetLocalIPAddress();
+        //获取本地地址，默认获取IPV4，
+        FTLINLINE LONG GetLocalAddress(std::list<CFSocketAddress*>& lstAddress, ULONG Family = AF_INET, ULONG Flags = 0);
 
 		//返回URL指定的文件大小和名字
 		FTLINLINE BOOL GetUrlFileSizeAndFileName(

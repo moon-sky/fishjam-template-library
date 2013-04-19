@@ -596,7 +596,7 @@ namespace FTL
 #ifndef DEFAULT_MEMALLOCATOR_FIXED_COUNT
     #define DEFAULT_MEMALLOCATOR_FIXED_COUNT 32
 #endif 
-    template <typename T, MemoryAllocType allocType  = matNew, UINT DefaultFixedCount = DEFAULT_MEMALLOCATOR_FIXED_COUNT>
+    template <typename T, UINT DefaultFixedCount = DEFAULT_MEMALLOCATOR_FIXED_COUNT, MemoryAllocType allocType  = matNew>
     class CFMemAllocator
     {
 #pragma TODO(ATL中已经有 CTempBuffer 模板类了)
@@ -636,7 +636,7 @@ namespace FTL
     public:
         FTLINLINE CFStringFormater(DWORD dwInitAllocLength = MAX_BUFFER_LENGTH);
         FTLINLINE virtual ~CFStringFormater();
-        FTLINLINE VOID Reset();
+        FTLINLINE VOID Reset(INT nSize = 0);
 		FTLINLINE HRESULT __cdecl Format(LPCTSTR lpszFormat, ...);
         FTLINLINE HRESULT __cdecl FormatV(LPCTSTR lpszFormat, va_list argList);
         FTLINLINE HRESULT __cdecl AppendFormat(LPCTSTR lpszFormat, ...);
@@ -673,6 +673,7 @@ namespace FTL
             return m_pBuf;
         }
         FTLINLINE LPCTSTR GetString() const;
+		FTLINLINE LPTSTR GetString();
         FTLINLINE LONG  GetStringLength() const;
         FTLINLINE LPTSTR Detach();
     protected:
