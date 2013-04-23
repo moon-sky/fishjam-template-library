@@ -11,7 +11,6 @@
 //#pragma comment(lib, "ddraw.lib")
 //#endif
 
-#pragma TODO(unhandled interface)
 //IVsFontAndColorDefaultsProvider
 //IVsCodePageSelection
 //IVsTextManager2
@@ -108,7 +107,7 @@ namespace FTL
 							//Events:
 							CComPtr<ITypeInfo> spRefTypeInfo;
 							COM_VERIFY(pTypeInfo->GetRefTypeInfo(hRefType, &spRefTypeInfo)); //利用刚才取得句柄来取得TypeInfo
-#pragma TODO(Get TypeInfo Events)
+                            //#pragma TODO(Get TypeInfo Events)
 						}
 					}
 					//判断是否是接口
@@ -121,7 +120,7 @@ namespace FTL
 							//Methods
 							CComPtr<ITypeInfo> spRefTypeInfo;
 							COM_VERIFY(pTypeInfo->GetRefTypeInfo(hRefType, &spRefTypeInfo)); //利用刚才取得句柄来取得TypeInfo
-#pragma TODO(Get TypeInfo Methods)
+                            //#pragma TODO(Get TypeInfo Methods)
 						}
 					}
 				}

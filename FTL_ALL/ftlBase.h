@@ -599,7 +599,7 @@ namespace FTL
     template <typename T, UINT DefaultFixedCount = DEFAULT_MEMALLOCATOR_FIXED_COUNT, MemoryAllocType allocType  = matNew>
     class CFMemAllocator
     {
-#pragma TODO(ATL中已经有 CTempBuffer 模板类了)
+        //和ATL中的 CTempBuffer 模板类比较
         DISABLE_COPY_AND_ASSIGNMENT(CFMemAllocator);
     public:
         FTLINLINE CFMemAllocator();
@@ -636,7 +636,7 @@ namespace FTL
     public:
         FTLINLINE CFStringFormater(DWORD dwInitAllocLength = MAX_BUFFER_LENGTH);
         FTLINLINE virtual ~CFStringFormater();
-        FTLINLINE BOOL Reset(INT nSize = 0);
+        FTLINLINE BOOL Reset(DWORD dwNewSize = 0);
 		FTLINLINE HRESULT __cdecl Format(LPCTSTR lpszFormat, ...);
         FTLINLINE HRESULT __cdecl FormatV(LPCTSTR lpszFormat, va_list argList);
         FTLINLINE HRESULT __cdecl AppendFormat(LPCTSTR lpszFormat, ...);

@@ -34,12 +34,15 @@ namespace FTL
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
-			BOOL bRet = FALSE;
+            FTLASSERT(WM_VSCROLL == uMsg || WM_HSCROLL == uMsg);
+            UNREFERENCED_PARAMETER(uMsg);
+
+            HRESULT hr = E_FAIL;
 			UINT nSBCode = LOWORD(wParam);
 			UINT nPos = HIWORD(wParam);
 			//nSBCode 为 SB_THUMBPOSITION 或 SB_THUMBTRACK 时, nPos 才有意义，其他时候(如 SB_ENDSCROLL)其值无意义 
-			m_strFormater.Format(TEXT("%s{nSBCode=%s, nPos=%d, lParam(HWND)=0x%x }"), 
-				pszMsgName, CFWinUtil::GetScrollBarCodeString(nSBCode), nPos, lParam);
+			COM_VERIFY(m_strFormater.Format(TEXT("%s{nSBCode=%s, nPos=%d, lParam(HWND)=0x%x }"), 
+				pszMsgName, CFWinUtil::GetScrollBarCodeString(nSBCode), nPos, lParam));
 			return m_strFormater;
 		};
 	};

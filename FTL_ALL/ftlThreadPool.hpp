@@ -159,11 +159,12 @@ namespace FTL
 
 	//////////////////////////////////////    CFThreadPool    ///////////////////////////////////////////////////
 	template <typename T>  
-	CFThreadPool<T>::CFThreadPool(IFThreadPoolCallBack<T>* pCallBack /* = NULL*/)
+	CFThreadPool<T>::CFThreadPool(IFThreadPoolCallBack<T>* pCallBack /* = NULL*/, LONG nMaxWaitingJobs /* = LONG_MAX */)
 		:m_pCallBack(pCallBack)
 	{
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
-
+        
+        m_nMaxWaitingJobs = nMaxWaitingJobs;
 		m_nMinNumThreads = 0;
 		m_nMaxNumThreads = 1;
 
@@ -184,11 +185,13 @@ namespace FTL
 		m_hEventContinue = ::CreateEvent(NULL, TRUE, TRUE, NULL);
 		FTLASSERT(NULL != m_hEventContinue);
 
+        m_hSemaphoreWaitingPos = CreateSemaphore(NULL, nMaxWaitingJobs, nMaxWaitingJobs, NULL);
+        FTLASSERT(m_hSemaphoreWaitingPos);
+
 		//将可以同时做的工作数设置为 MAXLONG -- 目前暂时不考虑队列中的个数
 		m_hSemaphoreJobToDo = ::CreateSemaphore(NULL, 0, MAXLONG, NULL);
 		FTLASSERT(NULL != m_hSemaphoreJobToDo);
 
-#pragma TODO(尝试更改代码支持动态调整线程池最小最大个数)
 		//创建调整线程个数的信号量
 		m_hSemaphoreSubtractThread = CreateSemaphore(NULL, 0, MAXLONG, NULL);
 		FTLASSERT(NULL != m_hSemaphoreSubtractThread);
@@ -222,8 +225,8 @@ namespace FTL
 		API_VERIFY(ResetEvent(m_hEventStop));
 		//API_VERIFY(ResetEvent(m_hEventAllThreadComplete));
 		API_VERIFY(SetEvent(m_hEventContinue));				//设置继续事件，保证各个工作线程能运行
-		
-		{
+
+        {
 			CFAutoLock<CFLockObject>   locker(&m_lockThreads);
 			//FTLASSERT(NULL == m_pJobThreadHandles);
 			//if(NULL == m_pJobThreadHandles)    //防止多次调用Start
@@ -294,7 +297,7 @@ namespace FTL
             }
             m_TaskThreads.clear();
 		}
-
+        
 		return bRet;
 	}
 
@@ -327,9 +330,15 @@ namespace FTL
 			FTLTRACEEX(tlInfo, TEXT("CFThreadPool::ClearUndoWork, waitingJob Number is %d\n"), m_WaitingJobs.size());
 			while (!m_WaitingJobs.empty())
 			{
-				//释放对应的信标对象，其个数和 m_WaitingJobs 的个数是一致的
+				//获取一个对应的信标对象，保证其个数和 m_WaitingJobs 的个数是一致的
 				DWORD dwResult = WaitForSingleObject(m_hSemaphoreJobToDo, FTL_MAX_THREAD_DEADLINE_CHECK); 
 				API_VERIFY(dwResult == WAIT_OBJECT_0);
+                
+                //释放一个等待队列空位的信标对象，保证其空位的个数正确
+                LONG nPreviousCount = 0;
+                API_VERIFY(ReleaseSemaphore(m_hSemaphoreWaitingPos, 1, &nPreviousCount));
+                FTLASSERT(nPreviousCount == (LONG)(m_nMaxWaitingJobs - m_WaitingJobs.size()));
+                UNREFERENCED_PARAMETER(nPreviousCount);
 
 				WaitingJobContainer::iterator iterBegin = m_WaitingJobs.begin();
 				CFJobBase<T>* pJob = *iterBegin;
@@ -376,11 +385,30 @@ namespace FTL
 	}
 
 	template <typename T>  
-	BOOL CFThreadPool<T>::SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex)
+	BOOL CFThreadPool<T>::SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, DWORD dwMilliseconds /* = INFINITE */)
 	{
 		FTLASSERT(NULL != m_hEventStop); //如果调用 _DestroyPool后，就不能再次调用该函数
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
 		BOOL bRet = FALSE;
+
+        HANDLE hWaitHandles[] = 
+        {
+            m_hEventStop,
+            m_hSemaphoreWaitingPos,
+        };
+
+        DWORD dwResult = WaitForMultipleObjects(_countof(hWaitHandles), hWaitHandles, FALSE, dwMilliseconds);
+        switch (dwResult)
+        {
+        case WAIT_OBJECT_0:     //Stop
+        case WAIT_TIMEOUT:      //There is no place and TimeOut
+            return FALSE;
+        case WAIT_OBJECT_0 + 1: //wait for place
+            break;
+        default:
+            FTLASSERT(FALSE);   //Why?
+            return FALSE;
+        }
 
 		//加入Job并且唤醒一个等待线程
 		{
@@ -510,6 +538,7 @@ namespace FTL
 		BOOL bRet = FALSE;
 		API_VERIFY(ClearUndoWork());
 		
+        SAFE_CLOSE_HANDLE(m_hSemaphoreWaitingPos, NULL);
 		SAFE_CLOSE_HANDLE(m_hSemaphoreJobToDo,NULL);
 		SAFE_CLOSE_HANDLE(m_hSemaphoreSubtractThread,NULL);
 		SAFE_CLOSE_HANDLE(m_hEventAllThreadComplete, NULL);
@@ -557,6 +586,7 @@ namespace FTL
 			*ppJob = pJob;
 			m_WaitingJobs.erase(iterBegin);
 			{
+                ReleaseSemaphore(m_hSemaphoreWaitingPos, 1, NULL);
 				//放到进行作业的容器中
 				CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
 				m_DoingJobs.insert(DoingJobContainer::value_type(pJob->GetJobIndex(), pJob));			

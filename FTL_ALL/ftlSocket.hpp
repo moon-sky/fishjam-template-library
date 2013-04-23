@@ -390,7 +390,7 @@ namespace FTL
 
 		for (;;)
 		{
-			CFClientSocketT<T>* pClient = m_pServerSocket->Accept();
+			CFSocket* pClient = m_pServerSocket->Accept();
 			if (pClient)
 			{
 				//HANDLE hbindIoPort = CreateIoCompletionPort((HANDLE)(pClient->m_socket),m_hIoCompletionPort,
@@ -421,7 +421,7 @@ namespace FTL
 	unsigned int CFNetServerT<T>::doWorkerLoop()
 	{
 		DWORD dwNumberOfBytesTransferred = 0;
-		CFClientSocketT<T>* pClientSocket;//用于获得第二次CreateIoCompletionPort时传入的参数
+		CFSocket* pClientSocket = NULL;//用于获得第二次CreateIoCompletionPort时传入的参数
 		LPFOVERLAPPED    pOverLapped = NULL;
 		BOOL bRet = FALSE;
 		for (;;)
@@ -486,7 +486,7 @@ namespace FTL
 		//}
 		int rc = NO_ERROR;
 		//BOOL bRet = FALSE;
-		m_pServerSocket = new CFServerSocketT<T>();
+		m_pServerSocket = new CFServerSocket();
 		NET_VERIFY(m_pServerSocket->Open(m_socketType, TRUE));
 
 		do 

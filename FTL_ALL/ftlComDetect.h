@@ -81,7 +81,6 @@ namespace FTL
 # define INCLUDE_DETECT_ACTIVSCP    1
 #endif
 
-#pragma TODO(Audiopolicy)
 #ifndef INCLUDE_DETECT_AUDIOPOLICY
 # define INCLUDE_DETECT_AUDIOPOLICY    0
 #endif

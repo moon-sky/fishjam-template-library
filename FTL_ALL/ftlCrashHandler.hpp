@@ -916,7 +916,7 @@ namespace FTL
 		return bRet;
 	}
 
-	LRESULT CFCrashHandlerDialog::OnSaveStackClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	LRESULT CFCrashHandlerDialog::OnSaveStackClick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
 		TCHAR szCrashFile[MAX_PATH] = {0};
 		_GetCrashFilePrefix(szCrashFile, _countof(szCrashFile));
@@ -936,7 +936,7 @@ namespace FTL
 				//WORD wdStart = 0xFEFF;
 				//fileDump.Write(&wdStart, sizeof(wdStart));
 				//HWND hWndAddress = GetDlgItem(IDC_STATIC_ADDRESS);
-				UINT nLenght = GetDlgItemText(IDC_STATIC_ADDRESS, szInfo, _countof(szInfo));
+				GetDlgItemText(IDC_STATIC_ADDRESS, szInfo, _countof(szInfo));
 				CString strInfo;
 				strInfo.Format(TEXT("Address:%s\r\n"), szInfo);
 				fileDump.Write((LPCTSTR)strInfo, strInfo.GetLength()* sizeof(TCHAR));
@@ -967,6 +967,7 @@ namespace FTL
 						ListBox_GetText(hListStack, i, pszBuf);
 						DWORD dwCount = nSize * sizeof(TCHAR);
 						HRESULT hr = fileDump.Write((LPCVOID)pszBuf, dwCount); 
+                        FTLASSERT(SUCCEEDED(hr));
 						fileDump.Write(TEXT("\r\n"), lstrlen(TEXT("\r\n")));
 					}
 					delete [] pszBuf;
@@ -977,7 +978,7 @@ namespace FTL
 		return 0;
 	}
 
-	LRESULT CFCrashHandlerDialog::OnCreateMiniDumpClick(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	LRESULT CFCrashHandlerDialog::OnCreateMiniDumpClick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
 		BOOL bRet = FALSE;
 

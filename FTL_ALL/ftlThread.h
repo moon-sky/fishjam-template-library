@@ -707,8 +707,7 @@ namespace FTL
             clearByRandom,      //随机清除，不排序(可能是按照 map 中 KEY 的大小顺序排序)
         };
         BOOL GetItemByKey(const KEY key,VALUE& value);
-#pragma TODO(Add GetItmeByKeyAsync) //如果有则马上返回，否则通过指定的异步方法调用后，通过回调返回
-		//BOOL GetItmeByKeyAsync(const KEY key, ?)
+        //BOOL GetItmeByKeyAsync(const KEY key); //TODO:异步获取，如果有则马上返回，否则通过指定的异步方法调用后，通过回调返回
         void SetClearMode(ClearMode mode);
         BOOL SetClearPercent(DWORD clearPercent);    //使用百分比进行清除
     protected:

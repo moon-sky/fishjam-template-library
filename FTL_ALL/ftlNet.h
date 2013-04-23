@@ -81,7 +81,6 @@
 #include <Iphlpapi.h>
 #include <ws2tcpip.h>
 
-#pragma TODO(now just use CAtlString)
 #include <atlbase.h>
 #include <atlstr.h>
 
@@ -743,9 +742,10 @@ namespace FTL
 		FTLINLINE explicit CFSocketAddress(const SOCKADDR_IN& addrv4);
 		FTLINLINE explicit CFSocketAddress(const SOCKADDR_IN6& addrv6);
 		FTLINLINE explicit CFSocketAddress(const SOCKADDR_STORAGE addrStorage);
-		FTLINLINE explicit CFSocketAddress(LPCTSTR sAddr, USHORT usPort);
+		FTLINLINE explicit CFSocketAddress(LPCTSTR sAddr, USHORT usPort = 0);
 		FTLINLINE ~CFSocketAddress();
 
+        FTLINLINE BOOL   SetAddressPort(USHORT usPort);
 		FTLINLINE BOOL 	 GetIPv4Address(in_addr& rAddrV4, USHORT& rPort);
 		FTLINLINE BOOL	 GetIPV6Address(in6_addr& rAddrV6, USHORT& rPort);
 		FTLINLINE LPCTSTR ToString(CFStringFormater& formater);
@@ -1123,10 +1123,14 @@ namespace FTL
 		FTLINLINE CFDownloadJob(const CAtlString& strAgent);
 	protected:
 		CAtlString m_strLocalFilePath;
+        FTLINLINE VOID SetDeleteWhenCancel(BOOL bDelete);
+        FTLINLINE BOOL GetDeleteWhenCancel();
 		FTLINLINE virtual BOOL _CheckParams();
 		FTLINLINE virtual BOOL _SendRequest();
 		FTLINLINE virtual BOOL _ReceiveResponse();
-		FTLINLINE virtual BOOL _OnOpenTargetFile(HANDLE hFile) { return TRUE; }
+		FTLINLINE virtual BOOL _OnOpenTargetFile(HANDLE hFile) { UNREFERENCED_PARAMETER(hFile); return TRUE; }
+    private:
+        BOOL    m_bDeleteWhenCancel;
 	};
 
 	//≤¢––œ¬‘ÿ
@@ -1148,7 +1152,15 @@ namespace FTL
 	public:
 		//Download
 		FTLINLINE virtual BOOL OnPromptSaveFile(__in LONG nJobIndex, __inout CFJobBase<FTransferJobInfoPtr>* pJob , 
-			__in LONGLONG nTotalFileSize, __inout LPTSTR pszFileName, __in DWORD nBufferLenght) { return TRUE; }
+			__in LONGLONG nTotalFileSize, __inout LPTSTR pszFileName, __in DWORD nBufferLenght) 
+        {
+            UNREFERENCED_PARAMETER(nJobIndex);
+            UNREFERENCED_PARAMETER(pJob);
+            UNREFERENCED_PARAMETER(nTotalFileSize);
+            UNREFERENCED_PARAMETER(pszFileName);
+            UNREFERENCED_PARAMETER(nBufferLenght);
+            return TRUE; 
+        }
 	};
 
 	class CFInternetTransfer

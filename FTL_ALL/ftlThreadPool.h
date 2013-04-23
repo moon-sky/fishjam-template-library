@@ -84,7 +84,6 @@ namespace FTL
 	* 
     * 使用方式：参见 test_CFThreadPool
     *********************************************************************************************/
-#pragma TODO(CreateThreadpoolIo)
 	//WaitForThreadpoolWorkCallbacks -- 可以取消尚未运行的任务，但无法取消已经运行的任务
 	//http://www.cnblogs.com/wz19860913/articles/1274214.html --  Windows 线程池
 
@@ -245,7 +244,7 @@ namespace FTL
 		friend class CFJobBase<T>;  //允许Job在 GetJobWaitType 中获取 m_hEventStop/m_hEventContinue
 		DISABLE_COPY_AND_ASSIGNMENT(CFThreadPool);
 	public:
-		FTLINLINE CFThreadPool(IFThreadPoolCallBack<T>* pCallBack = NULL);
+		FTLINLINE CFThreadPool(IFThreadPoolCallBack<T>* pCallBack = NULL, LONG nMaxWaitingJobs = LONG_MAX);
 		FTLINLINE virtual ~CFThreadPool(void);
 
 		//! 开始线程池,此时会创建 nMinNumThreads 个线程，然后会根据任务数在 nMinNumThreads -- nMaxNumThreads 之间自行调节线程的个数
@@ -267,7 +266,7 @@ namespace FTL
 
 		//! 向线程池中注册工作 -- 如果当前没有空闲的线程，并且当前线程数小于最大线程数，则会自动创建新的线程，
 		//! 成功后会通过 outJobIndex 返回Job的索引号，可通过该索引定位、取消特定的Job
-		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex);
+		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, DWORD dwMilliseconds = INFINITE);
 
 		//! 取消指定的Job,
 		//! TODO:如果取出Job给客户，可能调用者得到指针时，Job执行完毕 delete this，会照成野指针异常
@@ -305,13 +304,11 @@ namespace FTL
 	public:
 		LONG m_nMinNumThreads;					//! 线程池中最少的线程个数
 		LONG m_nMaxNumThreads;					//! 线程池中最大的线程个数
+        LONG m_nMaxWaitingJobs;                 //! 等待队列中的最大线程个数
 		IFThreadPoolCallBack<T>* m_pCallBack;	//! 回调接口
 		LONG m_nJobIndex;						//! Job的索引，每 SubmitJob 一次，则递增1
 
 		LONG m_nRunningJobNumber;				//! 当前正在运行的Job个数
-
-		//TODO: 两个最好统一？
-		//LONG m_nCurNumThreads;                  //! 当前的线程个数(主要用来维护 m_pJobThreadHandles 数组)
 		LONG m_nRunningThreadNum;				//! 当前运行着的线程个数(用来在所有的线程结束时激发 Complete 事件)
 
 		typedef std::map<DWORD, HANDLE>   TaskThreadContrainer;
@@ -334,6 +331,7 @@ namespace FTL
 		HANDLE m_hEventStop;                    //! 停止Pool的事件
 		HANDLE m_hEventAllThreadComplete;		//! 所有的线程都结束时激发这个事件
 		HANDLE m_hEventContinue;				//! 整个Pool继续运行的事件
+        HANDLE m_hSemaphoreWaitingPos;          //! 保存等待容器中还可以放的Job个数，每取出一个Job就增加1，每Submit一个进去就减1
 		HANDLE m_hSemaphoreJobToDo;             //! 保存还有多少个Job的信号量,每Submit一个Job,就增加一个
 		HANDLE m_hSemaphoreSubtractThread;      //! 用于减少线程个数时的信号量,初始时个数为0,每要释放一个，就增加一个，
 

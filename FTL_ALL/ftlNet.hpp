@@ -171,11 +171,11 @@ namespace FTL
 			iSockaddrLength = sizeof(addrStorage);
 		}
 	}
-	CFSocketAddress::CFSocketAddress(LPCTSTR sAddr, USHORT usPort)
+	CFSocketAddress::CFSocketAddress(LPCTSTR sAddr, USHORT usPort /* = 0 */)
 	{
 		Init();
 		int rc = 0;
-		NET_VERIFY_EXCEPT1(WSAStringToAddress((LPTSTR)sAddr, AF_INET, NULL, NULL, &iSockaddrLength), WSAEFAULT);
+		NET_VERIFY_EXCEPT1(WSAStringToAddress((LPTSTR)sAddr, AF_UNSPEC, NULL, NULL, &iSockaddrLength), WSAEFAULT);
 		if (SOCKET_ERROR == rc)
 		{
 			int lastSocketError = WSAGetLastError();
@@ -184,12 +184,16 @@ namespace FTL
 				lpSockaddr = (LPSOCKADDR)new BYTE[iSockaddrLength];
 				if (lpSockaddr)
 				{
-					NET_VERIFY(WSAStringToAddress((LPTSTR)sAddr, AF_INET, NULL, lpSockaddr, &iSockaddrLength));
+					NET_VERIFY(WSAStringToAddress((LPTSTR)sAddr, AF_UNSPEC, NULL, lpSockaddr, &iSockaddrLength));
 					if (SOCKET_ERROR == rc)
 					{
 						SAFE_DELETE_ARRAY(lpSockaddr);
 						iSockaddrLength = 0;
 					}
+                    else if(usPort != 0)
+                    {
+                        SetAddressPort(usPort);
+                    }
 				}
 			}
 		}
@@ -214,6 +218,39 @@ namespace FTL
 		}
 		return formater.GetString();
 	}
+
+    BOOL CFSocketAddress::SetAddressPort(USHORT usPort)
+    {
+        BOOL bRet = FALSE;
+        if (lpSockaddr)
+        {
+            switch (lpSockaddr->sa_family)
+            {
+            case AF_INET:
+                {
+                    FTLASSERT(this->iSockaddrLength >= sizeof(SOCKADDR_IN));
+                    SOCKADDR_IN* pSockAddrV4 = reinterpret_cast<SOCKADDR_IN*>(&lpSockaddr->sa_data);
+                    FTLASSERT(AF_INET == pSockAddrV4->sin_family);
+                    pSockAddrV4->sin_port = htons(usPort);
+                    bRet = TRUE;
+                    break;
+                }
+            case AF_INET6:
+                {
+                    FTLASSERT(this->iSockaddrLength >= sizeof(SOCKADDR_IN6));
+                    SOCKADDR_IN6* pSockAddrV6 = reinterpret_cast<SOCKADDR_IN6*>(&lpSockaddr->sa_data);
+                    FTLASSERT(AF_INET6 == pSockAddrV6->sin6_family);
+                    pSockAddrV6->sin6_port = htons(usPort);
+                    bRet = TRUE;
+                    break;
+                }
+            default:
+                FTLASSERT(FALSE);
+                break;
+            }
+        }
+        return bRet;
+    }
 
 	BOOL CFSocketAddress::GetIPv4Address(in_addr& rAddrV4, USHORT& rPort)
 	{
@@ -600,7 +637,7 @@ namespace FTL
 				optList.dwOptionCount,
 				optList.dwOptionError
 				);
-#pragma TODO(LPINTERNET_PER_CONN_OPTIONA  pOptions)
+            //#pragma TODO(LPINTERNET_PER_CONN_OPTIONA  pOptions)
 
 			return formater.GetString();
 		}
@@ -665,6 +702,7 @@ namespace FTL
 		LPCTSTR GetCertChainContextString(CFStringFormater& formater, const PCCERT_CHAIN_CONTEXT& certChainContext)
 		{
 			FTLASSERT(FALSE);
+            UNREFERENCED_PARAMETER(certChainContext);
 			return formater.GetString();
 		}
 #endif 
@@ -1216,6 +1254,12 @@ namespace FTL
 			__out LPTSTR pszOutFileName, 
 			__in INT nMaxFileNameSize)
 		{
+            UNREFERENCED_PARAMETER(pszUrl);
+            UNREFERENCED_PARAMETER(pFileSize);
+            UNREFERENCED_PARAMETER(pszOutFileName);
+            UNREFERENCED_PARAMETER(nMaxFileNameSize);
+            ATLASSERT(FALSE);  //TODO: pszOutFileName and nMaxFileNameSize
+
 			HINTERNET hInternet = NULL;
 			HINTERNET hConnect = NULL;
 			HINTERNET hRequest = NULL;
@@ -1240,16 +1284,15 @@ namespace FTL
 				INTERNET_FLAG_RELOAD | INTERNET_FLAG_KEEP_CONNECTION, // | INTERNET_FLAG_NO_COOKIES
 				NULL
 				);
-			HttpAddRequestHeaders(hRequest, TEXT("Accept: */*\r\n"), -1, HTTP_ADDREQ_FLAG_ADD|HTTP_ADDREQ_FLAG_REPLACE);
+			HttpAddRequestHeaders(hRequest, TEXT("Accept: */*\r\n"), (DWORD)(-1), HTTP_ADDREQ_FLAG_ADD|HTTP_ADDREQ_FLAG_REPLACE);
 			if (pszCookie)
 			{
-				HttpAddRequestHeaders(hRequest, pszCookie, -1, HTTP_ADDREQ_FLAG_ADD|HTTP_ADDREQ_FLAG_REPLACE);
+				HttpAddRequestHeaders(hRequest, pszCookie, (DWORD)(-1), HTTP_ADDREQ_FLAG_ADD|HTTP_ADDREQ_FLAG_REPLACE);
 			}
 			HttpSendRequest(hRequest, NULL, 0, NULL, 0);
 
 			//获取文件大小 
 			//HttpQueryInfo(hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
-
 
 		}
 
@@ -2252,6 +2295,8 @@ namespace FTL
 
 	BOOL  CFUploadJob::_SendCallbackParam(PBYTE pBuffer, DWORD dwBufferSize)
 	{
+        UNREFERENCED_PARAMETER(pBuffer);
+        UNREFERENCED_PARAMETER(dwBufferSize);
 		return TRUE;
 	}
 
@@ -2464,6 +2509,7 @@ namespace FTL
 	CFDownloadJob::CFDownloadJob(const CAtlString& strAgent)
 	:CFTransferJobBase(strAgent)
 	{
+        m_bDeleteWhenCancel = TRUE;
 	}
 
 	BOOL CFDownloadJob::_CheckParams()
@@ -2654,8 +2700,13 @@ namespace FTL
 		//User Cancel
 		if(GetJobWaitType(0) == ftwtStop)
 		{
-			BOOL bTempRet = ::DeleteFile(m_strLocalFilePath);
-			//API_ASSERT(bTempRet);
+            if (m_bDeleteWhenCancel)
+            {
+                //是否需要删除通常来说需要具体的Job确定
+                //BOOL bTempRet = 
+                ::DeleteFile(m_strLocalFilePath);
+                //API_ASSERT(bTempRet);
+            }
 
 			SetLastError(ERROR_CANCELLED);
 			_SetErrorStatus(ERROR_CANCELLED, TEXT("_ReceiveResponse"));
@@ -2663,6 +2714,16 @@ namespace FTL
 		}
 		return bRet;
 	}
+
+    BOOL CFDownloadJob::GetDeleteWhenCancel()
+    {
+        return m_bDeleteWhenCancel;
+    }
+    VOID CFDownloadJob::SetDeleteWhenCancel(BOOL bDelete)
+    {
+        m_bDeleteWhenCancel = bDelete;
+    }
+
 
 	CFParallelDownloadJob::CFParallelDownloadJob(const CAtlString& strAgent)
 		:CFDownloadJob(strAgent)
@@ -2877,6 +2938,7 @@ namespace FTL
 
 	BOOL CFUrlComponents::ParseUrl( LPCTSTR pstrURL, DWORD& dwServiceType, WORD& nPort, DWORD dwFlags )
 	{
+        ATLASSERT(FALSE && TEXT("Not parse dwServiceType and nPort"));
 		//未测试 -- 用 WinHttpCrackUrl 有什么问题？
 		BOOL bRet = FALSE;
 		LPTSTR pstrCanonicalizedURL = NULL;

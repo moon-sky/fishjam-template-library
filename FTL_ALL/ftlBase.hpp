@@ -488,23 +488,23 @@ namespace FTL
         SAFE_DELETE_ARRAY(m_pBuf);
     }
 
-    BOOL CFStringFormater::Reset(INT nSize /* = 0 */)
+    BOOL CFStringFormater::Reset(DWORD dwNewSize /* = 0 */)
     {
-		FTLASSERT(nSize >= 0);
-		if (nSize == m_dwTotalSpaceSize)
+		FTLASSERT(dwNewSize >= 0);
+		if (dwNewSize == m_dwTotalSpaceSize)
 		{
 			return TRUE;
 		}
 
 		BOOL bRet = FALSE;
-		if (0 < nSize)
+		if (0 < dwNewSize)
 		{
-			LPTSTR pszNewBuf = new TCHAR[nSize];
+			LPTSTR pszNewBuf = new TCHAR[dwNewSize];
 			if (pszNewBuf)
 			{
 				if (m_pBuf)
 				{
-					StringCchCopy(pszNewBuf, nSize - 1, m_pBuf);
+					StringCchCopy(pszNewBuf, dwNewSize - 1, m_pBuf);
 					SAFE_DELETE_ARRAY(m_pBuf);
 				}
 				else
@@ -512,14 +512,14 @@ namespace FTL
 					pszNewBuf[0] = NULL;
 				}
 				m_pBuf = pszNewBuf;
-				m_dwTotalSpaceSize = nSize;
+				m_dwTotalSpaceSize = dwNewSize;
 				bRet = TRUE;
 			}
 		}
-		else if(0 == nSize)
+		else if(0 == dwNewSize)
 		{
 			SAFE_DELETE_ARRAY(m_pBuf);
-			m_dwTotalSpaceSize = nSize;
+			m_dwTotalSpaceSize = dwNewSize;
 			bRet = TRUE;
 		}
 		return bRet;
@@ -827,7 +827,7 @@ namespace FTL
 
     CFFastTrace::CFFastTrace(LPCTSTR pszKey, HMODULE hModule)
     {
-        BOOL bRet = FALSE;
+        //BOOL bRet = FALSE;
 		//m_bAllocTls = FALSE;
 
         InitializeCriticalSection(&m_CsLock);
