@@ -13,6 +13,7 @@
 #include <Af_irda.h>
 #include <io.h>
 #include <WS2tcpip.h>
+//#include <WinSock2.h>
 
 #include <ftlFunctional.h>
 #include <ftlDebug.h>
@@ -26,7 +27,6 @@
 #  pragma comment(lib, "Crypt32.lib")
 #endif 
 
-//#include <WinSock2.h>
 
 #pragma warning( push )
 #pragma warning(disable: 4996) //C4996: 'read': The POSIX name for this item is deprecated.
@@ -105,15 +105,19 @@ namespace FTL
         return m_bufInfo;
     }
 
+	void CFSocketAddress::Init()
+	{
+		iSockaddrLength = 0;
+		lpSockaddr = NULL;
+		//m_Port = 0;
+	}
 	CFSocketAddress::CFSocketAddress()
 	{
-		this->iSockaddrLength = 0;
-		this->lpSockaddr = NULL;
+		Init();
 	}
 	CFSocketAddress::CFSocketAddress(const SOCKET_ADDRESS& addr)
 	{
-		this->iSockaddrLength = 0;
-		this->lpSockaddr = NULL;
+		Init();
 
 		if (addr.iSockaddrLength > 0)
 		{
@@ -125,6 +129,122 @@ namespace FTL
 			}
 		}
 	}
+	CFSocketAddress::CFSocketAddress(const SOCKADDR_IN& addrv4)
+	{
+		Init();
+		FTLASSERT(AF_INET == addrv4.sin_family);
+		if (AF_INET == addrv4.sin_family)
+		{
+			lpSockaddr = (LPSOCKADDR)new BYTE[sizeof(SOCKADDR_IN)];
+			if (lpSockaddr)
+			{
+				CopyMemory(lpSockaddr, &addrv4, sizeof(addrv4));
+				FTLASSERT(lpSockaddr->sa_family == AF_INET);
+				iSockaddrLength = sizeof(addrv4);
+			}
+		}
+	}
+
+	CFSocketAddress::CFSocketAddress(const SOCKADDR_IN6& addrv6)
+	{
+		Init();
+		FTLASSERT(sizeof(sockaddr_in6) == sizeof(addrv6));
+		FTLASSERT(AF_INET6 == addrv6.sin6_family);
+		if (AF_INET6 == addrv6.sin6_family)
+		{
+			lpSockaddr = (LPSOCKADDR)new BYTE[sizeof(addrv6)];
+			if (lpSockaddr)
+			{
+				CopyMemory(lpSockaddr, &addrv6, sizeof(addrv6));
+				FTLASSERT(lpSockaddr->sa_family == AF_INET6);
+				iSockaddrLength = sizeof(addrv6);
+			}
+		}
+	}
+	CFSocketAddress::CFSocketAddress(const SOCKADDR_STORAGE addrStorage)
+	{
+		Init();
+		lpSockaddr = (LPSOCKADDR)new BYTE[sizeof(addrStorage)];
+		if (lpSockaddr)
+		{
+			CopyMemory(lpSockaddr, &addrStorage, sizeof(addrStorage));
+			iSockaddrLength = sizeof(addrStorage);
+		}
+	}
+	CFSocketAddress::CFSocketAddress(LPCTSTR sAddr, USHORT usPort)
+	{
+		Init();
+		int rc = 0;
+		NET_VERIFY_EXCEPT1(WSAStringToAddress((LPTSTR)sAddr, AF_INET, NULL, NULL, &iSockaddrLength), WSAEFAULT);
+		if (SOCKET_ERROR == rc)
+		{
+			int lastSocketError = WSAGetLastError();
+			if (WSAEFAULT == lastSocketError && iSockaddrLength > 0)
+			{ 
+				lpSockaddr = (LPSOCKADDR)new BYTE[iSockaddrLength];
+				if (lpSockaddr)
+				{
+					NET_VERIFY(WSAStringToAddress((LPTSTR)sAddr, AF_INET, NULL, lpSockaddr, &iSockaddrLength));
+					if (SOCKET_ERROR == rc)
+					{
+						SAFE_DELETE_ARRAY(lpSockaddr);
+						iSockaddrLength = 0;
+					}
+				}
+			}
+		}
+	}
+
+	LPCTSTR CFSocketAddress::ToString(CFStringFormater& formater)
+	{
+		if (lpSockaddr)
+		{
+			int rc = 0;
+			DWORD dwAddressStringLength = 0;
+			NET_VERIFY_EXCEPT1(WSAAddressToString(lpSockaddr, iSockaddrLength, NULL, NULL, &dwAddressStringLength), WSAEFAULT);
+			if (SOCKET_ERROR == rc)
+			{
+				int lastSocketError = WSAGetLastError();
+				if (WSAEFAULT == lastSocketError && dwAddressStringLength > 0)
+				{
+					formater.Reset(dwAddressStringLength);
+					NET_VERIFY(WSAAddressToString(lpSockaddr, iSockaddrLength, NULL, formater.GetString(), &dwAddressStringLength));
+				}
+			}
+		}
+		return formater.GetString();
+	}
+
+	BOOL CFSocketAddress::GetIPv4Address(in_addr& rAddrV4, USHORT& rPort)
+	{
+		BOOL bRet = FALSE;
+		if (lpSockaddr && AF_INET == lpSockaddr->sa_family)
+		{
+			FTLASSERT(this->iSockaddrLength >= sizeof(SOCKADDR_IN));
+			SOCKADDR_IN* pSockAddrV4 = reinterpret_cast<SOCKADDR_IN*>(&lpSockaddr->sa_data);
+			FTLASSERT(AF_INET == pSockAddrV4->sin_family);
+			CopyMemory(&rAddrV4, &pSockAddrV4->sin_addr, sizeof(in_addr));
+			rPort = pSockAddrV4->sin_port;
+			bRet = TRUE;
+		}
+		return bRet;
+	}
+
+	BOOL CFSocketAddress::GetIPV6Address(in6_addr& rAddrV6, USHORT& rPort)
+	{
+		BOOL bRet = FALSE;
+		if (lpSockaddr && AF_INET6 == lpSockaddr->sa_family)
+		{
+			FTLASSERT(this->iSockaddrLength >= sizeof(SOCKADDR_IN6));
+			SOCKADDR_IN6* pSockAddrV6 = reinterpret_cast<SOCKADDR_IN6*>(&lpSockaddr->sa_data);
+			FTLASSERT(AF_INET6 == pSockAddrV6->sin6_family);
+			CopyMemory(&rAddrV6, &pSockAddrV6->sin6_addr, sizeof(in6_addr));
+			rPort = pSockAddrV6->sin6_port;
+			bRet = TRUE;
+		}
+		return bRet;
+	}
+
 	CFSocketAddress::~CFSocketAddress()
 	{
 		SAFE_DELETE_ARRAY(lpSockaddr);
@@ -395,31 +515,31 @@ namespace FTL
 			return formater.GetString();
 		}
 
-		LPCTSTR GetAddressInfoString(CFStringFormater& formater, LPSOCKADDR pSockAddr, DWORD dwAddressLength)
-		{
-			FTLASSERT(pSockAddr);
-			if (pSockAddr)
-			{
-				int rc = 0;
-				DWORD dwAddressStringLength = 0;
-				NET_VERIFY_EXCEPT1(WSAAddressToString(pSockAddr, dwAddressLength, NULL, NULL, &dwAddressStringLength), WSAEFAULT);
-				if (SOCKET_ERROR == rc)
-				{
-					int lastSocketError = WSAGetLastError();
-					if (WSAEFAULT == lastSocketError && dwAddressStringLength > 0)
-					{
-						formater.Reset(dwAddressStringLength);
-						NET_VERIFY(WSAAddressToString(pSockAddr, dwAddressLength, NULL, formater.GetString(), &dwAddressStringLength));
-					}
-				}
-			}
-			return formater.GetString();
-		}
+		//LPCTSTR GetAddressInfoString(CFStringFormater& formater, LPSOCKADDR pSockAddr, DWORD dwAddressLength)
+		//{
+		//	FTLASSERT(pSockAddr);
+		//	if (pSockAddr)
+		//	{
+		//		int rc = 0;
+		//		DWORD dwAddressStringLength = 0;
+		//		NET_VERIFY_EXCEPT1(WSAAddressToString(pSockAddr, dwAddressLength, NULL, NULL, &dwAddressStringLength), WSAEFAULT);
+		//		if (SOCKET_ERROR == rc)
+		//		{
+		//			int lastSocketError = WSAGetLastError();
+		//			if (WSAEFAULT == lastSocketError && dwAddressStringLength > 0)
+		//			{
+		//				formater.Reset(dwAddressStringLength);
+		//				NET_VERIFY(WSAAddressToString(pSockAddr, dwAddressLength, NULL, formater.GetString(), &dwAddressStringLength));
+		//			}
+		//		}
+		//	}
+		//	return formater.GetString();
+		//}
 
-		LPCTSTR GetAddressInfoString(CFStringFormater& formater, SOCKET_ADDRESS& socketAddress)
-		{
-			return GetAddressInfoString(formater, socketAddress.lpSockaddr, socketAddress.iSockaddrLength);
-		}
+		//LPCTSTR GetAddressInfoString(CFStringFormater& formater, SOCKET_ADDRESS& socketAddress)
+		//{
+		//	return GetAddressInfoString(formater, socketAddress.lpSockaddr, socketAddress.iSockaddrLength);
+		//}
 
 		LPCTSTR GetAddressInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel)
 		{

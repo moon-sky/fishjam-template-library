@@ -4,7 +4,8 @@
 //http://andylin02.iteye.com/blog/616098 -- Chrome的多线程模型
 // ?? Plugin动态链接库名字必须为xxxWrapper.dll，否则webkit引擎无法识别
 //     Plugin动态链接库必须和浏览器或者widget管理器在同一目录下
-
+// ?? Plugin类从 nsPluginInstanceBase 继承? 包含 "pluginbase.h"文件
+// FF中查看插件：about:pplugins
 /*******************************************************************************************************
 * http://mozilla.com.cn/post/21666/
 * https://code.google.com/p/npapi-sdk/
@@ -35,7 +36,7 @@
 *     NPP_NewStream/NPP_DestroyStream -- 创建及销毁一个 NPStream 的使用实例，plugin和浏览器交互数据时候需要此两个接口
 *     NPP_WriteReady/NPP_Write -- 在需要传递数据给plugin的时候，需要此两个接口，分别为获得可传递数据大小和传递数据的接口。
 *   NP_XXX() -- 插件提供给浏览器，默认调用的方法，主要用于识别、初始化、终止化插件等，需要在def中导出
-*     NP_Initialize、NP_Shutdown 等
+*     NP_Initialize、NP_Shutdown 等 -- ? npapi的插件库提供给浏览器的最上层接口，针对Plugin类型的函数
 *   NS_XXX() -- 
 *
 *
@@ -68,6 +69,7 @@
 
 /*******************************************************************************************************
 * 类型：
+*   ScriptablePluginObject ?
 *   NPClass -- 一个结构体，里面定义了很多名为 NPXXXFunctionPtr 的函数指针(如 Construct、HasMethod、Invoke、SetProperty等)
 *     一套C方式实现的插件接口规范
 *   NPError -- 定义的错误码，NPERR_NO_ERROR

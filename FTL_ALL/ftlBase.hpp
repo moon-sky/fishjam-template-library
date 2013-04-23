@@ -488,21 +488,43 @@ namespace FTL
         SAFE_DELETE_ARRAY(m_pBuf);
     }
 
-    VOID CFStringFormater::Reset(INT nSize /* = 0 */)
+    BOOL CFStringFormater::Reset(INT nSize /* = 0 */)
     {
 		FTLASSERT(nSize >= 0);
-        SAFE_DELETE_ARRAY(m_pBuf);
-        m_dwTotalSpaceSize = 0;
+		if (nSize == m_dwTotalSpaceSize)
+		{
+			return TRUE;
+		}
+
+		BOOL bRet = FALSE;
 		if (0 < nSize)
 		{
-			m_pBuf = new TCHAR[nSize];
-			if (m_pBuf)
+			LPTSTR pszNewBuf = new TCHAR[nSize];
+			if (pszNewBuf)
 			{
-				m_pBuf[0] = NULL;
-                m_dwTotalSpaceSize = nSize;
+				if (m_pBuf)
+				{
+					StringCchCopy(pszNewBuf, nSize - 1, m_pBuf);
+					SAFE_DELETE_ARRAY(m_pBuf);
+				}
+				else
+				{
+					pszNewBuf[0] = NULL;
+				}
+				m_pBuf = pszNewBuf;
+				m_dwTotalSpaceSize = nSize;
+				bRet = TRUE;
 			}
 		}
+		else if(0 == nSize)
+		{
+			SAFE_DELETE_ARRAY(m_pBuf);
+			m_dwTotalSpaceSize = nSize;
+			bRet = TRUE;
+		}
+		return bRet;
     }
+
     HRESULT CFStringFormater::Format(LPCTSTR lpszFormat, ...)
     {
         CHECK_POINTER_RETURN_VALUE_IF_FAIL(lpszFormat,E_INVALIDARG);

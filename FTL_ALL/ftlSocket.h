@@ -47,7 +47,7 @@ CFSocketBase
 * 
 * 各协议的区别
 *     项目                             IPV4                                   IPV6                             兼容
-*   地址结构                        sockaddr_in                            sockaddr_in6                   sockaddr_storage
+*   地址结构                  sockaddr_in/SOCKADDR_IN                 sockaddr_in6/SOCKADDR_IN6         sockaddr_storage
 *   地址长度                            4字节
 *   地址长度宏                   INET_ADDRSTRLEN(22)                   INET6_ADDRSTRLEN(65)
 *   通配地址                      htonl(INADDR_ANY)                        in6addr_any 
@@ -73,6 +73,8 @@ namespace FTL
 	//兼容 IPV4/IPV6 的地址管理类，套接字参数: 协议(AF_XXX) + IP地址 + 端口号
 	//template <typename SOCKADDR_BASE = sockaddr_in>
 	//可以尝试通过 union 兼容，判断 family 后 强制转换成对应的结构并处理
+
+#if 0
 	class CFSockAddrIn :  public SOCKADDR_IN //  : public addrinfo// 
 	{
 	public:
@@ -100,8 +102,8 @@ namespace FTL
 		FTLINLINE operator LPSOCKADDR() { return (LPSOCKADDR)(this); }
 		FTLINLINE size_t  Size() const { return sizeof(SOCKADDR_IN); }
 		FTLINLINE void    SetAddr(SOCKADDR_IN* psin) { CopyMemory(this, psin, Size()); }
-
 	};
+#endif 
 
     enum FSocketType
     {
@@ -126,11 +128,10 @@ namespace FTL
         volatile UINT	        nSession;
     }FOVERLAPPED, *LPFOVERLAPPED;
 
-    FTLEXPORT template <typename T>
-    class CFSocketT
+    class CFSocket
     {
     public:
-		FTLINLINE CFSocketT<T>* CreateSocketByAddr(CFSockAddrIn& addr)
+		FTLINLINE CFSocket* CreateSocketByAddr(CFSocketAddress& addr)
 		{
 			//服务器端：通过hints指定过滤条件，解析出本地的地址，然后可以直接用于创建socket并绑定
 			/*
@@ -156,20 +157,20 @@ namespace FTL
 			hints.ai_flags = AF_UNSPEC;
 			hints.ai_socktype = SOCK_DGRAM;
 			hints.ai_flags = AI_CANONNAME;
-			rc = getaddrinfo("www.baidu.com", "http", &hints, &res);  //得到指定域名的连接地址(可能会同时返回 IPV4/IPV6 的地址)
-			socketfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-			connect(socketft, res->ai_addr, res->ai_addrlen);
+			int rc = getaddrinfo("www.baidu.com", "http", &hints, &res);  //得到指定域名的连接地址(可能会同时返回 IPV4/IPV6 的地址)
+			SOCKET socketfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+			connect(socketfd, res->ai_addr, res->ai_addrlen);
 		}
 
-        FTLINLINE CFSocketT();
-        FTLINLINE virtual ~CFSocketT();
+        FTLINLINE CFSocket();
+        FTLINLINE virtual ~CFSocket();
 		FTLINLINE BOOL IsOpen();
         FTLINLINE int Open(FSocketType st, BOOL bAsync);
         FTLINLINE int Close();
         FTLINLINE int Shutdown(INT how);
 
 		//Connection
-		FTLINLINE int Connect(const CFSockAddrIn& addr);// LPCTSTR pszAddr, INT nSocketPort);
+		FTLINLINE int Connect(const CFSocketAddress& addr);// LPCTSTR pszAddr, INT nSocketPort);
 
 		//Data
 		FTLINLINE int Send(const BYTE* pBuf, INT len, DWORD flags);
@@ -179,7 +180,7 @@ namespace FTL
 		//FTLINLINE int SetOpt(xxxx); //setsocketopt 的封装
 
 
-		FTLINLINE CFSocketT<T>* Accept();
+		FTLINLINE CFSocket* Accept();
 		FTLINLINE int Associate(SOCKET socket, SOCKADDR_IN* pForeignAddr);
 		FTLINLINE SOCKADDR_IN& GetForeignAddr() { return m_foreignAddr; }
 	protected:
@@ -194,12 +195,11 @@ namespace FTL
         volatile UINT       m_nSession;
     };
 
-    FTLEXPORT template <typename T>
-    class CFServerSocketT : public CFSocketT< T >
+    class CFServerSocket : public CFSocket
     {
     public:
-        FTLINLINE CFServerSocketT();
-        FTLINLINE ~CFServerSocketT();
+        FTLINLINE CFServerSocket();
+        FTLINLINE ~CFServerSocket();
         //Server
 		FTLINLINE int Bind(USHORT listenPort, LPCTSTR pszBindAddr);
         FTLINLINE int StartListen(INT backlog, INT nMaxClients);
@@ -219,7 +219,7 @@ namespace FTL
         int Destroy();
         int Connect(LPCTSTR pszAddr);
     protected:
-        CFSocketT<T>*    m_pClientSocket;
+        CFSocket*		 m_pClientSocket;
         FSocketType      m_socketType;
     };
 
@@ -240,10 +240,10 @@ namespace FTL
         int Destroy();
         int Start(INT backlog, INT nMaxClients);
         int Stop();
-        //CFSocketT<T>* Accept();
+        //CFSocket<T>* Accept();
     protected:
         FSocketType                 m_socketType;
-        CFServerSocketT<T>*         m_pServerSocket;
+        CFServerSocket*			m_pServerSocket;
 
         //CFThreadPool<DWORD>*    m_pIoServerThreadPool;
         HANDLE                  m_hIoCompletionPort;

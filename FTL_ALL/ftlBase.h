@@ -636,7 +636,7 @@ namespace FTL
     public:
         FTLINLINE CFStringFormater(DWORD dwInitAllocLength = MAX_BUFFER_LENGTH);
         FTLINLINE virtual ~CFStringFormater();
-        FTLINLINE VOID Reset(INT nSize = 0);
+        FTLINLINE BOOL Reset(INT nSize = 0);
 		FTLINLINE HRESULT __cdecl Format(LPCTSTR lpszFormat, ...);
         FTLINLINE HRESULT __cdecl FormatV(LPCTSTR lpszFormat, va_list argList);
         FTLINLINE HRESULT __cdecl AppendFormat(LPCTSTR lpszFormat, ...);

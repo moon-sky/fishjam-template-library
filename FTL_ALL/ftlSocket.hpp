@@ -32,7 +32,7 @@ namespace FTL
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////
-
+#if 0
 	CFSockAddrIn& CFSockAddrIn::Copy(const CFSockAddrIn& sin)
 	{
 		memcpy(this, &sin, Size());
@@ -79,9 +79,9 @@ namespace FTL
 #endif 
 		return !IsNull();
 	}
+#endif
 
-	template<typename T>
-	CFSocketT<T>::CFSocketT()
+	CFSocket::CFSocket()
 	{
 		m_socket = INVALID_SOCKET;
 		m_socketType = stTCP;
@@ -89,22 +89,19 @@ namespace FTL
 		m_nSession = (UINT)(-1);
 	}
 
-	template<typename T>
-	CFSocketT<T>::~CFSocketT()
+	CFSocket::~CFSocket()
 	{
 		FTLASSERT(!IsOpen() && TEXT("Forget Close The Socket"));
 		Close();
 	}
 
-	template<typename T>
-	BOOL CFSocketT<T>::IsOpen()
+	BOOL CFSocket::IsOpen()
 	{
 		BOOL isOpen = (INVALID_SOCKET != m_socket);
 		return isOpen;
 	}
 
-	template<typename T>
-	int CFSocketT<T>::Open(FSocketType st, BOOL bAsync)
+	int CFSocket::Open(FSocketType st, BOOL bAsync)
 	{
 		FTLASSERT(INVALID_SOCKET == m_socket && TEXT("Can not Create Socket Twice"));
 
@@ -132,8 +129,7 @@ namespace FTL
 		return rc;
 	}
 
-	template<typename T>
-	int CFSocketT<T>::Close()
+	int CFSocket::Close()
 	{
 		int rc = NO_ERROR;
 		SAFE_CLOSE_SOCKET(m_socket);
@@ -146,8 +142,7 @@ namespace FTL
 		return rc;
 	}
 
-	template<typename T>
-	int CFSocketT<T>::Shutdown(INT how)
+	int CFSocket::Shutdown(INT how)
 	{
 		FTLASSERT(INVALID_SOCKET != m_socket);
 		int rc = NO_ERROR;
@@ -155,8 +150,7 @@ namespace FTL
 		return rc;
 	}
 
-	template<typename T>
-	int CFSocketT<T>::Connect(const CFSockAddrIn& addrConnect)// (LPCTSTR pszAddr, INT nSocketPort)
+	int CFSocket::Connect(const CFSocketAddress& addrConnect)// (LPCTSTR pszAddr, INT nSocketPort)
 	{
 		//FTLASSERT(pszAddr);
 		//FTLASSERT(nSocketPort);
@@ -169,14 +163,13 @@ namespace FTL
 		//addrConnect.sin_port = htons(nSocketPort);
 		//addrConnect.sin_addr.S_un.S_addr = inet_addr(CT2A(pszAddr));
 
-		NET_VERIFY(WSAConnect(m_socket, &addrConnect, nLength, NULL,NULL,NULL,NULL));
+		NET_VERIFY(WSAConnect(m_socket, addrConnect.lpSockaddr, nLength, NULL,NULL,NULL,NULL));
 
 		return rc;
 	}
 
 
-	template<typename T>
-	int CFSocketT<T>::Send(const BYTE* pBuf, INT len, DWORD flags)
+	int CFSocket::Send(const BYTE* pBuf, INT len, DWORD flags)
 	{
 		int rc = NO_ERROR;
 		WSABUF sendBuf = {0};
@@ -187,8 +180,7 @@ namespace FTL
 		return rc;
 	}
 
-	template<typename T>
-	int CFSocketT<T>::Recv(BYTE* pBuf, INT len, DWORD flags)
+	int CFSocket::Recv(BYTE* pBuf, INT len, DWORD flags)
 	{
 		int rc = NO_ERROR;
 
@@ -206,14 +198,13 @@ namespace FTL
 		return rc;
 	}
 
-	template<typename T>
-	CFSocketT<T>*  CFSocketT<T>::Accept()
+	CFSocket*  CFSocket::Accept()
 	{
 		SOCKET soAccept = INVALID_SOCKET;
 		//CFSockAddrIn addrClient;
 		struct sockaddr_in addrClient = {0};
 		int nLength = sizeof(struct sockaddr_in);
-		CFSocketT<T> *pRetClient = NULL;
+		CFSocket *pRetClient = NULL;
 
 		// Check if there is something in the listen queue.
 		soAccept = WSAAccept(m_socket, (struct sockaddr *) &addrClient, 
@@ -224,7 +215,7 @@ namespace FTL
 		{
 			// Get a pointer to the free ClientSocket 
 			// instance from the pool.
-			pRetClient = new CFSocketT<T>();
+			pRetClient = new CFSocket();
 			if (pRetClient == NULL) 
 			{
 				// There are no free instances in the pool, maximum 
@@ -243,8 +234,7 @@ namespace FTL
 		return pRetClient;
 	}
 
-	template<typename T>
-	int CFSocketT<T>::Associate(SOCKET socket, PSOCKADDR_IN pForeignAddr)
+	int CFSocket::Associate(SOCKET socket, PSOCKADDR_IN pForeignAddr)
 	{
 		FTLASSERT(m_socket == INVALID_SOCKET);
 		int rc = NO_ERROR;
@@ -256,23 +246,19 @@ namespace FTL
 	//////////////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////////////////////////////
-	template<typename T>
-	CFServerSocketT<T>::CFServerSocketT()
+	CFServerSocket::CFServerSocket()
 	{
 	}
 
-	template<typename T>
-	CFServerSocketT<T>::~CFServerSocketT()
+	CFServerSocket::~CFServerSocket()
 	{
 	}
 
-	template<typename T>
-	void CFServerSocketT<T>::OnClose()
+	void CFServerSocket::OnClose()
 	{
 	}
 
-	template<typename T>
-	int CFServerSocketT<T>::Bind(USHORT listenPort, LPCTSTR pszBindAddr  = NULL )
+	int CFServerSocket::Bind(USHORT listenPort, LPCTSTR pszBindAddr  = NULL )
 	{
 		FTLASSERT(m_socket != INVALID_SOCKET);
 		int rc = NO_ERROR;
@@ -293,11 +279,10 @@ namespace FTL
 		return rc;
 	}
 
-	template<typename T>
-	int CFServerSocketT<T>::StartListen(INT backlog, INT nMaxClients)
+	int CFServerSocket::StartListen(INT backlog, INT nMaxClients)
 	{
 		int rc = NO_ERROR;
-		m_pClientSocketPool = new CFMemCacheT<CFClientSocketT <T> >(0,nMaxClients);
+		//m_pClientSocketPool = new CFMemCacheT<CFClientSocketT <T> >(0,nMaxClients);
 
 		FTLASSERT( m_socket != INVALID_SOCKET );
 		NET_VERIFY(listen(m_socket, backlog));

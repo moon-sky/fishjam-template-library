@@ -734,14 +734,23 @@ namespace FTL
         FTLINLINE virtual LPCTSTR ConvertInfo();
     };
 
-	//IPV4/IPV6 兼容的地址
+	//IPV4/IPV6 兼容的地址 -- SOCKADDR_STORAGE
 	class CFSocketAddress : public SOCKET_ADDRESS
 	{
 	public:
 		FTLINLINE explicit CFSocketAddress();
 		FTLINLINE explicit CFSocketAddress(const SOCKET_ADDRESS& addr);
+		FTLINLINE explicit CFSocketAddress(const SOCKADDR_IN& addrv4);
+		FTLINLINE explicit CFSocketAddress(const SOCKADDR_IN6& addrv6);
+		FTLINLINE explicit CFSocketAddress(const SOCKADDR_STORAGE addrStorage);
+		FTLINLINE explicit CFSocketAddress(LPCTSTR sAddr, USHORT usPort);
 		FTLINLINE ~CFSocketAddress();
-	private:
+
+		FTLINLINE BOOL 	 GetIPv4Address(in_addr& rAddrV4, USHORT& rPort);
+		FTLINLINE BOOL	 GetIPV6Address(in6_addr& rAddrV6, USHORT& rPort);
+		FTLINLINE LPCTSTR ToString(CFStringFormater& formater);
+	protected:
+		FTLINLINE VOID	  Init();
 	};
 
 	typedef std::map<tstring, tstring> CookieKeyValueMap;
@@ -765,8 +774,8 @@ namespace FTL
 		//获取 ADDRINFO.ai_flags 对应的字符串
 		FTLINLINE LPCTSTR GetAddrInfoFlagsString(CFStringFormater& formater, int aiFlags);
 
-		FTLINLINE LPCTSTR GetAddressInfoString(CFStringFormater& formater, LPSOCKADDR pSockAddr, DWORD dwAddressLength);
-		FTLINLINE LPCTSTR GetAddressInfoString(CFStringFormater& formater, SOCKET_ADDRESS& socketAddress);
+		//FTLINLINE LPCTSTR GetAddressInfoString(CFStringFormater& formater, LPSOCKADDR pSockAddr, DWORD dwAddressLength);
+		//FTLINLINE LPCTSTR GetAddressInfoString(CFStringFormater& formater, SOCKET_ADDRESS& socketAddress);
 		FTLINLINE LPCTSTR GetAddressInfoString(CFStringFormater& formater, const ADDRINFO& addrInfo, int nLevel = 0);
 
         //获取指定地址家族的协议： 如 AF_INETx 中的 IPPROTO_IP/IPPROTO_TCP/IPPROTO_UDP 等
