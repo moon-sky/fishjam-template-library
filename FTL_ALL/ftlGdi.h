@@ -251,7 +251,9 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 * 注意：
 *   1.默认情况下(即没有用SetWindowExt/SetViewportExt设定一个逻辑单位对应多少个像素的时候，
 *     MM_ANISOTROPIC和MM_ISOTROPIC使用MM_LOMETRIC映射模式)
-*   使用 SetLogicalMapMode 可以设置逻辑坐标是逻辑单位(比如 0.01逻辑英寸)
+*   2.使用 SetLogicalMapMode 可以设置逻辑坐标是逻辑单位(比如 0.01逻辑英寸)
+*   3.AtlWin.h 中已经提供了 HIMETRIC_PER_INCH、MAP_PIX_TO_LOGHIM 等宏进行转换，
+*     如? hmWidth = MAP_PIX_TO_LOGHIM(pxWidth, GetDeviceCaps(hdc, LOGPIXELSX));
 * 
 * 核心公式(比值相同,也可说是一逻辑单位对应的像素个数):
 *   (xViewPort - xViewportOrg)/(xWindow-xWindowOrg) = xViewExt/xWindowExt

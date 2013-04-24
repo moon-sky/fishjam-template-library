@@ -2841,8 +2841,8 @@ namespace FTL
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_LOWERCASE, pszDivide);
 		}
 
-		//Edit Control Styles
-		if (0 ==  lstrcmp(szClassName, WC_EDIT))
+		if (0 ==  lstrcmp(szClassName, WC_EDIT)                     //Edit Control Styles
+            || 0 == lstrcmp(szClassName, TEXT("RICHEDIT50W")))      //Rich Edit Control Styles
 		{
 			#define ES_ALIGNMASK	(ES_LEFT | ES_CENTER | ES_RIGHT)
 			if ( 0 != (lStyle & ES_ALIGNMASK))
@@ -2857,16 +2857,23 @@ namespace FTL
 			}
 
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_MULTILINE, pszDivide);
-			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_UPPERCASE, pszDivide);
+			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_UPPERCASE | ES_NOOLEDRAGDROP, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_LOWERCASE, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_PASSWORD, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_AUTOVSCROLL, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_AUTOHSCROLL, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_NOHIDESEL, pszDivide);
+
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_OEMCONVERT, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_READONLY, pszDivide);
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_WANTRETURN, pszDivide);
-			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_NUMBER, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_NUMBER | ES_DISABLENOSCROLL, pszDivide); //两个的值一样，为什么
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_SUNKEN, pszDivide); 
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_SAVESEL, pszDivide);
+
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_NOIME, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_VERTICAL, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_SELECTIONBAR, pszDivide);
 		}
 
         //ListView

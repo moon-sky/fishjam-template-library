@@ -85,8 +85,12 @@ IMF_DUALFONT |
 *   CHARFORMAT2(EM_SETCHARFORMAT) -- 字符格式，如 字体、尺寸、颜色以及如粗体、斜体和保护(父窗口接受到EN_PROTECTED的通知)等
 *   PARAFORMAT2(EM_SETPARAFORMAT) -- 段落格式，如 对齐、跳格、缩进和编号
 *   包含嵌入的COM对象
+*   类型:
+*     ES_SELECTIONBAR -- 
 *   消息(EM_) -- 
 *     EM_EXLIMITTEXT -- 一个Rich Edit控件不可能包含超过32K字节的文本，除非你使用EM_EXLIMITTEXT消息扩展了这个限制
+*     EM_SETTEXTEX -- 设置文本，可通过RTF指定格式，如插入表格等
+*     EM_SETOLEINTERFACE -- 
 *   通知（EN_) -- 注意需要用 EM_SETEVENTMASK 设置能发送的通知类型, 标准控件是父窗口处理，无窗口是 ITextHost::TxNotify
 *     注意：有两种类型的通知， direct and delayed
 *     EN_MSGFILTER -- 过滤所有的键盘和鼠标输入，父窗体可以防止键盘和鼠标消息被处理(在ITextHost中不发送,参见MSDN)

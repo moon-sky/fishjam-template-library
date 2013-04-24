@@ -316,7 +316,9 @@
 *
 *   FORMATETC -- OLE数据交换的关键结构，对设备，数据，和相关媒体做了格式上的描述，
 *     如： FORMATETC cFmt = {(CLIPFORMAT) CF_TEXT, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-*   STDMEDIUM -- 由其 tymed 成员变量确定的一系列句柄或数据对象接口的联合，使用完毕需要通过 ReleaseStgMedium 释放
+*                        或 {CF_BITMAP(剪贴板格式是位图), NULL(目标设备是屏幕), DVASPECT_CONTENT(Level of detail is Full content), -1, TYMED_GDI(Storage medium是位图句柄) };
+*   STGMEDIUM -- 由其 tymed 成员变量确定的一系列句柄或数据对象接口的联合
+*     如：STGMEDIUM stgm = { TYMED_GDI, hBitmap , NULL(表示使用完毕通过 ReleaseStgMedium 释放) };
 *   
 *   IDropSource -- D&D时的数据源方?生成拖放时的 IDataObject ?
 *     QueryContinueDrag -- 
@@ -329,7 +331,7 @@
 *   IDropSourceNotify -- 
 *     DragEnterTarget
 *     DragLeaveTarget
-*   IDataObject -- 传送数据
+*   IDataObject -- 传送数据, RichEdit 中也可以插入该接口封装的图片等(可从 IDataObjectImpl 继承生成 CImageDataObject)
 *     GetData/QueryGetData/SetData
 *     GetDataHere
 *     GetCanonicalFormatEtc

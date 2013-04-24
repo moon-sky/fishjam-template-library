@@ -185,6 +185,10 @@ namespace FTL
 # define INCLUDE_DETECT_QEDIT       0
 #endif
 
+#ifndef INCLUDE_DETECT_RICHOLE
+# define INCLUDE_DETECT_RICHOLE       1
+#endif
+
 #ifndef INCLUDE_DETECT_SERVPROV
 # define INCLUDE_DETECT_SERVPROV    1
 #endif 
@@ -351,6 +355,10 @@ namespace FTL
 
 #if INCLUDE_DETECT_QEDIT
 #  include <qedit.h>
+#endif 
+
+#if INCLUDE_DETECT_RICHOLE
+#  include <RichOle.h>
 #endif 
 
 #if INCLUDE_DETECT_SERVPROV

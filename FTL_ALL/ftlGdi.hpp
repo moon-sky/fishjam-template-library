@@ -618,22 +618,26 @@ namespace FTL
 			API_ASSERT(NULL != lpRsrc);
 			if (lpRsrc)
 			{
-				HGLOBAL hMem = GlobalAlloc(GMEM_FIXED, dwResSize);
-				BYTE* pmem = (BYTE*)GlobalLock(hMem);
-				CopyMemory(pmem,lpRsrc,dwResSize);
+				HGLOBAL hGlobal = GlobalAlloc(GMEM_FIXED, dwResSize); //GMEM_MOVEABLE
+                if (hGlobal)
+                {
+                    BYTE* pmem = (BYTE*)GlobalLock(hGlobal);
+                    CopyMemory(pmem,lpRsrc,dwResSize);
+                    GlobalUnlock(hGlobal);
 
-				HRESULT hr = E_FAIL;
-				CComPtr<IStream> pStream;
-				COM_VERIFY(CreateStreamOnHGlobal(hMem, TRUE, &pStream));
-				if (SUCCEEDED(hr) && pStream)
-				{
-					COM_VERIFY(image.Load(pStream));
-					if (SUCCEEDED(hr))
-					{
-						bRet = TRUE;
-					}
-				}
-				GlobalUnlock(hMem);
+                    HRESULT hr = E_FAIL;
+                    CComPtr<IStream> pStream;
+                    COM_VERIFY(CreateStreamOnHGlobal(hGlobal, TRUE, &pStream));
+                    if (SUCCEEDED(hr) && pStream)
+                    {
+                        COM_VERIFY(image.Load(pStream));
+                        //COM_VERIFY(OleLoadPicture(pStream, nSize, FALSE, IID_IPicture, (LPVOID *)&m_pPicture));
+                        if (SUCCEEDED(hr))
+                        {
+                            bRet = TRUE;
+                        }
+                    }
+                }
 
 				UnlockResource(hrSrc);
 				FreeResource(hrSrc);

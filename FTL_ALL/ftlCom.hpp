@@ -889,6 +889,22 @@ namespace FTL
 		m_pInfoOutput->SetIndent(m_nIndent);
         SAFE_RELEASE(m_pObj);
     }
+
+    CFImageDataObject::CFImageDataObject()
+    {
+
+    }
+
+    CFImageDataObject::~CFImageDataObject()
+    {
+
+    }
+
+    HRESULT CFImageDataObject::IDataObject_GetData(FORMATETC *pformatetcIn, STGMEDIUM *pmedium)
+    {
+        FTLASSERT(FALSE);
+        return E_NOTIMPL;
+    }
 } //namespace FTL
 
 #endif //FTL_COM_HPP

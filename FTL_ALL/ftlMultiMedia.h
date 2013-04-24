@@ -155,7 +155,13 @@
 
 /*********************************************************************************************
 * COM 中使用 IPicture 管理图片，可以使用 CPictureHolder 的辅助类
-*   hr=OleLoadPicturePath(T2OLE(szPath),NULL,0,RGB(255,255,255),IID_IPicture,(LPVOID*)&pPicture);
+*   从文件加载：hr = OleLoadPicturePath(T2OLE(szPath),NULL,0,RGB(255,255,255),IID_IPicture,(LPVOID*)&pPicture);
+*   从内存加载：hr = OleLoadPicture(pStream, nSize, FALSE, IID_IPicture, (LPVOID *)&m_pPicture));
+*   绘制:
+*     pPicture->get_Width(&hmWidth);
+*     int nWidth  = MulDiv(hmWidth, pDC->GetDeviceCaps(LOGPIXELSX), HIMETRIC_PER_INCH); //MAP_LOGHIM_TO_PIX
+*     int nHeight = MulDiv(hmHeight,pDC->GetDeviceCaps(LOGPIXELSY), HIMETRIC_PER_INCH);
+*     hr = pPicture->Render(dcMem, 0, 0, nWidth, nHeight, 0, hmHeight, hmWidth, -hmHeight, NULL);
 *********************************************************************************************/
 
 

@@ -2415,7 +2415,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IOleCacheControl)
             DETECT_INTERFACE_ENTRY(IParseDisplayName)
             DETECT_INTERFACE_ENTRY(IOleContainer)
-            DETECT_INTERFACE_ENTRY(IOleClientSite)
+            DETECT_INTERFACE_ENTRY(IOleClientSite)  //
             DETECT_INTERFACE_ENTRY(IOleObject)  //提供了OLE文档架构的基本内容，容器和组件可以协商被嵌入对象的信息
             //如果控件要与包容器程序的站点对象进行通讯，那么必须实现此接口。
             DETECT_INTERFACE_ENTRY(IOleWindow)
@@ -2502,6 +2502,11 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(ISampleGrabber)
             DETECT_INTERFACE_ENTRY(IResize)
 #endif //INCLUDE_DETECT_QEDIT
+
+#if INCLUDE_DETECT_RICHOLE
+            DETECT_INTERFACE_ENTRY_IID(IRichEditOle, IID_IRichEditOle)      //该接口在MFC中可通过 CRichEditCtrl.GetIRichEditOle(); 得到
+            DETECT_INTERFACE_ENTRY_IID(IRichEditOleCallback, IID_IRichEditOleCallback)
+#endif //INCLUDE_DETECT_RICHOLE
 
 #if INCLUDE_DETECT_SERVPROV
             //!在 Windows Media 9 Series 以前，

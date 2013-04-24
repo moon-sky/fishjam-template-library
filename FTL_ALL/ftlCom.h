@@ -15,6 +15,9 @@
 //http://blogs.msdn.com/b/vistacompatteam/archive/2006/09/28/cocreateinstanceasadmin-or-createelevatedcomobject-sample.aspx
 #pragma TODO(The COM Elevation Moniker)
 
+#include <atlbase.h>
+#include <atlcom.h>
+#include <atlctl.h>
 //COM对象 .rgs --  val DllSurrogate = s ''
 //COM接口 .rgs -- 
 /*
@@ -234,6 +237,22 @@ namespace FTL
 		int                 m_nIndent;
 	};
 
+    //参见 codeproject 上的 CImageDataObject -- 原来的实现似乎有不少Bug
+    class CFImageDataObject 
+        : public CComObjectRootEx<CComMultiThreadModel>
+        , public IDataObjectImpl<CFImageDataObject>
+    {
+    public:
+        BEGIN_COM_MAP(CFImageDataObject)
+            COM_INTERFACE_ENTRY(IDataObject)
+        END_COM_MAP()
+
+        FTLINLINE HRESULT IDataObject_GetData(FORMATETC *pformatetcIn, STGMEDIUM *pmedium);
+    public:
+        CFImageDataObject();
+        ~CFImageDataObject();
+        IDataAdviseHolder* m_spDataAdviseHolder;
+    };
 }//namespace FTL
 
 #endif //FTL_COM_H
