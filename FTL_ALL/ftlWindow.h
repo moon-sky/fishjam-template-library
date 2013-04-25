@@ -402,7 +402,7 @@ namespace FTL
 		if( (filters) & DUMP_FILTER_DIALOG_CTRL_NOTIFY )\
 		{\
 			bFilterd = ((WM_CTLCOLORMSGBOX <= uMsg && uMsg <= WM_CTLCOLORSTATIC) \
-			|| (WM_PRINTCLIENT == || uMsg) \
+			|| (WM_PRINTCLIENT == uMsg) \
 			|| (WM_NOTIFY == uMsg && (LPNMHDR(lParam)->code == NM_CUSTOMDRAW)) \
 			) ? TRUE : bFilterd;\
 		}\

@@ -1,6 +1,7 @@
 #ifndef FTL_CONTROLS_H
 #define FTL_CONTROLS_H
 #pragma once
+//TODO: WTL 中的 CHAIN_MSG_MAP_ALT(CRichEditCommands<CFirstRibbonView>, 1) 
 
 #include "ftlDefine.h"
 
@@ -111,6 +112,27 @@ IMF_DUALFONT |
 * 
 * CToolTipCtrl -- 
 ***********************************************************************************************************/
+
+/***********************************************************************************************************
+* 通过 UICC.xsd 可以查看 Ribbon.xml 文件的语法规则, 
+*   MSDN 的帮助：http://msdn.microsoft.com/en-us/library/dd371191(VS.85).aspx
+*   例子: http://www.codeproject.com/Articles/32785/Windows-7-Ribbon-The-Time-Has-Come-Your-Win32-Appl
+*         
+* Ribbon -- 命令工具条，将软件的功能集成到窗口上方的一系列标签（tabs）中，用于代替传统的菜单栏和工具栏
+*   CMFCRibbonCategory -- 即Tab(Core + Contextual) 
+*     CMFCRibbonPanel -- 即Group
+*       CMFCRibbonBaseElement -- 具体元素，如Button、CheckBox 等   
+*   Gallery 控件可以对命令的执行效果进行直观的预览，可以大大减少用户尝试各种参数找到合适格式的过程。
+*   QAT(Quick Access Toolbar) --
+* 
+* MFC 中提供了 CMFCRibbonButton、CMFCRibbonGallery 等类
+* WTL中没有提供Slider?
+* 将 "propsys.dll;dwmapi.dll" 设置为了Delay Loaded(延迟加载)，保证在WinXP上不出错 
+* 
+* BEGIN_RIBBON_CONTROL_MAP -- RIBBON_CONTROL  -- END_RIBBON_CONTROL_MAP
+***********************************************************************************************************/
+
+
 
 //声明可以和 DDX_CONTROL 一起工作的 CWindowImpl 派生类
 //  如：DDX_CONTROL_IMPL(CListViewCtrl)，这样就有了一个名为 CListViewCtrl_DDX 的类，

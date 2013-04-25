@@ -8,6 +8,7 @@
 #endif
 
 #include "ftlBase.h"
+#include "ftlThread.h"
 
 /********************************************************************************************
 * EM64T -- Intel 的延伸内存64技术
@@ -90,29 +91,50 @@ namespace FTL
     };
 
     //用于检测程序在退出时，指定的类是否有内存泄漏的小工具类 -- 必须在认为应该释放完内存的地方(比如 main 返回的位置)进行调用检查宏
-    template< typename T>
     FTLEXPORT class CFMemCheckBase
     {
     public:
-        CFMemCheckBase();
-        CFMemCheckBase(const CFMemCheckBase &other);
-        virtual ~CFMemCheckBase();
-        //void SetTrace(BOOL bTrace);
-        //BOOL GetTrace();
-    public:
-        //BOOL            m_bTrace;
-        static LONG s_Count;
-        static BOOL s_Trace;
-        static void SetTrace(BOOL bTrace);
-        static BOOL GetTrace();
+        FTLINLINE CFMemCheckBase();
+		FTLINLINE CFMemCheckBase(const CFMemCheckBase &other);
+		FTLINLINE CFMemCheckBase& operator =( const CFMemCheckBase &ref );
+		FTLINLINE virtual ~CFMemCheckBase();
     };
 
-    #define CHECK_OBJ_MEM_LEAK(x)   \
-    if( 0 != x::s_Count ) \
-    {\
-        FTLTRACEEX(FTL::tlWarning ,TEXT("%s(%d): Warning!!! Memory May Leak -- '%s' remain count is %d\n"), \
-            TEXT(__FILE__), __LINE__, TEXT(#x), x::s_Count);\
-    }
+	class CFMemCheckManager
+	{
+	public:
+		FTLINLINE static CFMemCheckManager& GetInstance();
+		FTLINLINE static VOID ReleaseInstance();
+	public:
+		FTLINLINE BOOL AddObject(DWORD_PTR pObject, LPCTSTR pszPosition, LPCTSTR pszName = NULL);
+		FTLINLINE BOOL RemoveObject(DWORD_PTR pObject);
+
+		FTLINLINE VOID SetTrace(BOOL bTrace);
+		FTLINLINE BOOL GetTrace();
+		FTLINLINE VOID DumpLeakInfo();
+	private:
+		FTLINLINE CFMemCheckManager();
+		FTLINLINE ~CFMemCheckManager();
+		struct ObjectInfo
+		{
+			//UINT				m_nCount;		//o or 1
+			//DWORD_PTR			pObjectAddr;
+			CFStringFormater	m_strInfo;
+		};
+		CFCriticalSection		m_LockObj;
+		typedef std::map<DWORD_PTR, ObjectInfo*>	ObjectPtrInfoContainer;
+		ObjectPtrInfoContainer	m_allObjects;
+		BOOL m_bTrace;
+
+		static CFMemCheckManager*	s_pMemCheckMgr;
+	};
+
+	//#define CHECK_OBJ_MEM_LEAK()   \
+	//if( 0 != CFDoubleFreeCheckMgr::Instance(). ) \
+	//	{\
+	//		FTLTRACEEX(FTL::tlWarning ,TEXT("%s(%d): Warning!!! Memory May Leak -- '%s' remain count is %d\n"), \
+	//		TEXT(__FILE__), __LINE__, TEXT(#x), x::s_Count);\
+	//	}
 
     //Function
 }//namespace FTL

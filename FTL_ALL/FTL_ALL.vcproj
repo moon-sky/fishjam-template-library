@@ -247,6 +247,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlMem.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlMetadata.hpp"
 				>
 			</File>
@@ -418,6 +422,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlIntelSDK.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlMem.h"
 				>
 			</File>
 			<File

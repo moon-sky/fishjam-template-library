@@ -43,50 +43,121 @@ namespace FTL
     }
 
 
-    template <typename T>
-    CFMemCheckBase<T>::CFMemCheckBase()
+    CFMemCheckBase::CFMemCheckBase()
     {
-        InterlockedIncrement(&s_Count);
-        if (s_Trace)
-        {
-            FTLTRACE(TEXT("Construct %d %s \n"), s_Count, CA2T(typeid(T).name()));
-        }
+		CFMemCheckManager::GetInstance().AddObject((DWORD_PTR)this, __FILE__LINE__, CA2T(typeid(*this).name()));
     }
 
-    template <typename T>
-    CFMemCheckBase<T>::CFMemCheckBase(const CFMemCheckBase& other)
+    CFMemCheckBase::CFMemCheckBase(const CFMemCheckBase& other)
     {
         *this = other;
-        InterlockedIncrement(&s_Count);
+		CFMemCheckManager::GetInstance().AddObject((DWORD_PTR)this, __FILE__LINE__, CA2T(typeid(*this).name()));
     }
 
-    template <typename T>
-    CFMemCheckBase<T>::~CFMemCheckBase()
+	CFMemCheckBase& CFMemCheckBase::operator =( const CFMemCheckBase &ref )
+	{
+		//do nothing
+		return *this;
+	}
+
+    CFMemCheckBase::~CFMemCheckBase()
     {
-        if (s_Trace)
-        {
-            FTLTRACE(TEXT("Destruct %d %s \n"), s_Count, CA2T(typeid(T).name()));
-        }
-        InterlockedDecrement(&s_Count);
+		CFMemCheckManager::GetInstance().RemoveObject((DWORD_PTR)this);
     }
 
-    template <typename T>
-    void CFMemCheckBase<T>::SetTrace(BOOL bTrace)
+	CFMemCheckManager* CFMemCheckManager::s_pMemCheckMgr = NULL;
+	CFMemCheckManager& CFMemCheckManager::GetInstance()
+	{
+		if (NULL == s_pMemCheckMgr)
+		{
+			s_pMemCheckMgr = new CFMemCheckManager();
+			FTLASSERT(s_pMemCheckMgr);
+		}
+		return *s_pMemCheckMgr;
+	}
+
+	VOID CFMemCheckManager::ReleaseInstance()
+	{
+		if (s_pMemCheckMgr)
+		{
+			delete s_pMemCheckMgr;
+			s_pMemCheckMgr = NULL;
+		}
+	}
+	
+	CFMemCheckManager::CFMemCheckManager()
+	{
+		m_bTrace = TRUE;
+	}
+
+	CFMemCheckManager::~CFMemCheckManager()
+	{
+		FTLASSERT(m_allObjects.empty()); //Memory leak
+		DumpLeakInfo();
+	}
+
+	BOOL CFMemCheckManager::AddObject(DWORD_PTR pObject, LPCTSTR pszPosition, LPCTSTR pszName /* = NULL */)
+	{
+		BOOL bRet = FALSE;
+		CFAutoLock<CFLockObject>	locker(&m_LockObj);
+		ObjectPtrInfoContainer::iterator iter = m_allObjects.find(pObject);
+		if (iter != m_allObjects.end())
+		{
+			//找到相同的地址，原因是:
+			FTLASSERT(FALSE);
+		}
+		else
+		{
+			ObjectInfo* pInfo = new ObjectInfo;
+			pInfo->m_strInfo.Format(TEXT("%s:%s"), pszPosition, pszName);
+			m_allObjects[pObject] = pInfo;
+			bRet = TRUE;
+		}
+		return bRet;
+	}
+
+	BOOL CFMemCheckManager::RemoveObject(DWORD_PTR pObject)
+	{
+		CFAutoLock<CFLockObject>	locker(&m_LockObj);
+		BOOL bRet = FALSE;
+		ObjectPtrInfoContainer::iterator iter = m_allObjects.find(pObject);
+		if (iter != m_allObjects.end())
+		{
+			delete iter->second;
+			m_allObjects.erase(iter);
+			bRet = TRUE;
+		}
+		else
+		{
+			FTLASSERT(FALSE);
+		}
+		return bRet;
+	}
+
+	VOID CFMemCheckManager::DumpLeakInfo()
+	{
+		CFAutoLock<CFLockObject>	locker(&m_LockObj);
+		FTLTRACEEX(tlWarning, TEXT("Memory Leak\n"));
+		INT nIndex = 0;
+		for (ObjectPtrInfoContainer::iterator iter = m_allObjects.begin();
+			iter != m_allObjects.end(); 
+			++iter)
+		{
+			FTLTRACEEX(tlWarning, TEXT("%d: %s\n"), ++nIndex, iter->second->m_strInfo.GetString());
+		}
+	}
+
+    void CFMemCheckManager::SetTrace(BOOL bTrace)
     {
-        s_Trace = bTrace;
+        m_bTrace = bTrace;
     }
 
-    template <typename T>
-    BOOL CFMemCheckBase<T>::GetTrace()
+    BOOL CFMemCheckManager::GetTrace()
     {
-        return s_Trace;
+        return m_bTrace;
     }
 
-    template <typename T>
-    LONG CFMemCheckBase<T>::s_Count = 0;
-
-    template <typename T>
-    BOOL CFMemCheckBase<T>::s_Trace = TRUE;
+	
 }
 
 #endif //FTL_MEM_HPP
