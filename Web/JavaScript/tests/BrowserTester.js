@@ -72,6 +72,8 @@ test("TODO: Window", function() {
     equal(window.history, history, "history -- 历史对象");
     equal(window.location, location, "location -- 地址对象");
     equal(window.document, document, "document -- 文档对象");
+    equal(window.Link, Link, "超链接或图形的位置点");
+    equal(window.elements, elements, "访问窗体中的所有元素");
 
     //open 打开窗口 <== open(<URL字符串>, <窗口名称window.name,可以使用 _top/_blank 等内建名称>, <参数字符串>);
     //     参数(多个参数用逗号隔开)：
@@ -96,7 +98,7 @@ test("TODO: Window", function() {
 
     with (window.document) {
         //如果在 form 中指定其 name="xxx", 则可以通过 window.document.xxx 的方式引用?
-        
+
         equal(characterSet, "GBK", "字符集");
         equal(referrer, "", "referrer -- 如果当前文档是通过点击连接打开的,返回原来的URL");
 

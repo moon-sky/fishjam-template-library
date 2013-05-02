@@ -1128,6 +1128,7 @@ namespace FTL
 		FTLINLINE virtual BOOL _CheckParams();
 		FTLINLINE virtual BOOL _SendRequest();
 		FTLINLINE virtual BOOL _ReceiveResponse();
+		FTLINLINE virtual BOOL _CheckInternetBuffer(LPBYTE pBuffer, LONG nCount, CAtlString& strResultInfo);
 		FTLINLINE virtual BOOL _OnOpenTargetFile(HANDLE hFile) { UNREFERENCED_PARAMETER(hFile); return TRUE; }
     private:
         BOOL    m_bDeleteWhenCancel;

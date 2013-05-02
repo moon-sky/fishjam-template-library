@@ -384,8 +384,7 @@ namespace FTL
     };
 
 
-    FTLEXPORT 
-    class CFEventChecker
+    FTLEXPORT class CFEventChecker
     {
 		DISABLE_COPY_AND_ASSIGNMENT(CFEventChecker);
     public:

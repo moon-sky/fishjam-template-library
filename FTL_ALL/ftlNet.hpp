@@ -1911,12 +1911,12 @@ namespace FTL
 			{
 				break;
 			}
-			API_VERIFY_EXCEPT1(_SendRequest(), ERROR_CANCELLED);
+			bRet = _SendRequest();
 			if (!bRet)
 			{
 				break;
 			}
-			API_VERIFY_EXCEPT1(_ReceiveResponse(), ERROR_CANCELLED);
+			bRet = _ReceiveResponse();
 			if (!bRet)
 			{
 				break;
@@ -2602,10 +2602,11 @@ namespace FTL
 		BOOL bRet = FALSE;
 		DWORD nContentLength = 0; //4G  -- HTTP_QUERY_FLAG_NUMBER64
 		DWORD dwInfoSize = sizeof(nContentLength);
-
+		CAtlString strErrInfo = TEXT("_ReceiveResponse");
 
 		CFStringFormater formater;
-		FTLTRACE(TEXT("CFDownloadJob::_ReceiveResponse, Option is :\n%s\n"), FNetInfo::GetHttpQueryInfoString(formater, m_hRequest, (DWORD)(-1)));
+		FTLTRACE(TEXT("CFDownloadJob::_ReceiveResponse, Option is :\n%s\n"), 
+		  FNetInfo::GetHttpQueryInfoString(formater, m_hRequest, (DWORD)(-1)));
 
 		API_VERIFY(::HttpQueryInfo(m_hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_CONTENT_LENGTH, 
 			&nContentLength, &dwInfoSize, NULL));
@@ -2668,11 +2669,10 @@ namespace FTL
 						dwRead = nRead;
 						if (dwRead > 0)
 						{
-							//API_VERIFY(_CheckInternetBuffer(pBuffer, dwRead));
-							//if (bRet)
-							{
-#pragma TODO(_CheckInternetBuffer)
 							//对网络上读取到的数据进行检查, 防止各个流程都正确，但文件内容错误(比如：没有进行身份验证时往往会被重定向到登录网站)
+							API_VERIFY(_CheckInternetBuffer(pBuffer, dwRead, strErrInfo));
+							if (bRet)
+							{
 								API_VERIFY(WriteFile(hLocalFile, pBuffer, dwRead, &dwWriteToLocal, NULL));
 								if (!bRet || dwRead != dwWriteToLocal)
 								{
@@ -2695,6 +2695,12 @@ namespace FTL
 				_NotifyProgress(m_nCurPos, m_nTotalSize);
 				CloseHandle(hLocalFile);
 			}
+			else
+			{
+				DWORD dwLastError = GetLastError();
+				_SetErrorStatus(dwLastError, TEXT("CreateFile"));
+				bRet = FALSE;
+			}
 		}
 
 		//User Cancel
@@ -2713,6 +2719,12 @@ namespace FTL
 			bRet = FALSE;
 		}
 		return bRet;
+	}
+
+	BOOL CFDownloadJob::_CheckInternetBuffer(LPBYTE pBuffer, LONG nCount, CAtlString& strResultInfo)
+	{
+		//default implementation just return TRUE
+		return TRUE;
 	}
 
     BOOL CFDownloadJob::GetDeleteWhenCancel()
@@ -2794,14 +2806,14 @@ namespace FTL
 	}
 
 	BOOL CFInternetTransfer::Start(IInternetTransferCallBack* pCallBack , // IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack /* = NULL */, 
-		LONG nMinParallelCount /* = 1 */, 
+		LONG nMinParallelCount /* = 0 */, 
 		LONG nMaxParallelCount /* = 4 */, 
 		LPCTSTR pszAgent /* = NULL*/)
 	{
 		BOOL bRet = FALSE;
 		
 		FTLASSERT( NULL == m_pThreadPool );
-		FTLASSERT(nMinParallelCount >= 1);
+		FTLASSERT(nMinParallelCount >= 0);
 		FTLASSERT(nMinParallelCount <= nMaxParallelCount);
 		m_pThreadPool = new CFThreadPool<FTransferJobInfoPtr>(pCallBack);
 		if (m_pThreadPool)
@@ -2872,7 +2884,7 @@ namespace FTL
 			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_strAgent);
 			if (pDownloadJob)
 			{
-				pDownloadJob->SetReadBufferSize(16 * 1024);  //16K
+				//pDownloadJob->SetReadBufferSize(16 * 1024);  //16K
 				pDownloadJobInfo->m_TransferJobType = tjtDownload;
 				pDownloadJob->m_JobParam = pDownloadJobInfo;
 				API_VERIFY(m_pThreadPool->SubmitJob(pDownloadJob, &nJobIndex));
@@ -2903,7 +2915,7 @@ namespace FTL
 		BOOL bRet = FALSE;
 		if (m_pThreadPool)
 		{
-			API_VERIFY(m_pThreadPool->CancelJob(nJobIndex));
+			bRet = m_pThreadPool->CancelJob(nJobIndex);
 		}
 		return bRet;
 	}
