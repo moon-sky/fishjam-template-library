@@ -2,9 +2,9 @@
 * 三种后台执行方式的封装(统一接口，根据运行环境选择实现) -- https://code.google.com/p/jsworker/
 *
 * 后台执行：浏览器中 JavaScript引擎 是单线程执行的，一般来说实现方式是依次从内部待处理的事件队列中取出事件来执行。
-*   setTimout(func, time) -- 设置在指定的间隔时间之后执行某个 JavaScript 方法，
+*   timer = setTimout(func, time [,args]) -- 设置在指定的间隔时间之后执行某个 JavaScript 方法，清除时使用 clearTimeout(timer)
 *     特殊用法：把一个需要较长执行时间的任务分成若干个小任务，这些小任务之间用 setTimeout()串联起来
-*   setInterval(func, time) -- 设置根据指定的间隔重复执行某个 JavaScript 方法
+*   id = setInterval(func, time [,args]) -- 设置根据指定的间隔重复执行某个 JavaScript 方法，清除时使用 clearInterval(id)
 * 
 *   Google Gears -- Google开发的浏览器插件工具(已被Web Worker代替)，可以增强现有浏览器的功能(应用程序本地缓存、本地数据库和 JavaScript 工作线程池等)
 *     google.gears.factory.create('beta.workerpool') -- 创建一个工作线程池，通过消息传递机制进行交互(onmessage)

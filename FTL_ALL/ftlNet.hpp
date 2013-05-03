@@ -96,6 +96,13 @@ namespace FTL
                 //HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAINVALIDPROVIDER);
                 //HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAPROVIDERFAILEDINIT);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSASYSCALLFAILURE);
+
+				//WinINet.h 12001(INTERNET_ERROR_BASE) ~ 12175(INTERNET_ERROR_LAST)
+				HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo),ERROR_INTERNET_OUT_OF_HANDLES); //12001
+
+				HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo),ERROR_INTERNET_CONNECTION_ABORTED); //12030, 网络发送数据时，禁用本地网卡可能发生此错误
+
+				HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo),ERROR_INTERNET_DECODING_FAILED); //12175
             default:
                 CFAPIErrorInfo errorInfo(m_Info);
                 StringCchCopy(m_bufInfo, _countof(m_bufInfo), errorInfo.GetConvertedInfo());

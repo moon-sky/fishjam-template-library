@@ -385,3 +385,11 @@ void CMainDlg::OnStartFill(UINT uNotifyCode, int nID, CWindow wndCtl)
 		}
 	}
 }
+
+
+Java程序优化
+  1.I/O 操作较慢，是一个很耗时的操作，可考虑减少IO(如减少日志)的方式大幅提升
+  2.DB优化
+    a.共享数据库连接 -- 如系统提供的?Database Connection Pool 
+    b.使用预编译 SQL -- 使用 java.sql.PreparedStatement 代替 java.sql.Statement 生成 SQL 语句
+    c.使用 SQL 批处理 -- 通过 java.sql.PreparedStatement 的 addBatch 方法将 SQL 语句加入到批处理

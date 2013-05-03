@@ -26,14 +26,14 @@ test("TODO: Browser", function() {
     equal(navigator.appName, "Netscape", "返回浏览器名, FF/Chrome--Netscape, IE -- Microsoft Internet Explorer");
 
     equal(navigator.appVersion, // "5.0 (Windows)");       //浏览器版本
-     "5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22");  //Chrome -- 5.0 
+     "5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31");  //Chrome -- 5.0 
     //FF --
     //IE -- 4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0;  <== 注意：还可能有其他的一下信息
 
     equal(navigator.language, "zh-CN", "语言")
     equal(navigator.platform, "Win32", "平台");
-    equal(navigator.userAgent, 
-		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.22 (KHTML, like Gecko) Chrome/25.0.1364.172 Safari/537.22", 
+    equal(navigator.userAgent,
+		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31", 
 		"返回浏览器对象的全部信息，可以查找是否包含指定字符串来判断浏览器类型？");
     //equal(navigator.plugins, "a");    //以数组表示已安装的外挂程序
 
@@ -42,10 +42,11 @@ test("TODO: Browser", function() {
 
 test("TODO: Screen", function() {
     with (screen) { //全局屏幕对象 反映了当前用户的屏幕设置
-        equal(width, 1280, "屏幕宽度");
-        equal(height, 1024, "屏幕高度"); //960
-        equal(availWidth, 1280, "屏幕的可用宽度");
-        equal(availHeight, 1024, "屏幕的可用高度（除去了一些不自动隐藏的类似任务栏的东西所占用的高度"); //960
+        //TODO:在双屏显示器时，使用 equal 有的时候会失败，F5刷新后又变好，为什么？
+        ok(width >= 1280, "屏幕宽度");
+        ok(height >= 1024, "屏幕高度"); //960
+        ok(availWidth >= 1280, "屏幕的可用宽度");
+        ok(availHeight >= 1024, "屏幕的可用高度（除去了一些不自动隐藏的类似任务栏的东西所占用的高度"); //960
         equal(colorDepth, 32, "当前颜色设置所用的位数");
     }
 });
@@ -56,6 +57,7 @@ test("TODO: Window", function() {
 
     //equal(window.name, "test", "窗口的名称");
 
+    equal(window.closed, false, "当前窗体尚未关闭");
     equal(window.opener, null, "如果窗口不是由其他窗口打开的，Netscape中返回null;IE中返回undefined"); //
     equal(window.self, window, "self 指窗口本身，它返回的对象跟 window 对象是一模一样的,最常用的是\"self.close()\"");
 
@@ -72,8 +74,8 @@ test("TODO: Window", function() {
     equal(window.history, history, "history -- 历史对象");
     equal(window.location, location, "location -- 地址对象");
     equal(window.document, document, "document -- 文档对象");
-    equal(window.Link, Link, "超链接或图形的位置点");
-    equal(window.elements, elements, "访问窗体中的所有元素");
+    //equal(window.Link, Link, "超链接或图形的位置点"); //在Chrome中实测没有这个属性
+    //equal(window.elements, elements, "访问窗体中的所有元素"); //在Chrome中实测没有这个属性
 
     //open 打开窗口 <== open(<URL字符串>, <窗口名称window.name,可以使用 _top/_blank 等内建名称>, <参数字符串>);
     //     参数(多个参数用逗号隔开)：
@@ -94,9 +96,16 @@ test("TODO: Window", function() {
     equal(window.location.protocol, "file:", "location.protocol");
     equal(window.location.hostname, "", "location.hostname");
 
-    window.defaultStatus = "状态栏文字";
+    //window.scroll(x, y); //将窗口滚动到坐标指定的位置
+    //window.moveTo(x, y); //将窗口移动到指定的位置
+    //window.resizeTo(cx, cy);  //将窗口调整到指定的大小
+
+    window.defaultStatus = "缺省状态栏消息";
+    window.status = "指定用户将鼠标移到某个窗口等操作时，出现的瞬时状态消息"
 
     with (window.document) {
+        //document.open([MIMEType]) -- 以指定的MimeType(缺省是text/html)打开文档，然后可通过 write/writeln 等方法写入，写完通过close关闭
+        
         //如果在 form 中指定其 name="xxx", 则可以通过 window.document.xxx 的方式引用?
 
         equal(characterSet, "GBK", "字符集");
@@ -107,7 +116,27 @@ test("TODO: Window", function() {
         equal(applets.length, 0, "文档中所有的Applet对象(Java 小程序)的数组");
         equal(embeds.length, 0, "文档中所有的插件<embed>标记的数组");
         equal(forms.length, 0, "文档中所有表单<form>的数组");
+        equal(cookie.length, 0, "文档中的Cookie");
     }
+
+    //form 对象 -- windows.document.forms[n]
+    //其提供了 submit()/reset() 等方法
+    //         action/elements(可细化为 button/radio/text 等)/encoding/target 等属性
+    //         提交时(form.OnSubmit中): document.submitForm.result.value = submitValue; document.submitForm.submit();
+});
+
+test("Windows提示方式", function() {
+    equal(1, 1, "TODO");
+    //alert(提示信息) -- 提示信息，只有一个OK按钮
+    
+    //confirm -- 系统提供的确认对话框(分 确定/取消 两个按钮)，用户确定时返回 true
+    //if (confirm("提示信息")) {
+    //    alert("用户选择了\"确定\"");
+    //}
+
+    //prompt -- 显示要求用户输入的对话框，如用户取消返回 null，否则返回用户输入的内容
+    //var s = prompt("提示信息", "缺省输入");
+    
 });
 
 test("TODO: Firefox中的学习资料", function() {

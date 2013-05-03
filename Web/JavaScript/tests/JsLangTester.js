@@ -39,7 +39,7 @@ test("变量", function() {
     ok(typeof (varBool) == "boolean", "纯布尔逻辑值");
     equal(true, 1, "布尔值用于数字表达式时自动变为1和0");
     equal(false, 0);
-    
+
     var varInfinity = 1 / 0;
     equal(varInfinity, Infinity, "Infinity");
 
@@ -127,25 +127,39 @@ test("基础语法", function() {
 });
 
 //字符串 -- 双引号或单引号中的字符序列，转义字符为 "\"
-test("字符串", function() {
+//可以直接通过 赋值字符串数据来生成变量，也可以通过 new String 的方式来生成变量
+test("字符串String", function() {
     var strItem = "origial";
     var strItemRef = strItem;
 
     strItem += " some info";
     ok(strItemRef != strItem, "修改字符串会创建新的变量");
 
-    var strInfo = "";
+    //equal(String.big(strItem), "", "");
+
+    var strAppend = "";
     for (var i = 1; i < 10; i++) {
-        strInfo += i;
+        strAppend += i;
     }
-    equal(strInfo, "123456789", "字符串和数字相加(+)会按字符串连接的方式");
+    equal(strAppend, "123456789", "字符串和数字相加(+)会按字符串连接的方式");
+
+    //调用String对象的方法
+    var strObject = new String("百度");
+    equal(strObject.anchor('www.baidu.com'), "<a name=\"www.baidu.com\">百度</a>",
+        "anchor返回对应的超链接方式，然后可用 document.write 写入文档");
+    equal(strObject.link("www.baidu.com"),   "<a href=\"www.baidu.com\">百度</a>", "link 和 anchor 一样");
+    
+    equal(strObject.charAt(0), "百", "返回指定位置的字符")
+    equal(strObject.indexOf("度", 0), 1, "从0开始查找指定字符串");
+    equal(strObject.indexOf("网", 0), -1, "没有找到对应的字符串会返回 -1");
+    equal(strObject.lastIndexOf("百", 0), 0, "lastIndexOf");
 
     var strHelloworld = "hello world";
-    ok(strHelloworld.length == 11, "String Length");
-    
+    ok(strHelloworld.length == 11, "length属性 返回字符串的长度");
     ok(strHelloworld.charAt(0) == "h", "CharAt");       //返回该字符串位于第<位置>位的单个字符(Unicode)
     ok(strHelloworld.charAt(strHelloworld.length - 1) == "d", "CharAt(Length-1)");
-
+    equal(strHelloworld.substring(6, strHelloworld.length), "world", "substring获取子串");
+    equal(strHelloworld.toUpperCase(), "HELLO WORLD", "toUpperCase返回对应的大写字符串")
 
     //charCodeAt -- 返回该字符串位于第<位置>位的单个字符的 ASCII 码。
     //var strChina = String.fromCharCode();   //返回一个字符串，该字符串每个字符的 ASCII 码由 a, b, c... 等来确定。
@@ -209,9 +223,9 @@ test("运算符", function() {
 });
 
 //数组中的数据存在在以 整数 为索引的位置中
-test("数组", function() {
+test("数组Array", function() {
     var arrayWithLength = new Array(10);
-    equal(arrayWithLength.length, 10, "带长度的数组构造函数"); 
+    equal(arrayWithLength.length, 10, "带长度的数组构造函数");
     equal(arrayWithLength[9], null, "此时所有元素的初始值是 null");
 
     var myArray = new Array("abc", 123);  //带初始值的构造函数(即 "紧凑数组(dense array)"  )
@@ -220,7 +234,11 @@ test("数组", function() {
     //  myArray[1] = 123;
 
     var strArrayJoin = myArray.join(" "); //join方法把数组中的各个元素用<分隔符>串起来形成一个字符串，不影响数组内容
-    ok(strArrayJoin == "abc 123");
+    equal(strArrayJoin ,"abc 123");
+
+    myArray.reverse();  //逆转数组元素
+    strArrayJoin = myArray.join(",");
+    equal(strArrayJoin, "123,abc");
 
     //注意：JavaScript 只有一维数组, 如果要模拟多维数组，需要将数组的元素设置为数组
     myArray[2] = new Array();
@@ -258,6 +276,7 @@ test("数组", function() {
 
 });
 
+//比较函数有两个参数，Array.sort 根据其返回值排序
 function sortLesser(a, b) {
     return (b - a);
 }
@@ -268,16 +287,29 @@ test("数组排序", function() {
         myArray[i] = i;
     }
     equal(myArray.join("") ,"123456789");
-    myArray.sort(sortLesser);       //按从大到小排序
+    myArray.sort(sortLesser);       //按从大到小排序,缺省排序方法时会按照字典顺序排序
     equal(myArray.join("") , "987654321");
-
 });
 
+//注意：Math是内部对象而不是对象类型(即不能创建Math实例) -- 
+//var math = new Math();  会抛出"object is not a function"的异常
 test("Math", function() {
-    //alert("PI=" + Math.PI);
-    equal(Math.ceil(1.5), 2, "ceil 返回大于等于 x 的最小整数");
+    equal(Math.E, "2.718281828459045", "欧拉常数");
+    equal(Math.LN2, "0.6931471805599453", "2的自然对数");
+    equal(Math.LN10, "2.302585092994046", "10的自然对数");
+    equal(Math.LOG2E, "1.4426950408889634", "以2为底e的对数");
+    equal(Math.LOG10E, "0.4342944819032518", "以10为底e的对数");
+    equal(Math.PI, "3.141592653589793", "圆周率PI常数");
+    equal(Math.SQRT1_2, "0.7071067811865476", "1/2的平方根");
+    equal(Math.SQRT2, "1.4142135623730951", "2的平方根");
+    
+    equal(Math.abs(-99), 99, "abs返回绝对值")
+    equal(Math.ceil(1.234), 2, "ceil 返回大于等于 x 的最小整数");
+    equal(Math.exp(2), Math.pow(Math.E, 2), "exp 返回e的X乘方")
     equal(Math.floor(1.5), 1, "floor 返回小于等于 x 的最大整数");
-    equal(Math.round(1.5), 2, "round 返回 四舍五入后的值");
+    equal(Math.log(20), 2.995732273553991, "返回x的自然对数")
+    equal(Math.pow(2,3), 8, "返回x的y次方")
+    equal(Math.round(1.234), 1, "round 返回 四舍五入后的值");
 
     var myRandomNumber = Math.random() * 40 + 60;
     ok(myRandomNumber >= 60 && myRandomNumber <= 100, "random 返回大于 0 小于 1 的一个随机数");
@@ -292,14 +324,28 @@ test("Date", function() {
     //Date日期对象。这个对象可以储存任意一个日期，从 0001 年到 9999 年，并且可以精确到毫秒数（ 1/1000 秒）
     //所有日期时间，如果不指定时区，都采用“UTC”世界时时区
     var d = new Date(2012, 11, 21, 1, 2, 3, 400);
+    equal(d.getDate(), 21, "返回Date对象的时间")
     equal(d.getTimezoneOffset(), -480, "中国是东八区，与格林威治时间所差的分钟数为 -480(东方为负)");
     equal(d.getMonth(), 11, "注意月份是从 0 开始的");
     equal(d.toGMTString(), "Thu, 20 Dec 2012 17:02:03 GMT", "获取GMT(格林威治时间)格式的日期型字符串");
+    equal(d.toUTCString(), "Thu, 20 Dec 2012 17:02:03 GMT", "获取UTC时间格式的字符串，同GMT?");
+    equal(d.toLocaleString(), "2012年12月21日 上午1:02:03", "转换为本地格式，即用户所在地区常用的格式");
     ok(d.getFullYear() == 2012);
 
     var dParser = Date.parse(d);
     equal(dParser, 1356022923000, "Date.parse 返回该日期对象的内部表达方式(从1970年1月1日零时正开始计算到日期对象所指的日期的毫秒数");
     //equal(d.toString(), dParser.toString(), "直接定义和采用parse 两种方式相等 -- TODO: 为什么不能直接用等的方式？");
+
+    var now = new Date(); //如果不带参数的构造，会使用当前日期和时间创建Date实例
+    //equal(now.toLocaleString(), 2012, "");
+    ok(now.getFullYear() >= 2013, "当前年>=2013");
+
+});
+
+test("TODO:颜色", function() {
+//JavaScript定义了许多颜色常量和方法
+  equal(1, 1, "TODO:颜色")
+ 
 });
 
 test("TODO: 全局函数", function() {
@@ -326,11 +372,6 @@ test("TODO: 全局函数", function() {
     equal(isNaN(parseInt("abc")), true, "parseInt -- 如果以字母开头，则返回“NaN")
 
     equal(parseFloat("123.456"), 123.456, "parseFloat返回把括号内的字符串转换成浮点数之后的值");
-
-    //confirm -- 系统提供的确认对话框(分 确定/取消 两个按钮)
-    //if (confirm("提示信息")) {
-    //    alert("用户选择了\"确定\"");
-    //}
 
     equal("123".toString(), "123", "toString把对象转换成字符串");
     equal("123".toString(16), "123", "0x7B -- TODO(为什么不行？):toString(N)可以转换成特定进制");

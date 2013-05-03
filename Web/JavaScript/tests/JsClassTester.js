@@ -4,7 +4,8 @@
 
 //有两种面向对象的编程方式？
 //1. 类似 MyMathClass ? 每一个定义之间用逗号"," 分隔
-//2. 构造函数: function ClassName(参数列表) { 实现 };  ClassName.prototype.方法名 = function(参数列表) { 方法实现; }, 
+//2. 类似CUser的原型方式(★推荐★): 
+//   构造函数: function ClassName(参数列表) { 实现 };  ClassName.prototype.方法名 = function(参数列表) { 方法实现; }, 
 //   使用： var 变量名 = new 类名(参数);
 //   1.公共方法：prototype(原型) 属性包含了可以作为所有新副本的基引用(base reference)
 //   2.私有方法(private method)：在函数内部定义的函数，这样只能在函数内部调用。问题：除了定义的函数外，该类的其他方法都不能使用，那基本没有什么用处了？
@@ -29,12 +30,12 @@ var MyMathClass = { //TODO: 这个到底定义的是类还是对象？
 
 //注意：有两种不同的构造方式 -- 但似乎不支持重载 ?
 //*
-//通过原型(prototype)定义类
+//通过原型(prototype)定义类 -- JS可以使用 prototype 属性在已经定义好的可实例化对象类型(即定义好构造函数)中加入属性和方法.
 function CUser(name, birthday){      //构造函数
-    
-    //定义只能在内部使用的私有方法
     this.name = name;
     this.birthday = birthday;
+
+    //定义只能在内部使用的私有方法
     function dumpInfo() {
         //TODO:这里用 this.name/this.age 会出错，为什么?
         //console.log("CUser Init: name=%s, age=%s", this.name, this.age); 
@@ -46,6 +47,10 @@ function CUser(name, birthday){      //构造函数
     this.privilegedName = function() {
         return this.birthday;
     };
+    
+    //JavaScript从入门到精通P124左右介绍的旧方法 -- 未测试是否有效
+    //1.定义全局的 CUser_xxx 方法，实现中使用 this.name 等方式来操作内部变量
+    //2.在构造中将方法赋值并生成对应的函数, 如 Xxx = CUser_xxx; 然后外界即可用 user.Xxx() 方法来操作
 }
 
 CUser.prototype.getName = function(){  //定义的公有方法 -- 本质是将函数(getName)添加到此对象的 prototype 对象中(作为其属性)
@@ -133,6 +138,10 @@ test("funObj", function() {
 	
 	User("setUserName");					//当成正常的函数来使用
 	equal(window.name, "setUserName");		//但因为是在 window 里面调用的，会设置其name属性，造成名称污染,容易出现Bug?
+	
+	//函数可以作为对象来建立，并用 Function() 构造器将函数对象赋予变量，其语法为 "new Function([arg1,..,argn], functionBody);
+	var triple = new Function("n", "return 3*n");  //创建将数值乘以3以后的函数
+	equal( triple(100), 300, "函数对象");
 });
 
 
