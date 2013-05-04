@@ -11,14 +11,14 @@
 namespace FTL
 {
 
- 	TextFileEncoding CFFileUtil::GetTextFileEncoding(LPCTSTR pszFileName)
+ 	TextFileEncoding CFFileUtil::GetTextFileEncoding(LPCTSTR pszFilePath)
 	{
 		BOOL bRet = FALSE;
 		TextFileEncoding encoding = tfeError;
-		if (pszFileName)
+		if (pszFilePath)
 		{
 			BYTE header[3] = {0};
-			HANDLE hFile = ::CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+			HANDLE hFile = ::CreateFile(pszFilePath, GENERIC_READ, FILE_SHARE_READ, NULL,
 				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 			API_VERIFY(hFile != INVALID_HANDLE_VALUE);
 
@@ -54,6 +54,66 @@ namespace FTL
 		return encoding;
 	}
 
+	HANDLE CFFileUtil::CreateLocalWriteFile(__inout LPTSTR pszFilePath, DWORD dwMaxSize, CreateLocalFileFlags flags)
+	{
+		DWORD dwCreationDisposition = 0;
+		switch (flags)
+		{
+		case clfCreateIfNotExist:
+			dwCreationDisposition = CREATE_NEW;
+			break;
+		case clfAutoRename:
+			dwCreationDisposition = CREATE_NEW;
+			break;
+		case clfOverwrite:
+			dwCreationDisposition = CREATE_ALWAYS;
+			break;
+		}
+
+		HANDLE hLocalFile = ::CreateFile(pszFilePath, 
+			GENERIC_READ | GENERIC_WRITE, 
+			0, 
+			NULL,
+			dwCreationDisposition, 
+			FILE_ATTRIBUTE_NORMAL, 
+			NULL);
+		if (INVALID_HANDLE_VALUE == hLocalFile && clfAutoRename == flags)
+		{
+			//Can not create File,
+			TCHAR szLocalFilePath[_MAX_PATH] = {0};
+			TCHAR szDrive[_MAX_DRIVE]  = {0};
+			TCHAR szDir[_MAX_DIR] = {0};
+			TCHAR szFileName[_MAX_FNAME] = {0};
+			TCHAR szExt[_MAX_EXT] = {0};
+
+			_tsplitpath_s(pszFilePath, szDrive, szDir, szFileName, szExt);
+
+			int nIndex = 1;
+			CFStringFormater strFileName;
+			while ((nIndex <= 999) && (INVALID_HANDLE_VALUE == hLocalFile))
+			{
+				strFileName.Format(TEXT("%s(%d)"), szFileName, nIndex);
+				_tmakepath_s(szLocalFilePath, szDrive, szDir, strFileName.GetString(), szExt);
+
+				hLocalFile = ::CreateFile(szLocalFilePath, 
+					GENERIC_WRITE, 
+					0, 
+					NULL,
+					CREATE_NEW, 
+					FILE_ATTRIBUTE_NORMAL, 
+					NULL);
+				if (INVALID_HANDLE_VALUE != hLocalFile)
+				{
+					//change file path
+					StringCchCopy(pszFilePath, dwMaxSize, szLocalFilePath);
+					break;
+				}
+				nIndex++;
+			}
+		}
+
+		return hLocalFile;
+	}
 #if 0
     CFConsoleFile::CFConsoleFile()
     {

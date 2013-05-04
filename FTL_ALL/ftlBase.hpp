@@ -477,8 +477,10 @@ namespace FTL
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    CFStringFormater::CFStringFormater(DWORD dwInitAllocLength/* = MAX_BUFFER_LENGTH*/)
+	CFStringFormater::CFStringFormater(DWORD dwInitAllocLength/* = MAX_BUFFER_LENGTH*/, 
+		DWORD dwMaxBufferTimes /* = STRINGFORMATER_MAX_BUFFER_TIMES */)
         : m_dwInitAllocLength(dwInitAllocLength)
+		, m_dwMaxBufferTimes(dwMaxBufferTimes)
     {
         m_pBuf = NULL;
         m_dwTotalSpaceSize = 0;
@@ -493,6 +495,11 @@ namespace FTL
 		FTLASSERT(dwNewSize >= 0);
 		if (dwNewSize == m_dwTotalSpaceSize)
 		{
+			//TODO:Zero old memory?
+			//if (m_pBuf)
+			//{
+			//	m_pBuf[0] = NULL;
+			//}
 			return TRUE;
 		}
 
@@ -541,50 +548,48 @@ namespace FTL
     HRESULT CFStringFormater::FormatV(LPCTSTR lpszFormat, va_list argList)
     {
         HRESULT hr = E_FAIL;
-        m_dwTotalSpaceSize = 0;
-        SAFE_DELETE_ARRAY(m_pBuf);  //先删除以前的
 
-        DWORD dwLength = m_dwInitAllocLength;
-        LPTSTR pszDestEnd = NULL;
-        size_t cchRemaining = 0;
+		DWORD dwLength = m_dwTotalSpaceSize ? m_dwTotalSpaceSize : m_dwInitAllocLength;
+		LPTSTR pszDestEnd = NULL;
+		size_t cchRemaining = 0;
+		DWORD dwFlags = 0;
+		//STRSAFE_FILL_ON_FAILURE | STRSAFE_FILL_BEHIND_NULL; //失败时全部填充NULL，成功时在最后填充NULL
 
-        DWORD dwFlags = 0;
-        //STRSAFE_FILL_ON_FAILURE | STRSAFE_FILL_BEHIND_NULL; //失败时全部填充NULL，成功时在最后填充NULL
+		do 
+		{
+			if (!m_pBuf)
+			{
+				m_pBuf = new TCHAR[dwLength];
+				if (NULL == m_pBuf)
+				{
+					break;
+				}
+			}
 
-        m_pBuf = new TCHAR[dwLength];
-        if (!m_pBuf)
-        {
-            return HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY);
-        }
-        ZeroMemory(m_pBuf,sizeof(TCHAR) * dwLength);
+			ZeroMemory(m_pBuf,sizeof(TCHAR) * dwLength);
+			COM_VERIFY_EXCEPT1(StringCchVPrintfEx(m_pBuf,dwLength, &pszDestEnd,&cchRemaining,dwFlags,lpszFormat,argList)
+				,STRSAFE_E_INSUFFICIENT_BUFFER);
+			if (SUCCEEDED(hr))
+			{
+				m_dwTotalSpaceSize = dwLength;
+				// 确保最后的结束符，但实际上已经由 StringCchVPrintfEx 完成
+				//m_pBuf[dwLength - 1] = TEXT('\0');
+			}
+			else if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
+			{
+				SAFE_DELETE_ARRAY(m_pBuf);
+				//如果内存空间不够，每次扩大2倍内存长度，重新尝试，直到成功或内存分配失败
+				dwLength <<= 1; //dwLength *=2;
+			}
+		} while (hr == STRSAFE_E_INSUFFICIENT_BUFFER && dwLength <= m_dwMaxBufferTimes * m_dwInitAllocLength);
+		
+		if (NULL == m_pBuf)
+		{
+			m_dwTotalSpaceSize = 0;
+			hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
+		}
 
-        COM_VERIFY_EXCEPT1(StringCchVPrintfEx(m_pBuf,dwLength, &pszDestEnd,&cchRemaining,dwFlags,lpszFormat,argList)
-            ,STRSAFE_E_INSUFFICIENT_BUFFER);
-
-        //如果内存空间不够，每次扩大2倍内存长度，重新尝试，直到成功或内存分配失败
-        while (hr == STRSAFE_E_INSUFFICIENT_BUFFER && dwLength < 8 * m_dwInitAllocLength)
-        {
-            SAFE_DELETE_ARRAY(m_pBuf);
-            dwLength <<= 1; //dwLength *=2;
-            m_pBuf = new TCHAR[dwLength];
-            if (NULL == m_pBuf)
-            {
-                break;
-            }
-            ZeroMemory(m_pBuf,sizeof(TCHAR) * dwLength);
-            pszDestEnd = NULL;
-            COM_VERIFY_EXCEPT1(StringCchVPrintfEx(m_pBuf,dwLength, &pszDestEnd,&cchRemaining,
-                dwFlags,lpszFormat,argList),STRSAFE_E_INSUFFICIENT_BUFFER);
-        }
-        if (NULL == m_pBuf)
-        {
-            //Not enough memory
-            return HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY);
-        }
-        // 确保最后的结束符，但实际上已经由 StringCchVPrintfEx 完成
-        //m_pBuf[dwLength - 1] = TEXT('\0');
-        m_dwTotalSpaceSize = dwLength;
-        return hr;
+		return hr;
     }
     HRESULT CFStringFormater::AppendFormat(LPCTSTR lpszFormat, ...)
     {
@@ -674,7 +679,11 @@ namespace FTL
         }
         return 0;
     }
-	
+	LONG CFStringFormater::GetSize() const
+	{
+		return LONG(m_dwTotalSpaceSize);
+	}
+
     LPTSTR CFStringFormater::Detach()
     {
         LPTSTR pBuf = m_pBuf;

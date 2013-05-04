@@ -45,10 +45,17 @@ namespace FTL
 		tfeUTF8,					//0xEF BB BF
 		tfeUnicode,					//0xFF FE
 		tfeUnicodeBigEndian,		//0xFE FF
-	}
+	};
+
+	enum CreateLocalFileFlags{
+		clfCreateIfNotExist,
+		clfAutoRename,
+		clfOverwrite,
+	};
+
 	const BYTE TEXT_FILE_HEADER_UTF8[]				= { 0xEF, 0xBB, 0xBF };
 	const BYTE TEXT_FILE_HEADER_UNICODE[]			= { 0xFF, 0xFE };
-	const BYTE TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN	= { 0xFE, 0xFF };
+	const BYTE TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN[]= { 0xFE, 0xFF };
 
     /**************************************************************************************************
 	* OVERLAPPED -- 异步I/O是创建高性能可伸缩的应用程序的秘诀，因为它允许单个线程处理来自不同客户机的请求。
@@ -92,11 +99,13 @@ namespace FTL
 	* 读写文件(CFile) 时的性能
 	*   1.设置流使用缓冲区：setvbuf(fileLoad.m_pStream, NULL, _IOFBF, 32768);
     **************************************************************************************************/
+
 	class CFFileUtil
 	{
 	public:
-		FTLINLINE static TextFileEncoding GetTextFileEncoding(LPCTSTR pszFileName);
-	}
+		FTLINLINE static TextFileEncoding GetTextFileEncoding(LPCTSTR pszFilePath);
+		FTLINLINE static HANDLE CreateLocalWriteFile(__inout LPTSTR pszFilePath, DWORD dwMaxSize, CreateLocalFileFlags flags);
+	};
 
 #if 0
     class CFConsoleFile

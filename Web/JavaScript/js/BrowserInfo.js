@@ -11,7 +11,7 @@ function BrowserInfo()
     ((agent.indexOf('spoofer')==-1) && 
     (agent.indexOf('compatible') == -1)));
     
-    this.ie = (agent.indexOf("msie") != -1); //ÊÇ·ñ IE
+    this.IsIE = (agent.indexOf("msie") != -1); //ÊÇ·ñ IE
 }
 
 var gBrowserInfo = new BrowserInfo();

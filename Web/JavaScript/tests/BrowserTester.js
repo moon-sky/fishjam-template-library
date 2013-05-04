@@ -23,7 +23,7 @@ test("TODO: Browser", function() {
 
 
     equal(navigator.appCodeName, "Mozilla", "返回浏览器的码名--IE、FF、Chrome全都返回 Mozilla");
-    equal(navigator.appName, "Netscape", "返回浏览器名, FF/Chrome--Netscape, IE -- Microsoft Internet Explorer");
+    equal(navigator.appName, "Netscape", "navigator.appName 返回浏览器名, FF/Chrome--Netscape, IE -- Microsoft Internet Explorer");
 
     equal(navigator.appVersion, // "5.0 (Windows)");       //浏览器版本
      "5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31");  //Chrome -- 5.0 
@@ -72,7 +72,7 @@ test("TODO: Window", function() {
     equal(window.frames.length == 0, true, "TODO:frames -- 该页面内所有框架的集合，可通过frames[\"名字\"] 或 frames[index] 的方式引用");
 
     equal(window.history, history, "history -- 历史对象");
-    equal(window.location, location, "location -- 地址对象");
+    equal(window.location, location, "location -- 地址对象，有 reload() 和 repalce() 方法");
     equal(window.document, document, "document -- 文档对象");
     //equal(window.Link, Link, "超链接或图形的位置点"); //在Chrome中实测没有这个属性
     //equal(window.elements, elements, "访问窗体中的所有元素"); //在Chrome中实测没有这个属性
@@ -92,7 +92,7 @@ test("TODO: Window", function() {
     //if (winBaidu) {
     //    winBaidu.close();
     //}
-    ok(window.location.href.indexOf("QUnitTestFramework.html") > 0, "location");
+    ok(window.location.href.indexOf("QUnitTestFramework.html") > 0, "location.href 是完整的URL");
     equal(window.location.protocol, "file:", "location.protocol");
     equal(window.location.hostname, "", "location.hostname");
 
@@ -105,7 +105,7 @@ test("TODO: Window", function() {
 
     with (window.document) {
         //document.open([MIMEType]) -- 以指定的MimeType(缺省是text/html)打开文档，然后可通过 write/writeln 等方法写入，写完通过close关闭
-        
+
         //如果在 form 中指定其 name="xxx", 则可以通过 window.document.xxx 的方式引用?
 
         equal(characterSet, "GBK", "字符集");
@@ -117,6 +117,15 @@ test("TODO: Window", function() {
         equal(embeds.length, 0, "文档中所有的插件<embed>标记的数组");
         equal(forms.length, 0, "文档中所有表单<form>的数组");
         equal(cookie.length, 0, "文档中的Cookie");
+        
+        equal(images.length, 0, "文档中的所有图像");
+        /*
+        //在 QUnitTestFramework.html 中加入 <img src="..\HTML\img\merglobe.gif"/> 后测试这些
+        equal(images.length, 1, "文档中的所有图像");
+        ok(images[0].src.indexOf("merglobe.gif") > 0, "img src");
+        equal(images[0].height, "100", "img src");
+        equal(images[0].width, "100", "img src");
+        //*/
     }
 
     //form 对象 -- windows.document.forms[n]
@@ -147,6 +156,7 @@ test("TODO: Firefox中的学习资料", function() {
     //location -- 地址对象, 描述的是某一个窗口对象所打开的完整URL,内部有 protocol、pathname、href 等多个属性
     //  属于不同协议或不同主机的两个地址之间不能互相引用对方的 location对象(安全性的需要)
     //  URL地址：协议//主机:端口/路径名称#哈希标识?搜索条件
+    //    协议 -- 如 http, ftp, file, javascript(对JS表达式求值，如 JavaScript:void(0) ), about 等，
     //    哈希标识 描述了URL中的锚名称，包括哈希掩码(#)。此属性只应用于 HTTP 的 URL
     //    搜索条件 描述了URL中的任何查询信息，包括问号，是 变量=值 的对，多个对之间由 & 连接
     //Document -- 显示于窗口或框架内的一个文档。描述当前窗口或指定窗口对象的文档。它包含了文档从<head>到</body>的内容

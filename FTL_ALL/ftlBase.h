@@ -88,7 +88,8 @@ namespace FTL
 
 
     //考虑到字节对其的问题，定义为 8 的倍数
-    #define MAX_BUFFER_LENGTH       240
+    #define MAX_BUFFER_LENGTH				240
+	#define STRINGFORMATER_MAX_BUFFER_TIMES	8
 
     //禁止拷贝构造和赋值操作符
     #define DISABLE_COPY_AND_ASSIGNMENT(className)  \
@@ -634,7 +635,8 @@ namespace FTL
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFStringFormater);
     public:
-        FTLINLINE CFStringFormater(DWORD dwInitAllocLength = MAX_BUFFER_LENGTH);
+		//可以分配的最大内存空间为 : dwInitAllocLength * dwMaxBufferTimes(注意：dwMaxBufferTimes 最好是2的倍数)
+        FTLINLINE CFStringFormater(DWORD dwInitAllocLength = MAX_BUFFER_LENGTH, DWORD dwMaxBufferTimes = STRINGFORMATER_MAX_BUFFER_TIMES);
         FTLINLINE virtual ~CFStringFormater();
         FTLINLINE BOOL Reset(DWORD dwNewSize = 0);
 		FTLINLINE HRESULT __cdecl Format(LPCTSTR lpszFormat, ...);
@@ -675,6 +677,7 @@ namespace FTL
         FTLINLINE LPCTSTR GetString() const;
 		FTLINLINE LPTSTR GetString();
         FTLINLINE LONG  GetStringLength() const;
+		FTLINLINE LONG  GetSize() const;
         FTLINLINE LPTSTR Detach();
     protected:
         LPTSTR  m_pBuf;
@@ -682,6 +685,7 @@ namespace FTL
 		//TCHAR	m_szInitBuf[MAX_BUFFER_LENGTH];
         DWORD   m_dwTotalSpaceSize;
         const DWORD m_dwInitAllocLength;
+		const DWORD m_dwMaxBufferTimes;
     };
 
     // The typedef for the debugging output function.  Note that this matches OutputDebugString.

@@ -315,6 +315,19 @@ test("Math", function() {
     ok(myRandomNumber >= 60 && myRandomNumber <= 100, "random 返回大于 0 小于 1 的一个随机数");
 });
 
+test("图像image", function() {
+    var img = new Image(); //构造时可以指定 高度、宽度
+    img.src = "../HTML/img/merglobe.gif";  //加载指定图像，这种方式加载的图形不能通过 window.document.images 访问
+    equal(img.name, "", "图形的name属性");
+    equal(img.lowsrc, "", "低速带宽时先加载的图片");
+    equal(img.complete, true, "表示图形是否已经装载完成");
+    equal(img.width, 100, "加载的图像的宽度");
+    equal(img.height, 100, "加载的图像的高度");
+    //equal(img.border, 0, "边框粗细，单位为像素");
+    equal(img.hspace, 0, "边界宽度");
+    equal(img.vspace, 0, "边界高度");
+});
+
 test("Number", function() {
     ok(Number.MAX_VALUE < Number.POSITIVE_INFINITY);    //最大值 < 正无穷大
     ok(Number.NEGATIVE_INFINITY < Number.MIN_VALUE); //负无穷大 < 最小值
