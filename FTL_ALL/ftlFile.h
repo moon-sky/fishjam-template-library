@@ -98,6 +98,27 @@ namespace FTL
 	*
 	* 读写文件(CFile) 时的性能
 	*   1.设置流使用缓冲区：setvbuf(fileLoad.m_pStream, NULL, _IOFBF, 32768);
+	*
+	**************************************************************************************************/
+
+	/**************************************************************************************************
+	* CFileDialog
+	*   多选文件:
+	*     1.设置 OFN_ALLOWMULTISELECT
+	*     2.设置文件名的缓冲区
+	*       const int c_cbBuffSize = (MAX_TRANSLATE_FILES_COUNT * (MAX_PATH + 1)) + 1;
+	*     	fileDlg.GetOFN().lpstrFile = strMultiPath.GetBuffer(c_cbBuffSize);
+	*       fileDlg.GetOFN().nMaxFile = c_cbBuffSize;
+	*     3.遍历获取文件
+	*       POSITION startPosition = fileDlg.GetStartPosition();
+	*       while (startPosition) { CString strPath = fileDlg.GetNextPathName(startPosition); }
+	*     4.释放缓冲区资源 strMultiPath.ReleaseBuffer();
+	*
+	*  初始化路径
+	*    TCHAR szDefaultSavePath[MAX_PATH] = {0};
+	*    SHGetSpecialFolderPath(NULL, szDefaultSavePath, CSIDL_MYDOCUMENTS , TRUE);
+	*    dlg.m_ofn.lpstrInitialDir = szDefaultSavePath;
+
     **************************************************************************************************/
 
 	class CFFileUtil
