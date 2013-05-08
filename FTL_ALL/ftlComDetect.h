@@ -186,7 +186,7 @@ namespace FTL
 #endif
 
 #ifndef INCLUDE_DETECT_RICHOLE
-# define INCLUDE_DETECT_RICHOLE       1
+# define INCLUDE_DETECT_RICHOLE       0
 #endif
 
 #ifndef INCLUDE_DETECT_SERVPROV

@@ -8,6 +8,50 @@
 
 namespace FTL
 {
+    CFGdiPlusErrorInfo::CFGdiPlusErrorInfo(Gdiplus::Status status)
+        : CFConvertInfoT<CFGdiPlusErrorInfo, Gdiplus::Status>(status)
+    {
+    }
+
+    LPCTSTR CFGdiPlusErrorInfo::ConvertInfo()
+    {
+        if (NULL == m_bufInfo[0])
+        {
+            using namespace Gdiplus;
+            switch (m_Info)
+            {
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), Ok);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), GenericError);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), InvalidParameter);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), OutOfMemory);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), ObjectBusy);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), InsufficientBuffer);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), NotImplemented);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), Win32Error);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), WrongState);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), Aborted);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), FileNotFound);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), ValueOverflow);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), AccessDenied);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), UnknownImageFormat);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), FontFamilyNotFound);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), FontStyleNotFound);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), NotTrueTypeFont);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), UnsupportedGdiplusVersion);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), GdiplusNotInitialized);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), PropertyNotFound);
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), PropertyNotSupported);
+#if (GDIPVER >= 0x0110)
+                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo), ProfileNotFound);
+#endif //(GDIPVER >= 0x0110)
+            default:
+                StringCchPrintf(m_bufInfo,_countof(m_bufInfo),TEXT("Unknown Error:%d"), m_Info);
+                break;
+            }
+        }
+        return m_bufInfo;
+    }
+
 	CFAutoGdiplus::CFAutoGdiplus()
 	{
 		Gdiplus::GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);

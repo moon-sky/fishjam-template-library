@@ -136,6 +136,23 @@
 
 namespace FTL
 {
+
+    # define GDIPLUS_VERIFY(x)   \
+    sts = (x);\
+    if(Gdiplus::Ok != sts)\
+    {\
+        REPORT_ERROR_INFO(FTL::CFGdiPlusErrorInfo, sts, x);\
+    }
+
+
+    FTLEXPORT class CFGdiPlusErrorInfo : public CFConvertInfoT<CFGdiPlusErrorInfo, Gdiplus::Status>
+    {
+        DISABLE_COPY_AND_ASSIGNMENT(CFGdiPlusErrorInfo);
+    public:
+        FTLINLINE explicit CFGdiPlusErrorInfo(Gdiplus::Status status);
+        FTLINLINE virtual LPCTSTR ConvertInfo();
+    };
+
     class CFAutoGdiplus
 	{
 	public:

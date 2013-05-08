@@ -65,7 +65,7 @@ namespace FTL
 		CFMemCheckManager::GetInstance().RemoveObject((DWORD_PTR)this);
     }
 
-	CFMemCheckManager* CFMemCheckManager::s_pMemCheckMgr = NULL;
+    __declspec(selectany) CFMemCheckManager* CFMemCheckManager::s_pMemCheckMgr = NULL;
 	CFMemCheckManager& CFMemCheckManager::GetInstance()
 	{
 		if (NULL == s_pMemCheckMgr)

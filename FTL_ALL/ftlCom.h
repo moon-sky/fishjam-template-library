@@ -249,8 +249,8 @@ namespace FTL
 
         FTLINLINE HRESULT IDataObject_GetData(FORMATETC *pformatetcIn, STGMEDIUM *pmedium);
     public:
-        CFImageDataObject();
-        ~CFImageDataObject();
+        FTLINLINE CFImageDataObject();
+        FTLINLINE ~CFImageDataObject();
         IDataAdviseHolder* m_spDataAdviseHolder;
     };
 }//namespace FTL
