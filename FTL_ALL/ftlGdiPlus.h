@@ -82,6 +82,10 @@
 *     SolidBrush(固定色)/HatchBrush(阴影)/TextureBrush(纹理画刷--位图)/GradientBrush(渐变,分线性Linear和路径Path)
 *   CachedBitmap -- 通过缓存绘制的图形来优化显示，注意判断 DrawCachedBitmap 方法的返回值，如果不为OK说明显示属性有变化（比如？），
 *     需要重新创建缓存位图。
+*   Font -- GDI+只能使用矢量字体，可通过 InstalledFontCollection 枚举查看GDI+支持的字体
+*   FontCollection(基类，不要直接使用) 
+*     InstalledFontCollection -- 枚举当前系统已经安装的字体
+*     PrivateFontCollection -- 建立专用的字体集，程序发布时，将字体文件打包进去，在需要用到这些字体时，程序自动安装字体到你的专用字体集（不会影响操作系统），供你使用
 *   GraphicsPath -- 路径对象，可创建待绘制项目序列，路径可视为由各种绘图函数产生的轨迹
 *     AddLine/AddEllipse/AddBezier/AddPath/AddString--在路径中增加路径对象
 *     Flatten -- 拉平路径，可将路径中的各条贝塞尔样条转化为一连串直线
@@ -172,6 +176,10 @@ namespace FTL
 		//m_pImgOtherBubble[i]  = new Image(GetImagePath(strFileName));
 
 		FTLINLINE static BOOL DrawNineBlockImage(Gdiplus::Graphics* pGraphics, Gdiplus::Image* pImages[9], const Gdiplus::Rect* pRect);
+
+        //缺省查询所有Style的信息
+        FTLINLINE static LPCTSTR GetFontFamilyInfo(FTL::CFStringFormater& formater, Gdiplus::FontFamily* pFamily, 
+            INT nStyle = Gdiplus::FontStyleBoldItalic | Gdiplus::FontStyleUnderline | Gdiplus::FontStyleStrikeout );
 	};
 }
 

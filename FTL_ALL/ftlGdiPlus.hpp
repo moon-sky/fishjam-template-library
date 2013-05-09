@@ -62,6 +62,21 @@ namespace FTL
 		Gdiplus::GdiplusShutdown(m_gdiplusToken);
 	}
 
+    //CFRectFDumpInfo::CFRectFDumpInfo(const Gdiplus::RectF& rect) 
+    //    : CFConvertInfoT<CFRectFDumpInfo, const Gdiplus::RectF&, 64>(rect)
+    //{
+    //}
+
+    //LPCTSTR CFRectFDumpInfo::ConvertInfo()
+    //{
+    //    if (NULL == m_bufInfo[0])
+    //    {
+    //        StringCchPrintf(m_bufInfo,_countof(m_bufInfo),TEXT("(%f,%f)-(%f,%f), %dx%d"),
+    //            m_Info.X, m_Info.Y, m_Info.GetRight(), m_Info.GetHeight(),
+    //            m_Info.Width, m_Info.Height);
+    //    }
+    //    return m_bufInfo;
+    //}
 
 	BOOL CFGdiPlusUtil::DrawNineBlockImage(Gdiplus::Graphics* pGraphics, Gdiplus::Image* pImages[9], const Gdiplus::Rect* pRect)
 	{
@@ -101,6 +116,54 @@ namespace FTL
 		sx += vx;
 		pGraphics->DrawImage(pImages[8], sx, sy, pImages[8]->GetWidth(), pImages[8]->GetHeight());
 	}
+
+    LPCTSTR CFGdiPlusUtil::GetFontFamilyInfo(FTL::CFStringFormater& formater, Gdiplus::FontFamily* pFamily, 
+        INT nStyle /* = Gdiplus::FontStyleBoldItalic | Gdiplus::FontStyleUnderline | Gdiplus::FontStyleStrikeout */ )
+    {
+        FTLASSERT(pFamily);
+        if (!pFamily)
+        {
+            return NULL;
+        }
+
+        Gdiplus::Status sts = Gdiplus::Ok;
+
+        WCHAR szFamilyName[LF_FACESIZE] = {0};
+        GDIPLUS_VERIFY(pFamily->GetFamilyName(szFamilyName));
+        formater.Format(TEXT("FontFamily=%s: "), szFamilyName);
+
+        typedef std::pair<Gdiplus::FontStyle, LPCTSTR> FontStyleInfoPair;
+        FontStyleInfoPair checkStyles[] = {
+            std::make_pair(Gdiplus::FontStyleRegular, TEXT("Regular")),
+            std::make_pair(Gdiplus::FontStyleBold, TEXT("Bold")),
+            std::make_pair(Gdiplus::FontStyleItalic, TEXT("Italic")),
+            std::make_pair(Gdiplus::FontStyleUnderline, TEXT("Underline")),
+            std::make_pair(Gdiplus::FontStyleStrikeout, TEXT("Strikeout"))
+        };
+        
+        for (int i = 0; i < _countof(checkStyles); i++)
+        {
+            if ((nStyle & checkStyles[i].first) && pFamily->IsStyleAvailable(checkStyles[i].first))
+            {
+                UINT16 nEmHeight = pFamily->GetEmHeight(checkStyles[i].first);
+                GDIPLUS_VERIFY(pFamily->GetLastStatus());
+
+                UINT16 nCellAscent = pFamily->GetCellAscent(checkStyles[i].first);
+                GDIPLUS_VERIFY(pFamily->GetLastStatus());
+
+                UINT16 nCellDescent = pFamily->GetCellDescent(checkStyles[i].first);
+                GDIPLUS_VERIFY(pFamily->GetLastStatus());
+
+                UINT16 nLineSpacing = pFamily->GetLineSpacing(checkStyles[i].first);
+                GDIPLUS_VERIFY(pFamily->GetLastStatus());
+
+                formater.AppendFormat(TEXT("%s{nEmHeight=%d, nCellAscent=%d, nCellDescent=%d, nLineSpacing=%d}, "),
+                    checkStyles[i].second, nEmHeight, nCellAscent, nCellDescent, nLineSpacing);
+            }
+            
+        }
+        return formater.GetString();
+    }
 }
 
 #endif //FTL_GDIPLUS_HPP
