@@ -61,7 +61,7 @@ test("TODO: Window", function() {
     equal(window.opener, null, "如果窗口不是由其他窗口打开的，Netscape中返回null;IE中返回undefined"); //
     equal(window.self, window, "self 指窗口本身，它返回的对象跟 window 对象是一模一样的,最常用的是\"self.close()\"");
 
-    equal(window.parent, parent, "parent 返回窗口所属的框架页对象");
+    equal(window.parent, parent, "parent 返回窗口所属的框架页对象，如一个frame中找获取frameset的其他frame -- parent.frames[n]");
     equal(window.top, top, "top 返回占据整个浏览器窗口的最顶端的框架页对象");
     equal(window.parent, window.top, "此处 parent 和 top 是同一个");
 
@@ -173,6 +173,16 @@ test("TODO: Firefox中的学习资料", function() {
 //一个HTML 页面可以有一个或多个子框架，这些子框架以<iframe>来标记，用来显示一个独立的HTML 页面
 test("TODO:iframe", function() {
     equal(1, 1, "iFrame");
+});
+
+test("图形映射Area", function() {
+    //hash -- HREF属性的偏移量部分
+    //host -- HREF属性的主机部分
+    //href -- HREF属性全部
+    //target -- TARGET属性
+    var myarea = new Area();
+    myarea.href = "javascript:void(0)"; //忽略用户单击
+
 });
 
 test("BrowserInfo", function() {

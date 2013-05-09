@@ -589,60 +589,75 @@ namespace FTL
 
     BOOL CFSystemUtil::CopyTextToClipboard( LPCTSTR szMem , HWND hWndOwner )
     {
-        FTLASSERT ( FALSE == IsBadStringPtr ( szMem , MAX_PATH ) ) ;
-        if ( TRUE == IsBadStringPtr ( szMem , MAX_PATH ) )
-        {
-            return ( FALSE ) ;
-        }
-
         BOOL bRet = TRUE ;
-        BOOL bOpenedCB = FALSE ;
 		API_VERIFY(::OpenClipboard ( hWndOwner ))
         if ( bRet )
         {
-            bOpenedCB = TRUE ;
-            if ( TRUE == ::EmptyClipboard ( ) )
+            API_VERIFY(::EmptyClipboard( ));
+			if(bRet)
             {
-                // Do the goofy memory stuff.
-                HGLOBAL hGlob = ::GlobalAlloc ( GMEM_MOVEABLE         ,
-                    (_tcslen ( szMem ) + 1) *
-                    sizeof ( TCHAR )       );
+				const int nLen = _tcslen (szMem);
+
+				//TODO:GlobalAlloc 分配的内存不释放?还是说通过下次的 EmptyClipboard 释放?
+                HGLOBAL hGlob = ::GlobalAlloc ( GHND, ( nLen + 1) * sizeof ( TCHAR ));
                 if ( NULL != hGlob )
                 {
                     TCHAR * szClipMem = (TCHAR*)GlobalLock ( hGlob ) ;
                     FTLASSERT ( NULL != szMem ) ;
-                    StringCchCopy(szClipMem , _tcslen ( szMem ), szMem);
-                    //_tcscpy ( szClipMem, szMem) ;
-
+                    StringCchCopy(szClipMem , nLen, szMem);
                     GlobalUnlock ( hGlob ) ;
-                    if ( NULL == ::SetClipboardData ( CLIPBOARDFMT , hGlob ) )
-                    {
-                        FTLASSERT ( !"SetClipboardData failed!!" ) ;
-                    }
+                    API_VERIFY(NULL != ::SetClipboardData (CLIPBOARDFMT, hGlob));
+
+					//TODO:可以同时支持 CF_UNICODETEXT、CF_TEXT
                 }
                 else
                 {
-                    FTLASSERT ( !"Unable to GlobalAlloc memory!!" ) ;
                     bRet = FALSE ;
                 }
             }
-            else
-            {
-                FTLASSERT ( !"Unable to empty the clipboard!!" ) ;
-                bRet = FALSE ;
-            }
-        }
-        else
-        {
-            FTLASSERT ( !"Unable to open the clipboard!!" ) ;
-            bRet = FALSE ;
-        }
-        if ( TRUE == bOpenedCB )
-        {
-            CloseClipboard ( ) ;
+			CloseClipboard();
         }
         return ( bRet ) ;
     }
+
+	ULONGLONG CFSystemUtil::GetTickCount64()
+	{
+		typedef ULONGLONG (WINAPI* GetTickCount64Proc)(void);
+		typedef ULONG (WINAPI* NtQuerySystemInformationProc)(int /*SYSTEM_INFORMATION_CLASS SystemInformationClass*/,
+			PVOID /*SystemInformation*/, 
+			ULONG /*SystemInformationLength*/, 
+			PULONG /*ReturnLength*/);
+
+		GetTickCount64Proc pVistaGetTickCount64 = (GetTickCount64Proc)
+			GetProcAddress(GetModuleHandle(_T("kernel32.dll")), "GetTickCount64");
+		if (pVistaGetTickCount64)
+		{
+			return pVistaGetTickCount64();
+		}
+		else
+		{
+			typedef struct _SYSTEM_TIME_OF_DAY_INFORMATION
+			{
+				LARGE_INTEGER BootTime;
+				LARGE_INTEGER CurrentTime;
+				LARGE_INTEGER TimeZoneBias;
+				ULONG CurrentTimeZoneId;
+			} SYSTEM_TIME_OF_DAY_INFORMATION, *PSYSTEM_TIME_OF_DAY_INFORMATION;
+
+			NtQuerySystemInformationProc pNtQuerySystemInformation = (NtQuerySystemInformationProc)
+				GetProcAddress(GetModuleHandle(_T("ntdll.dll")), ("NtQuerySystemInformation"));
+
+			SYSTEM_TIME_OF_DAY_INFORMATION  st ={0};
+			ULONG                           oSize = 0;
+			if((NULL == pNtQuerySystemInformation)
+				|| 0 != (pNtQuerySystemInformation(3, &st, sizeof(st), &oSize))
+				||(oSize!= sizeof(st)))
+			{
+				return GetTickCount();
+			}
+			return (st.CurrentTime.QuadPart - st.BootTime.QuadPart)/10000;
+		}
+	}
 
     BOOL CFSystemUtil::IsLittleSystem()
     {

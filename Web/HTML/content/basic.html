@@ -67,7 +67,9 @@
         </td>
       </tr>
       <tr><td>img</td>
-      <td>图像高级用法(图像映射image-map -- 带有可供点击区域的图像地图。其中的每个星球都是一个超级链接) <br />
+      <td>图像高级用法(图像映射image-map -- 带有可供点击区域的图像地图。其中的每个星球都是一个超级链接)，
+        如将 href 设置为 javascript:void(0) 忽略鼠标点击，则可通过在onMouseOver中实现鼠标移动时的动态效果，
+       <br />
         <img src="../img/planets.jpg" border="0" usemap="#planetmap" alt="Planets" />
         <map name="planetmap" id="planetmap">
           <area shape="circle" coords="180,139,14" href ="../etc/venus.html" target ="_blank" alt="Venus" title="金星" />

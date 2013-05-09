@@ -909,26 +909,26 @@ namespace FTL
 
     LPCTSTR CFGdiUtil::GetFontNumberByPointSize(int nPointSize) 
     {
-        //注意：nPointSize / 10 就是磅数
+        //注意：nPointSize / 10 就是磅数 -- 不同：http://wenku.baidu.com/view/2aaefd492b160b4e767fcff3.html
         switch(nPointSize)
         {
 		//计算对应的像素值： nPointSize * dipY / 72 = nPointSize*96/72
 		//对应的毫米数？？：     nPointSize * 25.4 /72 -- 好像对应高度刚好错了一行？
-        case 420: return TEXT("初号");  //像素值：56, 毫米数：? 12.7
-        case 360: return TEXT("小初");	//像素值：48, 毫米数：? 11.1
-        case 260: return TEXT("一号");	//像素值：34, 毫米数：? 9.66
-        case 240: return TEXT("小一");	//像素值：32, 毫米数：? 8.42
-        case 220: return TEXT("二号");	//像素值：29, 毫米数：? 7.80
-        case 180: return TEXT("小二");	//像素值：24, 毫米数：? 6.39
-        case 160: return TEXT("三号");	//像素值：21, 毫米数：? 5.55
+        case 420: return TEXT("初号");  //像素值：56, 毫米数：? 12.7	420
+        case 360: return TEXT("小初");	//像素值：48, 毫米数：? 11.1	360
+        case 260: return TEXT("一号");	//像素值：34, 毫米数：? 9.66	280(*)
+        case 240: return TEXT("小一");	//像素值：32, 毫米数：? 8.42	
+        case 220: return TEXT("二号");	//像素值：29, 毫米数：? 7.80	210(*)
+        case 180: return TEXT("小二");	//像素值：24, 毫米数：? 6.39	180
+        case 160: return TEXT("三号");	//像素值：21, 毫米数：? 5.55	157.5(*)
         case 150: return TEXT("小三");	//像素值：20, 毫米数：? 5.23
-        case 140: return TEXT("四号");	//像素值：18, 毫米数：? 4.93
-        case 120: return TEXT("小四");	//像素值：16, 毫米数：? 4.25
-        case 105: return TEXT("五号");	//像素值：14, 毫米数：? 3.70
-        case  90: return TEXT("小五");	//像素值：12, 毫米数：? 3.15
-        case  75: return TEXT("六号");	//像素值：10, 毫米数：? 2.81
-        case  65: return TEXT("小六");	//像素值：8,  毫米数：? 2.45
-        case  55: return TEXT("七号");	//像素值：7,  毫米数：? 2.12
+        case 140: return TEXT("四号");	//像素值：18, 毫米数：? 4.93	140
+        case 120: return TEXT("小四");	//像素值：16, 毫米数：? 4.25	120
+        case 105: return TEXT("五号");	//像素值：14, 毫米数：? 3.70	105
+        case  90: return TEXT("小五");	//像素值：12, 毫米数：? 3.15	90
+        case  75: return TEXT("六号");	//像素值：10, 毫米数：? 2.81	78.75(*)
+        case  65: return TEXT("小六");	//像素值：8,  毫米数：? 2.45	
+        case  55: return TEXT("七号");	//像素值：7,  毫米数：? 2.12	52.5(*)
         case  50: return TEXT("八号");	//像素值：6,  毫米数：? 1.74
         default:
             return TEXT("Unknown");

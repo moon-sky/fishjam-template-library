@@ -106,13 +106,14 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *     ClearType -- Vista/Win7使用的技术，让显示器RGB各个次像素也放光，对色调进行微调，可达到实际分辨率以上的文字显示效果。
 *       使得字体更加平滑(WinXP默认未启用:显示->外观->效果->使用下列方式使屏幕字体的边缘平滑)
 *     MacType(前身为GDI++) -- 可以接管Windows系统的字体渲染功能，让文字看起来更加平滑、清晰。
-*     字体大小单位( WTL::CDialogBaseUnits::InitDialogBaseUnits ):
-*       1.point(磅,1/72逻辑英寸) -- 96DPI时一个像素为 72/96=0.75磅， 如 ITextFont::SetSize 等
-*         nPointSize -- 通常是十分之一磅， 如 CreatePointFont 时的单位
-*       2.twips(1/1440 逻辑英寸或 1/20磅) -- 如 CHARFORMAT::yHeight
-*       3.字号 -- 如 初号、小初 等，优点是使用简单方便（无需关心字体的实际尺寸），缺点是字体的大小受字号的限制，
+*     字体大小单位( WTL::CDialogBaseUnits::InitDialogBaseUnits )， 屏幕浏览时常用px(如网页)，打印输出时常用pt(如Word)
+*       1.point/pt(磅,1/72逻辑英寸) -- 96DPI时一个像素为 72/96=0.75磅(9pt=12px)， 如 ITextFont::SetSize 等, 通常称为"绝对长度"，但会随系统字体大小设置而改变(如 96DPI、120DPI)
+*         nPointSize -- 通常是十分之一磅， 如 CreatePointFont 时的单位，1pt = 10 nPointSize
+*       2.pixel/px() -- 像素，和屏幕分辨率有关，通常称为“相对长度”
+*       3.twips(1/1440 逻辑英寸或 1/20磅) -- 如 CHARFORMAT::yHeight
+*       4.字号 -- 如 初号、小初 等，优点是使用简单方便（无需关心字体的实际尺寸），缺点是字体的大小受字号的限制，
 *                 太小、太大或字号等级间的字体无法用字号表示
-*       4.逻辑单位，如 LOGONT::lfHeight， 注意：使用正的高度得到的字体比使用负值得到的字体小
+*       5.逻辑单位，如 LOGONT::lfHeight， 注意：使用正的高度得到的字体比使用负值得到的字体小
 *           <0 时,高度被转化为设备单位，大小相对于字体的字符高度 -- ? Windows 根据绝对值查找
 *                 查找的字体高度 = lfHeight - InternalLeading ???
 *           =0 时,使用合理的默认高度
@@ -123,8 +124,10 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *          磅 => 逻辑坐标: LOGFONT::lfHeight = -MulDiv(nPointSize, pDC->GetDeviceCaps(LOGPIXELSY), 72) = nPointSize*dpiY/72
 *          磅 => twips:    nTwips = nPointSize * 20;
 * 
-*       2.Em(twips?) -- 字体的逻辑坐标高度, LOGFONT::lfHeight 为负值时(如字体对话框中选择 8 等)，
-*           
+*       6.Em -- 字体的逻辑坐标高度, 一个em表示一种特殊字体的大写字母M的高度，也是相对度量单位，
+*           GdiPlus::Font 构造时使用, LOGFONT::lfHeight 为负值时(如字体对话框中选择 8 等)，
+*           1em=16px
+*
 *       //对话框上的单位： http://blog.csdn.net/dclchj/article/details/5938497
 *       nPointSize(CreatePointFont) -- 字体大小,以0.1点（像素/墨点/磅数）为单位。
 *         5号宋体字的该值是105,磅数为 10.5
@@ -635,7 +638,7 @@ namespace FTL
 
 		//根据传入的 10*磅， 得到对应的字号(如 初号、小初等)
 		FTLINLINE static LPCTSTR GetFontNumberByPointSize(int nPointSize);
-
+		
         //在HDC上绘制坐标系统的信息(映射模式、9个标准点的坐标)，从而帮助调试
         FTLINLINE static BOOL   DrawCoordinate(HDC hdc, const RECT& rcClient, BOOL bDrawText = TRUE,
             BOOL bDrawClipbox = FALSE);

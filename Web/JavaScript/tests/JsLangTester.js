@@ -294,7 +294,7 @@ test("数组排序", function() {
 //注意：Math是内部对象而不是对象类型(即不能创建Math实例) -- 
 //var math = new Math();  会抛出"object is not a function"的异常
 test("Math", function() {
-    equal(Math.E, "2.718281828459045", "欧拉常数");
+    equal(Math.E, "2.718281828459045", "欧拉常数，是自然对数的底数");
     equal(Math.LN2, "0.6931471805599453", "2的自然对数");
     equal(Math.LN10, "2.302585092994046", "10的自然对数");
     equal(Math.LOG2E, "1.4426950408889634", "以2为底e的对数");
@@ -388,13 +388,13 @@ test("TODO: 全局函数", function() {
 
     equal("123".toString(), "123", "toString把对象转换成字符串");
     equal("123".toString(16), "123", "0x7B -- TODO(为什么不行？):toString(N)可以转换成特定进制");
-});
 
+});
 
 test("自定义函数", function() {
     //1.函数必须先定义后使用，
     //2.函数中可以用自动生成的参数 arguments 数组处理传入的参数,使用时可以加 函数名前缀.
-    //3.声明变量时，若前面有 "var" 则表明是局部变量，否则就是全局变量（即使是在函数内部）
+    //3.声明变量时，若前面有 "var" 则表明是局部变量，否则就是全局变量（即使是在函数内部，但需要调用过函数后才会生成全局变量）
 
     function SomeFun() { //此处最好写上参数列表 -- 方便函数使用者知道调用方式
         equal(arguments.length, 4, "函数中的 arguments 数组参数");
@@ -438,7 +438,6 @@ test("自定义函数", function() {
         };
     })();
 
-
     //TODO:具体的参数是什么?
     equal(arguments.length, 1, "TODO:函数内部可以用 arguments 数组属性来获得外部程序调用函数时指定的参数信息");
     //这样可以在函数中获取任意多个参数 -- 不过对开发来说，可读性降低，只在调试时使用?
@@ -472,11 +471,17 @@ test("TODO: 错误处理程序", function() {
     ok(1, "TODO");
 });
 
-var g_myGlobalVariable = "some value";
+function someFun() {
+    var localVariable = 100;    //加了var的是局部变量
+    g_varInSomeFun = 10;        //不加var的是全局变量
+}
+
+var g_myGlobalVariable = "some value";  //此处加不加var都一样是全局变量
 test("作用域", function() {
-	//alert(this);
     equal(window.g_myGlobalVariable, "some value", "全局作用域的变量都是window对象的属性");
-	equal(1, 1);
+
+    someFun();   //必须先调用一次该函数，才能使用其内部生成的全局变量。TODO：如果多次调用会如何?
+    equal(g_varInSomeFun, 10, "定义在函数内部的全局变量，需要调用函数后才会生效");
 });
 
 /*
