@@ -10,6 +10,10 @@
 #include <GdiPlus.h>
 
 /*****************************************************************************************************
+* Temp -- http://support.microsoft.com/kb/307208/zh-cn
+*   GDI+绘制文本是分辨率无关的(GDI是分辨率相关的) -- 在各种分辨率下(包括打印时)都有相同的布局
+*   绘制时缺省是 grid-fitted rendering，此时font hinting会更改标志符号的宽度
+*
 * 使用GDI+前需要 GdiplusStartup 初始化， 使用完毕后通过 GdiplusShutdown 终止化
 * Gdi+ 有 1.0 和 1.1 两个版本(现在是否有更新的?)
 *
@@ -74,7 +78,7 @@
 *       PixelOffsetMode -- 
 *       SmoothingMode -- 控制平滑模式(是否使用消除锯齿的技术)，如 AntiAlias 反锯齿
 *       TextRenderingHint -- 柔化文本的锯齿边缘，如 SystemDefault(使用用户已经配置的任何字体平滑设置), SingleBitPerPixelGridFit(速度最快但质量最低),
-*         AntiAliasGridFit(更好的质量但较低的速度), ClearTypeGridFit(在LCD显示屏上具有最好的质量), 
+*         AntiAliasGridFit(更好的质量但较低的速度), ClearTypeGridFit(在LCD显示屏上具有最好的质量),
 *     图形容器(BeginContainer/EndContainer) -- 对 Graphics 对象做出的任何状态更改都属于容器,
 *       不会改写Graphics对象的现有状态(如 剪辑区域、变形和质量设置 等)
 *
