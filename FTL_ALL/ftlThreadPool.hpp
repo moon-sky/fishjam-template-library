@@ -10,7 +10,7 @@ namespace FTL
 {
 	///////////////////////////////////////////// CFJobBase ///////////////////////////////////////////////////
 	template <typename T>
-	CFJobBase<T>::CFJobBase()
+	CFJobBase<T>::CFJobBase(/*BOOL bSuspendOnCreate*/)
 		:m_JobParam(T())		//≥ı ºªØ
 	{
 		m_nJobPriority = 0;
@@ -349,6 +349,23 @@ namespace FTL
 			}
 		}
 		return bRet;
+	}
+
+	template <typename T>
+	BOOL CFThreadPool<T>::GetRunningStatus(INT* pDoingJobCount, INT* pWaitingJobCount)
+	{
+		CFAutoLock<CFLockObject> lockerWaiting(&m_lockWaitingJobs);
+		CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
+		if (pWaitingJobCount)
+		{
+			*pWaitingJobCount = (INT)m_WaitingJobs.size();
+		}
+
+		if (pDoingJobCount)
+		{
+			*pDoingJobCount = (INT)m_DoingJobs.size();
+		}
+		return TRUE;
 	}
 
 	template <typename T>  

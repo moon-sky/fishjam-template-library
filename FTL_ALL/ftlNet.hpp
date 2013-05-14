@@ -2915,6 +2915,16 @@ namespace FTL
 		return nJobIndex;
 	}
 
+	BOOL CFInternetTransfer::GetRunningStatus(INT* pDoingJobCount, INT* pWaitingJobCount)
+	{
+		FTLASSERT(m_pThreadPool);
+		BOOL bRet = FALSE;
+		if (m_pThreadPool)
+		{
+			bRet = m_pThreadPool->GetRunningStatus(pDoingJobCount, pWaitingJobCount);
+		}
+		return bRet;
+	}
 
 	BOOL CFInternetTransfer::CancelTask(LONG nJobIndex)
 	{

@@ -1172,6 +1172,7 @@ namespace FTL
 		FTLINLINE virtual ~CFInternetTransfer( void );
 
 		FTLINLINE BOOL IsStarted();
+		FTLINLINE BOOL GetRunningStatus(INT* pDoingJobCount, INT* pWaitingJobCount);
 		FTLINLINE BOOL Start(IInternetTransferCallBack* pCallBack = NULL, // IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack = NULL, 
 			LONG nMinParallelCount = 1, 
 			LONG nMaxParallelCount = 4, 

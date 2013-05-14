@@ -294,6 +294,8 @@ test("数组排序", function() {
 //注意：Math是内部对象而不是对象类型(即不能创建Math实例) -- 
 //var math = new Math();  会抛出"object is not a function"的异常
 test("Math", function() {
+    //通常在大量的数学运算代码中，使用 with(Math){xxx} 来减少代码
+
     equal(Math.E, "2.718281828459045", "欧拉常数，是自然对数的底数");
     equal(Math.LN2, "0.6931471805599453", "2的自然对数");
     equal(Math.LN10, "2.302585092994046", "10的自然对数");
@@ -302,17 +304,24 @@ test("Math", function() {
     equal(Math.PI, "3.141592653589793", "圆周率PI常数");
     equal(Math.SQRT1_2, "0.7071067811865476", "1/2的平方根");
     equal(Math.SQRT2, "1.4142135623730951", "2的平方根");
-    
-    equal(Math.abs(-99), 99, "abs返回绝对值")
+
     equal(Math.ceil(1.234), 2, "ceil 返回大于等于 x 的最小整数");
-    equal(Math.exp(2), Math.pow(Math.E, 2), "exp 返回e的X乘方")
     equal(Math.floor(1.5), 1, "floor 返回小于等于 x 的最大整数");
-    equal(Math.log(20), 2.995732273553991, "返回x的自然对数")
-    equal(Math.pow(2,3), 8, "返回x的y次方")
-    equal(Math.round(1.234), 1, "round 返回 四舍五入后的值");
+    equal(Math.round(1.234), 1, "round 返回 四舍五入后的值"); //即最接近的整数
+
+    equal(Math.min(10, 20), 10, "min 返回较小值");
+    equal(Math.max(10, 20), 20, "max 返回较大值");
+
+    equal(Math.abs(-99), 99, "abs返回绝对值")
+    equal(Math.exp(2), Math.pow(Math.E, 2), "exp 返回e的X乘方");
+    equal(Math.log(20), 2.995732273553991, "返回x的自然对数");
+    equal(Math.pow(2, 3), 8, "返回x的y次方");
+
+    //三角函数(cos/sin/tan/acos/asin/atan/atan2)
+    equal(Math.sin(90), 0.8939966636005579, "三角函数 sin/cos 等");
 
     var myRandomNumber = Math.random() * 40 + 60;
-    ok(myRandomNumber >= 60 && myRandomNumber <= 100, "random 返回大于 0 小于 1 的一个随机数");
+    ok(myRandomNumber >= 60 && myRandomNumber < 100, "random 返回大于 0 小于 1 的一个随机数");
 });
 
 test("图像image", function() {

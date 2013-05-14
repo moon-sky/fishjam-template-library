@@ -128,7 +128,7 @@ namespace FTL
 	{
 		friend class CFThreadPool<T>;   //允许Threadpool设置 m_pThreadPool/m_nJobIndex 的值
 	public:
-		FTLINLINE CFJobBase();
+		FTLINLINE CFJobBase(/*BOOL bSuspendOnCreate*/);
 		FTLINLINE CFJobBase(T& rJobParam);
 		FTLINLINE virtual ~CFJobBase();
 
@@ -151,6 +151,7 @@ namespace FTL
 
 		//如果Job正在运行过程中被取消，会调用这个方法
 		FTLINLINE BOOL RequestCancel();
+		FTLINLINE BOOL Resume();
 	protected:
 		//这个三个函数一组, 用于运行起来的Job： if( OnInitialize ){ Run -> OnFinalize }，即使Run中出现错误
 		virtual BOOL OnInitialize();
@@ -263,6 +264,9 @@ namespace FTL
 
 		//! 清除当前未完成的工作，
 		FTLINLINE BOOL ClearUndoWork();
+		
+		//! 获取当前线程池的运行状态，返回当前正在运行的Job和等待运行的Job个数
+		FTLINLINE BOOL GetRunningStatus(INT* pDoingJobCount, INT* pWaitingJobCount);
 
 		//! 向线程池中注册工作 -- 如果当前没有空闲的线程，并且当前线程数小于最大线程数，则会自动创建新的线程，
 		//! 成功后会通过 outJobIndex 返回Job的索引号，可通过该索引定位、取消特定的Job
