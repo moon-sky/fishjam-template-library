@@ -11,11 +11,19 @@
 
 /*****************************************************************************************************
 * Temp -- http://support.microsoft.com/kb/307208/zh-cn
-*   GDI+绘制文本是分辨率无关的(GDI是分辨率相关的) -- 在各种分辨率下(包括打印时)都有相同的布局
-*   绘制时缺省是 grid-fitted rendering，此时font hinting会更改标志符号的宽度
-*
+*   GDI+绘制文本(DrawString/MeasureString)是分辨率无关的(GDI是分辨率相关的) -- 在各种分辨率下(包括打印时)都有相同的布局
+*     (即在不同分辨率下显示自动分行的大段文字时)
+*   绘制时缺省是 grid-fitted rendering，此时font hinting会更改标志符号的宽度(？正常时绘制比计算的小，粗体时绘制比计算的大)，
+*     如使用GDI+绘制连续的正常"w"或粗体"i"，计算出和绘制出的宽带会差很多。
+*   准确的宽度也依赖于 TrueType Hinting, Grid Fitting 等
+*   为了避免自动调整，需要:
+*     1.在 DrawString 和 MeasureString 时使用基于 GenericTypographic 的 typographic StringFormat -- 怎么做?
+*     2.Graphics::SetTextRenderingHint(TextRenderingHintAntiAlias);
+*     3.[可选]Graphics::SetTextContrast -- 变暗反锯齿文本，解决上面代码造成的较小字体时显示灰色的问题
+*   或者使用 ExtTextOut / UniScribe /DirectWrite 来绘制多个不同格式的文本
+* 
 * 使用GDI+前需要 GdiplusStartup 初始化， 使用完毕后通过 GdiplusShutdown 终止化
-* Gdi+ 有 1.0 和 1.1 两个版本(现在是否有更新的?)
+* Gdi+ 有 1.0(缺省 -- GDIPVER) 和 1.1 两个版本，若要使用 1.1，需要定义 GDIPVER 宏
 *
 * GDI和GDI+的区别：
 *   ★GDI是有状态的，GDI+是无状态的， DC <==> Graphics 对象
@@ -79,6 +87,8 @@
 *       SmoothingMode -- 控制平滑模式(是否使用消除锯齿的技术)，如 AntiAlias 反锯齿
 *       TextRenderingHint -- 柔化文本的锯齿边缘，如 SystemDefault(使用用户已经配置的任何字体平滑设置), SingleBitPerPixelGridFit(速度最快但质量最低),
 *         AntiAliasGridFit(更好的质量但较低的速度), ClearTypeGridFit(在LCD显示屏上具有最好的质量),
+*     MeasureCharacterRanges -- 计算字符串占用的位置，返回的 Region 是包含文字的不规则形状(每行文字矩形的 Union ?)
+*       format.SetMeasurableCharacterRanges(设置想检测的字符范围); graphics.MeasureCharacterRanges(xxx);
 *     图形容器(BeginContainer/EndContainer) -- 对 Graphics 对象做出的任何状态更改都属于容器,
 *       不会改写Graphics对象的现有状态(如 剪辑区域、变形和质量设置 等)
 *
@@ -165,8 +175,10 @@ namespace FTL
     class CFAutoGdiplus
 	{
 	public:
-		FTLINLINE CFAutoGdiplus();
+		FTLINLINE CFAutoGdiplus(BOOL bEnableDebug = FALSE);
 		FTLINLINE ~CFAutoGdiplus();
+	protected:
+		FTLINLINE static VOID WINAPI FtlDebugEventProc(Gdiplus::DebugEventLevel level, CHAR *message);
 	private:
 		Gdiplus::GdiplusStartupInput	m_gdiplusStartupInput;
 		ULONG_PTR						m_gdiplusToken;

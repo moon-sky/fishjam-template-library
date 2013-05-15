@@ -5,6 +5,7 @@
 #ifdef USE_EXPORT
 #  include "ftlGdiPlus.h"
 #endif
+#include "ftlConversion.h"
 
 namespace FTL
 {
@@ -52,14 +53,31 @@ namespace FTL
         return m_bufInfo;
     }
 
-	CFAutoGdiplus::CFAutoGdiplus()
+	CFAutoGdiplus::CFAutoGdiplus(BOOL bEnableDebug /* = FALSE */)
 	{
+		if (bEnableDebug)
+		{
+			m_gdiplusStartupInput.DebugEventCallback = FtlDebugEventProc;
+		}
 		Gdiplus::GdiplusStartup(&m_gdiplusToken, &m_gdiplusStartupInput, NULL);
 	}
 
 	CFAutoGdiplus::~CFAutoGdiplus()
 	{
 		Gdiplus::GdiplusShutdown(m_gdiplusToken);
+	}
+
+	VOID CFAutoGdiplus::FtlDebugEventProc(Gdiplus::DebugEventLevel level, CHAR *message)
+	{
+		switch (level)
+		{
+		case Gdiplus::DebugEventLevelWarning:
+			FTLTRACEEX(tlWarning, TEXT("Gdi+:%s\n"), CFConversion(CP_ACP).MBCS_TO_TCHAR(message));
+			break;
+		case Gdiplus::DebugEventLevelFatal:
+			FTLTRACEEX(tlError, TEXT("Gdi+:%s\n"), CFConversion(CP_ACP).MBCS_TO_TCHAR(message));
+			break;
+		}
 	}
 
     //CFRectFDumpInfo::CFRectFDumpInfo(const Gdiplus::RectF& rect) 
