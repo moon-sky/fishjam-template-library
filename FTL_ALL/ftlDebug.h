@@ -15,6 +15,18 @@ namespace FTL
 
     /*********************************************************************************************************
     * 在Release版本中设置断点: _asm int 3
+	*   
+	* 使用 TRACE/ATLTRACE 打印带有中日韩的文字时，可能会报" _CrtDbgReport: String too long or IO Error "的错误，而无法打出日志：
+	*   原因: wprintf_s 不能正确输出中日韩的 UNICODE 文字(似乎VS2010后修复了这个Bug？)
+	*   补充资料(尚未仔细研究)：http://www.cnblogs.com/hnrainll/archive/2011/05/07/2039700.html
+	*   解决方法：
+	*     1.使用FTLTRACE(内部使用 StringCchVPrintfEx + OutputDebugString )
+	*     2.#include <locale.h>
+	*       char* old_locale = _strdup( setlocale(LC_ALL,NULL) );
+	*       setlocale( LC_ALL, "chs" );    或 "", "korean"
+	*       TRACE(XXXX);
+	*       setlocale( LC_ALL, old_locale); 
+	*       free(old_locale); 
     *********************************************************************************************************/
 
     //printf 的 Ctrl Code -- printf("\033[30m" "其他控制符" "\033[0m" , 参数列表)

@@ -13,6 +13,7 @@ static CCheckComboBox *g_pCurComboBox = 0;
 
 BEGIN_MESSAGE_MAP(CCheckComboBox, CComboBox)
 	//{{AFX_MSG_MAP(CCheckComboBox)
+	ON_WM_DESTROY()
 	ON_MESSAGE(WM_CTLCOLORLISTBOX, OnCtlColorListBox)
 	ON_MESSAGE(WM_GETTEXT, OnGetText)
 	ON_MESSAGE(WM_GETTEXTLENGTH, OnGetTextLength)
@@ -24,7 +25,8 @@ END_MESSAGE_MAP()
 //
 // The subclassed COMBOLBOX message handler
 //
-extern "C" LRESULT FAR PASCAL ComboBoxListBoxProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
+
+extern "C" LRESULT CALLBACK ComboBoxListBoxProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (nMsg) {
 		case WM_RBUTTONDOWN: {
@@ -63,7 +65,7 @@ extern "C" LRESULT FAR PASCAL ComboBoxListBoxProc(HWND hWnd, UINT nMsg, WPARAM w
 
 				CRect rcItem;
                 rcItem.SetRectEmpty();
-				SendMessage(hWnd, LB_GETITEMRECT, nIndex, (LONG)(VOID *)&rcItem);
+				SendMessage(hWnd, LB_GETITEMRECT, nIndex, (LONG_PTR)(VOID *)&rcItem);
 				InvalidateRect(hWnd, rcItem, FALSE);
 
 				// Invert the check mark
@@ -92,7 +94,7 @@ extern "C" LRESULT FAR PASCAL ComboBoxListBoxProc(HWND hWnd, UINT nMsg, WPARAM w
 				INT nIndex = nTopIndex + pt.y / nItemHeight;
 
 				CRect rcItem(0, 0, 0, 0);
-				SendMessage(hWnd, LB_GETITEMRECT, nIndex, (LONG)(VOID *)&rcItem);
+				SendMessage(hWnd, LB_GETITEMRECT, nIndex, (LONG_PTR)(VOID *)&rcItem);
 
 				if (PtInRect(rcItem, pt)) {
 					// Invalidate this window
@@ -125,6 +127,7 @@ CCheckComboBox::CCheckComboBox()
 	m_hListBox       = 0;
 	m_bTextUpdated   = FALSE;
 	m_bItemHeightSet = FALSE;
+	m_bHasResetItemData = FALSE;
 }
 
 CCheckComboBox::~CCheckComboBox()
@@ -148,6 +151,17 @@ BOOL CCheckComboBox::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, U
 	return CComboBox::Create(dwStyle, rect, pParentWnd, nID);
 }
 
+void CCheckComboBox::OnDestroy() 
+{
+	CComboBox::OnDestroy();
+	_ResetCheckItemContent(FALSE);
+}
+
+BOOL CCheckComboBox::InitControl()
+{
+	BOOL bRet = ModifyStyle(0xF, CBS_DROPDOWNLIST | CBS_OWNERDRAWVARIABLE | CBS_HASSTRINGS, 0);
+	return bRet;
+}
 
 LRESULT CCheckComboBox::OnCtlColorListBox(WPARAM wParam, LPARAM lParam) 
 {
@@ -161,7 +175,7 @@ LRESULT CCheckComboBox::OnCtlColorListBox(WPARAM wParam, LPARAM lParam)
 
 			// Do the subclassing
             g_pCheckComboBoxWndProc = (WNDPROC)GetWindowLongPtr(m_hListBox, GWLP_WNDPROC);
-			SetWindowLongPtr(m_hListBox, GWLP_WNDPROC, (LONG)ComboBoxListBoxProc);
+			SetWindowLongPtr(m_hListBox, GWLP_WNDPROC, (LONG_PTR)ComboBoxListBoxProc);
 		}
 	}
 	
@@ -182,7 +196,7 @@ void CCheckComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	INT nCheck = 0;
 
 	// Check if we are drawing the static portion of the combobox
-	if ((LONG)lpDrawItemStruct->itemID < 0) {
+	if ((LONG_PTR)lpDrawItemStruct->itemID < 0 || m_hListBox == 0) {
 		// Make sure the m_strText member is updated
 		RecalcText();
 
@@ -383,9 +397,9 @@ INT CCheckComboBox::SetCheck(INT nIndex, BOOL bFlag)
 	return 0;
 }
 
-BOOL CCheckComboBox::GetCheck(INT nIndex)
+BOOL CCheckComboBox::GetCheck(INT nIndex) const
 {
-    CheckItemInfo* pItemInfo = (CheckItemInfo*) CComboBox::GetItemData(nIndex);
+    const CheckItemInfo* pItemInfo = (const CheckItemInfo*) CComboBox::GetItemData(nIndex);
     ASSERT(pItemInfo);
     if (pItemInfo)
     {
@@ -487,4 +501,12 @@ void CCheckComboBox::_ResetCheckItemContent(BOOL bResetBaseItemData)
     {
         CComboBox::ResetContent();
     }
+}
+
+void CCheckComboBox::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if ((nChar == VK_DOWN) || (nChar == VK_LEFT) || (nChar == VK_RIGHT) || (nChar == VK_UP))
+		ShowDropDown();
+
+	CComboBox::OnKeyDown(nChar, nRepCnt, nFlags);
 }

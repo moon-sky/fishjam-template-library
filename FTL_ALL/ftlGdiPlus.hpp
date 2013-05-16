@@ -55,6 +55,9 @@ namespace FTL
 
 	CFAutoGdiplus::CFAutoGdiplus(BOOL bEnableDebug /* = FALSE */)
 	{
+#if (GDIPVER >= 0x0110) 
+		m_gdiplusStartupInput.GdiplusVersion = 2;
+#endif //GDIPVER
 		if (bEnableDebug)
 		{
 			m_gdiplusStartupInput.DebugEventCallback = FtlDebugEventProc;

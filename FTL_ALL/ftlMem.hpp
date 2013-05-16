@@ -54,7 +54,7 @@ namespace FTL
 		CFMemCheckManager::GetInstance().AddObject((DWORD_PTR)this, __FILE__LINE__, CA2T(typeid(*this).name()));
     }
 
-	CFMemCheckBase& CFMemCheckBase::operator =( const CFMemCheckBase &ref )
+	CFMemCheckBase& CFMemCheckBase::operator =( const CFMemCheckBase& ref )
 	{
 		//do nothing
 		return *this;
