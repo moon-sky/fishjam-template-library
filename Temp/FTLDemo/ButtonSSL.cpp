@@ -335,7 +335,7 @@ void CButtonSSL::OnLButtonDown(UINT nFlags, CPoint point)
 
 	// Show the menu if the click is on the drop-arrow
 	// and the SSL_BS_MENU_BTN style is set
-	if(HitMenuButton(point) && (SSL_BS_MENU_BTN & m_nStyle))  // 
+	if(HitMenuButton(point) &&(SSL_BS_MENU_BTN & m_nStyle)) 
 	{
 		m_bMenuPushed = TRUE;
 		Invalidate();
