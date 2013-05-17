@@ -8,6 +8,9 @@
 
 enum DrawImageFunctionType
 {
+	//http://msdn.microsoft.com/en-us/library/windows/desktop/ms535746(v=vs.85).aspx
+
+	//1.0 版本
 	difDestRect,				//DrawImage(Image*, const Rect),	自动缩放来适应大小
 	difDestPoint,				//DrawImage(Image*, const Point),   从指定点开始绘制原图，超过的部分自动被Clip
 	difDestRectF,				//DrawImage(Image*, const RectF),	自动缩放来适应大小
@@ -20,8 +23,30 @@ enum DrawImageFunctionType
 	difDestXYWH,				//DrawImage(Image*, INT, INT, INT, INT), 同 difDestRect
 	difDestRealXYWH,			//DrawImage(Image*, REAL, REAL, REAL, REAL), 同 difDestRect
 
-	difInt6Unit,				//DrawImage(Image*,INT,INT,INT,INT,INT,INT,Unit) 
-	difReal6Unit,				//DrawImage(Image*, REAL, REAL, REAL, REAL, REAL, REAL, Unit) 
+	difInt6Unit,				//DrawImage(Image*,INT,INT,INT,INT,INT,INT,Unit), 可以绘制部分图片，但不能缩放
+	difReal6Unit,				//DrawImage(Image*, REAL, REAL, REAL, REAL, REAL, REAL, Unit) ， 同上
+
+	difRectFsUnitAttributes,	//DrawImage(Image*,RectF&,RectF&,Unit,ImageAttributes*)
+
+	difRectXYWHAttributesAbort, //DrawImage(Image*,Rect&,INT,INT,INT,INT,Unit,ImageAttributes*,DrawImageAbort,VOID*)
+	difRectFXYHWAttributeAbort,			//DrawImage(Image*,RectF&,REAL,REAL,REAL,REAL,Unit,ImageAttributes*,DrawImageAbort,VOID*), 同上
+
+	difPointArrayXYHWUnitAttributesAbort,  //DrawImage(Image*,Point*,INT,INT,INT,INT,INT,Unit,ImageAttributes*,DrawImageAbort,VOID*)
+	difPointFArrayXYHWUnitAttributesAbort,	//DrawImage(Image*,PointF*,INT,REAL,REAL,REAL,REAL,Unit,ImageAttributes*,DrawImageAbort,VOID*)
+
+	//1.1 版本  -- MSDN 中 Unit 写错了
+	difRectFMaxtrixEffectAttributesUnit, //DrawImage(Image*,RectF*,Matrix*,Effect*,ImageAttributes*,Unit)
+};
+
+//Rotate/Scale/Translate 的顺序 -- 6种
+enum TransformOrder
+{
+	toRST,		//Rotate -> Scale -> Translate
+	toRTS,
+	toSRT,
+	toSTR,
+	toTRS,
+	toTSR,
 };
 
 struct GdiPlusTestParam
@@ -31,6 +56,10 @@ public:
 	BOOL GetCharacterRangeInfo(INT& nStart, INT& nLength);
 	LPCTSTR GetParamInfo(FTL::CFStringFormater& formater);
 public:
+	CString m_strPaintString;
+	CString m_strPaintImagePath;
+	CRect   m_rcDrawPanelClient;
+
 	INT     m_nFontHeight;
 	INT     m_nRenderingOriginX , m_nRenderingOriginY;
 	INT		m_nCharacterRangeStart, m_nCharacterRangeStop;
@@ -38,7 +67,6 @@ public:
 	
 	DrawImageFunctionType		m_drawImageFunctionType;
 
-	Gdiplus::REAL	m_fRotateAngle;
 	Gdiplus::Unit	m_nUint;
 
 	Gdiplus::StringAlignment m_nAlignment;
@@ -46,11 +74,35 @@ public:
 	Gdiplus::FontStyle		 m_nFontStyle;
 	Gdiplus::Color			 m_clrBrush;
 
-	Gdiplus::TextRenderingHint   m_TextRenderingHint;
-	Gdiplus::PixelOffsetMode     m_pixelOffsetMode;
+	//质量属性
+	BOOL						m_bEnabledCompositingMode;
+	Gdiplus::CompositingMode	m_compositingMode;
+	BOOL						m_bEnabledCompositingQuality;
+	Gdiplus::CompositingQuality m_compositingQuality;
+	BOOL						m_bEnabledInterpolationMode;
+	Gdiplus::InterpolationMode  m_interpolationMode;
+	BOOL						m_bEnabledPixelOffsetMode;
+	Gdiplus::PixelOffsetMode    m_pixelOffsetMode;
+	BOOL						m_bEnabledTextRenderingHint;
+	Gdiplus::TextRenderingHint  m_textRenderingHint;
+	BOOL						m_bEnabledSmoothingMode;
+	Gdiplus::SmoothingMode		m_smoothingMode;
 
-	CString m_strPaintString;
-	CString m_strPaintImagePath;
+
+	//坐标和转换
+	TransformOrder				m_transformOrder;
+	Gdiplus::MatrixOrder		m_graphicsMatrixOrder;
+	BOOL						m_bEnabledGraphicsRotate;
+	Gdiplus::REAL				m_graphicsRotateAngle;
+	BOOL						m_bEnabledGraphicsScale;
+	Gdiplus::REAL				m_graphicsScaleSx;
+	Gdiplus::REAL				m_graphicsScaleSy;
+	BOOL						m_bEnabledGraphicsTranslate;
+	Gdiplus::REAL				m_graphicsTranslateDx;
+	Gdiplus::REAL				m_graphicsTranslateDy;
+
+	Gdiplus::ColorAdjustType	 m_colorAdjustType;
+
 
 	CString m_strFontFamily;
 
@@ -89,36 +141,67 @@ private:
 	GdiPlusTestParam	m_testParam;
 
 	BOOL    _InitControls();
+	BOOL    _SetDrawPanelInfo(CPoint& ptMouse);
 	BOOL	_InitFontCollection();
 	BOOL	_InitComboboxControls();
 	BOOL	_InitTestButtons();
 	BOOL	_InitSpinControls();
+	BOOL	_InitGraphicsQualityControls();
+	BOOL	_InitGraphicsCoordinateAndTransform();
+
 	BOOL    _UnInitControls();
 
 	BOOL	_GetTestParam(const CRect& rcPaintDest, Gdiplus::Graphics* pGraphics);
 	INT     _GetCheckComboxSelectedFlags(const CCheckComboBox& checkCombobox);
+	Gdiplus::Status _CalcImageAttributes(Gdiplus::ImageAttributes& attributes);
+	Gdiplus::Status _CalcImageMatrix(Gdiplus::Matrix& matrix);
+	Gdiplus::Status _CalcImageEffect(Gdiplus::Effect& effect);
+
 
 	void    _DoGdiPlusTest(GdiPlusTestType testType);
+	Gdiplus::Status _SetGraphicsQualityParam(Gdiplus::Graphics* pGraphics);
+	Gdiplus::Status _SetGraphicsCoordinateAndTransformParam(Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestDrawString(Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestDrawImage(Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestMeasureCharacterRanges(Gdiplus::Graphics* pGraphics);
 protected:
 
 	CStatic m_staticPaint;
+	CStatic m_staticDrawPanelInfo;
+
 	CComboBox m_cmbAlignment;
     CComboBox m_cmbLineAlignment;
-    CComboBox m_cmbTextRenderingHint;
 	
     CComboBox m_cmbFontFamily;
-    CComboBox m_cmbPixelOffset;
 	CComboBox m_cmbUnit;
 	CComboBox m_cmbDrawImageFunctionType;
+	CComboBox m_cmbColorAdjustType;
+
+	//质量属性
+	CButton	  m_btnCheckCompositingMode;
+	CComboBox m_cmbCompositingMode;
+	CButton   m_btnCheckCompositingQuality;
+	CComboBox m_cmbCompositingQuality;
+	CButton   m_btnCheckInterpolationMode;
+	CComboBox m_cmbInterpolationMode;
+	CButton   m_btnCheckPixelOffsetMode;
+	CComboBox m_cmbPixelOffsetMode;
+	CButton	  m_btnCheckSmoothingMode;
+	CComboBox m_cmbSmoothingMode;
+	CButton   m_btnCheckTextRenderingHint;
+	CComboBox m_cmbTextRenderingHint;
+
+	//坐标和转换
+	CComboBox	m_cmbTransformOrder;
+	CComboBox   m_cmbGraphicsMatrixOrder;
+	CButton		m_btnCheckGraphicsRotate;
+	CButton		m_btnCheckGraphicsScale;
+	CButton		m_btnCheckGraphicsTranslate;
+
 
 	CCheckComboBox m_cmbFontStyle;
 	CCheckComboBox m_cmbStringFormatFlags;
 	
-	CSpinButtonCtrl	m_spinRotateAngle;
-
 	CButtonSSL m_BtnGdiPlusStringTestMenu;
 	CButtonSSL m_BtnGdiPlusImageTestMenu;
 
@@ -127,4 +210,8 @@ protected:
 	afx_msg void OnGdiplustestMeasureCharacterRanges();
 	afx_msg void OnImagetestDrawimage();
 	afx_msg void OnBnClickedBtnChooseImage();
+protected:
+	static BOOL CALLBACK _DrawImageAbortProc(VOID * pParam);
+public:
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 };

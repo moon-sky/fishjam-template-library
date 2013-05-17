@@ -17,6 +17,7 @@
 
 #define ADD_CHECK_COMBO_VALUE_STRING(cmb, flag, str, bCheck) ADD_CHECK_COMBO_VALUE_STRING_EX(cmb, flag, TEXT(#flag), bCheck)
 
+#define GET_COMBOBOX_TYPE_ITEMDATA(type, cmb)	(type)cmb.GetItemData(cmb.GetCurSel());
 
 class CCheckComboBox : public CComboBox
 {

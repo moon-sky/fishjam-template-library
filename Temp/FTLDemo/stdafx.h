@@ -14,6 +14,8 @@
 #define VC_EXTRALEAN		// 从 Windows 头中排除极少使用的资料
 #endif
 
+#define GDIPVER		0x0110
+
 //#ifndef WINVER
 //#  define WINVER _WIN32_MAXVER
 //#endif
