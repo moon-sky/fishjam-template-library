@@ -118,6 +118,8 @@ enum GdiPlusTestType
     gpttDrawDriverString,
 	gpttMeasureCharacterRanges,
 
+    gpttGraphicsPath,
+
 	//Image
 	gpttDrawImage,
 };
@@ -155,8 +157,9 @@ private:
 	INT     _GetCheckComboxSelectedFlags(const CCheckComboBox& checkCombobox);
 	Gdiplus::Status _CalcImageAttributes(Gdiplus::ImageAttributes& attributes);
 	Gdiplus::Status _CalcImageMatrix(Gdiplus::Matrix& matrix);
+#if (GDIPVER >= 0x0110)
 	Gdiplus::Status _CalcImageEffect(Gdiplus::Effect& effect);
-
+#endif //(GDIPVER >= 0x0110)
 
 	void    _DoGdiPlusTest(GdiPlusTestType testType);
 	Gdiplus::Status _SetGraphicsQualityParam(Gdiplus::Graphics* pGraphics);

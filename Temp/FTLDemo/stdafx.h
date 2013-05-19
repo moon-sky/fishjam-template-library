@@ -14,7 +14,7 @@
 #define VC_EXTRALEAN		// 从 Windows 头中排除极少使用的资料
 #endif
 
-#define GDIPVER		0x0110
+//#define GDIPVER		0x0110
 
 //#ifndef WINVER
 //#  define WINVER _WIN32_MAXVER
@@ -62,6 +62,7 @@
 #include <ftlbase.h>
 using namespace FTL;
 
+#include <GdiPlus.h>
 
 #ifdef _UNICODE
 #if defined _M_IX86

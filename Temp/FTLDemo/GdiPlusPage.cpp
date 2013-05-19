@@ -689,10 +689,20 @@ Gdiplus::Status CGdiPlusPage::_TestDrawString(Graphics* pGraphics)
 	GDIPLUS_VERIFY(pGraphics->MeasureString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
 		&font, m_testParam.m_rtfPaintDest, &format, &rcBounds));
 
+    RectF rcPathBounds;
+    GraphicsPath    path;
+    GDIPLUS_VERIFY(path.AddString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
+        m_testParam.m_strFontFamily, m_testParam.m_nFontStyle, m_testParam.m_nFontHeight, m_testParam.m_rtfPaintDest, &format));
+    path.GetBounds(&rcPathBounds);
+
 	//pDrawDC->Rectangle(rcBounds.X, rcBounds.Y, rcBounds.GetRight(), rcBounds.GetBottom());
 
 	Gdiplus::Pen penBounds(Color::Aqua);
 	GDIPLUS_VERIFY(pGraphics->DrawRectangle(&penBounds, rcBounds));
+
+    FTLTRACE(TEXT("PathBounds:{%f,%f - %f,%f}, MeasureBounds:{%f,%f - %f,%f}\n"), 
+        rcPathBounds.X, rcPathBounds.Y, rcPathBounds.GetRight(), rcPathBounds.GetBottom(),
+        rcBounds.X, rcBounds.Y, rcBounds.GetRight(), rcBounds.GetBottom());
 
 	GDIPLUS_VERIFY(pGraphics->DrawString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
 		&font, m_testParam.m_rtfPaintDest, &format,  &brush));
@@ -867,7 +877,11 @@ Gdiplus::Status CGdiPlusPage::_TestDrawImage(Graphics* pGraphics)
 					ImageAttributes attributes;
 					_CalcImageAttributes(attributes);
 
+#if 0
 					GDIPLUS_VERIFY(pGraphics->DrawImage(pImage, destRect, sourceRect, m_testParam.m_nUint, &attributes));
+#else
+                    AfxMessageBox(TEXT("Can not support in home"));
+#endif 
 					break;
 				}
 			case difRectXYWHAttributesAbort:
@@ -944,8 +958,9 @@ Gdiplus::Status CGdiPlusPage::_TestDrawImage(Graphics* pGraphics)
 
 					break;
 				}
-			case difRectFMaxtrixEffectAttributesUnit:
+            case difRectFMaxtrixEffectAttributesUnit:
 				{
+#if (GDIPVER >= 0x0110)
 					RectF sourceRect((REAL)pImage->GetWidth() / 4.0f, (REAL)pImage->GetHeight() / 4.0f,
 						(REAL)pImage->GetWidth() / 2.0f, (REAL)pImage->GetHeight() / 2.0f);
 					
@@ -959,7 +974,10 @@ Gdiplus::Status CGdiPlusPage::_TestDrawImage(Graphics* pGraphics)
 					_CalcImageAttributes(attributes);
 
 					GDIPLUS_VERIFY(pGraphics->DrawImage(pImage, &sourceRect, &xForm, &effect, &attributes, m_testParam.m_nUint));
-					break;
+#else
+                    AfxMessageBox(TEXT("GDI Plus Version Not Support"));
+#endif 
+                    break;
 				}
 			default:
 				FTLASSERT(FALSE);
@@ -1005,11 +1023,13 @@ Gdiplus::Status CGdiPlusPage::_CalcImageAttributes(ImageAttributes& attributes)
 	return sts;
 }
 
+#if (GDIPVER >= 0x0110)
 Gdiplus::Status CGdiPlusPage::_CalcImageEffect(Gdiplus::Effect& effect)
 {
 	Gdiplus::Status sts = Gdiplus::InvalidParameter;
 	return sts;
 }
+#endif //(GDIPVER >= 0x0110)
 
 Gdiplus::Status CGdiPlusPage::_CalcImageMatrix(Gdiplus::Matrix& matrix)
 {
