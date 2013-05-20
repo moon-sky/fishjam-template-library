@@ -141,7 +141,8 @@ void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolSetThreadCount()
 	BOOL bRet = FALSE;
 	if (m_pFtlThreadPool)
 	{
-		API_VERIFY(m_pFtlThreadPool->SetThreadsCount(m_nFtlThreadPoolMinThreads, m_nFtlThreadPoolMaxThreads));
+        API_VERIFY(m_pFtlThreadPool->SetMaxThreadsCount(m_nFtlThreadPoolMaxThreads));
+		API_VERIFY(m_pFtlThreadPool->SetMinThreadsCount(m_nFtlThreadPoolMinThreads));
 	}
 }
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobLow()

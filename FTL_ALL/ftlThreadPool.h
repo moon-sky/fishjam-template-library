@@ -287,7 +287,8 @@ namespace FTL
 
 		//! 动态调整线程个数，如果参数为 -1，表示不改变对应的线程数
 		//! 注意：如果是减少线程个数，且当前已有运行的Job占用了线程，不会强制取消线程的执行
-		FTLINLINE BOOL SetThreadsCount(LONG nMinNumThreads, LONG nMaxNumThreads);
+		FTLINLINE BOOL SetMinThreadsCount(LONG nMinNumThreads);
+        FTLINLINE BOOL SetMaxThreadsCount(LONG nMaxNumThreads);
 
 		//! 请求停止线程池
 		//! 注意：

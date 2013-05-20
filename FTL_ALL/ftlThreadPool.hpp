@@ -276,70 +276,92 @@ namespace FTL
 	}
 
 	template <typename T>  
-	BOOL CFThreadPool<T>::SetThreadsCount(LONG nMinNumThreads, LONG nMaxNumThreads)
+	BOOL CFThreadPool<T>::SetMinThreadsCount(LONG nMinNumThreads)
 	{
-		FTLTRACEEX(tlTrace, TEXT("CFThreadPool<T>::SetThreadsCount, Min: %d=>%d, Max:%d=>%d\n"),
-			m_nMinNumThreads, nMinNumThreads, m_nMaxNumThreads, nMaxNumThreads);
+		FTLTRACEEX(tlTrace, TEXT("CFThreadPool<T>::SetMinThreadsCount, Min: %d=>%d\n"),
+			m_nMinNumThreads, nMinNumThreads);
 
-#pragma TODO(最小最多线程个数一起处理)
-
-		//此处稍一不注意，可能造成死锁
-		if (nMinNumThreads != -1 && nMaxNumThreads != -1)
+		if (nMinNumThreads > m_nMaxNumThreads)
 		{
-			FTLASSERT(nMinNumThreads <= nMaxNumThreads);
-			if (nMinNumThreads > nMaxNumThreads)
-			{
-				SetLastError(ERROR_INVALID_PARAMETER);
-				return FALSE;
-			}
+			SetLastError(ERROR_INVALID_PARAMETER);
+			return FALSE;
 		}
 
-		BOOL bRet = TRUE;
-		if (nMinNumThreads != -1 && nMinNumThreads != m_nMinNumThreads)
-		{
-			//更改最少线程数
-			if (nMinNumThreads > m_nMinNumThreads)
-			{
-				//LONG nThreadCountDiff = FTL_MIN(nMinNumThreads - m_nMinNumThreads, XXX);
-				//由少变多，则增加线程个数
-				API_VERIFY(_AddJobThread(nMinNumThreads - m_nMinNumThreads));
-			}
-			else
-			{
-				//Do Nothing, 等待Job结束后线程数自动变少
-			}
-			m_nMinNumThreads = nMinNumThreads;
-		}
+        BOOL bRet = TRUE;
+        LONG nWaitingJobCount = 0;
+        LONG nDoingJobCount = 0;
+        LONG nDiffThreadCount = 0;
+        LONG nRunningThreadCount = m_nRunningThreadNum;
+        {
+            CFAutoLock<CFLockObject> lockerWaiting(&m_lockWaitingJobs);
+            nWaitingJobCount = m_WaitingJobs.size();
+        }
+        {
+            CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
+            nDoingJobCount = m_DoingJobs.size();
+        }
 
-		if (nMaxNumThreads != -1 && nMaxNumThreads != m_nMaxNumThreads)
-		{
-			//更改最多线程数
-			if (nMaxNumThreads > m_nMaxNumThreads)
-			{
-				LONG nThreadCountDiff = nMaxNumThreads - m_nMaxNumThreads;
-				m_nMaxNumThreads = nMaxNumThreads;
+       if (nMinNumThreads > m_nMinNumThreads && nRunningThreadCount < nMinNumThreads)
+        {
+            //要求增多
+            nDiffThreadCount = nMinNumThreads - nRunningThreadCount;
+            m_nMinNumThreads = nMinNumThreads;
+            API_VERIFY(_AddJobThread(nDiffThreadCount));
+        }
+        if(nMinNumThreads < m_nMinNumThreads && 0 == nWaitingJobCount)
+        {
+            //要求减少
+            nDiffThreadCount = m_nMinNumThreads - nMinNumThreads;
+            m_nMinNumThreads = nMinNumThreads;
+            API_VERIFY(ReleaseSemaphore(m_hSemaphoreSubtractThread, nDiffThreadCount, NULL));    
+        }
 
-				//由少变多, 
-				LONG nWaitingJobCount = 0;
-				{
-					CFAutoLock<CFLockObject> lockerWaiting(&m_lockWaitingJobs);
-					nWaitingJobCount = m_WaitingJobs.size();
-				}
-				if (nWaitingJobCount > 0)
-				{
-					API_VERIFY(_AddJobThread(FTL_MIN(nWaitingJobCount, nThreadCountDiff)));
-				}
-			}
-			else
-			{
-				//由多变少，通知请求释放线程的个数
-				LONG nThreadCountDiff = m_nMaxNumThreads - nMaxNumThreads;
-				m_nMaxNumThreads = nMaxNumThreads;
-				API_VERIFY(ReleaseSemaphore(m_hSemaphoreSubtractThread, nThreadCountDiff, NULL));
-			}
-		}
-		return bRet;
+        return bRet;
 	}
+    
+    template <typename T>  
+    BOOL CFThreadPool<T>::SetMaxThreadsCount(LONG nMaxNumThreads)
+    {
+        FTLTRACEEX(tlTrace, TEXT("CFThreadPool<T>::SetMaxThreadsCount, Max:%d=>%d\n"),
+            m_nMaxNumThreads, nMaxNumThreads);
+
+        if (nMaxNumThreads < m_nMinNumThreads)
+        {
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return FALSE;
+        }
+
+        BOOL bRet = TRUE;
+        LONG nWaitingJobCount = 0;
+        LONG nDoingJobCount = 0;
+        LONG nDiffThreadCount = 0;
+        LONG nRunningThreadCount = m_nRunningThreadNum;
+        {
+            CFAutoLock<CFLockObject> lockerWaiting(&m_lockWaitingJobs);
+            nWaitingJobCount = m_WaitingJobs.size();
+        }
+        {
+            CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
+            nDoingJobCount = m_DoingJobs.size();
+        }
+
+        if (nMaxNumThreads > m_nMaxNumThreads && nWaitingJobCount != 0)
+        {
+            //要求增多
+            nDiffThreadCount = FTL_MIN(nMaxNumThreads - m_nMaxNumThreads, nWaitingJobCount);;
+            m_nMaxNumThreads = nMaxNumThreads;
+            API_VERIFY(_AddJobThread(nDiffThreadCount));
+        }
+        if(nMaxNumThreads < m_nMaxNumThreads && nRunningThreadCount > nMaxNumThreads)
+        {
+            //要求减少
+            nDiffThreadCount = nRunningThreadCount - nMaxNumThreads, 
+            m_nMaxNumThreads = nMaxNumThreads;
+            API_VERIFY(ReleaseSemaphore(m_hSemaphoreSubtractThread, nDiffThreadCount, NULL));    
+        }
+
+        return bRet;
+    }
 
 	template <typename T>  
 	BOOL CFThreadPool<T>::Stop()
