@@ -1007,7 +1007,7 @@ namespace FTL
 		, public CFRWBufferT<CFTransferJobBase>
 	{
 	public:
-		FTLINLINE CFTransferJobBase(const CAtlString& strAgent);
+		FTLINLINE CFTransferJobBase(const CAtlString& strAgent, BOOL bSuspendOnCreate);
 		FTLINLINE virtual ~CFTransferJobBase();
 	public:
 		//CFRWBufferT
@@ -1015,10 +1015,8 @@ namespace FTL
 		FTLINLINE BOOL WriteReal(const PBYTE pBuffer, LONG nCount, LONG* pWrite);
 	protected:
 		//CFJobBase virtual function
-		FTLINLINE virtual BOOL OnInitialize();
 		FTLINLINE virtual BOOL Run();
-		FTLINLINE virtual void OnFinalize();
-		FTLINLINE virtual void OnCancelJob();
+		FTLINLINE virtual VOID OnFinalize(BOOL isWaiting);
 	protected:
 		CAtlString				m_strAgent;
 
@@ -1050,7 +1048,7 @@ namespace FTL
 	class CFUploadJob : public CFTransferJobBase
 	{
 	public:
-		FTLINLINE CFUploadJob(const CAtlString& strAgent);
+		FTLINLINE CFUploadJob(const CAtlString& strAgent, BOOL bSuspendOnCreate);
 	protected:
 		FTLINLINE virtual BOOL _CheckParams();
 		FTLINLINE virtual BOOL _SendRequest();
@@ -1121,7 +1119,8 @@ namespace FTL
 	class CFDownloadJob : public CFTransferJobBase
 	{
 	public:
-		FTLINLINE CFDownloadJob(const CAtlString& strAgent);
+		FTLINLINE CFDownloadJob(const CAtlString& strAgent, BOOL bSuspendOnCreate);
+		FTLINLINE CAtlString GetDownloadedFilePath() const { return m_strLocalFilePath; }
 	protected:
 		CAtlString m_strLocalFilePath;
         FTLINLINE VOID SetDeleteWhenCancel(BOOL bDelete);
@@ -1129,8 +1128,8 @@ namespace FTL
 		FTLINLINE virtual BOOL _CheckParams();
 		FTLINLINE virtual BOOL _SendRequest();
 		FTLINLINE virtual BOOL _ReceiveResponse();
+		FTLINLINE virtual HANDLE _CreateLocalSaveFile();
 		FTLINLINE virtual BOOL _CheckInternetBuffer(LPBYTE pBuffer, LONG nCount, CAtlString& strResultInfo);
-		FTLINLINE virtual BOOL _OnOpenTargetFile(HANDLE hFile) { UNREFERENCED_PARAMETER(hFile); return TRUE; }
     private:
         BOOL    m_bDeleteWhenCancel;
 	};
@@ -1139,30 +1138,11 @@ namespace FTL
 	class CFParallelDownloadJob : public CFDownloadJob
 	{
 	public:
-		FTLINLINE CFParallelDownloadJob(const CAtlString& strAgent);
+		FTLINLINE CFParallelDownloadJob(const CAtlString& strAgent, BOOL bSuspendOnCreate);
 		FTLINLINE virtual BOOL _CheckParams();
 	protected:
 		LONG m_nBeginPos;
 		LONG m_nEndPos;
-		FTLINLINE virtual BOOL _OnOpenTargetFile(HANDLE hFile);
-
-
-	};
-
-	class IInternetTransferCallBack : public IFThreadPoolCallBack<FTransferJobInfoPtr>
-	{
-	public:
-		//Download
-		FTLINLINE virtual BOOL OnPromptSaveFile(__in LONG nJobIndex, __inout CFJobBase<FTransferJobInfoPtr>* pJob , 
-			__in LONGLONG nTotalFileSize, __inout LPTSTR pszFileName, __in DWORD nBufferLenght) 
-        {
-            UNREFERENCED_PARAMETER(nJobIndex);
-            UNREFERENCED_PARAMETER(pJob);
-            UNREFERENCED_PARAMETER(nTotalFileSize);
-            UNREFERENCED_PARAMETER(pszFileName);
-            UNREFERENCED_PARAMETER(nBufferLenght);
-            return TRUE; 
-        }
 	};
 
 	class CFInternetTransfer
@@ -1173,7 +1153,7 @@ namespace FTL
 
 		FTLINLINE BOOL IsStarted();
 		FTLINLINE BOOL GetRunningStatus(INT* pDoingJobCount, INT* pWaitingJobCount);
-		FTLINLINE BOOL Start(IInternetTransferCallBack* pCallBack = NULL, // IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack = NULL, 
+		FTLINLINE BOOL Start(IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack = NULL, 
 			LONG nMinParallelCount = 1, 
 			LONG nMaxParallelCount = 4, 
 			LPCTSTR pszAgent = NULL);

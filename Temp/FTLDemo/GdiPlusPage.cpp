@@ -685,24 +685,28 @@ Gdiplus::Status CGdiPlusPage::_TestDrawString(Graphics* pGraphics)
 	//GDIPLUS_VERIFY(pGraphics->SetRenderingOrigin(m_testParam.m_nRenderingOriginX, m_testParam.m_nRenderingOriginY));
 	//graphic.SetTextContrast()
 
-	RectF rcBounds;
+	RectF rcMeasureBounds;
 	GDIPLUS_VERIFY(pGraphics->MeasureString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
-		&font, m_testParam.m_rtfPaintDest, &format, &rcBounds));
+		&font, m_testParam.m_rtfPaintDest, &format, &rcMeasureBounds));
+	Gdiplus::Pen penBounds(Color::Aqua);
+	GDIPLUS_VERIFY(pGraphics->DrawRectangle(&penBounds, rcMeasureBounds));
 
     RectF rcPathBounds;
     GraphicsPath    path;
+	FontFamily	fontFamily(m_testParam.m_strFontFamily);
     GDIPLUS_VERIFY(path.AddString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
-        m_testParam.m_strFontFamily, m_testParam.m_nFontStyle, m_testParam.m_nFontHeight, m_testParam.m_rtfPaintDest, &format));
+        &fontFamily, m_testParam.m_nFontStyle, m_testParam.m_nFontHeight, m_testParam.m_rtfPaintDest, &format));
     path.GetBounds(&rcPathBounds);
+
+	Gdiplus::Pen penPathBounds(Color::Yellow);
+	GDIPLUS_VERIFY(pGraphics->DrawRectangle(&penPathBounds, rcPathBounds));
 
 	//pDrawDC->Rectangle(rcBounds.X, rcBounds.Y, rcBounds.GetRight(), rcBounds.GetBottom());
 
-	Gdiplus::Pen penBounds(Color::Aqua);
-	GDIPLUS_VERIFY(pGraphics->DrawRectangle(&penBounds, rcBounds));
 
     FTLTRACE(TEXT("PathBounds:{%f,%f - %f,%f}, MeasureBounds:{%f,%f - %f,%f}\n"), 
         rcPathBounds.X, rcPathBounds.Y, rcPathBounds.GetRight(), rcPathBounds.GetBottom(),
-        rcBounds.X, rcBounds.Y, rcBounds.GetRight(), rcBounds.GetBottom());
+        rcMeasureBounds.X, rcMeasureBounds.Y, rcMeasureBounds.GetRight(), rcMeasureBounds.GetBottom());
 
 	GDIPLUS_VERIFY(pGraphics->DrawString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
 		&font, m_testParam.m_rtfPaintDest, &format,  &brush));

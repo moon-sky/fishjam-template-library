@@ -128,12 +128,11 @@ namespace FTL
 	{
 		friend class CFThreadPool<T>;   //允许Threadpool设置 m_pThreadPool/m_nJobIndex 的值
 	public:
-		FTLINLINE CFJobBase(/*BOOL bSuspendOnCreate*/);
+		FTLINLINE CFJobBase(BOOL bSuspendOnCreate = FALSE);
 		FTLINLINE CFJobBase(T& rJobParam);
 		FTLINLINE virtual ~CFJobBase();
 
-		//! 比较Job的大小，用于确定在 Waiting 容器中的队列， 排序依据为 Priority -> Index
-		bool operator < (const CFJobBase & other) const;
+		//bool operator < (const CFJobBase & other) const;
 
 		//! 获取或设置Job的优先级, 数字越小，优先级越高(在等待队列中拍在越前面)，缺省值是 0
 		//  注意：优先级必须在放入 Pool 前设置，放入后就不能再调整了
@@ -143,25 +142,21 @@ namespace FTL
 		FTLINLINE LONG GetJobIndex() const;
 		FTLINLINE DWORD GetErrorStatus() const;
 		FTLINLINE LPCTSTR GetErrorInfo() const;
-		//FTLINLINE FJobStatus GetJobStatus() const;
+
+		//Can call only when bSuspendOnCreate is TRUE
+		FTLINLINE BOOL Resume();
+
+		//FTLINLINE FJobStatus GetJobStatus() const { return m_JobStatus; }
 
 		T		m_JobParam;			//! Job会使用的参数，此处为了简化，直接采用公有变量的方式
-		//FTLINLINE T& GetJobParam();
-		//FTLINLINE const T& GetJobParam() const;
-
-		//如果Job正在运行过程中被取消，会调用这个方法
-		FTLINLINE BOOL RequestCancel();
-		FTLINLINE BOOL Resume();
 	protected:
-		//这个三个函数一组, 用于运行起来的Job： if( OnInitialize ){ Run -> OnFinalize }，即使Run中出现错误
-		virtual BOOL OnInitialize();
 		// 在这个Run中通常需要循环 调用 GetJobWaitType 方法检测
 		virtual BOOL Run() = 0;
 		//! 如果是new出来的，通常需要在 OnFinalize 中调用 delete this (除非又有另外的生存期管理容器)
-		virtual VOID OnFinalize() = 0;
-
-		//这个函数用于未运行的Job(直接取消或线程池停止), 用于清除内存等资源, 如 delete this 等
-		FTLINLINE virtual void OnCancelJob() = 0;
+		//! isWaiting 表示是否是在等待状态下结束的
+		//!   TRUE -- 未运行的Job(直接取消或线程池停止) 
+		//!   FALSE -- 运行过的Job,可能是运行结束，也可能是运行过程中被取消
+		virtual VOID OnFinalize(BOOL isWaiting) = 0;
 	protected:
 		FTLINLINE void _SetErrorStatus(DWORD dwErrorStatus, LPCTSTR pszErrorInfo);
 		FTLINLINE void _NotifyProgress(LONGLONG nCurPos, LONGLONG nTotalSize);
@@ -174,13 +169,19 @@ namespace FTL
 		FTLINLINE FTLThreadWaitType GetJobWaitType(DWORD dwMilliseconds = INFINITE) const;
 	private:
 		//设置为私有的变量和方法，即使是子类也不要直接更改，由Pool调用进行控制
+		BOOL		m_bSuspendOnCreate;
 		LONG		m_nJobPriority;
 		LONG		m_nJobIndex;
 		DWORD				m_dwErrorStatus;	//GetLastError
 		CFStringFormater	m_strFormatErrorInfo;		
+		HANDLE		m_hEventJobContinue;
 		HANDLE		m_hEventJobStop;					//停止Job的事件，该变量将由Pool创建和释放(TODO:Pool中缓存?)
 		//FJobStatus	m_JobStatus;
 		CFThreadPool<T>* m_pThreadPool;
+
+		FTLINLINE BOOL _Pause();
+		//如果Job正在运行过程中被取消，会调用这个方法
+		FTLINLINE BOOL _Cancel();
 	};
 
 	typedef enum tagGetJobType
@@ -190,6 +191,37 @@ namespace FTL
 		typeGetJob,
 		typeError,		//发生未知错误(目前尚不清楚什么情况下会发生)
 	}GetJobType;
+
+	//! 比较Job的大小，用于确定在 Waiting 容器中的顺序， 排序依据为 Priority -> Index
+	//! 微软有Bug?(invalid operator< for m_WaitingJobs.find) -- http://support.microsoft.com/kb/949171
+	struct WaitingJobSorter
+	{
+	public:
+		LONG nJobPriority;
+		LONG nJobIndex;
+
+		FTLINLINE WaitingJobSorter()
+		{
+			nJobPriority = 0;
+			nJobIndex = 0;
+		}
+		FTLINLINE WaitingJobSorter(LONG nJobPriority, LONG nJobIndex)
+		{
+			this->nJobPriority = nJobPriority;
+			this->nJobIndex = nJobIndex;
+		}
+		WaitingJobSorter(const WaitingJobSorter&  rOther)
+		{
+			nJobPriority = rOther.nJobPriority;
+			nJobIndex = rOther.nJobIndex;
+		}
+		FTLINLINE bool operator < (const WaitingJobSorter & other) const
+		{
+			COMPARE_MEM_LESS(nJobPriority, other);
+			COMPARE_MEM_LESS(nJobIndex, other);
+			return false;
+		}
+	};
 
 	//回调函数 -- 通过 pJob->m_JobParam 可以访问类型为 T 的 参数
 	FTLEXPORT template <typename T>
@@ -251,6 +283,12 @@ namespace FTL
 		//! 开始线程池,此时会创建 nMinNumThreads 个线程，然后会根据任务数在 nMinNumThreads -- nMaxNumThreads 之间自行调节线程的个数
 		FTLINLINE BOOL Start(LONG nMinNumThreads, LONG nMaxNumThreads);
 
+		FTLINLINE BOOL GetThreadsCount(LONG* pMinNumThreads, LONG* pMaxNumThreads) const;
+
+		//! 动态调整线程个数，如果参数为 -1，表示不改变对应的线程数
+		//! 注意：如果是减少线程个数，且当前已有运行的Job占用了线程，不会强制取消线程的执行
+		FTLINLINE BOOL SetThreadsCount(LONG nMinNumThreads, LONG nMaxNumThreads);
+
 		//! 请求停止线程池
 		//! 注意：
 		//!   1.只是设置StopEvent，需要Job根据GetJobWaitType处理 
@@ -272,21 +310,21 @@ namespace FTL
 		//! 成功后会通过 outJobIndex 返回Job的索引号，可通过该索引定位、取消特定的Job
 		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, DWORD dwMilliseconds = INFINITE);
 
-		//! 取消指定的Job,
 		//! TODO:如果取出Job给客户，可能调用者得到指针时，Job执行完毕 delete this，会照成野指针异常
+		FTLINLINE BOOL PauseJob(LONG nJobIndex);
+		FTLINLINE BOOL ResumeJob(LONG nJobIndex);
+		//! 取消指定的Job,
 		FTLINLINE BOOL CancelJob(LONG nJobIndex);
 
-		//FTLINLINE BOOL PauseJob(LONG nJobIndex);
-		//FTLINLINE BOOL ResumeJob(LONG nJobIndex);
+		FTLINLINE LONG GetJobPriority(LONG nJobIndex);
+		//! 动态更改Job的优先级
+		FTLINLINE LONG SetJobPriority(LONG nJobIndex, LONG nNewPriority);
 
 		//! 请求暂停线程池的操作
-		FTLINLINE BOOL Pause();
+		FTLINLINE BOOL PauseAll();
 
 		//! 请求继续线程池的操作
-		FTLINLINE BOOL Resume();
-
-		//! 是否已经请求了暂停线程池
-		FTLINLINE BOOL HadRequestPause() const;
+		FTLINLINE BOOL ResumeAll();
 
 		//! 是否已经请求了停止线程池
 		FTLINLINE BOOL HadRequestStop() const;
@@ -305,6 +343,11 @@ namespace FTL
 		FTLINLINE void _NotifyJobProgress(CFJobBase<T>* pJob, LONGLONG nCurPos, LONGLONG nTotalSize);
 		FTLINLINE void _NotifyJobError(CFJobBase<T>* pJob, DWORD dwError, LPCTSTR pszDescription); 
 
+		typedef BOOL (CALLBACK CFThreadPool::*HandleJobProc)(CFJobBase<T>* pJob, BOOL bFoundInWaiting);
+		FTLINLINE BOOL _FindAndHandleSpecialJob(LONG nJobIndex, HandleJobProc pProc);
+		FTLINLINE BOOL CALLBACK _InnerPauseJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting);
+		FTLINLINE BOOL CALLBACK _InnerResumeJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting);
+		FTLINLINE BOOL CALLBACK _InnerCancelJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting);
 	protected:
 		LONG m_nMinNumThreads;					//! 线程池中最少的线程个数
 		LONG m_nMaxNumThreads;					//! 线程池中最大的线程个数
@@ -323,18 +366,19 @@ namespace FTL
 
 		//HANDLE	m_hMgrThread;					//! Pool管理线程的句柄
 
-		//! 保存等待Job的信息，由于有优先级的问题，而且一般是从最前面开始取，因此保存成 set
-		typedef typename UnreferenceLess< CFJobBase<T> * >	JobBaseUnreferenceLess;
-		typedef std::set<CFJobBase<T>*, JobBaseUnreferenceLess > WaitingJobContainer;
+		//! 保存等待Job的信息，由于有优先级的问题，而且一般是从最前面开始取，因此保存成按照 WaitingJobSorter 排序的map
+		typedef std::map<WaitingJobSorter, CFJobBase<T> * > WaitingJobContainer;
+		typedef std::map<LONG, CFJobBase<T>* >	IndexToJobContainer;
+
 		WaitingJobContainer		m_WaitingJobs;	//! 等待运行的Job
+		IndexToJobContainer		m_WaitingIndexJobs;
 
 		//! 保存运行Job的信息， 由于会频繁加入、删除，且需要按照JobIndex查找，因此保存成 map
-		typedef std::map<LONG, CFJobBase<T>* >	DoingJobContainer;
-		DoingJobContainer		m_DoingJobs;	//! 正在运行的Job
+		IndexToJobContainer		m_DoingJobs;	//! 正在运行的Job
 
 		HANDLE m_hEventStop;                    //! 停止Pool的事件
 		HANDLE m_hEventAllThreadComplete;		//! 所有的线程都结束时激发这个事件
-		HANDLE m_hEventContinue;				//! 整个Pool继续运行的事件
+		//HANDLE m_hEventContinue;				//! 整个Pool继续运行的事件
         HANDLE m_hSemaphoreWaitingPos;          //! 保存等待容器中还可以放的Job个数，每取出一个Job就增加1，每Submit一个进去就减1
 		HANDLE m_hSemaphoreJobToDo;             //! 保存还有多少个Job的信号量,每Submit一个Job,就增加一个
 		HANDLE m_hSemaphoreSubtractThread;      //! 用于减少线程个数时的信号量,初始时个数为0,每要释放一个，就增加一个，

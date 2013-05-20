@@ -73,7 +73,8 @@ namespace FTL
         if( l.f < r.f ) { return true; } \
         else if( l.f > r.f ) { return false; }
         
-    //定义比较成员变量的宏，常用于重载类、结构的 operator < 或 > 时（注意：在比较完所有需要的变量后需要返回true），参数分别为 field , other&
+    //定义比较成员变量的宏，常用于重载类、结构的 operator < 或 > 时，参数分别为 field , other&
+	//注意：在比较完所有需要的变量后需要返回 false( http://support.microsoft.com/kb/949171 )
     #define COMPARE_MEM_LESS(f, o) \
         if( f < o.f ) { return true; }\
         else if( f > o.f ) { return false; }

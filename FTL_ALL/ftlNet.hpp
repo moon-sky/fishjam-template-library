@@ -1793,8 +1793,9 @@ namespace FTL
 
 	}
 
-	CFTransferJobBase::CFTransferJobBase(const CAtlString& strAgent)
-		:m_strAgent(strAgent)
+	CFTransferJobBase::CFTransferJobBase(const CAtlString& strAgent,  BOOL bSuspendOnCreate)
+		:CFJobBase<FTransferJobInfoPtr>(bSuspendOnCreate)
+		,m_strAgent(strAgent)
 	{
 		_InitValue();
 	}
@@ -1909,11 +1910,6 @@ namespace FTL
 		return bRet;
 	}
 
-	BOOL CFTransferJobBase::OnInitialize()
-	{
-		return TRUE;
-	}
-
 	BOOL CFTransferJobBase::Run()
 	{
 		//FUNCTION_BLOCK_TRACE(10000);
@@ -1958,18 +1954,13 @@ namespace FTL
 		return TRUE;
 	}
 
-	void CFTransferJobBase::OnFinalize()
+	void CFTransferJobBase::OnFinalize(BOOL isWaiting)
 	{
 		delete this;
 	}
 
-	void CFTransferJobBase::OnCancelJob()
-	{
-		delete this;
-	}
-
-	CFUploadJob::CFUploadJob(const CAtlString& strAgent)
-		:CFTransferJobBase(strAgent)
+	CFUploadJob::CFUploadJob(const CAtlString& strAgent, BOOL bSuspendOnCreate)
+		:CFTransferJobBase(strAgent, bSuspendOnCreate)
 	{
 		m_pEndBoundaryPostParam = NULL;
 	}
@@ -2197,7 +2188,7 @@ namespace FTL
 				pDestBuffer += pArgumentParam->nBufferSize;
 				dwDestSize += pArgumentParam->nBufferSize;
 
-				FTLTRACEEX(tlTrace, TEXT("_SendPostArgument:Len=%d, Buffer=%s\n"), 
+				FTLTRACEEX(tlInfo, TEXT("_SendPostArgument:Len=%d, Buffer=%s\n"), 
 					pArgumentParam->nBufferSize, 
 					CFConversion(CP_UTF8).UTF8_TO_TCHAR(pArgumentParam->pBuffer));
 			}
@@ -2485,7 +2476,7 @@ namespace FTL
 			nContentLength += m_pEndBoundaryPostParam->nBufferSize;
 		}
 
-		FTLTRACEEX(tlTrace, TEXT("CFUploadJob::_CalcContentLength nJobId=%d, ContentLength=%ld\n"), 
+		FTLTRACEEX(tlInfo, TEXT("CFUploadJob::_CalcContentLength nJobId=%d, ContentLength=%ld\n"), 
 			GetJobIndex(), nContentLength);
 		return nContentLength;
 	}
@@ -2507,7 +2498,7 @@ namespace FTL
 					{
 						CAtlString strHeader;
 						strHeader.Format(TEXT("%s: %s\r\n"), transParam.strName, transParam.strValue);
-						FTLTRACE(TEXT("_SetRequestHeader >>>>  %s\n"), strHeader);
+						FTLTRACEEX(tlInfo, TEXT("_SetRequestHeader >>>>  %s\n"), strHeader);
 
 						API_VERIFY(::HttpAddRequestHeaders(m_hRequest, strHeader, 
 							strHeader.GetLength(), HTTP_ADDREQ_FLAG_ADD_IF_NEW));
@@ -2525,8 +2516,8 @@ namespace FTL
 		return bRet;
 	}
 
-	CFDownloadJob::CFDownloadJob(const CAtlString& strAgent)
-	:CFTransferJobBase(strAgent)
+	CFDownloadJob::CFDownloadJob(const CAtlString& strAgent, BOOL bSuspendOnCreate)
+	:CFTransferJobBase(strAgent, bSuspendOnCreate)
 	{
         m_bDeleteWhenCancel = TRUE;
 	}
@@ -2651,19 +2642,9 @@ namespace FTL
 				m_nTotalSize = 1;
 				m_nCurPos = 1;
 			}
-			HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, 
-				GENERIC_WRITE, 
-				FILE_SHARE_READ | FILE_SHARE_WRITE,	//如果是多线程同时下载一个文件，需要设置为 FILE_SHARE_WRITE ?
-				NULL,
-				OPEN_ALWAYS, //如果支持断点或多线程下载，需要设置为 OPEN_ALWAYS?
-				FILE_ATTRIBUTE_NORMAL, 
-				NULL);
-			API_VERIFY(INVALID_HANDLE_VALUE != hLocalFile);
-
+			HANDLE hLocalFile = _CreateLocalSaveFile();
 			if (INVALID_HANDLE_VALUE != hLocalFile)
 			{
-				_OnOpenTargetFile(hLocalFile);
-
 				//DWORD dwError = 0;
 				DWORD dwSize = 0, dwRead = 0;
 				DWORD dwWriteToLocal = 0;
@@ -2740,6 +2721,19 @@ namespace FTL
 		return bRet;
 	}
 
+	HANDLE CFDownloadJob::_CreateLocalSaveFile()
+	{
+		//default Implemention -- create a new file, if there is already a file , it will fail
+		HANDLE hLocalFile = ::CreateFile(m_strLocalFilePath, 
+			GENERIC_WRITE, 
+			FILE_SHARE_READ | FILE_SHARE_WRITE,	//如果是多线程同时下载一个文件，需要设置为 FILE_SHARE_WRITE ?
+			NULL,
+			CREATE_NEW,		//如果支持断点或多线程下载，需要设置为 OPEN_ALWAYS?
+			FILE_ATTRIBUTE_NORMAL, 
+			NULL);
+		return hLocalFile;
+	}
+
 	BOOL CFDownloadJob::_CheckInternetBuffer(LPBYTE pBuffer, LONG nCount, CAtlString& strResultInfo)
 	{
 		//default implementation just return TRUE
@@ -2756,8 +2750,8 @@ namespace FTL
     }
 
 
-	CFParallelDownloadJob::CFParallelDownloadJob(const CAtlString& strAgent)
-		:CFDownloadJob(strAgent)
+	CFParallelDownloadJob::CFParallelDownloadJob(const CAtlString& strAgent, BOOL bSuspendOnCreate)
+		:CFDownloadJob(strAgent, bSuspendOnCreate)
 	{
 		m_nBeginPos = 0;
 		m_nEndPos = 0;
@@ -2795,16 +2789,17 @@ namespace FTL
 		}
 		return bRet;
 	}
-	BOOL CFParallelDownloadJob::_OnOpenTargetFile(HANDLE hFile)
-	{
-		BOOL bRet = FALSE;
-		API_VERIFY(INVALID_SET_FILE_POINTER != SetFilePointer(hFile, m_nBeginPos, NULL, FILE_BEGIN));
-		if (bRet)
-		{
-			m_nTotalSize = (m_nEndPos - m_nBeginPos);
-		}
-		return bRet;
-	}
+
+	//BOOL CFParallelDownloadJob::_OnOpenTargetFile(HANDLE hFile)
+	//{
+	//	BOOL bRet = FALSE;
+	//	API_VERIFY(INVALID_SET_FILE_POINTER != SetFilePointer(hFile, m_nBeginPos, NULL, FILE_BEGIN));
+	//	if (bRet)
+	//	{
+	//		m_nTotalSize = (m_nEndPos - m_nBeginPos);
+	//	}
+	//	return bRet;
+	//}
 
 	CFInternetTransfer::CFInternetTransfer(  )
 	{
@@ -2824,7 +2819,7 @@ namespace FTL
 		return bRet;
 	}
 
-	BOOL CFInternetTransfer::Start(IInternetTransferCallBack* pCallBack , // IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack /* = NULL */, 
+	BOOL CFInternetTransfer::Start(IFThreadPoolCallBack<FTransferJobInfoPtr>* pCallBack /* = NULL */, 
 		LONG nMinParallelCount /* = 0 */, 
 		LONG nMaxParallelCount /* = 4 */, 
 		LPCTSTR pszAgent /* = NULL*/)
@@ -2857,7 +2852,8 @@ namespace FTL
 		BOOL bRet = TRUE;
 		if (m_pThreadPool)
 		{
-			API_VERIFY(m_pThreadPool->StopAndWait());
+			API_VERIFY(m_pThreadPool->Stop());
+			API_VERIFY(m_pThreadPool->Wait());
 		}
 		return bRet;
 	}
@@ -2877,7 +2873,7 @@ namespace FTL
 		LONG nJobIndex = 0;
 		if (m_pThreadPool)
 		{
-			CFUploadJob* pJob = new CFUploadJob(m_strAgent);
+			CFUploadJob* pJob = new CFUploadJob(m_strAgent, FALSE);
 			if (pJob)
 			{
 				pJob->SetWriteBufferSize(16 * 10240);  //16K
@@ -2900,7 +2896,7 @@ namespace FTL
 		LONG nJobIndex = 0;
 		if (m_pThreadPool)
 		{
-			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_strAgent);
+			CFDownloadJob* pDownloadJob = new CFDownloadJob(m_strAgent, FALSE);
 			if (pDownloadJob)
 			{
 				//pDownloadJob->SetReadBufferSize(16 * 1024);  //16K

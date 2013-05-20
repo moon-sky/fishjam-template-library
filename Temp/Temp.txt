@@ -1,3 +1,5 @@
+中国政法大学 非诚勿扰 -- http://www.tudou.com/programs/view/u-9O-3UOIjg/
+
 graphics.TranslateTransform(dstRect.X + dstRect.Width / 2, dstRect.Y + dstRect.Height / 2);
  graphics.RotateTransform(m_rDegree); 
 
@@ -12,6 +14,10 @@ graphics.TranslateTransform(dstRect.X + dstRect.Width / 2, dstRect.Y + dstRect.H
  graphics.DrawRectangle(&pen, rectTem);
  graphics.ResetTransform();
 
+
+模版中
+嵌套依赖类型(http://leoxiang.com/dev/typename-and-nested-dependent-type-name-in-cpp)
+  
 
 Boost -- http://blog.csdn.net/caimouse/article/category/1339053/2
   1.lambda表达式，其实就是一个匿名函数。当你需要一个函数，并且只想使用一次时，但又不想声明这个函数，也不关心这个函数的名称，就可以使用这种表达方式。编译器自动生成该函数。好处是可以提高开发效率，提高类型安全，提供更加局部化的作用域代码。

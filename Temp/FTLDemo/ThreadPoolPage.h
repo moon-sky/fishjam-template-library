@@ -41,6 +41,7 @@ public:
 };
 
 class CThreadPoolPage : public CPropertyPage
+	, public FTL::IFThreadPoolCallBack<CThreadPoolPage*>
 {
 	DECLARE_DYNAMIC(CThreadPoolPage)
 
@@ -57,21 +58,35 @@ protected:
 	DECLARE_MESSAGE_MAP()
 protected:
 protected:
-    //CProgressCtrl m_ProgressOfThread;
-	FTL::CFThreadPool<CThreadPoolPage*> m_FtlThreadPool;
-	CThreadPool<CATLPoolJob>			m_AtlThreadPool;
+	virtual void OnJobProgress(LONG nJobIndex , CFJobBase<CThreadPoolPage*>* pJob, LONGLONG nCurPos, LONGLONG nTotalSize)
+	{
+		UNREFERENCED_PARAMETER(pJob);
 
+		FTLTRACE(TEXT("OnJobProgress, nJobIndex=%d, CurPos=%lld, TotalSize=%lld\n"),
+			nJobIndex, nCurPos, nTotalSize);
+	}
+
+    //CProgressCtrl m_ProgressOfThread;
+	FTL::CFThreadPool<CThreadPoolPage*>*	m_pFtlThreadPool;
+	CThreadPool<CATLPoolJob>				m_AtlThreadPool;
+	
+	LONG	m_nFtlThreadPoolMaxWaitingJobs;
+	LONG    m_nFtlThreadPoolMinThreads;
+	LONG	m_nFtlThreadPoolMaxThreads;
+	
 	LONG	m_nFtlCurJobIndex;
     LONG	m_nHighJobPriority;
     LONG	m_nLowJobPriority;
-
+	BOOL	m_bHadRequestFtlThreadPoolPause;
 public:
     afx_msg void OnDestroy();
 
 	void SetFtlThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused);
 	afx_msg void OnBnClickedBtnFtlThreadPoolStart();
+	afx_msg void OnBnClickedBtnFtlThreadPoolSetThreadCount();
 	afx_msg void OnBnClickedBtnFtlThreadPoolAddJobLow();
-    afx_msg void OnBnClickedBtnFtlThreadPoolAddJobHigh();
+	afx_msg void OnBnClickedBtnFtlThreadPoolAddJobHigh();
+	afx_msg void OnBnClickedBtnFtlThreadPoolAddJobSuspend();
 	afx_msg void OnBnClickedBtnFtlThreadPoolCancelJob();
 	afx_msg void OnBnClickedBtnFtlThreadPoolStop();
 	afx_msg void OnBnClickedBtnFtlThreadPoolPauseResume();

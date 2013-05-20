@@ -11,37 +11,45 @@ IMPLEMENT_DYNAMIC(CThreadPoolPage, CPropertyPage)
 class CFTLPoolJob : public FTL::CFJobBase<CThreadPoolPage*>
 {
 public:
+	CFTLPoolJob(BOOL bSuspendOnCreate = FALSE)
+		:CFJobBase<CThreadPoolPage*>(bSuspendOnCreate)
+	{
+
+	}
 	virtual BOOL Run()
 	{
-		FTLTRACE(TEXT("CFTLPoolJob Run, Thread id = %d\n"),GetCurrentThreadId());
-		LONG lCount = 5;
-		while(ftwtContinue == GetJobWaitType(INFINITE) && lCount > 0)
+		FTLTRACE(TEXT("CFTLPoolJob Enter Run, JobIndex=%d, Thread id = %d\n"), GetJobIndex(), GetCurrentThreadId());
+		LONG lMaxCount = 20;
+		LONG lCount = 0;
+		while(ftwtContinue == GetJobWaitType(INFINITE) && lCount < lMaxCount)
 		{
-			FUNCTION_BLOCK_NAME_TRACE(TEXT("In CFTLPoolJob::Run"),0);
+			_NotifyProgress(lCount, lMaxCount);
 			Sleep(200);
-			lCount--;
+			lCount++;
 		}
+		FTLTRACE(TEXT("CFTLPoolJob Leave Run, JobIndex=%d, Thread id = %d\n"), GetJobIndex(), GetCurrentThreadId());
 		return TRUE;
 	}
-	virtual VOID OnFinalize()
+	virtual VOID OnFinalize(BOOL isWaiting)
 	{
-		delete this;
-	}
-	virtual void OnCancelJob()
-	{
-		FUNCTION_BLOCK_TRACE(0);
+		UNREFERENCED_PARAMETER(isWaiting);
 		delete this;
 	}
 };
 
 CThreadPoolPage::CThreadPoolPage()
 	: CPropertyPage(CThreadPoolPage::IDD)
-	, m_FtlThreadPool(NULL, 2)
-	, m_nFtlCurJobIndex(0)
+	, m_pFtlThreadPool(NULL)
 {
+	m_nFtlThreadPoolMaxWaitingJobs = LONG_MAX;
+	m_nFtlThreadPoolMinThreads = 0;
+	m_nFtlThreadPoolMaxThreads = 1;
+
+	m_nFtlCurJobIndex = 0;
 	m_CurWorkItemCount = 0;
     m_nHighJobPriority = 0;
     m_nLowJobPriority = 0;
+	m_bHadRequestFtlThreadPoolPause = FALSE;
 }
 
 CThreadPoolPage::~CThreadPoolPage()
@@ -51,14 +59,20 @@ CThreadPoolPage::~CThreadPoolPage()
 void CThreadPoolPage::DoDataExchange(CDataExchange* pDX)
 {
     CPropertyPage::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT_FTL_THREAD_POOL_MAX_WAITING_JOBS, m_nFtlThreadPoolMaxWaitingJobs);
+	DDX_Text(pDX, IDC_EDIT_FTL_THREAD_POOL_MIN_THREADS, m_nFtlThreadPoolMinThreads);
+	DDX_Text(pDX, IDC_EDIT_FTL_THREAD_POOL_MAX_THREADS, m_nFtlThreadPoolMaxThreads);
 }
 
 
 BEGIN_MESSAGE_MAP(CThreadPoolPage, CPropertyPage)
     ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_START, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStart)
+	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_SETTHREADCOUNT, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolSetThreadCount)
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_LOW, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobLow)
     ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_HIGH, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobHigh)
+	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_SUSPEND, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobSuspend)
+	
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_CANCEL_JOB, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolCancelJob)
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_STOP, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStop)
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_PAUSE_RESUME, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolPauseResume)
@@ -80,7 +94,14 @@ END_MESSAGE_MAP()
 
 void CThreadPoolPage::OnDestroy()
 {
-	m_FtlThreadPool.StopAndWait();
+	BOOL bRet = FALSE;
+	if (m_pFtlThreadPool)
+	{
+		API_VERIFY(m_pFtlThreadPool->Stop());
+		API_VERIFY(m_pFtlThreadPool->Wait(FTL_MAX_THREAD_DEADLINE_CHECK));
+		delete(m_pFtlThreadPool);
+		m_pFtlThreadPool = NULL;
+	}
 
     CPropertyPage::OnDestroy();
 }
@@ -88,8 +109,10 @@ void CThreadPoolPage::OnDestroy()
 void CThreadPoolPage::SetFtlThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused)
 {
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_START)->EnableWindow(!bStarted);
+	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_SETTHREADCOUNT)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_LOW)->EnableWindow(bStarted);
     GetDlgItem(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_HIGH)->EnableWindow(bStarted);
+	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_SUSPEND)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_CANCEL_JOB)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_PAUSE_RESUME)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_STOP)->EnableWindow(bStarted);
@@ -99,52 +122,108 @@ void CThreadPoolPage::SetFtlThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused)
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStart()
 {
-	m_FtlThreadPool.Start(0, 6);
-	SetFtlThreadPoolButtonStatus(TRUE,FALSE);
+	if (!m_pFtlThreadPool)
+	{
+		BOOL bRet = UpdateData(TRUE);
+		if (bRet)
+		{
+			m_pFtlThreadPool = new FTL::CFThreadPool<CThreadPoolPage*>(this, m_nFtlThreadPoolMaxWaitingJobs);
+			m_pFtlThreadPool->Start(m_nFtlThreadPoolMinThreads, m_nFtlThreadPoolMaxThreads);
+			SetFtlThreadPoolButtonStatus(TRUE,FALSE);
+		}
+	}
 }
 
+void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolSetThreadCount()
+{
+	UpdateData(TRUE);
+
+	BOOL bRet = FALSE;
+	if (m_pFtlThreadPool)
+	{
+		API_VERIFY(m_pFtlThreadPool->SetThreadsCount(m_nFtlThreadPoolMinThreads, m_nFtlThreadPoolMaxThreads));
+	}
+}
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobLow()
 {
-    m_nLowJobPriority++;
-	CFTLPoolJob* pNewJob = new CFTLPoolJob();
-	pNewJob->m_JobParam = this;
-    pNewJob->SetJobPriority(m_nLowJobPriority);
-	m_FtlThreadPool.SubmitJob(pNewJob, &m_nFtlCurJobIndex);
+	if (m_pFtlThreadPool)
+	{
+		m_nLowJobPriority++;
+		CFTLPoolJob* pNewJob = new CFTLPoolJob();
+		pNewJob->m_JobParam = this;
+		pNewJob->SetJobPriority(m_nLowJobPriority);
+		m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex);
+	}
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobHigh()
 {
     //add a higher priority job
-    m_nHighJobPriority--;
-    CFTLPoolJob* pNewJob = new CFTLPoolJob();
-    pNewJob->m_JobParam = this;
-    pNewJob->SetJobPriority(m_nHighJobPriority);
-    m_FtlThreadPool.SubmitJob(pNewJob, &m_nFtlCurJobIndex);
+	if (m_pFtlThreadPool)
+	{
+		m_nHighJobPriority--;
+		CFTLPoolJob* pNewJob = new CFTLPoolJob();
+		pNewJob->m_JobParam = this;
+		pNewJob->SetJobPriority(m_nHighJobPriority);
+		m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex);
+	}
+}
+
+void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobSuspend()
+{
+	if (m_pFtlThreadPool)
+	{
+		CFTLPoolJob* pNewJob = new CFTLPoolJob(TRUE);
+		pNewJob->m_JobParam = this;
+		
+		m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex);
+		TRACE(TEXT("Submit a Suspend Job, Index=%d, will Resume after init some data(after 1 sec)\n"),
+			pNewJob->GetJobIndex());
+		//do some thing to init user param.
+
+		Sleep(1000);
+		TRACE(TEXT("Now will Resume Job(index=%d)\n"), pNewJob->GetJobIndex());
+		pNewJob->Resume();
+	}
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolCancelJob()
 {
-	m_FtlThreadPool.CancelJob(--m_nFtlCurJobIndex);
+	if (m_pFtlThreadPool)
+	{
+		m_pFtlThreadPool->CancelJob(m_nFtlCurJobIndex--);
+	}
+	
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStop()
 {
 	FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
-	m_FtlThreadPool.StopAndWait();
-	SetFtlThreadPoolButtonStatus(FALSE, m_FtlThreadPool.HadRequestPause());
+	if (m_pFtlThreadPool)
+	{
+		m_pFtlThreadPool->Stop();
+		m_pFtlThreadPool->Wait();
+		SetFtlThreadPoolButtonStatus(FALSE, FALSE);
+		SAFE_DELETE(m_pFtlThreadPool);
+	}
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolPauseResume()
 {
-	if(m_FtlThreadPool.HadRequestPause())
+	if (m_pFtlThreadPool)
 	{
-		m_FtlThreadPool.Resume();
+		if(m_bHadRequestFtlThreadPoolPause)
+		{
+			m_pFtlThreadPool->ResumeAll();
+		}
+		else
+		{
+			m_pFtlThreadPool->PauseAll();
+		}
+		m_bHadRequestFtlThreadPoolPause = !m_bHadRequestFtlThreadPoolPause;
+
+		SetFtlThreadPoolButtonStatus(TRUE, m_bHadRequestFtlThreadPoolPause);
 	}
-	else
-	{
-		m_FtlThreadPool.Pause();
-	}
-	SetFtlThreadPoolButtonStatus(TRUE, m_FtlThreadPool.HadRequestPause());
 }
 
 //ATL Thread Pool

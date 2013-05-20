@@ -18,8 +18,7 @@ public:
 
 class CNetPage 
 	: public CPropertyPage
-	//, public FTL::IFThreadPoolCallBack<FTransferJobInfoPtr>
-	, public FTL::IInternetTransferCallBack
+	, public FTL::IFThreadPoolCallBack<FTransferJobInfoPtr>
 	
 {
 	DECLARE_DYNAMIC(CNetPage)
@@ -38,16 +37,6 @@ public:
 	//virtual void OnJobCancel(LONG nJobIndex, CFJobBase<FTransferJobInfoPtr>* pJob)
 	virtual void OnJobProgress(LONG nJobIndex, CFJobBase<FTransferJobInfoPtr>* pJob, LONGLONG nCurPos, LONGLONG nTotalSize);
 	//virtual void OnJobError(LONG nJobIndex, CFJobBase<FTransferJobInfoPtr>* pJob, DWORD dwError, LPCTSTR pszDescription){}; 
-
-	//virtual BOOL OnPromptSaveFile(__in LONG nJobIndex, __inout CFJobBase<FTransferJobInfoPtr>* pJob , 
-	//	__in LONGLONG nTotalFileSize, __inout LPTSTR pszFileName, __in DWORD nBufferLenght)
-	//{
-	//	CString strFile;
-	//	strFile.Format(TEXT("Name=%s, Size=%lld"), pszFileName, nTotalFileSize);
-	//	AfxMessageBox(strFile);
-	//	return TRUE;
-	//}
-
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
 
