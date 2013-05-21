@@ -125,20 +125,24 @@
 #endif
 
 #if defined(_M_IX86)
-#  pragma message( "  defined _M_IX86" )
+#  pragma message( "  defined _M_IX86" )			//32bit处理器
+#elif defined(_M_IX64)
+#  pragma message( "  defined _M_X64")				//64bit Itanium处理器
+#elif defined(_M_X64)
+#  pragma message( "  defined _M_X64")				//64bit AMD and Intel处理器(VC2008及以后)
 #elif defined(_M_IA64)
 #  pragma message( "  defined _M_IA64")
 #elif defined(_M_AMD64)
-#  pragma message( "  defined _M_AMD64" )
+#  pragma message( "  defined _M_AMD64" )			//64bit AMD处理器 (VC2008以前)
 #else
 #  pragma message( "Unknown CPU Type")
 #endif
 
-//判断是否是64位编译
-#if defined (WIN32)
-#  pragma message( "  WIN32 Version" )
-#elif defined(_WIN64) && defined(WIN64)
-#  pragma message( "  WIN64 Version" )
+//判断是否是64位编译 -- 
+#if defined(_WIN64) || defined(WIN64)
+#  pragma message( "  WIN64 Version" )		//_WIN64 只在64上定义
+#elif defined (WIN32)
+#  pragma message( "  WIN32 Version" )		//_WIN32 在32和64上都会定义
 #else 
 #  pragma message( "  Unknown WinXX Version" )
 #endif

@@ -77,19 +77,22 @@ protected:
 	LONG	m_nFtlCurJobIndex;
     LONG	m_nHighJobPriority;
     LONG	m_nLowJobPriority;
-	BOOL	m_bHadRequestFtlThreadPoolPause;
+	//BOOL	m_bHadRequestFtlThreadPoolPause;
 public:
     afx_msg void OnDestroy();
 
 	void SetFtlThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused);
 	afx_msg void OnBnClickedBtnFtlThreadPoolStart();
 	afx_msg void OnBnClickedBtnFtlThreadPoolSetThreadCount();
+	afx_msg void OnBnClickedBtnFtlThreadPoolSetJobPriorityHighest();
 	afx_msg void OnBnClickedBtnFtlThreadPoolAddJobLow();
 	afx_msg void OnBnClickedBtnFtlThreadPoolAddJobHigh();
 	afx_msg void OnBnClickedBtnFtlThreadPoolAddJobSuspend();
+	afx_msg void OnBnClickedBtnFtlThreadPoolResumeJob();
 	afx_msg void OnBnClickedBtnFtlThreadPoolCancelJob();
 	afx_msg void OnBnClickedBtnFtlThreadPoolStop();
-	afx_msg void OnBnClickedBtnFtlThreadPoolPauseResume();
+	afx_msg void OnBnClickedBtnFtlThreadPoolPauseAll();
+	afx_msg void OnBnClickedBtnFtlThreadPoolResumeAll();
 
 	void SetAtlThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused);
 	afx_msg void OnBnClickedBtnAtlThreadPoolStart();

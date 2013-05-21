@@ -136,15 +136,12 @@ namespace FTL
 
 		//! 获取或设置Job的优先级, 数字越小，优先级越高(在等待队列中拍在越前面)，缺省值是 0
 		//  注意：优先级必须在放入 Pool 前设置，放入后就不能再调整了
-		FTLINLINE LONG GetJobPriority() const { return m_nJobPriority; }
-		FTLINLINE LONG SetJobPriority(LONG nNewPriority);
+		FTLINLINE LONG GetPriority() const { return m_nJobPriority; }
+		FTLINLINE LONG SetPriority(LONG nNewPriority);
 
 		FTLINLINE LONG GetJobIndex() const;
 		FTLINLINE DWORD GetErrorStatus() const;
 		FTLINLINE LPCTSTR GetErrorInfo() const;
-
-		//Can call only when bSuspendOnCreate is TRUE
-		FTLINLINE BOOL Resume();
 
 		//FTLINLINE FJobStatus GetJobStatus() const { return m_JobStatus; }
 
@@ -180,6 +177,7 @@ namespace FTL
 		CFThreadPool<T>* m_pThreadPool;
 
 		FTLINLINE BOOL _Pause();
+		FTLINLINE BOOL _Resume();
 		//如果Job正在运行过程中被取消，会调用这个方法
 		FTLINLINE BOOL _Cancel();
 	};
@@ -287,8 +285,7 @@ namespace FTL
 
 		//! 动态调整线程个数，如果参数为 -1，表示不改变对应的线程数
 		//! 注意：如果是减少线程个数，且当前已有运行的Job占用了线程，不会强制取消线程的执行
-		FTLINLINE BOOL SetMinThreadsCount(LONG nMinNumThreads);
-        FTLINLINE BOOL SetMaxThreadsCount(LONG nMaxNumThreads);
+		FTLINLINE BOOL SetThreadsCount(LONG nMinNumThreads, LONG nMaxNumThreads);
 
 		//! 请求停止线程池
 		//! 注意：
@@ -317,9 +314,9 @@ namespace FTL
 		//! 取消指定的Job,
 		FTLINLINE BOOL CancelJob(LONG nJobIndex);
 
-		FTLINLINE LONG GetJobPriority(LONG nJobIndex);
+		FTLINLINE BOOL GetJobPriority(LONG nJobIndex, LONG& nJobPriority);
 		//! 动态更改Job的优先级
-		FTLINLINE LONG SetJobPriority(LONG nJobIndex, LONG nNewPriority);
+		FTLINLINE BOOL SetJobPriority(LONG nJobIndex, LONG nNewPriority);
 
 		//! 请求暂停线程池的操作
 		FTLINLINE BOOL PauseAll();
@@ -344,11 +341,13 @@ namespace FTL
 		FTLINLINE void _NotifyJobProgress(CFJobBase<T>* pJob, LONGLONG nCurPos, LONGLONG nTotalSize);
 		FTLINLINE void _NotifyJobError(CFJobBase<T>* pJob, DWORD dwError, LPCTSTR pszDescription); 
 
-		typedef BOOL (CALLBACK CFThreadPool::*HandleJobProc)(CFJobBase<T>* pJob, BOOL bFoundInWaiting);
-		FTLINLINE BOOL _FindAndHandleSpecialJob(LONG nJobIndex, HandleJobProc pProc);
-		FTLINLINE BOOL CALLBACK _InnerPauseJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting);
-		FTLINLINE BOOL CALLBACK _InnerResumeJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting);
-		FTLINLINE BOOL CALLBACK _InnerCancelJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting);
+		typedef BOOL (CALLBACK CFThreadPool::*HandleJobProc)(CFJobBase<T>* pJob, BOOL bFoundInWaiting, LONG_PTR param);
+		FTLINLINE BOOL _FindAndHandleSpecialJob(LONG nJobIndex, HandleJobProc pProc, LONG_PTR param);
+		FTLINLINE BOOL CALLBACK _InnerPauseJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting, LONG_PTR param);
+		FTLINLINE BOOL CALLBACK _InnerResumeJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting, LONG_PTR param);
+		FTLINLINE BOOL CALLBACK _InnerCancelJob(CFJobBase<T>* pJob, BOOL bFoundInWaiting, LONG_PTR param);
+		FTLINLINE BOOL CALLBACK _InnerGetJobPriority(CFJobBase<T>* pJob, BOOL bFoundInWaiting, LONG_PTR param);
+		FTLINLINE BOOL CALLBACK _InnerSetJobPriority(CFJobBase<T>* pJob, BOOL bFoundInWaiting, LONG_PTR param);
 	protected:
 		LONG m_nMinNumThreads;					//! 线程池中最少的线程个数
 		LONG m_nMaxNumThreads;					//! 线程池中最大的线程个数

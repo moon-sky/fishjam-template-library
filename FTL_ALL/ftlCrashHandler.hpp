@@ -60,7 +60,7 @@ namespace FTL
         return ::DestroyWindow(m_hWnd);
     }
     template<typename T>
-    BOOL CFResourcelessDlg<T>::DoModal(HWND hWndParent/* = ::GetActiveWindow()*/, LPARAM dwInitParam/* = NULL*/)
+    INT_PTR CFResourcelessDlg<T>::DoModal(HWND hWndParent/* = ::GetActiveWindow()*/, LPARAM dwInitParam/* = NULL*/)
     {
         m_bModal	= true;
         T* pT		= static_cast<T*>(this);

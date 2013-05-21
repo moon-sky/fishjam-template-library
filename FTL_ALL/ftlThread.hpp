@@ -971,7 +971,7 @@ namespace FTL
         tni.dwThreadID = dwThreadID;  //if -1, then current Thread
         __try
         {
-            RaiseException(EXCEPTION_SET_THREAD_NAME, 0, sizeof(tni) / sizeof(DWORD),(DWORD*)(&tni));      //该异常通知调试器将给定的字符串名字分配给指定的异常
+            RaiseException(EXCEPTION_SET_THREAD_NAME, 0, sizeof(tni) / sizeof(DWORD),(ULONG_PTR*)(&tni));      //该异常通知调试器将给定的字符串名字分配给指定的异常
         }__except(EXCEPTION_EXECUTE_HANDLER)
         {
             fOkay = FALSE;
@@ -988,11 +988,15 @@ namespace FTL
     {
         UNREFERENCED_PARAMETER(dwThreadID);
         char *pszName = NULL;
-        __asm{
-            mov eax,fs:[0x18];
-            mov eax,[eax+0x14];
-            mov [pszName],eax;
-        }
+#ifdef _WIN64
+		pszName = NULL;
+#else
+		__asm{
+			mov eax,fs:[0x18];
+			mov eax,[eax+0x14];
+			mov [pszName],eax;
+		}
+#endif 
         return(pszName?pszName:"unKnown");
     }
 

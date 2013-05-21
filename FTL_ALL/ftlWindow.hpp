@@ -53,6 +53,7 @@ namespace FTL
 		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
 			FTLASSERT(WM_COMMAND == uMsg);
+			UNREFERENCED_PARAMETER(uMsg);
 
 			BOOL bRet = FALSE;
 			WORD wNotifyCode = HIWORD(wParam);

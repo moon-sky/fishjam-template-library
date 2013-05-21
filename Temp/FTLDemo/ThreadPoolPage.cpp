@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "FTLDemo.h"
 #include "ThreadPoolPage.h"
+#include <ftlSystem.h>
 
 // CThreadPoolPage 对话框
 IMPLEMENT_DYNAMIC(CThreadPoolPage, CPropertyPage)
@@ -42,14 +43,17 @@ CThreadPoolPage::CThreadPoolPage()
 	, m_pFtlThreadPool(NULL)
 {
 	m_nFtlThreadPoolMaxWaitingJobs = LONG_MAX;
+
 	m_nFtlThreadPoolMinThreads = 0;
-	m_nFtlThreadPoolMaxThreads = 1;
+
+	SYSTEM_INFO sysinfo = {0};
+	::GetSystemInfo(&sysinfo);
+	m_nFtlThreadPoolMaxThreads = sysinfo.dwNumberOfProcessors;
 
 	m_nFtlCurJobIndex = 0;
 	m_CurWorkItemCount = 0;
     m_nHighJobPriority = 0;
     m_nLowJobPriority = 0;
-	m_bHadRequestFtlThreadPoolPause = FALSE;
 }
 
 CThreadPoolPage::~CThreadPoolPage()
@@ -69,13 +73,17 @@ BEGIN_MESSAGE_MAP(CThreadPoolPage, CPropertyPage)
     ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_START, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStart)
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_SETTHREADCOUNT, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolSetThreadCount)
+	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_SET_JOB_PRIORITY_HIGHEST, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolSetJobPriorityHighest)
+
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_LOW, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobLow)
     ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_HIGH, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobHigh)
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_SUSPEND, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobSuspend)
-	
+	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_RESUME_JOB, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolResumeJob)
+
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_CANCEL_JOB, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolCancelJob)
 	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_STOP, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStop)
-	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_PAUSE_RESUME, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolPauseResume)
+	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_PAUSEALL, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolPauseAll)
+	ON_BN_CLICKED(IDC_BTN_FTL_THREAD_POOL_RESUMEALL, &CThreadPoolPage::OnBnClickedBtnFtlThreadPoolResumeAll)
 
 	ON_BN_CLICKED(IDC_BTN_ATL_THREAD_POOL_START, &CThreadPoolPage::OnBnClickedBtnAtlThreadPoolStart)
 	ON_BN_CLICKED(IDC_BTN_ATL_THREAD_POOL_ADD_JOB, &CThreadPoolPage::OnBnClickedBtnAtlThreadPoolAddJob)
@@ -110,14 +118,15 @@ void CThreadPoolPage::SetFtlThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused)
 {
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_START)->EnableWindow(!bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_SETTHREADCOUNT)->EnableWindow(bStarted);
+	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_SET_JOB_PRIORITY_HIGHEST)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_LOW)->EnableWindow(bStarted);
     GetDlgItem(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_HIGH)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_SUSPEND)->EnableWindow(bStarted);
+	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_RESUME_JOB)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_CANCEL_JOB)->EnableWindow(bStarted);
-	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_PAUSE_RESUME)->EnableWindow(bStarted);
+	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_PAUSEALL)->EnableWindow(bStarted);
+	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_RESUMEALL)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_STOP)->EnableWindow(bStarted);
-
-	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_PAUSE_RESUME)->SetWindowText( bPaused ? TEXT("Resume") : TEXT("Pause"));
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStart()
@@ -141,10 +150,20 @@ void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolSetThreadCount()
 	BOOL bRet = FALSE;
 	if (m_pFtlThreadPool)
 	{
-        API_VERIFY(m_pFtlThreadPool->SetMaxThreadsCount(m_nFtlThreadPoolMaxThreads));
-		API_VERIFY(m_pFtlThreadPool->SetMinThreadsCount(m_nFtlThreadPoolMinThreads));
+        API_VERIFY(m_pFtlThreadPool->SetThreadsCount(m_nFtlThreadPoolMinThreads, m_nFtlThreadPoolMaxThreads));
 	}
 }
+
+void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolSetJobPriorityHighest()
+{
+	//设置最后添加进去的Job优先级为最高
+	//连续 AddJobLow 增加越来越低优先级的Job后，单击这个按钮来查看Job执行顺序的变化
+	if (m_pFtlThreadPool)
+	{
+		m_pFtlThreadPool->SetJobPriority(m_nFtlCurJobIndex--, m_nHighJobPriority--);
+	}
+}
+
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobLow()
 {
 	if (m_pFtlThreadPool)
@@ -152,7 +171,7 @@ void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobLow()
 		m_nLowJobPriority++;
 		CFTLPoolJob* pNewJob = new CFTLPoolJob();
 		pNewJob->m_JobParam = this;
-		pNewJob->SetJobPriority(m_nLowJobPriority);
+		pNewJob->SetPriority(m_nLowJobPriority);
 		m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex);
 	}
 }
@@ -165,27 +184,31 @@ void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobHigh()
 		m_nHighJobPriority--;
 		CFTLPoolJob* pNewJob = new CFTLPoolJob();
 		pNewJob->m_JobParam = this;
-		pNewJob->SetJobPriority(m_nHighJobPriority);
+		pNewJob->SetPriority(m_nHighJobPriority);
 		m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex);
 	}
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobSuspend()
 {
+	//会增加一个Suspend Job(加入后不能马上运行，需要在用户点击 ResumeJob 或 ResumeAll 后才能运行)
 	if (m_pFtlThreadPool)
 	{
 		CFTLPoolJob* pNewJob = new CFTLPoolJob(TRUE);
 		pNewJob->m_JobParam = this;
 		
 		m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex);
-		TRACE(TEXT("Submit a Suspend Job, Index=%d, will Resume after init some data(after 1 sec)\n"),
+		TRACE(TEXT("Submit a Suspend Job, Index=%d, will Resume after Create Resume\n"),
 			pNewJob->GetJobIndex());
-		//do some thing to init user param.
-
-		Sleep(1000);
-		TRACE(TEXT("Now will Resume Job(index=%d)\n"), pNewJob->GetJobIndex());
-		pNewJob->Resume();
 	}
+}
+
+void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolResumeJob()
+{
+	//注意：如果连续增加多个Suspend的Job(超过maxThreadCount)，则会造成工作线程全部阻塞而无法处理后续加入的Job，直到那些Job被Resume
+	//所以 bSuspendOnCreate 和 ResumeJob 最好作为原子操作，一起执行
+	TRACE(TEXT("Resume Job(index=%d)\n"), m_nFtlCurJobIndex);
+	m_pFtlThreadPool->ResumeJob(m_nFtlCurJobIndex--);
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolCancelJob()
@@ -194,7 +217,6 @@ void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolCancelJob()
 	{
 		m_pFtlThreadPool->CancelJob(m_nFtlCurJobIndex--);
 	}
-	
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStop()
@@ -209,21 +231,20 @@ void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolStop()
 	}
 }
 
-void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolPauseResume()
+void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolPauseAll()
 {
 	if (m_pFtlThreadPool)
 	{
-		if(m_bHadRequestFtlThreadPoolPause)
-		{
-			m_pFtlThreadPool->ResumeAll();
-		}
-		else
-		{
-			m_pFtlThreadPool->PauseAll();
-		}
-		m_bHadRequestFtlThreadPoolPause = !m_bHadRequestFtlThreadPoolPause;
-
-		SetFtlThreadPoolButtonStatus(TRUE, m_bHadRequestFtlThreadPoolPause);
+		m_pFtlThreadPool->PauseAll();
+		SetFtlThreadPoolButtonStatus(TRUE, TRUE);
+	}
+}
+void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolResumeAll()
+{
+	if (m_pFtlThreadPool)
+	{
+		m_pFtlThreadPool->ResumeAll();
+		SetFtlThreadPoolButtonStatus(TRUE, FALSE);
 	}
 }
 

@@ -10,7 +10,9 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define DROP_BUTTON_WIDTH	16
-#define BS_TYPEMASK			SS_TYPEMASK
+#ifndef BS_TYPEMASK
+#  define BS_TYPEMASK			SS_TYPEMASK
+#endif
 
 //#define TIMER_MOUSE_OVER  1
 #define TIMER_MOUSE_OVER 0x3CE6C7AF // Abin, try to make it unique!
@@ -408,7 +410,7 @@ BOOL CButtonSSL::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 // Fix for button state problem. Inspired by Chris Maunder's control
 // subclassing article
-void CButtonSSL::OnTimer(UINT nIDEvent) 
+void CButtonSSL::OnTimer(UINT_PTR nIDEvent) 
 {
 	if(TIMER_MOUSE_OVER == nIDEvent) 
 	{
