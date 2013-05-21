@@ -52,7 +52,24 @@ namespace FTL
     class IShellChangeObserver
     {
     public:
-
+		virtual void OnFileRename( LPCITEMIDLIST pIdl_Src, LPCITEMIDLIST pIdl_Dst ) {};
+		virtual void OnFileCreate( LPCITEMIDLIST pIdl ){};
+		virtual void OnFileDelete( LPCITEMIDLIST pIdl ) {};
+		virtual void OnFileUpdated( LPCITEMIDLIST pIdl ) {};
+		virtual void OnFreeSpace(LPCITEMIDLIST pIdl ) {};
+		virtual void OnDirRename( LPCITEMIDLIST pIdl_Src, LPCITEMIDLIST pIdl_Dst ){};
+		virtual void OnDirCreate( LPCITEMIDLIST pIdl ) {};
+		virtual void OnDirDelete( LPCITEMIDLIST pIdl ) {};
+		virtual void OnDirUpdated( LPCITEMIDLIST pIdl ){};
+		virtual void OnMediaInserted( LPCITEMIDLIST pIdl ){};
+		virtual void OnMediaRemoved( LPCITEMIDLIST pIdl ){};
+		virtual void OnNetShare(LPCITEMIDLIST pIdl) {};
+		virtual void OnNetUnShare(LPCITEMIDLIST pIdl) {};
+		virtual void OnDriveAdded( LPCITEMIDLIST pIdl ) {};
+		virtual void OnDriveAddGUI( LPCITEMIDLIST pIdl ) {};
+		virtual void OnDriveRemoved( LPCITEMIDLIST pIdl ) {};
+		virtual void OnChangeAttributes( LPCITEMIDLIST pIdl ) {};
+		virtual void OnServerDisconnect(LPCITEMIDLIST pIdl ) {};
     };
 
 	//检测文件系统文件变化通知
@@ -61,15 +78,24 @@ namespace FTL
     public:
         FTLINLINE CFShellChangeMonitor();
         FTLINLINE ~CFShellChangeMonitor();
-        FTLINLINE BOOL Create(LPCTSTR pszMonitorPath = NULL, BOOL bRecursive = TRUE);
+		FTLINLINE BOOL SetChangeObserver(IShellChangeObserver* pChangeObserver)
+		{
+			m_pChangeObserver = pChangeObserver;
+			return TRUE;
+		}
+        FTLINLINE BOOL Create(LPCTSTR pszMonitorPath = NULL, 
+			LONG nEvent = SHCNE_ALLEVENTS | SHCNE_INTERRUPT,
+			BOOL bRecursive = TRUE);
         FTLINLINE BOOL Destroy();
     private:
+		IShellChangeObserver*	m_pChangeObserver;
         HWND m_hWndNotify;
         UINT m_uiNotifyMsg;
 		ULONG m_uiChangeNotifyID;
         IShellFolder*  m_pShellFolder;
-        BOOL _CreateNotifyWinows();
-        static FTLINLINE LRESULT CALLBACK MainMonitorWndProc(HWND hwnd,UINT uMsg, WPARAM wParam,LPARAM lParam);
+        FTLINLINE BOOL _CreateNotifyWinows();
+        FTLINLINE static LRESULT CALLBACK _MainMonitorWndProc(HWND hwnd,UINT uMsg, WPARAM wParam,LPARAM lParam);
+		FTLINLINE LRESULT _HandleMonitorEvent(LONG wEventId, LPCITEMIDLIST pIdlDst, LPCITEMIDLIST pIdlSrc);
 
         //FTLINLINE BOOL _RegisterMonitor()   
     };
@@ -81,6 +107,13 @@ namespace FTL
     FTLEXPORT class CFShellUtil
     {
     public:
+		//获取 SHCNE_XXX( 如 SHCNE_RENAMEITEM ) 等对应的字符串信息
+		FTLINLINE static LPCTSTR GetShellChangeNotifyString(LONG nEvent, CFStringFormater& formater, LPCTSTR pszDivide = TEXT("|"));
+
+		//获取 pItemIdList 对应的字符串
+		FTLINLINE static HRESULT GetItemIdName(  LPCITEMIDLIST  pItemIdList, LPTSTR pFriendlyName, UINT cchBuf, 
+			DWORD dwFlags = SHGDN_FORPARSING, IShellFolder* pSF = NULL );
+
         FTLINLINE static HRESULT GetFileShellInfo(LPCTSTR pszPath, ShellFileInfo& outInfo);
 
 		//获取Shell的系统图标列表，之后可以通过 GetListCtrl().SetImageList(CImageList::FromHandle(hi),LVSIL_SMALL 或 LVSIL_NORMAL) 的方式使用
@@ -93,6 +126,8 @@ namespace FTL
 		//使用ShellExecute的方法打开文件执行，但如果没有建立连接，则弹出"OpenWith"的对话框
 		//  TODO: 是否有其他标准的函数来完成该功能
 		FTLINLINE static HRESULT ExecuteOrOpenWithDialog(LPCTSTR pszFile, HWND hWndParent);
+
+		FTLINLINE static HRESULT ExplorerToSpecialFile(LPCTSTR pszFilePath);
     };
 }
 

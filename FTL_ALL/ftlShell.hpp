@@ -14,13 +14,12 @@ namespace FTL
 
     CFShellChangeMonitor::CFShellChangeMonitor()
     {
+		m_pChangeObserver = NULL;
         m_hWndNotify = NULL;
         m_uiNotifyMsg = 0;
 		m_uiChangeNotifyID = 0;
         m_pShellFolder = NULL;
-        
-        HRESULT hr = E_FAIL;
-        COM_VERIFY(SHGetDesktopFolder(&m_pShellFolder));
+		m_pShellFolder = NULL;
     }
 
     CFShellChangeMonitor::~CFShellChangeMonitor()
@@ -31,83 +30,283 @@ namespace FTL
         }
     }
 
-    BOOL CFShellChangeMonitor::Create(LPCTSTR pszMonitorPath /* = NULL */, BOOL bRecursive /* = TRUE */)
+    BOOL CFShellChangeMonitor::Create(LPCTSTR pszMonitorPath /* = NULL */, 
+		LONG nEvent /* = SHCNE_ALLEVENTS | SHCNE_INTERRUPT */,
+		BOOL bRecursive /* = TRUE */)
     {
         BOOL bRet = FALSE;
         HRESULT hr = E_FAIL;
+		if (!m_hWndNotify)
+		{
+			API_VERIFY(_CreateNotifyWinows());
+			FTLASSERT(m_hWndNotify);
+		}
+
         m_uiNotifyMsg = RegisterWindowMessage(TEXT("FTL_SHELL_CHANGE_MONITOR"));
 
+		LPITEMIDLIST pItemMonitor = NULL;
         if (NULL == pszMonitorPath)
         {
-            LPITEMIDLIST pItemDesktop = NULL;
-            COM_VERIFY(::SHGetSpecialFolderLocation(NULL,CSIDL_DESKTOPDIRECTORY, &pItemDesktop));
-            if (SUCCEEDED(hr))
-            {
-            }
+            COM_VERIFY(::SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOPDIRECTORY, &pItemMonitor)); //CSIDL_DESKTOP
         }
-        
-        int fSources = SHCNF_TYPE |  //SHCNF_IDLIST
-#if defined (UNICODE)  || defined (_UNICODE)
-            SHCNF_PATHW;
-#else
-            SHCNF_PATHA;
-#endif
+		else
+		{
+			//pItemMonitor = GetPidlFromPath(pszMonitorPath);
+		}
+		if (pItemMonitor)
+		{
+			SHChangeNotifyEntry notifyEntry = {0};
+			notifyEntry.fRecursive = bRecursive;
+			notifyEntry.pidl = pItemMonitor;
 
-#if 0
-        SHChangeNotifyEntry notifyEntry = {0};
-        notifyEntry.fRecursive = bRecursive;
-        notifyEntry.pidl = GetPidlFromPath(pszMonitorPath);
-        m_uiChangeNotifyID = ::SHChangeNotifyRegister(m_hWndNotify, fSources, SHCNE_ALLEVENTS | SHCNE_INTERRUPT, 
-			m_uiNotifyMsg,   
-			1, &notifyEntry);
-#endif 
+			m_uiChangeNotifyID = ::SHChangeNotifyRegister(m_hWndNotify, 
+				SHCNF_IDLIST | SHCNF_TYPE, 
+				nEvent,
+				m_uiNotifyMsg,   
+				1, 
+				&notifyEntry);
+			API_VERIFY(m_uiChangeNotifyID != 0);
+		}
+
+
+		//HRESULT hr = E_FAIL;
+		//COM_VERIFY(SHGetDesktopFolder(&m_pShellFolder));
         return bRet;
     }
 
     BOOL CFShellChangeMonitor::Destroy()
     {
+		BOOL bRet = TRUE;
+		if (m_uiChangeNotifyID)
+		{
+			API_VERIFY(::SHChangeNotifyDeregister(m_uiChangeNotifyID));
+			m_uiChangeNotifyID = 0;
+		}
         if(m_hWndNotify)
         {
-			SHChangeNotifyDeregister(m_uiChangeNotifyID);
-            m_pShellFolder->Release();
-            m_pShellFolder = NULL;
-
-            ::DestroyWindow(m_hWndNotify);
+            API_VERIFY(::DestroyWindow(m_hWndNotify));
             m_hWndNotify = NULL;
         }
-
+		return bRet;
     }
 
     BOOL CFShellChangeMonitor::_CreateNotifyWinows()
     {
-        WNDCLASS wndClass = {0};
-        
-        //::RegisterClass()
-        //::CreateWindow()
-        return FALSE;
+		FTLASSERT(NULL == m_hWndNotify);
+
+		BOOL bRet = FALSE;
+		HINSTANCE hInstance = GetModuleHandle(NULL);
+
+        WNDCLASSEX wndClass = {0};
+		wndClass.cbSize = sizeof(WNDCLASSEX);
+
+		wndClass.style			= 0; //CS_HREDRAW | CS_VREDRAW;
+		wndClass.lpfnWndProc	= _MainMonitorWndProc;
+		wndClass.cbClsExtra		= 0;
+		wndClass.cbWndExtra		= 0;
+		wndClass.hInstance		= hInstance;
+		wndClass.hIcon			= NULL; //LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TESTWNDCLASS));
+		wndClass.hCursor		= LoadCursor(NULL, IDC_ARROW);
+		wndClass.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+		wndClass.lpszMenuName	= NULL;//MAKEINTRESOURCE(IDC_TESTWNDCLASS);
+		wndClass.lpszClassName	= FTL_SHELL_CHANGE_MONITOR_CLASS_NAME;
+		wndClass.hIconSm		= NULL; //LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+		
+		ATOM atom = ::RegisterClassEx(&wndClass);
+		API_VERIFY(atom != 0);
+		if (atom != 0)
+		{
+			m_hWndNotify = ::CreateWindow(FTL_SHELL_CHANGE_MONITOR_CLASS_NAME, TEXT("FtlShellMonitor"), 
+				WS_OVERLAPPED, -2, -2, 1, 1, NULL, NULL, hInstance, NULL);
+			API_VERIFY(m_hWndNotify != NULL);
+			if (m_hWndNotify)
+			{
+				::SetWindowLongPtr(m_hWndNotify, GWLP_USERDATA, (LONG_PTR)this);
+			}
+		}
+		
+        return bRet;
     }
 
-    LRESULT CALLBACK CFShellChangeMonitor::MainMonitorWndProc(HWND hwnd,UINT uMsg, 
-        WPARAM wParam,LPARAM lParam)
+    LRESULT CALLBACK CFShellChangeMonitor::_MainMonitorWndProc(HWND hwnd,UINT uMsg, 
+        WPARAM wParam, LPARAM lParam)
     {
-        switch(uMsg)
-        {
-        case WM_CREATE:
-            break;
-		//case m_uiNotifyMsg:
-		//	//处理这个消息获得变化通知
-		//	{
-		//		LPCITEMIDLIST* pItemList = (LPCITEMIDLIST*)wParam;
-		//		pItemList[0]; // Dst
-		//		pItemList[1]; // Src
-		//		
-		//		//然后调用 SHChangeNotify ?
-		//		break;
-		//	}
-        default: 
-            return DefWindowProc(hwnd, uMsg, wParam, lParam); 
-        }
+		LONG_PTR nUserData = GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		CFShellChangeMonitor* pThis = (CFShellChangeMonitor*)nUserData;
+
+		if (pThis)
+		{
+			if (wParam && pThis->m_uiNotifyMsg == uMsg)
+			{
+				LRESULT nResult = 0;
+				const LPCITEMIDLIST* pidls = ( LPCITEMIDLIST* )wParam;
+				const LONG wEventId = ( LONG )lParam;
+				LPCITEMIDLIST pIdlDst = pidls[0];
+				LPCITEMIDLIST pIdlSrc = pidls[1];
+				nResult = pThis->_HandleMonitorEvent(wEventId, pIdlDst, pIdlSrc);
+				return nResult;
+			}
+		}
+		return DefWindowProc(hwnd, uMsg, wParam, lParam); 
     }
+	
+	LRESULT CFShellChangeMonitor::_HandleMonitorEvent(LONG wEventId, LPCITEMIDLIST pIdlDst, LPCITEMIDLIST pIdlSrc)
+	{
+		HRESULT hr = E_FAIL;
+
+#ifdef FTL_DEBUG
+		TCHAR szSrcPath[MAX_PATH] = {0};
+		TCHAR szDstPath[MAX_PATH] = {0};
+		
+		if (pIdlDst)
+		{
+			COM_VERIFY(CFShellUtil::GetItemIdName(pIdlDst, szDstPath, _countof(szDstPath), SHGDN_FORPARSING, m_pShellFolder));
+		}
+		if (pIdlSrc)
+		{
+			COM_VERIFY(CFShellUtil::GetItemIdName(pIdlSrc, szSrcPath, _countof(szSrcPath), SHGDN_FORPARSING, m_pShellFolder));
+		}
+		CFStringFormater formaterChangeNotify;
+		FTLTRACEEX(tlTrace, TEXT("_HandleMonitorEvent: event=%s(0x%x), srcPath=%s, dstPath=%s\n"), 
+			CFShellUtil::GetShellChangeNotifyString(wEventId, formaterChangeNotify),
+			wEventId, szSrcPath, szDstPath);
+#endif 
+
+		if (m_pChangeObserver)
+		{
+			switch (wEventId)
+			{
+			case SHCNE_RENAMEITEM:
+				m_pChangeObserver->OnFileRename(pIdlSrc, pIdlDst);
+				break;
+			case SHCNE_CREATE:
+				m_pChangeObserver->OnFileCreate(pIdlDst);
+				break;
+			case SHCNE_DELETE:
+				m_pChangeObserver->OnFileDelete(pIdlDst);
+				break;
+			case SHCNE_MKDIR:
+				m_pChangeObserver->OnDirCreate(pIdlDst);
+				break;
+			case SHCNE_RMDIR:
+				m_pChangeObserver->OnDirDelete(pIdlDst);
+				break;
+			case SHCNE_MEDIAINSERTED:
+				m_pChangeObserver->OnMediaInserted(pIdlDst);
+				break;
+			case SHCNE_MEDIAREMOVED:
+				m_pChangeObserver->OnMediaRemoved(pIdlDst);
+				break;
+			case SHCNE_DRIVEREMOVED:
+				m_pChangeObserver->OnDriveRemoved(pIdlDst);
+				break;
+			case SHCNE_DRIVEADD:
+				m_pChangeObserver->OnDriveAdded(pIdlDst);
+				break;
+			case SHCNE_NETSHARE:
+				m_pChangeObserver->OnNetShare(pIdlDst);
+				break;
+			case SHCNE_NETUNSHARE:
+				m_pChangeObserver->OnNetUnShare(pIdlDst);
+				break;
+			case SHCNE_ATTRIBUTES:
+				m_pChangeObserver->OnChangeAttributes(pIdlDst);
+				break;
+			case SHCNE_UPDATEDIR:
+				m_pChangeObserver->OnDirUpdated(pIdlDst);
+				break;
+			case SHCNE_UPDATEITEM:
+				m_pChangeObserver->OnFileUpdated(pIdlDst);
+				break;
+			case SHCNE_SERVERDISCONNECT:
+				m_pChangeObserver->OnServerDisconnect(pIdlDst);
+				break;
+			case SHCNE_DRIVEADDGUI:
+				m_pChangeObserver->OnDriveAddGUI(pIdlDst);
+				break;
+			case SHCNE_RENAMEFOLDER:
+				m_pChangeObserver->OnDirRename(pIdlSrc, pIdlDst);
+				break;
+			case SHCNE_FREESPACE:
+				m_pChangeObserver->OnFreeSpace(pIdlDst);
+				break;
+			default:
+				FTLTRACEEX(tlWarning, TEXT("Unknown Shell Change Notify Event:0x%x\n"),	wEventId);
+				break;
+			}
+		}
+		return 0;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	LPCTSTR CFShellUtil::GetShellChangeNotifyString(LONG nEvent, 
+		CFStringFormater& formater, LPCTSTR pszDivide /* = TEXT("|") */)
+	{
+		LONG nOldEvent = nEvent;
+
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_RENAMEITEM, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_CREATE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_DELETE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_MKDIR, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_RMDIR, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_MEDIAINSERTED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_MEDIAREMOVED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_DRIVEREMOVED, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_DRIVEADD, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_NETSHARE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_NETUNSHARE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_ATTRIBUTES, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_UPDATEDIR, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_UPDATEITEM, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_SERVERDISCONNECT, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_UPDATEIMAGE, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_DRIVEADDGUI, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_RENAMEFOLDER, pszDivide);
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_FREESPACE, pszDivide);
+#if (_WIN32_IE >= 0x0400)
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_EXTENDED_EVENT, pszDivide);
+#endif 
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, nEvent, SHCNE_ASSOCCHANGED, pszDivide);
+
+		FTLASSERT( 0 == nEvent);
+		if (0 != nEvent)
+		{
+			FTLTRACEEX(FTL::tlWarning, TEXT("%s: GetShellChangeNotifyString Not Complete, old=0x%x, remain=0x%x\n"),
+				__FILE__LINE__, nOldEvent, nEvent);
+		}
+
+		return formater.GetString();
+	}
+
+	HRESULT CFShellUtil::GetItemIdName( LPCITEMIDLIST  pItemIdList, LPTSTR pFriendlyName, UINT cchBuf, 
+		DWORD dwFlags, IShellFolder* pSF )
+	{
+		HRESULT hr = S_OK;
+		STRRET strRet = {0};
+		IShellFolder* pShellFolder  = pSF;
+
+		if ( pShellFolder == NULL )
+		{
+			COM_VERIFY(SHGetDesktopFolder( &pShellFolder ));
+			if ( !pShellFolder )
+			{
+				return hr;
+			}
+		}
+		COM_VERIFY(pShellFolder->GetDisplayNameOf( pItemIdList, dwFlags, &strRet));
+		if (SUCCEEDED(hr))
+		{
+			COM_VERIFY(StrRetToBuf( &strRet, pItemIdList, pFriendlyName, cchBuf)); 
+		}
+
+		if ( NULL == pSF )
+		{
+			pShellFolder->Release();
+			pShellFolder = NULL;
+		}
+		return hr;
+	}
 
     HRESULT CFShellUtil::GetFileShellInfo(LPCTSTR pszPath, ShellFileInfo& outInfo)
     {
@@ -282,6 +481,25 @@ namespace FTL
 			}
 		}
 
+		return hr;
+	}
+
+	HRESULT CFShellUtil::ExplorerToSpecialFile(LPCTSTR pszFilePath)
+	{
+		HRESULT hr = E_FAIL;
+
+		PIDLIST_RELATIVE pidl = NULL;
+		ULONG attributes = 0;
+		SFGAOF sfgaofIn = 0, sfgaofOut = 0;
+
+		COM_VERIFY(SHParseDisplayName(pszFilePath, NULL,	&pidl, sfgaofIn, &sfgaofOut));
+		if (SUCCEEDED(hr))
+		{
+			COM_VERIFY(SHOpenFolderAndSelectItems(pidl, 0, NULL, 0));
+			//ILFree(pidl);
+			CoTaskMemFree(pidl);
+			pidl = NULL;
+		}
 		return hr;
 	}
 

@@ -9,7 +9,7 @@
 #include <prsht.h>
 #include <CommCtrl.h>
 #include <zmouse.h>
-#include "ftlConversion.h"
+#include <ftlConversion.h>
 #include <ftlNLS.h>
 
 namespace FTL
