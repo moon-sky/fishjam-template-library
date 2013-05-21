@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "FTLDemo.h"
 #include "ThreadPoolPage.h"
-#include <ftlSystem.h>
 
 // CThreadPoolPage ¶Ô»°¿ò
 IMPLEMENT_DYNAMIC(CThreadPoolPage, CPropertyPage)

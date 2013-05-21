@@ -13,9 +13,6 @@ public:
     }
 };
 
-
-// CNetPage ¶Ô»°¿ò
-
 class CNetPage 
 	: public CPropertyPage
 	, public FTL::IFThreadPoolCallBack<FTransferJobInfoPtr>

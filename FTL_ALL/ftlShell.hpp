@@ -19,15 +19,11 @@ namespace FTL
         m_uiNotifyMsg = 0;
 		m_uiChangeNotifyID = 0;
         m_pShellFolder = NULL;
-		m_pShellFolder = NULL;
     }
 
     CFShellChangeMonitor::~CFShellChangeMonitor()
     {
-        if (m_hWndNotify)
-        {
-            Destroy();
-        }
+        Destroy();
     }
 
     BOOL CFShellChangeMonitor::Create(LPCTSTR pszMonitorPath /* = NULL */, 
@@ -42,6 +38,11 @@ namespace FTL
 			FTLASSERT(m_hWndNotify);
 		}
 
+		if(NULL == m_pShellFolder)
+		{
+        	COM_VERIFY(SHGetDesktopFolder(&m_pShellFolder));
+		}
+		
         m_uiNotifyMsg = RegisterWindowMessage(TEXT("FTL_SHELL_CHANGE_MONITOR"));
 
 		LPITEMIDLIST pItemMonitor = NULL;
@@ -87,6 +88,7 @@ namespace FTL
             API_VERIFY(::DestroyWindow(m_hWndNotify));
             m_hWndNotify = NULL;
         }
+		SAFE_RELEASE(m_pShellFolder);
 		return bRet;
     }
 
