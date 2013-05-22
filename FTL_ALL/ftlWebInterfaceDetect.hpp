@@ -95,11 +95,11 @@ namespace FTL
 				}
 			}
 
-			CComQIPtr<IHTMLDocument6>     spHTMLDocument6(m_pObj);
-			if (spHTMLDocument6)
-			{
-				
-			}
+			//CComQIPtr<IHTMLDocument6>     spHTMLDocument6(m_pObj);
+			//if (spHTMLDocument6)
+			//{
+			//	
+			//}
 
 		}
 		return hr;
