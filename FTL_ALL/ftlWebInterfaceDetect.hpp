@@ -64,8 +64,8 @@ namespace FTL
 			{
 				CComPtr<IDispatch> spDispScript;
 				COM_VERIFY(spHTMLDocument->get_Script(&spDispScript));
-				COM_DETECT_INTERFACE_FROM_REGISTER(spDispScript);
-				COM_DETECT_INTERFACE_FROM_LIST(spDispScript);
+				//COM_DETECT_INTERFACE_FROM_REGISTER(spDispScript);
+				//COM_DETECT_INTERFACE_FROM_LIST(spDispScript);
 			}
 
 			CComQIPtr<IHTMLDocument2>	spHTMLDocument2(m_pObj);
@@ -204,7 +204,7 @@ namespace FTL
 					nWidth, nHeight));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("Offset"), strFormaterOffset.GetString()));
 
-#if 0
+#if 1
 				CComBSTR	bstrToString;
 				COM_VERIFY(spHTMLElement->toString(&bstrToString));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("toString"), &bstrToString));
@@ -253,7 +253,9 @@ namespace FTL
 				COM_VERIFY(spHTMLElement->get_style(&spHtmlStyle));
 				if (spHtmlStyle)
 				{
+#if 0
 					CFHTMLStyleDumper	styleDumper(spHtmlStyle, pInfoOutput, m_nIndent + 2);
+#endif 
 				}
 			}
 		}

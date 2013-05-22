@@ -28,6 +28,7 @@
 	  val LocalizedString = s  '@%MODULE%,-101'
 */
 
+//调试: COM中各种函数签名可以通过MSDN或 OleView.exe 查看对应的 tlb(如 mshtml.tlb) 等文件
 
 /*************************************************************************************************************
 * INITGUID -- 包含 guiddef.h ？ 中定义的所有 GUID(使用库编译已经编译好的),更好的方式是直接包含 InitGuid.h
@@ -97,6 +98,9 @@
 *     2.CComVariant(LPCSTR lpszSrc)
 * 
 * 程序中创建GUID: CoCreateGuid, 然后可通过其 Data1~Data4 访问具体的数据(可当成随机数来用)
+*
+* COM连接点客户端调试(参见CFBhoObject::Invoke)：
+*   重载 Invoke 函数，然后可以打印相关信息，从而知道发生的所有连接点事件
 *************************************************************************************************************/
 
 #ifndef FTL_BASE_H
@@ -127,11 +131,14 @@ namespace FTL
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFVariantInfo);
     public:
-        FTLINLINE explicit CFVariantInfo(const VARIANT& info);
+		//bComPtrDetect 表明是否通过 ComDetect 检查COM接口支持的接口(如 IUnknown)
+        FTLINLINE explicit CFVariantInfo(const VARIANT& info, BOOL bComPtrDetect = FALSE);
         FTLINLINE virtual LPCTSTR ConvertInfo();
 	public:
 		FTLINLINE VOID GetTypeInfo(CFStringFormater& formaterType);
 		FTLINLINE VOID GetValueInfo(CFStringFormater& formaterValue);
+	protected:
+		BOOL m_bComPtrDetect;
     };
 
 	FTLEXPORT class CFPropVariantInfo : public CFConvertInfoT<CFPropVariantInfo, const PROPVARIANT&>
@@ -154,12 +161,18 @@ namespace FTL
             DWORD dwClsContext, REFIID riid, LPVOID FAR* ppv);
     };
 
+	//Explorer 连接点事件转换：
+	//可以重载 Explorer 客户端的 Invoke 函数，然后在里面转换得到 dispIdMember 对应的字符串, 参见 CFBhoObject::Invoke
+	//通常需要过滤掉 DISPID_STATUSTEXTCHANGE(102), DISPID_COMMANDSTATECHANGE(105, DISPID_PROGRESSCHANGE(108),
     FTLEXPORT class CFIExplorerDispidInfo : public CFConvertInfoT<CFIExplorerDispidInfo, DISPID>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFIExplorerDispidInfo);
     public:
-        FTLINLINE explicit CFIExplorerDispidInfo(DISPID id);
+        FTLINLINE explicit CFIExplorerDispidInfo(DISPID id, DISPPARAMS* pDispParams);
         FTLINLINE virtual LPCTSTR ConvertInfo();
+	protected:
+		DISPPARAMS*	m_pDispParams;
+		HRESULT _HandleBeforeNavigate2();
     };
 
     //多线程之间传递COM接口的辅助类

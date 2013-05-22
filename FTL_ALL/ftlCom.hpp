@@ -136,8 +136,10 @@ namespace FTL
 
 	//////////////////////////////////////////////////////////////////////////
 
-	CFVariantInfo::CFVariantInfo(const VARIANT& info) : CFConvertInfoT<CFVariantInfo, const VARIANT&>(info)
+	CFVariantInfo::CFVariantInfo(const VARIANT& info, BOOL bComPtrDetect/* = FALSE */) 
+		: CFConvertInfoT<CFVariantInfo, const VARIANT&>(info)
 	{
+		m_bComPtrDetect = bComPtrDetect;
 	}
 
 	VOID CFVariantInfo::GetTypeInfo(CFStringFormater& formaterType)
@@ -264,6 +266,9 @@ namespace FTL
 			}
 			else if(VT_BYREF == (VT_BYREF & varType))
 			{
+				if (NULL != V_BYREF(&m_Info))
+				{
+				}
 				//formaterValue.Format(TEXT("%s"), VARIANT_FALSE == *V_BOOLREF(&m_Info) ? TEXT("FALSE") : TEXT("TRUE") );
 			}
 			else
@@ -277,6 +282,7 @@ namespace FTL
 			varType &= VT_TYPEMASK;  //Get Type
 			if (varType != VT_BOOL && varType != VT_VARIANT)
 			{
+				FTLTRACEEX(tlWarning, TEXT("CFVariantInfo::GetValueInfo leak 0x%x\n"), typeMask);
 				FTLASSERT(typeMask == 0); //目前只处理了这些 REF，通过这个宏判断是否有遗漏的
 			}
 
@@ -312,7 +318,7 @@ namespace FTL
 			case VT_DISPATCH:
 			case VT_UNKNOWN:
 				formaterValue.Format(TEXT("0x%p"), V_UNKNOWN(&m_Info));
-				if (NULL != V_UNKNOWN(&m_Info))
+				if (NULL != V_UNKNOWN(&m_Info) && m_bComPtrDetect)
 				{
 					COM_DETECT_INTERFACE_FROM_REGISTER(V_UNKNOWN(&m_Info));
 				}
@@ -545,8 +551,10 @@ namespace FTL
         return hr;
     }
 
-    CFIExplorerDispidInfo::CFIExplorerDispidInfo(DISPID id) : CFConvertInfoT<CFIExplorerDispidInfo ,DISPID>(id)
+    CFIExplorerDispidInfo::CFIExplorerDispidInfo(DISPID id, DISPPARAMS* pDispParams) 
+		: CFConvertInfoT<CFIExplorerDispidInfo ,DISPID>(id)
     {
+		m_pDispParams = pDispParams;
     }
 
     LPCTSTR CFIExplorerDispidInfo::ConvertInfo()
@@ -555,13 +563,16 @@ namespace FTL
         {
             switch (m_Info)
             {
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_BEFORENAVIGATE);
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_BEFORENAVIGATE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NAVIGATECOMPLETE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_STATUSTEXTCHANGE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_QUIT);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_DOWNLOADCOMPLETE);
+
+				//void __stdcall OnEventCommandStateChange(long Command, VARIANT_BOOL Enable), Command 对应 CommandStateChangeConstants
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_COMMANDSTATECHANGE);
-                HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_DOWNLOADBEGIN);
+
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_DOWNLOADBEGIN);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NEWWINDOW);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PROGRESSCHANGE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWMOVE);
@@ -603,6 +614,7 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PRINTTEMPLATEINSTANTIATION);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PRINTTEMPLATETEARDOWN);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_UPDATEPAGESTATUS);
+
                 //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWREGISTERED);
                 //HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWREVOKED);
             default:
@@ -610,6 +622,26 @@ namespace FTL
                 StringCchPrintf(m_bufInfo,_countof(m_bufInfo),TEXT("Unknown Id:%d"),m_Info);
                 break;
             }
+
+			if (m_pDispParams && m_pDispParams->cArgs > 0)
+			{
+				CFStringFormater formaterParam;
+				formaterParam.Format(TEXT(" : Param=[0-%d]--"), (m_pDispParams->cArgs - 1));
+
+				for (UINT nArgIndex = 0; nArgIndex < m_pDispParams->cArgs; nArgIndex++)
+				{
+					CFVariantInfo varInfo(m_pDispParams->rgvarg[nArgIndex]);
+					formaterParam.AppendFormat(TEXT(",{ [%d]=\"%s\" }"), nArgIndex, varInfo.GetConvertedInfo());
+				}
+				if (formaterParam.GetStringLength() + lstrlen(m_bufInfo) > _countof(m_bufInfo))
+				{
+					FTLTRACEEX(tlWarning, TEXT("Warning: %s%s\n"), m_bufInfo, formaterParam.GetString());
+				}
+				else
+				{
+					StringCchCat(m_bufInfo, _countof(m_bufInfo), formaterParam.GetString());
+				}
+			}
         }
         return m_bufInfo;
     }
@@ -866,7 +898,7 @@ namespace FTL
         }
         T* pT = static_cast<T*>(this);
 		pInfoOutput->SetIndent(nIndent);
-		static BOOL s_bDumped = FALSE;
+		static BOOL s_bDumped = TRUE;
 		if (!s_bDumped)
 		{
 			s_bDumped = TRUE;

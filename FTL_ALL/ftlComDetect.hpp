@@ -78,9 +78,18 @@ namespace FTL
             {
                 //pTypeAttr->guid contains the CLSID of the CoClass
                 WCHAR* pwszProgID = NULL;
-                COM_VERIFY(ProgIDFromCLSID(pta->guid,&pwszProgID));
-                FTLTRACEEX(FTL::tlTrace,TEXT("\t\t\tProgId = %s\n"), W2T(pwszProgID));
-                CoTaskMemFree(pwszProgID);
+                COM_VERIFY_EXCEPT1(ProgIDFromCLSID(pta->guid,&pwszProgID), REGDB_E_CLASSNOTREG);
+				if(SUCCEEDED(hr))
+				{
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t\tProgId = %s\n"), W2T(pwszProgID));
+					CoTaskMemFree(pwszProgID);
+				}
+				else
+				{
+					TCHAR szGuid[40] = {0};
+					StringFromGUID2(pta->guid, szGuid, _countof(szGuid));
+					FTLTRACEEX(FTL::tlTrace,TEXT("\t\t\tguid = %s\n"), szGuid);
+				}
             }
 
 			#define IMPLTYPE_MASK				(IMPLTYPEFLAG_FDEFAULT|IMPLTYPEFLAG_FSOURCE|IMPLTYPEFLAG_FRESTRICTED)
