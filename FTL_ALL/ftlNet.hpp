@@ -2341,9 +2341,9 @@ namespace FTL
 		InternetBufferIn.Next = NULL;
 		
 		//TODO:如果使用 HttpSendRequestEx 来发送所有的数据，则可以一次全部发送？
-		//InternetBufferIn.dwBufferTotal = GetFileSize() + GetPostParamSize();
+		InternetBufferIn.dwBufferTotal = (DWORD)m_nTotalSize;
 
-		API_VERIFY(HttpSendRequestEx(m_hRequest, &InternetBufferIn, NULL, HSR_SYNC | HSR_INITIATE, 0));
+		API_VERIFY(HttpSendRequestEx(m_hRequest, &InternetBufferIn, NULL, 0, 0));
 		if (bRet)
 		{
 		    API_VERIFY_EXCEPT1(_SendPostArgument(pBuffer, dwBufferSize) 
@@ -2371,7 +2371,7 @@ namespace FTL
 
 		if (bRet)
 		{
-			API_VERIFY(HttpEndRequest( m_hRequest, NULL, HSR_SYNC | HSR_INITIATE, 0 ));
+			API_VERIFY(HttpEndRequest( m_hRequest, NULL, 0, 0 ));
 		}
 
 		SAFE_DELETE_ARRAY(pBuffer);
@@ -2391,6 +2391,14 @@ namespace FTL
 			NULL, NULL, NULL, dwFlags, NULL)));
 		if (bRet)
 		{
+			DWORD dwSendTimeout = 180 * 1000; 
+			API_VERIFY(InternetSetOption(m_hRequest, INTERNET_OPTION_SEND_TIMEOUT, 
+				&dwSendTimeout, sizeof(dwSendTimeout))); 
+
+			DWORD dwReceiveTimeout = 180 * 1000; 
+			API_VERIFY(InternetSetOption(m_hRequest, INTERNET_OPTION_RECEIVE_TIMEOUT, 
+				&dwReceiveTimeout, sizeof(dwReceiveTimeout))); 
+
 			API_VERIFY(_SetRequestHeader());
 		}
 		if (bRet)

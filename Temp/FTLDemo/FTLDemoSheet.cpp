@@ -43,11 +43,11 @@ BOOL CFTLDemoSheet::InitSheet()
 {
     BOOL bRet = TRUE;
 
-    //this->AddPage(new CBasePage());
+    this->AddPage(new CBasePage());
     //this->AddPage(new CCrackPage());
     //this->AddPage(new CCrashHandlerPage());
     //this->AddPage(new CGdiPage());
-    //this->AddPage(new CGdiPlusPage());
+    this->AddPage(new CGdiPlusPage());
     //this->AddPage(new CGuiPage());
     //this->AddPage(new CMemPage());
 

@@ -259,7 +259,7 @@ namespace FTL
 			}
 			else
 			{
-				FTLASSERT(m_nWriteBufferPos + nCount < m_nWriteBufferSize);
+				FTLASSERT(m_nWriteBufferPos + nCount <= m_nWriteBufferSize);
 				//if (m_nWriteBufferPos + nCount < m_nWriteBufferSize)
 				Checked::memcpy_s(m_pbWriteBuffer + m_nWriteBufferPos, 
 					m_nWriteBufferSize - m_nWriteBufferPos, pBuffer, nCount);

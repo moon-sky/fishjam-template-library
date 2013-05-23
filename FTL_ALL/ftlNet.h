@@ -639,6 +639,9 @@
 *       通常可用于 POST 发送文件，将 dwBufferTotal 设置为 Post等信息长度 + 文件大小(等价于设置 Content-Length )
 *       使用的请求句柄需要带 INTERNET_FLAG_NO_CACHE_WRITE 参数获得
 *     HttpEndRequest -- 结束HttpSendRequestEx初始化的HTTP请求
+*       当传递大文件时可能出现 TimeOut 的错误(考虑参考 http://support.microsoft.com/kb/177188/en-us)
+*       需要在 HttpSendRequestEx 时设置 INTERNET_BUFFERS::dwBufferTotal 并
+*         设置 INTERNET_OPTION_SEND_TIMEOUT 和 INTERNET_OPTION_RECEIVE_TIMEOUT
 *   Cache管理
 *     分为两种类型？
 *       Groups -- ?
