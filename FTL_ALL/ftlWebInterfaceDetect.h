@@ -13,7 +13,12 @@
 
 
 /*********************************************************************************************************************************
-
+* 在 WebBrowser(IWebBrowser) 中屏蔽脚本错误 -- http://www.cnblogs.com/zhangqingping/archive/2009/06/16/1504260.html
+*   方法1: SetSilent -- 其它提示信息(如 alert)也都不显示
+*   方法2: 重载 IOleCommandTarget::Exec，过滤 nCmdID == OLECMDID_SHOWSCRIPTERROR 的情况;
+*   方法3: 在 OnNavigateComplete2 或 OnNavigateComplete 中设置 JavaScript 的 window.onerror 事件
+*          测试时发现 OnNavigateComplete2 时无法QI到 IHTMLDocument2
+*   方法4: this.webBrowser1.ScriptErrorsSuppressed = true;
 *********************************************************************************************************************************/
 
 namespace FTL
@@ -26,8 +31,8 @@ namespace FTL
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFWebBrowserDumper);
 	public:
-		FTLINLINE explicit CFWebBrowserDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
-			:CFInterfaceDumperBase<CFWebBrowserDumper>(pObj, pInfoOutput, nIndent){}
+		FTLINLINE explicit CFWebBrowserDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFWebBrowserDumper>(pObj, pInfoOutput, nIndent, param){}
 	public:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
@@ -38,8 +43,8 @@ namespace FTL
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLDocumentDumper);
 	public:
-		FTLINLINE explicit CFHTMLDocumentDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
-			:CFInterfaceDumperBase<CFHTMLDocumentDumper>(pObj, pInfoOutput, nIndent){}
+		FTLINLINE explicit CFHTMLDocumentDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFHTMLDocumentDumper>(pObj, pInfoOutput, nIndent, param){}
 	public:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
@@ -49,8 +54,8 @@ namespace FTL
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLWindowDumper);
 	public:
-		FTLINLINE explicit CFHTMLWindowDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
-			:CFInterfaceDumperBase<CFHTMLWindowDumper>(pObj, pInfoOutput, nIndent){}
+		FTLINLINE explicit CFHTMLWindowDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFHTMLWindowDumper>(pObj, pInfoOutput, nIndent, param){}
 	public:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
@@ -60,8 +65,8 @@ namespace FTL
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLEventObjDumper);
 	public:
-		FTLINLINE explicit CFHTMLEventObjDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
-			:CFInterfaceDumperBase<CFHTMLEventObjDumper>(pObj, pInfoOutput, nIndent){}
+		FTLINLINE explicit CFHTMLEventObjDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFHTMLEventObjDumper>(pObj, pInfoOutput, nIndent, param){}
 	public:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
@@ -70,8 +75,8 @@ namespace FTL
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLStyleDumper);
 	public:
-		FTLINLINE explicit CFHTMLStyleDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
-			:CFInterfaceDumperBase<CFHTMLStyleDumper>(pObj, pInfoOutput, nIndent){}
+		FTLINLINE explicit CFHTMLStyleDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFHTMLStyleDumper>(pObj, pInfoOutput, nIndent, param){}
 	public:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
@@ -80,8 +85,8 @@ namespace FTL
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLElementDumper);
 	public:
-		FTLINLINE explicit CFHTMLElementDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
-			:CFInterfaceDumperBase<CFHTMLElementDumper>(pObj, pInfoOutput, nIndent){}
+		FTLINLINE explicit CFHTMLElementDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFHTMLElementDumper>(pObj, pInfoOutput, nIndent, param){}
 	public:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
@@ -90,8 +95,28 @@ namespace FTL
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLElementCollectionDumper);
 	public:
-		FTLINLINE explicit CFHTMLElementCollectionDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
-			:CFInterfaceDumperBase<CFHTMLElementCollectionDumper>(pObj, pInfoOutput, nIndent){}
+		FTLINLINE explicit CFHTMLElementCollectionDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFHTMLElementCollectionDumper>(pObj, pInfoOutput, nIndent, param){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFHTMLTableDumper : public CFInterfaceDumperBase<CFHTMLTableDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLTableDumper);
+	public:
+		FTLINLINE explicit CFHTMLTableDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFHTMLTableDumper>(pObj, pInfoOutput, nIndent, param){}
+	public:
+		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
+	};
+
+	class CFHTMLTableRowDumper : public CFInterfaceDumperBase<CFHTMLTableRowDumper>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLTableRowDumper);
+	public:
+		FTLINLINE explicit CFHTMLTableRowDumper(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM)
+			:CFInterfaceDumperBase<CFHTMLTableRowDumper>(pObj, pInfoOutput, nIndent, param){}
 	public:
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};

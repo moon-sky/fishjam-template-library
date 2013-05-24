@@ -196,7 +196,7 @@ void CCheckComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	INT nCheck = 0;
 
 	// Check if we are drawing the static portion of the combobox
-	if ((LONG)lpDrawItemStruct->itemID < 0 || m_hListBox == 0) {
+	if ((UINT(-1)) == lpDrawItemStruct->itemID || NULL == m_hListBox) {
 		// Make sure the m_strText member is updated
 		RecalcText();
 

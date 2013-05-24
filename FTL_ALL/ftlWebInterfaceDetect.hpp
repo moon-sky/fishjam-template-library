@@ -183,7 +183,16 @@ namespace FTL
 		//可以QI到()
 		//	等
 		//连接点有：
-		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("HTMLElement")));
+		if (m_nParam != 0)
+		{
+			CFStringFormater strNameFormater;
+			strNameFormater.Format(TEXT("HTMLElement %d"), (long)m_nParam);
+			COM_VERIFY(pInfoOutput->OutputInfoName(strNameFormater.GetString()));
+		}
+		else
+		{
+			COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("HTMLElement")));
+		}
 		if (m_pObj)
 		{
 			CComQIPtr<IHTMLElement>		spHTMLElement(m_pObj);
@@ -249,14 +258,14 @@ namespace FTL
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("language"), &bstrLanguage));
 #endif
 
+#if 0
 				CComPtr<IHTMLStyle>		spHtmlStyle;
 				COM_VERIFY(spHTMLElement->get_style(&spHtmlStyle));
 				if (spHtmlStyle)
 				{
-#if 0
 					CFHTMLStyleDumper	styleDumper(spHtmlStyle, pInfoOutput, m_nIndent + 2);
-#endif 
 				}
+#endif 
 			}
 		}
 		return hr;
@@ -279,22 +288,81 @@ namespace FTL
 				COM_VERIFY(spHTMLElementCollection->get_length(&nLength));
 				COM_VERIFY(pInfoOutput->OnOutput(TEXT("HTML Element Collection Length"), nLength));
 
-				for (long i = 0; i < nLength; i++)
+				for (long nIndex = 0; nIndex < nLength; nIndex++)
 				{
 					CComPtr<IDispatch>	spDispItem;
-					CComVariant varIndex(i);
+					CComVariant varIndex(nIndex);
 					COM_VERIFY(spHTMLElementCollection->item(varIndex, varIndex, &spDispItem));
 					CComQIPtr<IHTMLElement> spElementItem = spDispItem;
 					if (spElementItem)
 					{
-						CFHTMLElementDumper htmlElementDumper(spElementItem, pInfoOutput, m_nIndent + 2);
+						CFHTMLElementDumper htmlElementDumper(spElementItem, pInfoOutput, m_nIndent + 2, nIndex);
 					}
-
 				}
 			}
 		}
 		return hr;
 	}
+
+
+	HRESULT CFHTMLTableDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		//可以QI到()
+		//	等
+		//连接点有：
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("HTMLTable")));
+		if (m_pObj)
+		{
+			CComQIPtr<IHTMLTable>	spTable(m_pObj);
+			if (spTable)
+			{
+				CComBSTR	bstrFrame;
+				COM_VERIFY(spTable->get_frame(&bstrFrame));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("frame"), &bstrFrame));
+
+				long nCols = 0;
+				COM_VERIFY(spTable->get_cols(&nCols));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("cols"), nCols));
+
+				CComPtr<IHTMLElementCollection>	spRows;
+				COM_VERIFY(spTable->get_rows(&spRows));
+				if (spRows)
+				{
+					long nRows = 0;
+					COM_VERIFY(spRows->get_length(&nRows));
+					COM_VERIFY(pInfoOutput->OnOutput(TEXT("rows Count"), nRows));
+					if (nRows > 0)
+					{
+						CFHTMLElementCollectionDumper	spRowsDumper(spRows, pInfoOutput, m_nIndent + 2);
+					}
+				}
+			}
+		}
+		return hr;
+	}
+
+	HRESULT CFHTMLTableRowDumper::GetObjInfo(IInformationOutput* pInfoOutput)
+	{
+		HRESULT hr = E_POINTER;
+		//可以QI到()
+		//	等
+		//连接点有：
+		COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("HTMLTableRow")));
+		if (m_pObj)
+		{
+			CComQIPtr<IHTMLTableRow>	spTableRow(m_pObj);
+			if (spTableRow)
+			{
+				long nRowIndex = 0;
+				COM_VERIFY(spTableRow->get_rowIndex(&nRowIndex));
+				COM_VERIFY(pInfoOutput->OnOutput(TEXT("rowIndex"), nRowIndex));
+			}
+		}
+		return hr;
+	}
 }
-#include <MsHTML.h>
+
+//#include <MsHTML.h>
+
 #endif //FTL_WEB_INTERFACE_DETECT_HPP

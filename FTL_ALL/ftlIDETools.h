@@ -29,6 +29,12 @@
 *          http://www.microsoft.com/en-us/download/details.aspx?id=18950
 *   7.1 -- Microsoft Windows SDK for Windows 7 and .NET Framework 4
 *          http://www.microsoft.com/en-us/download/details.aspx?id=8442
+*
+* 升级IE后使用MFC等向导时弹出脚本错误的问题:
+*   http://blogs.msdn.com/b/vcblog/archive/2009/03/28/some-vs2005-and-vs2008-wizards-pop-up-script-error.aspx
+*   解决方法(需要重启)：
+*     [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Zones\1000]
+*        "1207"=dword:00000000
 ************************************************************************************************/
 
 /************************************************************************************************

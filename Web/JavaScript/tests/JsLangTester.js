@@ -471,12 +471,18 @@ test("TODO: 事件处理程序", function() {
 });
 
 
-//window.onerror = globalError; //注意没有最后的括号"()"
-//  返回值：
-//    true --
-//    false -- 
-test("TODO: 错误处理程序", function() {
+function globalError(msg, url, lineno) {
+    alert("window.onerror\n\n" + "Error: " + msg + "\n" + "URL:  " + url + "\n" + "Line:  " + lineno);
+    return true;
+}
 
+//指定全局的错误处理函数
+//window.onerror = globalError; //注意没有最后的括号"()"
+//返回值：
+//  true -- 表示已经处理
+//  false --
+test("TODO: 错误处理程序", function() {
+    
     ok(1, "TODO");
 });
 

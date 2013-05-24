@@ -339,10 +339,14 @@ namespace FTL
 		break;
 	#endif 
 
+	#ifndef HANDLE_CASE_RETURN_STRING_EX
+	# define HANDLE_CASE_RETURN_STRING_EX(c, v) \
+		case (c):\
+		return v;
+	#endif 
+
     #ifndef HANDLE_CASE_RETURN_STRING
-    # define HANDLE_CASE_RETURN_STRING(c) \
-        case (c):\
-        return TEXT(#c);
+    # define HANDLE_CASE_RETURN_STRING HANDLE_CASE_RETURN_STRING_EX(c, TEXT(#c))
     #endif 
 
     #define FTL_MIN(a,b)                (((a) < (b)) ? (a) : (b))

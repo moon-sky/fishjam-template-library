@@ -197,7 +197,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ItemPageAnalyzeBase.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MainFrm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ScriptErrHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ShoppingCart.cpp"
 				>
 			</File>
 			<File
@@ -221,7 +233,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\UserConfig.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\WowAH.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\WowAHDefine.cpp"
 				>
 			</File>
 			<File
@@ -238,6 +258,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ItemPageAnalyzeBase.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MainFrm.h"
 				>
 			</File>
@@ -246,7 +270,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ScriptErrHandler.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ShoppingCart.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UserConfig.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WowAHDefine.h"
 				>
 			</File>
 			<File

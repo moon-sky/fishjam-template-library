@@ -25,6 +25,8 @@ BOOL CMainFrame::OnIdle()
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+	BOOL bRet = FALSE;
+
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	// attach menu
@@ -42,8 +44,30 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	CreateSimpleStatusBar();
 
-	//TODO: Replace with a URL of your choice
-	m_hWndClient = m_view.Create(m_hWnd, rcDefault, _T("http://www.battlenet.com.cn/wow/zh/"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL | WS_VSCROLL, WS_EX_CLIENTEDGE);
+
+	CString strUrl;
+	//strUrl = _T("file:///F:/Fujie/FJCODE_GOOGLE/WowAH/WowPage.xht");
+	//strUrl = _T("http://www.battlenet.com.cn/wow/zh/");
+
+	TCHAR szCurPath[MAX_PATH] = {0};
+
+	API_VERIFY( GetModuleFileName(NULL, szCurPath, _countof(szCurPath)) > 0);
+	PathRemoveFileSpec(szCurPath);
+	LPTSTR pszLastDirPos = StrRChr(szCurPath, NULL, _T('\\'));
+	FTLASSERT(pszLastDirPos != NULL);
+	if (pszLastDirPos)
+	{
+		*pszLastDirPos = NULL;
+	}
+	PathAppend(szCurPath, TEXT("\\WowPage.xht"));
+	strUrl.Format(TEXT("file:///%s"), szCurPath);
+	strUrl.Replace(_T('\\'), _T('/'));
+
+
+	m_hWndClient = m_view.Create(m_hWnd, rcDefault, 
+		strUrl,
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL | WS_VSCROLL, 
+		WS_EX_CLIENTEDGE);
 
 	UIAddToolBar(hWndToolBar);
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
@@ -60,6 +84,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
+	
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
@@ -106,8 +131,11 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
+	HRESULT hr = E_FAIL;
 	//CAboutDlg dlg;
 	//dlg.DoModal();
-    m_view.CheckElement();
+    //m_view.CheckElement();
+
+	COM_VERIFY(m_view.SearchSpecialItem(TEXT("Ð«´Ì")));
     return 0;
 }

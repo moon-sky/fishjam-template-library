@@ -172,7 +172,6 @@ namespace FTL
         FTLINLINE virtual LPCTSTR ConvertInfo();
 	protected:
 		DISPPARAMS*	m_pDispParams;
-		HRESULT _HandleBeforeNavigate2();
     };
 
     //多线程之间传递COM接口的辅助类
@@ -241,13 +240,18 @@ namespace FTL
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFInterfaceDumperBase);
 	public:
-		FTLINLINE explicit CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent);
+		enum {
+			INVLIAD_INTERFACE_DUMPER_PARAM = -1
+		};
+		FTLINLINE explicit CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, 
+			int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM );
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
         virtual ~CFInterfaceDumperBase();
 	protected:
 		IUnknown*           m_pObj;
 		IInformationOutput*	m_pInfoOutput;
 		int                 m_nIndent;
+		LONG_PTR			m_nParam;
 	};
 
     //参见 codeproject 上的 CImageDataObject -- 原来的实现似乎有不少Bug

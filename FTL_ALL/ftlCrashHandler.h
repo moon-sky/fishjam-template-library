@@ -35,6 +35,8 @@ namespace FTL
 	* DbgHelp中的DumpAPI例子: http://www.debuginfo.com/examples/src/effminidumps/MiniDump.cpp 
 	* CrashReport: 程序出现异常的时候显示发送错误的对话框, 并把Dump文件发送到指定的地址. http://code.google.com/p/crashrpt/
 	* XCrashReport: 与上面的类似的一个开源项目. http://www.codeproject.com/KB/debug/XCrashReportPt1.aspx
+	* procdump: 可以使得指定进程生成dump文件(http://technet.microsoft.com/en-us/sysinternals/dd996900)
+	*   procdump -ma <PID>  -- 使得指定进程生成完整的dump文件，可在程序崩溃弹出错误对话框时使用
     **********************************************************************************************/
 }
 

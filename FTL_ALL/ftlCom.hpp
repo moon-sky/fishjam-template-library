@@ -282,8 +282,11 @@ namespace FTL
 			varType &= VT_TYPEMASK;  //Get Type
 			if (varType != VT_BOOL && varType != VT_VARIANT)
 			{
-				FTLTRACEEX(tlWarning, TEXT("CFVariantInfo::GetValueInfo leak 0x%x\n"), typeMask);
 				FTLASSERT(typeMask == 0); //目前只处理了这些 REF，通过这个宏判断是否有遗漏的
+				if (typeMask != 0)
+				{
+					FTLTRACEEX(tlWarning, TEXT("Warning -- CFVariantInfo::GetValueInfo miss 0x%x\n"), typeMask);
+				}
 			}
 
 			switch(varType)
@@ -572,6 +575,8 @@ namespace FTL
 				//void __stdcall OnEventCommandStateChange(long Command, VARIANT_BOOL Enable), Command 对应 CommandStateChangeConstants
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_COMMANDSTATECHANGE);
 
+				//void __stdcall OnDownloadBegin();
+				//_ATL_FUNC_INFO DownloadBegin_Info = { CC_STDCALL, VT_EMPTY, 0, { } };
 				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_DOWNLOADBEGIN);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NEWWINDOW);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PROGRESSCHANGE);
@@ -586,14 +591,22 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_FRAMENEWWINDOW);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_BEFORENAVIGATE2);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NEWWINDOW2);
+
+				//void __stdcall OnNavigateComplete2(IDispatch* pDisp, VARIANT* URL);
+				//_ATL_FUNC_INFO NavigateComplete2_Info = { CC_STDCALL, VT_EMPTY, 2, { VT_DISPATCH, VT_BYREF | VT_VARIANT } };
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NAVIGATECOMPLETE2);
+
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONQUIT);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONVISIBLE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONTOOLBAR);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONMENUBAR);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONSTATUSBAR);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONFULLSCREEN);
+
+				//void __stdcall OnEventDocumentComplete(IDispatch* pDisp, VARIANT* URL);
+				//_ATL_FUNC_INFO DocumentComplete2_Info = { CC_STDCALL, VT_EMPTY, 2, { VT_DISPATCH, VT_BYREF | VT_VARIANT } };
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_DOCUMENTCOMPLETE);
+
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONTHEATERMODE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONADDRESSBAR);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWSETRESIZABLE);
@@ -611,6 +624,40 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_VIEWUPDATE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_SETPHISHINGFILTERSTATUS);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWSTATECHANGED);
+
+//以下内容在 7.0 以上的SDK中提供
+#ifndef DISPID_NEWPROCESS
+//#  define DISPID_NEWPROCESS 284
+#endif //DISPID_NEWPROCESS
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NEWPROCESS);
+
+#ifndef DISPID_THIRDPARTYURLBLOCKED
+//#  define DISPID_THIRDPARTYURLBLOCKED 285
+#endif //DISPID_THIRDPARTYURLBLOCKED
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_THIRDPARTYURLBLOCKED);
+
+#ifndef DISPID_REDIRECTXDOMAINBLOCKED
+//#  define DISPID_REDIRECTXDOMAINBLOCKED 286
+#endif //DISPID_REDIRECTXDOMAINBLOCKED
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_REDIRECTXDOMAINBLOCKED);
+
+//以下内容在 8.0 的SDK中提供
+#ifndef DISPID_WEBWORKERSTARTED
+#  define DISPID_WEBWORKERSTARTED 288
+#endif //DISPID_WEBWORKERSTARTED
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WEBWORKERSTARTED);
+
+#ifndef DISPID_WEBWORKERFINISHED
+#  define DISPID_WEBWORKERFINISHED 289
+#endif //DISPID_WEBWORKERFINISHED
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WEBWORKERFINISHED);
+
+#ifndef DISPID_BEFORESCRIPTEXECUTE
+#  define DISPID_BEFORESCRIPTEXECUTE 290
+#endif //DISPID_BEFORESCRIPTEXECUTE
+				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_BEFORESCRIPTEXECUTE);
+
+
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PRINTTEMPLATEINSTANTIATION);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PRINTTEMPLATETEARDOWN);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_UPDATEPAGESTATUS);
@@ -741,7 +788,7 @@ namespace FTL
         if (pszKey && pValue)
         {
             OutputIndentSpace();
-            FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, pValue);
+            FTLTRACE(TEXT("  Key=\"%s\",Value=\"%s\"\n"), pszKey, pValue);
             return S_OK;
         }
         return S_FALSE;
@@ -754,7 +801,7 @@ namespace FTL
         if (pszKey && pValue)
         {
             OutputIndentSpace();
-            FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, OLE2CT(*pValue));
+            FTLTRACE(TEXT("  Key=\"%s\",Value=\"%s\"\n"), pszKey, OLE2CT(*pValue));
             return S_OK;
         }
         return S_FALSE;
@@ -765,7 +812,7 @@ namespace FTL
 		if (pszKey)
 		{
 			OutputIndentSpace();
-			FTLTRACE(TEXT("  Key=%s,Value=%s\n"), pszKey, VARIANT_FALSE == value ? TEXT("FALSE") : TEXT("TRUE"));
+			FTLTRACE(TEXT("  Key=\"%s\",Value=\"%s\"\n"), pszKey, VARIANT_FALSE == value ? TEXT("FALSE") : TEXT("TRUE"));
 			return S_OK;
 		}
 		return S_FALSE;
@@ -776,7 +823,7 @@ namespace FTL
         if (pszKey)
         {
             OutputIndentSpace();
-            FTLTRACE(TEXT("  Key=%s,Value=%d\n"), pszKey, nValue);
+            FTLTRACE(TEXT("  Key=\"%s\",Value=\"%d\"\n"), pszKey, nValue);
             return S_OK;
         }
         return S_FALSE;
@@ -787,7 +834,7 @@ namespace FTL
 		if (pszKey)
 		{
 			OutputIndentSpace();
-			FTLTRACE(TEXT("  Key=%s,Value=%d\n"), pszKey, dwValue);
+			FTLTRACE(TEXT("  Key=\"%s\",Value=\"%d\"\n"), pszKey, dwValue);
 			return S_OK;
 		}
 		return S_FALSE;
@@ -798,7 +845,7 @@ namespace FTL
 		if (pszKey)
 		{
 			OutputIndentSpace();
-			FTLTRACE(TEXT("  Key=%s,Value=%f\n"), pszKey, fValue);
+			FTLTRACE(TEXT("  Key=\"%s\",Value=\"%f\"\n"), pszKey, fValue);
 			return S_OK;
 		}
 		return S_FALSE;
@@ -834,7 +881,7 @@ namespace FTL
 					szClassName, szWindowText);
 
 				OutputIndentSpace();
-				FTLTRACE(TEXT("  Key=%s,Value=\"%s\"\n"), pszKey, formater.GetString());
+				FTLTRACE(TEXT("  Key=\"%s\",Value=\"%s\"\n"), pszKey, formater.GetString());
 
 				return S_OK;
 			}
@@ -887,10 +934,11 @@ namespace FTL
     }
 
 	template <typename T>
-	CFInterfaceDumperBase<T>::CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent)
+	CFInterfaceDumperBase<T>::CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, int nIndent, LONG_PTR param)
 		:m_pObj(pObj)
 		,m_pInfoOutput(pInfoOutput)
 		,m_nIndent(pInfoOutput->GetIndent())
+		,m_nParam(param)
 	{
 		if(m_pObj)
         {
