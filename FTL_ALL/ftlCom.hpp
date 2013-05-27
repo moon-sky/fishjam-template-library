@@ -576,7 +576,7 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_COMMANDSTATECHANGE);
 
 				//void __stdcall OnDownloadBegin();
-				//_ATL_FUNC_INFO DownloadBegin_Info = { CC_STDCALL, VT_EMPTY, 0, { } };
+				//_ATL_FUNC_INFO DownloadBegin_Info = { CC_STDCALL, VT_EMPTY, 0, { 0 } };
 				HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_DOWNLOADBEGIN);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NEWWINDOW);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PROGRESSCHANGE);
@@ -584,6 +584,9 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWRESIZE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWACTIVATE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PROPERTYCHANGE);
+
+                //void __stdcall OnTitleChange(BSTR );
+                //_ATL_FUNC_INFO TitleChange_Info = { CC_STDCALL, VT_EMPTY, 1, { VT_BSTR } };
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_TITLECHANGE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_TITLEICONCHANGE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_FRAMEBEFORENAVIGATE);
@@ -616,9 +619,16 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWSETWIDTH);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_WINDOWSETHEIGHT);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_CLIENTTOHOSTWINDOW);
+
+                //似乎会多次调用，nSecureLockIcon > 0 时表示是安全模式?
+                //void __stdcall OnSetSecureLockIcon(long nSecureLockIcon);
+                //_ATL_FUNC_INFO SetSecureLockIcon_Info = { CC_STDCALL, VT_EMPTY, 1, { VT_I4 } };
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_SETSECURELOCKICON);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_FILEDOWNLOAD);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NAVIGATEERROR);
+
+                //void __stdcall OnPrivacyImpactedStateChange(VT_BOOL bImpacted);   //魔兽网站是True
+                //_ATL_FUNC_INFO PrivacyImpactedStateChange_Info = { CC_STDCALL, VT_EMPTY, 1, { VT_BOOL } };
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_PRIVACYIMPACTEDSTATECHANGE);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_NEWWINDOW3);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_VIEWUPDATE);

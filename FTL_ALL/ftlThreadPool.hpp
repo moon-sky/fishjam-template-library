@@ -573,6 +573,11 @@ namespace FTL
 		{
 			CFAutoLock<CFLockObject> locker(&m_lockWaitingJobs);
 			m_nJobIndex++;
+            if (m_nJobIndex < 0)
+            {
+                //溢出了 -- 这得运行了多久的服务程序
+                m_nJobIndex = 1;
+            }
 			pJob->m_pThreadPool = this;         //访问私有变量，并将自己赋值过去
 			pJob->m_nJobIndex = m_nJobIndex;	//访问私有变量，设置JobIndex
 

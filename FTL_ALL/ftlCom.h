@@ -164,6 +164,7 @@ namespace FTL
 	//Explorer 连接点事件转换：
 	//可以重载 Explorer 客户端的 Invoke 函数，然后在里面转换得到 dispIdMember 对应的字符串, 参见 CFBhoObject::Invoke
 	//通常需要过滤掉 DISPID_STATUSTEXTCHANGE(102), DISPID_COMMANDSTATECHANGE(105, DISPID_PROGRESSCHANGE(108),
+    //参考例子？： http://www.codeproject.com/Articles/7147/WTL-Browser
     FTLEXPORT class CFIExplorerDispidInfo : public CFConvertInfoT<CFIExplorerDispidInfo, DISPID>
     {
         DISABLE_COPY_AND_ASSIGNMENT(CFIExplorerDispidInfo);

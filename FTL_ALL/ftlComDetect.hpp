@@ -78,6 +78,7 @@ namespace FTL
             {
                 //pTypeAttr->guid contains the CLSID of the CoClass
                 WCHAR* pwszProgID = NULL;
+				//可能是注册表中保留的垃圾数据(文件被非正常删除，而非卸载)
                 COM_VERIFY_EXCEPT1(ProgIDFromCLSID(pta->guid,&pwszProgID), REGDB_E_CLASSNOTREG);
 				if(SUCCEEDED(hr))
 				{

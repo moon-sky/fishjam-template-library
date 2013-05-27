@@ -49,6 +49,20 @@ BOOL CWowAHView::PreTranslateMessage(MSG* pMsg)
 //	delete this;
 //}
 
+HRESULT CWowAHView::Navigate(const CString& strURL)
+{
+    HRESULT hr = E_FAIL;
+    CComPtr<IWebBrowser2> spWebBrowser2;
+    COM_VERIFY(QueryControl(IID_IWebBrowser2, (void**)&spWebBrowser2));
+    if(SUCCEEDED(hr))
+    {
+        CComVariant varURL(strURL);
+        CComVariant varEmpty;
+        COM_VERIFY(spWebBrowser2->Navigate2(&varURL, &varEmpty, &varEmpty, &varEmpty, &varEmpty));
+    }
+    return hr;
+}
+
 
 STDMETHODIMP CWowAHView::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
 							DISPPARAMS FAR* pDispParams,VARIANT FAR* pVarResult,
@@ -196,6 +210,8 @@ CComPtr<IHTMLDocument3>	CWowAHView::_GetDocument()
 HRESULT CWowAHView::SearchSpecialItem(const CString& strItemName)
 {
 	HRESULT hr = E_FAIL;
+    FTLTRACE(TEXT("SearchSpecialItem: %s\n"), strItemName);
+
 	CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
 	if (spHtmlDoc)
 	{
@@ -207,6 +223,9 @@ HRESULT CWowAHView::SearchSpecialItem(const CString& strItemName)
 		CComQIPtr<IHTMLInputTextElement> spInputTextItemName = spInputItemName;
 		//COM_DETECT_INTERFACE_FROM_REGISTER(spSubmitItem);
 		//CComQIPtr<IHTMLButtonElement>	spSubmitButtonItem = spSubmitItem;
+
+        FTLASSERT(spInputTextItemName);
+        FTLASSERT(spSubmitItem);
 		if (spInputTextItemName && spSubmitItem) // && spSubmitButtonItem)
 		{
 			COM_VERIFY(spInputTextItemName->put_value(CComBSTR(strItemName)));
