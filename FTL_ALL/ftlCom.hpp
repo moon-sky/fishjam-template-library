@@ -228,7 +228,7 @@ namespace FTL
 		{
 			if (VT_ARRAY == (VT_ARRAY & typeMask))
 			{
-				FTLASSERT(FALSE);  //need check
+				FTLTRACEEX(tlWarning, TEXT("typeMask=0x%x, varType=0x%x\n"), typeMask, varType);
 
 				if (NULL != V_ARRAY(&m_Info))
 				{
@@ -254,9 +254,9 @@ namespace FTL
 							}
 						}
 					}
-					else
+					else if(VT_BOOL == V_VT(&m_Info))
 					{
-						FTLASSERT(!TEXT("NOT BSTR"));
+						//0x2011, BOOL 数组, WowAH 中分析
 					}
 				}
 				else
@@ -682,7 +682,7 @@ namespace FTL
 				}
 				if (formaterParam.GetStringLength() + lstrlen(m_bufInfo) > _countof(m_bufInfo))
 				{
-					FTLTRACEEX(tlWarning, TEXT("Warning: %s%s\n"), m_bufInfo, formaterParam.GetString());
+					FTLTRACEEX(tlWarning, TEXT("Warning for Length: %s%s\n"), m_bufInfo, formaterParam.GetString());
 				}
 				else
 				{

@@ -5,7 +5,10 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "WowAHView.h"
-#include "ItemPageAnalyzeBase.h"
+#include "SellerItemPageAnalyze.h"
+#include "BitItemPageAnalyze.h"
+#include "WowItemManager.h"
+
 #include "ScriptErrHandler.h"
 
 #include <ftlWebInterfaceDetect.h>
@@ -17,12 +20,19 @@ _ATL_FUNC_INFO CWowAHView::DownloadBegin_Info = { CC_STDCALL, VT_EMPTY, 0, { } }
 
 CWowAHView::CWowAHView()
 {
-	m_pItemPageAnalyze = NULL;
+	for (INT i = 0; i < (INT)pptCount; i++)
+	{
+		m_pItemPageAnalyzes[i] = NULL;
+	}
+	m_pWowItemManager = NULL;
 }
 
 CWowAHView::~CWowAHView()
 {
-	FTLASSERT(NULL == m_pItemPageAnalyze);
+	for (INT i = 0; i < (INT)pptCount; i++)
+	{
+		FTLASSERT(NULL == m_pItemPageAnalyzes[i]);
+	}
 }
 
 BOOL CWowAHView::PreTranslateMessage(MSG* pMsg)
@@ -82,26 +92,83 @@ int CWowAHView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		COM_VERIFY(spHost->put_AllowShowUI(VARIANT_FALSE));
 
     }
-	m_pItemPageAnalyze = new CItemPageAnalyzeBase();
+	m_pWowItemManager = new CWowItemManager();
+
+	m_pItemPageAnalyzes[pptSeller] = new CSellerItemPageAnalyze(m_pWowItemManager);
+	m_pItemPageAnalyzes[pptBit] = new CBitItemPageAnalyze(m_pWowItemManager);
 
     return lRet;
 }
 
 void CWowAHView::OnClose()
 {
+	SetMsgHandled(FALSE);
 }
+
 void CWowAHView::OnDestroy()
 {
-	SAFE_DELETE(m_pItemPageAnalyze);
+	for (INT i = 0; i < (UINT)pptCount; i++)
+	{
+		SAFE_DELETE(m_pItemPageAnalyzes[i]);
+	}
+	SAFE_DELETE(m_pWowItemManager);
+	
 
 	// Disconnect events
 	CComPtr<IWebBrowser2> spWebBrowser2;
 	HRESULT hr = E_FAIL;
-	COM_VERIFY(QueryControl(IID_IWebBrowser2, (void**)&spWebBrowser2));
+	//为什么会多次调用 OnDestroy?
+	COM_VERIFY_EXCEPT1(QueryControl(IID_IWebBrowser2, (void**)&spWebBrowser2), E_FAIL);
 	if(SUCCEEDED(hr))
 	{
 		DispEventUnadvise(spWebBrowser2, &DIID_DWebBrowserEvents2);
 	}
+	//SetMsgHandled(FALSE);
+}
+
+void CWowAHView::OnGotoPage(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	HRESULT hr = E_FAIL;
+	CComPtr<IWebBrowser2> spWebBrowser;
+	COM_VERIFY(QueryControl(IID_IWebBrowser2, (void**)&spWebBrowser));
+	if(spWebBrowser)
+	{
+		CComVariant varURL(_T("http://www.battlenet.com.cn/wow/zh/"));
+		CComVariant varEmpty;
+		COM_VERIFY(spWebBrowser->Navigate2(&varURL, &varEmpty, &varEmpty,&varEmpty, &varEmpty));
+	}	
+}
+
+void CWowAHView::OnParseSeller(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	HRESULT hr = E_FAIL;
+	if (m_pItemPageAnalyzes[pptSeller])
+	{
+		CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
+		if (spHtmlDoc)
+		{
+			COM_VERIFY(m_pItemPageAnalyzes[pptSeller]->ParseItemPage(spHtmlDoc, _T("")));
+		}
+	}
+}
+
+void CWowAHView::OnParseBid(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	HRESULT hr = E_FAIL;
+	if (m_pItemPageAnalyzes[pptBit])
+	{
+		CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
+		if (spHtmlDoc)
+		{
+			COM_VERIFY(m_pItemPageAnalyzes[pptBit]->ParseItemPage(spHtmlDoc, _T("")));
+		}
+	}
+}
+
+void CWowAHView::OnSearchSpecialItem(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	HRESULT hr = E_FAIL;
+	COM_VERIFY(SearchSpecialItem(TEXT("中皮")));
 }
 
 CComPtr<IHTMLDocument3>	CWowAHView::_GetDocument()
@@ -125,17 +192,6 @@ CComPtr<IHTMLDocument3>	CWowAHView::_GetDocument()
 }
 
 
-HRESULT CWowAHView::CheckElement()
-{
-    HRESULT hr = E_FAIL;
-	CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
-	if (spHtmlDoc)
-	{
-		COM_VERIFY(m_pItemPageAnalyze->ParseItemPage(spHtmlDoc));
-	}
-
-    return hr;
-}
 
 HRESULT CWowAHView::SearchSpecialItem(const CString& strItemName)
 {

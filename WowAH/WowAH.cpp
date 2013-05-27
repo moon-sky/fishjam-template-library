@@ -50,6 +50,14 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	AtlAxWinInit();
 
+#if 0
+	//启用日志的附加信息
+	FTL::FAST_TRACE_OPTIONS	options;
+	FTL::CFFastTrace::GetInstance().GetTraceOptions(&options);
+	options.bWriteDetail = TRUE;
+	FTL::CFFastTrace::GetInstance().SetTraceOptions(&options);
+#endif 
+
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 
 	_Module.Term();

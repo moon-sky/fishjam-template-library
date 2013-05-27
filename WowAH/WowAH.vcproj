@@ -197,6 +197,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BitItemPageAnalyze.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ItemPageAnalyzeBase.cpp"
 				>
 			</File>
@@ -206,6 +210,10 @@
 			</File>
 			<File
 				RelativePath=".\ScriptErrHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SellerItemPageAnalyze.cpp"
 				>
 			</File>
 			<File
@@ -248,6 +256,10 @@
 				RelativePath=".\WowAHView.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\WowItemManager.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -255,6 +267,10 @@
 			>
 			<File
 				RelativePath=".\AboutDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\BitItemPageAnalyze.h"
 				>
 			</File>
 			<File
@@ -271,6 +287,10 @@
 			</File>
 			<File
 				RelativePath=".\ScriptErrHandler.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SellerItemPageAnalyze.h"
 				>
 			</File>
 			<File
@@ -291,6 +311,10 @@
 			</File>
 			<File
 				RelativePath=".\WowAHView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\WowItemManager.h"
 				>
 			</File>
 		</Filter>

@@ -117,6 +117,18 @@ IMF_DUALFONT |
 * CListCtrl(TODO:合并到MFCStudy.h中)
 *   改变行高 -- ? ON_WM_MEASUREITEM_REFLECT, 虚函数 MeasureItem 中设置 lpMeasureItemStruct->itemHeight
 *   
+* 实现真彩色(256色)的工具条(MFC -- http://www.codeguru.com/cpp/controls/toolbar/article.php/c2537/FullFeatured-24bit-Color-Toolbar.htm)
+*   1.系统默认 -- 是16色(nColorTableSize)，是名为 IDR_MAINFRAME 的Toolbar 型资源，所有的按钮以bmp格式整体保存，资源编辑器不支持大于16色的位图。
+*   2.真彩色 -- 通过图像处理软件制作类似的图像，以位图形式加载到图像列表，并通过 SetImageList 指定为工具条的图标来源。
+*     HBITMAP hBmp =  (HBITMAP)LoadImage(,MAKEINTRESOURCE(IDB_TOOLBAR), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADMAP3DCOLORS);
+*     CBitmap bmp; bmp.Attach(hBmp);
+*     m_ilToolBar.Create(32,32, ILC_COLOR8, 4, 4);  //ILC_COLOR8 表明是256色，对应的还有 ILC_COLOR24、ILC_COLOR32 等
+*     m_ilToolBar.Add(&bmp,(CBitmap*)NULL);
+*     m_wndToolBar.GetToolBarCtrl().SetImageList(&m_ilToolBar); //指定图标来源
+*     注意：
+*       1.新创建的位图需要和代码中操作的 IDR_MAINFRAME 资源又相同的布局，才不会出现逻辑错误。
+*       2.这种方式创建的工具条似乎不能很好的支持 禁止、高亮  -- 但MFC提供了 SetDisabledImageList/SetHotImageList 方法
+*       3.运行时像素颜色为 light gray(RGB (192, 192, 192))在运行时会被用户选择按钮的颜色替换 -- 需要设置成透明的？
 ***********************************************************************************************************/
 
 /***********************************************************************************************************

@@ -24,34 +24,67 @@ struct UserConfigItemInfo
 
 enum ItemSellTimeInfo
 {
+	istiInvalid,		//无效值，用于初始化
+
+	//具体值需要确认
 	istiVeryLong,		//非常长(超过24小时)
 	istiLong,			//长(在2小时和12小时之间)
+	istiMiddle,			//中(?)
 	istiShort,			//短(2小时以内) ？
 };
 
 //拍卖行中的信息
-struct ItemInAHInfo
+class WowItemInfo
 {
-	ItemInAHInfo();
+public:
+	WowItemInfo();
+	LPCTSTR				GetSellTimeInfoString(ItemSellTimeInfo timeInfo);
+	VOID				Dump();
+
+	void UpdateRefreshTime();
+
+	LONG GetId() const { return m_nId; }
+	void SetId(LONG val) { m_nId = val; }
+	LONG GetTypeId() const { return m_nTypeId; }
+	void SetTypeId(LONG val) { m_nTypeId = val; }
+	LONG GetDataItem() const { return m_nDataItem; }
+	void SetDataItem(LONG val) { m_nDataItem = val; }
+	ItemSellTimeInfo GetItemSellTimeInfo() const { return m_ItemSellTimeInfo; }
+	void SetItemSellTimeInfo(ItemSellTimeInfo timeInfo);
+	LONG GetQuantity() const { return m_nQuantity; }
+	void SetQuantity(LONG val) { m_nQuantity = val; }
+	LONG GetPriceBid() const { return m_nPriceBid; }
+	void SetPriceBid(LONG val) { m_nPriceBid = val; }
+	LONG GetPriceBuyout() const { return m_nPriceBuyout; }
+	void SetPriceBuyout(LONG val) { m_nPriceBuyout = val; }
+	const CString& GetUrl() const { return m_strUrl; }
+	void SetUrl(const CString& val) { m_strUrl = val; }
+	const CString& GetSeller() const { return m_strSeller; }
+	void SetSeller(const CString& val) { m_strSeller = val; }
+	const CString& GetItemName() const { return m_strItemName; }
+	void SetItemName(const CString& val) { m_strItemName = val; }
+	
+	
+private:
 
 	LONG				m_nId;		//每一项的唯一标识
 	LONG				m_nTypeId;	//类型，蝎刺 对应的 5466, 和 UserConfigItemInfo 关联
 	LONG				m_nDataItem;	//
 	ItemSellTimeInfo	m_ItemSellTimeInfo;
-	DWORD				m_nLastCheckTime;		//上次检测的时间点
-	DWORD				m_nRemainTime;			//计算出来的准确值
 	LONG				m_nQuantity;			//数量
 	LONG				m_nPriceBid;			//拍卖价：金币 * 10000 + 银币 * 100 + 铜币
 	LONG				m_nPriceBuyout;			//一口价：金币 * 10000 + 银币 * 100 + 铜币
-
 	CString				m_strItemName;  
 	CString				m_strUrl;
 	CString				m_strSeller;
 
-	VOID				Dump();
-	LPCTSTR				GetSellTimeInfoString(ItemSellTimeInfo timeInfo);
+	ULONGLONG			m_nLastRefreshTickCount;//上次刷新的时间点
+	ULONGLONG			m_nExpirationTickCount;	//计算出来的到期时间点
 };
 
-typedef CFSharePtr<ItemInAHInfo>	ItemInAHInfoPtr;
+typedef CFSharePtr<WowItemInfo>	WowItemInfoPtr;
 
-typedef std::map<LONG, ItemInAHInfoPtr>		ItemInAHInfoContainer;
+
+//前向声明
+class CWowItemManager;
+class CBitItemPageAnalyze;

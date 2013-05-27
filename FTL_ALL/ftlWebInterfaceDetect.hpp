@@ -9,6 +9,90 @@
 
 namespace FTL
 {
+	HRESULT CFWebBrowserUtil::FindChildElement(IHTMLElement* pParent, 
+		FindElementMethod method, LPCTSTR pszName, long nStartIndex, RecursiveWay recurWay,
+		IHTMLElement** ppFoundElement)
+	{
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pParent, E_POINTER);
+		CHECK_POINTER_WRITABLE_DATA_RETURN_VALUE_IF_FAIL(ppFoundElement, sizeof(IHTMLElement*), E_POINTER);
+
+		HRESULT hr = E_FAIL;
+
+		CComPtr<IDispatch> spDispChildred;
+		COM_VERIFY(pParent->get_children(&spDispChildred));
+		CComQIPtr<IHTMLElementCollection>	spElemCollection(spDispChildred);
+		if (spElemCollection)
+		{
+			long nLength = 0;
+			COM_VERIFY(spElemCollection->get_length(&nLength));
+			for (long nIndex = nStartIndex; nIndex < nLength && (NULL == *ppFoundElement); ++nIndex)
+			{
+				CComVariant varIndex(nIndex);
+				CComPtr<IDispatch> spDispChild;
+				COM_VERIFY(spElemCollection->item(varIndex, varIndex, &spDispChild));
+				CComQIPtr<IHTMLElement> spChildElement = spDispChild;
+				if (spChildElement)
+				{
+					//CFHTMLElementDumper dumper(spChildElement, CFOutputWindowInfoOutput::Instance(), 0, nIndex);
+					CComBSTR	bstrValue;
+					switch (method)
+					{
+					case femById:
+						COM_VERIFY(spChildElement->get_id(&bstrValue));
+						break;
+					case femByTag:
+						COM_VERIFY(spChildElement->get_tagName(&bstrValue));
+						break;
+					case femByClass:
+						break;
+					}
+					if (bstrValue)
+					{
+						CString strValue = bstrValue;
+						if (strValue.Compare(pszName) == 0)
+						{
+							//bFound
+							*ppFoundElement = spChildElement.Detach();
+							hr = S_OK;
+							//跳出 for 循环的 break
+							break;
+						}
+					}
+
+					if (NULL == *ppFoundElement && recurWay == rwDepthFirst)
+					{
+						//深度优先递归
+						hr = FindChildElement(spChildElement,  method, pszName, nStartIndex, recurWay, ppFoundElement);
+					}
+				}
+			}
+
+			if (NULL == *ppFoundElement && recurWay == rwBreadthFirst)
+			{
+				//广度优先遍历
+				for (long nIndex = nStartIndex; nIndex < nLength && (NULL == *ppFoundElement); ++nIndex)
+				{
+					CComVariant varIndex(nIndex);
+					CComPtr<IDispatch> spDispChild;
+					COM_VERIFY(spElemCollection->item(varIndex, varIndex, &spDispChild));
+					CComQIPtr<IHTMLElement> spChildElement = spDispChild;
+					if (spChildElement)
+					{
+						hr = FindChildElement(spChildElement,  method, pszName, nStartIndex, recurWay, ppFoundElement);
+					}
+				}
+			}
+		}
+
+		//没有找到对象，并且错误码是正确 
+		if (NULL == *ppFoundElement && ( SUCCEEDED(hr)))
+		{
+			hr = HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+		}
+
+		return hr;
+	}
+
 	HRESULT CFWebBrowserDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{
 		HRESULT hr = E_POINTER;
@@ -183,7 +267,7 @@ namespace FTL
 		//可以QI到()
 		//	等
 		//连接点有：
-		if (m_nParam != 0)
+		if (m_nParam != INVLIAD_INTERFACE_DUMPER_PARAM)
 		{
 			CFStringFormater strNameFormater;
 			strNameFormater.Format(TEXT("HTMLElement %d"), (long)m_nParam);

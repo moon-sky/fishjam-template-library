@@ -46,9 +46,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 
 	CString strUrl;
-	//strUrl = _T("file:///F:/Fujie/FJCODE_GOOGLE/WowAH/WowPage.xht");
-	//strUrl = _T("http://www.battlenet.com.cn/wow/zh/");
-
+#if 0
+	strUrl = _T("http://www.battlenet.com.cn/wow/zh/");
+#else
 	TCHAR szCurPath[MAX_PATH] = {0};
 
 	API_VERIFY( GetModuleFileName(NULL, szCurPath, _countof(szCurPath)) > 0);
@@ -59,10 +59,12 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	{
 		*pszLastDirPos = NULL;
 	}
-	PathAppend(szCurPath, TEXT("\\WowPage.xht"));
+	//PathAppend(szCurPath, TEXT("\\WowPage.xht"));
+	PathAppend(szCurPath, TEXT("\\Bit.xht"));
+
 	strUrl.Format(TEXT("file:///%s"), szCurPath);
 	strUrl.Replace(_T('\\'), _T('/'));
-
+#endif 
 
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, 
 		strUrl,
@@ -131,11 +133,8 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	HRESULT hr = E_FAIL;
-	//CAboutDlg dlg;
-	//dlg.DoModal();
-    //m_view.CheckElement();
+	CAboutDlg dlg;
+	dlg.DoModal();
 
-	COM_VERIFY(m_view.SearchSpecialItem(TEXT("Ð«´Ì")));
     return 0;
 }

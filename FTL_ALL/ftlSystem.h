@@ -212,7 +212,7 @@ namespace FTL
 
 		//GetTickCount返回值是整数, 最多49天多就会复位重新从0开始, 微软在Vista后提供了GetTickCount64函数
 		//实现在WinXP上也能使用的 GetTickCount64 -- 虽然和真正的相比会差 800 毫秒左右(是否是测试的方法有问题?)
-		FTLINLINE ULONGLONG GetTickCount64();
+		FTLINLINE static ULONGLONG GetTickCount64();
 
         //判断当前系统是大端系统还是小端系统(操作系统有没有方式) -- intel的X86是小端，Apple的RISC是大端
         //大端模式 -- 数据的低位保存在内存的高地址中，而数据的高位保存在内存的低地址中

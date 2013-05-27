@@ -1336,6 +1336,55 @@ namespace FTL
 		return bRet;
 	}
 
+	BOOL CFGdiUtil::ReplaceBitmapColor(HBITMAP hBmp, COLORREF clrFrom, COLORREF clrTo)
+	{
+		BOOL bRet = FALSE;
+		BITMAP		bmInfo = {0};
+		API_VERIFY( sizeof(BITMAP) == ::GetObject(hBmp, sizeof(BITMAP), &bmInfo));
+		if (bRet)
+		{
+			switch (bmInfo.bmBitsPixel)
+			{
+			case 8:
+			case 16:
+			case 24:
+			case 32:
+				break;
+			}
+			//目前只支持24位设，后期调整
+			FTLASSERT(bmInfo.bmBitsPixel == 24);
+			FTLASSERT(bmInfo.bmWidthBytes == (bmInfo.bmWidth * 3));
+
+			const UINT numPixels = bmInfo.bmHeight * bmInfo.bmWidth;
+
+			DIBSECTION  dibSecion = {0};
+
+			API_VERIFY(sizeof(DIBSECTION) == ::GetObject(hBmp, sizeof(DIBSECTION), &dibSecion));
+			if (bRet)
+			{
+				RGBTRIPLE* pixels = reinterpret_cast<RGBTRIPLE*>(ds.dsBm.bmBits);
+				FTLASSERT(pixels != NULL);
+
+				const RGBTRIPLE	clrFromInfo = { GetBValue (clrFrom), GetGValue (clrFrom), GetRValue (clrFrom)};
+				const RGBTRIPLE clrToInfo = { GetBValue (clrTo), GetGValue (clrTo), GetRValue (clrTo) };
+				//开始转换
+				for (UINT i = 0; i < numPixels; ++i)
+				{
+					if (pixels [i].rgbtBlue == clrFromInfo.rgbtBlue 
+						&& pixels [i].rgbtGreen == clrFromInfo.rgbtGreen 
+						&& pixels [i].rgbtRed == clrFromInfo.rgbtRed)
+					{
+						pixels [i] = clrToInfo;
+					}
+				}
+			}
+		}
+
+		return bRet;
+	}
+	//////////////////////////////////////////////////////////////////////////
+
+
     BitmapProperty::BitmapProperty(const BITMAP& bitmap)
     {
         m_bitmap = bitmap;

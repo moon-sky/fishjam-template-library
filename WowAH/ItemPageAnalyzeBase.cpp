@@ -1,47 +1,20 @@
 #include "StdAfx.h"
 #include "ItemPageAnalyzeBase.h"
+#include "WowItemManager.h"
+
 #include <ftlWebInterfaceDetect.h>
 
-
-CItemPageAnalyzeBase::CItemPageAnalyzeBase(void)
+CItemPageAnalyzeBase::CItemPageAnalyzeBase(CWowItemManager* pWowItemManager)
 {
+	m_pWowItemManager = pWowItemManager;
 }
 
 CItemPageAnalyzeBase::~CItemPageAnalyzeBase(void)
 {
-	m_Items.clear();
 }
 
-HRESULT	CItemPageAnalyzeBase::ParseItemPage(CComPtr<IHTMLDocument3>& spHtmlDoc)
-{
-	CHECK_POINTER_RETURN_VALUE_IF_FAIL(spHtmlDoc, E_POINTER);
-	HRESULT hr = E_FAIL;
 
-
-	//获取所有的table
-	CComPtr<IHTMLElementCollection> spTables;
-	COM_VERIFY(spHtmlDoc->getElementsByTagName(CComBSTR(TEXT("table")), &spTables));
-	if (spTables)
-	{
-		long nLength = 0;
-		COM_VERIFY(spTables->get_length(&nLength));
-		for (long nIndex = 0; nIndex < nLength; ++nIndex)
-		{
-			CComPtr<IDispatch>	spDispTable;
-			CComVariant varIndex(nIndex);
-			COM_VERIFY(spTables->item(varIndex, varIndex, &spDispTable));
-			CComQIPtr<IHTMLTable> spTable = spDispTable;
-			if (spTable)
-			{
-				COM_VERIFY(_InnerParseTable(spTable));
-			}
-		}
-	}
-
-	return hr;
-}
-
-HRESULT CItemPageAnalyzeBase::_InnerParseTable(CComPtr<IHTMLTable>& spTable)
+HRESULT CItemPageAnalyzeBase::_InnerParseTable(CComPtr<IHTMLTable>& spTable, const CString& strTableName, const CString& strSearchItemName)
 {
 	HRESULT hr = E_FAIL;
 	
@@ -69,51 +42,21 @@ HRESULT CItemPageAnalyzeBase::_InnerParseTable(CComPtr<IHTMLTable>& spTable)
 				CFHTMLElementDumper htmlElementDumper(spPriceElementItem, CFOutputWindowInfoOutput::Instance(), 
 					0, nIndex);
 #endif
-
-
 				//每一行的价格
-				COM_VERIFY(_InnerParsePriceRowItem(nIndex, spPriceElementItem));
+				COM_VERIFY(_InnerParseRowItem(strTableName, nIndex, spPriceElementItem, strSearchItemName));
 			}
 		}
 	}
 	return hr;
 }
 
-ItemInAHInfoPtr	CItemPageAnalyzeBase::_GetItemInAnInfo(const CString& strIdInfo)
-{
-	ItemInAHInfoPtr spItemInfo(NULL);
-
-	int nPos = strIdInfo.Find(TEXT("-"));
-	FTLASSERT(nPos == 7);
-	if (nPos > 0)
-	{
-		CString strId = strIdInfo.Mid(nPos + 1);
-		LONG nId = StrToLong(strId);
-		FTLASSERT(nId > 0);
-		if (nId > 0)
-		{
-			ItemInAHInfoContainer::iterator iter = m_Items.find(nId);
-			if (iter != m_Items.end())
-			{
-				spItemInfo = ItemInAHInfoPtr(iter->second);
-			}
-			else
-			{
-				spItemInfo = ItemInAHInfoPtr(new ItemInAHInfo());
-				spItemInfo->m_nId = nId;
-				m_Items.insert(ItemInAHInfoContainer::value_type(nId, spItemInfo));
-			}
-		}
-	}
-	return spItemInfo;
-}
-
-HRESULT CItemPageAnalyzeBase::_InnerParsePriceRowItem(long nIndex, CComQIPtr<IHTMLElement>& spPriceElementItem)
+HRESULT CItemPageAnalyzeBase::_InnerParseRowItem(const CString& strTableName, long /*nIndex*/,
+												   CComQIPtr<IHTMLElement>& spPriceElementItem, const CString& strSearchItemName)
 {
 	HRESULT hr = E_FAIL;
 	//FTLTRACE(TEXT("ParsePrice:%d\n"), nIndex);
 
-	ItemInAHInfoPtr spItemInfo(NULL);
+	WowItemInfoPtr spItemInfo(NULL);
 
 	//COM_DETECT_SERVICE_PROVIDER_FROM_LIST(spPriceElementItem);
 
@@ -126,7 +69,7 @@ HRESULT CItemPageAnalyzeBase::_InnerParsePriceRowItem(long nIndex, CComQIPtr<IHT
 		if (bstrId)
 		{
 			CString strIdInfo(OLE2CT(bstrId));
-			spItemInfo = _GetItemInAnInfo(strIdInfo);
+			spItemInfo = m_pWowItemManager->GetItemInAnInfo(strIdInfo);
 		}
 
 		if (spItemInfo)
@@ -136,57 +79,19 @@ HRESULT CItemPageAnalyzeBase::_InnerParsePriceRowItem(long nIndex, CComQIPtr<IHT
 			if (spDispItemAll)
 			{
 				CComQIPtr<IHTMLElementCollection> spChildElements(spDispItemAll);
-				_GetPriceRowItemInfo(spChildElements, spItemInfo);
+				_GetRowItemInfo(strTableName, spChildElements, spItemInfo, strSearchItemName);
 				spItemInfo->Dump();
-
 				//COM_DETECT_INTERFACE_FROM_REGISTER(spDispItemAll);
 			}
 		}
-
 	}
-
-	
 	return hr;	
 }
 
-HRESULT CItemPageAnalyzeBase::_GetPriceRowItemInfo(CComQIPtr<IHTMLElementCollection>& spChildElements, ItemInAHInfoPtr& spItemInfo)
-{
-	HRESULT hr = E_FAIL;
-	long nLength = 0;
-	COM_VERIFY(spChildElements->get_length(&nLength));
-	FTLASSERT(nLength >= iiMinCount);
 
-	if (nLength > iiMinCount)
-	{
-		spItemInfo->m_strUrl = _GetCollectionItemValue(spChildElements, iiTypeUrl, ivtToString);
-		int nPosSlash = spItemInfo->m_strUrl.ReverseFind(_T('/'));
-		if (nPosSlash > 0)
-		{
-			CString strTypeId = spItemInfo->m_strUrl.Mid(nPosSlash + 1);
-			spItemInfo->m_nTypeId = StrToLong(strTypeId);
-		}
-
-		spItemInfo->m_strItemName = _GetCollectionItemValue(spChildElements, iiName, ivtInnerText);
-		spItemInfo->m_strSeller = _GetCollectionItemValue(spChildElements, iiSeller, ivtInnerText);
-		spItemInfo->m_nQuantity = StrToLong(_GetCollectionItemValue(spChildElements, iiQuantity, ivtInnerText));
-		
-		CString strTimeInfo = _GetCollectionItemValue(spChildElements, iiTimeInfo, ivtInnerText);
-		spItemInfo->m_ItemSellTimeInfo = _ConvertTimeInfo(strTimeInfo);
-
-		spItemInfo->m_nPriceBid = _GetPriceInfo(spChildElements, iiPriceBidGold, iiPriceBidSilver, iiPriceBidCopper);
-		spItemInfo->m_nPriceBuyout = _GetPriceInfo(spChildElements, iiPriceBuyoutGold, iiPriceBuyoutSilver, iiPriceBuyoutCopper);
-		
-	}
-	else
-	{
-		hr = E_FAIL;
-	}
-
-	return hr;
-}
 
 CString CItemPageAnalyzeBase::_GetCollectionItemValue(CComQIPtr<IHTMLElementCollection>& spChildElements, 
-													  INT index, ItemValueType valueType)
+													  INT index, ItemValueType valueType, BOOL bTrim /* = FALSE */)
 {
 	HRESULT hr = E_FAIL;
 
@@ -215,25 +120,35 @@ CString CItemPageAnalyzeBase::_GetCollectionItemValue(CComQIPtr<IHTMLElementColl
 			break;
 		}
 	}
-	
+	if (bTrim)
+	{
+		strResult.Trim();
+	}
 	return strResult;
 }
 
 ItemSellTimeInfo CItemPageAnalyzeBase::_ConvertTimeInfo(const CString& strTimeInfo)
 {
 	ItemSellTimeInfo timeInfo = istiVeryLong;
-	if (strTimeInfo.Compare(TEXT("非常长")))
+	if (0 == strTimeInfo.Compare(TEXT("非常长")))
 	{
 		timeInfo = istiVeryLong;
 	}
-	else if(strTimeInfo.Compare(TEXT("长")))
+	else if(0 == strTimeInfo.Compare(TEXT("长")))
 	{
 		timeInfo = istiLong;
 	}
+	else if(0 == strTimeInfo.Compare(TEXT("中")))
+	{
+		timeInfo = istiMiddle;
+	}
+	else if(0 == strTimeInfo.Compare(TEXT("短")))
+	{
+		timeInfo = istiShort;
+	}
 	else
 	{
-		FTLASSERT(FALSE); //短?
-		timeInfo = istiShort;
+		FTLASSERT(FALSE);
 	}
 	return timeInfo;
 }

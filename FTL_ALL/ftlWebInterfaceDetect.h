@@ -27,6 +27,21 @@ namespace FTL
 	* IWebBrowser
 	*********************************************************************************************************************************/
 
+
+	enum FindElementMethod
+	{
+		femById,
+		femByTag,
+		femByClass,
+	};
+	class CFWebBrowserUtil
+	{
+	public:
+		FTLINLINE static HRESULT FindChildElement(IHTMLElement* pParent, 
+			FindElementMethod method, LPCTSTR pszName, LONG nStartIndex, RecursiveWay recurWay,
+			IHTMLElement** ppFoundElement);
+	};
+
 	class CFWebBrowserDumper : public CFInterfaceDumperBase<CFWebBrowserDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFWebBrowserDumper);
@@ -81,6 +96,7 @@ namespace FTL
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
 	};
 
+	//param参数是可以是在Collection中的索引，通常由 CFHTMLElementCollectionDumper 调用时设置
 	class CFHTMLElementDumper : public CFInterfaceDumperBase<CFHTMLElementDumper>
 	{
 		DISABLE_COPY_AND_ASSIGNMENT(CFHTMLElementDumper);

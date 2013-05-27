@@ -88,6 +88,13 @@ namespace FTL
 		#define HILONG(a) (LONG)	((((LONGLONG)(a)) & 0xFFFFFFFF00000000) >> 32)
 		#define LOLONG(a) (LONG)	(((LONGLONG)(a)) & 0xFFFFFFFF)
 	#endif 
+
+	enum RecursiveWay			//递归算法的类型
+	{
+		rwNone,					//不递归
+		rwDepthFirst,			//深度优先
+		rwBreadthFirst,			//广度优先
+	};
 }
 
 

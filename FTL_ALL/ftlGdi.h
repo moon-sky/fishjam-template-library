@@ -328,7 +328,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 * 位图 -- 
 *   注意：创建兼容位图时，兼容DC不能是才创建好的内存DC -- 否则位图只有黑白两色
 *   CBitmap -- 功能较弱，只能显示出在资源中的图标、位图、光标及图元文件
-*     LoadBitmap -- 从资源装载位图
+*     LoadBitmap -- 从资源装载位图,注意：颜色会被裁剪为屏幕的颜色位深，并且不能直接访问像素(即 DIBSection )
 *     LoadOEMBitmap -- 装载预定义位图(如 OBM_CLOSE )
 *     LoadMappedBitmap -- 从资源装载位图，并将颜色映射到当前系统颜色
 *     CreateBitmap -- 创建具有指定高宽和图案的 DDB 内存位图
@@ -364,6 +364,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *     HBITMAP 同一时间只能选入一个DC中，第二次Select时会返回NULL，但GetLastError为0
 * 
 *  CreateDIBSection -- 创建可直接访问的DIB，可直接访问位图的位信息，创建DIBSECTION
+*    LoadImage(, LR_DEFAULTSIZE | LR_CREATEDIBSECTION) -- 加载图像资源，并且创建可直接访问像素的 DIBSection
 *  CreateDIBitmap -- 从DIB创建DDB，创建BITMAP
 * 
 * 画笔
@@ -661,6 +662,11 @@ namespace FTL
 
 		FTLINLINE static BOOL SaveBitmapToFile(HBITMAP hBmp, LPCTSTR pszFilePath);
 		FTLINLINE static BOOL SaveDCImageToFile(HDC hdc, LPCTSTR pszFilePath);
+
+		//将位图中指定颜色的点全部转换为特定的颜色(做透明色?) -- 如将 light gray(RGB (192, 192, 192)) 替换成 ::GetSysColor (COLOR_BTNFACE)
+		//  ReplaceBitmapColor(hBmp, RGB(192,192,192), ::GetSysColor (COLOR_BTNFACE));
+		//http://www.codeguru.com/cpp/controls/toolbar/article.php/c2537/FullFeatured-24bit-Color-Toolbar.htm
+		FTLINLINE static BOOL ReplaceBitmapColor(HBITMAP hBmp, COLORREF clrFrom, COLORREF clrTo);
     };
 
 	//根据指定的方式，计算一个RECT内(居中)包含一个SIZE时的RECT位置，通常用于窗体内居中显示图片或视频
