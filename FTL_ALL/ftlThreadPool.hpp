@@ -544,11 +544,44 @@ namespace FTL
 	}
 
 	template <typename T>  
-	BOOL CFThreadPool<T>::SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, DWORD dwMilliseconds /* = INFINITE */)
+	BOOL CFThreadPool<T>::SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, OOL bCheckDuplicate /* = FALSE */, DWORD dwMilliseconds /* = INFINITE */)
 	{
 		FTLASSERT(NULL != m_hEventStop); //如果调用 _DestroyPool后，就不能再次调用该函数
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
 		BOOL bRet = FALSE;
+        
+        LONG nCurJobIndex = pJob->GetJobIndex();
+        if (bCheckDuplicate && 0 != nCurJobIndex )
+        {
+            BOOL bFoundSameJob = FALSE;
+            CFJobBase<T>* pSameJob = NULL;
+            //如果想进行重复检测，并且这个Job已经加入过Pool，则在运行和等待队列中查找
+            CFAutoLock<CFLockObject> lockerWating(&m_lockWaitingJobs);
+            IndexToJobContainer::iterator iterWaiting = m_WaitingIndexJobs.find(nCurJobIndex);
+            if (iterWaiting != m_WaitingIndexJobs.end())
+            {
+                bFoundSameJob = TRUE;
+                pSameJob = iterWaiting->second;
+            }
+            else
+            {
+                CFAutoLock<CFLockObject> lockerDoing(&m_lockDoingJobs);
+                IndexToJobContainer::iterator iterDoing = m_DoingJobs.find(nCurJobIndex);
+                if (iterDoing != m_DoingJobs.end())
+                {
+                    bFoundSameJob = TRUE;
+                    pSameJob = iterDoing->second;
+                }
+            }
+            
+            if (bFoundSameJob)
+            {
+                //如果找到相同Index的Job  -- 肯定是同一个Job实例
+                FTLASSERT(pJob == pSameJob);
+                SetLastError(ERROR_ALREADY_EXISTS);
+                return FALSE;
+            }
+        }
 
         HANDLE hWaitHandles[] = 
         {
@@ -787,7 +820,7 @@ namespace FTL
 			{
 				//如果是在等待队列中找到的，则需要根据新的优先级重新放入等待队列
 				//实际上，_FindAndHandleSpecialJob 函数已经进行了锁定，此处可以不加锁
-				CFAutoLock<CFLockObject> lockerWating(&m_lockWaitingJobs);  
+				//CFAutoLock<CFLockObject> lockerWating(&m_lockWaitingJobs);  
 				WaitingJobSorter tmpSorter(pJob->GetPriority(), pJob->GetJobIndex());
 				WaitingJobContainer::iterator iterWaitingJob = m_WaitingJobs.find(tmpSorter);
 				FTLASSERT(iterWaitingJob != m_WaitingJobs.end());
