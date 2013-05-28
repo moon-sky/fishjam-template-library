@@ -21,4 +21,9 @@ protected:
     BITMAP      m_bmpInfo;
 	DECLARE_MESSAGE_MAP()
 public:
+	CComboBox m_cmbStockObject;
+	afx_msg void OnCbnSelchangeComboStockObject();
+
+private:
+	BOOL _InitControls();
 };

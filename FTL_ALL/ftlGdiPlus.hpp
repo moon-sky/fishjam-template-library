@@ -6,6 +6,7 @@
 #  include "ftlGdiPlus.h"
 #endif
 #include "ftlConversion.h"
+#include "ftlGdi.h"
 
 namespace FTL
 {
@@ -185,6 +186,50 @@ namespace FTL
         }
         return formater.GetString();
     }
+
+	LPCTSTR CFGdiPlusUtil::GetFontInfo(CFStringFormater& formater, Gdiplus::Font* pFont, Gdiplus::Graphics* pGraphics)
+	{
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pFont, NULL);
+		CHECK_POINTER_RETURN_VALUE_IF_FAIL(pGraphics, NULL);
+
+		Gdiplus::Status sts = Gdiplus::Ok;
+
+		LOGFONT logFont = {0};
+
+		//TODO: Font::GetLogFontX 为什么需要 Graphics 参数?
+#ifdef _UNICODE
+		GDIPLUS_VERIFY(pFont->GetLogFontW(pGraphics, &logFont));
+#else
+		GDIPLUS_VERIFY(pFont->GetLogFontA(pGraphics, &logFont));
+#endif 	
+
+		CFStringFormater formaterLogFont;
+		CFGdiUtil::GetLogFontInfo(formaterLogFont, &logFont);
+		
+		//获取FontFamily信息
+		Gdiplus::FontFamily	fontFamily;
+		GDIPLUS_VERIFY(pFont->GetFamily(&fontFamily));
+		CFStringFormater formaterFamily;
+		GetFontFamilyInfo(formaterFamily, &fontFamily);
+
+		HDC hDCDesktop = ::GetWindowDC(NULL);
+		INT nDpiY = ::GetDeviceCaps(hDCDesktop, LOGPIXELSY);
+		::ReleaseDC(NULL, hDCDesktop);
+
+		//获取其他信息 -- 理论上说 LOGFONT 已经有全部信息了
+		CFStringFormater formaterOtherInfo;
+		formaterOtherInfo.Format(
+			TEXT("IsAvailable=%d, Style=%d, Size=%f, Unit=%d,")
+			TEXT("Height(Graphi)=%f, Height(Dpi)=%f, DPI=%d"),
+			pFont->IsAvailable(), pFont->GetStyle(), pFont->GetSize(), pFont->GetUnit(),
+			pFont->GetHeight(pGraphics), pFont->GetHeight(nDpiY), nDpiY
+			);
+		
+		formater.Format(TEXT("%s, %s%s"), 
+			formaterLogFont.GetString(), formaterFamily.GetString(), formaterOtherInfo.GetString());
+
+		return formater.GetString();
+	}
 }
 
 #endif //FTL_GDIPLUS_HPP

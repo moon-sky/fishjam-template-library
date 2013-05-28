@@ -16,13 +16,13 @@ GdiPlusTestParam::GdiPlusTestParam()
 	m_strPaintImagePath = _T("C:\\Users\\Public\\Pictures\\Sample Pictures\\Koala.jpg");
 	m_rcDrawPanelClient.SetRectEmpty();
 
-	m_nFontHeight = 10;
+	m_nFontHeight = 12;
 	m_nRenderingOriginX = 0;
 	m_nRenderingOriginY = 0;
 	m_nCharacterRangeStart = 0;
 	m_nCharacterRangeStop = -1;
 	m_nStringFormatFlags = 0;
-	m_nUint = UnitPixel;
+	m_nUint = UnitWorld;
 	m_drawImageFunctionType = difDestRect;
 	m_colorAdjustType = ColorAdjustTypeDefault;
 
@@ -31,7 +31,7 @@ GdiPlusTestParam::GdiPlusTestParam()
 	m_nFontStyle = FontStyleRegular;
 	m_clrBrush = (ARGB)Color::Red;
 
-	m_strFontFamily = _T("Arial");
+	m_strFontFamily = _T("宋体");
 
 	//质量属性
 	m_bEnabledCompositingMode = TRUE;
@@ -73,10 +73,12 @@ BOOL GdiPlusTestParam::GetCharacterRangeInfo(INT& nStart, INT& nLength)
 
 LPCTSTR GdiPlusTestParam::GetParamInfo(FTL::CFStringFormater& formater)
 {
-	formater.Format(TEXT("String=%s,\n\tStringFormatFlags=0x%08x,")
-		TEXT("alignment=%d, lineAlignment=%d, Font={%d, %s}\n"),
-
-		m_strPaintString,  m_nStringFormatFlags, m_nAlignment, m_nLineAlignment, m_nFontHeight, m_strFontFamily
+	formater.Format(TEXT("String=%s,\n\t")
+		TEXT("StringFormatFlags=0x%08x,")
+		TEXT("alignment=%d, lineAlignment=%d, Font={%d, %s}, Unit=%d\n"),
+		m_strPaintString,  
+		m_nStringFormatFlags, m_nAlignment, m_nLineAlignment, m_nFontHeight, m_strFontFamily,
+		m_nUint
 		//rcBounds.X, rcBounds.Y, rcBounds.GetRight(), rcBounds.GetBottom()
 		);
 	return formater.GetString();
@@ -152,6 +154,7 @@ void CGdiPlusPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_GRAPHICS_TRANSLATE_DY, m_testParam.m_graphicsTranslateDy);
 
 
+	DDX_Control(pDX, IDC_BTN_GDI_PLUS_FONT_TEST, m_BtnGdiPlusFontTestMenu);
 	DDX_Control(pDX, IDC_BTN_GDI_PLUS_STRING_TEST, m_BtnGdiPlusStringTestMenu);
 	DDX_Control(pDX, IDC_BTN_GDI_PLUS_IMAGE_TEST, m_BtnGdiPlusImageTestMenu);
 
@@ -169,6 +172,7 @@ void CGdiPlusPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGdiPlusPage, CPropertyPage)
     ON_WM_DESTROY()
+	ON_COMMAND(ID_FONTTEST_FONTCONSTRUCTOR, &CGdiPlusPage::OnFontTestConstructor)
 	ON_COMMAND(ID_GDIPLUSTEST_DRAWSTRING, &CGdiPlusPage::OnGdiplustestDrawstring)
 	ON_COMMAND(ID_GDIPLUSTEST_MEASURECHARACTERRANGES, &CGdiPlusPage::OnGdiplustestMeasureCharacterRanges)
 	ON_COMMAND(ID_IMAGETEST_DRAWIMAGE, &CGdiPlusPage::OnImagetestDrawimage)
@@ -191,8 +195,9 @@ BOOL CGdiPlusPage::_InitFontCollection()
 {
 	BOOL bRet = TRUE;
 
-	Status sts;
-	INT nFontFamilyIndex = 0;
+	Status sts = Gdiplus::Ok;
+
+	//INT nFontFamilyIndex = 0;
 	//枚举系统已经安装的所有字体
 	Gdiplus::InstalledFontCollection  fonts;
 	INT nFontCount = fonts.GetFamilyCount();
@@ -214,18 +219,26 @@ BOOL CGdiPlusPage::_InitFontCollection()
 				{
 					GDIPLUS_VERIFY(pFontFamily[i].GetFamilyName(szFamilyName));
 					INT nIndex = m_cmbFontFamily.AddString(szFamilyName);
-					if (m_testParam.m_strFontFamily.CompareNoCase(szFamilyName) == 0)
-					{
-						nFontFamilyIndex = nIndex;
-					}
-					FTLTRACE(TEXT("%s\n"), FTL::CFGdiPlusUtil::GetFontFamilyInfo(strFormater, &pFontFamily[i]));
+					//FTLTRACE(tlInfo, TEXT("%s\n"), FTL::CFGdiPlusUtil::GetFontFamilyInfo(strFormater, &pFontFamily[i]));
 					//m_cmbFontFamily.SetItemData(nIndex, (DWORD_PTR)&pFontFamily[i]);
 				}
 			}
 			delete [] pFontFamily;
 		}
 	}
-	m_cmbFontFamily.SetCurSel(nFontFamilyIndex);
+	m_cmbFontFamily.SelectString(0, m_testParam.m_strFontFamily);
+
+	//INT nCount = m_cmbFontFamily.GetCount();
+	//for(INT i = 0; i < nCount; i++)
+	//{
+	//	m_cmbFontFamily.GetLBText()
+	//	if (m_testParam.m_strFontFamily.CompareNoCase() == 0)
+	//	{
+	//		nFontFamilyIndex = nIndex;
+	//	}
+
+	//}
+	//m_cmbFontFamily.SetCurSel(nFontFamilyIndex);
 
 	return bRet;
 }
@@ -278,7 +291,7 @@ BOOL CGdiPlusPage::_InitComboboxControls()
 	ADD_COMBO_VALUE_STRING_EX(m_cmbUnit, UnitInch, TEXT("Inch--1 inch"));
 	ADD_COMBO_VALUE_STRING_EX(m_cmbUnit, UnitDocument, TEXT("Document--1/300 inch"));		//Each unit is .
 	ADD_COMBO_VALUE_STRING_EX(m_cmbUnit, UnitMillimeter, TEXT("Millimeter--1 millimeter"));
-	m_cmbUnit.SetCurSel(3); //Pixel
+	m_cmbUnit.SetCurSel(m_testParam.m_nUint); //选择缺省值
 	
 	ADD_COMBO_VALUE_STRING_EX(m_cmbDrawImageFunctionType, difDestRect, TEXT("DestRect"));
 	ADD_COMBO_VALUE_STRING_EX(m_cmbDrawImageFunctionType, difDestPoint, TEXT("DestPoint"));
@@ -318,11 +331,23 @@ BOOL CGdiPlusPage::_InitComboboxControls()
 BOOL CGdiPlusPage::_InitTestButtons()
 {
 	BOOL bRet = TRUE;
+	enum TestMenuIndex
+	{
+		tmiFont = 0,
+		tmiString,
+		tmiImage,
+	};
+
+
+	m_BtnGdiPlusFontTestMenu.SetSSLButtonStyle(SSL_BS_MENU_BTN);
+	m_BtnGdiPlusFontTestMenu.SetSSLButtonMenu(IDR_MENU_GDI_PLUS_TEST, tmiFont);
+
+
 	m_BtnGdiPlusStringTestMenu.SetSSLButtonStyle(SSL_BS_MENU_BTN);
-	m_BtnGdiPlusStringTestMenu.SetSSLButtonMenu(IDR_MENU_GDI_PLUS_TEST, 0);
+	m_BtnGdiPlusStringTestMenu.SetSSLButtonMenu(IDR_MENU_GDI_PLUS_TEST, tmiString);
 
 	m_BtnGdiPlusImageTestMenu.SetSSLButtonStyle(SSL_BS_MENU_BTN);
-	m_BtnGdiPlusImageTestMenu.SetSSLButtonMenu(IDR_MENU_GDI_PLUS_TEST, 1);
+	m_BtnGdiPlusImageTestMenu.SetSSLButtonMenu(IDR_MENU_GDI_PLUS_TEST, tmiImage);
 
 	return bRet;
 }
@@ -422,15 +447,15 @@ BOOL CGdiPlusPage::_InitGraphicsCoordinateAndTransform()
 BOOL CGdiPlusPage::_InitControls()
 {
     BOOL bRet = FALSE;
-    Status sts;
-	_SetDrawPanelInfo(CPoint(0, 0));
-	_InitFontCollection();
-	_InitComboboxControls();
-	_InitTestButtons();
-	_InitSpinControls();
+    
+	API_VERIFY(_SetDrawPanelInfo(CPoint(0, 0)));
+	API_VERIFY(_InitFontCollection());
+	API_VERIFY(_InitComboboxControls());
+	API_VERIFY(_InitTestButtons());
+	API_VERIFY(_InitSpinControls());
 	
-	_InitGraphicsQualityControls();
-	_InitGraphicsCoordinateAndTransform();
+	API_VERIFY(_InitGraphicsQualityControls());
+	API_VERIFY(_InitGraphicsCoordinateAndTransform());
 
     return bRet;
 }
@@ -457,6 +482,9 @@ BOOL CGdiPlusPage::OnInitDialog()
 
 BOOL CGdiPlusPage::_GetTestParam(const CRect& rcPaintDest, Gdiplus::Graphics* pGraphics)
 {
+	UNREFERENCED_PARAMETER(pGraphics);
+
+
 	BOOL bRet = FALSE;
 	API_VERIFY(UpdateData(TRUE));
 	if (!bRet)
@@ -481,10 +509,10 @@ BOOL CGdiPlusPage::_GetTestParam(const CRect& rcPaintDest, Gdiplus::Graphics* pG
 	m_testParam.m_rtPaintDest.Width = rcPaintDest.Width();
 	m_testParam.m_rtPaintDest.Height = rcPaintDest.Height();
 
-	m_testParam.m_rtfPaintDest.X = rcPaintDest.left;
-	m_testParam.m_rtfPaintDest.Y = rcPaintDest.top;
-	m_testParam.m_rtfPaintDest.Width = rcPaintDest.Width();
-	m_testParam.m_rtfPaintDest.Height = rcPaintDest.Height();
+	m_testParam.m_rtfPaintDest.X = (REAL)rcPaintDest.left;
+	m_testParam.m_rtfPaintDest.Y = (REAL)rcPaintDest.top;
+	m_testParam.m_rtfPaintDest.Width = (REAL)rcPaintDest.Width();
+	m_testParam.m_rtfPaintDest.Height = (REAL)rcPaintDest.Height();
 
 
 	m_testParam.m_nStringFormatFlags = _GetCheckComboxSelectedFlags(m_cmbStringFormatFlags);
@@ -550,8 +578,11 @@ void CGdiPlusPage::_DoGdiPlusTest(GdiPlusTestType testType)
 
 			switch (testType)
 			{
+			case gpttFontConstructor:
+				GDIPLUS_VERIFY(_TestFontConstructor(pDrawDC->m_hDC, &graphic));
+				break;
 			case gpttDrawString:
-				GDIPLUS_VERIFY(_TestDrawString(&graphic));
+				GDIPLUS_VERIFY(_TestDrawString(pDrawDC->m_hDC, &graphic));
 				break;
 			case gpttDrawDriverString:
 				{
@@ -565,10 +596,10 @@ void CGdiPlusPage::_DoGdiPlusTest(GdiPlusTestType testType)
 					break;
 				}
 			case gpttMeasureCharacterRanges:
-				_TestMeasureCharacterRanges(&graphic);
+				_TestMeasureCharacterRanges(pDrawDC->m_hDC, &graphic);
 				break;
 			case gpttDrawImage:
-				GDIPLUS_VERIFY(_TestDrawImage(&graphic));
+				GDIPLUS_VERIFY(_TestDrawImage(pDrawDC->m_hDC, &graphic));
 				break;
 			}
 		}
@@ -665,12 +696,87 @@ Gdiplus::Status CGdiPlusPage::_SetGraphicsCoordinateAndTransformParam(Gdiplus::G
 	}
 	return sts;
 }
-
-Gdiplus::Status CGdiPlusPage::_TestDrawString(Graphics* pGraphics)
+Gdiplus::Status CGdiPlusPage::_TestFontConstructor(HDC hDC, Graphics* pGraphics)
 {
+	BOOL bRet = FALSE;
+	Gdiplus::Status sts = Gdiplus::Ok;
+	
+	{
+		//测试使用HDC的构造函数
+
+		Gdiplus::Font fontHDC(hDC);
+		GDIPLUS_VERIFY_EXCEPT1(fontHDC.GetLastStatus(), Gdiplus::NotTrueTypeFont);
+		if (Gdiplus::Ok == sts)
+		{
+			//实测时发生 NotTrueTypeFont 的错误 -- 原因?
+			FTL::CFStringFormater formaterHDC;
+			CFGdiPlusUtil::GetFontInfo(formaterHDC, &fontHDC, pGraphics);
+			FTLTRACE(TEXT("FontHDC=%s\n"), formaterHDC);
+		}
+	}
+
+	{
+		//测试使用 LOGFONT 的构造函数
+		HFONT hDefaultGuiFont =(HFONT)GetStockObject(DEFAULT_GUI_FONT);
+		if (hDefaultGuiFont)
+		{
+			LOGFONT logFont = {0};
+			API_VERIFY(sizeof(LOGFONT) == GetObject(hDefaultGuiFont, sizeof(LOGFONT), &logFont));
+
+			Gdiplus::Font fontLogFont(hDC, &logFont);
+			GDIPLUS_VERIFY(fontLogFont.GetLastStatus());
+			if (Gdiplus::Ok == sts)
+			{
+				FTL::CFStringFormater formaterLogFont;
+				CFGdiPlusUtil::GetFontInfo(formaterLogFont, &fontLogFont, pGraphics);
+				//Win7上运行的结果，注意：Unit 是 0(UnitWorld)：
+				//fontLogFont=Font::Height=-12,Width=0, Escapement=0,Orientation=0,Weight=400, Italic=0,Underline=0,
+				//StrikeOut=0, CharSet=134,OutPrecision=0,ClipPrecision=0,Quality=0,PitchAndFamily=0,FaceName=宋体, 
+				//FontFamily=宋体: Bold{nEmHeight=256, nCellAscent=220, nCellDescent=36, nLineSpacing=292}, 
+				//                 Italic{nEmHeight=256, nCellAscent=220, nCellDescent=36, nLineSpacing=292}, 
+				//                 Underline{nEmHeight=256, nCellAscent=220, nCellDescent=36, nLineSpacing=292}, 
+				//                 Strikeout{nEmHeight=256, nCellAscent=220, nCellDescent=36, nLineSpacing=292}, , 
+				//IsAvailable=1, Style=0, Size=12.000000, Unit=0,Height(Graphi)=13.687500, Height(Dpi)=13.687500, DPI=96
+				FTLTRACE(TEXT("fontLogFont=%s\n"), formaterLogFont.GetString());
+			}
+		}
+	}
+
+	{
+		Gdiplus::Font font();
+	}
+	{
+		//测试选择的字体信息
+		Gdiplus::Font fontUserChoose(m_testParam.m_strFontFamily, (REAL)m_testParam.m_nFontHeight, 
+			m_testParam.m_nFontStyle, 
+			m_testParam.m_nUint);  //注意：Font构造中缺省的Unit是UnitPoint，此处改为用户选择(缺省是 UnitWorld)
+		GDIPLUS_VERIFY(fontUserChoose.GetLastStatus());
+		if (Gdiplus::Ok == sts)
+		{
+			FTL::CFStringFormater formaterUserChoose;
+			CFGdiPlusUtil::GetFontInfo(formaterUserChoose, &fontUserChoose, pGraphics);
+			//Win7上的运行结果(默认选择 -- 宋体, 12, UnitWorld) -- 和 DEFAULT_GUI_FONT 完全一样
+
+			FTLTRACE(TEXT("UserChoose =%s\n"), formaterUserChoose.GetString());
+
+		}
+	}
+	
+
+
+
+	return sts;
+}
+
+Gdiplus::Status CGdiPlusPage::_TestDrawString(HDC hDC, Graphics* pGraphics)
+{
+	UNREFERENCED_PARAMETER(hDC);
 	Gdiplus::Status sts = Gdiplus::Ok;
 
-	Gdiplus::Font font(m_testParam.m_strFontFamily, (REAL)m_testParam.m_nFontHeight, m_testParam.m_nFontStyle);
+	Gdiplus::Font font(m_testParam.m_strFontFamily, (REAL)m_testParam.m_nFontHeight, m_testParam.m_nFontStyle, 
+		m_testParam.m_nUint, NULL);
+	GDIPLUS_VERIFY(font.GetLastStatus());
+
 	PointF ptStart(0, 0);
 
 	StringFormat format;
@@ -679,26 +785,37 @@ Gdiplus::Status CGdiPlusPage::_TestDrawString(Graphics* pGraphics)
 	format.SetFormatFlags(m_testParam.m_nStringFormatFlags);
 	SolidBrush brush(m_testParam.m_clrBrush);
 
-	SolidBrush nullBrush(Color::Green);
+	SolidBrush nullBrush((Gdiplus::ARGB)Color::Green);
 	pGraphics->FillRectangle(&nullBrush, m_testParam.m_rtPaintDest);
 
 	//GDIPLUS_VERIFY(pGraphics->SetRenderingOrigin(m_testParam.m_nRenderingOriginX, m_testParam.m_nRenderingOriginY));
 	//graphic.SetTextContrast()
 
 	RectF rcMeasureBounds;
+	INT  codepointsFitted = 0;
+	INT  linesFilled = 0;
 	GDIPLUS_VERIFY(pGraphics->MeasureString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
-		&font, m_testParam.m_rtfPaintDest, &format, &rcMeasureBounds));
-	Gdiplus::Pen penBounds(Color::Aqua);
+		&font, m_testParam.m_rtfPaintDest, &format, &rcMeasureBounds, &codepointsFitted, &linesFilled));
+
+	Gdiplus::Pen penBounds((Gdiplus::ARGB)Color::Aqua);
 	GDIPLUS_VERIFY(pGraphics->DrawRectangle(&penBounds, rcMeasureBounds));
 
     RectF rcPathBounds;
+	REAL fEmSize = font.GetSize();
+	INT nFontStyle = font.GetStyle();
+	FTLTRACE(
+		TEXT("font[Size=%f, height=%f, Style=%d] ,")
+		TEXT("m_testParam[FontHeight=%d, Style=%d]\n"), 
+		fEmSize, font.GetHeight(pGraphics), nFontStyle,
+		m_testParam.m_nFontHeight, m_testParam.m_nFontStyle);
+
     GraphicsPath    path;
 	FontFamily	fontFamily(m_testParam.m_strFontFamily);
     GDIPLUS_VERIFY(path.AddString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
-        &fontFamily, m_testParam.m_nFontStyle, m_testParam.m_nFontHeight, m_testParam.m_rtfPaintDest, &format));
+        &fontFamily, nFontStyle, fEmSize, m_testParam.m_rtfPaintDest, &format));
     path.GetBounds(&rcPathBounds);
 
-	Gdiplus::Pen penPathBounds(Color::Yellow);
+	Gdiplus::Pen penPathBounds((Gdiplus::ARGB)Color::Yellow);
 	GDIPLUS_VERIFY(pGraphics->DrawRectangle(&penPathBounds, rcPathBounds));
 
 	//pDrawDC->Rectangle(rcBounds.X, rcBounds.Y, rcBounds.GetRight(), rcBounds.GetBottom());
@@ -708,17 +825,24 @@ Gdiplus::Status CGdiPlusPage::_TestDrawString(Graphics* pGraphics)
         rcPathBounds.X, rcPathBounds.Y, rcPathBounds.GetRight(), rcPathBounds.GetBottom(),
         rcMeasureBounds.X, rcMeasureBounds.Y, rcMeasureBounds.GetRight(), rcMeasureBounds.GetBottom());
 
+	//DrawString 有三种重载方式，这是功能最强的方式，其核心是 GdipDrawString
 	GDIPLUS_VERIFY(pGraphics->DrawString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
-		&font, m_testParam.m_rtfPaintDest, &format,  &brush));
+		&font, //显示文本用的字体(FONT)
+		m_testParam.m_rtfPaintDest, 
+		&format,  
+		&brush)	//	//指示用什么图案来填充文本,可以选择用纯色、自定义的纹理图案、渐变色等等来绘制文本
+		);
 
 	return sts;
 }
 
-Gdiplus::Status CGdiPlusPage::_TestMeasureCharacterRanges(Gdiplus::Graphics* pGraphics)
+Gdiplus::Status CGdiPlusPage::_TestMeasureCharacterRanges(HDC hDC, Gdiplus::Graphics* pGraphics)
 {
+	UNREFERENCED_PARAMETER(hDC);
 	Gdiplus::Status sts = Gdiplus::InvalidParameter;
 
-	Gdiplus::Font font(m_testParam.m_strFontFamily, (REAL)m_testParam.m_nFontHeight, m_testParam.m_nFontStyle);
+	Gdiplus::Font font(m_testParam.m_strFontFamily, (REAL)m_testParam.m_nFontHeight, m_testParam.m_nFontStyle, 
+		m_testParam.m_nUint);
 
 	StringFormat format;
 	format.SetAlignment(m_testParam.m_nAlignment);
@@ -745,8 +869,9 @@ Gdiplus::Status CGdiPlusPage::_TestMeasureCharacterRanges(Gdiplus::Graphics* pGr
 	return sts;
 }
 
-Gdiplus::Status CGdiPlusPage::_TestDrawImage(Graphics* pGraphics)
+Gdiplus::Status CGdiPlusPage::_TestDrawImage(HDC hDC, Graphics* pGraphics)
 {
+	UNREFERENCED_PARAMETER(hDC);
 	Gdiplus::Status sts = Gdiplus::InvalidParameter;
 
 	if (!m_testParam.m_strPaintImagePath.IsEmpty())
@@ -1062,6 +1187,11 @@ void CGdiPlusPage::OnDestroy()
     _UnInitControls();
 
     CPropertyPage::OnDestroy();
+}
+
+void CGdiPlusPage::OnFontTestConstructor()
+{
+	_DoGdiPlusTest(gpttFontConstructor);
 }
 
 void CGdiPlusPage::OnGdiplustestDrawstring()

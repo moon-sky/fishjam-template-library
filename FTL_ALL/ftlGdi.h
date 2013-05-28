@@ -495,6 +495,7 @@ namespace FTL
         FTLINLINE ~HDCProperty();
     public:
         FTLINLINE LPCTSTR GetPropertyString(DWORD dwPropertyGet = HDC_PROPERTY_GET_DEFAULT);
+		HWND	m_hWnd;
         HDC     m_hSafeHdc;
         int     m_nGraphicsMode;
         int     m_nMapMode;
@@ -636,6 +637,9 @@ namespace FTL
         FTLINLINE static BOOL    GetHDCProperty(HDC hdc, HDCProperty* pProperty);
 
 		FTLINLINE static LPCTSTR GetTextMetricsInfo(HDC hdc, CFStringFormater& strFormater , HFONT hFont = NULL);
+
+		//获取LogFont结构对应的信息
+		FTLINLINE static LPCTSTR GetLogFontInfo(CFStringFormater& strFormater, LOGFONT* pLogFont);
 
 		//根据传入的 10*磅， 得到对应的字号(如 初号、小初等)
 		FTLINLINE static LPCTSTR GetFontNumberByPointSize(int nPointSize);

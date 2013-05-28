@@ -346,7 +346,7 @@ namespace FTL
 	#endif 
 
     #ifndef HANDLE_CASE_RETURN_STRING
-    # define HANDLE_CASE_RETURN_STRING HANDLE_CASE_RETURN_STRING_EX(c, TEXT(#c))
+    # define HANDLE_CASE_RETURN_STRING(c) HANDLE_CASE_RETURN_STRING_EX(c, TEXT(#c))
     #endif 
 
     #define FTL_MIN(a,b)                (((a) < (b)) ? (a) : (b))

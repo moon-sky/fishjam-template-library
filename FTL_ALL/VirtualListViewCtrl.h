@@ -31,12 +31,6 @@ public:
 		return TRUE;
 	}
 
-#ifndef HANDLE_CASE_RETURN_STRING
-# define HANDLE_CASE_RETURN_STRING(c) \
-case (c):\
-	return TEXT(#c);
-#endif 
-
 	LPCTSTR GetNotifyCodeString(UINT code)
 	{
 		switch(code)

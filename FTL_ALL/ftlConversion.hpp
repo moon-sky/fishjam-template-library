@@ -9,21 +9,40 @@
 
 namespace FTL
 {
-	CFConversion::CFConversion(UINT CodePage /* = CP_ACP */)
+	CFConversion::CFConversion(UINT CodePage /* = CP_ACP */, DWORD dwFlags /* = 0 */)
 		:m_codePage(CodePage)
+		,m_dwFlags(dwFlags)
 	{
-
+		m_pDefaultChar = NULL;
+		m_bUsedDefaultChar = FALSE;
 	}
 	CFConversion::~CFConversion()
 	{
-
+		SAFE_DELETE_ARRAY(m_pDefaultChar);
 	}
 
+	VOID CFConversion::SetDefaultCharForWC2MB(LPSTR pszDefaultChar)
+	{
+		FTLASSERT(pszDefaultChar != m_pDefaultChar);
+
+		SAFE_DELETE_ARRAY(m_pDefaultChar);
+		if (pszDefaultChar)
+		{
+			int nLength = strlen(pszDefaultChar);
+			m_pDefaultChar = new CHAR[nLength + 1];
+			if (m_pDefaultChar)
+			{
+				strncpy(m_pDefaultChar, pszDefaultChar, nLength);
+				m_pDefaultChar[nLength] = NULL;
+			}
+		}
+	}
 	LPWSTR CFConversion::UTF8_TO_UTF16(LPCSTR szUTF8 , BOOL bDetached /* = FALSE */)
 	{
-		int wcharsize = MultiByteToWideChar( CP_UTF8, 0,  szUTF8, -1, NULL, 0 );
+		BOOL bRet = FALSE;
+		int wcharsize = MultiByteToWideChar( CP_UTF8, m_dwFlags,  szUTF8, -1, NULL, 0 );
 		int size = wcharsize * sizeof( WCHAR );
-		ATLVERIFY( MultiByteToWideChar( CP_UTF8, 0,  szUTF8, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
+		API_VERIFY( 0 != MultiByteToWideChar( CP_UTF8, m_dwFlags,  szUTF8, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
 		if (bDetached)
 		{
 			return (LPWSTR)m_Mem.Detatch();
@@ -33,13 +52,16 @@ namespace FTL
 
 	LPSTR  CFConversion::UTF8_TO_MBCS( LPCSTR szUTF8 , BOOL bDetached /* = FALSE */ )
 	{
-		int wcharsize = MultiByteToWideChar( CP_UTF8, 0,  szUTF8, -1, NULL, 0 );
+		BOOL bRet = FALSE;
+		int wcharsize = MultiByteToWideChar( CP_UTF8, m_dwFlags,  szUTF8, -1, NULL, 0 );
 		int size = wcharsize * sizeof( WCHAR );
-		ATLVERIFY( MultiByteToWideChar( CP_UTF8, 0,  szUTF8, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
+		API_VERIFY( 0 != MultiByteToWideChar( CP_UTF8, m_dwFlags,  szUTF8, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
 
-		int charsize = WideCharToMultiByte( m_codePage, 0, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, NULL, NULL );
+		int charsize = WideCharToMultiByte( m_codePage, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, 
+			m_pDefaultChar, &m_bUsedDefaultChar);
 		size = charsize * sizeof( char );
-		ATLVERIFY( WideCharToMultiByte( m_codePage, 0, ( LPWSTR )( BYTE* )m_Mem, -1, ( LPSTR )m_Mem2.GetMemory( size ), size, 0, 0 ) ); // NS
+		API_VERIFY( 0 != WideCharToMultiByte( m_codePage, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, 
+			( LPSTR )m_Mem2.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) ); // NS
 		if (bDetached)
 		{
 			return (LPSTR)m_Mem2.Detatch();
@@ -49,9 +71,10 @@ namespace FTL
 
 	LPWSTR CFConversion::MBCS_TO_UTF16( LPCSTR szMBCS , BOOL bDetached /* = FALSE */)
 	{
-		int wcharsize = MultiByteToWideChar( m_codePage, 0,  szMBCS, -1, NULL, 0 );
+		BOOL bRet = FALSE;
+		int wcharsize = MultiByteToWideChar( m_codePage, m_dwFlags,  szMBCS, -1, NULL, 0 );
 		int size = wcharsize * sizeof( WCHAR );
-		ATLVERIFY( MultiByteToWideChar( m_codePage, 0,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
+		API_VERIFY(0 != MultiByteToWideChar( m_codePage, m_dwFlags,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
 
 		if (bDetached)
 		{
@@ -62,13 +85,16 @@ namespace FTL
 
 	LPSTR  CFConversion::MBCS_TO_UTF8( LPCSTR szMBCS , BOOL bDetached /* = FALSE */ )
 	{
-		int wcharsize = MultiByteToWideChar( m_codePage, 0,  szMBCS, -1, NULL, 0 );
+		BOOL bRet = FALSE;
+		int wcharsize = MultiByteToWideChar( m_codePage, m_dwFlags,  szMBCS, -1, NULL, 0 );
 		int size = wcharsize * sizeof( WCHAR );
-		ATLVERIFY( MultiByteToWideChar( m_codePage, 0,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
+		API_VERIFY( MultiByteToWideChar( m_codePage, m_dwFlags,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
 
-		int charsize = WideCharToMultiByte( CP_UTF8, 0, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, NULL, NULL );
+		int charsize = WideCharToMultiByte( CP_UTF8, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, 
+			m_pDefaultChar, &m_bUsedDefaultChar);
 		size = charsize * sizeof( char );
-		ATLVERIFY( WideCharToMultiByte( CP_UTF8, 0, ( LPWSTR )( BYTE* )m_Mem, -1, ( LPSTR )m_Mem2.GetMemory( size ), size, 0, 0 ) ); // NS
+		API_VERIFY( WideCharToMultiByte( CP_UTF8, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, 
+			( LPSTR )m_Mem2.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) ); // NS
 
 		if (bDetached)
 		{
@@ -79,9 +105,11 @@ namespace FTL
 
 	LPSTR  CFConversion::UTF16_TO_MBCS( LPCWSTR szUTF16 , BOOL bDetached /* = FALSE */ )
 	{
-		int charsize = WideCharToMultiByte( m_codePage, 0, szUTF16, -1, NULL, 0, NULL, NULL );
+		BOOL bRet = FALSE;
+		int charsize = WideCharToMultiByte( m_codePage, m_dwFlags, szUTF16, -1, NULL, 0, NULL, NULL );
 		int size = charsize * sizeof( char );
-		ATLVERIFY( WideCharToMultiByte( m_codePage, 0, szUTF16, -1, ( LPSTR )m_Mem.GetMemory( size ), size, 0, 0 ) );
+		API_VERIFY(0 != WideCharToMultiByte( m_codePage, m_dwFlags, szUTF16, -1, 
+			( LPSTR )m_Mem.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) );
 
 		if (bDetached)
 		{
@@ -92,9 +120,11 @@ namespace FTL
 
 	LPSTR  CFConversion::WCS_TO_MBCS( const UINT CodePage, LPCWSTR szWcs  , BOOL bDetached /* = FALSE */)
 	{
-		int charsize = WideCharToMultiByte( CodePage, 0, szWcs, -1, NULL, 0, NULL, NULL );
+		BOOL bRet = FALSE;
+		int charsize = WideCharToMultiByte( CodePage, m_dwFlags, szWcs, -1, NULL, 0, NULL, NULL );
 		int size = charsize * sizeof( char );
-		ATLVERIFY( WideCharToMultiByte( CodePage, 0, szWcs, -1, ( LPSTR )m_Mem.GetMemory( size ), size, 0, 0 ) );
+		API_VERIFY( 0 != WideCharToMultiByte( CodePage, m_dwFlags, szWcs, -1, 
+			( LPSTR )m_Mem.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) );
 
 		if (bDetached)
 		{
@@ -105,9 +135,10 @@ namespace FTL
 
 	LPWSTR  CFConversion::MBCS_TO_WCS( const UINT CodePage, LPCSTR szMBCS , BOOL bDetached /* = FALSE */ )
 	{
-		int wcharsize = MultiByteToWideChar( CodePage, 0,  szMBCS, -1, NULL, 0 );
+		BOOL bRet = FALSE;
+		int wcharsize = MultiByteToWideChar( CodePage, m_dwFlags,  szMBCS, -1, NULL, 0 );
 		int size = wcharsize * sizeof( WCHAR );
-		MultiByteToWideChar( CodePage, 0,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), size );
+		API_VERIFY(0 != MultiByteToWideChar( CodePage, m_dwFlags,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), size ));
 
 		if (bDetached)
 		{
@@ -118,9 +149,11 @@ namespace FTL
 
 	LPSTR  CFConversion::UTF16_TO_UTF8( LPCWSTR szUTF16 , BOOL bDetached /* = FALSE */)
 	{
-		int charsize = WideCharToMultiByte( CP_UTF8, 0, szUTF16, -1, NULL, 0, NULL, NULL );
+		BOOL bRet = FALSE;
+		int charsize = WideCharToMultiByte( CP_UTF8, m_dwFlags, szUTF16, -1, NULL, 0, NULL, NULL );
 		int size = charsize * sizeof( char );
-		ATLVERIFY( WideCharToMultiByte( CP_UTF8, 0, szUTF16, -1, ( LPSTR )m_Mem.GetMemory( size ), size, 0, 0 ) );
+		API_VERIFY( 0 != WideCharToMultiByte( CP_UTF8, m_dwFlags, szUTF16, -1, 
+			( LPSTR )m_Mem.GetMemory( size ), size, NULL, NULL ) );
 
 		if (bDetached)
 		{

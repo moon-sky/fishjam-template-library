@@ -30,6 +30,11 @@
 *   ★GDI的形状轮廓绘制和填充使用同一个函数，比如Rectangle(轮廓用画笔，填充用画刷)，
 *     而GDI+是分开的，如 DrawRectangle 和 FillRectangle
 *     GDI的坐标是整型，在转换时会丢失精度，GDI+里面的坐标可以采用REAL(float)，因此在缩放等处理中不会丢失精度
+*
+* 注意：
+*   1.DLL中使用Gdiplus时，只需要包含GdiPlus.h和GdiPlus.lib，不要进行初始化和终止化，否则容易发生DLL重入的错误(造成退出时死锁)
+*     但ATL::CImage 会自动初始化和终止化，所以如果有资源泄露一类的问题，很容易造成死锁。
+*   2.
 /*****************************************************************************************************/
 
 /*****************************************************************************************************
@@ -163,6 +168,13 @@ namespace FTL
         REPORT_ERROR_INFO(FTL::CFGdiPlusErrorInfo, sts, x);\
     }
 
+	# define GDIPLUS_VERIFY_EXCEPT1(x, e1)   \
+	sts = (x);\
+	if(Gdiplus::Ok != sts && e1 != sts)\
+	{\
+		REPORT_ERROR_INFO(FTL::CFGdiPlusErrorInfo, sts, x);\
+	}
+
 
     FTLEXPORT class CFGdiPlusErrorInfo : public CFConvertInfoT<CFGdiPlusErrorInfo, Gdiplus::Status>
     {
@@ -194,8 +206,11 @@ namespace FTL
 		FTLINLINE static BOOL DrawNineBlockImage(Gdiplus::Graphics* pGraphics, Gdiplus::Image* pImages[9], const Gdiplus::Rect* pRect);
 
         //缺省查询所有Style的信息
-        FTLINLINE static LPCTSTR GetFontFamilyInfo(FTL::CFStringFormater& formater, Gdiplus::FontFamily* pFamily, 
+        FTLINLINE static LPCTSTR GetFontFamilyInfo(CFStringFormater& formater, Gdiplus::FontFamily* pFamily, 
             INT nStyle = Gdiplus::FontStyleBoldItalic | Gdiplus::FontStyleUnderline | Gdiplus::FontStyleStrikeout );
+
+		//获取Font相关的各种信息
+		FTLINLINE static LPCTSTR GetFontInfo(CFStringFormater& formater, Gdiplus::Font* pFont, Gdiplus::Graphics* pGraphics);
 	};
 }
 

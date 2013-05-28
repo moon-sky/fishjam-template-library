@@ -446,11 +446,13 @@ namespace FTL
 	*     update-index -- 内部命令，如 git add 对应于 git update-index --add
 	*     whatchanged [分支1] [分支2] -- 查看两个分支的变化
 	* 其他相关工具 -- 想开发一个 nGit(参考 Git 和 Gemit的使用，如在VS里打开IE View)
+	*   Git -- http://git-scm.com/download/win
 	*   EGit -- Eclipse 下的 Git Plugin
     *   Gerrit -- 基于Web的代码评审工具和项目管理工具
 	*   GitHub -- 可与 Hudson 连接?
     *   TortoiseGit -- 提供 Git 和 Windows 资源管理器的整合(图形化操作界面)
     *     
+	* Git可以通过SSH连接(ssh-keygen -t rsa -C "xxx" 生成)
     *******************************************************************************************************************************/
 
 	/******************************************************************************************************************************

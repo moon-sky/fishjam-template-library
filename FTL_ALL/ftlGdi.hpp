@@ -75,33 +75,10 @@ namespace FTL
             }
         case OBJ_FONT:
             {
-                LOGFONT fontInfo = {0};
-                API_VERIFY(::GetObject(hgdiObj, sizeof(fontInfo), &fontInfo));
-                formater.Format(TEXT("Font::Height=%d,Width=%d, Escapement=%d,")
-                    TEXT("Orientation=%d,Weight=%d, Italic=%d,") 
-                    TEXT("Underline=%d,StrikeOut=%d, CharSet=%d,") 
-                    TEXT("OutPrecision=%d,ClipPrecision=%d,") 
-                    TEXT("Quality=%d,PitchAndFamily=%d,")
-                    TEXT("FaceName=%s"),
-                    
-                    fontInfo.lfHeight,			//参见头文件中的"字体大小单位"
-                    fontInfo.lfWidth,           //字体平均宽度的逻辑值,为0时,会自动选择一个与高度最匹配的值
-                    fontInfo.lfEscapement,      //字符串底线与水平线的夹角(单位为0.1角度)
-                    fontInfo.lfOrientation,     //每个字符的底线与水平线的夹角（单位为0.1度）
-                    fontInfo.lfWeight,          //字体的粗细,单位为千分比，取值范围为0(DONTCARE)~1000(全黑),
-												//如果为 FW_BOLD(700), 就是默认的粗体字, 系统默认的是 FW_NORMAL(400)
-                    fontInfo.lfItalic,          //TRUE则字体为斜体字
-                    fontInfo.lfUnderline,       //TRUE则字体带下划线
-                    fontInfo.lfStrikeOut,       //TRUE则字体带删除线
-                    fontInfo.lfCharSet,         //字符集，有 ANSI_CHARSET(0)、DEFAULT_CHARSET(1)、GB2312_CHARSET(134) 等
-                    fontInfo.lfOutPrecision,    //输出字体的精度,有 OUT_DEFAULT_PRECIS(0) 等
-                    fontInfo.lfClipPrecision,   //输出时字体被裁剪的精度,有 CLIP_DEFAULT_PRECIS(0) 等
-                    fontInfo.lfQuality,         //输出质量,有 CLIP_DEFAULT_PRECIS(0) 等
-                    fontInfo.lfPitchAndFamily,  //字符间距与字体家族,字符间距(pitch)占字节的低2位,如 DEFAULT_PITCH(0),
-                                                //字体家族(family) 占字节的4~7位，如 FF_DONTCARE(0<<4).
-                                                //可以用位或“|”将间距常量与家族常量组合使用(宏中已经定义，不用再移位了)
-                    fontInfo.lfFaceName);       //字体名称
-                break;
+                LOGFONT logFont = {0};
+                API_VERIFY(::GetObject(hgdiObj, sizeof(logFont), &logFont));
+				CFGdiUtil::GetLogFontInfo(formater, &logFont);
+           break;
             }
         case OBJ_BITMAP:
             {
@@ -161,8 +138,8 @@ namespace FTL
         case OBJ_MEMDC:
             {
                 HDCProperty propHDC;
-                CFGdiUtil::GetHDCProperty((HDC)hgdiObj,&propHDC);
-                formater.Format(TEXT("%s"), propHDC.GetPropertyString(HDC_PROPERTY_GET_DEFAULT));
+                CFGdiUtil::GetHDCProperty((HDC)hgdiObj, &propHDC);
+				formater.Format(TEXT("MemDC:%s"), propHDC.GetPropertyString(HDC_PROPERTY_GET_ALL));
                 break;
             }
         case OBJ_EXTPEN:
@@ -246,6 +223,7 @@ namespace FTL
 
     HDCProperty::HDCProperty()
     {
+		m_hWnd = NULL;
         m_hSafeHdc = NULL;
 
         m_nGraphicsMode = -1;
@@ -359,8 +337,9 @@ namespace FTL
             if (HDC_PROPERTY_GET_WINDOW_INFO == (HDC_PROPERTY_GET_WINDOW_INFO & dwPropertyGet))
             {
                 formater.AppendFormat(
-                    TEXT("\tWindow=(%d,%d)-(%d,%d), %dx%d\n"),
-                    m_ptWindowOrg.x, m_ptWindowOrg.y,
+                    TEXT("\tHWnd=0x%x,Window=(%d,%d)-(%d,%d), %dx%d\n"),
+					m_hWnd,
+					m_ptWindowOrg.x, m_ptWindowOrg.y,
                     m_ptWindowOrg.x + m_szWindowExt.cx, m_ptWindowOrg.y + m_szWindowExt.cy,
                     m_szWindowExt.cx, m_szWindowExt.cy
                     );
@@ -907,6 +886,36 @@ namespace FTL
 		return strFormater.GetString();
 	}
 
+	LPCTSTR CFGdiUtil::GetLogFontInfo(CFStringFormater& strFormater, LOGFONT* pLogFont)
+	{
+		strFormater.AppendFormat(TEXT("Font::Height=%d,Width=%d, Escapement=%d,")
+			TEXT("Orientation=%d,Weight=%d, Italic=%d,") 
+			TEXT("Underline=%d,StrikeOut=%d, CharSet=%d,") 
+			TEXT("OutPrecision=%d,ClipPrecision=%d,") 
+			TEXT("Quality=%d,PitchAndFamily=%d,")
+			TEXT("FaceName=%s"),
+
+			pLogFont->lfHeight,			//参见头文件中的"字体大小单位"
+			pLogFont->lfWidth,           //字体平均宽度的逻辑值,为0时,会自动选择一个与高度最匹配的值
+			pLogFont->lfEscapement,      //字符串底线与水平线的夹角(单位为0.1角度)
+			pLogFont->lfOrientation,     //每个字符的底线与水平线的夹角（单位为0.1度）
+			pLogFont->lfWeight,          //字体的粗细,单位为千分比，取值范围为0(DONTCARE)~1000(全黑),
+			//如果为 FW_BOLD(700), 就是默认的粗体字, 系统默认的是 FW_NORMAL(400)
+			pLogFont->lfItalic,          //TRUE则字体为斜体字
+			pLogFont->lfUnderline,       //TRUE则字体带下划线
+			pLogFont->lfStrikeOut,       //TRUE则字体带删除线
+			pLogFont->lfCharSet,         //字符集，有 ANSI_CHARSET(0)、DEFAULT_CHARSET(1)、GB2312_CHARSET(134) 等
+			pLogFont->lfOutPrecision,    //输出字体的精度,有 OUT_DEFAULT_PRECIS(0) 等
+			pLogFont->lfClipPrecision,   //输出时字体被裁剪的精度,有 CLIP_DEFAULT_PRECIS(0) 等
+			pLogFont->lfQuality,         //输出质量,有 CLIP_DEFAULT_PRECIS(0) 等
+			pLogFont->lfPitchAndFamily,  //字符间距与字体家族,字符间距(pitch)占字节的低2位,如 DEFAULT_PITCH(0),
+			//字体家族(family) 占字节的4~7位，如 FF_DONTCARE(0<<4).
+			//可以用位或“|”将间距常量与家族常量组合使用(宏中已经定义，不用再移位了)
+			pLogFont->lfFaceName);       //字体名称
+
+		return strFormater.GetString();
+	}
+
     LPCTSTR CFGdiUtil::GetFontNumberByPointSize(int nPointSize) 
     {
         //注意：nPointSize / 10 就是磅数 -- 不同：http://wenku.baidu.com/view/2aaefd492b160b4e767fcff3.html
@@ -943,6 +952,7 @@ namespace FTL
         API_VERIFY(0 != (pProperty->m_nArcDirection = ::GetArcDirection(hdc)));
         API_VERIFY(::GetBrushOrgEx(hdc, &pProperty->m_ptBrushOrg));
 
+		pProperty->m_hWnd = ::WindowFromDC(hdc);
         API_VERIFY(::GetWindowOrgEx(hdc, &pProperty->m_ptWindowOrg));
         API_VERIFY(::GetWindowExtEx(hdc, &pProperty->m_szWindowExt));
 
@@ -1362,7 +1372,7 @@ namespace FTL
 			API_VERIFY(sizeof(DIBSECTION) == ::GetObject(hBmp, sizeof(DIBSECTION), &dibSecion));
 			if (bRet)
 			{
-				RGBTRIPLE* pixels = reinterpret_cast<RGBTRIPLE*>(ds.dsBm.bmBits);
+				RGBTRIPLE* pixels = reinterpret_cast<RGBTRIPLE*>(dibSecion.dsBm.bmBits);
 				FTLASSERT(pixels != NULL);
 
 				const RGBTRIPLE	clrFromInfo = { GetBValue (clrFrom), GetGValue (clrFrom), GetRValue (clrFrom)};
