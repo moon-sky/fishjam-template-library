@@ -231,13 +231,13 @@ namespace FTL
 		return formater.GetString();
 	}
 
-	Gdiplus::Color CFGdiPlusUtil::ConvertColor(COLORREF clrGdi, BOOL bSupportTranslate /* = FALSE */)
+	Gdiplus::Color CFGdiPlusUtil::ConvertColor(COLORREF clrGdi, BOOL bSupportAlpha /* = FALSE */)
 	{
 		BYTE bAlpha = GetAValue(clrGdi);
 		BYTE bRed = GetRValue(clrGdi);
 		BYTE bGreen = GetGValue(clrGdi);
 		BYTE bBlue = GetBValue(clrGdi);
-		if (!bSupportTranslate)
+		if (!bSupportAlpha)
 		{
 			bAlpha = 0xFF;
 		}
@@ -245,12 +245,16 @@ namespace FTL
 		
 	}
 
-	COLORREF CFGdiPlusUtil::ConvertColor(Gdiplus::Color& clrGdiPlus, BOOL bSupportTranslate /* = FALSE */)
+	COLORREF CFGdiPlusUtil::ConvertColor(Gdiplus::Color& clrGdiPlus, BOOL bSupportAlpha /* = FALSE */)
 	{
 		BYTE bAlpha = clrGdiPlus.GetAlpha();
 		BYTE bRed = clrGdiPlus.GetRed();
 		BYTE bGreen = clrGdiPlus.GetGreen();
 		BYTE bBlue = clrGdiPlus.GetBlue();
+        if (!bSupportAlpha)
+        {
+            bAlpha = 0xFF;
+        }
 		return MAKE_RGBA(bRed, bGreen, bBlue, bAlpha);
 	}
 

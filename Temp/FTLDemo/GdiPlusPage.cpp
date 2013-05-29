@@ -164,7 +164,8 @@ void CGdiPlusPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_GRAPHICS_TRANSLATE_DY, m_testParam.m_graphicsTranslateDy);
 
 
-	DDX_Control(pDX, IDC_BTN_GDI_PLUS_FONT_TEST, m_BtnGdiPlusFontTestMenu);
+    DDX_Control(pDX, IDC_BTN_GDI_PLUS_FONT_TEST, m_BtnGdiPlusFontTestMenu);
+    DDX_Control(pDX, IDC_BTN_GDI_PLUS_PEN_BRUSH_TEST, m_BtnGdiPlusPenBrushTestMenu);
 	DDX_Control(pDX, IDC_BTN_GDI_PLUS_STRING_TEST, m_BtnGdiPlusStringTestMenu);
 	DDX_Control(pDX, IDC_BTN_GDI_PLUS_IMAGE_TEST, m_BtnGdiPlusImageTestMenu);
 
@@ -180,7 +181,8 @@ void CGdiPlusPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGdiPlusPage, CPropertyPage)
     ON_WM_DESTROY()
-	ON_COMMAND(ID_FONTTEST_FONTCONSTRUCTOR, &CGdiPlusPage::OnFontTestConstructor)
+    ON_COMMAND(ID_FONTTEST_FONTCONSTRUCTOR, &CGdiPlusPage::OnFontTestConstructor)
+    ON_COMMAND(ID_PENBRUSH_GRADIENTBRUSH, &CGdiPlusPage::OnPenBrushGradientBrush)
 	ON_COMMAND(ID_GDIPLUSTEST_DRAWSTRING, &CGdiPlusPage::OnGdiplustestDrawstring)
 	ON_COMMAND(ID_GDIPLUSTEST_MEASURECHARACTERRANGES, &CGdiPlusPage::OnGdiplustestMeasureCharacterRanges)
 	ON_COMMAND(ID_IMAGETEST_DRAWIMAGE, &CGdiPlusPage::OnImagetestDrawimage)
@@ -364,13 +366,17 @@ BOOL CGdiPlusPage::_InitTestButtons()
 	enum TestMenuIndex
 	{
 		tmiFont = 0,
-		tmiString,
+        tmiPenBrush,
+        tmiString,
 		tmiImage,
 	};
 
 
-	m_BtnGdiPlusFontTestMenu.SetSSLButtonStyle(SSL_BS_MENU_BTN);
-	m_BtnGdiPlusFontTestMenu.SetSSLButtonMenu(IDR_MENU_GDI_PLUS_TEST, tmiFont);
+    m_BtnGdiPlusFontTestMenu.SetSSLButtonStyle(SSL_BS_MENU_BTN);
+    m_BtnGdiPlusFontTestMenu.SetSSLButtonMenu(IDR_MENU_GDI_PLUS_TEST, tmiFont);
+
+    m_BtnGdiPlusPenBrushTestMenu.SetSSLButtonStyle(SSL_BS_MENU_BTN);
+    m_BtnGdiPlusPenBrushTestMenu.SetSSLButtonMenu(IDR_MENU_GDI_PLUS_TEST, tmiPenBrush);
 
 
 	m_BtnGdiPlusStringTestMenu.SetSSLButtonStyle(SSL_BS_MENU_BTN);
@@ -616,6 +622,9 @@ void CGdiPlusPage::_DoGdiPlusTest(GdiPlusTestType testType)
 			case gpttFontConstructor:
 				GDIPLUS_VERIFY(_TestFontConstructor(pDrawDC->m_hDC, &graphic));
 				break;
+            case gpttGradientBrush:
+                GDIPLUS_VERIFY(_TestGradientBrush(pDrawDC->m_hDC, &graphic));
+                break;
 			case gpttDrawString:
 				GDIPLUS_VERIFY(_TestDrawString(pDrawDC->m_hDC, &graphic));
 				break;
@@ -797,10 +806,44 @@ Gdiplus::Status CGdiPlusPage::_TestFontConstructor(HDC hDC, Graphics* pGraphics)
 		}
 	}
 	
-
-
-
 	return sts;
+}
+
+Gdiplus::Status CGdiPlusPage::_TestGradientBrush(HDC hDC, Graphics* pGraphics)
+{
+    BOOL bRet = FALSE;
+    Gdiplus::Status sts = Gdiplus::Ok;
+    
+#if 0
+    //Gdiplus::PathGradientBrush  pathBrush();
+
+    PointF ptLeftTop(m_testParam.m_rtfPaintDest.GetLeft(), m_testParam.m_rtfPaintDest.GetTop());
+    PointF ptRightBottom(m_testParam.m_rtfPaintDest.GetLeft(), m_testParam.m_rtPaintDest.GetRight());
+
+    Gdiplus::LinearGradientBrush    linearBrush(ptLeftTop, ptRightBottom, m_testParam.m_clrBrush, m_testParam.m_clrFont);
+
+    GDIPLUS_VERIFY(linearBrush.GetLastStatus());
+    GDIPLUS_VERIFY(pGraphics->FillRectangle(&linearBrush, m_testParam.m_rtfPaintDest));
+#endif 
+
+    Pen bluePen(Color(255, 0, 0, 255)); // 创建蓝色笔
+    Pen redPen(Color(255, 255, 0, 0)); // 创建红色笔
+    int y = m_testParam.m_rtPaintDest.Y; // y的初值
+    for (int x = m_testParam.m_rtPaintDest.X; x < m_testParam.m_rtPaintDest.GetRight(); x += 5) { // 绘制红蓝网线
+        pGraphics->DrawLine(&bluePen, 0, y, x, 0);
+        pGraphics->DrawLine(&redPen, 255, x, y, 255);
+        y -= 5;
+    }
+    for (y = m_testParam.m_rtPaintDest.Y; y < m_testParam.m_rtPaintDest.GetBottom(); y++) { // 画绿色透明度水平渐变的线（填满正方形）
+        Pen pen(Color(y % 255, 0, 255, 0)); // A green pen with shifting alpha
+        pGraphics->DrawLine(&pen, 0, y, 255, y);
+    }
+    //for (int x = 0; x < 256; x++) { // 画品红色透明度垂直渐变的线（填满扁矩形）
+    //    Pen pen(Color (x, 255, 0, 255)); // A magenta pen with shifting alpha
+    //    pGraphics->DrawLine(&pen, x, 100, x, 200);
+    //}
+
+    return sts;
 }
 
 Gdiplus::Status CGdiPlusPage::_TestDrawString(HDC hDC, Graphics* pGraphics)
@@ -1229,6 +1272,11 @@ void CGdiPlusPage::OnDestroy()
 void CGdiPlusPage::OnFontTestConstructor()
 {
 	_DoGdiPlusTest(gpttFontConstructor);
+}
+
+void CGdiPlusPage::OnPenBrushGradientBrush()
+{
+    _DoGdiPlusTest(gpttGradientBrush);
 }
 
 void CGdiPlusPage::OnGdiplustestDrawstring()

@@ -63,7 +63,7 @@
 *       <bindingRedirect  oldVersion="9.0.30729.6161-9.0.30729.6161" newVersion="9.0.30729.1"/>
 *   注：这个文件是从 SxsTrace 生成的日志文件中找出来的。
 *       bindingRedirect 指定 所有旧版本范围的客户需求映射到指定的新版本库，也可对别的字段进行映射？方式为 old + 关键字 ?
-* WinSxs(Windows Side-by-Side)
+* WinSxs(Windows Side-by-Side assembly，视窗并行程序集)
 *
 * 本地加载
 *   A.拷贝系统的 manifest 文件到应用程序本地文件夹中,更名为 <assemblyName>.manifest， 如 Microsoft.VC90.CRT.manifest，将对应的 DLL 文件(如 msvcr90.dll,msvcp90.dll 等）拷贝到相同的目录

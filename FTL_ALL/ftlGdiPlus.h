@@ -10,6 +10,8 @@
 #include <GdiPlus.h>
 
 /*****************************************************************************************************
+* GDI+最新超详细使用说明.pdf  -- 看到P15(GDI+的组成)
+*
 * Temp -- http://support.microsoft.com/kb/307208/zh-cn
 *   GDI+绘制文本(DrawString/MeasureString)是分辨率无关的(GDI是分辨率相关的) -- 在各种分辨率下(包括打印时)都有相同的布局
 *     (即在不同分辨率下显示自动分行的大段文字时)
@@ -23,18 +25,20 @@
 *   或者使用 ExtTextOut / UniScribe /DirectWrite 来绘制多个不同格式的文本
 * 
 * 使用GDI+前需要 GdiplusStartup 初始化， 使用完毕后通过 GdiplusShutdown 终止化
-* Gdi+ 有 1.0(缺省 -- GDIPVER) 和 1.1 两个版本，若要使用 1.1，需要定义 GDIPVER 宏
+* Gdi+ 有 1.0(缺省 -- GDIPVER) 和 1.1 两个版本，若要使用 1.1，需要定义 GDIPVER 宏，
 *
 * GDI和GDI+的区别：
 *   ★GDI是有状态的，GDI+是无状态的， DC <==> Graphics 对象
 *   ★GDI的形状轮廓绘制和填充使用同一个函数，比如Rectangle(轮廓用画笔，填充用画刷)，
 *     而GDI+是分开的，如 DrawRectangle 和 FillRectangle
 *     GDI的坐标是整型，在转换时会丢失精度，GDI+里面的坐标可以采用REAL(float)，因此在缩放等处理中不会丢失精度
+*   ★在GDI 中，区域被存储在设备坐标中，可应用的唯一变换是平移；GDI+中在全局坐标中存储区域，且允许区域发生任何可存储在变换矩阵中的变换（如缩放、旋转、平移）
+*   反锯齿(AntiAlias) -- 子像素消除锯齿,可以使文本在LCD 屏幕上呈现时显得比较平滑
 *
 * 注意：
 *   1.DLL中使用Gdiplus时，只需要包含GdiPlus.h和GdiPlus.lib，不要进行初始化和终止化，否则容易发生DLL重入的错误(造成退出时死锁)
 *     但ATL::CImage 会自动初始化和终止化，所以如果有资源泄露一类的问题，很容易造成死锁。
-*   2.
+*   2.效率一般低于GDI，GDI+不支持图的位运算，那么就不能进行异或绘图等操作。不支持双缓存机制(内存DC和显示DC)？
 /*****************************************************************************************************/
 
 /*****************************************************************************************************
@@ -107,7 +111,7 @@
 *   FontCollection(基类，不要直接使用) 
 *     InstalledFontCollection -- 枚举当前系统已经安装的字体
 *     PrivateFontCollection -- 建立专用的字体集，程序发布时，将字体文件打包进去，在需要用到这些字体时，程序自动安装字体到你的专用字体集（不会影响操作系统），供你使用
-*   GraphicsPath -- 路径对象，可创建待绘制项目序列，路径可视为由各种绘图函数产生的轨迹
+*   GraphicsPath -- 路径对象，可创建待绘制项目序列，路径可视为由各种绘图函数产生的轨迹(GDI中路径属于DC，绘制时会被毁坏；GDI+中路径可持久的保存在GraphicsPath中)
 *     AddLine/AddEllipse/AddBezier/AddPath/AddString--在路径中增加路径对象
 *     Flatten -- 拉平路径，可将路径中的各条贝塞尔样条转化为一连串直线
 *   Image -- 抽象基类
@@ -128,6 +132,7 @@
 *   Region -- 常用于
 *       1.剪辑(将绘制限制到显示区域的一个特定区域) -- 设置 Graphics.Clip 属性
 *       2.命中检测(确定按下鼠标按钮时光标是否在屏幕的特定区域)
+*     非矩形的区域使用 GraphicsPath 来生成的
 *     Complement -- ? 不在该区域的所有点的集合
 *     Exclude -- 补集，包含在第一个区域中而不在第二个区域中的所有点
 *     Intersect -- 交集,同时属于两个区域的所有点的集合
@@ -146,7 +151,7 @@
 *   渐变画刷(GradientBrush) -- 填充图形、路径和区域的线性渐变画笔和路径渐变画笔
 *     LinearGradientBrush -- 线性渐变画笔
 *     PathGradientBrush -- 路径渐变画笔
-*   基数样条(Cardinal Splines,木工画线的方法) -- 基数样条是一连串单独的曲线，这些曲线连接起来形成一条较大的曲线。
+*   基数样条(Cardinal Splines,木工画线的方法) -- 基数样条是一连串单独的曲线，这些曲线连接起来形成一条较大的光滑曲线。
 *     基数样条平滑地(没有锐角)通过数组中的每一个点，比通过连接直线创建的路径更精准。
 *     DrawCurve/DrawClosedCurve，样条由点的数组和张力参数(tension)指定。tension 值:
 *       0 -- 表示对应于无限的物理张力(直线)
@@ -214,8 +219,8 @@ namespace FTL
 		//获取Font相关的各种信息
 		FTLINLINE static LPCTSTR GetFontInfo(CFStringFormater& formater, Gdiplus::Font* pFont, Gdiplus::Graphics* pGraphics);
 
-		FTLINLINE static Gdiplus::Color ConvertColor(COLORREF clrGdi, BOOL bSupportTranslate = FALSE);
-		FTLINLINE static COLORREF ConvertColor(Gdiplus::Color& clrGdiPlus, BOOL bSupportTranslate = FALSE);
+		FTLINLINE static Gdiplus::Color ConvertColor(COLORREF clrGdi, BOOL bSupportAlpha = FALSE);
+		FTLINLINE static COLORREF ConvertColor(Gdiplus::Color& clrGdiPlus, BOOL bSupportAlpha = FALSE);
 
 		FTLINLINE static BOOL ConvertUnitCoordinate(IN Gdiplus::REAL dpi, IN Gdiplus::Unit unitFrom, IN Gdiplus::REAL valueFrom, 
 			IN Gdiplus::Unit unitTo, OUT Gdiplus::REAL& valueTo);

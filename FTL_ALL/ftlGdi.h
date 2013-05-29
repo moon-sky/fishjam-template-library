@@ -147,6 +147,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *    RGN_XOR --两个区域的并集减去两个区域的交集
 *  InvertRgn -- 使区域的颜色反色。在彩色屏幕上，这个反转依赖于产生屏幕颜色的技术类型
 *  FrameRgn -- 为区域周围画一个边界，并指定边界的宽度和刷子的模式
+*  PathToRegion -- 将路径转换为区域，但在此过程中，路径将被破坏
 *
 * 裁减区域(ClipRegion) -- 通过设置裁减区域，即使在全部逻辑作标上作图，也能大幅提高绘图效率。
 *   BeginPaint获取的DC包含裁减区域(性能高)，GetDC、CreateDC获取的DC默认不包含裁减区域(性能低)
@@ -429,7 +430,7 @@ namespace FTL
     //ARGB1555 与 RGBA8888 ?  RGBA 是大端序， ARGB 是小端序?
 
     //对应的内存结构： 0xAABBGGRR -- 
-    //  问题：gdi+中是 Color::MakeARGB,内存结构是 0xAARRGGBB 或 0xBBGGRRAA，究竟哪种对
+    //  问题：gdi+中是 Color::MakeARGB,内存结构是 0xAARRGGBB(对) 或 0xBBGGRRAA，究竟哪种对
 
 #define MAKE_RGBA(r,g,b,a)  ((COLORREF)((((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16))|(((DWORD)(BYTE)(a))<<24)))
 #define GetAValue(rgba)     (LOBYTE((rgba)>>24))

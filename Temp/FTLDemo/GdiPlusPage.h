@@ -123,6 +123,9 @@ enum GdiPlusTestType
 	//Font
 	gpttFontConstructor,
 
+    //Pen & Brush
+    gpttGradientBrush,
+
 	//String
     gpttDrawString,
     gpttMeasureString,
@@ -175,7 +178,8 @@ private:
 	void    _DoGdiPlusTest(GdiPlusTestType testType);
 	Gdiplus::Status _SetGraphicsQualityParam(Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _SetGraphicsCoordinateAndTransformParam(Gdiplus::Graphics* pGraphics);
-	Gdiplus::Status _TestFontConstructor(HDC hdc, Gdiplus::Graphics* pGraphics);
+    Gdiplus::Status _TestFontConstructor(HDC hdc, Gdiplus::Graphics* pGraphics);
+    Gdiplus::Status _TestGradientBrush(HDC hdc, Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestDrawString(HDC hdc, Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestDrawImage(HDC hdc, Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestMeasureCharacterRanges(HDC hdc, Gdiplus::Graphics* pGraphics);
@@ -222,12 +226,14 @@ protected:
 	CCheckComboBox m_cmbFontStyle;
 	CCheckComboBox m_cmbStringFormatFlags;
 	
-	CButtonSSL m_BtnGdiPlusFontTestMenu;
+    CButtonSSL m_BtnGdiPlusFontTestMenu;
+    CButtonSSL m_BtnGdiPlusPenBrushTestMenu;
 	CButtonSSL m_BtnGdiPlusStringTestMenu;
 	CButtonSSL m_BtnGdiPlusImageTestMenu;
 
     afx_msg void OnDestroy();
 	afx_msg void OnFontTestConstructor();
+    afx_msg void OnPenBrushGradientBrush();
 	afx_msg void OnGdiplustestDrawstring();
 	afx_msg void OnGdiplustestMeasureCharacterRanges();
 	afx_msg void OnImagetestDrawimage();
