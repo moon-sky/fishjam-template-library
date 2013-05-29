@@ -299,6 +299,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlVirtualization.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlVSIPHelper.hpp"
 				>
 			</File>
@@ -482,6 +486,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlUser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlVirtualization.h"
 				>
 			</File>
 			<File

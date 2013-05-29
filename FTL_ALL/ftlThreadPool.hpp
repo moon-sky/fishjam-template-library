@@ -544,7 +544,7 @@ namespace FTL
 	}
 
 	template <typename T>  
-	BOOL CFThreadPool<T>::SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, OOL bCheckDuplicate /* = FALSE */, DWORD dwMilliseconds /* = INFINITE */)
+	BOOL CFThreadPool<T>::SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, BOOL bCheckDuplicate /* = FALSE */, DWORD dwMilliseconds /* = INFINITE */)
 	{
 		FTLASSERT(NULL != m_hEventStop); //如果调用 _DestroyPool后，就不能再次调用该函数
 		FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);

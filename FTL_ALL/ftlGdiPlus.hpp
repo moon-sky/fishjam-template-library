@@ -230,6 +230,83 @@ namespace FTL
 
 		return formater.GetString();
 	}
+
+	Gdiplus::Color CFGdiPlusUtil::ConvertColor(COLORREF clrGdi, BOOL bSupportTranslate /* = FALSE */)
+	{
+		BYTE bAlpha = GetAValue(clrGdi);
+		BYTE bRed = GetRValue(clrGdi);
+		BYTE bGreen = GetGValue(clrGdi);
+		BYTE bBlue = GetBValue(clrGdi);
+		if (!bSupportTranslate)
+		{
+			bAlpha = 0xFF;
+		}
+		return Gdiplus::Color::MakeARGB(bAlpha, bRed, bGreen, bBlue);	
+		
+	}
+
+	COLORREF CFGdiPlusUtil::ConvertColor(Gdiplus::Color& clrGdiPlus, BOOL bSupportTranslate /* = FALSE */)
+	{
+		BYTE bAlpha = clrGdiPlus.GetAlpha();
+		BYTE bRed = clrGdiPlus.GetRed();
+		BYTE bGreen = clrGdiPlus.GetGreen();
+		BYTE bBlue = clrGdiPlus.GetBlue();
+		return MAKE_RGBA(bRed, bGreen, bBlue, bAlpha);
+	}
+
+	struct UnitConvertMatrix
+	{
+		Gdiplus::Unit	uniFrom;
+		Gdiplus::Unit	unitTo;
+
+		Gdiplus::REAL	mulValue1;
+		Gdiplus::REAL   mulValue2;
+		Gdiplus::REAL   divValue1;
+		Gdiplus::REAL   divValue2;
+	};
+
+	BOOL CFGdiPlusUtil::ConvertUnitCoordinate(IN Gdiplus::REAL dpi, IN Gdiplus::Unit unitFrom, IN Gdiplus::REAL valueFrom, 
+		IN Gdiplus::Unit unitTo, OUT Gdiplus::REAL& valueTo)
+	{
+		
+		FTLASSERT(unitFrom >= Gdiplus::UnitPixel);
+		FTLASSERT(unitTo >= Gdiplus::UnitPixel);
+
+		if (unitFrom == unitTo)
+		{
+			valueTo = valueFrom;
+			return TRUE;
+		}
+
+		BOOL bRet = FALSE;
+
+		const Gdiplus::REAL mm_per_inch = 25.4f;
+		const Gdiplus::REAL inch_per_point = 1.0f/72.0f;
+		const Gdiplus::REAL doc_per_inch = 300.0f;
+		UnitConvertMatrix convertMatrix[] = 
+		{
+			//wine的源码中找出来的 -- http://www.winehq.org/download/
+
+			//http://www.winehq.org/pipermail/wine-patches/2012-July/115857.html
+			{ Gdiplus::UnitPoint, Gdiplus::UnitPixel, dpi, inch_per_point, 1.0f, 1.0f },			//units * dpi * inch_per_point;
+			{ Gdiplus::UnitInch, Gdiplus::UnitPixel, dpi, 1.0f, 1.0f, 1.0f },						//units * dpi;
+			{ Gdiplus::UnitDocument, Gdiplus::UnitPixel, dpi, 1.0f, doc_per_inch, 1.0f },			//units * dpi / 300.0;
+			{ Gdiplus::UnitMillimeter, Gdiplus::UnitPixel, dpi, 1.0f, mm_per_inch, 1.0f },			//units * dpi / mm_per_inch;
+		};
+
+		for (int i = 0; i < _countof(convertMatrix); i++)
+		{
+			if (convertMatrix[i].uniFrom == unitFrom
+				&& convertMatrix[i].unitTo == unitTo)
+			{
+				valueTo = valueFrom * convertMatrix[i].mulValue1 * convertMatrix[i].mulValue2 / convertMatrix[i].divValue2 / convertMatrix[i].divValue2;
+				bRet = TRUE;
+				break;
+			}
+		}
+
+		return bRet;
+	}
 }
 
 #endif //FTL_GDIPLUS_HPP

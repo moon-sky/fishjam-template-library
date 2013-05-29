@@ -379,11 +379,13 @@ void CCheckComboBox::RecalcText()
 	}
 }
 
-INT CCheckComboBox::SetCheck(INT nIndex, BOOL bFlag)
+int CCheckComboBox::SetCheck(int nIndex, BOOL bFlag)
 {
+	FTLASSERT(nIndex >= 0 && nIndex < GetCount());
+
     CheckItemInfo* pItemInfo = (CheckItemInfo*) CComboBox::GetItemData(nIndex);
-    ASSERT(pItemInfo);
-    if (pItemInfo)
+	ASSERT(pItemInfo && pItemInfo != (CheckItemInfo*)(-1));
+	if (pItemInfo && pItemInfo != (CheckItemInfo*)(-1))
     {
         pItemInfo->bChecked = bFlag;
     }
@@ -397,11 +399,13 @@ INT CCheckComboBox::SetCheck(INT nIndex, BOOL bFlag)
 	return 0;
 }
 
-BOOL CCheckComboBox::GetCheck(INT nIndex) const
+BOOL CCheckComboBox::GetCheck(int nIndex) const
 {
+	FTLASSERT(nIndex >= 0 && nIndex < GetCount());
+
     const CheckItemInfo* pItemInfo = (const CheckItemInfo*) CComboBox::GetItemData(nIndex);
-    ASSERT(pItemInfo);
-    if (pItemInfo)
+    ASSERT(pItemInfo && pItemInfo != (CheckItemInfo*)(-1));
+    if (pItemInfo && pItemInfo != (CheckItemInfo*)(-1))
     {
         return pItemInfo->bChecked;
     }
@@ -413,8 +417,11 @@ BOOL CCheckComboBox::GetCheck(INT nIndex) const
 
 DWORD_PTR CCheckComboBox::GetItemData(int nIndex) const
 {
+	FTLASSERT(nIndex >= 0 && nIndex < GetCount());
+
     CheckItemInfo* pItemInfo = (CheckItemInfo*) CComboBox::GetItemData(nIndex);
-    if (pItemInfo)
+	ASSERT(pItemInfo && pItemInfo != (CheckItemInfo*)(-1));
+	if (pItemInfo && pItemInfo != (CheckItemInfo*)(-1))
     {
         return pItemInfo->dwItemData;
     }
@@ -426,15 +433,34 @@ DWORD_PTR CCheckComboBox::GetItemData(int nIndex) const
 
 int CCheckComboBox::SetItemData(int nIndex, DWORD_PTR dwItemData)
 {
-    int nRet = 0;
+	FTLASSERT(nIndex >= 0 && nIndex < GetCount());
+	
+	int nRet = -1;
     CheckItemInfo* pItemInfo = (CheckItemInfo*) CComboBox::GetItemData(nIndex);
-    ASSERT(pItemInfo);
-    if (pItemInfo)
+	ASSERT(pItemInfo && pItemInfo != (CheckItemInfo*)(-1));
+	if (pItemInfo && pItemInfo != (CheckItemInfo*)(-1))
     {
         pItemInfo->dwItemData = dwItemData;
         nRet = nIndex;
     }
     return nRet;
+}
+
+int CCheckComboBox::FindItemData(DWORD_PTR dwItemData)
+{
+	int nIndex = -1;
+	int nCount = GetCount();
+	for (int i = 0; i < nCount; i++)
+	{
+		CheckItemInfo* pItemInfo = (CheckItemInfo*)CComboBox::GetItemData(i);
+		if (pItemInfo && pItemInfo->dwItemData == dwItemData)
+		{
+			//ÕÒµ½
+			nIndex = i;
+			break;
+		}
+	}
+	return nIndex;
 }
 
 int CCheckComboBox::AddString(LPCTSTR lpszString)
@@ -452,9 +478,11 @@ int CCheckComboBox::AddString(LPCTSTR lpszString)
 
 int CCheckComboBox::DeleteString(UINT nIndex)
 {
+	FTLASSERT(nIndex >= 0 && nIndex < GetCount());
     CheckItemInfo* pItemInfo = (CheckItemInfo*) CComboBox::GetItemData(nIndex);
-    ASSERT(pItemInfo);
-    if (pItemInfo)
+
+	ASSERT(pItemInfo && pItemInfo != (CheckItemInfo*)(-1));
+	if (pItemInfo && pItemInfo != (CheckItemInfo*)(-1))
     {
         delete pItemInfo;
     }

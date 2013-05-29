@@ -12,7 +12,7 @@ using namespace Gdiplus;
 
 GdiPlusTestParam::GdiPlusTestParam()
 {
-	m_strPaintString = _T("测试文字,有中文有 English，如 A B C 和 abc");
+	m_strPaintString = _T("123456789\r\n一二三四五六七八九\r\nABCDEFGHIJKLMNOPQRSTUVWXYX");
 	m_strPaintImagePath = _T("C:\\Users\\Public\\Pictures\\Sample Pictures\\Koala.jpg");
 	m_rcDrawPanelClient.SetRectEmpty();
 
@@ -23,6 +23,8 @@ GdiPlusTestParam::GdiPlusTestParam()
 	m_nCharacterRangeStop = -1;
 	m_nStringFormatFlags = 0;
 	m_nUint = UnitWorld;
+	m_nPixelFormat = PixelFormatDontCare;
+
 	m_drawImageFunctionType = difDestRect;
 	m_colorAdjustType = ColorAdjustTypeDefault;
 
@@ -30,6 +32,9 @@ GdiPlusTestParam::GdiPlusTestParam()
 	m_nLineAlignment = StringAlignmentNear;
 	m_nFontStyle = FontStyleRegular;
 	m_clrBrush = (ARGB)Color::Red;
+	m_clrPen = (ARGB)Color::Black;
+	m_clrFont = (ARGB)Color::Blue;
+	m_rPenWidth = 1.0f;
 
 	m_strFontFamily = _T("宋体");
 
@@ -63,6 +68,7 @@ GdiPlusTestParam::GdiPlusTestParam()
 BOOL GdiPlusTestParam::GetCharacterRangeInfo(INT& nStart, INT& nLength)
 {
 	BOOL bRet = TRUE;
+	//nStart = 0;
 	nLength = (m_nCharacterRangeStop == -1) ? m_strPaintString.GetLength() : m_nCharacterRangeStop - m_nCharacterRangeStart;
 	if (nLength + m_nCharacterRangeStart > m_strPaintString.GetLength())
 	{
@@ -124,8 +130,12 @@ void CGdiPlusPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO_FONT_FAMILY, m_cmbFontFamily);
 	DDX_Control(pDX, IDC_COMBO_FONT_STYLE, m_cmbFontStyle);
 	DDX_Control(pDX, IDC_COMBO_UNIT, m_cmbUnit);
+	DDX_Control(pDX, IDC_COMBO_PIXEL_FORMAT, m_cmbPixelFormat);
 	DDX_Control(pDX, IDC_COMBO_DRAW_IMAGE_FUNCTION_TYPE, m_cmbDrawImageFunctionType);
 	DDX_Control(pDX, IDC_COMBO_COLOR_ADJUST_TYPE, m_cmbColorAdjustType);
+
+	//字体和画刷属性
+	DDX_Control(pDX, IDC_BTN_PEN_COLOR, m_btnColorPen);
 
 	//质量属性
 	DDX_Control(pDX, IDC_CHECK_COMPOSITING_MODE, m_btnCheckCompositingMode);
@@ -158,7 +168,6 @@ void CGdiPlusPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BTN_GDI_PLUS_STRING_TEST, m_BtnGdiPlusStringTestMenu);
 	DDX_Control(pDX, IDC_BTN_GDI_PLUS_IMAGE_TEST, m_BtnGdiPlusImageTestMenu);
 
-	DDX_Text(pDX, IDC_EDIT_FONT_HEIGHT, m_testParam.m_nFontHeight);
 	DDX_Text(pDX, IDC_EDIT_RENDERING_ORIGIN_X, m_testParam.m_nRenderingOriginX);
 	DDX_Text(pDX, IDC_EDIT_RENDERING_ORIGIN_Y, m_testParam.m_nRenderingOriginY);
 	DDX_Text(pDX, IDC_EDIT_CHARACTER_RANGE_START, m_testParam.m_nCharacterRangeStart);
@@ -166,7 +175,6 @@ void CGdiPlusPage::DoDataExchange(CDataExchange* pDX)
 
 	DDX_Text(pDX, IDC_EDIT_PAINT_STRING, m_testParam.m_strPaintString);
 	DDX_Text(pDX, IDC_EDIT_IMAGE_PATH, m_testParam.m_strPaintImagePath);
-
 
 }
 
@@ -176,11 +184,13 @@ BEGIN_MESSAGE_MAP(CGdiPlusPage, CPropertyPage)
 	ON_COMMAND(ID_GDIPLUSTEST_DRAWSTRING, &CGdiPlusPage::OnGdiplustestDrawstring)
 	ON_COMMAND(ID_GDIPLUSTEST_MEASURECHARACTERRANGES, &CGdiPlusPage::OnGdiplustestMeasureCharacterRanges)
 	ON_COMMAND(ID_IMAGETEST_DRAWIMAGE, &CGdiPlusPage::OnImagetestDrawimage)
+	
+	ON_BN_CLICKED(IDC_BTN_CHOOSE_FONT, &CGdiPlusPage::OnBnClickedBtnChooseFont)
 	ON_BN_CLICKED(IDC_BTN_CHOOSE_IMAGE, &CGdiPlusPage::OnBnClickedBtnChooseImage)
 	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
-BOOL CGdiPlusPage::_SetDrawPanelInfo(CPoint& ptMouse)
+BOOL CGdiPlusPage::_SetDrawPanelInfo(const CPoint& ptMouse)
 {
 	BOOL bRet = TRUE;
 	CString strDrawPanelInfo;
@@ -219,6 +229,7 @@ BOOL CGdiPlusPage::_InitFontCollection()
 				{
 					GDIPLUS_VERIFY(pFontFamily[i].GetFamilyName(szFamilyName));
 					INT nIndex = m_cmbFontFamily.AddString(szFamilyName);
+					API_VERIFY(nIndex >= 0);
 					//FTLTRACE(tlInfo, TEXT("%s\n"), FTL::CFGdiPlusUtil::GetFontFamilyInfo(strFormater, &pFontFamily[i]));
 					//m_cmbFontFamily.SetItemData(nIndex, (DWORD_PTR)&pFontFamily[i]);
 				}
@@ -246,14 +257,14 @@ BOOL CGdiPlusPage::_InitFontCollection()
 BOOL CGdiPlusPage::_InitComboboxControls()
 {
 	BOOL bRet = TRUE;
-	Status sts;
+	//Status sts;
 
 	//m_cmbFontStyle.InitControl();
 	//FontStyle -- TODO:实际上这些类型是可以组合的
-	ADD_CHECK_COMBO_VALUE_STRING_EX(m_cmbFontStyle, FontStyleRegular, TEXT("Regular"), TRUE);
+	//ADD_CHECK_COMBO_VALUE_STRING_EX(m_cmbFontStyle, FontStyleRegular, TEXT("Regular"), TRUE);
 	ADD_CHECK_COMBO_VALUE_STRING_EX(m_cmbFontStyle, FontStyleBold, TEXT("Bold"), FALSE);
 	ADD_CHECK_COMBO_VALUE_STRING_EX(m_cmbFontStyle, FontStyleItalic, TEXT("Italic"), FALSE);
-	ADD_CHECK_COMBO_VALUE_STRING_EX(m_cmbFontStyle, FontStyleBoldItalic, TEXT("BoldItalic"), FALSE);
+	//ADD_CHECK_COMBO_VALUE_STRING_EX(m_cmbFontStyle, FontStyleBoldItalic, TEXT("BoldItalic"), FALSE);
 	ADD_CHECK_COMBO_VALUE_STRING_EX(m_cmbFontStyle, FontStyleUnderline, TEXT("Underline"), FALSE);
 	ADD_CHECK_COMBO_VALUE_STRING_EX(m_cmbFontStyle, FontStyleStrikeout, TEXT("Strikeout"), FALSE);
 	//m_cmbFontStyle.SetCurSel(0);
@@ -293,6 +304,25 @@ BOOL CGdiPlusPage::_InitComboboxControls()
 	ADD_COMBO_VALUE_STRING_EX(m_cmbUnit, UnitMillimeter, TEXT("Millimeter--1 millimeter"));
 	m_cmbUnit.SetCurSel(m_testParam.m_nUint); //选择缺省值
 	
+	//http://technet.microsoft.com/zh-cn/system.drawing.imaging.pixelformat(v=vs.85)
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormatDontCare, TEXT("DontCare"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat1bppIndexed, TEXT("1bppIndexed"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat4bppIndexed, TEXT("4bppIndexed"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat8bppIndexed, TEXT("8bppIndexed"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat16bppGrayScale, TEXT("16bppGrayScale"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat16bppRGB555, TEXT("16bppRGB555"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat16bppRGB565, TEXT("16bppRGB565"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat16bppARGB1555, TEXT("16bppARGB1555"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat24bppRGB, TEXT("24bppRGB"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat32bppRGB, TEXT("32bppRGB"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat32bppARGB, TEXT("32bppARGB"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat32bppPARGB, TEXT("32bppPARGB"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat48bppRGB, TEXT("48bppRGB"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat64bppARGB, TEXT("64bppARGB"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat64bppPARGB, TEXT("64bppPARGB"));
+	ADD_COMBO_VALUE_STRING_EX(m_cmbPixelFormat, PixelFormat32bppCMYK, TEXT("32bppCMYK"));
+	m_cmbPixelFormat.SetCurSel(0); //m_testParam.m_nPixelFormat;
+
 	ADD_COMBO_VALUE_STRING_EX(m_cmbDrawImageFunctionType, difDestRect, TEXT("DestRect"));
 	ADD_COMBO_VALUE_STRING_EX(m_cmbDrawImageFunctionType, difDestPoint, TEXT("DestPoint"));
 	ADD_COMBO_VALUE_STRING_EX(m_cmbDrawImageFunctionType, difDestRectF, TEXT("DestRectF"));
@@ -523,9 +553,13 @@ BOOL CGdiPlusPage::_GetTestParam(const CRect& rcPaintDest, Gdiplus::Graphics* pG
 	m_cmbFontFamily.GetLBText(m_cmbFontFamily.GetCurSel(), m_testParam.m_strFontFamily);
 
 	m_testParam.m_nUint = GET_COMBOBOX_TYPE_ITEMDATA(Unit, m_cmbUnit);
+	m_testParam.m_nPixelFormat = GET_COMBOBOX_TYPE_ITEMDATA(PixelFormat, m_cmbPixelFormat);
 
 	m_testParam.m_drawImageFunctionType = GET_COMBOBOX_TYPE_ITEMDATA(DrawImageFunctionType, m_cmbDrawImageFunctionType);
 	m_testParam.m_colorAdjustType = GET_COMBOBOX_TYPE_ITEMDATA(ColorAdjustType, m_cmbColorAdjustType);
+
+	//字体和画刷属性
+	m_testParam.m_clrPen = CFGdiPlusUtil::ConvertColor(m_btnColorPen.GetColour());
 
 	//质量属性
 	m_testParam.m_bEnabledCompositingMode = m_btnCheckCompositingMode.GetCheck();
@@ -565,7 +599,7 @@ void CGdiPlusPage::_DoGdiPlusTest(GdiPlusTestType testType)
 
 		pDrawDC->FillSolidRect(rcPaintDest, RGB(0, 0, 255));
 		//向内部缩2个像素，可以看出边框
-		rcPaintDest.DeflateRect(2, 2);
+		//rcPaintDest.DeflateRect(2, 2);
 
 		API_VERIFY(_GetTestParam(rcPaintDest, &graphic));
 		if (bRet)
@@ -575,6 +609,7 @@ void CGdiPlusPage::_DoGdiPlusTest(GdiPlusTestType testType)
 
 			GDIPLUS_VERIFY(_SetGraphicsQualityParam(&graphic));
 			GDIPLUS_VERIFY(_SetGraphicsCoordinateAndTransformParam(&graphic));
+			//GDIPLUS_VERIFY(graphic.SetPageUnit(m_testParam.m_nUint));
 
 			switch (testType)
 			{
@@ -743,7 +778,7 @@ Gdiplus::Status CGdiPlusPage::_TestFontConstructor(HDC hDC, Graphics* pGraphics)
 	}
 
 	{
-		Gdiplus::Font font();
+		
 	}
 	{
 		//测试选择的字体信息
@@ -797,17 +832,19 @@ Gdiplus::Status CGdiPlusPage::_TestDrawString(HDC hDC, Graphics* pGraphics)
 	GDIPLUS_VERIFY(pGraphics->MeasureString(m_testParam.m_strPaintString, m_testParam.m_strPaintString.GetLength(),
 		&font, m_testParam.m_rtfPaintDest, &format, &rcMeasureBounds, &codepointsFitted, &linesFilled));
 
-	Gdiplus::Pen penBounds((Gdiplus::ARGB)Color::Aqua);
+	Gdiplus::Pen penBounds(m_testParam.m_clrPen, m_testParam.m_rPenWidth);
 	GDIPLUS_VERIFY(pGraphics->DrawRectangle(&penBounds, rcMeasureBounds));
 
     RectF rcPathBounds;
 	REAL fEmSize = font.GetSize();
 	INT nFontStyle = font.GetStyle();
-	FTLTRACE(
-		TEXT("font[Size=%f, height=%f, Style=%d] ,")
+
+	CFStringFormater formaterInfo;
+	formaterInfo.Format(TEXT("font[Size=%f, height=%f, Style=%d] ,")
 		TEXT("m_testParam[FontHeight=%d, Style=%d]\n"), 
 		fEmSize, font.GetHeight(pGraphics), nFontStyle,
 		m_testParam.m_nFontHeight, m_testParam.m_nFontStyle);
+	FTLTRACE(formaterInfo.GetString());
 
     GraphicsPath    path;
 	FontFamily	fontFamily(m_testParam.m_strFontFamily);
@@ -1207,6 +1244,49 @@ void CGdiPlusPage::OnGdiplustestMeasureCharacterRanges()
 void CGdiPlusPage::OnImagetestDrawimage()
 {
 	_DoGdiPlusTest(gpttDrawImage);
+}
+
+void CGdiPlusPage::OnBnClickedBtnChooseFont()
+{
+	BOOL bRet = FALSE;
+	UpdateData(TRUE);
+	CRect rcPaintDest;
+	m_staticPaint.GetClientRect(rcPaintDest);
+	API_VERIFY(_GetTestParam(rcPaintDest, NULL));
+
+	CFontDialog	dlg;
+	dlg.m_cf.Flags |= (CF_INITTOLOGFONTSTRUCT | CF_USESTYLE | CF_EFFECTS);
+	//初始化
+	dlg.m_cf.iPointSize = m_testParam.m_nFontHeight * 10;
+	dlg.m_cf.rgbColors = CFGdiPlusUtil::ConvertColor(m_testParam.m_clrFont, FALSE);
+
+	LPLOGFONT pLogFont = dlg.m_cf.lpLogFont;
+	StringCchCopy(pLogFont->lfFaceName, _countof(pLogFont->lfFaceName), m_testParam.m_strFontFamily);
+	if (m_cmbFontStyle.GetCheck(m_cmbFontStyle.FindItemData(FontStyleBold)))
+	{
+		pLogFont->lfWeight = FW_BOLD;
+	}
+	else
+	{
+		pLogFont->lfWeight = FW_NORMAL;
+	}
+	pLogFont->lfItalic = (BYTE)m_cmbFontStyle.GetCheck(m_cmbFontStyle.FindItemData(FontStyleItalic));
+	pLogFont->lfUnderline = (BYTE)m_cmbFontStyle.GetCheck(m_cmbFontStyle.FindItemData(FontStyleUnderline));
+	pLogFont->lfStrikeOut = (BYTE)m_cmbFontStyle.GetCheck(m_cmbFontStyle.FindItemData(FontStyleStrikeout));
+	
+	if (dlg.DoModal())
+	{
+		m_testParam.m_nFontHeight = dlg.GetSize() / 10;
+		
+		UpdateData(FALSE);
+		
+		m_cmbFontStyle.SetCheck(m_cmbFontStyle.FindItemData(FontStyleBold), dlg.IsBold());
+		m_cmbFontStyle.SetCheck(m_cmbFontStyle.FindItemData(FontStyleItalic), dlg.IsItalic());
+		m_cmbFontStyle.SetCheck(m_cmbFontStyle.FindItemData(FontStyleUnderline), dlg.IsUnderline());
+		m_cmbFontStyle.SetCheck(m_cmbFontStyle.FindItemData(FontStyleStrikeout), dlg.IsStrikeOut());
+
+		m_cmbFontFamily.SelectString(0, dlg.GetFaceName());
+	}
 }
 
 void CGdiPlusPage::OnBnClickedBtnChooseImage()

@@ -3,6 +3,7 @@
 #include "Gdiplus.h"
 #include "afxwin.h"
 
+#include "ColourPicker.h"
 #include "CheckComboBox.h"
 #include "ButtonSSL.h"
 
@@ -67,12 +68,19 @@ public:
 	
 	DrawImageFunctionType		m_drawImageFunctionType;
 
-	Gdiplus::Unit	m_nUint;
+	Gdiplus::Unit				m_nUint;
+	Gdiplus::PixelFormat		m_nPixelFormat;
 
+	//字体和画刷属性
 	Gdiplus::StringAlignment m_nAlignment;
 	Gdiplus::StringAlignment m_nLineAlignment;
 	Gdiplus::FontStyle		 m_nFontStyle;
 	Gdiplus::Color			 m_clrBrush;
+	Gdiplus::Color			 m_clrPen;
+	Gdiplus::Color			 m_clrFont;
+	Gdiplus::REAL			 m_rPenWidth;
+	Gdiplus::DashStyle		 m_nDashStyle;
+	Gdiplus::DashCap		 m_nDashCap;
 
 	//质量属性
 	BOOL						m_bEnabledCompositingMode;
@@ -146,7 +154,7 @@ private:
 	GdiPlusTestParam	m_testParam;
 
 	BOOL    _InitControls();
-	BOOL    _SetDrawPanelInfo(CPoint& ptMouse);
+	BOOL    _SetDrawPanelInfo(const CPoint& ptMouse);
 	BOOL	_InitFontCollection();
 	BOOL	_InitComboboxControls();
 	BOOL	_InitTestButtons();
@@ -181,8 +189,13 @@ protected:
 	
     CComboBox m_cmbFontFamily;
 	CComboBox m_cmbUnit;
+	CComboBox m_cmbPixelFormat;
 	CComboBox m_cmbDrawImageFunctionType;
 	CComboBox m_cmbColorAdjustType;
+
+	//字体和画刷属性
+	CColourPicker			m_btnColorPen;
+	CComboBox				m_cmbDashStyle;
 
 	//质量属性
 	CButton	  m_btnCheckCompositingMode;
@@ -218,6 +231,7 @@ protected:
 	afx_msg void OnGdiplustestDrawstring();
 	afx_msg void OnGdiplustestMeasureCharacterRanges();
 	afx_msg void OnImagetestDrawimage();
+	afx_msg void OnBnClickedBtnChooseFont();
 	afx_msg void OnBnClickedBtnChooseImage();
 protected:
 	static BOOL CALLBACK _DrawImageAbortProc(VOID * pParam);

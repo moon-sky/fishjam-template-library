@@ -101,7 +101,9 @@
 *     SolidBrush(固定色)/HatchBrush(阴影)/TextureBrush(纹理画刷--位图)/GradientBrush(渐变,分线性Linear和路径Path)
 *   CachedBitmap -- 通过缓存绘制的图形来优化显示，注意判断 DrawCachedBitmap 方法的返回值，如果不为OK说明显示属性有变化（比如？），
 *     需要重新创建缓存位图。
-*   Font -- GDI+只能使用矢量字体，可通过 InstalledFontCollection 枚举查看GDI+支持的字体
+*   Font -- GDI+只能使用矢量字体，可通过 InstalledFontCollection 枚举查看GDI+支持的字体,
+*     绘制文字(DrawString)时，Font的颜色是由 Brush 指定的，而不像GDI中是 LOGFONT::
+*
 *   FontCollection(基类，不要直接使用) 
 *     InstalledFontCollection -- 枚举当前系统已经安装的字体
 *     PrivateFontCollection -- 建立专用的字体集，程序发布时，将字体文件打包进去，在需要用到这些字体时，程序自动安装字体到你的专用字体集（不会影响操作系统），供你使用
@@ -211,6 +213,12 @@ namespace FTL
 
 		//获取Font相关的各种信息
 		FTLINLINE static LPCTSTR GetFontInfo(CFStringFormater& formater, Gdiplus::Font* pFont, Gdiplus::Graphics* pGraphics);
+
+		FTLINLINE static Gdiplus::Color ConvertColor(COLORREF clrGdi, BOOL bSupportTranslate = FALSE);
+		FTLINLINE static COLORREF ConvertColor(Gdiplus::Color& clrGdiPlus, BOOL bSupportTranslate = FALSE);
+
+		FTLINLINE static BOOL ConvertUnitCoordinate(IN Gdiplus::REAL dpi, IN Gdiplus::Unit unitFrom, IN Gdiplus::REAL valueFrom, 
+			IN Gdiplus::Unit unitTo, OUT Gdiplus::REAL& valueTo);
 	};
 }
 

@@ -57,7 +57,7 @@ void CGuiPage::OnBnClickedBtnRefresh()
     {
         for (int w = 0; w < rcWndDraw.Width(); w++)
         {
-            COLORREF cor = RGBA(255*h/255, 255*w/255, 255, (h*w)%255);
+            COLORREF cor = MAKE_RGBA(255*h/255, 255*w/255, 255, (h*w)%255);
             *pBuffer = cor;
             pBuffer++;
         }

@@ -37,8 +37,9 @@ END_MESSAGE_MAP()
 
 BOOL CNLSPage::OnInitDialog()
 {
-	UpdateData(FALSE);
+	__super::OnInitDialog();
 
+	//UpdateData(FALSE);
 
 	_InitControls();
 
@@ -48,6 +49,7 @@ BOOL CNLSPage::OnInitDialog()
 void CNLSPage::OnDestroy()
 {
 	g_NlsPage = NULL;
+	__super::OnDestroy();
 }
 
 BOOL CALLBACK CNLSPage::_InnerCodePageEnumProc(LPTSTR lpCodePageString)

@@ -108,7 +108,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *     MacType(前身为GDI++) -- 可以接管Windows系统的字体渲染功能，让文字看起来更加平滑、清晰。
 *     字体大小单位( WTL::CDialogBaseUnits::InitDialogBaseUnits )， 屏幕浏览时常用px(如网页)，打印输出时常用pt(如Word)
 *       1.point/pt(磅,1/72逻辑英寸) -- 96DPI时一个像素为 72/96=0.75磅(9pt=12px)， 如 ITextFont::SetSize 等, 通常称为"绝对长度"，但会随系统字体大小设置而改变(如 96DPI、120DPI)
-*         nPointSize -- 通常是十分之一磅， 如 CreatePointFont 时的单位，1pt = 10 nPointSize
+*         nPointSize -- 通常是十分之一磅， 如 CreatePointFont 时的单位, CFontDialog::GetSize ，1pt = 10 nPointSize
 *       2.pixel/px() -- 像素，和屏幕分辨率有关，通常称为“相对长度”
 *       3.twips(1/1440 逻辑英寸或 1/20磅) -- 如 CHARFORMAT::yHeight
 *       4.字号 -- 如 初号、小初 等，优点是使用简单方便（无需关心字体的实际尺寸），缺点是字体的大小受字号的限制，
@@ -431,7 +431,7 @@ namespace FTL
     //对应的内存结构： 0xAABBGGRR -- 
     //  问题：gdi+中是 Color::MakeARGB,内存结构是 0xAARRGGBB 或 0xBBGGRRAA，究竟哪种对
 
-#define RGBA(r,g,b,a)       ((COLORREF)((((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16))|(((DWORD)(BYTE)(a))<<24)))
+#define MAKE_RGBA(r,g,b,a)  ((COLORREF)((((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16))|(((DWORD)(BYTE)(a))<<24)))
 #define GetAValue(rgba)     (LOBYTE((rgba)>>24))
 
     #ifdef FTL_DEBUG

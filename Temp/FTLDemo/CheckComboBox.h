@@ -30,14 +30,17 @@ public:
 
 	//CCheckComboBox function
 	BOOL InitControl();
-	INT SetCheck(INT nIndex, BOOL bFlag);
-	BOOL GetCheck(INT nIndex) const;
+	int SetCheck(int nIndex, BOOL bFlag);
+	BOOL GetCheck(int nIndex) const;
 	void SelectAll(BOOL bCheck = TRUE);
 
     //覆写基类的 非虚函数 -- 注意：是非虚函数，需要测试确认是否有问题
     DWORD_PTR GetItemData(int nIndex) const;
     int SetItemData(int nIndex, DWORD_PTR dwItemData);
-    
+
+	//为了 GdiPlusPage 特别写的，查找指定 ItemData，返回其 index
+	int FindItemData(DWORD_PTR dwItemData);
+
     int AddString(LPCTSTR lpszString);
     int DeleteString(UINT nIndex);
     int InsertString(int nIndex, LPCTSTR lpszString);
