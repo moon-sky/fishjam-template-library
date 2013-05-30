@@ -285,7 +285,8 @@ namespace FTL
 		BOOL bRet = FALSE;
 
 		const Gdiplus::REAL mm_per_inch = 25.4f;
-		const Gdiplus::REAL inch_per_point = 1.0f/72.0f;
+		//http://en.wikipedia.org/wiki/Pixels_per_inch
+		const Gdiplus::REAL inch_per_point = 1.0f/72.0f; //TODO: PPI 这个值可能不是定值
 		const Gdiplus::REAL doc_per_inch = 300.0f;
 		UnitConvertMatrix convertMatrix[] = 
 		{

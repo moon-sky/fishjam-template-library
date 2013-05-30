@@ -197,7 +197,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\BitItemPageAnalyze.cpp"
+				RelativePath=".\CreateMyAuctionPageAnalyze.cpp"
 				>
 			</File>
 			<File
@@ -206,6 +206,14 @@
 			</File>
 			<File
 				RelativePath=".\MainFrm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MyAuctionItemPageAnalyze.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MyBitItemPageAnalyze.cpp"
 				>
 			</File>
 			<File
@@ -245,6 +253,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UserInfoManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\WowAH.cpp"
 				>
 			</File>
@@ -270,7 +282,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\BitItemPageAnalyze.h"
+				RelativePath=".\CreateMyAuctionPageAnalyze.h"
 				>
 			</File>
 			<File
@@ -279,6 +291,14 @@
 			</File>
 			<File
 				RelativePath=".\MainFrm.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MyAuctionItemPageAnalyze.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MyBitItemPageAnalyze.h"
 				>
 			</File>
 			<File
@@ -303,6 +323,10 @@
 			</File>
 			<File
 				RelativePath=".\UserConfig.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UserInfoManager.h"
 				>
 			</File>
 			<File

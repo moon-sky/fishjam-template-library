@@ -35,6 +35,7 @@ extern CAppModule _Module;
 
 #include <ftlBase.h>
 #include <ftlCom.h>
+#include <ftlSystem.h>
 using namespace FTL;
 
 #if defined _M_IX86

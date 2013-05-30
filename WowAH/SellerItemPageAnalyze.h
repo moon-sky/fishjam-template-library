@@ -2,7 +2,7 @@
 
 #include "ItemPageAnalyzeBase.h"
 
-//ä¯ÀÀÅÄÂô -- Seller.xht
+//ä¯ÀÀÅÄÂô -- SellerBrowse.xht
 class CSellerItemPageAnalyze : public CItemPageAnalyzeBase
 {
 	enum SellerItemIndex

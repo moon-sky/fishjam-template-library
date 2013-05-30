@@ -13,6 +13,32 @@ CItemPageAnalyzeBase::~CItemPageAnalyzeBase(void)
 {
 }
 
+HRESULT CItemPageAnalyzeBase::_INnerParseAllTables(CComPtr<IHTMLDocument3>& spHtmlDoc, 
+												   LPCTSTR* ppszTalbeNames, INT nTableCount, const CString& strSearchItemName)
+{
+	HRESULT hr = E_INVALIDARG;
+
+	for (int nTableIndex = 0; nTableIndex < nTableCount; ++nTableIndex)
+	{
+		CComPtr<IHTMLElement> spBidsElement;
+		COM_VERIFY(spHtmlDoc->getElementById(CComBSTR(ppszTalbeNames[nTableIndex]), &spBidsElement));
+		FTLASSERT(spBidsElement);
+		if (spBidsElement)
+		{
+			CComPtr<IHTMLElement> spElementBids;
+			COM_VERIFY(CFWebBrowserUtil::FindChildElement(spBidsElement, femByTag, TEXT("table"), 
+				0, rwBreadthFirst, &spElementBids));
+
+			CComQIPtr<IHTMLTable>	spTableBids = spElementBids;
+			FTLASSERT(spTableBids);
+			if (spTableBids)
+			{
+				COM_VERIFY(_InnerParseTable(spTableBids, ppszTalbeNames[nTableIndex], strSearchItemName));
+			}
+		}
+	}
+	return hr;
+}
 
 HRESULT CItemPageAnalyzeBase::_InnerParseTable(CComPtr<IHTMLTable>& spTable, const CString& strTableName, const CString& strSearchItemName)
 {
@@ -68,8 +94,8 @@ HRESULT CItemPageAnalyzeBase::_InnerParseRowItem(const CString& strTableName, lo
 		COM_VERIFY(spPriceElementItem->get_id(&bstrId));
 		if (bstrId)
 		{
-			CString strIdInfo(OLE2CT(bstrId));
-			spItemInfo = m_pWowItemManager->GetItemInAnInfo(strIdInfo);
+			CString strAuctionIdInfo(OLE2CT(bstrId));
+			spItemInfo = m_pWowItemManager->GetItemInAHInfo(strAuctionIdInfo);
 		}
 
 		if (spItemInfo)
@@ -80,7 +106,6 @@ HRESULT CItemPageAnalyzeBase::_InnerParseRowItem(const CString& strTableName, lo
 			{
 				CComQIPtr<IHTMLElementCollection> spChildElements(spDispItemAll);
 				_GetRowItemInfo(strTableName, spChildElements, spItemInfo, strSearchItemName);
-				spItemInfo->Dump();
 				//COM_DETECT_INTERFACE_FROM_REGISTER(spDispItemAll);
 			}
 		}

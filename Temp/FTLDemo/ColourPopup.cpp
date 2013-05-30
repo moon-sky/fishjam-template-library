@@ -121,7 +121,6 @@ CColourPopup::CColourPopup(CPoint p, COLORREF crColour, CWnd* pParentWnd,
 
 void CColourPopup::Initialise()
 {
-    BOOL bRet = FALSE;
     m_nNumColours       = sizeof(m_crColours)/sizeof(ColourTableEntry);
     ASSERT(m_nNumColours <= MAX_COLOURS);
     if (m_nNumColours > MAX_COLOURS)
@@ -142,10 +141,10 @@ void CColourPopup::Initialise()
     if (m_nBoxSize - 2*m_nMargin - 2 < 5) m_nBoxSize = 5 + 2*m_nMargin + 2;
 
     // Create the font
-    NONCLIENTMETRICS ncm = { 0 };
+    NONCLIENTMETRICS ncm;
     ncm.cbSize = sizeof(NONCLIENTMETRICS);
-    API_VERIFY(SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0));
-    API_VERIFY(m_Font.CreateFontIndirect(&(ncm.lfMessageFont)));
+    VERIFY(SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0));
+    m_Font.CreateFontIndirect(&(ncm.lfMessageFont));
 
     // Create the palette
     struct {

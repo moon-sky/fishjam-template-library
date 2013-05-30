@@ -5,9 +5,14 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "WowAHView.h"
+
 #include "SellerItemPageAnalyze.h"
-#include "BitItemPageAnalyze.h"
+#include "CreateMyAuctionPageAnalyze.h"
+#include "MyBitItemPageAnalyze.h"
+#include "MyAuctionItemPageAnalyze.h"
+
 #include "WowItemManager.h"
+#include "UserInfoManager.h"
 
 #include "ScriptErrHandler.h"
 
@@ -20,11 +25,11 @@ _ATL_FUNC_INFO CWowAHView::DownloadBegin_Info = { CC_STDCALL, VT_EMPTY, 0, { } }
 
 CWowAHView::CWowAHView()
 {
+	m_pWowItemManager = NULL;
 	for (INT i = 0; i < (INT)pptCount; i++)
 	{
 		m_pItemPageAnalyzes[i] = NULL;
 	}
-	m_pWowItemManager = NULL;
 	m_ParsePageType = pptInvalid;
 }
 
@@ -34,6 +39,7 @@ CWowAHView::~CWowAHView()
 	{
 		FTLASSERT(NULL == m_pItemPageAnalyzes[i]);
 	}
+	SAFE_DELETE(m_pWowItemManager);
 }
 
 BOOL CWowAHView::PreTranslateMessage(MSG* pMsg)
@@ -64,6 +70,30 @@ HRESULT CWowAHView::Navigate(const CString& strURL)
     return hr;
 }
 
+HRESULT CWowAHView::ExecuteJavaScript(const CString& strLanguage)
+{
+	HRESULT hr = E_FAIL;
+	CComPtr<IWebBrowser2> spWebBrowser2;
+	COM_VERIFY(QueryControl(IID_IWebBrowser2, (void**)&spWebBrowser2));
+	CComPtr<IDispatch> spDispDocument;
+	
+	COM_VERIFY(spWebBrowser2->get_Document(&spDispDocument));
+	if(spDispDocument)
+	{
+		//COM_DETECT_INTERFACE_FROM_REGISTER(spDispDocument);
+		CComQIPtr<IHTMLDocument>	spDocument(spDispDocument);
+		CComPtr<IDispatch> spDispScript;
+		COM_VERIFY(spDocument->get_Script(&spDispScript));
+		if (spDispScript)
+		{
+			COM_DETECT_INTERFACE_FROM_REGISTER(spDispScript);
+		}
+		
+	}
+
+
+	return hr;
+}
 
 STDMETHODIMP CWowAHView::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
 							DISPPARAMS FAR* pDispParams,VARIANT FAR* pVarResult,
@@ -73,9 +103,9 @@ STDMETHODIMP CWowAHView::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WOR
 		&& DISPID_COMMANDSTATECHANGE != dispIdMember
 		&& DISPID_PROGRESSCHANGE != dispIdMember)
 	{
-		FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
-		FTLTRACE(TEXT("[%d] Invoke, dispIdMember=%d(%s)\n"), GetCurrentThreadId(),
-			dispIdMember, idspidInfo.GetConvertedInfo());
+		//FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
+		//FTLTRACE(TEXT("[%d] Invoke, dispIdMember=%d(%s)\n"), GetCurrentThreadId(),
+		//	dispIdMember, idspidInfo.GetConvertedInfo());
 	}
 
 	HRESULT hr = __super::Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult,
@@ -111,7 +141,9 @@ int CWowAHView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_pWowItemManager = new CWowItemManager();
 
 	m_pItemPageAnalyzes[pptSellerBrowse] = new CSellerItemPageAnalyze(m_pWowItemManager);
-	m_pItemPageAnalyzes[pptMyBit] = new CBitItemPageAnalyze(m_pWowItemManager);
+	m_pItemPageAnalyzes[pptCreateMyAuction] = new CCreateMyAuctionPageAnalyze(m_pWowItemManager);
+	m_pItemPageAnalyzes[pptMyBit] = new CMyBitItemPageAnalyze(m_pWowItemManager);
+	m_pItemPageAnalyzes[pptMyAuction] = new CMyAuctionItemPageAnalyze(m_pWowItemManager);
 
     return lRet;
 }
@@ -145,7 +177,13 @@ void CWowAHView::OnDestroy()
 void CWowAHView::OnGotoPage(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = E_FAIL;
-	COM_VERIFY(Navigate(_T("http://www.battlenet.com.cn/wow/zh/")));
+
+	COM_VERIFY(ExecuteJavaScript(_T("http://www.battlenet.com.cn/wow/zh/")));
+}
+
+void CWowAHView::OnClearItems(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	m_pWowItemManager->ClearItems(isInvalid);
 }
 
 void CWowAHView::OnParseSellerBrowse(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -155,7 +193,8 @@ void CWowAHView::OnParseSellerBrowse(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CWowAHView::OnParseCreateMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-	_OpenLocalFileAndParse(pptCreateMyAuction);
+	//_OpenLocalFileAndParse(pptCreateMyAuction);
+	MessageBox(TEXT("Not support my Auction"));
 }
 
 void CWowAHView::OnParseMyBid(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -227,15 +266,22 @@ HRESULT CWowAHView::SearchSpecialItem(const CString& strItemName)
 
 void CWowAHView::OnEventDocumentComplete(IDispatch* , VARIANT* URL)
 {
-	HRESULT hr = E_FAIL;
 	if (m_ParsePageType != pptInvalid)
 	{
-		CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
-		if (spHtmlDoc)
-		{
-			COM_VERIFY(m_pItemPageAnalyzes[m_ParsePageType]->ParseItemPage(spHtmlDoc, _T("")));
-		}
+		PostMessage(UM_EVENT_DOCUMENT_COMPLETE, m_ParsePageType);
 	}
+}
+
+LRESULT CWowAHView::OnMsgEventDocumentComplete(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	HRESULT hr = E_FAIL;
+	CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
+	if (spHtmlDoc)
+	{
+		COM_VERIFY(m_pItemPageAnalyzes[m_ParsePageType]->ParseItemPage(spHtmlDoc, _T("")));
+		m_pWowItemManager->DumpAllItemInfo();
+	}
+	return 0;
 }
 
 void CWowAHView::OnNavigateComplete2(IDispatch* /*pDisp*/, VARIANT* URL)

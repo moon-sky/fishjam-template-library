@@ -20,6 +20,8 @@ protected:
 	};
 
 	//子类可以重用的方法
+	HRESULT _INnerParseAllTables(CComPtr<IHTMLDocument3>& spHtmlDoc, LPCTSTR* ppszTalbeNames, INT nTableCount, const CString& strSearchItemName);
+
 	HRESULT _InnerParseTable(CComPtr<IHTMLTable>& spTable, const CString& strTableName, const CString& strSearchItemName);
 	HRESULT _InnerParseRowItem(const CString& strTableName, long nIndex, CComQIPtr<IHTMLElement>& spPriceElementItem, const CString& strSearchItemName);
 

@@ -242,10 +242,10 @@ namespace FTL
 		DISABLE_COPY_AND_ASSIGNMENT(CFInterfaceDumperBase);
 	public:
 		enum {
-			INVLIAD_INTERFACE_DUMPER_PARAM = -1
+			INVALID_INTERFACE_DUMPER_PARAM = -1
 		};
 		FTLINLINE explicit CFInterfaceDumperBase(IUnknown* pObj, IInformationOutput* pInfoOutput, 
-			int nIndent, LONG_PTR param = INVLIAD_INTERFACE_DUMPER_PARAM );
+			int nIndent, LONG_PTR param = INVALID_INTERFACE_DUMPER_PARAM );
 		FTLINLINE HRESULT GetObjInfo(IInformationOutput* pInfoOutput);
         virtual ~CFInterfaceDumperBase();
 	protected:

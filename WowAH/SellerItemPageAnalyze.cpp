@@ -24,6 +24,8 @@ HRESULT	CSellerItemPageAnalyze::ParseItemPage(CComPtr<IHTMLDocument3>& spHtmlDoc
 	{
 		long nLength = 0;
 		COM_VERIFY(spTables->get_length(&nLength));
+		FTLASSERT(nLength == 1);
+
 		for (long nIndex = 0; nIndex < nLength; ++nIndex)
 		{
 			CComPtr<IDispatch>	spDispTable;
@@ -48,6 +50,8 @@ HRESULT CSellerItemPageAnalyze::_GetRowItemInfo(const CString& strTableName, CCo
 	long nLength = 0;
 	COM_VERIFY(spChildElements->get_length(&nLength));
 	FTLASSERT(nLength >= siiMinCount);
+
+	spItemInfo->SetItemStatus(isOtherSelling);
 
 	if (nLength > siiMinCount)
 	{
@@ -75,7 +79,7 @@ HRESULT CSellerItemPageAnalyze::_GetRowItemInfo(const CString& strTableName, CCo
 			spItemInfo->SetPriceBuyout(_GetPriceInfo(spChildElements, siiPriceBuyoutGold, siiPriceBuyoutSilver, siiPriceBuyoutCopper));
 
 			//最后才更新时间 -- 保证 SetItemSellTimeInfo 时能获取到上次更新的时间信息
-			spItemInfo->UpdateRefreshTime();
+			//spItemInfo->UpdateRefreshTime();
 		}
 	}
 	else

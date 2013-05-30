@@ -9,6 +9,7 @@ class CWowItemManager;
 
 const int _nDispatchID = 1;
 
+#define UM_EVENT_DOCUMENT_COMPLETE	(WM_USER + 0x100)
 
 class CWowAHView : public CWindowImpl<CWowAHView, CAxWindow>
     , public IDispEventSimpleImpl<_nDispatchID, CWowAHView, &DIID_DWebBrowserEvents2>
@@ -18,6 +19,7 @@ public:
 	~CWowAHView();
 
 	HRESULT Navigate(const CString& strURL);
+	HRESULT ExecuteJavaScript(const CString& strLanguage);
 
 	enum ParsePageType
 	{
@@ -41,10 +43,13 @@ public:
 		MSG_WM_CLOSE(OnClose)
 		COMMAND_ID_HANDLER_EX(ID_AH_GOTOPAGE, OnGotoPage)
 		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_SELLER_BROWSE, OnParseSellerBrowse)
+		COMMAND_ID_HANDLER_EX(ID_AH_CLEAR_ITEMS, OnClearItems)
+
 		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_CREATE_MY_AUCTION, OnParseCreateMyAuction)
 		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_MY_BID, OnParseMyBid)
 		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_MY_AUCTION, OnParseMyAuction)
 		COMMAND_ID_HANDLER_EX(ID_AH_SEARCH_SPECIAL_ITEM, OnSearchSpecialItem)
+		MESSAGE_HANDLER_EX(UM_EVENT_DOCUMENT_COMPLETE, OnMsgEventDocumentComplete)
 	END_MSG_MAP()
 
     // IDispatch events function info
@@ -62,7 +67,6 @@ public:
 	virtual STDMETHODIMP Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
 		DISPPARAMS FAR* pDispParams,VARIANT FAR* pVarResult,
 		EXCEPINFO FAR* pExcepInfo, unsigned int FAR* puArgErr);
-	ParsePageType	m_ParsePageType;
 public:
     int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	void OnClose();
@@ -70,6 +74,7 @@ public:
 
 	void OnGotoPage(UINT uNotifyCode, int nID, CWindow wndCtl);
 	
+	void OnClearItems(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnParseSellerBrowse(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnParseCreateMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnParseMyBid(UINT uNotifyCode, int nID, CWindow wndCtl);
@@ -78,6 +83,7 @@ public:
 	void OnSearchSpecialItem(UINT uNotifyCode, int nID, CWindow wndCtl);
 public:
 	HRESULT SearchSpecialItem(const CString& strItemName);
+	LRESULT OnMsgEventDocumentComplete(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
 	void _OpenLocalFileAndParse(ParsePageType pageType);
@@ -87,7 +93,8 @@ public:
 
 	CComPtr<IHTMLDocument3>	_GetDocument();
 private:
-	CItemPageAnalyzeBase*	m_pItemPageAnalyzes[pptCount];
 	CWowItemManager*		m_pWowItemManager;
+	CItemPageAnalyzeBase*	m_pItemPageAnalyzes[pptCount];
+	ParsePageType			m_ParsePageType;
 };
 

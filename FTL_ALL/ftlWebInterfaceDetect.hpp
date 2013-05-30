@@ -267,7 +267,7 @@ namespace FTL
 		//可以QI到()
 		//	等
 		//连接点有：
-		if (m_nParam != INVLIAD_INTERFACE_DUMPER_PARAM)
+		if (m_nParam != INVALID_INTERFACE_DUMPER_PARAM)
 		{
 			CFStringFormater strNameFormater;
 			strNameFormater.Format(TEXT("HTMLElement %d"), (long)m_nParam);

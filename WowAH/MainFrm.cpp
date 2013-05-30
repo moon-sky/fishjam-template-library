@@ -59,11 +59,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	{
 		*pszLastDirPos = NULL;
 	}
-	//PathAppend(szCurPath, TEXT("\\Page\\Seller.xht"));
-	//PathAppend(szCurPath, TEXT("\\Page\\MyStock.xht"));
-	//PathAppend(szCurPath, TEXT("\\Page\\MySell.xht"));
-	PathAppend(szCurPath, TEXT("\\Page\\MyBid.xht"));
-
+	//PathAppend(szCurPath, TEXT("\\Page\\SellerBrowse.xht"));
+	PathAppend(szCurPath, TEXT("\\Page\\Wizard.xht"));
+	
 	strUrl.Format(TEXT("file:///%s"), szCurPath);
 	strUrl.Replace(_T('\\'), _T('/'));
 #endif 
@@ -108,7 +106,10 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 LRESULT CMainFrame::OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	// TODO: add code to initialize document
-
+	CFileDialog fileDlg(TRUE, NULL, NULL, OFN_EXPLORER | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT, NULL, m_hWnd);
+	if (fileDlg.DoModal() == IDOK)
+	{
+	}
 	return 0;
 }
 
