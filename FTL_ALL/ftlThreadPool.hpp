@@ -576,7 +576,7 @@ namespace FTL
             
             if (bFoundSameJob)
             {
-                //如果找到相同Index的Job  -- 肯定是同一个Job实例
+                //如果找到相同Index的Job  -- 肯定是同一个Job实例，否则可能是多个Pool中重复使用Job造成的
                 FTLASSERT(pJob == pSameJob);
                 SetLastError(ERROR_ALREADY_EXISTS);
                 return FALSE;
@@ -589,17 +589,35 @@ namespace FTL
             m_hSemaphoreWaitingPos,
         };
 
+        DWORD dwLastError = 0;
         DWORD dwResult = WaitForMultipleObjects(_countof(hWaitHandles), hWaitHandles, FALSE, dwMilliseconds);
         switch (dwResult)
         {
         case WAIT_OBJECT_0:     //Stop
+            dwLastError = ERROR_CANCELLED;
+            bRet = FALSE;
+            break;
         case WAIT_TIMEOUT:      //There is no place and TimeOut
-            return FALSE;
+            dwLastError = ERROR_TIMEOUT;
+            bRet = FALSE;
+            break;
         case WAIT_OBJECT_0 + 1: //wait for place
+            bRet = TRUE;
             break;
         default:
             FTLASSERT(FALSE);   //Why?
-            return FALSE;
+            bRet = FALSE;
+            dwLastError = GetLastError();
+            break;
+        }
+
+        if (!bRet)
+        {
+            //增加Job失败，调用对应的清除函数 -- 将增加失败的Job等效的视为尚未运行就被Cancel的Job
+            _NotifyJobCancel(pJob);
+            pJob->OnFinalize(TRUE);
+            SetLastError(dwLastError);
+            return bRet;
         }
 
 		//加入Job并且唤醒一个等待线程
@@ -608,7 +626,7 @@ namespace FTL
 			m_nJobIndex++;
             if (m_nJobIndex < 0)
             {
-                //溢出了 -- 这得运行了多久的服务程序
+                //溢出了 -- 这得是运行了多久的服务程序
                 m_nJobIndex = 1;
             }
 			pJob->m_pThreadPool = this;         //访问私有变量，并将自己赋值过去

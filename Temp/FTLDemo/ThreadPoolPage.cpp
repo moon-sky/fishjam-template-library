@@ -165,26 +165,29 @@ void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolSetJobPriorityHighest()
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobLow()
 {
+    BOOL bRet = FALSE;
 	if (m_pFtlThreadPool)
 	{
 		m_nLowJobPriority++;
 		CFTLPoolJob* pNewJob = new CFTLPoolJob();
 		pNewJob->m_JobParam = this;
 		pNewJob->SetPriority(m_nLowJobPriority);
-		m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex);
+		API_VERIFY_EXCEPT2(m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex, FALSE, 100), 
+            ERROR_TIMEOUT, ERROR_CANCELLED);
 	}
 }
 
 void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobHigh()
 {
     //add a higher priority job
+    BOOL bRet = FALSE;
 	if (m_pFtlThreadPool)
 	{
 		m_nHighJobPriority--;
 		CFTLPoolJob* pNewJob = new CFTLPoolJob();
 		pNewJob->m_JobParam = this;
 		pNewJob->SetPriority(m_nHighJobPriority);
-		m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex);
+		API_VERIFY(m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex));
 	}
 }
 

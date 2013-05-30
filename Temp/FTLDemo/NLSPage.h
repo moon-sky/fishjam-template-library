@@ -2,7 +2,6 @@
 
 #include <ftlNLS.h>
 
-// CNLSPage 对话框
 
 class CNLSPage : public CPropertyPage
 {
@@ -12,12 +11,11 @@ public:
 	CNLSPage();
 	virtual ~CNLSPage();
 
-// 对话框数据
 	enum { IDD = IDD_PAGE_NLS };
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
+	virtual void DoDataExchange(CDataExchange* pDX);
 
 	DECLARE_MESSAGE_MAP()
 private:

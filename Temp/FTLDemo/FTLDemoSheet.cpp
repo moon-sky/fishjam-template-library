@@ -47,18 +47,18 @@ BOOL CFTLDemoSheet::InitSheet()
     //this->AddPage(new CCrackPage());
     //this->AddPage(new CCrashHandlerPage());
     //this->AddPage(new CGdiPage());
-    this->AddPage(new CGdiPlusPage());
+    //this->AddPage(new CGdiPlusPage());
     //this->AddPage(new CGuiPage());
     //this->AddPage(new CMemPage());
 
     //this->AddPage(new CPipelinePage());
 
-	this->AddPage(new CNetPage());
+	//this->AddPage(new CNetPage());
 	//this->AddPage(new CNLSPage());
  //   this->AddPage(new CShellPage());
  //   this->AddPage(new CSystemPage());
  //   this->AddPage(new CThreadPage());
-	//this->AddPage(new CThreadPoolPage());
+	this->AddPage(new CThreadPoolPage());
  //   this->AddPage(new CVistaPage());
  //   this->AddPage(new CWindowPage());
     return bRet;

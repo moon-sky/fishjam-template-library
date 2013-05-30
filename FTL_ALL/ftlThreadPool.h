@@ -307,6 +307,10 @@ namespace FTL
 		//! 向线程池中注册工作 -- 如果当前没有空闲的线程，并且当前线程数小于最大线程数，则会自动创建新的线程，
 		//! 成功后会通过 outJobIndex 返回Job的索引号，可通过该索引定位、取消特定的Job
         //! bCheckDuplicate -- 是否进行重复性检查(JobIndex)
+        //! 返回的错误码：
+        //    ERROR_ALREADY_EXISTS -- bCheckDuplicate 为TRUE时检测到相同的Job
+        //    ERROR_CANCELLED -- 增加Job时线程池停止
+        //    ERROR_TIMEOUT -- 超时
 		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, BOOL bCheckDuplicate = FALSE, DWORD dwMilliseconds = INFINITE);
 
 		//! TODO:如果取出Job给客户，可能调用者得到指针时，Job执行完毕 delete this，会照成野指针异常
