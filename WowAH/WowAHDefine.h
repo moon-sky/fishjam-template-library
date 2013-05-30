@@ -29,8 +29,8 @@ enum ItemSellTimeInfo
 	//具体值需要确认
 	istiVeryLong,		//非常长(超过24小时)
 	istiLong,			//长(在2小时和12小时之间)
-	istiMiddle,			//中(?)
-	istiShort,			//短(2小时以内) ？
+	istiMiddle,			//中(2小时以内)
+	istiShort,			//短(少于30分钟)
 };
 
 //拍卖行中的信息
@@ -73,7 +73,7 @@ private:
 	ItemSellTimeInfo	m_ItemSellTimeInfo;
 	LONG				m_nQuantity;			//数量
 	LONG				m_nPriceBid;			//拍卖价：金币 * 10000 + 银币 * 100 + 铜币
-	LONG				m_nPriceBuyout;			//一口价：金币 * 10000 + 银币 * 100 + 铜币
+	LONG				m_nPriceBuyout;			//一口价：金币 * 10000 + 银币 * 100 + 铜币，如果值为0表示没有一口价
 	CString				m_strItemName;  
 	CString				m_strUrl;
 	CString				m_strSeller;

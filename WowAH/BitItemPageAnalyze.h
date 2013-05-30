@@ -2,6 +2,7 @@
 
 #include "ItemPageAnalyzeBase.h"
 
+//分析"我的竞标" -- MyBid.xht
 class CBitItemPageAnalyze : public CItemPageAnalyzeBase
 {
 public:

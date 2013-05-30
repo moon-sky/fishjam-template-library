@@ -25,6 +25,7 @@ CWowAHView::CWowAHView()
 		m_pItemPageAnalyzes[i] = NULL;
 	}
 	m_pWowItemManager = NULL;
+	m_ParsePageType = pptInvalid;
 }
 
 CWowAHView::~CWowAHView()
@@ -73,7 +74,8 @@ STDMETHODIMP CWowAHView::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WOR
 		&& DISPID_PROGRESSCHANGE != dispIdMember)
 	{
 		FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
-		FTLTRACE(TEXT("Invoke, dispIdMember=%d(%s)\n"), dispIdMember, idspidInfo.GetConvertedInfo());
+		FTLTRACE(TEXT("[%d] Invoke, dispIdMember=%d(%s)\n"), GetCurrentThreadId(),
+			dispIdMember, idspidInfo.GetConvertedInfo());
 	}
 
 	HRESULT hr = __super::Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult,
@@ -108,8 +110,8 @@ int CWowAHView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 	m_pWowItemManager = new CWowItemManager();
 
-	m_pItemPageAnalyzes[pptSeller] = new CSellerItemPageAnalyze(m_pWowItemManager);
-	m_pItemPageAnalyzes[pptBit] = new CBitItemPageAnalyze(m_pWowItemManager);
+	m_pItemPageAnalyzes[pptSellerBrowse] = new CSellerItemPageAnalyze(m_pWowItemManager);
+	m_pItemPageAnalyzes[pptMyBit] = new CBitItemPageAnalyze(m_pWowItemManager);
 
     return lRet;
 }
@@ -143,40 +145,27 @@ void CWowAHView::OnDestroy()
 void CWowAHView::OnGotoPage(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = E_FAIL;
-	CComPtr<IWebBrowser2> spWebBrowser;
-	COM_VERIFY(QueryControl(IID_IWebBrowser2, (void**)&spWebBrowser));
-	if(spWebBrowser)
-	{
-		CComVariant varURL(_T("http://www.battlenet.com.cn/wow/zh/"));
-		CComVariant varEmpty;
-		COM_VERIFY(spWebBrowser->Navigate2(&varURL, &varEmpty, &varEmpty,&varEmpty, &varEmpty));
-	}	
+	COM_VERIFY(Navigate(_T("http://www.battlenet.com.cn/wow/zh/")));
 }
 
-void CWowAHView::OnParseSeller(UINT uNotifyCode, int nID, CWindow wndCtl)
+void CWowAHView::OnParseSellerBrowse(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-	HRESULT hr = E_FAIL;
-	if (m_pItemPageAnalyzes[pptSeller])
-	{
-		CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
-		if (spHtmlDoc)
-		{
-			COM_VERIFY(m_pItemPageAnalyzes[pptSeller]->ParseItemPage(spHtmlDoc, _T("")));
-		}
-	}
+	_OpenLocalFileAndParse(pptSellerBrowse);
 }
 
-void CWowAHView::OnParseBid(UINT uNotifyCode, int nID, CWindow wndCtl)
+void CWowAHView::OnParseCreateMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-	HRESULT hr = E_FAIL;
-	if (m_pItemPageAnalyzes[pptBit])
-	{
-		CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
-		if (spHtmlDoc)
-		{
-			COM_VERIFY(m_pItemPageAnalyzes[pptBit]->ParseItemPage(spHtmlDoc, _T("")));
-		}
-	}
+	_OpenLocalFileAndParse(pptCreateMyAuction);
+}
+
+void CWowAHView::OnParseMyBid(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	_OpenLocalFileAndParse(pptMyBit);
+}
+
+void CWowAHView::OnParseMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	_OpenLocalFileAndParse(pptMyAuction);
 }
 
 void CWowAHView::OnSearchSpecialItem(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -238,7 +227,15 @@ HRESULT CWowAHView::SearchSpecialItem(const CString& strItemName)
 
 void CWowAHView::OnEventDocumentComplete(IDispatch* , VARIANT* URL)
 {
-
+	HRESULT hr = E_FAIL;
+	if (m_ParsePageType != pptInvalid)
+	{
+		CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
+		if (spHtmlDoc)
+		{
+			COM_VERIFY(m_pItemPageAnalyzes[m_ParsePageType]->ParseItemPage(spHtmlDoc, _T("")));
+		}
+	}
 }
 
 void CWowAHView::OnNavigateComplete2(IDispatch* /*pDisp*/, VARIANT* URL)
@@ -266,4 +263,38 @@ void CWowAHView::OnNavigateComplete2(IDispatch* /*pDisp*/, VARIANT* URL)
 void CWowAHView::OnDownloadBegin()
 {
 	FTLTRACE(TEXT("On Download Begin\n"));
+}
+
+void CWowAHView::_OpenLocalFileAndParse(ParsePageType pageType)
+{
+	HRESULT hr = E_FAIL;
+	BOOL bRet = FALSE;
+
+	TCHAR szCurPath[MAX_PATH] = {0};
+
+	API_VERIFY( GetModuleFileName(NULL, szCurPath, _countof(szCurPath)) > 0);
+	API_VERIFY(PathRemoveFileSpec(szCurPath));
+	LPTSTR pszLastDirPos = StrRChr(szCurPath, NULL, _T('\\'));
+	FTLASSERT(pszLastDirPos != NULL);
+	if (pszLastDirPos)
+	{
+		*pszLastDirPos = NULL;
+	}
+	static LPCTSTR pszPage[pptCount] = 
+	{
+		TEXT("\\Page\\SellerBrowse.xht"),
+		TEXT("\\Page\\CreateMyAuction.xht"),
+		TEXT("\\Page\\MyBid.xht"),
+		TEXT("\\Page\\MyAuction.xht"),
+	};
+
+	API_VERIFY(PathAppend(szCurPath, pszPage[pageType]));
+
+	CString strUrl;
+	strUrl.Format(TEXT("file:///%s"), szCurPath);
+	strUrl.Replace(_T('\\'), _T('/'));
+
+	COM_VERIFY(Navigate(strUrl));
+	m_ParsePageType = pageType;
+
 }

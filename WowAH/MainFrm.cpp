@@ -59,8 +59,10 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	{
 		*pszLastDirPos = NULL;
 	}
-	//PathAppend(szCurPath, TEXT("\\WowPage.xht"));
-	PathAppend(szCurPath, TEXT("\\Bit.xht"));
+	//PathAppend(szCurPath, TEXT("\\Page\\Seller.xht"));
+	//PathAppend(szCurPath, TEXT("\\Page\\MyStock.xht"));
+	//PathAppend(szCurPath, TEXT("\\Page\\MySell.xht"));
+	PathAppend(szCurPath, TEXT("\\Page\\MyBid.xht"));
 
 	strUrl.Format(TEXT("file:///%s"), szCurPath);
 	strUrl.Replace(_T('\\'), _T('/'));

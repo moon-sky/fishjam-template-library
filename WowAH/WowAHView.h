@@ -17,10 +17,16 @@ public:
 	CWowAHView();
 	~CWowAHView();
 
+	HRESULT Navigate(const CString& strURL);
+
 	enum ParsePageType
 	{
-		pptSeller,		//出售页面
-		pptBit,			//竞标页面
+		pptInvalid = -1,
+
+		pptSellerBrowse,	//购买 -- 浏览拍卖
+		pptCreateMyAuction,	//出售 -- 开始拍卖
+		pptMyBit,			//竞标 -- 我的竞标
+		pptMyAuction,		//拍卖 -- 我的拍卖
 
 		pptCount,		//页面总数
 	};
@@ -34,8 +40,10 @@ public:
         MSG_WM_DESTROY(OnDestroy)
 		MSG_WM_CLOSE(OnClose)
 		COMMAND_ID_HANDLER_EX(ID_AH_GOTOPAGE, OnGotoPage)
-		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_SELLER, OnParseSeller)
-		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_BID, OnParseBid)
+		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_SELLER_BROWSE, OnParseSellerBrowse)
+		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_CREATE_MY_AUCTION, OnParseCreateMyAuction)
+		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_MY_BID, OnParseMyBid)
+		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_MY_AUCTION, OnParseMyAuction)
 		COMMAND_ID_HANDLER_EX(ID_AH_SEARCH_SPECIAL_ITEM, OnSearchSpecialItem)
 	END_MSG_MAP()
 
@@ -54,19 +62,25 @@ public:
 	virtual STDMETHODIMP Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
 		DISPPARAMS FAR* pDispParams,VARIANT FAR* pVarResult,
 		EXCEPINFO FAR* pExcepInfo, unsigned int FAR* puArgErr);
-
+	ParsePageType	m_ParsePageType;
 public:
     int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	void OnClose();
 	void OnDestroy();
 
 	void OnGotoPage(UINT uNotifyCode, int nID, CWindow wndCtl);
-	void OnParseSeller(UINT uNotifyCode, int nID, CWindow wndCtl);
-	void OnParseBid(UINT uNotifyCode, int nID, CWindow wndCtl);
+	
+	void OnParseSellerBrowse(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnParseCreateMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnParseMyBid(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnParseMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl);
+
 	void OnSearchSpecialItem(UINT uNotifyCode, int nID, CWindow wndCtl);
 public:
 	HRESULT SearchSpecialItem(const CString& strItemName);
 
+
+	void _OpenLocalFileAndParse(ParsePageType pageType);
     void __stdcall OnEventDocumentComplete(IDispatch* /*pDisp*/, VARIANT* URL);
 	void __stdcall OnNavigateComplete2(IDispatch* /*pDisp*/, VARIANT* URL);
 	void __stdcall OnDownloadBegin();

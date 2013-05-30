@@ -61,8 +61,8 @@ void WowItemInfo::SetItemSellTimeInfo(ItemSellTimeInfo timeInfo)
 			case istiMiddle://刚刚变到2小时
 				m_nExpirationTickCount = nCurTickCount + 2 * 3600 * 1000 - nDiffTickCount;
 				break;
-			case istiShort: //两小时以内
-				m_nExpirationTickCount = nCurTickCount + 2 * 3600 * 1000 - nDiffTickCount;
+			case istiShort: //少于30分钟
+				m_nExpirationTickCount = nCurTickCount + 30 * 60 * 1000 - nDiffTickCount;
 				break;
 			default:
 				FTLASSERT(FALSE);

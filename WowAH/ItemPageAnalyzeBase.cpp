@@ -37,7 +37,7 @@ HRESULT CItemPageAnalyzeBase::_InnerParseTable(CComPtr<IHTMLTable>& spTable, con
 			CComQIPtr<IHTMLElement> spPriceElementItem = spDispItem;
 			if (spPriceElementItem)
 			{
-#if 1
+#if 0
 				//启用这行代码，可以打印出所有的价格列表信息，方便在网页更改后分析
 				CFHTMLElementDumper htmlElementDumper(spPriceElementItem, CFOutputWindowInfoOutput::Instance(), 
 					0, nIndex);

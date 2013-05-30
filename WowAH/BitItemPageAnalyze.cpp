@@ -37,7 +37,10 @@ namespace WonBids
 {
 	enum BitItemIndex
 	{
+		biiTypeUrl = 1,
+		
 
+		biiMinCount,
 	};
 };
 
@@ -160,7 +163,51 @@ HRESULT CBitItemPageAnalyze::_InnerGetWonBidsRowItemInfo(CComQIPtr<IHTMLElementC
 															WowItemInfoPtr& spItemInfo, 
 															const CString& strSearchItemName)
 {
-	HRESULT hr = E_NOTIMPL;
+	HRESULT hr = E_FAIL;
+	long nLength = 0;
+
+	CFHTMLElementCollectionDumper dumper(spChildElements, CFOutputWindowInfoOutput::Instance(), 0);
+
+	COM_VERIFY(spChildElements->get_length(&nLength));
+	FTLASSERT(nLength > WonBids::biiMinCount);
+	if (nLength > WonBids::biiMinCount)
+	{
+#if 0
+		CString strItemName = _GetCollectionItemValue(spChildElements, WonBids::biiName, ivtInnerText, TRUE);
+		if (strSearchItemName.IsEmpty() || strSearchItemName == strItemName)
+		{
+			//搜索全部或当前的项目名就是需要搜索的项目
+			CString strUrl = _GetCollectionItemValue(spChildElements, WonBids::biiTypeUrl, ivtToString);
+			spItemInfo->SetUrl(strUrl);
+			int nPosSlash = strUrl.ReverseFind(_T('/'));
+			if (nPosSlash > 0)
+			{
+				CString strTypeId = strUrl.Mid(nPosSlash + 1);
+				spItemInfo->SetTypeId(StrToLong(strTypeId));
+			}
+
+			spItemInfo->SetItemName(strItemName);
+			//spItemInfo->SetSeller(_GetCollectionItemValue(spChildElements, LostBids::biiSeller, ivtInnerText));
+			spItemInfo->SetQuantity(StrToLong(_GetCollectionItemValue(spChildElements, WonBids::biiQuantity, ivtInnerText)));
+
+			//CString strTimeInfo = _GetCollectionItemValue(spChildElements, LostBids::biiTimeInfo, ivtInnerText, TRUE);
+			//spItemInfo->SetItemSellTimeInfo(_ConvertTimeInfo(strTimeInfo));
+
+			spItemInfo->SetPriceBid(_GetPriceInfo(spChildElements, WonBids::biiPriceBidGold, 
+				WonBids::biiPriceBidSilver, WonBids::biiPriceBidCopper));
+			//spItemInfo->SetPriceBuyout(_GetPriceInfo(spChildElements, LostBids::biiPriceBuyoutGold, 
+			//	LostBids::biiPriceBuyoutSilver, LostBids::biiPriceBuyoutCopper));
+
+			//最后才更新时间 -- 保证 SetItemSellTimeInfo 时能获取到上次更新的时间信息
+			//spItemInfo->UpdateRefreshTime();
+		}
+#endif
+	}
+	else
+	{
+		hr = E_FAIL;
+		FTLASSERT(FALSE && _T("Web Page Change"));
+	}
 
 	return hr;
 }
