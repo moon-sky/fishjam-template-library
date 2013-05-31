@@ -386,6 +386,7 @@ namespace FTL
     *        @ingroup [group_name] -- 定义一个特定的注释组
     *        @image html "需要插入的图片文件名"'
     *        @name 类似注释的名字
+	*        @note 注意事项
     *        @param 参数名 [in|out|in,out] 参数说明
     *        @post 码项之后的使用条件
     *        @pre 前提条件

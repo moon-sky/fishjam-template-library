@@ -172,8 +172,17 @@ void CThreadPoolPage::OnBnClickedBtnFtlThreadPoolAddJobLow()
 		CFTLPoolJob* pNewJob = new CFTLPoolJob();
 		pNewJob->m_JobParam = this;
 		pNewJob->SetPriority(m_nLowJobPriority);
-		API_VERIFY_EXCEPT2(m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex, FALSE, 100), 
-            ERROR_TIMEOUT, ERROR_CANCELLED);
+		API_VERIFY_EXCEPT1(m_pFtlThreadPool->SubmitJob(pNewJob, &m_nFtlCurJobIndex, 100), 
+            ERROR_TIMEOUT);
+		if(!bRet)
+		{
+			FTLTRACE(TEXT("OnBnClickedBtnFtlThreadPoolAddJobLow(0x%p) for %d\n"), pNewJob, GetLastError());
+
+			//增加Job失败，需要清除该Job的资源，在本例子中，因为是在主线程中增加Job，唯一的失败原因只能是 ERROR_TIMEOUT
+			//真实的业务逻辑代码中，增加Job的可能是子线程，此时失败的原因还可能是 ERROR_CANCELLED
+			//pNewJob->OnFinalize(TRUE);
+			delete pNewJob;
+		}
 	}
 }
 

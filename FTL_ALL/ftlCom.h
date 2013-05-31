@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @file   ftlCom.h
-/// @brief  Functional Template Library Base Header File.
+/// @brief  Fishjam Template Library Com Header File.
 /// @author fujie
 /// @version 0.6 
 /// @date 03/30/2008

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @file   ftlbase.hpp
-/// @brief  Functional Template Library Base Implemention File.
+/// @brief  Fishjam Template Library Base Implemention File.
 /// @author fujie
 /// @version 0.6 
 /// @date 03/30/2008

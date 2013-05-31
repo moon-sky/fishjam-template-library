@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @file   ftlDefine.h
-/// @brief  Functional Template Library Define Header File.
+/// @brief  Fishjam Template Library Define Header File.
 /// @author fujie
 /// @version 0.6 
 /// @date 03/30/2008

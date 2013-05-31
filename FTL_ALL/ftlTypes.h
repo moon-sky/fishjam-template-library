@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @file   ftlTypes.h
-/// @brief  Functional Template Library Types Header File.
+/// @brief  Fishjam Template Library Types Header File.
 /// @author fujie
 /// @version 0.6 
 /// @date 03/30/2008
