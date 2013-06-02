@@ -70,7 +70,7 @@ HRESULT CWowAHView::Navigate(const CString& strURL)
     return hr;
 }
 
-HRESULT CWowAHView::ExecuteJavaScript(const CString& strLanguage)
+HRESULT CWowAHView::ExecuteJavaScript(const CString& strCode)
 {
 	HRESULT hr = E_FAIL;
 	CComPtr<IWebBrowser2> spWebBrowser2;
@@ -81,17 +81,19 @@ HRESULT CWowAHView::ExecuteJavaScript(const CString& strLanguage)
 	if(spDispDocument)
 	{
 		//COM_DETECT_INTERFACE_FROM_REGISTER(spDispDocument);
-		CComQIPtr<IHTMLDocument>	spDocument(spDispDocument);
-		CComPtr<IDispatch> spDispScript;
-		COM_VERIFY(spDocument->get_Script(&spDispScript));
-		if (spDispScript)
-		{
-			COM_DETECT_INTERFACE_FROM_REGISTER(spDispScript);
-		}
-		
+		CComQIPtr<IHTMLDocument2>	spDocument(spDispDocument);
+        if (spDocument)
+        {
+            CComPtr<IHTMLWindow2> spHtmlWindow;
+            COM_VERIFY(spDocument->get_parentWindow(&spHtmlWindow));
+            if (spHtmlWindow)
+            {
+                CComVariant varRet;
+                COM_VERIFY(spHtmlWindow->execScript(CComBSTR(strCode), CComBSTR(TEXT("javascript")), &varRet));
+                FTLTRACE(TEXT("ExecuteJavaScript : %s, varRet=%s\n"), strCode, CFVariantInfo(varRet, FALSE).GetConvertedInfo());
+            }
+        }
 	}
-
-
 	return hr;
 }
 
@@ -135,8 +137,7 @@ int CWowAHView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     {
         COM_VERIFY(spHost->put_DocHostFlags(DOCHOSTUIFLAG_NO3DBORDER
             | DOCHOSTUIFLAG_THEME));
-		COM_VERIFY(spHost->put_AllowShowUI(VARIANT_FALSE));
-
+		//COM_VERIFY(spHost->put_AllowShowUI(VARIANT_FALSE));
     }
 	m_pWowItemManager = new CWowItemManager();
 
@@ -178,7 +179,7 @@ void CWowAHView::OnGotoPage(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = E_FAIL;
 
-	COM_VERIFY(ExecuteJavaScript(_T("http://www.battlenet.com.cn/wow/zh/")));
+	COM_VERIFY(Navigate(_T("http://www.battlenet.com.cn/wow/zh/")));
 }
 
 void CWowAHView::OnClearItems(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -188,29 +189,58 @@ void CWowAHView::OnClearItems(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CWowAHView::OnParseSellerBrowse(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-	_OpenLocalFileAndParse(pptSellerBrowse);
+	_OpenTargetUrl(pptSellerBrowse);
 }
 
 void CWowAHView::OnParseCreateMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-	//_OpenLocalFileAndParse(pptCreateMyAuction);
+	//_OpenTargetUrl(pptCreateMyAuction);
 	MessageBox(TEXT("Not support my Auction"));
 }
 
 void CWowAHView::OnParseMyBid(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-	_OpenLocalFileAndParse(pptMyBit);
+	_OpenTargetUrl(pptMyBit);
 }
 
 void CWowAHView::OnParseMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-	_OpenLocalFileAndParse(pptMyAuction);
+	_OpenTargetUrl(pptMyAuction);
 }
 
 void CWowAHView::OnSearchSpecialItem(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = E_FAIL;
-	COM_VERIFY(SearchSpecialItem(TEXT("中皮")));
+	//COM_VERIFY(SearchSpecialItem(TEXT("中皮")));
+    COM_VERIFY(ExecuteJavaScript(TEXT("alert('in execute java script')")));
+}
+
+void CWowAHView::OnMyTestPage(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    HRESULT hr = E_FAIL;
+    //COM_VERIFY(SearchSpecialItem(TEXT("中皮")));
+    COM_VERIFY(ExecuteJavaScript(TEXT("callmyfun()")));
+
+}
+
+void CWowAHView::OnOpenBid(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    HRESULT hr = E_FAIL;
+    CFAutoLock<CFLockObject> lock(&m_pWowItemManager->m_csLock);
+    ItemInAHInfoContainer::iterator iter = m_pWowItemManager->m_allWowItems.begin();
+    if (iter != m_pWowItemManager->m_allWowItems.end())
+    {
+        WowItemInfoPtr pItemInfo = iter->second;
+
+        CString strBid;
+        strBid.Format(TEXT("Auction.openBid(%d,%d)"), pItemInfo->GetAuctionId(), pItemInfo->GetPriceBid());
+        COM_VERIFY(ExecuteJavaScript(strBid));
+    }
+}
+
+void CWowAHView::OnOpenBuyout(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+
 }
 
 CComPtr<IHTMLDocument3>	CWowAHView::_GetDocument()
@@ -293,7 +323,7 @@ void CWowAHView::OnNavigateComplete2(IDispatch* /*pDisp*/, VARIANT* URL)
 	{
 		//COM_DETECT_INTERFACE_FROM_REGISTER(spWebBrowser);
 
-		COM_VERIFY(spWebBrowser->put_Silent(VARIANT_TRUE));
+		//COM_VERIFY(spWebBrowser->put_Silent(VARIANT_TRUE));
 
 #pragma TODO(为什么这个时候得不到 IHTMLDocument2)
 		CComQIPtr<IHTMLDocument2> spDoc = spWebBrowser;
@@ -311,13 +341,15 @@ void CWowAHView::OnDownloadBegin()
 	FTLTRACE(TEXT("On Download Begin\n"));
 }
 
-void CWowAHView::_OpenLocalFileAndParse(ParsePageType pageType)
+void CWowAHView::_OpenTargetUrl(ParsePageType pageType)
 {
 	HRESULT hr = E_FAIL;
 	BOOL bRet = FALSE;
 
-	TCHAR szCurPath[MAX_PATH] = {0};
+    CString strUrl;
 
+#if 1
+	TCHAR szCurPath[MAX_PATH] = {0};
 	API_VERIFY( GetModuleFileName(NULL, szCurPath, _countof(szCurPath)) > 0);
 	API_VERIFY(PathRemoveFileSpec(szCurPath));
 	LPTSTR pszLastDirPos = StrRChr(szCurPath, NULL, _T('\\'));
@@ -336,9 +368,19 @@ void CWowAHView::_OpenLocalFileAndParse(ParsePageType pageType)
 
 	API_VERIFY(PathAppend(szCurPath, pszPage[pageType]));
 
-	CString strUrl;
 	strUrl.Format(TEXT("file:///%s"), szCurPath);
 	strUrl.Replace(_T('\\'), _T('/'));
+#else
+    static LPCTSTR pszPage[pptCount] = 
+    {
+        TEXT("https://www.battlenet.com.cn/wow/zh/vault/character/auction/horde/browse"),
+        TEXT("https://www.battlenet.com.cn/wow/zh/vault/character/auction/horde/create"),
+        TEXT("https://www.battlenet.com.cn/wow/zh/vault/character/auction/horde/bids"),
+        TEXT("https://www.battlenet.com.cn/wow/zh/vault/character/auction/horde/auctions"),
+    };
+    strUrl = pszPage[pageType];
+
+#endif 
 
 	COM_VERIFY(Navigate(strUrl));
 	m_ParsePageType = pageType;

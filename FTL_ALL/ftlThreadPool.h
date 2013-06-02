@@ -22,7 +22,7 @@
 
 #include "ftlThread.h"
 //#include "ftlSharePtr.h"
-#include "ftlFunctional.h"
+//#include "ftlFunctional.h"
 
 namespace FTL
 {

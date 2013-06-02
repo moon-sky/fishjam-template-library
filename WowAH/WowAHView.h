@@ -19,7 +19,7 @@ public:
 	~CWowAHView();
 
 	HRESULT Navigate(const CString& strURL);
-	HRESULT ExecuteJavaScript(const CString& strLanguage);
+	HRESULT ExecuteJavaScript(const CString& strCode);
 
 	enum ParsePageType
 	{
@@ -49,7 +49,12 @@ public:
 		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_MY_BID, OnParseMyBid)
 		COMMAND_ID_HANDLER_EX(ID_AH_PARSE_MY_AUCTION, OnParseMyAuction)
 		COMMAND_ID_HANDLER_EX(ID_AH_SEARCH_SPECIAL_ITEM, OnSearchSpecialItem)
-		MESSAGE_HANDLER_EX(UM_EVENT_DOCUMENT_COMPLETE, OnMsgEventDocumentComplete)
+
+        COMMAND_ID_HANDLER_EX(ID_AH_MY_TEST_PAGE, OnMyTestPage)
+        COMMAND_ID_HANDLER_EX(ID_AH_OPEN_BID, OnOpenBid)
+        COMMAND_ID_HANDLER_EX(ID_AH_OPEN_BUYOUT, OnOpenBuyout)
+
+        MESSAGE_HANDLER_EX(UM_EVENT_DOCUMENT_COMPLETE, OnMsgEventDocumentComplete)
 	END_MSG_MAP()
 
     // IDispatch events function info
@@ -78,7 +83,11 @@ public:
 	void OnParseSellerBrowse(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnParseCreateMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnParseMyBid(UINT uNotifyCode, int nID, CWindow wndCtl);
-	void OnParseMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnParseMyAuction(UINT uNotifyCode, int nID, CWindow wndCtl);
+
+    void OnMyTestPage(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnOpenBid(UINT uNotifyCode, int nID, CWindow wndCtl);
+    void OnOpenBuyout(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 	void OnSearchSpecialItem(UINT uNotifyCode, int nID, CWindow wndCtl);
 public:
@@ -86,7 +95,7 @@ public:
 	LRESULT OnMsgEventDocumentComplete(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 
-	void _OpenLocalFileAndParse(ParsePageType pageType);
+	void _OpenTargetUrl(ParsePageType pageType);
     void __stdcall OnEventDocumentComplete(IDispatch* /*pDisp*/, VARIANT* URL);
 	void __stdcall OnNavigateComplete2(IDispatch* /*pDisp*/, VARIANT* URL);
 	void __stdcall OnDownloadBegin();

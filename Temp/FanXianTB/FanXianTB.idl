@@ -1,0 +1,18 @@
+// FanXianTB.idl : IDL source for FanXianTB
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (FanXianTB.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(4D760228-A142-41AD-998D-91BD29E636DB),
+	version(1.0),
+	helpstring("FanXianTB 1.0 Type Library")
+]
+library FanXianTBLib
+{
+	importlib("stdole2.tlb");
+};

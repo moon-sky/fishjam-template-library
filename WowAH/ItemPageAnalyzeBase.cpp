@@ -163,7 +163,7 @@ ItemSellTimeInfo CItemPageAnalyzeBase::_ConvertTimeInfo(const CString& strTimeIn
 	{
 		timeInfo = istiLong;
 	}
-	else if(0 == strTimeInfo.Compare(TEXT("ÖÐ")))
+	else if(0 == strTimeInfo.Compare(TEXT("ÖÐµÈ")))
 	{
 		timeInfo = istiMiddle;
 	}

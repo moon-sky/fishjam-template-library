@@ -23,7 +23,7 @@
 #  include <process.h>    //for _beginthreadex
 #endif
 
-#include <ftlFunctional.h>
+//#include <ftlFunctional.h>
 //#include <ftlSharePtr.h>
 
 #include <queue>
