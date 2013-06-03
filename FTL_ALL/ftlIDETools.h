@@ -612,6 +612,7 @@ namespace FTL
 	*      4.具体项目中启用klocwork的检查
     *        Linux:设置Config FileName 为编译的命令脚本（并删除编译中的命令，免得重复编译?）
     *        Windows:设置Config FileName 为 xxx.sln, Build Parameter 中输入 --config Debug 等
+	*      注意：实测效果来看，这个工具非常耗时间(一个普通的工程耗时40分钟左右)，有方法优化吗？
     *   Code Coverage(代码覆盖率,要求语句>50%,分支>40%) -- BullsEye/GCov, 收集工具是 Clover/Cobertura
     *     实现机制有两种：1.插入二进制(GCov); 2.插入源码再进行编译(BullsEye Coverage)
     *     1.GCov(Linux) -- 编译链接选项中加入: -fprofie-arcs -ftest-coverage -lgcov

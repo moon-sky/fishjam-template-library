@@ -1,7 +1,8 @@
 /*******************************************************************************
-* 并发 goroutine --  go 函数
-* chanel -- 通信机制， 默认上是阻塞(类似生产者消费者队列)，可以用 select 来侦听多个channel
-* channel := make(chan string)   //创建一个string类型的channel
+Go让函数很容易成为非常轻量的线程，线程之前的通讯使用 channel 完成
+  并发 goroutine --  go 函数
+chanel -- 通信机制， 默认上是阻塞(类似生产者消费者队列)，可以用 select 来侦听多个channel
+channel := make(chan string)   //创建一个string类型的channel
 *******************************************************************************/
 
 package gostudy
