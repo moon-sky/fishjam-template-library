@@ -478,7 +478,7 @@ namespace FTL
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	CFStringFormater::CFStringFormater(DWORD dwInitAllocLength/* = MAX_BUFFER_LENGTH*/, 
-		DWORD dwMaxBufferTimes /* = STRINGFORMATER_MAX_BUFFER_TIMES */)
+		DWORD dwMaxBufferTimes /* = STRINGFORMATER_BUFFER_MAX_DEFAULT_TIMES */)
         : m_dwInitAllocLength(dwInitAllocLength)
 		, m_dwMaxBufferTimes(dwMaxBufferTimes)
     {
@@ -1055,10 +1055,11 @@ namespace FTL
     }
     void CFFastTrace::WriteLogInfo(const LPCTSTR lpszFormat,...)
     {
-        CFStringFormater formater;
+        CFStringFormater formater(MAX_BUFFER_LENGTH, 1024);  //240K
 		va_list argList;
         va_start(argList, lpszFormat);
-		formater.FormatV(lpszFormat,argList);
+		HRESULT hr = formater.FormatV(lpszFormat,argList);
+		FTLASSERT(SUCCEEDED(hr));
         va_end(argList);
         InternalWriteLogData(tlTrace, formater.GetString());
     }
@@ -1067,10 +1068,11 @@ namespace FTL
     {
         if (CheckLevel(level))
         {
-            CFStringFormater formater;
+            CFStringFormater formater(MAX_BUFFER_LENGTH, 1024);	//240K
             va_list argList;
             va_start(argList, lpszFormat);
-            formater.FormatV(lpszFormat,argList);
+            HRESULT hr = formater.FormatV(lpszFormat,argList);
+			FTLASSERT(SUCCEEDED(hr));
             va_end(argList);
             InternalWriteLogData(level, formater.GetString());
         }

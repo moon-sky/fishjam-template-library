@@ -239,6 +239,7 @@ protected:
 	afx_msg void OnImagetestDrawimage();
 	afx_msg void OnBnClickedBtnChooseFont();
 	afx_msg void OnBnClickedBtnChooseImage();
+	afx_msg void OnBnClickedBtnDumpImageProperty();
 protected:
 	static BOOL CALLBACK _DrawImageAbortProc(VOID * pParam);
 public:

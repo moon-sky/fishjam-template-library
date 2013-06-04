@@ -231,6 +231,478 @@ namespace FTL
 		return formater.GetString();
 	}
 
+
+	LPCTSTR CFGdiPlusUtil::GetImagePropertyIdString(PROPID id)
+	{
+		switch (id)
+		{
+			// Image property ID tags
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifIFD, TEXT("ExifIFD"));					//0x8769
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsIFD, TEXT("GpsIFD"));					//0x8825
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagNewSubfileType, TEXT("NewSubfileType"));	//0x00FE
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagSubfileType, TEXT("SubfileType"));			//0x00FF
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagImageWidth, TEXT("ImageWidth"));			//0x0100
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagImageHeight, TEXT("ImageHeight"));			//0x0101
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagBitsPerSample, TEXT("BitsPerSample"));		//0x0102
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagCompression, TEXT("Compression"));			//0x0103
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPhotometricInterp, TEXT("PhotometricInterp"));//0x0106
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThreshHolding, TEXT("ThreshHolding"));		//0x0107
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagCellWidth, TEXT("CellWidth"));				//0x0108
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagCellHeight, TEXT("CellHeight"));			//0x0109
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagFillOrder, TEXT("FillOrder"));				//0x010A
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagDocumentName, TEXT("DocumentName"));		//0x010D
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagImageDescription, TEXT("ImageDescription"));//0x010E
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagEquipMake, TEXT("EquipMake"));				//照相机制造商
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagEquipModel, TEXT("EquipModel"));			//照相机型号
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagStripOffsets, TEXT("StripOffsets"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagOrientation, TEXT("Orientation"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagSamplesPerPixel, TEXT("SamplesPerPixel"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagRowsPerStrip, TEXT("RowsPerStrip"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagStripBytesCount, TEXT("StripBytesCount"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagMinSampleValue, TEXT("MinSampleValue"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagMaxSampleValue, TEXT("MaxSampleValue"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagXResolution, TEXT("XResolution"));			//水平分辨率
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagYResolution, TEXT("YResolution"));			//垂直分辨率
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPlanarConfig, TEXT("PlanarConfig"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPageName, TEXT("PageName"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagXPosition, TEXT("XPosition"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagYPosition, TEXT("YPosition"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagFreeOffset, TEXT("FreeOffset"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagFreeByteCounts, TEXT("FreeByteCounts"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGrayResponseUnit, TEXT("GrayResponseUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGrayResponseCurve, TEXT("GrayResponseCurve"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagT4Option, TEXT("T4Option"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagT6Option, TEXT("T6Option"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagResolutionUnit, TEXT("ResolutionUnit"));			//分辨率单位(2 -- ?)
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPageNumber, TEXT("PageNumber"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTransferFuncition, TEXT("TransferFuncition"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagSoftwareUsed, TEXT("SoftwareUsed"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagDateTime, TEXT("DateTime"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagArtist, TEXT("Artist"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagHostComputer, TEXT("HostComputer"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPredictor, TEXT("Predictor"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagWhitePoint, TEXT("WhitePoint"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPrimaryChromaticities, TEXT("PrimaryChromaticities"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagColorMap, TEXT("ColorMap"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagHalftoneHints, TEXT("HalftoneHints"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTileWidth, TEXT("TileWidth"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTileLength, TEXT("TileLength"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTileOffset, TEXT("TileOffset"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTileByteCounts, TEXT("TileByteCounts"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagInkSet, TEXT("InkSet"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagInkNames, TEXT("InkNames"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagNumberOfInks, TEXT("NumberOfInks"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagDotRange, TEXT("DotRange"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTargetPrinter, TEXT("TargetPrinter"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExtraSamples, TEXT("ExtraSamples"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagSampleFormat, TEXT("SampleFormat"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagSMinSampleValue, TEXT("SMinSampleValue"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagSMaxSampleValue, TEXT("SMaxSampleValue"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTransferRange, TEXT("TransferRange"));
+
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGProc, TEXT("JPEGProc"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGInterFormat, TEXT("JPEGInterFormat"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGInterLength, TEXT("JPEGInterLength"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGRestartInterval, TEXT("JPEGRestartInterval"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGLosslessPredictors, TEXT("JPEGLosslessPredictors"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGPointTransforms, TEXT("JPEGPointTransforms"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGQTables, TEXT("JPEGQTables"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGDCTables, TEXT("JPEGDCTables"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGACTables, TEXT("JPEGACTables"));
+
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagYCbCrCoefficients, TEXT("YCbCrCoefficients"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagYCbCrSubsampling, TEXT("YCbCrSubsampling"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagYCbCrPositioning, TEXT("YCbCrPositioning"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagREFBlackWhite, TEXT("REFBlackWhite"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagICCProfile, TEXT("ICCProfile"));
+			// for embedded ICC in TIFF
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGamma, TEXT("Gamma"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagICCProfileDescriptor, TEXT("ICCProfileDescriptor"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagSRGBRenderingIntent, TEXT("SRGBRenderingIntent"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagImageTitle, TEXT("ImageTitle"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagCopyright, TEXT("Copyright"));
+
+			// Extra TAGs (Like Adobe Image Information tags etc.)
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagResolutionXUnit, TEXT("ResolutionXUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagResolutionYUnit, TEXT("ResolutionYUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagResolutionXLengthUnit, TEXT("ResolutionXLengthUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagResolutionYLengthUnit, TEXT("ResolutionYLengthUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPrintFlags, TEXT("PrintFlags"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPrintFlagsVersion, TEXT("PrintFlagsVersion"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPrintFlagsCrop, TEXT("PrintFlagsCrop"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPrintFlagsBleedWidth, TEXT("PrintFlagsBleedWidth"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPrintFlagsBleedWidthScale, TEXT("PrintFlagsBleedWidthScale"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagHalftoneLPI, TEXT("HalftoneLPI"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagHalftoneLPIUnit, TEXT("HalftoneLPIUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagHalftoneDegree, TEXT("HalftoneDegree"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagHalftoneShape, TEXT("HalftoneShape"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagHalftoneMisc, TEXT("HalftoneMisc"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagHalftoneScreen, TEXT("HalftoneScreen"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagJPEGQuality, TEXT("JPEGQuality"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGridSize, TEXT("GridSize"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailFormat, TEXT("ThumbnailFormat"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailWidth, TEXT("ThumbnailWidth"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailHeight, TEXT("ThumbnailHeight"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailColorDepth, TEXT("ThumbnailColorDepth"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailPlanes, TEXT("ThumbnailPlanes"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailRawBytes, TEXT("ThumbnailRawBytes"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailSize, TEXT("ThumbnailSize"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailCompressedSize, TEXT("ThumbnailCompressedSize"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagColorTransferFunction, TEXT("ColorTransferFunction"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailData, TEXT("ThumbnailData"));	// RAW thumbnail bits in
+
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailImageWidth, TEXT("ThumbnailImageWidth"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailImageHeight, TEXT("ThumbnailImageHeight"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailBitsPerSample, TEXT("ThumbnailBitsPerSample"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailCompression, TEXT("ThumbnailCompression"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailPhotometricInterp, TEXT("ThumbnailPhotometricInterp"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailImageDescription, TEXT("ThumbnailImageDescription"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailEquipMake, TEXT("ThumbnailEquipMake"));
+			// Input equipment
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailEquipModel, TEXT("ThumbnailEquipModel"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailStripOffsets, TEXT("ThumbnailStripOffsets"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailOrientation, TEXT("ThumbnailOrientation"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailSamplesPerPixel, TEXT("ThumbnailSamplesPerPixel"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailRowsPerStrip, TEXT("ThumbnailRowsPerStrip"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailStripBytesCount, TEXT("ThumbnailStripBytesCount"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailResolutionX, TEXT("ThumbnailResolutionX"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailResolutionY, TEXT("ThumbnailResolutionY"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailPlanarConfig, TEXT("ThumbnailPlanarConfig"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailResolutionUnit, TEXT("ThumbnailResolutionUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailTransferFunction, TEXT("ThumbnailTransferFunction"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailSoftwareUsed, TEXT("ThumbnailSoftwareUsed"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailDateTime, TEXT("ThumbnailDateTime"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailArtist, TEXT("ThumbnailArtist"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailWhitePoint, TEXT("ThumbnailWhitePoint"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailPrimaryChromaticities, TEXT("ThumbnailPrimaryChromaticities"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailYCbCrCoefficients, TEXT("ThumbnailYCbCrCoefficients"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailYCbCrSubsampling, TEXT("ThumbnailYCbCrSubsampling"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailYCbCrPositioning, TEXT("ThumbnailYCbCrPositioning"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailRefBlackWhite, TEXT("ThumbnailRefBlackWhite"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagThumbnailCopyRight, TEXT("ThumbnailCopyRight"));
+
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagLuminanceTable, TEXT("LuminanceTable"));				//亮度表
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagChrominanceTable, TEXT("ChrominanceTable"));			//色度表
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagFrameDelay, TEXT("FrameDelay"));						
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagLoopCount, TEXT("LoopCount"));
+#if (GDIPVER >= 0x0110)
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGlobalPalette, TEXT("GlobalPalette"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagIndexBackground, TEXT("IndexBackground"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagIndexTransparent, TEXT("IndexTransparent"));
+#endif //(GDIPVER >= 0x0110)
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPixelUnit, TEXT("PixelUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPixelPerUnitX, TEXT("PixelPerUnitX"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPixelPerUnitY, TEXT("PixelPerUnitY"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagPaletteHistogram, TEXT("PaletteHistogram"));
+
+			//EXIF specific tag
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifExposureTime, TEXT("ExifExposureTime"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFNumber, TEXT("ExifFNumber"));					//光圈值(如 0012/0005 表示 f/2.4)
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifExposureProg, TEXT("ExifExposureProg"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSpectralSense, TEXT("ExifSpectralSense"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifISOSpeed, TEXT("ExifISOSpeed"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifOECF, TEXT("ExifOECF"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifVer, TEXT("ExifVer"));							//类型是 Undefined(0220)
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifDTOrig, TEXT("ExifDTOrig"));					//拍摄时间
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifDTDigitized, TEXT("ExifDTDigitized"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifCompConfig, TEXT("ExifCompConfig"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifCompBPP, TEXT("ExifCompBPP"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifShutterSpeed, TEXT("ExifShutterSpeed"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifAperture, TEXT("ExifAperture"));				//? -- 3640/1441
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifBrightness, TEXT("ExifBrightness"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifExposureBias, TEXT("ExifExposureBias"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifMaxAperture, TEXT("ExifMaxAperture"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSubjectDist, TEXT("ExifSubjectDist"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifMeteringMode, TEXT("ExifMeteringMode"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifLightSource, TEXT("ExifLightSource"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFlash, TEXT("ExifFlash"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFocalLength, TEXT("ExifFocalLength"));			//? -- 0431/0100
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSubjectArea, TEXT("ExifSubjectArea"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifMakerNote, TEXT("ExifMakerNote"));				//Undeined
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifUserComment, TEXT("ExifUserComment"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifDTSubsec, TEXT("ExifDTSubsec"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifDTOrigSS, TEXT("ExifDTOrigSS"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifDTDigSS, TEXT("ExifDTDigSS"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFPXVer, TEXT("ExifFPXVer"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifColorSpace, TEXT("ExifColorSpace"));			//
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifPixXDim, TEXT("ExifPixXDim"));					//宽度, 如 3200 像素
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifPixYDim, TEXT("ExifPixYDim"));					//高度, 如 2400 像素
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifRelatedWav, TEXT("ExifRelatedWav"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifInterop, TEXT("ExifInterop"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFlashEnergy, TEXT("ExifFlashEnergy"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSpatialFR, TEXT("ExifSpatialFR"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFocalXRes, TEXT("ExifFocalXRes"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFocalYRes, TEXT("ExifFocalYRes"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFocalResUnit, TEXT("ExifFocalResUnit"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSubjectLoc, TEXT("ExifSubjectLoc"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifExposureIndex, TEXT("ExifExposureIndex"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSensingMethod, TEXT("ExifSensingMethod"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFileSource, TEXT("ExifFileSource"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSceneType, TEXT("ExifSceneType"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifCfaPattern, TEXT("ExifCfaPattern"));
+
+			// New EXIF 2.2 properties
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifCustomRendered, TEXT("ExifCustomRendered"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifExposureMode, TEXT("ExifExposureMode"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifWhiteBalance, TEXT("ExifWhiteBalance"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifDigitalZoomRatio, TEXT("ExifDigitalZoomRatio"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifFocalLengthIn35mmFilm, TEXT("ExifFocalLengthIn35mmFilm"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSceneCaptureType, TEXT("ExifSceneCaptureType"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifGainControl, TEXT("ExifGainControl"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifContrast, TEXT("ExifContrast"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSaturation, TEXT("ExifSaturation"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSharpness, TEXT("ExifSharpness"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifDeviceSettingDesc, TEXT("ExifDeviceSettingDesc"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifSubjectDistanceRange, TEXT("ExifSubjectDistanceRange"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifUniqueImageID, TEXT("ExifUniqueImageID"));
+
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsVer, TEXT("GpsVer"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsLatitudeRef, TEXT("GpsLatitudeRef"));				//ASCII -- N
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsLatitude, TEXT("GpsLatitude"));						//维度，如 30/1,34/1,23104/1000 表示"30; 34; 23.104"
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsLongitudeRef, TEXT("GpsLongitudeRef"));				//ASCII -- E
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsLongitude, TEXT("GpsLongitude"));					//经度，如 104/1, 3/1, 56143/1000 表示 "104; 3; 56.143"
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsAltitudeRef, TEXT("GpsAltitudeRef"));				//高度标识?
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsAltitude, TEXT("GpsAltitude"));						//高度，如 454299/1000 表示 "454.299"
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsGpsTime, TEXT("GpsGpsTime"));						//时间(似乎是GMT)？如 11/1,36/1,39/1，Windows的属性中未显示
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsGpsSatellites, TEXT("GpsGpsSatellites"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsGpsStatus, TEXT("GpsGpsStatus"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsGpsMeasureMode, TEXT("GpsGpsMeasureMode"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsGpsDop, TEXT("GpsGpsDop"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsSpeedRef, TEXT("GpsSpeedRef"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsSpeed, TEXT("GpsSpeed"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsTrackRef, TEXT("GpsTrackRef"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsTrack, TEXT("GpsTrack"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsImgDirRef, TEXT("GpsImgDirRef"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsImgDir, TEXT("GpsImgDir"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsMapDatum, TEXT("GpsMapDatum"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDestLatRef, TEXT("GpsDestLatRef"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDestLat, TEXT("GpsDestLat"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDestLongRef, TEXT("GpsDestLongRef"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDestLong, TEXT("GpsDestLong"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDestBearRef, TEXT("GpsDestBearRef"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDestBear, TEXT("GpsDestBear"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDestDistRef, TEXT("GpsDestDistRef"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDestDist, TEXT("GpsDestDist"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsProcessingMethod, TEXT("GpsProcessingMethod"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsAreaInformation, TEXT("GpsAreaInformation"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDate, TEXT("GpsDate"));							//ASCII, 如 2013:05:09
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagGpsDifferential, TEXT("GpsDifferential"));
+			//HANDLE_CASE_RETURN_STRING_EX(xxxxx, TEXT("xxxxx"));
+
+
+			//Gdiplus 中没有定义的Tag  -- http://www.3dbrew.org/wiki/MPO
+#ifndef PropertyTagExifInteroperabilityVersion	
+#  define PropertyTagExifInteroperabilityVersion	0x5042
+#endif 
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifInteroperabilityVersion, TEXT("ExifInteroperabilityVersion"));
+
+			default:
+				FTLTRACEEX(tlWarning, TEXT("Warning: Unknown Property Tag Id for 0x%x\n"), id);
+				FTLASSERT(FALSE && TEXT("Unknown Property Tag Id"));
+				break;
+		}
+		return TEXT("Unknown");
+	}
+
+	LPCTSTR CFGdiPlusUtil::GetImagePropertyTagTypeString(WORD type)
+	{
+		switch (type)
+		{
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTypeByte, TEXT("Byte"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTypeASCII, TEXT("ASCII"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTypeShort, TEXT("Short"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTypeLong, TEXT("Long"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTypeRational, TEXT("Rational"));
+			//缺少6
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTypeUndefined, TEXT("Undefined"));
+			//缺少8
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTypeSLONG, TEXT("SLONG"));
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagTypeSRational, TEXT("SRational"));
+		default:
+			FTLASSERT(FALSE && TEXT("Not Found PropertyItem::type"));
+			break;
+		}
+		return TEXT("Unknown");
+	}
+
+	LPCTSTR CFGdiPlusUtil::GetGdiplusPropertyItemString(const Gdiplus::PropertyItem* pItem, CFStringFormater& formater)
+	{
+		FTLASSERT(pItem);
+		if (pItem)
+		{
+			formater.Format(TEXT("id=0x%x(%s), length=%d, type=%d(%s),value="),
+				pItem->id, GetImagePropertyIdString(pItem->id),
+				pItem->length, pItem->type, 
+				GetImagePropertyTagTypeString(pItem->type));
+
+			//根据类型获取具体的值
+			switch (pItem->type)
+			{
+			case PropertyTagTypeByte:
+				{
+					//最多只打印100个字节的数据
+					ULONG nPrintLen = FTL_MIN( pItem->length, 100);
+					for(ULONG i = 0; i < nPrintLen; ++i)
+					{
+						formater.AppendFormat(TEXT("0x%x,"), ((byte*)pItem->value)[i]);		
+					}
+				}
+				break;
+			case PropertyTagTypeASCII:
+				{
+					//ASCII时长度是包含结束时的NULL，因此可以直接转换
+					formater.AppendFormat(TEXT("%s"), CA2T((const char*)pItem->value));
+				}
+				break;
+			case PropertyTagTypeShort:
+				{
+					for( ULONG i=0; i<pItem->length / 2; ++i )
+					{
+						formater.AppendFormat(TEXT("%d,"), ((unsigned short*)pItem->value)[i]);
+					}
+				}
+				break;
+			case PropertyTagTypeLong:
+				{
+					for( ULONG i=0; i<pItem->length / 4; ++i )
+					{
+						formater.AppendFormat(TEXT("%d,"), ((unsigned long*)pItem->value)[i]);
+					}
+				}
+				break;
+			case PropertyTagTypeRational:
+				{
+					for( ULONG i=0; i <pItem->length / 8; ++i )
+					{
+						formater.AppendFormat(TEXT("%d/%d,"), 
+							((unsigned long*)pItem->value)[2*i + 0], 
+							((unsigned long*)pItem->value)[2*i + 1]);
+					}
+				}
+				break;
+			case PropertyTagTypeUndefined:
+				{
+					//最多只打印100个字节的数据
+					ULONG nPrintLen = FTL_MIN( pItem->length, 100);
+					for(ULONG i = 0; i < nPrintLen; ++i)
+					{
+						formater.AppendFormat(TEXT("0x%x,"), ((byte*)pItem->value)[i]);		
+					}
+				}
+				break;
+			case PropertyTagTypeSLONG:
+				{
+					for( ULONG i=0; i<pItem->length / 4; ++i )
+					{
+						formater.AppendFormat(TEXT("%d,"), ((signed long*)pItem->value)[i]);
+					}
+				}
+				break;
+			case PropertyTagTypeSRational:
+				{
+					for( ULONG i=0; i <pItem->length / 8; ++i )
+					{
+						formater.AppendFormat(TEXT("%d/%d,"), 
+							((signed long*)pItem->value)[2*i + 0], 
+							((signed long*)pItem->value)[2*i + 1]);
+					}
+				}
+				break;
+			default:
+				FTLASSERT(FALSE && TEXT("Not Found PropertyItem::type"));
+				break;
+			}
+			return formater.GetString();
+		}
+		return NULL;
+	}
+
+	Gdiplus::Status CFGdiPlusUtil::GetImageProperty(LPCTSTR pszImagePath, CFStringFormater& formater)
+	{
+		Gdiplus::Status sts = Gdiplus::InvalidParameter;
+		Gdiplus::Image* pImage = Gdiplus::Image::FromFile(CT2W(pszImagePath));
+		if (pImage)
+		{
+			GDIPLUS_VERIFY(pImage->GetLastStatus());
+
+			UINT nTotalBufferSize = 0;
+			UINT nNumProperties = 0;
+			GDIPLUS_VERIFY(pImage->GetPropertySize(&nTotalBufferSize, &nNumProperties));
+			Gdiplus::PropertyItem* pAllItems = (Gdiplus::PropertyItem*)new BYTE[nTotalBufferSize];// (Gdiplus::PropertyItem*)operator new( nTotalBufferSize ); 
+			if (pAllItems)
+			{
+				ZeroMemory(pAllItems, nTotalBufferSize);
+				GDIPLUS_VERIFY(pImage->GetAllPropertyItems(nTotalBufferSize, nNumProperties, pAllItems));
+				for (UINT i=0; i< nNumProperties; ++i )
+				{
+					const Gdiplus::PropertyItem& item = pAllItems[i];
+					CFStringFormater itemFormater;
+					formater.AppendFormat(TEXT("index=%d, item=[%s]\n"),
+						i, GetGdiplusPropertyItemString(&item, itemFormater));
+				}
+				//operator delete(pAllItems);
+				delete [] pAllItems;
+			}
+			delete pImage;
+		}
+
+		return sts;
+	}
+
+	Gdiplus::Status  CFGdiPlusUtil::GetImageSaveEncoder(LPCWSTR pszFileExt, OUT CLSID* pClsidEncoder)
+	{
+		FTLASSERT(pszFileExt);
+		FTLASSERT(pClsidEncoder);
+		if (!pszFileExt || !pClsidEncoder)
+		{
+			return Gdiplus::InvalidParameter;
+		}
+
+		*pClsidEncoder = CLSID_NULL;
+
+		Gdiplus::Status sts = Gdiplus::InvalidParameter;
+		UINT nEncoders = 0;
+		UINT nBytes  = 0;
+		GDIPLUS_VERIFY(Gdiplus::GetImageEncodersSize( &nEncoders, &nBytes ));
+		if (Gdiplus::Ok == sts)
+		{
+			Gdiplus::ImageCodecInfo* pEncoders = (Gdiplus::ImageCodecInfo*)(new BYTE[nBytes]);
+			if (pEncoders)
+			{
+				GDIPLUS_VERIFY(Gdiplus::GetImageEncoders( nEncoders, nBytes, pEncoders ));
+
+				BOOL bFound = FALSE;
+				for( UINT iCodec = 0; iCodec < nEncoders && !bFound; iCodec++ )
+				{
+					CStringW strExtensions( pEncoders[iCodec].FilenameExtension );
+
+					int iStart = 0;
+					do
+					{
+						CStringW strExtension = ::PathFindExtensionW( strExtensions.Tokenize( L";", iStart ) );
+						if( iStart != -1 )
+						{
+							if( strExtension.CompareNoCase( pszFileExt ) == 0 )
+							{
+								*pClsidEncoder = pEncoders[iCodec].Clsid;
+								bFound = TRUE;
+								sts = Gdiplus::Ok;
+								break;
+							}
+						}
+					} while( iStart != -1 );
+				}
+
+				delete [] pEncoders;
+			}
+			else
+			{
+				sts = Gdiplus::OutOfMemory;
+			}
+		}
+		return sts;
+	}
+
 	Gdiplus::Color CFGdiPlusUtil::ConvertColor(COLORREF clrGdi, BOOL bSupportAlpha /* = FALSE */)
 	{
 		BYTE bAlpha = GetAValue(clrGdi);

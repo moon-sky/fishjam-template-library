@@ -189,6 +189,7 @@ BEGIN_MESSAGE_MAP(CGdiPlusPage, CPropertyPage)
 	
 	ON_BN_CLICKED(IDC_BTN_CHOOSE_FONT, &CGdiPlusPage::OnBnClickedBtnChooseFont)
 	ON_BN_CLICKED(IDC_BTN_CHOOSE_IMAGE, &CGdiPlusPage::OnBnClickedBtnChooseImage)
+	ON_BN_CLICKED(IDC_BTN_DUMP_IMAGE_PROPERTY, &CGdiPlusPage::OnBnClickedBtnDumpImageProperty)
 	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
@@ -1347,6 +1348,45 @@ void CGdiPlusPage::OnBnClickedBtnChooseImage()
 	}
 }
 
+void CGdiPlusPage::OnBnClickedBtnDumpImageProperty()
+{
+	UpdateData(TRUE);
+	if (!m_testParam.m_strPaintImagePath.IsEmpty())
+	{
+		Gdiplus::Status sts = Gdiplus::Ok;
+		Gdiplus::Image* pImage = Image::FromFile(m_testParam.m_strPaintImagePath);
+		if (pImage)
+		{
+			PropertyItem item = {0};
+			item.id = PropertyTagGpsLongitude;
+			item.type = PropertyTagTypeRational;
+			ULONG gpsLongitude[] = 
+			{
+				30,
+				1,
+				40,
+				1,
+				50,
+				1
+			};
+			item.value = &gpsLongitude;
+			item.length = sizeof(gpsLongitude);
+			GDIPLUS_VERIFY(pImage->SetPropertyItem(&item));
+
+			CLSID clsidEncoder = CLSID_NULL;
+			GDIPLUS_VERIFY(CFGdiPlusUtil::GetImageSaveEncoder(L".jpg", &clsidEncoder));
+			GDIPLUS_VERIFY(pImage->Save(L"D:\\test.jpg", &clsidEncoder, NULL));
+
+			delete pImage;
+		}
+		//FTL::CFStringFormater	strFormater(1024);
+		//GDIPLUS_VERIFY(CFGdiPlusUtil::GetImageProperty(m_testParam.m_strPaintImagePath, strFormater));
+		//if (Gdiplus::Ok == sts)
+		//{
+		//	FTLTRACE(TEXT("Image Property=%s\n"), strFormater.GetString());
+		//}
+	}
+}
 
 void CGdiPlusPage::OnMouseMove(UINT nFlags, CPoint point)
 {

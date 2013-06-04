@@ -5,7 +5,9 @@
     (类似 ResourceGuard?)，按照 LIFO(后进先出)的顺序执行
     src, err := os.Open(srcFilePath);  defer src.Close();
   panic -- 不可恢复的错误,创建一个运行时错误并使程序停止，程序代码中应该避免
-  recover -- 捕捉panic，必须在被 defer的函数内部才有效？ 在 panic 时重新获得Go程的控制权并恢复正常的执行
+  recover -- 捕捉panic，仅在defer的函数内部才有效。在panic时重新获得Go程的控制权并恢复正常的执行
+    正常的执行过程中，recover会返回nil且没有任何效果；但如果当前的goroutine在panic过程中，可以捕获
+	到panic的输入值，并且恢复正常的执行
 
   if err := file.Chmod(0664); err != nil { xxx }
 

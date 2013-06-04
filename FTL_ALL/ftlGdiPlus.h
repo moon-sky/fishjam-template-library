@@ -219,6 +219,16 @@ namespace FTL
 		//获取Font相关的各种信息
 		FTLINLINE static LPCTSTR GetFontInfo(CFStringFormater& formater, Gdiplus::Font* pFont, Gdiplus::Graphics* pGraphics);
 
+		//获取Exif等属性信息 -- http://210.43.24.222/chy/3sbase/news/?228.html
+		//Property Item 描述信息: http://msdn.microsoft.com/zh-cn/library/windows/desktop/ms534416
+		FTLINLINE static LPCTSTR GetImagePropertyIdString(PROPID id);
+		FTLINLINE static LPCTSTR GetImagePropertyTagTypeString(WORD type);
+		FTLINLINE static LPCTSTR GetGdiplusPropertyItemString(const Gdiplus::PropertyItem* pItem, CFStringFormater& formater);
+
+		FTLINLINE static Gdiplus::Status GetImageProperty(LPCTSTR pszImagePath, CFStringFormater& formater);
+
+		FTLINLINE static Gdiplus::Status GetImageSaveEncoder(LPCWSTR pszFileExt, OUT CLSID* pClsidEncoder);
+
 		FTLINLINE static Gdiplus::Color ConvertColor(COLORREF clrGdi, BOOL bSupportAlpha = FALSE);
 		FTLINLINE static COLORREF ConvertColor(Gdiplus::Color& clrGdiPlus, BOOL bSupportAlpha = FALSE);
 

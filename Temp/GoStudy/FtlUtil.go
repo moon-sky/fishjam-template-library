@@ -35,6 +35,21 @@ func MySum(nums ...int) int {
 	return sum
 }
 
+//计算slice的平均值
+func MyAverage(xs []float32) (ave float32) {
+	sum := float32(0.0)
+	switch len(xs) {
+	case 0:
+		ave = 0 //如果长度是0，返回0(避免除以0)
+	default:
+		for _, v := range xs {
+			sum += v
+		}
+		ave = sum / float32(len(xs)) //必须转换成 float32/float64
+	}
+	return ave
+}
+
 //转换16进制的字符为对应的整数
 func UnHex(c byte) byte {
 	switch {
@@ -65,5 +80,25 @@ func NumberConverter(num int) (name string) {
 		name = "unknown"
 	}
 	return
+}
 
+//计算斐波那契数列 -- 尚未调用
+func Fibonacci(value int) []int {
+	x := make([]int, value) //创建用于保存执行结果的slice
+	x[0], x[1] = 1, 1
+	for n := 2; n < value; n++ {
+		x[n] = x[n-1] + x[n-2]
+	}
+	return x
+}
+
+//一个冒泡排序的实现, 调用: n:=[]int{ 2,-1, 0, 4, 5 }; BubbleSort(n);
+func BubbleSort(n []int) {
+	for i := 0; i < len(n)-1; i++ {
+		for j := i + 1; j < len(n); j++ {
+			if n[j] < n[i] {
+				n[i], n[j] = n[j], n[i]
+			}
+		}
+	}
 }

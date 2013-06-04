@@ -3,6 +3,8 @@
   http://www.open-open.com/lib/view/open1352201112438.html
   http://www.open-open.com/lib/view/open1352264498172.html
 
+[]定义了slice, [size]定义了数组，*定义了指针
+
 执行程序的入口点 func 是 main
 
 注意：
@@ -12,9 +14,14 @@
  3.通常Go程序仅在for循环语句中使用分号，以此来分开初始化器、条件和增量单元
  4.没有 public/protected/private 的关键字，如果想让方法可以被别的包访问的话，第一个字母必须大写。
 
-内存分配
-  new(T) -- 分配内存的内建函数, 只是将内存清零，而不是初始化内存，new(T)返回一个指向新分配的类型为T的零值的指针。
-  make(T, args)--仅用于创建内建的slice、map和channel（消息管道）,并返回类型T（不是*T）的一个被初始化了的（不是零）实例
+内存分配原语 -- 两种内存分配方式区别的原因是 slice,map,channel 使用前必须初始化内部数据结构(非零)
+  new(T)--分配内存的内建函数,返回指针，只是将内存清零，而不是初始化内存，
+    new(T)返回一个指向新分配的类型为T的零值的指针。
+	即使用者可用new创建一个数据结构的实例并且可以直接工作
+  make(T, args)--仅用于创建内建的slice、map和channel(消息管道),
+    并返回一个被初始化了的(不是零)类型T(不是*T)实例
+
+指针 -- Go有指针，但没有指针运算(从使用上来说，更像引用)，取址操作符(&)，取值操作符(*)
 
 切片 -- 一个具有三项内容的描述符，包括指向数据（在一个数组内部）的指针、长度以及容量
 函数 -- func [p 特定类型] 函数名(变量名 变量类型 , ...) (返回值 返回类型,...) { 函数体 }
@@ -27,7 +34,9 @@
    pFun:=func(){xxx}  //定义匿名函数并赋值给变量
    pFun()		      //通过变量调用函数
 
-函数闭包 -- 返回匿名函数的函数？ func nextNum() func() int { xxx := 100; return func() int { return xxx; }
+函数闭包 -- 返回匿名函数的函数？
+   func plusX(x int) func(int) int { return func(y int) int { return x + y; }
+   闭包可以毫不费力的将局部变量传递到回调
 
 关键字
   select(选择不同类型的通讯),chan,
@@ -44,6 +53,10 @@
 
 利用多赋值(是这个名字吗？)，要交换两个变量的值非常简单，不需要定义中间变量
   x, y = y , x
+
+定义包时，报名的约定是使用小写字符(不应有下划线或混合大小写)。 import [替代名] "包名"
+  导入时(import)可以指定路径(如 "./mypackage")，并可选替代名(通常用于解决冲突)
+  包中函数首字母大写时表示是导出的(包外部可见)，私有函数以小写字母开头
 *******************************************************************************/
 package gostudy
 
@@ -51,6 +64,7 @@ import (
 	"fmt"
 	//"math"
 	"testing"
+	//"utf8"
 )
 
 /*******************************************************************************
@@ -177,25 +191,25 @@ func TestRange(t *testing.T) {
 		fmt.Printf("Range from List[%d]=%s\n", idx, val)
 	}
 
+	strInfo := "Go语言测试"
 	//从字符串string中返回 int序号 + 字符 的键值对
 	//  注意：返回的pos是UTF8的字节位置，而非字符位置; char 是独立的Unicode字符
 	//       即输出的 pos 为 { 0, 1, 2,5, 8, 11 } -- 术语为 rune
-	for pos, char := range "Go语言测试" {
+	for pos, char := range strInfo {
 		fmt.Printf("Character '%c' at position %d\n", char, pos)
 	}
+
+	byteSilce := []byte(strInfo)
+	fmt.Printf("byteSilce for strInfo is %v\n", byteSilce)
+
+	//可以转换成[]int32, 每个int32保存Unicode编码
+	intSilce := []int32(strInfo)
+	fmt.Printf("intSlice for strInfo is %v\n", intSilce)
 
 	//测试switch...case
 	if UnHex('E') != 14 {
 		t.Error("Switch case for UnHex Fail")
 	}
-}
-
-func TestFmtPackage(t *testing.T) {
-	//%T -- 打印类型，如 func(),
-	fmt.Printf("hello world\n") //等价于 print("hello world")
-	fmt.Printf("some string value:%s\n", myFunReturnString(100))
-
-	t.Log("some info in fmt package testing")
 }
 
 func TestNumberConverter(t *testing.T) {
@@ -215,7 +229,8 @@ func tripleFunc(num int) (result int) {
 	return
 }
 
-func callback(num int, f func(int) int) int {
+//回调函数 -- 能否 typedef ?
+func MYCallback(num int, f func(int) int) int {
 	return f(num)
 }
 
@@ -229,6 +244,7 @@ func TestCallbackFunc(t *testing.T) {
 		fmt.Printf("funs[%d]=%d\n", i, funs[i](10))
 	}
 
-	numTwice := callback(10, twiceFunc)
+	//传入函数指针，通过回调的方式进行调用
+	numTwice := MYCallback(10, twiceFunc)
 	fmt.Printf("twiceFun for 10 is %d\n", numTwice)
 }
