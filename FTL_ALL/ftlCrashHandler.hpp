@@ -1183,6 +1183,11 @@ namespace FTL
     {
         FTLASSERT(NULL == s_pSingleCrashHandler);
         s_pSingleCrashHandler = this;
+		s_pCriticalSection = new CRITICAL_SECTION;
+		if (s_pCriticalSection)
+		{
+			InitializeCriticalSection(s_pCriticalSection);
+		}
         m_pfnOrigFilt = NULL;
     }
     CFCrashHandler::~CFCrashHandler()
@@ -1191,6 +1196,12 @@ namespace FTL
         {
             RestoreCrashHandlerFilter();
         }
+		if (s_pCriticalSection)
+		{
+			DeleteCriticalSection(s_pCriticalSection);
+			delete s_pCriticalSection;
+			s_pCriticalSection = NULL;
+		}
         s_pSingleCrashHandler = NULL;
     }
     BOOL CFCrashHandler::SetDefaultCrashHandlerFilter()
@@ -1209,11 +1220,15 @@ namespace FTL
 
 
     __declspec(selectany) CFCrashHandler* CFCrashHandler::s_pSingleCrashHandler = NULL;
+	__declspec(selectany) CRITICAL_SECTION* CFCrashHandler::s_pCriticalSection = NULL;
     LONG __stdcall CFCrashHandler::DefaultCrashHandlerFilter( PEXCEPTION_POINTERS pExPtrs )
     {
 		OutputDebugString(_T("Enter CFCrashHandler::DefaultCrashHandlerFilter\r\n"));
 
 		FTLASSERT(NULL != s_pSingleCrashHandler);
+#if 0
+		EnterCriticalSection( s_pCriticalSection ); 
+#endif 
         if ( EXCEPTION_STACK_OVERFLOW == pExPtrs->ExceptionRecord->ExceptionCode )
         {
             OutputDebugString(_T("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\r\n"));
@@ -1245,6 +1260,10 @@ namespace FTL
 			break;
 		}
 		SAFE_DELETE(pLocalModule);
+
+#if 0
+		LeaveCriticalSection(s_pCriticalSection); 
+#endif
 
         //if (s_pfnOrigFilt)
         //{

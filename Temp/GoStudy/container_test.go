@@ -1,15 +1,16 @@
 /*******************************************************************************
-array--由 [n]type 定义，生成固定大小的容器，生成后即不能改变大小，是值类型，
+array(数组) -- 由 [n]type 定义，生成固定大小的容器，生成后即不能改变大小，是值类型，
   可使用方括号完成对元素赋值或索引，注意其序号是 zero-base(零基址)的
-slice -- 由 make([]type, len, [cap]) 或 array[n:m] 定义(从序号n到m-1,长度为m-n)，是引用类型
+  可定义多维数组
+slice(切片) -- 由 make([]type, len, [cap]) 或 array[n:m] 定义(从序号n到m-1,长度为m-n)，是引用类型
   底层是一个指向固定长度的array的指针，
   当使用append追加新的元素时会返回追加后的新的，与原来的slice相同类型的slice
 map -- 由 map[Fromtype]ToType 定义
 
 在container中提供了如下的容器
-heap
-list
-ring
+  heap
+  list
+  ring
 *******************************************************************************/
 
 package gostudy
@@ -72,7 +73,7 @@ func TestSlice(t *testing.T) {
 
 //定义 string -> int 的映射
 func TestMap(t *testing.T) {
-	//方法1
+	//构造方法1
 	m1 := make(map[string]int)
 
 	//增加元素
@@ -93,7 +94,7 @@ func TestMap(t *testing.T) {
 		t.Error("m1 此时不应该有元素了")
 	}
 
-	//方法2
+	//构造方法2
 	m2 := map[string]int{
 		"one":   1,
 		"two":   2,

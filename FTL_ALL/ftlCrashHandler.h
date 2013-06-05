@@ -337,6 +337,9 @@ namespace FTL
 
     //注意：由于 SetUnhandledExceptionFilter 无法传入额外的参数，因此使用类方法不好控制
     //typedef long ( __stdcall *PFNCHFILTFN ) ( PEXCEPTION_POINTERS pExPtrs ) ;
+	//TODO:需要使用 AdjustTokenPrivileges 来提升 SE_DEBUG_NAME 权限 来调用 MiniDumpWriteDump ?
+	//  https://www.evernote.com/shard/s90/sh/81c75ef2-416b-4b72-8ed2-f997c12da163/2eb0ee2d8fa5dd2ad832351371216788
+	//  
     class CFCrashHandler
     {
     public:
@@ -351,6 +354,8 @@ namespace FTL
     private:
         //PFNCHFILTFN m_pfnCallBack;
         static CFCrashHandler* s_pSingleCrashHandler;
+		static CRITICAL_SECTION	*s_pCriticalSection;
+
         LPTOP_LEVEL_EXCEPTION_FILTER m_pfnOrigFilt;
         FTLINLINE static LONG __stdcall DefaultCrashHandlerFilter( PEXCEPTION_POINTERS pExPtrs);
     };

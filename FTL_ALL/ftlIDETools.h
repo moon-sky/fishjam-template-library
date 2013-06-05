@@ -563,6 +563,7 @@ namespace FTL
     *   Build Triggers -- schedule 中依次表示 分钟/小时/天/月/周， 如 X/10 * * * * 表示每10分钟触发一次 
     *     Commit Build -- 轮询(如10分钟)，有变动时则编译和单元测试，保证及时发现编译问题
     *     Integration Build -- 定时(如每晚),进行完整编译和全部检查(UT、静态、CC等)
+	*     Publishing Build -- 生成安装文件(注意应该同时备份相关的PDB)
     *   NHN Project Plugin(Assign NHN Project) -- 这样NHN的Project才能用？
     *     项目名的命名规范?
     * 
@@ -601,7 +602,7 @@ namespace FTL
 	*     http://wiki.hudson-ci.org/display/HUDSON/MSBuild+Plugin
 	*   MSTest plugin -- 把 MSTest TRX测试报告格式转换为JUnit XML格式
 	*     http://wiki.hudson-ci.org/display/HUDSON/MSTest+Plugin
-    * 代码质量维度及统计插件
+    * 代码质量维度及统计插件 -- 单机常用的代码行统计工具是 SourceCounter
     *   Coding Convention(代码规范) -- N'SIQ CppStyle(http://nsiqcppstyle.appspot.com)
     *   Static Analysis(静态分析) -- klocwork
 	*      1.通过 kw-user-installer.9.2.2.10679.windows.exe 安装程序先安装客户端软件;

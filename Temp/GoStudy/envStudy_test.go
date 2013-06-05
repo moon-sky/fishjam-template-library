@@ -4,7 +4,7 @@
    %GOROOT%=E:\Go\
    其他可设(实际上只要 GOROOT 即可? -- msi 安装程序只设置了这一个变量)
     %GOBIN%=C:\Go\Bin;  %GOARCH%=386|amd64;%GOOS%=mingw|windows;
-    %GOPATH% -- 可指定各种package的路径(包括自定义package ?)
+    %GOPATH% -- 可指定各种package的路径(主要是第三方或自定义package?),go会查找 %GOPATH%/src/目录
  2.测试:
 
    命令行(cmd), 切到 %GOROOT%test 目录下，执行 "go run helloworld.go"

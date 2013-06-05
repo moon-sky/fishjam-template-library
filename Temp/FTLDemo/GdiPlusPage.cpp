@@ -1350,6 +1350,36 @@ void CGdiPlusPage::OnBnClickedBtnChooseImage()
 
 void CGdiPlusPage::OnBnClickedBtnDumpImageProperty()
 {
+	BOOL bRet = FALSE;
+	HRESULT hr = E_FAIL;
+	Gdiplus::Status sts = Gdiplus::Ok;
+
+	UpdateData(TRUE);
+	//for (int i = 0; i < 100; i++)
+	{
+		Gdiplus::Image* pImage = NULL;
+		CLSID clsidEncoder = CLSID_NULL;
+
+		if (!m_testParam.m_strPaintImagePath.IsEmpty())
+		{
+			Gdiplus::Bitmap bmp(m_testParam.m_strPaintImagePath);
+			CComPtr<IStream> spStreamMemory;
+			COM_VERIFY(CreateStreamOnHGlobal(NULL, TRUE, &spStreamMemory));
+
+			GDIPLUS_VERIFY(CFGdiPlusUtil::GetImageSaveEncoder(L".JPG", &clsidEncoder));
+			GDIPLUS_VERIFY(bmp.Save(spStreamMemory, &clsidEncoder, NULL));
+
+			pImage = Gdiplus::Image::FromStream(spStreamMemory, TRUE);
+			FTLASSERT(pImage);
+		}
+		//API_VERIFY(MoveFile(m_testParam.m_strPaintImagePath, TEXT("D:\\testmove.jpg")));
+		//GDIPLUS_VERIFY(pImage->Save(L"D:\\imageSave.jpg", &clsidEncoder, NULL));
+
+		SAFE_DELETE(pImage);
+	}
+
+	return ;
+
 	UpdateData(TRUE);
 	if (!m_testParam.m_strPaintImagePath.IsEmpty())
 	{

@@ -1,11 +1,29 @@
+//TODO:
+//1.go是静态类型的语言 -- 什么意思? 对应的还有动态类型的语言?
+
 /*******************************************************************************
 基础语法：
   http://www.open-open.com/lib/view/open1352201112438.html
   http://www.open-open.com/lib/view/open1352264498172.html
 
+定义变量(两种方式)
+  1.var 变量名 [类型][= 初始值] -- 语法很像javascript(可不指明类型，通过初始化值来推导)
+  2.变量名 := 初始值
+
+常见类型(各类型全部独立，混用这些类型向变量赋值会引起编译器错误 -- 强制转换: type(value)?)：
+  bool --
+  byte -- uint8 的别名
+  complex64(32位虚数部分)/complex128(64位虚数部分) -- 复数
+  int/uint -- 32位系统是32位，但64位系统是64位的?
+  int32/uint32/int64/uint64/float32/float64
+  string -- 字符串是常量，是不能修改的？ 即 string[0] = 'S' 是非法的？
+常量 const ( 常量名 [类型] = 常量值 ),可通过 iota 来定义枚举
+特殊变量名(_, 下划线)，任何赋给它的值都被丢弃，通常用于不关心的变量，否则会出现编译错误(声明了变量却不使用)
+
 []定义了slice, [size]定义了数组，*定义了指针
 
 执行程序的入口点 func 是 main
+import "路径" -- import指定路径里的所有go文件(排除 _test.go)
 
 注意：
  1.无论任何时候，你都不应该将一个控制结构（(if、for、switch或select）的左大括号放在下一行。
@@ -14,11 +32,11 @@
  3.通常Go程序仅在for循环语句中使用分号，以此来分开初始化器、条件和增量单元
  4.没有 public/protected/private 的关键字，如果想让方法可以被别的包访问的话，第一个字母必须大写。
 
-内存分配原语 -- 两种内存分配方式区别的原因是 slice,map,channel 使用前必须初始化内部数据结构(非零)
+内存分配原语 -- 两种内存分配方式区别的原因是 slice,map,chan 使用前必须初始化内部数据结构(非零)
   new(T)--分配内存的内建函数,返回指针，只是将内存清零，而不是初始化内存，
     new(T)返回一个指向新分配的类型为T的零值的指针。
 	即使用者可用new创建一个数据结构的实例并且可以直接工作
-  make(T, args)--仅用于创建内建的slice、map和channel(消息管道),
+  make(T, args)--仅用于创建内建的slice、map和chan(消息管道),
     并返回一个被初始化了的(不是零)类型T(不是*T)实例
 
 指针 -- Go有指针，但没有指针运算(从使用上来说，更像引用)，取址操作符(&)，取值操作符(*)
@@ -29,7 +47,6 @@
  可选的"特定类型"表示这是特定类型的成员方法(参见 class_test )
  返回多值 -- 很多函数都会返回两个值，一个正常值，一个是错误
  函数不定参数(变参) -- func sum(nums ...int)
- 匿名函数
  函数作为值赋值给变量(相当于函数指针),
    pFun:=func(){xxx}  //定义匿名函数并赋值给变量
    pFun()		      //通过变量调用函数
@@ -39,9 +56,10 @@
    闭包可以毫不费力的将局部变量传递到回调
 
 关键字
-  select(选择不同类型的通讯),chan,
   fallthrough -- 用于switch...case中，当匹配失败后自动向下尝试(类似C中没有break时?)
   range--迭代器，可以从array,slice,string,map,channel等需要循环的内容中返回一个键值对
+  select(选择不同类型的通讯),chan,
+  switch -- 没有break语句，可以用逗号case多个值，可以通过fallthrough关键字继续尝试
 
 内建函数
   append -- 追加slice
@@ -66,22 +84,6 @@ import (
 	"testing"
 	//"utf8"
 )
-
-/*******************************************************************************
-定义变量：
-  var 变量名 [类型][= 初始值] 等价于 "变量名 := 初始值"
-go是静态类型的语言？语法很像 javascript(可不指明类型，通过初始化值来推导),
-常见类型(各类型全部独立，混用这些类型向变量赋值会引起编译器错误 -- 强制转换: type(value)?)：
-  bool --
-  byte -- uint8 的别名
-  complex64(32位虚数部分)/complex128(64位虚数部分) -- 复数
-  int/uint -- 32位系统是32位，但64位系统是64位的?
-  int32/uint32/int64/uint64/float32/float64
-  string -- 字符串是常量，是不能修改的？ 即 string[0] = 'S' 是非法的？
-*
-常量 const ( 常量定义 ),可通过 iota 来定义枚举
-特殊变量名(_, 下划线)，任何赋给它的值都被丢弃，通常用于不关心的变量，否则会出现编译错误(声明了变量却不使用)
-*******************************************************************************/
 
 //使用 iota 定义枚举
 const (
@@ -177,7 +179,11 @@ func TestMyMultiRet(t *testing.T) {
 
 func TestMySums(t *testing.T) {
 	var iSum int = MySum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
-	fmt.Printf("sum is %d\n", iSum)
+	fmt.Printf("MySum for 1-10 number is %d\n", iSum)
+
+	nums := []int{1, 2, 4}
+	iSum = MySum(nums...) //在传递数组作为不定参数时，注意最后需要增加三个点
+	fmt.Printf("MySum for 1-4 Array is %d\n", iSum)
 }
 
 func myFunReturnString(val int) string {
@@ -185,7 +191,7 @@ func myFunReturnString(val int) string {
 }
 
 func TestRange(t *testing.T) {
-	//从slice或array返回 int序号 + 值 的键值对
+	//从 array,slice,函数的不定参数 返回 int序号 + 值 的键值对
 	list := []string{"a", "b", "c", "d", "e", "f"} //创建字符串的slice
 	for idx, val := range list {
 		fmt.Printf("Range from List[%d]=%s\n", idx, val)

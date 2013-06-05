@@ -6,11 +6,12 @@
 
   go.exe
     build xxx.go [-o output] [build flags] [packages] -- 将 .go 文件编译成二进制文件，然后可直接运行
-    run xxx.go -- 编译并运行 go 文件
+    run xxx.go -- 编译并运行go文件(编译到什么地方了？似乎是临时文件?)
   godoc.exe -- 文档工具(会显示 %GOROOT%src\pkg 下各个包的文档)
     如: godoc fmt Printf
   gofix --
   gofmt -- 格式化源码为官方认可的格式
+    -w=true 文件 -- 直接格式化并保存到文件(而不是输出到stdout)
 *******************************************************************************/
 package gostudy
 
