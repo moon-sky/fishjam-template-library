@@ -1,11 +1,9 @@
+//http://coolshell.cn/articles/8489.html
+
 //TODO:
 //1.go是静态类型的语言 -- 什么意思? 对应的还有动态类型的语言?
 
 /*******************************************************************************
-基础语法：
-  http://www.open-open.com/lib/view/open1352201112438.html
-  http://www.open-open.com/lib/view/open1352264498172.html
-
 定义变量(两种方式)
   1.var 变量名 [类型][= 初始值] -- 语法很像javascript(可不指明类型，通过初始化值来推导)
   2.变量名 := 初始值
@@ -75,6 +73,16 @@ import "路径" -- import指定路径里的所有go文件(排除 _test.go)
 定义包时，报名的约定是使用小写字符(不应有下划线或混合大小写)。 import [替代名] "包名"
   导入时(import)可以指定路径(如 "./mypackage")，并可选替代名(通常用于解决冲突)
   包中函数首字母大写时表示是导出的(包外部可见)，私有函数以小写字母开头
+
+定时器：time.NewTimer(只通知一次)或time.NewTicker(持续通知)，可通过Stop()方法停止
+  绑定在当前channel中，通过channel的阻塞通知机制来通知程序
+  timer := time.NewTimer(2 * time.Second); <-timer.C; {定时满足}
+  ticker := time.NewTicker(time.Second); for t := range ticker.C { xxxx }
+计算耗时： t0 := time.Now(); xxx; elapsed:=time.Since(t0);
+   或 t1:=time.Now(); elapsed:=t1.Sub(t0);
+   计算时间段(可用于Sleep等)：time.Duration(nSec * time.Second)
+随机数： rand.Seed(time.Now().Unix()); randNum:= rand.Intn(100); //0~99的随机数
+
 *******************************************************************************/
 package gostudy
 

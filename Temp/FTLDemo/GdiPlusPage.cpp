@@ -1354,6 +1354,7 @@ void CGdiPlusPage::OnBnClickedBtnDumpImageProperty()
 	HRESULT hr = E_FAIL;
 	Gdiplus::Status sts = Gdiplus::Ok;
 
+#if 0
 	UpdateData(TRUE);
 	//for (int i = 0; i < 100; i++)
 	{
@@ -1377,13 +1378,13 @@ void CGdiPlusPage::OnBnClickedBtnDumpImageProperty()
 
 		SAFE_DELETE(pImage);
 	}
-
 	return ;
+#endif 
 
 	UpdateData(TRUE);
 	if (!m_testParam.m_strPaintImagePath.IsEmpty())
 	{
-		Gdiplus::Status sts = Gdiplus::Ok;
+#if 0
 		Gdiplus::Image* pImage = Image::FromFile(m_testParam.m_strPaintImagePath);
 		if (pImage)
 		{
@@ -1409,12 +1410,16 @@ void CGdiPlusPage::OnBnClickedBtnDumpImageProperty()
 
 			delete pImage;
 		}
-		//FTL::CFStringFormater	strFormater(1024);
-		//GDIPLUS_VERIFY(CFGdiPlusUtil::GetImageProperty(m_testParam.m_strPaintImagePath, strFormater));
-		//if (Gdiplus::Ok == sts)
-		//{
-		//	FTLTRACE(TEXT("Image Property=%s\n"), strFormater.GetString());
-		//}
+#endif 
+
+#if 1
+		FTL::CFStringFormater	strFormater(1024);
+		GDIPLUS_VERIFY(CFGdiPlusUtil::GetImageProperty(m_testParam.m_strPaintImagePath, strFormater));
+		if (Gdiplus::Ok == sts)
+		{
+			FTLTRACE(TEXT("Image Property=%s\n"), strFormater.GetString());
+		}
+#endif 
 	}
 }
 
