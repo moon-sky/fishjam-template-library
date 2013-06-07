@@ -490,11 +490,28 @@ namespace FTL
 			//HANDLE_CASE_RETURN_STRING_EX(xxxxx, TEXT("xxxxx"));
 
 
-			//Gdiplus 中没有定义的Tag  -- http://www.3dbrew.org/wiki/MPO
+			//Gdiplus 中没有定义的Tag -- http://www.exiv2.org/tags.html
+#ifndef PropertyTagRating							//(Short)Rating tag used by Windows
+#  define PropertyTagRating	0x4746					
+#endif 
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagRating, TEXT("Rating"));
+
+#ifndef PropertyTagRatingPercent					//(Short)Rating tag used by Windows, value in percent
+#  define PropertyTagRatingPercent	0x4749			
+#endif 
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagRatingPercent, TEXT("RatingPercent"));
+
 #ifndef PropertyTagExifInteroperabilityVersion	
 #  define PropertyTagExifInteroperabilityVersion	0x5042
 #endif 
 			HANDLE_CASE_RETURN_STRING_EX(PropertyTagExifInteroperabilityVersion, TEXT("ExifInteroperabilityVersion"));
+
+#ifndef PropertyTagXPTitle							//(BYTE)Title tag used by Windows, encoded in UCS2
+#  define PropertyTagXPTitle	0x9c9b
+#endif 
+			HANDLE_CASE_RETURN_STRING_EX(PropertyTagXPTitle, TEXT("XPTitle"));
+
+
 
 			default:
 				FTLTRACEEX(tlWarning, TEXT("Warning: Unknown Property Tag Id for 0x%x\n"), id);
@@ -530,7 +547,7 @@ namespace FTL
 		FTLASSERT(pItem);
 		if (pItem)
 		{
-			formater.Format(TEXT("id=0x%x(%s), length=%d, type=%d(%s),value="),
+			formater.Format(TEXT("id=0x%x(%s), length=%d, type=%d(%s),"),
 				pItem->id, GetImagePropertyIdString(pItem->id),
 				pItem->length, pItem->type, 
 				GetImagePropertyTagTypeString(pItem->type));
@@ -542,6 +559,7 @@ namespace FTL
 				{
 					//最多只打印100个字节的数据
 					ULONG nPrintLen = FTL_MIN( pItem->length, 100);
+					formater.AppendFormat(TEXT("value[0-%d]="), nPrintLen);
 					for(ULONG i = 0; i < nPrintLen; ++i)
 					{
 						formater.AppendFormat(TEXT("0x%x,"), ((byte*)pItem->value)[i]);		
@@ -551,11 +569,12 @@ namespace FTL
 			case PropertyTagTypeASCII:
 				{
 					//ASCII时长度是包含结束时的NULL，因此可以直接转换
-					formater.AppendFormat(TEXT("%s"), CA2T((const char*)pItem->value));
+					formater.AppendFormat(TEXT("value=%s"), CFConversion(CP_UTF8).UTF8_TO_TCHAR((const char*)pItem->value));
 				}
 				break;
 			case PropertyTagTypeShort:
 				{
+					formater.AppendFormat(TEXT("value="));
 					for( ULONG i=0; i<pItem->length / 2; ++i )
 					{
 						formater.AppendFormat(TEXT("%d,"), ((unsigned short*)pItem->value)[i]);
@@ -564,6 +583,7 @@ namespace FTL
 				break;
 			case PropertyTagTypeLong:
 				{
+					formater.AppendFormat(TEXT("value="));
 					for( ULONG i=0; i<pItem->length / 4; ++i )
 					{
 						formater.AppendFormat(TEXT("%d,"), ((unsigned long*)pItem->value)[i]);
@@ -572,6 +592,7 @@ namespace FTL
 				break;
 			case PropertyTagTypeRational:
 				{
+					formater.AppendFormat(TEXT("value="));
 					for( ULONG i=0; i <pItem->length / 8; ++i )
 					{
 						formater.AppendFormat(TEXT("%d/%d,"), 
@@ -584,6 +605,7 @@ namespace FTL
 				{
 					//最多只打印100个字节的数据
 					ULONG nPrintLen = FTL_MIN( pItem->length, 100);
+					formater.AppendFormat(TEXT("value[0-%d]="), nPrintLen);
 					for(ULONG i = 0; i < nPrintLen; ++i)
 					{
 						formater.AppendFormat(TEXT("0x%x,"), ((byte*)pItem->value)[i]);		
@@ -592,6 +614,7 @@ namespace FTL
 				break;
 			case PropertyTagTypeSLONG:
 				{
+					formater.AppendFormat(TEXT("value="));
 					for( ULONG i=0; i<pItem->length / 4; ++i )
 					{
 						formater.AppendFormat(TEXT("%d,"), ((signed long*)pItem->value)[i]);
@@ -600,6 +623,7 @@ namespace FTL
 				break;
 			case PropertyTagTypeSRational:
 				{
+					formater.AppendFormat(TEXT("value="));
 					for( ULONG i=0; i <pItem->length / 8; ++i )
 					{
 						formater.AppendFormat(TEXT("%d/%d,"), 

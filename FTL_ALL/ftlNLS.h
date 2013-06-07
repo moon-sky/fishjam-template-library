@@ -12,7 +12,7 @@
 *       参见 s_awcLowerMap 静态变量
 *       但因为有大小的判断(if (SizeofResource(hInst, hResInfo) == sizeof s_awcLowerMap))，需要调试看是否真正的使用了
 *
-
+* 
 * cmd命令行中
 *   chcp [nnn] -- 显示或设置活动代码页编号，如中文是(936)
 * 
@@ -51,7 +51,6 @@
 *   17.在一个资源(如res[codepage].dll)中，可以保存多个语言的资源，通过 SetThreadLocale 切换，
 *      然后通过 LoadString 等函数获取不同语言的值
 *
-* _tsetlocale(LC_ALL, _T("korea"))  -- 设置韩语的环境？但测试后没哟效果？
 *
 * 统一定义版本等信息
 *   生成 version.h 文件，然后在 .rc 文件中包含，并设置 CompanyName 等的值为定义的相关宏

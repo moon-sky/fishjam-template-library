@@ -205,8 +205,11 @@ namespace FTL
 
         //static BOOL GetLocalizedDateString();
         //static BOOL GetLocalizedTimeString();
-        FTLINLINE static BOOL SuspendProcess(DWORD dwProcessID,BOOL fSuspend,DWORD skipedThreadId = ::GetCurrentThreadId());
+        FTLINLINE static BOOL SuspendProcess(DWORD dwProcessID,BOOL fSuspend, DWORD skipedThreadId = ::GetCurrentThreadId());
         
+		//判断指定的Module所在进程是否是特殊的进程(如BHO中判断当前进程是IE)
+		FTLINLINE static BOOL IsSpecialProcessName(LPCTSTR pszProcessName, HMODULE hModule = NULL);
+
         //如果是拷贝位图的话，可以用 CF_BITMAP、CF_DIB 等
         FTLINLINE static BOOL CopyTextToClipboard ( LPCTSTR szMem , HWND hWndOwner = GetClipboardOwner());
 

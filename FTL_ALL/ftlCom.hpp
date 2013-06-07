@@ -315,7 +315,7 @@ namespace FTL
 				formaterValue.Format(TEXT("%d-%d"), V_CY(&m_Info).Hi, V_CY(&m_Info).Lo);
 				break;
 			case VT_BSTR:
-				formaterValue.Format(TEXT("%s"), COLE2T(V_BSTR(&m_Info)));
+				formaterValue.Format(TEXT("%s"), V_BSTR(&m_Info));
 				break;
 			case VT_DISPATCH:
 			case VT_UNKNOWN:

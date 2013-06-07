@@ -581,6 +581,24 @@ namespace FTL
         return bRet;
     }
 
+	BOOL CFSystemUtil::IsSpecialProcessName(LPCTSTR pszProcessName, HMODULE hModule /* = NULL */)
+	{
+		BOOL bRet = FALSE;
+		TCHAR szModuleFilePath[MAX_PATH] = {0};
+		API_VERIFY(::GetModuleFileName(hModule, szModuleFilePath, _countof(szModuleFilePath)) > 0);
+
+		//如果相等，则是指定名字的进程
+		if(lstrcmpi(pszProcessName, PathFindFileName(szModuleFilePath)) == 0)
+		{
+			bRet = TRUE;
+		}
+		else
+		{
+			bRet = FALSE;
+		}
+		return bRet;
+	}
+
 #ifdef UNICODE
 #define CLIPBOARDFMT    CF_UNICODETEXT
 #else

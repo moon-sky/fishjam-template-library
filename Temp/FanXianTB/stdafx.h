@@ -17,7 +17,16 @@
 
 #include "resource.h"
 #include <atlbase.h>
+#include <atlstr.h>
+#include <atltypes.h>
 #include <atlcom.h>
 #include <atlctl.h>
 
 using namespace ATL;
+
+#include <ftlBase.h>
+#include <ftlCom.h>
+#include <ftlWebInterfaceDetect.h>
+#include <ftlSystem.h>
+
+using namespace FTL;

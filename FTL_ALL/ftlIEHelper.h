@@ -45,7 +45,7 @@
 *   IeInstal.exe(管理级代理进程) -- 完成高特权的任务(例如安装加载项，需要写INF文件?)。
 * 
 * IE中的多进程控制
-*   HKLM或HKCR \SOFTWARE\Microsoft\Internet Explorer\MAIN\TabProcGrowth  -- REG_SZ, 为 0 表示， 为 Medium 表示
+*   HKLM或HKCR \SOFTWARE\Microsoft\Internet Explorer\MAIN\TabProcGrowth  -- REG_SZ, 为 0 表示单进程? 为 Medium 表示多进程?
 *
 ********************************************************************************************/
 

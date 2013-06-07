@@ -22,10 +22,10 @@ namespace FTL
 	*   解决方法：
 	*     1.使用FTLTRACE(内部使用 StringCchVPrintfEx + OutputDebugString )
 	*     2.#include <locale.h>
-	*       char* old_locale = _strdup( setlocale(LC_ALL,NULL) );
-	*       setlocale( LC_ALL, "chs" );    或 "", "korean"
+	*       TCHAR* old_locale = _tsetlocale( setlocale(LC_ALL,NULL) );
+	*       _tsetlocale( LC_ALL, _T("chs") );    或 "", "korean"
 	*       TRACE(XXXX);
-	*       setlocale( LC_ALL, old_locale); 
+	*       _tsetlocale( LC_ALL, old_locale); 
 	*       free(old_locale); 
     *********************************************************************************************************/
 

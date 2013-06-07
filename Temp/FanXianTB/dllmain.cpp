@@ -16,5 +16,22 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
 		return FALSE;
 #endif
 	hInstance;
+
+	switch (dwReason)
+	{
+	case DLL_PROCESS_ATTACH:
+		{
+			//过滤资源管理器(explorer.exe), 只处理IE(iexplore.exe)
+			if (CFSystemUtil::IsSpecialProcessName(TEXT("explorer.exe"), NULL))
+			{
+				FTLTRACE(TEXT("IsSpecialProcessName return for explorer.exe\n"));
+				return FALSE;
+			}
+		}
+		break;
+	case DLL_PROCESS_DETACH:
+		break;
+	}
+
 	return _AtlModule.DllMain(dwReason, lpReserved); 
 }

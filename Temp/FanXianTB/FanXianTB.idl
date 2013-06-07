@@ -8,6 +8,16 @@ import "oaidl.idl";
 import "ocidl.idl";
 
 [
+	object,
+	uuid(E412AB19-04A2-4530-97C5-2C9BBF078DD5),
+	dual,
+	nonextensible,
+	helpstring("IFanxianBand Interface"),
+	pointer_default(unique)
+]
+interface IFanxianBand : IDispatch{
+};
+[
 	uuid(4D760228-A142-41AD-998D-91BD29E636DB),
 	version(1.0),
 	helpstring("FanXianTB 1.0 Type Library")
@@ -15,4 +25,22 @@ import "ocidl.idl";
 library FanXianTBLib
 {
 	importlib("stdole2.tlb");
+	[
+		uuid(9989B256-A436-40B7-95A4-885055445FEE),
+		helpstring("_IFanxianBandEvents Interface")
+	]
+	dispinterface _IFanxianBandEvents
+	{
+		properties:
+		methods:
+	};
+	[
+		uuid(A67B1DD5-79FF-41B1-9334-3A893AB4D073),
+		helpstring("FanxianBand Class")
+	]
+	coclass FanxianBand
+	{
+		[default] interface IFanxianBand;
+		[default, source] dispinterface _IFanxianBandEvents;
+	};
 };

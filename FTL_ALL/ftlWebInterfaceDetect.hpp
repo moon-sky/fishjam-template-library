@@ -48,7 +48,7 @@ namespace FTL
 					}
 					if (bstrValue)
 					{
-						CString strValue = bstrValue;
+						CAtlString strValue = bstrValue;
 						if (strValue.Compare(pszName) == 0)
 						{
 							//bFound

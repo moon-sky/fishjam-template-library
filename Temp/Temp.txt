@@ -1,3 +1,58 @@
+boost::wregex wreg(L"(wd=)([^&$]*)(.*)", boost::wregex::icase | boost::wregex::normal);
+std::wstring wsrc =L"http://www.baidu.com/s?tn=baiduhome_pg&wd=abcd&ie=utf-8&rsv_sug3=8";
+std::wstring wTarget;
+if (wsrc.find(L"wd=") == std::wstring::npos)
+{
+	wTarget = wsrc + L"wd=fishjam";
+}
+else
+{
+	wTarget = boost::regex_replace(wsrc, wreg, L"$1fishjam$3");
+}
+TRACE(TEXT("Befor Replace= %s\n"), wsrc.c_str());
+TRACE(TEXT("After Replace= %s\n"), wTarget.c_str());
+
+
+
+
+老罗的Android之旅：http://blog.csdn.net/luoshengyang
+Boost 编译完毕后安装lib到VC的目录中： nmake -f vc9.mak install
+
+TODO:各种XML编解码库的测试( TinyXml )
+COM 的.rgs 文件语法(BNF) -- http://msdn.microsoft.com/en-us/library/ttd53fhh(v=vs.80).aspx
+
+IE工具条 -- VS中有没有向导？
+  1.IE上下文菜单时可以使用 res:// 协议(http://blog.sina.com.cn/s/blog_498014e701000a88.html)
+    res协议可以分析所有符合Win32 PE格式的文件的资源，语法是：res://ResourceFile[/ResourceType]/ResourceId。
+    ResourceType 是指 RT_CURSOR(1) 到 RT_MANIFEST(24) 等的整数
+  2.Toolbar:
+    HKCU\Software\Microsoft\Windows\CurrentVersion\Ext\Settings\ 下建立COM GUID子项
+    
+工具条图标:1.透明背景可以清晰地融合在工具条上；用24位真彩色或其以下的颜色深度(如使用32位真彩需做特殊处理才能显示)
+BHO是依托于浏览器主窗口，和浏览器实例的生命周期一致的组件。IE浏览器工具条的默认显示需要借助BHO的ShowBrowserBar方法来实现
+发布：1.打包成Exe或Msi安装执行文件(Install Shield, Wise 等工具)
+      2.打包成CAB包实现Web自动下载安装(IExpress,Cabinet Manager, WinCAB 等工具)
+        不提示自动下载安装 -- 必须有有效的合法数字签名(比如 Verisign 颁发的)
+        Signcode.exe(进行数字签名)，chktrust.exe(查验已经签名的代码信息)
+
+浏览器工具条制作工具：
+  IE秀(www.ieshow.net) -- 在线制作工具条
+  Best Toolbar(www.besttoolbars.net) -- 提供 ToolbarStudio 软件
+  Alexa定制(http://pages.alexa.com/prod_serv/associatetoolbar.html)
+        
+IE开发工具条(Internet Explorer Developer Toolbar) -- 开发网页的工具条
+  http://www.microsoft.com/en-us/download/details.aspx?id=18359
+
+          
+Internet选项中安全区域 -- 
+
+    
+const TCHAR REGKEY_MENU_EXT[]		= _T("Software\\Microsoft\\Internet Explorer\\MenuExt");
+const TCHAR REGKEY_IE_MAIN[]		= _T("SOFTWARE\\Microsoft\\Internet Explorer\\Main");
+const TCHAR REGKEY_TOOLBAR[]		= _T("Software\\Microsoft\\Internet Explorer\\Toolbar");
+const TCHAR REGKEY_WEB_BROWSER[]	= _T("Software\\Microsoft\\Internet Explorer\\Toolbar\\WebBrowser");
+const TCHAR REGKEY_IE_TYPEDURLS[]	= _T("Software\\Microsoft\\Internet Explorer\\TypedURLs");
+
 graphics.TranslateTransform(dstRect.X + dstRect.Width / 2, dstRect.Y + dstRect.Height / 2);
  graphics.RotateTransform(m_rDegree); 
 
