@@ -3,11 +3,23 @@
   CSS 语句需要使用 -moz- 和 -webkit- 前缀，来对不同的浏览器提供兼容支持(加了前缀表示在特定浏览器下使用，这样可以适配不同浏览器的差别 ?)
   CSS3(HTML5)
     :required { border-color: orange; border-sytle: solid; } -- 为所有required元素增加一个橙色边框
- 选择器：基本语法和jQuery选择器一致
+
+ 基本选择器：基本语法和jQuery选择器一致
+   标签选择器: tag			{ xxxx } -- 以文档元素(tag)作为选择符
+   ID选择器:   #idName		{ xxxx } -- 以文档元素的唯一标识符ID作为选择符
+   类选择器:   .className	{ xxxx } -- 以文档元素的class作为选择符
+   群组选择器：A,B,C        { xxxx } -- 将选择符 A,B,C 的选择结果 "或" 起来作为选择符
+   后代选择器：A B          { xxxx } -- 选择 A 的 任意后代元素
+   通配选择器：*            { xxxx } -- 以文档的所有元素作为选择符
+
+ 伪类选择器：
+ 子选择器：
+ 临近选择器：
+ 属性选择器：
 -->
 <html>
   <head>
-    <title>CSS</title>
+    <title>CSS -- 结构和表现样式完全分离, 部分学习笔记在 Firefox\FishjamHello\CSSStudy.h </title>
     <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
     <meta http-equiv="Content-Language" content="zh-cn" />
     <meta name="Generator" content="EditPlus" />
