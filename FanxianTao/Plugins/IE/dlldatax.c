@@ -13,6 +13,6 @@
 #define ENTRY_PREFIX	Prx
 
 #include "dlldata.c"
-#include "FanXianTB_p.c"
+#include "FanXianIEPlugin_p.c"
 
 #endif //_MERGE_PROXYSTUB

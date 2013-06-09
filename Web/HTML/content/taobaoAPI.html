@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+	taobaoAPI
+	1.<script src="http://l.tbcdn.cn/apps/top/x/sdk.js?appkey=xxxxxxx"></script>
+	2.后台调用?
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>TaobaoAPI</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <meta http-equiv="Content-Language" content="zh-cn" />
+    <meta name="Generator" content="EditPlus" />
+    <meta name="Author" content="fishjam" />
+    <meta name="Keywords" content="HTML Tester" />
+    <meta name="Description" content="HTML, DHTML, XML, XHTML" />
+    
+    <script type="text/javascript" src="../../WebSrc/jquery/jquery.js"></script>
+	<script src="http://l.tbcdn.cn/apps/top/x/sdk.js?appkey=21540635"></script>    
+	<link rel="stylesheet" type="text/css" href="../css/c3.css"></link>
+
+<script type="text/javascript">
+function convert() 
+{
+    console.log(TOP);
+    alert('resp');
+   /*
+	//
+	TOP.api('rest', 'get',{
+	   method:'taobao.taobaoke.widget.items.convert',
+		num_iids:'19399204606,17510351958',
+	   fields:'num_iid,click_url,commission_rate'
+	 },function(resp){
+   if(resp.error_response){
+     alert('taobao.taobaoke.widget.items.convert接口获取商信息品失败!'+resp.error_response.msg);
+      return false;
+     }
+     var respItem=resp.taobaoke_items.taobaoke_item;
+  console.log(respItem.length);
+  console.log(respItem['0'].num_iid);
+  console.log(respItem['0'].click_url);
+  console.log(respItem['1'].num_iid);
+  console.log(respItem['1'].click_url);
+     for(var i=0;i<respItem.length;i++){
+      //$("#r"+respItem[i].num_iid).html("佣金："+Number(respItem[i].commission_rate)/100+"%");
+      //$("#a"+respItem[i].num_iid).attr("href",respItem[i].click_url);
+      }
+ })
+ */
+ /*
+  var s="http://item.taobao.com/item.htm?spm=2013.1.0.87.nbMPp3&scm=1007.152.0.0&id=19399204606&pvid=a8d3aa89-2b32-4680-b41b-acd686072109&ad_id=&am_id=&cm_id=&pm_id=";
+  reg=/(?:\^|\?|&)id=(\d*)/;
+  r = s.match(reg);
+  console.log(r[1]);
+  console.log('ok');
+*/
+}
+
+</script>
+
+  </head>
+
+
+  <body>
+    <table class="dataintable">
+      <tr>
+        <th>术语名</th>
+        <th>描述</th>
+      </tr>
+      <tr>
+        <td>itemConvert</td>
+        <td>
+                <input type="text" name="itemURL"size="40" maxlength="200"/> 
+                <input type="button" onclick="convert" value="convert"/> 
+        </td>
+      </tr>
+    </table>
+  </body>
+
+</html>

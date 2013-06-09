@@ -1,0 +1,97 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "FanxianTaoWeb", "FanxianTaoWeb\", "{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFramework = "3.5"
+		Debug.AspNetCompiler.VirtualPath = "/FanxianTaoWeb"
+		Debug.AspNetCompiler.PhysicalPath = "FanxianTaoWeb\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\FanxianTaoWeb\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/FanxianTaoWeb"
+		Release.AspNetCompiler.PhysicalPath = "FanxianTaoWeb\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\FanxianTaoWeb\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "1229"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{AA57C3B7-599D-4B9D-8494-9457A82CC097}"
+	ProjectSection(SolutionItems) = preProject
+		Plugins\BHOStudy.h = Plugins\BHOStudy.h
+		Plugins\ChromePluginStudy.h = Plugins\ChromePluginStudy.h
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FanXianIEPlugin", "Plugins\IE\FanXianIEPlugin.vcproj", "{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chrome", "Plugins\Chrome\Chrome.vcproj", "{36200DA7-2A74-45BD-B046-4DF7C43B0381}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EF48D740-F86B-4EB9-9CF0-36EFC04E5057}"
+	ProjectSection(SolutionItems) = preProject
+		TaobaoAPIStudy.cs = TaobaoAPIStudy.cs
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Debug|Win32.Build.0 = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Release|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Release|Win32.ActiveCfg = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Release|Win32.Build.0 = Debug|Any CPU
+		{F6E1EC9E-D9F8-420B-9293-5098DA06A89B}.Release|x64.ActiveCfg = Debug|Any CPU
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|Any CPU.Build.0 = Debug|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|Win32.Build.0 = Debug|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|x64.ActiveCfg = Debug|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|x64.Build.0 = Debug|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|Any CPU.ActiveCfg = Release|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|Any CPU.Build.0 = Release|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|Win32.ActiveCfg = Release|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|Win32.Build.0 = Release|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|x64.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|x64.Build.0 = Release|x64
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381}.Debug|Win32.ActiveCfg = Debug|Win32
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381}.Debug|x64.ActiveCfg = Debug|Win32
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381}.Release|Any CPU.ActiveCfg = Release|Win32
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381}.Release|Win32.ActiveCfg = Release|Win32
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381}.Release|x64.ActiveCfg = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B} = {AA57C3B7-599D-4B9D-8494-9457A82CC097}
+		{36200DA7-2A74-45BD-B046-4DF7C43B0381} = {AA57C3B7-599D-4B9D-8494-9457A82CC097}
+	EndGlobalSection
+EndGlobal

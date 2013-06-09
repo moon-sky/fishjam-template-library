@@ -1,22 +1,6 @@
-boost::wregex wreg(L"(wd=)([^&$]*)(.*)", boost::wregex::icase | boost::wregex::normal);
-std::wstring wsrc =L"http://www.baidu.com/s?tn=baiduhome_pg&wd=abcd&ie=utf-8&rsv_sug3=8";
-std::wstring wTarget;
-if (wsrc.find(L"wd=") == std::wstring::npos)
-{
-	wTarget = wsrc + L"wd=fishjam";
-}
-else
-{
-	wTarget = boost::regex_replace(wsrc, wreg, L"$1fishjam$3");
-}
-TRACE(TEXT("Befor Replace= %s\n"), wsrc.c_str());
-TRACE(TEXT("After Replace= %s\n"), wTarget.c_str());
-
-
-
 
 老罗的Android之旅：http://blog.csdn.net/luoshengyang
-Boost 编译完毕后安装lib到VC的目录中： nmake -f vc9.mak install
+
 
 TODO:各种XML编解码库的测试( TinyXml )
 COM 的.rgs 文件语法(BNF) -- http://msdn.microsoft.com/en-us/library/ttd53fhh(v=vs.80).aspx

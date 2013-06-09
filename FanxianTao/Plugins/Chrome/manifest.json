@@ -1,0 +1,16 @@
+﻿{
+    "manifest_version": 2,
+    "name": "Fanxian Chrome Plugin",
+    "version": "1.0",
+    "description": "Fanxian Chrome Plugin",
+    "browser_action": {
+        "default_icon": "assets/icons/logo-128.png",
+        "popup": "popup.html"
+    },
+    "default_locale": "zh_CN",
+    "icons": {
+      "128": "assets/icons/logo-128.png",
+      "16": "assets/icons/logo-16.png",
+      "48": "assets/icons/logo-48.png"
+    }
+}

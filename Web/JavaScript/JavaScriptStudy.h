@@ -15,9 +15,21 @@
 //  function sendMessage(msg, obj) { obj.handleMsg(msg) }
 //调用
 //  sendMessage("how are you?", handleMsg : function( msg ) { alert("show Msg:" + msg); }); 
+
+
 /***********************************************************************************************
-* 调试 -- Firefox 中的 Firebug
+* JavaScript
+*   优点：使得网页和用户之间实现了一种实时、动态和交互的关系
+*   缺点：复杂的文档对象模型(DOM)；不一致的浏览器实现；缺乏便捷的开发、调试工具
 * 
+* 常见的JavaScript库( 通常提供强大的功能，并且兼容各大浏览器 )
+*   Prototype(www.prototypejs.org) -- 对内置对象做了大量的扩展，可认为是功能函数库
+*   Dojo(dojotoolkit.org) -- 提供了很多其他库没有提供的功能，如 离线存储API、生成图标，得到多家企业支持
+*   YUI(Yahoo User Interface) -- 
+*   jQuery(jquery.com) --★Web开发首选★拥有强大的选择器，出色的DOM操作，可靠的事件处理、完善的兼容性和链式操作等功能
+*   ExtJS(www.extjs.com) -- 对YUI的扩展，主要用于创建前段用户界面，可利用包括jQuery在内的多种JavaScript框架作为基础库。但本身比较臃肿，商业使用时需要付费获得授权许可
+* 
+*
 * JavaScript常见的封装类型
 *   DOM的选择和操作：经典的例子如jQuery的链式API。
 *   DOM事件处理：一个重点是简化事件的delegation，即利用事件冒泡机制在父元素上用一个侦听函数侦听触发在多个子元素上的事件。

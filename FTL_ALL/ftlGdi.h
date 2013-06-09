@@ -12,6 +12,7 @@
 //字体模拟 http://html.nhndesign.com/markup_tools/preview
 //调试工具：GdiWatch, http://www.189works.com/article-9611-1.html
 //字体工具(FontCreator/FontForge) -- 可以创建或编辑 ttf 等字体文件
+//图标库 -- http://findicons.com/pack
 
 /*
 .FON(光栅字体)--针对特定的显示分辨率以不同大小存储的位图,并不是以矢量描述的,放大以后会出现锯齿,但显示速度非常快

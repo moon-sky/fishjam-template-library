@@ -2,11 +2,11 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "FanXianTB_i.h"
+#include "FanXianIEPlugin_i.h"
 #include "dllmain.h"
 #include "dlldatax.h"
 
-CFanXianTBModule _AtlModule;
+CFanXianIEPluginModule _AtlModule;
 
 // DLL Entry Point
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)

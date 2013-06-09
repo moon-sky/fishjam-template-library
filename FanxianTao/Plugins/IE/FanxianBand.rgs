@@ -1,20 +1,20 @@
 HKCR
 {
-	FanXianTB.FanxianBand.1 = s 'FanxianBand Class'
+	FanXianIEPlugin.FanxianBand.1 = s 'FanxianBand Class'
 	{
 		CLSID = s '{A67B1DD5-79FF-41B1-9334-3A893AB4D073}'
 	}
-	FanXianTB.FanxianBand = s 'FanxianBand Class'
+	FanXianIEPlugin.FanxianBand = s 'FanxianBand Class'
 	{
 		CLSID = s '{A67B1DD5-79FF-41B1-9334-3A893AB4D073}'
-		CurVer = s 'FanXianTB.FanxianBand.1'
+		CurVer = s 'FanXianIEPlugin.FanxianBand.1'
 	}
 	NoRemove CLSID
 	{
 		ForceRemove {A67B1DD5-79FF-41B1-9334-3A893AB4D073} = s 'FanxianBand Class'
 		{
-			ProgID = s 'FanXianTB.FanxianBand.1'
-			VersionIndependentProgID = s 'FanXianTB.FanxianBand'
+			ProgID = s 'FanXianIEPlugin.FanxianBand.1'
+			VersionIndependentProgID = s 'FanXianIEPlugin.FanxianBand'
 			ForceRemove 'Programmable'
 			InprocServer32 = s '%MODULE%'
 			{

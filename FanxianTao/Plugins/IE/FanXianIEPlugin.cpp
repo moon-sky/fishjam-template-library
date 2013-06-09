@@ -1,9 +1,9 @@
-// FanXianTB.cpp : Implementation of DLL Exports.
+// FanXianIEPlugin.cpp : Implementation of DLL Exports.
 
 
 #include "stdafx.h"
 #include "resource.h"
-#include "FanXianTB_i.h"
+#include "FanXianIEPlugin_i.h"
 #include "dllmain.h"
 #include "dlldatax.h"
 

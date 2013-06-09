@@ -1,6 +1,6 @@
-; FanXianTB.def : Declares the module parameters.
+; FanXianIEPlugin.def : Declares the module parameters.
 
-LIBRARY      "FanXianTB.DLL"
+LIBRARY      "FanXianIEPlugin.DLL"
 
 EXPORTS
 	DllCanUnloadNow		PRIVATE

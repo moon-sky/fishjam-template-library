@@ -5,7 +5,6 @@
 
 #include <ShlGuid.h>
 
-
 // CFanxianBand
 
 STDMETHODIMP CFanxianBand::RegisterEventHandler(BOOL inAdvise)
@@ -78,8 +77,9 @@ STDMETHODIMP CFanxianBand::SetSite(IUnknown *pUnkSite)
 			return E_FAIL;
 		}
 
+#ifdef DEBUG
 		FormatMessageBox(NULL, TEXT("SetSite"), MB_OK, TEXT("SetSite for 0x%p"), pUnkSite);
-
+#endif 
 		m_spWebBrowser2 = pUnkSite;
 		if (m_spWebBrowser2)
 		{
@@ -89,7 +89,7 @@ STDMETHODIMP CFanxianBand::SetSite(IUnknown *pUnkSite)
 	}
 	else
 	{
-		COM_VERIFY(RegisterEventHandler(FALSE));
+		COM_VERIFY_EXCEPT1(RegisterEventHandler(FALSE), 0x80040200);
 	}
 	if(SUCCEEDED(hr))
 	{
@@ -106,12 +106,12 @@ STDMETHODIMP CFanxianBand::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, W
 {
 	HRESULT hr = S_OK;
 
-	FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
+	//FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
 
 #ifdef FTL_DEBUG
-	FTLTRACE(TEXT("Invoke, dispIdMember=%d(%s)\n"), dispIdMember, idspidInfo.GetConvertedInfo());
+	//FTLTRACE(TEXT("Invoke, dispIdMember=%d(%s)\n"), dispIdMember, idspidInfo.GetConvertedInfo());
 #else
-	OutputDebugString(idspidInfo.GetConvertedInfo());
+	//OutputDebugString(idspidInfo.GetConvertedInfo());
 #endif 
 
 	hr = IDispEventImpl::Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
@@ -131,24 +131,56 @@ STDMETHODIMP CFanxianBand::OnBeforeNavigate2(IDispatch* pDispatch, VARIANT* pvUr
 
 	if (pvUrl)
 	{
-		CAtlStringW wstrURL;
-		wstrURL.Format(L"%Ls", pvUrl->bstrVal );
-		FTLTRACE(TEXT("OnBeforeNavigate2, %s\n"), wstrURL);
-		int nPos = wstrURL.Find(L"baidu");
-		if (nPos > 0)
-		{
-			CComBSTR bstrUrl(L"www.google.com");
-			CComVariant varEmpty;
-			*pvCancel = VARIANT_TRUE;
-			COM_VERIFY(m_spWebBrowser2->Stop());
-			COM_VERIFY(m_spWebBrowser2->Navigate(bstrUrl, &varEmpty, &varEmpty, &varEmpty, &varEmpty));
+		CAtlStringW atlStrURL;
+		atlStrURL.Format(L"%Ls", pvUrl->bstrVal );
+		FTLTRACE(TEXT("OnBeforeNavigate2, %s\n"), atlStrURL);
 
-		}
-		//if (wstrURL.Find(L"fishjam") > 0)
-		{
-			//SysFreeString(pvUrl->bstrVal);
-			//pvUrl->bstrVal = SysAllocString(L"www.fishjam.com");
-		}
+        static LPCTSTR pszWeb[] = {
+            _T("tmall.com"),
+            _T("taobao.com"),
+        };
+
+        int nPos = -1;
+        for (int i = 0; i < _countof(pszWeb); i++)
+        {
+            nPos = atlStrURL.Find(pszWeb[i]);
+            if (nPos >= 0)
+            {
+                //找到一个需要替换的网站
+                break;
+            }
+        }
+
+
+        if (nPos >= 0)
+        {
+            if ((atlStrURL.Find(TEXT("id=")) > 0) && (atlStrURL.Find(TEXT("ali_trackid=2:mm_43549321_0_0")) < 0))
+            {
+                const CAtlString strTrackId = _T("ali_trackid=2:");
+                const CAtlString strMyTrackId = _T("mm_43549321_0_0");
+
+                FTLTRACE(TEXT("Before Change %s\n"), atlStrURL);
+
+                nPos = atlStrURL.Find(strTrackId);
+                if (nPos < 0)
+                {
+                    atlStrURL = atlStrURL + L"&ali_trackid=2:mm_43549321_0_0";
+                }
+                else
+                {
+                    CAtlStringW strNewUrl = atlStrURL.Left(nPos) + strTrackId + strMyTrackId + atlStrURL.Mid(nPos + strTrackId.GetLength() + strMyTrackId.GetLength());
+                    atlStrURL = strNewUrl;
+                }
+                FTLTRACE(TEXT("After Change %s\n"), atlStrURL);
+
+                CComBSTR bstrUrl(atlStrURL);
+                CComVariant varEmpty;
+                *pvCancel = VARIANT_TRUE;
+                COM_VERIFY(m_spWebBrowser2->Stop());
+                COM_VERIFY(m_spWebBrowser2->Navigate(bstrUrl, &varEmpty, &varEmpty, &varEmpty, &varEmpty));
+
+            }
+        }
 	}
 
 	return hr;

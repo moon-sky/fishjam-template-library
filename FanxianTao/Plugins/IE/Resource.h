@@ -1,9 +1,9 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by FanXianTB.rc
+// Used by FanXianIEPlugin.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_FANXIANTB                   101
+#define IDR_FANXIANIEPLUGIN             101
 #define IDR_FANXIANBAND                 102
 #define ID_FANXIANBAND                  103
 

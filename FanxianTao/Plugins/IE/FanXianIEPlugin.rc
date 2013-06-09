@@ -65,7 +65,7 @@ END
 
 3 TEXTINCLUDE 
 BEGIN
-    "1 TYPELIB ""FanXianTB.tlb""\r\n"
+    "1 TYPELIB ""FanXianIEPlugin.tlb""\r\n"
     "\0"
 END
 
@@ -98,8 +98,8 @@ BEGIN
             VALUE "FileDescription", "TODO: <File description>"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
-            VALUE "InternalName", "FanXianTB.dll"
-            VALUE "OriginalFilename", "FanXianTB.dll"
+            VALUE "InternalName", "FanXianIEPlugin.dll"
+            VALUE "OriginalFilename", "FanXianIEPlugin.dll"
             VALUE "ProductName", "TODO: <Product name>"
             VALUE "ProductVersion", "1.0.0.1"
         END
@@ -116,7 +116,7 @@ END
 // REGISTRY
 //
 
-IDR_FANXIANTB           REGISTRY                "FanXianTB.rgs"
+IDR_FANXIANIEPLUGIN           REGISTRY                "FanXianIEPlugin.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -125,7 +125,7 @@ IDR_FANXIANTB           REGISTRY                "FanXianTB.rgs"
 
 STRINGTABLE 
 BEGIN
-    IDS_PROJNAME            "FanXianTB"
+    IDS_PROJNAME            "FanXianIEPlugin"
 END
 
 #endif    // English (U.S.) resources
@@ -138,7 +138,7 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-1 TYPELIB "FanXianTB.tlb"
+1 TYPELIB "FanXianIEPlugin.tlb"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

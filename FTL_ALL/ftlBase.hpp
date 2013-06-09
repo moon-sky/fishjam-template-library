@@ -1055,7 +1055,7 @@ namespace FTL
     }
     void CFFastTrace::WriteLogInfo(const LPCTSTR lpszFormat,...)
     {
-        CFStringFormater formater(MAX_BUFFER_LENGTH, 1024);  //240K
+        CFStringFormater formater(MAX_BUFFER_LENGTH, 1024);  //256K
 		va_list argList;
         va_start(argList, lpszFormat);
 		HRESULT hr = formater.FormatV(lpszFormat,argList);
@@ -1068,7 +1068,7 @@ namespace FTL
     {
         if (CheckLevel(level))
         {
-            CFStringFormater formater(MAX_BUFFER_LENGTH, 1024);	//240K
+            CFStringFormater formater(MAX_BUFFER_LENGTH, 1024);	//256K
             va_list argList;
             va_start(argList, lpszFormat);
             HRESULT hr = formater.FormatV(lpszFormat,argList);

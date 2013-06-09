@@ -2,8 +2,8 @@ HKCR
 {
 	NoRemove AppID
 	{
-		'%APPID%' = s 'FanXianTB'
-		'FanXianTB.DLL'
+		'%APPID%' = s 'FanXianIEPlugin'
+		'FanXianIEPlugin.DLL'
 		{
 			val AppID = s '%APPID%'
 		}

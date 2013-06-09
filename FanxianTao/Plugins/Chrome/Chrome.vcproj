@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="HTML"
-	ProjectGUID="{C9E376CA-843E-4A05-8A68-CE58033204AD}"
-	RootNamespace="HTML"
+	Name="Chrome"
+	ProjectGUID="{36200DA7-2A74-45BD-B046-4DF7C43B0381}"
+	RootNamespace="Chrome"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -19,8 +19,8 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
+			ConfigurationType="2"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CHROME_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -90,8 +90,8 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
+			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -114,7 +114,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CHROME_EXPORTS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -166,175 +166,39 @@
 	</References>
 	<Files>
 		<Filter
-			Name="content"
+			Name="asserts"
 			>
-			<File
-				RelativePath=".\content\advance.html"
+			<Filter
+				Name="icons"
 				>
-			</File>
-			<File
-				RelativePath=".\content\applets.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\basic.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\color.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\css.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\dom.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\event.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\form.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\format.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\glossary.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\html5.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\jquery.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\language.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\media.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\notes.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\property.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\script.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\taobaoAPI.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\webSecurity.html"
-				>
-			</File>
-			<File
-				RelativePath=".\content\xhtml.html"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="css"
-			>
-			<File
-				RelativePath=".\css\c3.css"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="etc"
-			>
-			<File
-				RelativePath=".\etc\mercur.html"
-				>
-			</File>
-			<File
-				RelativePath=".\etc\sun.html"
-				>
-			</File>
-			<File
-				RelativePath=".\etc\venus.html"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="img"
-			>
-			<File
-				RelativePath=".\img\merglobe.gif"
-				>
-			</File>
-			<File
-				RelativePath=".\img\planets.jpg"
-				>
-			</File>
-			<File
-				RelativePath=".\img\sun.gif"
-				>
-			</File>
-			<File
-				RelativePath=".\img\venus.gif"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="js"
-			>
-			<File
-				RelativePath=".\js\Utils.js"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="media"
-			>
-			<File
-				RelativePath=".\media\movie.mp4"
-				>
-			</File>
-			<File
-				RelativePath=".\media\song.mp3"
-				>
-			</File>
-			<File
-				RelativePath=".\media\wmv.wmv"
-				>
-			</File>
+				<File
+					RelativePath=".\asserts\icons\logo-128.png"
+					>
+				</File>
+				<File
+					RelativePath=".\asserts\icons\logo-16.png"
+					>
+				</File>
+				<File
+					RelativePath=".\asserts\icons\logo-24.png"
+					>
+				</File>
+				<File
+					RelativePath=".\asserts\icons\logo-32.png"
+					>
+				</File>
+				<File
+					RelativePath=".\asserts\icons\logo-48.png"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
-			RelativePath=".\default_content.html"
+			RelativePath=".\manifest.json"
 			>
 		</File>
 		<File
-			RelativePath=".\footer.html"
-			>
-		</File>
-		<File
-			RelativePath=".\header.html"
-			>
-		</File>
-		<File
-			RelativePath=".\index.html"
-			>
-		</File>
-		<File
-			RelativePath=".\list.html"
+			RelativePath=".\popup.html"
 			>
 		</File>
 	</Files>

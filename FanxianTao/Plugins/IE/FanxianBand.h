@@ -3,7 +3,7 @@
 #pragma once
 #include "resource.h"       // main symbols
 
-#include "FanXianTB_i.h"
+#include "FanXianIEPlugin_i.h"
 #include "_IFanxianBandEvents_CP.h"
 
 #include <list>
@@ -13,7 +13,7 @@
 #error "Single-threaded COM objects are not properly supported on Windows CE platform, such as the Windows Mobile platforms that do not include full DCOM support. Define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA to force ATL to support creating single-thread COM object's and allow use of it's single-threaded COM object implementations. The threading model in your rgs file was set to 'Free' as that is the only threading model supported in non DCOM Windows CE platforms."
 #endif
 
-#define ENABLE_INVOKE_DUMP_INFO	1
+#define ENABLE_INVOKE_DUMP_INFO	0
 
 
 // CFanxianBand
@@ -26,7 +26,7 @@ class ATL_NO_VTABLE CFanxianBand :
 	public IObjectWithSiteImpl<CFanxianBand>,
 	//public IInputObject,
 	//public IDeskBand,
-	public IDispatchImpl<IFanxianBand, &IID_IFanxianBand, &LIBID_FanXianTBLib, /*wMajor =*/ 1, /*wMinor =*/ 0>,
+	public IDispatchImpl<IFanxianBand, &IID_IFanxianBand, &LIBID_FanXianIEPluginLib, /*wMajor =*/ 1, /*wMinor =*/ 0>,
 	public IDispEventImpl<ID_FANXIANBAND, CFanxianBand, & DIID_DWebBrowserEvents2, & LIBID_SHDocVw, 1, 0>
 {
 	DISABLE_COPY_AND_ASSIGNMENT(CFanxianBand);

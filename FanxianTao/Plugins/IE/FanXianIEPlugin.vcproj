@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="FanXianTB"
+	Name="FanXianIEPlugin"
 	ProjectGUID="{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}"
-	RootNamespace="FanXianTB"
+	RootNamespace="FanXianIEPlugin"
 	Keyword="AtlProj"
 	TargetFrameworkVersion="196613"
 	>
@@ -21,10 +21,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(FJSDK)using_boost.vsprops"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
@@ -47,11 +47,11 @@
 				MkTypLibCompatible="false"
 				TargetEnvironment="1"
 				GenerateStublessProxies="true"
-				TypeLibraryName="$(IntDir)/FanXianTB.tlb"
-				HeaderFileName="FanXianTB_i.h"
+				TypeLibraryName="$(IntDir)/FanXianIEPlugin.tlb"
+				HeaderFileName="FanXianIEPlugin_i.h"
 				DLLDataFileName=""
-				InterfaceIdentifierFileName="FanXianTB_i.c"
-				ProxyFileName="FanXianTB_p.c"
+				InterfaceIdentifierFileName="FanXianIEPlugin_i.c"
+				ProxyFileName="FanXianIEPlugin_p.c"
 				ValidateParameters="true"
 			/>
 			<Tool
@@ -82,99 +82,9 @@
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
 				LinkIncremental="2"
-				ModuleDefinitionFile=".\FanXianTB.def"
+				ModuleDefinitionFile=".\FanXianIEPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
-				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="2"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
-			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="false"
-				TargetEnvironment="1"
-				GenerateStublessProxies="true"
-				TypeLibraryName="$(IntDir)/FanXianTB.tlb"
-				HeaderFileName="FanXianTB_i.h"
-				DLLDataFileName=""
-				InterfaceIdentifierFileName="FanXianTB_i.c"
-				ProxyFileName="FanXianTB_p.c"
-				ValidateParameters="true"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_MERGE_PROXYSTUB"
-				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
-				WarningLevel="3"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				RegisterOutput="true"
-				IgnoreImportLibrary="true"
-				LinkIncremental="1"
-				ModuleDefinitionFile=".\FanXianTB.def"
-				GenerateDebugInformation="true"
-				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -227,11 +137,11 @@
 				MkTypLibCompatible="false"
 				TargetEnvironment="3"
 				GenerateStublessProxies="true"
-				TypeLibraryName="$(IntDir)/FanXianTB.tlb"
-				HeaderFileName="FanXianTB_i.h"
+				TypeLibraryName="$(IntDir)/FanXianIEPlugin.tlb"
+				HeaderFileName="FanXianIEPlugin_i.h"
 				DLLDataFileName=""
-				InterfaceIdentifierFileName="FanXianTB_i.c"
-				ProxyFileName="FanXianTB_p.c"
+				InterfaceIdentifierFileName="FanXianIEPlugin_i.c"
+				ProxyFileName="FanXianIEPlugin_p.c"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -261,10 +171,100 @@
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
 				LinkIncremental="2"
-				ModuleDefinitionFile=".\FanXianTB.def"
+				ModuleDefinitionFile=".\FanXianIEPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops;$(FJSDK)using_boost.vsprops"
+			UseOfATL="2"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="false"
+				TargetEnvironment="1"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(IntDir)/FanXianIEPlugin.tlb"
+				HeaderFileName="FanXianIEPlugin_i.h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="FanXianIEPlugin_i.c"
+				ProxyFileName="FanXianIEPlugin_p.c"
+				ValidateParameters="true"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;_MERGE_PROXYSTUB;FTL_DEBUG"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="2"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+				AdditionalIncludeDirectories="$(IntDir)"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				RegisterOutput="true"
+				IgnoreImportLibrary="true"
+				LinkIncremental="1"
+				ModuleDefinitionFile=".\FanXianIEPlugin.def"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -316,11 +316,11 @@
 				MkTypLibCompatible="false"
 				TargetEnvironment="3"
 				GenerateStublessProxies="true"
-				TypeLibraryName="$(IntDir)/FanXianTB.tlb"
-				HeaderFileName="FanXianTB_i.h"
+				TypeLibraryName="$(IntDir)/FanXianIEPlugin.tlb"
+				HeaderFileName="FanXianIEPlugin_i.h"
 				DLLDataFileName=""
-				InterfaceIdentifierFileName="FanXianTB_i.c"
-				ProxyFileName="FanXianTB_p.c"
+				InterfaceIdentifierFileName="FanXianIEPlugin_i.c"
+				ProxyFileName="FanXianIEPlugin_p.c"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -348,7 +348,7 @@
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
 				LinkIncremental="1"
-				ModuleDefinitionFile=".\FanXianTB.def"
+				ModuleDefinitionFile=".\FanXianIEPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -399,7 +399,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -408,7 +408,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -439,7 +439,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -448,7 +448,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -471,15 +471,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FanXianTB.cpp"
+				RelativePath=".\FanXianIEPlugin.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FanXianTB.def"
+				RelativePath=".\FanXianIEPlugin.def"
 				>
 			</File>
 			<File
-				RelativePath=".\FanXianTB.idl"
+				RelativePath=".\FanXianIEPlugin.idl"
 				>
 			</File>
 			<File
@@ -494,7 +494,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -502,7 +502,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -553,6 +553,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TaobaoAPI.h"
+				>
+			</File>
+			<File
 				RelativePath=".\targetver.h"
 				>
 			</File>
@@ -567,11 +571,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FanXianTB.rc"
+				RelativePath=".\FanXianIEPlugin.rc"
 				>
 			</File>
 			<File
-				RelativePath=".\FanXianTB.rgs"
+				RelativePath=".\FanXianIEPlugin.rgs"
 				>
 			</File>
 		</Filter>
@@ -580,7 +584,7 @@
 			SourceControlFiles="false"
 			>
 			<File
-				RelativePath=".\FanXianTB_i.c"
+				RelativePath=".\FanXianIEPlugin_i.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -592,7 +596,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -601,7 +605,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -620,7 +624,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\FanXianTB_i.h"
+				RelativePath=".\FanXianIEPlugin_i.h"
 				>
 			</File>
 		</Filter>

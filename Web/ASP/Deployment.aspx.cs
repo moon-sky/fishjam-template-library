@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
  *   注意：有多个同名文件，64位Win7上的目录是 C:\Windows\Microsoft.NET\Framework64\v4.0.30319\aspnet_regiis.exe
  * 4.管理工具：
  *     Win7: 管理工具 -> Internet 信息服务(IIS)管理器
+ *       网站(右键) -> 添加网站 -> 指定网站名称和物理路径 -> 
 ************************************************************************************************************/
 
 public partial class Deployment : System.Web.UI.Page

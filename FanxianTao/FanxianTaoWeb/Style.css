@@ -1,0 +1,52 @@
+@charset "utf-8";
+/* CSS Document */
+
+body,td,tr
+{
+font-size:12px;
+}
+.PageBody
+{
+	width:980px;
+	margin-left:auto;
+	margin-right:auto;
+}
+hr
+{
+	background-color:#CCCCCC;
+	height:1px;
+}
+
+.nav a
+{
+	width:120px;
+	height:20px;
+	line-height:20px;
+	display:inline-block;
+	border:#666666 solid 1px;
+	text-align:center;
+	text-decoration:none;
+}
+.nav a.select
+{
+	background-color:#C3C3C3;
+}
+a.button
+{
+	width:60px;
+	height:20px;
+	display:inline-block;
+	line-height:20px;
+	border:#999999 solid 1px;
+	text-align:center;
+	text-decoration:none;
+	background-color:#CCCCCC;
+}
+a.button:hover
+{
+	background-color:#C5C5C5;
+}
+tr:hover
+{
+	background-color:#E1E1E1;
+}
