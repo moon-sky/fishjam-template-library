@@ -491,6 +491,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ReflectionWnd.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -554,6 +558,10 @@
 			</File>
 			<File
 				RelativePath=".\FanxianTaoToolBar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ReflectionWnd.h"
 				>
 			</File>
 			<File
