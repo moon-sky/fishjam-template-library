@@ -95,7 +95,13 @@ using System.Data;
  *   1.web.config 中设置 <compilation debug="true">， 则会把页面相关的错误报告发送到浏览器(只在开发时使用)
  *   2.默认情况下，IE浏览器中的脚本调试器是禁用的 -- IE的Tools -> Internet Options -> Advanced -> Browsing -> Disable Script Debugging(禁用脚本调试)
  *   
- * Master Page -- 允许选择一个母版页(用于标准化页面布局的独立文件)文件作为创建Web页面的模版
+ * Master Page -- 允许选择一个母版页(用于标准化页面布局的独立文件)文件作为创建Web页面的模版，使用内容占位符定义母版页中要用内容页的内容加以替换的部分。
+ *   在使用Master Page时，我们的页面并没有继承Master Page，而是合并了Master Page，生成复合的输出页面。
+ *   MasterPage中放置的控件在Page中如何访问？是否可写？直接写名字告知找不到指定的变量 -- 可以使用Page.Master属性访问活动的Master Page
+ *   TODO:MasterPage定义统一的风格，PageBase处理统一的逻辑控制(PageBase是什么?)  
+ *   Master和页面互相访问的方式(非官方方法 -- 官方是什么方式?)
+ *     页面访问MasterPage: (Master as MyMasterPage).Xxx;
+ *     MasterPage访问页面: (Page as IXxxx).Xxx; -- 可以定义一个接口，然后Page实现该接口
  * 
  * 错误处理 -- VS中 Debug -> Exception -> Common Language Runtime Exceptions
  *   结构化异常处理( try...catch...finally ) -- 基于对象的异常，可以根据异常的类型来捕获异常，

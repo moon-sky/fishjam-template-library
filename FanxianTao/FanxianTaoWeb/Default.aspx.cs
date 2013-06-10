@@ -13,6 +13,6 @@ public partial class _Default : System.Web.UI.Page
     }
     protected void btnConvert_Click(object sender, EventArgs e)
     {
-        tbItemURL.Text = "http://www.alimama.com/index.htm";
+        //tbItemURL.Text = "http://www.alimama.com/index.htm";
     }
 }

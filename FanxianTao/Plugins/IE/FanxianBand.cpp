@@ -5,32 +5,229 @@
 
 #include <ShlGuid.h>
 
+#define TB_MIN_SIZE_X   10
+#define TB_MIN_SIZE_Y   10
+#define TB_MAX_SIZE_Y   25
+
+void InitWinSock()
+{
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	wVersionRequested = MAKEWORD( 2, 2 );
+	WSAStartup( wVersionRequested, &wsaData );
+}
+
+void UninitWinSock()
+{
+	WSACleanup( );
+}
+
 // CFanxianBand
+CFanxianBand::CFanxianBand()
+{
+	//m_hReBar = NULL;
+	m_hWndParent = NULL;
+	m_dwBandID = 0;
+	m_dwViewMode = 0;
+	m_bFocus = FALSE;
+	//m_ReflectWnd.GetToolBar().GetEditBox().SetBand(this);
+
+}
+
+CFanxianBand::~CFanxianBand()
+{
+
+}
+
+HRESULT CFanxianBand::FinalConstruct()
+{
+	return S_OK;
+}
+
+void CFanxianBand::FinalRelease()
+{
+
+}
+
+STDMETHODIMP CFanxianBand::GetWindow(HWND *phWnd)
+{
+	// Get safe window handle
+	*phWnd = m_Toolbar.m_hWnd;
+
+	return S_OK;
+}
+
+STDMETHODIMP CFanxianBand::ContextSensitiveHelp(BOOL fEnterMode)
+{
+	ATLTRACENOTIMPL("IOleWindow::ContextSensitiveHelp");
+}
+
+STDMETHODIMP CFanxianBand::ShowDW(BOOL bShow)
+{
+	// Do we have a valid toolbar?
+	if (m_Toolbar.m_hWnd)
+	{
+		// Should we show or hide our window?
+		if (bShow)
+		{
+			// Show our window
+			m_Toolbar.ShowWindow(SW_SHOW);
+		}
+		else
+		{
+			// Hide our window
+			m_Toolbar.ShowWindow(SW_HIDE);
+		}
+	}
+	else
+	{
+		MessageBox(m_hWndParent, TEXT("CFanxianBand::ShowDW with None m_hWnd"), NULL, MB_OK);
+	}
+
+	// Succeeded
+	return S_OK;
+}
+
+STDMETHODIMP CFanxianBand::CloseDW(DWORD /*dwReserved*/)
+{
+	// Hide
+	ShowDW(FALSE);
+	return S_OK;
+}
+
+STDMETHODIMP CFanxianBand::ResizeBorderDW(const RECT* /*pRC*/, IUnknown* /*pUnkSite*/, BOOL /*bReserved*/)
+{
+	ATLTRACENOTIMPL("IDockingWindow::ResizeBorderDW");
+}
+
+STDMETHODIMP CFanxianBand::UIActivateIO(BOOL bActivate, LPMSG /*pMsg*/)
+{
+	//if ( bActivate && m_Toolbar.IsLoadThemeDone() )
+	//{
+	//	::SetFocus(m_Toolbar.GetSearchCombo()->GetEditCtrl());
+	//}
+
+	return S_OK;
+}
+
+HRESULT CFanxianBand::GetBandInfo( 
+								  /* [in] */ DWORD dwBandID,
+								  /* [in] */ DWORD dwViewMode,
+								  /* [out][in] */ __RPC__inout DESKBANDINFO *pdbi)
+{
+	if (pdbi)
+	{
+		m_dwBandID = dwBandID;
+		m_dwViewMode = dwViewMode;
+
+		if (pdbi->dwMask & DBIM_MINSIZE)
+		{
+			pdbi->ptMinSize.x = TB_MIN_SIZE_X;
+			pdbi->ptMinSize.y = TB_MIN_SIZE_Y;
+		}
+
+		if (pdbi->dwMask & DBIM_MAXSIZE)
+		{
+			pdbi->ptMaxSize.x = -1;
+			pdbi->ptMaxSize.y = TB_MAX_SIZE_Y;
+		}
+
+		if(pdbi->dwMask & DBIM_INTEGRAL)
+		{
+			pdbi->ptIntegral.x = 1;
+			pdbi->ptIntegral.y = 1;
+		}
+
+		if (pdbi->dwMask & DBIM_ACTUAL)
+		{
+			pdbi->ptActual.x = 200;
+			pdbi->ptActual.y = TB_MAX_SIZE_Y;
+		}
+
+		if (pdbi->dwMask & DBIM_TITLE)
+		{
+			StringCchCopy(pdbi->wszTitle, _countof(pdbi->wszTitle), TEXT("FanxianTao"));
+		}
+
+		if (pdbi->dwMask & DBIM_MODEFLAGS)
+		{
+			pdbi->dwModeFlags = DBIMF_NORMAL;
+
+			pdbi->dwModeFlags |= DBIMF_VARIABLEHEIGHT;
+		}
+
+		if (pdbi->dwMask & DBIM_BKCOLOR)
+		{
+			// Use the default background color by removing this flag
+			pdbi->dwMask &= ~DBIM_BKCOLOR;
+		}
+
+		// Succeeded
+		return S_OK;
+	}
+	else
+	{
+		return E_INVALIDARG;
+	}
+}
+
+STDMETHODIMP CFanxianBand::HasFocusIO(void)
+{
+	// Does the window has a focus?
+	if (m_bFocus)
+	{	
+		// Yes, return S_OK
+		return S_OK;
+	}
+	else
+	{
+		// No, return S_FALSE
+		return S_FALSE;
+	}
+}
+
+STDMETHODIMP CFanxianBand::TranslateAcceleratorIO(LPMSG pMsg)
+{
+	// Needed for MFC calls
+	//AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// Let toolbar translate
+	return m_Toolbar.TranslateAcceleratorIO(pMsg);
+}
+
 
 STDMETHODIMP CFanxianBand::RegisterEventHandler(BOOL inAdvise)
 {
 	HRESULT hr = E_FAIL;
-	//CComPtr<IConnectionPoint>   spConnectionPoint;
-	//CComQIPtr<IConnectionPointContainer> spConnectionPointContainer(m_spWebBrowser2);
-	//COM_VERIFY(spConnectionPointContainer->FindConnectionPoint(DIID_DWebBrowserEvents2, &spConnectionPoint));
 	if (inAdvise)
 	{
-		//DWORD dwCookie = 0;
 		COM_VERIFY(DispEventAdvise(m_spWebBrowser2));
-		//COM_VERIFY(spConnectionPoint->Advise(static_cast<IDispatch*>(this), &dwCookie));
-		//m_Cookies.push_back(dwCookie);
 	}
 	else
 	{
-		COM_VERIFY_EXCEPT1(DispEventUnadvise(m_spWebBrowser2), 0x80040200);
-		//for (std::list<DWORD>::iterator iter = m_Cookies.begin(); iter != m_Cookies.end();
-		//	++iter)
-		//{
-		//	COM_VERIFY(spConnectionPoint->Unadvise(*iter));
-		//}
-		//m_Cookies.clear();
+		if (m_hWndParent)
+		{
+			COM_VERIFY_EXCEPT1(DispEventUnadvise(m_spWebBrowser2), 0x80040200);
+			m_hWndParent = NULL;
+		}
+		
 	}
 	return hr;
+}
+HRESULT CFanxianBand::CreateToolWindow()
+{
+	HRESULT hr = E_FAIL;
+	BOOL bRet = FALSE;
+
+	CWindow wndParent(m_hWndParent);
+
+	CRect rcClientParent;
+	rcClientParent.SetRectEmpty();
+	API_VERIFY(wndParent.GetClientRect(&rcClientParent));
+
+	API_VERIFY(NULL != m_Toolbar.Create(m_hWndParent, rcClientParent));
+	
+	return S_OK;
 }
 
 BOOL CFanxianBand::GetWebBrowserPtr( IUnknown* pUnkSite )
@@ -66,25 +263,45 @@ BOOL CFanxianBand::GetWebBrowserPtr( IUnknown* pUnkSite )
 STDMETHODIMP CFanxianBand::SetSite(IUnknown *pUnkSite)
 {
 	HRESULT hr = E_POINTER;
+	BOOL bRet = FALSE;
+	
+	//MessageBox(NULL, TEXT("SetSite"), TEXT("SetSite"), MB_OK);
+
 	FTLTRACE(TEXT("CFanxianBand::SetSite, pUnkSite=0x%p\n"), pUnkSite);
 
 	if (pUnkSite)
 	{
-		//过滤资源管理器(explorer.exe), 只处理IE(iexplore.exe)
-		if (CFSystemUtil::IsSpecialProcessName(TEXT("explorer.exe"), NULL))
-		{
-			FTLTRACE(TEXT("IsSpecialProcessName return\n"));
-			return E_FAIL;
-		}
+		InitWinSock();
 
 #ifdef DEBUG
 		FormatMessageBox(NULL, TEXT("SetSite"), MB_OK, TEXT("SetSite for 0x%p"), pUnkSite);
 #endif 
+		COM_DETECT_INTERFACE_FROM_REGISTER(pUnkSite);
+
+		//API_VERIFY(GetWebBrowserPtr(pUnkSite));
+
 		m_spWebBrowser2 = pUnkSite;
 		if (m_spWebBrowser2)
 		{
 			COM_VERIFY(RegisterEventHandler(TRUE));
 		}
+		
+		FTLASSERT(NULL == m_hWndParent);
+		CComQIPtr<IWebBrowserApp> spWebBrowserApp(pUnkSite);
+		if (spWebBrowserApp)
+		//CComQIPtr<IOleWindow> spOleWindow(m_spWebBrowser2);
+		//if (spOleWindow)
+		{
+			//COM_VERIFY(spOleWindow->GetWindow(&m_hWndParent));
+			COM_VERIFY(spWebBrowserApp->get_HWND((SHANDLE_PTR*)&m_hWndParent));
+			FTLASSERT(m_hWndParent != NULL);
+			if (m_hWndParent)
+			{
+				COM_VERIFY(CreateToolWindow());
+			}
+		}
+		
+
 		m_spUnkSite = pUnkSite;
 	}
 	else
@@ -93,7 +310,7 @@ STDMETHODIMP CFanxianBand::SetSite(IUnknown *pUnkSite)
 	}
 	if(SUCCEEDED(hr))
 	{
-		COM_VERIFY(__super::SetSite(pUnkSite));
+		COM_VERIFY(IObjectWithSiteImpl<CFanxianBand>::SetSite(pUnkSite));
 	}
 	return hr;
 }
@@ -106,7 +323,7 @@ STDMETHODIMP CFanxianBand::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, W
 {
 	HRESULT hr = S_OK;
 
-	//FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
+	FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
 
 #ifdef FTL_DEBUG
 	//FTLTRACE(TEXT("Invoke, dispIdMember=%d(%s)\n"), dispIdMember, idspidInfo.GetConvertedInfo());

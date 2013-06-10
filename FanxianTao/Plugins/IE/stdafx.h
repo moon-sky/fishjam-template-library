@@ -19,10 +19,14 @@
 #include <atlbase.h>
 #include <atlstr.h>
 #include <atltypes.h>
+#include <atlapp.h>
+
 #include <atlcom.h>
 #include <atlctl.h>
 
 using namespace ATL;
+
+#include <atlcrack.h>
 
 #include <ftlBase.h>
 #include <ftlCom.h>
@@ -30,3 +34,5 @@ using namespace ATL;
 #include <ftlSystem.h>
 
 using namespace FTL;
+
+//extern CComModule _Module;

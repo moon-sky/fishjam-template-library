@@ -7,6 +7,8 @@
 #include "dllmain.h"
 #include "dlldatax.h"
 
+//CComModule _Module;
+
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)
 {
@@ -16,6 +18,8 @@ STDAPI DllCanUnloadNow(void)
         return hr;
 #endif
     return _AtlModule.DllCanUnloadNow();
+
+	//return (_Module.GetLockCount() == 0) ? S_OK : S_FALSE;
 }
 
 
@@ -27,6 +31,8 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
         return S_OK;
 #endif
     return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
+
+	//return _Module.GetClassObject(rclsid, riid, ppv);
 }
 
 

@@ -43,6 +43,13 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_FANXIANIEPLUGIN     REGISTRY                "FanXianIEPlugin.rgs"
+
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -94,13 +101,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "TODO: <Company name>"
-            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "CompanyName", "Fishjam"
+            VALUE "FileDescription", "Fanxian Tao IE Plugin"
             VALUE "FileVersion", "1.0.0.1"
-            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
             VALUE "InternalName", "FanXianIEPlugin.dll"
+            VALUE "LegalCopyright", "www.fishjam.com"
             VALUE "OriginalFilename", "FanXianIEPlugin.dll"
-            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductName", "Fanxian Tao"
             VALUE "ProductVersion", "1.0.0.1"
         END
     END
@@ -113,19 +120,13 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// REGISTRY
-//
-
-IDR_FANXIANIEPLUGIN           REGISTRY                "FanXianIEPlugin.rgs"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // String Table
 //
 
 STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "FanXianIEPlugin"
+    IDS_TOOLBARNAME         "FanxianTao"
 END
 
 #endif    // English (U.S.) resources

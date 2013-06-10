@@ -7,6 +7,7 @@
 #include "dlldatax.h"
 
 CFanXianIEPluginModule _AtlModule;
+//CComModule _Module;
 
 // DLL Entry Point
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
@@ -27,6 +28,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
 				FTLTRACE(TEXT("IsSpecialProcessName return for explorer.exe\n"));
 				return FALSE;
 			}
+			_AtlModule.m_hModuleInstance = hInstance;
 		}
 		break;
 	case DLL_PROCESS_DETACH:
@@ -34,4 +36,5 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpRes
 	}
 
 	return _AtlModule.DllMain(dwReason, lpReserved); 
+	//return TRUE; //_Module.DllMain(hInstance, dwReason, lpReserved)
 }

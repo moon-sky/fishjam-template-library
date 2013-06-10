@@ -47,7 +47,7 @@ HKLM
                     {
                         NoRemove 'Browser Helper Objects'
                         {
-#                            {A67B1DD5-79FF-41B1-9334-3A893AB4D073}
+                            {A67B1DD5-79FF-41B1-9334-3A893AB4D073}
                         }
                     }
                 }

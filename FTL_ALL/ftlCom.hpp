@@ -135,6 +135,12 @@ namespace FTL
 
 	//////////////////////////////////////////////////////////////////////////
 
+	/*
+		SafeArrayGetLBound(v[3].parray,0,&lbound);
+		SafeArrayGetUBound(v[3].parray,0,&ubound);
+		sz=ubound-lbound+1;
+		SafeArrayAccessData(v[3].parray,&pv);
+	*/
 	CFVariantInfo::CFVariantInfo(const VARIANT& info, BOOL bComPtrDetect/* = FALSE */) 
 		: CFConvertInfoT<CFVariantInfo, const VARIANT&>(info)
 	{

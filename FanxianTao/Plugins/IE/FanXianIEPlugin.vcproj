@@ -81,6 +81,7 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="ws2_32.lib"
 				LinkIncremental="2"
 				ModuleDefinitionFile=".\FanXianIEPlugin.def"
 				GenerateDebugInformation="true"
@@ -170,6 +171,7 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="ws2_32.lib"
 				LinkIncremental="2"
 				ModuleDefinitionFile=".\FanXianIEPlugin.def"
 				GenerateDebugInformation="true"
@@ -258,6 +260,7 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="ws2_32.lib"
 				LinkIncremental="1"
 				ModuleDefinitionFile=".\FanXianIEPlugin.def"
 				GenerateDebugInformation="true"
@@ -347,6 +350,7 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="ws2_32.lib"
 				LinkIncremental="1"
 				ModuleDefinitionFile=".\FanXianIEPlugin.def"
 				GenerateDebugInformation="true"
@@ -483,6 +487,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FanxianTaoToolBar.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -529,10 +537,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\BHOStudy.h"
-				>
-			</File>
-			<File
 				RelativePath=".\dlldatax.h"
 				>
 			</File>
@@ -545,15 +549,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FanxiantaoDefine.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FanxianTaoToolBar.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Resource.h"
 				>
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TaobaoAPI.h"
 				>
 			</File>
 			<File

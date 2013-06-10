@@ -4,6 +4,7 @@
 //
 #define IDS_PROJNAME                    100
 #define IDR_FANXIANIEPLUGIN             101
+#define IDS_TOOLBARNAME                 101
 #define IDR_FANXIANBAND                 102
 #define ID_FANXIANBAND                  103
 
