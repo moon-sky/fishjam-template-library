@@ -24,6 +24,7 @@
 * 
 * 常见的JavaScript库( 通常提供强大的功能，并且兼容各大浏览器 )
 *   Prototype(www.prototypejs.org) -- 对内置对象做了大量的扩展，可认为是功能函数库
+*     https://ajax.googleapis.com/ajax/libs/prototype/1.7.1.0/prototype.js
 *   Dojo(dojotoolkit.org) -- 提供了很多其他库没有提供的功能，如 离线存储API、生成图标，得到多家企业支持
 *   YUI(Yahoo User Interface) -- 
 *   jQuery(jquery.com) --★Web开发首选★拥有强大的选择器，出色的DOM操作，可靠的事件处理、完善的兼容性和链式操作等功能

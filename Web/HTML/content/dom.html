@@ -34,6 +34,7 @@
           代码中创建对象：var videoObj=document.createElement("video");  <br />
           获取指定id的对象：var myVideo=document.getElementById("video1"); 
           获取指定类型的所有对象(数组)：var inputs=document.getElementsByTagName("input"); 
+          获取指定名字的所有对象(数组)：var myInputs=inputs.getElementsByName("myInput"); 
           获取所有明确设置为 required 的元素？：document.querySelectorAll(":required");
           对元素动态设置事件处理：inputs[i].addEventListener("invalid", function() {alert("input is invalid");}, false);
           objName.parentNode.removeChild(objName); -- 从DOM中删除元素

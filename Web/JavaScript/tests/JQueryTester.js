@@ -1,6 +1,6 @@
 /******************************************************************************************************************************************
 * 开发IDE(代码自动提示)
-*   1.Dreamweaver + jQuery_API.mxp 插件
+*   1.Dreamweaver + jQuery_API.mxp 插件(Dreamweaver cs6 已经内置)
 *   2.Aptana -- 基于Eclipse，专注于JavaScript的Ajax开发IDE，(Windows -> Preferences -> Aptana ->Editors -> Javascript -> Code Assist)
 *   3.Eclipse + jQueryWTP 或 Spket 插件
 *   4.Visual Studio 2008 + KB958502 补丁 + jquery-vsdoc.js(该文件版本和jQuery一致，而且 "-" 前面的部分必须和jQuery文件名一样，放在相同目录)
@@ -24,17 +24,18 @@
 *
 * 基础语法： $就是 jQuery的一个简写形式，如 $("#foo") 和 jQuery("#foo") 等价; $.ajax 和 jQuery.ajax 等价
 *   $(selector).action() -- 美元符号定义 jQuery; 选择符(selector)查询和查找HTML 元素; action() 执行对元素的操作
-*   $(document).ready(function(){ xxx }); -- 等待dom元素加载完毕执行指定语句
+*   $(document).ready(function(){ xxx }); -- 等待dom元素加载完毕执行指定语句，可以简写为 $(function(){ xxxx });
 *   .ready(function() { xxx });
-*   .click(function() { xxx });
 *  
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
 * 选择器(Selectors) -- (基本语法同CSS选择器),允许开发者使用从CSS1到CSS3几乎所有的选择器及jQuery独创的高级而复杂的选择器，通过插件还可以支持XPath选择器，甚至可以编写属于自己的选择器
 *   如果没有满足条件的元素(如没有指定id的元素)，调用jQuery方法也不会报错(因为选择器的返回是一个数组，只是此时数组个数为 0)
+*   选择条件中有特殊字符(如 ".", "#","[","]" 等)的，需要在特殊字符前使用双斜线(\\)进行转义，如 id="myId.index" 对象的选择器: $("myId\\.index")
+*     但最好不要使用特殊字符
 *   基本选择器
-*     tagType -- 选择所有指定类型的元素， 如类型 <p> 的 $("p")
+*     tagType -- 选择所有指定类型的元素， 如类型 <p> 的 $("p"), $("input[type=button]")选择所有button按钮(等价于 :button ?)
 *     #IdObj -- 选择  id="IdObj" 的元素
 *     .className -- 选择所有 class="className" 的元素
 *     this -- 选择当前元素,通常用在事件处理代码中，表示激发该事件的对象
@@ -69,7 +70,7 @@
 *     [attribute=value] -- 选取属性值为 value 的元素，如 $("div[title=test]") 选取属性title为"test"的<div>元素
 *        对应的有 !=value(不等于), ^=value(属性值以value开始), $=value(属性值以value结束), *=value(属性值含有value)
 *     [selector1][selector2] -- 将属性按“与”的方式合并，同时满足多个条件，如 $("div[id][title*='test']") 选取有属性id，并且属性title中含有"test"值的<div>元素
-*   子元素过滤选择器(注意和过滤选择器的区别：1.子元素过滤选择器的索引从开始; 2.子元素过滤选择器会对每个父元素都过滤)
+*   子元素过滤选择器(注意和过滤选择器的区别：1.子元素过滤选择器的索引从1开始; 2.子元素过滤选择器会对每个父元素都过滤)
 *     :nth-child(index/even/odd/equation) -- 选取每个父元素下的第index个子元素/奇/偶/?? 元素(index从1开始算)，如 $("div.one :nth-child(3n)")选取class为one的div父元素中索引值是3的倍数的元素
 *        注意：为每一个父元素匹配子元素，并且index是从1开始的
 *     :first-child -- 选取每个父元素的第一个子元素，如 $("ul li:first-child") 选取每个<ul>中第一个<li>元素
@@ -78,7 +79,21 @@
 *   表单对象属性过滤器 -- 对所选择的表单元素进行过滤
 *     :enabled/disabled -- 选取所有 可用/不可用 元素
 *     :checked -- 选取所有被选中的元素(单选框/复选框)
-*     :selected -- 选取所有被选中的选项元素(下拉列表) 
+*     :reset -- 选取 reset 按钮？
+*     :selected -- 选取所有被选中的选项元素(下拉列表)
+*   表单选择器(问题：和按tag选择有什么区别?) -- 选取表单(form)内制定类型的元素,以前需要指定所在的form 如 $("form1 text")
+*     :button -- 
+*     :checkbox
+*     :file
+*     :hidden -- <input type="hidden" />和<div style="display:none">test</div>都可以匹配.
+*     :input -- form中所有的输入类元素，注意和 $("input")的区别 -- ":input"比"input"要多,比如<select>,<button>属于:input但不属于input)
+*     :image
+*     :password 
+*     :radio
+*     :reset
+*     :submit
+*     :text
+*     textarea -- 前面没有 冒号(:),采用的是 tagName 方式
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
@@ -87,7 +102,7 @@
 * DOM操作封装 -- 封装了大量常用的DOM操作
 * 可靠的事件处理机制 -- 
 * 完善的Ajax -- 将所有的Ajax操作封装到一个函数 $.ajax() 里，开发者处理Ajax时能专心处理业务逻辑
-* 不污染顶级变量 -- 只建立一个名为jQuery的对象，其所有的函数方法都在这个对象之下，其别名 $ 也可以随时交出控制权( jQuery.noConflict() )，
+* 不污染顶级变量 -- 只建立一个名为jQuery的对象，其所有的函数方法都在这个对象之下，其别名 $ 也可以随时交出控制权( jQuery.noConflict();然后可以 jQuery(xxx) 的方式使用 )，
 *   绝不会污染其他的对象(可和其他库共存而无冲突)
 * 出色的浏览器兼容 -- 
 * 链式操作方式 -- 对发生在同一个jQuery对象上的一组动作，可以直接连写而无需重复获取对象(代码优雅)
@@ -97,20 +112,59 @@
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
-* 函数
-*   .attr("属性") -- 返回指定的属性 ?
-*   .css("属性", "新的值") -- 设置对应的css属性值
-*   .html() --
-*   .is(":checked") -- 判断是否被选中 ?
+* $(xxxx) -- 工厂函数? 如果内容是已有的dom变量，则转换成jQuery变量[如 $(document) ];否则创建新的 jQuery 对象[ 如 $parent.append($("<li>新列表项</li>")) ]
+*            如果在 函数里直接写 "xxx" 等价于 $("xxxx")?
+*   
+* 函数(TODO:分类别来写)
+*   控制元素
+*     .append($obj) -- 追加子元素到父元素的最后面?(在 innerHTML 属性中增加?)
+*     .appendTo($parent) -- 将当前对象追加到指定父元素的最后面
+*     .clone([bool]) -- 复制当前节点并返回，如果参数为true表明其副本具有同样的功能(如 事件处理函数 )
+*     .empty() -- 清空此元素里的内容，但元素还存在，如 $("ul li:first").empty() 会清除其文本，但节点还在
+*     .insertAfter($siblingObj) -- 插入到指定的兄弟节点后面，如果调用元素已经是 $siblingObj 的兄弟元素，则是移动
+*     .insertBefore($siblingObj) -- 插入到指定的兄弟节点前面，如果调用元素已经是 $siblingObj 的兄弟元素，则是移动
+*     .prepend($obj) -- 插入到父元素的最前面
+*     .remove() -- 从网页中移除本对象，会返回被移除的对象
+*     .remove(Selector) -- 从本对象中移除指定条件的子对象
+*     .replaceWith($obj) -- 使用指定元素替换当前元素
+*     .replaceAll(Selector) --使用当前元素替换所有指定元素?
+*   属性样式控制
+*     .attr("属性" [,新值]) -- 返回或设置指定的属性值, 如 class/style 等
+*     .addClass("className") -- 增加指定的class属性(通常用于关联CSS)
+*     .hasClass("className") -- 判断是否有指定的class属性，等价于 .is(".className") -- 注意 className 前面有个点
+*     .removeAttr("属性") -- 移除特定的属性，如 removeAttr("style")表示清除其所有的CSS属性，通常用于重置UI?
+*     .removeClass(["className"]) -- 去除指定的class属性，如果 className 为空，则去除所有的class属性
+*     .toggleClass("className") -- 重复切换指定样式
+*     .wrap("<a href='http://www.baidu.com' target='_blank'></a>") -- 使用指定元素把当前元素包裹起来
+*     .wrapAll("<xxx></xxx>") -- 将当前的所有元素放在一个 <xxx> 中， .wrap 会对每个选择的元素都包裹一个 <xxx>
+*     .wrapInner("<xxx></xxx>") -- 包裹在内部
+*   文本函数
+*     .html(["新的值"]) -- 读取或设置其 html 值，等价于读写 domObj.innerHTML
+*     .text(["新的值"]) -- 读写元素的文本(显示的值?用于<p>等带文本的元素 ?)， 如 select 中每一个 option 的文本, 等价于 domObj.innerText?
+*     .val(["新的值"]) -- 更改元素的值(用于 button, text等的文字显示 ?) ,等价于 domObj.defaultValue = "新的值" ? 
+*        如果需要设置多选值(如 multiple 的 select)时，需要用中括号括起且逗号分隔的项(如: $("#multiple").val(["check2","check3"]); )
+*        对应的值是 <option>中的文本部分, checkbox|radio 的 value 部分
+*     
+*   其他函数
+*   ?.children(selector) -- 通过指定的选择器选择所有满足条件的子元素?
+*   .css("属性", "新的值") -- 设置对应的css属性值, 如 .css("font-color", "red") 
+*   .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
+*   .end() -- 重新定位到上次操作的元素?
+*   .filter(Selector) -- 根据指定条件过滤出满足需求的子元素集合?
+*   .get(index) 或 [index] -- 选取jQuery对象数组中指定的元素，注意：返回值是DOM对象
+*   .is(":checked") -- 判断是否被选中 ? 类似的有 .is(":visible") 判断对象是否可见，常用于 if($obj.is(":checked")){ xxx  }
 *   .next("xx)
 *   .nextAll("xxx") -- 选取当前元素 后面的 同辈"xxx"元素
 *   .siblings("xxx") -- 选取当前元素同辈的"xxx"元素
-*   .show(毫秒数) -- 
+*   .slideToggle("slow", func()) -- 添加动画?
+*   .show(毫秒数)/hide() -- 显示/隐藏指定元素
+*   .trigger("eventName") -- 激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替
 *
 * 事件( .xxx(function() { xxx });
-*   .click() -- 设置click事件?
-*   .ready() -- 如 $(document).ready(function(){ xxx });
-*     网页中所有DOM结构绘制完毕就执行，可能DOM元素关联的东西没有加载完(比如图片?)；可以同时编写多个(window.onload只能有一个)
+*   .click() -- 设置click事件
+*   .change() -- 设置change事件，如 $("select").change(function(){ xxx; })
+*   .ready() -- 如 $(document).ready(function(){ xxx }); 
+*     网页中所有DOM结构绘制完毕就执行，可能DOM元素关联的东西没有加载完(比如图片?)；可以同时编写多个(但window.onload只能有一个)
 ******************************************************************************************************************************************/
 
 $(document).ready(function() {

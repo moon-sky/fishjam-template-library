@@ -297,6 +297,10 @@
 			Name="js"
 			>
 			<File
+				RelativePath=".\js\assist.js"
+				>
+			</File>
+			<File
 				RelativePath=".\js\Utils.js"
 				>
 			</File>
