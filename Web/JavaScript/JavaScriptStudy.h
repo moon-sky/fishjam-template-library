@@ -2,7 +2,8 @@
 //精通JavaScript xxxx .pdf -- P33,第三章,创建可重用代码。(但最好在看完入门到精通后，从头再看一遍)
 
 //开发出专业JavaScript代码的根本方法之一是：快速、静态地提供与其他代码的接口，同时保证自身的可理解性
-
+//开发时需要考虑到客户禁用或不支持JavaScript(用户代理)的情况，而且当前的搜索引擎爬虫基本都不支持JavaScript(SEO优化考虑)，
+//  TODO: 为了防止程序不认识JS脚本，需要将脚本代码放入  //<![CDATA[  xxxxxx    //]]> 之中 ?
 
 //<a href="javascript:self.close()"> 关闭 </a>
 

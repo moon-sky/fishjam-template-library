@@ -25,15 +25,28 @@
 * 基础语法： $就是 jQuery的一个简写形式，如 $("#foo") 和 jQuery("#foo") 等价; $.ajax 和 jQuery.ajax 等价
 *   $(selector).action() -- 美元符号定义 jQuery; 选择符(selector)查询和查找HTML 元素; action() 执行对元素的操作
 *   $(document).ready(function(){ xxx }); -- 等待dom元素加载完毕执行指定语句，可以简写为 $(function(){ xxxx });
-*   .ready(function() { xxx });
 *  
+* 事件: -- 如事件处理函数中 return false 则会同时 停止事件冒泡 和 阻止默认行为
+*   事件对象(event) -- 事件处理函数中才能访问，事件处理函数执行完毕后，该对象就被销毁
+*     metaKey -- 键盘事件中获取 <ctrl> 按键
+*     originalEvent -- 指向原始的事件对象
+*     pageX/pageY -- 获取到光标相对于页面的 x 坐标和 y 坐标(封装各种浏览器的区别 -- 名字和滚动条等 )
+*     relatedTarget -- 事件相关元素(如 mouseover 事件的 IE::fromElement, mouseout 事件的 IE::toElement )
+*     target -- 获取到触发事件的元素
+*     type -- 获取到事件类型的属性，如 "click" 等
+*     which -- 在鼠标单击事件中获取到鼠标的 左(1)、中(2)、右(3)键，在键盘事件中获取键盘的按键
+*     stopPropagation() -- 停止事件冒泡
+*     preventDefault() -- 阻止默认行为(如 单击超链接的跳转，单击提交按钮后提交表单 等)
+*   事件冒泡 -- 嵌套元素的事件依次从内向外激发? 比如 click( 该机制可能会引起预料之外的效果 ?) 
+*   事件捕获 -- 从最外层元素开始，依次到最里层元素(注意：因为不是所有浏览器都支持事件捕获，且jQuery无法修复，因此jQuery不支持事件捕获)
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
 * 选择器(Selectors) -- (基本语法同CSS选择器),允许开发者使用从CSS1到CSS3几乎所有的选择器及jQuery独创的高级而复杂的选择器，通过插件还可以支持XPath选择器，甚至可以编写属于自己的选择器
 *   如果没有满足条件的元素(如没有指定id的元素)，调用jQuery方法也不会报错(因为选择器的返回是一个数组，只是此时数组个数为 0)
-*   选择条件中有特殊字符(如 ".", "#","[","]" 等)的，需要在特殊字符前使用双斜线(\\)进行转义，如 id="myId.index" 对象的选择器: $("myId\\.index")
-*     但最好不要使用特殊字符
+*   选择条件中有特殊字符(如 ".", "#","(",")","[","]" 等)的，需要在特殊字符前使用双斜线(\\)进行转义，如 id="myId.index" 对象的选择器: $("myId\\.index")， 但最好不要使用特殊字符
+*   querySelectorAll() -- W3C在SelectorsAPI草案中提到的标准方法，为浏览器(IE8以后)原生，jQuery可能会使用该方法来重构选择器
+* 
 *   基本选择器
 *     tagType -- 选择所有指定类型的元素， 如类型 <p> 的 $("p"), $("input[type=button]")选择所有button按钮(等价于 :button ?)
 *     #IdObj -- 选择  id="IdObj" 的元素
@@ -77,22 +90,21 @@
 *     :last-child -- 选取每个父元素的最后一个子元素
 *     :only-child -- 如果某个元素是它父元素中唯一的子元素，将会匹配(即父元素中只有一个子元素)，如 $("ul li:only-child") 在<ul>中选取是唯一子元素的<li>元素
 *   表单对象属性过滤器 -- 对所选择的表单元素进行过滤
-*     :enabled/disabled -- 选取所有 可用/不可用 元素
+*     :enabled/:disabled -- 选取所有 可用/不可用 元素
 *     :checked -- 选取所有被选中的元素(单选框/复选框)
-*     :reset -- 选取 reset 按钮？
 *     :selected -- 选取所有被选中的选项元素(下拉列表)
-*   表单选择器(问题：和按tag选择有什么区别?) -- 选取表单(form)内制定类型的元素,以前需要指定所在的form 如 $("form1 text")
-*     :button -- 
-*     :checkbox
-*     :file
-*     :hidden -- <input type="hidden" />和<div style="display:none">test</div>都可以匹配.
-*     :input -- form中所有的输入类元素，注意和 $("input")的区别 -- ":input"比"input"要多,比如<select>,<button>属于:input但不属于input)
-*     :image
+*   表单选择器 -- 选取表单(form)内制定类型的元素,使用以前需要指定所在的form?, 如 $("form1 text")
+*     :button -- 选取所有的按钮
+*     :checkbox -- 
+*     :file -- 
+*     :hidden -- 所有的不可见元素，<input type="hidden" />和<div style="display:none">test</div>都可以匹配.
+*     :input -- 选取form中所有的输入类元素(input/textarea/select/button等)，注意和 $("input")的区别--":input"比"input"要多
+*     :image -- 
 *     :password 
 *     :radio
-*     :reset
-*     :submit
-*     :text
+*     :reset -- 重置按钮
+*     :submit -- 提交按钮
+*     :text -- 选取所有的单行文本框
 *     textarea -- 前面没有 冒号(:),采用的是 tagName 方式
 ******************************************************************************************************************************************/
 
@@ -108,63 +120,102 @@
 * 链式操作方式 -- 对发生在同一个jQuery对象上的一组动作，可以直接连写而无需重复获取对象(代码优雅)
 * 隐式迭代 -- 方法都被设计成自动操作对象集合，而不是单独的对象，不需要编写大量的循环结构代码
 * 行为层与结构层的分离 -- 可以使用jQuery选择器选中元素，然后直接给元素添加事件，这种分离的是想可以是jQuery开发人员和页面开发人员各司其职
-* 丰富的插件支持 -- 
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
-* $(xxxx) -- 工厂函数? 如果内容是已有的dom变量，则转换成jQuery变量[如 $(document) ];否则创建新的 jQuery 对象[ 如 $parent.append($("<li>新列表项</li>")) ]
-*            如果在 函数里直接写 "xxx" 等价于 $("xxxx")?
+* $(html) -- 工厂函数, 
+*    如果内容是已有的dom变量，则转换成jQuery变量[ 如 $(document) ]; 
+*    否则根据html标记字符串(注意需要是闭合的XHTML格式)创建DOM对象，并封装成jQuery对象返回[ 如 $parent.append($("<li>新列表项</li>")) ]; 
+*    如果在 函数里直接写 "xxx" 等价于 $("xxxx")?
 *   
-* 函数(TODO:分类别来写)
-*   控制元素
-*     .append($obj) -- 追加子元素到父元素的最后面?(在 innerHTML 属性中增加?)
-*     .appendTo($parent) -- 将当前对象追加到指定父元素的最后面
-*     .clone([bool]) -- 复制当前节点并返回，如果参数为true表明其副本具有同样的功能(如 事件处理函数 )
-*     .empty() -- 清空此元素里的内容，但元素还存在，如 $("ul li:first").empty() 会清除其文本，但节点还在
-*     .insertAfter($siblingObj) -- 插入到指定的兄弟节点后面，如果调用元素已经是 $siblingObj 的兄弟元素，则是移动
-*     .insertBefore($siblingObj) -- 插入到指定的兄弟节点前面，如果调用元素已经是 $siblingObj 的兄弟元素，则是移动
+* 函数(TODO:分类别来写) -- 注意：jQuery中很多功能使用相同的名字实现 getter/setter
+*   控制元素 -- 注意：如果操作的元素是已有的，则通常是移动操作，如 $parent.append("$obj") 时$obj是已有的元素，则会从原来的位置移动到 $parent下
+*     .after($siblingObj)/.before($siblingObj) -- 在每个匹配的元素之 “后/前”  插入内容，是其兄弟元素
+*     .append($obj) -- 追加子元素到父元素的最后面?(在 innerHTML 属性中增加?)，是其子元素
+*     .appendTo($parent) -- 将匹配元素追加到指定父元素的最后面
+*     .clone([bool]) -- 复制匹配节点并返回，如果参数为true表明其副本具有同样的绑定事件
+*     .empty() -- 清空此元素里的内容(即其内容和所有后代节点)，但元素还存在，如 $("ul li:first").empty() 会清除其文本，但节点(<li>)还在
+*     .insertAfter($siblingObj)/.insertBefore($siblingObj)  -- 插入到指定的兄弟节点 “后/前” 面
 *     .prepend($obj) -- 插入到父元素的最前面
-*     .remove() -- 从网页中移除本对象，会返回被移除的对象
+*     .prependTo($parent) -- 将匹配元素插入到指定父元素的最前面
+*     .remove() -- 从DOM中删除所有匹配元素及后代节点，返回被删除元素的引用
 *     .remove(Selector) -- 从本对象中移除指定条件的子对象
-*     .replaceWith($obj) -- 使用指定元素替换当前元素
-*     .replaceAll(Selector) --使用当前元素替换所有指定元素?
+*     .replaceWith($obj) -- 使用指定元素替换匹配元素
+*     .replaceAll(Selector) --使用匹配元素替换所有指定元素?
+*   遍历节点 (注意：各个函数都可以使用jQuery表达式作为参数来筛选元素)
+*     .closest() -- 取得最近的匹配元素，首先检查当前元素是否匹配，如匹配直接返回元素本身，如不匹配则逐级向上查找父元素，直到找到匹配的或空jQuery对象
+*       如 给点击的目标最近的 li 元素添加颜色: $(document).bind("click", function(e){ $(e.target).closest("li").css("color", "red"); })
+*     .children() -- 取得匹配元素的子元素集合(不考虑后代元素)
+*     .next()/.prev() -- 取得匹配元素 后面/前面 紧邻的同辈元素
+*     .siblings() -- 取得匹配元素前后的所有同辈元素(不包括自身)
+*     其他的: .find, .filter, .nextAll, .prevAll, .parent, .parents
 *   属性样式控制
-*     .attr("属性" [,新值]) -- 返回或设置指定的属性值, 如 class/style 等
-*     .addClass("className") -- 增加指定的class属性(通常用于关联CSS)
-*     .hasClass("className") -- 判断是否有指定的class属性，等价于 .is(".className") -- 注意 className 前面有个点
-*     .removeAttr("属性") -- 移除特定的属性，如 removeAttr("style")表示清除其所有的CSS属性，通常用于重置UI?
-*     .removeClass(["className"]) -- 去除指定的class属性，如果 className 为空，则去除所有的class属性
-*     .toggleClass("className") -- 重复切换指定样式
-*     .wrap("<a href='http://www.baidu.com' target='_blank'></a>") -- 使用指定元素把当前元素包裹起来
-*     .wrapAll("<xxx></xxx>") -- 将当前的所有元素放在一个 <xxx> 中， .wrap 会对每个选择的元素都包裹一个 <xxx>
-*     .wrapInner("<xxx></xxx>") -- 包裹在内部
+*     .attr("属性" [,"新值"]) -- 返回或设置指定的属性值, 如 class/style/title 等, 如要一次性设置多个属性，可以使用如下格式：
+*        .attr({ "title" : "your title", "name" : "your name" });
+*     .addClass("className") -- 增加指定的class属性(通常用于关联CSS)，注意：采用追加方式，有多个时会成为 "class1 class2" 等多个值的合并(如有相同名字的属性，后加的覆盖先加的)
+*     .css("属性" [,"新的值"]) -- 读写对应的css属性值, 如 .css("font-color", "red") 
+*        注意：无论对应的属性是外部CSS导入、还是内联，或动态设置的？都能获取到最终的结果
+*        常见属性(部分和标准CSS不一样): backgroundColor, color, fontSize, 
+*     .hasClass("className") -- 判断是否有指定的class属性,增强代码可读性而产生的,等价于 .is(".className")
+*     .height()/width() -- 读写以px为单位的实际高度和宽度(如果用 .css("heigh") 得到的可能是"auto"等)
+*     .offset() -- 读写在当前视窗的相对偏移，返回的对象包含 top 和 left 两个属性
+*     .position() -- 获取元素相对于最近的一个position样式属性设置为 relative 或者 absolute 的祖父节点的相对偏移，返回的对象包含 top 和 left 两个属性
+*     .removeAttr(["属性"]) -- 移除特定的属性，如 removeAttr("style")表示清除其所有的CSS属性, 如 "属性"为空，则去除所有的属性?
+*     .removeClass(["className1 className2"]) -- 去除指定的class属性，如果 className 为空，则去除所有的class属性
+*     .scrollTop([value])/.scrollLeft([value]) -- 读写元素的滚动条距顶端和左端的距离
+*     .toggleClass("className") -- 重复切换指定类名(存在则删除,不存在则添加)
+*     .wrap("<a href='http://www.baidu.com' target='_blank'></a>") -- 使用指定元素把匹配元素包裹起来
+*     .wrapAll("<xxx></xxx>") -- 将匹配的所有元素放在一个 <xxx> 中, 而 .wrap 会对每个匹配的元素都包裹一个 <xxx>
+*     .wrapInner("<xxx></xxx>") -- 将每一个匹配的元素的子内容(包括文本节点)用其他结构化的标记包裹起来，即 包裹在内部
 *   文本函数
-*     .html(["新的值"]) -- 读取或设置其 html 值，等价于读写 domObj.innerHTML
-*     .text(["新的值"]) -- 读写元素的文本(显示的值?用于<p>等带文本的元素 ?)， 如 select 中每一个 option 的文本, 等价于 domObj.innerText?
-*     .val(["新的值"]) -- 更改元素的值(用于 button, text等的文字显示 ?) ,等价于 domObj.defaultValue = "新的值" ? 
+*     .html(["新的值"]) -- 读取或设置其 HTML 值，等价于domObj.innerHTML, 注：不能用于XML文档
+*     .text(["新的值"]) -- 读写元素中的文本内容,等价于 domObj.innerText, 如 <p>中的文本，select中每一个option的文本
+*     .val(["新的值"]) -- 读写元素的值,类似domObj.value(用于 button,select,text等的文字显示)
 *        如果需要设置多选值(如 multiple 的 select)时，需要用中括号括起且逗号分隔的项(如: $("#multiple").val(["check2","check3"]); )
-*        对应的值是 <option>中的文本部分, checkbox|radio 的 value 部分
-*     
+*        对应的值是 <option>中的text部分, checkbox,radio 的 value或text部分
 *   其他函数
 *   ?.children(selector) -- 通过指定的选择器选择所有满足条件的子元素?
-*   .css("属性", "新的值") -- 设置对应的css属性值, 如 .css("font-color", "red") 
 *   .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
 *   .end() -- 重新定位到上次操作的元素?
-*   .filter(Selector) -- 根据指定条件过滤出满足需求的子元素集合?
+*   .filter(Selector) -- 根据指定条件过滤出满足需求的子元素集合, 如 $obj.filter(":contains('佳能'),:contains('尼康')")
 *   .get(index) 或 [index] -- 选取jQuery对象数组中指定的元素，注意：返回值是DOM对象
-*   .is(":checked") -- 判断是否被选中 ? 类似的有 .is(":visible") 判断对象是否可见，常用于 if($obj.is(":checked")){ xxx  }
+*   .is(xxx) -- 判断???
+*      .is(".className") -- 判断是否含有某个式样类
+*      .is(":属性") -- 如 :checked(是否被选中), :visible(是否可见)
 *   .next("xx)
-*   .nextAll("xxx") -- 选取当前元素 后面的 同辈"xxx"元素
-*   .siblings("xxx") -- 选取当前元素同辈的"xxx"元素
+*   .nextAll("xxx") -- 选取匹配元素 后面的 同辈"xxx"元素
+*   .siblings("xxx") -- 选取匹配元素同辈的"xxx"元素
 *   .slideToggle("slow", func()) -- 添加动画?
 *   .show(毫秒数)/hide() -- 显示/隐藏指定元素
+*   .toggle() -- 切换元素的可见状态，注意和 toggle合成事件 的区别
 *   .trigger("eventName") -- 激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替
 *
-* 事件( .xxx(function() { xxx });
-*   .click() -- 设置click事件
+* 事件( .xxx(function([event]) { xxx });
+*   .bind("事件" [,data] , fun) -- 通用地绑定指定事件, data作为可选参数，作为 event.data 属性值传递给事件对象的额外数据对象
+*   .blur -- 失去焦点时
 *   .change() -- 设置change事件，如 $("select").change(function(){ xxx; })
+*   .click -- 设置click事件
+*   .error
+*   .focus -- 获得焦点时
+*   .keyXxx -- 键盘事件: .keydown/.keypress/.keyup
+*   .load -- 等价于 onload
+*   .mouseXxxx -- 鼠标事件: .mousedown/.mouseup/.mousemove(内部移动时)
+*                           .mouseover(进入时?)/.mouseout(移出时?)/.mouseenter(进入时?)/.mouseleave(移出时?)
 *   .ready() -- 如 $(document).ready(function(){ xxx }); 
-*     网页中所有DOM结构绘制完毕就执行，可能DOM元素关联的东西没有加载完(比如图片?)；可以同时编写多个(但window.onload只能有一个)
+*      网页中所有DOM完全就绪就执行，但此时DOM元素关联的东西可能没有加载完(比如图片)，相比onload能极大提高响应速度(onload是所有元素加载完才执行),
+*        可以同时编写多个(但window.onload只能有一个)
+*      缺点：ready中可能无法准确获取图片的信息(如高宽等)，对应的有 load 事件；
+*    .resize --
+*    .scroll, .unload, .dblclick, .select, .submit
+*   合成事件(jQuery中自定义的方法)
+*     .hover( enter, leave ) -- 模拟光标悬停事件，分别对应 mouseenter 和 mouseleave 事件
+*     .toggle( fun1,fun2,...funN ) -- 模拟鼠标连续单击事件，可以在每次单击时切换多个函数的处理逻辑
+******************************************************************************************************************************************/
+
+/******************************************************************************************************************************************
+* 丰富的插件支持(http://plugins.jquery.com/)
+*   MoreSelectors for jQuery -- 增加更多的选择器，如 .color 匹配颜色, :colIndex 匹配表格中的列, :focus 匹配获取焦点的元素等
+*   Basic XPath -- 可以让用户使用基本的XPath
 ******************************************************************************************************************************************/
 
 $(document).ready(function() {
@@ -184,8 +235,4 @@ module("JQueryTester", {
 
 test("TODO: JQuery", function() {
     equal(1, 1, "TODO:");
-    
-    $(document).ready(function() {
-        alert("after document loaded");
-    });
 });

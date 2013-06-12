@@ -212,8 +212,14 @@
     </table>
     
     <table id="jquerytest">
-        <input type="text" id="address" value="请输入邮箱地址"/>   <br/><br/>
-    	<input type="password" id="password" value="请输入邮箱密码"/>  <br/><br/>
+        <label for="jqueryEval" >jQuery选择器</label><input type="text" id="jqueryEval" class="translucence" value="请输入jQuery表达式" /> 
+        <input type="color" value="#ff0000" /> <input type="button" id="jqueryCheckBtn" value="check"/> <br /><br />
+        
+        <a href="#" class="tooltip" title="使用jQuery设置的Tooltip, TODO:为什么大小不对，可能是c3.css中定义了div的style">自定义的jQuery提示</a> <br />
+        <a href="#" title="使用系统的Tooltip提示">系统的Tooltip提示</a> <br />
+        
+        <label for="address">邮箱地址</label><input type="text" id="address" class="translucence" value="请输入邮箱地址" /><br/>
+        <label for="password">邮箱密码</label><input type="password" id="password" class="translucence" value="请输入邮箱密码"/>  <br/><br/>
     
     
         <button id="reset">手动重置页面元素</button>

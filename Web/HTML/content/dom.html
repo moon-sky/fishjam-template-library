@@ -1,11 +1,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!--
-	DOM(Document Object Model) -- 表达XML文档的常见方式，给开发者提供了一种定位XML层级结构的直观方法。
-	  每一份DOM表示成一棵树，获取DOM对象通常的方法：
-	  getElementsByTagName
-	  getElementsByName
-	  getElementById
-
+	DOM(Document Object Model) -- 文档对象模型，是一种与浏览器、平台、语言无关的接口，使用该接口可以轻松地访问页面中所有的标准组件。
+	  表达XML文档的常见方式，给开发者提供了一种定位XML层级结构的直观方法。每一份DOM表示成一棵树。
+	DOM操作分三个方面：
+	  1.DOM Core -- 任何一种支持DOM的程序设计语言都可以使用它，可处理 XML, HTML 等
+	      getAttribute/setAttribute
+          getElementById
+          getElementsByTagName
+          getElementsByName
+          补充：getElementsBySelector() -- 通过脚本插件支持，可通过选择器来获取文档元素(http://simonwillison.net/)
+      2.HTML DOM -- 专属于HTML的属性，用于JavaScript和DOM, 如 document.forms， element.src 等
+      3.CSS-DOM -- 针对CSS的操作，主要是获取和设置style对象的各种属性，如 element.style.color="red";
+          
 -->
 
 <html xmlns="http://www.w3.org/1999/xhtml">

@@ -17,3 +17,18 @@
   div.hide { 
     display:none;
   }
+  
+ /* °ëÍ¸Ã÷Ð§¹û */
+  .translucence{
+    opacity : 0.5    
+  }
+  
+/* tooltip */
+#tooltip{
+	position:absolute;
+	border:1px solid #333;
+	background:#f7f5d1;
+	padding:1px;
+    color:#333;
+	display:none;
+}

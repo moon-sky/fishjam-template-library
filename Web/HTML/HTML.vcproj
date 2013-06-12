@@ -256,6 +256,10 @@
 				RelativePath=".\css\c3.css"
 				>
 			</File>
+			<File
+				RelativePath=".\css\style.css"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="etc"

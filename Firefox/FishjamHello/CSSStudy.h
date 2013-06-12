@@ -115,6 +115,7 @@
 *   font-varian: small-caps <== 控制字体的大小?(会把英文字体全部转换为小型的大写字母)
 *   line-height:1.5; <== ?
 *   margin: 0;  <== 外边距? 对应的有 margin-top 等细化部分
+*   opacity: 0~1 <== 透明度，如 0.5 表示半透明
 *   ?orient: horizental | ?  <== 用在 window/box 等容器中，控制自动对齐方式
 *   padding: 1px; <== 内边距
 *   quotes: "前符号" "后符号";  <== 设置包含引用(<q>)文字的符号(系统默认是引号")，注意：需要设置两个

@@ -60,7 +60,7 @@ test("变量", function() {
 test("基础语法", function() {
     var iNumber = 2;
     var strNumber = "";
-    
+
     switch (iNumber) {
         case 0:
             strNumber = "Zero";
@@ -124,6 +124,10 @@ test("基础语法", function() {
         //console.log("%o", porp);
     }
     ok(iCountForIn > 50, "测试 (for in) 获取对象的所有属性");
+
+    //三元运算符( ?: )
+    var tripleResult = false ? "TRUE" : "FALSE";
+    ok(tripleResult == "FALSE", "三元运算符");
 });
 
 //字符串 -- 双引号或单引号中的字符序列，转义字符为 "\"
@@ -343,6 +347,8 @@ test("Number", function() {
 });
 
 test("Date", function() {
+    var startTime = new Date().getTime();
+
     //Date日期对象。这个对象可以储存任意一个日期，从 0001 年到 9999 年，并且可以精确到毫秒数（ 1/1000 秒）
     //所有日期时间，如果不指定时区，都采用“UTC”世界时时区
     var d = new Date(2012, 11, 21, 1, 2, 3, 400);
@@ -362,6 +368,10 @@ test("Date", function() {
     //equal(now.toLocaleString(), 2012, "");
     ok(now.getFullYear() >= 2013, "当前年>=2013");
 
+
+    var endTime = new Date().getTime();
+    var elapseTime = endTime - startTime;       //返回的值是毫秒单位的时间间隔
+    ok(elapseTime < 100);                       //100ms内执行完毕
 });
 
 test("TODO:颜色", function() {
