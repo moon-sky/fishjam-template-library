@@ -611,7 +611,7 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONSTATUSBAR);
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_ONFULLSCREEN);
 
-				//void __stdcall OnEventDocumentComplete(IDispatch* pDisp, VARIANT* URL);
+				//void __stdcall OnDocumentComplete(IDispatch* pDisp, VARIANT* URL);
 				//_ATL_FUNC_INFO DocumentComplete2_Info = { CC_STDCALL, VT_EMPTY, 2, { VT_DISPATCH, VT_BYREF | VT_VARIANT } };
                 HANDLE_CASE_TO_STRING(m_bufInfo,_countof(m_bufInfo),DISPID_DOCUMENTCOMPLETE);
 

@@ -28,16 +28,16 @@
 *  
 * 事件: -- 如事件处理函数中 return false 则会同时 停止事件冒泡 和 阻止默认行为
 *   事件对象(event) -- 事件处理函数中才能访问，事件处理函数执行完毕后，该对象就被销毁
-*     metaKey -- 键盘事件中获取 <ctrl> 按键
+*     metaKey/ctrlKey -- 键盘事件中获取 <ctrl> 按键 -- 两个有什么区别(jQuery通过 metaKey 统一了各个环境的<ctrl>键?)
 *     originalEvent -- 指向原始的事件对象
 *     pageX/pageY -- 获取到光标相对于页面的 x 坐标和 y 坐标(封装各种浏览器的区别 -- 名字和滚动条等 )
 *     relatedTarget -- 事件相关元素(如 mouseover 事件的 IE::fromElement, mouseout 事件的 IE::toElement )
-*     target -- 获取到触发事件的元素
+*     target -- 获取到触发事件的元素， 如 button, a 等，都是object，可以进一步获取具体的属性值
 *     type -- 获取到事件类型的属性，如 "click" 等
-*     which -- 在鼠标单击事件中获取到鼠标的 左(1)、中(2)、右(3)键，在键盘事件中获取键盘的按键
-*     stopPropagation() -- 停止事件冒泡
-*     preventDefault() -- 阻止默认行为(如 单击超链接的跳转，单击提交按钮后提交表单 等)
-*   事件冒泡 -- 嵌套元素的事件依次从内向外激发? 比如 click( 该机制可能会引起预料之外的效果 ?) 
+*     which -- 在鼠标单击事件中获取到鼠标的 左(1)、中(2)、右(3)键，在键盘事件中获取键盘的按键(不区分大小写，如 a/A 都是 65)
+*     stopPropagation() -- 停止事件冒泡函数
+*     preventDefault() -- 阻止默认行为函数(如 单击超链接的跳转，单击提交按钮后提交表单 等)
+*   事件冒泡 -- 嵌套元素的事件依次从内向外激发, 比如 button.onclick() -> body.onclick 等 ( 该机制可能会引起预料之外的效果 ?) 
 *   事件捕获 -- 从最外层元素开始，依次到最里层元素(注意：因为不是所有浏览器都支持事件捕获，且jQuery无法修复，因此jQuery不支持事件捕获)
 ******************************************************************************************************************************************/
 
@@ -155,7 +155,7 @@
 *     .addClass("className") -- 增加指定的class属性(通常用于关联CSS)，注意：采用追加方式，有多个时会成为 "class1 class2" 等多个值的合并(如有相同名字的属性，后加的覆盖先加的)
 *     .css("属性" [,"新的值"]) -- 读写对应的css属性值, 如 .css("font-color", "red") 
 *        注意：无论对应的属性是外部CSS导入、还是内联，或动态设置的？都能获取到最终的结果
-*        常见属性(部分和标准CSS不一样): backgroundColor, color, fontSize, 
+*        常见属性(部分和标准CSS不一样): backgroundColor, color, fontSize(文字大小), opacity(透明度0~1)
 *     .hasClass("className") -- 判断是否有指定的class属性,增强代码可读性而产生的,等价于 .is(".className")
 *     .height()/width() -- 读写以px为单位的实际高度和宽度(如果用 .css("heigh") 得到的可能是"auto"等)
 *     .offset() -- 读写在当前视窗的相对偏移，返回的对象包含 top 和 left 两个属性
@@ -173,40 +173,61 @@
 *     .val(["新的值"]) -- 读写元素的值,类似domObj.value(用于 button,select,text等的文字显示)
 *        如果需要设置多选值(如 multiple 的 select)时，需要用中括号括起且逗号分隔的项(如: $("#multiple").val(["check2","check3"]); )
 *        对应的值是 <option>中的text部分, checkbox,radio 的 value或text部分
+*   动画函数 -- 
+*     .animate({属性名1:"属性值1"[, 属性名2:"属性值2"]}[, 时间][, 结束时的回调函数] } ) -- 自定义的动画函数，
+*        如 $(this).animate({left: "500px",height:"+=200px"}, 3000);
+*        具有最强大的功能，可以模拟出其他动画，如 .show(600) == .animate({height : "show" , width : "show" , opacity : "show" } , 600 );
+*     .fadeIn/.fadeOut -- 通过更改 "透明度" 来 "显示/隐藏" 元素
+*     .fadeTo(时间, 透明度) -- 更改透明度
+*     .show([时间])/.hide([时间]) -- 同时更改 "高/宽/透明度" 来 "显示/隐藏"匹配元素
+*     .slideDown/.slideUp -- 通过更改 "高度" 来 "显示/隐藏" 元素
+*     .slideToggle -- 通过更改高度来动画切换可见状态
+*     注意：
+*       1.时间可以用 "slow"(600ms)/"normal"(400ms)/"fast"(200ms) 或 毫秒数 来指定
+*       2.多个动画函数可以链式操作形成动画队列，依次执行
+*       3.TODO:使用动画函数来制作动画性能不高 -- HTML5中使用Canvas绘制更好?
 *   其他函数
-*   ?.children(selector) -- 通过指定的选择器选择所有满足条件的子元素?
-*   .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
-*   .end() -- 重新定位到上次操作的元素?
-*   .filter(Selector) -- 根据指定条件过滤出满足需求的子元素集合, 如 $obj.filter(":contains('佳能'),:contains('尼康')")
-*   .get(index) 或 [index] -- 选取jQuery对象数组中指定的元素，注意：返回值是DOM对象
-*   .is(xxx) -- 判断???
-*      .is(".className") -- 判断是否含有某个式样类
-*      .is(":属性") -- 如 :checked(是否被选中), :visible(是否可见)
-*   .next("xx)
-*   .nextAll("xxx") -- 选取匹配元素 后面的 同辈"xxx"元素
-*   .siblings("xxx") -- 选取匹配元素同辈的"xxx"元素
-*   .slideToggle("slow", func()) -- 添加动画?
-*   .show(毫秒数)/hide() -- 显示/隐藏指定元素
-*   .toggle() -- 切换元素的可见状态，注意和 toggle合成事件 的区别
-*   .trigger("eventName") -- 激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替
-*
+*     ?.children(selector) -- 通过指定的选择器选择所有满足条件的子元素?
+*     .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
+*     .end() -- 重新定位到上次操作的元素?
+*     .filter(Selector) -- 根据指定条件过滤出满足需求的子元素集合, 如 $obj.filter(":contains('佳能'),:contains('尼康')")
+*     .get(index) 或 [index] -- 选取jQuery对象数组中指定的元素，注意：返回值是DOM对象
+*     .is(xxx) -- 判断???
+*       .is(".className") -- 判断是否含有某个式样类
+*       .is(":属性") -- 如 :checked(是否被选中), :visible(是否可见)
+*     .next("xx)
+*     .nextAll("xxx") -- 选取匹配元素 后面的 同辈"xxx"元素
+*     .siblings("xxx") -- 选取匹配元素同辈的"xxx"元素
+*     .toggle() -- 切换元素的可见状态，注意和 toggle合成事件 的区别
+*     .trigger("eventName") -- 模拟激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替，并继续执行浏览器的缺省操作
+*        注意：可以激发自定义的事件(自定义事件也只能这样激发？)
+*     .triggerHandler("eventName") -- 模拟激发指定事件(但不继续执行浏览器的缺省操作，如激发 $inputObj.triggerHandler("focus") 会激发事件，
+*        但不会将焦点设置到 $inputObj 上)
+* 
 * 事件( .xxx(function([event]) { xxx });
-*   .bind("事件" [,data] , fun) -- 通用地绑定指定事件, data作为可选参数，作为 event.data 属性值传递给事件对象的额外数据对象
-*   .blur -- 失去焦点时
-*   .change() -- 设置change事件，如 $("select").change(function(){ xxx; })
-*   .click -- 设置click事件
-*   .error
-*   .focus -- 获得焦点时
-*   .keyXxx -- 键盘事件: .keydown/.keypress/.keyup
-*   .load -- 等价于 onload
-*   .mouseXxxx -- 鼠标事件: .mousedown/.mouseup/.mousemove(内部移动时)
-*                           .mouseover(进入时?)/.mouseout(移出时?)/.mouseenter(进入时?)/.mouseleave(移出时?)
-*   .ready() -- 如 $(document).ready(function(){ xxx }); 
-*      网页中所有DOM完全就绪就执行，但此时DOM元素关联的东西可能没有加载完(比如图片)，相比onload能极大提高响应速度(onload是所有元素加载完才执行),
-*        可以同时编写多个(但window.onload只能有一个)
-*      缺点：ready中可能无法准确获取图片的信息(如高宽等)，对应的有 load 事件；
-*    .resize --
-*    .scroll, .unload, .dblclick, .select, .submit
+*     .bind("事件1 [事件2]" [,data] , fun) -- 通用地绑定指定事件, data作为可选参数，作为 event.data 属性值传递给事件对象的额外数据对象
+*     .blur -- 失去焦点时
+*     .change() -- 设置change事件，如 $("select").change(function(){ xxx; })
+*     .click -- 设置click事件
+*     .error
+*     .focus -- 获得焦点时
+*     .keyXxx -- 键盘事件: .keydown/.keypress/.keyup
+*     .load -- 等价于 onload
+*     .mouseXxxx -- 鼠标事件: .mousedown/.mouseup/.mousemove(内部移动时)
+*                             .mouseover/.mouseout -- 不论鼠标指针穿过被选元素或其子元素，都会触发 mouseover 事件
+*                             .mouseenter/.mouseleave -- 只有在鼠标指针穿过被选元素时，才会触发 mouseenter 事件(子元素不触发)
+*     .one("事件" [,data] , fun) -- 通用地绑定一次事件(只激发一次)
+*     .ready() -- 如 $(document).ready(function(){ xxx }); 
+*        网页中所有DOM完全就绪就执行，但此时DOM元素关联的东西可能没有加载完(比如图片)，相比onload能极大提高响应速度(onload是所有元素加载完才执行),
+*          可以同时编写多个(但window.onload只能有一个)
+*        缺点：ready中可能无法准确获取图片的信息(如高宽等)，对应的有 load 事件；
+*      .resize --
+*      .scroll, .unload, .dblclick, .select, .submit
+*      .unbind(["事件" [,fun] ] ) -- 取消事件的绑定，可以指定 取消哪个事件或事件上的具体函数
+*   自定义事件 -- $obj.bind("myEvent", function(event, param1, ...paramN){ xxxx }
+*     激发(必须用 trigger，且通过数组的形式传递参数)：$obj.trigger("myEvent",["参数1","参数2"]);
+*   事件的名称空间 --  对事件可以指定名称空间(如 click.fishjam), 然后可以根据名称空间来操作(如 unbind(".fishjam") 可取消 ".fishjam" 名称空间下的所有事件,
+*     激发时可在 trigger 的事件名字后加感叹号("!") 来确保事件空间，如 "click" 会激发所有空间下的, "click!"只激发默认空间下的
 *   合成事件(jQuery中自定义的方法)
 *     .hover( enter, leave ) -- 模拟光标悬停事件，分别对应 mouseenter 和 mouseleave 事件
 *     .toggle( fun1,fun2,...funN ) -- 模拟鼠标连续单击事件，可以在每次单击时切换多个函数的处理逻辑

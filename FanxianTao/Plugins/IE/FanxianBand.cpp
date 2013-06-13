@@ -30,6 +30,7 @@ CFanxianBand::CFanxianBand()
 	m_dwBandID = 0;
 	m_dwViewMode = 0;
 	m_bFocus = FALSE;
+	m_bAdvised = FALSE;
 	//m_ReflectWnd.GetToolBar().GetEditBox().SetBand(this);
 
 }
@@ -202,13 +203,17 @@ STDMETHODIMP CFanxianBand::RegisterEventHandler(BOOL inAdvise)
 	if (inAdvise)
 	{
 		COM_VERIFY(DispEventAdvise(m_spWebBrowser2));
+		if (SUCCEEDED(hr))
+		{
+			m_bAdvised = TRUE;
+		}
 	}
 	else
 	{
-		if (m_hWndParent)
+		if (m_bAdvised)
 		{
-			COM_VERIFY_EXCEPT1(DispEventUnadvise(m_spWebBrowser2), 0x80040200);
-			m_hWndParent = NULL;
+			COM_VERIFY(DispEventUnadvise(m_spWebBrowser2));
+			m_bAdvised = FALSE;
 		}
 		
 	}
@@ -247,7 +252,7 @@ BOOL CFanxianBand::GetWebBrowserPtr( IUnknown* pUnkSite )
 		return FALSE;
 	}
 
-	spOleWindow->GetWindow(&m_hReBar);
+	//spOleWindow->GetWindow(&m_hReBar);
 	m_spWebBrowser2.Release();
 
 
@@ -398,6 +403,35 @@ STDMETHODIMP CFanxianBand::OnBeforeNavigate2(IDispatch* pDispatch, VARIANT* pvUr
 
             }
         }
+	}
+
+	return hr;
+}
+
+STDMETHODIMP CFanxianBand::OnDocumentComplete(IDispatch *pDisp, VARIANT *pvarURL)
+{
+	HRESULT hr = S_OK;
+
+	// Query for the IWebBrowser2 interface.
+	CComQIPtr<IWebBrowser2> spTempWebBrowser = pDisp;
+
+	// Is this event associated with the top-level browser?
+	if (spTempWebBrowser && m_spWebBrowser2 &&
+		m_spWebBrowser2.IsEqualObject(spTempWebBrowser))
+	{
+		// Get the current document object from browser...
+		CComPtr<IDispatch> spDispDoc;
+		COM_VERIFY(hr = m_spWebBrowser2->get_Document(&spDispDoc));
+		if (SUCCEEDED(hr))
+		{
+			// ...and query for an HTML document.
+			CComQIPtr<IHTMLDocument2> spHTMLDoc = spDispDoc;
+			if (spHTMLDoc != NULL)
+			{
+				// Finally, remove the images.
+				//RemoveImages(spHTMLDoc);
+			}
+		}
 	}
 
 	return hr;

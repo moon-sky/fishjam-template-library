@@ -5,6 +5,7 @@
 
 #include "FanXianIEPlugin_i.h"
 #include "_IFanxianBandEvents_CP.h"
+#include "ReflectionWnd.h"
 
 //Internet Explorer Toolbar (Deskband) Tutorial
 //  http://www.codeproject.com/Articles/1323/Internet-Explorer-Toolbar-Deskband-Tutorial
@@ -65,7 +66,7 @@ public:
 		//SINK_ENTRY_EX(ID_FANXIANBAND, DIID_DWebBrowserEvents2, DISPID_NEWWINDOW2, OnNewWindow2)
 		SINK_ENTRY_EX(ID_FANXIANBAND, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2, OnBeforeNavigate2)
 		//SINK_ENTRY_EX(ID_FANXIANBAND, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2, OnNavigateComplete2)
-		//SINK_ENTRY_EX(ID_FANXIANBAND, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete)
+		SINK_ENTRY_EX(ID_FANXIANBAND, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete)
 		//SINK_ENTRY_EX(ID_FANXIANBAND, DIID_DWebBrowserEvents2, DISPID_NAVIGATEERROR, OnNavigateError)
 	END_SINK_MAP()
 
@@ -107,6 +108,7 @@ public:
 
 	//	IDispEventImpl
 	STDMETHOD(OnBeforeNavigate2)(IDispatch*, VARIANT*, VARIANT*, VARIANT*, VARIANT*, VARIANT*, VARIANT_BOOL*) ;
+	STDMETHOD(OnDocumentComplete)(IDispatch *pDisp, VARIANT *pvarURL);
 
 #if ENABLE_INVOKE_DUMP_INFO
 	//调试版本时打印详细信息
@@ -133,6 +135,7 @@ private:
 	DWORD	m_dwBandID;
 	DWORD	m_dwViewMode;
 	BOOL	m_bFocus;
+	BOOL	m_bAdvised;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(FanxianBand), CFanxianBand)
