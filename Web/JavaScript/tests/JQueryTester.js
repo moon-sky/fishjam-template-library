@@ -1,4 +1,6 @@
 /******************************************************************************************************************************************
+* 05第五章\第五章例子\demo6-表格变色\demo5.html
+*
 * 开发IDE(代码自动提示)
 *   1.Dreamweaver + jQuery_API.mxp 插件(Dreamweaver cs6 已经内置)
 *   2.Aptana -- 基于Eclipse，专注于JavaScript的Ajax开发IDE，(Windows -> Preferences -> Aptana ->Editors -> Javascript -> Code Assist)
@@ -71,7 +73,7 @@
 *     :header -- 选取所有的标题元素(h1~h6)
 *     :animated -- 选取当前正在执行动画的所有元素
 *   内容过滤选择器 -- 根据包含的子元素或文本内容进行选择
-*     :contains(text) -- 选取含有文本内容为"text"的元素， 如 $("div:contains('我')") 选取含有文本"我"的<div>元素
+*     :contains(text) -- 选取自身或子元素中含有文本内容为"text"的元素， 如 $("div:contains('我')") 选取含有文本"我"的<div>元素
 *     :empty -- 选取不包含子元素或文本的空元素, 和 :parent 相反？
 *     :has(selector) -- 选取含有选择器所匹配的元素的元素，如 $("div:has(p)") 选取含有 <p>元素的<div>元素，注意选择的是 <div>
 *     :parent -- 选取含有子元素或者文本的元素(即自身是父控件)，如 $("div:parent") 选取拥有子元素(包括文本元素)的<div>元素
@@ -92,20 +94,22 @@
 *   表单对象属性过滤器 -- 对所选择的表单元素进行过滤
 *     :enabled/:disabled -- 选取所有 可用/不可用 元素
 *     :checked -- 选取所有被选中的元素(单选框/复选框)
-*     :selected -- 选取所有被选中的选项元素(下拉列表)
+*     :selected -- 选取所有被选中的选项元素(下拉列表), 如 $('#mySelect option:selected')
 *   表单选择器 -- 选取表单(form)内制定类型的元素,使用以前需要指定所在的form?, 如 $("form1 text")
 *     :button -- 选取所有的按钮
-*     :checkbox -- 
+*     :checkbox -- 复选按钮
 *     :file -- 
 *     :hidden -- 所有的不可见元素，<input type="hidden" />和<div style="display:none">test</div>都可以匹配.
 *     :input -- 选取form中所有的输入类元素(input/textarea/select/button等)，注意和 $("input")的区别--":input"比"input"要多
 *     :image -- 
 *     :password 
-*     :radio
+*     :radio -- 单选按钮
 *     :reset -- 重置按钮
 *     :submit -- 提交按钮
 *     :text -- 选取所有的单行文本框
 *     textarea -- 前面没有 冒号(:),采用的是 tagName 方式
+*  选择器例子：
+*    1.组合多个选择器来选择: <input type="checkbox" name="items" xxx> 中选中项 -- $('[name=items]:checkbox:checked')
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
@@ -150,19 +154,19 @@
 *     .siblings() -- 取得匹配元素前后的所有同辈元素(不包括自身)
 *     其他的: .find, .filter, .nextAll, .prevAll, .parent, .parents
 *   属性样式控制
-*     .attr("属性" [,"新值"]) -- 返回或设置指定的属性值, 如 class/style/title 等, 如要一次性设置多个属性，可以使用如下格式：
+*     .attr("属性" [,"新值"]) -- 返回或设置指定的属性值, 如 class/style/title/checked 等, 如要一次性设置多个属性，可以使用如下格式：
 *        .attr({ "title" : "your title", "name" : "your name" });
 *     .addClass("className") -- 增加指定的class属性(通常用于关联CSS)，注意：采用追加方式，有多个时会成为 "class1 class2" 等多个值的合并(如有相同名字的属性，后加的覆盖先加的)
 *     .css("属性" [,"新的值"]) -- 读写对应的css属性值, 如 .css("font-color", "red") 
 *        注意：无论对应的属性是外部CSS导入、还是内联，或动态设置的？都能获取到最终的结果
 *        常见属性(部分和标准CSS不一样): backgroundColor, color, fontSize(文字大小), opacity(透明度0~1)
 *     .hasClass("className") -- 判断是否有指定的class属性,增强代码可读性而产生的,等价于 .is(".className")
-*     .height()/width() -- 读写以px为单位的实际高度和宽度(如果用 .css("heigh") 得到的可能是"auto"等)
+*     .height([xx])/width([x]) -- 读写以px为单位的实际高度和宽度(如果用 .css("height") 得到的可能是"auto"等)
 *     .offset() -- 读写在当前视窗的相对偏移，返回的对象包含 top 和 left 两个属性
 *     .position() -- 获取元素相对于最近的一个position样式属性设置为 relative 或者 absolute 的祖父节点的相对偏移，返回的对象包含 top 和 left 两个属性
 *     .removeAttr(["属性"]) -- 移除特定的属性，如 removeAttr("style")表示清除其所有的CSS属性, 如 "属性"为空，则去除所有的属性?
 *     .removeClass(["className1 className2"]) -- 去除指定的class属性，如果 className 为空，则去除所有的class属性
-*     .scrollTop([value])/.scrollLeft([value]) -- 读写元素的滚动条距顶端和左端的距离
+*     .scrollTop([value])/.scrollLeft([value]) -- 读写元素的滚动条距顶端和左端的距离。有同名属性?( $comment.animate({ scrollTop:"-=50" } , 400);)
 *     .toggleClass("className") -- 重复切换指定类名(存在则删除,不存在则添加)
 *     .wrap("<a href='http://www.baidu.com' target='_blank'></a>") -- 使用指定元素把匹配元素包裹起来
 *     .wrapAll("<xxx></xxx>") -- 将匹配的所有元素放在一个 <xxx> 中, 而 .wrap 会对每个匹配的元素都包裹一个 <xxx>
@@ -173,8 +177,8 @@
 *     .val(["新的值"]) -- 读写元素的值,类似domObj.value(用于 button,select,text等的文字显示)
 *        如果需要设置多选值(如 multiple 的 select)时，需要用中括号括起且逗号分隔的项(如: $("#multiple").val(["check2","check3"]); )
 *        对应的值是 <option>中的text部分, checkbox,radio 的 value或text部分
-*   动画函数 -- 
-*     .animate({属性名1:"属性值1"[, 属性名2:"属性值2"]}[, 时间][, 结束时的回调函数] } ) -- 自定义的动画函数，
+*   动画函数 -- 为了避免动画堆积，在增加动画代码前需要先判断是否处于动画： if(!$Obj.is(":animated")){ 不处于动画，可以增加 }
+*     .animate( {属性名1:"属性值1"[, 属性名2:"属性值2"] }[, 时间][, 结束时的回调函数] } ) -- 自定义的动画函数，
 *        如 $(this).animate({left: "500px",height:"+=200px"}, 3000);
 *        具有最强大的功能，可以模拟出其他动画，如 .show(600) == .animate({height : "show" , width : "show" , opacity : "show" } , 600 );
 *     .fadeIn/.fadeOut -- 通过更改 "透明度" 来 "显示/隐藏" 元素
@@ -194,7 +198,8 @@
 *     .get(index) 或 [index] -- 选取jQuery对象数组中指定的元素，注意：返回值是DOM对象
 *     .is(xxx) -- 判断???
 *       .is(".className") -- 判断是否含有某个式样类
-*       .is(":属性") -- 如 :checked(是否被选中), :visible(是否可见)
+*       .is(":属性") -- 如 :checked(是否被选中), :visible(是否可见), :animated(是否处于动画)
+*       .is("#id") -- 判断是否是指定元素
 *     .next("xx)
 *     .nextAll("xxx") -- 选取匹配元素 后面的 同辈"xxx"元素
 *     .siblings("xxx") -- 选取匹配元素同辈的"xxx"元素
@@ -202,7 +207,7 @@
 *     .trigger("eventName") -- 模拟激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替，并继续执行浏览器的缺省操作
 *        注意：可以激发自定义的事件(自定义事件也只能这样激发？)
 *     .triggerHandler("eventName") -- 模拟激发指定事件(但不继续执行浏览器的缺省操作，如激发 $inputObj.triggerHandler("focus") 会激发事件，
-*        但不会将焦点设置到 $inputObj 上)
+*        但不会将焦点设置到 $inputObj 上)；或者 在 .blur 里面验证输入时，可以在.focus和.keyup 中triggerHandler("blur")来激发实时验证
 * 
 * 事件( .xxx(function([event]) { xxx });
 *     .bind("事件1 [事件2]" [,data] , fun) -- 通用地绑定指定事件, data作为可选参数，作为 event.data 属性值传递给事件对象的额外数据对象

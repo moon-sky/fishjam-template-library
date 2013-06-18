@@ -26,14 +26,14 @@ test("TODO: Browser", function() {
     equal(navigator.appName, "Netscape", "navigator.appName 返回浏览器名, FF/Chrome--Netscape, IE -- Microsoft Internet Explorer");
 
     equal(navigator.appVersion, // "5.0 (Windows)");       //浏览器版本
-     "5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31");  //Chrome -- 5.0 
+     "5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36");  //Chrome -- 5.0 
     //FF --
     //IE -- 4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0;  <== 注意：还可能有其他的一下信息
 
     equal(navigator.language, "zh-CN", "语言")
     equal(navigator.platform, "Win32", "平台");
     equal(navigator.userAgent,
-		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.64 Safari/537.31", 
+		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36", 
 		"返回浏览器对象的全部信息，可以查找是否包含指定字符串来判断浏览器类型？");
     //equal(navigator.plugins, "a");    //以数组表示已安装的外挂程序
 
@@ -42,7 +42,7 @@ test("TODO: Browser", function() {
 
 test("TODO: Screen", function() {
     with (screen) { //全局屏幕对象 反映了当前用户的屏幕设置
-        //TODO:在双屏显示器时，使用 equal 有的时候会失败，F5刷新后又变好，为什么？
+        //TODO:Chrome里，在双屏显示器时，使用 equal 有的时候会失败(语法错误)，换一个显示器并且F5刷新后又变好，为什么？
         ok(width >= 1280, "屏幕宽度");
         ok(height >= 1024, "屏幕高度"); //960
         ok(availWidth >= 1280, "屏幕的可用宽度");

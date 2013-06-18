@@ -560,9 +560,9 @@ namespace FTL
 	*       path -- C:\hudson\util\nsiqcppcheckstyle\nsiqcppcheckstyle;${path}      <== 似乎路径不对
 	*
     * CI配置(tomcat5.5.36,安装出来后是5.5.35?)
-    *   Build Triggers -- schedule 中依次表示 分钟/小时/天/月/周， 如 X/10 * * * * 表示每10分钟触发一次 
-    *     Commit Build -- 轮询(如10分钟)，有变动时则编译和单元测试，保证及时发现编译问题
-    *     Integration Build -- 定时(如每晚),进行完整编译和全部检查(UT、静态、CC等)
+    *   Build Triggers -- schedule 中依次表示 分钟/小时/天/月/周
+    *     Commit Build -- 轮询(如10分钟)，有变动时则编译和单元测试，保证及时发现编译问题, X/10 * * * * 表示每10分钟触发一次(注意10前面是星号*)
+    *     Integration Build -- 定时(如每晚),进行完整编译和全部检查(UT、静态、CC等), 30 0 * * 1-5 表示周一到周五每天 0:30 分触发 
 	*     Publishing Build -- 生成安装文件(注意应该同时备份相关的PDB)
     *   NHN Project Plugin(Assign NHN Project) -- 这样NHN的Project才能用？
     *     项目名的命名规范?
