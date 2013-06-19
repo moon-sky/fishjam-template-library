@@ -98,7 +98,7 @@
 *   background-attachment : fixed <== 背景关联，默认是scroll(背景和文字一起滚动)。
 *   background-color: yellow <== 背景色，默认是透明(transparent)（background 可以控制多个？顺序？）
 *   background-image: url("chrome://xxxx/skin/back.png");  <== 背景图片
-*   background-position : center ; <== 改变图像在背景中的位置, 如要表示右上角需要用 :top right;
+*   background-position : center ; <== 改变图像在背景中的位置, 如要表示右上角需要用 :top right; 或 npx mpx 指定详细的像素位置
 *   background-repeat: repeat|repeat-x|no-repeat; <== 背景图像重复平铺，默认是 repeat
 *   border: 1px dotted #000000; <== 一个像素宽的黑色点状边框
 *   color:red|#ff0000;  <== 前景色，颜色有几种表示方式：
@@ -108,6 +108,7 @@
 *   crop <== 裁剪元素的内容，当元素的宽度超过maxwidth时，超出的部分会去掉，变成"...", 可用在 label(其他?) 元素中
 *   display <== ?
 *   flex <== 设置元素是否自动扩展，当box发生变化时，拥有flex属性的元素会分享变化的空间，按照flex之间的比率来分享。只对没有指定宽度的元素起作用。
+*   float: none|left|right <== 可以在 <li> 元素中使用，改变列表项的排列方式(如从左到右排列，默认是从上到下)
 *   font-size:14px; <== 设置字体大小
 *   font-family:"sans-serif"; <== 字体系列
 *   font-style: italic;	<== 字体格式，如斜体

@@ -164,6 +164,7 @@ test("字符串String", function() {
     ok(strHelloworld.charAt(strHelloworld.length - 1) == "d", "CharAt(Length-1)");
     equal(strHelloworld.substring(6, strHelloworld.length), "world", "substring获取子串");
     equal(strHelloworld.toUpperCase(), "HELLO WORLD", "toUpperCase返回对应的大写字符串")
+    equal(strHelloworld.slice(-5), "world", "slice 从已有的字符串数组中返回选定的元素, (start,end)") //此处取字符串的后5个字符
 
     //charCodeAt -- 返回该字符串位于第<位置>位的单个字符的 ASCII 码。
     //var strChina = String.fromCharCode();   //返回一个字符串，该字符串每个字符的 ASCII 码由 a, b, c... 等来确定。
@@ -403,7 +404,7 @@ test("TODO: 全局函数", function() {
     equal(parseInt("abc").toString(), NaN.toString());
     equal(isNaN(parseInt("abc")), true, "parseInt -- 如果以字母开头，则返回“NaN")
 
-    equal(parseFloat("123.456"), 123.456, "parseFloat返回把括号内的字符串转换成浮点数之后的值");
+    equal(parseFloat("123.456", 10), 123.456, "parseFloat返回把括号内的字符串转换成浮点数之后的值");
 
     equal("123".toString(), "123", "toString把对象转换成字符串");
     equal("123".toString(16), "123", "0x7B -- TODO(为什么不行？):toString(N)可以转换成特定进制");

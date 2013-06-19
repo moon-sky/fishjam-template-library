@@ -209,6 +209,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tests\JsToolsTester.js"
+				>
+			</File>
+			<File
 				RelativePath=".\tests\MathTester.js"
 				>
 			</File>

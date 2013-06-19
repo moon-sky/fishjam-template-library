@@ -1,5 +1,11 @@
 /******************************************************************************************************************************************
-* 05第五章\第五章例子\demo6-表格变色\demo5.html
+* TODO:
+*   1.如果选中，则移出selected类，否则就加上selected类(这是什么语法?) -- $(this)[hasSelected ? "removeClass" : "addClass"]('selected')
+*     等价于: if(hasSelected){ $(this).removeClass('selected');} else { $(this).addClass('selected'); }
+******************************************************************************************************************************************/
+
+/******************************************************************************************************************************************
+* 第六章例子\6\asp\6\demo3-get
 *
 * 开发IDE(代码自动提示)
 *   1.Dreamweaver + jQuery_API.mxp 插件(Dreamweaver cs6 已经内置)
@@ -7,7 +13,7 @@
 *   3.Eclipse + jQueryWTP 或 Spket 插件
 *   4.Visual Studio 2008 + KB958502 补丁 + jquery-vsdoc.js(该文件版本和jQuery一致，而且 "-" 前面的部分必须和jQuery文件名一样，放在相同目录)
 *     测试似乎不行?
-
+*
 * JQuery(jquery.com) 免费、开源(使用MIT许可协议)，是一个轻量级的JavaScript库(精简后只有20多K)，兼容各种浏览器,极大地简化了 JavaScript 编程
 *   能方便地处理HTML元素、事件等，实现动画效果，为网站提供AJAX交互，使得HTML页保持代码和页面分离(不用插入js进行调用，只需定义id即可)
 *   
@@ -51,7 +57,8 @@
 * 
 *   基本选择器
 *     tagType -- 选择所有指定类型的元素， 如类型 <p> 的 $("p"), $("input[type=button]")选择所有button按钮(等价于 :button ?)
-*     #IdObj -- 选择  id="IdObj" 的元素
+*     #IdObj -- 选择  id="IdObj" 的元素，可以选取任何元素
+*       如对于 <link type="text/css" id="cssfile" href="css/skin_0.css"/>, 通过 $("#cssfile").attr("href","css/"+this.id+".css") 可切换使用的css文件，即动态换肤功能
 *     .className -- 选择所有 class="className" 的元素
 *     this -- 选择当前元素,通常用在事件处理代码中，表示激发该事件的对象
 *     sel1,sel2 -- 将多个选择器匹配的元素合并后一起返回
@@ -150,16 +157,20 @@
 *     .closest() -- 取得最近的匹配元素，首先检查当前元素是否匹配，如匹配直接返回元素本身，如不匹配则逐级向上查找父元素，直到找到匹配的或空jQuery对象
 *       如 给点击的目标最近的 li 元素添加颜色: $(document).bind("click", function(e){ $(e.target).closest("li").css("color", "red"); })
 *     .children() -- 取得匹配元素的子元素集合(不考虑后代元素)
+*     .filter() -- 按照指定条件过滤，如 input.keyup 中根据用户的输入进行过滤显示 .filter(":contains('"+( $(this).val() )+"')").show();
+*     .find() -- 在匹配元素中查找指定(子？)元素,如 .find("tr")
 *     .next()/.prev() -- 取得匹配元素 后面/前面 紧邻的同辈元素
-*     .siblings() -- 取得匹配元素前后的所有同辈元素(不包括自身)
-*     其他的: .find, .filter, .nextAll, .prevAll, .parent, .parents
+*     .parent() -- ? 只查找直接父元素
+*     .parents() -- ? 递归在各级父元素中查找指定元素
+*     .siblings() -- 取得匹配元素前后满足条件的所有同辈元素(不包括自身)
+*     其他的: .nextAll, .prevAll,
 *   属性样式控制
 *     .attr("属性" [,"新值"]) -- 返回或设置指定的属性值, 如 class/style/title/checked 等, 如要一次性设置多个属性，可以使用如下格式：
 *        .attr({ "title" : "your title", "name" : "your name" });
 *     .addClass("className") -- 增加指定的class属性(通常用于关联CSS)，注意：采用追加方式，有多个时会成为 "class1 class2" 等多个值的合并(如有相同名字的属性，后加的覆盖先加的)
 *     .css("属性" [,"新的值"]) -- 读写对应的css属性值, 如 .css("font-color", "red") 
 *        注意：无论对应的属性是外部CSS导入、还是内联，或动态设置的？都能获取到最终的结果
-*        常见属性(部分和标准CSS不一样): backgroundColor, color, fontSize(文字大小), opacity(透明度0~1)
+*        常见属性(部分和标准CSS不一样): backgroundColor, color, fontSize/font-size(文字大小), opacity(透明度0~1)
 *     .hasClass("className") -- 判断是否有指定的class属性,增强代码可读性而产生的,等价于 .is(".className")
 *     .height([xx])/width([x]) -- 读写以px为单位的实际高度和宽度(如果用 .css("height") 得到的可能是"auto"等)
 *     .offset() -- 读写在当前视窗的相对偏移，返回的对象包含 top 和 left 两个属性
@@ -190,12 +201,20 @@
 *       1.时间可以用 "slow"(600ms)/"normal"(400ms)/"fast"(200ms) 或 毫秒数 来指定
 *       2.多个动画函数可以链式操作形成动画队列，依次执行
 *       3.TODO:使用动画函数来制作动画性能不高 -- HTML5中使用Canvas绘制更好?
+*   Ajax封装函数
+*     $.ajax
+*     .get("URL", { 参数键值对 }, 回调函数 ) -- 参数键值对会采用 ?name1=value1&name2=value2 的方式提交给服务器
+*        回调函数格式 -- function (data, textStatus) { xxx }
+*     .load("URL 参数" [,回调函数 ] ) -- 在匹配元素上加载指定URL对应的内容。
+*        参数是怎么回事？比如 $("#resText").load("test.html .para"); 此处表示会加上 para 类型?
+*        回调函数的格式 -- function (responseText, textStatus, XMLHttpRequest){ xxx }
 *   其他函数
 *     ?.children(selector) -- 通过指定的选择器选择所有满足条件的子元素?
 *     .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
 *     .end() -- 重新定位到上次操作的元素?
 *     .filter(Selector) -- 根据指定条件过滤出满足需求的子元素集合, 如 $obj.filter(":contains('佳能'),:contains('尼康')")
 *     .get(index) 或 [index] -- 选取jQuery对象数组中指定的元素，注意：返回值是DOM对象
+*     .index(domObj) -- 获取指定 dom 对象在匹配元素中的索引值整数，如 var index= $objs.index(this) -- 获取当前激发事件的元素在全部匹配元素中的索引
 *     .is(xxx) -- 判断???
 *       .is(".className") -- 判断是否含有某个式样类
 *       .is(":属性") -- 如 :checked(是否被选中), :visible(是否可见), :animated(是否处于动画)
@@ -239,9 +258,10 @@
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
-* 丰富的插件支持(http://plugins.jquery.com/)
-*   MoreSelectors for jQuery -- 增加更多的选择器，如 .color 匹配颜色, :colIndex 匹配表格中的列, :focus 匹配获取焦点的元素等
+* 丰富的插件支持(http://plugins.jquery.com/) -- 通常有全局函数( $.xxxx() 方式? ), 比如 $.cookie
 *   Basic XPath -- 可以让用户使用基本的XPath
+*   Cookie -- jquery.cookie.js，方便cookie操作， $.cookie("名字" [,新值 ,{ 附加属性的键值对，如 path: '/', expires: 10 }])
+*   MoreSelectors for jQuery -- 增加更多的选择器，如 .color 匹配颜色, :colIndex 匹配表格中的列, :focus 匹配获取焦点的元素等
 ******************************************************************************************************************************************/
 
 $(document).ready(function() {
