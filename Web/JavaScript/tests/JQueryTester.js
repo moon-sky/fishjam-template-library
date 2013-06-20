@@ -2,10 +2,13 @@
 * TODO:
 *   1.如果选中，则移出selected类，否则就加上selected类(这是什么语法?) -- $(this)[hasSelected ? "removeClass" : "addClass"]('selected')
 *     等价于: if(hasSelected){ $(this).removeClass('selected');} else { $(this).addClass('selected'); }
+*   2.jQuery做动画效果时要求在标准模式下，否则可能引起动画抖动(即  -//W3C//DTD XHTML 1.0 Transitional )
+*   3.有的时候选择器为什么要加上 ",this" ? 比如 《锋利的jQuery中》P152,5.1.4下拉框应用中， $var options=$("option:selected",this); //获取选中的选项
 *
 * 可以在线测试各种数据的地址(照片分享网站) -- TODO: 淘宝的链接转换?
 *   http://api.flickr.com/services/feeds/photos_public.gne?tags=car&tagmode=any&format=json&jsoncallback=?
 *   TODO: jsoncallback 怎么回事 ?
+*   
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
@@ -15,9 +18,13 @@
 *   1.Dreamweaver + jQuery_API.mxp 插件(Dreamweaver cs6 已经内置)
 *   2.Aptana -- 基于Eclipse，专注于JavaScript的Ajax开发IDE，(Windows -> Preferences -> Aptana ->Editors -> Javascript -> Code Assist)
 *   3.Eclipse + jQueryWTP 或 Spket 插件
-*   4.Visual Studio 2008 + KB958502 补丁 + jquery-vsdoc.js(该文件版本和jQuery一致，而且 "-" 前面的部分必须和jQuery文件名一样，放在相同目录)
-*     测试似乎不行?
-*
+*   4.Visual Studio 2008 
+*     + KB958502 补丁(http://archive.msdn.microsoft.com/KB958502)
+*     + jquery-vsdoc.js(http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.9.1-vsdoc.js, 该文件版本和jQuery一致，而且 "-" 前面的部分必须和jQuery文件名一样，放在相同目录)
+*     实测似乎不行?
+* 辅助工具:
+*   1.Chrome中有一款jQuery的扩展程序，  
+* 
 * JQuery(jquery.com) 免费、开源(使用MIT许可协议)，是一个轻量级的JavaScript库(精简后只有20多K)，兼容各种浏览器,极大地简化了 JavaScript 编程
 *   能方便地处理HTML元素、事件等，实现动画效果，为网站提供AJAX交互，使得HTML页保持代码和页面分离(不用插入js进行调用，只需定义id即可)
 *   
@@ -32,7 +39,7 @@
 *   DOM 对象 -- 通过 document.getXxx 返回的对象
 *      $("#foo").html() <== 等价于 ==> document.getElementById("foo").innerHTML
 *      jQuery变量转换为DOM: var domObj = $jObj[index] 或 $jObj.get(index), 本质是从数组里取元素
-*      DOM变量转换为jQuery: var $jObj = $(domObj), 本质是通过 $(objName) 工厂函数生成, 如 $(document)
+*      DOM变量转换为jQuery: var $jObj = $(domObj), 本质是通过 $(objName) 工厂函数生成, 如 $(document), $(this) 等
 *
 * 基础语法： $就是 jQuery的一个简写形式，如 $("#foo") 和 jQuery("#foo") 等价; $.ajax 和 jQuery.ajax 等价
 *   $(selector).action() -- 美元符号定义 jQuery; 选择符(selector)查询和查找HTML 元素; action() 执行对元素的操作
@@ -106,7 +113,7 @@
 *     :enabled/:disabled -- 选取所有 可用/不可用 元素
 *     :checked -- 选取所有被选中的元素(单选框/复选框)
 *     :selected -- 选取所有被选中的选项元素(下拉列表), 如 $('#mySelect option:selected')
-*   表单选择器 -- 选取表单(form)内制定类型的元素,使用以前需要指定所在的form?, 如 $("form1 text")
+*   表单选择器 -- 选取表单(form)内制定类型的元素,使用以前通过指定form或其他属性限制选择范围, 如 $("form1 [name=items]:checkbox") 选择form1中name属性为"items"的所有checkbox
 *     :button -- 选取所有的按钮
 *     :checkbox -- 复选按钮
 *     :file -- 
@@ -164,7 +171,7 @@
 *     .filter() -- 按照指定条件过滤，如 input.keyup 中根据用户的输入进行过滤显示 .filter(":contains('"+( $(this).val() )+"')").show();
 *     .find() -- 在匹配元素中查找指定(子？)元素,如 .find("tr")
 *     .next()/.prev() -- 取得匹配元素 后面/前面 紧邻的同辈元素
-*     .parent() -- ? 只查找直接父元素
+*     .parent() -- ? 得到直接父元素
 *     .parents() -- ? 递归在各级父元素中查找指定元素
 *     .siblings() -- 取得匹配元素前后满足条件的所有同辈元素(不包括自身)
 *     其他的: .nextAll, .prevAll,
@@ -193,18 +200,20 @@
 *        如果需要设置多选值(如 multiple 的 select)时，需要用中括号括起且逗号分隔的项(如: $("#multiple").val(["check2","check3"]); )
 *        对应的值是 <option>中的text部分, checkbox,radio 的 value或text部分
 *   动画函数 -- 为了避免动画堆积，在增加动画代码前需要先判断是否处于动画： if(!$Obj.is(":animated")){ 不处于动画，可以增加 }
-*     .animate( {属性名1:"属性值1"[, 属性名2:"属性值2"] }[, 时间][, 结束时的回调函数] } ) -- 自定义的动画函数，
-*        如 $(this).animate({left: "500px",height:"+=200px"}, 3000);
-*        具有最强大的功能，可以模拟出其他动画，如 .show(600) == .animate({height : "show" , width : "show" , opacity : "show" } , 600 );
-*     .fadeIn/.fadeOut -- 通过更改 "透明度" 来 "显示/隐藏" 元素
-*     .fadeTo(时间, 透明度) -- 更改透明度
-*     .show([时间])/.hide([时间]) -- 同时更改 "高/宽/透明度" 来 "显示/隐藏"匹配元素
+*     .animate( {属性名1:"属性值1"[, 属性名2:"属性值2"] } [, 时间] [, 结束时的回调函数] ) -- 自定义的动画函数，在指定时间段内更改属性值达到动画效果，
+*        如 $(this).animate( {left:"500px", height:"+=200px" }, 3000);
+*        具有最强大的功能，可以模拟出其他动画，如 .show(600) == .animate( {height:"show", width:"show", opacity:"show" } , 600 );
+*     .fadeIn/.fadeOut -- 通过更改 "透明度" 来 "淡入/淡出" 元素
+*     .fadeTo(时间, 透明度, 回调) -- 更改透明度
+*     .show([时间])/.hide([时间]) -- 同时更改 "高/宽/透明度" 来 "显示/隐藏"匹配元素, hide前会先记住原先的 display 属性值，用于show时恢复
 *     .slideDown/.slideUp -- 通过更改 "高度" 来 "显示/隐藏" 元素
-*     .slideToggle -- 通过更改高度来动画切换可见状态
+*     .slideToggle( 时间, 回调) -- 通过更改高度来动画切换可见状态
+*     .stop([clearQueue=false] [,gotoEnd=false]) -- 停止匹配元素的动画，clearQueue为true表示清空未执行完的动画队列， gotoEnd为true表示直接将正在执行的动画跳转到末状态。
 *     注意：
 *       1.时间可以用 "slow"(600ms)/"normal"(400ms)/"fast"(200ms) 或 毫秒数 来指定
 *       2.多个动画函数可以链式操作形成动画队列，依次执行
-*       3.TODO:使用动画函数来制作动画性能不高 -- HTML5中使用Canvas绘制更好?
+*       3.stop时只能设置正在执行的动画最终状态，而没有提供直接到达未执行动画队列最终状态的方法
+*       4.TODO:使用动画函数来制作动画性能不高 -- HTML5中使用Canvas绘制更好?
 *   其他函数
 *     ?.children(selector) -- 通过指定的选择器选择所有满足条件的子元素?
 *     .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
@@ -224,8 +233,8 @@
 *     .serialize() -- 表单对象序列化，通常作用于 表单form 或 input元素 上，可以将用户输入序列化成 GET 的参数字符串(会自动调用 encodeURIComponent()编码 )
 *        如: $.get("get1.asp", $("#form1").serialize(), function ... );
 *     .serializeArray() -- 表单对象序列化成对象数组并返回，然后可以通过 $.each 进行遍历处理
-*     .toggle() -- 切换元素的可见状态，注意和 toggle合成事件 的区别
-*     .trigger("eventName") -- 模拟激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替，并继续执行浏览器的缺省操作
+*     .toggle([时间] [,回调]) -- 切换元素的可见状态，注意和 toggle合成事件 的区别
+*     .trigger("eventName", [ 参数数组 ] ) -- 模拟激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替，并继续执行浏览器的缺省操作
 *        注意：可以激发自定义的事件(自定义事件也只能这样激发？)
 *     .triggerHandler("eventName") -- 模拟激发指定事件(但不继续执行浏览器的缺省操作，如激发 $inputObj.triggerHandler("focus") 会激发事件，
 *        但不会将焦点设置到 $inputObj 上)；或者 在 .blur 里面验证输入时，可以在.focus和.keyup 中triggerHandler("blur")来激发实时验证
@@ -258,7 +267,7 @@
 *  
 * 事件( .xxx(function([event]) { xxx });
 *     .ajaxStart()/.ajaxStop() -- AJAX开始和结束事件，TODO: 虽然是全局公用的，但必须写在对象身上，即不能写为 $.ajaxStart ，而必须写成类似 $("#loading").ajaxStart
-*     .bind("事件1 [事件2]" [,data] , fun) -- 通用地绑定指定事件, data作为可选参数，作为 event.data 属性值传递给事件对象的额外数据对象
+*     .bind("事件1 [事件2]" [,data] , fun) -- 通用地绑定指定事件, data是可选参数，作为 event.data 属性值传递给事件对象的额外数据对象
 *     .blur -- 失去焦点时
 *     .change() -- 设置change事件，如 $("select").change(function(){ xxx; })
 *     .click -- 设置click事件
@@ -271,7 +280,7 @@
 *                             .mouseenter/.mouseleave -- 只有在鼠标指针穿过被选元素时，才会触发 mouseenter 事件(子元素不触发)
 *     .one("事件" [,data] , fun) -- 通用地绑定一次事件(只激发一次)
 *     .ready() -- 如 $(document).ready(function(){ xxx }); 
-*        网页中所有DOM完全就绪就执行，但此时DOM元素关联的东西可能没有加载完(比如图片)，相比onload能极大提高响应速度(onload是所有元素加载完才执行),
+*        网页中所有DOM完全就绪就执行，但此时DOM元素关联的东西可能没有加载完(比如图片)，相比 window.onload 能极大提高响应速度(onload是所有元素加载完才执行),
 *          可以同时编写多个(但window.onload只能有一个)
 *        缺点：ready中可能无法准确获取图片的信息(如高宽等)，对应的有 load 事件；
 *      .resize --
@@ -279,8 +288,8 @@
 *      .unbind(["事件" [,fun] ] ) -- 取消事件的绑定，可以指定 取消哪个事件或事件上的具体函数
 *   自定义事件 -- $obj.bind("myEvent", function(event, param1, ...paramN){ xxxx }
 *     激发(必须用 trigger，且通过数组的形式传递参数)：$obj.trigger("myEvent",["参数1","参数2"]);
-*   事件的名称空间 --  对事件可以指定名称空间(如 click.fishjam), 然后可以根据名称空间来操作(如 unbind(".fishjam") 可取消 ".fishjam" 名称空间下的所有事件,
-*     激发时可在 trigger 的事件名字后加感叹号("!") 来确保事件空间，如 "click" 会激发所有空间下的, "click!"只激发默认空间下的
+*   事件的名称空间 --  对事件可以指定名称空间(如 click.fishjam ), 然后可以根据名称空间来操作(如 unbind(".fishjam") 可取消 ".fishjam" 名称空间下的所有事件,
+*     激发时可在 trigger 的事件名字后加感叹号("!") 来匹配所有不包含在命名空间中的方法，如 "click" 会激发所有空间下的, "click!"只激发默认空间下的
 *   合成事件(jQuery中自定义的方法)
 *     .hover( enter, leave ) -- 模拟光标悬停事件，分别对应 mouseenter 和 mouseleave 事件
 *     .toggle( fun1,fun2,...funN ) -- 模拟鼠标连续单击事件，可以在每次单击时切换多个函数的处理逻辑

@@ -47,3 +47,27 @@ function strictParams(types, args ){
 		}
 	}
 }
+
+function checkParams(funName, args, logType) {
+    var argInfo = funName + ": "
+    for (var i = 0; i < args.length; i++) {
+        argInfo = argInfo + "[" + i + "]=" + typeof args[i] + ",";
+    }
+    if (logType != undefined) {
+        switch(logType) {
+        case 1:
+            console.debug(argInfo);
+        	break;
+        case 2:
+            console.info(argInfo);
+        	break;
+        case 3:
+        default:
+            console.log(argInfo);
+            break;
+        }
+    }else{
+        console.debug(argInfo);
+    }
+    return argInfo;
+}

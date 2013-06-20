@@ -25,16 +25,20 @@ test("TODO: Browser", function() {
     equal(navigator.appCodeName, "Mozilla", "返回浏览器的码名--IE、FF、Chrome全都返回 Mozilla");
     equal(navigator.appName, "Netscape", "navigator.appName 返回浏览器名, FF/Chrome--Netscape, IE -- Microsoft Internet Explorer");
 
+    /******************************************************************************************************************
     equal(navigator.appVersion, // "5.0 (Windows)");       //浏览器版本
-     "5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36");  //Chrome -- 5.0 
+     "5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36");  //Chrome -- 5.0
+    equal(navigator.userAgent,
+    	"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36",
+    	"返回浏览器对象的全部信息，可以查找是否包含指定字符串来判断浏览器类型？");
+    //*******************************************************************************************************************/
+    
     //FF --
     //IE -- 4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0;  <== 注意：还可能有其他的一下信息
 
     equal(navigator.language, "zh-CN", "语言")
     equal(navigator.platform, "Win32", "平台");
-    equal(navigator.userAgent,
-		"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36", 
-		"返回浏览器对象的全部信息，可以查找是否包含指定字符串来判断浏览器类型？");
+	
     //equal(navigator.plugins, "a");    //以数组表示已安装的外挂程序
 
     //ok(true, "tmp");
@@ -117,7 +121,7 @@ test("TODO: Window", function() {
         equal(embeds.length, 0, "文档中所有的插件<embed>标记的数组");
         equal(forms.length, 0, "文档中所有表单<form>的数组");
         equal(cookie.length, 0, "文档中的Cookie");
-        
+
         equal(images.length, 0, "文档中的所有图像");
         /*
         //在 QUnitTestFramework.html 中加入 <img src="..\HTML\img\merglobe.gif"/> 后测试这些

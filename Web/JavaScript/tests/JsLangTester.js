@@ -447,6 +447,8 @@ test("自定义函数", function() {
     //3.声明变量时，若前面有 "var" 则表明是局部变量，否则就是全局变量（即使是在函数内部，但需要调用过函数后才会生成全局变量）
 
     function SomeFun() { //此处最好写上参数列表 -- 方便函数使用者知道调用方式
+        checkParams("SomeFun", arguments);
+        
         equal(arguments.length, 4, "函数中的 arguments 数组参数");
         equal(SomeFun.arguments.length, 4, "函数名前缀.arguments");
 
