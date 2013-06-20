@@ -28,6 +28,21 @@ using System.Web.UI.WebControls;
  *   
 ************************************************************************************************************/
 
+/************************************************************************************************************
+ * 老ASP
+ *   POST 与 GET 区别在于Request.Form 和Request.QueryString的区别 -- 通用的方式是 request("xxx") ?
+ *     GET方式获取参数：dim username = request.QueryString("username")
+ *     POST方式获取参数 dim username = request.Form("username")
+ *     ？通用的获取参数 dim username = request("username")
+ * 
+ *   写返回信息(XML 格式返回)
+ *     Response.ContentType="application/xml"
+ *     Response.Charset="utf-8" 
+ *     Response.Write("<?xml version=""1.0"" encoding=""utf-8""?>") ... 
+ *   写返回信息(JSON 格式返回)
+ *     response.Write("{ username : '"&username&"' , content : '"&content&"'}")
+************************************************************************************************************/
+
 public partial class AspStructureStudy : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)

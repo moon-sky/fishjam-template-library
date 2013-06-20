@@ -20,6 +20,20 @@
 
  <script type="text/javascript">
      $(document).ready(function() {
+         //--------------------------使用自定义的color插件--------------------------
+        $("#useMyColorPlugin").click(function() {
+            //生成随机颜色
+             var getRandomColor = function() {
+                 return '#' +
+                (function(color) {
+                    return (color += '0123456789abcdef'[Math.floor(Math.random() * 16)])
+                  && (color.length == 6) ? color : arguments.callee(color);
+                })('');
+             };
+             console.log(getRandomColor);
+             $(this).color(getRandomColor);
+         });
+
          //--------------------------基本选择器 -------------------------------
          //选择 id为 one 的元素
          $('#btn01').click(function() {
@@ -61,130 +75,147 @@
          })
 
          //--------------------------基本过滤选择器 -------------------------------
-		 //选择第一个div元素.
-		  $('#btn21').click(function(){
-			  $('div:first').css("background","#bfa");
-		  })
-		  //选择最后一个div元素.
-		  $('#btn22').click(function(){
-			  $('div:last').css("background","#bfa");
-		  })
-		  //选择class不为one的 所有div元素.
-		  $('#btn23').click(function(){
-			  $('div:not(.one)').css("background","#bfa");
-		  })
-		  //选择 索引值为偶数 的div元素。
-		  $('#btn24').click(function(){
-			  $('div:even').css("background","#bfa");
-		  })
-		  //选择 索引值为奇数 的div元素。
-		  $('#btn25').click(function(){
-			  $('div:odd').css("background","#bfa");
-		  })
-		  //选择 索引等于 3 的元素
-		  $('#btn26').click(function(){
-			  $('div:eq(3)').css("background","#bfa");
-		  })
-		  //选择 索引大于 3 的元素
-		  $('#btn27').click(function(){
-			  $('div:gt(3)').css("background","#bfa");
-		  })
-		 //选择 索引小于 3 的元素
-		  $('#btn28').click(function(){
-			  $('div:lt(3)').css("background","#bfa");
-		  })
-		   //选择 所有的标题元素.比如h1, h2, h3等等...
-		  $('#btn29').click(function(){
-			  $(':header').css("background","#bfa");
-		  })
-		  //选择 当前正在执行动画的所有元素.
-		  $('#btn2a').click(function(){
-			  $(':animated').css("background","#bfa");
-		  });
+         //选择第一个div元素.
+         $('#btn21').click(function() {
+             $('div:first').css("background", "#bfa");
+         })
+         //选择最后一个div元素.
+         $('#btn22').click(function() {
+             $('div:last').css("background", "#bfa");
+         })
+         //选择class不为one的 所有div元素.
+         $('#btn23').click(function() {
+             $('div:not(.one)').css("background", "#bfa");
+         })
+         //选择 索引值为偶数 的div元素。
+         $('#btn24').click(function() {
+             $('div:even').css("background", "#bfa");
+         })
+         //选择 索引值为奇数 的div元素。
+         $('#btn25').click(function() {
+             $('div:odd').css("background", "#bfa");
+         })
+         //选择 索引等于 3 的元素
+         $('#btn26').click(function() {
+             $('div:eq(3)').css("background", "#bfa");
+         })
+         //选择 索引大于 3 的元素
+         $('#btn27').click(function() {
+             $('div:gt(3)').css("background", "#bfa");
+         })
+         //选择 索引小于 3 的元素
+         $('#btn28').click(function() {
+             $('div:lt(3)').css("background", "#bfa");
+         })
+         //选择 所有的标题元素.比如h1, h2, h3等等...
+         $('#btn29').click(function() {
+             $(':header').css("background", "#bfa");
+         })
+         //选择 当前正在执行动画的所有元素.
+         $('#btn2a').click(function() {
+             $(':animated').css("background", "#bfa");
+         });
 
          //--------------------------内容过滤选择器 -------------------------------
-		  //选取含有文本"di"的div元素.
-		  $('#btn31').click(function(){
-			  $('div:contains(di)').css("background","#bbffaa");
-		  })
-		  //选取不包含子元素(或者文本元素)的div空元素.
-		  $('#btn32').click(function(){
-			  $('div:empty').css("background","#bbffaa");
-		  })
-		  //选取含有class为mini元素 的div元素.
-		  $('#btn33').click(function(){
-			  $('div:has(.mini)').css("background","#bbffaa");
-		  })
-		  //选取含有子元素(或者文本元素)的div元素.
-		  $('#btn34').click(function(){
-			  $('div:parent').css("background","#bbffaa");
-		  })
+         //选取含有文本"di"的div元素.
+         $('#btn31').click(function() {
+             $('div:contains(di)').css("background", "#bbffaa");
+         })
+         //选取不包含子元素(或者文本元素)的div空元素.
+         $('#btn32').click(function() {
+             $('div:empty').css("background", "#bbffaa");
+         })
+         //选取含有class为mini元素 的div元素.
+         $('#btn33').click(function() {
+             $('div:has(.mini)').css("background", "#bbffaa");
+         })
+         //选取含有子元素(或者文本元素)的div元素.
+         $('#btn34').click(function() {
+             $('div:parent').css("background", "#bbffaa");
+         })
 
          //--------------------------可见性选择器 -------------------------------
-		//选取所有不可见的元素.包括<input type="hidden"/>.
-         $('#btn41').click(function(){
-	      alert( "不可见的元素有："+$('body :hidden').length +"个!\n"+
-		   "其中不可见的div元素有:"+$('div:hidden').length+"个!\n"+
-		   "其中文本隐藏域有:"+$('input:hidden').length+"个!");
-		  $('div:hidden').show(3000).css("background","#bbffaa");
-		  })
-		  //选取所有可见的div元素.
-		  $('#btn42').click(function(){
-			  $('div:visible').css("background","#FF6500");
-		  })
+         //选取所有不可见的元素.包括<input type="hidden"/>.
+         $('#btn41').click(function() {
+             alert("不可见的元素有：" + $('body :hidden').length + "个!\n" +
+		   "其中不可见的div元素有:" + $('div:hidden').length + "个!\n" +
+		   "其中文本隐藏域有:" + $('input:hidden').length + "个!");
+             $('div:hidden').show(3000).css("background", "#bbffaa");
+         })
+         //选取所有可见的div元素.
+         $('#btn42').click(function() {
+             $('div:visible').css("background", "#FF6500");
+         })
 
          //--------------------------属性选择器 -------------------------------
-		  //选取含有 属性title 的div元素.
-		  $('#btn51').click(function(){
-			  $('div[title]').css("background","#bbffaa");
-		  })
-		  //选取 属性title值等于 test 的div元素.
-		  $('#btn52').click(function(){
-			  $('div[title=test]').css("background","#bbffaa");
-		  })
-		  //选取 属性title值不等于 test 的div元素.
-		  $('#btn53').click(function(){
-			  $('div[title!=test]').css("background","#bbffaa");
-		  })
-		  //选取 属性title值 以 te 开始 的div元素.
-		  $('#btn54').click(function(){
-			  $('div[title^=te]').css("background","#bbffaa");
-		  })
-		  //选取 属性title值 以 est 结束 的div元素.
-		  $('#btn55').click(function(){
-			  $("div[title$=est]").css("background","#bbffaa");
-		  })
-		  //选取 属性title值 含有 es  的div元素.
-		  $('#btn56').click(function(){
-			  $("div[title*=es]").css("background","#bbffaa");
-		  })
-		  //组合属性选择器,首先选取有属性id的div元素，然后在结果中 选取属性title值 含有 es 的元素.
-		  $('#btn57').click(function(){
-			  $("div[id][title*=es]").css("background","#bbffaa");
-		  })
+         //选取含有 属性title 的div元素.
+         $('#btn51').click(function() {
+             $('div[title]').css("background", "#bbffaa");
+         })
+         //选取 属性title值等于 test 的div元素.
+         $('#btn52').click(function() {
+             $('div[title=test]').css("background", "#bbffaa");
+         })
+         //选取 属性title值不等于 test 的div元素.
+         $('#btn53').click(function() {
+             $('div[title!=test]').css("background", "#bbffaa");
+         })
+         //选取 属性title值 以 te 开始 的div元素.
+         $('#btn54').click(function() {
+             $('div[title^=te]').css("background", "#bbffaa");
+         })
+         //选取 属性title值 以 est 结束 的div元素.
+         $('#btn55').click(function() {
+             $("div[title$=est]").css("background", "#bbffaa");
+         })
+         //选取 属性title值 含有 es  的div元素.
+         $('#btn56').click(function() {
+             $("div[title*=es]").css("background", "#bbffaa");
+         })
+         //组合属性选择器,首先选取有属性id的div元素，然后在结果中 选取属性title值 含有 es 的元素.
+         $('#btn57').click(function() {
+             $("div[id][title*=es]").css("background", "#bbffaa");
+         })
 
          //--------------------------子元素选择器 -------------------------------
-		  //选取每个父元素下的第2个子元素
-		  $('#btn61').click(function(){
-			  $('div.one :nth-child(2)').css("background","#bbffaa");
-		  })
-		  //选取每个父元素下的第一个子元素
-		  $('#btn62').click(function(){
-			  $('div.one :first-child').css("background","#bbffaa");
-		  })
-		  //选取每个父元素下的最后一个子元素
-		  $('#btn63').click(function(){
-			  $('div.one :last-child').css("background","#bbffaa");
-		  })
-		  //如果父元素下的仅仅只有一个子元素，那么选中这个子元素
-		  $('#btn64').click(function(){
-			  $('div.one :only-child').css("background","#bbffaa");
-		  })
+         //选取每个父元素下的第2个子元素
+         $('#btn61').click(function() {
+             $('div.one :nth-child(2)').css("background", "#bbffaa");
+         })
+         //选取每个父元素下的第一个子元素
+         $('#btn62').click(function() {
+             $('div.one :first-child').css("background", "#bbffaa");
+         })
+         //选取每个父元素下的最后一个子元素
+         $('#btn63').click(function() {
+             $('div.one :last-child').css("background", "#bbffaa");
+         })
+         //如果父元素下的仅仅只有一个子元素，那么选中这个子元素
+         $('#btn64').click(function() {
+             $('div.one :only-child').css("background", "#bbffaa");
+         })
 
-		  //-------------------------- ???? 选择器 -------------------------------
+         //-------------------------- ???? 选择器 -------------------------------
 
-		  //--------------------------表单选择器 -------------------------------
-        
+         //--------------------------表单选择器 -------------------------------
+
+         //初始化验证信息  -- 实测发现有语法错误(可能是版本不匹配造成?)
+         /*
+         
+         $("#myForm").validate({
+         rules: {
+         password: {
+         required: true,
+         minlength: 2
+         },
+         address: {
+         required: true,
+         email: true
+         },
+         }
+         });
+         */
+
      });
      
  </script>
@@ -214,12 +245,15 @@
     <table id="jquerytest">
         <label for="jqueryEval" >jQuery选择器</label><input type="text" id="jqueryEval" class="translucence" value="请输入jQuery表达式" /> 
         <input type="color" value="#ff0000" /> <input type="button" id="jqueryCheckBtn" value="check"/> <br /><br />
+        <input type="button" id="useMyColorPlugin" value="使用自定义的color插件" /><br />
         
         <a href="#" class="tooltip" title="使用jQuery设置的Tooltip, TODO:为什么大小不对，可能是c3.css中定义了div的style">自定义的jQuery提示</a> <br />
         <a href="#" title="使用系统的Tooltip提示">系统的Tooltip提示</a> <br />
         
-        <label for="address">邮箱地址</label><input type="text" id="address" class="translucence" value="请输入邮箱地址" /><br/>
-        <label for="password">邮箱密码</label><input type="password" id="password" class="translucence" value="请输入邮箱密码"/>  <br/><br/>
+        <form id="myForm" method="get" action="#">
+            <label for="address">邮箱地址</label><input type="text" id="address" name="address" class="translucence" value="请输入邮箱地址" /><br/>
+            <label for="password">邮箱密码</label><input type="password" id="password" name="password" class="translucence" value="请输入邮箱密码"/>  <br/><br/>
+        </form>
     
     
         <button id="reset">手动重置页面元素</button>

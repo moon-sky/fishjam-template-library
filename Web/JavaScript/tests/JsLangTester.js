@@ -239,7 +239,7 @@ test("数组Array", function() {
     //  myArray[1] = 123;
 
     var strArrayJoin = myArray.join(" "); //join方法把数组中的各个元素用<分隔符>串起来形成一个字符串，不影响数组内容
-    equal(strArrayJoin ,"abc 123");
+    equal(strArrayJoin, "abc 123");
 
     myArray.reverse();  //逆转数组元素
     strArrayJoin = myArray.join(",");
@@ -278,6 +278,28 @@ test("数组Array", function() {
     equal(arrayProperty["one"] + arrayProperty["two"], 3);  //通过取属性的方式进行运算
     //equal(arrayMap["one"], 1);
     //console.log("arrayProperty, %o", arrayProperty);
+
+    //直接定义键值对的数组， 然后在 jQuery 中可以用 $.each( comments , function(commentIndex, comment){ xxx }) 来处理
+    //可以直接使用 comment['username'] 和 comment['content'] 来访问每一个元素的属性值。
+    //TODO： 处理函数中能自动识别 comment 是 JSON 对象？标准JS没有jQuery的支持也可以同样方式?
+    var comments =
+    //这些部分放在 .json 文件中就是 JSON 返回方式的数据?
+    [
+        { "username": "张三", "content": "沙发.", "score": 80 },
+        { "username": "李四", "content": "板凳.", "score": 70 },
+        { "username": "王五", "content": "地板.", "score": 90 }
+    ];
+    equal(comments.length, 3, "直接定义键值对数组");
+    equal(comments[1].username, "李四", "访问键值对信息");
+
+    var totalScore = 0;
+    for( var i = 0; i < comments.length; i++){
+        totalScore += comments[i].score;
+    }
+    //for (var comment in comments) {
+    //  totalScore += comment.score;
+    //}
+    equal(totalScore, 240, "通过for遍历数组元素， TODO: in 语法"); 
 
 });
 
@@ -392,12 +414,20 @@ test("TODO: 全局函数", function() {
     //        ok(true);
     //    }
 
-    var strSrcURL = "<>[]{}+-=,.;;'\"";
-    var strTargetURL = "%3C%3E%5B%5D%7B%7D+-%3D%2C.%3B%3B%27%22";
-    equal(escape(strSrcURL), strTargetURL, "escape 把字符串按URL编码方法来编码(如空格变为 %20 ),如要对'+'编码，需要加参数(1)");
-    equal(unescape(strTargetURL), strSrcURL, "unescape 解码括号中字符串成为一般字符串");
-    equal(isFinite(parseInt("abc")), false, "isFinite -- 如果括号内的数字是“有限”的(MIN_VALUE和MAX_VALUE之间)就返回true");
 
+    //各种编码方式的区别？哪种才是正确的？函数参数？
+    var strSrcURL = "<>[]{}+-=,.;;'\"";             //原始需要编码的字符串
+
+    var strEscapeResult       = "%3C%3E%5B%5D%7B%7D+-%3D%2C.%3B%3B%27%22";      //escape的结果
+    var strEncodeUriResult    = "%3C%3E%5B%5D%7B%7D%2B-%3D%2C.%3B%3B'%22";      //encodeURIComponent 的结果
+    var strBianma911ChaResult = "%3C%3E%5B%5D%7B%7D%2B-%3D%2C.%3B%3B%27%5C%22"; //http://bianma.911cha.com/ 网站的结果(问题:转义字符?)
+
+    equal(escape(strSrcURL), strEscapeResult, "escape 把字符串按URL编码方法来编码(如空格变为 %20 ),如要对'+'编码，需要加参数(1)");
+    equal(unescape(strEscapeResult), strSrcURL, "unescape 解码括号中字符串成为一般字符串");
+    equal(encodeURIComponent(strSrcURL), strEncodeUriResult, "encodeURIComponent");
+    
+
+    equal(isFinite(parseInt("abc")), false, "isFinite -- 如果括号内的数字是“有限”的(MIN_VALUE和MAX_VALUE之间)就返回true");
     equal(parseInt("123"), 123, "parseInt -- 把括号内的内容转换成整数之后的值,如果第一个支付不是数值，则返回 NaN");
     //equal(parseInt("0123"), 83, "前面有0时默认会按照八进制分析，可能造成错误，但Chrome中实测还是解析成 123");
     equal(parseInt("0123", 10), 123, "parseInt(xxx, 10) -- 强制按照10进制方式分析，★推荐★");

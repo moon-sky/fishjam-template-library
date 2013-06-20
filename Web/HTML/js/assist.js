@@ -83,4 +83,28 @@ $(document).ready(function() {
         $("#mover").slideToggle("slow", animateIt);
     }
     animateIt();
-})
+});
+
+//编写插件
+//  $(obj).color(xxx)
+(function($) {
+    $.fn.extend({
+        "color": function(value) {
+            if (value == undefined) {
+                return this.css("color");
+            } else {
+                return this.css("color", value);
+            }
+        }
+    });
+})(jQuery);
+
+// div:between(2,5) -- 选择索引介于 2 ~ [5-1] 之间的元素,索引从0开始
+(function($) {
+    $.extend($.expr[":"], {
+        between: function(a, i, m) {
+            var tmp = m[3].split(","); //将传递进来的m[3]以逗号为分隔符，切成一个数组
+            return tmp[0] - 0 < i && i < tmp[1] - 0;
+        }
+    });
+})(jQuery);

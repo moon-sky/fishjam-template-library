@@ -9,7 +9,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JQuery", "JQuery", "{36031838-69DD-4F16-AE7C-A3819AAA243A}"
 	ProjectSection(SolutionItems) = preProject
 		WebSrc\jquery\jquery-vsdoc.js = WebSrc\jquery\jquery-vsdoc.js
-		WebSrc\jquery\jquery.js = WebSrc\jquery\jquery.js
 	EndProjectSection
 EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "ASP", "ASP\", "{AF09284A-88E0-4D36-95B9-596D43078877}"

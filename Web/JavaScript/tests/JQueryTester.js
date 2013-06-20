@@ -2,10 +2,14 @@
 * TODO:
 *   1.如果选中，则移出selected类，否则就加上selected类(这是什么语法?) -- $(this)[hasSelected ? "removeClass" : "addClass"]('selected')
 *     等价于: if(hasSelected){ $(this).removeClass('selected');} else { $(this).addClass('selected'); }
+*
+* 可以在线测试各种数据的地址(照片分享网站) -- TODO: 淘宝的链接转换?
+*   http://api.flickr.com/services/feeds/photos_public.gne?tags=car&tagmode=any&format=json&jsoncallback=?
+*   TODO: jsoncallback 怎么回事 ?
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
-* 第六章例子\6\asp\6\demo3-get
+* 08第八章\第八章节例子
 *
 * 开发IDE(代码自动提示)
 *   1.Dreamweaver + jQuery_API.mxp 插件(Dreamweaver cs6 已经内置)
@@ -201,17 +205,12 @@
 *       1.时间可以用 "slow"(600ms)/"normal"(400ms)/"fast"(200ms) 或 毫秒数 来指定
 *       2.多个动画函数可以链式操作形成动画队列，依次执行
 *       3.TODO:使用动画函数来制作动画性能不高 -- HTML5中使用Canvas绘制更好?
-*   Ajax封装函数
-*     $.ajax
-*     .get("URL", { 参数键值对 }, 回调函数 ) -- 参数键值对会采用 ?name1=value1&name2=value2 的方式提交给服务器
-*        回调函数格式 -- function (data, textStatus) { xxx }
-*     .load("URL 参数" [,回调函数 ] ) -- 在匹配元素上加载指定URL对应的内容。
-*        参数是怎么回事？比如 $("#resText").load("test.html .para"); 此处表示会加上 para 类型?
-*        回调函数的格式 -- function (responseText, textStatus, XMLHttpRequest){ xxx }
 *   其他函数
 *     ?.children(selector) -- 通过指定的选择器选择所有满足条件的子元素?
 *     .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
 *     .end() -- 重新定位到上次操作的元素?
+*     .expr() -- ?
+*     ? $.extend( {键值对}, 变量 ) -- 扩展变量的值，可用在编写插件时设置缺省值？
 *     .filter(Selector) -- 根据指定条件过滤出满足需求的子元素集合, 如 $obj.filter(":contains('佳能'),:contains('尼康')")
 *     .get(index) 或 [index] -- 选取jQuery对象数组中指定的元素，注意：返回值是DOM对象
 *     .index(domObj) -- 获取指定 dom 对象在匹配元素中的索引值整数，如 var index= $objs.index(this) -- 获取当前激发事件的元素在全部匹配元素中的索引
@@ -222,13 +221,43 @@
 *     .next("xx)
 *     .nextAll("xxx") -- 选取匹配元素 后面的 同辈"xxx"元素
 *     .siblings("xxx") -- 选取匹配元素同辈的"xxx"元素
+*     .serialize() -- 表单对象序列化，通常作用于 表单form 或 input元素 上，可以将用户输入序列化成 GET 的参数字符串(会自动调用 encodeURIComponent()编码 )
+*        如: $.get("get1.asp", $("#form1").serialize(), function ... );
+*     .serializeArray() -- 表单对象序列化成对象数组并返回，然后可以通过 $.each 进行遍历处理
 *     .toggle() -- 切换元素的可见状态，注意和 toggle合成事件 的区别
 *     .trigger("eventName") -- 模拟激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替，并继续执行浏览器的缺省操作
 *        注意：可以激发自定义的事件(自定义事件也只能这样激发？)
 *     .triggerHandler("eventName") -- 模拟激发指定事件(但不继续执行浏览器的缺省操作，如激发 $inputObj.triggerHandler("focus") 会激发事件，
 *        但不会将焦点设置到 $inputObj 上)；或者 在 .blur 里面验证输入时，可以在.focus和.keyup 中triggerHandler("blur")来激发实时验证
-* 
+*
+*   Ajax封装函数(以 $. 开始的是全局函数， 以 $obj. 开始是指定对象上的函数 )
+*     $.ajax( { 各个参数的键值对 } ) -- 底层AJAX实现的全局函数，比如  $.ajax({ type:"GET", url:"test.js", dataType:"script" }); 等价于 .getScript("test.js")
+*        cache -- 是否缓存(true/false)，当POST时默认不缓存
+*        data -- 传递的参数，如？ $("#form1").serialize() 或 a=1&b=2&c=3
+*        dataType -- json/jsonp( 这是什么? 6\asp\6\demo6-ajax\demo3.html 中使用 )/script/xml 等
+*        error -- 出错时的回调函数, function(value){xxx}，
+*        success -- 正确执行后的回调函数, function(value){xxx}，注意：回调函数的参数可能根据 dataType 不同而不同(见 .getJSON 和 .getScript 的回调函数)
+*        timeout -- 超时，如 1000 表示1秒
+*        type -- GET/POST 等
+*        url  -- 目标URL,如 "test.asp" 等,
+*     $.each(数组, function(index, 数组项) { 处理逻辑 }) -- 遍历数组进行处理
+*     $.get("URL", { 参数键值对 }, 回调函数 ,返回类型 ) -- 全局的获取函数
+*        参数键值对 -- 键值不需要使用引号，如 username : $("#username").val()，会采用 ?name1=value1&name2=value2 的方式提交给服务器
+*        回调函数格式 -- function (data, statusText) { xxx }, 
+*        返回类型 -- 可选，如 "xml","json" 等，如不写则是字符串。回调中返回的data会根据该类型分别是 XML对象字符串，JSON解析对象，字符串等
+*     $.getJSON(".json地址" [, function(data){ 加载完毕的回调函数 }]) -- data就是已经解析出的JSON对象？
+*     $.getScript(".js地址" [, function(){ 加载完毕的回调函数 }]) -- 全局函数，动态加载并执行 JavsScript 文件?
+*     $.param("键值对参数") -- 将键值对参数转换成字符串格式， 如 $.param({a:1,b:2,c:3}) 返回 "a=1&b=2&c=3"
+*     $.post("URL",{ 参数键值对 }, 回调函数, 返回类型 ) -- 全局的提交函数
+*        回调函数格式 -- function (data, statusText) { xxx } 
+*     $obj.load("URL 参数" [,{参数键值对}] [,回调函数] ) -- 在匹配元素上加载指定URL对应的内容，
+*        GET方式 -- 直接使用 xxx.asp?username=xxx&content=yyy 等的URL形式
+*        POST方式 -- 通过 参数键值对提供
+*        URL参数是怎么回事？比如 $("#resText").load("test.html .para"); 此处表示会加上 para 类型? 
+*        回调函数的格式 -- function (responseText, textStatus, XMLHttpRequest){ xxx }
+*  
 * 事件( .xxx(function([event]) { xxx });
+*     .ajaxStart()/.ajaxStop() -- AJAX开始和结束事件，TODO: 虽然是全局公用的，但必须写在对象身上，即不能写为 $.ajaxStart ，而必须写成类似 $("#loading").ajaxStart
 *     .bind("事件1 [事件2]" [,data] , fun) -- 通用地绑定指定事件, data作为可选参数，作为 event.data 属性值传递给事件对象的额外数据对象
 *     .blur -- 失去焦点时
 *     .change() -- 设置change事件，如 $("select").change(function(){ xxx; })
@@ -258,10 +287,35 @@
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
-* 丰富的插件支持(http://plugins.jquery.com/) -- 通常有全局函数( $.xxxx() 方式? ), 比如 $.cookie
+* 丰富的插件支持(http://plugins.jquery.com/) -- 
 *   Basic XPath -- 可以让用户使用基本的XPath
-*   Cookie -- jquery.cookie.js，方便cookie操作， $.cookie("名字" [,新值 ,{ 附加属性的键值对，如 path: '/', expires: 10 }])
+*   Color -- jquery.color.js
+*   Cookie -- jquery.cookie.js，方便cookie操作， $.cookie("名字" ,新值 ,{ 附加属性的键值对，如 path: '/', expires: 10 });
+*     删除 -- $.cookie("名字", null, { path: '/' });
+*     expires -- 10天 -- 10; 
+*                三天后 -- var date = new Date(); date.getTime() + (3 * 24 * 60 * 60 * 1000); { xxxx, expires: date }
+*   Form -- jquery.form.js， 可以使用 .ajaxForm/.ajaxSubmit/.formSerialize 等方法
+*   jQueryUI -- ui.core.js/ui.sortable.js 等，UI扩展库，可以很容易地支持 拖拽(.sortable({delay:1}))、
+*   LiveQuery -- jquery.livequery.js，可以使用统一的语法绑定 前期晶体生成的元素 和 后期通过脚本生成的元素， 如  $('a').livequery('click', function(){ xxx });
 *   MoreSelectors for jQuery -- 增加更多的选择器，如 .color 匹配颜色, :colIndex 匹配表格中的列, :focus 匹配获取焦点的元素等
+*   Validate -- jquery.validate.js，表单验证插件(能验证 必输入项、邮件、URL、长度等)，可以自定义提示信息，支持多语言等。
+*     加载.js文件后，可在 .ready 中通过 $("#myForm").validate( { JSON 语法的规则、提示信息、回调函数 等 } ) 初始化需要验证的信息，
+*     可通过 $.validator.addMethod( "验证方法名", function(value, element, param) { 验证规则 }, "错误时提示信息");
+* 
+* 编写插件 -- (function($){ XXX })(jQuery);
+*   $.fn.extend( { "函数名" : function(value){实现体; return xxx; } } );  -- 对象的函数，通过 $obj.函数名 调用
+*     -- if (value==undefined){ 读取调用 }else{ 设置调用 }, 注意通常需要返回对象(如 this) 来支持链式操作
+*     -- value = $.extend({ 初始值的键值对 }, value);
+*   $.extend( { "函数名1" : function1{}, "函数名2" : function2{} } ); -- 全局函数，通过 $.函数名 调用
+******************************************************************************************************************************************/
+
+/******************************************************************************************************************************************
+* 解析XML -- $(xmlString) 生成XML解析对象？如 ajax 的以XML返回时 $(responseText), 各方法和选择器类似?
+*   .find("selector") -- 查找指定的节点，使用的语法类似 选择器？ 如 find("comment content").text() 可查找 <comment><content>someValue</content></comment>
+*
+* 解析JSON -- ajax 的 .get()以JSON返回时就是 JSON 解析对象？ 直接使用 data.varName 即可访问？
+*   
+* 
 ******************************************************************************************************************************************/
 
 $(document).ready(function() {
@@ -279,6 +333,17 @@ module("JQueryTester", {
     }
 });
 
-test("TODO: JQuery", function() {
-    equal(1, 1, "TODO:");
+test("JQuery", function() {
+    var comments =
+    [
+        { "username": "张三", "content": "沙发.", "score": 80 },
+        { "username": "李四", "content": "板凳.", "score": 70 },
+        { "username": "王五", "content": "地板.", "score": 90 }
+    ];
+    var totalScore = 0;
+    $.each(comments, function(index, comment) {
+        totalScore += comment.score;
+    });
+    equal( totalScore, 240, ".each 遍历");
 });
+
