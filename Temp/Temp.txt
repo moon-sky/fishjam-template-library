@@ -1,3 +1,8 @@
+JSON格式说明：
+  1.普通文本，2.子元素{ xxx }, 3.数组 [xx1, xx2]
+
+JavaScript 中全局变量： localStorage？
+
 EmEditor 13 注册码 -- 用户名似乎随便
   C3EZE-J5AQK-UE2QE-MEC6Z-GR2VQ
   CHAZX-3UERQ-B8Q9R-SU7VQ-BDYHA

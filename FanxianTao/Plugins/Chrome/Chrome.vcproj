@@ -166,39 +166,95 @@
 	</References>
 	<Files>
 		<Filter
-			Name="asserts"
+			Name="assets"
 			>
 			<Filter
 				Name="icons"
 				>
 				<File
-					RelativePath=".\asserts\icons\logo-128.png"
+					RelativePath=".\assets\icons\logo-128.png"
 					>
 				</File>
 				<File
-					RelativePath=".\asserts\icons\logo-16.png"
+					RelativePath=".\assets\icons\logo-16.png"
 					>
 				</File>
 				<File
-					RelativePath=".\asserts\icons\logo-24.png"
+					RelativePath=".\assets\icons\logo-24.png"
 					>
 				</File>
 				<File
-					RelativePath=".\asserts\icons\logo-32.png"
+					RelativePath=".\assets\icons\logo-32.png"
 					>
 				</File>
 				<File
-					RelativePath=".\asserts\icons\logo-48.png"
+					RelativePath=".\assets\icons\logo-48.png"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="js"
+				>
+				<File
+					RelativePath=".\assets\js\background.js"
+					>
+				</File>
+				<File
+					RelativePath=".\assets\js\contentscript.js"
+					>
+				</File>
+				<File
+					RelativePath=".\assets\js\options.js"
+					>
+				</File>
+				<File
+					RelativePath=".\assets\js\popup.js"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="views"
+				>
+				<File
+					RelativePath=".\assets\views\background.html"
+					>
+				</File>
+				<File
+					RelativePath=".\assets\views\blank.html"
+					>
+				</File>
+				<File
+					RelativePath=".\assets\views\options.html"
+					>
+				</File>
+				<File
+					RelativePath=".\assets\views\popup.html"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="img"
+				>
+			</Filter>
+			<Filter
+				Name="css"
+				>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="_locales"
+			>
+			<Filter
+				Name="zh_CN"
+				>
+				<File
+					RelativePath=".\_locales\zh_CN\messages.json"
 					>
 				</File>
 			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\manifest.json"
-			>
-		</File>
-		<File
-			RelativePath=".\popup.html"
 			>
 		</File>
 	</Files>

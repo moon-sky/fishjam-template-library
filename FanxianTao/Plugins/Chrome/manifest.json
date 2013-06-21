@@ -1,16 +1,51 @@
 ﻿{
     "manifest_version": 2,
-    "name": "Fanxian Chrome Plugin",
+    "name": "FanxianTao Chrome Extension",
     "version": "1.0",
-    "description": "Fanxian Chrome Plugin",
-    "browser_action": {
-        "default_icon": "assets/icons/logo-128.png",
-        "popup": "popup.html"
-    },
+    "incognito": "split",
     "default_locale": "zh_CN",
+
     "icons": {
-      "128": "assets/icons/logo-128.png",
       "16": "assets/icons/logo-16.png",
-      "48": "assets/icons/logo-48.png"
-    }
+      "48": "assets/icons/logo-48.png",
+      "128": "assets/icons/logo-128.png"
+    },
+
+    "description": "返现淘的Chrome扩展",
+    "browser_action": {
+        "default_icon": "assets/icons/logo-24.png",
+        "default_popup": "assets/views/popup.html",
+        "default_title": "启用返现淘插件"
+    },
+    
+    "background": {
+      "page": "assets/views/background.html"
+      //"scripts": [ "assets/js/jquery.js", "assets/js/background.js" ]
+      //"matches": [ "http://*/*", "https://*/*" ], 
+      //"css": [ "plug_style.css" ]
+    },
+    
+    //"background_page" : assets/views/background.html
+    
+    "content_scripts": [ {  
+      "js": [ "assets/js/jquery.js", "assets/js/contentscript.js" ],  
+      "matches": [ "http://*/*", "https://*/*" ],  
+      "css": [ "assets/css/content_style.css" ], 
+      "run_at": "document_idle"  
+    }],
+      
+    "options_page": "assets/views/options.html",
+    
+    "permissions": [
+        "tabs", 
+        "notifications",
+        "http://*/*",
+        "https://*/*"
+    ],
+    
+    //"chrome_url_overrides" : {
+	//	"newtab" : "assets/views/blank.html"
+    //},
+    
+    "homepage_url": "http://www.fishjam.com"
 }

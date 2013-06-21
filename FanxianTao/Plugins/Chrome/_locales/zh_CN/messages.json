@@ -1,0 +1,20 @@
+﻿{
+   "extDescription": {
+      "description": "extension description",
+      "message": "自动显示天猫、京东、苏宁等的价格"
+   },
+   "extName": {
+      "description": "extension name",
+      "message": "返现淘"
+   },
+   "extTitle": {
+      "description": "extension popup title",
+      "message": "返现淘"
+   },
+   "extSubmit":{
+		"message" : "提交"
+   },
+   "extReset":{
+		"message" : "重置"
+   }
+}

@@ -4,6 +4,7 @@
 *     等价于: if(hasSelected){ $(this).removeClass('selected');} else { $(this).addClass('selected'); }
 *   2.jQuery做动画效果时要求在标准模式下，否则可能引起动画抖动(即  -//W3C//DTD XHTML 1.0 Transitional )
 *   3.有的时候选择器为什么要加上 ",this" ? 比如 《锋利的jQuery中》P152,5.1.4下拉框应用中， $var options=$("option:selected",this); //获取选中的选项
+*   4.parseJSON 将JSON字符串解析成JS对象 -- 有这个函数吗?
 *
 * 可以在线测试各种数据的地址(照片分享网站) -- TODO: 淘宝的链接转换?
 *   http://api.flickr.com/services/feeds/photos_public.gne?tags=car&tagmode=any&format=json&jsoncallback=?
@@ -315,6 +316,8 @@
 *   $.fn.extend( { "函数名" : function(value){实现体; return xxx; } } );  -- 对象的函数，通过 $obj.函数名 调用
 *     -- if (value==undefined){ 读取调用 }else{ 设置调用 }, 注意通常需要返回对象(如 this) 来支持链式操作
 *     -- value = $.extend({ 初始值的键值对 }, value);
+*   $.fn.toDisable = function(){ xxx } -- 什么意思? 
+*   $.fn.toRestore = function(){ xxx } -- 
 *   $.extend( { "函数名1" : function1{}, "函数名2" : function2{} } ); -- 全局函数，通过 $.函数名 调用
 ******************************************************************************************************************************************/
 
