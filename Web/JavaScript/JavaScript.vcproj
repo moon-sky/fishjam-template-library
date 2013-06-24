@@ -205,6 +205,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tests\JsStorageTester.js"
+				>
+			</File>
+			<File
 				RelativePath=".\tests\JsThreadTester.js"
 				>
 			</File>

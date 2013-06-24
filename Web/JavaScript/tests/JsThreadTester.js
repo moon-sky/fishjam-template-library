@@ -28,7 +28,7 @@ module("ThreadTester", {
 });
 
 test("setTimeoutTest", function() {
-	ok(1 == 1, "TODO:setTimerOut");
+    ok(1 == 1, "TODO:setTimeOut");
 });
 
 //google Gears 插件中提供的JavaScript线程池功能

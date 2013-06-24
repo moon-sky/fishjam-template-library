@@ -542,15 +542,19 @@ test("作用域", function() {
     equal(g_varInSomeFun, 10, "定义在函数内部的全局变量，需要调用函数后才会生效");
 });
 
-/*
 function delayCheckString(msg, time) {
 	setTimeout(function() {
 		//alert(msg == "some info");   //这个alert会在一秒以后弹出 "true"
 		equal(msg, "some info", "通过闭包特性，函数能访问已经结束的函数中的变量");
 	}, time);
 }
+
+/***********************************************************************************************************
+* 闭包:
+***********************************************************************************************************/
+
 test("闭包", function() {
-	delayCheckString("some info", 1000);
-	equal(1,1,"闭包测试");
+	//delayCheckString("some info", 1000);
+    equal(1, 1, "闭包测试");
+	
 });
-//*/
