@@ -78,9 +78,9 @@
 *     * -- 匹配所有元素 
 *   层次选择器
 *     ancestor descendant -- 选取ancestor元素里的所有descendant元素(包括所有儿孙), 如 $("div span")选取<div>里的所有<span>，注意选择的是 <span>
-*     parent > child -- 选取 parent 元素下的 child 子元素(只包括儿子),如 $("div > span")选取<div>元素下元素名是<span>的子元素
-*     prevSel + nextSel -- 选取紧接在 prevSel 元素后的 nextSel 元素，更常见的用法是 $("prevSel").next("nextSel")
-*     prevSel ~ siblings -- 选取 prevSel 元素之后的所有 siblings 元素，更常见的用法是 $("prevSel").nextAll("siblings)
+*     parent>child -- 选取 parent 元素下的 child 子元素(只包括儿子),如 $("div > span")选取<div>元素下元素名是<span>的子元素
+*     prevSel+nextSel -- 选取紧接在 prevSel 元素后的 nextSel 元素，更常见的用法是 $("prevSel").next("nextSel")
+*     prevSel~siblings -- 选取 prevSel 元素之后的所有 siblings 元素，更常见的用法是 $("prevSel").nextAll("siblings)
 *  过滤选择器 -- 通过特定的过滤规则来筛选
 *     :first -- 选取第一个元素，如 $("div:first")选取第一个<div>元素
 *     :last -- 选取最后一个元素
@@ -147,10 +147,13 @@
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
-* $(html) -- 工厂函数, 
+* $(html [,context]) -- 工厂函数,如果没有指定context参数，将在当前的HTML文档中查找DOM元素,如果指定了context，那就会在这个context中查找。
 *    如果内容是已有的dom变量，则转换成jQuery变量[ 如 $(document) ]; 
 *    否则根据html标记字符串(注意需要是闭合的XHTML格式)创建DOM对象，并封装成jQuery对象返回[ 如 $parent.append($("<li>新列表项</li>")) ]; 
 *    如果在 函数里直接写 "xxx" 等价于 $("xxxx")?
+*
+* 实用全局函数和属性
+*   $.support -- 返回浏览器对各种特性的支持键值对，如 $.support.ajax 判断是否支持 Ajax
 *   
 * 函数(TODO:分类别来写) -- 注意：jQuery中很多功能使用相同的名字实现 getter/setter
 *   控制元素 -- 注意：如果操作的元素是已有的，则通常是移动操作，如 $parent.append("$obj") 时$obj是已有的元素，则会从原来的位置移动到 $parent下
@@ -166,15 +169,22 @@
 *     .remove(Selector) -- 从本对象中移除指定条件的子对象
 *     .replaceWith($obj) -- 使用指定元素替换匹配元素
 *     .replaceAll(Selector) --使用匹配元素替换所有指定元素?
-*   遍历节点 (注意：各个函数都可以使用jQuery表达式作为参数来筛选元素)
+*   筛选节点 (注意：各个函数都可以使用jQuery表达式作为参数来筛选元素)
 *     .closest() -- 取得最近的匹配元素，首先检查当前元素是否匹配，如匹配直接返回元素本身，如不匹配则逐级向上查找父元素，直到找到匹配的或空jQuery对象
 *       如 给点击的目标最近的 li 元素添加颜色: $(document).bind("click", function(e){ $(e.target).closest("li").css("color", "red"); })
 *     .children() -- 取得匹配元素的子元素集合(不考虑后代元素)
+*     .contents() -- 查找匹配元素内部所有的子孙节点(包括文本节点)
+*     .eq(index) -- 从匹配元素集中取得指定位置的元素，index从0开始
 *     .filter() -- 按照指定条件过滤，如 input.keyup 中根据用户的输入进行过滤显示 .filter(":contains('"+( $(this).val() )+"')").show();
 *     .find() -- 在匹配元素中查找指定(子？)元素,如 .find("tr")
+*     .is(expr) -- 用一个表达式来检查当前选择的元素集合，如至少有一个元素符合给定的表达式就返回true
+*       .is(".className") -- 判断是否含有某个式样类
+*       .is(":属性") -- 如 :checked(是否被选中), :visible(是否可见), :animated(是否处于动画)
+*       .is("#id") -- 判断是否是指定元素
+*     .map(callback) -- 将jQuery对象中的一组元素利用callback方法转换其值，然后添加到一个jQuery数组中
 *     .next()/.prev() -- 取得匹配元素 后面/前面 紧邻的同辈元素
-*     .parent() -- ? 得到直接父元素
-*     .parents() -- ? 递归在各级父元素中查找指定元素
+*     .parent() -- ? 取得一个包含所有匹配元素的唯一父元素的元素集合(即得到直接父元素?)
+*     .parents() -- ? 递归在各级父元素中查找指定元素(祖先元素)
 *     .siblings() -- 取得匹配元素前后满足条件的所有同辈元素(不包括自身)
 *     其他的: .nextAll, .prevAll,
 *   属性样式控制
@@ -184,9 +194,12 @@
 *     .css("属性" [,"新的值"]) -- 读写对应的css属性值, 如 .css("font-color", "red") 
 *        注意：无论对应的属性是外部CSS导入、还是内联，或动态设置的？都能获取到最终的结果
 *        常见属性(部分和标准CSS不一样): backgroundColor, color, fontSize/font-size(文字大小), opacity(透明度0~1)
+*     .data(name [,value]) -- 读写元素上存储的响应名字的数据
 *     .hasClass("className") -- 判断是否有指定的class属性,增强代码可读性而产生的,等价于 .is(".className")
 *     .height([xx])/width([x]) -- 读写以px为单位的实际高度和宽度(如果用 .css("height") 得到的可能是"auto"等)
+*     .innerHeight/innerWidth -- 内部高度/宽度(不包括border，但包括padding)
 *     .offset() -- 读写在当前视窗的相对偏移，返回的对象包含 top 和 left 两个属性
+*     .outerHeight/outerWidth -- 外部高度/宽度(包括border和padding)
 *     .position() -- 获取元素相对于最近的一个position样式属性设置为 relative 或者 absolute 的祖父节点的相对偏移，返回的对象包含 top 和 left 两个属性
 *     .removeAttr(["属性"]) -- 移除特定的属性，如 removeAttr("style")表示清除其所有的CSS属性, 如 "属性"为空，则去除所有的属性?
 *     .removeClass(["className1 className2"]) -- 去除指定的class属性，如果 className 为空，则去除所有的class属性
@@ -216,49 +229,65 @@
 *       2.多个动画函数可以链式操作形成动画队列，依次执行
 *       3.stop时只能设置正在执行的动画最终状态，而没有提供直接到达未执行动画队列最终状态的方法
 *       4.TODO:使用动画函数来制作动画性能不高 -- HTML5中使用Canvas绘制更好?
+*   串联函数
+*     .andSelf() -- 将前一个匹配的元素集合添加到当前的集合中
+*     .end() -- 结束最近的“破坏性”操作，将匹配的元素集合恢复到前一个状态，即重新定位到上次操作的元素?
+*
+*   数组和对象函数
+*     .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
+*     .grep(array, callback, invert) -- 使用过滤函数过滤数组内容
+*     .inArray(value, array) -- 返回value在数组中的位置，如果没有找到，则返回 -1
+*     .isArray(obj) -- 判断是否是数组
+*     .isFunction(obj) -- 判断是否为函数
+*     .makeArray(obj) -- 将一个类似数组的对象转化成数组
+*     .merge(first, second) -- 合并两个数组并返回
+*     .unique(array) -- 删除元素数组中的重复元素(不能用于普通数组?)
 *   其他函数
 *     ?.children(selector) -- 通过指定的选择器选择所有满足条件的子元素?
-*     .each(function (){ xxx }) -- 对选择出来的每一个元素执行指定事件
-*     .end() -- 重新定位到上次操作的元素?
 *     .expr() -- ?
-*     ? $.extend( {键值对}, 变量 ) -- 扩展变量的值，可用在编写插件时设置缺省值？
 *     .filter(Selector) -- 根据指定条件过滤出满足需求的子元素集合, 如 $obj.filter(":contains('佳能'),:contains('尼康')")
 *     .get(index) 或 [index] -- 选取jQuery对象数组中指定的元素，注意：返回值是DOM对象
 *     .index(domObj) -- 获取指定 dom 对象在匹配元素中的索引值整数，如 var index= $objs.index(this) -- 获取当前激发事件的元素在全部匹配元素中的索引
-*     .is(xxx) -- 判断???
-*       .is(".className") -- 判断是否含有某个式样类
-*       .is(":属性") -- 如 :checked(是否被选中), :visible(是否可见), :animated(是否处于动画)
-*       .is("#id") -- 判断是否是指定元素
-*     .next("xx)
+*     .next("xx")
 *     .nextAll("xxx") -- 选取匹配元素 后面的 同辈"xxx"元素
-*     .siblings("xxx") -- 选取匹配元素同辈的"xxx"元素
 *     .serialize() -- 表单对象序列化，通常作用于 表单form 或 input元素 上，可以将用户输入序列化成 GET 的参数字符串(会自动调用 encodeURIComponent()编码 )
 *        如: $.get("get1.asp", $("#form1").serialize(), function ... );
 *     .serializeArray() -- 表单对象序列化成JSON格式的数据并返回，然后可以通过 $.each 进行迭代处理
+*     .siblings("xxx") -- 选取匹配元素同辈的"xxx"元素
 *     .toggle([时间] [,回调]) -- 切换元素的可见状态，注意和 toggle合成事件 的区别
 *     .trigger("eventName", [ 参数数组 ] ) -- 模拟激发指定事件，如 $("#isreset").trigger('click')激发 onclick事件, 也可用 .click()代替，并继续执行浏览器的缺省操作
 *        注意：可以激发自定义的事件(自定义事件也只能这样激发？)
 *     .triggerHandler("eventName") -- 模拟激发指定事件(但不继续执行浏览器的缺省操作，如激发 $inputObj.triggerHandler("focus") 会激发事件，
 *        但不会将焦点设置到 $inputObj 上)；或者 在 .blur 里面验证输入时，可以在.focus和.keyup 中triggerHandler("blur")来激发实时验证
-*
+*     $.extend(target, {新键值对} ) -- 扩展target的值，如果新的键值对有新的值会用新的，否则用target里的旧键值对，通常可用在编写插件时设置缺省值
+*       如: function foo(options) { options = jQuery.extend({name:"test", length: 5 }, options); //前面是默认参数， options 是传递的参数
+* 
 *   Ajax封装函数(以 $. 开始的是全局函数， 以 $obj. 开始是指定对象上的函数 )
 *     $.ajax( { 各个参数的键值对 } ) -- 底层AJAX实现的全局函数，比如  $.ajax({ type:"GET", url:"test.js", dataType:"script" }); 
 *       等价于 .getScript("test.js")
 *         属性
-*          cache -- 是否缓存(true/false)，当POST时默认不缓存
-*          data -- 发送到服务器的键值对数据或字符串，如？ $("#form1").serialize() 或 a=1&b=2&c=3
-*          dataType -- 预期服务器返回的数据类型，如 html/json/jsonp/script/xml/text 等
-*          global -- 布尔值，表示是否触发Ajax事件，默认为true。
+*          async -- 是否是异步请求，默认为true
+*          cache -- 是否缓存，默认为true， 但type为POST或dataType为script时默认为false
+*          contentType -- 当发送信息至服务器时的内容编码类型，默认为"application/x-www-form-urlencoded"
+*          data -- 发送到服务器的键值对数据或数组、字符串等，如：$("#form1").serialize() 或 a=1&b=2&c=3
+*          dataType -- 预期服务器返回的数据类型，如 html/json/jsonp/script/xml/text 等，若不指定则自动根据HTTP包的MIME信息返回xml或text等
+*          global -- 布尔值，表示是否触发全局Ajax事件( $.ajaxStart/$.ajaxStop 等)，默认为true。
+*          jsonp -- 在一个jsonp请求中重写回调函数的名字，用来替代在 "callback=?" 这种请求中的"callback"部分。如 {jsonp:'onJsonPLoad'}会传递"onJsonPLoad=?"给服务器
+*          processData -- 控制是否将发送的数据转换为对象以配合默认的 contentType("application/x-www-form-urlencoded"),默认为true
 *          timeout -- 超时时间(毫秒),将覆盖 $.ajaxSetup 方法的全局设置
-*          type -- GET/POST 等
-*          url  -- 目标URL,如 "test.asp" 等,
-*        事件回调
-*          beforeSend -- 提交前的回调函数, function(xmlHttpRequest){ }
+*          type -- GET/POST 等，在远程请求时(不在同一个域下)，所有对 script 的POST请求都会转为GET请求
+*          url  -- 目标URL,如 "test.asp" 等
+*          username/password -- 用于响应HTTP访问认证请求的用户名和密码
+*        事件回调 -- TODO:回调函数中的this是指本次请求时传递的options参数？
+*          beforeSend -- 提交前的回调函数,如返回false会取消本次请求， function(xmlHttpRequest){ }
 *          complete -- 不论请求是否成功，只要请求完成都会调用的回调函数,function(xmlHttpRequest, textStatus){ }
-*          error -- 请求失败时的回调函数, function(value){xxx}，
+*          dataFilter -- 返回的原始数据预处理函数， function(data, dataType) { return 过滤过的data; }
+*          error -- 请求失败时的回调函数, function(xmlHttpRequest, textStatus, errorThrown){ }，
 *          success -- 请求成功后的回调函数, function(data, textStatus){xxx}，注意：回调函数的参数可能根据 dataType 不同而不同(见 .getJSON 和 .getScript 的回调函数)
+*     $.ajaxSetup(options) -- 设置全局Ajax选项
 *     $.each(数组, function(index, 内容) { 处理逻辑 }) -- 遍历数组(如 匹配结果、XML、JSON元素)进行处理
-*     $.get("URL", { 参数键值对 }, 成功时的回调函数 ,返回类型 ) -- 使用GET的全局获取函数
+*     $.get("URL", { 参数键值对 }, 成功时的回调函数 ,返回类型 ) -- 使用GET的全局获取函数，可通过在URL后 "+(+new Data)" 的方式来禁用缓存。
+*          注：（+new Date) 等价于 new Date().getTime() 
 *        参数键值对 -- 键值不需要使用引号，如 username : $("#username").val()，会采用 ?name1=value1&name2=value2 的方式提交给服务器
 *        回调函数格式 -- function (data, statusText) { xxx }, 
 *        返回类型 -- 可选，如 "_default","html","json","script","text","xml" 等，如不写则是字符串。
@@ -266,7 +295,7 @@
 *     $.getJSON(".json地址" [, function(data){ 成功加载完毕的回调函数 }]) -- data就是已经解析出的JSON对象？
 *     $.getScript(".js地址" [, function(){ 成功加载完毕后的回调函数 }]) -- 全局函数，动态加载并执行 JavsScript 文件
 *     $.param("键值对参数") -- 将键值对参数序列化成字符串格式， 如 $.param({a:1,b:2,c:3}) 返回 "a=1&b=2&c=3"
-*     $.post("URL",{ 参数键值对 }, 成功时的回调函数, 返回类型 ) -- 全局POST的全局提交函数，基本同 $.get
+*     $.post("URL",{ 参数键值对 }, 成功时的回调函数, 返回类型 ) -- 全局POST的全局提交函数，基本同 $.get，但post默认时会禁用缓存。
 *        回调函数格式 -- function (data, statusText) { xxx } 
 *     $obj.load("URL[ selector]" [,{参数键值对}] [,回调函数] ) -- 在匹配元素上加载指定URL对应的内容，没有参数时采用GET方式，有参数时使用POST方式
 *        GET方式 -- 直接使用 xxx.asp?username=xxx&content=yyy 等的URL形式
@@ -282,7 +311,7 @@
 *     .blur -- 失去焦点时
 *     .change() -- 设置change事件，如 $("select").change(function(){ xxx; })
 *     .click -- 设置click事件
-*     .error
+*     .error -- 
 *     .focus -- 获得焦点时
 *     .keyXxx -- 键盘事件: .keydown/.keypress/.keyup
 *     .load -- 等价于 onload
@@ -319,6 +348,7 @@
 *     交互(ui.sortable.js 等) -- 与鼠标交互相关的内容，可以很容易地支持 拖拽(.sortable({delay:1}))、缩放、选择、排序等;
 *     Widget(ui.core.js 等) -- 一些界面的扩展，如 自动完成(Autocomplete),取色器(Colorpicker),对话框(Dialog),滑块(Slider),放大镜(Magnifier) 等;
 *     效果库(effects.core.js) -- 提供丰富的动画效果，不再局限于 animate 方法,
+*   jQZoom -- jquery.jqzoom.js, 放大缩小图片(可用于商品的放大镜效果)
 *   LiveQuery -- jquery.livequery.js，可以使用统一的语法绑定 前期静态生成的元素 和 后期通过脚本动态生成的元素，如  $('a').livequery('click', function(){ xxx });
 *   Metadata -- jquery.metadata.js，支持固定格式解析，可用于Validation中编写验证规则
 *   MoreSelectors for jQuery -- 增加更多的选择器，如 .color 匹配颜色, :colIndex 匹配表格中的列, :focus 匹配获取焦点的元素等
@@ -329,26 +359,38 @@
 * 编写插件 -- 给已有的一系列方法或函数做一个封装，以便在其他地方重复使用。插件文件名推荐为 "jquery.xxx.js"
 *   主要有三种类型：
 *     1.封装对象方法的插件，常用语对通过选择器获取的jQuery对象进行操作(如 .parent,.color 等)
-*     2.封装全局函数的插件(jQuery中的全局函数)，如 解决冲突的 jQuery.noConflict(), jQuery.ajax 等
+*     2.封装全局函数的插件(jQuery中的全局函数)，如 解决冲突的 jQuery.noConflict(), jQuery.ajax, jQuery.trim 等
 *     3.选择器插件
 *   要点：
 *     1.所有的对象方法都应该附加到 jQuery.fn 对象上，所有的全局函数都应该附加到 jQuery 对象本身上;
-*     2.在插件内部，this指向的是当前通过选择器获取的jQuery对象，而不像一般方法中指向的DOM元素；
-*     3.可通过 this.each 来遍历所有元素
+*     2.在插件内部，this 指向的是当前通过选择器获取的jQuery对象，而不像一般方法中指向的DOM元素；
+*       selector 返回选择此元素的选择器; context 返回选择此元素时所在的DOM节点内容
+*     3.可通过 this.each 来遍历选择符匹配的多个元素
 *     4.所有的方法或函数插件，都应当以分号结尾，否则压缩的时候可能出现问题。为了稳妥，甚至可以在插件头部先加一个分号，以免其他不规范的插件影响。
 *     5.通常情况下，插件应该返回一个jQuery对象(比如this),以保证插件的链式操作
-*  常见的插件写法（利用闭包特性使用 $作为jQuery的别名，避免污染全局空间）：(function($){ XXX })(jQuery);
-*  两种扩展方法：
-*     1.$.fn.extend( { "函数名" : function(value){实现体; return xxx; } } );  -- 对象的函数，通过 $obj.函数名 调用
+*   常见的插件写法（利用闭包特性使用 $作为jQuery的别名，避免污染全局空间）：(function($){ 插件扩展代码 })(jQuery);
+*     两种扩展方法：
+*     1.$.fn.extend({           //扩展jQuery元素，提供对象的新的函数，通过 $obj.函数名 调用
+*         "函数名1":function(options){ options = $.extend({"默认参数"},options); 实现体; return this; }, //推荐的参数方式
+*         "函数名2":function(value1,valuen){ 实现体2; } 
+*       });
 *       -- if (value==undefined){ 读取调用 }else{ 设置调用 }, 注意通常需要返回对象(如 this) 来支持链式操作
-*       -- value = $.extend({ 初始值的键值对 }, value);
 *       $.fn.toDisable = function(){ xxx } -- 什么意思? 
 *       $.fn.toRestore = function(){ xxx } -- 
-*     2. $.extend( { "函数名1" : function1{}, "函数名2" : function2{} } ); -- 全局函数，通过 $.函数名 调用
+*     2.$.extend({              //在jQuery命名空间内添加一个全局函数，通过 $.函数名 调用
+*         "函数名1":function(){ },
+*         "函数名2":function(){ }
+*       });
+*       除了可以用与扩展 jQuery 对象外，还有一个很强大的功能，就是用于扩展已有的Object对象: jQuery.extend(target, obj1, obj2...)
+*  自定义选择器(制作选择器插件 ) -- jQuery的选择符解析器首先先使用一组正则表达式来解析选择器，然后针对解析出的每个选择符执行一个函数(选择器函数)，
+*    根据该函数的返回值(true或false)来决定是否保留这个元素。
+*    注意：现在的jQuery版本实现和《锋利的jQuery》一书中的实现已经不同了，可仿照 如 $.gt 实现 $.between(n,m)
+*          $.extend(jQuery.expr[":"], { between : function(a,i,m) { xxxx; } });
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
-* 解析XML -- $(xmlString) 生成XML解析对象？如 ajax 的以XML返回时 $(responseText), 各方法和选择器类似?
+* 解析XML -- 解析XML文档与解析DOM一样，也可用 find, children, 等来解析和用 each 来遍历， text/attr 等来获取文本和属性。
+*    $(xmlString) 生成XML解析对象。如 ajax 的以XML返回时 $(responseText), 各方法和选择器类似?
 *   .find("selector") -- 查找指定的节点，使用的语法类似 选择器？ 如 find("comment content").text() 可查找 <comment><content>someValue</content></comment>
 *
 * 解析JSON -- ajax 的 .get()以JSON返回时就是 JSON 解析对象？ 直接使用 data.varName 即可访问？
@@ -382,6 +424,9 @@ test("JQuery", function() {
     $.each(comments, function(index, comment) {
         totalScore += comment.score;
     });
-    equal( totalScore, 240, ".each 遍历");
+    equal(totalScore, 240, ".each 遍历");
+
+    console.log("support information is: %o", jQuery.support);
+    equal($.support.ajax, true, "检测浏览器对ajax的支持");
 });
 

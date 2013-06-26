@@ -7,9 +7,14 @@
 
 /***************************************************************************************************************
 * Chrome -- 基于Webkit的新一代浏览器
-*   
+* 隐身模式 -- 保证在该窗口下浏览不会留下痕迹，缺省情况下，扩展是不会运行在该模式下的
+*
+***************************************************************************************************************/
+
+/***************************************************************************************************************
+* 
 * 官方扩展文档：http://code.google.com/chrome/extensions/dev/devguide.html 
-* 360翻译的文档：http://open.chrome.360.cn/html/dev_doc.html 
+* 360翻译的文档：http://open.chrome.360.cn/html/dev_doc.html
 *                http://open.chrome.360.cn/extension_dev/overview.html
 * 开发IDE： Notepad++
 * 
@@ -28,7 +33,8 @@
 * 
 * browser action
 * page action -- 当扩展的图标是否显示出来是取决于单个的页面时
-* Content Script -- 内容脚本，插件和网页交互，通常由JS编写，会在网页载入完成后调用，可看作网页的一部分
+* Content Script -- 内容脚本，插件和网页交互，通常由JS编写，会在网页载入完成后调用，可看作网页的一部分(而非扩展的一部分)，
+*   有一些限制(如不能直接访问扩展中定义的变量)，可通过message机制解决。
 * 
 * 调试
 *   打开插件页(chrome://settings/extensions) -> 勾选"开发者模式" -> 载入插件并定位到文件夹
@@ -94,17 +100,19 @@ popup.html --
 ***************************************************************************************************************/
 
 /***************************************************************************************************************
-扩展API(chrome), 通常需要在 mainfest.json 中设置对应的权限(permissions)
+扩展API(chrome.), 通常需要在 mainfest.json 中设置对应的权限(permissions)
   bookmarks -- BookmarkTreeNode(节点，书签或文件夹)
   extension
     .onMessage -- 事件, addListener(function (request, sender, sendResponse){ });
-    .getURL('manifest.json') -- 
-    .sendMessage({json param}, function(response){ }); -- 发送消息，然后可在 onMessage 的处理时间中处理
+    .getURL('manifest.json') -- 返回指定的URL
+    .sendMessage({json param}, function(response){ }); -- 发送消息，然后可在 onMessage 的处理事件中处理
 
+  tab
+    .url -- 
   tabs
     .create({url: "www.baidu.com"}) -- 打开URL页面
 	.executeScript(null, {code:"document.body.style.backgroundColor='red'"});
-    .getSelected(null, function(tab){ xxx });
+    .getSelected(null, function(tab){ tab.url; }); -- 获取当前激活的页面?
 
 BrowserPage 相关的函数(怎么调用?)
   setIcon,setTitle,setBadgeText(图标标记，如未读邮件数),setBadgeBackgroundColor,setPopup

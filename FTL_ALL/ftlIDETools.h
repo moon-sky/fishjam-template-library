@@ -544,7 +544,7 @@ namespace FTL
 	*     JAVA_OPTS="$JAVA_OPTS -server -Xms256m -Xmx2048m -XX:PermSize=600m -XX:MaxPermSize=2048m -Dcom.sun.management.jmxremote"
 	*     JAVA_OPTS="$JAVA_OPTS -DHUDSON_HOME=C:\hudson\workspace -Xmx2048m"
 	*     CATALINA_OPTS="-DHUDSON_HOME=C:\hudson\workspace -Xmx2048m"
-    *   3.http://hudson-ci.org/downloads/war/  <== 在 1.395版本以后分为 hudson 和 JeXXXX ? 两个分支，目前最新的是 1.395.1
+    *   3.http://hudson-ci.org/downloads/war/  <== 在 1.395版本以后分为 hudson 和 JeXXXX(http://jenkins-ci.org/) ? 两个分支，目前最新的是 1.395.1
     *     将 hudson.war 放在 TOMCAT 的 webapps 目录中，也可解压成 hudson 子目录
     *     设置 HUDSON_HOME 变量到指定的工作目录(放置下载的源码进行编译)，默认为 CSIDL_APPDATA
     *   4.下载解压 apache-maven ? ， 设置 MAVEN_HOME 

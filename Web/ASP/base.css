@@ -1,0 +1,16 @@
+*
+{
+    /*可以让页面不受到不同浏览器默认设置的页边距和字边距的影响，虽然方便，但元素多的话有性能问题--YUI Reset CSS */
+    margin: 0;
+    padding: 0;
+}
+
+body
+{
+    color: #FF00FF;
+}
+
+html
+{
+    overflow:-moz-scrollbars-vertical;  /*在Firefox浏览器下始终显示滚动条，在不同浏览器下的显示效果一致*/
+}

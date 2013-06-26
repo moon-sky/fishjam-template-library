@@ -1,6 +1,5 @@
-﻿body {
-    color: #FF00FF;
-}
+﻿@import url("base.css")
+
 area
 {
     font-family: Arial, Helvetica, sans-serif;

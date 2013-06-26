@@ -16,13 +16,14 @@
 /***************************************************************************************************************************
 * XMLHttpRequest -- 核心对象，发送异步请求、接收响应、执行回调
 *   属性
-*     readyState -- 状态整数。0(尚未初始化),1(已调用open准备发送),2(已调用send发送),3(正在接收),4(完成响应)
+*     readyState -- 状态整数。0(尚未初始化),1(已调用open准备发送),2(已调用send发送),3(正在接收),4(完成响应，此时才可以处理responseText等信息)
 *     response -- 字符串
-*     responseText -- 客户端接收到的HTTP响应的文本内容
+*     responseText -- 客户端接收到的HTTP响应的文本内容，当readyState为4时才有意义
 *     responseType
 *     responseXML -- MIME 类型被指定为 text/xml或application/xml时，XML格式的响应
 *     status -- 描述HTTP状态码(如 200 表示成功)，只有当 readyState 为3或4 时才能访问，否则会引发异常
 *     statusText -- HTTP状态码文本(success, error,notmodified,timeout)
+*     withCredentials -- 是否发送验证信息，通常用于跨域访问时(设置为 true) -- 会发送cookie过去?
 *   回调事件
 *     onabort
 *     onerror
@@ -33,8 +34,10 @@
 *     getAllResponseHeaders() -- 获取所有的HttpResponse的头部信息
 *     getResponseHeader() -- 检索响应的头部值，仅当 readyState 为 3或4 时才可调用
 *     open(METHOD, uri, async, username, passwd) -- 初始化，设置需要打开的 URI 及 METHOD(GET/POST)、是否异步(默认为true) 等
-*     send({包含可变类型的参数数据}) -- 发送数据,GET时使用null作为参数，POST时
-*     setRequestHeader(header, value) -- 设置请求的 Content-Type 头部信息，在open后调用
+*     send({包含可变类型的参数数据}) -- 发送请求,GET时使用null作为参数，POST时使用指定参数发送附加数据
+*     setRequestHeader(header, value) -- 设置请求的 Content-Type 头部信息，在open后调用，如 send(data)中的参数类型为DOMString,
+*       则数据被编码为UTF-8；如数据是Document类型，则由data.XmlEncoding指定的编码串行化该数据
+*       
 ***************************************************************************************************************************/
 
 module("AjaxTester", {
