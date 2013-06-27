@@ -14,11 +14,28 @@ namespace FTL
 {
     /*********************************************************************************************
 	* 符号服务器：
-	*  环境变量：%_NT_SYMBOL_PATH%=SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
+	*   环境变量：%_NT_SYMBOL_PATH%=SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
+	*   问题：VS中可以在调试符号路径中指明 http://msdl.microsoft.com/download/symbols 不？
 	*
 	* 读取Dump信息 -- http://support.microsoft.com/kb/315263
 	* WINDBG分析DMP方法： http://bbs.icafe8.com/forum.php?mod=viewthread&tid=400104&fromuid=30123
+	*
+	* 常见问题：
+	*   1.post mortem debugging -- 调试 dmp 文件时无法设置断点
+	*   1.加载 .dmp 文件调试时，在 Output 中搜索 “.dmp': Loaded '*” 可以查看在客户端加载但在调试机器上没有的文件
+	*     (典型情况是各种版本的 msvcrp* 或 mfc*)，然后需要下载对应文件，否则无法加载调试符号
+	* 无法通过符号服务器下载 mfc90u.pdb
+	*   1.有可能是不同的OS?
+	*
+	* WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)
+	*   1.设置符号路径 SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
+	*   2.打开dmp文件
+	*   3.!sym noisy
+	*   4.!analyze -v
 	* 
+	*********************************************************************************************/
+
+	/*********************************************************************************************
     * SetUnhandledExceptionFilter -- 在发生未处理异常时，由系统调用进行处理
     * Vista系统下可以使用 RegisterApplicationRecoveryCallback 注册恢复回调函数，可以在
     * 未知错误或者超过Windows响应时间(默认5秒)后被系统调用，可以保存用户未保存的数据并恢复（有Windows提供的UI）

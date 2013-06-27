@@ -103,7 +103,7 @@
 *   xml中的信息：<assemblyIdentity type="win32" name="Microsoft.VC90.CRT" version="9.0.21022.8" processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b"></assemblyIdentity>
 *   对应文件为 ：C:\Windows\winsxs\x86_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.21022.8_none_bcb86ed6ac711f91\msvcp90.dll
 *            即：C:\Windows\winsxs\<processorArchitecture>_<name>_<publicKeyToken>_<version>_<???>_<???>\xxx.dll
-*
+* 
 * "Unable to start program" 问题的解决(使用 SxsTrace 工具，只有 Vista/Win7 下有 ?)
 *  1.以管理员账号启动 cmd.exe，并切换到目的程序的目录下
 *  2.SxsTrace Trace -logfile:SxsTrace.etl
@@ -116,9 +116,10 @@
 *         (本机的 WinSXS 中只有 9.0.21022.8 和 9.0.30729.1 的 x86_microsoft.vc90.debugcrt 版本，但清单文件中依赖了 9.0.30729.6161 版本)
 *    原因：所链接的静态库使用了 9.0.30729.6161(可通过 dumpbin /all 并重定向结果后查找 manifestdependency 确认)
 *      
+*   VS90SP1-KB2538241-x86.exe(MFC Security Update) -- http://www.microsoft.com/zh-CN/download/details.aspx?id=26360
 *   vcredist_x86.exe 文件各版本的下载路径
 *      9.0.30729.1(VS2008 SP1) -- http://www.microsoft.com/en-us/download/confirmation.aspx?id=5582
-*      9.0.30729.6161 -- http://www.microsoft.com/en-us/download/details.aspx?id=26368
+*      9.0.30729.6161(KB2538243/MS11-025) --  http://www.microsoft.com/en-us/download/details.aspx?id=26368
 *   
 * Fuslogvw.exe -- Assembly Binding Log Viewer,怎么用？
 * SvcTraceViewer.exe -- 查看系统日志的工具?
