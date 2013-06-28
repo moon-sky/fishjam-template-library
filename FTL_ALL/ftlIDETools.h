@@ -567,7 +567,10 @@ namespace FTL
 	*     Publishing Build -- 生成安装文件(注意应该同时备份相关的PDB)
     *   NHN Project Plugin(Assign NHN Project) -- 这样NHN的Project才能用？
     *     项目名的命名规范?
-    * 
+    *   批处理中可用的系统变量
+	*     %BUILD_NUMBER% -- 当前编译的序号
+	*     %WORKSPACE% -- 当前项目的工作空间，如 C:\jenkins\workspace\jobs\XXXX_I\workspace
+	*
     * 文件路径: ** 表示目录及子目录，如 JUnit 结果文件应该设置为 xx/test_detail.xml 表示搜索当前目录及子目录中的该文件
     * 
     * 常见Plugin(勾选后在最下面选择 Install，会自动下载 *.hpi文件并安装) -- http://wiki.hudson-ci.org/display/HUDSON/Plugins
@@ -619,11 +622,15 @@ namespace FTL
     *     实现机制有两种：1.插入二进制(GCov); 2.插入源码再进行编译(BullsEye Coverage)
     *     1.GCov(Linux) -- 编译链接选项中加入: -fprofie-arcs -ftest-coverage -lgcov
     *       用Cobertura采集结果，编译命令行中需要用 gcovr -r src --xml > coverage.xml 生成其需要的文件
-    *     2.Bullseye Coverage(Win/Linux) -- 要设置 COVBUILDZONE=${WORKSPACE}; COVFILE=${WORKSPACE}/test.gov,
+    *     2.Bullseye Coverage(Win/Linux), BullseyeCoverage-8.4.2-Windows.exe的安装License : 0z6RNW3dGR0x0lVSwC0JzlmD4dE3Q4116NMw
+	*       要设置 COVBUILDZONE=${WORKSPACE}; COVFILE=${WORKSPACE}/test.gov,
     *       VS2008 中可以通过 Tools->Enable/Disable Bullseye Coverage Build 命令打开或关闭其功能
     *       cov01 -1(打开选项); make clean all; cov01 -0(关闭); 执行测试程序; bullshtml target/coverage(在指定目录下生成覆盖率结果);
-    *       用Clover采集结果，其report directory 中填 target/coverage, file name 为 cover.xml
+    *       用Clover采集结果，其report directory 中填 target/coverage, file name 为 clover.xml
 	*       Bullseye 可以通过 COVFILE 环境变量指定全局的覆盖率分析文件(扩展名为 .gov )
+	*       注意:VS2008中启用Bullseye以后有可能出现"LNK1000: Internal error during LinkerMain"，
+	*         原因：MS的bug(KB948127), http://www.bullseye.com/help/trouble-lnk1000.html ; 
+	*         解决：1.安装补丁(似乎无效); 2.
     *   LOC/CC(圈复杂度,要求<30) -- N'SIQ Collector, 注意需要排除第三方代码、Lex/Yacc等自动生成、Windows的消息映射等
     *     http://dev.naver.com/projects/nsiqCollector, 下载后在配置时输入可执行文件(nsiqcollector.exe)的路径，有单独的Build Step
     *   CQ -- Code Quality
