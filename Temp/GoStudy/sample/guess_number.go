@@ -69,8 +69,8 @@ func main() {
 	flag.Parse()
 	list := []int{1, 6, 7, 8, 8, 75, ADD, SUB, MUL, DIV}
 	// list := []int1, 6, 7, ADD, SUB, MUL, DIV
-	magic, ok := strconv.Atoi(flag.Arg(0))
-	if ok != nil {
+	magic, err := strconv.Atoi(flag.Arg(0))
+	if err != nil {
 		return
 	}
 	f := make([]int, MAXPOS)

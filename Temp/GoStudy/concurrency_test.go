@@ -1,5 +1,5 @@
 /*******************************************************************************
-TODO:goroutine 不是线程，也不是简单意义的线程池 -- 类似纤程?
+TODO:goroutine 不是线程，也不是简单意义的线程池 -- 协程coroutine的一种(类似纤程?)
   官方说是动态复用线程，来保持所有的goroutine运行 --
 
 Go官方说 "Concurrency is not parallelism"
@@ -7,12 +7,12 @@ Go官方说 "Concurrency is not parallelism"
 
 
 Go让函数很容易成为非常轻量的线程，线程之前的通讯使用 channel 完成
-  goroutine--是Go并发能力的核心要素，并行执行，是轻量的(仅比分配栈多一点消耗),
+  goroutine--是Go并发能力的核心要素，并行执行，是轻量的(仅比分配栈多一点消耗),调度开销非常小，
     初识时栈很小，且随着需要在堆空间上分配
     默认时，如果一个goroutine没有被阻塞，别的goroutine就不会得到执行，可通过 runtime.GOMAXPROCS(n) 设置并行数
     TODO:没有任何办法知道，当所有goroutine都已经退出应当等待多久
 
-通讯序列化过程(Communicating Sequential Processes - CSP)
+采用通讯序列化过程(Communicating Sequential Processes - CSP)作为goroutine间的推荐通信方式，
 channel--通信机制(双向的生产者消费者队列?)， 默认是0-Buffer的阻塞方式(即Reader/Writer都要准备好以后才能继续)
          可以用 select 来侦听多个channel的读写(类似WaitForMulti),select阻塞直到任何一个chan可以读写才返回，
 		   设置超时流程的处理: case <-time.After(time.Second * 10): {xxx};
@@ -40,6 +40,32 @@ import (
 	"testing"
 	"time"
 )
+
+func sumArray(values []int, resultChan chan int) {
+	sum := 0
+	for _, val := range values {
+		sum += val
+	}
+	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
+	resultChan <- sum //将计算结果发送到channel中
+}
+func TestAddInGoroutine(t *testing.T) {
+	values := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	resultChan := make(chan int, 2)
+	if len(values) != 10 {
+		t.Error("数组长度")
+	}
+	go sumArray(values[:len(values)/2], resultChan)
+	go sumArray(values[len(values)/2:], resultChan)
+
+	//TODO: sum1和sum2的顺序
+	sum1, sum2 := <-resultChan, <-resultChan //从resultChan 中获取到结果
+
+	fmt.Printf("sum1=%d, sum2=%d\n", sum1, sum2)
+	if sum1 != 15 && sum2 != 40 {
+		t.Error("使用两个goroutine计算数据")
+	}
+}
 
 //首先定义会使用到的能收发int的channel -- 函数中的参数可以定义为 func xxx(cInput chan int)
 var cInput chan int

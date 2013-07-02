@@ -1,4 +1,5 @@
-#从比较老的文档中抄的(比如使用了 gomake Makefile 来编译 )，不知道是否还适用
+#从比较老的文档中抄的(比如使用了 gomake Makefile 来编译 )
+#新的版本中使用Go命令行工具, 不再使用makefile
 
 include $(GOROOT)/src/Make.inc
 

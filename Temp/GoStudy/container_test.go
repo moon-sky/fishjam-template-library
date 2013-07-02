@@ -3,9 +3,9 @@ array(数组) -- 由 [n]type 定义，生成固定大小的容器，生成后即
   可使用方括号完成对元素赋值或索引，注意其序号是 zero-base(零基址)的
   可定义多维数组
 slice(切片) -- 由 make([]type, len, [cap]) 或 array[n:m] 定义(从序号n到m-1,长度为m-n)，是引用类型
-  底层是一个指向固定长度的array的指针，
+  底层是一个指向固定长度的array的指针，类似于 std::vector ?
   当使用append追加新的元素时会返回追加后的新的，与原来的slice相同类型的slice
-map -- 由 map[Fromtype]ToType 定义
+map -- 由 map[KeyType]ValueType 定义
 
 在container中提供了如下的容器
   heap
