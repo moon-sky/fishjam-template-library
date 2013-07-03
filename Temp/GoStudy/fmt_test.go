@@ -17,18 +17,16 @@ package gostudy
 
 import (
 	"fmt"
-	"testing"
+	//"testing"
 )
 
-func TestFmtType(t *testing.T) {
-
-	fmt.Printf("Test Tools")
-}
-
-func TestFmtPackage(t *testing.T) {
-
+func ExampleFmtType() {
 	fmt.Printf("hello world\n") //等价于 print("hello world")
-	fmt.Printf("some string value:%s\n", myFunReturnString(100))
+	x := 10
+	y := 20
+	fmt.Println("x =", x, ", y =", y)
 
-	t.Log("some info in fmt package testing")
+	//Output:
+	//hello world
+	//x = 10 , y = 20
 }

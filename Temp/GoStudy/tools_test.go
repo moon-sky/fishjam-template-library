@@ -6,8 +6,11 @@
 
   go.exe
     build xxx.go [-o output] [build flags] [packages] -- 将 .go 文件编译成二进制文件，然后可直接运行
+	help [具体的命令]
+	  testfunc -- 测试相关的帮助(test,benchmark,example)
     run xxx.go -- 编译、链接并运行go文件(编译到是临时目录下，运行后就删除了?)
-	test Xxx|xxx_test.go -- 运行指定目录或_test的单元测试
+	test Xxx|xxx_test.go -- 运行指定目录或_test.go中的单元测试(func TestXxx(*testing.T))
+	  -bench regexp -- 进行指定的性能测试(Benchmark)
 	version -- 查看当前Go的版本，比如 "go1.1 windows/amd64"
   godoc.exe -- 文档工具(会显示 %GOROOT%src\pkg 下各个包的文档)
     如: godoc fmt Printf

@@ -1,3 +1,5 @@
+JavaScript 操作原始二进制数据： http://www.kuqin.com/webpagedesign/20120407/319733.html
+
 JSON格式说明：
   1.普通文本，2.子元素{ xxx }, 3.数组 [xx1, xx2]
 

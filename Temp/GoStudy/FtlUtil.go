@@ -1,8 +1,17 @@
 package gostudy
 
-//import (
-//"fmt"
-//)
+import (
+	//"fmt"
+	"testing"
+)
+
+func GOUNIT_ASSERT(t *testing.T, bAssert bool, str string) {
+	if !bAssert {
+		//t.Log(fmt.Sprintln(str))
+		//t.Fail()
+		t.Error(str)
+	}
+}
 
 //使用switch对字节数组进行比较的例子：
 //  比较返回两个字节数组字典顺序先后的整数，如果a==b返回0,如果a<b返回-1,如果a>b返回+1

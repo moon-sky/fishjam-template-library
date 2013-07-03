@@ -1,4 +1,6 @@
 /*******************************************************************************
+io
+  EOF -- 提供提供的预定义错误，bufio.NewReader(file).ReadLine 等函数返回 err 时可以检查是否是该error
 os
   读写文件 -- Open/Create(defer Close), Read/Write
   命令行参数 -- Args,其中使用了 flag,其有 Parse(解析标识，并填充变量),

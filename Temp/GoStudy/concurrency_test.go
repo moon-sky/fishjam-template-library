@@ -13,7 +13,7 @@ Go让函数很容易成为非常轻量的线程，线程之前的通讯使用 ch
     TODO:没有任何办法知道，当所有goroutine都已经退出应当等待多久
 
 采用通讯序列化过程(Communicating Sequential Processes - CSP)作为goroutine间的推荐通信方式，
-channel--通信机制(双向的生产者消费者队列?)， 默认是0-Buffer的阻塞方式(即Reader/Writer都要准备好以后才能继续)
+chan(channel?)--通信机制(双向的生产者消费者队列?)， 默认是0-Buffer的阻塞方式(即Reader/Writer都要准备好以后才能继续)
          可以用 select 来侦听多个channel的读写(类似WaitForMulti),select阻塞直到任何一个chan可以读写才返回，
 		   设置超时流程的处理: case <-time.After(time.Second * 10): {xxx};
 		   通过default进行无阻塞处理：default: {xxx} -- 即没有任何chan中读取到数据时立刻进入该分支
@@ -150,17 +150,24 @@ func TestReadInfoFromRunChan(t *testing.T) {
 	c2 := funReturnReadonlyChannel("Jerry")
 	count := 0
 	timeout := time.After(time.Second * 3)
+	var strInfo string = ""
 
 Quit:
 	for {
-
 		select {
 		case msg, _ := <-c1:
-			fmt.Printf("Tom says \"%s\"\n", msg)
+			if msg != "" {
+				fmt.Printf("Tom says \"%s\"\n", msg)
+				//strInfo = fmt.Sprintf("Tom says \"%s\"\n", msg)
+			}
 		case msg, _ := <-c2:
-			fmt.Printf("fun says \"%s\"\n", msg)
+			if msg != "" {
+				fmt.Printf("Jerry says \"%s\"\n", msg)
+				//strInfo = fmt.Sprintf("Jerry says \"%s\"\n", msg)
+			}
 		case <-timeout: //超时
 			fmt.Printf("Time out for TestReadInfoFromRunChan\n")
+			//strInfo = fmt.Sprintf("Time out for TestReadInfoFromRunChan")
 			break Quit
 			//default:
 			//	{
@@ -170,10 +177,10 @@ Quit:
 
 		}
 		count++
-		fmt.Printf("count=%d\n", count)
+		//fmt.Printf("count=%d\n", count)
 		if count > 100 {
 			break
 		}
 	}
-	fmt.Printf("Leave TestReadInfoFromRunChan\n")
+	fmt.Printf("Leave TestReadInfoFromRunChan, %s\n", strInfo)
 }

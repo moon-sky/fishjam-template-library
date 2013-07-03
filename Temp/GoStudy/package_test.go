@@ -3,7 +3,8 @@ bufio -- 实现缓冲的io，提供了 Reader/Writer 对象，在提供缓冲的
   r* bufio.Reader; buf,e := r.ReadBytes('\n'); if e == os.EOF{ break }
 exec -- 执行外部命令，Run(xxx)
 flag -- 定义命令行参数规范、并可获取和解析命令行参数, 运行时: -n=8080
-  port := flag.Bool("n", 80, "port number") //参数名,默认值,说明,返回指针
+  port := flag.Bool("n", 80, "port number") //参数名,默认值,说明 -- 返回指针
+    flag中类似的方法有 String,
   flag.Parse(); fmt.Println("port is:", *port);
   flag.NArg() -- 返回参数个数, 可在循环中获取 flag.Arg(i)
 
