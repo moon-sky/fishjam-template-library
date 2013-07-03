@@ -208,6 +208,12 @@ namespace FTL
         T*   m_pLockObj;
     };
 
+    //进度计算封装类，常用于下载等时计算平均速度
+    class CFProgressCalculator
+    {
+
+    };
+
     //一个将非线程安全的类包装成线程安全的类 -- 具体使用方法见 test_threadSafeWrapper
     //  利用了 operator-> 的特性：如果返回的不是指针类型，会继续调用返回值的operator->()方法，直到最终解析出一个指针类型
     //  第一次返回非指针类型的 proxy，于是会生成一个临时的 proxy 对象，对 m_ptr 加锁，然后通过 proxy::-> 进行调用，

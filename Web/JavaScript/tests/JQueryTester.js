@@ -2,6 +2,7 @@
 * TODO:
 *   1.如果选中，则移出selected类，否则就加上selected类(这是什么语法?) -- $(this)[hasSelected ? "removeClass" : "addClass"]('selected')
 *     等价于: if(hasSelected){ $(this).removeClass('selected');} else { $(this).addClass('selected'); }
+*     $(this)["removeClass"]('selected') 等价于 $(this).removeClass('selected');
 *   2.jQuery做动画效果时要求在标准模式下，否则可能引起动画抖动(即  -//W3C//DTD XHTML 1.0 Transitional )
 *   3.有的时候选择器为什么要加上 ",this" ? 比如 《锋利的jQuery中》P152,5.1.4下拉框应用中， $var options=$("option:selected",this); //获取选中的选项
 *   4.parseJSON 将JSON字符串解析成JS对象 -- 有这个函数吗?
@@ -19,6 +20,7 @@
 * 开发IDE(代码自动提示)
 *   1.Dreamweaver + jQuery_API.mxp 插件(Dreamweaver cs6 已经内置)
 *   2.Aptana -- 基于Eclipse，专注于JavaScript的Ajax开发IDE，(Windows -> Preferences -> Aptana ->Editors -> Javascript -> Code Assist)
+*       支持中文: Windows -> Preferences -> General -> Content Types -> Text 默认编码为 UTF-8, File associations 下添加文件类型，如 *.js!
 *   3.Eclipse + jQueryWTP 或 Spket 插件
 *   4.Visual Studio 2008 
 *     + KB958502 补丁(http://archive.msdn.microsoft.com/KB958502)

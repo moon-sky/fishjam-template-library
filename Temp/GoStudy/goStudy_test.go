@@ -22,14 +22,14 @@ https://github.com/astaxie/build-web-application-with-golang/blob/9aa3e508543491
 go help testfunc -- 查看相关帮助
 
 单元测试 -- xxx.go 文件对应的单元测试文件为 xxx_test.go, 通过 go test [xxx] 运行测试
-  函数签名为：func TestXxx(*testing.T)
+  函数签名为：func TestXxx(t *testing.T)
   testing.T
     Error("错误信息")
     Errorf("格式化错误信息")
     Skip("跳过测试的原因")
 
 性能测试 -- 命令行中通过 -bench regexp 运行匹配的性能测试(如 -bench . 表示匹配所有)
-  函数签名: func BenchmarkXxx(*testing.B) {
+  函数签名: func BenchmarkXxx(b *testing.B) {
     for i := 0; i < b.N; i++ { 运行目标代码N次 }
   }
   testing.B

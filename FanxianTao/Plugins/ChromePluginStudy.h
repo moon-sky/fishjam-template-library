@@ -102,8 +102,13 @@ popup.html --
 /***************************************************************************************************************
 扩展API(chrome.), 通常需要在 mainfest.json 中设置对应的权限(permissions)
   bookmarks -- BookmarkTreeNode(节点，书签或文件夹)
+  contextMenus
+    create 
+  cookies
+    getAll({url}, function(cookies){ })
   extension
-    .onMessage -- 事件, addListener(function (request, sender, sendResponse){ });
+    .onMessage -- addListener(function (request, sender, sendResponse){ });
+    .onRequest -- addListener(function (request, sender, resp) {});
     .getURL('manifest.json') -- 返回指定的URL
     .sendMessage({json param}, function(response){ }); -- 发送消息，然后可在 onMessage 的处理事件中处理
 
@@ -113,6 +118,10 @@ popup.html --
     .create({url: "www.baidu.com"}) -- 打开URL页面
 	.executeScript(null, {code:"document.body.style.backgroundColor='red'"});
     .getSelected(null, function(tab){ tab.url; }); -- 获取当前激活的页面?
+
+事件中的参数
+  request
+    link/cookie/url
 
 BrowserPage 相关的函数(怎么调用?)
   setIcon,setTitle,setBadgeText(图标标记，如未读邮件数),setBadgeBackgroundColor,setPopup
