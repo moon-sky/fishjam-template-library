@@ -1,7 +1,7 @@
 package gostudy
 
 import (
-	//"fmt"
+	"fmt"
 	"testing"
 )
 
@@ -109,5 +109,25 @@ func BubbleSort(n []int) {
 				n[i], n[j] = n[j], n[i]
 			}
 		}
+	}
+}
+
+func help(args []string) int {
+	fmt.Printf("This is help Func")
+	return 0
+}
+
+func quit(args []string) int {
+	fmt.Printf("This is in quit Func")
+	return 0
+}
+
+//返回命令字符串和对应的处理函数的map，
+//示例: handlers:=GetCommandHandlers()
+//     if handler, ok := handlers[commandName]; ok { handler(args); }
+func GetCommandHandlers() map[string]func(args []string) int {
+	return map[string]func([]string) int{
+		"help": help,
+		"quit": quit,
 	}
 }

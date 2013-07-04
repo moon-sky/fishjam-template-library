@@ -17,7 +17,9 @@ package gostudy
 
 import (
 	"fmt"
-	//"testing"
+	"strconv"
+	"strings"
+	"testing"
 )
 
 func ExampleFmtType() {
@@ -29,4 +31,16 @@ func ExampleFmtType() {
 	//Output:
 	//hello world
 	//x = 10 , y = 20
+}
+
+func TestConv(t *testing.T) {
+	valInt, _ := strconv.Atoi("123")
+	GOUNIT_ASSERT(t, valInt == 123, "Atoi")
+}
+
+func TestStrings(t *testing.T) {
+	strParam := "spm=2013.1.0.103.ZJ8LEG&id=18630698467&source=superboss&appId=13"
+	params := strings.Split(strParam, "&")
+	GOUNIT_ASSERT(t, len(params) == 4, "字符串Split")
+	GOUNIT_ASSERT(t, params[3] == "appId=13", "字符串Split")
 }

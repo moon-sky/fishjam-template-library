@@ -1,4 +1,6 @@
 /*******************************************************************************
+TODO: 定义结构时，成员变量后面的字符串是干什么的？(参见 ipc\server.go::Request 等的定义)
+
 Go语言编程 P52 -- 2读取输入文件
 https://github.com/astaxie/build-web-application-with-golang/blob/9aa3e50854349188fb836e8a7981eea69855a92a/preface.md
 

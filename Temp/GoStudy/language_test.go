@@ -130,10 +130,8 @@ const (
 )
 
 func TestEnum(t *testing.T) {
-	fmt.Printf("Sunday Number=%d\n", Sunday)
-	if Sunday != 6 {
-		t.Error("Enum 失败")
-	}
+	//fmt.Printf("Sunday Number=%d\n", Sunday)
+	GOUNIT_ASSERT(t, Sunday == 6, "通过iota定义枚举值")
 }
 
 func TestLanguage(t *testing.T) {
@@ -163,6 +161,13 @@ func TestLanguage(t *testing.T) {
 
 	GOUNIT_ASSERT(t, ^uint32(0) == 0xffffffff, "取反运算, Go中的取反是 ^x, C语言中是 ~x")
 
+	//匿名结构体赋值 -- 问题：定义值得部分似乎不能断行？
+	strValue := []struct {
+		name string
+		age  int
+	}{{"fishjam", 30}, {"fuj", 10}}
+	GOUNIT_ASSERT(t, strValue[0].name == "fishjam", "匿名结构体")
+	GOUNIT_ASSERT(t, strValue[1].age == 10, "匿名结构体")
 }
 
 func TestForLanguage(t *testing.T) {
@@ -272,6 +277,15 @@ func TestRange(t *testing.T) {
 }
 
 func TestString(t *testing.T) {
+	var strveryLong = `可以断行
+的
+多行字符串
+`
+
+	strLen := len(strveryLong)
+	//10个汉字 * 3 + 三个换行符
+	GOUNIT_ASSERT(t, strLen == 33, "通过反斜号可以定义很长的多行字符串")
+
 	strUTF8Info := "Go语言测试"
 	var nLen = len(strUTF8Info) //计算字节(byte)数组长度
 	GOUNIT_ASSERT(t, nLen == 14, "字符串字节数组长度")
@@ -301,11 +315,16 @@ func TestString(t *testing.T) {
 	//[71 111 232 175 173 232 168 128 230 181 139 232 175 149]
 	fmt.Printf("byteSilce for strUTF8Info is(%d) %v\n", len(byteSilce), byteSilce)
 	//GOUNIT_ASSERT(t, byteStrSlice == byteSilce, "字节数组的两种获取方式")
+	covByteStr := string(byteSilce)
+	GOUNIT_ASSERT(t, covByteStr == strUTF8Info, "使用string将byte数组转换回字符串")
 
 	//可以转换成[]int32, 每个int32保存Unicode编码
 	//[71 111 35821 35328 27979 35797]
 	intSilce := []int32(strUTF8Info)
 	fmt.Printf("intSlice for strUTF8Info is(%d) %v\n", len(intSilce), intSilce)
+
+	covIntStr := string(intSilce)
+	GOUNIT_ASSERT(t, covIntStr == strUTF8Info, "使用string将rune数组转换回字符串")
 
 	GOUNIT_ASSERT(t, fmt.Sprintf("%d", 2012) == "2012", "字符串格式化")
 }

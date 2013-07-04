@@ -4,11 +4,12 @@ array(数组)--由 [n]type 定义，生成固定大小的容器，生成后即�
   可使用方括号完成对元素赋值或索引，注意其序号是 zero-base(零基址)的
   可定义多维数组
 
-slice(切片)--是引用类型(赋值和函数参数时元素不会被复制)，可随时动态增减元素,扩充时会重新分配并复制内存(类似于 std::vector)
+slice(切片)--是引用类型(赋值、函数参数、结果返回时元素不会被复制)，
+  可随时动态增减元素,扩充时会重新分配并复制内存(类似于 std::vector)
   两种创建方式：
-  1.make([]type, len[, cap])直接创建
+  1.make([]type, len[, cap])直接创建(没有长度限制的数组封装)
   2.contain[n:m] 基于数组或已有切片定义(从序号n到m-1,长度为m-n)
-  其内部可抽象为三个变量(1.指向固定长度的array的指针;2.元素个数;3.已分配的存储空间)。
+  其内部可抽象为三个变量(1.指向固定长度的array的指针;2.元素个数len;3.已分配的存储空间cap)。
   当使用append追加新的元素时会返回追加后的新的，与原来的slice相同类型的slice(新变量，地址是不同的?)
 
 map -- 由 map[KeyType]ValueType 定义的一堆键值对的未排序集合
@@ -64,7 +65,7 @@ func TestSlice(t *testing.T) {
 	GOUNIT_ASSERT(t, len(intSlice) == 10, "make创建的slice长度")
 	GOUNIT_ASSERT(t, cap(intSlice) == 15, "make创建的slice容量")
 
-	//从尾端向数组切片中追加元素
+	//从尾端向数组切片中追加元素(容量够)
 	newIntSlice := append(intSlice, 11, 12, 13)
 	GOUNIT_ASSERT(t, len(intSlice) == 10, "append后原来的Slice不变")
 	GOUNIT_ASSERT(t, len(newIntSlice) == 13, "append后新的Slice")
@@ -75,6 +76,7 @@ func TestSlice(t *testing.T) {
 	newIntSlice[0] = 99
 	GOUNIT_ASSERT(t, newIntSlice[0] == intSlice[0], "未进行内存扩充的情况下新旧Slice指向同一个底层数组")
 
+	//从尾端向数组切片中追加元素(容量不够，会造成扩充)
 	newAddressIntSlice := append(intSlice, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 	GOUNIT_ASSERT(t, cap(newAddressIntSlice) == 30, "扩充后的长度，目前实现采用容量翻倍的方式")
 	newAddressIntSlice[0] = 199
@@ -94,6 +96,21 @@ func TestSlice(t *testing.T) {
 	//在slice后追加slice，注意最后的三个点
 	S3 := append(newIntSlice, intSliceFromArray...)
 	GOUNIT_ASSERT(t, len(S3) == 18 && cap(S3) == 30, "在slice后追加slice")
+
+	t.Logf("Before Remove, S3=%v\n", S3)
+	//TODO:从切片中删除指定元素 -- 似乎没有直接的方法，而需要自己根据 index/len 等来判断？
+	//<Go语言编程>中第三章结束的例子有错 -- 这里省略了判断 delIndex 有效性的代码
+	var delIndex int = 2
+	if delIndex < len(S3)-1 { //中间元素
+		S3 = append(S3[:delIndex], S3[delIndex+1:]...)
+	} else if delIndex == 0 { //删除仅有的一个元素
+		S3 = make([]int, 0)
+	} else { //删除的是最后一个元素
+		S3 = S3[:delIndex-1]
+	}
+	t.Logf("len(S3)=%d, cap(S3)=%d\n", len(S3), cap(S3))
+	GOUNIT_ASSERT(t, len(S3) == 17 && cap(S3) == 30, "从slice中删除一个元素")
+	t.Logf("After Remove, S3=%v\n", S3)
 
 	//copy函数，如两个切片不一样大，会按照较小的切片的元素个数进行复制
 	var newS = make([]int, 3)

@@ -15,7 +15,7 @@ import (
 )
 
 func TestUseCInGo(t *testing.T) {
-	fmt.Printf("in TestUseCInGo")
+	fmt.Printf("in TestUseCInGo\n")
 
 	/*
 		cstr := C.CString("Hello world")

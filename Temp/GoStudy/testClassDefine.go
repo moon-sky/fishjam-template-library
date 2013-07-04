@@ -1,3 +1,11 @@
+/*******************************************************************************
+初始化结构体变量：
+  rect1 := new(Rect)
+  rect2 := &Rect{}
+  rect3 := &Rect{ 10, 20}
+  rect4 := &Rect{ Width:10, Height: 20 }
+*******************************************************************************/
+
 package gostudy
 
 import (
@@ -5,16 +13,16 @@ import (
 	"math"
 )
 
-////////// 定义Shape接口及其方法原型的集合，公有的方法首字母需要大写///////////////////////
-type Shape interface {
+////////// 定义IShape接口及其方法原型的集合，公有的方法首字母需要大写///////////////////////
+type IShape interface {
 	Area() float64      //求面积
 	Perimeter() float64 //求周长
 }
 
 //定义了一个使用Shape接口的方法
-func PrintAreaInfo(s Shape) {
-	fmt.Printf("%v Area is %f\n", s, s.Area())
-}
+//func PrintAreaInfo(s Shape) {
+//	fmt.Printf("%v Area is %f\n", s, s.Area())
+//}
 
 ///////////////////////// 矩形 Rect 及其方法 //////////////////////////////////////
 type Rect struct {
@@ -35,6 +43,10 @@ func (r *Rect) String() string {
 	var str string
 	str = fmt.Sprintf("[Rect, width = %f, height = %f]", r.Width, r.Height)
 	return str
+}
+
+func NewRect(width, height float64) *Rect {
+	return &Rect{width, height}
 }
 
 //////////////////////// 圆形 Circle 及其方法 ////////////////////////////////////

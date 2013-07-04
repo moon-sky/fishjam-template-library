@@ -8,6 +8,7 @@
     build xxx.go [-o output] [build flags] [packages] -- 将 .go 文件编译成二进制文件，然后可直接运行
 	help [具体的命令]
 	  testfunc -- 测试相关的帮助(test,benchmark,example)
+	install <module|bin> -- 安装第三方或自己开发的模块，然后才可使用？安装到%GOPATH%pkg目录下？
     run xxx.go -- 编译、链接并运行go文件(编译到是临时目录下，运行后就删除了?)
 	test Xxx|xxx_test.go -- 运行指定目录或_test.go中的单元测试(func TestXxx(*testing.T))
 	  -bench regexp -- 进行指定的性能测试(Benchmark)

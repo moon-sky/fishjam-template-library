@@ -1,3 +1,8 @@
+《深度探索C++对象模型》
+
+小米 -- http://bbs.xiaomi.cn/forum.php?mod=viewthread&tid=2742326
+  同时按下音量键“+”和电源键进入Recovery界面
+
 JavaScript 操作原始二进制数据： http://www.kuqin.com/webpagedesign/20120407/319733.html
 
 JSON格式说明：
