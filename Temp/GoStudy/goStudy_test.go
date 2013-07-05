@@ -1,5 +1,5 @@
 /*******************************************************************************
-TODO: 定义结构时，成员变量后面的字符串是干什么的？(参见 ipc\server.go::Request 等的定义)
+TODO: 定义结构时，成员变量后面的字符串是干什么的？是json等的标签？(参见 ipc\server.go::Request 等的定义)
 
 Go语言编程 P52 -- 2读取输入文件
 https://github.com/astaxie/build-web-application-with-golang/blob/9aa3e50854349188fb836e8a7981eea69855a92a/preface.md
@@ -9,6 +9,7 @@ https://github.com/astaxie/build-web-application-with-golang/blob/9aa3e508543491
   Go语言的官方文档？：http://golang.org/doc/
   Go邮件组: http://groups.google.com/group/golang-nuts   -- 英文
            http://groups.google.com/group/golang-china  -- 中文讨论环境
+  第三方库?：https://code.google.com/p/go-wiki/wiki/Projects
 
 特点(从 Limbo 语言继承) -- 完全开源的，BSD License，但使用其的产品是否需要开源？
   并发(执行体有: 进程process、线程thread、协程coroutine)、分布式
@@ -18,6 +19,11 @@ https://github.com/astaxie/build-web-application-with-golang/blob/9aa3e508543491
 
 调试
   不需要编译选项，Go语言编译的二进制程序直接支持GDB调试，调试信息格式为 DWARFv3(版本高于7.1的GDB都支持)
+*******************************************************************************/
+
+/*******************************************************************************
+init() -- 在main函数之前执行的初始化函数
+main() -- 可执行文件的入口函数
 *******************************************************************************/
 
 /******************************************************************************

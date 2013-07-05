@@ -33,6 +33,7 @@
 *   jQuery(jquery.com) --★Web开发首选★拥有强大的选择器，出色的DOM操作，可靠的事件处理、完善的兼容性和链式操作等功能
 *   ExtJS(www.extjs.com) -- 对YUI的扩展，主要用于创建前段用户界面，可利用包括jQuery在内的多种JavaScript框架作为基础库。但本身比较臃肿，商业使用时需要付费获得授权许可
 * 
+* Json(JavaScript Object Notation) -- 一种比XML更轻量级的数据交换格式，易于阅读和编写的同时，也易于程序解析和生成，表现为键值对集合的文本描述信息 
 *
 * JavaScript常见的封装类型
 *   DOM的选择和操作：经典的例子如jQuery的链式API。

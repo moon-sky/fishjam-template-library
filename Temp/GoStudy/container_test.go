@@ -137,7 +137,7 @@ func TestMap(t *testing.T) {
 		t.Error("找到尚不存在的元素")
 	}
 
-	//删除元素 -- 旧的代码是 m1["one"] = 0, false, 已经被淘汰
+	//删除元素 -- 旧的代码是 m1["one"] = nil, false, 已经被淘汰
 	delete(m1, "one")
 	GOUNIT_ASSERT(t, len(m1) == 0, "删除元素后，m1此时不应该有元素了")
 

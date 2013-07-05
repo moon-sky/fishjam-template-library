@@ -69,6 +69,7 @@ import "路径" -- import指定路径里的所有go文件(排除 _test.go)
   给其他函数，最重要的是能够被函数动态创建和返回。
   闭包的实现确保只要闭包还被使用，那么被闭包引用的变量会一直存在
 
+  闭包可以是一个函数里面返回的另一个匿名函数，该匿名函数包含了定义在它外面的值。
 
    闭包可以毫不费力的将局部变量传递到回调
 
@@ -94,6 +95,9 @@ import "路径" -- import指定路径里的所有go文件(排除 _test.go)
 package -- 包是Go语言你最基本的分发单位
 定义包时，报名的约定是使用小写字符(不应有下划线或混合大小写)。 import [替代名] "包名"
   导入时(import)可以指定路径(如 "./mypackage")，并可选替代名(通常用于解决冲突)
+  不仅可以导入本地包，还支持在语言级别调用远程的包，如 import "github.com/myteam/crc32",
+    在编译前需要 go get github.com/myteam/crc32 来下载对应的包源码？
+
   包中函数首字母大写时表示是导出的(包外部可见)，私有函数以小写字母开头(只在本包内可见)
 
 定时器：time.NewTimer(只通知一次)或time.NewTicker(持续通知)，可通过Stop()方法停止
@@ -166,6 +170,10 @@ func TestLanguage(t *testing.T) {
 		name string
 		age  int
 	}{{"fishjam", 30}, {"fuj", 10}}
+	//}{
+	//	{"name": {"fishjam"}, "age": {30}},
+	//	{"name": {"fuj"}, "age": {10}},
+	//}
 	GOUNIT_ASSERT(t, strValue[0].name == "fishjam", "匿名结构体")
 	GOUNIT_ASSERT(t, strValue[1].age == 10, "匿名结构体")
 }

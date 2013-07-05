@@ -6,7 +6,9 @@
    其他可设(实际上只要 GOROOT 即可? -- msi 安装程序只设置了这一个变量)
     %GOBIN%=C:\Go\Bin;  %GOARCH%=386|amd64;%GOOS%=mingw|windows;
     %GOPATH% -- 可指定各种package的路径(主要是第三方或自定义package?),go会查找 %GOPATH%/src/目录
+	  go tool 的大部分命令都不是针对"当前目录"，而是针对包名(因此需要通过GOPATH指定相关包的路径)
 	  Go1.1中go get命令必须有一个合法的GOPATH,并且会在GOPATH和GOROOT设置为相同值的时候报错
+
  2.测试:
    命令行(cmd), 切到 %GOROOT%test 目录下，执行 "go run helloworld.go"
 

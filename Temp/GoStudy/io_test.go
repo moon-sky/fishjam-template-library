@@ -1,6 +1,8 @@
 /*******************************************************************************
 io
   EOF -- 提供提供的预定义错误，bufio.NewReader(file).ReadLine 等函数返回 err 时可以检查是否是该error
+ioutil
+  ReadDir -- 读取目录信息
 os
   打开文件 -- Open(文件名)/OpenFile(可指定模式)/Create， 注意需要 defer Close
   读写数据 -- Read/Write

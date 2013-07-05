@@ -131,3 +131,15 @@ func GetCommandHandlers() map[string]func(args []string) int {
 		"quit": quit,
 	}
 }
+
+func CheckSum(msg []byte) uint16 {
+	sum := 0
+	//先假设为偶数
+	for n := 1; n < len(msg)-1; n += 2 {
+		sum += int(msg[n])*256 + int(msg[n+1])
+	}
+	sum = (sum >> 16) + (sum & 0xFFFF)
+	sum += (sum >> 16)
+	var answer uint16 = uint16(^sum)
+	return answer
+}
