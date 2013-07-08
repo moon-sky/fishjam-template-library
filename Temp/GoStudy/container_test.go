@@ -24,6 +24,9 @@ map -- 由 map[KeyType]ValueType 定义的一堆键值对的未排序集合
 package gostudy
 
 import (
+	"container/heap"
+	"container/list"
+	"container/ring"
 	"fmt"
 	"testing"
 )
@@ -152,4 +155,22 @@ func TestMap(t *testing.T) {
 	for key, val := range m2 {
 		fmt.Printf("%s => %d\n", key, val)
 	}
+}
+
+func TestHeap(t *testing.T) {
+	heap.Init(pq)
+	for value, priority := range items {
+		item := &Item{
+			value:    value,
+			priority: priority,
+		}
+		heap.Push(pq, item)
+	}
+}
+
+func TestList(t *testing.T) {
+
+}
+func Testring(t *testing.T) {
+
 }

@@ -31,6 +31,7 @@ IDE(注意：.go 语言源码需要是 UTF-8 的编码方式，否则即使是�
    代码自动完成:
      a.设置 GOPATH 变量，必须设置为和 GOROOT不一样
 	 b.安装gocode(就是 bin/gocode.exe ?): go get -u github.com/nsf/gocode
+     c.查看->选项->LiteEditor->行为，取消 "代码完成区分大小写"
  3.Eclipse + GoClipse插件(https://goclipse.googlecode.com/svn/trunk/goclipse-update-site/)
  4.Sublime(http://www.sublimetext.com/)+GoSublime+gocode+MarGo
  5.vim + $GOROOT/misc/vim
