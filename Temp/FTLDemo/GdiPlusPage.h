@@ -129,7 +129,7 @@ enum GdiPlusTestType
 	//String
     gpttDrawString,
     gpttMeasureString,
-    gpttDrawDriverString,
+    gpttDrawDriverString,				//可以控制行间距?
 	gpttMeasureCharacterRanges,
 
     gpttGraphicsPath,

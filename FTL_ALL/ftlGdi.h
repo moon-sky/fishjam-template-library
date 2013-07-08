@@ -311,13 +311,16 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *     DT_SINGLELINE -- 单行显示文本，忽略回车和换行符，必须指定该值才能使用 DT_VCENTER?
 *     DT_TABSTOP -- 设置Tab的字符位数(默认为8)，该数放在nFormat的高位字节中，同时用 DT_EXPANDTABS 扩展
 *     DT_WORDBREAK -- 文本行超过矩形区域的宽时换行
+*   DrawTextEx -- 增加了 LPDRAWTEXTPARAMS(设置Tab大小，左右边界等) 选项,
 *   ExtTextOut -- 可以指定文字输出的间隔 ，例如：
 *     int space[]   = {20, 25, 30, 35, 40, 45, 50, 55, 60};
 *     ExtTextOut(hdc, 20, 80, ETO_CLIPPED, &rect, "ExtTextOut", 10, space); // 间隔逐渐增大
 *   TabbedTextOut -- 可以指定位数后开始Tab定位输出字符
 *     int tabList[] = {120, 280, 380};
 *     TabbedTextOut(hdc, 20, 170, TEXT("Tabbed\t\tText\tOut"), 16, 3, tabList, 1);
-* 
+*   PolyTextOut -- 
+*   问题: GDI里没有能控制行间距的文本输出方式?
+*
 * RTF -- Rich Text Format,由微软公司开发的跨平台文档格式,是一个很好的文件格式转换工具，用于在不同应用程序之间进行格式化文本文档的传送
 *   使用 wordpad.exe 可以很方便的生成RTF文档，标准的RTF文件应该仅包含7位ASCII码字符。 
 *   四种格式
@@ -608,6 +611,8 @@ namespace FTL
     public:
 		//计算一个点对应特定矩形的相对关系
 		FTLINLINE static PointPosQuadrant CalcPointPosQuadrant(const RECT& rect, const POINT& point);
+
+		FTLINLINE static int DrawInterValText(HDC hdc, LPCTSTR lpchText, int cchText,	LPRECT lprc, UINT format, POINT ptInterval);
 
 		FTLINLINE static BOOL LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType);
 

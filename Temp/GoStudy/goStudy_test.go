@@ -1,7 +1,7 @@
 /*******************************************************************************
 TODO: 定义结构时，成员变量后面的字符串是干什么的？是json等的标签？(参见 ipc\server.go::Request 等的定义)
 
-Go语言编程 P52 -- 2读取输入文件
+Go语言编程 P178 -- 2读取输入文件
 https://github.com/astaxie/build-web-application-with-golang/blob/9aa3e50854349188fb836e8a7981eea69855a92a/preface.md
 
 官方网站：
@@ -29,6 +29,8 @@ main() -- 可执行文件的入口函数
 /******************************************************************************
 go help testfunc -- 查看相关帮助
 
+符合规范的测试代码会在运行测试时被自动识别并执行。
+
 单元测试 -- xxx.go 文件对应的单元测试文件为 xxx_test.go, 通过 go test [xxx] 运行测试
   函数签名为：func TestXxx(t *testing.T)
   testing.T
@@ -41,7 +43,7 @@ go help testfunc -- 查看相关帮助
     for i := 0; i < b.N; i++ { 运行目标代码N次 }
   }
   testing.B
-	ResetTimer() -- 重设计时器
+	ResetTimer() -- 重设计时器，通常用于初始化后来排除初始化的影响
 
 示例(Examples) -- 测试时会比较 示例语句在标准输出中输出的内容 和 注释Output:后的内容
  func ExampleXxx(){

@@ -575,6 +575,12 @@ namespace FTL
 		return posQuadrant;
 	}
 
+	int CFGdiUtil::DrawInterValText(HDC hdc, LPCTSTR lpchText, int cchText,	LPRECT lprc, UINT format, POINT ptInterval)
+	{
+		FTLASSERT(FALSE);  //TODO:增加实现
+		return 0;
+	}
+
 	BOOL CFGdiUtil::LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType)
 	{
 		BOOL bRet = FALSE;

@@ -206,7 +206,7 @@ namespace FTL
 			UINT nRepCnt = LOWORD(lParam);
 			UINT nFlags = HIWORD(lParam);
 			
-			m_strFormater.Format(TEXT("%s{nChar=0x%x(%c,%s), nRepCnt=%d, nFlags=0x%x}"), pszMsgName, 
+			m_strFormater.Format(TEXT("%s{nChar=0x%x(%s), nRepCnt=%d, nFlags=0x%x}"), pszMsgName, 
 				nChar, CFWinUtil::GetVirtualKeyString(nChar) , nRepCnt, nFlags);
 			return m_strFormater;
 		}
