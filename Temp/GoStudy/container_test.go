@@ -16,9 +16,9 @@ map -- 由 map[KeyType]ValueType 定义的一堆键值对的未排序集合
   创建：make( map[KeyType]ValueType [, cap] )
 
 在container中提供了如下的容器
-  heap
-  list
-  ring
+  heap -- 提供了实现heap.Interface接口的任何类型的堆操作
+  list -- 双链表
+  ring -- 循环链表
 *******************************************************************************/
 
 package gostudy

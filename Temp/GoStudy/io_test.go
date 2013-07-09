@@ -13,7 +13,7 @@ os
   管道 -- Pipe() 函数创建读写管道，然后可以设置为子进程的输入输出，即可通信
   标准输入输出:Stdin/Stdout
 
-bufio -- 缓冲读写(文件等)数据
+bufio -- 缓冲读写(文件等)数据,可以比较方便地提供ReadLine子类的操作
   Reader
   Writer
 

@@ -3,7 +3,7 @@
   老版本中 6g/6l 表示64位Intel，8g/8l表示32位Intel，现在似乎统一成了 go.exe ?
 
 查看帮助：命令 --help
-
+  cgo.exe -- 处理所有带有Cgo代码的Go文件，生成Go语言版本的调用封装代码。
   go.exe
     build xxx.go [-o output] [build flags] [packages] -- 将 .go 文件编译成二进制文件，然后可直接运行
 	doc -- 运行 godoc 生成文档

@@ -29,6 +29,47 @@ namespace FTL
 		CFStringFormater	m_strFormater;
     };
 
+	class CFMoveMsgInfo : public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			FTLASSERT(WM_MOVE == uMsg);
+			UNREFERENCED_PARAMETER(uMsg);
+			
+			HRESULT hr = E_FAIL;
+			int xPos = (int)(short) LOWORD(lParam);   // horizontal position 
+			int yPos = (int)(short) HIWORD(lParam);   // vertical position
+			COM_VERIFY(m_strFormater.Format(TEXT("%s{xPos=%d, yPos=%d }"), 
+				pszMsgName, xPos, yPos));
+			return m_strFormater;
+		}
+	};
+	class CFWindowPosMsgInfo : public CFDefaultMsgInfo
+	{
+	public:
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		{
+			FTLASSERT(WM_WINDOWPOSCHANGING == uMsg || WM_WINDOWPOSCHANGED == uMsg);
+			UNREFERENCED_PARAMETER(uMsg);
+	  
+			HRESULT hr = E_FAIL;
+			WINDOWPOS* pWindowPos = (WINDOWPOS*)lParam;
+			FTLASSERT(pWindowPos);
+			if (pWindowPos)
+			{
+				CFStringFormater formaterFlags;
+				COM_VERIFY(m_strFormater.Format(TEXT("%s{hWnd=0x%x, hwndInsertAfter=0x%x,")
+					TEXT("Pos=(%d,%d)-(%d,%d), %dx%d, flags=0x%x(%s) }"), 
+					pszMsgName, pWindowPos->hwnd, pWindowPos->hwndInsertAfter,
+					pWindowPos->x, pWindowPos->y, pWindowPos->x + pWindowPos->cx, pWindowPos->y + pWindowPos->cy,
+					pWindowPos->cx, pWindowPos->cy,
+ 					pWindowPos->flags, CFWinUtil::GetWindowPosFlagsString(formaterFlags, pWindowPos->flags)));
+			}
+			return m_strFormater;
+		}
+	};
+
 	class CFScrollMsgInfo : public CFDefaultMsgInfo
 	{
 	public:
@@ -44,7 +85,7 @@ namespace FTL
 			COM_VERIFY(m_strFormater.Format(TEXT("%s{nSBCode=%s, nPos=%d, lParam(HWND)=0x%x }"), 
 				pszMsgName, CFWinUtil::GetScrollBarCodeString(nSBCode), nPos, lParam));
 			return m_strFormater;
-		};
+		}
 	};
 
 	class CFCommandMsgInfo: public CFDefaultMsgInfo
@@ -431,7 +472,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_CREATE, CFDefaultMsgInfo);
 				//GET_MESSAGE_INFO_ENTRY(WM_CREATE, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_DESTROY, CFDefaultMsgInfo);  //关闭窗口时,如果是主窗口,必须PostQuitMessage,否则进程还在运行(只是没有窗体)
-                GET_MESSAGE_INFO_ENTRY(WM_MOVE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_MOVE, CFMoveMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_SIZE, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_ACTIVATE, CFDefaultMsgInfo); //窗口被激活或失去激活状态, 可用于查看窗体是否最小化，及前一窗体
                 GET_MESSAGE_INFO_ENTRY(WM_SETFOCUS, CFDefaultMsgInfo);
@@ -497,8 +538,8 @@ namespace FTL
 #endif
                 GET_MESSAGE_INFO_ENTRY(WM_COMPACTING, CFDefaultMsgInfo);    //显示内存已经很少了
                 GET_MESSAGE_INFO_ENTRY(WM_COMMNOTIFY, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGING, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGED, CFDefaultMsgInfo);	//当窗体的位置、大小或位置变化以后
+                GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGING, CFWindowPosMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_WINDOWPOSCHANGED, CFWindowPosMsgInfo);	//当窗体的位置、大小或位置变化以后
                 GET_MESSAGE_INFO_ENTRY(WM_POWER, CFDefaultMsgInfo);         //当系统将要进入暂停状态时发送此消息
                 GET_MESSAGE_INFO_ENTRY(WM_COPYDATA, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_CANCELJOURNAL, CFDefaultMsgInfo); //当某个用户取消程序日志激活状态，提交此消息给程序
@@ -583,14 +624,8 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_INITMENU, CFDefaultMsgInfo);  //当一个菜单将要被激活时发送此消息，它发生在用户菜单条中的某项或按下某个菜单键，
                 //  它允许程序在显示前更改菜单
                 GET_MESSAGE_INFO_ENTRY(WM_INITMENUPOPUP, CFDefaultMsgInfo);
-#ifdef WM_SYSTIMER
-#error Already define WM_SYSTIMER
-#endif 
 
-#ifndef WM_SYSTIMER
-#define WM_SYSTIMER 0x0118
                 GET_MESSAGE_INFO_ENTRY(WM_SYSTIMER, CFDefaultMsgInfo);  //UnDocument Message
-#endif
 
                 GET_MESSAGE_INFO_ENTRY(WM_MENUSELECT, CFDefaultMsgInfo); //当用户选择一条菜单项时发送此消息给菜单的所有者（一般是窗口）
                 GET_MESSAGE_INFO_ENTRY(WM_MENUCHAR, CFDefaultMsgInfo);  //当菜单已被激活用户按下了某个键（不同于加速键），发送此消息给菜单的所有者
@@ -3080,12 +3115,45 @@ namespace FTL
 		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_ASYNCWINDOWPOS, pszDivide);
 #endif /* WINVER >= 0x0400 */
 
+#ifndef SWP_NOCLIENTSIZE 
+#  define SWP_NOCLIENTSIZE  0x0800		//Undocumented flags
+#endif 
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOCLIENTSIZE, pszDivide);
 
-		//不知道 0x1800 是什么的参数，msdn中没有找到
-		FTLASSERT( 0 == flags || flags == 0x1800);
+#ifndef SWP_NOCLIENTMOVE
+#  define SWP_NOCLIENTMOVE	0x1000		//Undocumented flags
+#endif 
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_NOCLIENTMOVE, pszDivide);
+
+#ifndef SWP_STATECHANGED  // window state (e.g. minimized, normalized, maximized) is changing or has changed,
+#  define SWP_STATECHANGED  0x8000		//Undocumented flags
+#endif 
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_STATECHANGED, pszDivide);
+
+#ifndef SWP_UNKNOWN_0X01000000
+#  define SWP_UNKNOWN_0X01000000  0x01000000	//Undocumented flags
+#endif 
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_UNKNOWN_0X01000000, pszDivide);
+
+#ifndef SWP_UNKNOWN_0X10000000
+#  define SWP_UNKNOWN_0X10000000  0x10000000	//Undocumented flags
+#endif 
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_UNKNOWN_0X10000000, pszDivide);
+
+#ifndef SWP_UNKNOWN_0X20000000
+#  define SWP_UNKNOWN_0X20000000  0x20000000	//Undocumented flags
+#endif 
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_UNKNOWN_0X20000000, pszDivide);
+
+#ifndef SWP_UNKNOWN_0X40000000
+#  define SWP_UNKNOWN_0X40000000  0x40000000	//Undocumented flags
+#endif 
+		HANDLE_COMBINATION_VALUE_TO_STRING(formater, flags, SWP_UNKNOWN_0X40000000, pszDivide);
+
+		FTLASSERT( 0 == flags);
 		if (0 != flags)
 		{
-			FTLTRACEEX(FTL::tlWarning, TEXT("%s: Check Set Window Pos String Not Complete, total=0x%08x, remain=0x%08x\n"),
+			FTLTRACEEX(FTL::tlWarning, TEXT("%s: WARNING, Check Set Window Pos String Not Complete, total=0x%08x, remain=0x%08x\n"),
 				__FILE__LINE__, nOldFlags, flags);
 		}
 		return formater.GetString();

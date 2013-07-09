@@ -16,7 +16,7 @@ func (i Integer) Less(other Integer) bool {
   使用接口访问对象：s := []shape{ &实例1, &实例2 } for _, sh := range s { xxxx }
   空接口(interface{})--每个类型都能匹配到空接口(即Any类型), 因此可以创建一个接受空接口作为参数的普通函数,
            然后使用 switch xxx.(type) 找到输入参数实际的类型(如 int, string, 等)
-  接口查询： if [shape,?] ok := obj.(IShape|*Rect); ok { obj实例实现了接口IShape|是*Rect实例 }
+  接口查询： if shape, ok := obj.(IShape|*Rect); ok { obj实例实现了接口IShape|是*Rect实例 }
   接口组合：如 ReadWriter 中 组合了 Reader 和 Writer
 
 Go不支持方法重载, 继承(通过组合方式实现类似继承的功能)、虚函数等常见的OO特性，没有构造和析构

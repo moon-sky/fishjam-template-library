@@ -346,76 +346,59 @@
 *   4.如果只是通过 Shell 拖放文件，更简单的方法是响应 WM_DROPFILES 消息
 ******************************************************************************************************/
   
+#ifndef WM_SYSTIMER
+#  define WM_SYSTIMER 0x0118		//UnDocument Message
+#endif 
+
+const UINT DEAFULT_DUMP_FILTER_MESSAGES[] = {
+	WM_MOUSEMOVE,
+	WM_SETCURSOR,
+
+	WM_NCMOUSEMOVE,
+	WM_NCHITTEST,
+	WM_NCACTIVATE,
+
+	WM_PAINT,
+	WM_ERASEBKGND,
+
+	WM_TIMER,
+	WM_SYSTIMER,
+
+	WM_ENTERIDLE,
+	WM_KICKIDLE,
+	WM_CTLCOLORMSGBOX,
+	WM_CTLCOLOREDIT,
+	WM_CTLCOLORLISTBOX,
+	WM_CTLCOLORBTN,
+	WM_CTLCOLORDLG,
+	WM_CTLCOLORSCROLLBAR,
+	WM_CTLCOLORSTATIC,
+	WM_PRINTCLIENT,
+
+};
+
 namespace FTL
 {
-#define DUMP_FILTER_MOUSE_MOVE              ((DWORD)(0x0001L))
-#define DUMP_FILTER_NCHITTEST               ((DWORD)(0x0002L))
-#define DUMP_FILTER_SETCURSOR               ((DWORD)(0x0004L))
-#define DUMP_FILTER_PAINT					((DWORD)(0x0008L))
-#define DUMP_FILTER_IDLE					((DWORD)(0x0010L))
-
-#define DUMP_FILTER_KEYDOWN					((DWORD)(0x1000L))
-#define DUMP_FILTER_TIMER                   ((DWORD)(0x2000L))
-
-//对话框中的 WM_CTLCOLORDLG/WM_CTLCOLORBTN/WM_PRINTCLIENT/ 等 -- 一个简单的WTL Dialog工程中
-#define DUMP_FILTER_DIALOG_CTRL_NOTIFY		((DWORD)(0x4000L))
-
-#define DEFAULT_DUMP_FILTER_MESSAGE \
-    DUMP_FILTER_MOUSE_MOVE\
-    |DUMP_FILTER_NCHITTEST\
-    |DUMP_FILTER_SETCURSOR\
-	|DUMP_FILTER_PAINT\
-	|DUMP_FILTER_IDLE
-
     //在Output中Dump出当前接受到的消息
 #ifdef FTL_DEBUG
-#  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) \
+#  define DUMP_WINDOWS_MSG(pszName, filters, nCount, uMsg, wParam, lParam) \
     {\
         BOOL bFilterd = FALSE;\
-        if( (filters) & DUMP_FILTER_MOUSE_MOVE)\
-        {\
-			bFilterd = (WM_MOUSEMOVE == uMsg || WM_NCMOUSEMOVE == uMsg) ? TRUE : bFilterd; \
-        }\
-        if( (filters) & DUMP_FILTER_NCHITTEST )\
-        {\
-            bFilterd = (WM_NCHITTEST == uMsg) ? TRUE : bFilterd;\
-        }\
-        if( (filters) & DUMP_FILTER_SETCURSOR )\
-        {\
-            bFilterd = (WM_SETCURSOR == uMsg) ? TRUE : bFilterd;\
-        }\
-		if( (filters) & DUMP_FILTER_PAINT )\
-		{\
-			bFilterd = (WM_PAINT == uMsg || WM_ERASEBKGND == uMsg) ? TRUE : bFilterd;\
-		}\
-		if( (filters) & DUMP_FILTER_IDLE )\
-		{\
-			bFilterd = (WM_ENTERIDLE == uMsg) ? TRUE : bFilterd;\
-		}\
-		if( (filters) & DUMP_FILTER_KEYDOWN)\
-		{\
-			bFilterd = (WM_KEYDOWN == uMsg) ? TRUE : bFilterd; \
-		}\
-        if( (filters) & DUMP_FILTER_TIMER )\
-        {\
-            bFilterd = (WM_TIMER == uMsg || WM_SYSTIMER == uMsg) ? TRUE : bFilterd;\
-        }\
-		if( (filters) & DUMP_FILTER_DIALOG_CTRL_NOTIFY )\
-		{\
-			bFilterd = ((WM_CTLCOLORMSGBOX <= uMsg && uMsg <= WM_CTLCOLORSTATIC) \
-			|| (WM_PRINTCLIENT == uMsg) \
-			|| (WM_NOTIFY == uMsg && (LPNMHDR(lParam)->code == NM_CUSTOMDRAW)) \
-			) ? TRUE : bFilterd;\
+		for(int i = 0; i < nCount; i++){\
+			if(uMsg == filters[i]){\
+				bFilterd = TRUE;\
+				break;\
+			}\
 		}\
         if(!bFilterd)\
         {\
-            FTLTRACE(TEXT("%s(%d) %s, wParam=0x%x, lParam=0x%x, Tick=%d\n"),\
-            pszName,uMsg, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(),\
+            FTLTRACE(TEXT("%s[%d](%d)%s, wParam=0x%x, lParam=0x%x, Tick=%d\n"),\
+            pszName,GetCurrentThreadId(),uMsg, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(),\
 			wParam, lParam, GetTickCount() );\
         }\
     }
 #else
-#  define DUMP_WINDOWS_MSG(pszName, filters, uMsg, wParam, lParam) __noop;
+#  define DUMP_WINDOWS_MSG(pszName, filters, nCount, uMsg, wParam, lParam) __noop;
 #endif 
 
 	//通过 RegisterWindowMessage 注册的消息

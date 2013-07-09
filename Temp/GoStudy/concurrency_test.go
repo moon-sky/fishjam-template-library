@@ -5,7 +5,6 @@ TODO:goroutine 不是线程，也不是简单意义的线程池 -- 协程corouti
 Go官方说 "Concurrency is not parallelism"
   https://talks.golang.org/2012/concurrency.slide#7
 
-
 Go让函数很容易成为非常轻量的线程，线程之前的通讯使用 channel 完成
   goroutine--是Go并发能力的核心要素，并行执行，是轻量的(仅比分配栈多一点消耗),调度开销非常小，
     ★:Go语言标准库提供的所有系统调用操作(也包括所有同步IO操作)，都会出让CPU给其他goroutine
