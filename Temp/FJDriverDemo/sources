@@ -1,0 +1,5 @@
+TARGETNAME=FJDriverDemo
+TARGETTYPE=DRIVER
+
+SOURCES=stdafx.cpp \
+	FJDriverDemo.cpp
