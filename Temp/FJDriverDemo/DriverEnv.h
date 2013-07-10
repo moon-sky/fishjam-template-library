@@ -2,8 +2,10 @@
 #define DRIVER_ENV_H
 
 /******************************************************************************************************************
-* (推荐)VisualDDK  -- http://visualddk.sysprogs.org/
-*  DDKWizard -- http://ddkwizard.assarbad.net/
+* VisualDDK(推荐)  -- http://visualddk.sysprogs.org/, 开源。
+*   开发调试驱动的VS插件，提供了驱动项目的向导，可通过TCPIP在远程机器上安装驱动，支持VirtualBox/VMWare
+*      
+* DDKWizard -- http://ddkwizard.assarbad.net/
 
 * Visual Studio 中工程向导中： General->Makefile Project，并设置对应的 Build command line 等
 *
@@ -13,7 +15,7 @@
 /******************************************************************************************************************
 * 现在推荐使用WDK开发驱动，可以兼容WinNT ~ Win7 等各个系统
 *
-* VXD() -- Win9X平台的，虚拟设备驱动程序
+* VXD() -- Win9X平台的，虚拟设备驱动程序, Win2K后完全被淘汰
 * 
 * DDK(Driver Development Kit) -- 使用WDM(Windows Driver Model)驱动模型,集成了测试套件HCT？，适用于WinXP及之前的平台
 *   NT类型 -- 不支持即插即用的NT式驱动?使用 NTDDK.h 头文件。不分层？

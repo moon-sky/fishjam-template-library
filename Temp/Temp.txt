@@ -1,3 +1,7 @@
+http://chromium-browser-source.commondatastorage.googleapis.com/chromium.r197479.tgz
+
+编程论坛 http://bbs.bccn.net/ 注册
+
 完全反截屏 -- http://blog.csdn.net/flyingleo1981/article/details/7790161
 
 跨语言交互中，比较复杂的问题：

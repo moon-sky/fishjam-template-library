@@ -83,11 +83,27 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			>
 			<File
+				RelativePath=".\DriverDebug.h"
+				>
+			</File>
+			<File
 				RelativePath=".\DriverEnv.h"
 				>
 			</File>
 			<File
+				RelativePath=".\DriverFilter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DriverIO.h"
+				>
+			</File>
+			<File
 				RelativePath=".\DriverStudy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DriverThread.h"
 				>
 			</File>
 			<File
@@ -104,7 +120,7 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\$(ProjectDir)\sources"
+			RelativePath=".\sources"
 			>
 		</File>
 	</Files>

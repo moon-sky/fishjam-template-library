@@ -19,11 +19,11 @@
 		http://bazislib.sysprogs.org/
 */
 
-void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject);
-NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
-NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
-NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  DriverObject, IN PDEVICE_OBJECT  PhysicalDeviceObject);
-NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
+//void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject);
+//NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
+//NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
+//NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  DriverObject, IN PDEVICE_OBJECT  PhysicalDeviceObject);
+//NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
 
 typedef struct _deviceExtension
 {
@@ -40,29 +40,16 @@ static const GUID GUID_FJDriverDemoInterface = {0x220E7E68, 0xc6b4, 0x4e63, {0xa
 extern "C" NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  RegistryPath);
 #endif
 
-NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  RegistryPath)
+NTSTATUS SameDemo()
 {
-	unsigned i;
-
-	DbgPrint("Hello from FJDriverDemo!\n");
-	
-	for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
-		DriverObject->MajorFunction[i] = FJDriverDemoDefaultHandler;
-
-	DriverObject->MajorFunction[IRP_MJ_CREATE] = FJDriverDemoCreateClose;
-	DriverObject->MajorFunction[IRP_MJ_CLOSE] = FJDriverDemoCreateClose;
-	DriverObject->MajorFunction[IRP_MJ_PNP] = FJDriverDemoPnP;
-
-	DriverObject->DriverUnload = FJDriverDemoUnload;
-	DriverObject->DriverStartIo = NULL;
-	DriverObject->DriverExtension->AddDevice = FJDriverDemoAddDevice;
-
-	return STATUS_SUCCESS;
+	return STATUS_NO_EAS_ON_FILE;
 }
 
+//提供一个Unload函数只是为了让这个程序能动态卸载，方便调试。否则一个内核模块一旦加载就不能再卸载了
 void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 {
-	DbgPrint("Goodbye from FJDriverDemo!\n");
+	//ExAllocatePool()
+	DbgPrint("Goodbye from FJDriverDemo, PID=%d\n", PsGetCurrentProcessId());
 }
 
 NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
@@ -192,4 +179,32 @@ NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 		return status;
 	}
 	return FJDriverDemoDefaultHandler(DeviceObject, Irp);
+}
+
+
+//每个内核模块的入口函数，在加载该模块时被系统进程System调用一次
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  RegistryPath)
+{
+	unsigned i;
+	NTSTATUS status = STATUS_SUCCESS;
+	//NT_VERIFY(SameDemo() == STATUS_SUCCESS);
+#if DBG
+	//汇编指令，相当于手工设置一个断点，这样可以调试
+	//_asm int 3
+#endif 
+
+	DbgPrint("this is new Hello from FJDriverDemo,PID=%d\n", PsGetCurrentProcessId());
+
+	//for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
+	//	DriverObject->MajorFunction[i] = FJDriverDemoDefaultHandler;
+
+	//DriverObject->MajorFunction[IRP_MJ_CREATE] = FJDriverDemoCreateClose;
+	//DriverObject->MajorFunction[IRP_MJ_CLOSE] = FJDriverDemoCreateClose;
+	//DriverObject->MajorFunction[IRP_MJ_PNP] = FJDriverDemoPnP;
+
+	DriverObject->DriverUnload = FJDriverDemoUnload;
+	//DriverObject->DriverStartIo = NULL;
+	//DriverObject->DriverExtension->AddDevice = FJDriverDemoAddDevice;
+
+	return STATUS_SUCCESS;
 }
