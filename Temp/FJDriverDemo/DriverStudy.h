@@ -1,9 +1,10 @@
 #ifndef DRIVER_STUDY_H
 #define DRIVER_STUDY_H
 
-
+//寒江独钓-Windows内核安全编程 -- P
 /******************************************************************************************************************
 * 内核模块的常见用途：虚拟光驱、防毒软件的实时监控(文件Filter)、防火墙、
+*   但使用驱动可能会导致软硬件不兼容(比如QQ登录时键盘驱动保护技术 被淘汰)
 *
 * 
 * 隔离的应用程序 + 共享的内核空间
@@ -34,7 +35,8 @@
 * IFS -- Installable File Systems 
 * IRP -- I/O Request Package，输入输出请求包，驱动程序的运行，依靠IRP驱动。通过主功能号(Major)和次功能号标识一个IRP的功能。
 * KMDF (Kernel Mode Driver Framework): A framework for developing kernel mode drivers. 
-* PDO -- Physical Device Object，物理设备对象
+* MDL -- 内存描述符链
+* PDO -- Physical Device Object，物理设备对象，通常是设备栈最下面的那个设备对象？
 * UMDF (User Mode Driver Framework): A framework for developing user mode drivers. 
 * VPB -- Volume parameter block
 * WDF  -- Windows Driver Foundation
@@ -56,7 +58,15 @@
 *   文件系统驱动(File System Driver)
 *   存储设备驱动(Storage Driver)
 *   网络驱动(Network Driver)
+*   
+*   类驱动 -- 统管一类设备的驱动程序，如 不管是URB键盘还是PS/2键盘均经过它。
 ******************************************************************************************************************/
 
+/******************************************************************************************************************
+* 系统进程分析
+*   csrss.exe -- 
+*     win32!RawInputThread 通过 GUID_CLASS_KEYBOARD 获得键盘设备栈中PDO的符号连接名
+*        (应用程序不能直接根据设备名打开设备，一般都通过符号链接名来打开)
+******************************************************************************************************************/
 
 #endif //DRIVER_STUDY_H

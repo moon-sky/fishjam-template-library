@@ -45,7 +45,12 @@
 *     https://developer.mozilla.org/en-US/docs/XULRunner
 *   Chrome(CEF:Chromium Embedded Framework) --  https://code.google.com/p/chromiumembedded/
 *     最好的解决方案。支持HTML5，跨平台。
+*     分了几个版本：
+*       CEF1 -- 使用Chromium WebKit API 的单进程实现
+*       CEF2 -- 使用Chromium browser 的多进程实现
+*       CEF3 -- 使用Chromium Content API 的多进程实现
 *     http://blog.csdn.net/daoxwj/article/details/8786911
+*     http://blog.csdn.net/milado_nju/article/details/7455373
 *************************************************************************************************************************/
 namespace FTL
 {

@@ -11,11 +11,6 @@
 * DbgPrint
 *   %wZ -- UNICODE_STRING 变量的地址
 *
-* 内核对象
-*   DRIVER_OBJECT(驱动对象) -- 需要填写一组回调函数来让Windows调用，插件模式
-*     快速IO分发函数 -- FAST_IO_DISPATCH
-*     普通分发函数   -- DRIVER_DISPATCH
-*   DEVICE_OBJECT(设备对象) -- 可以接受请求(IRP)
 *
 * PMDL -- 内存描述符链表指针？通常描述一个缓冲区
 *

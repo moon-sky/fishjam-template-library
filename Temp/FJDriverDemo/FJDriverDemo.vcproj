@@ -111,6 +111,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FDriverAPI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverSamples.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>

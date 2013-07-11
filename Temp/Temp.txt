@@ -1,4 +1,11 @@
-http://chromium-browser-source.commondatastorage.googleapis.com/chromium.r197479.tgz
+QT(http://qt-project.org)
+  GPL(GNU General Public License) -- 代码的开源/免费使用和引用/修改/衍生代码的开源/免费使用,，但不允许修改后和衍生的代码做为闭源的商业软件发布和销售
+  LGPL(GNU Lesser General Public License) -- 允许商业软件通过类库引用(link)方式使用,而不需要开源商业软件的代码
+    1.你的应用程序应该动态链接Qt函数库，并使你的应用程序与未做修改的LGPL库分开发布。同时必须确保使用者（接受者）知道应用程序使用了LGPL版本的Qt；
+    2. 如果你对LGPL版本的Qt进行了任何修改，并发布，则必须遵循LGPL 条款发布。任何使用者有权利得到这些修改（通常情况下是源代码），并且确保使用者可以通过这些修改自己生成相应你修改过的Qt版本。
+  Commercial License -- 
+
+  
 
 编程论坛 http://bbs.bccn.net/ 注册
 
