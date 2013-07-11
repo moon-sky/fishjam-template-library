@@ -1,5 +1,5 @@
-#ifndef DRIVER_UTIL_H
-#define DRIVER_UTIL_H
+#ifndef F_DRIVER_UTIL_H
+#define F_DRIVER_UTIL_H
 
 /******************************************************************************************************************
 * NT_SUCCESS  -- 判断返回值是否成功
@@ -24,7 +24,7 @@
 //# define REPORT_ERROR_INFO(s, x)   \
 //    DbgPrint("ERROR:%d, %s", s, #x);
 //
-//# define NT_VERIFY(x)   \
+//# define FNT_VERIFY(x)   \
 //    status = (x);\
 //    if(STATUS_SUCCESS != status)\
 //    {\
@@ -33,10 +33,10 @@
 //
 //#else
 //
-//# define NT_VERIFY(x)   \
+//# define FNT_VERIFY(x)   \
 //    nRet = (x);\
 //
 //#endif 
 
 
-#endif //DRIVER_UTIL_H
+#endif //F_DRIVER_UTIL_H

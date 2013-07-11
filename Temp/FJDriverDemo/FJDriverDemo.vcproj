@@ -83,39 +83,39 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			>
 			<File
-				RelativePath=".\DriverDebug.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DriverEnv.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DriverFilter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DriverIO.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DriverStudy.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DriverThread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DriverUtil.h"
-				>
-			</File>
-			<File
 				RelativePath=".\FDriverAPI.h"
 				>
 			</File>
 			<File
+				RelativePath=".\FDriverDebug.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverEnv.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverFilter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverIO.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FDriverSamples.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverStudy.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverThread.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverUtil.h"
 				>
 			</File>
 			<File

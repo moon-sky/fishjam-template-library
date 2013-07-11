@@ -1,5 +1,5 @@
-#ifndef DRIVER_FILTER_H
-#define DRIVER_FILTER_H
+#ifndef F_DRIVER_FILTER_H
+#define F_DRIVER_FILTER_H
 
 /******************************************************************************************************************
 * 若干个设备(可以属于不同的驱动)依次绑定形成一个设备栈，总是最顶端的设备先接收到请求。
@@ -39,4 +39,4 @@ NTSTATUS myDispatchGeneral(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 }
 #endif //if 0
 
-#endif //DRIVER_FILTER_H
+#endif //F_DRIVER_FILTER_H

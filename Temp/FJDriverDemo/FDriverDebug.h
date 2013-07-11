@@ -1,5 +1,5 @@
-#ifndef DRIVER_DEBUG_H
-#define DRIVER_DEBUG_H
+#ifndef F_DRIVER_DEBUG_H
+#define F_DRIVER_DEBUG_H
 
 /******************************************************************************************************************
 * SrvInstW.exe(http://www.onlinedown.net/soft/36059.htm)
@@ -38,4 +38,4 @@
 
 
 
-#endif //DRIVER_DEBUG_H
+#endif //F_DRIVER_DEBUG_H
