@@ -38,6 +38,8 @@
 ************************************************************************************************/
 
 /************************************************************************************************
+* How to: Deploy using XCopy -- http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
+* 
 * 依赖于 CRT、MFC 等多个版本时的重定向 -- 缺少 DebugCRT.9.0.30729.6161 等无法运行程序的问题
 * 1.拷贝对应版本的  Microsoft.VC90.CRT.manifest、 msvcr90.dll、msvcp90.dll 等文件到 可执行程序目录 -- 可解决大部分问题
 * 2.生成 程序名.exe.config 文件(即 Application Config File，应用程序运行时的配置信息)，内容框架如下（调整其中的 name , oldVersion, newVersion 等）：

@@ -2,7 +2,11 @@
 #define F_DRIVER_FILTER_H
 
 /******************************************************************************************************************
-* 若干个设备(可以属于不同的驱动)依次绑定形成一个设备栈，总是最顶端的设备先接收到请求。
+* 若干个设备(可以属于不同的驱动)依次绑定形成一个设备栈，总是最顶端的设备先接收到请求(IRP)。
+*   上层过滤层驱动(FiDO)
+*   功能驱动程序(FDO)
+*   下层过滤层驱动(FiDO)
+*   总线驱动程序(PDO)
 * 
 * 过滤(Filter) -- 在设备栈中可以优先进行处理(可实现文件过滤、实时防毒等功能)
 *   1.生成一个虚拟的设备对象
@@ -12,6 +16,8 @@
 *     UNICODE_STRING com_device_name = RTL_CONSTANT_STRING(L"\\Device\\Serial0");
 *     IoAttachDevice(myFilterDevice, &com_device_name, &attached_device);	//绑定具有名字的设备
 *     //IoAttachDeviceToDeviceStackSafe -- 根据设备对象的指针绑定
+*     绑定完毕必须清除 DO_DEVICE_INITIALIZING 标志，并设置需要的标志
+*     
 *   3.根据主功能号对IRP进行过滤，得到数据并处理
 *     for (i < IRP_MJ_MAXIMUM_FUNCTION; i++) { driver->MajorFunction[i] = myDispatch; } 
 *   n.IoDetachDevice + IoDeleteDevice

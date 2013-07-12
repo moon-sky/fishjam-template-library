@@ -10,26 +10,32 @@
 * 内核对象
 *   DRIVER_OBJECT(驱动对象) -- 需要填写一组回调函数来让Windows调用，插件模式，每个驱动程序只有一个驱动对象
 *     快速IO分发函数 -- FAST_IO_DISPATCH
-*     普通分发函数   -- DRIVER_DISPATCH,  MajorFunction?
+*     MajorFunction -- 普通分发函数(DRIVER_DISPATCH),对应各种  IRP_MJ_XXX 
 *     DriverStart/DriverSize -- 该驱动对象所代表的内核模块在内核空间中的开始地址和大小
-*     DeviceObject -- 设备链(其中的 NextDevice 指向同一个驱动中的下一个设备)
+*     DeviceObject -- 设备链(DEVICE_OBJECT::NextDevice 指向同一个驱动中的下一个设备)
 *     DriverUnload -- 卸载函数的指针，若不为空，表示可以动态卸载
-*     
-*   DEVICE_OBJECT(设备对象) -- 可以接受请求(IRP)
-*     DeviceExtension -- 设备扩展,可包含任何自定义信息，在IoCreateDevice时指定
+*     DriverExtension -- 设备扩展，其中有 AddDevice 等回调函数指针
+* 
+*   DEVICE_OBJECT(设备对象) -- 保存设备特征和状态信息，系统上的每一个虚拟、逻辑、物理的设备都有一个设备对象，可以接受请求(IRP)。
+*     DeviceExtension -- 设备扩展,可包含任何自定义信息，在IoCreateDevice时指定。系统已经预定义了一个 DEVICE_EXTENSION 结构？
 *   FILE_OBJECT(文件对象)
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
-* IRP (主功能号 + 次功能号 PIO_STACK_LOCATION::MinorFunction)
-*   各种主功能的分发函数都按功能号做索引保存在 DriveObject::MajorFunction 数组中
+* IRP (主功能号 + 次功能号 PIO_STACK_LOCATION::MinorFunction),各种主功能的分发函数都按功能号做索引
+*     保存在 DriveObject::MajorFunction 数组中(总个数为 IRP_MJ_MAXIMUM_FUNCTION)，操作系统遇到IRP时，就调用对应的函数处理
+*     TODO: pDriverObject->MajorFunction[IRP_MJ_WRITE] = USE_WRITE_FUNCTION；   // ?
+*   IRP是从非分页内存池中分配的可变大小的结构，关联一个 IO_STACK_LOCATION 结构数组
 *
 *   IoCopyCurrentIrpStackLocationToNext -- 把当前IRP栈空间拷贝到下一个栈空间,需要和 IoSetCompletionRoutine 合用，来做键盘过滤(下发读请求并在读到结果后过滤)
-*   IoGetCurrentIrpStackLocation -- 获得当前栈空间
+*   IoGetCurrentIrpStackLocation -- 获得当前栈空间信息
 *   IoMarkIrpPending -- 
 *   IoSetCompletionRoutine -- 设置完成回调函数
 *   IoSkipCurrentIrpStackLocation -- 跳过当前栈空间
+* 
 *   IoCompleteRequest(, IO_NO_INCREMENT); ??
+*   IoCreateSymbolicLink -- 在对象管理器中创建一个"符号链接"(如 Z: => \Device\NetworkRedirector )
+*   IoDeleteSymbolicLink --
 *
 *   缓冲区：
 *     MDLAddress -- 通过 MDL 把应用层的地址空间映射到内核空间
@@ -49,7 +55,7 @@
 /******************************************************************************************************************
 * <ntstrsafe.h> -- 字符串操作， 如要兼容Win2K，需要先定义 NTSTRSAFE_LIB 宏
 *   RtlStringCchPrintfW
-*   RtlInitUnicodeString
+*   RtlInitUnicodeString -- 初始化 UNICODE_STRING 结构体，该结构体不需要使用NULL作为字符串的结束
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
@@ -58,11 +64,13 @@
 *
 * Device
 *   IoAttachDevice/IoDetachDevice  -- 绑定/解除绑定设备到设备栈上，这样可以做过滤(Filter)
+*   IoAttachDeviceToDeviceStack
 *   IoCreateDevice/IoDeleteDevice
 *   IoEnumerateDeviceObjectList -- 枚举一个驱动下的所有设备对象
 *   IoGetAttachedDevice -- 获得一个设备所在的设备栈最顶端的那个设备
 *   IoGetDeviceObjectPointer -- 根据设备名字获得设备对象的指针,需要使用 ObDereferenceObject 把文件对象解除引用防止泄露
-*
+*   IoSetDeviceInterfaceState
+* 
 * Other
 *   ObDereferenceObject
 *   ObReferenceObjectByName(头文件中没有声明?) -- 通过一个名字获得一个对象的指针
@@ -76,7 +84,6 @@
 * KeDelayExecutionThread(KernelMode, FALSE, &interval) -- 延时指定时间(原理? 其他线程会继续执行?)
 * KsGetCurrentThread --
 *
-
 ******************************************************************************************************************/
 
 /******************************************************************************************************************

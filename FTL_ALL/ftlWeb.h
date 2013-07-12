@@ -51,6 +51,8 @@
 *       CEF3 -- 使用Chromium Content API 的多进程实现
 *     http://blog.csdn.net/daoxwj/article/details/8786911
 *     http://blog.csdn.net/milado_nju/article/details/7455373
+*   
+*   QtWebkit 和 CEF 对比： http://www.magpcss.org/ceforum/viewtopic.php?f=6&t=395
 *************************************************************************************************************************/
 namespace FTL
 {

@@ -65,6 +65,10 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			>
 			<File
+				RelativePath=".\FDriverUtil.c"
+				>
+			</File>
+			<File
 				RelativePath=".\FJDriverDemo.cpp"
 				>
 			</File>
@@ -88,6 +92,10 @@
 			</File>
 			<File
 				RelativePath=".\FDriverDebug.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverDef.h"
 				>
 			</File>
 			<File
