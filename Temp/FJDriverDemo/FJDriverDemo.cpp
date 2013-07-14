@@ -192,7 +192,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  Registr
 	//汇编指令，相当于手工设置一个断点，这样可以调试
 	//_asm int 3
 #endif 
-
+    DbgPrint("test in code\n");
 	DbgPrint("this is new Hello from FJDriverDemo,PID=%d\n", PsGetCurrentProcessId());
 
 	//for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)

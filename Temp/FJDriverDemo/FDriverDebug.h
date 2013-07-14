@@ -8,14 +8,20 @@
 * WinObj(http://technet.microsoft.com/en-us/sysinternals/bb896657.aspx)
 *   可以显示所有的内核对象
 *
+* Win2K 时代的产品
+*   DriverWorks -- DriverStudio工具包中的一个工具模块， Win2K时代支持WDM开发的辅助工具(是否有最新版本?)，提供了非常完善的向导
+*   DriverMonitor -- 可以显示调试语句，而且可以安装卸载驱动
+*   EzDriverInstaller -- 可以很方便的安装卸载WDM驱动的小使用程序
+*
 * 通过DebugView查看DbgPrint打印的日志信息，需要选中 Capture Kernel 才能看到内核输出
 *
 * 虚拟机调试
 *   VMWare
-*     共享目录：Options -> Shared Foloders -> 增加共享目录, 该共享目录会出现在虚拟机中的“网络驱动器”里
+*     共享目录：Options -> Shared Foloders -> 增加共享目录, 该共享目录会出现在虚拟机中的“网络驱动器”里(老版本VMWare需要通过 \\.host\ 访问)
 *     用管道虚拟串口：Hardware -> Add -> Serial Port -> Output to named pipe -> 修改第三个选项为"The other end is an application"
-*       调试机上启动windbg：windbg.exe -b -k com:port=\\.\pipe\com_1,baud=115200,pipe
-*       刚连接上时，虚拟机里的Windows系统会被中断(貌似时机),需要在WinDbg的命令提示符后执行 "g" 命令允许其继续运行
+*       调试机上启动windbg(可设置快捷方式的属性)：windbg.exe -b -k com:port=\\.\pipe\com_1,baud=115200,pipe，设置好符号文件和源码路径，
+*       刚连接上时，虚拟机里的Windows系统会被中断(貌似时机),需要在WinDbg的命令提示符后执行 "g" 命令允许其继续运行，
+*       可在源码中调试版本时 增加 _asm int 3 的软件断点
 *
 *
 ******************************************************************************************************************/

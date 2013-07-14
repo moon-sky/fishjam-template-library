@@ -2,11 +2,24 @@
 #define F_DRIVER_ENV_H
 
 /******************************************************************************************************************
+* 环境搭建
+*   1.VS2008/2010 + WDK(GRMWDK_EN_7600_1.ISO) + 
+*   2.包含路径: inc\ddk; inc\crt; inc\api;  
+*   3.调用约定需要改成 __stdcall(/Gz) ?
+* 
+* TODO: VirtualKD 中包含了 VirtualDDK ?
 * VisualDDK(推荐)  -- http://visualddk.sysprogs.org/, 开源。
-*   开发调试驱动的VS插件，提供了驱动项目的向导，可通过TCPIP在远程机器上安装驱动，支持VirtualBox/VMWare
-*      
-* DDKWizard -- http://ddkwizard.assarbad.net/
-
+*   开发调试驱动的VS插件，提供了驱动程序的向导，可通过TCPIP在远程机器上安装驱动，支持VirtualBox/VMWare，可在VS中直接调试驱动程序。
+*   远程调试设置:
+*     1.TODO？--需要设置网卡(物理、VMnet)为自动获取IP，允许VMnet8的连接共享，设置虚拟机网卡类型为NAT; 本地主机和虚拟机都要开启远程(协助+桌面)、关闭防火墙
+*       检测设置：本地主机和虚拟机能互相ping通；网上邻居能互访；
+*     2.安装VirtualDDK后，拷贝 Target 文件下的内容到虚拟机并运行vminstall.exe;
+*       TODO: 如果是 VirtualBox?
+*
+* DDKWizard -- http://ddkwizard.assarbad.net/ ，已被 VirtualDDK 替代
+* 
+* DriverStudio -- VC6 + Win2K 时代开发驱动的利器，有很好的向导(TODO: 尝试安装并分析学习向导生成的代码)
+*
 * Visual Studio 中工程向导中： General->Makefile Project，并设置对应的 Build command line 等
 *
 ******************************************************************************************************************/

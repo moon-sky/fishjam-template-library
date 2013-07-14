@@ -127,6 +127,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FDriverVideo.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
