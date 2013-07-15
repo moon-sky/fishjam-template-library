@@ -239,6 +239,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlHookAPI.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlIEHelper.hpp"
 				>
 			</File>
@@ -272,6 +276,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlP2P.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlService.hpp"
 				>
 			</File>
 			<File
@@ -417,6 +425,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlHookAPI.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlIDETools.h"
 				>
 			</File>
@@ -454,6 +466,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlP2P.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlService.h"
 				>
 			</File>
 			<File
