@@ -1,3 +1,26 @@
+Detours --   有商业版本(大约6000RMB?)，支持X64，
+  编译: nmake -- TODO: Debug/Release ?
+  原理:在目标进程中”打桩“来完成拦截目标函数的
+  挂接所有程序的API： Hook + Detours ?
+  
+
+ATL 服务程序Service(Exe)
+  安装服务(服务的注册, Register as Service，在SCM中查看)：XXX /Service, 
+    TODO: /RegServer 是本地服务器注册(注册COM？)
+  卸载服务：XXX /UnRegServer
+  启动|停止 服务： net start|stop 服务名称
+  服务名称：IDS_SERVICENAME
+  服务描述：重载 CAtlServiceModuleT::RegisterAppId(bool bService = false){ ChangeServiceConfig2(SERVICE_CONFIG_DESCRIPTION) }
+  修改安全设置(否则客户端调用时可能会 E_ACCESSDENIED)：InitializeSecurity 中 CoInitializeSecurity
+  通过增加 ATL Simple Object 的方式增加功能，需要在对应的 rgs 文件中增加 val AppID = s '%APPID%' 等(参见文库？)
+  
+SCM：服务配置管理 ？
+
+交互服务(WinXP以前)
+  GetProcessWindowStation() -- 获取当前进程的 Window Station
+  OpenDesktop("default", xxx)
+  OpenWindowStation("winsta0", xxx)  
+  
 QT(http://qt-project.org)
   GPL(GNU General Public License) -- 代码的开源/免费使用和引用/修改/衍生代码的开源/免费使用,，但不允许修改后和衍生的代码做为闭源的商业软件发布和销售
   LGPL(GNU Lesser General Public License) -- 允许商业软件通过类库引用(link)方式使用,而不需要开源商业软件的代码

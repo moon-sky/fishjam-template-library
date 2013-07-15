@@ -345,7 +345,36 @@
 *   3.拖放操作关系到两个进程的数据交换，会将两个进程都堵塞，直到拖放完成为止，所以，在接管拖放的接口方法中，不要进行过于耗时的运算
 *   4.如果只是通过 Shell 拖放文件，更简单的方法是响应 WM_DROPFILES 消息
 ******************************************************************************************************/
-  
+
+/******************************************************************************************************
+* TODO(FUAPIHook.h 中已有) -- http://wenku.baidu.com/view/5ae307f04693daef5ef73d48.html
+* Detours：http://nokyo.blogbus.com/logs/35243687.html
+*
+* 应用级的全局 Hook API：SetWindowsHookEx + Detours -- TODO: 单独的 ftlHookAPI(DUI 中 HookAPI 源码，比较)
+*   缺点（？）：
+*     1.需要管理员权限
+*     2.不稳定，依赖于其他WindowsHook的实现(Hooks 是一个合作机制，没有任何保证，其他的实现不调用 CallNextHookEx 就不能进行处理)？
+*     3.可能被反病毒软件提醒？
+*   注意：对应的有 驱动级的全局 Hook API(参见 FDriverHookAPI.h )
+*   钩子机制 -- 优先处理特定消息、事件的代码段，每一类Hook都是一个链表(钩子链，Hook Chains)，
+*     每一项都是一个应用程序定义的钩子处理函数，每一个处理函数都有责任通过调用 CallNextHookEx 保证之前的过滤函数被调用，
+*     最近安装的钩子放在链的开始，优先获得控制权。
+*     
+*   SetWindowsHookEx
+*     系统钩子() -- 必须在DLL中，系统自动将该DLL注入受影响的进程地址空间
+*     线程钩子 -- 
+*     
+*    
+*   实现 Hook API 的方式
+*     1.该引入表式 -- 易于实现，OpenProcess + WriteProcessMemory 改写函数地址
+*     2.陷阱式
+*     IAT(对于加壳的软件无效) ? 
+*     JMP 方式 -- 可以对付加壳软件   
+*  
+*   远程注入：
+*     1.Ring3: CreateRemoteThread + LoadLibrary
+******************************************************************************************************/
+
 #ifndef WM_SYSTIMER
 #  define WM_SYSTIMER 0x0118		//UnDocument Message
 #endif 

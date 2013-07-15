@@ -50,8 +50,10 @@
 *     src/build/Debug/chrome.exe 或 src/build/Release/chrome.exe
 *
 * CEF(Chromium Embedded Framework) -- https://code.google.com/p/chromiumembedded/
-*   用于嵌入基于 Google Chromium 项目的 Web 浏览器控件的开源项目
-* 
+*   CEF笔记：http://www.cnblogs.com/haippy/archive/2013/06/10/3131373.html
+*   用于嵌入基于 Google Chromium 项目的 Web 浏览器控件的开源项目，支持Windows、Linux、Mac等平台，
+*   提供的如下特性：自定义插件、自定义协议、自定义JavaScript对象和扩展
+*   OSR(Off Screen Rendering) -- 通过离屏渲染 + Windows的Layered Window，就制作了不规则的网页窗口
 *
 * Chrome源码分析
 *   http://blog.csdn.net/milado_nju/article/details/7216067
