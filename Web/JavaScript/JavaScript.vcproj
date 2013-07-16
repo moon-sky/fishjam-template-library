@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tests\JsHtml5Tester.js"
+				>
+			</File>
+			<File
 				RelativePath=".\tests\JsLangTester.js"
 				>
 			</File>

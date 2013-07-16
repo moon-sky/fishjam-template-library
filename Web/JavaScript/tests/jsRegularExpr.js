@@ -23,8 +23,8 @@ test("正则表达式", function() {
     equal(bEmail, false, "非法邮件地址");
 });
 
-test("RegExp", function() {
+test("RegExp, TODO:", function() {
     var regExp = new RegExp();
-
+    equal(1, 1, "TODO:")
 });
 
