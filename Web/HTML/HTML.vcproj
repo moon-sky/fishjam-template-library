@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\content\canvas.html"
+				>
+			</File>
+			<File
 				RelativePath=".\content\color.html"
 				>
 			</File>
