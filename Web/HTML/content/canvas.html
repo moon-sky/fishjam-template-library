@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+	Canvas
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Canvas</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+    <meta http-equiv="Content-Language" content="zh-cn" />
+    <meta name="Generator" content="EditPlus" />
+    <meta name="Author" content="fishjam" />
+    <meta name="Keywords" content="HTML Tester" />
+    <meta name="Description" content="HTML, DHTML, XML, XHTML" />
+    
+    <link rel="stylesheet" type="text/css" href="../css/c3.css"></link>
+    
+    <script type="text/javascript">
+        function selectFileEvent() {
+            console.log("%o", fileSrc);
+            imgSrc.src = fileSrc.value;
+        }
+
+        function myGetImageData() {
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            var img = document.getElementById("imgSrc");
+            ctx.drawImage(img, 0, 0);
+            var imgData = ctx.getImageData(0, 0, c.width, c.height);
+
+            for (var i = 0; i < imgData.data.length; i += 4) {
+                imgData.data[i] = 255 - imgData.data[i];
+                imgData.data[i + 1] = 255 - imgData.data[i + 1];
+                imgData.data[i + 2] = 255 - imgData.data[i + 2];
+                imgData.data[i + 3] = 20;
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+        
+    </script>
+  </head>
+
+  <body>
+    <form action="#" >
+    <canvas id="myCanvas" width="300" height="150" style="border:1px solid #d3d3d3;">
+        Your browser does not support the HTML5 canvas tag.
+    </canvas>
+
+        <img id="imgSrc" src="../img/sun.gif" alt="image" />
+        <input id="fileSrc" type="file" onselect="selectFileEvent" />
+        
+        <table class="dataintable">
+          <tr>
+            <th>术语名</th>
+            <th>描述</th>
+          </tr>
+          <tr>
+	        <td>Canvas</td>
+		    <td>XXXXXXXXXXXXXXXX</td>
+	      </tr>
+	      <tr>
+	        <td><input type="button" onclick="myGetImageData()" value="getImageData" /></td>
+	        <td>xxxxxxxxxxxxxxxx </td>
+	      </tr>
+        </table>
+    </form>
+  </body>
+
+</html>

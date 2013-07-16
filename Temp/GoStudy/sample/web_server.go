@@ -29,7 +29,11 @@ func safeHandler(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-const http_root = "F:\\Fujie\\FJCODE_GOOGLE\\Web"
+//在公司
+//const http_root = "F:\\Fujie\\FJCODE_GOOGLE\\Web"
+
+//在家
+const http_root = "G:\\FJCODE_GOOGLE\\Web"
 
 func main() {
 	http.HandleFunc("/", rootHandler)
