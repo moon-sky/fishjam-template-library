@@ -1,3 +1,5 @@
+解决vista和win7在windows服务中交互桌面权限问题：穿透Session 0 隔离 -- http://www.cnblogs.com/therock/articles/2261371.html
+
 西二旗的码农在朝鲜 http://v.youku.com/v_show/id_XNTgyOTM2MzQ4.html
 
 Javascript里有个C -- http://cnodejs.org/topic/4f16442ccae1f4aa270010c1 
