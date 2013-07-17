@@ -81,7 +81,6 @@ HANDLE WINAPI FilterCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD
 										LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
 										DWORD dwFlagsAndAttributes,HANDLE hTemplateFile)
 {
-	ATLTRACE(TEXT("FilterCreateFileW: lpFileName=%s\n"), lpFileName);
 	if (StrCmpICW(lpFileName, pszSystemSnapFilePathW) == 0)
 	{
 		SetLastError(ERROR_ACCESS_DENIED);
@@ -116,7 +115,9 @@ LRESULT CALLBACK My_CallWndProc(
 	CWPSTRUCT * pWPStruct = (CWPSTRUCT*)lParam;
 	if (!g_Hooked && pWPStruct)// && pWPStruct->message == UM_HELPER_HOOK)
 	{
-		ATLTRACE(TEXT("Will Hook API in PID=%d,TID=%d\n"), GetCurrentProcessId(), GetCurrentThreadId());
+        TCHAR szModuleName[MAX_PATH] = {0};
+        GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+		ATLTRACE(TEXT("Will Hook API in PID=%d(%s),TID=%d\n"), GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
 
 		BOOL bRet = FALSE;
 		g_Hooked = TRUE;
