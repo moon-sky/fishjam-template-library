@@ -356,9 +356,13 @@ test("图像image", function() {
     img.src = "../HTML/img/merglobe.gif";  //加载指定图像，这种方式加载的图形不能通过 window.document.images 访问
     equal(img.name, "", "图形的name属性");
     equal(img.lowsrc, "", "低速带宽时先加载的图片");
-    equal(img.complete, true, "表示图形是否已经装载完成");
-    equal(img.width, 100, "加载的图像的宽度");
-    equal(img.height, 100, "加载的图像的高度");
+
+    //加载图像是一个异步过程
+    //equal(img.complete, true, "表示图形是否已经装载完成");
+    if (img.complete) {
+        equal(img.width, 100, "加载的图像的宽度");
+        equal(img.height, 100, "加载的图像的高度");
+    }
     //equal(img.border, 0, "边框粗细，单位为像素");
     equal(img.hspace, 0, "边界宽度");
     equal(img.vspace, 0, "边界高度");

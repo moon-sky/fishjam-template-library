@@ -413,8 +413,10 @@ namespace FTL
 			RWM_HTML_GETOBJECT		= RegisterWindowMessage(TEXT("WM_HTML_GETOBJECT"));
 			RWM_SETRGBSTRING		= RegisterWindowMessage(SETRGBSTRING);
 			RWM_SHAREVISTRING		= RegisterWindowMessage(SHAREVISTRING);
+			WM_SHELLHOOKMESSAGE	= RegisterWindowMessage(TEXT("SHELLHOOK"));
 			RWM_TASKBARBUTTONCREATED	= RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
 			RWM_TASKBARCREATED		= RegisterWindowMessage(TEXT("TaskbarCreated")); //系统托盘编程完全指南 -- http://www.vckbase.com/index.php/wv/310
+
 		}
 		return m_bInited;
 	}
@@ -441,6 +443,7 @@ namespace FTL
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_HTML_GETOBJECT);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_SETRGBSTRING);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_SHAREVISTRING);
+		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, WM_SHELLHOOKMESSAGE);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_TASKBARBUTTONCREATED);
 
 		//HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, XXXXXXXX);

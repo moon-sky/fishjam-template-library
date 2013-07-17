@@ -1,3 +1,6 @@
+西二旗的码农在朝鲜 http://v.youku.com/v_show/id_XNTgyOTM2MzQ4.html
+
+Javascript里有个C -- http://cnodejs.org/topic/4f16442ccae1f4aa270010c1 
 
 QT(http://qt-project.org)
   GPL(GNU General Public License) -- 代码的开源/免费使用和引用/修改/衍生代码的开源/免费使用,，但不允许修改后和衍生的代码做为闭源的商业软件发布和销售
@@ -21,7 +24,10 @@ QT(http://qt-project.org)
 小米 -- http://bbs.xiaomi.cn/forum.php?mod=viewthread&tid=2742326
   同时按下音量键“+”和电源键进入Recovery界面
 
-JavaScript 操作原始二进制数据： http://www.kuqin.com/webpagedesign/20120407/319733.html
+Compression using Canvas and PNG-embedded data: 可以看到通过Canvas转换二进制数据
+  原文：http://blog.nihilogic.dk/2008/05/compression-using-canvas-and-png.html
+  中文：http://blog.sina.com.cn/s/blog_4ffbe80f0101bynz.html
+  
 
 JSON格式说明：
   1.普通文本，2.子元素{ xxx }, 3.数组 [xx1, xx2]

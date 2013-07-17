@@ -5,10 +5,13 @@
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
 #define IDD_MAINDLG                     129
-#define IDC_BTN_HOOK                    1000
-#define IDC_BTN_UNHOOK                  1001
-#define IDC_BTN_SERVICE                 1002
+#define IDC_BTN_SERVICE_HOOK            1000
+#define IDC_BTN_SERVICE_UNHOOK          1001
 #define IDC_BTN_INIT_SERVICE            1002
+#define IDC_BTN_FIN_SERVICE             1003
+#define IDC_BTN_DLL_HOOK                1004
+#define IDC_BTN_UNHOOK2                 1005
+#define IDC_BTN_DLL_UNHOOK              1005
 
 // Next default values for new objects
 // 

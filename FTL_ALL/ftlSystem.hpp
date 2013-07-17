@@ -698,6 +698,99 @@ namespace FTL
         return bisLittleSystem;
     }
 
+	BOOL CFSystemUtil::IsInsideVPC()
+	{
+		//__declspec(naked) bool IsInsideVPC()
+		{
+			__asm
+			{
+				push ebp
+				mov  ebp, esp
+
+				mov  ecx, offset exception_handler
+
+				push ebx
+				push ecx
+
+				push dword ptr fs:[0]
+				mov  dword ptr fs:[0], esp
+
+				mov  ebx, 0 // Flag
+				mov  eax, 1 // VPC function number
+			}
+
+			// call VPC 
+			_asm __emit 0Fh
+			_asm __emit 3Fh
+			_asm __emit 07h
+			_asm __emit 0Bh
+			_asm
+			{
+				mov eax, dword ptr ss:[esp]
+				mov dword ptr fs:[0], eax
+
+				add esp, 8
+				test ebx, ebx
+				setz al
+
+				lea esp, dword ptr ss:[ebp-4]
+				mov ebx, dword ptr ss:[esp]
+				mov ebp, dword ptr ss:[esp+4]
+
+				add esp, 8
+
+				jmp ret1
+exception_handler:
+				mov ecx, [esp+0Ch]
+				mov dword ptr [ecx+0A4h], -1 // EBX = -1 -> not running, ebx = 0 -> running
+					add dword ptr [ecx+0B8h], 4 // -> skip past the call to VPC
+					xor eax, eax // exception is handled
+					ret
+ret1:
+				ret
+			}
+		}
+	}
+
+	FTLINLINE bool _IsInsideVMWare()
+	{
+		bool r;
+		_asm
+		{
+			push   edx
+			push   ecx
+			push   ebx
+
+			mov    eax, 'VMXh'
+			mov    ebx, 0 // any value but MAGIC VALUE
+			mov    ecx, 10 // get VMWare version
+			mov    edx, 'VX' // port number
+			in     eax, dx // read port
+			// on return EAX returns the VERSION
+			cmp    ebx, 'VMXh' // is it a reply from VMWare?
+			setz   [r] // set return value
+
+			pop    ebx
+			pop    ecx
+			pop    edx
+		}
+		return r;
+	}
+
+	BOOL CFSystemUtil::IsInsideVMWare()
+	{
+		BOOL bRet = FALSE;
+		__try
+		{
+			bRet = !!_IsInsideVMWare();
+		}
+		__except(1) // 1 = EXCEPTION_EXECUTE_HANDLER
+		{
+			
+		}
+		return bRet;
+	}
+
     int CFSystemUtil::DosLineToUnixLine(const char *src, char *dest, int maxlen)
     {
         int		len = 0;

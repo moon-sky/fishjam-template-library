@@ -108,7 +108,8 @@
 *     2.陷阱式
 *   
 *   已有的库
-*     1.Detours：微软的开源研究库， 商业版本(大约6000RMB?支持X64
+*     1.Detours：http://research.microsoft.com/en-us/projects/detours
+*       微软的开源研究库，免费版本不能用于商业，商业版本大约6000RMB。支持X64
 *       http://nokyo.blogbus.com/logs/35243687.html
 *       编译：nmake，TODO: Debug/Release？ 可能需要更改 samples\common.mak 文件，去掉其中的 /nologo 
 *       原理：在目标进程中“打桩”来完成拦截目标函数的

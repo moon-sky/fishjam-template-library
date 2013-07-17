@@ -232,6 +232,14 @@ namespace FTL
         //un.s = 0x0102; //if(1==un.c[0] && 2==un.c[1]){big;}
         FTLINLINE static BOOL IsLittleSystem();
 
+		//TODO:测试是否有 C/C++ 的方式
+		//检测是否在虚拟机(Virtual PC/VMWare)上运行 -- http://download.csdn.net/detail/noliver/1380310
+		//VB 下：GetObject("winmgmts:\\" & strComputer & "\root\cimv2")
+		//  SELECT * FROM Win32_NetworkAdapterConfiguration WHERE IPEnabled = True
+		//  Left(objAdapter.Description,2）  ==  VM
+		FTLINLINE static BOOL IsInsideVPC();
+		FTLINLINE static BOOL IsInsideVMWare();
+
         //把Dos的结束符转换为Unix的结束符(去掉其中的 "\r" )
         FTLINLINE static int DosLineToUnixLine(const char *src, char *dest, int maxlen);
         //把Unix的结束符转换为Dos的结束符(将 "\r" 改成 "\r\n" )

@@ -6,8 +6,14 @@
 #include "resource.h"
 #include "MainDlg.h"
 #include "../ComicService/ComicService_i.c"
+#include "../ComicHelper/ComicHelper.h"
 
 #include <ftlComDetect.h>
+
+CMainDlg::CMainDlg()
+{
+	m_bHookInDll = FALSE;
+}
 
 LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -26,6 +32,11 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 void CMainDlg::OnDestroy()
 {
+	if (m_bHookInDll)
+	{
+		m_bHookInDll = FALSE;
+		SetApiUnHook();
+	}
 	if (m_spComicService)
 	{
 		m_spComicService.Release();
@@ -54,7 +65,7 @@ LRESULT CMainDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 	return 0;
 }
 
-void CMainDlg::OnInitService(UINT uNotifyCode, int nID, CWindow wndCtl)
+void CMainDlg::OnBtnInitService(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = E_FAIL;
 	COM_VERIFY(m_spComicService.CoCreateInstance(CLSID_ComicServiceObj, NULL, CLSCTX_LOCAL_SERVER));
@@ -63,11 +74,12 @@ void CMainDlg::OnInitService(UINT uNotifyCode, int nID, CWindow wndCtl)
 		COM_DETECT_INTERFACE_FROM_REGISTER(m_spComicService);
 	}
 	BOOL bEnabled = SUCCEEDED(hr);
-	::EnableWindow(GetDlgItem(IDC_BTN_HOOK), bEnabled);
-	::EnableWindow(GetDlgItem(IDC_BTN_UNHOOK), bEnabled);
+	::EnableWindow(GetDlgItem(IDC_BTN_INIT_SERVICE), !bEnabled);
+	::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_HOOK), bEnabled);
+	::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_UNHOOK), bEnabled);
 }
 
-void CMainDlg::OnBtnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
+void CMainDlg::OnBtnServiceHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = E_FAIL;
 	//CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
@@ -77,7 +89,7 @@ void CMainDlg::OnBtnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 	}
 }
 
-void CMainDlg::OnBtnUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
+void CMainDlg::OnBtnServiceUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	HRESULT hr = E_FAIL;
 	//CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
@@ -85,4 +97,25 @@ void CMainDlg::OnBtnUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
 		COM_VERIFY(m_spComicService->UnProtectWnd((LONG)m_hWnd));
 	}
+}
+
+void CMainDlg::OnBtnFinService(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	if (m_spComicService)
+	{
+		m_spComicService.Release();
+		::EnableWindow(GetDlgItem(IDC_BTN_INIT_SERVICE), TRUE);
+	}
+}
+
+void CMainDlg::OnBtnDllHook(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	m_bHookInDll = TRUE;
+	SetApiHook(m_hWnd);
+}
+
+void CMainDlg::OnBtnDllUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	SetApiUnHook();
+	m_bHookInDll = FALSE;
 }

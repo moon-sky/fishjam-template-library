@@ -6,6 +6,9 @@
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
 
+//#include <Wtsapi32.h>
+//#pragma comment(lib, "Wtsapi32.lib")
+
 /*************************************************************************************************************************
 * 已读例子
 *   winui\fulldrag -- (KBQ121541), 如果绘制比较花费时间，则在 WM_ENTERSIZEMOVE -> WM_EXITSIZEMOVE 时候缓冲，
@@ -366,6 +369,9 @@ const UINT DEAFULT_DUMP_FILTER_MESSAGES[] = {
 	WM_SYSTIMER,
 
 	WM_ENTERIDLE,
+#ifndef WM_KICKIDLE
+#  define WM_KICKIDLE	0x036A
+#endif 
 	WM_KICKIDLE,
 	WM_CTLCOLORMSGBOX,
 	WM_CTLCOLOREDIT,
@@ -380,13 +386,17 @@ const UINT DEAFULT_DUMP_FILTER_MESSAGES[] = {
 
 namespace FTL
 {
-    //在Output中Dump出当前接受到的消息
+	//注意:
+	//1.WTSRegisterSessionNotification 后才能接收 WM_WTSSESSION_CHANGE
+	//2.RegisterShellHookWindow 后可以接收 WM_SHELLHOOKMESSAGE
+
+	//在Output中Dump出当前接受到的消息
 #ifdef FTL_DEBUG
-#  define DUMP_WINDOWS_MSG(pszName, filters, nCount, uMsg, wParam, lParam) \
+#  define DUMP_WINDOWS_MSG(pszName, pFilters, nCount, uMsg, wParam, lParam) \
     {\
         BOOL bFilterd = FALSE;\
 		for(int i = 0; i < nCount; i++){\
-			if(uMsg == filters[i]){\
+			if(uMsg == pFilters[i] ){\
 				bFilterd = TRUE;\
 				break;\
 			}\
@@ -399,7 +409,7 @@ namespace FTL
         }\
     }
 #else
-#  define DUMP_WINDOWS_MSG(pszName, filters, nCount, uMsg, wParam, lParam) __noop;
+#  define DUMP_WINDOWS_MSG(pszName, filters, nCount, uMsg, wParam, lParam)	__noop;
 #endif 
 
 	//通过 RegisterWindowMessage 注册的消息
@@ -433,6 +443,7 @@ namespace FTL
 		UINT RWM_HTML_GETOBJECT;		//从IE窗体中获取对应的IHTMLDocument2接口
 		UINT RWM_SETRGBSTRING;
 		UINT RWM_SHAREVISTRING;
+		UINT WM_SHELLHOOKMESSAGE;		//RegisterShellHookWindow 后接收
 		UINT RWM_TASKBARBUTTONCREATED;	//任务栏重新创建?(没有确认，可以用于初始化Vista的 ITaskbarList3 接口?)
 		UINT RWM_TASKBARCREATED; 
 

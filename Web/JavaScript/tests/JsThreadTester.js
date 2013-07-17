@@ -63,18 +63,19 @@ test("WebWorkerTester", function() {
     ok(1 == 1, "TODO: WebWorkerTester");
 
     //主页面创建了一个专属工作线程，让它在后台执行 JavaScript 文件 prime_worker.js
-	/*
+    /*
+	//if(worker) worker.terminate();
 	var worker = new Worker("prime_worker.js"); 
 
 	 worker.onmessage = function(event) { 
-		var result = event.data; 
-		alert("计算完成，质数个数为：" + result); 
-	 }; 
+    var result = event.data; 
+    alert("计算完成，质数个数为：" + result); 
+    }; 
 
 	 function calculate() { 
-		var limit = parseInt(document.getElementById("limit").value) || 100000; 
-		worker.postMessage(limit); 
-	 }
+    var limit = parseInt(document.getElementById("limit").value) || 100000; 
+    worker.postMessage(limit); 
+    }
     */
  
 	/*

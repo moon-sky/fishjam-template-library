@@ -3,6 +3,7 @@
 
 /************************************************************************************************************
 *Chrome源码使用 GYP(Generate Your Projects) 来生成工程文件
+*  如果机器上安装了多个版本的VS，可以设置 GYP_MSVS_VERSION 环境变量(如 2010 )生成指定版本的工程
 * 
 *源码下载：
 *  http://dev.chromium.org/developers/how-tos/get-the-code 然后在其中找 "source tarball"
@@ -49,14 +50,15 @@
 *   7.运行
 *     src/build/Debug/chrome.exe 或 src/build/Release/chrome.exe
 *
-* CEF(Chromium Embedded Framework) -- https://code.google.com/p/chromiumembedded/
-*   CEF笔记：http://www.cnblogs.com/haippy/archive/2013/06/10/3131373.html
-*   用于嵌入基于 Google Chromium 项目的 Web 浏览器控件的开源项目，支持Windows、Linux、Mac等平台，
-*   提供的如下特性：自定义插件、自定义协议、自定义JavaScript对象和扩展
-*   OSR(Off Screen Rendering) -- 通过离屏渲染 + Windows的Layered Window，就制作了不规则的网页窗口
-*
 * Chrome源码分析
 *   http://blog.csdn.net/milado_nju/article/details/7216067
+* 
+* 各种极速浏览器是直接在Chrome上面扩展 -- 可扩展性强？
+************************************************************************************************************/
+
+/************************************************************************************************************
+* CEF(Chromium Embedded Framework) -- 开源Web browser控件，详见 ftlWeb.h
+*
 ************************************************************************************************************/
 
 

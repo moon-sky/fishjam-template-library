@@ -43,13 +43,15 @@
 * 
 * 更改
 *   服务名称：IDS_SERVICENAME
-*   服务描述：重载 CAtlServiceModuleT::RegisterAppId(bool bService = false){ ChangeServiceConfig2(SERVICE_CONFIG_DESCRIPTION) }
-*   修改安全设置(否则客户端调用时可能会 E_ACCESSDENIED)：InitializeSecurity 中 CoInitializeSecurity
+*   服务配置和描述等：重载 CAtlServiceModuleT::RegisterAppId(bool bService = false){ ChangeServiceConfig + ChangeServiceConfig2(SERVICE_CONFIG_DESCRIPTION) }
+*   修改安全设置(否则客户端调用时可能会 E_ACCESSDENIED)：InitializeSecurity 中
+*    CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_NONE, RPC_C_IMP_LEVEL_IDENTIFY, NULL, EOAC_NONE, NULL);
 *
 * 扩展实现
-*   TODO:VS2008中 "ATL Simple Object" 的向导无法启动
-*   通过增加 ATL Simple Object 的方式增加功能，需要在对应的 rgs 文件中增加 val AppID = s '%APPID%' 等(参见文库？)
-*   
+*   1.通过增加 ATL Simple Object 的方式增加功能，
+*     接口所能使用的参数必须是OLE兼容的，否则在QueryInterface时可能会报 0x80020008(DISP_E_BADVARTYPE) 的错误
+*   2.需要在对应的 rgs 文件中增加 val AppID = s '%APPID%'，否则客户端创建对象的时候会超时并报错误：0x80080005(CO_E_SERVER_EXEC_FAILURE)
+*   3.注册 xxxPS 工程生成的DLL
 *
 * 交互服务(WinXP以前)
 *   GetProcessWindowStation() -- 获取当前进程的 Window Station
