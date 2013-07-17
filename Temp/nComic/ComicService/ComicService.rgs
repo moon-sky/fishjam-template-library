@@ -1,0 +1,11 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		'%APPID%' = s 'ComicService'
+		'ComicService.EXE'
+		{
+			val AppID = s '%APPID%'
+		}
+	}
+}

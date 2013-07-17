@@ -1,0 +1,24 @@
+HKCR
+{
+	ComicService.ComicServiceObj.1 = s 'ComicServiceObj Class'
+	{
+		CLSID = s '{F59F3BEF-4A2B-4327-96EE-795E8FF1352F}'
+	}
+	ComicService.ComicServiceObj = s 'ComicServiceObj Class'
+	{
+		CLSID = s '{F59F3BEF-4A2B-4327-96EE-795E8FF1352F}'
+		CurVer = s 'ComicService.ComicServiceObj.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {F59F3BEF-4A2B-4327-96EE-795E8FF1352F} = s 'ComicServiceObj Class'
+		{
+			ProgID = s 'ComicService.ComicServiceObj.1'
+			VersionIndependentProgID = s 'ComicService.ComicServiceObj'
+			ForceRemove 'Programmable'
+			LocalServer32 = s '%MODULE%'
+			TypeLib = s '{1D7B6492-0112-4C41-8B2B-FCD9210FE0FE}'
+			val AppID = s '%APPID%'
+		}
+	}
+}
