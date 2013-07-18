@@ -3,20 +3,26 @@
 #include "stdafx.h"
 #include "ComicServiceObj.h"
 #include "../ComicHelper/ComicHelper.h"
-
+#include <WtsApi32.h>
+#pragma comment(lib, "wtsapi32.lib")
 // CComicServiceObj
 
 
-STDMETHODIMP CComicServiceObj::ProtectWnd(LONG hWnd, LONG clrBackground, BSTR bstrDisplayInfo)
+STDMETHODIMP CComicServiceObj::ProtectWnd(OLE_HANDLE hWnd, OLE_COLOR clrBackground, BSTR bstrDisplayInfo)
 {
-	SetApiHook((HWND)hWnd, clrBackground);
+	DWORD dwResult = 0;
+	//MessageBox(NULL, TEXT("Will ProtectWnd"), TEXT("Caption"), MB_OK);
+	WTSSendMessage(WTS_CURRENT_SERVER_HANDLE , WTSGetActiveConsoleSessionId(), TEXT("ProtectWnd"),
+		10 * sizeof(TCHAR), TEXT("Cap"), 3 * sizeof(TCHAR), MB_OK, 5, &dwResult, TRUE);
+
+	EnableWindowProtected((HWND)hWnd, clrBackground);
 	FTLTRACE(TEXT("CComicServiceObj::ProtectWnd, hWnd=0x%x\n"), hWnd);
 	return S_OK;
 }
 
-STDMETHODIMP CComicServiceObj::UnProtectWnd(LONG hWnd)
+STDMETHODIMP CComicServiceObj::UnProtectWnd(OLE_HANDLE hWnd)
 {
-	SetApiUnHook();
+	DisableWindowProtected((HWND)hWnd);
 	FTLTRACE(TEXT("CComicServiceObj::UnProtectWnd, hWnd=0x%x\n"), hWnd);
 
 	return S_OK;

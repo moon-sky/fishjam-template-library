@@ -27,6 +27,11 @@ public:
 		COMMAND_ID_HANDLER_EX(IDC_BTN_DLL_HOOK, OnBtnDllHook)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_DLL_UNHOOK, OnBtnDllUnHook)
 
+		MSG_WM_CHANGECBCHAIN(OnChangeCbChain)
+		MSG_WM_DRAWCLIPBOARD(OnDrawClipboard)	//whenever the content of the clipboard changes
+		COMMAND_ID_HANDLER_EX(IDC_BTN_ENABLE_CLIPBOARD_VIEWER, OnBtnEnableClipboardViewer)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_DISABLE_CLIPBOARD_VIEWER, OnBtnDisableClipboardViewer)
+
 		MSG_WM_DESTROY(OnDestroy)
 	END_MSG_MAP()
 
@@ -48,8 +53,14 @@ public:
 	void OnBtnDllHook(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnBtnDllUnHook(UINT uNotifyCode, int nID, CWindow wndCtl);
 
+	void OnBtnEnableClipboardViewer(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnBtnDisableClipboardViewer(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnChangeCbChain(CWindow wndRemove, CWindow wndAfter);
+	void OnDrawClipboard();
+
 	void OnDestroy();
 private:
 	CComPtr<IComicServiceObj>	m_spComicService;
 	BOOL	m_bHookInDll;
+	HWND	m_hWndNextViewer;
 };

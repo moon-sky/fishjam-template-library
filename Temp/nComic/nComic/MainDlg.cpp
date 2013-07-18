@@ -9,10 +9,13 @@
 #include "../ComicHelper/ComicHelper.h"
 
 #include <ftlComDetect.h>
+#include <ftlWindow.h>
+#include <ftlDebug.h>
 
 CMainDlg::CMainDlg()
 {
 	m_bHookInDll = FALSE;
+	m_hWndNextViewer = NULL;
 }
 
 LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -32,10 +35,16 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 void CMainDlg::OnDestroy()
 {
+	::ChangeClipboardChain(m_hWnd, m_hWndNextViewer);
+	if (m_hWndNextViewer)
+	{
+		m_hWndNextViewer = NULL;
+	}
+
 	if (m_bHookInDll)
 	{
 		m_bHookInDll = FALSE;
-		SetApiUnHook();
+		DisableWindowProtected(m_hWnd);
 	}
 	if (m_spComicService)
 	{
@@ -85,7 +94,7 @@ void CMainDlg::OnBtnServiceHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 	//CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
 	if (m_spComicService)
 	{
-		COM_VERIFY(m_spComicService->ProtectWnd((LONG)m_hWnd, RGB(255, 0, 0), CComBSTR(TEXT("Copy Protected"))));
+		COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, RGB(255, 0, 0), CComBSTR(TEXT("Copy Protected"))));
 	}
 }
 
@@ -95,7 +104,7 @@ void CMainDlg::OnBtnServiceUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 	//CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
 	if (m_spComicService)
 	{
-		COM_VERIFY(m_spComicService->UnProtectWnd((LONG)m_hWnd));
+		COM_VERIFY(m_spComicService->UnProtectWnd((OLE_HANDLE)m_hWnd));
 	}
 }
 
@@ -105,17 +114,94 @@ void CMainDlg::OnBtnFinService(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
 		m_spComicService.Release();
 		::EnableWindow(GetDlgItem(IDC_BTN_INIT_SERVICE), TRUE);
+		::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_HOOK), FALSE);
+		::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_UNHOOK), FALSE);
+		::EnableWindow(GetDlgItem(IDC_BTN_FIN_SERVICE), FALSE);
 	}
 }
 
 void CMainDlg::OnBtnDllHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	m_bHookInDll = TRUE;
-	SetApiHook(m_hWnd);
+	EnableWindowProtected(m_hWnd);
 }
 
 void CMainDlg::OnBtnDllUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-	SetApiUnHook();
+	DisableWindowProtected(m_hWnd);
 	m_bHookInDll = FALSE;
+}
+
+
+void CMainDlg::OnBtnEnableClipboardViewer(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	BOOL bRet = FALSE;
+	if (NULL == m_hWndNextViewer)
+	{
+		m_hWndNextViewer = ::SetClipboardViewer(m_hWnd);
+		API_VERIFY_EXCEPT1(m_hWndNextViewer != NULL, ERROR_SUCCESS);
+	}
+}
+
+void CMainDlg::OnBtnDisableClipboardViewer(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+	::ChangeClipboardChain(m_hWnd, m_hWndNextViewer);
+	if (m_hWndNextViewer)
+	{
+		m_hWndNextViewer = NULL;
+	}
+}
+
+void CMainDlg::OnChangeCbChain(CWindow wndRemove, CWindow wndAfter)
+{
+	if (wndRemove == m_hWndNextViewer) 
+	{
+		m_hWndNextViewer = wndAfter; 
+	}
+	// Otherwise, pass the message to the next link. 
+	else if (m_hWndNextViewer != NULL) 
+	{
+		SetMsgHandled(FALSE);
+		//::SendMessage(m_hWndNextViewer, WM_CHANGECBCHAIN, (WPARAM)wndRemove.m_hWnd, (LPARAM)wndAfter.m_hWnd); 
+	}
+}
+
+void CMainDlg::OnDrawClipboard()
+{
+	BOOL bRet = FALSE;
+	//HWND hWndOwner = GetClipboardOwner();
+	//if (hWndOwner)
+	{
+		//FTL::CFWindowDumpInfo dump(hWndOwner);
+		//FTLTRACE(TEXT("%s\n"), dump.GetConvertedInfo());
+		//TCHAR szClassName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
+		//GetClassName(hWndOwner, szClassName, _countof(szClassName));
+		//if (lstrcmpi(_T("#32769"), szClassName) == 0)
+		{
+			//Desktop
+			API_VERIFY(OpenClipboard());
+			if (bRet)
+			{
+#if 1
+				int nItem = 0;
+				CString strFormat;
+				UINT uFormat = 	EnumClipboardFormats(0); 
+				//TCHAR szFormatName[80] = {0};
+				while (uFormat) 
+				{ 
+					if (uFormat == CF_BITMAP || uFormat == CF_DIB || uFormat == CF_DIBV5)
+					{
+						FTLTRACE(TEXT("Will EmptyClipboard %d\n"), uFormat);
+						API_VERIFY(EmptyClipboard());
+						break;
+					}
+					uFormat = EnumClipboardFormats(uFormat); 
+				}
+#endif 
+				API_VERIFY(CloseClipboard());
+			}
+
+		}
+	}
+
 }

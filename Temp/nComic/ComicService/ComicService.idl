@@ -16,8 +16,8 @@ import "ocidl.idl";
 	pointer_default(unique)
 ]
 interface IComicServiceObj : IDispatch{
-	[id(1), helpstring("method ProtectWnd")] HRESULT ProtectWnd([in] LONG hWnd, [in] LONG clrBackground, [in] BSTR bstrDisplayInfo);
-	[id(2), helpstring("method UnProtectWnd")] HRESULT UnProtectWnd([in] LONG hWnd);
+	[id(1), helpstring("method ProtectWnd")] HRESULT ProtectWnd([in] OLE_HANDLE hWnd, [in] OLE_COLOR clrBackground, [in] BSTR bstrDisplayInfo);
+	[id(2), helpstring("method UnProtectWnd")] HRESULT UnProtectWnd([in] OLE_HANDLE hWnd);
 };
 [
 	uuid(1D7B6492-0112-4C41-8B2B-FCD9210FE0FE),

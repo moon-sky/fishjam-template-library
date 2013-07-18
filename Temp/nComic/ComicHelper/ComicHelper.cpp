@@ -22,21 +22,21 @@ BOOL  g_Hooked = FALSE;
 HMODULE g_hModule = NULL;
 
 static BOOL (WINAPI* TrueBitBlt)(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop) = BitBlt;
-static HANDLE (WINAPI* TrueCreateFileW)(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, 
-				LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
-				DWORD dwFlagsAndAttributes,HANDLE hTemplateFile)
-				= CreateFileW;
-
-static HANDLE (WINAPI* TrueCreateFileA)(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, 
-			   LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
-			   DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
-			   = CreateFileA;
+static HANDLE (WINAPI* TrueSetClipboardData)(UINT uFormat, HANDLE hMem) = SetClipboardData;
+//static HANDLE (WINAPI* TrueCreateFileW)(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, 
+//				LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
+//				DWORD dwFlagsAndAttributes,HANDLE hTemplateFile)
+//				= CreateFileW;
+//static HANDLE (WINAPI* TrueCreateFileA)(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, 
+//			   LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
+//			   DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
+//			   = CreateFileA;
 
 
 UINT UM_HELPER_HOOK = RegisterWindowMessage(TEXT("UM_HELPER_HOOK"));
 
-LPCWSTR pszSystemSnapFilePathW = L"C:\\Windows\\System32\\SnapShot";
-LPCSTR pszSystemSnapFilePathA = "C:\\Windows\\System32\\SnapShot";
+//LPCWSTR pszSystemSnapFilePathW = L"C:\\Windows\\System32\\SnapShot";
+//LPCSTR pszSystemSnapFilePathA = "C:\\Windows\\System32\\SnapShot";
 
 BOOL WINAPI FilterBitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop)
 {
@@ -77,33 +77,41 @@ BOOL WINAPI FilterBitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int 
 	return bRet;
 }
 
-HANDLE WINAPI FilterCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, 
-										LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
-										DWORD dwFlagsAndAttributes,HANDLE hTemplateFile)
+HANDLE WINAPI FilterSetClipboardData(UINT uFormat, HANDLE hMem)
 {
-	if (StrCmpICW(lpFileName, pszSystemSnapFilePathW) == 0)
-	{
-		SetLastError(ERROR_ACCESS_DENIED);
-		return NULL;
-	}
-	return TrueCreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition,
-		dwFlagsAndAttributes, hTemplateFile);
+	DWORD dwProcessId = GetCurrentProcessId();
+	TCHAR szModuleName[MAX_PATH] = {0};
+	GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+	ATLTRACE(TEXT("FilterSetClipboardData, PID=%d(%s)\n"), dwProcessId, PathFindFileName(szModuleName));
+	return TrueSetClipboardData(uFormat, hMem);
 }
 
-HANDLE WINAPI FilterCreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, 
-										LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
-										DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
-{
-	if (StrCmpICA(lpFileName, pszSystemSnapFilePathA) == 0)
-	{
-		SetLastError(ERROR_ACCESS_DENIED);
-		return NULL;
-	}
-
-	return TrueCreateFileA(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition,
-		dwFlagsAndAttributes, hTemplateFile);
-
-}
+//HANDLE WINAPI FilterCreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, 
+//										LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
+//										DWORD dwFlagsAndAttributes,HANDLE hTemplateFile)
+//{
+//	if (StrCmpICW(lpFileName, pszSystemSnapFilePathW) == 0)
+//	{
+//		SetLastError(ERROR_ACCESS_DENIED);
+//		return NULL;
+//	}
+//	return TrueCreateFileW(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition,
+//		dwFlagsAndAttributes, hTemplateFile);
+//}
+//
+//HANDLE WINAPI FilterCreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, 
+//										LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, 
+//										DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
+//{
+//	if (StrCmpICA(lpFileName, pszSystemSnapFilePathA) == 0)
+//	{
+//		SetLastError(ERROR_ACCESS_DENIED);
+//		return NULL;
+//	}
+//
+//	return TrueCreateFileA(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition,
+//		dwFlagsAndAttributes, hTemplateFile);
+//}
 
 
 LRESULT CALLBACK My_CallWndProc(
@@ -121,50 +129,62 @@ LRESULT CALLBACK My_CallWndProc(
 
 		BOOL bRet = FALSE;
 		g_Hooked = TRUE;
-		DetourRestoreAfterWith();
-		API_VERIFY(DetourTransactionBegin() == NO_ERROR);
-		API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
-		//API_VERIFY(DetourAttach(&(PVOID&)TrueSleepEx, TimedSleepEx) == NO_ERROR);
-		API_VERIFY(DetourAttach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
-		API_VERIFY(DetourAttach(&(PVOID&)TrueCreateFileW, FilterCreateFileW) == NO_ERROR);
-		API_VERIFY(DetourAttach(&(PVOID&)TrueCreateFileA, FilterCreateFileA) == NO_ERROR);
-		API_VERIFY(DetourTransactionCommit() == NO_ERROR);
+		API_VERIFY(HookApi());
 	}
 	return CallNextHookEx(g_hHook, nCode, wParam, lParam);
 }
 
 
-COMICHELPER_API BOOL SetApiHook(HWND hWndFilter, COLORREF clrDisabled)
+COMICHELPER_API BOOL EnableWindowProtected(HWND hWndFilter, COLORREF clrDisabled)
 {
-	ATLTRACE(TEXT("Enter SetApiHook for hWndFilter=0x%x\n"), hWndFilter);
+	ATLTRACE(TEXT("Enter EnableWindowProtected for hWndFilter=0x%x\n"), hWndFilter);
 	BOOL bRet = FALSE;
 	g_hFilterWnd = hWndFilter;
 	g_clrDisabled = clrDisabled;
 	if (NULL == g_hHook)
 	{
-		ATLTRACE(TEXT("Enter SetApiHook  for 0x%x\n"), hWndFilter);
+		ATLTRACE(TEXT("Enter EnableWindowProtected  for 0x%x\n"), hWndFilter);
 
 		//UM_HELPER_HOOK = RegisterWindowMessage(TEXT("UM_HELPER_HOOK"));
 		g_hHook = SetWindowsHookEx(WH_CALLWNDPROC, My_CallWndProc, g_hModule, 0);
 	}
 
-	ATLTRACE(TEXT("Leave SetApiHook g_hHook=0x%x, bRet=%d\n"), g_hHook, bRet);
+	ATLTRACE(TEXT("Leave EnableWindowProtected g_hHook=0x%x, bRet=%d\n"), g_hHook, bRet);
 	return bRet;
 }
 
-COMICHELPER_API BOOL SetApiUnHook()
+COMICHELPER_API BOOL DisableWindowProtected(HWND hWnd)
 {
 	BOOL bRet = TRUE;
-
-	if (g_hHook)
+	ATLASSERT(hWnd == g_hFilterWnd);
+	if (hWnd == g_hFilterWnd && g_hHook)
 	{
 		bRet = UnhookWindowsHookEx(g_hHook);
 		g_hHook = NULL;
 		UnHookApi();
+
+		g_hFilterWnd = NULL;
 	}
 	return bRet;
 }
 
+COMICHELPER_API BOOL HookApi()
+{
+	ATLTRACE(TEXT("Will HookApi in PID=%d, TID=%d\n"), GetCurrentProcessId(), GetCurrentThreadId());
+	BOOL bRet = FALSE;
+
+	DetourRestoreAfterWith();
+	API_VERIFY(DetourTransactionBegin() == NO_ERROR);
+	API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
+	//API_VERIFY(DetourAttach(&(PVOID&)TrueSleepEx, TimedSleepEx) == NO_ERROR);
+	API_VERIFY(DetourAttach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
+	//API_VERIFY(DetourAttach(&(PVOID&)TrueCreateFileW, FilterCreateFileW) == NO_ERROR);
+	//API_VERIFY(DetourAttach(&(PVOID&)TrueCreateFileA, FilterCreateFileA) == NO_ERROR);
+	API_VERIFY(DetourAttach(&(PVOID&)TrueSetClipboardData, FilterSetClipboardData) == NO_ERROR);
+	API_VERIFY(DetourTransactionCommit() == NO_ERROR);
+
+	return bRet;
+}
 COMICHELPER_API BOOL UnHookApi()
 {
 	ATLTRACE(TEXT("Will UnHookApi in PID=%d, TID=%d\n"), GetCurrentProcessId(), GetCurrentThreadId());
@@ -173,8 +193,9 @@ COMICHELPER_API BOOL UnHookApi()
 	API_VERIFY(DetourTransactionBegin()== NO_ERROR);
 	API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
 	API_VERIFY(DetourDetach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
-	API_VERIFY(DetourDetach(&(PVOID&)TrueCreateFileW, FilterCreateFileW) == NO_ERROR);
-	API_VERIFY(DetourDetach(&(PVOID&)TrueCreateFileA, FilterCreateFileA) == NO_ERROR);
+	//API_VERIFY(DetourDetach(&(PVOID&)TrueCreateFileW, FilterCreateFileW) == NO_ERROR);
+	//API_VERIFY(DetourDetach(&(PVOID&)TrueCreateFileA, FilterCreateFileA) == NO_ERROR);
+	API_VERIFY(DetourDetach(&(PVOID&)TrueSetClipboardData, FilterSetClipboardData) == NO_ERROR);
 	API_VERIFY(DetourTransactionCommit() == NO_ERROR);
 
 	return bRet;

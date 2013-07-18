@@ -47,8 +47,8 @@ END_COM_MAP()
 
 public:
 
-	STDMETHOD(ProtectWnd)(LONG hWnd, LONG clrBackground, BSTR bstrDisplayInfo);
-	STDMETHOD(UnProtectWnd)(LONG hWnd);
+	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd, OLE_COLOR clrBackground, BSTR bstrDisplayInfo);
+	STDMETHOD(UnProtectWnd)(OLE_HANDLE hWnd);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(ComicServiceObj), CComicServiceObj)
