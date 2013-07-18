@@ -107,13 +107,36 @@
 *     1.改引入表式 -- 易于实现，OpenProcess + WriteProcessMemory 改写函数地址
 *     2.陷阱式
 *   
-*   已有的库
-*     1.Detours：http://research.microsoft.com/en-us/projects/detours
-*       微软的开源研究库，免费版本不能用于商业，商业版本大约6000RMB。支持X64
-*       http://nokyo.blogbus.com/logs/35243687.html
-*       编译：nmake，TODO: Debug/Release？ 可能需要更改 samples\common.mak 文件，去掉其中的 /nologo 
-*       原理：在目标进程中“打桩”来完成拦截目标函数的
-*   
+* 已有的库
+*   1.Detours：http://research.microsoft.com/en-us/projects/detours
+*     微软的开源研究库，免费版本不能用于商业，商业版本大约6000RMB。支持x64和IA64等64位平台
+*     编译：nmake，TODO: Debug/Release？ 可能需要更改 samples\common.mak 文件，去掉其中的 /nologo 
+*     原理：在汇编层改变目标API出口和入口的一些汇编指令
+*       几部分：Source Fun => Detour Func(简单的JMP)=> Trampoline Func(蹦床,原始被替代的代码 + JMP到Target) => Target Func
+*       Trampoline 保存了被替换的目标API的前几条指令和一个无条件转移
+*     实现注意：
+*       1.需要将DLL复制到目标进程目录 或 System32(SysWOW64 -- 64位上的32位程序时)
+*       2.通过 #pragma data_seg("MyShare") + #pragma comment(linker,"/SECTION:MyShare,RWS") 将特定变量加入共享数据段
+*       3.DLL_PROCESS_ATTACH + DLL_THREAD_ATTACH 时进行Hook？ 
+*         DLL_PROCESS_DETACH + DLL_THREAD_DETACH 时进行UnHook？
+*       4.是否需要该文件？ detoured.dll 是一个标志，帮助微软的开发人员和工具判断某个进程是否已经被detours拦截
+*       5.32 <==> 64 互相插入时，会生成辅助进程(HelperProcess)？
+*     使用方式：
+*       1.普通：DetourTransactionBegin => DetourUpdateThread => DetourAttach/DetourDetach => DetourTransactionCommit
+*       2.类成员函数 -- 定义CXxxHook类(注意：尚未测试 -- http://wenku.baidu.com/view/7b441cb665ce05087632133b.html)
+*         a.定义static的函数指针： static int (CXxxHook::* TrueFun)(xxxx) = &CTrueXxx::Fun;
+*         b.定义 FilterFun 的成员函数，其中可以通过 (this->*TrueFun)(xxx) 的方式调用原来的实现
+*         c.DetourAttach(&(PVOID&)CXxxHook::TrueFun, (PVOID)(&(PVOID&)CXxxHook::FilterFun));
+*     主要的API
+*       DetourCreateProcessWithDllEx -- 在启动指定进程的时候注入DLL(该DLL最少要有一个导出函数)
+*       DetourIsHelperProcess -- 判断当前是否在辅助进程里,通过在DllMain中，该函数返回TRUE时，直接 return TRUE;
+*       DetourRestoreAfterWith -- 恢复初始状态(在 DllMain::PROCESS_ATTACH 时调用？)
+*       DetourUpdateThread -- 
+*       DetourFindFunction -- 动态找到函数指针的真实地址给 TrueXxx 赋值?
+*     TODO:
+*       是否需要调用 DisableThreadLibraryCalls ?
+*   2.Deviare(不支持C/C++?  http://www.nektra.com/products/deviare-api-hook-windows/)
+* 
 * TODO(FUAPIHook.h 中已有) -- http://wenku.baidu.com/view/5ae307f04693daef5ef73d48.html
 *   Win64的：http://blog.csdn.net/zzw315/article/details/4102488
 ******************************************************************************************************/

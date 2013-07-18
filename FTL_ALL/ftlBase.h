@@ -589,6 +589,14 @@ namespace FTL
         FTLINLINE LPCTSTR GetErrorFacility(HRESULT hr, LPTSTR pszFacility,DWORD dwLength);
     };
 
+	FTLEXPORT class CFWindowDumpInfo: public CFConvertInfoT<CFWindowDumpInfo, HWND>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFWindowDumpInfo);
+	public:
+		FTLINLINE explicit CFWindowDumpInfo(HWND hWnd);
+		FTLINLINE virtual LPCTSTR ConvertInfo();
+	};
+
     //! 方便的管理需要分配的临时内存，在类的构造中分配内存，析构中释放
     //! 是否可能生成小的内存碎片？使用Pool优化？
     enum MemoryAllocType

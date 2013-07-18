@@ -1,4 +1,4 @@
-解决vista和win7在windows服务中交互桌面权限问题：穿透Session 0 隔离 -- http://www.cnblogs.com/therock/articles/2261371.html
+微软研究院Detour开发包之API拦截技术 -- http://www.360doc.com/relevant/71531523_more.shtml
 
 西二旗的码农在朝鲜 http://v.youku.com/v_show/id_XNTgyOTM2MzQ4.html
 

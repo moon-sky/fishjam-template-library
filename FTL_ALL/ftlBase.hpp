@@ -358,6 +358,36 @@ namespace FTL
         }
         return m_bufInfo;
     }
+
+	CFWindowDumpInfo::CFWindowDumpInfo(HWND hWnd) 
+		: CFConvertInfoT<CFWindowDumpInfo, HWND>(hWnd)
+	{
+	}
+
+	LPCTSTR CFWindowDumpInfo::ConvertInfo()
+	{
+		BOOL bRet = TRUE;
+		if (NULL == m_bufInfo[0])
+		{
+			TCHAR szClassName[64] = {0};
+			API_VERIFY(0 != ::GetClassName(m_Info, szClassName, _countof(szClassName)));
+
+			//Window Text May be Empty, So it will return zero
+			TCHAR szWindowText[128] = {0};
+			API_VERIFY_EXCEPT1(0 != ::GetWindowText(m_Info, szWindowText, _countof(szWindowText)), ERROR_SUCCESS);
+
+			RECT rcWindow = {0};
+			API_VERIFY(::GetWindowRect(m_Info, &rcWindow));
+
+			StringCchPrintf(m_bufInfo,_countof(m_bufInfo), 
+				TEXT("HWnd=0x%x, ClassName='%s', WindowText='%s', rcWindow=(%d,%d)-(%d,%d), %dx%d"),
+				m_Info, szClassName, szWindowText, 
+				rcWindow.left, rcWindow.top, rcWindow.right, rcWindow.bottom,
+				rcWindow.right - rcWindow.left, rcWindow.bottom - rcWindow.top);
+		}
+		return m_bufInfo;
+	}
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     template <typename T, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/, MemoryAllocType allocType  /*= matNew*/>

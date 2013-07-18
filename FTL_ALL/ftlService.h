@@ -8,19 +8,22 @@
 
 /*************************************************************************************************************************
 * Windows服务分成两种类型：interactive service (交互式服务)和non-interactive service（非交互式服务）。
-* 1.如果一个服务以“LocalSystem Account”运行，并且设置了“SERVICE_INTERACTIVE_PROCESS”属性。
+* 1.如果一个服务以"LocalSystem Account"运行，并且设置了"SERVICE_INTERACTIVE_PROCESS"属性。
 *   那么它就被认为是一个interactive service。交互式服务在非Vista系统下（XP,NT），
-*   使用“interactive window station”（ WinSta0），显示UI接受用户输入，和用户进行交互。
-*   设置“SERVICE_INTERACTIVE_PROCESS”属性：服务属性页->[“log on”属性页]->[local system account] ->[Allow service to interact with desktop]
-* 2.如果一个服务以“LocalSystem Account”运行，但是没有设置“SERVICE_INTERACTIVE_PROCESS”属性,则使用名为
-*   "Service-0x0-3e7$\default" 的“window station”,非交互的,XP/2003/Vista 都相同;
-* 3.如果服务以“User Account”运行，它所使用的“window station”的名字基于用户的SID:
+*   使用"interactive window station"(WinSta0)，显示UI接受用户输入，和用户进行交互。
+*   设置"SERVICE_INTERACTIVE_PROCESS"属性：
+*     服务属性页->["log on"属性页]->[local system account] ->[Allow service to interact with desktop]
+* 2.如果一个服务以"LocalSystem Account"运行，但是没有设置"SERVICE_INTERACTIVE_PROCESS"属性,则使用名为
+*   "Service-0x0-3e7$\default" 的"window station",非交互的,XP/2003/Vista 都相同;
+* 3.如果服务以"User Account"运行，它所使用的"window station"的名字基于用户的SID:
 *   Service-0xZ1-Z2$, Z1, Z2分别代表SID的高位和低位 -- 非交互的.
 *
-* Interactive service存在的安全问题 -- 在Vista下，将所有的系统程序和服务程序都隔离到一个Session 0的空间中,
-* 由于用户程序和服务程序运行在完全分离的Session中,他们使用不同的window station和桌面,这种空间的分离，
-* 使得用户进程没有机会访问到服务程序的窗口句柄，这样就有效的避免了不良用户程序的攻击。
-* 
+* Interactive service存在的安全问题( WinXP中 服务程序和第一个登录用户的应用程序 在同一个Session 0中运行)。
+*   在Vista下，将所有的系统程序和服务程序都隔离到一个Session 0的空间中,其他应用程序则通过分离的Session运行。
+*   由于用户程序和服务程序运行在完全分离的Session中,他们使用不同的window station和桌面,这种空间的分离，
+*   使得用户进程没有机会访问到服务程序的窗口句柄，这样就有效的避免了不良用户程序的攻击。
+*   注意：可通过ProcessExplorer 的 Security 属性页查看进程所在Session
+*
 * Session分离带来的影响 -- 
 *  在分离前，服务进程如果想和用户进程通信，只需要跨越进程边界，
 *  而分离后，不仅仅是跨越进程边界，还需要跨越Session边界才能进行。
@@ -28,9 +31,10 @@
 *  2>.利用内核对象进行用户进程和服务进程的同步时，在分离Session模式下，需要指定内核对象的名字空间(如 "Global\\Event1")
 * 
 * Services将UI显示到用户桌面上:
-*  1> WTSSendMessage -- 显示简单的Message
+*  1> WTSSendMessage(WTS_CURRENT_SERVER_HANDLE, WTSGetActiveConsoleSessionId(), ) -- 显示简单的Message
 *  2> 复杂的UI -- 使用 CreateProcessAsUser()在用户的Session内创建一个进程，让这个进程来显示UI.
-*  3>.任何支持跨越主机的通信方式都支持跨越Session进行通信,简单适用的方式有RPC（远程过程调用）和Named Pipes(命名管道)。
+*     WTSQueryUserToken(WTSGetActiveConsoleSessionId(), &hToken) -> DuplicateTokenEx -> CreateEnvironmentBlock -> CreateProcessAsUser
+*  3>.任何支持跨越主机的通信方式都支持跨越Session进行通信,简单适用的方式有RPC(远程过程调用)Named Pipes(命名管道)，WCF 等。
 *
 *************************************************************************************************************************/
 
@@ -58,7 +62,14 @@
 *   OpenDesktop("default", xxx)
 *   OpenWindowStation("winsta0", xxx)  
 * 
+*
+*
+*************************************************************************************************************************/
 
+/*************************************************************************************************************************
+* C#开发服务
+*   从 ServiceBase 继承，有可重载的 OnStart/OnStop 等方法，
+*   程序编译后通过Installutil 将其加载到系统服务中
 *************************************************************************************************************************/
 
 namespace FTL
