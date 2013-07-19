@@ -116,9 +116,10 @@ namespace FTL
 		WCHAR  wszCLSID[50] = {0};
 		WCHAR  wszMonikerName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
 
-		StringFromGUID2(rclsid, wszCLSID, _countof(wszCLSID)); 
+		StringFromGUID2(rclsid, wszCLSID, _countof(wszCLSID));
 		COM_VERIFY(StringCchPrintf(wszMonikerName, _countof(wszMonikerName), 
 			L"Elevation:Administrator!new:%s",wszCLSID));
+			//Elevation:Highest!new:{guid}
 		if (FAILED(hr))
 		{
 			return hr;

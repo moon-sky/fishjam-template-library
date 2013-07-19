@@ -8,7 +8,6 @@
 
 #pragma TODO(从 FUUser 文件中同步)
 //用户帐号控制(UAC) -- http://www.cnblogs.com/rainbowzc/archive/2012/02/28/2371526.html
-
 /*********************************************************************************************************************************
 * 安全控制
 *   Security Context -- 安全上下文，定义某个进程允许做什么的许可和权限的集合，通过登录会话确定，通过访问令牌维护。
@@ -49,10 +48,13 @@
 *
 * 权限提升的方式(允许运行在受限用户（LUA）的应用程序激活一个提升权限的COM对象，即在Vista系统上会弹出UAC提示框让用户提升权限（UAC打开状态下）)
 *   1.manifest 中的 requireAdministrator ?
-*   2.COM Elevation Moniker -- COM类必须在注册表中有权限提升支持标识( AppID/DllSurrogate, Elevation/Enabled=1, LocalizedString="xxx", )
+*   2.COM Elevation Moniker -- 参见 ftlCom.h 
+*
+* 安全描述符
 *   
 * 函数
 *   CreateRestrictedToken -- 根据现有的访问令牌的约束创建一个新的受限访问令牌
+*   ConvertStringSecurityDescriptorToSecurityDescriptor -- 按安全描述符格式的字符串转换成有效的安全描述符结构
 *********************************************************************************************************************************/
 
 

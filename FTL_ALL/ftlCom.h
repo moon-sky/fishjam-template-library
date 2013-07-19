@@ -11,10 +11,6 @@
 #define FTL_COM_H
 #pragma once
 
-//http://msdn.microsoft.com/en-us/library/ms679687(VS.85).aspx,  CoCreateInstanceAsAdmin -> CreateElevatedComObject
-//http://blogs.msdn.com/b/vistacompatteam/archive/2006/09/28/cocreateinstanceasadmin-or-createelevatedcomobject-sample.aspx
-#pragma TODO(The COM Elevation Moniker)
-
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
@@ -101,8 +97,34 @@
 *
 * COM连接点客户端调试(参见CFBhoObject::Invoke)：
 *   重载 Invoke 函数，然后可以打印相关信息，从而知道发生的所有连接点事件
-*************************************************************************************************************/
+*
+* 通过COM进行动态权限提升(运行在UAC下的普通用户，可动态通过权利提升激活COM类 -- COM Elevation Moniker)
+*   http://blogs.msdn.com/b/vistacompatteam/archive/2006/09/28/cocreateinstanceasadmin-or-createelevatedcomobject-sample.aspx
+*   COM必须在注册表中有权限提升支持标识：
+*     Lib的rgs文件，
+*        APPID { val DllSurrogate = s '' }			-- COM对象会运行在新创建的 dllhost.exe 进程中
+*        可以设置二进制的 AccessPermission ?
+*     Object的rgs 文件中，
+*        val LocalizedString = s'@%MODULE%,-101'	-- 在提升对话框中显示的字符串，否则会报 CO_E_MISSING_DISPLAYNAME
+*        Elevation { 
+*          val Enabled = d 1						-- 声明 LUA-Enabled，否则会返回 CO_E_ELEVATION_DISABLED
+*          val IconReference= -s'@%MODULE%,-201'	-- 可选的程序图标(实测无效? 必须签名才会生效?)
+*        } 
+*   客户端：通过 CreateElevatedComObject 函数调用
+*   允许标准用户访问(如果不设置的话，管理员访问没有问题，其他用户访问会 E_ACCESSDENIED)
+*     1.dcomcnfg -> Component Services\Computers\My Computer\DCOM Config -> 找到对象 -> Properties -> Security
+*       Access Permissions 中 Add "Interactive"
+*       TODO:可以用代码直接设置吗?
+* 
+*   Over-The-Shoulder (OTS) Elevation -- 这是什么类型的提升？
+*   
+* 
+//http://blogs.msdn.com/b/vistacompatteam/archive/2006/09/28/cocreateinstanceasadmin-or-createelevatedcomobject-sample.aspx
+#pragma TODO(The COM Elevation Moniker)
+*     COM类( AppID/DllSurrogate, Elevation/Enabled=1, LocalizedString="xxx", )
 
+*************************************************************************************************************/
+ 
 #ifndef FTL_BASE_H
 #  error ftlcom.h requires ftlbase.h to be included first
 #endif
@@ -123,7 +145,7 @@ namespace FTL
         FTLINLINE static BOOL RegisterComponent(LPCTSTR pszFilePath,BOOL bRegister);
         FTLINLINE static HRESULT DisplayObjectPropertyPage(HWND hWndOwner,LPCOLESTR lpszCaption, IUnknown *pUnk);
 
-		//创建一个进行过权限提升的COM对象(改COM对象必须满足特定的要求?)
+		//创建一个进行过权限提升的COM对象(该COM对象必须满足特定的要求?)
 		FTLINLINE static HRESULT CreateElevatedComObject(HWND hwnd, REFCLSID rclsid, REFIID riid, __out void ** ppv);
     };
 

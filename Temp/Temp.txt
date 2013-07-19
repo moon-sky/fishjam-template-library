@@ -1,3 +1,7 @@
+NT内核简介——HIPS与现代木马 -- http://bbs.kafan.cn/thread-233915-1-1.html
+驱动级DLL注入源码 -- http://www.pudn.com/downloads379/sourcecode/windows/detail1634630.html
+基于API_HOOK的数据文件透明加解密系统设计和实现 -- http://www.docin.com/p-68506176.html
+
 微软研究院Detour开发包之API拦截技术 -- http://www.360doc.com/relevant/71531523_more.shtml
 
 西二旗的码农在朝鲜 http://v.youku.com/v_show/id_XNTgyOTM2MzQ4.html

@@ -35,7 +35,7 @@
 *      系统启动时，有 User32.dll 依次调用DLL中的 DllMain(DLL_PROCESS_ATTACH)
 *      不足：只能在系统重启后，加载到所有使用User32.dll 的 GUI 程序中；不支持Win98
 *
-*   b.使用 Windows 挂钩来插入DLL。有针对单个线程的Hook和针对整个系统的Hook
+*   b.使用 Windows 挂钩来插入DLL。有针对单个线程的Hook和针对整个系统的Hook(具体是哪个钩子无所谓，但一般好像是 WH_GETMESSAGE/WH_CALLWNDPROC ?)
 *       系统Hook： HHOOK hHook = SetWindowsHookEx(WH_GETMESSAGE,GetMsgProc,hInstDll,0);
 *       线程Hook： g_hHook = SetWindowsHookEx( WH_CALLWNDPROC,HookProc,hInstDll, GetWindowThreadProcessId(hWndParam,NULL));
 *     当系统插入或者映射包含挂钩过滤器函数的DLL时，整个DLL均被映射，而不只是挂钩过滤器函数被映射。
@@ -45,6 +45,7 @@
 *   c.使用远程线程来插入DLL -- 具有更大的灵活性(DLL 中执行 DLL_PROCESS_ATTACH 通知的 DllMain 函数 )
 *     CreateRemoteThread(其参数 pfnStartAddr指明线程函数的内存地址,其纤程函数的代码不能位于自己进程的地址空间中)，
 *     需要该线程调用 LoadLibrary 函数来加载我们的DLL。创建一个新线程，并且使线程函数的地址成为 LoadLibraryA 或LoadLibraryW函数的地址。
+*     TODO：？使用 VirtualQueryEx 函数把存放指令的页面的权限更改为可读可写可执行，再改写其内容，从而修改正在运行的程序 
 *     1).使用 VirtualAllocEx 函数，分配远程进程的地址空间中的内存。
 *     2).使用 WriteProcessMemory 函数，将DLL的路径名拷贝到第一个步骤中已经分配的内存中。
 *     3).使用 GetProcAddress 函数，获取 LoadLibraryA 或 LoadLibraryW 函数的实地址（在Kernel32.dll中）
@@ -52,8 +53,7 @@
 *        这时,DLL已经被插入远程进程的地址空间中，同时DLL的 DllMain 函数接收到一个 DLL_PROCESS_ATTACH 通知，并且能够执行需要的代码。
 *        当 DllMain 函数返回时，远程线程从它对 LoadLibrary 的调用返回,使远程线程终止运行。
 *        现在远程进程拥有第一个步骤中分配的内存块，而DLL则仍然保留在它的地址空间中。
-*     5).调用GetExitCodeThread获取远程线程的退出码 -- 即LoadLibrary函数的返回值，表明映射的DLL的基址，可以保留并用于以后示范
-*     清除操作：
+*     5).调用GetExitCodeThread获取远程线程的退出码 -- 即LoadLibrary函数的返回值，表明映射的DLL的基址，可以保留并用于以后释放清除操作：
 *     6).使用 VirtualFreeEx 函数，释放第一个步骤中分配的内存。
 *     7).使用 GetProcAddress 函数，获得 FreeLibrary 函数的实地址。
 *     8).使用 CreateRemoteThread 函数，在远程进程中创建一个线程，它调用 FreeLibrary 函数，传递远程DLL的HINSTANCE。
@@ -112,8 +112,14 @@
 *     微软的开源研究库，免费版本不能用于商业，商业版本大约6000RMB。支持x64和IA64等64位平台
 *     编译：nmake，TODO: Debug/Release？ 可能需要更改 samples\common.mak 文件，去掉其中的 /nologo 
 *     原理：在汇编层改变目标API出口和入口的一些汇编指令
-*       几部分：Source Fun => Detour Func(简单的JMP)=> Trampoline Func(蹦床,原始被替代的代码 + JMP到Target) => Target Func
-*       Trampoline 保存了被替换的目标API的前几条指令和一个无条件转移
+*       几部分：
+*         Target函数：要拦截的函数，通常为Windows的API
+*         Trampoline函数(蹦床,原始被替代的代码 + JMP到Target)：Target函数的部分复制品。
+*           因为Detours将会改写Target函数，所以先把Target函数的前5个字节复制保存好，
+*           一方面仍然保存Target函数的过程调用语义，另一方面便于以后的恢复。然后是一个无条件转移
+*         Detour函数：用来替代Target函数的截获函数
+*     Detours同样提供了DLL注入的方式，它可编辑任何DLL或EXE导入表的功能，达到向存在的二进制代码中添加任意数据节表的目的
+*     有效负荷(Payloads) -- 可以对Win32二进制文件添加、卸载数据节表(.detours Section)以及编辑DLL导入表
 *     实现注意：
 *       1.需要将DLL复制到目标进程目录 或 System32(SysWOW64 -- 64位上的32位程序时)
 *       2.通过 #pragma data_seg("MyShare") + #pragma comment(linker,"/SECTION:MyShare,RWS") 将特定变量加入共享数据段
@@ -121,6 +127,9 @@
 *         DLL_PROCESS_DETACH + DLL_THREAD_DETACH 时进行UnHook？
 *       4.是否需要该文件？ detoured.dll 是一个标志，帮助微软的开发人员和工具判断某个进程是否已经被detours拦截
 *       5.32 <==> 64 互相插入时，会生成辅助进程(HelperProcess)？
+*       6.可以静态或动态地创建：区别？ComicViewer中不能拦截视频的BitBlt？
+*       A1.一定要枚举线程并调用DetourUpdateThread函数。否则可能出现很低几率的崩溃问题，这种问题很难被检查出来。
+*       A2.如果拦截函数在DLL中，那么绝大多数情况下不能在Unhook之后卸载这个DLL，或者卸载存在造成崩溃的危险。
 *     使用方式：
 *       1.普通：DetourTransactionBegin => DetourUpdateThread => DetourAttach/DetourDetach => DetourTransactionCommit
 *       2.类成员函数 -- 定义CXxxHook类(注意：尚未测试 -- http://wenku.baidu.com/view/7b441cb665ce05087632133b.html)
@@ -133,6 +142,11 @@
 *       DetourRestoreAfterWith -- 恢复初始状态(在 DllMain::PROCESS_ATTACH 时调用？)
 *       DetourUpdateThread -- 
 *       DetourFindFunction -- 动态找到函数指针的真实地址给 TrueXxx 赋值?
+*     工具:
+*       SetDll.exe -- 可以在Exe文件中增加对指定DLL的引用(加入.detours节，会更改可执行文件),
+*         注意DLL需要有序号为"1" 的导出函数(Makefile 中有: /export:DetourFinishHelperProcess,@1,NONAME )
+*         TODO:def 文件中如何设置？
+*       WithDll.exe -- 在注入指定DLL的情况下创建并运行指定进程(纯内存操作，可执行文件不受影响)
 *     TODO:
 *       是否需要调用 DisableThreadLibraryCalls ?
 *   2.Deviare(不支持C/C++?  http://www.nektra.com/products/deviare-api-hook-windows/)

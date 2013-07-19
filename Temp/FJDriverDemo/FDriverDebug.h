@@ -4,7 +4,8 @@
 /******************************************************************************************************************
 * SrvInstW.exe(http://www.onlinedown.net/soft/36059.htm)
 *   将驱动作为服务的方式安装，然后可以通过 net start/stop 来启动/停止 驱动程序
-*
+*    卸载驱动：sc delete xxxx
+* 
 * WinObj(http://technet.microsoft.com/en-us/sysinternals/bb896657.aspx)
 *   可以显示所有的内核对象
 *
