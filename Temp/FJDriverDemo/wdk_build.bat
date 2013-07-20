@@ -1,13 +1,18 @@
 @echo on
-@echo %1 is chk or fre %2 is WXP or W2K or WNET.
+@echo %1 is chk or fre 
+@echo %2 is WXP or W2K or WNET.
+@echo %3 is copy source file path
+@echo %4 is copy target dir
 
 call set_wdk_env.bat
 
-if "%4"=="/a" call wdk_clean %1 %2
+rem if "%4"=="/a" call wdk_clean %1 %2
 
 pushd.
-call %BASEDIR%\bin\setenv.bat %BASEDIR% %1 %2
+call %WDKPATH%\bin\setenv.bat %WDKPATH% %1 %2
 popd
 
 @echo on
 build
+
+copy %3 %4

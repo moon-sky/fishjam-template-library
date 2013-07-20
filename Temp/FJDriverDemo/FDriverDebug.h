@@ -14,8 +14,17 @@
 *   DriverMonitor -- 可以显示调试语句，而且可以安装卸载驱动
 *   EzDriverInstaller -- 可以很方便的安装卸载WDM驱动的小使用程序
 *
-* 通过DebugView查看DbgPrint打印的日志信息，需要选中 Capture Kernel 才能看到内核输出
-*
+* 打印日志：
+*   DbgPrint
+*   KdPrint
+*  
+* 通过DebugView查看打印的日志信息，需要选中 Capture Kernel 才能看到内核输出
+* BusHound -- 调试USB驱动程序
+* IRPTrace -- 查看IRP
+* DriverMonitor -- 加载NT式驱动
+* EzDriverInstaller -- 加载WDM式驱动
+* DeviceTree -- 查看设备对象
+* 
 * 虚拟机调试
 *   VMWare
 *     共享目录：Options -> Shared Foloders -> 增加共享目录, 该共享目录会出现在虚拟机中的“网络驱动器”里(老版本VMWare需要通过 \\.host\ 访问)

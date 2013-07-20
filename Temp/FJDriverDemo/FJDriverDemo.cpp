@@ -1,5 +1,5 @@
 #include "stdafx.h"
-
+#include "FDriverMemory.h"
 /*
 	FJDriverDemo - Main file
 	This file contains a very simple implementation of a WDM driver. Note that it does not support all
@@ -37,6 +37,7 @@ typedef struct _deviceExtension
 static const GUID GUID_FJDriverDemoInterface = {0x220E7E68, 0xc6b4, 0x4e63, {0xae, 0xb9, 0xc9, 0xa1, 0xdc, 0xc, 0xb2, 0xdf } };
 
 #ifdef __cplusplus
+#pragma INITCODE
 extern "C" NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  RegistryPath);
 #endif
 
@@ -192,8 +193,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  Registr
 	//汇编指令，相当于手工设置一个断点，这样可以调试
 	//_asm int 3
 #endif 
-    DbgPrint("test in code\n");
-	DbgPrint("this is new Hello from FJDriverDemo,PID=%d\n", PsGetCurrentProcessId());
+	DbgPrint("Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId());
 
 	//for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
 	//	DriverObject->MajorFunction[i] = FJDriverDemoDefaultHandler;
@@ -206,5 +206,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  Registr
 	//DriverObject->DriverStartIo = NULL;
 	//DriverObject->DriverExtension->AddDevice = FJDriverDemoAddDevice;
 
-	return STATUS_SUCCESS;
+    DbgPrint("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId());
+
+	return status;
 }

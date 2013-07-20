@@ -7,6 +7,12 @@
 #define DELAY_ONE_SECOND		(DELAY_ONE_MILLISECOND * 1000)
 
 /******************************************************************************************************************
+* DriverEntry -- 驱动程序的入口函数(extern "C")，由内核中的IO管理器负责调用，主要工作是初始化 DriverObject, 指定Dispatch方法
+*   IN PDRIVER_OBJECT DriverObject    -- IO管理器传递进来的驱动对象
+*   IN PUNICODE_STRING  RegistryPath  -- 驱动程序在注册表中的路径
+******************************************************************************************************************/
+
+/******************************************************************************************************************
 * 内核对象
 *   DRIVER_OBJECT(驱动对象) -- 需要填写一组回调函数来让Windows调用，插件模式，每个驱动程序只有一个驱动对象
 *     快速IO分发函数 -- FAST_IO_DISPATCH
@@ -17,13 +23,16 @@
 *     DriverExtension -- 设备扩展，其中有 AddDevice 等回调函数指针
 * 
 *   DEVICE_OBJECT(设备对象) -- 保存设备特征和状态信息，系统上的每一个虚拟、逻辑、物理的设备都有一个设备对象，可以接受请求(IRP)。
-*     DeviceExtension -- 设备扩展,可包含任何自定义信息，在IoCreateDevice时指定。系统已经预定义了一个 DEVICE_EXTENSION 结构？
+*     DeviceExtension -- 设备扩展,可包含任何自定义信息，在IoCreateDevice时指定。根据不同驱动程序的需要，负责补充定义设备的相关信息。
 *   FILE_OBJECT(文件对象)
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
+* 应用程序一般通过 DeviceIoControl 与驱动交互
+* 所有对设备的操作最终将转化为IRP请求,这些IRP请求会被传送到派遣函数处理？
+*
 * IRP (主功能号 + 次功能号 PIO_STACK_LOCATION::MinorFunction),各种主功能的分发函数都按功能号做索引
-*     保存在 DriveObject::MajorFunction 数组中(总个数为 IRP_MJ_MAXIMUM_FUNCTION)，操作系统遇到IRP时，就调用对应的函数处理
+*     保存在 DriveObject::MajorFunction 数组中(总个数为 IRP_MJ_MAXIMUM_FUNCTION - 0x1b)，操作系统遇到IRP时，就调用对应的函数处理
 *     TODO: pDriverObject->MajorFunction[IRP_MJ_WRITE] = USE_WRITE_FUNCTION；   // ?
 *   IRP是从非分页内存池中分配的可变大小的结构，关联一个 IO_STACK_LOCATION 结构数组
 *
