@@ -1,9 +1,11 @@
-
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FJDriverDemo", "FJDriverDemo.vcproj", "{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FDriverDemoTester", ".\FDriverDemoTester\FDriverDemoTester.vcproj", "{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FDriverDemoTester", "FDriverDemoTester\FDriverDemoTester.vcproj", "{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935} = {7F95BBA2-4F94-4008-9767-F1B2B6D5E935}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

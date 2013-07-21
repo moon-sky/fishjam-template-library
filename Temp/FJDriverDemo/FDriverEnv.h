@@ -6,7 +6,8 @@
 *   1.VS2008/2010 + WDK(GRMWDK_EN_7600_1.ISO) + 
 *   2.包含路径: inc\ddk; inc\crt; inc\api -- ？TODO: 必须放在SDK路径的后面，不能用vsprops或设置在Project中？否则会出现 C2085 等编译错误
 *   3.调用约定需要改成 __stdcall(/Gz) ?
-* 
+*   命令行编译：Build Environments -> Windows XXX -> Checked/Free， 到对应目录下执行 build 命令
+
 * TODO: VirtualKD 中包含了 VirtualDDK ?
 * VisualDDK(推荐)  -- http://visualddk.sysprogs.org/, 开源。
 *   开发调试驱动的VS插件，提供了驱动程序的向导，可通过TCPIP在远程机器上安装驱动，支持VirtualBox/VMWare，可在VS中直接调试驱动程序。
@@ -21,7 +22,6 @@
 * DriverStudio -- VC6 + Win2K 时代开发驱动的利器，有很好的向导(TODO: 尝试安装并分析学习向导生成的代码)
 *
 * Visual Studio 中工程向导中： General->Makefile Project，并设置对应的 Build command line 等
-*
 ******************************************************************************************************************/
 
 

@@ -43,7 +43,8 @@
 *   IoSkipCurrentIrpStackLocation -- 跳过当前栈空间
 * 
 *   IoCompleteRequest(, IO_NO_INCREMENT); ??
-*   IoCreateSymbolicLink -- 在对象管理器中创建一个"符号链接"(如 Z: => \Device\NetworkRedirector )
+*   IoCreateSymbolicLink -- 在对象管理器中创建一个"符号链接"(如？ Z: => \Device\NetworkRedirector ),驱动程序中的设备名称只能在
+*     内核状态可见，应用程序需要通过符号链接来引用。
 *   IoDeleteSymbolicLink --
 *
 *   缓冲区：
@@ -62,9 +63,13 @@
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
+* 宽字符串(UNICODE_STRING) = RTL_CONSTANT_STRING(L"xxx")
+*   字符串操作时，Rtl-函数(如 RtlInitUnicodeString、)
+*
 * <ntstrsafe.h> -- 字符串操作， 如要兼容Win2K，需要先定义 NTSTRSAFE_LIB 宏
+*   RtlInitUnicodeString -- 初始化 UNICODE_STRING 结构体，注意：该结构体不要求使用NULL作为字符串的结束(使用通过NULL判断结束的字符串函数会出现问题)
 *   RtlStringCchPrintfW
-*   RtlInitUnicodeString -- 初始化 UNICODE_STRING 结构体，该结构体不需要使用NULL作为字符串的结束
+*
 ******************************************************************************************************************/
 
 /******************************************************************************************************************

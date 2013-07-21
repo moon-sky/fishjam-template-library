@@ -1,5 +1,10 @@
 TARGETNAME=FJDriverDemo
 TARGETTYPE=DRIVER
 
+INCLUDES=$(WDKPATH)\inc;\
+    $(WDKPATH)\inc\api;\
+    $(WDKPATH)\inc\ddk;\
+
+
 SOURCES=stdafx.cpp \
 	FJDriverDemo.cpp

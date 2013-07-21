@@ -33,7 +33,7 @@ BOOL CFDriverDemoController::InstallService()
             API_VERIFY((m_hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS)) != NULL);
             if (m_hSCManager)
             {
-                API_VERIFY((m_hDriverDemoService = ::CreateService(
+                API_VERIFY_EXCEPT1((m_hDriverDemoService = ::CreateService(
                     m_hSCManager, 
                     FDRIVER_DEMO_SERVICE_NAME, 
                     TEXT("FDriver Demo Service"),
@@ -47,7 +47,7 @@ BOOL CFDriverDemoController::InstallService()
                     NULL, 
                     NULL, 
                     NULL
-                    )) != NULL);
+                    )) != NULL, ERROR_SERVICE_EXISTS);
                 if (!m_hDriverDemoService)
                 {
                     m_hDriverDemoService = ::OpenService(m_hSCManager, FDRIVER_DEMO_SERVICE_NAME, SERVICE_ALL_ACCESS);
@@ -81,7 +81,7 @@ BOOL CFDriverDemoController::UnInstallService()
     {
         SERVICE_STATUS ServiceStatus;
         API_VERIFY_EXCEPT1(ControlService(m_hDriverDemoService, SERVICE_CONTROL_STOP, &ServiceStatus), ERROR_SERVICE_NOT_ACTIVE);
-        API_VERIFY(DeleteService(m_hDriverDemoService));
+        //API_VERIFY(DeleteService(m_hDriverDemoService));
         API_VERIFY(CloseServiceHandle(m_hDriverDemoService));
         m_hDriverDemoService = NULL;
     }

@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "FDriverMemory.h"
+#include "FDriverDemoDefine.h"
+#include "FDriverUtil.h"
+
 /*
 	FJDriverDemo - Main file
 	This file contains a very simple implementation of a WDM driver. Note that it does not support all
@@ -22,7 +25,7 @@
 //void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject);
 //NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
 //NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
-//NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  DriverObject, IN PDEVICE_OBJECT  PhysicalDeviceObject);
+//NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  pDriverObject, IN PDEVICE_OBJECT  PhysicalDeviceObject);
 //NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
 
 typedef struct _deviceExtension
@@ -61,42 +64,53 @@ NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 	return STATUS_SUCCESS;
 }
 
-NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
+NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 {
 	PFJDriverDemo_DEVICE_EXTENSION deviceExtension = NULL;
 	
-	IoSkipCurrentIrpStackLocation(Irp);
+	NTSTATUS status = STATUS_SUCCESS;
+	//pIrp->IoStatus.Status = status;
+	//pIrp->IoStatus.Information = 0;	//设置操作的字节数为0
+	//IoCompleteRequest( pIrp, IO_NO_INCREMENT);	//指示完成此IRP
+
+	IoSkipCurrentIrpStackLocation(pIrp);
 	deviceExtension = (PFJDriverDemo_DEVICE_EXTENSION) DeviceObject->DeviceExtension;
-	return IoCallDriver(deviceExtension->TargetDeviceObject, Irp);
+	return IoCallDriver(deviceExtension->TargetDeviceObject, pIrp);
 }
 
-NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  DriverObject, IN PDEVICE_OBJECT  PhysicalDeviceObject)
+NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  pDriverObject, IN PDEVICE_OBJECT  PhysicalDeviceObject)
 {
-	PDEVICE_OBJECT DeviceObject = NULL;
+	PDEVICE_OBJECT pDeviceObject = NULL;
 	PFJDriverDemo_DEVICE_EXTENSION pExtension = NULL;
-	NTSTATUS status;
+	NTSTATUS status = STATUS_SUCCESS;
 	
-	status = IoCreateDevice(DriverObject,
+    //创建设备名称
+    UNICODE_STRING  devName;
+    RtlInitUnicodeString(&devName, FDRIVER_DEMO_DEVICE_NAME);
+    
+    //创建设备
+	status = IoCreateDevice(pDriverObject,
 						    sizeof(FJDriverDemo_DEVICE_EXTENSION),
-							NULL,
+							&devName,
 							FILE_DEVICE_UNKNOWN,
 							0,
-							0,
-							&DeviceObject);
+							TRUE, //Exclusive -- 独占设备，同一时间只能被一个应用程序所使用
+							&pDeviceObject);
 
 	if (!NT_SUCCESS(status))
 		return status;
 
-	pExtension = (PFJDriverDemo_DEVICE_EXTENSION)DeviceObject->DeviceExtension;
+	pExtension = (PFJDriverDemo_DEVICE_EXTENSION)pDeviceObject->DeviceExtension;
 
-	pExtension->DeviceObject = DeviceObject;
+	pExtension->DeviceObject = pDeviceObject;
 	pExtension->PhysicalDeviceObject = PhysicalDeviceObject;
-	pExtension->TargetDeviceObject = IoAttachDeviceToDeviceStack(DeviceObject, PhysicalDeviceObject);
+	pExtension->TargetDeviceObject = IoAttachDeviceToDeviceStack(pDeviceObject, PhysicalDeviceObject);
 
 	status = IoRegisterDeviceInterface(PhysicalDeviceObject, &GUID_FJDriverDemoInterface, NULL, &pExtension->DeviceInterface);
 	ASSERT(NT_SUCCESS(status));
 
-	DeviceObject->Flags &= ~DO_DEVICE_INITIALIZING;
+    //pDeviceObject->Flags |= DO_BUFFERED_IO;
+	pDeviceObject->Flags &= ~DO_DEVICE_INITIALIZING;
 	return STATUS_SUCCESS;
 }
 
@@ -184,16 +198,16 @@ NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 
 
 //每个内核模块的入口函数，在加载该模块时被系统进程System调用一次
-NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  RegistryPath)
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  RegistryPath)
 {
 	unsigned i;
 	NTSTATUS status = STATUS_SUCCESS;
-	//NT_VERIFY(SameDemo() == STATUS_SUCCESS);
+	//FNT_VERIFY(SameDemo());
 #if DBG
 	//汇编指令，相当于手工设置一个断点，这样可以调试
 	//_asm int 3
 #endif 
-	DbgPrint("Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId());
+	DbgPrint("New Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId());
 
 	//for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
 	//	DriverObject->MajorFunction[i] = FJDriverDemoDefaultHandler;
@@ -202,7 +216,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  Registr
 	//DriverObject->MajorFunction[IRP_MJ_CLOSE] = FJDriverDemoCreateClose;
 	//DriverObject->MajorFunction[IRP_MJ_PNP] = FJDriverDemoPnP;
 
-	DriverObject->DriverUnload = FJDriverDemoUnload;
+	pDriverObject->DriverUnload = FJDriverDemoUnload;
 	//DriverObject->DriverStartIo = NULL;
 	//DriverObject->DriverExtension->AddDevice = FJDriverDemoAddDevice;
 

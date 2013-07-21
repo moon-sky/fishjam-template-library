@@ -2,7 +2,7 @@
 #define F_DRIVER_STUDY_H
 
 //寒江独钓-Windows内核安全编程 -- P14X
-//Windows驱动开发技术详解 -- P   (优先看调试技巧?)
+//Windows驱动开发技术详解 -- P36(用VC集成开发环境编译)  (优先看调试技巧?)
 
 //与用户模式通信(DeviceIoControl?)
 //  驱动程序通过 HAL 调用硬件抽象层，然后才和硬件交互
