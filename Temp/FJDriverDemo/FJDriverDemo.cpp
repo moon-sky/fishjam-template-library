@@ -109,7 +109,7 @@ NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  pDriverObject, IN PDEVICE_OBJE
 	status = IoRegisterDeviceInterface(PhysicalDeviceObject, &GUID_FJDriverDemoInterface, NULL, &pExtension->DeviceInterface);
 	ASSERT(NT_SUCCESS(status));
 
-    //pDeviceObject->Flags |= DO_BUFFERED_IO;
+    //pDeviceObject->Flags |= DO_BUFFERED_IO | DO_POWER_PAGABLE;
 	pDeviceObject->Flags &= ~DO_DEVICE_INITIALIZING;
 	return STATUS_SUCCESS;
 }
@@ -207,6 +207,8 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	//汇编指令，相当于手工设置一个断点，这样可以调试
 	//_asm int 3
 #endif 
+	//pDriverObject->DriverExtension->AddDevice = xxxx; //WDM驱动中创建设备对象并由Pnp管理器调用的回调函数
+
 	DbgPrint("New Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId());
 
 	//for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)

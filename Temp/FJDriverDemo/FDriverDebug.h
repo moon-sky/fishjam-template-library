@@ -2,6 +2,7 @@
 #define F_DRIVER_DEBUG_H
 
 /******************************************************************************************************************
+* 调试的Checked版本中有 define DBG 1 的宏定义
 * 打印日志：
 *   DbgPrint("x=%d\n", 100) -- 
 *     %wZ -- UNICODE_STRING 变量的地址
@@ -9,6 +10,8 @@
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
+* 一般的过滤等非硬件驱动安装完毕后，会以"隐藏设备"的形式加在设备管理器的 "Not-Plug and Play Drivers"(NT式？)中
+*
 * SrvInstW.exe(http://www.onlinedown.net/soft/36059.htm)
 *   将驱动作为服务的方式安装，然后可以通过 net start/stop 来启动/停止 驱动程序
 *    卸载驱动：sc delete xxxx
@@ -17,15 +20,17 @@
 *   可以显示所有的内核对象
 *
 * Win2K 时代的产品
-*   DriverWorks -- DriverStudio工具包中的一个工具模块， Win2K时代支持WDM开发的辅助工具(是否有最新版本?)，提供了非常完善的向导
-*   DriverMonitor -- 可以显示调试语句，而且可以安装卸载驱动
+*   DriverStudio工具包
+*     DriverWorks -- Win2K时代支持WDM开发的辅助工具(是否有最新版本?)，提供了非常完善的向导
+*     DriverMonitor -- 可以安装卸载驱动，并可以直接显示调试语句
 *   EzDriverInstaller -- 可以很方便的安装卸载WDM驱动的小使用程序
 *
+* Win7时代的产品？
+*   
 *  
 * 通过DebugView查看打印的日志信息，需要选中 Capture Kernel 才能看到内核输出
 * BusHound -- 调试USB驱动程序
 * IRPTrace -- 查看IRP
-* DriverMonitor -- 加载NT式驱动
 * EzDriverInstaller -- 加载WDM式驱动
 * DeviceTree -- 查看设备对象
 * 

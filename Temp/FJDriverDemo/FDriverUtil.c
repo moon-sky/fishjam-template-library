@@ -1,10 +1,12 @@
 #include "FDriverUtil.h"
-
 #include "FDriverDef.h"
 
+#pragma PAGEDCODE
 LPWSTR GetNtStatusString(NTSTATUS status)
 {
-    static CaseReturnStringPair ntStatusStringPairs[] = {
+	PAGED_CODE();
+
+	static CaseReturnStringPair ntStatusStringPairs[] = {
     //switch (status)
 	//{
 		DEFINE_CASE_RETURN_STRING(STATUS_WAIT_1)

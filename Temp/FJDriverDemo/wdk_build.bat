@@ -15,4 +15,4 @@ popd
 @echo on
 build
 
-copy %3 %4
+xcopy %3 %4 /Y

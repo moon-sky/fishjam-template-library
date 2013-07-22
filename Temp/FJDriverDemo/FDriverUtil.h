@@ -19,34 +19,32 @@
 extern "C" {
 #endif
 
-#include "ntddk.h"
-
-
-#if DBG
-# define REPORT_ERROR_INFO(s, x)   \
-    DbgPrint("ERROR:%d(%s), %s", s, GetNtStatusString(s), #x);
-
-# define FNT_VERIFY(x)   \
-    status = (x);\
-    if(STATUS_SUCCESS != status)\
-    {\
-        REPORT_ERROR_INFO(status, x);\
-    }
-
-#else
-
-# define FNT_VERIFY(x)   \
-    status = (x);\
-
-#endif 
+//#include "ntddk.h"
+#include "wdm.h"
 
 #pragma PAGEDCODE
 LPWSTR GetNtStatusString(NTSTATUS status);
-
 
 #ifdef __cplusplus
 }
 #endif
 
+#if DBG
+# define REPORT_ERROR_INFO(s, x)   \
+	DbgPrint("ERROR:%d(%s), %s", s, GetNtStatusString(s), #x);
+
+# define FNT_VERIFY(x)   \
+	status = (x);\
+	if(STATUS_SUCCESS != status)\
+{\
+	REPORT_ERROR_INFO(status, x);\
+}
+
+#else
+
+# define FNT_VERIFY(x)   \
+	status = (x);\
+
+#endif 
 
 #endif //F_DRIVER_UTIL_H

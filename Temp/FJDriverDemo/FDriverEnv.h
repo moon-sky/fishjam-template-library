@@ -2,12 +2,20 @@
 #define F_DRIVER_ENV_H
 
 /******************************************************************************************************************
+\\Device\\xxxx
+\\DosDevice\xxxx
+
+******************************************************************************************************************/
+
+/******************************************************************************************************************
 * 环境搭建
 *   1.VS2008/2010 + WDK(GRMWDK_EN_7600_1.ISO) + 
 *   2.包含路径: inc\ddk; inc\crt; inc\api -- ？TODO: 必须放在SDK路径的后面，不能用vsprops或设置在Project中？否则会出现 C2085 等编译错误
-*   3.调用约定需要改成 __stdcall(/Gz) ?
+*   3.链接 ntoskrnl.lib 
+*   4.调用约定需要改成 __stdcall(/Gz) ? 
+*   5./entry:"DriverEntry" 
 *   命令行编译：Build Environments -> Windows XXX -> Checked/Free， 到对应目录下执行 build 命令
-
+*
 * TODO: VirtualKD 中包含了 VirtualDDK ?
 * VisualDDK(推荐)  -- http://visualddk.sysprogs.org/, 开源。
 *   开发调试驱动的VS插件，提供了驱动程序的向导，可通过TCPIP在远程机器上安装驱动，支持VirtualBox/VMWare，可在VS中直接调试驱动程序。
@@ -32,8 +40,10 @@
 * 
 * DDK(Driver Development Kit) -- 使用WDM(Windows Driver Model)驱动模型,集成了测试套件HCT？，适用于WinXP及之前的平台
 *   NT式驱动程序 -- 不支持即插即用。使用 NTDDK.h 头文件。不分层？
+*     类似于Windows服务程序，可以以服务的方式加载在系统中进行测试。
 *
 * WDM(Windows Driver Model) -- Vista以前的驱动模型。支持即插即用,使用 WDM.h 头文件。
+*   主要是通过各个 MajorFunction 进行分发处理( IRP_MJ_CREATE 等定义在 Wdm.h 中)？
 *   建立在NT式驱动程序模型基础上，基于分层的，完成一个设备的操作，至少需要两个驱动设备共同完成。
 *   一个PDO(物理设备对象，由总线驱动自动创建)，一个FDO(功能设备对象)并附加到PDO上。
 *   其中还有可能存在过滤驱动。通过自定义设备扩展(如名为NextStackDevice)记录并找到下层的过滤驱动，通过 AttachedDevice 找到上层驱动

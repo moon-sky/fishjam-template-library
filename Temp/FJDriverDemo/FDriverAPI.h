@@ -20,8 +20,10 @@
 *     DriverStart/DriverSize -- 该驱动对象所代表的内核模块在内核空间中的开始地址和大小
 *     DeviceObject -- 设备链(DEVICE_OBJECT::NextDevice 指向同一个驱动中的下一个设备)
 *     DriverUnload -- 卸载函数的指针，若不为空，表示可以动态卸载
-*     DriverExtension -- 设备扩展，其中有 AddDevice 等回调函数指针
-* 
+*     DriverExtension -- 设备扩展
+*       AddDevice -- WDM类型的驱动中，由Pnp管理器调用，负责创建设备对象，其PhysicalDeviceObject为Pnp管理器
+*                    传入的底层物理设备对象。
+*
 *   DEVICE_OBJECT(设备对象) -- 保存设备特征和状态信息，系统上的每一个虚拟、逻辑、物理的设备都有一个设备对象，可以接受请求(IRP)。
 *     DeviceExtension -- 设备扩展,可包含任何自定义信息，在IoCreateDevice时指定。根据不同驱动程序的需要，负责补充定义设备的相关信息。
 *   FILE_OBJECT(文件对象)
@@ -78,7 +80,7 @@
 *
 * Device
 *   IoAttachDevice/IoDetachDevice  -- 绑定/解除绑定设备到设备栈上，这样可以做过滤(Filter)
-*   IoAttachDeviceToDeviceStack
+*   IoAttachDeviceToDeviceStack -- WDM中 IoCreateDevice 后，需要 pdx->NextStackDevice = Attach(PhysicalDeviceObject ...)?
 *   IoCreateDevice/IoDeleteDevice
 *   IoEnumerateDeviceObjectList -- 枚举一个驱动下的所有设备对象
 *   IoGetAttachedDevice -- 获得一个设备所在的设备栈最顶端的那个设备

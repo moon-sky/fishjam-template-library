@@ -24,7 +24,7 @@
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="call wdk_build.bat chk wxp &quot;$(TargetPath)&quot; &quot;$(SolutionDir)$(ConfigurationName)&quot;"
+				BuildCommandLine="call wdk_build.bat chk wxp &quot;$(TargetPath)&quot; &quot;$(SolutionDir)$(ConfigurationName)\&quot;"
 				ReBuildCommandLine="rmdir /s /q $(ProjectDir)\objchk_wxp_x86&#x0D;&#x0A;call $(WDKPATH)\bin\setenv.bat $(WDKPATH) chk wxp&#x0D;&#x0A;cd /d $(ProjectDir)&#x0D;&#x0A;build"
 				CleanCommandLine="rmdir /s /q $(ProjectDir)\objchk_wxp_x86"
 				Output="$(ProjectDir)\objchk_wxp_x86\i386\FJDriverDemo.sys"
