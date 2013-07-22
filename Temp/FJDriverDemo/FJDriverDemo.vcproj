@@ -115,6 +115,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FDriverInfStudy.h"
+				>
+			</File>
+			<File
 				RelativePath=".\FDriverIO.h"
 				>
 			</File>
@@ -155,6 +159,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\FJDriverDemo.inf"
+			>
+		</File>
 		<File
 			RelativePath=".\sources"
 			>

@@ -23,7 +23,7 @@
 *   DriverStudio工具包
 *     DriverWorks -- Win2K时代支持WDM开发的辅助工具(是否有最新版本?)，提供了非常完善的向导
 *     DriverMonitor -- 可以安装卸载驱动，并可以直接显示调试语句
-*   EzDriverInstaller -- 可以很方便的安装卸载WDM驱动的小使用程序
+*     EzDriverInstaller -- 可以很方便的通过 inf 安装卸载WDM驱动的工具
 *
 * Win7时代的产品？
 *   

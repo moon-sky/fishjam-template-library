@@ -1,3 +1,8 @@
+; ------------------------------ 注释信息 ------------------------------------------------------------
+
+; 版本信息
+; 如果设备是一个标准类别，使用标准类的名称和GUID
+; 否则创建一个自定义的类别名称，并自定义它的GUID
 [Version]
 Signature="$WINDOWS NT$"
 Class=HDC
@@ -6,8 +11,11 @@ Provider=%VisualDDK%
 DriverVer=01/01/1901, 1.00.0000
 CatalogFile=FJDriverDemo.cat
 
+; 目标文件节
 [DestinationDirs]
 DefaultDestDir = 12
+
+; 安装磁盘节 -- 确定安装盘和安装文件的路径，根据需要修改
 
 [SourceDisksNames.x86]
 1 = %DiskId1%,,,
@@ -21,6 +29,7 @@ FJDriverDemo.sys  = 1,\x86
 [SourceDisksFiles.amd64]
 FJDriverDemo.sys  = 1,\x64
 
+; 制造商节
 [Manufacturer]
 %VisualDDK%=Standard, NTamd64
 
@@ -49,7 +58,7 @@ ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
 ServiceBinary  = %12%\FJDriverDemo.sys
 LoadOrderGroup = Extended Base
 
-
+; 字符串节
 [Strings]
 SPSVCINST_ASSOCSERVICE= 0x00000002
 VisualDDK = "VisualDDK"

@@ -42,7 +42,7 @@
 *   NT式驱动程序 -- 不支持即插即用。使用 NTDDK.h 头文件。不分层？
 *     类似于Windows服务程序，可以以服务的方式加载在系统中进行测试。
 *
-* WDM(Windows Driver Model) -- Vista以前的驱动模型。支持即插即用,使用 WDM.h 头文件。
+* WDM(Windows Driver Model) -- Vista以前的驱动模型。支持即插即用,使用 WDM.h 头文件。链接 wdm.lib，
 *   主要是通过各个 MajorFunction 进行分发处理( IRP_MJ_CREATE 等定义在 Wdm.h 中)？
 *   建立在NT式驱动程序模型基础上，基于分层的，完成一个设备的操作，至少需要两个驱动设备共同完成。
 *   一个PDO(物理设备对象，由总线驱动自动创建)，一个FDO(功能设备对象)并附加到PDO上。

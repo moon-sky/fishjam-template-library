@@ -1,5 +1,9 @@
+# comment line
+
 TARGETNAME=FJDriverDemo
 TARGETTYPE=DRIVER
+
+# DRIVERTYPE=WDM
 
 INCLUDES=$(WDKPATH)\inc;\
     $(WDKPATH)\inc\api;\

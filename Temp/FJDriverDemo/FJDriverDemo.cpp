@@ -64,8 +64,11 @@ NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 	return STATUS_SUCCESS;
 }
 
+#pragma PAGEDCODE
 NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 {
+    PAGED_CODE();
+
 	PFJDriverDemo_DEVICE_EXTENSION deviceExtension = NULL;
 	
 	NTSTATUS status = STATUS_SUCCESS;
@@ -177,7 +180,7 @@ NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 		IoCompleteRequest(Irp, IO_NO_INCREMENT);
 		return STATUS_SUCCESS;
 
-	case IRP_MN_REMOVE_DEVICE:
+	case IRP_MN_REMOVE_DEVICE:      //PnpÖÐÐ¶ÔØÉè±¸
 		IoSetDeviceInterfaceState(&pExt->DeviceInterface, FALSE);
 		status = FJDriverDemoForwardIrpSynchronous(DeviceObject, Irp);
 		IoDetachDevice(pExt->TargetDeviceObject);
