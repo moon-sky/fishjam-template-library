@@ -53,6 +53,8 @@ NTSTATUS SameDemo()
 void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 {
 	//ExAllocatePool()
+    NTSTATUS status;
+    FNT_VERIFY(SameDemo());
 	KdPrint(("Goodbye from FJDriverDemo, PID=%d\n", PsGetCurrentProcessId()));
 }
 

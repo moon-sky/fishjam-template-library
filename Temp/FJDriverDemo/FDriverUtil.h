@@ -23,16 +23,17 @@ extern "C" {
 #include "wdm.h"
 
 void DumpDeviceFlags(USHORT nFlags);
-#pragma PAGEDCODE LPCSTR GetNtStatusString(NTSTATUS status);
+#pragma PAGEDCODE 
+LPSTR GetNtStatusString(NTSTATUS status);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#if DBG
+//#if DBG
 # define REPORT_ERROR_INFO(s, x)   \
-	DbgPrint(("ERROR:%d(%s), %s", s, GetNtStatusString(s), #x));
+    DbgPrint( "%s(%d) : ERROR: 0x%x(%s) for call %s\n", __FILE__, __LINE__, s, GetNtStatusString(s), #x);
 
 # define FNT_VERIFY(x)   \
 	status = (x);\
@@ -41,11 +42,11 @@ void DumpDeviceFlags(USHORT nFlags);
 	REPORT_ERROR_INFO(status, x);\
 }
 
-#else
-
-# define FNT_VERIFY(x)   \
-	status = (x);\
-
-#endif 
+//#else
+//
+//# define FNT_VERIFY(x)   \
+//	status = (x);\
+//
+//#endif 
 
 #endif //F_DRIVER_UTIL_H

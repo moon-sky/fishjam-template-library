@@ -43,7 +43,7 @@ void DumpDeviceFlags(USHORT nFlags)
 }
 
 #pragma PAGEDCODE
-LPCSTR GetNtStatusString(NTSTATUS status)
+LPSTR GetNtStatusString(NTSTATUS status)
 {
 	//PAGED_CODE();
 

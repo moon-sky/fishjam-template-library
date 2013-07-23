@@ -29,8 +29,8 @@
 *     DriverMonitor -- 可以安装卸载驱动，并可以直接显示调试语句
 *     EzDriverInstaller -- 可以很方便的通过 inf 安装卸载WDM驱动的工具
 *
-* Win7时代的产品？
-*   
+* Win7时代的产品(http://www.osronline.com 网站似乎有不少好东西？)？
+*   DeviceTree -- 显示所有的Pnp设备树，包括各个设备的关系
 *  
 * 通过DebugView查看打印的日志信息，需要选中 Capture Kernel 才能看到内核输出
 * BusHound -- 调试USB驱动程序
