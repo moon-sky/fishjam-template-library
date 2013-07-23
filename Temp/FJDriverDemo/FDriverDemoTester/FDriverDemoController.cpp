@@ -38,7 +38,7 @@ BOOL CFDriverDemoController::InstallService()
                     FDRIVER_DEMO_SERVICE_NAME, 
                     TEXT("FDriver Demo Service"),
                     SERVICE_ALL_ACCESS,
-                    SERVICE_KERNEL_DRIVER,
+                    SERVICE_KERNEL_DRIVER,	//SERVICE_FILE_SYSTEM_DRIVER
                     SERVICE_DEMAND_START,
                     SERVICE_ERROR_NORMAL,
                     szDriverFileName, 

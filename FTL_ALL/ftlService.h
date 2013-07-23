@@ -7,6 +7,8 @@
 #endif
 
 /*************************************************************************************************************************
+* SCM(Service Control Manager)--服务控制管理程序
+* 
 * Windows服务分成两种类型：interactive service (交互式服务)和non-interactive service（非交互式服务）。
 * 1.如果一个服务以"LocalSystem Account"运行，并且设置了"SERVICE_INTERACTIVE_PROCESS"属性。
 *   那么它就被认为是一个interactive service。交互式服务在非Vista系统下（XP,NT），
@@ -79,7 +81,7 @@ namespace FTL
     public:
         //判断服务是否安装
         FTLINLINE static BOOL IsServiceInstalled(LPCTSTR lpServiceName);
-        FTLINLINE static BOOL InstallService(LPCTSTR lpBinaryPathName,LPCTSTR lpServiceName,LPCTSTR lpDependencies);
+        FTLINLINE static BOOL InstallService(LPCTSTR lpBinaryPathName,LPCTSTR lpServiceName, LPCTSTR lpDependencies);
         FTLINLINE static BOOL UninstallService(LPCTSTR lpServiceName);
 
         //模拟Service 进程显示UI的步骤

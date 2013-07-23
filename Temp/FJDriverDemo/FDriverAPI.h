@@ -15,25 +15,35 @@
 /******************************************************************************************************************
 * 内核对象
 *   DRIVER_OBJECT(驱动对象) -- 需要填写一组回调函数来让Windows调用，插件模式，每个驱动程序只有一个驱动对象
-*     快速IO分发函数 -- FAST_IO_DISPATCH
-*     MajorFunction -- 普通分发函数(DRIVER_DISPATCH),对应各种  IRP_MJ_XXX 
+*     FastIoDispatch -- 快速IO分发函数(文件驱动中使用)
+*     MajorFunction -- 普通分发函数(DRIVER_DISPATCH)的指针数组,对应各种  IRP_MJ_XXX 
 *     DriverStart/DriverSize -- 该驱动对象所代表的内核模块在内核空间中的开始地址和大小
-*     DeviceObject -- 设备链(DEVICE_OBJECT::NextDevice 指向同一个驱动中的下一个设备)
+*     DriverStartIo -- 记录StartIO函数的地址，用于串行化操作
+*     DeviceObject -- 本驱动中的设备链(DEVICE_OBJECT::NextDevice 指向同一个驱动中的下一个设备)
+*     DriverName -- 驱动程序的名字，一般为 "\Driver\驱动程序名称"
 *     DriverUnload -- 卸载函数的指针，若不为空，表示可以动态卸载
-*     DriverExtension -- 设备扩展
+*     DriverExtension -- 驱动扩展
 *       AddDevice -- WDM类型的驱动中，由Pnp管理器调用，负责创建设备对象，其PhysicalDeviceObject为Pnp管理器
 *                    传入的底层物理设备对象。
 *
 *   DEVICE_OBJECT(设备对象) -- 保存设备特征和状态信息，系统上的每一个虚拟、逻辑、物理的设备都有一个设备对象，可以接受请求(IRP)。
-*     DeviceExtension -- 设备扩展,可包含任何自定义信息，在IoCreateDevice时指定。根据不同驱动程序的需要，负责补充定义设备的相关信息。
+*     AttachedDevice -- 有更高一层的驱动附加到这个驱动时的那个更高(低？)一层的驱动(即 Filter 的驱动？)
+*     CurrentIrp -- 使用StartIO例程时，指向当前IRP结构
+*     DeviceExtension -- 设备扩展,可包含任何自定义信息，在IoCreateDevice时指定，由IO管理器创建，保存在非分页内存中。
+*       根据不同驱动程序的需要，负责补充定义设备的相关信息。
+*     DeviceType -- 设备的类型，如 FILE_DEVICE_UNKNOWN(制作虚拟设备时使用) 等
+*     DriverObject -- 指向驱动程序中的驱动对象，同属于一个驱动程序的驱动对象指向的是同一驱动对象(过滤驱动中的如何？)
+*     NextDevice -- 指向下一个设备对象，形成设备链
+*     StackSize -- 多层驱动的层数( 驱动之间会形成类似堆栈的结构,IRP会依次从最高层传递到最底层 )
 *   FILE_OBJECT(文件对象)
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
-* 应用程序一般通过 DeviceIoControl 与驱动交互
-* 所有对设备的操作最终将转化为IRP请求,这些IRP请求会被传送到派遣函数处理？
+* 应用程序一般通过 文件方式( 如 WriteFile / DeviceIoControl ) 与驱动交互 -- I/O管理器担当者用户模式代码和设备驱动程序之间的接口。
+* 所有对设备的操作(比如端口的读写、键盘访问、磁盘文件的操作等)最终将转化为IRP请求,这些IRP请求会被传送到派遣函数处理？
 *
-* IRP (主功能号 + 次功能号 PIO_STACK_LOCATION::MinorFunction),各种主功能的分发函数都按功能号做索引
+* IRP(I/O Request Packages) -- 主功能号 + 次功能号 PIO_STACK_LOCATION::MinorFunction,
+*     各种主功能的分发函数都按功能号做索引
 *     保存在 DriveObject::MajorFunction 数组中(总个数为 IRP_MJ_MAXIMUM_FUNCTION - 0x1b)，操作系统遇到IRP时，就调用对应的函数处理
 *     TODO: pDriverObject->MajorFunction[IRP_MJ_WRITE] = USE_WRITE_FUNCTION；   // ?
 *   IRP是从非分页内存池中分配的可变大小的结构，关联一个 IO_STACK_LOCATION 结构数组
@@ -72,6 +82,8 @@
 *   RtlInitUnicodeString -- 初始化 UNICODE_STRING 结构体，注意：该结构体不要求使用NULL作为字符串的结束(使用通过NULL判断结束的字符串函数会出现问题)
 *   RtlStringCchPrintfW
 *
+* 内核态运行时函数(RtlXxx)
+*   Rtl
 ******************************************************************************************************************/
 
 /******************************************************************************************************************

@@ -4,16 +4,19 @@
 /******************************************************************************************************************
 \\Device\\xxxx
 \\DosDevice\xxxx
-
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
-* 环境搭建
+* 环境搭建 (若使用C++开发，需要注意最好只使用基本的C++特性，而不要使用模版、纯虚等高级特性)
 *   1.VS2008/2010 + WDK(GRMWDK_EN_7600_1.ISO) + 
 *   2.包含路径: inc\ddk; inc\crt; inc\api -- ？TODO: 必须放在SDK路径的后面，不能用vsprops或设置在Project中？否则会出现 C2085 等编译错误
 *   3.链接 ntoskrnl.lib 
-*   4.调用约定需要改成 __stdcall(/Gz) ? 
-*   5./entry:"DriverEntry" 
+*   4.调用约定必须是 __stdcall(/Gz) -- VC默认使用__cdecl，否则可能链接不过，_DriverEntry(错误) => _DriverEntry@8(正确)
+*     DDK 环境编译时默认采用的是复合要求的标准调用约定。
+*   5./entry:"DriverEntry"
+*   6.注意：
+*     a.不能使用编译器运行时函数(RunTime Func)，甚至 malloc 和 new 都不能使用，相应的应该使用 RtlXxx的内核态运行时函数
+*     b.尽量避免全局变量的使用(不容易同步)，通过将变量保存在 设备扩展对象 中解决
 *   命令行编译：Build Environments -> Windows XXX -> Checked/Free， 到对应目录下执行 build 命令
 *
 * TODO: VirtualKD 中包含了 VirtualDDK ?
@@ -57,7 +60,28 @@
 
 
 /******************************************************************************************************************
-* SOURCES -- 其内容关系到该模块要编译那些文件，及编译出来的 .sys 文件的名字
+* setenv.bat 后会设置如下环境变量(比较了 Win7 ia64 Checked 和 WinXp x86 Free)：
+*   BUILD_ALT_DIR -- 目录， 如 chk_win7_IA64, fre_wxp_x86
+*   BUILD_DEFAULT_TARGETS -- 目标类型(注意前面有一个横线)，如 -ia64, -386
+*   DDKBUILDENV 或 _BuildType -- 编译类型，如 chk, fre
+*   DDK_TARGET_OS -- 目标OS，如 Win7, WinXP
+*   _BUILDARCH -- 架构，如 IA64, x86
+*   _NT_TARGET_VERSION -- 如 0x601, 0x501
+*   另外：x86 的会生成 386=1 的环境变量； Ia64 的会生成 IA64=1；
+*
+* makefile -- 里面一般只有一行 "!INCLUDE $(NTMAKEENV)\makefile.def"
+* dirs -- 通过 DIRS=XXX 表示需要编译的子目录，并依次进入子目录进行编译 
+* sources -- 其内容关系到该模块要编译那些文件，及编译出来的 .sys 文件的名字等，其中可通过 $(XXX) 引用其他变量
+*   C_DEFINES -- 指示 C 预编译定义的参数，相当于在 C 文件中用 #define 声明的定义， 如 -DUSB2
+*   DDKROOT -- DDK 的根目录
+*   INCLUDES -- 设定包含目录的路径
+*   MSC_WARNING_LEVEL -- 编译警告级别，默认为 /W3
+*   SOURCES -- 工程所有的源文件，注意只指定 C/C++ 文件
+*   TARGETLIBS -- 目标代码所需要的库, 如 ntoskrnl.lib
+*   TARGETNAME -- 目标驱动的名称, 如 FJDriverDemo
+*   TARGETPATH -- 目标代码生成的路径, 如 obj
+*   TARGETTYPE -- 目标代码生成的类型: DRIVER(驱动), PROGRAM(Win32程序)
+*   
 ******************************************************************************************************************/
 
 

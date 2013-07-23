@@ -1,3 +1,5 @@
+"use strict";
+
 //★JavaScript区分大小写★
 //Netscape中如果多次因为用 for 循环向文档重复写 HTML 代码会导致浏览器卡死
 //字符串操作没有 StringBuffer 等类型?

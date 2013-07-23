@@ -1,3 +1,5 @@
+"use strict";
+
 module("CookieTester", {
     setup: function() {
         //dump("in MathTester::setup\n");

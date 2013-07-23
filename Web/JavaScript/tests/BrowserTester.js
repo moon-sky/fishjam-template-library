@@ -1,3 +1,5 @@
+"use strict";
+
 module("BrowserTester", {
     setup: function() {
         //dump("in BrowserTester::setup\n");

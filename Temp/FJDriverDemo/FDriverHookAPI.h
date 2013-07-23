@@ -1,13 +1,22 @@
 #ifndef F_DRIVER_HOOK_API_H
 #define F_DRIVER_HOOK_API_H
 
+TODO: Depends 查看 ntkrnlpa.exe + win32k.sys 并比较索引值
+
 /******************************************************************************************************************
-* 驱动级的 HOOK API( 通过 SSDP 来Hook) -- 注意先看该作者的其他下载。http://download.csdn.net/detail/jyw1111/5275135
+* 驱动级的 HOOK API( 通过更改 SSDP 中的函数地址来 Hook) -- 
+*   注意先看该作者的其他下载。http://download.csdn.net/detail/jyw1111/5275135
 *   缺点：可能被反病毒软件作为 rootkit 提醒
 *
+* 软中断：
+*   Win2K -- int 2eh
+*   WinXp -- sysenter
+*
+* SSDT(System Service Descriptor Table) -- 系统服务描述表，是各个系统服务号的 索引 => 对应系统服务函数的地址。
 *
 * Native API：
-*   ntdll.dll -- Native API 的接口，将调用传到内核，属于Ring 3
+*   ntdll.dll -- Native API 的接口，通过软中断方式将调用传到内核来调用系统服务，但本身属于Ring 3。
+*     函数名一般是对应Win32API前加 Nt 两个字母。
 *     1.把对应的功能编号存入eax寄存器,
 *     2.使用 SYSENTER 指令(早期使用触发 Int 2e 中断的方式)引发"自陷"
 *     3.KiSystemService 内核处理程序运行
@@ -18,10 +27,13 @@
 *       c.d -- 预留的SDT，即有人工创造SDT的可能，不过基本上没有意义
 *     5.Object Hook -- 更底层的接口，不过已经很难控制了
 *
-* ntkrnlpa.exe (SSDT?) -- 
-* win32k.sys (Shadow SSDT?) -- 
+* ntkrnlpa.exe (SSDT?) -- Kernel32.Dll 的内核实现
+* ntoskrnl.exe -- Windows执行体组件
+* win32k.sys (Shadow SSDT?) -- User32.dll + Gdi32.DLL 的内核实现
+*   将GUI的实现放入内核模式，会增大系统不稳定的几率。但会大大提高图形处理的运行效率。
 *
 * NtGdiBitBlt
+* 
 ******************************************************************************************************************/
 
 /******************************************************************************************************************

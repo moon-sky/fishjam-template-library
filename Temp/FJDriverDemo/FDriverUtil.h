@@ -19,11 +19,12 @@
 extern "C" {
 #endif
 
-//#include "ntddk.h"
+#include "ntddk.h"
 #include "wdm.h"
 
-#pragma PAGEDCODE
-LPWSTR GetNtStatusString(NTSTATUS status);
+void DumpDeviceFlags(USHORT nFlags);
+#pragma PAGEDCODE LPCSTR GetNtStatusString(NTSTATUS status);
+
 
 #ifdef __cplusplus
 }
@@ -31,7 +32,7 @@ LPWSTR GetNtStatusString(NTSTATUS status);
 
 #if DBG
 # define REPORT_ERROR_INFO(s, x)   \
-	DbgPrint("ERROR:%d(%s), %s", s, GetNtStatusString(s), #x);
+	DbgPrint(("ERROR:%d(%s), %s", s, GetNtStatusString(s), #x));
 
 # define FNT_VERIFY(x)   \
 	status = (x);\

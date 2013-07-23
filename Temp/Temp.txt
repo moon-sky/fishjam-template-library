@@ -1,3 +1,9 @@
+调用约定
+  __cdecl(C语言) -- 从右到左入栈，函数执行后用 ret 返回， 调用方通过 add esp, N 来恢复堆栈
+  __stdcall(标准) -- 从右到左入栈，函数执行后用 ret N 返回
+  __fastcall(快速)
+  thiscall(C++类成员函数)
+
 NT内核简介——HIPS与现代木马 -- http://bbs.kafan.cn/thread-233915-1-1.html
 驱动级DLL注入源码 -- http://www.pudn.com/downloads379/sourcecode/windows/detail1634630.html
 基于API_HOOK的数据文件透明加解密系统设计和实现 -- http://www.docin.com/p-68506176.html

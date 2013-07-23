@@ -1,3 +1,4 @@
+"use strict";
 /*************************************************************************************************************************
 * var fr = new FileReader()
 * fr.readAsArrayBuffer(fileSlice(file, e.data.position, e.data.amount));

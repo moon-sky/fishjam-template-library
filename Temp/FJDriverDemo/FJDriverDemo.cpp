@@ -53,7 +53,7 @@ NTSTATUS SameDemo()
 void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 {
 	//ExAllocatePool()
-	DbgPrint("Goodbye from FJDriverDemo, PID=%d\n", PsGetCurrentProcessId());
+	KdPrint(("Goodbye from FJDriverDemo, PID=%d\n", PsGetCurrentProcessId()));
 }
 
 NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
@@ -212,7 +212,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 #endif 
 	//pDriverObject->DriverExtension->AddDevice = xxxx; //WDM驱动中创建设备对象并由Pnp管理器调用的回调函数
 
-	DbgPrint("New Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId());
+	KdPrint(("New Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 
 	//for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
 	//	DriverObject->MajorFunction[i] = FJDriverDemoDefaultHandler;
@@ -225,7 +225,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	//DriverObject->DriverStartIo = NULL;
 	//DriverObject->DriverExtension->AddDevice = FJDriverDemoAddDevice;
 
-    DbgPrint("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId());
+    KdPrint(("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 
 	return status;
 }

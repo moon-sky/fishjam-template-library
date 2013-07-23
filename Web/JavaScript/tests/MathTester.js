@@ -1,3 +1,5 @@
+"use strict";
+
 module("MathTester", {
     setup: function() {
         //dump("in MathTester::setup\n");

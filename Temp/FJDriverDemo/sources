@@ -11,4 +11,5 @@ INCLUDES=$(WDKPATH)\inc;\
 
 
 SOURCES=stdafx.cpp \
-	FJDriverDemo.cpp
+	FJDriverDemo.cpp \
+	FDriverUtil.c

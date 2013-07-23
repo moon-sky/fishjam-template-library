@@ -1,3 +1,5 @@
+"use strict";
+
 function getCookie(cookieName) {
     var cookieString = document.cookie;
 
