@@ -1,6 +1,8 @@
 #ifndef F_DRIVER_STUDY_H
 #define F_DRIVER_STUDY_H
 
+//http://www.ltr-data.se/opencode.html -- 开源的一些程序(如 imdisk)
+
 //寒江独钓-Windows内核安全编程 -- P14X
 //Windows驱动开发技术详解 -- P118(UNICODE_STRING)  (优先看调试技巧?)
 

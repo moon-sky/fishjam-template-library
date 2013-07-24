@@ -44,11 +44,13 @@
 * DDK(Driver Development Kit) -- 使用WDM(Windows Driver Model)驱动模型,集成了测试套件HCT？，适用于WinXP及之前的平台
 *   NT式驱动程序 -- 不支持即插即用。使用 NTDDK.h 头文件。不分层？
 *     类似于Windows服务程序，可以以服务的方式加载在系统中进行测试。
-*
-* WDM(Windows Driver Model) -- Vista以前的驱动模型。支持即插即用,使用 WDM.h 头文件。链接 wdm.lib，
+*     
+* WDM(Windows Driver Model) -- Vista以前的驱动模型。支持即插即用(插入设备后系统自动创建PDO，并提示请求用户安装FDO),
+*   使用 WDM.h 头文件。链接 wdm.lib，
 *   主要是通过各个 MajorFunction 进行分发处理( IRP_MJ_CREATE 等定义在 Wdm.h 中)？
 *   建立在NT式驱动程序模型基础上，基于分层的，完成一个设备的操作，至少需要两个驱动设备共同完成。
-*   一个PDO(物理设备对象，由总线驱动自动创建)，一个FDO(功能设备对象)并附加到PDO上。
+*   一个PDO(物理设备对象)，当设备插入设备时由总线驱动自动创建，
+*   一个FDO(功能设备对象)，系统提示检测到新设备时提示安装驱动程序，该WDM驱动程序创建FDO并附加到PDO上，此时PDO的AttachedDevice会指向FDO.
 *   其中还有可能存在过滤驱动。通过自定义设备扩展(如名为NextStackDevice)记录并找到下层的过滤驱动，通过 AttachedDevice 找到上层驱动
 * 
 * WDK(Windows Driver Kit) -- 使用WDF(Windows Driver Foundation)模型，简化WDM的开发，
@@ -56,6 +58,14 @@
 *   以WDM为基础进行了建模和封装，降低了开发难度：基于对象（属性、方法、事件），封装了一些共同的默认行为（如即插即用和电源管理）
 *   驱动分为内核模式(KMD框架)和用户模式(UMD框架)的两种驱动程序。    
 * 
+*
+* 各种驱动架构的对比
+*     项目        |         DDK         |             WDM              |        WDK          |
+*   入口程序      |     DriverEntry     |         DriverEntry          |     DriverEntry     |
+*    加载方式     |     主动加载设备    |      加载PDO后被动加载       | 
+*     初始化      |     DriverEntry     | AddDevice中创建FDO,设置Flags |
+*     卸载        |     DriverUnload    |     IRP_MN_REMOVE_DEVICE     |
+*   派遣函数      |        无要求?      |         IRP_MJ_PNP           |
 ******************************************************************************************************************/
 
 

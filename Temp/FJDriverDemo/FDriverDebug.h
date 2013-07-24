@@ -5,9 +5,10 @@
 * 调试的Checked版本中有 define DBG 1 的宏定义
 * 打印日志：
 *   DbgPrint("x=%d\n", 100) -- 
-*     %wZ -- UNICODE_STRING 变量的地址
-*     %S/%ws -- UnicodeString.Buffer
 *     %s -- ANSI 字符串
+*     %S/%ws -- UnicodeString.Buffer
+*     %Z -- ANSI_STRING 变量的地址
+*     %wZ -- UNICODE_STRING 变量的地址
 *   KdPrint(("x=%d\n", 100)) -- DbgPrint 的宏，注意为了利用格式化功能，一般需要使用两重括号
 *
 * 驱动可以从注册表中提取相应参数，来提高灵活性。
@@ -29,9 +30,10 @@
 *     DriverMonitor -- 可以安装卸载驱动，并可以直接显示调试语句
 *     EzDriverInstaller -- 可以很方便的通过 inf 安装卸载WDM驱动的工具
 *
-* Win7时代的产品(http://www.osronline.com 网站似乎有不少好东西？)？
-*   DeviceTree -- 显示所有的Pnp设备树，包括各个设备的关系
-*  
+* Win7时代的产品( http://www.osronline.com 网站似乎有不少好东西？)
+*   DeviceTree -- 显示所有的Pnp设备树，包括各个设备的关系(设备堆栈 等)
+*   IrpTrace -- 可以方便地最终IRP的各种操作
+*
 * 通过DebugView查看打印的日志信息，需要选中 Capture Kernel 才能看到内核输出
 * BusHound -- 调试USB驱动程序
 * IRPTrace -- 查看IRP
@@ -64,6 +66,7 @@
 *   常用命令(在中断状态下，通过F9键可以设置/取消断点)
 *     g -- 中断的程序继续运行
 *     u XXXXXXXX -- 反汇编指定的地址(不需要 0x 前缀 ?)
+*     dt Xxxx -- 显示变量内容？ 如 dt _EPROCESS
 ******************************************************************************************************************/
 
 

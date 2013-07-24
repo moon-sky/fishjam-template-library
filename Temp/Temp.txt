@@ -1,3 +1,5 @@
+NuGet学习笔记 http://kb.cnblogs.com/kb/143190/
+
 调用约定
   __cdecl(C语言) -- 从右到左入栈，函数执行后用 ret 返回， 调用方通过 add esp, N 来恢复堆栈
   __stdcall(标准) -- 从右到左入栈，函数执行后用 ret N 返回

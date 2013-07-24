@@ -1013,6 +1013,9 @@ namespace FTL
 
 	typedef CFSharePtr<FTransferJobInfo> FTransferJobInfoPtr;
 
+	//TODO:
+	// 1.目前采用的是同步IO(读写本地磁盘、读写网络)，可以考虑更改成异步IO
+	// 2.断点续传 + 多线程 传输
 	class CFTransferJobBase 
 		: public CFJobBase<FTransferJobInfoPtr>
 		, public CFRWBufferT<CFTransferJobBase>

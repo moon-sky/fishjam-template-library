@@ -14,6 +14,9 @@ public:
     BOOL InstallService();
     BOOL UnInstallService();
 
+	BOOL OpenDemoDriver();
+	BOOL CloseDemoDriver();
+
     //BOOL StartService();
     //BOOL StopService();
 
@@ -21,4 +24,5 @@ private:
     SC_HANDLE m_hSCManager;
     SC_HANDLE m_hDriverDemoService;
 
+	HANDLE	  m_hDemoDriverFile;
 };

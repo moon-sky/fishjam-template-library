@@ -6,10 +6,13 @@ CFDriverDemoController::CFDriverDemoController(void)
 {
     m_hSCManager = NULL;
     m_hDriverDemoService = NULL;
+	m_hDemoDriverFile = NULL;
 }
 
 CFDriverDemoController::~CFDriverDemoController(void)
 {
+	CloseDemoDriver();
+	UnInstallService();
 }
 
 BOOL CFDriverDemoController::InstallService()
@@ -92,4 +95,38 @@ BOOL CFDriverDemoController::UnInstallService()
     }
 
     return bRet;
+}
+
+BOOL CFDriverDemoController::OpenDemoDriver()
+{
+	BOOL bRet = TRUE;
+	if (NULL == m_hDemoDriverFile)
+	{
+		API_VERIFY((m_hDemoDriverFile = ::CreateFile(FDRIVER_DEMO_DOS_NAME, GENERIC_READ | GENERIC_WRITE,
+			0, //·Ç¹²Ïí
+			NULL,
+			OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL,
+			NULL
+			)) != INVALID_HANDLE_VALUE);
+		if (!bRet)
+		{
+			FTLASSERT(INVALID_HANDLE_VALUE == m_hDemoDriverFile);
+			m_hDemoDriverFile = NULL;
+		}
+	}
+	return bRet;
+}
+
+BOOL CFDriverDemoController::CloseDemoDriver()
+{
+	BOOL bRet = TRUE;
+	if (m_hDemoDriverFile)
+	{
+		FTLASSERT(m_hDemoDriverFile != INVALID_HANDLE_VALUE);
+		CloseHandle(m_hDemoDriverFile);
+		m_hDemoDriverFile = NULL;
+	}
+	return bRet;
+
 }

@@ -1,8 +1,8 @@
 #ifndef F_DRIVER_DEMO_DEFINE_H
 #define F_DRIVER_DEMO_DEFINE_H
 
-//通过 CreateFile(FDRIVER_DEMO_NAME,..., OPEN_EXISTING ) 方式打开驱动
-#define FDRIVER_DEMO_NAME               TEXT("\\\\.\\Global\\FJDriverDemo")
+//通过 CreateFile(FDRIVER_DEMO_DOS_NAME,..., OPEN_EXISTING ) 方式打开驱动
+#define FDRIVER_DEMO_DOS_NAME           TEXT("\\\\.\\Global\\FJDriverDemo")
 
 #define FDRIVER_DEMO_FILENAME           TEXT("FJDriverDemo.sys")
 

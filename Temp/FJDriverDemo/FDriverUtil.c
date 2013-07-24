@@ -3,6 +3,30 @@
 
 #include "ntddk.h"
 
+void DisplayCurProcessName()
+{
+	//注意：这是 WinXP SP2 上的测试结果，各个系统可能有差别
+
+	//得到当前进程
+	PEPROCESS pEProcess = PsGetCurrentProcess();
+	
+	//得到当前进程名称
+	PTSTR processName = (PTSTR)((ULONG) pEProcess + 0x174);
+	KdPrint(("%d, %s\n", PsGetCurrentProcessId(), processName));
+}
+
+void DumpDeviceObjectInfo(IN PDEVICE_OBJECT pDeviceObject)
+{
+	KdPrint(("Device: Address=0x%p\n", 
+		pDeviceObject));
+}
+
+void DumpDriverObjectInfo(IN PDRIVER_OBJECT pDriverObject)
+{
+	KdPrint(("Driver: Address=0x%p, Name=%wZ\n", 
+		pDriverObject, &(pDriverObject->DriverName)));
+}
+
 void DumpDeviceFlags(USHORT nFlags)
 {
 	USHORT nCheckFlags = nFlags;
@@ -43,7 +67,7 @@ void DumpDeviceFlags(USHORT nFlags)
 }
 
 #pragma PAGEDCODE
-LPSTR GetNtStatusString(NTSTATUS status)
+PCHAR GetNtStatusString(NTSTATUS status)
 {
 	//PAGED_CODE();
 
@@ -1965,5 +1989,53 @@ LPSTR GetNtStatusString(NTSTATUS status)
         }
     }
     KdPrint(("Unknown Status:0x%x\n", status));
+	return "Unknown";
+}
+
+PCHAR GetIrpMajorCodeString(UCHAR MajorFunction)
+{
+	//PAGED_CODE();
+
+	static CaseReturnStringPair IrpMjCodeStringPairs[] = {
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_CREATE)				//创建设备，CreateFile
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_CREATE_NAMED_PIPE)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_CLOSE)				//关闭设备，CloseHandle
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_READ)				//读设备内容，如 ReadFile
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_WRITE)				//写设备内容，如 WriteFile
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_QUERY_INFORMATION)	//获取文件信息(如 GetFileSize)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_SET_INFORMATION)		//设置文件信息(如 SetFileAttributes)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_QUERY_EA)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_SET_EA)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_FLUSH_BUFFERS)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_QUERY_VOLUME_INFORMATION)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_SET_VOLUME_INFORMATION)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_DIRECTORY_CONTROL)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_FILE_SYSTEM_CONTROL)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_DEVICE_CONTROL)		//DeviceIoControl 会产生
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_INTERNAL_DEVICE_CONTROL)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_SHUTDOWN)			//关闭系统前产生此IRP
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_LOCK_CONTROL)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_CLEANUP)				//清除工作，CloseHandle 会产生
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_CREATE_MAILSLOT)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_QUERY_SECURITY)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_SET_SECURITY)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_POWER)				//操作系统处理电源消息时 产生
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_SYSTEM_CONTROL)		//系统内部产生的控制信息，类似于内核调用DeviceIoControl函数
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_DEVICE_CHANGE)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_QUERY_QUOTA)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_SET_QUOTA)
+		DEFINE_CASE_RETURN_STRING_A(IRP_MJ_PNP)					//即插即用消息，NT驱动不支持，只有WDM后的驱动才支持
+		//DEFINE_CASE_RETURN_STRING_A(IRP_MJ_PNP_POWER)
+	};
+	int nCount = _countof(IrpMjCodeStringPairs);
+	int nIndex = 0;
+	for (nIndex = 0; nIndex < nCount; nIndex++)
+	{
+		if (IrpMjCodeStringPairs[nIndex].nValue == MajorFunction)
+		{
+			return IrpMjCodeStringPairs[nIndex].pszValueString;
+		}
+	}
+	KdPrint(("Unknown Major Code:0x%x\n", nMajor));
 	return "Unknown";
 }

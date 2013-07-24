@@ -70,14 +70,14 @@ NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 {
     PAGED_CODE();
-
 	PFJDriverDemo_DEVICE_EXTENSION deviceExtension = NULL;
 	
 	NTSTATUS status = STATUS_SUCCESS;
-	//pIrp->IoStatus.Status = status;
+	//pIrp->IoStatus.Status = status;	//设置IRP完成状态
 	//pIrp->IoStatus.Information = 0;	//设置操作的字节数为0
-	//IoCompleteRequest( pIrp, IO_NO_INCREMENT);	//指示完成此IRP
+	//IoCompleteRequest( pIrp, IO_NO_INCREMENT);	//指示完成此IRP，不再继续处理
 
+	//跳过当前的设备，由设备栈中的下层设备继续处理
 	IoSkipCurrentIrpStackLocation(pIrp);
 	deviceExtension = (PFJDriverDemo_DEVICE_EXTENSION) DeviceObject->DeviceExtension;
 	return IoCallDriver(deviceExtension->TargetDeviceObject, pIrp);
@@ -201,7 +201,6 @@ NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 	return FJDriverDemoDefaultHandler(DeviceObject, Irp);
 }
 
-
 //每个内核模块的入口函数，在加载该模块时被系统进程System调用一次
 NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  RegistryPath)
 {
@@ -219,9 +218,9 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	//for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
 	//	DriverObject->MajorFunction[i] = FJDriverDemoDefaultHandler;
 
-	//DriverObject->MajorFunction[IRP_MJ_CREATE] = FJDriverDemoCreateClose;
-	//DriverObject->MajorFunction[IRP_MJ_CLOSE] = FJDriverDemoCreateClose;
-	//DriverObject->MajorFunction[IRP_MJ_PNP] = FJDriverDemoPnP;
+	//pDriverObject->MajorFunction[IRP_MJ_CREATE] = FJDriverDemoCreateClose;
+	//pDriverObject->MajorFunction[IRP_MJ_CLOSE] = FJDriverDemoCreateClose;
+	//pDriverObject->MajorFunction[IRP_MJ_PNP] = FJDriverDemoPnP;
 
 	pDriverObject->DriverUnload = FJDriverDemoUnload;
 	//DriverObject->DriverStartIo = NULL;

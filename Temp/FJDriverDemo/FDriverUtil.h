@@ -2,7 +2,7 @@
 #define F_DRIVER_UTIL_H
 
 /******************************************************************************************************************
-* NT_SUCCESS  -- 判断返回值是否成功
+* NT_SUCCESS  -- 判断返回值是否成功，但在 FNT_VERIFY 中是判断返回值是否等于 STATUS_SUCCESS(0)
 * 
 * 
 *
@@ -22,10 +22,18 @@ extern "C" {
 #include "ntddk.h"
 #include "wdm.h"
 
-void DumpDeviceFlags(USHORT nFlags);
-#pragma PAGEDCODE 
-LPSTR GetNtStatusString(NTSTATUS status);
+	#pragma PAGEDCODE 
+	void DumpDeviceObjectInfo(IN PDEVICE_OBJECT pDeviceObject);
+	#pragma PAGEDCODE 
+	void DumpDriverObjectInfo(IN PDRIVER_OBJECT pDriverObject);
+	#pragma PAGEDCODE 
+	void DumpDeviceFlags(USHORT nFlags);
 
+	#pragma PAGEDCODE 
+	PCHAR GetNtStatusString(NTSTATUS status);
+	
+	#pragma PAGEDCODE 
+	PCHAR GetIrpMajorCodeString(UCHAR MajorFunction);
 
 #ifdef __cplusplus
 }
