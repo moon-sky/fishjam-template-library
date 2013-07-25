@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "FDriverDemoTester.h"
 
+#include "FDriverDemoTesterDlg.h"
+
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/mfc/TestRunner.h>
 //#include <cppunit/ui/qt/QtTestRunner.h>
@@ -66,12 +68,14 @@ BOOL CFDriverDemoTesterApp::InitInstance()
 
     CoInitialize(NULL);
 
-    CPPUNIT_NS::MfcUi::TestRunner runner;
-    //CPPUNIT_NS::QtUi::TestRunner runner;
-    //CPPUNIT_NS::TextUi::TestRunner runner;
-    runner.addTest( CPPUNIT_NS::TestFactoryRegistry::getRegistry().makeTest() );
-    runner.run();
+    //CPPUNIT_NS::MfcUi::TestRunner runner;
+    ////CPPUNIT_NS::QtUi::TestRunner runner;
+    ////CPPUNIT_NS::TextUi::TestRunner runner;
+    //runner.addTest( CPPUNIT_NS::TestFactoryRegistry::getRegistry().makeTest() );
+    //runner.run();
 
+	CFDriverDemoTesterDlg	dlg;
+	dlg.DoModal();
 
     CoUninitialize();
 

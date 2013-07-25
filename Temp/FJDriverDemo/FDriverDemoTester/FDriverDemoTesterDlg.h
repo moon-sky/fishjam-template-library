@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "FDriverDemoController.h"
 
 // CFDriverDemoTesterDlg dialog
 class CFDriverDemoTesterDlg : public CDialog
@@ -28,4 +29,17 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedBtnInstallService();
+
+private:
+	CFDriverDemoController	m_DriverController;
+	CString m_strDriverPath;
+public:
+	afx_msg void OnBnClickedBtnChooseDriverFile();
+	afx_msg void OnBnClickedBtnOpenDriver();
+	afx_msg void OnBnClickedBtnCloseDriver();
+	afx_msg void OnBnClickedBtnUninstallService();
+	afx_msg void OnBnClickedBtnInstallHook();
+	afx_msg void OnBnClickedBtnUninstallHook();
 };

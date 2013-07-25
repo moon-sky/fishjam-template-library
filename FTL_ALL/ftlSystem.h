@@ -217,6 +217,9 @@ namespace FTL
 		//实现在WinXP上也能使用的 GetTickCount64 -- 虽然和真正的相比会差 800 毫秒左右(是否是测试的方法有问题?)
 		FTLINLINE static ULONGLONG GetTickCount64();
 
+		//获取第一个指定进程名的PID
+		FTLINLINE static DWORD GetPidFromProcessName(LPCTSTR pszProcesName);
+
         //判断当前系统是大端系统还是小端系统(操作系统有没有方式) -- intel的X86是小端，Apple的RISC是大端
         //大端模式 -- 数据的低位保存在内存的高地址中，而数据的高位保存在内存的低地址中
         //  0x12345678 保存为 {低 0x12, 0x34, 0x56, 0x78 高}

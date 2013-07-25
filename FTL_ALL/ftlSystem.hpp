@@ -677,6 +677,39 @@ namespace FTL
 		}
 	}
 
+
+	DWORD CFSystemUtil::GetPidFromProcessName(LPCTSTR pszProcesName)
+	{
+		DWORD dwPidResult = 0;
+
+		BOOL bRet = FALSE;
+		HANDLE hSnapProcHandle = NULL;
+		API_VERIFY((hSnapProcHandle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)) != INVALID_HANDLE_VALUE);
+		if (bRet)
+		{
+			PROCESSENTRY32 ProcEntry = { 0 };
+			ProcEntry.dwSize = sizeof(PROCESSENTRY32);
+			API_VERIFY(Process32First(hSnapProcHandle, &ProcEntry));
+			while (bRet)
+			{
+				LPCTSTR pszFileName = PathFindFileName(ProcEntry.szExeFile);
+				if (pszFileName)
+				{
+					if(lstrcmpi(pszProcesName, pszFileName) == 0)
+					{
+						dwPidResult = ProcEntry.th32ProcessID;
+						break;
+					}
+				}
+				API_VERIFY(Process32Next(hSnapProcHandle, &ProcEntry));
+			}
+			CloseHandle(hSnapProcHandle);
+		}
+		//OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, PID);
+
+		return dwPidResult;
+	}
+
     BOOL CFSystemUtil::IsLittleSystem()
     {
         FTLASSERT(sizeof(int) == 4);

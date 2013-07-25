@@ -22,6 +22,8 @@ extern "C" {
 #include "ntddk.h"
 #include "wdm.h"
 
+#if DBG
+
 	#pragma PAGEDCODE 
 	void DumpDeviceObjectInfo(IN PDEVICE_OBJECT pDeviceObject);
 	#pragma PAGEDCODE 
@@ -35,11 +37,6 @@ extern "C" {
 	#pragma PAGEDCODE 
 	PCHAR GetIrpMajorCodeString(UCHAR MajorFunction);
 
-#ifdef __cplusplus
-}
-#endif
-
-//#if DBG
 # define REPORT_ERROR_INFO(s, x)   \
     DbgPrint( "%s(%d) : ERROR: 0x%x(%s) for call %s\n", __FILE__, __LINE__, s, GetNtStatusString(s), #x);
 
@@ -50,11 +47,16 @@ extern "C" {
 	REPORT_ERROR_INFO(status, x);\
 }
 
-//#else
-//
-//# define FNT_VERIFY(x)   \
-//	status = (x);\
-//
-//#endif 
+#else
+
+# define FNT_VERIFY(x)   \
+	status = (x);\
+
+#endif 
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //F_DRIVER_UTIL_H

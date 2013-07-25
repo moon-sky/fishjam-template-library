@@ -3,6 +3,8 @@
 
 #include "ntddk.h"
 
+#if DBG
+
 void DisplayCurProcessName()
 {
 	//注意：这是 WinXP SP2 上的测试结果，各个系统可能有差别
@@ -2036,6 +2038,8 @@ PCHAR GetIrpMajorCodeString(UCHAR MajorFunction)
 			return IrpMjCodeStringPairs[nIndex].pszValueString;
 		}
 	}
-	KdPrint(("Unknown Major Code:0x%x\n", nMajor));
+	KdPrint(("Unknown Major Code:0x%x\n", MajorFunction));
 	return "Unknown";
 }
+
+#endif //DBG == 1

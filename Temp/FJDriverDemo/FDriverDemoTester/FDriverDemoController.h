@@ -11,12 +11,14 @@ public:
     CFDriverDemoController(void);
     ~CFDriverDemoController(void);
 
-    BOOL InstallService();
+    BOOL InstallService(LPCTSTR pszDriverFilePath, LPCTSTR pszServiceName);
     BOOL UnInstallService();
 
-	BOOL OpenDemoDriver();
+	BOOL OpenDemoDriver(LPCTSTR pszDosDriverName);
 	BOOL CloseDemoDriver();
 
+	BOOL IoControl(DWORD dwIoControlCode, LPVOID lpInBuffer, DWORD nInBufferSize,
+		LPVOID lpOutBuffer, DWORD nOutBufferSize);
     //BOOL StartService();
     //BOOL StopService();
 

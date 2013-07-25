@@ -9,10 +9,11 @@ extern "C"
 
 #include "VisualDDKHelpers.h"
 
-#include <ntddk.h>                      //NT式驱动(不支持PnP)
-#include <ntddstor.h>
-#include <mountdev.h>
-#include <ntddvol.h>
+//#include <ntddk.h>                      //NT式驱动(不支持PnP)
+//#include <ntddstor.h>
+//#include <mountdev.h>
+//#include <ntddvol.h>
+#include <ntifs.h>
 
 //#include <wdm.h>                        //WDM式驱动(支持PnP)
 
