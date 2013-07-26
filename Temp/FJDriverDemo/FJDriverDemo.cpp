@@ -71,7 +71,7 @@ NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 #pragma PAGEDCODE
 NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 {
-    PAGED_CODE();
+    //PAGED_CODE();
 	PFJDriverDemo_DEVICE_EXTENSION deviceExtension = NULL;
 
 	PIO_STACK_LOCATION pIoStackLoc = IoGetCurrentIrpStackLocation(pIrp);
@@ -114,7 +114,7 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 				if (inputBufferLength == sizeof(SCROLL_HOOK_TARGET))
 				{
 					RtlCopyMemory(&g_ScrollHookTarget, inputBuffer, sizeof(SCROLL_HOOK_TARGET));
-					InstallCopyProtectHook(g_ScrollHookTarget.hSelfProcess);
+					InstallCopyProtectHook(g_ScrollHookTarget.hTargetProcess);
 				}
 			}
 			else

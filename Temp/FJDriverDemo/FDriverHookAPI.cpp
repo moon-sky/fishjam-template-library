@@ -1,14 +1,16 @@
 #include "stdafx.h"
 #include "FDriverHookAPI.h"
+#include "FDriverUtil.h"
 
 SYS_SERVICE_TABLE *g_pShadowTable = NULL;
 
-int g_ScrollDCIndex = (-1);
+int g_NtGdiBitBltIndex = (-1);
+int g_NtGdiStretchBltIndex = (-1);
+
 HANDLE g_hProcess = 0;
 
 SCROLL_DATA g_ScrollData = {0};
 SCROLL_HOOK_TARGET g_ScrollHookTarget = {0};
-KAPC_STATE g_KApcState = {0};
 
 //Win32k.sys file, scroll to the target, the target-specific API calls to the process even if one has a value of TRUE.
 ULONG g_IsScrolled = FALSE;
@@ -19,8 +21,8 @@ ULONG g_SSDTAPILockCount = 0;
 //typedef ULONG (*SCROLLWINDOWEX)(HWND hWnd, int dx, int dy, const RECT *prcScroll, const RECT *prcClip, HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags);
 //ULONG (*OrigScrollWindowEx)(HWND hWnd, int dx, int dy, const RECT *prcScroll, const RECT *prcClip, HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags);
 
-typedef ULONG (*SCROLLDC)(HDC hDC,int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate);
-ULONG (*OrigScrollDC)(HDC hDC,int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate);
+//typedef ULONG (*SCROLLDC)(HDC hDC,int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate);
+//ULONG (*OrigScrollDC)(HDC hDC,int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate);
 
 typedef ULONG (*NTBITBLT)(HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
 					HDC  hDCSrc,int  XSrc,int  YSrc,	
@@ -29,10 +31,15 @@ ULONG (*OrigNtBitBlt)(HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
 					  HDC  hDCSrc,int  XSrc,int  YSrc,	
 					  ULONG  ROP,ULONG crBackColor,ULONG fl);
 
+
+typedef ULONG (*NTGDISTRETCHBLT)(HDC hDCDest);
+ULONG (*OrigNtGdiStretchBlt)(HDC hDCDest);
+
+
 typedef ULONG (*NTGDIEXTTEXTOUTW)(HDC hDC, INT XStart, INT YStart,UINT fuOptions, LPRECT UnsafeRect, LPWSTR UnsafeString, 
 								  INT Count, INT* UnsafeDx, ULONG dwCodePage);
 ULONG (*OrigNtGdiExtTextOutW)(HDC hDC, INT XStart, INT YStart,UINT fuOptions, LPRECT UnsafeRect, LPWSTR UnsafeString, 
-							  INT Count, INT* UnsafeDx, ULONG dwCodePage);
+							  INT Count, INT* UnsafeDx, ULONG dwCodePage) = NULL;
 
 
 typedef struct _SERVICE_DESCRIPTOR_TABLE *PSERVICE_DESCRIPTOR_TABLE;
@@ -40,6 +47,9 @@ typedef struct _SERVICE_DESCRIPTOR_TABLE *PSERVICE_DESCRIPTOR_TABLE;
 extern "C" PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
 extern "C" __declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, ULONG, ULONG); 
 
+//根据相同版本下与SSDT地址存在的偏移获取的SSDT SHADOW的地址
+// WinDbg 下 ?KeServiceDescriptorTable-
+// 会打印出：Evaluate expression: 64 = 00000040(XP), -0xE0(2K)
 SYS_SERVICE_TABLE *GetServiceDescriptorShadowTableAddress ()
 { 
 	// ShadowTable of obtaining the source code to address what I do not know who the original author is.
@@ -80,11 +90,12 @@ SYS_SERVICE_TABLE *GetServiceDescriptorShadowTableAddress ()
 // MDL to approach needs to be changed.
 VOID  ClearWriteProtect(VOID)
 {
+	//cli + sti 类似 push eax + pop eax
 	__asm
 	{
 		push  eax;
 		mov   eax, cr0;
-		and   eax, CR0_WP_MASK;
+		and   eax, 0x0FFFEFFFF;		//and     eax, not 10000h
 		mov   cr0, eax;
 		pop   eax;
 	}
@@ -96,13 +107,156 @@ VOID  SetWriteProtect(VOID)
 	{
 		push  eax;
 		mov   eax, cr0;
-		or    eax, not CR0_WP_MASK;
+		or    eax, not 0x0FFFEFFFF;  //or eax, 10000h
 		mov   cr0, eax;
 		pop   eax;
 	}
 }
 
-int GetScrollDCIndex(SYS_SERVICE_TABLE *p)
+//PSYSTEM_HANDLE_INFORMATION_EX GetInfoTable(OUT PULONG nSize)
+//{
+//	PVOID Buffer;
+//	NTSTATUS status;
+//	Buffer =ExAllocatePool(PagedPool,0x1000);
+//	status = ZwQuerySystemInformation(SystemHandleInformation, Buffer, 0x1000, nSize);
+//	ExFreePool(Buffer);
+//	if(status == STATUS_INFO_LENGTH_MISMATCH)
+//	{
+//		Buffer = ExAllocatePool(NonPagedPool, *nSize);
+//		status = ZwQuerySystemInformation(SystemHandleInformation, Buffer, *nSize, NULL);
+//		if(NT_SUCCESS(status))
+//		{
+//			return (PSYSTEM_HANDLE_INFORMATION_EX)Buffer;
+//		}
+//	}
+//	return (PSYSTEM_HANDLE_INFORMATION_EX)0;
+//}
+
+//HANDLE GetCsrPid(VOID)
+//{
+//	HANDLE Process,hObject;
+//	HANDLE CsrId = (HANDLE)0;
+//	OBJECT_ATTRIBUTES obj;
+//	CLIENT_ID cid;
+//	UCHAR Buff[0x100];
+//	POBJECT_NAME_INFORMATION ObjName = (POBJECT_NAME_INFORMATION)&Buff;
+//	PSYSTEM_HANDLE_INFORMATION_EX Handles;
+//	ULONG i;
+//	ULONG nSize;
+//	Handles = GetInfoTable(&nSize);
+//	if(!Handles)
+//	{
+//		return CsrId;
+//	}
+//	for(i = 0; i < Handles->NumberOfHandles; i++)
+//	{
+//		if(Handles->Information[i].ObjectTypeNumber == 21)
+//		{
+//			InitializeObjectAttributes(&obj, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
+//			cid.UniqueProcess = (HANDLE)Handles->Information[i].ProcessID;
+//			cid.UniqueThread  = 0;
+//			if(NT_SUCCESS(NtOpenProcess(&Process, PROCESS_DUP_HANDLE, &obj, &cid)))
+//			{
+//				if(NT_SUCCESS(ZwDuplicateObject(Process, (HANDLE)Handles->Information[i].Handle, NtCurrentProcess(), &hObject, 0, 0, DUPLICATE_SAME_ACCESS)))
+//				{
+//					if(NT_SUCCESS(ZwQueryObject(hObject, ObjectNameInformation, ObjName, 0x100, NULL)))
+//					{
+//						if(ObjName->Name.Buffer && !wcsncmp(L"\\Windows\\ApiPort", ObjName->Name.Buffer, 20))
+//						{
+//							CsrId = (HANDLE)Handles->Information[i].ProcessID;
+//							KdPrint(("Csrss.exe PID = %d", CsrId));
+//						}
+//					}
+//					ZwClose(hObject);
+//				}
+//				ZwClose(Process);
+//			}
+//		}
+//	}
+//	ExFreePool(Handles);
+//	return CsrId;
+//}
+
+int GetGdiExTextOutWIndex(SYS_SERVICE_TABLE *p)
+{
+	/*
+	1089 0008:A006F5AD params=03 NtGdiExtCreateRegion 
+	108A 0008:A00B2E12 params=08 NtGdiExtEscape 
+	108B 0008:A0133BFF params=05 NtGdiExtFloodFill 
+	108C 0008:A002873A params=03 NtGdiExtGetObjectW 
+	108D 0008:A0021B1A params=03 NtGdiExtSelectClipRgn 
+	108E 0008:A0067926 params=09 NtGdiExtTextOutW
+	108F 0008:A00948AF params=01 NtGdiFillPath 
+	1090 0008:A00B617B params=03 NtGdiFillRgn 
+	1091 0008:A0121AFA params=01 NtGdiFlattenPath 
+	1092 0008:A001A344 params=00 NtGdiFlushUserBatch 
+	1093 0008:A0017DB4 params=00 GreFlush 
+	*/
+
+	const int WIN2K_NtGdiExtCreateRegion = 0x89;
+	for (int i = WIN2K_NtGdiExtCreateRegion; i <= WIN2K_NtGdiExtCreateRegion + 20; i++)
+	{
+		KdPrint(("%d", p[1].ArgumentsTable[i] / 4));
+		if (
+			((p[1].ArgumentsTable[i + 0]) == 12)		//0x89, NtGdiExtCreateRegion
+			&& ((p[1].ArgumentsTable[i + 1]) == 32)		//0x8A, NtGdiExtEscape
+			&& ((p[1].ArgumentsTable[i + 2]) == 20)		//0x8B, NtGdiExtFloodFill
+			&& ((p[1].ArgumentsTable[i + 3]) == 12)		//0x8C, NtGdiExtGetObjectW
+			&& ((p[1].ArgumentsTable[i + 4]) == 12)		//0x8D, NtGdiExtSelectClipRgn
+			&& ((p[1].ArgumentsTable[i + 5]) == 36)		//0x8E, NtGdiExtTextOutW
+			&& ((p[1].ArgumentsTable[i + 6]) == 4)		//0x8F, NtGdiFillPath
+			&& ((p[1].ArgumentsTable[i + 7]) == 12)		//0x90, NtGdiFillRgn
+			&& ((p[1].ArgumentsTable[i + 8]) == 4)		//0x91, NtGdiFlattenPath
+			&& ((p[1].ArgumentsTable[i + 9]) == 0)		//0x92, NtGdiFlushUserBatch
+			)
+		{
+			KdPrint(("Find GdiExTextOutW in Windows XP, 0x%x!!\n", (i+5)));
+			return (i + 5);
+		}
+	}
+	KdPrint(("ERROR CAN NOT FIND GdiExTextOutW!!\n"));
+	return -1;
+}
+
+int GetNtGdiStretchBltIndex(SYS_SERVICE_TABLE *p)
+{
+	/*
+	1116 0008:A006FBB5 params=05 NtGdiSetVirtualResolution 
+	1117 0008:A006F8BE params=03 NtGdiSetSizeDevice 
+	1118 0008:A0071AA4 params=04 NtGdiStartDoc 
+	1119 0008:A0070474 params=01 NtGdiStartPage 
+	111A 0008:A003022B params=0C NtGdiStretchBlt 
+	111B 0008:A0059D6F params=10 NtGdiStretchDIBitsInternal 
+	111C 0008:A00BF555 params=01 NtGdiStrokeAndFillPath 
+	111D 0008:A0121E76 params=01 NtGdiStrokePath 
+	111E 0008:A01367B4 params=01 NtGdiSwapBuffers
+	*/
+
+	const int WIN2K_NtGdiSetVirtualResolution = 0x116;
+	for (int i = WIN2K_NtGdiSetVirtualResolution; i <= WIN2K_NtGdiSetVirtualResolution + 20; i++)
+	{
+		KdPrint(("%d", p[1].ArgumentsTable[i] / 4));
+		if (
+			((p[1].ArgumentsTable[i + 0]) == 20)		//0x116, NtGdiSetVirtualResolution
+			&& ((p[1].ArgumentsTable[i + 1]) == 12)		//0x117, NtGdiSetSizeDevice
+			&& ((p[1].ArgumentsTable[i + 2]) == 16)		//0x118, NtGdiStartDoc
+			&& ((p[1].ArgumentsTable[i + 3]) == 4)		//0x119, NtGdiStartPage
+			&& ((p[1].ArgumentsTable[i + 4]) == 48)		//0x11A, NtGdiStretchBlt
+			&& ((p[1].ArgumentsTable[i + 5]) == 64)		//0x11B, NtGdiStretchDIBitsInternal
+			&& ((p[1].ArgumentsTable[i + 6]) == 4)		//0x11C, NtGdiStrokeAndFillPath
+			&& ((p[1].ArgumentsTable[i + 7]) == 4)		//0x11D, NtGdiStrokePath
+			&& ((p[1].ArgumentsTable[i + 8]) == 4)		//0x11E, NtGdiSwapBuffers
+			)
+		{
+			KdPrint(("Find NtGdiStretchBlt in Windows XP, 0x%x!!\n", (i+4)));
+			return (i + 4);
+		}
+	}
+
+	return (-1);
+}
+
+int GetNtGdiBitBltIndex(SYS_SERVICE_TABLE *p)
 {
 	/*
 	1009 0008:A00AA5B4 params=00 NtGdiAnyLinkedFonts 
@@ -133,6 +287,7 @@ int GetScrollDCIndex(SYS_SERVICE_TABLE *p)
 			return (i + 4);
 		}
 	}
+	return (-1);
 
 #if 0
 	int WIN2K_NtUserRemoveMenu = 0;
@@ -218,33 +373,49 @@ int GetScrollDCIndex(SYS_SERVICE_TABLE *p)
 	return (-1);
 }
 
-ULONG MyScrollDC(HDC hDC, int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate)
-{
-	ULONG uResult = OrigScrollDC(hDC, dx, dy, lprcScroll, lprcClip, hrgnUpdate, lprcUpdate);
-	KdPrint(("MyScrollDC hDC=0x%x \n", hDC));
-
-	HANDLE PID = PsGetCurrentProcessId();
-	if (PID == g_ScrollHookTarget.hTargetProcess)
-	{
-	}
-	return uResult;
-}
+//ULONG MyScrollDC(HDC hDC, int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate)
+//{
+//	ULONG uResult = OrigScrollDC(hDC, dx, dy, lprcScroll, lprcClip, hrgnUpdate, lprcUpdate);
+//	KdPrint(("MyScrollDC hDC=0x%x \n", hDC));
+//
+//	HANDLE PID = PsGetCurrentProcessId();
+//	if (PID == g_ScrollHookTarget.hTargetProcess)
+//	{
+//	}
+//	return uResult;
+//}
 
 ULONG MyNtGdiBitBlt(
 					 HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
 					 HDC  hDCSrc,int  XSrc,int  YSrc,	
 					 ULONG  ROP,ULONG crBackColor,ULONG fl)
 {
+	NTSTATUS status;
 	static LONG nCount = 0;
-	ULONG uResult = OrigNtBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
+	ULONG nResult = OrigNtBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
 
+	if (OrigNtGdiExtTextOutW)
+	{
+		RECT rcClient = {0, 0, 400, 400};
+		FNT_VERIFY(OrigNtGdiExtTextOutW(hDCDest, 0, 0, ETO_OPAQUE, &rcClient, L"CopyProtect", 11, NULL, 0x0000000B));
+		//KdPrint(("OrigNtGdiExtTextOutW, return 0x%x\n", status));
+	}
+	KdPrint(("In MyNtGdiBitBlt hDCDest=0x%x, hDCSrc=0x%x, nResult=%d, status=%d\n", hDCDest, hDCSrc, nResult, status));
+
+	//EngBitBlt(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0);
 	
 	InterlockedIncrement(&nCount);
 	if (nCount % 20 == 0)
 	{
-		KdPrint(("In MyNtGdiBitBlt hDCDest=0x%x, hDCDest=0x%x\n", hDCDest, hDCSrc));
 	}
-	return uResult;
+	return nResult;
+}
+
+ULONG MyNtGdiStretchBlt(HDC hDCDest)
+{
+	ULONG nResult = OrigNtGdiStretchBlt(hDCDest);
+
+	return nResult;
 }
 
 //ULONG MyScrollWindowEx(HWND hWnd, int dx, int dy, const RECT *prcScroll, const RECT *prcClip, HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags)
@@ -263,11 +434,11 @@ ULONG MyNtGdiBitBlt(
 
 void InstallCopyProtectHook(HANDLE hProcess)
 {
-	PAGED_CODE();
+	//PAGED_CODE();
 
 	ClearWriteProtect();
 
-	KdPrint(("IRQL : %#x", KeGetCurrentIrql()));
+	//KdPrint(("IRQL : %#x", KeGetCurrentIrql()));
 
 	g_pShadowTable = GetServiceDescriptorShadowTableAddress();
 	if (g_pShadowTable == NULL)
@@ -288,31 +459,43 @@ void InstallCopyProtectHook(HANDLE hProcess)
 
 			return ;
 		}
-		KeStackAttachProcess(pEProcess, &g_KApcState);
+
+		KAPC_STATE KApcState = {0};
+		KeStackAttachProcess(pEProcess, &KApcState);
 		//KeAttachProcess(pEProcess);
 
-		g_ScrollDCIndex = GetScrollDCIndex(g_pShadowTable);
-		KdPrint(("g_ScrollDCIndex: %#x", g_ScrollDCIndex));
+		g_NtGdiBitBltIndex = GetNtGdiBitBltIndex(g_pShadowTable);
+		g_NtGdiStretchBltIndex = GetNtGdiStretchBltIndex(g_pShadowTable);
 
+		KdPrint(("g_NtGdiBitBltIndex=0x%x, g_NtGdiStretchBltIndex=0x%x\n", g_NtGdiBitBltIndex, g_NtGdiStretchBltIndex));
+		
 		g_hProcess = hProcess;
-		if (g_ScrollDCIndex != (-1))
+		if (g_NtGdiBitBltIndex != (-1) && g_NtGdiStretchBltIndex != (-1))
 		{
 			//
 			// This method is not accessible.
 			// This is very extremely low chance of a blue screen may occur. (A very unlikely possibility, but ...)
 			// OrigScrollDC = InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]), MyScrollDC);
 			//
-			OrigScrollDC = (SCROLLDC)(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]);
+			//OrigScrollDC = (SCROLLDC)(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]);
 			//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]), MyScrollDC);
 
-			OrigNtBitBlt = (NTBITBLT)(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]);
-			InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]), MyNtGdiBitBlt);
+			OrigNtBitBlt = (NTBITBLT)(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]);
+			InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]), MyNtGdiBitBlt);
 
+			//OrigNtGdiStretchBlt = (NTGDISTRETCHBLT)(g_pShadowTable[1].ServiceTable[g_NtGdiStretchBltIndex]);
+			//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiStretchBltIndex]), MyNtGdiStretchBlt);
+
+			int nGdiExTextOutIndex = GetGdiExTextOutWIndex(g_pShadowTable);
+			if (nGdiExTextOutIndex != (-1))
+			{
+				OrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(g_pShadowTable[1].ServiceTable[nGdiExTextOutIndex]);
+			}
 			//OrigScrollWindowEx = (SCROLLWINDOWEX)(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]);
 			//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]), MyScrollWindowEx);
 		}
-
-		KeDetachProcess();
+		KeUnstackDetachProcess(&KApcState);
+		//KeDetachProcess();
 	}
 	SetWriteProtect();
 }
@@ -321,7 +504,7 @@ void UnInstallScrollHook(void)
 {
 	LARGE_INTEGER WaitTime;
 	KdPrint(("Enter UnInstallScrollHook\n"));
-
+	
 	ClearWriteProtect();
 
 	if (g_pShadowTable != NULL)
@@ -330,13 +513,14 @@ void UnInstallScrollHook(void)
 
 		if (g_hProcess != 0)
 		{
-			if (g_ScrollDCIndex != (-1))
+			if (g_NtGdiBitBltIndex != (-1))
 			{
 				PEPROCESS pEProcess;
 
 				PsLookupProcessByProcessId(g_hProcess, &pEProcess);
 
-				KeUnstackDetachProcess(&g_KApcState);
+				KAPC_STATE KApcState = {0};
+				KeStackAttachProcess(pEProcess, &KApcState);
 				//KeAttachProcess(pEProcess);
 
 				//g_pShadowTable[1].ServiceTable[g_ScrollDCIndex] = OrigScrollDC;
@@ -344,9 +528,10 @@ void UnInstallScrollHook(void)
 				//g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1] = OrigScrollWindowEx;
 				//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]), OrigScrollWindowEx);
 
-				InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]), OrigNtBitBlt);
+				InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]), OrigNtBitBlt);
 
-				KeDetachProcess();
+				KeUnstackDetachProcess(&KApcState);
+				//KeDetachProcess();
 
 			}
 		}

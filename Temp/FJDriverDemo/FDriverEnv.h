@@ -78,11 +78,12 @@
 
 
 /******************************************************************************************************************
-* setenv.bat 后会设置如下环境变量(cmd 中通过 set 查看)：
+* setenv.bat 后会设置如下环境变量(cmd 中通过 set 查看，注意，有一些 SDK_LIB_PATH 等环境变量没有列举出来)：
 *          项目				|  WinXp x86 Checked   |      Win7 x64 Free   |    Win7 ia64 Checked    |
 *  BUILD_ALT_DIR(目录)		|     chk_wxp_x86      |     fre_win7_AMD64   |       chk_win7_IA64     |
 *  BUILD_DEFAULT_TARGETS	|         -386         |         -amd64       |          -ia64          |
-*        DDK_LIB_DEST       |   %WDKPATH%\lib\wxp  |   %WDKPATH%\lib\win7 |     %WDKPATH%\lib\win7  |
+*       DDK_LIB_DEST        |   %WDKPATH%\lib\wxp  |   %WDKPATH%\lib\win7 |     %WDKPATH%\lib\win7  |
+*       SDK_LIB_PATH        |
 *  DDKBUILDENV/_BuildType	|          chk         |           fre        |           chk           |
 *       DDK_TARGET_OS       |         WinXP        |          Win7        |           Win7          |
 *       _BUILDARCH          |          x86         |        AMD64         |           IA64          |
@@ -92,16 +93,17 @@
 *------------------------------------------  代码中可用的宏  ----------------------------------------
 *          DBG              |           1          |           0          |            1            |
 *
+*
 * 注意：以下文件中，以 井号(#) 开始的是注释
 *   makefile -- 里面一般只有一行 "!INCLUDE $(NTMAKEENV)\makefile.def"
 *   dirs -- 通过 DIRS=XXX 表示需要编译的子目录，并依次进入子目录进行编译 
 *   sources -- 其内容关系到该模块要编译那些文件，及编译出来的 .sys 文件的名字等，其中可通过 $(XXX) 引用其他变量
 *     C_DEFINES -- 指示 C 预编译定义的参数，相当于在 C 文件中用 #define 声明的定义， 如 -DUSB2
 *     DDKROOT -- DDK 的根目录
-*     INCLUDES -- 设定包含目录的路径
+*     INCLUDES -- 设定包含目录的路径,如 INCLUDES=$(INCLUDES) $(SDK_INC_PATH)
 *     MSC_WARNING_LEVEL -- 编译警告级别，默认为 /W3
 *     SOURCES -- 工程所有的源文件，注意只指定 C/C++ 文件
-*     TARGETLIBS -- 目标代码所需要的库(可以指定全路径?), 如 ntoskrnl.lib
+*     TARGETLIBS -- 目标代码所需要的库,如 TARGETLIBS=$(TARGETLIBS) $(SDK_LIB_PATH)\Win32k.lib
 *     TARGETNAME -- 目标驱动的名称, 如 FJDriverDemo
 *     TARGETPATH -- 目标代码生成的路径, 如 obj
 *     TARGETTYPE -- 目标代码生成的类型: DRIVER(驱动), PROGRAM(Win32程序)

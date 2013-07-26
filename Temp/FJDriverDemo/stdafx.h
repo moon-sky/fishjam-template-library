@@ -14,7 +14,9 @@ extern "C"
 //#include <mountdev.h>
 //#include <ntddvol.h>
 #include <ntifs.h>
-
+#include <windef.h>
+#include <wingdi.h>
+//#include <winddi.h>
 //#include <wdm.h>                        //WDM式驱动(支持PnP)
 
 #ifdef __cplusplus

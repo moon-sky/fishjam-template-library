@@ -2,13 +2,13 @@
 
 TARGETNAME=FJDriverDemo
 TARGETTYPE=DRIVER
-
+#TARGETLIBS=$(TARGETLIBS) $(SDK_LIB_PATH)\Win32k.lib
 # DRIVERTYPE=WDM
 
 INCLUDES=$(WDKPATH)\inc;\
-    $(WDKPATH)\inc\api;\
     $(WDKPATH)\inc\ddk;\
 
+LIBS=Win32k.lib
 
 SOURCES=stdafx.cpp \
 	FJDriverDemo.cpp \

@@ -42,4 +42,6 @@ public:
 	afx_msg void OnBnClickedBtnUninstallService();
 	afx_msg void OnBnClickedBtnInstallHook();
 	afx_msg void OnBnClickedBtnUninstallHook();
+	afx_msg void OnBnClickedBtnDoBitblt();
+	afx_msg void OnBnClickedBtnFilterDesktop();
 };

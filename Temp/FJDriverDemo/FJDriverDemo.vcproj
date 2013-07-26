@@ -172,6 +172,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\set_wdk_env.bat"
+			>
+		</File>
+		<File
 			RelativePath=".\sources"
 			>
 		</File>

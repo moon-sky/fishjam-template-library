@@ -7,6 +7,8 @@
 #include "FDriverDemoTesterDlg.h"
 #include "../FDriverDemoDefine.h"
 
+//#include <NapTypes.h>
+
 #include <ftlSystem.h>
 
 #ifdef _DEBUG
@@ -39,6 +41,8 @@ BEGIN_MESSAGE_MAP(CFDriverDemoTesterDlg, CDialog)
 	ON_BN_CLICKED(IDC_BTN_UNINSTALL_SERVICE, &CFDriverDemoTesterDlg::OnBnClickedBtnUninstallService)
 	ON_BN_CLICKED(IDC_BTN_INSTALL_HOOK, &CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook)
 	ON_BN_CLICKED(IDC_BTN_UNINSTALL_HOOK, &CFDriverDemoTesterDlg::OnBnClickedBtnUninstallHook)
+	ON_BN_CLICKED(IDC_BTN_DO_BITBLT, &CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt)
+	ON_BN_CLICKED(IDC_BTN_FILTER_DESKTOP, &CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop)
 END_MESSAGE_MAP()
 
 
@@ -159,4 +163,54 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallHook()
 	BOOL bRet = FALSE;
 	API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_UNINSTALL_HOOK, NULL, 0, NULL, 0));
 
+}
+
+void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
+{
+	BOOL bRet = FALSE;
+	CWnd* pWndDraw = GetDlgItem(IDC_STATIC_DRAW);
+	if (pWndDraw)
+	{
+		CDC* pDC = pWndDraw->GetDC();
+		if (pDC)
+		{
+			CDC dcMemory;
+			API_VERIFY(dcMemory.CreateCompatibleDC(pDC));
+			CRect rcStaticDraw;
+			pWndDraw->GetClientRect(&rcStaticDraw);
+			//pWndDraw->ScreenToClient(&rcStaticDraw);
+			CBitmap bmp;
+			API_VERIFY(bmp.CreateCompatibleBitmap(pDC, rcStaticDraw.Width(), rcStaticDraw.Height()));
+			CBitmap* pOldBmp = dcMemory.SelectObject(&bmp);
+			dcMemory.FillSolidRect(rcStaticDraw, RGB(255, 0, 0));
+
+			FTLTRACE(TEXT("OnBnClickedBtnDoBitblt, hDCDest=0x%x, hDCDest=0x%x"), pDC->m_hDC, dcMemory.m_hDC);
+			API_VERIFY(pDC->BitBlt(0, 0, rcStaticDraw.Width(), rcStaticDraw.Height(), &dcMemory, 0, 0, SRCCOPY));
+
+			//pDC->DrawText(TEXT("fishjam"), &rcStaticDraw, DT_CENTER | DT_VCENTER);
+			//pDC->FillSolidRect(rcStaticDraw, RGB(0, 255, 0));
+			dcMemory.SelectObject(pOldBmp);
+
+			pWndDraw->ReleaseDC(pDC);
+		}
+	}
+}
+
+class CMyTest
+{
+public:
+	void Test()
+	{
+		AfxMessageBox(TEXT("In Test"));
+	}
+};
+void CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop()
+{
+	BOOL bRet = FALSE;
+	
+	//HWND hDesktop = ::GetDesktopWindow();
+	//API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_FILTER_DESKTOP, &hDesktop, sizeof(hDesktop), NULL, 0));
+
+	CMyTest* pMyTest = NULL;
+	pMyTest->Test();
 }

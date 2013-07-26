@@ -10,8 +10,12 @@
 #define IDC_BTN_CLOSE_DRIVER            1003
 #define IDC_BTN_INSTALL_HOOK            1004
 #define IDC_BTN_CHOOSE_DRIVER_FILE      1005
-#define IDC_BTN_INSTALL_HOOK2           1006
 #define IDC_BTN_UNINSTALL_HOOK          1006
+#define IDC_BTN_DO_BITBLT               1007
+#define IDC_STATIC_DRAW                 1008
+#define IDC_BTN_FILTER_DESKTOP          1009
+#define IDC_BUTTON3                     1010
+#define IDC_BTN_UNFILTER_DESKTOP        1010
 
 // Next default values for new objects
 // 
@@ -19,7 +23,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        129
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1001
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -119,6 +119,7 @@ BOOL CFDriverDemoController::CloseDemoDriver()
 		CloseHandle(m_hDemoDriverFile);
 		m_hDemoDriverFile = NULL;
 
+		
 		FTLTRACE(TEXT("After CloseDemoDriver\n"));
 	}
 	return bRet;
