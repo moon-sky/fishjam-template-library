@@ -1,8 +1,24 @@
 #include "stdafx.h"
 #include "FDriverHookAPI.h"
 #include "FDriverUtil.h"
+#include "FDriverMemory.h"
 
-SYS_SERVICE_TABLE *g_pShadowTable = NULL;
+typedef struct _DRIVER_HOOK_API_INFOS
+{
+	int IndexOfNtGdiBitBlt;
+	int IndexOfNtGdiStretchBlt;
+
+	DRIVER_HOOK_API_INFOS()
+	{
+		IndexOfNtGdiBitBlt = -1;
+		IndexOfNtGdiStretchBlt = -1;
+	}
+}DRIVER_HOOK_API_INFOS, *PDRIVER_HOOK_API_INFOS;
+
+#pragma LOCKEDCODE	DRIVER_HOOK_API_INFOS g_DriverHookApiInfos;
+
+
+SYSTEM_SERVICE_TABLE *g_pShadowTable = NULL;
 
 int g_NtGdiBitBltIndex = (-1);
 int g_NtGdiStretchBltIndex = (-1);
@@ -50,40 +66,70 @@ extern "C" __declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, UL
 //根据相同版本下与SSDT地址存在的偏移获取的SSDT SHADOW的地址
 // WinDbg 下 ?KeServiceDescriptorTable-
 // 会打印出：Evaluate expression: 64 = 00000040(XP), -0xE0(2K)
-SYS_SERVICE_TABLE *GetServiceDescriptorShadowTableAddress ()
+//卡巴斯基有个类似的函数：FindSystemServiceDescriptionTableShadow
+SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 { 
-	// ShadowTable of obtaining the source code to address what I do not know who the original author is.
-	// Almost floating around on the Internet can be seen as the source.
+	//通过搜索有效内存地址的办法 来查找 Shadow SSDT
 
 	// First, obtain a pointer to KeAddSystemServiceTable
 	unsigned char *check = (unsigned char*)KeAddSystemServiceTable; 
 	int i;
 	//Initialize an instance of System Service Table, will be used to
 	//obtain an address from KeAddSystemServiceTable
-	SYS_SERVICE_TABLE *rc=0; 
+	SYSTEM_SERVICE_TABLE *rc=0; 
 	// Make 100 attempts to match a valid address with that of KeServiceDescriptorTable 
-	for (i=0; i<4096; i++) { 
+	for (i=0; i<4096; i++) {  //PAGE_SIZE
 		__try { 
 			// try to obtain an address from  KeAddSystemServiceTable 
-			rc = *(SYS_SERVICE_TABLE **)check; 
+			rc = *(SYSTEM_SERVICE_TABLE **)check; 
 			// if this address is NOT valid OR it itself is the address of 
 			//KeServiceDescriptorTable OR its first entry is NOT equal 
 			//to the first entry of KeServiceDescriptorTable 
-			if (!MmIsAddressValid (rc) || (rc == (SYS_SERVICE_TABLE *)KeServiceDescriptorTable) 
+			if (!MmIsAddressValid (rc) || (rc == (SYSTEM_SERVICE_TABLE *)KeServiceDescriptorTable) 
 				|| (memcmp (rc, KeServiceDescriptorTable, sizeof (*rc)) != 0)) { 
 					// Proceed with the next address 
 					check++; 
 					// don't forget to reset the old address 
 					rc = 0; 
 			} 
-		} __except (EXCEPTION_EXECUTE_HANDLER) { rc = 0; } 
+		} __except (EXCEPTION_EXECUTE_HANDLER) 
+		{
+			rc = 0; 
+		} 
 		// when the loop is completed, check if it produced a valid address 
 		if (rc) 
+		{
 			// because if it didn't, we failed to find the address of KeServiceDescriptorTableShadow 
 			break; 
+		}
 	} 
 	// otherwise, there is a valid address! So return it! 
 	return rc; 
+
+	//方法2
+#if 0
+	PUCHAR cPtr, pOpcode;
+	ULONG Length = 0;
+
+	for (cPtr = (PUCHAR)KeAddSystemServiceTable;
+		cPtr < (PUCHAR)KeAddSystemServiceTable + PAGE_SIZE;
+		cPtr += Length)
+	{
+		if (!MmIsAddressValid(cPtr)) break;
+
+		Length = SizeOfCode(cPtr, &pOpcode);
+
+		if (!Length || (Length == 1 && *pOpcode == 0xC3)) break;
+
+		//找到以下汇编对应的位置： 
+		//805ba5a3 8d8840a65580    lea    ecx,nt!KeServiceDescriptorTableShadow (8055a640)[eax]
+		if (*(PUSHORT)pOpcode == 0x888D)
+		{
+			KeServiceDescriptorTableShadow = *(PVOID *)(pOpcode + 2);
+			break;
+		}
+	}
+#endif 
 }
 
 // It is not part of a fairly clean.
@@ -113,71 +159,8 @@ VOID  SetWriteProtect(VOID)
 	}
 }
 
-//PSYSTEM_HANDLE_INFORMATION_EX GetInfoTable(OUT PULONG nSize)
-//{
-//	PVOID Buffer;
-//	NTSTATUS status;
-//	Buffer =ExAllocatePool(PagedPool,0x1000);
-//	status = ZwQuerySystemInformation(SystemHandleInformation, Buffer, 0x1000, nSize);
-//	ExFreePool(Buffer);
-//	if(status == STATUS_INFO_LENGTH_MISMATCH)
-//	{
-//		Buffer = ExAllocatePool(NonPagedPool, *nSize);
-//		status = ZwQuerySystemInformation(SystemHandleInformation, Buffer, *nSize, NULL);
-//		if(NT_SUCCESS(status))
-//		{
-//			return (PSYSTEM_HANDLE_INFORMATION_EX)Buffer;
-//		}
-//	}
-//	return (PSYSTEM_HANDLE_INFORMATION_EX)0;
-//}
 
-//HANDLE GetCsrPid(VOID)
-//{
-//	HANDLE Process,hObject;
-//	HANDLE CsrId = (HANDLE)0;
-//	OBJECT_ATTRIBUTES obj;
-//	CLIENT_ID cid;
-//	UCHAR Buff[0x100];
-//	POBJECT_NAME_INFORMATION ObjName = (POBJECT_NAME_INFORMATION)&Buff;
-//	PSYSTEM_HANDLE_INFORMATION_EX Handles;
-//	ULONG i;
-//	ULONG nSize;
-//	Handles = GetInfoTable(&nSize);
-//	if(!Handles)
-//	{
-//		return CsrId;
-//	}
-//	for(i = 0; i < Handles->NumberOfHandles; i++)
-//	{
-//		if(Handles->Information[i].ObjectTypeNumber == 21)
-//		{
-//			InitializeObjectAttributes(&obj, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
-//			cid.UniqueProcess = (HANDLE)Handles->Information[i].ProcessID;
-//			cid.UniqueThread  = 0;
-//			if(NT_SUCCESS(NtOpenProcess(&Process, PROCESS_DUP_HANDLE, &obj, &cid)))
-//			{
-//				if(NT_SUCCESS(ZwDuplicateObject(Process, (HANDLE)Handles->Information[i].Handle, NtCurrentProcess(), &hObject, 0, 0, DUPLICATE_SAME_ACCESS)))
-//				{
-//					if(NT_SUCCESS(ZwQueryObject(hObject, ObjectNameInformation, ObjName, 0x100, NULL)))
-//					{
-//						if(ObjName->Name.Buffer && !wcsncmp(L"\\Windows\\ApiPort", ObjName->Name.Buffer, 20))
-//						{
-//							CsrId = (HANDLE)Handles->Information[i].ProcessID;
-//							KdPrint(("Csrss.exe PID = %d", CsrId));
-//						}
-//					}
-//					ZwClose(hObject);
-//				}
-//				ZwClose(Process);
-//			}
-//		}
-//	}
-//	ExFreePool(Handles);
-//	return CsrId;
-//}
-
-int GetGdiExTextOutWIndex(SYS_SERVICE_TABLE *p)
+int GetGdiExTextOutWIndex(SYSTEM_SERVICE_TABLE *p)
 {
 	/*
 	1089 0008:A006F5AD params=03 NtGdiExtCreateRegion 
@@ -218,7 +201,7 @@ int GetGdiExTextOutWIndex(SYS_SERVICE_TABLE *p)
 	return -1;
 }
 
-int GetNtGdiStretchBltIndex(SYS_SERVICE_TABLE *p)
+int GetNtGdiStretchBltIndex(SYSTEM_SERVICE_TABLE *p)
 {
 	/*
 	1116 0008:A006FBB5 params=05 NtGdiSetVirtualResolution 
@@ -256,7 +239,7 @@ int GetNtGdiStretchBltIndex(SYS_SERVICE_TABLE *p)
 	return (-1);
 }
 
-int GetNtGdiBitBltIndex(SYS_SERVICE_TABLE *p)
+int GetNtGdiBitBltIndex(SYSTEM_SERVICE_TABLE *p)
 {
 	/*
 	1009 0008:A00AA5B4 params=00 NtGdiAnyLinkedFonts 
@@ -400,7 +383,9 @@ ULONG MyNtGdiBitBlt(
 		FNT_VERIFY(OrigNtGdiExtTextOutW(hDCDest, 0, 0, ETO_OPAQUE, &rcClient, L"CopyProtect", 11, NULL, 0x0000000B));
 		//KdPrint(("OrigNtGdiExtTextOutW, return 0x%x\n", status));
 	}
-	KdPrint(("In MyNtGdiBitBlt hDCDest=0x%x, hDCSrc=0x%x, nResult=%d, status=%d\n", hDCDest, hDCSrc, nResult, status));
+	KdPrint(("[%d], In MyNtGdiBitBlt hDCDest=0x%x, hDCSrc=0x%x, nResult=%d, status=%d\n", 
+		PsGetCurrentProcessId(),
+		hDCDest, hDCSrc, nResult, status));
 
 	//EngBitBlt(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0);
 	
@@ -440,7 +425,7 @@ void InstallCopyProtectHook(HANDLE hProcess)
 
 	//KdPrint(("IRQL : %#x", KeGetCurrentIrql()));
 
-	g_pShadowTable = GetServiceDescriptorShadowTableAddress();
+	g_pShadowTable = GetKeServiceDescriptorTableShadowAddress();
 	if (g_pShadowTable == NULL)
 	{
 		KdPrint(("Failed GetShadowTable"));

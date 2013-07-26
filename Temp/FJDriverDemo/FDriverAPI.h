@@ -10,6 +10,10 @@
 * DriverEntry -- 驱动程序的入口函数(extern "C")，由内核中的IO管理器负责调用，主要工作是初始化 DriverObject, 指定Dispatch方法
 *   IN PDRIVER_OBJECT DriverObject    -- IO管理器传递进来的驱动对象
 *   IN PUNICODE_STRING  RegistryPath  -- 驱动程序在注册表中的路径
+*
+* 注意：
+*   1.内核中有很多函数是未文档化或头文件中没有定义的(但在实际的文件中存在)，通常来说只要声明后就可以使用。
+*     
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
@@ -90,6 +94,7 @@
 
 /******************************************************************************************************************
 * DDK不鼓励程序员使用C语言的字符串，主要是容易出现缓冲区溢出。鼓励程序员使用 STRING/ANSI_STRING/UNICODE_STRING 等带长度的结构
+*
 * ASCII字符串(ANSI_STRING) -- 
 * 宽字符串(UNICODE_STRING) = RTL_CONSTANT_STRING(L"xxx")
 *   字符串操作时，Rtl-函数(如 RtlInitUnicodeString、)
@@ -177,5 +182,23 @@
 ******************************************************************************************************************/
 
 
+//声明未文档化，且常用的一些API原型
+NTSTATUS ZwQuerySystemInformation( 
+								  IN ULONG SystemInformationClass, 
+								  IN PVOID SystemInformation, 
+								  IN ULONG SystemInformationLength, 
+								  OUT PULONG ReturnLength);
+
+NTSTATUS ZwDuplicateObject(
+						   IN HANDLE                 SourceProcessHandle,
+						   IN PHANDLE                 SourceHandle,
+						   IN HANDLE                 TargetProcessHandle,
+						   OUT PHANDLE               TargetHandle,
+						   IN ACCESS_MASK             DesiredAccess OPTIONAL,
+						   IN BOOLEAN                 InheritHandle,
+						   IN ULONG                   Options );
+
+
+//ntifs.h 中
 
 #endif //F_DRIVER_API_H

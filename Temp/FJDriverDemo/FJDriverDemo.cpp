@@ -4,7 +4,7 @@
 #include "FDriverUtil.h"
 #include "FDriverHookAPI.h"
 
-extern SYS_SERVICE_TABLE *g_pShadowTable;
+extern SYSTEM_SERVICE_TABLE *g_pShadowTable;
 
 extern SCROLL_DATA g_ScrollData;
 extern SCROLL_HOOK_TARGET g_ScrollHookTarget;

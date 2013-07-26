@@ -4,10 +4,14 @@
 
 //#include "WindowsTypes.h"
 
+//到SSDT Shadow表中的函数定义和参数说明 -- WRK(2003的源码)
+
 //TODO: Depends 查看 ntkrnlpa.exe + win32k.sys 并比较索引值
 //SoftICE for Windows NT/2000的ntcall命令可以将这些System Service显示出 -- http://dev.21tx.com/2005/03/14/12553.html
 //Hook NtGdiBitBlt  -- http://www.osronline.com/showthread.cfm?link=187950
-//http://bbs.pediy.com/showthread.php?t=56955
+//shadow ssdt学习笔记 -- http://bbs.pediy.com/showthread.php?t=56955
+//Hook Shadow SSDT -- http://bbs.pediy.com/showthread.php?t=65931
+//读取硬盘上的ntoskrnl.exe文件，根据export table定位原始的SSDT，再用物理内存与虚拟内存映射的办法转换，得到系统中SSDT的位置
 
 /******************************************************************************************************************
 * 在Windows操作系统中，消息钩子（通过SetWindowsHookEx设置）只会当前的桌面上的窗口有效，
@@ -70,16 +74,30 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 *   TODO: 怎么得到一个函数的SSDT索引号(dumpbin 或 depends ?)
 *         http://www.cnblogs.com/nlsoft/archive/2013/04/02/2994628.html
 * Shadow SSDT(Shadow System Services Descriptor Table) -- 管图形、用户相关的函数(gdi32.dll,user32.dll)
+*   注意：
+*   1.win32k.sys不是常在内存的，如果不是GUI线程，Shadow SSDT 地址无效 -- 在GUI线程中DeviceIoControl即可;
+*   2.通常需要附加的进程是 csrss.exe ? GetCsrPid()
+*   3.使用MDL映射一块不分页内存，设置成可以写入，常驻在物理内存(参见 RegmonMapServiceTable)
+*     TODO:通过 #pragma LOCKEDCODE 声明变量即可？
 *
-*   系统内部有个名为 KeServiceDescriptorTable 的变量，保存了相关信息，可通过 extern 后访问
-*     如 WinDbg 中: dd KeServiceDescriptorTable
-*
+* KeServiceDescriptorTable -- 系统预定义的保存SSDT信息的变量，可通过extern后访问，如 WinDbg 中: dd KeServiceDescriptorTable
+* KeServiceDescriptorTableShadow -- 为了做 Shadow SSDT Hook 而定义的，系统中不存在，可以通过 KeServiceDescriptorTable 来定位。
+* 
+
 * 对SSDT进行Hook的过程
 *   1.关闭CR0写保护(改变CR0寄存器的WP位)；
 *   2.1.Hook Shadow SSDT 之前，必须将进程上下文切换到CSRSS进程
 *   2.2.用新的函数地址替换原来SSDT中的函数地址
 *   3.恢复CR0写保护
-*
+* 
+* Shadow SSDT 中函数名定位：
+*   1.可以解析pdb得到，但比较麻烦(已有 获取shadow地址和函数名称的工具 )
+*     SymInitialize -> SymSetSearchPath -> SymLoadModule -> SymGetSymFromName
+*   2.同一个版本的系统调用号一样，经过测试后可以直接写死
+*     
+* Hook 检查(避免和别人的Hook冲突或安全检查)
+*   1.查看 OldFunc 的函数地址是否在win32k的模块里
+* 
 * 窗口保护 NtUserFindWindowEx、NtUserGetForegroundWindow、NtUserBuildHwndList、NtUserQueryWindow、
 *          NtUserWindowFromPoint、NtUserSetParent、NtUserPostMessage、NtUserMessageCall、
 *          NtUserSetWindowLong、NtUserShowWindow、NtUserDestroyWindow、NtUserCallHwndParamLock
@@ -132,13 +150,22 @@ extern "C" {
 #define SSDT_API_CALL_LEAVE(x) (InterlockedDecrement(&x))
 
 //SSDT表结构
-typedef struct _SYS_SERVICE_TABLE { 
-	void **ServiceTable;					//SSDT在内存中的基地址(其每一个的元素就是各个Rin0的函数？)
-	unsigned long CounterTable; 
-											//包含着 SSDT 中每个服务被调用次数的计数器。这个计数器一般由sysenter 更新
-	unsigned long uNumberOfServices;		//SSDT项的个数？由 CounterTable 描述的服务的数目
-	PUCHAR ArgumentsTable;					//TODO:实际上是参数个数? 包含每个系统服务参数字节数表的基地址-系统服务参数表
-} SYS_SERVICE_TABLE, *PSYS_SERVICE_TABLE;
+typedef struct _SYSTEM_SERVICE_TABLE { 
+	// PNTPROC ServiceTable;
+	void **ServiceTable;					//SSDT在内存中的基地址(数组，其每一个的元素就是各个Rin0的函数)
+	PDWORD CounterTable;					// array of usage counters, 包含着 SSDT 中每个服务被调用次数计数器的数组。这个计数器一般由sysenter 更新
+	DWORD uNumberOfServices;				//SSDT项的个数
+	PBYTE ArgumentsTable;					//TODO:实际上是参数个数? 包含每个系统服务参数字节数表的基地址-系统服务参数表
+} SYSTEM_SERVICE_TABLE, *PSYSTEM_SERVICE_TABLE;
+
+//系统中的4个SSDT表
+typedef struct _SERVICE_DESCRIPTOR_TABLE
+{
+	SYSTEM_SERVICE_TABLE ntoskrnl;  // ntoskrnl.exe(native api，即 SSDT, KeServiceDescriptorTable )
+	SYSTEM_SERVICE_TABLE win32k;    // win32k.sys (gdi/user support, shadow SSDT)
+	SYSTEM_SERVICE_TABLE Table3;    // not used
+	SYSTEM_SERVICE_TABLE Table4;    // not used
+}SYSTEM_DESCRIPTOR_TABLE, PSYSTEM_DESCRIPTOR_TABLE;
 
 typedef struct _SCROLL_HOOK_TARGET
 {
@@ -154,8 +181,8 @@ typedef struct _SCROLL_DATA
 } SCROLL_DATA, *PSCROLL_DATA;
 #pragma push(0)
 
-SYS_SERVICE_TABLE *GetServiceDescriptorShadowTableAddress();
-//int GetNtGdiBitBltIndex(SYS_SERVICE_TABLE *p);
+SYSTEM_SERVICE_TABLE *GetServiceDescriptorShadowTableAddress();
+//int GetNtGdiBitBltIndex(SYSTEM_SERVICE_TABLE *p);
 
 void InstallCopyProtectHook(HANDLE hProcess);
 void UnInstallScrollHook(void);

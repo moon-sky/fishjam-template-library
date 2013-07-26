@@ -196,21 +196,19 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 	}
 }
 
-class CMyTest
-{
-public:
-	void Test()
-	{
-		AfxMessageBox(TEXT("In Test"));
-	}
-};
 void CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop()
 {
 	BOOL bRet = FALSE;
 	
-	//HWND hDesktop = ::GetDesktopWindow();
+	HWND hWndDesktop = ::GetDesktopWindow();
+	HDC hDC = ::GetDC(hWndDesktop);
+
+	HWND hWndFromDC = ::WindowFromDC(hDC);
+
+	FTLTRACE(TEXT("hWndDesktop = 0x%x, hWndFromDC=0x%x, hDC=0x%x\n"), hWndDesktop, hWndFromDC, hDC);
+
+	::ReleaseDC(hWndDesktop, hDC);
+
 	//API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_FILTER_DESKTOP, &hDesktop, sizeof(hDesktop), NULL, 0));
 
-	CMyTest* pMyTest = NULL;
-	pMyTest->Test();
 }
