@@ -2,23 +2,91 @@
 #include "FDriverHookAPI.h"
 #include "FDriverUtil.h"
 #include "FDriverMemory.h"
+#include "FDriverAPI.h"
+
+#define ObjectNameInformation  1
+#define SystemHandleInformation 0x10
+
+SYSTEM_SERVICE_TABLE *g_pShadowTable = NULL;
+
+typedef NTSTATUS (*NTBITBLT)(HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
+						  HDC  hDCSrc,int  XSrc,int  YSrc,	
+						  ULONG  ROP,ULONG crBackColor,ULONG fl);
+
+typedef NTSTATUS (*NTGDIEXTTEXTOUTW)(HDC hDC, INT XStart, INT YStart,UINT fuOptions, LPRECT UnsafeRect, LPWSTR UnsafeString, 
+								  INT Count, INT* UnsafeDx, ULONG dwCodePage);
 
 typedef struct _DRIVER_HOOK_API_INFOS
 {
-	int IndexOfNtGdiBitBlt;
-	int IndexOfNtGdiStretchBlt;
+	HWND					hWndProtect;
+	unsigned long			OldCr0;
+
+	int						IndexOfNtGdiBitBlt;
+	int						IndexOfNtGdiStretchBlt;
+	
+	NTBITBLT				pOrigNtBitBlt;
+	NTGDIEXTTEXTOUTW		pOrigNtGdiExtTextOutW;
+
 
 	DRIVER_HOOK_API_INFOS()
 	{
+		hWndProtect = (HWND)0;
+		OldCr0 = 0;
+
 		IndexOfNtGdiBitBlt = -1;
 		IndexOfNtGdiStretchBlt = -1;
+
+		pOrigNtBitBlt = NULL;
+		pOrigNtGdiExtTextOutW = NULL;
+	}
+
+	//根据操作系统来确定具体函数的服务号
+	NTSTATUS InitCallNumber()
+	{
+		NT_ASSERT(g_pShadowTable);
+
+		NTSTATUS status = STATUS_SUCCESS;
+		ULONG majorVersion = 0;
+		ULONG minorVersion = 0;
+		PsGetVersion( &majorVersion, &minorVersion, NULL, NULL );
+
+		ULONG versionCode = majorVersion * 100 + minorVersion;
+		KdPrint(("PsGetVersion, version is %d\n", versionCode));
+		switch (versionCode)
+		{
+		case 501:	//WinXp
+			{
+				KdPrint(("Running on Windows XP\n"));
+				IndexOfNtGdiBitBlt = 0xD;				//100D 0008:A001B344 params=0B NtGdiBitBlt 
+				IndexOfNtGdiStretchBlt = 0x124;			//111A 0008:A003022B params=0C NtGdiStretchBlt 
+
+
+				break;
+			}
+		default:
+			status = STATUS_NOT_SUPPORTED;
+			break;
+		}
+
+		if (NT_SUCCESS(status))
+		{
+			int nPointSize = sizeof(void *);
+			NT_ASSERT(nPointSize == 4);
+			NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtGdiBitBlt] == (0xB * nPointSize));
+			NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtGdiStretchBlt] == (0xC * nPointSize));
+		}
+
+		return status;
 	}
 }DRIVER_HOOK_API_INFOS, *PDRIVER_HOOK_API_INFOS;
 
-#pragma LOCKEDCODE	DRIVER_HOOK_API_INFOS g_DriverHookApiInfos;
 
 
-SYSTEM_SERVICE_TABLE *g_pShadowTable = NULL;
+
+#pragma LOCKEDCODE	
+DRIVER_HOOK_API_INFOS g_DriverHookApiInfos;
+
+
 
 int g_NtGdiBitBltIndex = (-1);
 int g_NtGdiStretchBltIndex = (-1);
@@ -40,22 +108,14 @@ ULONG g_SSDTAPILockCount = 0;
 //typedef ULONG (*SCROLLDC)(HDC hDC,int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate);
 //ULONG (*OrigScrollDC)(HDC hDC,int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate);
 
-typedef ULONG (*NTBITBLT)(HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
-					HDC  hDCSrc,int  XSrc,int  YSrc,	
-					ULONG  ROP,ULONG crBackColor,ULONG fl);
-ULONG (*OrigNtBitBlt)(HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
-					  HDC  hDCSrc,int  XSrc,int  YSrc,	
-					  ULONG  ROP,ULONG crBackColor,ULONG fl);
 
 
 typedef ULONG (*NTGDISTRETCHBLT)(HDC hDCDest);
 ULONG (*OrigNtGdiStretchBlt)(HDC hDCDest);
 
 
-typedef ULONG (*NTGDIEXTTEXTOUTW)(HDC hDC, INT XStart, INT YStart,UINT fuOptions, LPRECT UnsafeRect, LPWSTR UnsafeString, 
-								  INT Count, INT* UnsafeDx, ULONG dwCodePage);
-ULONG (*OrigNtGdiExtTextOutW)(HDC hDC, INT XStart, INT YStart,UINT fuOptions, LPRECT UnsafeRect, LPWSTR UnsafeString, 
-							  INT Count, INT* UnsafeDx, ULONG dwCodePage) = NULL;
+//ULONG (*OrigNtGdiExtTextOutW)(HDC hDC, INT XStart, INT YStart,UINT fuOptions, LPRECT UnsafeRect, LPWSTR UnsafeString, 
+//							  INT Count, INT* UnsafeDx, ULONG dwCodePage) = NULL;
 
 
 typedef struct _SERVICE_DESCRIPTOR_TABLE *PSERVICE_DESCRIPTOR_TABLE;
@@ -69,7 +129,7 @@ extern "C" __declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, UL
 //卡巴斯基有个类似的函数：FindSystemServiceDescriptionTableShadow
 SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 { 
-	//通过搜索有效内存地址的办法 来查找 Shadow SSDT
+	//通过搜索 操作SSDT的函数实现中的有效内存地址的办法 来查找 Shadow SSDT
 
 	// First, obtain a pointer to KeAddSystemServiceTable
 	unsigned char *check = (unsigned char*)KeAddSystemServiceTable; 
@@ -85,7 +145,8 @@ SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 			// if this address is NOT valid OR it itself is the address of 
 			//KeServiceDescriptorTable OR its first entry is NOT equal 
 			//to the first entry of KeServiceDescriptorTable 
-			if (!MmIsAddressValid (rc) || (rc == (SYSTEM_SERVICE_TABLE *)KeServiceDescriptorTable) 
+			if (!MmIsAddressValid (rc) 
+				|| (rc == (SYSTEM_SERVICE_TABLE *)KeServiceDescriptorTable) 
 				|| (memcmp (rc, KeServiceDescriptorTable, sizeof (*rc)) != 0)) { 
 					// Proceed with the next address 
 					check++; 
@@ -356,6 +417,79 @@ int GetNtGdiBitBltIndex(SYSTEM_SERVICE_TABLE *p)
 	return (-1);
 }
 
+PSYSTEM_HANDLE_INFORMATION_EX GetInfoTable(ULONG ATableType)
+{
+	ULONG mSize = 0x4000;
+	PSYSTEM_HANDLE_INFORMATION_EX mPtr = NULL;
+	NTSTATUS St;
+	do
+	{
+		mPtr = (PSYSTEM_HANDLE_INFORMATION_EX)ExAllocatePool(PagedPool, mSize);
+		memset(mPtr, 0, mSize);
+		if (mPtr)
+		{
+			St = ZwQuerySystemInformation(ATableType, mPtr, mSize, NULL);
+		} else return NULL;
+		if (St == STATUS_INFO_LENGTH_MISMATCH)
+		{
+			ExFreePool(mPtr);
+			mSize = mSize * 2;
+		}
+	} while (St == STATUS_INFO_LENGTH_MISMATCH);
+	if (St == STATUS_SUCCESS) return mPtr;
+	ExFreePool(mPtr);
+	return NULL;
+}
+
+HANDLE GetCsrPid()
+{
+	HANDLE Process, hObject;
+	HANDLE CsrId = (HANDLE)0;
+	OBJECT_ATTRIBUTES obj;
+	CLIENT_ID cid;
+	UCHAR Buff[0x100];
+	POBJECT_NAME_INFORMATION ObjName = (POBJECT_NAME_INFORMATION)&Buff;
+	PSYSTEM_HANDLE_INFORMATION_EX Handles;
+	ULONG r;
+
+	Handles = GetInfoTable(SystemHandleInformation);
+
+	if (!Handles) return CsrId;
+
+	for (r = 0; r < Handles->NumberOfHandles; r++)
+	{
+		if (Handles->Information[r].ObjectTypeNumber == 21) //Port object
+		{
+			InitializeObjectAttributes(&obj, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
+
+			cid.UniqueProcess = (HANDLE)Handles->Information[r].ProcessID;
+			cid.UniqueThread = 0;
+
+			if (NT_SUCCESS(NtOpenProcess(&Process, PROCESS_DUP_HANDLE, &obj, &cid)))
+			{
+				if (NT_SUCCESS(ZwDuplicateObject(Process, (HANDLE)Handles->Information[r].Handle,NtCurrentProcess(), &hObject, 0, 0, DUPLICATE_SAME_ACCESS)))
+				{
+					if (NT_SUCCESS(ZwQueryObject(hObject, (OBJECT_INFORMATION_CLASS)ObjectNameInformation, 
+						ObjName, 0x100, NULL)))
+					{
+						if (ObjName->Name.Buffer && !wcsncmp(L"\\Windows\\ApiPort", ObjName->Name.Buffer, 20))
+						{
+							CsrId = (HANDLE)Handles->Information[r].ProcessID;
+						} 
+					}
+
+					ZwClose(hObject);
+				}
+
+				ZwClose(Process);
+			}
+		}
+	}
+
+	ExFreePool(Handles);
+	return CsrId;
+}
+
 //ULONG MyScrollDC(HDC hDC, int dx, int dy, const RECT *lprcScroll, const RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate)
 //{
 //	ULONG uResult = OrigScrollDC(hDC, dx, dy, lprcScroll, lprcClip, hrgnUpdate, lprcUpdate);
@@ -375,12 +509,12 @@ ULONG MyNtGdiBitBlt(
 {
 	NTSTATUS status;
 	static LONG nCount = 0;
-	ULONG nResult = OrigNtBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
+	ULONG nResult = g_DriverHookApiInfos.pOrigNtBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
 
-	if (OrigNtGdiExtTextOutW)
+	if (g_DriverHookApiInfos.pOrigNtGdiExtTextOutW)
 	{
 		RECT rcClient = {0, 0, 400, 400};
-		FNT_VERIFY(OrigNtGdiExtTextOutW(hDCDest, 0, 0, ETO_OPAQUE, &rcClient, L"CopyProtect", 11, NULL, 0x0000000B));
+		FNT_VERIFY(g_DriverHookApiInfos.pOrigNtGdiExtTextOutW(hDCDest, 0, 0, ETO_OPAQUE, &rcClient, L"CopyProtect", 11, NULL, 0x0000000B));
 		//KdPrint(("OrigNtGdiExtTextOutW, return 0x%x\n", status));
 	}
 	KdPrint(("[%d], In MyNtGdiBitBlt hDCDest=0x%x, hDCSrc=0x%x, nResult=%d, status=%d\n", 
@@ -403,6 +537,16 @@ ULONG MyNtGdiStretchBlt(HDC hDCDest)
 	return nResult;
 }
 
+
+BOOLEAN Sleep(ULONG MillionSecond)
+{
+	NTSTATUS st;
+	LARGE_INTEGER DelayTime;
+	DelayTime = RtlConvertLongToLargeInteger(-10000 * MillionSecond);
+	st=KeDelayExecutionThread( KernelMode, FALSE, &DelayTime );
+	return (NT_SUCCESS(st));
+}
+
 //ULONG MyScrollWindowEx(HWND hWnd, int dx, int dy, const RECT *prcScroll, const RECT *prcClip, HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags)
 //{
 //	KdPrint(("MyScrollWindowEx hWnd=0x%x,\n", hWnd));
@@ -420,7 +564,7 @@ ULONG MyNtGdiStretchBlt(HDC hDCDest)
 void InstallCopyProtectHook(HANDLE hProcess)
 {
 	//PAGED_CODE();
-
+	NTSTATUS status = STATUS_SUCCESS;
 	ClearWriteProtect();
 
 	//KdPrint(("IRQL : %#x", KeGetCurrentIrql()));
@@ -434,8 +578,10 @@ void InstallCopyProtectHook(HANDLE hProcess)
 	{
 		PEPROCESS pEProcess;
 
-		KdPrint(("ServiceDescriptorShadowTableAddress : %#x\n", g_pShadowTable));
-		KdPrint(("PID %u\n", hProcess));
+		ULONG hCsrPid = (ULONG)GetCsrPid();
+
+		KdPrint(("ServiceDescriptorShadowTableAddress : %#x, SSDT EntryCount=%d, Shadow EntryCount=%d, PID=%d, hCsrPid=%d\n", 
+			g_pShadowTable, g_pShadowTable[0].uNumberOfServices, g_pShadowTable[1].uNumberOfServices, hProcess, hCsrPid));
 
 		PsLookupProcessByProcessId(hProcess, &pEProcess);
 		if (pEProcess == NULL)
@@ -448,6 +594,8 @@ void InstallCopyProtectHook(HANDLE hProcess)
 		KAPC_STATE KApcState = {0};
 		KeStackAttachProcess(pEProcess, &KApcState);
 		//KeAttachProcess(pEProcess);
+
+		FNT_VERIFY(g_DriverHookApiInfos.InitCallNumber());
 
 		g_NtGdiBitBltIndex = GetNtGdiBitBltIndex(g_pShadowTable);
 		g_NtGdiStretchBltIndex = GetNtGdiStretchBltIndex(g_pShadowTable);
@@ -465,7 +613,7 @@ void InstallCopyProtectHook(HANDLE hProcess)
 			//OrigScrollDC = (SCROLLDC)(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]);
 			//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]), MyScrollDC);
 
-			OrigNtBitBlt = (NTBITBLT)(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]);
+			g_DriverHookApiInfos.pOrigNtBitBlt = (NTBITBLT)(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]);
 			InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]), MyNtGdiBitBlt);
 
 			//OrigNtGdiStretchBlt = (NTGDISTRETCHBLT)(g_pShadowTable[1].ServiceTable[g_NtGdiStretchBltIndex]);
@@ -474,7 +622,7 @@ void InstallCopyProtectHook(HANDLE hProcess)
 			int nGdiExTextOutIndex = GetGdiExTextOutWIndex(g_pShadowTable);
 			if (nGdiExTextOutIndex != (-1))
 			{
-				OrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(g_pShadowTable[1].ServiceTable[nGdiExTextOutIndex]);
+				g_DriverHookApiInfos.pOrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(g_pShadowTable[1].ServiceTable[nGdiExTextOutIndex]);
 			}
 			//OrigScrollWindowEx = (SCROLLWINDOWEX)(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]);
 			//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]), MyScrollWindowEx);
@@ -513,7 +661,7 @@ void UnInstallScrollHook(void)
 				//g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1] = OrigScrollWindowEx;
 				//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]), OrigScrollWindowEx);
 
-				InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]), OrigNtBitBlt);
+				InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]), g_DriverHookApiInfos.pOrigNtBitBlt);
 
 				KeUnstackDetachProcess(&KApcState);
 				//KeDetachProcess();

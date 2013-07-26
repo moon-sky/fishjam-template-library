@@ -5,6 +5,10 @@
 //#include "WindowsTypes.h"
 
 //到SSDT Shadow表中的函数定义和参数说明 -- WRK(2003的源码)
+//求助NtGdiBitBlt的参数 -- http://bbs.pediy.com/showthread.php?t=99572&highlight=NtGdiBitBlt
+
+//问题：给出来的表示错误的
+//  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
 
 //TODO: Depends 查看 ntkrnlpa.exe + win32k.sys 并比较索引值
 //SoftICE for Windows NT/2000的ntcall命令可以将这些System Service显示出 -- http://dev.21tx.com/2005/03/14/12553.html
@@ -201,6 +205,7 @@ typedef struct _SYSTEM_HANDLE_INFORMATION_EX
 	ULONG NumberOfHandles;
 	SYSTEM_HANDLE_INFORMATION Information[1];
 }SYSTEM_HANDLE_INFORMATION_EX, *PSYSTEM_HANDLE_INFORMATION_EX;
+
 
 //typedef enum _OBJECT_INFORMATION_CLASS{
 //	ObjectBasicInformation,

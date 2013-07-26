@@ -5,6 +5,7 @@
 * 调试的Checked版本中有 define DBG 1 的宏定义，代码中可通过 #if DBG  XXXX #else YYYY #endif  的方式来区调试版和发布版
 * 打印日志：
 *   DbgPrint("x=%d\n", 100) -- 
+*     %#x -- 地址，会自动以 0x 开头
 *     %s -- ANSI 字符串
 *     %S/%ws -- UnicodeString.Buffer
 *     %Z -- ANSI_STRING 变量的地址

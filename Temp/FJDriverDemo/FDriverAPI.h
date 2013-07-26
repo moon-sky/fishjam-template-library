@@ -181,6 +181,11 @@
 *   WdfDriverCreate -- 
 ******************************************************************************************************************/
 
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
+
 
 //声明未文档化，且常用的一些API原型
 NTSTATUS ZwQuerySystemInformation( 
@@ -189,14 +194,19 @@ NTSTATUS ZwQuerySystemInformation(
 								  IN ULONG SystemInformationLength, 
 								  OUT PULONG ReturnLength);
 
-NTSTATUS ZwDuplicateObject(
-						   IN HANDLE                 SourceProcessHandle,
-						   IN PHANDLE                 SourceHandle,
-						   IN HANDLE                 TargetProcessHandle,
-						   OUT PHANDLE               TargetHandle,
-						   IN ACCESS_MASK             DesiredAccess OPTIONAL,
-						   IN BOOLEAN                 InheritHandle,
-						   IN ULONG                   Options );
+//extern "C" NTSTATUS ZwDuplicateObject(
+//						   IN HANDLE                 SourceProcessHandle,
+//						   IN PHANDLE                 SourceHandle,
+//						   IN HANDLE                 TargetProcessHandle,
+//						   OUT PHANDLE               TargetHandle,
+//						   IN ACCESS_MASK             DesiredAccess OPTIONAL,
+//						   IN BOOLEAN                 InheritHandle,
+//						   IN ULONG                   Options );
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 //ntifs.h 中

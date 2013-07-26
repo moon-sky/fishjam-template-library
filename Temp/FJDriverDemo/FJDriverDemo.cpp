@@ -149,23 +149,26 @@ NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  pDriverObject, IN PDEVICE_OBJE
     RtlInitUnicodeString(&ntName, FDRIVER_DEMO_NT_DEVICE_NAME);
     
     //创建设备
-	status = IoCreateDevice(pDriverObject,
+	FNT_VERIFY(IoCreateDevice(pDriverObject,
 						    sizeof(FJDriverDemo_DEVICE_EXTENSION),
 							&ntName,
 							FILE_DEVICE_UNKNOWN,
-							0,
+							0, //FILE_DEVICE_SECURE_OPEN
 							TRUE, //Exclusive -- 独占设备，同一时间只能被一个应用程序所使用
-							&pDeviceObject);
+							&pDeviceObject));
 
 	if (!NT_SUCCESS(status))
+	{
 		return status;
+	}
 
 	UNICODE_STRING win32Name;
 	RtlInitUnicodeString(&win32Name, FDRIVER_DEMO_DOS_DEVICE_NAME);
-	status = IoCreateSymbolicLink ( 
+	FNT_VERIFY(IoCreateSymbolicLink ( 
 		&win32Name, 
-		&ntName);
-	if (FALSE == NT_SUCCESS(status))
+		&ntName));
+
+	if (!NT_SUCCESS(status))
 	{
 		KdPrint( ("%s >> IoCreateSymbolicLink() failed", __FUNCTION__) );
 		IoDeleteDevice( pDeviceObject );
@@ -286,8 +289,8 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	FNT_VERIFY(IoCreateDevice(pDriverObject, 
 		0, 
 		&ntName, 
-		FDRIVER_DEV_DRV, 
-		0, 
+		FDRIVER_DEV_DRV,	//FILE_DEVICE_UNKNOWN
+		0,	//FILE_DEVICE_SECURE_OPEN
 		TRUE, 
 		&deviceObject));
 	if (FALSE == NT_SUCCESS(status))

@@ -69,7 +69,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FDriverUtil.c"
+				RelativePath=".\FDriverUtil.cpp"
 				>
 			</File>
 			<File
