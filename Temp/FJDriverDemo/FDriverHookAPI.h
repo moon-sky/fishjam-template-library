@@ -5,16 +5,20 @@
 //#include "WindowsTypes.h"
 
 //到SSDT Shadow表中的函数定义和参数说明 -- WRK(2003的源码)
-//求助NtGdiBitBlt的参数 -- http://bbs.pediy.com/showthread.php?t=99572&highlight=NtGdiBitBlt
+//  WRK(Windows Research Kernel) -- 微软为高校操作系统课程提供的可修改和跟踪的操作系统教学平台。
+//  给出了Windows这个成功的商业操作系统的内核大部分代码，可以对其进行修改、编译，并且可以用这个内核启动Windows操作系统。
 
 //问题：给出来的表示错误的
 //  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
 
+//Windows WIN32K.SYS System Call Table (NT/2000/XP/2003/Vista/2008/7)
+//  http://j00ru.vexillium.org/win32k_syscalls/
+
+//Vista 中的 PatchGuard 是否有影响?
+// on x86,we use Hook shadowSSDT; on x64,we use inline hook in user-mode;
+
 //TODO: Depends 查看 ntkrnlpa.exe + win32k.sys 并比较索引值
 //SoftICE for Windows NT/2000的ntcall命令可以将这些System Service显示出 -- http://dev.21tx.com/2005/03/14/12553.html
-//Hook NtGdiBitBlt  -- http://www.osronline.com/showthread.cfm?link=187950
-//shadow ssdt学习笔记 -- http://bbs.pediy.com/showthread.php?t=56955
-//Hook Shadow SSDT -- http://bbs.pediy.com/showthread.php?t=65931
 //读取硬盘上的ntoskrnl.exe文件，根据export table定位原始的SSDT，再用物理内存与虚拟内存映射的办法转换，得到系统中SSDT的位置
 
 /******************************************************************************************************************
@@ -52,7 +56,10 @@
 *
 * KeUserModeCallBack -- 从R0调用位于Ring3的函数(系统所有的消息钩子回调都是利用该函数完成的)
 * 
-* NtGdiBitBlt
+* http://bbs.pediy.com/showthread.php?t=149861&highlight=NtGdiBitBlt
+* NtGdiBitBlt / NtGdiAlphaBlend / NtGdiCancelDC / NtGdiColorCorrectPalette / NtGdiConsoleTextOut / NtGdiCreateColorSpace /NtGdiCreateColorTransform
+* NtGdiGetDCPoint / NtGdiGetDCObject
+*
 NtGdiOpenDCW 
 NtGdiDeleteObjectApp
 NtGdiBitBlt
@@ -123,13 +130,14 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 
 /******************************************************************************************************************
 *             Ring3(kernel32)                    |   Native API(ntdll!)     |       Ring0(nt!)          |
+* ------------------------------------------- SSDT (WinXP 284) -----------------------------------------|
 * OpenProcess                                    | NtOpenProcess            | NtOpenProcess             |
 * NtDuplicateObject                              |                          |                           |
 * CreateThread/CreateRemoteThread                | NtCreateThread           | CreateThread              |
 * OpenThread                                     |                          | NtOpenThread              |
 * WriteProcessMemory                             | NtWriteVirtualMemory     | NtWriteVirtualMemory      |
 
-* ------------------------------------------------ Shadow SSDT -----------------------------------------|
+* ------------------------------------- Shadow SSDT (WinXP 667)-----------------------------------------|
 * FindWindow                                     |                          | NtUserFindWindowEx        |
 * GetForegroundWindow                            |                          | NtUserGetForegroundWindow |
 * EnumWindows                                    |                          | NtUserBuildHwndList       |
@@ -144,7 +152,10 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 * EnableWindow                                   |                          | NtUserCallHwndParamLock   |
 * BitBlt                                         |                          | NtGdiBitBlt               |
 * StretchBlt                                     |                          | NtGdiStretchBlt           | 
+*                                                |                          | NtUserCallTwoParam        |
 ******************************************************************************************************************/
+//#define TWOPARAM_ROUTINE_SETDCBRUSHCOLOR    0xfffd0046
+//#define NtUserSetDCBrushColor(hbr, crColor) (COLORREF)NtUserCallTwoParam((DWORD)(hbr), (DWORD)crColor, TWOPARAM_ROUTINE_SETDCBRUSHCOLOR)
 
 #ifdef __cplusplus
 extern "C" {
@@ -156,10 +167,10 @@ extern "C" {
 //SSDT表结构
 typedef struct _SYSTEM_SERVICE_TABLE { 
 	// PNTPROC ServiceTable;
-	void **ServiceTable;					//SSDT在内存中的基地址(数组，其每一个的元素就是各个Rin0的函数)
-	PDWORD CounterTable;					// array of usage counters, 包含着 SSDT 中每个服务被调用次数计数器的数组。这个计数器一般由sysenter 更新
-	DWORD uNumberOfServices;				//SSDT项的个数
-	PBYTE ArgumentsTable;					//TODO:实际上是参数个数? 包含每个系统服务参数字节数表的基地址-系统服务参数表
+	PVOID *ServiceTable;					//SSDT在内存中的基地址(数组，其每一个的元素就是各个Rin0的函数)
+	PULONG CounterTable;					// array of usage counters, 包含着 SSDT 中每个服务被调用次数计数器的数组。这个计数器一般由sysenter 更新
+	ULONG NumberOfServices;				    //SSDT项的个数
+	PBYTE ArgumentsTable;					//TODO:实际上是参数个数(ParamTableBase)? 包含每个系统服务参数字节数表的基地址-系统服务参数表
 } SYSTEM_SERVICE_TABLE, *PSYSTEM_SERVICE_TABLE;
 
 //系统中的4个SSDT表

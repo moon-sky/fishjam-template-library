@@ -16,6 +16,8 @@
 #define IDC_BTN_FILTER_DESKTOP          1009
 #define IDC_BUTTON3                     1010
 #define IDC_BTN_UNFILTER_DESKTOP        1010
+#define IDC_BTN_DO_BITBLT2              1011
+#define IDC_BTN_DO_TEXTOUT              1011
 
 // Next default values for new objects
 // 

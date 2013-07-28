@@ -6,6 +6,7 @@
 #include "FDriverDemoTester.h"
 #include "FDriverDemoTesterDlg.h"
 #include "../FDriverDemoDefine.h"
+#include <winioctl.h>
 
 //#include <NapTypes.h>
 
@@ -43,6 +44,7 @@ BEGIN_MESSAGE_MAP(CFDriverDemoTesterDlg, CDialog)
 	ON_BN_CLICKED(IDC_BTN_UNINSTALL_HOOK, &CFDriverDemoTesterDlg::OnBnClickedBtnUninstallHook)
 	ON_BN_CLICKED(IDC_BTN_DO_BITBLT, &CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt)
 	ON_BN_CLICKED(IDC_BTN_FILTER_DESKTOP, &CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop)
+    ON_BN_CLICKED(IDC_BTN_DO_TEXTOUT, &CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout)
 END_MESSAGE_MAP()
 
 
@@ -184,7 +186,7 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 			CBitmap* pOldBmp = dcMemory.SelectObject(&bmp);
 			dcMemory.FillSolidRect(rcStaticDraw, RGB(255, 0, 0));
 
-			FTLTRACE(TEXT("OnBnClickedBtnDoBitblt, hDCDest=0x%x, hDCDest=0x%x"), pDC->m_hDC, dcMemory.m_hDC);
+			FTLTRACE(TEXT("OnBnClickedBtnDoBitblt, hDCDest=0x%x, hDCDest=0x%x, hWnd=0x%x\n"), pDC->m_hDC, dcMemory.m_hDC, pWndDraw->GetSafeHwnd());
 			API_VERIFY(pDC->BitBlt(0, 0, rcStaticDraw.Width(), rcStaticDraw.Height(), &dcMemory, 0, 0, SRCCOPY));
 
 			//pDC->DrawText(TEXT("fishjam"), &rcStaticDraw, DT_CENTER | DT_VCENTER);
@@ -212,3 +214,23 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop()
 	//API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_FILTER_DESKTOP, &hDesktop, sizeof(hDesktop), NULL, 0));
 
 }
+
+void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
+{
+    BOOL bRet = FALSE;
+    CWnd* pWndDraw = GetDlgItem(IDC_STATIC_DRAW);
+    if (pWndDraw)
+    {
+        CDC* pDC = pWndDraw->GetDC();
+        if (pDC)
+        {
+            CRect rcStaticDraw;
+            pWndDraw->GetClientRect(&rcStaticDraw);
+            rcStaticDraw.OffsetRect(10, 10);
+
+            pDC->DrawText(TEXT("DrawTextDemo"), rcStaticDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+            pDC->TextOut(rcStaticDraw.left, rcStaticDraw.top, TEXT("TextOutDemo"));
+
+            pWndDraw->ReleaseDC(pDC);
+        }
+    }}

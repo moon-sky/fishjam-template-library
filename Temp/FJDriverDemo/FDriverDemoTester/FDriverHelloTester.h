@@ -4,6 +4,8 @@
 * 
 ************************************************************************/
 
+#ifdef ENABLE_CPPUNIT
+
 #include <cppunit/extensions/HelperMacros.h>
 #include "FDriverDemoController.h"
 
@@ -26,3 +28,5 @@ private:
     CFDriverDemoController      m_FDriverDemoController;
     //DECLARE_DEFAULT_TEST_CLASS(CFDriverHelloTester);
 };
+
+#endif //ENABLE_CPPUNIT

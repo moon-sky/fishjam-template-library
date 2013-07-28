@@ -349,7 +349,6 @@
 *   4.如果只是通过 Shell 拖放文件，更简单的方法是响应 WM_DROPFILES 消息
 ******************************************************************************************************/
 
-
 #ifndef WM_SYSTIMER
 #  define WM_SYSTIMER 0x0118		//UnDocument Message
 #endif 

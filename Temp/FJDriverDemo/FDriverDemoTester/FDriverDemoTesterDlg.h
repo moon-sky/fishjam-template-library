@@ -44,4 +44,5 @@ public:
 	afx_msg void OnBnClickedBtnUninstallHook();
 	afx_msg void OnBnClickedBtnDoBitblt();
 	afx_msg void OnBnClickedBtnFilterDesktop();
+    afx_msg void OnBnClickedBtnDoTextout();
 };

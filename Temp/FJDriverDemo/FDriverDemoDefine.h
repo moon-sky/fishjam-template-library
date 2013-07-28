@@ -25,21 +25,15 @@
 #define FDRIVER_DEMO_DOS_DEVICE_NAME       L"\\DosDevices\\FJDriverDemo"			//L"\\\\.\\Global\\FJDriverDemo"
 #define FDRIVER_DEMO_WIN2K_DEVICE_NAME		L"\\\\.\\Global\\FJDriverDemo"
 
-//#ifndef CTL_CODE
-//#  define DEFINE_CTL_CODE	1
 #  define METHOD_BUFFERED 0
 #  define FILE_WRITE_ACCESS         ( 0x0002 )    // file & pipe
 
-#  define CTL_CODE( DeviceType, Function, Method, Access ) (                 \
-	((DeviceType) << 16) | ((Access) << 14) | ((Function) << 2) | (Method) \
-	)
-//#else
-//#  define DEFINE_CTL_CODE 0
-//#endif 
 
 //在  IRP_MJ_DEVICE_CONTROL 的分发函数中 switch(irpStack->Parameters.DeviceIoControl.IoControlCode)
 
 //通信方面，有 METHOD_NEITHER 方法(不好，有问题)，更好的应该是 BUFFERED 模式
+
+//Notice: SDK 的 <winioctl.h> 有 CTL_CODE 的定义
 
 #define FDRIVER_DEV_DRV 0x00002A80
 #define IOCTL_FDRIVER_INSTALL_HOOK		(ULONG) CTL_CODE(FDRIVER_DEV_DRV, 0x01, METHOD_BUFFERED, FILE_WRITE_ACCESS)
@@ -48,12 +42,6 @@
 #define IOCTL_FDRIVER_FILTER_DESKTOP	(ULONG) CTL_CODE(FDRIVER_DEV_DRV, 0x03, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 #define IOCTL_FDRIVER_UNFILTER_DESKTOP	(ULONG) CTL_CODE(FDRIVER_DEV_DRV, 0x04, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 
-//#if DEFINE_CTL_CODE
-//#  undef CTL_CODE
-//#  undef DEFINE_CTL_CODE
-////#  undef METHOD_BUFFERED
-////#  undef FILE_WRITE_ACCESS
-//#endif 
 
 //#define NT4_DRIVERNAME "\\\\.\\NTProcDrv"
 //#define OTHER_DRIVERNAME "\\\\.\\Global\\NTProcDrv"

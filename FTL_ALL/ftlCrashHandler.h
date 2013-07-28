@@ -37,11 +37,6 @@ namespace FTL
 	* 无法通过符号服务器下载 mfc90u.pdb
 	*   1.有可能是不同的OS?
 	*
-	* WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)
-	*   1.设置符号路径 SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
-	*   2.打开dmp文件
-	*   3.!sym noisy
-	*   4.!analyze -v
 	* 
 	*********************************************************************************************/
 

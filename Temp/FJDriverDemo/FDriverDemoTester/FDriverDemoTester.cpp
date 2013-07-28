@@ -7,10 +7,13 @@
 
 #include "FDriverDemoTesterDlg.h"
 
+#ifdef ENABLE_CPPUNIT
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/mfc/TestRunner.h>
 //#include <cppunit/ui/qt/QtTestRunner.h>
 //#include <cppunit/ui/text/TestRunner.h>
+#endif //ENABLE_CPPUNIT
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

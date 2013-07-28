@@ -2,6 +2,8 @@
 #include "FDriverHelloTester.h"
 #include "../FDriverDemoDefine.h"
 
+#ifdef ENABLE_CPPUNIT
+
 void CFDriverHelloTester::setUp()
 {
     BOOL bRet = FALSE;
@@ -30,3 +32,5 @@ void CFDriverHelloTester::test_DriverHelloWorld()
     //::MessageBox(NULL,TEXT("Test Text"),TEXT("Caption"),MB_OKCANCEL);
     CPPUNIT_ASSERT(1 == 1 );
 }
+
+#endif //ENABLE_CPPUNIT

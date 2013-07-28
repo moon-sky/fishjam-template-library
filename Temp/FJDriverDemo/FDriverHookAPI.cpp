@@ -6,39 +6,73 @@
 
 #define ObjectNameInformation  1
 #define SystemHandleInformation 0x10
+#define HOOK_API_INFO_TAG     (ULONG)0x12345678
 
 SYSTEM_SERVICE_TABLE *g_pShadowTable = NULL;
 
-typedef NTSTATUS (*NTBITBLT)(HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
+typedef NTSTATUS (*NTBITBLT)(HDC hDCDest,int  XDest,int  YDest, int  Width,int  Height,
 						  HDC  hDCSrc,int  XSrc,int  YSrc,	
 						  ULONG  ROP,ULONG crBackColor,ULONG fl);
 
-typedef NTSTATUS (*NTGDIEXTTEXTOUTW)(HDC hDC, INT XStart, INT YStart,UINT fuOptions, LPRECT UnsafeRect, LPWSTR UnsafeString, 
-								  INT Count, INT* UnsafeDx, ULONG dwCodePage);
+typedef BOOL (*NTGDIEXTTEXTOUTW)(IN HDC 	hDC,
+                                     IN INT 	XStart,
+                                     IN INT 	YStart,
+                                     IN UINT 	fuOptions,
+                                     IN OPTIONAL LPRECT 	UnsafeRect,
+                                     IN LPWSTR 	UnsafeString,
+                                     IN INT 	Count,
+                                     IN OPTIONAL LPINT 	UnsafeDx,
+                                     IN DWORD 	dwCodePage);
+
+
+typedef NTSTATUS (*NTGDIGETDCDWORD)(HDC hdc,
+                                    INT n, 
+                                    PDWORD result );
+
+typedef NTSTATUS (*NTUSERCALLONEPARAM)(IN ULONG Param, IN ULONG Routine);
 
 typedef struct _DRIVER_HOOK_API_INFOS
 {
-	HWND					hWndProtect;
-	unsigned long			OldCr0;
+private:
+    HWND					m_hWndProtect;
+    unsigned long			m_OldCr0;
+    BOOL                    m_ValidCallNumber;
 
-	int						IndexOfNtGdiBitBlt;
+public:
+    int						IndexOfNtGdiBitBlt;
 	int						IndexOfNtGdiStretchBlt;
-	
+	int                     IndexOfNtGdiGetDCDword;
+    int                     IndexOfNtGdiExtTextOutW;
+    int                     IndexOfNtUserCallOneParam;
+
 	NTBITBLT				pOrigNtBitBlt;
 	NTGDIEXTTEXTOUTW		pOrigNtGdiExtTextOutW;
+    NTGDIGETDCDWORD         pOrigNtGdiGetDcDWord;
+    NTUSERCALLONEPARAM      pOrigNtUserCallOneParam;
 
-
-	DRIVER_HOOK_API_INFOS()
+	VOID InitValue()
 	{
-		hWndProtect = (HWND)0;
-		OldCr0 = 0;
+        m_hWndProtect = (HWND)0;
+        m_OldCr0 = 0;
+        m_ValidCallNumber = FALSE;
 
 		IndexOfNtGdiBitBlt = -1;
 		IndexOfNtGdiStretchBlt = -1;
+        IndexOfNtGdiGetDCDword = -1;
+        IndexOfNtGdiExtTextOutW = -1;
+        IndexOfNtUserCallOneParam = -1;
+
 
 		pOrigNtBitBlt = NULL;
 		pOrigNtGdiExtTextOutW = NULL;
+        pOrigNtGdiGetDcDWord = NULL;
+        pOrigNtUserCallOneParam = NULL;
 	}
+
+    BOOL HasValidCallNumber()
+    {
+        return m_ValidCallNumber;
+    }
 
 	//根据操作系统来确定具体函数的服务号
 	NTSTATUS InitCallNumber()
@@ -56,13 +90,33 @@ typedef struct _DRIVER_HOOK_API_INFOS
 		{
 		case 501:	//WinXp
 			{
+                //ShadowSSDT_array_xp3 -- http://bbs.pediy.com/showthread.php?t=116044&highlight=NtGdiBitBlt
 				KdPrint(("Running on Windows XP\n"));
-				IndexOfNtGdiBitBlt = 0xD;				//100D 0008:A001B344 params=0B NtGdiBitBlt 
-				IndexOfNtGdiStretchBlt = 0x124;			//111A 0008:A003022B params=0C NtGdiStretchBlt 
+				IndexOfNtGdiBitBlt = 0xD;				//13,  100D 0008:A001B344 params=0B NtGdiBitBlt 
+                IndexOfNtGdiExtTextOutW = 0x92;
+				IndexOfNtGdiStretchBlt = 0x124; 		//292, 111A 0008:A003022B params=0C NtGdiStretchBlt 
+                //IndexOfNtGdiDdGetDC = 74; 
+                //IndexOfNtGdiDdReleaseDC = 88;
+                //IndexOfNtGdiGetAndSetDCDword = 155;
+                IndexOfNtGdiGetDCDword = 167;
+                IndexOfNtUserCallOneParam = 323;        //0x143;
+                //IndexOfNtGdiGetDCPoint = 170;
 
-
+                //IndexOfNtGdiResetDC = 250;
+                //IndexOfNtGdiSetColorAdjustment = 268;
+                //IndexOfNtGdiSetColorSpace = 269;
+                //IndexOfNtGdiUpdateColors = 302;
+                //IndexOfNtUserGetDC = 401;
+                //IndexOfNtUserGetDCEx = 402;
+                //IndexOfNtUserGetWindowDC = 439;
+                //IndexOfNtUserSetSysColors = 535;
+                
 				break;
 			}
+        case 0xFFF: //win8 x86 fre 8319 -- http://bbs.pediy.com/showthread.php?t=149861&highlight=NtGdiBitBlt
+            {
+                IndexOfNtGdiBitBlt = 0x12e;  //0x12e    NtGdiBitBlt
+            }
 		default:
 			status = STATUS_NOT_SUPPORTED;
 			break;
@@ -70,10 +124,14 @@ typedef struct _DRIVER_HOOK_API_INFOS
 
 		if (NT_SUCCESS(status))
 		{
+            
 			int nPointSize = sizeof(void *);
 			NT_ASSERT(nPointSize == 4);
 			NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtGdiBitBlt] == (0xB * nPointSize));
 			NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtGdiStretchBlt] == (0xC * nPointSize));
+            NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtUserCallOneParam] == (0x2 * nPointSize));
+
+            m_ValidCallNumber = TRUE;
 		}
 
 		return status;
@@ -84,12 +142,11 @@ typedef struct _DRIVER_HOOK_API_INFOS
 
 
 #pragma LOCKEDCODE	
-DRIVER_HOOK_API_INFOS g_DriverHookApiInfos;
+DRIVER_HOOK_API_INFOS* g_pDriverHookApiInfos = NULL;
 
 
 
-int g_NtGdiBitBltIndex = (-1);
-int g_NtGdiStretchBltIndex = (-1);
+//int g_NtGdiStretchBltIndex = (-1);
 
 HANDLE g_hProcess = 0;
 
@@ -110,12 +167,8 @@ ULONG g_SSDTAPILockCount = 0;
 
 
 
-typedef ULONG (*NTGDISTRETCHBLT)(HDC hDCDest);
-ULONG (*OrigNtGdiStretchBlt)(HDC hDCDest);
-
-
-//ULONG (*OrigNtGdiExtTextOutW)(HDC hDC, INT XStart, INT YStart,UINT fuOptions, LPRECT UnsafeRect, LPWSTR UnsafeString, 
-//							  INT Count, INT* UnsafeDx, ULONG dwCodePage) = NULL;
+//typedef ULONG (*NTGDISTRETCHBLT)(HDC hDCDest);
+//ULONG (*OrigNtGdiStretchBlt)(HDC hDCDest);
 
 
 typedef struct _SERVICE_DESCRIPTOR_TABLE *PSERVICE_DESCRIPTOR_TABLE;
@@ -502,24 +555,91 @@ HANDLE GetCsrPid()
 //	return uResult;
 //}
 
+//enum SimpleCallRoutines
+//{
+//NOPARAM_ROUTINE_CREATEMENU,
+//NOPARAM_ROUTINE_CREATEMENUPOPUP,
+//NOPARAM_ROUTINE_ENABLEPROCWNDGHSTING,
+//NOPARAM_ROUTINE_MSQCLEARWAKEMASK,
+//NOPARAM_ROUTINE_ALLOWFOREGNDACTIVATION,
+//NOPARAM_ROUTINE_DESTROY_CARET,
+//NOPARAM_ROUTINE_GETDEVICECHANGEINFO,
+//NOPARAM_ROUTINE_GETIMESHOWSTATUS,
+//NOPARAM_ROUTINE_GETINPUTDESKTOP,
+//NOPARAM_ROUTINE_GETMSESSAGEPOS,
+//NOPARAM_ROUTINE_GETREMOTEPROCID,
+//
+//NOPARAM_ROUTINE_HIDECURSORNOCAPTURE,
+//NOPARAM_ROUTINE_LOADCURSANDICOS,
+//NOPARAM_ROUTINE_RELEASECAPTURE,
+//NOPARAM_ROUTINE_RESETDBLCLICK,
+//NOPARAM_ROUTINE_ZAPACTIVEANDFOUS,
+//NOPARAM_ROUTINE_REMOTECONSHDWSTOP,
+//NOPARAM_ROUTINE_REMOTEDISCONNECT,
+//NOPARAM_ROUTINE_REMOTELOGOFF,
+//NOPARAM_ROUTINE_REMOTENTSECURITY,
+//NOPARAM_ROUTINE_REMOTESHDWSETUP,
+//NOPARAM_ROUTINE_REMOTESHDWSTOP,
+//NOPARAM_ROUTINE_REMOTEPASSTHRUENABLE,
+//NOPARAM_ROUTINE_REMOTEPASSTHRUDISABLE,
+//NOPARAM_ROUTINE_REMOTECONNECTSTATE,
+//NOPARAM_ROUTINE_UPDATEPERUSERIMMENABLING,
+//NOPARAM_ROUTINE_USERPWRCALLOUTWORKER,
+//NOPARAM_ROUTINE_INIT_MESSAGE_PUMP,
+//NOPARAM_ROUTINE_UNINIT_MESSAGE_PUMP,
+//NOPARAM_ROUTINE_LOADUSERAPIHOOK,
+//ONEPARAM_ROUTINE_BEGINDEFERWNDPOS,
+//ONEPARAM_ROUTINE_GETSENDMSGRECVR,
+//ONEPARAM_ROUTINE_WINDOWFROMDC,      //32 in WinXP
+//ONEPARAM_ROUTINE_ALLOWSETFOREGND,
+//ONEPARAM_ROUTINE_CREATEEMPTYCUROBJECT,
+//ONEPARAM_ROUTINE_CREATESYSTEMTHREADS,
+//ONEPARAM_ROUTINE_CSDDEUNINITIALIZE,
+//ONEPARAM_ROUTINE_DIRECTEDYIELD,
+//ONEPARAM_ROUTINE_ENUMCLIPBOARDFORMATS,
+//ONEPARAM_ROUTINE_GETCURSORPOS,
+//ONEPARAM_ROUTINE_GETINPUTEVENT,
+//ONEPARAM_ROUTINE_GETKEYBOARDLAYOUT,
+//ONEPARAM_ROUTINE_GETKEYBOARDTYPE,
+//ONEPARAM_ROUTINE_GETPROCDEFLAYOUT,
+//ONEPARAM_ROUTINE_GETQUEUESTATUS,
+//ONEPARAM_ROUTINE_GETWINSTAINFO,
+//ONEPARAM_ROUTINE_HANDLESYSTHRDCREATFAIL,
+//};
+
+#define ONEPARAM_ROUTINE_WINDOWFROMDC_WINXP 31
+
+//USER32!NtUserCallOneParam (77d184ae)
+//mov     edx,offset SharedUserData!SystemCallStub (7ffe0300)
+
 ULONG MyNtGdiBitBlt(
 					 HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
-					 HDC  hDCSrc,int  XSrc,int  YSrc,	
-					 ULONG  ROP,ULONG crBackColor,ULONG fl)
+					 HDC hDCSrc, int  XSrc, int  YSrc,	
+					 ULONG  ROP, ULONG crBackColor,ULONG fl)
 {
 	NTSTATUS status;
 	static LONG nCount = 0;
-	ULONG nResult = g_DriverHookApiInfos.pOrigNtBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
+	ULONG nResult = g_pDriverHookApiInfos->pOrigNtBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
 
-	if (g_DriverHookApiInfos.pOrigNtGdiExtTextOutW)
+    HWND hWndDestFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCDest, ONEPARAM_ROUTINE_WINDOWFROMDC_WINXP);
+    HWND hWndSrcFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCSrc, ONEPARAM_ROUTINE_WINDOWFROMDC_WINXP);
+
+	if (g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW)
 	{
 		RECT rcClient = {0, 0, 400, 400};
-		FNT_VERIFY(g_DriverHookApiInfos.pOrigNtGdiExtTextOutW(hDCDest, 0, 0, ETO_OPAQUE, &rcClient, L"CopyProtect", 11, NULL, 0x0000000B));
+		FNT_VERIFY(g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW(hDCDest, 0, 0, ETO_OPAQUE, &rcClient, L"CopyProtect", 11, NULL, 0x0000000B));
 		//KdPrint(("OrigNtGdiExtTextOutW, return 0x%x\n", status));
 	}
-	KdPrint(("[%d], In MyNtGdiBitBlt hDCDest=0x%x, hDCSrc=0x%x, nResult=%d, status=%d\n", 
+
+    if (g_pDriverHookApiInfos)
+    {
+        typedef NTSTATUS (*NTGDIGETDCDWORD)( HDC, INT n, PDWORD result );
+
+    }
+	KdPrint(("[%d], In MyNtGdiBitBlt hWndDestFromDC=0x%x, hDCDest=0x%x, hWndSrcFromDC=0x%x, hDCSrc=0x%x, nResult=%d, status=%d\n", 
 		PsGetCurrentProcessId(),
-		hDCDest, hDCSrc, nResult, status));
+        hWndDestFromDC, hDCDest, 
+        hWndSrcFromDC, hDCSrc, nResult, status));
 
 	//EngBitBlt(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0);
 	
@@ -530,12 +650,41 @@ ULONG MyNtGdiBitBlt(
 	return nResult;
 }
 
-ULONG MyNtGdiStretchBlt(HDC hDCDest)
+BOOL MyNtGdiExtTextOutW(IN HDC 	hDC,
+                         IN INT 	XStart,
+                         IN INT 	YStart,
+                         IN UINT 	fuOptions,
+                         IN OPTIONAL LPRECT 	UnsafeRect,
+                         IN LPWSTR 	UnsafeString,
+                         IN INT 	Count,
+                         IN OPTIONAL LPINT 	UnsafeDx,
+                         IN DWORD 	dwCodePage)
 {
-	ULONG nResult = OrigNtGdiStretchBlt(hDCDest);
+    PAGED_CODE();
 
-	return nResult;
+    KdPrint(("[%d], In MyNtGdiExtTextOutW hDC=0x%x, StartXY=(%d, %d), fuOptions=%d, String=%S, Count=%d, codePage=%d\n", 
+        PsGetCurrentProcessId(), hDC, XStart, YStart, fuOptions, UnsafeString, Count, dwCodePage));
+    if (UnsafeRect)
+    {
+        KdPrint(("  UnsafeRect = (%d, %d - %d, %d)\n", UnsafeRect->left, UnsafeRect->top, UnsafeRect->right, UnsafeRect->bottom));
+    }
+    if (UnsafeDx)
+    {
+        KdPrint(("  *UnsafeDx=%d\n", *UnsafeDx));
+    }
+
+    BOOL bRet = g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW(hDC, XStart, YStart,fuOptions, UnsafeRect, UnsafeString,
+        Count, UnsafeDx, dwCodePage);
+
+    return bRet;
 }
+
+//ULONG MyNtGdiStretchBlt(HDC hDCDest)
+//{
+//	ULONG nResult = OrigNtGdiStretchBlt(hDCDest);
+//
+//	return nResult;
+//}
 
 
 BOOLEAN Sleep(ULONG MillionSecond)
@@ -564,73 +713,75 @@ BOOLEAN Sleep(ULONG MillionSecond)
 void InstallCopyProtectHook(HANDLE hProcess)
 {
 	//PAGED_CODE();
-	NTSTATUS status = STATUS_SUCCESS;
-	ClearWriteProtect();
 
-	//KdPrint(("IRQL : %#x", KeGetCurrentIrql()));
+#if DBG
+    //_asm int 3
+#else 
+    abc
+#endif
 
-	g_pShadowTable = GetKeServiceDescriptorTableShadowAddress();
-	if (g_pShadowTable == NULL)
-	{
-		KdPrint(("Failed GetShadowTable"));
-	}
-	else
-	{
-		PEPROCESS pEProcess;
+    if (!g_pDriverHookApiInfos)
+    {
+        g_pDriverHookApiInfos = (PDRIVER_HOOK_API_INFOS)ExAllocatePoolWithTag(NonPagedPoolCacheAlignedMustS, sizeof(DRIVER_HOOK_API_INFOS), HOOK_API_INFO_TAG);
+        NT_ASSERT(g_pDriverHookApiInfos);
+        if (g_pDriverHookApiInfos)
+        {
+            g_pDriverHookApiInfos->InitValue();
 
-		ULONG hCsrPid = (ULONG)GetCsrPid();
+            NTSTATUS status = STATUS_SUCCESS;
+            ClearWriteProtect();
 
-		KdPrint(("ServiceDescriptorShadowTableAddress : %#x, SSDT EntryCount=%d, Shadow EntryCount=%d, PID=%d, hCsrPid=%d\n", 
-			g_pShadowTable, g_pShadowTable[0].uNumberOfServices, g_pShadowTable[1].uNumberOfServices, hProcess, hCsrPid));
+            //KdPrint(("IRQL : %#x", KeGetCurrentIrql()));
 
-		PsLookupProcessByProcessId(hProcess, &pEProcess);
-		if (pEProcess == NULL)
-		{
-			SetWriteProtect();
+            g_pShadowTable = GetKeServiceDescriptorTableShadowAddress();
+            if (g_pShadowTable == NULL)
+            {
+                KdPrint(("Failed GetShadowTable"));
+            }
+            else
+            {
+                PEPROCESS pEProcess;
 
-			return ;
-		}
+                ULONG hCsrPid = (ULONG)GetCsrPid();
 
-		KAPC_STATE KApcState = {0};
-		KeStackAttachProcess(pEProcess, &KApcState);
-		//KeAttachProcess(pEProcess);
+                KdPrint(("ServiceDescriptorShadowTableAddress : %#x, SSDT EntryCount=%d, Shadow EntryCount=%d, PID=%d, hCsrPid=%d\n", 
+                    g_pShadowTable, g_pShadowTable[0].NumberOfServices, g_pShadowTable[1].NumberOfServices, hProcess, hCsrPid));
 
-		FNT_VERIFY(g_DriverHookApiInfos.InitCallNumber());
+                PsLookupProcessByProcessId(hProcess, &pEProcess);
+                if (pEProcess == NULL)
+                {
+                    SetWriteProtect();
 
-		g_NtGdiBitBltIndex = GetNtGdiBitBltIndex(g_pShadowTable);
-		g_NtGdiStretchBltIndex = GetNtGdiStretchBltIndex(g_pShadowTable);
+                    ExFreePoolWithTag(g_pDriverHookApiInfos, HOOK_API_INFO_TAG);
+                    g_pDriverHookApiInfos = NULL;
+                    return ;
+                }
 
-		KdPrint(("g_NtGdiBitBltIndex=0x%x, g_NtGdiStretchBltIndex=0x%x\n", g_NtGdiBitBltIndex, g_NtGdiStretchBltIndex));
-		
-		g_hProcess = hProcess;
-		if (g_NtGdiBitBltIndex != (-1) && g_NtGdiStretchBltIndex != (-1))
-		{
-			//
-			// This method is not accessible.
-			// This is very extremely low chance of a blue screen may occur. (A very unlikely possibility, but ...)
-			// OrigScrollDC = InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]), MyScrollDC);
-			//
-			//OrigScrollDC = (SCROLLDC)(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]);
-			//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]), MyScrollDC);
+                KAPC_STATE KApcState = {0};
+                KeStackAttachProcess(pEProcess, &KApcState);
+                //KeAttachProcess(pEProcess);
 
-			g_DriverHookApiInfos.pOrigNtBitBlt = (NTBITBLT)(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]);
-			InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]), MyNtGdiBitBlt);
+                FNT_VERIFY(g_pDriverHookApiInfos->InitCallNumber());
+                if (NT_SUCCESS(status))
+                {
+                    g_hProcess = hProcess;
 
-			//OrigNtGdiStretchBlt = (NTGDISTRETCHBLT)(g_pShadowTable[1].ServiceTable[g_NtGdiStretchBltIndex]);
-			//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiStretchBltIndex]), MyNtGdiStretchBlt);
+                    g_pDriverHookApiInfos->pOrigNtBitBlt = (NTBITBLT)(g_pShadowTable[1].ServiceTable[g_pDriverHookApiInfos->IndexOfNtGdiBitBlt]);// g_NtGdiBitBltIndex]);
+                    InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_pDriverHookApiInfos->IndexOfNtGdiBitBlt]), MyNtGdiBitBlt);
 
-			int nGdiExTextOutIndex = GetGdiExTextOutWIndex(g_pShadowTable);
-			if (nGdiExTextOutIndex != (-1))
-			{
-				g_DriverHookApiInfos.pOrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(g_pShadowTable[1].ServiceTable[nGdiExTextOutIndex]);
-			}
-			//OrigScrollWindowEx = (SCROLLWINDOWEX)(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]);
-			//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]), MyScrollWindowEx);
-		}
-		KeUnstackDetachProcess(&KApcState);
-		//KeDetachProcess();
-	}
-	SetWriteProtect();
+                    g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(g_pShadowTable[1].ServiceTable[g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW]);
+                    InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW]), MyNtGdiExtTextOutW);
+
+                    g_pDriverHookApiInfos->pOrigNtUserCallOneParam = (NTUSERCALLONEPARAM)(g_pShadowTable[1].ServiceTable[g_pDriverHookApiInfos->IndexOfNtUserCallOneParam]);
+                }
+                KeUnstackDetachProcess(&KApcState);
+                //KeDetachProcess();
+            }
+            SetWriteProtect();
+        }
+    }
+
+
 }
 
 void UnInstallScrollHook(void)
@@ -638,60 +789,61 @@ void UnInstallScrollHook(void)
 	LARGE_INTEGER WaitTime;
 	KdPrint(("Enter UnInstallScrollHook\n"));
 	
-	ClearWriteProtect();
+    if (g_pDriverHookApiInfos)
+    {
+        ClearWriteProtect();
 
-	if (g_pShadowTable != NULL)
-	{
-		KdPrint(("ServiceDescriptorShadowTableAddress : %#x", g_pShadowTable));
+        if (g_pShadowTable != NULL)
+        {
+            KdPrint(("ServiceDescriptorShadowTableAddress : %#x", g_pShadowTable));
 
-		if (g_hProcess != 0)
-		{
-			if (g_NtGdiBitBltIndex != (-1))
-			{
-				PEPROCESS pEProcess;
+            if (g_hProcess != 0)
+            {
+                if (g_pDriverHookApiInfos->HasValidCallNumber())// g_pDriverHookApiInfos-> g_NtGdiBitBltIndex != (-1))
+                {
+                    PEPROCESS pEProcess;
 
-				PsLookupProcessByProcessId(g_hProcess, &pEProcess);
+                    PsLookupProcessByProcessId(g_hProcess, &pEProcess);
 
-				KAPC_STATE KApcState = {0};
-				KeStackAttachProcess(pEProcess, &KApcState);
-				//KeAttachProcess(pEProcess);
+                    KAPC_STATE KApcState = {0};
+                    KeStackAttachProcess(pEProcess, &KApcState);
 
-				//g_pShadowTable[1].ServiceTable[g_ScrollDCIndex] = OrigScrollDC;
-				//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex]), OrigScrollDC);
-				//g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1] = OrigScrollWindowEx;
-				//InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_ScrollDCIndex + 1]), OrigScrollWindowEx);
+                    InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_pDriverHookApiInfos->IndexOfNtGdiBitBlt]), g_pDriverHookApiInfos->pOrigNtBitBlt);
+                    InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW]), g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW);
+                    
+                    g_pDriverHookApiInfos->pOrigNtUserCallOneParam = NULL;
 
-				InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTable[g_NtGdiBitBltIndex]), g_DriverHookApiInfos.pOrigNtBitBlt);
+                    KeUnstackDetachProcess(&KApcState);
+                }
+            }
+        }
+        SetWriteProtect();
 
-				KeUnstackDetachProcess(&KApcState);
-				//KeDetachProcess();
+        WaitTime.QuadPart = -1 * 10 * 1000 * 1000;
+        while (g_SSDTAPILockCount > 0)
+        {
+            // This is hooking the SSDT API during execution.
+            // To release hooking InterlockedExchangePointer function, but the hooking off
+            // That the function is called just before the MyScrollDC same API is called, the call back then if InterlockedExchangePointer
+            // The state of the call is already MyScrollDC.
+            // Therefore, when the driver is unloaded DRIVER_UNLOADED_WITHOUT_CANCELLING_PENDING_OPERATIONS might cause a blue screen to prevent it.
+            KdPrint(("g_SSDTAPILockCount : %u\n", g_SSDTAPILockCount));
 
-			}
-		}
-	}
-	SetWriteProtect();
+            // After waiting for 1 second to re-check Lock the pool ryeotneunji.
+            WaitTime.QuadPart = -1 * 10 * 1000 * 1000;
+            KeDelayExecutionThread(KernelMode ,FALSE, &WaitTime);	
 
-	WaitTime.QuadPart = -1 * 10 * 1000 * 1000;
-	while (g_SSDTAPILockCount > 0)
-	{
-		// This is hooking the SSDT API during execution.
-		// To release hooking InterlockedExchangePointer function, but the hooking off
-		// That the function is called just before the MyScrollDC same API is called, the call back then if InterlockedExchangePointer
-		// The state of the call is already MyScrollDC.
-		// Therefore, when the driver is unloaded DRIVER_UNLOADED_WITHOUT_CANCELLING_PENDING_OPERATIONS might cause a blue screen to prevent it.
-		KdPrint(("g_SSDTAPILockCount : %u\n", g_SSDTAPILockCount));
+            // NOTE! Lock Lock is loose again after that check may take a while.
+            // Increment the counter because the Lock function call that part is because just to increase.
+            // As a function of the fact nacked make parts, but also affects the stability awake, so it is not recommended.
+        }
+        // After waiting for 1 second again to allow the driver to unload.
+        WaitTime.QuadPart = -1 * 10 * 1000 * 1000;
+        KeDelayExecutionThread(KernelMode ,FALSE, &WaitTime);	
 
-		// After waiting for 1 second to re-check Lock the pool ryeotneunji.
-		WaitTime.QuadPart = -1 * 10 * 1000 * 1000;
-		KeDelayExecutionThread(KernelMode ,FALSE, &WaitTime);	
 
-		// NOTE! Lock Lock is loose again after that check may take a while.
-		// Increment the counter because the Lock function call that part is because just to increase.
-		// As a function of the fact nacked make parts, but also affects the stability awake, so it is not recommended.
-	}
-	// After waiting for 1 second again to allow the driver to unload.
-	WaitTime.QuadPart = -1 * 10 * 1000 * 1000;
-	KeDelayExecutionThread(KernelMode ,FALSE, &WaitTime);	
-
+        ExFreePoolWithTag(g_pDriverHookApiInfos, HOOK_API_INFO_TAG);
+        g_pDriverHookApiInfos = NULL;
+    }
 	DbgPrint("OpenCapture ScrollHook Driver UnLoaded\n");
 }

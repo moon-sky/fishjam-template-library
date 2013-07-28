@@ -124,7 +124,7 @@
 *     COM¿‡( AppID/DllSurrogate, Elevation/Enabled=1, LocalizedString="xxx", )
 
 *************************************************************************************************************/
- 
+
 #ifndef FTL_BASE_H
 #  error ftlcom.h requires ftlbase.h to be included first
 #endif
