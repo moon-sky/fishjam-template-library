@@ -55,13 +55,13 @@
 *   调试内核时必须是双机调试？通过串口相连？网络？
 *   设置被调试机器为调试执行方式，WinDbg会把内核视为一个整体进行调试
 *     WinXP：boot.ini 文件中拷贝并增加一个启动项 /debug /debugport=com1 /baudrate=115200
-*     Vista：
+*     Vista(管理员权限)：
 *       bcdedit /enum OSLOADER <== 先枚举出本机上所有的"操作系统加载器"
 *       bcdedit /copy {current} /d "Windows Debug Model"  <== 拷贝出一个调试模式的配置项
 *       TODO: 设置刚拷贝出来的配置项为当前配置项？否则会更改到当前的正常配置(或者拷贝出一个 Original ?)
-*       bcdedit /debug ON  <== 设置为调试
+*       bcdedit /debug {Debug配置项的GUID} ON  <== 设置为调试
 *       bcdedit /bootdebug ON 
-*       bcdedit /dbgsetting  <== 查看当前的调试配置
+*       bcdedit /dbgsetting  <== 查看和设置当前的调试配置
 *   其他WinDbg的常用命令参见 FtlDebug.h 文件
 *
 ******************************************************************************************************************/
