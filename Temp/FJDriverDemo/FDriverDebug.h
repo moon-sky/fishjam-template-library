@@ -21,7 +21,8 @@
 * SrvInstW.exe(http://www.onlinedown.net/soft/36059.htm)
 *   将驱动作为服务的方式安装，然后可以通过 net start/stop 来启动/停止 驱动程序
 *    卸载驱动：sc delete xxxx
-* 
+* InstDrv.exe -- 
+*
 * WinObj(http://technet.microsoft.com/en-us/sysinternals/bb896657.aspx)
 *   可以显示所有的内核对象
 *
@@ -62,6 +63,9 @@
 *       bcdedit /debug {Debug配置项的GUID} ON  <== 设置为调试
 *       bcdedit /bootdebug {Debug配置项的GUID} ON 
 *       bcdedit /dbgsettings {Debug配置项的GUID  <== 查看和设置当前的调试配置
+*       bcdedit /set loadoptions DDISABLE_INTEGRITY_CHECKS  <== 关闭 Win7 系统中的驱动签名强制要求. 
+*          重新开启签名要求：bcdedit /set nointegritychecks off
+*         bcedit /set testsigning ON <== 允许加载测试签名签发的驱动程序
 *   其他WinDbg的常用命令参见 FtlDebug.h 文件
 *
 ******************************************************************************************************************/

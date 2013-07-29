@@ -6,6 +6,7 @@ rem %4 is copy source directory path
 rem %5 is copy source file(with out extersion name)
 rem %6 is copy target dir
 
+rem WIN32=100;_X86_=1;WINVER=0x501;DBG=1
 
 @echo on
 call set_wdk_env.bat

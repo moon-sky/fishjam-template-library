@@ -4,6 +4,10 @@
 
 //#include "WindowsTypes.h"
 
+//64位系统中的PatchGuard(安全内核) -- 有应用或驱动尝试修改核心，就会产生 CRITICAL_STRUCTURE_CORRUPTION(0x109 ?) 错误
+//  http://www.microsoft.com/whdc/driver/kernel/64bitPatching.mspx
+//  DEP(基于硬件的数据执行保护) -- 
+
 //bf84d8de  win32k!FastWindowFromDC 
 //bf8c30bc  win32k!_WindowFromDC 
 
@@ -13,11 +17,14 @@
 
 //问题：给出来的表示错误的
 //  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
+//  获取函数地址的公式是：dwo(nt!KiServiceTable+n)+nt!KiServiceTable（n=0,1,2…）。
+//  http://bbs.dbgtech.net/forum.php?mod=viewthread&tid=360
 
 //Windows WIN32K.SYS System Call Table (NT/2000/XP/2003/Vista/2008/7)
 //  http://j00ru.vexillium.org/win32k_syscalls/
 
-//Vista 中的 PatchGuard 是否有影响?
+
+//Win7 64位对于未有认证签名的驱动程序进行了限制安装 -- 启动时F8后可以选择“禁用驱动程序签名强制”或通过bcdedit更改
 // on x86,we use Hook shadowSSDT; on x64,we use inline hook in user-mode;
 
 //TODO: Depends 查看 ntkrnlpa.exe + win32k.sys 并比较索引值

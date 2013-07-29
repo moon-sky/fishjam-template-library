@@ -24,6 +24,8 @@
 *     b.尽量避免全局变量的使用(不容易同步)，通过将变量保存在 设备扩展对象 中解决
 *   命令行编译：Build Environments -> Windows XXX -> Checked/Free， 到对应目录下执行 build 命令
 *
+* 签名：%WDKPATH%\bin\selfsign
+* 
 * TODO: VirtualKD 中包含了 VirtualDDK ?
 * VisualDDK(推荐)  -- http://visualddk.sysprogs.org/, 开源。
 *   开发调试驱动的VS插件，提供了驱动程序的向导，可通过TCPIP在远程机器上安装驱动，支持VirtualBox/VMWare，可在VS中直接调试驱动程序。
