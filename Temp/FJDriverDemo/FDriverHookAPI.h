@@ -4,6 +4,9 @@
 
 //#include "WindowsTypes.h"
 
+//bf84d8de  win32k!FastWindowFromDC 
+//bf8c30bc  win32k!_WindowFromDC 
+
 //到SSDT Shadow表中的函数定义和参数说明 -- WRK(2003的源码)
 //  WRK(Windows Research Kernel) -- 微软为高校操作系统课程提供的可修改和跟踪的操作系统教学平台。
 //  给出了Windows这个成功的商业操作系统的内核大部分代码，可以对其进行修改、编译，并且可以用这个内核启动Windows操作系统。
@@ -121,7 +124,7 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 
 /******************************************************************************************************************
 * 系统进程分析
-*   csrss.exe -- 会保存所有进程的句柄，
+*   csrss.exe -- Windows子系统服务器进程, 会保存所有进程的句柄，
 *     Console窗体的 ScrollDC 等API需要Hook这个进程才行？
 *     win32!RawInputThread 通过 GUID_CLASS_KEYBOARD 获得键盘设备栈中PDO的符号连接名
 *   System -- 系统进程，在系统启动时创建。
@@ -182,13 +185,6 @@ typedef struct _SERVICE_DESCRIPTOR_TABLE
 	SYSTEM_SERVICE_TABLE Table4;    // not used
 }SYSTEM_DESCRIPTOR_TABLE, PSYSTEM_DESCRIPTOR_TABLE;
 
-typedef struct _SCROLL_HOOK_TARGET
-{
-	HWND hTargetWindow;
-	HANDLE hSelfProcess;
-	HANDLE hTargetProcess;
-} SCROLL_HOOK_TARGET, *PSCROLL_HOOK_TARGET;
-
 typedef struct _SCROLL_DATA
 {
 	int dy;
@@ -199,7 +195,7 @@ typedef struct _SCROLL_DATA
 SYSTEM_SERVICE_TABLE *GetServiceDescriptorShadowTableAddress();
 //int GetNtGdiBitBltIndex(SYSTEM_SERVICE_TABLE *p);
 
-void InstallCopyProtectHook(HANDLE hProcess);
+void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop);
 void UnInstallScrollHook(void);
 
 typedef struct _SYSTEM_HANDLE_INFORMATION{

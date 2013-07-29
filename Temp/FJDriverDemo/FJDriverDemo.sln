@@ -9,16 +9,21 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FDriverDemoTester", "FDrive
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
+		Debug_WIN7|Win32 = Debug_WIN7|Win32
+		Debug_WXP|Win32 = Debug_WXP|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}.Debug|Win32.ActiveCfg = Debug|Win32
-		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}.Debug|Win32.Build.0 = Debug|Win32
+		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}.Debug_WIN7|Win32.ActiveCfg = Debug_WIN7|Win32
+		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}.Debug_WIN7|Win32.Build.0 = Debug_WIN7|Win32
+		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}.Debug_WXP|Win32.ActiveCfg = Debug_WXP|Win32
+		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}.Debug_WXP|Win32.Build.0 = Debug_WXP|Win32
 		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}.Release|Win32.ActiveCfg = Release|Win32
 		{7F95BBA2-4F94-4008-9767-F1B2B6D5E935}.Release|Win32.Build.0 = Release|Win32
-		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug|Win32.ActiveCfg = Debug|Win32
-		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug|Win32.Build.0 = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug_WIN7|Win32.ActiveCfg = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug_WIN7|Win32.Build.0 = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug_WXP|Win32.ActiveCfg = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug_WXP|Win32.Build.0 = Debug|Win32
 		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Release|Win32.ActiveCfg = Release|Win32
 		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection

@@ -141,19 +141,20 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallService()
 
 }
 
-typedef struct _SCROLL_HOOK_TARGET
-{
-	HWND hTargetWindow;
-	HANDLE hSelfProcess;
-	HANDLE hTargetProcess;
-	//WindowFromDC
-} SCROLL_HOOK_TARGET, *PSCROLL_HOOK_TARGET;
+//typedef struct _SCROLL_HOOK_TARGET
+//{
+//	HWND hTargetWindow;
+//	HANDLE hSelfProcess;
+//	HANDLE hTargetProcess;
+//	//WindowFromDC
+//} SCROLL_HOOK_TARGET, *PSCROLL_HOOK_TARGET;
 
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
 {
 	BOOL bRet = FALSE;
 	SCROLL_HOOK_TARGET	hookTarget;
+	hookTarget.hWndDeskTop = ::GetDesktopWindow();
 	hookTarget.hTargetWindow = m_hWnd;
 	hookTarget.hSelfProcess = (HANDLE)GetCurrentProcessId();
 	hookTarget.hTargetProcess = (HANDLE)FTL::CFSystemUtil::GetPidFromProcessName(TEXT("csrss.exe"));

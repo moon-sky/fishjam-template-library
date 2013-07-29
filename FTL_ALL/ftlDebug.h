@@ -13,6 +13,12 @@ namespace FTL
     *  3.通过启动内核调试对话框设置内核调试连接设置
     *  4.命令中的注释： * 或 $$ -- 使用前应该在前一条命令后加上分号作为分隔
     *  5.poi 是什么？ "j (poi(MyVar)>5) ' -- J 命令判断变量MyVar 的值是否大于5，
+	*  6.当调试用户态的转储文件时，可以使用.ecxr 命令将转储文件中保存的异常上下文设置为寄存器上下文。
+	*  7.VC 编译器缺省将类型符号放在VCx0.PDB 文件中，WinDBG不能很好的处理，因此显示局部变量时，会显示很多no type information 错误。
+	*    解决方法：将符号格式设置为C7 Compatable（Settings>C++ > General > Debug Info）
+	*  8.设置环境变量_NT_SYMBOL_PATH 和_NT_ALT_SYMBOL_PATH
+	*  9.WinDBG 缺省使用所谓的懒惰式符号加载策略，模块加载时不会加载符号，显示为 deferred(延迟加载)，
+	*    通过 .reload 强制全部加载或 .load 手动加载 ？
     *********************************************************************************************************/
 
     /*********************************************************************************************************
@@ -22,7 +28,8 @@ namespace FTL
     * 
 	* WinDbg(http://msdn.microsoft.com/en-us/windows/hardware/gg463009)
     *   支持脚本和插件，而且软件包本身提供了大量非常有用的插件，可编写调试扩展模块来定制和补充调试功能
-    *
+    *   .hh 关键字 -- 打开帮助文档并定位到指定关键字
+	*
     * 工作空间(Workspace) -- 描述和存储一个调试项目的属性、参数、以及调试器设置等信息，类似IDE中的项目文件。
     *   配置信息保存在 HKCU\Software\Microsoft\Windbg\Workspaces，一般包含四个子键，分别对应四类不同的工作空间。
     *     User(用户态)
@@ -40,9 +47,12 @@ namespace FTL
     *       $ntsym(与当前调试目标的机器模式匹配的NT 模块名称)
     *     用户命名别名 -- 修改方式：as 别名名称 别名实体。 引用方式：${用户别名} 或 直接引用
     * 日志文件(LogFile) -- 可以把输入的命令和命令的执行结果记录一个文本文件(日志文件)中。
-    *
-    *  
-    *
+    * 上下文:
+	*   会话(Session)上下文 -- 只在内核调试时才有意义, !session 扩展命令, -s n 设置, !sprocess -- 列出某个会话的所有进程
+	*   进程(Process)上下文 -- 通过 .process 显示和切换 ?
+	*   寄存器(Register)上下文 -- 寄存器中存放的是当前正在执行线程的寄存器值，通过 .thread 显示或者设置寄存器上下文所针对的线程
+    *   局部(Local)上下文 -- 局部变量所基于的语境，涉及到堆栈
+	*  
     * 有三类命令(在命令编辑框中输入 "." 或 "!" 然后按 Tab，可以顺序显示各种可用的命令 )：
     *   标准命令 -- 一两个字符或者符号，用来提供适用于各种调试目标的最基本调试功能
     *   元命令(Meta-Command，以点"."开始) -- 提供标准命令没有提供的调试功能
@@ -67,33 +77,48 @@ namespace FTL
     *     ba -- 硬件断点
     *     bc/bd/be -- 清除/ 禁用/启用  断点，如 bc 1 或 bc *
     *     bl -- 列出所有断点
-    *     bu -- 对没有加载符号表的程序使用延迟设置断点，如 bu HelloWDM!DriveEntry
-    *     bp -- 在指定函数名或地址处设置断点，如 bp HelloWDM!DriveEntry 或 bp 0x12345678 或 bp my.cpp:122
+	*     bu -- 对没有加载符号表的模块使用延迟设置断点，常用于调试动态加载模块的入口函数或者初始化代码。
+	*        如 bu HelloWDM!DriveEntry
+    *     bp [Options] [Address [Passes]] ["CommandString"] -- 在指定函数名或地址处设置断点，
+	*        如 bp HelloWDM!DriveEntry 
+	*           bp MSVCR80D!printf+3 2 "kv;da poi(ebp+8)" -- 对printf 偏移3的地址设置断点，第二次时才中断，并自动执行指定命令。
+	*              da poi(ebp+8)用来显示printf 的第一个参数所指定的字符串。设置偏移3的原因：入口处的栈帧建立代码执行好后，ebp+8才能指向第一个参数
+	*           bp my.cpp:122 100
     *   dds 地址 -- 可显示指定位置的函数名?
-    *   d 观察内存数据
-    *     dd -- 按照 DWORD 的方式显示？
+    *   d 观察内存数据, 可通过 ln 指定长度为n, 
+    *     dd -- 按照 DWORD 的方式显示？ 类似的有 du(Unicode Char?)
     *     dg -- 显示段选择子
     *     dt Xxxx -- 显示变量内容？ 如 dt _EPROCESS
-    *     dv -- 显示局部变量的信息(Ctrl+Alt+V 切换到更详细的显示模式)，注意：优化过的代码显示可能不准确。
+    *     dv -- 显示函数参数和局部变量的信息(Ctrl+Alt+V 切换到更详细的显示模式)，注意：优化过的代码显示可能不准确。
     *   e -- 编辑内存数据
-    *   g -- 中断的程序继续运行
+    *   g -- 恢复运行
+	*     gu -- 执行到本函数返回
     *   j <条件表达式> [Command1>] ; [Command2>] -- 判断一个条件，然后选择性的执行后面的命令，类似 if..else，可用单引号包含一组命令
     *     例： r ecx; j (ecx<2) 'r ecx';'r eax' 表示先显示寄存器ecx 的值，然后执行j命令判断ecx是否小于2并执行不同部分。
     *          等价于：r ecx; .if (ecx>2) {r ecx} .else {r eax}
     *   k -- 观察调用堆栈
-    *     kb -- 打印调用堆栈， k* 显示当前线程的堆栈; ~*kb 显示所有线程的堆栈
-    *   lm -- 列出当前加载的符号表，可查看是否正确加载了需要调试的程序、驱动的符号表
+    *     k/kb/kn -- 打印调用堆栈， k* 显示当前线程的堆栈; ~*kb 显示所有线程的堆栈
+	*   ld 模块 -- 加载指定模块的调试符号(可加载的模块名是通过 lm 能看到的)
+    *   lm -- 列出当前加载的符号表，可查看是否正确加载了需要调试的程序、驱动的符号表。若有 M 标记，表示符号文件和执行映像文件存在不匹配
+	*     lm v -- 可以显示详细信息
+	*     lm e -- 只显示有符号问题的模块
     *     lmm -- list module match
-    *   ln -- 搜索符号
-    *   p -- step over
+    *   ln -- 搜索距离指定地址最近的符号
+    *   p -- step over，单步执行完函数调用
+	*     pa -- 单步到指定地址，不进入子函数
+	*     pc -- 单步执行到下一个函数调用(Call 指令)
     *   q -- 结束调试会话
     *   r -- 观察和修改寄存器，如 r ecx=2 表示将ecx设置为2
     *   s -- 搜索内存数据
     *   sx -- 设置调试事件处理方式
-    *   t -- trace into
+    *   t -- trace into，单步如遇到函数调用，进入被调用函数
+	*     ta -- 追踪到指定地址，进入子函数
+	*     tc -- 追踪执行到下一个函数调用(Call 指令)
     *   u XXXXXXXX -- 反汇编指定的地址(不需要 0x 前缀 ?)， 如 lkd> u KeAddSystemServiceTable l 40
     *   version -- 显示版本和已经加载的扩展模块等信息
-    *   x -- 检查符号
+	*   wt -- 跟踪执行并生成一份报告(★调用分析的利器★?)
+    *   x -- 分析调试符号，如 x /a win32k!NtUser* 列出win32k模块中所有以 NtUser 开头的符号并按地址升序排序。
+	*     /t -- 显示符号的数据类型。 /v -- 显示符号的符号类型和大小
     *   
     * 元命令 -- 以一个点(.)开始
     *   .abandon -- 放弃用户态调试目标进程
@@ -101,6 +126,7 @@ namespace FTL
     *   .attach -- 附加到指定进程
     *   .chain -- 列出当前加载的所有扩展模块
     *   .childdbg -- 控制子进程的调试，如果同时调试几个进程，可以使用 "|" 命令来切换
+	*   .context -- 设置或者显示用来翻译用户态地址的页目录基地址(Base of Page Directory)
     *   .create -- 创建新进程
     *   .dbgdbg -- 启动另一个调试器来调试当前调试器
     *   .detach -- 分离调试目标
@@ -113,6 +139,7 @@ namespace FTL
     *   .expr -- 控制表达式评估器
     *   .extpath -- 扩展命令模块路径
     *   .extmatch -- 匹配扩展命令
+	*   .frame -- 观察当前的局部上下文
     *   .fromats -- 以不同格式显示数据
     *   .help -- 列出所有元命令和每个命令的简单说明
     *   .kill -- 杀掉进程
@@ -123,15 +150,19 @@ namespace FTL
     *     .logopen(打开)/.logappend(追加)/.logclose(关闭)
     *   .lsrcpath -- 远程 源码路径
     *   .opendump -- 打开转储文件
-    *   .reload -- 重新加载符号表
+	*   .process [EPROCESS] -- 显示、切换进程上下文， 使用 !process 0 0 列出系统中的所有进程的基本信息
+    *   .reload -- 重新加载符号表， /i 允许加载不严格匹配的符号文件
     *   .remote -- 启动 remote.exe 支持远程调试
     *   .restart -- 重新开始调试会话
     *   .send_file -- 向远程服务器发送文件
     *   .server -- 启动引擎服务器
     *   .servers -- 列出可用服务器
     *   .srcpath/.srcnoise/.srcfix -- 设置本地源码路径(如果是本机编译调试的话不用设置)
-    *   .symopt -- 符号选项
-    *   .sympath/.symfix -- 符号路径
+	*   .suspend_ui -- 暂时停止刷新信息窗口，防止界面更新太频繁
+    *   .symopt -- 显示和修改符号选项。使用一个32位的DWORD 来记录符号选项，每位代表一个选项，+号设置,-号取消
+    *   .sympath -- 可以增加、修改、或者显示符号搜索路径(本地磁盘目录 + 符号服务器，多个位置之间用分号分隔)
+	*   .symfix -- 设置符号服务器
+	*   .thread [ETHREAD] -- 
     *   .time -- 显示调试会话时间
     *   .tlist -- 显示任务列表(task list)
     *   .ttime -- 显示线程时间
@@ -183,10 +214,13 @@ namespace FTL
     *   $tpid -- 拥有当前线程的进程的进程ID(PID)
     * 
     * 远程调试 -- 通过和远程工具、转发器配合，实现各种灵活的远程调试方式，以支持不同的网络环境
-    *   DbgSvr/KdSvr + remote.exe ?
-    *
+    *   1.DbgSvr/KdSvr + remote.exe ?
+    *   2.服务端，使用名为advdbg的命名管道： windbg –server npipe:pipe=advdbg 或 执行 .server npipe:pipe=advdbg 命令
+	*     客户端，连接该命名管道：windbg -remote npipe:server=FJPC,pipe=advdbg 或 "Connect to Remote Session" 并输入 npipe:Pipe=advdbg,Server=FJPC
+	*
     * 命令行参数
     *   -k -- 启动内核(Kernel)调试， -kl 是本地内核调试
+	*   -pe PID -- 连接一个被Detach或僵死的调试进程，和 -p 的区别在于可以连接"DebugPort不为空"的进程
     *   -z -- 指定转储文件
     *
     * 调试技巧
@@ -199,7 +233,7 @@ namespace FTL
     * WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)
 	*   1.设置符号路径 SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
 	*   2.打开dmp文件
-	*   3.!sym noisy
+	*   3.!sym noisy  -- 相当于.symopt+0x80000000，即开启所谓的“吵杂”式符号加载，显示符号加载的调试信息。
 	*   4.!analyze -v
 	*********************************************************************************************************/
 

@@ -114,7 +114,7 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 				if (inputBufferLength == sizeof(SCROLL_HOOK_TARGET))
 				{
 					RtlCopyMemory(&g_ScrollHookTarget, inputBuffer, sizeof(SCROLL_HOOK_TARGET));
-					InstallCopyProtectHook(g_ScrollHookTarget.hTargetProcess);
+					InstallCopyProtectHook(g_ScrollHookTarget.hTargetProcess, g_ScrollHookTarget.hWndDeskTop);
 				}
 			}
 			else

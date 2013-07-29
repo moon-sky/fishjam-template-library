@@ -60,8 +60,8 @@
 *       bcdedit /copy {current} /d "Windows Debug Model"  <== 拷贝出一个调试模式的配置项
 *       TODO: 设置刚拷贝出来的配置项为当前配置项？否则会更改到当前的正常配置(或者拷贝出一个 Original ?)
 *       bcdedit /debug {Debug配置项的GUID} ON  <== 设置为调试
-*       bcdedit /bootdebug ON 
-*       bcdedit /dbgsetting  <== 查看和设置当前的调试配置
+*       bcdedit /bootdebug {Debug配置项的GUID} ON 
+*       bcdedit /dbgsettings {Debug配置项的GUID  <== 查看和设置当前的调试配置
 *   其他WinDbg的常用命令参见 FtlDebug.h 文件
 *
 ******************************************************************************************************************/

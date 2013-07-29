@@ -3,6 +3,7 @@
 #include "FDriverUtil.h"
 #include "FDriverMemory.h"
 #include "FDriverAPI.h"
+#include "FDriverDemoDefine.h"
 
 #define ObjectNameInformation  1
 #define SystemHandleInformation 0x10
@@ -33,17 +34,20 @@ typedef NTSTATUS (*NTUSERCALLONEPARAM)(IN ULONG Param, IN ULONG Routine);
 
 typedef struct _DRIVER_HOOK_API_INFOS
 {
-private:
+public:
+	HWND					m_hWndDesktop;
     HWND					m_hWndProtect;
     unsigned long			m_OldCr0;
     BOOL                    m_ValidCallNumber;
 
 public:
     int						IndexOfNtGdiBitBlt;
-	int						IndexOfNtGdiStretchBlt;
-	int                     IndexOfNtGdiGetDCDword;
+	//int						IndexOfNtGdiStretchBlt;
+	//int                     IndexOfNtGdiGetDCDword;
     int                     IndexOfNtGdiExtTextOutW;
     int                     IndexOfNtUserCallOneParam;
+
+	int						ONEPARAM_ROUTINE_WINDOWFROMDC;
 
 	NTBITBLT				pOrigNtBitBlt;
 	NTGDIEXTTEXTOUTW		pOrigNtGdiExtTextOutW;
@@ -52,16 +56,20 @@ public:
 
 	VOID InitValue()
 	{
+		m_hWndDesktop = (HWND)0;
+
         m_hWndProtect = (HWND)0;
         m_OldCr0 = 0;
         m_ValidCallNumber = FALSE;
 
 		IndexOfNtGdiBitBlt = -1;
-		IndexOfNtGdiStretchBlt = -1;
-        IndexOfNtGdiGetDCDword = -1;
+		//IndexOfNtGdiStretchBlt = -1;
+        //IndexOfNtGdiGetDCDword = -1;
         IndexOfNtGdiExtTextOutW = -1;
         IndexOfNtUserCallOneParam = -1;
 
+
+		ONEPARAM_ROUTINE_WINDOWFROMDC = -1;
 
 		pOrigNtBitBlt = NULL;
 		pOrigNtGdiExtTextOutW = NULL;
@@ -94,23 +102,22 @@ public:
 				KdPrint(("Running on Windows XP\n"));
 				IndexOfNtGdiBitBlt = 0xD;				//13,  100D 0008:A001B344 params=0B NtGdiBitBlt 
                 IndexOfNtGdiExtTextOutW = 0x92;
-				IndexOfNtGdiStretchBlt = 0x124; 		//292, 111A 0008:A003022B params=0C NtGdiStretchBlt 
-                //IndexOfNtGdiDdGetDC = 74; 
-                //IndexOfNtGdiDdReleaseDC = 88;
-                //IndexOfNtGdiGetAndSetDCDword = 155;
-                IndexOfNtGdiGetDCDword = 167;
-                IndexOfNtUserCallOneParam = 323;        //0x143;
-                //IndexOfNtGdiGetDCPoint = 170;
+				//IndexOfNtGdiStretchBlt = 0x124; 		//292, 111A 0008:A003022B params=0C NtGdiStretchBlt 
+                //IndexOfNtGdiGetDCDword = 167;
+                IndexOfNtUserCallOneParam = 0x143;      //323;
 
-                //IndexOfNtGdiResetDC = 250;
-                //IndexOfNtGdiSetColorAdjustment = 268;
-                //IndexOfNtGdiSetColorSpace = 269;
-                //IndexOfNtGdiUpdateColors = 302;
-                //IndexOfNtUserGetDC = 401;
-                //IndexOfNtUserGetDCEx = 402;
-                //IndexOfNtUserGetWindowDC = 439;
-                //IndexOfNtUserSetSysColors = 535;
-                
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f;	//31
+				break;
+			}
+		case 601:	//Win7
+			{
+				KdPrint(("Running on Windows 7\n"));
+				IndexOfNtGdiBitBlt = 0xE;
+				IndexOfNtGdiExtTextOutW = 0x95;
+				//IndexOfNtGdiStretchBlt = 0x12e;
+				IndexOfNtUserCallOneParam = 0x14e;
+
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24;	//Win7
 				break;
 			}
         case 0xFFF: //win8 x86 fre 8319 -- http://bbs.pediy.com/showthread.php?t=149861&highlight=NtGdiBitBlt
@@ -128,7 +135,7 @@ public:
 			int nPointSize = sizeof(void *);
 			NT_ASSERT(nPointSize == 4);
 			NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtGdiBitBlt] == (0xB * nPointSize));
-			NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtGdiStretchBlt] == (0xC * nPointSize));
+			//NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtGdiStretchBlt] == (0xC * nPointSize));
             NT_ASSERT(g_pShadowTable[1].ArgumentsTable[IndexOfNtUserCallOneParam] == (0x2 * nPointSize));
 
             m_ValidCallNumber = TRUE;
@@ -555,6 +562,8 @@ HANDLE GetCsrPid()
 //	return uResult;
 //}
 
+//http://www.reactos.org/wiki/Techwiki:Win32k/apfnSimpleCall
+
 //enum SimpleCallRoutines
 //{
 //NOPARAM_ROUTINE_CREATEMENU,
@@ -607,7 +616,7 @@ HANDLE GetCsrPid()
 //ONEPARAM_ROUTINE_HANDLESYSTHRDCREATFAIL,
 //};
 
-#define ONEPARAM_ROUTINE_WINDOWFROMDC_WINXP 31
+//#define ONEPARAM_ROUTINE_WINDOWFROMDC_WINXP 31		//0x1f
 
 //USER32!NtUserCallOneParam (77d184ae)
 //mov     edx,offset SharedUserData!SystemCallStub (7ffe0300)
@@ -617,13 +626,28 @@ ULONG MyNtGdiBitBlt(
 					 HDC hDCSrc, int  XSrc, int  YSrc,	
 					 ULONG  ROP, ULONG crBackColor,ULONG fl)
 {
-	NTSTATUS status;
+	NTSTATUS status = STATUS_SUCCESS;
 	static LONG nCount = 0;
-	ULONG nResult = g_pDriverHookApiInfos->pOrigNtBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
+	ULONG nResult = 0;
 
-    HWND hWndDestFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCDest, ONEPARAM_ROUTINE_WINDOWFROMDC_WINXP);
-    HWND hWndSrcFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCSrc, ONEPARAM_ROUTINE_WINDOWFROMDC_WINXP);
+    HWND hWndDestFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCDest, g_pDriverHookApiInfos->ONEPARAM_ROUTINE_WINDOWFROMDC);
+    HWND hWndSrcFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCSrc, g_pDriverHookApiInfos->ONEPARAM_ROUTINE_WINDOWFROMDC);
+	
+	if (hWndDestFromDC == g_pDriverHookApiInfos->m_hWndDesktop
+		|| hWndSrcFromDC == g_pDriverHookApiInfos->m_hWndDesktop)
+	{
+		//Skip 
 
+		//KdPrint(("[%d], Bitblt for Desktop Wnd\n"));
+		KdPrint(("[%d], !!!! In MyNtGdiBitBlt, hWndDesktop=0x%x, hWndDestFromDC=0x%x, hDCDest=0x%x, hWndSrcFromDC=0x%x, hDCSrc=0x%x, nResult=%d\n", 
+			PsGetCurrentProcessId(),
+			g_pDriverHookApiInfos->m_hWndDesktop, hWndDestFromDC, hDCDest, 
+			hWndSrcFromDC, hDCSrc, nResult));
+	}
+	else
+	{
+		ULONG nResult = g_pDriverHookApiInfos->pOrigNtBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
+	}
 	if (g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW)
 	{
 		RECT rcClient = {0, 0, 400, 400};
@@ -636,10 +660,6 @@ ULONG MyNtGdiBitBlt(
         typedef NTSTATUS (*NTGDIGETDCDWORD)( HDC, INT n, PDWORD result );
 
     }
-	KdPrint(("[%d], In MyNtGdiBitBlt hWndDestFromDC=0x%x, hDCDest=0x%x, hWndSrcFromDC=0x%x, hDCSrc=0x%x, nResult=%d, status=%d\n", 
-		PsGetCurrentProcessId(),
-        hWndDestFromDC, hDCDest, 
-        hWndSrcFromDC, hDCSrc, nResult, status));
 
 	//EngBitBlt(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0);
 	
@@ -664,14 +684,14 @@ BOOL MyNtGdiExtTextOutW(IN HDC 	hDC,
 
     KdPrint(("[%d], In MyNtGdiExtTextOutW hDC=0x%x, StartXY=(%d, %d), fuOptions=%d, String=%S, Count=%d, codePage=%d\n", 
         PsGetCurrentProcessId(), hDC, XStart, YStart, fuOptions, UnsafeString, Count, dwCodePage));
-    if (UnsafeRect)
-    {
-        KdPrint(("  UnsafeRect = (%d, %d - %d, %d)\n", UnsafeRect->left, UnsafeRect->top, UnsafeRect->right, UnsafeRect->bottom));
-    }
-    if (UnsafeDx)
-    {
-        KdPrint(("  *UnsafeDx=%d\n", *UnsafeDx));
-    }
+    //if (UnsafeRect)
+    //{
+    //    KdPrint(("  UnsafeRect = (%d, %d - %d, %d)\n", UnsafeRect->left, UnsafeRect->top, UnsafeRect->right, UnsafeRect->bottom));
+    //}
+    //if (UnsafeDx)
+    //{
+    //    KdPrint(("  *UnsafeDx=%d\n", *UnsafeDx));
+    //}
 
     BOOL bRet = g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW(hDC, XStart, YStart,fuOptions, UnsafeRect, UnsafeString,
         Count, UnsafeDx, dwCodePage);
@@ -710,7 +730,7 @@ BOOLEAN Sleep(ULONG MillionSecond)
 //	return uResult;
 //}
 
-void InstallCopyProtectHook(HANDLE hProcess)
+void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
 {
 	//PAGED_CODE();
 
@@ -727,6 +747,7 @@ void InstallCopyProtectHook(HANDLE hProcess)
         if (g_pDriverHookApiInfos)
         {
             g_pDriverHookApiInfos->InitValue();
+			g_pDriverHookApiInfos->m_hWndDesktop = hWndDesktop;
 
             NTSTATUS status = STATUS_SUCCESS;
             ClearWriteProtect();
