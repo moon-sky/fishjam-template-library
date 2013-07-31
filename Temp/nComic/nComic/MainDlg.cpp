@@ -8,9 +8,9 @@
 #include "../ComicService/ComicService_i.c"
 #include "../ComicHelper/ComicHelper.h"
 
-#include <ftlComDetect.h>
-#include <ftlWindow.h>
-#include <ftlDebug.h>
+//#include <ftlComDetect.h>
+//#include <ftlWindow.h>
+//#include <ftlDebug.h>
 
 CMainDlg::CMainDlg()
 {
@@ -80,7 +80,7 @@ void CMainDlg::OnBtnInitService(UINT uNotifyCode, int nID, CWindow wndCtl)
 	COM_VERIFY(m_spComicService.CoCreateInstance(CLSID_ComicServiceObj, NULL, CLSCTX_LOCAL_SERVER));
 	if (m_spComicService)
 	{
-		COM_DETECT_INTERFACE_FROM_REGISTER(m_spComicService);
+		//COM_DETECT_INTERFACE_FROM_REGISTER(m_spComicService);
 	}
 	BOOL bEnabled = SUCCEEDED(hr);
 	::EnableWindow(GetDlgItem(IDC_BTN_INIT_SERVICE), !bEnabled);
@@ -123,7 +123,7 @@ void CMainDlg::OnBtnFinService(UINT uNotifyCode, int nID, CWindow wndCtl)
 void CMainDlg::OnBtnDllHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	m_bHookInDll = TRUE;
-	EnableWindowProtected(m_hWnd);
+	EnableWindowProtected(GetCurrentProcessId(), m_hWnd);
 }
 
 void CMainDlg::OnBtnDllUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)

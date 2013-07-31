@@ -11,6 +11,9 @@
 // Windows Header Files:
 #include <windows.h>
 
+#include <atlbase.h>
+#include <atlstr.h>
+#include <atltypes.h>
 
 
 // TODO: reference additional headers your program requires here

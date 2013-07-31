@@ -188,7 +188,7 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 			dcMemory.FillSolidRect(rcStaticDraw, RGB(255, 0, 0));
 
 			FTLTRACE(TEXT("OnBnClickedBtnDoBitblt, hDCDest=0x%x, hDCDest=0x%x, hWnd=0x%x\n"), pDC->m_hDC, dcMemory.m_hDC, pWndDraw->GetSafeHwnd());
-			API_VERIFY(pDC->BitBlt(0, 0, rcStaticDraw.Width(), rcStaticDraw.Height(), &dcMemory, 0, 0, SRCCOPY));
+			//API_VERIFY(pDC->BitBlt(0, 0, rcStaticDraw.Width(), rcStaticDraw.Height(), &dcMemory, 0, 0, SRCCOPY));
 
 			//pDC->DrawText(TEXT("fishjam"), &rcStaticDraw, DT_CENTER | DT_VCENTER);
 			//pDC->FillSolidRect(rcStaticDraw, RGB(0, 255, 0));
@@ -229,8 +229,9 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
             pWndDraw->GetClientRect(&rcStaticDraw);
             rcStaticDraw.OffsetRect(10, 10);
 
-            pDC->DrawText(TEXT("DrawTextDemo"), rcStaticDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-            pDC->TextOut(rcStaticDraw.left, rcStaticDraw.top, TEXT("TextOutDemo"));
+			pDC->ExtTextOut(0, 0, ETO_OPAQUE, &rcStaticDraw, NULL, 0, NULL);
+            //pDC->DrawText(TEXT("DrawTextDemo"), rcStaticDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+            //pDC->TextOut(rcStaticDraw.left, rcStaticDraw.top, TEXT("TextOutDemo"));
 
             pWndDraw->ReleaseDC(pDC);
         }

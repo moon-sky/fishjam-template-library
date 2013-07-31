@@ -18,9 +18,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)PS"
 			ConfigurationType="2"
+			InheritedPropertySheets="..\set_solution_config.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -56,7 +57,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				RegisterOutput="true"
 				AdditionalDependencies="kernel32.lib rpcns4.lib rpcrt4.lib oleaut32.lib uuid.lib"
 				ModuleDefinitionFile="ComicServicePS.def"
 			/>
@@ -84,9 +84,10 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)PS"
 			ConfigurationType="2"
+			InheritedPropertySheets="..\set_solution_config.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -123,7 +124,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				RegisterOutput="true"
 				AdditionalDependencies="kernel32.lib rpcns4.lib rpcrt4.lib oleaut32.lib uuid.lib"
 				ModuleDefinitionFile="ComicServicePS.def"
 				OptimizeReferences="2"

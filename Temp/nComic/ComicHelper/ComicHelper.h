@@ -10,7 +10,7 @@
 #define COMICHELPER_API __declspec(dllimport)
 #endif
 
-extern COMICHELPER_API BOOL EnableWindowProtected(HWND hWndFilter, COLORREF clrDisabled = RGB(127, 127, 127));
+extern COMICHELPER_API BOOL EnableWindowProtected(DWORD curProcessId, HWND hWndFilter, COLORREF clrDisabled = RGB(127, 127, 127));
 extern COMICHELPER_API BOOL DisableWindowProtected(HWND hWndFilter);
 
 extern COMICHELPER_API BOOL HookApi();

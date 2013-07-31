@@ -18,10 +18,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			InheritedPropertySheets="..\set_solution_config.vsprops;..\using_ftl.vsprops;..\using_detours.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="E:\Detours Express 3.0\include"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;COMICHELPER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -62,9 +62,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="detours.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="E:\Detours Express 3.0\lib.X86"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -93,10 +92,10 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			InheritedPropertySheets="..\set_solution_config.vsprops;..\using_ftl.vsprops;..\using_detours.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -119,7 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="E:\Detours Express 3.0\include"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;COMICHELPER_EXPORTS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -138,9 +137,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="detours.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="E:\Detours Express 3.0\lib.X86"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

@@ -3,10 +3,10 @@
 #pragma once
 
 //#include "WindowsTypes.h"
+//可能使用了DX的Capture -- http://www.wisdom-soft.com/products/screenhunter.htm
 
-//64位系统中的PatchGuard(安全内核) -- 有应用或驱动尝试修改核心，就会产生 CRITICAL_STRUCTURE_CORRUPTION(0x109 ?) 错误
-//  http://www.microsoft.com/whdc/driver/kernel/64bitPatching.mspx
-//  DEP(基于硬件的数据执行保护) -- 
+//Tommy 的专栏 -- http://blog.csdn.net/whf727/article/details/4986575
+//KeServiceDescriptorTable 结构及修改内存保护写的方法 --   http://www.3600safe.com/?post=94
 
 //bf84d8de  win32k!FastWindowFromDC 
 //bf8c30bc  win32k!_WindowFromDC 
@@ -14,6 +14,7 @@
 //到SSDT Shadow表中的函数定义和参数说明 -- WRK(2003的源码)
 //  WRK(Windows Research Kernel) -- 微软为高校操作系统课程提供的可修改和跟踪的操作系统教学平台。
 //  给出了Windows这个成功的商业操作系统的内核大部分代码，可以对其进行修改、编译，并且可以用这个内核启动Windows操作系统。
+//  检查导入表符号的小工具 -- 静态分析PE文件的导入表，挨个对导入表中的符号，去导入文件的导出表中去搜索(参考WRK)
 
 //问题：给出来的表示错误的
 //  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
@@ -38,6 +39,31 @@
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
+* PatchGuard -- 64位系统中的内核补丁保护程序, 有应用或驱动尝试修改核心组件，就会产生 CRITICAL_STRUCTURE_CORRUPTION(0x109)蓝屏错误
+*   保护下列组件
+*     系统模块 (NTOS、NDIS、HAL)
+*     系统服务分派表 (SSDT, System Service Dispatch Table -- KeServiceDescriptorTable)
+*     全局描述符表 (DGT -- Global Descriptor Table)
+*     中断描述符表 (IDT -- Interrupt Descriptor Table)
+*     使用不是由内核分配的内核堆栈(Using kernel stacks that are not allocated by the kernel)
+*     修补内核的任何部分	 -- Patching any part of the kernel (detected only on AMD64-based systems) 
+*  TODO：不检查 inline hook 和 Shadow SSDT ?
+*
+*   PatchGuard可能是所有操作系统中第一个验证内核镜像、内存及 MSR并检查系统是否受到损害的组件。
+*     为防止第三方内核模块禁用内核补丁保护，其初始化和操作模式已高度模糊化并随机化，试图分析 PatchGuard将是徒劳无功的。
+*   PatchGuard 原理 -- 
+*     1.初始化(使用了很多的错误引导迷惑对此好奇的人士)
+*     	if (KiDivide6432(KiTestDividend, 0xCB5FA3) != 0x5EE0B7E5){ KeBugCheck(UNSUPPORTED_PROCESSOR); }
+*     2.实际运行时，会产生除法溢出错误异常，由 KiDivideErrorFault 继续处理， 启动PatchGuard的初始化过程。
+*     3.选定随机化的池标签及数位大小并分配内存，然后使用随机密钥对 PatchGuard 进行加密并复制到该内存
+******************************************************************************************************************/
+
+//  http://www.microsoft.com/whdc/driver/kernel/64bitPatching.mspx
+//  http://uninformed.org/index.cgi?v=8&a=5
+//  http://www.mcafee.com/cn/resources/reports/rp-defeating-patchguard.pdf
+//  DEP(基于硬件的数据执行保护) -- 
+
+/******************************************************************************************************************
 * 驱动级的 HOOK API( 通过更改 SSDP 中的函数地址来 Hook) -- 
 *   注意先看该作者的其他下载。http://download.csdn.net/detail/jyw1111/5275135
 *   缺点：可能被反病毒软件作为 rootkit 提醒
@@ -60,6 +86,7 @@
 *     5.Object Hook -- 更底层的接口，不过已经很难控制了
 *
 * ntkrnlpa.exe (SSDT?) -- Kernel32.Dll 的内核实现
+* ntkrnlmp.exe ?
 * ntoskrnl.exe -- Windows执行体组件
 * win32k.sys (Shadow SSDT?) -- User32.dll + Gdi32.DLL 的内核实现
 *   将GUI的实现放入内核模式，会增大系统不稳定的几率。但会大大提高图形处理的运行效率。
@@ -70,10 +97,8 @@
 * NtGdiBitBlt / NtGdiAlphaBlend / NtGdiCancelDC / NtGdiColorCorrectPalette / NtGdiConsoleTextOut / NtGdiCreateColorSpace /NtGdiCreateColorTransform
 * NtGdiGetDCPoint / NtGdiGetDCObject
 *
-NtGdiOpenDCW 
-NtGdiDeleteObjectApp
-NtGdiBitBlt
-NtGdiStretchBlt
+ 
+
 NtUserPrintWindow
 NtGdiDdLock
 NtGdiPlgBlt
@@ -100,6 +125,7 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 *   2.通常需要附加的进程是 csrss.exe ? GetCsrPid()
 *   3.使用MDL映射一块不分页内存，设置成可以写入，常驻在物理内存(参见 RegmonMapServiceTable)
 *     TODO:通过 #pragma LOCKEDCODE 声明变量即可？
+*   4.GDI的很多函数会操作 _pGdiSharedHandleTable 表?
 *
 * KeServiceDescriptorTable -- 系统预定义的保存SSDT信息的变量，可通过extern后访问，如 WinDbg 中: dd KeServiceDescriptorTable
 * KeServiceDescriptorTableShadow -- 为了做 Shadow SSDT Hook 而定义的，系统中不存在，可以通过 KeServiceDescriptorTable 来定位。
@@ -126,7 +152,7 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 * 获取键盘按键状态 NtUserGetAsyncKeyState
 * 打开安全桌面 NtUserOpenDesktop
 * 将虚假按键还原成真实的按键 NtUserTranslateMessage
-* 截屏保护 NtGdiBitBlt、NtGdiStretchBlt
+* 截屏保护 NtGdiStretchBlt
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
@@ -148,20 +174,23 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 * WriteProcessMemory                             | NtWriteVirtualMemory     | NtWriteVirtualMemory      |
 
 * ------------------------------------- Shadow SSDT (WinXP 667)-----------------------------------------|
-* FindWindow                                     |                          | NtUserFindWindowEx        |
-* GetForegroundWindow                            |                          | NtUserGetForegroundWindow |
-* EnumWindows                                    |                          | NtUserBuildHwndList       |
-* GetWindowThreadProcessId                       |                          | NtUserQueryWindow         |
-* WindowFromPoint                                |                          | NtUserWindowFromPoint     |
-* SetParent                                      |                          | NtUserSetParent           |
-* PostMessage                                    |                          | NtUserPostMessage         |
-* SendMessage                                    |                          | NtUserMessageCall         |
-* SetWindowLong                                  |                          | NtUserSetWindowLong       |
-* ShowWindow                                     |                          | NtUserShowWindow          |
+* BitBlt                                         |                          | NtGdiBitBlt               |
+* CreateDC										 |                          | NtGdiOpenDCW              |
+* DeleteDC                                       |                          | NtGdiDeleteObjectApp      |
 * DestroyWindow                                  |                          | NtUserDestroyWindow       |
 * EnableWindow                                   |                          | NtUserCallHwndParamLock   |
-* BitBlt                                         |                          | NtGdiBitBlt               |
+* EnumWindows                                    |                          | NtUserBuildHwndList       |
+* FindWindow                                     |                          | NtUserFindWindowEx        |
+* GetForegroundWindow                            |                          | NtUserGetForegroundWindow |
+* GetWindowThreadProcessId                       |                          | NtUserQueryWindow         |
+* PostMessage                                    |                          | NtUserPostMessage         |
+* SendMessage                                    |                          | NtUserMessageCall         |
+* SetParent                                      |                          | NtUserSetParent           |
+* SetWindowLong                                  |                          | NtUserSetWindowLong       |
+* ShowWindow                                     |                          | NtUserShowWindow          |
 * StretchBlt                                     |                          | NtGdiStretchBlt           | 
+* WindowFromDC                                   |                          | NtUserCallOneParam        |
+* WindowFromPoint                                |                          | NtUserWindowFromPoint     |
 *                                                |                          | NtUserCallTwoParam        |
 ******************************************************************************************************************/
 //#define TWOPARAM_ROUTINE_SETDCBRUSHCOLOR    0xfffd0046

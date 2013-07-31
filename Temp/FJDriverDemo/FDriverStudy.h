@@ -42,13 +42,17 @@
 * FDE -- Full Disk Encryption,全磁盘加密
 * FDO -- Function Device Object ，功能设备对象，一般就是自己驱动中通过 IoCreateDevice 创建的设备对象?
 * FSD -- File System Driver, 文件系统驱动
-* HAL -- 
+* GDT -- Global Descriptor Table, 全局描述符表
+* GPF -- General Protection Fault, 一般保护性错误
+* HAL -- 硬件抽象层
 * HCT -- Hardware Compatibility Test(硬件兼容性测试工具)
+* IDT -- Interrupt Descriptor Table, 中断描述符表
 * IFS -- Installable File Systems 
 * IRP -- I/O Request Package，输入输出请求包，驱动程序的运行，依靠IRP驱动。通过主功能号(Major)和次功能号标识一个IRP的功能。
 * ISR -- 中断服务程序
 * KMDF (Kernel Mode Driver Framework): A framework for developing kernel mode drivers. 
 * MDL -- 内存描述符链
+* NDIS -- Network Driver Interface Specification
 * PDO -- Physical Device Object，物理设备对象，通常是设备栈最下面的那个设备对象？
 * UMDF (User Mode Driver Framework): A framework for developing user mode drivers. 
 * VPB -- Volume parameter block

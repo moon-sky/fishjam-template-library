@@ -18,10 +18,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			InheritedPropertySheets="..\set_solution_config.vsprops;..\using_ftl.vsprops"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
@@ -104,16 +104,15 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			InheritedPropertySheets="..\set_solution_config.vsprops;..\using_ftl.vsprops"
 			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
@@ -164,8 +163,8 @@
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
-				Description="Stop Service"
-				CommandLine="net stop &quot;Naver Comic Service&quot;&#x0D;&#x0A;set errorlevel=0&#x0D;&#x0A;"
+				Description=""
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCLinkerTool"
@@ -197,8 +196,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Performing registration"
-				CommandLine="&quot;$(TargetPath)&quot; /RegServer&#x0D;&#x0A;&quot;$(TargetPath)&quot; /Service&#x0D;&#x0A;net start &quot;Naver Comic Service&quot;&#x0D;&#x0A;"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>

@@ -42,7 +42,8 @@ NTSTATUS SameDemo()
 void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 {
 	KdPrint(("Enter FJDriverDemoUnload\n"));
-
+	
+#if 1
 	UnInstallScrollHook();
 
 	//ExAllocatePool()
@@ -58,6 +59,7 @@ void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 	IoDeleteDevice (DriverObject->DeviceObject);
 
 	KdPrint(("Goodbye xxxxxx from FJDriverDemo, PID=%d\n", PsGetCurrentProcessId()));
+#endif 
 }
 
 NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
@@ -274,7 +276,12 @@ NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 //每个内核模块的入口函数，在加载该模块时被系统进程System调用一次
 NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  RegistryPath)
 {
-	unsigned i;
+	KdPrint(("Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
+
+	pDriverObject->DriverUnload = FJDriverDemoUnload;
+
+#if 1
+	
 	NTSTATUS status = STATUS_SUCCESS;
 	//FNT_VERIFY(SameDemo());
 #if DBG
@@ -309,14 +316,18 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 		IoDeleteDevice( deviceObject );
 		return status;
 	}
-	NT_ASSERT(pDriverObject->DeviceObject == NULL);
-	pDriverObject->DeviceObject = deviceObject;
+	NT_ASSERT(pDriverObject->DeviceObject == NULL || pDriverObject->DeviceObject == deviceObject);
+	if (pDriverObject->DeviceObject == NULL)
+	{
+		//WinXP
+		pDriverObject->DeviceObject = deviceObject;
+	}
 
 	//pDriverObject->DriverExtension->AddDevice = xxxx; //WDM驱动中创建设备对象并由Pnp管理器调用的回调函数
 
 	KdPrint(("New Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 
-	for (i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
+	for (unsigned int i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
 	{
 		pDriverObject->MajorFunction[i] = FJDriverDemoDefaultHandler;
 	}
@@ -330,7 +341,8 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	//DriverObject->DriverStartIo = NULL;
 	//DriverObject->DriverExtension->AddDevice = FJDriverDemoAddDevice;
 
-    KdPrint(("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
+#endif 
+	KdPrint(("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 
 	return status;
 }

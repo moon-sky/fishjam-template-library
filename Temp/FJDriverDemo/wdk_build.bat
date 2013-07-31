@@ -18,6 +18,8 @@ rem call %WDKPATH%\bin\setenv.bat %WDKPATH% %1 %2 %3 no_oacr
 call %WDKPATH%\bin\setenv.bat %WDKPATH% %1 %2 %3 
 popd
 
+ml64 /c AsmHelperFun.asm
+
 @echo on
 build
 

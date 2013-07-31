@@ -85,6 +85,11 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			>
 			<File
+				RelativePath=".\AsmHelperFun.asm"
+				DeploymentContent="true"
+				>
+			</File>
+			<File
 				RelativePath=".\FDriverHookAPI.cpp"
 				>
 			</File>
@@ -110,6 +115,10 @@
 			Name="Header files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			>
+			<File
+				RelativePath=".\FDriver64.h"
+				>
+			</File>
 			<File
 				RelativePath=".\FDriverAPI.h"
 				>
@@ -144,6 +153,10 @@
 			</File>
 			<File
 				RelativePath=".\FDriverIO.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FDriverKernel.h"
 				>
 			</File>
 			<File

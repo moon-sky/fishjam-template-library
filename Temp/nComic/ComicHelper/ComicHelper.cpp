@@ -3,23 +3,26 @@
 
 #include "stdafx.h"
 #include "ComicHelper.h"
-#include <atlbase.h>
 #include "detours.h"
+#include <atlbase.h>
+#include "ftlbase.h"
 
-#define API_VERIFY(x)	bRet = (x); if(!bRet){ ATLTRACE(TEXT("Error:%d, %s"), GetLastError(), TEXT(#x)); }
+//#define API_VERIFY(x)	bRet = (x); if(!bRet){ ATLTRACE(TEXT("Error:%d, %s"), GetLastError(), TEXT(#x)); }
 
 static LONG dwSlept = 0;
 static DWORD (WINAPI * TrueSleepEx)(DWORD dwMilliseconds, BOOL bAlertable) = SleepEx;
 
 #pragma data_seg("MyShare")
 HWND		g_hFilterWnd = NULL;
+DWORD		g_curProcessId = 0;
 COLORREF	g_clrDisabled = RGB(127, 127, 127);
 #pragma data_seg()
 #pragma comment(linker,"/SECTION:MyShare,RWS")
 
-HHOOK g_hHook = NULL;
-BOOL  g_Hooked = FALSE;
 HMODULE g_hModule = NULL;
+HHOOK g_hHook = NULL;
+BOOL  g_bHooked = FALSE;
+BOOL  g_bIsSelfProcess = FALSE;
 
 static BOOL (WINAPI* TrueBitBlt)(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop) = BitBlt;
 static HANDLE (WINAPI* TrueSetClipboardData)(UINT uFormat, HANDLE hMem) = SetClipboardData;
@@ -52,24 +55,31 @@ BOOL WINAPI FilterBitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int 
 				TCHAR szProcessName[MAX_PATH] = {0};
 				GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
 
-				ATLTRACE(TEXT("FilterBitBlt, PID=%d(%s), hWnd=%d, g_hFilterWnd=%d\n"),
+				FTLTRACE(TEXT("FilterBitBlt, PID=%d(%s), hWnd=%d, g_hFilterWnd=%d\n"),
 					GetCurrentProcessId(), PathFindFileName(szProcessName), hWnd, g_hFilterWnd);
 
-				RECT rcTarget = { x, y, cx, cy };
-				RECT rcFilter = {0};
-				GetWindowRect(g_hFilterWnd, &rcFilter);
-				ATLTRACE(TEXT("rcTarget=(%d,%d)-(%d,%d), %dx%d, rcFilter=(%d,%d)-(%d,%d), %dx%d"),
+				CRect rcTarget( x, y,  x + cx, y + cy);
+				CRect rcSource(x1, y1, x1 + cx, y1 + cy);
+				CRect rcFilter(0, 0, 0, 0);
+
+				API_VERIFY(GetWindowRect(g_hFilterWnd, &rcFilter));
+				FTLTRACE(TEXT("rcTarget=(%d,%d)-(%d,%d), %dx%d, rcSource=(%d,%d)-(%d,%d), rcFilter=(%d,%d)-(%d,%d), %dx%d"),
 					rcTarget.left, rcTarget.top, rcTarget.right, rcTarget.bottom, 
 					rcTarget.right - rcTarget.left, rcTarget.bottom - rcTarget.top,
+					rcSource.left, rcSource.top, rcSource.right, rcSource.bottom, 
 					rcFilter.left, rcFilter.top, rcFilter.right, rcFilter.bottom, 
 					rcFilter.right - rcFilter.left, rcFilter.bottom - rcFilter.top
 					);
 
-				IntersectRect(&rcFilter, &rcTarget, &rcFilter);
-				if (!::IsRectEmpty(&rcFilter))
+				rcSource.IntersectRect(&rcSource, &rcFilter);
+				rcSource.OffsetRect(x - x1, y - y1);
+				if (!rcSource.IsRectEmpty())
 				{
+					FTLTRACE(TEXT("Will FillColor newRcSource=(%d,%d)-(%d,%d), %dx%d"),
+						rcSource.left, rcSource.top, rcSource.right, rcSource.bottom, 
+						rcSource.right - rcSource.left, rcSource.bottom - rcSource.top);
 					::SetBkColor(hdc, g_clrDisabled);
-					::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rcFilter, NULL, 0, NULL);
+					::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rcSource, NULL, 0, NULL);
 				}
 			}
 		}
@@ -121,30 +131,31 @@ LRESULT CALLBACK My_CallWndProc(
 							 )
 {
 	CWPSTRUCT * pWPStruct = (CWPSTRUCT*)lParam;
-	if (!g_Hooked && pWPStruct)// && pWPStruct->message == UM_HELPER_HOOK)
+	if (!g_bHooked && !g_bIsSelfProcess && pWPStruct)// && pWPStruct->message == UM_HELPER_HOOK)
 	{
+		g_bIsSelfProcess = (g_curProcessId == GetCurrentProcessId());
+
         TCHAR szModuleName[MAX_PATH] = {0};
         GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
 		ATLTRACE(TEXT("Will Hook API in PID=%d(%s),TID=%d\n"), GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
 
 		BOOL bRet = FALSE;
-		g_Hooked = TRUE;
 		API_VERIFY(HookApi());
 	}
 	return CallNextHookEx(g_hHook, nCode, wParam, lParam);
 }
 
 
-COMICHELPER_API BOOL EnableWindowProtected(HWND hWndFilter, COLORREF clrDisabled)
+COMICHELPER_API BOOL EnableWindowProtected(DWORD curProcessId, HWND hWndFilter, COLORREF clrDisabled)
 {
 	ATLTRACE(TEXT("Enter EnableWindowProtected for hWndFilter=0x%x\n"), hWndFilter);
 	BOOL bRet = FALSE;
 	g_hFilterWnd = hWndFilter;
 	g_clrDisabled = clrDisabled;
+	g_curProcessId = curProcessId;
+
 	if (NULL == g_hHook)
 	{
-		ATLTRACE(TEXT("Enter EnableWindowProtected  for 0x%x\n"), hWndFilter);
-
 		//UM_HELPER_HOOK = RegisterWindowMessage(TEXT("UM_HELPER_HOOK"));
 		g_hHook = SetWindowsHookEx(WH_CALLWNDPROC, My_CallWndProc, g_hModule, 0);
 	}
@@ -170,33 +181,49 @@ COMICHELPER_API BOOL DisableWindowProtected(HWND hWnd)
 
 COMICHELPER_API BOOL HookApi()
 {
-	ATLTRACE(TEXT("Will HookApi in PID=%d, TID=%d\n"), GetCurrentProcessId(), GetCurrentThreadId());
 	BOOL bRet = FALSE;
+	if ( !g_bHooked)
+	{
+		g_bHooked = TRUE;
 
-	DetourRestoreAfterWith();
-	API_VERIFY(DetourTransactionBegin() == NO_ERROR);
-	API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
-	//API_VERIFY(DetourAttach(&(PVOID&)TrueSleepEx, TimedSleepEx) == NO_ERROR);
-	API_VERIFY(DetourAttach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
-	//API_VERIFY(DetourAttach(&(PVOID&)TrueCreateFileW, FilterCreateFileW) == NO_ERROR);
-	//API_VERIFY(DetourAttach(&(PVOID&)TrueCreateFileA, FilterCreateFileA) == NO_ERROR);
-	API_VERIFY(DetourAttach(&(PVOID&)TrueSetClipboardData, FilterSetClipboardData) == NO_ERROR);
-	API_VERIFY(DetourTransactionCommit() == NO_ERROR);
+		TCHAR szModuleName[MAX_PATH] = {0};
+		GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+		ATLTRACE(TEXT(">>> Will Hook API(g_bHooked=%d) in PID=%d(%s),TID=%d\n"), 
+			g_bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
 
+		DetourRestoreAfterWith();
+		API_VERIFY(DetourTransactionBegin() == NO_ERROR);
+		API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
+		//API_VERIFY(DetourAttach(&(PVOID&)TrueSleepEx, TimedSleepEx) == NO_ERROR);
+		API_VERIFY(DetourAttach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
+		//API_VERIFY(DetourAttach(&(PVOID&)TrueCreateFileW, FilterCreateFileW) == NO_ERROR);
+		//API_VERIFY(DetourAttach(&(PVOID&)TrueCreateFileA, FilterCreateFileA) == NO_ERROR);
+		API_VERIFY(DetourAttach(&(PVOID&)TrueSetClipboardData, FilterSetClipboardData) == NO_ERROR);
+		API_VERIFY(DetourTransactionCommit() == NO_ERROR);
+	}
 	return bRet;
 }
 COMICHELPER_API BOOL UnHookApi()
 {
-	ATLTRACE(TEXT("Will UnHookApi in PID=%d, TID=%d\n"), GetCurrentProcessId(), GetCurrentThreadId());
-
 	BOOL bRet = FALSE;
-	API_VERIFY(DetourTransactionBegin()== NO_ERROR);
-	API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
-	API_VERIFY(DetourDetach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
-	//API_VERIFY(DetourDetach(&(PVOID&)TrueCreateFileW, FilterCreateFileW) == NO_ERROR);
-	//API_VERIFY(DetourDetach(&(PVOID&)TrueCreateFileA, FilterCreateFileA) == NO_ERROR);
-	API_VERIFY(DetourDetach(&(PVOID&)TrueSetClipboardData, FilterSetClipboardData) == NO_ERROR);
-	API_VERIFY(DetourTransactionCommit() == NO_ERROR);
+
+	TCHAR szModuleName[MAX_PATH] = {0};
+	GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+	ATLTRACE(TEXT("<<< Will UnHook API(g_bHooked=%d) in PID=%d(%s),TID=%d\n"), 
+		g_bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
+
+	if (g_bHooked)
+	{
+		g_bHooked = FALSE;
+
+		API_VERIFY(DetourTransactionBegin()== NO_ERROR);
+		API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
+		API_VERIFY(DetourDetach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
+		//API_VERIFY(DetourDetach(&(PVOID&)TrueCreateFileW, FilterCreateFileW) == NO_ERROR);
+		//API_VERIFY(DetourDetach(&(PVOID&)TrueCreateFileA, FilterCreateFileA) == NO_ERROR);
+		API_VERIFY(DetourDetach(&(PVOID&)TrueSetClipboardData, FilterSetClipboardData) == NO_ERROR);
+		API_VERIFY(DetourTransactionCommit() == NO_ERROR);
+	}
 
 	return bRet;
 }

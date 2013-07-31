@@ -15,7 +15,8 @@ STDMETHODIMP CComicServiceObj::ProtectWnd(OLE_HANDLE hWnd, OLE_COLOR clrBackgrou
 	WTSSendMessage(WTS_CURRENT_SERVER_HANDLE , WTSGetActiveConsoleSessionId(), TEXT("ProtectWnd"),
 		10 * sizeof(TCHAR), TEXT("Cap"), 3 * sizeof(TCHAR), MB_OK, 5, &dwResult, TRUE);
 
-	EnableWindowProtected((HWND)hWnd, clrBackground);
+#pragma TODO(Need Change PID)
+	EnableWindowProtected(0, (HWND)hWnd, clrBackground);
 	FTLTRACE(TEXT("CComicServiceObj::ProtectWnd, hWnd=0x%x\n"), hWnd);
 	return S_OK;
 }

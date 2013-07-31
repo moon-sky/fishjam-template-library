@@ -82,6 +82,9 @@
 * 如果在一个worker线程中调用GetMessage，该线程就会产生消息队列，纵然它并没有窗口，
 *   这时就可以调用PostThreadMessage给该worker线程发送消息。
 *
+* 非GUI线程(non-GUI)--线程创建时都是非GUI线程
+* GUI线程 -- 拥有 更大的堆栈、Win32k.sys会在创建和结束时收到通知？进程被转换成GUI进程
+* 
 * TLS -- 线程局部存储
 *   C runtime library把errno和strtok指针放在TLS中
 *   MFC通过TLS来追踪每一个线程所使用的GDI对象和USER对象

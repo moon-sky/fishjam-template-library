@@ -17,10 +17,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			InheritedPropertySheets="..\using_wtl.vsprops;..\using_ftl.vsprops;..\set_solution_config.vsprops"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
@@ -103,10 +103,10 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			InheritedPropertySheets="..\using_wtl.vsprops;..\using_ftl.vsprops;..\set_solution_config.vsprops"
 			ATLMinimizesCRunTimeLibraryUsage="true"
 			CharacterSet="1"
 			>
@@ -137,7 +137,6 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;NDEBUG"
-				ExceptionHandling="0"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"

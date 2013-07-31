@@ -108,7 +108,24 @@
 *     2.陷阱式
 *   
 * 已有的库
-*   1.Detours：http://research.microsoft.com/en-us/projects/detours
+*   1.EasyHook：http://easyhook.codeplex.com/
+*               https://code.google.com/p/easyhook-continuing-detours
+*       使用的例子:http://blog.csdn.net/baggiowangyu/article/details/7675098
+*     支持驱动中Hook，支持X64注入，且完全免费，License为GPL
+*     提供了两种模式的注入管理：托管代码 和 非托管代码，通过Inline Hook 方式实现
+*     示例:
+*       TRACED_HOOK_HANDLE hHookCreateFileW = { NULL };  
+*       ULONG HookCreateFileW_ACLEntries[1] = {0}; 
+*       LhInstallHook(OriginalCreateFileW, MyCreateFileW, NULL, &hHookCreateFileW);
+*       LhSetExclusiveACL(HookCreateFileW_ACLEntries, 1, hHookCreateFileW);  
+*       调用函数
+*       LhUninstallAllHooks();
+*       LhUninstallHook(&hHookCreateFileW);  
+*       delete hHookCreateFileW;  
+*       LhWaitForPendingRemovals(); //等待内存释放
+* 
+* 
+*   2.Detours：http://research.microsoft.com/en-us/projects/detours
 *     微软的开源研究库，免费版本不能用于商业，商业版本大约6000RMB。支持x64和IA64等64位平台
 *     编译：nmake，TODO: Debug/Release？ 可能需要更改 samples\common.mak 文件，去掉其中的 /nologo 
 *     原理：在汇编层改变目标API出口和入口的一些汇编指令
@@ -149,7 +166,8 @@
 *       WithDll.exe -- 在注入指定DLL的情况下创建并运行指定进程(纯内存操作，可执行文件不受影响)
 *     TODO:
 *       是否需要调用 DisableThreadLibraryCalls ?
-*   2.Deviare(不支持C/C++?  http://www.nektra.com/products/deviare-api-hook-windows/)
+*   3.Deviare(不支持C/C++?  http://www.nektra.com/products/deviare-api-hook-windows/)
+*   4.MinHook
 * 
 * TODO(FUAPIHook.h 中已有) -- http://wenku.baidu.com/view/5ae307f04693daef5ef73d48.html
 *   Win64的：http://blog.csdn.net/zzw315/article/details/4102488
