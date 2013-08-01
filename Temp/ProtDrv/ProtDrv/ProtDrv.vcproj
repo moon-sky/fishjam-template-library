@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="gb2312"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="ProtDrv"
+	ProjectGUID="{7247C405-A700-4806-9DCB-24345212FCC0}"
+	RootNamespace="ProtDrv"
+	Keyword="MakeFileProj"
+	TargetFrameworkVersion="196613"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+		<Platform
+			Name="x64"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="chk_win7|Win32"
+			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_x86"
+			IntermediateDirectory="obj$(ConfigurationName)_x86"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat chk x86 WIN7"
+				ReBuildCommandLine="wdk_clean.bat chk x86 WIN7 &amp;&amp; wdk_build.bat chk x86 WIN7"
+				CleanCommandLine="wdk_clean.bat chk x86 WIN7"
+				Output=""
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="chk_win7|x64"
+			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_amd64"
+			IntermediateDirectory="obj$(ConfigurationName)_amd64"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat chk x64 WIN7"
+				ReBuildCommandLine="wdk_clean.bat chk x64 WIN7 &amp;&amp; wdk_build.bat chk x64 WIN7"
+				CleanCommandLine="wdk_clean.bat chk x64 WIN7"
+				Output=""
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="fre_win7|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat"
+				ReBuildCommandLine="wdk_clean.bat &amp;&amp; wdk_build.bat"
+				CleanCommandLine="wdk_clean.bat"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="fre_win7|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat"
+				ReBuildCommandLine="wdk_clean.bat &amp;&amp; wdk_build.bat"
+				CleanCommandLine="wdk_clean.bat"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath=".\KernelHookAPI.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ProtDrv.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+			<File
+				RelativePath=".\KernelHookAPI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\stdafx.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+		</Filter>
+		<Filter
+			Name="Build"
+			>
+			<File
+				RelativePath=".\wdk_build.bat"
+				>
+			</File>
+			<File
+				RelativePath=".\wdk_clean.bat"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\ProtDrv.inf"
+			>
+		</File>
+		<File
+			RelativePath=".\sources"
+			>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

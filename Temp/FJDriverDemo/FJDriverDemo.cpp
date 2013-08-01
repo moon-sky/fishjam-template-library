@@ -55,7 +55,9 @@ void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 	//UnInstallScrollHook();
 
 	RtlInitUnicodeString (&Win32NameString , FDRIVER_DEMO_DOS_DEVICE_NAME);	
-	FNT_VERIFY(IoDeleteSymbolicLink (&Win32NameString));	
+	FNT_VERIFY(IoDeleteSymbolicLink (&Win32NameString));
+	NT_ASSERT(NULL != DriverObject->DeviceObject);
+
 	IoDeleteDevice (DriverObject->DeviceObject);
 
 	KdPrint(("Goodbye xxxxxx from FJDriverDemo, PID=%d\n", PsGetCurrentProcessId()));
@@ -292,6 +294,15 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	UNICODE_STRING ntName;
 	UNICODE_STRING win32Name;
 
+	UNICODE_STRING					SymbolName;
+	PVOID pAddress = NULL;
+	RtlInitUnicodeString(&SymbolName, L"KeCancelTimer");
+
+	pAddress = MmGetSystemRoutineAddress(&SymbolName);
+
+	KdPrint(("%wZ pAddress=0x%p\n"), &SymbolName, pAddress);
+
+
 	RtlInitUnicodeString(&ntName, FDRIVER_DEMO_NT_DEVICE_NAME);
 	FNT_VERIFY(IoCreateDevice(pDriverObject, 
 		0, 
@@ -316,12 +327,14 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 		IoDeleteDevice( deviceObject );
 		return status;
 	}
+
 	NT_ASSERT(pDriverObject->DeviceObject == NULL || pDriverObject->DeviceObject == deviceObject);
-	if (pDriverObject->DeviceObject == NULL)
-	{
-		//WinXP
-		pDriverObject->DeviceObject = deviceObject;
-	}
+	//if (pDriverObject->DeviceObject == NULL)
+	//{
+	//  是否需要设置过去？没有看到哪个驱动程序的代码中设置过，系统会自动设置过去？Unload中直接 Delete 的
+	//	//WinXP
+	//	pDriverObject->DeviceObject = deviceObject;
+	//}
 
 	//pDriverObject->DriverExtension->AddDevice = xxxx; //WDM驱动中创建设备对象并由Pnp管理器调用的回调函数
 

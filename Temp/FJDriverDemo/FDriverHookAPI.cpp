@@ -351,7 +351,7 @@ SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 #endif 
 }
 
-#if 1
+#if defined(_M_IX86)
 // It is not part of a fairly clean.
 // MDL to approach needs to be changed.
 VOID  ClearWriteProtect(VOID)
@@ -378,7 +378,7 @@ VOID  SetWriteProtect(VOID)
 		pop   eax;
 	}
 }
-#else
+#else //_M_AMD64, _M_IA64
   extern "C" void __stdcall ClearWriteProtect();
   extern "C" void __stdcall SetWriteProtect();
 #endif //

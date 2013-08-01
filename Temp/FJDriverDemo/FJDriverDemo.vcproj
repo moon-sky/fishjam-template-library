@@ -85,8 +85,12 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			>
 			<File
-				RelativePath=".\AsmHelperFun.asm"
+				RelativePath=".\AsmHelperFun_x64.asm"
 				DeploymentContent="true"
+				>
+			</File>
+			<File
+				RelativePath=".\AsmHelperFun_x86.asm"
 				>
 			</File>
 			<File

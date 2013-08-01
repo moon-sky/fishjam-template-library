@@ -90,8 +90,8 @@ namespace FTL
 	*           bp my.cpp:122 100
 	*        条件断点: 命令行中通过 j(@@ 条件) 来判断并处理
     *   dds 地址 -- 可显示指定位置的函数名?
-    *   d{a|b|c|d|D|f|p|q|u|w|W} 地址 [l长度] -- 观察内存数据
-    *     a(ASCII),b(Byte and ASCII),dd(DWORD),f(float),p(Pointer),u(Unicode),w(Word),W(Word and ASCII) 
+    *   d{a|b|c|d|D|f|p|q|u|w|W} 地址 [l长度] -- 观察指定地址的内存数据
+    *     a(ASCII),b(Byte and ASCII),dd(DWORD),f(float),p(Pointer),q(Quad-word), u(Unicode),w(Word),W(Word and ASCII) 
     *     dg -- 显示段选择子
     *     dt Xxxx -- 按照类型(如 结构体？)显示变量内容，如 dt _EPROCESS
     *     dv -- 显示函数参数和局部变量的信息(Ctrl+Alt+V 切换到更详细的显示模式)，注意：优化过的代码显示可能不准确。
@@ -226,7 +226,7 @@ namespace FTL
     *   $retreg -- 首要的函数返回值寄存器。x86 架构使用的是EAX，x64 是RAX，安腾是ret0
     *   $retreg64 -- 64 位格式的首要函数返回值寄存器，x86 中是edx:eax 寄存器对
     *   $teb -- 当前线程的线程环境块(TEB)的地址
-    *   $thread -- 当前线程的ETHREAD 结构的地址
+    *   $thread -- 当前线程的 _ETHREAD 结构的地址, 如 ?? @$thread
     *   $tid -- 当前线程的线程ID
     *   $tpid -- 拥有当前线程的进程的进程ID(PID)
     * 

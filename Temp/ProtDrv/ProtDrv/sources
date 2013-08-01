@@ -1,0 +1,36 @@
+# comment line
+
+!IF "$(_BUILDARCH)" == "x86"
+TARGETNAME=ProtDrv32
+!ELSEIF "$(_BUILDARCH)" == "AMD64"
+TARGETNAME=ProtDrv64
+!ELSEIF "$(_BUILDARCH)" == "IA64"
+TARGETNAME=ProtDrvIa64
+!ENDIF
+
+
+TARGETTYPE=DRIVER
+
+# TARGETLIBS=AsmHelperFun.obj
+# AMD64_SOURCES=AsmHelperFun.asm
+# TARGETLIBS=$(TARGETLIBS) $(SDK_LIB_PATH)\Win32k.lib
+# DRIVERTYPE=WDM
+
+INCLUDES=$(WDKPATH)\inc;\
+    $(WDKPATH)\inc\ddk;\
+
+LIBS=Win32k.lib
+
+
+# I386_SOURCES=$(SOURCES)
+# AMD64_SOURCES=$(SOURCES)
+# AMD64_SOURCES=ASM\AsmHelperFun_x86.asm
+# I386_SOURCES=ASM\AsmHelperFun_x64.asm
+
+SOURCES=ProtDrv.cpp \
+	KernelHookAPI.cpp
+
+
+
+
+

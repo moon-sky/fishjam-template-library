@@ -1,0 +1,113 @@
+[Version]
+signature = "$Windows NT$"
+Provider = "NHN"
+DriverVer = 8/1/2013,1,05,02,0038
+
+
+[SourceDisksNames]
+1 = "Protect Driver Installation disk"
+
+
+[SourceDisksFiles.x86]
+ProtDrv32.sys = 1,objchk_win7_x86\i386
+ProtDrv.inf = 1
+
+
+[SourceDisksFiles.ia64]
+ProtDrvIa64.sys = 1,objchk_win7_ia64\ia64
+ProtDrv.inf = 1
+
+
+[SourceDisksFiles.amd64]
+ProtDrvIa64.sys = 1,objchk_win7_amd64\amd64
+ProtDrv.inf = 1
+
+[DestinationDirs]
+; ProtDrvExeFiles = 11
+ProtDrvExe32Files = 16425
+ProtDrvSysFiles = 12
+ProtDrvInfFiles = 17
+ 
+
+[DefaultInstall.ntx86]
+CopyFiles = ProtDrvSysFiles, ProtDrvInfFiles
+AddReg = ProtDrvAddReg
+DelReg = ProtDrvDelOldReg
+
+
+[DefaultUninstall.ntx86]
+DelFiles = ProtDrvSysFiles, ProtDrvInfFiles
+DelReg = ProtDrvDelReg
+
+
+[DefaultInstall.ntamd64]
+CopyFiles = ProtDrvSysFiles, ProtDrvInfFiles
+AddReg = ProtDrvAddReg
+DelReg = ProtDrvDelOldReg
+
+
+[DefaultUninstall.ntamd64]
+DelFiles = ProtDrvSysFiles, ProtDrvInfFiles
+DelReg = ProtDrvDelReg
+
+
+[DefaultInstall.ntia64]
+CopyFiles = ProtDrvSysFiles, ProtDrvInfFiles
+AddReg = ProtDrvAddReg
+DelReg = ProtDrvDelOldReg
+
+
+[DefaultUninstall.ntia64]
+DelFiles = ProtDrvSysFiles, ProtDrvInfFiles
+DelReg = ProtDrvDelReg
+
+
+[DefaultInstall.ntx86.Services]
+AddService = ProtDrv, , ProtSvr
+
+[DefaultUninstall.ntx86.Services]
+DelService = ProtDrv
+
+
+[DefaultInstall.ntamd64.Services]
+AddService = ProtDrv, , ProtSvr
+
+
+[DefaultUninstall.ntamd64.Services]
+DelService = ProtDrv
+
+
+[DefaultInstall.ntia64.Services]
+AddService = ProtDrv, , ProtSvr
+
+
+[DefaultUninstall.ntia64.Services]
+DelService = ProtDrv
+
+
+
+[ProtDrvSysFiles]
+ProtDrv.sys
+
+
+[ProtDrvInfFiles]
+ProtDrv.inf
+
+
+[ProtDrvAddReg]
+HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProtDrv", "DisplayName", 0, "ProtDrv Virtual Disk Driver"
+HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProtDrv", "UninstallString", 0, "rundll32.exe setupapi.dll,InstallHinfSection DefaultUninstall 132 %17%\ProtDrv.inf"
+HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProtDrv", "EstimatedSize", 65537, 320
+HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProtDrv", "Size", 0, ""
+
+
+[ProtDrvDelReg]
+HKLM, "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ProtDrv"
+
+[ProtSvr]
+DisplayName = "NHN Protect Service"
+Description = "NHN Comic Protect Service"
+ServiceType = 1
+StartType = 2
+ErrorControl = 0
+ServiceBinary = %12%\ProtDrv.sys

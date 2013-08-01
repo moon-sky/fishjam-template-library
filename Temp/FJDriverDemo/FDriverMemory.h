@@ -36,5 +36,12 @@
 #define LOCKEDDATA  data_seg()
 #define INITDATA    data_seg("INIT")
 
+//这是类似的功能？
+#if 0
+//#ifdef ALLOC_PRAGMA
+//#  pragma alloc_text(INIT, DriverEntry)
+//#  pragma alloc_text(PAGE, TestDriverDispatchCreate)
+//#endif
+#endif 
 
 #endif //F_DRIVER_MEMORY_H

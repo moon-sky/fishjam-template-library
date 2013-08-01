@@ -26,9 +26,11 @@
 *   HKLM\SYSTEM\CurrentControlSet\Control\Class -- 类子健，每个设备都会从属于一个设备类(可是系统预定的，也可是自定义的)
 *   HKLM\SYSTEM\CurrentControlSet\services -- 服务子健，兼容以前的NT式驱动程序
 *
-* 目录代码(用于 DestinationDirs 等地方？)
-*   10 -- C:\Windows
-*   11 -- C:\Windows\System
+* 目录代码(用于 DestinationDirs 等地方, 具体参见 Using Dirids )
+*   10 -- %SystemRoot%, 如 C:\Windows
+*   11 -- %SystemRoot%\system32 , 如 C:\Windows\System32
+*   12 -- %SystemRoot%\system32\drivers, 驱动目录
+*   17 -- INF file directory
 *   30 -- C盘根目录
 *   31 -- Windows系统所在盘的根目录
 * 

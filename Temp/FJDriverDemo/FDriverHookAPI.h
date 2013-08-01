@@ -2,8 +2,15 @@
 #define F_DRIVER_HOOK_API_H
 #pragma once
 
+//[原创开源]在WIN7 X64上Hook Shadow SSDT  --  http://www.m5home.com/bbs/thread-6963-1-1.html
+
+
 //#include "WindowsTypes.h"
-//可能使用了DX的Capture -- http://www.wisdom-soft.com/products/screenhunter.htm
+
+//注意：2个driver先后hook ssdt并且如果先后unload通常是灾难之源 -- 如果发现地址不在原来的位置(win32k.sys?)的话，不进行hook？
+
+// nt!_KTHREAD -- X64下有这个全局变量(什么东西？线程? )，里面可以找到ServiceTable ？
+
 
 //Tommy 的专栏 -- http://blog.csdn.net/whf727/article/details/4986575
 //KeServiceDescriptorTable 结构及修改内存保护写的方法 --   http://www.3600safe.com/?post=94
@@ -18,11 +25,14 @@
 
 //问题：给出来的表示错误的
 //  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
+//     查看SSDT函数的方法(Win7 x64测试似乎可以) -- ln (dwo(nt!KiServiceTable + 4*index)>>4) + nt!KiServiceTable
+//     查看Shadow SSDT的方法(Win7 x64测试不对) -- ln win32k!W32pServiceTable+((poi(win32k!W32pServiceTable+4*index)&0x00000000`ffffffff)>>4)-10000000
 //  获取函数地址的公式是：dwo(nt!KiServiceTable+n)+nt!KiServiceTable（n=0,1,2…）。
 //  http://bbs.dbgtech.net/forum.php?mod=viewthread&tid=360
 
 //Windows WIN32K.SYS System Call Table (NT/2000/XP/2003/Vista/2008/7)
 //  http://j00ru.vexillium.org/win32k_syscalls/
+//  http://j00ru.vexillium.org/win32k_x64/
 
 
 //Win7 64位对于未有认证签名的驱动程序进行了限制安装 -- 启动时F8后可以选择“禁用驱动程序签名强制”或通过bcdedit更改
@@ -41,13 +51,16 @@
 /******************************************************************************************************************
 * PatchGuard -- 64位系统中的内核补丁保护程序, 有应用或驱动尝试修改核心组件，就会产生 CRITICAL_STRUCTURE_CORRUPTION(0x109)蓝屏错误
 *   保护下列组件
-*     系统模块 (NTOS、NDIS、HAL)
+*     系统模块 (ntoskrnl.exe、ndis.sys、hal.dll)
 *     系统服务分派表 (SSDT, System Service Dispatch Table -- KeServiceDescriptorTable)
-*     全局描述符表 (DGT -- Global Descriptor Table)
+*     全局描述符表 (GDT -- Global Descriptor Table)
 *     中断描述符表 (IDT -- Interrupt Descriptor Table)
+*     Processor MSRs (syscall)
 *     使用不是由内核分配的内核堆栈(Using kernel stacks that are not allocated by the kernel)
 *     修补内核的任何部分	 -- Patching any part of the kernel (detected only on AMD64-based systems) 
-*  TODO：不检查 inline hook 和 Shadow SSDT ?
+*     TODO：不检查 inline hook 和 Shadow SSDT ?
+* 
+*  禁用PatchGuard -- 进行双机调试且在被调试机启动时就挂载上内核调试器，PatchGuard就不会被启用。
 *
 *   PatchGuard可能是所有操作系统中第一个验证内核镜像、内存及 MSR并检查系统是否受到损害的组件。
 *     为防止第三方内核模块禁用内核补丁保护，其初始化和操作模式已高度模糊化并随机化，试图分析 PatchGuard将是徒劳无功的。
@@ -203,12 +216,13 @@ extern "C" {
 #define SSDT_API_CALL_ENTER(x) (InterlockedIncrement(&x))
 #define SSDT_API_CALL_LEAVE(x) (InterlockedDecrement(&x))
 
-//SSDT表结构
+//SSDT表结构 -- 32/64 通用， func = (PBYTE)Base+Base[index];
 typedef struct _SYSTEM_SERVICE_TABLE { 
 	// PNTPROC ServiceTable;
 	PVOID *ServiceTable;					//SSDT在内存中的基地址(数组，其每一个的元素就是各个Rin0的函数)
 	PULONG CounterTable;					// array of usage counters, 包含着 SSDT 中每个服务被调用次数计数器的数组。这个计数器一般由sysenter 更新
-	ULONG NumberOfServices;				    //SSDT项的个数
+	//ULONG NumberOfServices;				    //SSDT项的个数
+	SIZE_T NumberOfServices;				    //SSDT项的个数
 	PBYTE ArgumentsTable;					//TODO:实际上是参数个数(ParamTableBase)? 包含每个系统服务参数字节数表的基地址-系统服务参数表
 } SYSTEM_SERVICE_TABLE, *PSYSTEM_SERVICE_TABLE;
 

@@ -90,7 +90,7 @@
 *  BUILD_ALT_DIR(目录)		|     chk_wxp_x86      |     fre_win7_AMD64   |       chk_win7_IA64     |
 *  BUILD_DEFAULT_TARGETS	|         -386         |         -amd64       |          -ia64          |
 *       DDK_LIB_DEST        |   %WDKPATH%\lib\wxp  |   %WDKPATH%\lib\win7 |     %WDKPATH%\lib\win7  |
-*       SDK_LIB_PATH        |
+*       SDK_LIB_PATH        |                      |                      |                         |
 *  DDKBUILDENV/_BuildType	|          chk         |           fre        |           chk           |
 *       DDK_TARGET_OS       |         WinXP        |          Win7        |           Win7          |
 *       _BUILDARCH          |          x86         |        AMD64         |           IA64          |
@@ -99,7 +99,9 @@
 *                           |    _IA32bit=true     |      _AMD64bit=true  |                         |
 *------------------------------------------  代码中可用的宏  ----------------------------------------
 *          DBG              |           1          |           0          |            1            |
-*
+*       平台编译宏          |        _M_IX86       |         _M_AMD64     |          _M_IA64        |
+*----------------------------------------------------------------------------------------------------
+* 
 *
 * 注意：以下文件中，以 井号(#) 开始的是注释
 *   makefile -- 里面一般只有一行 "!INCLUDE $(NTMAKEENV)\makefile.def"
