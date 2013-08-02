@@ -149,6 +149,26 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Asm"
+			>
+			<File
+				RelativePath=".\ASM\AsmHelperFun.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ASM\AsmHelperFun_x64.asm"
+				>
+			</File>
+			<File
+				RelativePath=".\ASM\AsmHelperFun_x86.asm"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\makefile"
+			>
+		</File>
 		<File
 			RelativePath=".\ProtDrv.inf"
 			>

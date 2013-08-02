@@ -8,8 +8,12 @@ TARGETNAME=ProtDrv64
 TARGETNAME=ProtDrvIa64
 !ENDIF
 
+# If $FREEBUILD
+
+# $(OBJ_PATH)\$(O)\
 
 TARGETTYPE=DRIVER
+# TARGETPATH=obj
 
 # TARGETLIBS=AsmHelperFun.obj
 # AMD64_SOURCES=AsmHelperFun.asm
@@ -21,10 +25,13 @@ INCLUDES=$(WDKPATH)\inc;\
 
 LIBS=Win32k.lib
 
+# NTTARGETFILE0=ASM\AsmHelperFun_x64.obj
 
 # I386_SOURCES=$(SOURCES)
 # AMD64_SOURCES=$(SOURCES)
-# AMD64_SOURCES=ASM\AsmHelperFun_x86.asm
+
+TARGETLIBS=ASM\AsmHelperFun_x64.obj
+
 # I386_SOURCES=ASM\AsmHelperFun_x64.asm
 
 SOURCES=ProtDrv.cpp \

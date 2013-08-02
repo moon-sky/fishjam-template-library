@@ -1,4 +1,13 @@
 #include "stdafx.h"
+#include "ASM/AsmHelperFun.h"
+#include "KernelHookAPI.h"
+
+//PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
+
+//读取MSR，然后特征码匹配的方法
+
+//http://blog.chinaunix.net/uid-27471192-id-3314623.html
+
 
 NTSTATUS SimpleDriverDispatchDefault(
 								  IN PDEVICE_OBJECT InDeviceObject,
@@ -23,7 +32,6 @@ VOID SimpleDriverUnload(IN PDRIVER_OBJECT pDriverObject)
 }
 
 
-
 extern "C" NTSTATUS DriverEntry(
 					 IN PDRIVER_OBJECT		pDriverObject,
 					 IN PUNICODE_STRING		pRegistryPath)
@@ -31,10 +39,16 @@ extern "C" NTSTATUS DriverEntry(
 	KdPrint(("Simple DriverEntry, pDriverObject=0x%p, pRegistryPath=%wZ\n", pDriverObject, pRegistryPath));
 
 	UNICODE_STRING			SymbolName;
-	RtlInitUnicodeString(&SymbolName, L"NtCreateProcessEx");
+	RtlInitUnicodeString(&SymbolName, L"KiSystemCall64");
 	PVOID pAddress = MmGetSystemRoutineAddress(&SymbolName);
+	KdPrint(("Address of %wZ is 0x%p, \n" , &SymbolName, pAddress));
 
-	KdPrint(("Address of %wZ is 0x%p\n" , &SymbolName, pAddress));
+	pAddress = GetKiSystemCall64Address();
+	KdPrint(("GetKiSystemCall64Address is 0x%p\n" , pAddress));
+
+
+	pAddress = (PVOID)GetKeServiceDescriptorTableShadow64();
+	KdPrint(("GetKeServiceDescriptorTableShadow64=0x%p\n", pAddress));
 
 	NTSTATUS						status;    
 	PDEVICE_OBJECT					DeviceObject = NULL;
