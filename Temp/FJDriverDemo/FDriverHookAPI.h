@@ -4,6 +4,16 @@
 
 //[原创开源]在WIN7 X64上Hook Shadow SSDT  --  http://www.m5home.com/bbs/thread-6963-1-1.html
 
+/******************************************************************************************************************
+系统中的变量
+
+KeAddSystemServiceTable
+
+KiServiceTable ?  == KeServiceDescriptorTable->ServiceTableBase;
+KeServiceDescriptorTable
+KeServiceDescriptorTableShadow
+
+******************************************************************************************************************/
 
 //#include "WindowsTypes.h"
 
@@ -25,8 +35,8 @@
 
 //问题：给出来的表示错误的
 //  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
-//     查看SSDT函数的方法(Win7 x64测试似乎可以) -- ln (dwo(nt!KiServiceTable + 4*index)>>4) + nt!KiServiceTable
-//     查看Shadow SSDT的方法(Win7 x64测试不对) -- ln win32k!W32pServiceTable+((poi(win32k!W32pServiceTable+4*index)&0x00000000`ffffffff)>>4)-10000000
+//     查看SSDT函数的方法(Win7 x64测试 OK) -- ln (dwo(nt!KiServiceTable + 4*index)>>4) + nt!KiServiceTable
+//     查看Shadow SSDT的方法(Win7 x64测试NG -- 没有win32k!W32pServiceTable) -- ln win32k!W32pServiceTable+((poi(win32k!W32pServiceTable+4*index)&0x00000000`ffffffff)>>4)-10000000
 //  获取函数地址的公式是：dwo(nt!KiServiceTable+n)+nt!KiServiceTable（n=0,1,2…）。
 //  http://bbs.dbgtech.net/forum.php?mod=viewthread&tid=360
 
@@ -177,6 +187,7 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 *     当驱动加载的时候，系统进程启动新的线程，调用对象管理器，创建一个驱动对象(DRIVER_OBJECT)，然后调用其 DriverEntry 
 ******************************************************************************************************************/
 
+//http://drmemory.googlecode.com/svn/trunk/drmemory/syscall_usercallx.h
 /******************************************************************************************************************
 *             Ring3(kernel32)                    |   Native API(ntdll!)     |       Ring0(nt!)          |
 * ------------------------------------------- SSDT (WinXP 284) -----------------------------------------|

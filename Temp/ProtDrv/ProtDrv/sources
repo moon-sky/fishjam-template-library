@@ -35,7 +35,7 @@ TARGETLIBS=ASM\AsmHelperFun_x64.obj
 # I386_SOURCES=ASM\AsmHelperFun_x64.asm
 
 SOURCES=ProtDrv.cpp \
-	KernelHookAPI.cpp
+	KernelHookAPI.c
 
 
 

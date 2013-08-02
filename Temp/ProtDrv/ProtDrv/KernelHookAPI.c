@@ -5,13 +5,17 @@
 
 ULONGLONG GetKeServiceDescriptorTableShadow64()
 {
-#if 0
+#if 1
 	PUCHAR StartSearchAddress = (PUCHAR)__readmsr(0xC0000082);
 	PUCHAR EndSearchAddress = StartSearchAddress + 0x500;
 	PUCHAR i = NULL;
 	UCHAR b1=0,b2=0,b3=0;
 	ULONG templong=0;
 	ULONGLONG addr=0;
+#if DBG
+	SetSoftBreakPoint();
+#endif 
+
 	for(i=StartSearchAddress;i<EndSearchAddress;i++)
 	{
 		if( MmIsAddressValid(i) && MmIsAddressValid(i+1) && MmIsAddressValid(i+2) )
@@ -29,6 +33,21 @@ ULONGLONG GetKeServiceDescriptorTableShadow64()
 	}
 #endif 
 	return 0;
+}
+
+ULONGLONG GetSSSDTFuncCurAddr64(ULONGLONG pShadowSSDT,  ULONG64 Index)
+{
+	ULONGLONG				W32pServiceTable=0, qwTemp=0;
+	LONG 					dwTemp=0;
+	PSYSTEM_SERVICE_TABLE	pWin32k;
+	pWin32k = (PSYSTEM_SERVICE_TABLE)((ULONG64)pShadowSSDT + sizeof(SYSTEM_SERVICE_TABLE));
+	W32pServiceTable=(ULONGLONG)(pWin32k->ServiceTableBase);
+	//ul64W32pServiceTable = W32pServiceTable;
+	qwTemp = W32pServiceTable + 4 * (Index-0x1000);	//这里是获得偏移地址的位置，要HOOK的话修改这里即可
+	dwTemp = *(PLONG)qwTemp;
+	dwTemp = dwTemp >> 4;
+	qwTemp = W32pServiceTable + (LONG64)dwTemp;
+	return qwTemp;
 }
 
 
@@ -76,7 +95,7 @@ PVOID GetKeServiceDescriptorTable64()
 	return pRet;
 #endif 
 
-#if 1
+#if 0
 	char KiSystemServiceStart_pattern[14] = "\x8B\xF8\xC1\xEF\x07\x83\xE7\x20\x25\xFF\x0F\x00\x00";
 
 	ULONGLONG CodeScanStart = (ULONGLONG)&_strnicmp;

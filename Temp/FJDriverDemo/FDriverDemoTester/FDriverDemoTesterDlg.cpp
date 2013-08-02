@@ -235,4 +235,5 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
 
             pWndDraw->ReleaseDC(pDC);
         }
-    }}
+    }
+}

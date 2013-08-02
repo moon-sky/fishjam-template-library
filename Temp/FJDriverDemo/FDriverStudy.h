@@ -51,12 +51,12 @@
 * IRP -- I/O Request Package，输入输出请求包，驱动程序的运行，依靠IRP驱动。通过主功能号(Major)和次功能号标识一个IRP的功能。
 * ISR -- 中断服务程序
 * KMDF (Kernel Mode Driver Framework): A framework for developing kernel mode drivers. 
-* MDL -- 内存描述符链
+* MDL -- Memory Descriptor List(内存描述符链)
 * NDIS -- Network Driver Interface Specification
 * PDO -- Physical Device Object，物理设备对象，通常是设备栈最下面的那个设备对象？
 * UMDF (User Mode Driver Framework): A framework for developing user mode drivers. 
 * VPB -- Volume parameter block
-* WDF  -- Wi传输ndows Driver Foundation
+* WDF  -- Windows Driver Foundation
 * WDM -- Windows Driver Model
 * WDK -- Windows Driver Kit，Vista后的开发包，兼容WinXP
 * WDTF -- Windows Device Testing Framework

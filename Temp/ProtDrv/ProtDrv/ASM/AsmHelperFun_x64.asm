@@ -3,7 +3,7 @@
 
 GetKiSystemCall64Address proc
 	xor rax, rax
-	mov ecx, 0C000082h
+	mov ecx, 0C0000082h
 	rdmsr			; read MSR(model specific register)
 	shl rdx, 20h
 	or rax, rdx

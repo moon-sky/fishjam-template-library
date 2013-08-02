@@ -7,7 +7,7 @@
 * 汇编
 *   64位编译器不再支持内嵌式的汇编代码(__asm) -- 可以将汇编代码提取出函数写在单独的汇编文件中，编译成obj后通过 TARGETLIBS 链接
 *   MS的编译器是 ml64.exe；其他的有 GoASM(GoASM编译器 + GoLINK链接器 + GoRC资源编译器)等
-*    
+*
 *   Windows X64汇编入门 -- http://bbs.pediy.com/showthread.php?t=43967
 *     X32中原有的寄存器在X64中均为扩展为64位，寄存器从小到大依次为 AL/AH(8) -> AX(16) -> EAX(32) -> RAX(64)
 *     x64中前四个参数分析通过四个寄存器传递：RCX、RDX、R8、R9，有更多的参数时才通过椎栈(RDI指向的内存)传递 -- 可以减少溢出的可能性
@@ -16,7 +16,7 @@
 *     TODO:测试未通过。可以在source文件中加入对.asm文件引用， 如 AMD64_SOURCES=AMD64\test3.asm， 其他的有 I386_SOURCES/IA64_SOURCES
 *     64位的汇编地址需要用"`"  符号(数字1左边的)连接？ 如 0xFFFFFFFF`FFB5C4F8
 *
-* SSDT表处理
+* SSDT表处理 -- KiServiceTable ?
 *   1.64位系统不导出 KeServiceDescriptorTable, 会遇到 LNK2001: unresolved external symbol 的错误，
 *     实际上在内存中是存在的，比如可以通过 dq KeServiceDescriptorTable 和 ln KeServiceDescriptorTable 查看(实际地址会变)
 *     0: kd> dp KeServiceDescriptorTable
@@ -42,6 +42,10 @@
 *   1.IA32_EFER.LMA
 *   2.if(sizeof(ULONG_PTR)==4)  32位 
 *   
+******************************************************************************************************************/
+
+/******************************************************************************************************************
+* (LDE64) Length Disassemble Engine) -- X64反汇编引擎
 ******************************************************************************************************************/
 
 

@@ -38,18 +38,6 @@ extern "C" NTSTATUS DriverEntry(
 {
 	KdPrint(("Simple DriverEntry, pDriverObject=0x%p, pRegistryPath=%wZ\n", pDriverObject, pRegistryPath));
 
-	UNICODE_STRING			SymbolName;
-	RtlInitUnicodeString(&SymbolName, L"KiSystemCall64");
-	PVOID pAddress = MmGetSystemRoutineAddress(&SymbolName);
-	KdPrint(("Address of %wZ is 0x%p, \n" , &SymbolName, pAddress));
-
-	pAddress = GetKiSystemCall64Address();
-	KdPrint(("GetKiSystemCall64Address is 0x%p\n" , pAddress));
-
-
-	pAddress = (PVOID)GetKeServiceDescriptorTableShadow64();
-	KdPrint(("GetKeServiceDescriptorTableShadow64=0x%p\n", pAddress));
-
 	NTSTATUS						status;    
 	PDEVICE_OBJECT					DeviceObject = NULL;
 	status = IoCreateDevice(
@@ -70,6 +58,25 @@ extern "C" NTSTATUS DriverEntry(
 		pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = SimpleDriverDispatchDefault;
 		pDriverObject->DriverUnload = SimpleDriverUnload;
 	}
+
+	UNICODE_STRING			SymbolName;
+	RtlInitUnicodeString(&SymbolName, L"KiSystemCall64");
+	PVOID pAddress = MmGetSystemRoutineAddress(&SymbolName);
+	KdPrint(("Address of %wZ is 0x%p, \n" , &SymbolName, pAddress));
+
+	pAddress = GetKiSystemCall64Address();
+	KdPrint(("GetKiSystemCall64Address is 0x%p\n" , pAddress));
+
+	pAddress = (PVOID)GetKeServiceDescriptorTableShadow64();
+	KdPrint(("GetKeServiceDescriptorTableShadow64=0x%p\n", pAddress));
+
+	//if (pAddress)
+	//{
+	//	ULONG64 IndexOfNtGdiBitBlt = 0x1008;
+	//	ULONGLONG AddrOfGdiBitBlt = GetSSSDTFuncCurAddr64((ULONGLONG)pAddress, IndexOfNtGdiBitBlt);
+	//	KdPrint(("AddrOfGdiBitBlt=0x%p\n", AddrOfGdiBitBlt));	
+	//}
+
 	return status;
 }
 

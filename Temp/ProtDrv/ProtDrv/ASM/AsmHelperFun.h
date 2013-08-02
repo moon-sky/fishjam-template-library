@@ -1,7 +1,17 @@
 #pragma once
 
-extern "C" PVOID __stdcall GetKiSystemCall64Address();
-extern "C" void __stdcall SetSoftBreakPoint();
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-extern "C" void __stdcall ClearWriteProtect();
-extern "C" void __stdcall SetWriteProtect();
+PVOID __stdcall GetKiSystemCall64Address();
+void __stdcall SetSoftBreakPoint();
+
+void __stdcall ClearWriteProtect();
+void __stdcall SetWriteProtect();
+
+
+
+#ifdef __cplusplus
+}
+#endif
