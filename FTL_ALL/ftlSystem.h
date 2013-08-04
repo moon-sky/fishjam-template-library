@@ -209,6 +209,12 @@ namespace FTL
         //static BOOL GetLocalizedTimeString();
         FTLINLINE static BOOL SuspendProcess(DWORD dwProcessID,BOOL fSuspend, DWORD skipedThreadId = ::GetCurrentThreadId());
         
+        //使用 ATL 的 CAccessToken 更方便
+        //调整进程权限( EnableProcessPrivilege (GetCurrentProcess(),SE_SHUTDOWN_NAME) )
+        //（要对一个任意进程（包括系统安全进程和服务进程）进行指定了写相关的访问权的OpenProcess操作，
+        //只要当前进程具有SeDeDebug权限就可以了）
+        FTLINLINE static BOOL EnableProcessPrivilege (HANDLE hProcess, LPCTSTR lpPrivilegeName = SE_DEBUG_NAME ,BOOL bEnabled = TRUE);
+
 		//判断指定的Module所在进程是否是特殊的进程(如BHO中判断当前进程是IE)
 		FTLINLINE static BOOL IsSpecialProcessName(LPCTSTR pszProcessName, HMODULE hModule = NULL);
 

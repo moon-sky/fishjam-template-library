@@ -581,6 +581,29 @@ namespace FTL
         return bRet;
     }
 
+    BOOL CFSystemUtil::EnableProcessPrivilege(HANDLE hProcess, LPCTSTR lpPrivilegeName /* = SE_DEBUG_NAME */,BOOL bEnabled /*= TRUE*/)
+    {
+        HANDLE hToken = NULL;
+        BOOL bRet = FALSE;
+        API_VERIFY(OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken));
+        if (bRet)
+        {
+            TOKEN_PRIVILEGES TokenPrivileges = { 0 };
+            API_VERIFY(LookupPrivilegeValue (NULL, lpPrivilegeName, &TokenPrivileges.Privileges[0].Luid));
+            if (bRet)
+            {
+                TokenPrivileges.PrivilegeCount = 1;
+                TokenPrivileges.Privileges[0].Attributes = bEnabled ? SE_PRIVILEGE_ENABLED : 0; //SE_PRIVILEGE_REMOVED
+                API_VERIFY(AdjustTokenPrivileges (hToken,FALSE,&TokenPrivileges,
+                    sizeof (TokenPrivileges),NULL,NULL));
+                bRet = (GetLastError () == ERROR_SUCCESS);
+            }
+            CloseHandle(hToken);
+        }
+        return bRet;
+    }
+
+
 	BOOL CFSystemUtil::IsSpecialProcessName(LPCTSTR pszProcessName, HMODULE hModule /* = NULL */)
 	{
 		BOOL bRet = FALSE;
