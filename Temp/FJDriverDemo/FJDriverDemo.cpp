@@ -96,7 +96,8 @@ NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp
 #pragma PAGEDCODE
 NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 {
-	NTSTATUS status; 
+    NTSTATUS status	= STATUS_INVALID_DEVICE_REQUEST;
+
 	PIO_STACK_LOCATION pIoStackLoc = IoGetCurrentIrpStackLocation(pIrp);
 	NT_ASSERT(pIoStackLoc->MajorFunction == IRP_MJ_DEVICE_CONTROL);
 	PVOID inputBuffer = pIrp->AssociatedIrp.SystemBuffer;
@@ -125,18 +126,18 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 			{
 				KdPrint(("Already InstallCopyProtectHook()"));
 			}
-
-#if DBG
-			//_asm int 3
-#endif 
+            status = STATUS_SUCCESS;
 		}
 		break;
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
 			//UnInstallScrollHook();
 			KdPrint(("%s\n", "IOCTL_FDRIVER_INSTALL_HOOK"));
+            status = STATUS_SUCCESS;
 		}
 		break;
+    default:
+        break;
 	}
 	return FJDriverDemoDefaultHandler(DeviceObject, pIrp);
 }	
@@ -294,13 +295,13 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	UNICODE_STRING ntName;
 	UNICODE_STRING win32Name;
 
-	UNICODE_STRING					SymbolName;
-	PVOID pAddress = NULL;
-	RtlInitUnicodeString(&SymbolName, L"KeCancelTimer");
+	//UNICODE_STRING					SymbolName;
+	//PVOID pAddress = NULL;
+	//RtlInitUnicodeString(&SymbolName, L"KeCancelTimer");
 
-	pAddress = MmGetSystemRoutineAddress(&SymbolName);
+	//pAddress = MmGetSystemRoutineAddress(&SymbolName);
 
-	KdPrint(("%wZ pAddress=0x%p\n"), &SymbolName, pAddress);
+	//KdPrint(("%wZ pAddress=0x%p\n"), &SymbolName, pAddress);
 
 
 	RtlInitUnicodeString(&ntName, FDRIVER_DEMO_NT_DEVICE_NAME);
@@ -338,7 +339,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 
 	//pDriverObject->DriverExtension->AddDevice = xxxx; //WDM驱动中创建设备对象并由Pnp管理器调用的回调函数
 
-	KdPrint(("New Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
+	//KdPrint(("New Enter FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 
 	for (unsigned int i = 0; i <= IRP_MJ_MAXIMUM_FUNCTION; i++)
 	{

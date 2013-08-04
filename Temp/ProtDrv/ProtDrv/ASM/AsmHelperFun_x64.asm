@@ -1,8 +1,8 @@
 
 .code
+%if WIN64
 
 GetKiSystemCall64Address proc
-	xor rax, rax
 	mov ecx, 0C0000082h
 	rdmsr			; read MSR(model specific register)
 	shl rdx, 20h
@@ -34,7 +34,7 @@ SetWriteProtect proc
 	ret
 SetWriteProtect ENDP
 
-
+%endif
 
 
 end

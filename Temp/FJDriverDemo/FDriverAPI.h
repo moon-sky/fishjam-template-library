@@ -64,7 +64,8 @@
 *   IRP是从非分页内存池中分配的可变大小的结构，关联一个 IO_STACK_LOCATION 结构数组
 * 
 * IO_STACK_LOCATION -- IO堆栈，对应设备堆栈中每层设备所做的操作，本层设备对应的值可通过 IoGetCurrentIrpStackLocation 获得
-* 
+*   Parameters里面是很多结构体的union，需要根据具体的 功能号 选择对应的成员变量进行处理   
+*
 *   IoCopyCurrentIrpStackLocationToNext -- 把当前IRP栈空间拷贝到下一个栈空间,需要和 IoSetCompletionRoutine 合用，来做键盘过滤(下发读请求并在读到结果后过滤)
 *   IoGetCurrentIrpStackLocation -- 获得当前栈空间信息
 *   IoMarkIrpPending -- 

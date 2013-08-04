@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ASM/AsmHelperFun.h"
+//#include "ASM/AsmHelperFun.h"
 #include "KernelHookAPI.h"
 
 //PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
@@ -11,22 +11,80 @@
 
 NTSTATUS SimpleDriverDispatchDefault(
 								  IN PDEVICE_OBJECT InDeviceObject,
-								  IN PIRP InIrp)
+								  IN PIRP pIrp)
 {
-	InIrp->IoStatus.Information = 0;
-	InIrp->IoStatus.Status = STATUS_SUCCESS;
+	pIrp->IoStatus.Information = 0;
+	pIrp->IoStatus.Status = STATUS_SUCCESS;
 
-	IoCompleteRequest(InIrp, IO_NO_INCREMENT);
+	IoCompleteRequest(pIrp, IO_NO_INCREMENT);
 
 	return STATUS_SUCCESS;
 }
 
-VOID SimpleDriverUnload(IN PDRIVER_OBJECT pDriverObject)
+NTSTATUS ProtectDriverDispatchDeviceControl(
+                                     IN PDEVICE_OBJECT InDeviceObject,
+                                     IN PIRP pIrp)
+{
+    NTSTATUS status	= STATUS_INVALID_DEVICE_REQUEST;
+
+    PIO_STACK_LOCATION pIoStackLoc = IoGetCurrentIrpStackLocation(pIrp);
+    NT_ASSERT(pIoStackLoc->MajorFunction == IRP_MJ_DEVICE_CONTROL);
+
+    PVOID inputBuffer = pIrp->AssociatedIrp.SystemBuffer;
+    PVOID outputBuffer = pIrp->AssociatedIrp.SystemBuffer;
+
+    ULONG inputBufferLength = pIoStackLoc->Parameters.DeviceIoControl.InputBufferLength;
+    ULONG outputBufferLength = pIoStackLoc->Parameters.DeviceIoControl.OutputBufferLength;
+    ULONG ioControlCode = pIoStackLoc->Parameters.DeviceIoControl.IoControlCode;
+
+    switch (ioControlCode)
+    {
+    case IOCTL_PROTDRV_INSTALL_HOOK:
+        InstallHook();
+        break;
+
+    case IOCTL_PROTDRV_UNINSTALL_HOOK:
+        UnInstallHook();
+        break;
+
+    case IOCTL_PROTDRV_SET_INFO:
+        {
+            if (inputBufferLength == sizeof(PROTECT_WND_INFO))
+            {
+                SetProtectWndInfo((PPROTECT_WND_INFO)inputBuffer);
+                status = STATUS_SUCCESS;
+            }
+            else
+            {
+                status = STATUS_INVALID_PARAMETER;
+            }
+        }
+        break;
+    case IOCTL_PROTDRV_CLEAR_INFO:
+        {
+            SetProtectWndInfo(NULL);
+            status = STATUS_SUCCESS;
+        }
+        break;
+    default:
+        break;
+    }
+
+    //pIrp->IoStatus.Information = 0;
+    //pIrp->IoStatus.Status = STATUS_SUCCESS;
+
+    //IoCompleteRequest(pIrp, IO_NO_INCREMENT);
+
+    return status;
+}
+
+
+VOID ProtectDriverUnload(IN PDRIVER_OBJECT pDriverObject)
 {
     /*
 		Delete the device object
     */
-	KdPrint(("SimpleDriverUnload, pDriverObject=0x%p, Device=0x%p\n", pDriverObject, pDriverObject->DeviceObject));
+	KdPrint(("ProtectDriverUnload, pDriverObject=0x%p, Device=0x%p\n", pDriverObject, pDriverObject->DeviceObject));
 
     IoDeleteDevice(pDriverObject->DeviceObject);
 }
@@ -36,39 +94,59 @@ extern "C" NTSTATUS DriverEntry(
 					 IN PDRIVER_OBJECT		pDriverObject,
 					 IN PUNICODE_STRING		pRegistryPath)
 {
-	KdPrint(("Simple DriverEntry, pDriverObject=0x%p, pRegistryPath=%wZ\n", pDriverObject, pRegistryPath));
+	KdPrint(("[%d] ProtectDrv DriverEntry, pDriverObject=0x%p, pRegistryPath=%wZ\n", 
+        PsGetCurrentProcessId(), pDriverObject, pRegistryPath));
 
 	NTSTATUS						status;    
 	PDEVICE_OBJECT					DeviceObject = NULL;
-	status = IoCreateDevice(
+    UNICODE_STRING ntName;
+    UNICODE_STRING win32Name;
+
+    RtlInitUnicodeString(&ntName, PROTECT_DEVICE_NAME);
+	FNT_VERIFY(IoCreateDevice(
 		pDriverObject,
 		0,								// DeviceExtensionSize
-		NULL,
-		0x893D,							// DeviceType
+		&ntName,
+		PROTDRV_DEVICE_TYPE,							// DeviceType
 		0,								// DeviceCharacteristics
 		TRUE,							// Exclusive
 		&DeviceObject					// [OUT]
-		);
-	if(NT_SUCCESS(status))
+		));
+	if(!NT_SUCCESS(status))
 	{
-		KdPrint(("Address of new DeviceObject is 0x%p\n" , DeviceObject));
+        KdPrint( ("%s >> IoCreateDevice fail", __FUNCTION__) );
+        return status;
+    }
 
-		pDriverObject->MajorFunction[IRP_MJ_CREATE] = SimpleDriverDispatchDefault;
-		pDriverObject->MajorFunction[IRP_MJ_CLOSE] = SimpleDriverDispatchDefault;
-		pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = SimpleDriverDispatchDefault;
-		pDriverObject->DriverUnload = SimpleDriverUnload;
-	}
+	KdPrint(("Address of new DeviceObject is 0x%p\n" , DeviceObject));
 
-	UNICODE_STRING			SymbolName;
-	RtlInitUnicodeString(&SymbolName, L"KiSystemCall64");
-	PVOID pAddress = MmGetSystemRoutineAddress(&SymbolName);
-	KdPrint(("Address of %wZ is 0x%p, \n" , &SymbolName, pAddress));
+    RtlInitUnicodeString (&win32Name, PROTECT_NT_DEVICE_NAME);	
+    FNT_VERIFY(IoCreateSymbolicLink ( 
+        &win32Name, 
+        &ntName));
+    if (FALSE == NT_SUCCESS(status))
+    {
+        KdPrint( ("%s >> IoCreateSymbolicLink() failed", __FUNCTION__) );
+        IoDeleteDevice( DeviceObject );
+        return status;
+    }
+    NT_ASSERT(pDriverObject->DeviceObject == NULL || pDriverObject->DeviceObject == DeviceObject);
 
-	pAddress = GetKiSystemCall64Address();
-	KdPrint(("GetKiSystemCall64Address is 0x%p\n" , pAddress));
+    pDriverObject->MajorFunction[IRP_MJ_CREATE] = SimpleDriverDispatchDefault;
+    pDriverObject->MajorFunction[IRP_MJ_CLOSE] = SimpleDriverDispatchDefault;
+    pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = SimpleDriverDispatchDefault;
+    pDriverObject->DriverUnload = ProtectDriverUnload;
 
-	pAddress = (PVOID)GetKeServiceDescriptorTableShadow64();
-	KdPrint(("GetKeServiceDescriptorTableShadow64=0x%p\n", pAddress));
+	//UNICODE_STRING			SymbolName;
+	//RtlInitUnicodeString(&SymbolName, L"KiSystemCall64");
+	//PVOID pAddress = MmGetSystemRoutineAddress(&SymbolName);
+	//KdPrint(("Address of %wZ is 0x%p, \n" , &SymbolName, pAddress));
+
+	//pAddress = GetKiSystemCall64Address();
+	//KdPrint(("GetKiSystemCall64Address is 0x%p\n" , pAddress));
+
+	//pAddress = (PVOID)GetKeServiceDescriptorTableShadow64();
+	//KdPrint(("GetKeServiceDescriptorTableShadow64=0x%p\n", pAddress));
 
 	//if (pAddress)
 	//{

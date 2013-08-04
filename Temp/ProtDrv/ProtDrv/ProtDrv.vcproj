@@ -40,6 +40,66 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="fre_win7|Win32"
+			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_x86"
+			IntermediateDirectory="obj$(ConfigurationName)_x86"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat"
+				ReBuildCommandLine="wdk_clean.bat &amp;&amp; wdk_build.bat"
+				CleanCommandLine="wdk_clean.bat"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="chk_wxp|Win32"
+			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_x86"
+			IntermediateDirectory="obj$(ConfigurationName)_x86"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat chk x86 wxp"
+				ReBuildCommandLine="wdk_clean.bat chk x86 wxp &amp;&amp; wdk_build.bat chk x86 wxp"
+				CleanCommandLine="wdk_clean.bat chk x86 wxp"
+				Output=""
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="fre_wxp|Win32"
+			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_x86"
+			IntermediateDirectory="obj$(ConfigurationName)_x86"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat"
+				ReBuildCommandLine="wdk_clean.bat &amp;&amp; wdk_build.bat"
+				CleanCommandLine="wdk_clean.bat"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
 			Name="chk_win7|x64"
 			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_amd64"
 			IntermediateDirectory="obj$(ConfigurationName)_amd64"
@@ -52,26 +112,6 @@
 				CleanCommandLine="wdk_clean.bat chk x64 WIN7"
 				Output=""
 				PreprocessorDefinitions=""
-				IncludeSearchPath=""
-				ForcedIncludes=""
-				AssemblySearchPath=""
-				ForcedUsingAssemblies=""
-				CompileAsManaged=""
-			/>
-		</Configuration>
-		<Configuration
-			Name="fre_win7|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="0"
-			>
-			<Tool
-				Name="VCNMakeTool"
-				BuildCommandLine="wdk_build.bat"
-				ReBuildCommandLine="wdk_clean.bat &amp;&amp; wdk_build.bat"
-				CleanCommandLine="wdk_clean.bat"
-				Output=""
-				PreprocessorDefinitions="WIN32;NDEBUG"
 				IncludeSearchPath=""
 				ForcedIncludes=""
 				AssemblySearchPath=""
@@ -109,7 +149,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\KernelHookAPI.c"
+				RelativePath=".\KernelHookAPI.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\KernelHookAPIHelper.c"
 				>
 			</File>
 			<File
@@ -123,7 +167,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\KernelDefine.h"
+				>
+			</File>
+			<File
 				RelativePath=".\KernelHookAPI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\KernelHookAPIHelper.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ProtDrvDef.h"
 				>
 			</File>
 			<File

@@ -2,10 +2,12 @@
 
 !IF "$(_BUILDARCH)" == "x86"
 TARGETNAME=ProtDrv32
+# TARGETLIBS=ASM\AsmHelperFun_x86.obj
 !ELSEIF "$(_BUILDARCH)" == "AMD64"
-TARGETNAME=ProtDrv64
+  TARGETNAME=ProtDrv64
+# TARGETLIBS=ASM\AsmHelperFun_x64.obj
 !ELSEIF "$(_BUILDARCH)" == "IA64"
-TARGETNAME=ProtDrvIa64
+  TARGETNAME=ProtDrvIa64
 !ENDIF
 
 # If $FREEBUILD
@@ -29,13 +31,13 @@ LIBS=Win32k.lib
 
 # I386_SOURCES=$(SOURCES)
 # AMD64_SOURCES=$(SOURCES)
-
-TARGETLIBS=ASM\AsmHelperFun_x64.obj
-
 # I386_SOURCES=ASM\AsmHelperFun_x64.asm
 
-SOURCES=ProtDrv.cpp \
-	KernelHookAPI.c
+SOURCES=KernelHookAPIHelper.c \
+    KernelHookAPI.cpp \
+    ProtDrv.cpp
+    
+	
 
 
 
