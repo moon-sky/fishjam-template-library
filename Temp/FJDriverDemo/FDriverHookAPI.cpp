@@ -894,7 +894,7 @@ void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
 
                     g_pDriverHookApiInfos->pOrigNtGdiBitBlt = (NTGDIBITBLT)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt));
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, MyNtGdiBitBlt);
-#if 1
+#if 0
                     g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW));
                     ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, MyNtGdiExtTextOutW);
 					
@@ -942,7 +942,7 @@ void UnInstallScrollHook(void)
                     KeStackAttachProcess(pEProcess, &KApcState);
 
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, g_pDriverHookApiInfos->pOrigNtGdiBitBlt);
-#if 1
+#if 0
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW);
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, g_pDriverHookApiInfos->pOrigNtGdiOpenDCW);
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp);
