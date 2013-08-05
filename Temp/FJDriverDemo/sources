@@ -17,3 +17,6 @@ SOURCES=stdafx.cpp \
 	FJDriverDemo.cpp \
 	FDriverUtil.c \
 	FDriverHookAPI.cpp
+
+AMD64_SOURCES=KernelHelper_Amd64.c
+I386_SOURCES=KernelHelper_X86.c

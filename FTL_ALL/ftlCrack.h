@@ -36,11 +36,12 @@
 /*********************************************************************************************************************************
 * 对可执行程序(.exe/.dll/.sys等)进行签名 -- 各种参数需要对应更改
 *   1.创建根证书：
-*     makecert.exe -$ individual  -r -pe -ss "Fishjam Certificate Store" -n CN="Fishjam Certificate" "FishjamRoot.cer"
+*     MakeCert.exe -r -pe -ss "FishjamCertStore" -n CN="FishjamCert" "FishjamRoot.cer"
+*       -$ individual
 *   2.信任该根证书，之后可以通过 certmgr.msc 查看和删除等
-*     certmgr.exe /add "FishjamRoot.cer" /s /r localMachine root
+*     CertMgr.exe /add "FishjamRoot.cer" /s /r localMachine root
 *   3.对可执行文件进行签名
-*     signtool.exe sign /v /s "Fishjam Certificate Store" /n "Fishjam Certificate" drivername.sys
+*     signtool.exe sign /v /s "FishjamCertStore" /n "FishjamCert" /t http://timestamp.verisign.com/scripts/timestamp.dll drivername.sys
 *   4.[可选]验证签名
 *     signtool.exe verify /pa /v drivername.sys
 *********************************************************************************************************************************/

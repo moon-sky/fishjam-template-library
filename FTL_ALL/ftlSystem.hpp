@@ -756,6 +756,7 @@ namespace FTL
 
 	BOOL CFSystemUtil::IsInsideVPC()
 	{
+#if defined(_M_IX86)
 		//__declspec(naked) bool IsInsideVPC()
 		{
 			__asm
@@ -806,10 +807,15 @@ ret1:
 				ret
 			}
 		}
+#endif 
+
+		return FALSE;
 	}
 
 	FTLINLINE bool _IsInsideVMWare()
 	{
+#if defined(_M_IX86)
+
 		bool r;
 		_asm
 		{
@@ -831,6 +837,8 @@ ret1:
 			pop    edx
 		}
 		return r;
+#endif 
+		return false;
 	}
 
 	BOOL CFSystemUtil::IsInsideVMWare()

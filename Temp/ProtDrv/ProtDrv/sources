@@ -35,6 +35,7 @@ LIBS=Win32k.lib
 
 SOURCES=KernelHookAPIHelper.c \
     KernelHookAPI.cpp \
+    FDriverUtil.cpp \
     ProtDrv.cpp
     
 	

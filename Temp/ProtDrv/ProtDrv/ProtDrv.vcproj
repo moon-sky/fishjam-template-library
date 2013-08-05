@@ -40,9 +40,49 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="chk_win7|x64"
+			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_amd64"
+			IntermediateDirectory="obj$(ConfigurationName)_amd64"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat chk x64 WIN7"
+				ReBuildCommandLine="wdk_clean.bat chk x64 WIN7 &amp;&amp; wdk_build.bat chk x64 WIN7"
+				CleanCommandLine="wdk_clean.bat chk x64 WIN7"
+				Output=""
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
 			Name="fre_win7|Win32"
 			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_x86"
 			IntermediateDirectory="obj$(ConfigurationName)_x86"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="wdk_build.bat"
+				ReBuildCommandLine="wdk_clean.bat &amp;&amp; wdk_build.bat"
+				CleanCommandLine="wdk_clean.bat"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="fre_win7|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="0"
 			>
 			<Tool
@@ -80,6 +120,63 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="chk_wxp|x64"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
 			Name="fre_wxp|Win32"
 			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_x86"
 			IntermediateDirectory="obj$(ConfigurationName)_x86"
@@ -100,43 +197,60 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="chk_win7|x64"
-			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_amd64"
-			IntermediateDirectory="obj$(ConfigurationName)_amd64"
-			ConfigurationType="0"
-			>
-			<Tool
-				Name="VCNMakeTool"
-				BuildCommandLine="wdk_build.bat chk x64 WIN7"
-				ReBuildCommandLine="wdk_clean.bat chk x64 WIN7 &amp;&amp; wdk_build.bat chk x64 WIN7"
-				CleanCommandLine="wdk_clean.bat chk x64 WIN7"
-				Output=""
-				PreprocessorDefinitions=""
-				IncludeSearchPath=""
-				ForcedIncludes=""
-				AssemblySearchPath=""
-				ForcedUsingAssemblies=""
-				CompileAsManaged=""
-			/>
-		</Configuration>
-		<Configuration
-			Name="fre_win7|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			Name="fre_wxp|x64"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="0"
+			ConfigurationType="1"
 			>
 			<Tool
-				Name="VCNMakeTool"
-				BuildCommandLine="wdk_build.bat"
-				ReBuildCommandLine="wdk_clean.bat &amp;&amp; wdk_build.bat"
-				CleanCommandLine="wdk_clean.bat"
-				Output=""
-				PreprocessorDefinitions="WIN32;NDEBUG"
-				IncludeSearchPath=""
-				ForcedIncludes=""
-				AssemblySearchPath=""
-				ForcedUsingAssemblies=""
-				CompileAsManaged=""
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 	</Configurations>
@@ -148,6 +262,10 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\FDriverUtil.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\KernelHookAPI.cpp"
 				>
@@ -166,6 +284,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\FDriverUtil.h"
+				>
+			</File>
 			<File
 				RelativePath=".\KernelDefine.h"
 				>

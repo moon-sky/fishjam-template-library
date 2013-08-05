@@ -3,6 +3,7 @@
 #include "KernelDefine.h"
 #include "KernelHookAPIHelper.h"
 #include "KernelHookAPI.h"
+#include "FDriverUtil.h"
 
 #define ObjectNameInformation  1
 #define SystemHandleInformation 0x10
@@ -349,9 +350,10 @@ NTSTATUS SetProtectWndInfo(PPROTECT_WND_INFO pProtectWndInfo)
 }
 
 
-NTSTATUS InstallHook(HANDLE hProcess)
+NTSTATUS InstallHook(HANDLE hProcessId)
 {
     NTSTATUS status = STATUS_SUCCESS;
+	KdPrint(("Enter InstallHook, hProcessId=%d\n"));
 
     if (!g_pDriverHookApiInfos)
     {
@@ -370,16 +372,16 @@ NTSTATUS InstallHook(HANDLE hProcess)
             g_pShadowTable = GetKeServiceDescriptorTableShadowX86();
             if (g_pShadowTable == NULL)
             {
-                KdPrint(("Failed GetShadowTable"));
+                KdPrint(("Failed GetShadowTable\n"));
             }
             else
             {
                 KdPrint(("KeServiceDescriptorTableShadow : %#x, SSDT EntryCount=%d, Shadow EntryCount=%d, PID=%d\n",   //%#x Ò²ÊÇµØÖ·?
-                    g_pShadowTable, g_pShadowTable[0].NumberOfServices, g_pShadowTable[1].NumberOfServices, hProcess));
+                    g_pShadowTable, g_pShadowTable[0].NumberOfServices, g_pShadowTable[1].NumberOfServices, hProcessId));
 
                 PEPROCESS pEProcess = NULL;
 
-                FNT_VERIFY(PsLookupProcessByProcessId(hProcess, &pEProcess));
+                FNT_VERIFY(PsLookupProcessByProcessId(hProcessId, &pEProcess));
                 if (pEProcess == NULL)
                 {
                     //SetWriteProtect();
@@ -388,6 +390,7 @@ NTSTATUS InstallHook(HANDLE hProcess)
                     g_pDriverHookApiInfos = NULL;
                     return status;
                 }
+				//ObDereferenceObject(pEProcess);
 
                 KAPC_STATE KApcState = {0};
                 KeStackAttachProcess(pEProcess, &KApcState);
@@ -396,7 +399,7 @@ NTSTATUS InstallHook(HANDLE hProcess)
                 FNT_VERIFY(g_pDriverHookApiInfos->InitCallNumber());
                 if (NT_SUCCESS(status))
                 {
-                    g_hProcess = hProcess;
+                    g_hProcess = hProcessId;
                     
                     g_pDriverHookApiInfos->pOrigNtGdiBitBlt = (NTGDIBITBLT)(g_pShadowTable[1].ServiceTableBase[g_pDriverHookApiInfos->IndexOfNtGdiBitBlt]);// g_NtGdiBitBltIndex]);
                     InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTableBase[g_pDriverHookApiInfos->IndexOfNtGdiBitBlt]), MyNtGdiBitBlt);
@@ -414,7 +417,9 @@ NTSTATUS InstallHook(HANDLE hProcess)
             SetWriteProtect();
         }
     }
-    return STATUS_SUCCESS;
+	KdPrint(("Leave InstallHook, status=0x%x\n", status));
+
+    return status;
 }
 NTSTATUS UnInstallHook()
 {
@@ -435,18 +440,19 @@ NTSTATUS UnInstallHook()
             {
                 if (g_pDriverHookApiInfos->HasValidCallNumber())// g_pDriverHookApiInfos-> g_NtGdiBitBltIndex != (-1))
                 {
-                    PEPROCESS pEProcess;
+                    PEPROCESS pEProcess = NULL;
 
-                    PsLookupProcessByProcessId(g_hProcess, &pEProcess);
+                    FNT_VERIFY(PsLookupProcessByProcessId(g_hProcess, &pEProcess));
+					KAPC_STATE KApcState = {0};
+					KeStackAttachProcess(pEProcess, &KApcState);
 
-                    KAPC_STATE KApcState = {0};
-                    KeStackAttachProcess(pEProcess, &KApcState);
+					//ObDereferenceObject(pEProcess);
 
-                    InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTableBase[g_pDriverHookApiInfos->IndexOfNtGdiBitBlt]), g_pDriverHookApiInfos->pOrigNtGdiBitBlt);
-                    InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTableBase[g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW]), g_pDriverHookApiInfos->pOrigNtGdiOpenDCW);
-                    InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTableBase[g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp]), g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp);
+					InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTableBase[g_pDriverHookApiInfos->IndexOfNtGdiBitBlt]), g_pDriverHookApiInfos->pOrigNtGdiBitBlt);
+					InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTableBase[g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW]), g_pDriverHookApiInfos->pOrigNtGdiOpenDCW);
+					InterlockedExchangePointer(&(g_pShadowTable[1].ServiceTableBase[g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp]), g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp);
 
-                    g_pDriverHookApiInfos->pOrigNtUserCallOneParam = NULL;
+					g_pDriverHookApiInfos->pOrigNtUserCallOneParam = NULL;
 
                     KeUnstackDetachProcess(&KApcState);
                 }
@@ -480,7 +486,7 @@ NTSTATUS UnInstallHook()
         ExFreePoolWithTag(g_pDriverHookApiInfos, HOOK_API_INFO_TAG);
         g_pDriverHookApiInfos = NULL;
     }
-    DbgPrint("OpenCapture ScrollHook Driver UnLoaded\n");
+    DbgPrint("Protected Driver UnLoaded\n");
 
     return status;
 

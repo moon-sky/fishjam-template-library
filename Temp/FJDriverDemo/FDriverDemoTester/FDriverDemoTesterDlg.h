@@ -5,7 +5,7 @@
 #pragma once
 
 #include "FDriverDemoController.h"
-
+ 
 // CFDriverDemoTesterDlg dialog
 class CFDriverDemoTesterDlg : public CDialog
 {
@@ -35,6 +35,9 @@ public:
 private:
 	CFDriverDemoController	m_DriverController;
 	CString m_strDriverPath;
+	CDC m_MemoryDC;
+	CBitmap	m_bmpWindow;
+	CBitmap* m_pOldBmp;
 public:
 	afx_msg void OnBnClickedBtnChooseDriverFile();
 	afx_msg void OnBnClickedBtnOpenDriver();

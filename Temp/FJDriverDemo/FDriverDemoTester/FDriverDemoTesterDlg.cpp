@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FDriverDemoTester.h"
 #include "FDriverDemoTesterDlg.h"
+//#include "../../ProtDrv/ProtDrv/ProtDrvDef.h"
 #include "../FDriverDemoDefine.h"
 #include <winioctl.h>
 
@@ -24,6 +25,7 @@ CFDriverDemoTesterDlg::CFDriverDemoTesterDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CFDriverDemoTesterDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_pOldBmp = NULL;
 }
 
 void CFDriverDemoTesterDlg::DoDataExchange(CDataExchange* pDX)
@@ -117,7 +119,9 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnInstallService()
 	BOOL bRet = FALSE;
 	if (!m_strDriverPath.IsEmpty())
 	{
+		//API_VERIFY(m_DriverController.InstallService(m_strDriverPath , PROTECT_SERVICE_NAME)); //FDRIVER_DEMO_SERVICE_NAME));
 		API_VERIFY(m_DriverController.InstallService(m_strDriverPath , FDRIVER_DEMO_SERVICE_NAME));
+
 	}
 }
 
@@ -125,6 +129,7 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnInstallService()
 void CFDriverDemoTesterDlg::OnBnClickedBtnOpenDriver()
 {
 	BOOL bRet = FALSE;
+	//API_VERIFY(m_DriverController.OpenDemoDriver(PROTECT_NT_CONTROL_FILE_NAME)); //FDRIVER_DEMO_WIN2K_DEVICE_NAME));
 	API_VERIFY(m_DriverController.OpenDemoDriver(FDRIVER_DEMO_WIN2K_DEVICE_NAME)); //L"\\DosDevices\\Open_CaptureDriver")); // FDRIVER_DEMO_WIN2K_DEVICE_NAME));
 }
 
@@ -153,17 +158,41 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallService()
 void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
 {
 	BOOL bRet = FALSE;
+	CRect rcClient;
+	GetClientRect(&rcClient);
+	
+	CWindowDC deskDC(NULL);
+
+	if (m_MemoryDC.m_hDC)
+	{
+		m_MemoryDC.SelectObject(m_pOldBmp);
+		API_VERIFY(m_bmpWindow.DeleteObject());
+		API_VERIFY(m_MemoryDC.DeleteDC());
+	}
+
+	API_VERIFY(m_bmpWindow.CreateCompatibleBitmap(&deskDC, rcClient.Width(), rcClient.Height()));
+	API_VERIFY(m_MemoryDC.CreateCompatibleDC(&deskDC));
+	m_MemoryDC.SelectObject(&m_bmpWindow);
+	m_MemoryDC.FillSolidRect(&rcClient, RGB(127, 0, 0));
+
+	//DWORD dwProcessId = GetCurrentProcessId();
+	//API_VERIFY(m_DriverController.IoControl(IOCTL_PROTDRV_INSTALL_HOOK, &dwProcessId, sizeof(dwProcessId), NULL, 0))
 	SCROLL_HOOK_TARGET	hookTarget;
 	hookTarget.hWndDeskTop = ::GetDesktopWindow();
 	hookTarget.hTargetWindow = m_hWnd;
 	hookTarget.hSelfProcess = (HANDLE)GetCurrentProcessId();
 	hookTarget.hTargetProcess = (HANDLE)FTL::CFSystemUtil::GetPidFromProcessName(TEXT("csrss.exe"));
+	hookTarget.hDCProtect = m_MemoryDC.m_hDC;
+
+	ClientToScreen(&rcClient);
+	hookTarget.rcProtectWindow = rcClient;
 	API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_INSTALL_HOOK, &hookTarget, sizeof(hookTarget), NULL, 0));
 }
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallHook()
 {
 	BOOL bRet = FALSE;
+	//API_VERIFY(m_DriverController.IoControl(IOCTL_PROTDRV_UNINSTALL_HOOK, NULL, 0, NULL, 0));
 	API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_UNINSTALL_HOOK, NULL, 0, NULL, 0));
 
 }
@@ -177,6 +206,9 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 		CDC* pDC = pWndDraw->GetDC();
 		if (pDC)
 		{
+			CWindowDC deskDC(NULL);
+			
+
 			CDC dcMemory;
 			API_VERIFY(dcMemory.CreateCompatibleDC(pDC));
 			CRect rcStaticDraw;
@@ -187,8 +219,11 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 			CBitmap* pOldBmp = dcMemory.SelectObject(&bmp);
 			dcMemory.FillSolidRect(rcStaticDraw, RGB(255, 0, 0));
 
-			FTLTRACE(TEXT("OnBnClickedBtnDoBitblt, hDCDest=0x%x, hDCDest=0x%x, hWnd=0x%x\n"), pDC->m_hDC, dcMemory.m_hDC, pWndDraw->GetSafeHwnd());
+			FTLTRACE(TEXT("OnBnClickedBtnDoBitblt, hDCDest=0x%x(hWnd=0x%x), hDCSrc=0x%x, \n"), 
+				deskDC.m_hDC, WindowFromDC(deskDC.m_hDC), dcMemory.m_hDC);
 			//API_VERIFY(pDC->BitBlt(0, 0, rcStaticDraw.Width(), rcStaticDraw.Height(), &dcMemory, 0, 0, SRCCOPY));
+			
+			deskDC.BitBlt(0, 0, rcStaticDraw.Width(), rcStaticDraw.Height(), &dcMemory, 0, 0, SRCCOPY);
 
 			//pDC->DrawText(TEXT("fishjam"), &rcStaticDraw, DT_CENTER | DT_VCENTER);
 			//pDC->FillSolidRect(rcStaticDraw, RGB(0, 255, 0));

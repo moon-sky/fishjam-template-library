@@ -86,6 +86,7 @@
 * 
 * 常见蓝屏错误(BSOD -- Blue Screen Of Death)和可能的原因：
 *   IRQL_NOT_LESS_OR_EQUAL(0x0000000AL) -- 访问没有权限的内存 
+*   DRIVER_IRQL_NOT_LESS_OR_EQUAL(0x000000D1L) -- 
 *   PAGE_FAULT_IN_NONPAGED_AREA(0x00000050L) -- 非分页内存中发生了缺页错误
 *     1.IRQL 可能不满足需求，可以通过 KeGetCurrentIrql 获取当前的IRQL， 也可以通过 PAGED_CODE 宏帮忙检查;
 *     2.如是卸载驱动时 IoDeleteSymbolicLink 出错，可能是因为 DriverEntry 被声明为 #pragma code_seg("INIT") 造成

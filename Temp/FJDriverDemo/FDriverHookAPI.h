@@ -230,7 +230,7 @@ extern "C" {
 //SSDT表结构 -- 32/64 通用， func = (PBYTE)Base+Base[index];
 typedef struct _SYSTEM_SERVICE_TABLE { 
 	// PNTPROC ServiceTable;
-	PVOID ServiceTable;					//SSDT在内存中的基地址(数组，其每一个的元素就是各个Rin0的函数)
+	PVOID* ServiceTableBase;					//SSDT在内存中的基地址(数组，其每一个的元素就是各个Rin0的函数)
 	PULONG CounterTable;					// array of usage counters, 包含着 SSDT 中每个服务被调用次数计数器的数组。这个计数器一般由sysenter 更新
 	//ULONG NumberOfServices;				    //SSDT项的个数
 	SIZE_T NumberOfServices;				    //SSDT项的个数

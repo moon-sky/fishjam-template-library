@@ -4,13 +4,25 @@
 
 
 #if defined(_M_IX86)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct _SERVICE_DESCRIPTOR_TABLE *PSERVICE_DESCRIPTOR_TABLE;
+
+PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
+__declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, ULONG, ULONG); 
+
+#ifdef __cplusplus
+}
+#endif
+
 //typedef struct _SERVICE_DESCRIPTOR_TABLE *PSERVICE_DESCRIPTOR_TABLE;
 //extern "C" PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
-
-//extern "C" 
-PSYSTEM_DESCRIPTOR_TABLE KeServiceDescriptorTable; 
-//extern "C" 
-__declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, ULONG, ULONG); 
+//
+//extern "C" PSYSTEM_DESCRIPTOR_TABLE KeServiceDescriptorTable; 
+//extern "C" __declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, ULONG, ULONG); 
 
 //根据相同版本下与SSDT地址存在的偏移获取的SSDT SHADOW的地址
 // WinDbg 下 ?KeServiceDescriptorTable-
@@ -19,14 +31,16 @@ __declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, ULONG, ULONG)
 SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowX86()
 { 
     //通过搜索 操作SSDT的函数实现中的有效内存地址的办法 来查找 Shadow SSDT
-
     // First, obtain a pointer to KeAddSystemServiceTable
     unsigned char *check = (unsigned char*)KeAddSystemServiceTable; 
     int i;
     //Initialize an instance of System Service Table, will be used to
     //obtain an address from KeAddSystemServiceTable
     SYSTEM_SERVICE_TABLE *rc=0; 
-    // Make 100 attempts to match a valid address with that of KeServiceDescriptorTable 
+
+	KdPrint(("GetKeServiceDescriptorTableShadowX86, KeAddSystemServiceTable=%p\n", check));
+
+	// Make 100 attempts to match a valid address with that of KeServiceDescriptorTable 
     for (i=0; i<4096; i++) {  //PAGE_SIZE
         __try { 
             // try to obtain an address from  KeAddSystemServiceTable 

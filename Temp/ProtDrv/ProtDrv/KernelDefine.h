@@ -7,6 +7,11 @@ extern "C" {
 #include <ntddk.h>
 #include <windef.h>
 
+#define SSDT_API_CALL_ENTER(x) (InterlockedIncrement(&x))
+#define SSDT_API_CALL_LEAVE(x) (InterlockedDecrement(&x))
+
+
+#pragma push(0)
 
 //SSDT±í½á¹¹
 typedef struct _SYSTEM_SERVICE_TABLE { 
@@ -26,7 +31,6 @@ typedef struct _SERVICE_DESCRIPTOR_TABLE
     SYSTEM_SERVICE_TABLE Table3;    // not used
     SYSTEM_SERVICE_TABLE Table4;    // not used
 }SYSTEM_DESCRIPTOR_TABLE, *PSYSTEM_DESCRIPTOR_TABLE;
-
 
 
 #ifdef __cplusplus

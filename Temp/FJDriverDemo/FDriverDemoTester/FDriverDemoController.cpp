@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "FDriverDemoController.h"
-//#include "D:\\Code\\OpenCapture\\trunk\\CaptureDriver\\CaptureDriver.h"
 
 CFDriverDemoController::CFDriverDemoController(void)
 {
@@ -133,10 +132,11 @@ BOOL CFDriverDemoController::IoControl(DWORD dwIoControlCode, LPVOID lpInBuffer,
 	FTLASSERT(m_hDemoDriverFile);
 	if (m_hDemoDriverFile)
 	{
+		FTLTRACE(TEXT("Before IoControl dwIoControlCode=0x%x\n"));
 		DWORD nBytesReturned = 0;
 		API_VERIFY(DeviceIoControl(m_hDemoDriverFile, dwIoControlCode, lpInBuffer, nInBufferSize, lpOutBuffer,
 			nInBufferSize, &nBytesReturned, NULL));
-		FTLTRACE(TEXT("After IoControl \n"));
+		FTLTRACE(TEXT("After IoControl dwIoControlCode=0x%x\n"));
 	}
 	return bRet;
 }

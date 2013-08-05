@@ -53,6 +53,8 @@ typedef struct _SCROLL_HOOK_TARGET
 	HWND hTargetWindow;
 	HANDLE hSelfProcess;
 	HANDLE hTargetProcess;
+	HDC	   hDCProtect;
+	RECT   rcProtectWindow;
 } SCROLL_HOOK_TARGET, *PSCROLL_HOOK_TARGET;
 
 

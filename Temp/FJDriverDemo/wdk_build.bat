@@ -23,5 +23,5 @@ rem ml64 /c AsmHelperFun.asm
 @echo on
 build
 
-xcopy %4%5.sys %6 /Y
-xcopy %4%5.pdb %6 /Y
+rem xcopy %4%5.sys %6 /Y
+rem xcopy %4%5.pdb %6 /Y

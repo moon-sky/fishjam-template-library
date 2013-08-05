@@ -112,7 +112,7 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 	case IOCTL_FDRIVER_INSTALL_HOOK:
 		{
 			//SYS_SERVICE_TABLE* pServiceTable = GetServiceDescriptorShadowTableAddress();
-			//KdPrint(("%s, pServiceTable=0x%p\n", "IOCTL_FDRIVER_INSTALL_HOOK", pServiceTable));
+			KdPrint(("Enter %s, g_pShadowTable=0x%p\n", "IOCTL_FDRIVER_INSTALL_HOOK", g_pShadowTable));
 	
 			if (g_pShadowTable == NULL)
 			{
@@ -131,15 +131,15 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 		break;
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
-			//UnInstallScrollHook();
-			KdPrint(("%s\n", "IOCTL_FDRIVER_INSTALL_HOOK"));
+			UnInstallScrollHook();
+			KdPrint(("%s\n", "Enter IOCTL_FDRIVER_INSTALL_HOOK"));
             status = STATUS_SUCCESS;
 		}
 		break;
     default:
         break;
 	}
-	return FJDriverDemoDefaultHandler(DeviceObject, pIrp);
+	return status;// FJDriverDemoDefaultHandler(DeviceObject, pIrp);
 }	
 
 

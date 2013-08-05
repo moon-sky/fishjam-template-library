@@ -1,6 +1,7 @@
 #include "stdafx.h"
 //#include "ASM/AsmHelperFun.h"
 #include "KernelHookAPI.h"
+#include "FDriverUtil.h"
 
 //PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
 
@@ -40,19 +41,25 @@ NTSTATUS ProtectDriverDispatchDeviceControl(
     switch (ioControlCode)
     {
     case IOCTL_PROTDRV_INSTALL_HOOK:
-        InstallHook();
+		{
+			if (inputBufferLength == sizeof(HANDLE))
+			{
+				FNT_VERIFY(InstallHook(HANDLE(inputBuffer)));
+			}
+		}
         break;
 
     case IOCTL_PROTDRV_UNINSTALL_HOOK:
-        UnInstallHook();
+		{
+			FNT_VERIFY(UnInstallHook());
+		}
         break;
 
     case IOCTL_PROTDRV_SET_INFO:
         {
             if (inputBufferLength == sizeof(PROTECT_WND_INFO))
             {
-                SetProtectWndInfo((PPROTECT_WND_INFO)inputBuffer);
-                status = STATUS_SUCCESS;
+                FNT_VERIFY(SetProtectWndInfo((PPROTECT_WND_INFO)inputBuffer));
             }
             else
             {
@@ -62,8 +69,7 @@ NTSTATUS ProtectDriverDispatchDeviceControl(
         break;
     case IOCTL_PROTDRV_CLEAR_INFO:
         {
-            SetProtectWndInfo(NULL);
-            status = STATUS_SUCCESS;
+            FNT_VERIFY(SetProtectWndInfo(NULL));
         }
         break;
     default:
@@ -86,6 +92,16 @@ VOID ProtectDriverUnload(IN PDRIVER_OBJECT pDriverObject)
     */
 	KdPrint(("ProtectDriverUnload, pDriverObject=0x%p, Device=0x%p\n", pDriverObject, pDriverObject->DeviceObject));
 
+	
+	NTSTATUS status = STATUS_SUCCESS;
+	FNT_VERIFY(UnInstallHook());
+
+	UNICODE_STRING Win32NameString;
+	RtlInitUnicodeString (&Win32NameString , PROTECT_DOS_DEVICE_NAME);	
+
+	FNT_VERIFY(IoDeleteSymbolicLink (&Win32NameString));
+	NT_ASSERT(NULL != pDriverObject->DeviceObject);
+
     IoDeleteDevice(pDriverObject->DeviceObject);
 }
 
@@ -97,7 +113,7 @@ extern "C" NTSTATUS DriverEntry(
 	KdPrint(("[%d] ProtectDrv DriverEntry, pDriverObject=0x%p, pRegistryPath=%wZ\n", 
         PsGetCurrentProcessId(), pDriverObject, pRegistryPath));
 
-	NTSTATUS						status;    
+	NTSTATUS status = STATUS_SUCCESS;
 	PDEVICE_OBJECT					DeviceObject = NULL;
     UNICODE_STRING ntName;
     UNICODE_STRING win32Name;
@@ -120,7 +136,7 @@ extern "C" NTSTATUS DriverEntry(
 
 	KdPrint(("Address of new DeviceObject is 0x%p\n" , DeviceObject));
 
-    RtlInitUnicodeString (&win32Name, PROTECT_NT_DEVICE_NAME);	
+    RtlInitUnicodeString (&win32Name, PROTECT_DOS_DEVICE_NAME);	
     FNT_VERIFY(IoCreateSymbolicLink ( 
         &win32Name, 
         &ntName));
@@ -130,11 +146,13 @@ extern "C" NTSTATUS DriverEntry(
         IoDeleteDevice( DeviceObject );
         return status;
     }
+	KdPrint(("Success Create Symbolic Link %wZ => %wZ\n", &win32Name, &ntName));
+
     NT_ASSERT(pDriverObject->DeviceObject == NULL || pDriverObject->DeviceObject == DeviceObject);
 
     pDriverObject->MajorFunction[IRP_MJ_CREATE] = SimpleDriverDispatchDefault;
     pDriverObject->MajorFunction[IRP_MJ_CLOSE] = SimpleDriverDispatchDefault;
-    pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = SimpleDriverDispatchDefault;
+    pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = ProtectDriverDispatchDeviceControl;
     pDriverObject->DriverUnload = ProtectDriverUnload;
 
 	//UNICODE_STRING			SymbolName;

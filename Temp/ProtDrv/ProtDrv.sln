@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProtDrv", "ProtDrv\ProtDrv.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProtDrvTester", "ProtDrvTester\ProtDrvTester.vcproj", "{5AE9AD28-6526-4ECE-A850-EDBF324422D6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FDriverDemoTester", "..\FJDriverDemo\FDriverDemoTester\FDriverDemoTester.vcproj", "{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		chk_win7|Win32 = chk_win7|Win32
@@ -27,9 +29,9 @@ Global
 		{7247C405-A700-4806-9DCB-24345212FCC0}.chk_wxp|Win32.ActiveCfg = chk_wxp|Win32
 		{7247C405-A700-4806-9DCB-24345212FCC0}.chk_wxp|Win32.Build.0 = chk_wxp|Win32
 		{7247C405-A700-4806-9DCB-24345212FCC0}.chk_wxp|x64.ActiveCfg = chk_wxp|Win32
-		{7247C405-A700-4806-9DCB-24345212FCC0}.Debug|Win32.ActiveCfg = fre_wxp|Win32
-		{7247C405-A700-4806-9DCB-24345212FCC0}.Debug|Win32.Build.0 = fre_wxp|Win32
-		{7247C405-A700-4806-9DCB-24345212FCC0}.Debug|x64.ActiveCfg = fre_wxp|Win32
+		{7247C405-A700-4806-9DCB-24345212FCC0}.Debug|Win32.ActiveCfg = chk_wxp|Win32
+		{7247C405-A700-4806-9DCB-24345212FCC0}.Debug|Win32.Build.0 = chk_wxp|Win32
+		{7247C405-A700-4806-9DCB-24345212FCC0}.Debug|x64.ActiveCfg = chk_wxp|Win32
 		{7247C405-A700-4806-9DCB-24345212FCC0}.fre_win7|Win32.ActiveCfg = fre_win7|Win32
 		{7247C405-A700-4806-9DCB-24345212FCC0}.fre_win7|Win32.Build.0 = fre_win7|Win32
 		{7247C405-A700-4806-9DCB-24345212FCC0}.fre_win7|x64.ActiveCfg = fre_win7|Win32
@@ -57,6 +59,24 @@ Global
 		{5AE9AD28-6526-4ECE-A850-EDBF324422D6}.Release|Win32.ActiveCfg = Release|Win32
 		{5AE9AD28-6526-4ECE-A850-EDBF324422D6}.Release|Win32.Build.0 = Release|Win32
 		{5AE9AD28-6526-4ECE-A850-EDBF324422D6}.Release|x64.ActiveCfg = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.chk_win7|Win32.ActiveCfg = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.chk_win7|Win32.Build.0 = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.chk_win7|x64.ActiveCfg = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.chk_wxp|Win32.ActiveCfg = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.chk_wxp|Win32.Build.0 = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.chk_wxp|x64.ActiveCfg = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug|Win32.Build.0 = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Debug|x64.ActiveCfg = Debug|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.fre_win7|Win32.ActiveCfg = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.fre_win7|Win32.Build.0 = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.fre_win7|x64.ActiveCfg = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.fre_wxp|Win32.ActiveCfg = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.fre_wxp|Win32.Build.0 = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.fre_wxp|x64.ActiveCfg = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Release|Win32.ActiveCfg = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Release|Win32.Build.0 = Release|Win32
+		{AA84A2F3-2970-4B1C-A4EF-65EF67EE2AF5}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

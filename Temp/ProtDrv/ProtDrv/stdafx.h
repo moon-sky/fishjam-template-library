@@ -18,9 +18,9 @@ extern "C"
 	//#include <wdm.h>                        //WDM式驱动(支持PnP)
 
 
-#ifndef FNT_VERIFY
-#  define FNT_VERIFY(x)     status=(x);
-#endif 
+//#ifndef FNT_VERIFY
+//#  define FNT_VERIFY(x)     status=(x);
+//#endif 
 
 #ifdef __cplusplus
 }

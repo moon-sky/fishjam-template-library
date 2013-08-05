@@ -12,7 +12,9 @@
 #define PROTECT_DEVICE_NAME         L"\\Device\\ProtDrvDevice"
 
 //客户端使用的驱动符号链接名，通过 CreateFile(FDRIVER_DEMO_DOS_DEVICE_NAME,..., OPEN_EXISTING ) 方式打开驱动
-#define PROTECT_NT_DEVICE_NAME		L"\\\\.\\Global\\FJDriverDemo"
+//#define PROTECT_NT_DEVICE_NAME		L"\\\\.\\Global\\ProtDev"
+#define PROTECT_DOS_DEVICE_NAME			L"\\DosDevices\\ProtDev"
+#define PROTECT_NT_CONTROL_FILE_NAME	L"\\\\.\\Global\\ProtDev"
 
 
 
