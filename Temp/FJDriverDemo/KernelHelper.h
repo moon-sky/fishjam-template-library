@@ -12,7 +12,6 @@ extern "C" {
 error unsupport OS
 #endif 
 
-
 #ifdef __cplusplus
 }
 #endif

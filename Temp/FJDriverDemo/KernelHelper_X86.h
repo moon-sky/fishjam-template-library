@@ -8,8 +8,8 @@ extern "C" {
 
 #if defined(_M_IX86)
 
-	KIRQL ClearWriteProtect();
-	void SetWriteProtect(KIRQL irql);
+	//KIRQL WPOFFx64();
+	//void WPONx64(KIRQL irql);
 	SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress();
 
 	PVOID GetShadowSSDTFuncAddr(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex);

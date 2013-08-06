@@ -3,6 +3,7 @@
 #include "FDriverDemoDefine.h"
 #include "FDriverUtil.h"
 #include "FDriverHookAPI.h"
+#include "LDE64x64.h"
 
 extern SYSTEM_SERVICE_TABLE *g_pShadowTable;
 
@@ -139,7 +140,7 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
     default:
         break;
 	}
-	return status;// FJDriverDemoDefaultHandler(DeviceObject, pIrp);
+	return FJDriverDemoDefaultHandler(DeviceObject, pIrp);
 }	
 
 
@@ -194,87 +195,6 @@ NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  pDriverObject, IN PDEVICE_OBJE
 	return STATUS_SUCCESS;
 }
 
-
-NTSTATUS FJDriverDemoIrpCompletion(
-					  IN PDEVICE_OBJECT DeviceObject,
-					  IN PIRP Irp,
-					  IN PVOID Context
-					  )
-{
-	PKEVENT Event = (PKEVENT) Context;
-
-	UNREFERENCED_PARAMETER(DeviceObject);
-	UNREFERENCED_PARAMETER(Irp);
-
-	KeSetEvent(Event, IO_NO_INCREMENT, FALSE);
-
-	return(STATUS_MORE_PROCESSING_REQUIRED);
-}
-
-NTSTATUS FJDriverDemoForwardIrpSynchronous(
-							  IN PDEVICE_OBJECT DeviceObject,
-							  IN PIRP Irp
-							  )
-{
-	PFJDriverDemo_DEVICE_EXTENSION   deviceExtension;
-	KEVENT event;
-	NTSTATUS status;
-
-	KeInitializeEvent(&event, NotificationEvent, FALSE);
-	deviceExtension = (PFJDriverDemo_DEVICE_EXTENSION) DeviceObject->DeviceExtension;
-
-	IoCopyCurrentIrpStackLocationToNext(Irp);
-
-	IoSetCompletionRoutine(Irp, FJDriverDemoIrpCompletion, &event, TRUE, TRUE, TRUE);
-
-	status = IoCallDriver(deviceExtension->TargetDeviceObject, Irp);
-
-	if (status == STATUS_PENDING) {
-		KeWaitForSingleObject(&event, Executive, KernelMode, FALSE, NULL);
-		status = Irp->IoStatus.Status;
-	}
-	return status;
-}
-
-NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
-{
-	PIO_STACK_LOCATION irpSp = IoGetCurrentIrpStackLocation(Irp);
-	PFJDriverDemo_DEVICE_EXTENSION pExt = ((PFJDriverDemo_DEVICE_EXTENSION)DeviceObject->DeviceExtension);
-	NTSTATUS status;
-
-	ASSERT(pExt);
-
-	switch (irpSp->MinorFunction)
-	{
-	case IRP_MN_START_DEVICE:
-		IoSetDeviceInterfaceState(&pExt->DeviceInterface, TRUE);
-		Irp->IoStatus.Status = STATUS_SUCCESS;
-		IoCompleteRequest(Irp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-
-	case IRP_MN_QUERY_REMOVE_DEVICE:
-		Irp->IoStatus.Status = STATUS_SUCCESS;
-		IoCompleteRequest(Irp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-
-	case IRP_MN_REMOVE_DEVICE:      //Pnp中卸载设备
-		IoSetDeviceInterfaceState(&pExt->DeviceInterface, FALSE);
-		status = FJDriverDemoForwardIrpSynchronous(DeviceObject, Irp);
-		IoDetachDevice(pExt->TargetDeviceObject);
-		IoDeleteDevice(pExt->DeviceObject);
-		RtlFreeUnicodeString(&pExt->DeviceInterface);
-		Irp->IoStatus.Status = STATUS_SUCCESS;
-		IoCompleteRequest(Irp, IO_NO_INCREMENT);
-		return STATUS_SUCCESS;
-
-	case IRP_MN_QUERY_PNP_DEVICE_STATE:
-		status = FJDriverDemoForwardIrpSynchronous(DeviceObject, Irp);
-		Irp->IoStatus.Information = 0;
-		IoCompleteRequest(Irp, IO_NO_INCREMENT);
-		return status;
-	}
-	return FJDriverDemoDefaultHandler(DeviceObject, Irp);
-}
 
 //每个内核模块的入口函数，在加载该模块时被系统进程System调用一次
 NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  RegistryPath)
@@ -356,6 +276,10 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	//DriverObject->DriverExtension->AddDevice = FJDriverDemoAddDevice;
 
 #endif 
+
+	//初始化反汇编引擎
+	LDE_init();
+
 	KdPrint(("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 
 	return status;

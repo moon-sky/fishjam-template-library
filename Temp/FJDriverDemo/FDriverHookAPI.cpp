@@ -67,6 +67,11 @@ public:
 
 	int						ONEPARAM_ROUTINE_WINDOWFROMDC;
 
+	ULONG					nPatchSizeGdiBltBlt;
+	
+	//HOOK_TRACE_INFO			hHookNtGdiBitBlt;
+	//ULONG                   ACLEntriesNtGdiBitBlt[1];
+
 	NTGDIBITBLT				pOrigNtGdiBitBlt;
 	NTGDIEXTTEXTOUTW		pOrigNtGdiExtTextOutW;
     NTGDIGETDCDWORD         pOrigNtGdiGetDcDWord;
@@ -100,6 +105,8 @@ public:
 		IndexOfNtGdiFlushUserBatch = -1;
 
 		ONEPARAM_ROUTINE_WINDOWFROMDC = -1;
+
+		nPatchSizeGdiBltBlt = 0;
 
 		pOrigNtGdiBitBlt = NULL;
 		pOrigNtGdiExtTextOutW = NULL;
@@ -854,7 +861,7 @@ void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
 			g_pDriverHookApiInfos->m_hWndDesktop = hWndDesktop;
 
             NTSTATUS status = STATUS_SUCCESS;
-            KIRQL irql = ClearWriteProtect();
+            //KIRQL irql = WPOFFx64();
 
             //KdPrint(("IRQL : %#x", KeGetCurrentIrql()));
 
@@ -875,7 +882,7 @@ void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
                 PsLookupProcessByProcessId(hProcess, &pEProcess);
                 if (pEProcess == NULL)
                 {
-                    SetWriteProtect(irql);
+                    //WPONx64(irql);
 
 					g_pDriverHookApiInfos->FinalizeValue();
                     ExFreePoolWithTag(g_pDriverHookApiInfos, HOOK_API_INFO_TAG);
@@ -893,15 +900,21 @@ void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
                     g_hProcess = hProcess;
 
                     g_pDriverHookApiInfos->pOrigNtGdiBitBlt = (NTGDIBITBLT)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt));
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, MyNtGdiBitBlt);
+					KdPrint(("pOrigNtGdiBitBlt[0x%x] is %p\n", g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, g_pDriverHookApiInfos->pOrigNtGdiBitBlt));
+					PVOID pOldGdiBitBlt = NULL;
+					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, MyNtGdiBitBlt, &pOldGdiBitBlt,
+						&g_pDriverHookApiInfos->nPatchSizeGdiBltBlt);
 #if 0
                     g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW));
+					KdPrint(("pOrigNtGdiExtTextOutW[0x%x] is %p\n", g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW));
                     ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, MyNtGdiExtTextOutW);
 					
 					g_pDriverHookApiInfos->pOrigNtGdiOpenDCW = (NTGDIOPENDCW)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW));
+					KdPrint(("pOrigNtGdiOpenDCW[0x%x] is %p\n", g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, g_pDriverHookApiInfos->pOrigNtGdiOpenDCW));
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, MyNtGdiOpenDCW);
 
 					g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp = (NTGDIDELETEOBJECTAPP)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp));
+					KdPrint(("pOrigNtGdiDeleteObjectApp[0x%x] is %p\n", g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp));
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, MyNtGdiDeleteObjectApp);
 
                     g_pDriverHookApiInfos->pOrigNtUserCallOneParam = (NTUSERCALLONEPARAM)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtUserCallOneParam));
@@ -910,7 +923,7 @@ void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
                 KeUnstackDetachProcess(&KApcState);
                 //KeDetachProcess();
             }
-            SetWriteProtect(irql);
+            //WPONx64(irql);
         }
     }
 
@@ -924,7 +937,7 @@ void UnInstallScrollHook(void)
 	
     if (g_pDriverHookApiInfos)
     {
-		KIRQL irql = ClearWriteProtect();
+		//KIRQL irql = WPOFFx64();
 
         if (g_pShadowTable != NULL)
         {
@@ -941,8 +954,8 @@ void UnInstallScrollHook(void)
                     KAPC_STATE KApcState = {0};
                     KeStackAttachProcess(pEProcess, &KApcState);
 
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, g_pDriverHookApiInfos->pOrigNtGdiBitBlt);
 #if 0
+					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, g_pDriverHookApiInfos->pOrigNtGdiBitBlt);
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW);
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, g_pDriverHookApiInfos->pOrigNtGdiOpenDCW);
 					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp);
@@ -953,7 +966,7 @@ void UnInstallScrollHook(void)
                 }
             }
         }
-        SetWriteProtect(irql);
+        //WPONx64(irql);
 
         WaitTime.QuadPart = -1 * 10 * 1000 * 1000;
         while (g_SSDTAPILockCount > 0)

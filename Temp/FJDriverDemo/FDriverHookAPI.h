@@ -10,9 +10,61 @@
 KeAddSystemServiceTable
 
 KiServiceTable ?  == KeServiceDescriptorTable->ServiceTableBase;
-KeServiceDescriptorTable
-KeServiceDescriptorTableShadow
+nt!KeServiceDescriptorTable			-- fffff800`02ac5840
+nt!KeServiceDescriptorTableShadow	-- fffff800`02ac5880
+nt!KiServiceTable					-- fffff800`0288fb00, 即 SYSTEM_SERVICE_TABLE::ServiceTableBase
 
+1: kd> dp nt!KeServiceDescriptorTableShadow
+fffff800`02ac5880  fffff800`0288fb00 00000000`00000000
+fffff800`02ac5890  00000000`00000191 fffff800`0289078c
+fffff800`02ac58a0  fffff960`001c1c00 00000000`00000000
+fffff800`02ac58b0  00000000`0000033b fffff960`001c391c
+
+1: kd> ?? pServiceTable   -- (即通过类型显示 nt!KeServiceDescriptorTableShadow::ntoskrnl )
+struct _SYSTEM_SERVICE_TABLE * 0xfffff800`02ac5880
++0x000 ServiceTableBase : 0xfffff800`0288fb00  -> 0x02f6f000`04106900 Void
++0x008 CounterTable     : (null) 
++0x010 NumberOfServices : 0x191
++0x018 ArgumentsTable   : 0xfffff800`0289078c  ""
+
+1: kd> ?? &pServiceTable[1] -- (即通过类型显示 nt!KeServiceDescriptorTableShadow::win32k )
+struct _SYSTEM_SERVICE_TABLE * 0xfffff800`02ac58a0
++0x000 ServiceTableBase : 0xfffff960`001c1c00  -> 0xfff0a301`fff39800 Void
++0x008 CounterTable     : (null) 
++0x010 NumberOfServices : 0x33b
++0x018 ArgumentsTable   : 0xfffff960`001c391c  ""
+
+0: kd> dv
+pServiceTable = 0xfffff800`02ac5880
+nIndex = 0n8
+newAddress = 0xfffff880`02ab6980
+status = 0n0
+W32pServiceTable = 0xfffff960`001c1c00
+i = 0n0
+qwTemp = 0
+pWin32k = 0xfffff800`02ac58a0
+dwTemp = 0n0
+
+0: kd> dd fffff960`001c1c00	-- W32pServiceTable
+fffff960`001c1c00  fff39800 fff0a301 000206c0 00101d00		0~3
+fffff960`001c1c10  00095ac0 00022700 fff99a00 ffddfec3		1~7
+fffff960`001c1c20  0003ac47 00fbb500 ffed1d80 ffe4f980		8~11
+fffff960`001c1c30  000c5380 000af0c0 000e8700 fffeb5c0
+fffff960`001c1c40  ffb1d500 0004e780 ffa561c0 000b9000
+fffff960`001c1c50  000b1fc0 000fbd40 00037b00 000b3900
+fffff960`001c1c60  ffb212c0 000b5380 000a0f00 ffb2a580
+fffff960`001c1c70  ffa2a543 ffa83800 0012aac0 00093c00
+
+0xfffff960`001c1c00 + 依次的数字>4
+Address of 1 is fffff960`001b2630 -- win32k!NtUserPeekMessage    	-- 001c1c00 + Ffff0a30   -- 1
+Address of 2 is fffff960`001c3c6c -- win32k!NtUserCallOneParam 		-- 001c1c00 + 0000206c   -- 2
+Address of 3 is fffff960`001d1dd0 -- win32k!NtUserGetKeyState		-- 001c1c00 + 000101d0   -- 3
+Address of 4 is fffff960`001cb1ac -- win32k!NtUserInvalidateRect	-- 001c1c00 + 000095ac   -- 4
+Address of 5 is fffff960`001c3e70 -- win32k!NtUserCallNoParam		-- 001c1c00 + 00002270	 -- 5
+Address of 6 is fffff960`001bb5a0 -- win32k!NtUserGetMessage		-- 001c1c00 + Ffff99a0	 -- 6
+Address of 7 is fffff960`0019fbec -- win32k!NtUserMessageCall		-- 001c1c00 + Fffddfec	 -- 7
+Address of 8 is fffff960`001c56c4 -- win32k!NtGdiBitBlt			-- 001c1c00 + 00003ac4	 -- 8
+Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fbb50	 -- 9
 ******************************************************************************************************************/
 
 //#include "WindowsTypes.h"

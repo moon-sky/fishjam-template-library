@@ -3,7 +3,7 @@
 
 #if defined(_M_IX86)
 
-KIRQL  ClearWriteProtect(VOID)
+KIRQL  WPOFFx64(VOID)
 {
 	KIRQL irql = KeGetCurrentIrql();
 
@@ -20,7 +20,7 @@ KIRQL  ClearWriteProtect(VOID)
 	return irql;
 }
 
-VOID  SetWriteProtect(KIRQL irql)
+VOID  WPONx64(KIRQL irql)
 {
 	__asm
 	{
@@ -116,7 +116,10 @@ PVOID GetShadowSSDTFuncAddr(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex)
 NTSTATUS ModifyShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress)
 {
 	NTSTATUS status = STATUS_SUCCESS;
+
+	KIRQL irql = WPOFFx64();
 	InterlockedExchangePointer(&(pServiceTable[1].ServiceTableBase[nIndex]), newAddress);
+	WPONx64(irql);
 
 	return status;
 }
