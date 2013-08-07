@@ -291,7 +291,7 @@ public:
 	//根据操作系统来确定具体函数的服务号
 	NTSTATUS InitCallNumber()
 	{
-		NT_ASSERT(g_pShadowTable);
+		//NT_ASSERT(g_pShadowTable);
 
 		NTSTATUS status = STATUS_SUCCESS;
 		ULONG majorVersion = 0;
@@ -331,7 +331,7 @@ SCROLL_HOOK_TARGET g_ScrollHookTarget = {0};
 ULONG g_IsScrolled = FALSE;
 
 // If the current one hooking SSDT API function calls and function call in progress, if this value has a value greater than 0.
-ULONG g_SSDTAPILockCount = 0;
+LONG g_SSDTAPILockCount = 0;
 
 //typedef ULONG (*SCROLLWINDOWEX)(HWND hWnd, int dx, int dy, const RECT *prcScroll, const RECT *prcClip, HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags);
 //ULONG (*OrigScrollWindowEx)(HWND hWnd, int dx, int dy, const RECT *prcScroll, const RECT *prcClip, HRGN hrgnUpdate, LPRECT prcUpdate, UINT flags);
@@ -691,58 +691,62 @@ BOOL MyNtGdiBitBlt(
 					 ULONG  ROP, ULONG crBackColor,ULONG fl)
 {
 	NTSTATUS status = STATUS_SUCCESS;
-	static LONG nCount = 0;
 	BOOL nResult = TRUE;
 
-    HWND hWndDestFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCDest, g_pDriverHookApiInfos->ONEPARAM_ROUTINE_WINDOWFROMDC);
-    HWND hWndSrcFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCSrc, g_pDriverHookApiInfos->ONEPARAM_ROUTINE_WINDOWFROMDC);
-
-
-	BOOL bWillPrevent = FALSE;
-	if (hWndDestFromDC == g_pDriverHookApiInfos->m_hWndDesktop
-		|| hWndSrcFromDC == g_pDriverHookApiInfos->m_hWndDesktop
-		|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hDCSrc))
+	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
+	__try
 	{
-		//Skip 
-		//KdPrint(("[%d], Bitblt for Desktop Wnd\n"));
-		RECT rcWnd = g_ScrollHookTarget.rcProtectWindow;
-
-		//drawProtectResult  -- FALSE , 而 正常的 Draw 返回 TRUE
-		//[1972], !!!! In MyNtGdiBitBlt, hWndDesktop=0x10014, hWndDestFromDC=0x0, hDCDest=0x92010acd, hWndSrcFromDC=0x10014, 
-		//hDCSrc=0x1010056, nResult=1, drawProtecResult=0, rcWnd={373, 313, 907 ,708}, hDCProtect=0x8801097d
-		BOOL drawProtectResult = g_pDriverHookApiInfos->pOrigNtGdiBitBlt(hDCDest, rcWnd.left, rcWnd.top, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top,
-			g_ScrollHookTarget.hDCProtect, 0, 0, SRCCOPY, ULONG(-1) , 0);
-
-		KdPrint(("[%d], !!!! In MyNtGdiBitBlt, hWndDesktop=0x%x, hWndDestFromDC=0x%x, "
-			"hDCDest=0x%x, hWndSrcFromDC=0x%x, hDCSrc=0x%x, nResult=%d, drawProtecResult=%d,"
-			"rcWnd={%d, %d, %d ,%d}, hDCProtect=0x%x\n"
-			, 
-			PsGetCurrentProcessId(),
-			g_pDriverHookApiInfos->m_hWndDesktop, hWndDestFromDC, hDCDest, 
-			hWndSrcFromDC, hDCSrc, nResult, drawProtectResult,
-			rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, g_ScrollHookTarget.hDCProtect
-			));
+		HWND hWndDestFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCDest, g_pDriverHookApiInfos->ONEPARAM_ROUTINE_WINDOWFROMDC);
+		HWND hWndSrcFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDCSrc, g_pDriverHookApiInfos->ONEPARAM_ROUTINE_WINDOWFROMDC);
 
 
-		bWillPrevent = TRUE;
+		BOOL bWillPrevent = FALSE;
+		if (hWndDestFromDC == g_pDriverHookApiInfos->m_hWndDesktop
+			|| hWndSrcFromDC == g_pDriverHookApiInfos->m_hWndDesktop
+			|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hDCSrc))
+		{
+			//Skip 
+			//KdPrint(("[%d], Bitblt for Desktop Wnd\n"));
+			RECT rcWnd = g_ScrollHookTarget.rcProtectWindow;
+
+			//drawProtectResult  -- FALSE , 而 正常的 Draw 返回 TRUE
+			//[1972], !!!! In MyNtGdiBitBlt, hWndDesktop=0x10014, hWndDestFromDC=0x0, hDCDest=0x92010acd, hWndSrcFromDC=0x10014, 
+			//hDCSrc=0x1010056, nResult=1, drawProtecResult=0, rcWnd={373, 313, 907 ,708}, hDCProtect=0x8801097d
+			BOOL drawProtectResult = g_pDriverHookApiInfos->pOrigNtGdiBitBlt(hDCDest, rcWnd.left, rcWnd.top, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top,
+				g_ScrollHookTarget.hDCProtect, 0, 0, SRCCOPY, ULONG(-1) , 0);
+
+			KdPrint(("[%d], !!!! In MyNtGdiBitBlt, hWndDesktop=0x%x, hWndDestFromDC=0x%x, "
+				"hDCDest=0x%x, hWndSrcFromDC=0x%x, hDCSrc=0x%x, nResult=%d, drawProtecResult=%d,"
+				"rcWnd={%d, %d, %d ,%d}, hDCProtect=0x%x\n"
+				, 
+				PsGetCurrentProcessId(),
+				g_pDriverHookApiInfos->m_hWndDesktop, hWndDestFromDC, hDCDest, 
+				hWndSrcFromDC, hDCSrc, nResult, drawProtectResult,
+				rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, g_ScrollHookTarget.hDCProtect
+				));
+
+
+			bWillPrevent = TRUE;
+		}
+		else
+		{
+			nResult = g_pDriverHookApiInfos->pOrigNtGdiBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
+		}
+		if (bWillPrevent)
+		{
+			//RECT rcClient = {XDest, YDest, XDest + Width, YDest + Height};
+			//FNT_VERIFY(g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW(hDCDest, 0, 0, ETO_OPAQUE, &rcClient, NULL, 0, NULL, 0));
+			//KdPrint(("OrigNtGdiExtTextOutW, return 0x%x\n", status));
+		}
+
+		//EngBitBlt(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0);
 	}
-	else
+	__finally
 	{
-		nResult = g_pDriverHookApiInfos->pOrigNtGdiBitBlt(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
-	}
-	if (bWillPrevent)
-	{
-		RECT rcClient = {XDest, YDest, XDest + Width, YDest + Height};
-		FNT_VERIFY(g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW(hDCDest, 0, 0, ETO_OPAQUE, &rcClient, NULL, 0, NULL, 0));
-		//KdPrint(("OrigNtGdiExtTextOutW, return 0x%x\n", status));
+		SSDT_API_CALL_LEAVE(g_SSDTAPILockCount);
 	}
 
-	//EngBitBlt(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0);
-	
-	InterlockedIncrement(&nCount);
-	if (nCount % 20 == 0)
-	{
-	}
+
 	return nResult;
 }
 
@@ -785,8 +789,8 @@ HDC MyNtGdiOpenDCW( PUNICODE_STRING Device,
 {
 	HDC hDC = g_pDriverHookApiInfos->pOrigNtGdiOpenDCW(Device, InitData, pustrLogAddr, iType, hspool, pDriverInfo2, pUMdhpdev);
 
-	KdPrint(("[%d], In MyNtGdiOpenDCW Device=%wZ, hDC=0x%x\n", 
-		PsGetCurrentProcessId(), Device, hDC));
+	//KdPrint(("[%d], In MyNtGdiOpenDCW Device=%wZ, hDC=0x%x\n", 
+	//	PsGetCurrentProcessId(), Device, hDC));
 
 	if (!Device)
 		//|| (RtlEqualUnicodeString(Device, &g_pDriverHookApiInfos->m_UnicodeString_DISPLAY, TRUE)))
@@ -865,8 +869,8 @@ void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
 
             //KdPrint(("IRQL : %#x", KeGetCurrentIrql()));
 
-            g_pShadowTable = GetKeServiceDescriptorTableShadowAddress();
-            if (g_pShadowTable == NULL)
+            
+            if (NULL == GetKeServiceDescriptorTableShadowAddress())
             {
                 KdPrint(("Failed GetShadowTable"));
             }
@@ -876,8 +880,8 @@ void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
 
                 //ULONG hCsrPid = (ULONG)GetCsrPid();
 
-                KdPrint(("ServiceDescriptorShadowTableAddress : %#x, SSDT EntryCount=%d, Shadow EntryCount=%d, PID=%d\n", 
-                    g_pShadowTable, g_pShadowTable[0].NumberOfServices, g_pShadowTable[1].NumberOfServices, hProcess));
+                //KdPrint(("ServiceDescriptorShadowTableAddress : %#x, SSDT EntryCount=%d, Shadow EntryCount=%d, PID=%d\n", 
+                //    g_pShadowTable, g_pShadowTable[0].NumberOfServices, g_pShadowTable[1].NumberOfServices, hProcess));
 
                 PsLookupProcessByProcessId(hProcess, &pEProcess);
                 if (pEProcess == NULL)
@@ -899,27 +903,28 @@ void InstallCopyProtectHook(HANDLE hProcess, HWND hWndDesktop)
                 {
                     g_hProcess = hProcess;
 
-                    g_pDriverHookApiInfos->pOrigNtGdiBitBlt = (NTGDIBITBLT)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt));
+                    //g_pDriverHookApiInfos->pOrigNtGdiBitBlt = (NTGDIBITBLT)(GetShadowSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtGdiBitBlt));
 					KdPrint(("pOrigNtGdiBitBlt[0x%x] is %p\n", g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, g_pDriverHookApiInfos->pOrigNtGdiBitBlt));
-					PVOID pOldGdiBitBlt = NULL;
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, MyNtGdiBitBlt, &pOldGdiBitBlt,
-						&g_pDriverHookApiInfos->nPatchSizeGdiBltBlt);
-#if 0
-                    g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW));
+					ModifyShadowSSDTFunc(g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, MyNtGdiBitBlt, (PVOID*)&g_pDriverHookApiInfos->pOrigNtGdiBitBlt,
+						NULL);
+
+                    //g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW));
+                    ModifyShadowSSDTFunc(g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, MyNtGdiExtTextOutW, 
+						(PVOID*)&g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW, NULL);
 					KdPrint(("pOrigNtGdiExtTextOutW[0x%x] is %p\n", g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW));
-                    ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, MyNtGdiExtTextOutW);
 					
-					g_pDriverHookApiInfos->pOrigNtGdiOpenDCW = (NTGDIOPENDCW)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW));
+					//g_pDriverHookApiInfos->pOrigNtGdiOpenDCW = (NTGDIOPENDCW)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW));
+					ModifyShadowSSDTFunc(g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, MyNtGdiOpenDCW, (PVOID*)&g_pDriverHookApiInfos->pOrigNtGdiOpenDCW, NULL);
 					KdPrint(("pOrigNtGdiOpenDCW[0x%x] is %p\n", g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, g_pDriverHookApiInfos->pOrigNtGdiOpenDCW));
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, MyNtGdiOpenDCW);
 
-					g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp = (NTGDIDELETEOBJECTAPP)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp));
+					//g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp = (NTGDIDELETEOBJECTAPP)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp));
+					ModifyShadowSSDTFunc(g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, MyNtGdiDeleteObjectApp, 
+						(PVOID*)&g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp, NULL);
 					KdPrint(("pOrigNtGdiDeleteObjectApp[0x%x] is %p\n", g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp));
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, MyNtGdiDeleteObjectApp);
 
-                    g_pDriverHookApiInfos->pOrigNtUserCallOneParam = (NTUSERCALLONEPARAM)(GetShadowSSDTFuncAddr(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtUserCallOneParam));
-#endif 
-                }
+					g_pDriverHookApiInfos->pOrigNtUserCallOneParam = (NTUSERCALLONEPARAM)(GetShadowSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtUserCallOneParam));
+
+				}
                 KeUnstackDetachProcess(&KApcState);
                 //KeDetachProcess();
             }
@@ -939,7 +944,7 @@ void UnInstallScrollHook(void)
     {
 		//KIRQL irql = WPOFFx64();
 
-        if (g_pShadowTable != NULL)
+        //if (g_pShadowTable != NULL)
         {
             KdPrint(("ServiceDescriptorShadowTableAddress : %#x", g_pShadowTable));
 
@@ -954,13 +959,12 @@ void UnInstallScrollHook(void)
                     KAPC_STATE KApcState = {0};
                     KeStackAttachProcess(pEProcess, &KApcState);
 
-#if 0
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, g_pDriverHookApiInfos->pOrigNtGdiBitBlt);
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW);
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, g_pDriverHookApiInfos->pOrigNtGdiOpenDCW);
-					ModifyShadowSSDTFunc(g_pShadowTable, g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp);
-#endif               
-                    g_pDriverHookApiInfos->pOrigNtUserCallOneParam = NULL;
+					ModifyShadowSSDTFunc(g_pDriverHookApiInfos->IndexOfNtGdiBitBlt, g_pDriverHookApiInfos->pOrigNtGdiBitBlt, NULL, NULL);
+					ModifyShadowSSDTFunc(g_pDriverHookApiInfos->IndexOfNtGdiExtTextOutW, g_pDriverHookApiInfos->pOrigNtGdiExtTextOutW, NULL, NULL);
+					ModifyShadowSSDTFunc(g_pDriverHookApiInfos->IndexOfNtGdiOpenDCW, g_pDriverHookApiInfos->pOrigNtGdiOpenDCW, NULL, NULL);
+					ModifyShadowSSDTFunc(g_pDriverHookApiInfos->IndexOfNtGdiDeleteObjectApp, g_pDriverHookApiInfos->pOrigNtGdiDeleteObjectApp, NULL, NULL);
+
+					g_pDriverHookApiInfos->pOrigNtUserCallOneParam = NULL;
 
                     KeUnstackDetachProcess(&KApcState);
                 }

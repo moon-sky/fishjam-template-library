@@ -3,6 +3,8 @@
 
 #if defined(_M_IX86)
 
+PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
+
 KIRQL  WPOFFx64(VOID)
 {
 	KIRQL irql = KeGetCurrentIrql();
@@ -35,8 +37,8 @@ VOID  WPONx64(KIRQL irql)
 
 typedef struct _SERVICE_DESCRIPTOR_TABLE *PSERVICE_DESCRIPTOR_TABLE;
 
-PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
-__declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, ULONG, ULONG); 
+extern PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
+extern __declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, ULONG, ULONG); 
 
 //根据相同版本下与SSDT地址存在的偏移获取的SSDT SHADOW的地址
 // WinDbg 下 ?KeServiceDescriptorTable-
@@ -52,6 +54,12 @@ SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 	//Initialize an instance of System Service Table, will be used to
 	//obtain an address from KeAddSystemServiceTable
 	SYSTEM_SERVICE_TABLE *rc=0; 
+
+	if (g_pSystemServiceTable)
+	{
+		return g_pSystemServiceTable;
+	}
+
 	// Make 100 attempts to match a valid address with that of KeServiceDescriptorTable 
 	for (i=0; i<4096; i++) {  //PAGE_SIZE
 		__try { 
@@ -80,45 +88,40 @@ SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 		}
 	} 
 	// otherwise, there is a valid address! So return it! 
-	return rc; 
 
-	//方法2
-#if 0
-	PUCHAR cPtr, pOpcode;
-	ULONG Length = 0;
+	g_pSystemServiceTable = rc;
 
-	for (cPtr = (PUCHAR)KeAddSystemServiceTable;
-		cPtr < (PUCHAR)KeAddSystemServiceTable + PAGE_SIZE;
-		cPtr += Length)
+	if (g_pSystemServiceTable)
 	{
-		if (!MmIsAddressValid(cPtr)) break;
-
-		Length = SizeOfCode(cPtr, &pOpcode);
-
-		if (!Length || (Length == 1 && *pOpcode == 0xC3)) break;
-
-		//找到以下汇编对应的位置： 
-		//805ba5a3 8d8840a65580    lea    ecx,nt!KeServiceDescriptorTableShadow (8055a640)[eax]
-		if (*(PUSHORT)pOpcode == 0x888D)
-		{
-			KeServiceDescriptorTableShadow = *(PVOID *)(pOpcode + 2);
-			break;
-		}
+		KdPrint(("g_pSystemServiceTable : %#x, SSDT EntryCount=%d, Shadow EntryCount=%d\n", 
+			g_pSystemServiceTable, g_pSystemServiceTable[0].NumberOfServices, 
+			g_pSystemServiceTable[1].NumberOfServices));
 	}
-#endif 
+	else
+	{
+		KdPrint(("!!! Find Shadow SSDT Failed from KeAddSystemServiceTable=%p\n", KeAddSystemServiceTable));
+	}
+
+	return g_pSystemServiceTable; 
 }
 
-PVOID GetShadowSSDTFuncAddr(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex)
+
+PVOID GetShadowSSDTFuncAddr(int nIndex)
 {
-	return pServiceTable[1].ServiceTableBase[nIndex];
+	return g_pSystemServiceTable[1].ServiceTableBase[nIndex];
 }
 
-NTSTATUS ModifyShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress)
+NTSTATUS ModifyShadowSSDTFunc(int nIndex, PVOID newAddress,
+							  OUT PVOID *Original_ApiAddress, OUT ULONG *PatchSize)
 {
 	NTSTATUS status = STATUS_SUCCESS;
 
 	KIRQL irql = WPOFFx64();
-	InterlockedExchangePointer(&(pServiceTable[1].ServiceTableBase[nIndex]), newAddress);
+	if (Original_ApiAddress)
+	{
+		*Original_ApiAddress = g_pSystemServiceTable[1].ServiceTableBase[nIndex];
+	}
+	InterlockedExchangePointer(&(g_pSystemServiceTable[1].ServiceTableBase[nIndex]), newAddress);
 	WPONx64(irql);
 
 	return status;

@@ -72,8 +72,8 @@
 *       bcdedit /set loadoptions DDISABLE_INTEGRITY_CHECKS  <== 关闭 Win7 系统中的驱动签名强制要求
 *          64系统似乎无效，需要通过 bcdedit /set nointegritychecks ON ？ 有 Driver Signature 工具似乎可以？
 *          重新开启签名要求：bcdedit /set nointegritychecks off  
-*         bcdedit /set testsigning ON <== 允许加载测试签名签发的驱动程序(还是要签名，不过可以用非微软认证的证书？)
-*       启动时选择 F8， 然后选择“禁止强制驱动签名”
+*         bcdedit /set testsigning ON <== 允许加载测试签名签发的驱动程序(还是要签名，不过可以用非微软认证的证书)
+*       启动时选择 F8， 然后选择“禁止强制驱动签名” 即可以不用签名进行测试
 *     
 * 
 *   其他WinDbg的常用命令参见 FtlDebug.h 文件
@@ -90,6 +90,9 @@
 *   PAGE_FAULT_IN_NONPAGED_AREA(0x00000050L) -- 非分页内存中发生了缺页错误
 *     1.IRQL 可能不满足需求，可以通过 KeGetCurrentIrql 获取当前的IRQL， 也可以通过 PAGED_CODE 宏帮忙检查;
 *     2.如是卸载驱动时 IoDeleteSymbolicLink 出错，可能是因为 DriverEntry 被声明为 #pragma code_seg("INIT") 造成
+*
+* 常见错误
+*   1.用户态 CreateFile 打开符号时返回 1(Incorrect function), 多半是因为驱动没有实现 IRP_MJ_CREATE/IRP_MJ_CLOSE 等的分发函数
 ******************************************************************************************************************/
 
 #endif //F_DRIVER_DEBUG_H

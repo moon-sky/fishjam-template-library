@@ -12,8 +12,9 @@ extern "C" {
 	//void WPONx64(KIRQL irql);
 	SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress();
 
-	PVOID GetShadowSSDTFuncAddr(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex);
-	NTSTATUS ModifyShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress);
+	PVOID GetShadowSSDTFuncAddr(int nIndex);
+	NTSTATUS ModifyShadowSSDTFunc(int nIndex, PVOID newAddress,
+		OUT PVOID *Original_ApiAddress, OUT ULONG *PatchSize);
 
 #endif 
 

@@ -5,7 +5,7 @@
 #include "FDriverHookAPI.h"
 #include "LDE64x64.h"
 
-extern SYSTEM_SERVICE_TABLE *g_pShadowTable;
+//extern SYSTEM_SERVICE_TABLE *g_pShadowTable;
 
 extern SCROLL_DATA g_ScrollData;
 extern SCROLL_HOOK_TARGET g_ScrollHookTarget;
@@ -113,9 +113,9 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 	case IOCTL_FDRIVER_INSTALL_HOOK:
 		{
 			//SYS_SERVICE_TABLE* pServiceTable = GetServiceDescriptorShadowTableAddress();
-			KdPrint(("Enter %s, g_pShadowTable=0x%p\n", "IOCTL_FDRIVER_INSTALL_HOOK", g_pShadowTable));
+			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK"));
 	
-			if (g_pShadowTable == NULL)
+			//if (g_pShadowTable == NULL)
 			{
 				if (inputBufferLength == sizeof(SCROLL_HOOK_TARGET))
 				{
@@ -123,10 +123,10 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 					InstallCopyProtectHook(g_ScrollHookTarget.hTargetProcess, g_ScrollHookTarget.hWndDeskTop);
 				}
 			}
-			else
-			{
-				KdPrint(("Already InstallCopyProtectHook()"));
-			}
+			//else
+			//{
+			//	KdPrint(("Already InstallCopyProtectHook()"));
+			//}
             status = STATUS_SUCCESS;
 		}
 		break;
