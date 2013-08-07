@@ -1,5 +1,6 @@
 #include "stdafx.h"
-#include "KernelHelper_X86.h"
+#include "KernelHookAPI.h"
+#include "KernelHelper.h"
 
 #if defined(_M_IX86)
 
