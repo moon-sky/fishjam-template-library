@@ -3,20 +3,13 @@
 #include "FDriverDemoDefine.h"
 #include "FDriverUtil.h"
 #include "FDriverHookAPI.h"
-#include "LDE64x64.h"
+#include "KernelHookAPI.h"
 
-//extern SYSTEM_SERVICE_TABLE *g_pShadowTable;
+//#include "LDE64x64.h"
 
-extern SCROLL_DATA g_ScrollData;
-extern SCROLL_HOOK_TARGET g_ScrollHookTarget;
 
-extern ULONG g_IsScrolled;
-
-//void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject);
-//NTSTATUS FJDriverDemoCreateClose(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
-//NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
-//NTSTATUS FJDriverDemoAddDevice(IN PDRIVER_OBJECT  pDriverObject, IN PDEVICE_OBJECT  PhysicalDeviceObject);
-//NTSTATUS FJDriverDemoPnP(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp);
+//extern SCROLL_HOOK_TARGET g_ScrollHookTarget;
+extern PROTECT_WND_INFO	g_ProtectWndInfo;
 
 typedef struct _deviceExtension
 {
@@ -45,7 +38,7 @@ void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 	KdPrint(("Enter FJDriverDemoUnload\n"));
 	
 #if 1
-	UnInstallScrollHook();
+	UnInstallAPIHook();
 
 	//ExAllocatePool()
     NTSTATUS status;
@@ -53,7 +46,7 @@ void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 
 	UNICODE_STRING Win32NameString;
 
-	//UnInstallScrollHook();
+	//UnInstallAPIHook();
 
 	RtlInitUnicodeString (&Win32NameString , FDRIVER_DEMO_DOS_DEVICE_NAME);	
 	FNT_VERIFY(IoDeleteSymbolicLink (&Win32NameString));
@@ -115,24 +108,17 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 			//SYS_SERVICE_TABLE* pServiceTable = GetServiceDescriptorShadowTableAddress();
 			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK"));
 	
-			//if (g_pShadowTable == NULL)
+			if (inputBufferLength == sizeof(PROTECT_WND_INFO))
 			{
-				if (inputBufferLength == sizeof(SCROLL_HOOK_TARGET))
-				{
-					RtlCopyMemory(&g_ScrollHookTarget, inputBuffer, sizeof(SCROLL_HOOK_TARGET));
-					InstallCopyProtectHook(g_ScrollHookTarget.hTargetProcess, g_ScrollHookTarget.hWndDeskTop);
-				}
+				RtlCopyMemory(&g_ProtectWndInfo, inputBuffer, sizeof(PROTECT_WND_INFO));
+				InstallApiHook(g_ProtectWndInfo.hTargetProcess, g_ProtectWndInfo.hWndDeskTop);
 			}
-			//else
-			//{
-			//	KdPrint(("Already InstallCopyProtectHook()"));
-			//}
             status = STATUS_SUCCESS;
 		}
 		break;
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
-			UnInstallScrollHook();
+			UnInstallAPIHook();
 			KdPrint(("%s\n", "Enter IOCTL_FDRIVER_INSTALL_HOOK"));
             status = STATUS_SUCCESS;
 		}
@@ -278,7 +264,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 #endif 
 
 	//初始化反汇编引擎
-	LDE_init();
+	//LDE_init();
 
 	KdPrint(("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 

@@ -47,15 +47,25 @@
 #define IOCTL_FDRIVER_FILTER_DESKTOP	(ULONG) CTL_CODE(FDRIVER_DEV_DRV, 0x802, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 #define IOCTL_FDRIVER_UNFILTER_DESKTOP	(ULONG) CTL_CODE(FDRIVER_DEV_DRV, 0x803, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 
-typedef struct _SCROLL_HOOK_TARGET
+typedef struct _PROTECT_WND_INFO
 {
 	HWND hWndDeskTop;
-	HWND hTargetWindow;
-	HANDLE hSelfProcess;
+	//HWND hTargetWindow;
+	//HANDLE hSelfProcess;
 	HANDLE hTargetProcess;
-	HDC	   hDCProtect;
-	RECT   rcProtectWindow;
-} SCROLL_HOOK_TARGET, *PSCROLL_HOOK_TARGET;
+	//HDC	   hDCProtect;
+	//RECT   rcProtectWindow;
+} PROTECT_WND_INFO, *PPROTECT_WND_INFO;
+
+//typedef struct _SCROLL_HOOK_TARGET
+//{
+//	HWND hWndDeskTop;
+//	HWND hTargetWindow;
+//	HANDLE hSelfProcess;
+//	HANDLE hTargetProcess;
+//	HDC	   hDCProtect;
+//	RECT   rcProtectWindow;
+//} SCROLL_HOOK_TARGET, *PSCROLL_HOOK_TARGET;
 
 
 //#define NT4_DRIVERNAME "\\\\.\\NTProcDrv"

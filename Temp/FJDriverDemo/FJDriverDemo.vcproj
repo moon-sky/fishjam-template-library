@@ -168,6 +168,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\KernelHookAPI.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 			</File>
@@ -258,11 +262,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\KernelHelper_Amd64.h"
-				>
-			</File>
-			<File
-				RelativePath=".\KernelHelper_X86.h"
+				RelativePath=".\KernelHookAPI.h"
 				>
 			</File>
 			<File

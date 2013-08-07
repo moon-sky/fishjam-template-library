@@ -18,6 +18,7 @@ LIBS=Win32k.lib
 SOURCES=stdafx.cpp \
 	FJDriverDemo.cpp \
 	FDriverUtil.c \
+	KernelHookAPI.cpp \
 	FDriverHookAPI.cpp
 
 AMD64_SOURCES=KernelHelper_Amd64.c

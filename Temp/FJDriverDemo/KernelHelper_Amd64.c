@@ -123,7 +123,7 @@ PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *O
 	return head_n_byte;
 }
 
-NTSTATUS ModifyShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress,
+NTSTATUS HookShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress,
 							  OUT PVOID *Original_ApiAddress, OUT ULONG *PatchSize)
 {
 	//ULONG64 OldAddress = 0;
@@ -133,7 +133,7 @@ NTSTATUS ModifyShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, P
 }	
 
 #if 0
-NTSTATUS ModifyShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress)
+NTSTATUS HookShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress)
 {
 	NTSTATUS status = STATUS_SUCCESS;
 	KIRQL irql;

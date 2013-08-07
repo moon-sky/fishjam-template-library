@@ -111,21 +111,39 @@ PVOID GetShadowSSDTFuncAddr(int nIndex)
 	return g_pSystemServiceTable[1].ServiceTableBase[nIndex];
 }
 
-NTSTATUS ModifyShadowSSDTFunc(int nIndex, PVOID newAddress,
-							  OUT PVOID *Original_ApiAddress, OUT ULONG *PatchSize)
+NTSTATUS HookShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
 	NTSTATUS status = STATUS_SUCCESS;
+	KIRQL irql = 0;
 
-	KIRQL irql = WPOFFx64();
-	if (Original_ApiAddress)
-	{
-		*Original_ApiAddress = g_pSystemServiceTable[1].ServiceTableBase[nIndex];
-	}
-	InterlockedExchangePointer(&(g_pSystemServiceTable[1].ServiceTableBase[nIndex]), newAddress);
+	KdPrint(("Hook Shadow func %ws at [%d], newAddress=%p\n", 
+		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, pHookApiInfo->pNewApiAddress));
+	NT_ASSERT(NULL == pHookApiInfo->pOrigApiAddress);
+
+	irql = WPOFFx64();
+	pHookApiInfo->pOrigApiAddress = g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT];
+	InterlockedExchangePointer(&(g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT]), pHookApiInfo->pNewApiAddress);
 	WPONx64(irql);
 
 	return status;
 }
 
+NTSTATUS RestoreShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
+{
+	NTSTATUS status = STATUS_SUCCESS;
+	KIRQL irql = 0;
+
+	KdPrint(("Restore Shadow func %ws at [%d], origAddress=%p\n", 
+		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, pHookApiInfo->pOrigApiAddress));
+
+	NT_ASSERT(NULL != pHookApiInfo->pOrigApiAddress);
+
+	irql = WPOFFx64();
+	InterlockedExchangePointer(&(g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT]), pHookApiInfo->pOrigApiAddress);
+	pHookApiInfo->pOrigApiAddress = NULL;
+	WPONx64(irql);
+
+	return status;
+}
 
 #endif //_M_IX86

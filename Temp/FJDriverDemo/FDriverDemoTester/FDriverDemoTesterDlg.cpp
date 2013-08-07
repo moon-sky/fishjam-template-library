@@ -177,16 +177,16 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
 
 	//DWORD dwProcessId = GetCurrentProcessId();
 	//API_VERIFY(m_DriverController.IoControl(IOCTL_PROTDRV_INSTALL_HOOK, &dwProcessId, sizeof(dwProcessId), NULL, 0))
-	SCROLL_HOOK_TARGET	hookTarget;
-	hookTarget.hWndDeskTop = ::GetDesktopWindow();
-	hookTarget.hTargetWindow = m_hWnd;
-	hookTarget.hSelfProcess = (HANDLE)GetCurrentProcessId();
-	hookTarget.hTargetProcess = (HANDLE)FTL::CFSystemUtil::GetPidFromProcessName(TEXT("csrss.exe"));
-	hookTarget.hDCProtect = m_MemoryDC.m_hDC;
+	PROTECT_WND_INFO	protectInfo;
+	protectInfo.hWndDeskTop = ::GetDesktopWindow();
+	//protectInfo.hTargetWindow = m_hWnd;
+	//protectInfo.hSelfProcess = (HANDLE)GetCurrentProcessId();
+	protectInfo.hTargetProcess = (HANDLE)FTL::CFSystemUtil::GetPidFromProcessName(TEXT("csrss.exe"));
+	//protectInfo.hDCProtect = m_MemoryDC.m_hDC;
 
-	ClientToScreen(&rcClient);
-	hookTarget.rcProtectWindow = rcClient;
-	API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_INSTALL_HOOK, &hookTarget, sizeof(hookTarget), NULL, 0));
+	//ClientToScreen(&rcClient);
+	//protectInfo.rcProtectWindow = rcClient;
+	API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_INSTALL_HOOK, &protectInfo, sizeof(protectInfo), NULL, 0));
 }
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallHook()
@@ -208,7 +208,6 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 		{
 			CWindowDC deskDC(NULL);
 			
-
 			CDC dcMemory;
 			API_VERIFY(dcMemory.CreateCompatibleDC(pDC));
 			CRect rcStaticDraw;
