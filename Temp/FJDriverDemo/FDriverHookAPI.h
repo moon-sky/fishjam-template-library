@@ -102,10 +102,6 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 //  获取函数地址的公式是：dwo(nt!KiServiceTable+n)+nt!KiServiceTable（n=0,1,2…）。
 //  http://bbs.dbgtech.net/forum.php?mod=viewthread&tid=360
 
-//Windows WIN32K.SYS System Call Table (NT/2000/XP/2003/Vista/2008/7)
-//  http://j00ru.vexillium.org/win32k_syscalls/
-//  http://j00ru.vexillium.org/win32k_x64/
-
 
 //Win7 64位对于未有认证签名的驱动程序进行了限制安装 -- 启动时F8后可以选择“禁用驱动程序签名强制”或通过bcdedit更改
 // on x86,we use Hook shadowSSDT; on x64,we use inline hook in user-mode;

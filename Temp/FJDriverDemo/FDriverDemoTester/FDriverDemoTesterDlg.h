@@ -38,6 +38,7 @@ private:
 	CDC m_MemoryDC;
 	CBitmap	m_bmpWindow;
 	CBitmap* m_pOldBmp;
+	BOOL _RefreshMemoryDC();
 public:
 	afx_msg void OnBnClickedBtnChooseDriverFile();
 	afx_msg void OnBnClickedBtnOpenDriver();

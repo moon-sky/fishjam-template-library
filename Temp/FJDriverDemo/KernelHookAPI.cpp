@@ -12,6 +12,10 @@
 SYSTEM_SERVICE_TABLE *g_pShadowTable = NULL;
 
 //函数原型 -- http://doxygen.reactos.org/
+//Windows WIN32K.SYS System Call Table (NT/2000/XP/2003/Vista/2008/7)
+//  http://j00ru.vexillium.org/win32k_syscalls/
+//  http://j00ru.vexillium.org/win32k_x64/
+
 
 typedef BOOL (*NTGDIBITBLT)(HDC hDCDest, int XDest, int YDest, int Width, int Height,
 						    HDC hDCSrc, int XSrc, int YSrc,	
@@ -35,15 +39,9 @@ typedef BOOL (*NTGDITRANSPARENTBLT)(HDC hdcDst, INT xDst, INT yDst, INT cxDst, I
 									COLORREF TransColor);
 
 
-typedef BOOL (*NTGDIEXTTEXTOUTW)(IN HDC 	hDC,
-                                     IN INT 	XStart,
-                                     IN INT 	YStart,
-                                     IN UINT 	fuOptions,
-                                     IN OPTIONAL LPRECT 	UnsafeRect,
-                                     IN LPWSTR 	UnsafeString,
-                                     IN INT 	Count,
-                                     IN OPTIONAL LPINT 	UnsafeDx,
-                                     IN DWORD 	dwCodePage);
+typedef BOOL (*NTGDIEXTTEXTOUTW)(HDC hDC, INT XStart, INT YStart, UINT fuOptions,
+								 LPRECT UnsafeRect, LPWSTR UnsafeString, INT Count, 
+								 LPINT UnsafeDx, DWORD dwCodePage);
 
 typedef HDC (*NTGDIOPENDCW)( PUNICODE_STRING Device,
 					 DEVMODEW *InitData,
@@ -54,12 +52,12 @@ typedef HDC (*NTGDIOPENDCW)( PUNICODE_STRING Device,
 					 VOID *pUMdhpdev );
 typedef BOOL (*NTGDIDELETEOBJECTAPP)(HDC  DCHandle);
 
-typedef NTSTATUS (*NTUSERCALLONEPARAM)(IN ULONG Param, IN ULONG Routine);
-
 typedef BOOL (*NTUSERPRINTWINDOW)(HWND 	hwnd, HDC hdcBlt, UINT nFlags);
 
 
 typedef DWORD (*NTGDIDDLOCK)(HANDLE hSurface, PDD_LOCKDATA puLockData, HDC hdcClip);
+
+typedef NTSTATUS (*NTUSERCALLONEPARAM)(IN ULONG Param, IN ULONG Routine);
 
 
 #define MAX_TRACE_CREATE_DISPLAY_DC_COUNT	1
@@ -86,6 +84,11 @@ BOOL Hooked_NtGdiTransparentBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT c
 								   HDC hdcSrc, INT xSrc, INT ySrc, INT cxSrc, INT cySrc,
 								   COLORREF TransColor);
 
+BOOL Hooked_NtGdiExtTextOutW(HDC hDC, INT XStart, INT YStart, UINT fuOptions,
+								 LPRECT UnsafeRect, LPWSTR UnsafeString, INT Count, 
+								 LPINT UnsafeDx, DWORD dwCodePage);
+
+
 HDC Hooked_NtGdiOpenDCW( PUNICODE_STRING Device,
 						DEVMODEW *InitData,
 						PUNICODE_STRING pustrLogAddr,
@@ -109,6 +112,7 @@ enum HookFuncType
 	hft_NtGdiPlgBlt,
 	hft_NtGdiMaskBlt,
 	hft_NtGdiTransparentBlt,
+	hft_NtGdiExtTextOutW,
 
 	hft_NtGdiOpenDCW,
 	hft_NtGdiDeleteObjectApp,
@@ -131,17 +135,6 @@ public:
 	//UNICODE_STRING			m_UnicodeString_DISPLAY;
 public:
 	HOOK_API_INFO			m_HookFuns[hft_FunctionCount];
-	//HOOK_API_INFO			hookNtGdiBitBlt;
-	//HOOK_API_INFO			hookNtGdiStretchBlt;
-	//HOOK_API_INFO			hookNtGdiPlgBlt;
-	//HOOK_API_INFO			hookNtGdiMaskBlt;
-	//HOOK_API_INFO			hookNtGdiTransparentBlt;
-
-	//HOOK_API_INFO			hookNtGdiOpenDCW;
-	//HOOK_API_INFO			hookNtGdiDeleteObjectApp;
-
-	//HOOK_API_INFO			hookNtUserPrintWindow;
-	//HOOK_API_INFO			hookNtGdiDdLock;
 
     int                     IndexOfNtUserCallOneParam;
 	int						ONEPARAM_ROUTINE_WINDOWFROMDC;
@@ -237,6 +230,7 @@ public:
 				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0xed;
 				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0xe3;
 				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x12a;
+				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x92;
 
 				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0xe9;
 				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x7a;
@@ -256,6 +250,7 @@ public:
 				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0xf7;
 				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0xed;
 				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x134;
+				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x95;
 
 				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0xf3;
 				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x7d;
@@ -302,6 +297,7 @@ public:
 				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x24a;
 				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x69;
 				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x275;
+				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x38;
 
 				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0xda;
 				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x23;
@@ -361,6 +357,11 @@ public:
 		m_HookFuns[hft_NtGdiTransparentBlt].pNewApiAddress = Hooked_NtGdiTransparentBlt;
 		m_HookFuns[hft_NtGdiTransparentBlt].nParamCount = 11;
 		m_HookFuns[hft_NtGdiTransparentBlt].bEnableHook = FALSE;
+
+		m_HookFuns[hft_NtGdiExtTextOutW].pwzApiName = L"NtGdiExtTextOutW";
+		m_HookFuns[hft_NtGdiExtTextOutW].pNewApiAddress = Hooked_NtGdiExtTextOutW;
+		m_HookFuns[hft_NtGdiExtTextOutW].nParamCount = 9;
+		m_HookFuns[hft_NtGdiExtTextOutW].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiOpenDCW].pwzApiName = L"NtGdiOpenDCW";
 		m_HookFuns[hft_NtGdiOpenDCW].pNewApiAddress = Hooked_NtGdiOpenDCW;
@@ -471,8 +472,11 @@ BOOL Hooked_NtGdiBitBlt(
 	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
 	__try
 	{
-		if (IsFilterHDC(hDCDest) 
-			|| IsFilterHDC(hDCSrc)
+		BOOL bIsFilterDCDest = IsFilterHDC(hDCDest);
+		BOOL bIsFilterDCSrc = IsFilterHDC(hDCSrc);
+		BOOL bIsCreateDisplayDC = g_pDriverHookApiInfos->IsCreatedDisplayDC(hDCSrc);
+
+		if (IsFilterHDC(hDCSrc) || IsFilterHDC(hDCDest)
 			|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hDCSrc))
 		{
 			//Skip 
@@ -483,8 +487,9 @@ BOOL Hooked_NtGdiBitBlt(
 				(hDCDest, rcWnd.left, rcWnd.top, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top,
 				hdcMemory, 0, 0, SRCCOPY, ULONG(-1) , 0);
 
-			KdPrint(("!!! in Hooked_NtGdiBitBlt, hdcMemory =0x%x, rcProtect={%d,%d -- %d,%d}, BitBltMemory=%d, Reason=%d\n", 
-				hdcMemory, rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, drawProtectResult, 0));
+			KdPrint(("!!! in Hooked_NtGdiBitBlt,isDest=%d, isSrc=%d, isCreateDC=%d, hDCDest=0x%x, hDCSrc=0x%x, hdcMemory =0x%x, rcProtect={%d,%d -- %d,%d}, BitBltMemory=%d\n", 
+				bIsFilterDCDest, bIsFilterDCSrc, bIsCreateDisplayDC, hDCDest, hDCSrc,
+				hdcMemory, rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, drawProtectResult));
 
 			//drawProtectResult  -- FALSE , 而 正常的 Draw 返回 TRUE
 			//[1972], !!!! In Hooked_NtGdiBitBlt, hWndDesktop=0x10014, hWndDestFromDC=0x0, hDCDest=0x92010acd, hWndSrcFromDC=0x10014, 
@@ -533,8 +538,8 @@ BOOL Hooked_NtGdiStretchBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT cyDst
 	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
 	__try
 	{
-		KdPrint(("[%d] In Hooked_NtGdiStretchBlt, hdcDst=0x%x, hdcSrc=0x%x\n", 
-			PsGetCurrentProcessId(), hdcDst, hdcSrc));
+		//KdPrint(("[%d] In Hooked_NtGdiStretchBlt, hdcDst=0x%x, hdcSrc=0x%x\n", 
+		//	PsGetCurrentProcessId(), hdcDst, hdcSrc));
 
 		if (IsFilterHDC(hdcDst) 
 			|| IsFilterHDC(hdcSrc)
@@ -641,6 +646,29 @@ BOOL Hooked_NtGdiTransparentBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT c
 
 }
 
+BOOL Hooked_NtGdiExtTextOutW(HDC hDC, INT XStart, INT YStart, UINT fuOptions,
+							 LPRECT UnsafeRect, LPWSTR UnsafeString, INT Count, 
+							 LPINT UnsafeDx, DWORD dwCodePage)
+{
+	BOOL bRet = FALSE;
+	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
+	__try
+	{
+		bRet = (NTGDIEXTTEXTOUTW(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiExtTextOutW].pOrigApiAddress))
+			(hDC, XStart, YStart, fuOptions, UnsafeRect, UnsafeString, Count, UnsafeDx, dwCodePage);
+
+		//KdPrint(("[%d], In Hooked_NtGdiExtTextOutW hDC=0x%x, Start[%d, %d], codePage=%d, nCount=%d, String=%ws\n", 
+		//	PsGetCurrentProcessId(), hDC, XStart, YStart, dwCodePage, Count,
+		//	UnsafeString ? UnsafeString : L"None"));
+	}
+	__finally
+	{
+		SSDT_API_CALL_LEAVE(g_SSDTAPILockCount);
+	}
+	return bRet;
+
+}
+
 HDC Hooked_NtGdiOpenDCW( PUNICODE_STRING Device,
 							DEVMODEW *InitData,
 							PUNICODE_STRING pustrLogAddr,
@@ -655,9 +683,8 @@ HDC Hooked_NtGdiOpenDCW( PUNICODE_STRING Device,
 	{
 		hDC = (NTGDIOPENDCW(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiOpenDCW].pOrigApiAddress))(Device, InitData, pustrLogAddr, iType, hspool, pDriverInfo2, pUMdhpdev);
 
-		KdPrint(("[%d], In Hooked_NtGdiOpenDCW Device=%wZ, hDC=0x%x\n", 
-			PsGetCurrentProcessId(), Device, hDC));
-
+		//KdPrint(("[%d], In Hooked_NtGdiOpenDCW Device=%wZ, hDC=0x%x\n", 
+		//	PsGetCurrentProcessId(), Device, hDC));
 		if (!Device)
 			//|| (RtlEqualUnicodeString(Device, &g_pDriverHookApiInfos->m_UnicodeString_DISPLAY, TRUE)))
 		{

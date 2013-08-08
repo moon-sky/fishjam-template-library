@@ -62,7 +62,8 @@ BOOL CFDriverDemoTesterDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-
+	
+	_RefreshMemoryDC();
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -146,13 +147,12 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallService()
 
 }
 
-void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
+BOOL CFDriverDemoTesterDlg::_RefreshMemoryDC()
 {
 	BOOL bRet = FALSE;
+	CWindowDC deskDC(NULL);
 	CRect rcClient;
 	GetClientRect(&rcClient);
-	
-	CWindowDC deskDC(NULL);
 
 	if (m_MemoryDC.m_hDC)
 	{
@@ -166,6 +166,14 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
 	m_MemoryDC.SelectObject(&m_bmpWindow);
 	m_MemoryDC.FillSolidRect(&rcClient, RGB(0, 127, 127));
 	m_MemoryDC.DrawText(TEXT("Filter Wnd Pos"), rcClient, DT_LEFT| DT_TOP| DT_SINGLELINE);
+	return bRet;
+
+}
+void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
+{
+	BOOL bRet = FALSE;
+	CRect rcClient;
+	GetClientRect(&rcClient);
 
 	//DWORD dwProcessId = GetCurrentProcessId();
 	//API_VERIFY(m_DriverController.IoControl(IOCTL_PROTDRV_INSTALL_HOOK, &dwProcessId, sizeof(dwProcessId), NULL, 0))
@@ -248,20 +256,30 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
     CWnd* pWndDraw = GetDlgItem(IDC_STATIC_DRAW);
     if (pWndDraw)
     {
-        CDC* pDC = pWndDraw->GetDC();
+		CWindowDC wndDC(NULL);
+        CDC* pDC =  &wndDC;// pWndDraw->GetDC();
         if (pDC)
         {
             CRect rcStaticDraw;
             pWndDraw->GetClientRect(&rcStaticDraw);
             //rcStaticDraw.OffsetRect(10, 10);
 
+			FTLTRACE(TEXT("Before BitBlt From MemoryDC"));
 			API_VERIFY(pDC->BitBlt(rcStaticDraw.left, rcStaticDraw.top, rcStaticDraw.Width(), rcStaticDraw.Height(),
 				&m_MemoryDC, 0, 0, SRCCOPY));
-			//pDC->ExtTextOut(0, 0, ETO_OPAQUE, &rcStaticDraw, NULL, 0, NULL);
-            //pDC->DrawText(TEXT("DrawTextDemo"), rcStaticDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-            //pDC->TextOut(rcStaticDraw.left, rcStaticDraw.top, TEXT("TextOutDemo"));
 
-            pWndDraw->ReleaseDC(pDC);
+			Sleep(1000);
+
+			pDC->ExtTextOut(0, 0, ETO_OPAQUE, &rcStaticDraw, NULL, 0, NULL);
+            pDC->DrawText(TEXT("DrawTextDemo"), rcStaticDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+            pDC->TextOut(rcStaticDraw.left, rcStaticDraw.top, TEXT("TextOutDemo"));
+
+			Sleep(1000);
+
+			pDC->FillSolidRect(rcStaticDraw, RGB(255, 0, 0));
+            
+			
+			//pWndDraw->ReleaseDC(pDC);
         }
     }
 }
