@@ -2,7 +2,15 @@
 #define F_DRIVER_HOOK_API_H
 #pragma once
 
-#include "KernelHookAPI.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+#ifdef __cplusplus
+}
+#endif
 
 //[原创开源]在WIN7 X64上Hook Shadow SSDT  --  http://www.m5home.com/bbs/thread-6963-1-1.html
 
@@ -273,36 +281,6 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 ******************************************************************************************************************/
 //#define TWOPARAM_ROUTINE_SETDCBRUSHCOLOR    0xfffd0046
 //#define NtUserSetDCBrushColor(hbr, crColor) (COLORREF)NtUserCallTwoParam((DWORD)(hbr), (DWORD)crColor, TWOPARAM_ROUTINE_SETDCBRUSHCOLOR)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-
-#ifdef __cplusplus
-}
-#endif
-
-
-#if 0
-//SSDT表结构
-typedef struct _ServiceDescriptorTable {
-	PULONG ServiceTableBase;			//System Service Dispatch Table 的基地址  
-	PULONG ServiceCounterTableBase; 
-	//包含着 SSDT 中每个服务被调用次数的计数器。这个计数器一般由sysenter 更新
-	ULONG NumberOfServices;				//由 ServiceTableBase 描述的服务的数目
-	PBYTE ParamTableBase;				//TODO:实际上是参数个数? 包含每个系统服务参数字节数表的基地址-系统服务参数表  
-}*PServiceDescriptorTable;
-//由SSDT索引号获取当前函数地址
-//NtOpenProcess  [[KeServiceDescriptorTable]+0x7A*4]
-extern "C" PServiceDescriptorTable KeServiceDescriptorTable;
-
-
-或者(似乎没有看到 _SERVICE_DESCRIPTOR_TABLE 的定义)
-typedef struct _SERVICE_DESCRIPTOR_TABLE *PSERVICE_DESCRIPTOR_TABLE;
-xtern PSERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;
-#endif
 
 #endif //F_DRIVER_HOOK_API_H
 

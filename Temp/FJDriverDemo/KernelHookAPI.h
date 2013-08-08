@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FDriverDemoDefine.h"
+
 #define SSDT_API_CALL_ENTER(x) (InterlockedIncrement(&x))
 #define SSDT_API_CALL_LEAVE(x) (InterlockedDecrement(&x))
 
@@ -22,7 +24,6 @@ typedef struct _SERVICE_DESCRIPTOR_TABLE
 	SYSTEM_SERVICE_TABLE Table4;    // not used
 }SYSTEM_DESCRIPTOR_TABLE, *PSYSTEM_DESCRIPTOR_TABLE;
 
-
 //#pragma pack(push)
 //#pragma push(4)
 typedef struct _HOOK_API_INFO
@@ -41,8 +42,10 @@ typedef struct _HOOK_API_INFO
 extern "C" {
 #endif
 
-void InstallApiHook(HANDLE hProcess, HWND hWndDesktop);
-void UnInstallAPIHook(void);
+NTSTATUS InstallCopyProtectHook(PPROTECT_WND_INFO pProtectWndInfo);
+NTSTATUS UnInstallAPIHook(void);
+
+NTSTATUS UnInstallCopyProtectHook(void);
 
 #ifdef __cplusplus
 }

@@ -57,17 +57,6 @@ typedef struct _PROTECT_WND_INFO
 	//RECT   rcProtectWindow;
 } PROTECT_WND_INFO, *PPROTECT_WND_INFO;
 
-//typedef struct _SCROLL_HOOK_TARGET
-//{
-//	HWND hWndDeskTop;
-//	HWND hTargetWindow;
-//	HANDLE hSelfProcess;
-//	HANDLE hTargetProcess;
-//	HDC	   hDCProtect;
-//	RECT   rcProtectWindow;
-//} SCROLL_HOOK_TARGET, *PSCROLL_HOOK_TARGET;
-
-
 //#define NT4_DRIVERNAME "\\\\.\\NTProcDrv"
 //#define OTHER_DRIVERNAME "\\\\.\\Global\\NTProcDrv"
 //#define PROCDRVPROCESSEVENT "NTProcDrvProcessEvent"

@@ -2,6 +2,8 @@
 #include "KernelHelper_Amd64.h"
 #include "FDriverUtil.h"
 
+#if defined(_M_AMD64)
+
 #include "LDE64x64.h"
 
 #define kmalloc(_s) ExAllocatePoolWithTag(NonPagedPool, _s, 'SYSQ')
@@ -176,4 +178,6 @@ NTSTATUS HookShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVO
 	return status;
 }
 
-#endif
+#endif //0
+
+#endif //_M_AMD64
