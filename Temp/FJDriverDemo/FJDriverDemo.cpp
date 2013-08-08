@@ -74,12 +74,11 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 		{
 			//SYS_SERVICE_TABLE* pServiceTable = GetServiceDescriptorShadowTableAddress();
 			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK, inputLen=%d\n", inputBufferLength));
-	
+			NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
+
 			if (inputBufferLength == sizeof(PROTECT_WND_INFO))
 			{
 				FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
-				//RtlCopyMemory(&g_ProtectWndInfo, inputBuffer, sizeof(PROTECT_WND_INFO));
-				//InstallCopyProtectHook(g_ProtectWndInfo.hTargetProcess, g_ProtectWndInfo.hWndDeskTop);
 			}
             status = STATUS_SUCCESS;
 		}
@@ -87,7 +86,7 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
 			UnInstallAPIHook();
-			KdPrint(("%s\n", "Enter IOCTL_FDRIVER_INSTALL_HOOK"));
+			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
             status = STATUS_SUCCESS;
 		}
 		break;

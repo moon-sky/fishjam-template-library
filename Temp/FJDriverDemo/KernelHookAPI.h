@@ -33,6 +33,7 @@ typedef struct _HOOK_API_INFO
 	PVOID   pNewApiAddress;
 	LONG	nIndexInSSDT;
 	LONG    nParamCount;
+	BOOL	bEnableHook;
 	//LONG    nPatchSize;
 }HOOK_API_INFO, *PHOOK_API_INFO;
 //#pragma pack(pop)

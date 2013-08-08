@@ -146,15 +146,6 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallService()
 
 }
 
-//typedef struct _SCROLL_HOOK_TARGET
-//{
-//	HWND hTargetWindow;
-//	HANDLE hSelfProcess;
-//	HANDLE hTargetProcess;
-//	//WindowFromDC
-//} SCROLL_HOOK_TARGET, *PSCROLL_HOOK_TARGET;
-
-
 void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
 {
 	BOOL bRet = FALSE;
@@ -173,19 +164,20 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
 	API_VERIFY(m_bmpWindow.CreateCompatibleBitmap(&deskDC, rcClient.Width(), rcClient.Height()));
 	API_VERIFY(m_MemoryDC.CreateCompatibleDC(&deskDC));
 	m_MemoryDC.SelectObject(&m_bmpWindow);
-	m_MemoryDC.FillSolidRect(&rcClient, RGB(127, 0, 0));
+	m_MemoryDC.FillSolidRect(&rcClient, RGB(0, 127, 127));
+	m_MemoryDC.DrawText(TEXT("Filter Wnd Pos"), rcClient, DT_LEFT| DT_TOP| DT_SINGLELINE);
 
 	//DWORD dwProcessId = GetCurrentProcessId();
 	//API_VERIFY(m_DriverController.IoControl(IOCTL_PROTDRV_INSTALL_HOOK, &dwProcessId, sizeof(dwProcessId), NULL, 0))
 	PROTECT_WND_INFO	protectInfo;
-	protectInfo.hWndDeskTop = ::GetDesktopWindow();
-	//protectInfo.hTargetWindow = m_hWnd;
+	protectInfo.hWndDeskTop =  ::GetDesktopWindow(); //GetDlgItem(IDC_STATIC_DRAW)->m_hWnd;// 
+	protectInfo.hProtectWindow = m_hWnd;
 	//protectInfo.hSelfProcess = (HANDLE)GetCurrentProcessId();
 	protectInfo.hTargetProcess = (HANDLE)FTL::CFSystemUtil::GetPidFromProcessName(TEXT("csrss.exe"));
-	//protectInfo.hDCProtect = m_MemoryDC.m_hDC;
+	protectInfo.hDCProtect = m_MemoryDC.m_hDC;
+	ClientToScreen(&rcClient);
+	protectInfo.rcProtectWindow = rcClient;
 
-	//ClientToScreen(&rcClient);
-	//protectInfo.rcProtectWindow = rcClient;
 	API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_INSTALL_HOOK, &protectInfo, sizeof(protectInfo), NULL, 0));
 }
 
@@ -261,9 +253,11 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
         {
             CRect rcStaticDraw;
             pWndDraw->GetClientRect(&rcStaticDraw);
-            rcStaticDraw.OffsetRect(10, 10);
+            //rcStaticDraw.OffsetRect(10, 10);
 
-			pDC->ExtTextOut(0, 0, ETO_OPAQUE, &rcStaticDraw, NULL, 0, NULL);
+			API_VERIFY(pDC->BitBlt(rcStaticDraw.left, rcStaticDraw.top, rcStaticDraw.Width(), rcStaticDraw.Height(),
+				&m_MemoryDC, 0, 0, SRCCOPY));
+			//pDC->ExtTextOut(0, 0, ETO_OPAQUE, &rcStaticDraw, NULL, 0, NULL);
             //pDC->DrawText(TEXT("DrawTextDemo"), rcStaticDraw, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
             //pDC->TextOut(rcStaticDraw.left, rcStaticDraw.top, TEXT("TextOutDemo"));
 

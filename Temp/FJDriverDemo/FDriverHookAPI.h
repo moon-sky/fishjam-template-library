@@ -184,10 +184,10 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 *
  
 
-NtUserPrintWindow
-NtGdiDdLock
-NtGdiPlgBlt
-NtGdiMaskBlt
+
+
+
+
 NtGdiTransparentBlt
 NtGdiCreateDIBSection
 NtGdiAlphaBlend

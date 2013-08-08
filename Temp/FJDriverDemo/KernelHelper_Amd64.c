@@ -1,12 +1,14 @@
 #include "stdafx.h"
-#include "KernelHelper_Amd64.h"
 #include "FDriverUtil.h"
+#include "KernelHookAPI.h"
+#include "KernelHelper.h"
+
 
 #if defined(_M_AMD64)
 
 #include "LDE64x64.h"
 
-#define kmalloc(_s) ExAllocatePoolWithTag(NonPagedPool, _s, 'SYSQ')
+PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
 
 KIRQL WPOFFx64()
 {
@@ -36,6 +38,12 @@ SYSTEM_SERVICE_TABLE* GetKeServiceDescriptorTableShadowAddress()  //GetKeService
 	UCHAR b1=0,b2=0,b3=0;
 	ULONG templong=0;
 	ULONGLONG addr=0;
+
+	if (g_pSystemServiceTable)
+	{
+		return g_pSystemServiceTable;
+	}
+
 	for(i=StartSearchAddress;i<EndSearchAddress;i++)
 	{
 		if( MmIsAddressValid(i) && MmIsAddressValid(i+1) && MmIsAddressValid(i+2) )
@@ -47,19 +55,35 @@ SYSTEM_SERVICE_TABLE* GetKeServiceDescriptorTableShadowAddress()  //GetKeService
 			{
 				memcpy(&templong,i+3,4);
 				addr = (ULONGLONG)templong + (ULONGLONG)i + 7;
-				return (SYSTEM_SERVICE_TABLE*)addr;
+				break;
 			}
 		}
 	}
-	return NULL;
+	g_pSystemServiceTable = addr;
+
+	if (g_pSystemServiceTable)
+	{
+		KdPrint(("g_pSystemServiceTable : %#x, SSDT EntryCount=%d, Shadow EntryCount=%d\n", 
+			g_pSystemServiceTable, g_pSystemServiceTable[0].NumberOfServices, 
+			g_pSystemServiceTable[1].NumberOfServices));
+	}
+	else
+	{
+		KdPrint(("!!! Find Shadow SSDT Failed\n"));
+	}
+
+	return g_pSystemServiceTable; 
 }
 
-PVOID GetShadowSSDTFuncAddr(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex)
+PVOID GetShadowSSDTFuncAddr(int nIndex)
 {
+	//使用 7 个字节保存相对于 g_pSystemServiceTable[1].ServiceTableBase 的地址偏移
+
 	PBYTE				W32pServiceTable=0, qwTemp=0;
 	LONG 					dwTemp=0;
-	PSYSTEM_SERVICE_TABLE	pWin32k = &pServiceTable[1];
+	PSYSTEM_SERVICE_TABLE	pWin32k = &g_pSystemServiceTable[1];
 	W32pServiceTable=(PBYTE)pWin32k->ServiceTableBase;
+
 	//ul64W32pServiceTable = W32pServiceTable;
 	qwTemp = W32pServiceTable + 4 * nIndex;	//这里是获得偏移地址的位置，要HOOK的话修改这里即可
 	dwTemp = *(PLONG)qwTemp;
@@ -91,6 +115,7 @@ ULONG GetPatchSize(PUCHAR Address)
 }
 
 //传入：待HOOK函数地址，代理函数地址，接收原始函数地址的指针，接收补丁长度的指针；返回：原来头N字节的数据
+#if 0
 PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *Original_ApiAddress, OUT ULONG *PatchSize)
 {
 	KIRQL irql;
@@ -124,15 +149,20 @@ PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *O
 	//return ori code
 	return head_n_byte;
 }
+#endif
 
-NTSTATUS HookShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress,
-							  OUT PVOID *Original_ApiAddress, OUT ULONG *PatchSize)
+NTSTATUS HookShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
 	//ULONG64 OldAddress = 0;
 	//OldAddress = (ULONG64)GetShadowSSDTFuncAddr(pServiceTable, nIndex);
 	//HookKernelApi((PVOID)OldAddress, newAddress, Original_ApiAddress, PatchSize);
 	return STATUS_SUCCESS;
 }	
+
+NTSTATUS RestoreShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
+{
+	return STATUS_SUCCESS;
+}
 
 #if 0
 NTSTATUS HookShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress)

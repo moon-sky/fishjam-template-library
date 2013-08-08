@@ -1,5 +1,14 @@
 # comment line
 
+#!IF "$(_BUILDARCH)" == "x86"
+#TARGETNAME=FJDriverDemo32
+#!ELSEIF "$(_BUILDARCH)" == "AMD64"
+#TARGETNAME=FJDriverDemo64
+#ELSEIF "$(_BUILDARCH)" == "IA64"
+#TARGETNAME=FJDriverDemoIa64
+#!ENDIF
+
+
 TARGETNAME=FJDriverDemo
 TARGETTYPE=DRIVER
 #TARGETLIBS=AsmHelperFun.obj

@@ -8,7 +8,7 @@ PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
 
 KIRQL  WPOFFx64(VOID)
 {
-	KIRQL irql = KeGetCurrentIrql();
+	KIRQL irql = 0; //KeGetCurrentIrql();
 
 	//cli + sti ÀàËÆ push eax + pop eax
 	__asm
@@ -117,12 +117,14 @@ NTSTATUS HookShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 	NTSTATUS status = STATUS_SUCCESS;
 	KIRQL irql = 0;
 
-	KdPrint(("Hook Shadow func %ws at [%d], newAddress=%p\n", 
-		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, pHookApiInfo->pNewApiAddress));
 	NT_ASSERT(NULL == pHookApiInfo->pOrigApiAddress);
+	pHookApiInfo->pOrigApiAddress = g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT];
+
+	KdPrint(("Hook Shadow func %ws at [%d], oldAddress=%p, newAddress=%p\n", 
+		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
+		pHookApiInfo->pOrigApiAddress, pHookApiInfo->pNewApiAddress));
 
 	irql = WPOFFx64();
-	pHookApiInfo->pOrigApiAddress = g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT];
 	InterlockedExchangePointer(&(g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT]), pHookApiInfo->pNewApiAddress);
 	WPONx64(irql);
 
