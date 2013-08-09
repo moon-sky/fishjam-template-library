@@ -45,9 +45,16 @@ extern __declspec(dllimport) KeAddSystemServiceTable(ULONG, ULONG, ULONG, ULONG,
 // WinDbg 下 ?KeServiceDescriptorTable-
 // 会打印出：Evaluate expression: 64 = 00000040(XP), -0xE0(2K)
 //卡巴斯基有个类似的函数：FindSystemServiceDescriptionTableShadow
+
+//KeServiceDescriptorTable -- 包含了 SSDT,(其 Shadow SSDT 处都是NULL)
+//KeServiceDescriptorTableShadow -- 包含了 SSDT + Shadow SSDT，因此GUI线程不用转换也能调用 SSDT 中的函数
 SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 { 
+	//32位系统中导出了KeServiceDescriptorTable变量，
+	//其后紧接着有未导出的 KeServiceDescriptorTableShadow, 其前部分的内容和 KeServiceDescriptorTable 内容一样
+	//通过从 KeAddSystemServiceTable 导出函数开始搜索，并比较内存中的内充，从而找到 KeServiceDescriptorTableShadow，
 	//通过搜索 操作SSDT的函数实现中的有效内存地址的办法 来查找 Shadow SSDT
+	//TODO: 能取到 KeServiceDescriptorTable 导出变量的地址，返回 KeServiceDescriptorTable[1] 不就是 KeServiceDescriptorTableShadow 的地址了？
 
 	// First, obtain a pointer to KeAddSystemServiceTable
 	unsigned char *check = (unsigned char*)KeAddSystemServiceTable; 
@@ -107,42 +114,63 @@ SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 }
 
 
-PVOID GetShadowSSDTFuncAddr(int nIndex)
+PVOID GetSSDTFuncAddr(LONG nServiceIndex)
 {
-	return g_pSystemServiceTable[1].ServiceTableBase[nIndex];
+	PSYSTEM_SERVICE_TABLE pServiceTable = nServiceIndex < 0x1000 ? &g_pSystemServiceTable[0] : &g_pSystemServiceTable[1];
+	LONG nIndex = nServiceIndex;
+	if (nIndex > 0x1000)
+	{
+		nIndex -= 0x1000;
+	}
+
+	return pServiceTable->ServiceTableBase[nIndex];
 }
 
-NTSTATUS HookShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
+NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
 	NTSTATUS status = STATUS_SUCCESS;
 	KIRQL irql = 0;
+	
+	PSYSTEM_SERVICE_TABLE pServiceTable = pHookApiInfo->nIndexInSSDT < 0x1000 ? &g_pSystemServiceTable[0] : &g_pSystemServiceTable[1];
+	LONG nIndex = pHookApiInfo->nIndexInSSDT;
+	if (nIndex > 0x1000)
+	{
+		nIndex -= 0x1000;
+	}
 
 	NT_ASSERT(NULL == pHookApiInfo->pOrigApiAddress);
-	pHookApiInfo->pOrigApiAddress = g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT];
+	pHookApiInfo->pOrigApiAddress = pServiceTable->ServiceTableBase[nIndex];
 
-	KdPrint(("Hook Shadow func %ws at [%d], oldAddress=%p, newAddress=%p\n", 
+	KdPrint(("Hook SSDT func %ws at [%d], oldAddress=%p, newAddress=%p\n", 
 		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
 		pHookApiInfo->pOrigApiAddress, pHookApiInfo->pNewApiAddress));
 
 	irql = WPOFFx64();
-	InterlockedExchangePointer(&(g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT]), pHookApiInfo->pNewApiAddress);
+	InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pNewApiAddress);
 	WPONx64(irql);
 
 	return status;
 }
 
-NTSTATUS RestoreShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
+NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
 	NTSTATUS status = STATUS_SUCCESS;
 	KIRQL irql = 0;
 
-	KdPrint(("Restore Shadow func %ws at [%d], origAddress=%p\n", 
+	PSYSTEM_SERVICE_TABLE pServiceTable = pHookApiInfo->nIndexInSSDT < 0x1000 ? &g_pSystemServiceTable[0] : &g_pSystemServiceTable[1];
+	LONG nIndex = pHookApiInfo->nIndexInSSDT;
+	if (nIndex > 0x1000)
+	{
+		nIndex -= 0x1000;
+	}
+
+	KdPrint(("Restore SSDT func %ws at [%d], origAddress=%p\n", 
 		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, pHookApiInfo->pOrigApiAddress));
 
 	NT_ASSERT(NULL != pHookApiInfo->pOrigApiAddress);
 
 	irql = WPOFFx64();
-	InterlockedExchangePointer(&(g_pSystemServiceTable[1].ServiceTableBase[pHookApiInfo->nIndexInSSDT]), pHookApiInfo->pOrigApiAddress);
+	InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pOrigApiAddress);
 	pHookApiInfo->pOrigApiAddress = NULL;
 	WPONx64(irql);
 

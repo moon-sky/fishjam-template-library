@@ -75,7 +75,7 @@ SYSTEM_SERVICE_TABLE* GetKeServiceDescriptorTableShadowAddress()  //GetKeService
 	return g_pSystemServiceTable; 
 }
 
-PVOID GetShadowSSDTFuncAddr(int nIndex)
+PVOID GetSSDTFuncAddr(LONG nServiceIndex)
 {
 	//使用 7 个字节保存相对于 g_pSystemServiceTable[1].ServiceTableBase 的地址偏移
 
@@ -85,7 +85,7 @@ PVOID GetShadowSSDTFuncAddr(int nIndex)
 	W32pServiceTable=(PBYTE)pWin32k->ServiceTableBase;
 
 	//ul64W32pServiceTable = W32pServiceTable;
-	qwTemp = W32pServiceTable + 4 * nIndex;	//这里是获得偏移地址的位置，要HOOK的话修改这里即可
+	qwTemp = W32pServiceTable + 4 * nServiceIndex;	//这里是获得偏移地址的位置，要HOOK的话修改这里即可
 	dwTemp = *(PLONG)qwTemp;
 	dwTemp = dwTemp >> 4;
 	qwTemp = W32pServiceTable + (LONG64)dwTemp;
@@ -151,21 +151,21 @@ PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *O
 }
 #endif
 
-NTSTATUS HookShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
+NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
 	//ULONG64 OldAddress = 0;
-	//OldAddress = (ULONG64)GetShadowSSDTFuncAddr(pServiceTable, nIndex);
+	//OldAddress = (ULONG64)GetSSDTFuncAddr(pServiceTable, nIndex);
 	//HookKernelApi((PVOID)OldAddress, newAddress, Original_ApiAddress, PatchSize);
 	return STATUS_SUCCESS;
 }	
 
-NTSTATUS RestoreShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo)
+NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
 	return STATUS_SUCCESS;
 }
 
 #if 0
-NTSTATUS HookShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress)
+NTSTATUS HookSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID newAddress)
 {
 	NTSTATUS status = STATUS_SUCCESS;
 	KIRQL irql;
@@ -181,7 +181,7 @@ NTSTATUS HookShadowSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVO
 	LONG 					dwTemp=0;
 	PSYSTEM_SERVICE_TABLE	pWin32k = &pServiceTable[1];
 
-	OldAddress = GetShadowSSDTFuncAddr(pServiceTable, nIndex);
+	OldAddress = GetSSDTFuncAddr(pServiceTable, nIndex);
 
 	//填充shellcode
 	memcpy(jmp_code+6,&myfun,8);

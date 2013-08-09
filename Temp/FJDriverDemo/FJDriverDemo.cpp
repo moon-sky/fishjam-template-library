@@ -21,7 +21,7 @@ void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 	KdPrint(("Enter FJDriverDemoUnload, PID=%d\n", PsGetCurrentProcessId()));
 	
     NTSTATUS status = STATUS_SUCCESS;
-	FNT_VERIFY(UnInstallAPIHook());
+	FNT_VERIFY(UnInstallCopyProtectHook());
 
 	UNICODE_STRING Win32NameString;
 
@@ -85,7 +85,7 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 		break;
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
-			UnInstallAPIHook();
+			UnInstallCopyProtectHook();
 			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
             status = STATUS_SUCCESS;
 		}

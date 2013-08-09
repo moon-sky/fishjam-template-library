@@ -9,15 +9,16 @@
 *   MS的编译器是 ml64.exe；其他的有 GoASM(GoASM编译器 + GoLINK链接器 + GoRC资源编译器)等
 *
 *
+* 正常情况下，ETHREAD中的ServiceTable，要么指向KeServiceDescriptorTable,要么指向 KeServiceDescriptorTableShadow
 * SSDT表处理 -- KiServiceTable ?
 *   1.64位系统不导出 KeServiceDescriptorTable, 会遇到 LNK2001: unresolved external symbol 的错误，
 *     实际上在内存中是存在的，比如可以通过 dq KeServiceDescriptorTable 和 ln KeServiceDescriptorTable 查看(实际地址会变)
 *     0: kd> dp KeServiceDescriptorTable
-*        fffff800`02ab1840  fffff800`0287bb00 00000000`00000000     <== 第一个 KeServiceDescriptorTable
+*        fffff800`02ab1840  fffff800`0287bb00 00000000`00000000     <== KeServiceDescriptorTable(KiServiceTabe, 32位系统中导出，64位系统中未导出)
 *        fffff800`02ab1850  00000000`00000191 fffff800`0287c78c     <== SSDT的个数是0x191个
 *        fffff800`02ab1860  00000000`00000000 00000000`00000000
 *        fffff800`02ab1870  00000000`00000000 00000000`00000000
-*        fffff800`02ab1880  fffff800`0287bb00 00000000`00000000		<== 第二个 KeServiceDescriptorTable -- 实际是 KeServiceDescriptorTableShadow ?
+*        fffff800`02ab1880  fffff800`0287bb00 00000000`00000000		<== KeServiceDescriptorTableShadow, 其内容和 KeServiceDescriptorTable 一样(不论在什么系统都未导出)
 *        fffff800`02ab1890  00000000`00000191 fffff800`0287c78c		<== SSDT的个数是0x191个
 *        fffff800`02ab18a0  fffff960`00131c00 00000000`00000000		<== Shadow SSDT
 *        fffff800`02ab18b0  00000000`0000033b fffff960`0013391c		<== Shadow SSDT个数是0x33b个

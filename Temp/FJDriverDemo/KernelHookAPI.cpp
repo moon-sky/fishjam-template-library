@@ -241,44 +241,44 @@ public:
 			{
 				//ShadowSSDT_array_xp3 -- http://bbs.pediy.com/showthread.php?t=116044&highlight=NtGdiBitBlt
 				KdPrint(("Running on Windows XP\n"));
-				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0xD;				//13,  100D 0008:A001B344 params=0B NtGdiBitBlt 
-				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x124;
-				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0xed;
-				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0xe3;
-				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x12a;
-				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x92;
+				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x100D;				//13,  100D 0008:A001B344 params=0B NtGdiBitBlt 
+				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x1124;
+				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x10ED;
+				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x10E3;
+				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x112A;
+				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x1092;
 
-				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0xe9;
-				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x7a;
+				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0x10E9;
+				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x107A;
 
-				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x1dd;
-				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x53;
+				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0X1DD;
+				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1053;
 
-				IndexOfNtGdiCreateCompatibleDC = 0x1e;
-				IndexOfNtGdiCreateCompatibleBitmap = 0x1d;
-				IndexOfNtGdiSelectBitmap = 0x101;
-				IndexOfNtUserCallOneParam = 0x143;      //323;
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f;	//31
+				IndexOfNtGdiCreateCompatibleDC = 0x101E;
+				IndexOfNtGdiCreateCompatibleBitmap = 0x101D;
+				IndexOfNtGdiSelectBitmap = 0x1101;
+				IndexOfNtUserCallOneParam = 0x1143;      //323;
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x101f;	//31
 				break;
 			}
 		case 601:	//Win7
 			{
 				KdPrint(("Running on Windows 7\n"));
-				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0xE;
-				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x12e;
-				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0xf7;
-				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0xed;
-				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x134;
-				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x95;
+				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x100E;
+				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x112e;
+				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x10F7;
+				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x10ED;
+				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x1134;
+				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x1095;
 
-				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0xf3;
-				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x7d;
+				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0x10F3;
+				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x107D;
 
-				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x1fe;
-				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x56;
+				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x11FE;
+				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1056;
 
-				IndexOfNtUserCallOneParam = 0x14e;
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24;	//Win7
+				IndexOfNtUserCallOneParam = 0x114U;
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1024;	//Win7
 				break;
 			}
 		default:
@@ -311,21 +311,21 @@ public:
 			{
 				KdPrint(("Running on Windows 7 64\n"));
 
-				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x8;
-				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x31;
-				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x24a;
-				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x69;
-				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x275;
-				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x38;
+				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x1008;
+				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x1031;
+				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x124a;
+				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x1069;
+				m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x1275;
+				m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x1038;
 
-				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0xda;
-				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x23;
+				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0x10da;
+				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x1023;
 
-				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x2eb;
-				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1ab;
+				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x12eb;
+				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x11ab;
 
-				IndexOfNtUserCallOneParam = 0x2;
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24;	//Win7
+				IndexOfNtUserCallOneParam = 0x1002;
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1024;	//Win7
 				break;
 			}
 		default:
@@ -861,16 +861,16 @@ NTSTATUS InstallCopyProtectHook(PPROTECT_WND_INFO pProtectWndInfo)
 		if (NT_SUCCESS(status))
 		{
 			//__asm int 3
-			g_pDriverHookApiInfos->pOrigNtUserCallOneParam = (NTUSERCALLONEPARAM)(GetShadowSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtUserCallOneParam));
-			g_pDriverHookApiInfos->pOrigNtGdiCreateCompatibleDC = (NTGDICREATECOMPATIBLEDC)(GetShadowSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtGdiCreateCompatibleDC));
-			g_pDriverHookApiInfos->pOrigNtGdiCreateCompatibleBitmap = (NTGDICREATECOMPATIBLEBITMAP)(GetShadowSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtGdiCreateCompatibleBitmap));
-			g_pDriverHookApiInfos->pOrigNtGdiSelectBitmap = (NTGDISELECTBITMAP)(GetShadowSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtGdiSelectBitmap));
+			g_pDriverHookApiInfos->pOrigNtUserCallOneParam = (NTUSERCALLONEPARAM)(GetSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtUserCallOneParam));
+			g_pDriverHookApiInfos->pOrigNtGdiCreateCompatibleDC = (NTGDICREATECOMPATIBLEDC)(GetSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtGdiCreateCompatibleDC));
+			g_pDriverHookApiInfos->pOrigNtGdiCreateCompatibleBitmap = (NTGDICREATECOMPATIBLEBITMAP)(GetSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtGdiCreateCompatibleBitmap));
+			g_pDriverHookApiInfos->pOrigNtGdiSelectBitmap = (NTGDISELECTBITMAP)(GetSSDTFuncAddr(g_pDriverHookApiInfos->IndexOfNtGdiSelectBitmap));
 
 			for (INT i = 0; i < hft_FunctionCount; i++)
 			{
 				if (g_pDriverHookApiInfos->m_HookFuns[i].bEnableHook)
 				{
-					FNT_VERIFY(HookShadowSSDTFunc(&g_pDriverHookApiInfos->m_HookFuns[i]));
+					FNT_VERIFY(HookSSDTFunc(&g_pDriverHookApiInfos->m_HookFuns[i]));
 				}
 			}
 
@@ -882,11 +882,11 @@ NTSTATUS InstallCopyProtectHook(PPROTECT_WND_INFO pProtectWndInfo)
 	return status;
 }
 
-NTSTATUS UnInstallAPIHook(void)
+NTSTATUS UnInstallCopyProtectHook(void)
 {
 	NTSTATUS status = STATUS_SUCCESS;
 
-	KdPrint(("Enter UnInstallAPIHook\n"));
+	KdPrint(("Enter UnInstallCopyProtectHook\n"));
 	if (g_pDriverHookApiInfos)
 	{
 		KdPrint(("ServiceDescriptorShadowTableAddress : %#x", g_pShadowTable));
@@ -904,7 +904,7 @@ NTSTATUS UnInstallAPIHook(void)
 				{
 					if (g_pDriverHookApiInfos->m_HookFuns[i].bEnableHook)
 					{
-						FNT_VERIFY(RestoreShadowSSDTFunc(&g_pDriverHookApiInfos->m_HookFuns[i]));
+						FNT_VERIFY(RestoreSSDTFunc(&g_pDriverHookApiInfos->m_HookFuns[i]));
 					}
 				}
 				g_pDriverHookApiInfos->pOrigNtUserCallOneParam = NULL;
@@ -941,7 +941,7 @@ NTSTATUS UnInstallAPIHook(void)
 		ExFreePoolWithTag(g_pDriverHookApiInfos, HOOK_API_INFO_TAG);
 		g_pDriverHookApiInfos = NULL;
 	}
-	DbgPrint("Leave UnInstallAPIHook\n");
+	DbgPrint("Leave UnInstallCopyProtectHook\n");
 	return status;
 }
 

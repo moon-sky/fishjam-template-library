@@ -13,17 +13,21 @@ extern "C" {
 #endif
 
 //[原创开源]在WIN7 X64上Hook Shadow SSDT  --  http://www.m5home.com/bbs/thread-6963-1-1.html
+//实现 Win64 上的内核级Inline Hook引擎 --  http://www.jybase.net/biancheng/20120429881.html
 
 /******************************************************************************************************************
-系统中的变量
+调用顺序
+  KiFastCallEntry  -> SSDT[ServiceIndex] -> 
+    ServiceIndex大于 0x1000 则用第二张表(Shadow SSDT)
 
-KeAddSystemServiceTable
 
-KiServiceTable ?  == KeServiceDescriptorTable->ServiceTableBase;
-nt!KeServiceDescriptorTable			-- fffff800`02ac5840
-nt!KeServiceDescriptorTableShadow	-- fffff800`02ac5880
-nt!KiServiceTable					-- fffff800`0288fb00, 即 SYSTEM_SERVICE_TABLE::ServiceTableBase
-win32k!W32pServiceTable
+系统中的函数
+  nt!KeAddSystemServiceTable -- 系统的导出函数
+系统中的变量, 
+  nt!KeServiceDescriptorTable			-- fffff800`02ac5840
+  nt!KeServiceDescriptorTableShadow	-- fffff800`02ac5880
+  nt!KiServiceTable					-- fffff800`0288fb00, 即 nt!KeServiceDescriptorTable->ServiceTableBase(SSDT)
+  win32k!W32pServiceTable				-- fffff960`001c1c00, 即 nt!KeServiceDescriptorTableShadow->ServiceTableBase[1](Shadow SSDT)
 
 1: kd> dp nt!KeServiceDescriptorTableShadow
 fffff800`02ac5880  fffff800`0288fb00 00000000`00000000
@@ -56,17 +60,20 @@ qwTemp = 0
 pWin32k = 0xfffff800`02ac58a0
 dwTemp = 0n0
 
+Shadow SSDT 中的地址在Win64下是相对地址(3.5 个字节，可表示的范围有限)，因此不能用交换地址的方式直接替换
+TODO：最后一位有可能不是0，具体的用处是什么？
+
 0: kd> dd fffff960`001c1c00	-- W32pServiceTable
-fffff960`001c1c00  fff39800 fff0a301 000206c0 00101d00		0~3
-fffff960`001c1c10  00095ac0 00022700 fff99a00 ffddfec3		1~7
-fffff960`001c1c20  0003ac47 00fbb500 ffed1d80 ffe4f980		8~11
+fffff960`001c1c00  fff39800 fff0a301 000206c0 00101d00		1~4
+fffff960`001c1c10  00095ac0 00022700 fff99a00 ffddfec3		5~8
+fffff960`001c1c20  0003ac47 00fbb500 ffed1d80 ffe4f980		9~12
 fffff960`001c1c30  000c5380 000af0c0 000e8700 fffeb5c0
 fffff960`001c1c40  ffb1d500 0004e780 ffa561c0 000b9000
 fffff960`001c1c50  000b1fc0 000fbd40 00037b00 000b3900
 fffff960`001c1c60  ffb212c0 000b5380 000a0f00 ffb2a580
 fffff960`001c1c70  ffa2a543 ffa83800 0012aac0 00093c00
 
-0xfffff960`001c1c00 + 依次的数字>4
+0xfffff960`001c1c00 + 依次的数字>;4
 Address of 1 is fffff960`001b2630 -- win32k!NtUserPeekMessage    	-- 001c1c00 + Ffff0a30   -- 1
 Address of 2 is fffff960`001c3c6c -- win32k!NtUserCallOneParam 		-- 001c1c00 + 0000206c   -- 2
 Address of 3 is fffff960`001d1dd0 -- win32k!NtUserGetKeyState		-- 001c1c00 + 000101d0   -- 3
@@ -100,6 +107,7 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 // WinXP 32 Bit  -- TODO: 怎么显示序号 eax ?
 //   SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(nt!KiServiceTable + 4 * eax)) }
 //   Shadow SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(win32k!W32pServiceTable + 4 * eax)) }
+
 
 //问题：给出来的表示错误的
 //  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
@@ -172,8 +180,8 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 *       2.3 -- 预留的SDT，即有人工创造SDT的可能，不过基本上没有意义
 *     5.Object Hook -- 更底层的接口，不过已经很难控制了
 *
-* ntkrnlpa.exe (SSDT?) -- Kernel32.Dll 的内核实现
-* ntkrnlmp.exe ?
+* ntkrnlpa.exe 
+* ntkrnlmp.exe (SSDT?) -- Kernel32.Dll 的内核实现
 * ntoskrnl.exe -- Windows执行体组件
 * win32k.sys (Shadow SSDT?) -- User32.dll + Gdi32.DLL 的内核实现
 *   将GUI的实现放入内核模式，会增大系统不稳定的几率。但会大大提高图形处理的运行效率。

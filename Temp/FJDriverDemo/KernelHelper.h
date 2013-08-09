@@ -6,9 +6,9 @@ extern "C" {
 
 SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ();
 
-PVOID GetShadowSSDTFuncAddr(int nIndex);
-NTSTATUS HookShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo);
-NTSTATUS RestoreShadowSSDTFunc(PHOOK_API_INFO pHookApiInfo);
+PVOID GetSSDTFuncAddr(LONG nServiceIndex);
+NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo);
+NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo);
 
 
 #ifdef __cplusplus
