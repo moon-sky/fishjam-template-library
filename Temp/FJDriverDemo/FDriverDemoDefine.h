@@ -49,12 +49,15 @@
 
 typedef struct _PROTECT_WND_INFO
 {
-	HWND hWndDeskTop;
+#if 0
 	HWND hProtectWindow;
-	//HANDLE hSelfProcess;
+	HANDLE hSelfProcess;
+	HDC    hDCDesktop;
+#endif 
+	HWND hWndDeskTop;
 	HANDLE hTargetProcess;
-	HDC	   hDCProtect;
 	RECT   rcProtectWindow;
+	HDC	   hDCWndProtect;
 } PROTECT_WND_INFO, *PPROTECT_WND_INFO;
 
 //#define NT4_DRIVERNAME "\\\\.\\NTProcDrv"

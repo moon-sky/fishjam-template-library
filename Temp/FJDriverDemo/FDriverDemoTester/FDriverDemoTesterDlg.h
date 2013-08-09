@@ -49,4 +49,5 @@ public:
 	afx_msg void OnBnClickedBtnDoBitblt();
 	afx_msg void OnBnClickedBtnFilterDesktop();
     afx_msg void OnBnClickedBtnDoTextout();
+	afx_msg void OnBnClickedBtnTestDesktop();
 };

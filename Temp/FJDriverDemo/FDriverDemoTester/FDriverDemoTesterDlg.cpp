@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(CFDriverDemoTesterDlg, CDialog)
 	ON_BN_CLICKED(IDC_BTN_DO_BITBLT, &CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt)
 	ON_BN_CLICKED(IDC_BTN_FILTER_DESKTOP, &CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop)
     ON_BN_CLICKED(IDC_BTN_DO_TEXTOUT, &CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout)
+	ON_BN_CLICKED(IDC_BTN_TEST_DESKTOP, &CFDriverDemoTesterDlg::OnBnClickedBtnTestDesktop)
 END_MESSAGE_MAP()
 
 
@@ -179,14 +180,17 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
 	//API_VERIFY(m_DriverController.IoControl(IOCTL_PROTDRV_INSTALL_HOOK, &dwProcessId, sizeof(dwProcessId), NULL, 0))
 	PROTECT_WND_INFO	protectInfo;
 	protectInfo.hWndDeskTop =  ::GetDesktopWindow(); //GetDlgItem(IDC_STATIC_DRAW)->m_hWnd;// 
-	protectInfo.hProtectWindow = m_hWnd;
+	//protectInfo.hDCDesktop = ::GetDC(protectInfo.hWndDeskTop);
+
+	//protectInfo.hProtectWindow = m_hWnd;
 	//protectInfo.hSelfProcess = (HANDLE)GetCurrentProcessId();
 	protectInfo.hTargetProcess = (HANDLE)FTL::CFSystemUtil::GetPidFromProcessName(TEXT("csrss.exe"));
-	protectInfo.hDCProtect = m_MemoryDC.m_hDC;
+	protectInfo.hDCWndProtect = m_MemoryDC.m_hDC;
 	ClientToScreen(&rcClient);
 	protectInfo.rcProtectWindow = rcClient;
 
 	API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_INSTALL_HOOK, &protectInfo, sizeof(protectInfo), NULL, 0));
+	//::ReleaseDC(protectInfo.hWndDeskTop, protectInfo.hDCDesktop);
 }
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallHook()
@@ -282,4 +286,13 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
 			//pWndDraw->ReleaseDC(pDC);
         }
     }
+}
+
+void CFDriverDemoTesterDlg::OnBnClickedBtnTestDesktop()
+{
+	DWORD dwProcessId = 0;
+	HWND hWndDesktop = ::GetDesktopWindow();
+	DWORD dwThreadId = GetWindowThreadProcessId(hWndDesktop, &dwProcessId);
+	FTLTRACE(TEXT("DesktopWindow=0x%x, ProcessId=%d, ThreadId=%d\n"),
+		hWndDesktop, dwProcessId, dwThreadId);
 }

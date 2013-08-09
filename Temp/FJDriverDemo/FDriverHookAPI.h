@@ -23,6 +23,7 @@ KiServiceTable ?  == KeServiceDescriptorTable->ServiceTableBase;
 nt!KeServiceDescriptorTable			-- fffff800`02ac5840
 nt!KeServiceDescriptorTableShadow	-- fffff800`02ac5880
 nt!KiServiceTable					-- fffff800`0288fb00, 即 SYSTEM_SERVICE_TABLE::ServiceTableBase
+win32k!W32pServiceTable
 
 1: kd> dp nt!KeServiceDescriptorTableShadow
 fffff800`02ac5880  fffff800`0288fb00 00000000`00000000
@@ -94,6 +95,11 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 //  WRK(Windows Research Kernel) -- 微软为高校操作系统课程提供的可修改和跟踪的操作系统教学平台。
 //  给出了Windows这个成功的商业操作系统的内核大部分代码，可以对其进行修改、编译，并且可以用这个内核启动Windows操作系统。
 //  检查导入表符号的小工具 -- 静态分析PE文件的导入表，挨个对导入表中的符号，去导入文件的导出表中去搜索(参考WRK)
+
+//WinDbg 中循环查找SSDT的函数对应表
+// WinXP 32 Bit  -- TODO: 怎么显示序号 eax ?
+//   SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(nt!KiServiceTable + 4 * eax)) }
+//   Shadow SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(win32k!W32pServiceTable + 4 * eax)) }
 
 //问题：给出来的表示错误的
 //  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
