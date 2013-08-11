@@ -55,6 +55,8 @@
 *
 * VXD() -- Win9X平台的，虚拟设备驱动程序, Win2K后完全被淘汰
 * 
+* KMD(Kernel Mode Driver) -- 也叫NT式驱动
+*
 * DDK(Driver Development Kit) -- 使用WDM(Windows Driver Model)驱动模型,集成了测试套件HCT？，适用于WinXP及之前的平台
 *   NT式驱动程序 -- 不支持即插即用。使用 NTDDK.h 头文件。不分层？
 *   安装测试：创建服务，以服务的方式加载在系统中进行测试

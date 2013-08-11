@@ -120,6 +120,7 @@ namespace FTL
             ostWin2003,	//MSDN
             ostVista,	//OK
             ostWindows7,//OK
+			ostWindows8,//OK
             ostHighUnknown
         };//OSType;
         //_osver,_winmajor,_winminor

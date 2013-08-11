@@ -39,7 +39,7 @@
 #define FDRIVER_DEV_DRV 0xA812
 
 //定义可用于 IOCTL 或 FSCTL 的编码，给用户保留可以使用的function codes范围是 0x800(2048)-0xFFF(4095)
-//CTL_CODE( 设备类型, 功能, I/O访问内存使用方式, 访问限制 )
+//CTL_CODE( 设备类型, 功能, I/O访问内存使用方式, 访问限制 ) -- 驱动中包含 <ntddk.h>， 应用程序中包含 <winioctl.h>
 
 #define IOCTL_FDRIVER_INSTALL_HOOK		(ULONG) CTL_CODE(FDRIVER_DEV_DRV, 0x800, METHOD_BUFFERED, FILE_WRITE_ACCESS)
 #define IOCTL_FDRIVER_UNINSTALL_HOOK	(ULONG) CTL_CODE(FDRIVER_DEV_DRV, 0x801, METHOD_BUFFERED, FILE_WRITE_ACCESS)

@@ -95,7 +95,7 @@
 *     2.如是卸载驱动时 IoDeleteSymbolicLink 出错，可能是因为 DriverEntry 被声明为 #pragma code_seg("INIT") 造成
 *
 * 常见错误
-*   1.用户态 CreateFile 打开符号时返回 1(Incorrect function), 多半是因为驱动没有实现 IRP_MJ_CREATE/IRP_MJ_CLOSE 等的分发函数
+*   1.用户态 CreateFile 打开符号时返回 1(Incorrect function), 多半是因为驱动没有实现 IRP_MJ_CREATE/IRP_MJ_CLOSE 等分发函数
 ******************************************************************************************************************/
 
 #endif //F_DRIVER_DEBUG_H

@@ -1,5 +1,6 @@
 //Go 语言简介（下）— 特性 -- http://coolshell.cn/articles/8489.html
 //JavaScript中的匿名函数及函数的闭包 -- http://www.cnblogs.com/rainman/archive/2009/05/04/1448899.html
+//Go 编程语言的 12 条最佳实践 -- http://www.oschina.net/news/42825/go-best-practices?from=20130804 
 
 //TODO:
 //1.go是静态类型的语言 -- 什么意思(强类型语言)? 对应的还有动态类型的语言(如JavaScript)?

@@ -61,6 +61,8 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 
 	PIO_STACK_LOCATION pIoStackLoc = IoGetCurrentIrpStackLocation(pIrp);
 	NT_ASSERT(pIoStackLoc->MajorFunction == IRP_MJ_DEVICE_CONTROL);
+
+    //因为是缓冲方式，所以输入和输出都是使用 AssociatedIrp.SystemBuffer，操作系统会自动在 R3/R0 间复制
 	PVOID inputBuffer = pIrp->AssociatedIrp.SystemBuffer;
 	PVOID outputBuffer = pIrp->AssociatedIrp.SystemBuffer;
 
@@ -143,6 +145,8 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 		IoDeleteDevice( deviceObject );
 		return status;
 	}
+    
+    //deviceObject->Flags |= DO_BUFFERED_IO;  -- 设置为缓冲读写方式
 
 	NT_ASSERT(pDriverObject->DeviceObject == NULL || pDriverObject->DeviceObject == deviceObject);
 	//if (pDriverObject->DeviceObject == NULL)

@@ -5,7 +5,7 @@
 // http://bazislib.sysprogs.org/ -- BazisLib library，而且有很多向导和标准驱动的辅助开发类
 
 //寒江独钓-Windows内核安全编程 -- P14X
-//Windows驱动开发技术详解 -- P118(UNICODE_STRING)  (优先看调试技巧?)
+//Windows驱动开发技术详解 -- P266(互斥体)  (优先看调试技巧?)
 
 //与用户模式通信(DeviceIoControl?)
 //  驱动程序通过 HAL 调用硬件抽象层，然后才和硬件交互。
@@ -33,6 +33,7 @@
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
+* APIC -- Advanced Programmable Interrupt Controller, 高级编程控制器
 * CDO -- 控制设备(Control Device Object)，修改整个驱动的内部配置，一个Driver只对应一个CDO？
 * DCT -- Display Compatibility Kit
 * DDK -- Driver Development Kit，WinNT、WinXP等平台的开发包

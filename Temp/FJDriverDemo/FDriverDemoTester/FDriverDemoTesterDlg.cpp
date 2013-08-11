@@ -25,7 +25,9 @@ CFDriverDemoTesterDlg::CFDriverDemoTesterDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CFDriverDemoTesterDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	m_pOldBmp = NULL;
+	m_hOldBmp = NULL;
+    m_hFileMapping = NULL;
+    m_hBmpWindow = NULL;
 }
 
 void CFDriverDemoTesterDlg::DoDataExchange(CDataExchange* pDX)
@@ -152,21 +154,42 @@ BOOL CFDriverDemoTesterDlg::_RefreshMemoryDC()
 {
 	BOOL bRet = FALSE;
 	CWindowDC deskDC(NULL);
-	CRect rcClient;
-	GetClientRect(&rcClient);
+	//CRect rcClient;
+	GetClientRect(&m_rcClient);
 
 	if (m_MemoryDC.m_hDC)
 	{
-		m_MemoryDC.SelectObject(m_pOldBmp);
-		API_VERIFY(m_bmpWindow.DeleteObject());
-		API_VERIFY(m_MemoryDC.DeleteDC());
-	}
+		m_MemoryDC.SelectObject(m_hOldBmp);
 
-	API_VERIFY(m_bmpWindow.CreateCompatibleBitmap(&deskDC, rcClient.Width(), rcClient.Height()));
-	API_VERIFY(m_MemoryDC.CreateCompatibleDC(&deskDC));
-	m_MemoryDC.SelectObject(&m_bmpWindow);
-	m_MemoryDC.FillSolidRect(&rcClient, RGB(0, 127, 127));
-	m_MemoryDC.DrawText(TEXT("Filter Wnd Pos"), rcClient, DT_LEFT| DT_TOP| DT_SINGLELINE);
+        API_VERIFY(DeleteObject(m_hBmpWindow));
+        m_hBmpWindow = NULL;
+        API_VERIFY(CloseHandle(m_hFileMapping));
+        m_hFileMapping = NULL;
+		API_VERIFY(m_MemoryDC.DeleteDC());
+        
+	}
+    PVOID pvBits = NULL;
+    BITMAPINFO bmpInfo = {0};
+    bmpInfo.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+    bmpInfo.bmiHeader.biWidth = m_rcClient.Width();
+    bmpInfo.bmiHeader.biHeight = m_rcClient.Height(); //-m_nHeight;
+    bmpInfo.bmiHeader.biPlanes = 1;
+    bmpInfo.bmiHeader.biBitCount = 32;
+    bmpInfo.bmiHeader.biCompression = BI_RGB;
+    bmpInfo.bmiHeader.biSizeImage = abs( m_rcClient.Width() * m_rcClient.Height() * 32 >> 3 );
+
+    API_VERIFY((m_hFileMapping = CreateFileMapping(NULL, NULL, PAGE_READWRITE, 0, bmpInfo.bmiHeader.biSizeImage, NULL)) != NULL);
+    if (bRet)
+    {
+        API_VERIFY((m_hBmpWindow = CreateDIBSection(deskDC.m_hDC, &bmpInfo, DIB_RGB_COLORS, &pvBits, m_hFileMapping, 0)) != NULL);
+        //API_VERIFY(m_bmpWindow.CreateCompatibleBitmap(&deskDC, rcClient.Width(), rcClient.Height()));
+        API_VERIFY(m_MemoryDC.CreateCompatibleDC(&deskDC));
+        m_MemoryDC.SelectObject(m_hBmpWindow);
+        m_MemoryDC.FillSolidRect(&m_rcClient, RGB(0, 127, 127));
+        m_MemoryDC.DrawText(TEXT("Filter Wnd Pos"), m_rcClient, DT_LEFT| DT_TOP| DT_SINGLELINE);
+    }
+
+
 	return bRet;
 
 }
@@ -261,7 +284,7 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
     if (pWndDraw)
     {
 		CWindowDC wndDC(NULL);
-        CDC* pDC =  &wndDC;// pWndDraw->GetDC();
+        CDC* pDC =  pWndDraw->GetDC(); //&wndDC;// 
         if (pDC)
         {
             CRect rcStaticDraw;
@@ -283,16 +306,24 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
 			pDC->FillSolidRect(rcStaticDraw, RGB(255, 0, 0));
             
 			
-			//pWndDraw->ReleaseDC(pDC);
+			pWndDraw->ReleaseDC(pDC);
         }
     }
 }
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnTestDesktop()
 {
-	DWORD dwProcessId = 0;
+    BOOL bRet = FALSE;
+
+	DWORD ProcessIdOfDesktop = 0;
 	HWND hWndDesktop = ::GetDesktopWindow();
-	DWORD dwThreadId = GetWindowThreadProcessId(hWndDesktop, &dwProcessId);
-	FTLTRACE(TEXT("DesktopWindow=0x%x, ProcessId=%d, ThreadId=%d\n"),
-		hWndDesktop, dwProcessId, dwThreadId);
+	DWORD dwThreadId = GetWindowThreadProcessId(hWndDesktop, &ProcessIdOfDesktop);
+    HDC hDCDesktop = ::GetWindowDC(hWndDesktop);
+    CClientDC dcClient(GetDlgItem(IDC_STATIC_DRAW));
+    API_VERIFY(BitBlt(dcClient.m_hDC, 0, 0, m_rcClient.Width(), m_rcClient.Height(), hDCDesktop, 0, 0, SRCCOPY));
+
+    FTLTRACE(TEXT("DesktopWindow=0x%x,hDCDesktop=0x%x, dcClient=0x%x, ProcessIdOfDesktop=%d, ThreadId=%d\n"),
+        hWndDesktop, hDCDesktop, dcClient.m_hDC,  ProcessIdOfDesktop, dwThreadId);
+
+    ::ReleaseDC(hWndDesktop, hDCDesktop);
 }

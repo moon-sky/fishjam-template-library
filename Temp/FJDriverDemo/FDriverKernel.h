@@ -3,7 +3,6 @@
 
 //NtCurrentPeb()->KernelCallbackTable
 
-
 /******************************************************************************************************************
 * CSRSS.exe -- Console, TS, HardError ?
 * WinLogon.exe

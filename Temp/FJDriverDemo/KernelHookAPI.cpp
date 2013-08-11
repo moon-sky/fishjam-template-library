@@ -149,7 +149,7 @@ public:
 	LONG					IndexOfNtGdiCreateCompatibleDC;
 	LONG                    IndexOfNtUserCallOneParam;
 
-	LONG					ONEPARAM_ROUTINE_WINDOWFROMDC;
+    LONG					ONEPARAM_ROUTINE_WINDOWFROMDC;  //http://www.reactos.org/wiki/Techwiki:Win32k/apfnSimpleCall
 
 	ULONG					nPatchSizeGdiBltBlt;
 	
@@ -240,7 +240,7 @@ public:
 		case 501:	//WinXp
 			{
 				//ShadowSSDT_array_xp3 -- http://bbs.pediy.com/showthread.php?t=116044&highlight=NtGdiBitBlt
-				KdPrint(("Running on Windows XP\n"));
+				KdPrint(("Running on Windows XP 32\n"));
 				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x100D;				//13,  100D 0008:A001B344 params=0B NtGdiBitBlt 
 				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x1124;
 				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x10ED;
@@ -258,12 +258,65 @@ public:
 				IndexOfNtGdiCreateCompatibleBitmap = 0x101D;
 				IndexOfNtGdiSelectBitmap = 0x1101;
 				IndexOfNtUserCallOneParam = 0x1143;      //323;
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x101f;	//31
+
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f; //不要加 0x1000
 				break;
 			}
+        case 502:   //Win2003
+            {
+                KdPrint(("Running on Win2003 32\n"));
+
+                m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x100d;
+                m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x1123;
+                m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x10ec;
+                m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x10e2;
+                m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x1129;
+                m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x1092;
+
+                m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0x10e8;
+                m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x107a;
+
+                m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x11dc;
+                m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1053;
+
+                IndexOfNtGdiCreateCompatibleDC = 0x101e;
+                IndexOfNtGdiCreateCompatibleBitmap = 0x101d;
+                IndexOfNtGdiSelectBitmap = 0x1100;
+                IndexOfNtUserCallOneParam = 0x1142;
+
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f; //不要加 0x1000
+
+                break;
+            }
+        case 600:   //Vista
+            {
+                KdPrint(("Running on Vista 32\n"));
+
+                m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x100d;
+                m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x112d;
+                m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x10f5;
+                m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x10eb;
+                m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x1133;
+                m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x1095;
+
+                m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0x10f1;
+                m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x107c;
+
+                m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x11f3;
+                m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1055;
+
+                IndexOfNtGdiCreateCompatibleDC = 0x101f;
+                IndexOfNtGdiCreateCompatibleBitmap = 0x101e;
+                IndexOfNtGdiSelectBitmap = 0x1109;
+                IndexOfNtUserCallOneParam = 0x114d;
+
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x23; //不要加 0x1000
+
+                break;
+            }
 		case 601:	//Win7
 			{
-				KdPrint(("Running on Windows 7\n"));
+				KdPrint(("Running on Windows 7 32\n"));
 				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x100E;
 				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x112e;
 				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x10F7;
@@ -278,9 +331,20 @@ public:
 				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1056;
 
 				IndexOfNtUserCallOneParam = 0x114U;
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1024;	//Win7
+
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24; ////不要加 0x1000
 				break;
 			}
+        //case xxxx:    //Windows 2008 Server
+        //    {
+        //        KdPrint(("Running on Windows 2008 Server 32\n"));
+        //        break;
+        //    }
+        //case 602:   //Win8
+        //    {
+        //        KdPrint(("Running on Windows 8 32\n"));
+        //        break;
+        //    }
 		default:
 			status = STATUS_NOT_SUPPORTED;
 			break;
@@ -325,7 +389,8 @@ public:
 				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x11ab;
 
 				IndexOfNtUserCallOneParam = 0x1002;
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1024;	//Win7
+
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24;	//不要加 0x1000
 				break;
 			}
 		default:
@@ -462,7 +527,6 @@ LONG g_SSDTAPILockCount = 0;
 
 // If the current one hooking SSDT API function calls and function call in progress, if this value has a value greater than 0.
 
-//http://www.reactos.org/wiki/Techwiki:Win32k/apfnSimpleCall
 
 //enum SimpleCallRoutines
 //{
@@ -541,8 +605,8 @@ BOOL Hooked_NtGdiBitBlt(
 			|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hDCSrc))
 		{
 			//Skip 
-			RECT rcWnd = g_pDriverHookApiInfos->m_ProtectWndInfo.rcProtectWindow;
-			HDC hdcMemory = g_pDriverHookApiInfos->m_ProtectWndInfo.hDCWndProtect;
+            RECT rcWnd = g_pDriverHookApiInfos->m_ProtectWndInfo.rcProtectWindow;
+            HDC hdcMemory = g_pDriverHookApiInfos->m_ProtectWndInfo.hDCWndProtect;
 
 			//PEPROCESS pEProcess = NULL;
 			//KAPC_STATE KApcState = {0};
@@ -554,13 +618,17 @@ BOOL Hooked_NtGdiBitBlt(
 			//}
 
 			//drawProtectResult  -- FALSE , 而 正常的 Draw 返回 TRUE
-			//BOOL drawProtectResult = ((NTGDIBITBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiBitBlt].pOrigApiAddress))
-			//		(hDCDest, rcWnd.left, rcWnd.top, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top,
-			//		hdcMemory, 0, 0, SRCCOPY, ULONG(-1) , 0);
-			KdPrint(("[%d]!!! in Hooked_NtGdiBitBlt,isDest=%d(0x%x), isSrc=%d(0x%x), isCreateDC=%d, hDCDest=0x%x, hDCSrc=0x%x, hdcMemory =0x%x, rcProtect={%d,%d -- %d,%d}\n", 
+			BOOL drawProtectResult = ((NTGDIBITBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiBitBlt].pOrigApiAddress))
+					(hDCDest, rcWnd.left, rcWnd.top, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top,
+					hdcMemory, 0, 0, SRCCOPY, ULONG(-1) , 0);
+            //if (!drawProtectResult)
+            //{
+            //    GetLastError();
+            //}
+			KdPrint(("[%d]!!! in Hooked_NtGdiBitBlt,isDest=%d(0x%x), isSrc=%d(0x%x), isCreateDC=%d, hDCDest=0x%x, hDCSrc=0x%x, hdcMemory =0x%x, rcProtect={%d,%d -- %d,%d}, drawProtectResult=%d\n", 
 				PsGetCurrentProcessId(), bIsFilterDCDest, hWndFromDest, bIsFilterDCSrc, hWndFromSrc, bIsCreateDisplayDC, hDCDest, hDCSrc,
-				hdcMemory, rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom));
-
+				hdcMemory, rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, drawProtectResult));
+            
 			//if (pEProcess)
 			//{
 			//	KeUnstackDetachProcess(&KApcState);

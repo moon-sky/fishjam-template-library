@@ -78,10 +78,13 @@ namespace FTL
         case 20601:
             osType = ostWindows7;
             break;
+		case 20602:
+			osType = ostWindows8;
+			break;
         default:
             {
                 _ASSERT(FALSE);
-                if (dwOsVersion > 20601)
+                if (dwOsVersion > 20602)
                 {
                     osType = ostHighUnknown;
                 }

@@ -76,15 +76,6 @@
 *   IoCreateSymbolicLink -- 在对象管理器中创建一个"符号链接"
 *   IoDeleteSymbolicLink --
 *
-* 驱动创建的设备一般有三种读写方式：1.缓冲区方式(DO_BUFFERED_IO); 2.直接方式; 3.其他方式(?)
-*   缓冲区：
-*     MDLAddress -- 通过 MDL 把应用层的地址空间映射到内核空间
-*     UserBuffer -- 最追求效率的解决方案，应用层的缓冲区地址直接放在其中，在内核控制中访问。只能用于当前进程和发送请求进程一致的情况？
-*     AssociatedIrp.SystemBuffer -- 用于比较简单且不追求效率情况下的解决方案(把R3中内存空间中的缓冲数据拷贝到R0)
-*   通用的读写数据方式(TODO:没有标志指明使用的具体缓冲区？):
-*     if(irp->MdlAddress != NULL) buffer = (PBYTE)MmGetSystemAddressForMdlSafe(irp->MdlAddress);
-*     else buffer = (PBYTE)irp->UserBuffer;
-*     if(buffer == NULL) buffer = (PBYTE)irp->AssociatedIrp.SystemBuffer;
 * 
 * IRP类型
 ******************************************************************************************************************/

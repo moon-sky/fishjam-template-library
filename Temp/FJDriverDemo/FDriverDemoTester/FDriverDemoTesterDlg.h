@@ -35,9 +35,15 @@ public:
 private:
 	CFDriverDemoController	m_DriverController;
 	CString m_strDriverPath;
-	CDC m_MemoryDC;
-	CBitmap	m_bmpWindow;
-	CBitmap* m_pOldBmp;
+	CDC         m_MemoryDC;
+    CRect       m_rcClient;
+    HBITMAP     m_hBmpWindow;
+    HBITMAP     m_hOldBmp;
+    HANDLE      m_hFileMapping;
+    //CAtlFileMapping m_bmpFileMap;
+    
+	//CBitmap	m_bmpWindow;
+	//CBitmap* m_pOldBmp;
 	BOOL _RefreshMemoryDC();
 public:
 	afx_msg void OnBnClickedBtnChooseDriverFile();
