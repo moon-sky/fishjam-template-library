@@ -5,9 +5,9 @@
 // http://bazislib.sysprogs.org/ -- BazisLib library，而且有很多向导和标准驱动的辅助开发类
 
 //寒江独钓-Windows内核安全编程 -- P14X
-//Windows驱动开发技术详解 -- P266(互斥体)  (优先看调试技巧?)
+//Windows驱动开发技术详解 -- P330(创建IRP)  (优先看调试技巧?)
 
-//与用户模式通信(DeviceIoControl?)
+//与用户模式通信( ReadFile/DeviceIoControl/CancelIo 等)
 //  驱动程序通过 HAL 调用硬件抽象层，然后才和硬件交互。
 //  在驱动程序中，应尽量避免使用针对平台的汇编指令(如 IN, OUT)，而应该使用与平台无关的HAL函数或宏（如 READ_PORT_BUFFER_UCHAR ）
 /******************************************************************************************************************
@@ -33,13 +33,15 @@
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
+* APC -- Asynchronous Procedure Call, 异步过程调用(线程处于 Alert 状态时回调才可能被调用)
 * APIC -- Advanced Programmable Interrupt Controller, 高级编程控制器
 * CDO -- 控制设备(Control Device Object)，修改整个驱动的内部配置，一个Driver只对应一个CDO？
 * DCT -- Display Compatibility Kit
 * DDK -- Driver Development Kit，WinNT、WinXP等平台的开发包
+* DIRQL -- 
 * DMA -- 
 * DSF -- Device Simulation Framework
-* DPC -- Delayed Procedure Call，延迟过程调用，完成一个IO请求和开始另一个中断驱动的传输
+* DPC -- Delayed Procedure Call，延迟过程调用，完成一个IO请求和开始另一个中断驱动的传输，一般和ISR配合使用防止打断正常运行的线程
 * FDE -- Full Disk Encryption,全磁盘加密
 * FDO -- Function Device Object ，功能设备对象，一般就是自己驱动中通过 IoCreateDevice 创建的设备对象?
 * FSD -- File System Driver, 文件系统驱动

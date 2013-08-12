@@ -26,11 +26,17 @@
 *     用户模式下，符号链接以 "\\.\" 开头， 如 "\\.\C:"
 *   2.通过设备接口找到设备
 *
-*   
+* ZwOpenSymbolicLinkObject -- 打开内核模式的符号链接，如 L"\\??\\C:"
+* ZwQuerySymbolicLinkObject -- 获取符号链接对应的设备信息
+* 
+* 驱动中调用其他驱动  
+*   1.使用文件句柄方式(类似App调用驱动) -- ZwCreateFile(SYNCHRONIZE 同步) -> ZwReadFile 等
+*   2.IoGetDeviceObjectPointer -- 获得设备指针
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
 * 内核对象
+* 
 *   DRIVER_OBJECT(驱动对象) -- 需要填写一组回调函数来让Windows调用，插件模式，每个驱动程序只有一个驱动对象
 *     FastIoDispatch -- 快速IO分发函数(文件驱动中使用)
 *     MajorFunction -- 普通分发函数(DRIVER_DISPATCH)的指针数组,对应各种  IRP_MJ_XXX 
@@ -63,21 +69,31 @@
 *     TODO: pDriverObject->MajorFunction[IRP_MJ_WRITE] = USE_WRITE_FUNCTION；   // ?
 *   IRP是从非分页内存池中分配的可变大小的结构，关联一个 IO_STACK_LOCATION 结构数组
 * 
+* 同步IRP -- 派遣函数中直接处理并调用 IoCompleteRequest 函数结束IRP请求( 其内部设置 IRP.UserEvent )
+* 异步IRP -- 派遣函数中保存信息(如通过 IoStartPacket 放入StartIo队列)，调用 IoMarkIrpPending 函数告知操作系统该IRP处于挂起状态，并返回 STATUS_PENDING，
+*            有助于提高效率，但通常需要进行同步处理(如 StartIO/中断服务例程等)，防止出现逻辑上的错误。
+* 
 * IO_STACK_LOCATION -- IO堆栈，对应设备堆栈中每层设备所做的操作，本层设备对应的值可通过 IoGetCurrentIrpStackLocation 获得
 *   Parameters里面是很多结构体的union，需要根据具体的 功能号 选择对应的成员变量进行处理   
 *
+*   IoCancelIrp -- 取消指定的IRP请求，其内部会使用叫做 cancel 的自旋锁进行同步，需要在 IoSetCancelRoutine 设定的
+*     取消回调函数中调用 IoReleaseCancelSpinLock(Irp->CancelIrql) 释放该自旋锁。
+*     可通过DPC定时器设置超时并调用该函数取消IRP，防止无响应。
+*   IoCompleteRequest(, IO_NO_INCREMENT) -- 结束IRP，如果调用(WriteFile)是同步，则结束Irp时会唤醒之前被阻塞的同步调用线程
 *   IoCopyCurrentIrpStackLocationToNext -- 把当前IRP栈空间拷贝到下一个栈空间,需要和 IoSetCompletionRoutine 合用，来做键盘过滤(下发读请求并在读到结果后过滤)
 *   IoGetCurrentIrpStackLocation -- 获得当前栈空间信息
-*   IoMarkIrpPending -- 
+*   IoMarkIrpPending -- 告知操作系统该IRP处于挂起状态
+*   IoSetCancelRoutine -- 设置取消IRP请求的回调函数，当该IRP被取消时，操作系统会调用该取消函数
 *   IoSetCompletionRoutine -- 设置完成回调函数
 *   IoSkipCurrentIrpStackLocation -- 跳过当前栈空间
-* 
-*   IoCompleteRequest(, IO_NO_INCREMENT) -- 结束IRP，如果调用(WriteFile)是同步，则结束Irp时会唤醒之前被阻塞的同步调用线程
+*   IoStartNextPacket -- 从队列中取出下一个IRP并调用StartIo
+*   IoStartPacket -- 调用StartIo函数或将IRP放入等待队列
 *   IoCreateSymbolicLink -- 在对象管理器中创建一个"符号链接"
 *   IoDeleteSymbolicLink --
-*
+*   KeRemoveEntryDeviceQueue -- 
 * 
 * IRP类型
+*
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
@@ -117,11 +133,10 @@
 *   ExAllocateFromNPagedLookasideList/ExAllocateFromPagedLookasideList -- 从Lookaside分配内存
 *   ExFreeToNPagedLookasideList/ExFreeToPagedLookasideList -- 回收内存
 *
-*   
-*   
-* 容器(链表)
+*
+* 容器(链表) -- 可通过 CONTAINING_RECORD 宏从 LIST_ENTRY 变量获得用户定义结构体变量的地址
 *   单向链表(Next指向下一个) -- 
-*   双向链表(Blink/Flink) -- 以 LIST_ENTRY 作为第一个元素，来定义每个元素的数据类型，可通过 CONTAINING_RECORD 宏获得变量地址
+*   双向链表(Blink/Flink) -- 以 LIST_ENTRY 作为第一个元素，来定义每个元素的数据类型，
 *     InitializeListHead -- 初始化链表头，Flink和Blink都指向自己，表示为空链
 *     IsListEmpty -- 判断是否是空链
 *     InsertHeadList/InsertTailList -- 从头部、尾部插入元素
@@ -142,6 +157,10 @@
 * 系统操作
 *   MmGetSystemRoutineAddress -- 可以得到核心层的函数指针?
 *   KeUserModeCallback -- Ring0调用Ring3的函数，其他的方式还有 APC 等
+*
+* 内核对象句柄和指针 -- 每个内核中的句柄都会和一个内核对象的指针联系起来，可互相转化
+*   IoGetDeviceObjectPointer -- 通过设备名获得设备栈顶端设备和文件对象
+
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
@@ -160,6 +179,22 @@
 * Other
 *   ObDereferenceObject
 *   ObReferenceObjectByName(头文件中没有声明?) -- 通过一个名字获得一个对象的指针
+*
+* 时间相关的函数
+*   时间参数：
+*     小于0的时间值代表从当前开始的相对时间(100ns的倍数)
+*     大于0的时间值代表从 1601-01-01 开始的绝对的时间(100ns的倍数)
+*   定时器 -- 分为 IO定时器 和 DPC定时器
+*     IoInitializeTimer/IoStartTimer/IoStopTimer -- IO定时器,系统每1s激发一次定时器例程(运行在 DISPATCH_LEVEL),
+*       运行在任意线程，因此不能直接使用App中的内存地址
+*     KeInitializeTimer/KeSetTimer/KeCancelTimer -- DPC定时器，通过DPC队列执行，可对任意间隔时间进行定时。
+*       每一次 KeSetTimer 只会触发一次,若要周期性触发DPC例程，需要在处理函数中周期性调用 KeSetTimer.
+* 
+*   KeDelayExecutionThread -- 强制当前线程进入睡眠状态，经过指定的睡眠时间后，线程恢复运行。
+*   KeStallExecutionProcessor -- 让CPU处于忙等状态，经过指定时间后，继续让线程运行(由于不会进入睡眠，因此不会发生线程的切换，延时比较精确)
+*   KeQuerySystemTime -- 获取当前系统时间(从  1601-01-01 开始的格林尼治时间)
+*   ExSystemTimeToLocalTime -- 将系统时间转换为当前时区对应的时间
+*   RtlTimeToTimeFields -- 由系统时间得到具体的年月日等信息
 *
 * 电源(Power)相关?
 *   PoStartNextPowerIrp -- 

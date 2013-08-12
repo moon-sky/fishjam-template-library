@@ -30,11 +30,11 @@ typedef BOOL (*NTGDISTRETCHBLT)(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT c
 								HDC hdcSrc, INT xSrc, INT ySrc, INT cxSrc, INT cySrc,
 								DWORD dwRop, DWORD dwBackColor);
 
-typedef BOOL (*NTGDIPLGBLT)(HDC hdcTrg, LPPOINT pptlTrg, 
+typedef BOOL (*NTGDIPLGBLT)(HDC hdcDst, LPPOINT pptlTrg, 
 							HDC hdcSrc, INT xSrc, INT ySrc, INT cxSrc, INT cySrc,
 							HBITMAP hbmMask, INT xMask, INT yMask, DWORD crBackColor);
 
-typedef BOOL (*NTGDIMASKBLT)(HDC hdc, INT xDst, INT yDst, INT cx, INT cy,
+typedef BOOL (*NTGDIMASKBLT)(HDC hdcDst, INT xDst, INT yDst, INT cx, INT cy,
 							 HDC hdcSrc, INT xSrc, INT ySrc, 
 							 HBITMAP hbmMask, INT xMask, INT yMask, 
 							 DWORD dwRop4, DWORD crBackColor);
@@ -61,7 +61,7 @@ typedef BOOL (*NTUSERPRINTWINDOW)(HWND 	hwnd, HDC hdcBlt, UINT nFlags);
 
 
 typedef DWORD (*NTGDIDDLOCK)(HANDLE hSurface, PDD_LOCKDATA puLockData, HDC hdcClip);
-
+typedef DWORD (*NTGDIDDUNLOCK)(HANDLE hSurface, PDD_UNLOCKDATA puUnlockData);
 
 #define MAX_TRACE_CREATE_DISPLAY_DC_COUNT	1
 
@@ -74,11 +74,11 @@ BOOL Hooked_NtGdiStretchBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT cyDst
 									 HDC hdcSrc, INT xSrc, INT ySrc, INT cxSrc, INT cySrc,
 									 DWORD dwRop, DWORD dwBackColor);
 
-BOOL Hooked_NtGdiPlgBlt(HDC hdcTrg, LPPOINT pptlTrg, 
+BOOL Hooked_NtGdiPlgBlt(HDC hdcDst, LPPOINT pptlTrg, 
 							HDC hdcSrc, INT xSrc, INT ySrc, INT cxSrc, INT cySrc,
 							HBITMAP hbmMask, INT xMask, INT yMask, DWORD crBackColor);
 
-BOOL Hooked_NtGdiMaskBlt(HDC hdc, INT xDst, INT yDst, INT cx, INT cy,
+BOOL Hooked_NtGdiMaskBlt(HDC hdcDst, INT xDst, INT yDst, INT cx, INT cy,
 						HDC hdcSrc, INT xSrc, INT ySrc, 
 						HBITMAP hbmMask, INT xMask, INT yMask, 
 						DWORD dwRop4, DWORD crBackColor);
@@ -105,6 +105,7 @@ BOOL Hooked_NtGdiDeleteObjectApp(HDC  DCHandle);
 BOOL Hooked_NtUserPrintWindow(HWND hwnd, HDC hdcBlt, UINT nFlags);
 
 DWORD Hooked_NtGdiDdLock(HANDLE hSurface, PDD_LOCKDATA puLockData, HDC hdcClip);
+DWORD Hooked_NtGdiDdUnlock(HANDLE hSurface, PDD_UNLOCKDATA puUnlockData);
 
 BOOL IsFilterHDC(HDC hDC, HWND* phWndFromDC);
 
@@ -122,6 +123,7 @@ enum HookFuncType
 
 	hft_NtUserPrintWindow,
 	hft_NtGdiDdLock,
+	hft_NtGdiDdUnlock,
 
 	hft_FunctionCount,
 };
@@ -251,8 +253,9 @@ public:
 				m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0x10E9;
 				m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x107A;
 
-				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0X1DD;
+				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x11dd;
 				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1053;
+				m_HookFuns[hft_NtGdiDdUnlock].nIndexInSSDT = 0x1061;
 
 				IndexOfNtGdiCreateCompatibleDC = 0x101E;
 				IndexOfNtGdiCreateCompatibleBitmap = 0x101D;
@@ -278,6 +281,7 @@ public:
 
                 m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x11dc;
                 m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1053;
+				m_HookFuns[hft_NtGdiDdUnlock].nIndexInSSDT = 0x1061;
 
                 IndexOfNtGdiCreateCompatibleDC = 0x101e;
                 IndexOfNtGdiCreateCompatibleBitmap = 0x101d;
@@ -304,6 +308,7 @@ public:
 
                 m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x11f3;
                 m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1055;
+				m_HookFuns[hft_NtGdiDdUnlock].nIndexInSSDT = 0x1063;
 
                 IndexOfNtGdiCreateCompatibleDC = 0x101f;
                 IndexOfNtGdiCreateCompatibleBitmap = 0x101e;
@@ -329,6 +334,7 @@ public:
 
 				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x11FE;
 				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1056;
+				m_HookFuns[hft_NtGdiDdUnlock].nIndexInSSDT = 0x1064;
 
 				IndexOfNtUserCallOneParam = 0x114U;
 
@@ -387,6 +393,7 @@ public:
 
 				m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x12eb;
 				m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x11ab;
+				m_HookFuns[hft_NtGdiDdUnlock].nIndexInSSDT = 0x11b8;
 
 				IndexOfNtUserCallOneParam = 0x1002;
 
@@ -430,17 +437,17 @@ public:
 		m_HookFuns[hft_NtGdiPlgBlt].pwzApiName = L"NtGdiPlgBlt";
 		m_HookFuns[hft_NtGdiPlgBlt].pNewApiAddress = Hooked_NtGdiPlgBlt;
 		m_HookFuns[hft_NtGdiPlgBlt].nParamCount = 11;
-		m_HookFuns[hft_NtGdiPlgBlt].bEnableHook = FALSE;
+		m_HookFuns[hft_NtGdiPlgBlt].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiMaskBlt].pwzApiName = L"NtGdiMaskBlt";
 		m_HookFuns[hft_NtGdiMaskBlt].pNewApiAddress = Hooked_NtGdiMaskBlt;
 		m_HookFuns[hft_NtGdiMaskBlt].nParamCount = 13;
-		m_HookFuns[hft_NtGdiMaskBlt].bEnableHook = FALSE;
+		m_HookFuns[hft_NtGdiMaskBlt].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiTransparentBlt].pwzApiName = L"NtGdiTransparentBlt";
 		m_HookFuns[hft_NtGdiTransparentBlt].pNewApiAddress = Hooked_NtGdiTransparentBlt;
 		m_HookFuns[hft_NtGdiTransparentBlt].nParamCount = 11;
-		m_HookFuns[hft_NtGdiTransparentBlt].bEnableHook = FALSE;
+		m_HookFuns[hft_NtGdiTransparentBlt].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiExtTextOutW].pwzApiName = L"NtGdiExtTextOutW";
 		m_HookFuns[hft_NtGdiExtTextOutW].pNewApiAddress = Hooked_NtGdiExtTextOutW;
@@ -460,12 +467,17 @@ public:
 		m_HookFuns[hft_NtUserPrintWindow].pwzApiName = L"NtUserPrintWindow";
 		m_HookFuns[hft_NtUserPrintWindow].pNewApiAddress = Hooked_NtUserPrintWindow;
 		m_HookFuns[hft_NtUserPrintWindow].nParamCount = 3;
-		m_HookFuns[hft_NtUserPrintWindow].bEnableHook = FALSE;
+		m_HookFuns[hft_NtUserPrintWindow].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiDdLock].pwzApiName = L"NtGdiDdLock";
 		m_HookFuns[hft_NtGdiDdLock].pNewApiAddress = Hooked_NtGdiDdLock;
-		m_HookFuns[hft_NtGdiDdLock].nParamCount = 0x3;
-		m_HookFuns[hft_NtGdiDdLock].bEnableHook = FALSE;
+		m_HookFuns[hft_NtGdiDdLock].nParamCount = 3;
+		m_HookFuns[hft_NtGdiDdLock].bEnableHook = TRUE;
+
+		m_HookFuns[hft_NtGdiDdUnlock].pwzApiName = L"NtGdiDdUnlock";
+		m_HookFuns[hft_NtGdiDdUnlock].pNewApiAddress = Hooked_NtGdiDdUnlock;
+		m_HookFuns[hft_NtGdiDdUnlock].nParamCount = 2;
+		m_HookFuns[hft_NtGdiDdUnlock].bEnableHook = TRUE;
 
 #if defined(_M_IX86)
 		FNT_VERIFY(_InitCallNumberX86(versionCode));
@@ -600,45 +612,47 @@ BOOL Hooked_NtGdiBitBlt(
 		BOOL bIsFilterDCDest = IsFilterHDC(hDCDest, &hWndFromDest);
 		BOOL bIsFilterDCSrc = IsFilterHDC(hDCSrc, &hWndFromSrc);
 		BOOL bIsCreateDisplayDC = g_pDriverHookApiInfos->IsCreatedDisplayDC(hDCSrc);
-
-		if (bIsFilterDCSrc || bIsFilterDCDest
-			|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hDCSrc))
+		NTGDIBITBLT pOrigNtGdiBitBlt = (NTGDIBITBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiBitBlt].pOrigApiAddress);
+		if (pOrigNtGdiBitBlt)
 		{
-			//Skip 
-            RECT rcWnd = g_pDriverHookApiInfos->m_ProtectWndInfo.rcProtectWindow;
-            HDC hdcMemory = g_pDriverHookApiInfos->m_ProtectWndInfo.hDCWndProtect;
+			if (bIsFilterDCSrc || bIsFilterDCDest
+				|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hDCSrc))
+			{
+				//Skip 
+				RECT rcWnd = g_pDriverHookApiInfos->m_ProtectWndInfo.rcProtectWindow;
+				HDC hdcMemory = g_pDriverHookApiInfos->m_ProtectWndInfo.hDCWndProtect;
 
-			//PEPROCESS pEProcess = NULL;
-			//KAPC_STATE KApcState = {0};
+				//PEPROCESS pEProcess = NULL;
+				//KAPC_STATE KApcState = {0};
 
-			////FNT_VERIFY(PsLookupProcessByProcessId(PsGetCurrentProcessId(), &pEProcess));
-			//if (pEProcess)
-			//{
-			//	KeStackAttachProcess(pEProcess, &KApcState);
-			//}
+				////FNT_VERIFY(PsLookupProcessByProcessId(PsGetCurrentProcessId(), &pEProcess));
+				//if (pEProcess)
+				//{
+				//	KeStackAttachProcess(pEProcess, &KApcState);
+				//}
 
-			//drawProtectResult  -- FALSE , 而 正常的 Draw 返回 TRUE
-			BOOL drawProtectResult = ((NTGDIBITBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiBitBlt].pOrigApiAddress))
-					(hDCDest, rcWnd.left, rcWnd.top, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top,
+				//drawProtectResult  -- FALSE , 而 正常的 Draw 返回 TRUE
+				BOOL drawProtectResult = (pOrigNtGdiBitBlt)(hDCDest, rcWnd.left, rcWnd.top, rcWnd.right - rcWnd.left, rcWnd.bottom - rcWnd.top,
 					hdcMemory, 0, 0, SRCCOPY, ULONG(-1) , 0);
-            //if (!drawProtectResult)
-            //{
-            //    GetLastError();
-            //}
-			KdPrint(("[%d]!!! in Hooked_NtGdiBitBlt,isDest=%d(0x%x), isSrc=%d(0x%x), isCreateDC=%d, hDCDest=0x%x, hDCSrc=0x%x, hdcMemory =0x%x, rcProtect={%d,%d -- %d,%d}, drawProtectResult=%d\n", 
-				PsGetCurrentProcessId(), bIsFilterDCDest, hWndFromDest, bIsFilterDCSrc, hWndFromSrc, bIsCreateDisplayDC, hDCDest, hDCSrc,
-				hdcMemory, rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, drawProtectResult));
-            
-			//if (pEProcess)
-			//{
-			//	KeUnstackDetachProcess(&KApcState);
-			//	ObDereferenceObject(pEProcess);
-			//}
-		}
-		else
-		{
-			bRet = ((NTGDIBITBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiBitBlt].pOrigApiAddress))
-				(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
+				//if (!drawProtectResult)
+				//{
+				//    GetLastError();
+				//}
+				KdPrint(("[%d]!!! in Hooked_NtGdiBitBlt,isDest=%d(0x%x), isSrc=%d(0x%x), isCreateDC=%d, hDCDest=0x%x, hDCSrc=0x%x, hdcMemory =0x%x, rcProtect={%d,%d -- %d,%d}, drawProtectResult=%d\n", 
+					PsGetCurrentProcessId(), bIsFilterDCDest, hWndFromDest, bIsFilterDCSrc, hWndFromSrc, bIsCreateDisplayDC, hDCDest, hDCSrc,
+					hdcMemory, rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, drawProtectResult));
+
+				//if (pEProcess)
+				//{
+				//	KeUnstackDetachProcess(&KApcState);
+				//	ObDereferenceObject(pEProcess);
+				//}
+			}
+			else
+			{
+				bRet = (pOrigNtGdiBitBlt)
+					(hDCDest, XDest, YDest, Width, Height, hDCSrc, XSrc, YSrc, ROP, crBackColor, fl);
+			}
 		}
 	}
 	__finally
@@ -658,30 +672,34 @@ BOOL Hooked_NtGdiStretchBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT cyDst
 	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
 	__try
 	{
-		//KdPrint(("[%d] In Hooked_NtGdiStretchBlt, hdcDst=0x%x, hdcSrc=0x%x\n", 
-		//	PsGetCurrentProcessId(), hdcDst, hdcSrc));
-
-		if (IsFilterHDC(hdcDst, NULL) 
-			|| IsFilterHDC(hdcSrc, NULL)
-			|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
+		NTGDISTRETCHBLT pOrigNtGdiStretchBlt= (NTGDISTRETCHBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiStretchBlt].pOrigApiAddress);
+		if (pOrigNtGdiStretchBlt)
 		{
-			//RECT rcWnd = g_pDriverHookApiInfos->m_ProtectWndInfo.rcProtectWindow;
-			//HDC hdcMemory = g_pDriverHookApiInfos->m_ProtectWndInfo.hDCWndProtect;
-			//LONG cx = rcWnd.right - rcWnd.left;
-			//LONG cy = rcWnd.bottom - rcWnd.top;
+			//KdPrint(("[%d] In Hooked_NtGdiStretchBlt, hdcDst=0x%x, hdcSrc=0x%x\n", 
+			//	PsGetCurrentProcessId(), hdcDst, hdcSrc));
 
-			//BOOL drawProtectResult = ((NTGDISTRETCHBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiBitBlt].pOrigApiAddress))
-			//	(hdcDst, rcWnd.left, rcWnd.top, cx, cy,
-			//	hdcMemory, 0, 0, cx, cy, SRCCOPY, dwBackColor);
+			if (IsFilterHDC(hdcDst, NULL) 
+				|| IsFilterHDC(hdcSrc, NULL)
+				|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
+			{
+				//RECT rcWnd = g_pDriverHookApiInfos->m_ProtectWndInfo.rcProtectWindow;
+				//HDC hdcMemory = g_pDriverHookApiInfos->m_ProtectWndInfo.hDCWndProtect;
+				//LONG cx = rcWnd.right - rcWnd.left;
+				//LONG cy = rcWnd.bottom - rcWnd.top;
 
-			//KdPrint(("!!! in Hooked_NtGdiStretchBlt, hdcMemory =0x%x, rcProtect={%d,%d -- %d,%d}, BitBltMemory=%d, Reason=%d\n", 
-			//	hdcMemory, rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, drawProtectResult, 0));
+				//BOOL drawProtectResult = (pOrigNtGdiStretchBlt)
+				//	(hdcDst, rcWnd.left, rcWnd.top, cx, cy,
+				//	hdcMemory, 0, 0, cx, cy, SRCCOPY, dwBackColor);
 
-		}
-		else
-		{
-			bRet = ((NTGDISTRETCHBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiStretchBlt].pOrigApiAddress))
-				(hdcDst, xDst, yDst, cxDst, cyDst, hdcSrc, xSrc, ySrc, cxSrc, cySrc, dwRop, dwBackColor);
+				//KdPrint(("!!! in Hooked_NtGdiStretchBlt, hdcMemory =0x%x, rcProtect={%d,%d -- %d,%d}, BitBltMemory=%d, Reason=%d\n", 
+				//	hdcMemory, rcWnd.left, rcWnd.top, rcWnd.right, rcWnd.bottom, drawProtectResult, 0));
+
+			}
+			else
+			{
+				bRet = (pOrigNtGdiStretchBlt)
+					(hdcDst, xDst, yDst, cxDst, cyDst, hdcSrc, xSrc, ySrc, cxSrc, cySrc, dwRop, dwBackColor);
+			}
 		}
 	}
 	__finally
@@ -691,7 +709,7 @@ BOOL Hooked_NtGdiStretchBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT cyDst
 	return bRet;
 }
 
-BOOL Hooked_NtGdiPlgBlt(HDC hdcTrg, LPPOINT pptlTrg, 
+BOOL Hooked_NtGdiPlgBlt(HDC hdcDst, LPPOINT pptlTrg, 
 						HDC hdcSrc, INT xSrc, INT ySrc, INT cxSrc, INT cySrc, 
 						HBITMAP hbmMask, INT xMask, INT yMask, DWORD crBackColor)
 {
@@ -699,12 +717,22 @@ BOOL Hooked_NtGdiPlgBlt(HDC hdcTrg, LPPOINT pptlTrg,
 	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
 	__try
 	{
-		KdPrint(("Enter Hooked_NtGdiPlgBlt, hdcTrg=0x%x, hdcSrc=0x%x\n", hdcTrg, hdcSrc));
-
-		bRet = ((NTGDIPLGBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiPlgBlt].pOrigApiAddress))
-			(hdcTrg, pptlTrg, hdcSrc, xSrc, ySrc, cxSrc, cySrc,
-			hbmMask, xMask, yMask, crBackColor);
-
+		NTGDIPLGBLT pOrigNtGdiPlgBlt = ((NTGDIPLGBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiPlgBlt].pOrigApiAddress));
+		if (pOrigNtGdiPlgBlt)
+		{
+			if (IsFilterHDC(hdcDst, NULL) 
+				|| IsFilterHDC(hdcSrc, NULL)
+				|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
+			{
+				KdPrint(("!!! In Hooked_NtGdiPlgBlt, hdcTrg=0x%x, hdcSrc=0x%x\n", hdcDst, hdcSrc));
+			}
+			else
+			{
+				bRet = (pOrigNtGdiPlgBlt)
+					(hdcDst, pptlTrg, hdcSrc, xSrc, ySrc, cxSrc, cySrc,
+					hbmMask, xMask, yMask, crBackColor);
+			}
+		}
 		//KdPrint(("Leave Hooked_NtGdiPlgBlt, hdcTrg=0x%x, hdcSrc=0x%x\n", hdcTrg, hdcSrc));
 	}
 	__finally
@@ -715,7 +743,7 @@ BOOL Hooked_NtGdiPlgBlt(HDC hdcTrg, LPPOINT pptlTrg,
 	return bRet;
 }
 
-BOOL Hooked_NtGdiMaskBlt(HDC hdc, INT xDst, INT yDst, INT cx, INT cy, 
+BOOL Hooked_NtGdiMaskBlt(HDC hdcDst, INT xDst, INT yDst, INT cx, INT cy, 
 						 HDC hdcSrc, INT xSrc, INT ySrc, 
 						 HBITMAP hbmMask, INT xMask, INT yMask, 
 						 DWORD dwRop4, DWORD crBackColor)
@@ -724,12 +752,22 @@ BOOL Hooked_NtGdiMaskBlt(HDC hdc, INT xDst, INT yDst, INT cx, INT cy,
 	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
 	__try
 	{
-		KdPrint(("Enter Hooked_NtGdiMaskBlt\n"));
-		
-		bRet = ((NTGDIMASKBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiMaskBlt].pOrigApiAddress))
-			(hdc, xDst, yDst, cx, cy, hdcSrc, xSrc, ySrc,
-			hbmMask, xMask, yMask, dwRop4, crBackColor);
-
+		NTGDIMASKBLT pOrigNtGdiMaskBlt = ((NTGDIMASKBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiMaskBlt].pOrigApiAddress));
+		if (pOrigNtGdiMaskBlt)
+		{
+			if (IsFilterHDC(hdcDst, NULL) 
+				|| IsFilterHDC(hdcSrc, NULL)
+				|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
+			{
+				KdPrint(("!!! In Hooked_NtGdiMaskBlt\n"));
+			}
+			else
+			{
+				bRet = (pOrigNtGdiMaskBlt)
+					(hdcDst, xDst, yDst, cx, cy, hdcSrc, xSrc, ySrc,
+					hbmMask, xMask, yMask, dwRop4, crBackColor);
+			}
+		}
 		//KdPrint(("Leave Hooked_NtGdiMaskBlt\n"));
 	}
 	__finally
@@ -748,13 +786,23 @@ BOOL Hooked_NtGdiTransparentBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT c
 	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
 	__try
 	{
-		KdPrint(("Enter Hooked_NtGdiTransparentBlt\n"));
-
-		bRet = ((NTGDITRANSPARENTBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiTransparentBlt].pOrigApiAddress))
-			(hdcDst, xDst, yDst, cxDst, cyDst, 
-			hdcSrc, xSrc, ySrc, cxSrc, cySrc,
-			TransColor);
-
+		NTGDITRANSPARENTBLT pOrigNtGdiTransparentBlt = (NTGDITRANSPARENTBLT)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiTransparentBlt].pOrigApiAddress);
+		if (pOrigNtGdiTransparentBlt)
+		{
+			if (IsFilterHDC(hdcDst, NULL) 
+				|| IsFilterHDC(hdcSrc, NULL)
+				|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
+			{
+				KdPrint(("!!! In Hooked_NtGdiTransparentBlt\n"));
+			}
+			else
+			{
+				bRet = (pOrigNtGdiTransparentBlt)
+					(hdcDst, xDst, yDst, cxDst, cyDst, 
+					hdcSrc, xSrc, ySrc, cxSrc, cySrc,
+					TransColor);
+			}
+		}
 		//KdPrint(("Leave Hooked_NtGdiTransparentBlt\n"));
 	}
 	__finally
@@ -774,9 +822,12 @@ BOOL Hooked_NtGdiExtTextOutW(HDC hDC, INT XStart, INT YStart, UINT fuOptions,
 	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
 	__try
 	{
-		bRet = (NTGDIEXTTEXTOUTW(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiExtTextOutW].pOrigApiAddress))
-			(hDC, XStart, YStart, fuOptions, UnsafeRect, UnsafeString, Count, UnsafeDx, dwCodePage);
-
+		NTGDIEXTTEXTOUTW pOrigNtGdiExtTextOutW = (NTGDIEXTTEXTOUTW)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiExtTextOutW].pOrigApiAddress);
+		if (pOrigNtGdiExtTextOutW)
+		{
+			bRet = (pOrigNtGdiExtTextOutW)
+				(hDC, XStart, YStart, fuOptions, UnsafeRect, UnsafeString, Count, UnsafeDx, dwCodePage);
+		}
 		//KdPrint(("[%d], In Hooked_NtGdiExtTextOutW hDC=0x%x, Start[%d, %d], codePage=%d, nCount=%d, String=%ws\n", 
 		//	PsGetCurrentProcessId(), hDC, XStart, YStart, dwCodePage, Count,
 		//	UnsafeString ? UnsafeString : L"None"));
@@ -801,8 +852,12 @@ HDC Hooked_NtGdiOpenDCW( PUNICODE_STRING Device,
 	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
 	__try
 	{
-		hDC = (NTGDIOPENDCW(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiOpenDCW].pOrigApiAddress))(Device, InitData, pustrLogAddr, iType, hspool, pDriverInfo2, pUMdhpdev);
+		NTGDIOPENDCW pOrigNtGdiOpenDCW = (NTGDIOPENDCW)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiOpenDCW].pOrigApiAddress);
 
+		if (pOrigNtGdiOpenDCW)
+		{
+			hDC = (pOrigNtGdiOpenDCW)(Device, InitData, pustrLogAddr, iType, hspool, pDriverInfo2, pUMdhpdev);
+		}
 		//KdPrint(("[%d], In Hooked_NtGdiOpenDCW Device=%wZ, hDC=0x%x\n", 
 		//	PsGetCurrentProcessId(), Device, hDC));
 		if (!Device)
@@ -827,9 +882,13 @@ BOOL Hooked_NtGdiDeleteObjectApp(HDC  DCHandle)
 	{
 		//KdPrint(("[%d], In Hooked_NtGdiDeleteObjectApp hDC=0x%x\n", 
 		//	PsGetCurrentProcessId(), DCHandle));
-
 		bRet = g_pDriverHookApiInfos->RemoveCreatedDisplayDC(DCHandle);
-		bRet = ((NTGDIDELETEOBJECTAPP)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiDeleteObjectApp].pOrigApiAddress))(DCHandle);
+
+		NTGDIDELETEOBJECTAPP pOrigNtGdiDeleteObjectApp = (NTGDIDELETEOBJECTAPP)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiDeleteObjectApp].pOrigApiAddress);
+		if (pOrigNtGdiDeleteObjectApp)
+		{
+			bRet = (pOrigNtGdiDeleteObjectApp)(DCHandle);
+		}
 	}
 	__finally
 	{
@@ -839,7 +898,7 @@ BOOL Hooked_NtGdiDeleteObjectApp(HDC  DCHandle)
 	return bRet;
 }
 
-//使用 PrintWindow 进行 后台截图
+//使用 PrintWindow 进行 后台截图 -- Snagit 的滚动截图会用到
 //PrintWindow(NtUserPrintWindow)->xxxPrintWindow->(SetRedirectedWindow->CreateRedirectionBitmap)
 // ->xxxUpdateWindow->_GetDCEx->NtGdiBitBlt
 //http://bbs.csdn.net/topics/380255549?page=1#post-393923087
@@ -852,7 +911,19 @@ BOOL Hooked_NtUserPrintWindow(HWND hwnd, HDC hdcBlt, UINT nFlags)
 		KdPrint(("[%d], In Hooked_NtUserPrintWindow, hWnd=0x%x, hdcBlt=0x%x, nFlags=%d\n",
 			PsGetCurrentProcessId(), hwnd, hdcBlt, nFlags));
 
-		bRet = ((NTUSERPRINTWINDOW)(g_pDriverHookApiInfos->m_HookFuns[hft_NtUserPrintWindow].pOrigApiAddress))(hwnd, hdcBlt, nFlags);
+		NTUSERPRINTWINDOW pOrigNtUserPrintWindow = (NTUSERPRINTWINDOW)(g_pDriverHookApiInfos->m_HookFuns[hft_NtUserPrintWindow].pOrigApiAddress);
+		if (pOrigNtUserPrintWindow)
+		{
+			//if (IsFilterHDC(hdcDst, NULL) 
+			//	|| IsFilterHDC(hdcSrc, NULL)
+			//	|| g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
+			//{
+			//}
+			//else
+			{
+				bRet = (pOrigNtUserPrintWindow)(hwnd, hdcBlt, nFlags);
+			}
+		}
 	}
 	__finally
 	{
@@ -869,8 +940,33 @@ DWORD Hooked_NtGdiDdLock(HANDLE hSurface, PDD_LOCKDATA puLockData, HDC hdcClip)
 	{
 		KdPrint(("[%d] In Hooked_NtGdiDdLock, hSurface=0x%x, hdcClip=0x%x\n",
 			PsGetCurrentProcessId(), hSurface, hdcClip));
+		NTGDIDDLOCK pOrigNtGdiDdLock = (NTGDIDDLOCK)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiDdLock].pOrigApiAddress);
+		if (pOrigNtGdiDdLock)
+		{
+			dwResult = (pOrigNtGdiDdLock)(hSurface, puLockData, hdcClip);
+		}
+	}
+	__finally
+	{
+		SSDT_API_CALL_LEAVE(g_SSDTAPILockCount);
+	}
+	return dwResult;
+}
 
-		dwResult = ((NTGDIDDLOCK)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiDdLock].pOrigApiAddress))(hSurface, puLockData, hdcClip);
+DWORD Hooked_NtGdiDdUnlock(HANDLE hSurface, PDD_UNLOCKDATA puUnlockData)
+{
+	DWORD dwResult = 0;
+	SSDT_API_CALL_ENTER(g_SSDTAPILockCount);
+	__try
+	{
+		KdPrint(("[%d] In Hooked_NtGdiDdUnlock, hSurface=0x%x, puUnlockData=0x%p\n",
+			PsGetCurrentProcessId(), hSurface, puUnlockData));
+
+		NTGDIDDUNLOCK pOrigNtGdiDdUnlock = (NTGDIDDUNLOCK)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiDdUnlock].pOrigApiAddress);
+		if (pOrigNtGdiDdUnlock)
+		{
+			dwResult = (pOrigNtGdiDdUnlock)(hSurface, puUnlockData);
+		}
 	}
 	__finally
 	{
@@ -895,6 +991,7 @@ NTSTATUS InstallCopyProtectHook(PPROTECT_WND_INFO pProtectWndInfo)
 
 	if (!g_pDriverHookApiInfos)
 	{
+		KdPrint(("InstallCopyProtectHook Will Allocate %d size Buffer\n", sizeof(DRIVER_HOOK_API_INFOS)));
 		g_pDriverHookApiInfos = (PDRIVER_HOOK_API_INFOS)ExAllocatePoolWithTag(NonPagedPoolCacheAlignedMustS, sizeof(DRIVER_HOOK_API_INFOS), HOOK_API_INFO_TAG);
 		NT_ASSERT(g_pDriverHookApiInfos);
 		if (g_pDriverHookApiInfos)

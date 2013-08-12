@@ -1,6 +1,10 @@
 #ifndef F_DRIVER_THREAD_H
 #define F_DRIVER_THREAD_H
 
+/******************************************************************************************************************
+* 异步IO
+*   CreateFile 时指定 FILE_FLAG_OVERLAPPED,然后在 DeviceIoControl 等函数中使用 OVERLAPPED 参数或 ReadFileEx 函数中使用APC
+******************************************************************************************************************/
 
 /******************************************************************************************************************
 * 内核对象
@@ -11,23 +15,30 @@
 *   PsCreateSystemThread -- 通过 ProcessHandle 参数来区分是创建新的 用户线程(属于当前进程) 还是 系统线程(属于System系统进程)
 *   ★PsTerminateSystemThread★ -- 必须在线程函数内部调用该函数并设置返回值，否则线程无法退出。直接 return 是不行的？
 * 
-* KSPIN_LOCK -- 自旋锁,被锁住时如果再次申请获取该锁，程序会处于自旋状态(不停的轮询是否可以获取该锁),一般用于各派遣函数间同步。
-*   必须在低于或等于 DISPATCH_LEVEL 的IRQL级别中使用。
+* KSPIN_LOCK -- 自旋锁,被锁住时如果再次申请获取该锁，程序会处于自旋状态(不停的轮询是否可以获取该锁，锁区域不能过长),
+*   必须在低于或等于 DISPATCH_LEVEL 的IRQL级别中使用。一般用于各派遣函数间同步(如多线程同时读写同一个设备)。
 *   KeInitializeSpinLock -- 初始化
 *   KeAcquireSpinLock/KeReleaseSpinLock -- 获取和释放自旋锁，在获取锁时会改变为 DISPATCH_LEVEL
 *   KeAcquireSpinLockAtDpcLevel/KeReleaseSpinLockFromDpcLevel -- 在 DISPATCH_LEVEL 级别申请和释放锁，不会改变级别
 *
 * 内核模式的同步对象(程序员可以获得真实同步对象的指针)
 *   等待函数 -- KeWaitForSingleObject/KeWaitForMultipleObjects
-*     
+*   FAST_MUTEX -- 快速互斥对象(速度快但不能递归获取释放)
+*     ExInitializeFastMutex
+*     ExAcquireFastMutex/ExReleaseFastMutex --
 *   KEVENT -- 事件对象，分为 通知事件(NotificationEvent, 需要手动重置) 和 同步事件(SynchronizationEvent,Wait后自动重置)
 *     KeInitializeEvent/KeSetEvent
 *     IoCreateNotificationEvent/IoCreateSynchronizationEvent -- 创建或打开"有名"的通知事件/同步事件对象，多个驱动可以交互
-*  
+*   KMUTEX -- 互斥对象(可递归获取释放)
+*     KeInitializeMutex -- 初始化
+*     KeRleaseMutex -- 释放互斥对象，然后可通过 KeWait 等待
 *   KSEMAPHORE -- 信号量
 *     KeInitializeSemaphore -- 初始化
 *     KeReadStateSemaphore -- 读取信号量当前的计数
-*     KeReleaseSemaphore -- 释放信号量，可以用于 KeWait
+*     KeReleaseSemaphore -- 释放信号量，然后可通过 KeWait 等待
+*   变量同步
+*     InterlockedIncrement 系列 -- 不使用自旋锁，内部不会提升 IRQL，可操作非分页数据或分页数据
+*     ExInterlockedIncrementLong 系列 -- 通过自旋锁实现，会提升IRQL，该系列函数不能操作分页内存数据
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
@@ -48,7 +59,7 @@
 *     0.执行在高于或等于 DISPATCH_LEVEL 级的代码不可以引发页故障，否则会蓝屏 ( PAGED_CODE 宏 可以帮助检查本函数所在的中断请求级是否超过APC_LEVEL)
 *     1.如果在调用路径上没有特殊的情况(导致中断级的提高或降低)，则一个函数执行时的中断级和它的调用源的中断级相同
 *     2.如果在调用路径上有获取自旋锁，则中断级随之升高；如果调用路径上有释放自旋锁，则中断级随之下降
-*     3.当前代码运行的中断级(如DISPATCH_LEVEL) 和 需要调用函数能运行的中断级(如PASSIVE_LEVEL)不一样时，不能使用API改变当前中断级。
+*     3.当前代码运行的中断级(如DISPATCH_LEVEL) 和 需要调用函数能运行的中断级(如PASSIVE_LEVEL)不一样时，不能使用API改变当前中断级(为什么?)。
 *       但可以：
 *       a.生成一个线程专门去执行指定中断级的代码
 *     4.对于等于或高于 DISPATCH_LEVEL 级别的函数不能使用分页内存，必须使用非分页内存
@@ -56,7 +67,8 @@
 *     用户模式的应用程序        -- PASSIVE_LEVEL
 *     DriverEntry/DriveUnload/各种分发函数/AddDevice等	-- PASSIVE_LEVEL，需要时可申请进入 DISPATCH_LEVEL
 *     完成函数、NDIS回调函数	-- DISPATCH_LEVEL
-*     StartIO/DPC/中断服务例程  -- DISPATCH_LEVEL
+*     StartIO/DPC				-- DISPATCH_LEVEL
+*     中断服务例程				-- 提升到设备对应的IRQL级别
 *     内核中的线程调度模块      -- DISPATCH_LEVEL, 所以可以中断用户线程的执行进行调度切换
 *   相关API
 *     KeGetCurrentIrql       -- 得到当前的IRQL级别

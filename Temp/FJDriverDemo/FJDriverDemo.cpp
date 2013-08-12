@@ -82,20 +82,22 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 			{
 				FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
 			}
-            status = STATUS_SUCCESS;
 		}
 		break;
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
-			UnInstallCopyProtectHook();
+			FNT_VERIFY(UnInstallCopyProtectHook());
 			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
-            status = STATUS_SUCCESS;
 		}
 		break;
     default:
         break;
 	}
-	return FJDriverDemoDefaultHandler(DeviceObject, pIrp);
+	pIrp->IoStatus.Status = status;	//设置IRP完成状态
+	pIrp->IoStatus.Information = 0;	//设置操作的字节数为0
+	IoCompleteRequest( pIrp, IO_NO_INCREMENT);	//指示完成此IRP，不再继续处理
+	return status;
+	//return FJDriverDemoDefaultHandler(DeviceObject, pIrp);
 }	
 
 //每个内核模块的入口函数，在加载该模块时被系统进程System调用一次

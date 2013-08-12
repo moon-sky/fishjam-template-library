@@ -19,15 +19,54 @@
 *     if(irp->MdlAddress != NULL) buffer = (PBYTE)MmGetSystemAddressForMdlSafe(irp->MdlAddress, xxx);
 *     else buffer = (PBYTE)irp->UserBuffer;
 *     if(buffer == NULL) buffer = (PBYTE)irp->AssociatedIrp.SystemBuffer;
-*
-* 分为 Buffered IO 和 Direct IO
-*
+******************************************************************************************************************/
+ 
+/******************************************************************************************************************
+* OBJECT_ATTRIBUTES -- 驱动中访问文件、其他的驱动时需要通过这个类型的变量指定目标文件、驱动
+*   
+*   
 * NtCreateFile -- 老版本，头文件中已经不再包含，但实际存在，和Zw-是简单的对应关系？
 * ZwCreateFile -- 当前用于操作文件的函数
 *
 * IoCreateFile -- 比 Zw-更底层的IO操作
 * IoCreateDevice -- 生成一个设备对象
 * IoCallDriver -- 发送请求
+******************************************************************************************************************/
+
+#if 0
+//打开其他驱动的代码(同步方式)
+UNICODE_STRING otherDeviceName;
+OBJECT_ATTRIBUTES objAttributes;
+HANDLE hOtherDevice;
+IO_STATUS_BLOCK status_block;
+RtlInitUnicodeString(&otherDeviceName, L"\\Device\\OtherDeviceName");
+InitializeObjectAttributes(&objAttributes, &otherDeviceName, OBJ_CASE_INSENSITIVE, NULL, NULL);
+status = ZwCreateFile(&hOtherDevice, FILE_READ_ATTRIBUTES | SYNCHRONIZE, &objAttributes, &status_block, 
+	NULL, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ, FILE_OPEN_IF, FILE_SYNCHRONOUS_IO_NONALERT, NULL, 0);
+#endif 
+
+/******************************************************************************************************************
+* StartIO -- 可以保证各个并行的IRP串行化，注意运行在 DISPATCH_LEVEL 级别，函数声明时需要加上 #pragma LOCKEDCODE 修饰符
+*   KDEVICE_QUEUE -- 操作系统提供的可实现IRP串行化的队列，其实例为 DEVICE_OBJECT::DeviceQueue,
+*   设置 DRIVER_OBJECT::DriverStartIo 变量指定的回调函数，
+*
+* 自定义的StartIo(很灵活，但需要负责入队和出队操作) -- 系统定义的StartIo只能使用一个队列，会将所有的IRP(如读、写)混在一起进行串行处理
+*   KeInitializeDeviceQueue
+*   KeInsertDeviceQueue -- 插入队列，若返回FALSE表明IRP没有插入到队列，需要立即处理
+*   KeRemoveDeviceQueue -- 从队列中删除元素
+******************************************************************************************************************/
+
+/******************************************************************************************************************
+* 中断服务程序(ISR)，
+*   驱动中使用ISR，需要先获得中断对象(INTERRUPT)
+*   
+*   IoConnectInterrupt -- 将中断对象和ISR联系起来，当中断信号来临时进入ISR处理
+*   KeSynchronizeExecution -- 
+*
+* DPC(Delayed Procedure Call) -- 延迟过程调用，有一个队列，系统依次调用，处于 DISPATCH_LEVEL 级别
+*   ISR具有很高的IRQL，会打断正常运行的线程，因此一般在ISR中处理紧急代码，而将不需要紧急处理的代码放在DPC例程中。
+*   KeInitializeDpc -- 
+*   IoRequestDpc -- 放入DPC例程的队列
 ******************************************************************************************************************/
 
 #endif //F_DRIVER_IO_H

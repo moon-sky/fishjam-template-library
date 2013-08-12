@@ -139,11 +139,13 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 	}
 
 	NT_ASSERT(NULL == pHookApiInfo->pOrigApiAddress);
+	NT_ASSERT((LONG)pServiceTable->ArgumentsTable[nIndex] == pHookApiInfo->nParamCount * sizeof(PVOID));	//判断参数的个数
+
 	pHookApiInfo->pOrigApiAddress = pServiceTable->ServiceTableBase[nIndex];
 
-	KdPrint(("Hook SSDT func %ws at [%d], oldAddress=%p, newAddress=%p\n", 
+	KdPrint(("Hook SSDT func %ws at [0x%x], oldAddress=%p, newAddress=%p, nParamCount=%d\n", 
 		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
-		pHookApiInfo->pOrigApiAddress, pHookApiInfo->pNewApiAddress));
+		pHookApiInfo->pOrigApiAddress, pHookApiInfo->pNewApiAddress, pHookApiInfo->nParamCount));
 
 	irql = WPOFFx64();
 	InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pNewApiAddress);
@@ -155,6 +157,7 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
 	NTSTATUS status = STATUS_SUCCESS;
+	//KIRQL irql1 = 0;
 	KIRQL irql = 0;
 
 	PSYSTEM_SERVICE_TABLE pServiceTable = pHookApiInfo->nIndexInSSDT < 0x1000 ? &g_pSystemServiceTable[0] : &g_pSystemServiceTable[1];
@@ -164,10 +167,12 @@ NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 		nIndex -= 0x1000;
 	}
 
-	KdPrint(("Restore SSDT func %ws at [%d], origAddress=%p\n", 
+	KdPrint(("Restore SSDT func %ws at [0x%x], origAddress=%p\n", 
 		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, pHookApiInfo->pOrigApiAddress));
 
 	NT_ASSERT(NULL != pHookApiInfo->pOrigApiAddress);
+
+	//KeAcquireSpinLock(&pHookApiInfo->spinLock, &irql1);
 
 	irql = WPOFFx64();
 	InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pOrigApiAddress);

@@ -123,7 +123,9 @@
 *       LhUninstallHook(&hHookCreateFileW);  
 *       delete hHookCreateFileW;  
 *       LhWaitForPendingRemovals(); //等待内存释放
-* 
+*     源码分析:
+*       LhInstallHook -> LhRelocateEntryPoint -> 
+*       
 * 
 *   2.Detours：http://research.microsoft.com/en-us/projects/detours
 *     微软的开源研究库，免费版本不能用于商业，商业版本大约6000RMB。支持x64和IA64等64位平台
