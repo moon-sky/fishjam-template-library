@@ -27,9 +27,7 @@ typedef struct _SERVICE_DESCRIPTOR_TABLE
 	SYSTEM_SERVICE_TABLE Table4;    // not used
 }SYSTEM_DESCRIPTOR_TABLE, *PSYSTEM_DESCRIPTOR_TABLE;
 
-//#pragma pack(push)
-//#pragma push(4)
-
+//#pragma pack(push, 8)
 typedef struct _HOOK_API_INFO
 {
 	//在Hook函数执行过程中pOrig可能被替换,需要先将 pOrigApiAddress 保存成临时变量，判断不为空后使用临时变量

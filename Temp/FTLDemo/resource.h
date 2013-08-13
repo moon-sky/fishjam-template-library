@@ -25,6 +25,7 @@
 #define IDD_PAGE_THREADPOOL             138
 #define IDD_PAGE_GDIPLUS                139
 #define IDR_MENU_GDI_PLUS_TEST          140
+#define IDD_PAGE_HOOKAPI                141
 #define IDC_EDIT_LOG                    1000
 #define IDC_BTN_FTL_THREAD_POOL_START   1001
 #define IDC_BTN_FTL_THREAD_POOL_ADD_JOB_LOW 1002
@@ -116,6 +117,8 @@
 #define IDC_BTN_API_VERIFY              1069
 #define IDC_BTN_DRAW_STRING             1069
 #define IDC_BTN_CHOOSE_IMAGE            1069
+#define IDC_BTN_HOOK_API                1069
+#define IDC_BTN_HOOK_API_DETOURS        1069
 #define IDC_EDIT_SHELL_FILE             1070
 #define IDC_BTN_WININET_DISCONNECT      1070
 #define IDC_BTN_DRAW_DRIVER_STRING      1070
@@ -215,7 +218,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        141
+#define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32778
 #define _APS_NEXT_CONTROL_VALUE         1133
 #define _APS_NEXT_SYMED_VALUE           101

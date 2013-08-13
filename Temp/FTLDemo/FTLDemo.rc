@@ -412,6 +412,14 @@ BEGIN
     PUSHBUTTON      "P",IDC_BTN_DUMP_IMAGE_PROPERTY,556,136,17,14
 END
 
+IDD_PAGE_HOOKAPI DIALOGEX 0, 0, 325, 214
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "HookApi"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    PUSHBUTTON      "Detours",IDC_BTN_HOOK_API_DETOURS,30,28,118,33
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -572,6 +580,14 @@ BEGIN
         RIGHTMARGIN, 581
         TOPMARGIN, 7
         BOTTOMMARGIN, 383
+    END
+
+    IDD_PAGE_HOOKAPI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 318
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 207
     END
 END
 #endif    // APSTUDIO_INVOKED

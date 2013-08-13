@@ -170,7 +170,7 @@
 *         
 *   2.Detours：http://research.microsoft.com/en-us/projects/detours
 *     微软的开源研究库，免费版本不能用于商业，商业版本需要 10K USD。支持x64和IA64等64位平台
-*     编译：nmake，TODO: Debug/Release？ 可能需要更改 samples\common.mak 文件，去掉其中的 /nologo 
+*     编译：nmake，TODO: Debug/Release？ 编译时可能需要更改 samples\common.mak 文件，去掉其中的 /nologo 
 *     缺陷：x86无法hook小于5字节的函数，因为没有完整的反汇编器，无法处理后面的代码 jmp 到函数前五个字节范围内(刚好被替代) 的代码逻辑
 *     原理：在汇编层改变目标API出口和入口的一些汇编指令
 *       几部分：
@@ -179,6 +179,8 @@
 *           因为Detours将会改写Target函数，所以先把Target函数的前5个字节复制保存好，
 *           一方面仍然保存Target函数的过程调用语义，另一方面便于以后的恢复。然后是一个无条件转移
 *         Detour函数：用来替代Target函数的截获函数
+*       源码分析：
+*         1.
 *     Detours同样提供了DLL注入的方式，它可编辑任何DLL或EXE导入表的功能，达到向存在的二进制代码中添加任意数据节表的目的
 *     有效负荷(Payloads) -- 可以对Win32二进制文件添加、卸载数据节表(.detours Section)以及编辑DLL导入表
 *     实现注意：

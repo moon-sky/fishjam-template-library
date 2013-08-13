@@ -8,6 +8,7 @@
 #include "GdiPage.h"
 #include "GdiPlusPage.h"
 #include "GuiPage.h"
+#include "HookApiPage.h"
 #include "NetPage.h"
 #include "NLSPage.h"
 //#include "PipelinePage.h"
@@ -49,6 +50,7 @@ BOOL CFTLDemoSheet::InitSheet()
     this->AddPage(new CGdiPage());
     this->AddPage(new CGdiPlusPage());
     //this->AddPage(new CGuiPage());
+    this->AddPage(new CHookApiPage());
     //this->AddPage(new CMemPage());
 
     //this->AddPage(new CPipelinePage());
