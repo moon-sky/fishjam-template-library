@@ -13,11 +13,11 @@ KIRQL  WPOFFx64(VOID)
 	//cli + sti ¿‡À∆ push eax + pop eax
 	__asm
 	{
-		push  eax;
+		push  eax;					//cli
 		mov   eax, cr0;
-		and   eax, 0x0FFFEFFFF;		//and     eax, not 10000h
+		and   eax, not 10000h;		//and     eax, 0x0FFFEFFFF
 		mov   cr0, eax;
-		pop   eax;
+		pop   eax;					//sti
 	}
 
 	return irql;
@@ -29,7 +29,7 @@ VOID  WPONx64(KIRQL irql)
 	{
 		push  eax;
 		mov   eax, cr0;
-		or    eax, not 0x0FFFEFFFF;  //or eax, 10000h
+		or    eax, 10000h;  //or eax, not 0x0FFFEFFFF
 		mov   cr0, eax;
 		pop   eax;
 	}

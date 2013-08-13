@@ -1,6 +1,10 @@
 #pragma once
 
-#include "FDriverDemoDefine.h"
+#ifdef FDRIVER_DEMO_PROJECT
+#  include "FDriverDemoDefine.h"
+#else
+#  include "nComicDrvDefine.h"
+#endif
 
 #define SSDT_API_CALL_ENTER(x) (InterlockedIncrement(&x))
 #define SSDT_API_CALL_LEAVE(x) (InterlockedDecrement(&x))

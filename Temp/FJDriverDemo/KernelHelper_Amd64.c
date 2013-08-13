@@ -13,10 +13,11 @@ PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
 KIRQL WPOFFx64()
 {
 	KIRQL irql= KeRaiseIrqlToDpcLevel();  //KeGetCurrentIrql();
+	_disable();
 	UINT64 cr0=__readcr0();
 	cr0 &= ~0x10000; //0xfffffffffffeffff;
 	__writecr0(cr0);
-	_disable();
+	//_disable(); //需要注释?
 	return irql;
 }
 
@@ -24,8 +25,9 @@ void WPONx64(KIRQL irql)
 {
 	UINT64 cr0=__readcr0();
 	cr0 |= 0x10000;
-	_enable();
+	//_enable();
 	__writecr0(cr0);
+	_enable();
 	KeLowerIrql(irql);
 }
 
@@ -150,6 +152,18 @@ PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *O
 	return head_n_byte;
 }
 #endif
+
+/*
+ -- 如果分配trampoline的时候，通过VirtualAlloc限定分配出的内存和old_func在同一个4G，可将限制降低为 5个字节(2+4)
+1，找到需要hook的函数地址
+2，解析从函数起始地址开始，至少6+8=14个字节的代码。代码不能断开。以上2个过程和detourx86一样，不同的是，detoursx86之需要e9 xxxxxxxx，也就是说只需要5个字节，而我们必须用ff15 [xxxxxxxx]。如果函数体小于14个字节，这意味着该函书无法detours。
+不过函数体小于14字节多半是因为里面执行了一个call或者jmp，那么解析该代码，把函数起始地址设置为jmp之后的地址，重新进行2过程。
+3，把这14或者15，16...个字节拷贝到预先分配的一块内存中，我们叫它trampoline。
+4，把前6个字节改为ff15 [0]，也即ff15 00000000
+5，在随后的8个字节中保存new_function的起始地址
+6，修正trampoline中的14字节的代码，如果里面有jmp，call等跳转语句，修改偏移量，这时候通常又需要跨4G的跳转，那么按照上面的方法修改之，trampoline的字节数可能会增加。
+7，在trampoline的代码之后，插入ff15 [0]，并且在随后的8个字节中填充old_function+14。
+*/
 
 NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {

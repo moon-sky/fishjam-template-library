@@ -54,6 +54,13 @@ extern "C" {
 
 #endif 
 
+#if 0
+NTSTATUS NTAPI NtProtectVirtualMemory(IN HANDLE ProcessHandle,
+		IN OUT PVOID *UnsafeBaseAddress,
+		IN OUT SIZE_T *UnsafeNumberOfBytesToProtect,
+		IN ULONG NewAccessProtection,
+		OUT PULONG UnsafeOldAccessProtection);
+#endif 
 
 #ifdef __cplusplus
 }

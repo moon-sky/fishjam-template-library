@@ -13,7 +13,7 @@ namespace FTL
     *  2.alias -- 
     *  3.通过启动内核调试对话框设置内核调试连接设置
     *  4.命令中的注释： * 或 $$ -- 使用前应该在前一条命令后加上分号作为分隔
-    *  5.poi 是什么？ "j (poi(MyVar)>5) ' -- J 命令判断变量MyVar 的值是否大于5，
+    *  5.poi 将变量转换成指针 "j (poi(MyVar)>5) ' -- J 命令判断变量MyVar 的值是否大于5； 若 pSomeFun 为函数指针，则 ln poi(pSomeFun) 显示其地址的函数名
 	*  6.当调试用户态的转储文件时，可以使用.ecxr 命令将转储文件中保存的异常上下文设置为寄存器上下文。
 	*  7.VC 编译器缺省将类型符号放在VCx0.PDB 文件中，WinDBG不能很好的处理，因此显示局部变量时，会显示很多no type information 错误。
 	*    解决方法：将符号格式设置为C7 Compatable（Settings>C++ > General > Debug Info）

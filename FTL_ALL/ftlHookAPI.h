@@ -6,6 +6,30 @@
 #  error ftlHookAPI.h requires ftlbase.h to be included first
 #endif
 
+//卡巴斯基 在64BitWin7上的Hook
+//95	NtUserPostThreadMessage	0xFFFFF960000D428E	0xFFFFF960000D4294	-	
+//8		NtGdiBitBlt				0xFFFFF960001256BE	0xFFFFF960001256C4	-	
+//811	NtUserUnregisterHotKey	0xFFFFF9600012CBE6	0xFFFFF9600012CBEC	-	
+//7		NtUserMessageCall		0xFFFFF960000FFBE6	0xFFFFF960000FFBEC	-	
+//756	NtUserRegisterRawInputDevices	0xFFFFF9600013687A	0xFFFFF96000136880	-	
+//755	NtUserRegisterHotKey	0xFFFFF9600012B72A	0xFFFFF9600012B730	-	
+//68	NtUserGetAsyncKeyState	0xFFFFF9600012A5E6	0xFFFFF9600012A5EC	-	
+//5		NtUserCallNoParam		0xFFFFF96000123E6A	0xFFFFF96000123E70	-	
+//586	NtGdiPlgBlt				0xFFFFF9600022F95E	0xFFFFF9600022F964	-	
+//49	NtGdiStretchBlt			0xFFFFF9600024813A	0xFFFFF96000248140	-	
+//3		NtUserGetKeyState		0xFFFFF96000131DCA	0xFFFFF96000131DD0	-	
+//28	NtUserBuildHwndList		0xFFFFF960000C464E	0xFFFFF960000C4654	-	
+//260	NtUserSetWinEventHook	0xFFFFF96000128152	0xFFFFF96000128158	-	
+//236	NtUserAttachThreadInput	0xFFFFF96000129582	0xFFFFF96000129588	-	
+//15	NtUserPostMessage		0xFFFFF96000120756	0xFFFFF9600012075C	-	
+//140	NtUserSetWindowsHookEx	0xFFFFF960000CE096	0xFFFFF960000CE09C	-	
+//130	NtUserSendInput			0xFFFFF9600012F83A	0xFFFFF9600012F840	-	
+//120	NtUserGetKeyboardState	0xFFFFF96000131C4E	0xFFFFF96000131C54	-	
+//119	NtUserSetParent			0xFFFFF9600012BF4E	0xFFFFF9600012BF54	-	
+//110	NtUserFindWindowEx		0xFFFFF9600012FD12	0xFFFFF9600012FD18	-	
+//105	NtGdiMaskBlt			0xFFFFF96000247222	0xFFFFF96000247228	-	
+
+
 /******************************************************************************************************
 * 有些情况下，必须打破进程的界限，访问另一个进程的地址空间，这些情况包括：
 * 1.当你想要为另一个进程创建的窗口建立子类时 -- SetWindowLongPtr(hwnd,GWLP_WNDPROC,..) 改变窗口的内存块中的窗口过程地址。
@@ -104,8 +128,9 @@
 /******************************************************************************************************
 * Hook API
 *   实现方式
-*     1.改引入表式 -- 易于实现，OpenProcess + WriteProcessMemory 改写函数地址
-*     2.陷阱式
+*     1.改引入表式(import/export) -- 易于实现，OpenProcess + WriteProcessMemory 改写函数地址
+*     2.陷阱式(inline) -- 可以用来hook内部函数，而且调用者很难绕过hook
+*         通常需要完备的反汇编器和解释器
 *   
 * 已有的库
 *   1.EasyHook：http://easyhook.codeplex.com/
@@ -125,14 +150,31 @@
 *       LhWaitForPendingRemovals(); //等待内存释放
 *     源码分析:
 *       LhInstallHook -> LhRelocateEntryPoint -> 
-*       
 * 
+*	  Detours源码分析(参见 Detours.chm )：
+*       概念:
+*         Source Function -- 用户调用的函数
+*         Target Function -- 被调用的函数
+*         Detour Function -- 自己定义的替代函数
+*         Trampoline -- 从Detour Function 跳转回Target的一个函数，实质是 Target的一部分加了个跳转指令，
+*       流程:
+*         Hook前: Source -> 调用Target -> 返回Source
+*         Hook后: Source(Target中直接Jmp到Detour) -> Detour [ -> Trampoline -> Target -> 返回Detour ] -> 返回Source
+*       相关结构和类:
+*         _DETOUR_TRAMPOLINE -- 平台相关(即 Trampoline 函数体？)，保存了多种信息：
+*            Target 被截掉的代码(rbRestore？)、长度(cbCode)、Target处理后首条指令的地址(pbRemain)、Detour函数的地址(pbDetour)
+*         DetourOperation -- 链表结构，记录了Target首条指令的地址(ppbPointer?)、
+*       实现函数
+*         DetourCodeFromPointer -- 内部调用 detour_skip_jmp得到函数的真正位置。调用动态链接库时通常通过 "JMP 地址" 这种方式来进行，
+*         因此通过该函数找到代码的真正位置。
+*         
 *   2.Detours：http://research.microsoft.com/en-us/projects/detours
-*     微软的开源研究库，免费版本不能用于商业，商业版本大约6000RMB。支持x64和IA64等64位平台
+*     微软的开源研究库，免费版本不能用于商业，商业版本需要 10K USD。支持x64和IA64等64位平台
 *     编译：nmake，TODO: Debug/Release？ 可能需要更改 samples\common.mak 文件，去掉其中的 /nologo 
+*     缺陷：x86无法hook小于5字节的函数，因为没有完整的反汇编器，无法处理后面的代码 jmp 到函数前五个字节范围内(刚好被替代) 的代码逻辑
 *     原理：在汇编层改变目标API出口和入口的一些汇编指令
 *       几部分：
-*         Target函数：要拦截的函数，通常为Windows的API
+*         Target函数：要拦截的函数，通常为Windows的API，被Hook后其最开始部分的汇编被更改为：jmp DetourFunction
 *         Trampoline函数(蹦床,原始被替代的代码 + JMP到Target)：Target函数的部分复制品。
 *           因为Detours将会改写Target函数，所以先把Target函数的前5个字节复制保存好，
 *           一方面仍然保存Target函数的过程调用语义，另一方面便于以后的恢复。然后是一个无条件转移
@@ -168,11 +210,16 @@
 *       WithDll.exe -- 在注入指定DLL的情况下创建并运行指定进程(纯内存操作，可执行文件不受影响)
 *     TODO:
 *       是否需要调用 DisableThreadLibraryCalls ?
+*     移植到 x64 的 Kernel
+*       1.VirtualProtect让内存 READ_WRITE_EXECUTE -> 清除cr0 或 使用 native API 完成VirtualProtect的功能( NtProtectVirtualMemory )
+*       2.x64下不存在 jmp 64_address这种指令
+
 *   3.Deviare(不支持C/C++?  http://www.nektra.com/products/deviare-api-hook-windows/)
 *   4.MinHook
 * 
 * TODO(FUAPIHook.h 中已有) -- http://wenku.baidu.com/view/5ae307f04693daef5ef73d48.html
-*   Win64的：http://blog.csdn.net/zzw315/article/details/4102488
+*   Win64的：http://bbs3.driverdevelop.com/read.php?tid=99096
+* http://blog.csdn.net/zzw315/article/details/4102488
 ******************************************************************************************************/
 
 /******************************************************************************************************
@@ -195,6 +242,37 @@
 *  
 *   远程注入：
 *     1.Ring3: CreateRemoteThread + LoadLibrary
+******************************************************************************************************/
+
+/******************************************************************************************************
+* 常见反汇编代码(默认 x86, 前面有三个星号的是 x64 上的)
+*   0x26 -- jmp es:
+*   0x2e -- jmp cs:
+*   0x33c0 -- xor     eax,eax
+*   0x36 -- jmp ss:
+*   0x488d -- lea xxxx
+*   0x64 -- jmp fs:
+*   0x65 -- jmp gs:
+*   0x90 -- nop	, 一般用于填充代码区域
+*** 0xB8 -- mov rax, xxxx , 将指定的64位数据放入 rax 
+*   0xc2 -- ret +imm8
+*   0xc3 -- ret
+*   0xcc -- int 3, 软件断点，一般用于代码空余部分的填充
+*   0xe0 -- jmp eax
+*   0xe3 -- jmp ds 还是 jcxz imm8 ?
+*   0xe8 -- call imm16/imm32
+*   0xe9 -- jmp imm16/imm32	(jmp offset)		; x64 下对应 ff15  [xxxxxxxx], xxxxxxxx 是32位的，[xxxxxxxx]指向一个64位地址
+*   0xeb -- jmp imm8
+*   0xff25 -- jmp [+imm32]			
+*   0xffe0 -- jmp rax
+* 
+
+*
+* 64位系统下，如要跳转到64位的绝对地址，需要通过寄存器来实现, 如(EasyHook的实现方式)
+*   48 B8 8877665544332211  MOV RAX,1122334455667788H 
+*   ffe0                    jmp rax
+* 
+
 ******************************************************************************************************/
 
 namespace FTL

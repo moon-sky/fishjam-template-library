@@ -541,3 +541,9 @@ Java程序优化
     a.共享数据库连接 -- 如系统提供的?Database Connection Pool 
     b.使用预编译 SQL -- 使用 java.sql.PreparedStatement 代替 java.sql.Statement 生成 SQL 语句
     c.使用 SQL 批处理 -- 通过 java.sql.PreparedStatement 的 addBatch 方法将 SQL 语句加入到批处理
+
+您好，用户2719854045
+共享资料积分：20
+新浪通行证号：2719854045
+用户2719854045 
+登录账号 15184464231@sina.cn

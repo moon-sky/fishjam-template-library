@@ -2043,3 +2043,169 @@ PCHAR GetIrpMajorCodeString(UCHAR MajorFunction)
 }
 
 #endif //DBG == 1
+
+#if 0
+NTSTATUS NTAPI NtProtectVirtualMemory(IN HANDLE ProcessHandle,
+					   IN OUT PVOID *UnsafeBaseAddress,
+					   IN OUT SIZE_T *UnsafeNumberOfBytesToProtect,
+					   IN ULONG NewAccessProtection,
+					   OUT PULONG UnsafeOldAccessProtection)
+{
+	PEPROCESS Process;
+	ULONG OldAccessProtection;
+	ULONG Protection;
+	PEPROCESS CurrentProcess = PsGetCurrentProcess();
+	PVOID BaseAddress = NULL;
+	SIZE_T NumberOfBytesToProtect = 0;
+	KPROCESSOR_MODE PreviousMode = ExGetPreviousMode();
+	NTSTATUS Status;
+	BOOLEAN Attached = FALSE;
+	KAPC_STATE ApcState;
+	PAGED_CODE();
+
+	//
+	// Check for valid protection flags
+	//
+	Protection = NewAccessProtection & ~(PAGE_GUARD|PAGE_NOCACHE);
+	if (Protection != PAGE_NOACCESS &&
+		Protection != PAGE_READONLY &&
+		Protection != PAGE_READWRITE &&
+		Protection != PAGE_WRITECOPY &&
+		Protection != PAGE_EXECUTE &&
+		Protection != PAGE_EXECUTE_READ &&
+		Protection != PAGE_EXECUTE_READWRITE &&
+		Protection != PAGE_EXECUTE_WRITECOPY)
+	{
+		//
+		// Fail
+		//
+		return STATUS_INVALID_PAGE_PROTECTION;
+	}
+
+	//
+	// Check if we came from user mode
+	//
+	if (PreviousMode != KernelMode)
+	{
+		//
+		// Enter SEH for probing
+		//
+		_SEH2_TRY
+		{
+			//
+			// Validate all outputs
+			//
+			ProbeForWritePointer(UnsafeBaseAddress);
+			ProbeForWriteSize_t(UnsafeNumberOfBytesToProtect);
+			ProbeForWriteUlong(UnsafeOldAccessProtection);
+
+			//
+			// Capture them
+			//
+			BaseAddress = *UnsafeBaseAddress;
+			NumberOfBytesToProtect = *UnsafeNumberOfBytesToProtect;
+		}
+		_SEH2_EXCEPT(EXCEPTION_EXECUTE_HANDLER)
+		{
+			//
+			// Get exception code
+			//
+			_SEH2_YIELD(return _SEH2_GetExceptionCode());
+		}
+		_SEH2_END;
+	}
+	else
+	{
+		//
+		// Capture directly
+		//
+		BaseAddress = *UnsafeBaseAddress;
+		NumberOfBytesToProtect = *UnsafeNumberOfBytesToProtect;
+	}
+
+	//
+	// Catch illegal base address
+	//
+	if (BaseAddress > MM_HIGHEST_USER_ADDRESS) return STATUS_INVALID_PARAMETER_2;
+
+	//
+	// Catch illegal region size
+	//
+	if ((MmUserProbeAddress - (ULONG_PTR)BaseAddress) < NumberOfBytesToProtect)
+	{
+		//
+		// Fail
+		//
+		return STATUS_INVALID_PARAMETER_3;
+	}
+
+	//
+	// 0 is also illegal
+	//
+	if (!NumberOfBytesToProtect) return STATUS_INVALID_PARAMETER_3;
+
+	//
+	// Get a reference to the process
+	//
+	Status = ObReferenceObjectByHandle(ProcessHandle,
+		PROCESS_VM_OPERATION,
+		PsProcessType,
+		PreviousMode,
+		(PVOID*)(&Process),
+		NULL);
+	if (!NT_SUCCESS(Status)) return Status;
+
+	//
+	// Check if we should attach
+	//
+	if (CurrentProcess != Process)
+	{
+		//
+		// Do it
+		//
+		KeStackAttachProcess(&Process->Pcb, &ApcState);
+		Attached = TRUE;
+	}
+
+	//
+	// Do the actual work
+	//
+	Status = MiProtectVirtualMemory(Process,
+		&BaseAddress,
+		&NumberOfBytesToProtect,
+		NewAccessProtection,
+		&OldAccessProtection);
+
+	//
+	// Detach if needed
+	//
+	if (Attached) KeUnstackDetachProcess(&ApcState);
+
+	//
+	// Release reference
+	//
+	ObDereferenceObject(Process);
+
+	//
+	// Enter SEH to return data
+	//
+	_SEH2_TRY
+	{
+		//
+		// Return data to user
+		//
+		*UnsafeOldAccessProtection = OldAccessProtection;
+		*UnsafeBaseAddress = BaseAddress;
+		*UnsafeNumberOfBytesToProtect = NumberOfBytesToProtect;
+	}
+	_SEH2_EXCEPT(EXCEPTION_EXECUTE_HANDLER)
+	{
+	}
+	_SEH2_END;
+
+	//
+	// Return status
+	//
+	return Status;
+}
+#endif //if 0

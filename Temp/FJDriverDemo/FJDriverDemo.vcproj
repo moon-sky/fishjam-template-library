@@ -51,7 +51,7 @@
 				ReBuildCommandLine=""
 				CleanCommandLine=""
 				Output=""
-				PreprocessorDefinitions=""
+				PreprocessorDefinitions="_M_AMD64"
 				IncludeSearchPath=""
 				ForcedIncludes=""
 				AssemblySearchPath=""
