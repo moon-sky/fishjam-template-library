@@ -12,6 +12,22 @@
 //Cryptoapi说明: http://www.cnblogs.com/lzjsky/archive/2010/09/21/1832239.html
 
 /*********************************************************************************************************************************
+* 签名证书工具
+*  Pvk2Pfx.exe -- 将证书私钥文件转换为签名工具可以使用的 pfx(个人信息交换) 格式
+*    -pvk 指定密钥文件 
+*    -spc 指定双证书文件 
+*    -pfx 输出的pfx证书文件
+*  SignTool.exe -- 签名工具，主要分为 catdb/sign/verify/timestamp 等命令
+*    sign 
+*      /v 执行成功、执行失败或产生警告消息时生成详细输出。 
+*      /a 自动选择最佳的签名证书。 
+*      /c 指定用于对证书进行签名的证书模板名（一个 Microsoft 扩展），交叉签名证书。 
+*      /f 指定签名证书文件（pfx格式）。 
+*      /p 指定签名证书的私钥保护密码。 
+*      /t 指定时间戳服务器的 URL， 确保证书过期还能正常使用
+*********************************************************************************************************************************/
+
+/*********************************************************************************************************************************
 * PE 文件格式：
 *   Dos Header -- DOS兼容的文件头
 *   PE Header
@@ -42,8 +58,18 @@
 *     CertMgr.exe /add "FishjamRoot.cer" /s /r localMachine root
 *   3.对可执行文件进行签名
 *     signtool.exe sign /v /s "FujieCertStore" /n "FujieCert" /t http://timestamp.verisign.com/scripts/timestamp.dll drivername.sys
-*   4.[可选]验证签名
+*   4.[可选]验证签名 -- TODO: /kp ?
 *     signtool.exe verify /pa /v drivername.sys
+*
+* 64位Vista/Win7驱动签名 (http://msdn.microsoft.com/en-us/windows/hardware/gg487317.aspx)
+*   1.向CA证书机构(VerSign、GlobalSign 等)购买驱动签名证书(特殊种类的?)
+*     a.MyCert.spc(双证书文件，包含一个CA证书和一个签名证书) + myCert.pvk(私钥文件)
+*     b.转换为签名工具可以使用的pfx(个人信息交换)格式：Pvk2Pfx -pvk myCert.pvk -spc myCert.spc -pfx myCert.pfx
+*   2.从微软网站下载交叉认证根证书，交叉认证根证书和驱动签名证书的CA必须是相同的，如 "VeriSign Class 3 Public Primary Certification Authority"
+*     http://www.microsoft.com/whdc/driver/install/drvsign/crosscert.mspx
+*   3.使用 SignTool 同时使用 交叉证书和PFX文件 进行签名
+*     signtool sign /v /ac VeriSignG5.cer /f MyCert.pfx /p 密码 
+*        /t http://timestamp.verisign.com/scripts/timestamp.dll EasyHook64Drv.sys
 *********************************************************************************************************************************/
 
 

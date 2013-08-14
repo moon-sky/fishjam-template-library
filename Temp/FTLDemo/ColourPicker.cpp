@@ -90,44 +90,44 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CColourPicker message handlers
 
-LONG CColourPicker::OnSelEndOK(UINT lParam, LONG /*wParam*/)
+LRESULT CColourPicker::OnSelEndOK(WPARAM wParam, LPARAM /*lParam*/)
 {
-    COLORREF crNewColour = (COLORREF) lParam;
+    COLORREF crNewColour = (COLORREF) wParam;
     m_bActive = FALSE;
     SetColour(crNewColour);
 
     CWnd *pParent = GetParent();
     if (pParent) {
-        pParent->SendMessage(CPN_CLOSEUP, lParam, (WPARAM) GetDlgCtrlID());
-        pParent->SendMessage(CPN_SELENDOK, lParam, (WPARAM) GetDlgCtrlID());
+        pParent->SendMessage(CPN_CLOSEUP, wParam, (WPARAM) GetDlgCtrlID());
+        pParent->SendMessage(CPN_SELENDOK, wParam, (WPARAM) GetDlgCtrlID());
     }
 
     if (crNewColour != GetColour())
-        if (pParent) pParent->SendMessage(CPN_SELCHANGE, lParam, (WPARAM) GetDlgCtrlID());
+        if (pParent) pParent->SendMessage(CPN_SELCHANGE, wParam, (WPARAM) GetDlgCtrlID());
 
     return TRUE;
 }
 
-LONG CColourPicker::OnSelEndCancel(UINT lParam, LONG /*wParam*/)
+LRESULT CColourPicker::OnSelEndCancel(WPARAM wParam, LPARAM /*lParam*/)
 {
     m_bActive = FALSE;
-    SetColour((COLORREF) lParam);
+    SetColour((COLORREF) wParam);
 
     CWnd *pParent = GetParent();
     if (pParent) {
-        pParent->SendMessage(CPN_CLOSEUP, lParam, (WPARAM) GetDlgCtrlID());
-        pParent->SendMessage(CPN_SELENDCANCEL, lParam, (WPARAM) GetDlgCtrlID());
+        pParent->SendMessage(CPN_CLOSEUP, wParam, (LPARAM) GetDlgCtrlID());
+        pParent->SendMessage(CPN_SELENDCANCEL, wParam, (LPARAM) GetDlgCtrlID());
     }
 
     return TRUE;
 }
 
-LONG CColourPicker::OnSelChange(UINT lParam, LONG /*wParam*/)
+LRESULT CColourPicker::OnSelChange(WPARAM wParam, LPARAM /*lParam*/)
 {
-    if (m_bTrackSelection) SetColour((COLORREF) lParam);
+    if (m_bTrackSelection) SetColour((COLORREF) wParam);
 
     CWnd *pParent = GetParent();
-    if (pParent) pParent->SendMessage(CPN_SELCHANGE, lParam, (WPARAM) GetDlgCtrlID());
+    if (pParent) pParent->SendMessage(CPN_SELCHANGE, wParam, (LPARAM) GetDlgCtrlID());
 
     return TRUE;
 }

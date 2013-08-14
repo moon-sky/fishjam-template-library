@@ -6,28 +6,36 @@
 #  error ftlHookAPI.h requires ftlbase.h to be included first
 #endif
 
+#  define DETOURS_VERIFY(x) \
+	nRet = (x);\
+	if(nRet != NO_ERROR)\
+	{\
+		REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, nRet, x);\
+	}
+//http://bbs.csdn.net/topics/300138796 -- atlstdthunk.h 里面有 jmp rax 的代码
+
 //卡巴斯基 在64BitWin7上的Hook
-//95	NtUserPostThreadMessage	0xFFFFF960000D428E	0xFFFFF960000D4294	-	
-//8		NtGdiBitBlt				0xFFFFF960001256BE	0xFFFFF960001256C4	-	
-//811	NtUserUnregisterHotKey	0xFFFFF9600012CBE6	0xFFFFF9600012CBEC	-	
-//7		NtUserMessageCall		0xFFFFF960000FFBE6	0xFFFFF960000FFBEC	-	
+//3		NtUserGetKeyState				0xFFFFF96000131DCA	0xFFFFF96000131DD0	-	
+//5		NtUserCallNoParam				0xFFFFF96000123E6A	0xFFFFF96000123E70	-	
+//7		NtUserMessageCall				0xFFFFF960000FFBE6	0xFFFFF960000FFBEC	-	
+//8		NtGdiBitBlt						0xFFFFF960001256BE	0xFFFFF960001256C4	-	
+//15	NtUserPostMessage				0xFFFFF96000120756	0xFFFFF9600012075C	-	
+//28	NtUserBuildHwndList				0xFFFFF960000C464E	0xFFFFF960000C4654	-	
+//49	NtGdiStretchBlt					0xFFFFF9600024813A	0xFFFFF96000248140	-	
+//68	NtUserGetAsyncKeyState			0xFFFFF9600012A5E6	0xFFFFF9600012A5EC	-	
+//95	NtUserPostThreadMessage			0xFFFFF960000D428E	0xFFFFF960000D4294	-	
+//105	NtGdiMaskBlt					0xFFFFF96000247222	0xFFFFF96000247228	-	
+//110	NtUserFindWindowEx				0xFFFFF9600012FD12	0xFFFFF9600012FD18	-	
+//119	NtUserSetParent					0xFFFFF9600012BF4E	0xFFFFF9600012BF54	-	
+//120	NtUserGetKeyboardState			0xFFFFF96000131C4E	0xFFFFF96000131C54	-	
+//130	NtUserSendInput					0xFFFFF9600012F83A	0xFFFFF9600012F840	-	
+//140	NtUserSetWindowsHookEx			0xFFFFF960000CE096	0xFFFFF960000CE09C	-	
+//236	NtUserAttachThreadInput			0xFFFFF96000129582	0xFFFFF96000129588	-	
+//260	NtUserSetWinEventHook			0xFFFFF96000128152	0xFFFFF96000128158	-	
+//586	NtGdiPlgBlt						0xFFFFF9600022F95E	0xFFFFF9600022F964	-	
+//755	NtUserRegisterHotKey			0xFFFFF9600012B72A	0xFFFFF9600012B730	-	
 //756	NtUserRegisterRawInputDevices	0xFFFFF9600013687A	0xFFFFF96000136880	-	
-//755	NtUserRegisterHotKey	0xFFFFF9600012B72A	0xFFFFF9600012B730	-	
-//68	NtUserGetAsyncKeyState	0xFFFFF9600012A5E6	0xFFFFF9600012A5EC	-	
-//5		NtUserCallNoParam		0xFFFFF96000123E6A	0xFFFFF96000123E70	-	
-//586	NtGdiPlgBlt				0xFFFFF9600022F95E	0xFFFFF9600022F964	-	
-//49	NtGdiStretchBlt			0xFFFFF9600024813A	0xFFFFF96000248140	-	
-//3		NtUserGetKeyState		0xFFFFF96000131DCA	0xFFFFF96000131DD0	-	
-//28	NtUserBuildHwndList		0xFFFFF960000C464E	0xFFFFF960000C4654	-	
-//260	NtUserSetWinEventHook	0xFFFFF96000128152	0xFFFFF96000128158	-	
-//236	NtUserAttachThreadInput	0xFFFFF96000129582	0xFFFFF96000129588	-	
-//15	NtUserPostMessage		0xFFFFF96000120756	0xFFFFF9600012075C	-	
-//140	NtUserSetWindowsHookEx	0xFFFFF960000CE096	0xFFFFF960000CE09C	-	
-//130	NtUserSendInput			0xFFFFF9600012F83A	0xFFFFF9600012F840	-	
-//120	NtUserGetKeyboardState	0xFFFFF96000131C4E	0xFFFFF96000131C54	-	
-//119	NtUserSetParent			0xFFFFF9600012BF4E	0xFFFFF9600012BF54	-	
-//110	NtUserFindWindowEx		0xFFFFF9600012FD12	0xFFFFF9600012FD18	-	
-//105	NtGdiMaskBlt			0xFFFFF96000247222	0xFFFFF96000247228	-	
+//811	NtUserUnregisterHotKey			0xFFFFF9600012CBE6	0xFFFFF9600012CBEC	-	
 
 
 /******************************************************************************************************
@@ -67,7 +75,7 @@
 *     Sample：跨进程获取桌面 ListView 中各个项目的位置。
 *
 *   c.使用远程线程来插入DLL -- 具有更大的灵活性(DLL 中执行 DLL_PROCESS_ATTACH 通知的 DllMain 函数 )
-*     CreateRemoteThread(其参数 pfnStartAddr指明线程函数的内存地址,其纤程函数的代码不能位于自己进程的地址空间中)，
+*     CreateRemoteThread/NtCreateThreadEx(其参数 pfnStartAddr指明线程函数的内存地址,其纤程函数的代码不能位于自己进程的地址空间中)，
 *     需要该线程调用 LoadLibrary 函数来加载我们的DLL。创建一个新线程，并且使线程函数的地址成为 LoadLibraryA 或LoadLibraryW函数的地址。
 *     TODO：？使用 VirtualQueryEx 函数把存放指令的页面的权限更改为可读可写可执行，再改写其内容，从而修改正在运行的程序 
 *     1).使用 VirtualAllocEx 函数，分配远程进程的地址空间中的内存。
@@ -102,7 +110,7 @@
 *     6).将原始指令重新放入起始地址。
 *     7).让进程继续从起始地址开始执行，就像没有发生任何事情一样
 *   
-*   g. 使用 WriteProcessMemory 在远程进程中写入执行代码，并使用 CreateRemoteThread 执行。
+*   g. 使用 WriteProcessMemory 在远程进程中写入执行代码，并使用 CreateRemoteThread(Vista前) 或 NtCreateThreadEx(Vista及其后) 执行。
 *     1).使用 VirtualAllocEx 在远程进程中分配 插入代码 和 参数(INJDATA)的内存；
 *     2).使用 WriteProcessMemory 写入"插入代码"和“参数”的拷贝；
 *     3).使用 CreateRemoteThread 开始执行 插入代码；
@@ -136,8 +144,8 @@
 *   1.EasyHook：http://easyhook.codeplex.com/
 *               https://code.google.com/p/easyhook-continuing-detours
 *       使用的例子:http://blog.csdn.net/baggiowangyu/article/details/7675098
-*     支持驱动中Hook，支持X64注入，且完全免费，License为GPL
-*     提供了两种模式的注入管理：托管代码 和 非托管代码，通过Inline Hook 方式实现
+*     支持驱动中Hook，支持X64注入，且完全免费，License为 LGPL,
+*     提供了两种模式的注入管理：托管代码 和 非托管代码(例子为 UnmanagedHook 和 TestDriver)，通过Inline Hook 方式实现
 *     示例:
 *       TRACED_HOOK_HANDLE hHookCreateFileW = { NULL };  
 *       ULONG HookCreateFileW_ACLEntries[1] = {0}; 
@@ -217,7 +225,8 @@
 *       2.x64下不存在 jmp 64_address这种指令
 
 *   3.Deviare(不支持C/C++?  http://www.nektra.com/products/deviare-api-hook-windows/)
-*   4.MinHook
+*   4.MinHook -- 日本人写的，比较简单，只有Hook功能。
+*     其使用了 Relay 函数来支持最小5字节的函数。VirtualAlloc 在跳转函数附近分配空间，先使用32位的JMP跳转到其位置，然后再进行64位的跳转。
 * 
 * TODO(FUAPIHook.h 中已有) -- http://wenku.baidu.com/view/5ae307f04693daef5ef73d48.html
 *   Win64的：http://bbs3.driverdevelop.com/read.php?tid=99096
@@ -255,6 +264,7 @@
 *   0x488d -- lea xxxx
 *   0x64 -- jmp fs:
 *   0x65 -- jmp gs:
+*   0x74 XX -- je imm8
 *   0x90 -- nop	, 一般用于填充代码区域
 *** 0xB8 -- mov rax, xxxx , 将指定的64位数据放入 rax 
 *   0xc2 -- ret +imm8
@@ -262,19 +272,22 @@
 *   0xcc -- int 3, 软件断点，一般用于代码空余部分的填充
 *   0xe0 -- jmp eax
 *   0xe3 -- jmp ds 还是 jcxz imm8 ?
-*   0xe8 -- call imm16/imm32
-*   0xe9 -- jmp imm16/imm32	(jmp offset)		; x64 下对应 ff15  [xxxxxxxx], xxxxxxxx 是32位的，[xxxxxxxx]指向一个64位地址
+*   0xe8 XXXXXXXX -- call imm16/imm32
+*   0xe9 XXXXXXXX -- jmp imm16/imm32 (jmp offset, offset大于0向前挑,offset小于0向后跳) ; x64 下对应 ff15  [xxxxxxxx], xxxxxxxx 是32位的，[xxxxxxxx]指向一个64位地址
 *   0xeb -- jmp imm8
-*   0xff25 -- jmp [+imm32]			
-*   0xffe0 -- jmp rax
+*   0xff25 -- jmp [+imm32] -- 根据指定内存中保存的 Address Table 进行跳转? JMP QWORD NEAR
+*   0xffe0 -- jmp rax -- 根据 rax 寄存器的值进行跳转，即 jmp imm64 ?
 * 
-
 *
 * 64位系统下，如要跳转到64位的绝对地址，需要通过寄存器来实现, 如(EasyHook的实现方式)
 *   48 B8 8877665544332211  MOV RAX,1122334455667788H 
 *   ffe0                    jmp rax
-* 
-
+*
+* 当前指令地址： x86下是 EIP， x64下是 RIP
+* JMP有好几种形式(无条件的相对位置跳转, 新的地址 = EIP/RIP + OFFSET + sizeof(JMP OFFSET) )
+*   因此，代码中需要计算的 偏移 = 目的地址 - (From + sizeof(JMP OFFSET) )
+*   0xe9 -- 32位上覆盖整个地址空间
+*
 ******************************************************************************************************/
 
 namespace FTL
