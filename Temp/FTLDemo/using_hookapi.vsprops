@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ks_c_5601-1987"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="using_hookapi"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;E:\Detours Express 3.0\include&quot;;F:\Code\MinHook_110_src\MinHook\libMinHook"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="&quot;E:\Detours Express 3.0\lib.X86&quot;;F:\Code\MinHook_110_src\MinHook\Debug"
+	/>
+</VisualStudioPropertySheet>
