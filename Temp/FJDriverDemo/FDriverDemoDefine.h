@@ -13,7 +13,7 @@
 //#endif
 
 
-#define FDRIVER_DEMO_FILENAME           TEXT("FJDriverDemo.sys")
+//#define FDRIVER_DEMO_FILENAME           TEXT("FJDriverDemo.sys")
 
 #define FDRIVER_DEMO_SERVICE_NAME       TEXT("FJDriverDemo")
 

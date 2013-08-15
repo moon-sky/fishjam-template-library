@@ -1,15 +1,19 @@
 # comment line
 
-#!IF "$(_BUILDARCH)" == "x86"
-#TARGETNAME=FJDriverDemo32
-#!ELSEIF "$(_BUILDARCH)" == "AMD64"
-#TARGETNAME=FJDriverDemo64
-#ELSEIF "$(_BUILDARCH)" == "IA64"
-#TARGETNAME=FJDriverDemoIa64
-#!ENDIF
+
+!IF "$(_BUILDARCH)" == "x86"
+TARGETNAME=FJDriverDemo32
+TARGETLIBS=$(TARGETLIBS) ASM\ILD_x86.obj
+NO_SAFESEH=1
+!ELSEIF "$(_BUILDARCH)" == "AMD64"
+TARGETNAME=FJDriverDemo64
+TARGETLIBS=$(TARGETLIBS) ASM\ILD_x64.obj
+!ELSEIF "$(_BUILDARCH)" == "IA64"
+TARGETNAME=FJDriverDemoIa64
+!ENDIF
 
 
-TARGETNAME=FJDriverDemo
+#TARGETNAME=FJDriverDemo
 TARGETTYPE=DRIVER
 #TARGETLIBS=AsmHelperFun.obj
 #AMD64_SOURCES=AsmHelperFun.asm
@@ -27,6 +31,7 @@ LIBS=Win32k.lib
 SOURCES=stdafx.cpp \
 	FJDriverDemo.cpp \
 	FDriverUtil.c \
+	InlineHook.cpp \
 	KernelHookAPI.cpp \
 	FDriverHookAPI.cpp
 

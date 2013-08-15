@@ -51,7 +51,7 @@
 *		" \\.\pipe\com_1 " , " This end is the server " , " The other end is an application ", 选中 "Conect at power on"， TODO:" Yield CPU on poll "
 *       调试机上启动windbg(可设置快捷方式的属性)：windbg.exe -b -k com:port=\\.\pipe\com_1,baud=115200,pipe ，设置好符号文件和源码路径，
 *       刚连接上时，虚拟机里的Windows系统会被中断(貌似时机),需要在WinDbg的命令提示符后执行 "g" 命令允许其继续运行，
-*       可在源码中调试版本时 增加 _asm int 3 的软件断点
+*       可在源码中调试版本时 增加 _asm int 3 的软件断点, x64 使用 __debugbreak
 *
 *
 ******************************************************************************************************************/

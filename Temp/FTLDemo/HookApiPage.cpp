@@ -288,6 +288,27 @@ void replaceCodeBuf(BYTE* code, DWORD_PTR len, DWORD old, void* ptr)
 	MessageBox(0,L"2",0,0);
 }
 
+#if defined(_M_AMD64)
+#pragma pack(push,2)
+struct JMPCODE
+{
+	USHORT  RcxMov;         // mov rcx, pThis
+	ULONG64 RcxImm;         // 
+	USHORT  RaxMov;         // mov rax, target
+	ULONG64 RaxImm;         //
+	USHORT  RaxJmp;         // jmp target
+	BOOL Init(DWORD_PTR proc, void *pThis)
+	{
+		RcxMov = 0xb948;          // mov rcx, pThis
+		RcxImm = (ULONG64)pThis;  // 
+		RaxMov = 0xb848;          // mov rax, target
+		RaxImm = (ULONG64)proc;   //
+		RaxJmp = 0xe0ff;          // jmp rax
+		return FlushInstructionCache(GetCurrentProcess(), this, sizeof(JMPCODE));
+	}
+}
+#endif  //_M_AMD64
+
 void CHookApiPage::OnBnClickedBtnHookApiTestJmp()
 {
 	//0x90 -- nop
@@ -309,8 +330,9 @@ void CHookApiPage::OnBnClickedBtnHookApiTestJmp()
 			Jumper[i] = 0x90;	//nop
 		}
 	}
-
 	//Init Jump
+	//JMPCODE jmpCode;
+	//jmpCode.Init(DemoFunc);
 
 	//Will not Execute if jump enabled
 	::MessageBox(m_hWnd, TEXT("You Should NOT see me!"), TEXT("JMP NOT affect!"), MB_OK);

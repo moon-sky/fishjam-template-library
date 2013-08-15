@@ -4,10 +4,7 @@
 #include "FDriverUtil.h"
 #include "FDriverHookAPI.h"
 #include "KernelHookAPI.h"
-
-#if defined(_M_AMD64)
-#  include "LDE64x64.h"
-#endif 
+#include "InlineHook.h"
 
 #ifdef __cplusplus
 //#pragma INITCODE
@@ -54,6 +51,27 @@ NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp
 	//return IoCallDriver(deviceExtension->TargetDeviceObject, pIrp);
 }
 
+typedef BOOLEAN (*KECANCELTIMER)(PKTIMER InTimer);
+KECANCELTIMER		g_pOldKeCancelTimer = NULL;
+PINLINE_HOOK_INFO	g_pInlineHookInfo = NULL;
+
+BOOLEAN __stdcall KeCancelTimer_Hook(PKTIMER InTimer)
+{
+	//PVOID					CallStack[64];
+	//MODULE_INFORMATION		Mod;
+	//ULONG					MethodCount;
+	BOOLEAN					bRet = FALSE;
+
+	KdPrint(("Enter KeCancelTimer_Hook\n"));
+	if (g_pOldKeCancelTimer)
+	{
+		bRet =  (g_pOldKeCancelTimer)(InTimer);
+	}
+	
+	KdPrint(("Leave KeCancelTimer_Hook\n"));
+	return bRet;
+}
+
 #pragma PAGEDCODE
 NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 {
@@ -74,23 +92,40 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 	{
 	case IOCTL_FDRIVER_INSTALL_HOOK:
 		{
-			//SYS_SERVICE_TABLE* pServiceTable = GetServiceDescriptorShadowTableAddress();
-			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK, inputLen=%d\n", inputBufferLength));
-			NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
+			PVOID					pOriginalCancelTimer = NULL;
+			UNICODE_STRING			SymbolName;
+			RtlInitUnicodeString(&SymbolName, L"KeCancelTimer");
+			pOriginalCancelTimer = MmGetSystemRoutineAddress(&SymbolName);
+			
+			FNT_VERIFY(CreateInlineHook(pOriginalCancelTimer, KeCancelTimer_Hook, 
+				(PVOID*)&g_pOldKeCancelTimer, &g_pInlineHookInfo));
 
-			if (inputBufferLength == sizeof(PROTECT_WND_INFO))
-			{
-				FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
-			}
+			KTIMER					Timer;
+			KeInitializeTimer(&Timer);
+			KeCancelTimer(&Timer);
+
+			//KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK, inputLen=%d\n", inputBufferLength));
+			//NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
+
+			//if (inputBufferLength == sizeof(PROTECT_WND_INFO))
+			//{
+			//	FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
+			//}
+			break;
 		}
-		break;
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
-			FNT_VERIFY(UnInstallCopyProtectHook());
-			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
+			if (g_pInlineHookInfo)
+			{
+				FNT_VERIFY(RestoreInlineHook(g_pInlineHookInfo));
+				g_pInlineHookInfo = NULL;
+			}
+			//FNT_VERIFY(UnInstallCopyProtectHook());
+			//KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
+			break;
 		}
-		break;
     default:
+		NT_ASSERT(FALSE);
         break;
 	}
 	pIrp->IoStatus.Status = status;	//设置IRP完成状态
@@ -171,9 +206,9 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	pDriverObject->DriverUnload = FJDriverDemoUnload;
 
 	//初始化反汇编引擎
-#if defined(_M_AMD64)
-	LDE_init();
-#endif //defined
+//#if defined(_M_AMD64)
+//	LDE_init();
+//#endif //defined
 
 	KdPrint(("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 

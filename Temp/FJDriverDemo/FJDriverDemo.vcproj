@@ -160,6 +160,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InlineHook.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\KernelHelper_Amd64.c"
 				>
 			</File>
@@ -258,6 +262,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InlineHook.h"
+				>
+			</File>
+			<File
 				RelativePath=".\KernelHelper.h"
 				>
 			</File>
@@ -275,6 +283,18 @@
 			</File>
 			<File
 				RelativePath=".\WindowsTypes.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="ASM"
+			>
+			<File
+				RelativePath=".\ASM\ILD_x64.asm"
+				>
+			</File>
+			<File
+				RelativePath=".\ASM\ILD_x86.asm"
 				>
 			</File>
 		</Filter>

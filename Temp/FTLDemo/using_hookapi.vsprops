@@ -6,10 +6,10 @@
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="&quot;E:\Detours Express 3.0\include&quot;;F:\Code\MinHook_110_src\MinHook\libMinHook"
+		AdditionalIncludeDirectories="&quot;E:\Detours Express 3.0\include&quot;;F:\Tools\Program\Driver\easyhook\trunk\Public;F:\Tools\Program\Driver\MinHook_110_src\MinHook\libMinHook"
 	/>
 	<Tool
 		Name="VCLinkerTool"
-		AdditionalLibraryDirectories="&quot;E:\Detours Express 3.0\lib.X86&quot;;F:\Code\MinHook_110_src\MinHook\Debug"
+		AdditionalLibraryDirectories="&quot;E:\Detours Express 3.0\lib.X86&quot;;&quot;F:\Tools\Program\Driver\easyhook\trunk\$(ConfigurationName)\x86&quot;;&quot;F:\Tools\Program\Driver\easyhook\trunk\$(ConfigurationName)\x64&quot;;F:\Tools\Program\Driver\MinHook_110_src\MinHook\Debug;F:\Tools\Program\Driver\MinHook_110_src\MinHook\x64\Debug"
 	/>
 </VisualStudioPropertySheet>

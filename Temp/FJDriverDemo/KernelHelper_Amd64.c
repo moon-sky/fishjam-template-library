@@ -6,15 +6,16 @@
 
 #if defined(_M_AMD64)
 
-#include "LDE64x64.h"
+//#include "LDE64x64.h"
 
 PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
 
 KIRQL WPOFFx64()
 {
-	KIRQL irql= KeRaiseIrqlToDpcLevel();  //KeGetCurrentIrql();
+	KIRQL irql = KeRaiseIrqlToDpcLevel();  //KeGetCurrentIrql();
+	UINT64 cr0;
 	_disable();
-	UINT64 cr0=__readcr0();
+	cr0 = __readcr0();
 	cr0 &= ~0x10000; //0xfffffffffffeffff;
 	__writecr0(cr0);
 	//_disable(); //需要注释?
@@ -104,17 +105,17 @@ PVOID GetSSDTFuncAddr(LONG nServiceIndex)
 //}
 
 
-ULONG GetPatchSize(PUCHAR Address)
-{
-	ULONG LenCount=0,Len=0;
-	while(LenCount<=14)	//至少需要14字节
-	{
-		Len=LDE(Address,64);
-		Address=Address+Len;
-		LenCount=LenCount+Len;
-	}
-	return LenCount;
-}
+//ULONG GetPatchSize(PUCHAR Address)
+//{
+//	ULONG LenCount=0,Len=0;
+//	while(LenCount<=14)	//至少需要14字节
+//	{
+//		Len=LDE(Address,64);
+//		Address=Address+Len;
+//		LenCount=LenCount+Len;
+//	}
+//	return LenCount;
+//}
 
 //传入：待HOOK函数地址，代理函数地址，接收原始函数地址的指针，接收补丁长度的指针；返回：原来头N字节的数据
 #if 0

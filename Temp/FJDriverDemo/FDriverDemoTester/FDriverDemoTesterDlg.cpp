@@ -125,10 +125,8 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnInstallService()
 	{
 		//API_VERIFY(m_DriverController.InstallService(m_strDriverPath , PROTECT_SERVICE_NAME)); //FDRIVER_DEMO_SERVICE_NAME));
 		API_VERIFY(m_DriverController.InstallService(m_strDriverPath , FDRIVER_DEMO_SERVICE_NAME));
-
 	}
 }
-
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnOpenDriver()
 {
