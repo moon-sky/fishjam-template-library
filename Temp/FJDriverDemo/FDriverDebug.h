@@ -43,7 +43,8 @@
 * BusHound -- 调试USB驱动程序
 * EzDriverInstaller -- 加载WDM式驱动
 * DeviceTree -- 查看设备对象
-* 
+* Driver Verifier  -- ?
+*
 * 虚拟机调试
 *   VMWare
 *     共享目录：Options -> Shared Foloders -> 增加共享目录, 该共享目录会出现在虚拟机中的“网络驱动器”里(老版本VMWare需要通过 \\.host\ 访问)

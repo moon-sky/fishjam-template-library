@@ -23,5 +23,5 @@ rem ml64 /c AsmHelperFun.asm
 @echo on
 build
 
-rem xcopy %4%5.sys %6 /Y
-rem xcopy %4%5.pdb %6 /Y
+if %_BUILDARCH%==x86   signtool.exe sign /v /s "FujieCertStore" /n "FujieCert" /t http://timestamp.verisign.com/scripts/timestamp.dll obj%BUILD_ALT_DIR%\i386\FJDriverDemo32.sys
+if %_BUILDARCH%==AMD64 signtool.exe sign /v /s "FujieCertStore" /n "FujieCert" /t http://timestamp.verisign.com/scripts/timestamp.dll obj%BUILD_ALT_DIR%\amd64\FJDriverDemo64.sys

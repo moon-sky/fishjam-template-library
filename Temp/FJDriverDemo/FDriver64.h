@@ -2,12 +2,21 @@
 #define F_DRIVER_64_H
 
 /******************************************************************************************************************
-* 64位平台的驱动开发
+* TODO: 下载一份最新的WHQL测试包进行WHQL测试
 * 
+* 内存对齐(structure alignment) --  
+*   UNALIGNED  -- 具体作用？ *(UNALIGNED void *)&s.ptr = p;
+******************************************************************************************************************/
+
+/******************************************************************************************************************
+* 64位平台的驱动开发 -- 64位操作系统不支持32位的驱动程序
+*   Porting Your Driver to 64-Bit Windows -- http://msdn.microsoft.com/library/en-us/kmarch/hh/kmarch/Other_394c38ae-a3e6-45fb-87f2-c3e227cb6b7c.xml.asp
+* 
+*  
 * 汇编
-*   64位编译器不再支持内嵌式的汇编代码(__asm) -- 可以将汇编代码提取出函数写在单独的汇编文件中，编译成obj后通过 TARGETLIBS 链接
+*   64位编译器不再支持内嵌式的汇编代码(__asm) -- 可以将汇编代码提取出函数写在单独的汇编文件(.asm)中，编译成obj后通过 TARGETLIBS 链接
 *   MS的编译器是 ml64.exe；其他的有 GoASM(GoASM编译器 + GoLINK链接器 + GoRC资源编译器)等
-*
+*   汇编文件需要放在对应的目录下(比如 i386/amd64 )，然后在 AMD64_SOURCES、I386_SOURCES 等中指定 .asm 文件
 *
 * 正常情况下，ETHREAD中的ServiceTable，要么指向KeServiceDescriptorTable,要么指向 KeServiceDescriptorTableShadow
 * SSDT表处理 -- KiServiceTable ?

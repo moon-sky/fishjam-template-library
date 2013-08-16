@@ -262,11 +262,14 @@
 *   0x33c0 -- xor     eax,eax
 *   0x36 -- jmp ss:
 *   0x488d -- lea xxxx
+*** 0x48b8 XXXXXXXX`XXXXXXXX -- mov rax, Xxxxxx; 将指定的64位数据放入 rax 
+*   0x50 -- push eax / rax
+*   0x58 -- pop eax / rax
 *   0x64 -- jmp fs:
 *   0x65 -- jmp gs:
 *   0x74 XX -- je imm8
 *   0x90 -- nop	, 一般用于填充代码区域
-*** 0xB8 -- mov rax, xxxx , 将指定的64位数据放入 rax 
+*   0xB8 XXXXXXXX -- mov eax, xxxx , 将指定的32位数据放入 eax 
 *   0xc2 -- ret +imm8
 *   0xc3 -- ret
 *   0xcc -- int 3, 软件断点，一般用于代码空余部分的填充
@@ -275,7 +278,8 @@
 *   0xe8 XXXXXXXX -- call imm16/imm32
 *   0xe9 XXXXXXXX -- jmp imm16/imm32 (jmp offset, offset大于0向前挑,offset小于0向后跳) ; x64 下对应 ff15  [xxxxxxxx], xxxxxxxx 是32位的，[xxxxxxxx]指向一个64位地址
 *   0xeb -- jmp imm8
-*   0xff25 -- jmp [+imm32] -- 根据指定内存中保存的 Address Table 进行跳转? JMP QWORD NEAR
+*   0xff25 -- jmp [+imm32] -- 根据指定内存中保存的 Address Table 进行跳转? JMP QWORD NEAR，
+*     跳转目标是指定8字节内存中的地址(64位系统上可以直接跳转到全局目的地)。可以指定8字节地址为0,即根据当前指令后偏移位置为0的地址进行跳转
 *   0xffe0 -- jmp rax -- 根据 rax 寄存器的值进行跳转，即 jmp imm64 ?
 * 
 *

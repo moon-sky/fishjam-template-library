@@ -1,7 +1,10 @@
 #include "stdafx.h"
 #include "KernelHookAPI.h"
 #include "InlineHook.h"
-#include "FDriverUtil.h"
+#ifdef FDRIVER_DEMO_PROJECT
+#  include "FDriverUtil.h"
+#endif 
+
 #include "KernelHelper.h"
 
 #define INLINE_HOOK_TAG				'HOOK'

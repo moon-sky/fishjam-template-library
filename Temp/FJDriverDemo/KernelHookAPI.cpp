@@ -1,8 +1,13 @@
 #include "stdafx.h"
 #include "KernelHookAPI.h"
 #include "KernelHelper.h"
-#include "FDriverUtil.h"
-#include "FDriverDemoDefine.h"
+
+#ifdef FDRIVER_DEMO_PROJECT
+#  include "FDriverUtil.h"
+#  include "FDriverDemoDefine.h"
+#else
+#  include "nComicDrvDefine.h"
+#endif 
 #include <ddrawint.h>
 
 #define ObjectNameInformation  1
@@ -11,7 +16,7 @@
 
 //SYSTEM_SERVICE_TABLE *g_pShadowTable = NULL;
 
-//º¯ÊýÔ­ÐÍ -- http://doxygen.reactos.org/
+//function define -- http://doxygen.reactos.org/
 //Windows WIN32K.SYS System Call Table (NT/2000/XP/2003/Vista/2008/7)
 //  http://j00ru.vexillium.org/win32k_syscalls/
 //  http://j00ru.vexillium.org/win32k_x64/

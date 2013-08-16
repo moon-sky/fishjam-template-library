@@ -1,9 +1,11 @@
 #include "stdafx.h"
-#include "FDriverUtil.h"
+
+#ifdef FDRIVER_DEMO_PROJECT
+#  include "FDriverUtil.h"
+#endif 
 #include "KernelHookAPI.h"
 #include "KernelHelper.h"
 
-#define _M_AMD64
 
 #if defined(_M_AMD64)
 
@@ -62,7 +64,7 @@ SYSTEM_SERVICE_TABLE* GetKeServiceDescriptorTableShadowAddress()  //GetKeService
 			}
 		}
 	}
-	g_pSystemServiceTable = addr;
+	g_pSystemServiceTable = (PSYSTEM_SERVICE_TABLE)addr;
 
 	if (g_pSystemServiceTable)
 	{
@@ -182,6 +184,10 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 
 NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
+	KdPrint(("Restore Inline SSDT func %ws at [0x%x], TargetAddress=%p, newAddress=%p, OrigiApiAddress=%p\n", 
+		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, 
+		pHookApiInfo->pOrigApiAddress));
+
 	pHookApiInfo->pOrigApiAddress = NULL;
 	RestoreInlineHook(pHookApiInfo->pInlineHookInfo);
 	pHookApiInfo->pInlineHookInfo = NULL;

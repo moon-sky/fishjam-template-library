@@ -260,19 +260,18 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop()
 {
-	BOOL bRet = FALSE;
-	
-	HWND hWndDesktop = ::GetDesktopWindow();
-	HDC hDC = ::GetDC(hWndDesktop);
+	//BOOL bRet = FALSE;
+	//HWND hWndDesktop = ::GetDesktopWindow();
+	//HDC hDC = ::GetDC(hWndDesktop);
+	//HWND hWndFromDC = ::WindowFromDC(hDC);
+	//FTLTRACE(TEXT("hWndDesktop = 0x%x, hWndFromDC=0x%x, hDC=0x%x\n"), hWndDesktop, hWndFromDC, hDC);
+	//::ReleaseDC(hWndDesktop, hDC);
+	////API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_FILTER_DESKTOP, &hDesktop, sizeof(hDesktop), NULL, 0));
 
-	HWND hWndFromDC = ::WindowFromDC(hDC);
-
-	FTLTRACE(TEXT("hWndDesktop = 0x%x, hWndFromDC=0x%x, hDC=0x%x\n"), hWndDesktop, hWndFromDC, hDC);
-
-	::ReleaseDC(hWndDesktop, hDC);
-
-	//API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_FILTER_DESKTOP, &hDesktop, sizeof(hDesktop), NULL, 0));
-
+	INT nSize = sizeof(PROTECT_WND_INFO);
+	CString strInfo;
+	strInfo.Format(TEXT("sizeof PROTECT_WND_INFO is %d"), nSize);
+	MessageBox(strInfo);
 }
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()

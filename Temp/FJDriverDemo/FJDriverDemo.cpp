@@ -10,6 +10,12 @@
 extern "C" NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  RegistryPath);
 #endif
 
+typedef struct _PPROTECT_WND_INFO_32 {
+	VOID*POINTER_32 hWndDeskTop;
+	VOID*POINTER_32 hTargetProcess;
+	RECT   rcProtectWindow;
+	VOID*POINTER_32	   hDCWndProtect;
+} PROTECT_WND_INFO_32, *PPROTECT_WND_INFO_32;
 
 //提供一个Unload函数只是为了让这个程序能动态卸载，方便调试。否则一个内核模块一旦加载就不能再卸载了
 void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
@@ -82,7 +88,7 @@ NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp
 #pragma PAGEDCODE
 NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 {
-    NTSTATUS status	= STATUS_INVALID_DEVICE_REQUEST;
+    NTSTATUS status	= STATUS_INVALID_PARAMETER;;
 
 	PIO_STACK_LOCATION pIoStackLoc = IoGetCurrentIrpStackLocation(pIrp);
 	NT_ASSERT(pIoStackLoc->MajorFunction == IRP_MJ_DEVICE_CONTROL);
@@ -105,18 +111,43 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 			//	(PVOID*)&g_pOldMyCode, &g_pInlineHookInfo));
 
 			//MyOriginalCode(10, 20, L"After Hook");
-
-			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK, inputLen=%d\n", inputBufferLength));
+			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK, inputLen=%d, sizeof(PROTECT_WND_INFO)=%d\n", 
+				inputBufferLength, sizeof(PROTECT_WND_INFO)));
+#if defined(_M_IX86)
+			//x86
 			NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
-
 			if (inputBufferLength == sizeof(PROTECT_WND_INFO))
 			{
 				FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
 			}
+#else
+			//AMD64
+			if (IoIs32bitProcess(pIrp))
+			{
+				//If Caller is x32 Program
+				PPROTECT_WND_INFO_32 pProtectWndInfo32 = (PPROTECT_WND_INFO_32)inputBuffer;
+
+				PROTECT_WND_INFO protectWndInfo64;
+				protectWndInfo64.hWndDeskTop = (HWND)pProtectWndInfo32->hWndDeskTop;
+				protectWndInfo64.hTargetProcess = pProtectWndInfo32->hTargetProcess;
+				protectWndInfo64.rcProtectWindow = pProtectWndInfo32->rcProtectWindow;
+				protectWndInfo64.hDCWndProtect = (HDC)pProtectWndInfo32->hDCWndProtect;
+				FNT_VERIFY(InstallCopyProtectHook(&protectWndInfo64));
+			}
+			else
+			{
+				NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
+				if (inputBufferLength == sizeof(PROTECT_WND_INFO))
+				{
+					FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
+				}
+			}
+#endif 
 			break;
 		}
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
+			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
 			//if (g_pInlineHookInfo)
 			//{
 			//	FNT_VERIFY(RestoreInlineHook(g_pInlineHookInfo));
@@ -125,7 +156,6 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 			//	MyOriginalCode(100, 200, L"After UnHook");
 			//}
 			FNT_VERIFY(UnInstallCopyProtectHook());
-			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
 			break;
 		}
     default:
@@ -208,11 +238,6 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING  Regist
 	
 	pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = FJDriverDemoDeviceControl;
 	pDriverObject->DriverUnload = FJDriverDemoUnload;
-
-	//初始化反汇编引擎
-//#if defined(_M_AMD64)
-//	LDE_init();
-//#endif //defined
 
 	KdPrint(("Leave FJDriverDemo DriverEntry,PID=%d\n", PsGetCurrentProcessId()));
 
