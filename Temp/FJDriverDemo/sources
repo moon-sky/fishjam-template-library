@@ -3,11 +3,9 @@
 
 !IF "$(_BUILDARCH)" == "x86"
 TARGETNAME=FJDriverDemo32
-TARGETLIBS=$(TARGETLIBS) ASM\ILD_x86.obj
 NO_SAFESEH=1
 !ELSEIF "$(_BUILDARCH)" == "AMD64"
 TARGETNAME=FJDriverDemo64
-TARGETLIBS=$(TARGETLIBS) ASM\ILD_x64.obj
 !ELSEIF "$(_BUILDARCH)" == "IA64"
 TARGETNAME=FJDriverDemoIa64
 !ENDIF
@@ -35,5 +33,8 @@ SOURCES=stdafx.cpp \
 	KernelHookAPI.cpp \
 	FDriverHookAPI.cpp
 
-AMD64_SOURCES=KernelHelper_Amd64.c
-I386_SOURCES=KernelHelper_X86.c
+AMD64_SOURCES=KernelHelper_Amd64.c \
+	amd64\ILD_x64.asm
+	
+I386_SOURCES=KernelHelper_X86.c \
+	i386\ILD_x86.asm

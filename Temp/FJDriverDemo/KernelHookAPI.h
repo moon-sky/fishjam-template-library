@@ -6,8 +6,11 @@
 #  include "nComicDrvDefine.h"
 #endif
 
+#include "InlineHook.h"
+
 #define SSDT_API_CALL_ENTER(x) (InterlockedIncrement(&x))
 #define SSDT_API_CALL_LEAVE(x) (InterlockedDecrement(&x))
+
 
 //SSDT表结构 -- 32/64 通用， func = (PBYTE)Base+Base[index];
 typedef struct _SYSTEM_SERVICE_TABLE { 
@@ -32,14 +35,16 @@ typedef struct _HOOK_API_INFO
 {
 	//在Hook函数执行过程中pOrig可能被替换,需要先将 pOrigApiAddress 保存成临时变量，判断不为空后使用临时变量
 	LPWSTR  pwzApiName;
-	PVOID	pOrigApiAddress;
+	PVOID   pTargetAddress;			
 	PVOID   pNewApiAddress;
+	PVOID	pOrigApiAddress;		//x86是Shadow SSDT中的函数，amd64是原始函数
 	LONG	nIndexInSSDT;
 	LONG    nParamCount;
 	BOOL	bEnableHook;
 
 	//KSPIN_LOCK	spinLock;		//LONG	nAPICallCount;
 	//LONG    nPatchSize;
+	PINLINE_HOOK_INFO	pInlineHookInfo;
 }HOOK_API_INFO, *PHOOK_API_INFO;
 //#pragma pack(pop)
 

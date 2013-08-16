@@ -9,7 +9,7 @@
 #define SystemHandleInformation 0x10
 #define HOOK_API_INFO_TAG     (ULONG)0x12345678
 
-SYSTEM_SERVICE_TABLE *g_pShadowTable = NULL;
+//SYSTEM_SERVICE_TABLE *g_pShadowTable = NULL;
 
 //º¯ÊýÔ­ÐÍ -- http://doxygen.reactos.org/
 //Windows WIN32K.SYS System Call Table (NT/2000/XP/2003/Vista/2008/7)
@@ -409,6 +409,7 @@ public:
 		{
 			int nPointSize = sizeof(void *);
 			KdPrint(("Pointer Size is %d\n", nPointSize));
+			m_ValidCallNumber = TRUE;
 		}
 		return status;
 	}
@@ -452,7 +453,7 @@ public:
 		m_HookFuns[hft_NtGdiExtTextOutW].pwzApiName = L"NtGdiExtTextOutW";
 		m_HookFuns[hft_NtGdiExtTextOutW].pNewApiAddress = Hooked_NtGdiExtTextOutW;
 		m_HookFuns[hft_NtGdiExtTextOutW].nParamCount = 9;
-		m_HookFuns[hft_NtGdiExtTextOutW].bEnableHook = TRUE;
+		m_HookFuns[hft_NtGdiExtTextOutW].bEnableHook = FALSE;
 
 		m_HookFuns[hft_NtGdiOpenDCW].pwzApiName = L"NtGdiOpenDCW";
 		m_HookFuns[hft_NtGdiOpenDCW].pNewApiAddress = Hooked_NtGdiOpenDCW;
@@ -467,17 +468,17 @@ public:
 		m_HookFuns[hft_NtUserPrintWindow].pwzApiName = L"NtUserPrintWindow";
 		m_HookFuns[hft_NtUserPrintWindow].pNewApiAddress = Hooked_NtUserPrintWindow;
 		m_HookFuns[hft_NtUserPrintWindow].nParamCount = 3;
-		m_HookFuns[hft_NtUserPrintWindow].bEnableHook = TRUE;
+		m_HookFuns[hft_NtUserPrintWindow].bEnableHook = FALSE;
 
 		m_HookFuns[hft_NtGdiDdLock].pwzApiName = L"NtGdiDdLock";
 		m_HookFuns[hft_NtGdiDdLock].pNewApiAddress = Hooked_NtGdiDdLock;
 		m_HookFuns[hft_NtGdiDdLock].nParamCount = 3;
-		m_HookFuns[hft_NtGdiDdLock].bEnableHook = TRUE;
+		m_HookFuns[hft_NtGdiDdLock].bEnableHook = FALSE;
 
 		m_HookFuns[hft_NtGdiDdUnlock].pwzApiName = L"NtGdiDdUnlock";
 		m_HookFuns[hft_NtGdiDdUnlock].pNewApiAddress = Hooked_NtGdiDdUnlock;
 		m_HookFuns[hft_NtGdiDdUnlock].nParamCount = 2;
-		m_HookFuns[hft_NtGdiDdUnlock].bEnableHook = TRUE;
+		m_HookFuns[hft_NtGdiDdUnlock].bEnableHook = FALSE;
 
 #if defined(_M_IX86)
 		FNT_VERIFY(_InitCallNumberX86(versionCode));
@@ -535,67 +536,6 @@ public:
 DRIVER_HOOK_API_INFOS* g_pDriverHookApiInfos = NULL;
 
 LONG g_SSDTAPILockCount = 0;
-
-
-// If the current one hooking SSDT API function calls and function call in progress, if this value has a value greater than 0.
-
-
-//enum SimpleCallRoutines
-//{
-//NOPARAM_ROUTINE_CREATEMENU,
-//NOPARAM_ROUTINE_CREATEMENUPOPUP,
-//NOPARAM_ROUTINE_ENABLEPROCWNDGHSTING,
-//NOPARAM_ROUTINE_MSQCLEARWAKEMASK,
-//NOPARAM_ROUTINE_ALLOWFOREGNDACTIVATION,
-//NOPARAM_ROUTINE_DESTROY_CARET,
-//NOPARAM_ROUTINE_GETDEVICECHANGEINFO,
-//NOPARAM_ROUTINE_GETIMESHOWSTATUS,
-//NOPARAM_ROUTINE_GETINPUTDESKTOP,
-//NOPARAM_ROUTINE_GETMSESSAGEPOS,
-//NOPARAM_ROUTINE_GETREMOTEPROCID,
-//
-//NOPARAM_ROUTINE_HIDECURSORNOCAPTURE,
-//NOPARAM_ROUTINE_LOADCURSANDICOS,
-//NOPARAM_ROUTINE_RELEASECAPTURE,
-//NOPARAM_ROUTINE_RESETDBLCLICK,
-//NOPARAM_ROUTINE_ZAPACTIVEANDFOUS,
-//NOPARAM_ROUTINE_REMOTECONSHDWSTOP,
-//NOPARAM_ROUTINE_REMOTEDISCONNECT,
-//NOPARAM_ROUTINE_REMOTELOGOFF,
-//NOPARAM_ROUTINE_REMOTENTSECURITY,
-//NOPARAM_ROUTINE_REMOTESHDWSETUP,
-//NOPARAM_ROUTINE_REMOTESHDWSTOP,
-//NOPARAM_ROUTINE_REMOTEPASSTHRUENABLE,
-//NOPARAM_ROUTINE_REMOTEPASSTHRUDISABLE,
-//NOPARAM_ROUTINE_REMOTECONNECTSTATE,
-//NOPARAM_ROUTINE_UPDATEPERUSERIMMENABLING,
-//NOPARAM_ROUTINE_USERPWRCALLOUTWORKER,
-//NOPARAM_ROUTINE_INIT_MESSAGE_PUMP,
-//NOPARAM_ROUTINE_UNINIT_MESSAGE_PUMP,
-//NOPARAM_ROUTINE_LOADUSERAPIHOOK,
-//ONEPARAM_ROUTINE_BEGINDEFERWNDPOS,
-//ONEPARAM_ROUTINE_GETSENDMSGRECVR,
-//ONEPARAM_ROUTINE_WINDOWFROMDC,      //32 in WinXP
-//ONEPARAM_ROUTINE_ALLOWSETFOREGND,
-//ONEPARAM_ROUTINE_CREATEEMPTYCUROBJECT,
-//ONEPARAM_ROUTINE_CREATESYSTEMTHREADS,
-//ONEPARAM_ROUTINE_CSDDEUNINITIALIZE,
-//ONEPARAM_ROUTINE_DIRECTEDYIELD,
-//ONEPARAM_ROUTINE_ENUMCLIPBOARDFORMATS,
-//ONEPARAM_ROUTINE_GETCURSORPOS,
-//ONEPARAM_ROUTINE_GETINPUTEVENT,
-//ONEPARAM_ROUTINE_GETKEYBOARDLAYOUT,
-//ONEPARAM_ROUTINE_GETKEYBOARDTYPE,
-//ONEPARAM_ROUTINE_GETPROCDEFLAYOUT,
-//ONEPARAM_ROUTINE_GETQUEUESTATUS,
-//ONEPARAM_ROUTINE_GETWINSTAINFO,
-//ONEPARAM_ROUTINE_HANDLESYSTHRDCREATFAIL,
-//};
-
-//#define ONEPARAM_ROUTINE_WINDOWFROMDC_WINXP 31		//0x1f
-
-//USER32!NtUserCallOneParam (77d184ae)
-//mov     edx,offset SharedUserData!SystemCallStub (7ffe0300)
 
 BOOL Hooked_NtGdiBitBlt(
 					 HDC hDCDest,int  XDest,int  YDest,int  Width,int  Height,
@@ -1054,7 +994,7 @@ NTSTATUS UnInstallCopyProtectHook(void)
 	KdPrint(("Enter UnInstallCopyProtectHook\n"));
 	if (g_pDriverHookApiInfos)
 	{
-		KdPrint(("ServiceDescriptorShadowTableAddress : %#x", g_pShadowTable));
+		//KdPrint(("ServiceDescriptorShadowTableAddress : %#x\n", g_pDriverHookApiInfos));
 
 		if (g_pDriverHookApiInfos->HasValidCallNumber())// g_pDriverHookApiInfos-> g_NtGdiBitBltIndex != (-1))
 		{

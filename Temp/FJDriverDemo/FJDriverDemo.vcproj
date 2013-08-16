@@ -289,14 +289,22 @@
 		<Filter
 			Name="ASM"
 			>
-			<File
-				RelativePath=".\ASM\ILD_x64.asm"
+			<Filter
+				Name="amd64"
 				>
-			</File>
-			<File
-				RelativePath=".\ASM\ILD_x86.asm"
+				<File
+					RelativePath=".\amd64\ILD_x64.asm"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="i386"
 				>
-			</File>
+				<File
+					RelativePath=".\i386\ILD_x86.asm"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\FJDriverDemo.inf"

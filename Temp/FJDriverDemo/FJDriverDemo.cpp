@@ -4,7 +4,6 @@
 #include "FDriverUtil.h"
 #include "FDriverHookAPI.h"
 #include "KernelHookAPI.h"
-#include "InlineHook.h"
 
 #ifdef __cplusplus
 //#pragma INITCODE
@@ -51,26 +50,34 @@ NTSTATUS FJDriverDemoDefaultHandler(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp
 	//return IoCallDriver(deviceExtension->TargetDeviceObject, pIrp);
 }
 
-typedef BOOLEAN (*KECANCELTIMER)(PKTIMER InTimer);
-KECANCELTIMER		g_pOldKeCancelTimer = NULL;
-PINLINE_HOOK_INFO	g_pInlineHookInfo = NULL;
+//typedef BOOL (*MYORIGINALCODE)(INT nNumber1, INT nNumber2, WCHAR* pChar3);
+//MYORIGINALCODE		g_pOldMyCode = NULL;
+//PINLINE_HOOK_INFO	g_pInlineHookInfo = NULL;
 
-BOOLEAN __stdcall KeCancelTimer_Hook(PKTIMER InTimer)
-{
-	//PVOID					CallStack[64];
-	//MODULE_INFORMATION		Mod;
-	//ULONG					MethodCount;
-	BOOLEAN					bRet = FALSE;
-
-	KdPrint(("Enter KeCancelTimer_Hook\n"));
-	if (g_pOldKeCancelTimer)
-	{
-		bRet =  (g_pOldKeCancelTimer)(InTimer);
-	}
-	
-	KdPrint(("Leave KeCancelTimer_Hook\n"));
-	return bRet;
-}
+//BOOL MyOriginalCode(INT nNumber1, INT nNumber2, WCHAR* pChar3)
+//{
+//	KdPrint(("Enter MyOriginalCode, nNumber1=%d, nNunmber2=%d, pChar3=%wS\n", nNumber1, nNumber2, pChar3));
+//
+//	INT nResult = nNumber1 + nNumber2;
+//
+//	KdPrint(("Leave MyOriginalCode, nResult=%d\n", nResult));
+//
+//	return TRUE;
+//}
+//
+//BOOL MyOriginalCode_Hook(INT nNumber1, INT nNumber2, WCHAR* pChar3)
+//{
+//	BOOL					bRet = FALSE;
+//
+//	KdPrint(("Enter MyOriginalCode_Hook\n"));
+//	if (g_pOldMyCode)
+//	{
+//		bRet =  (g_pOldMyCode)(nNumber1, nNumber2, pChar3);
+//	}
+//	
+//	KdPrint(("Leave MyOriginalCode_Hook\n"));
+//	return bRet;
+//}
 
 #pragma PAGEDCODE
 NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
@@ -92,36 +99,33 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 	{
 	case IOCTL_FDRIVER_INSTALL_HOOK:
 		{
-			PVOID					pOriginalCancelTimer = NULL;
-			UNICODE_STRING			SymbolName;
-			RtlInitUnicodeString(&SymbolName, L"KeCancelTimer");
-			pOriginalCancelTimer = MmGetSystemRoutineAddress(&SymbolName);
-			
-			FNT_VERIFY(CreateInlineHook(pOriginalCancelTimer, KeCancelTimer_Hook, 
-				(PVOID*)&g_pOldKeCancelTimer, &g_pInlineHookInfo));
+			//MyOriginalCode(1, 2, L"Before Hook");
 
-			KTIMER					Timer;
-			KeInitializeTimer(&Timer);
-			KeCancelTimer(&Timer);
+			//FNT_VERIFY(CreateInlineHook(MyOriginalCode, MyOriginalCode_Hook, 
+			//	(PVOID*)&g_pOldMyCode, &g_pInlineHookInfo));
 
-			//KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK, inputLen=%d\n", inputBufferLength));
-			//NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
+			//MyOriginalCode(10, 20, L"After Hook");
 
-			//if (inputBufferLength == sizeof(PROTECT_WND_INFO))
-			//{
-			//	FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
-			//}
+			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK, inputLen=%d\n", inputBufferLength));
+			NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
+
+			if (inputBufferLength == sizeof(PROTECT_WND_INFO))
+			{
+				FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
+			}
 			break;
 		}
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
-			if (g_pInlineHookInfo)
-			{
-				FNT_VERIFY(RestoreInlineHook(g_pInlineHookInfo));
-				g_pInlineHookInfo = NULL;
-			}
-			//FNT_VERIFY(UnInstallCopyProtectHook());
-			//KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
+			//if (g_pInlineHookInfo)
+			//{
+			//	FNT_VERIFY(RestoreInlineHook(g_pInlineHookInfo));
+			//	g_pInlineHookInfo = NULL;
+
+			//	MyOriginalCode(100, 200, L"After UnHook");
+			//}
+			FNT_VERIFY(UnInstallCopyProtectHook());
+			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
 			break;
 		}
     default:

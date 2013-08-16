@@ -3,10 +3,10 @@
 #include "KernelHookAPI.h"
 #include "KernelHelper.h"
 
+#define _M_AMD64
 
 #if defined(_M_AMD64)
 
-//#include "LDE64x64.h"
 
 PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
 
@@ -84,11 +84,17 @@ PVOID GetSSDTFuncAddr(LONG nServiceIndex)
 
 	PBYTE				W32pServiceTable=0, qwTemp=0;
 	LONG 					dwTemp=0;
-	PSYSTEM_SERVICE_TABLE	pWin32k = &g_pSystemServiceTable[1];
-	W32pServiceTable=(PBYTE)pWin32k->ServiceTableBase;
+	PSYSTEM_SERVICE_TABLE pServiceTable = nServiceIndex < 0x1000 ? &g_pSystemServiceTable[0] : &g_pSystemServiceTable[1];
 
-	//ul64W32pServiceTable = W32pServiceTable;
-	qwTemp = W32pServiceTable + 4 * nServiceIndex;	//这里是获得偏移地址的位置，要HOOK的话修改这里即可
+	LONG nIndex = nServiceIndex;
+	if (nIndex > 0x1000)
+	{
+		nIndex -= 0x1000;
+	}
+
+	W32pServiceTable=(PBYTE)pServiceTable->ServiceTableBase;
+
+	qwTemp = W32pServiceTable + 4 * nIndex;	//这里是获得偏移地址的位置，要HOOK的话修改这里即可
 	dwTemp = *(PLONG)qwTemp;
 	dwTemp = dwTemp >> 4;
 	qwTemp = W32pServiceTable + (LONG64)dwTemp;
@@ -104,18 +110,6 @@ PVOID GetSSDTFuncAddr(LONG nServiceIndex)
 //	return dwtmp<<4;
 //}
 
-
-//ULONG GetPatchSize(PUCHAR Address)
-//{
-//	ULONG LenCount=0,Len=0;
-//	while(LenCount<=14)	//至少需要14字节
-//	{
-//		Len=LDE(Address,64);
-//		Address=Address+Len;
-//		LenCount=LenCount+Len;
-//	}
-//	return LenCount;
-//}
 
 //传入：待HOOK函数地址，代理函数地址，接收原始函数地址的指针，接收补丁长度的指针；返回：原来头N字节的数据
 #if 0
@@ -168,14 +162,29 @@ PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *O
 
 NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
-	//ULONG64 OldAddress = 0;
-	//OldAddress = (ULONG64)GetSSDTFuncAddr(pServiceTable, nIndex);
-	//HookKernelApi((PVOID)OldAddress, newAddress, Original_ApiAddress, PatchSize);
-	return STATUS_SUCCESS;
+	
+	NTSTATUS status = STATUS_SUCCESS;
+	KIRQL irql = 0;
+
+	pHookApiInfo->pTargetAddress = GetSSDTFuncAddr(pHookApiInfo->nIndexInSSDT);
+	NT_ASSERT(pHookApiInfo->pTargetAddress);
+
+	FNT_VERIFY(CreateInlineHook(pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
+		&pHookApiInfo->pInlineHookInfo));
+
+	KdPrint(("Inline Hook SSDT func %ws at [0x%x], TargetAddress=%p, newAddress=%p, OrigiApiAddress=%p, nParamCount=%d\n", 
+		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
+		pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, 
+		pHookApiInfo->pOrigApiAddress, pHookApiInfo->nParamCount));
+
+	return status;
 }	
 
 NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
+	pHookApiInfo->pOrigApiAddress = NULL;
+	RestoreInlineHook(pHookApiInfo->pInlineHookInfo);
+	pHookApiInfo->pInlineHookInfo = NULL;
 	return STATUS_SUCCESS;
 }
 
