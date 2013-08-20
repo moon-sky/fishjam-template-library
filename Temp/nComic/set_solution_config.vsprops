@@ -4,16 +4,8 @@
 	Version="8.00"
 	Name="set_solution_config"
 	>
-	<Tool
-		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="$(SolutionDir)third_party\Detours\include"
-	/>
-	<Tool
-		Name="VCResourceCompilerTool"
-		AdditionalIncludeDirectories="$(SolutionDir)third_party\Detours\lib"
-	/>
 	<UserMacro
 		Name="TARGET_DIR"
-		Value="$(SolutionDir)..\bin\$(ConfigurationName)"
+		Value="$(SolutionDir)$(ConfigurationName)"
 	/>
 </VisualStudioPropertySheet>

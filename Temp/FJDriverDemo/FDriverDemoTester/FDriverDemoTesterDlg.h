@@ -53,7 +53,8 @@ public:
 	afx_msg void OnBnClickedBtnInstallHook();
 	afx_msg void OnBnClickedBtnUninstallHook();
 	afx_msg void OnBnClickedBtnDoBitblt();
-	afx_msg void OnBnClickedBtnFilterDesktop();
     afx_msg void OnBnClickedBtnDoTextout();
 	afx_msg void OnBnClickedBtnTestDesktop();
+    afx_msg void OnBnClickedBtnFilterUpdateProtectWnd();
+    afx_msg void OnBnClickedBtnClearProtectWnd();
 };

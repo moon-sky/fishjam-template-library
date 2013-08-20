@@ -31,11 +31,12 @@ namespace FTL
     /*********************************************************************************************************
     * WinDbg  -- 反汇编分析能力较弱，GUI界面偏弱，无源码时调试比较困难；支持dump调试，分析功能强大
     *            通过 SOS.dll 支持.NET调试，进行高级调试比较方便
+    * http://download.microsoft.com/download/A/6/A/A6AC035D-DA3F-4F0C-ADA4-37C8E5D34E3D/setup/WinSDKDebuggingTools_amd64/dbg_amd64.msi
     * 
-	* WinDbg(http://msdn.microsoft.com/en-us/windows/hardware/gg463009)
+	* WinDbg(http://msdn.microsoft.com/en-us/windows/hardware/gg463009) -- 现在已经不再提供单独下载，在SDK、WDK等中包含。
     *   支持脚本和插件，而且软件包本身提供了大量非常有用的插件，可编写调试扩展模块来定制和补充调试功能
     *   .hh 关键字 -- 打开帮助文档并定位到指定关键字
-	*
+	*   
     * 工作空间(Workspace) -- 描述和存储一个调试项目的属性、参数、以及调试器设置等信息，类似IDE中的项目文件。
     *   配置信息保存在 HKCU\Software\Microsoft\Windbg\Workspaces，一般包含四个子键，分别对应四类不同的工作空间。
     *     User(用户态)

@@ -735,6 +735,7 @@ namespace FTL
     /******************************************************************************************************************************
 	* 其他类似的安装程序制作工具有：Inno Setup， wix(微软)
     * NSIS(Nullsoft Scriptable Install System) -- http://nsis.sf.net, 开源的 Windows 系统下免费安装程序制作程序，通过脚本配置
+    *   问题：Unicode版本？
     *   NSIS帮助文档(蓝色网际)： 
 	*   编译方式：
 	*     makensis.exe [option | script.nsi ] -- 命令行的编译器
@@ -762,7 +763,8 @@ namespace FTL
 	*         命令很长时，可以用 "\" 来换行继续写，如 Messagebox MB_OK \<CR> "This is line breaks demo" 
 	*         !define 常量名 "常量值"   -- 引用时(?)： ${常量名}
     *         !macro 宏名  XXX !macroend -- 定义宏，然后通过 !insertmacro 宏名 引用
-	*         !include 头文件名 -- 包含指定的头文件，如 !include LogicLib.nsh
+	*         !ifdef MY_DEFINE  xxxxx !endif -- 判断是否定义了特殊的宏，可通过 !define 或 makensis.exe 命令时通过 /D"MY_DEFINE" 的方式定义
+	*         !include 头文件名 -- 包含指定的头文件，然后即可使用其中的常量、函数、宏等。如 !include LogicLib.nsh
     *         !insertmacro 宏名 -- 在当前位置插入定义的宏（如系统预订的 MUI_PAGE_WELCOME 等各个Page页面都是宏 -- \Modern UI\System.nsh 文件中） 
 	*         var [/GLOBAL] 变量名, 引用时 $变量名，变量以字符串方式存储？有1024字节的限制，定义的变量都是全局的(即使在区段或函数类定义？)
 	*             颜色 -- 类似HTML中的RGB表示法，但不用井号"#"
@@ -771,11 +773,14 @@ namespace FTL
 	*           $PROGRAMFILES、$COMMONFILES，$DESKTOP，$STARTMENU(开始菜单目录), $TEMP(系统临时目录)
 	*           $MUSIC，$FONTS，$APPDATA
 	*           $RESOURCES、$RESOURCES_LOCALIZED
+	*         64位系统安装判断 ${If} ${RunningX64} xxxxx ${Else} yyyyy ${EndIf}
 	*    安装脚本
 	*       0.5安装程序属性（如 、InstallDir 等)
 	*          确定安装程序的性能、外观和习惯，控制显示的文本、安装类型的数量等，大多数在运行时只读，
+    *          InstallDir "$PROGRAMFILES\${COMPANYNAME}\${APPNAME_INNER}"  -- 设置缺省安装目录
 	*          Name "MyPrgramName" -- 设置安装程序运行时显示的标题栏名字(可能还有其他地方使用 ?)
 	*          OutFile "MyProgramSetup.exe" -- 设置编译后的安装程序名字
+    *          RequestExecutionLevel admin -- 在Vista后安装时需要管理员权限
 	*       1.页面 -- 非静默安装所需要的向导页面，用于指导用户进行安装。
 	*         Page/UninstPage/PageEx 页面名 -- 指定特定的安装/卸载页面, 可通过回调函数进行验证,如没有回调，则对应的位置用 ""
 	*         内置界面(??) -- license(许可协议)，components(组件选择)，directory(安装目录选择)，instfiles(安装进行中)，uninstConfirm

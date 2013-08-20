@@ -21,7 +21,7 @@
 			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\set_solution_config.vsprops;..\using_ftl.vsprops;..\using_detours.vsprops"
+			InheritedPropertySheets="..\set_solution_config.vsprops;..\using_detours.vsprops;$(FJSDK)FJSDK.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -46,7 +46,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;COMICHELPER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="4"
@@ -95,7 +95,7 @@
 			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			InheritedPropertySheets="..\set_solution_config.vsprops;..\using_ftl.vsprops;..\using_detours.vsprops"
+			InheritedPropertySheets="..\set_solution_config.vsprops;..\using_detours.vsprops;$(FJSDK)FJSDK.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -120,7 +120,7 @@
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;COMICHELPER_EXPORTS"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"

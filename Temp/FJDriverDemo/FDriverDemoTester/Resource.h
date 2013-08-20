@@ -14,8 +14,10 @@
 #define IDC_BTN_DO_BITBLT               1007
 #define IDC_STATIC_DRAW                 1008
 #define IDC_BTN_FILTER_DESKTOP          1009
+#define IDC_BTN_FILTER_UPDATE_PROTECT_WND 1009
 #define IDC_BUTTON3                     1010
 #define IDC_BTN_UNFILTER_DESKTOP        1010
+#define IDC_BTN_CLEAR_PROTECT_WND       1010
 #define IDC_BTN_DO_BITBLT2              1011
 #define IDC_BTN_DO_TEXTOUT              1011
 #define IDC_BUTTON1                     1012

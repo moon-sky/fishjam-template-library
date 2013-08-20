@@ -10,13 +10,6 @@
 extern "C" NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING  RegistryPath);
 #endif
 
-typedef struct _PPROTECT_WND_INFO_32 {
-	VOID*POINTER_32 hWndDeskTop;
-	VOID*POINTER_32 hTargetProcess;
-	RECT   rcProtectWindow;
-	VOID*POINTER_32	   hDCWndProtect;
-} PROTECT_WND_INFO_32, *PPROTECT_WND_INFO_32;
-
 //提供一个Unload函数只是为了让这个程序能动态卸载，方便调试。否则一个内核模块一旦加载就不能再卸载了
 void FJDriverDemoUnload(IN PDRIVER_OBJECT DriverObject)
 {
@@ -105,56 +98,72 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
 	{
 	case IOCTL_FDRIVER_INSTALL_HOOK:
 		{
-			//MyOriginalCode(1, 2, L"Before Hook");
-
-			//FNT_VERIFY(CreateInlineHook(MyOriginalCode, MyOriginalCode_Hook, 
-			//	(PVOID*)&g_pOldMyCode, &g_pInlineHookInfo));
-
-			//MyOriginalCode(10, 20, L"After Hook");
-			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK, inputLen=%d, sizeof(PROTECT_WND_INFO)=%d\n", 
-				inputBufferLength, sizeof(PROTECT_WND_INFO)));
+            KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
+            HANDLE hTargetProcess = NULL;
 #if defined(_M_IX86)
-			//x86
-			NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
-			if (inputBufferLength == sizeof(PROTECT_WND_INFO))
-			{
-				FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
-			}
-#else
-			//AMD64
-			if (IoIs32bitProcess(pIrp))
-			{
-				//If Caller is x32 Program
-				PPROTECT_WND_INFO_32 pProtectWndInfo32 = (PPROTECT_WND_INFO_32)inputBuffer;
-
-				PROTECT_WND_INFO protectWndInfo64;
-				protectWndInfo64.hWndDeskTop = (HWND)pProtectWndInfo32->hWndDeskTop;
-				protectWndInfo64.hTargetProcess = pProtectWndInfo32->hTargetProcess;
-				protectWndInfo64.rcProtectWindow = pProtectWndInfo32->rcProtectWindow;
-				protectWndInfo64.hDCWndProtect = (HDC)pProtectWndInfo32->hDCWndProtect;
-				FNT_VERIFY(InstallCopyProtectHook(&protectWndInfo64));
-			}
-			else
-			{
-				NT_ASSERT(inputBufferLength == sizeof(PROTECT_WND_INFO));
-				if (inputBufferLength == sizeof(PROTECT_WND_INFO))
-				{
-					FNT_VERIFY(InstallCopyProtectHook((PPROTECT_WND_INFO)inputBuffer));
-				}
-			}
+            PINSTALL_COPY_PROTECT_HOOK  pHook = PINSTALL_COPY_PROTECT_HOOK(inputBuffer);
+            hTargetProcess = pHook->hTargetProcess;
+#elif defined(_M_AMD64)
+            if (IoIs32bitProcess(pIrp))
+            {
+                PINSTALL_COPY_PROTECT_HOOK_32 pHook32 = PINSTALL_COPY_PROTECT_HOOK_32(inputBuffer);
+                hTargetProcess = pHook32->hTargetProcess;
+            }
+            else
+            {
+                PINSTALL_COPY_PROTECT_HOOK  pHook = PINSTALL_COPY_PROTECT_HOOK(inputBuffer);
+                hTargetProcess = pHook->hTargetProcess;
+            }
 #endif 
+            FNT_VERIFY(InstallCopyProtectHook(hTargetProcess));
 			break;
 		}
+    case IOCTL_FDRIVER_UPDATE_PROTECT_WND:
+        {
+            BOOL bSameBitProcess = TRUE;
+            KdPrint(("Enter IOCTL_FDRIVER_UPDATE_PROTECT_WND, inputBufSize=%d, inputBuf=%p, sizeof(WND_INFO) =%d\n",
+                inputBufferLength, inputBuffer, sizeof(PROTECT_WND_INFO)));
+
+#if defined(_M_AMD64)
+            //AMD64
+            if (IoIs32bitProcess(pIrp))
+            {
+                bSameBitProcess = FALSE;
+                NT_ASSERT(sizeof(PPROTECT_WND_INFO_32) == inputBufferLength || 0 == inputBufferLength);
+
+                if (sizeof(PPROTECT_WND_INFO_32) == inputBufferLength || 0 == inputBufferLength)
+                {
+                    //If Caller is x32 Program
+                    PPROTECT_WND_INFO_32 pProtectWndInfo32 = (PPROTECT_WND_INFO_32)inputBuffer;
+                    if (pProtectWndInfo32)
+                    {
+                        PROTECT_WND_INFO protectWndInfo64;
+                        protectWndInfo64.hWndDeskTop = (HWND)pProtectWndInfo32->hWndDeskTop;
+                        //protectWndInfo64.hTargetProcess = pProtectWndInfo32->hTargetProcess;
+                        protectWndInfo64.rcProtectWindow = pProtectWndInfo32->rcProtectWindow;
+                        protectWndInfo64.hDCWndProtect = (HDC)pProtectWndInfo32->hDCWndProtect;
+                        FNT_VERIFY(UpdateCopyProtectWndInfo(&protectWndInfo64));
+                    }
+                    else
+                    {
+                        FNT_VERIFY(UpdateCopyProtectWndInfo(NULL));
+                    }
+                }
+            }
+#endif 
+            if (bSameBitProcess)  //32 or 64, Same
+            {
+                NT_ASSERT(sizeof(PROTECT_WND_INFO) == inputBufferLength || 0 == inputBufferLength);
+                if (sizeof(PROTECT_WND_INFO) == inputBufferLength || 0 == inputBufferLength)
+                {
+                    FNT_VERIFY(UpdateCopyProtectWndInfo((PPROTECT_WND_INFO)inputBuffer));
+                }
+            }
+            break;
+        }
 	case IOCTL_FDRIVER_UNINSTALL_HOOK:
 		{
-			KdPrint(("Enter IOCTL_FDRIVER_INSTALL_HOOK\n"));
-			//if (g_pInlineHookInfo)
-			//{
-			//	FNT_VERIFY(RestoreInlineHook(g_pInlineHookInfo));
-			//	g_pInlineHookInfo = NULL;
-
-			//	MyOriginalCode(100, 200, L"After UnHook");
-			//}
+			KdPrint(("Enter IOCTL_FDRIVER_UNINSTALL_HOOK\n"));
 			FNT_VERIFY(UnInstallCopyProtectHook());
 			break;
 		}

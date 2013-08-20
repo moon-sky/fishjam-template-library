@@ -53,7 +53,8 @@ typedef struct _HOOK_API_INFO
 extern "C" {
 #endif
 
-NTSTATUS InstallCopyProtectHook(PPROTECT_WND_INFO pProtectWndInfo);
+NTSTATUS InstallCopyProtectHook(HANDLE hTargetProcess);
+NTSTATUS UpdateCopyProtectWndInfo(PPROTECT_WND_INFO pProtectWndInfo);
 NTSTATUS UnInstallCopyProtectHook(void);
 
 #ifdef __cplusplus

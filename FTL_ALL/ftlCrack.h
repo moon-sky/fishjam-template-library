@@ -13,6 +13,7 @@
 
 /*********************************************************************************************************************************
 * 签名证书工具
+*  Cert2Spc -- 将Cert转换成Spc
 *  Pvk2Pfx.exe -- 将证书私钥文件转换为签名工具可以使用的 pfx(个人信息交换) 格式
 *    -pvk 指定密钥文件 
 *    -spc 指定双证书文件 
@@ -42,6 +43,7 @@
 * CA(Certificate Authority) -- 受信任的证书颁发机构
 *   certificate -- 证书
 *   certificate revocation list -- 证书吊销列表
+*   certificate store -- 证书存储,有三种类型：User Account store、Service Account store、Local Computer store
 *   certificate trust list -- 证书信任列表
 * DRM(Digital Rights Management) -- 数字权限管理，主要用于数字版权加密保护。出版者用来控制被保护对象的使用权
 * PEM(Privacy Enhanced Mail)
@@ -55,7 +57,7 @@
 *     MakeCert.exe -r -pe -ss "FujieCertStore" -n CN="FujieCert" "Fujie.cer"
 *       -$ individual
 *   2.信任该根证书，之后可以通过 certmgr.msc 查看和删除等
-*     CertMgr.exe /add "FishjamRoot.cer" /s /r localMachine root
+*     CertMgr.exe /add "Fujie.cer" /s /r localMachine root
 *   3.对可执行文件进行签名
 *     signtool.exe sign /v /s "FujieCertStore" /n "FujieCert" /t http://timestamp.verisign.com/scripts/timestamp.dll drivername.sys
 *   4.[可选]验证签名 -- TODO: /kp ?

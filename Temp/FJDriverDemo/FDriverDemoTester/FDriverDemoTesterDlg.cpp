@@ -47,9 +47,10 @@ BEGIN_MESSAGE_MAP(CFDriverDemoTesterDlg, CDialog)
 	ON_BN_CLICKED(IDC_BTN_INSTALL_HOOK, &CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook)
 	ON_BN_CLICKED(IDC_BTN_UNINSTALL_HOOK, &CFDriverDemoTesterDlg::OnBnClickedBtnUninstallHook)
 	ON_BN_CLICKED(IDC_BTN_DO_BITBLT, &CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt)
-	ON_BN_CLICKED(IDC_BTN_FILTER_DESKTOP, &CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop)
     ON_BN_CLICKED(IDC_BTN_DO_TEXTOUT, &CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout)
 	ON_BN_CLICKED(IDC_BTN_TEST_DESKTOP, &CFDriverDemoTesterDlg::OnBnClickedBtnTestDesktop)
+    ON_BN_CLICKED(IDC_BTN_FILTER_UPDATE_PROTECT_WND, &CFDriverDemoTesterDlg::OnBnClickedBtnFilterUpdateProtectWnd)
+    ON_BN_CLICKED(IDC_BTN_CLEAR_PROTECT_WND, &CFDriverDemoTesterDlg::OnBnClickedBtnClearProtectWnd)
 END_MESSAGE_MAP()
 
 
@@ -194,24 +195,10 @@ BOOL CFDriverDemoTesterDlg::_RefreshMemoryDC()
 void CFDriverDemoTesterDlg::OnBnClickedBtnInstallHook()
 {
 	BOOL bRet = FALSE;
-	CRect rcClient;
-	GetClientRect(&rcClient);
 
-	//DWORD dwProcessId = GetCurrentProcessId();
-	//API_VERIFY(m_DriverController.IoControl(IOCTL_PROTDRV_INSTALL_HOOK, &dwProcessId, sizeof(dwProcessId), NULL, 0))
-	PROTECT_WND_INFO	protectInfo;
-	protectInfo.hWndDeskTop =  ::GetDesktopWindow(); //GetDlgItem(IDC_STATIC_DRAW)->m_hWnd;// 
-	//protectInfo.hDCDesktop = ::GetDC(protectInfo.hWndDeskTop);
-
-	//protectInfo.hProtectWindow = m_hWnd;
-	//protectInfo.hSelfProcess = (HANDLE)GetCurrentProcessId();
-	protectInfo.hTargetProcess = (HANDLE)FTL::CFSystemUtil::GetPidFromProcessName(TEXT("csrss.exe"));
-	protectInfo.hDCWndProtect = m_MemoryDC.m_hDC;
-	ClientToScreen(&rcClient);
-	protectInfo.rcProtectWindow = rcClient;
-
-	API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_INSTALL_HOOK, &protectInfo, sizeof(protectInfo), NULL, 0));
-	//::ReleaseDC(protectInfo.hWndDeskTop, protectInfo.hDCDesktop);
+    INSTALL_COPY_PROTECT_HOOK   InstallHook = {0};
+    InstallHook.hTargetProcess = (HANDLE)FTL::CFSystemUtil::GetPidFromProcessName(TEXT("csrss.exe"));
+    API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_INSTALL_HOOK, &InstallHook, sizeof(InstallHook), NULL, 0));
 }
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallHook()
@@ -258,21 +245,7 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 	}
 }
 
-void CFDriverDemoTesterDlg::OnBnClickedBtnFilterDesktop()
-{
-	//BOOL bRet = FALSE;
-	//HWND hWndDesktop = ::GetDesktopWindow();
-	//HDC hDC = ::GetDC(hWndDesktop);
-	//HWND hWndFromDC = ::WindowFromDC(hDC);
-	//FTLTRACE(TEXT("hWndDesktop = 0x%x, hWndFromDC=0x%x, hDC=0x%x\n"), hWndDesktop, hWndFromDC, hDC);
-	//::ReleaseDC(hWndDesktop, hDC);
-	////API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_FILTER_DESKTOP, &hDesktop, sizeof(hDesktop), NULL, 0));
 
-	INT nSize = sizeof(PROTECT_WND_INFO);
-	CString strInfo;
-	strInfo.Format(TEXT("sizeof PROTECT_WND_INFO is %d"), nSize);
-	MessageBox(strInfo);
-}
 
 void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
 {
@@ -323,4 +296,33 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnTestDesktop()
         hWndDesktop, hDCDesktop, dcClient.m_hDC,  ProcessIdOfDesktop, dwThreadId);
 
     ::ReleaseDC(hWndDesktop, hDCDesktop);
+}
+
+void CFDriverDemoTesterDlg::OnBnClickedBtnFilterUpdateProtectWnd()
+{
+    BOOL bRet = FALSE;
+    CRect rcClient;
+    GetClientRect(&rcClient);
+
+    //DWORD dwProcessId = GetCurrentProcessId();
+    //API_VERIFY(m_DriverController.IoControl(IOCTL_PROTDRV_INSTALL_HOOK, &dwProcessId, sizeof(dwProcessId), NULL, 0))
+    PROTECT_WND_INFO	protectInfo;
+    protectInfo.hWndDeskTop =  ::GetDesktopWindow(); //GetDlgItem(IDC_STATIC_DRAW)->m_hWnd;// 
+    //protectInfo.hDCDesktop = ::GetDC(protectInfo.hWndDeskTop);
+
+    //protectInfo.hProtectWindow = m_hWnd;
+    //protectInfo.hSelfProcess = (HANDLE)GetCurrentProcessId();
+    //protectInfo.hTargetProcess = 
+    protectInfo.hDCWndProtect = m_MemoryDC.m_hDC;
+    ClientToScreen(&rcClient);
+    protectInfo.rcProtectWindow = rcClient;
+
+    API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_UPDATE_PROTECT_WND, &protectInfo, sizeof(protectInfo), NULL, 0));
+    //::ReleaseDC(protectInfo.hWndDeskTop, protectInfo.hDCDesktop);
+}
+
+void CFDriverDemoTesterDlg::OnBnClickedBtnClearProtectWnd()
+{
+    BOOL bRet = FALSE;
+    API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_UPDATE_PROTECT_WND, NULL, 0, NULL, 0));
 }
