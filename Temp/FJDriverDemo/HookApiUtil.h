@@ -1,11 +1,12 @@
 #pragma once
 
-#include <windef.h>
 
 #ifdef HOOK_DRIVER
 #  define HOOK_ASSERT              NT_ASSERT
+#  include <windef.h>
 #else
 #  define HOOK_ASSERT
+#  include <windows.h>
 #endif 
 
 #ifdef __cplusplus

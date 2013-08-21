@@ -1,4 +1,7 @@
+#ifdef HOOK_DRIVER
 #include "stdafx.h"
+#endif 
+
 #include "HookAPIUtil.h"
 
 #define INLINE_HOOK_TAG             'HOOK'
