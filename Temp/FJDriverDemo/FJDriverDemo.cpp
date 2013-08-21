@@ -129,9 +129,9 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
             if (IoIs32bitProcess(pIrp))
             {
                 bSameBitProcess = FALSE;
-                NT_ASSERT(sizeof(PPROTECT_WND_INFO_32) == inputBufferLength || 0 == inputBufferLength);
-
-                if (sizeof(PPROTECT_WND_INFO_32) == inputBufferLength || 0 == inputBufferLength)
+                KdPrint(("sizeof(PROTECT_WND_INFO_32)=%d, inputBufferLength=%d\n", sizeof(PROTECT_WND_INFO_32),inputBufferLength));
+                NT_ASSERT(sizeof(PROTECT_WND_INFO_32) == inputBufferLength || 0 == inputBufferLength);
+                if (sizeof(PROTECT_WND_INFO_32) == inputBufferLength || 0 == inputBufferLength)
                 {
                     //If Caller is x32 Program
                     PPROTECT_WND_INFO_32 pProtectWndInfo32 = (PPROTECT_WND_INFO_32)inputBuffer;
