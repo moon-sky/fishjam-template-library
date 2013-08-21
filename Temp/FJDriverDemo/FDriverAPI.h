@@ -80,6 +80,7 @@
 * IO_STACK_LOCATION -- IO堆栈，对应设备堆栈中每层设备所做的操作，本层设备对应的值可通过 IoGetCurrentIrpStackLocation 获得
 *   Parameters里面是很多结构体的union，需要根据具体的 功能号 选择对应的成员变量进行处理   
 *
+*   IoBuildSynchronousFsdRequest/IoBuildAsynchronousFsdRequest -- 手工创建IRP
 *   IoCancelIrp -- 取消指定的IRP请求，其内部会使用叫做 cancel 的自旋锁进行同步，需要在 IoSetCancelRoutine 设定的
 *     取消回调函数中调用 IoReleaseCancelSpinLock(Irp->CancelIrql) 释放该自旋锁。
 *     可通过DPC定时器设置超时并调用该函数取消IRP，防止无响应。
