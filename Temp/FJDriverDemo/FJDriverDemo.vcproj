@@ -40,49 +40,9 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="chk_wxp|x64"
-			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_amd64"
-			IntermediateDirectory="obj$(ConfigurationName)_amd64"
-			ConfigurationType="0"
-			>
-			<Tool
-				Name="VCNMakeTool"
-				BuildCommandLine="call wdk_build.bat chk x64 WIN7 $(TargetDir) $(TargetName) $(SolutionDir)$(ConfigurationName)\"
-				ReBuildCommandLine=""
-				CleanCommandLine=""
-				Output=""
-				PreprocessorDefinitions="_M_AMD64"
-				IncludeSearchPath=""
-				ForcedIncludes=""
-				AssemblySearchPath=""
-				ForcedUsingAssemblies=""
-				CompileAsManaged=""
-			/>
-		</Configuration>
-		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(ProjectDir)\objfre_wxp_x86"
 			IntermediateDirectory="$(ProjectDir)\objfre_wxp_x86"
-			ConfigurationType="0"
-			>
-			<Tool
-				Name="VCNMakeTool"
-				BuildCommandLine="call $(WDKPATH)\bin\setenv.bat $(WDKPATH) fre wxp&#x0D;&#x0A;cd /d $(ProjectDir)&#x0D;&#x0A;build"
-				ReBuildCommandLine="rmdir /s /q $(ProjectDir)\objfre_wxp_x86&#x0D;&#x0A;call $(WDKPATH)\bin\setenv.bat $(WDKPATH) fre wxp&#x0D;&#x0A;cd /d $(ProjectDir)&#x0D;&#x0A;build"
-				CleanCommandLine="rmdir /s /q $(ProjectDir)\objfre_wxp_x86"
-				Output="$(ProjectDir)\objfre_wxp_x86\i386\FJDriverDemo.sys"
-				PreprocessorDefinitions="WIN32;_CONSOLE;_X86_;_DDK_;_NDEBUG;DBG=0"
-				IncludeSearchPath="$(WDKPATH)\inc\ddk;$(WDKPATH)\inc\api;$(WDKPATH)\inc\crt"
-				ForcedIncludes=""
-				AssemblySearchPath=""
-				ForcedUsingAssemblies=""
-				CompileAsManaged=""
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="0"
 			>
 			<Tool
@@ -113,6 +73,46 @@
 				Output=""
 				PreprocessorDefinitions=""
 				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="chk_wxp|x64"
+			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_amd64"
+			IntermediateDirectory="obj$(ConfigurationName)_amd64"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="call wdk_build.bat chk x64 WIN7 $(TargetDir) $(TargetName) $(SolutionDir)$(ConfigurationName)\"
+				ReBuildCommandLine=""
+				CleanCommandLine=""
+				Output=""
+				PreprocessorDefinitions="_M_AMD64"
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="call $(WDKPATH)\bin\setenv.bat $(WDKPATH) fre wxp&#x0D;&#x0A;cd /d $(ProjectDir)&#x0D;&#x0A;build"
+				ReBuildCommandLine="rmdir /s /q $(ProjectDir)\objfre_wxp_x86&#x0D;&#x0A;call $(WDKPATH)\bin\setenv.bat $(WDKPATH) fre wxp&#x0D;&#x0A;cd /d $(ProjectDir)&#x0D;&#x0A;build"
+				CleanCommandLine="rmdir /s /q $(ProjectDir)\objfre_wxp_x86"
+				Output="$(ProjectDir)\objfre_wxp_x86\i386\FJDriverDemo.sys"
+				PreprocessorDefinitions="WIN32;_CONSOLE;_X86_;_DDK_;_NDEBUG;DBG=0"
+				IncludeSearchPath="$(WDKPATH)\inc\ddk;$(WDKPATH)\inc\api;$(WDKPATH)\inc\crt"
 				ForcedIncludes=""
 				AssemblySearchPath=""
 				ForcedUsingAssemblies=""
@@ -157,6 +157,10 @@
 			</File>
 			<File
 				RelativePath=".\FJDriverDemo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\HookApiUtil.c"
 				>
 			</File>
 			<File
@@ -259,6 +263,10 @@
 			</File>
 			<File
 				RelativePath=".\FDriverVideo.h"
+				>
+			</File>
+			<File
+				RelativePath=".\HookApiUtil.h"
 				>
 			</File>
 			<File

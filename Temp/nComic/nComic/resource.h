@@ -14,6 +14,9 @@
 #define IDC_BTN_ENABLE_CLIPBOARD_VIEWER 1006
 #define IDC_BUTTON2                     1007
 #define IDC_BTN_DISABLE_CLIPBOARD_VIEWER 1007
+#define IDC_BTN_INLINE_HOOK             1008
+#define IDC_BTN_DLL_HOOK3               1009
+#define IDC_BTN_INLINE_UNHOOK           1009
 
 // Next default values for new objects
 // 

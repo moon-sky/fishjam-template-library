@@ -8,31 +8,31 @@ import "oaidl.idl";
 import "ocidl.idl";
 
 [
-	object,
-	uuid(AFB24CDD-6F94-4A7D-9449-9DF4C31B606B),
-	dual,
-	nonextensible,
-	helpstring("IComicServiceObj Interface"),
-	pointer_default(unique)
+    object,
+    uuid(AFB24CDD-6F94-4A7D-9449-9DF4C31B606B),
+    dual,
+    nonextensible,
+    helpstring("IComicServiceObj Interface"),
+    pointer_default(unique)
 ]
 interface IComicServiceObj : IDispatch{
-	[id(1), helpstring("method ProtectWnd")] HRESULT ProtectWnd([in] OLE_HANDLE hWnd, [in] OLE_COLOR clrBackground, [in] BSTR bstrDisplayInfo);
-	[id(2), helpstring("method UnProtectWnd")] HRESULT UnProtectWnd([in] OLE_HANDLE hWnd);
+    [id(1), helpstring("method ProtectWnd")] HRESULT ProtectWnd([in] OLE_HANDLE hWnd, [in] OLE_COLOR clrBackground, [in] BSTR bstrDisplayInfo);
+    [id(2), helpstring("method UnProtectWnd")] HRESULT UnProtectWnd([in] OLE_HANDLE hWnd);
 };
 [
-	uuid(1D7B6492-0112-4C41-8B2B-FCD9210FE0FE),
-	version(1.0),
-	helpstring("ComicService 1.0 Type Library")
+    uuid(1D7B6492-0112-4C41-8B2B-FCD9210FE0FE),
+    version(1.0),
+    helpstring("ComicService 1.0 Type Library")
 ]
 library ComicServiceLib
 {
-	importlib("stdole2.tlb");
-	[
-		uuid(F59F3BEF-4A2B-4327-96EE-795E8FF1352F),
-		helpstring("ComicServiceObj Class")
-	]
-	coclass ComicServiceObj
-	{
-		[default] interface IComicServiceObj;
-	};
+    importlib("stdole2.tlb");
+    [
+        uuid(F59F3BEF-4A2B-4327-96EE-795E8FF1352F),
+        helpstring("ComicServiceObj Class")
+    ]
+    coclass ComicServiceObj
+    {
+        [default] interface IComicServiceObj;
+    };
 };

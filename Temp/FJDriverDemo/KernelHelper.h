@@ -4,9 +4,6 @@
 extern "C" {
 #endif
 
-	KIRQL   ClearWriteProtect(VOID);
-	void    RestoreWriteProtect(KIRQL irql);
-
 	SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ();
 
 	PVOID GetSSDTFuncAddr(LONG nServiceIndex);

@@ -6,11 +6,11 @@
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="E:\Code\nComic\trunk\src\third_party\Detours\include"
+		AdditionalIncludeDirectories="E:\Code\nComic\trunk\src\third_party\Detours\include;&quot;E:\Detours Express 3.0\include&quot;"
 	/>
 	<Tool
 		Name="VCLinkerTool"
 		AdditionalDependencies="detours.lib"
-		AdditionalLibraryDirectories="E:\Code\nComic\trunk\src\third_party\Detours\lib"
+		AdditionalLibraryDirectories="E:\Code\nComic\trunk\src\third_party\Detours\lib;&quot;E:\Detours Express 3.0\lib.X86&quot;"
 	/>
 </VisualStudioPropertySheet>

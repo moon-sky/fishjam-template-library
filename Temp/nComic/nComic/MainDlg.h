@@ -33,7 +33,9 @@ public:
 		COMMAND_ID_HANDLER_EX(IDC_BTN_DISABLE_CLIPBOARD_VIEWER, OnBtnDisableClipboardViewer)
 
 		MSG_WM_DESTROY(OnDestroy)
-	END_MSG_MAP()
+        COMMAND_HANDLER(IDC_BTN_INLINE_HOOK, BN_CLICKED, OnBnClickedBtnInlineHook)
+        COMMAND_HANDLER(IDC_BTN_INLINE_UNHOOK, BN_CLICKED, OnBnClickedBtnInlineUnhook)
+    END_MSG_MAP()
 
 // Handler prototypes (uncomment arguments if needed):
 //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -63,4 +65,7 @@ private:
 	CComPtr<IComicServiceObj>	m_spComicService;
 	BOOL	m_bHookInDll;
 	HWND	m_hWndNextViewer;
+public:
+    LRESULT OnBnClickedBtnInlineHook(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnBnClickedBtnInlineUnhook(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };

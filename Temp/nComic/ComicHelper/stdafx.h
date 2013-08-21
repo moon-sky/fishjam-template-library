@@ -15,5 +15,4 @@
 #include <atlstr.h>
 #include <atltypes.h>
 
-
 // TODO: reference additional headers your program requires here

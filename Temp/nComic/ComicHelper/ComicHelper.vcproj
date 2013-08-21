@@ -14,6 +14,9 @@
 		/>
 	</Platforms>
 	<ToolFiles>
+		<DefaultToolFile
+			FileName="masm.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
@@ -29,6 +32,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="MASM"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -104,6 +110,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="MASM"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -203,6 +212,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\HookAPIUtil.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\ILD_x86.asm"
+				>
+			</File>
+			<File
+				RelativePath=".\InlineHook.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -230,6 +259,14 @@
 			>
 			<File
 				RelativePath=".\ComicHelper.h"
+				>
+			</File>
+			<File
+				RelativePath=".\HookAPIUtil.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InlineHook.h"
 				>
 			</File>
 			<File

@@ -251,5 +251,9 @@
 		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="nComic.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

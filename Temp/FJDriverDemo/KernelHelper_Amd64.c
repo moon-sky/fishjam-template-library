@@ -12,29 +12,6 @@
 
 PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
 
-KIRQL ClearWriteProtect()
-{
-	KIRQL irql = KeRaiseIrqlToDpcLevel();  //KeGetCurrentIrql();
-	UINT64 cr0;
-	_disable();
-	cr0 = __readcr0();
-	cr0 &= ~0x10000; //0xfffffffffffeffff;
-	__writecr0(cr0);
-	//_disable(); //ÐèÒª×¢ÊÍ?
-	return irql;
-}
-
-void RestoreWriteProtect(KIRQL irql)
-{
-	UINT64 cr0=__readcr0();
-	cr0 |= 0x10000;
-	//_enable();
-	__writecr0(cr0);
-	_enable();
-	KeLowerIrql(irql);
-}
-
-
 SYSTEM_SERVICE_TABLE* GetKeServiceDescriptorTableShadowAddress()  //GetKeServiceDescriptorTableShadow64()
 {
 	PUCHAR StartSearchAddress = (PUCHAR)__readmsr(0xC0000082);
