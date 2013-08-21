@@ -1,12 +1,17 @@
 #include "stdafx.h"
+#ifdef FDRIVER_DEMO_PROJECT
+#  include "FDriverUtil.h"
+#endif 
 #include "KernelHookAPI.h"
 #include "KernelHelper.h"
 
 #if defined(_M_IX86)
 
+#define USE_INLINE_HOOK
+
 PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
 
-KIRQL  WPOFFx64(VOID)
+KIRQL  ClearWriteProtect(VOID)
 {
 	KIRQL irql = 0; //KeGetCurrentIrql();
 
@@ -23,7 +28,7 @@ KIRQL  WPOFFx64(VOID)
 	return irql;
 }
 
-VOID  WPONx64(KIRQL irql)
+VOID  RestoreWriteProtect(KIRQL irql)
 {
 	__asm
 	{
@@ -147,9 +152,20 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
 		pHookApiInfo->pOrigApiAddress, pHookApiInfo->pNewApiAddress, pHookApiInfo->nParamCount));
 
-	irql = WPOFFx64();
-	InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pNewApiAddress);
-	WPONx64(irql);
+	irql = ClearWriteProtect();
+#ifdef USE_INLINE_HOOK
+    pHookApiInfo->pTargetAddress = GetSSDTFuncAddr(pHookApiInfo->nIndexInSSDT);
+    NT_ASSERT(pHookApiInfo->pTargetAddress);
+    FNT_VERIFY(CreateInlineHook(pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
+        &pHookApiInfo->pInlineHookInfo));
+    KdPrint(("Inline Hook SSDT func %ws at [0x%x], TargetAddress=%p, newAddress=%p, OrigiApiAddress=%p, nParamCount=%d\n", 
+        pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
+        pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, 
+        pHookApiInfo->pOrigApiAddress, pHookApiInfo->nParamCount));
+#else
+    InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pNewApiAddress);
+#endif 
+	RestoreWriteProtect(irql);
 
 	return status;
 }
@@ -174,10 +190,19 @@ NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 
 	//KeAcquireSpinLock(&pHookApiInfo->spinLock, &irql1);
 
-	irql = WPOFFx64();
+	irql = ClearWriteProtect();
+#ifdef USE_INLINE_HOOK
+    KdPrint(("Restore Inline SSDT func %ws at [0x%x], TargetAddress=%p, newAddress=%p, OrigiApiAddress=%p\n", 
+        pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, 
+        pHookApiInfo->pOrigApiAddress));
+    FNT_VERIFY(RestoreInlineHook(pHookApiInfo->pInlineHookInfo));
+    pHookApiInfo->pInlineHookInfo = NULL;
+#else
 	InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pOrigApiAddress);
-	pHookApiInfo->pOrigApiAddress = NULL;
-	WPONx64(irql);
+#endif 
+
+    pHookApiInfo->pOrigApiAddress = NULL;
+	RestoreWriteProtect(irql);
 
 	return status;
 }

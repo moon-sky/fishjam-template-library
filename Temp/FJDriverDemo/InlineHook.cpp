@@ -9,53 +9,49 @@
 
 #define INLINE_HOOK_TAG				'HOOK'
 
+#if defined(_M_IX86)
+  typedef LONG						POINTER_TYPE;
+#elif defined(_M_X64)
+  typedef LONGLONG					POINTER_TYPE;
+#endif
+
 #pragma pack(push, 1)
 struct JMP_x86_OFFSET
 {
 	UCHAR		opcode[1];
 	ULONG		operand;
-	//UCHAR		nop[6];
-	VOID Init()
+	VOID SetJmpTarget(POINTER_TYPE target, POINTER_TYPE from)
 	{
-		opcode[0] = 0x9E;	//jmp operand
-		operand = 0;
+        //32位是相对跳转
+        opcode[0] = 0xE9;	//jmp operand
+		operand = (target - from - sizeof(*this));
 	}
 };
 struct JMP_x64_ABS
 {
-	//UCHAR		pushcode[1];
 	UCHAR		opcode[2];
 	LONG		offsetAddr;
 	ULONGLONG	operand;
-	//UCHAR		jmpcode[2];
-	//UCHAR		popcode[1];
-	VOID Init() //BOOL bPush, BOOL bPop)
+	VOID SetJmpTarget(POINTER_TYPE target, POINTER_TYPE /*from*/)
 	{
-		//opcode[0] = 0x48; opcode[1] = 0xb8;		//mov rax, operand
-		//operand = 0;
-		//jmpcode[0] = 0xff; jmpcode[1] = 0xe0;	//jmp rax
-
+        //64位是绝对跳转
 		opcode[0] = 0xff; opcode[1] = 0x25;			//jmp [+imm32]
 		offsetAddr = 0;								//must zero, 
-		operand = 0;
+		operand = target;
 	}
 };
 #pragma pack(pop)
 
 #if defined(_M_IX86)
-//#  define JUMPER_SIZE				5
 #  define INSTRUCTION_LENGTH_TYPE	0
 #  define GetInstructionLength		GetInstructionLength_x86
 #  define JUMP_CODE_TYPE			JMP_x86_OFFSET
-typedef LONG						POINTER_TYPE;
 
 EXTERN_C int __stdcall				GetInstructionLength_x86(void* InPtr, int InType);
 #elif defined(_M_X64)
-//#  define JUMPER_SIZE				12
 #  define INSTRUCTION_LENGTH_TYPE	64
 #  define GetInstructionLength		GetInstructionLength_x64
 #  define JUMP_CODE_TYPE			JMP_x64_ABS
-typedef LONGLONG					POINTER_TYPE;
 
 EXTERN_C int __stdcall				GetInstructionLength_x64(void* InPtr, int InType);
 #endif 
@@ -99,19 +95,17 @@ NTSTATUS CreateInlineHook(PVOID pTarget, PVOID const pDetour, PVOID* ppOriginal,
 		pHookInfo->trampolineSize = EntrySize;
 		RtlCopyMemory(pHookInfo->trampoline, pTarget, EntrySize);
 
-		//设置 trampoline 函数 -- 调到 Target 后指定位置，需要push
-		jmpType.Init();
-		jmpType.operand = (POINTER_TYPE)((PBYTE)(pHookInfo->pTarget) + nHookJmpSize);
-		RtlCopyMemory(pHookInfo->trampoline + EntrySize, &jmpType, nHookJmpSize);
+        //设置 trampoline 函数 -- 调到 Target 后指定位置
+		jmpType.SetJmpTarget((POINTER_TYPE)((PBYTE)(pHookInfo->pTarget) + nHookJmpSize), (POINTER_TYPE)pHookInfo->trampoline + EntrySize);
+        RtlCopyMemory(pHookInfo->trampoline + EntrySize, &jmpType, nHookJmpSize);
 
 		//设置 target 函数, 跳转到自定义Detour(Hook) 函数
-		jmpType.Init();
-		jmpType.operand = (POINTER_TYPE)((PBYTE)(pHookInfo->pDetour));
+		jmpType.SetJmpTarget((POINTER_TYPE)((PBYTE)(pHookInfo->pDetour)), (POINTER_TYPE)pHookInfo->pTarget);
 
-		KIRQL irql = WPOFFx64();
+        KIRQL irql = ClearWriteProtect();
+        RtlFillMemory(pHookInfo->pTarget, EntrySize, 0x90);     //fill nop
 		RtlCopyMemory(pHookInfo->pTarget, &jmpType, nHookJmpSize);
-		RtlFillMemory(pHookInfo->pTarget + nHookJmpSize, EntrySize - nHookJmpSize, 0x90);  //fill nop
-		WPONx64(irql);
+		RestoreWriteProtect(irql);
 
 		if (ppOriginal)
 		{
@@ -126,9 +120,9 @@ NTSTATUS RestoreInlineHook(PINLINE_HOOK_INFO pHookInfo)
 {
 	NTSTATUS status = STATUS_SUCCESS;
 
-	KIRQL irql = WPOFFx64();
+	KIRQL irql = ClearWriteProtect();
 	RtlCopyMemory(pHookInfo->pTarget, pHookInfo->targetBackup, pHookInfo->targetBackupSize);
-	WPONx64(irql);
+	RestoreWriteProtect(irql);
 
 	ExFreePoolWithTag(pHookInfo, INLINE_HOOK_TAG);
 

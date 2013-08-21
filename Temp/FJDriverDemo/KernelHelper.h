@@ -4,8 +4,8 @@
 extern "C" {
 #endif
 
-	KIRQL  WPOFFx64(VOID);
-	void WPONx64(KIRQL irql);
+	KIRQL   ClearWriteProtect(VOID);
+	void    RestoreWriteProtect(KIRQL irql);
 
 	SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ();
 

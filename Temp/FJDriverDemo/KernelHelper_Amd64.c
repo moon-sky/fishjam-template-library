@@ -12,7 +12,7 @@
 
 PSYSTEM_SERVICE_TABLE	g_pSystemServiceTable= NULL;
 
-KIRQL WPOFFx64()
+KIRQL ClearWriteProtect()
 {
 	KIRQL irql = KeRaiseIrqlToDpcLevel();  //KeGetCurrentIrql();
 	UINT64 cr0;
@@ -24,7 +24,7 @@ KIRQL WPOFFx64()
 	return irql;
 }
 
-void WPONx64(KIRQL irql)
+void RestoreWriteProtect(KIRQL irql)
 {
 	UINT64 cr0=__readcr0();
 	cr0 |= 0x10000;
@@ -126,9 +126,9 @@ PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *O
 	*PatchSize= 14; //GetPatchSize((PUCHAR)ApiAddress);
 	//step 1: Read current data
 	head_n_byte=kmalloc(*PatchSize);
-	irql=WPOFFx64();
+	irql=ClearWriteProtect();
 	memcpy(head_n_byte,ApiAddress,*PatchSize);
-	WPONx64(irql);
+	RestoreWriteProtect(irql);
 	//step 2: Create ori function
 	ori_func=kmalloc(*PatchSize+14);	//原始机器码+跳转机器码
 	RtlFillMemory(ori_func,*PatchSize+14,0x90);
@@ -141,10 +141,10 @@ PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *O
 	tmpv=(UINT64)Proxy_ApiAddress;
 	memcpy(jmp_code+6,&tmpv,8);
 	//step 4: Fill NOP and hook
-	irql=WPOFFx64();
+	irql=ClearWriteProtect();
 	RtlFillMemory(ApiAddress,*PatchSize,0x90);
 	memcpy(ApiAddress,jmp_code,14);
-	WPONx64(irql);
+	RestoreWriteProtect(irql);
 	//return ori code
 	return head_n_byte;
 }
@@ -217,7 +217,7 @@ NTSTATUS HookSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID new
 	memcpy(jmp_code+6,&myfun,8);
 	//写入shellcode
 	
-	irql=WPOFFx64();
+	irql=ClearWriteProtect();
 
 	memcpy((PVOID)OldAddress,fuckcode,23);	//覆盖23个字节【保持指令完整性】
 	memcpy((PVOID)(OldAddress+4),jmp_code,14);
@@ -233,7 +233,7 @@ NTSTATUS HookSSDTFunc(PSYSTEM_SERVICE_TABLE pServiceTable, int nIndex, PVOID new
 
 	*(PLONG)qwTemp = dwTemp;
 
-	WPONx64(irql);
+	RestoreWriteProtect(irql);
 
 	return status;
 }
