@@ -1,12 +1,6 @@
 #include "stdafx.h"
 #include "InlineHook.h"
-#include "HookAPIUtil.h"
-
-//#include "KernelHookAPI.h"
-//#ifdef FDRIVER_DEMO_PROJECT
-//#  include "FDriverUtil.h"
-//#endif 
-//#include "KernelHelper.h"
+#include "HookApiUtil.h"
 
 #pragma pack(push, 1)
 struct JMP_x86_OFFSET
@@ -62,10 +56,6 @@ BOOL CreateInlineHook(PVOID pTarget, PVOID const pDetour, PVOID* ppOriginal, PIN
     LONG    nHookJmpSize = sizeof(JUMP_CODE_TYPE);
     //LONG  popSize;
     //POINTER_TYPE  RelAddr;
-
-//#if defined(_M_IX86)
-//#elif defined(_M_X64)
-//#endif 
 
     EntrySize = LhRoundToNextInstruction(pTarget, nHookJmpSize); //JUMPER_SIZE);
     HOOK_ASSERT(EntrySize + nHookJmpSize < MAX_REPLACE_CODE_SIZE);

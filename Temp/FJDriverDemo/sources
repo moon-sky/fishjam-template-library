@@ -23,7 +23,7 @@ LIBS=Win32k.lib
 SOURCES=stdafx.cpp \
 	FJDriverDemo.cpp \
 	FDriverUtil.c \
-	HookAPIUtil.c \
+	HookApiUtil.c \
 	InlineHook.cpp \
 	KernelHookAPI.cpp \
 	FDriverHookAPI.cpp

@@ -604,52 +604,52 @@ public:
 		m_HookFuns[hft_NtGdiStretchBlt].pwzApiName = L"NtGdiStretchBlt";
 		m_HookFuns[hft_NtGdiStretchBlt].pNewApiAddress = Hooked_NtGdiStretchBlt;
 		m_HookFuns[hft_NtGdiStretchBlt].nParamCount = 12;
-		m_HookFuns[hft_NtGdiStretchBlt].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtGdiStretchBlt].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiPlgBlt].pwzApiName = L"NtGdiPlgBlt";
 		m_HookFuns[hft_NtGdiPlgBlt].pNewApiAddress = Hooked_NtGdiPlgBlt;
 		m_HookFuns[hft_NtGdiPlgBlt].nParamCount = 11;
-		m_HookFuns[hft_NtGdiPlgBlt].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtGdiPlgBlt].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiMaskBlt].pwzApiName = L"NtGdiMaskBlt";
 		m_HookFuns[hft_NtGdiMaskBlt].pNewApiAddress = Hooked_NtGdiMaskBlt;
 		m_HookFuns[hft_NtGdiMaskBlt].nParamCount = 13;
-		m_HookFuns[hft_NtGdiMaskBlt].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtGdiMaskBlt].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiTransparentBlt].pwzApiName = L"NtGdiTransparentBlt";
 		m_HookFuns[hft_NtGdiTransparentBlt].pNewApiAddress = Hooked_NtGdiTransparentBlt;
 		m_HookFuns[hft_NtGdiTransparentBlt].nParamCount = 11;
-		m_HookFuns[hft_NtGdiTransparentBlt].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtGdiTransparentBlt].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiExtTextOutW].pwzApiName = L"NtGdiExtTextOutW";
 		m_HookFuns[hft_NtGdiExtTextOutW].pNewApiAddress = Hooked_NtGdiExtTextOutW;
 		m_HookFuns[hft_NtGdiExtTextOutW].nParamCount = 9;
-		m_HookFuns[hft_NtGdiExtTextOutW].bEnableHook = FALSE; //;
+		m_HookFuns[hft_NtGdiExtTextOutW].bEnableHook = FALSE;
 
 		m_HookFuns[hft_NtGdiOpenDCW].pwzApiName = L"NtGdiOpenDCW";
 		m_HookFuns[hft_NtGdiOpenDCW].pNewApiAddress = Hooked_NtGdiOpenDCW;
 		m_HookFuns[hft_NtGdiOpenDCW].nParamCount = 8;
-		m_HookFuns[hft_NtGdiOpenDCW].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtGdiOpenDCW].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiDeleteObjectApp].pwzApiName = L"NtGdiDeleteObjectApp";
 		m_HookFuns[hft_NtGdiDeleteObjectApp].pNewApiAddress = Hooked_NtGdiDeleteObjectApp;
 		m_HookFuns[hft_NtGdiDeleteObjectApp].nParamCount = 1;
-		m_HookFuns[hft_NtGdiDeleteObjectApp].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtGdiDeleteObjectApp].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtUserPrintWindow].pwzApiName = L"NtUserPrintWindow";
 		m_HookFuns[hft_NtUserPrintWindow].pNewApiAddress = Hooked_NtUserPrintWindow;
 		m_HookFuns[hft_NtUserPrintWindow].nParamCount = 3;
-		m_HookFuns[hft_NtUserPrintWindow].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtUserPrintWindow].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiDdLock].pwzApiName = L"NtGdiDdLock";
 		m_HookFuns[hft_NtGdiDdLock].pNewApiAddress = Hooked_NtGdiDdLock;
 		m_HookFuns[hft_NtGdiDdLock].nParamCount = 3;
-		m_HookFuns[hft_NtGdiDdLock].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtGdiDdLock].bEnableHook = TRUE;
 
 		m_HookFuns[hft_NtGdiDdUnlock].pwzApiName = L"NtGdiDdUnlock";
 		m_HookFuns[hft_NtGdiDdUnlock].pNewApiAddress = Hooked_NtGdiDdUnlock;
 		m_HookFuns[hft_NtGdiDdUnlock].nParamCount = 2;
-		m_HookFuns[hft_NtGdiDdUnlock].bEnableHook = TRUE; //TRUE;
+		m_HookFuns[hft_NtGdiDdUnlock].bEnableHook = TRUE;
 
 #if defined(_M_IX86)
 		FNT_VERIFY(_InitCallNumberX86(versionCode));

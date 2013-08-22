@@ -121,10 +121,6 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
         pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
         pHookApiInfo->pOrigApiAddress, pHookApiInfo->pNewApiAddress, pHookApiInfo->nParamCount));
 
-#if DBG
-#else
-#endif
-
 #ifdef USE_INLINE_HOOK
     pHookApiInfo->pTargetAddress = GetSSDTFuncAddr(pHookApiInfo->nIndexInSSDT);
     NT_ASSERT(pHookApiInfo->pTargetAddress);

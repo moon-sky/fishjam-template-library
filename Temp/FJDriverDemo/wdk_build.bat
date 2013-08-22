@@ -24,9 +24,9 @@ rem ml64 /c AsmHelperFun.asm
 build
 
 rem /t http://timestamp.verisign.com/scripts/timestamp.dll
-if %_BUILDARCH%==x86   signtool sign /v /ac VeriSignG5.cer /f NHNCorp_20121130-20150130.pfx /p wood5566 obj%BUILD_ALT_DIR%\i386\FJDriverDemo32.sys
+rem if %_BUILDARCH%==x86 signtool sign /v /ac VeriSignG5.cer /f fishjam.pfx /p 123456 obj%BUILD_ALT_DIR%\i386\FJDriverDemo32.sys
 rem if %_BUILDARCH%==x86 xcopy obj%BUILD_ALT_DIR%\i386\nComicDrv32.sys %4 /Y
 rem if %_BUILDARCH%==x86 xcopy obj%BUILD_ALT_DIR%\i386\nComicDrv32.pdb %4 /Y
-if %_BUILDARCH%==AMD64 signtool sign /v /ac VeriSignG5.cer /f NHNCorp_20121130-20150130.pfx /p wood5566 obj%BUILD_ALT_DIR%\amd64\FJDriverDemo64.sys
+rem if %_BUILDARCH%==AMD64 signtool sign /v /ac VeriSignG5.cer /f fishjam.pfx /p 123456 obj%BUILD_ALT_DIR%\amd64\FJDriverDemo64.sys
 rem if %_BUILDARCH%==AMD64 xcopy obj%BUILD_ALT_DIR%\amd64\nComicDrv64.sys %4 /Y
 rem if %_BUILDARCH%==AMD64 xcopy obj%BUILD_ALT_DIR%\amd64\nComicDrv64.pdb %4 /Y
