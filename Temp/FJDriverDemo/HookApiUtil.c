@@ -68,7 +68,7 @@ VOID  RestoreWriteProtect(LPVOID lpAddress, SIZE_T dwSize, ULONG oldProtect)
     //_enable();
     __writecr0(cr0);
     _enable();
-    KeLowerIrql(KIRQL(oldProtect));
+    KeLowerIrql((KIRQL)oldProtect);
 }
 #  endif //64
 

@@ -6,7 +6,7 @@
 #include <atlbase.h>
 #include "ftlbase.h"
 
-#define USE_INLINE_HOOK
+//#define USE_INLINE_HOOK
 
 #ifdef USE_INLINE_HOOK
 #  include "InlineHook.h"

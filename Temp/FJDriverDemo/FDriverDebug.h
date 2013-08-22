@@ -67,13 +67,13 @@
 *       TODO: 设置刚拷贝出来的配置项为当前配置项？否则会更改到当前的正常配置(或者拷贝出一个 Original ?)
 *         bcdedit /displayorder {Debug配置项的GUID} {current} -- 增加一个新的选项到引导菜单 ？
 *       bcdedit /debug {Debug配置项的GUID} ON  <== 激活调试
-*       bcdedit /bootdebug {Debug配置项的GUID}   
+*       bcdedit /bootdebug {Debug配置项的GUID} ON <== 
 *       bcdedit /dbgsettings <== 查看和设置当前的调试配置，如不是串口，需要设置如下语句
 *         bcdedit /dbgsettings serial baudrate:115200 debugport:1
-*       bcdedit /set loadoptions DDISABLE_INTEGRITY_CHECKS  <== 关闭 Win7 系统中的驱动签名强制要求
+*       bcdedit /set loadoptions {Debug配置项的GUID} DDISABLE_INTEGRITY_CHECKS  <== 关闭 Win7 系统中的驱动签名强制要求
 *          64系统似乎无效，需要通过 bcdedit /set nointegritychecks ON ？ 有 Driver Signature 工具似乎可以？
 *          重新开启签名要求：bcdedit /set nointegritychecks off  
-*         bcdedit /set testsigning ON <== 允许加载测试签名签发的驱动程序(还是要签名，不过可以用非微软认证的证书)
+*         bcdedit /set {Debug配置项的GUID} testsigning ON <== 允许加载测试签名签发的驱动程序(还是要签名，不过可以用非微软认证的证书)
 *       启动时选择 F8， 然后选择“禁止强制驱动签名” 即可以不用签名进行测试
 *     
 * 

@@ -142,17 +142,21 @@ PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *O
 NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
 	
-	NTSTATUS status = STATUS_SUCCESS;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
 	KIRQL irql = 0;
+    BOOL bRet = FALSE;
 
 	pHookApiInfo->pTargetAddress = GetSSDTFuncAddr(pHookApiInfo->nIndexInSSDT);
 	NT_ASSERT(pHookApiInfo->pTargetAddress);
 
-	FNT_VERIFY(CreateInlineHook(pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
-		&pHookApiInfo->pInlineHookInfo));
-
-	KdPrint(("Inline Hook SSDT func %ws at [0x%x], TargetAddress=%p, newAddress=%p, OrigiApiAddress=%p, nParamCount=%d\n", 
-		pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
+	bRet = CreateInlineHook(pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
+		&pHookApiInfo->pInlineHookInfo);
+    if (bRet)
+    {
+        status = STATUS_SUCCESS;
+    }
+	KdPrint(("Inline Hook SSDT func %ws return %d at [0x%x], TargetAddress=%p, newAddress=%p, OrigiApiAddress=%p, nParamCount=%d\n", 
+		bRet, pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
 		pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, 
 		pHookApiInfo->pOrigApiAddress, pHookApiInfo->nParamCount));
 

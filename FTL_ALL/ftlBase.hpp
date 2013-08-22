@@ -37,6 +37,15 @@ namespace FTL
 		value2 = temp;
 	}
 
+    CLastErrorRecovery::CLastErrorRecovery()
+    {
+        m_dwLastError = GetLastError();
+    }
+    CLastErrorRecovery::~CLastErrorRecovery()
+    {
+        SetLastError(m_dwLastError);
+    }
+
 	template<typename T>
 	CFSharedVariable<T>::CFSharedVariable(
 		InitializeSharedVariableProc pInitializeProc /* = NULL */, 
@@ -860,6 +869,7 @@ namespace FTL
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     CFFastTrace& CFFastTrace::GetInstance()
     {
+        CLastErrorRecovery  lastErrorRecovery;
         static CFFastTrace fastTrace(TEXT("Software\\FTL"),NULL);
         return fastTrace;
     }
@@ -1085,6 +1095,7 @@ namespace FTL
     }
     void CFFastTrace::WriteLogInfo(const LPCTSTR lpszFormat,...)
     {
+        CLastErrorRecovery  lastErrorRecovery;
         CFStringFormater formater(MAX_BUFFER_LENGTH, 1024);  //256K
 		va_list argList;
         va_start(argList, lpszFormat);
@@ -1096,6 +1107,7 @@ namespace FTL
 
     void CFFastTrace::WriteLogInfoEx(TraceLevel level,const LPCTSTR lpszFormat,...)
     {
+        CLastErrorRecovery  lastErrorRecovery;
         if (CheckLevel(level))
         {
             CFStringFormater formater(MAX_BUFFER_LENGTH, 1024);	//256K

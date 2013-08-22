@@ -511,6 +511,15 @@ namespace FTL
 	template<typename T>
 	void SwapValue(T& value1, T& value2);
 
+    FTLEXPORT class CLastErrorRecovery
+    {
+    public:
+        FTLINLINE CLastErrorRecovery();
+        FTLINLINE ~CLastErrorRecovery();
+    private:
+        DWORD   m_dwLastError;
+    };
+
 
 	//在 Exe 和 DLL 中共享变量的内存区域 -- T 必须是简单类型，能支持 CopyMemory, sizeof 等操作
 	template<typename T>

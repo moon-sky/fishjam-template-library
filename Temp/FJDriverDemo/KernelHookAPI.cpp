@@ -20,6 +20,7 @@
 //Windows WIN32K.SYS System Call Table (NT/2000/XP/2003/Vista/2008/7)
 //  http://j00ru.vexillium.org/win32k_syscalls/
 //  http://j00ru.vexillium.org/win32k_x64/
+//WindowFromDC -- http://www.reactos.org/wiki/Techwiki:Win32k/apfnSimpleCall
 
 typedef HDC (*NtGdiCreateCompatibleDC)(HDC hdc);
 typedef HBITMAP (*NtGdiCreateCompatibleBitmap)(HDC hDC, INT Width, INT Height);
@@ -164,7 +165,7 @@ public:
 	LONG					IndexOfNtGdiCreateSolidBrush;
 	LONG					IndexOfNtGdiDeleteObjectApp;
 
-    LONG					ONEPARAM_ROUTINE_WINDOWFROMDC;  //http://www.reactos.org/wiki/Techwiki:Win32k/apfnSimpleCall
+    LONG					ONEPARAM_ROUTINE_WINDOWFROMDC;
 
 	ULONG					nPatchSizeGdiBltBlt;
 	
@@ -259,9 +260,8 @@ public:
 		{
 		case 501:	//WinXp
 			{
-				//ShadowSSDT_array_xp3 -- http://bbs.pediy.com/showthread.php?t=116044&highlight=NtGdiBitBlt
 				KdPrint(("Running on Windows XP 32\n"));
-				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x100D;				//13,  100D 0008:A001B344 params=0B NtGdiBitBlt 
+				m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x100D;
 				m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x1124;
 				m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x10ED;
 				m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x10E3;
@@ -278,14 +278,14 @@ public:
 				IndexOfNtGdiCreateCompatibleDC = 0x101E;
 				IndexOfNtGdiCreateCompatibleBitmap = 0x101D;
 				IndexOfNtGdiSelectBitmap = 0x1101;
-				IndexOfNtUserCallOneParam = 0x1143;      //323;
+				IndexOfNtUserCallOneParam = 0x1143;
 				
 				IndexOfNtGdiCreateRectRgn = 0x1029;
 				IndexOfNtGdiFillRgn = 0x1094;
 				IndexOfNtGdiCreateSolidBrush = 0x102c;
 				IndexOfNtGdiDeleteObjectApp =  0x107a;
 
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f; //不要加 0x1000
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f;
 				break;
 			}
         case 502:   //Win2003
@@ -316,7 +316,7 @@ public:
 				IndexOfNtGdiCreateSolidBrush = 0x102c;
 				IndexOfNtGdiDeleteObjectApp =  0x107a;
 
-                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f; //不要加 0x1000
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f;
 
                 break;
             }
@@ -348,7 +348,7 @@ public:
 				IndexOfNtGdiCreateSolidBrush = 0x102e;
 				IndexOfNtGdiDeleteObjectApp =  0x107c;
 
-                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x23; //不要加 0x1000
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x23;
 
                 break;
             }
@@ -379,7 +379,7 @@ public:
 				IndexOfNtGdiCreateSolidBrush = 0x102f;
 				IndexOfNtGdiDeleteObjectApp =  0x107d;
 
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24; ////不要加 0x1000
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24;
 				break;
 			}
         //case xxxx:    //Windows 2008 Server
@@ -417,7 +417,7 @@ public:
                 IndexOfNtGdiCreateSolidBrush = 0x110B;
                 IndexOfNtGdiDeleteObjectApp =  0x10BD;
 
-                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x26; ////不要加 0x1000
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x26;
                 break;
             }
 		default:
@@ -439,7 +439,7 @@ public:
 		NTSTATUS status = STATUS_SUCCESS;
 		switch (versionCode)
 		{
-		case 501:	//WinXp
+		case 501:
 			{
 				KdPrint(("Running on Windows XP 64\n"));
 
@@ -460,18 +460,18 @@ public:
                 IndexOfNtGdiCreateCompatibleDC = 0x1054;
                 IndexOfNtGdiCreateCompatibleBitmap = 0x104a;
                 IndexOfNtGdiSelectBitmap = 0x100b;
-                IndexOfNtUserCallOneParam = 0x1002;      //323;
+                IndexOfNtUserCallOneParam = 0x1002;
 
                 IndexOfNtGdiCreateRectRgn = 0x1085;
                 IndexOfNtGdiFillRgn = 0x10d8;
                 IndexOfNtGdiCreateSolidBrush = 0x10bc;
                 IndexOfNtGdiDeleteObjectApp =  0x1022;
 
-                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f;   //不要加 0x1000
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f;
 
                 break;
 			}
-        case 502:   //Win2003
+        case 502:
             {
                 KdPrint(("Running on Win2003 64\n"));
 
@@ -499,7 +499,7 @@ public:
                 IndexOfNtGdiCreateSolidBrush = 0x10bc;
                 IndexOfNtGdiDeleteObjectApp =  0x1022;
 
-                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f; //不要加 0x1000
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x1f;
 
                 break;
             }
@@ -531,7 +531,7 @@ public:
                 IndexOfNtGdiCreateSolidBrush = 0x10bd;
                 IndexOfNtGdiDeleteObjectApp =  0x1023;
 
-                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x23; //不要加 0x1000
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x23;
 
                 break;
             }
@@ -563,14 +563,42 @@ public:
                 IndexOfNtGdiCreateSolidBrush = 0x10b8;
                 IndexOfNtGdiDeleteObjectApp =  0x1023;
 
-				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24;	//不要加 0x1000
+				ONEPARAM_ROUTINE_WINDOWFROMDC = 0x24;
 				break;
 			}
-        //case 602:   //Win8
-        //    {
-        //        KdPrint(("Running on Windows 8 64\n"));
-        //        break;
-        //    }
+        case 602:   //Win8
+            {
+                KdPrint(("Running on Windows 8 64\n"));
+
+                m_HookFuns[hft_NtGdiBitBlt].nIndexInSSDT = 0x1009;
+                m_HookFuns[hft_NtGdiStretchBlt].nIndexInSSDT = 0x1032;
+                m_HookFuns[hft_NtGdiPlgBlt].nIndexInSSDT = 0x128d;
+                m_HookFuns[hft_NtGdiMaskBlt].nIndexInSSDT = 0x1069;
+                m_HookFuns[hft_NtGdiTransparentBlt].nIndexInSSDT = 0x12b8;
+                m_HookFuns[hft_NtGdiExtTextOutW].nIndexInSSDT = 0x1039;
+
+                m_HookFuns[hft_NtGdiOpenDCW].nIndexInSSDT = 0x10da;
+                m_HookFuns[hft_NtGdiDeleteObjectApp].nIndexInSSDT = 0x1024;
+
+                m_HookFuns[hft_NtUserPrintWindow].nIndexInSSDT = 0x1362;
+
+                //m_HookFuns[hft_NtGdiDdLock].nIndexInSSDT = 0x1065;
+                //m_HookFuns[hft_NtGdiDdUnlock].nIndexInSSDT = 0x1065;
+
+                IndexOfNtGdiCreateCompatibleDC = 0x1055;
+                IndexOfNtGdiCreateCompatibleBitmap = 0x104c;
+                IndexOfNtGdiSelectBitmap = 0x100c;
+                IndexOfNtUserCallOneParam = 0x1003;
+
+                IndexOfNtGdiCreateRectRgn = 0x1084;
+                IndexOfNtGdiFillRgn = 0x10d4;
+                IndexOfNtGdiCreateSolidBrush = 0x10b8;
+                IndexOfNtGdiDeleteObjectApp =  0x1024;
+
+                ONEPARAM_ROUTINE_WINDOWFROMDC = 0x25;
+
+                break;
+            }
         default:
 			status = STATUS_NOT_SUPPORTED;
 			break;
@@ -644,12 +672,12 @@ public:
 		m_HookFuns[hft_NtGdiDdLock].pwzApiName = L"NtGdiDdLock";
 		m_HookFuns[hft_NtGdiDdLock].pNewApiAddress = Hooked_NtGdiDdLock;
 		m_HookFuns[hft_NtGdiDdLock].nParamCount = 3;
-		m_HookFuns[hft_NtGdiDdLock].bEnableHook = TRUE;
+		m_HookFuns[hft_NtGdiDdLock].bEnableHook = FALSE;
 
 		m_HookFuns[hft_NtGdiDdUnlock].pwzApiName = L"NtGdiDdUnlock";
 		m_HookFuns[hft_NtGdiDdUnlock].pNewApiAddress = Hooked_NtGdiDdUnlock;
 		m_HookFuns[hft_NtGdiDdUnlock].nParamCount = 2;
-		m_HookFuns[hft_NtGdiDdUnlock].bEnableHook = TRUE;
+		m_HookFuns[hft_NtGdiDdUnlock].bEnableHook = FALSE;
 
 #if defined(_M_IX86)
 		FNT_VERIFY(_InitCallNumberX86(versionCode));

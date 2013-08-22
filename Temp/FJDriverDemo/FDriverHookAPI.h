@@ -103,16 +103,21 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 //  给出了Windows这个成功的商业操作系统的内核大部分代码，可以对其进行修改、编译，并且可以用这个内核启动Windows操作系统。
 //  检查导入表符号的小工具 -- 静态分析PE文件的导入表，挨个对导入表中的符号，去导入文件的导出表中去搜索(参考WRK)
 
-//WinDbg 中循环查找SSDT的函数对应表
-// WinXP 32 Bit  -- TODO: 怎么显示序号 eax ?
+//WinDbg 中循环查找SSDT的函数对应表 -- 需要进入Hook部分，并 load 相关的pdb文件才能查找
+// 32 Bit(WinXP)
 //   SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(nt!KiServiceTable + 4 * eax)) }
 //   Shadow SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(win32k!W32pServiceTable + 4 * eax)) }
-
+// 64 Bit(Win7)
+//   SSDT -- 
+//   Shadow SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; r ebx=dwo(win32k!W32pServiceTable+4*eax); .if(ebx & 0x80000000) { r ebx=((ebx>>>4)+0xF0000000); r rcx=0x100000000; } .else { r ebx=ebx>>>4; r rcx=0x0; }; ln win32k!W32pServiceTable+ebx-rcx }
 
 //问题：给出来的表示错误的
 //  x64里用windbg查看SSDT/Shadow SSDT -- http://hi.baidu.com/ithurricane/item/4cabc91964d1460de75c3634
 //     查看SSDT函数的方法(Win7 x64测试 OK) -- ln (dwo(nt!KiServiceTable + 4*index)>>4) + nt!KiServiceTable
-//     查看Shadow SSDT的方法(Win7 x64测试NG -- 没有win32k!W32pServiceTable) -- ln win32k!W32pServiceTable+((poi(win32k!W32pServiceTable+4*index)&0x00000000`ffffffff)>>4)-10000000
+//     查看Shadow SSDT的方法(Win7 x64测试NG -- 3~5有问题 ) -- ln win32k!W32pServiceTable+((poi(win32k!W32pServiceTable+4*index)&0x00000000`ffffffff)>>4)-10000000
+//       .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(win32k!W32pServiceTable + 4*eax)>>4) + win32k!W32pServiceTable }
+
+
 //  获取函数地址的公式是：dwo(nt!KiServiceTable+n)+nt!KiServiceTable（n=0,1,2…）。
 //  http://bbs.dbgtech.net/forum.php?mod=viewthread&tid=360
 
