@@ -144,7 +144,7 @@
 *   1.EasyHook：http://easyhook.codeplex.com/
 *               https://code.google.com/p/easyhook-continuing-detours
 *       使用的例子:http://blog.csdn.net/baggiowangyu/article/details/7675098
-*     支持驱动中Hook，支持X64注入，且完全免费，License为 LGPL, 作者通过 IDA Pro 5.0反汇编 Ildasm.exe 生成目录DriverShared\ASM下主要核心汇编代码(Trampoline_ASM_x86/x64)
+*     支持驱动中Hook，支持X64注入，且完全免费，License为 LGPL,作者通过DA Pro 5.0反汇编 Ildasm.exe 生成目录DriverShared\ASM下主要核心汇编代码(Trampoline_ASM_x86/x64)
 *     提供了两种模式的注入管理：托管代码 和 非托管代码(例子为 UnmanagedHook 和 TestDriver)，通过Inline Hook 方式实现
 *     示例:
 *       TRACED_HOOK_HANDLE hHookCreateFileW = { NULL };  

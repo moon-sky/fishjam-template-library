@@ -511,11 +511,11 @@ namespace FTL
 	template<typename T>
 	void SwapValue(T& value1, T& value2);
 
-    FTLEXPORT class CLastErrorRecovery
+    FTLEXPORT class CFLastErrorRecovery
     {
     public:
-        FTLINLINE CLastErrorRecovery();
-        FTLINLINE ~CLastErrorRecovery();
+        FTLINLINE CFLastErrorRecovery();
+        FTLINLINE ~CFLastErrorRecovery();
     private:
         DWORD   m_dwLastError;
     };

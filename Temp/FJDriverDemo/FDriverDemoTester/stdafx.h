@@ -52,3 +52,5 @@
 
 #include "TesterClassDef.h"
 #include <ftlBase.h>
+
+#define ENABLE_CPPUNIT

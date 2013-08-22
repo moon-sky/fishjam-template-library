@@ -20,14 +20,14 @@
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="chk_wxp|Win32"
-			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_x86"
-			IntermediateDirectory="obj$(ConfigurationName)_x86"
+			Name="Release|Win32"
+			OutputDirectory="$(ProjectDir)\objfre_wxp_x86"
+			IntermediateDirectory="$(ProjectDir)\objfre_wxp_x86"
 			ConfigurationType="0"
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="call wdk_build.bat chk x86 WXP $(TargetDir) $(TargetName) $(SolutionDir)$(ConfigurationName)\"
+				BuildCommandLine="call wdk_build.bat fre x86 WXP $(SolutionDir)$(ConfigurationName)\"
 				ReBuildCommandLine=""
 				CleanCommandLine=""
 				Output=""
@@ -40,34 +40,14 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="$(ProjectDir)\objfre_wxp_x86"
-			IntermediateDirectory="$(ProjectDir)\objfre_wxp_x86"
+			Name="Debug|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="0"
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="call $(WDKPATH)\bin\setenv.bat $(WDKPATH) fre wxp&#x0D;&#x0A;cd /d $(ProjectDir)&#x0D;&#x0A;build"
-				ReBuildCommandLine="rmdir /s /q $(ProjectDir)\objfre_wxp_x86&#x0D;&#x0A;call $(WDKPATH)\bin\setenv.bat $(WDKPATH) fre wxp&#x0D;&#x0A;cd /d $(ProjectDir)&#x0D;&#x0A;build"
-				CleanCommandLine="rmdir /s /q $(ProjectDir)\objfre_wxp_x86"
-				Output="$(ProjectDir)\objfre_wxp_x86\i386\FJDriverDemo.sys"
-				PreprocessorDefinitions="WIN32;_CONSOLE;_X86_;_DDK_;_NDEBUG;DBG=0"
-				IncludeSearchPath="$(WDKPATH)\inc\ddk;$(WDKPATH)\inc\api;$(WDKPATH)\inc\crt"
-				ForcedIncludes=""
-				AssemblySearchPath=""
-				ForcedUsingAssemblies=""
-				CompileAsManaged=""
-			/>
-		</Configuration>
-		<Configuration
-			Name="chk_win7|Win32"
-			OutputDirectory="$(SolutionDir)obj$(ConfigurationName)_x86"
-			IntermediateDirectory="obj$(ConfigurationName)_x86"
-			ConfigurationType="0"
-			>
-			<Tool
-				Name="VCNMakeTool"
-				BuildCommandLine="call wdk_build.bat chk x86 WIN7 $(TargetDir) $(TargetName) $(SolutionDir)$(ConfigurationName)\"
+				BuildCommandLine="call wdk_build.bat chk x86 WXP $(SolutionDir)$(ConfigurationName)\"
 				ReBuildCommandLine=""
 				CleanCommandLine=""
 				Output=""
@@ -314,24 +294,36 @@
 				</File>
 			</Filter>
 		</Filter>
+		<Filter
+			Name="Build"
+			>
+			<File
+				RelativePath=".\makefile"
+				>
+			</File>
+			<File
+				RelativePath=".\makefile.inc"
+				>
+			</File>
+			<File
+				RelativePath=".\set_wdk_env.bat"
+				>
+			</File>
+			<File
+				RelativePath=".\sources"
+				>
+			</File>
+			<File
+				RelativePath=".\wdk_build.bat"
+				>
+			</File>
+			<File
+				RelativePath=".\wdk_clean.bat"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\FJDriverDemo.inf"
-			>
-		</File>
-		<File
-			RelativePath=".\set_wdk_env.bat"
-			>
-		</File>
-		<File
-			RelativePath=".\sources"
-			>
-		</File>
-		<File
-			RelativePath=".\wdk_build.bat"
-			>
-		</File>
-		<File
-			RelativePath=".\wdk_clean.bat"
 			>
 		</File>
 	</Files>

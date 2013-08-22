@@ -263,8 +263,11 @@ namespace FTL
 
     /*************************************************************************************************************************
     * CppUnit --
-    *    VC9编译时出现错误：error C3505: cannot load type library '{80CC9F66-E7D8-4DDD-85B6-D9E6CD0E93E2}
+    *    VS2008编译时出现错误：
+    *      1.error C3505: cannot load type library '{80CC9F66-E7D8-4DDD-85B6-D9E6CD0E93E2}
     *        将对应错误行 (MsDevCallerListCtrl.cpp:67 ) 的 version("7.0")  改为 version("9.0") 即可
+    *      2.TestRunnerDSPlugInD.dll.intermediate.manifest 中报告错误 general error c1010070: Failed to load and parse the manifest
+    *
     *************************************************************************************************************************/
 
     /*************************************************************************************************************************

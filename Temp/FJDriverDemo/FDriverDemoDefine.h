@@ -13,7 +13,11 @@
 //#endif
 
 
-//#define FDRIVER_DEMO_FILENAME           TEXT("FJDriverDemo.sys")
+#if defined(_M_IX86)
+#  define FDRIVER_DEMO_FILENAME           TEXT("FJDriverDemo32.sys")
+#else
+#  define FDRIVER_DEMO_FILENAME           TEXT("FJDriverDemo64.sys")
+#endif 
 
 #define FDRIVER_DEMO_SERVICE_NAME       TEXT("FJDriverDemo")
 

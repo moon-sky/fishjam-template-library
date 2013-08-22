@@ -80,7 +80,9 @@
 * IO_STACK_LOCATION -- IO堆栈，对应设备堆栈中每层设备所做的操作，本层设备对应的值可通过 IoGetCurrentIrpStackLocation 获得
 *   Parameters里面是很多结构体的union，需要根据具体的 功能号 选择对应的成员变量进行处理   
 *
-*   IoBuildSynchronousFsdRequest/IoBuildAsynchronousFsdRequest -- 手工创建IRP
+*   IoAllocateIrp -- 手工创建任意类型的IRP(其他手工创建方式的底层实现)，创建完毕后需要手动填充IRP的子域，退出时需要通过 IoFreeIrp 删除
+*   IoBuildSynchronousFsdRequest/IoBuildAsynchronousFsdRequest -- 手工创建 同步/异步 IRP
+*   IoBuildDeviceIoControlRequest -- 手工创建同步类型的 IRP_MJ_INTERNAL_DEVICE_CONTROL 或 IRP_MJ_DEVICE_CONTROL
 *   IoCancelIrp -- 取消指定的IRP请求，其内部会使用叫做 cancel 的自旋锁进行同步，需要在 IoSetCancelRoutine 设定的
 *     取消回调函数中调用 IoReleaseCancelSpinLock(Irp->CancelIrql) 释放该自旋锁。
 *     可通过DPC定时器设置超时并调用该函数取消IRP，防止无响应。
@@ -99,6 +101,11 @@
 * 
 * IRP类型
 *
+* 手动创建IRP
+*   1.得到设备指针 -- IoGetDeviceObjectPointer 或 ObReferenceObjectByPointer 等
+*   2.手工创建IRP  -- IoBuildSynchronousFsdRequest / IoAllocateIrp 等
+*   2.构造IRP的I/O堆栈，每层IO堆栈对应一个设备对象, IoGetNextIrpStackLocation ?
+*   3.通过 IoCallDriver 调用相应的驱动
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
@@ -185,7 +192,7 @@
 * 
 * Other
 *   ObDereferenceObject
-*   ObReferenceObjectByName(头文件中没有声明?) -- 通过一个名字获得一个对象的指针
+*   ObReferenceObjectByName(头文件中没有声明?) -- 通过一个名字获得一个对象的指针，使用完毕后需要通过 ObDereferenceObject 将引用计数减1
 *
 * 时间相关的函数
 *   时间参数：
@@ -207,7 +214,6 @@
 *   PoStartNextPowerIrp -- 
 *   PoCallDriver -- ??
 ******************************************************************************************************************/
-
 /******************************************************************************************************************
 * KeDelayExecutionThread(KernelMode, FALSE, &interval) -- 延时指定时间(原理? 其他线程会继续执行?)
 * KeInitializeSpinLock / KeQueryInterruptTime
@@ -232,6 +238,20 @@ NTSTATUS ZwQuerySystemInformation(
 								  IN PVOID SystemInformation, 
 								  IN ULONG SystemInformationLength, 
 								  OUT PULONG ReturnLength);
+
+NTKERNELAPI 
+NTSTATUS ObReferenceObjectByName(
+                                 IN PUNICODE_STRING ObjectName,                 //打开设备的设备名，如 L"\\??\\HelloDDK"
+                                 IN ULONG Attributes,                           //一般设置为 OBJ_CASE_INSENSITIVE
+                                 IN PACCESS_STATE PassedAccessState OPTIONAL,   //很少用，一般设为 NULL
+                                 IN ACCESS_MASK DesiredAccess OPTIONAL,         //权限，一般为 FILE_ALL_ACCESS
+                                 IN POBJECT_TYPE ObjectType,                    //指定对象类型，IoDeviceObjectType 表示需要获得设备对象的指针
+                                 IN KPROCESSOR_MODE AccessMode,                 //如内核中访问该指针，设为 KernelMode
+                                 IN OUT PVOID ParseContext OPTIONAL,            //一般设为 NULL
+                                 OUT PVOID *Object                              //返回的内核对象指针
+                                 );
+
+extern POBJECT_TYPE IoDeviceObjectType;
 
 //extern "C" NTSTATUS ZwDuplicateObject(
 //						   IN HANDLE                 SourceProcessHandle,
