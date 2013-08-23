@@ -83,6 +83,7 @@
 *   IoAllocateIrp -- 手工创建任意类型的IRP(其他手工创建方式的底层实现)，创建完毕后需要手动填充IRP的子域，退出时需要通过 IoFreeIrp 删除
 *   IoBuildSynchronousFsdRequest/IoBuildAsynchronousFsdRequest -- 手工创建 同步/异步 IRP
 *   IoBuildDeviceIoControlRequest -- 手工创建同步类型的 IRP_MJ_INTERNAL_DEVICE_CONTROL 或 IRP_MJ_DEVICE_CONTROL
+*   IoCallDriver -- 给设备发送请求，通常是向设备堆栈的下层设备发送请求。
 *   IoCancelIrp -- 取消指定的IRP请求，其内部会使用叫做 cancel 的自旋锁进行同步，需要在 IoSetCancelRoutine 设定的
 *     取消回调函数中调用 IoReleaseCancelSpinLock(Irp->CancelIrql) 释放该自旋锁。
 *     可通过DPC定时器设置超时并调用该函数取消IRP，防止无响应。
@@ -92,7 +93,7 @@
 *   IoMarkIrpPending -- 告知操作系统该IRP处于挂起状态
 *   IoSetCancelRoutine -- 设置取消IRP请求的回调函数，当该IRP被取消时，操作系统会调用该取消函数
 *   IoSetCompletionRoutine -- 设置完成回调函数
-*   IoSkipCurrentIrpStackLocation -- 跳过当前栈空间
+*   IoSkipCurrentIrpStackLocation -- 跳过当前栈空间(本质是将当前IO堆栈往上移动一层?)，常用于当前设备不需要对应I/O堆栈时
 *   IoStartNextPacket -- 从队列中取出下一个IRP并调用StartIo
 *   IoStartPacket -- 调用StartIo函数或将IRP放入等待队列
 *   IoCreateSymbolicLink -- 在对象管理器中创建一个"符号链接"
@@ -179,11 +180,10 @@
 
 /******************************************************************************************************************
 * Driver
-*   IoCallDriver -- 给设备发送请求?
 *
 * Device
 *   IoAttachDevice/IoDetachDevice  -- 绑定/解除绑定设备到设备栈上，这样可以做过滤(Filter)
-*   IoAttachDeviceToDeviceStack -- WDM中IoCreateDevice创建FDO后，需要Attach到PDO上
+*   IoAttachDeviceToDeviceStack/IoAttachDeviceToDeviceStackSafe -- 可用于分层驱动挂载，如：WDM中IoCreateDevice创建FDO后，需要Attach到PDO上
 *   IoCreateDevice/IoDeleteDevice
 *   IoEnumerateDeviceObjectList -- 枚举一个驱动下的所有设备对象
 *   IoGetAttachedDevice -- 获得一个设备所在的设备栈最顶端的那个设备

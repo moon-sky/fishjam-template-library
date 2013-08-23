@@ -102,7 +102,7 @@ PVOID GetSSDTFuncAddr(LONG nServiceIndex)
 
 NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
-    NTSTATUS status = STATUS_SUCCESS;
+    NTSTATUS status = STATUS_UNSUCCESSFUL;
     ULONG oldProtect = 0;
     
     PSYSTEM_SERVICE_TABLE pServiceTable = pHookApiInfo->nIndexInSSDT < 0x1000 ? &g_pSystemServiceTable[0] : &g_pSystemServiceTable[1];
@@ -124,8 +124,11 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 #ifdef USE_INLINE_HOOK
     pHookApiInfo->pTargetAddress = GetSSDTFuncAddr(pHookApiInfo->nIndexInSSDT);
     NT_ASSERT(pHookApiInfo->pTargetAddress);
-    FNT_VERIFY(CreateInlineHook(pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
-        &pHookApiInfo->pInlineHookInfo));
+    if(CreateInlineHook(pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
+        &pHookApiInfo->pInlineHookInfo))
+    {
+        status = STATUS_SUCCESS;
+    }
     KdPrint(("Inline Hook SSDT func %ws at [0x%x], TargetAddress=%p, newAddress=%p, OrigiApiAddress=%p, nParamCount=%d\n", 
         pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, 
         pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, 
@@ -134,6 +137,7 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
     oldProtect = ClearWriteProtect(pServiceTable->ServiceTableBase[nIndex], sizeof(PVOID));
     InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pNewApiAddress);
     RestoreWriteProtect(pServiceTable->ServiceTableBase[nIndex], sizeof(PVOID), oldProtect);
+    status = STATUS_SUCCESS;
 #endif 
 
     return status;
@@ -141,7 +145,7 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 
 NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 {
-    NTSTATUS status = STATUS_SUCCESS;
+    NTSTATUS status = STATUS_UNSUCCESSFUL;
     ULONG oldProtect = 0;
 
     PSYSTEM_SERVICE_TABLE pServiceTable = pHookApiInfo->nIndexInSSDT < 0x1000 ? &g_pSystemServiceTable[0] : &g_pSystemServiceTable[1];
@@ -162,12 +166,16 @@ NTSTATUS RestoreSSDTFunc(PHOOK_API_INFO pHookApiInfo)
     KdPrint(("Restore Inline SSDT func %ws at [0x%x], TargetAddress=%p, newAddress=%p, OrigiApiAddress=%p\n", 
         pHookApiInfo->pwzApiName, pHookApiInfo->nIndexInSSDT, pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, 
         pHookApiInfo->pOrigApiAddress));
-    FNT_VERIFY(RestoreInlineHook(pHookApiInfo->pInlineHookInfo));
+    if(RestoreInlineHook(pHookApiInfo->pInlineHookInfo))
+    {
+        status = STATUS_SUCCESS;
+    }
     pHookApiInfo->pInlineHookInfo = NULL;
 #else
     oldProtect = ClearWriteProtect(pServiceTable->ServiceTableBase[nIndex], sizeof(PVOID));
     InterlockedExchangePointer(&(pServiceTable->ServiceTableBase[nIndex]), pHookApiInfo->pOrigApiAddress);
     RestoreWriteProtect(pServiceTable->ServiceTableBase[nIndex], sizeof(PVOID), oldProtect);
+    status = STATUS_SUCCESS;
 #endif 
 
     pHookApiInfo->pOrigApiAddress = NULL;

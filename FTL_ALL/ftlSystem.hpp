@@ -757,68 +757,47 @@ namespace FTL
         return bisLittleSystem;
     }
 
+#if defined(_M_IX86)
+	// IsInsideVPC's exception filter  
+	DWORD __forceinline IsInsideVPC_exceptionFilter(LPEXCEPTION_POINTERS ep)  
+	{  
+    	PCONTEXT ctx = ep->ContextRecord;  
+
+    	ctx->Ebx = -1; // Not running VPC  
+    	ctx->Eip += 4; // skip past the "call VPC" opcodes  
+    	return EXCEPTION_CONTINUE_EXECUTION; // we can safely resume execution since we skipped faulty instruction  
+	}  
+
 	BOOL CFSystemUtil::IsInsideVPC()
 	{
-#if defined(_M_IX86)
-		//__declspec(naked) bool IsInsideVPC()
-		{
-			__asm
-			{
-				push ebp
-				mov  ebp, esp
+	    bool rc = false;  
 
-				mov  ecx, offset exception_handler
+	    __try  
+	    {  
+	        _asm push ebx  
+	        _asm mov  ebx, 0 // Flag  
+	        _asm mov  eax, 1 // VPC function number  
 
-				push ebx
-				push ecx
+	        // call VPC   
+	        _asm __emit 0Fh  
+	        _asm __emit 3Fh  
+	        _asm __emit 07h  
+	        _asm __emit 0Bh  
 
-				push dword ptr fs:[0]
-				mov  dword ptr fs:[0], esp
+	        _asm test ebx, ebx  
+	        _asm setz [rc]  
+	        _asm pop ebx  
+	    }  
+	    // The except block shouldn't get triggered if VPC is running!!  
+	    __except(IsInsideVPC_exceptionFilter(GetExceptionInformation()))  
+	    {  
+	    }  
 
-				mov  ebx, 0 // Flag
-				mov  eax, 1 // VPC function number
-			}
-
-			// call VPC 
-			_asm __emit 0Fh
-			_asm __emit 3Fh
-			_asm __emit 07h
-			_asm __emit 0Bh
-			_asm
-			{
-				mov eax, dword ptr ss:[esp]
-				mov dword ptr fs:[0], eax
-
-				add esp, 8
-				test ebx, ebx
-				setz al
-
-				lea esp, dword ptr ss:[ebp-4]
-				mov ebx, dword ptr ss:[esp]
-				mov ebp, dword ptr ss:[esp+4]
-
-				add esp, 8
-
-				jmp ret1
-exception_handler:
-				mov ecx, [esp+0Ch]
-				mov dword ptr [ecx+0A4h], -1 // EBX = -1 -> not running, ebx = 0 -> running
-					add dword ptr [ecx+0B8h], 4 // -> skip past the call to VPC
-					xor eax, eax // exception is handled
-					ret
-ret1:
-				ret
-			}
-		}
-#endif 
-
-		return FALSE;
+	    return rc;  
 	}
 
 	FTLINLINE bool _IsInsideVMWare()
 	{
-#if defined(_M_IX86)
-
 		bool r;
 		_asm
 		{
@@ -840,8 +819,6 @@ ret1:
 			pop    edx
 		}
 		return r;
-#endif 
-		return false;
 	}
 
 	BOOL CFSystemUtil::IsInsideVMWare()
@@ -857,6 +834,7 @@ ret1:
 		}
 		return bRet;
 	}
+#endif 
 
     int CFSystemUtil::DosLineToUnixLine(const char *src, char *dest, int maxlen)
     {

@@ -133,6 +133,7 @@ END_MESSAGE_MAP()
 int WINAPI Hooked_MessageBoxW(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType)
 {
 	FTLASSERT(g_pOrigMessageBoxW);
+    UNREFERENCED_PARAMETER(lpCaption);
 
 	int nRet = 0;
     CString strHookedText;
@@ -190,8 +191,8 @@ void CHookApiPage::OnBnClickedBtnHookApiDetoursUnInstall()
 
 void CHookApiPage::OnBnClickedBtnHookApiEasyHookInstall()
 {
-	BOOL bRet = FALSE;
 #ifdef HOOK_API_EASYHOOK
+    BOOL bRet = FALSE;
 	NTSTATUS status = 0;
 	FTLASSERT(m_pHookMessageBoxW == NULL);
 	if (!m_pHookMessageBoxW)
@@ -289,53 +290,53 @@ void replaceCodeBuf(BYTE* code, DWORD_PTR len, DWORD old, void* ptr)
 }
 
 #if defined(_M_AMD64)
-#pragma pack(push,2)
-struct JMPCODE
-{
-	USHORT  RcxMov;         // mov rcx, pThis
-	ULONG64 RcxImm;         // 
-	USHORT  RaxMov;         // mov rax, target
-	ULONG64 RaxImm;         //
-	USHORT  RaxJmp;         // jmp target
-	BOOL Init(DWORD_PTR proc, void *pThis)
-	{
-		RcxMov = 0xb948;          // mov rcx, pThis
-		RcxImm = (ULONG64)pThis;  // 
-		RaxMov = 0xb848;          // mov rax, target
-		RaxImm = (ULONG64)proc;   //
-		RaxJmp = 0xe0ff;          // jmp rax
-		return FlushInstructionCache(GetCurrentProcess(), this, sizeof(JMPCODE));
-	}
-}
+//#pragma pack(push,2)
+//struct JMPCODE
+//{
+//	USHORT  RcxMov;         // mov rcx, pThis
+//	ULONG64 RcxImm;         // 
+//	USHORT  RaxMov;         // mov rax, target
+//	ULONG64 RaxImm;         //
+//	USHORT  RaxJmp;         // jmp target
+//	BOOL Init(DWORD_PTR proc, void *pThis)
+//	{
+//		RcxMov = 0xb948;          // mov rcx, pThis
+//		RcxImm = (ULONG64)pThis;  // 
+//		RaxMov = 0xb848;          // mov rax, target
+//		RaxImm = (ULONG64)proc;   //
+//		RaxJmp = 0xe0ff;          // jmp rax
+//		return FlushInstructionCache(GetCurrentProcess(), this, sizeof(JMPCODE));
+//	}
+//}
 #endif  //_M_AMD64
 
 void CHookApiPage::OnBnClickedBtnHookApiTestJmp()
 {
 	//0x90 -- nop
-#if defined _M_IX86
-	UCHAR			            Jumper[12] = {0xE9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-#elif defined _M_IA64
-	UCHAR			            Jumper[12] = {0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xe0};
-#elif defined _M_X64
-	UCHAR			            Jumper[12] = {0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xe0};
-#else
-    error Not Support OS
-#endif
-
-	//init to nop
-	for(int i = 0; i < _countof(Jumper); i++)
-	{
-		if (Jumper[i] == 0x00)
-		{
-			Jumper[i] = 0x90;	//nop
-		}
-	}
-	//Init Jump
-	//JMPCODE jmpCode;
-	//jmpCode.Init(DemoFunc);
-
-	//Will not Execute if jump enabled
-	::MessageBox(m_hWnd, TEXT("You Should NOT see me!"), TEXT("JMP NOT affect!"), MB_OK);
-
-	::MessageBox(m_hWnd, TEXT("After JMP Message"), TEXT("Text"), MB_OK);
+//#if defined _M_IX86
+//	UCHAR			            Jumper[12] = {0xE9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+//#elif defined _M_IA64
+//	UCHAR			            Jumper[12] = {0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xe0};
+//#elif defined _M_X64
+//	UCHAR			            Jumper[12] = {0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xe0};
+//#else
+//    error Not Support OS
+//#endif
+//
+//	//init to nop
+//	for(int i = 0; i < _countof(Jumper); i++)
+//	{
+//		if (Jumper[i] == 0x00)
+//		{
+//			Jumper[i] = 0x90;	//nop
+//		}
+//	}
+//	//Init Jump
+//	//JMPCODE jmpCode;
+//	//jmpCode.Init(DemoFunc);
+//
+//	//Will not Execute if jump enabled
+//	::MessageBox(m_hWnd, TEXT("You Should NOT see me!"), TEXT("JMP NOT affect!"), MB_OK);
+//
+//	::MessageBox(m_hWnd, TEXT("After JMP Message"), TEXT("Text"), MB_OK);
 }

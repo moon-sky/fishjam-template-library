@@ -15,7 +15,6 @@
 *   2.并Attach到真实的设备上
 *     UNICODE_STRING com_device_name = RTL_CONSTANT_STRING(L"\\Device\\Serial0");
 *     IoAttachDevice(myFilterDevice, &com_device_name, &attached_device);	//绑定具有名字的设备
-*     //IoAttachDeviceToDeviceStackSafe -- 根据设备对象的指针绑定
 *     绑定完毕必须清除 DO_DEVICE_INITIALIZING 标志，并设置需要的标志
 *     
 *   3.根据主功能号对IRP进行过滤，得到数据并处理

@@ -82,9 +82,14 @@ namespace FTL
             }
         case OBJ_BITMAP:
             {
+                //两种比较方式：
                 //只要是BITMAP都可用获取到 DIBSECTION, 但普通的Bitmap获取到的 BITMAPINFOHEADER 等值都为0
                 DIBSECTION dibInfo = {0};
                 API_VERIFY(::GetObject(hgdiObj, sizeof(dibInfo), &dibInfo));
+
+                //DIB中 bmpInfo.bmBits不为NULL, DFB 中bmpInfo.bmBits为NULL
+                BITMAP bmpInfo = {0};
+                API_VERIFY(GetObject(hgdiObj, sizeof(bmpInfo), &bmpInfo));
 
                 formater.Format(
                     TEXT("%s::BITMAP[Type=%d,Width=%d,Height=%d,WidthBytes=%d,")
@@ -95,6 +100,8 @@ namespace FTL
                     );
                 if (0 < dibInfo.dsBmih.biSize)
                 {
+                    FTLASSERT(NULL != bmpInfo.bmBits);  //DIB中 bmpInfo.bmBits不为NULL
+
                     //CreateDIBSection 创建的DIB
                     formater.AppendFormat(TEXT(",BITMAPINFOHEADER[biSize=%d,biWidth=%ld,biHeight=%ld,")
                         TEXT("biPlanes=%d,biBitCount=%d,biCompression=%d,")
@@ -112,6 +119,8 @@ namespace FTL
                 }
                 else
                 {
+                    FTLASSERT(NULL == bmpInfo.bmBits);  //DFB 中bmpInfo.bmBits为NULL
+
                     //DIBSECTION 中除了 BITMAP 以外其他结构体的大小 -- 此时其值应该全为 0
                     const DWORD OtherInfoSize = sizeof(DIBSECTION) - sizeof(BITMAP);
                     BYTE dibSecInfo[OtherInfoSize] = {0};
@@ -1536,14 +1545,15 @@ namespace FTL
 		UNREFERENCED_PARAMETER(hWnd);
         FTLASSERT( NULL == m_hCanvasDC );
         FTLASSERT( 32 == bpp && TEXT("Now just support 32 bit"));
-        
+
         BOOL bRet = FALSE;
         m_height = FTL_ABS(heigth);
         m_width = FTL_ABS(width);
         m_bpp = bpp;
 
         ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
-        m_bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFO);
+        ZeroMemory(m_ReserveSpace, sizeof(m_ReserveSpace));
+        m_bmpInfo.bmiHeader.biSize = sizeof(m_bmpInfo.bmiHeader); // sizeof(BITMAPINFO);
         m_bmpInfo.bmiHeader.biWidth = m_width;
         m_bmpInfo.bmiHeader.biHeight = m_height;
         m_bmpInfo.bmiHeader.biPlanes = 1;
@@ -1551,21 +1561,34 @@ namespace FTL
         m_bmpInfo.bmiHeader.biCompression = BI_RGB;
         m_bmpInfo.bmiHeader.biSizeImage = ((m_height * m_width * bpp + 31) >> 3) & ~3;
 										  //(m_height * m_width * bpp + 31) / 32 * 4 ; 
-
-		//bmpInfo.bmiHeader.biXPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSX);
+        if (bpp <= 8)
+        {
+            // 这个图像是调色板观看里的，所以我们需要合成它的调色板
+            m_bmpInfo.bmiHeader.biClrUsed = 1 << bpp;
+        }
+        else
+        {
+            m_bmpInfo.bmiHeader.biClrUsed = 0;
+        }
+        m_bmpInfo.bmiHeader.biClrImportant = m_bmpInfo.bmiHeader.biClrUsed;
+        //bmpInfo.bmiHeader.biXPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSX);
         //bmpInfo.bmiHeader.biYPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSY);
-        //bmpInfo.bmiHeader.biClrUsed = 0;
-        //bmpInfo.bmiHeader.biClrImportant = 0;
 		
         m_hCanvasDC = ::CreateCompatibleDC(NULL);
 
+        HDC hScreen = GetDC(NULL);
         API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(
-			NULL, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
+			hScreen, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
 			&m_bmpInfo, 
 			DIB_RGB_COLORS,
             (VOID**)&m_pBuffer, NULL, 0)));
-
         ZeroMemory(m_pBuffer, m_bmpInfo.bmiHeader.biSizeImage);
+        if (bpp <= 8)
+        {
+            //获取调色板，并设置到 DIB中
+            //GetPaletteEntries + SetDIBColorTable
+        }
+        ReleaseDC(NULL, hScreen);
 
         m_hOldBitmap = (HBITMAP)::SelectObject(m_hCanvasDC, (HGDIOBJ)m_hMemBitmap);
         return bRet;

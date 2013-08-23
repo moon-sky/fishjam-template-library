@@ -249,9 +249,10 @@ namespace FTL
 		//VB 下：GetObject("winmgmts:\\" & strComputer & "\root\cimv2")
 		//  SELECT * FROM Win32_NetworkAdapterConfiguration WHERE IPEnabled = True
 		//  Left(objAdapter.Description,2）  ==  VM
-		FTLINLINE static BOOL IsInsideVPC();
+#if defined(_M_IX86)
+        FTLINLINE static BOOL IsInsideVPC();
 		FTLINLINE static BOOL IsInsideVMWare();
-
+#endif 
         //把Dos的结束符转换为Unix的结束符(去掉其中的 "\r" )
         FTLINLINE static int DosLineToUnixLine(const char *src, char *dest, int maxlen);
         //把Unix的结束符转换为Dos的结束符(将 "\r" 改成 "\r\n" )

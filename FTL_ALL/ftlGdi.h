@@ -741,7 +741,11 @@ namespace FTL
         HDC     m_hCanvasDC;
         HBITMAP m_hMemBitmap;
         HBITMAP m_hOldBitmap;
-        BITMAPINFO  m_bmpInfo;
+        union {
+            BITMAPINFO  m_bmpInfo;
+            BYTE m_ReserveSpace[sizeof(BITMAPINFO) + 0xFF * sizeof(RGBQUAD)];
+        };
+        
         BYTE*   m_pBuffer;
         int     m_width;
         int     m_height;
