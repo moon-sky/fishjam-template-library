@@ -5,7 +5,7 @@
 // http://bazislib.sysprogs.org/ -- BazisLib library，而且有很多向导和标准驱动的辅助开发类
 
 //寒江独钓-Windows内核安全编程 -- P14X
-//Windows驱动开发技术详解 -- P348(向下转发IRP)  (优先看调试技巧?)
+//Windows驱动开发技术详解 -- P378(处理即插即用IRP的派遣函数)  (优先看调试技巧?)
 
 //与用户模式通信( ReadFile/DeviceIoControl/CancelIo 等)
 //  驱动程序通过 HAL 调用硬件抽象层，然后才和硬件交互。

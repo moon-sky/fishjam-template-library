@@ -57,11 +57,11 @@
 * 
 * KMD(Kernel Mode Driver) -- 也叫NT式驱动
 *
-* DDK(Driver Development Kit) -- 使用WDM(Windows Driver Model)驱动模型,集成了测试套件HCT？，适用于WinXP及之前的平台
+* DDK(Driver Development Kit) -- 使用WDM(Windows Driver Model)驱动模型，在DriverEntry中创建设备,集成了测试套件HCT？，适用于WinXP及之前的平台
 *   NT式驱动程序 -- 不支持即插即用。使用 NTDDK.h 头文件。不分层？
 *   安装测试：创建服务，以服务的方式加载在系统中进行测试
 *     
-* WDM(Windows Driver Model) -- Vista以前的驱动模型。支持即插即用(插入设备后系统自动创建PDO，并提示请求用户安装FDO),
+* WDM(Windows Driver Model) -- Vista以前的驱动模型。支持即插即用(插入设备后系统自动创建PDO，并提示请求用户安装FDO),在AddDevice中创建设备
 *   使用 WDM.h 头文件。链接 wdm.lib，
 *   主要是通过各个 MajorFunction 进行分发处理( IRP_MJ_CREATE 等定义在 Wdm.h 中)？
 *   建立在NT式驱动程序模型基础上，基于分层的，完成一个设备的操作，至少需要两个驱动设备共同完成。

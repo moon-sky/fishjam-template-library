@@ -223,7 +223,7 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 *   注意：
 *   1.win32k.sys不是常在内存的，如果不是GUI线程，Shadow SSDT 地址无效 -- 在GUI线程中DeviceIoControl即可;
 *   2.通常需要附加的进程是 csrss.exe ? GetCsrPid()
-*   3.使用MDL映射一块不分页内存，设置成可以写入，常驻在物理内存(参见 RegmonMapServiceTable)
+*   3.使用MDL映射一块不分页内存，设置成可以写入，常驻在物理内存(参见 RegmonMapServiceTable) -- IoAllocateMdl ?
 *     TODO:通过 #pragma LOCKEDCODE 声明变量即可？
 *   4.GDI的很多函数会操作 _pGdiSharedHandleTable 表?
 *

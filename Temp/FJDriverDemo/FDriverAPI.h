@@ -76,6 +76,7 @@
 * 同步IRP -- 派遣函数中直接处理并调用 IoCompleteRequest 函数结束IRP请求( 其内部设置 IRP.UserEvent )
 * 异步IRP -- 派遣函数中保存信息(如通过 IoStartPacket 放入StartIo队列)，调用 IoMarkIrpPending 函数告知操作系统该IRP处于挂起状态，并返回 STATUS_PENDING，
 *            有助于提高效率，但通常需要进行同步处理(如 StartIO/中断服务例程等)，防止出现逻辑上的错误。
+* IRP完成回调(IoSetCompletionRoutine) -- 将IRP发送给底层或其他驱动前设置，一旦完成立刻触发。可方便地了解其他驱动对IRP进行的处理
 * 
 * IO_STACK_LOCATION -- IO堆栈，对应设备堆栈中每层设备所做的操作，本层设备对应的值可通过 IoGetCurrentIrpStackLocation 获得
 *   Parameters里面是很多结构体的union，需要根据具体的 功能号 选择对应的成员变量进行处理   
@@ -107,6 +108,9 @@
 *   2.手工创建IRP  -- IoBuildSynchronousFsdRequest / IoAllocateIrp 等
 *   2.构造IRP的I/O堆栈，每层IO堆栈对应一个设备对象, IoGetNextIrpStackLocation ?
 *   3.通过 IoCallDriver 调用相应的驱动
+*
+* IRP分解(如底层驱动限制了读写字节数，上层驱动进行扩展) -- 可用IRPTrace进行跟踪
+*   分解IRP请求，通过完成回调(return STATUS_MORE_PROCESSING_REQUIRED)中继续利用IRP并重新转发实现
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
@@ -137,6 +141,13 @@
 *   ExAllocatePoolWithTag/ExFreePoolWithTag -- 额外分配4字节的标签，调试时可找出是否有标有这个标签的内存没有被释放
 *   ExAllocatePoolWithQuota	-- 按配额分配
 *   ExAllocatePoolWithQuotaTag
+*   
+* MDL函数
+*   IoAllocateMdl/IoFreeMdl -- 
+*   IoBuildPartialMdl
+*   MmGetMdlVirtualAddress
+*   MmGetMdlByteCount
+*   MmPrepareMdlForReuse -- 重新利用MDL
 *
 * Lookaside 避免内存空洞(适用于：每次申请固定大小的内存；申请和释放的操作十分频繁)
 *   初识时向系统申请一块较大的内存，以后每次申请时，从中划分，并能智能地避免产生内存空洞，而且效率高。
@@ -176,6 +187,11 @@
 *
 * 辅助函数
 *   PtrToUlong/PtrToLong -- 截断指针， 如果要将指针的值保存成 INT 等值，需要使用 INT_PTR 等
+*
+* 枚举遍历(驱动对象->设备对象->同类设备对象的地址等)
+*   DEVICE_OBJECT
+*     Vpb::DeviceObject
+*     NextDevice
 ******************************************************************************************************************/
 
 /******************************************************************************************************************
