@@ -57,4 +57,8 @@ public:
 	afx_msg void OnBnClickedBtnTestDesktop();
     afx_msg void OnBnClickedBtnFilterUpdateProtectWnd();
     afx_msg void OnBnClickedBtnClearProtectWnd();
+
+    afx_msg void OnBnClickedBtnInstallInlineHook();
+    afx_msg void OnBnClickedBtnUninstallInlineHook();
+
 };

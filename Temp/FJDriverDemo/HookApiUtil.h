@@ -6,6 +6,7 @@
 #  include <windef.h>
 #else
 #  define HOOK_ASSERT
+#  define HOOK_VERIFY(x)            bRet=(x); HOOK_ASSERT(bRet)
 #  include <windows.h>
 #endif 
 

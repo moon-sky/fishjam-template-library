@@ -22,6 +22,9 @@
 #define IDC_BTN_DO_TEXTOUT              1011
 #define IDC_BUTTON1                     1012
 #define IDC_BTN_TEST_DESKTOP            1012
+#define IDC_BTN_INSTALL_INLINE_HOOK     1013
+#define IDC_BTN_INSTALL_INLINE_HOOK2    1014
+#define IDC_BTN_UNINSTALL_INLINE_HOOK   1014
 
 // Next default values for new objects
 // 

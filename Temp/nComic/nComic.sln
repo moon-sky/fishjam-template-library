@@ -1,20 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComicService", "ComicService\ComicService.vcproj", "{800544EE-4E75-4FCB-B9CE-C2A921F4852D}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3E2C0921-6732-47F8-8123-621F359CEA5F} = {3E2C0921-6732-47F8-8123-621F359CEA5F}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComicServicePS", "ComicService\ComicServicePS.vcproj", "{F24BEDD4-480A-447B-9B3A-3CDB605BE3CA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{800544EE-4E75-4FCB-B9CE-C2A921F4852D} = {800544EE-4E75-4FCB-B9CE-C2A921F4852D}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nComic", "nComic\nComic.vcproj", "{0EE39E53-024B-4D6D-A673-81FE6F84F537}"
 	ProjectSection(ProjectDependencies) = postProject
 		{3E2C0921-6732-47F8-8123-621F359CEA5F} = {3E2C0921-6732-47F8-8123-621F359CEA5F}
-		{800544EE-4E75-4FCB-B9CE-C2A921F4852D} = {800544EE-4E75-4FCB-B9CE-C2A921F4852D}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComicHelper", "ComicHelper\ComicHelper.vcproj", "{3E2C0921-6732-47F8-8123-621F359CEA5F}"
@@ -25,13 +14,6 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{800544EE-4E75-4FCB-B9CE-C2A921F4852D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{800544EE-4E75-4FCB-B9CE-C2A921F4852D}.Debug|Win32.Build.0 = Debug|Win32
-		{800544EE-4E75-4FCB-B9CE-C2A921F4852D}.Release|Win32.ActiveCfg = Release|Win32
-		{800544EE-4E75-4FCB-B9CE-C2A921F4852D}.Release|Win32.Build.0 = Release|Win32
-		{F24BEDD4-480A-447B-9B3A-3CDB605BE3CA}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F24BEDD4-480A-447B-9B3A-3CDB605BE3CA}.Debug|Win32.Build.0 = Debug|Win32
-		{F24BEDD4-480A-447B-9B3A-3CDB605BE3CA}.Release|Win32.ActiveCfg = Release|Win32
 		{0EE39E53-024B-4D6D-A673-81FE6F84F537}.Debug|Win32.ActiveCfg = Debug|Win32
 		{0EE39E53-024B-4D6D-A673-81FE6F84F537}.Debug|Win32.Build.0 = Debug|Win32
 		{0EE39E53-024B-4D6D-A673-81FE6F84F537}.Release|Win32.ActiveCfg = Release|Win32

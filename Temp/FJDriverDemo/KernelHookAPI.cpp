@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "KernelHookAPI.h"
 #include "KernelHelper.h"
+#include "HookApiUtil.h"
 
 #ifdef FDRIVER_DEMO_PROJECT
 #  include "FDriverUtil.h"
@@ -818,9 +819,11 @@ BOOL Hooked_NtGdiBitBlt(
         NtGdiBitBlt pOrigNtGdiBitBlt = (NtGdiBitBlt)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiBitBlt].pOrigApiAddress);
         if (pOrigNtGdiBitBlt)
         {
-            if (Width >= 1000 && Height >= 1000)
+            if (Width >= 1000 && Height >= 900)
             {
-                KdPrint(("Width(%d) and Height(%d) >= 1000\n", Width, Height));
+                KdPrint(("In Hooked_NtGdiBitBlt, hdcDst=0x%x, hWndDest=0x%x, bIsFilterDCDest=%d, hdcSrc=0x%p, hWndSrc=0x%x, bIsFilterDCSrc=%d, bIsCreateDisplayDC=%d\n", 
+                    hdcDst, hWndFromDest, bIsFilterDCDest,
+                    hdcSrc, hWndFromSrc, bIsFilterDCSrc, bIsCreateDisplayDC));
 
                 hWndFromDest = NULL;
                 hWndFromSrc = NULL;
@@ -832,8 +835,9 @@ BOOL Hooked_NtGdiBitBlt(
             if (bIsFilterDCSrc || bIsFilterDCDest
                 || g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
             {
-                KdPrint(("!!! In Hooked_NtGdiBitBlt, hdcDst=0x%x, hWndDest=0x%x, hdcSrc=0x%x, hWndSrc=0x%x\n", 
-                    hdcDst, hWndFromDest, hdcSrc, hWndFromSrc));
+                KdPrint(("!!!In Hooked_NtGdiBitBlt, hdcDst=0x%x, hWndDest=0x%x, bIsFilterDCDest=%d, hdcSrc=0x%x, hWndSrc=0x%x, bIsFilterDCSrc=%d, bIsCreateDisplayDC=%d\n", 
+                    hdcDst, hWndFromDest, bIsFilterDCDest,
+                    hdcSrc, hWndFromSrc, bIsFilterDCSrc, bIsCreateDisplayDC));
 
                 //FNT_VERIFY(g_pDriverHookApiInfos->RefreshMemoryDC(hdcDst));
                 //DrawFilterWnd(hdcDst);
@@ -1347,7 +1351,15 @@ BOOL IsFilterHDC(HDC hDC, HWND* phWndFromDC)
     BOOL bRet = FALSE;
     if (g_pDriverHookApiInfos->m_ProtectWndInfo.hWndDeskTop != NULL)
     {
-        HWND hWndFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((ULONG)hDC, 
+        HDC hDCLocal = hDC;
+#if defined(_M_AMD64)
+        if (IoIs32bitProcess(NULL))
+        {
+            hDCLocal = (HDC)((ULONG64)hDCLocal & 0x00000000FFFFFFFF);
+        }
+#endif 
+
+        HWND hWndFromDC = (HWND)g_pDriverHookApiInfos->pOrigNtUserCallOneParam((DWORD_PTR)hDCLocal, 
             g_pDriverHookApiInfos->ONEPARAM_ROUTINE_WINDOWFROMDC);
 
         if (phWndFromDC)
@@ -1361,6 +1373,12 @@ BOOL IsFilterHDC(HDC hDC, HWND* phWndFromDC)
         {
             bRet = TRUE;
         }
+        //if ((ULONG64)hDC & 0x8000000000000000)
+        //{
+        //    KdPrint(("IsFilterHDC, hdc=0x%p, hDCLocal=0x%p\n", hDC, hDCLocal));
+        //}
+
+
     }
 
     return bRet;

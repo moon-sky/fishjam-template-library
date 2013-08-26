@@ -96,7 +96,10 @@ ULONG ClearWriteProtect(LPVOID lpAddress, SIZE_T dwSize)
 VOID  RestoreWriteProtect(LPVOID lpAddress, SIZE_T dwSize, ULONG oldProtect)
 {
     BOOL bRet = FALSE;
-    bRet = VirtualProtect(lpAddress, dwSize, oldProtect, NULL);
+    HANDLE hProcess = GetCurrentProcess();
+    HOOK_VERIFY(VirtualProtect(lpAddress, dwSize, oldProtect, NULL));
+    HOOK_VERIFY(FlushInstructionCache(hProcess, lpAddress, dwSize));
+
     HOOK_ASSERT(bRet);
 }
 

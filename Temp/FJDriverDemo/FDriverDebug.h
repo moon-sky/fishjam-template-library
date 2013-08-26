@@ -76,7 +76,10 @@
 *         bcdedit /set {Debug配置项的GUID} testsigning ON <== 允许加载测试签名签发的驱动程序(还是要签名，不过可以用非微软认证的证书)
 *       启动时选择 F8， 然后选择“禁止强制驱动签名” 即可以不用签名进行测试
 *     
-* 
+*   内核调试会话时设置用户态的断点 -- 通常内核会话不会加载用户态的模块符号，导致很难设置断点
+*     1.!process 0 0 命令列出所有进程，并通过 .PROCESS XXXX 切换到对应的进程
+*     2.执行.reload或.reload /user 重新加载符号
+*
 *   其他WinDbg的常用命令参见 FtlDebug.h 文件
 *
 * ETHREAD

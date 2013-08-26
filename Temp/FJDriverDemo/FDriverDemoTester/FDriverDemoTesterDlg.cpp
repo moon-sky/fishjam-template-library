@@ -51,6 +51,8 @@ BEGIN_MESSAGE_MAP(CFDriverDemoTesterDlg, CDialog)
 	ON_BN_CLICKED(IDC_BTN_TEST_DESKTOP, &CFDriverDemoTesterDlg::OnBnClickedBtnTestDesktop)
     ON_BN_CLICKED(IDC_BTN_FILTER_UPDATE_PROTECT_WND, &CFDriverDemoTesterDlg::OnBnClickedBtnFilterUpdateProtectWnd)
     ON_BN_CLICKED(IDC_BTN_CLEAR_PROTECT_WND, &CFDriverDemoTesterDlg::OnBnClickedBtnClearProtectWnd)
+    ON_BN_CLICKED(IDC_BTN_INSTALL_INLINE_HOOK, &CFDriverDemoTesterDlg::OnBnClickedBtnInstallInlineHook)
+    ON_BN_CLICKED(IDC_BTN_UNINSTALL_INLINE_HOOK, &CFDriverDemoTesterDlg::OnBnClickedBtnUninstallInlineHook)
 END_MESSAGE_MAP()
 
 
@@ -325,4 +327,15 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnClearProtectWnd()
 {
     BOOL bRet = FALSE;
     API_VERIFY(m_DriverController.IoControl(IOCTL_FDRIVER_UPDATE_PROTECT_WND, NULL, 0, NULL, 0));
+}
+
+
+void CFDriverDemoTesterDlg::OnBnClickedBtnInstallInlineHook()
+{
+    
+}
+
+void CFDriverDemoTesterDlg::OnBnClickedBtnUninstallInlineHook()
+{
+
 }

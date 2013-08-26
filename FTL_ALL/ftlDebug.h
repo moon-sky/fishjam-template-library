@@ -200,7 +200,7 @@ namespace FTL
     *     TODO: !for_each_XXXX 命令循环执行
 	*   [Dbghelp.dll] -- 缺省的
 	*      !lmi Module -- 显示模块详细信息
-	*      !process -- 查看指定(默认是当前)进程信息，包括 EPROCESS 块的信息
+	*      !process -- 查看指定(默认是当前进程)进程信息，包括 EPROCESS 块的信息
 	*      !sym -- 控制调试符号加载时的提示信息
 	*         noisy(开启嘈杂模式), quiet(关闭嘈杂模式)
     *   acpikd.dll -- 用于ACPI 调试，追踪调用ASL 程序的过程，显示ACPI 对象
