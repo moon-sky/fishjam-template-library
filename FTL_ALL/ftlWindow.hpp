@@ -779,7 +779,10 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_QUERYNEWPALETTE, CFDefaultMsgInfo);   //此消息能使窗口在收到焦点时同时有机会实现他的逻辑调色板
                 GET_MESSAGE_INFO_ENTRY(WM_PALETTEISCHANGING, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_PALETTECHANGED, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_HOTKEY, CFDefaultMsgInfo);        //当用户按下由REGISTERHOTKEY函数注册的热键时提交此消息
+
+                //当用户按下由REGISTERHOTKEY函数注册的热键时提交此消息，
+                //Windows Hotkey Explorer(http://hkcmdr.anymania.com/index.html) -- 检测当前系统的快捷键及注册程序
+                GET_MESSAGE_INFO_ENTRY(WM_HOTKEY, CFDefaultMsgInfo);        
 
 #if(WINVER >= 0x0400)
                 GET_MESSAGE_INFO_ENTRY(WM_PRINT, CFDefaultMsgInfo);

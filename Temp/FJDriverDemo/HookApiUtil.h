@@ -3,10 +3,12 @@
 
 #ifdef HOOK_DRIVER
 #  define HOOK_ASSERT              NT_ASSERT
+#  define HOOK_TRACE               KdPrint
 #  include <windef.h>
 #else
 #  define HOOK_ASSERT
 #  define HOOK_VERIFY(x)            bRet=(x); HOOK_ASSERT(bRet)
+#  define HOOK_TRACE                
 #  include <windows.h>
 #endif 
 

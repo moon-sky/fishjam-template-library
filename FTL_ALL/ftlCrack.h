@@ -30,13 +30,14 @@
 
 /*********************************************************************************************************************************
 * PE 文件格式：
-*   Dos Header -- DOS兼容的文件头
-*   PE Header
+*   Dos Header(IMAGE_DOS_HEADER) -- DOS兼容的文件头，其 e_magic 应该为 IMAGE_DOS_SIGNATURE
+*   PE Header(IMAGE_NT_HEADERS  -- (IMAGE_NT_HEADERS *)((PBYTE)pDosHeader + pDosHeader->e_lfanew)，其Signature 应为 IMAGE_NT_SIGNATURE
 *   .text Section(Program Code) -- 包含了程序代码
 *   .data Section(Initialized Data) -- 保存了初始化数据的数据节表
 *   .idata Section(Import Table) -- 列出导入的DLL和函数的导入表
 *   .edata Section（Export Table） -- 列出导出函数代码的导出表
 *   Debug Symbols -- 调试符号
+*  
 *********************************************************************************************************************************/
 
 /*********************************************************************************************************************************

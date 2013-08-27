@@ -4,21 +4,22 @@
 extern "C" {
 #endif
 
-    #define MAX_REPLACE_CODE_SIZE       0x40
+    #define MAX_REPLACE_CODE_SIZE       0x20
 
     typedef struct _INLINE_HOOK_INFO
     {
-        PBYTE   pTarget;
-        PBYTE   pDetour;
+        PBYTE   pTarget;            //要拦截的函数（如Windows API）
+        PBYTE   pDetour;            //用来替代Target函数的函数
         PBYTE   pOriginal;
 
-        UCHAR   targetBackup[MAX_REPLACE_CODE_SIZE];
-        ULONG   targetBackupSize;
-
-        UCHAR   trampoline[MAX_REPLACE_CODE_SIZE];
-        ULONG   trampolineSize;
+        //UCHAR   targetBackup[MAX_REPLACE_CODE_SIZE];
+        UCHAR   trampoline[MAX_REPLACE_CODE_SIZE];  //Target函数的复制品，后面接 jmp
+        ULONG   trampolineSize;                     //整个 trampoline 的长度，包括后面的 jmp
+        ULONG   targetBackupSize;                   //Target函数的备份长度
 
     }INLINE_HOOK_INFO, *PINLINE_HOOK_INFO;
+
+    C_ASSERT(sizeof(_INLINE_HOOK_INFO) == 52);
 
     //struct _INLINE_HOOK_INFO;
     //typedef _INLINE_HOOK_INFO* PINLINE_HOOK_INFO;

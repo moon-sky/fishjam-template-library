@@ -286,13 +286,18 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoTextout()
 void CFDriverDemoTesterDlg::OnBnClickedBtnTestDesktop()
 {
     BOOL bRet = FALSE;
+    CWnd* pWndDraw = GetDlgItem(IDC_STATIC_DRAW);
+    CRect rcClient;
+    pWndDraw->GetClientRect(&rcClient);
 
 	DWORD ProcessIdOfDesktop = 0;
 	HWND hWndDesktop = ::GetDesktopWindow();
 	DWORD dwThreadId = GetWindowThreadProcessId(hWndDesktop, &ProcessIdOfDesktop);
     HDC hDCDesktop = ::GetWindowDC(hWndDesktop);
-    CClientDC dcClient(GetDlgItem(IDC_STATIC_DRAW));
-    API_VERIFY(BitBlt(dcClient.m_hDC, 0, 0, m_rcClient.Width(), m_rcClient.Height(), hDCDesktop, 0, 0, SRCCOPY));
+    CClientDC dcClient(pWndDraw);
+    
+    API_VERIFY(StretchBlt(dcClient.m_hDC, 0, 0, rcClient.Width(), rcClient.Height(), 
+        hDCDesktop, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SRCCOPY));
 
     FTLTRACE(TEXT("DesktopWindow=0x%x,hDCDesktop=0x%x, dcClient=0x%x, ProcessIdOfDesktop=%d, ThreadId=%d\n"),
         hWndDesktop, hDCDesktop, dcClient.m_hDC,  ProcessIdOfDesktop, dwThreadId);

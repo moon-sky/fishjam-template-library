@@ -90,6 +90,7 @@ ULONG ClearWriteProtect(LPVOID lpAddress, SIZE_T dwSize)
     BOOL bRet = FALSE;
     bRet = VirtualProtect(lpAddress, dwSize, PAGE_EXECUTE_READWRITE, &oldProtect);
     HOOK_ASSERT(bRet);
+    HOOK_ASSERT(oldProtect == PAGE_EXECUTE_READ);
     return oldProtect;
 }
 
@@ -97,7 +98,8 @@ VOID  RestoreWriteProtect(LPVOID lpAddress, SIZE_T dwSize, ULONG oldProtect)
 {
     BOOL bRet = FALSE;
     HANDLE hProcess = GetCurrentProcess();
-    HOOK_VERIFY(VirtualProtect(lpAddress, dwSize, oldProtect, NULL));
+    DWORD dwOld = 0;
+    HOOK_VERIFY(VirtualProtect(lpAddress, dwSize, oldProtect, &dwOld));
     HOOK_VERIFY(FlushInstructionCache(hProcess, lpAddress, dwSize));
 
     HOOK_ASSERT(bRet);

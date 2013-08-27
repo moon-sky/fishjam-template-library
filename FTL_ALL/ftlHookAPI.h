@@ -136,10 +136,13 @@
 /******************************************************************************************************
 * Hook API
 *   实现方式
-*     1.改引入表式(import/export) -- 易于实现，OpenProcess + WriteProcessMemory 改写函数地址
-*     2.陷阱式(inline) -- 可以用来hook内部函数，而且调用者很难绕过hook
-*         通常需要完备的反汇编器和解释器
-*   
+*     1.改引入表式(IAT--Import Address Table) -- 易于实现，OpenProcess + WriteProcessMemory 改写函数地址
+*     2.陷阱式(inline, 无条件跳转 unconditional jump) -- 可以用来hook内部函数，而且调用者很难绕过hook
+*       通常需要完备的反汇编器和解释器，比较复杂:
+*       a.需要考虑原来的 jmp 的 relocate
+*       b.如果使用相对跳转(jmp offset)，x86需要5字节，但有2G的限制；64需要 ?
+*         如果使用绝对跳转(jmp [xxx]),x86需要10字节，64需要14字节，可以全进程空间跳转
+*       c.使用 VirtualProtectEx 把存放指令的页面的权限更改为可读可写可执行，再改写其内容，FlushInstructionCache
 * 已有的库
 *   1.EasyHook：http://easyhook.codeplex.com/
 *               https://code.google.com/p/easyhook-continuing-detours
@@ -213,6 +216,7 @@
 *       DetourRestoreAfterWith -- 恢复初始状态(在 DllMain::PROCESS_ATTACH 时调用？)
 *       DetourUpdateThread -- 
 *       DetourFindFunction -- 动态找到函数指针的真实地址给 TrueXxx 赋值?
+*        -- 远程创建线程闭关运行指定代码
 *     工具:
 *       SetDll.exe -- 可以在Exe文件中增加对指定DLL的引用(加入.detours节，会更改可执行文件),
 *         注意DLL需要有序号为"1" 的导出函数(Makefile 中有: /export:DetourFinishHelperProcess,@1,NONAME )
@@ -248,11 +252,16 @@
 *     系统钩子() -- 必须在DLL中，系统自动将该DLL注入受影响的进程地址空间
 *     线程钩子 -- 
 *    
-*     IAT(对于加壳的软件无效) ? 
+*     IAT(对于加壳的软件无效) ? 可以通过 GetProcAddress 跳过?
 *     JMP 方式 -- 可以对付加壳软件   
 *  
 *   远程注入：
 *     1.Ring3: CreateRemoteThread + LoadLibrary
+******************************************************************************************************/
+
+/******************************************************************************************************
+* 反汇编器(disassembler -- 需要同时支持 x86 和 64)
+*   diStorm64 disassembler(开源, GPL 和 commercial) -- http://www.ragestorm.net/distorm/
 ******************************************************************************************************/
 
 /******************************************************************************************************
