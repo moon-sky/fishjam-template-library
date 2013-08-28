@@ -19,3 +19,6 @@ TARGETNAME=FJDriverDemoIa64
 #    echo "need copy "
 #   copy $(_INX)\$(@B).inx $@
 
+#$(TARGETNAME)_copy.sys : $(OBJ_PATH)\$(O)\$(TARGETNAME).sys
+#    sign /v /ac VeriSignG5.cer /f fishjam.pfx /p wood5566 $(OBJ_PATH)\$(O)\$(TARGETNAME).sys
+#    copy $(OBJ_PATH)\$(O)\$(TARGETNAME).sys $@

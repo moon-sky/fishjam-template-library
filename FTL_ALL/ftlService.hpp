@@ -6,6 +6,10 @@
 #  include "ftlService.h"
 #endif
 
+#include <WtsApi32.h>
+#include <Userenv.h>
+#include <WinSvc.h>
+
 namespace FTL
 {
         BOOL CFService::IsServiceInstalled(LPCTSTR lpServiceName)
@@ -99,9 +103,40 @@ namespace FTL
             return FALSE;
         }
 
-        BOOL CFService::CreateServiceUIProcess(LPCTSTR pszProcessPath)
+        BOOL CFService::CreateServiceUIProcess(LPCTSTR pszProcessPath, ULONG SessionId)
         {
-            BOOL bRet = FALSE; 
+            BOOL bRet = FALSE;
+            HANDLE hToken = NULL;
+            API_VERIFY(WTSQueryUserToken(SessionId, &hToken));
+            if (bRet)
+            {
+                HANDLE hProcessToken = NULL;
+                API_VERIFY(DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL, SecurityIdentification ,
+                    TokenPrimary, &hProcessToken));
+                if (bRet)
+                {
+                    LPVOID pEnvBlock = NULL;
+                    API_VERIFY(CreateEnvironmentBlock(&pEnvBlock, hProcessToken, TRUE));
+                    if (bRet)
+                    {
+                        STARTUPINFO startupInfo = {0};
+                        PROCESS_INFORMATION processInfo = {0};
+                        API_VERIFY(CreateProcessAsUser(hProcessToken, 
+                            pszProcessPath,
+                            NULL, NULL, NULL,
+                            FALSE, CREATE_UNICODE_ENVIRONMENT, pEnvBlock, NULL, &startupInfo, &processInfo));
+                        if (bRet)
+                        {
+                            SAFE_CLOSE_HANDLE(processInfo.hProcess, NULL);
+                            SAFE_CLOSE_HANDLE(processInfo.hThread, NULL);
+                        }
+                        API_VERIFY(DestroyEnvironmentBlock(pEnvBlock));
+                    }
+                    SAFE_CLOSE_HANDLE(hProcessToken, NULL);
+                }
+
+                SAFE_CLOSE_HANDLE(hToken, NULL);
+            }
 #if 0
             //*1* Log the client on to the local computer.
             if (!LogonUser(

@@ -161,8 +161,8 @@
 #  pragma message( "  _MSC_VER = " QQUOTE(_MSC_VER) )
 #  if _MSC_VER == 1200
 #    pragma message( "     IDE is VC6")  //实际上由于ftlbase.h 使用了 strsafe.h 等文件和函数，因此是不支持的
-#  if _MSC_VER == 1300
-#    pragma message( "     IDE is VC70")  //实际上由于ftlbase.h 使用了 strsafe.h 等文件和函数，因此是不支持的
+#  elif _MSC_VER == 1300
+#    pragma message( "     IDE is VC70")
 #  elif _MSC_VER == 1310
 #    pragma message( "     IDE is VC71")
 #  elif _MSC_VER == 1400

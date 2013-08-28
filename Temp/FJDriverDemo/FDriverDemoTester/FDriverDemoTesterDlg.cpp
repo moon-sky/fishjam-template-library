@@ -295,7 +295,10 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnTestDesktop()
 	DWORD dwThreadId = GetWindowThreadProcessId(hWndDesktop, &ProcessIdOfDesktop);
     HDC hDCDesktop = ::GetWindowDC(hWndDesktop);
     CClientDC dcClient(pWndDraw);
-    
+
+    //API_VERIFY(BitBlt(dcClient.m_hDC, 0, 0, rcClient.Width(), rcClient.Height(), 
+    //    hDCDesktop, 0, 0, SRCCOPY));
+
     API_VERIFY(StretchBlt(dcClient.m_hDC, 0, 0, rcClient.Width(), rcClient.Height(), 
         hDCDesktop, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SRCCOPY));
 

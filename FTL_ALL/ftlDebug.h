@@ -174,7 +174,7 @@ namespace FTL
     *     .logopen(打开)/.logappend(追加)/.logclose(关闭)
     *   .lsrcpath -- 远程 源码路径
     *   .opendump -- 打开转储文件
-	*   .process [EPROCESS] -- 显示、切换进程上下文， 使用 !process 0 0 列出系统中的所有进程的基本信息
+	*   .process [EPROCESS] -- 显示、切换进程上下文
     *   .reload [module]-- 重新加载符号表， /i 允许加载不严格匹配的符号文件， /f 强制更新包括lazy在内的
     *   .remote -- 启动 remote.exe 支持远程调试
     *   .restart -- 重新开始调试会话
@@ -201,6 +201,7 @@ namespace FTL
 	*   [Dbghelp.dll] -- 缺省的
 	*      !lmi Module -- 显示模块详细信息
 	*      !process -- 查看指定(默认是当前进程)进程信息，包括 EPROCESS 块的信息
+    *        !process 0 0 列出系统中的所有进程的基本信息， !process -1 0 查看当前进程
 	*      !sym -- 控制调试符号加载时的提示信息
 	*         noisy(开启嘈杂模式), quiet(关闭嘈杂模式)
     *   acpikd.dll -- 用于ACPI 调试，追踪调用ASL 程序的过程，显示ACPI 对象

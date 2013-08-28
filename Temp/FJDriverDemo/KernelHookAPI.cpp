@@ -1268,6 +1268,7 @@ NTSTATUS UpdateCopyProtectWndInfo(PPROTECT_WND_INFO pProtectWndInfo)
     {
         if (pProtectWndInfo)
         {
+            //IoConnectInterrupt()
             RtlCopyMemory(&g_pDriverHookApiInfos->m_ProtectWndInfo, pProtectWndInfo, sizeof(PROTECT_WND_INFO));
         }
         else

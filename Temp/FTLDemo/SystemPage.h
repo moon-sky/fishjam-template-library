@@ -22,4 +22,5 @@ protected:
 public:
     afx_msg void OnBnClickedBtnTempFpuRcReset();
 	afx_msg void OnBnClickedBtnSystemMetrics();
+    afx_msg void OnBnClickedBtnCreateProcessAsUser();
 };

@@ -40,14 +40,14 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|Win32"
+			Name="Release|x64"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="0"
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="call wdk_build.bat chk x86 WXP $(SolutionDir)$(ConfigurationName)\"
+				BuildCommandLine="call wdk_build.bat fre x64 WIN7 $(SolutionDir)$(ConfigurationName)\"
 				ReBuildCommandLine=""
 				CleanCommandLine=""
 				Output=""
@@ -60,14 +60,14 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release|x64"
+			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="0"
 			>
 			<Tool
 				Name="VCNMakeTool"
-				BuildCommandLine="call wdk_build.bat fre x64 WIN7 $(SolutionDir)$(ConfigurationName)\"
+				BuildCommandLine="call wdk_build.bat chk x86 WXP $(SolutionDir)$(ConfigurationName)\"
 				ReBuildCommandLine=""
 				CleanCommandLine=""
 				Output=""

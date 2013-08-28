@@ -17,6 +17,8 @@
 #define IDC_BTN_INLINE_HOOK             1008
 #define IDC_BTN_DLL_HOOK3               1009
 #define IDC_BTN_INLINE_UNHOOK           1009
+#define IDC_BUTTON1                     1010
+#define IDC_BTN_CREATE_PROCESS_AS_USER  1010
 
 // Next default values for new objects
 // 
@@ -24,7 +26,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        201
 #define _APS_NEXT_COMMAND_VALUE         32775
-#define _APS_NEXT_CONTROL_VALUE         1007
+#define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -5,6 +5,9 @@
 #include "FTLDemo.h"
 #include "SystemPage.h"
 #include <ftlsystem.h>
+#include <ftlService.h>
+#pragma comment(lib, "Userenv.lib")
+#pragma comment(lib, "WtsApi32.lib")
 
 // CSystemPage ¶Ô»°¿ò
 
@@ -29,6 +32,8 @@ void CSystemPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSystemPage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_TEMP_FPU_RC_RESET, &CSystemPage::OnBnClickedBtnTempFpuRcReset)
 	ON_BN_CLICKED(IDC_BTN_SYSTEM_METRICS, &CSystemPage::OnBnClickedBtnSystemMetrics)
+    ON_BN_CLICKED(IDC_BTN_SYSTEM_CREATE_PROCESS_AS_USER, &CSystemPage::OnBnClickedBtnCreateProcessAsUser)
+
 END_MESSAGE_MAP()
 
 
@@ -56,3 +61,11 @@ void CSystemPage::OnBnClickedBtnSystemMetrics()
 	CFSystemMetricsProperty	systemMetricsProperty;
 	FTLTRACE(TEXT("SystemMetricsProperty = %s\n"), systemMetricsProperty.GetPropertyString());
 }
+
+void CSystemPage::OnBnClickedBtnCreateProcessAsUser()
+{
+    BOOL bRet = FALSE;
+    API_VERIFY(FTL::CFSystemUtil::EnableProcessPrivilege(GetCurrentProcess(), SE_TCB_NAME, TRUE));
+    API_VERIFY(FTL::CFService::CreateServiceUIProcess(TEXT("C:\\Windows\\System32\\calc.exe"), 1));
+}
+

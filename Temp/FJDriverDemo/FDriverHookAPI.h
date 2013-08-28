@@ -14,6 +14,7 @@ extern "C" {
 
 //[原创开源]在WIN7 X64上Hook Shadow SSDT  --  http://www.m5home.com/bbs/thread-6963-1-1.html
 //实现 Win64 上的内核级Inline Hook引擎 --  http://www.jybase.net/biancheng/20120429881.html
+//为什么win32k.sys在System进程空间无法访问 -- http://hi.baidu.com/_achillis/blog/item/da88bb195b75ef0c34fa4173.html 
 
 /******************************************************************************************************************
 调用顺序
@@ -192,7 +193,7 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 *   将GUI的实现放入内核模式，会增大系统不稳定的几率。但会大大提高图形处理的运行效率。
 *
 * KeUserModeCallBack -- 从R0调用位于Ring3的函数(系统所有的消息钩子回调都是利用该函数完成的)
-* 
+* win32k!xxxSnapWindow -- 按PrtSc键时会调用的函数
 * http://bbs.pediy.com/showthread.php?t=149861&highlight=NtGdiBitBlt
 * NtGdiBitBlt / NtGdiAlphaBlend / NtGdiCancelDC / NtGdiColorCorrectPalette / NtGdiConsoleTextOut / NtGdiCreateColorSpace /NtGdiCreateColorTransform
 * NtGdiGetDCPoint / NtGdiGetDCObject
@@ -210,6 +211,7 @@ NtGdiGetPixel
 NtUserSendInput
 NtOpenSection
 NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，NtUserFindWindowEx
+
 ******************************************************************************************************************/
 
 /******************************************************************************************************************

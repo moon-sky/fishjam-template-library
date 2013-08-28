@@ -69,4 +69,9 @@ status = ZwCreateFile(&hOtherDevice, FILE_READ_ATTRIBUTES | SYNCHRONIZE, &objAtt
 *   IoRequestDpc -- 放入DPC例程的队列
 ******************************************************************************************************************/
 
+/******************************************************************************************************************
+* How can I disable the print screen function -- http://www.faqs.org/faqs/msdos-programmer-faq/part2/section-17.html
+*   Win9x时 BIOS 通过 INT 5 中断处理打印，使用 0040:0100 (= 0000:0500) 的数据判断是否正在处理 print screen
+******************************************************************************************************************/
+
 #endif //F_DRIVER_IO_H

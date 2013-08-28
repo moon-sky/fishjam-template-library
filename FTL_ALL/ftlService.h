@@ -38,6 +38,12 @@
 *     WTSQueryUserToken(WTSGetActiveConsoleSessionId(), &hToken) -> DuplicateTokenEx -> CreateEnvironmentBlock -> CreateProcessAsUser
 *  3>.任何支持跨越主机的通信方式都支持跨越Session进行通信,简单适用的方式有RPC(远程过程调用)Named Pipes(命名管道)，WCF 等。
 *
+* 服务的安全控制
+*   1.不接受停止控制(如 Fasoo) -- AcceptStop 和 AcceptPause 设置成 FALSE， 可通过禁用的方式？
+*     可通过命令行查看属性确认：wmic service where name="服务名" get /value
+*     问题：如果是独立进程的服务可以中止进程，但是如果处于svchost宿主后面就没辙了，因为你强行停掉它也会把同一宿主下的其它服务也退出了
+*   2.禁止 禁用 -- 
+*   3.DesktopInteract = FALSE
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -85,7 +91,7 @@ namespace FTL
         FTLINLINE static BOOL UninstallService(LPCTSTR lpServiceName);
 
         //模拟Service 进程显示UI的步骤
-        FTLINLINE static BOOL CreateServiceUIProcess(LPCTSTR pszProcessPath);
+        FTLINLINE static BOOL CreateServiceUIProcess(LPCTSTR pszProcessPath, ULONG SessionId = WTSGetActiveConsoleSessionId());
     };
 
 }
