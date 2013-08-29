@@ -149,7 +149,7 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 	pHookApiInfo->pTargetAddress = GetSSDTFuncAddr(pHookApiInfo->nIndexInSSDT);
 	NT_ASSERT(pHookApiInfo->pTargetAddress);
 
-	bRet = CreateInlineHook(pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
+	bRet = CreateInlineHook(&pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
 		&pHookApiInfo->pInlineHookInfo);
     if (bRet)
     {

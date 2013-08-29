@@ -72,8 +72,13 @@ VOID  RestoreWriteProtect(LPVOID lpAddress, SIZE_T dwSize, ULONG oldProtect)
 }
 #  endif //64
 
+BOOL CheckIsImported(PBYTE pbCode, PBYTE pbAddress)
+{
+    return FALSE;
+}
 
 #else   //Application
+
 PVOID HookAllocate(SIZE_T NumberOfBytes)
 {
     return malloc(NumberOfBytes);
@@ -103,6 +108,41 @@ VOID  RestoreWriteProtect(LPVOID lpAddress, SIZE_T dwSize, ULONG oldProtect)
     HOOK_VERIFY(FlushInstructionCache(hProcess, lpAddress, dwSize));
 
     HOOK_ASSERT(bRet);
+}
+
+BOOL CheckIsImported(PBYTE pbCode, PBYTE pbAddress)
+{
+    BOOL bRet = FALSE;
+    MEMORY_BASIC_INFORMATION mbi = {0};
+    PIMAGE_DOS_HEADER pDosHeader = NULL;
+    PIMAGE_NT_HEADERS pNtHeader = NULL;
+    PBYTE pStartAddress = NULL;
+    PBYTE pEndAddress = NULL;
+
+    VirtualQuery((PVOID)pbCode, &mbi, sizeof(mbi));
+    //__try {
+    pDosHeader = (PIMAGE_DOS_HEADER)mbi.AllocationBase;
+    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+        return FALSE;
+    }
+
+    pNtHeader = (PIMAGE_NT_HEADERS)((PBYTE)pDosHeader +
+        pDosHeader->e_lfanew);
+    if (pNtHeader->Signature != IMAGE_NT_SIGNATURE) {
+        return FALSE;
+    }
+
+    pStartAddress = (PBYTE)pDosHeader + pNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress;
+    pEndAddress = pStartAddress + pNtHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size;
+
+    if (pbAddress >= pStartAddress &&  pbAddress < pEndAddress) {
+        return TRUE;
+    }
+    return FALSE;
+    //}
+    //__except(EXCEPTION_EXECUTE_HANDLER) {
+    //    return false;
+    //}
 }
 
 #endif 

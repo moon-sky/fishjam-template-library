@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6041064B-7A3F-44AF-9B42-1859D147F162}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\FTL_ALL\ftlDebug.h = ..\..\FTL_ALL\ftlDebug.h
+		..\..\FTL_ALL\ftlHookAPI.h = ..\..\FTL_ALL\ftlHookAPI.h
 	EndProjectSection
 EndProject
 Global

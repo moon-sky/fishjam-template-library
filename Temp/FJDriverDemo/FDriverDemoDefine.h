@@ -75,7 +75,7 @@ typedef struct _INSTALL_COPY_PROTECT_HOOK_32
 }INSTALL_COPY_PROTECT_HOOK_32, *PINSTALL_COPY_PROTECT_HOOK_32;
 
 typedef struct _PPROTECT_WND_INFO_32 {
-    VOID*POINTER_32     hWndDeskTop;
+    VOID*POINTER_32     hWndDeskTop;        //UlongToPtr
     VOID*POINTER_32	    hDCWndProtect;
     RECT                rcProtectWindow;
 } PROTECT_WND_INFO_32, *PPROTECT_WND_INFO_32;

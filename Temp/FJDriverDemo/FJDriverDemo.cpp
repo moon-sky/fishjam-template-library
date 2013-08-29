@@ -138,7 +138,7 @@ NTSTATUS FJDriverDemoDeviceControl(IN PDEVICE_OBJECT DeviceObject, IN PIRP pIrp)
                     if (pProtectWndInfo32)
                     {
                         PROTECT_WND_INFO protectWndInfo64;
-                        protectWndInfo64.hWndDeskTop = (HWND)pProtectWndInfo32->hWndDeskTop;
+                        protectWndInfo64.hWndDeskTop = (HWND)pProtectWndInfo32->hWndDeskTop;    //UlongToPtr
                         //protectWndInfo64.hTargetProcess = pProtectWndInfo32->hTargetProcess;
                         protectWndInfo64.rcProtectWindow = pProtectWndInfo32->rcProtectWindow;
                         protectWndInfo64.hDCWndProtect = (HDC)pProtectWndInfo32->hDCWndProtect;

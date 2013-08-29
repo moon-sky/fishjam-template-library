@@ -6,7 +6,7 @@
 #include <atlbase.h>
 #include "ftlbase.h"
 
-//#define USE_INLINE_HOOK
+#define USE_INLINE_HOOK
 
 #ifdef USE_INLINE_HOOK
 #  include "InlineHook.h"
@@ -53,7 +53,7 @@ BOOL WINAPI FilterBitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int 
     //ATLTRACE(TEXT("Enter FilterBitBlt\n"));
 #ifdef USE_INLINE_HOOK
     BITBLT pOrigBitBlt = (BITBLT)g_pHookBitBlt->pOriginal;
-    BOOL bRet = pOrigBitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
+    BOOL bRet = (*pOrigBitBlt)(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
 #else 
     BOOL bRet = TrueBitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
 #endif 
@@ -118,8 +118,9 @@ BOOL WINAPI FilterStretchBlt(  HDC hdcDest,
                 DWORD dwRop)
 {
 #ifdef USE_INLINE_HOOK
-    STRETCHBLT pOrigStretchBlt = (BITBLT)g_pHookBitBlt->pOriginal;
-    BOOL bRet = pOrigStretchBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
+    STRETCHBLTPROC pOrigStretchBlt = (STRETCHBLTPROC)g_pHookBitBlt->pOriginal;
+    BOOL bRet = pOrigStretchBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nWidthSrc,
+        hdcSrc, nXOriginSrc, nYOriginSrc, nWidthSrc, nHeightSrc, dwRop);
 #else 
     BOOL bRet = TrueStretchBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nWidthSrc,
         hdcSrc, nXOriginSrc, nYOriginSrc, nWidthSrc, nHeightSrc, dwRop);
@@ -245,7 +246,7 @@ COMICHELPER_API BOOL HookApi()
             g_bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
 
 #ifdef USE_INLINE_HOOK
-        API_VERIFY(CreateInlineHook(BitBlt, FilterBitBlt, NULL, &g_pHookBitBlt));
+        API_VERIFY(CreateInlineHook((PVOID*)&TrueBitBlt, &FilterBitBlt, NULL, &g_pHookBitBlt));
 #else
         DetourRestoreAfterWith();
         API_VERIFY(DetourTransactionBegin() == NO_ERROR);

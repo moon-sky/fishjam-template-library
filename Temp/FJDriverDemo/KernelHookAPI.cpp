@@ -72,7 +72,7 @@ typedef BOOL (*NtUserPrintWindow)(HWND 	hwnd, HDC hdcBlt, UINT nFlags);
 typedef DWORD (*NtGdiDdLock)(HANDLE hSurface, PDD_LOCKDATA puLockData, HDC hdcClip);
 typedef DWORD (*NtGdiDdUnlock)(HANDLE hSurface, PDD_UNLOCKDATA puUnlockData);
 
-#define MAX_TRACE_CREATE_DISPLAY_DC_COUNT	10
+#define MAX_TRACE_CREATE_DISPLAY_DC_COUNT	1
 
 BOOL DrawFilterWnd(HDC hDCDest);
 
@@ -142,7 +142,7 @@ typedef struct _DRIVER_HOOK_API_INFOS
 public:
     HANDLE                  m_hTargetProcess;
     PROTECT_WND_INFO		m_ProtectWndInfo;
-#if 1
+#if 0
     HDC						m_hMemoryDC;
     HBITMAP					m_hBitmap;
     //PEPROCESS				m_pEProcess;
@@ -200,7 +200,7 @@ public:
             KeAcquireSpinLock(&m_SplinLock, &irql);
             for (int i = 0; i < MAX_TRACE_CREATE_DISPLAY_DC_COUNT; i++)
             {
-                if (NULL == m_hCreatedDisplayDC[i])
+                //if (NULL == m_hCreatedDisplayDC[i])
                 {
                     m_hCreatedDisplayDC[i] = hDC;
                     bRet = TRUE;
@@ -631,7 +631,7 @@ public:
         NTSTATUS status = STATUS_SUCCESS;
         RTL_OSVERSIONINFOW osVersionInfo = {0};
         osVersionInfo.dwOSVersionInfoSize  = sizeof(osVersionInfo);
-        FNT_VERIFY(RtlGetVersion(&osVersionInfo));
+        FNT_VERIFY(RtlGetVersion(&osVersionInfo));  //PsGetVersion
 
         ULONG versionCode = osVersionInfo.dwMajorVersion * 100 + osVersionInfo.dwMinorVersion;
         KdPrint(("RtlGetVersion, version is %d, buildNumber=%d, platformId=%d, csd=%ws\n", 
@@ -702,7 +702,7 @@ public:
         return status;
     }
 
-#if 1
+#if 0
     NTSTATUS RefreshMemoryDC(HDC hdcDst)
     {
         //__asm int 3
@@ -813,30 +813,31 @@ BOOL Hooked_NtGdiBitBlt(
     {
         HWND hWndFromDest = NULL;
         HWND hWndFromSrc = NULL;
-        BOOL bIsFilterDCDest = IsFilterHDC(hdcDst, &hWndFromDest);
+        //BOOL bIsFilterDCDest = IsFilterHDC(hdcDst, &hWndFromDest);
         BOOL bIsFilterDCSrc = IsFilterHDC(hdcSrc, &hWndFromSrc);
         BOOL bIsCreateDisplayDC = g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc);
         NtGdiBitBlt pOrigNtGdiBitBlt = (NtGdiBitBlt)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiBitBlt].pOrigApiAddress);
         if (pOrigNtGdiBitBlt)
         {
-            if (Width >= 1000 && Height >= 900)
+            if (((ULONG)hdcSrc & 0x80000000)
+                && (Width >= 800 && Height >= 600))
             {
-                KdPrint(("In Hooked_NtGdiBitBlt, hdcDst=0x%x, hWndDest=0x%x, bIsFilterDCDest=%d, hdcSrc=0x%p, hWndSrc=0x%x, bIsFilterDCSrc=%d, bIsCreateDisplayDC=%d\n", 
-                    hdcDst, hWndFromDest, bIsFilterDCDest,
+                KdPrint(("[%d, %d]In Hooked_NtGdiBitBlt, hdcSrc=0x%p, hWndSrc=0x%p, bIsFilterDCSrc=%d, bIsCreateDisplayDC=%d\n", 
+                    PsGetCurrentProcessId(), PsGetCurrentThreadId(), 
                     hdcSrc, hWndFromSrc, bIsFilterDCSrc, bIsCreateDisplayDC));
 
                 hWndFromDest = NULL;
                 hWndFromSrc = NULL;
-                bIsFilterDCDest = IsFilterHDC(hdcDst, &hWndFromDest);
+                //bIsFilterDCDest = IsFilterHDC(hdcDst, &hWndFromDest);
                 bIsFilterDCSrc = IsFilterHDC(hdcSrc, &hWndFromSrc);
                 bIsCreateDisplayDC = g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc);
             }
 
-            if (bIsFilterDCSrc || bIsFilterDCDest
+            if (bIsFilterDCSrc// || bIsFilterDCDest
                 || g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
             {
-                KdPrint(("!!!In Hooked_NtGdiBitBlt, hdcDst=0x%x, hWndDest=0x%x, bIsFilterDCDest=%d, hdcSrc=0x%x, hWndSrc=0x%x, bIsFilterDCSrc=%d, bIsCreateDisplayDC=%d\n", 
-                    hdcDst, hWndFromDest, bIsFilterDCDest,
+                KdPrint(("!!![%d, %d]In Hooked_NtGdiBitBlt, hdcSrc=0x%p, hWndSrc=0x%p, bIsFilterDCSrc=%d, bIsCreateDisplayDC=%d\n", 
+                    PsGetCurrentProcessId(), PsGetCurrentThreadId(),
                     hdcSrc, hWndFromSrc, bIsFilterDCSrc, bIsCreateDisplayDC));
 
                 //FNT_VERIFY(g_pDriverHookApiInfos->RefreshMemoryDC(hdcDst));
@@ -870,8 +871,8 @@ BOOL Hooked_NtGdiStretchBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT cyDst
         {
             //KdPrint(("[%d] In Hooked_NtGdiStretchBlt, hdcDst=0x%x, hdcSrc=0x%x\n", 
             //	PsGetCurrentProcessId(), hdcDst, hdcSrc));
-            if (IsFilterHDC(hdcDst, NULL) 
-                || IsFilterHDC(hdcSrc, NULL)
+            if (IsFilterHDC(hdcSrc, NULL) 
+                //|| IsFilterHDC(hdcDst, NULL) 
                 || g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
             {
                 KdPrint(("!!! In Hooked_NtGdiStretchBlt, hdcDst=0x%x, hdcSrc=0x%x\n", hdcDst, hdcSrc));
@@ -902,8 +903,8 @@ BOOL Hooked_NtGdiPlgBlt(HDC hdcDst, LPPOINT pptlTrg,
         NtGdiPlgBlt pOrigNtGdiPlgBlt = ((NtGdiPlgBlt)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiPlgBlt].pOrigApiAddress));
         if (pOrigNtGdiPlgBlt)
         {
-            if (IsFilterHDC(hdcDst, NULL) 
-                || IsFilterHDC(hdcSrc, NULL)
+            if (IsFilterHDC(hdcSrc, NULL)
+                //|| IsFilterHDC(hdcDst, NULL) 
                 || g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
             {
                 KdPrint(("!!! In Hooked_NtGdiPlgBlt, hdcDst=0x%x, hdcSrc=0x%x\n", hdcDst, hdcSrc));
@@ -938,8 +939,8 @@ BOOL Hooked_NtGdiMaskBlt(HDC hdcDst, INT xDst, INT yDst, INT cx, INT cy,
         NtGdiMaskBlt pOrigNtGdiMaskBlt = ((NtGdiMaskBlt)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiMaskBlt].pOrigApiAddress));
         if (pOrigNtGdiMaskBlt)
         {
-            if (IsFilterHDC(hdcDst, NULL) 
-                || IsFilterHDC(hdcSrc, NULL)
+            if (IsFilterHDC(hdcSrc, NULL)
+                //|| IsFilterHDC(hdcDst, NULL) 
                 || g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
             {
                 KdPrint(("!!! In Hooked_NtGdiMaskBlt, hdcDst=0x%x, hdcSrc=0x%x\n", hdcDst, hdcSrc));
@@ -973,8 +974,8 @@ BOOL Hooked_NtGdiTransparentBlt(HDC hdcDst, INT xDst, INT yDst, INT cxDst, INT c
         NtGdiTransparentBlt pOrigNtGdiTransparentBlt = (NtGdiTransparentBlt)(g_pDriverHookApiInfos->m_HookFuns[hft_NtGdiTransparentBlt].pOrigApiAddress);
         if (pOrigNtGdiTransparentBlt)
         {
-            if (IsFilterHDC(hdcDst, NULL) 
-                || IsFilterHDC(hdcSrc, NULL)
+            if (IsFilterHDC(hdcSrc, NULL)
+                //|| IsFilterHDC(hdcDst, NULL) 
                 || g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcSrc))
             {
                 KdPrint(("!!! In Hooked_NtGdiTransparentBlt, hdcDst=0x%x, hdcSrc=0x%x\n", hdcDst, hdcSrc));
@@ -1123,7 +1124,6 @@ BOOL Hooked_NtUserPrintWindow(HWND hwnd, HDC hdcBlt, UINT nFlags)
         if (pOrigNtUserPrintWindow)
         {
             if (IsFilterHDC(hdcBlt, NULL) 
-                || IsFilterHDC(hdcBlt, NULL)
                 || g_pDriverHookApiInfos->IsCreatedDisplayDC(hdcBlt))
             {
                 KdPrint(("!!! In Hooked_NtUserPrintWindow, hdcBlt=0x%x\n", hdcBlt));

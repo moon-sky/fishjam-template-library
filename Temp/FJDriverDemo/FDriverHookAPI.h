@@ -104,7 +104,7 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 //  给出了Windows这个成功的商业操作系统的内核大部分代码，可以对其进行修改、编译，并且可以用这个内核启动Windows操作系统。
 //  检查导入表符号的小工具 -- 静态分析PE文件的导入表，挨个对导入表中的符号，去导入文件的导出表中去搜索(参考WRK)
 
-//WinDbg 中循环查找SSDT的函数对应表 -- 需要进入Hook部分，并 load 相关的pdb文件才能查找
+//WinDbg 中循环查找SSDT的函数对应表 -- 需要进入Hook部分，并 load 相关的pdb文件才能查找(先通过  !process 0 0 查找当前)
 // 32 Bit(WinXP)
 //   SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(nt!KiServiceTable + 4 * eax)) }
 //   Shadow SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(win32k!W32pServiceTable + 4 * eax)) }
@@ -224,7 +224,7 @@ NtGdiBitBlt，NtGdiMaskBlt，NtGdiPlgBlt，NtGdiStretchBlt。NtUserBuildHwndList，Nt
 * Shadow SSDT(Shadow System Services Descriptor Table) -- 管图形、用户相关的函数(gdi32.dll,user32.dll)
 *   注意：
 *   1.win32k.sys不是常在内存的，如果不是GUI线程，Shadow SSDT 地址无效 -- 在GUI线程中DeviceIoControl即可;
-*   2.通常需要附加的进程是 csrss.exe ? GetCsrPid()
+*   2.通常需要附加的进程是 csrss.exe, 因为该进程是系统的，并且其中已经映射了 win32k.sys。 GetCsrPid()
 *   3.使用MDL映射一块不分页内存，设置成可以写入，常驻在物理内存(参见 RegmonMapServiceTable) -- IoAllocateMdl ?
 *     TODO:通过 #pragma LOCKEDCODE 声明变量即可？
 *   4.GDI的很多函数会操作 _pGdiSharedHandleTable 表?

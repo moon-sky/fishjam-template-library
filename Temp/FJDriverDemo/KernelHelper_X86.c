@@ -26,7 +26,7 @@ SYSTEM_SERVICE_TABLE *GetKeServiceDescriptorTableShadowAddress ()
 { 
     //32位系统中导出了KeServiceDescriptorTable变量，
     //其后紧接着有未导出的 KeServiceDescriptorTableShadow, 其前部分的内容和 KeServiceDescriptorTable 内容一样
-    //通过从 KeAddSystemServiceTable 导出函数开始搜索，并比较内存中的内充，从而找到 KeServiceDescriptorTableShadow，
+    //通过从 KeAddSystemServiceTable 导出函数开始搜索，并比较内存中的内容，从而找到 KeServiceDescriptorTableShadow，
     //通过搜索 操作SSDT的函数实现中的有效内存地址的办法 来查找 Shadow SSDT
     //TODO: 能取到 KeServiceDescriptorTable 导出变量的地址，返回 KeServiceDescriptorTable[1] 不就是 KeServiceDescriptorTableShadow 的地址了？
 
@@ -124,7 +124,7 @@ NTSTATUS HookSSDTFunc(PHOOK_API_INFO pHookApiInfo)
 #ifdef USE_INLINE_HOOK
     pHookApiInfo->pTargetAddress = GetSSDTFuncAddr(pHookApiInfo->nIndexInSSDT);
     NT_ASSERT(pHookApiInfo->pTargetAddress);
-    if(CreateInlineHook(pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
+    if(CreateInlineHook(&(PVOID&)pHookApiInfo->pTargetAddress, pHookApiInfo->pNewApiAddress, &pHookApiInfo->pOrigApiAddress,
         &pHookApiInfo->pInlineHookInfo))
     {
         status = STATUS_SUCCESS;

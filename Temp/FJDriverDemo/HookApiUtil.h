@@ -29,6 +29,7 @@ VOID  HookFree(PVOID pBuffer);
 ULONG ClearWriteProtect(LPVOID lpAddress, SIZE_T dwSize);
 VOID  RestoreWriteProtect(LPVOID lpAddress, SIZE_T dwSize, ULONG oldProtect);
 
+BOOL CheckIsImported(PBYTE pbCode, PBYTE pbAddress);
 
 #ifdef __cplusplus
 }
