@@ -286,8 +286,8 @@
 *   0xe3 -- jmp ds 还是 jcxz imm8 ?
 *   0xe8 XXXXXXXX -- call imm16/imm32
 *   0xe9 XXXXXXXX -- jmp imm16/imm32 (jmp offset, offset大于0向前挑,offset小于0向后跳) ; x64 下对应 ff15  [xxxxxxxx], xxxxxxxx 是32位的，[xxxxxxxx]指向一个64位地址
-*   0xeb -- jmp imm8
-*   0xff25 -- jmp [+imm32] -- 根据指定内存中保存的 Address Table 进行跳转? JMP QWORD NEAR，
+*   0xeb -- jmp imm8(patch jump)
+*   0xff25 -- jmp [+imm32] -- 根据指定内存中保存的 Address Table 进行跳转? JMP QWORD NEAR， import vector
 *     跳转目标是指定8字节内存中的地址(64位系统上可以直接跳转到全局目的地)。可以指定8字节地址为0,即根据当前指令后偏移位置为0的地址进行跳转
 *   0xffe0 -- jmp rax -- 根据 rax 寄存器的值进行跳转，即 jmp imm64 ?
 * 

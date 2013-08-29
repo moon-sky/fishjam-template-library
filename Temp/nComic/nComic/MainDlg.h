@@ -35,6 +35,7 @@ public:
 		MSG_WM_DESTROY(OnDestroy)
         COMMAND_HANDLER(IDC_BTN_INLINE_HOOK, BN_CLICKED, OnBnClickedBtnInlineHook)
         COMMAND_HANDLER(IDC_BTN_INLINE_UNHOOK, BN_CLICKED, OnBnClickedBtnInlineUnhook)
+        COMMAND_HANDLER(IDC_BTN_DLL_HOOK, BN_CLICKED, OnBnClickedBtnDllHook)
     END_MSG_MAP()
 
 // Handler prototypes (uncomment arguments if needed):
@@ -68,4 +69,5 @@ private:
 public:
     LRESULT OnBnClickedBtnInlineHook(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     LRESULT OnBnClickedBtnInlineUnhook(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+    LRESULT OnBnClickedBtnDllHook(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };

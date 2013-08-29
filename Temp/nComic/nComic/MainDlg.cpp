@@ -216,3 +216,8 @@ LRESULT CMainDlg::OnBnClickedBtnInlineUnhook(WORD /*wNotifyCode*/, WORD /*wID*/,
     UnHookApi();
     return 0;
 }
+
+LRESULT CMainDlg::OnBnClickedBtnDllHook(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+    return 0;
+}
