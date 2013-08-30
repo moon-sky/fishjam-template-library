@@ -48,12 +48,46 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About ComicHelperProxy",              ID_APP_ABOUT
+    END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Icon
 //
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\nComic.ico"
+IDR_MAINFRAME           ICON                    "res\\ComicHelperProxy.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -61,41 +95,18 @@ IDR_MAINFRAME           ICON                    "res\\nComic.ico"
 //
 
 IDD_ABOUTBOX DIALOG  0, 0, 187, 102
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,130,81,50,14
-    CTEXT           "nComic Application v1.0\n\n(c) Copyright 2013",IDC_STATIC,25,57,78,32
+    CTEXT           "ComicHelperProxy Application v1.0\n\n(c) Copyright 2013",IDC_STATIC,25,57,78,
+                    32
     ICON            IDR_MAINFRAME,IDC_STATIC,55,26,18,20
     GROUPBOX        "",IDC_STATIC,7,7,115,88
 END
 
-IDD_MAINDLG DIALOGEX 0, 0, 418, 209
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
-CAPTION "nComic"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,361,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,361,24,50,14
-    PUSHBUTTON      "&About",ID_APP_ABOUT,361,187,50,14
-    PUSHBUTTON      "Hook",IDC_BTN_SERVICE_HOOK,21,61,98,20,WS_DISABLED
-    PUSHBUTTON      "UnHook",IDC_BTN_SERVICE_UNHOOK,21,121,98,20,WS_DISABLED
-    PUSHBUTTON      "InitService",IDC_BTN_INIT_SERVICE,21,30,98,20
-    GROUPBOX        "Service",IDC_STATIC,7,17,129,168
-    PUSHBUTTON      "FinService",IDC_BTN_FIN_SERVICE,21,151,98,20
-    GROUPBOX        "DLL",IDC_STATIC,146,18,118,79
-    PUSHBUTTON      "Hook",IDC_BTN_DLL_HOOK,156,33,98,20
-    PUSHBUTTON      "UnHook",IDC_BTN_DLL_UNHOOK,156,63,98,20
-    GROUPBOX        "ClipboardViewer",IDC_STATIC,146,107,118,77
-    PUSHBUTTON      "Enable",IDC_BTN_ENABLE_CLIPBOARD_VIEWER,160,121,89,20
-    PUSHBUTTON      "Disable",IDC_BTN_DISABLE_CLIPBOARD_VIEWER,161,153,89,20
-    PUSHBUTTON      "Hook",IDC_BTN_INLINE_HOOK,285,33,51,20
-    PUSHBUTTON      "UnHook",IDC_BTN_INLINE_UNHOOK,285,66,51,20
-    GROUPBOX        "InlineHook",IDC_STATIC,272,17,78,81
-    PUSHBUTTON      "CreateProcessAsUser",IDC_BTN_CREATE_PROCESS_AS_USER,273,118,102,20
-    PUSHBUTTON      "UpdateProtectInfo",IDC_BTN_SERVICE_UPDATE_PROTECT_INFO,21,90,98,20,WS_DISABLED
-END
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -112,14 +123,6 @@ BEGIN
         RIGHTMARGIN, 180
         TOPMARGIN, 7
         BOTTOMMARGIN, 95
-    END
-
-    IDD_MAINDLG, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 411
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 201
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -171,21 +174,21 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "FileDescription", "nComic Module"
-            VALUE "FileVersion", "1, 0, 0, 1"
-            VALUE "InternalName", "nComic"
-            VALUE "LegalCopyright", "Copyright 2013"
-            VALUE "OriginalFilename", "nComic.exe"
-            VALUE "ProductName", "nComic Module"
-            VALUE "ProductVersion", "1, 0, 0, 1"
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "ComicHelperProxy Module\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "ComicHelperProxy\0"
+            VALUE "LegalCopyright", "Copyright 2013\0"
+            VALUE "OriginalFilename", "ComicHelperProxy.exe\0"
+            VALUE "ProductName", "ComicHelperProxy Module\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x409, 1200
+        VALUE "Translation", 0x0409, 0x04B0
     END
 END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -194,7 +197,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_MAINFRAME           "nComic"
+    IDR_MAINFRAME	"ComicHelperProxy"
 END
 
 STRINGTABLE 
@@ -268,10 +271,6 @@ END
 STRINGTABLE 
 BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
-END
-
-STRINGTABLE 
-BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
 
@@ -279,3 +278,5 @@ END
 /////////////////////////////////////////////////////////////////////////////
 
 
+#ifndef APSTUDIO_INVOKED
+#endif    // not APSTUDIO_INVOKED

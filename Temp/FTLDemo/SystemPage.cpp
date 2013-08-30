@@ -65,7 +65,11 @@ void CSystemPage::OnBnClickedBtnSystemMetrics()
 void CSystemPage::OnBnClickedBtnCreateProcessAsUser()
 {
     BOOL bRet = FALSE;
-    API_VERIFY(FTL::CFSystemUtil::EnableProcessPrivilege(GetCurrentProcess(), SE_TCB_NAME, TRUE));
-    API_VERIFY(FTL::CFService::CreateServiceUIProcess(TEXT("C:\\Windows\\System32\\calc.exe"), 1));
+    HANDLE hCurProcess = GetCurrentProcess();
+    API_VERIFY(FTL::CFSystemUtil::EnableProcessPrivilege(hCurProcess, SE_CHANGE_NOTIFY_NAME, TRUE));
+    API_VERIFY(FTL::CFSystemUtil::EnableProcessPrivilege(hCurProcess, SE_INCREASE_QUOTA_NAME, TRUE));
+    API_VERIFY(FTL::CFSystemUtil::EnableProcessPrivilege(hCurProcess, SE_TCB_NAME, TRUE)); 
+    API_VERIFY(FTL::CFSystemUtil::EnableProcessPrivilege(hCurProcess, SE_ASSIGNPRIMARYTOKEN_NAME, TRUE));
+    API_VERIFY(FTL::CFService::CreateServiceUIProcess(TEXT("C:\\Windows\\System32\\calc.exe"), TRUE));
 }
 

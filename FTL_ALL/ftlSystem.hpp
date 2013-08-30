@@ -586,13 +586,13 @@ namespace FTL
 
     BOOL CFSystemUtil::EnableProcessPrivilege(HANDLE hProcess, LPCTSTR lpPrivilegeName /* = SE_DEBUG_NAME */,BOOL bEnabled /*= TRUE*/)
     {
-        HANDLE hToken = NULL;
         BOOL bRet = FALSE;
-        API_VERIFY(OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken));
+        TOKEN_PRIVILEGES TokenPrivileges = { 0 };
+        API_VERIFY(LookupPrivilegeValue (NULL, lpPrivilegeName, &TokenPrivileges.Privileges[0].Luid));
         if (bRet)
         {
-            TOKEN_PRIVILEGES TokenPrivileges = { 0 };
-            API_VERIFY(LookupPrivilegeValue (NULL, lpPrivilegeName, &TokenPrivileges.Privileges[0].Luid));
+            HANDLE hToken = NULL;
+            API_VERIFY(OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken));
             if (bRet)
             {
                 TokenPrivileges.PrivilegeCount = 1;
@@ -600,8 +600,8 @@ namespace FTL
                 API_VERIFY(AdjustTokenPrivileges (hToken,FALSE,&TokenPrivileges,
                     sizeof (TokenPrivileges),NULL,NULL));
                 bRet = (GetLastError () == ERROR_SUCCESS);
+                CloseHandle(hToken);
             }
-            CloseHandle(hToken);
         }
         return bRet;
     }

@@ -47,7 +47,7 @@ namespace FTL
     }
 
 	template<typename T>
-	CFSharedVariable<T>::CFSharedVariable(
+	CFSharedVariableT<T>::CFSharedVariableT(
 		InitializeSharedVariableProc pInitializeProc /* = NULL */, 
 		FinalizeSharedVariableProc pFinalizeProc /* = NULL */,
 		LPCTSTR pszShareName /* = NULL */)
@@ -91,7 +91,7 @@ namespace FTL
 	}
 
 	template<typename T>
-	CFSharedVariable<T>::~CFSharedVariable()
+	CFSharedVariableT<T>::~CFSharedVariableT()
 	{
 		if (m_pShareValue)
 		{
@@ -111,7 +111,7 @@ namespace FTL
 	}
 
 	template<typename T>
-	T& CFSharedVariable<T>::GetShareValue()
+	T& CFSharedVariableT<T>::GetShareValue()
 	{
 		FTLASSERT(m_pShareValue);
 		return *m_pShareValue;

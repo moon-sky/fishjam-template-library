@@ -103,11 +103,18 @@ namespace FTL
             return FALSE;
         }
 
-        BOOL CFService::CreateServiceUIProcess(LPCTSTR pszProcessPath, ULONG SessionId)
+        BOOL CFService::CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, ULONG SessionId)
         {
             BOOL bRet = FALSE;
             HANDLE hToken = NULL;
-            API_VERIFY(WTSQueryUserToken(SessionId, &hToken));
+            if (bAsSystem)
+            {
+                API_VERIFY(OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &hToken));
+            }
+            else
+            {
+                API_VERIFY(WTSQueryUserToken(SessionId, &hToken));
+            }
             if (bRet)
             {
                 HANDLE hProcessToken = NULL;
@@ -115,16 +122,23 @@ namespace FTL
                     TokenPrimary, &hProcessToken));
                 if (bRet)
                 {
+                    if (bAsSystem)
+                    {
+                        API_VERIFY(SetTokenInformation(hProcessToken, TokenSessionId, &SessionId, sizeof(SessionId)));
+                    }
                     LPVOID pEnvBlock = NULL;
-                    API_VERIFY(CreateEnvironmentBlock(&pEnvBlock, hProcessToken, TRUE));
+                    API_VERIFY(CreateEnvironmentBlock(&pEnvBlock, hProcessToken, FALSE));
                     if (bRet)
                     {
                         STARTUPINFO startupInfo = {0};
+                        startupInfo.lpDesktop = TEXT("WinSta0\\Default"); //指定创建进程的窗口站，Windows下唯一可交互的窗口站就是WinSta0\Default  
                         PROCESS_INFORMATION processInfo = {0};
+                        DWORD dwCreationFlag = CREATE_UNICODE_ENVIRONMENT | NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE;
                         API_VERIFY(CreateProcessAsUser(hProcessToken, 
                             pszProcessPath,
-                            NULL, NULL, NULL,
-                            FALSE, CREATE_UNICODE_ENVIRONMENT, pEnvBlock, NULL, &startupInfo, &processInfo));
+                            NULL,
+                            NULL, NULL,
+                            FALSE, dwCreationFlag, pEnvBlock, NULL, &startupInfo, &processInfo));
                         if (bRet)
                         {
                             SAFE_CLOSE_HANDLE(processInfo.hProcess, NULL);

@@ -19,6 +19,7 @@
 #define IDC_BTN_INLINE_UNHOOK           1009
 #define IDC_BUTTON1                     1010
 #define IDC_BTN_CREATE_PROCESS_AS_USER  1010
+#define IDC_BTN_SERVICE_UPDATE_PROTECT_INFO 1011
 
 // Next default values for new objects
 // 

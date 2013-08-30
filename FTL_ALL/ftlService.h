@@ -80,6 +80,9 @@
 *   程序编译后通过Installutil 将其加载到系统服务中
 *************************************************************************************************************************/
 
+#pragma comment(lib, "wtsapi32.lib")
+#pragma comment(lib, "Userenv.lib")
+
 namespace FTL
 {
     class CFService
@@ -91,7 +94,8 @@ namespace FTL
         FTLINLINE static BOOL UninstallService(LPCTSTR lpServiceName);
 
         //模拟Service 进程显示UI的步骤
-        FTLINLINE static BOOL CreateServiceUIProcess(LPCTSTR pszProcessPath, ULONG SessionId = WTSGetActiveConsoleSessionId());
+        //http://blog.csdn.net/sonsie007/article/details/8835830
+        FTLINLINE static BOOL CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, ULONG SessionId = WTSGetActiveConsoleSessionId());
     };
 
 }

@@ -523,17 +523,17 @@ namespace FTL
 
 	//在 Exe 和 DLL 中共享变量的内存区域 -- T 必须是简单类型，能支持 CopyMemory, sizeof 等操作
 	template<typename T>
-	class CFSharedVariable
+	class CFSharedVariableT
 	{
 	public:
 		typedef BOOL (CALLBACK* InitializeSharedVariableProc)(T& rValue);
 		typedef BOOL (CALLBACK* FinalizeSharedVariableProc)(T& rValue);
 
 		//pszShareName 如果是NULL，会自动根据 Exe 的名字创建进程相关的共享区，这样统一进程中的各个某块能够共享变量
-		FTLINLINE CFSharedVariable(InitializeSharedVariableProc pInitializeProc,
+		FTLINLINE CFSharedVariableT(InitializeSharedVariableProc pInitializeProc,
 			FinalizeSharedVariableProc pFinalizeProc,
 			LPCTSTR pszShareName = NULL);
-		FTLINLINE ~CFSharedVariable();
+		FTLINLINE ~CFSharedVariableT();
 
 		FTLINLINE T& GetShareValue();
 	private:
@@ -554,7 +554,7 @@ namespace FTL
 	FTLINLINE BOOL CALLBACK _FtlGlobalShareInfoFinalize(FTLGlobalShareInfo& rShareInfo);
 
 	//定义FTL中会用到全局共享变量 -- 可以在使用FTL的 Exe/Dll 之间共享变量
-	__declspec(selectany)	CFSharedVariable<FTLGlobalShareInfo>	g_GlobalShareInfo(
+	__declspec(selectany)	CFSharedVariableT<FTLGlobalShareInfo>	g_GlobalShareInfo(
 		_FtlGlobalShareInfoInitialize, 
 		_FtlGlobalShareInfoFinalize,
 		NULL);
