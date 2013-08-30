@@ -77,16 +77,23 @@ BOOL CheckIsImported(PBYTE pbCode, PBYTE pbAddress)
     return FALSE;
 }
 
+VOID SetExecuteCodeProtect(LPVOID lpAddress, SIZE_T dwSize)
+{
+
+}
+
 #else   //Application
 
 PVOID HookAllocate(SIZE_T NumberOfBytes)
 {
-    return malloc(NumberOfBytes);
+    return VirtualAlloc(NULL, NumberOfBytes, MEM_COMMIT|MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE);
+    //return malloc(NumberOfBytes);
 }
 
 VOID  HookFree(PVOID pBuffer)
 {
-    free(pBuffer);
+    return VirtualFree(pBuffer, 0, MEM_RELEASE);
+    //free(pBuffer);
 }
 
 ULONG ClearWriteProtect(LPVOID lpAddress, SIZE_T dwSize)
@@ -95,19 +102,25 @@ ULONG ClearWriteProtect(LPVOID lpAddress, SIZE_T dwSize)
     BOOL bRet = FALSE;
     bRet = VirtualProtect(lpAddress, dwSize, PAGE_EXECUTE_READWRITE, &oldProtect);
     HOOK_ASSERT(bRet);
-    HOOK_ASSERT(oldProtect == PAGE_EXECUTE_READ);
     return oldProtect;
 }
 
 VOID  RestoreWriteProtect(LPVOID lpAddress, SIZE_T dwSize, ULONG oldProtect)
 {
     BOOL bRet = FALSE;
-    HANDLE hProcess = GetCurrentProcess();
     DWORD dwOld = 0;
     HOOK_VERIFY(VirtualProtect(lpAddress, dwSize, oldProtect, &dwOld));
-    HOOK_VERIFY(FlushInstructionCache(hProcess, lpAddress, dwSize));
 
     HOOK_ASSERT(bRet);
+}
+
+VOID SetExecuteCodeProtect(LPVOID lpAddress, SIZE_T dwSize)
+{
+    BOOL bRet = FALSE;
+    HANDLE hProcess = GetCurrentProcess();
+    DWORD dwOld = 0;
+    HOOK_VERIFY(VirtualProtect(lpAddress, dwSize, PAGE_EXECUTE, &dwOld));
+    HOOK_VERIFY(FlushInstructionCache(hProcess, lpAddress, dwSize));
 }
 
 BOOL CheckIsImported(PBYTE pbCode, PBYTE pbAddress)

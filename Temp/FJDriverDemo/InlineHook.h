@@ -6,6 +6,7 @@ extern "C" {
 
     #define MAX_REPLACE_CODE_SIZE       0x20
 
+#pragma pack(push, 1)
     typedef struct _INLINE_HOOK_INFO
     {
         PBYTE   pTarget;            //要拦截的函数（如Windows API）
@@ -18,6 +19,7 @@ extern "C" {
         ULONG   targetBackupSize;                   //Target函数的备份长度
 
     }INLINE_HOOK_INFO, *PINLINE_HOOK_INFO;
+#pragma pack(pop)
 
     //32 || 64
     C_ASSERT(sizeof(INLINE_HOOK_INFO) == 52 || sizeof(INLINE_HOOK_INFO) == 64);
@@ -25,8 +27,8 @@ extern "C" {
     //struct _INLINE_HOOK_INFO;
     //typedef _INLINE_HOOK_INFO* PINLINE_HOOK_INFO;
 
-    BOOL CreateInlineHook(PVOID* ppTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE_HOOK_INFO* ppOutHookInfo);
-    BOOL RestoreInlineHook(PINLINE_HOOK_INFO pHookInfo);
+    BOOL __cdecl CreateInlineHook(PVOID* ppTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE_HOOK_INFO* ppOutHookInfo);
+    BOOL __cdecl RestoreInlineHook(PINLINE_HOOK_INFO pHookInfo);
     //NTSTATUS EnableInlineHook(PVOID pTarget, PINLINE_HOOK_INFO pHookInfo);
     //NTSTATUS DisableInlineHook(PVOID pTarget, PINLINE_HOOK_INFO pHookInfo);
 

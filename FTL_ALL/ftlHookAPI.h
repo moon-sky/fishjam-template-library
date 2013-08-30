@@ -287,8 +287,10 @@
 *   0xe8 XXXXXXXX -- call imm16/imm32
 *   0xe9 XXXXXXXX -- jmp imm16/imm32 (jmp offset, offset大于0向前挑,offset小于0向后跳) ; x64 下对应 ff15  [xxxxxxxx], xxxxxxxx 是32位的，[xxxxxxxx]指向一个64位地址
 *   0xeb -- jmp imm8(patch jump)
+*   0xff15 -- call [+imm32]
 *   0xff25 -- jmp [+imm32] -- 根据指定内存中保存的 Address Table 进行跳转? JMP QWORD NEAR， import vector
-*     跳转目标是指定8字节内存中的地址(64位系统上可以直接跳转到全局目的地)。可以指定8字节地址为0,即根据当前指令后偏移位置为0的地址进行跳转
+*     32位时4字节的偏移是绝对位置，
+*     64位时4字节的偏移是相对位置，因此可以指定其值为0,即根据当前指令后偏移位置为0的地址(其中保存目标的8字节绝对地址)进行跳转
 *   0xffe0 -- jmp rax -- 根据 rax 寄存器的值进行跳转，即 jmp imm64 ?
 * 
 *
@@ -301,6 +303,10 @@
 *   因此，代码中需要计算的 偏移 = 目的地址 - (From + sizeof(JMP OFFSET) )
 *   0xe9 -- 32位上覆盖整个地址空间
 *
+* ILT -- Incremental Link Table(VS Debug 增量编译时它记录了一些函数的入口然后跳过去, 关闭Link Incrementally后编译器就不会再生成)
+*   如:EIP地址  Code        
+*      6869ae3d e97e310000 -- jmp ComicHelper!Hooked_BitBlt( 0x6869dfc0 = 0x6869ae3d + 0x0000317e + 5), 显示为 ComicHelper!ILT+3640(?FilterBitBltYGHPAUHDC__HHHH0HHKZ):
+*   注意：使用DLL时会有Import Lookup Table，其缩写也是 ILT
 ******************************************************************************************************/
 
 namespace FTL

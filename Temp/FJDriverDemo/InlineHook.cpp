@@ -19,14 +19,14 @@ C_ASSERT(sizeof(JMP_x86_OFFSET) == 5);
 
 struct JMP_x86_ABS
 {
-    //32位绝对跳转 -- 未测试
+    //32位绝对跳转 -- 其offsetAddr就是一个绝对地址?
     UCHAR   opcode[2];
-    LONG    offsetAddr;
+    ULONG   offsetAddr;
     ULONG   operand;
     VOID SetJmpTarget(POINTER_TYPE target, POINTER_TYPE from)
     {
-        opcode[0] = 0xff; opcode[1] = 0x25;         //jmp [+imm32]
-        offsetAddr = 0;                             //must zero, 
+        opcode[0] = 0xff; opcode[1] = 0x25;         //jmp [imm32]
+        offsetAddr = (ULONG)from + sizeof(opcode) + sizeof(offsetAddr); // +  
         operand = target; //PtrToUlong(target);
     }
 };
@@ -36,9 +36,9 @@ struct JMP_x64_ABS
 {
     //64位绝对跳转
     UCHAR   opcode[2];
-    LONG    offsetAddr;
+    ULONG   offsetAddr;
     ULONGLONG   operand;
-    PBYTE SetJmpTarget(POINTER_TYPE target, POINTER_TYPE /*from*/)
+    VOID SetJmpTarget(POINTER_TYPE target, POINTER_TYPE /*from*/)
     {
         opcode[0] = 0xff; opcode[1] = 0x25;         //jmp [+imm32]
         offsetAddr = 0;                             //must zero, 
@@ -66,10 +66,10 @@ EXTERN_C int __stdcall    GetInstructionLength_x64(void* InPtr, int InType);
 
 
 static ULONG _LhRoundToNextInstruction(PBYTE InCodePtr, LONG InCodeSize);
-static PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG nMaxSize);
+static PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize);
 static BOOL  _IsEndFunctionCode(PBYTE pbCode); //判断是否是表示结束的代码
 
-BOOL CreateInlineHook(PVOID* ppTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE_HOOK_INFO* ppOutHookInfo)
+BOOL __cdecl CreateInlineHook(PVOID* ppTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE_HOOK_INFO* ppOutHookInfo)
 {
     BOOL bRet = FALSE;
     LONG  EntrySize;
@@ -91,22 +91,23 @@ BOOL CreateInlineHook(PVOID* ppTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE
     PINLINE_HOOK_INFO pHookInfo = (PINLINE_HOOK_INFO)HookAllocate(sizeof(INLINE_HOOK_INFO));
     if (pHookInfo)
     {
-        JUMP_CODE_TYPE jmpType;
+        JUMP_CODE_TYPE jmpType = {0};
 
-        RtlZeroMemory(pHookInfo, sizeof(INLINE_HOOK_INFO));
+        RtlFillMemory(pHookInfo, sizeof(INLINE_HOOK_INFO), 0xcc);  //fill brk
         pHookInfo->pTarget = (PBYTE)pTarget;
         pHookInfo->pDetour = (PBYTE)pDetour;
         pHookInfo->pOriginal = pHookInfo->trampoline;
-
+        
         //RtlCopyMemory(pHookInfo->targetBackup, pTarget, EntrySize);
 
-        pHookInfo->trampolineSize = EntrySize;
+        pHookInfo->trampolineSize = EntrySize + nHookJmpSize;
         pHookInfo->targetBackupSize = EntrySize;
         RtlCopyMemory(pHookInfo->trampoline, pTarget, EntrySize);
 
         //设置 trampoline 函数 -- 跳到 Target 后指定位置
         jmpType.SetJmpTarget((POINTER_TYPE)((PBYTE)(pHookInfo->pTarget) + nHookJmpSize), (POINTER_TYPE)pHookInfo->trampoline + EntrySize);
         RtlCopyMemory(pHookInfo->trampoline + EntrySize, &jmpType, nHookJmpSize);
+        SetExecuteCodeProtect(pHookInfo->trampoline, pHookInfo->trampolineSize);
 
         //设置 target 函数, 跳转到自定义Detour(Hook) 函数
         jmpType.SetJmpTarget((POINTER_TYPE)((PBYTE)(pHookInfo->pDetour)), (POINTER_TYPE)pHookInfo->pTarget);
@@ -162,61 +163,75 @@ ULONG _LhRoundToNextInstruction(
     return (ULONG)(Ptr - BasePtr);
 }
 
-PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG nMaxSize)
+PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
 {
     if (pbCode == NULL) {
         return NULL;
     }
+    PBYTE   pPtrOffset = pbCode;
+    LONG    nOffset = 0;
+    LONG    nCurLen = 0;
 
-    LONG nIndex = 0;
 
-    for (; nIndex < nMaxSize; nIndex++)
+    while (nOffset < MinCheckSize)
     {
-        if (pbCode[nIndex + 0] == 0xe9) {   // jmp +imm32
-            PBYTE pbNew = pbCode + 5 + *(INT32 *)&pbCode[nIndex + 1];
-            HOOK_TRACE(("%p->%p: skipped over long jump.\n", pbCode, pbNew));
+        //skip ILT(Incremental Link Table) -- Debug Version
+        if (pPtrOffset[0] == 0xe9) {   // jmp +imm32
+            PBYTE pbNew = pPtrOffset + 5 + *(INT32 *)&pPtrOffset[1];
+            HOOK_TRACE(("%p->%p: skipped over long jump.\n", pPtrOffset, pbNew));
             pbCode = pbNew;
-            nIndex = 0; //new place, reset nIndex
+            pPtrOffset = pbCode;
+            nOffset = 0;
+            continue;
         }
 
         // First, skip over the import vector if there is one.
-        if (pbCode[nIndex + 0] == 0xff && pbCode[nIndex + 1] == 0x25) {   // jmp [imm32]
+        if (pPtrOffset[0] == 0xff && pPtrOffset[1] == 0x25) {   // jmp [imm32]
             // Looks like an import alias jump, then get the code it points to.
-            PBYTE pbTarget = *(PBYTE *)&pbCode[nIndex + 2];
-            if (CheckIsImported(pbCode, pbTarget)) {
+            PBYTE pbTarget = *(PBYTE *)&pPtrOffset[2];
+            //if (CheckIsImported(pPtrOffset, pbTarget)) 
+            {
                 PBYTE pbNew = *(PBYTE *)pbTarget;
-                HOOK_TRACE(("%p->%p: skipped over import table.\n", pbCode, pbNew));
+                HOOK_TRACE(("%p->%p: skipped over import table.\n", pPtrOffset, pbNew));
                 pbCode = pbNew;
-                nIndex = 0; //new place, reset nIndex
+                pPtrOffset = pbCode; //new place, reset
+                nOffset = 0;
+                continue;
             }
         }
 
         // Then, skip over a patch jump
-        if (pbCode[nIndex + 0] == 0xeb) {   // jmp +imm8
-            PBYTE pbNew = pbCode + 2 + *(CHAR *)&pbCode[1];
-            HOOK_TRACE(("%p->%p: skipped over short jump.\n", pbCode, pbNew));
+        if (pPtrOffset[0] == 0xeb) {   // jmp +imm8
+            PBYTE pbNew = pPtrOffset + 2 + *(CHAR *)&pPtrOffset[1];
+            HOOK_TRACE(("%p->%p: skipped over short jump.\n", pPtrOffset, pbNew));
             pbCode = pbNew;
-            nIndex = 0; //new place, reset nIndex
+            pPtrOffset = pbCode; //new place, reset
+            nOffset = 0;
 
             // First, skip over the import vector if there is one.
-            if (pbCode[nIndex + 0] == 0xff && pbCode[nIndex + 1] == 0x25) {   // jmp [imm32]
+            if (pPtrOffset[0] == 0xff && pPtrOffset[1] == 0x25) {   // jmp [imm32]
                 // Looks like an import alias jump, then get the code it points to.
-                PBYTE pbTarget = *(PBYTE *)&pbCode[nIndex + 2];
-                if (CheckIsImported(pbCode, pbTarget)) {
+                PBYTE pbTarget = *(PBYTE *)&pPtrOffset[2];
+                //if (CheckIsImported(pPtrOffset, pbTarget)) 
+                {
                     PBYTE pbNew = *(PBYTE *)pbTarget;
-                    HOOK_TRACE(("%p->%p: skipped over import table.\n", pbCode, pbNew));
+                    HOOK_TRACE(("%p->%p: skipped over import table.\n", pPtrOffset, pbNew));
                     pbCode = pbNew;
+                    pPtrOffset = pbCode; //new place, reset
+                    nOffset = 0;
                 }
             }
-            // Finally, skip over a long jump if it is the target of the patch jump.
-            else if (pbCode[nIndex + 0] == 0xe9) {   // jmp +imm32
-                PBYTE pbNew = pbCode + 5 + *(INT32 *)&pbCode[nIndex + 1];
-                HOOK_TRACE(("%p->%p: skipped over long jump.\n", pbCode, pbNew));
-                pbCode = pbNew;
-                nIndex = 0; //new place, reset nIndex
-            }
         }
+
+        nCurLen = GetInstructionLength(pPtrOffset, INSTRUCTION_LENGTH_TYPE);
+        if (nCurLen <= 0)
+        {
+            return pbCode;
+        }
+        nOffset += nCurLen;
+        pPtrOffset += nCurLen;
     }
+
     return pbCode;
 }
 

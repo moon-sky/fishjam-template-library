@@ -35,7 +35,7 @@ BOOL  g_bIsSelfProcess = FALSE;
 #else
 #endif
 
-typedef BOOL (WINAPI *BITBLT)(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop);
+typedef BOOL (WINAPI *BitBltProc)(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop);
 typedef BOOL (WINAPI *STRETCHBLTPROC)(HDC hdc, int x, int y, int cx, int cy,
                                   HDC hdcSrc, int x1, int y1, int nWidthSrc, int nHeightSrc, 
                                   DWORD rop);
@@ -48,12 +48,13 @@ static HANDLE (WINAPI* TrueSetClipboardData)(UINT uFormat, HANDLE hMem) = SetCli
 UINT UM_HELPER_HOOK = RegisterWindowMessage(TEXT("UM_HELPER_HOOK"));
 
 
-BOOL WINAPI FilterBitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop)
+BOOL WINAPI Hooked_BitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int x1, int y1, DWORD rop)
 {
-    //ATLTRACE(TEXT("Enter FilterBitBlt\n"));
+    ATLTRACE(TEXT("Enter Hooked_BitBlt\n"));
 #ifdef USE_INLINE_HOOK
-    BITBLT pOrigBitBlt = (BITBLT)g_pHookBitBlt->pOriginal;
-    BOOL bRet = (*pOrigBitBlt)(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
+    BitBltProc pOrigBitBlt = (BitBltProc)g_pHookBitBlt->pOriginal;
+    BOOL bRet = (pOrigBitBlt)(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
+    ATLTRACE(TEXT("After Hooked_BitBlt\n"));
 #else 
     BOOL bRet = TrueBitBlt(hdc, x, y, cx, cy, hdcSrc, x1, y1, rop);
 #endif 
@@ -72,7 +73,7 @@ BOOL WINAPI FilterBitBlt(HDC hdc, int x, int y, int cx, int cy, HDC hdcSrc, int 
                 TCHAR szProcessName[MAX_PATH] = {0};
                 GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
 
-                FTLTRACE(TEXT("FilterBitBlt, PID=%d(%s), hWnd=%d, g_hFilterWnd=%d\n"),
+                FTLTRACE(TEXT("Hooked_BitBlt, PID=%d(%s), hWnd=%d, g_hFilterWnd=%d\n"),
                     GetCurrentProcessId(), PathFindFileName(szProcessName), hWnd, g_hFilterWnd);
 
                 CRect rcTarget( x, y,  x + cx, y + cy);
@@ -246,12 +247,12 @@ COMICHELPER_API BOOL HookApi()
             g_bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
 
 #ifdef USE_INLINE_HOOK
-        API_VERIFY(CreateInlineHook((PVOID*)&TrueBitBlt, &FilterBitBlt, NULL, &g_pHookBitBlt));
+        API_VERIFY(CreateInlineHook((PVOID*)&TrueBitBlt, &Hooked_BitBlt, NULL, &g_pHookBitBlt));
 #else
         DetourRestoreAfterWith();
         API_VERIFY(DetourTransactionBegin() == NO_ERROR);
         API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
-        API_VERIFY(DetourAttach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
+        API_VERIFY(DetourAttach(&(PVOID&)TrueBitBlt, Hooked_BitBlt) == NO_ERROR);
         API_VERIFY(DetourAttach(&(PVOID&)TrueStretchBlt, FilterStretchBlt) == NO_ERROR);
         API_VERIFY(DetourAttach(&(PVOID&)TrueSetClipboardData, FilterSetClipboardData) == NO_ERROR);
         API_VERIFY(DetourTransactionCommit() == NO_ERROR);
@@ -277,7 +278,7 @@ COMICHELPER_API BOOL UnHookApi()
 #else 
         API_VERIFY(DetourTransactionBegin()== NO_ERROR);
         API_VERIFY(DetourUpdateThread(GetCurrentThread()) == NO_ERROR);
-        API_VERIFY(DetourDetach(&(PVOID&)TrueBitBlt, FilterBitBlt) == NO_ERROR);
+        API_VERIFY(DetourDetach(&(PVOID&)TrueBitBlt, Hooked_BitBlt) == NO_ERROR);
         API_VERIFY(DetourDetach(&(PVOID&)TrueStretchBlt, FilterStretchBlt) == NO_ERROR);
         API_VERIFY(DetourDetach(&(PVOID&)TrueSetClipboardData, FilterSetClipboardData) == NO_ERROR);
         API_VERIFY(DetourTransactionCommit() == NO_ERROR);

@@ -28,6 +28,7 @@ VOID  HookFree(PVOID pBuffer);
 
 ULONG ClearWriteProtect(LPVOID lpAddress, SIZE_T dwSize);
 VOID  RestoreWriteProtect(LPVOID lpAddress, SIZE_T dwSize, ULONG oldProtect);
+VOID SetExecuteCodeProtect(LPVOID lpAddress, SIZE_T dwSize);
 
 BOOL CheckIsImported(PBYTE pbCode, PBYTE pbAddress);
 
