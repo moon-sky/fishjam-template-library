@@ -85,7 +85,6 @@ void CMainDlg::OnBtnInitService(UINT uNotifyCode, int nID, CWindow wndCtl)
     BOOL bEnabled = SUCCEEDED(hr);
     ::EnableWindow(GetDlgItem(IDC_BTN_INIT_SERVICE), !bEnabled);
     ::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_HOOK), bEnabled);
-    ::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_UPDATE_PROTECT_INFO), bEnabled);
     ::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_UNHOOK), bEnabled);
 }
 
@@ -97,13 +96,6 @@ void CMainDlg::OnBtnServiceHook(UINT uNotifyCode, int nID, CWindow wndCtl)
     {
         COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, NULL));
     }
-}
-
-void CMainDlg::OnBtnServiceUpdateProtectInfo(UINT uNotifyCode, int nID, CWindow wndCtl)
-{
-    CRect rcClient;
-    rcClient.SetRectEmpty();
-    UpdateProtectWindowInfo(m_hWnd, &rcClient);
 }
 
 void CMainDlg::OnBtnServiceUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -123,7 +115,6 @@ void CMainDlg::OnBtnFinService(UINT uNotifyCode, int nID, CWindow wndCtl)
         m_spComicService.Release();
         ::EnableWindow(GetDlgItem(IDC_BTN_INIT_SERVICE), TRUE);
         ::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_HOOK), FALSE);
-        ::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_UPDATE_PROTECT_INFO), FALSE);
         ::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_UNHOOK), FALSE);
         ::EnableWindow(GetDlgItem(IDC_BTN_FIN_SERVICE), FALSE);
     }
@@ -222,7 +213,7 @@ LRESULT CMainDlg::OnBnClickedBtnInlineHook(WORD /*wNotifyCode*/, WORD /*wID*/, H
 
 LRESULT CMainDlg::OnBnClickedBtnInlineUnhook(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    UnHookApi();
+    //UnHookApi();
     return 0;
 }
 

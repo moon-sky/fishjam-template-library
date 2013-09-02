@@ -15,4 +15,6 @@
 #include <atlstr.h>
 #include <atltypes.h>
 
+#include <ftlBase.h>
+
 // TODO: reference additional headers your program requires here

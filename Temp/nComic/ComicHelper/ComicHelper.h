@@ -17,3 +17,5 @@ extern COMICHELPER_API BOOL UpdateProtectWindowInfo(HWND hWndFilter, LPRECT pRec
 
 extern COMICHELPER_API BOOL HookApi();
 extern COMICHELPER_API BOOL UnHookApi();
+
+

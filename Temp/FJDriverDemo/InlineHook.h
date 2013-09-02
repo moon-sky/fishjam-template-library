@@ -27,7 +27,7 @@ extern "C" {
     //struct _INLINE_HOOK_INFO;
     //typedef _INLINE_HOOK_INFO* PINLINE_HOOK_INFO;
 
-    BOOL __cdecl CreateInlineHook(PVOID* ppTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE_HOOK_INFO* ppOutHookInfo);
+    BOOL __cdecl CreateInlineHook(PVOID pTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE_HOOK_INFO* ppOutHookInfo);
     BOOL __cdecl RestoreInlineHook(PINLINE_HOOK_INFO pHookInfo);
     //NTSTATUS EnableInlineHook(PVOID pTarget, PINLINE_HOOK_INFO pHookInfo);
     //NTSTATUS DisableInlineHook(PVOID pTarget, PINLINE_HOOK_INFO pHookInfo);

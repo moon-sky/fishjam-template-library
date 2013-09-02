@@ -69,13 +69,13 @@ static ULONG _LhRoundToNextInstruction(PBYTE InCodePtr, LONG InCodeSize);
 static PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize);
 static BOOL  _IsEndFunctionCode(PBYTE pbCode); //判断是否是表示结束的代码
 
-BOOL __cdecl CreateInlineHook(PVOID* ppTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE_HOOK_INFO* ppOutHookInfo)
+BOOL __cdecl CreateInlineHook(PVOID pTarget, PVOID pDetour, PVOID* ppOriginal, PINLINE_HOOK_INFO* ppOutHookInfo)
 {
     BOOL bRet = FALSE;
     LONG  EntrySize;
     LONG  nHookJmpSize = sizeof(JUMP_CODE_TYPE);
-    PBYTE pTarget = (PBYTE)*ppTarget;
-    pTarget = (PBYTE)_InlineHookGetRealCode(pTarget, nHookJmpSize);   //get real code by jmp or call
+    //PBYTE pTarget = (PBYTE)*ppTarget;
+    pTarget = (PBYTE)_InlineHookGetRealCode((PBYTE)pTarget, nHookJmpSize);   //get real code by jmp or call
     pDetour = (PBYTE)_InlineHookGetRealCode((PBYTE)pDetour, 1);
 
     EntrySize = _LhRoundToNextInstruction((PBYTE)pTarget, nHookJmpSize); //JUMPER_SIZE);

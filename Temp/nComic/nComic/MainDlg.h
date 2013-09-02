@@ -51,7 +51,6 @@ public:
 	void OnBtnInitService(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnBtnServiceHook(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnBtnServiceUnHook(UINT uNotifyCode, int nID, CWindow wndCtl);
-    void OnBtnServiceUpdateProtectInfo(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnBtnFinService(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 	void OnBtnDllHook(UINT uNotifyCode, int nID, CWindow wndCtl);

@@ -432,6 +432,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ProtectWndHookAPI.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -483,6 +487,10 @@
 			</File>
 			<File
 				RelativePath=".\InlineHook.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ProtectWndHookAPI.h"
 				>
 			</File>
 			<File
