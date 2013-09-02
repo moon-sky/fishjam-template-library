@@ -21,6 +21,7 @@ BOOL CMainFrame::OnIdle()
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+    m_pProtectWndInfoFileMap = NULL;
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -28,7 +29,16 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
-    EnableWindowProtected(GetCurrentProcessId(), NULL);
+    HRESULT hr = E_FAIL;
+    COM_VERIFY(m_FileMap.OpenMapping(COMIC_PROTECT_WND_FILE_MAP_NAME, sizeof(ProtectWndInfoFileMap)));
+    if (SUCCEEDED(hr))
+    {
+        m_pProtectWndInfoFileMap = (ProtectWndInfoFileMap*)m_FileMap.GetData();
+        if (m_pProtectWndInfoFileMap)
+        {
+            EnableWindowProtected(GetCurrentProcessId(), m_pProtectWndInfoFileMap->hWndProtect);
+        }
+    }
     
     //FTL::CFSharedVariableT<
 	return 0;
@@ -42,7 +52,10 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	pLoop->RemoveMessageFilter(this);
 	pLoop->RemoveIdleHandler(this);
 
-    DisableWindowProtected(NULL);
+    if (NULL != m_pProtectWndInfoFileMap && NULL != m_pProtectWndInfoFileMap->hWndProtect)
+    {
+        DisableWindowProtected(m_pProtectWndInfoFileMap->hWndProtect);
+    }
 
 	bHandled = FALSE;
 	return 1;
@@ -66,4 +79,21 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	CAboutDlg dlg;
 	dlg.DoModal();
 	return 0;
+}
+
+LRESULT CMainFrame::OnUpdateProtectWnd(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
+{
+    return 0;
+}
+
+void CMainFrame::OnPaint(CDCHandle /*dc*/)
+{
+    CPaintDC dc(m_hWnd);
+    CAtlString strUpdateWndInfo;
+    HWND hWnd = m_pProtectWndInfoFileMap ? m_pProtectWndInfoFileMap->hWndProtect : NULL;
+    strUpdateWndInfo.Format(TEXT("UpdateWndInfo=0x%x"), hWnd);
+
+    CRect rcClient;
+    GetClientRect(&rcClient);
+    dc.DrawText(strUpdateWndInfo, strUpdateWndInfo.GetLength(), &rcClient, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
 }

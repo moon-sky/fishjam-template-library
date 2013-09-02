@@ -155,7 +155,7 @@ HANDLE WINAPI FilterSetClipboardData(UINT uFormat, HANDLE hMem)
     DWORD dwProcessId = GetCurrentProcessId();
     TCHAR szModuleName[MAX_PATH] = {0};
     GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
-    ATLTRACE(TEXT("FilterSetClipboardData, PID=%d(%s)\n"), dwProcessId, PathFindFileName(szModuleName));
+    FTLTRACE(TEXT("FilterSetClipboardData, PID=%d(%s)\n"), dwProcessId, PathFindFileName(szModuleName));
     return TrueSetClipboardData(uFormat, hMem);
 }
 
@@ -172,7 +172,8 @@ LRESULT CALLBACK My_CallWndProc(
 
         TCHAR szModuleName[MAX_PATH] = {0};
         GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
-        ATLTRACE(TEXT("Will Hook API in PID=%d(%s),TID=%d\n"), GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
+        FTLTRACE(TEXT("Will Hook API in PID=%d(%s),TID=%d, ProtectWnd=0x%x\n"), 
+            GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId(), g_hFilterWnd);
 
         BOOL bRet = FALSE;
         API_VERIFY(HookApi());
@@ -258,8 +259,8 @@ COMICHELPER_API BOOL HookApi()
 
         TCHAR szModuleName[MAX_PATH] = {0};
         GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
-        ATLTRACE(TEXT(">>> Will Hook API(g_bHooked=%d) in PID=%d(%s),TID=%d\n"), 
-            g_bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
+        ATLTRACE(TEXT(">>> Will Hook API(g_bHooked=%d) in PID=%d(%s),TID=%d, ProtectWnd=0x%x\n"), 
+            g_bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId(), g_hFilterWnd);
 
 #ifdef USE_INLINE_HOOK
         API_VERIFY(CreateInlineHook((PVOID*)&TrueBitBlt, &Hooked_BitBlt, NULL, &g_pHookBitBlt));

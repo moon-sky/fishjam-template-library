@@ -97,9 +97,9 @@ extern "C" int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstan
                                 LPTSTR /*lpCmdLine*/, int nShowCmd)
 {
     int nRet = 0;
-    FTLTRACE(TEXT("Enter _tWinMain, nShowCmd = %d\n"), nShowCmd);
+    FTL::FormatMessageBox(NULL, NULL, MB_OK, TEXT("Enter _tWinMain, nShowCmd = %d\n"), nShowCmd);
     nRet = _AtlModule.WinMain(nShowCmd);
-    FTLTRACE(TEXT("Leave _tWinMain, nRet = %d\n"), nRet);
+    FTL::FormatMessageBox(NULL, NULL, MB_OK, TEXT("Leave _tWinMain, nRet = %d\n"), nRet);
     return nRet;
 }
 

@@ -95,7 +95,7 @@ void CMainDlg::OnBtnServiceHook(UINT uNotifyCode, int nID, CWindow wndCtl)
     //CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
     if (m_spComicService)
     {
-        COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, RGB(255, 0, 0), CComBSTR(TEXT("Copy Protected"))));
+        COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, NULL));
     }
 }
 

@@ -103,7 +103,7 @@ namespace FTL
             return FALSE;
         }
 
-        BOOL CFService::CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, ULONG SessionId)
+        BOOL CFService::CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, PROCESS_INFORMATION* pProcessInfo, ULONG SessionId)
         {
             BOOL bRet = FALSE;
             HANDLE hToken = NULL;
@@ -141,8 +141,15 @@ namespace FTL
                             FALSE, dwCreationFlag, pEnvBlock, NULL, &startupInfo, &processInfo));
                         if (bRet)
                         {
-                            SAFE_CLOSE_HANDLE(processInfo.hProcess, NULL);
-                            SAFE_CLOSE_HANDLE(processInfo.hThread, NULL);
+                            if (pProcessInfo)
+                            {
+                                *pProcessInfo = processInfo;
+                            }
+                            else
+                            {
+                                SAFE_CLOSE_HANDLE(processInfo.hProcess, NULL);
+                                SAFE_CLOSE_HANDLE(processInfo.hThread, NULL);
+                            }
                         }
                         API_VERIFY(DestroyEnvironmentBlock(pEnvBlock));
                     }

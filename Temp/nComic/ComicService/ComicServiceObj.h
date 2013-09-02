@@ -5,12 +5,12 @@
 
 #include "ComicService_i.h"
 
-
 #if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
 #error "Single-threaded COM objects are not properly supported on Windows CE platform, such as the Windows Mobile platforms that do not include full DCOM support. Define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA to force ATL to support creating single-thread COM object's and allow use of it's single-threaded COM object implementations. The threading model in your rgs file was set to 'Free' as that is the only threading model supported in non DCOM Windows CE platforms."
 #endif
 
-
+#include "../ComicHelperProxy/ComicHelperProxy.h"
+#include <atlfile.h>
 
 // CComicServiceObj
 
@@ -22,6 +22,15 @@ class ATL_NO_VTABLE CComicServiceObj :
 public:
 	CComicServiceObj()
 	{
+        FTLTRACE(TEXT("Enter CComicServiceObj::CComicServiceObj\n"));
+        m_pProtectWndInfoMap = NULL;
+        HRESULT hr = E_FAIL;
+        COM_VERIFY(m_FileMap.MapSharedMem(sizeof(ProtectWndInfoFileMap), COMIC_PROTECT_WND_FILE_MAP_NAME,
+            NULL, NULL, PAGE_READWRITE, FILE_MAP_ALL_ACCESS));
+        if (SUCCEEDED(hr))
+        {
+            m_pProtectWndInfoMap = (ProtectWndInfoFileMap*)m_FileMap;
+        }
 	}
 
 DECLARE_REGISTRY_RESOURCEID(IDR_COMICSERVICEOBJ)
@@ -43,11 +52,14 @@ END_COM_MAP()
 
 	void FinalRelease()
 	{
+        m_FileMap.Unmap();
 	}
-
+private:
+    ProtectWndInfoFileMap*                  m_pProtectWndInfoMap;
+    CAtlFileMapping<ProtectWndInfoFileMap>  m_FileMap;
 public:
 
-	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd, OLE_COLOR clrBackground, BSTR bstrDisplayInfo);
+	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd, OLE_HANDLE hDIBSecion);
 	STDMETHOD(UnProtectWnd)(OLE_HANDLE hWnd);
 };
 

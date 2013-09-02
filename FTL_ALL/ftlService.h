@@ -95,7 +95,7 @@ namespace FTL
 
         //模拟Service 进程显示UI的步骤
         //http://blog.csdn.net/sonsie007/article/details/8835830
-        FTLINLINE static BOOL CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, ULONG SessionId = WTSGetActiveConsoleSessionId());
+        FTLINLINE static BOOL CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, PROCESS_INFORMATION* pProcessInfo, ULONG SessionId = WTSGetActiveConsoleSessionId());
     };
 
 }
