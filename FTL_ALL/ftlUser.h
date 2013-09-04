@@ -34,7 +34,9 @@
 *     %UserProfile%\AppData\Local\Microsoft\Windows\Temporary Internet Files\Virtualized\XXXX -- XXX部分即是应该的 C:\ProgramData\MyProgramData 等
 *
 *     以下注册表进行控制？：HKLM\SYSTEM\CurrentControlSet\services\luafv
-* 
+*   
+*   FUS(Fast User Switch) -- 快速用户切换
+*   会话隔离(Session Isolation) -- Vista后所有系统服务运行在会话0以增强系统服务的安全性
 *   Restricted Token -- 受限访问令牌
 *   SFP -- 系统文件保护, Win2K 以前的文件保护机制
 *   UAC(User Account Control) -- 用户帐户控制， 管理员登录时会为该登录会话创建了两个不同的访问令牌，默认使用受限访问令牌(创建时指定了禁用SID并删除了某些权限)，

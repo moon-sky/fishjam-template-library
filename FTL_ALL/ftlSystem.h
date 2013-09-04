@@ -49,9 +49,10 @@
 *     Virtual Bytes -- 虚拟内存大小
 *   如果没有内存泄露，应该是在特定区间内波动，如果呈现线性增长趋势，通常说明有泄漏。
 *
-* 替换任务管理器：
-*   HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\taskmgr.exe
-*   设置 Debugger 项的值，如 "H:\TOOLS\SYSTEM\PROCESSEXPLORER\PROCEXP.EXE"
+* 映像劫持 -- 运行指定名字的程序时，操作系统就会先启动Debugger指定的进程，并把要执行的程序名和路径传递给它
+*   如：替换任务管理器：
+*     HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\taskmgr.exe
+*     设置 Debugger 项的值，如 "H:\TOOLS\SYSTEM\PROCESSEXPLORER\PROCEXP.EXE"
 *****************************************************************************************************/
 namespace FTL
 {

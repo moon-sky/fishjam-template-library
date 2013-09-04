@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../ComicService/ComicService_i.h"
+//#include <ftlwindow.h>
 
 class CMainDlg : public CDialogImpl<CMainDlg>
 {
@@ -14,6 +15,7 @@ public:
 	enum { IDD = IDD_MAINDLG };
 
 	BEGIN_MSG_MAP(CMainDlg)
+        //DUMP_WINDOWS_MSG(TEXT("CMainDlg"), DEAFULT_DUMP_FILTER_MESSAGES, _countof(DEAFULT_DUMP_FILTER_MESSAGES), uMsg, wParam, lParam)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDOK, OnOK)

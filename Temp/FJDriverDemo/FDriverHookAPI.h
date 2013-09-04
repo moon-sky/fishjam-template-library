@@ -107,6 +107,7 @@ Address of 9 is fffff960`002bd750 -- win32k!NtGdiGetCharSet		-- 001c1c00 + 000fb
 //WinDbg 中循环查找SSDT的函数对应表 -- 需要进入Hook部分，并 load 相关的pdb文件才能查找(先通过  !process 0 0 查找当前)
 // 32 Bit(WinXP)
 //   SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(nt!KiServiceTable + 4 * eax)) }
+//     使用用户定义伪寄存器(未测试)？-- .for (r @$t0=0, @$t1=5; @$t0 <= @$t1; r @$t0=@$t0+1){? @$t0; ln (dwo(nt!KiServiceTable + 4 * @$t0)) }
 //   Shadow SSDT -- .for (r eax=0, edx=5; @eax <= @edx; reax=eax+1){? eax; ln (dwo(win32k!W32pServiceTable + 4 * eax)) }
 // 64 Bit(Win7)
 //   SSDT -- 
