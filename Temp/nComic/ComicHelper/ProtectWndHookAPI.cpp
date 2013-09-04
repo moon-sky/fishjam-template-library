@@ -2,6 +2,8 @@
 #include "ProtectWndHookAPI.h"
 #include "InlineHook.h"
 
+ProtectWndInfoFileMap* g_pProtectWndInfoFileMap = NULL;
+
 enum HookFuncType
 {
     hft_BitBlt = 0,
@@ -31,10 +33,10 @@ struct HOOK_API_INFO
     }
 }g_HookApiInfo;
 
-#pragma data_seg("MyShare")
-PROTECT_WND_INFO g_ProtectWndInfo;
-#pragma data_seg()
-#pragma comment(linker,"/SECTION:MyShare,RWS")
+//#pragma data_seg("MyShare")
+//PROTECT_WND_INFO g_ProtectWndInfo;
+//#pragma data_seg()
+//#pragma comment(linker,"/SECTION:MyShare,RWS")
 
 BOOL HookApiFromModule(HMODULE hModule, LPCSTR lpProcName, PVOID pDetour, PINLINE_HOOK_INFO* ppOutHookInfo);
 
@@ -49,7 +51,13 @@ typedef BOOL (WINAPI *StretchBltProc)(HDC hdcDest, int nXOriginDest, int nYOrigi
 BOOL HookApiFromModule(HMODULE hModule, LPCSTR lpProcName, PVOID pDetour, PINLINE_HOOK_INFO* ppOutHookInfo)
 {
     BOOL bRet = FALSE;
+
+    TCHAR szProcessName[MAX_PATH] = {0};
+    GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
     PVOID pTarget = (PVOID)GetProcAddress(hModule, lpProcName);
+
+    //FTLTRACE(TEXT("HookApiFromModule %s in %s, 0x%x => 0x%x, hWndProtect=0x%x\n"), 
+    //    CA2T(lpProcName), PathFindFileName(szProcessName), pTarget, pDetour, g_pProtectWndInfoFileMap->hWndProtect);
     if (pTarget)
     {
         API_VERIFY(CreateInlineHook(pTarget, pDetour, NULL, ppOutHookInfo));
@@ -60,22 +68,26 @@ BOOL HookApiFromModule(HMODULE hModule, LPCSTR lpProcName, PVOID pDetour, PINLIN
 BOOL WINAPI Hooked_BitBlt(HDC hdcDest, int nXDest, int nYDest, int nWidth, int nHeight,
                           HDC hdcSrc, int nXSrc, int nYSrc, DWORD dwRop)
 {
-    BitBltProc pOrigBitBlt = (BitBltProc)g_HookApiInfo.HookApiInfos[hft_BitBlt]->pOriginal;
-    BOOL bRet = (pOrigBitBlt)(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+    BOOL bRet = TRUE; 
 
-    if (bRet && NULL != g_ProtectWndInfo.hFilterWnd)
+    BitBltProc pOrigBitBlt = (BitBltProc)g_HookApiInfo.HookApiInfos[hft_BitBlt]->pOriginal;
+    bRet = (pOrigBitBlt)(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+
+    //FTLTRACE(TEXT("[%d] In Hooked_BitBlt, %s, g_hFilterWnd=%d\n"), 
+    //    GetCurrentProcessId(), PathFindFileName(szProcessName), g_ProtectWndInfo.hFilterWnd);
+
+    if (bRet && NULL != g_pProtectWndInfoFileMap)
     {
         HWND hWnd = WindowFromDC(hdcSrc);
+        HWND hWndFilter = g_pProtectWndInfoFileMap->hWndProtect;
         if (hWnd != NULL)
         {
-            if (hWnd == GetDesktopWindow() || hWnd == g_ProtectWndInfo.hFilterWnd || ::IsChild(g_ProtectWndInfo.hFilterWnd, hWnd))
+            if (hWnd == GetDesktopWindow() || hWnd == hWndFilter|| ::IsChild(hWndFilter, hWnd))
             {
-
                 TCHAR szProcessName[MAX_PATH] = {0};
                 GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
-
                 FTLTRACE(TEXT("!!! Hooked_BitBlt Desktop PID=%d(%s), hWnd=%d, g_hFilterWnd=%d\n"),
-                    GetCurrentProcessId(), PathFindFileName(szProcessName), hWnd, g_ProtectWndInfo.hFilterWnd);
+                    GetCurrentProcessId(), PathFindFileName(szProcessName), hWnd, hWndFilter);
 #if 0
                 //CRect rcSource(x1, y1, x1 + cx, y1 + cy);
                 //::SetBkColor(hdc, g_clrDisabled);
@@ -86,7 +98,7 @@ BOOL WINAPI Hooked_BitBlt(HDC hdcDest, int nXDest, int nYDest, int nWidth, int n
                 CRect rcSource( nXSrc, nYSrc, nXSrc + nWidth, nYSrc   + nHeight);
                 CRect rcFilter(0, 0, 0, 0);
 
-                API_VERIFY(GetWindowRect(g_ProtectWndInfo.hFilterWnd, &rcFilter));
+                API_VERIFY(GetWindowRect(hWndFilter, &rcFilter));
                 if (bRet)
                 {
                     //FTLTRACE(TEXT("rcTarget=(%d,%d)-(%d,%d), %dx%d, rcSource=(%d,%d)-(%d,%d), rcFilter=(%d,%d)-(%d,%d), %dx%d"),
@@ -104,7 +116,7 @@ BOOL WINAPI Hooked_BitBlt(HDC hdcDest, int nXDest, int nYDest, int nWidth, int n
                         //FTLTRACE(TEXT("Will FillColor newRcSource=(%d,%d)-(%d,%d), %dx%d"),
                         //    rcSource.left, rcSource.top, rcSource.right, rcSource.bottom, 
                         //    rcSource.right - rcSource.left, rcSource.bottom - rcSource.top);
-                        ::SetBkColor(hdcDest, g_ProtectWndInfo.clrDisabled);
+                        ::SetBkColor(hdcDest, g_pProtectWndInfoFileMap->clrDisabled);
                         ::ExtTextOut(hdcDest, 0, 0, ETO_OPAQUE, &rcSource, NULL, 0, NULL);
                     }
                 }
@@ -126,20 +138,18 @@ BOOL WINAPI Hooked_StretchBlt(HDC hdcDest, int nXOriginDest, int nYOriginDest, i
         bRet = (pOrigStretchBlt)(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest,
             hdcSrc, nXOriginSrc, nYOriginSrc, nWidthSrc, nHeightSrc, dwRop);
     }
-    if (bRet)
+    if (bRet && g_pProtectWndInfoFileMap && g_pProtectWndInfoFileMap->hWndProtect)
     {
-        if (NULL != g_ProtectWndInfo.hFilterWnd)
+        HWND hWnd = WindowFromDC(hdcSrc);
+        if (hWnd != NULL)
         {
-            HWND hWnd = WindowFromDC(hdcSrc);
-            if (hWnd != NULL)
+            HWND hWndFilter = g_pProtectWndInfoFileMap->hWndProtect;
+            if (hWnd == GetDesktopWindow() || hWnd == hWndFilter || ::IsChild(hWndFilter, hWnd))
             {
-                if (hWnd == GetDesktopWindow() || hWnd == g_ProtectWndInfo.hFilterWnd || ::IsChild(g_ProtectWndInfo.hFilterWnd, hWnd))
-                {
-                    FTLTRACE(TEXT("!!! In Hooked_StretchBlt, Desktop\n"));
-                    CRect rcSource(nXOriginDest, nYOriginDest, nXOriginDest + nWidthDest, nYOriginDest + nHeightDest);
-                    ::SetBkColor(hdcDest, g_ProtectWndInfo.clrDisabled);
-                    ::ExtTextOut(hdcDest, 0, 0, ETO_OPAQUE, &rcSource, NULL, 0, NULL);
-                }
+                FTLTRACE(TEXT("!!! In Hooked_StretchBlt, Desktop\n"));
+                CRect rcSource(nXOriginDest, nYOriginDest, nXOriginDest + nWidthDest, nYOriginDest + nHeightDest);
+                ::SetBkColor(hdcDest, g_pProtectWndInfoFileMap->clrDisabled);
+                ::ExtTextOut(hdcDest, 0, 0, ETO_OPAQUE, &rcSource, NULL, 0, NULL);
             }
         }
     }
@@ -160,25 +170,35 @@ BOOL CProtectWndHookAPI::StartHook()
 {
     BOOL bRet = TRUE;
 
+    TCHAR szModuleName[MAX_PATH] = {0};
+    GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+
     if ( !g_HookApiInfo.bHooked)
     {
         g_HookApiInfo.bHooked = TRUE;
 
-        TCHAR szModuleName[MAX_PATH] = {0};
-        GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
-        ATLTRACE(TEXT(">>> Will Hook API(g_bHooked=%d) in PID=%d(%s),TID=%d, ProtectWnd=0x%x\n"), 
-            g_HookApiInfo.bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId(), 
-            g_ProtectWndInfo.hFilterWnd);
-
-        HMODULE hModuleGdi32 = GetModuleHandle(TEXT("Gdi32.DLL"));
-        FTLASSERT(hModuleGdi32);
-
-        if (hModuleGdi32)
+        HRESULT hr = E_FAIL;
+        COM_VERIFY(m_FileMap.OpenMapping(COMIC_PROTECT_WND_FILE_MAP_NAME, sizeof(ProtectWndInfoFileMap), 0, FILE_MAP_READ));
+        if (SUCCEEDED(hr))
         {
-            API_VERIFY(HookApiFromModule(hModuleGdi32, "BitBlt", &Hooked_BitBlt, &g_HookApiInfo.HookApiInfos[hft_BitBlt]));
-            API_VERIFY(HookApiFromModule(hModuleGdi32, "StretchBlt", &Hooked_StretchBlt, &g_HookApiInfo.HookApiInfos[hft_StretchBlt]));
+            g_pProtectWndInfoFileMap = (ProtectWndInfoFileMap*)m_FileMap.GetData();
+            if (g_pProtectWndInfoFileMap)
+            {
+                ATLTRACE(TEXT(">>> Will Hook API(g_bHooked=%d) in PID=%d(%s),TID=%d, ProtectWnd=0x%x\n"), 
+                    g_HookApiInfo.bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId(), 
+                    g_pProtectWndInfoFileMap->hWndProtect);
 
-            //don't call FreeLibrary
+                HMODULE hModuleGdi32 = GetModuleHandle(TEXT("Gdi32.DLL"));
+                FTLASSERT(hModuleGdi32);
+
+                if (hModuleGdi32)
+                {
+                    API_VERIFY(HookApiFromModule(hModuleGdi32, "BitBlt", &Hooked_BitBlt, &g_HookApiInfo.HookApiInfos[hft_BitBlt]));
+                    API_VERIFY(HookApiFromModule(hModuleGdi32, "StretchBlt", &Hooked_StretchBlt, &g_HookApiInfo.HookApiInfos[hft_StretchBlt]));
+
+                    //don't call FreeLibrary
+                }
+            }
         }
     }
     return bRet;
@@ -199,6 +219,8 @@ BOOL CProtectWndHookAPI::StopHook()
 
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_BitBlt]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_StretchBlt]));
+
+        m_FileMap.Unmap();
     }
     return bRet;
 }

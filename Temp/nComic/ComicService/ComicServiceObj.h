@@ -20,18 +20,8 @@ class ATL_NO_VTABLE CComicServiceObj :
 	public IDispatchImpl<IComicServiceObj, &IID_IComicServiceObj, &LIBID_ComicServiceLib, /*wMajor =*/ 1, /*wMinor =*/ 0>
 {
 public:
-	CComicServiceObj()
-	{
-        FTLTRACE(TEXT("Enter CComicServiceObj::CComicServiceObj\n"));
-        m_pProtectWndInfoMap = NULL;
-        HRESULT hr = E_FAIL;
-        COM_VERIFY(m_FileMap.MapSharedMem(sizeof(ProtectWndInfoFileMap), COMIC_PROTECT_WND_FILE_MAP_NAME,
-            NULL, NULL, PAGE_READWRITE, FILE_MAP_ALL_ACCESS));
-        if (SUCCEEDED(hr))
-        {
-            m_pProtectWndInfoMap = (ProtectWndInfoFileMap*)m_FileMap;
-        }
-	}
+	CComicServiceObj();
+    virtual ~CComicServiceObj();
 
 DECLARE_REGISTRY_RESOURCEID(IDR_COMICSERVICEOBJ)
 

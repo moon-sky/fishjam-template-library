@@ -5,9 +5,10 @@
 
 struct ProtectWndInfoFileMap
 {
-    HANDLE  hEventProtectUpdate;
+    //HANDLE  hEventProtectUpdate;
     HWND    hWndProtect;
-    HANDLE  hDibSection;
+    //HANDLE  hDibSection;
+    COLORREF clrDisabled;
 };
 
 #define COMIC_PROTECT_WND_FILE_MAP_NAME     TEXT("Global\\ComicViewerFileMap")

@@ -55,6 +55,7 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
     if (NULL != m_pProtectWndInfoFileMap && NULL != m_pProtectWndInfoFileMap->hWndProtect)
     {
         DisableWindowProtected(m_pProtectWndInfoFileMap->hWndProtect);
+        m_pProtectWndInfoFileMap->hWndProtect = NULL;
     }
 
 	bHandled = FALSE;

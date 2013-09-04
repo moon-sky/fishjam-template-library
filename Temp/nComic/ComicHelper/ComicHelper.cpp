@@ -21,9 +21,9 @@ HMODULE g_hModule;
 HHOOK g_hHook = NULL;
 HHOOK g_hHookKeyboard = NULL;
 BOOL  g_bHooked = FALSE;
-BOOL  g_bIsSelfProcess = FALSE;
+//BOOL  g_bIsSelfProcess = FALSE;
 
-extern PROTECT_WND_INFO g_ProtectWndInfo;
+//extern PROTECT_WND_INFO g_ProtectWndInfo;
 
 CProtectWndHookAPI g_ProtectWndHookApi;
 
@@ -35,9 +35,9 @@ LRESULT CALLBACK My_CallWndProc(
                                 )
 {
     CWPSTRUCT * pWPStruct = (CWPSTRUCT*)lParam;
-    if (!g_bHooked && !g_bIsSelfProcess && pWPStruct)// && pWPStruct->message == UM_HELPER_HOOK)
+    if (!g_bHooked && /*!g_bIsSelfProcess &&*/ pWPStruct)// && pWPStruct->message == UM_HELPER_HOOK)
     {
-        g_bIsSelfProcess = (g_ProtectWndInfo.curProcessId == GetCurrentProcessId());
+        //g_bIsSelfProcess = (g_ProtectWndInfo.curProcessId == GetCurrentProcessId());
 
         TCHAR szModuleName[MAX_PATH] = {0};
         GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
@@ -57,8 +57,8 @@ LRESULT CALLBACK My_LowLevelKeyboardProc(int nCode,
 {
     LRESULT nResult = 1;
     KBDLLHOOKSTRUCT* pKbdLlHookStruct = (KBDLLHOOKSTRUCT*)lParam;
-    FTLTRACE(TEXT("LowLevelKeyboardProc, vkCode=0x%x, ScanCode=0x%x, flags=0x%x, dwExtraInfo=0x%p\n"), 
-        pKbdLlHookStruct->vkCode, pKbdLlHookStruct->scanCode, pKbdLlHookStruct->flags, pKbdLlHookStruct->dwExtraInfo);
+    //FTLTRACE(TEXT("LowLevelKeyboardProc, vkCode=0x%x, ScanCode=0x%x, flags=0x%x, dwExtraInfo=0x%p\n"), 
+    //    pKbdLlHookStruct->vkCode, pKbdLlHookStruct->scanCode, pKbdLlHookStruct->flags, pKbdLlHookStruct->dwExtraInfo);
     if (0x37 == pKbdLlHookStruct->scanCode     //PrtSc(55)
         || 0x54 == pKbdLlHookStruct->scanCode) //Alt+PrtSc(84)
     {
@@ -79,9 +79,9 @@ COMICHELPER_API BOOL EnableWindowProtected(DWORD curProcessId, HWND hWndFilter, 
 {
     ATLTRACE(TEXT("Enter EnableWindowProtected for hWndFilter=0x%x\n"), hWndFilter);
     BOOL bRet = FALSE;
-    g_ProtectWndInfo.hFilterWnd = hWndFilter;
-    g_ProtectWndInfo.clrDisabled = clrDisabled;
-    g_ProtectWndInfo.curProcessId = curProcessId;
+    //g_ProtectWndInfo.hFilterWnd = hWndFilter;
+    //g_ProtectWndInfo.clrDisabled = clrDisabled;
+    //g_ProtectWndInfo.curProcessId = curProcessId;
 
     if (NULL == g_hHook)
     {
@@ -100,27 +100,22 @@ COMICHELPER_API BOOL DisableWindowProtected(HWND hWnd)
     //ATLASSERT(hWnd == g_hFilterWnd);
     if (g_hHook)// && hWnd == g_hFilterWnd
     {
+        UnHookApi();
+
         bRet = UnhookWindowsHookEx(g_hHook);
         UnhookWindowsHookEx(g_hHookKeyboard);
         g_hHook = NULL;
         g_hHookKeyboard = NULL;
 
-        UnHookApi();
         //g_hFilterWnd = NULL;
     }
     return bRet;
 }
 
-COMICHELPER_API BOOL UpdateProtectWindowInfo(HWND hWndFilter, LPRECT pRect)
-{
-    BOOL bRet = FALSE;
-
-    return TRUE;
-}
-
 COMICHELPER_API BOOL HookApi()
 {
     BOOL bRet = FALSE;
+    g_bHooked = TRUE;
     API_VERIFY(g_ProtectWndHookApi.StartHook());
     return bRet;
 }
@@ -129,6 +124,7 @@ COMICHELPER_API BOOL UnHookApi()
 {
     BOOL bRet = FALSE;
     API_VERIFY(g_ProtectWndHookApi.StopHook());
+    g_bHooked = FALSE;
     return bRet;
 
 }
