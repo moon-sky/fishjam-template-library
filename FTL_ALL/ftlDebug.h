@@ -5,8 +5,16 @@
 
 namespace FTL
 {
-    //WinDBG用法详解.pdf -- P28,  30.8.3 符号服务器
+    //WinDBG用法详解.pdf -- P79,  30.14 遍历链表
 	//http://wenku.baidu.com/view/14fdd446a8956bec0975e30c.html -- P31, 挑选技术
+
+    /*********************************************************************************************************
+    * 手工回溯栈(缓冲区溢出等造成栈帧信息被破坏)--
+    *   a.ln eip -- 得到当前函数名
+    *   b.寻找当前函数的栈帧基准地址 -- 没有破坏的 EBP或者ESP, 或 !teb
+    *   c.寻找当前函数的返回地址 -- EBP+4
+    *********************************************************************************************************/
+
     /*********************************************************************************************************
     * TODO: 
     *  1.双击内核调试 和 本地内核调试
@@ -14,12 +22,15 @@ namespace FTL
     *  3.通过启动内核调试对话框设置内核调试连接设置
     *  4.命令中的注释： *(其后所有内容都是注释) 或 $$(其后内容都是注释，可使用分号结束) -- 使用前应该在前一条命令后加上分号作为分隔
     *  5.poi 将变量转换成指针 "j (poi(MyVar)>5) ' -- J 命令判断变量MyVar 的值是否大于5； 若 pSomeFun 为函数指针，则 ln poi(pSomeFun) 显示其地址的函数名
+    *    da poi(ebp+8) -- 在 printf 函数中显示第一个参数所指定的字符串，此断点必须在建立栈的代码(mov ebp,esp)执行完毕后才行。
 	*  6.当调试用户态的转储文件时，可以使用.ecxr 命令将转储文件中保存的异常上下文设置为寄存器上下文。
 	*  7.VC 编译器缺省将类型符号放在VCx0.PDB 文件中，WinDBG不能很好的处理，因此显示局部变量时，会显示很多no type information 错误。
 	*    解决方法：将符号格式设置为C7 Compatable（Settings>C++ > General > Debug Info）
 	*  8.设置环境变量_NT_SYMBOL_PATH 和_NT_ALT_SYMBOL_PATH
 	*  9.WinDBG 缺省使用所谓的懒惰式符号加载策略，模块加载时不会加载符号，显示为 deferred(延迟加载)，
 	*    通过 .reload 强制全部加载或 .load 手动加载 ？
+    *  10.加载不严格匹配的符号文件(通常没有完全匹配的符号文件时) -- 先通过 !sym noisy 开启吵杂模式确认，然后 .reload /i 模块名 加载
+    *     加载完后通过 lm 查看，其前面会有 "M" 的标记
     *
     * 扩展命令
     *   sdbgext -- 可以根据窗体句柄查看窗体信息等， 如 !sdbgext.hwnd 00070836
@@ -31,7 +42,21 @@ namespace FTL
 	*   http://www.apimonitor.com/
 	*********************************************************************************************************/
 	/*********************************************************************************************************
-	*  
+	* Windows 的调试模型是事件驱动的。整个调试过程就是围绕调试事件的产生、发送、接收和处理为线索而展开的。
+	* Windows 定义了9 类调试事件:
+	*   EXCEPTION_DEBUG_EVENT(1) -- 异常事件,根据异常代码分为很多个子类:
+	*     Win32 异常(非法访问、除零 -- 定义在 ntstatus.h 中)
+	*     Visual C++异常(throw调用RaiseException -- 0xe06d7363, .msc)
+	*     托管异常(0xe0636f6d, .com )
+	*     其他异常(用户直接调用RaiseException和其它C++编译器抛出的异常等)
+	*   CREATE_THREAD_DEBUG_EVENT(2) -- 
+	*   CREATE_PROCESS_DEBUG_EVENT(3) -- 
+	*   EXIT_THREAD_DEBUG_EVENT(4) -- 
+	*   EXIT_PROCESS_DEBUG_EVENT(5) -- 
+	*   LOAD_DLL_DEBUG_EVENT(6) -- 
+	*   UNLOAD_DLL_DEBUG_EVENT(7) -- 
+	*   OUTPUT_DEBUG_STRING_EVENT(8) -- 
+	*   RIP_EVENT(9) --
 	*********************************************************************************************************/
 
     /*********************************************************************************************************
@@ -93,7 +118,10 @@ namespace FTL
     *   ad -- 删除指定或全部(ad *) 用户别名
     *   as 别名名称 别名实体 -- 定义或者修改用户命名别名，如 as SST nt!KiServiceTable
     *   b -- 断点(F9 即是在光标所在源码行设定断点？)。bu 设置的断点会保存在Workspace中?
-    *     ba Access Size -- 数据断点(也叫硬件断点)，访问指定地址时中断，如 ba w4 0xffb5c4f8+0x18+0x4
+    *     ba Access Size [Address] -- 数据断点(也叫硬件断点)，可检视数据和IO访问等。通过CPU的调试寄存器设置(x86设置在DR0~DR7)，具有数量限制。
+    *       如 ba w4 0xffb5c4f8+0x18+0x4
+    *       Access: e(读取和执行指令时);r(读写数据时);w(写数据时);i(执行输入输出访问时)
+    *       Size:指定访问的长度。e(1),其他种类的可以使 1/2/4/8。注意地址的内存对齐。
     *     bc/bd/be -- 清除/ 禁用/启用  断点，如 bc 1 或 bc *
     *     bl -- 列出所有断点
 	*     bm -- 通过通配符设置一批断点，如 bm msvcr80d!print* 对于 msvcr80d 模块中的所有print 开头的函数设置断点。
@@ -105,52 +133,87 @@ namespace FTL
 	*           bp MSVCR80D!printf+3 2 "kv;da poi(ebp+8)" -- 对printf 偏移3的地址设置断点，第二次时才中断，并自动执行指定命令。
 	*              da poi(ebp+8)用来显示printf 的第一个参数所指定的字符串。设置偏移3的原因：入口处的栈帧建立代码执行好后，ebp+8才能指向第一个参数
 	*           bp my.cpp:122 100
-	*        条件断点: 命令行中通过 j(@@ 条件) 来判断并处理
+	*        条件断点: 命令行中通过 j(条件) 或 .if(条件) 来判断并处理。
+	*          如：当命令行参数的个数大于1时中断
+	*            1.[MASM表达式时]bp myProgress!wmain "j (poi(argc)>1) 'dd argc l1;du poi(poi(argv)+4)';'gc'"
+	*            2.[MASM表达式时]bp myProgress!wmain ".if (poi(argc)>1) {dd argc l1;du poi(poi(argv)+4)} .else {gc}"
+	*            3.[C++表达式时] bp myProgress!wmain "j (argc>1) '? argc;?? argv[1]';'gc'"
+	*     /p EPROCESS -- 只能用在内核调试中, 只有当前进程是指定进程时才触发这个断点
+	*     /t ETHREAD  -- 只能用在内核调试中, 只有当前线程是指定线程时才触发这个断点
     *   dds 地址 -- 可显示指定位置的函数名?
-    *   d{a|b|c|d|D|f|p|q|u|w|W} 地址 [l长度] -- 观察指定地址的内存数据
-    *     a(ASCII),b(Byte and ASCII),dd(DWORD),f(float),p(Pointer),q(Quad-word), u(Unicode),w(Word),W(Word and ASCII) 
+    *   d{a|b|c|d|D|f|p|q|S|u|w|W} 地址 [L长度] -- 观察指定地址的内存数据
+    *     a(ASCII),b(Byte and ASCII),c(DWORD and ASCII),dd(DWORD),f(float),p(Pointer),q(Quad-word),S(UNICODE_STRING),u(Unicode),w(Word),W(Word and ASCII) 
     *     dg -- 显示段选择子
-    *     dt Xxxx -- 按照类型(如 结构体？)显示变量内容，如 dt _EPROCESS
-    *     dv -- 显示函数参数和局部变量的信息(Ctrl+Alt+V 切换到更详细的显示模式)，注意：优化过的代码显示可能不准确。
+    *     dt Xxxx [Address] -- 按照类型(如 结构体？)显示变量内容，如 dt _EPROCESS 0xXXXX -- 使用_EPROCESS结构来显示指定内存地址的数据
+    *     dv /i /t /v -- 显示函数参数和局部变量的信息(Ctrl+Alt+V 切换到更详细的显示模式)，注意：优化过的代码显示可能不准确。
+    *       /i -- 显示变量范围(param,local,function 等); /t -- 显示变量类型(int,wchar_t* 等), /v -- 显示相对ebp等寄存器的地址
+    *       缺少私有符号时dv命令无法工作，可通过查看内存、 EBP+-N 的方式查看
     *   e -- 编辑内存数据，根据格式有 e{b|d|D|f|p|q|w} 等
-    *   g -- 恢复运行
+    *   g[=StartAddress] -- 恢复运行
     *     gc -- 从条件断点继续执行，通常用于设置断点时的 "CommandString" 中
-	*     gu -- 执行到本函数返回
+	*     gh/gn -- 发生异常时继续并返回系统 已处理(通常用于动态改变值后继续)/未处理(通常程序会崩溃或蓝屏) 该异常
+	*     gu -- 执行到本函数返回，等价于 ta @$ra
     *   j <条件表达式> [Command1>] ; [Command2>] -- 判断一个条件，然后选择性的执行后面的命令，类似 if..else，可用单引号包含一组命令
     *     例： r ecx; j (ecx<2) 'r ecx';'r eax' 表示先显示寄存器ecx 的值，然后执行j命令判断ecx是否小于2并执行不同部分。
     *          等价于：r ecx; .if (ecx>2) {r ecx} .else {r eax}
     *   k -- 显示调用堆栈
 	*     kb -- 显示传入函数的头三个参数
-	*     kp -- 显示每个函数的所有参数
+	*     kp -- 显示每个函数的所有参数，需要私有符号。
 	*     kn -- 显示堆栈层次数，可通过 .frame n 切换
+    *     kv -- FPO（栈指针省略）信息和调用协议(如 cdecl、等)，需要私有符号。
     *     k* 显示当前线程的堆栈; ~*kb 显示所有线程的堆栈
 	*   ld 模块 -- 加载指定模块的调试符号(可加载的模块名是通过 lm 能看到的)
-    *   lm -- 列出当前加载的模块列表，可查看是否正确加载了需要调试的程序、驱动的符号表。若有 M 标记，表示符号文件和执行映像文件存在不匹配
+    *   lm -- 列出当前加载的模块列表，可查看是否正确加载了需要调试的程序、驱动的符号表。
+    *     标记符号的意义：
+    *       C 或 T(具体区别？) -- 校验和缺失，不可访问，或者等于0
+    *       # -- 表示符号文件和执行映像文件存在不匹配，比如时间戳、校验和等
+    *       M -- 表示符号文件和执行映像文件存在不匹配，要么是时间戳或者校验和。但是仍然加载了这样的符号文件。
+    *       PERF -- 执行文件包含性能优化代码，对地址进行简单加减运行可能产生错误结果。
 	*     lm e -- 只显示有符号问题的模块
 	*     lm -f -- 显示模块全路径，通常可以查看运行的模块是否是指定的模块(尤其是服务、驱动、COM组件等)
-	*     lm v -- 可以显示详细信息
-    *     lmm -- list module match
-    *   ln -- 搜索距离指定地址最近的符号
-    *   p -- step over，单步执行完函数调用
-	*     pa -- 单步到指定地址，不进入子函数
+    *     lm l -- 只显示已经加载符号的模块
+	*     lm v -- 可以显示详细信息，如路径、时间戳、版本等
+    *     lm m -- 指定对模块名的过滤模式，比如 lm m k* 显示以模块名k 开头的模块
+    *   ln 地址 -- 搜索距离指定地址最近的符号
+    *   p[r][=StartAddress] -- step over，单步执行完函数调用, r 表示禁止断点时显示寄存器值,可通过等号(=)指定起始地址。
+	*     pa StopAddress-- 单步执行到指定地址，如果中间有函数调用，那么不进入所调用的函数
 	*     pc -- 单步执行到下一个函数调用(Call 指令, 汇编调试中使用 pc + t 跟踪执行流程时非常有用)
     *   q -- 结束调试会话
     *   r -- 观察和修改寄存器，如 r ecx=2 表示将ecx设置为2
-    *   s -- 搜索内存数据
-    *   sx -- 设置调试事件处理方式
+    *   s -- 搜索内存，主要分为三种应用方式
+    *     s -[[Flags]]sa|su Range -- 在指定的内存范围内搜索数据(ASCII字符|UNICODE字符),
+    *       例：s-[l5]sa poi(nt!PsInitialSystemProcess) l200 -- 搜索nt!PsInitialSystemProcess 变量所指向地址开始的512个字节范围内任何长度不小于5的ASCII字符串
+    *     s -[[Flags]]v Range Object -- 在指定内存地址范围内搜索与指定对象相同类型的对象(相同的类实例)
+    *     s [-[[Flags]]Type] Range Pattern  -- 在指定范围内搜索某一内容模式
+    *       例：s-u 0x400000 l2a000 "AdvDbg" -- 从0x40000开始长度为0x2a000的范围内搜索"AdvDbg"的Unicode字符串
+    *     通用参数
+    *       -s -- 将搜索结果保存起来
+    *       -r -- 在保存的结果中搜索
+    *   sx -- 显示或设置调试事件处理方式(GUI方式为Debug -> Events Filters)
+    *    sxr 可以将所有事件处理选项恢复为缺省值
     *   t -- trace into，单步如遇到函数调用，进入被调用函数
 	*     ta -- 追踪到指定地址，进入子函数
+	*     tb -- 追踪执行到下一条分支指令
 	*     tc -- 追踪执行到下一个函数调用(Call 指令)
     *   u XXXXXXXX -- 反汇编指定的地址(不需要 0x 前缀 ?)， 如 lkd> u KeAddSystemServiceTable l 40
     *     l 长度 -- 可以指定反汇编出来的语句长度，是16进制
     *   version -- 显示版本和已经加载的扩展模块等信息
-	*   wt -- 跟踪执行并生成一份报告(★调用分析的利器★?)
-    *   x -- (Examine Symbols)分析调试符号，如 x /a win32k!NtUser* 列出win32k模块中所有以 NtUser 开头的符号并按地址升序排序。
-	*     /t -- 显示符号的数据类型。 /v -- 显示符号的符号类型和大小
+	*   wt -- 跟踪执行并生成报告(★调用分析的利器★?)，执行情况表中：
+	*     第一列表示指令数(函数入口的数字表示 从本函数入口进入到下一行所对应的函数的入口所执行的指令数；函数出口的数字表示本函数执行的指令数 )
+	*     第二列表示本行所对应的函数调用其它函数时所执行的总指令数；
+	*     第三列表示函数调用深度;
+	*     第四列表示函数名称
+    *   x -- (Examine Symbols)分析调试符号，支持 *,?,#,[0-9], 等正则表达式。注意：有些选项只有私有PDB中才起作用。
+	*     /n -- 按名称升序。 /s <符号大小> -- 按符号(函数体、数据类型)大小设置过滤条件。 
+    *     /t -- 显示符号的数据类型。 /v -- 显示符号的符号类型和大小
+    *     如: x /a win32k!NtUser* 列出win32k模块中所有以 NtUser 开头的符号并按地址升序排序。
     *   z -- 循环执行一或多个命令，循环执行时会有 redo 的日志提示
     *   
+    * 表达式评估器(通过 .expr 切换)
+    *   MASM[缺省] -- Microsoft Assembler expressions, 此时可使用 @@ 前导符来嵌入C++表达式
+    *  
 	* 操作符(Operator) -- 如 r eip = poi(@esp) -- 设置Eip(命令指针)为堆栈偏移为0x0指向的值
-	*   poi -- 从地址获得指针大小的数据
+	*   poi -- 从指定地址获得指针大小的数据,类似的有 by(字节),wo(字),dwo(双字),qwo(四字) 等
 	* 
     * 元命令 -- 以一个点(.)开始
     *   .abandon -- 放弃用户态调试目标进程
@@ -170,11 +233,11 @@ namespace FTL
     *   .endpsrv -- 结束远程进程服务器
     *   .endsrv -- 结束引擎服务器
     *   .exepath -- 可执行文件
-    *   .expr -- 控制表达式评估器，分为 MASM, C++ 等
+    *   .expr [/s] -- 显示或切换表达式评估器，分为 MASM, C++ 等
     *   .extpath -- 扩展命令模块路径
     *   .extmatch -- 匹配扩展命令
 	*   .frame [n]-- 观察或切换当前的调用堆栈层次
-    *   .fromats -- 以不同格式显示数据
+    *   .formats -- 以不同格式显示数据(比如: .formats 0x302 -- 会将十六进制显示为二进制格式)
     *   .help -- 列出所有元命令和每个命令的简单说明
     *   .kill -- 杀掉进程
     *   .load 模块完整路径 -- 加载扩展命令模块
@@ -195,7 +258,9 @@ namespace FTL
 	*   .srcnoisy [options]-- 设置搜索源码目录时的输出信息
 	*   .srcpath [源码目录]-- 设置本地源码路径(通常用于非本地编译时，如果是本机编译调试的话不用设置)
 	*   .suspend_ui -- 暂时停止刷新信息窗口，防止界面更新太频繁
-    *   .symopt -- 显示和修改符号选项。使用一个32位的DWORD 来记录符号选项，每位代表一个选项，+号设置,-号取消
+    *   .symopt -- 显示和修改符号选项。使用一个32位的DWORD 来记录符号选项，每位代表一个选项，+号设置,-号取消，
+    *      如 SYMOPT_DEFERRED_LOADS(延迟加载，默认为ON)；SYMOPT_DEBUG(显示符号加载过程，默认Off) 等
+    *         SYMOPT_LOAD_ANYTHING(加载不完全匹配的符号，默认OFF；影响范围太大，容易出错，建议不要设为ON)
     *   .sympath -- 可以增加、修改、或者显示符号搜索路径(本地磁盘目录 + 符号服务器，多个位置之间用分号分隔)
 	*   .symfix -- 设置符号服务器，设置完毕后需要使用 .reload 刷新
     *   .thread [ETHREAD] -- 将指定线程的上下文设置为新的线程上下文，具体的 ETHREAD 可在 .process <EPROCESS> 时看到
@@ -213,18 +278,21 @@ namespace FTL
     *     TODO: !for_each_XXXX 命令循环执行， 如 !for_each_frame 对每个栈帧执行一个操作， !for_each_local对每个局部变量
     *           打印出每个栈帧的每个局部变量 -- !for_each_frame !for_each_local dt @#Local
 	*   [Dbghelp.dll] -- 缺省的
-	*      !lmi Module -- 显示模块详细信息
+	*      !lmi 模块名 -- 显示模块详细信息,每次只能观察一个模块
 	*      !process -- 查看指定(默认是当前进程)进程信息，包括 EPROCESS 块的信息
     *        !process 0 0 列出系统中的所有进程的基本信息， !process -1 0 查看当前进程
     *      !session -- 显示和切换会话上下文
-	*      !sym -- 控制调试符号加载时的提示信息
+	*      !sym -- 控制调试符号加载时的提示信息( .symopt 命令的扩展)
 	*         noisy(开启嘈杂模式), quiet(关闭嘈杂模式)
     *   acpikd.dll -- 用于ACPI 调试，追踪调用ASL 程序的过程，显示ACPI 对象
     *   ext.dll -- 适用于各种调试目标的常用扩展命令
+    *     !address [Address] -- 显示内存地址(区域)的特征信息，如 /Protect(PAGE_READWRITE)/State(PAGE_READWRITE) 等
     *   exts.dll -- 关于堆(!heap)、进程/ 线程结构(!teb/!peb)、安全信息(!token、!sid、!acl)、和应用程序验证(!avrf)等的扩展命令。
     *   fltkd.dll -- 用于调试文件系统的过滤驱动程序(FsFilter)
     *   kdexts.dll -- 包含了大量用于内核调试的扩展命令
+    *     !pte -- 显示指定地址所属的页表表项(PTE)和页目录表项(PDE)
     *   kext.dll -- 内核态调试时的常用扩展命令
+    *     !d{b|c|d|p|q|u|w} -- 显示物理地址(只能在内核调试时使用)
     *   ks.dll -- 用于调试内核流(Kernel Stream)
     *   logexts.dll -- 用于监视和记录API 调用(Windows API Logging Extensions)
     *   minipkd.dll -- 用于调试AIC78xx 小端口(miniport)驱动程序。
@@ -235,6 +303,7 @@ namespace FTL
     *   sos.dll -- 用于调试托管代码和.Net 程序
     *   traceprt.dll -- 用于格式化 ETW 信息
     *   uext.dll -- 用户态调试时的常用扩展命令
+    *     !vprot -- 显示一个内存地址的属性,显示结果类似于 !address
     *   vdmexts.dll -- 调试运行在 VDM 中的 DOS 程序和 WOW 程序
     *   wdfkd.dll -- 调试使用WDF(Windows Driver Foundation)编写的驱动程序
     *   wmitrace.dll -- 显示 WMI 追踪有关的数据结构、缓冲区和日志文件
@@ -253,7 +322,7 @@ namespace FTL
     *   $frame -- 当前栈帧的序号
     *   $ip -- 指令指针寄存器。x86 中即 EIP，x64 即 RIP
     *   $pagesize -- 调试目标所在系统的内存页字节数
-    *   $peb -- 当前进程的进程环境块(PEB)的地址
+    *   $peb -- 当前进程的进程环境块(PEB)的地址, 其 BeingDebugged 字段表明当前进程是否在被调试
     *   $ptrsize -- 调试目标所在系统的指针类型宽度
     *   $proc -- 当前进程的 EPROCESS 结构的地址
     *   $ra -- 当前函数的返回地址(retrun address)
@@ -343,7 +412,7 @@ namespace FTL
 	*********************************************************************************************************/
 
     /*********************************************************************************************************
-    * 在Release版本中设置断点: _asm int 3
+    * 在Release版本中设置断点: _asm int 3 (或 ntdll!DbgBreakPoint ?), 会产生 0x80000003 的异常
 	*   
 	* 使用 TRACE/ATLTRACE 打印带有中日韩的文字时，可能会报" _CrtDbgReport: String too long or IO Error "的错误，而无法打出日志：
 	*   原因: wprintf_s 不能正确输出中日韩的 UNICODE 文字(似乎VS2010后修复了这个Bug？)

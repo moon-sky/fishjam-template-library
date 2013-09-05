@@ -18,10 +18,13 @@ namespace FTL
 	*********************************************************************************************/
 
     /*********************************************************************************************
-	* 符号服务器：
+	* 符号服务器(Symbol Server)
+    *   由 WinDbg.exe/devenv.exe + DbgEng.dll + DbgHelp.dll(OS的符号库模块，负责读取和解析调试符号) + SymSvr.Dll(从符号服务器查找、下载和管理符号文件) 等组成：
+    *   语法为：symsrv*ServerDLL*[DownstreamStore*]ServerPath
+    *     如果使用系统提供的SymSvr.Dll，可以简化成：srv*[DownstreamStore*]ServerPath
 	*   环境变量：%_NT_SYMBOL_PATH%=SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
 	*   问题：VS中可以在调试符号路径中指明 http://msdl.microsoft.com/download/symbols 不？
-	*
+    *
 	* CrashReport: 程序出现异常的时候显示发送错误的对话框, 并把Dump文件发送到指定的地址. http://code.google.com/p/crashrpt/
 	* XCrashReport: 与上面的类似的一个开源项目. http://www.codeproject.com/KB/debug/XCrashReportPt1.aspx
 	* procdump: 可以使得指定进程生成 dmp 文件(http://technet.microsoft.com/en-us/sysinternals/dd996900)
@@ -29,6 +32,8 @@ namespace FTL
 	*
 	* 读取Dump信息 -- http://support.microsoft.com/kb/315263
 	* WINDBG分析DMP方法： http://bbs.icafe8.com/forum.php?mod=viewthread&tid=400104&fromuid=30123
+    *
+    * 二次开发：符号服务器API(Symbol Server API, 如 SymbolServer 等函数，具体参见 dbghelp.chm 文件),
 	*
 	* 常见问题：
 	*   1.post mortem debugging -- 调试 dmp 文件时无法设置断点
@@ -41,6 +46,8 @@ namespace FTL
 	*********************************************************************************************/
 
 	/*********************************************************************************************
+	* 每个异常，Windows 会最多给于两轮处理机会 -- 
+	*   异常处理器(VEH、SEH 等)
     * SetUnhandledExceptionFilter -- 在发生未处理异常时，由系统调用进行处理
     * Vista系统下可以使用 RegisterApplicationRecoveryCallback 注册恢复回调函数，可以在
     * 未知错误或者超过Windows响应时间(默认5秒)后被系统调用，可以保存用户未保存的数据并恢复（有Windows提供的UI）
@@ -61,6 +68,14 @@ namespace FTL
 	*
 	* 
 	* DbgHelp中的DumpAPI例子: http://www.debuginfo.com/examples/src/effminidumps/MiniDump.cpp 
+    *
+    * TODO(未考虑调用约定，需要确认下面的内容是否正确)
+    *   EBP-C -- 第一个局部变量
+    *   EBP-8 -- 是Cookie屏障(一般是 0xCCCCCCC, 只有调试版才有?)
+    *   EBP-4 -- 安全Cookie
+    *   EBP -- 父函数的EBP 值
+    *   EBP+4 -- 函数的返回地址
+    *   EBP+8 -- 参数N(第一个还是最后一个?)
     **********************************************************************************************/
 }
 
