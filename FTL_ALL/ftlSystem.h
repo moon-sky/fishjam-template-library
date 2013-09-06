@@ -139,7 +139,7 @@ namespace FTL
 
     class CFRegUtil
     {
-        //RegNotifyChangeKeyValue -- 检测注册表的变化
+        //RegNotifyChangeKeyValue -- 检测注册表的变化，可以快速响应
         //RegCreateKeyEx -- 创建注册表项，如果存在的话则打开
         //RegQueryValueEx -- 获取 字符串(REG_SZ)、DWORD(REG_DWORD) 注册表的 类型 和值
         //RegSetValueEx -- 设置值，如果lpSubKey为NULL或""，则设置默认值

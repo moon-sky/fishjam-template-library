@@ -29,6 +29,7 @@ extern "C" {
   nt!KeServiceDescriptorTableShadow	-- fffff800`02ac5880
   nt!KiServiceTable					-- fffff800`0288fb00, 即 nt!KeServiceDescriptorTable->ServiceTableBase(SSDT)
   win32k!W32pServiceTable				-- fffff960`001c1c00, 即 nt!KeServiceDescriptorTableShadow->ServiceTableBase[1](Shadow SSDT)
+  PsInitialSystemProcess -- 初始的系统进程的EPROCESS结构的地址
 
 1: kd> dp nt!KeServiceDescriptorTableShadow
 fffff800`02ac5880  fffff800`0288fb00 00000000`00000000

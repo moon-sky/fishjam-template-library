@@ -13,6 +13,10 @@ public :
     DECLARE_LIBID(LIBID_ComicServiceLib)
     DECLARE_REGISTRY_APPID_RESOURCEID(IDR_COMICSERVICE, "{91F71D7D-DBA9-4403-B629-940731E8AA4F}")
 
+    CComicServiceModule()
+    {
+        m_status.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_SHUTDOWN;
+    }
     HRESULT InitializeSecurity() throw()
     {
         // TODO : Call CoInitializeSecurity and provide the appropriate security settings for 
@@ -88,6 +92,40 @@ public :
  
         return hr;
     }
+
+    void OnPause() throw()
+    {
+        OutputDebugString(TEXT("On Comic Service Pause\n"));
+        SetServiceStatus(SERVICE_PAUSED);
+        __super::OnPause();
+    }
+    void OnContinue() throw()
+    {
+        OutputDebugString(TEXT("On Comic Service Continue\n"));
+        SetServiceStatus(SERVICE_RUNNING);
+        __super::OnContinue();
+    }
+
+    void OnStop() throw()
+    {
+        OutputDebugString(TEXT("On Comic Service Stop\n"));
+        __super::OnStop();
+    }
+
+    //void Handler(DWORD dwOpcode) throw()
+    //{
+    //    switch(dwOpcode)
+    //    {
+    //    case SERVICE_CONTROL_PAUSE:
+    //        OnPause();
+    //        break;
+    //    case SERVICE_CONTROL_CONTINUE:
+    //        OnContinue();
+    //        break;
+    //    default:
+    //        __super::Handler(dwOpcode);
+    //    }
+    //}
 };
 
 CComicServiceModule _AtlModule;

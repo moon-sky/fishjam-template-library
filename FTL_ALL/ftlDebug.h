@@ -41,6 +41,7 @@ namespace FTL
 	*   http://www.rohitab.com/apimonitor
 	*   http://www.apimonitor.com/
 	*********************************************************************************************************/
+
 	/*********************************************************************************************************
 	* Windows 的调试模型是事件驱动的。整个调试过程就是围绕调试事件的产生、发送、接收和处理为线索而展开的。
 	* Windows 定义了9 类调试事件:
@@ -67,6 +68,8 @@ namespace FTL
 	* WinDbg(http://msdn.microsoft.com/en-us/windows/hardware/gg463009) -- 现在已经不再提供单独下载，在SDK、WDK等中包含。
     *   支持脚本和插件，而且软件包本身提供了大量非常有用的插件，可编写调试扩展模块来定制和补充调试功能
     *   .hh 关键字 -- 打开帮助文档并定位到指定关键字
+    *   其他帮助文档：kernel_debugging_tutorial.doc(内核调试)、symhttp.doc(建立符号服务器)、srcsrv.doc(介绍建立源文件服务器)、
+    *                 dml.doc(介绍DML的用途和编写方法)
 	*   
     * 工作空间(Workspace) -- 描述和存储一个调试项目的属性、参数、以及调试器设置等信息，类似IDE中的项目文件。
     *   配置信息保存在 HKCU\Software\Microsoft\Windbg\Workspaces(也可以保存成文件)，一般包含四个子键，分别对应四类不同的工作空间。
@@ -105,6 +108,8 @@ namespace FTL
     *   ~ -- 显示和切换线程
     *     ~<thread_index> s -- 切换当前线程， 如 "~6 s" 切换到第6号线程
     *     ~*e 命令 -- 针对所有线程执行执行命令，如 ~*e kn 显示所有线程的调用堆栈; ~1 命令 -- 针对1号线程执行命令
+    *     ~ThreadIndex n/m -- 增加或减少指定线程的 Suspend 数(改变线程的挂起计数系统属性)
+    *     ~ThreadIndex f/u -- 冻结(Freeze)或解冻(Unfreeze)线程(改变调试器的线程设置)
     *   | -- 显示进程
     *     |<process_index> s -- 切换当前系统中的当前进程
     *   || -- 显示当前的系统(如 本地、远程、dump等)，在同时调试多个系统时使用
@@ -144,7 +149,10 @@ namespace FTL
     *   d{a|b|c|d|D|f|p|q|S|u|w|W} 地址 [L长度] -- 观察指定地址的内存数据
     *     a(ASCII),b(Byte and ASCII),c(DWORD and ASCII),dd(DWORD),f(float),p(Pointer),q(Quad-word),S(UNICODE_STRING),u(Unicode),w(Word),W(Word and ASCII) 
     *     dg -- 显示段选择子
+    *     dl -- 遍历链表，提供的地址必须是LIST_ENTRY/SINGLE_LIST_ENTRY的地址，命令中要指定链表元素的大小，而且只能显示下一个ENTRY的指针数值。
+    *           相对来说 dt -l 或 !list 方式对用户更友好。
     *     dt Xxxx [Address] -- 按照类型(如 结构体？)显示变量内容，如 dt _EPROCESS 0xXXXX -- 使用_EPROCESS结构来显示指定内存地址的数据
+    *       -l -- 遍历列表，如：dt nt!_EPROCESS -l ActiveProcessLinks.Flink -y Ima -yoi Uni poi(PsInitialSystemProcess) 表示遍历进程，类似 !process 0 0
     *     dv /i /t /v -- 显示函数参数和局部变量的信息(Ctrl+Alt+V 切换到更详细的显示模式)，注意：优化过的代码显示可能不准确。
     *       /i -- 显示变量范围(param,local,function 等); /t -- 显示变量类型(int,wchar_t* 等), /v -- 显示相对ebp等寄存器的地址
     *       缺少私有符号时dv命令无法工作，可通过查看内存、 EBP+-N 的方式查看
@@ -210,8 +218,10 @@ namespace FTL
     *   z -- 循环执行一或多个命令，循环执行时会有 redo 的日志提示
     *   
     * 表达式评估器(通过 .expr 切换)
-    *   MASM[缺省] -- Microsoft Assembler expressions, 此时可使用 @@ 前导符来嵌入C++表达式
-    *  
+    *   MASM[缺省]--Microsoft Assembler expressions, 此时可使用 @@ 前导符来嵌入C++表达式。引用伪寄存器时可以 在$符号前加@符号也可不加。
+    *   C++ -- 引用伪寄存器时一定要加 @符号，引用别名的典型方式是使用 ${}
+    *     @@c++(表达式) -- 强制使用C++表达式评估器
+    *
 	* 操作符(Operator) -- 如 r eip = poi(@esp) -- 设置Eip(命令指针)为堆栈偏移为0x0指向的值
 	*   poi -- 从指定地址获得指针大小的数据,类似的有 by(字节),wo(字),dwo(双字),qwo(四字) 等
 	* 
@@ -219,7 +229,8 @@ namespace FTL
     *   .abandon -- 放弃用户态调试目标进程
     *   .aliascmds -- 列出当前所有的用户命名别名
     *   .asm -- 反汇编选项
-    *   .attach -- 附加到指定进程, 如果带参数 -k 表示是内核调试
+    *   .attach -- 附加到指定进程, 如果带参数 -k 表示是内核调试， -premote 可指定远程系统的位置和通信方式
+    *   .call -- 从调试器中调用被调试程序中的函数，必须有被调用函数的私有符号。需要小心其可能的副作用
     *   .chain -- 列出当前加载的所有扩展模块
     *   .childdbg -- 控制子进程的调试，如果同时调试几个进程，可以使用 "|" 命令来切换
 	*   .context -- 设置或者显示用来翻译用户态地址的页目录基地址(Base of Page Directory)
@@ -270,8 +281,10 @@ namespace FTL
     *   .unload/.unloadall -- 卸载扩展命令模块
     *   .wake -- 唤醒处于睡眠状态的调试器
     *   .writemem -- 将原始内存数据写到文件
-    *   编写命令程序(.if、.else、.elsif、.foreach、.do、.while、.continue、.catch、.break、.continue、.leave、.printf、.block 等)
-    *     多个命令可以以分号分隔并包含在大括号{} 中
+    *   流程控制符号(Control Flow Token)，多个命令可以以分号分隔并包含在大括号{} 中
+    *     .if、.else、.elsif、.foreach、.do、.while、.continue、.break、.continue、.printf
+    *    .catch、.leave -- 捕捉异常和从异常块中退出
+    *    .block -- 定义代码块
     * 
     * 扩展命令 -- 实现在DLL中扩展某一方面的调试功能，部分会自动加载，不许需要通过 .load/.loadby 手动加载。
     *     以感叹号(!)开始的命令，语法为： ![扩展模块名.]<扩展命令名> [参数]
@@ -287,6 +300,7 @@ namespace FTL
     *   acpikd.dll -- 用于ACPI 调试，追踪调用ASL 程序的过程，显示ACPI 对象
     *   ext.dll -- 适用于各种调试目标的常用扩展命令
     *     !address [Address] -- 显示内存地址(区域)的特征信息，如 /Protect(PAGE_READWRITE)/State(PAGE_READWRITE) 等
+    *     !list -- 遍历链表，显示链表的每个元素或者对其执行其它命令，在命令中可以使用 !list 命令所定义的伪寄存器$extret(代表每个链表节点的地址)
     *   exts.dll -- 关于堆(!heap)、进程/ 线程结构(!teb/!peb)、安全信息(!token、!sid、!acl)、和应用程序验证(!avrf)等的扩展命令。
     *   fltkd.dll -- 用于调试文件系统的过滤驱动程序(FsFilter)
     *   kdexts.dll -- 包含了大量用于内核调试的扩展命令
@@ -340,6 +354,13 @@ namespace FTL
     *   2.服务端，使用名为advdbg的命名管道： windbg -server npipe:pipe=advdbg 或 执行 .server npipe:pipe=advdbg 命令
 	*     客户端，连接该命名管道：windbg -remote npipe:server=FJPC,pipe=advdbg 或 "Connect to Remote Session" 并输入 npipe:Pipe=advdbg,Server=FJPC
 	*
+    * 调试器命令程序(Debugger Command Program) -- 把一系列调试器命令放在一个文件中，然后以文件的形式通过命令提交给调试器来执行。
+    *   可以使用流程控制符号控制流程，自动的伪寄存器、用户赋值的伪寄存器等作为变量
+    *   提交执行文件的命令:
+    *     $>< FileName -- 读取文件并将其中的内容浓缩成一个单一命令(浓缩时把换行符替换为分号)然后执行
+    *     $$<> FileName -- 允许在文件名前有空格，并允许使用双引号包围文件名。
+    *     $$>a< FileName arg1 arg2 -- 允许使用参数，然后命令程序中可以通过 ${$arg1} 的方式使用
+    * 
     * 命令行参数(WinDbg Command-Line Options)
     *   -k -- 内核(Kernel)调试时的连接类型， -kl 是本地内核调试
 	*   -pe PID -- 连接一个被Detach或僵死的调试进程，和 -p 的区别在于可以连接"DebugPort不为空"的进程
@@ -358,6 +379,8 @@ namespace FTL
 	*   2.打开dmp文件
 	*   3.!sym noisy  -- 相当于.symopt+0x80000000，即开启所谓的“吵杂”式符号加载，显示符号加载的调试信息(可检测调试符号加载时的问题)。
 	*   4.!analyze -v
+    *
+    * DML(Debugger Markup Language) -- 一种标记语言，用于标记WinDBG 或者扩展命令的信息输出
 	*********************************************************************************************************/
 
 	/*********************************************************************************************************

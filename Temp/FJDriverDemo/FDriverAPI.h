@@ -158,9 +158,9 @@
 *   ExFreeToNPagedLookasideList/ExFreeToPagedLookasideList -- 回收内存
 *
 *
-* 容器(链表) -- 可通过 CONTAINING_RECORD 宏从 LIST_ENTRY 变量获得用户定义结构体变量的地址
-*   单向链表(Next指向下一个) -- 
-*   双向链表(Blink/Flink) -- 以 LIST_ENTRY 作为第一个元素，来定义每个元素的数据类型，
+* 容器(链表) -- 可通过 CONTAINING_RECORD 宏从 LIST_ENTRY 变量获得用户定义结构体变量的地址,WinDbg中可以使用 dt -l 的方式进行遍历显示
+*   单向链表(Next指向下一个) -- 每个节点是一个SINGLE_LIST_ENTRY
+*   双向链表(Blink/Flink) -- 每个节点是一个 LIST_ENTRY 结构，
 *     InitializeListHead -- 初始化链表头，Flink和Blink都指向自己，表示为空链
 *     IsListEmpty -- 判断是否是空链
 *     InsertHeadList/InsertTailList -- 从头部、尾部插入元素

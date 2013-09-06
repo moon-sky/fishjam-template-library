@@ -124,6 +124,7 @@
 *      9.0.30729.6161(KB2538243/MS11-025) --  http://www.microsoft.com/en-us/download/details.aspx?id=26368
 *   
 * Fuslogvw.exe -- Assembly Binding Log Viewer,怎么用？
+* PDBCopy.exe -- 复制调试符号
 * SvcTraceViewer.exe -- 查看系统日志的工具?
 ************************************************************************************************/
 
