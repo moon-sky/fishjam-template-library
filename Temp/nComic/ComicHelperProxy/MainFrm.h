@@ -5,6 +5,7 @@
 #pragma once
 #include "ComicHelperProxy.h"
 #include <atlfile.h>
+#include <ftlThread.h>
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
@@ -13,6 +14,7 @@ class CMainFrame :
 {
 public:
 	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
+    CMainFrame();
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
@@ -46,5 +48,9 @@ public:
 protected:
     LRESULT OnUpdateProtectWnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
     ProtectWndInfoFileMap*   m_pProtectWndInfoFileMap;
+    FTL::CFThread<>          m_ThreadMonitor;
     CAtlFileMapping<ProtectWndInfoFileMap> m_FileMap;
+private:
+    DWORD _InnerMonitorThreadProc();
+    static DWORD WINAPI MonitorThreadProc(LPVOID lpThreadParameter);
 };

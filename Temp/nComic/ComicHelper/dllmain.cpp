@@ -11,6 +11,16 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+        {
+            TCHAR szModuleName[MAX_PATH] = {0};
+            GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+            if (StrStr(szModuleName, TEXT("Thunder")) != NULL
+                || StrStr(szModuleName, TEXT("HostProcess.exe")) != NULL)
+            {
+                ATLTRACE(TEXT(">>> Will Skip Hook Thunder\n"));
+                return FALSE;
+            }
+        }
 		g_hModule = hModule;
 		break;
 	case DLL_THREAD_ATTACH:

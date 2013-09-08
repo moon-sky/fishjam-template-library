@@ -9,6 +9,11 @@
 #include "MainFrm.h"
 #include "../ComicHelper/ComicHelper.h"
 
+CMainFrame::CMainFrame()
+{
+    m_pProtectWndInfoFileMap = NULL;
+}
+
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
 	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
@@ -21,8 +26,6 @@ BOOL CMainFrame::OnIdle()
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-    m_pProtectWndInfoFileMap = NULL;
-
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
@@ -40,13 +43,16 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
         }
     }
     
-    //FTL::CFSharedVariableT<
+    m_ThreadMonitor.Start(MonitorThreadProc, this, TRUE);
 	return 0;
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
-	// unregister message filtering and idle updates
+    BOOL bRet = FALSE;
+    API_VERIFY(m_ThreadMonitor.Stop());
+    API_VERIFY(m_ThreadMonitor.Wait());
+
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
 	pLoop->RemoveMessageFilter(this);
@@ -97,4 +103,27 @@ void CMainFrame::OnPaint(CDCHandle /*dc*/)
     CRect rcClient;
     GetClientRect(&rcClient);
     dc.DrawText(strUpdateWndInfo, strUpdateWndInfo.GetLength(), &rcClient, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+}
+
+DWORD CMainFrame::MonitorThreadProc(LPVOID lpThreadParameter)
+{
+    CMainFrame* pThis = static_cast<CMainFrame*>(lpThreadParameter);
+    DWORD dwResult = pThis->_InnerMonitorThreadProc();
+    return dwResult;
+}
+
+DWORD CMainFrame::_InnerMonitorThreadProc()
+{
+    FTLTRACE(TEXT("Enter CMainFrame::_InnerMonitorThreadProc\n"));
+    FTL::FTLThreadWaitType waitType = FTL::ftwtError;
+    waitType = m_ThreadMonitor.SleepAndCheckStop(1000);
+    while (waitType == FTL::ftwtTimeOut || waitType == FTL::ftwtContinue)
+    {
+
+
+        waitType = m_ThreadMonitor.SleepAndCheckStop(1000);
+    }
+
+    FTLTRACE(TEXT("Leave CMainFrame::_InnerMonitorThreadProc\n"));
+    return 0;
 }

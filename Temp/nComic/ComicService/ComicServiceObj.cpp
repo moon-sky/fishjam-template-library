@@ -13,8 +13,19 @@ CComicServiceObj::CComicServiceObj()
     FTLTRACE(TEXT("Enter CComicServiceObj::CComicServiceObj\n"));
     m_pProtectWndInfoMap = NULL;
     HRESULT hr = E_FAIL;
+
+    SECURITY_DESCRIPTOR secutityDese;
+    ::InitializeSecurityDescriptor(&secutityDese, SECURITY_DESCRIPTOR_REVISION);
+    ::SetSecurityDescriptorDacl(&secutityDese,TRUE,NULL,FALSE);
+    SECURITY_ATTRIBUTES securityAttr;
+    securityAttr.nLength = sizeof( SECURITY_ATTRIBUTES);
+    securityAttr.bInheritHandle = FALSE;
+    securityAttr.lpSecurityDescriptor = &secutityDese;
+
     COM_VERIFY(m_FileMap.MapSharedMem(sizeof(ProtectWndInfoFileMap), COMIC_PROTECT_WND_FILE_MAP_NAME,
-        NULL, NULL, PAGE_READWRITE, FILE_MAP_ALL_ACCESS));
+        NULL, 
+        &securityAttr, 
+        PAGE_READWRITE, FILE_MAP_ALL_ACCESS));
     if (SUCCEEDED(hr))
     {
         m_pProtectWndInfoMap = (ProtectWndInfoFileMap*)m_FileMap;
@@ -85,13 +96,13 @@ STDMETHODIMP CComicServiceObj::ProtectWnd(OLE_HANDLE hWnd, OLE_HANDLE hDIBSecion
 
 STDMETHODIMP CComicServiceObj::UnProtectWnd(OLE_HANDLE hWnd)
 {
+    FTLTRACE(TEXT("CComicServiceObj::UnProtectWnd, hWnd=0x%x\n"), hWnd);
+
     DisableWindowProtected((HWND)hWnd);
     if (m_pProtectWndInfoMap)
     {
         m_pProtectWndInfoMap->hWndProtect = NULL;
     }
-
-    FTLTRACE(TEXT("CComicServiceObj::UnProtectWnd, hWnd=0x%x\n"), hWnd);
 
     return S_OK;
 }
