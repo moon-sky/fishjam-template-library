@@ -17,5 +17,5 @@ public:
     BOOL StartHook();
     BOOL StopHook();
 private:
-    CAtlFileMapping<ProtectWndInfoFileMap> m_FileMap;
+    CAtlFileMapping<ProtectWndInfoFileMap32> m_FileMap;
 };

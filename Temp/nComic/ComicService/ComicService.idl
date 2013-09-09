@@ -16,7 +16,7 @@ import "ocidl.idl";
     pointer_default(unique)
 ]
 interface IComicServiceObj : IDispatch{
-    [id(1), helpstring("method ProtectWnd")] HRESULT ProtectWnd([in] OLE_HANDLE hWnd, [in] OLE_HANDLE hDIBSecion);
+    [id(1), helpstring("method ProtectWnd")] HRESULT ProtectWnd([in] OLE_HANDLE hWnd);
     [id(2), helpstring("method UnProtectWnd")] HRESULT UnProtectWnd([in] OLE_HANDLE hWnd);
 };
 [

@@ -11,6 +11,7 @@
 
 #include "../ComicHelperProxy/ComicHelperProxy.h"
 #include <atlfile.h>
+#include <ftlThread.h>
 
 // CComicServiceObj
 
@@ -31,25 +32,32 @@ BEGIN_COM_MAP(CComicServiceObj)
 	COM_INTERFACE_ENTRY(IDispatch)
 END_COM_MAP()
 
-
-
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	HRESULT FinalConstruct()
-	{
-		return S_OK;
-	}
-
-	void FinalRelease()
-	{
-        m_FileMap.Unmap();
-	}
+	HRESULT FinalConstruct();
+	void FinalRelease();
 private:
-    ProtectWndInfoFileMap*                  m_pProtectWndInfoMap;
-    CAtlFileMapping<ProtectWndInfoFileMap>  m_FileMap;
-public:
+    BOOL                                    m_bIsWindows64;
+    volatile BOOL                           m_bUserStopProcess;
 
-	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd, OLE_HANDLE hDIBSecion);
+    HANDLE                                  m_hEventStop;
+    HANDLE                                  m_hHelperProxyProcess32;
+    HANDLE                                  m_hEventProtectNotify32;
+
+    HANDLE                                  m_hHelperProxyProcess64;
+    HANDLE                                  m_hEventProtectNotify64;
+
+    ProtectWndInfoFileMap32*                  m_pProtectWndInfoMap;
+    FTL::CFThread<DefaultThreadTraits>*     m_pHelperProxyProcessMonitorThread;
+
+    CAtlFileMapping<ProtectWndInfoFileMap32>  m_FileMap;
+
+    static DWORD WINAPI                     _ProcessMonitorProc(LPVOID lpThreadParameter);
+    DWORD                                   _InnerProcessMonitorProc();
+    BOOL                                    _CreateProxyProcess(BOOL isWin64);
+    BOOL                                    _StopHelperProxyProcess();
+public:
+	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd);
 	STDMETHOD(UnProtectWnd)(OLE_HANDLE hWnd);
 };
 

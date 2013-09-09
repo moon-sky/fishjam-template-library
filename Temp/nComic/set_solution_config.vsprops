@@ -6,6 +6,6 @@
 	>
 	<UserMacro
 		Name="TARGET_DIR"
-		Value="$(SolutionDir)$(ConfigurationName)"
+		Value="$(SolutionDir)Bin\$(ConfigurationName)"
 	/>
 </VisualStudioPropertySheet>

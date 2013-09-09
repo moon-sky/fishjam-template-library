@@ -135,6 +135,7 @@ extern "C" int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstan
                                 LPTSTR /*lpCmdLine*/, int nShowCmd)
 {
     int nRet = 0;
+    //Sleep(10000);
     FTLTRACE(TEXT("Enter _tWinMain, nShowCmd = %d\n"), nShowCmd);
     nRet = _AtlModule.WinMain(nShowCmd);
     FTLTRACE(TEXT("Leave _tWinMain, nRet = %d\n"), nRet);

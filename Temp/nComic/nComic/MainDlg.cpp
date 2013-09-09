@@ -94,7 +94,7 @@ void CMainDlg::OnBtnServiceHook(UINT uNotifyCode, int nID, CWindow wndCtl)
     //CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
     if (m_spComicService)
     {
-        COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, NULL));
+        COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd));
     }
 }
 
@@ -110,8 +110,11 @@ void CMainDlg::OnBtnServiceUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CMainDlg::OnBtnFinService(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    HRESULT hr = E_FAIL;
     if (m_spComicService)
     {
+        COM_VERIFY(m_spComicService->UnProtectWnd((OLE_HANDLE)m_hWnd));
+
         m_spComicService.Release();
         ::EnableWindow(GetDlgItem(IDC_BTN_INIT_SERVICE), TRUE);
         ::EnableWindow(GetDlgItem(IDC_BTN_SERVICE_HOOK), FALSE);

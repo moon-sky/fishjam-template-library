@@ -21,7 +21,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)PS"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\set_solution_config.vsprops"
@@ -60,6 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="true"
 				AdditionalDependencies="kernel32.lib rpcns4.lib rpcrt4.lib oleaut32.lib uuid.lib"
 				ModuleDefinitionFile="ComicServicePS.def"
 				GenerateDebugInformation="true"
@@ -84,11 +85,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)PS"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\set_solution_config.vsprops"
@@ -128,6 +131,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="true"
 				AdditionalDependencies="kernel32.lib rpcns4.lib rpcrt4.lib oleaut32.lib uuid.lib"
 				ModuleDefinitionFile="ComicServicePS.def"
 				GenerateDebugInformation="true"
@@ -153,11 +157,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)PS"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\set_solution_config.vsprops"
@@ -197,6 +203,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="true"
 				AdditionalDependencies="kernel32.lib rpcns4.lib rpcrt4.lib oleaut32.lib uuid.lib"
 				ModuleDefinitionFile="ComicServicePS.def"
 				GenerateDebugInformation="true"
@@ -223,11 +230,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)PS"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\set_solution_config.vsprops"
@@ -268,6 +277,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="true"
 				AdditionalDependencies="kernel32.lib rpcns4.lib rpcrt4.lib oleaut32.lib uuid.lib"
 				ModuleDefinitionFile="ComicServicePS.def"
 				GenerateDebugInformation="true"
@@ -295,6 +305,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>

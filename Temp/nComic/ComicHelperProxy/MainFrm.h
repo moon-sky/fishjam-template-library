@@ -4,8 +4,8 @@
 
 #pragma once
 #include "ComicHelperProxy.h"
-#include <atlfile.h>
-#include <ftlThread.h>
+
+class CProtectEventMonitorThread;
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
@@ -25,10 +25,7 @@ public:
 	BEGIN_MSG_MAP(CMainFrame)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-        MESSAGE_HANDLER(UM_UPDATE_PROTECT_WND, OnUpdateProtectWnd)
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
-		COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
-		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
         MSG_WM_PAINT(OnPaint)
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
@@ -43,14 +40,7 @@ public:
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
     void OnPaint(CDCHandle /*dc*/);
-protected:
-    LRESULT OnUpdateProtectWnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-    ProtectWndInfoFileMap*   m_pProtectWndInfoFileMap;
-    FTL::CFThread<>          m_ThreadMonitor;
-    CAtlFileMapping<ProtectWndInfoFileMap> m_FileMap;
 private:
-    DWORD _InnerMonitorThreadProc();
-    static DWORD WINAPI MonitorThreadProc(LPVOID lpThreadParameter);
+    CProtectEventMonitorThread* m_pProtectEventMonitorThread;
 };

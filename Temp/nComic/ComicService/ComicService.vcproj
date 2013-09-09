@@ -21,7 +21,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="..\set_solution_config.vsprops;$(FJSDK)FJSDK.vsprops"
@@ -107,12 +107,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
 				CommandLine="$(TargetPath) /Service"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="..\set_solution_config.vsprops;$(FJSDK)FJSDK.vsprops"
@@ -197,12 +198,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
 				CommandLine="$(TargetPath) /Service"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="..\set_solution_config.vsprops;$(FJSDK)FJSDK.vsprops"
@@ -288,12 +290,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
 				CommandLine="$(TargetPath) /Service"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(TARGET_DIR)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="..\set_solution_config.vsprops;$(FJSDK)FJSDK.vsprops"
@@ -378,6 +381,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
 				CommandLine="$(TargetPath) /Service"
 			/>
 		</Configuration>
