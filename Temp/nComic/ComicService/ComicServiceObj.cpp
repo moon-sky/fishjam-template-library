@@ -183,7 +183,7 @@ DWORD CComicServiceObj::_InnerProcessMonitorProc()
     BOOL bRet = FALSE;
 
     DWORD dwWaitCount = 2;
-    if (m_bIsWindows64)
+    if (m_bIsWindows64 && NULL != m_hHelperProxyProcess64)
     {
         dwWaitCount = 3;
     }

@@ -3,6 +3,16 @@
 #include "ComicHelper.h"
 extern HMODULE g_hModule;
 
+//#include <atlbase.h>
+//#include <atlstr.h>
+//#include <atltypes.h>
+//#include <atlapp.h>
+//#include <atlres.h>
+//#include <atldlgs.h>
+//#include <ftlCrashHandler.h>
+//
+//FTL::CFCrashHandler g_CrashHandler;
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -12,14 +22,15 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
         {
-            TCHAR szModuleName[MAX_PATH] = {0};
-            GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
-            if (StrStr(szModuleName, TEXT("Thunder")) != NULL
-                || StrStr(szModuleName, TEXT("HostProcess.exe")) != NULL)
-            {
-                ATLTRACE(TEXT(">>> Will Skip Hook Thunder\n"));
-                return FALSE;
-            }
+            //TCHAR szModuleName[MAX_PATH] = {0};
+            //GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+            //if (StrStr(szModuleName, TEXT("Thunder")) != NULL
+            //    || StrStr(szModuleName, TEXT("HostProcess.exe")) != NULL)
+            //{
+            //    ATLTRACE(TEXT(">>> Will Skip Hook Thunder\n"));
+            //    return FALSE;
+            //}
+            //g_CrashHandler.SetDefaultCrashHandlerFilter();
         }
 		g_hModule = hModule;
 		break;

@@ -17,9 +17,19 @@
 
 #include "resource.h"
 #include <atlbase.h>
+#include <atlstr.h>
+#include <atltypes.h>
+#include <atlapp.h>
+
 #include <atlcom.h>
 #include <atlctl.h>
+#include <atlcoll.h>
+
+#include <atlcrack.h>
 
 using namespace ATL;
 
 #include <ftlbase.h>
+#include <ftlThread.h>
+#include <ftlService.h>
+#include <ftlSystem.h>

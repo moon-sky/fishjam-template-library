@@ -3,6 +3,7 @@
 #include "HookApiUtil.h"
 
 #pragma pack(push, 1)
+#if defined _M_IX86
 struct JMP_x86_OFFSET
 {
     //32位相对跳转
@@ -11,7 +12,7 @@ struct JMP_x86_OFFSET
     VOID SetJmpTarget(POINTER_TYPE target, POINTER_TYPE from)
     {
         opcode[0] = 0xE9; //jmp +imm32
-        operand = ((PBYTE)target - (PBYTE)from - sizeof(*this));
+        operand = (ULONG)((PBYTE)target - (PBYTE)from - sizeof(*this));
         //return (PBYTE)target + sizeof(*this);
     }
 };
@@ -32,6 +33,8 @@ struct JMP_x86_ABS
 };
 C_ASSERT(sizeof(JMP_x86_ABS) == 10);
 
+#else
+
 struct JMP_x64_ABS
 {
     //64位绝对跳转
@@ -46,7 +49,7 @@ struct JMP_x64_ABS
     }
 };
 C_ASSERT(sizeof(JMP_x64_ABS) == 14);
-
+#endif
 #pragma pack(pop)
 
 #if defined(_M_IX86)

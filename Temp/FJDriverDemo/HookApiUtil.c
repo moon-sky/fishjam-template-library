@@ -92,7 +92,7 @@ PVOID HookAllocate(SIZE_T NumberOfBytes)
 
 VOID  HookFree(PVOID pBuffer)
 {
-    return VirtualFree(pBuffer, 0, MEM_RELEASE);
+    VirtualFree(pBuffer, 0, MEM_RELEASE);
     //free(pBuffer);
 }
 
