@@ -8,7 +8,7 @@
 #include <WtsApi32.h>
 #include <ftlSystem.h>
 
-//#define JUST_WIN32
+#define JUST_WIN32
 
 // CComicServiceObj
 
@@ -226,7 +226,7 @@ DWORD CComicServiceObj::_InnerProcessMonitorProc()
     return 0;
 }
 
-STDMETHODIMP CComicServiceObj::ProtectWnd(OLE_HANDLE hWnd)
+STDMETHODIMP CComicServiceObj::ProtectWnd(OLE_HANDLE hWnd, OLE_COLOR clrDisabled)
 {
     DWORD dwResult = 0;
     BOOL bRet = FALSE;
@@ -236,7 +236,7 @@ STDMETHODIMP CComicServiceObj::ProtectWnd(OLE_HANDLE hWnd)
     if (m_pProtectWndInfoMap)
     {
         m_pProtectWndInfoMap->hWndProtect = (ULONG)hWnd;
-        m_pProtectWndInfoMap->clrDisabled = RGB(127, 127, 127);
+        m_pProtectWndInfoMap->clrDisabled = COLORREF(clrDisabled);
         m_pProtectWndInfoMap->dwCommand = COMMAND_BEGIN_PROTECT_WND;
     }
 

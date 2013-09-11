@@ -94,7 +94,7 @@ void CMainDlg::OnBtnServiceHook(UINT uNotifyCode, int nID, CWindow wndCtl)
     //CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
     if (m_spComicService)
     {
-        COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd));
+        COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, OLE_COLOR(RGB(255, 0, 0))));// RGB(153, 217, 234))));
     }
 }
 

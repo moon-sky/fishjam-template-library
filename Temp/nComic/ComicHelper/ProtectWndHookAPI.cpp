@@ -2,6 +2,10 @@
 #include "ProtectWndHookAPI.h"
 #include "InlineHook.h"
 #include <ftlThread.h>
+#include <ftlGdi.h>
+#include "resource.h"
+
+extern HMODULE g_hModule;
 
 #define HOOKED_API_CALL_ENTER(x) (InterlockedIncrement(&x))
 #define HOOKED_API_CALL_LEAVE(x) (InterlockedDecrement(&x))
@@ -35,6 +39,14 @@ struct HOOK_API_INFO
 
     LONG    HookedAPICallCount;
     HDC     hCreateDesktopDC;
+
+    HDC     hDCMemory;          //HDC memory for store background
+    HBITMAP hBmpBackground;
+    HBITMAP hOldBitmap;
+    BYTE*   pBackgroundBuffer;
+    int     nImageWidth;
+    int     nImageHeight;
+
     PINLINE_HOOK_INFO    HookApiInfos[hft_FunctionCount];
 
     HOOK_API_INFO()
@@ -42,6 +54,13 @@ struct HOOK_API_INFO
         bHooked = FALSE;
         HookedAPICallCount = 0;
         hCreateDesktopDC = NULL;
+
+        hDCMemory = NULL;
+        hBmpBackground = NULL;
+        hOldBitmap = NULL;
+        pBackgroundBuffer = NULL;
+        nImageWidth = 0;
+        nImageHeight = 0;
     }
 }g_HookApiInfo;
 
@@ -94,6 +113,42 @@ BOOL IsFilterHDC(HDC hDC)
     return bWillFilter;
 }
 
+CRect GetFitRect( const CRect& rcMargin, const CSize& szContent )
+{
+    CRect rcResult = rcMargin;
+
+    INT nWidthAllowed = rcMargin.Width();
+    INT nHeightAllowed = rcMargin.Height();
+    INT nWidthFactor = szContent.cx;
+    INT nHeightFactor = szContent.cy;
+
+    if ( ( nWidthAllowed >= nWidthFactor ) && ( nHeightAllowed >= nHeightFactor ) )
+    {
+        rcResult.left = rcMargin.left + ( rcMargin.Width() - szContent.cx ) / 2;
+        rcResult.top = rcMargin.top + (rcMargin.Height() - szContent.cy ) / 2;
+        rcResult.right = rcResult.left + szContent.cx;
+        rcResult.bottom = rcResult.top + szContent.cy;
+    }
+    else
+    {
+        if ( MulDiv( nWidthAllowed, nHeightFactor, nWidthFactor ) < nHeightAllowed )
+        {
+            INT nHeight = MulDiv( nWidthAllowed, nHeightFactor, nWidthFactor );
+            INT nDiff = ( nHeightAllowed - nHeight ) / 2;
+            rcResult.top = rcResult.top + nDiff;
+            rcResult.bottom = rcResult.bottom - nDiff;
+        }
+        else
+        {
+            INT nWidth = MulDiv( nHeightAllowed, nWidthFactor, nHeightFactor );
+            INT nDiff = ( nWidthAllowed - nWidth ) / 2;
+            rcResult.left = rcResult.left + nDiff;
+            rcResult.right = rcResult.right - nDiff;
+        }
+    }
+    return rcResult;
+}
+
 BOOL DoFilterPaste(HDC hdcDest, int nXDest, int nYDest, int nWidthDest, int nHeightDest,
                    HDC hdcSrc, int nXSrc, int nYSrc, int nWidthSrc, int nHeightSrc, 
                    DWORD dwRop)
@@ -109,21 +164,16 @@ BOOL DoFilterPaste(HDC hdcDest, int nXDest, int nYDest, int nWidthDest, int nHei
         {
             CRect rcTarget( nXDest, nYDest,  nXDest + nWidthDest, nYDest + nHeightDest);
             CRect rcSource( nXSrc, nYSrc, nXSrc + nWidthSrc, nYSrc + nHeightSrc);
-            //FTLTRACE(TEXT("rcTarget=(%d,%d)-(%d,%d), %dx%d, rcSource=(%d,%d)-(%d,%d), rcFilter=(%d,%d)-(%d,%d), %dx%d"),
-            //    rcTarget.left, rcTarget.top, rcTarget.right, rcTarget.bottom, 
-            //    rcTarget.right - rcTarget.left, rcTarget.bottom - rcTarget.top,
-            //    rcSource.left, rcSource.top, rcSource.right, rcSource.bottom, 
-            //    rcFilter.left, rcFilter.top, rcFilter.right, rcFilter.bottom, 
-            //    rcFilter.right - rcFilter.left, rcFilter.bottom - rcFilter.top
-            //    );
+            FTLTRACE(TEXT("rcTarget=(%d,%d)-(%d,%d), %dx%d, rcSource=(%d,%d)-(%d,%d), %dx%d, rcFilter=(%d,%d)-(%d,%d), %dx%d"),
+                rcTarget.left, rcTarget.top, rcTarget.right, rcTarget.bottom, rcTarget.Width(), rcTarget.Height(),
+                rcSource.left, rcSource.top, rcSource.right, rcSource.bottom, rcSource.Width(), rcSource.Height(),
+                rcFilter.left, rcFilter.top, rcFilter.right, rcFilter.bottom, rcFilter.Width(), rcFilter.Height()
+                );
 
             rcFilter.IntersectRect(&rcSource, &rcFilter);
             rcFilter.OffsetRect(nXDest - nXSrc, nYDest - nYSrc);
             if (!rcFilter.IsRectEmpty())
             {
-                //FTLTRACE(TEXT("Will FillColor newRcSource=(%d,%d)-(%d,%d), %dx%d"),
-                //    rcSource.left, rcSource.top, rcSource.right, rcSource.bottom, 
-                //    rcSource.right - rcSource.left, rcSource.bottom - rcSource.top);
                 float fZoomX = 1.0f;
                 if (nWidthDest != nWidthSrc && nWidthSrc != 0)
                 {
@@ -138,8 +188,28 @@ BOOL DoFilterPaste(HDC hdcDest, int nXDest, int nYDest, int nWidthDest, int nHei
                     rcFilter.top = (LONG)(fZoomY * rcFilter.top);
                     rcFilter.bottom = (LONG)(fZoomY * rcFilter.bottom);
                 }
-                ::SetBkColor(hdcDest, g_pProtectWndInfoFileMap->clrDisabled);
-                ::ExtTextOut(hdcDest, 0, 0, ETO_OPAQUE, &rcFilter, NULL, 0, NULL);
+            }
+
+            //rcFilter.OffsetRect(-rcFilter.TopLeft());
+
+            FTLTRACE(TEXT("Will FillColor newRcSource=(%d,%d)-(%d,%d), %dx%d"),
+                rcFilter.left, rcFilter.top, rcFilter.right, rcFilter.bottom, 
+                rcFilter.Width(), rcFilter.Height());
+
+            ::SetBkColor(hdcDest, g_pProtectWndInfoFileMap->clrDisabled);
+            ::ExtTextOut(hdcDest, 0, 0, ETO_OPAQUE, &rcFilter, NULL, 0, NULL);
+
+            StretchBltProc pOrigStretchBlt = (StretchBltProc)g_HookApiInfo.HookApiInfos[hft_StretchBlt]->pOriginal;
+            if (pOrigStretchBlt && g_HookApiInfo.hDCMemory)
+            {
+                CSize szImage(g_HookApiInfo.nImageWidth, g_HookApiInfo.nImageHeight);
+                rcFilter = GetFitRect(rcFilter, szImage);
+                
+                FTLTRACE(TEXT("!!!DoFilterPaste: [%d,%d],%dx%d <== [%d,%d],%dx%d\n"),
+                    rcFilter.left, rcFilter.top, rcFilter.Width(), rcFilter.Height(),
+                    0, 0, g_HookApiInfo.nImageWidth, g_HookApiInfo.nImageHeight);
+                (pOrigStretchBlt)(hdcDest, rcFilter.left, rcFilter.top, rcFilter.Width(), rcFilter.Height(), 
+                    g_HookApiInfo.hDCMemory, 0, 0, g_HookApiInfo.nImageWidth, g_HookApiInfo.nImageHeight, SRCCOPY);
             }
         }
     }
@@ -164,8 +234,8 @@ BOOL WINAPI Hooked_BitBlt(HDC hdcDest, int nXDest, int nYDest, int nWidth, int n
         {
             TCHAR szProcessName[MAX_PATH] = {0};
             GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
-            FTLTRACE(TEXT("!!! Hooked_BitBlt Desktop PID=%d(%s), n"),
-                GetCurrentProcessId(), PathFindFileName(szProcessName));
+            FTLTRACE(TEXT("!!! Hooked_BitBlt Desktop PID=%d(%s), Dest=[%d, %d], %dx%d, Src=[%d, %d]\n"),
+                GetCurrentProcessId(), PathFindFileName(szProcessName), nXDest, nYDest, nWidth, nHeight, nXSrc, nYSrc);
 
             DoFilterPaste(hdcDest, nXDest, nYDest, nWidth, nHeight,
                 hdcSrc, nXSrc, nYSrc, nWidth, nHeight, dwRop);
@@ -290,6 +360,77 @@ CProtectWndHookAPI::~CProtectWndHookAPI(void)
 {
 }
 
+BOOL CProtectWndHookAPI::_InitImgBackground()
+{
+    BOOL bRet = FALSE;
+    ATL::CImage* pImgBackground = new ATL::CImage();
+    if (pImgBackground)
+    {
+        API_VERIFY(FTL::CFGdiUtil::LoadPNGFromResource(*pImgBackground, g_hModule, IDB_FILTER_BACKGROUND));
+        if (bRet)
+        {
+            g_HookApiInfo.nImageWidth = pImgBackground->GetWidth();
+            g_HookApiInfo.nImageHeight = pImgBackground->GetHeight();
+
+            HWND hWndDesktop = GetDesktopWindow();
+            HDC hDCDesktop = ::GetWindowDC(hWndDesktop);
+            HDC hDCMemory = ::CreateCompatibleDC(hDCDesktop);
+
+            BITMAPINFO bmpInfo = {0};
+            bmpInfo.bmiHeader.biSize = sizeof(bmpInfo.bmiHeader); // sizeof(BITMAPINFO);
+            bmpInfo.bmiHeader.biWidth = g_HookApiInfo.nImageWidth;
+            bmpInfo.bmiHeader.biHeight = g_HookApiInfo.nImageHeight;
+            bmpInfo.bmiHeader.biPlanes = 1;
+            bmpInfo.bmiHeader.biBitCount = (WORD)32;
+            bmpInfo.bmiHeader.biClrUsed = 0;
+            bmpInfo.bmiHeader.biCompression = BI_RGB;
+            bmpInfo.bmiHeader.biSizeImage = ((g_HookApiInfo.nImageWidth * g_HookApiInfo.nImageHeight * 32 + 31) >> 3) & ~3;
+
+            HBITMAP hBmpBackground = NULL;
+            API_VERIFY((hBmpBackground = ::CreateDIBSection(hDCDesktop, &bmpInfo, DIB_RGB_COLORS,  
+                (VOID**)&g_HookApiInfo.pBackgroundBuffer, NULL, 0)) != NULL);
+
+            //FTLTRACE(TEXT("CreateDIBSection, hBmpBackground=0x%x, Err=%d, width=%d, height=%d, sizeImage=%d\n"), 
+            //    hBmpBackground, GetLastError(), bmpInfo.bmiHeader.biWidth, bmpInfo.bmiHeader.biHeight, bmpInfo.bmiHeader.biSizeImage);
+
+            g_HookApiInfo.hOldBitmap = (HBITMAP)::SelectObject(hDCMemory, hBmpBackground);
+            CImageDC imgDC(*pImgBackground);
+            API_VERIFY(BitBlt(hDCMemory, 0, 0, g_HookApiInfo.nImageWidth, g_HookApiInfo.nImageHeight, imgDC, 0, 0, SRCCOPY));
+            FTLTRACE(TEXT("_InitImgBackground, BitBlt ret %d, HDCmemory=0x%x, hBmpBackground=0x%x\n"),
+                bRet, hDCMemory, hBmpBackground);
+            if (bRet)
+            {
+                g_HookApiInfo.hDCMemory = hDCMemory;
+                g_HookApiInfo.hBmpBackground = hBmpBackground;
+            }
+            else
+            {
+                DeleteDC(hDCMemory);
+                DeleteObject(hBmpBackground);
+            }
+
+            ReleaseDC(hWndDesktop, hDCDesktop);
+        }
+        delete pImgBackground;
+    }
+
+
+    return bRet;
+}
+BOOL CProtectWndHookAPI::_ReleaseImgBackground()
+{
+    BOOL bRet = TRUE;
+    if (g_HookApiInfo.hBmpBackground)
+    {
+        ::SelectObject(g_HookApiInfo.hDCMemory, g_HookApiInfo.hOldBitmap);
+        API_VERIFY(DeleteObject(g_HookApiInfo.hBmpBackground));
+        API_VERIFY(DeleteDC(g_HookApiInfo.hDCMemory));
+    }
+    g_HookApiInfo.nImageWidth = 0;
+    g_HookApiInfo.nImageHeight = 0;
+
+    return bRet;
+}
 BOOL CProtectWndHookAPI::StartHook()
 {
     BOOL bRet = TRUE;
@@ -297,7 +438,11 @@ BOOL CProtectWndHookAPI::StartHook()
     TCHAR szModuleName[MAX_PATH] = {0};
     GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
 
-    FTL::CFAutoLock<FTL::CFLockObject> autoLock(&g_HookApiInfo.csLock);
+    TCHAR szTrace[MAX_PATH] = {0};
+    StringCchPrintf(szTrace, _countof(szTrace), TEXT("StartHook in %s"), PathFindFileName(szModuleName));
+    FUNCTION_BLOCK_NAME_TRACE(szTrace, 1);
+
+    //FTL::CFAutoLock<FTL::CFLockObject> autoLock(&g_HookApiInfo.csLock);
     if ( !g_HookApiInfo.bHooked)
     {
         HRESULT hr = E_FAIL;
@@ -317,6 +462,7 @@ BOOL CProtectWndHookAPI::StartHook()
                 if (hModuleGdi32)
                 {
                     g_HookApiInfo.bHooked = TRUE;
+                    API_VERIFY(_InitImgBackground());
 
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "BitBlt", &Hooked_BitBlt, &g_HookApiInfo.HookApiInfos[hft_BitBlt]));
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "StretchBlt", &Hooked_StretchBlt, &g_HookApiInfo.HookApiInfos[hft_StretchBlt]));
@@ -335,14 +481,18 @@ BOOL CProtectWndHookAPI::StartHook()
 BOOL CProtectWndHookAPI::StopHook()
 {
     BOOL bRet = TRUE;
-    FTL::CFAutoLock<FTL::CFLockObject> autoLock(&g_HookApiInfo.csLock);
+    //FTL::CFAutoLock<FTL::CFLockObject> autoLock(&g_HookApiInfo.csLock);
 
     TCHAR szModuleName[MAX_PATH] = {0};
     GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+
+    TCHAR szTrace[MAX_PATH] = {0};
+    StringCchPrintf(szTrace, _countof(szTrace), TEXT("StopHook in %s"), PathFindFileName(szModuleName));
+    FUNCTION_BLOCK_NAME_TRACE(szTrace, DEFAULT_BLOCK_TRACE_THRESHOLD);
+
     ATLTRACE(TEXT("<<< Will UnHook API(g_bHooked=%d) in PID=%d(%s),TID=%d\n"), 
         g_HookApiInfo.bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
 
-    
     if (g_HookApiInfo.bHooked)
     {
         while (g_HookApiInfo.HookedAPICallCount > 0)
@@ -356,7 +506,14 @@ BOOL CProtectWndHookAPI::StopHook()
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateDCW]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateDCA]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_DeleteDC]));
-        m_FileMap.Unmap();
+
+        {
+            StringCchPrintf(szTrace, _countof(szTrace), TEXT("Before _ReleaseImgBackground in %s"), PathFindFileName(szModuleName));
+            FUNCTION_BLOCK_NAME_TRACE(szTrace, DEFAULT_BLOCK_TRACE_THRESHOLD);
+
+            API_VERIFY(_ReleaseImgBackground());
+            m_FileMap.Unmap();
+        }
     }
     return bRet;
 }

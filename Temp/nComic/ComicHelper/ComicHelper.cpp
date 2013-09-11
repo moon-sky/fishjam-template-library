@@ -18,9 +18,14 @@
 #include "ProtectWndHookAPI.h"
 
 HMODULE g_hModule;
+
+#pragma data_seg("SHAREDMEM")
 HHOOK g_hHookCallWndProc = NULL;
 HHOOK g_hHookKeyboard = NULL;
-BOOL  g_bHooked = FALSE;
+#pragma data_seg()
+#pragma comment(linker, "/Section:SHAREDMEM,rws")
+
+volatile BOOL  g_bHooked = FALSE;
 
 CProtectWndHookAPI g_ProtectWndHookApi;
 
@@ -33,6 +38,7 @@ LRESULT CALLBACK My_CallWndProc(
     CWPSTRUCT * pWPStruct = (CWPSTRUCT*)lParam;
     if (!g_bHooked && /*!g_bIsSelfProcess &&*/ pWPStruct)
     {
+		g_bHooked = TRUE;
         //g_bIsSelfProcess = (g_ProtectWndInfo.curProcessId == GetCurrentProcessId());
 
 #ifdef _DEBUG
@@ -74,7 +80,7 @@ LRESULT CALLBACK My_LowLevelKeyboardProc(int nCode,
     return nResult;
 }
 
-COMICHELPER_API BOOL EnableWindowProtected(DWORD curProcessId, HWND hWndFilter, COLORREF clrDisabled)
+COMICHELPER_API BOOL EnableWindowProtected(DWORD curProcessId, HWND hWndFilter)
 {
     ATLTRACE(TEXT("Enter EnableWindowProtected for hWndFilter=0x%x\n"), hWndFilter);
     BOOL bRet = TRUE;
@@ -102,17 +108,44 @@ COMICHELPER_API BOOL DisableWindowProtected(HWND hWnd)
     return bRet;
 }
 
+unsigned int __stdcall _AsyncHookControl(void * param)
+{
+	BOOL bRet = FALSE;
+	BOOL bStart = (BOOL)param;
+	if(bStart)
+	{
+		API_VERIFY(g_ProtectWndHookApi.StartHook());
+	}
+	else
+	{
+		API_VERIFY(g_ProtectWndHookApi.StopHook());
+	}
+	return 0;
+}
 COMICHELPER_API BOOL HookApi()
 {
-    BOOL bRet = FALSE;
-    g_bHooked = TRUE;
-    API_VERIFY(g_ProtectWndHookApi.StartHook());
-    return bRet;
+	unsigned int nThreadId = 0;
+	HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, _AsyncHookControl, (void*)TRUE, 0, &nThreadId);
+	CloseHandle(hThread);
+
+    return TRUE;
 }
 
 COMICHELPER_API BOOL UnHookApi()
 {
-    BOOL bRet = FALSE;
+    TCHAR szModuleName[MAX_PATH] = {0};
+    GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+
+    TCHAR szTrace[MAX_PATH] = {0};
+    StringCchPrintf(szTrace, _countof(szTrace), TEXT("UnHookApi in %s"), PathFindFileName(szModuleName));
+    FUNCTION_BLOCK_NAME_TRACE(szTrace, 1);
+
+    FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
+
+    //notify all the toplevel progress
+    //BroadcastSystemMessage(BSF_FORCEIFHUNG |BSF_POSTMESSAGE, NULL, WM_NULL, 0, 0);
+    //Sync UnHook API
+	BOOL bRet = FALSE;
     API_VERIFY(g_ProtectWndHookApi.StopHook());
     g_bHooked = FALSE;
     return bRet;

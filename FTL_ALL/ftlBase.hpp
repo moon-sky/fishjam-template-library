@@ -957,6 +957,11 @@ namespace FTL
     {
         CloseAllFileWriters();
 #pragma TODO(TlsSetValue NULL when thread quit)
+        //if (TLS_OUT_OF_INDEXES != m_dwTLSSlot)
+        //{
+        //    TlsFree(m_dwTLSSlot);
+        //    m_dwTLSSlot = TLS_OUT_OF_INDEXES;
+        //}
         DeleteCriticalSection ( &m_CsLock ) ;
     }
 

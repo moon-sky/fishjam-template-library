@@ -85,8 +85,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description=""
-				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -230,8 +228,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description=""
-				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration

@@ -57,7 +57,7 @@ private:
     BOOL                                    _CreateProxyProcess(BOOL isWin64);
     BOOL                                    _StopHelperProxyProcess();
 public:
-	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd);
+	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd, OLE_COLOR clrDisabled);
 	STDMETHOD(UnProtectWnd)(OLE_HANDLE hWnd);
 };
 

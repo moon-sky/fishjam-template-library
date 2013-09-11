@@ -31,5 +31,5 @@ using namespace ATL;
 
 #include <ftlbase.h>
 #include <ftlThread.h>
-#include <ftlService.h>
+//#include <ftlService.h>
 #include <ftlSystem.h>

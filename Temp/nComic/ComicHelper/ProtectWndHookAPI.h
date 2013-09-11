@@ -18,4 +18,6 @@ public:
     BOOL StopHook();
 private:
     CAtlFileMapping<ProtectWndInfoFileMap32> m_FileMap;
+    BOOL _InitImgBackground();
+    BOOL _ReleaseImgBackground();
 };

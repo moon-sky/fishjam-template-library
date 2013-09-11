@@ -43,6 +43,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 #else
     SetWindowText(TEXT("ComicHelperProxy64"));
 #endif 
+	//ShowWindow(SW_HIDE);
     return 0;
 }
 

@@ -614,7 +614,7 @@ namespace FTL
 
 		FTLINLINE static int DrawInterValText(HDC hdc, LPCTSTR lpchText, int cchText,	LPRECT lprc, UINT format, POINT ptInterval);
 
-		FTLINLINE static BOOL LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType);
+		FTLINLINE static BOOL LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType = TEXT("PNG"));
 
         FTLINLINE static LPCTSTR GetGraphicsModeString(int nGraphicsMode);
 

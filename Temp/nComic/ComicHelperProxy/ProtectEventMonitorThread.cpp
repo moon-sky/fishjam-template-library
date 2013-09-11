@@ -25,7 +25,8 @@ BOOL CProtectEventMonitorThread::Start()
 BOOL CProtectEventMonitorThread::Stop()
 {
     BOOL bRet = FALSE;
-    API_VERIFY(__super::StopAndWait());
+    ::SetEvent(m_hEventStop);
+    API_VERIFY(__super::Wait(INFINITE));
     return bRet;
 }
 
@@ -100,6 +101,7 @@ FTL::FTLThreadWaitType CProtectEventMonitorThread::_HandleSingleProtectEvent()
     if (m_pProtectWndInfoFileMap)
     {
         FTLTRACE(TEXT("CProtectEventMonitorThread::_HandleSingleProtectEvent, Command=%d\n"), m_pProtectWndInfoFileMap->dwCommand);
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("_HandleSingleProtectEvent"), DEFAULT_BLOCK_TRACE_THRESHOLD);
 
         switch (m_pProtectWndInfoFileMap->dwCommand)
         {
@@ -120,8 +122,8 @@ FTL::FTLThreadWaitType CProtectEventMonitorThread::_HandleSingleProtectEvent()
                 m_pProtectWndInfoFileMap->hWndProtect = NULL;
                 API_VERIFY(DisableWindowProtected(hWndProtect));
             }
-            m_pMainFrame->Invalidate(TRUE);
-            m_pMainFrame->UpdateWindow();
+            API_VERIFY(m_pMainFrame->Invalidate(TRUE));
+            API_VERIFY(m_pMainFrame->UpdateWindow());
             break;
         case COMMAND_NOTIFY_END_HELPER_PROXY:
             if (m_pMainFrame)
