@@ -26,6 +26,8 @@ enum HookFuncType
     hft_CreateDCA,
     hft_DeleteDC,
 
+    hft_OpenProcess,
+    hft_TerminateProcess,
     //hft_NtUserPrintWindow,
     //hft_NtGdiDdLock,
     //hft_NtGdiDdUnlock,
@@ -47,6 +49,7 @@ struct HOOK_API_INFO
     int     nImageWidth;
     int     nImageHeight;
 
+    HANDLE  hProtectProcessInCurProcess;
     PINLINE_HOOK_INFO    HookApiInfos[hft_FunctionCount];
 
     HOOK_API_INFO()
@@ -61,6 +64,7 @@ struct HOOK_API_INFO
         pBackgroundBuffer = NULL;
         nImageWidth = 0;
         nImageHeight = 0;
+        hProtectProcessInCurProcess = NULL;
     }
 }g_HookApiInfo;
 
@@ -77,6 +81,9 @@ typedef HDC (WINAPI* CreateDCWProc)(LPCWSTR pwszDriver, LPCWSTR pwszDevice, LPCW
 typedef HDC (WINAPI* CreateDCAProc)(LPCSTR pszDriver, LPCSTR pszDevice, LPCSTR pszPort, CONST DEVMODEA * pdm);
 typedef BOOL (WINAPI* DeleteDCProc)(HDC hdc);
 
+typedef HANDLE (WINAPI* OpenProcessProc)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);
+typedef BOOL (WINAPI* TerminateProcessProc)(HANDLE hProcess, UINT uExitCode);
+
 BOOL HookApiFromModule(HMODULE hModule, LPCSTR lpProcName, PVOID pDetour, PINLINE_HOOK_INFO* ppOutHookInfo)
 {
     BOOL bRet = FALSE;
@@ -85,8 +92,6 @@ BOOL HookApiFromModule(HMODULE hModule, LPCSTR lpProcName, PVOID pDetour, PINLIN
     GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
     PVOID pTarget = (PVOID)GetProcAddress(hModule, lpProcName);
 
-    //FTLTRACE(TEXT("HookApiFromModule %s in %s, 0x%x => 0x%x, hWndProtect=0x%x\n"), 
-    //    CA2T(lpProcName), PathFindFileName(szProcessName), pTarget, pDetour, g_pProtectWndInfoFileMap->hWndProtect);
     if (pTarget)
     {
         API_VERIFY(CreateInlineHook(pTarget, pDetour, NULL, ppOutHookInfo));
@@ -151,16 +156,23 @@ CRect GetFitRect( const CRect& rcMargin, const CSize& szContent )
 
 BOOL DoFilterPaste(HDC hdcDest, int nXDest, int nYDest, int nWidthDest, int nHeightDest,
                    HDC hdcSrc, int nXSrc, int nYSrc, int nWidthSrc, int nHeightSrc, 
-                   DWORD dwRop)
+                   DWORD dwRop, RECT* prcFilter)
 {
     BOOL bRet = FALSE;
     if (g_pProtectWndInfoFileMap)
     {
-        HWND hWndFilter = (HWND)g_pProtectWndInfoFileMap->hWndProtect;
-
         CRect rcFilter(0, 0, 0, 0);
-        API_VERIFY(GetWindowRect(hWndFilter, &rcFilter));
-        if (bRet)
+        if (prcFilter)
+        {
+            rcFilter = *prcFilter;
+        }
+        else
+        {
+            HWND hWndFilter = (HWND)g_pProtectWndInfoFileMap->hWndProtect;
+            API_VERIFY(GetWindowRect(hWndFilter, &rcFilter));
+        }
+        
+        //if (bRet)
         {
             CRect rcTarget( nXDest, nYDest,  nXDest + nWidthDest, nYDest + nHeightDest);
             CRect rcSource( nXSrc, nYSrc, nXSrc + nWidthSrc, nYSrc + nHeightSrc);
@@ -170,10 +182,20 @@ BOOL DoFilterPaste(HDC hdcDest, int nXDest, int nYDest, int nWidthDest, int nHei
                 rcFilter.left, rcFilter.top, rcFilter.right, rcFilter.bottom, rcFilter.Width(), rcFilter.Height()
                 );
 
+            if (rcSource.left == 0 && rcSource.top == 0)
+            {
+                
+            }
+            else
+            {
+                //rcFilter.OffsetRect(-rcFilter.TopLeft());
+            }
+
             rcFilter.IntersectRect(&rcSource, &rcFilter);
-            rcFilter.OffsetRect(nXDest - nXSrc, nYDest - nYSrc);
             if (!rcFilter.IsRectEmpty())
             {
+                rcFilter.OffsetRect(-nXSrc, -nYSrc);
+
                 float fZoomX = 1.0f;
                 if (nWidthDest != nWidthSrc && nWidthSrc != 0)
                 {
@@ -192,7 +214,7 @@ BOOL DoFilterPaste(HDC hdcDest, int nXDest, int nYDest, int nWidthDest, int nHei
 
             //rcFilter.OffsetRect(-rcFilter.TopLeft());
 
-            FTLTRACE(TEXT("Will FillColor newRcSource=(%d,%d)-(%d,%d), %dx%d"),
+            FTLTRACE(TEXT("Will FillColor rcFilter=(%d,%d)-(%d,%d), %dx%d"),
                 rcFilter.left, rcFilter.top, rcFilter.right, rcFilter.bottom, 
                 rcFilter.Width(), rcFilter.Height());
 
@@ -221,30 +243,41 @@ BOOL WINAPI Hooked_BitBlt(HDC hdcDest, int nXDest, int nYDest, int nWidth, int n
                           HDC hdcSrc, int nXSrc, int nYSrc, DWORD dwRop)
 {
     BOOL bRet = TRUE; 
-    HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
+    //HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
     __try
     {
         BitBltProc pOrigBitBlt = (BitBltProc)g_HookApiInfo.HookApiInfos[hft_BitBlt]->pOriginal;
-        if (pOrigBitBlt)
-        {
-            bRet = (pOrigBitBlt)(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
-        }
 
-        if (bRet && IsFilterHDC(hdcSrc))
+        if (IsFilterHDC(hdcSrc))
         {
             TCHAR szProcessName[MAX_PATH] = {0};
             GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
             FTLTRACE(TEXT("!!! Hooked_BitBlt Desktop PID=%d(%s), Dest=[%d, %d], %dx%d, Src=[%d, %d]\n"),
                 GetCurrentProcessId(), PathFindFileName(szProcessName), nXDest, nYDest, nWidth, nHeight, nXSrc, nYSrc);
 
+            HWND hWndFilter = (HWND)g_pProtectWndInfoFileMap->hWndProtect;
+            RECT rcFilterWnd = {0};
+            bRet = GetWindowRect(hWndFilter, &rcFilterWnd);
+            if (pOrigBitBlt)
+            {
+                bRet = (pOrigBitBlt)(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+            }
             DoFilterPaste(hdcDest, nXDest, nYDest, nWidth, nHeight,
-                hdcSrc, nXSrc, nYSrc, nWidth, nHeight, dwRop);
+                hdcSrc, nXSrc, nYSrc, nWidth, nHeight, dwRop, &rcFilterWnd);
+        }
+        else
+        {
+            if (pOrigBitBlt)
+            {
+                bRet = (pOrigBitBlt)(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+            }
         }
     }
     __finally
     {
         HOOKED_API_CALL_LEAVE(g_HookApiInfo.HookedAPICallCount);
     }
+
     return bRet;
 }
 
@@ -253,19 +286,33 @@ BOOL WINAPI Hooked_StretchBlt(HDC hdcDest, int nXDest, int nYDest, int nWidthDes
                               DWORD dwRop)
 {
     BOOL bRet = FALSE;
+    //FUNCTION_BLOCK_MODULE_NAME_TRACE(TEXT("Hooked_StretchBlt"), 10);
     HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
     __try
     {
         StretchBltProc pOrigStretchBlt = (StretchBltProc)g_HookApiInfo.HookApiInfos[hft_StretchBlt]->pOriginal;
-        if (pOrigStretchBlt)
+        if (IsFilterHDC(hdcSrc))
         {
-            bRet = (pOrigStretchBlt)(hdcDest, nXDest, nYDest, nWidthDest, nHeightDest,
-                hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc, dwRop);
-        }
-        if (bRet && IsFilterHDC(hdcSrc))
-        {
+            HWND hWndFilter = (HWND)g_pProtectWndInfoFileMap->hWndProtect;
+            RECT rcFilterWnd = {0};
+            bRet = GetWindowRect(hWndFilter, &rcFilterWnd);
+
+            if (pOrigStretchBlt)
+            {
+                bRet = (pOrigStretchBlt)(hdcDest, nXDest, nYDest, nWidthDest, nHeightDest,
+                    hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc, dwRop);
+            }
+
             DoFilterPaste(hdcDest, nXDest, nYDest, nWidthDest, nHeightDest, 
-                hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc, dwRop);
+                hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc, dwRop, &rcFilterWnd);
+        }
+        else
+        {
+            if (pOrigStretchBlt)
+            {
+                bRet = (pOrigStretchBlt)(hdcDest, nXDest, nYDest, nWidthDest, nHeightDest,
+                    hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc, dwRop);
+            }
         }
     }
     __finally
@@ -279,6 +326,8 @@ BOOL WINAPI Hooked_StretchBlt(HDC hdcDest, int nXDest, int nYDest, int nWidthDes
 HDC WINAPI Hooked_CreateDCW(LPCWSTR pwszDriver, LPCWSTR pwszDevice, LPCWSTR pwszOutput, CONST DEVMODEW* lpInitData)
 {
     HDC hdc = NULL;
+    //FUNCTION_BLOCK_MODULE_NAME_TRACE(TEXT("Hooked_CreateDCW"), 10);
+
     HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
     __try
     {
@@ -304,6 +353,8 @@ HDC WINAPI Hooked_CreateDCW(LPCWSTR pwszDriver, LPCWSTR pwszDevice, LPCWSTR pwsz
 HDC WINAPI Hooked_CreateDCA(LPCSTR pszDriver, LPCSTR pszDevice, LPCSTR pszPort, CONST DEVMODEA * pdm)
 {
     HDC hdc = NULL;
+    //FUNCTION_BLOCK_MODULE_NAME_TRACE(TEXT("Hooked_CreateDCA"), 10);
+
     HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
     __try
     {
@@ -329,6 +380,8 @@ HDC WINAPI Hooked_CreateDCA(LPCSTR pszDriver, LPCSTR pszDevice, LPCSTR pszPort, 
 BOOL WINAPI Hooked_DeleteDC(HDC hdc)
 {
     BOOL bRet = FALSE;
+    //FUNCTION_BLOCK_MODULE_NAME_TRACE(TEXT("Hooked_DeleteDC"), 10);
+
     HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
     __try
     {
@@ -351,6 +404,54 @@ BOOL WINAPI Hooked_DeleteDC(HDC hdc)
     return bRet;
 }
 
+HANDLE WINAPI Hooked_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId)
+{
+    HANDLE hProcess = NULL;
+    HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
+    __try
+    {
+        OpenProcessProc pOrigOpenProcess = (OpenProcessProc)g_HookApiInfo.HookApiInfos[hft_OpenProcess]->pOriginal;
+        if (pOrigOpenProcess)
+        {
+            hProcess = (pOrigOpenProcess)(dwDesiredAccess, bInheritHandle, dwProcessId);
+            if (dwProcessId == g_pProtectWndInfoFileMap->dwProtectProcessId)
+            {
+                g_HookApiInfo.hProtectProcessInCurProcess = hProcess;
+            }
+        }
+    }
+    __finally
+    {
+        HOOKED_API_CALL_LEAVE(g_HookApiInfo.HookedAPICallCount);
+    }
+    return hProcess;
+}
+
+BOOL WINAPI Hooked_TerminateProcess(HANDLE hProcess, UINT uExitCode)
+{
+    BOOL bRet = FALSE;
+    SetLastError(ERROR_ACCESS_DENIED);
+    FTLTRACE(TEXT("!!! TerminateProcess HANDLE=0x%x, \n"), hProcess);
+    
+    HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
+    __try
+    {
+        TerminateProcessProc pOrigTerminateProcess = (TerminateProcessProc)g_HookApiInfo.HookApiInfos[hft_TerminateProcess]->pOriginal;
+        if (pOrigTerminateProcess)
+        {
+            if (g_HookApiInfo.hProtectProcessInCurProcess != hProcess)
+            {
+                bRet = pOrigTerminateProcess(hProcess, uExitCode);
+            }
+        }
+    }
+    __finally
+    {
+        HOOKED_API_CALL_LEAVE(g_HookApiInfo.HookedAPICallCount);
+    }
+
+    return bRet;
+}
 
 CProtectWndHookAPI::CProtectWndHookAPI(void)
 {
@@ -363,6 +464,8 @@ CProtectWndHookAPI::~CProtectWndHookAPI(void)
 BOOL CProtectWndHookAPI::_InitImgBackground()
 {
     BOOL bRet = FALSE;
+    FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("UnHookApi"), FTL::TraceDetailExeName, 10);
+
     ATL::CImage* pImgBackground = new ATL::CImage();
     if (pImgBackground)
     {
@@ -420,6 +523,8 @@ BOOL CProtectWndHookAPI::_InitImgBackground()
 BOOL CProtectWndHookAPI::_ReleaseImgBackground()
 {
     BOOL bRet = TRUE;
+    FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("_ReleaseImgBackground"), FTL::TraceDetailExeName, 10);
+
     if (g_HookApiInfo.hBmpBackground)
     {
         ::SelectObject(g_HookApiInfo.hDCMemory, g_HookApiInfo.hOldBitmap);
@@ -469,8 +574,13 @@ BOOL CProtectWndHookAPI::StartHook()
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "CreateDCA", &Hooked_CreateDCA, &g_HookApiInfo.HookApiInfos[hft_CreateDCA]));
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "CreateDCW", &Hooked_CreateDCW, &g_HookApiInfo.HookApiInfos[hft_CreateDCW]));
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "DeleteDC", &Hooked_DeleteDC, &g_HookApiInfo.HookApiInfos[hft_DeleteDC]));
-
                     //don't call FreeLibrary
+                }
+                HMODULE hModuleKernel32 = GetModuleHandle(TEXT("Kernel32.DLL"));
+                if (hModuleKernel32)
+                {
+                    //API_VERIFY(HookApiFromModule(hModuleKernel32, "OpenProcess", &Hooked_OpenProcess, &g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
+                    //API_VERIFY(HookApiFromModule(hModuleKernel32, "TerminateProcess", &Hooked_TerminateProcess, &g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
                 }
             }
         }
@@ -488,7 +598,7 @@ BOOL CProtectWndHookAPI::StopHook()
 
     TCHAR szTrace[MAX_PATH] = {0};
     StringCchPrintf(szTrace, _countof(szTrace), TEXT("StopHook in %s"), PathFindFileName(szModuleName));
-    FUNCTION_BLOCK_NAME_TRACE(szTrace, DEFAULT_BLOCK_TRACE_THRESHOLD);
+    FUNCTION_BLOCK_NAME_TRACE(szTrace, 10);
 
     ATLTRACE(TEXT("<<< Will UnHook API(g_bHooked=%d) in PID=%d(%s),TID=%d\n"), 
         g_HookApiInfo.bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
@@ -506,10 +616,11 @@ BOOL CProtectWndHookAPI::StopHook()
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateDCW]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateDCA]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_DeleteDC]));
+       // API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
+        //API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
 
         {
-            StringCchPrintf(szTrace, _countof(szTrace), TEXT("Before _ReleaseImgBackground in %s"), PathFindFileName(szModuleName));
-            FUNCTION_BLOCK_NAME_TRACE(szTrace, DEFAULT_BLOCK_TRACE_THRESHOLD);
+            FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("ReleaseImage + UnMap"), FTL::TraceDetailExeName, 100);
 
             API_VERIFY(_ReleaseImgBackground());
             m_FileMap.Unmap();

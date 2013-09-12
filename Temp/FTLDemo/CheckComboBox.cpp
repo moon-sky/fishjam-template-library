@@ -478,7 +478,7 @@ int CCheckComboBox::AddString(LPCTSTR lpszString)
 
 int CCheckComboBox::DeleteString(UINT nIndex)
 {
-	FTLASSERT(nIndex >= 0 && nIndex < GetCount());
+	FTLASSERT(nIndex >= 0 && nIndex < (UINT)GetCount());
     CheckItemInfo* pItemInfo = (CheckItemInfo*) CComboBox::GetItemData(nIndex);
 
 	ASSERT(pItemInfo && pItemInfo != (CheckItemInfo*)(-1));

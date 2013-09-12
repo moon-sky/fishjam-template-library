@@ -197,7 +197,7 @@ LRESULT CButtonSSL::OnSetStyle(WPARAM wParam, LPARAM lParam)
 // Thanks to Tomasz Sowinski for helping me with the DDX problems
 // Many thanks to Joe Newcomer for pointing out the error of my ways
 // by not supplying all of the requried parameters
-LRESULT CButtonSSL::OnGetCheck(WPARAM wParam, LPARAM lParam) 
+LRESULT CButtonSSL::OnGetCheck(WPARAM /*wParam*/, LPARAM /*lParam*/) 
 {
 	UINT nType = GetControlType();
 	if(BS_CHECKBOX ==(BS_CHECKBOX & nType) || 
@@ -220,7 +220,7 @@ LRESULT CButtonSSL::OnGetCheck(WPARAM wParam, LPARAM lParam)
 // Thanks to Tomasz Sowinski for helping me with the DDX problems
 // Many thanks to Joe Newcomer for pointing out the error of my ways
 // by not supplying all of the requried parameters
-LRESULT CButtonSSL::OnSetCheck(WPARAM fCheck, LPARAM lParam) 
+LRESULT CButtonSSL::OnSetCheck(WPARAM fCheck, LPARAM /*lParam*/) 
 {
 	if(BST_CHECKED == fCheck) 
 	{
@@ -440,7 +440,7 @@ void CButtonSSL::OnTimer(UINT_PTR nIDEvent)
 	CButton::OnTimer(nIDEvent);
 }
 
-HBRUSH CButtonSSL::CtlColor(CDC* pDC, UINT nCtlColor) 
+HBRUSH CButtonSSL::CtlColor(CDC* /*pDC*/, UINT /*nCtlColor*/) 
 {
 	return(HBRUSH)::GetStockObject(NULL_BRUSH); 
 }
@@ -1081,13 +1081,13 @@ BOOL CButtonSSL::SetSSLButtonFont(LPCTSTR lpszFaceName, int nSizePoints/* = 8*/,
 
 	StringCchCopy(lf.lfFaceName, _countof(lf.lfFaceName) -1,  lpszFaceName);
 	lf.lfHeight = -MulDiv(nSizePoints, GetDeviceCaps(pDC->m_hDC, LOGPIXELSY), 72);
-	lf.lfUnderline = bUnderline;
+    lf.lfUnderline = bUnderline ? 1 : 0;
 	if(TRUE == bBold) 
 	{
 		lf.lfWeight = FW_BOLD;
 	}
-	lf.lfStrikeOut = bStrikeOut;
-	lf.lfItalic = bItalic;
+    lf.lfStrikeOut = bStrikeOut ? 1 : 0;
+    lf.lfItalic = bItalic ? 1 : 0;
 
 	BOOL bReturn = m_font.CreateFontIndirect(&lf);
 

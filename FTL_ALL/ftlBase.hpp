@@ -957,11 +957,6 @@ namespace FTL
     {
         CloseAllFileWriters();
 #pragma TODO(TlsSetValue NULL when thread quit)
-        //if (TLS_OUT_OF_INDEXES != m_dwTLSSlot)
-        //{
-        //    TlsFree(m_dwTLSSlot);
-        //    m_dwTLSSlot = TLS_OUT_OF_INDEXES;
-        //}
         DeleteCriticalSection ( &m_CsLock ) ;
     }
 
@@ -1376,10 +1371,11 @@ namespace FTL
 
 #ifdef FTL_DEBUG
     CFBlockElapse::CFBlockElapse(LPCTSTR pszFileName,DWORD line, 
-        LPCTSTR pBlockName, LPVOID pReturnAddr, DWORD MinElapse/* = 0*/)
+        LPCTSTR pBlockName, TraceDetailType detailType, LPVOID pReturnAddr, DWORD MinElapse/* = 0*/)
         :m_pszFileName(pszFileName)
         ,m_Line(line)
         ,m_pszBlkName(pBlockName)
+        ,m_traceDetailType(detailType)
         ,m_pReturnAdr(pReturnAddr)
         ,m_MinElapse(MinElapse)
 
@@ -1394,8 +1390,8 @@ namespace FTL
         BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
         if (NULL == pInfo)
         {
-            //FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
-            //   __FILE__LINE__, GetCurrentThreadId());
+            FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
+               __FILE__LINE__, GetCurrentThreadId());
             pInfo = new BlockElapseInfo();
             ZeroMemory(pInfo, sizeof(BlockElapseInfo));
             TlsSetValue(rBlockElapseTlsIndex, pInfo);
@@ -1410,24 +1406,58 @@ namespace FTL
         FAST_TRACE_EX(tlDetail, TEXT("%s(%d) :\t TID(0x%04x) %s (Enter \t%d): %s\n"),
             m_pszFileName,m_Line,GetCurrentThreadId(),pInfo->bufIndicate,pInfo->indent ,
             m_pszBlkName);
+
         m_StartTime = GetTickCount();
     }
 
     CFBlockElapse::~CFBlockElapse()
     {
 		//Save old last error to avoid effect it
-		DWORD dwOldLastError = ::GetLastError();
+        CFLastErrorRecovery lastErrorRecory;
         DWORD dwElapseTime = GetTickCount() - m_StartTime;
-        if (m_MinElapse != 0 && dwElapseTime >= m_MinElapse)
-        {
-            FAST_TRACE_EX(tlWarning, TEXT("%s(%d) :\t TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
-                m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, m_pszBlkName,m_pReturnAdr,m_MinElapse,dwElapseTime);
-        }
-        
-		DWORD& rBlockElapseTlsIndex = g_GlobalShareInfo.GetShareValue().dwBlockElapseTlsIndex;
+
+        DWORD& rBlockElapseTlsIndex = g_GlobalShareInfo.GetShareValue().dwBlockElapseTlsIndex;
         BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
         FTLASSERT(pInfo);
 #pragma TODO(一个线程创建对象，另外的线程来释放，怎么处理，如GraphEdt)
+        if (m_MinElapse != 0 && dwElapseTime >= m_MinElapse)
+        {
+            if (pInfo)
+            {
+                DWORD dwMaxSize = _countof(pInfo->szDetailName);
+                switch (m_traceDetailType)
+                {
+                case TraceDetailExeName:
+                    GetModuleFileName(NULL, pInfo->szDetailName, dwMaxSize);
+                    StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s in %s"), m_pszBlkName, 
+                        PathFindFileName(pInfo->szDetailName));
+                    break;
+                case TraceDetailModuleName:
+                    {
+                        MEMORY_BASIC_INFORMATION memInfo = {0};
+                        VirtualQuery(m_pReturnAdr, &memInfo, sizeof(memInfo));
+                        if (memInfo.BaseAddress)
+                        {
+                            GetModuleFileName((HMODULE)memInfo.AllocationBase, pInfo->szDetailName, dwMaxSize);
+                            StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s in %s"), m_pszBlkName, 
+                                PathFindFileName(pInfo->szDetailName));
+                        }
+                    }
+                    break;
+                case TraceDetailNone:
+                default:
+                    StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s"), m_pszBlkName);
+                    break;
+                }
+                FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
+                    m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, pInfo->szDetailName,m_pReturnAdr,m_MinElapse,dwElapseTime);
+            }
+            else
+            {
+                FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
+                    m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, m_pszBlkName,m_pReturnAdr,m_MinElapse,dwElapseTime);
+            }
+        }
         if (pInfo)
         {
             LONG curLevel = FTL_MIN(pInfo->indent,MAX_TRACE_INDICATE_LEVEL);
@@ -1447,7 +1477,6 @@ namespace FTL
                 TlsSetValue(rBlockElapseTlsIndex, NULL);
             }
         }
-		::SetLastError(dwOldLastError);
     }
 
 //#if defined(_M_IA64) || defined(_M_IX86) || defined (_M_AMD64)

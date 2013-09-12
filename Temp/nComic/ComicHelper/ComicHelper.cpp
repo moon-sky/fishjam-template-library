@@ -19,11 +19,11 @@
 
 HMODULE g_hModule;
 
-#pragma data_seg("SHAREDMEM")
+//#pragma data_seg("SHAREDMEM")
 HHOOK g_hHookCallWndProc = NULL;
 HHOOK g_hHookKeyboard = NULL;
-#pragma data_seg()
-#pragma comment(linker, "/Section:SHAREDMEM,rws")
+//#pragma data_seg()
+//#pragma comment(linker, "/Section:SHAREDMEM,rws")
 
 volatile BOOL  g_bHooked = FALSE;
 
@@ -87,22 +87,26 @@ COMICHELPER_API BOOL EnableWindowProtected(DWORD curProcessId, HWND hWndFilter)
     if (NULL == g_hHookCallWndProc)
     {
         API_VERIFY((g_hHookCallWndProc = SetWindowsHookEx(WH_CALLWNDPROC, My_CallWndProc, g_hModule, 0)) != NULL);
-        API_VERIFY((g_hHookKeyboard = SetWindowsHookEx(WH_KEYBOARD_LL, My_LowLevelKeyboardProc, g_hModule, 0)) != NULL);
-    }
+        //API_VERIFY((g_hHookKeyboard = SetWindowsHookEx(WH_KEYBOARD_LL, My_LowLevelKeyboardProc, g_hModule, 0)) != NULL);
 
-    ATLTRACE(TEXT("Leave EnableWindowProtected g_hHook=0x%x, g_hHookKeyboard=0x%x, bRet=%d\n"), g_hHookCallWndProc, g_hHookKeyboard, bRet);
+        ATLTRACE(TEXT("Leave EnableWindowProtected g_hHook=0x%x, g_hHookKeyboard=0x%x, bRet=%d\n"), g_hHookCallWndProc, g_hHookKeyboard, bRet);
+    }
     return bRet;
 }
 
 COMICHELPER_API BOOL DisableWindowProtected(HWND hWnd)
 {
     BOOL bRet = TRUE;
+    //FUNCTION_BLOCK_MODULE_NAME_TRACE(TEXT("DisableWindowProtected"), 100);
+    API_VERIFY(UnHookApi());
     if (g_hHookCallWndProc)
     {
-        API_VERIFY(UnHookApi());
         API_VERIFY(UnhookWindowsHookEx(g_hHookCallWndProc));
-        API_VERIFY(UnhookWindowsHookEx(g_hHookKeyboard));
         g_hHookCallWndProc = NULL;
+    }
+    if (g_hHookKeyboard)
+    {
+        API_VERIFY(UnhookWindowsHookEx(g_hHookKeyboard));
         g_hHookKeyboard = NULL;
     }
     return bRet;
@@ -133,15 +137,7 @@ COMICHELPER_API BOOL HookApi()
 
 COMICHELPER_API BOOL UnHookApi()
 {
-    TCHAR szModuleName[MAX_PATH] = {0};
-    GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
-
-    TCHAR szTrace[MAX_PATH] = {0};
-    StringCchPrintf(szTrace, _countof(szTrace), TEXT("UnHookApi in %s"), PathFindFileName(szModuleName));
-    FUNCTION_BLOCK_NAME_TRACE(szTrace, 1);
-
-    FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
-
+    FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("UnHookApi"), FTL::TraceDetailExeName, 1);
     //notify all the toplevel progress
     //BroadcastSystemMessage(BSF_FORCEIFHUNG |BSF_POSTMESSAGE, NULL, WM_NULL, 0, 0);
     //Sync UnHook API

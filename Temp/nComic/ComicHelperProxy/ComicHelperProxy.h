@@ -8,6 +8,7 @@
 struct ProtectWndInfoFileMap32
 {
     DWORD       dwCommand;
+    DWORD       dwProtectProcessId;
     ULONG       hWndProtect;       //HWND is 4 on 32 and 8 on 64
     COLORREF    clrDisabled;
 };

@@ -238,6 +238,7 @@ STDMETHODIMP CComicServiceObj::ProtectWnd(OLE_HANDLE hWnd, OLE_COLOR clrDisabled
         m_pProtectWndInfoMap->hWndProtect = (ULONG)hWnd;
         m_pProtectWndInfoMap->clrDisabled = COLORREF(clrDisabled);
         m_pProtectWndInfoMap->dwCommand = COMMAND_BEGIN_PROTECT_WND;
+        m_pProtectWndInfoMap->dwProtectProcessId = GetCurrentProcessId();
     }
 
     API_VERIFY(SetEvent(m_hEventProtectNotify32));

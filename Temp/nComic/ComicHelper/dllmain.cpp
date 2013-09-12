@@ -12,14 +12,19 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 	{
 	case DLL_PROCESS_ATTACH:
         {
-            //TCHAR szModuleName[MAX_PATH] = {0};
-            //GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
-            //if (StrStr(szModuleName, TEXT("Thunder")) != NULL
-            //    || StrStr(szModuleName, TEXT("HostProcess.exe")) != NULL)
-            //{
-            //    ATLTRACE(TEXT(">>> Will Skip Hook Thunder\n"));
-            //    return FALSE;
-            //}
+            TCHAR szModuleName[MAX_PATH] = {0};
+            GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+            LPCTSTR pszFileName = PathFindFileName(szModuleName);
+            if (pszFileName)
+            {
+                //if (StrStrI(pszFileName, TEXT("NaverCapture.exe")) == NULL
+                //    //|| StrStrI(szModuleName, TEXT("NComic.exe")) != NULL
+                //    )
+                //{
+                //    ATLTRACE(TEXT(">>> Will Skip Hook %s\n"), pszFileName);
+                //    return FALSE;
+                //}
+            }
         }
 		g_hModule = hModule;
 		break;

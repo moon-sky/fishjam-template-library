@@ -137,41 +137,37 @@ namespace FTL
     # define API_ASSERT(x)\
         if(FALSE == (x))\
         {\
-            DWORD dwLastError = GetLastError();\
-            REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, dwLastError,x);\
-            SetLastError(dwLastError);\
+            FTL::CFLastErrorRecovery lastErrorRecory;\
+            REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, lastErrorRecory.GetError(),x);\
         }
 
     # define API_VERIFY(x)   \
         bRet = (x);\
         if(FALSE == bRet)\
         {\
-            DWORD dwLastError = GetLastError();\
-            REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, dwLastError,x);\
-            SetLastError(dwLastError);\
+            FTL::CFLastErrorRecovery lastErrorRecory;\
+            REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, lastErrorRecory.GetError(), x);\
         }
 
     # define API_VERIFY_EXCEPT1(x,e1)\
         bRet = (x);\
         if(FALSE == bRet)\
         {\
-            DWORD dwLastError = GetLastError();\
-            if(dwLastError != e1)\
+            FTL::CFLastErrorRecovery lastErrorRecory;\
+            if(lastErrorRecory.GetError() != e1)\
             {\
-                REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, dwLastError,x);\
+                REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, lastErrorRecory.GetError(), x);\
             }\
-            SetLastError(dwLastError);\
         }
 	# define API_VERIFY_EXCEPT2(x,e1,e2)\
 		bRet = (x);\
 		if(FALSE == bRet)\
 		{\
-			DWORD dwLastError = GetLastError();\
-			if(dwLastError != e1 && dwLastError != e2)\
+            FTL::CFLastErrorRecovery lastErrorRecory;\
+			if(lastErrorRecory.GetError() != e1 && lastErrorRecory.GetError() != e2)\
 			{\
-				REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, dwLastError,x);\
+				REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, lastErrorRecory.GetError(),x);\
 			}\
-			SetLastError(dwLastError);\
 		}
 
     #else //没有定义 FTL_DEBUG 的时候 -- 不进行 GetLastError/SetLastError 的调用
@@ -516,6 +512,7 @@ namespace FTL
     public:
         FTLINLINE CFLastErrorRecovery();
         FTLINLINE ~CFLastErrorRecovery();
+        DWORD GetError() const { return m_dwLastError; }
     private:
         DWORD   m_dwLastError;
     };
@@ -893,24 +890,28 @@ namespace FTL
 
 #pragma message( "  MAX_TRACE_INDICATE_LEVEL = " QQUOTE(MAX_TRACE_INDICATE_LEVEL) )
 
+    enum TraceDetailType{
+        TraceDetailNone = 0,
+        TraceDetailExeName,
+        TraceDetailModuleName,
+    };
 #ifdef FTL_DEBUG
-    //注意:一般需要在 FUNCTION_BLOCK_INIT 后紧跟一个 FUNCTION_BLOCK_TRACE(0),但需要注意一定要让其生成的临时 elaplse 变量的生存周期
-    //  早于FUNCTION_BLOCK_UNINIT, 这样可以避免KB118816 问题和频繁的 new/delete  BlockElapseInfo 对应
-//#  define FUNCTION_BLOCK_INIT()     FTL::CFBlockElapse::Init()
-
+    //KB118816
+    
     //CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__),__LINE__,TEXT(__FUNCTION__),FTL::_ReturnAddress(),(minElapse))
     // #pragma TODO(此处的写法有问题，无法根据行号生成唯一变量 -- "JOIN_TWO" 不支持带参数的构造)
 #  define FUNCTION_BLOCK_TRACE(minElapse) \
-    FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__),__LINE__,TEXT(__FUNCTION__),FTL::_ReturnAddress(),(minElapse))
+    FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__), __LINE__, TEXT(__FUNCTION__), FTL::TraceDetailNone, FTL::_ReturnAddress(),(minElapse))
 #  define FUNCTION_BLOCK_NAME_TRACE(blockName,minElapse) \
-    FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__),__LINE__,blockName,FTL::_ReturnAddress(),minElapse)
+    FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__), __LINE__, blockName, FTL::TraceDetailNone, FTL::_ReturnAddress(),minElapse)
 
-//#  define FUNCTION_BLOCK_UNINIT()   FTL::CFBlockElapse::UnInit()
+#  define FUNCTION_BLOCK_NAME_TRACE_EX(blockName, detailType, minElapse) \
+    FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__), __LINE__, blockName, detailType, FTL::_ReturnAddress(),minElapse)
+
 #else
-//#  define  FUNCTION_BLOCK_INIT();                           __noop
-#  define  FUNCTION_BLOCK_TRACE(minElapse)                  __noop
-#  define  FUNCTION_BLOCK_NAME_TRACE(blockName,minElapse)   __noop
-//#  define  FUNCTION_BLOCK_UNINIT();                         __noop
+#  define  FUNCTION_BLOCK_TRACE(minElapse)                                   __noop
+#  define  FUNCTION_BLOCK_NAME_TRACE(blockName,minElapse)                    __noop
+#  define  FUNCTION_BLOCK_NAME_TRACE_EX(blockName, detailType, minElapse)    __noop
 #endif
 
 
@@ -932,7 +933,7 @@ namespace FTL
     public:
         //使用毫秒作为判断是否超时
         FTLINLINE CFBlockElapse(LPCTSTR pszFileName,DWORD line, 
-            LPCTSTR pBlockName, LPVOID pReturnAddr, DWORD MinElapse = 0);
+            LPCTSTR pBlockName, TraceDetailType detailType, LPVOID pReturnAddr, DWORD MinElapse = 0);
 		FTLINLINE void SetLeaveLine(DWORD line);
         FTLINLINE ~CFBlockElapse(void);
     private:
@@ -940,11 +941,13 @@ namespace FTL
         {
             LONG   indent;
             TCHAR  bufIndicate[MAX_TRACE_INDICATE_LEVEL + 1];//增加最后的NULL所占的空间
+            TCHAR  szDetailName[MAX_PATH];
         };
         //static DWORD  s_dwTLSIndex;
 		//static LONG   s_lElapseId;
         const TCHAR* m_pszFileName;
         const TCHAR* m_pszBlkName;
+        const TraceDetailType m_traceDetailType;
         const LPVOID m_pReturnAdr;
         const DWORD  m_Line;
         const DWORD m_MinElapse;

@@ -1956,6 +1956,7 @@ namespace FTL
 
 	void CFTransferJobBase::OnFinalize(BOOL isWaiting)
 	{
+        UNREFERENCED_PARAMETER(isWaiting);
 		delete this;
 	}
 

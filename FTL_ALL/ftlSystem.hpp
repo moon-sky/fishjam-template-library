@@ -763,9 +763,9 @@ namespace FTL
 	{  
     	PCONTEXT ctx = ep->ContextRecord;  
 
-    	ctx->Ebx = -1; // Not running VPC  
+    	ctx->Ebx = (DWORD)(-1); // Not running VPC  
     	ctx->Eip += 4; // skip past the "call VPC" opcodes  
-    	return EXCEPTION_CONTINUE_EXECUTION; // we can safely resume execution since we skipped faulty instruction  
+    	return (DWORD)EXCEPTION_CONTINUE_EXECUTION; // we can safely resume execution since we skipped faulty instruction  
 	}  
 
 	BOOL CFSystemUtil::IsInsideVPC()

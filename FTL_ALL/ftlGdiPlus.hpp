@@ -222,7 +222,7 @@ namespace FTL
 			TEXT("IsAvailable=%d, Style=%d, Size=%f, Unit=%d,")
 			TEXT("Height(Graphi)=%f, Height(Dpi)=%f, DPI=%d"),
 			pFont->IsAvailable(), pFont->GetStyle(), pFont->GetSize(), pFont->GetUnit(),
-			pFont->GetHeight(pGraphics), pFont->GetHeight(nDpiY), nDpiY
+            pFont->GetHeight(pGraphics), pFont->GetHeight((Gdiplus::REAL)nDpiY), nDpiY
 			);
 		
 		formater.Format(TEXT("%s, %s%s"), 

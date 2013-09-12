@@ -63,6 +63,7 @@ void CBasePage::SetElapseButtonStatus(FTL::RunningStatus status, BOOL bEnabled)
 
 void CBasePage::OnBnClickedBtnStart()
 {
+    FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("OnBnClickedBtnStart"), FTL::TraceDetailNone, 1);
     m_ElapseCounter.Start();
     SetElapseButtonStatus(m_ElapseCounter.GetStatus(), TRUE);
 }

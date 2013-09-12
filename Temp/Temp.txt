@@ -18,6 +18,11 @@ NuGet学习笔记 http://kb.cnblogs.com/kb/143190/
   __stdcall(标准) -- 从右到左入栈，函数执行后用 ret N 返回，被调用的API负责栈指针ESP的恢复
   __fastcall(快速)
   thiscall(C++类成员函数)
+  
+VS2012中使用汇编：会遇到 error LNK2026: module unsafe for SAFESEH image 的错误
+解决方式：
+  1. (推荐) -- ml.exe 的参数中增加 /safeseh
+  2. 在 Link的 Command 中输入 "/SAFESEH:NO"
 
 NT内核简介——HIPS与现代木马 -- http://bbs.kafan.cn/thread-233915-1-1.html
 驱动级DLL注入源码 -- http://www.pudn.com/downloads379/sourcecode/windows/detail1634630.html
