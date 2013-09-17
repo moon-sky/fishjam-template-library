@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="gb2312"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="using_opengl"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="$(OPENGLSDK)include"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="OpenGL32.lib GLu32.lib GLaux.lib"
+		AdditionalLibraryDirectories="$(OPENGLSDK)lib"
+	/>
+	<UserMacro
+		Name="OPENGLSDK"
+		Value="$(SolutionDir)third_party\OpenGL\"
+	/>
+</VisualStudioPropertySheet>
