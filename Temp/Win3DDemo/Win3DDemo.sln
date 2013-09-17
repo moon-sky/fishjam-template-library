@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenGLDemo", "OpenGLDemo\OpenGLDemo.vcproj", "{52D91204-AE91-4B92-8F37-3453ECC0833D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{59C337A6-F4B9-48B2-A922-DB65CFD1B12F}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\FTL_ALL\ftlOpenGL.h = ..\..\FTL_ALL\ftlOpenGL.h
+		..\..\FTL_ALL\ftlOpenGL.hpp = ..\..\FTL_ALL\ftlOpenGL.hpp
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{52D91204-AE91-4B92-8F37-3453ECC0833D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{52D91204-AE91-4B92-8F37-3453ECC0833D}.Debug|Win32.Build.0 = Debug|Win32
+		{52D91204-AE91-4B92-8F37-3453ECC0833D}.Release|Win32.ActiveCfg = Release|Win32
+		{52D91204-AE91-4B92-8F37-3453ECC0833D}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

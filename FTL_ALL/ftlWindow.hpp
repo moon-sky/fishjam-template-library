@@ -618,7 +618,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_INITDIALOG, CFDefaultMsgInfo); //在一个对话框程序被显示前发送此消息给它，通常用此消息初始化控件和执行其它任务
                 GET_MESSAGE_INFO_ENTRY(WM_COMMAND, CFCommandMsgInfo);
 
-                //可用于屏蔽屏幕保护和显示器节电模式(SC_SCREENSAVE/SC_MONITORPOWER),返回0
+                //可用于组织屏幕保护和显示器节电模式(SC_SCREENSAVE/SC_MONITORPOWER),返回 0 即阻止
                 GET_MESSAGE_INFO_ENTRY(WM_SYSCOMMAND, CFDefaultMsgInfo);    //当用户选择窗口菜单的一条命令或当用户选择最大化或最小化时那个窗口会收到此消息
 
                 GET_MESSAGE_INFO_ENTRY(WM_TIMER, CFDefaultMsgInfo);     //发生了定时器事件
@@ -3066,7 +3066,9 @@ namespace FTL
 		}
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_CONTROLPARENT, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_STATICEDGE, pszDivide);
-        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_APPWINDOW, pszDivide);	//当激活时，任务条上会出现 Top-Level窗体
+
+        //当激活时，任务条上会出现Top-Level窗体，可用于全屏窗体，保证窗体在最前面
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, lExStyle, WS_EX_APPWINDOW, pszDivide);	
 #endif /* WINVER >= 0x0400 */
 
 #if(_WIN32_WINNT >= 0x0500)
