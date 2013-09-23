@@ -843,9 +843,26 @@ namespace FTL
 	*              Dumpstate
 	*           
 	*       6.插件(扩展NSIS安装程序的DLL，系统预安装的在 Plugins 目录下，用户可用 !addplugindir 增加目录位置)
-	*         使用语法： DllName::FunctionName "参数1" 参数2" "参数3"
+	*         使用语法： DllName::FunctionName [选项] "参数1" 参数2" "参数3"
+    *           插件中使用参数可通过 popstring/popint 等获取，处理结果通过 pushstring/pushint 等再放入堆栈
+    *           插件放入堆栈的处理结果，在脚本中可通过 Pop $0 后进行访问
 	*         如（下载文件）： NSISdl::download http://download.nullsoft.com/winamp/client/winamp291_lite.exe $R0
 	*            (调用DLL函数): System::Call '不带扩展名的Dll名::函数() 参数'
+    *         可用选项:
+    *           /NOUNLOAD -- 调用完插件后不卸载，可用于在插件内保存了数据的情况(坏的设计？)
+    *       6.1自己编写插件(示例参见 NSIS\Examples\Plugin ) -- 插件函数的原型声明如下：
+    *          extern "C" __declspec(dllexport) void mypluginfunc(HWND hWndParent, int string_size, TCHAR *variables, stack_t **stacktop, extra_parameters *extra);
+    *            hWndParent -- 整个安装的根窗口句柄
+    *            stacktop -- 参数堆栈，可通过 popstring/pushint 等函数操作，从而和脚本交互
+    *            extra -- 插件里调用script函数时使用，使用示例:
+    *            a.脚本中获取脚本函数DllInit的地址，然后传递给插件:
+    *              Function DllInit 脚本的函数实现 FunctionEnd 
+    *              GetFunctionAddress $2 DllInit
+    *              myPlugin::Init /NOUNLOAD $2 
+    *            b.插件中通过堆栈获取到地址后，使用 ExecuteCodeSegment 进行回调:
+    *              EXDLL_INIT(); int nFunc=popint(); extra->ExecuteCodeSegment(nFunc-1,g_hwndParent);
+    *          通过堆栈或全局变量($0~$9,$R0~$R9 等)传递参数、返回结果  
+    *          
     *       7.更改默认的UI -- 在 "MUI Settings" 后通过 !define MUI_XXXX_YYY "文字或位图地址" 的方式指定特定时刻所使用的文字或位图等信息
     *         MUI_WELCOMEPAGE_TITLE -- 安装包标题(字符串)  
     *         MUI_WELCOMEFINISHPAGE_BITMAP -- 

@@ -389,7 +389,7 @@ namespace FTL
 	//1.WTSRegisterSessionNotification 后才能接收 WM_WTSSESSION_CHANGE
 	//2.RegisterShellHookWindow 后可以接收 WM_SHELLHOOKMESSAGE
 
-	//在Output中Dump出当前接受到的消息
+	//在Output中Dump出当前接受到的消息，通常第一个参数是 __FILE__LINE__
 #ifdef FTL_DEBUG
 #  define DUMP_WINDOWS_MSG(pszName, pFilters, nCount, uMsg, wParam, lParam) \
     {\

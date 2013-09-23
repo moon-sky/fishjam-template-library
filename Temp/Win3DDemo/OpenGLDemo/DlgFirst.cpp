@@ -28,11 +28,13 @@ void CDlgFirst::OnBasicOpenGLDemoWnd(UINT uNotifyCode, int nID, CWindow wndCtl)
     BOOL bRet = FALSE;
     if (!m_MyOpenGLWnd.IsWindow())
     {
-        API_VERIFY(NULL != m_MyOpenGLWnd.Create(m_hWnd));
+        CRect rcOpenGL(100, 100, 500, 500);
+        API_VERIFY(NULL != m_MyOpenGLWnd.Create(m_hWnd, &rcOpenGL));
     }
     if (m_MyOpenGLWnd.IsWindow())
     {
         m_MyOpenGLWnd.ShowWindow(SW_SHOW);
+        m_MyOpenGLWnd.UpdateWindow();
     }
 }
 

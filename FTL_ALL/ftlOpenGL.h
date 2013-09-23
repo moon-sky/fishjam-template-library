@@ -7,6 +7,14 @@
 #  error ftlOpenGL.h requires ftlbase.h to be included first
 #endif
 
+#ifndef __ATLGDI_H__
+#  error ftlOpenGL.h requires atlgdi.h to be included first
+#endif
+
+#ifdef _ATL_NO_OPENGL
+#  error ftlOpenGL.h requires OpenGL support
+#endif
+
 namespace FTL
 {
 	/*****************************************************************************************************
@@ -14,6 +22,8 @@ namespace FTL
     * OpenGL(NeHe)中文学习资料：http://www.yakergong.net/nehe/
     *
     * 窗体风格必须包括：WS_CLIPSIBLINGS 和 WS_CLIPCHILDREN
+    *
+    * WTL中如果没有定义 _ATL_NO_OPENGL 宏，在atlgdi.h的CDCT中就会支持opengl
     *****************************************************************************************************/
 
     /*****************************************************************************************************
@@ -145,38 +155,50 @@ namespace FTL
     };
 
     template <class T>
-    FTLEXPORT class /*ATL_NO_VTABLE*/ CFOpenGLWndT : public ATL::CWindowImpl<T, CWindow, CFrameWinTraits>
+    FTLEXPORT class ATL_NO_VTABLE CFOpenGLWindowImpl 
+        //: public ATL::CWindowImpl<T, CWindow, CFrameWinTraits>
+        //, public CIdleHandler
     {
     public:
-        DECLARE_WND_CLASS_EX(TEXT("FTLOpenGLWindow"), CS_VREDRAW | CS_HREDRAW | CS_OWNDC, -1)
+        //窗口着色描述表(Rendering Context)句柄，
+        //将所有的OpenGL调用命令连接到Device Context(设备描述表)上
+        HGLRC   m_hRC;          
 
-        BEGIN_MSG_MAP(CFOpenGLWndT)
+        // Message map and handlers
+        typedef CFOpenGLWindowImpl<T>	thisClass;
+
+        //DECLARE_WND_CLASS_EX(TEXT("FTLOpenGLWindow"), CS_VREDRAW | CS_HREDRAW | CS_OWNDC, -1)
+
+        BEGIN_MSG_MAP(thisClass)
+            //DUMP_WINDOWS_MSG(__FILE__LINE__, DEAFULT_DUMP_FILTER_MESSAGES, 0, uMsg, wParam, lParam)
             MESSAGE_HANDLER(WM_CREATE, OnCreate)
             MESSAGE_HANDLER(WM_PAINT, OnPaint)
             MESSAGE_HANDLER(WM_SIZE, OnSize)
+            MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBkgnd)
             MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
         END_MSG_MAP()
 
     public:
-        CFOpenGLWndT();
-        ~CFOpenGLWndT();
+        CFOpenGLWindowImpl();
+        ~CFOpenGLWindowImpl();
         BOOL CreateGLWindow(char* title, INT width, INT height, INT bits, BOOL fullscreenflag);
         BOOL SetFullScreenMode(BOOL bFullScreen, BOOL *pOldFullScreenMode);
-        BOOL DrawGLScene(GLvoid);
         GLenum ReSizeGLScene(GLsizei width, GLsizei height);
 
     protected:
-        HGLRC   m_hRC;          //窗口着色描述表(Rendering Context)句柄，将所有的OpenGL调用命令连接到Device Context(设备描述表)上
-        HDC     m_hDC;    //OpenGL渲染设备描述表句柄
+        //HDC     m_hDC;    //OpenGL渲染设备描述表句柄
         BOOL    m_bFullScreen;  //全屏标志
         int     m_iPixelFormat;
 
-        BOOL    OnInitScene();
-        BOOL    OnFiniScene();
+        BOOL    OnInit();
+        BOOL    OnRender();
+        BOOL    OnFini();
+        BOOL    OnResize(int cx, int cy);
     private:
         LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
         LRESULT OnPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
         LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+        LRESULT OnEraseBkgnd(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
         LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     };
 }

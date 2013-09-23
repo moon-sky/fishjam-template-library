@@ -1,3 +1,6 @@
+CHAIN_MSG_MAP_ALT -- 
+在CMainFrame中将消息派发到不同的View中 -- CHAIN_MSG_MAP_ALT_MEMBER(m_view, 1) + ALT_MSG_MAP
+
 宏_M_IX86,_M_AMD64和_M_X64 http://blog.csdn.net/hihui/article/details/5979690
  
 http://wenku.baidu.com/view/14fdd446a8956bec0975e30c.html

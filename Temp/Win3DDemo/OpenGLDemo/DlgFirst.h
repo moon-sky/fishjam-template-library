@@ -9,13 +9,14 @@
 
 // CDlgFirst
 
-class CMyOpenGLWnd : public CWindowImpl<CMyOpenGLWnd>
+class CMyOpenGLWnd : public CWindowImpl<CMyOpenGLWnd, CWindow, CFrameWinTraits>
     , public FTL::CFOpenGLWindowImpl<CMyOpenGLWnd>
     , public CUpdateUI<CMyOpenGLWnd>
     //, public CMessageFilter
     , public CIdleHandler
 {
 public:
+    DECLARE_WND_CLASS_EX(TEXT("FTLOpenGLWindow"), CS_VREDRAW | CS_HREDRAW | CS_OWNDC, -1)
     //DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
     GLfloat m_fAngle;		// Rotation angle of the cube
 
@@ -60,6 +61,7 @@ public:
         GLenum glErr = GL_NO_ERROR;
 
         m_fAngle = 0.0f;
+        OPENGL_VERIFY(glShadeModel(GL_SMOOTH));
 
         OPENGL_VERIFY(glClearColor(0.0f, 0.0f, 0.0f, 1.0f)); //Background color
 
