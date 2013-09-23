@@ -30,13 +30,12 @@ extern CAppModule _Module;
 #include <Gl.h>
 #include <GLAux.h>
 #include <GLU.h>
-//#include <gl/GL.h>
-//#include <gl/GLAux.h>
-//#include <gl/GLU.h>
+//#include <gl/gl.h>        // Header File For The OpenGL32 Library
+//#include <gl/glu.h>       // Header File For The GLu32 Library
+//#include <gl/glaux.h>     // Header File For The Glaux Library
 
 #include <ftlBase.h>
 #include <ftlWindow.h>
-#include <ftlOpenGL.h>
 
 
 #if defined _M_IX86

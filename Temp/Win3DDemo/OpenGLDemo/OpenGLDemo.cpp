@@ -9,6 +9,12 @@
 
 CAppModule _Module;
 
+class CGLMessageLoop : public CMessageLoop {
+    BOOL OnIdle(int nIdleCount) {
+        return !CMessageLoop::OnIdle(nIdleCount);
+    }
+};
+
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpstrCmdLine*/, int /*nCmdShow*/)
 {
 	HRESULT hRes = ::CoInitialize(NULL);
@@ -24,6 +30,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*
 
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
+    
+    CGLMessageLoop theLoop;
+    _Module.AddMessageLoop(&theLoop);
 
 	int nRet = 0;
 	// BLOCK: Run application
@@ -31,6 +40,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*
 		CMainDlg dlgMain;
 		nRet = dlgMain.DoModal();
 	}
+    _Module.RemoveMessageLoop();
 
 	_Module.Term();
 	::CoUninitialize();

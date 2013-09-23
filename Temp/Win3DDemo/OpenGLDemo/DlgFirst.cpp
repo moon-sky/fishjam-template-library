@@ -18,15 +18,17 @@ LRESULT CDlgFirst::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 	DoDataExchange();//m_BtnSt.SubclassWindow(GetDlgItem(IDC_BTN_ST));
     DlgResize_Init(FALSE);
 
+    //m_OpenGLApp.Initialize();
 
 	return 1;  // Let the system set the focus
 }
 
 void CDlgFirst::OnBasicOpenGLDemoWnd(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    BOOL bRet = FALSE;
     if (!m_MyOpenGLWnd.IsWindow())
     {
-        m_MyOpenGLWnd.Create(m_hWnd);
+        API_VERIFY(NULL != m_MyOpenGLWnd.Create(m_hWnd));
     }
     if (m_MyOpenGLWnd.IsWindow())
     {
