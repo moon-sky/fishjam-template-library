@@ -66,6 +66,12 @@ using System.Web.Profile;
  *     SQLServer要求以 @ 开始命名，如 WHERE CustomeID = @CustomerID, 然后 cmd.Parameters.AddWithValue("@CustomerID", txtID.Text);
  *     OLEDB要求以 ? 来表示，然后通过位置替换，如 WHERE CustomeID = ? 
  * 
+ * Hash Collision DoS(Hash碰撞的拒绝式服务攻击) -- 受攻击的服务器会变慢，几乎所有的语言都会受影响。
+ *   利用各语言中Hash算法的“非随机性”制造出N多不一样的value，但是key一样数据，然后让Hash表成为一张单向链表，
+ *   从而导致整个网站或是程序的运行性能以级数下降。
+ *   ASP.NET 中可以通过 MS11-100 补丁修复
+ * 
+ * 
  * 文件上传时的安全问题
  *   1. 如果上传文件大于允许上传的上限，ASP.NET的服务器在接收到完整的请求后，才会拒绝上传，这会造成服务器的停顿(拒绝服务攻击)，
  *      允许上传的文件越大，越容易受到这种攻击

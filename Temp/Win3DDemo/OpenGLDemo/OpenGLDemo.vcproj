@@ -199,6 +199,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MyOpenGLWnd.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\OpenGLDemo.cpp"
 				>
 			</File>
@@ -245,6 +249,10 @@
 			</File>
 			<File
 				RelativePath=".\MainDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MyOpenGLWnd.h"
 				>
 			</File>
 			<File

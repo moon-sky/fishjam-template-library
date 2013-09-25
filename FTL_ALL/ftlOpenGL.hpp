@@ -196,7 +196,7 @@ namespace FTL
     }
 
     template <class T>
-    GLenum CFOpenGLWindowImpl<T>::ReSizeGLScene(GLsizei width, GLsizei height)
+    GLenum CFOpenGLWindowImpl<T>::ReSizeGLScene(INT width, INT height)
     {
         GLenum glErr = GL_NO_ERROR;
 
@@ -204,28 +204,34 @@ namespace FTL
         {
             height = 1;
         }
+
+        GLfloat fFovy  = 45.0f; // Field-of-view
+        GLfloat fZNear = 0.1f;  // Near clipping plane
+        GLfloat fZFar = 100.0f;  // Far clipping plane
+
         OPENGL_VERIFY(glViewport(0, 0, width, height));             // 重置当前的视口
+
+        GLfloat fAspect = (GLfloat)width / (GLfloat)height;
 
         // 为透视图设置屏幕 -- 越远的东西看起来越小
         OPENGL_VERIFY(glMatrixMode(GL_PROJECTION));						        // 选择投影矩阵
         OPENGL_VERIFY(glLoadIdentity());							                // 重置投影矩阵
 
         //此处透视按照基于窗口宽度和高度的45度视角来计算。0.1f，100.0f是我们在场景中所能绘制深度的起点和终点
-        OPENGL_VERIFY(gluPerspective(45.0f,(GLfloat)width/(GLfloat)height,0.1f,100.0f));   // 设置视口的大小
+        OPENGL_VERIFY(gluPerspective(fFovy, fAspect, fZNear, fZFar));   // 设置视口的大小
         OPENGL_VERIFY(glMatrixMode(GL_MODELVIEW));						            // 选择模型观察矩阵
         OPENGL_VERIFY(glLoadIdentity());							                // 重置模型观察矩阵
 
         return glErr;
     }
     
-    template <class T>
-    BOOL CFOpenGLWindowImpl<T>::CreateGLWindow(char* title, INT width, INT height, INT bits, BOOL fullscreenflag)
-    {
-        BOOL bRet = FALSE;
-        GLuint		PixelFormat; // 保存查找匹配的结果
-
-        return bRet;
-    }
+    //template <class T>
+    //BOOL CFOpenGLWindowImpl<T>::CreateGLWindow(TCHAR* title, INT width, INT height, INT bits, BOOL fullscreenflag)
+    //{
+    //    BOOL bRet = FALSE;
+    //    GLuint		PixelFormat; // 保存查找匹配的结果
+    //    return bRet;
+    //}
 
     template <class T>
     BOOL CFOpenGLWindowImpl<T>::SetFullScreenMode(BOOL bFullScreen, BOOL *pOldFullScreenMode)
@@ -300,8 +306,10 @@ namespace FTL
     template <class T>
     BOOL CFOpenGLWindowImpl<T>::OnResize(int cx, int cy)
     {
+        ReSizeGLScene(cx, cy);
         return TRUE;
     }
+
     template <class T>
     BOOL CFOpenGLWindowImpl<T>::OnFini()
     {

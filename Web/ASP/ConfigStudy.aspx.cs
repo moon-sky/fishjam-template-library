@@ -42,7 +42,7 @@ using System.Web.UI.WebControls;
  * GUI的网站管理工具(WAT -- Website Administration Tool) : Web Site -> ASP.NET Configuration
  * 
  * <customErrors 
- *      mode="RemoteOnly -- 对于远程用户进现实通用的出错信息(本地用户显示更详细的代码行等), 默认设置。
+ *      mode="RemoteOnly -- 对于远程用户显示通用的出错信息(本地用户显示更详细的代码行等), 默认设置。
  *          调试阶段可设置为 "On"，即对所有用户都显示详细错误信息，通常用于调试阶段，发布阶段应该设置为 RemoteOnly 或 Off
  *      defaultRedirect="MyErrorHandle.aspx"  -- 设置自定义的错误信息。
  *  >

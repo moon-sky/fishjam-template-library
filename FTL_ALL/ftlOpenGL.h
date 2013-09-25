@@ -21,7 +21,7 @@ namespace FTL
     * OpenGL的开发SDK下载(VC6版本的)：http://download.csdn.net/detail/jinxiu/274113
     * OpenGL(NeHe)中文学习资料：http://www.yakergong.net/nehe/
     *
-    * 窗体风格必须包括：WS_CLIPSIBLINGS 和 WS_CLIPCHILDREN
+    * 窗体风格包括(防止覆盖后重绘闪烁)：WS_CLIPSIBLINGS 和 WS_CLIPCHILDREN
     *
     * WTL中如果没有定义 _ATL_NO_OPENGL 宏，在atlgdi.h的CDCT中就会支持opengl
     *****************************************************************************************************/
@@ -181,9 +181,9 @@ namespace FTL
     public:
         CFOpenGLWindowImpl();
         ~CFOpenGLWindowImpl();
-        BOOL CreateGLWindow(char* title, INT width, INT height, INT bits, BOOL fullscreenflag);
+        //BOOL CreateGLWindow(TCHAR* title, INT width, INT height, INT bits, BOOL fullscreenflag);
         BOOL SetFullScreenMode(BOOL bFullScreen, BOOL *pOldFullScreenMode);
-        GLenum ReSizeGLScene(GLsizei width, GLsizei height);
+        GLenum ReSizeGLScene(INT width, INT height);
 
     protected:
         //HDC     m_hDC;    //OpenGL渲染设备描述表句柄
