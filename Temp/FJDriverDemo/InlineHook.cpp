@@ -134,13 +134,15 @@ BOOL __cdecl CreateInlineHook(PVOID pTarget, PVOID pDetour, PVOID* ppOriginal, P
 BOOL RestoreInlineHook(PINLINE_HOOK_INFO pHookInfo)
 {
     BOOL bRet = TRUE;
+    if (pHookInfo)
+    {
+        ULONG oldValue = ClearWriteProtect(pHookInfo->pTarget, pHookInfo->targetBackupSize);
+        //RtlCopyMemory(pHookInfo->pTarget, pHookInfo->targetBackup, pHookInfo->targetBackupSize);
+        RtlCopyMemory(pHookInfo->pTarget, pHookInfo->trampoline, pHookInfo->targetBackupSize);
+        RestoreWriteProtect(pHookInfo->pTarget, pHookInfo->targetBackupSize, oldValue);
 
-    ULONG oldValue = ClearWriteProtect(pHookInfo->pTarget, pHookInfo->targetBackupSize);
-    //RtlCopyMemory(pHookInfo->pTarget, pHookInfo->targetBackup, pHookInfo->targetBackupSize);
-    RtlCopyMemory(pHookInfo->pTarget, pHookInfo->trampoline, pHookInfo->targetBackupSize);
-    RestoreWriteProtect(pHookInfo->pTarget, pHookInfo->targetBackupSize, oldValue);
-
-    HookFree(pHookInfo);
+        HookFree(pHookInfo);
+    }
 
     return bRet;
 }
@@ -191,7 +193,8 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
         // First, skip over the import vector if there is one.
         if (pPtrOffset[0] == 0xff && pPtrOffset[1] == 0x25) {   // jmp [imm32]
             // Looks like an import alias jump, then get the code it points to.
-            PBYTE pbTarget = *(PBYTE *)&pPtrOffset[2];
+            PBYTE pbTarget = pPtrOffset + 6 + (ULONG)(*(PBYTE *)&pPtrOffset[2]);
+            //PBYTE pbTarget = *(PBYTE *)&pPtrOffset[2];
             //if (CheckIsImported(pPtrOffset, pbTarget)) 
             {
                 PBYTE pbNew = *(PBYTE *)pbTarget;
@@ -214,7 +217,8 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
             // First, skip over the import vector if there is one.
             if (pPtrOffset[0] == 0xff && pPtrOffset[1] == 0x25) {   // jmp [imm32]
                 // Looks like an import alias jump, then get the code it points to.
-                PBYTE pbTarget = *(PBYTE *)&pPtrOffset[2];
+                PBYTE pbTarget = pPtrOffset + 6 + (ULONG)(*(PBYTE *)&pPtrOffset[2]);
+                //PBYTE pbTarget = *(PBYTE *)&pPtrOffset[2];
                 //if (CheckIsImported(pPtrOffset, pbTarget)) 
                 {
                     PBYTE pbNew = *(PBYTE *)pbTarget;

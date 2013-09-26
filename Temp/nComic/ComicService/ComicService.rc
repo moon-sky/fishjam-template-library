@@ -125,7 +125,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_SERVICENAME         "Naver Comic Service"
+    IDS_SERVICENAME         "NaverComicService"
 END
 
 #endif    // English (U.S.) resources

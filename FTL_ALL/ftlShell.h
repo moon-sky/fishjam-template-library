@@ -44,6 +44,17 @@
 * 获取文件版本信息
 *   GetFileVersionInfoSize -> GetFileVersionInfo -> VerQueryValue(lpData, TEXT("\\"), &pFileInfo, (PUINT)&bufLen);
 *   HIWORD(MS),LOWORD(MS),wBuild, HIWORD(LS)
+*
+*****************************************************************************************************/
+
+/*****************************************************************************************************
+* 文件系统变化监控
+*   1.SHChangeNotifyRegister -- 把指定的窗口添加到系统的消息监视链中，接收并处理来自文件系统或者Shell的通知消息
+*   2.FindFirstChangeNotification  -- 创建一个更改通知句柄并设置初始更改通知过滤条件，然后进行Wait
+*   3.ReadDirectoryChangesW -- 
+*   4.实现ICopyHook接口的Shell扩展对象，并注册到 HKCR\Directory\shellex\CopyHookHandlers 下
+* 注册表系统变化监控
+*   1.RegNotifyChangeKeyValue
 *****************************************************************************************************/
 
 namespace FTL
@@ -72,7 +83,6 @@ namespace FTL
 		virtual void OnServerDisconnect(LPCITEMIDLIST pIdl ) {};
     };
 
-	//检测文件系统文件变化通知
     FTLEXPORT class CFShellChangeMonitor
     {
     public:

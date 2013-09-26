@@ -31,6 +31,9 @@ enum HookFuncType
     //hft_NtUserPrintWindow,
     //hft_NtGdiDdLock,
     //hft_NtGdiDdUnlock,
+
+    hft_RegOpenKeyA,
+    hft_RegOpenKeyW,
     hft_FunctionCount
 };
 
@@ -83,6 +86,9 @@ typedef BOOL (WINAPI* DeleteDCProc)(HDC hdc);
 
 typedef HANDLE (WINAPI* OpenProcessProc)(DWORD dwDesiredAccess, BOOL bInheritHandle, DWORD dwProcessId);
 typedef BOOL (WINAPI* TerminateProcessProc)(HANDLE hProcess, UINT uExitCode);
+
+typedef LONG (WINAPI* RegOpenKeyAProc)(HKEY hKey, LPCSTR lpSubKey, PHKEY phkResult);
+typedef LONG (WINAPI* RegOpenKeyWProc)(HKEY hKey, LPCWSTR lpSubKey, PHKEY phkResult);
 
 BOOL HookApiFromModule(HMODULE hModule, LPCSTR lpProcName, PVOID pDetour, PINLINE_HOOK_INFO* ppOutHookInfo)
 {
@@ -414,8 +420,10 @@ HANDLE WINAPI Hooked_OpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle, DWO
         if (pOrigOpenProcess)
         {
             hProcess = (pOrigOpenProcess)(dwDesiredAccess, bInheritHandle, dwProcessId);
-            if (dwProcessId == g_pProtectWndInfoFileMap->dwProtectProcessId)
+            FTLTRACE(TEXT("In Hooked_OpenProcess dwProcessId=%d, hProcess=0x%x\n"), dwProcessId, hProcess);
+            if (dwProcessId == g_pProtectWndInfoFileMap->dwProtectProcessId && hProcess)
             {
+                FTLTRACE(TEXT("!!!In Hooked_OpenProcess hProtectProcessInCurProcess=0x%x\n"), hProcess);
                 g_HookApiInfo.hProtectProcessInCurProcess = hProcess;
             }
         }
@@ -452,6 +460,50 @@ BOOL WINAPI Hooked_TerminateProcess(HANDLE hProcess, UINT uExitCode)
 
     return bRet;
 }
+
+LONG WINAPI Hooked_RegOpenKeyA(HKEY hKey, LPCSTR lpSubKey, PHKEY phkResult)
+{
+    LONG lRet = 0;
+    FTLTRACE(TEXT("!!! Hooked_RegOpenKeyA\n"));
+
+    HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
+    __try
+    {
+        RegOpenKeyAProc pOrigRegOpenKeyA = (RegOpenKeyAProc)g_HookApiInfo.HookApiInfos[hft_RegOpenKeyA]->pOriginal;
+        if (pOrigRegOpenKeyA)
+        {
+            lRet = pOrigRegOpenKeyA(hKey, lpSubKey, phkResult);
+        }
+    }
+    __finally
+    {
+        HOOKED_API_CALL_LEAVE(g_HookApiInfo.HookedAPICallCount);
+    }
+
+    return lRet;
+}
+
+LONG WINAPI Hooked_RegOpenKeyW(HKEY hKey, LPCWSTR lpSubKey, PHKEY phkResult)
+{
+    LONG lRet = 0;
+    FTLTRACE(TEXT("!!! Hooked_RegOpenKeyW\n"));
+
+    HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
+    __try
+    {
+        RegOpenKeyWProc pOrigRegOpenKeyW = (RegOpenKeyWProc)g_HookApiInfo.HookApiInfos[hft_RegOpenKeyW]->pOriginal;
+        if (pOrigRegOpenKeyW)
+        {
+            lRet = pOrigRegOpenKeyW(hKey, lpSubKey, phkResult);
+        }
+    }
+    __finally
+    {
+        HOOKED_API_CALL_LEAVE(g_HookApiInfo.HookedAPICallCount);
+    }
+    return lRet;
+}
+
 
 CProtectWndHookAPI::CProtectWndHookAPI(void)
 {
@@ -579,8 +631,14 @@ BOOL CProtectWndHookAPI::StartHook()
                 HMODULE hModuleKernel32 = GetModuleHandle(TEXT("Kernel32.DLL"));
                 if (hModuleKernel32)
                 {
-                    //API_VERIFY(HookApiFromModule(hModuleKernel32, "OpenProcess", &Hooked_OpenProcess, &g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
-                    //API_VERIFY(HookApiFromModule(hModuleKernel32, "TerminateProcess", &Hooked_TerminateProcess, &g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
+                    API_VERIFY(HookApiFromModule(hModuleKernel32, "OpenProcess", &Hooked_OpenProcess, &g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
+                    API_VERIFY(HookApiFromModule(hModuleKernel32, "TerminateProcess", &Hooked_TerminateProcess, &g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
+                }
+                HMODULE hModuleAdvapi32 = GetModuleHandle(TEXT("Advapi32.dll"));
+                if (hModuleAdvapi32)
+                {
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegOpenKeyA", &Hooked_RegOpenKeyA, &g_HookApiInfo.HookApiInfos[hft_RegOpenKeyA]));
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegOpenKeyW", &Hooked_RegOpenKeyW, &g_HookApiInfo.HookApiInfos[hft_RegOpenKeyW]));
                 }
             }
         }
@@ -616,8 +674,11 @@ BOOL CProtectWndHookAPI::StopHook()
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateDCW]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateDCA]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_DeleteDC]));
-       // API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
-        //API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
+
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegOpenKeyA]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegOpenKeyW]));
 
         {
             FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("ReleaseImage + UnMap"), FTL::TraceDetailExeName, 100);

@@ -9,7 +9,11 @@
 
 CComicServiceModule::CComicServiceModule()
 {
-    //m_status.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_SHUTDOWN;
+#ifdef _DEBUG
+    m_status.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_SHUTDOWN;
+#else
+    m_status.dwControlsAccepted = 0; //disable stop in control panel
+#endif
 }
 
 HRESULT CComicServiceModule::InitializeSecurity() throw()
@@ -41,7 +45,7 @@ HRESULT CComicServiceModule::RegisterAppId(bool bService/* = false */) throw()
             SC_HANDLE hService = ::OpenService(hSCM, m_szServiceName, SERVICE_CHANGE_CONFIG);
             if (hService)
             {
-                API_VERIFY(ChangeServiceConfig(hService, SERVICE_NO_CHANGE, SERVICE_DEMAND_START,
+                API_VERIFY(ChangeServiceConfig(hService, SERVICE_NO_CHANGE, SERVICE_AUTO_START,
                     0, NULL, NULL, NULL, NULL, NULL, NULL, m_szServiceName));
 
                 SERVICE_DESCRIPTION Description = { 0 };
@@ -109,6 +113,22 @@ void CComicServiceModule::OnContinue() throw()
     SetServiceStatus(SERVICE_RUNNING);
     __super::OnContinue();
 }
+
+void CComicServiceModule::OnUnknownRequest(DWORD dwOpcode) throw()
+{
+    switch (dwOpcode)
+    {
+    case COMIC_SERVICE_STOP:
+        //OutputDebugString(TEXT("In OnUnknownRequest for COMIC_SERVICE_STOP\n"));
+        SetServiceStatus(SERVICE_STOP_PENDING);
+        ::PostThreadMessage(m_dwThreadID, WM_QUIT, 0, 0);
+        break;
+    default:
+        __super::OnUnknownRequest(dwOpcode);
+        break;
+    }
+}
+
 
 void CComicServiceModule::OnStop() throw()
 {

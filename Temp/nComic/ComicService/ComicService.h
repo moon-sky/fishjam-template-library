@@ -17,18 +17,6 @@ public :
     void OnPause() throw();
     void OnContinue() throw();
     void OnStop() throw();
-    //void Handler(DWORD dwOpcode) throw()
-    //{
-    //    switch(dwOpcode)
-    //    {
-    //    case SERVICE_CONTROL_PAUSE:
-    //        OnPause();
-    //        break;
-    //    case SERVICE_CONTROL_CONTINUE:
-    //        OnContinue();
-    //        break;
-    //    default:
-    //        __super::Handler(dwOpcode);
-    //    }
-    //}
+    void OnUnknownRequest(DWORD dwOpcode) throw();
+
 };

@@ -17,7 +17,8 @@
 
 #include "ProtectWndHookAPI.h"
 
-HMODULE g_hModule;
+HMODULE g_hModule = NULL;
+BOOL    g_bNeedHook = FALSE;
 
 //#pragma data_seg("SHAREDMEM")
 HHOOK g_hHookCallWndProc = NULL;
@@ -36,7 +37,7 @@ LRESULT CALLBACK My_CallWndProc(
                                 )
 {
     CWPSTRUCT * pWPStruct = (CWPSTRUCT*)lParam;
-    if (!g_bHooked && /*!g_bIsSelfProcess &&*/ pWPStruct)
+    if (g_bNeedHook && !g_bHooked && /*!g_bIsSelfProcess &&*/ pWPStruct)
     {
 		g_bHooked = TRUE;
         //g_bIsSelfProcess = (g_ProtectWndInfo.curProcessId == GetCurrentProcessId());
@@ -139,7 +140,7 @@ COMICHELPER_API BOOL UnHookApi()
 {
     FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("UnHookApi"), FTL::TraceDetailExeName, 1);
     //notify all the toplevel progress
-    //BroadcastSystemMessage(BSF_FORCEIFHUNG |BSF_POSTMESSAGE, NULL, WM_NULL, 0, 0);
+    BroadcastSystemMessage(BSF_FORCEIFHUNG |BSF_POSTMESSAGE, NULL, WM_NULL, 0, 0);
     //Sync UnHook API
 	BOOL bRet = FALSE;
     API_VERIFY(g_ProtectWndHookApi.StopHook());

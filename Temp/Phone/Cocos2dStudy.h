@@ -58,7 +58,8 @@
 * 很多类都有一个静态的 sharedXxx 工厂函数
 * CCApplication -- 通常需要继承子类(AppDelegate,应用程序代理),并在applicationDidFinishLaunching中初始化
 * CCDirector(导演) -- 负责游戏全过程的场景切换，已经预定义了单例
-*   runWithScene() -- 
+*   runWithScene() -- 主程序启动时显示第一个场景
+*   pushScene --
 * CCEGLView -- 
 * CCFileUtils -- 
 * CCLayer -- 层，通常业务界面从该类继承，而且为了同时显示多层，需要透明或半透明

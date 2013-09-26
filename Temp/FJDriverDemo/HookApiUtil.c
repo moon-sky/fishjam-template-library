@@ -86,14 +86,17 @@ VOID SetExecuteCodeProtect(LPVOID lpAddress, SIZE_T dwSize)
 
 PVOID HookAllocate(SIZE_T NumberOfBytes)
 {
-    return VirtualAlloc(NULL, NumberOfBytes, MEM_COMMIT|MEM_TOP_DOWN, PAGE_EXECUTE_READWRITE);
-    //return malloc(NumberOfBytes);
+#if defined(_M_IX86)
+    DWORD flAllocationType = MEM_COMMIT|MEM_TOP_DOWN;
+#else   //64
+    DWORD flAllocationType = MEM_COMMIT;
+#endif
+    return VirtualAlloc(NULL, NumberOfBytes, flAllocationType, PAGE_EXECUTE_READWRITE);
 }
 
 VOID  HookFree(PVOID pBuffer)
 {
     VirtualFree(pBuffer, 0, MEM_RELEASE);
-    //free(pBuffer);
 }
 
 ULONG ClearWriteProtect(LPVOID lpAddress, SIZE_T dwSize)

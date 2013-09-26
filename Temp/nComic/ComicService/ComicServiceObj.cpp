@@ -8,7 +8,7 @@
 #include <WtsApi32.h>
 #include <ftlSystem.h>
 
-#define JUST_WIN32
+//#define JUST_WIN32
 
 // CComicServiceObj
 
@@ -16,6 +16,7 @@ CComicServiceObj::CComicServiceObj()
 {
     FTLTRACE(TEXT("Enter CComicServiceObj::CComicServiceObj\n"));
     HRESULT hr = E_FAIL;
+    m_HeartBeatTicket = 0;
 #ifdef JUST_WIN32
     m_bIsWindows64 = FALSE; 
 #else
@@ -267,5 +268,12 @@ STDMETHODIMP CComicServiceObj::UnProtectWnd(OLE_HANDLE hWnd)
         API_VERIFY(SetEvent(m_hEventProtectNotify64));
     }
 
+    return S_OK;
+}
+
+STDMETHODIMP CComicServiceObj::HeartBeat(LONG curTicket)
+{
+    //do nothing, just remain current ticket
+    m_HeartBeatTicket = curTicket;
     return S_OK;
 }

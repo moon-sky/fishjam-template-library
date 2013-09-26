@@ -39,7 +39,7 @@ END_COM_MAP()
 private:
     BOOL                                    m_bIsWindows64;
     volatile BOOL                           m_bUserStopProcess;
-
+    LONG                                    m_HeartBeatTicket;
     HANDLE                                  m_hEventStop;
     HANDLE                                  m_hHelperProxyProcess32;
     HANDLE                                  m_hEventProtectNotify32;
@@ -59,6 +59,7 @@ private:
 public:
 	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd, OLE_COLOR clrDisabled);
 	STDMETHOD(UnProtectWnd)(OLE_HANDLE hWnd);
+    STDMETHOD(HeartBeat)(LONG curTicket);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(ComicServiceObj), CComicServiceObj)
