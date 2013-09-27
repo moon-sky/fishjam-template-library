@@ -1386,26 +1386,29 @@ namespace FTL
 		m_nElapseId = InterlockedIncrement(&rElapseId);
 
 		DWORD& rBlockElapseTlsIndex = g_GlobalShareInfo.GetShareValue().dwBlockElapseTlsIndex;
-		ATLASSERT(rBlockElapseTlsIndex != TLS_OUT_OF_INDEXES);
-        BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
-        if (NULL == pInfo)
+        ATLASSERT(rBlockElapseTlsIndex != TLS_OUT_OF_INDEXES);
+        if (rBlockElapseTlsIndex != TLS_OUT_OF_INDEXES)
         {
-            FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
-               __FILE__LINE__, GetCurrentThreadId());
-            pInfo = new BlockElapseInfo();
-            ZeroMemory(pInfo, sizeof(BlockElapseInfo));
-            TlsSetValue(rBlockElapseTlsIndex, pInfo);
+            BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
+            if (NULL == pInfo)
+            {
+                FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
+                    __FILE__LINE__, GetCurrentThreadId());
+                pInfo = new BlockElapseInfo();
+                ZeroMemory(pInfo, sizeof(BlockElapseInfo));
+                TlsSetValue(rBlockElapseTlsIndex, pInfo);
+            }
+            pInfo->indent++;
+            LONG curLevel = FTL_MIN(pInfo->indent, MAX_TRACE_INDICATE_LEVEL); //InterlockedIncrement(&s_Indent);
+            for (LONG n = 0; n < curLevel; n++)
+            {
+                pInfo->bufIndicate[n] = TEXT('>');
+            }
+            pInfo->bufIndicate[curLevel] = 0;
+            FAST_TRACE_EX(tlDetail, TEXT("%s(%d) :\t TID(0x%04x) %s (Enter \t%d): %s\n"),
+                m_pszFileName,m_Line,GetCurrentThreadId(),pInfo->bufIndicate,pInfo->indent ,
+                m_pszBlkName);
         }
-        pInfo->indent++;
-        LONG curLevel = FTL_MIN(pInfo->indent, MAX_TRACE_INDICATE_LEVEL); //InterlockedIncrement(&s_Indent);
-        for (LONG n = 0; n < curLevel; n++)
-        {
-            pInfo->bufIndicate[n] = TEXT('>');
-        }
-        pInfo->bufIndicate[curLevel] = 0;
-        FAST_TRACE_EX(tlDetail, TEXT("%s(%d) :\t TID(0x%04x) %s (Enter \t%d): %s\n"),
-            m_pszFileName,m_Line,GetCurrentThreadId(),pInfo->bufIndicate,pInfo->indent ,
-            m_pszBlkName);
 
         m_StartTime = GetTickCount();
     }
@@ -1417,64 +1420,68 @@ namespace FTL
         DWORD dwElapseTime = GetTickCount() - m_StartTime;
 
         DWORD& rBlockElapseTlsIndex = g_GlobalShareInfo.GetShareValue().dwBlockElapseTlsIndex;
-        BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
-        FTLASSERT(pInfo);
-#pragma TODO(一个线程创建对象，另外的线程来释放，怎么处理，如GraphEdt)
-        if (m_MinElapse != 0 && dwElapseTime >= m_MinElapse)
+        ATLASSERT(rBlockElapseTlsIndex != TLS_OUT_OF_INDEXES);
+        if (rBlockElapseTlsIndex != TLS_OUT_OF_INDEXES)
         {
+            BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
+            FTLASSERT(pInfo);
+#pragma TODO(一个线程创建对象，另外的线程来释放，怎么处理，如GraphEdt)
+            if (m_MinElapse != 0 && dwElapseTime >= m_MinElapse)
+            {
+                if (pInfo)
+                {
+                    DWORD dwMaxSize = _countof(pInfo->szDetailName);
+                    switch (m_traceDetailType)
+                    {
+                    case TraceDetailExeName:
+                        GetModuleFileName(NULL, pInfo->szDetailName, dwMaxSize);
+                        StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s in %s"), m_pszBlkName, 
+                            PathFindFileName(pInfo->szDetailName));
+                        break;
+                    case TraceDetailModuleName:
+                        {
+                            MEMORY_BASIC_INFORMATION memInfo = {0};
+                            VirtualQuery(m_pReturnAdr, &memInfo, sizeof(memInfo));
+                            if (memInfo.BaseAddress)
+                            {
+                                GetModuleFileName((HMODULE)memInfo.AllocationBase, pInfo->szDetailName, dwMaxSize);
+                                StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s in %s"), m_pszBlkName, 
+                                    PathFindFileName(pInfo->szDetailName));
+                            }
+                        }
+                        break;
+                    case TraceDetailNone:
+                    default:
+                        StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s"), m_pszBlkName);
+                        break;
+                    }
+                    FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
+                        m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, pInfo->szDetailName,m_pReturnAdr,m_MinElapse,dwElapseTime);
+                }
+                else
+                {
+                    FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
+                        m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, m_pszBlkName,m_pReturnAdr,m_MinElapse,dwElapseTime);
+                }
+            }
             if (pInfo)
             {
-                DWORD dwMaxSize = _countof(pInfo->szDetailName);
-                switch (m_traceDetailType)
+                LONG curLevel = FTL_MIN(pInfo->indent,MAX_TRACE_INDICATE_LEVEL);
+                for (LONG n = 0; n < curLevel; n++)
                 {
-                case TraceDetailExeName:
-                    GetModuleFileName(NULL, pInfo->szDetailName, dwMaxSize);
-                    StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s in %s"), m_pszBlkName, 
-                        PathFindFileName(pInfo->szDetailName));
-                    break;
-                case TraceDetailModuleName:
-                    {
-                        MEMORY_BASIC_INFORMATION memInfo = {0};
-                        VirtualQuery(m_pReturnAdr, &memInfo, sizeof(memInfo));
-                        if (memInfo.BaseAddress)
-                        {
-                            GetModuleFileName((HMODULE)memInfo.AllocationBase, pInfo->szDetailName, dwMaxSize);
-                            StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s in %s"), m_pszBlkName, 
-                                PathFindFileName(pInfo->szDetailName));
-                        }
-                    }
-                    break;
-                case TraceDetailNone:
-                default:
-                    StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s"), m_pszBlkName);
-                    break;
+                    pInfo->bufIndicate[n] = TEXT('<');
                 }
-                FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
-                    m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, pInfo->szDetailName,m_pReturnAdr,m_MinElapse,dwElapseTime);
-            }
-            else
-            {
-                FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
-                    m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, m_pszBlkName,m_pReturnAdr,m_MinElapse,dwElapseTime);
-            }
-        }
-        if (pInfo)
-        {
-            LONG curLevel = FTL_MIN(pInfo->indent,MAX_TRACE_INDICATE_LEVEL);
-            for (LONG n = 0; n < curLevel; n++)
-            {
-                pInfo->bufIndicate[n] = TEXT('<');
-            }
-            pInfo->bufIndicate[curLevel] = 0;
-            FAST_TRACE_EX(tlDetail,TEXT("%s(%d) :\t TID(0x%04x) %s (Leave \t%d): %s\n"),
-                m_pszFileName,m_Line,GetCurrentThreadId(), pInfo->bufIndicate,pInfo->indent,m_pszBlkName);
-            pInfo->indent--;
-            if (0 == pInfo->indent)
-            {
-                //FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
-                //    __FILE__LINE__, GetCurrentThreadId());
-                delete pInfo;
-                TlsSetValue(rBlockElapseTlsIndex, NULL);
+                pInfo->bufIndicate[curLevel] = 0;
+                FAST_TRACE_EX(tlDetail,TEXT("%s(%d) :\t TID(0x%04x) %s (Leave \t%d): %s\n"),
+                    m_pszFileName,m_Line,GetCurrentThreadId(), pInfo->bufIndicate,pInfo->indent,m_pszBlkName);
+                pInfo->indent--;
+                if (0 == pInfo->indent)
+                {
+                    //FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
+                    //    __FILE__LINE__, GetCurrentThreadId());
+                    delete pInfo;
+                    TlsSetValue(rBlockElapseTlsIndex, NULL);
+                }
             }
         }
     }

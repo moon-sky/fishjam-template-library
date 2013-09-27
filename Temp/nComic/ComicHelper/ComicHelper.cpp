@@ -18,7 +18,7 @@
 #include "ProtectWndHookAPI.h"
 
 HMODULE g_hModule = NULL;
-BOOL    g_bNeedHook = FALSE;
+BOOL    g_bNeedHook = TRUE;
 
 //#pragma data_seg("SHAREDMEM")
 HHOOK g_hHookCallWndProc = NULL;
@@ -138,7 +138,7 @@ COMICHELPER_API BOOL HookApi()
 
 COMICHELPER_API BOOL UnHookApi()
 {
-    FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("UnHookApi"), FTL::TraceDetailExeName, 1);
+    FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("UnHookApi"), FTL::TraceDetailExeName, 100);
     //notify all the toplevel progress
     BroadcastSystemMessage(BSF_FORCEIFHUNG |BSF_POSTMESSAGE, NULL, WM_NULL, 0, 0);
     //Sync UnHook API
