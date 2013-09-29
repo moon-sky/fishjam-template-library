@@ -17,24 +17,27 @@ public:
 	BEGIN_MSG_MAP(CMainDlg)
         //DUMP_WINDOWS_MSG(TEXT("CMainDlg"), DEAFULT_DUMP_FILTER_MESSAGES, _countof(DEAFULT_DUMP_FILTER_MESSAGES), uMsg, wParam, lParam)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
+        MSG_WM_CHANGECBCHAIN(OnChangeCbChain)
+        MSG_WM_DRAWCLIPBOARD(OnDrawClipboard)	//whenever the content of the clipboard changes
+        MSG_WM_DESTROY(OnDestroy)
+
+        COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
 		COMMAND_ID_HANDLER(IDOK, OnOK)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
 
 		COMMAND_ID_HANDLER_EX(IDC_BTN_INIT_SERVICE, OnBtnInitService)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_SERVICE_HOOK, OnBtnServiceHook)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_SERVICE_UNHOOK, OnBtnServiceUnHook)
-		COMMAND_ID_HANDLER_EX(IDC_BTN_FIN_SERVICE, OnBtnFinService)
+        COMMAND_ID_HANDLER_EX(IDC_BTN_FIN_SERVICE, OnBtnFinService)
 
 		COMMAND_ID_HANDLER_EX(IDC_BTN_DLL_HOOK, OnBtnDllHook)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_DLL_UNHOOK, OnBtnDllUnHook)
 
-		MSG_WM_CHANGECBCHAIN(OnChangeCbChain)
-		MSG_WM_DRAWCLIPBOARD(OnDrawClipboard)	//whenever the content of the clipboard changes
 		COMMAND_ID_HANDLER_EX(IDC_BTN_ENABLE_CLIPBOARD_VIEWER, OnBtnEnableClipboardViewer)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_DISABLE_CLIPBOARD_VIEWER, OnBtnDisableClipboardViewer)
 
-		MSG_WM_DESTROY(OnDestroy)
+        COMMAND_ID_HANDLER_EX(IDC_BTN_CREATE_SETUP, OnBtnCreateSetup)
+
         COMMAND_HANDLER(IDC_BTN_INLINE_HOOK, BN_CLICKED, OnBnClickedBtnInlineHook)
         COMMAND_HANDLER(IDC_BTN_INLINE_UNHOOK, BN_CLICKED, OnBnClickedBtnInlineUnhook)
         COMMAND_HANDLER(IDC_BTN_DLL_HOOK, BN_CLICKED, OnBnClickedBtnDllHook)
@@ -57,6 +60,8 @@ public:
 
 	void OnBtnDllHook(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnBtnDllUnHook(UINT uNotifyCode, int nID, CWindow wndCtl);
+
+    void OnBtnCreateSetup(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 	void OnBtnEnableClipboardViewer(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnBtnDisableClipboardViewer(UINT uNotifyCode, int nID, CWindow wndCtl);

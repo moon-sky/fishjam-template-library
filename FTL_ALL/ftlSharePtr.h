@@ -215,6 +215,11 @@ public:
 	{
 		return ref->use_count() == 1;
 	}
+    void detach()
+    {
+        ptr = 0;
+        ref = new CFSharedPtrDetail::_FTLSharedCounter<T>(0);
+    }
 	void reset()
 	{
 		ref->release();

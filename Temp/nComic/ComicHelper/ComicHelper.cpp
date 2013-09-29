@@ -18,13 +18,13 @@
 #include "ProtectWndHookAPI.h"
 
 HMODULE g_hModule = NULL;
-BOOL    g_bNeedHook = TRUE;
+BOOL    g_bNeedHook = FALSE;
 
-//#pragma data_seg("SHAREDMEM")
+#pragma data_seg("SHAREDMEM")
 HHOOK g_hHookCallWndProc = NULL;
 HHOOK g_hHookKeyboard = NULL;
-//#pragma data_seg()
-//#pragma comment(linker, "/Section:SHAREDMEM,rws")
+#pragma data_seg()
+#pragma comment(linker, "/Section:SHAREDMEM,rws")
 
 volatile BOOL  g_bHooked = FALSE;
 

@@ -16,6 +16,9 @@
 
 #include <ShlObj.h>
 #include <atlbase.h>
+#ifdef _DEBUG
+#  include <winternl.h>
+#endif
 
 namespace FTL
 {
@@ -735,6 +738,73 @@ namespace FTL
 
 		return dwPidResult;
 	}
+
+    typedef struct  
+    {  
+        DWORD       ExitStatus;                     //PVOID Reserved1
+        DWORD       PebBaseAddress;                 //PPEB PebBaseAddress;
+        DWORD       AffinityMask;                   //PVOID Reserved2[0]
+        DWORD       BasePriority;                   //PVOID Reserved2[1];
+        ULONG_PTR   UniqueProcessId;                //ULONG_PTR UniqueProcessId;
+        ULONG       InheritedFromUniqueProcessId;   //Reserved3
+    }   PROCESS_BASIC_INFORMATION_FOR_PPID;  
+
+#ifdef _DEBUG
+    C_ASSERT(sizeof(PROCESS_BASIC_INFORMATION_FOR_PPID) == sizeof(PROCESS_BASIC_INFORMATION));
+#endif 
+
+    typedef NTSTATUS (WINAPI *NtQueryInformationProcessProc)(HANDLE, UINT, PVOID, ULONG, PULONG);  
+    DWORD CFSystemUtil::GetParentProcessId(DWORD dwPID, BOOL bCheckParentExist /* = TRUE*/)
+    {
+        DWORD   dwParentPID = (DWORD)-1;  
+        BOOL    bRet = FALSE;
+        NTSTATUS nStatus = 0;
+        HANDLE  hProcess = NULL;
+        PROCESS_BASIC_INFORMATION_FOR_PPID pbi = {0};  
+
+        HMODULE hModuleNtDll = GetModuleHandle(TEXT("ntdll"));
+        NtQueryInformationProcessProc pNtQueryInformationProcess = 
+            (NtQueryInformationProcessProc)GetProcAddress( hModuleNtDll, "NtQueryInformationProcess");  
+        if (pNtQueryInformationProcess)
+        {
+            // Get process handle  
+            hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwPID);  
+            if (hProcess)
+            {
+                nStatus = (pNtQueryInformationProcess)(hProcess,  
+                    ProcessBasicInformation,  
+                    (PVOID)&pbi,  
+                    sizeof(PROCESS_BASIC_INFORMATION_FOR_PPID),  
+                    NULL  
+                    );
+                FTLASSERT(0 == nStatus);    //STATUS_SUCCESS
+                if (0 == nStatus)
+                {
+                    if (bCheckParentExist)
+                    {
+                        HANDLE hParentProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pbi.InheritedFromUniqueProcessId); 
+                        if (hParentProcess)
+                        {
+                            dwParentPID = pbi.InheritedFromUniqueProcessId;
+                            CloseHandle(hParentProcess);
+                        }
+                    }
+                    else
+                    {
+                        dwParentPID = pbi.InheritedFromUniqueProcessId;
+                    }
+                    
+                }
+                else
+                {
+                    FTLTRACEEX(FTL::tlError, TEXT("%s, CFSystemUtil::GetParentProcessId, Error Code=0x%x\n"),
+                        __FILE__LINE__,  nStatus);
+                }
+                CloseHandle (hProcess);  
+            }
+        }
+        return dwParentPID;  
+    }
 
     BOOL CFSystemUtil::IsLittleSystem()
     {

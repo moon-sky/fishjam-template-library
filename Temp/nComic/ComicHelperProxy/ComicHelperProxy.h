@@ -11,6 +11,7 @@ struct ProtectWndInfoFileMap32
     DWORD       dwProtectProcessId;
     ULONG       hWndProtect;       //HWND is 4 on 32 and 8 on 64
     COLORREF    clrDisabled;
+    DWORD       dwSetupFilePID;
     //TCHAR       szTargetLogFile;
 };
 

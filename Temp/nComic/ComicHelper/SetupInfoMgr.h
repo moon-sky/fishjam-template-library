@@ -34,13 +34,26 @@ public:
     ~CSetupInfoMgr(void);
 
 public:
-    BOOL SetSetupInfo(HookedSetupInfoType infoType, LPCTSTR pszOldInfo, LPCTSTR pszNewInfo);
+    BOOL SetSetupFileInfo(/*HookedSetupInfoType infoType, */LPCTSTR pszOldInfo, LPCTSTR pszNewInfo);
+    BOOL DeleteSetupFileInfo(LPCTSTR pszFilePath);
+
+    BOOL OpenSetupReg(HKEY hKeyRoot, HKEY hKey, LPCTSTR pszPath);
+    BOOL SetSetupRegInfo(HKEY hKey, LPCTSTR pszPath);
+    BOOL CloseSetupReg(HKEY hKey);
+
     BOOL    DumpAllSetupInfo();
 private:
+    FTL::CFCriticalSection      m_csLock;
+
+    //TODO: will new every time
     typedef std::set<HookedSetupInfoPtr, FTL::UnreferenceLess<HookedSetupInfoPtr>> HookedSetupInfoContainer;
     HookedSetupInfoContainer    m_HookedSetupInfos;
-    FTL::CFCriticalSection      m_csLock;
+
+    typedef std::map<HKEY, CAtlString> RegKeyPathPairContainer;
+    RegKeyPathPairContainer     m_RegKeyPathPairs;
+    
 private:
+    CAtlString _GetRegRootKeyString(HKEY hKeyRoot);
 };
 
 extern CSetupInfoMgr* g_pSetupInfoMgr;

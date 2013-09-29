@@ -11,6 +11,7 @@
 //#include <ftlComDetect.h>
 //#include <ftlWindow.h>
 //#include <ftlDebug.h>
+#include <ftlSystem.h>
 
 CMainDlg::CMainDlg()
 {
@@ -94,6 +95,7 @@ void CMainDlg::OnBtnServiceHook(UINT uNotifyCode, int nID, CWindow wndCtl)
     //CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
     if (m_spComicService)
     {
+        //m_spComicService->UpdateSetupFileInfo(4664);
         COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, OLE_COLOR(RGB(255, 0, 0))));// RGB(153, 217, 234))));
     }
 }
@@ -135,6 +137,61 @@ void CMainDlg::OnBtnDllUnHook(UINT uNotifyCode, int nID, CWindow wndCtl)
     m_bHookInDll = FALSE;
 }
 
+void CMainDlg::OnBtnCreateSetup(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    BOOL bRet = FALSE;
+    //DWORD dwCurrentPid = 308;
+    //DWORD dwParentPid = CFSystemUtil::GetParentProcessId(dwCurrentPid);
+    //while (dwParentPid != (DWORD)(-1))
+    //{
+    //    //if (dwParentPid == pProtectWndInfoFileMap->dwSetupFilePID)
+    //    //{
+    //    //    bWillHook = TRUE;
+    //    //    break;
+    //    //}
+    //    FTLTRACE(TEXT("curPid=%d, Parent=%d\n"), dwCurrentPid, dwParentPid);
+    //    dwCurrentPid = dwParentPid;
+    //    dwParentPid = CFSystemUtil::GetParentProcessId(dwCurrentPid);
+    //}
+    //return;
+
+    CFileDialog dlg(TRUE);
+    if (dlg.DoModal() == IDOK)
+    {
+        STARTUPINFO startupInfo = {0};
+        PROCESS_INFORMATION processInfo = {0};
+        API_VERIFY(CreateProcess(NULL, dlg.m_szFileName, NULL, NULL, FALSE, 
+            CREATE_NEW_PROCESS_GROUP | CREATE_SUSPENDED, NULL, NULL, 
+            &startupInfo, &processInfo));
+        if (bRet)
+        {
+            m_spComicService->UpdateSetupFileInfo(processInfo.dwProcessId);
+            FTLTRACE(TEXT("After CreateProcess, PID=%d, TID=%d\n"), 
+                processInfo.dwProcessId, processInfo.dwThreadId);
+
+            HRESULT hr = E_FAIL;
+            //CComQIPtr<IComicServiceObj> spComicServiceOb(m_spComicService);
+            if (m_spComicService)
+            {
+                COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, OLE_COLOR(RGB(255, 0, 0))));// RGB(153, 217, 234))));
+            }
+
+            Sleep(100);
+
+            FTLTRACE(TEXT("After Sleep, PID=%d, TID=%d\n"), 
+                processInfo.dwProcessId, processInfo.dwThreadId);
+
+            ResumeThread(processInfo.hThread);
+
+            FTLTRACE(TEXT("Before WaitFor processInfo.hThread\n"));
+
+            WaitForSingleObject(processInfo.hThread, INFINITE);
+
+            CloseHandle(processInfo.hProcess);
+            CloseHandle(processInfo.hThread);
+        }
+    }
+}
 
 void CMainDlg::OnBtnEnableClipboardViewer(UINT uNotifyCode, int nID, CWindow wndCtl)
 {

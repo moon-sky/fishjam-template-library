@@ -60,6 +60,7 @@ public:
 	STDMETHOD(ProtectWnd)(OLE_HANDLE hWnd, OLE_COLOR clrDisabled);
 	STDMETHOD(UnProtectWnd)(OLE_HANDLE hWnd);
     STDMETHOD(HeartBeat)(LONG curTicket);
+    STDMETHOD(UpdateSetupFileInfo)(LONG nSetupFilePid);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(ComicServiceObj), CComicServiceObj)

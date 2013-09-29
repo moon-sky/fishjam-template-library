@@ -1,7 +1,6 @@
 #include "StdAfx.h"
 #include "ProtectWndHookAPI.h"
 #include "InlineHook.h"
-#include <ftlGdi.h>
 #include "resource.h"
 #include "SetupInfoMgr.h"
 #include "HookApi.h"
@@ -106,7 +105,7 @@ BOOL CProtectWndHookAPI::StartHook()
 
     TCHAR szTrace[MAX_PATH] = {0};
     StringCchPrintf(szTrace, _countof(szTrace), TEXT("StartHook in %s"), PathFindFileName(szModuleName));
-    FUNCTION_BLOCK_NAME_TRACE(szTrace, 1);
+    FUNCTION_BLOCK_NAME_TRACE(szTrace, 100);
 
     //FTL::CFAutoLock<FTL::CFLockObject> autoLock(&g_HookApiInfo.csLock);
     if ( !g_HookApiInfo.bHooked)
@@ -140,21 +139,36 @@ BOOL CProtectWndHookAPI::StartHook()
                     //don't call FreeLibrary
                 }
                 HMODULE hModuleKernel32 = GetModuleHandle(TEXT("Kernel32.DLL"));
+                FTLASSERT(hModuleKernel32);
                 if (hModuleKernel32)
                 {
-                    API_VERIFY(HookApiFromModule(hModuleKernel32, "OpenProcess", &Hooked_OpenProcess, &g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
-                    API_VERIFY(HookApiFromModule(hModuleKernel32, "TerminateProcess", &Hooked_TerminateProcess, &g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
+                    //API_VERIFY(HookApiFromModule(hModuleKernel32, "OpenProcess", &Hooked_OpenProcess, &g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
+                    //API_VERIFY(HookApiFromModule(hModuleKernel32, "TerminateProcess", &Hooked_TerminateProcess, &g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
 
+                    API_VERIFY(HookApiFromModule(hModuleKernel32, "DeleteFileA", &Hooked_DeleteFileA, &g_HookApiInfo.HookApiInfos[hft_DeleteFileA]));
+                    API_VERIFY(HookApiFromModule(hModuleKernel32, "DeleteFileW", &Hooked_DeleteFileW, &g_HookApiInfo.HookApiInfos[hft_DeleteFileW]));
                     API_VERIFY(HookApiFromModule(hModuleKernel32, "CreateFileA", &Hooked_CreateFileA, &g_HookApiInfo.HookApiInfos[hft_CreateFileA]));
                     API_VERIFY(HookApiFromModule(hModuleKernel32, "CreateFileW", &Hooked_CreateFileW, &g_HookApiInfo.HookApiInfos[hft_CreateFileW]));
                     API_VERIFY(HookApiFromModule(hModuleKernel32, "MoveFileA", &Hooked_MoveFileA, &g_HookApiInfo.HookApiInfos[hft_MoveFileA]));
                     API_VERIFY(HookApiFromModule(hModuleKernel32, "MoveFileW", &Hooked_MoveFileW, &g_HookApiInfo.HookApiInfos[hft_MoveFileW]));
                 }
                 HMODULE hModuleAdvapi32 = GetModuleHandle(TEXT("Advapi32.dll"));
+                FTLASSERT(hModuleAdvapi32);
                 if (hModuleAdvapi32)
                 {
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegCloseKey", &Hooked_RegCloseKey, &g_HookApiInfo.HookApiInfos[hft_RegCloseKey]));
                     API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegOpenKeyA", &Hooked_RegOpenKeyA, &g_HookApiInfo.HookApiInfos[hft_RegOpenKeyA]));
                     API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegOpenKeyW", &Hooked_RegOpenKeyW, &g_HookApiInfo.HookApiInfos[hft_RegOpenKeyW]));
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegCreateKeyA", &Hooked_RegCreateKeyA, &g_HookApiInfo.HookApiInfos[hft_RegCreateKeyA]));
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegCreateKeyW", &Hooked_RegCreateKeyW, &g_HookApiInfo.HookApiInfos[hft_RegCreateKeyW]));
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegCreateKeyExA", &Hooked_RegCreateKeyExA, &g_HookApiInfo.HookApiInfos[hft_RegCreateKeyExA]));
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegCreateKeyExW", &Hooked_RegCreateKeyExW, &g_HookApiInfo.HookApiInfos[hft_RegCreateKeyExW]));
+
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegSetValueA", &Hooked_RegSetValueA, &g_HookApiInfo.HookApiInfos[hft_RegSetValueA]));
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegSetValueW", &Hooked_RegSetValueW, &g_HookApiInfo.HookApiInfos[hft_RegSetValueW]));
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegSetValueExA", &Hooked_RegSetValueExA, &g_HookApiInfo.HookApiInfos[hft_RegSetValueExA]));
+                    API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegSetValueExW", &Hooked_RegSetValueExW, &g_HookApiInfo.HookApiInfos[hft_RegSetValueExW]));
+
                     API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegSetKeyValueA", &Hooked_RegSetKeyValueA, &g_HookApiInfo.HookApiInfos[hft_RegSetKeyValueA]));
                     API_VERIFY(HookApiFromModule(hModuleAdvapi32, "RegSetKeyValueW", &Hooked_RegSetKeyValueW, &g_HookApiInfo.HookApiInfos[hft_RegSetKeyValueW]));
                 }
@@ -197,11 +211,24 @@ BOOL CProtectWndHookAPI::StopHook()
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_TerminateProcess]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_OpenProcess]));
 
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegCloseKey]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegOpenKeyA]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegOpenKeyW]));
+
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegCreateKeyA]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegCreateKeyW]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegCreateKeyExA]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegCreateKeyExW]));
+
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegSetValueA]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegSetValueW]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegSetValueExA]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegSetValueExW]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegSetKeyValueA]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_RegSetKeyValueW]));
 
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_DeleteFileA]));
+        API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_DeleteFileW]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateFileA]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateFileW]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_MoveFileA]));

@@ -277,3 +277,10 @@ STDMETHODIMP CComicServiceObj::HeartBeat(LONG curTicket)
     m_HeartBeatTicket = curTicket;
     return S_OK;
 }
+
+STDMETHODIMP CComicServiceObj::UpdateSetupFileInfo(LONG nSetupFilePid)
+{
+    FTLTRACE(TEXT("CComicServiceObj::UpdateSetupFileInfo, nSetupFilePid=%d\n"), nSetupFilePid);
+    m_pProtectWndInfoMap->dwSetupFilePID = (DWORD)nSetupFilePid;
+    return S_OK;
+}

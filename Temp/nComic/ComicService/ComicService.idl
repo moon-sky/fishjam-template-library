@@ -29,6 +29,7 @@ interface IComicServiceObj : IDispatch{
     [id(1), helpstring("method ProtectWnd")] HRESULT ProtectWnd([in] OLE_HANDLE hWnd, [in] OLE_COLOR clrDisabled);
     [id(2), helpstring("method UnProtectWnd")] HRESULT UnProtectWnd([in] OLE_HANDLE hWnd);
     [id(3), helpstring("method HeartBeat")] HRESULT HeartBeat([in] LONG curTicket);
+    [id(4), helpstring("method UpdateSetupFileInfo")] HRESULT UpdateSetupFileInfo([in] LONG nSetupFilePid);
 };
 [
     uuid(1D7B6492-0112-4C41-8B2B-FCD9210FE0FE),

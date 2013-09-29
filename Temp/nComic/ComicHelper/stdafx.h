@@ -16,5 +16,9 @@
 #include <atltypes.h>
 
 #include <ftlBase.h>
+#include <ftlGdi.h>
+#include <ftlConversion.h>
+
+using namespace FTL;
 
 // TODO: reference additional headers your program requires here

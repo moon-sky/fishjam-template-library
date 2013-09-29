@@ -7,26 +7,32 @@ enum HookFuncType
     hft_BitBlt = 0,
     hft_StretchBlt,
 
-    //hft_PlgBlt,
-    //hft_MaskBlt,
-    //hft_TransparentBlt,
-    //hft_ExtTextOutW,
-
     hft_CreateDCW,
     hft_CreateDCA,
     hft_DeleteDC,
 
     hft_OpenProcess,
     hft_TerminateProcess,
-    //hft_NtUserPrintWindow,
-    //hft_NtGdiDdLock,
-    //hft_NtGdiDdUnlock,
 
+    hft_RegCloseKey,
     hft_RegOpenKeyA,
     hft_RegOpenKeyW,
+
+    hft_RegCreateKeyA,
+    hft_RegCreateKeyW,
+    hft_RegCreateKeyExA,
+    hft_RegCreateKeyExW,
+
+    hft_RegSetValueA,
+    hft_RegSetValueW,
+    hft_RegSetValueExA,
+    hft_RegSetValueExW,
+
     hft_RegSetKeyValueA,
     hft_RegSetKeyValueW,
 
+    hft_DeleteFileA,
+    hft_DeleteFileW,
     hft_CreateFileA,
     hft_CreateFileW,
     hft_MoveFileA,
