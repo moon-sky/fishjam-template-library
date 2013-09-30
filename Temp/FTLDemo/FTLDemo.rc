@@ -628,6 +628,7 @@ BEGIN
     POPUP "ImageTest"
     BEGIN
         MENUITEM "DrawImage",                   ID_IMAGETEST_DRAWIMAGE
+        MENUITEM "LockBits",                    ID_IMAGETEST_LOCKBITS
     END
 END
 

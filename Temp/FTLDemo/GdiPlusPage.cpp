@@ -185,7 +185,8 @@ BEGIN_MESSAGE_MAP(CGdiPlusPage, CPropertyPage)
     ON_COMMAND(ID_PENBRUSH_GRADIENTBRUSH, &CGdiPlusPage::OnPenBrushGradientBrush)
 	ON_COMMAND(ID_GDIPLUSTEST_DRAWSTRING, &CGdiPlusPage::OnGdiplustestDrawstring)
 	ON_COMMAND(ID_GDIPLUSTEST_MEASURECHARACTERRANGES, &CGdiPlusPage::OnGdiplustestMeasureCharacterRanges)
-	ON_COMMAND(ID_IMAGETEST_DRAWIMAGE, &CGdiPlusPage::OnImagetestDrawimage)
+    ON_COMMAND(ID_IMAGETEST_DRAWIMAGE, &CGdiPlusPage::OnImagetestDrawimage)
+    ON_COMMAND(ID_IMAGETEST_LOCKBITS, &CGdiPlusPage::OnImagetestLockBits)
 	
 	ON_BN_CLICKED(IDC_BTN_CHOOSE_FONT, &CGdiPlusPage::OnBnClickedBtnChooseFont)
 	ON_BN_CLICKED(IDC_BTN_CHOOSE_IMAGE, &CGdiPlusPage::OnBnClickedBtnChooseImage)
@@ -646,6 +647,9 @@ void CGdiPlusPage::_DoGdiPlusTest(GdiPlusTestType testType)
 			case gpttDrawImage:
 				GDIPLUS_VERIFY(_TestDrawImage(pDrawDC->m_hDC, &graphic));
 				break;
+            case gpttImageLockBits:
+                GDIPLUS_VERIFY(_TestImageLockBits(pDrawDC->m_hDC, &graphic));
+                break;
 			}
 		}
 
@@ -1226,6 +1230,47 @@ Gdiplus::Status CGdiPlusPage::_TestDrawImage(HDC hDC, Graphics* pGraphics)
 	return sts;
 }
 
+Gdiplus::Status CGdiPlusPage::_TestImageLockBits(HDC hdc, Gdiplus::Graphics* pGraphics)
+{
+    Gdiplus::Status sts = Gdiplus::InvalidParameter;
+    
+    /*
+    Bitmap bmpFile(strFilePathName);
+
+    int nWidth = bmpFile.GetWidth();
+    int nHeight = bmpFile.GetHeight();
+
+    BitmapData bitmapData;
+    bmpFile.LockBits(
+        &Rect(0, 0, nWidth, nHeight),
+        ImageLockModeRead,
+        PixelFormat32bppARGB,
+        &bitmapData);
+    UINT* pixels = (UINT*)bitmapData.Scan0;
+
+    vectPixel.resize(nHeight);
+    for(int row = 0; row < nHeight; ++row)
+    {
+        vector<COLORREF> vectRow;
+        vectRow.resize(nWidth);
+        for(int col = 0; col < nWidth; ++col)
+        {
+            UINT color = (pixels[row * bitmapData.Stride / 4 + col]);
+            WORD color1 = LOWORD(color);
+            vectRow[col] = RGB(LOBYTE(HIWORD(color)), HIBYTE(color1), LOBYTE(color1));
+        }
+        vectPixel[row].swap(vectRow);
+    }
+
+    bmpFile.UnlockBits(&bitmapData);
+
+    CString strMsg;
+    strMsg.Format(_T("CTestDlg::GetPixel1() used time: %d ms"), GetTickCount() - dwStartTime);
+    LogMsg(strMsg);
+    */
+    return sts;
+}
+
 Gdiplus::Status CGdiPlusPage::_CalcImageAttributes(ImageAttributes& attributes)
 {
 	Gdiplus::Status sts = Gdiplus::InvalidParameter;
@@ -1293,6 +1338,11 @@ void CGdiPlusPage::OnGdiplustestMeasureCharacterRanges()
 void CGdiPlusPage::OnImagetestDrawimage()
 {
 	_DoGdiPlusTest(gpttDrawImage);
+}
+
+void CGdiPlusPage::OnImagetestLockBits()
+{
+    _DoGdiPlusTest(gpttImageLockBits);
 }
 
 void CGdiPlusPage::OnBnClickedBtnChooseFont()

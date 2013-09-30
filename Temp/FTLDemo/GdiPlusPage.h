@@ -136,6 +136,7 @@ enum GdiPlusTestType
 
 	//Image
 	gpttDrawImage,
+    gpttImageLockBits,
 };
 
 class CGdiPlusPage : public CPropertyPage
@@ -182,6 +183,7 @@ private:
     Gdiplus::Status _TestGradientBrush(HDC hdc, Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestDrawString(HDC hdc, Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestDrawImage(HDC hdc, Gdiplus::Graphics* pGraphics);
+    Gdiplus::Status _TestImageLockBits(HDC hdc, Gdiplus::Graphics* pGraphics);
 	Gdiplus::Status _TestMeasureCharacterRanges(HDC hdc, Gdiplus::Graphics* pGraphics);
 protected:
 
@@ -236,7 +238,8 @@ protected:
     afx_msg void OnPenBrushGradientBrush();
 	afx_msg void OnGdiplustestDrawstring();
 	afx_msg void OnGdiplustestMeasureCharacterRanges();
-	afx_msg void OnImagetestDrawimage();
+    afx_msg void OnImagetestDrawimage();
+    afx_msg void OnImagetestLockBits();
 	afx_msg void OnBnClickedBtnChooseFont();
 	afx_msg void OnBnClickedBtnChooseImage();
 	afx_msg void OnBnClickedBtnDumpImageProperty();
