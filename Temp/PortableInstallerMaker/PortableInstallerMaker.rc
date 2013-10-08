@@ -96,7 +96,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Welcome Page"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    LTEXT           "Welcome",IDC_STATIC,115,7,138,58
+    LTEXT           "1.Choose Setup Files and install it\n2.Choose file and reg to make the portable installer",IDC_STATIC,115,55,297,22
 END
 
 IDD_PAGE_COMPLETE DIALOGEX 0, 0, 420, 220

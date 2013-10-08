@@ -280,6 +280,8 @@ namespace FTL
         FTLINLINE static BOOL IsInsideVPC();
 		FTLINLINE static BOOL IsInsideVMWare();
 #endif 
+        FTLINLINE static BOOL IsRunningOnRemoteDesktop();
+
         //把Dos的结束符转换为Unix的结束符(去掉其中的 "\r" )
         FTLINLINE static int DosLineToUnixLine(const char *src, char *dest, int maxlen);
         //把Unix的结束符转换为Dos的结束符(将 "\r" 改成 "\r\n" )

@@ -188,6 +188,10 @@ namespace FTL
 
 		//设置ListBox水平滚动范围
 		FTLINLINE static BOOL UpdateListboxHorizontalExtent(HWND hwndListbox, INT nPadding = 0);
+
+        //带CheckBox的TreeCtrl，将父节点选中时，同时更改其全部子节点
+        //递归遍历所选项的子项进行修改
+        FTLINLINE static BOOL CheckTreeSubItems(HWND hWndTree, HTREEITEM hParent, BOOL bCheck);
 	};
 
 	//RichEdit 中的 ITextRange

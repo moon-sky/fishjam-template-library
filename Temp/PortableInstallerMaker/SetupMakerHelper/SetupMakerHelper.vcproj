@@ -2,9 +2,10 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="PortableInstallerMaker"
-	ProjectGUID="{D94AC38B-D2D9-4D69-950D-D1BA527DBCC8}"
-	RootNamespace="PortableInstallerMaker"
+	Name="SetupMakerHelper"
+	ProjectGUID="{3E2C0921-6732-47F8-8123-621F359CEA5F}"
+	RootNamespace="SetupMakerHelper"
+	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -13,15 +14,17 @@
 		/>
 	</Platforms>
 	<ToolFiles>
+		<DefaultToolFile
+			FileName="masm.rules"
+		/>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
-			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
 			<Tool
@@ -31,6 +34,9 @@
 				Name="VCCustomBuildTool"
 			/>
 			<Tool
+				Name="MASM"
+			/>
+			<Tool
 				Name="VCXMLDataGeneratorTool"
 			/>
 			<Tool
@@ -38,20 +44,12 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="false"
-				TargetEnvironment="1"
-				GenerateStublessProxies="true"
-				TypeLibraryName="$(IntDir)/PortableInstallerMaker.tlb"
-				HeaderFileName="PortableInstallerMaker.h"
-				DLLDataFileName=""
-				InterfaceIdentifierFileName="PortableInstallerMaker_i.c"
-				ProxyFileName="PortableInstallerMaker_p.c"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;_DEBUG"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SETUPMAKERHELPER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -64,9 +62,6 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -74,7 +69,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				UACExecutionLevel="2"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -105,16 +100,19 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
-			ATLMinimizesCRunTimeLibraryUsage="true"
 			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="MASM"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -124,33 +122,24 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="false"
-				TargetEnvironment="1"
-				GenerateStublessProxies="true"
-				TypeLibraryName="$(IntDir)/PortableInstallerMaker.tlb"
-				HeaderFileName="PortableInstallerMaker.h"
-				DLLDataFileName=""
-				InterfaceIdentifierFileName="PortableInstallerMaker_i.c"
-				ProxyFileName="PortableInstallerMaker_p.c"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;NDEBUG"
-				ExceptionHandling="0"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SETUPMAKERHELPER_EXPORTS;$(NOINHERIT)"
 				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -158,8 +147,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
-				UACExecutionLevel="2"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="true"
 				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -182,6 +174,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
@@ -190,10 +183,65 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\PortableInstallerMaker.cpp"
+				RelativePath=".\dllmain.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAsManaged="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\HookAPIUtil.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\InlineHook.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ProtectWndHookAPI.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SetupInfoMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SetupMakerHelper.cpp"
 				>
 			</File>
 			<File
@@ -219,10 +267,19 @@
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\PortableInstallerMaker.h"
+				RelativePath=".\HookAPIUtil.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InlineHook.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ProtectWndHookAPI.h"
 				>
 			</File>
 			<File
@@ -230,99 +287,90 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SetupInfoMgr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SetupMakerHelper.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\targetver.h"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\res\header.bmp"
-				>
-			</File>
-			<File
-				RelativePath=".\res\PortableInstallerMaker.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\PortableInstallerMaker.rc"
-				>
-			</File>
-			<File
-				RelativePath=".\res\watermark.bmp"
+				RelativePath=".\SetupMakerHelper.rc"
 				>
 			</File>
 		</Filter>
 		<Filter
-			Name="Wizard"
+			Name="ASM"
 			>
 			<File
-				RelativePath=".\MakerChooseSetupFilePage.cpp"
+				RelativePath=".\ILD_x86.asm"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="ml /c $(InputPath)&#x0D;&#x0A;"
+						Outputs="$(InputName).obj"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="ml /c $(InputPath)&#x0D;&#x0A;"
+						Outputs="$(InputName).obj"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="HookApi"
+			>
+			<File
+				RelativePath=".\FileHookApi.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MakerChooseSetupFilePage.h"
+				RelativePath=".\FileHookApi.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MakerCompletePage.cpp"
+				RelativePath=".\HookApi.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MakerCompletePage.h"
+				RelativePath=".\HookApi.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MakerSetupProgressPage.cpp"
+				RelativePath=".\RegHookApi.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MakerSetupProgressPage.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerSetupResultPage.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerSetupResultPage.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerWelcomePage.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerWelcomePage.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerWizard.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerWizard.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerWizardInfo.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerWizardInfo.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerWizardSheet.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MakerWizardSheet.h"
+				RelativePath=".\RegHookApi.h"
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\ReadMe.txt"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

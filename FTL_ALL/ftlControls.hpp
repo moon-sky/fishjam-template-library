@@ -360,6 +360,17 @@ namespace FTL
 		return bRet;
 	}
 
+    BOOL CFControlUtil::CheckTreeSubItems(HWND hWndTree, HTREEITEM hParent, BOOL bCheck)
+    {
+        BOOL bRet = FALSE;
+        TreeView_SetCheckState(hWndTree, hParent, bCheck);
+        HTREEITEM hItem = TreeView_GetChild(hWndTree, hParent);
+        while(hItem)
+        {
+            CheckTreeSubItems(hWndTree, hItem,bCheck);
+            hItem = TreeView_GetNextSibling(hWndTree, hItem);
+        }
+    }
 	//////////////////////////////////////////////////////////////////////////
 	HRESULT CFTextRangeDumper::GetObjInfo(IInformationOutput* pInfoOutput)
 	{

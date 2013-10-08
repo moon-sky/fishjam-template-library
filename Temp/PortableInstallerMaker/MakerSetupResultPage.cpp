@@ -36,7 +36,8 @@ void CMakerSetupResultPage::InitializeControls(void)
     CTreeItem tiFileRoot, tiRegRoot;
 
     tiFileRoot  = m_treeSetupChangeResult.InsertItem ( TEXT("File"), TVI_ROOT, TVI_LAST );
-    TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiFileRoot, TRUE);
+    //TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiFileRoot.m_hTreeItem, TRUE);
+    m_treeSetupChangeResult.SetCheckState(tiFileRoot, TRUE);
 
     for (SetupMonitorInfoContainer::iterator iterFile = m_pMakerWizardInfo->m_allSetupFileInfos.begin();
         iterFile != m_pMakerWizardInfo->m_allSetupFileInfos.end();
@@ -46,18 +47,24 @@ void CMakerSetupResultPage::InitializeControls(void)
         if (!_IsFilterFile(fileInfo.strPath))
         {
             CTreeItem tiFileItem = tiFileRoot.AddTail(fileInfo.strPath, 0);
-            TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiFileItem, TRUE);
+            m_treeSetupChangeResult.SetCheckState(tiFileItem, TRUE);
+            //TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiFileItem.m_hTreeItem, TRUE);
         }
     }
     
     tiRegRoot  = m_treeSetupChangeResult.InsertItem ( TEXT("Reg"), TVI_ROOT, TVI_LAST );
+    //TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiRegRoot.m_hTreeItem, TRUE);
+    m_treeSetupChangeResult.SetCheckState(tiRegRoot, TRUE);
+
     for (SetupMonitorInfoContainer::iterator iterReg = m_pMakerWizardInfo->m_allSetupRegInfos.begin();
         iterReg != m_pMakerWizardInfo->m_allSetupRegInfos.end();
         ++iterReg)
     {
         SetupMonitorInfo& regInfo = *iterReg;
         CTreeItem tiRegItem = tiRegRoot.AddTail(regInfo.strPath, 0);
-        TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiRegItem, TRUE);
+        m_treeSetupChangeResult.SetCheckState(tiRegItem, TRUE);
+
+        //TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiRegItem.m_hTreeItem, TRUE);
     }
 }
 
@@ -76,7 +83,7 @@ bool CMakerSetupResultPage::StoreValues(void)
 // Overrides from base class
 int CMakerSetupResultPage::OnSetActive()
 {
-    this->SetWizardButtons(PSWIZB_BACK | PSWIZB_NEXT);
+    this->SetWizardButtons(PSWIZB_NEXT);
 
     // 0 = allow activate
     // -1 = go back to page that was active

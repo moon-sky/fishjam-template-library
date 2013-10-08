@@ -753,12 +753,12 @@ namespace FTL
     C_ASSERT(sizeof(PROCESS_BASIC_INFORMATION_FOR_PPID) == sizeof(PROCESS_BASIC_INFORMATION));
 #endif 
 
-    typedef NTSTATUS (WINAPI *NtQueryInformationProcessProc)(HANDLE, UINT, PVOID, ULONG, PULONG);  
+    typedef LONG (WINAPI *NtQueryInformationProcessProc)(HANDLE, UINT, PVOID, ULONG, PULONG);  
     DWORD CFSystemUtil::GetParentProcessId(DWORD dwPID, BOOL bCheckParentExist /* = TRUE*/)
     {
         DWORD   dwParentPID = (DWORD)-1;  
         BOOL    bRet = FALSE;
-        NTSTATUS nStatus = 0;
+        LONG    nStatus = 0;
         HANDLE  hProcess = NULL;
         PROCESS_BASIC_INFORMATION_FOR_PPID pbi = {0};  
 
@@ -772,7 +772,7 @@ namespace FTL
             if (hProcess)
             {
                 nStatus = (pNtQueryInformationProcess)(hProcess,  
-                    ProcessBasicInformation,  
+                    0, //ProcessBasicInformation,  
                     (PVOID)&pbi,  
                     sizeof(PROCESS_BASIC_INFORMATION_FOR_PPID),  
                     NULL  
@@ -905,6 +905,22 @@ namespace FTL
 		return bRet;
 	}
 #endif 
+
+    BOOL CFSystemUtil::IsRunningOnRemoteDesktop()
+    {
+        BOOL bRet = FALSE;
+        BOOL bRunningOnRemoteDesktop = FALSE;
+        DWORD dwSessionId = 0;
+        API_VERIFY(ProcessIdToSessionId(GetCurrentProcessId(), &dwSessionId));
+        if (bRet)
+        {
+            if (WTSGetActiveConsoleSessionId() != dwSessionId)
+            {
+                bRunningOnRemoteDesktop = TRUE;
+            }
+        }
+        return bRunningOnRemoteDesktop;
+    }
 
     int CFSystemUtil::DosLineToUnixLine(const char *src, char *dest, int maxlen)
     {
