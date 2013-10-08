@@ -11,11 +11,13 @@ infoRefClass(pMakerWizardInfo)
     m_pageWelcome.SetMakerWizardInfo(pMakerWizardInfo);
     m_pageChooseSetupFile.SetMakerWizardInfo(pMakerWizardInfo);
     m_pageSetupProgress.SetMakerWizardInfo(pMakerWizardInfo);
+    m_pageSetupResult.SetMakerWizardInfo(pMakerWizardInfo);
     m_pageCompletion.SetMakerWizardInfo(pMakerWizardInfo);
 
     API_VERIFY(AddPage(m_pageWelcome));
     API_VERIFY(AddPage(m_pageChooseSetupFile));
     API_VERIFY(AddPage(m_pageSetupProgress));
+    API_VERIFY(AddPage(m_pageSetupResult));
     API_VERIFY(AddPage(m_pageCompletion));
 
     m_psh.dwFlags &= ~PSH_HASHELP;

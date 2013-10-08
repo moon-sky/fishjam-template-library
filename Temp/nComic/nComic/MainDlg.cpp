@@ -176,7 +176,7 @@ void CMainDlg::OnBtnCreateSetup(UINT uNotifyCode, int nID, CWindow wndCtl)
                 COM_VERIFY(m_spComicService->ProtectWnd((OLE_HANDLE)m_hWnd, OLE_COLOR(RGB(255, 0, 0))));// RGB(153, 217, 234))));
             }
 
-            Sleep(100);
+            //Sleep(100);
 
             FTLTRACE(TEXT("After Sleep, PID=%d, TID=%d\n"), 
                 processInfo.dwProcessId, processInfo.dwThreadId);

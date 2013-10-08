@@ -1,5 +1,11 @@
 #pragma once
 
+#define UM_SETUP_MAKER_PROCESS_FINISHED     (WM_USER + 100)
+#define UM_SETUP_MAKER_GET_RESULT           (WM_USER + 101)
+
+#include <set>
+#include <list>
+
 static LPCTSTR s_allFiles = _T("*.*");
 
 class IMakerWizardFindFileCB
@@ -37,6 +43,13 @@ enum MakerWizardQuerySiblingNotifiations
     eQuerySibling_ParametersFileChanged = 0,
 };
 
+struct SetupMonitorInfo
+{
+    DWORD dwType;
+    CString strPath;
+};
+typedef std::list<SetupMonitorInfo> SetupMonitorInfoContainer;
+
 class CMakerWizardInfo
 {
 protected:
@@ -45,6 +58,7 @@ protected:
 
     // Member variables
     CString m_path, m_filter;
+    CString m_strSetupFilePath;
     bool m_showWelcome, m_recurse;
 
     MakerWizardOutputType m_outputType;
@@ -60,6 +74,9 @@ public:
     // Set
     bool SetShowWelcome(bool showWelcome);
     bool SetPath(LPCTSTR path);
+    bool SetSetupFilePath(LPCTSTR pszSetupFilePath);
+    bool AddSetupMonitorInfo(DWORD dwType, LPCTSTR pszPath);
+
     bool SetRecurse(bool recurse);
     bool SetFilter(LPCTSTR filter);
     bool SetOutputType(MakerWizardOutputType outputType);
@@ -70,6 +87,7 @@ public:
 
     // Get
     bool GetShowWelcome(void) const;
+    LPCTSTR GetSetupFilePath(void) const;
     CString GetPath(void) const;
     bool GetRecurse(void) const;
     CString GetFilter(void) const;
@@ -108,6 +126,10 @@ protected:
     bool FinishWizard_CopyToClipboard(HWND hWndParent);
     bool FinishWizard_SendEMail(HWND hWndParent);
     bool FinishWizard_SaveToFile(HWND hWndParent);
+
+public:
+    SetupMonitorInfoContainer   m_allSetupFileInfos;
+    SetupMonitorInfoContainer   m_allSetupRegInfos;
 };
 
 class CMakerWizardInfoRef

@@ -40,6 +40,7 @@ void CMakerChooseSetupFilePage::InitializeValues(void)
 
 bool CMakerChooseSetupFilePage::StoreValues(void)
 {
+    m_pMakerWizardInfo->SetSetupFilePath(m_strSetupFilePath);
     //m_pMakerWizardInfo->SetShowWelcome(m_buttonSkipWelcome.GetCheck() == BST_UNCHECKED);
     return true;
 }

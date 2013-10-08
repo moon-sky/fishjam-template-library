@@ -10,6 +10,98 @@
 
 namespace FTL
 {
+    BOOL CFFileUtil::DumpAllAPISystemFolderPath(DWORD dwSHGetFolderPathFlags/* = SHGFP_TYPE_DEFAULT */)
+    {
+        BOOL bRet = FALSE;
+        HRESULT hr = E_FAIL;
+        TCHAR szFolderPath[MAX_PATH] = {0};
+
+        typedef std::pair<int, LPCTSTR> CSIDL2NameInfoPair;
+        CSIDL2NameInfoPair checkClsids[] = {
+            std::make_pair(CSIDL_DESKTOP, TEXT("CSIDL_DESKTOP")),
+            std::make_pair(CSIDL_INTERNET, TEXT("CSIDL_INTERNET")),
+            std::make_pair(CSIDL_PROGRAMS, TEXT("CSIDL_PROGRAMS")),
+            std::make_pair(CSIDL_CONTROLS, TEXT("CSIDL_CONTROLS")),
+            std::make_pair(CSIDL_PRINTERS, TEXT("CSIDL_PRINTERS")),
+            std::make_pair(CSIDL_PERSONAL, TEXT("CSIDL_PERSONAL")),
+            std::make_pair(CSIDL_FAVORITES, TEXT("CSIDL_FAVORITES")),
+            std::make_pair(CSIDL_STARTUP, TEXT("CSIDL_STARTUP")),
+            std::make_pair(CSIDL_RECENT, TEXT("CSIDL_RECENT")),
+            std::make_pair(CSIDL_SENDTO, TEXT("CSIDL_SENDTO")),
+            std::make_pair(CSIDL_BITBUCKET, TEXT("CSIDL_BITBUCKET")),
+            std::make_pair(CSIDL_STARTMENU, TEXT("CSIDL_STARTMENU")),
+            std::make_pair(CSIDL_MYDOCUMENTS, TEXT("CSIDL_MYDOCUMENTS")),
+            std::make_pair(CSIDL_MYMUSIC, TEXT("CSIDL_MYMUSIC")),
+            std::make_pair(CSIDL_MYVIDEO, TEXT("CSIDL_MYVIDEO")),
+            std::make_pair(CSIDL_DESKTOPDIRECTORY, TEXT("CSIDL_DESKTOPDIRECTORY")),
+            std::make_pair(CSIDL_DRIVES, TEXT("CSIDL_DRIVES")),
+            std::make_pair(CSIDL_NETWORK, TEXT("CSIDL_NETWORK")),
+            std::make_pair(CSIDL_NETHOOD, TEXT("CSIDL_NETHOOD")),
+            std::make_pair(CSIDL_FONTS, TEXT("CSIDL_FONTS")),
+            std::make_pair(CSIDL_TEMPLATES, TEXT("CSIDL_TEMPLATES")),
+            std::make_pair(CSIDL_COMMON_STARTMENU, TEXT("CSIDL_COMMON_STARTMENU")),
+            std::make_pair(CSIDL_COMMON_PROGRAMS, TEXT("CSIDL_COMMON_PROGRAMS")),
+            std::make_pair(CSIDL_COMMON_STARTUP, TEXT("CSIDL_COMMON_STARTUP")),
+            std::make_pair(CSIDL_COMMON_DESKTOPDIRECTORY, TEXT("CSIDL_COMMON_DESKTOPDIRECTORY")),
+            std::make_pair(CSIDL_APPDATA, TEXT("CSIDL_APPDATA")),
+            std::make_pair(CSIDL_PRINTHOOD, TEXT("CSIDL_PRINTHOOD")),
+            std::make_pair(CSIDL_LOCAL_APPDATA, TEXT("CSIDL_LOCAL_APPDATA")),
+            std::make_pair(CSIDL_ALTSTARTUP, TEXT("CSIDL_ALTSTARTUP")),
+            std::make_pair(CSIDL_COMMON_ALTSTARTUP, TEXT("CSIDL_COMMON_ALTSTARTUP")),
+            std::make_pair(CSIDL_COMMON_FAVORITES, TEXT("CSIDL_COMMON_FAVORITES")),
+
+            std::make_pair(CSIDL_INTERNET_CACHE, TEXT("CSIDL_INTERNET_CACHE")),
+            std::make_pair(CSIDL_COOKIES, TEXT("CSIDL_COOKIES")),
+            std::make_pair(CSIDL_HISTORY, TEXT("CSIDL_HISTORY")),
+            std::make_pair(CSIDL_COMMON_APPDATA, TEXT("CSIDL_COMMON_APPDATA")),
+            std::make_pair(CSIDL_WINDOWS, TEXT("CSIDL_WINDOWS")),
+            std::make_pair(CSIDL_SYSTEM, TEXT("CSIDL_SYSTEM")),
+            std::make_pair(CSIDL_PROGRAM_FILES, TEXT("CSIDL_PROGRAM_FILES")),
+            std::make_pair(CSIDL_MYPICTURES, TEXT("CSIDL_MYPICTURES")),
+            std::make_pair(CSIDL_PROFILE, TEXT("CSIDL_PROFILE")),
+            std::make_pair(CSIDL_SYSTEMX86, TEXT("CSIDL_SYSTEMX86")),
+            std::make_pair(CSIDL_PROGRAM_FILESX86, TEXT("CSIDL_PROGRAM_FILESX86")),
+            std::make_pair(CSIDL_PROGRAM_FILES_COMMON, TEXT("CSIDL_PROGRAM_FILES_COMMON")),
+            std::make_pair(CSIDL_PROGRAM_FILES_COMMONX86, TEXT("CSIDL_PROGRAM_FILES_COMMONX86")),
+            std::make_pair(CSIDL_COMMON_TEMPLATES, TEXT("CSIDL_COMMON_TEMPLATES")),
+            std::make_pair(CSIDL_COMMON_DOCUMENTS, TEXT("CSIDL_COMMON_DOCUMENTS")),
+            std::make_pair(CSIDL_COMMON_ADMINTOOLS, TEXT("CSIDL_COMMON_ADMINTOOLS")),
+            std::make_pair(CSIDL_ADMINTOOLS, TEXT("CSIDL_ADMINTOOLS")),
+            std::make_pair(CSIDL_CONNECTIONS, TEXT("CSIDL_CONNECTIONS")),
+            std::make_pair(CSIDL_COMMON_MUSIC, TEXT("CSIDL_COMMON_MUSIC")),
+            std::make_pair(CSIDL_COMMON_PICTURES, TEXT("CSIDL_COMMON_PICTURES")),
+            std::make_pair(CSIDL_COMMON_VIDEO, TEXT("CSIDL_COMMON_VIDEO")),
+            std::make_pair(CSIDL_RESOURCES, TEXT("CSIDL_RESOURCES")),
+            std::make_pair(CSIDL_RESOURCES_LOCALIZED, TEXT("CSIDL_RESOURCES_LOCALIZED")),
+            std::make_pair(CSIDL_COMMON_OEM_LINKS, TEXT("CSIDL_COMMON_OEM_LINKS")),
+            std::make_pair(CSIDL_CDBURN_AREA, TEXT("CSIDL_CDBURN_AREA")),
+            std::make_pair(CSIDL_COMPUTERSNEARME, TEXT("CSIDL_COMPUTERSNEARME")),
+
+            //std::make_pair(xxxxxx, TEXT("xxxxx")),
+        };
+
+        FTLTRACEEX(tlTrace, TEXT("SHGetFolderPath Folders are:\n"));
+        for (int i = 0; i <_countof(checkClsids); i++)
+        {
+            COM_VERIFY_EXCEPT1(SHGetFolderPath(NULL, checkClsids[i].first, NULL, dwSHGetFolderPathFlags, szFolderPath), E_FAIL);
+            if (SUCCEEDED(hr))
+            {
+                FTLTRACEEX(tlTrace, TEXT("%s => %s\n"), checkClsids[i].second, szFolderPath);
+            }
+            else
+            {
+                FTLTRACEEX(tlWarning, TEXT("SHGetFolderPath Get %s Failed(0x%x)\n"), checkClsids[i].second, hr);
+            }
+        }
+        
+        API_VERIFY(0 != GetTempPath(_countof(szFolderPath), szFolderPath));
+        if (bRet)
+        {
+            FTLTRACEEX(tlTrace, TEXT("GetTempPath => %s\n"), szFolderPath);
+        }
+
+        return bRet;
+    }
 
  	TextFileEncoding CFFileUtil::GetTextFileEncoding(LPCTSTR pszFilePath)
 	{

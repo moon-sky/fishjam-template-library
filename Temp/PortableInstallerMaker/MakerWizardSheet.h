@@ -42,6 +42,7 @@
 #include "MakerWelcomePage.h"
 #include "MakerChooseSetupFilePage.h"
 #include "MakerSetupProgressPage.h"
+#include "MakerSetupResultPage.h"
 #include "MakerCompletePage.h"
 
 class CMakerWizardSheet :
@@ -58,6 +59,7 @@ protected:
     CMakerWelcomePage           m_pageWelcome;
     CMakerChooseSetupFilePage   m_pageChooseSetupFile;
     CMakerSetupProgressPage     m_pageSetupProgress;
+    CMakerSetupResultPage       m_pageSetupResult;
     CMakerCompletePage          m_pageCompletion;
 
 public:

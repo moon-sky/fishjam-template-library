@@ -9,6 +9,8 @@
 #define IDD_PAGE_COMPLETE               130
 #define IDD_PAGE_CHOOSE_SETUP_FILE      131
 #define IDD_PAGE_SETUP_PROGRESS         132
+#define IDD_PROPPAGE_MEDIUM1            133
+#define IDD_PAGE_SETUP_RESULT           133
 #define IDB_WIZ97_HEADER                201
 #define IDB_WIZ97_WATERMARK             202
 #define IDC_WIZ97_EXTERIOR_TITLE        1000
@@ -17,6 +19,9 @@
 #define IDC_EDIT_SETUP_FILE_PATH        1003
 #define IDC_BTN_CHOOSE_SETUP_FILE       1004
 #define IDC_PROGRESS1                   1005
+#define IDC_TREE1                       1006
+#define IDC_TREE_SETUP_CHANGE_LIST      1006
+#define IDC_TREE_SETUP_CHANGE_RESULT    1006
 
 // Next default values for new objects
 // 
@@ -24,7 +29,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        203
 #define _APS_NEXT_COMMAND_VALUE         32775
-#define _APS_NEXT_CONTROL_VALUE         1006
+#define _APS_NEXT_CONTROL_VALUE         1007
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

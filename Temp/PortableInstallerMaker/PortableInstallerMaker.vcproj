@@ -281,6 +281,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MakerSetupResultPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MakerSetupResultPage.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MakerWelcomePage.cpp"
 				>
 			</File>

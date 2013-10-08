@@ -2,6 +2,8 @@
 
 #include "resource.h"
 #include "MakerWizardInfo.h"
+#include <ftlthread.h>
+
 
 class CMakerSetupProgressPage :
     public CWizard97ExteriorPageImpl<CMakerSetupProgressPage>,
@@ -27,10 +29,15 @@ public:
 
     BEGIN_MSG_MAP(thisClass)
         MSG_WM_INITDIALOG(OnInitDialog)
+        MSG_WM_COPYDATA(OnCopyData)
+        MESSAGE_HANDLER(UM_SETUP_MAKER_PROCESS_FINISHED, OnSetupMakerProcessFinished)
+
         CHAIN_MSG_MAP(baseClass)
     END_MSG_MAP()
 
     BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
+    BOOL OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct);
+
     void OnBtnChooseSetupFile(UINT uNotifyCode, int nID, CWindow wndCtl);
 
     // Helper methods
@@ -42,6 +49,12 @@ public:
     int OnSetActive();
     int OnWizardNext();
     void OnHelp();
+private:
+    FTL::CFThread<FTL::DefaultThreadTraits> m_ThreadSetup;
+    static DWORD __stdcall _RunSetupProc(LPVOID pParam);
+    DWORD _InnerRunSetupProc();
+    LRESULT OnSetupMakerProcessFinished(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+
 };
 
 

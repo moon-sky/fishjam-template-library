@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "MakerSetupProgressPage.h"
+#include "SetupMakerHelper/SetupMakerHelper.h"
 
 CMakerSetupProgressPage::CMakerSetupProgressPage(_U_STRINGorID title /* = (LPCTSTR)NULL*/ )
 :baseClass(title)
@@ -10,6 +11,28 @@ BOOL CMakerSetupProgressPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 {
     this->InitializeControls();
     this->InitializeValues();
+
+    BOOL bRet = FALSE;
+    API_VERIFY(m_ThreadSetup.Start(_RunSetupProc, this, TRUE));
+    return TRUE;
+}
+
+BOOL CMakerSetupProgressPage::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataStruct)
+{
+    if (pCopyDataStruct)
+    {
+        FTLASSERT(pCopyDataStruct->cbData == sizeof(SETUP_MONITOR_INFO));
+        if (pCopyDataStruct->cbData == sizeof(SETUP_MONITOR_INFO))
+        {
+            SETUP_MONITOR_INFO* pSetupMonitorInfo = (SETUP_MONITOR_INFO*)pCopyDataStruct->lpData;
+            if (pSetupMonitorInfo)
+            {
+                m_pMakerWizardInfo->AddSetupMonitorInfo(pSetupMonitorInfo->dwInfoType, pSetupMonitorInfo->szPath);
+                FTLTRACE(TEXT("OnCopyData, %d, %s\n"), pSetupMonitorInfo->dwInfoType, pSetupMonitorInfo->szPath);
+            }
+        }
+        
+    }
     return TRUE;
 }
 
@@ -47,7 +70,7 @@ bool CMakerSetupProgressPage::StoreValues(void)
 // Overrides from base class
 int CMakerSetupProgressPage::OnSetActive()
 {
-    this->SetWizardButtons(PSWIZB_BACK | PSWIZB_NEXT); //PSWIZB_BACK
+    this->SetWizardButtons(0); //PSWIZB_BACK | PSWIZB_NEXT); //PSWIZB_BACK
 
     // 0 = allow activate
     // -1 = go back to page that was active
@@ -79,3 +102,47 @@ void CMakerSetupProgressPage::OnHelp()
     m_pMakerWizardInfo->ShowHelp(IDD);
 }
 
+
+DWORD __stdcall CMakerSetupProgressPage::_RunSetupProc(LPVOID pParam)
+{
+    CMakerSetupProgressPage* pThis = static_cast<CMakerSetupProgressPage*>(pParam);
+    DWORD dwResult = pThis->_InnerRunSetupProc();
+    return dwResult;
+}
+DWORD CMakerSetupProgressPage::_InnerRunSetupProc()
+{
+    BOOL bRet = FALSE;
+    STARTUPINFO startupInfo = {0};
+    PROCESS_INFORMATION processInfo = {0};
+
+    API_VERIFY(CreateProcess(NULL, (LPTSTR)m_pMakerWizardInfo->GetSetupFilePath(), NULL, NULL, FALSE, 
+        /*CREATE_NEW_PROCESS_GROUP |*/ CREATE_SUSPENDED, NULL, NULL, 
+        &startupInfo, &processInfo));
+
+    FTLTRACE(TEXT("After CreateProcess, bRet=%d, PID=%d, TID=%d\n"), 
+        bRet, processInfo.dwProcessId, processInfo.dwThreadId);
+
+    if (bRet)
+    {
+        API_VERIFY(EnableSetupMonitor(GetCurrentProcessId(), processInfo.dwProcessId, m_hWnd));
+
+        ResumeThread(processInfo.hThread);
+        FTLTRACE(TEXT("Before WaitFor processInfo.hThread\n"));
+
+        WaitForSingleObject(processInfo.hThread, INFINITE);
+        API_VERIFY(DisableSetupMonitor(processInfo.dwProcessId));
+
+        FTLTRACE(TEXT("After WaitFor processInfo.hThread\n"));
+        PostMessage(UM_SETUP_MAKER_PROCESS_FINISHED, 0, 0);
+        CloseHandle(processInfo.hProcess);
+        CloseHandle(processInfo.hThread);
+    }
+    return 0;
+}
+
+LRESULT CMakerSetupProgressPage::OnSetupMakerProcessFinished(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+    this->SetWizardButtons(PSWIZB_NEXT); //PSWIZB_BACK
+
+    return 0;
+}

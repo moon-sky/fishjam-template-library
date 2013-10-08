@@ -46,6 +46,30 @@ CMakerWizardInfo::CMakerWizardInfo() :
         return (m_path == path);
     }
 
+    bool CMakerWizardInfo::SetSetupFilePath(LPCTSTR pszSetupFilePath)
+    {
+        m_strSetupFilePath = pszSetupFilePath;
+        return true;
+    }
+
+    bool CMakerWizardInfo::AddSetupMonitorInfo(DWORD dwType, LPCTSTR pszPath)
+    {
+        SetupMonitorInfo info;
+        info.dwType = dwType;
+        info.strPath = pszPath;
+        switch (dwType)
+        {
+        case 1:
+            //file
+            m_allSetupFileInfos.push_back(info);
+            break;
+        case 2:
+            //reg
+            m_allSetupRegInfos.push_back(info);
+            break;
+        }
+        return true;
+    }
     bool CMakerWizardInfo::SetRecurse(bool recurse)
     {
         m_recurse = recurse;
@@ -95,6 +119,11 @@ CMakerWizardInfo::CMakerWizardInfo() :
     CString CMakerWizardInfo::GetPath(void) const
     {
         return m_path;
+    }
+
+    LPCTSTR CMakerWizardInfo::GetSetupFilePath(void) const
+    {
+        return m_strSetupFilePath;
     }
 
     bool CMakerWizardInfo::GetRecurse(void) const
@@ -350,7 +379,7 @@ CMakerWizardInfo::CMakerWizardInfo() :
 
         switch(pageDialogId)
         {
-        case IDD_MAKER_WELCOME:
+        case IDD_PAGE_WELCOME:
             topicPath = _T("/MakerWizard_Welcome.html");
             break;
         //case IDD_WIZ97_PATHFILTER:
@@ -362,7 +391,7 @@ CMakerWizardInfo::CMakerWizardInfo() :
         //case IDD_WIZ97_OUTPUT:
         //    topicPath = _T("/MakerWizard_Output.html");
         //    break;
-        case IDD_MAKDER_COMPLETION:
+        case IDD_PAGE_COMPLETE:
             topicPath = _T("/MakerWizard_Completion.html");
             break;
         }
