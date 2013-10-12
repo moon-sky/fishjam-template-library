@@ -119,7 +119,7 @@ BOOL CProtectWndHookAPI::StartHook()
             {
                 g_pSetupInfoMgr = new CSetupInfoMgr();
 
-                //ATLTRACE(TEXT(">>> Will Hook API(g_bHooked=%d) in PID=%d(%s),TID=%d, ProtectWnd=0x%x\n"), 
+                //FTLTRACE(TEXT(">>> Will Hook API(g_bHooked=%d) in PID=%d(%s),TID=%d, ProtectWnd=0x%x\n"), 
                 //    g_HookApiInfo.bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId(), 
                 //    g_pProtectWndInfoFileMap->hWndProtect);
 
@@ -191,7 +191,7 @@ BOOL CProtectWndHookAPI::StopHook()
     StringCchPrintf(szTrace, _countof(szTrace), TEXT("StopHook in %s"), PathFindFileName(szModuleName));
     FUNCTION_BLOCK_NAME_TRACE(szTrace, 100);
 
-    ATLTRACE(TEXT("<<< Will UnHook API(g_bHooked=%d) in PID=%d(%s),TID=%d\n"), 
+    FTLTRACE(TEXT("<<< Will UnHook API(g_bHooked=%d) in PID=%d(%s),TID=%d\n"), 
         g_HookApiInfo.bHooked, GetCurrentProcessId(), PathFindFileName(szModuleName), GetCurrentThreadId());
 
     if (g_HookApiInfo.bHooked)

@@ -91,7 +91,7 @@ BOOL CSetupInfoMgr::DeleteSetupFileInfo(LPCTSTR pszFilePath)
 
 BOOL CSetupInfoMgr::OpenSetupReg(HKEY hKeyRoot, HKEY hKey, LPCTSTR pszPath)
 {
-    FTLASSERT(pszPath);
+    //FTLASSERT(pszPath);
 
     BOOL bRet = TRUE;
     FTL::CFAutoLock<FTL::CFLockObject> lockObj(&m_csLock);
@@ -172,7 +172,7 @@ BOOL CSetupInfoMgr::GetAllSetupInfo(HWND hWndGetResult)
             copyData.dwData = 1;
             copyData.lpData = &info;
 
-            SendMessage(hWndGetResult,  WM_COPYDATA, NULL, (LPARAM) (LPVOID)&copyData);
+            API_VERIFY(TRUE == (BOOLEAN)SendMessage(hWndGetResult,  WM_COPYDATA, NULL, (LPARAM) (LPVOID)&copyData));
             //FTLTRACE(TEXT("\t[%d]%d - %s\n"), ++nIndex, pHookedSetupInfo->infoType, pHookedSetupInfo->pszInfo);
         }
     }

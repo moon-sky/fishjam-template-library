@@ -72,7 +72,7 @@ LRESULT CALLBACK My_LowLevelKeyboardProc(int nCode,
 
         TCHAR szModuleName[MAX_PATH] = {0};
         GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
-        ATLTRACE(TEXT("LowLevelKeyboardProc In PID=%d(%s),TID=%d\n"), 
+        FTLTRACE(TEXT("LowLevelKeyboardProc In PID=%d(%s),TID=%d\n"), 
             GetCurrentProcessId(), PathFindFileName(szModuleName), 
             GetCurrentThreadId());
     }
@@ -85,7 +85,8 @@ LRESULT CALLBACK My_LowLevelKeyboardProc(int nCode,
 
 SETUPMAKERHELPER_API BOOL EnableSetupMonitor(DWORD curProcessId, DWORD dwSetupPID, HWND hWndGetSetupResult)
 {
-    ATLTRACE(TEXT("Enter EnableSetupMonitor for dwSetupPID=0x%x\n"), dwSetupPID);
+    FTLTRACE(TEXT("Enter EnableSetupMonitor for dwSetupPID=0x%x(%d), hWndGetSetupResult=0x%x\n"), 
+        dwSetupPID, dwSetupPID, hWndGetSetupResult);
     BOOL bRet = TRUE;
     if (NULL == g_hHookCallWndProc)
     {
@@ -94,7 +95,7 @@ SETUPMAKERHELPER_API BOOL EnableSetupMonitor(DWORD curProcessId, DWORD dwSetupPI
         API_VERIFY((g_hHookCallWndProc = SetWindowsHookEx(WH_CALLWNDPROC, My_CallWndProc, g_hModule, 0)) != NULL);
         //API_VERIFY((g_hHookKeyboard = SetWindowsHookEx(WH_KEYBOARD_LL, My_LowLevelKeyboardProc, g_hModule, 0)) != NULL);
 
-        //ATLTRACE(TEXT("Leave EnableWindowProtected g_hHook=0x%x, g_hHookKeyboard=0x%x, bRet=%d\n"), g_hHookCallWndProc, g_hHookKeyboard, bRet);
+        //FTLTRACE(TEXT("Leave EnableWindowProtected g_hHook=0x%x, g_hHookKeyboard=0x%x, bRet=%d\n"), g_hHookCallWndProc, g_hHookKeyboard, bRet);
     }
     return bRet;
 }
@@ -102,6 +103,8 @@ SETUPMAKERHELPER_API BOOL EnableSetupMonitor(DWORD curProcessId, DWORD dwSetupPI
 SETUPMAKERHELPER_API BOOL DisableSetupMonitor(DWORD dwSetupPID)
 {
     BOOL bRet = TRUE;
+    FTLTRACE(TEXT("DisableSetupMonitor, dwSetupPID=%d, g_hHookCallWndProc=0x%x\n"),
+        dwSetupPID, g_hHookCallWndProc);
     //FUNCTION_BLOCK_MODULE_NAME_TRACE(TEXT("DisableWindowProtected"), 100);
     API_VERIFY(UnHookApi());
     if (g_hHookCallWndProc)
@@ -142,6 +145,7 @@ SETUPMAKERHELPER_API BOOL HookApi()
 
 SETUPMAKERHELPER_API BOOL UnHookApi()
 {
+    FTLTRACE(TEXT("Enter UnHookAPi\n"));
     FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("UnHookApi"), FTL::TraceDetailExeName, 100);
     //notify all the toplevel progress
     BroadcastSystemMessage(BSF_FORCEIFHUNG |BSF_POSTMESSAGE, NULL, WM_NULL, 0, 0);
@@ -149,6 +153,7 @@ SETUPMAKERHELPER_API BOOL UnHookApi()
 	BOOL bRet = FALSE;
     API_VERIFY(g_ProtectWndHookApi.StopHook());
     g_bHooked = FALSE;
+    FTLTRACE(TEXT("Leave UnHookAPi\n"));
     return bRet;
 }
 

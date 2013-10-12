@@ -96,7 +96,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Welcome Page"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    LTEXT           "1.Choose Setup Files and install it\n2.Choose file and reg to make the portable installer",IDC_STATIC,115,55,297,22
+    LTEXT           "1.Choose Setup Files and install it\n2.Choose file and reg to make the portable installer",IDC_STATIC_WELCOME,115,55,297,22
 END
 
 IDD_PAGE_COMPLETE DIALOGEX 0, 0, 420, 220
@@ -124,7 +124,7 @@ CAPTION "Property Page"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "Setup File Running",IDC_STATIC,135,34,90,8
-    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",PBS_SMOOTH | WS_BORDER,131,73,246,15
+    CONTROL         "",IDC_PROGRESS_SETUP,"msctls_progress32",PBS_SMOOTH | WS_BORDER,131,73,246,15
 END
 
 IDD_PAGE_SETUP_RESULT DIALOGEX 0, 0, 420, 220
@@ -132,7 +132,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Property Page"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_TREE_SETUP_CHANGE_RESULT,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_CHECKBOXES | WS_BORDER | WS_HSCROLL | WS_TABSTOP,115,28,298,161
+    CONTROL         "",IDC_TREE_SETUP_CHANGE_RESULT,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_CHECKBOXES | WS_BORDER | WS_HSCROLL | WS_TABSTOP,115,28,298,161
     LTEXT           "File && Register Change List: ",IDC_STATIC,115,14,91,8
 END
 

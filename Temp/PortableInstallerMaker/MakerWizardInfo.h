@@ -43,12 +43,12 @@ enum MakerWizardQuerySiblingNotifiations
     eQuerySibling_ParametersFileChanged = 0,
 };
 
-struct SetupMonitorInfo
-{
-    DWORD dwType;
-    CString strPath;
-};
-typedef std::list<SetupMonitorInfo> SetupMonitorInfoContainer;
+//struct SetupMonitorInfo
+//{
+//    //DWORD dwType;
+//    CString strPath;
+//};
+typedef std::set<CString> SetupMonitorInfoContainer;
 
 class CMakerWizardInfo
 {

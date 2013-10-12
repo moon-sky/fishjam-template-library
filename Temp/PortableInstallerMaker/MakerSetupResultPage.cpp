@@ -17,55 +17,49 @@ BOOL CMakerSetupResultPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 
 void CMakerSetupResultPage::InitializeControls(void)
 {
-    CFontHandle fontExteriorPageTitleFont(baseClass::GetExteriorPageTitleFont());
-    CFontHandle fontBulletFont(baseClass::GetBulletFont());
-
-    //CWindow title = this->GetDlgItem(IDC_WIZ97_EXTERIOR_TITLE);
-    //CWindow bullet1 = this->GetDlgItem(IDC_WIZ97_BULLET1);
-    //CWindow bullet2 = this->GetDlgItem(IDC_WIZ97_BULLET2);
-    //CWindow bullet3 = this->GetDlgItem(IDC_WIZ97_BULLET3);
-    //CWindow bullet4 = this->GetDlgItem(IDC_WIZ97_BULLET4);
-    //m_buttonSkipWelcome = this->GetDlgItem(IDC_WIZ97_WELCOME_NOTAGAIN);
-
-    //title.SetFont(fontExteriorPageTitleFont);
-    //bullet1.SetFont(fontBulletFont);
-    //bullet2.SetFont(fontBulletFont);
-    //bullet3.SetFont(fontBulletFont);
-    //bullet4.SetFont(fontBulletFont);
+    //CFontHandle fontExteriorPageTitleFont(baseClass::GetExteriorPageTitleFont());
+    //CFontHandle fontBulletFont(baseClass::GetBulletFont());
 
     CTreeItem tiFileRoot, tiRegRoot;
 
     tiFileRoot  = m_treeSetupChangeResult.InsertItem ( TEXT("File"), TVI_ROOT, TVI_LAST );
-    //TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiFileRoot.m_hTreeItem, TRUE);
     m_treeSetupChangeResult.SetCheckState(tiFileRoot, TRUE);
+
+    INT nIndex = 1;
 
     for (SetupMonitorInfoContainer::iterator iterFile = m_pMakerWizardInfo->m_allSetupFileInfos.begin();
         iterFile != m_pMakerWizardInfo->m_allSetupFileInfos.end();
         ++iterFile)
     {
-        SetupMonitorInfo& fileInfo = *iterFile;
-        if (!_IsFilterFile(fileInfo.strPath))
+        //SetupMonitorInfo& fileInfo = *iterFile;
+        CString& filePath = *iterFile;
+        if (!_IsFilterFile(filePath))
         {
-            CTreeItem tiFileItem = tiFileRoot.AddTail(fileInfo.strPath, 0);
+            CTreeItem tiFileItem = tiFileRoot.AddTail(filePath, 0);
+            FTLTRACE(TEXT("Add File[%d], %s\n"), nIndex++, filePath); //fileInfo.strPath);
             m_treeSetupChangeResult.SetCheckState(tiFileItem, TRUE);
-            //TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiFileItem.m_hTreeItem, TRUE);
         }
     }
     
     tiRegRoot  = m_treeSetupChangeResult.InsertItem ( TEXT("Reg"), TVI_ROOT, TVI_LAST );
-    //TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiRegRoot.m_hTreeItem, TRUE);
     m_treeSetupChangeResult.SetCheckState(tiRegRoot, TRUE);
 
     for (SetupMonitorInfoContainer::iterator iterReg = m_pMakerWizardInfo->m_allSetupRegInfos.begin();
         iterReg != m_pMakerWizardInfo->m_allSetupRegInfos.end();
         ++iterReg)
     {
-        SetupMonitorInfo& regInfo = *iterReg;
-        CTreeItem tiRegItem = tiRegRoot.AddTail(regInfo.strPath, 0);
-        m_treeSetupChangeResult.SetCheckState(tiRegItem, TRUE);
+        //SetupMonitorInfo& regInfo = *iterReg;
+        CString& regPath = *iterReg;
+        CTreeItem tiRegItem = tiRegRoot.AddTail(regPath, 0); //regInfo.strPath, 0);
+        FTLTRACE(TEXT("Add Reg[%d], %s\n"), nIndex++, regPath); //regInfo.strPath);
 
-        //TreeView_SetCheckState(m_treeSetupChangeResult.m_hWnd, tiRegItem.m_hTreeItem, TRUE);
+        m_treeSetupChangeResult.SetCheckState(tiRegItem, TRUE);
     }
+
+    //FTL::CFControlUtil::CheckTreeSubItems(m_treeSetupChangeResult.m_hWnd, tiFileRoot.m_hTreeItem, TRUE);
+    //FTL::CFControlUtil::CheckTreeSubItems(m_treeSetupChangeResult.m_hWnd, tiRegRoot.m_hTreeItem, TRUE);
+    //m_treeSetupChangeResult.Expand(tiFileRoot.m_hTreeItem);
+    //m_treeSetupChangeResult.Expand(tiRegRoot.m_hTreeItem);
 }
 
 void CMakerSetupResultPage::InitializeValues(void)

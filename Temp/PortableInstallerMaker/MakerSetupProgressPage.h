@@ -25,6 +25,7 @@ public:
 
     BEGIN_DDX_MAP(thisClass)
         //DDX_TEXT(IDC_EDIT_SETUP_FILE_PATH, m_strSetupFilePath)
+        DDX_CONTROL_HANDLE(IDC_PROGRESS_SETUP, m_ProgressSetup)
     END_DDX_MAP()
 
     BEGIN_MSG_MAP(thisClass)
@@ -50,6 +51,8 @@ public:
     int OnWizardNext();
     void OnHelp();
 private:
+    CProgressBarCtrl   m_ProgressSetup;
+    INT     m_nFileIndex;
     FTL::CFThread<FTL::DefaultThreadTraits> m_ThreadSetup;
     static DWORD __stdcall _RunSetupProc(LPVOID pParam);
     DWORD _InnerRunSetupProc();

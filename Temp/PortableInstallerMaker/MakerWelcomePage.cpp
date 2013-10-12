@@ -9,6 +9,7 @@ CMakerWelcomePage::CMakerWelcomePage(_U_STRINGorID title /* = (LPCTSTR)NULL*/ )
 
 BOOL CMakerWelcomePage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
 {
+    DlgResize_Init(true);
     this->InitializeControls();
     this->InitializeValues();
     return TRUE;

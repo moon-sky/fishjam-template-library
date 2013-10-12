@@ -4,6 +4,7 @@
 
 CMakerSetupProgressPage::CMakerSetupProgressPage(_U_STRINGorID title /* = (LPCTSTR)NULL*/ )
 :baseClass(title)
+,m_nFileIndex(0)
 {
 }
 
@@ -13,7 +14,9 @@ BOOL CMakerSetupProgressPage::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     this->InitializeValues();
 
     BOOL bRet = FALSE;
+    FTLTRACE(TEXT("CMakerSetupProgressPage::OnInitDialog, m_hWnd=0x%x\n"), m_hWnd);
     API_VERIFY(m_ThreadSetup.Start(_RunSetupProc, this, TRUE));
+    m_ProgressSetup.SetMarquee(TRUE);
     return TRUE;
 }
 
@@ -27,17 +30,18 @@ BOOL CMakerSetupProgressPage::OnCopyData(CWindow wnd, PCOPYDATASTRUCT pCopyDataS
             SETUP_MONITOR_INFO* pSetupMonitorInfo = (SETUP_MONITOR_INFO*)pCopyDataStruct->lpData;
             if (pSetupMonitorInfo)
             {
+                FTLTRACE(TEXT("OnCopyData[%d], %d, %s\n"), ++m_nFileIndex, pSetupMonitorInfo->dwInfoType, pSetupMonitorInfo->szPath);
                 m_pMakerWizardInfo->AddSetupMonitorInfo(pSetupMonitorInfo->dwInfoType, pSetupMonitorInfo->szPath);
-                FTLTRACE(TEXT("OnCopyData, %d, %s\n"), pSetupMonitorInfo->dwInfoType, pSetupMonitorInfo->szPath);
             }
         }
-        
     }
     return TRUE;
 }
 
 void CMakerSetupProgressPage::InitializeControls(void)
 {
+    DoDataExchange(FALSE);
+    m_ProgressSetup.ModifyStyle(0, PBS_MARQUEE);
     CFontHandle fontExteriorPageTitleFont(baseClass::GetExteriorPageTitleFont());
     CFontHandle fontBulletFont(baseClass::GetBulletFont());
 
@@ -114,7 +118,7 @@ DWORD CMakerSetupProgressPage::_InnerRunSetupProc()
     BOOL bRet = FALSE;
     STARTUPINFO startupInfo = {0};
     PROCESS_INFORMATION processInfo = {0};
-
+    
     API_VERIFY(CreateProcess(NULL, (LPTSTR)m_pMakerWizardInfo->GetSetupFilePath(), NULL, NULL, FALSE, 
         /*CREATE_NEW_PROCESS_GROUP |*/ CREATE_SUSPENDED, NULL, NULL, 
         &startupInfo, &processInfo));
@@ -142,6 +146,9 @@ DWORD CMakerSetupProgressPage::_InnerRunSetupProc()
 
 LRESULT CMakerSetupProgressPage::OnSetupMakerProcessFinished(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+    m_ProgressSetup.SetMarquee(FALSE);
+    m_ProgressSetup.SetRange32(0, 100);
+    m_ProgressSetup.SetPos(100);
     this->SetWizardButtons(PSWIZB_NEXT); //PSWIZB_BACK
 
     return 0;

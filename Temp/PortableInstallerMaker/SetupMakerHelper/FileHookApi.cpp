@@ -1,21 +1,20 @@
 #include "stdafx.h"
 #include "FileHookApi.h"
 #include "SetupInfoMgr.h"
+#include <ftlFile.h>
 
-static DWORD s_dwDesiredAccessFilter = FILE_APPEND_DATA | FILE_WRITE_DATA;
-static DWORD s_dwCreationDispositionFilter = 0;
+static DWORD s_dwDesiredAccessFilter = GENERIC_WRITE | GENERIC_ALL;
+//static DWORD s_dwCreationDispositionFilter = 0;
 
 BOOL CheckWillWrite(DWORD dwDesiredAccess)
 {
-    return TRUE; //((dwDesiredAccess & s_dwCreationDispositionFilter) != 0);
+    return ((dwDesiredAccess & s_dwDesiredAccessFilter) != 0);
 }
-
 
 BOOL WINAPI Hooked_DeleteFileA(LPCSTR lpFileName)
 {
     BOOL bRet = FALSE;
     HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
-    LPCTSTR pszTCharFileName = CFConversion().MBCS_TO_TCHAR(lpFileName);
 
     DeleteFileAProc pOrigDeleteFileA = (DeleteFileAProc)g_HookApiInfo.HookApiInfos[hft_DeleteFileA]->pOriginal;
     if (pOrigDeleteFileA)
@@ -23,7 +22,9 @@ BOOL WINAPI Hooked_DeleteFileA(LPCSTR lpFileName)
         bRet = pOrigDeleteFileA(lpFileName);
         if (bRet)
         {
-            FTLTRACE(TEXT("!!! Hooked_DeleteFileA, lpFileName=%s\n"), pszTCharFileName);
+            CFConversion conv;
+            LPCTSTR pszTCharFileName = conv.MBCS_TO_TCHAR(lpFileName);
+            FTLTRACEEX(tlInfo, TEXT("!!! Hooked_DeleteFileA, lpFileName=%s\n"), pszTCharFileName);
             g_pSetupInfoMgr->DeleteSetupFileInfo(pszTCharFileName);
         }
     }
@@ -35,7 +36,6 @@ BOOL WINAPI Hooked_DeleteFileW(LPCWSTR lpFileName)
 {
     BOOL bRet = FALSE;
     HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
-    LPCTSTR pszTCharFileName = CFConversion().UTF16_TO_TCHAR(lpFileName);
 
     DeleteFileWProc pOrigDeleteFileW = (DeleteFileWProc)g_HookApiInfo.HookApiInfos[hft_DeleteFileW]->pOriginal;
     if (pOrigDeleteFileW)
@@ -43,6 +43,8 @@ BOOL WINAPI Hooked_DeleteFileW(LPCWSTR lpFileName)
         bRet = pOrigDeleteFileW(lpFileName);
         if (bRet)
         {
+            CFConversion conv;
+            LPCTSTR pszTCharFileName = conv.UTF16_TO_TCHAR(lpFileName);
             FTLTRACE(TEXT("!!! Hooked_DeleteFileW, lpFileName=%s\n"), pszTCharFileName);
             g_pSetupInfoMgr->DeleteSetupFileInfo(pszTCharFileName);
         }
@@ -58,7 +60,6 @@ HANDLE WINAPI Hooked_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess,
 {
     HANDLE hFileReturn = NULL;
     HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
-    LPCTSTR pszTCharFileName = CFConversion().MBCS_TO_TCHAR(lpFileName);
 
     CreateFileAProc pOrigCreateFileA = (CreateFileAProc)g_HookApiInfo.HookApiInfos[hft_CreateFileA]->pOriginal;
     if (pOrigCreateFileA)
@@ -67,7 +68,9 @@ HANDLE WINAPI Hooked_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess,
             dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
         if (INVALID_HANDLE_VALUE != hFileReturn && CheckWillWrite(dwDesiredAccess))
         {
-            FTLTRACE(TEXT("!!! Hooked_CreateFileA,lpFileName=%s\n"), pszTCharFileName);
+            CFConversion conv;
+            LPCTSTR pszTCharFileName = conv.MBCS_TO_TCHAR(lpFileName);
+            FTLTRACEEX(tlInfo, TEXT("!!! Hooked_CreateFileA,lpFileName=%s\n"), pszTCharFileName);
             g_pSetupInfoMgr->SetSetupFileInfo(pszTCharFileName, NULL);
         }
     }
@@ -82,7 +85,6 @@ HANDLE WINAPI Hooked_CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess,
 {
     HANDLE hFileReturn = NULL;
     HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
-    LPCTSTR pszTCharFileName = CFConversion().UTF16_TO_TCHAR(lpFileName);
 
     CreateFileWProc pOrigCreateFileW = (CreateFileWProc)g_HookApiInfo.HookApiInfos[hft_CreateFileW]->pOriginal;
     if (pOrigCreateFileW)
@@ -91,7 +93,10 @@ HANDLE WINAPI Hooked_CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess,
             dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
         if (INVALID_HANDLE_VALUE != hFileReturn && CheckWillWrite(dwDesiredAccess))
         {
-            FTLTRACE(TEXT("!!! Hooked_CreateFileW, lpFileName=%s\n"), pszTCharFileName);
+            CFConversion conv;
+            LPCTSTR pszTCharFileName = conv.UTF16_TO_TCHAR(lpFileName);
+            FTLTRACEEX(tlInfo, TEXT("!!! Hooked_CreateFileW, lpFileName=%s,dwDesiredAccess=0x%x, dwShareMode=0x%x, CreateDisp=0x%x\n"), 
+                pszTCharFileName, dwDesiredAccess, dwShareMode, dwCreationDisposition);
             g_pSetupInfoMgr->SetSetupFileInfo(pszTCharFileName, NULL);
         }
     }
@@ -112,9 +117,11 @@ BOOL WINAPI Hooked_MoveFileA(LPCSTR lpExistingFileName, LPCSTR lpNewFileName)
         bRet = pOrigMoveFileA(lpExistingFileName, lpNewFileName); 
         if (bRet)
         {
-            LPCTSTR pszTCharExistingFileName = CFConversion().MBCS_TO_TCHAR(lpExistingFileName);
-            LPCTSTR pszTCharNewFileName = CFConversion().MBCS_TO_TCHAR(lpNewFileName);
-            FTLTRACE(TEXT("!!! Hooked_MoveFileA, %s=>%s\n"), 
+            CFConversion convExistFileName;
+            CFConversion convNewFileName;
+            LPCTSTR pszTCharExistingFileName = convExistFileName.MBCS_TO_TCHAR(lpExistingFileName);
+            LPCTSTR pszTCharNewFileName = convNewFileName.MBCS_TO_TCHAR(lpNewFileName);
+            FTLTRACEEX(tlInfo, TEXT("!!! Hooked_MoveFileA, %s=>%s\n"), 
                 pszTCharExistingFileName, pszTCharNewFileName);
 
             g_pSetupInfoMgr->SetSetupFileInfo(pszTCharExistingFileName, pszTCharNewFileName);
@@ -136,10 +143,12 @@ BOOL WINAPI Hooked_MoveFileW(LPCWSTR lpExistingFileName, LPCWSTR lpNewFileName)
         bRet = pOrigMoveFileW(lpExistingFileName, lpNewFileName); 
         if (bRet)
         {
-            LPCTSTR pszTCharExistingFileName = CFConversion().UTF16_TO_TCHAR(lpExistingFileName);
-            LPCTSTR pszTCharNewFileName = CFConversion().UTF16_TO_TCHAR(lpNewFileName);
+            CFConversion convExistFileName;
+            CFConversion convNewFileName;
+            LPCTSTR pszTCharExistingFileName = convExistFileName.UTF16_TO_TCHAR(lpExistingFileName);
+            LPCTSTR pszTCharNewFileName = convNewFileName.UTF16_TO_TCHAR(lpNewFileName);
 
-            FTLTRACE(TEXT("!!! Hooked_MoveFileW, %s=>%s\n"), pszTCharExistingFileName, pszTCharNewFileName);
+            FTLTRACEEX(tlInfo, TEXT("!!! Hooked_MoveFileW, %s=>%s\n"), pszTCharExistingFileName, pszTCharNewFileName);
             g_pSetupInfoMgr->SetSetupFileInfo(pszTCharExistingFileName, pszTCharNewFileName);
         }
     }

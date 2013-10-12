@@ -54,18 +54,21 @@ CMakerWizardInfo::CMakerWizardInfo() :
 
     bool CMakerWizardInfo::AddSetupMonitorInfo(DWORD dwType, LPCTSTR pszPath)
     {
-        SetupMonitorInfo info;
-        info.dwType = dwType;
-        info.strPath = pszPath;
+        //SetupMonitorInfo info;
+        //info.dwType = dwType;
+        //info.strPath = pszPath;
         switch (dwType)
         {
         case 1:
             //file
-            m_allSetupFileInfos.push_back(info);
+            if (::PathFileExists(pszPath))
+            {
+                m_allSetupFileInfos.insert(pszPath);// push_back(info);
+            }
             break;
         case 2:
             //reg
-            m_allSetupRegInfos.push_back(info);
+            m_allSetupRegInfos.insert(pszPath);// info);
             break;
         }
         return true;

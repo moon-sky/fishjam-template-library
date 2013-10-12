@@ -66,7 +66,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                             //|| StrStrI(szModuleName, TEXT("NComic.exe")) != NULL
                             )
                         {
-                            ATLTRACE(TEXT(">>> Will Hook %s\n"), pszFileName);
+                            FTLTRACE(TEXT(">>> Will Hook %s\n"), pszFileName);
                             g_bNeedHook = TRUE;
                         }
                     }
