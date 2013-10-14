@@ -431,6 +431,15 @@ BEGIN
     PUSHBUTTON      "Test JMP",IDC_BTN_HOOK_API_TEST_JMP,200,15,50,22
 END
 
+IDD_PAGE_CONTROLS DIALOGEX 0, 0, 371, 245
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Controls"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_TREE_CHECK,"SysTreeView32",WS_BORDER | WS_HSCROLL | WS_TABSTOP,7,22,206,186
+    LTEXT           "CheckTreeCtrlView",IDC_STATIC,7,7,164,17
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -599,6 +608,14 @@ BEGIN
         RIGHTMARGIN, 318
         TOPMARGIN, 7
         BOTTOMMARGIN, 207
+    END
+
+    IDD_PAGE_CONTROLS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 364
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 238
     END
 END
 #endif    // APSTUDIO_INVOKED

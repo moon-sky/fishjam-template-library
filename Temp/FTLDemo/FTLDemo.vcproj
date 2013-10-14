@@ -383,6 +383,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ControlsPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CrackPage.cpp"
 				>
 			</File>
@@ -522,6 +526,10 @@
 			</File>
 			<File
 				RelativePath=".\ColourPopup.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ControlsPage.h"
 				>
 			</File>
 			<File

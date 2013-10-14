@@ -3,6 +3,7 @@
 #include "FTLDemoSheet.h"
 
 #include "BasePage.h"
+#include "ControlsPage.h"
 #include "CrackPage.h"
 #include "CrashHandlerPage.h"
 #include "GdiPage.h"
@@ -45,6 +46,7 @@ BOOL CFTLDemoSheet::InitSheet()
     BOOL bRet = TRUE;
 
     this->AddPage(new CBasePage());
+    this->AddPage(new CControlsPage());
     //this->AddPage(new CCrackPage());
     //this->AddPage(new CCrashHandlerPage());
     //this->AddPage(new CGdiPage());

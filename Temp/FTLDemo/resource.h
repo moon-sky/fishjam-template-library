@@ -26,6 +26,7 @@
 #define IDD_PAGE_GDIPLUS                139
 #define IDR_MENU_GDI_PLUS_TEST          140
 #define IDD_PAGE_HOOKAPI                141
+#define IDD_PAGE_CONTROLS               142
 #define IDC_EDIT_LOG                    1000
 #define IDC_BTN_FTL_THREAD_POOL_START   1001
 #define IDC_BTN_FTL_THREAD_POOL_ADD_JOB_LOW 1002
@@ -211,6 +212,8 @@
 #define IDC_BTN_DUMP_IMAGE_PROPERTY     1132
 #define IDC_BUTTON2                     1133
 #define IDC_BTN_HOOK_API_TEST_JMP       1133
+#define IDC_TREE1                       1134
+#define IDC_TREE_CHECK                  1134
 #define ID_GDIPLUSTEST_DRAWSTRING       32771
 #define ID_GDIPLUSTEST_MEASURECHARACTERRANGES 32772
 #define ID_IMAGETEST_DRAWIMAGE          32773
@@ -227,7 +230,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1134
+#define _APS_NEXT_CONTROL_VALUE         1135
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

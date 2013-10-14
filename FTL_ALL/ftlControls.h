@@ -129,6 +129,9 @@ IMF_DUALFONT |
 *       1.新创建的位图需要和代码中操作的 IDR_MAINFRAME 资源又相同的布局，才不会出现逻辑错误。
 *       2.这种方式创建的工具条似乎不能很好的支持 禁止、高亮  -- 但MFC提供了 SetDisabledImageList/SetHotImageList 方法
 *       3.运行时像素颜色为 light gray(RGB (192, 192, 192))在运行时会被用户选择按钮的颜色替换 -- 需要设置成透明的？
+*
+* 树型控件(CTreeViewCtrlExT)
+*   
 ***********************************************************************************************************/
 
 /***********************************************************************************************************
@@ -260,6 +263,14 @@ namespace FTL
 		BOOL m_bShowHoriz;
 		BOOL m_bShowVert;
 	};
+
+    class CCheckedTreeViewCtrlEx : public CTreeViewCtrlEx
+    {
+    public:
+        CCheckedTreeViewCtrlEx();
+        ~CCheckedTreeViewCtrlEx();
+    public:
+    };
 
     struct FScrollSkinInfo
     {

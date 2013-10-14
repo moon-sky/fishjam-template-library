@@ -32,6 +32,11 @@ VS2012中使用汇编：会遇到 error LNK2026: module unsafe for SAFESEH image 的错误
 解决方式：
   1. (推荐) -- ml.exe 的参数中增加 /safeseh
   2. 在 Link的 Command 中输入 "/SAFESEH:NO"
+  
+VS2012中使用WTL，会报 error C2039: 'AtlGetCommCtrlVersion' is not a member of 'ATL' 的错误
+解决方式：
+  1. (推荐) -- 使用wtl81_12085 后的版本http://sourceforge.net/projects/wtl/files/WTL%208.1/WTL%208.1.12085/）
+
 
 NT内核简介——HIPS与现代木马 -- http://bbs.kafan.cn/thread-233915-1-1.html
 驱动级DLL注入源码 -- http://www.pudn.com/downloads379/sourcecode/windows/detail1634630.html
