@@ -10,6 +10,45 @@
 
 namespace FTL
 {
+    LPCTSTR CFFileUtil::GetFileDesiredAccessFlagsString(FTL::CFStringFormater& formater, DWORD dwDesiredAccess, LPCTSTR pszDivide /* = TEXT("|") */)
+    {
+        DWORD oldDesiredAccess = dwDesiredAccess;
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_READ_DATA, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_WRITE_DATA, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_APPEND_DATA, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_READ_EA, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_WRITE_EA, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_EXECUTE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_DELETE_CHILD, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_READ_ATTRIBUTES, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, FILE_WRITE_ATTRIBUTES, pszDivide);
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, DELETE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, READ_CONTROL, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, WRITE_DAC, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, WRITE_OWNER, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, SYNCHRONIZE, pszDivide);
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, ACCESS_SYSTEM_SECURITY, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, MAXIMUM_ALLOWED, pszDivide);
+
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, GENERIC_READ, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, GENERIC_WRITE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, GENERIC_EXECUTE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, GENERIC_ALL, pszDivide);
+
+        FTLASSERT( 0 == dwDesiredAccess);
+        //HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwDesiredAccess, XXXXXXXXX, pszDivide);
+        if (0 != dwDesiredAccess)
+        {
+            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Get File Desired AccessFlags String Not Complete, total=0x%08x, remain=0x%08x\n"),
+                __FILE__LINE__, oldDesiredAccess, dwDesiredAccess);
+        }
+        return formater.GetString();
+    }
+
     BOOL CFFileUtil::DumpAllAPISystemFolderPath(DWORD dwSHGetFolderPathFlags/* = SHGFP_TYPE_DEFAULT */)
     {
         BOOL bRet = FALSE;

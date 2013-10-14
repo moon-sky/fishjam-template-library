@@ -93,7 +93,15 @@
 *     Dll 中资源ID为 2( ISOLATIONAWARE_MANIFEST_RESOURCE_ID )
 *     问题：3( ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID ) 有什么用?
 *           24( RT_MANIFEST ) 有什么用?
-* 
+*   
+*   资源(.rc)文件的信息
+*     VarFileInfo
+*        Translation -- 文件属性中显示的语言(英文为"0x0409 0x04B0", 中文为"0x0804 0x04B0")
+*     StringFileInfo
+*        每个语言对应的信息(如 BLOCK "040904B0" 对应英文)
+*     
+*       
+*
 *   WinXP以前的Windows会忽略 manifest 的内容。
 *   VS2010 又不再使用manifest了？
 *

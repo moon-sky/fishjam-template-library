@@ -381,8 +381,8 @@ namespace FTL
 				{
 					COM_VERIFY(spShellLink->SetIconLocation(szIconPath, iIcon));
 				}
-
-				COM_VERIFY(spPersistFile->Save(CFConversion().TCHAR_TO_UTF16(szPathLink), TRUE));
+                CFConversion conv;
+				COM_VERIFY(spPersistFile->Save(conv.TCHAR_TO_UTF16(szPathLink), TRUE));
 			}
 		}
 

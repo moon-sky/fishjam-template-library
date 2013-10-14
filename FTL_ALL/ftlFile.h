@@ -124,11 +124,15 @@ namespace FTL
 	class CFFileUtil
 	{
 	public:
+        //获取 CreateFile(xxx, dwDesiredAccess, xxx) 中的 dwDesiredAccess 参数
+        FTLINLINE static LPCTSTR GetFileDesiredAccessFlagsString(FTL::CFStringFormater& formater, DWORD dwDesiredAccess, LPCTSTR pszDivide = TEXT("|"));
+
         //调试方法，输出所有能获取到的系统目录
         FTLINLINE static BOOL DumpAllAPISystemFolderPath(DWORD dwSHGetFolderPathFlags = SHGFP_TYPE_DEFAULT);
 
 		FTLINLINE static TextFileEncoding GetTextFileEncoding(LPCTSTR pszFilePath);
 		FTLINLINE static HANDLE CreateLocalWriteFile(__inout LPTSTR pszFilePath, DWORD dwMaxSize, CreateLocalFileFlags flags);
+
 	};
 
 #if 0

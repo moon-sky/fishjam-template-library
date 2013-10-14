@@ -1,3 +1,9 @@
+用7Zip制作软件安装包
+  通过 -sfx[SFX_Module] 可以创建自解压的压缩包，其中7zCon.sfx 为命令行版本,7zS.sfx为Windows版本
+
+?MsIsTub.exe -- 制作 .msi 格式的安装程序
+ResHacker -- 修改相关资源?
+
 CHAIN_MSG_MAP_ALT -- 
 在CMainFrame中将消息派发到不同的View中 -- CHAIN_MSG_MAP_ALT_MEMBER(m_view, 1) + ALT_MSG_MAP
 
