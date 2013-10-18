@@ -7,7 +7,7 @@
 #include <ftlCrashHandler.h>
 #include <ftlgdiplus.h>
 //#include "vld.h"
-
+#include <ftlfile.h>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -60,6 +60,8 @@ BOOL CFTLDemoApp::InitInstance()
 
         AfxEnableControlContainer();
 
+        FTL::CFFileUtil::DumpAllAPISystemFolderPath();
+
         // 标准初始化
         // 如果未使用这些功能并希望减小
         // 最终可执行文件的大小，则应移除下列
@@ -71,6 +73,8 @@ BOOL CFTLDemoApp::InitInstance()
         crashHandler.SetDefaultCrashHandlerFilter();
 
         FTL::CFAutoGdiplus   gdiPlusInitObject;
+
+
         //CFTLDemoDlg dlg;
         //m_pMainWnd = &dlg;
         //INT_PTR nResponse = dlg.DoModal();

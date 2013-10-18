@@ -57,64 +57,64 @@ namespace FTL
 
         typedef std::pair<int, LPCTSTR> CSIDL2NameInfoPair;
         CSIDL2NameInfoPair checkClsids[] = {
-            std::make_pair(CSIDL_DESKTOP, TEXT("CSIDL_DESKTOP")),
-            std::make_pair(CSIDL_INTERNET, TEXT("CSIDL_INTERNET")),
-            std::make_pair(CSIDL_PROGRAMS, TEXT("CSIDL_PROGRAMS")),
-            std::make_pair(CSIDL_CONTROLS, TEXT("CSIDL_CONTROLS")),
-            std::make_pair(CSIDL_PRINTERS, TEXT("CSIDL_PRINTERS")),
-            std::make_pair(CSIDL_PERSONAL, TEXT("CSIDL_PERSONAL")),
-            std::make_pair(CSIDL_FAVORITES, TEXT("CSIDL_FAVORITES")),
-            std::make_pair(CSIDL_STARTUP, TEXT("CSIDL_STARTUP")),
-            std::make_pair(CSIDL_RECENT, TEXT("CSIDL_RECENT")),
-            std::make_pair(CSIDL_SENDTO, TEXT("CSIDL_SENDTO")),
-            std::make_pair(CSIDL_BITBUCKET, TEXT("CSIDL_BITBUCKET")),
-            std::make_pair(CSIDL_STARTMENU, TEXT("CSIDL_STARTMENU")),
-            std::make_pair(CSIDL_MYDOCUMENTS, TEXT("CSIDL_MYDOCUMENTS")),
-            std::make_pair(CSIDL_MYMUSIC, TEXT("CSIDL_MYMUSIC")),
-            std::make_pair(CSIDL_MYVIDEO, TEXT("CSIDL_MYVIDEO")),
-            std::make_pair(CSIDL_DESKTOPDIRECTORY, TEXT("CSIDL_DESKTOPDIRECTORY")),
-            std::make_pair(CSIDL_DRIVES, TEXT("CSIDL_DRIVES")),
-            std::make_pair(CSIDL_NETWORK, TEXT("CSIDL_NETWORK")),
-            std::make_pair(CSIDL_NETHOOD, TEXT("CSIDL_NETHOOD")),
-            std::make_pair(CSIDL_FONTS, TEXT("CSIDL_FONTS")),
-            std::make_pair(CSIDL_TEMPLATES, TEXT("CSIDL_TEMPLATES")),
-            std::make_pair(CSIDL_COMMON_STARTMENU, TEXT("CSIDL_COMMON_STARTMENU")),
-            std::make_pair(CSIDL_COMMON_PROGRAMS, TEXT("CSIDL_COMMON_PROGRAMS")),
-            std::make_pair(CSIDL_COMMON_STARTUP, TEXT("CSIDL_COMMON_STARTUP")),
-            std::make_pair(CSIDL_COMMON_DESKTOPDIRECTORY, TEXT("CSIDL_COMMON_DESKTOPDIRECTORY")),
-            std::make_pair(CSIDL_APPDATA, TEXT("CSIDL_APPDATA")),
-            std::make_pair(CSIDL_PRINTHOOD, TEXT("CSIDL_PRINTHOOD")),
-            std::make_pair(CSIDL_LOCAL_APPDATA, TEXT("CSIDL_LOCAL_APPDATA")),
-            std::make_pair(CSIDL_ALTSTARTUP, TEXT("CSIDL_ALTSTARTUP")),
-            std::make_pair(CSIDL_COMMON_ALTSTARTUP, TEXT("CSIDL_COMMON_ALTSTARTUP")),
-            std::make_pair(CSIDL_COMMON_FAVORITES, TEXT("CSIDL_COMMON_FAVORITES")),
+            std::make_pair(CSIDL_DESKTOP, TEXT("CSIDL_DESKTOP")),           //%USERPROFILE%\Desktop
+            std::make_pair(CSIDL_INTERNET, TEXT("CSIDL_INTERNET")),         //E_FAIL
+            std::make_pair(CSIDL_PROGRAMS, TEXT("CSIDL_PROGRAMS")),         //%APPDATA%\Microsoft\Windows\Start Menu\Programs
+            std::make_pair(CSIDL_CONTROLS, TEXT("CSIDL_CONTROLS")),         //E_FAIL
+            std::make_pair(CSIDL_PRINTERS, TEXT("CSIDL_PRINTERS")),         //E_FAIL
+            std::make_pair(CSIDL_PERSONAL, TEXT("CSIDL_PERSONAL")),         //%USERPROFILE%\Documents
+            std::make_pair(CSIDL_FAVORITES, TEXT("CSIDL_FAVORITES")),       //%USERPROFILE%\Favorites
+            std::make_pair(CSIDL_STARTUP, TEXT("CSIDL_STARTUP")),           //%APPDATA%\Microsoft\Windows\Start Menu\Programs\StartUp
+            std::make_pair(CSIDL_RECENT, TEXT("CSIDL_RECENT")),             //%APPDATA%\Microsoft\Windows\Recent
+            std::make_pair(CSIDL_SENDTO, TEXT("CSIDL_SENDTO")),             //%APPDATA%\Microsoft\Windows\SendTo
+            std::make_pair(CSIDL_BITBUCKET, TEXT("CSIDL_BITBUCKET")),       //E_FAIL
+            std::make_pair(CSIDL_STARTMENU, TEXT("CSIDL_STARTMENU")),       //%APPDATA%\Microsoft\Windows\Start Menu
+            std::make_pair(CSIDL_MYDOCUMENTS, TEXT("CSIDL_MYDOCUMENTS")),   //%USERPROFILE%\Documents
+            std::make_pair(CSIDL_MYMUSIC, TEXT("CSIDL_MYMUSIC")),           //%USERPROFILE%\Music
+            std::make_pair(CSIDL_MYVIDEO, TEXT("CSIDL_MYVIDEO")),           //%USERPROFILE%\Videos
+            std::make_pair(CSIDL_DESKTOPDIRECTORY, TEXT("CSIDL_DESKTOPDIRECTORY")), //%USERPROFILE%\Desktop
+            std::make_pair(CSIDL_DRIVES, TEXT("CSIDL_DRIVES")),             //E_FAIL
+            std::make_pair(CSIDL_NETWORK, TEXT("CSIDL_NETWORK")),           //E_FAIL
+            std::make_pair(CSIDL_NETHOOD, TEXT("CSIDL_NETHOOD")),           //%APPDATA%\Microsoft\Windows\Network Shortcuts
+            std::make_pair(CSIDL_FONTS, TEXT("CSIDL_FONTS")),               //%SystemRoot%\Fonts
+            std::make_pair(CSIDL_TEMPLATES, TEXT("CSIDL_TEMPLATES")),       //%APPDATA%\Microsoft\Windows\Templates
+            std::make_pair(CSIDL_COMMON_STARTMENU, TEXT("CSIDL_COMMON_STARTMENU")), //%ProgramData%\Microsoft\Windows\Start Menu
+            std::make_pair(CSIDL_COMMON_PROGRAMS, TEXT("CSIDL_COMMON_PROGRAMS")),   //%ProgramData%\Microsoft\Windows\Start Menu\Programs
+            std::make_pair(CSIDL_COMMON_STARTUP, TEXT("CSIDL_COMMON_STARTUP")),     //%ProgramData%\Microsoft\Windows\Start Menu\Programs\StartUp
+            std::make_pair(CSIDL_COMMON_DESKTOPDIRECTORY, TEXT("CSIDL_COMMON_DESKTOPDIRECTORY")),   //%PUBLIC%\Desktop
+            std::make_pair(CSIDL_APPDATA, TEXT("CSIDL_APPDATA")),           //%APPDATA%
+            std::make_pair(CSIDL_PRINTHOOD, TEXT("CSIDL_PRINTHOOD")),       //%APPDATA%\Microsoft\Windows\Printer Shortcuts
+            std::make_pair(CSIDL_LOCAL_APPDATA, TEXT("CSIDL_LOCAL_APPDATA")),   //%LOCALAPPDATA%
+            std::make_pair(CSIDL_ALTSTARTUP, TEXT("CSIDL_ALTSTARTUP")),     //%APPDATA%\Microsoft\Windows\Start Menu\Programs\StartUp
+            std::make_pair(CSIDL_COMMON_ALTSTARTUP, TEXT("CSIDL_COMMON_ALTSTARTUP")),   //%ProgramData%\Microsoft\Windows\Start Menu\Programs\StartUp
+            std::make_pair(CSIDL_COMMON_FAVORITES, TEXT("CSIDL_COMMON_FAVORITES")), //%USERPROFILE%\Favorites
 
-            std::make_pair(CSIDL_INTERNET_CACHE, TEXT("CSIDL_INTERNET_CACHE")),
-            std::make_pair(CSIDL_COOKIES, TEXT("CSIDL_COOKIES")),
-            std::make_pair(CSIDL_HISTORY, TEXT("CSIDL_HISTORY")),
-            std::make_pair(CSIDL_COMMON_APPDATA, TEXT("CSIDL_COMMON_APPDATA")),
-            std::make_pair(CSIDL_WINDOWS, TEXT("CSIDL_WINDOWS")),
-            std::make_pair(CSIDL_SYSTEM, TEXT("CSIDL_SYSTEM")),
-            std::make_pair(CSIDL_PROGRAM_FILES, TEXT("CSIDL_PROGRAM_FILES")),
-            std::make_pair(CSIDL_MYPICTURES, TEXT("CSIDL_MYPICTURES")),
-            std::make_pair(CSIDL_PROFILE, TEXT("CSIDL_PROFILE")),
-            std::make_pair(CSIDL_SYSTEMX86, TEXT("CSIDL_SYSTEMX86")),
-            std::make_pair(CSIDL_PROGRAM_FILESX86, TEXT("CSIDL_PROGRAM_FILESX86")),
-            std::make_pair(CSIDL_PROGRAM_FILES_COMMON, TEXT("CSIDL_PROGRAM_FILES_COMMON")),
-            std::make_pair(CSIDL_PROGRAM_FILES_COMMONX86, TEXT("CSIDL_PROGRAM_FILES_COMMONX86")),
-            std::make_pair(CSIDL_COMMON_TEMPLATES, TEXT("CSIDL_COMMON_TEMPLATES")),
-            std::make_pair(CSIDL_COMMON_DOCUMENTS, TEXT("CSIDL_COMMON_DOCUMENTS")),
-            std::make_pair(CSIDL_COMMON_ADMINTOOLS, TEXT("CSIDL_COMMON_ADMINTOOLS")),
-            std::make_pair(CSIDL_ADMINTOOLS, TEXT("CSIDL_ADMINTOOLS")),
-            std::make_pair(CSIDL_CONNECTIONS, TEXT("CSIDL_CONNECTIONS")),
-            std::make_pair(CSIDL_COMMON_MUSIC, TEXT("CSIDL_COMMON_MUSIC")),
-            std::make_pair(CSIDL_COMMON_PICTURES, TEXT("CSIDL_COMMON_PICTURES")),
-            std::make_pair(CSIDL_COMMON_VIDEO, TEXT("CSIDL_COMMON_VIDEO")),
-            std::make_pair(CSIDL_RESOURCES, TEXT("CSIDL_RESOURCES")),
-            std::make_pair(CSIDL_RESOURCES_LOCALIZED, TEXT("CSIDL_RESOURCES_LOCALIZED")),
-            std::make_pair(CSIDL_COMMON_OEM_LINKS, TEXT("CSIDL_COMMON_OEM_LINKS")),
-            std::make_pair(CSIDL_CDBURN_AREA, TEXT("CSIDL_CDBURN_AREA")),
-            std::make_pair(CSIDL_COMPUTERSNEARME, TEXT("CSIDL_COMPUTERSNEARME")),
+            std::make_pair(CSIDL_INTERNET_CACHE, TEXT("CSIDL_INTERNET_CACHE")), //%LOCALAPPDATA%\Microsoft\Windows\Temporary Internet Files
+            std::make_pair(CSIDL_COOKIES, TEXT("CSIDL_COOKIES")),           //%APPDATA%\Microsoft\Windows\Cookies
+            std::make_pair(CSIDL_HISTORY, TEXT("CSIDL_HISTORY")),           //%LOCALAPPDATA%\Microsoft\Windows\History
+            std::make_pair(CSIDL_COMMON_APPDATA, TEXT("CSIDL_COMMON_APPDATA")), //%ProgramData%
+            std::make_pair(CSIDL_WINDOWS, TEXT("CSIDL_WINDOWS")),               //%SystemRoot%
+            std::make_pair(CSIDL_SYSTEM, TEXT("CSIDL_SYSTEM")),                 //%SystemRoot%\System32
+            std::make_pair(CSIDL_PROGRAM_FILES, TEXT("CSIDL_PROGRAM_FILES")),   //%ProgramFiles(x86)% -- 32
+            std::make_pair(CSIDL_MYPICTURES, TEXT("CSIDL_MYPICTURES")),         //%USERPROFILE%\Pictures
+            std::make_pair(CSIDL_PROFILE, TEXT("CSIDL_PROFILE")),               //%USERPROFILE%
+            std::make_pair(CSIDL_SYSTEMX86, TEXT("CSIDL_SYSTEMX86")),           //%SystemRoot%\SysWOW64
+            std::make_pair(CSIDL_PROGRAM_FILESX86, TEXT("CSIDL_PROGRAM_FILESX86")), //%ProgramFiles(x86)%
+            std::make_pair(CSIDL_PROGRAM_FILES_COMMON, TEXT("CSIDL_PROGRAM_FILES_COMMON")),     //%CommonProgramFiles(x86)%
+            std::make_pair(CSIDL_PROGRAM_FILES_COMMONX86, TEXT("CSIDL_PROGRAM_FILES_COMMONX86")),   //%CommonProgramFiles(x86)%
+            std::make_pair(CSIDL_COMMON_TEMPLATES, TEXT("CSIDL_COMMON_TEMPLATES")), //%ProgramData%\Microsoft\Windows\Templates
+            std::make_pair(CSIDL_COMMON_DOCUMENTS, TEXT("CSIDL_COMMON_DOCUMENTS")), //%PUBLIC%\Documents
+            std::make_pair(CSIDL_COMMON_ADMINTOOLS, TEXT("CSIDL_COMMON_ADMINTOOLS")),   //%ProgramData%\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+            std::make_pair(CSIDL_ADMINTOOLS, TEXT("CSIDL_ADMINTOOLS")),                 //%APPDATA%\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+            std::make_pair(CSIDL_CONNECTIONS, TEXT("CSIDL_CONNECTIONS")),       //E_FAIL
+            std::make_pair(CSIDL_COMMON_MUSIC, TEXT("CSIDL_COMMON_MUSIC")),     //%PUBLIC%\Music
+            std::make_pair(CSIDL_COMMON_PICTURES, TEXT("CSIDL_COMMON_PICTURES")),   //%PUBLIC%\Pictures
+            std::make_pair(CSIDL_COMMON_VIDEO, TEXT("CSIDL_COMMON_VIDEO")),     //%PUBLIC%\Videos
+            std::make_pair(CSIDL_RESOURCES, TEXT("CSIDL_RESOURCES")),           //%SystemRoot%\resources
+            std::make_pair(CSIDL_RESOURCES_LOCALIZED, TEXT("CSIDL_RESOURCES_LOCALIZED")),   //%SystemRoot%\resources\0804 -- ÖÐÎÄ
+            std::make_pair(CSIDL_COMMON_OEM_LINKS, TEXT("CSIDL_COMMON_OEM_LINKS")), //%ProgramData%\OEM Links
+            std::make_pair(CSIDL_CDBURN_AREA, TEXT("CSIDL_CDBURN_AREA")),           //%LOCALAPPDATA%\Microsoft\Windows\Burn\Burn
+            std::make_pair(CSIDL_COMPUTERSNEARME, TEXT("CSIDL_COMPUTERSNEARME")),   //E_FAIL
 
             //std::make_pair(xxxxxx, TEXT("xxxxx")),
         };
@@ -311,7 +311,7 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Creates or opens a file
 	//-----------------------------------------------------------------------------
-	BOOL CFFile::Open(LPCTSTR pszFileName,			// file name 
+	BOOL CFFile::Create(LPCTSTR pszFileName,			// file name 
 		DWORD dwAccess,				// access mode
 		DWORD dwShareMode,				// share mode
 		LPSECURITY_ATTRIBUTES lpSA,	// poiner to SECURITY_ATTRIBUTES
@@ -393,7 +393,7 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Writes data from a buffer to the file associated with the CFFile object
 	//-----------------------------------------------------------------------------
-	BOOL CFFile::Write(const void* lpBuf, DWORD nCount)
+	BOOL CFFile::Write(const void* lpBuf, DWORD nCount, DWORD* pdwWritten)
 	{
 		_ASSERT(m_hFile && ((m_hFile) != INVALID_HANDLE_VALUE));
 		_ASSERT(lpBuf);
@@ -406,8 +406,7 @@ namespace FTL
 		}
 
 		// Write data to a file
-		DWORD dwWritten;
-		if (!::WriteFile(m_hFile, lpBuf, nCount, &dwWritten, NULL))
+		if (!::WriteFile(m_hFile, lpBuf, nCount, pdwWritten, NULL))
 		{
 			//CXFileException ex((long)::GetLastError());
 			//throw ex;
@@ -702,6 +701,64 @@ namespace FTL
 		return TRUE;
 	}
 
+    BOOL CFFileUTF8Encoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten)
+    {
+        BOOL bRet = FALSE;
+        CFConversion conv;
+        INT nLength = 0;
+        LPCSTR pszUtf8 = conv.TCHAR_TO_UTF8(strValue, &nLength);
+        API_VERIFY(pFile->Write(pszUtf8, (nLength) * sizeof(char), pnBytesWritten));
+        return bRet;
+    }
+    BOOL CFFileUnicodeEncoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten)
+    {
+        BOOL bRet = FALSE;
+        CFConversion conv;
+        INT nLength = 0;
+        LPCTSTR pszUtf16 = conv.TCHAR_TO_UTF16(strValue, &nLength);
+        API_VERIFY(pFile->Write(pszUtf16, (nLength) * sizeof(WCHAR), pnBytesWritten));
+        return bRet;
+    }
+
+    template <typename TEncoding>
+    CFTextFile<TEncoding>::CFTextFile(TextFileEncoding fileEncoding)
+        :m_fileEncoding(fileEncoding)
+    {
+    }
+
+    template <typename TEncoding>
+    BOOL CFTextFile<TEncoding>::WriteFileHeader()
+    {
+        BOOL bRet = FALSE;
+        ULONGLONG nSize = GetLength();
+        FTLASSERT(nSize == 0LL);
+        DWORD nBytesWritten = 0;
+        switch (m_fileEncoding)
+        {
+        case tfeUTF8:
+            API_VERIFY(Write(TEXT_FILE_HEADER_UTF8, sizeof(TEXT_FILE_HEADER_UTF8), &nBytesWritten));
+            FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UTF8));
+            break;
+        case tfeUnicode:
+            API_VERIFY(Write(TEXT_FILE_HEADER_UNICODE, sizeof(TEXT_FILE_HEADER_UNICODE), &nBytesWritten));
+            FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UNICODE));
+            break;
+        case tfeUnicodeBigEndian:
+            API_VERIFY(Write(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN, sizeof(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN), &nBytesWritten));
+            FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN));
+            break;
+        default:
+            FTLASSERT(FALSE);
+            break;
+        }
+        return bRet;
+    }
+
+    template <typename TEncoding>
+    BOOL CFTextFile<TEncoding>::WriteString(const CAtlString&strValue, DWORD* pnBytesWritten)
+    {
+        return TEncoding::WriteEncodingString(this, strValue, pnBytesWritten);
+    }
 
     CFStructuredStorageFile::CFStructuredStorageFile()
     {

@@ -91,6 +91,11 @@ namespace FTL
         }
     };
 
+    //Longest Common Sequence -- 计算最大公共子序列(两个字符串的最长公共序列)
+    //http://blog.csdn.net/hackbuteer1/article/details/6686931
+    //http://www.codeproject.com/Articles/3697/V-Diff-A-File-Comparer-with-visual-output
+    //INT CalculateLongestCommonSequence(LPCTSTR pszX, LPCTSTR pszY, LPTSTR* pStartPos);    
+
 #if 0
 #pragma TODO(尝试编写一个带迭代器的容器基类)
 	template <typename T, typename C>

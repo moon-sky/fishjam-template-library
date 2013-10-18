@@ -147,7 +147,7 @@ BOOL WINAPI Hooked_BitBlt(HDC hdcDest, int nXDest, int nYDest, int nWidth, int n
                           HDC hdcSrc, int nXSrc, int nYSrc, DWORD dwRop)
 {
     BOOL bRet = TRUE; 
-    //HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
+    HOOKED_API_CALL_ENTER(g_HookApiInfo.HookedAPICallCount);
     __try
     {
         BitBltProc pOrigBitBlt = (BitBltProc)g_HookApiInfo.HookApiInfos[hft_BitBlt]->pOriginal;

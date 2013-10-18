@@ -220,8 +220,9 @@ void CFDriverDemoTesterDlg::OnBnClickedBtnDoBitblt()
 		CDC* pDC = pWndDraw->GetDC();
 		if (pDC)
 		{
-			CWindowDC deskDC(NULL);
-			
+			//CWindowDC deskDC(NULL);
+			CWindowDC deskDC(pWndDraw);
+
 			CDC dcMemory;
 			API_VERIFY(dcMemory.CreateCompatibleDC(pDC));
 			CRect rcStaticDraw;

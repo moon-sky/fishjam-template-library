@@ -20,11 +20,11 @@
 HMODULE g_hModule = NULL;
 BOOL    g_bNeedHook = FALSE;
 
-#pragma data_seg("SHAREDMEM")
+//#pragma data_seg("SHAREDMEM")
 HHOOK g_hHookCallWndProc = NULL;
 HHOOK g_hHookKeyboard = NULL;
-#pragma data_seg()
-#pragma comment(linker, "/Section:SHAREDMEM,rws")
+//#pragma data_seg()
+//#pragma comment(linker, "/Section:SHAREDMEM,rws")
 
 volatile BOOL  g_bHooked = FALSE;
 
@@ -129,10 +129,14 @@ unsigned int __stdcall _AsyncHookControl(void * param)
 }
 COMICHELPER_API BOOL HookApi()
 {
-	unsigned int nThreadId = 0;
+    BOOL bRet = TRUE;
+#if 1
+    unsigned int nThreadId = 0;
 	HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, _AsyncHookControl, (void*)TRUE, 0, &nThreadId);
 	CloseHandle(hThread);
-
+#else
+    API_VERIFY(g_ProtectWndHookApi.StartHook());
+#endif 
     return TRUE;
 }
 

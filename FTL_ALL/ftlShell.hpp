@@ -505,6 +505,27 @@ namespace FTL
 		return hr;
 	}
 
+    BOOL CFShellUtil::BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle /* = NULL */, UINT nFlags /* = BIF_NEWDIALOGSTYLE */)
+    {
+        BOOL bRet = FALSE;
+        TCHAR dir[MAX_PATH];
+        BROWSEINFO bi = { 0 };
+        bi.hwndOwner = NULL;
+        bi.pidlRoot = NULL;
+        bi.pszDisplayName = dir;
+        bi.lpszTitle = strTitle;
+        bi.ulFlags = nFlags;
+        bi.lpfn = NULL;
+        bi.lParam = NULL;
+        bi.iImage = NULL;
+
+        bRet = SHGetPathFromIDList(SHBrowseForFolder(&bi), dir);
+        if (bRet)
+        {
+            strResult.Format(TEXT("%s"), dir);
+        }
+        return bRet;
+    }
 }
 
 #endif //FTL_SHELL_HPP

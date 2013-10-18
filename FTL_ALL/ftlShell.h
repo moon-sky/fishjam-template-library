@@ -16,7 +16,7 @@
 *     DragQueryFile(hDropInfo, i, pBuf, nSize);
 *   }
 *
-* SHGetSpecialFolderLocation/SHGetSpecialFolderPath -- 获取系统中指定类型的目录位置信息
+* SHGetSpecialFolderPath/SHGetSpecialFolderLocation -- 获取系统中指定类型的目录位置信息
 * ShellBrowser 窗体现在只需要用 SHBrowseForFolder 和 SHGetPathFromIDList 函数即可
 * SHGetDesktopFolder -- 获取Shell中桌面对应的IShellFolder接口
 *
@@ -138,6 +138,8 @@ namespace FTL
 		FTLINLINE static HRESULT ExecuteOrOpenWithDialog(LPCTSTR pszFile, HWND hWndParent);
 
 		FTLINLINE static HRESULT ExplorerToSpecialFile(LPCTSTR pszFilePath);
+
+        FTLINLINE static BOOL BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle = NULL, UINT nFlags = BIF_NEWDIALOGSTYLE);
     };
 }
 

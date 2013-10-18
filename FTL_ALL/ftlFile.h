@@ -162,7 +162,7 @@ namespace FTL
 		FTLINLINE virtual CString GetFilePath() const;
 		FTLINLINE virtual BOOL SetFilePath(CString strNewName);
 
-		FTLINLINE virtual BOOL Open(LPCTSTR pszFileName, 
+		FTLINLINE virtual BOOL Create(LPCTSTR pszFileName, 
 			DWORD dwAccess = GENERIC_WRITE | GENERIC_READ,
 			DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE,
 			LPSECURITY_ATTRIBUTES lpSA = NULL,
@@ -184,7 +184,7 @@ namespace FTL
 		FTLINLINE virtual DWORD GetLength() const;
 
 		FTLINLINE virtual DWORD Read(void* lpBuf, DWORD nCount, LPOVERLAPPED lpOverlapped = NULL);
-		FTLINLINE virtual BOOL Write(const void* lpBuf, DWORD nCount);
+		FTLINLINE virtual BOOL Write(const void* lpBuf, DWORD nCount, DWORD* pdwWritten);
 		FTLINLINE BOOL WriteEndOfLine();
 
 		FTLINLINE virtual BOOL LockRange(DWORD dwPos, DWORD dwCount);
@@ -206,6 +206,31 @@ namespace FTL
 	protected:
 		CString m_strFileName;	// stores the file name for the current file
     };
+
+    class CFFileUTF8Encoding
+    {
+    public:
+        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten);
+    };
+
+    class CFFileUnicodeEncoding
+    {
+    public:
+        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten);
+    };
+
+    template <typename TEncoding>
+    class CFTextFile : public CFFile
+    {
+    public:
+        typedef CFTextFile< TEncoding > thisClass;
+        FTLINLINE CFTextFile(TextFileEncoding fileEncoding);
+        FTLINLINE BOOL WriteFileHeader();
+        FTLINLINE BOOL WriteString(const CAtlString&strValue, DWORD* pnBytesWritten);
+    private:
+        TextFileEncoding    m_fileEncoding;
+    };
+
 
     //有 ATLPath 实现了很多功能, 如 RemoveFileSpec(删除路径最后的文件名)
     class CFPath

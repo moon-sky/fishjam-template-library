@@ -37,10 +37,14 @@ namespace FTL
 			}
 		}
 	}
-	LPWSTR CFConversion::UTF8_TO_UTF16(LPCSTR szUTF8 , BOOL bDetached /* = FALSE */)
+	LPWSTR CFConversion::UTF8_TO_UTF16(LPCSTR szUTF8 , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
 	{
 		BOOL bRet = FALSE;
 		int wcharsize = MultiByteToWideChar( CP_UTF8, m_dwFlags,  szUTF8, -1, NULL, 0 );
+        if (pLength)
+        {
+            *pLength = wcharsize - 1;
+        }
 		int size = wcharsize * sizeof( WCHAR );
 		API_VERIFY( 0 != MultiByteToWideChar( CP_UTF8, m_dwFlags,  szUTF8, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
 		if (bDetached)
@@ -50,7 +54,7 @@ namespace FTL
 		return ( LPWSTR )( BYTE* )m_Mem;
 	}
 
-	LPSTR  CFConversion::UTF8_TO_MBCS( LPCSTR szUTF8 , BOOL bDetached /* = FALSE */ )
+	LPSTR  CFConversion::UTF8_TO_MBCS( LPCSTR szUTF8 , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */ )
 	{
 		BOOL bRet = FALSE;
 		int wcharsize = MultiByteToWideChar( CP_UTF8, m_dwFlags,  szUTF8, -1, NULL, 0 );
@@ -59,6 +63,10 @@ namespace FTL
 
 		int charsize = WideCharToMultiByte( m_codePage, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, 
 			m_pDefaultChar, &m_bUsedDefaultChar);
+        if (pLength)
+        {
+            *pLength = charsize - 1;
+        }
 		size = charsize * sizeof( char );
 		API_VERIFY( 0 != WideCharToMultiByte( m_codePage, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, 
 			( LPSTR )m_Mem2.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) ); // NS
@@ -69,10 +77,14 @@ namespace FTL
 		return ( LPSTR )( BYTE* )m_Mem2;
 	}
 
-	LPWSTR CFConversion::MBCS_TO_UTF16( LPCSTR szMBCS , BOOL bDetached /* = FALSE */)
+    LPWSTR CFConversion::MBCS_TO_UTF16( LPCSTR szMBCS , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
 	{
 		BOOL bRet = FALSE;
 		int wcharsize = MultiByteToWideChar( m_codePage, m_dwFlags,  szMBCS, -1, NULL, 0 );
+        if (pLength)
+        {
+            *pLength = wcharsize - 1;
+        }
 		int size = wcharsize * sizeof( WCHAR );
 		API_VERIFY(0 != MultiByteToWideChar( m_codePage, m_dwFlags,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
 
@@ -83,7 +95,7 @@ namespace FTL
 		return ( LPWSTR )( BYTE* )m_Mem;
 	}
 
-	LPSTR  CFConversion::MBCS_TO_UTF8( LPCSTR szMBCS , BOOL bDetached /* = FALSE */ )
+    LPSTR  CFConversion::MBCS_TO_UTF8( LPCSTR szMBCS , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */ )
 	{
 		BOOL bRet = FALSE;
 		int wcharsize = MultiByteToWideChar( m_codePage, m_dwFlags,  szMBCS, -1, NULL, 0 );
@@ -93,6 +105,10 @@ namespace FTL
 		int charsize = WideCharToMultiByte( CP_UTF8, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, 
 			m_pDefaultChar, &m_bUsedDefaultChar);
 		size = charsize * sizeof( char );
+        if (pLength)
+        {
+            *pLength = charsize - 1;
+        }
 		API_VERIFY( WideCharToMultiByte( CP_UTF8, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, 
 			( LPSTR )m_Mem2.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) ); // NS
 
@@ -103,10 +119,14 @@ namespace FTL
 		return ( LPSTR )( BYTE* )m_Mem2;
 	}
 
-	LPSTR  CFConversion::UTF16_TO_MBCS( LPCWSTR szUTF16 , BOOL bDetached /* = FALSE */ )
+    LPSTR  CFConversion::UTF16_TO_MBCS( LPCWSTR szUTF16 , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */ )
 	{
 		BOOL bRet = FALSE;
 		int charsize = WideCharToMultiByte( m_codePage, m_dwFlags, szUTF16, -1, NULL, 0, NULL, NULL );
+        if (pLength)
+        {
+            *pLength = charsize - 1;
+        }
 		int size = charsize * sizeof( char );
 		API_VERIFY(0 != WideCharToMultiByte( m_codePage, m_dwFlags, szUTF16, -1, 
 			( LPSTR )m_Mem.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) );
@@ -118,10 +138,14 @@ namespace FTL
 		return ( LPSTR )( BYTE* )m_Mem;
 	}
 
-	LPSTR  CFConversion::WCS_TO_MBCS( const UINT CodePage, LPCWSTR szWcs  , BOOL bDetached /* = FALSE */)
+    LPSTR  CFConversion::WCS_TO_MBCS( const UINT CodePage, LPCWSTR szWcs, INT* pLength /* = NULL */,  BOOL bDetached /* = FALSE */)
 	{
 		BOOL bRet = FALSE;
 		int charsize = WideCharToMultiByte( CodePage, m_dwFlags, szWcs, -1, NULL, 0, NULL, NULL );
+        if (pLength)
+        {
+            *pLength = charsize - 1;
+        }
 		int size = charsize * sizeof( char );
 		API_VERIFY( 0 != WideCharToMultiByte( CodePage, m_dwFlags, szWcs, -1, 
 			( LPSTR )m_Mem.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) );
@@ -133,10 +157,14 @@ namespace FTL
 		return ( LPSTR )( BYTE* )m_Mem;
 	}
 
-	LPWSTR  CFConversion::MBCS_TO_WCS( const UINT CodePage, LPCSTR szMBCS , BOOL bDetached /* = FALSE */ )
+    LPWSTR  CFConversion::MBCS_TO_WCS( const UINT CodePage, LPCSTR szMBCS , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */ )
 	{
 		BOOL bRet = FALSE;
 		int wcharsize = MultiByteToWideChar( CodePage, m_dwFlags,  szMBCS, -1, NULL, 0 );
+        if (pLength)
+        {
+            *pLength = wcharsize - 1;
+        }
 		int size = wcharsize * sizeof( WCHAR );
 		API_VERIFY(0 != MultiByteToWideChar( CodePage, m_dwFlags,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), size ));
 
@@ -147,10 +175,14 @@ namespace FTL
 		return ( LPWSTR )( BYTE* )m_Mem;
 	}
 
-	LPSTR  CFConversion::UTF16_TO_UTF8( LPCWSTR szUTF16 , BOOL bDetached /* = FALSE */)
+    LPSTR  CFConversion::UTF16_TO_UTF8( LPCWSTR szUTF16, INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
 	{
 		BOOL bRet = FALSE;
 		int charsize = WideCharToMultiByte( CP_UTF8, m_dwFlags, szUTF16, -1, NULL, 0, NULL, NULL );
+        if (pLength)
+        {
+            *pLength = charsize - 1;
+        }
 		int size = charsize * sizeof( char );
 		API_VERIFY( 0 != WideCharToMultiByte( CP_UTF8, m_dwFlags, szUTF16, -1, 
 			( LPSTR )m_Mem.GetMemory( size ), size, NULL, NULL ) );
@@ -163,11 +195,15 @@ namespace FTL
 	}
 
 #ifdef _UNICODE
-	LPCTSTR CFConversion::UTF16_TO_TCHAR( LPCTSTR lp , BOOL bDetached /* = FALSE */)
+    LPCTSTR CFConversion::UTF16_TO_TCHAR( LPCTSTR lp , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
 	{
+        int nSrc = lstrlen(lp) + 1;
+        if (pLength)
+        {
+            *pLength = nSrc - 1;
+        }
 		if (bDetached)
 		{
-			int nSrc = lstrlen(lp) + 1;
 			StringCchCopy((LPTSTR)m_Mem.GetMemory(nSrc * sizeof(TCHAR)), nSrc, lp);
 			return (LPCTSTR)m_Mem.Detatch();
 		}
@@ -176,11 +212,15 @@ namespace FTL
 			return lp;
 		}
 	}
-	LPCTSTR CFConversion::TCHAR_TO_UTF16( LPCTSTR lp , BOOL bDetached /* = FALSE */)
+    LPCTSTR CFConversion::TCHAR_TO_UTF16( LPCTSTR lp, INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
 	{
-		if (bDetached)
+        int nSrc = lstrlen(lp) + 1;
+        if (pLength)
+        {
+            *pLength = nSrc - 1;
+        }
+        if (bDetached)
 		{
-			int nSrc = lstrlen(lp) + 1;
 			StringCchCopy((LPTSTR)m_Mem.GetMemory(nSrc * sizeof(TCHAR)), nSrc, lp);
 			return (LPCTSTR)m_Mem.Detatch();
 		}
@@ -190,11 +230,15 @@ namespace FTL
 		}
 	}
 #else	//Non _UNICODE
-	LPCTSTR CFConversion::MBCS_TO_TCHAR( LPCTSTR lp , BOOL bDetached /* = FALSE */)
+    LPCTSTR CFConversion::MBCS_TO_TCHAR( LPCTSTR lp , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
 	{
+        int nSrc = lstrlen(lp) + 1;
+        if (pLength)
+        {
+            *pLength = nSrc - 1;
+        }
 		if (bDetached)
 		{
-			int nSrc = lstrlen(lp) + 1;
 			StringCchCopy((LPTSTR)m_Mem.GetMemory(nSrc * sizeof(TCHAR)), nSrc, lp);
 			return (LPCTSTR)m_Mem.Detatch();
 		}
@@ -203,11 +247,15 @@ namespace FTL
 			return lp;
 		}
 	}
-	LPCTSTR CFConversion::TCHAR_TO_MBCS( LPCTSTR lp , BOOL bDetached /* = FALSE */)
+    LPCTSTR CFConversion::TCHAR_TO_MBCS( LPCTSTR lp , INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
 	{
+        int nSrc = lstrlen(lp) + 1;
+        if (pLength)
+        {
+            *pLength = nSrc - 1;
+        }
 		if (bDetached)
 		{
-			int nSrc = lstrlen(lp) + 1;
 			StringCchCopy((LPTSTR)m_Mem.GetMemory(nSrc * sizeof(TCHAR)), nSrc, lp);
 			return (LPCTSTR)m_Mem.Detatch();
 		}

@@ -131,7 +131,13 @@ IMF_DUALFONT |
 *       3.运行时像素颜色为 light gray(RGB (192, 192, 192))在运行时会被用户选择按钮的颜色替换 -- 需要设置成透明的？
 *
 * 树型控件(CTreeViewCtrlExT)
-*   
+*   注意:
+*   1.资源中设置Tree的 TVS_CHECKBOXES 属性后，在OnInitDialog中调用 SetCheck 无效。
+*     原因：Init时其ImageList还是空的(State Icon)没有加载，初始化结束后Icon数为3(m_tree.GetImageList(TVSIL_STATE).GetImageCount())
+*            http://blog.csdn.net/dongchongyang/article/details/9142559
+*     解决方法:
+*       方法a.通过ModifyStyle设置才行(最好先通过代码取消一次，避免.rc中已经设置成一模一样的)
+*       方法b.指定自定义的图像列表: m_Tree.SetImageList(&m_ImageList, TVSIL_STATE);
 ***********************************************************************************************************/
 
 /***********************************************************************************************************

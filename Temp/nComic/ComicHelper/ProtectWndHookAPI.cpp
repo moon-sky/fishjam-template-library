@@ -133,6 +133,8 @@ BOOL CProtectWndHookAPI::StartHook()
 
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "BitBlt", &Hooked_BitBlt, &g_HookApiInfo.HookApiInfos[hft_BitBlt]));
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "StretchBlt", &Hooked_StretchBlt, &g_HookApiInfo.HookApiInfos[hft_StretchBlt]));
+                    //API_VERIFY(HookApiFromModule(hModuleGdi32, "PlgBlt", &Hooked_PlgBlt, &g_HookApiInfo.HookApiInfos[hft_PlgBlt]));
+                    //API_VERIFY(HookApiFromModule(hModuleGdi32, "MaskBlt", &Hooked_MaskBlt, &g_HookApiInfo.HookApiInfos[hft_MaskBlt]));
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "CreateDCA", &Hooked_CreateDCA, &g_HookApiInfo.HookApiInfos[hft_CreateDCA]));
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "CreateDCW", &Hooked_CreateDCW, &g_HookApiInfo.HookApiInfos[hft_CreateDCW]));
                     API_VERIFY(HookApiFromModule(hModuleGdi32, "DeleteDC", &Hooked_DeleteDC, &g_HookApiInfo.HookApiInfos[hft_DeleteDC]));
@@ -204,6 +206,8 @@ BOOL CProtectWndHookAPI::StopHook()
         g_HookApiInfo.bHooked = FALSE;
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_BitBlt]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_StretchBlt]));
+        //API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_PlgBlt]));
+        //API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_MaskBlt]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateDCW]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_CreateDCA]));
         API_VERIFY(RestoreInlineHook(g_HookApiInfo.HookApiInfos[hft_DeleteDC]));

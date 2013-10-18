@@ -136,14 +136,16 @@ BOOL RestoreInlineHook(PINLINE_HOOK_INFO pHookInfo)
     BOOL bRet = TRUE;
     if (pHookInfo)
     {
-        ULONG oldValue = ClearWriteProtect(pHookInfo->pTarget, pHookInfo->targetBackupSize);
-        //RtlCopyMemory(pHookInfo->pTarget, pHookInfo->targetBackup, pHookInfo->targetBackupSize);
-        RtlCopyMemory(pHookInfo->pTarget, pHookInfo->trampoline, pHookInfo->targetBackupSize);
-        RestoreWriteProtect(pHookInfo->pTarget, pHookInfo->targetBackupSize, oldValue);
+        if (pHookInfo->pTarget)
+        {
+            ULONG oldValue = ClearWriteProtect(pHookInfo->pTarget, pHookInfo->targetBackupSize);
+            //RtlCopyMemory(pHookInfo->pTarget, pHookInfo->targetBackup, pHookInfo->targetBackupSize);
+            RtlCopyMemory(pHookInfo->pTarget, pHookInfo->trampoline, pHookInfo->targetBackupSize);
+            RestoreWriteProtect(pHookInfo->pTarget, pHookInfo->targetBackupSize, oldValue);
+        }
 
         HookFree(pHookInfo);
     }
-
     return bRet;
 }
 
@@ -190,6 +192,15 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
             continue;
         }
 
+        if (pPtrOffset[0] == 0xe8)  //call [0xXXXXXXXX]
+        {
+            PBYTE pbNew = pPtrOffset + 5 + *(INT32*)&pPtrOffset[1];
+            HOOK_TRACE(("%p->%p: skipped over call.\n", pPtrOffset, pbNew));
+            pbCode = pbNew;
+            pPtrOffset = pbCode;
+            nOffset = 0;
+            continue;
+        }
         // First, skip over the import vector if there is one.
         if (pPtrOffset[0] == 0xff && pPtrOffset[1] == 0x25) {   // jmp [imm32]
             // Looks like an import alias jump, then get the code it points to.
@@ -245,6 +256,7 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
 BOOL _IsEndFunctionCode(PBYTE pbCode)
 {
     if (pbCode[0] == 0xeb ||    // jmp +imm8
+        pbCode[0] == 0xe8 ||    // call +imm32
         pbCode[0] == 0xe9 ||    // jmp +imm32
         pbCode[0] == 0xe0 ||    // jmp eax
         pbCode[0] == 0xc2 ||    // ret +imm8
