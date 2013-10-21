@@ -22,7 +22,7 @@
 _ATL_FUNC_INFO CWowAHView::DocumentComplete2_Info = { CC_STDCALL, VT_EMPTY, 2, { VT_DISPATCH, VT_BYREF | VT_VARIANT } };
 _ATL_FUNC_INFO CWowAHView::NavigateComplete2_Info = { CC_STDCALL, VT_EMPTY, 2, { VT_DISPATCH, VT_BYREF | VT_VARIANT } };
 _ATL_FUNC_INFO CWowAHView::DownloadBegin_Info = { CC_STDCALL, VT_EMPTY, 0, { } };
-
+_ATL_FUNC_INFO CWowAHView::DownloadComplete_Info = { CC_STDCALL, VT_EMPTY, 0, {} };
 CWowAHView::CWowAHView()
 {
 	m_pWowItemManager = NULL;
@@ -105,9 +105,9 @@ STDMETHODIMP CWowAHView::Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WOR
 		&& DISPID_COMMANDSTATECHANGE != dispIdMember
 		&& DISPID_PROGRESSCHANGE != dispIdMember)
 	{
-		//FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
-		//FTLTRACE(TEXT("[%d] Invoke, dispIdMember=%d(%s)\n"), GetCurrentThreadId(),
-		//	dispIdMember, idspidInfo.GetConvertedInfo());
+		FTL::CFIExplorerDispidInfo  idspidInfo(dispIdMember, pDispParams);
+		FTLTRACE(TEXT("[%d] Invoke, dispIdMember=%d(%s)\n"), GetCurrentThreadId(),
+			dispIdMember, idspidInfo.GetConvertedInfo());
 	}
 
 	HRESULT hr = __super::Invoke(dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult,
@@ -308,6 +308,15 @@ LRESULT CWowAHView::OnMsgEventDocumentComplete(UINT uMsg, WPARAM wParam, LPARAM 
 	CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
 	if (spHtmlDoc)
 	{
+        //COM_DETECT_INTERFACE_FROM_REGISTER(spHtmlDoc);
+        //COM_DETECT_INTERFACE_FROM_LIST(spHtmlDoc);
+        //CComPtr<IHTMLElement> spDocumentElement;
+        //COM_VERIFY(spHtmlDoc->get_documentElement(&spDocumentElement));
+        //if (spDocumentElement)
+        //{
+        //    FTL::CFHTMLElementDumper elementDumper(spDocumentElement, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+        //}
+
 		COM_VERIFY(m_pItemPageAnalyzes[m_ParsePageType]->ParseItemPage(spHtmlDoc, _T("")));
 		m_pWowItemManager->DumpAllItemInfo();
 	}
@@ -339,6 +348,11 @@ void CWowAHView::OnNavigateComplete2(IDispatch* /*pDisp*/, VARIANT* URL)
 void CWowAHView::OnDownloadBegin()
 {
 	FTLTRACE(TEXT("On Download Begin\n"));
+}
+
+void CWowAHView::OnDownloadComplete()
+{
+    FTLTRACE(TEXT("On Download Complete\n"));
 }
 
 void CWowAHView::_OpenTargetUrl(ParsePageType pageType)

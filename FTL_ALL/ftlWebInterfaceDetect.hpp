@@ -351,6 +351,34 @@ namespace FTL
 				}
 #endif 
 			}
+
+            if (m_nParam != INVALID_INTERFACE_DUMPER_PARAM)
+            {
+                CFStringFormater strNameFormater;
+                strNameFormater.Format(TEXT("HTMLElement2 %d"), (long)m_nParam);
+                COM_VERIFY(pInfoOutput->OutputInfoName(strNameFormater.GetString()));
+            }
+            else
+            {
+                COM_VERIFY(pInfoOutput->OutputInfoName(TEXT("HTMLElement2")));
+            }
+
+            CComQIPtr<IHTMLElement2>		spHTMLElement2(m_pObj);
+            if (spHTMLElement2)
+            {
+                long nScrollLeft = 0, nScrollTop = 0, nScrollHeight = 0, nScrollWidth = 0;
+                COM_VERIFY(spHTMLElement2->get_scrollLeft(&nScrollLeft)); 
+                COM_VERIFY(spHTMLElement2->get_scrollTop(&nScrollTop)); 
+                COM_VERIFY(spHTMLElement2->get_scrollWidth(&nScrollWidth)); 
+                COM_VERIFY(spHTMLElement2->get_scrollHeight(&nScrollHeight)); 
+
+                FTL::CFStringFormater	strFormaterScroll;
+                COM_VERIFY(strFormaterScroll.Format(TEXT("(%d,%d)-(%d,%d), %dx%d"),
+                    nScrollLeft, nScrollTop, nScrollLeft + nScrollWidth, nScrollTop + nScrollHeight,
+                    nScrollWidth, nScrollHeight));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Scroll"), strFormaterScroll.GetString()));
+
+            }
 		}
 		return hr;
 	}

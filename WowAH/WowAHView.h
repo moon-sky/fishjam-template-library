@@ -61,11 +61,14 @@ public:
     static _ATL_FUNC_INFO DocumentComplete2_Info;
 	static _ATL_FUNC_INFO NavigateComplete2_Info;
 	static _ATL_FUNC_INFO DownloadBegin_Info;
+    static _ATL_FUNC_INFO DownloadComplete_Info;
 
     BEGIN_SINK_MAP(CWowAHView)
         SINK_ENTRY_INFO(_nDispatchID, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, OnEventDocumentComplete, &DocumentComplete2_Info)
 		SINK_ENTRY_INFO(_nDispatchID, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2, OnNavigateComplete2, &NavigateComplete2_Info )
 		SINK_ENTRY_INFO(_nDispatchID, DIID_DWebBrowserEvents2, DISPID_DOWNLOADBEGIN, OnDownloadBegin, &DownloadBegin_Info )
+        SINK_ENTRY_INFO(_nDispatchID, DIID_DWebBrowserEvents2, DISPID_DOWNLOADCOMPLETE, OnDownloadComplete, &DownloadComplete_Info )
+        
     END_SINK_MAP()
 
 public:
@@ -99,6 +102,7 @@ public:
     void __stdcall OnEventDocumentComplete(IDispatch* /*pDisp*/, VARIANT* URL);
 	void __stdcall OnNavigateComplete2(IDispatch* /*pDisp*/, VARIANT* URL);
 	void __stdcall OnDownloadBegin();
+    void __stdcall OnDownloadComplete();
 
 	CComPtr<IHTMLDocument3>	_GetDocument();
 private:
