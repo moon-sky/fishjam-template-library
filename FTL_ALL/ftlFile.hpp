@@ -5,8 +5,10 @@
 #ifdef USE_EXPORT
 #  include "ftlfile.h"
 #endif
+#include "ftlConversion.h"
 
 #include <atlpath.h>
+
 
 namespace FTL
 {
@@ -764,6 +766,32 @@ namespace FTL
     {
         return TEncoding::WriteEncodingString(this, strValue, pnBytesWritten);
     }
+
+
+    //////////////////////////////////////////////////////////////////////////
+    CFDirectoryCopier::CFDirectoryCopier()
+    {
+
+    }
+    CFDirectoryCopier::~CFDirectoryCopier()
+    {
+
+    }
+    BOOL CFDirectoryCopier::SetCallback(ICopyDirCallback* pCallback)
+    {
+        return TRUE;
+    }
+    BOOL CFDirectoryCopier::Start(LPCTSTR pszSourcePath, LPCTSTR pszTargetPath, LPCTSTR pszFilter /* = _T("*.*") */)
+    {
+        return TRUE;
+    }
+    BOOL CFDirectoryCopier::Stop()
+    {
+        return TRUE;
+    }
+
+    
+    //////////////////////////////////////////////////////////////////////////
 
     CFStructuredStorageFile::CFStructuredStorageFile()
     {

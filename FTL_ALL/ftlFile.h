@@ -5,6 +5,7 @@
 #ifndef FTL_BASE_H
 #  error ftlfile.h requires ftlbase.h to be included first
 #endif
+#include <atlstr.h>
 
 namespace FTL
 {

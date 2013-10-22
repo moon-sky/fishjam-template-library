@@ -83,6 +83,7 @@ namespace FTL
 		virtual void OnServerDisconnect(LPCITEMIDLIST pIdl ) {};
     };
 
+	//检测文件系统文件变化通知
     FTLEXPORT class CFShellChangeMonitor
     {
     public:

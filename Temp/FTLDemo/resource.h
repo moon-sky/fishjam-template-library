@@ -210,9 +210,7 @@
 #define IDC_BTN_CHOOSE_FONT             1130
 #define IDC_STATIC_FONT_DEMO            1131
 #define IDC_BTN_DUMP_IMAGE_PROPERTY     1132
-#define IDC_BUTTON2                     1133
 #define IDC_BTN_HOOK_API_TEST_JMP       1133
-#define IDC_TREE1                       1134
 #define IDC_TREE_CHECK                  1134
 #define ID_GDIPLUSTEST_DRAWSTRING       32771
 #define ID_GDIPLUSTEST_MEASURECHARACTERRANGES 32772
