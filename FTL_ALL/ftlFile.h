@@ -242,6 +242,30 @@ namespace FTL
         
     };
 
+    class ICopyDirCallback
+    {
+    public:
+        virtual VOID OnBegin(LONGLONG nTotalSize, LONG nFileCount) = 0;
+        virtual VOID OnCopyFile(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, LONG nIndex, LONGLONG nFileSize, LONGLONG nCopiedSize) = 0;
+        virtual VOID OnError(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, DWORD dwError) = 0;
+        virtual VOID OnEnd(BOOL bSuccess, LONGLONG nTotalCopiedSize, LONG nCopiedFileCount) = 0;
+    };
+
+    class CFDirectoryCopier
+    {
+    public:
+        FTLINLINE CFDirectoryCopier();
+        FTLINLINE ~CFDirectoryCopier();
+        FTLINLINE BOOL SetCallback(ICopyDirCallback* pCallback);
+        FTLINLINE BOOL Start(LPCTSTR pszSourcePath, LPCTSTR pszTargetPath, LPCTSTR pszFilter = _T("*.*"));
+        FTLINLINE BOOL Stop();
+    protected:
+        ICopyDirCallback*               m_pCallback;
+        CFThread<DefaultThreadTraits>   m_threadCopy;
+        static DWORD __stdcall _CopierThreadProc(LPVOID lpThreadParameter);
+        DWORD _InnerCopierThreadProc();
+    };
+
     class CFStructuredStorageFile
     {
     public:

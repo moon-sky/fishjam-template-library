@@ -1,3 +1,5 @@
+利用boost 实现文件操作 --  http://blog.csdn.net/zyaiwx/article/details/11659335
+
 向导页：http://blog.csdn.net/lk_cool/article/details/4323671
 
 微软WinXPUSB补丁: http://download.microsoft.com/download/9/8/4/984b8505-02b8-4015-b8d2-7d408a011cda/WindowsXP-KB943198-v2-x86-CHS.exe

@@ -179,6 +179,15 @@ namespace FTL
 				}
 			}
 
+            CComQIPtr<IHTMLDocument5>	spHTMLDocument5(m_pObj);
+            if (spHTMLDocument5)
+            {
+                CComBSTR	bstrCompatMode;
+                COM_VERIFY(spHTMLDocument5->get_compatMode(&bstrCompatMode));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("compatMode"), &bstrCompatMode));
+
+            }
+
 			//CComQIPtr<IHTMLDocument6>     spHTMLDocument6(m_pObj);
 			//if (spHTMLDocument6)
 			//{

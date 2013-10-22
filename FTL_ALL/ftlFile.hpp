@@ -404,9 +404,14 @@ namespace FTL
 		{
 			return TRUE;
 		}
-
+        DWORD dwWritten = 0;
+        DWORD* pLocalWritten = pdwWritten;
+        if (!pLocalWritten)
+        {
+            pLocalWritten = &dwWritten;
+        }
 		// Write data to a file
-		if (!::WriteFile(m_hFile, lpBuf, nCount, pdwWritten, NULL))
+		if (!::WriteFile(m_hFile, lpBuf, nCount, pLocalWritten, NULL))
 		{
 			//CXFileException ex((long)::GetLastError());
 			//throw ex;

@@ -294,9 +294,12 @@ HRESULT CWowAHView::SearchSpecialItem(const CString& strItemName)
 	return hr;
 }
 
-void CWowAHView::OnEventDocumentComplete(IDispatch* , VARIANT* URL)
+void CWowAHView::OnEventDocumentComplete(IDispatch* pDispatch, VARIANT* URL)
 {
-	if (m_ParsePageType != pptInvalid)
+    //COM_DETECT_INTERFACE_FROM_REGISTER(pDispatch);
+    //COM_DETECT_INTERFACE_FROM_LIST(pDispatch);
+
+    //if (m_ParsePageType != pptInvalid)
 	{
 		PostMessage(UM_EVENT_DOCUMENT_COMPLETE, m_ParsePageType);
 	}
@@ -308,17 +311,19 @@ LRESULT CWowAHView::OnMsgEventDocumentComplete(UINT uMsg, WPARAM wParam, LPARAM 
 	CComQIPtr<IHTMLDocument3> spHtmlDoc = _GetDocument();
 	if (spHtmlDoc)
 	{
+        FTL::CFHTMLDocumentDumper docDumper(spHtmlDoc, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+
         //COM_DETECT_INTERFACE_FROM_REGISTER(spHtmlDoc);
         //COM_DETECT_INTERFACE_FROM_LIST(spHtmlDoc);
-        //CComPtr<IHTMLElement> spDocumentElement;
-        //COM_VERIFY(spHtmlDoc->get_documentElement(&spDocumentElement));
-        //if (spDocumentElement)
-        //{
-        //    FTL::CFHTMLElementDumper elementDumper(spDocumentElement, FTL::CFOutputWindowInfoOutput::Instance(), 0);
-        //}
+        CComPtr<IHTMLElement> spDocumentElement;
+        COM_VERIFY(spHtmlDoc->get_documentElement(&spDocumentElement));
+        if (spDocumentElement)
+        {
+            FTL::CFHTMLElementDumper elementDumper(spDocumentElement, FTL::CFOutputWindowInfoOutput::Instance(), 0);
+        }
 
-		COM_VERIFY(m_pItemPageAnalyzes[m_ParsePageType]->ParseItemPage(spHtmlDoc, _T("")));
-		m_pWowItemManager->DumpAllItemInfo();
+		//COM_VERIFY(m_pItemPageAnalyzes[m_ParsePageType]->ParseItemPage(spHtmlDoc, _T("")));
+		//m_pWowItemManager->DumpAllItemInfo();
 	}
 	return 0;
 }
