@@ -227,6 +227,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlGame.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlGdi.hpp"
 				>
 			</File>
@@ -414,6 +418,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlFunctional.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlGame.h"
 				>
 			</File>
 			<File
