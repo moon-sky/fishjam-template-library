@@ -85,10 +85,10 @@ namespace FTL
 	class CFConvUtil
 	{
 	public:
-		//ex. pb = {255,15} -> sz = {"FF0F"} -- TODO: AtlHexDecode/AtlHexEncode
-		//FTLINLINE static LONG HexFromBinary(__in const BYTE* pBufSrc, __in LONG nSrcCount, 
-		//	__out LPTSTR pBufDest, __inout long* pDestCount, 
-		//	__in LPCTSTR pszDivision = NULL);
+		//ex. pb = {255,15} -> sz = {"FF,0F"} -- TODO: AtlHexDecode/AtlHexEncode
+		FTLINLINE static BOOL HexFromBinary(__in const BYTE* pBufSrc, __in LONG nSrcLen, 
+			__out LPTSTR pBufDest, __inout LONG* pDestCharCount, 
+			__in TCHAR chDivision = _T('\0'));
 
 	};
 }

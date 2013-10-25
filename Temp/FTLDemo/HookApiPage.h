@@ -5,7 +5,7 @@
 #endif 
 
 //#define HOOK_API_EASYHOOK
-#define HOOK_API_MINHOOK
+//#define HOOK_API_MINHOOK
 
 struct _HOOK_TRACE_INFO_;
 typedef  struct _HOOK_TRACE_INFO_ HOOK_TRACE_INFO;

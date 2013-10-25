@@ -13,6 +13,7 @@
 #ifdef USE_EXPORT
 #  include "ftlsystem.h"
 #endif
+#include "ftlConversion.h"
 
 #include <ShlObj.h>
 #include <atlbase.h>
@@ -249,6 +250,80 @@ namespace FTL
         return bRet;
     }
 
+    LONG CFRegUtil::GetRegValueExportString(HKEY hKey, LPCTSTR pszValueName, CAtlString& strResult, DWORD* pRegType)
+    {
+        LONG lRet = ERROR_SUCCESS;
+        BOOL bRet= FALSE;
+        DWORD dwRegType = REG_NONE;
+        DWORD nBytesCount = 0;
+        REG_VERIFY(::RegQueryValueEx(hKey, pszValueName, NULL, &dwRegType, NULL, &nBytesCount));
+        if (ERROR_SUCCESS == lRet)
+        {
+            CFMemAllocator<BYTE> memValue(nBytesCount);
+            REG_VERIFY(::RegQueryValueEx(hKey, pszValueName, NULL, &dwRegType, memValue, &nBytesCount));
+            if (ERROR_SUCCESS == lRet)
+            {
+                if (pRegType)
+                {
+                    *pRegType = dwRegType;
+                }
+                strResult.Empty();
+                CAtlString strBinary;
+                LONG nStrBinaryCount = 0;
+
+                switch (dwRegType)
+                {
+                case REG_SZ:
+                    {
+                        CAtlString strTemp;
+                        strTemp.Format(TEXT("%s"), (LPCTSTR)memValue.GetMemory());
+                        strTemp.Replace(TEXT("\\"), TEXT("\\\\"));  // \ => \\  
+                        strTemp.Replace(TEXT("\""), TEXT("\\\""));  // " => \" 
+                        strResult.Format(TEXT("\"%s\""), strTemp);
+                    }
+                    break;
+                case REG_EXPAND_SZ:
+                case REG_BINARY:
+                case REG_MULTI_SZ:
+                case REG_QWORD_LITTLE_ENDIAN:  //REG_QWORD
+                    {
+                        API_VERIFY(CFConvUtil::HexFromBinary(memValue.GetMemory(), nBytesCount, NULL, &nStrBinaryCount, _T(',')));
+                        CFMemAllocator<TCHAR> bufString(nStrBinaryCount);
+                        API_VERIFY(CFConvUtil::HexFromBinary(memValue.GetMemory(), nBytesCount, bufString.GetMemory(), &nStrBinaryCount, _T(',')));
+                        
+                        if (REG_BINARY == dwRegType)
+                        {
+                            strResult = _T("hex:");
+                        }
+                        else
+                        {
+                            strResult.Format(TEXT("hex(%x):"), dwRegType);
+                        }
+                        strResult.Append(bufString.GetMemory());
+
+                        break;
+                    }
+                case REG_DWORD_LITTLE_ENDIAN: //REG_DWORD:
+                    {
+                        strResult.Format(TEXT("dword:%08x"), *((DWORD*)memValue.GetMemory()));
+                        break;
+                    }
+                case REG_DWORD_BIG_ENDIAN:
+                case REG_LINK:
+                case REG_RESOURCE_LIST:
+                case REG_FULL_RESOURCE_DESCRIPTOR:
+                case REG_RESOURCE_REQUIREMENTS_LIST:
+                default:
+                    FTLTRACEEX(tlWarning, TEXT("%s Unsupport RegType\n"), __FILE__LINE__);
+                    FTLASSERT(FALSE);
+                    lRet = ERROR_UNSUPPORTED_TYPE;
+                    break;
+                }
+            }
+        }
+        return lRet;
+    }
+    
 
 	///////////////////////////////////////// SystemParamProperty ///////////////////////////////////////////////
 	SystemParamProperty::SystemParamProperty()

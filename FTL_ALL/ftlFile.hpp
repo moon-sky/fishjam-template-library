@@ -9,7 +9,6 @@
 
 #include <atlpath.h>
 
-
 namespace FTL
 {
     LPCTSTR CFFileUtil::GetFileDesiredAccessFlagsString(FTL::CFStringFormater& formater, DWORD dwDesiredAccess, LPCTSTR pszDivide /* = TEXT("|") */)
@@ -650,10 +649,10 @@ namespace FTL
 		return 0;   // no support
 	}
 
-	BOOL CFPath::CreateDirTree(LPTSTR szPath)
+	BOOL CFPath::CreateDirTree(LPCTSTR szPath)
 	{
-		TCHAR szDirName[MAX_PATH] = { NULL };
-		TCHAR* p = szPath;
+		TCHAR szDirName[MAX_PATH] = { 0 };
+		const TCHAR* p = szPath;
 		TCHAR* q = szDirName;
 
 		while(*p)
@@ -707,6 +706,27 @@ namespace FTL
 
 		return TRUE;
 	}
+
+    BOOL CFPath::GetRelativePath(LPCTSTR pszFullPath, LPCTSTR pszParentPath, LPTSTR pszRelateivePath, UINT cchMax)
+    {
+        BOOL bRet = FALSE;
+
+        LPTSTR pszRelative = StrStrI(pszFullPath, pszParentPath);
+        if (pszRelative)
+        {
+            pszRelative += lstrlen(pszParentPath);
+            while (pszRelative && (*pszRelative == _T('\\')))
+            {
+                pszRelative++;
+            }
+            if (pszRelative)
+            {
+                lstrcpyn(pszRelateivePath, pszRelative, cchMax);
+                bRet = TRUE;
+            }
+        }
+        return bRet;
+    }
 
     BOOL CFFileUTF8Encoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten)
     {
@@ -769,28 +789,267 @@ namespace FTL
 
 
     //////////////////////////////////////////////////////////////////////////
+
+    CFFileFinder::CFFileFinder()
+    {
+        m_pCallback = NULL;
+    }
+
+    VOID CFFileFinder::SetCallback(IFileFindCallback* pCallBack)
+    {
+        m_pCallback = pCallBack;
+    }
+
+    BOOL CFFileFinder::Find(LPCTSTR pszDirPath, 
+        LPCTSTR pszFilter /* =_T("*.*") */, 
+        BOOL bRecursive /* = TRUE */)
+    {
+        BOOL bRet = FALSE;
+        FTLASSERT(m_pCallback);
+        if (!m_pCallback)
+        {
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return FALSE;
+        }
+        m_strDirPath = pszDirPath;
+        m_strFilter = pszFilter;
+
+        m_FindDirs.push_back(m_strDirPath);
+        
+        FileFindResultHandle resultHandler = rhContinue;
+
+        while (!m_FindDirs.empty() && rhContinue == resultHandler)
+        {
+            const CAtlString& strFindPath = m_FindDirs.front();
+            CPath path(strFindPath);
+            path.Append(m_strFilter);
+
+            WIN32_FIND_DATA findData = { 0 };
+
+            HANDLE hFind = NULL;
+            API_VERIFY((hFind = FindFirstFile(path.m_strPath, &findData)) != INVALID_HANDLE_VALUE);
+            if (bRet)
+            {
+                do 
+                {
+                    CPath pathFullFindResult(strFindPath);
+                    pathFullFindResult.Append(findData.cFileName);
+
+                    if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                    {
+                        if ((lstrcmpi(findData.cFileName, _T(".")) != 0) 
+                            && (lstrcmpi(findData.cFileName, _T("..")) != 0))
+                        {
+                            resultHandler = m_pCallback->OnFindFile(pathFullFindResult.m_strPath, findData);
+                            //normal dir 
+                            if (bRecursive)
+                            {
+                                m_FindDirs.push_back(pathFullFindResult.m_strPath);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        resultHandler = m_pCallback->OnFindFile(pathFullFindResult.m_strPath, findData);
+                    }
+
+                    API_VERIFY_EXCEPT1(FindNextFile(hFind, &findData), ERROR_NO_MORE_FILES);
+                } while (bRet);
+                API_VERIFY(FindClose(hFind));
+            }
+            m_FindDirs.pop_front();
+        }
+
+        return bRet;
+    }
+
     CFDirectoryCopier::CFDirectoryCopier()
     {
-
+        m_pCallback = NULL;
+        m_nTotalSize = 0LL;
+        m_nTotoalCopiedSize = 0LL;
+        m_nCurCopyFileSize = 0LL;
+        m_nFileCount = 0;
+        m_nTotalCopiedFileCount = 0;
+        m_nCopyFileIndex = 0;
+        m_bFailIfExists = FALSE;
+        m_bRecursive = TRUE;
+        m_bCopyEmptyFolder = TRUE;
     }
+
     CFDirectoryCopier::~CFDirectoryCopier()
     {
 
     }
     BOOL CFDirectoryCopier::SetCallback(ICopyDirCallback* pCallback)
     {
+        m_pCallback = pCallback;
+
         return TRUE;
     }
-    BOOL CFDirectoryCopier::Start(LPCTSTR pszSourcePath, LPCTSTR pszTargetPath, LPCTSTR pszFilter /* = _T("*.*") */)
+    BOOL CFDirectoryCopier::SetCopyEmptyFolder(BOOL bCopyEmptyFolder)
     {
+        m_bCopyEmptyFolder = bCopyEmptyFolder;
         return TRUE;
     }
-    BOOL CFDirectoryCopier::Stop()
+    BOOL CFDirectoryCopier::Start(LPCTSTR pszSourcePath, 
+        LPCTSTR pszDestPath, 
+        LPCTSTR pszFilter /* = _T("*.*") */, 
+        BOOL bFailIfExists /* = FALSE */,
+        BOOL bRecursive /* = TRUE */)
     {
-        return TRUE;
+        BOOL bRet = FALSE;
+        m_strSrcDirPath = pszSourcePath;
+        m_strDstDirPath = pszDestPath;
+        m_strFilter = pszFilter;
+        m_bFailIfExists = bFailIfExists;
+        m_bRecursive = bRecursive;
+    
+        API_VERIFY(m_threadCopy.Start(_CopierThreadProc, this, TRUE));
+        return bRet;
+    }
+    DWORD CFDirectoryCopier::_CopierThreadProc(LPVOID lpThreadParameter)
+    {
+        CFDirectoryCopier* pThis = static_cast<CFDirectoryCopier*>(lpThreadParameter);
+        DWORD dwResult = pThis->_InnerCopierThreadProc();
+        return dwResult;
+    }
+    DWORD CFDirectoryCopier::_InnerCopierThreadProc()
+    {
+        FTLThreadWaitType waitType = ftwtContinue;
+        do 
+        {
+            waitType = _PrepareSourceFiles();
+            if (waitType != ftwtContinue)
+            {
+                break;
+            }
+            waitType = _CopyFiles();
+        } while (0);
+
+        return 0;
+    }
+    FTLThreadWaitType CFDirectoryCopier::_PrepareSourceFiles()
+    {
+        BOOL bRet = FALSE;
+        FTLThreadWaitType waitType = ftwtError;
+        CFFileFinder finder;
+        finder.SetCallback(this);
+        API_VERIFY(finder.Find(m_strSrcDirPath, m_strFilter, m_bRecursive));
+        if (bRet)
+        {
+            waitType = ftwtContinue;
+        }
+        return waitType;
     }
 
+    FTLThreadWaitType CFDirectoryCopier::_CopyFiles()
+    {
+        BOOL bRet = FALSE;
+
+        FTLThreadWaitType waitType = m_threadCopy.GetThreadWaitType(INFINITE);
+        TCHAR szRelativePath[MAX_PATH] = {0};
+        while (waitType == ftwtContinue && !m_sourceFiles.empty())
+        {
+            const SourceFileInfo& fileInfo = m_sourceFiles.front();
+            API_VERIFY(CFPath::GetRelativePath(fileInfo.strFullPath, m_strSrcDirPath, szRelativePath, _countof(szRelativePath)));
+            if (bRet)
+            {
+                m_nCopyFileIndex++;
+                CPath pathTarget(m_strDstDirPath);
+                pathTarget.Append(szRelativePath);
+                if (fileInfo.isDirectory)
+                {
+                    API_VERIFY(CFPath::CreateDirTree(pathTarget.m_strPath));
+                }
+                else
+                {
+                    CAtlString strFileName = PathFindFileName(pathTarget.m_strPath);
+                    pathTarget.RemoveFileSpec();
+                    API_VERIFY(CFPath::CreateDirTree(pathTarget.m_strPath));
+                    if (bRet)
+                    {
+                        m_strCurSrcFilePath = fileInfo.strFullPath;
+                        pathTarget.Append(strFileName);
+                        m_strCurDstFilePath = pathTarget.m_strPath;
+                        API_VERIFY(CopyFile(m_strCurSrcFilePath, m_strCurDstFilePath, m_bFailIfExists));
+                    }
+                }
+                if (bRet)
+                {
+                    m_nTotalCopiedFileCount++;
+                    m_nTotoalCopiedSize += fileInfo.nFileSize;
+                    m_nCurCopyFileSize = fileInfo.nFileSize;
+                    _NotifyCallBack(ICopyDirCallback::cbtCopyFile);    
+                }
+                if (!bRet)
+                {
+                    _NotifyCallBack(ICopyDirCallback::cbtError, GetLastError());
+                }
+            }
+
+            m_sourceFiles.pop_front();
+        }
+        return waitType;
+    }
+
+    BOOL CFDirectoryCopier::Stop()
+    {
+        BOOL bRet = FALSE;
+        API_VERIFY(m_threadCopy.Stop());
+        return bRet;
+    }
+    BOOL CFDirectoryCopier::WaitToEnd(DWORD dwMilliseconds /* = INFINITE */)
+    {
+        BOOL bRet = FALSE;
+        API_VERIFY(m_threadCopy.Wait(dwMilliseconds));
+        return bRet;
+    }
     
+    VOID CFDirectoryCopier::_NotifyCallBack(ICopyDirCallback::CallbackType type, DWORD dwError /* = 0 */)
+    {
+        if (m_pCallback)
+        {
+            switch (type)
+            {
+            case ICopyDirCallback::cbtBegin:
+                m_pCallback->OnBegin(m_nTotalSize, m_nFileCount);
+                break;
+            case ICopyDirCallback::cbtCopyFile:
+                m_pCallback->OnCopyFile(m_strCurSrcFilePath, m_strCurDstFilePath, 
+                    m_nCopyFileIndex, m_nCurCopyFileSize, m_nTotoalCopiedSize);
+                break;
+            case ICopyDirCallback::cbtEnd:
+                m_pCallback->OnEnd(TRUE, m_nTotoalCopiedSize, m_nTotalCopiedFileCount);
+                break;
+            case ICopyDirCallback::cbtError:
+                m_pCallback->OnError(m_strCurSrcFilePath, m_strCurDstFilePath, dwError);
+                break;
+            }
+        }
+    }
+    FileFindResultHandle CFDirectoryCopier::OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData)
+    {
+        LARGE_INTEGER fileSize;
+        fileSize.HighPart = findData.nFileSizeHigh;
+        fileSize.LowPart = findData.nFileSizeLow;
+
+        BOOL isDirectory = ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
+        if (!isDirectory || m_bCopyEmptyFolder)
+        {
+            SourceFileInfo fileInfo;
+            fileInfo.strFullPath = pszFilePath;
+            fileInfo.nFileSize = fileSize.QuadPart;
+            fileInfo.isDirectory = isDirectory;
+
+            m_sourceFiles.push_back(fileInfo);
+            m_nTotalSize += fileSize.QuadPart;
+            m_nFileCount ++;
+        }
+        return rhContinue;
+        
+    }
+
     //////////////////////////////////////////////////////////////////////////
 
     CFStructuredStorageFile::CFStructuredStorageFile()

@@ -444,10 +444,12 @@ namespace FTL
 	*     1.使用FTLTRACE(内部使用 StringCchVPrintfEx + OutputDebugString )
 	*     2.#include <locale.h>
 	*       TCHAR* old_locale = _tsetlocale( setlocale(LC_ALL,NULL) );
-	*       _tsetlocale( LC_ALL, _T("chs") );    或 "", "korean"
+	*       _tsetlocale( LC_ALL, _T("chs") );    或 "", "korean", 
 	*       TRACE(XXXX);
 	*       _tsetlocale( LC_ALL, old_locale); 
 	*       free(old_locale); 
+    *
+    *      locale_string = setlocale(LC_CTYPE, "Japanese_Japan"); if (locale_string == NULL) { "Japanese locale not enabled" }
     *********************************************************************************************************/
 
     //printf 的 Ctrl Code -- printf("\033[30m" "其他控制符" "\033[0m" , 参数列表)

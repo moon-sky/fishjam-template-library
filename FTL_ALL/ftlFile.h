@@ -17,6 +17,7 @@ namespace FTL
 
 #include <WinIoctl.h>
 #include "ftlsystem.h"
+#include "ftlThread.h"
 
 namespace FTL
 {
@@ -238,33 +239,107 @@ namespace FTL
     {
     public:
 		//创建指定路径中的全部目录
-		FTLINLINE static BOOL CreateDirTree(LPTSTR szPath);
+		FTLINLINE static BOOL CreateDirTree(LPCTSTR szPath);
+        FTLINLINE static BOOL GetRelativePath(LPCTSTR pszFullPath, LPCTSTR pszParentPath, LPTSTR pszRelateivePath, UINT cchMax);
     private:
         
     };
 
+
+    enum FileFindResultHandle
+    {
+        rhContinue,
+        rhSkip,
+        rhStop,
+    };
+
+    class IFileFindCallback
+    {
+    public:
+        virtual FileFindResultHandle OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData) = 0;
+    };
+
+    //同步查找指定目录
+    class CFFileFinder
+    {
+    public:
+        FTLINLINE CFFileFinder();
+        FTLINLINE VOID SetCallback(IFileFindCallback* pCallBack);
+        FTLINLINE BOOL Find(LPCTSTR pszDirPath, LPCTSTR pszFilter = _T("*.*"), BOOL bRecursive = TRUE);
+    protected:
+        IFileFindCallback*  m_pCallback;
+        CAtlString          m_strDirPath;
+        CAtlString          m_strFilter;
+        typedef std::deque<CAtlString>  FindDirsContainer;
+        FindDirsContainer  m_FindDirs;
+    };
+
+
     class ICopyDirCallback
     {
     public:
+        enum CallbackType
+        {
+            cbtBegin,
+            cbtCopyFile,
+            cbtEnd,
+            cbtError,
+        };
         virtual VOID OnBegin(LONGLONG nTotalSize, LONG nFileCount) = 0;
         virtual VOID OnCopyFile(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, LONG nIndex, LONGLONG nFileSize, LONGLONG nCopiedSize) = 0;
-        virtual VOID OnError(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, DWORD dwError) = 0;
         virtual VOID OnEnd(BOOL bSuccess, LONGLONG nTotalCopiedSize, LONG nCopiedFileCount) = 0;
+        virtual VOID OnError(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, DWORD dwError) = 0;
     };
-
-    class CFDirectoryCopier
+    class CFDirectoryCopier : public IFileFindCallback
     {
     public:
         FTLINLINE CFDirectoryCopier();
         FTLINLINE ~CFDirectoryCopier();
         FTLINLINE BOOL SetCallback(ICopyDirCallback* pCallback);
-        FTLINLINE BOOL Start(LPCTSTR pszSourcePath, LPCTSTR pszTargetPath, LPCTSTR pszFilter = _T("*.*"));
+        FTLINLINE BOOL SetCopyEmptyFolder(BOOL bCopyEmptyFolder);
+        FTLINLINE BOOL Start(LPCTSTR pszSourcePath, LPCTSTR pszDestPath, 
+            LPCTSTR pszFilter = _T("*.*"), 
+            BOOL bFailIfExists = FALSE, 
+            BOOL bRecursive = TRUE);
         FTLINLINE BOOL Stop();
+        FTLINLINE BOOL WaitToEnd(DWORD dwMilliseconds = INFINITE);
+    public:
+        FTLINLINE virtual FileFindResultHandle OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData);
     protected:
         ICopyDirCallback*               m_pCallback;
+
+        LONGLONG                        m_nCurCopyFileSize;
+        LONGLONG                        m_nTotalSize;
+        LONGLONG                        m_nTotoalCopiedSize;
+
+        LONG                            m_nFileCount;
+        LONG                            m_nCopyFileIndex;
+        LONG                            m_nTotalCopiedFileCount;
+
+        BOOL                            m_bFailIfExists;
+        BOOL                            m_bRecursive;
+        BOOL                            m_bCopyEmptyFolder;
+        CAtlString                      m_strCurSrcFilePath;
+        CAtlString                      m_strCurDstFilePath;
+        CAtlString                      m_strSrcDirPath;
+        CAtlString                      m_strDstDirPath;
+        CAtlString                      m_strFilter;
+
+        struct SourceFileInfo{
+            CAtlString  strFullPath;
+            BOOL        isDirectory;
+            LONGLONG    nFileSize;
+        };
+        typedef std::list<SourceFileInfo>   SourceFileInfoContainer;
+        SourceFileInfoContainer         m_sourceFiles;
         CFThread<DefaultThreadTraits>   m_threadCopy;
-        static DWORD __stdcall _CopierThreadProc(LPVOID lpThreadParameter);
-        DWORD _InnerCopierThreadProc();
+        FTLINLINE static DWORD __stdcall _CopierThreadProc(LPVOID lpThreadParameter);
+        FTLINLINE DWORD _InnerCopierThreadProc();
+
+        FTLINLINE VOID _NotifyCallBack(ICopyDirCallback::CallbackType type, DWORD dwError = 0);
+
+        FTLINLINE FTLThreadWaitType _PrepareSourceFiles();
+        FTLINLINE FTLThreadWaitType _CopyFiles();
     };
 
     class CFStructuredStorageFile

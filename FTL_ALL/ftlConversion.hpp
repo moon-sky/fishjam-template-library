@@ -266,6 +266,55 @@ namespace FTL
 	}
 #endif //_UNICODE
 
+    BOOL CFConvUtil::HexFromBinary(__in const BYTE* pBufSrc, __in LONG nSrcLen, 
+        __out LPTSTR pBufDest, __inout LONG* pDestCharCount, 
+        __in TCHAR chDivision/* = _T('\0') */)
+    {
+        FTLASSERT(pBufSrc);
+        FTLASSERT(pDestCharCount);
+
+        BOOL bRet = FALSE;
+
+        if (!pBufDest)
+        {
+            *pDestCharCount = nSrcLen * 2 + 1;
+            if (chDivision != _T('\0'))
+            {
+                *pDestCharCount += (nSrcLen - 1);
+            }
+            return TRUE;
+        }
+
+        static const char s_chHexChars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
+            'A', 'B', 'C', 'D', 'E', 'F'};
+
+        LONG nRead = 0;
+        LONG nWritten = 0;
+        BYTE ch = 0;
+        LPTSTR pWritePos = pBufDest;
+        while (nRead < nSrcLen)
+        {
+            ch = *pBufSrc++;
+            nRead++;
+            *pWritePos++ = s_chHexChars[(ch >> 4) & 0x0F];
+            *pWritePos++ = s_chHexChars[ch & 0x0F];
+            nWritten += 2;
+            if (chDivision != _T('\0'))
+            {
+                *pWritePos++ = chDivision;
+                nWritten ++;
+            }
+        }
+        if (pWritePos != pBufDest)
+        {
+            *(pWritePos - 1) = NULL;  //set last NULL 
+        }
+
+        *pDestCharCount = nWritten;
+
+        return TRUE;
+    }
+
 }
 
 #endif //FTL_CONVERSION_HPP

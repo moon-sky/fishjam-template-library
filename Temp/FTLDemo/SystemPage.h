@@ -23,4 +23,6 @@ public:
     afx_msg void OnBnClickedBtnTempFpuRcReset();
 	afx_msg void OnBnClickedBtnSystemMetrics();
     afx_msg void OnBnClickedBtnCreateProcessAsUser();
+    afx_msg void OnBnClickedBtnCreateProcessAndWaitAllChild();
+    afx_msg void OnBnClickedBtnGetRegValueExportString();
 };

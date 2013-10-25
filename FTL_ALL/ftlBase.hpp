@@ -194,6 +194,7 @@ namespace FTL
     CFAPIErrorInfo::CFAPIErrorInfo(DWORD dwError) : CFConvertInfoT<CFAPIErrorInfo,DWORD>(dwError)
     {
 		m_LanguageID = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
+        //m_LanguageID = MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL);//本地语言
     }
 
 	DWORD CFAPIErrorInfo::SetLanguageID(DWORD dwLanguageID)
@@ -225,7 +226,7 @@ namespace FTL
                 LPTSTR pszMsgBuf = NULL;
                 DWORD dwCount = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER 
                     | FORMAT_MESSAGE_FROM_SYSTEM 
-                    | FORMAT_MESSAGE_IGNORE_INSERTS,
+                    | FORMAT_MESSAGE_IGNORE_INSERTS,    //消息定义中的插入序列(类似 %s 一类)会被一直忽略和跳过直到输出缓冲区不改变
                     NULL,
                     m_Info,
                     m_LanguageID,

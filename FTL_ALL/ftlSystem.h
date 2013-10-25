@@ -23,6 +23,7 @@
 #include <TlHelp32.h>   //CreateToolhelp32Snapshot
 #include <list>
 #include <functional>
+#include <atlstr.h>
 
 //控制面板的选项：
 //http://msdn.microsoft.com/en-us/library/windows/desktop/cc144191(v=vs.85).aspx
@@ -160,6 +161,7 @@ namespace FTL
 
     class CFRegUtil
     {
+    public:
         //RegNotifyChangeKeyValue -- 检测注册表的变化，可以快速响应
         //RegCreateKeyEx -- 创建注册表项，如果存在的话则打开
         //RegQueryValueEx -- 获取 字符串(REG_SZ)、DWORD(REG_DWORD) 注册表的 类型 和值
@@ -167,6 +169,7 @@ namespace FTL
         //RegOpenKeyEx -- 打开注册表
         //RegEnumKeyEx -- 枚举子键，可用于删除、查找子键等，没有更多时返回 ERROR_NO_MORE_ITEMS
         //RegDeleteKey -- 删除没有下级子键的子键,如果要递归删除，可以使用 CRegKey::RecurseDeleteKey 
+        FTLINLINE static LONG GetRegValueExportString(HKEY hKey, LPCTSTR pszValueName, CAtlString& strResult, DWORD* pRegType);
     };
 
 	//SystemParametersInfo -- 查询当前系统的参数
