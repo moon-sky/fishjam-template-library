@@ -505,26 +505,106 @@ namespace FTL
 		return hr;
 	}
 
-    BOOL CFShellUtil::BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle /* = NULL */, UINT nFlags /* = BIF_NEWDIALOGSTYLE */)
+    //BOOL CFShellUtil::BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle /* = NULL */, UINT nFlags /* = BIF_NEWDIALOGSTYLE */)
+    //{
+    //    BOOL bRet = FALSE;
+    //    TCHAR dir[MAX_PATH];
+    //    BROWSEINFO bi = { 0 };
+    //    bi.hwndOwner = NULL;
+    //    bi.pidlRoot = NULL;
+    //    bi.pszDisplayName = dir;
+    //    bi.lpszTitle = strTitle;
+    //    bi.ulFlags = nFlags;
+    //    bi.lpfn = NULL;
+    //    bi.lParam = NULL;
+    //    bi.iImage = NULL;
+
+    //    bRet = SHGetPathFromIDList(SHBrowseForFolder(&bi), dir);
+    //    if (bRet)
+    //    {
+    //        strResult.Format(TEXT("%s"), dir);
+    //    }
+    //    return bRet;
+    //}
+
+    CFDirBrowser::CFDirBrowser(LPCTSTR lpszTitle /* = NULL */, HWND hWndOwner /* = NULL */, LPCTSTR pszInit /* = NULL */, 
+        UINT nFlags)
+    {
+        ZeroMemory(&m_browseInfo, sizeof(m_browseInfo));
+        m_szPath[0] = NULL;
+        m_szInitPath[0] = NULL;
+
+        m_browseInfo.lpszTitle = lpszTitle;
+        m_browseInfo.hwndOwner = hWndOwner;
+        m_browseInfo.pszDisplayName = m_szPath;
+        m_browseInfo.ulFlags = nFlags;
+        m_browseInfo.lpfn = DirBrowseCallbackProc;
+        m_browseInfo.lParam = (LPARAM)this;
+
+        if (pszInit && PathFileExists(pszInit))
+        {
+            lstrcpyn(m_szInitPath, pszInit, _countof(m_szInitPath));
+        }
+     }
+
+    BOOL CFDirBrowser::DoModal()
     {
         BOOL bRet = FALSE;
-        TCHAR dir[MAX_PATH];
-        BROWSEINFO bi = { 0 };
-        bi.hwndOwner = NULL;
-        bi.pidlRoot = NULL;
-        bi.pszDisplayName = dir;
-        bi.lpszTitle = strTitle;
-        bi.ulFlags = nFlags;
-        bi.lpfn = NULL;
-        bi.lParam = NULL;
-        bi.iImage = NULL;
-
-        bRet = SHGetPathFromIDList(SHBrowseForFolder(&bi), dir);
-        if (bRet)
+        LPITEMIDLIST pIDList = SHBrowseForFolder(&m_browseInfo);    //调用显示选择对话框
+        if (pIDList)
         {
-            strResult.Format(TEXT("%s"), dir);
+            API_VERIFY(SHGetPathFromIDList(pIDList, m_szPath)); //取得文件夹路径到m_szPath里
+            CoTaskMemFree(pIDList);
         }
         return bRet;
+    }
+
+    int CFDirBrowser::DirBrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+    {
+        HRESULT hr = E_FAIL;
+
+        //FTLTRACE(TEXT("DirBrowseCallbackProc, uMsg=%d\n"), uMsg);
+        CFDirBrowser* pThis = reinterpret_cast<CFDirBrowser*>(lpData);
+
+        switch (uMsg)
+        {
+        case BFFM_INITIALIZED:
+            {
+                FTLTRACE(TEXT("DirBrowseCallbackProc - BFFM_INITIALIZED\n"));
+                if (pThis->m_szInitPath[0])
+                {
+                    SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)pThis->m_szInitPath);
+                }
+                break;
+            }
+        case BFFM_SELCHANGED:
+            {
+                LPITEMIDLIST pItemList = (LPITEMIDLIST)lParam;
+                TCHAR szSelPath[MAX_PATH] = {0};
+                COM_VERIFY(CFShellUtil::GetItemIdName(pItemList, szSelPath, _countof(szSelPath), SHGDN_FORPARSING));
+
+                FTLTRACE(TEXT("DirBrowseCallbackProc - BFFM_SELCHANGED, %s\n"), szSelPath);
+                break;
+            }
+        case BFFM_VALIDATEFAILED:
+            {
+                FTLTRACE(TEXT("DirBrowseCallbackProc - BFFM_VALIDATEFAILED, %s\n"), (LPCTSTR)lParam);
+                break;
+            }
+        case BFFM_IUNKNOWN:
+            {
+                //经测试，至少支持如下接口： IFolderFilter、IFolderFilterSite
+                IUnknown *pUnknown = reinterpret_cast<IUnknown*>(lParam);
+                FTLTRACE(TEXT("DirBrowseCallbackProc - BFFM_IUNKNOWN, pUnknown=0x%p\n"), pUnknown);
+
+                //COM_DETECT_INTERFACE_FROM_REGISTER(pUnknown);
+                break;
+            }
+        default:
+            FTLASSERT(FALSE);
+            break;
+        }
+        return 0;
     }
 }
 

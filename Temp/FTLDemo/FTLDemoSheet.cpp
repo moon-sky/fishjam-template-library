@@ -6,6 +6,7 @@
 #include "ControlsPage.h"
 #include "CrackPage.h"
 #include "CrashHandlerPage.h"
+#include "FilePage.h"
 #include "GdiPage.h"
 #include "GdiPlusPage.h"
 #include "GuiPage.h"
@@ -46,11 +47,12 @@ BOOL CFTLDemoSheet::InitSheet()
     BOOL bRet = TRUE;
 
     this->AddPage(new CBasePage());
-    this->AddPage(new CControlsPage());
+    //this->AddPage(new CControlsPage());
     //this->AddPage(new CCrackPage());
     //this->AddPage(new CCrashHandlerPage());
+    this->AddPage(new CFilePage());
     //this->AddPage(new CGdiPage());
-    this->AddPage(new CGdiPlusPage());
+    //this->AddPage(new CGdiPlusPage());
     //this->AddPage(new CGuiPage());
     this->AddPage(new CHookApiPage());
     //this->AddPage(new CMemPage());

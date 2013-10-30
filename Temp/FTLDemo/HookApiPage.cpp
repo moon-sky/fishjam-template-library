@@ -251,7 +251,7 @@ void CHookApiPage::OnBnClickedBtnHookApiMinHookInstall()
 
 	m_bMinHookIsHooked = TRUE;
 	s_strHookSource = TEXT("MinHook");
-#endif 
+#endif //HOOK_API_MINHOOK
 }
 
 void CHookApiPage::OnBnClickedBtnHookApiMinHookUnInstall()
@@ -266,7 +266,7 @@ void CHookApiPage::OnBnClickedBtnHookApiMinHookUnInstall()
 		MH_VERIFY(MH_DisableHook(&::MessageBoxW));
 		MH_VERIFY(MH_Uninitialize());
 	}
-#endif
+#endif //HOOK_API_MINHOOK
 }
 
 void CHookApiPage::OnDestroy()

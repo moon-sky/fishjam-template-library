@@ -63,24 +63,24 @@ namespace FTL
     class IShellChangeObserver
     {
     public:
-		virtual void OnFileRename( LPCITEMIDLIST pIdl_Src, LPCITEMIDLIST pIdl_Dst ) {};
-		virtual void OnFileCreate( LPCITEMIDLIST pIdl ){};
-		virtual void OnFileDelete( LPCITEMIDLIST pIdl ) {};
-		virtual void OnFileUpdated( LPCITEMIDLIST pIdl ) {};
-		virtual void OnFreeSpace(LPCITEMIDLIST pIdl ) {};
-		virtual void OnDirRename( LPCITEMIDLIST pIdl_Src, LPCITEMIDLIST pIdl_Dst ){};
-		virtual void OnDirCreate( LPCITEMIDLIST pIdl ) {};
-		virtual void OnDirDelete( LPCITEMIDLIST pIdl ) {};
-		virtual void OnDirUpdated( LPCITEMIDLIST pIdl ){};
-		virtual void OnMediaInserted( LPCITEMIDLIST pIdl ){};
-		virtual void OnMediaRemoved( LPCITEMIDLIST pIdl ){};
-		virtual void OnNetShare(LPCITEMIDLIST pIdl) {};
-		virtual void OnNetUnShare(LPCITEMIDLIST pIdl) {};
-		virtual void OnDriveAdded( LPCITEMIDLIST pIdl ) {};
-		virtual void OnDriveAddGUI( LPCITEMIDLIST pIdl ) {};
-		virtual void OnDriveRemoved( LPCITEMIDLIST pIdl ) {};
-		virtual void OnChangeAttributes( LPCITEMIDLIST pIdl ) {};
-		virtual void OnServerDisconnect(LPCITEMIDLIST pIdl ) {};
+		virtual void OnFileRename( LPCITEMIDLIST /* pIdl_Src */, LPCITEMIDLIST /* pIdl_Dst */ ) {};
+		virtual void OnFileCreate( LPCITEMIDLIST /* pIdl */ ){};
+		virtual void OnFileDelete( LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnFileUpdated( LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnFreeSpace(LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnDirRename( LPCITEMIDLIST /* pIdl_Src */, LPCITEMIDLIST /* pIdl_Dst */ ){};
+		virtual void OnDirCreate( LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnDirDelete( LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnDirUpdated( LPCITEMIDLIST /* pIdl */  ){};
+		virtual void OnMediaInserted( LPCITEMIDLIST /* pIdl */  ){};
+		virtual void OnMediaRemoved( LPCITEMIDLIST /* pIdl */  ){};
+		virtual void OnNetShare(LPCITEMIDLIST /* pIdl */ ) {};
+		virtual void OnNetUnShare(LPCITEMIDLIST /* pIdl */ ) {};
+		virtual void OnDriveAdded( LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnDriveAddGUI( LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnDriveRemoved( LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnChangeAttributes( LPCITEMIDLIST /* pIdl */  ) {};
+		virtual void OnServerDisconnect(LPCITEMIDLIST /* pIdl */  ) {};
     };
 
 	//检测文件系统文件变化通知
@@ -140,7 +140,21 @@ namespace FTL
 
 		FTLINLINE static HRESULT ExplorerToSpecialFile(LPCTSTR pszFilePath);
 
-        FTLINLINE static BOOL BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle = NULL, UINT nFlags = BIF_NEWDIALOGSTYLE);
+        //FTLINLINE static BOOL BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle = NULL, UINT nFlags = BIF_NEWDIALOGSTYLE);
+    };
+
+    class CFDirBrowser
+    {
+    public:
+        FTLINLINE CFDirBrowser(LPCTSTR lpszTitle = NULL, HWND hWndOwner = NULL, LPCTSTR pszInit = NULL, 
+            UINT nFlags = BIF_NEWDIALOGSTYLE | BIF_STATUSTEXT);
+        FTLINLINE BOOL DoModal();
+
+        BROWSEINFO  m_browseInfo;
+        TCHAR       m_szPath[MAX_PATH];
+        TCHAR       m_szInitPath[MAX_PATH];
+    protected:
+        FTLINLINE static int CALLBACK DirBrowseCallbackProc(HWND hwnd, UINT uMsg,LPARAM lParam, LPARAM lpData);
     };
 }
 

@@ -13,7 +13,7 @@
 namespace FTL
 {
 	/*********************************************************************************************
-	* CFileDialog dlg(TRUE); dlg.DoModel(); 在Win7下崩溃
+	* CFileDialog dlg(TRUE); dlg.DoModal(); 在Win7下崩溃
 	*   http://social.msdn.microsoft.com/Forums/en-US/2de2670e-03df-495b-9a84-1049eddff9b6/cfiledialog-on-vindows-7-exception
 	*********************************************************************************************/
 

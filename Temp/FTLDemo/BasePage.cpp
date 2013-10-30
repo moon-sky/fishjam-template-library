@@ -87,13 +87,13 @@ void CBasePage::OnBnClickedBtnStart()
 
     //return;
 
-    FTL::CFDirectoryCopier copier;
-    copier.Start(TEXT("E:\\Code\\cafesolution\\src\\bin\\Debug\\PackageTemplate"), TEXT("E:\\CopyTarget"));
-    copier.WaitToEnd();
+    //FTL::CFDirectoryCopier copier;
+    //copier.Start(TEXT("E:\\Code\\cafesolution\\src\\bin\\Debug\\PackageTemplate"), TEXT("E:\\CopyTarget"));
+    //copier.WaitToEnd();
 
-    //FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("OnBnClickedBtnStart"), FTL::TraceDetailNone, 1);
-    //m_ElapseCounter.Start();
-    //SetElapseButtonStatus(m_ElapseCounter.GetStatus(), TRUE);
+    FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("OnBnClickedBtnStart"), FTL::TraceDetailNone, 1);
+    m_ElapseCounter.Start();
+    SetElapseButtonStatus(m_ElapseCounter.GetStatus(), TRUE);
 }
 
 
