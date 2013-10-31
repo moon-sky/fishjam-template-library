@@ -11,10 +11,11 @@
 #include "GdiPlusPage.h"
 #include "GuiPage.h"
 #include "HookApiPage.h"
+#include "MemPage.h"
 #include "NetPage.h"
 #include "NLSPage.h"
 //#include "PipelinePage.h"
-#include "MemPage.h"
+#include "RegPage.h"
 #include "ShellPage.h"
 #include "SystemPage.h"
 #include "ThreadPage.h"
@@ -57,10 +58,10 @@ BOOL CFTLDemoSheet::InitSheet()
     this->AddPage(new CHookApiPage());
     //this->AddPage(new CMemPage());
 
-    //this->AddPage(new CPipelinePage());
-
 	//this->AddPage(new CNetPage());
 	//this->AddPage(new CNLSPage());
+    //this->AddPage(new CPipelinePage());
+    this->AddPage(new CRegPage());
 	//this->AddPage(new CShellPage());
 	this->AddPage(new CSystemPage());
 	//this->AddPage(new CThreadPage());

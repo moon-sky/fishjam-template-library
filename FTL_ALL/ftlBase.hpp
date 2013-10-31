@@ -416,8 +416,11 @@ namespace FTL
         ,m_allocType(allocType)
         ,m_nCount(nCount)
     {
-        FTLASSERT(nCount > 0);
-		ZeroMemory(m_FixedMem, sizeof(m_FixedMem));
+        if (0 == nCount)
+        {
+            m_nCount = 1;
+        }
+    	ZeroMemory(m_FixedMem, sizeof(m_FixedMem));
         Init(nCount);
     }
 

@@ -228,10 +228,12 @@ namespace FTL
         typedef CFTextFile< TEncoding > thisClass;
         FTLINLINE CFTextFile(TextFileEncoding fileEncoding);
         FTLINLINE BOOL WriteFileHeader();
-        FTLINLINE BOOL WriteString(const CAtlString&strValue, DWORD* pnBytesWritten);
+        FTLINLINE BOOL WriteString(const CAtlString&strValue, DWORD* pnBytesWritten = NULL);
     private:
         TextFileEncoding    m_fileEncoding;
     };
+
+    typedef CFTextFile<CFFileUnicodeEncoding> CFUnicodeFile;
 
 
     //有 ATLPath 实现了很多功能, 如 RemoveFileSpec(删除路径最后的文件名)

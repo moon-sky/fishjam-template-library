@@ -25,4 +25,5 @@ public:
     afx_msg void OnBnClickedBtnCreateProcessAsUser();
     afx_msg void OnBnClickedBtnCreateProcessAndWaitAllChild();
     afx_msg void OnBnClickedBtnGetRegValueExportString();
+    afx_msg void OnBnClickedBtnTestOpenReg();
 };

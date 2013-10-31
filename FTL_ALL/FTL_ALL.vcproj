@@ -287,6 +287,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlReg.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlService.hpp"
 				>
 			</File>
@@ -482,6 +486,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlP2P.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlReg.h"
 				>
 			</File>
 			<File

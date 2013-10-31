@@ -35,7 +35,8 @@ BEGIN_MESSAGE_MAP(CSystemPage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_SYSTEM_CREATE_PROCESS_AS_USER, &CSystemPage::OnBnClickedBtnCreateProcessAsUser)
     ON_BN_CLICKED(IDC_BTN_SYSTEM_WAIT_ALL_CHILD_PROCESS, &CSystemPage::OnBnClickedBtnCreateProcessAndWaitAllChild)
     ON_BN_CLICKED(IDC_BTN_SYSTEM_GET_REG_VALUE_EXPORT_STRING, &CSystemPage::OnBnClickedBtnGetRegValueExportString)
-    
+    ON_BN_CLICKED(IDC_BTN_SYSTEM_TEST_OPENREG, &CSystemPage::OnBnClickedBtnTestOpenReg)
+
 END_MESSAGE_MAP()
 
 
@@ -174,25 +175,91 @@ void CSystemPage::OnBnClickedBtnGetRegValueExportString()
     //return;
 
 
+    //LONG lRet = ERROR_SUCCESS;
+    //CAtlString strResult;
+    //DWORD dwRegType = REG_NONE;
+
+    //CRegKey reg;
+    //REG_VERIFY(reg.Open(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"), KEY_READ | KEY_WOW64_64KEY ));
+    //if (ERROR_SUCCESS == lRet)
+    //{
+    //    LPCTSTR pszValueNames[] = {
+    //        _T("PathName"),
+    //        //_T("LogFileDirectory"),
+    //    };
+
+    //    for (int i = 0; i < _countof(pszValueNames); i++)
+    //    {
+    //        REG_VERIFY(FTL::CFRegUtil::GetRegValueExportString(reg, pszValueNames[i], strResult, &dwRegType));
+    //        FTLTRACE(TEXT("%s(%d) export value is %s\n"), pszValueNames[i], dwRegType, strResult);
+    //    }
+    //    
+    //}
+}
+
+#define MAX_KEY_LENGTH 255
+#define MAX_VALUE_NAME 16383
+
+void CSystemPage::OnBnClickedBtnTestOpenReg()
+{
     LONG lRet = ERROR_SUCCESS;
-    CAtlString strResult;
-    DWORD dwRegType = REG_NONE;
+    CAtlString strSubKey = TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer");
+    CRegKey regLocalMachine;
+    REG_VERIFY(regLocalMachine.Open(HKEY_LOCAL_MACHINE, strSubKey, KEY_ALL_ACCESS));
 
-    CRegKey reg;
-    REG_VERIFY(reg.Open(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"), KEY_READ | KEY_WOW64_64KEY ));
-    if (ERROR_SUCCESS == lRet)
-    {
-        LPCTSTR pszValueNames[] = {
-            _T("PathName"),
-            //_T("LogFileDirectory"),
-        };
 
-        for (int i = 0; i < _countof(pszValueNames); i++)
-        {
-            REG_VERIFY(FTL::CFRegUtil::GetRegValueExportString(reg, pszValueNames[i], strResult, &dwRegType));
-            FTLTRACE(TEXT("%s(%d) export value is %s\n"), pszValueNames[i], dwRegType, strResult);
-        }
-        
-    }
-    
+    TCHAR    achKey[MAX_VALUE_NAME] = {0};   // buffer for subkey name
+    DWORD    cbName = _countof(achKey);                   // size of name string 
+    TCHAR    achClass[MAX_PATH] = {0};  // buffer for class name 
+    DWORD    cchClassName = MAX_PATH;  // size of class string 
+    DWORD    cSubKeys=0;               // number of subkeys 
+    DWORD    cbMaxSubKey;              // longest subkey size 
+    DWORD    cchMaxClass;              // longest class string 
+    DWORD    cValues;              // number of values for key 
+    DWORD    cchMaxValue;          // longest value name 
+    DWORD    cbMaxValueData;       // longest value data 
+    DWORD    cbSecurityDescriptor; // size of security descriptor 
+    FILETIME ftLastWriteTime;      // last write time 
+
+    DWORD i, retCode; 
+
+    TCHAR  achValue[MAX_VALUE_NAME]; 
+    DWORD cchValue = MAX_VALUE_NAME; 
+
+    // Get the class name and the value count. 
+    REG_VERIFY(RegQueryInfoKey(
+        regLocalMachine.m_hKey,                    // key handle 
+        achClass,                // buffer for class name 
+        &cchClassName,           // size of class string 
+        NULL,                    // reserved 
+        &cSubKeys,               // number of subkeys 
+        &cbMaxSubKey,            // longest subkey size 
+        &cchMaxClass,            // longest class string 
+        &cValues,                // number of values for this key 
+        &cchMaxValue,            // longest value name 
+        &cbMaxValueData,         // longest value data 
+        &cbSecurityDescriptor,   // security descriptor 
+        &ftLastWriteTime));       // last write time 
+
+
+
+    CRegKey regCurrentUser;
+    REG_VERIFY(regCurrentUser.Open(HKEY_CURRENT_USER, strSubKey, KEY_QUERY_VALUE));
+
+    REG_VERIFY(RegQueryInfoKey(
+        regCurrentUser.m_hKey,                    // key handle 
+        achClass,                // buffer for class name 
+        &cchClassName,           // size of class string 
+        NULL,                    // reserved 
+        &cSubKeys,               // number of subkeys 
+        &cbMaxSubKey,            // longest subkey size 
+        &cchMaxClass,            // longest class string 
+        &cValues,                // number of values for this key 
+        &cchMaxValue,            // longest value name 
+        &cbMaxValueData,         // longest value data 
+        &cbSecurityDescriptor,   // security descriptor 
+        &ftLastWriteTime));       // last write time 
+
+    //FTLASSERT(regLocalMachine.m_hKey == regCurrentUser.m_hKey);
+
 }
