@@ -15,11 +15,10 @@ namespace FTL
 {
     enum RegExportFlags
     {
-        WRITE_PATH_NONE     = 0x0000,
-        WRITE_PATH_AUTO     = 0x0001,       //用于 pszValueName 为 *时
-        
-        EXPORT_SUB_KEY       = 0x0010,
-        EXPORT_MULTI_VALUE   = 0x0020,
+        EXPORT_SUB_KEY       = 0x0010,          //递归遍历子树
+        EXPORT_MULTI_VALUE   = 0x0020,          //支持 pszValueName 指定 * 导出多个值
+
+        EXPORT_LINEWAPPER_BINARY = 0x0100,      //对二进制进行格式化
     };
 
     class CFRegUtil
@@ -36,17 +35,9 @@ namespace FTL
         //RegEnumKeyEx -- 枚举子键，可用于删除、查找子键等，没有更多时返回 ERROR_NO_MORE_ITEMS
         //RegDeleteKey -- 删除没有下级子键的子键,如果要递归删除，可以使用 CRegKey::RecurseDeleteKey 
         //RegSaveKey/RegSaveKeyEx -- 以二进制方式导出注册表内容
+
+        //获取键值导出时对应的格式字符串
         FTLINLINE static LONG GetRegValueExportString(HKEY hKey, LPCTSTR pszValueName, CAtlString& strResult, DWORD* pRegType);
-
-        //以 .reg 的文本格式 导出注册表的内容
-        //  注意：不能采用 CRegKey 的子类方式实现(利用m_hKey) -- 其没有保存注册表路径
-        FTLINLINE static LONG ExportRegValueToFile(LPCTSTR pszFullKey, 
-            LPCTSTR pszValueName, 
-            CFUnicodeFile* pRegFile, 
-            DWORD flags = EXPORT_SUB_KEY | EXPORT_MULTI_VALUE,
-            REGSAM samDesired = KEY_READ | KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE);
-
-        //FTLINLINE static LONG EnumRegKeyHandle(HKEY hKey, )
     };
 
     class IRegSerializeCallback
@@ -54,6 +45,9 @@ namespace FTL
     public:
         //TODO
     };
+
+    //以 .reg 的文本格式 导出注册表的内容
+    //  注意：不能采用 CRegKey 的子类方式实现(利用m_hKey) -- 其没有保存注册表路径
     class CFRegSerialize
     {
     public:
@@ -68,9 +62,9 @@ namespace FTL
         
     protected:
         FTLINLINE LONG _ExportReg(HKEY hKeyRoot, LPCTSTR pszSubKey, LPCTSTR pszValueName, DWORD flags, REGSAM samDesired);
-        FTLINLINE LONG _ExportReg(HKEY hKey, LPCTSTR pszValueName);
+        FTLINLINE LONG _ExportReg(HKEY hKey, LPCTSTR pszValueName, DWORD flags);
         FTLINLINE LONG _ConstructExportString(CAtlString& strRegExport, LPCTSTR pszValueName, 
-            const CAtlString& strValueResult, DWORD regType);
+            const CAtlString& strValueResult, DWORD regType, DWORD flags);
         BOOL _LineWrapperBinaryString(CAtlString& strRegExport, INT nValueLen, DWORD regType);
 
         FTLINLINE BOOL _WillExportMultiValue(LPCTSTR pszValueName, DWORD flags);

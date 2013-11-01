@@ -122,132 +122,6 @@ namespace FTL
         return lRet;
     }
 
-    LONG CFRegUtil::ExportRegValueToFile(LPCTSTR pszFullKey, 
-        LPCTSTR pszValueName, 
-        CFUnicodeFile* pRegFile, 
-        DWORD flags,
-        REGSAM samDesired)
-    {
-        FTLASSERT(pszFullKey);  //pszValue can be NULL
-        FTLASSERT(pRegFile);
-        
-        LONG lRet = ERROR_FILE_NOT_FOUND;
-        BOOL bRet = FALSE;
-        //BOOL bWritePath = ((flags & WRITE_PATH_AUTO) != 0); 
-
-        TCHAR szKeyRoot[256] = {0};  //255 + 1
-        TCHAR szSubKey[256] = {0};
-
-        lstrcpyn(szKeyRoot,  pszFullKey, _countof(szKeyRoot));
-        LPTSTR pszSubKeyDiv = StrChr(szKeyRoot, TEXT('\\'));
-        FTLASSERT(pszSubKeyDiv);
-        if (pszSubKeyDiv)
-        {
-            lstrcpyn(szSubKey, pszSubKeyDiv + 1, _countof(szKeyRoot));
-            pszSubKeyDiv[0] = NULL;
-
-            HKEY hKeyRoot = ConvertStringToRegRootKey(szKeyRoot);
-            FTLASSERT(hKeyRoot);
-            if (hKeyRoot)
-            {
-                HKEY hkResult = NULL;
-                REG_VERIFY(::RegOpenKeyEx(hKeyRoot, szSubKey, 0, samDesired, &hkResult));
-                if (ERROR_SUCCESS == lRet)
-                {
-                    CAtlString strRegExport;
-                    //if (bWritePath)
-                    {
-                        strRegExport.Format(TEXT("\r\n[%s]\r\n"), pszFullKey);
-                        API_VERIFY(pRegFile->WriteString(strRegExport, NULL));
-                    }
-
-                    CAtlString strValueResult;
-                    DWORD regType;
-                    if (pszValueName && lstrlen(pszValueName) == 1 && *pszValueName == _T('*'))
-                    {
-                        if(ERROR_SUCCESS == GetRegValueExportString(hkResult, pszValueName, strValueResult, &regType))
-                        {
-                            FTLTRACE(TEXT("Export for %s\\%s\n"), pszFullKey, pszValueName);
-                            return lRet;
-                        }
-
-                        DWORD    cSubKeys = 0;               // number of subkeys 
-                        DWORD    cbMaxSubKeyLen = 0;         // longest subkey size 
-                        //DWORD    cchMaxClass = 0;            // longest class string 
-                        DWORD    cValues = 0;                // number of values for key 
-                        DWORD    cchMaxValueLen = 0;         // longest value name 
-                        DWORD    cbMaxValueLen = 0;          // longest value data 
-                        //DWORD    cbSecurityDescriptor = 0;   // size of security descriptor 
-
-                        REG_VERIFY(RegQueryInfoKey(hkResult, NULL, NULL, NULL, &cSubKeys, 
-                            &cbMaxSubKeyLen, NULL,&cValues, &cchMaxValueLen, &cbMaxValueLen, 
-                            NULL, NULL));
-                        if (ERROR_SUCCESS == lRet)
-                        {
-                            DWORD dwValueNameLen = cchMaxValueLen + 1;
-                            CFMemAllocator<TCHAR> valueName(dwValueNameLen);
-                            //CFMemAllocator<BYTE>  valueData(cbMaxValueLen);
-                            DWORD subFlags = flags;
-                            for (DWORD indexValue = 0; indexValue < cValues; indexValue++)
-                            {
-                                dwValueNameLen = valueName.GetCount();
-                                REG_VERIFY(RegEnumValue(hkResult, indexValue, valueName, &dwValueNameLen, NULL, 
-                                    NULL, NULL, NULL));
-                                    //&regType, valueData, &cbMaxValueLen));
-                                if (ERROR_SUCCESS == lRet)
-                                {
-                                    //if (indexValue == 0)
-                                    //{
-                                    //    subFlags |= WRITE_PATH_AUTO;
-                                    //}
-                                    //else {
-                                    //    subFlags &= ~WRITE_PATH_AUTO;
-                                    //}
-                                    REG_VERIFY(ExportRegValueToFile(pszFullKey, valueName, pRegFile, subFlags, samDesired));
-                                }
-                            }
-
-                            if (flags & EXPORT_SUB_KEY)
-                            {
-                                DWORD dwSubKeyBufferLen = cbMaxSubKeyLen + 1;
-                                FTL::CFMemAllocator<TCHAR> subKeyName(dwSubKeyBufferLen);
-                                for (DWORD indexSubKey = 0; indexSubKey < cSubKeys; indexSubKey++)
-                                {
-                                    dwSubKeyBufferLen = subKeyName.GetCount();
-                                    CAtlString strSubKeyFullPath = pszFullKey;
-                                    REG_VERIFY(RegEnumKeyEx(hkResult, indexSubKey, subKeyName.GetMemory(), &dwSubKeyBufferLen, NULL, NULL, NULL, NULL));
-                                    if (ERROR_SUCCESS == lRet)
-                                    {
-                                        strSubKeyFullPath.AppendFormat(TEXT("\\%s"), subKeyName.GetMemory());
-                                        REG_VERIFY(ExportRegValueToFile(strSubKeyFullPath, _T("*"), pRegFile, flags, samDesired));
-                                    }
-                                }
-                            }
-                        }
-                        //enum
-                    }
-                    else
-                    {
-                        REG_VERIFY(GetRegValueExportString(hkResult, pszValueName, strValueResult, &regType));
-                        if (ERROR_SUCCESS == lRet)
-                        {
-                            if (pszValueName && lstrlen(pszValueName) > 0)
-                            {
-                                strRegExport.Format(TEXT("\"%s\"=%s\r\n"), pszValueName, strValueResult);
-                            }
-                            else
-                            {
-                                strRegExport.Format(TEXT("@=%s\r\n"), strValueResult);
-                            }
-                            API_VERIFY(pRegFile->WriteString(strRegExport, NULL));
-                        }
-                    }
-                }
-            }
-        }
-        return lRet;
-    }
-
     CFRegSerialize::CFRegSerialize()
     {
         m_bWillQuit = FALSE;
@@ -377,7 +251,7 @@ namespace FTL
                                 NULL, NULL, NULL));
                             if (ERROR_SUCCESS == lRet)
                             {
-                                _ExportReg(hkResult, valueName);
+                                _ExportReg(hkResult, valueName, flags);
                             }
                         }
                     }
@@ -406,7 +280,7 @@ namespace FTL
             else
             {
                 //export just current reg key
-                REG_VERIFY(_ExportReg(hkResult, pszValueName));
+                REG_VERIFY(_ExportReg(hkResult, pszValueName, flags));
             }
 
             REG_VERIFY(RegCloseKey(hkResult));
@@ -414,7 +288,7 @@ namespace FTL
         return lRet;
     }
 
-    LONG CFRegSerialize::_ExportReg(HKEY hKey, LPCTSTR pszValueName)
+    LONG CFRegSerialize::_ExportReg(HKEY hKey, LPCTSTR pszValueName, DWORD flags)
     {
         BOOL bRet = FALSE;
         LONG lRet = ERROR_INVALID_PARAMETER;
@@ -425,14 +299,14 @@ namespace FTL
         REG_VERIFY(CFRegUtil::GetRegValueExportString(hKey, pszValueName, strValueResult, &regType));
         if (ERROR_SUCCESS == lRet)
         {
-            REG_VERIFY(_ConstructExportString(strRegExport, pszValueName, strValueResult, regType));
+            REG_VERIFY(_ConstructExportString(strRegExport, pszValueName, strValueResult, regType, flags));
         }
 
         return lRet;
     }
 
     LONG CFRegSerialize::_ConstructExportString(CAtlString& strRegExport, LPCTSTR pszValueName, 
-        const CAtlString& strValueResult, DWORD regType)
+        const CAtlString& strValueResult, DWORD regType, DWORD flags)
     {
         BOOL bRet = FALSE;
         INT nValueLen = 0;
@@ -451,7 +325,10 @@ namespace FTL
             strRegExport.Format(TEXT("@=%s\r\n"), strValueResult);
         }
 
-        _LineWrapperBinaryString(strRegExport, nValueLen, regType);
+        if (flags & EXPORT_LINEWAPPER_BINARY)
+        {
+            _LineWrapperBinaryString(strRegExport, nValueLen, regType);
+        }
         API_VERIFY(m_pRegFile->WriteString(strRegExport, NULL));
         return ERROR_SUCCESS;
     }
@@ -477,7 +354,7 @@ namespace FTL
                 INT nWrapperSize = MAX_LINE_WRAPPER_COUNT;
                 if (nValueLen + FIRST_LONG_VALUE_OFFSET > MAX_LINE_WRAPPER_COUNT)
                 {
-                    nWrapperSize = nValueLen + FIRST_LONG_VALUE_OFFSET - 1;
+                    nWrapperSize = nValueLen + FIRST_LONG_VALUE_OFFSET;// - 1;
                 }
                 else if (nValueLen + FIRST_LONG_VALUE_OFFSET == MAX_LINE_WRAPPER_COUNT)
                 {
@@ -485,7 +362,8 @@ namespace FTL
                 }
 
                 CAtlString strTemp;
-                while (strRegExport.GetLength() > nWrapperSize) //回车换行
+                INT nLength = 0;
+                while ((nLength = strRegExport.GetLength()) > nWrapperSize) //回车换行
                 {
                     BOOL bSameLine = FALSE;
                     TCHAR chLast = _T('\0');

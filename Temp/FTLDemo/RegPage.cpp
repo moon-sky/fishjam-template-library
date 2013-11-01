@@ -68,13 +68,19 @@ void CRegPage::OnBnClickedBtnRegExport()
     FTL::CFElapseCounter elapseCounter;
 
     CFRegSerialize regSerialize;
-    REG_VERIFY(regSerialize.CreateRegFile(TEXT("D:\\test_Assemblies.reg")));
+    REG_VERIFY(regSerialize.CreateRegFile(TEXT("D:\\test_software2.reg")));
 
     REG_VERIFY(regSerialize.ExportReg(
-        TEXT("HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Assemblies"), 
+        TEXT("HKEY_CURRENT_USER\\Software\\FTL\\Au_.exe"), 
         _T("*"), 
-        //_T("Microsoft.VisualC,8.0.0.0,,b03f5f7f11d50a3a,msil"),
         EXPORT_SUB_KEY | EXPORT_MULTI_VALUE, 
+        KEY_READ | KEY_WOW64_64KEY)); //| KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE |
+
+    REG_VERIFY(regSerialize.ExportReg(
+        TEXT("HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer"), 
+        _T("*"), 
+        //_T("Microsoft.SmartDevice.Connectivity,version=\"9.0.0.0\",publicKeyToken=\"b03f5f7f11d50a3a\",processorArchitecture=\"MSIL\",fileVersion=\"9.0.30729.1\",culture=\"neutral\""),
+        EXPORT_MULTI_VALUE | EXPORT_SUB_KEY | EXPORT_LINEWAPPER_BINARY, 
         KEY_READ | KEY_WOW64_64KEY)); //| KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE |
     
     REG_VERIFY(regSerialize.CloseRegFile());
