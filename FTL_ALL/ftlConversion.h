@@ -81,7 +81,6 @@ namespace FTL
 		CFMemAllocator<BYTE> m_Mem2;
 	};
 
-
 	class CFConvUtil
 	{
 	public:

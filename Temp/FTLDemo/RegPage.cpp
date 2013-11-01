@@ -36,7 +36,6 @@ END_MESSAGE_MAP()
 
 void CRegPage::OnBnClickedBtnRegExport()
 {
-    BOOL bRet = FALSE;
     LONG lRet = ERROR_SUCCESS;
 
     //API_VERIFY(FTL::CFSystemUtil::EnableProcessPrivilege(GetCurrentProcess(), SE_BACKUP_NAME, TRUE));
@@ -52,15 +51,35 @@ void CRegPage::OnBnClickedBtnRegExport()
 
     //API_VERIFY(FTL::CFSystemUtil::EnableProcessPrivilege(GetCurrentProcess(), SE_BACKUP_NAME, FALSE));
     //return;
-    CFUnicodeFile   regFile(tfeUnicode);
-    API_VERIFY(regFile.Create(TEXT("D:\\test.reg")));
-    API_VERIFY(regFile.WriteFileHeader());
-    API_VERIFY(regFile.WriteString(TEXT("Windows Registry Editor Version 5.00\r\n")));
+#if 0
+    //CFUnicodeFile   regFile(tfeUnicode);
+    //API_VERIFY(regFile.Create(TEXT("D:\\test.reg")));
+    //API_VERIFY(regFile.WriteFileHeader());
+    //API_VERIFY(regFile.WriteString(TEXT("Windows Registry Editor Version 5.00\r\n")));
 
-    REG_VERIFY(FTL::CFRegUtil::ExportRegValueToFile(TEXT("HKEY_LOCAL_MACHINE\\SOFTWARE"), 
+    //REG_VERIFY(FTL::CFRegUtil::ExportRegValueToFile(TEXT("HKEY_LOCAL_MACHINE\\SOFTWARE"), 
+    //    _T("*"), 
+    //    &regFile, 
+    //    EXPORT_MULTI_VALUE | EXPORT_SUB_KEY, KEY_READ | KEY_WOW64_64KEY));
+
+    //regFile.Close();
+#endif 
+    CWaitCursor waitCursor;
+    FTL::CFElapseCounter elapseCounter;
+
+    CFRegSerialize regSerialize;
+    REG_VERIFY(regSerialize.CreateRegFile(TEXT("D:\\test_Assemblies.reg")));
+
+    REG_VERIFY(regSerialize.ExportReg(
+        TEXT("HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\Installer\\Assemblies"), 
         _T("*"), 
-        &regFile, 
-        WRITE_PATH_AUTO | WRITE_SUB_KEY, KEY_READ | KEY_WOW64_64KEY));
+        //_T("Microsoft.VisualC,8.0.0.0,,b03f5f7f11d50a3a,msil"),
+        EXPORT_SUB_KEY | EXPORT_MULTI_VALUE, 
+        KEY_READ | KEY_WOW64_64KEY)); //| KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE |
+    
+    REG_VERIFY(regSerialize.CloseRegFile());
 
-    regFile.Close();
+    FormatMessageBox(m_hWnd, TEXT("Export Register"), MB_OK, TEXT("Elapse Count=%d(ms)"),
+        elapseCounter.GetElapseTime() / NANOSECOND_PER_MILLISECOND);
+    //::MessageBox(m_hWnd, TEXT("After Export"), TEXT("Over"), MB_OK);
 }

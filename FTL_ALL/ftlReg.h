@@ -18,7 +18,8 @@ namespace FTL
         WRITE_PATH_NONE     = 0x0000,
         WRITE_PATH_AUTO     = 0x0001,       //用于 pszValueName 为 *时
         
-        WRITE_SUB_KEY       = 0x0010
+        EXPORT_SUB_KEY       = 0x0010,
+        EXPORT_MULTI_VALUE   = 0x0020,
     };
 
     class CFRegUtil
@@ -42,12 +43,43 @@ namespace FTL
         FTLINLINE static LONG ExportRegValueToFile(LPCTSTR pszFullKey, 
             LPCTSTR pszValueName, 
             CFUnicodeFile* pRegFile, 
-            DWORD flags = WRITE_PATH_AUTO | WRITE_SUB_KEY,
+            DWORD flags = EXPORT_SUB_KEY | EXPORT_MULTI_VALUE,
             REGSAM samDesired = KEY_READ | KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE);
 
         //FTLINLINE static LONG EnumRegKeyHandle(HKEY hKey, )
     };
 
+    class IRegSerializeCallback
+    {
+    public:
+        //TODO
+    };
+    class CFRegSerialize
+    {
+    public:
+        FTLINLINE CFRegSerialize();
+        FTLINLINE ~CFRegSerialize();
+        FTLINLINE LONG CreateRegFile(LPCTSTR pszFilePath);
+        FTLINLINE LONG CloseRegFile();
+
+        FTLINLINE LONG ExportReg(LPCTSTR pszFullKey, LPCTSTR pszValueName = _T("*"), 
+            DWORD flags = EXPORT_SUB_KEY | EXPORT_MULTI_VALUE,
+            REGSAM samDesired = KEY_READ | KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE);
+        
+    protected:
+        FTLINLINE LONG _ExportReg(HKEY hKeyRoot, LPCTSTR pszSubKey, LPCTSTR pszValueName, DWORD flags, REGSAM samDesired);
+        FTLINLINE LONG _ExportReg(HKEY hKey, LPCTSTR pszValueName);
+        FTLINLINE LONG _ConstructExportString(CAtlString& strRegExport, LPCTSTR pszValueName, 
+            const CAtlString& strValueResult, DWORD regType);
+        BOOL _LineWrapperBinaryString(CAtlString& strRegExport, INT nValueLen, DWORD regType);
+
+        FTLINLINE BOOL _WillExportMultiValue(LPCTSTR pszValueName, DWORD flags);
+
+        volatile BOOL  m_bWillQuit;
+        CAtlString  m_strRootKey;
+        //CAtlString  m_strSubKey;
+        CFUnicodeFile* m_pRegFile;
+    };
 }
 #endif //FTL_REG_H
 
