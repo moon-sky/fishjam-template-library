@@ -129,11 +129,11 @@
 #elif defined(_M_IX64)
 #  pragma message( "  defined _M_X64")				//64bit Itanium处理器
 #elif defined(_M_X64)
-#  pragma message( "  defined _M_X64")				//64bit AMD and Intel处理器(VC2008及以后)
+#  pragma message( "  defined _M_X64")				//64bit AMD(AMD64) and Intel(EM64T)处理器(VC2008及以后), 兼容X86
 #elif defined(_M_IA64)
-#  pragma message( "  defined _M_IA64")
+#  pragma message( "  defined _M_IA64")             //完全的64位，不兼容x86
 #elif defined(_M_AMD64)
-#  pragma message( "  defined _M_AMD64" )			//64bit AMD处理器 (VC2008以前)
+#  pragma message( "  defined _M_AMD64" )			//64bit AMD处理器 (VC2008以前),兼容X86
 #else
 #  pragma message( "Unknown CPU Type")
 #endif

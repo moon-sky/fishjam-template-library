@@ -143,11 +143,17 @@ namespace FTL
         //FTLINLINE static BOOL BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle = NULL, UINT nFlags = BIF_NEWDIALOGSTYLE);
     };
 
+
+    //BUG -- Win7 下，当有 BIF_NEWDIALOGSTYLE 时，无法自动定位显示 pszInit 的目录
+    //https://connect.microsoft.com/VisualStudio/feedback/details/518103/bffm-setselection-does-not-work-with-shbrowseforfolder-on-windows-7
     class CFDirBrowser
     {
     public:
         FTLINLINE CFDirBrowser(LPCTSTR lpszTitle = NULL, HWND hWndOwner = NULL, LPCTSTR pszInit = NULL, 
-            UINT nFlags = BIF_NEWDIALOGSTYLE | BIF_STATUSTEXT);
+            UINT nFlags = BIF_NEWDIALOGSTYLE | 
+            BIF_STATUSTEXT |     //可包含状态区域，通过发送消息可以设置其文本
+            BIF_RETURNONLYFSDIRS //仅返回文件系统的目录，选中“我的电脑”等时确认按钮为禁用状态
+            );
         FTLINLINE BOOL DoModal();
 
         BROWSEINFO  m_browseInfo;
@@ -155,6 +161,10 @@ namespace FTL
         TCHAR       m_szInitPath[MAX_PATH];
     protected:
         FTLINLINE static int CALLBACK DirBrowseCallbackProc(HWND hwnd, UINT uMsg,LPARAM lParam, LPARAM lpData);
+        HWND        m_hTreeView;
+        BOOL        m_bFirstEnsureSelectVisible;
+        FTLINLINE HWND FindTreeViewCtrl(HWND hWnd);
+        FTLINLINE BOOL EnsureSelectVisible();
     };
 }
 

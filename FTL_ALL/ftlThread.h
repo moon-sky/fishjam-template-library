@@ -356,6 +356,8 @@ namespace FTL
         ftwtContinue,
         ftwtTimeOut,
         ftwtError,
+
+        ftwtUserHandle,
     }FTLThreadWaitType;
     
     /************************************************************************
@@ -413,6 +415,8 @@ namespace FTL
         FTLINLINE CFEventChecker(HANDLE hEventStop,HANDLE hEventContinue);
         FTLINLINE ~CFEventChecker();
         FTLINLINE FTLThreadWaitType GetWaitType(DWORD dwTimeOut = INFINITE);
+        FTLINLINE FTLThreadWaitType GetWaitTypeEx(HANDLE* pUserHandles, DWORD nUserHandlCount, 
+            DWORD* pResultHandleIndex, BOOL  bCheckContinue = FALSE, DWORD dwTimeOut = INFINITE);
         FTLINLINE FTLThreadWaitType SleepAndCheckStop(DWORD dwTimeOut);
     private:
         HANDLE		    m_hEventStop;
@@ -475,7 +479,14 @@ namespace FTL
 
         FTLINLINE virtual ~CFThread();
     public:
-        FTLINLINE virtual FTLThreadWaitType GetThreadWaitType(DWORD dwTimeOut = INFINITE);
+        FTLINLINE FTLThreadWaitType GetThreadWaitType(DWORD dwTimeOut = INFINITE);
+
+        //可以等待用户提供的事件(必须是类似Stop一类的结束事件 -- 如等待进程结束等)
+        FTLINLINE FTLThreadWaitType GetThreadWaitTypeEx(HANDLE* pUserHandles, 
+            DWORD nUserHandlCount, 
+            DWORD* pResultHandleIndex, 
+            BOOL  bCheckContinue = FALSE,
+            DWORD dwTimeOut  = INFINITE);
         FTLINLINE virtual FTLThreadWaitType SleepAndCheckStop(DWORD dwTimeOut);
         FTLINLINE BOOL Start(LPTHREAD_START_ROUTINE pfnThreadProc, void *pvParam, BOOL resetEvent = TRUE);
         FTLINLINE BOOL Wait(DWORD dwTimeOut = INFINITE, BOOL bCloseHandle = TRUE, BOOL bTerminateIfTimeOut = TRUE);

@@ -533,6 +533,8 @@ namespace FTL
         ZeroMemory(&m_browseInfo, sizeof(m_browseInfo));
         m_szPath[0] = NULL;
         m_szInitPath[0] = NULL;
+        m_hTreeView = NULL;
+        m_bFirstEnsureSelectVisible = TRUE;
 
         m_browseInfo.lpszTitle = lpszTitle;
         m_browseInfo.hwndOwner = hWndOwner;
@@ -540,7 +542,7 @@ namespace FTL
         m_browseInfo.ulFlags = nFlags;
         m_browseInfo.lpfn = DirBrowseCallbackProc;
         m_browseInfo.lParam = (LPARAM)this;
-
+        
         if (pszInit && PathFileExists(pszInit))
         {
             lstrcpyn(m_szInitPath, pszInit, _countof(m_szInitPath));
@@ -559,9 +561,85 @@ namespace FTL
         return bRet;
     }
 
+    HWND CFDirBrowser::FindTreeViewCtrl(HWND hWnd)
+    {
+        BOOL bRet = FALSE;
+        TCHAR szClassName[FTL_MAX_CLASS_NAME_LENGTH] = {0}; //The maximum length for lpszClassName is 256.
+        HWND hWndItem = ::GetWindow(hWnd, GW_CHILD);
+        BOOL bFound = FALSE;
+        while (hWndItem && !bFound)
+        {
+            API_VERIFY(::GetClassName(hWndItem, szClassName, _countof(szClassName)) > 0);
+            if (bRet)
+            {
+                if (lstrcmpi(szClassName, WC_TREEVIEW) == 0)
+                {
+                    //normal style
+                    //BrowserDlg -> SysTreeView32
+                    bFound = TRUE;
+                    break;
+                }
+                if (lstrcmpi(szClassName, _T("SHBrowseForFolder ShellNameSpace Control")) == 0)
+                {
+                    //BIF_NEWDIALOGSTYLE
+                    //BrowserDlg -> Select Dest Folder(SHBrowseForFolder ShellNameSpace Control) -> SysTreeView32
+                    HWND hWndItemInControl = ::GetWindow(hWndItem, GW_CHILD);
+                    while (hWndItemInControl)
+                    {
+                        API_VERIFY(::GetClassName(hWndItemInControl, szClassName, _countof(szClassName)) > 0);
+                        if (bRet)
+                        {
+                            if (lstrcmpi(szClassName, WC_TREEVIEW) == 0)
+                            {
+                                bFound = TRUE;
+                                hWndItem = hWndItemInControl;
+                                break;
+                            }
+                        }
+                        hWndItemInControl = ::GetWindow(hWndItemInControl, GW_HWNDNEXT);
+                    }
+                }
+            }
+            if (!bFound)
+            {
+                hWndItem = ::GetWindow(hWndItem, GW_HWNDNEXT);
+            }
+        }
+        return hWndItem;
+    }
+
+    BOOL CFDirBrowser::EnsureSelectVisible()
+    {
+        BOOL bRet = FALSE;
+        if (m_hTreeView)
+        {
+            HTREEITEM hSelected= (HTREEITEM)::SendMessage(m_hTreeView, TVM_GETNEXTITEM, TVGN_CARET, NULL);
+            //TreeView_GetSelection(m_hTreeView);
+            if (hSelected)
+            {
+#ifdef _DEBUG
+                TCHAR szSelectPath[MAX_PATH] = {0};
+                TVITEM item = {0};
+                item.hItem = hSelected;
+                item.mask = TVIF_TEXT | TVIF_STATE;
+                item.pszText = szSelectPath;
+                item.cchTextMax = _countof(szSelectPath);
+                //TreeView_GetItem(m_hTreeView, &item);
+                ::SendMessage(m_hTreeView, TVM_GETITEM, 0, (LPARAM)&item);
+                FTLTRACE(TEXT("Select Item Text=%s\n"), szSelectPath);
+#endif
+                ::SendMessage(m_hTreeView, TVM_ENSUREVISIBLE, 0, (LPARAM)hSelected);
+                //TreeView_EnsureVisible(m_hTreeView, hSelected);
+
+                bRet = TRUE;
+            }
+        }
+        return bRet;
+    }
     int CFDirBrowser::DirBrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
     {
         HRESULT hr = E_FAIL;
+        BOOL bRet = FALSE;
 
         //FTLTRACE(TEXT("DirBrowseCallbackProc, uMsg=%d\n"), uMsg);
         CFDirBrowser* pThis = reinterpret_cast<CFDirBrowser*>(lpData);
@@ -574,6 +652,7 @@ namespace FTL
                 if (pThis->m_szInitPath[0])
                 {
                     SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)pThis->m_szInitPath);
+                    pThis->m_hTreeView = pThis->FindTreeViewCtrl(hwnd);
                 }
                 break;
             }
@@ -581,9 +660,19 @@ namespace FTL
             {
                 LPITEMIDLIST pItemList = (LPITEMIDLIST)lParam;
                 TCHAR szSelPath[MAX_PATH] = {0};
-                COM_VERIFY(CFShellUtil::GetItemIdName(pItemList, szSelPath, _countof(szSelPath), SHGDN_FORPARSING));
+                bRet = SHGetPathFromIDList(pItemList, szSelPath);
+                //COM_VERIFY(CFShellUtil::GetItemIdName(pItemList, szSelPath, _countof(szSelPath), SHGDN_FORPARSING));
+                if(bRet) //SUCCEEDED(hr))
+                {
+                    FTLTRACE(TEXT("DirBrowseCallbackProc - BFFM_SELCHANGED, %s\n"), szSelPath);
+                    SendMessage(hwnd, BFFM_SETSTATUSTEXT, NULL, (LPARAM)szSelPath);
+                }
 
-                FTLTRACE(TEXT("DirBrowseCallbackProc - BFFM_SELCHANGED, %s\n"), szSelPath);
+                if (pThis->m_browseInfo.ulFlags & BIF_NEWDIALOGSTYLE
+                    && pThis->m_bFirstEnsureSelectVisible)
+                {
+                    pThis->m_bFirstEnsureSelectVisible = !pThis->EnsureSelectVisible();
+                }
                 break;
             }
         case BFFM_VALIDATEFAILED:
@@ -604,7 +693,7 @@ namespace FTL
             FTLASSERT(FALSE);
             break;
         }
-        return 0;
+        return 1;
     }
 }
 

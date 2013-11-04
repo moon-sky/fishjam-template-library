@@ -34,13 +34,22 @@ protected:
     void SetThreadButtonStatus(BOOL bStarted, BOOL bPaused);
     void SetThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused);
     LRESULT AFX_MSG_CALL OnThreadUpdateProgress(WPARAM wParam, LPARAM lParam);
+
+
+    static DWORD __stdcall ExecProgressThreadProc(void* pParam);
+    CFThread<>          m_threadExecProcess;
+
 protected:
     CProgressCtrl m_ProgressOfThread;
 public:
+    afx_msg void OnDestroy();
     afx_msg void OnBnClickedBtnThreadStart();
     afx_msg void OnBnClickedBtnThreadStop();
     afx_msg void OnBnClickedBtnThreadPauseResume();
-    afx_msg void OnDestroy();
+
+    afx_msg void OnBnClickedBtnThreadGetWaitTypeEx();
+    afx_msg void OnBnClickedBtnThreadStopWaitTypeExThread();
+
     afx_msg void OnBnClickedBtnRwlockStart();
     afx_msg void OnBnClickedBtnRwlockAddRead();
     afx_msg void OnBnClickedBtnRwlockAddWrite();

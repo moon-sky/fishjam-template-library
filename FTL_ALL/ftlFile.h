@@ -243,6 +243,9 @@ namespace FTL
 		//创建指定路径中的全部目录
 		FTLINLINE static BOOL CreateDirTree(LPCTSTR szPath);
         FTLINLINE static BOOL GetRelativePath(LPCTSTR pszFullPath, LPCTSTR pszParentPath, LPTSTR pszRelateivePath, UINT cchMax);
+
+        //将长路径转成短路径(网上拷贝，尚未测试) -- 已有有 GUI 相关的实现
+        FTLINLINE static CAtlString GetShortPath(LPCTSTR pszFullPath, long nMaxLength);
     private:
         
     };

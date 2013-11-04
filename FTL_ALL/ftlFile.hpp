@@ -728,6 +728,49 @@ namespace FTL
         return bRet;
     }
 
+    CAtlString CFPath::GetShortPath(LPCTSTR pszFullPath, long nMaxLength)
+    {
+        FTLASSERT(nMaxLength > 5);
+        FTLASSERT(pszFullPath);
+
+        int nPathLenght = lstrlen(pszFullPath);
+
+        if(nPathLenght < nMaxLength)//没有超过长,不用处理
+            return pszFullPath ;
+
+        CAtlString strDir = pszFullPath;
+        CAtlString strShortDir;
+
+        //如果有盘符(如c:\)加上盘符
+        if (nPathLenght > 3 && _T(':') == strDir[1] && _T('\\') == strDir[2])
+        {
+            strShortDir = strDir.Left(3);        
+        }
+
+        CAtlString strLastDir ;//取最后一级文件夹或文件
+        int nPos = strDir.ReverseFind(_T('\\'));
+        if(nPos != -1)
+        {
+            strLastDir = strDir.Mid(nPos);
+        }
+        if(strLastDir.GetLength() > nMaxLength - 5 )
+        {          
+            strLastDir = strLastDir.Mid(strLastDir.GetLength() - (nMaxLength - 5));
+            if(_T('\\') != strLastDir[0])
+                strLastDir = _T('\\') + strLastDir ;
+        }
+
+        //中间加上若干...,最多六个
+        int nSpace = nMaxLength - strShortDir.GetLength() - strLastDir.GetLength() ;
+        if(nSpace > 6)
+            nSpace = 6;
+        for(int i = 0 ; i< nSpace ; i++)
+            strShortDir +=_T(".");
+
+        strShortDir += strLastDir ;
+        return strShortDir ;
+    }
+
     BOOL CFFileUTF8Encoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten)
     {
         BOOL bRet = FALSE;

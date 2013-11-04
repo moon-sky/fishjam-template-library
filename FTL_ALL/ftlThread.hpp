@@ -743,6 +743,64 @@ namespace FTL
         return waitType;
     }
 
+    FTLThreadWaitType CFEventChecker::GetWaitTypeEx(HANDLE* pUserHandles, 
+        DWORD nUserHandlCount, DWORD* pResultHandleIndex,
+        BOOL  bCheckContinue /*= FALSE */,
+        DWORD dwTimeOut /* = INFINITE */)
+    {
+        FTLASSERT(nUserHandlCount + 2 < MAXIMUM_WAIT_OBJECTS);
+        FTLASSERT(NULL != pResultHandleIndex);
+
+        DWORD dwWaitCount = 1;
+        HANDLE waitEvent[MAXIMUM_WAIT_OBJECTS] = 
+        {
+            {m_hEventStop},
+            0
+        };
+        if (pUserHandles && nUserHandlCount > 0)
+        {
+            CopyMemory(&waitEvent[1], pUserHandles, sizeof(HANDLE) * nUserHandlCount);
+            dwWaitCount += nUserHandlCount;
+        }
+        if (bCheckContinue)
+        {
+            waitEvent[dwWaitCount++] = m_hEventContinue;
+        }
+
+        FTLThreadWaitType waitType = ftwtError;
+        DWORD dwResult = WaitForMultipleObjects(dwWaitCount, waitEvent, FALSE, dwTimeOut);
+        if (WAIT_OBJECT_0 == dwResult)
+        {
+            //stop
+            waitType = ftwtStop;
+        }
+        else if(WAIT_OBJECT_0 + 1 <= dwResult && dwResult <= WAIT_OBJECT_0 + nUserHandlCount)
+        {
+            //user handle
+            waitType = ftwtUserHandle;
+            if (pResultHandleIndex)
+            {
+                *pResultHandleIndex = (dwResult - WAIT_OBJECT_0 - 1);
+            }
+        }
+        else if(bCheckContinue && WAIT_OBJECT_0 + nUserHandlCount + 1 == dwResult)
+        {
+            // continue
+            waitType = ftwtContinue;
+        }
+        else if(WAIT_TIMEOUT == dwResult)
+        {
+            waitType = ftwtTimeOut;
+        }
+        else
+        {
+            FTLTRACEEX(tlError,_T("CFEventChecker::GetWaitTypeEx Error!!!\r\n"));
+            waitType = ftwtError;
+            FTLASSERT(FALSE);
+        }
+        return waitType;
+    }
+
     FTLThreadWaitType CFEventChecker::SleepAndCheckStop(DWORD dwTimeOut)
     {
         FTLThreadWaitType waitType = ftwtError;
@@ -1079,10 +1137,22 @@ namespace FTL
         }
     }
     template <typename ThreadTraits>
-    FTLThreadWaitType CFThread<ThreadTraits>::GetThreadWaitType(DWORD dwTimeOut = INFINITE)
+    FTLThreadWaitType CFThread<ThreadTraits>::GetThreadWaitType(DWORD dwTimeOut /* = INFINITE */)
     {
         FTLThreadWaitType waitType = ftwtError;
         waitType = m_pEventChecker->GetWaitType(dwTimeOut);
+        return waitType;
+    }
+
+    template <typename ThreadTraits>
+    FTLThreadWaitType CFThread<ThreadTraits>::GetThreadWaitTypeEx(HANDLE* pUserHandles, DWORD nUserHandlCount, 
+        DWORD* pResultHandleIndex, 
+        BOOL  bCheckContinue /* = FALSE */,
+        DWORD dwTimeOut /* = INFINITE */)
+    {
+        FTLThreadWaitType waitType = ftwtError;
+        waitType = m_pEventChecker->GetWaitTypeEx(pUserHandles, nUserHandlCount, 
+            pResultHandleIndex, bCheckContinue, dwTimeOut);
         return waitType;
     }
 

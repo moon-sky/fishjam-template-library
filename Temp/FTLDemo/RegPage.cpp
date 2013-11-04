@@ -71,7 +71,7 @@ void CRegPage::OnBnClickedBtnRegExport()
     REG_VERIFY(regSerialize.CreateRegFile(TEXT("D:\\test_software2.reg")));
 
     REG_VERIFY(regSerialize.ExportReg(
-        TEXT("HKEY_CURRENT_USER\\Software\\FTL\\Au_.exe"), 
+        TEXT("HKEY_CURRENT_USER\\Software\\FTL"), 
         _T("*"), 
         EXPORT_SUB_KEY | EXPORT_MULTI_VALUE, 
         KEY_READ | KEY_WOW64_64KEY)); //| KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE |

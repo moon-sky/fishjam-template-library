@@ -204,7 +204,11 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
         // First, skip over the import vector if there is one.
         if (pPtrOffset[0] == 0xff && pPtrOffset[1] == 0x25) {   // jmp [imm32]
             // Looks like an import alias jump, then get the code it points to.
+#if defined _M_IX86
+			PBYTE pbTarget = (PBYTE)((ULONG)(*(PBYTE *)&pPtrOffset[2]));
+#else
             PBYTE pbTarget = pPtrOffset + 6 + (ULONG)(*(PBYTE *)&pPtrOffset[2]);
+#endif 
             //PBYTE pbTarget = *(PBYTE *)&pPtrOffset[2];
             //if (CheckIsImported(pPtrOffset, pbTarget)) 
             {

@@ -29,11 +29,15 @@ void CThreadPage::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CThreadPage, CPropertyPage)
-    ON_BN_CLICKED(IDC_BTN_THREAD_START, &CThreadPage::OnBnClickedBtnThreadStart)
+    ON_WM_DESTROY()
     ON_MESSAGE(WM_THREAD_UPDATE_PROGRESS,OnThreadUpdateProgress)
+
+    ON_BN_CLICKED(IDC_BTN_THREAD_START, &CThreadPage::OnBnClickedBtnThreadStart)
     ON_BN_CLICKED(IDC_BTN_THREAD_STOP, &CThreadPage::OnBnClickedBtnThreadStop)
     ON_BN_CLICKED(IDC_BTN_THREAD_PAUSE_RESUME, &CThreadPage::OnBnClickedBtnThreadPauseResume)
-    ON_WM_DESTROY()
+    ON_BN_CLICKED(IDC_BTN_THREAD_GETWAITTYPEEX, &CThreadPage::OnBnClickedBtnThreadGetWaitTypeEx)
+    ON_BN_CLICKED(IDC_BTN_THREAD_STOP_WAITTYPEEX_THREAD, &CThreadPage::OnBnClickedBtnThreadStopWaitTypeExThread)
+
     ON_BN_CLICKED(IDC_BTN_RWLOCK_START, &CThreadPage::OnBnClickedBtnRwlockStart)
     ON_BN_CLICKED(IDC_BTN_RWLOCK_ADD_READ, &CThreadPage::OnBnClickedBtnRwlockAddRead)
     ON_BN_CLICKED(IDC_BTN_RWLOCK_ADD_WRITE, &CThreadPage::OnBnClickedBtnRwlockAddWrite)
@@ -107,6 +111,56 @@ void CThreadPage::OnBnClickedBtnThreadStop()
     SetThreadButtonStatus(FALSE,FALSE);
 }
 
+DWORD CThreadPage::ExecProgressThreadProc(void* pParam)
+{
+    BOOL bRet = FALSE;
+    TCHAR szCmdPath[MAX_PATH] = {0};
+    GetSystemDirectory(szCmdPath, _countof(szCmdPath));
+    PathAppend(szCmdPath, TEXT("cmd.exe"));
+
+    STARTUPINFO startInfo = {0};
+    PROCESS_INFORMATION processInfo = { 0 };
+    API_VERIFY(CreateProcess(szCmdPath, NULL, NULL, NULL, FALSE, 0, NULL, NULL, 
+        &startInfo, &processInfo));
+    if (bRet)
+    {
+        CThreadPage* pThis = reinterpret_cast<CThreadPage*>(pParam);
+        DWORD dwResultIndex = 0;
+
+        FTL::FTLThreadWaitType waitType = ftwtContinue;
+        while (ftwtContinue == waitType)
+        {
+           waitType = pThis->m_threadExecProcess.GetThreadWaitTypeEx(&processInfo.hProcess, 1, &dwResultIndex, TRUE);
+           Sleep(100);
+        }
+
+        if (waitType == ftwtUserHandle)
+        {
+            FTLASSERT(dwResultIndex == 0);
+            FTLTRACE(TEXT("The Cmd.exe Process Exit\n"));
+        }
+        else
+        {
+            FTLASSERT(waitType == ftwtStop);
+            FTLTRACE(TEXT("The Wait Thread Stop\n"));
+        }
+        SAFE_CLOSE_HANDLE(processInfo.hProcess, NULL);
+        SAFE_CLOSE_HANDLE(processInfo.hThread, NULL)
+    }
+
+    return 0;
+}
+
+void CThreadPage::OnBnClickedBtnThreadGetWaitTypeEx()
+{
+    m_threadExecProcess.Start(ExecProgressThreadProc, this);
+}
+
+void CThreadPage::OnBnClickedBtnThreadStopWaitTypeExThread()
+{
+    m_threadExecProcess.Stop();
+    m_threadExecProcess.Wait(INFINITE);
+}
 void CThreadPage::OnDestroy()
 {
     m_TestThread.StopAndWait();
