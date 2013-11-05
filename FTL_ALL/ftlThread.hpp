@@ -1303,6 +1303,14 @@ namespace FTL
     }
 
     template <typename ThreadTraits>
+    BOOL CFThread<ThreadTraits>::HadRequestStop() const
+    {
+        DWORD dwResult = WaitForSingleObject(m_hEventStop,0);
+        BOOL bRet = (dwResult != WAIT_TIMEOUT);
+        return bRet;
+    }
+
+    template <typename ThreadTraits>
     BOOL CFThread<ThreadTraits>::HadRequestPause() const
     {
         DWORD dwResult = WaitForSingleObject(m_hEventContinue,0);

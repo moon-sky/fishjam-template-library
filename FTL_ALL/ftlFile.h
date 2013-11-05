@@ -209,6 +209,11 @@ namespace FTL
 		CString m_strFileName;	// stores the file name for the current file
     };
 
+    class CFFileAnsiEncoding
+    {
+    public:
+        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten);
+    };
     class CFFileUTF8Encoding
     {
     public:
@@ -233,8 +238,8 @@ namespace FTL
         TextFileEncoding    m_fileEncoding;
     };
 
+    typedef CFTextFile<CFFileAnsiEncoding>    CFAnsiFile;
     typedef CFTextFile<CFFileUnicodeEncoding> CFUnicodeFile;
-
 
     //有 ATLPath 实现了很多功能, 如 RemoveFileSpec(删除路径最后的文件名)
     class CFPath
@@ -254,14 +259,14 @@ namespace FTL
     enum FileFindResultHandle
     {
         rhContinue,
-        rhSkip,
+        rhSkipDir,  //just use for skip special dir
         rhStop,
     };
 
     class IFileFindCallback
     {
     public:
-        virtual FileFindResultHandle OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData) = 0;
+        virtual FileFindResultHandle OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData, LPVOID pParam) = 0;
     };
 
     //同步查找指定目录
@@ -269,10 +274,11 @@ namespace FTL
     {
     public:
         FTLINLINE CFFileFinder();
-        FTLINLINE VOID SetCallback(IFileFindCallback* pCallBack);
+        FTLINLINE VOID SetCallback(IFileFindCallback* pCallBack, LPVOID pParam);
         FTLINLINE BOOL Find(LPCTSTR pszDirPath, LPCTSTR pszFilter = _T("*.*"), BOOL bRecursive = TRUE);
     protected:
         IFileFindCallback*  m_pCallback;
+        LPVOID              m_pParam;
         CAtlString          m_strDirPath;
         CAtlString          m_strFilter;
         typedef std::deque<CAtlString>  FindDirsContainer;
@@ -285,11 +291,13 @@ namespace FTL
     public:
         enum CallbackType
         {
+            cbtPrepareSourceFiles,         //prepare source files
             cbtBegin,
             cbtCopyFile,
             cbtEnd,
             cbtError,
         };
+        virtual VOID OnBeginPrepareSourceFiles(LPCTSTR pszSrcDir, LPCTSTR pszDstDir) = 0;
         virtual VOID OnBegin(LONGLONG nTotalSize, LONG nFileCount) = 0;
         virtual VOID OnCopyFile(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, LONG nIndex, LONGLONG nFileSize, LONGLONG nCopiedSize) = 0;
         virtual VOID OnEnd(BOOL bSuccess, LONGLONG nTotalCopiedSize, LONG nCopiedFileCount) = 0;
@@ -309,13 +317,14 @@ namespace FTL
         FTLINLINE BOOL Stop();
         FTLINLINE BOOL WaitToEnd(DWORD dwMilliseconds = INFINITE);
     public:
-        FTLINLINE virtual FileFindResultHandle OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData);
+        FTLINLINE virtual FileFindResultHandle OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData, LPVOID pParam);
     protected:
         ICopyDirCallback*               m_pCallback;
 
         LONGLONG                        m_nCurCopyFileSize;
         LONGLONG                        m_nTotalSize;
-        LONGLONG                        m_nTotoalCopiedSize;
+        LONGLONG                        m_nCopiedFileSize;
+        LONGLONG                        m_nCurFileTransferred;
 
         LONG                            m_nFileCount;
         LONG                            m_nCopyFileIndex;
@@ -324,6 +333,8 @@ namespace FTL
         BOOL                            m_bFailIfExists;
         BOOL                            m_bRecursive;
         BOOL                            m_bCopyEmptyFolder;
+        BOOL                            m_bCancelForCopyFileEx;
+
         CAtlString                      m_strCurSrcFilePath;
         CAtlString                      m_strCurDstFilePath;
         CAtlString                      m_strSrcDirPath;
@@ -340,6 +351,17 @@ namespace FTL
         CFThread<DefaultThreadTraits>   m_threadCopy;
         FTLINLINE static DWORD __stdcall _CopierThreadProc(LPVOID lpThreadParameter);
         FTLINLINE DWORD _InnerCopierThreadProc();
+
+        FTLINLINE static DWORD CALLBACK _CopyFileProgressRoutine(LARGE_INTEGER TotalFileSize,
+            LARGE_INTEGER TotalBytesTransferred,
+            LARGE_INTEGER StreamSize,
+            LARGE_INTEGER StreamBytesTransferred,
+            DWORD dwStreamNumber,
+            DWORD dwCallbackReason,
+            HANDLE hSourceFile,
+            HANDLE hDestinationFile,
+            LPVOID lpData
+            );
 
         FTLINLINE VOID _NotifyCallBack(ICopyDirCallback::CallbackType type, DWORD dwError = 0);
 

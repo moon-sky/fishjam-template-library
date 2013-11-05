@@ -500,6 +500,7 @@ namespace FTL
         FTLINLINE int  GetPriority() const;
         FTLINLINE BOOL SetPriority(int priority);
         FTLINLINE BOOL IsThreadRunning() const;
+        FTLINLINE BOOL HadRequestStop() const;
         FTLINLINE BOOL HadRequestPause() const;
     protected:
         //unsigned int	m_Id;			//!< Thread ID

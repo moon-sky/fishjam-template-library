@@ -61,36 +61,8 @@ void CBasePage::SetElapseButtonStatus(FTL::RunningStatus status, BOOL bEnabled)
     GetDlgItem(IDC_BTN_ELAPSE_PAUSE_RESUME)->EnableWindow(bEnabled);
 }
 
-#include <ftlFile.h>
-class CMyFindCallback : public IFileFindCallback
-{
-public:
-    virtual FileFindResultHandle OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData)
-    {
-        LARGE_INTEGER fileSize;
-        fileSize.HighPart = findData.nFileSizeHigh;
-        fileSize.LowPart = findData.nFileSizeLow;
-
-        FTLTRACE(TEXT("OnFindFile, %s, dwFileAttributes=%d(0x%x), size=%ld\n"), 
-            pszFilePath, findData.dwFileAttributes, findData.dwFileAttributes, fileSize.QuadPart);
-        return rhContinue; 
-    }
-};
-
-
 void CBasePage::OnBnClickedBtnStart()
 {
-    //CMyFindCallback callback;
-    //FTL::CFFileFinder finder;
-    //finder.SetCallback(&callback);
-    //finder.Find(TEXT("E:\\Code\\cafesolution\\src\\bin\\Debug\\PackageTemplate"));
-
-    //return;
-
-    //FTL::CFDirectoryCopier copier;
-    //copier.Start(TEXT("E:\\Code\\cafesolution\\src\\bin\\Debug\\PackageTemplate"), TEXT("E:\\CopyTarget"));
-    //copier.WaitToEnd();
-
     FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("OnBnClickedBtnStart"), FTL::TraceDetailNone, 1);
     m_ElapseCounter.Start();
     SetElapseButtonStatus(m_ElapseCounter.GetStatus(), TRUE);

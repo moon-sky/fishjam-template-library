@@ -14,16 +14,14 @@
 *
 *************************************************************************************************************************/
 
-
-
-#include "ftlThread.h"
-
 #include <Shlwapi.h>    //IShellFolder
 #include <float.h>      //_control87
 #include <TlHelp32.h>   //CreateToolhelp32Snapshot
 #include <list>
 #include <functional>
 #include <atlstr.h>
+#include "ftlFunctional.h"
+#include "ftlThread.h"
 
 //控制面板的选项：
 //http://msdn.microsoft.com/en-us/library/windows/desktop/cc144191(v=vs.85).aspx

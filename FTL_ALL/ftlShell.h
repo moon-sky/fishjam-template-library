@@ -155,8 +155,9 @@ namespace FTL
             BIF_RETURNONLYFSDIRS //仅返回文件系统的目录，选中“我的电脑”等时确认按钮为禁用状态
             );
         FTLINLINE BOOL DoModal();
-
+        FTLINLINE LPCTSTR GetSelectPath() { return m_szPath; }
         BROWSEINFO  m_browseInfo;
+    protected:
         TCHAR       m_szPath[MAX_PATH];
         TCHAR       m_szInitPath[MAX_PATH];
     protected:

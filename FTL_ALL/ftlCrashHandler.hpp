@@ -6,6 +6,7 @@
 #  include "ftlCrashHandler.h"
 #endif
 #include <atlfile.h>
+#include "ftlFile.h"
 //#include <atldlgs.h>
 #include <WindowsX.h>
 namespace FTL
@@ -900,24 +901,32 @@ namespace FTL
 	BOOL CFCrashHandlerDialog::_GetCrashFilePrefix(LPTSTR pszBuffer, DWORD dwSize)
 	{
 		BOOL bRet = FALSE;
+        TCHAR szModuleName[MAX_PATH] = {0};
+        GetModuleFileName(NULL, szModuleName, _countof(szModuleName));
+        LPCTSTR pszFileName = PathFindFileName(szModuleName);
+        if (pszFileName)
+        {
+            FILETIME curFileTime = {0};
+            SYSTEMTIME	curSysTime = {0};
+            GetSystemTimeAsFileTime(&curFileTime);
+            bRet = FileTimeToSystemTime(&curFileTime, &curSysTime);
+            if (bRet)
+            {
 
-		FILETIME curFileTime = {0};
-		SYSTEMTIME	curSysTime = {0};
-		GetSystemTimeAsFileTime(&curFileTime);
-		bRet = FileTimeToSystemTime(&curFileTime, &curSysTime);
-		if (bRet)
-		{
-			
-			HRESULT hr = StringCchPrintf(pszBuffer, dwSize, TEXT("%04d%02d%02d-%02d%02d%02d"), 
-				curSysTime.wYear, curSysTime.wMonth, curSysTime.wDay,
-				curSysTime.wHour, curSysTime.wMinute, curSysTime.wSecond);
-			bRet = SUCCEEDED(hr);
-		}
+                HRESULT hr = StringCchPrintf(pszBuffer, dwSize, TEXT("%s-%04d%02d%02d-%02d%02d%02d"), 
+                    pszFileName,
+                    curSysTime.wYear, curSysTime.wMonth, curSysTime.wDay,
+                    curSysTime.wHour, curSysTime.wMinute, curSysTime.wSecond);
+                bRet = SUCCEEDED(hr);
+            }
+        }
 		return bRet;
 	}
 
 	LRESULT CFCrashHandlerDialog::OnSaveStackClick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
+        //::MessageBox(m_hWnd, TEXT("Before Save Stack"), TEXT("Test"), MB_OK);
+
 		TCHAR szCrashFile[MAX_PATH] = {0};
 		_GetCrashFilePrefix(szCrashFile, _countof(szCrashFile));
 		StringCchCat(szCrashFile, _countof(szCrashFile), TEXT("_StackList.txt"));
@@ -925,25 +934,27 @@ namespace FTL
 		CFileDialog dlgSave(FALSE, TEXT("txt"), szCrashFile, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, TEXT("Text File\0*.txt\0\0"));
 		if (dlgSave.DoModal() == IDOK)
 		{
-			CAtlFile fileDump;
+			CFAnsiFile fileDump(tfeUnknown);
 #ifdef __AFXDLGS_H__
-			if (SUCCEEDED(fileDump.Create(dlgSave.GetPathName(), GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
+			if (fileDump.Create(dlgSave.GetPathName()))
 #else
-			if (SUCCEEDED(fileDump.Create(dlgSave.m_szFileName, GENERIC_WRITE,FILE_SHARE_READ, CREATE_ALWAYS)))
+			if (fileDump.Create(dlgSave.m_szFileName))
 #endif 
 			{
+                fileDump.WriteFileHeader();
+
 				TCHAR szInfo[128] = {0};
 				//WORD wdStart = 0xFEFF;
 				//fileDump.Write(&wdStart, sizeof(wdStart));
 				//HWND hWndAddress = GetDlgItem(IDC_STATIC_ADDRESS);
 				GetDlgItemText(IDC_STATIC_ADDRESS, szInfo, _countof(szInfo));
 				CString strInfo;
-				strInfo.Format(TEXT("Address:%s\r\n"), szInfo);
-				fileDump.Write((LPCTSTR)strInfo, strInfo.GetLength()* sizeof(TCHAR));
+				strInfo.Format(TEXT("New Address:%s\r\n"), szInfo);
+				fileDump.WriteString(strInfo, NULL);
 
 				GetDlgItemText(IDC_STATIC_REASON, szInfo, _countof(szInfo));
 				strInfo.Format(TEXT("Reason:%s\r\n"), szInfo);
-				fileDump.Write((LPCTSTR)strInfo, strInfo.GetLength()* sizeof(TCHAR));
+				fileDump.WriteString(strInfo, NULL);
 
 				HWND hListStack = GetDlgItem(IDC_LIST_STACK);
 				FTLASSERT(::IsWindow(hListStack));
@@ -966,9 +977,9 @@ namespace FTL
 						}
 						ListBox_GetText(hListStack, i, pszBuf);
 						DWORD dwCount = nSize * sizeof(TCHAR);
-						HRESULT hr = fileDump.Write((LPCVOID)pszBuf, dwCount); 
+						HRESULT hr = fileDump.WriteString(pszBuf, NULL); 
                         FTLASSERT(SUCCEEDED(hr));
-						fileDump.Write(TEXT("\r\n"), lstrlen(TEXT("\r\n")));
+						fileDump.WriteString(TEXT("\r\n"), NULL);
 					}
 					delete [] pszBuf;
 					fileDump.Close();
