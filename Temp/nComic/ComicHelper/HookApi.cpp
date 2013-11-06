@@ -24,17 +24,20 @@ HOOK_API_INFO::HOOK_API_INFO()
 BOOL HookApiFromModule(HMODULE hModule, LPCSTR lpProcName, PVOID pDetour, PINLINE_HOOK_INFO* ppOutHookInfo)
 {
     BOOL bRet = FALSE;
-    FTLASSERT(ppOutHookInfo &&  NULL == *ppOutHookInfo);
-
-    TCHAR szProcessName[MAX_PATH] = {0};
-    GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
-    PVOID pTarget = (PVOID)GetProcAddress(hModule, lpProcName);
-    
-    FTLASSERT(pTarget);
-
-    if (pTarget)
+    FTLASSERT(ppOutHookInfo);// &&  NULL == *ppOutHookInfo);
+    if (NULL == *ppOutHookInfo)
     {
-        API_VERIFY(CreateInlineHook(pTarget, pDetour, NULL, ppOutHookInfo));
+        TCHAR szProcessName[MAX_PATH] = {0};
+        GetModuleFileName(NULL, szProcessName, _countof(szProcessName));
+        PVOID pTarget = (PVOID)GetProcAddress(hModule, lpProcName);
+
+        //FTLASSERT(pTarget);
+
+        if (pTarget)
+        {
+            API_VERIFY(CreateInlineHook(pTarget, pDetour, NULL, ppOutHookInfo));
+        }
+        bRet = TRUE;
     }
     return bRet;
 }

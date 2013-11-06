@@ -111,7 +111,8 @@ namespace FTL
             return FALSE;
         }
 
-        BOOL CFService::CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, PROCESS_INFORMATION* pProcessInfo, ULONG SessionId)
+        BOOL CFService::CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, 
+            PROCESS_INFORMATION* pProcessInfo, ULONG SessionId)
         {
             BOOL bRet = FALSE;
             HANDLE hToken = NULL;
@@ -126,7 +127,9 @@ namespace FTL
             if (bRet)
             {
                 HANDLE hProcessToken = NULL;
-                API_VERIFY(DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL, SecurityIdentification ,
+                API_VERIFY(DuplicateTokenEx(hToken, 
+                    TOKEN_ALL_ACCESS, //MAXIMUM_ALLOWED
+                    NULL, SecurityIdentification ,
                     TokenPrimary, &hProcessToken));
                 if (bRet)
                 {
@@ -139,13 +142,16 @@ namespace FTL
                     if (bRet)
                     {
                         STARTUPINFO startupInfo = {0};
+                        startupInfo.cb = sizeof(startupInfo);
                         startupInfo.lpDesktop = TEXT("WinSta0\\Default"); //指定创建进程的窗口站，Windows下唯一可交互的窗口站就是WinSta0\Default  
                         PROCESS_INFORMATION processInfo = {0};
+
                         DWORD dwCreationFlag = CREATE_UNICODE_ENVIRONMENT | NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE;
                         API_VERIFY(CreateProcessAsUser(hProcessToken, 
                             pszProcessPath,
                             NULL,
-                            NULL, NULL,
+                            NULL, 
+                            NULL,
                             FALSE, dwCreationFlag, pEnvBlock, NULL, &startupInfo, &processInfo));
                         if (bRet)
                         {

@@ -3,6 +3,9 @@
 #include <ftlFile.h>
 // CFilePage dialog
 
+#define UM_UPDATE_COPY_DIR_PROGRESS     (WM_USER + 101)
+#define UM_UPDATE_COPY_DIR_ERROR        (WM_USER + 102)
+
 class CFilePage : public CPropertyPage
     , public ICopyDirCallback
 {
@@ -25,11 +28,20 @@ public:
     afx_msg void OnBnClickedBtnFileChooseCopyDstDir();
     afx_msg void OnBnClickedBtnFileFindSourceDir();
     afx_msg void OnBnClickedBtnFileStartCopyDir();
+    afx_msg void OnBnClickedBtnFilePauseResumeCopyDir();
     afx_msg void OnBnClickedBtnFileStopCopyDir();
+
+    LRESULT AFX_MSG_CALL OnCopyDirProgress(WPARAM wParam, LPARAM lParam);
+    LRESULT AFX_MSG_CALL OnCopyDirError(WPARAM wParam, LPARAM lParam);
+
     virtual BOOL OnInitDialog();
 protected:
     CString     m_strCopySrcDir;
     CString     m_strCopyDstDir;
+
+    LONGLONG    m_nTotalSize;
+    LONGLONG    m_nCopiedSize;
+    CProgressCtrl   m_progressCopyDir;
 
     CFDirectoryCopier   m_DirCopier;
 

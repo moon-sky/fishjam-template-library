@@ -906,6 +906,7 @@ namespace FTL
 	}
 #endif 
 
+#define INVALID_SESSIONID ((DWORD)0xFFFFFFFF)
     BOOL CFSystemUtil::IsRunningOnRemoteDesktop()
     {
         BOOL bRet = FALSE;
@@ -914,7 +915,9 @@ namespace FTL
         API_VERIFY(ProcessIdToSessionId(GetCurrentProcessId(), &dwSessionId));
         if (bRet)
         {
-            if (WTSGetActiveConsoleSessionId() != dwSessionId)
+            DWORD dwActiveSessionId = WTSGetActiveConsoleSessionId();
+            if ( dwActiveSessionId != INVALID_SESSIONID 
+                && dwActiveSessionId != dwSessionId)
             {
                 bRunningOnRemoteDesktop = TRUE;
             }

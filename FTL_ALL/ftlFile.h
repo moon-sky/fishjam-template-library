@@ -314,6 +314,8 @@ namespace FTL
             LPCTSTR pszFilter = _T("*.*"), 
             BOOL bFailIfExists = FALSE, 
             BOOL bRecursive = TRUE);
+        FTLINLINE BOOL IsPaused();
+        FTLINLINE BOOL PauseOrResume();
         FTLINLINE BOOL Stop();
         FTLINLINE BOOL WaitToEnd(DWORD dwMilliseconds = INFINITE);
     public:
@@ -341,16 +343,21 @@ namespace FTL
         CAtlString                      m_strDstDirPath;
         CAtlString                      m_strFilter;
 
+
         struct SourceFileInfo{
             CAtlString  strFullPath;
             BOOL        isDirectory;
             LONGLONG    nFileSize;
         };
         typedef std::list<SourceFileInfo>   SourceFileInfoContainer;
+
         SourceFileInfoContainer         m_sourceFiles;
         CFThread<DefaultThreadTraits>   m_threadCopy;
+
+        FTLINLINE VOID   _InitValue();
         FTLINLINE static DWORD __stdcall _CopierThreadProc(LPVOID lpThreadParameter);
         FTLINLINE DWORD _InnerCopierThreadProc();
+
 
         FTLINLINE static DWORD CALLBACK _CopyFileProgressRoutine(LARGE_INTEGER TotalFileSize,
             LARGE_INTEGER TotalBytesTransferred,
@@ -367,6 +374,7 @@ namespace FTL
 
         FTLINLINE FTLThreadWaitType _PrepareSourceFiles();
         FTLINLINE FTLThreadWaitType _CopyFiles();
+        
     };
 
     class CFStructuredStorageFile

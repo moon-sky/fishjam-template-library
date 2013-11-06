@@ -13,7 +13,7 @@
 * Windows服务分成两种类型：interactive service (交互式服务)和non-interactive service（非交互式服务）。
 * 1.如果一个服务以"LocalSystem Account"运行，并且设置了"SERVICE_INTERACTIVE_PROCESS"属性。
 *   那么它就被认为是一个interactive service。交互式服务在非Vista系统下（XP,NT），
-*   使用"interactive window station"(WinSta0)，显示UI接受用户输入，和用户进行交互。
+*   使用"interactive window station"(WinSta0 -- Vista前的默认用户桌面)，显示UI接受用户输入，和用户进行交互。
 *   设置"SERVICE_INTERACTIVE_PROCESS"属性：
 *     服务属性页->["log on"属性页]->[local system account] ->[Allow service to interact with desktop]
 * 2.如果一个服务以"LocalSystem Account"运行，但是没有设置"SERVICE_INTERACTIVE_PROCESS"属性,则使用名为
@@ -97,9 +97,9 @@
 *
 * 交互服务(WinXP以前)
 *   GetProcessWindowStation() -- 获取当前进程的 Window Station
-*   OpenDesktop("default", xxx)
+*   OpenDesktop("default", xxx)、( OpenInputDesktop、SetThreadDesktop )
 *   OpenWindowStation("winsta0", xxx)  
-* 
+*   
 *
 *
 *************************************************************************************************************************/
@@ -125,6 +125,7 @@ namespace FTL
 
         //模拟Service 进程显示UI的步骤
         //http://blog.csdn.net/sonsie007/article/details/8835830
+        //http://blog.csdn.net/breeze_vickie/article/details/4334257
         FTLINLINE static BOOL CreateServiceUIProcess(LPCTSTR pszProcessPath, BOOL bAsSystem, PROCESS_INFORMATION* pProcessInfo, ULONG SessionId = WTSGetActiveConsoleSessionId());
     };
 

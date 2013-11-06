@@ -4,6 +4,7 @@
 
 enum HookFuncType
 {
+    hft_First = 0,
     hft_BitBlt = 0,
     hft_StretchBlt,
 
@@ -17,11 +18,22 @@ enum HookFuncType
     hft_RegCloseKey,
     hft_RegOpenKeyA,
     hft_RegOpenKeyW,
+    hft_RegOpenKeyExA,
+    hft_RegOpenKeyExW,
+    hft_RegOpenKeyTransactedA,
+    hft_RegOpenKeyTransactedW,
+    hft_RegOpenCurrentUser,
+    hft_RegOpenUserClassesRoot,
+
+    hft_RegConnectRegistryA,
+    hft_RegConnectRegistryW,
 
     hft_RegCreateKeyA,
     hft_RegCreateKeyW,
     hft_RegCreateKeyExA,
     hft_RegCreateKeyExW,
+    hft_RegCreateKeyTransactedA,
+    hft_RegCreateKeyTransactedW,
 
     hft_RegSetValueA,
     hft_RegSetValueW,
@@ -37,6 +49,11 @@ enum HookFuncType
     hft_CreateFileW,
     hft_MoveFileA,
     hft_MoveFileW,
+
+    hft_CopyFileA,
+    hft_CopyFileW,
+    hft_CopyFileExA,
+    hft_CopyFileExW,
 
     hft_FunctionCount
 };

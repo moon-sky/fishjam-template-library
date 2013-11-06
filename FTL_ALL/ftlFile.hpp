@@ -927,6 +927,18 @@ namespace FTL
     CFDirectoryCopier::CFDirectoryCopier()
     {
         m_pCallback = NULL;
+        m_bFailIfExists = FALSE;
+        m_bRecursive = TRUE;
+        m_bCopyEmptyFolder = TRUE;
+        m_bCancelForCopyFileEx = FALSE;
+        _InitValue();
+    }
+
+    CFDirectoryCopier::~CFDirectoryCopier()
+    {
+    }
+    VOID CFDirectoryCopier::_InitValue()
+    {
         m_nTotalSize = 0LL;
         m_nCopiedFileSize = 0LL;
         m_nCurFileTransferred = 0LL;
@@ -934,15 +946,6 @@ namespace FTL
         m_nFileCount = 0;
         m_nTotalCopiedFileCount = 0;
         m_nCopyFileIndex = 0;
-        m_bFailIfExists = FALSE;
-        m_bRecursive = TRUE;
-        m_bCopyEmptyFolder = TRUE;
-        m_bCancelForCopyFileEx = FALSE;
-    }
-
-    CFDirectoryCopier::~CFDirectoryCopier()
-    {
-
     }
     BOOL CFDirectoryCopier::SetCallback(ICopyDirCallback* pCallback)
     {
@@ -968,6 +971,8 @@ namespace FTL
         m_bFailIfExists = bFailIfExists;
         m_bRecursive = bRecursive;
         m_bCancelForCopyFileEx = FALSE;
+
+        _InitValue();
 
         API_VERIFY(m_threadCopy.Start(_CopierThreadProc, this, TRUE));
         return bRet;
@@ -1048,20 +1053,28 @@ namespace FTL
                         pathTarget.Append(strFileName);
                         m_strCurDstFilePath = pathTarget.m_strPath;
                         m_nCurCopyFileSize = fileInfo.nFileSize;
+                        m_nCurFileTransferred = 0LL;
 
-                        API_VERIFY(CopyFileEx(m_strCurSrcFilePath, m_strCurDstFilePath, 
-                            _CopyFileProgressRoutine, this, &m_bCancelForCopyFileEx, dwCopyFlags));
+                        API_VERIFY_EXCEPT1(CopyFileEx(m_strCurSrcFilePath, m_strCurDstFilePath, 
+                            _CopyFileProgressRoutine, this, &m_bCancelForCopyFileEx, dwCopyFlags),
+                            ERROR_REQUEST_ABORTED);
                     }
                 }
                 if (bRet)
                 {
                     m_nTotalCopiedFileCount++;
-                    //m_nCopiedFileSize += fileInfo.nFileSize;
+                    m_nCopiedFileSize += fileInfo.nFileSize;
+                    m_nCurFileTransferred = 0LL;
+
                     _NotifyCallBack(ICopyDirCallback::cbtCopyFile);    
                 }
                 if (!bRet)
                 {
-                    _NotifyCallBack(ICopyDirCallback::cbtError, GetLastError());
+                    DWORD dwError = GetLastError();
+                    if (dwError != ERROR_REQUEST_ABORTED)
+                    {
+                        _NotifyCallBack(ICopyDirCallback::cbtError, dwError);
+                    }
                 }
                 waitType = m_threadCopy.GetThreadWaitType(INFINITE);
             }
@@ -1083,10 +1096,10 @@ namespace FTL
     {
         DWORD dwReturnValue = PROGRESS_CONTINUE;
 
-        FTLTRACE(TEXT("_CopyFileProgressRoutine, totalFileSize=%lld, TotalTrans=%lld, StreamSize=%lld,")
-            TEXT("streamTrans=%lld, dwStreamNumber=%d, reason=%d, hSrcFile=0x%x, hDstFile=0x%x\n"),
-            TotalFileSize.QuadPart, TotalBytesTransferred.QuadPart, StreamSize.QuadPart,
-            StreamBytesTransferred.QuadPart, dwStreamNumber, dwCallbackReason, hSourceFile, hDestinationFile);
+        //FTLTRACE(TEXT("_CopyFileProgressRoutine, totalFileSize=%lld, TotalTrans=%lld, StreamSize=%lld,")
+        //    TEXT("streamTrans=%lld, dwStreamNumber=%d, reason=%d, hSrcFile=0x%x, hDstFile=0x%x\n"),
+        //    TotalFileSize.QuadPart, TotalBytesTransferred.QuadPart, StreamSize.QuadPart,
+        //    StreamBytesTransferred.QuadPart, dwStreamNumber, dwCallbackReason, hSourceFile, hDestinationFile);
 
         CFDirectoryCopier* pThis = reinterpret_cast<CFDirectoryCopier*>(lpData);
         pThis->m_nCurFileTransferred = TotalBytesTransferred.QuadPart;
@@ -1109,6 +1122,24 @@ namespace FTL
         return dwReturnValue;
     }
 
+    BOOL CFDirectoryCopier::IsPaused()
+    {
+        return m_threadCopy.HadRequestPause();
+    }
+    BOOL CFDirectoryCopier::PauseOrResume()
+    {
+        BOOL bRet = FALSE;
+        BOOL bIsPause = m_threadCopy.HadRequestPause();
+        if (bIsPause)
+        {
+            API_VERIFY(m_threadCopy.Resume());
+        }
+        else
+        {
+            API_VERIFY(m_threadCopy.Pause());
+        }
+        return bRet;
+    }
     BOOL CFDirectoryCopier::Stop()
     {
         BOOL bRet = FALSE;
@@ -1137,7 +1168,7 @@ namespace FTL
                 break;
             case ICopyDirCallback::cbtCopyFile:
                 m_pCallback->OnCopyFile(m_strCurSrcFilePath, m_strCurDstFilePath, 
-                    m_nCopyFileIndex, m_nCurCopyFileSize, m_nCopiedFileSize);
+                    m_nCopyFileIndex, m_nCurCopyFileSize, m_nCopiedFileSize + m_nCurFileTransferred);
                 break;
             case ICopyDirCallback::cbtEnd:
                 m_pCallback->OnEnd(TRUE, m_nCopiedFileSize, m_nTotalCopiedFileCount);
