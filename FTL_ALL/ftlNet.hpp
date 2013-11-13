@@ -1403,6 +1403,7 @@ namespace FTL
 			break;
 		case INTERNET_STATUS_DETECTING_PROXY: OnDetectingProxy(hInternet, m_param); break;
 		case INTERNET_STATUS_REQUEST_COMPLETE: 
+            //请求完成，通常在这里进行后续处理
 			OnRequestComplete(hInternet, m_param, (INTERNET_ASYNC_RESULT*)lpvStatusInformation, dwStatusInformationLength); 
 			break;
 		case INTERNET_STATUS_REDIRECT: OnRedirect(hInternet, m_param); break;
@@ -1839,6 +1840,29 @@ namespace FTL
 		{
 			*pWrite  = (LONG)dwWritten;
 		}
+
+#if 0
+        //DWORD nLeft = nCount;
+        //DWORD nSend = 0;
+        //PBYTE pSendData = pBuffer;
+        //while (nLeft > 0)
+        //{
+        //    API_VERIFY(::InternetWriteFile(m_hRequest, pSendData, nLeft, &nSend));
+        //    if (!bRet)
+        //    {
+        //        //TODO:
+        //        break;
+        //    }
+        //    FTLASSERT(nLeft == nSend);
+        //    nLeft -= nSend;
+        //    pSendData += nSend;
+        //} 
+        //if (pWrite)
+        //{
+        //    *pWrite  = (LONG)(nCount - nLeft);
+        //}
+#endif
+
 		return bRet;
 	}
 
@@ -2745,6 +2769,10 @@ namespace FTL
 
 	BOOL CFDownloadJob::_CheckInternetBuffer(LPBYTE pBuffer, LONG nCount, CAtlString& strResultInfo)
 	{
+        UNREFERENCED_PARAMETER(pBuffer);
+        UNREFERENCED_PARAMETER(nCount);
+        UNREFERENCED_PARAMETER(strResultInfo);
+
 		//default implementation just return TRUE
 		return TRUE;
 	}

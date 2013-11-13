@@ -76,89 +76,9 @@ void CSystemPage::OnBnClickedBtnCreateProcessAsUser()
     API_VERIFY(FTL::CFService::CreateServiceUIProcess(TEXT("C:\\Windows\\System32\\calc.exe"), TRUE, NULL));
 }
 
-BOOL CreateProcessAndWaitAllChild(LPCTSTR pszPath)
-{
-    BOOL bRet = FALSE;
-
-    CHandle Job(CreateJobObject(NULL, NULL));
-    CHandle IOPort(CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 1));
-
-    if(!IOPort) {
-        return FALSE;
-    }
-
-    JOBOBJECT_ASSOCIATE_COMPLETION_PORT Port;
-    Port.CompletionKey = Job;
-    Port.CompletionPort = IOPort;
-    API_VERIFY(SetInformationJobObject(Job, 
-        JobObjectAssociateCompletionPortInformation, &Port, sizeof(Port)));
-    PROCESS_INFORMATION ProcessInformation;
-    STARTUPINFO StartupInfo = { sizeof(StartupInfo) };
-
-    API_VERIFY(CreateProcess(pszPath, NULL, NULL, NULL, FALSE, 
-        NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB, 
-        NULL, NULL, &StartupInfo, &ProcessInformation));
-    BOOL bInJob = FALSE;
-    API_VERIFY(IsProcessInJob(ProcessInformation.hProcess, Job, &bInJob));
-    //CHandle handCopyProcess(OpenProcess(PROCESS_ALL_ACCESS | PROCESS_SET_QUOTA|PROCESS_TERMINATE, FALSE, ProcessInformation.dwProcessId));
-
-    API_VERIFY(AssignProcessToJobObject(Job, ProcessInformation.hProcess)); 
-
-    ResumeThread(ProcessInformation.hThread);
-    CloseHandle(ProcessInformation.hThread);
-    CloseHandle(ProcessInformation.hProcess);
-
-    DWORD CompletionCode;
-    ULONG_PTR CompletionKey;
-    LPOVERLAPPED Overlapped;
-    while (GetQueuedCompletionStatus(IOPort, &CompletionCode,&CompletionKey, 
-        &Overlapped, INFINITE) 
-        && CompletionCode != JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO) {
-        FTLTRACE(L"Still waiting...\n");
-    }
-    FTLTRACE(L"All done\n");
-
-
-    /*
-
-    DWORD dwWait = 0;
-    HANDLE hJobObject = NULL;
-    HANDLE hCopyProcess = NULL;
-    API_VERIFY((hJobObject = CreateJobObject(NULL, NULL)) != NULL);
-    if(bRet)
-    {
-        STARTUPINFO startupInfo = {0};
-        startupInfo.cb = sizeof(startupInfo);
-        PROCESS_INFORMATION processInfo = {0};
-
-        API_VERIFY(CreateProcess(pszPath, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo));
-        if (bRet)
-        {
-            API_VERIFY(NULL != (hCopyProcess = OpenProcess(PROCESS_ALL_ACCESS, TRUE, processInfo.dwProcessId)));
-            API_VERIFY(AssignProcessToJobObject(hJobObject, hCopyProcess));
-
-        }
-        dwWait = WaitForSingleObject(hJobObject, INFINITE);
-        switch (dwWait)
-        {
-        case WAIT_OBJECT_0:
-            break;
-        default:
-            API_ASSERT(FALSE);
-        }
-        CloseHandle(processInfo.hProcess);
-        CloseHandle(processInfo.hThread);
-        CloseHandle(hCopyProcess);
-
-        CloseHandle(hJobObject);
-    }
-    */
-    return bRet;
-}
-
 void CSystemPage::OnBnClickedBtnCreateProcessAndWaitAllChild()
 {
-    CreateProcessAndWaitAllChild(TEXT("C:\\Windows\\System32\\cmd.exe"));
+    FTL::CFSystemUtil::CreateProcessAndWaitAllChild(TEXT("C:\\Windows\\System32\\cmd.exe"));
 }
 
 void CSystemPage::OnBnClickedBtnGetRegValueExportString()

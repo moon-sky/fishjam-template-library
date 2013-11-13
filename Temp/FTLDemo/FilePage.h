@@ -31,6 +31,8 @@ public:
     afx_msg void OnBnClickedBtnFilePauseResumeCopyDir();
     afx_msg void OnBnClickedBtnFileStopCopyDir();
 
+    afx_msg void OnBnClickedBtnIocpTest();
+
     LRESULT AFX_MSG_CALL OnCopyDirProgress(WPARAM wParam, LPARAM lParam);
     LRESULT AFX_MSG_CALL OnCopyDirError(WPARAM wParam, LPARAM lParam);
 

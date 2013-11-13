@@ -58,7 +58,7 @@ BOOL CFTLDemoSheet::InitSheet()
     this->AddPage(new CHookApiPage());
     //this->AddPage(new CMemPage());
 
-	//this->AddPage(new CNetPage());
+	this->AddPage(new CNetPage());
 	//this->AddPage(new CNLSPage());
     //this->AddPage(new CPipelinePage());
     this->AddPage(new CRegPage());

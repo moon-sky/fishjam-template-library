@@ -60,6 +60,8 @@ namespace FTL
 	const BYTE TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN[]= { 0xFE, 0xFF };
 
     /**************************************************************************************************
+    * IOCP -- 
+    * 
 	* OVERLAPPED -- 异步I/O是创建高性能可伸缩的应用程序的秘诀，因为它允许单个线程处理来自不同客户机的请求。
 	*   注意：
 	*   1.不能随便结束发出 I/O 请求的线程
@@ -186,7 +188,7 @@ namespace FTL
 		FTLINLINE virtual DWORD GetLength() const;
 
 		FTLINLINE virtual DWORD Read(void* lpBuf, DWORD nCount, LPOVERLAPPED lpOverlapped = NULL);
-		FTLINLINE virtual BOOL Write(const void* lpBuf, DWORD nCount, DWORD* pdwWritten);
+		FTLINLINE virtual BOOL Write(const void* lpBuf, DWORD nCount, DWORD* pdwWritten, LPOVERLAPPED lpOverlapped = NULL);
 		FTLINLINE BOOL WriteEndOfLine();
 
 		FTLINLINE virtual BOOL LockRange(DWORD dwPos, DWORD dwCount);
@@ -212,18 +214,21 @@ namespace FTL
     class CFFileAnsiEncoding
     {
     public:
-        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten);
+        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, 
+            DWORD* pnBytesWritten, LPOVERLAPPED lpOverlapped = NULL);
     };
     class CFFileUTF8Encoding
     {
     public:
-        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten);
+        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, 
+            DWORD* pnBytesWritten, LPOVERLAPPED lpOverlapped = NULL);
     };
 
     class CFFileUnicodeEncoding
     {
     public:
-        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten);
+        FTLINLINE static BOOL WriteEncodingString(CFFile* pFile, const CAtlString& strValue, 
+            DWORD* pnBytesWritten, LPOVERLAPPED lpOverlapped = NULL);
     };
 
     template <typename TEncoding>
@@ -232,8 +237,8 @@ namespace FTL
     public:
         typedef CFTextFile< TEncoding > thisClass;
         FTLINLINE CFTextFile(TextFileEncoding fileEncoding);
-        FTLINLINE BOOL WriteFileHeader();
-        FTLINLINE BOOL WriteString(const CAtlString&strValue, DWORD* pnBytesWritten = NULL);
+        FTLINLINE BOOL WriteFileHeader(LPOVERLAPPED lpOverlapped = NULL);
+        FTLINLINE BOOL WriteString(const CAtlString&strValue, DWORD* pnBytesWritten = NULL, LPOVERLAPPED lpOverlapped = NULL);
     private:
         TextFileEncoding    m_fileEncoding;
     };

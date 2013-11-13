@@ -6,6 +6,7 @@
 #include "FilePage.h"
 
 #include "ftlShell.h"
+#include "ftlIocp.h"
 // CFilePage dialog
 
 IMPLEMENT_DYNAMIC(CFilePage, CPropertyPage)
@@ -43,6 +44,9 @@ BEGIN_MESSAGE_MAP(CFilePage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_FILE_START_COPY_DIR, &CFilePage::OnBnClickedBtnFileStartCopyDir)
     ON_BN_CLICKED(IDC_BTN_FILE_PAUSE_RESUME_COPY_DIR, &CFilePage::OnBnClickedBtnFilePauseResumeCopyDir)
     ON_BN_CLICKED(IDC_BTN_FILE_STOP_COPY_DIR, &CFilePage::OnBnClickedBtnFileStopCopyDir)
+
+    ON_BN_CLICKED(IDC_BTN_FILE_IOCP, &CFilePage::OnBnClickedBtnIocpTest)
+
 END_MESSAGE_MAP()
 
 
@@ -140,6 +144,50 @@ void CFilePage::OnBnClickedBtnFileStopCopyDir()
     m_DirCopier.WaitToEnd(INFINITE);
 }
 
+class CFFileIocpTask : public CFUnicodeFile,
+    public CFIocpBaseTask
+{
+public:
+    CFFileIocpTask(TextFileEncoding fileEncoding)
+        : CFUnicodeFile(fileEncoding)
+    {
+
+    }
+
+    HANDLE GetIocpHandle() const
+    {
+        return m_hFile;
+    }
+    BOOL OnIoComplete(CFIocpMgr* pIocpMgr, F_IOCP_OVERLAPPED* pIocpOverLapped, DWORD dwBytesTransferred)
+    {
+        pIocpOverLapped->overLapped.Offset += dwBytesTransferred;
+        WriteString(TEXT("some string"), NULL, (LPOVERLAPPED)&m_OverLapped);
+        return TRUE;
+    }
+};
+
+void CFilePage::OnBnClickedBtnIocpTest()
+{
+    BOOL bRet = FALSE;
+    CFIocpMgr iocpMgr;
+    iocpMgr.Start(1);
+
+    CFFileIocpTask  fileIocpTask(tfeUnicode);
+    fileIocpTask.Create(TEXT("D:\\testiocp.txt"), GENERIC_WRITE, FILE_SHARE_READ, NULL,
+        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED);
+    iocpMgr.AddTask(&fileIocpTask);
+    
+    fileIocpTask.m_OverLapped.overLapped.Offset = 0;
+
+    fileIocpTask.WriteFileHeader((LPOVERLAPPED)&fileIocpTask.m_OverLapped);
+
+    Sleep(1000);
+    fileIocpTask.Close();
+
+    iocpMgr.Stop();
+    iocpMgr.Close();
+}
+
 BOOL CFilePage::OnInitDialog()
 {
     CPropertyPage::OnInitDialog();
@@ -151,7 +199,6 @@ BOOL CFilePage::OnInitDialog()
 
 VOID CFilePage::OnBeginPrepareSourceFiles(LPCTSTR pszSrcDir, LPCTSTR pszDstDir)
 {
-
 }
 
 VOID CFilePage::OnBegin(LONGLONG nTotalSize, LONG nFileCount)

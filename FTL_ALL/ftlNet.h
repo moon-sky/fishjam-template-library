@@ -11,6 +11,7 @@
 *   netds\http\server -- 使用 winhttp 实现的简单 HTPPV1 服务器，支持GET和POST
 *   netds\uri -- 演示创建并显示IUri接口属性的用法(需要定义 _WIN32_IE=0x0700，且使用 7.0 以上的SDK)
 *   netds\winsock\mcastip -- 多播，有两个版本，分别使用 setsockopt 和 WSAJoinLeaf 实现
+*   web\Wininet\Async -- 使用WinInet + 异步IO 来异步的读写并上传/下载文件，通过 InternetSetStatusCallback + BindIoCompletionCallback 实现
 *   web\Wininet\CacheEnumerate -- 使用Wininet的Cache API枚举、删除URL相关的内容(-d 参数很危险，可能会把cookie删掉)
 *   web\Wininet\httpauth -- 通过HTTP访问Web页面时，检测是否需要认证信息(代理、网页等) -- 不过没有测试出结果
 *
@@ -20,7 +21,12 @@
 *
 * 第三方网络通信库
 *   libcurl 
-*   thrift -- 是一个软件框架，用来进行可扩展且跨语言的服务的开发，有代码生成引擎
+*   protocol buffer -- Google 的数据交换的格式，可用于诸如网络传输、配置文件、数据存储等诸多领域。
+*   thrift -- 是一个软件框架，用来进行可扩展且跨语言的服务的开发，有代码生成引擎.
+*     定义一个包含了数据类型和服务接口的输入文件，编译器生成RPC客户端和服务器通信的各种编程语言。
+*        常见IDL文件的定义：http://www.cnblogs.com/tianhuilove/archive/2011/09/05/2167669.html
+*     使用：thrift-1.0.0.exe -r --gen cpp Test.thrift
+* 
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -294,20 +300,7 @@
 *     执行结果(其结果和不使用Overlapped调用ReadFile等函数时返回的结果一样)。
 *     注意：请求Overlapped后，函数通常返回失败，错误码为WSA_IO_PENDING，但如果请求的数据已经在Cache中，会直接返回成功
 *
-*   IO Completion Port(完成端口) -- 和 Overlapped I/O 协同工作，可以在一个“管理众多的句柄且受制于I/O的程序(如Web服务器)”中获得最佳性能。
-*     没有64个HANDLE的限制，使用一堆线程(通常可设置为 CPU个数*2+2 )服务一堆Events的性质，自动支持 scalable。
-*     操作系统把已经完成的重叠I/O请求的通知放入完成端口的通知队列(一个线程将一个请求暂时保存下来)，等待另一个线程为它做实际服务。
-*     线程池的所有线程 = 目前正在执行的 + 被阻塞的 + 在完成端口上等待的。
-*     微软例子：web\Wininet\Async
-*     使用流程：
-*       1.产生一个I/O completion port -- hPort=CreateIoCompletionPort(INVALID_HANDLE_VALUE,NULL...)。产生一个没有和任何文件Handle有关系的port
-*       2.让它和文件handle产生关联 -- CreateIoCompletionPort(hFile,hPort...)，为每一个欲附加的文件Handle进行关联
-*       3.产生一堆线程 -- for(CPU*2+2){ _beginthreadex }
-*       4.让每一个线程在Completion Port上等待，返回后根据情况进行处理
-*         GetQueuedCompletionStatus(,INFINITE)，可通过 CONTAINING_RECORD 宏取出其中指向扩展结构的指针
-*       5.开始对着那个文件handle发出一些overlapped I/O请求 -- 如 ReadFile、WriteFile、DeviceIoControl等，
-*       6.其他线程如果需要交互(如通知程序结束)，需要通过 PostQueuedCompletionStatus 向完成端口放入事件通知，从而唤醒各个线程,
-*         然后 WaitForSingleObject(hPort, 超时时间)
+*   IO Completion Port(完成端口) -- 详见ftlIocp.h
 *   epool -- 通过系统核上的虚设备控制数据，通过预注册的回调函数，由内核并发调度  
 *       
 *     临时关闭完成通知(想忽略结果时)：将 OVERLAPPED 的hEvent 的最低位置为1
@@ -361,6 +354,7 @@
 *       常见的 SocketOption(SOL_SOCKET)
 *         SO_DEBUG        turn on debugging info recording 
 *         SO_ACCEPTCONN   socket has had listen()
+*         SO_CONNECT_TIME 
 *         SO_REUSEADDR    允许重用处于 TIME_WAIT 状态的套接字建立连接。
 *         SO_KEEPALIVE    keep connections alive -- 可以(自动？)保持连接，如果对端崩溃后能立即知道（怎么知道？）
 *         SO_DONTROUTE    just use interface addresses 
@@ -408,6 +402,8 @@
 * TransmitFile -- 在内核中高性能的传输文件数据
 * TransmitPackets -- 在已有的连接socket上传输内存块，似乎不能有反馈和取消？
 * WSAStartup/WSACleanup --初始化和清除
+* WSAAccept/AcceptEx -- 接受连接请求, AcceptEx可以通过一次调用就完成接受客户端连接请求和接受数据
+*   (但如果客户端连接后不发送数据时将阻塞 -- 拒绝服务)
 * WSAEnumProtocols -- 获得系统中安装的网络协议的相关信息
 * WSASocket(地址家族,套接字类型,协议),如果前三个参数都是用 FROM_PROTOCOL_INFO ，并且指定 WSAPROTOCOL_INFO结构，则使用结构中的。
 *   可以利用 WSAEnumProtocols 枚举，然后创建指定的Socket
@@ -627,7 +623,7 @@
 *       if(InternetErrorDlg(GetDesktopWindow(), hRequest, dwError, dwFlags, NULL) == ERROR_INTERNET_FORCE_RETRY){ retry; }
 *   连接控制
 *     InternetOpen -- 初始化WinINet函数库，其返回的句柄用于后续的Connect,使用完毕后需要Close
-*     InternetConnect -- 指定URL建立一个连接, 可知指定供 InternetSetStatusCallback 使用的回调参数(设计比较怪，为什么不在 InternetSetStatusCallback 中提供?)
+*     InternetConnect -- 指定URL建立一个连接, 可指定供 InternetSetStatusCallback 使用的回调参数(设计比较怪，为什么不在 InternetSetStatusCallback 中提供?)
 *     InternetAttemptConnect
 *     InternetCloseHandle(hRequest,hConnect, hOpen)
 *     HttpOpenRequest -- 建立一个HTTP请求，不过这个函数不会自动把请求发送出去，需要调用 HttpSendRequest[Ex] 来发送
@@ -706,10 +702,26 @@ namespace FTL
                 WSASetLastError(lastSocketError);\
             }\
         }
+        #define NET_VERIFY_EXCEPT2(x, e1, e2) \
+        {\
+            rc = (x);\
+            if(SOCKET_ERROR == rc)\
+            {\
+                int lastSocketError = WSAGetLastError();\
+                if((e1) != lastSocketError && (e2) != lastSocketError)\
+                {\
+                    REPORT_ERROR_INFO(FTL::CFNetErrorInfo, lastSocketError, x);\
+                }\
+                WSASetLastError(lastSocketError);\
+            }\
+        }
+
     #else
         #define NET_VERIFY(x)	\
             rc = (x);
         #define NET_VERIFY_EXCEPT1(x, e1) \
+            rc = (x);
+        #define NET_VERIFY_EXCEPT2(x, e1, e2) \
             rc = (x);
     #endif
 
@@ -828,7 +840,7 @@ namespace FTL
 
     FTLEXPORT class CFNetUtil
     {
-
+    public:
     };
 
 	//默认实现只是打印出事件日志，该类的变量必须作为 InternetConnect(dwContext) 参数传入

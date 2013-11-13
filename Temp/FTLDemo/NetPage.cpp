@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "FTLDemo.h"
 #include "NetPage.h"
+#include <ftlNet.h>
+#include <ftlSocket.h>
 
 #define USER_AGENT	TEXT("FTLDemoAgent")
 
@@ -75,6 +77,14 @@ void CNetPage::SetButtonStatus(BOOL bServerEnabled)
 
 void CNetPage::OnBnClickedBtnStartServer()
 {
+
+    CFSocket mySocket;
+    mySocket.Open(stTCP, TRUE);
+    FTL::CFSocketUtils::DumpSocketOption(mySocket.m_socket);
+    
+    mySocket.Close();
+    return;
+
     int rc = NO_ERROR;
     m_pMyServer = new CMyNetServer(FTL::stTCP);
     NET_VERIFY(m_pMyServer->Create(5555,INADDR_ANY));

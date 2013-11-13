@@ -999,6 +999,8 @@ namespace FTL
     HRESULT CFImageDataObject::IDataObject_GetData(FORMATETC *pformatetcIn, STGMEDIUM *pmedium)
     {
         FTLASSERT(FALSE);
+        UNREFERENCED_PARAMETER(pformatetcIn);
+        UNREFERENCED_PARAMETER(pmedium);
         return E_NOTIMPL;
     }
 } //namespace FTL

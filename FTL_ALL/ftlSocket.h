@@ -131,6 +131,7 @@ namespace FTL
     class CFSocket
     {
     public:
+        SOCKET              m_socket;
 		FTLINLINE CFSocket* CreateSocketByAddr(CFSocketAddress& addr)
 		{
 			//服务器端：通过hints指定过滤条件，解析出本地的地址，然后可以直接用于创建socket并绑定
@@ -157,7 +158,8 @@ namespace FTL
 			hints.ai_flags = AF_UNSPEC;
 			hints.ai_socktype = SOCK_DGRAM;
 			hints.ai_flags = AI_CANONNAME;
-			int rc = getaddrinfo("www.baidu.com", "http", &hints, &res);  //得到指定域名的连接地址(可能会同时返回 IPV4/IPV6 的地址)
+			int rc = SOCKET_ERROR;
+            NET_VERIFY(getaddrinfo("www.baidu.com", "http", &hints, &res));  //得到指定域名的连接地址(可能会同时返回 IPV4/IPV6 的地址)
 			SOCKET socketfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 			connect(socketfd, res->ai_addr, res->ai_addrlen);
 		}
@@ -187,7 +189,6 @@ namespace FTL
 		FTLINLINE virtual void OnOpen() {}
 		FTLINLINE virtual void OnClose() {}
     protected:
-        SOCKET              m_socket;
         FSocketType         m_socketType;
         BOOL                m_bASync;
         CFCriticalSection   m_lockObject;
@@ -256,15 +257,15 @@ namespace FTL
         unsigned int     doServerLoop();
         unsigned int     doWorkerLoop();
     };
-
-#if 0
     class CFSocketUtils
     {
     public:
+#if 0
         static FTLINLINE size_t readn(int fd, void* vptr, size_t n);
         static FTLINLINE size_t writen(int fd, const void* vptr, size_t n);
-    };
 #endif 
+        static FTLINLINE int DumpSocketOption(SOCKET s);
+    };
 }
 #endif //FTL_SOCKET_H
 

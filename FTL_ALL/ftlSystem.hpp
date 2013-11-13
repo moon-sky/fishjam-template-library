@@ -806,6 +806,71 @@ namespace FTL
         return dwParentPID;  
     }
 
+    BOOL CFSystemUtil::CreateProcessAndWaitAllChild(LPCTSTR pszPath, LPTSTR pszCommandLine, LPDWORD lpExitCode)
+    {
+        //Job 中可以使用 UserHandleGrantAccess 来调整权限
+        BOOL bRet = FALSE;
+
+        CHandle hJob(CreateJobObject(NULL, NULL));
+        API_ASSERT(hJob != NULL);
+
+        CHandle hIoPort(CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 1));
+        API_ASSERT(hIoPort != NULL);
+
+        if(!hJob || !hIoPort) {
+            return FALSE;
+        }
+
+        STARTUPINFO StartupInfo = { sizeof(StartupInfo) };
+        PROCESS_INFORMATION ProcessInformation = {0};
+
+        API_VERIFY(CreateProcess(pszPath, pszCommandLine, NULL, NULL, FALSE, 
+            NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB, 
+            NULL, NULL, &StartupInfo, &ProcessInformation));
+        if (!bRet)
+        {
+            return bRet;
+        }
+
+        JOBOBJECT_ASSOCIATE_COMPLETION_PORT Port = { 0 };
+        Port.CompletionKey = hJob;
+        Port.CompletionPort = hIoPort;
+        API_VERIFY(SetInformationJobObject(hJob, 
+            JobObjectAssociateCompletionPortInformation, &Port, sizeof(Port)));
+
+#ifdef FTL_DEBUG
+        BOOL bInJob = FALSE;
+        API_VERIFY(IsProcessInJob(ProcessInformation.hProcess, hJob, &bInJob));
+        FTLASSERT(FALSE == bInJob);  //使用了 CREATE_BREAKAWAY_FROM_JOB 从默认Job中分离出来
+#endif 
+        //CHandle handCopyProcess(OpenProcess(PROCESS_ALL_ACCESS | PROCESS_SET_QUOTA|PROCESS_TERMINATE, FALSE, ProcessInformation.dwProcessId));
+
+        API_VERIFY(AssignProcessToJobObject(hJob, ProcessInformation.hProcess)); 
+
+        ResumeThread(ProcessInformation.hThread);
+        SAFE_CLOSE_HANDLE(ProcessInformation.hThread, NULL);
+
+        DWORD CompletionCode = 0;
+        ULONG_PTR CompletionKey = NULL;
+        LPOVERLAPPED Overlapped = NULL;
+        do 
+        {
+            API_VERIFY(GetQueuedCompletionStatus(hIoPort, &CompletionCode, &CompletionKey, &Overlapped, INFINITE));
+
+            FTLTRACE(TEXT("CreateProcessAndWaitAllChild, CompletionCode=%d\n"), CompletionCode);
+        } while (bRet && (CompletionCode != JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO));
+
+        //FTLTRACE(L"All done\n");
+        if (lpExitCode)
+        {
+            API_VERIFY(GetExitCodeProcess(ProcessInformation.hProcess, lpExitCode));
+        }
+
+        SAFE_CLOSE_HANDLE(ProcessInformation.hProcess, NULL);
+
+        return bRet;
+    }
+
     BOOL CFSystemUtil::IsLittleSystem()
     {
         FTLASSERT(sizeof(int) == 4);

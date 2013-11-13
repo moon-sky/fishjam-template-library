@@ -255,6 +255,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlIocp.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlMem.hpp"
 				>
 			</File>
@@ -454,6 +458,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlIntelSDK.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlIocp.h"
 				>
 			</File>
 			<File

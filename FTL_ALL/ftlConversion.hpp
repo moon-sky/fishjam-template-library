@@ -32,7 +32,8 @@ namespace FTL
 			m_pDefaultChar = new CHAR[nLength + 1];
 			if (m_pDefaultChar)
 			{
-				strncpy(m_pDefaultChar, pszDefaultChar, nLength);
+                lstrcpynA(m_pDefaultChar, pszDefaultChar, nLength);
+				//strncpy(m_pDefaultChar, pszDefaultChar, nLength);
 				m_pDefaultChar[nLength] = NULL;
 			}
 		}
@@ -273,7 +274,7 @@ namespace FTL
         FTLASSERT(pBufSrc);
         FTLASSERT(pDestCharCount);
 
-        BOOL bRet = FALSE;
+        //BOOL bRet = FALSE;
 
         if (!pBufDest)
         {

@@ -245,6 +245,9 @@ namespace FTL
         //     2.获取到的父进程可能已经被关闭，或者其PID已经被重用。有什么方法解决PID重用?
         FTLINLINE static DWORD GetParentProcessId(DWORD dwPID, BOOL bCheckParentExist = TRUE);
 
+        FTLINLINE static BOOL CreateProcessAndWaitAllChild(LPCTSTR pszPath, 
+            LPTSTR pszCommandLine = NULL, LPDWORD lpExitCode = NULL);
+
         //判断当前系统是大端系统还是小端系统(操作系统有没有方式) -- intel的X86是小端，Apple的RISC是大端
         //大端模式 -- 数据的低位保存在内存的高地址中，而数据的高位保存在内存的低地址中
         //  0x12345678 保存为 {低 0x12, 0x34, 0x56, 0x78 高}

@@ -394,8 +394,9 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Writes data from a buffer to the file associated with the CFFile object
 	//-----------------------------------------------------------------------------
-	BOOL CFFile::Write(const void* lpBuf, DWORD nCount, DWORD* pdwWritten)
+	BOOL CFFile::Write(const void* lpBuf, DWORD nCount, DWORD* pdwWritten, LPOVERLAPPED lpOverlapped)
 	{
+        BOOL bRet = FALSE;
 		_ASSERT(m_hFile && ((m_hFile) != INVALID_HANDLE_VALUE));
 		_ASSERT(lpBuf);
 
@@ -412,13 +413,16 @@ namespace FTL
             pLocalWritten = &dwWritten;
         }
 		// Write data to a file
-		if (!::WriteFile(m_hFile, lpBuf, nCount, pLocalWritten, NULL))
-		{
-			//CXFileException ex((long)::GetLastError());
-			//throw ex;
-			return FALSE;
-		}
-		return TRUE;
+		API_VERIFY_EXCEPT1(::WriteFile(m_hFile, lpBuf, nCount, pLocalWritten, lpOverlapped),
+            ERROR_IO_PENDING);
+        return bRet;
+        //if (!bRet)
+        //{
+        //    //CXFileException ex((long)::GetLastError());
+        //    //throw ex;
+        //    return FALSE;
+        //}
+        //return TRUE;
 	}
 
 	//-----------------------------------------------------------------------------
@@ -644,7 +648,14 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	UINT CFFile::GetBufferPtr(UINT nCommand, UINT nCount, void** ppBufStart, void** ppBufMax)
 	{
-		_ASSERT(nCommand == bufferCheck);
+        FTLASSERT(FALSE && TEXT("TODO"));
+
+        _ASSERT(nCommand == bufferCheck);
+
+        UNREFERENCED_PARAMETER(nCommand);
+        UNREFERENCED_PARAMETER(nCount);
+        UNREFERENCED_PARAMETER(ppBufStart);
+        UNREFERENCED_PARAMETER(ppBufMax);
 
 		return 0;   // no support
 	}
@@ -772,32 +783,40 @@ namespace FTL
         return strShortDir ;
     }
 
-    BOOL CFFileAnsiEncoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten)
+    BOOL CFFileAnsiEncoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, 
+        DWORD* pnBytesWritten, LPOVERLAPPED lpOverlapped /* = NULL */)
     {
         BOOL bRet = FALSE;
         CFConversion conv;
         INT nLength = 0;
         LPCSTR pszUtf8 = conv.TCHAR_TO_MBCS(strValue, &nLength);
-        API_VERIFY(pFile->Write(pszUtf8, (nLength) * sizeof(char), pnBytesWritten));
+        API_VERIFY_EXCEPT1(pFile->Write(pszUtf8, (nLength) * sizeof(char), pnBytesWritten, lpOverlapped),
+            ERROR_IO_PENDING);
         return bRet;
     }
 
-    BOOL CFFileUTF8Encoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten)
+    BOOL CFFileUTF8Encoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, 
+        DWORD* pnBytesWritten,
+        LPOVERLAPPED lpOverlapped /* = NULL */)
     {
         BOOL bRet = FALSE;
         CFConversion conv;
         INT nLength = 0;
         LPCSTR pszUtf8 = conv.TCHAR_TO_UTF8(strValue, &nLength);
-        API_VERIFY(pFile->Write(pszUtf8, (nLength) * sizeof(char), pnBytesWritten));
+        API_VERIFY_EXCEPT1(pFile->Write(pszUtf8, (nLength) * sizeof(char), pnBytesWritten, lpOverlapped),
+            ERROR_IO_PENDING);
         return bRet;
     }
-    BOOL CFFileUnicodeEncoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, DWORD* pnBytesWritten)
+    BOOL CFFileUnicodeEncoding::WriteEncodingString(CFFile* pFile, const CAtlString& strValue, 
+        DWORD* pnBytesWritten, 
+        LPOVERLAPPED lpOverlapped /* = NULL */)
     {
         BOOL bRet = FALSE;
         CFConversion conv;
         INT nLength = 0;
         LPCTSTR pszUtf16 = conv.TCHAR_TO_UTF16(strValue, &nLength);
-        API_VERIFY(pFile->Write(pszUtf16, (nLength) * sizeof(WCHAR), pnBytesWritten));
+        API_VERIFY_EXCEPT1(pFile->Write(pszUtf16, (nLength) * sizeof(WCHAR), pnBytesWritten, lpOverlapped),
+            ERROR_IO_PENDING);
         return bRet;
     }
 
@@ -808,7 +827,7 @@ namespace FTL
     }
 
     template <typename TEncoding>
-    BOOL CFTextFile<TEncoding>::WriteFileHeader()
+    BOOL CFTextFile<TEncoding>::WriteFileHeader(LPOVERLAPPED lpOverlapped /* = NULL */)
     {
         BOOL bRet = FALSE;
         ULONGLONG nSize = GetLength();
@@ -817,16 +836,28 @@ namespace FTL
         switch (m_fileEncoding)
         {
         case tfeUTF8:
-            API_VERIFY(Write(TEXT_FILE_HEADER_UTF8, sizeof(TEXT_FILE_HEADER_UTF8), &nBytesWritten));
-            FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UTF8));
+            API_VERIFY_EXCEPT1(Write(TEXT_FILE_HEADER_UTF8, sizeof(TEXT_FILE_HEADER_UTF8), 
+                &nBytesWritten, lpOverlapped), ERROR_IO_PENDING);
+            if (bRet)
+            {
+                FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UTF8));
+            }
             break;
         case tfeUnicode:
-            API_VERIFY(Write(TEXT_FILE_HEADER_UNICODE, sizeof(TEXT_FILE_HEADER_UNICODE), &nBytesWritten));
-            FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UNICODE));
+            API_VERIFY_EXCEPT1(Write(TEXT_FILE_HEADER_UNICODE, sizeof(TEXT_FILE_HEADER_UNICODE), 
+                &nBytesWritten, lpOverlapped), ERROR_IO_PENDING);
+            if (bRet)
+            {
+                FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UNICODE));
+            }
             break;
         case tfeUnicodeBigEndian:
-            API_VERIFY(Write(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN, sizeof(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN), &nBytesWritten));
-            FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN));
+            API_VERIFY_EXCEPT1(Write(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN, sizeof(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN), 
+                &nBytesWritten, lpOverlapped), ERROR_IO_PENDING);
+            if (bRet)
+            {
+                FTLASSERT(nBytesWritten == sizeof(TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN));
+            }
             break;
         case tfeUnknown:
             //do nothing
@@ -839,9 +870,10 @@ namespace FTL
     }
 
     template <typename TEncoding>
-    BOOL CFTextFile<TEncoding>::WriteString(const CAtlString&strValue, DWORD* pnBytesWritten)
+    BOOL CFTextFile<TEncoding>::WriteString(const CAtlString&strValue, DWORD* pnBytesWritten, 
+        LPOVERLAPPED lpOverlapped /* = NULL */)
     {
-        return TEncoding::WriteEncodingString(this, strValue, pnBytesWritten);
+        return TEncoding::WriteEncodingString(this, strValue, pnBytesWritten, lpOverlapped);
     }
 
 
