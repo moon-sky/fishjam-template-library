@@ -316,4 +316,4 @@ namespace FTL
 
 #ifndef USE_EXPORT
 #  include "ftlHookAPI.hpp"
-#endif 
+#endif

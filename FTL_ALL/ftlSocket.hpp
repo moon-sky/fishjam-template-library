@@ -250,6 +250,7 @@ namespace FTL
 	//////////////////////////////////////////////////////////////////////////
 	CFServerSocket::CFServerSocket()
 	{
+        m_nMaxClients = INT_MAX;
 	}
 
 	CFServerSocket::~CFServerSocket()
@@ -284,10 +285,11 @@ namespace FTL
 	int CFServerSocket::StartListen(INT backlog, INT nMaxClients)
 	{
 		int rc = NO_ERROR;
-		//m_pClientSocketPool = new CFMemCacheT<CFClientSocketT <T> >(0,nMaxClients);
+		//m_pClientSocketPool = new CFMemoryPoolT<CFClientSocketT <T> >(0,nMaxClients);
 
 		FTLASSERT( m_socket != INVALID_SOCKET );
 		NET_VERIFY(listen(m_socket, backlog));
+        m_nMaxClients = nMaxClients;
 		return rc;
 	}
 
@@ -673,6 +675,7 @@ namespace FTL
     };
     struct SockOptInfo
     {
+        int         level; 
         int         optName;
         TCHAR       pszOptName[40];
         int         nOptLen;
@@ -687,59 +690,66 @@ namespace FTL
 
         static SockOptInfo allOptions[] = 
         {
-            { SO_TYPE,          _T("SO_TYPE"),          sizeof(int), sovtSocketType }, //SOCK_STREAM 等 
+            //SOL_SOCKET
+            { SOL_SOCKET, SO_TYPE,          _T("SO_TYPE"),          sizeof(int), sovtSocketType }, //SOCK_STREAM 等 
 
-            { SO_DEBUG,         _T("SO_DEBUG"),         sizeof(BOOL), sovtBOOL },   //FALSE
-            { SO_ACCEPTCONN,    _T("SO_ACCEPTCONN"),    sizeof(BOOL), sovtBOOL },   //FALSE
-            { SO_REUSEADDR,     _T("SO_REUSEADDR"),     sizeof(BOOL), sovtBOOL },   //FALSE
-            { SO_KEEPALIVE,     _T("SO_KEEPALIVE"),     sizeof(BOOL), sovtBOOL },   //FALSE
-            { SO_DONTROUTE,     _T("SO_DONTROUTE"),     sizeof(BOOL), sovtBOOL },   //FALSE
+            { SOL_SOCKET, SO_DEBUG,         _T("SO_DEBUG"),         sizeof(BOOL), sovtBOOL },   //FALSE
+            { SOL_SOCKET, SO_ACCEPTCONN,    _T("SO_ACCEPTCONN"),    sizeof(BOOL), sovtBOOL },   //FALSE
+            { SOL_SOCKET, SO_REUSEADDR,     _T("SO_REUSEADDR"),     sizeof(BOOL), sovtBOOL },   //FALSE
+            { SOL_SOCKET, SO_KEEPALIVE,     _T("SO_KEEPALIVE"),     sizeof(BOOL), sovtBOOL },   //FALSE
+            { SOL_SOCKET, SO_DONTROUTE,     _T("SO_DONTROUTE"),     sizeof(BOOL), sovtBOOL },   //FALSE
 
-            { SO_BROADCAST,     _T("SO_BROADCAST"),     sizeof(BOOL), sovtBOOL },   //Fail -- WSAENOPROTOOPT
-            { SO_USELOOPBACK,   _T("SO_USELOOPBACK"),   sizeof(BOOL), sovtBOOL },   //Fail -- WSAENOPROTOOPT
+            { SOL_SOCKET, SO_BROADCAST,     _T("SO_BROADCAST"),     sizeof(BOOL), sovtBOOL },   //Fail -- WSAENOPROTOOPT
+            { SOL_SOCKET, SO_USELOOPBACK,   _T("SO_USELOOPBACK"),   sizeof(BOOL), sovtBOOL },   //Fail -- WSAENOPROTOOPT
 
-            { SO_DONTLINGER,    _T("SO_DONTLINGER"),    sizeof(BOOL), sovtBOOL },
-            { SO_LINGER,        _T("SO_LINGER"),        sizeof(LINGER), sovtLinger}, //onoff=0, linger=0
+            { SOL_SOCKET, SO_DONTLINGER,    _T("SO_DONTLINGER"),    sizeof(BOOL), sovtBOOL },
+            { SOL_SOCKET, SO_LINGER,        _T("SO_LINGER"),        sizeof(LINGER), sovtLinger}, //onoff=0, linger=0
             
-            { SO_OOBINLINE,     _T("SO_OOBINLINE"),     sizeof(BOOL), sovtBOOL },   //FALSE
+            { SOL_SOCKET, SO_OOBINLINE,     _T("SO_OOBINLINE"),     sizeof(BOOL), sovtBOOL },   //FALSE
 
-            { SO_SNDBUF,        _T("SO_SNDBUF"),        sizeof(int), sovtInt },     //8192
-            { SO_RCVBUF ,       _T("SO_RCVBUF "),       sizeof(int), sovtInt },     //8192
-            { SO_SNDLOWAT,      _T("SO_SNDLOWAT"),      sizeof(int), sovtInt },     //Fail -- WSAENOPROTOOPT
-            { SO_RCVLOWAT,      _T("SO_RCVLOWAT"),      sizeof(int), sovtInt },     //Fail -- WSAENOPROTOOPT
-            { SO_SNDTIMEO,      _T("SO_SNDTIMEO"),      sizeof(int), sovtInt },     //0
-            { SO_RCVTIMEO,      _T("SO_RCVTIMEO"),      sizeof(int), sovtInt },     //0
-            { SO_ERROR,         _T("SO_ERROR"),         sizeof(int), sovtInt },     //0
+            { SOL_SOCKET, SO_SNDBUF,        _T("SO_SNDBUF"),        sizeof(int), sovtInt },     //8192
+            { SOL_SOCKET, SO_RCVBUF ,       _T("SO_RCVBUF "),       sizeof(int), sovtInt },     //8192
+            { SOL_SOCKET, SO_SNDLOWAT,      _T("SO_SNDLOWAT"),      sizeof(int), sovtInt },     //Fail -- WSAENOPROTOOPT
+            { SOL_SOCKET, SO_RCVLOWAT,      _T("SO_RCVLOWAT"),      sizeof(int), sovtInt },     //Fail -- WSAENOPROTOOPT
+            { SOL_SOCKET, SO_SNDTIMEO,      _T("SO_SNDTIMEO"),      sizeof(int), sovtInt },     //0
+            { SOL_SOCKET, SO_RCVTIMEO,      _T("SO_RCVTIMEO"),      sizeof(int), sovtInt },     //0
+            { SOL_SOCKET, SO_ERROR,         _T("SO_ERROR"),         sizeof(int), sovtInt },     //0
 
-            { SO_GROUP_ID,      _T("SO_GROUP_ID"), sizeof(GROUP), sovtGroup },      //0
-            { SO_GROUP_PRIORITY, _T("SO_GROUP_PRIORITY"), sizeof(int), sovtInt },   //0
-            { SO_MAX_MSG_SIZE,  _T("SO_MAX_MSG_SIZE"), sizeof(unsigned int), sovtInt }, //1073741823 (ERROR_UNHANDLED_ERROR 或 2^30-1)
+            { SOL_SOCKET, SO_GROUP_ID,      _T("SO_GROUP_ID"), sizeof(GROUP), sovtGroup },      //0
+            { SOL_SOCKET, SO_GROUP_PRIORITY, _T("SO_GROUP_PRIORITY"), sizeof(int), sovtInt },   //0
+            { SOL_SOCKET, SO_MAX_MSG_SIZE,  _T("SO_MAX_MSG_SIZE"), sizeof(unsigned int), sovtInt }, //1073741823 (ERROR_UNHANDLED_ERROR 或 2^30-1)
 
             //szProtocol=MSAFD Tcpip [TCP/IP], iVersion=2, iAddressFamily=2
-            { SO_PROTOCOL_INFO, _T("SO_PROTOCOL_INFO"), sizeof(WSAPROTOCOL_INFO), sovtWsaProtocolInfo},
+            { SOL_SOCKET, SO_PROTOCOL_INFO, _T("SO_PROTOCOL_INFO"), sizeof(WSAPROTOCOL_INFO), sovtWsaProtocolInfo},
             
-            { SO_CONDITIONAL_ACCEPT, _T("SO_CONDITIONAL_ACCEPT"), sizeof(BOOL), sovtBOOL }, //FALSE
+            { SOL_SOCKET, SO_CONDITIONAL_ACCEPT, _T("SO_CONDITIONAL_ACCEPT"), sizeof(BOOL), sovtBOOL }, //FALSE
 
-            { SO_MAXDG,         _T("SO_MAXDG"), sizeof(DWORD), sovtDWORD },         //1073741823(ERROR_UNHANDLED_ERROR?)
-            { SO_MAXPATHDG,     _T("SO_MAXPATHDG"), sizeof(DWORD), sovtDWORD },     //1073741823(ERROR_UNHANDLED_ERROR?)
-            { SO_UPDATE_ACCEPT_CONTEXT, _T("SO_UPDATE_ACCEPT_CONTEXT"), sizeof(DWORD), sovtDWORD }, //Fail -- WSAENOPROTOOPT
-            { SO_CONNECT_TIME,  _T("SO_CONNECT_TIME"), sizeof(DWORD), sovtDWORD },  // -1
+            { SOL_SOCKET, SO_MAXDG,         _T("SO_MAXDG"), sizeof(DWORD), sovtDWORD },         //1073741823(ERROR_UNHANDLED_ERROR?)
+            { SOL_SOCKET, SO_MAXPATHDG,     _T("SO_MAXPATHDG"), sizeof(DWORD), sovtDWORD },     //1073741823(ERROR_UNHANDLED_ERROR?)
+            { SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, _T("SO_UPDATE_ACCEPT_CONTEXT"), sizeof(DWORD), sovtDWORD }, //Fail -- WSAENOPROTOOPT
+
+            //-1(SOCKET_ERROR), 返回Socket连接的秒数, 可用于检测连接成功却不发送数据的情况(通常需要关闭)
+            { SOL_SOCKET, SO_CONNECT_TIME,  _T("SO_CONNECT_TIME"), sizeof(DWORD), sovtDWORD },  
+            
 #if(_WIN32_WINNT >= 0x0501)
-            { SO_UPDATE_CONNECT_CONTEXT, _T("SO_UPDATE_CONNECT_CONTEXT"), sizeof(DWORD), sovtDWORD }, //Fail -- WSAENOPROTOOPT
+            { SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, _T("SO_UPDATE_CONNECT_CONTEXT"), sizeof(DWORD), sovtDWORD }, //Fail -- WSAENOPROTOOPT
 #endif //(_WIN32_WINNT >= 0x0501)
 
-            //{ XXXX, _T("XXXXX"), sizeof(DWORD), sovtDWORD },
 
+
+            //IPPROTO_TCP
+            {IPPROTO_TCP,  TCP_NODELAY, _T("TCP_NODELAY"), sizeof(BOOL), sovtBOOL },
+            //{yyyy,  XXXX, _T("XXXXX"), sizeof(DWORD), sovtDWORD },
         };
 
         for (int i = 0; i < _countof(allOptions); i++)
         {
-            FTLASSERT(allOptions[i].nOptLen <= optValueBuffer.GetCount());
-            if (allOptions[i].nOptLen <= optValueBuffer.GetCount())
+            FTLASSERT(allOptions[i].nOptLen <= (int)optValueBuffer.GetCount());
+            if (allOptions[i].nOptLen <= (int)optValueBuffer.GetCount())
             {
                 ZeroMemory(optValueBuffer, optValueBuffer.GetCount());
 
-                NET_VERIFY_EXCEPT1(getsockopt(s, SOL_SOCKET, allOptions[i].optName, 
+                NET_VERIFY_EXCEPT1(getsockopt(s, allOptions[i].level, allOptions[i].optName, 
                     (CHAR*)optValueBuffer, &allOptions[i].nOptLen),
                     WSAENOPROTOOPT);
                 if (NO_ERROR == rc)

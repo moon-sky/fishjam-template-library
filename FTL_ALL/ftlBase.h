@@ -608,6 +608,7 @@ namespace FTL
     enum MemoryAllocType
     {
         matNew,             //使用new分配，使用delete释放，为了方便管理，即使只分配一个，也使用数组方式
+        matVirtualAlloc,    //使用VirtualAlloc直接在进程的地址空间中保留一快内存(既非堆又非栈)，速度快
         //matAlloc,           //使用
         //matMalloca,         //使用_malloca在栈上分配
     };
@@ -622,9 +623,8 @@ namespace FTL
         DISABLE_COPY_AND_ASSIGNMENT(CFMemAllocator);
     public:
         FTLINLINE CFMemAllocator();
-        FTLINLINE CFMemAllocator(DWORD nCount);
+        FTLINLINE CFMemAllocator(DWORD nCount, BOOL bAlignment = FALSE);
         FTLINLINE ~CFMemAllocator();
-        FTLINLINE VOID Init(DWORD nCount);
         FTLINLINE T* GetMemory( UINT nMaxSize );
 		FTLINLINE T* GetMemory();
         FTLINLINE operator T*()
@@ -639,6 +639,8 @@ namespace FTL
         FTLINLINE T* Detatch(); 
         FTLINLINE UINT GetCount() const;
     protected:
+        FTLINLINE VOID _Init(DWORD nCount, BOOL bAlignment);
+        FTLINLINE UINT _AdjustAlignmentSize(UINT nCount);
         FTLINLINE VOID _FreeMemory();
         FTLINLINE UINT _GetBlockSize(UINT nMaxCount);
     private:
@@ -646,6 +648,7 @@ namespace FTL
         T               m_FixedMem[DefaultFixedCount];
         MemoryAllocType m_allocType;
         UINT            m_nCount;
+        BOOL            m_bAlignment;
     };
 
     //! 字符串格式化，可以根据传入的格式化字符长度自动调整，析构时释放分配的内存

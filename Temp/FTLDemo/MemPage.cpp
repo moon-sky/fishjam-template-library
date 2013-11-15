@@ -29,6 +29,7 @@ BEGIN_MESSAGE_MAP(CMemPage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_MEM_CHECK_MEM_LEAK, &CMemPage::OnBnClickedBtnMemCheckMemLeak)
     ON_BN_CLICKED(IDC_BTN_CHECK_MULTI_THREAD_MEM_LEAK, &CMemPage::OnBnClickedBtnCheckMultiThreadMemLeak)
     ON_BN_CLICKED(IDC_BTN_CHECK_ERROR_FREE_MEMORY, &CMemPage::OnBnClickedBtnCheckErrorFreeMemory)
+    ON_BN_CLICKED(IDC_BTN_MEM_USE_MEMORY_POOL, &CMemPage::OnBnClickedBtnUseMemoryPool)
 END_MESSAGE_MAP()
 
 
@@ -201,4 +202,57 @@ void CMemPage::CheckErrorMemoryFree()
 void CMemPage::OnBnClickedBtnCheckErrorFreeMemory()
 {
     CheckErrorMemoryFree();
+}
+
+void CMemPage::OnBnClickedBtnUseMemoryPool()
+{
+    FTL::CFMemoryPoolT<CFile> filePool(5, 10);
+    std::list<CFile*>     tmpFiles;
+
+    for (INT i = 0; i < 5; i++)
+    {
+        CFile* pFile = filePool.Get();
+        FTLASSERT(pFile);
+        tmpFiles.push_back(pFile);
+    }
+    for(INT i = 5; i < 10; i++)
+    {
+        CFile* pFile = filePool.Get();
+        FTLASSERT(pFile);
+        tmpFiles.push_back(pFile);
+    }
+    CFile* pMoreFile = filePool.Get();
+    FTLASSERT(NULL == pMoreFile);
+
+    INT nReturnCount = 5;
+    for (std::list<CFile*>::iterator iter = tmpFiles.begin();
+        iter != tmpFiles.end();
+        )
+    {
+        filePool.Retrun(*iter);
+        tmpFiles.erase(iter++);
+
+        nReturnCount--;
+        if (nReturnCount <= 0)
+        {
+            break;
+        }
+    }
+
+    filePool.Free(2);
+
+    for (std::list<CFile*>::iterator iter = tmpFiles.begin();
+        iter != tmpFiles.end();
+        iter++)
+    {
+        filePool.Retrun(*iter);
+    }
+    
+    {
+        CFMemoryPoolObjectHelper<CFile> poolObj(&filePool);
+        CFile* pFile = poolObj.pObject;
+        if (pFile)
+        {
+        }
+    }
 }

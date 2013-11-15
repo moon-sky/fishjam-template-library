@@ -61,6 +61,8 @@ void CBasePage::SetElapseButtonStatus(FTL::RunningStatus status, BOOL bEnabled)
     GetDlgItem(IDC_BTN_ELAPSE_PAUSE_RESUME)->EnableWindow(bEnabled);
 }
 
+#include <ShellAPI.h>
+
 void CBasePage::OnBnClickedBtnStart()
 {
     FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("OnBnClickedBtnStart"), FTL::TraceDetailNone, 1);

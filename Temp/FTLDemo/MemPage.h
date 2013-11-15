@@ -25,4 +25,5 @@ public:
     afx_msg void OnBnClickedBtnMemCheckMemLeak();
     afx_msg void OnBnClickedBtnCheckMultiThreadMemLeak();
     afx_msg void OnBnClickedBtnCheckErrorFreeMemory();
+    afx_msg void OnBnClickedBtnUseMemoryPool();
 };

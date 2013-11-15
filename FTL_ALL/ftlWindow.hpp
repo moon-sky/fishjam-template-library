@@ -32,7 +32,7 @@ namespace FTL
 	class CFMoveMsgInfo : public CFDefaultMsgInfo
 	{
 	public:
-		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM /*wParam*/, LPARAM lParam)
 		{
 			FTLASSERT(WM_MOVE == uMsg);
 			UNREFERENCED_PARAMETER(uMsg);
@@ -48,7 +48,7 @@ namespace FTL
 	class CFWindowPosMsgInfo : public CFDefaultMsgInfo
 	{
 	public:
-		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM /*wParam*/, LPARAM lParam)
 		{
 			FTLASSERT(WM_WINDOWPOSCHANGING == uMsg || WM_WINDOWPOSCHANGED == uMsg);
 			UNREFERENCED_PARAMETER(uMsg);

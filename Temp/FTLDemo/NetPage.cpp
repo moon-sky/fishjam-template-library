@@ -64,6 +64,8 @@ BEGIN_MESSAGE_MAP(CNetPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_BTN_INTERNET_TRANSFER_ADD_UPLOAD, &CNetPage::OnBnClickedBtnInternetTransferAddUpload)
 	ON_BN_CLICKED(IDC_BTN_INTERNET_TRANSFER_CANCEL_JOB, &CNetPage::OnBnClickedBtnInternetTransferCancelJob)
 	ON_BN_CLICKED(IDC_BTN_INTERNET_TRANSFER_STOP, &CNetPage::OnBnClickedBtnInternetTransferStop)
+
+    ON_BN_CLICKED(IDC_BTN_SOCKET_DUMP_OPTION, &CNetPage::OnBnClickedBtnSocketDumpOption)
 END_MESSAGE_MAP()
 
 
@@ -288,3 +290,22 @@ void CNetPage::OnBnClickedBtnInternetTransferStop()
 	}
 }
 
+
+void CNetPage::OnBnClickedBtnSocketDumpOption()
+{
+    int rc = SOCKET_ERROR;
+
+    FTL::CFSocket tcpSocket;
+    NET_VERIFY(tcpSocket.Open(stTCP, TRUE));
+    CFSocketAddress tcpAddress(TEXT("www.baidu.com"), 80);
+    NET_VERIFY(tcpSocket.Connect(tcpAddress));
+    
+    NET_VERIFY(FTL::CFSocketUtils::DumpSocketOption(tcpSocket.m_socket));
+    NET_VERIFY(tcpSocket.Close());
+
+
+    FTL::CFSocket udpSocket;
+    NET_VERIFY(udpSocket.Open(stUDP, FALSE));
+    NET_VERIFY(FTL::CFSocketUtils::DumpSocketOption(udpSocket.m_socket));
+    NET_VERIFY(udpSocket.Close());
+}

@@ -290,7 +290,7 @@ namespace FTL
 
     LONG CFRegSerialize::_ExportReg(HKEY hKey, LPCTSTR pszValueName, DWORD flags)
     {
-        BOOL bRet = FALSE;
+        //BOOL bRet = FALSE;
         LONG lRet = ERROR_INVALID_PARAMETER;
         DWORD regType = REG_NONE;
         CAtlString strValueResult;

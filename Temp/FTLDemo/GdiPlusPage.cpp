@@ -69,6 +69,8 @@ BOOL GdiPlusTestParam::GetCharacterRangeInfo(INT& nStart, INT& nLength)
 {
 	BOOL bRet = TRUE;
 	//nStart = 0;
+    nStart = m_nCharacterRangeStart;
+    FTLASSERT( 0 == m_nCharacterRangeStart);
 	nLength = (m_nCharacterRangeStop == -1) ? m_strPaintString.GetLength() : m_nCharacterRangeStop - m_nCharacterRangeStart;
 	if (nLength + m_nCharacterRangeStart > m_strPaintString.GetLength())
 	{
@@ -814,9 +816,9 @@ Gdiplus::Status CGdiPlusPage::_TestFontConstructor(HDC hDC, Graphics* pGraphics)
 	return sts;
 }
 
-Gdiplus::Status CGdiPlusPage::_TestGradientBrush(HDC hDC, Graphics* pGraphics)
+Gdiplus::Status CGdiPlusPage::_TestGradientBrush(HDC /*hDC*/, Graphics* pGraphics)
 {
-    BOOL bRet = FALSE;
+    //BOOL bRet = FALSE;
     Gdiplus::Status sts = Gdiplus::Ok;
     
 #if 0
@@ -1230,10 +1232,20 @@ Gdiplus::Status CGdiPlusPage::_TestDrawImage(HDC hDC, Graphics* pGraphics)
 	return sts;
 }
 
-Gdiplus::Status CGdiPlusPage::_TestImageLockBits(HDC hdc, Gdiplus::Graphics* pGraphics)
+Gdiplus::Status CGdiPlusPage::_TestImageLockBits(HDC /*hdc*/, Gdiplus::Graphics* /*pGraphics*/)
 {
     Gdiplus::Status sts = Gdiplus::InvalidParameter;
-    
+
+    if (!m_testParam.m_strPaintImagePath.IsEmpty())
+    {
+        Bitmap bitmap(m_testParam.m_strPaintImagePath);
+        GDIPLUS_VERIFY(bitmap.GetLastStatus());
+        if (Gdiplus::Ok == sts)
+        {
+
+        }
+    }
+
     /*
     Bitmap bmpFile(strFilePathName);
 
@@ -1248,6 +1260,7 @@ Gdiplus::Status CGdiPlusPage::_TestImageLockBits(HDC hdc, Gdiplus::Graphics* pGr
         &bitmapData);
     UINT* pixels = (UINT*)bitmapData.Scan0;
 
+    vector< vector<COLORREF> > vectPixel;
     vectPixel.resize(nHeight);
     for(int row = 0; row < nHeight; ++row)
     {
@@ -1279,14 +1292,14 @@ Gdiplus::Status CGdiPlusPage::_CalcImageAttributes(ImageAttributes& attributes)
 }
 
 #if (GDIPVER >= 0x0110)
-Gdiplus::Status CGdiPlusPage::_CalcImageEffect(Gdiplus::Effect& effect)
+Gdiplus::Status CGdiPlusPage::_CalcImageEffect(Gdiplus::Effect& /*effect*/)
 {
 	Gdiplus::Status sts = Gdiplus::InvalidParameter;
 	return sts;
 }
 #endif //(GDIPVER >= 0x0110)
 
-Gdiplus::Status CGdiPlusPage::_CalcImageMatrix(Gdiplus::Matrix& matrix)
+Gdiplus::Status CGdiPlusPage::_CalcImageMatrix(Gdiplus::Matrix& /*matrix*/)
 {
 	Gdiplus::Status sts = Gdiplus::InvalidParameter;
 	return sts;
@@ -1400,8 +1413,8 @@ void CGdiPlusPage::OnBnClickedBtnChooseImage()
 
 void CGdiPlusPage::OnBnClickedBtnDumpImageProperty()
 {
-	BOOL bRet = FALSE;
-	HRESULT hr = E_FAIL;
+	//BOOL bRet = FALSE;
+	//HRESULT hr = E_FAIL;
 	Gdiplus::Status sts = Gdiplus::Ok;
 
 #if 0

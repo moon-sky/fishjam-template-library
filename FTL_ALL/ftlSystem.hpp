@@ -421,8 +421,10 @@ namespace FTL
 
 		TCHAR *pszTok = NULL;
 		TCHAR szVersion[MAX_VERSION_SIZE] = { 0 };
+        TCHAR *nextToken = NULL;
+
 		StringCchCopy(szVersion, _countof(szVersion), pszVersion) ;
-		pszTok = _tcstok(szVersion, szToken) ;
+		pszTok = _tcstok_s(szVersion, szToken, &nextToken) ;
 		if (pszTok == NULL)
 		{
 			return FALSE;
@@ -432,7 +434,7 @@ namespace FTL
 
 		for (int nIndex = 1; nIndex < 4; nIndex++)
 		{
-			pszTok = _tcstok(NULL, szToken) ;
+			pszTok = _tcstok_s(NULL, szToken, &nextToken) ;
 			if (pszTok == NULL)
 			{
 				return FALSE;
@@ -741,12 +743,12 @@ namespace FTL
 
     typedef struct  
     {  
-        DWORD       ExitStatus;                     //PVOID Reserved1
-        DWORD       PebBaseAddress;                 //PPEB PebBaseAddress;
-        DWORD       AffinityMask;                   //PVOID Reserved2[0]
-        DWORD       BasePriority;                   //PVOID Reserved2[1];
-        ULONG_PTR   UniqueProcessId;                //ULONG_PTR UniqueProcessId;
-        ULONG       InheritedFromUniqueProcessId;   //Reserved3
+        DWORD_PTR       ExitStatus;                     //PVOID Reserved1
+        DWORD_PTR       PebBaseAddress;                 //PPEB PebBaseAddress;
+        DWORD_PTR       AffinityMask;                   //PVOID Reserved2[0]
+        DWORD_PTR       BasePriority;                   //PVOID Reserved2[1];
+        ULONG_PTR       UniqueProcessId;                //ULONG_PTR UniqueProcessId;
+        ULONG_PTR       InheritedFromUniqueProcessId;   //Reserved3
     }   PROCESS_BASIC_INFORMATION_FOR_PPID;  
 
 #ifdef _DEBUG
@@ -756,22 +758,24 @@ namespace FTL
     typedef LONG (WINAPI *NtQueryInformationProcessProc)(HANDLE, UINT, PVOID, ULONG, PULONG);  
     DWORD CFSystemUtil::GetParentProcessId(DWORD dwPID, BOOL bCheckParentExist /* = TRUE*/)
     {
-        DWORD   dwParentPID = (DWORD)-1;  
+        DWORD   dwParentPID = (DWORD)(-1);  
         BOOL    bRet = FALSE;
-        LONG    nStatus = 0;
         HANDLE  hProcess = NULL;
         PROCESS_BASIC_INFORMATION_FOR_PPID pbi = {0};  
 
-        HMODULE hModuleNtDll = GetModuleHandle(TEXT("ntdll"));
+        HMODULE hModuleNtDll = GetModuleHandle(TEXT("Ntdll.dll"));
+        API_ASSERT(NULL != hModuleNtDll);
+
         NtQueryInformationProcessProc pNtQueryInformationProcess = 
             (NtQueryInformationProcessProc)GetProcAddress( hModuleNtDll, "NtQueryInformationProcess");  
         if (pNtQueryInformationProcess)
         {
             // Get process handle  
-            hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwPID);  
-            if (hProcess)
+            API_VERIFY((hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwPID))
+                != NULL);  
+            if (bRet)
             {
-                nStatus = (pNtQueryInformationProcess)(hProcess,  
+                NTSTATUS nStatus = (pNtQueryInformationProcess)(hProcess,  
                     0, //ProcessBasicInformation,  
                     (PVOID)&pbi,  
                     sizeof(PROCESS_BASIC_INFORMATION_FOR_PPID),  

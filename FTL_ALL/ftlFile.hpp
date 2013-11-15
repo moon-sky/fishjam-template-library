@@ -1126,8 +1126,15 @@ namespace FTL
         HANDLE hDestinationFile, 
         LPVOID lpData )
     {
-        DWORD dwReturnValue = PROGRESS_CONTINUE;
+        UNREFERENCED_PARAMETER(TotalFileSize);
+        UNREFERENCED_PARAMETER(StreamSize);
+        UNREFERENCED_PARAMETER(StreamBytesTransferred);
+        UNREFERENCED_PARAMETER(dwStreamNumber);
+        UNREFERENCED_PARAMETER(dwCallbackReason);
+        UNREFERENCED_PARAMETER(hSourceFile);
+        UNREFERENCED_PARAMETER(hDestinationFile);
 
+        DWORD dwReturnValue = PROGRESS_CONTINUE;
         //FTLTRACE(TEXT("_CopyFileProgressRoutine, totalFileSize=%lld, TotalTrans=%lld, StreamSize=%lld,")
         //    TEXT("streamTrans=%lld, dwStreamNumber=%d, reason=%d, hSrcFile=0x%x, hDstFile=0x%x\n"),
         //    TotalFileSize.QuadPart, TotalBytesTransferred.QuadPart, StreamSize.QuadPart,
@@ -1214,6 +1221,8 @@ namespace FTL
     
     FileFindResultHandle CFDirectoryCopier::OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData, LPVOID pParam)
     {
+        UNREFERENCED_PARAMETER(pParam);
+
         if (m_threadCopy.HadRequestStop())
         {
             return rhStop;

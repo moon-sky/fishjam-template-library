@@ -9,6 +9,7 @@
 
 #include "ftlBase.h"
 #include "ftlThread.h"
+#include "ftlFunctional.h"
 
 /********************************************************************************************
 * EM64T -- Intel 的延伸内存64技术
@@ -63,6 +64,115 @@ namespace FTL
 {
     //Class
     
+    //模板内存池
+    //  注意：Get后返回的指针将是上一次的值，需要自行进行初始化
+    //        Get和Release都从list前部进行，减少page交换的次数
+    template <typename T>  //, typename THREADLOCK = CFCriticalSection
+    class CFMemoryPoolT
+    {
+    private:
+        template <typename T>
+        struct CFMemoryObjectT{
+        public:
+            LONG index;
+            T    obj;
+            FTLINLINE bool operator < (const CFMemoryObjectT<T> & other) const
+            {
+                COMPARE_MEM_LESS(index, other);
+                return false;
+            }
+        };
+        typedef CFMemoryObjectT<T>    CFMemoryObject;
+    public:
+        FTLINLINE CFMemoryPoolT( INT nInitSize = 0 , INT nMaxSize = INT_MAX);
+        FTLINLINE ~CFMemoryPoolT();
+        FTLINLINE T* Get();
+        FTLINLINE void Retrun( T* t );
+
+        //真正的释放，如果 nCount = -1， 表示将 m_freeBlocks 中的全部释放掉
+        INT Free(INT nCount = -1);
+    private:
+        //typename THREADLOCK	m_lockObject;
+        CFCriticalSection	m_lockObject;
+        
+        typedef std::set< CFMemoryObject*, UnreferenceLess<CFMemoryObject*> > ObjectContainer;
+        ObjectContainer     m_allBlocks;
+        ObjectContainer     m_freeBlocks;
+        INT                 m_nMaxSize;
+        INT                 m_nCurCount;
+        LONG                m_nNextIndex;
+        FTLINLINE LONG      _GetNextIndex() 
+        { 
+            return InterlockedIncrement(&m_nNextIndex); 
+        }
+    };
+
+    //从内存池中获取对象的辅助类，构造中获取，释放中放回内存池
+    template <typename T>
+    class CFMemoryPoolObjectHelper
+    {
+    private:
+        DISABLE_COPY_AND_ASSIGNMENT(CFMemoryPoolObjectHelper);
+        typedef CFMemoryPoolT<T>        MemoryPoolType;
+        MemoryPoolType* m_pMemPool;
+    public:
+        T*  pObject;
+        CFMemoryPoolObjectHelper(MemoryPoolType* pMemPool);
+        ~CFMemoryPoolObjectHelper();
+    };
+
+    //TODO: 参考 .NET 的 System.Web.Caching.Cache 类的特点
+    //  如果缓存项已经过期，或者缓存项所依赖的某个文件或对象发生了改变，或内存紧张时，自动移除缓存项 -- 使用前需要检查缓存项是否存在
+    //  缓存项支持缓存依赖性(CacheDependency) -- 链接到的文件、DB中的表或其他任何类型的资源，如发生变化，自动视为无效并被移除
+    FTLEXPORT template<typename KEY, typename VALUE, typename CHILDCLASS>
+    class CFItemCacheT
+    {
+    public:
+        CFItemCacheT(DWORD nMaxCacheSize,DWORD clearPercent = 30);
+        virtual ~CFItemCacheT();
+    public:
+        enum ClearMode
+        {
+            //clearByOptimal,     //最佳置换算法(需要“估计”不使用或很长时间内不使用的的项，很难实现)
+            //clearByLFU,         //Least Frequently Used(最不经常使用), TODO -- 实现
+            clearByLRU,         //Least recently used(最近最少使用算法，通常只置换一个)
+            clearByMRU,         //Most recently used(最近最常使用算法，性能非常差) 
+            //clearByNUR,         //Not Used Recently(最近未用置换算法,是LRU的近似算法，置换所有从上次计算后未使用过的)
+            clearByFIFO,        //First In First Out(先入先出算法，最直观，但性能最差)
+            clearByRandom,      //随机清除，不排序(可能是按照 map 中 KEY 的大小顺序排序)
+        };
+        BOOL GetItemByKey(const KEY key,VALUE& value);
+        //BOOL GetItmeByKeyAsync(const KEY key); //TODO:异步获取，如果有则马上返回，否则通过指定的异步方法调用后，通过回调返回
+        void SetClearMode(ClearMode mode);
+        BOOL SetClearPercent(DWORD clearPercent);    //使用百分比进行清除
+    protected:
+        //virtual BOOL GetRealItem(KEY key,VALUE& value) = 0;
+        //virtual void FreeItem(KEY key,VALUE& value) = 0;
+    protected:
+        struct CItemData
+        {
+            KEY key;
+            VALUE value;
+            LARGE_INTEGER lastAccess;   //上一次访问的时间
+            DWORD index;
+        };
+        typedef std::map<KEY,CItemData*>  CACHE_MAP;
+        CACHE_MAP m_ItemCacheMaps;
+        static bool LastAccessGreater(CItemData* p, CItemData* q);
+        static bool LastAccessSmaller(CItemData* p, CItemData* q);
+        static bool IndexGreater(CItemData* p, CItemData* q);
+        static bool IndexSmaller(CItemData* p, CItemData* q);
+        void ClearCache(DWORD percent);     
+    private:
+        void Init(DWORD nMaxCacheSize,DWORD clearPercent);
+
+        CFCriticalSection   m_LockObject;
+        ClearMode           m_ClearMode;
+        DWORD               m_MaxCacheSize;
+        DWORD               m_ClearPercent;
+        DWORD               m_CurrentIndex;
+    };
+
     //注意：本宏只能在单线程的情况下进行检查，其他线程分配的内存也会被检测到，如果要检测，必须把其他的线程先暂停
 
 #ifdef _DEBUG

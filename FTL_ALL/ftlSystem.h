@@ -243,6 +243,7 @@ namespace FTL
         //获取指定进程的父进程PID，如找不到父进程PID，则返回 -1
         //TODO:1.利用了非公开的函数，可能会变
         //     2.获取到的父进程可能已经被关闭，或者其PID已经被重用。有什么方法解决PID重用?
+        //     3.尚未测试64位系统
         FTLINLINE static DWORD GetParentProcessId(DWORD dwPID, BOOL bCheckParentExist = TRUE);
 
         FTLINLINE static BOOL CreateProcessAndWaitAllChild(LPCTSTR pszPath, 

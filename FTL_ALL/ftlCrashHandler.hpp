@@ -976,7 +976,7 @@ namespace FTL
 							
 						}
 						ListBox_GetText(hListStack, i, pszBuf);
-						DWORD dwCount = nSize * sizeof(TCHAR);
+						//DWORD dwCount = nSize * sizeof(TCHAR);
 						HRESULT hr = fileDump.WriteString(pszBuf, NULL); 
                         FTLASSERT(SUCCEEDED(hr));
 						fileDump.WriteString(TEXT("\r\n"), NULL);

@@ -132,7 +132,7 @@ namespace FTL
     {
     public:
         SOCKET              m_socket;
-		FTLINLINE CFSocket* CreateSocketByAddr(CFSocketAddress& addr)
+		FTLINLINE CFSocket* CreateSocketByAddr(CFSocketAddress& /*addr*/)
 		{
 			//服务器端：通过hints指定过滤条件，解析出本地的地址，然后可以直接用于创建socket并绑定
 			/*
@@ -208,6 +208,7 @@ namespace FTL
 	protected:
 		FTLINLINE virtual void OnClose();
     protected:
+        INT     m_nMaxClients;
     };
 
     FTLEXPORT template < typename T>

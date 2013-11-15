@@ -128,8 +128,8 @@ void CSystemPage::OnBnClickedBtnTestOpenReg()
     REG_VERIFY(regLocalMachine.Open(HKEY_LOCAL_MACHINE, strSubKey, KEY_ALL_ACCESS));
 
 
-    TCHAR    achKey[MAX_VALUE_NAME] = {0};   // buffer for subkey name
-    DWORD    cbName = _countof(achKey);                   // size of name string 
+    //TCHAR    achKey[MAX_VALUE_NAME] = {0};   // buffer for subkey name
+    //DWORD    cbName = _countof(achKey);                   // size of name string 
     TCHAR    achClass[MAX_PATH] = {0};  // buffer for class name 
     DWORD    cchClassName = MAX_PATH;  // size of class string 
     DWORD    cSubKeys=0;               // number of subkeys 
@@ -141,10 +141,8 @@ void CSystemPage::OnBnClickedBtnTestOpenReg()
     DWORD    cbSecurityDescriptor; // size of security descriptor 
     FILETIME ftLastWriteTime;      // last write time 
 
-    DWORD i, retCode; 
-
-    TCHAR  achValue[MAX_VALUE_NAME]; 
-    DWORD cchValue = MAX_VALUE_NAME; 
+    //TCHAR  achValue[MAX_VALUE_NAME]; 
+    //DWORD cchValue = MAX_VALUE_NAME; 
 
     // Get the class name and the value count. 
     REG_VERIFY(RegQueryInfoKey(

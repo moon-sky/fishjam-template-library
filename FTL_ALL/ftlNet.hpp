@@ -3010,7 +3010,7 @@ namespace FTL
 		ZeroMemory(m_szExtraInfo, _countof(m_szExtraInfo));
 	}
 
-	BOOL CFUrlComponents::ParseUrl( LPCTSTR pstrURL, DWORD& dwServiceType, WORD& nPort, DWORD dwFlags )
+	BOOL CFUrlComponents::ParseUrl( LPCTSTR pstrURL, DWORD& /*dwServiceType*/, WORD& /*nPort*/, DWORD dwFlags )
 	{
         ATLASSERT(FALSE && TEXT("Not parse dwServiceType and nPort"));
 		//未测试 -- 用 WinHttpCrackUrl 有什么问题？
@@ -3051,6 +3051,8 @@ namespace FTL
 		API_VERIFY( InternetCrackUrl( pstrCanonicalizedURL, 0, dwCrackFlags, this ));
 		//API_VERIFY(UrlUnescape( lpszUrlPath, NULL, NULL, URL_UNESCAPE_INPLACE | URL_DONT_UNESCAPE_EXTRA_INFO ));
 
+        nPort = this->nPort;
+        
 		return bRet;
 	}
 	//////////////////////////////////////////////////////////////////////////

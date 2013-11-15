@@ -612,6 +612,7 @@ namespace FTL
 		//计算一个点对应特定矩形的相对关系
 		FTLINLINE static PointPosQuadrant CalcPointPosQuadrant(const RECT& rect, const POINT& point);
 
+        //计算并按指定的间隔(行间距)绘制文本
 		FTLINLINE static int DrawInterValText(HDC hdc, LPCTSTR lpchText, int cchText,	LPRECT lprc, UINT format, POINT ptInterval);
 
 		FTLINLINE static BOOL LoadPNGFromResource(CImage& image, HMODULE hModule, UINT nIDResource, LPCTSTR pszType = TEXT("PNG"));

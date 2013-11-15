@@ -54,7 +54,7 @@ void CShellPage::OnBnClickedBtnShellExecute()
     //if (spDesktop)
     {
         LPITEMIDLIST pidl = NULL;
-        ULONG attributes = 0;
+        //ULONG attributes = 0;
         SFGAOF sfgaofIn = 0, sfgaofOut = 0;
 
 		PTSTR pszBuf = strFilePath.GetBuffer();

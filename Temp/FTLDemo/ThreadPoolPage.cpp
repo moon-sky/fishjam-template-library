@@ -123,8 +123,8 @@ void CThreadPoolPage::SetFtlThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused)
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_ADD_JOB_SUSPEND)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_RESUME_JOB)->EnableWindow(bStarted);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_CANCEL_JOB)->EnableWindow(bStarted);
-	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_PAUSEALL)->EnableWindow(bStarted);
-	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_RESUMEALL)->EnableWindow(bStarted);
+	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_PAUSEALL)->EnableWindow(bStarted && !bPaused);
+	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_RESUMEALL)->EnableWindow(bStarted && bPaused);
 	GetDlgItem(IDC_BTN_FTL_THREAD_POOL_STOP)->EnableWindow(bStarted);
 }
 

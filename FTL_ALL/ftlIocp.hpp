@@ -133,8 +133,13 @@ namespace FTL
     {
         BOOL bRet = FALSE;
         //将一个重叠IO方式的对象句柄绑定到已创建好的完成端口对象上
-        API_VERIFY(NULL != CreateIoCompletionPort(pTask->GetIocpHandle(), m_hIoCompletionPort, (ULONG_PTR)pTask, 0));
-
+        HANDLE hIoPort = NULL;
+        API_VERIFY((hIoPort = CreateIoCompletionPort(pTask->GetIocpHandle(), 
+            m_hIoCompletionPort, (ULONG_PTR)pTask, 0)) != NULL );
+        if (bRet)
+        {
+            FTLASSERT(hIoPort == m_hIoCompletionPort);
+        }
         return bRet;
     }
 

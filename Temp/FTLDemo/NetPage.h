@@ -48,6 +48,8 @@ public:
 	afx_msg void OnBnClickedBtnInternetTransferAddUpload();
 	afx_msg void OnBnClickedBtnInternetTransferCancelJob();
 	afx_msg void OnBnClickedBtnInternetTransferStop();
+
+    afx_msg void OnBnClickedBtnSocketDumpOption();
 private:
 	// ServerHost
 	CString m_strServerHost;

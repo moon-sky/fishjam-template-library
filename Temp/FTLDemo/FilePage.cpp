@@ -52,14 +52,14 @@ END_MESSAGE_MAP()
 
 // CFilePage message handlers
 
-LRESULT AFX_MSG_CALL CFilePage::OnCopyDirProgress(WPARAM wParam, LPARAM lParam)
+LRESULT AFX_MSG_CALL CFilePage::OnCopyDirProgress(WPARAM wParam, LPARAM /*lParam*/)
 {
     m_progressCopyDir.SetPos((INT)wParam);
 
     return 0;
 }
 
-LRESULT AFX_MSG_CALL CFilePage::OnCopyDirError(WPARAM wParam, LPARAM lParam)
+LRESULT AFX_MSG_CALL CFilePage::OnCopyDirError(WPARAM wParam, LPARAM /*lParam*/)
 {
     DWORD dwError = (DWORD)wParam;
     FTL::CFAPIErrorInfo apiErrorInfo(dwError);
@@ -158,7 +158,7 @@ public:
     {
         return m_hFile;
     }
-    BOOL OnIoComplete(CFIocpMgr* pIocpMgr, F_IOCP_OVERLAPPED* pIocpOverLapped, DWORD dwBytesTransferred)
+    BOOL OnIoComplete(CFIocpMgr* /*pIocpMgr*/, F_IOCP_OVERLAPPED* pIocpOverLapped, DWORD dwBytesTransferred)
     {
         pIocpOverLapped->overLapped.Offset += dwBytesTransferred;
         WriteString(TEXT("some string"), NULL, (LPOVERLAPPED)&m_OverLapped);
@@ -168,7 +168,7 @@ public:
 
 void CFilePage::OnBnClickedBtnIocpTest()
 {
-    BOOL bRet = FALSE;
+    //BOOL bRet = FALSE;
     CFIocpMgr iocpMgr;
     iocpMgr.Start(1);
 
@@ -197,7 +197,7 @@ BOOL CFilePage::OnInitDialog()
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-VOID CFilePage::OnBeginPrepareSourceFiles(LPCTSTR pszSrcDir, LPCTSTR pszDstDir)
+VOID CFilePage::OnBeginPrepareSourceFiles(LPCTSTR /*pszSrcDir*/, LPCTSTR /*pszDstDir*/)
 {
 }
 
@@ -205,6 +205,7 @@ VOID CFilePage::OnBegin(LONGLONG nTotalSize, LONG nFileCount)
 {
     m_nTotalSize = nTotalSize;
     SetWindowText(TEXT("Begin Copy"));
+    FTLTRACE(TEXT("Begin Copy, TotalSize=%lld, nFileCount=%d\n"), nTotalSize, nFileCount);
 }
 
 VOID CFilePage::OnCopyFile(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, LONG nIndex, LONGLONG nFileSize, LONGLONG nCopiedSize)
@@ -218,7 +219,7 @@ VOID CFilePage::OnCopyFile(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, LONG nInde
     m_nCopiedSize = nCopiedSize;
     if (m_nTotalSize > 0)
     {
-        INT nPercent = (double)m_nCopiedSize * 100 / m_nTotalSize;
+        INT nPercent = (INT)((double)m_nCopiedSize * 100 / m_nTotalSize);
         PostMessage(UM_UPDATE_COPY_DIR_PROGRESS, nPercent, 0);
     }
     else
@@ -230,6 +231,8 @@ VOID CFilePage::OnCopyFile(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, LONG nInde
 VOID CFilePage::OnEnd(BOOL bSuccess, LONGLONG nTotalCopiedSize, LONG nCopiedFileCount)
 {
     SetWindowText(TEXT("Copy Dir End"));
+    FTLTRACE(TEXT("Copy Dir End, bSuccess=%d, nTotalCopiedSize=%lld, nCopiedFileCount=%d\n"),
+        bSuccess, nTotalCopiedSize, nCopiedFileCount);
 }
 
 VOID CFilePage::OnError(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, DWORD dwError)

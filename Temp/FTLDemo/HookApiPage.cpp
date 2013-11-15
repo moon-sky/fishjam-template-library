@@ -6,7 +6,7 @@
 #include "HookApiPage.h"
 #include "ftlHookAPI.h"
 
-#ifndef FNT_VERIFY(x)
+#ifndef FNT_VERIFY
 #  define FNT_VERIFY(x)	\
 	status = (x);\
 	if(!NT_SUCCESS(status)) \

@@ -313,17 +313,19 @@ namespace FTL
     HRESULT CFShellUtil::GetFileShellInfo(LPCTSTR pszPath, ShellFileInfo& outInfo)
     {
         HRESULT hr = E_NOTIMPL;
+        UNREFERENCED_PARAMETER(pszPath);
+        UNREFERENCED_PARAMETER(outInfo);
 #pragma TODO(Use SHGetFileInfo get all info)
-        
-		CComPtr<IMalloc> spMalloc;
-		CComPtr<IShellFolder> spShellFolder;
-		COM_VERIFY(SHGetMalloc(&spMalloc));
-		COM_VERIFY(SHGetDesktopFolder(&spShellFolder));
-		
-		if (spShellFolder && spMalloc)
-		{
 
-		}
+		//CComPtr<IMalloc> spMalloc;
+		//CComPtr<IShellFolder> spShellFolder;
+		//COM_VERIFY(SHGetMalloc(&spMalloc));
+		//COM_VERIFY(SHGetDesktopFolder(&spShellFolder));
+		//
+		//if (spShellFolder && spMalloc)
+		//{
+        //      SHParseDisplayName(pszPath, NULL, &outInfo.pIdl, )
+		//}
 		
         return hr;
     }
@@ -491,10 +493,10 @@ namespace FTL
 		HRESULT hr = E_FAIL;
 
 		PIDLIST_RELATIVE pidl = NULL;
-		ULONG attributes = 0;
+		//ULONG attributes = 0;
 		SFGAOF sfgaofIn = 0, sfgaofOut = 0;
 
-		COM_VERIFY(SHParseDisplayName(pszFilePath, NULL,	&pidl, sfgaofIn, &sfgaofOut));
+		COM_VERIFY(SHParseDisplayName(pszFilePath, NULL, &pidl, sfgaofIn, &sfgaofOut));
 		if (SUCCEEDED(hr))
 		{
 			COM_VERIFY(SHOpenFolderAndSelectItems(pidl, 0, NULL, 0));
@@ -616,7 +618,7 @@ namespace FTL
     }
     int CFDirBrowser::DirBrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
     {
-        HRESULT hr = E_FAIL;
+        //HRESULT hr = E_FAIL;
         BOOL bRet = FALSE;
 
         //FTLTRACE(TEXT("DirBrowseCallbackProc, uMsg=%d\n"), uMsg);
@@ -662,6 +664,7 @@ namespace FTL
             {
                 //经测试，至少支持如下接口： IFolderFilter、IFolderFilterSite
                 IUnknown *pUnknown = reinterpret_cast<IUnknown*>(lParam);
+                UNREFERENCED_PARAMETER(pUnknown);
                 FTLTRACE(TEXT("DirBrowseCallbackProc - BFFM_IUNKNOWN, pUnknown=0x%p\n"), pUnknown);
 
                 //COM_DETECT_INTERFACE_FROM_REGISTER(pUnknown);

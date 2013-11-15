@@ -113,7 +113,7 @@ namespace FTL
 
     struct ShellFileInfo
     {
-
+        //PIDLIST_ABSOLUTE    pIdl;
     };
     FTLEXPORT class CFShellUtil
     {
@@ -125,6 +125,7 @@ namespace FTL
 		FTLINLINE static HRESULT GetItemIdName(  LPCITEMIDLIST  pItemIdList, LPTSTR pFriendlyName, UINT cchBuf, 
 			DWORD dwFlags = SHGDN_FORPARSING, IShellFolder* pSF = NULL );
 
+        //TODO: 系统已经提供了 SHGetFileInfo 函数
         FTLINLINE static HRESULT GetFileShellInfo(LPCTSTR pszPath, ShellFileInfo& outInfo);
 
 		//获取Shell的系统图标列表，之后可以通过 GetListCtrl().SetImageList(CImageList::FromHandle(hi),LVSIL_SMALL 或 LVSIL_NORMAL) 的方式使用

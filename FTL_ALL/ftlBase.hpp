@@ -403,38 +403,47 @@ namespace FTL
     template <typename T, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/, MemoryAllocType allocType  /*= matNew*/>
     CFMemAllocator<T, DefaultFixedCount, allocType>::CFMemAllocator()
         :m_pMem(NULL)
-        ,m_allocType(matNew)
+        ,m_allocType(allocType)
         ,m_nCount(DefaultFixedCount)
+        ,m_bAlignment(FALSE)
     {
 		ZeroMemory(m_FixedMem, sizeof(m_FixedMem));
-        Init(DefaultFixedCount);
+        _Init(DefaultFixedCount, m_bAlignment);
     }
 
     template <typename T, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/, MemoryAllocType allocType  /*= matNew*/>
-    CFMemAllocator<T, DefaultFixedCount, allocType>::CFMemAllocator(DWORD nCount)
+    CFMemAllocator<T, DefaultFixedCount, allocType>::CFMemAllocator(DWORD nCount, BOOL bAlignment)
         :m_pMem(NULL)
         ,m_allocType(allocType)
         ,m_nCount(nCount)
+        ,m_bAlignment(bAlignment)
     {
         if (0 == nCount)
         {
-            m_nCount = 1;
+            nCount = 1;
         }
     	ZeroMemory(m_FixedMem, sizeof(m_FixedMem));
-        Init(nCount);
+        _Init(nCount, m_bAlignment);
     }
 
     template <typename T, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/, MemoryAllocType allocType  /*= matNew*/>
-    VOID CFMemAllocator<T, DefaultFixedCount, allocType>::Init(DWORD nCount)
+    VOID CFMemAllocator<T, DefaultFixedCount, allocType>::_Init(DWORD nCount, BOOL bAlignment)
     {
+        if (bAlignment)
+        {
+            nCount = _AdjustAlignmentSize(nCount);
+        }
         if (nCount > DefaultFixedCount)
         {
+            m_nCount = nCount;
             switch(allocType)
             {
             case matNew:
                 m_pMem = new T[nCount];
-                m_nCount = nCount;
                 ZeroMemory(m_pMem,sizeof(T) * nCount); //先清除内存，保证没有垃圾数据--是否会造成类指针问题？性能影响？
+                break;
+            case matVirtualAlloc:
+                m_pMem = (T*)VirtualAlloc(NULL, sizeof(T) * nCount, MEM_COMMIT, PAGE_READWRITE);
                 break;
             default:
                 FTLASSERT(FALSE);
@@ -444,14 +453,40 @@ namespace FTL
     }
 
     template <typename T, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/, MemoryAllocType allocType  /*= matNew*/>
+    UINT CFMemAllocator<T, DefaultFixedCount, allocType>::_AdjustAlignmentSize(UINT nCount)
+    {
+        static UINT s_nAlignmentSize[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024,
+            2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, //1048576 = 1024 * 1024
+            2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, //1073741824 = 1024 * 1024 * 1024
+            2147483648, UINT_MAX
+        };
+        INT nIndex = 0;
+        while (nCount < s_nAlignmentSize[nIndex] && nIndex < _countof(s_nAlignmentSize))
+        {
+            nIndex++;
+            
+        }
+        if (nIndex < _countof(s_nAlignmentSize))
+        {
+            nCount = s_nAlignmentSize[nIndex];
+        }
+        return nCount;
+    }
+    
+    template <typename T, UINT DefaultFixedCount/* = DEFAULT_MEMALLOCATOR_FIXED_COUNT*/, MemoryAllocType allocType  /*= matNew*/>
     VOID CFMemAllocator<T, DefaultFixedCount, allocType>::_FreeMemory()
     {
+        BOOL bRet = TRUE;
         if (m_pMem)
         {
             switch (allocType)
             {
             case matNew:
                 SAFE_DELETE_ARRAY(m_pMem);
+                break;
+            case matVirtualAlloc:
+                API_VERIFY(VirtualFree(m_pMem, 0, MEM_RELEASE));
+                m_pMem = NULL;
                 break;
             default:
                 FTLASSERT(FALSE);
@@ -487,7 +522,7 @@ namespace FTL
         {
             _FreeMemory();
             m_nCount = _GetBlockSize( nMaxSize );
-            Init(m_nCount);
+            _Init(m_nCount, m_bAlignment);
         }
 		return m_pMem;
     }

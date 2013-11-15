@@ -584,7 +584,8 @@ namespace FTL
 		return posQuadrant;
 	}
 
-	int CFGdiUtil::DrawInterValText(HDC hdc, LPCTSTR lpchText, int cchText,	LPRECT lprc, UINT format, POINT ptInterval)
+	int CFGdiUtil::DrawInterValText(HDC /*hdc*/, LPCTSTR /*lpchText*/, int /*cchText*/,	
+        LPRECT /*lprc*/, UINT /*format*/, POINT /*ptInterval*/)
 	{
 		FTLASSERT(FALSE);  //TODO:增加实现
 		return 0;
