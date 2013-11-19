@@ -6,6 +6,7 @@
 #include "NetPage.h"
 #include <ftlNet.h>
 #include <ftlSocket.h>
+#include <ftlFile.h>
 
 #define USER_AGENT	TEXT("FTLDemoAgent")
 
@@ -66,6 +67,7 @@ BEGIN_MESSAGE_MAP(CNetPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_BTN_INTERNET_TRANSFER_STOP, &CNetPage::OnBnClickedBtnInternetTransferStop)
 
     ON_BN_CLICKED(IDC_BTN_SOCKET_DUMP_OPTION, &CNetPage::OnBnClickedBtnSocketDumpOption)
+    ON_BN_CLICKED(IDC_BTN_NET_TRANSMITFILE, &CNetPage::OnBnClickedBtnTransmitFile)
 END_MESSAGE_MAP()
 
 
@@ -79,14 +81,6 @@ void CNetPage::SetButtonStatus(BOOL bServerEnabled)
 
 void CNetPage::OnBnClickedBtnStartServer()
 {
-
-    CFSocket mySocket;
-    mySocket.Open(stTCP, TRUE);
-    FTL::CFSocketUtils::DumpSocketOption(mySocket.m_socket);
-    
-    mySocket.Close();
-    return;
-
     int rc = NO_ERROR;
     m_pMyServer = new CMyNetServer(FTL::stTCP);
     NET_VERIFY(m_pMyServer->Create(5555,INADDR_ANY));
@@ -297,7 +291,7 @@ void CNetPage::OnBnClickedBtnSocketDumpOption()
 
     FTL::CFSocket tcpSocket;
     NET_VERIFY(tcpSocket.Open(stTCP, TRUE));
-    CFSocketAddress tcpAddress(TEXT("www.baidu.com"), 80);
+    CFSocketAddress tcpAddress(TEXT("www.baidu.com:80"), FALSE);
     NET_VERIFY(tcpSocket.Connect(tcpAddress));
     
     NET_VERIFY(FTL::CFSocketUtils::DumpSocketOption(tcpSocket.m_socket));
@@ -308,4 +302,44 @@ void CNetPage::OnBnClickedBtnSocketDumpOption()
     NET_VERIFY(udpSocket.Open(stUDP, FALSE));
     NET_VERIFY(FTL::CFSocketUtils::DumpSocketOption(udpSocket.m_socket));
     NET_VERIFY(udpSocket.Close());
+}
+
+void CNetPage::OnBnClickedBtnTransmitFile()
+{
+    BOOL bRet = FALSE;
+    int rc = SOCKET_ERROR;
+
+    CFSocketAddress tcpAddress(TEXT("127.0.0.1:999"), FALSE);// TEXT("www.baidu.com"), 80);
+    
+    CFileDialog dlg(TRUE);
+    if (dlg.DoModal() == IDOK)
+    {
+        FTL::CFFile fileSrc;
+        API_VERIFY(fileSrc.Create(dlg.GetPathName(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING));
+
+        if (tcpAddress.IsValid())
+        {
+            FTL::CFStringFormater formater;
+            FTLTRACE(TEXT("SockAddress=%s\n"), tcpAddress.ToString(formater));
+
+            FTL::CFSocket tcpSocket;
+            NET_VERIFY(tcpSocket.Open(stTCP, TRUE));
+            if (SOCKET_ERROR != rc)
+            {
+                NET_VERIFY(tcpSocket.Connect(tcpAddress));
+                NET_VERIFY(tcpSocket.Send((const BYTE*)"GET /", 6, 0));
+
+                DWORD dwLength = (DWORD)fileSrc.GetLength();
+                //API_VERIFY(TransmitFile(tcpSocket.m_socket, fileSrc.m_hFile, 
+                //    dwLength, 0, NULL, NULL, 0));
+
+                CFMemAllocator<BYTE> resultBuffer(4096);
+                int nResult = tcpSocket.Recv(resultBuffer.GetMemory(), resultBuffer.GetCount(), 0);
+
+                FTLTRACE(TEXT("Result(%d) is \n"), nResult);
+
+                tcpSocket.Close();
+            }
+        }
+    }
 }

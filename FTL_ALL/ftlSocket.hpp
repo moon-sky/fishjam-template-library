@@ -158,14 +158,14 @@ namespace FTL
 		//FTLASSERT(nSocketPort);
 
 		int rc = NO_ERROR;
-		int nLength = sizeof(addrConnect);
+		//int nLength = sizeof(addrConnect);
 		//sockaddr_in addrConnect = {0};
 
 		//addrConnect.sin_family = AF_INET;
 		//addrConnect.sin_port = htons(nSocketPort);
 		//addrConnect.sin_addr.S_un.S_addr = inet_addr(CT2A(pszAddr));
 
-		NET_VERIFY(WSAConnect(m_socket, addrConnect.lpSockaddr, nLength, NULL,NULL,NULL,NULL));
+		NET_VERIFY(WSAConnect(m_socket, addrConnect.lpSockaddr, addrConnect.iSockaddrLength, NULL,NULL,NULL,NULL));
 
 		return rc;
 	}
@@ -563,9 +563,7 @@ namespace FTL
 		int rc = NO_ERROR;
 		BOOL bRet = FALSE;
 
-
-
-		DWORD dwNumberOfConcurrentThreads = getNumberOfConcurrentThreads();
+        DWORD dwNumberOfConcurrentThreads = getNumberOfConcurrentThreads();
 		FTLASSERT(dwNumberOfConcurrentThreads > 0);
 
 		//1.创建IO完成端口

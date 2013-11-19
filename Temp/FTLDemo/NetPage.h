@@ -50,6 +50,7 @@ public:
 	afx_msg void OnBnClickedBtnInternetTransferStop();
 
     afx_msg void OnBnClickedBtnSocketDumpOption();
+    afx_msg void OnBnClickedBtnTransmitFile();
 private:
 	// ServerHost
 	CString m_strServerHost;

@@ -161,7 +161,7 @@ namespace FTL
 		HANDLE m_hFile;
 
 		// Operations
-		FTLINLINE virtual DWORD GetPosition() const;
+		FTLINLINE virtual LONGLONG GetPosition() const;
 		FTLINLINE virtual CString GetFileName() const;
 		FTLINLINE virtual CString GetFilePath() const;
 		FTLINLINE virtual BOOL SetFilePath(CString strNewName);
@@ -178,14 +178,14 @@ namespace FTL
 		FTLINLINE static BOOL Rename(CString strOldName, CString strNewName);
 		FTLINLINE static BOOL Remove(CString strFileName);
 
-		FTLINLINE DWORD SeekToEnd();
-		FTLINLINE DWORD SeekToBegin();
+		FTLINLINE LONGLONG SeekToEnd();
+		FTLINLINE LONGLONG SeekToBegin();
 
 		FTLINLINE virtual CFFile * Duplicate() const;
 
-		FTLINLINE virtual DWORD Seek(LONG lOff, UINT nFrom);
-		FTLINLINE virtual BOOL SetLength(DWORD dwNewLen);
-		FTLINLINE virtual DWORD GetLength() const;
+		FTLINLINE virtual LONGLONG Seek(LONGLONG lOff, UINT nFrom);
+		FTLINLINE virtual BOOL SetLength(LONGLONG newLen);
+		FTLINLINE virtual LONGLONG GetLength() const;
 
 		FTLINLINE virtual DWORD Read(void* lpBuf, DWORD nCount, LPOVERLAPPED lpOverlapped = NULL);
 		FTLINLINE virtual BOOL Write(const void* lpBuf, DWORD nCount, DWORD* pdwWritten, LPOVERLAPPED lpOverlapped = NULL);

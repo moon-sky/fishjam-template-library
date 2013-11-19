@@ -759,6 +759,7 @@ namespace FTL
     };
 
 	//IPV4/IPV6 兼容的地址 -- SOCKADDR_STORAGE
+    //TODO: atlsocket.h 文件中已经包含了 CSocketAddr
 	class CFSocketAddress : public SOCKET_ADDRESS
 	{
 	public:
@@ -767,8 +768,11 @@ namespace FTL
 		FTLINLINE explicit CFSocketAddress(const SOCKADDR_IN& addrv4);
 		FTLINLINE explicit CFSocketAddress(const SOCKADDR_IN6& addrv6);
 		FTLINLINE explicit CFSocketAddress(const SOCKADDR_STORAGE addrStorage);
-		FTLINLINE explicit CFSocketAddress(LPCTSTR sAddr, USHORT usPort = 0);
+
+        //地址的格式必须是包含端口号的数字格式，如 192.168.0.1:80 或  fe80::9c25:a275:26ba:6926%17 等
+		FTLINLINE explicit CFSocketAddress(LPCTSTR sAddr, BOOL bCheckIpV6First = FALSE);
 		FTLINLINE ~CFSocketAddress();
+        FTLINLINE BOOL   IsValid();
 
         FTLINLINE BOOL   SetAddressPort(USHORT usPort);
 		FTLINLINE BOOL 	 GetIPv4Address(in_addr& rAddrV4, USHORT& rPort);

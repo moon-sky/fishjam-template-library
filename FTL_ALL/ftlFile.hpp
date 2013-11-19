@@ -448,29 +448,37 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Repositions the pointer in a previously opened file.
 	//-----------------------------------------------------------------------------
-	DWORD CFFile::Seek(LONG lOff, UINT nFrom)
+	LONGLONG CFFile::Seek(LONGLONG lOff, UINT nFrom)
 	{
+        BOOL bRet = FALSE;
+
 		FTLASSERT(m_hFile && ((m_hFile) != INVALID_HANDLE_VALUE));
 		FTLASSERT(nFrom == begin || nFrom == end || nFrom == current);
 		FTLASSERT(begin == FILE_BEGIN && end == FILE_END && current == FILE_CURRENT);
+        
+        LARGE_INTEGER SeekPos = {0};
+        SeekPos.QuadPart = lOff;
 
-		DWORD dwNew = ::SetFilePointer(m_hFile, lOff, NULL, (DWORD)nFrom);
-		API_ASSERT((DWORD)-1 != dwNew);
+        LARGE_INTEGER SeekResult = {0};
+        SeekResult.QuadPart = (LONGLONG)(-1);
+
+		API_VERIFY(::SetFilePointerEx(m_hFile, SeekPos, &SeekResult, (DWORD)nFrom));
 	
-		return dwNew;
+		return SeekResult.QuadPart;
 	}
 
 	//-----------------------------------------------------------------------------
 	// Obtains the current value of the file pointer, which can be used in 
 	// subsequent calls to Seek.
 	//-----------------------------------------------------------------------------
-	DWORD CFFile::GetPosition() const
+	LONGLONG CFFile::GetPosition() const
 	{
 		_ASSERT(m_hFile && ((m_hFile) != INVALID_HANDLE_VALUE));
-
-		DWORD dwPos = ::SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
-		API_ASSERT(dwPos  != (DWORD)-1);
-		return dwPos;
+        BOOL bRet = FALSE;
+        LARGE_INTEGER nSeekPos = {0};
+        LARGE_INTEGER nCurPos = { 0 };
+        API_VERIFY(::SetFilePointerEx(m_hFile, nSeekPos, &nCurPos, FILE_CURRENT));
+		return nCurPos.QuadPart;
 	}
 
 	//-----------------------------------------------------------------------------
@@ -531,11 +539,11 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Changes the length of the file.
 	//-----------------------------------------------------------------------------
-	BOOL CFFile::SetLength(DWORD dwNewLen)
+	BOOL CFFile::SetLength(LONGLONG newLen)
 	{
 		FTLASSERT(m_hFile && ((m_hFile) != INVALID_HANDLE_VALUE));
 		BOOL bRet = FALSE;
-		Seek(dwNewLen, CFFile::begin);
+		Seek(newLen, CFFile::begin);
 
 		// Move the end-of-file (EOF) position for the file to the current position 
 		// of the file pointer. 
@@ -546,7 +554,7 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Obtains the current logical length of the file in bytes
 	//-----------------------------------------------------------------------------
-	DWORD CFFile::GetLength() const
+	LONGLONG CFFile::GetLength() const
 	{
 		CFFile * pFile = (CFFile*)this;
 
@@ -576,17 +584,17 @@ namespace FTL
 	//-----------------------------------------------------------------------------
 	// Sets the value of the file pointer to the end of the file.
 	//-----------------------------------------------------------------------------
-	DWORD CFFile::SeekToEnd()
+	LONGLONG CFFile::SeekToEnd()
 	{ 
-		return Seek(0, CFFile::end); 
+		return Seek(0LL, CFFile::end); 
 	}
 
 	//-----------------------------------------------------------------------------
 	// Sets the value of the file pointer to the beginning of the file.
 	//-----------------------------------------------------------------------------
-	DWORD CFFile::SeekToBegin()
+	LONGLONG CFFile::SeekToBegin()
 	{ 
-		return Seek(0, CFFile::begin);
+		return Seek(0LL, CFFile::begin);
 	}
 
 	//-----------------------------------------------------------------------------

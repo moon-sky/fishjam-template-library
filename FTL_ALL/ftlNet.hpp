@@ -68,6 +68,7 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAENETUNREACH);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAENETRESET);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAECONNABORTED);
+                HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAECONNRESET);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAENOBUFS);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAEISCONN);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAENOTCONN);
@@ -122,6 +123,11 @@ namespace FTL
 	{
 		Init();
 	}
+    CFSocketAddress::~CFSocketAddress()
+    {
+        SAFE_DELETE_ARRAY(lpSockaddr);
+    }
+
 	CFSocketAddress::CFSocketAddress(const SOCKET_ADDRESS& addr)
 	{
 		Init();
@@ -142,7 +148,7 @@ namespace FTL
 		FTLASSERT(AF_INET == addrv4.sin_family);
 		if (AF_INET == addrv4.sin_family)
 		{
-			lpSockaddr = (LPSOCKADDR)new BYTE[sizeof(SOCKADDR_IN)];
+			lpSockaddr = (LPSOCKADDR)new BYTE[sizeof(addrv4)];
 			if (lpSockaddr)
 			{
 				CopyMemory(lpSockaddr, &addrv4, sizeof(addrv4));
@@ -178,33 +184,64 @@ namespace FTL
 			iSockaddrLength = sizeof(addrStorage);
 		}
 	}
-	CFSocketAddress::CFSocketAddress(LPCTSTR sAddr, USHORT usPort /* = 0 */)
+	CFSocketAddress::CFSocketAddress(LPCTSTR sAddr, BOOL bCheckIpV6First)
 	{
+        //FTLASSERT(FALSE && TEXT("use CSocketAddr in atlsocket.h"));
+
 		Init();
 		int rc = 0;
-		NET_VERIFY_EXCEPT1(WSAStringToAddress((LPTSTR)sAddr, AF_UNSPEC, NULL, NULL, &iSockaddrLength), WSAEFAULT);
-		if (SOCKET_ERROR == rc)
-		{
-			int lastSocketError = WSAGetLastError();
-			if (WSAEFAULT == lastSocketError && iSockaddrLength > 0)
-			{ 
-				lpSockaddr = (LPSOCKADDR)new BYTE[iSockaddrLength];
-				if (lpSockaddr)
-				{
-					NET_VERIFY(WSAStringToAddress((LPTSTR)sAddr, AF_UNSPEC, NULL, lpSockaddr, &iSockaddrLength));
-					if (SOCKET_ERROR == rc)
-					{
-						SAFE_DELETE_ARRAY(lpSockaddr);
-						iSockaddrLength = 0;
-					}
-                    else if(usPort != 0)
+        int lastSocketError = 0;
+
+        INT nTryAddressFamily[] = {
+            AF_INET,
+            AF_INET6
+        };
+
+        INT nStartFamily = 0;
+        INT nEndFamily = _countof(nTryAddressFamily);
+        INT nOffset = 1;
+        if (bCheckIpV6First)
+        {
+            nStartFamily--;
+            nEndFamily--;
+            SwapValue(nStartFamily, nEndFamily);
+            nOffset = -1;
+        }
+
+        for (INT i = nStartFamily; i != nEndFamily; i+=nOffset)
+        {
+            NET_VERIFY_EXCEPT1(WSAStringToAddress((LPTSTR)sAddr, nTryAddressFamily[i], NULL, NULL, &iSockaddrLength), WSAEFAULT);
+            if (SOCKET_ERROR == rc)
+            {
+                lastSocketError = WSAGetLastError();
+                if (WSAEFAULT == lastSocketError && iSockaddrLength > 0)
+                {
+                    lpSockaddr = (LPSOCKADDR)new BYTE[iSockaddrLength];
+                    if (lpSockaddr)
                     {
-                        SetAddressPort(usPort);
+                        lpSockaddr->sa_family = nTryAddressFamily[i];
+                        lpSockaddr->sa_data[0] = NULL;
+                        NET_VERIFY(WSAStringToAddress((LPTSTR)sAddr, nTryAddressFamily[i], NULL, lpSockaddr, &iSockaddrLength));
+                        if (SOCKET_ERROR == rc)
+                        {
+                            SAFE_DELETE_ARRAY(lpSockaddr);
+                            iSockaddrLength = 0;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                        //else if(usPort != 0)
+                        //{
+                        //    SetAddressPort(usPort);
+                        //    break;
+                        //}
                     }
-				}
-			}
-		}
-	}
+                }
+            }
+        }
+
+    }
 
 	LPCTSTR CFSocketAddress::ToString(CFStringFormater& formater)
 	{
@@ -226,6 +263,16 @@ namespace FTL
 		return formater.GetString();
 	}
 
+    BOOL CFSocketAddress::IsValid()
+    {
+        BOOL bRet = FALSE;
+        if (lpSockaddr)
+        {
+            //TODO: Check
+            bRet = TRUE;
+        }
+        return bRet;
+    }
     BOOL CFSocketAddress::SetAddressPort(USHORT usPort)
     {
         BOOL bRet = FALSE;
@@ -287,11 +334,6 @@ namespace FTL
 			bRet = TRUE;
 		}
 		return bRet;
-	}
-
-	CFSocketAddress::~CFSocketAddress()
-	{
-		SAFE_DELETE_ARRAY(lpSockaddr);
 	}
 
     namespace FNetInfo

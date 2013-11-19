@@ -6,6 +6,7 @@
 #include "FTLDemoSheet.h"
 #include <ftlCrashHandler.h>
 #include <ftlgdiplus.h>
+#include <ftlSocket.h>
 //#include "vld.h"
 #include <ftlfile.h>
 #ifdef _DEBUG
@@ -73,7 +74,7 @@ BOOL CFTLDemoApp::InitInstance()
         crashHandler.SetDefaultCrashHandlerFilter();
 
         FTL::CFAutoGdiplus   gdiPlusInitObject;
-
+        FTL::CFWinsockEnvInit winsockInit;
 
         //CFTLDemoDlg dlg;
         //m_pMainWnd = &dlg;
