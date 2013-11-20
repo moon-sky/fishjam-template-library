@@ -327,7 +327,7 @@ void CNetPage::OnBnClickedBtnTransmitFile()
             if (SOCKET_ERROR != rc)
             {
                 NET_VERIFY(tcpSocket.Connect(tcpAddress));
-                NET_VERIFY(tcpSocket.Send((const BYTE*)"GET /", 6, 0));
+                NET_VERIFY(tcpSocket.Send((const BYTE*)"GET /index.html HTTP/1.1\r\n", -1, 0));
 
                 DWORD dwLength = (DWORD)fileSrc.GetLength();
                 //API_VERIFY(TransmitFile(tcpSocket.m_socket, fileSrc.m_hFile, 

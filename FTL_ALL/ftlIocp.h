@@ -6,6 +6,10 @@
 #  error ftlIocp.h requires ftlbase.h to be included first
 #endif
 
+#include "ftlThread.h"
+#include "ftlMem.h"
+#include "ftlSharePtr.h"
+
 /*************************************************************************************************************************
 * IOCP(IO Completion Port -- 完成端口) -- 一个通知队列，和Overlapped I/O协同工作，可以在一个“管理众多的句柄且受制于I/O的程序(如Web服务器)”中获得最佳性能。
 *   没有64个HANDLE的限制，使用一堆线程(通常可设置为 CPU个数*2+2 )服务一堆Events的性质，自动支持 scalable。
@@ -38,23 +42,67 @@ namespace FTL
     class CFIocpBaseTask;
     class CFIocpMgr;
 
-
-    typedef struct tagF_IOCP_OVERLAPPED
+    FTLINLINE LONGLONG AddOverLappedOffset(LPOVERLAPPED pOverlapped, DWORD dwTransfered)
     {
-        tagF_IOCP_OVERLAPPED()
-        {
-            ZeroMemory(&overLapped, sizeof(overLapped));
-        }
-        OVERLAPPED  overLapped;
-    }F_IOCP_OVERLAPPED, *LPF_IOCP_OVERLAPPED;
+        LARGE_INTEGER largeInteger;
+        largeInteger.LowPart = pOverlapped->Offset;
+        largeInteger.HighPart = pOverlapped->OffsetHigh;
+        largeInteger.QuadPart += dwTransfered;
+        pOverlapped->Offset = largeInteger.LowPart;
+        pOverlapped->OffsetHigh = largeInteger.HighPart;
+        return largeInteger.QuadPart;
+    }
+
+    enum IOType 
+    {
+	    IOInitialize,   // The client just connected
+	    IORead,         // Read from the client. 
+	    IOReadCompleted,// Read completed
+	    IOWrite,        // Write to the Client
+	    IOWriteCompleted, // Write Completed.
+	    //IOZeroByteRead, // Read zero Byte from client (dummy for avoiding The System Blocking error) 
+	    //IOZeroReadCompleted, // Read Zero Byte  completed. (se IOZeroByteRead)
+	    //IOTransmitFileCompleted,
+    };
+
+    class CFIocpBuffer
+    {
+    public:
+        OVERLAPPED      m_overLapped;
+        IOType          m_ioType;
+        LONG            m_nSequenceNumber;
+        PBYTE	        m_pBuffer;
+        DWORD           m_dwSize;
+        DWORD           m_dwUsed;
+    public:
+        FTLINLINE CFIocpBuffer(DWORD dwSize = 512);
+        FTLINLINE ~CFIocpBuffer();
+    };
+    typedef CFMemoryPoolObjectHelper<CFIocpBuffer> CFIoBufferPoolObject;
+    typedef CFSharePtr<CFIoBufferPoolObject>    CFIoBufferPoolObjectPtr;
 
     class CFIocpBaseTask
     {
+        friend class CFIocpMgr;
     public:
-        F_IOCP_OVERLAPPED   m_OverLapped;
-    public:
+        typedef std::map<LONG, CFIoBufferPoolObjectPtr> IocpBufferMap;
+        CFIocpBaseTask();
+
         virtual HANDLE GetIocpHandle() const = 0;
-        virtual BOOL   OnIoComplete(CFIocpMgr* pIocpMgr, F_IOCP_OVERLAPPED* pIocpOverLapped, DWORD dwBytesTransferred) = 0;
+        //virtual BOOL   OnIoComplete(CFIocpMgr* pIocpMgr, CFIoBufferPoolObjectPtr& pIoBuffer, DWORD dwBytesTransferred) = 0;
+        virtual FTLINLINE BOOL OnInitialize(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
+        virtual FTLINLINE BOOL OnRead(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
+        virtual FTLINLINE BOOL OnReadCompleted(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
+        virtual FTLINLINE BOOL OnWrite(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
+        virtual FTLINLINE BOOL OnWriteCompleted(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
+        virtual FTLINLINE BOOL OnEnd(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
+
+    private:
+        LONG            m_nCurReadSequence;
+        LONG            m_nCurWriteSequence;
+
+        IocpBufferMap   m_ReadBufferMap;
+        IocpBufferMap   m_WriteBufferMap;
     };
 
     //class CFSocketIocpTask : public CFIocpBaseTask
@@ -101,12 +149,15 @@ namespace FTL
         HANDLE* m_pWorkThreads;
         volatile BOOL m_bStop;
 
+        CFMemoryPoolT<CFIocpBuffer> m_IocpBufferPool;
+
         DWORD   m_nConcurrentThreadCount;
 
         FTLINLINE DWORD _GetDefaultConcurrentThreadCount();
         FTLINLINE DWORD _InnerWorkThreadProc();
 
         FTLINLINE static DWORD __stdcall _WorkThreadProc(LPVOID pParam);
+        FTLINLINE BOOL _ProcessPackage(CFIocpBaseTask* pTask, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
     };
 }
 #endif //FTL_IOCP_H

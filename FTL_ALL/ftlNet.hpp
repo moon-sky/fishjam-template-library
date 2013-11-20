@@ -2526,7 +2526,8 @@ namespace FTL
 
 	LONGLONG CFUploadJob::_CalcContentLength()
 	{
-		//计算总共的长度：post参数长度 + 文件长度(注意文件内容分割的长度) -- 和nTalk等其他项目的代码不一样(依赖于Post参数的创建方式中是否包含多余的CRLF等)
+		//计算总共的长度：post参数长度 + 文件长度(注意文件内容分割的长度) 
+        //和nTalk等其他项目的代码不一样(依赖于Post参数的创建方式中是否包含多余的CRLF等)
 
 		LONGLONG nContentLength = 0;
 

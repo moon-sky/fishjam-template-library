@@ -3,6 +3,8 @@
 
 #pragma once
 
+//网络相关的文章 -- http://www.cnblogs.com/TankXiao/
+
 /*************************************************************************************************************************
 * 已读例子
 *   netds\http\AsyncServer(未看完，需要先看线程池、IO完成端口) -- 使用 IO完成端口 + 线程池 实现的异步HttpV2服务器
@@ -15,8 +17,6 @@
 *   web\Wininet\CacheEnumerate -- 使用Wininet的Cache API枚举、删除URL相关的内容(-d 参数很危险，可能会把cookie删掉)
 *   web\Wininet\httpauth -- 通过HTTP访问Web页面时，检测是否需要认证信息(代理、网页等) -- 不过没有测试出结果
 *
-* HTTP协议分析
-*   http://www.cnblogs.com/TankXiao/archive/2012/02/13/2342672.html
 * 目前中国主流的网吧管理系统包括：网维大师(iCafe8,还原穿透技术)，迅闪(PubWin)，盛天易游(Stnts)等
 *
 * 第三方网络通信库
@@ -110,8 +110,7 @@
 *  2616 -- HTTP(Hypertext Transfer Protocol)
 *  6443 -- RFB(Remote Framebuffer Protocol), 通常用于远程控制
 
-* Fiddler(http调试代理) -- 记录并检查所有你的电脑和互联网之间的http通讯，查看所有进出数据
-* Httpwatch/Fiddler2 -- 专门监控Http传输的工具?
+* Fiddler2/Httpwatch -- 专门监控Http传输的工具?
 * Wireshark(网络抓包工具) -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
 * IECookiesView(www.nirsoft.net): 查看编辑Cookie
 * netstat -- 系统提供的查询监听、绑定等信息的工具
@@ -150,7 +149,11 @@
 *     1024 ~ 49151 是 IANA 列出来的、已注册的端口，供普通用户的普通用户进程或程序使用。
 *     49152 ~ 65535 是动态和（或）私用端口。
 *
-* 代理(Proxy) -- 分为 SOCKS4/5, HTTP/1.1 等
+* 代理(Proxy) -- 分为 SOCKS4/5, HTTP/1.1 等，位于客户端和服务器之间，扮演“中间人”的角色。
+*   通常用于 翻墙、匿名访问(删除IP地址、Cookie、SessionId等)、代理上网、缓存加快上网速度等
+*   IE代理的自动配置脚本(PAC--Proxy Auto Config) -- 小型的JavaScript程序的文本文件，后缀为.dat.
+*     其实现类似如下: function FindProxyForURL(url, host){if (url.substring(0, 5) == "http:") { return "PROXY proxy:80"; } else { return "DIRECT"; }
+*   IE代理的自动检测设置(WPAD--) -- 使用WPAD协议自动找到PAC文件的URL
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -172,11 +175,13 @@
 * ARP(Address Resolution Protocol)--地址转换协议，用于动态地完成IP地址向物理地址的转换。
 * BOOTP(BooTstrap Protocol)--可选安全启动协议，使用UDP消息，提供一个有附加信息的无盘工作站，通过文件服务器上的内存影像来启动。
 * Cookie(Cookies) -- 网站为了辨别用户身份、进行session跟踪而储存在用户本地终端上用分号(";")分开的键值对数据（通常经过加密）。
-*   定义为 RFC2109（已废弃）和 RFC2965。最典型的应用是自动登录、购物车等
-*   服务器端生成 -> 发送给UserAgent(浏览器) -> 浏览器保存成文本 -> 下次访问时发送 -> 服务器验证
+*   细说Cookie -- http://www.cnblogs.com/fish-li/archive/2011/07/03/2096903.html
+*   定义为RFC2109(已废弃)和RFC2965。最典型的应用是自动登录、购物车等
+*   服务器端生成->发送给UserAgent(浏览器)->浏览器保存成文本->下次访问时发送->服务器验证
 *   生存周期 -- Cookie生成时指定的Expire，超出周期Cookie就会被清除。单位为？生存周期设置为"0"或负值表示关闭页面时马上清除。
 *   安全问题：1.识别不精确。在同一台计算机上使用同一浏览器的多用户群，cookie不会区分他们的身份（除非使用不用的用户名登录OS）
-*             2.网页臭虫的图片(透明且只有一个像素-以便隐藏)，将所有访问过此页面的计算机写入cookie，方便网站发送垃圾邮件
+*              2.网页臭虫的图片(透明且只有一个像素-以便隐藏)，将所有访问过此页面的计算机写入cookie，方便网站发送垃圾邮件
+*              3.Cookie欺骗 -- 通过XSS(Cross Site Scripting)跨站脚本攻击; 获取别人电脑上保存的cookie文件;
 * DHT(Distributed Hash Table 分散式杂凑表) -- 可以使P2P网络完全不使用服务器，典型的有eMule中使用的 Kad，
 * ICMP(Internet Control Message Protocol)--互连控制消息协议，主要用来供主机或路由器报告IP数据报载传输中可能出现的不正常情况。
 * IP(Internet Protocol)--互联协议，规定了数据传输的基本单元(报文分组)以及所有数据在网际传递时的确切格式规范。
@@ -198,6 +203,8 @@
 *     
 * TTL -- 生存时间，表示一个数据包在丢弃之前，可在网络上存在多长时间，值为0时，包被丢弃
 * UDP(User Datagram Protocol) -- 用户数据报协议，无连接，支持双向的数据流，但并不保证可靠、有序、无重复
+* URL(Uniform Resource Locator) -- 基本格式,schema://host[:port]/path/.../[?query-string][#anchor]
+*   如: http://www.mywebsite.com/sj/test/test.aspx?name=sviergn&x=true#stuff
 * WINS -- Windows互联网命名服务器,维护着已注册的所有NetBIOS名字的一个列表
 * WinSock -- 是网络编程接口，而不是协议，与协议无关。可以针对一种具体协议（如IP、TCP、IPX、lrDA等）创建套接字。
 *  “面向消息”（保护消息边界--每次读取返回一个消息，如网络游戏的控制包）和 “面向流”（连续的数据传输，会尽量地读取有效数据）
@@ -453,10 +460,15 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
-* HTTP(Hypertext Transport Protocol) -- 超文本传输协议, RFC1945定义1.0, RFC2616定义广为使用的 1.1。是无状态的协议。
+* HTTP协议分析
+*   http://www.cnblogs.com/TankXiao/archive/2012/02/13/2342672.html
+* HTTP(Hypertext Transport Protocol) -- 超文本传输协议, RFC1945定义1.0, RFC2616定义广为使用的 1.1。是无状态的面向连接的协议,
+*   http服务器并不知道两个请求是否来自同一个客户端，一般可通过 Cookie、Session等机制来维护状态
+*
 *   通常承载于TCP、TLS或SSL(即HTTPS，默认端口443)协议层之上，属于应用层协议，分为 POST(RFC1867)、GET(RFC???) 等
 *   C#中使用 HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://www.baidu.com");
 *            request.AddRange //可以指定资源的范围
+*            request.Credentials = new NetworkCredential("username", "password"); //使用基本认证
 *            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 *            Stream stream = response.GetResponseStream();
 *            StreamReader sr = new StreamReader(stream);
@@ -473,7 +485,7 @@
 *                    </form>
 *    1. HttpAddRequestHeaders部分
 *       使用 "Content-Type: multipart/form-data; boundary={boundary}" 声明使用多表单分，且指定分割表单中不同部分数据的符号
-*       (可自定义或随即产生，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
+*       (可自定义或随机产生，但一般使用的是 --MULTI-PARTS-FORM-DATA-BOUNDARY )
 *    2. Post参数部分：多个部分内容，有 Content-Disposition  和可选的 [Content-Type]， 如(参数信息、二进制原始信息)，
 *       每一部分用 {boundary} CRLF 和 "Content-Disposition: form-data;" 分开, 注意二进制文件尾部也需要 CRLF，(二进制数据开始时需要两个 CRLF ?)
 *    3. 使用 {boundary}-- 表示结束(注意后面多两个 "--" )
@@ -491,7 +503,8 @@
 *   DELETE(1.1) -- 请求删除指定的资源
 *   GET(1.0) -- 请求获取特定的资源，不会向服务器提交数据(INTERNET_REQFLAG_NO_HEADERS)，如请求一个Web页面，
 *               通常只包含URL中的 网页地址部分，如 GET /index.html HTTP/1.1\r\n
-*               查询字符串（名称/值对）是在 GET 请求的 URL 中发送的(会被看到，有长度限制)，如 /test/demo_form.asp?name1=value1&name2=value2
+*               查询字符串（名称/值对）是在 GET 请求的 URL 中发送的(以?分隔URL和参数，参数间以&相连，会被看到和缓存，且有长度限制)，
+*               如 /test/demo_form.asp?name1=value1&name2=value2
 *   HEAD(1.0) -- 向服务器请求获取与GET请求相一致的响应，只不过响应体不会被返回。
 *                该方法可在不必传输整个响应内容的情况下，就获取包含在响应消息头中的元信息，
 *                通常用于辅助作用(如搜索引擎获取信息，安全认证时传递认证信息，下载文件前判断资源是否有效 等)
@@ -503,7 +516,18 @@
 *   TRACE(1.1) -- 回显服务器收到的请求
 *   UNLINK(1.1)
 *
-* 判断连接 HINTERNET 是否需要认证信息
+* HTTP身份认证， 常见的有：
+*   基本(Basic)验证 -- Authorization 头域中是BASE64编码后的 用户名:(加密后)密码 字符串。本身不加密
+*   OAuth认证 -- Authorization 头域中是Token
+*   摘要认证 --
+*   
+*   通常在初次验证完毕后，可以将认证后的Cookies复制出来直接添加到下一个请求的HEADER中
+*   需要身份验证的数据访问流程
+*     1.客户端发送不带验证信息的Request给服务器
+*     2.服务器返回401(DENIED)表明Unauthozied，
+*     3.客户端把用户名和密码用BASE64编码后，通过 Authorization 头域发送给服务器进行验证
+*     4.服务器进行验证，如验证通过，将根据请求，发送资源给客户端
+*   判断连接 HINTERNET 是否需要认证信息
 *   1.HttpQueryInfo(hRequest, HTTP_QUERY_FLAG_NUMBER | HTTP_QUERY_STATUS_CODE, &dwStatus, &cbStatus, NULL);  //获取状态码
 *   2.switch(dwStatus) {   //查询状态码
 *       case HTTP_STATUS_DENIED(401):			// 拒绝访问，再查询 dwFlags = HTTP_QUERY_WWW_AUTHENTICATE
@@ -517,14 +541,32 @@
 *     内容包括：统一资源标识符（URL）、协议版本号，后边是MIME信息包括请求修饰符、客户机信息和可能的内容
 *   3.服务器返回响应信息，格式为一个状态行，包括信息的协议版本号、一个成功或错误的代码，后边是MIME信息包括服务器信息、实体信息和可能的内容
 * 
+* 消息结构
+*   Request -- Request line(如 GET www.cnblogs.com/ HTTP/1.1) + Header(各种头域的键值对) + CRLF + Body
+*   Response-- Status line(如 HTTP/1.1 200 OK) + Header + CRLF + Body
+* 
 * 头域(Headers)，主要数据前的原信息(Meta Information)，用于向服务器提供本次请求的相关信息，格式为 "域名:域值"
 *   每个描述部分用"CRLF"分开，结束处有两个"CRLF"，通过 HttpAddRequestHeaders 加入?
-*   [M]Accept: text/plain, x/x(注意：此处本来是*号)，表示Client能够接收得种类和类型
-*   [O]Accept-Charset: GBK, utf-8
-*   [O]Accept-Encoding: gzip, deflate
-*   [O]Accept-Language: zh-cn
+*   []中各种符号的说明:C(客户端), S(服务器端); M(必须), O(可选)
+*   ---------------------------------------------------------------------------------------------------------------------
+*   [M]Accept: text/plain, x/x(注意：此处本来是*号)，表示Client能够接收的媒体类型
+*   [O]Accept-Charset: GBK, utf-8，字符集
+*   [O]Accept-Encoding: gzip, deflate(zlib格式)，identity(未编码，缺省值) -- 接收或发送的编码方法，通常用于指定是否支持压缩
+*   [O]Accept-Language: zh-cn，浏览器可接收的语言
 *   [O]Accept-Ranges: bytes
-*   [O]Cache-Control: 指定请求和响应遵循的缓存机制，如 no-cache, max-age, private 等
+*   [C]Authorization: -- 客户端把用户名和密码用BASE64编码后发送给服务器，进行身份验证
+*   [O]Cache-Control: 指定请求和响应遵循的缓存机制，1.0中只有Pragma: no-cache
+*      no-cache(所有内容都不会被缓存)
+*      no-store(绝对禁止缓存，用于机密，敏感文件--依赖于客户端实现?)
+*      public(被缓存且在多用户间共享)
+*      private(缓存到私有缓存中)
+*      max-age=相对时间的秒数
+*      浏览器动作:
+*         Ctrl + F5 -- 强制刷新浏览器，会通过no-cache指定不使用缓存
+*         F5 -- 浏览器会去Web服务器验证缓存
+*         地址栏输入网址然后回车 -- 浏览器会"直接使用有效的缓存"(缓存命中)，而不必非去服务器验证缓存
+*         
+*   []Connection: Keep-Alive(持久连接), Close(非持久连接)
 *   [M]Content-Type: 请求或返回的内容类型，对应于 form 中的 enctype
 *      类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
 *        application/x-www-form-urlencoded <== 
@@ -539,52 +581,66 @@
 *        text/plain  <== TXT
 *        text/xml    <== XML
 *        text/html;charset=gb2312  <== HTML
-*        
 *   []Content-Disposition: -- 不是HTTP标准，但广泛实现。
 *     可传输二进制文件(前面必须有 --{boundary}), 其后接保存时的建议文件名。
-      协议头时：form-data; name=\"attach_file\"; filename=\"xxxx\"    -- 其中的 "attach_file" 是HTML元素名(和服务器有关)
-      协议尾时：form-data; name=\"icount\" + CRLF + CRLF + _T("1") + CRLF +   -- 其中的 icount 也是服务器相关的?
-      \"submitted\"
+*     协议头时：form-data; name=\"attach_file\"; filename=\"xxxx\"    -- 其中的 "attach_file" 是HTML元素名(和服务器有关)
+*     协议尾时：form-data; name=\"icount\" + CRLF + CRLF + _T("1") + CRLF +   -- 其中的 icount 也是服务器相关的?
+*      \"submitted\"
+*   [S]Content-Encoding: gzip, 响应体的编码方式，如gzip表示服务器端使用了gzip压缩，利于下载，但是必须client端支持gzip的解码操作
+*       Vista之后WinINet可以支持解码( InternetSetOption(INTERNET_OPTION_HTTP_DECODING) )
 *   [M]Content-Length: 内容长度（包括 头 + 数据 + 尾），如果直接访问文件地址的话，返回的是文件大小？
+*   [S]Content-Range: bytes 388136960-1552508927/1552508928
+*     格式为bytes 开始位置-结束位置/总大小, 对Range 的响应, (总大小比最后的结束为止大1 ?)
 *   [O]Content-Transfer-Encoding: binary | Chunked(表示输出的内容长度不确定)
-*   []Connection: Keep-Alive(持久连接), Close(非持久连接)
-*   []Cookie : 分号";"分开的多个 "变量名=值" 的键值对
+*   [C]Cookie : 分号";"分开的多个 "变量名=值" 的键值对
 *   []Date: 表示消息发送的时间，由RFC822定义，是世界标准时。如 Sat, 26 May 2012 00:42:19 GMT
-*   [O]Host: www.google.com[:80]，请求目标的网站，和 GET 等请求类型后的地址连起来就是目标地址
-*   []Referer: http://源资源地址， 这可以允许服务器生成回退链表，可用来登陆、优化、cache等
-*   []User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0) 或自定义的名字，是发出请求的用户身份信息
-*                
-* GET /文件地址 HTTP/1.1 -- 分块/断点续传，如果请求成功会返回 206(HTTP_STATUS_PARTIAL_CONTENT) OK
+*   [C]ETag: "1d2d6-5c896800-4c0baf45c91c0" -- 告诉服务器本请求的Entity Tag(实体标签，根据内容算出的hash值)，用于Cache机制
+*   []Expires: 告诉client绝对的过期时间，在这个时间内client都可以不用发送请求而直接从client的cache中获取，
+*     可用于js/css/image的缓存性能
+*   [M]Host: www.google.com[:80]，请求目标的网站，和 GET 等请求类型后的地址连起来就是目标地址
+*   [C]If-Modified-Since: -- 客户端请求资源时指定缓存中文档的最后修改时间，由服务端判断是否可以使用缓存(返回304)
+*   [S]Last-Modified: 资源的最后修改日期和时间
+*   []Location:重定向(302)时的新地址
+*   []Keep-Alive: timeout=5, max=100
+*   []P3P: CP=CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR -- 用于跨域设置Cookie, 
+*     这样可以解决iframe跨域访问cookie的问题
 *   []Range: bytes=开始位置-结束位置, 请求实体的一个或者多个子范围，可通过逗号分隔多个范围
-*   []Content-Range: bytes 开始位置-结束位置/总大小, 对Range 的响应
-* 
+*   []Referer: http://源资源地址， 告诉服务器是从哪个链接过来的，这可以允许服务器生成回退链表，可用来登陆、优化、cache等
+*   [S]Set-Cookie: sc=4c31523a; path=/; domain=.acookie.taobao.com -- 用于把cookie 发送到客户端浏览器，
+*     每一个写入cookie都会生成一个Set-Cookie。
+*   [S]Server: Microsoft-IIS/7.5 -- 响应客户端的服务器，可以看出是什么类型的Web服务
+*   []User-Agent: Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0) 或自定义的名字，
+*     是发出请求的用户身份信息，通常是客户端使用的操作系统和浏览器的名称和版本
+*   [S]WWW-Authenticate: -- 需要认证时服务器返回的信息
+*   []X-AspNet-Version:4.0.30319 -- 如果网站是用ASP.NET开发的，这个header用来表示ASP.NET的版本
+*
+* 分块/断点续传，通过Range头域请求指定范围的内容，如果请求成功服务器会返回 206(HTTP_STATUS_PARTIAL_CONTENT) OK，
+*    并通过 Content-Range 返回范围
+*    
 * 请求主体(request-body)
 *   其中可包含任意的数据，
 * 
 * 返回信息: 状态行(HTTP版本号 + 3位状态码 + 状态描述) + 头 + 响应体
 *   状态码( HTTP_STATUS_OK 等 )
 *     1xx消息 -- 请求已被服务器接收，继续处理
-*       100 Continue -- 服务器仅接收到部分请求，客户端应该继续发送其余的请求。
-*       101 Switching Protocols -- 服务器转换协议：服务器将遵从客户的请求转换到另外一种协议。
+*        100 Continue -- 服务器仅接收到部分请求，客户端应该继续发送其余的请求。
+*        101 Switching Protocols -- 服务器转换协议：服务器将遵从客户的请求转换到另外一种协议。
 *     2xx成功 -- 请求已成功被服务器接收、理解并接受，如 200(OK，其后是对GET和POST请求的应答文档）
-*       206(PARTIAL_CONTENT) -- 表示成功获取到部分数据，用于Range指定范围下载
-*     3xx重定向 -- 需要后续操作才能完成这一请求，如 304(NOT MODIFIED--该资源在上次请求之后没有任何修改，通常用于浏览器的缓存机制)
-*     4xx请求错误 -- 请求含有语法错误或无法被执行，如 401(UNAUTHORIZED),403(FORBIDDEN),404(NOT FOUND)
-*     5xx服务器错误 -- 服务器在处理某个正确请求时发生错误，如 501(Not Implemented--服务器不能识别请求或未实现指定的请求)
+*        206(PARTIAL_CONTENT) -- 表示成功获取到部分数据，通常用于在Range指定范围下载时的反馈
+*          FlashGet, 迅雷等下载工具、边看边下载的视频工具等
+*     3xx重定向 -- 需要后续操作才能完成这一请求
+*        302(REDIRECT) -- 重定向，新的URL会在Response 中的Location中返回，浏览器将会自动使用新的URL发出新的Request
+*        304(NOT_MODIFIED)--该资源在上次请求之后没有任何修改，通常用于浏览器的缓存机制。
+*           当客户端通过 If-Modified-Since(缓存页面的最后修改时间) 或 If-None-Match(页面的ETag值)头域时才可能返回该值?
+*     4xx请求错误 -- 请求含有语法错误或无法被执行，
+*        401(DENIED) -- 没有进行身份验证
+*        403(FORBIDDEN)
+*        404(NOT FOUND)
+*     5xx服务器错误 -- 服务器在处理某个正确请求时发生错误，
+*        500(SERVER_ERROR) -- 服务器发生了不可预期的错误
+*        501(NOT_SUPPORTED)--服务器不能识别请求或未实现指定的请求
+*        503(SERVICE_UNAVAIL) -- 服务器当前不能处理客户端的请求，一段时间后可能恢复正常
 *   返回的状态头
-*     []Server: Apache/2.2.11 (Unix)
-*     []Last-Modified: Wed, 23 May 2012 21:38:23 GMT
-*     []ETag: "1d2d6-5c896800-4c0baf45c91c0"
-*     []Accept-Ranges: bytes
-*     []Content-Encoding: gzip, 响应体的编码方式，如gzip表示服务器端使用了gzip压缩，利于下载，但是必须client端支持gzip的解码操作
-*       Vista之后WinINet可以支持解码( InternetSetOption(INTERNET_OPTION_HTTP_DECODING) )
-*     []Content-Length: 1164371968
-*     []Content-Range: bytes 388136960-1552508927/1552508928
-*     []Expires: 告诉client绝对的过期时间，在这个时间内client都可以不用发送请求而直接从client的cache中获取，
-*                可用于js/css/image的缓存性能
-*     []Keep-Alive: timeout=5, max=100
-*     []Last-Modified: 会后一次修改响应内容的日期和时间
-*     []Server: BWS/1.0 响应客户端的服务器，可以看出是什么类型的Web服务
 *
 * 封装函数
 *   URLDownloadToFile -- 指定URL直接下载文件，缺点：同步调用，不能下载大文件。
@@ -1078,7 +1134,6 @@ namespace FTL
 		//循环保证发送指定的 N 个字节数据
 		//TODO: 参考 CHttpFile 的Buffer功能
 		FTLINLINE BOOL _SendN(PBYTE pBuffer, LONG nCount, LONG* pSend);
-
 	};
 
 	class CFUploadJob : public CFTransferJobBase

@@ -8,6 +8,68 @@
 
 namespace FTL
 {
+    CFIocpBuffer::CFIocpBuffer(DWORD dwSize)
+    {
+        ZeroMemory(&m_overLapped, sizeof(m_overLapped));
+        m_ioType = IOInitialize;
+        m_nSequenceNumber = 0;
+        m_pBuffer = NULL;
+        m_dwSize = 0;
+        m_dwUsed = 0;
+
+        m_pBuffer = new BYTE[dwSize];
+        ZeroMemory(m_pBuffer, dwSize);
+        m_dwSize = dwSize;
+
+    }
+    CFIocpBuffer::~CFIocpBuffer()
+    {
+        SAFE_DELETE_ARRAY(m_pBuffer);
+    }
+
+    CFIocpBaseTask::CFIocpBaseTask()
+    {
+        m_nCurReadSequence = 0;
+        m_nCurWriteSequence = 0;
+    }
+
+    BOOL CFIocpBaseTask::OnInitialize(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+    {
+        FTLTRACE(TEXT("CFIocpBaseTask::OnInitialize, ioType=%d, transfered=%d\n"),
+            pIoBuffer->m_ioType, dwBytesTransferred);
+        return TRUE;
+    }
+    BOOL CFIocpBaseTask::OnRead(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+    {
+        FTLTRACE(TEXT("CFIocpBaseTask::OnRead, ioType=%d, transfered=%d\n"),
+            pIoBuffer->m_ioType, dwBytesTransferred);
+        return TRUE;
+    }
+
+    BOOL CFIocpBaseTask::OnReadCompleted(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+    {
+        FTLTRACE(TEXT("CFIocpBaseTask::OnReadCompleted, ioType=%d, transfered=%d\n"),
+            pIoBuffer->m_ioType, dwBytesTransferred);
+        return TRUE;
+    }
+    BOOL CFIocpBaseTask::OnWrite(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+    {
+        FTLTRACE(TEXT("CFIocpBaseTask::OnWrite, ioType=%d, transfered=%d\n"),
+            pIoBuffer->m_ioType, dwBytesTransferred);
+        return TRUE;
+    }
+    BOOL CFIocpBaseTask::OnWriteCompleted(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+    {
+        FTLTRACE(TEXT("CFIocpBaseTask::OnWriteCompleted, ioType=%d, transfered=%d\n"),
+            pIoBuffer->m_ioType, dwBytesTransferred);
+        return TRUE;
+    }
+    BOOL CFIocpBaseTask::OnEnd(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+    {
+        FTLTRACE(TEXT("CFIocpBaseTask::OnEnd, ioType=%d, transfered=%d\n"),
+            pIoBuffer->m_ioType, dwBytesTransferred);
+        return TRUE;
+    }
     //HANDLE CFSocketIocpTask::GetIocpHandle()
     //{
     //    //SOCKET skSocket = ::WSASocket(AF_INET,SOCK_STREAM,IPPROTO_IP, NULL, 0, WSA_FLAG_OVERLAPPED);
@@ -21,6 +83,7 @@ namespace FTL
 
     //////////////////////////////////////////////////////////////////////////
     CFIocpMgr::CFIocpMgr()
+        :m_IocpBufferPool(0, INT_MAX)
     {
         m_hIoCompletionPort = NULL;
         m_pWorkThreads = NULL;
@@ -139,6 +202,14 @@ namespace FTL
         if (bRet)
         {
             FTLASSERT(hIoPort == m_hIoCompletionPort);
+            
+            CFIocpBuffer* pTaskBuffer = m_IocpBufferPool.Get();
+            FTLASSERT(pTaskBuffer);
+            if (pTaskBuffer)
+            {
+                pTaskBuffer->m_ioType = IOInitialize;
+                bRet = PostQueuedCompletionStatus(m_hIoCompletionPort, 0, (ULONG_PTR)pTask, &pTaskBuffer->m_overLapped);
+            }
         }
         return bRet;
     }
@@ -176,19 +247,43 @@ namespace FTL
         DWORD dwBytesTransferred = 0;
         ULONG_PTR nCompletionKey = NULL;
         LPOVERLAPPED lpOverlapped = NULL;
-        F_IOCP_OVERLAPPED* pFIocpOverLapped = NULL;
+        CFIocpBuffer* pFIocpBuffer = NULL;
+        CFIocpBaseTask* pIocpTask = NULL;
 
         //核心工作是循环调用 GetQueuedCompletionStatus，调用线程会阻塞等待"被排队的完成状态"
         while(TRUE)
         {
-            API_VERIFY(GetQueuedCompletionStatus(
+            pIocpTask = NULL;
+            pFIocpBuffer = NULL;
+
+            API_VERIFY_EXCEPT1(GetQueuedCompletionStatus(
                 m_hIoCompletionPort,        //完成端口内核对象的句柄
                 &dwBytesTransferred,        //返回IO操作实际传输或者接收了多少个字节,可用于校验数据收发完整性
                 &nCompletionKey,            //返回绑定到句柄时的自定义数据
                 &lpOverlapped, 
-                INFINITE));
+                INFINITE), 
+                ERROR_HANDLE_EOF);
+
+            pIocpTask = reinterpret_cast<CFIocpBaseTask*>(nCompletionKey);
+            if (lpOverlapped)
+            {
+                pFIocpBuffer = CONTAINING_RECORD(lpOverlapped,  CFIocpBuffer, m_overLapped);
+            }
+
             if (!bRet)
             {
+                DWORD dwLastError = GetLastError();
+                switch (dwLastError)
+                {
+                case ERROR_HANDLE_EOF:
+                    {
+                        if (pIocpTask && pFIocpBuffer)
+                        {
+                            pIocpTask->OnEnd(pFIocpBuffer, dwBytesTransferred);
+                        }
+                    }
+                    break;
+                }
                 //continue;
                 break;
             }
@@ -198,11 +293,10 @@ namespace FTL
                 //dwResult = ::GetLastError();
                 break;
             }
-            CFIocpBaseTask* pIocpTask = reinterpret_cast<CFIocpBaseTask*>(nCompletionKey);
-            pFIocpOverLapped = CONTAINING_RECORD(lpOverlapped,  F_IOCP_OVERLAPPED, overLapped);
-            if (pIocpTask && pFIocpOverLapped)
+            //if (pIocpTask && pFIocpBuffer)
             {
-                pIocpTask->OnIoComplete(this, pFIocpOverLapped, dwBytesTransferred);
+                _ProcessPackage(pIocpTask, pFIocpBuffer, dwBytesTransferred);
+                //pIocpTask->OnIoComplete(this, pFIocpOverLapped, dwBytesTransferred);
             }
 
             //CONTAINING_RECORD(lpOverlapped, MYOVERLAPPED, m_ol);
@@ -211,8 +305,47 @@ namespace FTL
                 //检测到不是一个真正完成的状态
             }
         }
-
         return dwResult;
+    }
+
+    BOOL CFIocpMgr::_ProcessPackage(CFIocpBaseTask* pTask, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+    {
+        BOOL bRet = FALSE;
+
+        FTLASSERT(pTask);
+        FTLASSERT(pIoBuffer);
+
+        if (pTask && pIoBuffer)
+        {
+            bRet = TRUE;
+            AddOverLappedOffset(&pIoBuffer->m_overLapped, dwBytesTransferred);
+
+            switch (pIoBuffer->m_ioType)
+            {
+            case IOInitialize:
+                pTask->OnInitialize(pIoBuffer, dwBytesTransferred);
+                break;
+            case IORead:
+                pTask->OnRead(pIoBuffer, dwBytesTransferred);
+                break;
+            case IOReadCompleted:
+                pTask->OnReadCompleted(pIoBuffer, dwBytesTransferred);
+                m_IocpBufferPool.Retrun(pIoBuffer);
+                break;
+            case IOWrite:
+                pTask->OnWrite(pIoBuffer, dwBytesTransferred);
+                break;
+            case IOWriteCompleted:
+                pTask->OnWriteCompleted(pIoBuffer, dwBytesTransferred);
+                m_IocpBufferPool.Retrun(pIoBuffer);
+                break;
+            default:
+                FTLASSERT(FALSE);
+                break;
+            }
+        }
+
+        return bRet;
     }
 }
 #endif //FTL_IOCP_HPP

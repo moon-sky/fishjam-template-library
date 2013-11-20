@@ -429,6 +429,39 @@ namespace FTL
     *   GhostDoc -- VS的免费插件，帮助开发人员编写XML格式的注释文档
     *******************************************************************************************************************************/
 
+    /*******************************************************************************************************************************
+    * http://www.cnblogs.com/TankXiao/archive/2012/02/06/2337728.html
+    * Fiddler(http调试代理)--记录并检查所有客户端和服务器之间的http/https通讯，
+    *   查看所有进出数据,可以检视、设置断点，修改输入输出数据等。包含了一个强大的基于事件脚本的子系统，能使用JScript.NET语言进行扩展
+    *   工作原理：以代理web服务器的形式工作，使用127.0.0.1:8888，启动时自动设置代理，退出时自动注销代理。
+    *   
+    *   常见设置
+    *     1.捕获HTTPS(缺省禁用) -- Tool->Fiddler Options->HTTPS tab->选中对应的复选框("Decrypt HTTPS traffic", "Ignore server certificate errors"等)
+    *     2.监控特定程序
+    *       Firefox/Chrome -- 手工设置其使用 127.0.0.1:8888 的Http代理
+    *       VS调试ASP.NET -- 在localhost后面加个点号即可，如 http://localhost:2391/Default.aspx => http://localhost.:2391/Default.aspx
+    *     3.设置断点(中断时可修改其中的任何内容)
+    *       方法1: Rules->Automatic Breakpoint->Before Requests, 会中断所有的会话
+    *       方法2: 在 QuickExec 命令行处输入 bpu URL 即可在只访问指定URL时中断。直接输入 bpu 可清除断点
+    *               输入 bpafter URL 可在Response时中断
+    *     4.利用“远程连接”功能来实现Fiddle捕获Mac系统发出的HTTP/HTTPS(TODO: 不用虚拟机，用其他人的机器也行?)
+    *       a.Mac中安装虚拟机(如VMware);
+    *       b.虚拟机中安装Windows系统，并安装Fiddle软件;
+    *       c.虚拟机的网络使用“Bridged” 模式 -- 虚拟机中的Windows拥有独立的IP地址。
+    *       d.设置Fiddle -- Tools->Options->Connections->Allow remote computers to connect
+    *       e.配置Mac，把代理服务器指向Fiddler所在的Windows -- System Preferences ->Network->Advanced...->Proxies
+    * 
+    *   常见工具
+    *     AutoResponder -- 允许你从本地返回文件，而不用将http request 发送到服务器上
+    *        将需要替换成本地文件的会话拖动到AutoResponder，并选中Enable automatic reaponses 和Unmatched requests passthrough
+    *     Composer -- 可以创建和发送自定义的HTTP Request
+    *     Filter -- 过滤会话
+    *     Script -- 
+    *       1.安装SyntaxView:Inspectors tab->Get SyntaxView tab->Download and Install SyntaxView Now,
+    *         安装成功且重启后会多了一个Fiddler Script Tab，可在其中编写 OnBeforeRequest 等事件时的脚本，
+    *         在脚本中甚至可以自动修改Request或Response的内容(CustomRules.js).
+    *******************************************************************************************************************************/
+
     /******************************************************************************************************************************
     * Git -- 最早用于linux内核开发的开源的分布式版本控制系统，不需要服务器端软件的支持
 	*   集中式(SVN) -- 核心是服务器，有非常明确的权限管理机制(分支访问限制)，不适合开源开发

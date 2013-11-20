@@ -187,7 +187,7 @@ namespace FTL
 		FTLINLINE virtual BOOL SetLength(LONGLONG newLen);
 		FTLINLINE virtual LONGLONG GetLength() const;
 
-		FTLINLINE virtual DWORD Read(void* lpBuf, DWORD nCount, LPOVERLAPPED lpOverlapped = NULL);
+		FTLINLINE virtual BOOL Read(void* lpBuf, DWORD nCount, LPOVERLAPPED lpOverlapped = NULL);
 		FTLINLINE virtual BOOL Write(const void* lpBuf, DWORD nCount, DWORD* pdwWritten, LPOVERLAPPED lpOverlapped = NULL);
 		FTLINLINE BOOL WriteEndOfLine();
 

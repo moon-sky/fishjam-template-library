@@ -144,25 +144,30 @@ void CFilePage::OnBnClickedBtnFileStopCopyDir()
     m_DirCopier.WaitToEnd(INFINITE);
 }
 
-class CFFileIocpTask : public CFUnicodeFile,
-    public CFIocpBaseTask
+class CFIocpFileReadTask : public CFFile
+    ,public CFIocpBaseTask
 {
 public:
-    CFFileIocpTask(TextFileEncoding fileEncoding)
-        : CFUnicodeFile(fileEncoding)
-    {
-
-    }
-
     HANDLE GetIocpHandle() const
     {
         return m_hFile;
     }
-    BOOL OnIoComplete(CFIocpMgr* /*pIocpMgr*/, F_IOCP_OVERLAPPED* pIocpOverLapped, DWORD dwBytesTransferred)
+
+    virtual BOOL OnInitialize( CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
     {
-        pIocpOverLapped->overLapped.Offset += dwBytesTransferred;
-        WriteString(TEXT("some string"), NULL, (LPOVERLAPPED)&m_OverLapped);
-        return TRUE;
+        BOOL bRet = __super::OnInitialize(pIoBuffer, dwBytesTransferred);
+        pIoBuffer->m_ioType = IORead;
+        Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, &pIoBuffer->m_overLapped);
+        return bRet;
+    }
+
+    virtual BOOL OnRead( CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        BOOL bRet = __super::OnRead(pIoBuffer, dwBytesTransferred);
+        pIoBuffer->m_ioType = IORead;
+
+        Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, &pIoBuffer->m_overLapped);
+        return bRet;
     }
 };
 
@@ -171,18 +176,21 @@ void CFilePage::OnBnClickedBtnIocpTest()
     //BOOL bRet = FALSE;
     CFIocpMgr iocpMgr;
     iocpMgr.Start(1);
+    BOOL bRet = FALSE;
 
-    CFFileIocpTask  fileIocpTask(tfeUnicode);
-    fileIocpTask.Create(TEXT("D:\\testiocp.txt"), GENERIC_WRITE, FILE_SHARE_READ, NULL,
-        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED);
-    iocpMgr.AddTask(&fileIocpTask);
-    
-    fileIocpTask.m_OverLapped.overLapped.Offset = 0;
+    CFIocpFileReadTask  fileReadTask;
+    API_VERIFY(fileReadTask.Create(TEXT("D:\\test.jpg"), 
+        GENERIC_WRITE | GENERIC_READ, 
+        FILE_SHARE_READ, NULL,
+        OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED));
+    iocpMgr.AddTask(&fileReadTask);
 
-    fileIocpTask.WriteFileHeader((LPOVERLAPPED)&fileIocpTask.m_OverLapped);
+    //fileIocpTask.m_OverLapped.overLapped.Offset = 0;
 
-    Sleep(1000);
-    fileIocpTask.Close();
+    //fileIocpTask.WriteFileHeader((LPOVERLAPPED)&fileIocpTask.m_OverLapped);
+
+    Sleep(10000000);
+    //fileReadTask.Close();
 
     iocpMgr.Stop();
     iocpMgr.Close();
