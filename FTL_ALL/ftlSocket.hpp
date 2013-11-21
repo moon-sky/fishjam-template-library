@@ -16,12 +16,12 @@ namespace FTL
 		m_initResult = WSAStartup(wVersionRequested, &m_wsaData);
 
 		//Success
-		if (0 != m_initResult)
+		if (NO_ERROR != m_initResult)
 		{
 			FTLTRACEEX(tlError, TEXT("WSAStartup Error: %d(%s)"), 
 				m_initResult, CFNetErrorInfo(m_initResult).GetConvertedInfo());
 		}
-		FTLASSERT(m_initResult == 0);
+		FTLASSERT(m_initResult == NO_ERROR);
 		FTLASSERT(wVersionRequested == m_wsaData.wVersion);
 	}
 	

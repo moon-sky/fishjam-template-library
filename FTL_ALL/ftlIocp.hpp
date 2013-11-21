@@ -8,23 +8,41 @@
 
 namespace FTL
 {
-    CFIocpBuffer::CFIocpBuffer(DWORD dwSize)
+    CFIocpBuffer::CFIocpBuffer()
     {
-        ZeroMemory(&m_overLapped, sizeof(m_overLapped));
-        m_ioType = IOInitialize;
-        m_nSequenceNumber = 0;
-        m_pBuffer = NULL;
         m_dwSize = 0;
-        m_dwUsed = 0;
-
-        m_pBuffer = new BYTE[dwSize];
-        ZeroMemory(m_pBuffer, dwSize);
-        m_dwSize = dwSize;
-
+        m_pBuffer = NULL;
+        
+        Reset(0);
     }
+
     CFIocpBuffer::~CFIocpBuffer()
     {
         SAFE_DELETE_ARRAY(m_pBuffer);
+    }
+
+    VOID CFIocpBuffer::Reset(DWORD dwSize)
+    {
+        ZeroMemory(&m_overLapped, sizeof(m_overLapped));
+        m_operType = iotInitialize;
+        m_nSequenceNumber = 0;
+        if (m_dwSize != dwSize)
+        {
+            SAFE_DELETE_ARRAY(m_pBuffer);
+            m_dwSize = dwSize;
+        }
+
+        if (dwSize > 0)
+        {
+            if (!m_pBuffer)
+            {
+                m_pBuffer = new BYTE[dwSize];
+            }
+            if (m_pBuffer)
+            {
+                ZeroMemory(m_pBuffer, dwSize);
+            }
+        }
     }
 
     CFIocpBaseTask::CFIocpBaseTask()
@@ -33,57 +51,10 @@ namespace FTL
         m_nCurWriteSequence = 0;
     }
 
-    BOOL CFIocpBaseTask::OnInitialize(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
-    {
-        FTLTRACE(TEXT("CFIocpBaseTask::OnInitialize, ioType=%d, transfered=%d\n"),
-            pIoBuffer->m_ioType, dwBytesTransferred);
-        return TRUE;
-    }
-    BOOL CFIocpBaseTask::OnRead(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
-    {
-        FTLTRACE(TEXT("CFIocpBaseTask::OnRead, ioType=%d, transfered=%d\n"),
-            pIoBuffer->m_ioType, dwBytesTransferred);
-        return TRUE;
-    }
-
-    BOOL CFIocpBaseTask::OnReadCompleted(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
-    {
-        FTLTRACE(TEXT("CFIocpBaseTask::OnReadCompleted, ioType=%d, transfered=%d\n"),
-            pIoBuffer->m_ioType, dwBytesTransferred);
-        return TRUE;
-    }
-    BOOL CFIocpBaseTask::OnWrite(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
-    {
-        FTLTRACE(TEXT("CFIocpBaseTask::OnWrite, ioType=%d, transfered=%d\n"),
-            pIoBuffer->m_ioType, dwBytesTransferred);
-        return TRUE;
-    }
-    BOOL CFIocpBaseTask::OnWriteCompleted(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
-    {
-        FTLTRACE(TEXT("CFIocpBaseTask::OnWriteCompleted, ioType=%d, transfered=%d\n"),
-            pIoBuffer->m_ioType, dwBytesTransferred);
-        return TRUE;
-    }
-    BOOL CFIocpBaseTask::OnEnd(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
-    {
-        FTLTRACE(TEXT("CFIocpBaseTask::OnEnd, ioType=%d, transfered=%d\n"),
-            pIoBuffer->m_ioType, dwBytesTransferred);
-        return TRUE;
-    }
-    //HANDLE CFSocketIocpTask::GetIocpHandle()
-    //{
-    //    //SOCKET skSocket = ::WSASocket(AF_INET,SOCK_STREAM,IPPROTO_IP, NULL, 0, WSA_FLAG_OVERLAPPED);
-    //    return (HANDLE)m_nSocket;
-    //}
-
-    //HANDLE CFFileIocpTask::GetIocpHandle()
-    //{
-    //    return m_hHandle;
-    //}
-
     //////////////////////////////////////////////////////////////////////////
-    CFIocpMgr::CFIocpMgr()
-        :m_IocpBufferPool(0, INT_MAX)
+    CFIocpMgr::CFIocpMgr(DWORD dwBufferSize)
+        :m_dwBufferSize(dwBufferSize)
+        ,m_IocpBufferPool(0, INT_MAX)
     {
         m_hIoCompletionPort = NULL;
         m_pWorkThreads = NULL;
@@ -93,22 +64,23 @@ namespace FTL
     }
     CFIocpMgr::~CFIocpMgr()
     {
+        Stop();
         Close();
     }
-    BOOL CFIocpMgr::Start(DWORD NumberOfConcurrentThreads)
+
+    BOOL CFIocpMgr::_InitlizeIocp(DWORD NumberOfConcurrentThreads)
     {
         BOOL bRet = FALSE;
-        m_bStop = FALSE;
-
         DWORD dwThreadCount = NumberOfConcurrentThreads;
         if (DEFAULT_THREAD_COUNT == dwThreadCount)
         {
             dwThreadCount = _GetDefaultConcurrentThreadCount();
         }
-        
+
         //1.创建一个完成端口的内核对象
         m_hIoCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, (ULONG_PTR)NULL, 
-            dwThreadCount); //真正并发同时执行的最大线程数
+            0); //0 代表有多少个处理器，就允许同时多少个线程运行
+        //dwThreadCount); //真正并发同时执行的最大线程数
         API_VERIFY(NULL != m_hIoCompletionPort);
 
         if (bRet)
@@ -136,6 +108,21 @@ namespace FTL
                 }
             }
         }
+        return bRet;
+    }
+    BOOL CFIocpMgr::Start(DWORD NumberOfConcurrentThreads)
+    {
+        BOOL bRet = FALSE;
+        m_bStop = FALSE;
+        FTLASSERT(NULL == m_hIoCompletionPort);
+        FTLASSERT(NULL == m_pWorkThreads);
+
+        API_VERIFY(_InitlizeIocp(NumberOfConcurrentThreads));
+        if (bRet)
+        {
+            bRet = OnIocpStart();
+        }
+        
 
         return bRet;
     }
@@ -144,6 +131,8 @@ namespace FTL
     {
         BOOL bRet = TRUE;
         m_bStop = TRUE;
+        OnIocpStop();
+
         for (DWORD dwIndex = 0; dwIndex < m_nConcurrentThreadCount; ++dwIndex)
         {
             API_VERIFY(PostQueuedCompletionStatus(m_hIoCompletionPort, 0, NULL, NULL));
@@ -166,12 +155,15 @@ namespace FTL
                     CloseHandle(m_pWorkThreads[dwCloseIndex]);
                 }
             }
+#else
+            FTLASSERT(m_nConcurrentThreadCount <= MAXIMUM_WAIT_OBJECTS);
+            WaitForMultipleObjects(m_nConcurrentThreadCount, m_pWorkThreads, TRUE, dwMilliseconds);
+            //for (DWORD dwWaitIndex = 0; dwWaitIndex < m_nConcurrentThreadCount; ++dwWaitIndex)
+            //{
+            //    WaitForSingleObject(m_pWorkThreads[dwWaitIndex], dwMilliseconds);
+            //    CloseHandle(m_pWorkThreads[dwWaitIndex]);
+            //}
 #endif 
-            for (DWORD dwWaitIndex = 0; dwWaitIndex < m_nConcurrentThreadCount; ++dwWaitIndex)
-            {
-                WaitForSingleObject(m_pWorkThreads[dwWaitIndex], dwMilliseconds);
-                CloseHandle(m_pWorkThreads[dwWaitIndex]);
-            }
             SAFE_DELETE_ARRAY(m_pWorkThreads);
         }
 
@@ -192,22 +184,25 @@ namespace FTL
         return numberOfConcurrentThreads;
     }
 
-    BOOL CFIocpMgr::AddTask(CFIocpBaseTask* pTask)
+    BOOL CFIocpMgr::AssociateTask(CFIocpBaseTask* pTask)
     {
-        BOOL bRet = FALSE;
+        BOOL bRet = TRUE;
         //将一个重叠IO方式的对象句柄绑定到已创建好的完成端口对象上
         HANDLE hIoPort = NULL;
-        API_VERIFY((hIoPort = CreateIoCompletionPort(pTask->GetIocpHandle(), 
-            m_hIoCompletionPort, (ULONG_PTR)pTask, 0)) != NULL );
+        INT nHandleCount = pTask->GetIocpHandleCount();
+        for(INT iIndex = 0; iIndex < nHandleCount && bRet; iIndex++)
+        {
+            API_VERIFY((hIoPort = CreateIoCompletionPort(pTask->GetIocpHandle(iIndex), 
+                m_hIoCompletionPort, (ULONG_PTR)pTask, 0)) != NULL );
+            FTLASSERT(hIoPort == m_hIoCompletionPort);
+        }
         if (bRet)
         {
-            FTLASSERT(hIoPort == m_hIoCompletionPort);
-            
             CFIocpBuffer* pTaskBuffer = m_IocpBufferPool.Get();
             FTLASSERT(pTaskBuffer);
             if (pTaskBuffer)
             {
-                pTaskBuffer->m_ioType = IOInitialize;
+                pTaskBuffer->Reset(m_dwBufferSize);
                 bRet = PostQueuedCompletionStatus(m_hIoCompletionPort, 0, (ULONG_PTR)pTask, &pTaskBuffer->m_overLapped);
             }
         }
@@ -251,7 +246,7 @@ namespace FTL
         CFIocpBaseTask* pIocpTask = NULL;
 
         //核心工作是循环调用 GetQueuedCompletionStatus，调用线程会阻塞等待"被排队的完成状态"
-        while(TRUE)
+        while(!m_bStop)
         {
             pIocpTask = NULL;
             pFIocpBuffer = NULL;
@@ -259,53 +254,57 @@ namespace FTL
             API_VERIFY_EXCEPT1(GetQueuedCompletionStatus(
                 m_hIoCompletionPort,        //完成端口内核对象的句柄
                 &dwBytesTransferred,        //返回IO操作实际传输或者接收了多少个字节,可用于校验数据收发完整性
-                &nCompletionKey,            //返回绑定到句柄时的自定义数据
+                (PULONG_PTR)&pIocpTask,            //返回绑定到句柄时的自定义数据
                 &lpOverlapped, 
                 INFINITE), 
                 ERROR_HANDLE_EOF);
 
-            pIocpTask = reinterpret_cast<CFIocpBaseTask*>(nCompletionKey);
-            if (lpOverlapped)
-            {
-                pFIocpBuffer = CONTAINING_RECORD(lpOverlapped,  CFIocpBuffer, m_overLapped);
-            }
-
-            if (!bRet)
-            {
-                DWORD dwLastError = GetLastError();
-                switch (dwLastError)
-                {
-                case ERROR_HANDLE_EOF:
-                    {
-                        if (pIocpTask && pFIocpBuffer)
-                        {
-                            pIocpTask->OnEnd(pFIocpBuffer, dwBytesTransferred);
-                        }
-                    }
-                    break;
-                }
-                //continue;
-                break;
-            }
             if (NULL == lpOverlapped)
             {
                 FTLASSERT(m_bStop);
                 //dwResult = ::GetLastError();
                 break;
             }
-            //if (pIocpTask && pFIocpBuffer)
-            {
-                _ProcessPackage(pIocpTask, pFIocpBuffer, dwBytesTransferred);
-                //pIocpTask->OnIoComplete(this, pFIocpOverLapped, dwBytesTransferred);
-            }
 
-            //CONTAINING_RECORD(lpOverlapped, MYOVERLAPPED, m_ol);
+            pFIocpBuffer = CONTAINING_RECORD(lpOverlapped,  CFIocpBuffer, m_overLapped);
+            if (!bRet)
+            {
+                if(! _HandleError(pIocpTask, pFIocpBuffer, dwBytesTransferred, GetLastError()))
+                {
+                    break;
+                }
+                continue;
+            }
+            _ProcessPackage(pIocpTask, pFIocpBuffer, dwBytesTransferred);
+
             if( !HasOverlappedIoCompleted(lpOverlapped))
             {
                 //检测到不是一个真正完成的状态
             }
         }
+
+        FTLTRACE(TEXT("Thread %d  will Quit\n"), GetCurrentThreadId());
         return dwResult;
+    }
+
+    BOOL CFIocpMgr::_HandleError(CFIocpBaseTask* pIocpTask, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred, DWORD dwErr)
+    {
+        BOOL bRet = TRUE;
+        switch (dwErr)
+        {
+        case ERROR_HANDLE_EOF:
+            if (pIocpTask && pIoBuffer)
+            {
+                pIocpTask->OnUninitialize(this, pIoBuffer, dwBytesTransferred);
+                m_IocpBufferPool.Retrun(pIoBuffer);
+            }
+            break;
+        default:
+            FTLASSERT(FALSE);
+            bRet = FALSE;
+            break;
+        }
+        return bRet;
     }
 
     BOOL CFIocpMgr::_ProcessPackage(CFIocpBaseTask* pTask, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
@@ -318,32 +317,50 @@ namespace FTL
         if (pTask && pIoBuffer)
         {
             bRet = TRUE;
-            AddOverLappedOffset(&pIoBuffer->m_overLapped, dwBytesTransferred);
-
-            switch (pIoBuffer->m_ioType)
+            switch (pIoBuffer->m_operType)
             {
-            case IOInitialize:
-                pTask->OnInitialize(pIoBuffer, dwBytesTransferred);
+            case iotInitialize:
+                pTask->OnInitialize(this, pIoBuffer, dwBytesTransferred);
                 break;
-            case IORead:
-                pTask->OnRead(pIoBuffer, dwBytesTransferred);
+            case iotRead:
+                pTask->AfterReadCompleted(this, pIoBuffer, dwBytesTransferred);
                 break;
-            case IOReadCompleted:
-                pTask->OnReadCompleted(pIoBuffer, dwBytesTransferred);
-                m_IocpBufferPool.Retrun(pIoBuffer);
-                break;
-            case IOWrite:
-                pTask->OnWrite(pIoBuffer, dwBytesTransferred);
-                break;
-            case IOWriteCompleted:
-                pTask->OnWriteCompleted(pIoBuffer, dwBytesTransferred);
-                m_IocpBufferPool.Retrun(pIoBuffer);
+            case iotWrite:
+                pTask->AfterWriteCompleted(this, pIoBuffer, dwBytesTransferred);
                 break;
             default:
                 FTLASSERT(FALSE);
                 break;
             }
         }
+
+        return bRet;
+    }
+
+    BOOL CFIocpNetServer::OnIocpStart()
+    {
+        BOOL bRet = FALSE;
+        //初始化Socket
+        struct sockaddr_in ServerAddress;  
+        // 这里需要特别注意，如果要使用重叠I/O的话，这里必须要使用WSASocket来初始化Socket   
+        // 注意里面有个WSA_FLAG_OVERLAPPED参数   
+        m_nSocketListen = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);  
+
+        CFIocpListenTask* pListenTask = new CFIocpListenTask(m_nSocketListen);
+        AssociateTask(pListenTask);
+
+        // 填充地址结构信息   
+        ZeroMemory((char *)&ServerAddress, sizeof(ServerAddress));  
+        ServerAddress.sin_family = AF_INET;  
+        // 这里可以选择绑定任何一个可用的地址，或者是自己指定的一个IP地址    
+        ServerAddress.sin_addr.s_addr = htonl(INADDR_ANY);                         
+        //ServerAddress.sin_addr.s_addr = inet_addr("127.0.0.1");           
+        ServerAddress.sin_port = htons(12345);                            
+        // 绑定端口   
+
+        bind(m_nSocketListen, (struct sockaddr *) &ServerAddress, sizeof(ServerAddress));
+        // 开始监听
+        listen(m_nSocketListen, SOMAXCONN);  
 
         return bRet;
     }

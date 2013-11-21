@@ -172,6 +172,7 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
+* 
 * ARP(Address Resolution Protocol)--地址转换协议，用于动态地完成IP地址向物理地址的转换。
 * BOOTP(BooTstrap Protocol)--可选安全启动协议，使用UDP消息，提供一个有附加信息的无盘工作站，通过文件服务器上的内存影像来启动。
 * Cookie(Cookies) -- 网站为了辨别用户身份、进行session跟踪而储存在用户本地终端上用分号(";")分开的键值对数据（通常经过加密）。
@@ -301,11 +302,15 @@
 *         进行对应的处理(如 OnReceive )，在结束前需要再次以 0作为 lEvent 参数调用 WSAAsyncSelect 以取消事件通知
 *   WSAEventSelect(事件选择) -- 针对每一个套接字，使用WSACreateEvent创建一个事件(默认是手动重置)，并进行关联。
 *     可用 WSAWaitForMultipleEvents 进行等待，最多支持64个；再用 WSAEnumNetworkEvents 获取发生的事件
+*     缺点？：收到数据通知后，需要调用对应函数进行接收或发送。不像完成端口一步搞定。
 *   Overlapped I/O(重叠式I/O) -- 具有较好的性能，使用 WSA_FLAG_OVERLAPPED 创建Socket((默认设置)，
 *     并在相关Socket函数中加入 WSAOVERLAPPED 结构或使用"完成例程"，
 *     调用 WSAResetEvent 重置事件(其事件是手动重置的)，通过 WSAGetOverlappedResult 获取
 *     执行结果(其结果和不使用Overlapped调用ReadFile等函数时返回的结果一样)。
 *     注意：请求Overlapped后，函数通常返回失败，错误码为WSA_IO_PENDING，但如果请求的数据已经在Cache中，会直接返回成功
+*   完成例程(COMPLETION_ROUTINE) -- 通过回调方式处理(即APC)。
+*     优点：没有64个句柄的限制
+*     缺点：发出请求的线程必须得要自己去处理接收请求，无法负载均衡
 *
 *   IO Completion Port(完成端口) -- 详见ftlIocp.h
 *   epool -- 通过系统核上的虚设备控制数据，通过预注册的回调函数，由内核并发调度  
@@ -413,6 +418,8 @@
 * WSAStartup/WSACleanup --初始化和清除
 * WSAAccept/AcceptEx -- 接受连接请求, AcceptEx可以通过一次调用就完成接受客户端连接请求和接受数据
 *   (但如果客户端连接后不发送数据时将阻塞 -- 拒绝服务)
+*   AcceptEx -- 提前建立Socket，可同完成端口协作，异步接收
+*     该函数存在于Winsock2结构体系之外(特别为重叠IO定制)，最好用WSAIoctl配合SIO_GET_EXTENSION_FUNCTION_POINTER参数来获取函数的指针并调用。
 * WSAEnumProtocols -- 获得系统中安装的网络协议的相关信息
 * WSASocket(地址家族,套接字类型,协议),如果前三个参数都是用 FROM_PROTOCOL_INFO ，并且指定 WSAPROTOCOL_INFO结构，则使用结构中的。
 *   可以利用 WSAEnumProtocols 枚举，然后创建指定的Socket

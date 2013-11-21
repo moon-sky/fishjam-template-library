@@ -775,7 +775,7 @@ namespace FTL
                 != NULL);  
             if (bRet)
             {
-                NTSTATUS nStatus = (pNtQueryInformationProcess)(hProcess,  
+                LONG nStatus = (pNtQueryInformationProcess)(hProcess,  
                     0, //ProcessBasicInformation,  
                     (PVOID)&pbi,  
                     sizeof(PROCESS_BASIC_INFORMATION_FOR_PPID),  

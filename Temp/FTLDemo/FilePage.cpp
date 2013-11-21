@@ -6,7 +6,6 @@
 #include "FilePage.h"
 
 #include "ftlShell.h"
-#include "ftlIocp.h"
 // CFilePage dialog
 
 IMPLEMENT_DYNAMIC(CFilePage, CPropertyPage)
@@ -16,9 +15,13 @@ CFilePage::CFilePage()
 {
     m_strCopySrcDir = _T("C:\\Program Files (x86)\\Common Files");
     m_strCopyDstDir = _T("E:\\testOutput");
+
+    m_strCopySrcFile = TEXT("E:\\ServerFileList.txt");
+
     m_DirCopier.SetCallback(this);
     m_nTotalSize = 0LL;
     m_nCopiedSize = 0LL;
+    m_nCopyFileCount = 5;
 }
 
 CFilePage::~CFilePage()
@@ -46,6 +49,11 @@ BEGIN_MESSAGE_MAP(CFilePage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_FILE_STOP_COPY_DIR, &CFilePage::OnBnClickedBtnFileStopCopyDir)
 
     ON_BN_CLICKED(IDC_BTN_FILE_IOCP, &CFilePage::OnBnClickedBtnIocpTest)
+    ON_BN_CLICKED(IDC_BTN_FILE_API_COPYFILE, &CFilePage::OnBnClickedBtnApiCopyFile)
+    ON_BN_CLICKED(IDC_BTN_FILE_API_COPYFILEEX, &CFilePage::OnBnClickedBtnApiCopyFileEx)
+    ON_BN_CLICKED(IDC_BTN_FILE_READ_WRITE_COPY, &CFilePage::OnBnClickedBtnReadWriteCopy)
+
+    ON_BN_CLICKED(IDC_BTN_FILE_FILLDUMP, &CFilePage::OnBnClickedBtnFillDump)
 
 END_MESSAGE_MAP()
 
@@ -144,62 +152,309 @@ void CFilePage::OnBnClickedBtnFileStopCopyDir()
     m_DirCopier.WaitToEnd(INFINITE);
 }
 
-class CFIocpFileReadTask : public CFFile
-    ,public CFIocpBaseTask
+//class CFIocpFileReadTask : public CFFile
+//    ,public CFIocpBaseTask
+//{
+//public:
+//    virtual INT GetIocpHandleCount() const 
+//    {
+//        return 1;
+//    }
+//
+//    virtual HANDLE GetIocpHandle(INT nIndex) const
+//    {
+//        return m_hFile;
+//    }
+//
+//    virtual BOOL OnInitialize(CFIocpMgr* pIocpMgr,  CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+//    {
+//        BOOL bRet = FALSE;
+//        pIoBuffer->m_operType = IORead;
+//        API_VERIFY(Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, NULL, &pIoBuffer->m_overLapped));
+//        return bRet;
+//    }
+//
+//    virtual BOOL AfterReadCompleted(CFIocpMgr* pIocpMgr,  CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+//    {
+//        BOOL bRet = FALSE;
+//        FTLASSERT(IORead == pIoBuffer->m_operType);
+//        API_VERIFY(Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, NULL, &pIoBuffer->m_overLapped));
+//        return bRet;
+//    }
+//    virtual BOOL AfterWriteCompleted(CFIocpMgr* pIocpMgr,  CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+//    {
+//        BOOL bRet = FALSE;
+//        FTLASSERT(IOWrite == pIoBuffer->m_operType);
+//        API_VERIFY(Write(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, NULL, &pIoBuffer->m_overLapped));
+//        return bRet;
+//    }
+//    virtual BOOL OnUninitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+//    {
+//        BOOL bRet = FALSE;
+//        this->Close();
+//        return bRet;
+//    }
+//};
+
+class CFIocpCopyFileTask : public CFIocpBaseTask
 {
 public:
-    HANDLE GetIocpHandle() const
+    static LONG s_Count;
+
+    CFIocpCopyFileTask()
     {
-        return m_hFile;
+        if (0 == s_Count)
+        {
+            m_ElapseCount.Start();
+        }
+        InterlockedIncrement(&s_Count);
+    }
+    ~CFIocpCopyFileTask()
+    {
+        LONG nCount = InterlockedDecrement(&s_Count);
+        if (0 == nCount)
+        {
+            m_ElapseCount.Stop();
+            CFStringFormater formater;
+            formater.Format(TEXT("CFIocpCopyFileTask Copy File Elapse %d(ms)\n"),
+                m_ElapseCount.GetElapseTime() / NANOSECOND_PER_MILLISECOND);
+            OutputDebugString(formater.GetString());
+        }
+    }
+    FTL::CFElapseCounter m_ElapseCount;
+
+    BOOL OpenFiles(LPCTSTR pszSrcFile, LPCTSTR pszDstFile)
+    {
+        BOOL bRet = FALSE;
+
+        API_VERIFY(m_SrcFile.Create(pszSrcFile, GENERIC_READ, FILE_SHARE_READ, NULL, 
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED));
+        API_VERIFY(m_DstFile.Create(pszDstFile, GENERIC_WRITE, 0, NULL,
+            CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED));
+        return bRet;
+    }
+    
+
+    virtual INT GetIocpHandleCount() const 
+    {
+        return 2;
     }
 
-    virtual BOOL OnInitialize( CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    virtual HANDLE GetIocpHandle(INT nIndex) const
     {
-        BOOL bRet = __super::OnInitialize(pIoBuffer, dwBytesTransferred);
-        pIoBuffer->m_ioType = IORead;
-        Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, &pIoBuffer->m_overLapped);
+        HANDLE hResult = INVALID_HANDLE_VALUE;
+        switch (nIndex)
+        {
+        case 0:
+            hResult = m_SrcFile.m_hFile;
+            break;
+        case 1:
+            hResult = m_DstFile.m_hFile;
+            break;
+        default:
+            FTLASSERT(FALSE);
+            break;
+        }
+        return hResult;
+    }
+
+    virtual BOOL OnInitialize(CFIocpMgr* pIocpMgr,  CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        BOOL bRet = FALSE;
+        pIoBuffer->m_operType = iotRead;
+        API_VERIFY_EXCEPT1(m_SrcFile.Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, NULL, &pIoBuffer->m_overLapped),
+            ERROR_IO_PENDING);
         return bRet;
     }
 
-    virtual BOOL OnRead( CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    virtual BOOL AfterReadCompleted(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
     {
-        BOOL bRet = __super::OnRead(pIoBuffer, dwBytesTransferred);
-        pIoBuffer->m_ioType = IORead;
+        BOOL bRet = FALSE;
+        FTLASSERT(iotRead == pIoBuffer->m_operType);
+        pIoBuffer->m_operType = iotWrite;
+        API_VERIFY_EXCEPT1(m_DstFile.Write(pIoBuffer->m_pBuffer, dwBytesTransferred, NULL, &pIoBuffer->m_overLapped),
+            ERROR_IO_PENDING);
 
-        Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, &pIoBuffer->m_overLapped);
         return bRet;
     }
+    virtual BOOL AfterWriteCompleted(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        BOOL bRet = FALSE;
+        FTLASSERT(iotWrite == pIoBuffer->m_operType);
+        pIoBuffer->m_operType = iotRead;
+
+        AddOverLappedOffset(&pIoBuffer->m_overLapped, dwBytesTransferred);
+
+        API_VERIFY_EXCEPT1(m_SrcFile.Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, NULL, &pIoBuffer->m_overLapped),
+            ERROR_IO_PENDING);
+        return bRet;
+    }
+    virtual BOOL OnUninitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred)
+    {
+        BOOL bRet = FALSE;
+        switch(pIoBuffer->m_operType)
+        {
+        case iotRead:
+            //read over
+            API_VERIFY(m_SrcFile.Close());
+            API_VERIFY(m_DstFile.Write(pIoBuffer->m_pBuffer, dwBytesTransferred, NULL, NULL));
+            m_DstFile.Close();
+            break;
+        default:
+            FTLASSERT(FALSE);
+            break;
+        //case IOWrite:
+        //    API_VERIFY(m_DstFile.Close());
+        //    break;
+        }
+        delete this;
+        return bRet;
+    }
+private:
+    CFFile  m_SrcFile;
+    CFFile  m_DstFile;
 };
+LONG CFIocpCopyFileTask::s_Count = 0;
 
 void CFilePage::OnBnClickedBtnIocpTest()
 {
     //BOOL bRet = FALSE;
-    CFIocpMgr iocpMgr;
-    iocpMgr.Start(1);
     BOOL bRet = FALSE;
 
-    CFIocpFileReadTask  fileReadTask;
-    API_VERIFY(fileReadTask.Create(TEXT("D:\\test.jpg"), 
-        GENERIC_WRITE | GENERIC_READ, 
-        FILE_SHARE_READ, NULL,
-        OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED));
-    iocpMgr.AddTask(&fileReadTask);
+    //CFIocpFileReadTask  fileReadTask;
+    //API_VERIFY(fileReadTask.Create(TEXT("D:\\test.jpg"), 
+    //    GENERIC_WRITE | GENERIC_READ, 
+    //    FILE_SHARE_READ, NULL,
+    //    OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED));
+
+    CFElapseCounter counter;
+    for (INT i = 0; i < m_nCopyFileCount; i++)
+    {
+        CFIocpCopyFileTask* pFileCopyTask = new CFIocpCopyFileTask();
+        CAtlString strTagetFile;
+        strTagetFile.Format(TEXT("E:\\TargetCopy_%d.txt"), counter.GetElapseTime() % LONG_MAX);
+        pFileCopyTask->OpenFiles(m_strCopySrcFile, strTagetFile);
+        m_iocpMgr.AssociateTask(pFileCopyTask);
+    }
+
 
     //fileIocpTask.m_OverLapped.overLapped.Offset = 0;
 
     //fileIocpTask.WriteFileHeader((LPOVERLAPPED)&fileIocpTask.m_OverLapped);
 
-    Sleep(10000000);
     //fileReadTask.Close();
 
-    iocpMgr.Stop();
-    iocpMgr.Close();
+    //iocpMgr.Stop();
+    //iocpMgr.Close();
+}
+
+void CFilePage::OnBnClickedBtnApiCopyFile()
+{
+    BOOL bRet = FALSE;
+    m_strCopyDstFile.Format(TEXT("E:\\TargetCopy_%d.txt"), GetTickCount());
+    API_VERIFY_EXCEPT1(DeleteFile(m_strCopyDstFile), ERROR_FILE_NOT_FOUND);
+
+    CFElapseCounter counter;
+    counter.Start();
+    API_VERIFY(CopyFile(m_strCopySrcFile, m_strCopyDstFile, FALSE));
+    counter.Stop();
+
+    CFStringFormater formater;
+    formater.Format(TEXT("API CopyFile Elapse %d(ms)\n"), counter.GetElapseTime() / NANOSECOND_PER_MILLISECOND);
+    OutputDebugString(formater.GetString());
+}
+
+static DWORD CALLBACK CopyProgressRoutine(LARGE_INTEGER TotalFileSize,
+   LARGE_INTEGER TotalBytesTransferred,
+   LARGE_INTEGER StreamSize,
+   LARGE_INTEGER StreamBytesTransferred,
+   DWORD dwStreamNumber,
+   DWORD dwCallbackReason,
+   HANDLE hSourceFile,
+   HANDLE hDestinationFile,
+   LPVOID lpData
+)
+{
+    return PROGRESS_CONTINUE;
+}
+
+
+void CFilePage::OnBnClickedBtnApiCopyFileEx()
+{
+    BOOL bRet = FALSE;
+    m_strCopyDstFile.Format(TEXT("E:\\TargetCopy_%d.txt"), GetTickCount());
+    API_VERIFY_EXCEPT1(DeleteFile(m_strCopyDstFile), ERROR_FILE_NOT_FOUND);
+
+    CFElapseCounter counter;
+    counter.Start();
+    BOOL bCancel = FALSE;
+    API_VERIFY(CopyFileEx(m_strCopySrcFile, m_strCopyDstFile, CopyProgressRoutine, this, &bCancel, 0));
+    counter.Stop();
+
+    CFStringFormater formater;
+    formater.Format(TEXT("API CopyFileEx Elapse %d(ms)\n"), counter.GetElapseTime() / NANOSECOND_PER_MILLISECOND);
+    OutputDebugString(formater.GetString());
+}
+
+void CFilePage::OnBnClickedBtnReadWriteCopy()
+{
+    BOOL bRet = FALSE;
+    m_strCopyDstFile.Format(TEXT("E:\\TargetCopy_%d.txt"), GetTickCount());
+    API_VERIFY_EXCEPT1(DeleteFile(m_strCopyDstFile), ERROR_FILE_NOT_FOUND);
+
+    CFFile srcFile;
+    CFFile dstFile;
+    CFMemAllocator<BYTE> buf(4096);
+
+    CFElapseCounter counter;
+    counter.Start();
+
+    API_VERIFY(srcFile.Create(m_strCopySrcFile, GENERIC_READ, FILE_SHARE_READ, NULL,
+        OPEN_EXISTING));
+    API_VERIFY(dstFile.Create(m_strCopyDstFile, GENERIC_WRITE, 0, NULL,
+        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL));
+
+    DWORD dwRead = 0;
+    DWORD dwWrite = 0;
+    while (srcFile.Read(buf.GetMemory(), buf.GetCount(), &dwRead, NULL) 
+        && dwRead > 0)
+    {
+        API_VERIFY(dstFile.Write(buf.GetMemory(), dwRead, &dwWrite, NULL));
+    }
+    srcFile.Close();
+    dstFile.Close();
+
+    counter.Stop();
+
+    CFStringFormater formater;
+    formater.Format(TEXT("Read + Write Copy Elapse %d(ms)\n"), counter.GetElapseTime() / NANOSECOND_PER_MILLISECOND);
+    OutputDebugString(formater.GetString());
+}
+
+void CFilePage::OnBnClickedBtnFillDump()
+{
+    BOOL bRet = FALSE;
+    CFileDialog dlg(FALSE, TEXT(".fil"), TEXT("FileDump.fil"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+        TEXT("*.fil\0*.fil\0All Files(*.*)\0*.*\0\0"), this);
+    if (dlg.DoModal() == IDOK)
+    {
+        CString strFilePath = dlg.GetPathName();
+
+        CFFile dmpFile;
+        API_VERIFY(dmpFile.Create(strFilePath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS));
+        if (bRet)
+        {
+            API_VERIFY(dmpFile.SetLength(100 * 1024 * 1024));
+            API_VERIFY(dmpFile.Close());
+        }
+    }
 }
 
 BOOL CFilePage::OnInitDialog()
 {
     CPropertyPage::OnInitDialog();
     m_progressCopyDir.SetRange32(0, 100);
+    m_iocpMgr.Start();
 
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE

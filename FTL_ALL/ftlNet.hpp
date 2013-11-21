@@ -69,7 +69,7 @@ namespace FTL
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAENETRESET);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAECONNABORTED);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAECONNRESET);
-                HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAENOBUFS);
+                HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAENOBUFS);  //当连接的客户端过多时(如超过4W)，系统来不及分配或资源不足
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAEISCONN);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAENOTCONN);
                 HANDLE_CASE_TO_STRING(m_bufInfo, _countof(m_bufInfo), WSAESHUTDOWN);

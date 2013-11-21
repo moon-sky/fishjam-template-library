@@ -9,8 +9,10 @@
 #include "ftlThread.h"
 #include "ftlMem.h"
 #include "ftlSharePtr.h"
+#include "ftlSocket.h"
 
 /*************************************************************************************************************************
+// http://www.cnblogs.com/lancidie/archive/2011/12/19/2293773.html
 * IOCP(IO Completion Port -- 完成端口) -- 一个通知队列，和Overlapped I/O协同工作，可以在一个“管理众多的句柄且受制于I/O的程序(如Web服务器)”中获得最佳性能。
 *   没有64个HANDLE的限制，使用一堆线程(通常可设置为 CPU个数*2+2 )服务一堆Events的性质，自动支持 scalable。
 *   操作系统把已经完成的重叠I/O请求的通知放入完成端口的通知队列(一个线程将一个请求暂时保存下来)，等待另一个线程为它做实际服务。
@@ -19,8 +21,8 @@
 *   微软例子：web\Wininet\Async
 *   使用流程：
 *     1.产生一个I/O completion port -- hPort=CreateIoCompletionPort(INVALID_HANDLE_VALUE,NULL...)。产生一个没有和任何文件Handle有关系的port
-*     2.让它和文件handle产生关联 -- CreateIoCompletionPort(hFile,hPort...)，为每一个欲附加的文件Handle进行关联
-*     3.产生一堆线程 -- for(CPU*2+2){ _beginthreadex }
+*     2.产生一堆线程 -- 一般是 for(CPU*2+2){ _beginthreadex }
+*     3.让完成端口和文件handle、Socket句柄等产生关联 -- CreateIoCompletionPort(hFile,hPort...)，为每一个欲附加的文件Handle进行关联
 *     4.让每一个线程在Completion Port上等待，返回后根据情况进行处理
 *       GetQueuedCompletionStatus(,INFINITE)，可通过 CONTAINING_RECORD 宏取出其中指向扩展结构的指针
 *     5.开始对着那个文件handle发出一些overlapped I/O请求 -- 如 ReadFile、WriteFile、DeviceIoControl等，
@@ -44,22 +46,20 @@ namespace FTL
 
     FTLINLINE LONGLONG AddOverLappedOffset(LPOVERLAPPED pOverlapped, DWORD dwTransfered)
     {
-        LARGE_INTEGER largeInteger;
-        largeInteger.LowPart = pOverlapped->Offset;
-        largeInteger.HighPart = pOverlapped->OffsetHigh;
-        largeInteger.QuadPart += dwTransfered;
-        pOverlapped->Offset = largeInteger.LowPart;
-        pOverlapped->OffsetHigh = largeInteger.HighPart;
-        return largeInteger.QuadPart;
+        LARGE_INTEGER* pLargeInteger = reinterpret_cast<LARGE_INTEGER*>(&pOverlapped->Offset);
+        pLargeInteger->QuadPart += dwTransfered;
+        return pLargeInteger->QuadPart;
     }
 
-    enum IOType 
+    enum IocpOperationType 
     {
-	    IOInitialize,   // The client just connected
-	    IORead,         // Read from the client. 
-	    IOReadCompleted,// Read completed
-	    IOWrite,        // Write to the Client
-	    IOWriteCompleted, // Write Completed.
+        //iotUnknown = -1,
+
+	    iotInitialize,   // The client just connected
+	    iotRead,         // Read from the client. 
+	    //IOReadCompleted,// Read completed
+	    iotWrite,        // Write to the Client
+	    //IOWriteCompleted, // Write Completed.
 	    //IOZeroByteRead, // Read zero Byte from client (dummy for avoiding The System Blocking error) 
 	    //IOZeroReadCompleted, // Read Zero Byte  completed. (se IOZeroByteRead)
 	    //IOTransmitFileCompleted,
@@ -68,15 +68,17 @@ namespace FTL
     class CFIocpBuffer
     {
     public:
-        OVERLAPPED      m_overLapped;
-        IOType          m_ioType;
+        OVERLAPPED          m_overLapped;
+        //HANDLE              m_hIoHandle;
+        IocpOperationType   m_operType;
         LONG            m_nSequenceNumber;
         PBYTE	        m_pBuffer;
         DWORD           m_dwSize;
-        DWORD           m_dwUsed;
+        //DWORD           m_dwUsed;
     public:
-        FTLINLINE CFIocpBuffer(DWORD dwSize = 512);
+        FTLINLINE CFIocpBuffer();
         FTLINLINE ~CFIocpBuffer();
+        FTLINLINE VOID Reset(DWORD dwSize);
     };
     typedef CFMemoryPoolObjectHelper<CFIocpBuffer> CFIoBufferPoolObject;
     typedef CFSharePtr<CFIoBufferPoolObject>    CFIoBufferPoolObjectPtr;
@@ -85,17 +87,16 @@ namespace FTL
     {
         friend class CFIocpMgr;
     public:
-        typedef std::map<LONG, CFIoBufferPoolObjectPtr> IocpBufferMap;
-        CFIocpBaseTask();
+        typedef std::map<LONG, CFIoBufferPoolObjectPtr> IocpBufferMap;  //可以在上面同时投递多个IO请求
+        FTLINLINE CFIocpBaseTask();
 
-        virtual HANDLE GetIocpHandle() const = 0;
+        virtual INT    GetIocpHandleCount() const { return 1; }
+        virtual HANDLE GetIocpHandle(INT index) const = 0;
         //virtual BOOL   OnIoComplete(CFIocpMgr* pIocpMgr, CFIoBufferPoolObjectPtr& pIoBuffer, DWORD dwBytesTransferred) = 0;
-        virtual FTLINLINE BOOL OnInitialize(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
-        virtual FTLINLINE BOOL OnRead(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
-        virtual FTLINLINE BOOL OnReadCompleted(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
-        virtual FTLINLINE BOOL OnWrite(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
-        virtual FTLINLINE BOOL OnWriteCompleted(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
-        virtual FTLINLINE BOOL OnEnd(CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
+        virtual BOOL OnInitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred) { return TRUE; }
+        virtual BOOL AfterReadCompleted(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred) { return TRUE; }
+        virtual BOOL AfterWriteCompleted(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred) { return TRUE; }
+        virtual BOOL OnUninitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred) { return TRUE; }
 
     private:
         LONG            m_nCurReadSequence;
@@ -121,15 +122,16 @@ namespace FTL
     //    HANDLE m_hHandle;
     //};
 
+    //template <typename T>
     class CFIocpMgr
     {
     public:
         enum 
         {
-            DEFAULT_THREAD_COUNT = 0,
+            DEFAULT_THREAD_COUNT = (DWORD)(-1),
         };
 
-        FTLINLINE CFIocpMgr();
+        FTLINLINE CFIocpMgr(DWORD dwBufferSize = 4096);
         FTLINLINE ~CFIocpMgr();
 
         //0 is default, will create as 2 * CPU + 2
@@ -138,26 +140,89 @@ namespace FTL
         FTLINLINE VOID Close(DWORD dwMilliseconds = INFINITE);
 
         //关联需要等待完成的重叠IO操作的句柄(如 File、SOCKET、Pipe 等)
-        FTLINLINE BOOL AddTask(CFIocpBaseTask* pTask);
+        FTLINLINE BOOL AssociateTask(CFIocpBaseTask* pTask);
 
     protected:
         //工作线程初始化、终止化，可以进行COM初始化等
+        FTLINLINE virtual BOOL OnIocpStart() { return TRUE; }
+        FTLINLINE virtual BOOL OnIocpStop() { return TRUE; }
+
         FTLINLINE virtual BOOL OnWorkThreadInit();
         FTLINLINE virtual VOID OnWorkThreadFina();
     private:
         HANDLE  m_hIoCompletionPort;
         HANDLE* m_pWorkThreads;
+        DWORD    m_dwBufferSize;
         volatile BOOL m_bStop;
 
         CFMemoryPoolT<CFIocpBuffer> m_IocpBufferPool;
 
         DWORD   m_nConcurrentThreadCount;
 
+        FTLINLINE BOOL  _InitlizeIocp(DWORD NumberOfConcurrentThreads);
+ 
         FTLINLINE DWORD _GetDefaultConcurrentThreadCount();
         FTLINLINE DWORD _InnerWorkThreadProc();
+        FTLINLINE BOOL  _HandleError(CFIocpBaseTask* pIocpTask, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred, DWORD dwErr);
 
         FTLINLINE static DWORD __stdcall _WorkThreadProc(LPVOID pParam);
         FTLINLINE BOOL _ProcessPackage(CFIocpBaseTask* pTask, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred);
+    };
+
+    class CFIospServerSocket : public CFIocpBaseTask
+        , public CFSocket
+    {
+        virtual INT GetIocpHandleCount() const
+        {
+            return 1;
+        }
+
+        virtual HANDLE GetIocpHandle( INT index ) const
+        {
+            return (HANDLE)m_socket;
+        }
+
+    };
+
+    class CFIocpNetServer;
+
+    class CFIocpListenTask : public CFIocpBaseTask
+    {
+    public:
+        CFIocpListenTask(SOCKET socketListen)
+        {
+            m_socketListen = socketListen;
+        }
+        FTLINLINE virtual INT GetIocpHandleCount() const
+        {
+            return 1;
+        }
+
+        FTLINLINE virtual HANDLE GetIocpHandle( INT index ) const
+        {
+            FTLASSERT(index < 1);
+            return (HANDLE)m_socketListen;
+        }
+
+        FTLINLINE virtual BOOL OnInitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+        {
+            FTLASSERT(pIoBuffer->m_operType == iotInitialize);
+            
+            CFIospServerSocket* pSocket = new CFIospServerSocket();
+            pIocpMgr->AssociateTask(pSocket);
+
+            return TRUE;
+        }
+    private:
+        SOCKET m_socketListen;
+    };
+    class CFIocpNetServer : public CFIocpMgr
+    {
+    public:
+        FTLINLINE virtual BOOL OnIocpStart();
+        FTLINLINE virtual BOOL OnIocpStop();
+    protected:
+        SOCKET      m_nSocketListen;
     };
 }
 #endif //FTL_IOCP_H

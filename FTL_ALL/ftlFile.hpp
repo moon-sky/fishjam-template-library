@@ -368,7 +368,7 @@ namespace FTL
 	// Reads data from a file associated with the CFFile object, 
 	// starting at the position indicated by the file pointer.
 	//-----------------------------------------------------------------------------
-	BOOL CFFile::Read(void* lpBuf, DWORD nCount, LPOVERLAPPED lpOverlapped)
+	BOOL CFFile::Read(void* lpBuf, DWORD nCount, DWORD* pdwRead, LPOVERLAPPED lpOverlapped)
 	{
         BOOL bRet = FALSE;
 		_ASSERT(m_hFile && ((m_hFile) != INVALID_HANDLE_VALUE));
@@ -382,9 +382,14 @@ namespace FTL
 
 		// Read data from the file
 		DWORD dwRead = 0;
-        API_VERIFY_EXCEPT1(::ReadFile(m_hFile, lpBuf, nCount, &dwRead, lpOverlapped),
-            ERROR_IO_PENDING);
+        DWORD* pLocalRead = pdwRead;
+        if (!pLocalRead)
+        {
+            pLocalRead = &dwRead;
+        }
 
+        API_VERIFY_EXCEPT1(::ReadFile(m_hFile, lpBuf, nCount, pLocalRead, lpOverlapped),
+            ERROR_IO_PENDING);
         return bRet;
 	}
 
@@ -413,13 +418,6 @@ namespace FTL
 		API_VERIFY_EXCEPT1(::WriteFile(m_hFile, lpBuf, nCount, pLocalWritten, lpOverlapped),
             ERROR_IO_PENDING);
         return bRet;
-        //if (!bRet)
-        //{
-        //    //CXFileException ex((long)::GetLastError());
-        //    //throw ex;
-        //    return FALSE;
-        //}
-        //return TRUE;
 	}
 
 	//-----------------------------------------------------------------------------
