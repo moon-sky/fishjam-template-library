@@ -101,10 +101,7 @@ namespace FTL
         INT                 m_nMaxSize;
         INT                 m_nCurCount;
         LONG                m_nNextIndex;
-        FTLINLINE LONG      _GetNextIndex() 
-        { 
-            return InterlockedIncrement(&m_nNextIndex); 
-        }
+        FTLINLINE LONG      _GetNextIndex(){ return InterlockedIncrement(&m_nNextIndex); }
     };
 
     //从内存池中获取对象的辅助类，构造中获取，释放中放回内存池

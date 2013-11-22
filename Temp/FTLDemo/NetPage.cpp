@@ -18,7 +18,11 @@ IMPLEMENT_DYNAMIC(CNetPage, CPropertyPage)
 CNetPage::CNetPage()
 	: CPropertyPage(CNetPage::IDD)
 	, m_strServerHost(_T("www.baidu.com"))
+#ifdef TEST_IOC_SERVER
+    , m_pIocpServer(NULL)
+#else
 	, m_pMyServer(NULL)
+#endif 
 	, m_hSession(NULL)
 	, m_hConnect(NULL)
 	, m_hRequest(NULL)
@@ -73,7 +77,7 @@ END_MESSAGE_MAP()
 
 // CNetPage 消息处理程序
 
-void CNetPage::SetButtonStatus(BOOL bServerEnabled)
+void CNetPage::SetServerButtonStatus(BOOL bServerEnabled)
 {
     GetDlgItem(IDC_BTN_START_SERVER)->EnableWindow(!bServerEnabled);
     GetDlgItem(IDC_BTN_STOP_SERVER)->EnableWindow(bServerEnabled);
@@ -82,25 +86,41 @@ void CNetPage::SetButtonStatus(BOOL bServerEnabled)
 void CNetPage::OnBnClickedBtnStartServer()
 {
     int rc = NO_ERROR;
+#ifdef TEST_IOC_SERVER
+    m_pIocpServer = new CFIocpNetServer();
+    m_pIocpServer->Start(1);
+#else
     m_pMyServer = new CMyNetServer(FTL::stTCP);
     NET_VERIFY(m_pMyServer->Create(5555,INADDR_ANY));
     if (NO_ERROR == rc)
     {
         NET_VERIFY(m_pMyServer->Start(5,10));
-        //SetButtonStatus(TRUE);
     }
+#endif 
+    SetServerButtonStatus(TRUE);
 }
 
 void CNetPage::OnBnClickedBtnStopServer()
 {
     int rc = NO_ERROR;
+#ifdef TEST_IOC_SERVER
+    if (m_pIocpServer)
+    {
+        m_pIocpServer->Stop();
+        m_pIocpServer->Close(INFINITE);
+        SAFE_DELETE(m_pIocpServer);
+
+        //FTL::CFMemCheckManager::GetInstance().DumpLeakInfo();
+    }
+#else
 	if (m_pMyServer)
 	{
 		NET_VERIFY(m_pMyServer->Stop());
 		NET_VERIFY(m_pMyServer->Destroy());
 		SAFE_DELETE(m_pMyServer);
 	}
-    //SetButtonStatus(FALSE);
+#endif 
+    SetServerButtonStatus(FALSE);
 }
 
 void CNetPage::OnBnClickedBtnWininetConnect()

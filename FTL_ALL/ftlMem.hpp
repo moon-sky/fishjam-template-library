@@ -44,7 +44,7 @@ namespace FTL
             m_allBlocks.size(), m_freeBlocks.size());
         FTLASSERT(m_allBlocks.size() == m_freeBlocks.size() 
             && TEXT("Must Release all object back to pool before destructor"));
-        FTLASSERT(m_nCurCount == m_allBlocks.size());
+        FTLASSERT(m_nCurCount == (INT)m_allBlocks.size());
 
         for ( ObjectContainer::iterator iter = m_allBlocks.begin();
             iter != m_allBlocks.end(); ++iter) 

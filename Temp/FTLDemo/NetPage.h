@@ -3,6 +3,10 @@
 #include <ftlNet.h>
 #include <ftlSocket.h>
 
+#define TEST_IOC_SERVER
+
+#ifdef TEST_IOC_SERVER
+#else
 class CMyNetServer : public CFNetServerT<DWORD>
 {
 public:
@@ -12,6 +16,7 @@ public:
 
     }
 };
+#endif
 
 class CNetPage 
 	: public CPropertyPage
@@ -54,8 +59,13 @@ public:
 private:
 	// ServerHost
 	CString m_strServerHost;
-	CMyNetServer*    m_pMyServer;
-	void SetButtonStatus(BOOL bServerEnabled);
+
+#ifdef TEST_IOC_SERVER
+    CFIocpNetServer* m_pIocpServer;
+#else
+    CMyNetServer*    m_pMyServer;
+#endif
+	void SetServerButtonStatus(BOOL bServerEnabled);
 
 	HINTERNET	m_hSession;
 	HINTERNET	m_hConnect;

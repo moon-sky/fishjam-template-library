@@ -6,7 +6,6 @@
 #  include "ftlSocket.h"
 #endif
 //#include <winsock.h>
-#include <mswsock.h>        //包含 SO_CONNECT_TIME 等宏定义，可能会造成其他错误?
 
 namespace FTL
 {
@@ -809,6 +808,295 @@ namespace FTL
         }
 
         return NO_ERROR;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    CFIocpClientSocket::CFIocpClientSocket(CFIocpMgr* pIocpMgr)
+        :CFIocpBaseTask(pIocpMgr)
+    {
+
+    }
+    INT CFIocpClientSocket::GetIocpHandleCount() const
+    {
+        return 1;
+    }
+
+    HANDLE CFIocpClientSocket::GetIocpHandle( INT index ) const
+    {
+        return (HANDLE)m_socket;
+    }
+
+    BOOL CFIocpClientSocket::OnInitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        throw std::exception("The method or operation is not implemented.");
+    }
+
+    BOOL CFIocpClientSocket::AfterReadCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        SOCKADDR_IN* ClientAddr = &m_foreignAddr;
+        CFConversion convAddr, convInfo;
+        LPCTSTR pszClientAddr = convAddr.MBCS_TO_TCHAR(inet_ntoa(ClientAddr->sin_addr));
+        LPCTSTR pszClientInfo = convInfo.MBCS_TO_TCHAR(pIoBuffer->m_wsaBuf.buf);
+
+        FTLTRACE(_T("收到  %s:%d 信息：%s\n"), pszClientAddr, ntohs(ClientAddr->sin_port), pszClientInfo);
+
+        // 然后开始投递下一个WSARecv请求
+        CFIocpNetServer* pNetServer = dynamic_cast<CFIocpNetServer*>(pIocpMgr);
+        if (pNetServer)
+        {
+            pNetServer->_PostRecv(pIoBuffer);
+        }
+        return TRUE;
+    }
+
+    BOOL CFIocpClientSocket::AfterWriteCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        throw std::exception("The method or operation is not implemented.");
+    }
+
+    BOOL CFIocpClientSocket::OnUninitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        Close();
+        delete this;
+        return TRUE;
+    }
+
+    CFIocpListenTask::CFIocpListenTask(CFIocpMgr* pIocpMgr, SOCKET socketListen)
+        :CFIocpBaseTask(pIocpMgr)
+    {
+        m_socketListen = socketListen;
+    }
+    CFIocpListenTask::~CFIocpListenTask()
+    {
+        int rc = SOCKET_ERROR;
+        SAFE_CLOSE_SOCKET(m_socketListen);
+    }
+    INT CFIocpListenTask::GetIocpHandleCount() const
+    {
+        return 1;
+    }
+
+    HANDLE CFIocpListenTask::GetIocpHandle( INT index ) const
+    {
+        FTLASSERT(index < 1);
+        return (HANDLE)m_socketListen;
+    }
+
+    BOOL CFIocpListenTask::OnInitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        FTLASSERT(pIoBuffer->m_operType == otInitialize);
+
+        SOCKADDR_IN* ClientAddr = NULL;
+        SOCKADDR_IN* LocalAddr = NULL;  
+        int remoteLen = sizeof(SOCKADDR_IN), localLen = sizeof(SOCKADDR_IN);  
+
+        CFIocpNetServer* pNetServer = dynamic_cast<CFIocpNetServer*>(pIocpMgr);
+        if (pNetServer)
+        {
+            // 1. 首先取得连入客户端的地址信息
+            // 这个 m_lpfnGetAcceptExSockAddrs 不得了啊~~~~~~
+            // 不但可以取得客户端和本地端的地址信息，还能顺便取出客户端发来的第一组数据，老强大了...
+            pNetServer->m_lpfnGetAcceptExSockAddrs(pIoBuffer->m_wsaBuf.buf, pIoBuffer->m_wsaBuf.len - ((sizeof(SOCKADDR_IN)+16)*2),  
+                sizeof(SOCKADDR_IN)+16, sizeof(SOCKADDR_IN)+16, (LPSOCKADDR*)&LocalAddr, &localLen, 
+                (LPSOCKADDR*)&ClientAddr, &remoteLen);  
+
+            CFConversion convAddr, convInfo;
+            LPCTSTR pszClientAddr = convAddr.MBCS_TO_TCHAR(inet_ntoa(ClientAddr->sin_addr));
+            LPCTSTR pszClientInfo = convInfo.MBCS_TO_TCHAR(pIoBuffer->m_wsaBuf.buf);
+
+            FTLTRACE(_T("客户端 %s:%d 连入, 信息: %s\n"), pszClientAddr, ntohs(ClientAddr->sin_port), pszClientInfo);
+        //    //pNetServer->_PostAccept(pIoBuffer);
+        }
+        //pIocpMgr->AssociateTask(pSocket);
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        // 2. 这里需要注意，这里传入的这个是ListenSocket上的Context，这个Context我们还需要用于监听下一个连接
+        // 所以我还得要将ListenSocket上的Context复制出来一份为新连入的Socket新建一个SocketContext
+
+        CFIocpClientSocket* pClientSocket = new CFIocpClientSocket(pIocpMgr);
+        //PER_SOCKET_CONTEXT* pNewSocketContext = new PER_SOCKET_CONTEXT;
+        pClientSocket->Associate((SOCKET)pIoBuffer->m_hIoHandle, ClientAddr);
+        
+        // 参数设置完毕，将这个Socket和完成端口绑定(这也是一个关键步骤)
+        pNetServer->AssociateTask(pClientSocket, FALSE);
+
+        // 3. 继续，建立其下的IoContext，用于在这个Socket上投递第一个Recv数据请求
+        CFIocpBuffer* pRecvBuffer = pNetServer->m_IocpBufferPool.Get();
+        if (pRecvBuffer)
+        {
+            pRecvBuffer->Reset(pNetServer->m_dwBufferSize);
+            pRecvBuffer->m_hIoHandle = (HANDLE)pClientSocket->m_socket;
+            pClientSocket->AddBuffer(pRecvBuffer);
+
+            // 如果Buffer需要保留，就自己拷贝一份出来
+            //memcpy( pRecvBuffer->m_pBuffer, pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize);
+
+
+            // 绑定完毕之后，就可以开始在这个Socket上投递完成请求了
+            pNetServer->_PostRecv(pRecvBuffer);        
+
+            // 4. 如果投递成功，那么就把这个有效的客户端信息，加入到ContextList中去(需要统一管理，方便释放资源)
+            //this->_AddToContextList( pNewSocketContext );
+        }
+
+        // 5. 使用完毕之后，把Listen Socket的那个IoContext重置，然后准备投递新的AcceptEx
+        pIoBuffer->m_hIoHandle = INVALID_HANDLE_VALUE;
+        pNetServer->_PostAccept(pIoBuffer);
+
+        return TRUE;
+    }
+
+    BOOL CFIocpListenTask::AfterReadCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        throw std::exception("The method or operation is not implemented.");
+    }
+
+    BOOL CFIocpListenTask::AfterWriteCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        throw std::exception("The method or operation is not implemented.");
+    }
+
+    BOOL CFIocpListenTask::OnUninitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    {
+        throw std::exception("The method or operation is not implemented.");
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    CFIocpNetServer::CFIocpNetServer()
+    {
+        m_nListenPort = 12345;
+        m_pListenTask = NULL;
+    }
+    CFIocpNetServer::~CFIocpNetServer()
+    {
+        m_pListenTask = NULL;
+        //SAFE_DELETE(m_pListenTask);
+    }
+
+    BOOL CFIocpNetServer::OnIocpStart()
+    {
+        BOOL bRet = FALSE;
+        int rc = SOCKET_ERROR;
+
+        // AcceptEx 和 GetAcceptExSockaddrs 的GUID，用于导出函数指针
+        GUID GuidAcceptEx = WSAID_ACCEPTEX;  
+        GUID GuidGetAcceptExSockAddrs = WSAID_GETACCEPTEXSOCKADDRS; 
+
+        // 服务器地址信息，用于绑定Socket
+        struct sockaddr_in ServerAddress;  
+        // 如果要使用重叠I/O的话，这里必须要使用WSASocket(WSA_FLAG_OVERLAPPED)来建立Socket
+        SOCKET socketListen = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+        if (INVALID_SOCKET == socketListen)
+        {
+            CFNetErrorInfo err(WSAGetLastError());
+            FTLTRACEEX(tlError, TEXT("Create Overlapped Listen Socket Fail, reason %d(%s)\n"),
+                err, err.GetConvertedInfo());
+            FTLASSERT(FALSE);
+            SetLastError(err.GetInfo());
+            return FALSE;
+        }
+
+        // 将ListenSocket绑定至完成端口中
+        FTLASSERT(NULL == m_pListenTask);
+        m_pListenTask = new CFIocpListenTask(this, socketListen);
+        AssociateTask(m_pListenTask, FALSE);
+
+        // 填充地址结构信息   
+        ZeroMemory((char *)&ServerAddress, sizeof(ServerAddress));  
+        ServerAddress.sin_family = AF_INET;  
+        // 这里可以选择绑定任何一个可用的地址，或者是自己指定的一个IP地址    
+        ServerAddress.sin_addr.s_addr = htonl(INADDR_ANY);                         
+        //ServerAddress.sin_addr.s_addr = inet_addr(m_strIP);           
+        ServerAddress.sin_port = htons(m_nListenPort);                            
+
+        // 绑定端口   
+        NET_VERIFY(bind(socketListen, (struct sockaddr *) &ServerAddress, sizeof(ServerAddress)));
+
+        // 开始监听
+        NET_VERIFY(listen(socketListen, SOMAXCONN));
+
+        // 使用AcceptEx函数，因为这个是属于WinSock2规范之外的微软另外提供的扩展函数
+        // 所以需要额外获取一下函数的指针
+
+        DWORD dwBytes = 0;  
+        NET_VERIFY(WSAIoctl(
+            socketListen, SIO_GET_EXTENSION_FUNCTION_POINTER, 
+            &GuidAcceptEx, sizeof(GuidAcceptEx), 
+            &m_lpfnAcceptEx, sizeof(m_lpfnAcceptEx), 
+            &dwBytes, NULL, NULL));  
+        NET_VERIFY(WSAIoctl(
+            socketListen, SIO_GET_EXTENSION_FUNCTION_POINTER, 
+            &GuidGetAcceptExSockAddrs, sizeof(GuidGetAcceptExSockAddrs), 
+            &m_lpfnGetAcceptExSockAddrs, sizeof(m_lpfnGetAcceptExSockAddrs),   
+            &dwBytes, NULL, NULL)); 
+
+        //为AcceptEx 准备参数，然后投递AcceptEx I/O请求
+        for( int i=0; i<MAX_POST_ACCEPT; i++ )
+        {
+            // 新建一个IO_CONTEXT
+            CFIocpBuffer* pAcceptBuffer = m_IocpBufferPool.Get();
+            if (pAcceptBuffer)
+            {
+                pAcceptBuffer->Reset(m_dwBufferSize);
+                m_pListenTask->AddBuffer(pAcceptBuffer);
+                _PostAccept(pAcceptBuffer);
+            }
+        }
+
+        return bRet;
+    }
+
+    BOOL CFIocpNetServer::_PostAccept(CFIocpBuffer* pioBuffer)
+    {
+        BOOL bRet = FALSE;
+        FTLASSERT(INVALID_SOCKET != m_pListenTask->m_socketListen);
+
+        // 准备参数
+        DWORD dwBytes = 0;  
+        pioBuffer->m_operType = otInitialize;  
+        //WSABUF *p_wbuf   = (WSABUF *)pAcceptBuffer->m_pBuffer;
+        WSABUF* p_wbuf = &pioBuffer->m_wsaBuf;
+        //p_wbuf->buf = (CHAR*)p_wbuf + sizeof(WSABUF);
+        //p_wbuf->len = pAcceptBuffer->m_dwSize - sizeof(WSABUF);
+
+        // 为以后新连入的客户端先准备好Socket( 这个是与传统accept最大的区别 ) 
+        pioBuffer->m_hIoHandle  = (HANDLE)WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 
+            NULL, 0, WSA_FLAG_OVERLAPPED);  
+        FTLASSERT(INVALID_SOCKET != (SOCKET)pioBuffer->m_hIoHandle);
+
+        // 投递AcceptEx
+        bRet = m_lpfnAcceptEx( m_pListenTask->m_socketListen, (SOCKET)pioBuffer->m_hIoHandle, 
+            p_wbuf->buf, p_wbuf->len - ((sizeof(SOCKADDR_IN)+16)*2),   
+            sizeof(SOCKADDR_IN)+16, sizeof(SOCKADDR_IN)+16, &dwBytes, 
+            &pioBuffer->m_overLapped);
+        {
+            if (!bRet)
+            {
+                API_VERIFY(WSA_IO_PENDING == WSAGetLastError());
+            }
+        }
+        return bRet;
+    }
+    BOOL CFIocpNetServer::_PostRecv(CFIocpBuffer* pioBuffer)
+    {
+        BOOL bRet = TRUE;
+        int rc = SOCKET_ERROR;
+        pioBuffer->m_operType = otRead;
+
+        SOCKET sock = (SOCKET)pioBuffer->m_hIoHandle;
+        FTLASSERT(INVALID_SOCKET != sock);
+        DWORD dwRecevd = 0;
+        DWORD dwFlags = 0;
+        NET_VERIFY_EXCEPT1(WSARecv(sock, &pioBuffer->m_wsaBuf, 1, &dwRecevd, &dwFlags, &pioBuffer->m_overLapped, NULL), 
+            WSA_IO_PENDING);
+
+        return bRet;
+    }
+
+    BOOL CFIocpNetServer::OnIocpStop()
+    {
+        //SAFE_DELETE(m_pListenTask);         
+        return TRUE;
     }
 
 }

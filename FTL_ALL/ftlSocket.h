@@ -8,7 +8,10 @@
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <ftlNet.h>
+#include <mswsock.h>        //包含 SO_CONNECT_TIME 等宏定义，可能会造成其他错误?
+
+#include "ftlNet.h"
+#include "ftlIocp.h"
 
 /*
 
@@ -266,6 +269,64 @@ namespace FTL
         static FTLINLINE size_t writen(int fd, const void* vptr, size_t n);
 #endif 
         static FTLINLINE int DumpSocketOption(SOCKET s);
+    };
+
+
+    class CFIocpClientSocket : public CFIocpBaseTask
+        , public CFSocket
+    {
+    public:
+        FTLINLINE CFIocpClientSocket(CFIocpMgr* pIocpMgr);
+        FTLINLINE virtual INT GetIocpHandleCount() const ;
+        FTLINLINE virtual HANDLE GetIocpHandle( INT index ) const;
+        FTLINLINE virtual BOOL OnInitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred );
+        FTLINLINE virtual BOOL AfterReadCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred );
+        FTLINLINE virtual BOOL AfterWriteCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred );
+        FTLINLINE virtual BOOL OnUninitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred );
+    };
+
+    class CFIocpNetServer;
+
+    class CFIocpListenTask : public CFIocpBaseTask
+    {
+    public:
+        FTLINLINE CFIocpListenTask(CFIocpMgr* pIocpMgr, SOCKET socketListen);
+        FTLINLINE ~CFIocpListenTask();
+
+        FTLINLINE virtual INT GetIocpHandleCount() const;
+        FTLINLINE virtual HANDLE GetIocpHandle( INT index ) const;
+
+        FTLINLINE virtual BOOL OnInitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred );
+        FTLINLINE virtual BOOL AfterReadCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred );
+        FTLINLINE virtual BOOL AfterWriteCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred );
+        FTLINLINE virtual BOOL OnUninitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred );
+    public:
+        SOCKET m_socketListen;
+    };
+
+    // 同时投递的Accept请求的数量(这个要根据实际的情况灵活设置)
+#define MAX_POST_ACCEPT              1
+    class CFIocpNetServer : public CFIocpMgr
+    {
+    public:
+        FTLINLINE CFIocpNetServer();
+        FTLINLINE ~CFIocpNetServer();
+        FTLINLINE virtual BOOL OnIocpStart();
+        FTLINLINE virtual BOOL OnIocpStop();
+    protected:
+        //SOCKET      m_nSocketListen;
+        USHORT      m_nListenPort;
+        CFIocpListenTask* m_pListenTask;
+        // AcceptEx 和 GetAcceptExSockaddrs 的函数指针，用于调用这两个扩展函数
+    public:
+        LPFN_ACCEPTEX                m_lpfnAcceptEx;
+        LPFN_GETACCEPTEXSOCKADDRS    m_lpfnGetAcceptExSockAddrs;
+
+    //protected:
+    public:
+        FTLINLINE BOOL _PostAccept(CFIocpBuffer* pioBuffer);
+        FTLINLINE BOOL _PostRecv(CFIocpBuffer* pioBuffer);
+        FTLINLINE BOOL _PostSend(CFIocpBuffer* pioBuffer);
     };
 }
 #endif //FTL_SOCKET_H

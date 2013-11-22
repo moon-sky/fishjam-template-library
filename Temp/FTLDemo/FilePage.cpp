@@ -201,7 +201,8 @@ class CFIocpCopyFileTask : public CFIocpBaseTask
 public:
     static LONG s_Count;
 
-    CFIocpCopyFileTask()
+    CFIocpCopyFileTask(CFIocpMgr* pIocpMgr)
+        :CFIocpBaseTask(pIocpMgr)
     {
         if (0 == s_Count)
         {
@@ -261,7 +262,7 @@ public:
     virtual BOOL OnInitialize(CFIocpMgr* pIocpMgr,  CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
     {
         BOOL bRet = FALSE;
-        pIoBuffer->m_operType = iotRead;
+        pIoBuffer->m_operType = otRead;
         API_VERIFY_EXCEPT1(m_SrcFile.Read(pIoBuffer->m_pBuffer, pIoBuffer->m_dwSize, NULL, &pIoBuffer->m_overLapped),
             ERROR_IO_PENDING);
         return bRet;
@@ -270,8 +271,8 @@ public:
     virtual BOOL AfterReadCompleted(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
     {
         BOOL bRet = FALSE;
-        FTLASSERT(iotRead == pIoBuffer->m_operType);
-        pIoBuffer->m_operType = iotWrite;
+        FTLASSERT(otRead == pIoBuffer->m_operType);
+        pIoBuffer->m_operType = otWrite;
         API_VERIFY_EXCEPT1(m_DstFile.Write(pIoBuffer->m_pBuffer, dwBytesTransferred, NULL, &pIoBuffer->m_overLapped),
             ERROR_IO_PENDING);
 
@@ -280,8 +281,8 @@ public:
     virtual BOOL AfterWriteCompleted(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
     {
         BOOL bRet = FALSE;
-        FTLASSERT(iotWrite == pIoBuffer->m_operType);
-        pIoBuffer->m_operType = iotRead;
+        FTLASSERT(otWrite == pIoBuffer->m_operType);
+        pIoBuffer->m_operType = otRead;
 
         AddOverLappedOffset(&pIoBuffer->m_overLapped, dwBytesTransferred);
 
@@ -294,7 +295,7 @@ public:
         BOOL bRet = FALSE;
         switch(pIoBuffer->m_operType)
         {
-        case iotRead:
+        case otRead:
             //read over
             API_VERIFY(m_SrcFile.Close());
             API_VERIFY(m_DstFile.Write(pIoBuffer->m_pBuffer, dwBytesTransferred, NULL, NULL));
@@ -330,11 +331,11 @@ void CFilePage::OnBnClickedBtnIocpTest()
     CFElapseCounter counter;
     for (INT i = 0; i < m_nCopyFileCount; i++)
     {
-        CFIocpCopyFileTask* pFileCopyTask = new CFIocpCopyFileTask();
+        CFIocpCopyFileTask* pFileCopyTask = new CFIocpCopyFileTask(&m_iocpMgr);
         CAtlString strTagetFile;
         strTagetFile.Format(TEXT("E:\\TargetCopy_%d.txt"), counter.GetElapseTime() % LONG_MAX);
         pFileCopyTask->OpenFiles(m_strCopySrcFile, strTagetFile);
-        m_iocpMgr.AssociateTask(pFileCopyTask);
+        m_iocpMgr.AssociateTask(pFileCopyTask, TRUE);
     }
 
 

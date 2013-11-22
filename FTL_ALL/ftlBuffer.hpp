@@ -12,10 +12,12 @@ namespace FTL
 	CFRWBufferT<T>::CFRWBufferT()
 	{
 		m_pbWriteBuffer = NULL;
-		m_pbReadBuffer = NULL;
-
+		m_bWriteBufferIsAttached = FALSE;
 		m_nWriteBufferSize = 0;
 		m_nWriteBufferPos = 0;
+		
+		m_pbReadBuffer = NULL;
+		m_bReadBufferIsAttached = FALSE;
 		m_nReadBufferSize = 0;
 		m_nReadBufferPos = 0;
 		m_nReadBufferBytes = 0;
@@ -24,14 +26,69 @@ namespace FTL
 	template <typename T>
 	CFRWBufferT<T>::~CFRWBufferT()
 	{
-		SAFE_DELETE_ARRAY(m_pbWriteBuffer);
-		SAFE_DELETE_ARRAY(m_pbReadBuffer);
+		if(!m_bWriteBufferIsAttached)
+		{
+			SAFE_DELETE_ARRAY(m_pbWriteBuffer);
+		}
+		if(!m_bReadBufferIsAttached)
+		{
+			SAFE_DELETE_ARRAY(m_pbReadBuffer);
+		}
 	}
+
+	template <typename T>
+	BOOL CFRWBufferT<T>::Attach(PBYTE pReadBuffer, LONG nReadBufferSize, PBYTE pWriteBuffer, LONG nWriteBufferSize)
+	{
+		BOOL bRet = TRUE;
+		if(pReadBuffer && nReadBufferSize > 0)
+		{
+			if(!m_bReadBufferIsAttached)
+			{
+				API_VERIFY(SetReadBufferSize(0));
+			}
+			if(bRet)
+			{
+                LONG nDataSize = m_nReadBufferBytes - m_nReadBufferPos;
+                if (m_pbReadBuffer && nDataSize > 0)
+                {
+                    //TODO: copy old data
+                    //Checked::memcpy_s(m_pbReadBuffer, nReadSize, pbTemp + m_nReadBufferPos, nDataSize);
+                }
+				m_pbReadBuffer = pReadBuffer;
+				m_nReadBufferSize = nReadBufferSize;
+				m_bReadBufferIsAttached = TRUE;
+			}
+		}
+		
+		if(pWriteBuffer && nWriteBufferSize > 0)
+		{
+			if(!m_bWriteBufferIsAttached)
+			{
+				API_VERIFY(SetWriteBufferSize(0));
+			}
+            //TODO: Copy old data
+			m_pbWriteBuffer = pWriteBuffer;
+			m_nWriteBufferSize = nWriteBufferSize;
+			m_bWriteBufferIsAttached = TRUE;
+		}
+		
+		return bRet;
+	}
+	template <typename T>
+    BOOL  CFRWBufferT<T>::Detach(PBYTE* ppReadBuffer, LONG* pReadBufferSize, PBYTE* ppWriteBuffer, LONG* pWriteBufferSize)
+	{
+		BOOL bRet = TRUE;
+		
+		return bRet;
+	}
+
 
 	template <typename T>
 	BOOL CFRWBufferT<T>::SetReadBufferSize(LONG nReadSize)
 	{
 		BOOL bRet = TRUE;
+        FTLASSERT(!m_bReadBufferIsAttached);
+
 		//MS Bug: http://support.microsoft.com/kb/154895/en-us, 尝试更改掉,  (新版本已经没有了?)
 
 		if (nReadSize != m_nReadBufferSize)
@@ -92,6 +149,7 @@ namespace FTL
 	BOOL CFRWBufferT<T>::SetWriteBufferSize(LONG nWriteSize)
 	{
 		BOOL bRet = TRUE;
+        FTLASSERT(!m_bWriteBufferIsAttached);
 
 		if (nWriteSize != m_nWriteBufferSize)
 		{
