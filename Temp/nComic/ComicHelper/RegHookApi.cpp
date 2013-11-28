@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "RegHookAPI.h"
 #include "SetupInfoMgr.h"
+#include "InfoConvUtil.h"
 
 LONG WINAPI Hooked_RegCloseKey(HKEY hKey)
 {

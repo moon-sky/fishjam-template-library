@@ -225,7 +225,25 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
                 nOffset = 0;
                 continue;
             }
+	    
+#if defined _M_IX86
 
+#else
+            //Windows 8 64 Hook Kernel32.dll 中的 OpenProcess 等函数时遇到的 0x48FF25 进行 jmp
+            //  000007FB944D1670 48 FF 25 71 CA 11 00     jmp  qword ptr [7FB945EE0E8h] 
+            //  目的地:7FB945EE0E8 = 7FB944D1670(源) + 7(长度) + 0011CA71(偏移)
+            if (pPtrOffset[0] == 0x48 && pPtrOffset[1] == 0xff && pPtrOffset[2] == 0x25)   //Jmp [xxxx]
+            {
+                PBYTE pbTarget = pPtrOffset + 7 + *(INT32 *)&pPtrOffset[3];
+                PBYTE pbNew = *(PBYTE *)pbTarget;
+                HOOK_TRACE(("%p->%p: skipped over call.\n", pPtrOffset, pbNew));
+                pbCode = pbNew;
+                pPtrOffset = pbCode;
+                nOffset = 0;
+                continue;
+            }
+
+#endif 
             // skip over a patch jump
             if (pPtrOffset[0] == 0xeb) {   // jmp +imm8
                 PBYTE pbNew = pPtrOffset + 2 + *(CHAR *)&pPtrOffset[1];
@@ -257,8 +275,9 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
 
 BOOL _IsEndFunctionCode(PBYTE pbCode)
 {
-    BOOL bEndCode = FALSE;
-    __try{
+    BOOL isEnd = FALSE;
+    __try
+    {
         if (pbCode[0] == 0xeb ||    // jmp +imm8
             pbCode[0] == 0xe8 ||    // call +imm32
             pbCode[0] == 0xe9 ||    // jmp +imm32
@@ -266,26 +285,28 @@ BOOL _IsEndFunctionCode(PBYTE pbCode)
             pbCode[0] == 0xc2 ||    // ret +imm8
             pbCode[0] == 0xc3 ||    // ret
             pbCode[0] == 0xcc) {    // brk
-                bEndCode = TRUE;
+                isEnd = TRUE;
         }
         else if (pbCode[0] == 0xff && pbCode[1] == 0x25) {  // jmp [+imm32]
-            bEndCode = TRUE;
+            isEnd = TRUE;
         }
         else if ((pbCode[0] == 0x26 ||      // jmp es:
             pbCode[0] == 0x2e ||      // jmp cs:
             pbCode[0] == 0x36 ||      // jmp ss:
+#ifndef _M_IX86
+            //Win 8 64
+            pbCode[0] == 0x48 ||      // jmp [xxx] ?
+#endif
             pbCode[0] == 0xe3 ||      // jmp ds:
             pbCode[0] == 0x64 ||      // jmp fs:
-            pbCode[0] == 0x65) &&     // jmp gs:
-            pbCode[1] == 0xff &&       // jmp [+imm32]
-            pbCode[2] == 0x25) {
-                bEndCode = TRUE;
+            pbCode[0] == 0x65 )        // jmp gs:
+            && pbCode[1] == 0xff &&  pbCode[2] == 0x25){ // jmp [+imm32]
+                isEnd = TRUE;
         }
     }
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
-        bEndCode = TRUE;
+        isEnd = TRUE;
     }
-
-    return bEndCode;
+    return isEnd;
 }

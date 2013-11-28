@@ -7,7 +7,7 @@
 
 enum HookedSetupInfoType
 {
-    hsit_Invalid,
+    hsit_Invalid = 0,
 
     hsit_NewFile,
 
@@ -16,8 +16,9 @@ enum HookedSetupInfoType
 struct HookedSetupInfo
 {
     HookedSetupInfoType infoType;
-    LPTSTR              pszInfo;
-    LONG                nInfoLength;
+    LPTSTR              pszPath;
+    LPTSTR              pszValue;
+    //LONG                nInfoLength;
     //HookedSetupInfo*    pNextInfo;
 
     bool operator < (const HookedSetupInfo & other) const;
@@ -40,7 +41,7 @@ public:
     BOOL OpenSetupReg(HKEY hKeyRoot, HKEY hKey, LPCTSTR pszPath);
     BOOL SetSetupRegInfo(HKEY hKey, LPCTSTR pszPath);
     BOOL CloseSetupReg(HKEY hKey);
-
+    BOOL GetAllSetupInfo(HWND hWndGetResult);
     BOOL    DumpAllSetupInfo();
 private:
     FTL::CFCriticalSection      m_csLock;
@@ -53,7 +54,6 @@ private:
     RegKeyPathPairContainer     m_RegKeyPathPairs;
     
 private:
-    CAtlString _GetRegRootKeyString(HKEY hKeyRoot);
 };
 
 extern CSetupInfoMgr* g_pSetupInfoMgr;

@@ -39,5 +39,10 @@ BOOL HookApiFromModule(HMODULE hModule, LPCSTR lpProcName, PVOID pDetour, PINLIN
         }
         bRet = TRUE;
     }
+    else
+    {
+        bRet = TRUE;
+    }
+
     return bRet;
 }

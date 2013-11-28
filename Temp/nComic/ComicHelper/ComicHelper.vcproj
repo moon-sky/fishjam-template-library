@@ -435,6 +435,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\InfoConvUtil.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\InlineHook.cpp"
 				>
 			</File>
@@ -494,6 +498,10 @@
 			</File>
 			<File
 				RelativePath=".\HookAPIUtil.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InfoConvUtil.h"
 				>
 			</File>
 			<File
