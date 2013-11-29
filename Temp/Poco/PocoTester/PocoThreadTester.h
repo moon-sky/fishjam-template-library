@@ -4,21 +4,38 @@
 
 /**********************************************************************************************
 * 多线程封装
-*   Poco::Thread
+*   Thread
+*   ThreadPool(线程池) -- 功能不强
+*     1.无法独立控制任务
+*     2.向ThreadPool中增加任务,当没有空闲线程时，会抛出 NoThreadAvailableException 异常，而不是放入队列等待
+*  
+*   thread-local 存储 -- 
 *   同步原子(Poco::Mutex, Poco::ScopedLock, Poco::Event,  Poco::Semaphore, Poco::RWLock), 
-*   Poco::ThreadPool 类及支持thread-local 存储, 
-*   高级别的活动对象(active object) -- 拥有运行于自有线程中的方法的类
-*      ActiveMethod + ActiveResult
+*     Mutex，Semaphore，Event，Scopelock，ReadWriteLock
+*   Active Object(主动对象) -- 使用自己线程运行自己的成员函数,可以共享线程，Poco支持两种主动成员函数。
+*      Activity -- 用在业务不需要返回值和无参数的成员函数时
+*      ActiveMethod + ActiveResult(异步返回结果) -- 用在业务需要返回值和参数的成员函数时
+*   Timer(定时器) -- 
 **********************************************************************************************/
 
 class CPocoThreadTester : public CPPUNIT_NS::TestFixture
 {
 public:
     CPPUNIT_TEST_SUITE( CPocoThreadTester );
-    CPPUNIT_TEST( test_container_holder );
+    CPPUNIT_TEST( test_Locker );
+    CPPUNIT_TEST( test_Thread );
+    CPPUNIT_TEST( test_ThreadPool );
+    CPPUNIT_TEST( test_Timer );
+    CPPUNIT_TEST( test_Activity );
+    CPPUNIT_TEST( test_ActiveMethod );
     CPPUNIT_TEST_SUITE_END();
 
     DECLARE_DEFAULT_TEST_CLASS(CPocoThreadTester);
 private:
-    void test_container_holder();
+    void test_Locker();
+    void test_Thread();
+    void test_ThreadPool();
+    void test_Timer();
+    void test_Activity();
+    void test_ActiveMethod();
 };

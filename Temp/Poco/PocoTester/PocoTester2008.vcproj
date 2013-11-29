@@ -482,6 +482,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PocoDebugTester.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PocoDebugTester.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PocoFileTester.cpp"
 				>
 			</File>

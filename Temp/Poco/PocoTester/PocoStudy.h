@@ -3,6 +3,15 @@
 
 #pragma once
 
+//http://blog.csdn.net/arau_sh/article/details/8620810
+
+//快速的跨平台开发 -- STL + boost + Poco + Qt + Mysql 是一个不错的组合
+
+#include "Poco/Config.h"        //编译定义宏，用来指定编译版本中一些特性
+#include "Poco/Foundation.h"    //编译版本的输出类型,如编译的Dll的输出属性
+#include "Poco/Platform.h"      //支持平台定义，操作系统与硬件结构关系定义
+//#include "Poco/Platform_WIN32.h"   //特定平台的下平台特性定义
+
 
 /****************************************************************************************************
 * Poco(POrtable COmponents), http://pocoproject.org/ -- 开源，侧重于互联网应用，
@@ -11,6 +20,11 @@
 *   包括：Foundation、XML、Crypto、XML、Util、Net、Zip、NetSSL、Data（支持 SQLite、ODBC、MySQL）、
 *          Tools & Utilities、Application 等
 * 
+* 跨平台库的生成
+*   1.VC下编译采用没有预编译头文件的形式, 没有stdafx.h 、stdafx.cpp
+*   2.所有的Dll都是没有资源、没有dllmain存在的工程
+*
+* 编译宏 -- 更改 Poco/Config.h 文件? 可以控制线程数最大数量、是否支持UTF8等
 ****************************************************************************************************/
 
 

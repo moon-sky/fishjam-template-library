@@ -9,6 +9,10 @@
 *     ::NetSSL -- NetSSL为Net库中的网络类提供SSL支持
 *     ::Socket 
 *     ::Reactor 
+*
+* 基于socket 类提供两个框架创建TCP服务器:
+*   1.多线程服务器(每个连接一个线程, 从线程池获得)
+*   2.基于Acceptor-Reactor模式的服务器
 **********************************************************************************************/
 
 class CPocoNetTester : public CPPUNIT_NS::TestFixture
