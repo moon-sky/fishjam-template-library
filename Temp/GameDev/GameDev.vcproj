@@ -189,15 +189,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MySqlTester.h"
-				>
-			</File>
-			<File
 				RelativePath=".\PlatformDefine.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SQLLanguage.h"
 				>
 			</File>
 		</Filter>

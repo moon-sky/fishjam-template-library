@@ -202,6 +202,10 @@
 				RelativePath=".\ftlCrashHandler.hpp"
 				>
 			</File>
+   			<File
+				RelativePath=".\ftlDatabase.hpp"
+				>
+			</File>
 			<File
 				RelativePath=".\ftlDebug.hpp"
 				>
@@ -394,6 +398,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlCrashHandler.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlDatabase.h"
 				>
 			</File>
 			<File
