@@ -47,24 +47,24 @@ BOOL CFTLDemoSheet::InitSheet()
 {
     BOOL bRet = TRUE;
 
-    this->AddPage(new CBasePage());
+    //this->AddPage(new CBasePage());
     //this->AddPage(new CControlsPage());
     //this->AddPage(new CCrackPage());
     //this->AddPage(new CCrashHandlerPage());
-    this->AddPage(new CFilePage());
+    //this->AddPage(new CFilePage());
     //this->AddPage(new CGdiPage());
     //this->AddPage(new CGdiPlusPage());
     //this->AddPage(new CGuiPage());
-    this->AddPage(new CHookApiPage());
-    this->AddPage(new CMemPage());
+    //this->AddPage(new CHookApiPage());
+    //this->AddPage(new CMemPage());
 
-	this->AddPage(new CNetPage());
+	//this->AddPage(new CNetPage());
 	//this->AddPage(new CNLSPage());
     //this->AddPage(new CPipelinePage());
-    this->AddPage(new CRegPage());
+    //this->AddPage(new CRegPage());
 	//this->AddPage(new CShellPage());
 	this->AddPage(new CSystemPage());
-	this->AddPage(new CThreadPage());
+	//this->AddPage(new CThreadPage());
 	//this->AddPage(new CThreadPoolPage());
 	//this->AddPage(new CVistaPage());
 	//this->AddPage(new CWindowPage());

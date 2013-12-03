@@ -36,6 +36,10 @@ BEGIN_MESSAGE_MAP(CSystemPage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_SYSTEM_WAIT_ALL_CHILD_PROCESS, &CSystemPage::OnBnClickedBtnCreateProcessAndWaitAllChild)
     ON_BN_CLICKED(IDC_BTN_SYSTEM_GET_REG_VALUE_EXPORT_STRING, &CSystemPage::OnBnClickedBtnGetRegValueExportString)
     ON_BN_CLICKED(IDC_BTN_SYSTEM_TEST_OPENREG, &CSystemPage::OnBnClickedBtnTestOpenReg)
+    ON_BN_CLICKED(IDC_BTN_SYSTEM_CHECK_RUN_ON_VMWARE, &CSystemPage::OnBnClickedBtnCheckRunningOnVMWare)
+    ON_BN_CLICKED(IDC_BTN_SYSTEM_CHECK_RUN_ON_VPC, &CSystemPage::OnBnClickedBtnCheckRunningOnVirtualPC)
+    ON_BN_CLICKED(IDC_BTN_SYSTEM_CHECK_RUN_ON_VBOX, &CSystemPage::OnBnClickedBtnCheckRunningOnVirtualBox)
+    ON_BN_CLICKED(IDC_BTN_SYSTEM_CHECK_RUNING_MACHINE_TYPE, &CSystemPage::OnBnClickedBtnCheckRunningMachineType)
 
 END_MESSAGE_MAP()
 
@@ -180,4 +184,87 @@ void CSystemPage::OnBnClickedBtnTestOpenReg()
 
     //FTLASSERT(regLocalMachine.m_hKey == regCurrentUser.m_hKey);
 
+}
+
+
+BOOL VirtualPCTest()
+{
+    BOOL gInVirtualPC = TRUE;
+    __try
+    {
+        __asm
+        {
+            pushad      
+                mov ebx, 0 // Flag
+                mov eax, 1 // VPC function number
+                __emit 0Fh
+                __emit 3Fh
+                __emit 07h
+                __emit 0Bh
+                test ebx, ebx
+                sete al
+                movzx eax, al
+                mov gInVirtualPC , eax;
+            popad
+        }
+
+    }
+    __except(EXCEPTION_EXECUTE_HANDLER)
+    {
+        gInVirtualPC=FALSE;
+    }
+    return gInVirtualPC;
+}
+
+void CSystemPage::OnBnClickedBtnCheckRunningOnVMWare()
+{
+    BOOL isVmWare = FTL::CFSystemUtil::IsInsideVMWare();
+    CAtlString strInfo = isVmWare ? TEXT("On VmWare") : TEXT("Not On VmWare");
+    AfxMessageBox(strInfo);
+}
+
+void CSystemPage::OnBnClickedBtnCheckRunningOnVirtualPC()
+{
+    BOOL isVPC = FTL::CFSystemUtil::IsInsideVPC();
+    CAtlString strInfo = isVPC ? TEXT("On VPC") : TEXT("Not On VPC");
+    AfxMessageBox(strInfo);
+}
+
+void CSystemPage::OnBnClickedBtnCheckRunningOnVirtualBox()
+{
+    BOOL isVirtualBox = FTL::CFSystemUtil::IsInsideVirtualBox();
+    CAtlString strInfo = isVirtualBox ? TEXT("On VirtualBox") : TEXT("Not On VirtualBox");
+    AfxMessageBox(strInfo);
+
+}
+
+void CSystemPage::OnBnClickedBtnCheckRunningMachineType()
+{
+    CString strResult = TEXT("Unknown Result");
+    FTL::VirtualMachineType vmType = FTL::CFSystemUtil::CheckRunningMachineType();
+    switch (vmType)
+    {
+    case vmtError:
+        strResult = TEXT("vmtError");
+        break;
+    case vmtUnknown:
+        strResult = TEXT("vmtUnknown");
+        break;
+    case vmtReal:
+        strResult = TEXT("vmtReal");
+        break;
+    case vmtVmWare:
+        strResult = TEXT("vmtVmWare");
+        break;
+    case vmtVirtualPC:
+        strResult = TEXT("vmtVirtualPC");
+        break;
+    case vmtVirtualBox:
+        strResult = TEXT("vmtVirtualBox");
+        break;
+    default:
+        FTLASSERT(FALSE);
+        break;
+    }
+    AfxMessageBox(strResult);
 }

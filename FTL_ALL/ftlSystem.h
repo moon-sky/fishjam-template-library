@@ -204,6 +204,16 @@ namespace FTL
 		DWORD dwVer3;
 	};
 
+    enum VirtualMachineType
+    {
+        vmtError = -2,
+        vmtUnknown = -1,
+        
+        vmtReal,        //ÕæÊµ»úÆ÷
+        vmtVmWare,
+        vmtVirtualPC,
+        vmtVirtualBox,
+    };
     FTLEXPORT class CFSystemUtil
     {
     public:
@@ -272,7 +282,11 @@ namespace FTL
 		//  Left(objAdapter.Description,2£©  ==  VM
 #if defined(_M_IX86)
         FTLINLINE static BOOL IsInsideVPC();
+        FTLINLINE static BOOL IsInsideVirtualBox();
 		FTLINLINE static BOOL IsInsideVMWare();
+
+        //http://www.oschina.net/code/snippet_222150_16772
+        FTLINLINE static VirtualMachineType CheckRunningMachineType();
 #endif 
         FTLINLINE static BOOL IsRunningOnRemoteDesktop();
 

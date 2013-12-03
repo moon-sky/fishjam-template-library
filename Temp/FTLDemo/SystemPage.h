@@ -26,4 +26,10 @@ public:
     afx_msg void OnBnClickedBtnCreateProcessAndWaitAllChild();
     afx_msg void OnBnClickedBtnGetRegValueExportString();
     afx_msg void OnBnClickedBtnTestOpenReg();
+    afx_msg void OnBnClickedBtnCheckRunningOnVirtualBox();
+    afx_msg void OnBnClickedBtnCheckRunningOnVirtualPC();
+    afx_msg void OnBnClickedBtnCheckRunningOnVMWare();
+    afx_msg void OnBnClickedBtnCheckRunningMachineType();
+
+
 };

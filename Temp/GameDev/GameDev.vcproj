@@ -192,6 +192,10 @@
 				RelativePath=".\PlatformDefine.h"
 				>
 			</File>
+			<File
+				RelativePath=".\WowPrivateServer.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

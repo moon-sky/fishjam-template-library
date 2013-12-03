@@ -70,6 +70,7 @@ setlocal enabledelayedexpansion -- ???
 *     mysqldump --opt school>school.bbb -- 测试失败(unknown option '--no-beep')
 *
 * 管理工具
+*   SQLyog -- 第三方的客户端管理工具
 *   MySQL Administrator
 *   MySQL Query Browser
 *   MySQL Workbench

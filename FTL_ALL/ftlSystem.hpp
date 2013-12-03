@@ -909,7 +909,7 @@ namespace FTL
 
 	BOOL CFSystemUtil::IsInsideVPC()
 	{
-	    bool rc = false;  
+	    bool rc = true;  
 
 	    __try  
 	    {  
@@ -930,13 +930,171 @@ namespace FTL
 	    // The except block shouldn't get triggered if VPC is running!!  
 	    __except(IsInsideVPC_exceptionFilter(GetExceptionInformation()))  
 	    {  
+            rc = false;
 	    }  
 
 	    return rc;  
 	}
 
+    typedef struct
+    {
+        WORD IDTLimit;    // IDT的大小
+        WORD LowIDTbase;  // IDT的低位地址
+        WORD HiIDTbase;  // IDT的高位地址
+    } IDTINFO;
+
+    BOOL CFSystemUtil::IsInsideVirtualBox()
+    {
+        //汇编的文档 -- Intel 64 and IA-32 Architecture Software Developer’s Manual Volume 3A: System Programming Guide
+        BOOL bRet = FALSE;
+        BOOL isInsideVBox = FALSE;
+
+#if 1
+        //基于STR的检测方法
+        //在保护模式下运行的所有程序在切换任务时，对于当前任务中指向TSS的段选择器将会被存储在任务寄存器中
+        //在虚拟机和真实主机之中，通过STR读取的地址是不同的，
+        //当地址等于0x0040xxxx时，说明处于虚拟机中，否则为真实主机
+
+        unsigned char mem[4] = {0};
+        int i;
+        __asm str mem;
+        FormatMessageBox(NULL, TEXT("CheckVBox"), MB_OK, 
+            TEXT("STR base: 0x%02x%02x%02x%02x\n"), mem[0], mem[1], mem[2], mem[3]);
+
+        if ( (mem[0]==0x28) && (mem[1]==0x00))
+        {
+            isInsideVBox = TRUE;
+        }
+#endif 
+
+#if 0
+        //利用LDT和GDT的检测方法 
+        //在保护模式下，所有的内存访问都要通过全局描述符表（GDT）或者本地描述符表（LDT）才能进行。
+        //虚拟机与真实主机中的GDT和LDT不能相同
+        //当LDT基址位于0x0000（只有两字节）时为真实主机，否则为虚拟机，
+        //当GDT基址位于0xFFXXXXXX时说明处于虚拟机中，否则为真实主机。
+
+        //LDTDetect
+        unsigned short ldt_addr = 0;
+        unsigned char ldtr[2] = {0};
+
+        _asm sldt ldtr
+            ldt_addr = *((unsigned short *)&ldtr);
+        //printf("LDT BaseAddr: 0x%x\n", ldt_addr);
+
+        if(ldt_addr == 0x0000)
+        {
+            isInsideVBox = FALSE;
+        }
+        else
+        {
+            isInsideVBox = TRUE;
+        }
+
+        if (!bRet)
+        {
+            //GDTDetect -- 有内存问题
+            unsigned int gdt_addr = 0;
+            unsigned char gdtr[4] = {0};
+
+            _asm sgdt gdtr
+                gdt_addr = *((unsigned int *)&gdtr[2]);
+            FTLTRACE(TEXT("GDT BaseAddr:0x%x\n"), gdt_addr);
+
+            if((gdt_addr >> 24) == 0xff)
+            {
+                isInsideVBox = TRUE;
+            }
+        }
+#endif 
+
+#if 0
+        DWORD  dwIndex = 0;
+        DISPLAY_DEVICE displayDevice = {0};
+        displayDevice.cb = sizeof(displayDevice);
+        DWORD dwFlags =  EDD_GET_DEVICE_INTERFACE_NAME;
+        //DISPLAY_DEVICE_MIRRORING_DRIVER
+        bRet = EnumDisplayDevices(NULL, dwIndex, &displayDevice, dwFlags);
+        while (bRet)
+        {
+            if (bRet)
+            {
+                if (DISPLAY_DEVICE_ATTACHED_TO_DESKTOP == (displayDevice.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP))
+                {
+                    //real device
+                    if (StrStr(displayDevice.DeviceString, TEXT("VirtualBox")))
+                    {
+                        isInsideVBox = TRUE;
+                        break;
+                    }
+                }
+                //FormatMessageBox(NULL, TEXT("Enum"), MB_OK, TEXT("Index=%d, DeviceName=%s, DeviceString=%s,DeviceID=%s,DeviceKey=%s,StateFlags=0x%x"), 
+                //    dwIndex, displayDevice.DeviceName, displayDevice.DeviceString, displayDevice.DeviceID,displayDevice.DeviceKey, displayDevice.StateFlags);
+            }
+            dwIndex++;
+            ZeroMemory(&displayDevice, sizeof(displayDevice));
+            displayDevice.cb = sizeof(displayDevice);
+            bRet = EnumDisplayDevices(NULL, dwIndex, &displayDevice, dwFlags);
+        }
+#endif 
+
+#if 0
+        //TODO: 目前测试无法执行
+        //BOOL bRet = FALSE;
+        //利用IDT(中断描述符表, Interrupt Descriptor Table)基址检测虚拟机
+        //读取IDT基址--SIDT指令来读取IDTR(中断描述符表寄存器，用于IDT在内存中的基址)
+        //由于只存在一个IDTR，但又存在两个操作系统(虚拟机系统和真主机系统)，为了防止冲突，
+        //虚拟机监控器(VMM)必须更改虚拟机中的IDT地址，利用真主机与虚拟机环境中执行sidt指令的差异即可用于检测虚拟机是否存在
+        //Redpill作者发现各环境相IDT的地址范围(因此只需判断执行SIDT指令后返回的第一字节是否大于0xD0)：
+        //  VMware -- 0xFFXXXXXX
+        //  VirtualPC -- 0xE8XXXXXX
+        //  真机 -- 0x80xxxxxx
+        //缺陷:
+        //  IDT的值只针对处于正在运行的处理器而言，在单CPU中它是个常量，
+        //  但当它处于多CPU时就可能会受到影响(每个CPU都有其自己的IDT)
+        //解决方案:SetThreadAffinityMask()将线程限制在单处理器上执行
+        //   但是VM线程在不同的处理器上执行时，IDT值将会发生变化 -- 此方法适用性不强
+
+        __try
+        {
+            //SetThreadAffinityMask(
+            unsigned char m[2+4], rpill[] = "\x0f\x01\x0d\x00\x00\x00\x00\xc3";  //相当于SIDT[adrr],其中addr用于保存IDT地址
+            *((unsigned int*)&rpill[3]) = (unsigned int)m;  //将sidt[addr]中的addr设为m的地址
+            ((void(*)())&rpill)();  //执行SIDT指令，并将读取后IDT地址保存在数组m中
+
+            //*((unsigned*)&m[2]) -- 由于前2字节为IDT大小，因此从m[2]开始即为IDT地址
+            if (m[5]>0xd0)          //当IDT基址大于0xd0xxxxxx时则说明程序处于VMware中
+            {
+                isInsideVBox = TRUE;
+            }
+        }
+        __except(IsInsideVPC_exceptionFilter(GetExceptionInformation()))
+        {
+        }
+#endif 
+
+#if 0
+        //基于注册表检测虚拟机 -- 缺点:万一没有装?
+        //在windows虚拟机中常常安装有VMware Tools以及其它的虚拟硬件(如网络适配器、虚拟打印机等)
+
+        //HKEY_CLASSES_ROOT\Applications\VMwareHostOpen.exe 
+
+#endif 
+
+#if 0
+        //利用虚拟硬件指纹检测虚拟机
+        //  如VMware默认的网卡MAC地址前缀为“00-05-69，00-0C-29或者00-50-56”
+#endif 
+        return isInsideVBox;
+    }
+
 	FTLINLINE bool _IsInsideVMWare()
 	{
+        //通过执行特权指令来检测虚拟机
+        //VMWare使用“IN”指令来读取特定端口的数据以进行两机通讯,但由于IN指令属于特权指令，
+        //处于保护模式下的真机上执行此指令时，会触发 EXCEPTION_PRIV_INSTRUCTION 异常;而在虚拟机中并不会发生异常
+        //在指定功能号0A（获取VMware版本）的情况下，它会在EBX中返回其版本号“VMXH”；
+        //而当功能号为0x14时，可用于获取VMware内存大小，当大于0时则说明处于虚拟机中。
 		bool r;
 		_asm
 		{
@@ -945,13 +1103,15 @@ namespace FTL
 			push   ebx
 
 			mov    eax, 'VMXh'
-			mov    ebx, 0 // any value but MAGIC VALUE
-			mov    ecx, 10 // get VMWare version
-			mov    edx, 'VX' // port number
-			in     eax, dx // read port
+			mov    ebx, 0       //将ebx设置为非幻数( MAGIC VALUE)’VMXH’的其它值
+			mov    ecx, 10      //指定功能号，用于获取VMWare版本，当它为0x14时用于获取VMware内存大小
+			mov    edx, 'VX'    //端口号
+			in     eax, dx      //从端口dx读取VMware版本到eax
+            //若上面指定功能号为0x14时，可通过判断eax中的值是否大于0，若是则说明处于虚拟机中
+
 			// on return EAX returns the VERSION
-			cmp    ebx, 'VMXh' // is it a reply from VMWare?
-			setz   [r] // set return value
+			cmp    ebx, 'VMXh'  //判断ebx中是否包含VMware版本’VMXh’，若是则在虚拟机中
+			setz   [r]          //设置返回值
 
 			pop    ebx
 			pop    ecx
@@ -962,17 +1122,50 @@ namespace FTL
 
 	BOOL CFSystemUtil::IsInsideVMWare()
 	{
-		BOOL bRet = FALSE;
+		BOOL bRet = FALSE;  //如果未处于VMware中，则触发异常，因此默认值设置为FALSE
 		__try
 		{
 			bRet = !!_IsInsideVMWare();
 		}
 		__except(1) // 1 = EXCEPTION_EXECUTE_HANDLER
 		{
-			
+			//bRet = FALSE;
 		}
 		return bRet;
 	}
+
+    VirtualMachineType CFSystemUtil::CheckRunningMachineType()
+    {
+        VirtualMachineType vmType = vmtUnknown;
+        __try
+        {
+            unsigned char mem[4] = {0};
+            __asm str mem;
+            FormatMessageBox(NULL, TEXT("CheckVBox"), MB_OK, 
+                TEXT("STR base: 0x%02x%02x%02x%02x\n"), mem[0], mem[1], mem[2], mem[3]);
+
+            unsigned int memResult = mem[0] << 24 | mem[1] << 16 | mem[2] << 8 | mem[3];
+            switch (memResult)
+            {
+            case 0x40000000:
+                vmType = vmtReal;
+                break;
+            case 0x28000000:
+                vmType = vmtVirtualBox;
+                break;
+            case 0x00400000:
+                vmType = vmtVmWare;
+                break;
+            default:
+                break;
+            }
+        }
+        __except(IsInsideVPC_exceptionFilter(GetExceptionInformation()))
+        {
+            vmType = vmtError;
+        }
+        return vmType;
+    }
 #endif 
 
 #define INVALID_SESSIONID ((DWORD)0xFFFFFFFF)
