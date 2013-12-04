@@ -71,6 +71,7 @@ setlocal enabledelayedexpansion -- ???
 *
 * 管理工具
 *   SQLyog -- 第三方的客户端管理工具
+*   Navicat_for_MySQL -- 
 *   MySQL Administrator
 *   MySQL Query Browser
 *   MySQL Workbench
