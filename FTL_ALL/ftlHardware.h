@@ -137,6 +137,15 @@ namespace FTL
     private:
         HDEVNOTIFY m_hDevNotify;
     };
+
+    //http://www.vckbase.com/index.php/wv/507.html -- 获取硬盘信息
+    class CFDiskInfomation
+    {
+    public:
+        FTLINLINE INT GetDiskCount(); 
+        FTLINLINE BOOL GetDiskInfo(INT nDiskIndex = 0); //缺省获取第一个
+
+    };
 }
 
 #endif //FTL_HARDWARE_H

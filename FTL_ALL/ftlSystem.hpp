@@ -943,20 +943,46 @@ namespace FTL
         WORD HiIDTbase;  // IDT的高位地址
     } IDTINFO;
 
+#include <WinIoCtl.h>
+
+#define IDE_ATAPI_IDENTIFY  0xA1
+#define IDE_ATA_IDENTIFY  0xEC
+#define IDENTIFY_BUFFER_SIZE 512
+#define DFP_GET_VERSION   0x00074080
+#define DFP_RECEIVE_DRIVE_DATA 0x0007c088
+//#define DFP_RECEIVE_DRIVE_DATA  CTL_CODE(IOCTL_DISK_BASE, 0x0022, METHOD_BUFFERED, FILE_READ_ACCESS | FILE_WRITE_ACCESS)
+//#define SMART_RCV_DRIVE_DATA      CTL_CODE(IOCTL_DISK_BASE, 0x0022, METHOD_BUFFERED, FILE_READ_ACCESS | FILE_WRITE_ACCESS)
+
+   /// struct to save disk dirver info
+   typedef struct _GETVERSIONOUTPARAMS
+    {
+        BYTE bVersion;
+        BYTE bRevision;
+        BYTE bReserved;
+        BYTE bIDEDeviceMap;
+        DWORD fCapabilities;
+        DWORD dwReserved[4];
+    }GETVERSIONOUTPARAMS, *PGETVERSIONOUTPARAMS, *LPGETVERSIONOUTPARAMS;
+
     BOOL CFSystemUtil::IsInsideVirtualBox()
     {
         //汇编的文档 -- Intel 64 and IA-32 Architecture Software Developer’s Manual Volume 3A: System Programming Guide
         BOOL bRet = FALSE;
         BOOL isInsideVBox = FALSE;
+        FTLASSERT(DFP_RECEIVE_DRIVE_DATA == SMART_RCV_DRIVE_DATA);
 
 #if 1
+
+#endif 
+#if 0
         //基于STR的检测方法
         //在保护模式下运行的所有程序在切换任务时，对于当前任务中指向TSS的段选择器将会被存储在任务寄存器中
+        //STR(Store task register)指令是用于将任务寄存器 (TR) 中的段选择器存储到目标操作数，
+        //  目标操作数可以是通用寄存器或内存位置，使用此指令存储的段选择器指向当前正在运行的任务的任务状态段 (TSS)。
         //在虚拟机和真实主机之中，通过STR读取的地址是不同的，
         //当地址等于0x0040xxxx时，说明处于虚拟机中，否则为真实主机
 
-        unsigned char mem[4] = {0};
-        int i;
+        unsigned char mem[4] = {0, 0, 0, 0};
         __asm str mem;
         FormatMessageBox(NULL, TEXT("CheckVBox"), MB_OK, 
             TEXT("STR base: 0x%02x%02x%02x%02x\n"), mem[0], mem[1], mem[2], mem[3]);

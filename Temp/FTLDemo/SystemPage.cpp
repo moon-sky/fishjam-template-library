@@ -230,12 +230,142 @@ void CSystemPage::OnBnClickedBtnCheckRunningOnVirtualPC()
     AfxMessageBox(strInfo);
 }
 
+BOOL DoIdentify (HANDLE hPhysicalDriveIOCTL, PSENDCMDINPARAMS pSCIP,
+                         PSENDCMDOUTPARAMS pSCOP, BYTE bIDCmd, BYTE bDriveNum,
+                         PDWORD lpcbBytesReturned)
+{
+    // Set up data structures for IDENTIFY command.
+    pSCIP -> cBufferSize = IDENTIFY_BUFFER_SIZE;
+    pSCIP -> irDriveRegs.bFeaturesReg = 0;
+    pSCIP -> irDriveRegs.bSectorCountReg = 1;
+    pSCIP -> irDriveRegs.bSectorNumberReg = 1;
+    pSCIP -> irDriveRegs.bCylLowReg = 0;
+    pSCIP -> irDriveRegs.bCylHighReg = 0;
+
+    // Compute the drive number.
+    pSCIP -> irDriveRegs.bDriveHeadReg = 0xA0 | ((bDriveNum & 1) << 4);
+
+    // The command can either be IDE identify or ATAPI identify.
+    pSCIP -> irDriveRegs.bCommandReg = bIDCmd;
+    pSCIP -> bDriveNumber = bDriveNum;
+    pSCIP -> cBufferSize = IDENTIFY_BUFFER_SIZE;
+
+    return( DeviceIoControl (hPhysicalDriveIOCTL, DFP_RECEIVE_DRIVE_DATA,
+        (LPVOID) pSCIP,
+        sizeof(SENDCMDINPARAMS) - 1,
+        (LPVOID) pSCOP,
+        sizeof(SENDCMDOUTPARAMS) + IDENTIFY_BUFFER_SIZE - 1,
+        lpcbBytesReturned, NULL) );
+}
+
+char *ConvertToString(DWORD diskdata [256], char* pOutBuf, int nSize, int firstIndex, int lastIndex)
+{
+    ZeroMemory(pOutBuf, nSize);
+
+    FTLASSERT(lastIndex - firstIndex < nSize);
+    if (lastIndex - firstIndex < nSize)
+    {
+        int index = 0;
+        int position = 0;
+
+        //  each integer has two characters stored in it backwards
+        for (index = firstIndex; index <= lastIndex; index++)
+        {
+            //  get high byte for 1st character
+            pOutBuf [position] = (char) (diskdata [index] / 256);
+            position++;
+
+            //  get low byte for 2nd character
+            pOutBuf [position] = (char) (diskdata [index] % 256);
+            position++;
+        }
+        //  end the string 
+        pOutBuf [position] = '\0';
+
+        //  cut off the trailing blanks
+        for (index = position - 1; index > 0 && ' ' == pOutBuf [index]; index--)
+            pOutBuf [index] = '\0';
+    }
+
+    return pOutBuf;
+}
+
+BOOL GetDiskName(INT nDiskIndex, CAtlString& strDiskName)
+{
+    BOOL bRet = FALSE;
+
+    CAtlString strPhysicalDriverName;
+    strPhysicalDriverName.Format(TEXT("\\\\.\\PhysicalDrive%d"), nDiskIndex);
+    
+    HANDLE hPhysicalDriveIOCTL = CreateFile (strPhysicalDriverName,
+        GENERIC_READ | GENERIC_WRITE, 
+        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+        OPEN_EXISTING, 0, NULL);
+    API_VERIFY( hPhysicalDriveIOCTL != INVALID_HANDLE_VALUE );
+
+    if (bRet)
+    {
+        GETVERSIONOUTPARAMS VersionParams = {0};
+        DWORD               cbBytesReturned = 0;
+
+        // Get the version, etc of PhysicalDrive IOCTL
+        memset ((void*) &VersionParams, 0, sizeof(VersionParams));
+        API_VERIFY(DeviceIoControl (hPhysicalDriveIOCTL, DFP_GET_VERSION,
+            NULL,  0, &VersionParams, sizeof(VersionParams), &cbBytesReturned, NULL));
+
+        // If there is a IDE device at number "i" issue commands
+        // to the device
+        if (bRet && VersionParams.bIDEDeviceMap > 0)
+        {
+            BYTE             bIDCmd = 0;   // IDE or ATAPI IDENTIFY cmd
+            SENDCMDINPARAMS  scip;
+            //SENDCMDOUTPARAMS OutCmd;
+            BYTE IdOutCmd [sizeof (SENDCMDOUTPARAMS) + IDENTIFY_BUFFER_SIZE - 1];
+            // Now, get the ID sector for all IDE devices in the system.
+            // If the device is ATAPI use the IDE_ATAPI_IDENTIFY command,
+            // otherwise use the IDE_ATA_IDENTIFY command
+            bIDCmd = (VersionParams.bIDEDeviceMap >> nDiskIndex & 0x10) ? IDE_ATAPI_IDENTIFY : IDE_ATA_IDENTIFY;
+
+            memset (&scip, 0, sizeof(scip));
+            memset (IdOutCmd, 0, sizeof(IdOutCmd));
+
+            API_VERIFY(DoIdentify(hPhysicalDriveIOCTL, 
+                &scip, 
+                (PSENDCMDOUTPARAMS)&IdOutCmd, 
+                (BYTE) bIDCmd,
+                (BYTE) nDiskIndex,
+                &cbBytesReturned));
+            if (bRet)
+            {
+                DWORD diskdata [256];
+                USHORT *pIdSector = (USHORT *)((PSENDCMDOUTPARAMS) IdOutCmd) -> bBuffer;
+                for (int i = 0; i < 256; i++)
+                {
+                    diskdata [i] = pIdSector [i];
+                }
+                char diskName[128] = {0};
+                strDiskName = CAtlString(ConvertToString(diskdata, diskName, _countof(diskName), 27, 46));
+            }
+        }
+        CloseHandle(hPhysicalDriveIOCTL);
+    }
+
+    return bRet;
+}
+
 void CSystemPage::OnBnClickedBtnCheckRunningOnVirtualBox()
 {
-    BOOL isVirtualBox = FTL::CFSystemUtil::IsInsideVirtualBox();
-    CAtlString strInfo = isVirtualBox ? TEXT("On VirtualBox") : TEXT("Not On VirtualBox");
-    AfxMessageBox(strInfo);
-
+    //BOOL isVirtualBox = FTL::CFSystemUtil::IsInsideVirtualBox();
+    //CAtlString strInfo = isVirtualBox ? TEXT("On VirtualBox") : TEXT("Not On VirtualBox");
+    //AfxMessageBox(strInfo);
+    BOOL bRet = FALSE;
+    CAtlString strDiskName;
+    API_VERIFY(GetDiskName(0, strDiskName));
+    if (bRet)
+    {
+        AfxMessageBox(strDiskName);
+    }
+    
 }
 
 void CSystemPage::OnBnClickedBtnCheckRunningMachineType()

@@ -96,7 +96,7 @@
 *   采用CefRefPtr<CefBase子类>来实现生存期管理，各个 CefBase子类 具体实现类中通过 IMPLEMENT_REFCOUNTING 宏实现引用计数的函数
 *  
 * 常见类
-*   CefApp 
+*   CefApp -- 整体的进程类，通常要从该类继承?
 *   CefBrowser -- 代表一个浏览器对象，可以获取其中的各个CefFrame,给指定browser/render进程发送特定消息。
 *     在browser进程中该类的方法可以被任意线程调用。在render进程中只能在主线程被调用
 *   CefBrowserHost -- 在浏览器窗口来看代表了browser进程，暴露了与浏览器窗口相关的接口

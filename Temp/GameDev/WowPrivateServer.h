@@ -29,7 +29,7 @@
 *       mangos -- 通过导入YTDB的方式恢复， 需要约 5、6 个小时?
 *                 然后按顺序逐步执行YTDB中名字带 mangos 的升级补丁，
 *                 查看 db_version 表，看最后一列的列名前面的编号(如 11169_02)，然后再导入sql\updates文件夹下对应编号后的所有sql文件
-*       realmd
+*       realmd -- login 信息的数据库，main中循环处理 ACE_Reactor::run_reactor_event_loop，处理 AuthSocket 的接入?
 *     2.src\bindings\ScriptDev2\sql\scriptdev2_create_database.sql -- 创建 scriptdev2 库
 *       scriptdev2 -- scriptdev2_script_full.sql 脚本创建表
 *   配置文件
@@ -53,8 +53,13 @@
 * 
 * MaNGOS(Massive Network Game Object Server) -- 开源(GPL)的MMORPG游戏服务器源码框架, 理论上支持任何客户端的网络游戏, 目前常用于魔兽私服。
 *   新版本 -- https://github.com/mangos , 其上可以找到对应各个Wow版本的程序( Zero -> Four )
-*   旧版本 -- https://svn.code.sf.net/p/mangos/code/trunk
+*     0.Mangos Zero  -- For Vanilla World of Warcraft
+*     1.Mangos One   -- The Burning Crusade(燃烧的远征)
+*     2.Mangos Two   -- The Wrath of the Lich King(巫妖王之怒)
+*     3.Mangos Three -- The Cataclysm(大灾变)
+*     4.Mangos Four  -- Mists of Pandaria(潘达利亚的迷雾)
 *
+*     
 *   
 *  
 *   核心部分是个和特定游戏没有关系的核心框架程序 -- 进行进程调度，创造世界，建立心跳机制，处理网络接入等。
@@ -66,6 +71,7 @@
 *   doc -- 可以生成 Doxygen 格式的帮助文件
 * 
 * 脚本系统(scriptdev2)，编译生成 scriptdev2.dll， 针对WoW的游戏脚本，增加了额外的怪物及BOSS的AI，小怪提供框架由数据库提供支持
+*   https://github.com/scriptdev2/scriptdev2 -- 最新 ?
 *   https://svn.code.sf.net/p/scriptdev2/code/, 需要下载到 mangos\trunk\src\bindings\ScriptDev2 目录中(会通过相对路径使用mangos中的文件)
 *   https://scriptdev2.svn.sourceforge.net/svnroot/scriptdev2
 * 
@@ -99,4 +105,12 @@
 /**********************************************************************************************************************
 * 模拟魔兽世界的项目 -- 
 * 
+**********************************************************************************************************************/
+
+/**********************************************************************************************************************
+* 魔兽目录分析
+*   Wow.exe -- 原版登录器
+*   Launcher.exe -- 登录器，集成网站公告，更新检查，修复等多项功能 
+*   Data -- 核心版本数据，包括3D模型等
+*   WTK  -- 游戏的配置数据文件夹
 **********************************************************************************************************************/
