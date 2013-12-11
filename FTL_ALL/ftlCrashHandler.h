@@ -49,6 +49,10 @@ namespace FTL
 	* 每个异常，Windows 会最多给于两轮处理机会 -- 
 	*   异常处理器(VEH、SEH 等)
     * SetUnhandledExceptionFilter -- 在发生未处理异常时，由系统调用进行处理
+    *   其异常处理函数的返回值：
+    *     EXCEPTION_EXECUTE_HANDLER -- 
+    *     EXCEPTION_CONTINUE_EXECUTION -- 代码会试图对发生异常的代码再执行一遍，通常需要先修改相关逻辑，否则会死循环
+    *     EXCEPTION_CONTINUE_SEARCH -- 进行系统通常的异常处理（错误消息对话框） 
     * Vista系统下可以使用 RegisterApplicationRecoveryCallback 注册恢复回调函数，可以在
     * 未知错误或者超过Windows响应时间(默认5秒)后被系统调用，可以保存用户未保存的数据并恢复（有Windows提供的UI）
     * 在 TIB 中保存SEH的链表，CONTEXT里寄存器的值

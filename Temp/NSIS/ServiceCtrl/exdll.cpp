@@ -33,6 +33,9 @@ int popstring(TCHAR *str)
   th=(*g_stacktop);
   lstrcpy(str,th->text);
   *g_stacktop = th->next;
+  //OutputDebugString(TEXT("\npopstring : "));
+  //OutputDebugString(str);
+
   GlobalFree((HGLOBAL)th);
   return 0;
 }
@@ -43,6 +46,9 @@ void pushstring(TCHAR *str)
   if (!g_stacktop) return;
   th=(stack_t*)GlobalAlloc(GPTR,sizeof(stack_t)+ g_stringsize * sizeof(TCHAR));
   lstrcpyn(th->text,str,g_stringsize);
+  //OutputDebugString(TEXT("\npushstring : "));
+  //OutputDebugString(str);
+
   th->next=*g_stacktop;
   *g_stacktop=th;
 }

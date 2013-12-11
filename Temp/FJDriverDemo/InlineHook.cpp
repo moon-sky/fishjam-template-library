@@ -154,7 +154,7 @@ BOOL __cdecl RestoreInlineHook(PINLINE_HOOK_INFO pHookInfo)
     return bRet;
 }
 
-ULONG _LhRoundToNextInstruction(
+ULONG __cdecl _LhRoundToNextInstruction(
             PBYTE InCodePtr,
             LONG InCodeSize)
 {
@@ -175,8 +175,9 @@ ULONG _LhRoundToNextInstruction(
     return (ULONG)(Ptr - BasePtr);
 }
 
-PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
+PBYTE __cdecl _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
 {
+    PBYTE   pPtrOriginalCode = pbCode;
     PBYTE   pPtrOffset = pbCode;
     __try
     {
@@ -257,12 +258,19 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
             nCurLen = GetInstructionLength(pPtrOffset, INSTRUCTION_LENGTH_TYPE);
             if (nCurLen <= 0)
             {
-                return pbCode;
+                return NULL;
             }
             nOffset += nCurLen;
             pPtrOffset += nCurLen;
         }
 
+        if (_IsEndFunctionCode(pbCode))
+        {
+            HOOK_TRACE(("ERROR _InlineHookGetRealCode _IsEndFunction for pPtrOriginalCode=%p, curPbCode=%p, pPtrOffset=%p\n", 
+                pPtrOriginalCode,  pbCode, pPtrOffset));
+            HOOK_ASSERT(FALSE);
+            return NULL;
+        }
         return pbCode;
     }
     __except(EXCEPTION_EXECUTE_HANDLER)
@@ -273,7 +281,7 @@ PBYTE _InlineHookGetRealCode(PBYTE pbCode, LONG MinCheckSize)
     }
 }
 
-BOOL _IsEndFunctionCode(PBYTE pbCode)
+BOOL __cdecl _IsEndFunctionCode(PBYTE pbCode)
 {
     BOOL isEnd = FALSE;
     __try

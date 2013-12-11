@@ -7,7 +7,7 @@
 * 
 *源码下载：
 *  http://dev.chromium.org/developers/how-tos/get-the-code 然后在其中找 "source tarball"
-*  解压时需要使用最新的解压工具(比如 http://www.7-zip.org/，但最好先测试是否能一次解压)？否则可能会报错？
+*  注意：解压时需要使用最新的解压工具(比如 http://www.7-zip.org/，但最好先测试是否能一次解压)？WinZip/WinRar解压时会报错？
 *
 * 编译(Windows) -- http://www.chromium.org/developers/how-tos/build-instructions-windows
 *   0.编译机器：Win7_64 + 8G内存 + 60G可用空间

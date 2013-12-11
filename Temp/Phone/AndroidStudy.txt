@@ -1,0 +1,445 @@
+Android应用开发详解.pdf -- P68, 使用菜单资源
+单元测试 ???
+
+TODO: 
+
+  1.SDK 版本 和 Google API 版本，两者有什么区别
+
+临时：
+  欢迎来到Android世界 http://www.docin.com/p-31448231.html
+  Android中的命名规则采用 mXXXX 的方式（没有下划线）
+  Android中可视化GUI布局拖拉开源工具程序  http://code.google.com/p/droiddraw , 或者通过 http://www.droiddraw.org/ 在线使用
+    
+
+Google Android SDK开发范例大全 
+  http://book.csdn.net/bookfiles/1060/100106031790.shtml
+
+需要 Apache Ant 1.7 以上？
+
+Android是Google发布的基于Linux平台的开源手机操作系统。
+Android Market(http://www.android.com/market/) -- 用户浏览、下载或购买应用软件。
+
+Android的安装 -- JDK + Eclipse + Android SDK + ADT
+http://code.google.com/android/ 或 http://developer.android.com/
+1.下载安装JDK -- jdk-6u16-windows-i586.exe, 设置Java环境变量(%JAVA_HOME%, %CLASSPATH%值为".", 加入path)
+2.解压Ant, 将Ant路径加入path，(设置环境变量?)
+3.下载解压Eclipse -- http://www.eclipse.org/downloads/
+4.解压Android SDK(91M) -- http://developer.android.com/sdk/index.html，1.6以后只提供了在线安装
+  并设置Android SDK的环境变量(如 ANDROID_SDK ，并将 tools 子目录加入path)；目录中最好不要带空格。
+5.本地或通过网络安装 Android for Eclipse 的插件(ADT -- Android Development Toolkit)：http://dl-ssl.google.com/android/eclipse/ (或使用 https:// ?).
+  包括 Android Development Tools 和 Android Editors.
+  ADT可以: 代码的自动生成、调试、编译、打包、拖拽式界面生成等
+6.重启Eclipse后，Window > Preferences > Android > SDK  -- 指定SDK的根目录。
+7.File -> New -> Project... -> Android -> Android Project 创建工程。
+
+
+Android应用程序有以下几种类型：
+1.前端Activity（Foreground Activities）。
+2.后台服务（Background Services） -- 系统服务（System Service）
+    Service -- 长生命周期，没有用户界面的程序，如正在从播放列表中播放歌曲的后台媒体播放器。 
+      Context.startService 启动一个Service; Context.bindService 连接到一个Service上(如还没有运行则启动)
+  系统Broadcast（广播信息）与Receiver（广播信息）接收器 -- 如电量低的广播和接收器
+3.间隔执行Activity（Intermittent Activities）-- 类似Notification Manager等等
+
+部署到手机 
+  1.通过USB联机至手机
+  2.安装Android的USB Driver -- %ANDROID_SDK%\usb_driver
+     不要搜索，我要自己选择要安装的驱动程序 -> 显示所有设备-> 选择 android_usb.inf 文件 -> HTC Dream Composite ADB Interface
+  3.打开手机上的USB调试(Debug)模式：应用程序->开发->USB调试
+  3.
+
+AndroidManifest.xml -- 包含这个Android应用程序具有哪些Activity、Service或者Receiver，也有权限设置。所有组件必须在其中声明后才能使用。
+  <intent-filter> -- 指定访问能力。action指定程序入口?; category 指定 LAUNCHER(加载程序时运行), ??? 等
+  
+
+Google的基于Linux平台的开源手机操作系统,由Google与开放手机联盟(包括中国移动、摩托罗拉等)合作开发。由四部分组成:
+  应用软件(Java)
+  应用程序框架 -- 用户界面(Views),内容管理器(Content Providers), 资源管理器(Resource Manager),通知管理器(Notification Manager),活动管理器(Activity Manager).
+    应用程序框架支持组件的重用与替换，如可替换系统中的打电话应用程序、文件管理器等
+  中间件(哪些? 指Android程序库? -- ) C/C++库集，通过应用程序框架为开发者提供服务。
+  操作系统(Linux) -- 核心系统服务依赖于Linux内核(2.6)，如安全性、内存管理、进程管理、网络协议栈和驱动模型等
+  
+采用WebKit浏览器引擎，具备触摸屏、高级图形显示和上网功能，比iPhone等其他手机更强调搜索功能，界面更强大，可以说是一种融入全部Web应用的单一平台。
+开放手机联盟OHA (Open Handset Alliance)
+基于Android平台的SDK(Software Development Kit) -- m3-rc20a
+Android的目标是发展成为移动互联网领域终端设备的软件平台，就好比Windows在PC机领域的地位。
+
+每一个Android应用程序运行在自己的进程中,都拥有一个独立的Dalvik虚拟机实例
+
+Android 包含一套C/C++库，可以被Android系统的各种组件使用，这些特性通过Android 应用程序框架开放给开发者，下面列出了核心库。
+  系统C函数库 从BSD标准C系统库继承的，基于嵌入式linux设备进行优化的版本。
+  多媒体库 -- 基于PacketVideo公司的OpenCORE库，该库支持录音回放，录制流行的声音和视频格式文件，以及静态图像文件，这些文件格式包括MPEG4,H.264,MP3,AAC,AMR,JPG,和PNG.
+  界面管理(Surface Manager) -- 管理对显示子系统的访问，并且无缝合成不同的应用程序中的2D和3D图像层
+  LibWebCord – 一个流行的网页浏览器引擎，增强Android浏览器和嵌入式网页浏览的能力
+  SGL – 底层的2D 图像引擎
+  3D 库 – 一个基于OpenGL ES 1.0 APIs的版本，这个库既可以使用硬件3D加速（硬件支持）或者内置的，高度优化的3D软加速
+  字体类型(FreeType) -- 位图(bitmap)或者矢量(vector)字体
+  SQLite – 一个强大的轻量级关系数据库引擎，允许所有的应用程序使用
+  其他(?): 蓝牙(Bluetooth), EDGE, 3G, WiFi(依赖于硬件)，照相机, GPS, 指南针, 加速度计
+
+Dalvik VM -- Android中的虚拟机机制，和Java VM类似，但不兼容。专门为移动设备做了优化(基于寄存器的)，相对Java虚拟机速度快很多,执行.dex的Dalvik可执行文件
+intent(动作 + URI格式的数据) -- Android中引入的新的设计元素，不同组件之间相互导航的纽带，封装了不同组件之间导航查找的条件。
+  应用程序可以通过它发出请求，就像是发出求助信号。应用程序可以按照相似或互补的方式进行注册，表明他们有能力或有兴趣执行各种请求或intent。
+  
+
+OPhone应用程序不控制自己的进程寿命，由OPhone Runtime管理每个应用程序进程，但是每个Activity的状态反过来会影响到OPhone Runtime是否将终止当前Activity和还是让它继续运行。
+每个Actvity的状态由它所在Activity栈中的位置所决定，所有当前正在运行的Actvity将遵循后进先出的原则。当一个新的Activity启动，当前的Activity将移至堆栈的顶部，如果用户使用Back按钮，或在前台Activity被关闭，下一个Activity将被激活并且移至到堆栈的顶部。
+
+Activity状态 -- 状态过渡具有不确定性并且由OPhone Runtime完全管理
+  Active状态：这时候Activity处于栈顶，且是可见的，有焦点的，能够接收用户输入前景Activity。
+  Paused状态：Activity是可见的，但没有焦点。例如，如果有一个透明或非全屏幕上的Activity在你的Actvity上面。
+  Stopped状态：完全被遮住（不可见）时，将继续保留在内存中保持当前的所有状态和成员信息，但会是被回收对象的主要候选。
+  Inactive状态：Activity被杀掉以后或者被启动以前，已被从Activity堆栈中移除，需要重新启动才可以显示和使用。
+监测Actvity的状态变化 -- 
+  onCreate -- 在Activity生命周期开始时被调用，初始化用户界面，分配引用类变量，绑定数据控件，并创建服务和线程 -- 通常需要findViewById将成员变量和控件建立关联。
+  onRestore -- onCreate完成后被调用，用来回复UI状态
+  onRestart -- 当activity从停止状态重新启动时调用(onStop->onRestart->onStart)
+  onStart -- 当activity对用户即将可见的时候调用，可注册更新用户界面Intent接收者
+  onResume -- 当activity将要与用户交互时调用此方法，此时activity在activity栈的栈顶，用户输入已经可以传递给它 
+  onSave -- Activity即将移出栈顶保留UI状态时调用此方法
+  onPause -- 当系统要启动一个其他的activity时调用，这个方法被用来提交那些持久数据的改变、停止动画、和其他占用 CPU资源的东西。
+  onStop -- 当另外一个activity恢复并遮盖住此activity,导致其对用户不再可见时调用。一个新activity启动、其它activity被切换至前景、当前activity被销毁时都会发生这种场景。可注销更新用户界面Intent接收者
+  onDestroy -- 在activity被销毁前所调用的最后一个方法，有可能在某些情况下，一个Activity被终止时并不调用onDestroy方法。
+
+OMS -- 基于Android为中国移动“深度定制”的移动操作系统。
+需要在 Project->Properties->Java Build Path->Libraries->Add Library 中增加 oms.jar 后,才能使用 oms 中的类，编译后生成 .apk 文件。
+
+apkbuilder.bat -- 将dx工具制作的.dex 和 appt命令制作的资源文件 打包成 .apk 文件
+AVD(Android Virtual Device) -- Android虚拟设备，是模拟器的配置，让用户可以更好地模拟真实设备。包含:硬件配置(如是否有照相机、键盘类型、内存大小等)、版本选择、设备的屏幕尺寸、SD卡大小等。
+  创建的配置文件保存在%ANDROID_SDK_HOME%环境变量中(如无则是%HOMEPATH%? 中)的 .android\avd 目录下
+emulator.exe 模拟器软件，几乎提供了大多数物理硬件设备的特性，但不能 接打电话、拍照 等
+  -wipe-data  -- 把模拟器的设置恢复到初始状态
+  -sdcard SD.file -- 模拟插入sd卡的情景
+mksdcard.exe -- 创建sd卡影像文件
+ddms.bat(Dalvik Debug Monitor Service) -- Dalvik 调试监控服务。主要对系统运行后台日志、系统线程、虚拟机状态等的监控? 还可模拟发送短信、拨打电话、发送GPS位置信息等。
+  (旧: 手机/模拟器的屏幕截图或log)
+aapt.exe(Android Asset Packaging Tool) -- 资源(音视频、图片、xml配置等)打包工具? (旧: 可以获取log，安装应用程序，复制文件等等)
+  aapt p -A assets -S res -M AndroidManifest.xml -F \bin\resources.ap_ -- 将工程下的资源打包为 \bin\resources.ap_ 压缩文件
+adb.exe(Android Debug Bridge) -- 提供一个简单的shell环境,可以登录到手机/模拟器上进行各种命令行操作，就像在一台Linux电脑里一样。可以安装一个ARM版的busybox,使用起来更加方便
+  adb logcat --  可以查看系统log，用于调试。
+  adb install myapp.apk -- 在CMD环境下将应用程序安装到模拟器 /data/app 目录下，安装前需要先复制到设备上。可以在不退出模拟器的情况下通过安装、删除的方式进行调试。
+  adb shell -- 进入shell交互模式，可以使用 ls、cd、rm、dmsg 等简单命令；还可以使用 sqlite3 命令访问数据库
+  adb forward tcp:5555 tcp:8000 -- 设置发布端口，做为主机向模拟器或设备的请求端口
+  adb push test.txt /sdcard/test.txt -- 复制一个文件或目录到设备或模拟器上
+  adb pull /android/lib/libwebcore.os .\ -- 从设备或模拟器上复制一个文件或目录到当前目录
+  adb devices -- 取得当前运行的模拟器、设备的实例列表及每个实例的状态
+  adb bugreport -- 查看Bug报告
+dx.bat -- 将Java编译后的类文件(.class字节码文件)转换成Dalvik虚拟机可执行的.dex(Dalvik Executable Format)文件
+  如: dx --dex --dump-to=D:\MyAndroid\testProject.dex --core-library D:\MyAndroid\Bin
+
+activityCreator.py -- 一个Python脚本，用于为项目创建所有的源代码和目录的编译环境(即产生可用于ant编译的build.xml)
+  activityCreator.py --out HelloAndroid com.google.android.hello.HelloAndroid  -- 产生 build.xml
+  ant -- 使用Ant编译，会在bin目录下生成 HelloAndroid.apk 包文件，然后可以用 adb 安装进模拟器。
+
+
+Logcat  -- Debug 工具，显示 android.util.Log 的日志输出。
+abd shell 进入交互后，通过 logcat 命令执行。常用参数：
+  -s -- 设置默认的过滤级别及过滤信息，如 -s "Module1:i"  -- 显示Tag为 "Module1" 中大于等于I(nfo)的信息
+  -b -- 打开不同的log buffer(位于 /dev/log/ 目录下，有三个：main、radio、events)
+  -c -- 清除已有的log信息。如：#logcat -cb events #logcat -b events
+  -d -- 在屏幕上显示log信息，并在信息结束后退出。
+  -f -- 将log信息作为文件保存起来，可以将log信息较为长久的保存在手机设备中。
+     # mount -o remount,rw rootfs /      -- 将文件系统改为可读写
+     # logcat -b events -f /tmp/events   --  将events buffer中的log信息存入 tmp文件夹下的events文件中
+  -g -- 查看三个log buffer 的大小
+  -n -- 设置日志的最大数目<count>，默认是4。和 -f 命令配套使用
+  -r  -- 每 <kbytes>时输出日志，默认值为16。和 -f 命令配套使用
+  -v -- 设置log的输出格式。brief(默认)、process、tag、thread、raw、time、long
+log级别
+  V(erbose) 、D(ebug)、I(nfo)、W(arning)、E(rror)、F(atal)、S(ilent) 
+
+
+多分辨率设备兼容性问题解决方案 -- 创建相应分辨率的资源文件夹和页面布局文件夹,OPhone系统在编译运行时会根据当前设备分辨率，自动选择相应的资源文件和页面布局文件。
+隐藏TitleBar 和 Status Bar -- 在当前Activity的Java源文件引入android.view.Window和android.view.WindowManager，并在oncreate()方法中调用:
+  //Hide title bar; 
+    requestWindowFeature(Window.FEATURE_NO_TITLE); 
+  //Hide status bar; 
+    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); 
+    //getWindow().setBackgroundDrawableResource(R.color.red_bg); //设置背景色
+  注意，该方法需要在setContentView(R.layout.start_test)之前调用，否则会出现force close 错误。
+
+TextView ResultText = (TextView)findViewById(R.id.ResultText);  //通过资源中定义的id找到对应的对象
+
+按钮交互
+  1.implements OnClickListener -- 
+    Button ResolutionTest = (Button)findViewById(R.id.ResolutionTest); 
+    ResolutionTest.setOnClickListener(this);  //必须在 onClick中比较 getId才能处理多个按钮的点击情况
+    public void onClick(View arg0) 
+    { 
+      if (arg0.getId() == R.id.ResolutionTest) 
+      { startTest(); } 
+    } 
+  2.ResolutionTest.setOnClickListener(m_myButtonClick);
+    Button.OnClickListener m_myButtonClick =  new Button.OnClickListener() {...}  //成员变量
+  3.使用无名的事件(?)
+    ResolutionTest.setOnClickListener(new Button.OnClickListener() {
+      //@Override -- 是否需要这行
+      public void onClick(View v)
+      {
+        startTest();  //不用比较getId,每个Button都可以有自己的OnClick
+      }
+    });
+
+界面：风格(style) 、主题(theme)
+
+os --
+  Bundle -- 属性对，通常用于状态值保存和恢复。也可用于数据传递。
+    new Bundle 后通过 Intent 的 putExtras 方法进行设置。接收端的 Activity.getIntent (不等于savedInstanceState).getExtras 进行获取。
+  Handler
+  Message
+content--
+  Context--Context可以控制系统调用, 它提供了诸如资源解析, 访问数据库等
+    getResources() -- 得到Resources对象，从而继续访问各种类型资源，如 r.getDimension(尺寸资源)，r.getXML(文件名), getDrawable(图片资源)
+      引用资源的一般格式为: @[包名:]资源类型/资源名
+    getString() -- TODO: 究竟是 Context.getString 还是 Resources.getString ?
+UI -- 
+  app -- Activity（findViewById, setContentView）
+    Context <- ContextWrapper <- ContextThemeWrapper <- Activity
+  view 
+    View
+    ViewGroup
+
+  widget -- 
+    Button( setOnClickListener(new Button.OnClickListener(){public void onClick(View v) {...}}); )
+    EditText
+    TextView
+    RelativeLayout
+    lists,grids,text boxes,buttons,
+
+
+数据提供者(ContentProvider)--允许一个应用程序访问其他应用程序（比如通信录）的数据，或者共享它自己的数据
+资源管理器(ResourceManager)--提供访问非代码资源，如本地化字符串，图像，布局文件的能力。
+通告管理器(NotificationManager)--允许所有应用程序显示特定的警告信息在状态条上
+任务管理器(ActivityManager)--管理应用程序的活动周期，并且提供通用的导航支持（navigation backstack）
+
+
+Android提供了基于XML的界面构建方式，将界面和应用程序逻辑分离.xml文件放在 res(存放所有非代码资源 -- 图片、本地化字符串、XML布局文件等)目录下。
+使用名为"R.java"的文件来定义所有资源的索引，(aapt?)自动生成，不要更改。其中分为 attr(属性), drawable(图片资源)、layout(页面布局)、string等多个静态内部类, public final class R { xxxx }，
+  代码中引用资源时： R.资源类型.资源名称
+    系统提供的资源： android.R.资源类型.资源名称, 如 android.R.anim.fade_in(系统预定义动画); android.R.string.cancel(系统预定义的字符串 -- 可自动支持多语言?)
+    Context.getString()/
+  资源文件中引用时： "@资源类型.资源名称"
+  TODO: id="@+id/MyTextView01" -- 前面的加号"+"什么意思？如果没有则加入？
+ 
+XML -- 通过 getResources().getXml() 获得 XmlResourceParser 对象实例表示XML原始文件， 
+  import org.xmlpull.v1.XmlPullParser;
+    XmlResourceParser xrp = getResources().getXml(R.xml.testXmlFile);
+    while(xrp.getEventType() != XmlResourceParser.END_DOCUMENT) { //未到文件尾则继续循环
+      if(xrp.getEventType() == XmlResourceParser.START_TAG) { //如果是开始标签  
+         String name = xrp.getName(); //获取标签名
+         xrp.getAttributeValue(nIndex); //获取指定索引位置的属性值,更好的方法是根据属性名获取值
+      }
+      xrp.next();  //获取下一条记录
+    }
+  
+颜色( #Alpha-Red-Green-Blue 格式), 如： #RGB, #ARGB, #RRGGBB, #AARRGGBB， 代码中获得颜色方法：Resources.getColor
+
+界面切换 -- 有什么区别?标准应该是使用第二种方法（虽然麻烦，但更合理和）
+  1.切换layout -- 定义不同的layout xml文件,通过 setContentView方法 进行切换; 还在同一个Activity中，成员变量不变。
+  2.切换Activity -- 定义不同的layout xml，实现不同的Activity子类(显示对应的layout),通过 Intent类 进行切换。
+     注意需要在AndroidManifest.xml中定义新的activity，并设置那么属性，否则无法编译。
+    public void onClick(View v)
+    {
+        Intent intent = new Intent();// new一个Intent对象
+    	intent.setClass(EX03_09.this, EX03_09_1.class); //指定要启动的class
+    	startActivity(intent);// 调用一个新的Activity -- 类似非模态？
+	//startActivityForResult(intent,0/*被调用Activity要返回值的依据*/); -- 启动新的Activity并等待其结束，
+	  并通过重载 onActivityResult 函数判断返回值(resultCode == RESULT_OK), 可以通过 data.getExtras 获取数据， 具有层次关系
+	//  子Activity中通过如下方式返回结果:
+        //    EX03_09_1.this.setResult(RESULT_OK, intent);        // 返回result回上一个activity
+        //    EX03_09_1.this.finish();// 结束这个activity
+	EX03_09.this.finish();// 关闭原本的Activity(根据具体情况)
+      }
+
+Layout -- Android 通过 LayoutInflater 类将 XML 格式的布局文件中的组件解析为可视化的视图组件。
+  布局文件中的 <requestFocus/> 项代表什么意思? 
+
+
+AbsoluteLayout -- 绝对位置定位，降低兼容性，维护高
+RelativeLayout -- 可以拉伸自动适应，但会造成图像变形。
+LinearLayout -- 线型布局
+  orientation -- vertical,horizontal
+  layout_width -- fill_parent,wrap_content(根据内容指定高宽),320px,80dip
+  layout_height -- fill_parent,wrap_content
+  layout_alignParentRight -- true
+  layout_alignParentTop -- true
+  layout_alignParentLeft -- true
+  layout_marginRight -- 80dip, 
+  layout_below -- "@+id/ExitButton", 
+  layout_alignTop -- "@+id/sizebutton"
+  layout_toLeftOf -- "@+id/sizebutton"
+  layout_x -- 30px
+  layout_y
+  layout_centerHorizontal -- true
+  id -- "@+id/ResultText"
+  background -- "@drawable/testpic",
+TableLayout + TableRow + 
+  stretchColumns -- "数字"
+TableRow
+  gravity -- right
+  
+EditText
+  textSize -- 18sp
+  password -- true
+  numeric -- decimal
+TextView -- 文本视图，显示字符串
+  text -- @string/str_id
+  textColor -- @drawable/darkgray
+  gravity="center_vertical|center_horizontal", bottom
+  autoLink -- all(可以显示网址，如 http://)
+ListView
+Button
+  text
+ImageButton
+  src -- "@drawable/iconempty"
+  setImageResource(R.drawable.iconempty);
+RadioGroup(管理一组RadioButton)
+  checkedButton -- "@+id/sex1"
+  orientation -- vertical,horizontal
+RadioButton
+CheckBox
+ImageView -- 显示图片
+  setImageDrawable(getResources().getDrawable(R.drawable.right));   //设置显示的图片, 或通过 src 属性设置
+Gallery(图库)
+BaseAdapter -- 
+ProgressDialog -- 进度显示
+Spinner --
+
+Activity -- 表示用户界面中的一个屏幕，显示由几个Views控件组成的用户接口，并对事件做出响应，可以在xml文件中定义所需要的Views或在代码中定义，
+  setContentView -- 便可将Activity与Views绑定在一起来实现用户交互的功能。
+  startActivity -- 从一个屏幕导航到另一个屏幕，打开Activity的条件被封装在Intent中
+  -Window
+    -View(基本控件)/ViewGroup(布局控件) 
+
+定义名为color.xml的文件,放在values目录下,然后可以main.xml中使用:如 android:background="@drawable/white" 
+<resources>  //在 graphics.Color 中定义了默认的颜色常数
+  <drawable name="darkgray">#808080FF</drawable>
+  <drawable name="white">#FFFFFFFF</drawable>
+</resources>
+
+动画 -- ArrayAdapter<String> 合作？
+   ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, countriesStr);
+    /* myspinner_dropdown为自定义下拉菜单模式定义在res/layout目录下 */
+    adapter.setDropDownViewResource(R.layout.myspinner_dropdown);
+    /* 将ArrayAdapter添加Spinner对象中 */
+    mySpinner.setAdapter(adapter);
+
+检测手机信息
+   DisplayMetrics dm = new DisplayMetrics();
+   getWindowManager().getDefaultDisplay().getMetrics(dm);
+   String strOpt = "手机屏幕分辨率为：" +  dm.widthPixels + " × " + dm.heightPixels;  //320 x 480
+
+使用资源(resouces -- 其中有 attr/drawable/id/layout/string/style 等多种)
+  Resources resources = getBaseContext().getResources();
+  Drawable HippoDrawable = resources.getDrawable(R.drawable.white);
+  mTextView01.setBackgroundDrawable(HippoDrawable); //设置背景色
+
+使用资源时，有三种引用形式：
+  android:xxx/yyy,
+  android:@xxxx/yyy  -- 如 @string/hello, @drawable/white
+  android:?xxx
+     @+id/myPassword
+
+使用字体
+  1.在assets目录中创建 fonts 子目录,加入 .ttf 文件;
+  2.引用 android.graphics.Typeface;
+  3.通过 creatFromAsset 创建Typeface对象
+    m_Text.setTypeface(Typeface.createFromAsset(getAssets(),"fonts/HandmadeTypewriter.ttf"));
+
+尺寸单位(dimens)：px(像素), in(英寸--基于屏幕的物理尺寸),mm(毫米), pt(点--英寸的1/72), dp(和密度无关的像素-相对屏幕物理密度的抽象单位),sp(和精度无关的像素)
+  
+从资源中加载字符串
+  CharSequence str_2 = getString(R.string.str_2);  或 String str = getString(R.string.str_2).toString();
+字符串资源可以通过 array/ item 的方式创建字符串数组，然后在 AlertDialog中通过 setItems(R.array.items_irdc_dialog, ...) 来使用
+  或者通过 getResources().getStringArray(R.array.items_irdc_dialog) 返回 String[] 。
+  <array name="items_irdc_dialog">
+    <item>中餐</item>
+    <item>日式火锅</item>
+    <item>巴西烧烤</item>
+  </array>
+
+自绘
+  在View的子类中重载 onDraw(Canvas canvas) 函数，并在其中使用 Canvas 和 Paint进行绘制。
+
+自定义Style(指定颜色、大小等)
+  1.编写style.xml文件,放在values目录下
+    <?xml version="1.0" encoding="utf-8"?>
+    <resources>
+      <style name="DavidStyleText1" [parent=“父Style名”]>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#EC9237</item>
+      </style>
+      可以使用 <style></style> 定义多个,
+    </resources>
+  2.main.xml 中 <TextView style="@style/DavidStyleText1" ...>
+
+打开对话框
+public void onClick(View v)
+{
+  //AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(EX03_12.this);
+  new AlertDialog.Builder(this)
+    .setTitle(R.string.app_about)
+    .setMessage(R.string.app_about_msg)
+    .setPositiveButton(R.string.str_ok,   //.setNegativeButton
+      new DialogInterface.OnClickListener()
+      {
+        public void onClick(DialogInterface dialog, int chooseIndex)
+        {
+	  //dialog.dismiss();
+        }
+      }
+    ).show();
+}      
+
+线程后台执行，前台显示进度对话框
+  m_myDialog = ProgressDialog.show(EX03_18.this,strDialogTitle,strDialogBody, true);
+  new Thread()
+  {
+    public void run()
+    {
+      try
+      {
+        sleep(3000); //后台运行的程序片段，此处以暂停3秒作为示范
+      }
+      catch(Exception e)
+      {
+        e.printStackTrace();
+      }
+      finally
+      {
+         myDialog.dismiss(); //卸载所创建的m_myDialog对象
+      }
+    }
+  }.start();//开始运行线程
+  
+提示窗口(没有交互功能，只是提示)
+  Toast.makeText(EX04_03.this,"提示信息", Toast.LENGTH_LONG).show;
+
+自定义系统菜单
+  重载 Activity 的 onCreateOptionsMenu、onOptionsItemSelected 等函数
+
+Java 
+  Double.parseDouble
+
+将Double进行四舍五入
+ private String format(double num)
+  {
+    NumberFormat formatter = new DecimalFormat("0.00");
+    String s=formatter.format(num);
+    return s;
+  }
+
+数组
+  private int[] mColors = new int[] { Color.BLACK, Color.RED, Color.BLUE,Color.GREEN, Color.MAGENTA, Color.YELLOW };
+
+工程的目录结构
+  assets -- 原生的文件(如MP3等)，Android程序不能直接访问，必须通过 AssetManager类以二进制方式来读取
+  src -- 保存源码
+  res -- 可通过 R.java 中的资源类直接访问，被编译到应用程序中
+    |-anim : 保存动画
+    |-drawable : 保存图片，主要分为：BitmapFile, ColorDrawable(颜色), Nine-Patch Image(九片图片)
+    |-layout :保存布局文件(xml格式)
+    |-menu   :xml菜单文件
+    |-raw    :直接复制到设备中的原生文件
+    |-values :保存一些常量值，如 strings.xml(字符串常量), arrays.xml(数组), colors.xml(颜色), dimens.xml(尺寸, 如文字尺寸、高宽等), styles.xml(样式)
+    |-xml    :xml文件

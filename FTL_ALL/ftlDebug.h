@@ -9,6 +9,40 @@ namespace FTL
 	//http://wenku.baidu.com/view/14fdd446a8956bec0975e30c.html -- P31, 挑选技术
 
     /*********************************************************************************************************
+    * WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)
+    * 一般来说都是Mini dump，只包含寄存器、堆栈、和部分内存
+    *   1.设置符号路径 程序pdb路径;SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
+    *   2.打开dmp文件
+    *   3.!sym noisy  -- 相当于.symopt+0x80000000，即开启所谓的“吵杂”式符号加载，显示符号加载的调试信息(可检测调试符号加载时的问题)。
+    *   4.!analyze -v -- 一般这个时候可以看到出问题的代码位置，但如果有异常处理(如Nelo)等，则kn看出来的地址不对,需执行下一步
+    *       -v    -- 对信息进行详细输出
+    *       -hang -- 对问题进行自动分析(似乎是直接调用 kn? 有Nelo时不准 )
+    *      分析结果:
+    *        FAULTING_IP -- 错误发生时指令指针(EIP)的值
+    *        EXCEPTION_RECORD -- 异常记录(Exception Record), 如值是ffffffff表示没有一个异常包含
+    *        DEFAULT_BUCKET_ID -- 详细给出故障所属的类别，典型情况有 NULL_POINTER_READ, INVALID_POINTER_WRITE 等
+    *        FAULTING_THREAD -- 导致出错的线程，可以通过 ? 查看
+    *        BUGCHECK_STR -- "错误检查"的文字描述，但这里不区分用户态和内核态，可能导致误解
+    *   5. .ecxr 后 kn -- 在有异常处理函数的情况下查看错误时的真实调用堆栈
+    * 
+    * 通过MAP文件根据地址(如异常地址)定位代码位置
+    *   1.编译时需要生成Map -- Linker: Generate Map File(Yes, /MAP); Map File Name(xxx); Map Exports(Yes, /MAPINFO:EXPORTS)
+    *   2.将指定地址和 Rva+Base栏地址(即 偏移地址+基址) 进行比较，找到最后一个比指定地址小的函数,即为目标函数;
+    *   3.用指定地址减去该函数的Rva+Base,得到代码相对于函数起始地址的偏移，
+    *     TODO(VS2012不一样了), 然后在"Line number for"部分找相应行号。
+    * 
+    * 通过汇编(COD)文件定位 -- TODO:未确认
+    *   1.编译时选中"Assembly with Machine Code",会生成与每一个cpp文件同名的.cod文件
+    *
+    * adplus.vbs -- 能够检测一个或多个进程，并且在这些进程发生崩溃时自动生成转储文件并通知用户
+    *   手工生成dmp文件, 也有专门的工具
+    *   adplus -Crash -p 进程ID -quiet -fullonfirst -o C:\dumps
+    *      -fullonfirst：在first chance时捕捉完整的dump信息，也就是进程的所有完整信息
+    *
+    * 
+    *********************************************************************************************************/
+
+    /*********************************************************************************************************
     * 手工回溯栈(缓冲区溢出等造成栈帧信息被破坏)--
     *   a.ln eip -- 得到当前函数名
     *   b.寻找当前函数的栈帧基准地址 -- 没有破坏的 EBP或者ESP, 或 !teb
@@ -31,6 +65,7 @@ namespace FTL
 	*    通过 .reload 强制全部加载或 .load 手动加载 ？
     *  10.加载不严格匹配的符号文件(通常没有完全匹配的符号文件时) -- 先通过 !sym noisy 开启吵杂模式确认，然后 .reload /i 模块名 加载
     *     加载完后通过 lm 查看，其前面会有 "M" 的标记
+    *  11.系统自带的 Dr.Watson(???.exe) -- 系统自带的应用程序调试程序，崩溃时可生成dmp，-i 参数设置为默认
     *
     * 扩展命令
     *   sdbgext -- 可以根据窗体句柄查看窗体信息等， 如 !sdbgext.hwnd 00070836
@@ -314,7 +349,10 @@ namespace FTL
     *   ntsdexts.dll -- 实现了!handle、!locks、!dp、!dreg(显示注册表)等命令
     *   rpcexts.dll -- 用于RPC 调试
     *   scsikd.dll -- 用于调试SCSI 有关的驱动程序
-    *   sos.dll -- 用于调试托管代码和.Net 程序
+    *   sos.dll -- 用于调试托管代码和.Net 程序 -- .NET程序的内存问题很多情况下是缓存中没有清除机制造成的
+    *     !eeheap -gc -- 查看托管堆上的内容(如GC拖管堆、堆上对象占用的空间)，如其中有"Large object heap"表示有大量的数据在堆上
+    *     !dumpheap -min 85000 -stat -- 显示大对象(最小大小为85K ?)的统计信息(如果不带 -stat 参数，则显示详细列表)
+    *     !gcroot 地址 -- 
     *   traceprt.dll -- 用于格式化 ETW 信息
     *   uext.dll -- 用户态调试时的常用扩展命令
     *     !vprot -- 显示一个内存地址的属性,显示结果类似于 !address
@@ -374,11 +412,6 @@ namespace FTL
     *   4.使用Windbg显示系统句柄信息(显示Session1 中的 WinSta0): lkd>!object Sessions\1\Windows\WindowStations\WinSta0 
     *   5.调试内核目标 -- 
     *
-    * WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)
-	*   1.设置符号路径 SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
-	*   2.打开dmp文件
-	*   3.!sym noisy  -- 相当于.symopt+0x80000000，即开启所谓的“吵杂”式符号加载，显示符号加载的调试信息(可检测调试符号加载时的问题)。
-	*   4.!analyze -v
     *
     * DML(Debugger Markup Language) -- 一种标记语言，用于标记WinDBG 或者扩展命令的信息输出
 	*********************************************************************************************************/
