@@ -21,4 +21,7 @@ protected:
 public:
     afx_msg void OnBnClickedBtnMessageInfo();
 	afx_msg void OnBnClickedBtnRegisterMessageInfo();
+    afx_msg void OnBnClickedBtnHideShowTaskBar();
+
+    BOOL    m_bHideTaskBar;
 };

@@ -625,6 +625,9 @@ namespace FTL
 		//注意：Windows 98/2000 doesn't want to foreground a window when some other window has keyboard focus
         FTLINLINE static BOOL ActiveAndForegroundWindow(HWND hWnd);
 
+        //隐藏任务栏
+        FTLINLINE static BOOL HideTaskBar(BOOL bHide);
+
         //全屏窗口：WS_POPUP|WS_VISIBLE 属性(不能是 WS_OVERLAPPEDWINDOW ), 0,0 ~ CxScreen, CyScreen
         FTLINLINE static BOOL SetWindowFullScreen(HWND hWnd,BOOL isFullScreen, BOOL &oldZoomedState);
         FTLINLINE static LPCDLGTEMPLATE LoadDialog(HMODULE hModuleRes, LPCTSTR szResource, HINSTANCE * phInstFoundIn);

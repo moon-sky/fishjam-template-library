@@ -67,7 +67,7 @@ BOOL CFTLDemoSheet::InitSheet()
 	//this->AddPage(new CThreadPage());
 	//this->AddPage(new CThreadPoolPage());
 	//this->AddPage(new CVistaPage());
-	//this->AddPage(new CWindowPage());
+	this->AddPage(new CWindowPage());
     return bRet;
 }
 

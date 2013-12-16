@@ -13,7 +13,7 @@ IMPLEMENT_DYNAMIC(CWindowPage, CPropertyPage)
 CWindowPage::CWindowPage()
 	: CPropertyPage(CWindowPage::IDD)
 {
-
+    m_bHideTaskBar = TRUE;
 }
 
 CWindowPage::~CWindowPage()
@@ -28,7 +28,8 @@ void CWindowPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CWindowPage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_MESSAGE_INFO, &CWindowPage::OnBnClickedBtnMessageInfo)
-	ON_BN_CLICKED(IDC_BTN_REGISTER_MESSAGE_INFO, &CWindowPage::OnBnClickedBtnRegisterMessageInfo)
+    ON_BN_CLICKED(IDC_BTN_REGISTER_MESSAGE_INFO, &CWindowPage::OnBnClickedBtnRegisterMessageInfo)
+    ON_BN_CLICKED(IDC_BTN_WINDOW_HIDE_SHOW_TASKBAR, &CWindowPage::OnBnClickedBtnHideShowTaskBar)
 END_MESSAGE_MAP()
 
 
@@ -47,4 +48,10 @@ void CWindowPage::OnBnClickedBtnRegisterMessageInfo()
 	CFMessageInfo msgInfo(nHtmlGetObjectMsg, 0, 0);
 	LPCTSTR pszMessageInfo = msgInfo.GetConvertedInfo();
 	AfxMessageBox(pszMessageInfo);
+}
+
+void CWindowPage::OnBnClickedBtnHideShowTaskBar()
+{
+    CFWinUtil::HideTaskBar(m_bHideTaskBar);
+    m_bHideTaskBar = !m_bHideTaskBar;
 }

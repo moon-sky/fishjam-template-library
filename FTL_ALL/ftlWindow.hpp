@@ -1848,7 +1848,19 @@ namespace FTL
         //IPMSG 中也有一个 SetForceForegroundWindow 方法，大致相同
 
         BOOL bRet = TRUE;
-        HWND   hForegdWnd   =   ::GetForegroundWindow();
+        HWND   hForegdWnd   =  ::GetForegroundWindow();
+        if(NULL == hForegdWnd)
+        {
+            FTLTRACEEX(tlWarning, TEXT("GetForegroundWindow is NULL\n"));
+            hForegdWnd = ::GetActiveWindow();
+        }
+        if (NULL == hForegdWnd)
+        {
+            FTLTRACEEX(tlWarning, TEXT("GetActiveWindow is NULL\n"));
+            hForegdWnd = GetFocus();
+        }
+        API_VERIFY(NULL != hForegdWnd);
+        
         if (hForegdWnd == hWnd)
         {
             return TRUE;
@@ -1898,6 +1910,42 @@ namespace FTL
 		}
 #endif 
 
+        return bRet;
+    }
+
+    BOOL CFWinUtil::HideTaskBar(BOOL bHide)
+    {
+        BOOL bRet = FALSE;
+        int nCmdShow = SW_HIDE; 
+        HWND hWnd = NULL; 
+        LPARAM lParam = 0;  
+
+        API_VERIFY(NULL != (hWnd = FindWindow(_T("Shell_TrayWnd"),NULL)));  
+        if(bHide)  
+        {  
+            nCmdShow = SW_HIDE;  
+            lParam = ABS_AUTOHIDE | ABS_ALWAYSONTOP;  
+        }  
+        else  
+        {  
+            nCmdShow = SW_SHOW;  
+            lParam = ABS_ALWAYSONTOP;  
+        }  
+
+        ShowWindow(hWnd,nCmdShow);  
+
+        HWND hWndStartBtn=::FindWindow(_T("Button"),NULL);//win7下隐藏开始按钮  
+        ShowWindow(hWndStartBtn,nCmdShow);  
+        //EnableWindow(hWndStartBtn, !bHide);
+
+        APPBARDATA apBar = {0};   
+        apBar.cbSize = sizeof(apBar);   
+        apBar.hWnd = hWnd;   
+        if(apBar.hWnd != NULL)   
+        {   
+            apBar.lParam = lParam;   
+            API_VERIFY((BOOL)SHAppBarMessage(ABM_SETSTATE, &apBar));  
+        }   
         return bRet;
     }
 
