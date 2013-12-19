@@ -195,16 +195,15 @@ content--
 UI -- 
   app -- Activity£¨findViewById, setContentView£©
     Context <- ContextWrapper <- ContextThemeWrapper <- Activity
-  view 
-    View
-    ViewGroup
+  view  -- ËùÓĞUIÀà¶¼½¨Á¢ÔÚViewºÍViewGroupÁ½¸öÀàµÄ»ù´¡Ö®ÉÏ£¬²ÉÓÃ×éºÏ(Composite)Éè¼ÆÄ£Ê½
+    View -- Æä×ÓÀà³ÆÎª Widget
+      Button( setOnClickListener(new Button.OnClickListener(){public void onClick(View v) {...}}); )
+      EditText
+      TextView
+      RelativeLayout
+      lists,grids,text boxes,buttons,
+    ViewGroup -- ²¼¾ÖÈİÆ÷£¬×ÓÀà³ÆÎªLayout
 
-  widget -- 
-    Button( setOnClickListener(new Button.OnClickListener(){public void onClick(View v) {...}}); )
-    EditText
-    TextView
-    RelativeLayout
-    lists,grids,text boxes,buttons,
 
 
 Êı¾İÌá¹©Õß(ContentProvider)--ÔÊĞíÒ»¸öÓ¦ÓÃ³ÌĞò·ÃÎÊÆäËûÓ¦ÓÃ³ÌĞò£¨±ÈÈçÍ¨ĞÅÂ¼£©µÄÊı¾İ£¬»òÕß¹²ÏíËü×Ô¼ºµÄÊı¾İ
@@ -373,6 +372,17 @@ Activity -- ±íÊ¾ÓÃ»§½çÃæÖĞµÄÒ»¸öÆÁÄ»£¬ÏÔÊ¾ÓÉ¼¸¸öViews¿Ø¼ş×é³ÉµÄÓÃ»§½Ó¿Ú£¬²¢¶ÔÊÂ¼
     </resources>
   2.main.xml ÖĞ <TextView style="@style/DavidStyleText1" ...>
 
+¶Ô»°¿ò
+  AlertDialog 
+    {
+      AlertDialog.Builder builder = new AlertDialog.Builder(this);  //´´½¨Builder
+      builder.setMessage(msg).setCancelable(false).setPositiveButton("È·¶¨", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //ÉèÖÃbuilder
+      AlertDialog alert = builder.create();  //´´½¨
+      alert.show(); //ÏÔÊ¾
+    }
+
+               
+
 ´ò¿ª¶Ô»°¿ò
 public void onClick(View v)
 {
@@ -415,8 +425,14 @@ public void onClick(View v)
 ÌáÊ¾´°¿Ú(Ã»ÓĞ½»»¥¹¦ÄÜ£¬Ö»ÊÇÌáÊ¾)
   Toast.makeText(EX04_03.this,"ÌáÊ¾ĞÅÏ¢", Toast.LENGTH_LONG).show;
 
-×Ô¶¨ÒåÏµÍ³²Ëµ¥
-  ÖØÔØ Activity µÄ onCreateOptionsMenu¡¢onOptionsItemSelected µÈº¯Êı
+²Ëµ¥ -- Ñ¡Ïî²Ëµ¥(OptionMenu)¡¢ÉÏÏÂÎÄ²Ëµ¥(ContextMenu -- ³¤Ê±¼ä°´¼ü²»·ÅÊ±)¡¢×Ó²Ëµ¥(SubMenu)
+  MenuInflater --
+  ×Ô¶¨ÒåÏµÍ³²Ëµ¥
+    ÖØÔØ Activity µÄ ÌØ¶¨º¯Êı
+      onCreate { mi = new MenuInflater(this); } 
+      onCreateOptionsMenu(Menu menu){ mi.inflate(R.menu.test_menu, menu); return true; } //»òÍ¨¹ı menu.add/addSubMenu µÈ·½·¨¶¯Ì¬Ìí¼Ó
+      onOptionsItemSelected(MenuItem item){ switch(item.getItemId()) { case R.id.about:  xxxx; break; } return true; }
+      ÖØÔØ onCreateContextMenu/onContextItemSelected,  È»ºóµ÷ÓÃ registerForContextMenu(xxx) ÎªÖ¸¶¨ÊÓÍ¼×¢²áÉÏÏÂÎÄ²Ëµ¥
 
 Java 
   Double.parseDouble
@@ -439,7 +455,7 @@ Java
     |-anim : ±£´æ¶¯»­
     |-drawable : ±£´æÍ¼Æ¬£¬Ö÷Òª·ÖÎª£ºBitmapFile, ColorDrawable(ÑÕÉ«), Nine-Patch Image(¾ÅÆ¬Í¼Æ¬)
     |-layout :±£´æ²¼¾ÖÎÄ¼ş(xml¸ñÊ½)
-    |-menu   :xml²Ëµ¥ÎÄ¼ş
+    |-menu   :xml²Ëµ¥ÎÄ¼ş, <menu> -> <group> -> <item> ¡£<group>±íÊ¾Ò»¸ö²Ëµ¥×é£¬¿ÉÒÔÒ»ÆğÉèÖÃÆäÊôĞÔ(Èçvisible,checkableBehavior µÈ)
     |-raw    :Ö±½Ó¸´ÖÆµ½Éè±¸ÖĞµÄÔ­ÉúÎÄ¼ş
     |-values :±£´æÒ»Ğ©³£Á¿Öµ£¬Èç strings.xml(×Ö·û´®³£Á¿), arrays.xml(Êı×é), colors.xml(ÑÕÉ«), dimens.xml(³ß´ç, ÈçÎÄ×Ö³ß´ç¡¢¸ß¿íµÈ), styles.xml(ÑùÊ½)
     |-xml    :xmlÎÄ¼ş
