@@ -6,7 +6,12 @@
 namespace FTL
 {
     //WinDBG用法详解.pdf -- P79,  30.14 遍历链表
+    //Windows用户态程序高效排错(普通下载).pdf -- 
+    //  http://blog.csdn.net/eparg/
+
 	//http://wenku.baidu.com/view/14fdd446a8956bec0975e30c.html -- P31, 挑选技术
+
+    //TODO:Time Travel Debugging -- 微软最新的调试技术(记录代码执行流程，且所有的代码都是顺序执行 ?)
 
     /*********************************************************************************************************
     * WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)
@@ -39,6 +44,18 @@ namespace FTL
     *   adplus -Crash -p 进程ID -quiet -fullonfirst -o C:\dumps
     *      -fullonfirst：在first chance时捕捉完整的dump信息，也就是进程的所有完整信息
     *
+    * gflags.exe -- WinDbg的全局配置工具
+    *  定位内存泄露( http://support.microsoft.com/kb/268343 ):
+    *    1.选中"Enable pool tagging" 和"Enable heap tagging"。
+    *    2.cmd.exe 中输入 gflags.exe /i text.exe +ust  <== 在注册表中设置 text.exe的GlobalFlag信息,
+    *        ust 表示 "Create user mode stack trace database"
+    *      注册表路径: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options
+    *    3.VC中发现内存泄露的提示后(如 e:\tests\testsdlg.cpp(101) : {118} normal block at 0x003BBAD8, 100 bytes long.),
+    *      针对内存泄露的地址执行： !heap -x 内存地址(如0x003BBAD8) 获取 Entry 地址，如 
+    *      Entry     User      Heap      Segment       Size  PrevSize  Unused    Flags
+    *      -----------------------------------------------------------------------------
+    *      003bbab0  003bbab8  003b0000  003b0640        a0      17f0        18  busy extra fill 
+    *    4.针对获取到的Entry地址，执行: !heap -p -a 地址(如 003bbab0 ), 会显示调用堆栈 ?
     * 
     *********************************************************************************************************/
 

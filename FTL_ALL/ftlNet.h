@@ -1049,7 +1049,7 @@ namespace FTL
 	enum FTransferOrder
 	{
 		toNormal,			//will send as normal order(post -> localfile -> End)
-		toNeedCallback,		//ticket in nTalk maybe expired, so must send after file send
+		toNeedCallback,		//ticket maybe expired, so must send after file send
 	};
 	struct FTransferParam
 	{

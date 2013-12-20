@@ -1194,7 +1194,10 @@ namespace FTL
     *   内置工具和过程管理框架
 	* 
 	* Visual Studio Team Explorer(下载、管理 CodePlex 上代码的工具)
-	*   
+	* 
+    * Profiler(性能分析工具): 
+    *   Tools->Performance Tools->Performance Wizard
+    * 
     * 常见编译、链接错误
     *   1.LNK2026:module unsafe for SAFESEH image -- VS2012编译汇编文件时，报告的错误，/SAFESEH
     *     解决：(推荐)使用 ml(64).exe 编译时，可以指定 /safeseh 参数(set the Use Safe Exception Handler MASM property to Yes)

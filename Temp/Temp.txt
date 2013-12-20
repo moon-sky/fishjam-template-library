@@ -1,3 +1,6 @@
+Reflector -- 可以反编译分析.NET CLR文件
+Cryptopp -- 加解密
+
 Job: http://hi.baidu.com/hypkb/item/c8757be8dea225b02f140bdf
 利用boost 实现文件操作 --  http://blog.csdn.net/zyaiwx/article/details/11659335
 

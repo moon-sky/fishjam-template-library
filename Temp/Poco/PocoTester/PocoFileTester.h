@@ -8,6 +8,7 @@ a. File类，读取文件的相关信息，比如权限，大小，日期，文件的删除，拷贝等
 b. Path 类， 文件目录的解析，目录创建等  
 c. DirectoryIterator类，遍历指定目录下的文件列表  
 d. TemporaryFile 类，临时文件创建，删除等
+e. 
 **********************************************************************************************/
 
 class CPocoFileTester : public CPPUNIT_NS::TestFixture
