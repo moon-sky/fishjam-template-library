@@ -13,6 +13,8 @@
 
 
 /********************************************************************************************
+* http://blogs.msdn.com/b/ieinternals/archive/2012/03/23/understanding-ie10-enhanced-protected-mode-network-security-addons-cookies-metro-desktop.aspx 
+* 
 * Win8 -- 两种不同的用户接口，需要分别运行不同类型的应用程序（如IE有对应的 Metro style 和 Desktop style)
 *   1.经典 -- 桌面应用程序
 *   2.Metro -- 专门的 Metro 程序或 Metro-style enabled desktop browsers (MEDB).Metro模式下的IE只有Flash插件，不能安装或运行其他的任何插件?
@@ -33,7 +35,7 @@
 *     5.收藏夹: 收藏夹默认允许低级别的IE进程访问，因此不需要独立的目录？
 *   解决兼容性问题：
 *     1.通过建立NTFS软链接(Soft Link)的方法来解决IE保护模式的兼容性问题：linkd 源目录 低权限的目的目录
-*       实质：给NTFS文件增加一个重解析点(REPARSE)的属性
+*       实质：给NTFS文件增加一个重解析点(FILE_ATTRIBUTE_REPARSE_POINT)的属性
 *       Linkd 可执行程序在 Windows Server 2003 Resource Kit Tools工具包 中
 *     2.SHGetSpecialFolderPath(NULL, szSavePath, CSIDL_LOCAL_APPDATA , TRUE); //取得 %UserProfile%\AppData\Local
 *       CString strFilePath(szSavePath); 

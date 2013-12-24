@@ -107,6 +107,9 @@ namespace FTL
 
 	/**************************************************************************************************
 	* CFileDialog
+    *   过滤字符串格式
+    *     MFC -- CString strFilter = _T("ImageFile(*.bmp;*.jpg;*.jpeg;*.png)|*.bmp;*.jpg;*.jpeg;*.png|All Files(*.*)|*.*");
+    *     WTL -- CString strFilter = _T("ImageFile(*.bmp;*.jpg;*.jpeg;*.png)\0*.bmp;*.jpg;*.jpeg;*.png\0All Files(*.*)\0*.*\0\0");
 	*   多选文件:
 	*     1.设置 OFN_ALLOWMULTISELECT
 	*     2.设置文件名的缓冲区

@@ -8,6 +8,10 @@
 #  error ftlCrack.h requires ftlbase.h to be included first
 #endif
 
+#include <wincrypt.h>
+#include <wintrust.h>
+
+
 //代码页转换: http://bianma.911cha.com/
 //Cryptoapi说明: http://www.cnblogs.com/lzjsky/archive/2010/09/21/1832239.html
 //Cryptopp 库
@@ -375,6 +379,34 @@ namespace FTL
         static LPCTSTR s_csKiloString;
         static LPCTSTR s_csPlaceString;
     };
+
+    //http://support.microsoft.com/kb/323809
+    //WinVerifyTrust -- 这个API只能简单的验证可执行文件的签名，
+    //CryptQueryObject -- 获取可执行文件中详细的验证签名信息(如 时间戳、发行商等)
+
+    class CFCodeSignInfo
+    {
+    public:
+        FTLINLINE CFCodeSignInfo();
+        FTLINLINE ~CFCodeSignInfo();
+        FTLINLINE BOOL OpenCodeSignByFile(LPCTSTR pszFilePath);
+        FTLINLINE BOOL Close();
+    public:
+        FTLINLINE LPCWSTR GetProgramName() { return m_pProgramName; }
+        FTLINLINE LPCWSTR GetPublisherLink() { return m_pPublisherLink; }
+        FTLINLINE LPCWSTR GetMoreInfoLink() { return m_pMoreInfoLink; }
+        FTLINLINE BOOL GetDateOfTimeStamp(SYSTEMTIME *st);
+    private:
+        static const DWORD      s_CheckEncoding = X509_ASN_ENCODING | PKCS_7_ASN_ENCODING;
+        PCMSG_SIGNER_INFO       m_pSignerInfo;
+        PCMSG_SIGNER_INFO       m_pCounterSignerInfo;
+        LPCWSTR                 m_pProgramName;
+        LPCWSTR                 m_pPublisherLink;
+        LPCWSTR                 m_pMoreInfoLink;
+        FTLINLINE BOOL          _GetProgAndPublisherInfo();
+        FTLINLINE BOOL          _GetTimeStampSignerInfo();
+        FTLINLINE LPCWSTR       _AllocateAndCopyWideString(LPCWSTR inputString);
+    };
 }
 
 #endif //FTL_CRACK_H
@@ -405,6 +437,7 @@ void Base64_Demo()
 	delete []pBase64;
 }
 #endif 
+
 
 
 #ifndef USE_EXPORT

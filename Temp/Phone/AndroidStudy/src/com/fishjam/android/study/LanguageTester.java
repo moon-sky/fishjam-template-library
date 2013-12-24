@@ -7,7 +7,16 @@ import junit.framework.TestCase;
  *
  * 数组
  *    private int[] mColors = new int[] { Color.BLACK, Color.RED, Color.BLUE,Color.GREEN, Color.MAGENTA, Color.YELLOW };
- *
+ *    ArrayAdapter -- 数组适配器
+ *    
+ * super 调用基类的同名方法，如: super.onCreate(xxxx);
+ * 
+ * Android 使用Java中的事件处理机制，包括( TODO ):
+ *   事件 -- (extends EventObject), 通过 FireEvent 激发事件 
+ *   事件源
+ *   事件监听器 -- 从EventListener 继承来定义监听接口，具体的监听器 implements 该接口  
+ *     Android系统中常见的事件监听器：
+ *       View 中的 OnClickListener, OnFocusChangeListener, OnKeyListener, OnTouchListener, OnCheckedChangeListener 等 
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************

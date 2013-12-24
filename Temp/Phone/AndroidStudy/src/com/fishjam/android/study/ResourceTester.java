@@ -51,11 +51,13 @@ import junit.framework.TestCase;
  *  
  * 菜单 -- 选项菜单(OptionMenu)、上下文菜单(ContextMenu -- 长时间按键不放时)、子菜单(SubMenu)
  *   MenuInflater --
- *   自定义系统菜单 -- 重载 Activity 的 特定函数
+ *   系统菜单 -- 重载 Activity 的 特定函数
  *      onCreate { mi = new MenuInflater(this); } 
- *      onCreateOptionsMenu(Menu menu){ mi.inflate(R.menu.test_menu, menu); return true; } //或通过 menu.add/addSubMenu 等方法动态添加
+ *      onCreateOptionsMenu(Menu menu){ mi.inflate(R.menu.test_menu, menu); return true; } 
+ *        或通过 menu.add/addSubMenu 等方法动态添加
  *      onOptionsItemSelected(MenuItem item){ switch(item.getItemId()) { case R.id.about:  xxxx; break; } return true; }
- *    重载 onCreateContextMenu/onContextItemSelected,  然后调用 registerForContextMenu(xxx) 为指定视图注册上下文菜单
+ *    上下文菜单 -- 重载 onCreateContextMenu/onContextItemSelected,  然后调用 registerForContextMenu(xxx) 为指定视图注册
+ *    
  *      
  * 使用尺寸 -- 单位(dimens)
  *   px(像素), in(英寸--基于屏幕的物理尺寸),mm(毫米), pt(点--英寸的1/72), dp(和密度无关的像素-相对屏幕物理密度的抽象单位),sp(和精度无关的像素)

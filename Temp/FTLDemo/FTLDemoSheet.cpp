@@ -49,7 +49,7 @@ BOOL CFTLDemoSheet::InitSheet()
 
     //this->AddPage(new CBasePage());
     //this->AddPage(new CControlsPage());
-    //this->AddPage(new CCrackPage());
+    this->AddPage(new CCrackPage());
     //this->AddPage(new CCrashHandlerPage());
     //this->AddPage(new CFilePage());
     //this->AddPage(new CGdiPage());

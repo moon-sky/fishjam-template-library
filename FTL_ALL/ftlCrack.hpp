@@ -5,7 +5,7 @@
 #ifdef USE_EXPORT
 #  include "ftlCrack.h"
 #endif
-
+#pragma comment(lib, "crypt32.lib")
 
 namespace FTL
 {
@@ -120,6 +120,273 @@ namespace FTL
             CopyMemory(m_pszCrackString + dwPlaceStart, s_csPlaceString, placeBufLen);
         }
         return m_pszCrackString;
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////
+    CFCodeSignInfo::CFCodeSignInfo()
+    {
+        m_pSignerInfo = NULL;
+        m_pCounterSignerInfo = NULL;
+        m_pProgramName = NULL;
+        m_pPublisherLink = NULL;
+        m_pMoreInfoLink = NULL;
+        //ZeroMemory(&m_SignerInfo, sizeof(m_SignerInfo));
+    }
+    CFCodeSignInfo::~CFCodeSignInfo()
+    {
+        Close();
+    }
+
+    BOOL CFCodeSignInfo::OpenCodeSignByFile(LPCTSTR pszFilePath)
+    {
+        CHECK_POINTER_ISSTRING_PTR_RETURN_VALUE_IF_FAIL(pszFilePath, FALSE);
+
+        BOOL bRet = FALSE;
+
+        DWORD dwEncoding = 0;
+        DWORD dwContentType = 0;
+        DWORD dwFormatType = 0;
+        DWORD dwSignerInfo = 0;
+
+        HCERTSTORE hCertStore = NULL;
+        HCRYPTMSG  hCryptMsg = NULL;
+        API_VERIFY_EXCEPT1(CryptQueryObject(CERT_QUERY_OBJECT_FILE, pszFilePath
+            , CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED    //验证码签名都是基于PKCS7的
+            , CERT_QUERY_FORMAT_FLAG_BINARY
+            , 0
+            , &dwEncoding
+            , &dwContentType, &dwFormatType, &hCertStore, &hCryptMsg, NULL ),
+            CRYPT_E_NO_MATCH);
+        if (bRet)
+        {
+            API_VERIFY(CryptMsgGetParam(hCryptMsg, CMSG_SIGNER_INFO_PARAM, 0, NULL, &dwSignerInfo));
+            m_pSignerInfo = (PCMSG_SIGNER_INFO)new BYTE[dwSignerInfo];
+            if (m_pSignerInfo)
+            {
+                API_VERIFY(CryptMsgGetParam(hCryptMsg, CMSG_SIGNER_INFO_PARAM, 0, (PVOID)m_pSignerInfo, &dwSignerInfo));
+                if (bRet)
+                {
+                    API_VERIFY(_GetProgAndPublisherInfo());
+                    API_VERIFY(_GetTimeStampSignerInfo());
+                }
+                // Search for the signer certificate in the temporary certificate store.
+
+            }
+        }
+        return bRet;
+    }
+
+    BOOL CFCodeSignInfo::Close()
+    {
+        BOOL bRet = TRUE;
+
+        SAFE_DELETE_ARRAY(m_pSignerInfo);
+        SAFE_DELETE_ARRAY(m_pCounterSignerInfo);
+
+        SAFE_DELETE_ARRAY(m_pProgramName);
+        SAFE_DELETE_ARRAY(m_pPublisherLink);
+        SAFE_DELETE_ARRAY(m_pMoreInfoLink);
+
+        return bRet;
+    }
+
+    LPCWSTR CFCodeSignInfo::_AllocateAndCopyWideString(LPCWSTR inputString)
+    {
+        LPWSTR outputString = NULL;
+
+        outputString = new WCHAR[wcslen(inputString) + 1];
+        if (outputString != NULL)
+        {
+            lstrcpyW(outputString, inputString);
+        }
+        return outputString;
+
+    }
+    BOOL CFCodeSignInfo::_GetProgAndPublisherInfo()
+    {
+        BOOL bRet = FALSE;
+        PSPC_SP_OPUS_INFO pOpusInfo = NULL;
+        BOOL bFound = FALSE;
+        DWORD dwData = 0;
+        
+        SAFE_DELETE_ARRAY(m_pProgramName);
+        SAFE_DELETE_ARRAY(m_pPublisherLink);
+        SAFE_DELETE_ARRAY(m_pMoreInfoLink);
+
+        // Loop through authenticated attributes and find SPC_SP_OPUS_INFO_OBJID OID.
+        for (DWORD n = 0; n < m_pSignerInfo->AuthAttrs.cAttr && !bFound; n++)
+        {           
+            if (lstrcmpA(SPC_SP_OPUS_INFO_OBJID, 
+                m_pSignerInfo->AuthAttrs.rgAttr[n].pszObjId) == 0)
+            {
+                bFound = TRUE;
+
+                // Get Size of SPC_SP_OPUS_INFO structure.
+                API_VERIFY(CryptDecodeObject(s_CheckEncoding,
+                    SPC_SP_OPUS_INFO_OBJID,
+                    m_pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].pbData,
+                    m_pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].cbData,
+                    0,
+                    NULL,
+                    &dwData));
+                if (!bRet)
+                {
+                    break;
+                }
+
+                // Allocate memory for SPC_SP_OPUS_INFO structure.
+                pOpusInfo = (PSPC_SP_OPUS_INFO)LocalAlloc(LPTR, dwData);
+                if (!pOpusInfo)
+                {
+                    break;
+                }
+
+                // Decode and get SPC_SP_OPUS_INFO structure.
+                API_VERIFY(CryptDecodeObject(s_CheckEncoding,
+                    SPC_SP_OPUS_INFO_OBJID,
+                    m_pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].pbData,
+                    m_pSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].cbData,
+                    0,
+                    pOpusInfo,
+                    &dwData));
+                if (!pOpusInfo)
+                {
+                    break;
+                }
+
+                // Fill in Program Name if present.
+                if (pOpusInfo->pwszProgramName)
+                {
+                    m_pProgramName = _AllocateAndCopyWideString(pOpusInfo->pwszProgramName);
+                }
+
+                // Fill in Publisher Information if present.
+                if (pOpusInfo->pPublisherInfo)
+                {
+
+                    switch (pOpusInfo->pPublisherInfo->dwLinkChoice)
+                    {
+                    case SPC_URL_LINK_CHOICE:
+                        m_pPublisherLink = _AllocateAndCopyWideString(pOpusInfo->pPublisherInfo->pwszUrl);
+                        break;
+
+                    case SPC_FILE_LINK_CHOICE:
+                        m_pPublisherLink = _AllocateAndCopyWideString(pOpusInfo->pPublisherInfo->pwszFile);
+                        break;
+                    default:
+                        FTLASSERT(NULL == m_pPublisherLink);
+                        break;
+                    }
+                }
+
+
+                // Fill in More Info if present.
+                if (pOpusInfo->pMoreInfo)
+                {
+                    switch (pOpusInfo->pMoreInfo->dwLinkChoice)
+                    {
+                    case SPC_URL_LINK_CHOICE:
+                        m_pMoreInfoLink = _AllocateAndCopyWideString(pOpusInfo->pMoreInfo->pwszUrl);
+                        break;
+                    case SPC_FILE_LINK_CHOICE:
+                        m_pMoreInfoLink = _AllocateAndCopyWideString(pOpusInfo->pMoreInfo->pwszFile);
+                        break;
+                    default:
+                        FTLASSERT(NULL == m_pMoreInfoLink);
+                        break;
+                    }
+                }               
+            } //lstrcmp SPC_SP_OPUS_INFO_OBJID
+        } // for
+
+        SAFE_LOCAL_FREE(pOpusInfo);
+        return bRet;
+    }
+
+    BOOL CFCodeSignInfo::_GetTimeStampSignerInfo()
+    {
+        PCCERT_CONTEXT pCertContext = NULL;
+        BOOL bRet = FALSE;
+        DWORD dwSize= 0;
+        BOOL bFound = FALSE;
+
+        FTLASSERT(NULL == m_pCounterSignerInfo);
+
+        // Loop through unathenticated attributes for szOID_RSA_counterSign OID.
+        for (DWORD n = 0; n < m_pSignerInfo->UnauthAttrs.cAttr && !bFound; n++)
+        {
+            if (lstrcmpA(m_pSignerInfo->UnauthAttrs.rgAttr[n].pszObjId, 
+                szOID_RSA_counterSign) == 0)
+            {
+                bFound = TRUE;
+
+                // Get size of CMSG_SIGNER_INFO structure.
+                API_VERIFY(CryptDecodeObject(s_CheckEncoding,
+                    PKCS7_SIGNER_INFO,
+                    m_pSignerInfo->UnauthAttrs.rgAttr[n].rgValue[0].pbData,
+                    m_pSignerInfo->UnauthAttrs.rgAttr[n].rgValue[0].cbData,
+                    0, NULL, &dwSize));
+                if (!bRet)
+                {
+                    break;
+                }
+
+                // Allocate memory for CMSG_SIGNER_INFO.
+                CFMemAllocator<BYTE> pCounterSignerInfo(dwSize);
+
+                // Decode and get CMSG_SIGNER_INFO structure for timestamp certificate.
+                API_VERIFY(CryptDecodeObject(s_CheckEncoding,
+                    PKCS7_SIGNER_INFO,
+                    m_pSignerInfo->UnauthAttrs.rgAttr[n].rgValue[0].pbData,
+                    m_pSignerInfo->UnauthAttrs.rgAttr[n].rgValue[0].cbData,
+                    0,
+                    (PVOID)*&pCounterSignerInfo,
+                    &dwSize));
+                if (bRet)
+                {
+                    m_pCounterSignerInfo = (PCMSG_SIGNER_INFO)pCounterSignerInfo.Detatch();
+                }
+            }
+        }
+        return bRet;
+    }
+
+    BOOL CFCodeSignInfo::GetDateOfTimeStamp(SYSTEMTIME *st)
+    {   
+        BOOL bRet = FALSE;
+        FILETIME ft = {0}; 
+        DWORD dwData = 0;
+
+        if (m_pCounterSignerInfo)
+        {
+            // Loop through authenticated attributes and find szOID_RSA_signingTime OID.
+            for (DWORD n = 0; n < m_pCounterSignerInfo->AuthAttrs.cAttr; n++)
+            {           
+                if (lstrcmpA(szOID_RSA_signingTime, 
+                    m_pCounterSignerInfo->AuthAttrs.rgAttr[n].pszObjId) == 0)
+                {               
+                    // Decode and get FILETIME structure.
+                    dwData = sizeof(ft);
+                    API_VERIFY(CryptDecodeObject(s_CheckEncoding,
+                        szOID_RSA_signingTime,
+                        m_pCounterSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].pbData,
+                        m_pCounterSignerInfo->AuthAttrs.rgAttr[n].rgValue[0].cbData,
+                        0, (PVOID)&ft, &dwData));
+                    if (!bRet)
+                    {
+                        break;
+                    }
+                    // Convert to local time.
+                    FILETIME lft = {0};
+                    FileTimeToLocalFileTime(&ft, &lft);
+                    FileTimeToSystemTime(&lft, st);
+
+                    break; // Break from for loop.
+                } //lstrcmp szOID_RSA_signingTime
+            } // for 
+        }
+        return bRet;
     }
 }
 

@@ -34,11 +34,11 @@ import junit.framework.TestCase;
  *   BaseAdapter -- 
  *   Button
  *     text
- *   EditText
+ *   EditText -- 编辑框或密码框
  *     textSize -- 18sp
  *     password -- true
  *     numeric -- decimal
- *   CheckBox
+ *   CheckBox -- 复选按钮
  *   Gallery(图库)
  *   ImageButton
  *     src -- "@drawable/iconempty"
@@ -50,11 +50,13 @@ import junit.framework.TestCase;
  *     checkedButton -- "@+id/sex1"
  *     orientation -- vertical,horizontal
  *   RadioButton
+ *   Spinner -- 下拉列表
  *   TextView -- 文本视图，显示字符串
  *     text -- @string/str_id
  *     textColor -- @drawable/darkgray
  *     gravity="center_vertical|center_horizontal", bottom
  *     autoLink -- all(可以显示网址，如 http://)
+ *   ToggleButton -- 开关按钮
  *   ProgressDialog -- 进度显示
  *   Spinner --
  *   
@@ -63,10 +65,11 @@ import junit.framework.TestCase;
 /***************************************************************************************************************************************
  * Layout -- Android 通过 LayoutInflater 类将 XML 格式的布局文件中的组件解析为可视化的视图组件。
  *   布局文件中的 <requestFocus/> 项代表什么意思? 
- *   AbsoluteLayout -- 绝对位置定位，降低兼容性，维护高
- *   RelativeLayout -- 可以拉伸自动适应，但会造成图像变形。
- *   LinearLayout -- 线型布局
- *     orientation -- vertical,horizontal
+ *   AbsoluteLayout -- 绝对位置定位，降低兼容性，维护成本高 ( TODO: 已抛弃 )
+ *   FrameLayout -- 帧布局，组件从屏幕的左上角开始布局，多个组件层叠排序，后面的组件覆盖前面的组件。
+ *   LinearLayout -- 线型布局，按照垂直或者水平方向布局组件
+ *     gravity(对齐方式) -- top, bottom, left, right
+ *     orientation(方向) -- vertical,horizontal
  *     layout_width -- fill_parent,wrap_content(根据内容指定高宽),320px,80dip
  *     layout_height -- fill_parent,wrap_content
  *     layout_alignParentRight -- true
@@ -76,15 +79,15 @@ import junit.framework.TestCase;
  *     layout_below -- "@+id/ExitButton", 
  *     layout_alignTop -- "@+id/sizebutton"
  *     layout_toLeftOf -- "@+id/sizebutton"
- *     layout_x -- 30px
- *     layout_y
+ *     layout_x, layout_y -- 30px
  *     layout_centerHorizontal -- true
  *     id -- "@+id/ResultText"
-   *   background -- "@drawable/testpic",
- *   TableLayout + TableRow + 
+ *    background -- "@drawable/testpic",
+ *   RelativeLayout -- 相对布局，相对其他组件的布局方式(如在其上下左右等)。可以拉伸自动适应，但会造成图像变形。
+ *     layout_below, layout_toLeftOf
+ *   TableLayout  -- 表格布局，按照行列方式布局组件( 采用 > TableRow > 元素 的方式)
  *     stretchColumns -- "数字"
  *   TableRow
- *     gravity -- right
  *
 ***************************************************************************************************************************************/
  
@@ -115,16 +118,19 @@ import junit.framework.TestCase;
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * Dialog
- *   AlertDialog
+ * 对话框(Dialog)
+ *   AlertDialog(警告对话框)
  *     示例: 
  *       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);  //创建Builder，然后可以依次设置各种参数
  *       dlgBuilder.setMessage(msg).setCancelable(false).setPositiveButton("确定", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //设置builder
- *       AlertDialog alert = dlgBuilder.create();  //创建
+ *       AlertDialog alert = dlgBuilder.create();  //创建对话框实例
  *       alert.show(); //显示
- * 
- * Toast -- 提示窗口(没有交互功能，只是提示)
- *    Toast.makeText(EX04_03.this,"提示信息", Toast.LENGTH_LONG).show;
+ *  ProgressDialog(进度对话框)
+ *  DatePickerDialog(日期选择对话框)
+ *  TimePickerDialog(时间选择对话框)
+ *  
+ * Toast -- 提示信息(没有交互功能，只是提示), 静态的makeText设置显示文本和时长
+ *    Toast.makeText(getApplicationContext(), "提示信息", Toast.LENGTH_LONG).show;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -163,6 +169,7 @@ public class UITester extends TestCase {
 	}
 	protected void setUp() throws Exception {
 		super.setUp();
+
 	}
 
 	protected void tearDown() throws Exception {

@@ -20,5 +20,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
     CString m_strPathOfAppWithMemOverFlow;
+    CString m_strCodeSignInfo;
+
     afx_msg void OnBnClickedBtnCrack();
+    afx_msg void OnBnClickedBtnCrackGetSignInfo();
 };
