@@ -8,6 +8,8 @@ import junit.framework.TestCase;
  * 数组
  *    private int[] mColors = new int[] { Color.BLACK, Color.RED, Color.BLUE,Color.GREEN, Color.MAGENTA, Color.YELLOW };
  *    ArrayAdapter -- 数组适配器
+ *      String[] strs = {"a", "b", "c"}; ArrayAdapter aa = new ArrayAdapter(this, android.R.layout.simple_spinner_item, strs);
+ *      spinner.setAdapter(aa); 
  *    
  * super 调用基类的同名方法，如: super.onCreate(xxxx);
  * 

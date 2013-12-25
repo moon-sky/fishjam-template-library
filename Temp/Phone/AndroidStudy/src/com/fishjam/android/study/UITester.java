@@ -1,4 +1,15 @@
 package com.fishjam.android.study;
+import android.content.Context;
+import android.support.v4.view.ViewPager.LayoutParams;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ImageSwitcher;
+import android.widget.ImageView;
+import android.widget.TabHost;
 import junit.framework.TestCase;
 
 /***************************************************************************************************************************************
@@ -31,6 +42,7 @@ import junit.framework.TestCase;
 
 /***************************************************************************************************************************************
  * View
+ *   AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
  *   BaseAdapter -- 
  *   Button
  *     text
@@ -39,27 +51,39 @@ import junit.framework.TestCase;
  *     password -- true
  *     numeric -- decimal
  *   CheckBox -- 复选按钮
- *   Gallery(图库)
+ *   Gallery(图库) + ImageSwitcher -- 能水平方向显示其内容，一般用来浏览图片，被选中的项位于中间，且可以响应事件显示信息。
+ *      通常使用 Gallery 显示缩略图，在点击时通过ImageSwitcher::setImageResource切换到大图
+ *      ImageSwitcher::setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out)); // 设置动画效果
+ *   GridView -- 按照行列的方式显示内容，一般适合显示图片)
  *   ImageButton
  *     src -- "@drawable/iconempty"
  *     setImageResource(R.drawable.iconempty);
  *   ImageView -- 显示图片
  *     setImageDrawable(getResources().getDrawable(R.drawable.right));   //设置显示的图片, 或通过 src 属性设置
- *   ListView
+ *     setImageResource(xxx);
+ *   ListView/ListActivity -- 列表视图，以垂直列表的方式列出需要显示的列表项(如联系人名单、系统设置项等)
+ *     关键点：设置Adapter
+ *   MapView -- 显示Google地图
+ *   ProgressBar -- 进度条，有很多种:
+ *     1.ProgressDialog(对话框进度条)： 覆盖Activity的onCreateDialog方法，并在其中创建进度条并返回；调用showDialog方法显示;
+ *     2.ProgressBarIndeterminate(标题栏进度条)：调用 Activity.requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS) 方法设置窗口有进度条的特征;
+ *       调用 Activity.setProgressBarIndeterminateVisibility 显示进度条
+ *     3.ProgressBar(水平进度条) -- 布局文件中声明ProgressBar，获取到变量后调用 incrementProgressBy 等方法设置进度
  *   RadioGroup(管理一组RadioButton)
  *     checkedButton -- "@+id/sex1"
  *     orientation -- vertical,horizontal
  *   RadioButton
  *   Spinner -- 下拉列表
+ *   TabHost / TabActivity -- 选项卡
  *   TextView -- 文本视图，显示字符串
  *     text -- @string/str_id
  *     textColor -- @drawable/darkgray
  *     gravity="center_vertical|center_horizontal", bottom
  *     autoLink -- all(可以显示网址，如 http://)
  *   ToggleButton -- 开关按钮
- *   ProgressDialog -- 进度显示
- *   Spinner --
- *   
+ *   WebView -- 内置浏览器控件，可直接加载网页。为响应超链接功能，调用 setWebViewClient 方法设置自定义的 WebViewClient 子类实例
+ *     getSettings().setJavaScriptEnabled(true) -- 更改设置
+ *     loadUrl -- 加载指定的URL地址网页
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
@@ -68,7 +92,7 @@ import junit.framework.TestCase;
  *   AbsoluteLayout -- 绝对位置定位，降低兼容性，维护成本高 ( TODO: 已抛弃 )
  *   FrameLayout -- 帧布局，组件从屏幕的左上角开始布局，多个组件层叠排序，后面的组件覆盖前面的组件。
  *   LinearLayout -- 线型布局，按照垂直或者水平方向布局组件
- *     gravity(对齐方式) -- top, bottom, left, right
+ *     gravity(对齐方式) -- top, bottom, left, right, center_vertical
  *     orientation(方向) -- vertical,horizontal
  *     layout_width -- fill_parent,wrap_content(根据内容指定高宽),320px,80dip
  *     layout_height -- fill_parent,wrap_content
@@ -90,7 +114,24 @@ import junit.framework.TestCase;
  *   TableRow
  *
 ***************************************************************************************************************************************/
- 
+
+/**************************************************************************************************************************************
+ * 对话框(Dialog)
+ *   AlertDialog(警告对话框)
+ *     示例: 
+ *       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);  //创建Builder，然后可以依次设置各种参数
+ *       dlgBuilder.setMessage(msg).setCancelable(false).setPositiveButton("确定", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //设置builder
+ *       AlertDialog alert = dlgBuilder.create();  //创建对话框实例
+ *       alert.show(); //显示
+ *  DatePickerDialog/TimePickerDialog(日期/时间 选择对话框) --  
+ *    1.重载 Activity.onCreateDialog(int id) { switch(id) {...}  } 方法创建对话框;
+ *    2.在 OnDateSetListener 和 OnTimeSetListener 的对应事件方法中响应日期和时间的设置;
+ *    3.调用 Activity.showDialog 显示对话框
+ *  
+ * Toast -- 提示信息(没有交互功能，只是提示), 静态的makeText设置显示文本和时长
+ *    Toast.makeText(getApplicationContext(), "提示信息", Toast.LENGTH_LONG).show;
+**************************************************************************************************************************************/
+
 /***************************************************************************************************************************************
  * Activity  :  表示用户界面中的一个屏幕，显示由几个Views控件组成的用户接口，并对事件做出响应，可以在xml文件中定义所需要的Views或在代码中定义，
  *     Context <- ContextWrapper <- ContextThemeWrapper <- Activity
@@ -116,22 +157,6 @@ import junit.framework.TestCase;
  *     setContentView -- 可将Activity与Views绑定在一起来实现用户交互的功能
  *     startActivity -- 从一个屏幕导航到另一个屏幕，打开Activity的条件被封装在Intent中
  **************************************************************************************************************************************/
-
-/**************************************************************************************************************************************
- * 对话框(Dialog)
- *   AlertDialog(警告对话框)
- *     示例: 
- *       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);  //创建Builder，然后可以依次设置各种参数
- *       dlgBuilder.setMessage(msg).setCancelable(false).setPositiveButton("确定", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //设置builder
- *       AlertDialog alert = dlgBuilder.create();  //创建对话框实例
- *       alert.show(); //显示
- *  ProgressDialog(进度对话框)
- *  DatePickerDialog(日期选择对话框)
- *  TimePickerDialog(时间选择对话框)
- *  
- * Toast -- 提示信息(没有交互功能，只是提示), 静态的makeText设置显示文本和时长
- *    Toast.makeText(getApplicationContext(), "提示信息", Toast.LENGTH_LONG).show;
-**************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
  * 按钮交互
@@ -161,10 +186,13 @@ import junit.framework.TestCase;
  *    //getWindow().setBackgroundDrawableResource(R.color.red_bg); //设置背景色
  * 2. 通过资源中定义的id找到对应的对象 -- findViewById
  *    TextView ResultText = (TextView)findViewById(R.id.ResultText);
+ * 3. 显示图片
+ *    
 **************************************************************************************************************************************/
 
 public class UITester extends TestCase {
 	public UITester()	{
+		
 		
 	}
 	protected void setUp() throws Exception {
@@ -192,6 +220,73 @@ public class UITester extends TestCase {
 		 * 返回result回上一个activity // EX03_09_1.this.finish();// 结束这个activity
 		 * EX03_09.this.finish(); // 关闭原本的Activity(根据具体情况)
 		 **************************************************************************************************/
+	}
+	
+	public void TabHostTester(){
+		/********************************************************************************************
+		 * 方法1:
+		 *   1. 在布局文件中使用 FrameLayout 列出Tab组件及Tab中的内容组件
+		 *   2. Activity 要继承 TabActivity;
+		 *   3.调用 TabActivity::getTabHost 获得 TabHost 对象，然后创建 Tab 选项页
+		 * 方法2:
+		 *   1.实现接口 TabHost.TabContentFactory 的 createTabContent 方法来指定
+		 *     public class MyActivity extends TabActivity implements TabHost.TabContentFactory { 
+		 *          onCreate 中:  getTabHost().addTab(getTabHost().newTabSpec("all").setContent(this);
+		 *          public View createTabContent(String tag) { ...; if(tag.equals("all")) {  设置all页面对应的内容  }  } 
+		 ********************************************************************************************/
+		
+		/*******************************************************************************************
+		//代码部分
+			TabHost tabHost = getTabHost();
+			LayoutInflater.from(this).infalte(R.layout.main, tabHost.getTabContentView(), true);
+			tabHost.addTab(tabHost.newTabSpec("all").setIndicator("所有通话记录").setContent(R.id.TextViewAll));
+			tabHost.addTab(tabHost.newTabSpec("ok").setIndicator("已接来电").setContent(R.id.TextViewReceived));
+			tabHost.addTab(tabHost.newTabSpec("cancel").setIndicator("未接来电").setContent(R.id.TextViewUnreceived));
+
+		 //布局部分
+		   <FrameLayout ....>
+		   	  <TabHost>
+		   	    <TextView android:id="@+id/TextViewAll" android:layout_width="wrap_content" android.text="所有通话记录">
+		   	    </TextView>
+		   	  </TabHost>
+		   </FrameLayout>
+		 *******************************************************************************************/
+	}
+	
+
+	public void GridViewDisplayImageTester(){
+		//使用 BaseAdapter 类，重写其中的方法( 如 getView 来设置图片显示格式 )
+		/********************************************************************************************
+		//自定义的 BaseAdapter 类，根据需要返回并图片的数据信息
+			class MyAdapter extends BaseAdapter{
+				private Integer [] imgs = {
+						R.drawable.ic_launcher
+				};
+				Context context;
+				MyAdapter(Context context){
+					this.context = context;
+				}
+				@Override
+				public View getView(int position, View convertView, ViewGroup parent) {
+					ImageView imageView;
+					if(convertView == null){
+						imageView = new ImageView(context);
+						imageView.setLayoutParams(new GridView.LayoutParams(45, 45));	//设置ImageView对象布局
+						imageView.setAdjustViewBounds(false); 		//设置边界对齐
+						imageView.setPadding(8,  8,  8,  8);				//设置间距
+					}
+					else{
+						imageView = (ImageView)convertView;
+					}
+					imageView.setImageResource(imgs[position]);	//为 ImageView 设置图片资源
+					return imageView;
+				}
+			}
+		//Activity 子类中，使用自定义的 Adapter 在 GridView 中显示图片
+			GridView gridView = (GridView)findViewById(R.id.xxx);
+			gridView.setNumColumns(4); 	//设置列数
+			gridView.setAdapter(new MyAdapter(this));
+		*********************************************************************************************/
 	}
 }
 

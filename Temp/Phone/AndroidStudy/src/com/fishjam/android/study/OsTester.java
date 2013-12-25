@@ -1,4 +1,8 @@
 package com.fishjam.android.study;
+import java.util.Calendar;
+
+import android.R.integer;
+
 import junit.framework.TestCase;
 
 /***************************************************************************************************************************************
@@ -32,5 +36,38 @@ public class OsTester  extends TestCase {
 		//DisplayMetrics dm = new DisplayMetrics();
 		//getWindowManager().getDefaultDisplay().getMetrics(dm);
 		//String strOpt = "手机屏幕分辨率为：" +  dm.widthPixels + " × " + dm.heightPixels;  //320 x 480
+	}
+	public void IntentTester(){
+		//以下代码在源Activity的子类(MainActivity) 中执行，启动并给 ResultActivity 传递参数
+		/*
+		Bundle bundle = new Bundle();
+		bundle.putString("username", "userNameString");
+		bundle.putString("passwd", "passwdString");
+		Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+		intent.putExtra("data", bundle);
+		startActivity(intent);
+		*/
+		
+		//以下代码在目的Activity的子类(ResultActivity) 中执行，接收传入的参数
+		/*
+		Intent intent = this.getIntent();
+		Bundle bundle = intent.getBundleExtra("data");
+		List list = new ArrayList();
+		list.add(bundle.getString("username"));
+		ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_checked, list);
+		listView.setAdapter(adapter);
+		*/
+	}
+	
+	public void CalendarTester()
+	{
+		 //Calendar -- 日历(TODO: 是不是UI控件 ?)
+		Calendar calendar = Calendar.getInstance();
+		if (calendar != null) {
+			int  year 	= calendar.get(Calendar.YEAR);
+			int month = calendar.get(Calendar.MONTH);
+			int day 		= calendar.get(Calendar.DAY_OF_MONTH) ;
+		}
+		
 	}
 }
