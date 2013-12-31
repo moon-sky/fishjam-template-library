@@ -9,6 +9,11 @@ import junit.framework.TestCase;
  *   3.打开手机上的USB调试(Debug)模式：应用程序->开发->USB调试
  *
  * 每一个Android应用程序运行在自己的进程中,都拥有一个独立的Dalvik虚拟机实例
+ *  
+ * 调试日志:
+ *   1.util.Log 中可使用类似 Log.i(TAG, 消息); 的方式;  
+ *   2.System.out.println("xxx"); -- 这种方式?
+ *   
  **************************************************************************************************************************************/
 
 public class DebugTester  extends TestCase{

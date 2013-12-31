@@ -60,7 +60,7 @@ import junit.framework.TestCase;
  * workflow(流程，有类吗?)
 *****************************************************************************************************/
 
-public class Cocos2dStudy extends TestCase{
+public class Cocos2dTester extends TestCase{
 
 }
 

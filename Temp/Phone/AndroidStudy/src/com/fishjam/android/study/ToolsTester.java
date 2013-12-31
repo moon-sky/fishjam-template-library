@@ -43,7 +43,7 @@ import junit.framework.TestCase;
  *     -v -- 设置log的输出格式。brief(默认)、process、tag、thread、raw、time、long
  *            TODO: log级别： V(erbose) 、D(ebug)、I(nfo)、W(arning)、E(rror)、F(atal)、S(ilent) 
  * mksdcard.exe -- 创建sd卡影像文件
-
+*    mksdcard.exe -l SDCard 512M "E:\Android_SDK\sdcard.img"
 
  **************************************************************************************************************************************/
 

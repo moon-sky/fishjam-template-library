@@ -11,6 +11,7 @@
 /*********************************************************************************************************************************
 * 安全控制
 *   Security Context -- 安全上下文，定义某个进程允许做什么的许可和权限的集合，通过登录会话确定，通过访问令牌维护。
+*   SID(Security Identifier) -- LookupAccountName 等函数获取
 *   Security Principal -- Windows信任的安装安全主体
 *   LUID -- locally unique identifier
 *
@@ -34,7 +35,12 @@
 *     %UserProfile%\AppData\Local\Microsoft\Windows\Temporary Internet Files\Virtualized\XXXX -- XXX部分即是应该的 C:\ProgramData\MyProgramData 等
 *
 *     以下注册表进行控制？：HKLM\SYSTEM\CurrentControlSet\services\luafv
-*   
+
+*   LSA(Local Security Authority) -- 控制本地权限的API
+*     权限管理API流程：
+*       LsaOpenPolicy -> LookupAccountName/LsaLookupNames(get SID) -> LsaAddAccountRights/LsaRemoveAccountRights(增加或减少权限) -> LsaClose
+*         LsaEnumerateAccountRights(枚举用户权限), LsaEnumerateAccountsWithUserRight(枚举有指定权限的用户)
+* 
 *   FUS(Fast User Switch) -- 快速用户切换
 *   会话隔离(Session Isolation) -- Vista后所有系统服务运行在会话0以增强系统服务的安全性
 *   Restricted Token -- 受限访问令牌
@@ -62,10 +68,31 @@
 
 namespace FTL
 {
-	class CFUser
+	class CFUserUtil
 	{
 	public:
+        //判断当前用户(当前进程的Owner)是否是本地 Adminstrators 组中的成员(注意：不是域的)
+        FTLINLINE static IsProcessUserAdministrator();
 	};
+
+    //How To Manage User Privileges Programmatically in Windows NT
+    //  support.microsoft.com/kb/132958
+
+    //TODO: 未写完
+    class CFUserPrivileges
+    {
+    public:
+        FTLINLINE CFUserPrivileges();
+        FTLINLINE ~CFUserPrivileges();
+        FTLINLINE BOOL Open();
+        FTLINLINE VOID Close();
+        //设置权限：如 L"SeServiceLogonRight", 其内部可调用 LsaAddAccountRights/LsaRemoveAccountRights
+        FTLINLINE BOOL SetPrivilegeOnAccount(LPWSTR PrivilegeName, BOOL bEnable ); 
+    private:
+        FTLINLINE void _InitLsaString(PLSA_UNICODE_STRING LsaString,LPWSTR String);
+    private:
+        LSA_HANDLE  m_hPolicy;
+    };
 }
 #endif //FTL_USER_H
 

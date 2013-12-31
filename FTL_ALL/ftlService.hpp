@@ -16,7 +16,7 @@ namespace FTL
         {
             BOOL bRet = FALSE;
 
-            SC_HANDLE hSCM = ::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+            SC_HANDLE hSCM = ::OpenSCManager(NULL, NULL, SERVICE_QUERY_STATUS);
 
             if (hSCM != NULL)
             {

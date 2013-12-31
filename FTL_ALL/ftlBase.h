@@ -104,6 +104,7 @@ namespace FTL
     //  TRACE 格式化时， %ls -- WCHAR*, %hs -- CHAR*
     //  %s -- 按原样输出； %S -- 切换UNICODE 和 ANSI 输出
 	//  %ws -- 在MS的Sample(Samples\web\Wininet\Async\async.c) 中有这样的用法，表明宽字符?
+    //  L"%hS" -- 可以直接将 ANSI 转换为 UNICODE? wsprintfW 等函数?
 
     #ifdef _DEBUG
     #  define DBG_REPORT    _CrtDbgReport

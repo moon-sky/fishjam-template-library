@@ -79,7 +79,7 @@
 * 更改
 *   服务名称：IDS_SERVICENAME
 *   服务配置和描述等：重载 CAtlServiceModuleT::RegisterAppId(bool bService = false){ 
-*     ChangeServiceConfig  -- 可更改服务类型(驱动服务、运行在自己的进程的服务)，启动方式(自动、手动等)，依赖服务(如 _T("RPCSS\0") 等)
+*     ChangeServiceConfig  -- 可更改服务类型(驱动服务SERVICE_DRIVER、运行在自己的进程的服务)，启动方式(自动、手动等)，依赖服务(如 _T("RPCSS\0") 等)
 *     ChangeServiceConfig2(SERVICE_CONFIG_DESCRIPTION) 
 *   }
 *   修改安全设置(否则客户端调用时可能会 E_ACCESSDENIED)：InitializeSecurity 中
@@ -100,7 +100,10 @@
 *   OpenDesktop("default", xxx)、( OpenInputDesktop、SetThreadDesktop )
 *   OpenWindowStation("winsta0", xxx)  
 *   
-*
+* 常见问题:
+*   1.停止或删除服务时会弹出 "Could not stop service"、"Could not delete service" 等英文对话框
+*     原因：使用了ATL制作服务，且无法及时停止服务时，CAtlServiceModuleT 中硬编码的对话框
+*     解决：重载 RegisterAppId 并拷贝基类实现后，更改对默认的 Install/Uninstall 等函数的调用和实现(如 MyInstall/MyUninstall )
 *
 *************************************************************************************************************************/
 

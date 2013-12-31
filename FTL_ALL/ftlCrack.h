@@ -313,6 +313,7 @@
 *
 * OpenSSL -- 基于密码学的安全开发包，为网络通信提供安全及数据完整性的一种安全协议，囊括了主要的密码算法、常用的密钥和证书封装管理功能以及SSL协议.
 *   电子文档:赵春平 的 OpenSSL编程
+*   Win32下可以直接使用OpenSSL-Win32，不用编译。http://slproweb.com/products/Win32OpenSSL.html
 *   编译(参见其中的 INSTALL.W32)：
 *     1.下载并安装 ActivePerl(http://www.activestate.com/ActivePerl);
 *     2.[可选]下载 汇编编译器 NASM(Netwide Assembler) http://www.nasm.us/ 或 http://nasm.sourceforge.net/

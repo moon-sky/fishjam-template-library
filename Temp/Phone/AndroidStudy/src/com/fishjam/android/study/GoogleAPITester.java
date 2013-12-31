@@ -13,8 +13,13 @@ import junit.framework.TestCase;
 *     4.获得 "Google Map API key"：使用 JDK的keytool生成MD5 key，到google网站申请 ApiKey
 *       http://code.google.com/intl/zh-cn/android/maps-api-signup.html
 *     5.布局文件 <com.google.android.maps.MapView android:apiKey="xxxxxxx" />
-*     5.继承 MapActivity, 里面使用 MapView 进行显示和控制
-*      
+*     6.继承 MapActivity, 里面使用 MapView 进行显示和控制
+*     
+*   要显示地图时，也可使用 ACTION_VIEW + Uri="geo：进度,维度" 的Intent方式
+*   
+*   邮件
+*     1.内置 Gmail 引擎收发邮件
+*     2.使用 SMTP 来收发
  **************************************************************************************************************************************/
 
 public class GoogleAPITester  extends TestCase{
