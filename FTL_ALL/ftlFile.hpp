@@ -6,7 +6,7 @@
 #  include "ftlfile.h"
 #endif
 #include "ftlConversion.h"
-
+#include "ftlString.h"
 #include <atlpath.h>
 
 namespace FTL
@@ -907,6 +907,7 @@ namespace FTL
         }
         m_strDirPath = pszDirPath;
         m_strFilter = pszFilter;
+        Split(m_strFilter, _T(";"), false, m_FindFilters);
 
         m_FindDirs.push_back(m_strDirPath);
         
@@ -918,7 +919,14 @@ namespace FTL
             FTLASSERT(!strFindPath.IsEmpty());
 
             CPath path(strFindPath);
-            path.Append(m_strFilter);
+            if (1 == m_FindFilters.size())
+            {
+                path.Append(m_strFilter);
+            }
+            else
+            {
+                path.Append(TEXT("*.*"));
+            }
 
             WIN32_FIND_DATA findData = { 0 };
 
@@ -930,7 +938,6 @@ namespace FTL
                 {
                     CPath pathFullFindResult(strFindPath);
                     pathFullFindResult.Append(findData.cFileName);
-
                     if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                     {
                         if ((lstrcmpi(findData.cFileName, _T(".")) != 0) 
@@ -946,7 +953,10 @@ namespace FTL
                     }
                     else
                     {
-                        resultHandler = m_pCallback->OnFindFile(pathFullFindResult.m_strPath, findData, m_pParam);
+                        if (_isMatchFilterFile(findData.cFileName))
+                        {
+                            resultHandler = m_pCallback->OnFindFile(pathFullFindResult.m_strPath, findData, m_pParam);
+                        }
                     }
 
                     API_VERIFY_EXCEPT1(FindNextFile(hFind, &findData), ERROR_NO_MORE_FILES);
@@ -957,6 +967,23 @@ namespace FTL
         }
 
         return bRet;
+    }
+
+    BOOL CFFileFinder::_isMatchFilterFile(LPCTSTR pszFileName)
+    {
+        BOOL bMatch = FALSE;
+        for (FindFiltersContainer::iterator iter = m_FindFilters.begin();
+            iter != m_FindFilters.end(); 
+            ++iter)
+        {
+            const CAtlString& strFilter = *iter;
+            bMatch = CFStringUtil::IsMatchMask(pszFileName, strFilter, FALSE);
+            if (bMatch)
+            {
+                break;
+            }
+        }
+        return bMatch;
     }
 
     CFDirectoryCopier::CFDirectoryCopier()

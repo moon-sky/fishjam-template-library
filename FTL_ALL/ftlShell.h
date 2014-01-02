@@ -152,8 +152,10 @@ namespace FTL
     public:
         FTLINLINE CFDirBrowser(LPCTSTR lpszTitle = NULL, HWND hWndOwner = NULL, LPCTSTR pszInit = NULL, 
             UINT nFlags = BIF_NEWDIALOGSTYLE | 
-            BIF_STATUSTEXT |     //可包含状态区域，通过发送消息可以设置其文本
-            BIF_RETURNONLYFSDIRS //仅返回文件系统的目录，选中“我的电脑”等时确认按钮为禁用状态
+            BIF_EDITBOX |
+            BIF_STATUSTEXT |        //可包含状态区域，通过发送消息可以设置其文本
+            BIF_RETURNONLYFSDIRS |  //仅返回文件系统的目录，选中“我的电脑”等时确认按钮为禁用状态
+            BIF_BROWSEINCLUDEURLS 
             );
         FTLINLINE BOOL DoModal();
         FTLINLINE LPCTSTR GetSelectPath() { return m_szPath; }

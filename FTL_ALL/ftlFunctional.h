@@ -302,6 +302,35 @@ namespace FTL
         return tokens.size();
     }
 
+    FTLINLINE size_t Split(const CAtlString& text, 
+        const CAtlString& delimiter,
+        bool bWithDelimeter,
+        std::list<CAtlString>& tokens)
+    {
+        int len = text.GetLength();
+        int start = 0;
+        int stop = text.Find(delimiter, start);
+        while (-1 != stop)
+        {
+            if (bWithDelimeter && start > 0)
+            {
+                tokens.push_back(text.Mid(start - 1, stop - start + 1));
+            }
+            else
+            {
+                tokens.push_back(text.Mid(start, stop - start));
+            }
+            start = stop + 1;
+            stop = text.Find(delimiter, start);
+        }
+        if (start >0 && start < len)
+        {
+            tokens.push_back(text.Mid(start));
+        }
+
+        return tokens.size();
+    }
+
     FTLINLINE int GetRandomArray(int from, int to, std::vector<int>& result)
     {
         FTLASSERT(from <= to);

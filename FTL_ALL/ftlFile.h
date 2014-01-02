@@ -277,7 +277,7 @@ namespace FTL
         virtual FileFindResultHandle OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData, LPVOID pParam) = 0;
     };
 
-    //同步查找指定目录
+    //同步查找指定目录 -- 采用了递推方式来避免递归方式的问题
     class CFFileFinder
     {
     public:
@@ -289,8 +289,11 @@ namespace FTL
         LPVOID              m_pParam;
         CAtlString          m_strDirPath;
         CAtlString          m_strFilter;
-        typedef std::deque<CAtlString>  FindDirsContainer;
+        typedef std::deque<CAtlString>  FindDirsContainer;      //递归方式时保存需要查找的子目录
         FindDirsContainer  m_FindDirs;
+        typedef std::list<CAtlString>   FindFiltersContainer;   //保存通过分号区分开的多种扩展名
+        FindFiltersContainer    m_FindFilters;
+        FTLINLINE   BOOL _isMatchFilterFile(LPCTSTR pszFileName);
     };
 
 

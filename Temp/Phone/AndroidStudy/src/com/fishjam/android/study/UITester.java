@@ -82,9 +82,12 @@ import junit.framework.TestCase;
  *     gravity="center_vertical|center_horizontal", bottom
  *     autoLink -- all(可以显示网址，如 http://)
  *   ToggleButton -- 开关按钮
+ *   VideoView -- 
  *   WebView -- 内置浏览器控件，可直接加载网页。为响应超链接功能，调用 setWebViewClient 方法设置自定义的 WebViewClient 子类实例
  *     getSettings().setJavaScriptEnabled(true) -- 更改设置
  *     loadUrl -- 加载指定的URL地址网页
+ *   Window
+ *     setFormat -- 设置窗口特征，如 PixelFormat.TRANSLUCENT(半透明)， 需要在 setContentView 之前调用
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************

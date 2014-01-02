@@ -202,7 +202,7 @@
 				RelativePath=".\ftlCrashHandler.hpp"
 				>
 			</File>
-   			<File
+			<File
 				RelativePath=".\ftlDatabase.hpp"
 				>
 			</File>
@@ -308,6 +308,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlSocket.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlString.hpp"
 				>
 			</File>
 			<File
@@ -522,6 +526,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlSocket.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlString.h"
 				>
 			</File>
 			<File
