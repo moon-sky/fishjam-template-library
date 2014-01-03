@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
 import android.view.SurfaceHolder;
+import android.view.animation.AnimationUtils;
 import junit.framework.TestCase;
 
 /***************************************************************************************************************************************
@@ -39,14 +40,36 @@ import junit.framework.TestCase;
  *     setType() -- 设置类型，如 SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS
  *     
  * 2D图形处理  -- android.graphics, android.view.animation 等包中
- *   Drawable --
- *   Bitmap / BitmapFactory 
- *   Tween / Frame -- 动画
- *   Canvas
- *   Color
- *   Paint
- *   Path
- *   Matrix / Shader -- 图形特效
+ *   图片: Drawable / Bitmap / BitmapFactory
+ *     Drawable -- 操作图片，其有多个子类: BitmapDrawable/ColorDrawable/ShapeDrawable
+ *       使用方式:
+ *         1.保存在工程中的图片文件, 如 ImageView.setImageResource(R.drawable.myImage); 
+ *         2.XML文件定义Drawable属性, 如 <ImageView android:id=“@id/ImageView01" android:src="@drawable/myimage" ... />
+ *         3.直接构造实例读取(SD) 
+ *           a.Bitmap bmp = BitmapFactory.decodeFile("/sdcard/test.jpg"); 类似的有 decodeResource
+ *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //根据原始位图创建新视图  
+ *           
+ *   
+ *   动画 -- Animation(动画抽象类，有多个子类) 
+ *       AnimationSet -- 定义动画属性集合类
+ *       AnimationUtils -- 动画工具类
+ *     1.Tween -- 可以使视图组件移动、放大、缩小、旋转、及透明度等变化；
+ *       ScaleAnimation/AlphaAnimation/RotateAnimation/TranslateAnimation
+ *       使用方式:
+ *         1.硬编码 -- 构造Animation子类实例并设置好参数后，通过 ImageView.startAnimation 等函数启动指定动画
+ *         2.配置文件(推荐) -- res\anim\ 目录中设置动画文件，然后通过 AnimationUtils.loadAnimation 方法获得动画实例，并通过组件的 startAnimation 开始，
+ *           <set> <alpha android:fromAlpha="0.1" toAlpha="1.0" duration="3000" /></set>， 类似的有 <scale>, <translate>, <rotate> 等
+ *     2.Frame -- 帧动画，通过顺序播放排列好的图片来实现，类似电影。
+ *       AnimationDrawable -- 一般通过XML配置文件配置，<animation-list> <item/></animation-list>，然后在Activity的xml配置中可以通过 android:background 指定？
+ *  
+ * 自绘
+ *   从 View/SurfaceView 等类继承，然后重载 onDraw 方法 { }，使用Canvas进行绘制，通过 postInvalidate 请求更新
+ *   Canvas -- 画布
+ *   Color/Paint(画笔)/Path/ShapeDrawable及其子类，如 OvalShape(椭圆)、RectShape(矩形)
+ *   
+ *   Matrix -- 图形特效，可以实现图形的 旋转(setRotate)、缩放(setScale)和平移(setTranslate)等
+ *   Shader -- 渲染效果，有很多子类，如 BitmapShader(位图渲染)、ComposeShader(混合渲染)、LinearGradient(线性渲染)、
+ *      RadialGradient(光束渲染), SweepGradient(梯度渲染) 等， 可通过 Paint.setShader(); 等方式来使用
  * 3D图形处理(OpenGL ES) -- 位于 javax.microedition.khronos.opengles, android.opengl 等包中
  *   
  ***************************************************************************************************************************************/
@@ -62,4 +85,8 @@ import junit.framework.TestCase;
 
 public class MultiMediaTester extends TestCase {
 	SurfaceHolder holder;
+	public void test()
+	{
+
+	}
 }

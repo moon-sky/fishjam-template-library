@@ -6,10 +6,13 @@ CLotteryMgr::CLotteryMgr()
     m_szThumbnail.SetSize(100, 100);
     m_hWndControl = NULL;
     m_dwElapseTime = 200;
+    m_bRecursive = FALSE;
 }
 
 CLotteryMgr::~CLotteryMgr(void)
 {
+    m_threadInit.StopAndWait();
+    m_threadLoop.StopAndWait();
 }
 
 FTL::FileFindResultHandle CLotteryMgr::OnFindFile(LPCTSTR pszFilePath, const WIN32_FIND_DATA& findData, LPVOID pParam)
@@ -17,6 +20,11 @@ FTL::FileFindResultHandle CLotteryMgr::OnFindFile(LPCTSTR pszFilePath, const WIN
     HRESULT hr = E_FAIL;
     BOOL    bRet = FALSE;
     Gdiplus::Status sts = Gdiplus::Ok;
+
+    if (ftwtContinue != m_threadInit.GetThreadWaitType(INFINITE))
+    {
+         return rhStop;
+    }
 
     if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
     {
@@ -46,26 +54,53 @@ FTL::FileFindResultHandle CLotteryMgr::OnFindFile(LPCTSTR pszFilePath, const WIN
     return rhContinue;
 }
 
-DWORD CLotteryMgr::Init(HWND hWndControl, const CSize& szThumbnail, LPCTSTR pszDirectory, LPCTSTR pszExtName /* = TEXT(*.jpg;*.png) */)
+BOOL CLotteryMgr::Init(HWND hWndControl, const CSize& szThumbnail, LPCTSTR pszDirectory, 
+                       LPCTSTR pszExtName /* = TEXT(*.jpg;*.png) */,
+                       BOOL bRecursive /* = FALSE*/)
 {
-    m_allLotteryInfos.clear();
+    BOOL bRet = FALSE;
+    API_VERIFY(m_threadInit.StopAndWait());
+
     m_szThumbnail = szThumbnail;
     m_hWndControl = hWndControl;
+    m_strDirectory = pszDirectory;
+    m_strExtName = pszExtName;
+    m_bRecursive = bRecursive;
+
+    API_VERIFY(m_threadInit.Start(_InitFunc, this));
+    return bRet;
+}
+
+DWORD CLotteryMgr::_InitFunc(LPVOID lpThreadParameter)
+{
+    CLotteryMgr* pThis = reinterpret_cast<CLotteryMgr*>(lpThreadParameter);
+    return pThis->_innerInitFunc();
+}
+DWORD CLotteryMgr::_innerInitFunc()
+{
+    m_allLotteryInfos.clear();
 
     BOOL bRet = FALSE;
     CFFileFinder finder;
     finder.SetCallback(this, NULL);
-    API_VERIFY(finder.Find(pszDirectory, pszExtName, TRUE));
-
-    return m_allLotteryInfos.size();
+    API_VERIFY(finder.Find(m_strDirectory, m_strExtName, m_bRecursive));
+    DWORD dwCount = m_allLotteryInfos.size();
+    SendMessage(m_hWndControl, UM_INIT_LOTTERY_COMPLETE, dwCount, NULL);
+    return dwCount;
 }
 
+BOOL CLotteryMgr::StopInit()
+{
+    BOOL bRet = FALSE;
+    API_VERIFY(m_threadInit.StopAndWait());
+    return bRet;
+}
 BOOL CLotteryMgr::Start(DWORD dwElapseTime)
 {
     BOOL bRet = FALSE;
     m_dwElapseTime = dwElapseTime;
     
-    API_VERIFY(m_thread.Start(_LotterLoopFunc, this));
+    API_VERIFY(m_threadLoop.Start(_LotterLoopFunc, this));
     return bRet;
 }
 
@@ -80,7 +115,7 @@ DWORD CLotteryMgr::_innerLotterLoopFunc()
     FTLTRACE(TEXT("Enter _innerLotterLoopFunc\n"));
     DWORD dwResult = 0;
     FTLThreadWaitType waitType = ftwtContinue;
-    while(ftwtContinue == (waitType = m_thread.GetThreadWaitType(INFINITE)))
+    while(ftwtContinue == (waitType = m_threadLoop.GetThreadWaitType(INFINITE)))
     {
         for (LotteryInfoContainer::iterator iter = m_allLotteryInfos.begin();
             iter != m_allLotteryInfos.end();
@@ -93,16 +128,16 @@ DWORD CLotteryMgr::_innerLotterLoopFunc()
                 SendMessage(m_hWndControl, UM_UPDATE_LOTTERY_INFO, (WPARAM)m_pCurLotterInfo.get(), NULL);
 
                 //wait for pause
-                if (m_thread.HadRequestPause())
+                if (m_threadLoop.HadRequestPause())
                 {
-                    waitType = m_thread.GetThreadWaitType(INFINITE);
+                    waitType = m_threadLoop.GetThreadWaitType(INFINITE);
                     FTLASSERT(!m_pCurLotterInfo->bSelection);
                     m_pCurLotterInfo->bSelection = TRUE;
                 }
                 else
                 {
                     //sleep for elapse
-                    waitType = m_thread.SleepAndCheckStop(m_dwElapseTime);
+                    waitType = m_threadLoop.SleepAndCheckStop(m_dwElapseTime);
                 }
 
                 if (waitType != ftwtTimeOut 
@@ -121,13 +156,13 @@ DWORD CLotteryMgr::_innerLotterLoopFunc()
 BOOL CLotteryMgr::TogglePause()
 {
     BOOL bRet = FALSE;
-    if (m_thread.HadRequestPause())
+    if (m_threadLoop.HadRequestPause())
     {
-        API_VERIFY(m_thread.Resume());
+        API_VERIFY(m_threadLoop.Resume());
     }
     else
     {
-        API_VERIFY(m_thread.Pause());
+        API_VERIFY(m_threadLoop.Pause());
     }
     return bRet;
 }
@@ -135,7 +170,7 @@ BOOL CLotteryMgr::TogglePause()
 BOOL CLotteryMgr::Stop()
 {
     BOOL bRet = FALSE;
-    API_VERIFY(m_thread.StopAndWait());
+    API_VERIFY(m_threadLoop.StopAndWait());
     return bRet;
 }
 

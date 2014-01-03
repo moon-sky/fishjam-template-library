@@ -3,7 +3,7 @@ import junit.framework.TestCase;
 
 /***************************************************************************************************************************************
  * 学习书籍
- *     Android应用开发详解.pdf -- 257, 
+ *     Android应用开发详解.pdf -- 311, 
  *     欢迎来到Android世界 http://www.docin.com/p-31448231.html
  *     Android中可视化GUI布局拖拉开源工具程序  http://code.google.com/p/droiddraw , 或者通过 http://www.droiddraw.org/ 在线使用
  *     Google Android SDK开发范例大全  -- http://book.csdn.net/bookfiles/1060/100106031790.shtml

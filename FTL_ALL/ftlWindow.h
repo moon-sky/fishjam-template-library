@@ -394,17 +394,20 @@ namespace FTL
 #  define DUMP_WINDOWS_MSG(pszName, pFilters, nCount, uMsg, wParam, lParam) \
     {\
         BOOL bFilterd = FALSE;\
-		for(int i = 0; i < nCount; i++){\
-			if(uMsg == pFilters[i] ){\
-				bFilterd = TRUE;\
-				break;\
-			}\
-		}\
+        if(pFilters) \
+        {\
+		    for(int i = 0; i < nCount; i++){\
+			    if(uMsg == pFilters + i ){\
+				    bFilterd = TRUE;\
+				    break;\
+			    }\
+		    }\
+        }\
         if(!bFilterd)\
         {\
             FTLTRACE(TEXT("%s[%d](%d)%s, wParam=0x%x, lParam=0x%x, Tick=%d\n"),\
-            pszName,GetCurrentThreadId(),uMsg, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(),\
-			wParam, lParam, GetTickCount() );\
+                pszName,GetCurrentThreadId(),uMsg, FTL::CFMessageInfo(uMsg, wParam, lParam).GetConvertedInfo(),\
+		        wParam, lParam, GetTickCount() );\
         }\
     }
 #else

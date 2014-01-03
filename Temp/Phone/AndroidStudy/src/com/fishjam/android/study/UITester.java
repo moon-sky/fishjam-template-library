@@ -43,6 +43,7 @@ import junit.framework.TestCase;
 
 /***************************************************************************************************************************************
  * View
+ *   AdapterView
  *   AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
  *   BaseAdapter -- 
  *   Button
@@ -113,6 +114,7 @@ import junit.framework.TestCase;
  *    background -- "@drawable/testpic",
  *   RelativeLayout -- 相对布局，相对其他组件的布局方式(如在其上下左右等)。可以拉伸自动适应，但会造成图像变形。
  *     layout_below, layout_toLeftOf
+ *   ScrollView 
  *   TableLayout  -- 表格布局，按照行列方式布局组件( 采用 > TableRow > 元素 的方式)
  *     stretchColumns -- "数字"
  *   TableRow

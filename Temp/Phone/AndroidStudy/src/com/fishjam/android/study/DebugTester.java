@@ -14,6 +14,9 @@ import junit.framework.TestCase;
  *   1.util.Log 中可使用类似 Log.i(TAG, 消息); 的方式;  
  *   2.System.out.println("xxx"); -- 这种方式?
  *   
+ * 使用模拟器测试位置服务(GPS)
+ *   1.将Eclipse视图模式切换到 DDMS 模式;
+ *   2.在 Emulator Control 中找到位置服务选项，提供了手动发送经纬度、GPX和KML格式数据来测试位置服务等
  **************************************************************************************************************************************/
 
 public class DebugTester  extends TestCase{

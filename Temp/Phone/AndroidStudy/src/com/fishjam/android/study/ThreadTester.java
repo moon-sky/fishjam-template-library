@@ -2,10 +2,14 @@ package com.fishjam.android.study;
 import junit.framework.TestCase;
 
 /**************************************************************************************************************************************
- * Thread
+ * Thread -- 实现 Runnable 接口支持多线程，  new Thread(Runable).start();
+ *   while(!Thread.currentThread().isInterrupted()) { ... } 
+ *   
  *   AsyncTask<byte[], String, String> -- 异步任务类？参数为模版形式? 可用于照相后异步保存图片 ?
  *     doInBackground(byte[]...params) -- 继承类中需要重载的具体工作方法 
  *     execute(参数) -- 调用开始异步执行
+ *     
+ *  
 **************************************************************************************************************************************/
 
 public class ThreadTester extends TestCase{

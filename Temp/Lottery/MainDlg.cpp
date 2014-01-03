@@ -10,7 +10,9 @@
 CMainDlg::CMainDlg()
 {
     m_szThumbnail.SetSize(100, 100);
-    //m_strInitPath = _T("C:\\Users\\Public\\Pictures");
+#ifdef _DEBUG
+    m_strInitPath = _T("C:\\Users\\Public\\Pictures\\Sample Pictures");
+#endif 
     m_pCalcRect = CFCalcRect::GetCalcRectObject(CFCalcRect::modeAutoFit);
     m_dwImageCount = 0;
 }
@@ -24,7 +26,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 {
 	// center the dialog on the screen
 	CenterWindow();
-    
+    DlgResize_Init();
 
 	// set icons
 	HICON hIcon = AtlLoadIconImage(IDR_MAINFRAME, LR_DEFAULTCOLOR, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON));
@@ -38,6 +40,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 void CMainDlg::OnDestroy()
 {
+    m_lotteryMgr.StopInit();
     m_lotteryMgr.Stop();
 }
 
@@ -51,7 +54,7 @@ LRESULT CMainDlg::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 LRESULT CMainDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	// TODO: Add validation code 
-	EndDialog(wID);
+	//EndDialog(wID);
 	return 0;
 }
 
@@ -63,6 +66,7 @@ LRESULT CMainDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 
 void CMainDlg::OnBtnInitClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    BOOL bRet = FALSE;
     CFDirBrowser dirBrowser(_T("Choose Picture Directory"), m_hWnd, m_strInitPath);
     if (dirBrowser.DoModal())
     {
@@ -70,9 +74,7 @@ void CMainDlg::OnBtnInitClick(UINT uNotifyCode, int nID, CWindow wndCtl)
         CRect rcPic;
         m_StaicPic.GetClientRect(&rcPic);
         m_strInitPath = dirBrowser.GetSelectPath();
-        m_dwImageCount = m_lotteryMgr.Init(m_hWnd, rcPic.Size(), m_strInitPath);
-        DoDataExchange(DDX_LOAD, IDC_STATIC_IMAGE_COUNT);
-        SetWindowText(TEXT("Init Complete"));
+        API_VERIFY(m_lotteryMgr.Init(m_hWnd, rcPic.Size(), m_strInitPath));
         _SetButtonStatus(TRUE, FALSE, FALSE);
     }
 }
@@ -80,31 +82,31 @@ void CMainDlg::OnBtnInitClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 void CMainDlg::OnBtnStartClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     m_lotteryMgr.Start(100);
-    _SetButtonStatus(TRUE, TRUE, FALSE);
+    _SetButtonStatus(FALSE, TRUE, FALSE);
 }
 
 void CMainDlg::OnBtnPauseResumeClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     m_lotteryMgr.TogglePause();
-    _SetButtonStatus(TRUE, TRUE, m_lotteryMgr.IsPaused());
+    _SetButtonStatus(FALSE, TRUE, m_lotteryMgr.IsPaused());
 }
 
 void CMainDlg::OnBtnResetClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     m_lotteryMgr.Stop();
     m_lotteryMgr.ResetSelectionState();
-    _SetButtonStatus(TRUE, FALSE, FALSE);
+    _SetButtonStatus(FALSE, FALSE, FALSE);
 }
 
-void CMainDlg::_SetButtonStatus(BOOL bInited, BOOL bStarted, BOOL bPaused)
+void CMainDlg::_SetButtonStatus(BOOL bIniting, BOOL bStarted, BOOL bPaused)
 {
-    //GetDlgItem(IDC_BTN_INIT).EnableWindow(!bInited);
-    GetDlgItem(IDC_BTN_START).EnableWindow(!bStarted);
+    GetDlgItem(IDC_BTN_INIT).EnableWindow(!bIniting);
+    GetDlgItem(IDC_BTN_START).EnableWindow(!bIniting && !bStarted);
 
-    GetDlgItem(IDC_BTN_PAUSE_RESUME).EnableWindow(bInited && bStarted);
+    GetDlgItem(IDC_BTN_PAUSE_RESUME).EnableWindow(bStarted);
     GetDlgItem(IDC_BTN_PAUSE_RESUME).SetWindowText(bPaused ? TEXT("Resume") : _T("Pause"));
 
-    GetDlgItem(IDC_BTN_RESET).EnableWindow(bInited && bStarted);
+    GetDlgItem(IDC_BTN_RESET).EnableWindow(bStarted);
 }
 
 LRESULT CMainDlg::OnAddLotteryInfo(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -124,6 +126,15 @@ LRESULT CMainDlg::OnAddLotteryInfo(UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetWindowText(pInfo->strPicturePath.Mid(nFileName));
         }
     }
+    return 0;
+}
+
+LRESULT CMainDlg::OnInitLotteryComplete(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    DWORD dwCount = (DWORD)wParam;
+    FTLASSERT(m_dwImageCount == dwCount);
+    _SetButtonStatus(FALSE, FALSE, FALSE);
+    SetWindowText(TEXT("Init Complete"));
     return 0;
 }
 
@@ -154,4 +165,17 @@ LRESULT CMainDlg::OnUpdateLotteryInfo(UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
     }
     return 0;
+}
+
+void CMainDlg::OnBtnConfigClick(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    //
+}
+
+void CMainDlg::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+    if (VK_ESCAPE == nChar)
+    {
+        MessageBox(TEXT("Esc"));
+    }
 }
