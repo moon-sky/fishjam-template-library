@@ -1,10 +1,5 @@
 package com.fishjam.android.study;
-import java.util.ArrayList;
-import java.util.List;
-
-import android.net.ParseException;
-
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
  * Socket/ServerSocket -- TCP/IP编程中使用
@@ -24,7 +19,7 @@ import junit.framework.TestCase;
  * WebService -- 使用单独下载的 KSOAP.jar ?
  * WebView -- 视图组件直接显示网页，其使用了开源的 WebKit 引擎
 ***************************************************************************************************************************************/
-public class NetTester extends TestCase {
+public class NetTester extends AndroidTestCase {
 	public void TestGetCityListFromWebService(){
 		/****************************************************************************************************************************************
 		//通过WebService获取天气预报的城市列表

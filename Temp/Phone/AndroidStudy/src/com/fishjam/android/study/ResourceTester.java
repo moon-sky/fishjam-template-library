@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 /**************************************************************************************************************************************
  * TODO: id="@+id/MyTextView01" -- 前面的加号"+"什么意思？如果没有则加入？
  *
@@ -75,6 +76,6 @@ import junit.framework.TestCase;
  *     xrp.next();  //获取下一条记录
  *   }
 **************************************************************************************************************************************/
-public class ResourceTester  extends TestCase {
+public class ResourceTester  extends AndroidTestCase {
 
 }

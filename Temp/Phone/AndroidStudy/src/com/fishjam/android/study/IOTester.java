@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 
 /***************************************************************************************************************************************
  * OutputStream
@@ -7,6 +8,6 @@ import junit.framework.TestCase;
  * InputStream 
 ***************************************************************************************************************************************/
 
-public class IOTester extends TestCase {
+public class IOTester extends AndroidTestCase {
 
 }

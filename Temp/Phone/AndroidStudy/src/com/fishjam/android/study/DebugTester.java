@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 
 /***************************************************************************************************************************************
  * 部署到手机 
@@ -19,6 +20,6 @@ import junit.framework.TestCase;
  *   2.在 Emulator Control 中找到位置服务选项，提供了手动发送经纬度、GPX和KML格式数据来测试位置服务等
  **************************************************************************************************************************************/
 
-public class DebugTester  extends TestCase{
+public class DebugTester  extends AndroidTestCase{
 
 }

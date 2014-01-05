@@ -1,9 +1,9 @@
 package com.fishjam.android.study;
-import android.view.SurfaceHolder;
-import android.view.animation.AnimationUtils;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
+ * AudioManager
+ * 
  * Android 对常见媒体格式提供了支持，
  *   图片：JPEG, GIF, PNG, BMP 等
  *   音频：3GP, MP3, WAV 等
@@ -83,8 +83,7 @@ import junit.framework.TestCase;
  *   outStream.close();
 ***************************************************************************************************************************************/
 
-public class MultiMediaTester extends TestCase {
-	SurfaceHolder holder;
+public class MultiMediaTester extends AndroidTestCase {
 	public void test()
 	{
 

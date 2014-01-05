@@ -1,9 +1,5 @@
 package com.fishjam.android.study;
-import android.R.integer;
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
  * AIDL(Android Interface Definition Language) -- Android接口 定义语言。
@@ -45,6 +41,6 @@ import junit.framework.TestCase;
  *   IBinder -- 
 ***************************************************************************************************************************************/
 
-public class ServiceTester  extends TestCase {
+public class ServiceTester  extends AndroidTestCase {
 
 }

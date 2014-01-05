@@ -6,7 +6,7 @@
 namespace FTL
 {
     //WinDBG用法详解.pdf -- P79,  30.14 遍历链表
-    //Windows用户态程序高效排错(普通下载).pdf -- 
+    //Windows用户态程序高效排错(普通下载).pdf -- P43, 符号文件
     //  http://blog.csdn.net/eparg/
 
 	//http://wenku.baidu.com/view/14fdd446a8956bec0975e30c.html -- P31, 挑选技术

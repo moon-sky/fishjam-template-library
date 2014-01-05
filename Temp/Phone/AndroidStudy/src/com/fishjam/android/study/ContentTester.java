@@ -1,15 +1,6 @@
 package com.fishjam.android.study;
-import android.app.ListActivity;
-import android.content.ContentResolver;
-import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
-import android.provider.Contacts.People;
-import android.widget.Adapter;
-import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
-import android.widget.SimpleCursorAdapter;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 
 /***************************************************************************************************************************************
 * Uri
@@ -49,13 +40,13 @@ import junit.framework.TestCase;
  *     ContentResolver -- 客户端访问时使用的类(Context.getContentResolver() )，其内部操作对应的 ContentProvider 来对数据进行操作。 
  *     
  * Adapter -- 适配器接口
- *   BaseAdapter
+ *   BaseAdapter -- 自定义适配器的基类，一般从该类继承，作为Module和View之间的桥梁,其中实现 getCount,getItem,getView等方法。
  *   ArrayAdapter
  *   SimpleCursorAdapter 
  *     
  **************************************************************************************************************************************/
 
-public class ContentTester  extends TestCase{
+public class ContentTester  extends AndroidTestCase{
 	public void ListActivityCursorTester(){
 		
 		/*********************************************************************************************************

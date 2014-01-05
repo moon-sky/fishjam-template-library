@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 
 /***************************************************************************************************************************************
 * GoogleMap
@@ -34,6 +35,6 @@ import junit.framework.TestCase;
 *     2.使用 SMTP 来收发
  **************************************************************************************************************************************/
 
-public class GoogleAPITester  extends TestCase{
+public class GoogleAPITester  extends AndroidTestCase{
 
 }

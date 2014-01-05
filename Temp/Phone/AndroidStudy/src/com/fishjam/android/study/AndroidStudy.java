@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 
 /***************************************************************************************************************************************
  * 学习书籍
@@ -9,7 +10,7 @@ import junit.framework.TestCase;
  *     Google Android SDK开发范例大全  -- http://book.csdn.net/bookfiles/1060/100106031790.shtml
  * 
  * Android是Google发布的基于Linux平台的开源手机操作系统。
- *   Android Market(http://www.android.com/market/) -- 用户浏览、下载或购买应用软件。
+ *   Android Market(http://www.android.com/market/) -- 用户浏览、下载或购买应用软件。支持集合发布，系统自动根据用户手机选择合适的apk。
  *   Google的基于Linux平台的开源手机操作系统,由Google与开放手机联盟(包括中国移动、摩托罗拉等)合作开发。由四部分组成:
  *     1.应用软件(Java)
  *     2.应用程序框架 -- 用户界面(Views),内容管理器(Content Providers), 资源管理器(Resource Manager),通知管理器(Notification Manager),活动管理器(Activity Manager).
@@ -44,6 +45,13 @@ import junit.framework.TestCase;
  *   1.Eclipse 
  *     更改字体： Window-> Prefrences -> General -> Appearance -> Colors and Fonts -> Text Font, 
  *                     然后"Use System Font"，会自动使用 微软雅黑 
+ * 
+ * 导入已存在的工程
+ *   方法1(项目目录已在workspace目录中): Import -> Existing Projects into Workspace
+ *   方法2. 新建Android程序 -> Create project form existing source
+ *
+ * 发布
+ *   
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -77,6 +85,6 @@ import junit.framework.TestCase;
  *       创建相应分辨率的资源文件夹和页面布局文件夹，在编译运行时会根据当前设备分辨率，自动选择相应的资源文件和页面布局文件。
 **************************************************************************************************************************************/
 
-public class AndroidStudy  extends TestCase{
+public class AndroidStudy  extends AndroidTestCase{
 
 }

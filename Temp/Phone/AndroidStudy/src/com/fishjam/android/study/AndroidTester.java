@@ -1,12 +1,13 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 
 /***************************************************************************************************************************************
  * 单元测试
- * 
+ *   1.Menifest.xml 中加入
  *
  **************************************************************************************************************************************/
 
-public class AndroidTester  extends TestCase{
+public class AndroidTester  extends AndroidTestCase{
 
 }

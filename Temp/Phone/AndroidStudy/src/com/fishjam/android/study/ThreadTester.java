@@ -1,5 +1,5 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
  * Thread -- 实现 Runnable 接口支持多线程，  new Thread(Runable).start();
@@ -12,7 +12,7 @@ import junit.framework.TestCase;
  *  
 **************************************************************************************************************************************/
 
-public class ThreadTester extends TestCase{
+public class ThreadTester extends AndroidTestCase{
 
 	public void ThreadDemo(){
 		//线程后台执行，前台显示进度对话框

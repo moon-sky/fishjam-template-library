@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 
 //http://wenku.baidu.com/view/af55f852ad02de80d4d84024.html
 /***************************************************************************************************************************************
@@ -60,7 +61,7 @@ import junit.framework.TestCase;
  * workflow(流程，有类吗?)
 *****************************************************************************************************/
 
-public class Cocos2dTester extends TestCase{
+public class Cocos2dTester extends AndroidTestCase{
 
 }
 

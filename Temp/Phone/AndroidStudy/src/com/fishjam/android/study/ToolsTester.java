@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 /***************************************************************************************************************************************
  * aapt.exe(Android Asset Packaging Tool) -- 资源(音视频、图片、xml配置等)打包工具? (旧: 可以获取log，安装应用程序，复制文件等等)
  *    aapt p -A assets -S res -M AndroidManifest.xml -F \bin\resources.ap_ -- 将工程下的资源打包为 \bin\resources.ap_ 压缩文件
@@ -47,6 +48,6 @@ import junit.framework.TestCase;
 
  **************************************************************************************************************************************/
 
-public class ToolsTester  extends TestCase {
+public class ToolsTester  extends AndroidTestCase {
 
 }

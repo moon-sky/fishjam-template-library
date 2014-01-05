@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
 
 /***************************************************************************************************************************************
  * Android语法
@@ -36,7 +37,7 @@ import junit.framework.TestCase;
  *    其他(?): 蓝牙(Bluetooth), EDGE, 3G, WiFi(依赖于硬件)，照相机, GPS, 指南针, 加速度计
 **************************************************************************************************************************************/
 
-public class LanguageTester  extends TestCase{
+public class LanguageTester  extends AndroidTestCase{
 
 	public void TestParseDouble(){
 		//Double.parseDouble

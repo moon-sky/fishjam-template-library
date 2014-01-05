@@ -1,15 +1,9 @@
 package com.fishjam.android.study;
 import java.util.Calendar;
-
-import android.app.Activity;
-import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
-
-import junit.framework.TestCase;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
  * os --
@@ -85,6 +79,11 @@ import junit.framework.TestCase;
  *     
  * 任务管理器(ActivityManager)--管理应用程序的活动周期，并且提供通用的导航支持（navigation backstack）
  * 
+ * TODO: 反射部分?
+ * 包管理器(PackageManager)--管理应用程序包。通过 getPackageManager()方法获得
+ *   可以获取应用程序的信息(如名字,CacheSize、DataSize等),本质是从所有包的 AndroidManifest.xml 中解析数据?
+ *   PackageItemInfo -- AndroidManifest.xml文件中所有节点的基类，有 ActivityInfo、ApplicationInfo、ServiceInfo 等多种子类
+ *   示例：queryIntentActivities 可查询所有具备ACTION_MAIN和CATEGORY_LAUNCHER的Intent的应用程序，然后可让用户点击时启动应用(类似Home程序的Launcher)
 ***************************************************************************************************************************************/
 
 class MyReceiver extends BroadcastReceiver{
@@ -94,7 +93,7 @@ class MyReceiver extends BroadcastReceiver{
 	}
 }
 
-public class OsTester  extends TestCase {
+public class OsTester  extends AndroidTestCase {
 	public OsTester(){
 		//Intent intent = new Intent();
 	}

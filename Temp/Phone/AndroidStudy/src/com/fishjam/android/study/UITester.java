@@ -1,17 +1,35 @@
 package com.fishjam.android.study;
-import android.content.Context;
-import android.support.v4.view.ViewPager.LayoutParams;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.BaseAdapter;
-import android.widget.EditText;
-import android.widget.GridView;
-import android.widget.ImageSwitcher;
-import android.widget.ImageView;
-import android.widget.TabHost;
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
+
+/***************************************************************************************************************************************
+ * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
+ * dip(density irrelevant pixels) -- 密度无关的像素,简称为 dp。基于屏幕密度的抽象单位，程序用它来定义界面元素。
+ *   像素(px)=dip * (密度 / 160) , 如 密度为160dpi的屏幕上，1dip等于1x; 密度240dpi的屏幕上,1dip=1.5px
+ *
+ * 尺寸：屏幕的物理尺寸，指屏幕的对角线长度，如 2.8英寸、3.7英寸
+ * 比例：屏幕的物理长度和物理宽度比，16:9或16:10的是宽屏，4:3的为窄屏
+ * 分辨率：屏幕上拥有的像素的总数，常使用"宽度x长度"表达，？通常应用程序并不直接处理分辨率？
+ * 密度：以屏幕分辨率为基础，沿屏幕长宽方向排列的像素，密度较低的屏幕，在长宽方向都只有比较少的像素。
+ * 视网膜(Retina)显示屏：一种超高像素和越高密度的液晶屏，相对于以前的iPhone，增加了4倍的像素数量，
+ *       将960*640的分辨率压缩到和前代iPhone相同物理尺寸(3.5英寸)的显示屏内。屏幕密度达到 326像素/英寸
+ *  
+ * 多分辨率规格的界面设计 -- 真正需要区别的是OS版本(1.5和1.6及以上)而不是屏幕分辨率
+ *   各种屏幕和UI类型：
+ *     HTC Sense UI, SamSung TouchWiz UI, Motorola MOTO blur UI, Xiaomi MIUI, OMS(Ophone), LEOS(LePhone), Alibaba云OS 等
+ *   A.1.5以前不支持高分屏，所有图片放在同一个drawable目录下;
+ *     1.6开始支持 高(drawable-hdpi)、中(drawable-mdpi)、低(drawable-ldpi)三种密度。
+ *     3.0以后支持 超高(drawable-xhdpi)，
+ *     为了电视? 支持 (drawable-xxhdpi)
+ * 
+ *  交互设计建议：
+ *    1.以中密度(mdpi)的正常屏幕(HVGA, 320x480)为设计基准进行界面布局(此时 dip和px为1:1，能更充分理解空间并合理使用)；
+ *    2.程序可以为各种尺寸的屏幕提供不同的资源(主要是布局),也可以为各种密度的屏幕提供不同的资源(主要是位图);
+ *    3.使用与密度无关的像素(dip)来定义应用程序的界面布局，而不是px -- 这样可保证应用程序的界面能在各种分辨率的屏幕上都可以正常显示。
+ *    4.执行时，平台会根据屏幕本身的尺寸与密度特性，自动载入对应的资源，并把它们从与密度无关的像素转换成屏幕上的物理像素
+ *    5.在处理屏幕方向变化时，为其优化而不是单纯地改变方向
+ *    6.挑选具有代表性的特性界面在真机预览效果
+ *    7.处理按钮的放大缩小时，尽可能使用九宫格图片，而不是单纯绘图
+***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
  * 风格(Style)
@@ -94,7 +112,7 @@ import junit.framework.TestCase;
 /***************************************************************************************************************************************
  * Layout -- Android 通过 LayoutInflater 类将 XML 格式的布局文件中的组件解析为可视化的视图组件。
  *   布局文件中的 <requestFocus/> 项代表什么意思? 
- *   AbsoluteLayout -- 绝对位置定位，降低兼容性，维护成本高 ( TODO: 已抛弃 )
+ *   (TODO:已废弃 )AbsoluteLayout -- 绝对位置定位，降低兼容性，维护成本高
  *   FrameLayout -- 帧布局，组件从屏幕的左上角开始布局，多个组件层叠排序，后面的组件覆盖前面的组件。
  *   LinearLayout -- 线型布局，按照垂直或者水平方向布局组件
  *     gravity(对齐方式) -- top, bottom, left, right, center_vertical
@@ -119,6 +137,8 @@ import junit.framework.TestCase;
  *     stretchColumns -- "数字"
  *   TableRow
  *
+ * LayoutInflater infater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE); //或LayoutInflater.from(getApplicationContext())
+ * convertView = infater.inflate(R.layout.baseadapter_provider,null);
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -208,7 +228,7 @@ import junit.framework.TestCase;
  *    
 **************************************************************************************************************************************/
 
-public class UITester extends TestCase {
+public class UITester extends AndroidTestCase {
 	public UITester()	{
 		
 	}

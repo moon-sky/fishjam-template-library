@@ -28,6 +28,11 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <uses-library android:name="android.test.runner" />
     </application>
 
+    <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
+    <instrumentation android:name="android.test.InstrumentationTestRunner" android:targetPackage="com.fishjam.android.study"
+
+android:label="Test for my app"/>
 </manifest>
