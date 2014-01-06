@@ -13,7 +13,9 @@ import junit.framework.Assert;
  *       <action>
  *       <category>
  *       <data>
- * <uses-sdk> -- 指定SDk的版本信息，如 minSdkVersion  
+ * <uses-sdk> -- 指定SDk的版本信息
+ *   minSdkVersion -- 可以支持的最低版本等级
+ *   targetSdkVersion -- ? 指定该版本即允许平台禁用不需要的兼容性代码或者能使新的功能运行在旧版本的程序里 
  * 
  * 
  *  

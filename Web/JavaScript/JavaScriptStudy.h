@@ -1,3 +1,4 @@
+//http://www.gbtags.com/gb/share/2661.htm -- 45个超实用的JavaScript技巧及最佳实践
 //JavaScript 从入门到精通 -- P266(桌面附件)
 //精通JavaScript xxxx .pdf -- P33,第三章,创建可重用代码。(但最好在看完入门到精通后，从头再看一遍)
 //  本地存储 -- localStorage ?
