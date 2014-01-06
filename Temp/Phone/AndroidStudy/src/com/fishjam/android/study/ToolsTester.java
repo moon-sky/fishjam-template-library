@@ -44,8 +44,8 @@ import android.test.AndroidTestCase;
  *     -v -- 设置log的输出格式。brief(默认)、process、tag、thread、raw、time、long
  *            TODO: log级别： V(erbose) 、D(ebug)、I(nfo)、W(arning)、E(rror)、F(atal)、S(ilent) 
  * mksdcard.exe -- 创建sd卡影像文件
-*    mksdcard.exe -l SDCard 512M "E:\Android_SDK\sdcard.img"
-
+ *   mksdcard.exe -l SDCard 512M "E:\Android_SDK\sdcard.img"
+ * 随机测试 ： adb shell monkey -p com.fishjam.android.study  -v 500  -- 使用缺省配置，想应用发送500个随机事件(包括按键、touch事件、系统事件等)
  **************************************************************************************************************************************/
 
 public class ToolsTester  extends AndroidTestCase {

@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
 import android.test.AndroidTestCase;
+import junit.framework.Assert;
 
 /**************************************************************************************************************************************
  * AndroidManifest.xml -- 包含这个Android应用程序具有哪些Activity、Service或者Receiver，也有权限设置。所有组件必须在其中声明后才能使用。
@@ -19,5 +20,10 @@ import android.test.AndroidTestCase;
 **************************************************************************************************************************************/
 
 public class AndroidManifest  extends AndroidTestCase{
-
+	public void testSave() throws Throwable
+	{
+		int i=4+8;
+		Assert.assertEquals(12,i);
+	}
 }
+

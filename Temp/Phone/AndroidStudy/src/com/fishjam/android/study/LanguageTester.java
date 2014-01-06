@@ -1,6 +1,9 @@
 package com.fishjam.android.study;
+import java.util.ArrayList;
 import android.test.AndroidTestCase;
-
+import android.util.Log;
+import junit.framework.Assert;
+import java.util.Collection;
 
 /***************************************************************************************************************************************
  * Android语法
@@ -39,11 +42,19 @@ import android.test.AndroidTestCase;
 
 public class LanguageTester  extends AndroidTestCase{
 
-	public void TestParseDouble(){
-		//Double.parseDouble
-		
+	public void testParseDouble() throws Throwable 
+	{
+		double dValue = Double.parseDouble("1.05");
+		assertEquals(dValue, 1.05, 0.001);
 		//将Double进行四舍五入
 		//NumberFormat formatter = new DecimalFormat("0.00");
 	    //String s=formatter.format(num);
+	}
+	
+	public void testTemplate(){
+		Collection<String> colStrings = new ArrayList<String>();
+		colStrings.add("fishjam");
+		Log.i("Language", new Integer(colStrings.size()).toString());
+		assertEquals(colStrings.size(), 1);
 	}
 }

@@ -2,6 +2,7 @@ package com.fishjam.android.study;
 import java.util.Calendar;
 import android.util.Log;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.test.AndroidTestCase;
 
