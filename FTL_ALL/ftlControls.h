@@ -39,6 +39,7 @@ if(::GetCapture() == m_hWnd)
 /***********************************************************************************************************
 * http://www.functionx.com/visualc/applications/deskpad.htm
 * http://blog.csdn.net/takikoyx/article/details/6311807
+* 更改 atlctrls 中 CRichEditCtrlT 源码支持高版本的 MSFTEDIT_CLASS RICHEDIT_CLASS
 * 
 * riched32.dll -> riched20.dll/riched32.dll(模拟) -> msftedit.dll/riched20.dll  -- 98以后的系统， riched20.dll 都好用？
 * 为了使用新版本的RichEdit -- 通过定义 _RICHEDIT_VER 宏并包含 RichEdit.H 是否可以？ afxwin 定义为 0x0210

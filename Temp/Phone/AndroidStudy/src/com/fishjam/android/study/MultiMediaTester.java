@@ -41,12 +41,17 @@ import android.test.AndroidTestCase;
  *     
  * 2D图形处理  -- android.graphics, android.view.animation 等包中
  *   图片: Drawable / Bitmap / BitmapFactory
+ *     Bitmap
+ *       createBitmap -- 根据参数创建位图
+ *       extractAlpha -- 根据Paint::setColor 设置的颜色，提取生成具有指定颜色的Alpha通道的位图？
  *     Drawable -- 操作图片，其有多个子类: BitmapDrawable/ColorDrawable/ShapeDrawable
  *       使用方式:
  *         1.保存在工程中的图片文件, 如 ImageView.setImageResource(R.drawable.myImage); 
  *         2.XML文件定义Drawable属性, 如 <ImageView android:id=“@id/ImageView01" android:src="@drawable/myimage" ... />
  *         3.直接构造实例读取(SD) 
- *           a.Bitmap bmp = BitmapFactory.decodeFile("/sdcard/test.jpg"); 类似的有 decodeResource
+ *           a.Bitmap bmp = BitmapFactory.decodeFile("/sdcard/test.jpg"); 
+ *             类似的有 decodeResource()
+ *                      decodeStream(context.getResources().openRawResource(xxx))
  *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //根据原始位图创建新视图  
  *           
  *   

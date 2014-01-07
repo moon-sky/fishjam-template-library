@@ -38,6 +38,7 @@ import java.util.Collection;
  *    字体类型(FreeType) -- 位图(bitmap)或者矢量(vector)字体
  *    SQLite – 一个强大的轻量级关系数据库引擎，允许所有的应用程序使用
  *    其他(?): 蓝牙(Bluetooth), EDGE, 3G, WiFi(依赖于硬件)，照相机, GPS, 指南针, 加速度计
+ *    
 **************************************************************************************************************************************/
 
 public class LanguageTester  extends AndroidTestCase{
