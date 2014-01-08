@@ -62,6 +62,9 @@ import android.test.AndroidTestCase;
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
+ * View 事件
+ *     onTouchEvent() -- 当发生触摸屏事件时的回调，switch(event.getAction()) 来判断按键状态(down,move,up 等)
+ * 
  * View
  *   AdapterView
  *   AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
@@ -151,6 +154,7 @@ import android.test.AndroidTestCase;
  *       dlgBuilder.setMessage(msg).setCancelable(false).setPositiveButton("确定", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //设置builder
  *       AlertDialog alert = dlgBuilder.create();  //创建对话框实例
  *       alert.show(); //显示
+ *  ColorPickerDialog -- 选择颜色对话框
  *  DatePickerDialog/TimePickerDialog(日期/时间 选择对话框) --  
  *    1.重载 Activity.onCreateDialog(int id) { switch(id) {...}  } 方法创建对话框;
  *    2.在 OnDateSetListener 和 OnTimeSetListener 的对应事件方法中响应日期和时间的设置;
@@ -221,7 +225,7 @@ import android.test.AndroidTestCase;
 /**************************************************************************************************************************************
  * 1. 隐藏TitleBar 和 Status Bar -- TODO：需要在setContentView(R.layout.start_test)之前调用，否则会出现force close 错误。
  *    在当前Activity的Java源文件引入android.view.Window和android.view.WindowManager，并在oncreate()方法中调用:
- *    requestWindowFeature(Window.FEATURE_NO_TITLE);   		//Hide title bar;
+ *    requestWindowFeature(Window.FEATURE_NO_TITLE);   //Hide title bar;
  *    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);  //Hide status bar;
  *    //getWindow().setBackgroundDrawableResource(R.color.red_bg); //设置背景色
  * 2. 通过资源中定义的id找到对应的对象 -- findViewById
@@ -231,101 +235,101 @@ import android.test.AndroidTestCase;
 **************************************************************************************************************************************/
 
 public class UITester extends AndroidTestCase {
-	public UITester()	{
-		
-	}
-	protected void setUp() throws Exception {
-		super.setUp();
+    public UITester()    {
+        
+    }
+    protected void setUp() throws Exception {
+        super.setUp();
 
-	}
+    }
 
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-	
-	//界面切换 -- 有什么区别?标准应该是使用第二种方法（虽然麻烦，但更合理和）
-	//  1.切换layout -- 定义不同的layout xml文件,通过 setContentView方法 进行切换; 还在同一个Activity中，成员变量不变。
-	//  2.切换Activity -- 定义不同的layout xml，实现不同的Activity子类(显示对应的layout),通过 Intent类 进行切换。
-	//  注意需要在AndroidManifest.xml中定义新的activity，并设置那么属性，否则无法编译。
-	public void TestSwitchUI() {
-		/*************************************************************************************************
-		 * Intent intent = new Intent();// new一个Intent对象
-		 * intent.setClass(EX03_09.this, EX03_09_1.class); //指定要启动的class
-		 * startActivity(intent);// 调用一个新的Activity -- 类似非模态？
-		 * //startActivityForResult(intent,0); // 被调用Activity要返回值的依据,
-		 * 启动新的Activity并等待其结束， // 并通过重载 onActivityResult 函数判断返回值(resultCode ==
-		 * RESULT_OK), 可以通过 data.getExtras 获取数据， 具有层次关系 // 子Activity中通过如下方式返回结果:
-		 * // EX03_09_1.this.setResult(RESULT_OK, intent); //
-		 * 返回result回上一个activity // EX03_09_1.this.finish();// 结束这个activity
-		 * EX03_09.this.finish(); // 关闭原本的Activity(根据具体情况)
-		 **************************************************************************************************/
-	}
-	
-	public void TabHostTester(){
-		/********************************************************************************************
-		 * 方法1:
-		 *   1. 在布局文件中使用 FrameLayout 列出Tab组件及Tab中的内容组件
-		 *   2. Activity 要继承 TabActivity;
-		 *   3.调用 TabActivity::getTabHost 获得 TabHost 对象，然后创建 Tab 选项页
-		 * 方法2:
-		 *   1.实现接口 TabHost.TabContentFactory 的 createTabContent 方法来指定
-		 *     public class MyActivity extends TabActivity implements TabHost.TabContentFactory { 
-		 *          onCreate 中:  getTabHost().addTab(getTabHost().newTabSpec("all").setContent(this);
-		 *          public View createTabContent(String tag) { ...; if(tag.equals("all")) {  设置all页面对应的内容  }  } 
-		 ********************************************************************************************/
-		
-		/*******************************************************************************************
-		//代码部分
-			TabHost tabHost = getTabHost();
-			LayoutInflater.from(this).infalte(R.layout.main, tabHost.getTabContentView(), true);
-			tabHost.addTab(tabHost.newTabSpec("all").setIndicator("所有通话记录").setContent(R.id.TextViewAll));
-			tabHost.addTab(tabHost.newTabSpec("ok").setIndicator("已接来电").setContent(R.id.TextViewReceived));
-			tabHost.addTab(tabHost.newTabSpec("cancel").setIndicator("未接来电").setContent(R.id.TextViewUnreceived));
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
+    //界面切换 -- 有什么区别?标准应该是使用第二种方法（虽然麻烦，但更合理和）
+    //  1.切换layout -- 定义不同的layout xml文件,通过 setContentView方法 进行切换; 还在同一个Activity中，成员变量不变。
+    //  2.切换Activity -- 定义不同的layout xml，实现不同的Activity子类(显示对应的layout),通过 Intent类 进行切换。
+    //  注意需要在AndroidManifest.xml中定义新的activity，并设置那么属性，否则无法编译。
+    public void TestSwitchUI() {
+        /*************************************************************************************************
+         * Intent intent = new Intent();// new一个Intent对象
+         * intent.setClass(EX03_09.this, EX03_09_1.class); //指定要启动的class
+         * startActivity(intent);// 调用一个新的Activity -- 类似非模态？
+         * //startActivityForResult(intent,0); // 被调用Activity要返回值的依据,
+         * 启动新的Activity并等待其结束， // 并通过重载 onActivityResult 函数判断返回值(resultCode ==
+         * RESULT_OK), 可以通过 data.getExtras 获取数据， 具有层次关系 // 子Activity中通过如下方式返回结果:
+         * // EX03_09_1.this.setResult(RESULT_OK, intent); //
+         * 返回result回上一个activity // EX03_09_1.this.finish();// 结束这个activity
+         * EX03_09.this.finish(); // 关闭原本的Activity(根据具体情况)
+         **************************************************************************************************/
+    }
+    
+    public void TabHostTester(){
+        /********************************************************************************************
+         * 方法1:
+         *   1. 在布局文件中使用 FrameLayout 列出Tab组件及Tab中的内容组件
+         *   2. Activity 要继承 TabActivity;
+         *   3.调用 TabActivity::getTabHost 获得 TabHost 对象，然后创建 Tab 选项页
+         * 方法2:
+         *   1.实现接口 TabHost.TabContentFactory 的 createTabContent 方法来指定
+         *     public class MyActivity extends TabActivity implements TabHost.TabContentFactory { 
+         *          onCreate 中:  getTabHost().addTab(getTabHost().newTabSpec("all").setContent(this);
+         *          public View createTabContent(String tag) { ...; if(tag.equals("all")) {  设置all页面对应的内容  }  } 
+         ********************************************************************************************/
+        
+        /*******************************************************************************************
+        //代码部分
+            TabHost tabHost = getTabHost();
+            LayoutInflater.from(this).infalte(R.layout.main, tabHost.getTabContentView(), true);
+            tabHost.addTab(tabHost.newTabSpec("all").setIndicator("所有通话记录").setContent(R.id.TextViewAll));
+            tabHost.addTab(tabHost.newTabSpec("ok").setIndicator("已接来电").setContent(R.id.TextViewReceived));
+            tabHost.addTab(tabHost.newTabSpec("cancel").setIndicator("未接来电").setContent(R.id.TextViewUnreceived));
 
-		 //布局部分
-		   <FrameLayout ....>
-		   	  <TabHost>
-		   	    <TextView android:id="@+id/TextViewAll" android:layout_width="wrap_content" android.text="所有通话记录">
-		   	    </TextView>
-		   	  </TabHost>
-		   </FrameLayout>
-		 *******************************************************************************************/
-	}
-	
+         //布局部分
+           <FrameLayout ....>
+                 <TabHost>
+                   <TextView android:id="@+id/TextViewAll" android:layout_width="wrap_content" android.text="所有通话记录">
+                   </TextView>
+                 </TabHost>
+           </FrameLayout>
+         *******************************************************************************************/
+    }
+    
 
-	public void GridViewDisplayImageTester(){
-		//使用 BaseAdapter 类，重写其中的方法( 如 getView 来设置图片显示格式 )
-		/********************************************************************************************
-		//自定义的 BaseAdapter 类，根据需要返回并图片的数据信息
-			class MyAdapter extends BaseAdapter{
-				private Integer [] imgs = {
-						R.drawable.ic_launcher
-				};
-				Context context;
-				MyAdapter(Context context){
-					this.context = context;
-				}
-				@Override
-				public View getView(int position, View convertView, ViewGroup parent) {
-					ImageView imageView;
-					if(convertView == null){
-						imageView = new ImageView(context);
-						imageView.setLayoutParams(new GridView.LayoutParams(45, 45));	//设置ImageView对象布局
-						imageView.setAdjustViewBounds(false); 		//设置边界对齐
-						imageView.setPadding(8,  8,  8,  8);				//设置间距
-					}
-					else{
-						imageView = (ImageView)convertView;
-					}
-					imageView.setImageResource(imgs[position]);	//为 ImageView 设置图片资源
-					return imageView;
-				}
-			}
-		//Activity 子类中，使用自定义的 Adapter 在 GridView 中显示图片
-			GridView gridView = (GridView)findViewById(R.id.xxx);
-			gridView.setNumColumns(4); 	//设置列数
-			gridView.setAdapter(new MyAdapter(this));
-		*********************************************************************************************/
-	}
+    public void GridViewDisplayImageTester(){
+        //使用 BaseAdapter 类，重写其中的方法( 如 getView 来设置图片显示格式 )
+        /********************************************************************************************
+        //自定义的 BaseAdapter 类，根据需要返回并图片的数据信息
+            class MyAdapter extends BaseAdapter{
+                private Integer [] imgs = {
+                        R.drawable.ic_launcher
+                };
+                Context context;
+                MyAdapter(Context context){
+                    this.context = context;
+                }
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    ImageView imageView;
+                    if(convertView == null){
+                        imageView = new ImageView(context);
+                        imageView.setLayoutParams(new GridView.LayoutParams(45, 45));    //设置ImageView对象布局
+                        imageView.setAdjustViewBounds(false);         //设置边界对齐
+                        imageView.setPadding(8,  8,  8,  8);                //设置间距
+                    }
+                    else{
+                        imageView = (ImageView)convertView;
+                    }
+                    imageView.setImageResource(imgs[position]);    //为 ImageView 设置图片资源
+                    return imageView;
+                }
+            }
+        //Activity 子类中，使用自定义的 Adapter 在 GridView 中显示图片
+            GridView gridView = (GridView)findViewById(R.id.xxx);
+            gridView.setNumColumns(4);     //设置列数
+            gridView.setAdapter(new MyAdapter(this));
+        *********************************************************************************************/
+    }
 }
 

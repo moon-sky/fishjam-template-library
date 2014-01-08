@@ -1,4 +1,5 @@
 package com.fishjam.android.study;
+
 import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
@@ -43,15 +44,15 @@ import android.test.AndroidTestCase;
  *   图片: Drawable / Bitmap / BitmapFactory
  *     Bitmap
  *       createBitmap -- 根据参数创建位图
- *       extractAlpha -- 根据Paint::setColor 设置的颜色，提取生成具有指定颜色的Alpha通道的位图？
+ *       extractAlpha -- 根据位图信息生成只有透明度没有颜色(即Alpha通道)的位图
  *     Drawable -- 操作图片，其有多个子类: BitmapDrawable/ColorDrawable/ShapeDrawable
  *       使用方式:
  *         1.保存在工程中的图片文件, 如 ImageView.setImageResource(R.drawable.myImage); 
  *         2.XML文件定义Drawable属性, 如 <ImageView android:id=“@id/ImageView01" android:src="@drawable/myimage" ... />
  *         3.直接构造实例读取(SD) 
  *           a.Bitmap bmp = BitmapFactory.decodeFile("/sdcard/test.jpg"); 
- *             类似的有 decodeResource()
- *                      decodeStream(context.getResources().openRawResource(xxx))
+ *             类似的有 decodeResource(getResources(), R.drawable.xxx);
+ *                          decodeStream(context.getResources().openRawResource(xxx));
  *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //根据原始位图创建新视图  
  *           
  *   
@@ -68,14 +69,23 @@ import android.test.AndroidTestCase;
  *       AnimationDrawable -- 一般通过XML配置文件配置，<animation-list> <item/></animation-list>，然后在Activity的xml配置中可以通过 android:background 指定？
  *  
  * 自绘
- *   从 View/SurfaceView 等类继承，然后重载 onDraw 方法 { }，使用Canvas进行绘制，通过 postInvalidate 请求更新
+ *   1.从 View/SurfaceView 等类继承，然后重载 onDraw 方法 { }，使用Canvas进行绘制，通过 invalidate 或 postInvalidate 请求更新
+ *   2.可以从 GraphicsActivity 继承
+ *   
  *   Canvas -- 画布
  *   Color/Paint(画笔)/Path/ShapeDrawable及其子类，如 OvalShape(椭圆)、RectShape(矩形)
  *   
- *   Matrix -- 图形特效，可以实现图形的 旋转(setRotate)、缩放(setScale)和平移(setTranslate)等
- *   Shader -- 渲染效果，有很多子类，如 BitmapShader(位图渲染)、ComposeShader(混合渲染)、LinearGradient(线性渲染)、
- *      RadialGradient(光束渲染), SweepGradient(梯度渲染) 等， 可通过 Paint.setShader(); 等方式来使用
+ * 图形特效
+ *   Matrix -- 坐标变换矩阵，可以实现图形的 旋转(setRotate)、缩放(setScale)和平移(setTranslate)，图片的特效处理等
+ *     invert() -- 
+ *     setTranslate() -- 
+ *   ColorMatrix -- 颜色矩阵(RGBA)。可用于图片特效处理，如 将图片做出黑白的，或者老照片的效果 等
+ *   Shader -- 渲染效果，可通过 Paint.setShader(); 等方式来使用。
+ *      其有很多子类，如 BitmapShader(位图渲染)、ComposeShader(混合渲染)、LinearGradient(线性渲染)、RadialGradient(光束渲染), SweepGradient(梯度渲染) 等 
+ *   Xfermode -- 两张图交互时的覆盖模式，一般用法为 paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN 等模式枚举值 ));
+ *   
  * 3D图形处理(OpenGL ES) -- 位于 javax.microedition.khronos.opengles, android.opengl 等包中
+ *   
  *   
  ***************************************************************************************************************************************/
 
@@ -89,8 +99,6 @@ import android.test.AndroidTestCase;
 ***************************************************************************************************************************************/
 
 public class MultiMediaTester extends AndroidTestCase {
-	public void test()
-	{
-
-	}
+    public void test(){
+    }
 }

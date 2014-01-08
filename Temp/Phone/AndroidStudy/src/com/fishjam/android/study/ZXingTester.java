@@ -22,8 +22,20 @@ import android.test.AndroidTestCase;
  *    CaptureActivityHandler -- 解码处理类，负责调用另外的线程进行解码
  *    DecodeThread -- 解码的线程
  *    ViewfinderView -- 自定义的View，即拍摄时中间的框框
+ * 工具类
+ *    IntentIntegrator + IntentResult -- 通过 Intents 方式使用二维码(但要求用户安装BarcodeScanner)
+ *    MatrixToImageWriter -- 生成二维码
+ *    MultiFormatReader -- 读取和分析二维码图片
 **************************************************************************************************************************************/
 
 public class ZXingTester extends AndroidTestCase {
 
+	public void testGenerateCode(){
+		//生成二维码文件
+		/*
+		 BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, width, height,hints);  //生成二维码 
+		 File outputFile = new File("d://new.png"); //定义图片存储的位置（D区根目录）和文件名(new.png)
+		 MatrixToImageWriter.writeToFile(bitMatrix, format, outputFile);  //将二维码写入图片文件
+		 */ 		
+	}
 }
