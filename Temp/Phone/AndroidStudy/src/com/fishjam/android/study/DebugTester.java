@@ -18,6 +18,12 @@ import android.test.AndroidTestCase;
  * 使用模拟器测试位置服务(GPS)
  *   1.将Eclipse视图模式切换到 DDMS 模式;
  *   2.在 Emulator Control 中找到位置服务选项，提供了手动发送经纬度、GPX和KML格式数据来测试位置服务等
+ *   
+ * 手机上调试
+ *   1.建议使用驱动精灵，自动检测手机驱动，手机连接后安装驱动
+ *   2.设备管理中 -> Android Device -> Android Composite ADB Interface
+ *   3.手机中打开 "USB调试", 
+ *   4.Eclipse中 Window->Show View->Devices，查看是否已经连接
  **************************************************************************************************************************************/
 
 public class DebugTester  extends AndroidTestCase{

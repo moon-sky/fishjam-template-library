@@ -37,13 +37,14 @@ public:
         BOOL bRecursive = FALSE);
     BOOL StopInit();
 
+    BOOL IsStarted() { return m_bStarted; }
     BOOL Start(DWORD dwElapseTime);
     BOOL TogglePause();
     BOOL Stop();
     BOOL ResetSelectionState();
     BOOL IsPaused() { return m_threadLoop.HadRequestPause(); }
 private:
-    typedef std::list<LotteryInfoPtr>     LotteryInfoContainer;
+    typedef std::list<LotteryInfoPtr>       LotteryInfoContainer;
     LotteryInfoContainer                    m_allLotteryInfos;
     FTL::CFCriticalSection                  m_csLock;
 private:
@@ -55,6 +56,9 @@ private:
     CAtlString m_strExtName;
     BOOL        m_bRecursive;
     DWORD   m_dwElapseTime;
+    BOOL    m_bStarted;
+
+    CFCalcRect* m_pCalcRect;
 
     LotteryInfoPtr  m_pCurLotterInfo;
 

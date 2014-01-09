@@ -1,4 +1,7 @@
 package com.fishjam.android.study;
+import java.util.concurrent.Executor;
+
+import android.os.AsyncTask;
 import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
@@ -9,11 +12,17 @@ import android.test.AndroidTestCase;
  *     doInBackground(byte[]...params) -- 继承类中需要重载的具体工作方法 
  *     execute(参数) -- 调用开始异步执行
  *     
- *  
+ * 并发编程
+ *   Executor框架 -- 包括线程池，Executor，Executors，ExecutorService，CompletionService，Future，Callable等
+ *   Executor -- 接口
 **************************************************************************************************************************************/
 
 public class ThreadTester extends AndroidTestCase{
+	
+	public void testExecutor(){
 
+		//Executor.execute(Runnalbe) 。Executor在执行时使用内部的线程池完成操作。
+	}
 	public void ThreadDemo(){
 		//线程后台执行，前台显示进度对话框
 		/**************************************************************************************************************************************

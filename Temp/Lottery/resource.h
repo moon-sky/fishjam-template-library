@@ -5,6 +5,8 @@
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
 #define IDD_MAINDLG                     129
+#define IDI_ICON1                       205
+#define IDI_ICON2                       206
 #define IDC_BTN_INIT                    1000
 #define IDC_BTN_START                   1001
 #define IDC_BTN_PAUSE_RESUME            1002
@@ -18,7 +20,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        201
+#define _APS_NEXT_RESOURCE_VALUE        207
 #define _APS_NEXT_COMMAND_VALUE         32775
 #define _APS_NEXT_CONTROL_VALUE         1008
 #define _APS_NEXT_SYMED_VALUE           101

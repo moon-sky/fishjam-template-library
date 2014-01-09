@@ -192,6 +192,10 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm"
 			>
 			<File
+				RelativePath=".\ButtonST.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Lottery.cpp"
 				>
 			</File>
@@ -229,6 +233,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc"
 			>
 			<File
+				RelativePath=".\ButtonST.h"
+				>
+			</File>
+			<File
 				RelativePath=".\LotteryMgr.h"
 				>
 			</File>
@@ -250,6 +258,22 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest"
 			>
 			<File
+				RelativePath=".\res\circle_blue.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\circle_red.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Halloween1.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Halloween2.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\Lottery.ico"
 				>
 			</File>
@@ -258,6 +282,14 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\res\Off.PNG"
+			>
+		</File>
+		<File
+			RelativePath=".\res\On.PNG"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

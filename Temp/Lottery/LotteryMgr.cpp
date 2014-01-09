@@ -3,14 +3,17 @@
 
 CLotteryMgr::CLotteryMgr()
 {
+    m_bStarted = FALSE;
     m_szThumbnail.SetSize(100, 100);
     m_hWndControl = NULL;
     m_dwElapseTime = 200;
     m_bRecursive = FALSE;
+    m_pCalcRect = CFCalcRect::GetCalcRectObject(CFCalcRect::modeAutoFit);
 }
 
 CLotteryMgr::~CLotteryMgr(void)
 {
+    SAFE_DELETE(m_pCalcRect);
     m_threadInit.StopAndWait();
     m_threadLoop.StopAndWait();
 }
@@ -36,13 +39,26 @@ FTL::FileFindResultHandle CLotteryMgr::OnFindFile(LPCTSTR pszFilePath, const WIN
         if (SUCCEEDED(hr))
         {
             LotteryInfoPtr pLotteryInfo(new LotteryInfo(pszFilePath, FALSE));
-            API_VERIFY(pLotteryInfo->imgThumbnail.Create(m_szThumbnail.cx, m_szThumbnail.cy, 32, CImage::createAlphaChannel));
+            CRect rcThumbnail(0, 0, m_szThumbnail.cx, m_szThumbnail.cy);
+            CSize szImage(img.GetWidth(), img.GetHeight());
+
+            CRect rcDrawTarget = m_pCalcRect->GetFitRect(rcThumbnail, szImage);
+            if (rcDrawTarget.bottom <= rcDrawTarget.top)
+            {
+                rcDrawTarget.bottom = rcDrawTarget.top + 1;
+            }
+            if (rcDrawTarget.right <= rcDrawTarget.left)
+            {
+                rcDrawTarget.right = rcDrawTarget.left + 1;
+            }
+
+            API_VERIFY(pLotteryInfo->imgThumbnail.Create(rcDrawTarget.Width(), rcDrawTarget.Height(), 32, CImage::createAlphaChannel));
             if (bRet)
             {
                 CImageDC dc(pLotteryInfo->imgThumbnail);
                 Gdiplus::Bitmap bmp((HBITMAP)img, NULL);
                 Gdiplus::Graphics graphic(dc);
-                GDIPLUS_VERIFY(graphic.DrawImage(&bmp, 0, 0, m_szThumbnail.cx, m_szThumbnail.cy));
+                GDIPLUS_VERIFY(graphic.DrawImage(&bmp, 0, 0, rcDrawTarget.Width(), rcDrawTarget.Height()));
 
                 SendMessage(m_hWndControl, UM_ADD_LOTTERY_INFO, (WPARAM)pLotteryInfo.get(), NULL);
 
@@ -84,6 +100,14 @@ DWORD CLotteryMgr::_innerInitFunc()
     CFFileFinder finder;
     finder.SetCallback(this, NULL);
     API_VERIFY(finder.Find(m_strDirectory, m_strExtName, m_bRecursive));
+
+    std::vector<LotteryInfoPtr> vecLotterys;
+    std::copy(m_allLotteryInfos.begin(), m_allLotteryInfos.end(), std::back_inserter(vecLotterys));
+
+    std::random_shuffle(vecLotterys.begin(), vecLotterys.end());
+    m_allLotteryInfos.clear();
+    std::copy(vecLotterys.begin(), vecLotterys.end(), std::front_inserter(m_allLotteryInfos));
+
     DWORD dwCount = m_allLotteryInfos.size();
     SendMessage(m_hWndControl, UM_INIT_LOTTERY_COMPLETE, dwCount, NULL);
     return dwCount;
@@ -98,6 +122,7 @@ BOOL CLotteryMgr::StopInit()
 BOOL CLotteryMgr::Start(DWORD dwElapseTime)
 {
     BOOL bRet = FALSE;
+    m_bStarted = TRUE;
     m_dwElapseTime = dwElapseTime;
     
     API_VERIFY(m_threadLoop.Start(_LotterLoopFunc, this));
@@ -170,6 +195,7 @@ BOOL CLotteryMgr::TogglePause()
 BOOL CLotteryMgr::Stop()
 {
     BOOL bRet = FALSE;
+    m_bStarted = FALSE;
     API_VERIFY(m_threadLoop.StopAndWait());
     return bRet;
 }

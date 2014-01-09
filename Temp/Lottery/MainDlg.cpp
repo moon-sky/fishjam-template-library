@@ -11,7 +11,8 @@ CMainDlg::CMainDlg()
 {
     m_szThumbnail.SetSize(100, 100);
 #ifdef _DEBUG
-    m_strInitPath = _T("C:\\Users\\Public\\Pictures\\Sample Pictures");
+    //m_strInitPath = _T("C:\\Users\\Public\\Pictures\\Sample Pictures");
+    m_strInitPath = _T("G:\\FJCODE_GOOGLE\\Temp\\Lottery\\res");
 #endif 
     m_pCalcRect = CFCalcRect::GetCalcRectObject(CFCalcRect::modeAutoFit);
     m_dwImageCount = 0;
@@ -35,6 +36,24 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SetIcon(hIconSmall, FALSE);
 
     DoDataExchange(DDX_LOAD);
+
+    //COLORREF	crBtnColor;
+    // Calculate a color effect for high-lighting the button
+    //crBtnColor = ::GetSysColor(COLOR_BTNFACE) + RGB(30, 30, 30);
+
+    //m_btnStart.SetBitmaps(IDB_PNG_ON, crBtnColor);
+    //CRect rcBtnStart;
+    //m_btnStart.GetClientRect(&rcBtnStart);
+    //rcBtnStart.right =  rcBtnStart.left + 128;
+    //rcBtnStart.bottom = rcBtnStart.top + 128;
+    //m_btnStart.SetWindowPos(NULL, rcBtnStart, SWP_NOMOVE | SWP_NOZORDER);
+
+    m_btnStart.SetWindowText(TEXT(""));
+    m_btnStart.SetIcon(IDI_ICON1,IDI_ICON2);
+    m_btnStart.SetFlat(true);
+    //m_btnStart.SetColor(CButtonST::BTNST_COLOR_BK_IN, crBtnColor);
+    m_btnStart.SetTooltipText(TEXT("³é½±"));
+
 	return TRUE;
 }
 
@@ -42,6 +61,33 @@ void CMainDlg::OnDestroy()
 {
     m_lotteryMgr.StopInit();
     m_lotteryMgr.Stop();
+}
+
+BOOL CMainDlg::OnEraseBkgnd(CDCHandle dc)
+{
+    BOOL bRet = FALSE;
+    if (m_StaicPic.m_hWnd)
+    {
+        CRect rcClient;
+        API_VERIFY(GetClientRect(rcClient));
+        
+        dc.FillSolidRect(rcClient,GetSysColor(COLOR_BTNFACE)); // RGB(0x127, 0x127, 0x127));
+
+        CRect rcStaticPic;
+        m_StaicPic.GetWindowRect(rcStaticPic);
+        API_VERIFY(ScreenToClient(rcStaticPic));
+
+        CMemoryDC memDC(dc, rcStaticPic);
+        CFont font;
+        font.CreatePointFont(200, TEXT("ËÎÌå"));
+        HFONT hOldFont = memDC.SelectFont(font);
+        memDC.FillSolidRect(rcStaticPic, RGB(0, 0, 255));
+        memDC.SetBkMode(TRANSPARENT);
+        memDC.DrawText(TEXT("×£·¶×ÚÁÖ¡¢ÑîÀ½½á»é¿ìÀÖ£¡"), -1, rcStaticPic, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        memDC.SelectFont(hOldFont);
+    }
+    
+    return TRUE;
 }
 
 LRESULT CMainDlg::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -74,21 +120,26 @@ void CMainDlg::OnBtnInitClick(UINT uNotifyCode, int nID, CWindow wndCtl)
         CRect rcPic;
         m_StaicPic.GetClientRect(&rcPic);
         m_strInitPath = dirBrowser.GetSelectPath();
-        API_VERIFY(m_lotteryMgr.Init(m_hWnd, rcPic.Size(), m_strInitPath));
-        _SetButtonStatus(TRUE, FALSE, FALSE);
+        API_VERIFY(m_lotteryMgr.Stop());
+        API_VERIFY(m_lotteryMgr.StopInit());
+        API_VERIFY(m_lotteryMgr.Init(m_hWnd, rcPic.Size(), m_strInitPath, TEXT("*.jpg;*.png;*.ico")));
+
+        _SetButtonStatus(TRUE, m_lotteryMgr.IsStarted(), m_lotteryMgr.IsPaused());
     }
 }
 
 void CMainDlg::OnBtnStartClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    m_lotteryMgr.Start(100);
-    _SetButtonStatus(FALSE, TRUE, FALSE);
-}
-
-void CMainDlg::OnBtnPauseResumeClick(UINT uNotifyCode, int nID, CWindow wndCtl)
-{
-    m_lotteryMgr.TogglePause();
-    _SetButtonStatus(FALSE, TRUE, m_lotteryMgr.IsPaused());
+    if (!m_lotteryMgr.IsStarted())
+    {
+        m_lotteryMgr.Start(100);
+    }
+    else
+    {
+        m_lotteryMgr.TogglePause();
+    }
+    
+    _SetButtonStatus(FALSE, m_lotteryMgr.IsStarted(), m_lotteryMgr.IsPaused());
 }
 
 void CMainDlg::OnBtnResetClick(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -101,10 +152,10 @@ void CMainDlg::OnBtnResetClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 void CMainDlg::_SetButtonStatus(BOOL bIniting, BOOL bStarted, BOOL bPaused)
 {
     GetDlgItem(IDC_BTN_INIT).EnableWindow(!bIniting);
-    GetDlgItem(IDC_BTN_START).EnableWindow(!bIniting && !bStarted);
+    GetDlgItem(IDC_BTN_START).EnableWindow(!bIniting);
 
-    GetDlgItem(IDC_BTN_PAUSE_RESUME).EnableWindow(bStarted);
-    GetDlgItem(IDC_BTN_PAUSE_RESUME).SetWindowText(bPaused ? TEXT("Resume") : _T("Pause"));
+    //GetDlgItem(IDC_BTN_PAUSE_RESUME).EnableWindow(bStarted);
+    //GetDlgItem(IDC_BTN_PAUSE_RESUME).SetWindowText(bPaused ? TEXT("Resume") : _T("Pause"));
 
     GetDlgItem(IDC_BTN_RESET).EnableWindow(bStarted);
 }
@@ -155,7 +206,11 @@ LRESULT CMainDlg::OnUpdateLotteryInfo(UINT uMsg, WPARAM wParam, LPARAM lParam)
         CRect rcDrawTarget = m_pCalcRect->GetFitRect(rcPic, szPic);
 
         CDC dcPic = m_StaicPic.GetDC();
-        API_VERIFY(pInfo->imgThumbnail.Draw(dcPic.m_hDC, rcDrawTarget));
+
+        CMemoryDC memDC(dcPic, rcPic);
+        memDC.FillSolidRect(rcPic, RGB(0, 0, 0));
+
+        API_VERIFY(pInfo->imgThumbnail.Draw(memDC.m_hDC, rcDrawTarget));
 
         CPath pathFileName(pInfo->strPicturePath);
         int nFileName =pathFileName.FindFileName();
