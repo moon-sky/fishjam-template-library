@@ -7,8 +7,10 @@ import android.test.AndroidTestCase;
  *   1.通过USB联机至手机
  *   2.安装Android的USB Driver -- %ANDROID_SDK%\ usb_driver
  *     不要搜索，我要自己选择要安装的驱动程序 -> 显示所有设备-> 选择 android_usb.inf 文件 -> HTC Dream Composite ADB Interface
- *   3.打开手机上的USB调试(Debug)模式：应用程序->开发->USB调试
+ *     安装驱动后才能把Android手机整合成运行、调试环境
+ *   3.打开手机上的USB调试(Debug)模式：应用程序->开发->USB调试，一般可以选中 "不锁定屏幕"、"USB调试"、"允许模拟位置" 等选项
  *
+ * 
  * 每一个Android应用程序运行在自己的进程中,都拥有一个独立的Dalvik虚拟机实例
  *  
  * 调试日志:

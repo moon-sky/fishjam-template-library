@@ -3,6 +3,8 @@ import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
+ * WVGA() -- 800x480
+ * 
  * dip(density irrelevant pixels) -- 密度无关的像素,简称为 dp。基于屏幕密度的抽象单位，程序用它来定义界面元素。
  *   像素(px)=dip * (密度 / 160) , 如 密度为160dpi的屏幕上，1dip等于1x; 密度240dpi的屏幕上,1dip=1.5px
  *
@@ -79,6 +81,7 @@ import android.test.AndroidTestCase;
  *   Gallery(图库) + ImageSwitcher -- 能水平方向显示其内容，一般用来浏览图片，被选中的项位于中间，且可以响应事件显示信息。
  *      通常使用 Gallery 显示缩略图，在点击时通过ImageSwitcher::setImageResource切换到大图
  *      ImageSwitcher::setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out)); // 设置动画效果
+ *   Gesture -- 手势识别 
  *   GridView -- 按照行列的方式显示内容，一般适合显示图片)
  *   ImageButton
  *     src -- "@drawable/iconempty"
