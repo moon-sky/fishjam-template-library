@@ -3,7 +3,8 @@ import android.test.AndroidTestCase;
 import junit.framework.Assert;
 
 /**************************************************************************************************************************************
- * AndroidManifest.xml -- 包含这个Android应用程序具有哪些Activity、Service或者Receiver，也有权限设置。所有组件必须在其中声明后才能使用。
+ * AndroidManifest.xml -- 系统清单文件，控制应用的名称、图标、访问权限等属性， 
+ *   也包含这个Android应用程序具有哪些Activity、Service、Provider、Receiver 等，所有组件必须在其中声明后才能使用。
  * <application>
  *   <activity android:name=".MainActivity" android:label="@string/app_name> -- 声明Activity
  *   <provider android:name="EmployeeProvider" android:authorities="com.fishjam.android.study.Employees" /> -- 声明 ContentProvider

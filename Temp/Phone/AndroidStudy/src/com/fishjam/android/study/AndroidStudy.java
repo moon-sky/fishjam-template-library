@@ -4,7 +4,7 @@ import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
  * 学习书籍
- *     疯狂Android讲义 -- P34 (使用DX编译Android应用)
+ *     疯狂Android讲义 -- P44 (AndroidManifest.xml)
  *     Android应用开发详解.pdf -- 311, 
  *     欢迎来到Android世界 http://www.docin.com/p-31448231.html
  *     Android中可视化GUI布局拖拉开源工具程序  http://code.google.com/p/droiddraw , 或者通过 http://www.droiddraw.org/ 在线使用
@@ -87,7 +87,7 @@ import android.test.AndroidTestCase;
  *   方法2. 新建Android程序 -> Create project form existing source
  *
  * 发布
- *   1.通过DX工具对*.class文件进行转换，得到.dex文件;
+ *   1.通过DX工具对*.class文件进行转换和打包，得到.dex文件;
  *   2.通过AAPT工具打包所有资源文件，得到 .ap_ 文件
  *   3.通过 apkbuilder 工具把 .dex 和 .ap_ 文件打包成 APK包
  *   4.签名 ?
@@ -103,9 +103,10 @@ import android.test.AndroidTestCase;
  * 工程的目录结构
  *   assets -- 原生的文件(如MP3等)，Android程序不能直接访问，必须通过 AssetManager类以二进制方式来读取
  *   src -- 保存源码
- *   res -- 可通过 R.java 中的资源类直接访问，被编译到应用程序中
+ *   res -- 可通过 R.java 中的资源类直接访问，被编译到应用程序中的各种资源，aapt工具自动扫描生成资源清单文件(R.java)
  *     |-anim : 保存动画
  *     |-drawable : 保存图片，主要分为：BitmapFile, ColorDrawable(颜色), Nine-Patch Image(九片图片)
+ *     |---drawable-ldpi,drawable-mdpi,drawable-hdpi,drawable-xhdpi 分别存放低分辨率、中分辨率、高分辨率、超高分辨率的4种图片文件
  *     |-layout :保存布局文件(xml格式)
  *     |-menu   :xml菜单文件, <menu> -> <group> -> <item> 。<group>表示一个菜单组，可以一起设置其属性(如visible,checkableBehavior 等)
  *     |-raw    :直接复制到设备中的原生文件

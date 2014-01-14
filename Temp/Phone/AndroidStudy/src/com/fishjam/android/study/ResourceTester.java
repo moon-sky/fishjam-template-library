@@ -2,7 +2,8 @@ package com.fishjam.android.study;
 import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
- * TODO: id="@+id/MyTextView01" -- 前面的加号"+"什么意思？如果没有则加入？
+ * 注意：
+ *   1. id="@+id/MyTextView01" -- 前面的加号"+"表示直接分配标识符(没有专门的资源文件)，只用于 id，其他地方引用时使用 "@id/xxx" 的方式
  *
  * 资源管理器(ResourceManager)--提供访问非代码资源，如本地化字符串，图像，布局文件的能力。
  *   使用资源(resouces -- 其中有 attr/drawable/id/layout/string/style 等多种)

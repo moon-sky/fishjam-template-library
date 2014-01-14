@@ -15,6 +15,13 @@
         android:text="@string/hello_world" />
 
     <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView1"
+        android:layout_marginTop="42dp"
+        android:text="@string/str_Scan" />
+    <Button
         android:id="@+id/btnViewImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

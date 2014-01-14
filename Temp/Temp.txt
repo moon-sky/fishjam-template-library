@@ -1,3 +1,23 @@
+iso8601 -- 日期时间的字符串标准(看用于网络传时间?),如 2007-03-01T13:00:00
+std::time(NULL)
+std::time_t StringToTime(std::string const& timeString)
+{
+	Poco::DateTime pocoTime;
+	int timeZone = Poco::Timezone::tzd();
+	Poco::DateTimeParser::parse(timeString, pocoTime, timeZone); //catch(Poco::Exception& e)
+	return pocoTime.timestamp().epochTime();
+}
+
+std::string TimeToString(std::time_t const& time)
+{
+	return Poco::DateTimeFormatter::format(
+		Poco::Timestamp::fromEpochTime(time),
+		Poco::DateTimeFormat::ISO8601_FORMAT);
+		//Poco::Timezone::tzd());
+}
+
+
+
 Reflector -- 可以反编译分析.NET CLR文件
 Cryptopp -- 加解密
 

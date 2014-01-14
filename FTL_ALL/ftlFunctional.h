@@ -14,6 +14,7 @@
 #include <list>
 #include <sstream>
 #include "ftlTypes.h"
+#include <atlstr.h>
 //#include <WinSock2.h>
 namespace FTL
 {
@@ -302,10 +303,10 @@ namespace FTL
         return tokens.size();
     }
 
-    FTLINLINE size_t Split(const CAtlString& text, 
-        const CAtlString& delimiter,
+    FTLINLINE size_t Split(const ATL::CAtlString& text, 
+        const ATL::CAtlString& delimiter,
         bool bWithDelimeter,
-        std::list<CAtlString>& tokens)
+        std::list<ATL::CAtlString>& tokens)
     {
         int len = text.GetLength();
         int start = 0;

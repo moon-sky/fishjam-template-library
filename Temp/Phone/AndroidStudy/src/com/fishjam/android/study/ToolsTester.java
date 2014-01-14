@@ -3,7 +3,14 @@ import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
  * aapt.exe(Android Asset Packaging Tool) -- 资源(音视频、图片、xml配置等)打包工具? (旧: 可以获取log，安装应用程序，复制文件等等)
- *    aapt p -A assets -S res -M AndroidManifest.xml -F \bin\resources.ap_ -- 将工程下的资源打包为 \bin\resources.ap_ 压缩文件
+ *    子命令:
+ *       a -- add, 向压缩包中添加指定文件
+ *       d --dump 导出APK包内的指定内容
+ *       l -- list, 列出资源压缩包内的内容
+ *       p -- package,打包生成资源压缩文件
+ *       v -- version, 打印aapt的版本 
+ *    如：aapt p -A "附件资源路径如assets" -S "资源路径如res" -M AndroidManifest.xml -I "额外的包如 android-9\android.jar" 
+ *       -F \bin\resources.ap_ -- 将工程下的 assets子目录、res子目录、AndroidManifest.xml 等资源打包为 \bin\resources.ap_ 压缩文件
  * activityCreator.py -- 一个Python脚本，用于为项目创建所有的源代码和目录的编译环境(即产生可用于ant编译的build.xml)
  *    activityCreator.py --out HelloAndroid com.google.android.hello.HelloAndroid  -- 产生 build.xml
  * adb.exe(Android Debug Bridge) -- 提供一个简单的shell环境,可以登录到手机/模拟器上进行各种命令行操作，就像在一台Linux电脑里一样。
@@ -22,10 +29,10 @@ import android.test.AndroidTestCase;
  * android.bat -- 直接运行会启动Android SDK管理器(TODO: 官方有帮助?)
  *   list [avd|target]-- 列出机器上所有已经安装的 AVD设备 和|或 Android版本
  *   create|move|delete avd  -- 创建|移动或重命名|删除 一个AVD设备
- *   create|update project -- 创建|更新  一个新的Android项目
+ *   create|update project -- 创建|更新  一个新的Android项目，会提供Ant生成文件(build.xml)，然后可通过Ant来生成、安装项目。
  *   create|update test-project -- 创建|更新  一个新的Android测试项目   
- * ant -- 使用Ant编译，会在bin目录下生成 HelloAndroid.apk 包文件，然后可以用 adb 安装进模拟器。
- *
+ * ant.bat -- 使用Ant编译，会在bin目录下生成 HelloAndroid.apk 包文件，然后可以用 adb 安装进模拟器。
+ *   build.xml 中包含的 target: clean,debug,release,test,install,uninstall
  * apkbuilder.bat -- 将dx工具制作的.dex 和 appt命令制作的资源文件 打包成 .apk 文件
  * AVD(Android Virtual Device) -- Android虚拟设备，是模拟器的配置，让用户可以更好地模拟真实设备。
  *    包含:硬件配置(如是否有照相机、键盘类型、内存大小等)、版本选择、设备的屏幕尺寸、SD卡大小等。
@@ -34,12 +41,13 @@ import android.test.AndroidTestCase;
  * ddms.bat(Dalvik Debug Monitor Service) -- Dalvik 调试监控服务。主要对系统运行后台日志、系统线程、虚拟机状态等的监控? 还可模拟发送短信、拨打电话、发送GPS位置信息等。
  *     (旧: 手机/模拟器的屏幕截图或log)
  * dx.bat -- 将Java编译后的类文件(.class字节码文件)转换成Dalvik虚拟机可执行的.dex(Dalvik Executable Format)文件
- *    如: dx --dex --dump-to=D:\MyAndroid\testProject.dex --core-library D:\MyAndroid\Bin
+ *      dx --dex [--dump-to=<目的.dex文件>] [--core-library <file>.class | f<file>.{zip,jar,apk} | <directory> ]
+ *      如: dx --dex --dump-to=D:\MyAndroid\testProject.dex --core-library D:\MyAndroid\Bin
  * emulator.exe 模拟器软件，几乎提供了大多数物理硬件设备的特性，但不能 接打电话、拍照 等
  *    -avd <AVD名> -- 运行指定名字的AVD设备
  *    -data <镜像文件路径> -- 直接使用指定镜像文件来运行AVD
  *    -wipe-data  -- 把模拟器的设置恢复到初始状态
- *    -sdcard SD.file -- 模拟插入sd卡的情景
+ *    -sdcard SD.file -- 加载SD卡的镜像文件
  *    
  * logcat  -- Debug 工具，显示 android.util.Log 的日志输出。
  *   abd shell 进入交互后，通过 logcat 命令执行。常用参数：
@@ -56,7 +64,7 @@ import android.test.AndroidTestCase;
  *     -v -- 设置log的输出格式。brief(默认)、process、tag、thread、raw、time、long
  *            TODO: log级别： V(erbose) 、D(ebug)、I(nfo)、W(arning)、E(rror)、F(atal)、S(ilent) 
  * mksdcard.exe -- 创建sd卡影像文件
- *   mksdcard.exe -l SDCard 512M "E:\Android_SDK\sdcard.img"
+ *   mksdcard.exe [-l "Label"] <大小如512M> <路径，如 E:\Android_SDK\sdcard.img>
  * monitor.bat -- Android Debug Monitor,用于调试监控(代替ddms.bat)
  * 
  * 随机测试 ： adb shell monkey -p com.fishjam.android.study  -v 500  -- 使用缺省配置，想应用发送500个随机事件(包括按键、touch事件、系统事件等)

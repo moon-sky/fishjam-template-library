@@ -1,5 +1,8 @@
 package com.fishjam.android.study;
 import java.util.ArrayList;
+import java.util.Date;
+
+import android.R.string;
 import android.test.AndroidTestCase;
 import android.util.Log;
 import junit.framework.Assert;
@@ -42,7 +45,8 @@ import java.util.Collection;
 **************************************************************************************************************************************/
 
 public class LanguageTester  extends AndroidTestCase{
-
+	private static final String TAG = LanguageTester.class.getName();
+	
 	public void testParseDouble() throws Throwable 
 	{
 		double dValue = Double.parseDouble("1.05");
@@ -57,5 +61,9 @@ public class LanguageTester  extends AndroidTestCase{
 		colStrings.add("fishjam");
 		Log.i("Language", new Integer(colStrings.size()).toString());
 		assertEquals(colStrings.size(), 1);
+	}
+	
+	public void testDateTime(){
+		Log.i(TAG, new Date().toString());
 	}
 }
