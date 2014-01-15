@@ -2,6 +2,8 @@ package com.fishjam.android.study;
 import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
+ * 以库方式给其他项目使用 -- project.properties 中增加 android.library=true， 然后其他项目可以加入
+ * 
  * ZXing(http://code.google.com/p/zxing/) -- 开源的二维码、条形码处理库，包含了多种语言的接口。如微信中的扫一扫。
  *    主要分为：
  *      core -- 核心编解码库
@@ -17,7 +19,8 @@ import android.test.AndroidTestCase;
  *     1.下载 maven -- https://maven.apache.org/download.cgi， 解压后设置 MAVEN_HOME 环境变量，并将bin加入%PATH%
  *     2.进入 core 目录后，执行  mvn -DskipTests -Dgpg.skip=true install 进行编译，第一次使用时会下载很多依赖库。编译后在 target 找到生成的jar包
  *     3.更新本地Android工程配置(增加 local.properties 文件设置SDK的路径): android.bat update project --path <工程目录，如 android>
- *     3.导入源码后，"Build path" -> "Add External Archives" ，加入 core.jar 
+ *     3.导入源码后，"Build path" -> "Add External Archives" ，加入 core.jar
+ *   
  *  源码分析
  *    CaptureActivity -- 启动Activity(扫描器的主界面?)
  *    CaptureActivityHandler -- 解码处理类，负责调用另外的线程进行解码

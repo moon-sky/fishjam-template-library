@@ -1,5 +1,6 @@
 package com.fishjam.android.study;
 import android.test.AndroidTestCase;
+import android.view.View;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
@@ -48,7 +49,7 @@ import android.test.AndroidTestCase;
  *     
  * 主题(Theme)
  * 
- * view  -- 所有UI类都建立在View和ViewGroup两个类的基础之上，采用组合(Composite)设计模式
+ * view  -- 所有UI类都建立在View和ViewGroup两个类的基础之上，采用组合(Composite)设计模式，需要通过 Activity.setContentView 设置显示
  *   View --基本控件,  其子类称为 Widget
  *     Button( setOnClickListener(new Button.OnClickListener(){public void onClick(View v) {...}}); )
  *     EditText
@@ -67,7 +68,7 @@ import android.test.AndroidTestCase;
  * View 事件
  *     onTouchEvent() -- 当发生触摸屏事件时的回调，switch(event.getAction()) 来判断按键状态(down,move,up 等)
  * 
- * View
+ * View -- 
  *   AdapterView
  *   AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
  *   BaseAdapter -- 
@@ -193,9 +194,11 @@ import android.test.AndroidTestCase;
  *     程序退出:    onPause  -> onStop -> onDestroy
  *     后台到前台: onRestart ->onStart -> onResume
  *   常见方法
- *     findViewById -- 根据ID查找组件的实例
- *     finish() -- 结束Activity, 通常用法为 MyActivity.this.finish(); 
+ *     findViewById() -- 根据ID查找组件的实例
+ *     finish() -- 结束Activity, 通常用法为 MyActivity.this.finish();
+ *     getWindow() -- 返回该Activity所包含的窗口，如不调用 setContentView 来设置该窗口显示的内容，则显示为一个空窗口 
  *     setContentView -- 通常在重载的 onCreate 中调用来设置要显示的视图，从而实现与用户交互的功能
+ *     setThemem -- 设置窗口风格(如 不显示ActionBar、以对话框形式显示窗口等)
  *     startActivity -- 启动并导航到另一个Activity，参数被封装在Intent中
  *       Intent intent = new Intent(FirstActivity.this, SecondActivity.class);  通过Bundle设置参数;  startActivity(intent);  //在FirstActivity中启动SecondActivity
  *       在 SecondActivity::onCreate 中: Intent intent = getIntent(); Bundle bundle = intent.getExtras(); ...
@@ -243,7 +246,7 @@ public class UITester extends AndroidTestCase {
     }
     protected void setUp() throws Exception {
         super.setUp();
-
+        
     }
 
     protected void tearDown() throws Exception {

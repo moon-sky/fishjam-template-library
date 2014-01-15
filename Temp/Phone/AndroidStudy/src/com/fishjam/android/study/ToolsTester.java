@@ -48,7 +48,18 @@ import android.test.AndroidTestCase;
  *    -data <镜像文件路径> -- 直接使用指定镜像文件来运行AVD
  *    -wipe-data  -- 把模拟器的设置恢复到初始状态
  *    -sdcard SD.file -- 加载SD卡的镜像文件
- *    
+ * jarsigner.exe -- 对未签名的APK安装包进行签名，会以交互方式让用户输入密码(能否自动化?)
+ *   -verbose -- 指定生成详细输出
+ *   -keystore -- 指定数字证书的存储路径
+ *   -signedjar <签名后的APK包> <未签名的APK包> <数字证书的别名> -- 
+ *    签名: jarsigner -verbose -keystore 证书文件(如fishjam.keystore) -signedjar HelloWorld_Signed.apk HelloWorld.apk 别名(如fishjam)
+ * keytool -- 数字证书工具
+ *   -genkeypair -- 指定生成数字证书
+ *   -alias -- 指定生成数字证书的别名
+ *   -keyalg -- 指定生成证书的算法，如 RSA
+ *   -validity -- 指定有效期
+ *   -keystore -- 指定证书文件的存储路径
+ *    生成证书: keytool -genkeypair -alias 别名(如fishjam) -keyalg RSA -validity 400 -keystore 文件路径(如 fishjam.keystore) -- 执行后向导模式输入公司等信息
  * logcat  -- Debug 工具，显示 android.util.Log 的日志输出。
  *   abd shell 进入交互后，通过 logcat 命令执行。常用参数：
  *     -s -- 设置默认的过滤级别及过滤信息，如 -s "Module1:i"  -- 显示Tag为 "Module1" 中大于等于I(nfo)的信息
@@ -66,6 +77,11 @@ import android.test.AndroidTestCase;
  * mksdcard.exe -- 创建sd卡影像文件
  *   mksdcard.exe [-l "Label"] <大小如512M> <路径，如 E:\Android_SDK\sdcard.img>
  * monitor.bat -- Android Debug Monitor,用于调试监控(代替ddms.bat)
+ * zipalign.exe -- 档案整理工具，可用于优化APK安装包,从而提升Android应用与系统之间的交互效率和运行速度
+ *   -f -- 指定强制覆盖已有的文件
+ *   -v -- 指定生成详细输出
+ *   4 -- 指定档案整理所基于的字节数，通常指定为4(即基于32位进行整理)
+ *   zipalign.exe -f -v 4 HelloWorld_Signed.apk HelloWorld_Signed_zip.apk
  * 
  * 随机测试 ： adb shell monkey -p com.fishjam.android.study  -v 500  -- 使用缺省配置，想应用发送500个随机事件(包括按键、touch事件、系统事件等)
  **************************************************************************************************************************************/
