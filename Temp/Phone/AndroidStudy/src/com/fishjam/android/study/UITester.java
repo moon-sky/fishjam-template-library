@@ -1,6 +1,5 @@
 package com.fishjam.android.study;
 import android.test.AndroidTestCase;
-import android.view.View;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
@@ -56,7 +55,8 @@ import android.view.View;
  *     TextView
  *     RelativeLayout
  *     lists,grids,text boxes,buttons,
- *   ViewGroup -- 布局容器，子类称为Layout
+ *   ViewGroup -- 布局容器的抽象父类，子类称为Layout(布局管理器)，控制其子组件的分布依赖于LayoutParams,MarginLayoutParams 
+ *     两个内部类，其提供了一些XML属性(如 layout_heidth/layout_width)。ViewGroup的子类通过指定这些属性来进行布局？
  *   
  * 自绘
  *   相关组件: Canvas + Bitmap + Paint 
@@ -65,9 +65,10 @@ import android.view.View;
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * View 事件
- *     onTouchEvent() -- 当发生触摸屏事件时的回调，switch(event.getAction()) 来判断按键状态(down,move,up 等)
- * 
+ * View事件
+ *     onTouchEvent() -- 当发生触摸屏事件时的回调，switch(event.getAction()) 来判断按键状态(down,move,up 等), getX/getY 获取位置
+ * View属性
+ *   tag -- 为组件设置I个字符串类型的tag值，然后可通过 getTag()获取该值 或通过 findViewWithTag 找到该组件
  * View -- 
  *   AdapterView
  *   AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
@@ -119,32 +120,31 @@ import android.view.View;
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * Layout -- Android 通过 LayoutInflater 类将 XML 格式的布局文件中的组件解析为可视化的视图组件。
+ * Layout -- Android 通过 LayoutInflater 类将 XML 格式的布局文件中的组件解析为可视化的视图组件。会根据运行平台调整其中组件的位置、大小
  *   布局文件中的 <requestFocus/> 项代表什么意思? 
- *   (TODO:已废弃 )AbsoluteLayout -- 绝对位置定位，降低兼容性，维护成本高
- *   FrameLayout -- 帧布局，组件从屏幕的左上角开始布局，多个组件层叠排序，后面的组件覆盖前面的组件。
- *   LinearLayout -- 线型布局，按照垂直或者水平方向布局组件
- *     gravity(对齐方式) -- top, bottom, left, right, center_vertical
- *     orientation(方向) -- vertical,horizontal
- *     layout_width -- fill_parent,wrap_content(根据内容指定高宽),320px,80dip
- *     layout_height -- fill_parent,wrap_content
- *     layout_alignParentRight -- true
- *     layout_alignParentTop -- true
- *     layout_alignParentLeft -- true
- *     layout_marginRight -- 80dip, 
- *     layout_below -- "@+id/ExitButton", 
- *     layout_alignTop -- "@+id/sizebutton"
- *     layout_toLeftOf -- "@+id/sizebutton"
- *     layout_x, layout_y -- 30px
- *     layout_centerHorizontal -- true
- *     id -- "@+id/ResultText"
- *    background -- "@drawable/testpic",
- *   RelativeLayout -- 相对布局，相对其他组件的布局方式(如在其上下左右等)。可以拉伸自动适应，但会造成图像变形。
- *     layout_below, layout_toLeftOf
- *   ScrollView 
- *   TableLayout  -- 表格布局，按照行列方式布局组件( 采用 > TableRow > 元素 的方式)
- *     stretchColumns -- "数字"
- *   TableRow
+ *   (TODO:已废弃 )+-AbsoluteLayout -- 绝对位置定位，降低兼容性，维护成本高
+ *   +-FrameLayout -- 帧布局，组件从屏幕的左上角开始布局，多个组件层叠排序，后面的组件覆盖前面的组件。
+ *   +-GridLayout -- 
+ *   +-LinearLayout -- 线型布局，按照垂直或者水平方向布局组件。注意：水平排列时不会换行显示多余的组件。
+ *       background -- "@drawable/testpic",
+ *       divider -- 垂直布局时两个按钮之间的分隔条(Drawable对象)
+ *       gravity -- 控制布局管理器内组件的对齐方式，如 top, bottom, left, right, center_vertical 等，多个属性可通过 "|" 组合
+ *       layout_gravity -- 设置该子元素在父容器中的对齐方式
+ *       orientation -- 排列方式, 如   vertical(垂直排列，默认值),horizontal
+ *       layout_width/layout_height -- fill_parent(减去填充空白后等同于父容器),match_parent(等价于fill_parent?推荐) wrap_content(根据内容指定高宽),320px,80dip
+ *       layout_weight -- 权重
+ *       layout_alignParentLeft/layout_alignParentTop/ -- true 或 false
+ *       layout_marginRight -- 80dip, 
+ *       layout_below/layout_alignTop -- "@+id/ExitButton", 设置相对位置的元素ID
+ *       layout_x, layout_y -- 30px
+ *       layout_centerHorizontal -- true
+ *       measureWithLargestChild -- 设置为true时，所有带权重的子元素都会具有最大子元素的最小尺寸
+ *     +-TableLayout  -- 表格布局，按照行列方式布局组件( 采用 > TableRow > 元素 的方式)
+ *         stretchColumns -- "数字"
+ *   +-RelativeLayout -- 相对布局，相对其他组件的布局方式(如在其上下左右等)。可以拉伸自动适应，但会造成图像变形。
+ *       layout_below, layout_toLeftOf
+ *   +-ScrollView 
+ *   +-TableRow
  *
  * LayoutInflater infater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE); //或LayoutInflater.from(getApplicationContext())
  * convertView = infater.inflate(R.layout.baseadapter_provider,null);

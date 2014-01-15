@@ -45,7 +45,7 @@ import android.test.AndroidTestCase;
  *     Bitmap
  *       createBitmap -- 根据参数创建位图
  *       extractAlpha -- 根据位图信息生成只有透明度没有颜色(即Alpha通道)的位图
- *     Drawable -- 操作图片，其有多个子类: BitmapDrawable/ColorDrawable/ShapeDrawable
+ *     Drawable -- 抽象基类，代表可以被绘制出来的某东西，常用于定制UI，其有多个子类: BitmapDrawable/ColorDrawable/ShapeDrawable
  *       使用方式:
  *         1.保存在工程中的图片文件, 如 ImageView.setImageResource(R.drawable.myImage); 
  *         2.XML文件定义Drawable属性, 如 <ImageView android:id=“@id/ImageView01" android:src="@drawable/myimage" ... />
@@ -69,7 +69,14 @@ import android.test.AndroidTestCase;
  *       AnimationDrawable -- 一般通过XML配置文件配置，<animation-list> <item/></animation-list>，然后在Activity的xml配置中可以通过 android:background 指定？
  *  
  * 自绘
- *   1.从 View/SurfaceView 等类继承，然后重载 onDraw 方法 { }，使用Canvas进行绘制，通过 invalidate 或 postInvalidate 请求更新
+ *   1.从 View/SurfaceView 等类继承，然后选择性重载以下方法：
+ *      onDraw -- 使用Canvas进行绘制，通过 invalidate 或 postInvalidate 请求更新
+ *      onFinishInflate -- 当应用从XML布局文件加载组件并利用它来构建界面之后调用
+ *      onMeasure -- 检测View组件及它所包含的所有组件的大小
+ *      onLayout -- 当组件需要分配其子组件的位置、大小时回调
+ *      onTrackballEvent -- 当发生轨迹球事件时触发
+ *      onTouchEvent -- 当发生触摸屏事件时触发， TODO:怎么处理手势(Gesture?)
+ *      onAttachedToWindow/onDetachedFromWindow -- 当该组件 放入窗口/从窗口分离 时触发
  *   2.可以从 GraphicsActivity 继承
  *   
  *   Canvas -- 画布

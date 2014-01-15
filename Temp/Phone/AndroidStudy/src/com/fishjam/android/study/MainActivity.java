@@ -1,8 +1,5 @@
 package com.fishjam.android.study;
 
-
-import com.fishjam.android.zxing.IntentIntegrator;
-
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -26,8 +23,8 @@ public class MainActivity extends Activity {
         mTestButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-			      IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
-			      integrator.initiateScan();
+			      //IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
+			      //integrator.initiateScan();
 			      
 				/*
 				Intent intent = new Intent();

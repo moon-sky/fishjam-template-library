@@ -4,7 +4,7 @@ import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
  * 学习书籍
- *     疯狂Android讲义 -- P44 (AndroidManifest.xml)
+ *     疯狂Android讲义 -- P69 (表格布局)
  *     Android应用开发详解.pdf -- 311, 
  *     欢迎来到Android世界 http://www.docin.com/p-31448231.html
  *     Android中可视化GUI布局拖拉开源工具程序  http://code.google.com/p/droiddraw , 或者通过 http://www.droiddraw.org/ 在线使用

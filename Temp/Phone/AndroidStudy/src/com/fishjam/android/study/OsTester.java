@@ -10,7 +10,7 @@ import android.test.AndroidTestCase;
  * os --
  *   Bundle -- 属性对，通常用于状态值保存和恢复。也可用于数据传递。
  *     new Bundle 后通过 Intent 的 putExtras 方法进行设置。接收端的 Activity.getIntent (不等于savedInstanceState).getExtras 进行获取。
- *   Context--Context可以控制系统调用, 它提供了诸如资源解析, 访问数据库等
+ *   Context--Context可以访问Android应用环境的系统调用, 它提供了诸如资源解析, 访问数据库等，Activity、Service等都是其子类。
  *     getResources() -- 得到Resources对象，从而继续访问各种类型资源，如 r.getDimension(尺寸资源)，r.getXML(文件名), getDrawable(图片资源)
  *       引用资源的一般格式为: @[包名:]资源类型/资源名
  *     getString() -- TODO: 究竟是 Context.getString 还是 Resources.getString ?
