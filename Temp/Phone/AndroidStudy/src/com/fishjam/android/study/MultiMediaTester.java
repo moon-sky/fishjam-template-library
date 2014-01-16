@@ -45,17 +45,22 @@ import android.test.AndroidTestCase;
  *     Bitmap
  *       createBitmap -- 根据参数创建位图
  *       extractAlpha -- 根据位图信息生成只有透明度没有颜色(即Alpha通道)的位图
- *     Drawable -- 抽象基类，代表可以被绘制出来的某东西，常用于定制UI，其有多个子类: BitmapDrawable/ColorDrawable/ShapeDrawable
+ *     Drawable -- 抽象基类，代表可以被绘制出来的某东西，常用于定制UI，其有多个子类: BitmapDrawable/ColorDrawable/ShapeDrawable/StateListDrawable 等
  *       使用方式:
  *         1.保存在工程中的图片文件, 如 ImageView.setImageResource(R.drawable.myImage); 
  *         2.XML文件定义Drawable属性, 如 <ImageView android:id=“@id/ImageView01" android:src="@drawable/myimage" ... />
+ *           注意：可以通过 XML 定义 drawable 对象, 使用方式:  android:background="@drawable/bg_border" 
+ *              bg_border.xml(透明背景色 + 红色边框) : <shape xmlns:android="http://xxx"><solid android:color="#0000"/><stroke android:width="4px" android:color="#f00" /></shape>
+ *              button_selector.xml(按钮按下、弹起时的界面) : <selector> <item state_pressed="true" drawable="xxx"/> <item state_pressed="false" drawable="xxx"/> </selector>
  *         3.直接构造实例读取(SD) 
  *           a.Bitmap bmp = BitmapFactory.decodeFile("/sdcard/test.jpg"); 
  *             类似的有 decodeResource(getResources(), R.drawable.xxx);
  *                          decodeStream(context.getResources().openRawResource(xxx));
  *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //根据原始位图创建新视图  
- *           
  *   
+ *   9Patch图片 -- 特殊的PNG图片(扩展名为 .9.png)，在原始图片四周各添加一个宽度为1像素的线条，这4条线决定了图片的缩放、显示规则。
+ *     TODO: 似乎和Windows下的九宫格绘制不同。九宫格是缩放 # 字形内部； 而9Patch是缩放 # 字形外部 ？
+ *     
  *   动画 -- Animation(动画抽象类，有多个子类) 
  *       AnimationSet -- 定义动画属性集合类
  *       AnimationUtils -- 动画工具类

@@ -4,9 +4,16 @@ import android.test.AndroidTestCase;
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
  * WVGA() -- 800x480
- * 
- * dip(density irrelevant pixels) -- 密度无关的像素,简称为 dp。基于屏幕密度的抽象单位，程序用它来定义界面元素。
- *   像素(px)=dip * (密度 / 160) , 如 密度为160dpi的屏幕上，1dip等于1x; 密度240dpi的屏幕上,1dip=1.5px
+ *
+ * 常用距离单位
+ *    dip/dp(density-independent pixels) -- 密度无关的像素, 基于屏幕密度的抽象单位，程序用它来定义界面元素。
+ *      像素(px)=dip * (密度 / 160) , 如 密度为160dpi的屏幕上，1dip等于1x; 密度240dpi的屏幕上,1dip=1.5px
+ *    in(英寸) -- 基于屏幕的物理尺寸
+ *    mm(毫米) -- 
+ *    pt(磅)-- 1/72英寸
+ *    px -- 像素，对应屏幕上的一个点
+ *    sp(scaled pixels) -- 比例像素，和精度无关的像素。主要处理字体的大小，可以根据用户的字体大小首选项进行缩放
+
  *
  * 尺寸：屏幕的物理尺寸，指屏幕的对角线长度，如 2.8英寸、3.7英寸
  * 比例：屏幕的物理长度和物理宽度比，16:9或16:10的是宽屏，4:3的为窄屏
@@ -69,80 +76,98 @@ import android.test.AndroidTestCase;
  *     onTouchEvent() -- 当发生触摸屏事件时的回调，switch(event.getAction()) 来判断按键状态(down,move,up 等), getX/getY 获取位置
  * View属性
  *   tag -- 为组件设置I个字符串类型的tag值，然后可通过 getTag()获取该值 或通过 findViewWithTag 找到该组件
+ *   
  * View -- 
- *   AdapterView
- *   AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
- *   BaseAdapter -- 
- *   Button
+ * +-AdapterView
+ * +-AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
+ * +-BaseAdapter -- 
+ * +-Button
  *     text
- *   EditText -- 编辑框或密码框
- *     textSize -- 18sp
+ * +-CheckBox -- 复选按钮
+ * +-EditText -- 编辑框或密码框
+ *     hint -- 没有输入内容时的提示信息
+ *     inputType -- 指定输入组件的类型(类似 HTML 中 <input> 的type属性)，如 date(日期), number(数值), numberPassword(只接受数字密码), 等
+ *     numeric -- 设置关联的数值输入法，如 integer(整数), signed(允许输入符号的数值)， decimal(允许输入小数点的数值)
  *     password -- true
- *     numeric -- decimal
- *   CheckBox -- 复选按钮
- *   Gallery(图库) + ImageSwitcher -- 能水平方向显示其内容，一般用来浏览图片，被选中的项位于中间，且可以响应事件显示信息。
+ *     textSize -- 18sp
+ * +-ExtractEditText -- 是EditText组件的底层服务类，负责提供全屏输入法支持
+ * +-Gallery(图库) + ImageSwitcher -- 能水平方向显示其内容，一般用来浏览图片，被选中的项位于中间，且可以响应事件显示信息。
  *      通常使用 Gallery 显示缩略图，在点击时通过ImageSwitcher::setImageResource切换到大图
  *      ImageSwitcher::setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out)); // 设置动画效果
- *   Gesture -- 手势识别 
- *   GridView -- 按照行列的方式显示内容，一般适合显示图片)
- *   ImageButton
+ * +-Gesture -- 手势识别 
+ * +-GridView -- 按照行列的方式显示内容，一般适合显示图片)
+ * +-ImageButton
  *     src -- "@drawable/iconempty"
  *     setImageResource(R.drawable.iconempty);
- *   ImageView -- 显示图片
+ * +-ImageView -- 显示图片
  *     setImageDrawable(getResources().getDrawable(R.drawable.right));   //设置显示的图片, 或通过 src 属性设置
  *     setImageResource(xxx);
- *   ListView/ListActivity -- 列表视图，以垂直列表的方式列出需要显示的列表项(如联系人名单、系统设置项等)
+ * +-ListView/ListActivity -- 列表视图，以垂直列表的方式列出需要显示的列表项(如联系人名单、系统设置项等)
  *     关键点：设置Adapter
- *   MapView -- 显示Google地图
- *   ProgressBar -- 进度条，有很多种:
+ * +-MapView -- 显示Google地图
+ * +-ProgressBar -- 进度条，有很多种:
  *     1.ProgressDialog(对话框进度条)： 覆盖Activity的onCreateDialog方法，并在其中创建进度条并返回；调用showDialog方法显示;
  *     2.ProgressBarIndeterminate(标题栏进度条)：调用 Activity.requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS) 方法设置窗口有进度条的特征;
  *       调用 Activity.setProgressBarIndeterminateVisibility 显示进度条
  *     3.ProgressBar(水平进度条) -- 布局文件中声明ProgressBar，获取到变量后调用 incrementProgressBy 等方法设置进度
- *   RadioGroup(管理一组RadioButton)
+ * +-RadioGroup(管理一组RadioButton)
  *     checkedButton -- "@+id/sex1"
  *     orientation -- vertical,horizontal
- *   RadioButton
- *   Spinner -- 下拉列表
- *   TabHost / TabActivity -- 选项卡
- *   TextView -- 文本视图，显示字符串
+ * +-RadioButton
+ * +-Spinner -- 下拉列表
+ * +-TabHost / TabActivity -- 选项卡
+ * +-TextView -- 文本视图，显示字符串
+ *     autoLink -- all(可以显示链接，如 http://)， 或 "email|phone" -- 对邮件、电话增加链接
+ *     editable -- 控制是否允许编辑
+ *     ellipsize -- 设置当显示的文本超过长度时如何处理文本内容，如 end(在文本结尾处截断显示省略号), marquee(滚动动画显示文本)
  *     text -- @string/str_id
  *     textColor -- @drawable/darkgray
- *     gravity="center_vertical|center_horizontal", bottom
- *     autoLink -- all(可以显示网址，如 http://)
- *   ToggleButton -- 开关按钮
- *   VideoView -- 
- *   WebView -- 内置浏览器控件，可直接加载网页。为响应超链接功能，调用 setWebViewClient 方法设置自定义的 WebViewClient 子类实例
+ *    +-CheckedTextView -- 增加了checked状态
+ * +-ToggleButton -- 开关按钮
+ * +-VideoView -- 
+ * +-WebView -- 内置浏览器控件，可直接加载网页。为响应超链接功能，调用 setWebViewClient 方法设置自定义的 WebViewClient 子类实例
  *     getSettings().setJavaScriptEnabled(true) -- 更改设置
  *     loadUrl -- 加载指定的URL地址网页
- *   Window
+ * +-Window
  *     setFormat -- 设置窗口特征，如 PixelFormat.TRANSLUCENT(半透明)， 需要在 setContentView 之前调用
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
  * Layout -- Android 通过 LayoutInflater 类将 XML 格式的布局文件中的组件解析为可视化的视图组件。会根据运行平台调整其中组件的位置、大小
  *   布局文件中的 <requestFocus/> 项代表什么意思? 
- *   (TODO:已废弃 )+-AbsoluteLayout -- 绝对位置定位，降低兼容性，维护成本高
+ * ViewGroup -- 虚拟父类
+ *   gravity -- 控制布局管理器内组件的对齐方式，如 top, bottom, left, right, center_vertical 等，多个属性可通过 "|" 组合
+ *   layout_width/layout_height -- fill_parent(减去填充空白后等同于父容器),match_parent(等价于fill_parent?推荐) wrap_content(根据内容指定高宽),320px,80dip
+ *   +-AbsoluteLayout(TODO:已废弃 ) -- 绝对位置定位，降低兼容性，维护成本高
+ *       layout_x, layout_y -- 30px， 指定子组件的 X、Y 坐标
  *   +-FrameLayout -- 帧布局，组件从屏幕的左上角开始布局，多个组件层叠排序，后面的组件覆盖前面的组件。
- *   +-GridLayout -- 
+ *                             为每个加入其中的组件创建一个空白的区域(称为一帧),每个子组件占据一帧。这些帧会根据gravity属性自动对齐。
+ *                             可通过设置多个 layout_gravity="center" 的逐渐减小的子元素达到霓虹灯的效果(如同心圆环)
+ *         foreground -- 设置该帧布局容器的前景图像(Drawable类型)
+ *         foregroundGravity -- 定义绘制前景图像的gravity属性
+ *   +-GridLayout -- 4.0新增的网格布局,将容器划分为 rowsXcolumns 个网格，每个网格可以防止一个组件
+ *       columnCount/rowCount -- 设置网格的 列数 、行数
+ *       layout_column/layout_row -- 设置该子组件在GridLayout的第几列、第几行
+ *       layout_columnSpan/layout_rowSpan -- 设置该子组件在GridLayout 横向、纵向上 跨几列、几行
  *   +-LinearLayout -- 线型布局，按照垂直或者水平方向布局组件。注意：水平排列时不会换行显示多余的组件。
  *       background -- "@drawable/testpic",
  *       divider -- 垂直布局时两个按钮之间的分隔条(Drawable对象)
- *       gravity -- 控制布局管理器内组件的对齐方式，如 top, bottom, left, right, center_vertical 等，多个属性可通过 "|" 组合
  *       layout_gravity -- 设置该子元素在父容器中的对齐方式
  *       orientation -- 排列方式, 如   vertical(垂直排列，默认值),horizontal
- *       layout_width/layout_height -- fill_parent(减去填充空白后等同于父容器),match_parent(等价于fill_parent?推荐) wrap_content(根据内容指定高宽),320px,80dip
  *       layout_weight -- 权重
  *       layout_alignParentLeft/layout_alignParentTop/ -- true 或 false
  *       layout_marginRight -- 80dip, 
  *       layout_below/layout_alignTop -- "@+id/ExitButton", 设置相对位置的元素ID
- *       layout_x, layout_y -- 30px
  *       layout_centerHorizontal -- true
  *       measureWithLargestChild -- 设置为true时，所有带权重的子元素都会具有最大子元素的最小尺寸
- *     +-TableLayout  -- 表格布局，按照行列方式布局组件( 采用 > TableRow > 元素 的方式)
- *         stretchColumns -- "数字"
+ *     +-TableLayout  -- 表格布局，继承自LinearLayout，按照行列方式布局组件( 采用 > TableRow > 元素 的方式)。
+ *         若直接将元素放入TableLayout，则该元素将占满一行
+ *           collapseColumns -- 设置需要被隐藏的列的列序号，多个列序号之间用逗号隔开
+ *           shrinkColumns -- 设置允许被收缩的列的列序号，多个列序号之间用逗号隔开
+ *           stretchColumns -- 设置允许被拉伸的列的列序号，多个列序号之间用逗号隔开，可保证组件能完全填满表格空余空间
  *   +-RelativeLayout -- 相对布局，相对其他组件的布局方式(如在其上下左右等)。可以拉伸自动适应，但会造成图像变形。
- *       layout_below, layout_toLeftOf
+ *        layout_below, layout_toLeftOf
+ *        ignoreGravity -- 指定哪个组件不受gravity属性的影响
  *   +-ScrollView 
  *   +-TableRow
  *

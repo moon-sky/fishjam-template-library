@@ -40,6 +40,7 @@ import android.test.AndroidTestCase;
  * Dalvik VM -- Android中的虚拟机机制，和Java VM类似，但不兼容。专门为移动设备做了优化(基于寄存器的)，相对Java虚拟机速度快很多,执行.dex的Dalvik可执行文件
  * ddms.bat(Dalvik Debug Monitor Service) -- Dalvik 调试监控服务。主要对系统运行后台日志、系统线程、虚拟机状态等的监控? 还可模拟发送短信、拨打电话、发送GPS位置信息等。
  *     (旧: 手机/模拟器的屏幕截图或log)
+ * draw9patch.bat-- 制作9Patch图片的工具
  * dx.bat -- 将Java编译后的类文件(.class字节码文件)转换成Dalvik虚拟机可执行的.dex(Dalvik Executable Format)文件
  *      dx --dex [--dump-to=<目的.dex文件>] [--core-library <file>.class | f<file>.{zip,jar,apk} | <directory> ]
  *      如: dx --dex --dump-to=D:\MyAndroid\testProject.dex --core-library D:\MyAndroid\Bin

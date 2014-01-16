@@ -16,8 +16,6 @@ import android.test.AndroidTestCase;
  *     getString() -- TODO: 究竟是 Context.getString 还是 Resources.getString ?
  *   Environment
  *     getExternalStorageState -- 获取SD卡的状态，如 MEDIA_MOUNTED 
- *   Handler + Message -- (异步处理机制？) 可重载 Handler::handleMessage 方法，并在其中 switch(Message.whtat) { } 进行处理
- *     content--
  *
  * Intent(动作 + URI格式的数据) -- Android中引入的新的设计元素，不同组件之间相互导航的纽带，封装了不同组件之间导航查找的条件。
  *   应用程序可以通过它发出请求，就像是发出求助信号。应用程序可以按照相似或互补的方式进行注册，表明他们有能力或有兴趣执行各种请求或intent。
