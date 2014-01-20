@@ -46,4 +46,6 @@ using namespace Gdiplus;
 #include <ftlSharePtr.h>
 #include <ftlShell.h>
 #include <ftlThread.h>
+#include <ftlWindow.h>
+
 using namespace FTL;

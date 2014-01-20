@@ -1,7 +1,15 @@
 package com.fishjam.android.study;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import android.test.ActivityTestCase;
 import android.test.AndroidTestCase;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
 
 /***************************************************************************************************************************************
@@ -42,9 +50,11 @@ import android.widget.ArrayAdapter;
  *     ContentResolver -- 客户端访问时使用的类(Context.getContentResolver() )，其内部操作对应的 ContentProvider 来对数据进行操作。 
  *     
  * Adapter -- 适配器接口
- *   BaseAdapter -- 自定义适配器的基类，一般从该类继承，作为Module和View之间的桥梁,其中实现 getCount,getItem,getView等方法。
- *   ArrayAdapter -- 常用于将数组或List集合的多个值包装成多个列表项
- *   SimpleCursorAdapter -- 可用于将List集合的多个对象包装成多个列表项
+ *   BaseAdapter -- 自定义适配器的基类，一般从该类继承，作为Module和View之间的桥梁。从该类继承可以取得对Adapter最大的控制权，
+ *     实现 getCount, getItem{return null}, getView{ return myCustomView; } 等方法。可用于类似 Windows Virtual ListView 的高性能显示
+ *   ArrayAdapter -- 常用于将数组或List集合的多个值包装成多个列表项，功能有限，其列表项只能是TextView，一般只用于 AutoCompleteTextView 等只显示文本的地方
+ *   SimpleAdapter -- 可用于将List集合的多个对象包装成多个列表项，功能很强大
+
  *   SimpleCursorAdapter -- 包装Cursor提供的数据
  *     
  * Intent/IntentFilter -- 不同组件之间通信的载体
@@ -60,13 +70,30 @@ import android.widget.ArrayAdapter;
 
 public class ContentTester  extends ActivityTestCase{
 	public void testArrayAdapter(){
-		/*
 		String [] booksStrings = {"book1" , "book2", "book3"};
-		ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity() , this, R.layout.array_item, booksStrings);
-		list1.setAdapter(adapter1);
-		*/
+		ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity() , android.R.layout.simple_list_item_1, booksStrings);
+		AutoCompleteTextView autoCompleteTextView = (AutoCompleteTextView)getActivity().findViewById(R.id.textView1);
+		if (autoCompleteTextView != null) {
+			autoCompleteTextView.setAdapter(adapter1);
+		}
 	}
-	
+	public void testSimpleAdapter(){
+		List<Map<String, Object>> listItems = new ArrayList<Map<String, Object>>();
+		for (int i = 0; i < 10; i++) {
+			Map<String, Object> listItem = new HashMap<String, Object>();
+			listItem.put("keyName", "myValue");
+			listItems.add(listItem);
+		}
+		SimpleAdapter simpleAdapter = new SimpleAdapter(
+				this.getActivity(), 
+				listItems,	//List<? extends Map<String, ?>> 类型的集合对象，其中的每个 Map<String, ?> 对象生成一个列表项 
+				android.R.layout.simple_list_item_checked, 	//一个界面布局ID，每个列表项都按照这个进行布局
+				new String[]{"keyName"}, 	//String[] 的数组，决定提取Map<String,?>对象中哪些key对应的value来生成列表项
+				new int[]{android.R.id.text1}	//int[] 类型的数组，决定对应的 Key 显示在界面布局中的哪个组件上
+		);
+		//ListView listView = (ListView)getActivity().findViewById(R.id.mylist);
+		//listView.setAdapter(simpleAdapter);
+	}
 	public void ListActivityCursorTester(){
 		
 		/*********************************************************************************************************

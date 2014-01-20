@@ -5,6 +5,7 @@
 #pragma once
 #include "LotteryMgr.h"
 #include <ftlWindow.h>
+#include "LayedButton.h"
 #include "ButtonST.h"
 
 class CMainDlg : public CDialogImpl<CMainDlg>
@@ -80,7 +81,13 @@ private:
     CStatic     m_StaicPic;
     CFCalcRect* m_pCalcRect;
     UINT        m_dwImageCount;
-    CButtonST   m_btnStart;
+    //CButtonST   m_btnStart;
+    CImageList m_imgList;
 
+    Gdiplus::Image* m_pImage;
+    CLayeredButton   m_btnStart;
+    //CButtonST m_btnStart;
+    //CImageButton m_btnStart;
+    //LayeredButton m_btnStart;
     //CConfigDlg dlg;
 };

@@ -21,7 +21,8 @@ import android.util.Log;
  *     doInBackground(byte[]...params) -- 继承类中需要重载的具体工作方法 
  *     execute(参数) -- 调用开始异步执行
  *
- *   Handler + Message -- (异步处理机制？) 可重载 Handler::handleMessage 方法，并在其中 switch(Message.what) { } 进行处理
+ *   Handler + Message -- 异步处理机制。Android中禁止线程中直接更新UI，因此需要通过发送 Message 到主线程中，由Handle获取到Message后更新。 
+ *     使用时只需 new Handler 并重载handleMessage 方法， 并在其中 switch(Message.what) { } 处理即可( 不需要 set 到Activity等 )
  *     content--
  *     sendEmptyMessage -- 发送消息
  *     TODO: HandlerLeak -- ? 同一个线程下的handler共享一个looper对象，消息中保留了对handler的引用，只要有消息在队列中，那么handler便无法被回收

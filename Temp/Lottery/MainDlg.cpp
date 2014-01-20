@@ -6,6 +6,8 @@
 #include "resource.h"
 
 #include "MainDlg.h"
+const INT IMAGE_WIDTH = 128;
+const INT IMAGE_HEIGHT = 128;
 
 CMainDlg::CMainDlg()
 {
@@ -25,6 +27,7 @@ CMainDlg::~CMainDlg()
 
 LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+    BOOL bRet = FALSE;
 	// center the dialog on the screen
 	CenterWindow();
     DlgResize_Init();
@@ -48,12 +51,40 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
     //rcBtnStart.bottom = rcBtnStart.top + 128;
     //m_btnStart.SetWindowPos(NULL, rcBtnStart, SWP_NOMOVE | SWP_NOZORDER);
 
-    m_btnStart.SetWindowText(TEXT(""));
-    m_btnStart.SetIcon(IDI_ICON1,IDI_ICON2);
-    m_btnStart.SetFlat(true);
+    //m_btnStart.SetWindowText(TEXT(""));
+    //m_btnStart.SetIcon(IDI_ICON1,IDI_ICON2);
+    //m_btnStart.SetFlat(true);
     //m_btnStart.SetColor(CButtonST::BTNST_COLOR_BK_IN, crBtnColor);
-    m_btnStart.SetTooltipText(TEXT("³é½±"));
+    //m_btnStart.SetTooltipText(TEXT("³é½±"));
 
+    API_VERIFY(FTL::CFGdiUtil::LoadPNGFromResource(m_pImage, _Module.GetResourceInstance(), IDB_PNG_START_ALL));
+
+    API_VERIFY(m_imgList.Create(IMAGE_WIDTH, IMAGE_HEIGHT , ILC_COLOR32, 4, 1));
+    //API_VERIFY(m_imgList.Create(IDB_PNG_START_ALL, IMAGE_WIDTH, 1, CLR_NONE));
+    for (INT i = IDB_PNG2; i < IDB_PNG5; i++)
+    {
+        CImage image;
+        API_VERIFY(FTL::CFGdiUtil::LoadPNGFromResource(image, _Module.GetResourceInstance(), i));
+        if (bRet)
+        {
+            m_imgList.Add(image, CLR_NONE);
+        }
+    }
+
+    
+    //pThumbnail->GetHBITMAP(Color(255,255,255),&hBmp);  
+
+    //CBitmap *pImage = CBitmap::FromHandle(hBmp);         //×ª»»³ÉCBitmap¸ñÊ½Î»Í¼  
+
+    //int a=m_pImageList->Add(pImage,RGB(255,255,255));  
+    //pImage->DeleteObject();  
+
+    
+    //API_VERIFY(m_imgList.CreateFromImage(IDB_PNG_START_ALL, IMAGE_WIDTH, 1, 
+    //    CLR_NONE, IMAGE_BITMAP, LR_CREATEDIBSECTION));
+    ////m_btnStart.SetImageList()
+    m_btnStart.SetImageList(m_imgList);
+    m_btnStart.SetImages(0, 1, 2, 3);
 	return TRUE;
 }
 
@@ -83,7 +114,7 @@ BOOL CMainDlg::OnEraseBkgnd(CDCHandle dc)
         HFONT hOldFont = memDC.SelectFont(font);
         memDC.FillSolidRect(rcStaticPic, RGB(0, 0, 255));
         memDC.SetBkMode(TRANSPARENT);
-        memDC.DrawText(TEXT("×£·¶×ÚÁÖ¡¢ÑîÀ½½á»é¿ìÀÖ£¡"), -1, rcStaticPic, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        //memDC.DrawText(TEXT("×£·¶×ÚÁÖ¡¢ÑîÀ½½á»é¿ìÀÖ£¡"), -1, rcStaticPic, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         memDC.SelectFont(hOldFont);
     }
     
@@ -122,7 +153,7 @@ void CMainDlg::OnBtnInitClick(UINT uNotifyCode, int nID, CWindow wndCtl)
         m_strInitPath = dirBrowser.GetSelectPath();
         API_VERIFY(m_lotteryMgr.Stop());
         API_VERIFY(m_lotteryMgr.StopInit());
-        API_VERIFY(m_lotteryMgr.Init(m_hWnd, rcPic.Size(), m_strInitPath, TEXT("*.jpg;*.png;*.ico")));
+        API_VERIFY(m_lotteryMgr.Init(m_hWnd, rcPic.Size(), m_strInitPath, TEXT("*.jpg;*.png;*.ico"), TRUE));
 
         _SetButtonStatus(TRUE, m_lotteryMgr.IsStarted(), m_lotteryMgr.IsPaused());
     }

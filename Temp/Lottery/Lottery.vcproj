@@ -196,6 +196,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LayedButton.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Lottery.cpp"
 				>
 			</File>
@@ -237,6 +241,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LayedButton.h"
+				>
+			</File>
+			<File
 				RelativePath=".\LotteryMgr.h"
 				>
 			</File>
@@ -258,22 +266,6 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest"
 			>
 			<File
-				RelativePath=".\res\circle_blue.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\circle_red.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\Halloween1.ico"
-				>
-			</File>
-			<File
-				RelativePath=".\res\Halloween2.ico"
-				>
-			</File>
-			<File
 				RelativePath=".\res\Lottery.ico"
 				>
 			</File>
@@ -281,13 +273,25 @@
 				RelativePath=".\Lottery.rc"
 				>
 			</File>
+			<File
+				RelativePath=".\res\StartAll.png"
+				>
+			</File>
 		</Filter>
 		<File
-			RelativePath=".\res\Off.PNG"
+			RelativePath=".\res\Click.png"
 			>
 		</File>
 		<File
-			RelativePath=".\res\On.PNG"
+			RelativePath=".\res\Disable.png"
+			>
+		</File>
+		<File
+			RelativePath=".\res\Focus.png"
+			>
+		</File>
+		<File
+			RelativePath=".\res\Normal.png"
 			>
 		</File>
 	</Files>

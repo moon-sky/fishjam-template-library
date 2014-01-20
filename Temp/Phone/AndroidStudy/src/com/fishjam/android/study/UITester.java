@@ -94,10 +94,16 @@ import android.widget.ImageView;
  *    textFilterEnabled -- 设置是否对列表项进行过滤，需要对应的Adapter实现了Filter接口时才起作用
  * +-AdapterView -- 抽象基类，可以包括多个"列表项"并将其以合适的形式显示出来，其显示的列表项由 Adapter 提供(通过 setAdapter 方法设置).
  *     AdapterView 的各子类负责采用合适的方式显示Adapter提供的每个"列表项"组件。
+ *     setOnItemClickListener()/setOnItemSelectedListener() -- 添加单击、选中事件
+ * +-AdapterViewFlipper -- 一般用于幻灯播放。一次显示一个Adapter提供的View组件，可以通过 showPrevious()/showNext() 方法来控制显示上一个、下一个。
+ *    inAnimation/outAnimation -- 控制 显示/隐藏 时使用的动画
+ *    flipInterval -- 设置自动播放的时间间隔
  * +-AnalogClock -- 模拟时钟，显示 小时、分钟
  *    dial -- 设置表盘使用的图片
  *    hand_hour/hand_minute -- 设置时针、分针使用的图片
  * +-AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
+ *    completionHint/completionHintView -- 下拉菜单中的 提示标题 / 提示标题视图 
+ *    completionThreshold -- 用户至少输入几个字符才会显示提示
  * +-BaseAdapter -- 
  * +-Button
  *     text
@@ -112,12 +118,19 @@ import android.widget.ImageView;
  *     numeric -- 设置关联的数值输入法，如 integer(整数), signed(允许输入符号的数值)， decimal(允许输入小数点的数值)
  *     password -- true
  *     textSize -- 18sp
+ * +-ExpandableListView -- 可展开的列表组件(类似数控件?)，把列表项分为几组，每组里可包含多个列表项，其数据由 ExpandableListAdapter 提供。
  * +-ExtractEditText -- 是EditText组件的底层服务类，负责提供全屏输入法支持
- * +-Gallery(图库) + ImageSwitcher -- 能水平方向显示其内容，一般用来浏览图片，被选中的项位于中间，且可以响应事件显示信息。
- *      通常使用 Gallery 显示缩略图，在点击时通过ImageSwitcher::setImageResource切换到大图
+ * +-Gallery(图库) -- 能水平方向显示其内容，而且用户可以拖动来切换列表项。一般和 ImageSwitcher 一起用来浏览图片，被选中的项位于中间。
+ *      通常使用 Gallery 显示缩略图，在点击时通过 ImageSwitcher::setImageResource 切换到大图
+ *      TODO: 已不再推荐该控件。推荐使用 HorizontalScrollView + ViewPager 来代替Gallery。
+ *      animationDuration -- 设置图片切换时的动画持续时间
+ *      unselectedAlpha -- 设置没有选中的图片的透明度，如 "0.6"
  *      ImageSwitcher::setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out)); // 设置动画效果
  * +-Gesture -- 手势识别 
  * +-GridView -- 按照行列的方式显示内容，一般适合显示图片)
+ *     horizontalSpacing/verticalSpacing -- 各元素之间的 水平/垂直 间距
+ *     numColumns -- 设置列数，默认为1。注意：行数是根据Adapter动态改变的
+ *     stretchMode -- 设置拉伸模式，如 NO_STRETCH(不拉伸)， STRETCH_COLUMN_WIDTH(拉伸元素表格元素本身)
  * +-ImageButton -- 图片按钮(ImageView的子类，设置text无效)
  *     src -- "@drawable/iconempty"
  *     setImageResource(R.drawable.iconempty);
@@ -133,17 +146,28 @@ import android.widget.ImageView;
  * +-ListView/ListActivity -- 列表视图，以垂直列表的方式列出需要显示的列表项(如联系人名单、系统设置项等)
  *     关键点：设置Adapter。 若 ListActivty 中要使用自定义的界面布局文件，则其中必须有一个id为 "@+id/android:list" 的ListView。
  * +-MapView -- 显示Google地图
+ * +-MultiAutoCompleteTextView -- 允许输入多个提示项(多个提示项以分隔符分隔)的自动提示，
+ *    setTokenizer -- 设置分隔符，如  myAuto.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
  * +-ProgressBar -- 进度条，有很多种:
  *     1.ProgressDialog(对话框进度条)： 覆盖Activity的onCreateDialog方法，并在其中创建进度条并返回；调用showDialog方法显示;
- *     2.ProgressBarIndeterminate(标题栏进度条)：调用 Activity.requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS) 方法设置窗口有进度条的特征;
- *       调用 Activity.setProgressBarIndeterminateVisibility 显示进度条
- *     3.ProgressBar(水平进度条) -- 布局文件中声明ProgressBar，获取到变量后调用 incrementProgressBy 等方法设置进度
+ *     2.ProgressBarIndeterminate(标题栏进度条)：调用 Activity.requestWindowFeature(Window.FEATURE_PROGRESS) 方法设置窗口有进度条的特征;
+ *       调用 Activity.setProgressBarVisibility(带进度)/setProgressBarIndeterminateVisibility(不带进度) 显示进度条， Activity.setProgress 设置进度
+ *     3.ProgressBar(普通进度条) -- 布局文件中声明ProgressBar，获取到变量后调用 incrementProgressBy 等方法设置进度
+ *       style -- 指定风格, 如 : @android:style/Widget.ProgressBar.Inverse -- 普通大小的环形进度条
+ *       indeterminate/indeterminateDuration -- 设置为true，表示不精确显示 进度 /进度的持续时间
+ *       progressDrawable -- 设置进度条的轨道对应的Drawable对象(为 LayerDrawable 对象, 通过 <layer-list> 元素进行配置)
+ *       
  * +-QuickContactBadge -- 显示关联到特定联系人的图片，单击图片时会打开相应联系人的联系方式界面
  *     assignContactFromEmail()/assignContactPhone()/assignContactUri() 
  * +-RadioButton(单选按钮) + RadioGroup(管理一组RadioButton) 
  *     checkedButton -- "@+id/sex1"
  *     orientation -- vertical,horizontal
+ * +-RatingBar -- 
+ * +-SeekBar -- 拖动条
+ *     thumb -- 指定一个Drawable对象，可自定义滑块的外观，响应 OnSeekBarChangeListener 
+ * +-StackView -- 以堆栈方式来显示多个列表项
  * +-Spinner -- 下拉列表
+ *     entries -- 使用数组资源设置该下拉列表框的列表项目
  * +-Switch -- 开关
  *     switchTextAppearance -- 该开关图标上的文本样式
  *     thumb -- 指定使用自定义Drawable控制该开关的开关按钮

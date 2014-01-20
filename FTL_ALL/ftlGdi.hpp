@@ -641,6 +641,56 @@ namespace FTL
 		return bRet;
 	}
 
+    BOOL CFGdiUtil::LoadPNGFromResource(Gdiplus::Image *& pImage, HINSTANCE hInstance, UINT nIDResource, LPCTSTR pszType)
+    {
+        BOOL bRet = FALSE;
+        HRSRC hrSrc = ::FindResource(hInstance, MAKEINTRESOURCE(nIDResource), pszType);
+        API_ASSERT(NULL != hrSrc);
+        if (hrSrc)
+        {
+#if 0 
+            //或者 -- 没有测试
+            HGLOBAL hGlobal = LoadResource( hModule, hrSrc );
+            DWORD dwSize = SizeofResource( hModule, hrSrc );
+            BYTE* pResData = (BYTE*)LockResource( hGlobal );
+            //使用数据， 比如 CopyMemory 到buffer中
+            UnlockResource( hGlobal );
+            FreeResource( hGlobal );
+#endif 
+            DWORD dwResSize = SizeofResource(hInstance, hrSrc);
+            BYTE* lpRsrc = (BYTE*)LoadResource(hInstance, hrSrc);
+            API_ASSERT(NULL != lpRsrc);
+            //LPVOID lpRsrc = LockResource(hResData);
+            if (lpRsrc)
+            {
+                HGLOBAL hGlobal = GlobalAlloc(GMEM_FIXED, dwResSize); //GMEM_MOVEABLE
+                if (hGlobal)
+                {
+                    BYTE* pmem = (BYTE*)GlobalLock(hGlobal);
+                    CopyMemory(pmem,lpRsrc,dwResSize);
+                    GlobalUnlock(hGlobal);
+
+                    HRESULT hr = E_FAIL;
+                    CComPtr<IStream> pStream;
+                    COM_VERIFY(CreateStreamOnHGlobal(hGlobal, FALSE, &pStream));
+                    if (SUCCEEDED(hr) && pStream)
+                    {
+                        pImage = new Gdiplus::Image(pStream);
+                        if (pImage)
+                        {
+                            bRet = TRUE;
+                        }
+                    }
+                    GlobalFree(hGlobal);
+                }
+
+                UnlockResource(hrSrc);
+                FreeResource(hrSrc);
+            }
+        }
+        return bRet;
+    }
+
     LPCTSTR CFGdiUtil::GetBkModeString(int nBkMode)
     {
         switch(nBkMode)

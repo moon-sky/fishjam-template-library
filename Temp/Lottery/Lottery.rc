@@ -23,13 +23,14 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
+// PNG
 //
 
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_ICON1               ICON                    "res\\circle_blue.ico"
-IDI_ICON2               ICON                    "res\\circle_red.ico"
+IDB_PNG_START_ALL       PNG                     "res\\StartAll.png"
+IDB_PNG2                PNG                     "res\\Click.png"
+IDB_PNG3                PNG                     "res\\Disable.png"
+IDB_PNG4                PNG                     "res\\Focus.png"
+IDB_PNG5                PNG                     "res\\Normal.png"
 #endif    // Chinese (P.R.C.) resources
 /////////////////////////////////////////////////////////////////////////////
 
