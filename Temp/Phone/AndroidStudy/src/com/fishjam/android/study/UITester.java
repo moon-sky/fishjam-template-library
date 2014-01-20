@@ -1,5 +1,12 @@
 package com.fishjam.android.study;
+import java.security.PublicKey;
+
+import android.R.integer;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.test.AndroidTestCase;
+import android.view.View;
+import android.widget.ImageView;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
@@ -77,13 +84,28 @@ import android.test.AndroidTestCase;
  * View属性
  *   tag -- 为组件设置I个字符串类型的tag值，然后可通过 getTag()获取该值 或通过 findViewWithTag 找到该组件
  *   
- * View -- 
- * +-AdapterView
+ * View --
+ * +-AbsListView --  列表视图的抽象基类，有 GridView、ListView 等子类
+ *    choiceMode -- 选择行为，如 none(不显示任何选中项), singleChoice(单选), multipleChoice(多选)
+ *    divider -- 设置列表项的分隔条(即可用颜色、也可用Drawable)
+ *    entries -- 指定一个数组资源，将根据该数组资源来生成ListView, 如指定 "@array/bools"
+ *    fastScrollEnabled -- 设置是否允许快速滚动，如为true，则会显示滚动图标，并允许用户拖动该滚动图标进行快速滚动
+ *    scrollingCache -- 如设为true，在滚动时将会使用绘制缓存
+ *    textFilterEnabled -- 设置是否对列表项进行过滤，需要对应的Adapter实现了Filter接口时才起作用
+ * +-AdapterView -- 抽象基类，可以包括多个"列表项"并将其以合适的形式显示出来，其显示的列表项由 Adapter 提供(通过 setAdapter 方法设置).
+ *     AdapterView 的各子类负责采用合适的方式显示Adapter提供的每个"列表项"组件。
+ * +-AnalogClock -- 模拟时钟，显示 小时、分钟
+ *    dial -- 设置表盘使用的图片
+ *    hand_hour/hand_minute -- 设置时针、分针使用的图片
  * +-AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
  * +-BaseAdapter -- 
  * +-Button
  *     text
  * +-CheckBox -- 复选按钮
+ * +-Chronmeter -- 计时器，显示从某个起始时间开始，一共过去了多长时间
+ *     format -- 指定计时器的计时格式，
+ *     setBase(long) -- 设置计时器的起始时间，单位为毫秒。如 SystemClock.elapsedRealtime()
+ * +-DigitalClock -- 数字时钟，可以显示当前的秒数
  * +-EditText -- 编辑框或密码框
  *     hint -- 没有输入内容时的提示信息
  *     inputType -- 指定输入组件的类型(类似 HTML 中 <input> 的type属性)，如 date(日期), number(数值), numberPassword(只接受数字密码), 等
@@ -96,25 +118,36 @@ import android.test.AndroidTestCase;
  *      ImageSwitcher::setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out)); // 设置动画效果
  * +-Gesture -- 手势识别 
  * +-GridView -- 按照行列的方式显示内容，一般适合显示图片)
- * +-ImageButton
+ * +-ImageButton -- 图片按钮(ImageView的子类，设置text无效)
  *     src -- "@drawable/iconempty"
  *     setImageResource(R.drawable.iconempty);
- * +-ImageView -- 显示图片
- *     setImageDrawable(getResources().getDrawable(R.drawable.right));   //设置显示的图片, 或通过 src 属性设置
- *     setImageResource(xxx);
+ * +-ImageView -- 显示图片等Drawable对象
+ *     adjustViewBounds -- 设置是否调整自己的边界来保持所显示的图片的长宽比
+ *     cropToPadding -- 设置是否裁剪到保留padding
+ *     scaleType -- 设置显示的图片如何缩放或移动以适应ImageView的大小，如 matrix(??), fitXY(横向纵向独立缩放，图片完全适应该ImageView)，
+ *       center(图片放在中间，不进行缩放), centerCrop(保持纵横比缩放，使得图片能完全覆盖ImageView), centerInside(保持纵横比缩放，使得能完全显示图片)
+ *       fitCenter(保持纵横比缩放，并将缩放后的图片放在中央) 
+ *     设置显示的内容
+ *       setImageDrawable(getResources().getDrawable(R.drawable.right));   //设置显示的图片, 或通过 src 属性设置
+ *       setImageResource(xxx); setImageBitmap(); setImageURI()
  * +-ListView/ListActivity -- 列表视图，以垂直列表的方式列出需要显示的列表项(如联系人名单、系统设置项等)
- *     关键点：设置Adapter
+ *     关键点：设置Adapter。 若 ListActivty 中要使用自定义的界面布局文件，则其中必须有一个id为 "@+id/android:list" 的ListView。
  * +-MapView -- 显示Google地图
  * +-ProgressBar -- 进度条，有很多种:
  *     1.ProgressDialog(对话框进度条)： 覆盖Activity的onCreateDialog方法，并在其中创建进度条并返回；调用showDialog方法显示;
  *     2.ProgressBarIndeterminate(标题栏进度条)：调用 Activity.requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS) 方法设置窗口有进度条的特征;
  *       调用 Activity.setProgressBarIndeterminateVisibility 显示进度条
  *     3.ProgressBar(水平进度条) -- 布局文件中声明ProgressBar，获取到变量后调用 incrementProgressBy 等方法设置进度
- * +-RadioGroup(管理一组RadioButton)
+ * +-QuickContactBadge -- 显示关联到特定联系人的图片，单击图片时会打开相应联系人的联系方式界面
+ *     assignContactFromEmail()/assignContactPhone()/assignContactUri() 
+ * +-RadioButton(单选按钮) + RadioGroup(管理一组RadioButton) 
  *     checkedButton -- "@+id/sex1"
  *     orientation -- vertical,horizontal
- * +-RadioButton
  * +-Spinner -- 下拉列表
+ * +-Switch -- 开关
+ *     switchTextAppearance -- 该开关图标上的文本样式
+ *     thumb -- 指定使用自定义Drawable控制该开关的开关按钮
+ *     track -- 指定使用自定义Drawable控制该开关的开关轨道
  * +-TabHost / TabActivity -- 选项卡
  * +-TextView -- 文本视图，显示字符串
  *     autoLink -- all(可以显示链接，如 http://)， 或 "email|phone" -- 对邮件、电话增加链接
@@ -123,13 +156,16 @@ import android.test.AndroidTestCase;
  *     text -- @string/str_id
  *     textColor -- @drawable/darkgray
  *    +-CheckedTextView -- 增加了checked状态
- * +-ToggleButton -- 开关按钮
+ * +-ToggleButton -- 状态开关按钮，拥有 checked 属性
+ *     textOn/textOff -- 当按钮的状态 打开/关闭 时显示的文本
  * +-VideoView -- 
  * +-WebView -- 内置浏览器控件，可直接加载网页。为响应超链接功能，调用 setWebViewClient 方法设置自定义的 WebViewClient 子类实例
  *     getSettings().setJavaScriptEnabled(true) -- 更改设置
  *     loadUrl -- 加载指定的URL地址网页
  * +-Window
  *     setFormat -- 设置窗口特征，如 PixelFormat.TRANSLUCENT(半透明)， 需要在 setContentView 之前调用
+ * +-ZoomButton -- 放大/缩小 按钮，Android系统提供了 @android:drawable/btn_minus,btn_plus 两个资源，只需指定其 src 属性即可
+ * +-ZoomControls -- 同时组合了 放大、缩小 两个按钮，并可分别绑定不同的事件监听器
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
@@ -152,7 +188,7 @@ import android.test.AndroidTestCase;
  *   +-LinearLayout -- 线型布局，按照垂直或者水平方向布局组件。注意：水平排列时不会换行显示多余的组件。
  *       background -- "@drawable/testpic",
  *       divider -- 垂直布局时两个按钮之间的分隔条(Drawable对象)
- *       layout_gravity -- 设置该子元素在父容器中的对齐方式
+ *       layout_gravity -- 设置该子元素在父容器中的对齐方式，如 center_horizontal
  *       orientation -- 排列方式, 如   vertical(垂直排列，默认值),horizontal
  *       layout_weight -- 权重
  *       layout_alignParentLeft/layout_alignParentTop/ -- true 或 false
@@ -271,7 +307,6 @@ public class UITester extends AndroidTestCase {
     }
     protected void setUp() throws Exception {
         super.setUp();
-        
     }
 
     protected void tearDown() throws Exception {
@@ -327,7 +362,23 @@ public class UITester extends AndroidTestCase {
          *******************************************************************************************/
     }
     
-
+    public void testTouchImage(){
+    	//setOnTouchListener -- 在图片上通过触摸更改位置、大小等(不完整， 而且可能会有性能问题？)
+    	/*
+    	public boolean OnTouch(View view, MotionEvent event){
+	    	ImageView image1 = new ImageView();
+	    	BitmapDrawable bitmapDrawable = (BitmapDrawable)image1.getDrawable();
+	    	Bitmap bitmap = bitmapDrawable.getBitmap();  //获取位图
+	    	double scale  = bitmap.getWidth() / 320.0; // 获得缩放比例
+	    	//计算要显示的图片的开始点（注意增加范围检查）
+	    	int x = (int)(event.getX() * scale);
+	    	int y = (int)(event.getY() * scale);
+	    	image2.setImageBitmap(Bitmap.createBitmap(bitmap, x, y, 120, 120));  //从指定开始位置创建要显示的子位图，并显示
+	    	return false;
+    	}
+    	*/
+    }
+    
     public void GridViewDisplayImageTester(){
         //使用 BaseAdapter 类，重写其中的方法( 如 getView 来设置图片显示格式 )
         /********************************************************************************************

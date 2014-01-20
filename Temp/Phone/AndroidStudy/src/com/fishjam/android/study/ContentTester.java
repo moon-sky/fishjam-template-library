@@ -1,5 +1,7 @@
 package com.fishjam.android.study;
+import android.test.ActivityTestCase;
 import android.test.AndroidTestCase;
+import android.widget.ArrayAdapter;
 
 
 /***************************************************************************************************************************************
@@ -41,8 +43,9 @@ import android.test.AndroidTestCase;
  *     
  * Adapter -- 适配器接口
  *   BaseAdapter -- 自定义适配器的基类，一般从该类继承，作为Module和View之间的桥梁,其中实现 getCount,getItem,getView等方法。
- *   ArrayAdapter
- *   SimpleCursorAdapter 
+ *   ArrayAdapter -- 常用于将数组或List集合的多个值包装成多个列表项
+ *   SimpleCursorAdapter -- 可用于将List集合的多个对象包装成多个列表项
+ *   SimpleCursorAdapter -- 包装Cursor提供的数据
  *     
  * Intent/IntentFilter -- 不同组件之间通信的载体
  *   显式Intent -- 明确指定需要启动或触发的组件的类名
@@ -55,7 +58,15 @@ import android.test.AndroidTestCase;
 
  **************************************************************************************************************************************/
 
-public class ContentTester  extends AndroidTestCase{
+public class ContentTester  extends ActivityTestCase{
+	public void testArrayAdapter(){
+		/*
+		String [] booksStrings = {"book1" , "book2", "book3"};
+		ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity() , this, R.layout.array_item, booksStrings);
+		list1.setAdapter(adapter1);
+		*/
+	}
+	
 	public void ListActivityCursorTester(){
 		
 		/*********************************************************************************************************

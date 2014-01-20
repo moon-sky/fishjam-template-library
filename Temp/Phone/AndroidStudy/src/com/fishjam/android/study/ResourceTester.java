@@ -33,6 +33,9 @@ import android.test.AndroidTestCase;
  *   或者通过 getResources().getStringArray(R.array.items_irdc_dialog) 返回 String[] 。
  *   示例： <array name="items_irdc_dialog"><item>中餐</item><item>日式火锅</item><item>巴西烧烤</item></array>
  *   
+ * 字符串数组
+ *   <resources> <string-array name="books"> <item>xxxx</item></string-array></resources>
+ *   
  * 颜色( #Alpha-Red-Green-Blue 格式), 如： #RGB, #ARGB, #RRGGBB, #AARRGGBB， 代码中获得颜色方法：Resources.getColor
  *   定义名为color.xml的文件,放在values目录下,然后可以main.xml中使用:如 android:background="@drawable/white" 
  *      <resources>  //在 graphics.Color 中定义了默认的颜色常数

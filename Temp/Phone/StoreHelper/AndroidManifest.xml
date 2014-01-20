@@ -25,6 +25,9 @@
         <activity
             android:name="com.fishjam.storehelper.ImageActivity">
         </activity>
+        <activity
+            android:name="com.fishjam.storehelper.PositionActivity">
+        </activity>
     </application>
 
 </manifest>

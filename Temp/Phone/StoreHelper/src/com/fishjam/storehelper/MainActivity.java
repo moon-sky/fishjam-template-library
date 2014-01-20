@@ -15,7 +15,47 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	private TextView mTextView;
-	private Button btnView;
+	private Button mbtnView;
+	private Button mbtnScan;
+	private Button mbtnViewFloor;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		
+		mTextView = (TextView)findViewById(R.id.textView1);
+		mTextView.setText("Wait For Result");
+		
+		mbtnScan = (Button)findViewById(R.id.btnScan);
+		mbtnScan.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				IntentIntegrator intentInte = new IntentIntegrator(MainActivity.this);
+				intentInte.initiateScan();
+			}
+		});
+
+		mbtnView = (Button)findViewById(R.id.btnViewImage);
+		mbtnView.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, ImageActivity.class);
+				startActivity(intent);
+			}
+		});
+		
+		mbtnViewFloor = (Button)findViewById(R.id.btnViewFloor);
+		mbtnViewFloor.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, PositionActivity.class);
+				intent.putExtra("curPosition", new int[] { 100, 200});
+				startActivity(intent);
+			}
+		});
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		 IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
@@ -24,33 +64,7 @@ public class MainActivity extends Activity {
 		}
 		super.onActivityResult(requestCode, resultCode, intent);
 	}
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		mTextView = (TextView)findViewById(R.id.textView1);
-		mTextView.setText("Wait For Result");
-		Button btn1 = (Button)findViewById(R.id.button1);
-		btn1.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				IntentIntegrator intentInte = new IntentIntegrator(MainActivity.this);
-				intentInte.initiateScan();
-			}
-		});
-
-		btnView = (Button)findViewById(R.id.btnViewImage);
-		
-		btnView.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this, ImageActivity.class);
-				startActivity(intent);
-			}
-		});
-	}
-
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
