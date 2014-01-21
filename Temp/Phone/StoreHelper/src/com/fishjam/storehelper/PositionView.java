@@ -7,38 +7,54 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
-
+class PositionInfo
+{
+	public int nFloor;
+	public Point ptPosition = new Point();
+}
 
 public class PositionView extends ImageView {
-	private int mCurPositionX = 0;
-	private int mCurPositionY = 0;
+	//private int mCurPositionX = 0;
+	//private int mCurPositionY = 0;
+	PositionInfo mPositionInfo = new PositionInfo();
+	Paint mPaint = new Paint();
+	
+	int [] FloorNumber = {
+			R.raw.floor_1,
+			R.raw.floor_2
+	};
 	
 	public PositionView(Context context) {
 		super(context);
+		mPositionInfo.nFloor = -1;
 		setAdjustViewBounds(true);
-		Resources resources = getResources();
-		Drawable drawFloor =  resources.getDrawable(R.raw.floor_1);
-		setImageDrawable(drawFloor);
+		
 		//setBackgroundDrawable(drawFlow);
 	}
 	
-	public void SetPosition(int x, int y)
+	public void SetPosition(PositionInfo posInfo)
 	{
-		mCurPositionX = x;
-		mCurPositionY = y;
+		//if(mPositionInfo.nFloor != posInfo.nFloor){
+			Resources resources = getResources();
+			Drawable drawFloor =  resources.getDrawable(FloorNumber[posInfo.nFloor]);
+			setImageDrawable(drawFloor);
+		//}
+		mPositionInfo = posInfo;
+		
 		postInvalidate();
 	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		if (mCurPositionX != 0 && mCurPositionY != 0) {
-			Paint paint = new Paint();
-			paint.setColor(getResources().getColor(android.R.color.holo_blue_bright));
-			canvas.drawCircle(mCurPositionX,  mCurPositionY, 10, paint);
+		if (mPositionInfo.ptPosition.x != 0 && mPositionInfo.ptPosition.y != 0) {
+			//paint.setColor(getResources().getColor(R.drawable.red));
+			mPaint.setColor(getResources().getColor(R.drawable.red));
+			canvas.drawCircle(mPositionInfo.ptPosition.x, mPositionInfo.ptPosition.y, 10, mPaint);
 		}
 	}
 	

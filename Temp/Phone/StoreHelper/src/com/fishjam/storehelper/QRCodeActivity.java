@@ -1,5 +1,19 @@
 package com.fishjam.storehelper;
 
+import android.app.Activity;
+import android.os.Bundle;
+
+
+public class QRCodeActivity extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+	}
+
+}
+/*
 import com.google.zxing.client.android.CaptureActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -43,5 +57,5 @@ public class QRCodeActivity extends CaptureActivity {
 			return;
 		}
 	}
-
 }
+*/

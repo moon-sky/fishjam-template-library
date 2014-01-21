@@ -29,7 +29,7 @@ import android.test.AndroidTestCase;
  *      dex2jar.bat classes.dex  后会生成 classes_dex2jar.jar
  *   3.将 jar 解压 或使用 jd-gui 查看文件 
  * 
- * ApkTool(https://code.google.com/p/android-apktool/) -- 反编译生成程序的源代码和图片、XML配置、语言资源
+ * ApkTool(https://code.google.com/p/android-apktool/) -- 反编译生成程序的源代码和图片、XML配置、语言资源(已经解密)
  *   反编译： apktool.bat d -f <apk文件> [输出文件夹] -- 
  *                反编译后其内部的 .smali 文件就是 davlik 源码? 
  *   重新打包:  apktool.bat  b <文件夹>  -- 通常可用于修改后重新打包？

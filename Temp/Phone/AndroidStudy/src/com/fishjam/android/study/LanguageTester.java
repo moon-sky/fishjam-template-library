@@ -9,6 +9,27 @@ import junit.framework.Assert;
 import java.util.Collection;
 
 /***************************************************************************************************************************************
+ * Android 的条件编译
+ *   Java 语言本身没有引入条件编译的功能，根据Java编译器的优化和布尔常量(final Boolean)的机制，对于条件表达式中永远为false的语句，
+ *   编译器将部队条件覆盖的代码段生成字节码(不编译进结果文件) 。如：
+ *      final boolean bDebug = false;
+ *      if(bDebug) { xxxxx -- 编译时会被优化掉 }
+ *   可以定义一个纯数据的配置类来控制，如：
+ *      public class AppConfig { public static final boolean bDebug = true; .... }
+ *      然后在代码中直接使用这些 final 变量 -- if(AppConfig.bDebug) { ... }
+ *
+ *  TODO:使用类似方法，可以使用其他API读取配置来条件编译？ 
+ *     系统会生成一个 BuildConfig 类，其中有 public final static boolean DEBUG = true;
+ *     
+ *   system.prop(Android源码编译时使用？) -- 通过 Key=Value 键值对 的方式配置系统属性，
+ *   通过 android.os.SystemProperties 类读取其中内容，可实现根据配置文件来条件编译。
+ *   注意：SystemProperties 是非标准的SDK接口，如要使用，在 Android.mk 文件中不能定义 LOCAL_SDK_VERION 变量(该变量表示应用只能使用标准的SDK接口)
+ *     如：./build/target/board/generic/system.prop 文件(编译时，编译脚本会根据该文件生成  build.prop 文件)
+ *     private static final boolean bSupportBluetooth = SystemProperties.getBoolean("ro.Gallery.bSupportBluetooth", false);
+ *     if(bSupportBluetooth) { ... } 
+***************************************************************************************************************************************/
+
+/***************************************************************************************************************************************
  * Android语法
  *  1.Android中的命名规则采用 mXXXX 的方式（没有下划线）
  *  
