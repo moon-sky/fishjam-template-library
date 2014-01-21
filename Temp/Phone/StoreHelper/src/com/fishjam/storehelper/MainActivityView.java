@@ -8,6 +8,7 @@ import java.util.Map;
 import android.R.anim;
 import android.R.integer;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 public class MainActivityView extends Activity {
 	private static final String TAG = MainActivityView.class.getName();
@@ -29,6 +31,7 @@ public class MainActivityView extends Activity {
 		
 		mStartIconInfos = new StartIconInfo[]{
 			new FindCarIconItem(this),
+			new CameraParamIconItem(this),
 		};
 		
 		ArrayList<Map<String, Object>> listItems = new ArrayList<Map<String,Object>>();
@@ -41,7 +44,6 @@ public class MainActivityView extends Activity {
 			
 		mViewStartIcons = (GridView)findViewById(R.id.view_start_icons);
 		mViewStartIcons.setOnItemClickListener(new OnItemClickListener() {
-
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
@@ -57,5 +59,21 @@ public class MainActivityView extends Activity {
 		
 	}
 	
-	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == RESULT_OK) {
+			Bundle bundle = data.getExtras();
+			String scanResult = bundle.getString("result");
+			
+			
+			Intent intent = new Intent(MainActivityView.this, PositionActivity.class);
+			intent.putExtra(PositionActivity.KEY_CUR_POSITION, new int[] { 150, 200});
+			int nFloor = 0;
+			intent.putExtra(PositionActivity.KEY_FLOOR,  nFloor);
+			startActivity(intent);
+
+			Toast.makeText(this,  scanResult, Toast.LENGTH_LONG).show();
+		}
+	}
 }

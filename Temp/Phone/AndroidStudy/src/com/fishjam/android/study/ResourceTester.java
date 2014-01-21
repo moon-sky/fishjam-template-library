@@ -23,6 +23,8 @@ import android.test.AndroidTestCase;
  *   其中分为 attr(属性), drawable(图片资源)、layout(页面布局)、string等多个静态内部类, public final class R { xxxx }，
  *   代码中引用资源时： R.资源类型.资源名称
  *   
+ *   ? layout 时的顺序：？  setFrame -> layout [ onLayout ]-> 
+ *   
  * 系统提供的资源： android.R.资源类型.资源名称, 如 android.R.anim.fade_in(系统预定义动画); android.R.string.cancel(系统预定义的字符串 -- 可自动支持多语言?)
  *   Context.getString()/
  *   资源文件中引用时： "@资源类型.资源名称"

@@ -8,6 +8,7 @@ import android.widget.ImageView.ScaleType;
 public class PositionActivity extends Activity{
 	static final String KEY_CUR_POSITION = "curPosition";
 	static final String KEY_FLOOR = "Floor";
+	//static final String KEY_CODE = "Code";
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

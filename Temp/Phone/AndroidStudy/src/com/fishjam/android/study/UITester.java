@@ -5,6 +5,7 @@ import android.R.integer;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.test.AndroidTestCase;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -80,7 +81,10 @@ import android.widget.ImageView;
 
 /***************************************************************************************************************************************
  * View事件
- *     onTouchEvent() -- 当发生触摸屏事件时的回调，switch(event.getAction()) 来判断按键状态(down,move,up 等), getX/getY 获取位置
+ *     onTouchEvent() -- 当发生触摸屏事件时的回调，switch(event.getAction() & MotionEvent.ACTION_MASK) 来判断按键状态(down,move,up 等), 
+ *     getX(相对于自身左上角的坐标)/getRawX(相对于屏幕左上角的坐标) 等方法获取位置。
+ *       单点：ACTION_DOWN -> ACTION_MOVE -> ACTION_UP
+ *       多点：ACTION_DOWN -> ACTION_POINTER_DOWN(getPointerCount == 2) -> ACTION_MOVE -> ACTION_POINTER_UP -> ACTION_UP
  * View属性
  *   tag -- 为组件设置I个字符串类型的tag值，然后可通过 getTag()获取该值 或通过 findViewWithTag 找到该组件
  *   
@@ -389,7 +393,7 @@ public class UITester extends AndroidTestCase {
     public void testTouchImage(){
     	//setOnTouchListener -- 在图片上通过触摸更改位置、大小等(不完整， 而且可能会有性能问题？)
     	/*
-    	public boolean OnTouch(View view, MotionEvent event){
+    	public boolean onTouchEvent(View view, MotionEvent event){
 	    	ImageView image1 = new ImageView();
 	    	BitmapDrawable bitmapDrawable = (BitmapDrawable)image1.getDrawable();
 	    	Bitmap bitmap = bitmapDrawable.getBitmap();  //获取位图

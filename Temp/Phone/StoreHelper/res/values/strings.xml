@@ -7,4 +7,6 @@
     <string name="str_startImage">StartImageActivity</string>
     <string name="str_Scan">Scan</string>
     <string name="viewflow">viewFlow</string>
+    <string name="findCar">找车位</string>
+    <string name="cameraParam">摄像头参数</string>
 </resources>

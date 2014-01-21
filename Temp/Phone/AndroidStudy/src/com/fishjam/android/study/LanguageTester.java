@@ -4,6 +4,7 @@ import java.util.Date;
 
 import android.R.string;
 import android.test.AndroidTestCase;
+import android.util.FloatMath;
 import android.util.Log;
 import junit.framework.Assert;
 import java.util.Collection;
@@ -75,6 +76,8 @@ public class LanguageTester  extends AndroidTestCase{
 		//将Double进行四舍五入
 		//NumberFormat formatter = new DecimalFormat("0.00");
 	    //String s=formatter.format(num);
+		
+		assertEquals(FloatMath.sqrt(100), 10.0);  //平方根
 	}
 	
 	public void testTemplate(){

@@ -73,7 +73,7 @@ import android.test.AndroidTestCase;
  *   
  * 环境搭建 （需要 Apache Ant 1.7 以上 ？) -- JDK + Eclipse + Android SDK + ADT
  *   1.下载安装JDK -- jdk-6u16-windows-i586.exe/jdk-7u45-windows-i586.exe, 
- *     设置Java环境变量(%JAVA_HOME%, %CLASSPATH%值为  "%JAVA_HOME%\lib\tools.jar;%JAVA_HOME%\lib\dt.jar;.", 加入path)
+ *     设置Java环境变量(%JAVA_HOME%, %CLASSPATH%值为  ".;%JAVA_HOME%\lib\tools.jar;%JAVA_HOME%\lib\dt.jar", 加入path)
  *   2.解压Ant, 设置 ANT_HOME 环境变量，将 %ANT_HOME%\bin 路径加入 PATH，(设置环境变量?)
  *   3.下载解压Eclipse -- http://www.eclipse.org/downloads/, 一般可以下载 Eclipse for Java EE Developers
  *   4.解压Android SDK(91M) -- http://developer.android.com/sdk/index.html，1.6以后只提供了在线安装
@@ -87,7 +87,8 @@ import android.test.AndroidTestCase;
  *   
  *   TODO:
  *     1.需要安装 Tomcat(使用解压缩的安装方式),安装完毕后将 jsp-api.jar,servlet-api.jar 两个文件添加到 %CLASSPATH% 变量后;
- *       Web应用复制到 %TOMCAT_HOME%\webapps 目录下，然后进入 build.xml 所在路径，执行 ant compile 来编译应用
+ *       Web应用复制到 %TOMCAT_HOME%\webapps 目录下，然后进入 build.xml 所在路径，执行 ant compile 来编译应用。
+ *       启动Tomcat服务器，通过浏览器即可访问该应用
  *     
  *   1.Eclipse 
  *     更改字体： Window-> Prefrences -> General -> Appearance -> Colors and Fonts -> Text Font, 

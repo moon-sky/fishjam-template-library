@@ -53,7 +53,7 @@ public class PositionView extends ImageView {
 		super.onDraw(canvas);
 		if (mPositionInfo.ptPosition.x != 0 && mPositionInfo.ptPosition.y != 0) {
 			//paint.setColor(getResources().getColor(R.drawable.red));
-			mPaint.setColor(getResources().getColor(R.drawable.red));
+			mPaint.setColor(getResources().getColor(R.color.red));
 			canvas.drawCircle(mPositionInfo.ptPosition.x, mPositionInfo.ptPosition.y, 10, mPaint);
 		}
 	}
