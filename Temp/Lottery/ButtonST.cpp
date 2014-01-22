@@ -90,7 +90,8 @@ void CButtonST::FreeResources(bool bCheckFor0)
 		// Note: the following two lines MUST be here! even if
 		// BoundChecker says they are unnecessary!
 		if (m_csIcons[0].hIcon != 0) { ::DeleteObject(m_csIcons[0].hIcon); }
-		if (m_csIcons[1].hIcon != 0) { ::DeleteObject(m_csIcons[1].hIcon); }
+        if (m_csIcons[1].hIcon != 0) { ::DeleteObject(m_csIcons[1].hIcon); }
+        if (m_csIcons[2].hIcon != 0) { ::DeleteObject(m_csIcons[2].hIcon); }
 		// Destroy bitmaps
 		if (m_csBitmaps[0].hBitmap != 0) { m_csBitmaps[0].hBitmap.DeleteObject(); }
 		if (m_csBitmaps[1].hBitmap != 0) { m_csBitmaps[1].hBitmap.DeleteObject(); }
@@ -103,10 +104,11 @@ void CButtonST::FreeResources(bool bCheckFor0)
 } // End of FreeResources
 
 
-DWORD CButtonST::SetIcon(_U_STRINGorID nIconInId, _U_STRINGorID nIconOutId, HMODULE rsrcModule)
+DWORD CButtonST::SetIcon(_U_STRINGorID nIconInId, _U_STRINGorID nIconOutId, _U_STRINGorID nIconDisable, HMODULE rsrcModule)
 {
 	HICON		hIconIn;
 	HICON		hIconOut;
+    HICON       hIconDisable;
 	HINSTANCE	hInstResource;
 
 	// Find correct resource handle
@@ -115,23 +117,28 @@ DWORD CButtonST::SetIcon(_U_STRINGorID nIconInId, _U_STRINGorID nIconOutId, HMOD
 	hIconIn = (HICON)::LoadImage(hInstResource, nIconInId.m_lpstr, IMAGE_ICON, 0, 0, 0);
   	// Set icon when the mouse is OUT the button
 	hIconOut = (HICON)::LoadImage(hInstResource, nIconOutId.m_lpstr, IMAGE_ICON, 0, 0, 0);
-	return SetIcon(hIconIn, hIconOut);
+
+    hIconDisable = (HICON)::LoadImage(hInstResource, nIconDisable.m_lpstr, IMAGE_ICON, 0, 0, 0);
+	return SetIcon(hIconIn, hIconOut, hIconDisable);
 }
 
-DWORD CButtonST::SetIcon(HIMAGELIST imagelist, int idxIn, int idxOut)
+DWORD CButtonST::SetIcon(HIMAGELIST imagelist, int idxIn, int idxOut, int idxDisable)
 {
 	HICON		hIconIn;
 	HICON		hIconOut;
+    HICON       hIconDisable;
 	CImageList	il(imagelist);
 
 	// Set icon when the mouse is IN the button
 	hIconIn = il.GetIcon(idxIn, ILD_TRANSPARENT);
   	// Set icon when the mouse is OUT the button
 	hIconOut = il.GetIcon(idxOut, ILD_TRANSPARENT);
-	return SetIcon(hIconIn, hIconOut);
+    hIconDisable = il.GetIcon(idxDisable, ILD_TRANSPARENT);
+
+	return SetIcon(hIconIn, hIconOut, hIconDisable);
 }
 
-DWORD CButtonST::SetIcon(HICON hIconIn, HICON hIconOut)
+DWORD CButtonST::SetIcon(HICON hIconIn, HICON hIconOut, HICON hIconDisable)
 {
 	bool		bRetValue;
 	ICONINFO	ii;
@@ -170,6 +177,22 @@ DWORD CButtonST::SetIcon(HICON hIconIn, HICON hIconOut)
 			::DeleteObject(ii.hbmMask);
 			::DeleteObject(ii.hbmColor);
 			}
+        if (hIconDisable != 0)
+        {
+            m_csIcons[2].hIcon = hIconDisable;
+            // Get icon dimension
+            ZeroMemory(&ii, sizeof(ICONINFO));
+            bRetValue = (::GetIconInfo(hIconDisable, &ii) != 0);
+            if (!bRetValue)
+            {
+                FreeResources();
+                return BTNST_INVALIDRESOURCE;
+            }
+            m_csIcons[2].dwWidth	= (DWORD)(ii.xHotspot * 2);
+            m_csIcons[2].dwHeight	= (DWORD)(ii.yHotspot * 2);
+            ::DeleteObject(ii.hbmMask);
+            ::DeleteObject(ii.hbmColor);
+        }
 		}
 	if (IsWindow()) { RedrawWindow(); }
 	return BTNST_OK;
@@ -543,7 +566,11 @@ void CButtonST::DrawTheIcon(CDCHandle pDC, bool bHasTitle, RECT &rpItem, CRect &
 	BYTE byIndex = 0;
 
 	// Select the icon to use
-	if (m_bIsCheckBox)
+    if (bIsDisabled)
+    {
+        byIndex = (m_csIcons[2].hIcon == NULL ? 0 : 2);
+    }
+	else if (m_bIsCheckBox)
 		{
 		if (bIsPressed)
 			{
@@ -554,7 +581,7 @@ void CButtonST::DrawTheIcon(CDCHandle pDC, bool bHasTitle, RECT &rpItem, CRect &
 			byIndex = (m_csIcons[1].hIcon == NULL ? 0 : 1);
 			}
 		}
-	else
+	else 
 		{
 		if (m_bMouseOnButton || bIsPressed)
 			{
@@ -572,7 +599,7 @@ void CButtonST::DrawTheIcon(CDCHandle pDC, bool bHasTitle, RECT &rpItem, CRect &
 	pDC.DrawState(
 		rImage.TopLeft(), rImage.Size(), 
 		m_csIcons[byIndex].hIcon,
-		(bIsDisabled ? DSS_DISABLED : DSS_NORMAL), 
+		/*(bIsDisabled ? DSS_DISABLED :*/ DSS_NORMAL, 
 		0);
 }
 

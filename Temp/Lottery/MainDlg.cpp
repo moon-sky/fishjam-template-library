@@ -18,6 +18,7 @@ CMainDlg::CMainDlg()
 #endif 
     m_pCalcRect = CFCalcRect::GetCalcRectObject(CFCalcRect::modeAutoFit);
     m_dwImageCount = 0;
+    m_pCurLotteryInfo = NULL;
 }
 
 CMainDlg::~CMainDlg()
@@ -51,25 +52,31 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
     //rcBtnStart.bottom = rcBtnStart.top + 128;
     //m_btnStart.SetWindowPos(NULL, rcBtnStart, SWP_NOMOVE | SWP_NOZORDER);
 
-    //m_btnStart.SetWindowText(TEXT(""));
-    //m_btnStart.SetIcon(IDI_ICON1,IDI_ICON2);
-    //m_btnStart.SetFlat(true);
+    CRect rcClient;
+    m_btnStart.GetWindowRect(&rcClient);
+    ScreenToClient(rcClient);
+    rcClient.right = rcClient.left + IMAGE_WIDTH * 2;
+    rcClient.bottom = rcClient.top + IMAGE_HEIGHT;
+
+    m_btnStart.MoveWindow(&rcClient, FALSE);
+    m_btnStart.SetWindowText(TEXT(""));
+    m_btnStart.SetIcon(IDI_ICON_CLICK, IDI_ICON_NORMAL, IDI_ICON_DISABLE);
+    m_btnStart.SetFlat(true);
     //m_btnStart.SetColor(CButtonST::BTNST_COLOR_BK_IN, crBtnColor);
-    //m_btnStart.SetTooltipText(TEXT("³é½±"));
+    m_btnStart.SetTooltipText(TEXT("³é½±"));
 
-    API_VERIFY(FTL::CFGdiUtil::LoadPNGFromResource(m_pImage, _Module.GetResourceInstance(), IDB_PNG_START_ALL));
-
-    API_VERIFY(m_imgList.Create(IMAGE_WIDTH, IMAGE_HEIGHT , ILC_COLOR32, 4, 1));
-    //API_VERIFY(m_imgList.Create(IDB_PNG_START_ALL, IMAGE_WIDTH, 1, CLR_NONE));
-    for (INT i = IDB_PNG2; i < IDB_PNG5; i++)
-    {
-        CImage image;
-        API_VERIFY(FTL::CFGdiUtil::LoadPNGFromResource(image, _Module.GetResourceInstance(), i));
-        if (bRet)
-        {
-            m_imgList.Add(image, CLR_NONE);
-        }
-    }
+    //API_VERIFY(FTL::CFGdiUtil::LoadPNGFromResource(m_pImage, _Module.GetResourceInstance(), IDB_PNG_START_ALL));
+    //API_VERIFY(m_imgList.Create(IMAGE_WIDTH, IMAGE_HEIGHT , ILC_COLOR32, 4, 1));
+    ////API_VERIFY(m_imgList.Create(IDB_PNG_START_ALL, IMAGE_WIDTH, 1, CLR_NONE));
+    //for (INT i = IDB_PNG2; i < IDB_PNG5; i++)
+    //{
+    //    CImage image;
+    //    API_VERIFY(FTL::CFGdiUtil::LoadPNGFromResource(image, _Module.GetResourceInstance(), i));
+    //    if (bRet)
+    //    {
+    //        m_imgList.Add(image, CLR_NONE);
+    //    }
+    //}
 
     
     //pThumbnail->GetHBITMAP(Color(255,255,255),&hBmp);  
@@ -83,8 +90,8 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
     //API_VERIFY(m_imgList.CreateFromImage(IDB_PNG_START_ALL, IMAGE_WIDTH, 1, 
     //    CLR_NONE, IMAGE_BITMAP, LR_CREATEDIBSECTION));
     ////m_btnStart.SetImageList()
-    m_btnStart.SetImageList(m_imgList);
-    m_btnStart.SetImages(0, 1, 2, 3);
+    //m_btnStart.SetImageList(m_imgList);
+    //m_btnStart.SetImages(0, 1, 2, 3);
 	return TRUE;
 }
 
@@ -99,23 +106,7 @@ BOOL CMainDlg::OnEraseBkgnd(CDCHandle dc)
     BOOL bRet = FALSE;
     if (m_StaicPic.m_hWnd)
     {
-        CRect rcClient;
-        API_VERIFY(GetClientRect(rcClient));
-        
-        dc.FillSolidRect(rcClient,GetSysColor(COLOR_BTNFACE)); // RGB(0x127, 0x127, 0x127));
-
-        CRect rcStaticPic;
-        m_StaicPic.GetWindowRect(rcStaticPic);
-        API_VERIFY(ScreenToClient(rcStaticPic));
-
-        CMemoryDC memDC(dc, rcStaticPic);
-        CFont font;
-        font.CreatePointFont(200, TEXT("ËÎÌå"));
-        HFONT hOldFont = memDC.SelectFont(font);
-        memDC.FillSolidRect(rcStaticPic, RGB(0, 0, 255));
-        memDC.SetBkMode(TRANSPARENT);
-        //memDC.DrawText(TEXT("×£·¶×ÚÁÖ¡¢ÑîÀ½½á»é¿ìÀÖ£¡"), -1, rcStaticPic, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-        memDC.SelectFont(hOldFont);
+        drawLotteryInfo(dc);
     }
     
     return TRUE;
@@ -153,7 +144,7 @@ void CMainDlg::OnBtnInitClick(UINT uNotifyCode, int nID, CWindow wndCtl)
         m_strInitPath = dirBrowser.GetSelectPath();
         API_VERIFY(m_lotteryMgr.Stop());
         API_VERIFY(m_lotteryMgr.StopInit());
-        API_VERIFY(m_lotteryMgr.Init(m_hWnd, rcPic.Size(), m_strInitPath, TEXT("*.jpg;*.png;*.ico"), TRUE));
+        API_VERIFY(m_lotteryMgr.Init(m_hWnd, rcPic.Size(), m_strInitPath, TEXT("*.jpg;*.png;*.ico"), FALSE));
 
         _SetButtonStatus(TRUE, m_lotteryMgr.IsStarted(), m_lotteryMgr.IsPaused());
     }
@@ -163,7 +154,7 @@ void CMainDlg::OnBtnStartClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     if (!m_lotteryMgr.IsStarted())
     {
-        m_lotteryMgr.Start(100);
+        m_lotteryMgr.Start(150);
     }
     else
     {
@@ -220,36 +211,76 @@ LRESULT CMainDlg::OnInitLotteryComplete(UINT uMsg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-LRESULT CMainDlg::OnUpdateLotteryInfo(UINT uMsg, WPARAM wParam, LPARAM lParam)
+void CMainDlg::drawLotteryInfo(CDCHandle dc)
 {
     BOOL bRet = FALSE;
-    LotteryInfo* pInfo = (LotteryInfo*)wParam;
-    FTLASSERT(pInfo);
-    if (pInfo)
-    {
-        CRect rcPic;
-        CSize szPic;
+    CRect rcPic;
+    m_StaicPic.GetClientRect(&rcPic);
+    CDC dcPic = m_StaicPic.GetDC();
+    //CRect rcStaticPic;
+    //m_StaicPic.GetWindowRect(rcStaticPic);
+    //API_VERIFY(ScreenToClient(rcStaticPic));
 
-        m_StaicPic.GetClientRect(&rcPic);
-        szPic.cx = pInfo->imgThumbnail.GetWidth();
-        szPic.cy = pInfo->imgThumbnail.GetHeight();
+    CRect rcClient;
+    API_VERIFY(GetClientRect(rcClient));
+    if (dc.m_hDC)
+    {
+        if (m_pCurLotteryInfo)
+        {
+            CRect rcPicInWindow;
+            m_StaicPic.GetWindowRect(rcPicInWindow);
+            ScreenToClient(rcPicInWindow);
+            dc.ExcludeClipRect(rcPicInWindow);
+        }
+        dc.FillSolidRect(rcClient, GetSysColor(COLOR_BTNFACE)); // RGB(0x127, 0x127, 0x127));
+    }
+    else
+    {
+        CClientDC dcClient(m_hWnd);
+        dcClient.ExcludeClipRect(rcPic);
+        dcClient.FillSolidRect(rcClient, GetSysColor(COLOR_BTNFACE)); // RGB(0x127, 0x127, 0x127));
+    }
+
+    if (m_pCurLotteryInfo)
+    {
+        CSize szPic;
+        szPic.cx = m_pCurLotteryInfo->imgThumbnail.GetWidth();
+        szPic.cy = m_pCurLotteryInfo->imgThumbnail.GetHeight();
 
         CRect rcDrawTarget = m_pCalcRect->GetFitRect(rcPic, szPic);
 
-        CDC dcPic = m_StaicPic.GetDC();
-
         CMemoryDC memDC(dcPic, rcPic);
-        memDC.FillSolidRect(rcPic, RGB(0, 0, 0));
+        memDC.FillSolidRect(rcPic, RGB(255, 0, 0));
 
-        API_VERIFY(pInfo->imgThumbnail.Draw(memDC.m_hDC, rcDrawTarget));
+        API_VERIFY(m_pCurLotteryInfo->imgThumbnail.Draw(memDC.m_hDC, rcDrawTarget));
 
-        CPath pathFileName(pInfo->strPicturePath);
+        CPath pathFileName(m_pCurLotteryInfo->strPicturePath);
         int nFileName =pathFileName.FindFileName();
         if (nFileName != -1)
         {
-            SetWindowText(pInfo->strPicturePath.Mid(nFileName));
+            SetWindowText(m_pCurLotteryInfo->strPicturePath.Mid(nFileName));
         }
     }
+    else
+    {
+        //CMemoryDC memDC(dcPic, rcStaticPic);
+        //CFont font;
+        //font.CreatePointFont(200, TEXT("ËÎÌå"));
+        //HFONT hOldFont = memDC.SelectFont(font);
+        //memDC.FillSolidRect(rcStaticPic, RGB(255, 0, 0));
+        //memDC.SetBkMode(TRANSPARENT);
+        //memDC.DrawText(TEXT("×£·¶×ÚÁÖ¡¢Ñîéª½á»é¿ìÀÖ£¡"), -1, rcStaticPic, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+        //memDC.SelectFont(hOldFont);
+
+    }
+}
+
+LRESULT CMainDlg::OnUpdateLotteryInfo(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    BOOL bRet = FALSE;
+    m_pCurLotteryInfo = (LotteryInfo*)wParam;
+    FTLASSERT(m_pCurLotteryInfo);
+    drawLotteryInfo(CDCHandle(NULL));
     return 0;
 }
 

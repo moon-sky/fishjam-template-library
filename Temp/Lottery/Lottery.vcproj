@@ -266,11 +266,23 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest"
 			>
 			<File
+				RelativePath=".\res\Click.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Disable.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\Lottery.ico"
 				>
 			</File>
 			<File
 				RelativePath=".\Lottery.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Normal.ico"
 				>
 			</File>
 			<File

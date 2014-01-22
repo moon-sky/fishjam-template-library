@@ -1,3 +1,38 @@
+AdapterView 的子类：GridView, Spinner, Gallery, AdapterViewFlipper 等
+
+ArrayAdapter 的的功能比较有限，每个列表项只能是TextView，一般只用于 AutoCompleteTextView 等文字的地方。 ArrayAdapter<String> aa = new ArrayAdapter<String>(this,...);
+BaseAdapter -- 扩展该类可以取得对Adapter最大的控制权(需要创建多少个列表项、每个列表项的组件都由开发者来决定)
+  TODO：可以用于性能优化？类似Windows 下的 virtual listview？
+  BaseAdapter adapter = new BaseAdapter() { int getCount{...}; Object getItem{...}; getItemId{...}; View getView{...} };
+  mList.setAdapter(adapter);
+
+SimpleAdapter -- 功能很强大，如可内嵌多个元素？
+  List<Map<String, Object>> listItems = new ArrayList<Map<String, Object>>(); 
+  Map<String, Object> listItem1 = new HashMap<Stirng, Object>(); listItem1.put("key", value); 
+  listItems.add(listItem1);
+  //核心：SimpleAdapter 将资源XML中的ID和HashMap中的Key关联起来，会自动将 指定ID的元素内容显示为 Key 对应的value值。
+  //  ListView -> n ListItem -> layout/simple_item.xml -> [ id -> key -> value ]
+  //  2.List<? extends Map<String, ? >> 类型的集合对象，每个 Map<String, ?> 对象生成一个列表项
+  //  3.界面布局XML文件对应的ID，每个列表项都是一个这种类型的组件
+  //  4.String[] 类型的参数，该参数决定提取Map<String, ?>对象中哪些key对应的value来生成列表项
+  //  5.int[] 类型的参数，决定填充哪些组件
+  SimpleAdapter simpleAdapter = new SimpleAdapter(this, listItems, R.layout.simple_item, new String[] { HashMap中的key }, new int[] { 资源ID });  
+  list.setAdapter(simpleAdapter);
+
+AdapterView 事件
+  setOnItemClickListener
+  setOnItemSelectedListener
+
+AutoCompleteTextView
+  completionHint/completionHintView -- 下拉菜单中的提示标题/提示标题视图
+  completionThreshold -- 至少输入几个字符才会显示提示
+  drapDownHeight -- 下拉菜单的高度
+MultiAutoCompleteTextView --  允许输入多个提示项，多个提示项以分隔符(通过 setTokenizer 方法设置)分隔
+  setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+
+
+--------------------------------------------------------------------------------
+
 iso8601 -- 日期时间的字符串标准(看用于网络传时间?),如 2007-03-01T13:00:00
 std::time(NULL)
 std::time_t StringToTime(std::string const& timeString)

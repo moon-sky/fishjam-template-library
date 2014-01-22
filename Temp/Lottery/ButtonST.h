@@ -79,11 +79,11 @@ public:
 	//! Sets the cursor of the button
 	bool SetBtnCursor(_U_STRINGorID nCursorId, HMODULE rsrcModule = 0);
 	//! Sets the icons of the button
-	DWORD SetIcon(HICON hIconIn, HICON hIconOut);
+	DWORD SetIcon(HICON hIconIn, HICON hIconOut, HICON hIconDisable);
 	//! Sets the icons of the button
-	DWORD SetIcon(_U_STRINGorID nIconInId, _U_STRINGorID nIconOutId = 0U, HMODULE rsrcModule = 0);
+	DWORD SetIcon(_U_STRINGorID nIconInId, _U_STRINGorID nIconOutId = 0U, _U_STRINGorID nIconDisable =0U, HMODULE rsrcModule = 0);
 	//! Set the icons of the buttons form an image list
-	DWORD SetIcon(HIMAGELIST imagelIst, int idxIn, int idxOut);
+	DWORD SetIcon(HIMAGELIST imagelIst, int idxIn, int idxOut, int idxDisable);
 	//! Sets the bitmaps of the button
 	DWORD SetBitmaps(HBITMAP hBitmapIn, COLORREF crTransColorIn, HBITMAP hBitmapOut, COLORREF crTransColorOut = 0);
 	//! Sets the bitmaps of the button
@@ -256,7 +256,7 @@ protected:
 	CBitmapHandle	m_pbmpOldBk;					//!< Original bitmap selected in m_dcBk
 	COLORREF		m_crColors[BTNST_MAX_COLORS];	//!< Coilors associated to the color types
 	TCHAR			m_szURL[_MAX_PATH];				//!< URL
-	STRUCT_ICONS	m_csIcons[2];					//!< icons used for drawing the button
+	STRUCT_ICONS	m_csIcons[3];					//!< icons used for drawing the button
 	STRUCT_BITMAPS	m_csBitmaps[2];					//!< bitmaps used for drawing the button
 
 };

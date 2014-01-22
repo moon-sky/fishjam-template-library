@@ -20,10 +20,11 @@ public class PositionActivity extends Activity{
 		
 		super.onCreate(savedInstanceState);
 		
+		/*
 		mImageSurfaceView = new DragImageSurfaceView(this);
 		setContentView(mImageSurfaceView);
 		
-		/*
+		//*/
 		PositionView positionView = new PositionView(this);
 		positionView.setScaleType(ScaleType.CENTER);
 		setContentView(positionView);

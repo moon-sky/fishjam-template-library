@@ -39,7 +39,7 @@ public class MainActivityView extends Activity {
 		mStartIconInfos = new StartIconInfo[]{
 			new FindCarIconItem(this),
 			new CameraParamIconItem(this),
-			new ViewFloorImage(this),
+			//new ViewFloorImage(this),
 		};
 		
 		ArrayList<Map<String, Object>> listItems = new ArrayList<Map<String,Object>>();
@@ -71,6 +71,7 @@ public class MainActivityView extends Activity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		
+		/*
 		 IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
 		 if (scanResult != null) {
 				//Bundle bundle = data.getExtras();
@@ -83,13 +84,10 @@ public class MainActivityView extends Activity {
 				
 			//mTextView.setText(scanResult.toString());
 		}
-		//super.onActivityResult(requestCode, resultCode, data);
-		
-		 /*
+  	 //*/
 		if (resultCode == RESULT_OK) {
 			Bundle bundle = data.getExtras();
 			String scanResult = bundle.getString("result");
-			
 			
 			Intent intent = new Intent(MainActivityView.this, PositionActivity.class);
 			intent.putExtra(PositionActivity.KEY_CUR_POSITION, new int[] { 150, 200});
@@ -99,6 +97,6 @@ public class MainActivityView extends Activity {
 
 			Toast.makeText(this,  scanResult, Toast.LENGTH_LONG).show();
 		}
-	   */
+	   //*/
 	}
 }

@@ -74,6 +74,7 @@ public:
     LRESULT OnUpdateLotteryInfo(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     void _SetButtonStatus(BOOL bIniting, BOOL bStarted, BOOL bPaused);
+    void drawLotteryInfo(CDCHandle dc);
 private:
     CSize       m_szThumbnail;
     CLotteryMgr m_lotteryMgr;
@@ -83,10 +84,10 @@ private:
     UINT        m_dwImageCount;
     //CButtonST   m_btnStart;
     CImageList m_imgList;
-
+    LotteryInfo*    m_pCurLotteryInfo;
     Gdiplus::Image* m_pImage;
-    CLayeredButton   m_btnStart;
-    //CButtonST m_btnStart;
+    //CLayeredButton   m_btnStart;
+    CButtonST m_btnStart;
     //CImageButton m_btnStart;
     //LayeredButton m_btnStart;
     //CConfigDlg dlg;

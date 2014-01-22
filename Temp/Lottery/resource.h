@@ -11,6 +11,12 @@
 #define IDB_PNG3                        216
 #define IDB_PNG4                        217
 #define IDB_PNG5                        218
+#define IDI_ICON1                       219
+#define IDI_ICON_DISABLE                219
+#define IDI_ICON2                       220
+#define IDI_ICON_NORMAL                 220
+#define IDI_ICON3                       221
+#define IDI_ICON_CLICK                  221
 #define IDC_BTN_INIT                    1000
 #define IDC_BTN_START                   1001
 #define IDC_BTN_PAUSE_RESUME            1002
@@ -24,7 +30,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        219
+#define _APS_NEXT_RESOURCE_VALUE        222
 #define _APS_NEXT_COMMAND_VALUE         32775
 #define _APS_NEXT_CONTROL_VALUE         1008
 #define _APS_NEXT_SYMED_VALUE           101

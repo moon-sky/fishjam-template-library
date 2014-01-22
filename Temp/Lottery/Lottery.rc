@@ -31,18 +31,6 @@ IDB_PNG2                PNG                     "res\\Click.png"
 IDB_PNG3                PNG                     "res\\Disable.png"
 IDB_PNG4                PNG                     "res\\Focus.png"
 IDB_PNG5                PNG                     "res\\Normal.png"
-#endif    // Chinese (P.R.C.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -52,31 +40,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\Lottery.ico"
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include ""atlres.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
+IDI_ICON_DISABLE        ICON                    "res\\Disable.ico"
+IDI_ICON_NORMAL         ICON                    "res\\Normal.ico"
+IDI_ICON_CLICK          ICON                    "res\\Click.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -96,14 +62,14 @@ END
 
 IDD_MAINDLG DIALOGEX 0, 0, 443, 255
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Lottery"
+CAPTION "抽奖"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    PUSHBUTTON      "Init",IDC_BTN_INIT,362,207,50,14
-    PUSHBUTTON      "Start",IDC_BTN_START,348,33,88,79
-    PUSHBUTTON      "Reset",IDC_BTN_RESET,361,229,50,14
+    PUSHBUTTON      "初始化",IDC_BTN_INIT,362,207,50,14
+    PUSHBUTTON      "开始",IDC_BTN_START,348,39,87,73
+    PUSHBUTTON      "重置",IDC_BTN_RESET,361,229,50,14
     CONTROL         "",IDC_STATIC_PIC,"Static",SS_BLACKFRAME | SS_CENTERIMAGE,17,23,325,220,WS_EX_TRANSPARENT
-    LTEXT           "Count:",IDC_STATIC,19,11,41,8,0,WS_EX_TRANSPARENT
+    LTEXT           "照片数:",IDC_STATIC,19,11,41,8,0,WS_EX_TRANSPARENT
     LTEXT           "0",IDC_STATIC_IMAGE_COUNT,71,11,35,11,0,WS_EX_TRANSPARENT
 END
 
@@ -284,6 +250,43 @@ STRINGTABLE
 BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""atlres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
