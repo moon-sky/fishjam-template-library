@@ -2,6 +2,7 @@ package com.fishjam.storehelper;
 
 import java.util.Random;
 
+import com.fishjam.storehelper.zxing.IntentIntegrator;
 import com.zxing.activity.CaptureActivity;
 
 import android.app.Activity;
@@ -23,8 +24,14 @@ public class FindCarIconItem extends StartIconInfo{
 	void onClick() {
 		super.onClick();
 
+		IntentIntegrator intentInte = new IntentIntegrator(mActivity);
+		intentInte.initiateScan();
+		
+		/*
 		Intent openCameraIntent = new Intent(mActivity, CaptureActivity.class);
 		mActivity.startActivityForResult(openCameraIntent, 0);
+		*/
+		
 		/*
 		Intent intent = new Intent(mContext, PositionActivity.class);
 		intent.putExtra(PositionActivity.KEY_CUR_POSITION, new int[] { 150, 200});

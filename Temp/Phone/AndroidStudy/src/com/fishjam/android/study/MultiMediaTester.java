@@ -1,6 +1,20 @@
 package com.fishjam.android.study;
 
-import android.test.AndroidTestCase;
+import java.io.InputStream;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.test.ActivityTestCase;
+
+/***************************************************************************************************************************************
+ * 最佳实践
+ *   1.加载图片
+ *     BitmapFactory.decodeStream 构造图片(不使用Java层的createBitmap，节约内存)
+ *     TODO: 该方法不会根据机器的各种分辨率来自动适应 ？
+ *   2.BitmapFactory.Options
+ *     读取图片时加上图片的Config参数，可以更有效减少加载的内存
+ *   3.显示图片 -- setImageBitmap ?
+***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
  * AudioManager
@@ -35,16 +49,22 @@ import android.test.AndroidTestCase;
  *     setPreviewDisplay(SurfaceHolder) -- 设置预览，可以在 SurfaceHolder.Callback.surfaceCreated 中调用
  *     setParameters() -> startPreview() -- 设置参数后进行预览，可以在 SurfaceHolder.Callback.surfaceChanged 中调用
  *     takePicture() -- 进行照相
- *   SurfaceView -- 实现照片预览的视图组件
+ *   SurfaceView -- 实现自绘的视图组件，具有很好的性能
  *   SurfaceHolder -- 界面控制接口，一般通过 SurfaceView.getHolder 获得，允许控制界面的尺寸、格式、像素，及监控界面尺寸的改变等
  *     Callback -- 内部回调接口，可获得界面改变消息(surfaceCreated, surfaceChanged, surfaceDestroyed )，通过 addCallback 设置
+ *     lockCanvas/unlockCanvasAndPost --锁定surface(可锁定部分范围)并返回可绘图的Canvas；绘制完成后解锁canvas并等待主线程更新
+ *       注意： unlockCanvasAndPost 后只是提交了更新请求，主线程可能尚未更新，因此绘制的内容会被覆盖。
+ *                为了使提交立即生效，可以 lockCanvas(new Rect(0, 0, 0, 0)) + unlockCanvasAndPost() 一次。
  *     setType() -- 设置类型，如 SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS
+ *     
  *     
  * 2D图形处理  -- android.graphics, android.view.animation 等包中
  *   图片: Drawable / Bitmap / BitmapFactory
  *     Bitmap
  *       createBitmap -- 根据参数创建位图
  *       extractAlpha -- 根据位图信息生成只有透明度没有颜色(即Alpha通道)的位图
+ *       isRecycle-- 判断图片内存是否已被回收
+ *       recycle -- 回收图片所占的内存
  *     Drawable -- 抽象基类，代表可以被绘制出来的某东西，常用于定制UI，其有多个子类: BitmapDrawable/ColorDrawable/ShapeDrawable/StateListDrawable 等
  *       使用方式:
  *         1.保存在工程中的图片文件, 如 ImageView.setImageResource(R.drawable.myImage); 
@@ -57,7 +77,8 @@ import android.test.AndroidTestCase;
  *             类似的有 decodeResource(getResources(), R.drawable.xxx);
  *                          decodeStream(context.getResources().openRawResource(xxx));
  *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //根据原始位图创建新视图  
- *   
+ *     BitmapFactory -- Bitmap的工厂类，具有 decodeFile/decodeResource/decodeStream 等多种方式来构造Bitmap
+ *     
  *   9Patch图片 -- 特殊的PNG图片(扩展名为 .9.png)，在原始图片四周各添加一个宽度为1像素的线条，这4条线决定了图片的缩放、显示规则。
  *     TODO: 似乎和Windows下的九宫格绘制不同。九宫格是缩放 # 字形内部； 而9Patch是缩放 # 字形外部 ？
  *     
@@ -110,7 +131,23 @@ import android.test.AndroidTestCase;
  *   outStream.close();
 ***************************************************************************************************************************************/
 
-public class MultiMediaTester extends AndroidTestCase {
-    public void test(){
+public class MultiMediaTester extends ActivityTestCase {
+    public void testLoadBitmap(){
+    	
+    	InputStream is = getActivity(). getResources().openRawResource(R.drawable.ic_launcher);
+        BitmapFactory.Options options=new BitmapFactory.Options();
+        options.inJustDecodeBounds = false;
+        
+        //缩放的比例，缩放是很难按准备的比例进行缩放的，其值表明缩放的倍数，SDK中建议其值是2的指数值,值越大会导致图片不清晰
+        options.inSampleSize = 4;   //width，hight设为原来的四分一，即整个图是原来的 16 分之一
+        
+      //以最省内存的方式读取本地资源的图片
+        options.inInputShareable = true;  
+        options.inPurgeable = true;  
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        
+        Bitmap btp =BitmapFactory.decodeStream(is,null,options);
     }
 }
+
+

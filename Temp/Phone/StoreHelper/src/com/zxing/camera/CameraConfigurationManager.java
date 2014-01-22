@@ -58,7 +58,7 @@ final class CameraConfigurationManager {
     screenResolution = new Point(display.getWidth(), display.getHeight());
     Log.d(TAG, "Screen resolution: " + screenResolution);
     cameraResolution = getCameraResolution(parameters, screenResolution);
-    Log.d(TAG, "Camera resolution: " + screenResolution);
+    Log.d(TAG, "Camera resolution: " + cameraResolution);
   }
 
   /**
@@ -143,10 +143,23 @@ final class CameraConfigurationManager {
         continue;
       }
 
+      if(newX == screenResolution.x && newY == screenResolution.y)
+      {
+    	  bestX = newX;
+    	  bestY = newY;
+    	  break;
+      }
+      else if(newX == screenResolution.y && newY == screenResolution.x)
+      {
+    	  bestX = newY;
+    	  bestY = newX;
+    	  break;
+      }
+      
       //.zxing 的源代码是横屏的,本作者的程序是坚屏的
       //zxing 作者的意图很明显,因为相机的预览像素不等于屏幕的显示像素,作者想找到最合适的.在预览方向和屏幕方向一致的情况下,差值最小的就是最优的.
-      //int newDiff = Math.abs(newX - screenResolution.x) + Math.abs(newY - screenResolution.y);
-      int newDiff = Math.abs(newY - screenResolution.x) + Math.abs(newX - screenResolution.y);
+      int newDiff = Math.abs(newX - screenResolution.x) + Math.abs(newY - screenResolution.y);
+      //int newDiff = Math.abs(newY - screenResolution.x) + Math.abs(newX - screenResolution.y);
       //boolean isScaleRight = ((double)newX / (double)screenResolution.y == (double)newY / (double)screenResolution.x);
       if (newDiff == 0) {
         bestX = newX;
@@ -157,7 +170,6 @@ final class CameraConfigurationManager {
         bestY = newY;
         diff = newDiff;
       }
-
     }
 
     if (bestX > 0 && bestY > 0) {

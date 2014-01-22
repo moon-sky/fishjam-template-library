@@ -13,6 +13,9 @@ import android.test.AndroidTestCase;
  * OutputStream
  *   write
  * InputStream 
+ * FileWriter 
+ * 
+ * String logdir  = Environment.getExternalStorageDirectory().getAbsolutePath()+ File.separator + "snda"+File.separator+"log" ; 
 ***************************************************************************************************************************************/
 
 public class IOTester extends AndroidTestCase {

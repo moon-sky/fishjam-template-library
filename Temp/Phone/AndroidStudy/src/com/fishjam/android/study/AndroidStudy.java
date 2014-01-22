@@ -41,7 +41,12 @@ import android.test.AndroidTestCase;
  * 
  * TODO: 
  *   1.SDK 版本 和 Google API 版本，两者有什么区别
- *   2.平台版本 和 API Level 。 获得API Level 的代码： Integer apiLevel = Integer.parseInt(VERSION.SDK); 
+ *   2.版本兼容 -- 使用 Android Support Library package 来保证来高版本sdk开发的向下兼容性，
+ *     使得高版本开发的程序在低版本OS上也能运行，但功能可能会退化(如 fragement ?) 
+ *     android-support-v4.jar -- 支持 1.6 及以后
+ *     android-support-v7.jar -- 支持 2.1 及以后，依赖于 -v4.jar 包(即两者同时包含)
+ *     android-support-v13.jar --支持3.2 及以后，通常在平板开发中才会使用
+ *   3.平台版本 和 API Level 。 获得API Level 的代码： Integer apiLevel = Integer.parseInt(VERSION.SDK); 
  *      平台版本				API Level				功能
  *     Android 4.4.2            19
  *     Android ???				18

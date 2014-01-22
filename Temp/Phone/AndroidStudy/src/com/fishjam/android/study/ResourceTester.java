@@ -20,7 +20,7 @@ import android.test.AndroidTestCase;
 /**************************************************************************************************************************************
  * Android提供了基于XML的界面构建方式，将界面和应用程序逻辑分离.xml文件放在 res(存放所有非代码资源 -- 图片、本地化字符串、XML布局文件等)目录下。
  *   使用名为"R.java"的文件来定义所有资源的索引，自动生成，不要更改。
- *   其中分为 attr(属性), drawable(图片资源)、layout(页面布局)、string等多个静态内部类, public final class R { xxxx }，
+ *   其中分为 attr(属性, declare-styleable), drawable(图片资源)、layout(页面布局)、string等多个静态内部类, public final class R { xxxx }，
  *   代码中引用资源时： R.资源类型.资源名称
  *   
  *   ? layout 时的顺序：？  setFrame -> layout [ onLayout ]-> 

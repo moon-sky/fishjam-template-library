@@ -4,8 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView.ScaleType;
+import com.fishjam.util.*;
+
 
 public class PositionActivity extends Activity{
+	DragImageSurfaceView mImageSurfaceView;
+	
 	static final String KEY_CUR_POSITION = "curPosition";
 	static final String KEY_FLOOR = "Floor";
 	//static final String KEY_CODE = "Code";
@@ -16,6 +20,10 @@ public class PositionActivity extends Activity{
 		
 		super.onCreate(savedInstanceState);
 		
+		mImageSurfaceView = new DragImageSurfaceView(this);
+		setContentView(mImageSurfaceView);
+		
+		/*
 		PositionView positionView = new PositionView(this);
 		positionView.setScaleType(ScaleType.CENTER);
 		setContentView(positionView);
@@ -28,6 +36,7 @@ public class PositionActivity extends Activity{
 			posInfo.ptPosition.set(curPosition[0], curPosition[1]);
 			positionView.SetPosition(posInfo);
 		}
+		//*/
 		
 	}
 

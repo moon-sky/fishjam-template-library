@@ -83,8 +83,18 @@ import android.test.AndroidTestCase;
  *   可以获取应用程序的信息(如名字,CacheSize、DataSize等),本质是从所有包的 AndroidManifest.xml 中解析数据?
  *   PackageItemInfo -- AndroidManifest.xml文件中所有节点的基类，有 ActivityInfo、ApplicationInfo、ServiceInfo 等多种子类
  *   示例：queryIntentActivities 可查询所有具备ACTION_MAIN和CATEGORY_LAUNCHER的Intent的应用程序，然后可让用户点击时启动应用(类似Home程序的Launcher)
+ *   
+ *   
+ * 
 ***************************************************************************************************************************************/
 
+/***************************************************************************************************************************************
+ * 虚拟机控制 -- TODO: 最好不要直接控制虚拟机参数
+ *    +-dalvik.system.VMRuntime
+ *        getRuntime() -- 获取当前的运行实例 
+ *        setTargetHeapUtilization() -- 增强程序堆内存的处理效率，如 0.75f
+ *        setMinimumHeapSize() -- 设置最小heap大小
+***************************************************************************************************************************************/
 class MyReceiver extends BroadcastReceiver{
 	@Override
 	public void onReceive(Context context, Intent intent) {
