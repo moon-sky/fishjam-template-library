@@ -43,6 +43,8 @@ import java.util.Collection;
  *      spinner.setAdapter(aa); 
  *    
  * super 调用基类的同名方法，如: super.onCreate(xxxx);
+ *
+ * annotation
  * 
  * Android 使用Java中的事件处理机制，包括( TODO ):
  *   事件 -- (extends EventObject), 通过 FireEvent 激发事件 

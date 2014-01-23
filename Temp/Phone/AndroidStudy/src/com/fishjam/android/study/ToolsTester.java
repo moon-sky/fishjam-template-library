@@ -85,6 +85,9 @@ import android.test.AndroidTestCase;
  *   zipalign.exe -f -v 4 HelloWorld_Signed.apk HelloWorld_Signed_zip.apk
  * 
  * 随机测试 ： adb shell monkey -p com.fishjam.android.study  -v 500  -- 使用缺省配置，想应用发送500个随机事件(包括按键、touch事件、系统事件等)
+ * 查看应用内存占用情况：
+ *   1.使用Eclipse插件MAT
+ *   2.adb shell dumpsys meminfo <package_name>
  **************************************************************************************************************************************/
 
 public class ToolsTester  extends AndroidTestCase {

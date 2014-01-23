@@ -2,7 +2,6 @@ package com.fishjam.android.study;
 import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
- * 以库方式给其他项目使用 -- project.properties 中增加 android.library=true， 然后其他项目可以加入
  * 
  * ZXing(http://code.google.com/p/zxing/) -- 开源的二维码、条形码处理库，包含了多种语言的接口。如微信中的扫一扫。
  *    主要分为：

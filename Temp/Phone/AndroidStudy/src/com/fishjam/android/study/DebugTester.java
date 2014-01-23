@@ -3,6 +3,9 @@ import android.test.AndroidTestCase;
 
 
 /***************************************************************************************************************************************
+ * 模拟器切换纵、横屏 -- 快捷键F12或Ctrl+F11， 程序会重新调用各个生命周期(如 onCreate ?)， 通过 onConfigurationChanged 可以捕获切换消息？
+ *   TODO:  设置Activity的android:configChanges="orientation|keyboardHidden"时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法
+ * 
  * 部署到手机 
  *   1.通过USB联机至手机
  *   2.安装Android的USB Driver -- %ANDROID_SDK%\ usb_driver
@@ -26,6 +29,22 @@ import android.test.AndroidTestCase;
  *   2.设备管理中 -> Android Device -> Android Composite ADB Interface
  *   3.手机中打开 "USB调试", 
  *   4.Eclipse中 Window->Show View->Devices，查看是否已经连接
+ *   
+ **************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
+ * 常见错误和分析
+ *   1.eglSurfaceAttrib not implemented
+ *     可能是模拟器未实现功能，用真机测试确认
+ *   2."Hot code replace failed" -- 调试过程中编辑源码
+ *     结束掉被调试的进程或断开连接？ 
+ *   3.内存问题 
+ *     OOM(Out Of Memory)
+ *     GC_FOR_ALLOC --  发生在堆被占满不能进行内存分配时，在分配新对象之前必须进行内存回收
+ *     GC_CONCURRENT-- 发生在（可能是部分的）垃圾可供回收时，通常有很多对象可以回收。
+ *     GC_EXPLICIT -- 显式调用System.gc()产生的垃圾收集。
+ *     GC_EXTERNAL_ALLOC -- Honeycomb及以上版本不会出现（一切都已在堆中分配）
+ *     GC_HPRPF_DUMP_HEAP -- 发生在创建HPROF文件时
  **************************************************************************************************************************************/
 
 public class DebugTester  extends AndroidTestCase{

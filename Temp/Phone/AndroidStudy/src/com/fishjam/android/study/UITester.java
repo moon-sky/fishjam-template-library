@@ -77,18 +77,31 @@ import android.widget.ImageView;
  *   相关组件: Canvas + Bitmap + Paint 
  *   在View的子类中重载 onDraw(Canvas canvas) 函数，并在其中使用 进行绘制。
  *   
- * 手势识别 -- 如 缩放图片或者缩放网页
- *   GestureDetector
- *   +-ScaleGestureDetector -- 检测两个手指在屏幕上缩放的手势，可简单的将 onTouchEvent 事件转发进去处理。
- *       OnScaleGestureListener -- 用户提供的回调接口，一般在各个回调函数中调用 Detector 的方法进行处理。onScaleBegin -> onScale -> onScaleEnd
- *       getScaleFactor() -- 返回缩放比例
- *       
+ * 手势识别 -- 如 缩放图片或者缩放网页，在 android.gesture 包中还提供了很多辅助类，
+ *   GestureDetector(v1)/GestureDetectorCompat(sv4，推荐，可以使更多的Action适配到API4)，可简单的将 View.onTouchEvent 事件转发进去处理。
+ *     OnDoubleTapListener -- 
+ *   +-ScaleGestureDetector -- 检测两个手指在屏幕上缩放的手势，
+ *       http://www.cnblogs.com/over140/archive/2010/12/08/1899839.html
+ *       OnScaleGestureListener -- 用户提供的回调接口，一般在各个回调函数中调用 Detector 的方法进行处理。
+ *         onScaleBegin(返回true表明开始缩放) -> 循环onScale -> onScaleEnd
+ *       getScaleFactor() -- 返回缩放比例，注意：onScale 中如果返回true会更新factor的基数, 返回false会以旧值计算factor.
+ *   实现手势识别的方法：
+ *     1.实现 OnGestureListener 接口，实现所有方法 
+ *       onFling(快速移动并松开)
+ *       onLongPress(长按且未松开)
+ *       onScroll(滑动 -- 包括缩放?), 
+ *       onShowPress(按下到激发长按之前)
+ *       onSingleTapUp(手指离开触摸屏)
+ *     2.继承已有的 SimpleOnGestureListener 类，只需重载需要的部分方法即可
+ *    
  * 重力感应
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
  * View事件
- *     onTouchEvent() -- 当发生触摸屏事件时的回调，switch(event.getAction() & MotionEvent.ACTION_MASK) 来判断按键状态(down,move,up 等), 
+ *     onTouchEvent() -- 当发生触摸屏事件时的回调，
+ *           int action = MotionEventCompat.getActionMasked(event);  然后 switch(action) {...}
+ *       或 switch(event.getAction() & MotionEvent.ACTION_MASK) 来判断按键状态(down,move,up 等), 
  *     getX(相对于自身左上角的坐标)/getRawX(相对于屏幕左上角的坐标) 等方法获取位置。
  *       单点：ACTION_DOWN -> ACTION_MOVE -> ACTION_UP
  *       多点：ACTION_DOWN -> ACTION_POINTER_DOWN(getPointerCount == 2) -> ACTION_MOVE -> ACTION_POINTER_UP -> ACTION_UP
@@ -148,9 +161,11 @@ import android.widget.ImageView;
  * +-ImageView -- 显示图片等Drawable对象
  *     adjustViewBounds -- 设置是否调整自己的边界来保持所显示的图片的长宽比
  *     cropToPadding -- 设置是否裁剪到保留padding
- *     scaleType -- 设置显示的图片如何缩放或移动以适应ImageView的大小，如 matrix(??), fitXY(横向纵向独立缩放，图片完全适应该ImageView)，
+ *     scaleType -- 设置显示的图片如何缩放或移动以适应ImageView的大小，
  *       center(图片放在中间，不进行缩放), centerCrop(保持纵横比缩放，使得图片能完全覆盖ImageView), centerInside(保持纵横比缩放，使得能完全显示图片)
- *       fitCenter(保持纵横比缩放，并将缩放后的图片放在中央) 
+ *       fitCenter(保持纵横比缩放，并将缩放后的图片放在中央) , fitXY(横向纵向独立缩放，图片完全适应该ImageView)，
+ *       matrix(使用图像矩阵方式缩放),
+ *     setOnTouchListener -- 设置Touch事件监听器 
  *     设置显示的内容
  *       setImageDrawable(getResources().getDrawable(R.drawable.right));   //设置显示的图片, 或通过 src 属性设置
  *       setImageResource(xxx); setImageBitmap(); setImageURI()
@@ -204,8 +219,8 @@ import android.widget.ImageView;
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * Layout -- Android 通过 LayoutInflater 类将 XML 格式的布局文件中的组件解析为可视化的视图组件。会根据运行平台调整其中组件的位置、大小
- *   布局文件中的 <requestFocus/> 项代表什么意思? 
+ * Layout -- Android 通过 LayoutInflater/MenuInflater  等类将 XML 格式的布局文件中的组件解析为可视化的视图组件。会根据运行平台调整其中组件的位置、大小
+ *   布局文件中的 <requestFocus/> 项代表什么意思?
  * ViewGroup -- 虚拟父类
  *   gravity -- 控制布局管理器内组件的对齐方式，如 top, bottom, left, right, center_vertical 等，多个属性可通过 "|" 组合
  *   layout_width/layout_height -- fill_parent(减去填充空白后等同于父容器),match_parent(等价于fill_parent?推荐) wrap_content(根据内容指定高宽),320px,80dip
@@ -289,6 +304,8 @@ import android.widget.ImageView;
  *     初次启动:    onCreate -> onStart -> onResume
  *     程序退出:    onPause  -> onStop -> onDestroy
  *     后台到前台: onRestart ->onStart -> onResume
+ *   常见属性
+ *     ConfigChanges -- 可以使Activity捕捉设备状态变化, 如 orientation(设备旋转) 等
  *   常见方法
  *     findViewById() -- 根据ID查找组件的实例
  *     finish() -- 结束Activity, 通常用法为 MyActivity.this.finish();

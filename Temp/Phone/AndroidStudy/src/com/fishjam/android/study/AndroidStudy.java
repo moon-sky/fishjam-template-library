@@ -1,4 +1,6 @@
 package com.fishjam.android.study;
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.test.AndroidTestCase;
 
 
@@ -11,6 +13,9 @@ import android.test.AndroidTestCase;
  *     c. .classpath 文件 
  *     d. project.properties 文件
  *     e. 高版本可能会增加 crunch、res/values-v11、res/values-v14 等 资源目录
+ *   3.以库方式给其他项目使用 -- project.properties 中增加 android.library=true， 然后其他项目可以加入
+ *     Windows中要求两个工程在同一个盘符下，否则会关联失败(显示添加成功，但再次打开时显示红叉)，此为ADT 的bug
+ *     其他问题(R.id 的final问题)：http://blog.sina.com.cn/s/blog_ac843e3301017p2t.html
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
@@ -41,19 +46,25 @@ import android.test.AndroidTestCase;
  * 
  * TODO: 
  *   1.SDK 版本 和 Google API 版本，两者有什么区别
- *   2.版本兼容 -- 使用 Android Support Library package 来保证来高版本sdk开发的向下兼容性，
- *     使得高版本开发的程序在低版本OS上也能运行，但功能可能会退化(如 fragement ?) 
- *     android-support-v4.jar -- 支持 1.6 及以后
- *     android-support-v7.jar -- 支持 2.1 及以后，依赖于 -v4.jar 包(即两者同时包含)
- *     android-support-v13.jar --支持3.2 及以后，通常在平板开发中才会使用
- *   3.平台版本 和 API Level 。 获得API Level 的代码： Integer apiLevel = Integer.parseInt(VERSION.SDK); 
+ *   2.版本兼容
+ *     2.1. 使用 Android Support Library package 来保证来高版本sdk开发的向下兼容性，
+ *           使得高版本开发的程序在低版本OS上也能运行，但功能可能会退化(如 fragement ?) 
+ *           android-support-v4.jar -- 支持 1.6 及以后
+ *           android-support-v7.jar -- 支持 2.1 及以后，依赖于 -v4.jar 包(即两者同时包含)
+ *           android-support-v13.jar --支持3.2 及以后，通常在平板开发中才会使用
+ *     2.2. 使用 @TargetApi(版本号) 使高版本API的代码在低版本SDK不报错(即避免低版本中找不到定义的错误)，
+ *           在代码中还需要加一个版本判断是否执行该代码, 参见 testVersionCompat
+ *           TODO: 这是编译时行为还是运行时行为？
+ *   3.平台版本 和 API Level 。 
+ *      获得API Level 的代码： Integer apiLevel = Integer.parseInt(VERSION.SDK);
+ *      编译时指定版本：在函数前增加如下声明 --   表明只针对 14(及之后?)的有效？
  *      平台版本				API Level				功能
  *     Android 4.4.2            19
  *     Android ???				18
  *     Android 4.2				17
  *     Android 4.1				16
  *     Android 4.0.3            15
- *     Android 4.0				14
+ *     Android 4.0				14(ICE_CREAM_SANDWICH)
  *     Android 3.2				13
  *     Android 3.1				12
  *     Android 3.0				11
@@ -159,5 +170,12 @@ import android.test.AndroidTestCase;
 public class AndroidStudy  extends AndroidTestCase{
 	public void testAndriod()
 	{
+	}
+	
+	@TargetApi(14)  //(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+	public void testVersionCompat(){
+		if(Build.VERSION.SDK_INT >= 14){ 
+			//版本大于 14 时执行以下代码(可以使用14中新的API)
+		}
 	}
 }

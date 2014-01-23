@@ -30,7 +30,7 @@ import junit.framework.Assert;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * 权限列表
+ * 权限列表( uses-permissionandroid:name="xxxx" )
  *   ACCESS_CHECKIN_PROPERTIES
  *   ACCESS_COARSE_LOCATION
  *   ACCESS_FINE_LOCATION
@@ -129,7 +129,7 @@ import junit.framework.Assert;
  *   SYSTEM_ALERT_WINDOW
  *   UPDATE_DEVICE_STATS
  *   USE_CREDENTIALS
- *   VIBRATE	-- 控制振动器
+ *   VIBRATE	-- 控制振动器, (Vibrator) context.getSystemService(Service.VIBRATOR_SERVICE); 
  *   WAKE_LOCK
  *   WRITE_APN_SETTINGS
  *   WRITE_CALENDAR

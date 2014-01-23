@@ -109,7 +109,13 @@ import android.test.ActivityTestCase;
  *   Color/Paint(画笔)/Path/ShapeDrawable及其子类，如 OvalShape(椭圆)、RectShape(矩形)
  *   
  * 图形特效
- *   Matrix -- 坐标变换矩阵，可以实现图形的 旋转(setRotate)、缩放(setScale)和平移(setTranslate)，图片的特效处理等
+ *   Matrix -- 3x3的坐标变换矩阵，通常用于图片的特效处理等。
+ *     可以实现图形的 平移(Translate)、 旋转(Rotate)、缩放(Scale)、错切(Skew, x或y保持不变，而对应的y或x按比例平移: 如 矩形=>菱形，属于等面积变换 )等， (TODO: Persp 透视变换?)。
+ *       每种变换有三种操作方式： set(直接设置), pre(先乘, 即矩阵的右乘)，post(后乘, 即矩阵的左乘) -- 矩阵的乘法不满足交换律，先乘后乘必须严格区分。
+ *       旋转/缩放/错切 可以围绕一个中心点进行，如不指定，则围绕(0,0)进行变换。
+ *       水平对称：float matrix_values[] = {1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f}; matrix.setValues(matrix_values); 
+ *       垂直对称：float matrix_values[] = {-1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f}; matrix.setValues(matrix_values);
+ *       x=y轴对称： float matrix_values[] = {0f, -1f, 0f, -1f, 0f, 0f, 0f, 0f, 1f};
  *     invert() -- 
  *     setTranslate() -- 
  *   ColorMatrix -- 颜色矩阵(RGBA)。可用于图片特效处理，如 将图片做出黑白的，或者老照片的效果 等

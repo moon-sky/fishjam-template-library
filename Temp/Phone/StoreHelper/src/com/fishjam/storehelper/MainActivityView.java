@@ -39,7 +39,9 @@ public class MainActivityView extends Activity {
 		mStartIconInfos = new StartIconInfo[]{
 			new FindCarIconItem(this),
 			new CameraParamIconItem(this),
-			//new ViewFloorImage(this),
+			new ViewFloorImage(this),
+			new TestGestureIconInfo(this),
+			new ImageActivityIconInfo(this),
 		};
 		
 		ArrayList<Map<String, Object>> listItems = new ArrayList<Map<String,Object>>();

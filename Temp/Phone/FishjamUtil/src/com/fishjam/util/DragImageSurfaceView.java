@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.renderscript.RenderScript.ContextType;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -91,7 +90,7 @@ public class DragImageSurfaceView extends SurfaceView implements
 		if(canvas != null){
 			Time time = new Time();
 			time.setToNow(); 
-			canvas.drawColor(getContext().getResources().getColor(android.R.color.holo_red_light));
+			canvas.drawColor(getContext().getResources().getColor(android.R.color.primary_text_light));
 			//canvas.drawText(time.format("%H%M%S"), 0, 0, mPaint);
 			canvas.drawText("fishjam test", 10, 10, mPaint);
 			holder.unlockCanvasAndPost(canvas);
