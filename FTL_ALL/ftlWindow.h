@@ -397,7 +397,7 @@ namespace FTL
         if(pFilters) \
         {\
 		    for(int i = 0; i < nCount; i++){\
-			    if(uMsg == pFilters + i ){\
+			    if(uMsg == *((UINT*)(pFilters + i))){\
 				    bFilterd = TRUE;\
 				    break;\
 			    }\

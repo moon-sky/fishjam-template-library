@@ -65,6 +65,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 	@Override
 	public void uncaughtException(Thread thread, final Throwable ex) {
 		System.out.println("uncaughtException");
+		ex.printStackTrace();
 		//mException = ex;
 		
 		new Thread() {  

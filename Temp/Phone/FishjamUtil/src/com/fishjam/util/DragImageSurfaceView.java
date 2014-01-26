@@ -20,9 +20,8 @@ public class DragImageSurfaceView extends SurfaceView implements
 	
 	private static final String TAG = DragImageSurfaceView.class.getSimpleName();
 	private Paint mPaint;
-	
-	
 	private ScaleGestureDetector mScaleGestureDetector;
+
 	public DragImageSurfaceView(Context context) {
 		super(context);
 		
@@ -34,7 +33,7 @@ public class DragImageSurfaceView extends SurfaceView implements
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		Log.i(TAG, "-----onTouchEvent, action=" + event.getAction() + ", Pos=" + event.getX() + "," + event.getY());
-		
+
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			drawOnSurfaceHolder();

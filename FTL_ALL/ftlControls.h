@@ -48,12 +48,18 @@ if(::GetCapture() == m_hWnd)
 *   2.在 App 的构造中 LoadLibrary(_T("msftedit.dll")); 析构中 FreeLibrary,
 *   3.在 InitInstance 中仍然需要调用 AfxInitRichEdit2 ? -- 实测表明不需要，而且其实现也是加载 RICHED20.DLL 或 RICHED32.DLL
 * 
-* 默认时，当用户切换键盘布局(keyboard layout -- 比如中英韩等？)，会自动切换字体(auto font feature)，造成程序出现问题，为了关闭该功能：
+* 默认时，当用户切换键盘布局(keyboard layout -- 比如中英韩等？)，会自动切换字体(auto font feature)，造成程序出现问题(比如换行后自动改变字体？)，为了关闭该功能：
 *   LRESULT lres = SendMessage(hRE, EM_GETLANGOPTIONS, 0, 0);
 *   lres &= ~( IMF_AUTOFONT | IMF_AUTOFONTSIZEADJUST) ;
 *   SendMessage(hRE, EM_SETLANGOPTIONS, 0, lres);
 *   缺省时是：IMF_AUTOFONT 
-IMF_DUALFONT |   
+*             IMF_DUALFONT |   
+* 
+* TODO:使用中日韩等IME输入法时，
+*   1.正确实现 TxImmGetContext/TxImmReleaseContext
+*   2.必须将 IME 相关的消息发送给RichEdit进行处理，否则可能出现 韩文的选字符号位置不正确的bug(出现在屏幕的左上角)
+*     if ((WM_IME_SETCONTEXT <= uMsg && uMsg <= WM_IME_KEYUP) || WM_IME_STARTCOMPOSITION == uMsg || WM_IME_ENDCOMPOSITION == uMsg || WM_IME_COMPOSITION == uMsg)
+*     { m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult); }
 *
 * Rich Text Edit Control ( RichEdit.H, 在标准 EDIT 控件的基础上扩展 )， 
 * 为了使用RichEdit，需要先加载对应的DLL，MFC下调用AfxInitRichEdit ，

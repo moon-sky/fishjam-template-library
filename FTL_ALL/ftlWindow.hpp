@@ -3053,6 +3053,31 @@ namespace FTL
 #endif
 		}
 
+        //Dialog style
+        if (0 == lstrcmp(szClassName, _T("#32770")))
+        {
+            formater.AppendFormat(TEXT("%s%s"), TEXT("Dialog"), pszDivide);
+
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_ABSALIGN, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_SYSMODAL, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_LOCALEDIT, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_SETFONT, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_MODALFRAME, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_NOIDLEMSG, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_SETFOREGROUND, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_3DLOOK, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_FIXEDSYS, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_NOFAILCREATE, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_CONTROL, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_CENTER, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_CENTERMOUSE, pszDivide);
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_CONTEXTHELP, pszDivide);
+            //HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_SHELLFONT, pszDivide);  //(DS_SETFONT | DS_FIXEDSYS)
+#if(_WIN32_WCE >= 0x0500)
+            HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, DS_USEPIXELS, pszDivide);
+#endif
+        }
+
         FTLASSERT( 0 == lStyle);
 		//HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, XXXXXXXXX, pszDivide);
         if (0 != lStyle)
