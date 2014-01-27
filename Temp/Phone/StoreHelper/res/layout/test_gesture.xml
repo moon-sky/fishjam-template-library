@@ -6,17 +6,10 @@
 
     <com.fishjam.util.GestureImageView
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res/com.fishjam.util.GestureImageView"
         android:id="@+id/imageViewTest"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/car_logo_benz" />
+        android:layout_height="fill_parent"
+        android:src="@raw/floor_1" />
 
-    <ZoomControls
-        android:id="@+id/zoomControls"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" 
-        android:layout_gravity="bottom" 
-        android:onClick="onZoomControlsClick"/>
 
 </LinearLayout>

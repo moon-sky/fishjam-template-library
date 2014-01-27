@@ -42,6 +42,7 @@ public class MainActivityView extends Activity {
 			new ViewFloorImage(this),
 			new TestGestureIconInfo(this),
 			new ImageActivityIconInfo(this),
+			new ViewCallbackTesterIconInfo(this)
 		};
 		
 		ArrayList<Map<String, Object>> listItems = new ArrayList<Map<String,Object>>();

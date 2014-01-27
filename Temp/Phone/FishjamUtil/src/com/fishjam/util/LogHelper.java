@@ -44,10 +44,10 @@ public final class LogHelper {
 			sBuilder.append("ACTION_OUTSIDE");
 			break;
 		case MotionEvent.ACTION_POINTER_DOWN:
-			sBuilder.append("ACTION_POINTER_DOWN");
+			sBuilder.append("ACTION_POINTER_DOWN: " + event.getX(1) + "," + event.getY(1));
 			break;
 		case MotionEvent.ACTION_POINTER_UP:
-			sBuilder.append("ACTION_POINTER_UP");
+			sBuilder.append("ACTION_POINTER_UP: " + event.getX(1) + "," + event.getY(1));
 			break;
 //		case MotionEvent.ACTION_HOVER_MOVE:
 //			sBuilder.append("ACTION_HOVER_MOVE");

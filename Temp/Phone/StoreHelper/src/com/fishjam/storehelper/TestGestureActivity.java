@@ -78,6 +78,8 @@ public class TestGestureActivity extends Activity{ // implements OnTouchListener
 		setContentView(R.layout.test_gesture);
 		//mDetector = new ScaleGestureDetector(this, mGestureListener);
 		mImageView = (GestureImageView)findViewById(R.id.imageViewTest);
+		
+		/*
 		ZoomControls zoomControls = (ZoomControls)findViewById(R.id.zoomControls);
 
 		zoomControls.setOnZoomInClickListener(new View.OnClickListener() {
@@ -95,6 +97,8 @@ public class TestGestureActivity extends Activity{ // implements OnTouchListener
 				mImageView.SetScaleFactor(0.5f);
 			}
 		});
+		*/
+		
 		//mImageView.setOnTouchListener(this);
 		//mMatrix = new Matrix(); 
 	}

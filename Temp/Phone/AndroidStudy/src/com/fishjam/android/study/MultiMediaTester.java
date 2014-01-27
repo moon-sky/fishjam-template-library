@@ -85,6 +85,7 @@ import android.test.ActivityTestCase;
  *   动画 -- Animation(动画抽象类，有多个子类) 
  *       AnimationSet -- 定义动画属性集合类
  *       AnimationUtils -- 动画工具类
+ *       ViewPropertyAnimator -- 
  *     1.Tween -- 可以使视图组件移动、放大、缩小、旋转、及透明度等变化；
  *       ScaleAnimation/AlphaAnimation/RotateAnimation/TranslateAnimation
  *       使用方式:
@@ -93,12 +94,14 @@ import android.test.ActivityTestCase;
  *           <set> <alpha android:fromAlpha="0.1" toAlpha="1.0" duration="3000" /></set>， 类似的有 <scale>, <translate>, <rotate> 等
  *     2.Frame -- 帧动画，通过顺序播放排列好的图片来实现，类似电影。
  *       AnimationDrawable -- 一般通过XML配置文件配置，<animation-list> <item/></animation-list>，然后在Activity的xml配置中可以通过 android:background 指定？
- *  
+ *     
  * 自绘
  *   1.从 View/SurfaceView 等类继承，然后选择性重载以下方法：
  *      onDraw -- 使用Canvas进行绘制，通过 invalidate 或 postInvalidate 请求更新
  *      onFinishInflate -- 当应用从XML布局文件加载组件并利用它来构建界面之后调用
- *      onMeasure -- 检测View组件及它所包含的所有组件的大小
+ *      onMeasure -- 检测View组件及它所包含的所有组件的大小，父元素要放置该View时调用。
+ *        计算时先通过 MeasureSpec 类的静态方法getMode(AT_MOST 表示最大可获得的空间，对应wrap_content; EXACTLY 表示精确的尺寸，对应fill_parent )
+ *        和getSize来分析传入的边界参数。然后通过 setMeasuredDimension 指定计算结果。
  *      onLayout -- 当组件需要分配其子组件的位置、大小时回调
  *      onTrackballEvent -- 当发生轨迹球事件时触发
  *      onTouchEvent -- 当发生触摸屏事件时触发， TODO:怎么处理手势(Gesture?)
@@ -122,6 +125,7 @@ import android.test.ActivityTestCase;
  *   Shader -- 渲染效果，可通过 Paint.setShader(); 等方式来使用。
  *      其有很多子类，如 BitmapShader(位图渲染)、ComposeShader(混合渲染)、LinearGradient(线性渲染)、RadialGradient(光束渲染), SweepGradient(梯度渲染) 等 
  *   Xfermode -- 两张图交互时的覆盖模式，一般用法为 paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN 等模式枚举值 ));
+ *   EdgeEffect/EdgeEffectCompat -- 边缘效果
  *   
  * 3D图形处理(OpenGL ES) -- 位于 javax.microedition.khronos.opengles, android.opengl 等包中
  *   

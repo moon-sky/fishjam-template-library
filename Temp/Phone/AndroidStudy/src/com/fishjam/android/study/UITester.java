@@ -89,7 +89,7 @@ import android.widget.ImageView;
  *     1.实现 OnGestureListener 接口，实现所有方法 
  *       onFling(快速移动并松开)
  *       onLongPress(长按且未松开)
- *       onScroll(滑动 -- 包括缩放?), 
+ *       onScroll(滑动 -- 单指? 包括缩放?), 
  *       onShowPress(按下到激发长按之前)
  *       onSingleTapUp(手指离开触摸屏)
  *     2.继承已有的 SimpleOnGestureListener 类，只需重载需要的部分方法即可
@@ -219,7 +219,8 @@ import android.widget.ImageView;
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * Layout -- Android 通过 LayoutInflater/MenuInflater  等类将 XML 格式的布局文件中的组件解析为可视化的视图组件。会根据运行平台调整其中组件的位置、大小
+ * Layout -- Android 通过 LayoutInflater/MenuInflater  等类将 XML 格式的布局文件中的组件解析为可视化的视图组件。
+ *   会根据运行平台调整其中组件的位置、大小。其过程分为两步：measure(计算位置) -> layout(根据计算结果进行布局)
  *   布局文件中的 <requestFocus/> 项代表什么意思?
  * ViewGroup -- 虚拟父类
  *   gravity -- 控制布局管理器内组件的对齐方式，如 top, bottom, left, right, center_vertical 等，多个属性可通过 "|" 组合
@@ -301,9 +302,10 @@ import android.widget.ImageView;
  *     onStop -- 当另外一个activity恢复并遮盖住此activity,导致其对用户不再可见时调用。一个新activity启动、其它activity被切换至前景、当前activity被销毁时都会发生这种场景。可注销更新用户界面Intent接收者
  *     onDestroy -- 在activity被销毁前所调用的最后一个方法，有可能在某些情况下，一个Activity被终止时并不调用onDestroy方法。
  *   常见场景的执行顺序:
- *     初次启动:    onCreate -> onStart -> onResume
- *     程序退出:    onPause  -> onStop -> onDestroy
- *     后台到前台: onRestart ->onStart -> onResume
+ *     初次启动:    onApplyThemeResource -> {onCreate} -> onStart -> onPostCreate -> onResume -> onPostResume -> onAttachedToWindow
+ *     退出:    [onBackPressed ->] onPause  -> onStop -> onDestroy -> onDetachedFromWindow
+ *     Home到后台：onUserLeaveHint -> onSaveInstanceState -> onPause -> onCreateDescription -> onStop
+ *     到前台: {onRestart} ->onStart -> onResume -> onPostResume
  *   常见属性
  *     ConfigChanges -- 可以使Activity捕捉设备状态变化, 如 orientation(设备旋转) 等
  *   常见方法

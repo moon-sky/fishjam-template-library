@@ -33,6 +33,7 @@
         <activity android:name="com.fishjam.storehelper.PositionActivity"></activity>
         <activity android:name="com.zxing.activity.CaptureActivity"></activity>
         <activity android:name="TestGestureActivity"></activity>
+        <activity android:name="CallbackTesterActivity"></activity>
     </application>
 
 </manifest>

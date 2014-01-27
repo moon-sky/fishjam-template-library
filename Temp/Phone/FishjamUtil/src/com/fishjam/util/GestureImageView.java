@@ -2,6 +2,8 @@ package com.fishjam.util;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -14,8 +16,14 @@ import android.widget.ImageView;
 public class GestureImageView extends ImageView {
 	private final String TAG =GestureImageView.class.getSimpleName();
 	
-	float mFactor = 1.0f;
-	float mLastFactor = 1.0f;
+	float mCurScaleFactor = 1.0f;
+	float mLastScaleFactor = 1.0f;
+	
+	PointF mCurTranslate = new PointF(0.0f, 0.0f);
+	PointF mLastTranslate = new PointF(0.0f, 0.0f);
+	
+	float mMinScaleFactor = 0.25f;
+	float mMaxScaleFactor = 4f;
 	
 	Matrix mMyMatrix = new Matrix();
 	// GestureDetector mDetector;
@@ -24,6 +32,7 @@ public class GestureImageView extends ImageView {
 
 	public GestureImageView(Context context) {
 		this(context, null, 0);
+		
 	}
 
 	public GestureImageView(Context context, AttributeSet attrs) {
@@ -41,16 +50,25 @@ public class GestureImageView extends ImageView {
 		setOnTouchListener(mTouchListener);
 	}
 
-	public void SetScaleFactor(float newFactor){
-		mFactor = newFactor;
-		float totalScaleFactor = newFactor * mLastFactor; 
+	public void SetMinMaxScaleFactor(float minFactor, float maxFactor){
+		mMinScaleFactor = minFactor;
+		mMaxScaleFactor = maxFactor;
+	}
+	
+	void calcImageMatrix(){
+		if (mCurScaleFactor > mMaxScaleFactor) {
+			mCurScaleFactor = mMaxScaleFactor;
+		}else if (mCurScaleFactor < mMinScaleFactor) {
+			mCurScaleFactor = mMinScaleFactor;
+		}
+
+		float totalScaleFactor = mCurScaleFactor * mLastScaleFactor; 
+		Log.i(TAG, "SetScaleFactor, mCurScaleFactor=" + mCurScaleFactor + ",lastFactor=" + mLastScaleFactor + ",total=" + totalScaleFactor);
 
 		mMyMatrix.reset();
 
-		Log.i(TAG, "SetScaleFactor, newFactor=" + newFactor + ",lastFactor=" + mLastFactor + ",total=" + totalScaleFactor);
-
+		mMyMatrix.postTranslate(mCurTranslate.x, mCurTranslate.y);
 		mMyMatrix.postScale(totalScaleFactor, totalScaleFactor);
-
 		setImageMatrix(mMyMatrix);
 	}
 
@@ -58,15 +76,10 @@ public class GestureImageView extends ImageView {
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-
-			Log.i(TAG, LogHelper.FormatMotionEvent(event));
+			//Log.i(TAG, "onTouch: " + LogHelper.FormatMotionEvent(event));
 			boolean bResult = false;
-			//bResult = mScaleGestureDetector.onTouchEvent(event);
-			//if (!bResult) 
-			{
-				Log.i(TAG, "Enter mGestureDetector");
-				bResult = mGestureDetector.onTouchEvent(event);
-			}
+			bResult = mScaleGestureDetector.onTouchEvent(event);
+			bResult = mGestureDetector.onTouchEvent(event) | bResult;
 
 			return bResult;
 		}
@@ -80,26 +93,28 @@ public class GestureImageView extends ImageView {
 			Log.i(TAG, "onScale, Span=" + detector.getCurrentSpan() + ", Factor=" + detector.getScaleFactor());
 			//if ((curScaleFactor / mLastFactor) < 0.9f || (mLastFactor / curScaleFactor) < 0.9f) 
 			{
-				SetScaleFactor(curScaleFactor);
+				mCurScaleFactor = curScaleFactor;
+				calcImageMatrix();
 			}
 			return false;
 		}
 
 		@Override
 		public boolean onScaleBegin(ScaleGestureDetector detector) {
-			Log.i(TAG, "onScaleBegin, Focus=" + detector.getFocusX() + "x" + detector.getFocusY());
 			float curScaleFactor = detector.getScaleFactor();
-			if ((curScaleFactor / mLastFactor) < 0.9f || (mLastFactor / curScaleFactor) < 0.9f){
+			Log.i(TAG, "onScaleBegin, Focus=" + detector.getFocusX() + "x" + detector.getFocusY() 
+					+ ", curScaleFactor="+curScaleFactor + ", mLastFactor=" + mLastScaleFactor);
+			//if ((curScaleFactor / mLastFactor) < 0.9f || (mLastFactor / curScaleFactor) < 0.9f){
 				return true;
-			}
-			return false;
+			//}
+			//return false;
 		}
 
 		@Override
 		public void onScaleEnd(ScaleGestureDetector detector) {
 			Log.i(TAG, "onScaleEnd, Factor=" + detector.getScaleFactor());
 
-			mLastFactor = mFactor;
+			mLastScaleFactor *= detector.getScaleFactor();;
 			super.onScaleEnd(detector);
 		}
 
@@ -122,7 +137,12 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
 				float distanceX, float distanceY) {
-			Log.i(TAG, "onScroll, Pos=" + e1.getX() + "x" + e1.getY() + ", distanceXY=" + distanceX + "," + distanceY);
+			Log.i(TAG, "onScroll, e1=" + LogHelper.FormatMotionEvent(e1) + ",e2=" + LogHelper.FormatMotionEvent(e2)
+					+ ", distanceXY=" + distanceX + "," + distanceY);
+			mCurTranslate.x = e2.getX() - e1.getX();
+			mCurTranslate.y = e2.getY() - e1.getY();
+			calcImageMatrix();
+			
 			return super.onScroll(e1, e2, distanceX, distanceY);
 		}
 
