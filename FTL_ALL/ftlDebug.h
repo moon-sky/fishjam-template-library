@@ -23,7 +23,7 @@ namespace FTL
     *       -v    -- 对信息进行详细输出
     *       -hang -- 对问题进行自动分析(似乎是直接调用 kn? 有Nelo时不准 )
     *      分析结果:
-    *        FAULTING_IP -- 错误发生时指令指针(EIP)的值
+    *        FAULTING_IP -- 错误发生时指令指针(EIP)的值，通过pdb一般能定位到最后出错的代码位置(注意：不一定是原因)
     *        EXCEPTION_RECORD -- 异常记录(Exception Record), 如值是ffffffff表示没有一个异常包含
     *        DEFAULT_BUCKET_ID -- 详细给出故障所属的类别，典型情况有 NULL_POINTER_READ, INVALID_POINTER_WRITE 等
     *        FAULTING_THREAD -- 导致出错的线程，可以通过 ? 查看
@@ -205,6 +205,7 @@ namespace FTL
     *           相对来说 dt -l 或 !list 方式对用户更友好。
     *     dt Xxxx [Address] -- 按照类型(如 结构体？)显示变量内容，如 dt _EPROCESS 0xXXXX -- 使用_EPROCESS结构来显示指定内存地址的数据
     *       -l -- 遍历列表，如：dt nt!_EPROCESS -l ActiveProcessLinks.Flink -y Ima -yoi Uni poi(PsInitialSystemProcess) 表示遍历进程，类似 !process 0 0
+    *       dt -r this -- 递归显示this的成员变量类型及值
     *     dv /i /t /v -- 显示函数参数和局部变量的信息(Ctrl+Alt+V 切换到更详细的显示模式)，注意：优化过的代码显示可能不准确。
     *       /i -- 显示变量范围(param,local,function 等); /t -- 显示变量类型(int,wchar_t* 等), /v -- 显示相对ebp等寄存器的地址
     *       缺少私有符号时dv命令无法工作，可通过查看内存、 EBP+-N 的方式查看
@@ -486,6 +487,7 @@ namespace FTL
 
     /*********************************************************************************************************
     * 在Release版本中设置断点: _asm int 3 (或 ntdll!DbgBreakPoint ?), 会产生 0x80000003 的异常
+    * Release 中的 this 指针会保存在 ecx 寄存器中，
 	*   
 	* 使用 TRACE/ATLTRACE 打印带有中日韩的文字时，可能会报" _CrtDbgReport: String too long or IO Error "的错误，而无法打出日志：
 	*   原因: wprintf_s 不能正确输出中日韩的 UNICODE 文字(似乎VS2010后修复了这个Bug？)

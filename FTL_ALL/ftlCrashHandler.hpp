@@ -879,8 +879,13 @@ namespace FTL
     }
     void CFCrashHandlerDialog::CreateDlg()
     {
-        CreateDlgTemplate(TEXT("Crash Handler"), DS_SETFONT|DS_MODALFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_POPUP|WS_CAPTION|WS_SYSMENU,
-            0, 0, 0, 420, 274, 8, TEXT("MS Shell Dlg"), TEXT(""), TEXT(""));
+        CreateDlgTemplate(TEXT("Crash Handler"), 
+            DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME,
+            //DS_SETFONT|DS_MODALFRAME|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_POPUP|WS_CAPTION|WS_SYSMENU|WS_THICKFRAME|WS_OVERLAPPEDWINDOW,
+            //WS_EX_DLGMODALFRAME | WS_EX_APPWINDOW | WS_EX_OVERLAPPEDWINDOW , 
+            0, 
+            0, 0, 420, 274, 
+            8, TEXT("MS Shell Dlg"), TEXT(""), TEXT(""));
 
         AddListBox(TEXT(""), LBS_NOINTEGRALHEIGHT|LBS_DISABLENOSCROLL|WS_VSCROLL|WS_HSCROLL|WS_TABSTOP, 
 			0, 7, 21, 406, 221, IDC_LIST_STACK);
@@ -1156,39 +1161,87 @@ namespace FTL
     {
         BOOL bRet = FALSE;
         CFStringFormater strFormater;
+        if (m_pException)
+        {
 #ifdef WIN32
-        //strFormater.Format(_T ( "%04X:%08X" ),
-        //  m_pException->ContextRecord->SegCs,
-        //  m_pException->ExceptionRecord->ExceptionAddress);
-        strFormater.Format(_T ( "%08X" ),
-            m_pException->ExceptionRecord->ExceptionAddress);
+            //strFormater.Format(_T ( "%04X:%08X" ),
+            //  m_pException->ContextRecord->SegCs,
+            //  m_pException->ExceptionRecord->ExceptionAddress);
+            strFormater.Format(_T ( "%08X" ),
+                m_pException->ExceptionRecord->ExceptionAddress);
 #else
 
-        strFormater.Format(_T ( "%016X" ),
-            m_pException->ExceptionRecord->ExceptionAddress);
+            strFormater.Format(_T ( "%016X" ),
+                m_pException->ExceptionRecord->ExceptionAddress);
 #endif
-        FTLTRACE(_T("Crash %08x at %s"),m_pException->ExceptionRecord->ExceptionCode,strFormater);
-        SetDlgItemText(IDC_STATIC_ADDRESS,strFormater);
-        SetDlgItemText(IDC_STATIC_REASON,GetFaultReason(m_pException->ExceptionRecord->ExceptionCode));
+            FTLTRACE(_T("Crash %08x at %s"),m_pException->ExceptionRecord->ExceptionCode,strFormater);
+            SetDlgItemText(IDC_STATIC_ADDRESS,strFormater);
+            SetDlgItemText(IDC_STATIC_REASON,GetFaultReason(m_pException->ExceptionRecord->ExceptionCode));
 
-        HWND hListStack = GetDlgItem(IDC_LIST_STACK);
-        FTLASSERT(::IsWindow(hListStack));
-        if (::IsWindow(hListStack))
-        {
-            CFStackWalker stackWalker;
-            API_VERIFY(stackWalker.GetCallStackArray(GetCurrentThread(),m_pException->ContextRecord));
-            INT nTraceNum = stackWalker.GetStackTraceNum();
-            for (INT i = 0; i < nTraceNum; i++)
+            HWND hListStack = GetDlgItem(IDC_LIST_STACK);
+            FTLASSERT(::IsWindow(hListStack));
+            if (::IsWindow(hListStack))
             {
-                LPCTSTR pszStack = stackWalker.GetStackTraceStringByIndex(i);
-                //ListBox_AddString(hListStack,pszStack);
-                ::SendMessage(hListStack,LB_ADDSTRING,0L,(LPARAM)(LPCTSTR)(pszStack));
-            }
+                CFStackWalker stackWalker;
+                API_VERIFY(stackWalker.GetCallStackArray(GetCurrentThread(),m_pException->ContextRecord));
+                INT nTraceNum = stackWalker.GetStackTraceNum();
+                for (INT i = 0; i < nTraceNum; i++)
+                {
+                    LPCTSTR pszStack = stackWalker.GetStackTraceStringByIndex(i);
+                    //ListBox_AddString(hListStack,pszStack);
+                    ::SendMessage(hListStack,LB_ADDSTRING,0L,(LPARAM)(LPCTSTR)(pszStack));
+                }
 
-			ListBox_SetHorizontalExtent(hListStack, 1024); //add for magin
+                ListBox_SetHorizontalExtent(hListStack, 1024); //add for magin
+            }
         }
         return 0;
     }
+
+    LRESULT CFCrashHandlerDialog::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+    {
+        FTLTRACE(TEXT("CFCrashHandlerDialog::OnDestroy\n"));
+        bHandled = FALSE;
+        return 0;
+    }
+
+    LRESULT CFCrashHandlerDialog::OnSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+    {
+        BOOL bRet = FALSE;
+        
+        UINT nType = wParam;
+        WORD nNewWidth = LOWORD(lParam);
+        WORD nNewHeight = HIWORD(lParam);
+        
+        HWND hListStack = GetDlgItem(IDC_LIST_STACK);
+        FTLASSERT(::IsWindow(hListStack));
+
+        API_VERIFY(::SetWindowPos(hListStack, NULL, 0, 0, nNewWidth - 13, nNewHeight - 70, SWP_NOZORDER | SWP_NOMOVE));
+        
+        //HWND hBtnMiniDump = GetDlgItem(IDC_BTN_CREATE_MINIDUMP);
+        //HWND hBtnSaveStack = GetDlgItem(IDC_BTN_SAVE_STACK);
+        //HWND hBtnDebug = GetDlgItem(IDC_BTN_DEBUG);
+        //HWND hBtnClose = GetDlgItem(IDOK);
+
+        HWND hButtons[] = {
+            GetDlgItem(IDC_BTN_CREATE_MINIDUMP),
+            GetDlgItem(IDC_BTN_SAVE_STACK),
+            GetDlgItem(IDC_BTN_DEBUG),
+            GetDlgItem(IDOK)
+        };
+
+        for (int i = 0; i < _countof(hButtons); i++)
+        {
+            RECT rcOld = {0};
+
+            API_VERIFY(::GetWindowRect(hButtons[i], &rcOld));
+            API_VERIFY(ScreenToClient(&rcOld));
+            API_VERIFY(::SetWindowPos(hButtons[i], NULL, rcOld.left, nNewHeight - 30, 0, 0, SWP_NOZORDER | SWP_NOSIZE));
+        }
+
+        return 0;
+    }
+
 
     CFCrashHandler::CFCrashHandler()
     {

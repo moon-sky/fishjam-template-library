@@ -1516,8 +1516,8 @@ namespace FTL
                 pInfo->indent--;
                 if (0 == pInfo->indent)
                 {
-                    //FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
-                    //    __FILE__LINE__, GetCurrentThreadId());
+                    FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
+                        __FILE__LINE__, GetCurrentThreadId());
                     delete pInfo;
                     TlsSetValue(rBlockElapseTlsIndex, NULL);
                 }

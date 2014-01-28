@@ -336,9 +336,13 @@ namespace FTL
     {
     public:
         BEGIN_MSG_MAP(CFCrashHandlerDialog)
-			COMMAND_HANDLER(IDC_BTN_CREATE_MINIDUMP, BN_CLICKED, OnCreateMiniDumpClick)
+            DUMP_WINDOWS_MSG(__FILE__LINE__, DEAFULT_DUMP_FILTER_MESSAGES, _countof(DEAFULT_DUMP_FILTER_MESSAGES), uMsg, wParam, lParam)
+
+            COMMAND_HANDLER(IDC_BTN_CREATE_MINIDUMP, BN_CLICKED, OnCreateMiniDumpClick)
 			COMMAND_HANDLER(IDC_BTN_SAVE_STACK, BN_CLICKED, OnSaveStackClick)
             MESSAGE_HANDLER(WM_INITDIALOG,OnInitDialog)
+            MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+            MESSAGE_HANDLER(WM_SIZE, OnSize)
 			CHAIN_MSG_MAP(CFResourcelessDlg<CFCrashHandlerDialog>)
             //MESSAGE_HANDLER(WM_SIZE, OnSize)
         END_MSG_MAP()
@@ -354,6 +358,9 @@ namespace FTL
         FTLINLINE CFCrashHandlerDialog(PEXCEPTION_POINTERS pExcption);
         FTLINLINE virtual ~CFCrashHandlerDialog();
         FTLINLINE LRESULT OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+        FTLINLINE LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+        FTLINLINE LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+
         //FTLINLINE LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
         FTLINLINE LPTSTR GetFaultReason(DWORD ExceptionCode);
         FTLINLINE void CreateDlg();
