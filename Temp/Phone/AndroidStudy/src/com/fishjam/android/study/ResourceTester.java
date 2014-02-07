@@ -59,7 +59,7 @@ import android.test.AndroidTestCase;
  * 菜单 -- 选项菜单(OptionMenu)、上下文菜单(ContextMenu -- 长时间按键不放时)、子菜单(SubMenu)
  *   MenuInflater --
  *   系统菜单 -- 重载 Activity 的 特定函数
- *      onCreate { mi = new MenuInflater(this); } 
+ *      onCreate { mi = new MenuInflater(this); 或 getMenuInflater(); } 
  *      onCreateOptionsMenu(Menu menu){ mi.inflate(R.menu.test_menu, menu); return true; } 
  *        或通过 menu.add/addSubMenu 等方法动态添加
  *      onOptionsItemSelected(MenuItem item){ switch(item.getItemId()) { case R.id.about:  xxxx; break; } return true; }
