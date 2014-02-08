@@ -55,29 +55,29 @@ import android.test.AndroidTestCase;
  *     2.2. 使用 @TargetApi(版本号) 使高版本API的代码在低版本SDK不报错(即避免低版本中找不到定义的错误)，
  *           在代码中还需要加一个版本判断是否执行该代码, 参见 testVersionCompat
  *           TODO: 这是编译时行为还是运行时行为？
- *   3.平台版本 和 API Level 。 
+ *   3.平台版本 和 API Level ( Build.VERSION_CODES )
  *      获得API Level 的代码： Integer apiLevel = Integer.parseInt(VERSION.SDK);
  *      编译时指定版本：在函数前增加如下声明 --   表明只针对 14(及之后?)的有效？
- *      平台版本				API Level				功能
- *     Android 4.4.2            19
- *     Android ???				18
- *     Android 4.2				17
- *     Android 4.1				16
- *     Android 4.0.3            15
- *     Android 4.0				14(ICE_CREAM_SANDWICH)
- *     Android 3.2				13
- *     Android 3.1				12
- *     Android 3.0				11
- *     Android 2.3.3            10
- *     Android 2.3				9
- *     Android 2.2				8
- *     Android 2.1				7
- *     Android 2.0.1            6
- *     Android 2.0              5
- *     Android 1.6              4
- *     Android 1.5				3
- *     Android 1.1				2
- *     Android 1.0				1
+ *      平台版本                API Level                功能
+ *     Android 4.4                19(KITKAT)
+ *     Android 4.3                18(JELLY_BEAN_MR2)
+ *     Android 4.2                17(JELLY_BEAN_MR1)
+ *     Android 4.1                16
+ *     Android 4.0.3             15
+ *     Android 4.0                14(ICE_CREAM_SANDWICH)
+ *     Android 3.2                13
+ *     Android 3.1                12
+ *     Android 3.0                11
+ *     Android 2.3.3             10(GINGERBREAD_MR1)
+ *     Android 2.3                9
+ *     Android 2.2                8(FROYO)
+ *     Android 2.1                7(ECLAIR_MR1)
+ *     Android 2.0.1             6(ECLAIR_0_1)
+ *     Android 2.0               5(ECLAIR)
+ *     Android 1.6               4(DONUT)
+ *     Android 1.5               3(CUPCAKE)
+ *     Android 1.1               2(BASE_1_1)
+ *     Android 1.0               1(BASE)
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -168,14 +168,17 @@ import android.test.AndroidTestCase;
 **************************************************************************************************************************************/
 
 public class AndroidStudy  extends AndroidTestCase{
-	public void testAndriod()
-	{
-	}
-	
-	@TargetApi(14)  //(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-	public void testVersionCompat(){
-		if(Build.VERSION.SDK_INT >= 14){ 
-			//版本大于 14 时执行以下代码(可以使用14中新的API)
-		}
-	}
+    public void testAndriod()
+    {
+        
+    }
+    
+    @TargetApi(14)  //(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    public void testVersionCompat(){
+    	//Build.VERSION_CODES.xxxxx
+    	
+        if(Build.VERSION.SDK_INT >= 14){ 
+            //版本大于 14 时执行以下代码(可以使用14中新的API)
+        }
+    }
 }

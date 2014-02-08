@@ -19,7 +19,7 @@ public class FindCarIconItem extends StartIconInfo{
 		this.name = mActivity.getResources().getString(R.string.findCar);
 	}
 
-	Random mRandom = new Random();
+	//Random mRandom = new Random();
 	@Override
 	void onClick() {
 		super.onClick();

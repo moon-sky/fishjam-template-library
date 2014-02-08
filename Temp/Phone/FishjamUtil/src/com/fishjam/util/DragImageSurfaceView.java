@@ -14,7 +14,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ScaleGestureDetector;
 
-
 public class DragImageSurfaceView extends SurfaceView implements
 		SurfaceHolder.Callback, ScaleGestureDetector.OnScaleGestureListener {
 	
@@ -24,7 +23,7 @@ public class DragImageSurfaceView extends SurfaceView implements
 
 	public DragImageSurfaceView(Context context) {
 		super(context);
-		
+
 		mPaint = new Paint();
 		mPaint.setColor(Color.BLUE);
 		mScaleGestureDetector = new ScaleGestureDetector(context, this);
@@ -32,7 +31,8 @@ public class DragImageSurfaceView extends SurfaceView implements
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		Log.i(TAG, "-----onTouchEvent, action=" + event.getAction() + ", Pos=" + event.getX() + "," + event.getY());
+		Log.i(TAG, "-----onTouchEvent, action=" + event.getAction() + ", Pos="
+				+ event.getX() + "," + event.getY());
 
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
@@ -43,33 +43,32 @@ public class DragImageSurfaceView extends SurfaceView implements
 		}
 
 		return mScaleGestureDetector.onTouchEvent(event);
-		//return super.onTouchEvent(event);
+		// return super.onTouchEvent(event);
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
+		//在创建时激发，一般在这里调用画图的线程
 		Log.i(TAG, "surfaceCreated");
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-		Log.i(TAG, "surfaceChanged, format=" + format +",width=" + width + ", height=" + height);
+		Log.i(TAG, "surfaceChanged, format=" + format + ",width=" + width + ", height=" + height);
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
+		//销毁时激发，一般在这里将画图的线程停止、释放。 
 		Log.i(TAG, "surfaceDestroyed");
-
 	}
 
 	@Override
 	public boolean onScale(ScaleGestureDetector detector) {
 		Log.i(TAG, "onScale, factor=" + detector.getScaleFactor());
-		
-		return false;
+
+		return true;
 	}
 
 	@Override
@@ -83,17 +82,18 @@ public class DragImageSurfaceView extends SurfaceView implements
 		Log.i(TAG, "onScaleEnd");
 	}
 
-	private void drawOnSurfaceHolder(){
+	private void drawOnSurfaceHolder() {
 		SurfaceHolder holder = getHolder();
 		Canvas canvas = holder.lockCanvas();
-		if(canvas != null){
+		if (canvas != null) {
 			Time time = new Time();
-			time.setToNow(); 
-			canvas.drawColor(getContext().getResources().getColor(android.R.color.primary_text_light));
-			//canvas.drawText(time.format("%H%M%S"), 0, 0, mPaint);
+			time.setToNow();
+			canvas.drawColor(getContext().getResources().getColor(
+					android.R.color.primary_text_light));
+			// canvas.drawText(time.format("%H%M%S"), 0, 0, mPaint);
 			canvas.drawText("fishjam test", 10, 10, mPaint);
 			holder.unlockCanvasAndPost(canvas);
-			
+
 			canvas = holder.lockCanvas(new Rect(0, 0, 0, 0));
 			holder.unlockCanvasAndPost(canvas);
 		}

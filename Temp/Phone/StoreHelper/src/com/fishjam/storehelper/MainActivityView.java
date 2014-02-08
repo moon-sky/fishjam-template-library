@@ -37,6 +37,7 @@ public class MainActivityView extends Activity {
 		//crashHandler.init(getApplicationContext()); 
 		
 		mStartIconInfos = new StartIconInfo[]{
+			new SaveCarIconItem(this),
 			new FindCarIconItem(this),
 			new CameraParamIconItem(this),
 			new ViewFloorImage(this),
@@ -94,8 +95,10 @@ public class MainActivityView extends Activity {
 			
 			Intent intent = new Intent(MainActivityView.this, PositionActivity.class);
 			intent.putExtra(PositionActivity.KEY_CUR_POSITION, new int[] { 150, 200});
-			int nFloor = 0;
-			intent.putExtra(PositionActivity.KEY_FLOOR,  nFloor);
+			intent.putExtra(PositionActivity.KEY_CAR_POSITION, new int[] { 350, 400});
+			
+			intent.putExtra(PositionActivity.KEY_FLOOR,  0);
+			
 			startActivity(intent);
 
 			Toast.makeText(this,  scanResult, Toast.LENGTH_LONG).show();

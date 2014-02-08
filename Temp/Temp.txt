@@ -1,3 +1,9 @@
+移动原厂线刷包：      http://yun.baidu.com/share/link?shareid=2611205181&uk=1866394329
+联通原厂线刷包:       http://yun.baidu.com/share/link?shareid=3651670488&uk=1866394329
+刷机工具：            http://yun.baidu.com/share/link?shareid=2239922798&uk=1866394329
+驱动：                http://pan.baidu.com/share/link?shareid=1159878015&uk=1866394329
+如果驱动有问题请安装：http://yun.baidu.com/share/link?shareid=2341853829&uk=1866394329
+
 AdapterView 的子类：GridView, Spinner, Gallery, AdapterViewFlipper 等
 
 ArrayAdapter 的的功能比较有限，每个列表项只能是TextView，一般只用于 AutoCompleteTextView 等文字的地方。 ArrayAdapter<String> aa = new ArrayAdapter<String>(this,...);

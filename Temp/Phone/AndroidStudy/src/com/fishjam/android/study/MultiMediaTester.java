@@ -49,7 +49,9 @@ import android.test.ActivityTestCase;
  *     setPreviewDisplay(SurfaceHolder) -- 设置预览，可以在 SurfaceHolder.Callback.surfaceCreated 中调用
  *     setParameters() -> startPreview() -- 设置参数后进行预览，可以在 SurfaceHolder.Callback.surfaceChanged 中调用
  *     takePicture() -- 进行照相
- *   SurfaceView -- 实现自绘的视图组件，具有很好的性能
+ *   SurfaceView -- 实现自绘的视图组件，可以控制表面的格式，底层提供了GPU加速，具有很好的性能，
+ *      其子类有 GLSurfaceView、VideoView 等. 通常用于主动持续更新的画面(如 酷跑游戏等)
+ *      注意：SurfaceView可以在一个子线程中直接绘制，而View必须在UI的主线程中绘制。
  *   SurfaceHolder -- 界面控制接口，一般通过 SurfaceView.getHolder 获得，允许控制界面的尺寸、格式、像素，及监控界面尺寸的改变等
  *     Callback -- 内部回调接口，可获得界面改变消息(surfaceCreated, surfaceChanged, surfaceDestroyed )，通过 addCallback 设置
  *     lockCanvas/unlockCanvasAndPost --锁定surface(可锁定部分范围)并返回可绘图的Canvas；绘制完成后解锁canvas并等待主线程更新

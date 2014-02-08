@@ -5,8 +5,11 @@ import android.R.integer;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.test.AndroidTestCase;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 /***************************************************************************************************************************************
@@ -86,12 +89,16 @@ import android.widget.ImageView;
  *         onScaleBegin(返回true表明开始缩放) -> 循环onScale -> onScaleEnd
  *       getScaleFactor() -- 返回缩放比例，注意：onScale 中如果返回true会更新factor的基数, 返回false会以旧值计算factor.
  *   实现手势识别的方法：
- *     1.实现 OnGestureListener 接口，实现所有方法 
+ *     1.实现 OnGestureListener 和 OnDoubleTapListener 接口，实现所有方法
+ *       onDown --按下 
  *       onFling(快速移动并松开)
- *       onLongPress(长按且未松开)
- *       onScroll(滑动 -- 单指? 包括缩放?), 
- *       onShowPress(按下到激发长按之前)
+ *       onLongPress -- 长按且未松开，此后松开也不会出现 Up 事件?
+ *       onScroll -- 单指滑动, 在onDown后立即移动(不触发 onShowPress), 包括缩放? 
+ *       onShowPress -- 按下到激发长按之前
  *       onSingleTapUp(手指离开触摸屏)
+ *       onDoubleTap/onDoubleTapEvent(双击)
+ *       onSingleTapConfirmed
+ *       
  *     2.继承已有的 SimpleOnGestureListener 类，只需重载需要的部分方法即可
  *    
  * 重力感应
@@ -255,7 +262,7 @@ import android.widget.ImageView;
  *   +-RelativeLayout -- 相对布局，相对其他组件的布局方式(如在其上下左右等)。可以拉伸自动适应，但会造成图像变形。
  *        layout_below, layout_toLeftOf
  *        ignoreGravity -- 指定哪个组件不受gravity属性的影响
- *   +-ScrollView 
+ *   +-ScrollView -- 滚动视图
  *   +-TableRow
  *
  * LayoutInflater infater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE); //或LayoutInflater.from(getApplicationContext())
@@ -301,7 +308,7 @@ import android.widget.ImageView;
  *     onPause -- 当系统要启动一个其他的activity时调用，这个方法被用来提交那些持久数据的改变、停止动画、和其他占用 CPU资源的东西。
  *     onStop -- 当另外一个activity恢复并遮盖住此activity,导致其对用户不再可见时调用。一个新activity启动、其它activity被切换至前景、当前activity被销毁时都会发生这种场景。可注销更新用户界面Intent接收者
  *     onDestroy -- 在activity被销毁前所调用的最后一个方法，有可能在某些情况下，一个Activity被终止时并不调用onDestroy方法。
- *   常见场景的执行顺序:
+ *   常见场景的执行顺序(TODO: BackPress 和 Home 不一样 ?):
  *     初次启动:    onApplyThemeResource -> {onCreate} -> onStart -> onPostCreate -> onResume -> onPostResume -> onAttachedToWindow
  *     退出:    [onBackPressed ->] onPause  -> onStop -> onDestroy -> onDetachedFromWindow
  *     Home到后台：onUserLeaveHint -> onSaveInstanceState -> onPause -> onCreateDescription -> onStop
@@ -466,6 +473,22 @@ public class UITester extends AndroidTestCase {
             gridView.setNumColumns(4);     //设置列数
             gridView.setAdapter(new MyAdapter(this));
         *********************************************************************************************/
+    }
+    
+	// 全屏显示窗口并获取屏幕高宽等, Activity.onCreate 中
+    public void testFullScreen(){
+    	/*
+    	// 隐去标题栏（程序的名字）, 等价于 android:theme="@android:style/Theme.NoTitleBar"
+    	requestWindowFeature(Window.FEATURE_NO_TITLE);
+    	  
+    	//隐去电池等图标和一切修饰部分（状态栏部分）， 等价于 android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+    	getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);  
+    		
+    	Display display = getWindowManager().getDefaultDisplay();
+    	display.getWidth(), display.getHeight();
+    	
+    	setContentView(xxxx);
+   		*/
     }
 }
 

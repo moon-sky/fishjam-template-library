@@ -2,7 +2,6 @@ package com.fishjam.util;
 
 import android.content.Context;
 import android.graphics.Matrix;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.AttributeSet;
@@ -32,7 +31,6 @@ public class GestureImageView extends ImageView {
 
 	public GestureImageView(Context context) {
 		this(context, null, 0);
-		
 	}
 
 	public GestureImageView(Context context, AttributeSet attrs) {
@@ -56,19 +54,26 @@ public class GestureImageView extends ImageView {
 	}
 	
 	void calcImageMatrix(){
-		if (mCurScaleFactor > mMaxScaleFactor) {
-			mCurScaleFactor = mMaxScaleFactor;
-		}else if (mCurScaleFactor < mMinScaleFactor) {
-			mCurScaleFactor = mMinScaleFactor;
+		float totalScaleFactor = mCurScaleFactor * mLastScaleFactor; 
+		
+		if (totalScaleFactor > mMaxScaleFactor) {
+			totalScaleFactor = mMaxScaleFactor;
+		}else if (totalScaleFactor < mMinScaleFactor) {
+			totalScaleFactor = mMinScaleFactor;
 		}
 
-		float totalScaleFactor = mCurScaleFactor * mLastScaleFactor; 
-		Log.i(TAG, "SetScaleFactor, mCurScaleFactor=" + mCurScaleFactor + ",lastFactor=" + mLastScaleFactor + ",total=" + totalScaleFactor);
+		float totalTranslateX = mLastTranslate.x + mCurTranslate.x;
+		float totalTranslateY = mLastTranslate.y + mCurTranslate.y;
+		
+		Log.i(TAG, "SetScaleFactor, mCurScaleFactor=" + mCurScaleFactor + ",lastFactor=" + mLastScaleFactor + ",total=" + totalScaleFactor
+				+ ", Translate=" + LogHelper.FormatPointF(mCurTranslate));
 
+		
 		mMyMatrix.reset();
 
-		mMyMatrix.postTranslate(mCurTranslate.x, mCurTranslate.y);
+		mMyMatrix.postTranslate(totalTranslateX, totalTranslateY);
 		mMyMatrix.postScale(totalScaleFactor, totalScaleFactor);
+		//Log.i(TAG, "ImageMaxtrix=" + LogHelper.FormatMatrix(mMyMatrix));
 		setImageMatrix(mMyMatrix);
 	}
 
@@ -112,9 +117,8 @@ public class GestureImageView extends ImageView {
 
 		@Override
 		public void onScaleEnd(ScaleGestureDetector detector) {
-			Log.i(TAG, "onScaleEnd, Factor=" + detector.getScaleFactor());
-
 			mLastScaleFactor *= detector.getScaleFactor();;
+			Log.i(TAG, "onScaleEnd, Factor=" + detector.getScaleFactor() + ",LastScale=" + mLastScaleFactor);
 			super.onScaleEnd(detector);
 		}
 
@@ -137,10 +141,14 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onScroll(MotionEvent e1, MotionEvent e2,
 				float distanceX, float distanceY) {
-			Log.i(TAG, "onScroll, e1=" + LogHelper.FormatMotionEvent(e1) + ",e2=" + LogHelper.FormatMotionEvent(e2)
-					+ ", distanceXY=" + distanceX + "," + distanceY);
 			mCurTranslate.x = e2.getX() - e1.getX();
 			mCurTranslate.y = e2.getY() - e1.getY();
+			//mCurScaleFactor = 1.0f;
+			
+			Log.i(TAG, "onScroll, e1=" + LogHelper.FormatMotionEvent(e1) + ",e2=" + LogHelper.FormatMotionEvent(e2)
+					+ ", distanceXY=" + distanceX + "," + distanceY
+					+ ", CurTranslate=" + LogHelper.FormatPointF(mCurTranslate));
+
 			calcImageMatrix();
 			
 			return super.onScroll(e1, e2, distanceX, distanceY);
@@ -162,6 +170,9 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onDown(MotionEvent e) {
 			Log.i(TAG, "onDown, Pos=" + e.getX() + "x" + e.getY());
+			mCurScaleFactor = 1.0f;
+			mLastTranslate = mCurTranslate;
+			mCurTranslate.set(0.0f, 0.0f);
 			return super.onDown(e);
 		}
 
@@ -174,7 +185,12 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onDoubleTapEvent(MotionEvent e) {
 			Log.i(TAG, "onDoubleTapEvent, Pos=" + e.getX() + "x" + e.getY());
-			return super.onDoubleTapEvent(e);
+			mCurScaleFactor = mLastScaleFactor = 1.0f;
+			mCurTranslate.set(0.0f, 0.0f);
+			mLastTranslate.set(0.0f, 0.0f);
+			calcImageMatrix();
+			return true;
+			//return super.onDoubleTapEvent(e);
 		}
 
 		@Override

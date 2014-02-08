@@ -14,7 +14,8 @@ import android.widget.ImageView;
 class PositionInfo
 {
 	public int nFloor;
-	public Point ptPosition = new Point();
+	public Point ptCarPosition = new Point();
+	public Point ptCurPosition = new Point();
 }
 
 public class PositionView extends ImageView {
@@ -51,10 +52,14 @@ public class PositionView extends ImageView {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-		if (mPositionInfo.ptPosition.x != 0 && mPositionInfo.ptPosition.y != 0) {
+		if (mPositionInfo.ptCurPosition.x != 0 && mPositionInfo.ptCurPosition.y != 0) {
 			//paint.setColor(getResources().getColor(R.drawable.red));
-			mPaint.setColor(getResources().getColor(R.color.red));
-			canvas.drawCircle(mPositionInfo.ptPosition.x, mPositionInfo.ptPosition.y, 10, mPaint);
+			Resources resources = getResources();
+			mPaint.setColor(resources.getColor(R.color.red));
+			canvas.drawCircle(mPositionInfo.ptCurPosition.x, mPositionInfo.ptCurPosition.y, 10, mPaint);
+			
+			mPaint.setColor(resources.getColor(R.color.grgray));
+			canvas.drawCircle(mPositionInfo.ptCarPosition.x, mPositionInfo.ptCarPosition.y, 10, mPaint);
 		}
 	}
 	
