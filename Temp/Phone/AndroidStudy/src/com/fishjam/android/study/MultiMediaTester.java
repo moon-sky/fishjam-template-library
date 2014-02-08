@@ -58,7 +58,7 @@ import android.test.ActivityTestCase;
  *       注意： unlockCanvasAndPost 后只是提交了更新请求，主线程可能尚未更新，因此绘制的内容会被覆盖。
  *                为了使提交立即生效，可以 lockCanvas(new Rect(0, 0, 0, 0)) + unlockCanvasAndPost() 一次。
  *     setType() -- 设置类型，如 SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS
- *     
+ *   Surface -- 保存了当前窗口的像素数据，但一般不直接和Surface打交道。而是通过在Canvas上绘图来改变其中的数据 
  *     
  * 2D图形处理  -- android.graphics, android.view.animation 等包中
  *   图片: Drawable / Bitmap / BitmapFactory

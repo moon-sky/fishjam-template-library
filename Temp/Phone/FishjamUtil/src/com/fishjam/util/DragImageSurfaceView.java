@@ -1,6 +1,7 @@
 package com.fishjam.util;
 
 import java.util.Date;
+import java.util.Timer;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -15,18 +16,28 @@ import android.view.SurfaceView;
 import android.view.ScaleGestureDetector;
 
 public class DragImageSurfaceView extends SurfaceView implements
-		SurfaceHolder.Callback, ScaleGestureDetector.OnScaleGestureListener {
-	
+		SurfaceHolder.Callback, ScaleGestureDetector.OnScaleGestureListener //, Runnable
+{
 	private static final String TAG = DragImageSurfaceView.class.getSimpleName();
+	private SurfaceHolder mSurfaceHolder;
+	private Canvas mCanvas;
 	private Paint mPaint;
+	private int mScreenW, mScreenH;
+	private Time mTime;
 	private ScaleGestureDetector mScaleGestureDetector;
 
 	public DragImageSurfaceView(Context context) {
 		super(context);
-
+		
 		mPaint = new Paint();
 		mPaint.setColor(Color.BLUE);
+		mPaint.setAntiAlias(true);
+		
+		mSurfaceHolder = this.getHolder();
+		mSurfaceHolder.addCallback(this);
 		mScaleGestureDetector = new ScaleGestureDetector(context, this);
+
+		this.setKeepScreenOn(true); 	//保持屏幕常量
 	}
 
 	@Override
@@ -50,6 +61,11 @@ public class DragImageSurfaceView extends SurfaceView implements
 	public void surfaceCreated(SurfaceHolder holder) {
 		//在创建时激发，一般在这里调用画图的线程
 		Log.i(TAG, "surfaceCreated");
+
+		
+		//构造函数时 View 尚未真正创建，那个时候得到的 Width/Height 为 0 
+		mScreenW = this.getWidth();
+		mScreenH = this.getHeight();
 	}
 
 	@Override
@@ -82,20 +98,22 @@ public class DragImageSurfaceView extends SurfaceView implements
 		Log.i(TAG, "onScaleEnd");
 	}
 
-	private void drawOnSurfaceHolder() {
-		SurfaceHolder holder = getHolder();
-		Canvas canvas = holder.lockCanvas();
-		if (canvas != null) {
-			Time time = new Time();
-			time.setToNow();
-			canvas.drawColor(getContext().getResources().getColor(
-					android.R.color.primary_text_light));
-			// canvas.drawText(time.format("%H%M%S"), 0, 0, mPaint);
-			canvas.drawText("fishjam test", 10, 10, mPaint);
-			holder.unlockCanvasAndPost(canvas);
+	protected void drawOnSurfaceHolder() {
 
-			canvas = holder.lockCanvas(new Rect(0, 0, 0, 0));
-			holder.unlockCanvasAndPost(canvas);
+		Canvas canvas = mSurfaceHolder.lockCanvas();
+		if (canvas != null) {
+			try
+			{
+				canvas.drawColor(Color.WHITE);// getContext().getResources().getColor(android.R.color.primary_text_light));
+				mTime.setToNow();
+				canvas.drawText(mTime.format("%H%M%S"), 0, 0, mPaint);
+				canvas.drawText("fishjam test", 30, 30, mPaint);
+			}finally{
+				mSurfaceHolder.unlockCanvasAndPost(canvas);
+				
+				//canvas = mSurfaceHolder.lockCanvas(new Rect(0, 0, 0, 0));
+				//mSurfaceHolder.unlockCanvasAndPost(canvas);
+			}
 		}
 	}
 }
