@@ -75,7 +75,31 @@ public final class LogHelper {
 		}
 		return sBuilder.toString();
 	}
-	
+	public static String FormatKey(int key){
+		String strResult; 
+		switch (key) {
+		case KeyEvent.KEYCODE_SOFT_LEFT: 	strResult = "SoftLeft"; break;
+		case KeyEvent.KEYCODE_SOFT_RIGHT: 	strResult = "SoftRight";break;
+		case KeyEvent.KEYCODE_HOME:			strResult = "Home";		break;
+		case KeyEvent.KEYCODE_BACK:			strResult = "Back";		break;
+		case KeyEvent.KEYCODE_CALL:			strResult = "Call";		break;
+		case KeyEvent.KEYCODE_ENDCALL:		strResult = "EndCall";	break;
+		case KeyEvent.KEYCODE_DPAD_UP:		strResult = "DPadUp";	break;
+		case KeyEvent.KEYCODE_DPAD_DOWN:	strResult = "DPadDown";	break;
+		case KeyEvent.KEYCODE_DPAD_LEFT:	strResult = "DPadLeft";	break;
+		case KeyEvent.KEYCODE_DPAD_RIGHT:	strResult = "DPadRight";break;
+		case KeyEvent.KEYCODE_VOLUME_UP:	strResult = "VolumeUp";	break;
+		case KeyEvent.KEYCODE_VOLUME_DOWN:	strResult = "VolumeDown";break;
+		case KeyEvent.KEYCODE_POWER:		strResult = "Power";	break;
+		case KeyEvent.KEYCODE_CAMERA:		strResult = "Camera";	break;
+		case KeyEvent.KEYCODE_CLEAR:		strResult = "Clear";	break;
+
+		default:
+			strResult = "Unknown:" + key;
+			break;
+		}
+		return strResult;
+	}
 	public static String FormatKeyEvent(KeyEvent event){
 		StringBuilder sBuilder = new StringBuilder();
 		switch(event.getAction()) {

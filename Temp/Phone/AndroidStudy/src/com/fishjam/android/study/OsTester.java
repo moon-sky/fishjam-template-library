@@ -7,6 +7,17 @@ import android.content.Intent;
 import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
+ * 1.多个Activity的应用程序的完全关闭方法(TODO: 评论说模拟器上才可以)
+ *   a.声明 <uses-permission android:name="android.permission.RESTART_PACKAGES"/> 权限
+ *   b.在退出的地方调用： 
+ *     ActivityManager activityMgr= (ActivityManager)this.getSystemService(ACTIVITY_SERVICE);
+ *     activityMgr.restartPackage(getPackageName());
+ *   其他方式：
+ *   1.用广播也行啊，广播接收器需要在每个activity里注册，需要全退时，广播一下
+ *   2.继承Application把所有activity都放到一个集合里，退出时，直接把这个集合里的activity一个一个退出
+***************************************************************************************************************************************/
+
+/***************************************************************************************************************************************
  * os --
  *   Bundle -- 属性对，通常用于状态值保存和恢复。也可用于数据传递。
  *     new Bundle 后通过 Intent 的 putExtras 方法进行设置。接收端的 Activity.getIntent (不等于savedInstanceState).getExtras 进行获取。
@@ -16,7 +27,9 @@ import android.test.AndroidTestCase;
  *     getString() -- TODO: 究竟是 Context.getString 还是 Resources.getString ?
  *   Environment
  *     getExternalStorageState -- 获取SD卡的状态，如 MEDIA_MOUNTED 
- *
+ *   Process
+ *     killProcess(android.os.Process.myPid()) -- 强制杀死本进程，但不安全。需要在 Activity.onDestroy 中调用?
+ *   
  * Intent(动作 + URI格式的数据) -- Android中引入的新的设计元素，不同组件之间相互导航的纽带，封装了不同组件之间导航查找的条件。
  *   应用程序可以通过它发出请求，就像是发出求助信号。应用程序可以按照相似或互补的方式进行注册，表明他们有能力或有兴趣执行各种请求或intent。
  *   主要部分： 
@@ -118,7 +131,8 @@ public class OsTester  extends AndroidTestCase {
 		Bundle bundle = new Bundle();
 		bundle.putString("username", "userNameString");
 		bundle.putString("passwd", "passwdString");
-		Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+		Intent intent = new Intent(MainActivity.this, ResultActivity.class); 
+		//或 new Intent(); intent.setClass(MainActivity.this, ResultActivity.class);
 		intent.putExtra("data", bundle);
 		startActivity(intent);
 		*/

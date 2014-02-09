@@ -111,6 +111,7 @@ import android.test.ActivityTestCase;
  *   2.可以从 GraphicsActivity 继承
  *   
  *   Canvas -- 画布
+ *     save/restore -- 保存和取出画布的状态，成对出现。通常用于对Canvas进行 旋转/缩放/平移等操作，来对其中的部分元素进行特殊绘制，绘制完毕后恢复Canvs
  *   Color/Paint(画笔)/Path/ShapeDrawable及其子类，如 OvalShape(椭圆)、RectShape(矩形)
  *   
  * 图形特效

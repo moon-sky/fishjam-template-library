@@ -5,7 +5,8 @@ import android.test.AndroidTestCase;
 /***************************************************************************************************************************************
  * 模拟器切换纵、横屏 -- 快捷键F12或Ctrl+F11， 程序会重新调用各个生命周期(如 onCreate ?)， 通过 onConfigurationChanged 可以捕获切换消息？
  *   TODO:  设置Activity的android:configChanges="orientation|keyboardHidden"时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法
- * 
+ *          Manifest中设置Activity的属性 -- android:screenOrientation="landscape"(横屏)、"portrait" 竖屏
+ *           
  * 部署到手机 
  *   1.通过USB联机至手机
  *   2.安装Android的USB Driver -- %ANDROID_SDK%\ usb_driver

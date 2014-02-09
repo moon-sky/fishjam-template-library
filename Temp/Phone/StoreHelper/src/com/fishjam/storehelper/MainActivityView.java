@@ -35,7 +35,7 @@ public class MainActivityView extends Activity {
 		CrashHandler crashHandler = CrashHandler.getInstance();
 		crashHandler.init(this);
 		//crashHandler.init(getApplicationContext()); 
-		
+
 		mStartIconInfos = new StartIconInfo[]{
 			new SaveCarIconItem(this),
 			new FindCarIconItem(this),

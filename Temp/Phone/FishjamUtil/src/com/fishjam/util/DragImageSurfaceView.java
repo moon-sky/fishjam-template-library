@@ -38,6 +38,7 @@ public class DragImageSurfaceView extends SurfaceView implements
 		mScaleGestureDetector = new ScaleGestureDetector(context, this);
 
 		this.setKeepScreenOn(true); 	//保持屏幕常量
+		this.setFocusable(true);		//设置焦点后才能响应 onKeyDown 等方法
 	}
 
 	@Override
@@ -104,11 +105,14 @@ public class DragImageSurfaceView extends SurfaceView implements
 		if (canvas != null) {
 			try
 			{
+				//canvas.save();
+				
 				canvas.drawColor(Color.WHITE);// getContext().getResources().getColor(android.R.color.primary_text_light));
 				mTime.setToNow();
 				canvas.drawText(mTime.format("%H%M%S"), 0, 0, mPaint);
 				canvas.drawText("fishjam test", 30, 30, mPaint);
 			}finally{
+				//canvas.restore();
 				mSurfaceHolder.unlockCanvasAndPost(canvas);
 				
 				//canvas = mSurfaceHolder.lockCanvas(new Rect(0, 0, 0, 0));

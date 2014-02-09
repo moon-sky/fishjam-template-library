@@ -65,7 +65,8 @@ import android.widget.ImageView;
  *     2.main.xml 中 <TextView style="@style/DavidStyleText1" ...>
  *     
  * 主题(Theme)
- * 
+ *   配置中：android:theme="@android:style/Theme.Dialog"
+ *   
  * view  -- 所有UI类都建立在View和ViewGroup两个类的基础之上，采用组合(Composite)设计模式，需要通过 Activity.setContentView 设置显示
  *   View --基本控件,  其子类称为 Widget
  *     Button( setOnClickListener(new Button.OnClickListener(){public void onClick(View v) {...}}); )
@@ -293,6 +294,9 @@ import android.widget.ImageView;
  *     注意：Activity必须在清单文件中声明才能使用
  *   每个Activity的状态由它所在Activity栈中的位置所决定，所有当前正在运行的Activity将遵循后进先出的原则。
  *   当一个新的Activity启动，当前的Activity将移至堆栈的顶部，如果用户使用Back按钮，或在前台Activity被关闭，下一个Activity将被激活并且移至到堆栈的顶部。
+ *   如在 startActivity 时 setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) 标志可清空已有的栈(即新起的Activity将成为最后一个，finish时将结束程序)
+ *     TODO：API版本小于8？否则用 FLAG_ACTIVITY_NEW_TASK
+ *     
  *   Activity状态 -- 状态过渡具有不确定性并且由Runtime完全管理
  *     Active状态：这时候Activity处于栈顶，且是可见的，有焦点的，能够接收用户输入前景Activity。
  *     Paused状态：Activity是可见的，但没有焦点。例如，如果有一个透明或非全屏幕上的Activity在你的Activity上面。
@@ -321,7 +325,7 @@ import android.widget.ImageView;
  *     getWindow() -- 返回该Activity所包含的窗口，如不调用 setContentView 来设置该窗口显示的内容，则显示为一个空窗口 
  *     setContentView -- 通常在重载的 onCreate 中调用来设置要显示的视图，从而实现与用户交互的功能
  *     setThemem -- 设置窗口风格(如 不显示ActionBar、以对话框形式显示窗口等)
- *     startActivity -- 启动并导航到另一个Activity，参数被封装在Intent中
+ *     startActivity -- 启动并导航到另一个Activity，参数被封装在Intent中,
  *       Intent intent = new Intent(FirstActivity.this, SecondActivity.class);  通过Bundle设置参数;  startActivity(intent);  //在FirstActivity中启动SecondActivity
  *       在 SecondActivity::onCreate 中: Intent intent = getIntent(); Bundle bundle = intent.getExtras(); ...
  *     startActivityForResult -- 以等待返回结果的方式启动并导航到另一个Activity， 需要重载 onActivityResult 处理返回的 Intent 等结果。
