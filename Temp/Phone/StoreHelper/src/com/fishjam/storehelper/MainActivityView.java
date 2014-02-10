@@ -27,15 +27,20 @@ public class MainActivityView extends Activity {
 	
 	StartIconInfo[] mStartIconInfos;
 	GridView mViewStartIcons;
+	int mCurSelIconIndex = -1;
+	//StoreInformation mStoreInformation;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_view);
-		CrashHandler crashHandler = CrashHandler.getInstance();
-		crashHandler.init(this);
+		//CrashHandler crashHandler = CrashHandler.getInstance();
+		//crashHandler.init(this);
 		//crashHandler.init(getApplicationContext()); 
 
+		//≥ı ºªØ
+		StoreInformation.Instance(this);
+		
 		mStartIconInfos = new StartIconInfo[]{
 			new SaveCarIconItem(this),
 			new FindCarIconItem(this),
@@ -43,7 +48,8 @@ public class MainActivityView extends Activity {
 			new ViewFloorImage(this),
 			new TestGestureIconInfo(this),
 			new ImageActivityIconInfo(this),
-			new ViewCallbackTesterIconInfo(this)
+			new ViewCallbackTesterIconInfo(this),
+			new AStarIconItem(this),
 		};
 		
 		ArrayList<Map<String, Object>> listItems = new ArrayList<Map<String,Object>>();
@@ -59,7 +65,8 @@ public class MainActivityView extends Activity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				mStartIconInfos[position].onClick();
+				mCurSelIconIndex = position;
+				mStartIconInfos[position].onExecute();
 			}
 		});
 
@@ -68,13 +75,20 @@ public class MainActivityView extends Activity {
 				new int[] { R.id.imageView1, R.id.textView1 } 
 		);
 		mViewStartIcons.setAdapter(adapterStartIcons);
-		
 	}
 	
 	@Override
+	protected void onDestroy() {
+		StoreInformation.Instance(this).Save();
+		super.onDestroy();
+	}
+
+	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		
+		if (mCurSelIconIndex != -1) {
+			mStartIconInfos[mCurSelIconIndex].onActivityResult(requestCode, resultCode, data);
+		}
 		/*
 		 IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
 		 if (scanResult != null) {
@@ -87,21 +101,6 @@ public class MainActivityView extends Activity {
 				startActivity(intent);
 				
 			//mTextView.setText(scanResult.toString());
-		}
-  	 //*/
-		if (resultCode == RESULT_OK) {
-			Bundle bundle = data.getExtras();
-			String scanResult = bundle.getString("result");
-			
-			Intent intent = new Intent(MainActivityView.this, PositionActivity.class);
-			intent.putExtra(PositionActivity.KEY_CUR_POSITION, new int[] { 150, 200});
-			intent.putExtra(PositionActivity.KEY_CAR_POSITION, new int[] { 350, 400});
-			
-			intent.putExtra(PositionActivity.KEY_FLOOR,  0);
-			
-			startActivity(intent);
-
-			Toast.makeText(this,  scanResult, Toast.LENGTH_LONG).show();
 		}
 	   //*/
 	}

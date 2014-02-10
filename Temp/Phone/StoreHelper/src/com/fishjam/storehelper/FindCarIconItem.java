@@ -8,7 +8,9 @@ import com.zxing.activity.CaptureActivity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 public class FindCarIconItem extends StartIconInfo{
 
@@ -21,8 +23,8 @@ public class FindCarIconItem extends StartIconInfo{
 
 	//Random mRandom = new Random();
 	@Override
-	void onClick() {
-		super.onClick();
+	void onExecute() {
+		super.onExecute();
 
 		IntentIntegrator intentInte = new IntentIntegrator(mActivity);
 		intentInte.initiateScan();
@@ -40,6 +42,25 @@ public class FindCarIconItem extends StartIconInfo{
 		intent.putExtra(PositionActivity.KEY_FLOOR,  nFloor);
 		mContext.startActivity(intent);
 		*/
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		if (resultCode == Activity.RESULT_OK) {
+			Bundle bundle = data.getExtras();
+			String scanResult = bundle.getString("result");
+			
+			PositionInfo curPositionInfo = StoreInformation.Instance(mActivity).mCurPositionInfo;
+			curPositionInfo.iFloor = 0;
+			curPositionInfo.ptPos.set(450,  400);
+			
+			Intent intent = new Intent(mActivity, PositionActivity.class);
+			mActivity.startActivity(intent);
+
+			//Toast.makeText(mActivity,  scanResult, Toast.LENGTH_LONG).show();
+		}
 	}
 
 }

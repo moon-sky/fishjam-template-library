@@ -22,7 +22,7 @@ class ImageActivityIconInfo extends StartIconInfo{
 	}
 
 	@Override
-	void onClick() {
+	void onExecute() {
 		Intent intent = new Intent(mActivity, ImageActivity.class);
 		mActivity.startActivity(intent);
 	}

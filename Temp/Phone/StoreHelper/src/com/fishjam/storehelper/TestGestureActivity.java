@@ -28,7 +28,7 @@ class TestGestureIconInfo extends StartIconInfo{
 	}
 
 	@Override
-	void onClick() {
+	void onExecute() {
 		Intent intent = new Intent(mActivity, TestGestureActivity.class);
 		mActivity.startActivity(intent);
 	}

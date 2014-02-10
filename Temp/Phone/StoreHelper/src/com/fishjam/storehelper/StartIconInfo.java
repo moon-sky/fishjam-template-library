@@ -1,6 +1,7 @@
 package com.fishjam.storehelper;
 
 import android.app.Activity;
+import android.content.Intent;
 
 public class StartIconInfo {
 	public int 			icon;
@@ -11,7 +12,10 @@ public class StartIconInfo {
 	{
 		mActivity = activity;
 	}
-	void onClick(){
-		//Log.i(TAG,  name + " is Clicked");
+	void onExecute(){
+		
+	}
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
 	}
 }

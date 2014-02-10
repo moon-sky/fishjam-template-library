@@ -49,6 +49,8 @@ import android.widget.ImageView;
  *    5.在处理屏幕方向变化时，为其优化而不是单纯地改变方向
  *    6.挑选具有代表性的特性界面在真机预览效果
  *    7.处理按钮的放大缩小时，尽可能使用九宫格图片，而不是单纯绘图
+ *  
+ *  在 layout 中可以通过 <include> 和 <merge> 标签重用已有的layout等 -- TODO：细节？
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
@@ -261,7 +263,7 @@ import android.widget.ImageView;
  *           shrinkColumns -- 设置允许被收缩的列的列序号，多个列序号之间用逗号隔开
  *           stretchColumns -- 设置允许被拉伸的列的列序号，多个列序号之间用逗号隔开，可保证组件能完全填满表格空余空间
  *   +-RelativeLayout -- 相对布局，相对其他组件的布局方式(如在其上下左右等)。可以拉伸自动适应，但会造成图像变形。
- *        layout_below, layout_toLeftOf
+ *        layout_below, layout_alignParentBottom, layout_toRightOf
  *        ignoreGravity -- 指定哪个组件不受gravity属性的影响
  *   +-ScrollView -- 滚动视图
  *   +-TableRow
@@ -331,7 +333,7 @@ import android.widget.ImageView;
  *     startActivityForResult -- 以等待返回结果的方式启动并导航到另一个Activity， 需要重载 onActivityResult 处理返回的 Intent 等结果。
  *                                       在SecondActivity中通过 SecondActivity.this.setResult(0, intent); 设置返回值， 然后 finish() 结束
  *   常见子类
- *     ListActivity, MapActivity 等
+ *     ListActivity, MapActivity, PreferenceActivity(对系统进行信息配置和管理) 等
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************

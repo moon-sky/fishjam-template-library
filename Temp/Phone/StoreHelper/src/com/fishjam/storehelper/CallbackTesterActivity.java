@@ -29,7 +29,7 @@ class ViewCallbackTesterIconInfo extends StartIconInfo{
 	}
 
 	@Override
-	void onClick() {
+	void onExecute() {
 		Intent intent = new Intent(mActivity, CallbackTesterActivity.class);
 		mActivity.startActivity(intent);
 	}

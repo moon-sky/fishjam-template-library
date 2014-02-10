@@ -28,9 +28,9 @@ public class CameraParamIconItem extends StartIconInfo{
 	}
 	
 	@Override
-	void onClick() {
+	void onExecute() {
 		// TODO Auto-generated method stub
-		super.onClick();
+		super.onExecute();
 		
 		Camera camera = Camera.open();
 		if (camera != null ) {

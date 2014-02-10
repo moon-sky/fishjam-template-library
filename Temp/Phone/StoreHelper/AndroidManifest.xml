@@ -34,6 +34,7 @@
         <activity android:name="com.zxing.activity.CaptureActivity"></activity>
         <activity android:name="TestGestureActivity"></activity>
         <activity android:name="CallbackTesterActivity"></activity>
+        <activity android:name="AStarTestActivity"></activity>
     </application>
 
 </manifest>

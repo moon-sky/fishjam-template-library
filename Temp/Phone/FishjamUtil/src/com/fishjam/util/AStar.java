@@ -2,7 +2,7 @@ package com.fishjam.util;
 
 import java.util.ArrayList;
 
-import android.R.integer;
+import android.util.Log;
 
 /**************************************************************************************************************************************
  * 游戏地图编辑器( http://download.csdn.net/download/xys289187120/3452259 )
@@ -27,34 +27,38 @@ if(result != null) { success }
 
 //八方向寻路
 public class AStar {
+	private final static String TAG = AStar.class.getSimpleName();
 	
-	class PosInfo {
-		public PosInfo(int iX, int iY) {
-			this.x = iX;
-			this.y = iY;
+	public class PosInfo {
+		public PosInfo(int iRow, int iCol, int iDir) {
+			this.row = iRow;
+			this.col = iCol;
+			this.dir = iDir;
 		}
 
 		public PosInfo(PosInfo posInfo) {
-			this.x = posInfo.x;
-			this.y = posInfo.y;
+			this.row = posInfo.row;
+			this.col = posInfo.col;
+			this.dir = posInfo.dir;
 		}
 
-		public int x;
-		public int y;
+		public int row;
+		public int col;
+		public int dir;
 	}
 
-	private int[][] map; // 地图矩阵，0表示能通过，1表示不能通过
-	private int map_w; // 地图宽度
-	private int map_h; // 地图高度
-	private int start_x; // 起点坐标X
-	private int start_y; // 起点坐标Y
-	private int goal_x; // 终点坐标X
-	private int goal_y; // 终点坐标Y
+	private int[][] mMap; // 地图矩阵，0表示能通过，1表示不能通过
+	private int mMapRowCount; 	// 地图宽度
+	private int mMapColumnCount; 				// 地图高度
+	private int mStartRow; 		// 起点行数
+	private int mStartCol; 	// 起点列数
+	private int mEndRow; 		// 终点行数
+	private int mEndCol; 	// 终点列数
 	private boolean mEnable8Way;		//是否允许8方向寻路，false表示4方向
 	
-	private boolean closeList[][]; // 关闭列表
-	public int openList[][][]; // 打开列表
-	private int openListLength;
+	private boolean mCloseList[][]; // 关闭列表
+	public int mOpenList[][][]; // 打开列表
+	private int mOpenListLength;
 
 	private static final int EXIST = 1;
 	private static final int NOT_EXIST = 0;
@@ -75,27 +79,31 @@ public class AStar {
 	public static final int DIR_DOWN_LEFT = 7;
 	public static final int DIR_DOWN_RIGHT = 8;
 
-	private int astar_counter; // 算法嵌套深度
+	private static final int ASTAR_DEPTH = 5000; // 算法嵌套深度
 	private boolean isFound; // 是否找到路径
 
-	public AStar(int[][] mx, int sx, int sy, int gx, int gy, boolean bEnable8Way) {
-		start_x = sx;
-		start_y = sy;
-		goal_x = gx;
-		goal_y = gy;
+	public AStar(int[][] map, int startRow, int startColumn, int endRow, int endColumn, boolean bEnable8Way) {
+		mStartRow = startRow;
+		mStartCol = startColumn;
+		mEndRow = endRow;
+		mEndCol = endColumn;
 		mEnable8Way = bEnable8Way;
 		
-		map = mx;
-		map_w = mx.length;
-		map_h = mx[0].length;
+		mMap = map;
+		mMapRowCount = map.length;
+		mMapColumnCount = map[0].length;
 		
-		astar_counter = 5000;
+		Log.e(TAG, "AStar, Row=" + mMapRowCount +",Column=" + mMapColumnCount 
+				+",canPasStart[" + mMap[mStartRow][mStartCol] + "]=" + checkPass(mStartRow, mStartCol)
+				+",canPasGoal[" + mMap[mEndRow][mEndCol] + "]=" + checkPass(mEndRow, mEndCol)
+		);
+		
 		initCloseList();
-		initOpenList(goal_x, goal_y);
+		initOpenList(mEndRow, mEndCol);
 	}
 
 	// 得到地图上这一点的消耗值
-	private int getMapExpense(int x, int y, int dir) {
+	private int getMapExpense(int row, int col, int dir) {
 		if (dir < 5) {
 			return 10;
 		} else {
@@ -104,168 +112,207 @@ public class AStar {
 	}
 
 	// 得到距离的消耗值
-	private int getDistance(int x, int y, int ex, int ey) {
-		return 10 * (Math.abs(x - ex) + Math.abs(y - ey));
+	private int getDistance(int sRow, int sCol, int eRow, int eCol) {
+		return 10 * (Math.abs(sRow - eRow) + Math.abs(sCol - eCol));
 	}
 
 	// 得到给定坐标格子此时的总消耗值
-	private int getCost(int x, int y) {
-		return openList[x][y][COST];
+	private int getCost(int iRow, int iCol) {
+		return mOpenList[iRow][iCol][COST];
 	}
 
 	// 开始寻路
 	public void searchPath() {
-		addOpenList(start_x, start_y);
-		aStar(start_x, start_y);
+		Log.e(TAG, "isCanPass Start=" + isCanPass(mStartRow, mStartCol));//+", Reason=" + sTmpReason);
+		Log.e(TAG, "isCanPass Goal=" + isCanPass(mEndRow, mEndCol));// +", Reason=" + sTmpReason);
+		
+		if (isCanPass(mStartRow, mStartCol) && isCanPass(mEndRow, mEndCol)) {
+			addOpenList(mStartRow, mStartCol);
+			aStar(mStartRow, mStartCol);
+		}
+		String strFound = "" + isFound;
+		Log.e(TAG, String.format("searchPath, [%1$d,%2$d] -> [%3$d,%4$d], isFound=%5$s", mStartRow, mStartCol, mEndRow, mEndCol, 
+				strFound));
 	}
 
 	// 寻路
-	private void aStar(int x, int y) {
+	private void aStar(int row, int col) {
 		// 控制算法深度
-		for (int t = 0; t < astar_counter; t++) {
-			if (((x == goal_x) && (y == goal_y))) {
+		for (int depth = 0; depth < ASTAR_DEPTH; depth++) {
+			if (((row == mEndRow) && (col == mEndCol))) {
+				Log.i(TAG, "find AStart, depth=" + depth);
 				isFound = true;
 				return;
-			} else if ((openListLength == 0)) {
+			} else if ((mOpenListLength == 0)) {
+				Log.i(TAG, "can not find AStart, depth=" + depth);
 				isFound = false;
 				return;
 			}
 
-			removeOpenList(x, y);
-			addCloseList(x, y);
+			removeOpenList(row, col);
+			addCloseList(row, col);
 
 			// 该点周围能够行走的点
-			addNewOpenList(x, y, x, y + 1, DIR_UP);
-			addNewOpenList(x, y, x, y - 1, DIR_DOWN);
-			addNewOpenList(x, y, x - 1, y, DIR_RIGHT);
-			addNewOpenList(x, y, x + 1, y, DIR_LEFT);
+			addNewOpenList(row, col, row, col + 1, DIR_UP);
+			addNewOpenList(row, col, row, col - 1, DIR_DOWN);
+			addNewOpenList(row, col, row - 1, col, DIR_RIGHT);
+			addNewOpenList(row, col, row + 1, col, DIR_LEFT);
 			if (mEnable8Way) {
-				addNewOpenList(x, y, x + 1, y + 1, DIR_UP_LEFT);
-				addNewOpenList(x, y, x - 1, y + 1, DIR_UP_RIGHT);
-				addNewOpenList(x, y, x + 1, y - 1, DIR_DOWN_LEFT);
-				addNewOpenList(x, y, x - 1, y - 1, DIR_DOWN_RIGHT);
+				addNewOpenList(row, col, row + 1, col + 1, DIR_UP_LEFT);
+				addNewOpenList(row, col, row - 1, col + 1, DIR_UP_RIGHT);
+				addNewOpenList(row, col, row + 1, col - 1, DIR_DOWN_LEFT);
+				addNewOpenList(row, col, row - 1, col - 1, DIR_DOWN_RIGHT);
 			}
 
 			// 找到估值最小的点，进行下一轮算法
 			int cost = 0x7fffffff;
-			for (int i = 0; i < map_w; i++) {
-				for (int j = 0; j < map_h; j++) {
-					if (openList[i][j][ISEXIST] == EXIST) {
+			for (int i = 0; i < mMapRowCount; i++) {
+				for (int j = 0; j < mMapColumnCount; j++) {
+					if (mOpenList[i][j][ISEXIST] == EXIST) {
 						if (cost > getCost(i, j)) {
 							cost = getCost(i, j);
-							x = i;
-							y = j;
+							row = i;
+							col = j;
 						}
 					}
 				}
 			}
 		}
 		// 算法超深
+		Log.e(TAG, "Too big map, RowCount=" + mMapRowCount + ",ColCount" + mMapColumnCount);
 		isFound = false;
 		return;
 	}
 
 	// 添加一个新的节点
-	private void addNewOpenList(int x, int y, int newX, int newY, int dir) {
-		if (isCanPass(newX, newY)) {
-			if (openList[newX][newY][ISEXIST] == EXIST) {
-				if (openList[x][y][EXPENSE] + getMapExpense(newX, newY, dir) < openList[newX][newY][EXPENSE]) {
-					setFatherDir(newX, newY, dir);
-					setCost(newX, newY, x, y, dir);
+	private void addNewOpenList(int sRow, int sCol, int eRow, int eCol, int dir) {
+		if (isCanPass(eRow, eCol)) {
+			if (mOpenList[eRow][eCol][ISEXIST] == EXIST) {
+				if (mOpenList[sRow][sCol][EXPENSE] + getMapExpense(eRow, eCol, dir) < mOpenList[eRow][eCol][EXPENSE]) {
+					setFatherDir(eRow, eCol, dir);
+					setCost(eRow, eCol, sRow, sCol, dir);
 				}
 			} else {
-				addOpenList(newX, newY);
-				setFatherDir(newX, newY, dir);
-				setCost(newX, newY, x, y, dir);
+				addOpenList(eRow, eCol);
+				setFatherDir(eRow, eCol, dir);
+				setCost(eRow, eCol, sRow, sCol, dir);
 			}
 		}
 	}
 
 	// 设置消耗值
-	private void setCost(int x, int y, int ex, int ey, int dir) {
-		openList[x][y][EXPENSE] = openList[ex][ey][EXPENSE]
-				+ getMapExpense(x, y, dir);
-		openList[x][y][DISTANCE] = getDistance(x, y, ex, ey);
-		openList[x][y][COST] = openList[x][y][EXPENSE]
-				+ openList[x][y][DISTANCE];
+	private void setCost(int sRow, int sCol, int eRow, int eCol, int dir) {
+		mOpenList[sRow][sCol][EXPENSE] = mOpenList[eRow][eCol][EXPENSE]
+				+ getMapExpense(sRow, sCol, dir);
+		mOpenList[sRow][sCol][DISTANCE] = getDistance(sRow, sCol, eRow, eCol);
+		mOpenList[sRow][sCol][COST] = mOpenList[sRow][sCol][EXPENSE]
+				+ mOpenList[sRow][sCol][DISTANCE];
 	}
 
 	// 设置父节点方向
-	private void setFatherDir(int x, int y, int dir) {
-		openList[x][y][FATHER_DIR] = dir;
+	private void setFatherDir(int iRow, int iCol, int iDir) {
+		mOpenList[iRow][iCol][FATHER_DIR] = iDir;
 	}
 
-	// 判断一个点是否可以通过
-	private boolean isCanPass(int x, int y) {
-		// 超出边界
-		if (x < 0 || x >= map_w || y < 0 || y >= map_h) {
-			return false;
-		}
-		// 地图不通
-		if (map[x][y] != 0) {
-			return false;
-		}
-		// 在关闭列表中
-		if (isInCloseList(x, y)) {
+	//可重载
+	protected boolean checkPass(int iRow, int iCol){
+		if (mMap[iRow][iCol] != 0) {
 			return false;
 		}
 		return true;
 	}
+	
+	//private String sTmpReason;
+	// 判断一个点是否可以通过
+	private boolean isCanPass(int iRow, int iCol) {
+		// 超出边界
+		if (iRow < 0 || iRow >= mMapRowCount || iCol < 0 || iCol >= mMapColumnCount) {
+			//sTmpReason = "OverBounds, iRow=" + iRow + ",nCol=" + iCol 
+			//		+ ",mMapRowCount=" + mMapRowCount +",mMapColumnCount=" + mMapColumnCount;
+			return false;
+		}
+		
+		// 地图不通
+		if (!checkPass(iRow, iCol)) {
+			//sTmpReason = "checkPass";
+			return false;
+		}
+		// 在关闭列表中
+		if (isInCloseList(iRow, iCol)) {
+			//sTmpReason = "inCloseList, iRow=" + iRow + ",nCol=" + iCol;
+			return false;
+		}
+		//sTmpReason = "";
+		return true;
+	}
 
 	// 移除打开列表的一个元素
-	private void removeOpenList(int x, int y) {
-		if (openList[x][y][ISEXIST] == EXIST) {
-			openList[x][y][ISEXIST] = NOT_EXIST;
-			openListLength--;
+	private void removeOpenList(int iRow, int iCol) {
+		if (mOpenList[iRow][iCol][ISEXIST] == EXIST) {
+			mOpenList[iRow][iCol][ISEXIST] = NOT_EXIST;
+			mOpenListLength--;
 		}
 	}
 
 	// 判断一点是否在关闭列表中
-	private boolean isInCloseList(int x, int y) {
-		return closeList[x][y];
+	private boolean isInCloseList(int iRow, int iCol) {
+		return mCloseList[iRow][iCol];
 	}
 
 	// 添加关闭列表
-	private void addCloseList(int x, int y) {
-		closeList[x][y] = true;
+	private void addCloseList(int iRow, int iCol) {
+		mCloseList[iRow][iCol] = true;
 	}
 
 	// 添加打开列表
-	private void addOpenList(int x, int y) {
-		if (openList[x][y][ISEXIST] == NOT_EXIST) {
-			openList[x][y][ISEXIST] = EXIST;
-			openListLength++;
+	private void addOpenList(int iRow, int iCol) {
+		if (mOpenList[iRow][iCol][ISEXIST] == NOT_EXIST) {
+			mOpenList[iRow][iCol][ISEXIST] = EXIST;
+			mOpenListLength++;
 		}
 	}
 
 	// 初始化关闭列表
 	private void initCloseList() {
-		closeList = new boolean[map_w][map_h];
-		for (int i = 0; i < map_w; i++) {
-			for (int j = 0; j < map_h; j++) {
-				closeList[i][j] = false;
+		mCloseList = new boolean[mMapRowCount][mMapColumnCount];
+		for (int row = 0; row < mMapRowCount; row++) {
+			for (int col = 0; col < mMapColumnCount; col++) {
+				mCloseList[row][col] = false;
 			}
 		}
 	}
 
 	// 初始化打开列表
-	private void initOpenList(int ex, int ey) {
-		openList = new int[map_w][map_h][5];
-		for (int i = 0; i < map_w; i++) {
-			for (int j = 0; j < map_h; j++) {
-				openList[i][j][ISEXIST] = NOT_EXIST;
-				openList[i][j][EXPENSE] = getMapExpense(i, j, DIR_NULL);
-				openList[i][j][DISTANCE] = getDistance(i, j, ex, ey);
-				openList[i][j][COST] = openList[i][j][EXPENSE]
-						+ openList[i][j][DISTANCE];
-				openList[i][j][FATHER_DIR] = DIR_NULL;
+	private void initOpenList(int endRow, int endCol) {
+		mOpenList = new int[mMapRowCount][mMapColumnCount][5];
+		for (int row = 0; row < mMapRowCount; row++) {
+			for (int col = 0; col < mMapColumnCount; col++) {
+				mOpenList[row][col][ISEXIST] = NOT_EXIST;
+				mOpenList[row][col][EXPENSE] = getMapExpense(row, col, DIR_NULL);
+				mOpenList[row][col][DISTANCE] = getDistance(row, col, endRow, endCol);
+				mOpenList[row][col][COST] = mOpenList[row][col][EXPENSE] + mOpenList[row][col][DISTANCE];
+				mOpenList[row][col][FATHER_DIR] = DIR_NULL;
 			}
 		}
-		openListLength = 0;
+		mOpenListLength = 0;
 	}
 
+	public String getDirString(int dir){
+		switch (dir) {
+		case DIR_NULL: 					return "N";
+		case DIR_DOWN: 				return "↓";
+		case DIR_UP:						return "↑";
+		case DIR_LEFT:					return "←";
+		case DIR_RIGHT:				return "→";
+		case DIR_UP_LEFT:				return "↖";
+		case DIR_UP_RIGHT:			return "↗";
+		case DIR_DOWN_LEFT:		return "↙";
+		case DIR_DOWN_RIGHT:		return "↘";
+		default:									return "Unknown";
+		}
+	}
 	// 获得寻路结果
-	public PosInfo[] getResult() {
+	public PosInfo[] getResult(boolean includeStart) {
 		PosInfo[] result;
 		ArrayList<PosInfo> route;
 		searchPath();
@@ -274,11 +321,11 @@ public class AStar {
 		}
 		route = new ArrayList<PosInfo>();
 		// openList是从目标点向起始点倒推的。
-		int iX = goal_x;
-		int iY = goal_y;
-		while ((iX != start_x || iY != start_y)) {
-			route.add(new PosInfo(iX, iY));
-			switch (openList[iX][iY][FATHER_DIR]) {
+		int iX = mEndRow;
+		int iY = mEndCol;
+		while ((iX != mStartRow || iY != mStartCol)) {
+			route.add(new PosInfo(iX, iY, mOpenList[iX][iY][FATHER_DIR]));
+			switch (mOpenList[iX][iY][FATHER_DIR]) {
 			case DIR_DOWN:
 				iY++;
 				break;
@@ -308,6 +355,9 @@ public class AStar {
 				iY++;
 				break;
 			}
+		}
+		if (includeStart) {
+			route.add(new PosInfo(mStartRow, mStartCol, mOpenList[mStartRow][mStartCol][FATHER_DIR]));
 		}
 		int size = route.size();
 		result = new PosInfo[size];

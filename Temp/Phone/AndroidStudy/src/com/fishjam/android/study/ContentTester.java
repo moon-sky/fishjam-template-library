@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.R.string;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.test.ActivityTestCase;
 import android.test.AndroidTestCase;
 import android.widget.ArrayAdapter;
@@ -27,8 +31,19 @@ import android.widget.SimpleAdapter;
 
 /***************************************************************************************************************************************
  * Android提供了多种数据存取方式：
- *   Preference -- 数据较少的配置信息等， 使用键值对的方式保存在 XML 文件中 ( /Android/data/<package>/shared_prefs/ 目录下 )
- *      SharedPreferences --  Context.getSharedPreferences(文件名，模式).edit().putString("key","Value");  修改后需要 commit();
+ *   SharedPreferences -- 数据较少的配置信息等， 使用键值对的方式保存在 XML 文件中 ( /Android/data/<package>/shared_prefs/ 目录下 ),
+ *     使用上比较方便，但功能不强
+ *      程序配置项
+ *         1.生成 Preference 类型的xml，并保存在 res/xml 下，其中定义各种Preference信息等(将用于显示)，常见属性项(key/title/summary)
+ *            PreferenceScreen -- PreferenceActivity的根元素，只有一个
+ *              PreferenceCategory -- 类别分组(可多个)，作为父节点，其下的子节点以树结构展示
+ *                CheckBoxPreference -- 
+ *                EditTextPreference -- 编辑框
+ *                ListPreference -- 列表项，可通过 entries/entryValues 关联到 string-array 设置的数组资源 
+ *                Preference -- 只进行文本显示，一般用于弹出特定的设置界面，如"蓝牙设置"。通常会通过 dependency 属性来关联其他项(如"启用蓝牙")控制本设置是否可用
+ *                RingtonePreference -- 铃声
+ *         2.从 PreferenceActivity 继承，在 onCreate 中 addPreferencesFromResource(R.xml.mypreference); 设置要显示的属性配置页面
+ *         3.在 onPreferenceTreeClick 中使用 SharedPreferences 通过 key进行读写 
  *   File (默认保存在 /data/<package>/files 下面)
  *     Context.openFileInput   -- 获得标准的Java文件输入流(FileInputStream)，然后循环读取 
  *     Context.openFileOutput -- 获得标准的Java文件输出流(FileOutputStream)。fos.write(content.getBytes()); fos.close();
@@ -69,6 +84,7 @@ import android.widget.SimpleAdapter;
  **************************************************************************************************************************************/
 
 public class ContentTester  extends ActivityTestCase{
+	
 	public void testArrayAdapter(){
 		String [] booksStrings = {"book1" , "book2", "book3"};
 		ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity() , android.R.layout.simple_list_item_1, booksStrings);
@@ -94,7 +110,7 @@ public class ContentTester  extends ActivityTestCase{
 		//ListView listView = (ListView)getActivity().findViewById(R.id.mylist);
 		//listView.setAdapter(simpleAdapter);
 	}
-	public void ListActivityCursorTester(){
+	public void testListActivityCursor(){
 		
 		/*********************************************************************************************************
 		//class MyActivity extends ListActivity
@@ -105,11 +121,10 @@ public class ContentTester  extends ActivityTestCase{
 				new String[] { People.NAME },  new int[] {android.R.id.textName } );
 		setListAdapter(adapter);
 		*********************************************************************************************************/
-		
 	}
 	
 	//根据用户名从联系人管理程序中查询
-	public void QueryUserInfoByName(){
+	public void testQueryUserInfoByName(){
 	/********************************************************************************************************
 	//TODO: 1.使用的方式已经被淘汰，应该有更合适的方式; 2.需要增加 READ_CONTACTS 的权限
 	 
@@ -127,7 +142,7 @@ public class ContentTester  extends ActivityTestCase{
 	*******************************************************************************************************/
 	}
 	
-	public void DialTelTester(){
+	public void testDialTel(){
 	/*******************************************************************************************************
 	    //显示拨打电话，如使用 Intent.ACTION_CALL 则直接拨打电话
 		String data = "tel:15184464231";
@@ -137,5 +152,15 @@ public class ContentTester  extends ActivityTestCase{
 		intent.setData(uri);
 		startActivity(intent);
 	*******************************************************************************************************/
+	}
+	
+	public void testSharedPreferences(){
+		SharedPreferences sharedPreferences = this.getActivity().getSharedPreferences("FileName",  Context.MODE_PRIVATE);
+		 Editor editor = sharedPreferences.edit();  //常见模式： MODE_PRIVATE
+		 editor.putString("key","Value");  
+		 editor.commit();  //提交生效
+		 
+		 String sKeyValue = sharedPreferences.getString("key", "defaultValue");
+		 assertEquals(sKeyValue, "Value");
 	}
 }
