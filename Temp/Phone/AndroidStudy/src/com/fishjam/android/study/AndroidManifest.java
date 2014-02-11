@@ -30,7 +30,7 @@ import junit.framework.Assert;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * 权限列表( uses-permissionandroid:name="xxxx" )
+ * 权限列表( uses-permission android:name="android.permission.xxxx" )
  *   ACCESS_CHECKIN_PROPERTIES
  *   ACCESS_COARSE_LOCATION
  *   ACCESS_FINE_LOCATION
@@ -134,7 +134,7 @@ import junit.framework.Assert;
  *   WRITE_APN_SETTINGS
  *   WRITE_CALENDAR
  *   WRITE_CONTACTS	-- 写入用户联系人
- *   WRITE_EXTERNAL_STORAGE
+ *   WRITE_EXTERNAL_STORAGE -- 写SD卡
  *   WRITE_GSERVICES
  *   WRITE_HISTORY_BOOKMARKS	-- 写历史书签
  *   WRITE_OWNER_DATA	-- 写用户数据

@@ -3,9 +3,12 @@ import android.test.AndroidTestCase;
 
 
 /***************************************************************************************************************************************
- * 模拟器切换纵、横屏 -- 快捷键F12或Ctrl+F11， 程序会重新调用各个生命周期(如 onCreate ?)， 通过 onConfigurationChanged 可以捕获切换消息？
- *   TODO:  设置Activity的android:configChanges="orientation|keyboardHidden"时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法
- *          Manifest中设置Activity的属性 -- android:screenOrientation="landscape"(横屏)、"portrait" 竖屏
+ * 模拟器切换纵、横屏 -- 快捷键F12或Ctrl+F11， 
+ *   默认情况下屏幕切换时程序会重启Activity，应在销毁前保存当前状态，再次Create时载入配置。通过 onConfigurationChanged 可以捕获切换消息？
+ *     然后获取当前状态并处理： if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){ }
+ *     Manifest中设置Activity的属性：
+ *       1. 指定横屏、竖屏(禁止切换) -- android:screenOrientation="landscape"(横屏)、"portrait" 竖屏 。
+ *       2.屏幕切换时不重启Activity  --  android:configChanges="orientation|keyboardHidden"，之后只会调用onConfigurationChanged方法
  *           
  * 部署到手机 
  *   1.通过USB联机至手机

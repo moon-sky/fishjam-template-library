@@ -1,18 +1,20 @@
 package com.fishjam.android.study;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import android.R.string;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.test.ActivityTestCase;
-import android.test.AndroidTestCase;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 
@@ -32,8 +34,9 @@ import android.widget.SimpleAdapter;
 /***************************************************************************************************************************************
  * Android提供了多种数据存取方式：
  *   SharedPreferences -- 数据较少的配置信息等， 使用键值对的方式保存在 XML 文件中 ( /Android/data/<package>/shared_prefs/ 目录下 ),
- *     使用上比较方便，但功能不强
- *      程序配置项
+ *     使用上比较方便，但功能不强，不适合保存比较大的数据，保存的文件只能在同一包内使用，不能在不同包之间使用(同一个程序的不同package也不能用？)
+ *        使用：Activity.getSharedPreferences(获得实例) -> 
+ *     程序配置项
  *         1.生成 Preference 类型的xml，并保存在 res/xml 下，其中定义各种Preference信息等(将用于显示)，常见属性项(key/title/summary)
  *            PreferenceScreen -- PreferenceActivity的根元素，只有一个
  *              PreferenceCategory -- 类别分组(可多个)，作为父节点，其下的子节点以树结构展示
@@ -43,11 +46,13 @@ import android.widget.SimpleAdapter;
  *                Preference -- 只进行文本显示，一般用于弹出特定的设置界面，如"蓝牙设置"。通常会通过 dependency 属性来关联其他项(如"启用蓝牙")控制本设置是否可用
  *                RingtonePreference -- 铃声
  *         2.从 PreferenceActivity 继承，在 onCreate 中 addPreferencesFromResource(R.xml.mypreference); 设置要显示的属性配置页面
- *         3.在 onPreferenceTreeClick 中使用 SharedPreferences 通过 key进行读写 
+ *         3.在 onPreferenceTreeClick 中使用 SharedPreferences 通过 key进行读写
+ *      
  *   File (默认保存在 /data/<package>/files 下面)
  *     Context.openFileInput   -- 获得标准的Java文件输入流(FileInputStream)，然后循环读取 
  *     Context.openFileOutput -- 获得标准的Java文件输出流(FileOutputStream)。fos.write(content.getBytes()); fos.close();
  *     Resources.openRawResource -- 返回 InputStream
+ *     可以使用 DataOutputStream/DataInputStream 封装File流，即可支持更多的读写操作( 如 writeUTF(String) ).
  *   SQLite (数据文件一般保存在 /data/<package>/databases/ 下，创建或打开时需要使用全路径 )
  *     SQLiteDatabase -- 数据库管理类，控制 创建、增删改 等
  *     SQLiteOpenHelper -- 辅助类，管理数据库创建和版本更新。继承后重载 onCreate/onUpgrade 等方法，可通过 getWritableDatabase/getReadableDatabase 获取对应的数据库
@@ -93,6 +98,32 @@ public class ContentTester  extends ActivityTestCase{
 			autoCompleteTextView.setAdapter(adapter1);
 		}
 	}
+	
+	public void testFileIoStream() {
+		FileOutputStream fileOutputStream = null;
+		DataOutputStream dataOutputStream = null;
+		try {
+			
+			fileOutputStream = getActivity().openFileOutput("dstFile.txt", Context.MODE_PRIVATE);
+			dataOutputStream = new DataOutputStream(fileOutputStream);
+			dataOutputStream.writeUTF("some unicode string");
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (dataOutputStream != null) {
+					fileOutputStream.close();
+				}
+				if (fileOutputStream != null) {
+					fileOutputStream.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void testSimpleAdapter(){
 		List<Map<String, Object>> listItems = new ArrayList<Map<String, Object>>();
 		for (int i = 0; i < 10; i++) {
@@ -155,12 +186,20 @@ public class ContentTester  extends ActivityTestCase{
 	}
 	
 	public void testSharedPreferences(){
+		//获取实例，操作模式有： 
+		//   MODE_PRIVATE(新内容覆盖原内容)
+		//   MODE_APPEND(新内容追加到原内容后), 
+		//   MODE_WORLD_READABLE(允许其他应用程序读取)
+		//   MODE_WORLD_WRITEABLE(允许其他应用程序写入，会覆盖原数据)
 		SharedPreferences sharedPreferences = this.getActivity().getSharedPreferences("FileName",  Context.MODE_PRIVATE);
-		 Editor editor = sharedPreferences.edit();  //常见模式： MODE_PRIVATE
-		 editor.putString("key","Value");  
-		 editor.commit();  //提交生效
+		
+		//通过Editor接口进入编辑模式
+		Editor editor = sharedPreferences.edit();   
+		editor.putString("key","Value");  
+		editor.commit();  //提交生效
 		 
-		 String sKeyValue = sharedPreferences.getString("key", "defaultValue");
-		 assertEquals(sKeyValue, "Value");
+		 //读取模式，读取之前设置的值
+		String sKeyValue = sharedPreferences.getString("key", "defaultValue");
+		assertEquals(sKeyValue, "Value");
 	}
 }

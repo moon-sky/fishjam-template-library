@@ -17,8 +17,15 @@ import android.test.ActivityTestCase;
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * AudioManager
+ * 手机上的调节音量的按钮分两种情况：
+ *   1.调整手机本身的铃声音量
+ *   2.调整游戏，软件，音乐播放的音量， 需要先通过 Activity.setVolumeControlStream(AudioManager.STREAM_MUSIC) 设置一下，
+ *      否则只有游戏中有声音在播放的时候才能调整游戏的音量。
  * 
+ * AudioManager -- (AudioManager)getSystemService(Context.AUDIO_SERVICE); //通过服务获取音频管理器，可控制音量大小等
+ *   getStreamMaxVolume(AudioManager.STREAM_MUSIC); -- 获取最大音量值(TODO: 注意是 15，而不是100)
+ *   setStreamVolume(AudioManager.STREAM_MUSIC, currentVol, AudioManager.FLAG_PLAY_SOUND); --  设置当前的音量大小
+ *   
  * Android 对常见媒体格式提供了支持，
  *   图片：JPEG, GIF, PNG, BMP 等
  *   音频：3GP, MP3, WAV 等
@@ -26,13 +33,21 @@ import android.test.ActivityTestCase;
  *   
  * 播放音视频
  *   MediaPlayer -- 静态的 create 方法返回实例，然后可通过 start/pause/stop 等方法控制
+ *       缺点：资源占用量较高、延迟时间较长、不支持多个音频同时播放
+ *       优点： 
  *     setDataSrouce -- 设置想要播放文件的路径
+ *     setVolue -- 调整左右声道的大小
  *     prepare -- 在start前调用
  *     OnCompletionListener -- 在媒体播放完成时会回调的接口，其有 onCompletion 方法。通过 setOnCompletionListener 设置
- *   JetPlayer
+ * JetPlayer -- 可以播放比较长的游戏背景音乐
  * VideoView + MediaController -- 可很容易的实现视频播放器
  *   video.setMediaController 和 ctrl.setMediaPlayer 相互关联， 然后 video.requestFocus 获得焦点
- *   
+ * SoundPool -- 直接new实例： new SoundPool(4, AudioManager.STREAM_MUSIC, 100);  //允许4个声音流同时播放，声音品质为100
+ *   优点：适用于游戏中同时播放多个音效， 
+ *   缺点：只能播放较短的声音片段(最大只能申请1M的内存空间)，音频格式建议使用OGG，目前只对16bit的WAV文件有较好的支持
+ *   load -- 加载声音资源，返回ID
+ *   play() -- 根据ID播放已经加载的声音资源
+ * 
  * 录制音视频
  *   MediaRecorder 
  *     setAudioSource -- 设置音频源，如 AudioSource.MIC
@@ -81,8 +96,12 @@ import android.test.ActivityTestCase;
  *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //根据原始位图创建新视图  
  *     BitmapFactory -- Bitmap的工厂类，具有 decodeFile/decodeResource/decodeStream 等多种方式来构造Bitmap
  *     
- *   9Patch图片 -- 特殊的PNG图片(扩展名为 .9.png)，在原始图片四周各添加一个宽度为1像素的线条，这4条线决定了图片的缩放、显示规则。
- *     TODO: 似乎和Windows下的九宫格绘制不同。九宫格是缩放 # 字形内部； 而9Patch是缩放 # 字形外部 ？
+ *   9Pitch图片 -- 特殊的PNG图片(扩展名为 .9.png，使用 draw9patch.bat 编辑)，
+ *     在原始图片四周各添加一个宽度为1像素的线条，这4条线决定了图片的缩放、显示规则。
+ *     代码中使用：
+ *       Bitmap bmp_9path = BitmapFactory.decodeResource(getResources(), R.drawable.9path);  
+ *       NinePatch np = new NinePatch(bmp_9path, bmp_9path.getNinePatchChunk(), null); //第二个参数就是.9.png图片文件中保存的处理拉伸方式的信息数据
+ *       np.draw(canvas, xxxx); 
  *     
  *   动画 -- Animation(动画抽象类，有多个子类) 
  *       AnimationSet -- 定义动画属性集合类

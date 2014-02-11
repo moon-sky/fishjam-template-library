@@ -71,8 +71,9 @@ public class GestureImageView extends ImageView {
 		
 		mMyMatrix.reset();
 
-		mMyMatrix.postTranslate(totalTranslateX, totalTranslateY);
 		mMyMatrix.postScale(totalScaleFactor, totalScaleFactor);
+		mMyMatrix.postTranslate(totalTranslateX, totalTranslateY);
+		
 		//Log.i(TAG, "ImageMaxtrix=" + LogHelper.FormatMatrix(mMyMatrix));
 		setImageMatrix(mMyMatrix);
 	}

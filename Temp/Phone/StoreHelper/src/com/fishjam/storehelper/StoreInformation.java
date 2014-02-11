@@ -53,7 +53,7 @@ public class StoreInformation {
 	public boolean Load(){
 		SharedPreferences sharedPreferences = mActivity.getPreferences(Context.MODE_PRIVATE);
 		LoadPositionInfo(sharedPreferences, KEY_CAR_POSITION, mCarPositionInfo);
-		LoadPositionInfo(sharedPreferences, KEY_CUR_POSITION, mCurPositionInfo);
+		//LoadPositionInfo(sharedPreferences, KEY_CUR_POSITION, mCurPositionInfo);
 		return true;
 	}
 	
@@ -61,7 +61,7 @@ public class StoreInformation {
 		SharedPreferences sharedPreferences = mActivity.getPreferences(Context.MODE_PRIVATE);
 		Editor editor = sharedPreferences.edit();
 		SavePositionInfo(editor, KEY_CAR_POSITION, mCarPositionInfo);
-		SavePositionInfo(editor, KEY_CUR_POSITION, mCurPositionInfo);
+		//SavePositionInfo(editor, KEY_CUR_POSITION, mCurPositionInfo);
 		return editor.commit();
 	}
 	private void SavePositionInfo(Editor editor, String strKey, PositionInfo positionInfo) {

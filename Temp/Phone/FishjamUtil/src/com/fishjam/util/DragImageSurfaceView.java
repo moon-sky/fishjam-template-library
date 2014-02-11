@@ -1,13 +1,9 @@
 package com.fishjam.util;
 
-import java.util.Date;
-import java.util.Timer;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -39,6 +35,8 @@ public class DragImageSurfaceView extends SurfaceView implements
 
 		this.setKeepScreenOn(true); 	//保持屏幕常量
 		this.setFocusable(true);		//设置焦点后才能响应 onKeyDown 等方法
+		this.setFocusableInTouchMode(true);	//触屏模式获取焦点
+		this.setClickable(true);
 	}
 
 	@Override

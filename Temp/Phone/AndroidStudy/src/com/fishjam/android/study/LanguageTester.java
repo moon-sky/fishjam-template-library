@@ -34,7 +34,8 @@ import java.util.Collection;
  * Android语法
  *  1.Android中的命名规则采用 mXXXX 的方式（没有下划线）
  *  
- *  HashMap<String, String>
+ *  HashMap<String, String> -- 不同步、空键值、效率高
+ *  HashTable -- 同步、非空键值、效率略低
  * 
  * 数组
  *    private int[] mColors = new int[] { Color.BLACK, Color.RED, Color.BLUE,Color.GREEN, Color.MAGENTA, Color.YELLOW };

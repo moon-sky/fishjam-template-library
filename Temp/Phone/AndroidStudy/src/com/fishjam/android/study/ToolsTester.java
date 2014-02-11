@@ -40,7 +40,8 @@ import android.test.AndroidTestCase;
  * Dalvik VM -- Android中的虚拟机机制，和Java VM类似，但不兼容。专门为移动设备做了优化(基于寄存器的)，相对Java虚拟机速度快很多,执行.dex的Dalvik可执行文件
  * ddms.bat(Dalvik Debug Monitor Service) -- Dalvik 调试监控服务。主要对系统运行后台日志、系统线程、虚拟机状态等的监控? 还可模拟发送短信、拨打电话、发送GPS位置信息等。
  *     (旧: 手机/模拟器的屏幕截图或log)
- * draw9patch.bat-- 制作9Patch图片的工具
+ * dmtracedump -- 从trace文件中生成函数调用图(似乎是个失败的工具？替换工具：http://blog.csdn.net/zjujoe/article/details/6080738)
+ * draw9patch.bat-- 制作9Patch图片的工具，http://blog.csdn.net/xiaominghimi/article/details/6107837
  * dx.bat -- 将Java编译后的类文件(.class字节码文件)转换成Dalvik虚拟机可执行的.dex(Dalvik Executable Format)文件
  *      dx --dex [--dump-to=<目的.dex文件>] [--core-library <file>.class | f<file>.{zip,jar,apk} | <directory> ]
  *      如: dx --dex --dump-to=D:\MyAndroid\testProject.dex --core-library D:\MyAndroid\Bin
@@ -48,7 +49,7 @@ import android.test.AndroidTestCase;
  *    -avd <AVD名> -- 运行指定名字的AVD设备
  *    -data <镜像文件路径> -- 直接使用指定镜像文件来运行AVD
  *    -wipe-data  -- 把模拟器的设置恢复到初始状态
- *    -sdcard SD.file -- 加载SD卡的镜像文件
+ *    -sdcard sdcard.img -- 加载SD卡的镜像文件
  * jarsigner.exe -- 对未签名的APK安装包进行签名，会以交互方式让用户输入密码(能否自动化?)
  *   -verbose -- 指定生成详细输出
  *   -keystore -- 指定数字证书的存储路径
@@ -78,6 +79,10 @@ import android.test.AndroidTestCase;
  * mksdcard.exe -- 创建sd卡影像文件
  *   mksdcard.exe [-l "Label"] <大小如512M> <路径，如 E:\Android_SDK\sdcard.img>
  * monitor.bat -- Android Debug Monitor,用于调试监控(代替ddms.bat)
+ * traceview.bat -- 用于对Android的应用程序以及Framework层的代码进行性能分析。
+ *   1.修改代码，在需要调试的起始位置加入调试函数( Debug.startMethodTracing/stopMethodTracing )
+ *   2.运行程序，会在SD的根目录下产生*.trace文件来保存运行时的数据，
+ *   3.将*.trace拷贝到PC上，然后 traceview.bat xxxx.trace 文件进行分析(TODO: 路径必须用绝对路径？)
  * zipalign.exe -- 档案整理工具，可用于优化APK安装包,从而提升Android应用与系统之间的交互效率和运行速度
  *   -f -- 指定强制覆盖已有的文件
  *   -v -- 指定生成详细输出

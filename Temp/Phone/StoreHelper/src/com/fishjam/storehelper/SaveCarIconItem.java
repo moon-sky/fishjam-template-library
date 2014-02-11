@@ -20,8 +20,15 @@ public class SaveCarIconItem extends StartIconInfo{
 	void onExecute() {
 		super.onExecute();
 		
-		IntentIntegrator intentInte = new IntentIntegrator(mActivity);
-		intentInte.initiateScan();
+		PositionInfo carPositionInfo = StoreInformation.Instance(mActivity).mCarPositionInfo;
+		carPositionInfo.iFloor = 0;
+		carPositionInfo.ptPos.set(150,  200);
+		
+		Intent intent = new Intent(mActivity, PositionActivity.class);
+		mActivity.startActivity(intent);
+		
+		//IntentIntegrator intentInte = new IntentIntegrator(mActivity);
+		//intentInte.initiateScan();
 		
 		//Toast.makeText(mActivity, "save car", Toast.LENGTH_LONG).show();		
 	}

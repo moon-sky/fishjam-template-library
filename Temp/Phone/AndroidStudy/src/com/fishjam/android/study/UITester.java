@@ -109,7 +109,7 @@ import android.widget.ImageView;
 
 /***************************************************************************************************************************************
  * View事件
- *     onTouchEvent() -- 当发生触摸屏事件时的回调，
+ *     onTouchEvent() -- 当发生触摸屏事件时的回调，注意重载以后的返回值(1. 直接返回true； 2(更好？).onCreate时 setClickable(true)，然后返回super.onTouchEvent)
  *           int action = MotionEventCompat.getActionMasked(event);  然后 switch(action) {...}
  *       或 switch(event.getAction() & MotionEvent.ACTION_MASK) 来判断按键状态(down,move,up 等), 
  *     getX(相对于自身左上角的坐标)/getRawX(相对于屏幕左上角的坐标) 等方法获取位置。
@@ -316,7 +316,7 @@ import android.widget.ImageView;
  *     onDestroy -- 在activity被销毁前所调用的最后一个方法，有可能在某些情况下，一个Activity被终止时并不调用onDestroy方法。
  *   常见场景的执行顺序(TODO: BackPress 和 Home 不一样 ?):
  *     初次启动:    onApplyThemeResource -> {onCreate} -> onStart -> onPostCreate -> onResume -> onPostResume -> onAttachedToWindow
- *     退出:    [onBackPressed ->] onPause  -> onStop -> onDestroy -> onDetachedFromWindow
+ *     退出:    [onBackPressed ->] onPause(切换时触发)  -> onStop(后台由系统选择时机触发) -> onDestroy -> onDetachedFromWindow
  *     Home到后台：onUserLeaveHint -> onSaveInstanceState -> onPause -> onCreateDescription -> onStop
  *     到前台: {onRestart} ->onStart -> onResume -> onPostResume
  *   常见属性
