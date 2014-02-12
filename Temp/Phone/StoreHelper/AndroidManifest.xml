@@ -32,9 +32,9 @@
         </activity>
         <activity android:name="com.fishjam.storehelper.PositionActivity"></activity>
         <activity android:name="com.zxing.activity.CaptureActivity"></activity>
-        <activity android:name="TestGestureActivity"></activity>
-        <activity android:name="CallbackTesterActivity"></activity>
-        <activity android:name="AStarTestActivity"></activity>
+        <activity android:name="com.fishjam.storehelper.TestGestureActivity"></activity>
+        <activity android:name="com.fishjam.storehelper.CallbackTesterActivity"></activity>
+        <activity android:name="com.fishjam.storehelper.AStarTestActivity"></activity>
     </application>
 
 </manifest>

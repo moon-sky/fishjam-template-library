@@ -4,7 +4,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <com.fishjam.util.GestureImageView
+    <com.fishjam.storehelper.PositionView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/imageViewTest"
         android:layout_width="fill_parent"

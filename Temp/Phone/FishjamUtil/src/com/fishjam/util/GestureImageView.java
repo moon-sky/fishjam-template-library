@@ -21,8 +21,8 @@ public class GestureImageView extends ImageView {
 	PointF mCurTranslate = new PointF(0.0f, 0.0f);
 	PointF mLastTranslate = new PointF(0.0f, 0.0f);
 	
-	float mMinScaleFactor = 0.25f;
-	float mMaxScaleFactor = 4f;
+	float mMinScaleFactor = 0.5f;
+	float mMaxScaleFactor = 2.0f;
 	
 	Matrix mMyMatrix = new Matrix();
 	// GestureDetector mDetector;
@@ -51,6 +51,17 @@ public class GestureImageView extends ImageView {
 	public void SetMinMaxScaleFactor(float minFactor, float maxFactor){
 		mMinScaleFactor = minFactor;
 		mMaxScaleFactor = maxFactor;
+	}
+	public void ResetImageMatrix()
+	{
+		mCurScaleFactor = 1.0f;
+		mLastScaleFactor = 1.0f;
+		mLastTranslate.set(0.0f, 0.0f);
+		mCurTranslate.set(0.0f, 0.0f);
+	}
+	public boolean onImageFling(MotionEvent e1, MotionEvent e2, float velocityX,
+			float velocityY) {
+		return false;
 	}
 	
 	void calcImageMatrix(){
@@ -158,6 +169,10 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 				float velocityY) {
+			boolean bRet = GestureImageView.this.onImageFling(e1, e2, velocityX, velocityY);
+			if (bRet) {
+				return bRet;
+			}
 			Log.i(TAG, "onFling, Pos=" + e1.getX() + "x" + e1.getY() + ", velocityXY=" + velocityX + "," + velocityY);
 			return super.onFling(e1, e2, velocityX, velocityY);
 		}
@@ -180,7 +195,7 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
 			Log.i(TAG, "onDoubleTap, Pos=" + e.getX() + "x" + e.getY());
-			return super.onDoubleTap(e);
+			return true;
 		}
 
 		@Override
@@ -197,8 +212,9 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onSingleTapConfirmed(MotionEvent e) {
 			Log.i(TAG, "onSingleTapConfirmed, Pos=" + e.getX() + "x" + e.getY());
-			return super.onSingleTapConfirmed(e);
+			return true;
 		}
 
 	};
+
 }

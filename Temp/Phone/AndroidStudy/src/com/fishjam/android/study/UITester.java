@@ -99,8 +99,9 @@ import android.widget.ImageView;
  *       onScroll -- 单指滑动, 在onDown后立即移动(不触发 onShowPress), 包括缩放? 
  *       onShowPress -- 按下到激发长按之前
  *       onSingleTapUp(手指离开触摸屏)
- *       onDoubleTap/onDoubleTapEvent(双击)
- *       onSingleTapConfirmed
+ *       onDoubleTap(双击)--什么区别？为什么GestureImageView中会发生对次？
+ *       onDoubleTapEvent -- 通知DoubleTap手势中的事件，包含down、up和move事件(指在双击之间发生的事件)
+ *       onSingleTapConfirmed -- 用来判定该次点击是SingleTap而不是DoubleTap
  *       
  *     2.继承已有的 SimpleOnGestureListener 类，只需重载需要的部分方法即可
  *    
@@ -242,6 +243,9 @@ import android.widget.ImageView;
  *                             可通过设置多个 layout_gravity="center" 的逐渐减小的子元素达到霓虹灯的效果(如同心圆环)
  *         foreground -- 设置该帧布局容器的前景图像(Drawable类型)
  *         foregroundGravity -- 定义绘制前景图像的gravity属性
+ *     +-ViewAnimator--为其中的View切换提供动画效果，可通过 setInAnimation/setOutAnimation 设置进入和退出屏幕时使用的动画
+ *       +-ViewFlipper--指定多个View之间的切换效果
+ *       +-ViewSwitcher--在两个View之间切换。可通过指定 ViewSwitcher.ViewFactory 来创建，其子类 ImageSwitcher/TextSwitcher
  *   +-GridLayout -- 4.0新增的网格布局,将容器划分为 rowsXcolumns 个网格，每个网格可以防止一个组件
  *       columnCount/rowCount -- 设置网格的 列数 、行数
  *       layout_column/layout_row -- 设置该子组件在GridLayout的第几列、第几行
