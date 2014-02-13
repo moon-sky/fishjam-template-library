@@ -1,9 +1,7 @@
 package com.fishjam.util;
 
-import android.R.integer;
 import android.graphics.Matrix;
 import android.graphics.PointF;
-import android.text.method.MovementMethod;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 

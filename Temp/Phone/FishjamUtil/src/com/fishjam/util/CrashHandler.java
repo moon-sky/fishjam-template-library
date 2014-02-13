@@ -3,7 +3,7 @@ package com.fishjam.util;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.Thread.UncaughtExceptionHandler; 
+import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.app.AlertDialog;
 import android.content.Context;

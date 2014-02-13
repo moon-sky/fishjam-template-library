@@ -1,24 +1,18 @@
 package com.fishjam.storehelper;
 
-import javax.security.auth.PrivateCredentialPermission;
-
-import com.fishjam.util.AStar;
-
-import android.R.integer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+
+import com.fishjam.util.AStar;
 
 class AStarIconItem extends StartIconInfo {
 	private final static String TAG = AStarIconItem.class.getSimpleName();

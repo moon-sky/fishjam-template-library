@@ -84,8 +84,8 @@ import android.widget.ImageView;
  *   在View的子类中重载 onDraw(Canvas canvas) 函数，并在其中使用 进行绘制。
  *   
  * 手势识别 -- 如 缩放图片或者缩放网页，在 android.gesture 包中还提供了很多辅助类，
- *   GestureDetector(v1)/GestureDetectorCompat(sv4，推荐，可以使更多的Action适配到API4)，可简单的将 View.onTouchEvent 事件转发进去处理。
- *     OnDoubleTapListener -- 
+ *   +-GestureDetector(v1)/GestureDetectorCompat(sv4，推荐，可以使更多的Action适配到API4)，可简单的将 View.onTouchEvent 事件转发进去处理。
+ *      OnDoubleTapListener -- 
  *   +-ScaleGestureDetector -- 检测两个手指在屏幕上缩放的手势，
  *       http://www.cnblogs.com/over140/archive/2010/12/08/1899839.html
  *       OnScaleGestureListener -- 用户提供的回调接口，一般在各个回调函数中调用 Detector 的方法进行处理。

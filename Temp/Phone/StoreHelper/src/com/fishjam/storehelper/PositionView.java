@@ -1,5 +1,6 @@
 package com.fishjam.storehelper;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -12,9 +13,10 @@ import android.view.MotionEvent;
 
 import com.fishjam.util.AStar;
 import com.fishjam.util.GestureImageView;
+import com.fishjam.util.DragImageView;
 import com.fishjam.util.LogHelper;
 
-public class PositionView extends GestureImageView {
+public class PositionView extends DragImageView {
 	private final static String TAG = PositionView.class.getSimpleName();
 	
 	Paint mPaint = new Paint();
@@ -67,17 +69,18 @@ public class PositionView extends GestureImageView {
 			Resources resources = getResources();
 			Drawable drawFloor =  resources.getDrawable(FloorNumber[mCurFloor]);
 			setImageDrawable(drawFloor);
-			ResetImageMatrix();
+			
+			setmActivity((Activity)getContext());
+			//dragImageView.setImageBitmap(bmp);
+			//dragImageView.setmActivity(this);//×¢ÈëActivity.
+			
+			//ResetImageMatrix();
 			postInvalidate();
 		}
 	}
 
-	@Override
-	public void SetMinMaxScaleFactor(float minFactor, float maxFactor) {
-		// TODO Auto-generated method stub
-		super.SetMinMaxScaleFactor(minFactor, maxFactor);
-	}
-	
+
+	/*
 	@Override
 	public boolean onImageFling(MotionEvent e1, MotionEvent e2, float velocityX,
 			float velocityY) {
@@ -101,6 +104,6 @@ public class PositionView extends GestureImageView {
 			setFloor(mCurFloor == 0 ? 1 : 0);
 		}
 	}
-	
+	*/
 	
 }

@@ -77,13 +77,13 @@ public class GestureImageView extends ImageView {
 		float totalTranslateY = mLastTranslate.y + mCurTranslate.y;
 		
 		Log.i(TAG, "SetScaleFactor, mCurScaleFactor=" + mCurScaleFactor + ",lastFactor=" + mLastScaleFactor + ",total=" + totalScaleFactor
-				+ ", Translate=" + LogHelper.FormatPointF(mCurTranslate));
-
+				+ ", Translate=[" + LogHelper.FormatPointF(mLastTranslate) + "]+[" + LogHelper.FormatPointF(mCurTranslate)
+				+ "="+ totalTranslateX +"," + totalTranslateY);
 		
 		mMyMatrix.reset();
 
-		mMyMatrix.postScale(totalScaleFactor, totalScaleFactor);
 		mMyMatrix.postTranslate(totalTranslateX, totalTranslateY);
+		mMyMatrix.preScale(totalScaleFactor, totalScaleFactor);
 		
 		//Log.i(TAG, "ImageMaxtrix=" + LogHelper.FormatMatrix(mMyMatrix));
 		setImageMatrix(mMyMatrix);
@@ -93,11 +93,13 @@ public class GestureImageView extends ImageView {
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
-			//Log.i(TAG, "onTouch: " + LogHelper.FormatMotionEvent(event));
 			boolean bResult = false;
 			bResult = mScaleGestureDetector.onTouchEvent(event);
-			bResult = mGestureDetector.onTouchEvent(event) | bResult;
-
+			//Log.i(TAG, "onTouch: " + LogHelper.FormatMotionEvent(event) +",Scale return=" + bResult);
+			
+			//if (!bResult) {
+				bResult = mGestureDetector.onTouchEvent(event) | bResult;
+			//}
 			return bResult;
 		}
 	};
@@ -107,7 +109,7 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onScale(ScaleGestureDetector detector) {
 			float curScaleFactor = detector.getScaleFactor();
-			Log.i(TAG, "onScale, Span=" + detector.getCurrentSpan() + ", Factor=" + detector.getScaleFactor());
+			Log.i(TAG, "onScale, Span=" + detector.getCurrentSpan() + ", Factor=" + curScaleFactor);
 			//if ((curScaleFactor / mLastFactor) < 0.9f || (mLastFactor / curScaleFactor) < 0.9f) 
 			{
 				mCurScaleFactor = curScaleFactor;
@@ -141,7 +143,7 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onSingleTapUp(MotionEvent e) {
 			Log.i(TAG, "onSingleTapUp, Pos=" + e.getX() + "x" + e.getY());
-			return super.onSingleTapUp(e);
+			return true; //super.onSingleTapUp(e);
 		}
 
 		@Override
@@ -163,7 +165,7 @@ public class GestureImageView extends ImageView {
 
 			calcImageMatrix();
 			
-			return super.onScroll(e1, e2, distanceX, distanceY);
+			return true; //super.onScroll(e1, e2, distanceX, distanceY);
 		}
 
 		@Override
@@ -174,7 +176,7 @@ public class GestureImageView extends ImageView {
 				return bRet;
 			}
 			Log.i(TAG, "onFling, Pos=" + e1.getX() + "x" + e1.getY() + ", velocityXY=" + velocityX + "," + velocityY);
-			return super.onFling(e1, e2, velocityX, velocityY);
+			return true;//super.onFling(e1, e2, velocityX, velocityY);
 		}
 
 		@Override
@@ -189,7 +191,7 @@ public class GestureImageView extends ImageView {
 			mCurScaleFactor = 1.0f;
 			mLastTranslate = mCurTranslate;
 			mCurTranslate.set(0.0f, 0.0f);
-			return super.onDown(e);
+			return true; //super.onDown(e);
 		}
 
 		@Override
