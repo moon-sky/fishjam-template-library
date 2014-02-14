@@ -1,13 +1,11 @@
 package com.fishjam.android.study;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
-import android.R.string;
 import android.test.AndroidTestCase;
 import android.util.FloatMath;
 import android.util.Log;
-import junit.framework.Assert;
-import java.util.Collection;
 
 /***************************************************************************************************************************************
  * Android µÄÌõ¼þ±àÒë

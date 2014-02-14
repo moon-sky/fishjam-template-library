@@ -1,9 +1,5 @@
 package com.fishjam.storehelper;
 
-import com.fishjam.util.AStar;
-import com.fishjam.util.GestureImageView;
-import com.fishjam.util.LogHelper;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -11,17 +7,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
-import android.view.View;
-import android.view.View.OnTouchListener;
-import android.widget.ImageView;
-import android.widget.ZoomControls;
+
+import com.fishjam.util.AStar;
+import com.fishjam.util.CrashHandler;
+import com.fishjam.util.LogHelper;
 
 //http://blog.csdn.net/pathuang68/article/details/6992085 -- 手势后通过Matrix缩放、移动图片(为何不用 ScaleGestureDetector ? 版本问题？ )
 
@@ -36,8 +29,9 @@ class TestGestureIconInfo extends StartIconInfo{
 
 	@Override
 	void onExecute() {
-		Intent intent = new Intent(mActivity, TestGestureActivity.class);
-		mActivity.startActivity(intent);
+		CrashHandler.getInstance().testShowCrashActivity(mActivity);
+		//Intent intent = new Intent(mActivity, TestGestureActivity.class);
+		//mActivity.startActivity(intent);
 	}
 }
 
@@ -48,7 +42,8 @@ public class TestGestureActivity extends Activity{ // implements OnTouchListener
 	private static final int GRID_HEIGHT = 8;
 	
 	PositionView mImageView;
-
+	FloorMapManager mFloorMapManager;
+	
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		Log.i(TAG, "onKeyDown , keyCode=" + keyCode +",event=" + LogHelper.FormatKeyEvent(event));
@@ -76,7 +71,9 @@ public class TestGestureActivity extends Activity{ // implements OnTouchListener
 		Paint paintRoute = new Paint();
 		paintRoute.setColor(Color.RED);
 
-		AStar aStar = new AStar(FloorMapData.MapFloor1, 6, 32, 30, 48, false);
+		mFloorMapManager = FloorMapManager.getInstance();
+		
+		AStar aStar = new AStar(mFloorMapManager.getMapByFloor(0).mTileData, 6, 32, 30, 48, false);
 		AStar.PosInfo[] posInfos = aStar.getResult(true);
 		if (posInfos != null) {
 			int nStartLine = 0;

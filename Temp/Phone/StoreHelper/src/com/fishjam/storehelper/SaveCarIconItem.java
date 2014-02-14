@@ -1,11 +1,8 @@
 package com.fishjam.storehelper;
 
-import com.fishjam.storehelper.zxing.IntentIntegrator;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 public class SaveCarIconItem extends StartIconInfo{
 

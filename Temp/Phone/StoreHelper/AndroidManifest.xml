@@ -35,6 +35,8 @@
         <activity android:name="com.fishjam.storehelper.TestGestureActivity"></activity>
         <activity android:name="com.fishjam.storehelper.CallbackTesterActivity"></activity>
         <activity android:name="com.fishjam.storehelper.AStarTestActivity"></activity>
+        <activity android:name="com.fishjam.util.CrashInfoActivity"></activity>
+        
     </application>
 
 </manifest>

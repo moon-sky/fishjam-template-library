@@ -39,7 +39,7 @@ import android.test.ActivityTestCase;
  *     setVolue -- 调整左右声道的大小
  *     prepare -- 在start前调用
  *     OnCompletionListener -- 在媒体播放完成时会回调的接口，其有 onCompletion 方法。通过 setOnCompletionListener 设置
- * JetPlayer -- 可以播放比较长的游戏背景音乐
+ * JetPlayer -- 可以播放比较长的游戏背景音乐, 参见 Samples 中的 JetBoy
  * VideoView + MediaController -- 可很容易的实现视频播放器
  *   video.setMediaController 和 ctrl.setMediaPlayer 相互关联， 然后 video.requestFocus 获得焦点
  * SoundPool -- 直接new实例： new SoundPool(4, AudioManager.STREAM_MUSIC, 100);  //允许4个声音流同时播放，声音品质为100

@@ -108,16 +108,22 @@ import android.test.AndroidTestCase;
  *        setTargetHeapUtilization() -- 增强程序堆内存的处理效率，如 0.75f
  *        setMinimumHeapSize() -- 设置最小heap大小
 ***************************************************************************************************************************************/
-class MyReceiver extends BroadcastReceiver{
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		Log.i("Receiver", "Receive BOOT_COMPLETED broadcast information");
-	}
-}
 
 public class OsTester  extends AndroidTestCase {
+	private static final String TAG = OsTester.class.getSimpleName();
+	
 	public OsTester(){
 		//Intent intent = new Intent();
+	}
+	
+	class MyReceiver extends BroadcastReceiver{
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Log.i(TAG, "Receive BOOT_COMPLETED broadcast information");
+		}
+	}
+	public void testBroadcastReceiver(){
+		//MyReceiver myReceiver = new MyReceiver();
 	}
 	
 	public void CheckPhoneConfig() {
@@ -156,7 +162,7 @@ public class OsTester  extends AndroidTestCase {
 			int  year 	= calendar.get(Calendar.YEAR);
 			int month = calendar.get(Calendar.MONTH);
 			int day 		= calendar.get(Calendar.DAY_OF_MONTH) ;
+			Log.i(TAG, "year=" + year + ",month=" + month + ",day=" + day);
 		}
-		
 	}
 }

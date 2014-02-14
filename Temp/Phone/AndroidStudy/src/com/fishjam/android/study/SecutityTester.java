@@ -1,10 +1,4 @@
 package com.fishjam.android.study;
-import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-
-import android.content.ComponentName;
-import android.content.pm.PackageManager;
 import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
@@ -27,7 +21,7 @@ import android.test.AndroidTestCase;
  *     resources.arsc --
  *   2.使用 dex2jar ( http://code.google.com/p/dex2jar/ ) 把 classes.dex 文件转为 .jar 文件
  *      dex2jar.bat classes.dex  后会生成 classes_dex2jar.jar
- *   3.将 jar 解压 或使用 jd-gui 查看文件 
+ *   3.将 jar 解压 或使用 jd-gui 查看文件，也可导出 .src.zip 源码压缩包 
  * 
  * ApkTool(https://code.google.com/p/android-apktool/) -- 反编译生成程序的源代码和图片、XML配置、语言资源(已经解密)
  *   反编译： apktool.bat d -f <apk文件> [输出文件夹] -- 

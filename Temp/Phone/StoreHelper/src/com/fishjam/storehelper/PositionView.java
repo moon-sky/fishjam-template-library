@@ -8,13 +8,10 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import com.fishjam.util.AStar;
-import com.fishjam.util.GestureImageView;
 import com.fishjam.util.DragImageView;
-import com.fishjam.util.LogHelper;
 
 public class PositionView extends DragImageView {
 	private final static String TAG = PositionView.class.getSimpleName();

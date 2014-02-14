@@ -1,16 +1,5 @@
 package com.fishjam.android.study;
-import java.security.PublicKey;
-
-import android.R.integer;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.test.AndroidTestCase;
-import android.view.Display;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ImageView;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
@@ -104,7 +93,20 @@ import android.widget.ImageView;
  *       onSingleTapConfirmed -- 用来判定该次点击是SingleTap而不是DoubleTap
  *       
  *     2.继承已有的 SimpleOnGestureListener 类，只需重载需要的部分方法即可
- *    
+ *   自定义手势识别：
+ *     1.使用 Sample 中的 GestureBuilder 建立自定义的手势信息(会保存成 sdcard\gestures 文件)， 其中使用了 GestureOverlayView 
+ *     2.拷贝 gestures 文件到本工程的 raw 目录下，代码中：
+ *       GestureLibrary glib = GestureLibraries.fromRawResource(this, R.raw.gestures); glib.load();
+ *       GestureOverlayView gov = (GestureOverlayView)findViewById(xxxx);
+ *       gov.addOnGesturePerformedListener(){ new OnGesturePerformedListener(){
+ *         public void onGesturePerformed(GestureOverlayView overlay, Gesture gesture){ 
+ *           ArrayList<Prediction> list = gl.recognize(gesture); //识别手势，返回一个类型为Prediction的列表
+ *           Prediction pre = list.get(0); 
+ *            if(pre.score > 1){  //如果匹配度大于1，表示可以识别，否则提示无法识别
+ *               if(pre.name.equals("myGesture")) { ...  }  //判断名字是否与手势库的名字相同  
+ *            }
+ *         } 
+ *       }
  * 重力感应
 ***************************************************************************************************************************************/
 

@@ -1,5 +1,5 @@
 package com.fishjam.android.study;
-import android.test.ActivityUnitTestCase;
+import android.test.AndroidTestCase;
 
 
 /***************************************************************************************************************************************
@@ -98,13 +98,7 @@ import android.test.ActivityUnitTestCase;
  *   @LargeTest 
 ***************************************************************************************************************************************/
 
-public class AndroidTester  extends ActivityUnitTestCase{
-	public AndroidTester(Class activityClass) {
-		super(activityClass);
-		// TODO Auto-generated constructor stub
-		 
-	}
-
+public class AndroidTester  extends AndroidTestCase{
 	public void testActivityLable(){
 	
 	}

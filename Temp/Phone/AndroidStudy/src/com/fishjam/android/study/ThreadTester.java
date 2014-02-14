@@ -2,13 +2,10 @@ package com.fishjam.android.study;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executor;
 
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.test.AndroidTestCase;
-import android.text.StaticLayout;
 import android.util.Log;
 
 /**************************************************************************************************************************************

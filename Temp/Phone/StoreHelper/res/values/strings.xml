@@ -2,6 +2,9 @@
 <resources>
 
     <string name="app_name">StoreHelper</string>
+    <string name="menu_enable_crashhandler">启动调试</string>
+    <string name="menu_disable_crashhandler">禁止调试</string>
+    <string name="menu_quit">退出</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="str_startImage">StartImageActivity</string>

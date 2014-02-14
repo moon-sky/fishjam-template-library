@@ -1,7 +1,6 @@
 package com.fishjam.android.study;
-import android.Manifest;
-import android.test.AndroidTestCase;
 import junit.framework.Assert;
+import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
  * AndroidManifest.xml -- 系统清单文件，控制应用的名称、图标、访问权限等属性，也可以声明其他程序调用该程序所需的权限声明？ 

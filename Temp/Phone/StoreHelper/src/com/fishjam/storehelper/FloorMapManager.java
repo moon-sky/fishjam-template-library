@@ -1,10 +1,47 @@
 package com.fishjam.storehelper;
 
+import java.util.ArrayList;
+
 import android.R.integer;
 import android.graphics.Point;
 
-public final class FloorMapData {
-	public final static int[][] MapFloor1 = {
+public final class FloorMapManager {
+
+	public static FloorMapManager getInstance(){
+		if (sInstanceOfFloorMapManager == null) {
+			sInstanceOfFloorMapManager = new FloorMapManager();
+		}
+		return sInstanceOfFloorMapManager;
+	}
+	private static FloorMapManager	sInstanceOfFloorMapManager;
+	private FloorMapManager(){
+		mMapDatas = new ArrayList<FloorMapManager.MapData>();
+		mMapDatas.add( new MapData(MapFloor1, ElevatorFloor1));
+		mMapDatas.add( new MapData(MapFloor2, ElevatorFloor2));
+	}
+	
+	
+	public MapData getMapByFloor(int nFloor)
+	{
+		if (nFloor >= 0 && nFloor < mMapDatas.size()) {
+			return mMapDatas.get(nFloor);
+		}
+		return null;
+	}
+	ArrayList<MapData> mMapDatas;
+	
+	
+	public class MapData
+	{
+		MapData(int[][] titleData, Point[] elevatorData){
+			mTileData = titleData;
+			mElevatorData = elevatorData;
+		}
+		int [][] mTileData;
+		Point [] mElevatorData;
+	}
+	
+	private final static int[][] MapFloor1 = {
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
@@ -54,14 +91,14 @@ public final class FloorMapData {
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 }			
 	};
-	public final static Point[] ElevatorFloor1 = {
+	private final static Point[] ElevatorFloor1 = {
 		new Point(9,30),
 		new Point(10,30),
 		new Point(9,31),
 		new Point(10,31),
 	};
 	
-	public final static int[][] MapFloor2 = {
+	private final static int[][] MapFloor2 = {
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
@@ -126,5 +163,9 @@ public final class FloorMapData {
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
 			{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 }
+	};
+	
+	private final static Point[] ElevatorFloor2 = {
+		new Point(1,1),
 	};
 }

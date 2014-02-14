@@ -38,11 +38,16 @@ import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
  * 常见错误和分析
- *   1.eglSurfaceAttrib not implemented
+ *   1.启动时无法启动，显示
+ *     "Unable to execute dex: java.nio.BufferOverflowException. Check the Eclipse log for stack trace."
+ *     "Conversion to Dalvik format failed: Unable to execute dex: java.nio.BufferOverflowException. Check the Eclipse log for stack trace."
+ *     原因：似乎是高版本的Android SDK 不再需要低版本的一些文件？
+ *     解决方案：eclipse中右键 "Android Dependencies" --->Build Path--> remove it from build path
+ *   2.eglSurfaceAttrib not implemented
  *     可能是模拟器未实现功能，用真机测试确认
- *   2."Hot code replace failed" -- 调试过程中编辑源码
+ *   3."Hot code replace failed" -- 调试过程中编辑源码
  *     结束掉被调试的进程或断开连接？ 
- *   3.内存问题 
+ *   4.内存问题 
  *     OOM(Out Of Memory)
  *     GC_FOR_ALLOC --  发生在堆被占满不能进行内存分配时，在分配新对象之前必须进行内存回收
  *     GC_CONCURRENT-- 发生在（可能是部分的）垃圾可供回收时，通常有很多对象可以回收。

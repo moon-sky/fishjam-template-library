@@ -1,20 +1,15 @@
 package com.fishjam.storehelper;
 
-import java.util.Random;
 import java.util.regex.Pattern;
 
-import android.R.integer;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
-
-import com.zxing.activity.CaptureActivity;
 
 public class CameraParamIconItem extends StartIconInfo{
 	private final static String TAG = CameraParamIconItem.class.getSimpleName();
@@ -145,7 +140,7 @@ public class CameraParamIconItem extends StartIconInfo{
 		    return null;
 		  }
 
-		  private static int findBestMotZoomValue(CharSequence stringValues, int tenDesiredZoom) {
+		  public static int findBestMotZoomValue(CharSequence stringValues, int tenDesiredZoom) {
 		    int tenBestValue = 0;
 		    for (String stringValue : COMMA_PATTERN.split(stringValues)) {
 		      stringValue = stringValue.trim();

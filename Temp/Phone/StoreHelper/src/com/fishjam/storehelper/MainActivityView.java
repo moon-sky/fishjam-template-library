@@ -2,41 +2,53 @@ package com.fishjam.storehelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import com.fishjam.storehelper.zxing.IntentIntegrator;
-import com.fishjam.storehelper.zxing.IntentResult;
-import com.fishjam.util.CrashHandler;
-
-import android.R.anim;
-import android.R.integer;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.GridView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
+
+import com.fishjam.util.CrashHandler;
 
 public class MainActivityView extends Activity {
 	private static final String TAG = MainActivityView.class.getName();
+	private static final String CONFIG_ENABLE_CRASH_HANDLER = "EnableCrashHandler";
+	
+	private static final int MENU_ITEM_ID_ENABLE_CRASH_HANDLER = Menu.FIRST + 1;
+	private static final int MENU_ITEM_ID_EXIT =  Menu.FIRST + 2;
+	
 	
 	StartIconInfo[] mStartIconInfos;
 	GridView mViewStartIcons;
+	SharedPreferences mSharedPreferences;
+	boolean mbEnableCrashHandler;
 	int mCurSelIconIndex = -1;
 	//StoreInformation mStoreInformation;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		mSharedPreferences = getPreferences(MODE_PRIVATE);
+		mbEnableCrashHandler = mSharedPreferences.getBoolean(CONFIG_ENABLE_CRASH_HANDLER,  true);
+
+		Log.i(TAG, "mbEnableCrashHandler=" + mbEnableCrashHandler);
+		
+		if (mbEnableCrashHandler) {
+			CrashHandler crashHandler = CrashHandler.getInstance();
+			crashHandler.init(this);
+			//crashHandler.init(getApplicationContext()); 
+		}
 		setContentView(R.layout.activity_main_view);
-		//CrashHandler crashHandler = CrashHandler.getInstance();
-		//crashHandler.init(this);
-		//crashHandler.init(getApplicationContext()); 
 
 		//≥ı ºªØ
 		StoreInformation.Instance(this);
@@ -104,4 +116,45 @@ public class MainActivityView extends Activity {
 		}
 	   //*/
 	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0,  MENU_ITEM_ID_ENABLE_CRASH_HANDLER,  0,  R.string.menu_enable_crashhandler);
+		menu.add(0, MENU_ITEM_ID_EXIT, 0, R.string.menu_quit);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		Log.i(TAG, "Get mbEnableCrashHandler=" + mbEnableCrashHandler);
+		
+		MenuItem item =  menu.findItem(MENU_ITEM_ID_ENABLE_CRASH_HANDLER);
+		if (item != null) {
+			if (mbEnableCrashHandler) {
+				item.setTitle(R.string.menu_disable_crashhandler);
+			}
+			else{
+				item.setTitle(R.string.menu_enable_crashhandler);
+			}
+		}
+		
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case MENU_ITEM_ID_ENABLE_CRASH_HANDLER:
+			mbEnableCrashHandler = !mbEnableCrashHandler;
+			mSharedPreferences.edit().putBoolean(CONFIG_ENABLE_CRASH_HANDLER, mbEnableCrashHandler).commit();
+			
+			Log.i(TAG, "Set mbEnableCrashHandler=" + mbEnableCrashHandler);
+			break;
+		case MENU_ITEM_ID_EXIT:
+			finish();
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+	
 }

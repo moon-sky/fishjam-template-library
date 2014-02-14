@@ -1,17 +1,13 @@
 package com.fishjam.storehelper;
 
-import com.fishjam.util.GestureImageView;
-import com.fishjam.util.DragImageView;
-
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 
 public class PositionActivity extends Activity {
 

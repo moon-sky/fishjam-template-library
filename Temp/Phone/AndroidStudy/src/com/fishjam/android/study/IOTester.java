@@ -1,11 +1,4 @@
 package com.fishjam.android.study;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-
-import android.R.integer;
 import android.test.AndroidTestCase;
 
 

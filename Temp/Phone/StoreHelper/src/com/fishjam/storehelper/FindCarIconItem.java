@@ -1,19 +1,16 @@
 package com.fishjam.storehelper;
 
-import java.util.Random;
-
-import com.fishjam.storehelper.zxing.IntentIntegrator;
-import com.zxing.activity.CaptureActivity;
-
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
+
+import com.fishjam.storehelper.zxing.IntentIntegrator;
+import com.fishjam.util.CrashHandler;
 
 public class FindCarIconItem extends StartIconInfo{
-
+	private static final String TAG = FindCarIconItem.class.getSimpleName();
+	
 	FindCarIconItem(Activity activity) {
 		super(activity);
 		
@@ -21,11 +18,11 @@ public class FindCarIconItem extends StartIconInfo{
 		this.name = mActivity.getResources().getString(R.string.findCar);
 	}
 
-	//Random mRandom = new Random();
 	@Override
 	void onExecute() {
-		super.onExecute();
+		//super.onExecute();
 
+		
 		IntentIntegrator intentInte = new IntentIntegrator(mActivity);
 		intentInte.initiateScan();
 		
@@ -46,7 +43,7 @@ public class FindCarIconItem extends StartIconInfo{
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
+		//super.onActivityResult(requestCode, resultCode, data);
 		
 		if (resultCode == Activity.RESULT_OK) {
 			Bundle bundle = data.getExtras();
@@ -59,6 +56,7 @@ public class FindCarIconItem extends StartIconInfo{
 			Intent intent = new Intent(mActivity, PositionActivity.class);
 			mActivity.startActivity(intent);
 
+			Log.i(TAG, scanResult);
 			//Toast.makeText(mActivity,  scanResult, Toast.LENGTH_LONG).show();
 		}
 	}

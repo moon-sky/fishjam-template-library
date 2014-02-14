@@ -1,5 +1,5 @@
 package com.fishjam.android.study;
-import android.test.ActivityUnitTestCase;;
+import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
 * BroadcastReceiver -- 接收广播消息，可以接收其他组件通过 sendBroadcast, sendStickyBroadcast, sendOrderedBroadcast 等发送的消息。
@@ -10,11 +10,7 @@ import android.test.ActivityUnitTestCase;;
 *     2.代码中通过 Context.registReceiver() 来注册
 ***************************************************************************************************************************************/
 
-public class BroadcastReceiverTester extends ActivityUnitTestCase{
+public class BroadcastReceiverTester extends AndroidTestCase{
 
-	public BroadcastReceiverTester(Class activityClass) {
-		super(activityClass);
-		// TODO Auto-generated constructor stub
-	}
 
 }

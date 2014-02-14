@@ -1,5 +1,6 @@
 package com.fishjam.storehelper;
 
+import android.R.integer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +16,7 @@ import android.view.View;
 import com.fishjam.util.AStar;
 
 class AStarIconItem extends StartIconInfo {
-	private final static String TAG = AStarIconItem.class.getSimpleName();
+	//private final static String TAG = AStarIconItem.class.getSimpleName();
 	
 	AStarIconItem(Activity activity) {
 		super(activity);
@@ -36,8 +37,8 @@ class AStarIconItem extends StartIconInfo {
 class AStarView extends View{
 	private final static String TAG = AStarView.class.getSimpleName();
 	
-	private static final int OFFSET_X = 20;
-	private static final int OFFSET_Y = 20;
+	//private static final int OFFSET_X = 20;
+	//private static final int OFFSET_Y = 20;
 	private static final int GRID_WIDTH = 8;
 	private static final int GRID_HEIGHT = 8;
 	
@@ -48,10 +49,12 @@ class AStarView extends View{
 	private Bitmap mBitmapMemory;  
 	
 	AStar.PosInfo mAStarPosInfo[];
+	int[][] mTileData;
 	private AStar mAStar;
-	private int mWidth = 64; //15;
-	private int mHeight = 64;//25;
-	 
+	private int mWidth;
+	private int mHeight;
+	
+	
 	AStarView(Context context){
 		super(context);
 		setKeepScreenOn(true);
@@ -67,8 +70,11 @@ class AStarView extends View{
     	
 		//mBitmapMemory = Bitmap.createBitmap(GRID_WIDTH * mWidth, GRID_HEIGHT * mHeight, Bitmap.Config.RGB_565);
 		mCanvasMemory = new Canvas(mBitmapMemory);
-		//mAStar = new AStar(FloorMapData.MapFloor1, 6, 32, 30, 48, true);
-		mAStar = new AStar(FloorMapData.MapFloor2, 16, 15, 47, 44, true);
+		mTileData = FloorMapManager.getInstance().getMapByFloor(0).mTileData;
+		mWidth = mTileData[0].length;
+		mHeight = mTileData.length;
+		
+		mAStar = new AStar(mTileData, 16, 15, 47, 44, true);
 		//mAStar.searchPath();
 		mAStarPosInfo = mAStar.getResult(true);
 		if (mAStarPosInfo != null) {
@@ -98,7 +104,7 @@ class AStarView extends View{
 			for (int j = 0; j < mWidth; j++) {
 				nStartLine = j * GRID_WIDTH;
 				nStartCol = i * GRID_HEIGHT;
-				if(FloorMapData.MapFloor2[i][j] == 0)
+				if(mTileData[i][j] == 0)
 				{
 					paint = mPaintEmpty;
 				}else
@@ -135,6 +141,8 @@ public class AStarTestActivity extends Activity {
 
 		super.onCreate(savedInstanceState);
 		setContentView(new AStarView(this));
+		
+		Log.i(TAG, "AStarTestActivity.onCreate");
 	}
 }
 

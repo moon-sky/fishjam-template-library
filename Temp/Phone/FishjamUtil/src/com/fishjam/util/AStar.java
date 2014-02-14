@@ -7,7 +7,7 @@ import android.util.Log;
 /**************************************************************************************************************************************
  * 游戏地图编辑器( http://download.csdn.net/download/xys289187120/3452259 )
  *   mappy(mapwin) -- 使用 playback library 来装载和显示FMP地图文件
- *   tiled
+ *   tile -- 游戏中的一个小格
  * 术语：
  *   
  * 地图编辑器 -- http://fc00.deviantart.net/fs70/f/2011/034/c/c/tilemap_editor_b55_pokemon_by_digibody-d36t3aq.swf
@@ -15,7 +15,9 @@ import android.util.Log;
  * A星算法 -- 在图形平面上，有多个节点的路径，求出最低通过成本的算法
  *   http://blog.sina.com.cn/s/blog_53a5865c0102dycw.html
  *     其实现中 open-list和close-list使用的完全是静态数组，降低了入栈出栈的负担。最后获得的路径，是从终点指向起点的
- *     
+ *    
+ * 游戏示例：
+ *   LunarLander -- 月球降落，使用 Thread+SurfaceView 绘制
  ***************************************************************************************************************************************/
 
 /*

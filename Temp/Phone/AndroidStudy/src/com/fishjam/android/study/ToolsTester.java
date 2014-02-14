@@ -37,6 +37,7 @@ import android.test.AndroidTestCase;
  * AVD(Android Virtual Device) -- Android虚拟设备，是模拟器的配置，让用户可以更好地模拟真实设备。
  *    包含:硬件配置(如是否有照相机、键盘类型、内存大小等)、版本选择、设备的屏幕尺寸、SD卡大小等。
  *    创建的配置文件保存在%ANDROID_SDK_HOME%环境变量中(如无则是%HOMEPATH%? 中)的 .android\avd 目录下
+ *    允许DPad键：打开 .android\avd\xxxx.avd\config.ini 文件，将 hw.dPad=no 改为 hw.dPad=yes
  * Dalvik VM -- Android中的虚拟机机制，和Java VM类似，但不兼容。专门为移动设备做了优化(基于寄存器的)，相对Java虚拟机速度快很多,执行.dex的Dalvik可执行文件
  * ddms.bat(Dalvik Debug Monitor Service) -- Dalvik 调试监控服务。主要对系统运行后台日志、系统线程、虚拟机状态等的监控? 还可模拟发送短信、拨打电话、发送GPS位置信息等。
  *     (旧: 手机/模拟器的屏幕截图或log)

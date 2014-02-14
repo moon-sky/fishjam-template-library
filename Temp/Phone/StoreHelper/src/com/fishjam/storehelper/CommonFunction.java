@@ -1,22 +1,5 @@
 package com.fishjam.storehelper;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import android.app.Activity;
-import android.content.Intent;
-import android.location.Location;
-import android.webkit.WebView;
 
 public class CommonFunction {
 	/*
