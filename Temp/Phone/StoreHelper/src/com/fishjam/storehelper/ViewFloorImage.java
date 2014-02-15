@@ -19,11 +19,11 @@ public class ViewFloorImage extends StartIconInfo{
 		
 		PositionInfo carPositionInfo = StoreInformation.Instance(mActivity).mCarPositionInfo;
 		carPositionInfo.iFloor = 0;
-		carPositionInfo.ptPos.set(150,  200);
+		carPositionInfo.ptPos.set(151,  201);
 		
-		PositionInfo curPositionInfo = StoreInformation.Instance(mActivity).mCurPositionInfo;
+		PositionInfo curPositionInfo = StoreInformation.Instance(mActivity).mUserPositionInfo;
 		curPositionInfo.iFloor = 0;
-		curPositionInfo.ptPos.set(350,  400);
+		curPositionInfo.ptPos.set(351,  401);
 		
 		Intent intent = new Intent(mActivity, PositionActivity.class);
 		

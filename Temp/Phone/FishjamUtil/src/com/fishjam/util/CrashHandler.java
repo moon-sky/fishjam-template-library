@@ -1,7 +1,10 @@
 package com.fishjam.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.io.StringWriter;
 
 import android.app.Activity;
@@ -18,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**************************************************************************************************************************************
  * http://www.cnblogs.com/freeliver54/archive/2011/10/25/2223729.html
@@ -100,7 +104,11 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 		if (mWriteToLogs) {
 			writeStackTraceToFile(strMsg);
 		}
+		Toast.makeText(mContext, "StoreHelperCrash", Toast.LENGTH_LONG).show();
+ 
+        android.os.Process.killProcess(android.os.Process.myPid());   
 		
+		/*
 		Intent crashedIntent = new Intent(mContext, CrashInfoActivity.class);
         crashedIntent.putExtra(CrashInfoActivity.CRASH_INFO_STRING, strMsg);
         crashedIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
@@ -114,7 +122,8 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
                 		System.exit(0);
 					}  
                 }).create().show();  
-        
+        */
+		
 		/*new Thread() {  
             @Override  
             public void run() {  
@@ -137,7 +146,19 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
 	}
 
 	private void writeStackTraceToFile(String strMsg) {
-		//File file =  Environment.getExternalStorageDirectory(); 
+		String baseDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+		File file = new File(baseDir + File.separator + "storeHelper_crash.log");
+
+		try {
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			RandomAccessFile raf = new RandomAccessFile(file, "rw");
+			raf.write(strMsg.getBytes());
+			raf.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 

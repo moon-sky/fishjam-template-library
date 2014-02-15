@@ -1,11 +1,17 @@
 package com.fishjam.storehelper;
 
+import com.fishjam.storehelper.zxing.IntentIntegrator;
+import com.fishjam.storehelper.zxing.IntentResult;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 public class SaveCarIconItem extends StartIconInfo{
-
+	private static final String TAG = SaveCarIconItem.class.getSimpleName();
+	
 	SaveCarIconItem(Activity activity) {
 		super(activity);
 		
@@ -17,33 +23,24 @@ public class SaveCarIconItem extends StartIconInfo{
 	void onExecute() {
 		super.onExecute();
 		
-		PositionInfo carPositionInfo = StoreInformation.Instance(mActivity).mCarPositionInfo;
-		carPositionInfo.iFloor = 0;
-		carPositionInfo.ptPos.set(150,  200);
-		
-		Intent intent = new Intent(mActivity, PositionActivity.class);
-		mActivity.startActivity(intent);
-		
-		//IntentIntegrator intentInte = new IntentIntegrator(mActivity);
-		//intentInte.initiateScan();
-		
-		//Toast.makeText(mActivity, "save car", Toast.LENGTH_LONG).show();		
+		IntentIntegrator intentInte = new IntentIntegrator(mActivity);
+		intentInte.initiateScan();
 	}
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == Activity.RESULT_OK) {
-			Bundle bundle = data.getExtras();
-			String scanResult = bundle.getString("result");
-			
-			PositionInfo carPositionInfo = StoreInformation.Instance(mActivity).mCarPositionInfo;
-			carPositionInfo.iFloor = 0;
-			carPositionInfo.ptPos.set(150,  200);
-			
-			Intent intent = new Intent(mActivity, PositionActivity.class);
-			mActivity.startActivity(intent);
+		 IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+		 if (scanResult != null) {
+			String strContents = scanResult.getContents();  //scanResult.getFormatName
+			Log.i(TAG, "strContents=" + strContents);  
+			if (strContents != null) {
+				StoreInformation.Instance(mActivity).strScanResult = strContents;
+				
+				Intent intent = new Intent(mActivity, PositionActivity.class);
+				mActivity.startActivity(intent);
 
-			//Toast.makeText(mActivity,  scanResult, Toast.LENGTH_LONG).show();
+				Toast.makeText(mActivity,  strContents, Toast.LENGTH_LONG).show();
+			 }	
 		}
 	}
 

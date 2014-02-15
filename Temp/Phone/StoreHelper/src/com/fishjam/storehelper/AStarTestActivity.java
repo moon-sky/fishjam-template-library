@@ -39,8 +39,6 @@ class AStarView extends View{
 	
 	//private static final int OFFSET_X = 20;
 	//private static final int OFFSET_Y = 20;
-	private static final int GRID_WIDTH = 8;
-	private static final int GRID_HEIGHT = 8;
 	
 	private Paint mPaintEmpty;
 	private Paint mPaintWall;
@@ -94,16 +92,16 @@ class AStarView extends View{
 		Paint paint;
 		
 		for (int i = 0; i < mHeight; i++) {
-			mCanvasMemory.drawText("" + (i%10)  , (mWidth + 1) * GRID_WIDTH,  (i + 1) * GRID_HEIGHT , mPaintRoute);
+			mCanvasMemory.drawText("" + (i%10)  , (mWidth + 1) * GlobalConfig.TILE_WIDTH,  (i + 1) * GlobalConfig.TILE_HEIGHT , mPaintRoute);
 		}
 		for (int j = 0; j < mWidth; j++) {
-			mCanvasMemory.drawText("" + (j%10)  ,  j*GRID_WIDTH, GRID_HEIGHT *  (mHeight + 1), mPaintRoute);
+			mCanvasMemory.drawText("" + (j%10)  ,  j*GlobalConfig.TILE_WIDTH, GlobalConfig.TILE_HEIGHT *  (mHeight + 1), mPaintRoute);
 		}
 		//mCanvasMemory.drawText("fishjmam test", GRID_WIDTH * 18, GRID_HEIGHT * 18, mPaintRoute);
 		for (int i = 0; i < mHeight; i++) {
 			for (int j = 0; j < mWidth; j++) {
-				nStartLine = j * GRID_WIDTH;
-				nStartCol = i * GRID_HEIGHT;
+				nStartLine = j * GlobalConfig.TILE_WIDTH;
+				nStartCol = i * GlobalConfig.TILE_HEIGHT;
 				if(mTileData[i][j] == 0)
 				{
 					paint = mPaintEmpty;
@@ -111,7 +109,7 @@ class AStarView extends View{
 				{
 					paint = mPaintWall;
 				}
-				mCanvasMemory.drawRect(nStartLine, nStartCol, (j +1) * GRID_WIDTH, (i + 1) * GRID_HEIGHT, paint);
+				mCanvasMemory.drawRect(nStartLine, nStartCol, (j +1) * GlobalConfig.TILE_WIDTH, (i + 1) * GlobalConfig.TILE_HEIGHT, paint);
 			}
 		}
 		
@@ -119,12 +117,12 @@ class AStarView extends View{
 			StringBuilder stringBuilder = new StringBuilder();
 			
 			for (int i = mAStarPosInfo.length - 1; i >=0 ; i--) {
-				nStartLine = mAStarPosInfo[i].col * GRID_WIDTH;
-				nStartCol = mAStarPosInfo[i].row * GRID_HEIGHT;
+				nStartLine = mAStarPosInfo[i].col * GlobalConfig.TILE_WIDTH;
+				nStartCol = mAStarPosInfo[i].row * GlobalConfig.TILE_HEIGHT;
 				stringBuilder.append("=>[" + mAStarPosInfo[i].row + "," + mAStarPosInfo[i].col + "," + 
 						mAStar.getDirString(mAStarPosInfo[i].dir)  +  "]");
-				mCanvasMemory.drawRect(nStartLine + GRID_HEIGHT / 4 , nStartCol + GRID_WIDTH / 4 ,
-						nStartLine + GRID_WIDTH  * 3 / 4,  nStartCol + GRID_HEIGHT * 3 /4, 
+				mCanvasMemory.drawRect(nStartLine + GlobalConfig.TILE_HEIGHT / 4 , nStartCol + GlobalConfig.TILE_WIDTH / 4 ,
+						nStartLine + GlobalConfig.TILE_WIDTH  * 3 / 4,  nStartCol + GlobalConfig.TILE_HEIGHT * 3 /4, 
 						mPaintRoute );
 			}
 			Log.i(TAG, stringBuilder.toString());

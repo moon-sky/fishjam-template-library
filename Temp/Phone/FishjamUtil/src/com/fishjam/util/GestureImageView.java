@@ -14,6 +14,7 @@ import android.widget.ImageView;
 
 public class GestureImageView extends ImageView {
 	private final String TAG =GestureImageView.class.getSimpleName();
+	private final static boolean Debug = false;
 	
 	float mCurScaleFactor = 1.0f;
 	float mLastScaleFactor = 1.0f;
@@ -76,9 +77,9 @@ public class GestureImageView extends ImageView {
 		float totalTranslateX = mLastTranslate.x + mCurTranslate.x;
 		float totalTranslateY = mLastTranslate.y + mCurTranslate.y;
 		
-		Log.i(TAG, "SetScaleFactor, mCurScaleFactor=" + mCurScaleFactor + ",lastFactor=" + mLastScaleFactor + ",total=" + totalScaleFactor
-				+ ", Translate=[" + LogHelper.FormatPointF(mLastTranslate) + "]+[" + LogHelper.FormatPointF(mCurTranslate)
-				+ "="+ totalTranslateX +"," + totalTranslateY);
+//		Log.i(TAG, "calcImageMatrix, mCurScaleFactor=" + mCurScaleFactor + ",lastFactor=" + mLastScaleFactor + ",total=" + totalScaleFactor
+//				+ ", Translate=[" + LogHelper.FormatPointF(mLastTranslate) + "]+[" + LogHelper.FormatPointF(mCurTranslate)
+//				+ "="+ totalTranslateX +"," + totalTranslateY);
 		
 		mMyMatrix.reset();
 
@@ -109,7 +110,7 @@ public class GestureImageView extends ImageView {
 		@Override
 		public boolean onScale(ScaleGestureDetector detector) {
 			float curScaleFactor = detector.getScaleFactor();
-			Log.i(TAG, "onScale, Span=" + detector.getCurrentSpan() + ", Factor=" + curScaleFactor);
+			//Log.i(TAG, "onScale, Span=" + detector.getCurrentSpan() + ", Factor=" + curScaleFactor);
 			//if ((curScaleFactor / mLastFactor) < 0.9f || (mLastFactor / curScaleFactor) < 0.9f) 
 			{
 				mCurScaleFactor = curScaleFactor;
@@ -159,9 +160,9 @@ public class GestureImageView extends ImageView {
 			mCurTranslate.y = e2.getY() - e1.getY();
 			//mCurScaleFactor = 1.0f;
 			
-			Log.i(TAG, "onScroll, e1=" + LogHelper.FormatMotionEvent(e1) + ",e2=" + LogHelper.FormatMotionEvent(e2)
-					+ ", distanceXY=" + distanceX + "," + distanceY
-					+ ", CurTranslate=" + LogHelper.FormatPointF(mCurTranslate));
+//			Log.i(TAG, "onScroll, e1=" + LogHelper.FormatMotionEvent(e1) + ",e2=" + LogHelper.FormatMotionEvent(e2)
+//					+ ", distanceXY=" + distanceX + "," + distanceY
+//					+ ", CurTranslate=" + LogHelper.FormatPointF(mCurTranslate));
 
 			calcImageMatrix();
 			

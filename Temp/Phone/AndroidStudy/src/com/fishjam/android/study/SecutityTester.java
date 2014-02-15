@@ -58,6 +58,8 @@ import android.test.AndroidTestCase;
  *   3.在 AndroidManifest.xml 中加入 对应的代码(参看SDK，有 Activity, Service, Receiver 等 )
  *   
  * 源码混淆 -- 将代码中的所有变量、函数、类的名称加密为简短的英文字母代号，在APP被破解后增加破解者对代码的阅读难度
+ *   1.资源(.xml)中的id是十六进制，但代码中的 findViewById 等使用的是十进制;
+ *   2.
  * 
  * 伪加密(Android 4.2.x 之前) -- 通过java代码对APK(压缩文件)进行伪加密，其修改原理是修改连续4位字节标记为"P K 01 02"的后第5位字节，奇数表示不加密偶数表示加密。
  *   伪加密后的APK不但可以防止PC端对它的解压和查看，也同样能防止反编译工具编译。

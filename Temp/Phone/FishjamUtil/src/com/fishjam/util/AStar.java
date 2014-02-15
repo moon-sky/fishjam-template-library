@@ -85,6 +85,9 @@ public class AStar {
 	private boolean isFound; // ÊÇ·ñÕÒµ½Â·¾¶
 
 	public AStar(int[][] map, int startRow, int startColumn, int endRow, int endColumn, boolean bEnable8Way) {
+		
+
+		
 		mStartRow = startRow;
 		mStartCol = startColumn;
 		mEndRow = endRow;
@@ -94,9 +97,12 @@ public class AStar {
 		mMap = map;
 		mMapRowCount = map.length;
 		mMapColumnCount = map[0].length;
-		
+
 		Log.e(TAG, "AStar, Row=" + mMapRowCount +",Column=" + mMapColumnCount 
-				+",canPasStart[" + mMap[mStartRow][mStartCol] + "]=" + checkPass(mStartRow, mStartCol)
+				+", mStartRow=" + mStartRow + "," + mStartCol
+				+", mEndRow=" + mEndRow + "," + mEndCol);
+
+		Log.e(TAG, "canPasStart[" + mMap[mStartRow][mStartCol] + "]=" + checkPass(mStartRow, mStartCol)
 				+",canPasGoal[" + mMap[mEndRow][mEndCol] + "]=" + checkPass(mEndRow, mEndCol)
 		);
 		

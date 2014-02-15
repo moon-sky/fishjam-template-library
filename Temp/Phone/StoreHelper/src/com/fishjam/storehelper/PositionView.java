@@ -3,24 +3,36 @@ package com.fishjam.storehelper;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
+import com.fishjam.storehelper.FloorMapManager.MapData;
 import com.fishjam.util.AStar;
 import com.fishjam.util.DragImageView;
+import com.fishjam.util.GestureImageView;
+import com.fishjam.util.LogHelper;
 
-public class PositionView extends DragImageView {
+public class PositionView extends GestureImageView {
 	private final static String TAG = PositionView.class.getSimpleName();
 	
 	Paint mPaint = new Paint();
 	int    mCurFloor = -1;
 	AStar mAStar;
+	AStar.PosInfo[] mAStarRoute;
+	Bitmap mUserBitmap;
+	Bitmap mCarBitmap;
 	
-	//StoreInformation	mStoreInformation;
+	PositionInfo mUserPositionInfo;
+	PositionInfo mCarPositionInfo;
 	
 	int [] FloorNumber = {
 			R.raw.floor_1,
@@ -29,45 +41,103 @@ public class PositionView extends DragImageView {
 	
 	public PositionView(Context context) {
 		super(context);
-		//setAdjustViewBounds(true);
+		init();
 	}
 	public PositionView(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		init();
 	}
 	
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		// TODO Auto-generated method stub
-		return super.onTouchEvent(event);
+	void init(){
+		
+		final Resources resources = getResources();
+		mUserBitmap = BitmapFactory.decodeStream(resources.openRawResource(R.drawable.ic_launcher));
+		mCarBitmap = BitmapFactory.decodeStream(resources.openRawResource(R.drawable.car_logo_benz));
 	}
-
-	@Override
-	protected void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-		StoreInformation storeInformation = StoreInformation.Instance();
-		Point ptCurPos = storeInformation.mCurPositionInfo.ptPos;
-		Point ptCarPos = storeInformation.mCarPositionInfo.ptPos;
-
-		Resources resources = getResources();
-		if (ptCurPos.x >= 0 && ptCurPos.y >= 0) {
-			mPaint.setColor(resources.getColor(R.color.red));
-			canvas.drawCircle(ptCurPos.x, ptCurPos.y, 10, mPaint);
-		}
-		if (ptCarPos.x >= 0 && ptCarPos.y >= 0) {
-			mPaint.setColor(resources.getColor(R.color.grgray));
-			canvas.drawCircle(ptCarPos.x, ptCarPos.y, 10, mPaint);
-		}
-	}
+//	@Override
+//	protected void onDraw(Canvas canvas) {
+//		super.onDraw(canvas);
+//		
+//		
+////		if (mUserPositionInfo.iFloor == mCurFloor) {
+////			//ÓÃ»§
+////			mPaint.setColor(Color.RED);
+////			canvas.drawCircle(mUserPositionInfo.ptPos.x * GlobalConfig.TILE_WIDTH, mUserPositionInfo.ptPos.y * GlobalConfig.TILE_HEIGHT, 10, mPaint);
+////		}
+////		if (mCarPositionInfo.iFloor == mCurFloor) {
+////			mPaint.setColor(Color.YELLOW);
+////			canvas.drawCircle(mCarPositionInfo.ptPos.x * GlobalConfig.TILE_WIDTH, mCarPositionInfo.ptPos.y * GlobalConfig.TILE_HEIGHT, 10, mPaint);
+////		}
+//	}
 
 	public void setFloor(int iFloor) {
+		Log.i(TAG, "setFloor," + mCurFloor + " to " + iFloor);
 		if (mCurFloor != iFloor) {
 			mCurFloor = iFloor;
 			
+			mUserPositionInfo = StoreInformation.Instance().mUserPositionInfo;
+			mCarPositionInfo = StoreInformation.Instance().mCarPositionInfo;
+			Log.i(TAG, "onDraw, UserPos=" + mUserPositionInfo.toString() + ",CarPos=" + mCarPositionInfo.toString());
+
 			Resources resources = getResources();
-			Drawable drawFloor =  resources.getDrawable(FloorNumber[mCurFloor]);
-			setImageDrawable(drawFloor);
+			Bitmap bitmap = BitmapFactory.decodeStream(resources.openRawResource(FloorNumber[mCurFloor])).copy(Bitmap.Config.RGB_565, true);
+
+			Log.i(TAG, "Bitmap Size=" + bitmap.getWidth() + "," + bitmap.getHeight());
+			Canvas canvas = new Canvas(bitmap);
 			
-			setmActivity((Activity)getContext());
+			if(mCurFloor == mUserPositionInfo.iFloor){
+				Rect srcRect = new Rect(0, 0, mUserBitmap.getWidth(), mUserBitmap.getHeight());
+				Rect dstRect = new Rect(
+						(mUserPositionInfo.ptPos.y - 1) * GlobalConfig.TILE_WIDTH, 
+						(mUserPositionInfo.ptPos.x - 1) * GlobalConfig.TILE_HEIGHT, 
+						(mUserPositionInfo.ptPos.y + 1) * GlobalConfig.TILE_WIDTH, 
+						(mUserPositionInfo.ptPos.x + 1) * GlobalConfig.TILE_HEIGHT);
+				Log.i(TAG, "DrawUser, " + LogHelper.FormatRect(srcRect) + " to " + LogHelper.FormatRect(dstRect));
+				canvas.drawBitmap(mUserBitmap, srcRect, dstRect, null);
+			}
+			
+			if(mCurFloor == mCarPositionInfo.iFloor){
+				Rect srcRect = new Rect(0, 0, mCarBitmap.getWidth(), mCarBitmap.getHeight());
+				Rect dstRect = new Rect(
+						(mCarPositionInfo.ptPos.y - 1) * GlobalConfig.TILE_WIDTH, 
+						(mCarPositionInfo.ptPos.x - 1) * GlobalConfig.TILE_HEIGHT, 
+						(mCarPositionInfo.ptPos.y + 1) * GlobalConfig.TILE_WIDTH, 
+						(mCarPositionInfo.ptPos.x + 1) * GlobalConfig.TILE_HEIGHT);
+				Log.i(TAG, "DrawCar, " + LogHelper.FormatRect(srcRect) + " to " + LogHelper.FormatRect(dstRect));
+				canvas.drawBitmap(mCarBitmap, srcRect, dstRect, null);
+			}
+			
+			Paint paintRoute = new Paint();
+			paintRoute.setColor(Color.RED);
+		
+			MapData maData = FloorMapManager.getInstance().getMapByFloor(iFloor);
+			AStar aStar = new AStar(maData.mTileData, mUserPositionInfo.ptPos.x, mUserPositionInfo.ptPos.y, 
+					mCarPositionInfo.ptPos.x, mCarPositionInfo.ptPos.y, true);
+					//6, 32, 30, 48, false);
+			AStar.PosInfo[] posInfos = aStar.getResult(true);
+			if (posInfos != null) {
+				int nStartLine = 0;
+				int nStartCol = 0;
+				//StringBuilder stringBuilder = new StringBuilder();
+				
+				for (int i = posInfos.length - 1; i >=0 ; i--) {
+					nStartLine = (posInfos[i].col + 0) * GlobalConfig.TILE_WIDTH;
+					nStartCol = (posInfos[i].row + 0) * GlobalConfig.TILE_HEIGHT;
+					//stringBuilder.append("=>[" + posInfos[i].row + "," + posInfos[i].col + "," + 
+					//		aStar.getDirString(posInfos[i].dir)  +  "]");
+					canvas.drawRect(nStartLine + GlobalConfig.TILE_WIDTH / 4 , nStartCol + GlobalConfig.TILE_HEIGHT / 4 ,
+							nStartLine + GlobalConfig.TILE_WIDTH  * 3 / 4,  nStartCol + GlobalConfig.TILE_HEIGHT * 3 /4, 
+							paintRoute );
+				}
+			}
+			else{
+				canvas.drawText("Not Found Route", 0, 0, paintRoute);
+			}
+			setImageBitmap(bitmap);
+			
+
+			
+			//setmActivity((Activity)getContext());
 			//dragImageView.setImageBitmap(bmp);
 			//dragImageView.setmActivity(this);//×¢ÈëActivity.
 			

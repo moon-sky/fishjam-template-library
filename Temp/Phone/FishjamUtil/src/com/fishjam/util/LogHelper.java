@@ -1,15 +1,38 @@
 package com.fishjam.util;
 
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 public final class LogHelper {
 	
-	public static String FormatPointF(PointF pointF){
+	public static String FormatPoint(Point point){
 		StringBuilder sBuilder = new StringBuilder();
-		sBuilder.append(pointF.x + "," + pointF.y);
+		sBuilder.append(point.x + "," + point.y);
+		return sBuilder.toString();
+	}
+	
+	public static String FormatPoint(PointF point){
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append(point.x + "," + point.y);
+		return sBuilder.toString();
+	}
+	
+	public static String FormatRect(Rect rect){
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append("(" + rect.left + "," + rect.top + ")-(" + rect.right + "," + rect.bottom
+				+ "), " + rect.width() + "x" + rect.height());
+		return sBuilder.toString();
+	}
+	
+	public static String FormatRect(RectF rect){
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append("(" + rect.left + "," + rect.top + ")-(" + rect.right + "," + rect.bottom
+				+ "), " + rect.width() + "x" + rect.height());
 		return sBuilder.toString();
 	}
 	

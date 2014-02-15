@@ -20,8 +20,7 @@ import android.widget.SimpleAdapter;
 import com.fishjam.util.CrashHandler;
 
 public class MainActivityView extends Activity {
-	private static final String TAG = MainActivityView.class.getName();
-	private static final String CONFIG_ENABLE_CRASH_HANDLER = "EnableCrashHandler";
+	private static final String TAG = MainActivityView.class.getSimpleName();
 	
 	private static final int MENU_ITEM_ID_ENABLE_CRASH_HANDLER = Menu.FIRST + 1;
 	private static final int MENU_ITEM_ID_EXIT =  Menu.FIRST + 2;
@@ -38,14 +37,14 @@ public class MainActivityView extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		mSharedPreferences = getPreferences(MODE_PRIVATE);
-		mbEnableCrashHandler = mSharedPreferences.getBoolean(CONFIG_ENABLE_CRASH_HANDLER,  true);
+		mSharedPreferences = getSharedPreferences(GlobalConfig.SHARE_PREFERENCE_NAME, MODE_PRIVATE);
+		mbEnableCrashHandler = mSharedPreferences.getBoolean(GlobalConfig.CONFIG_ENABLE_CRASH_HANDLER,  true);
 
-		Log.i(TAG, "mbEnableCrashHandler=" + mbEnableCrashHandler);
+		Log.i(TAG, "onCreate mbEnableCrashHandler=" + mbEnableCrashHandler);
 		
 		if (mbEnableCrashHandler) {
-			CrashHandler crashHandler = CrashHandler.getInstance();
-			crashHandler.init(this);
+			//CrashHandler crashHandler = CrashHandler.getInstance();
+			//crashHandler.init(this);
 			//crashHandler.init(getApplicationContext()); 
 		}
 		setContentView(R.layout.activity_main_view);
@@ -78,6 +77,7 @@ public class MainActivityView extends Activity {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				mCurSelIconIndex = position;
+				Log.i(TAG, "onItemClick,mCurSelIconIndex=" + mCurSelIconIndex);
 				mStartIconInfos[position].onExecute();
 			}
 		});
@@ -89,32 +89,22 @@ public class MainActivityView extends Activity {
 		mViewStartIcons.setAdapter(adapterStartIcons);
 	}
 	
+	
 	@Override
-	protected void onDestroy() {
+	protected void onPause() {
 		StoreInformation.Instance(this).Save();
-		super.onDestroy();
+		super.onPause();
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		Log.i(TAG, "onActivityResult, mCurSelIconIndex=" + mCurSelIconIndex);
 		if (mCurSelIconIndex != -1) {
-			mStartIconInfos[mCurSelIconIndex].onActivityResult(requestCode, resultCode, data);
+			if(mCurSelIconIndex >= 0 && mCurSelIconIndex < mStartIconInfos.length){
+				mStartIconInfos[mCurSelIconIndex].onActivityResult(requestCode, resultCode, data);
+			}
 		}
-		/*
-		 IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-		 if (scanResult != null) {
-				//Bundle bundle = data.getExtras();
-				//String scanResult = bundle.getString("result");
-				Intent intent = new Intent(MainActivityView.this, PositionActivity.class);
-				intent.putExtra(PositionActivity.KEY_CUR_POSITION, new int[] { 150, 200});
-				int nFloor = 0;
-				intent.putExtra(PositionActivity.KEY_FLOOR,  nFloor);
-				startActivity(intent);
-				
-			//mTextView.setText(scanResult.toString());
-		}
-	   //*/
 	}
 
 	@Override
@@ -146,7 +136,7 @@ public class MainActivityView extends Activity {
 		switch (item.getItemId()) {
 		case MENU_ITEM_ID_ENABLE_CRASH_HANDLER:
 			mbEnableCrashHandler = !mbEnableCrashHandler;
-			mSharedPreferences.edit().putBoolean(CONFIG_ENABLE_CRASH_HANDLER, mbEnableCrashHandler).commit();
+			mSharedPreferences.edit().putBoolean(GlobalConfig.CONFIG_ENABLE_CRASH_HANDLER, mbEnableCrashHandler).commit();
 			
 			Log.i(TAG, "Set mbEnableCrashHandler=" + mbEnableCrashHandler);
 			break;

@@ -7,12 +7,17 @@ import android.content.SharedPreferences.Editor;
 import android.graphics.Point;
 
 class PositionInfo{
-	public int iFloor;
+	public int iFloor = -1;
 	public Point ptPos = new Point(0, 0);
 
 	@Override
 	public String toString() {
 		return "" + iFloor +"," + ptPos.x + "," + ptPos.y;
+	}
+
+	public void reset() {
+		iFloor = -1;
+		ptPos.set(0, 0);
 	}
 }
 
@@ -34,12 +39,13 @@ public class StoreInformation {
 	private StoreInformation(Activity activity){
 		mActivity = activity;
 		mCarPositionInfo = new PositionInfo();
-		mCurPositionInfo = new PositionInfo();
+		mUserPositionInfo = new PositionInfo();
 	}
 
 	Activity mActivity;
 	PositionInfo mCarPositionInfo;
-	PositionInfo mCurPositionInfo;
+	PositionInfo mUserPositionInfo;
+	String strScanResult;
 	
 	void LoadPositionInfo(SharedPreferences sharedPreferences, String strKey, PositionInfo positionInfo){
 		String carPosString = sharedPreferences.getString(strKey, "0,0,0");
