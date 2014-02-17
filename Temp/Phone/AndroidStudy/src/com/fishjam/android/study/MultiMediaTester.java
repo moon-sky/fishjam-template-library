@@ -9,7 +9,7 @@ import android.test.ActivityTestCase;
 /***************************************************************************************************************************************
  * 最佳实践
  *   1.加载图片
- *     BitmapFactory.decodeStream 构造图片(不使用Java层的createBitmap，节约内存)
+ *     BitmapFactory.decodeStream(getResources.openRawResource())  构造图片(不使用Java层的createBitmap，节约内存)
  *     TODO: 该方法不会根据机器的各种分辨率来自动适应 ？
  *   2.BitmapFactory.Options
  *     读取图片时加上图片的Config参数，可以更有效减少加载的内存
@@ -179,6 +179,10 @@ public class MultiMediaTester extends ActivityTestCase {
         options.inPreferredConfig = Bitmap.Config.RGB_565;  //缺省是 ARGB_8888 
         
         Bitmap btp =BitmapFactory.decodeStream(is,null,options);
+        if (btp != null) {
+			btp.recycle();
+		}
+        
     }
 }
 
