@@ -166,6 +166,10 @@ public final class FloorMapManager {
 	};
 	
 	private final static Point[] ElevatorFloor2 = {
-		new Point(1,1),
+		new Point(15,30),
 	};
+	public int getMapCount() {
+		 
+		return mMapDatas.size();
+	}
 }

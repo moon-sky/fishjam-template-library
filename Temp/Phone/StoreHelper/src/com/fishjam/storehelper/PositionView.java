@@ -21,7 +21,7 @@ import com.fishjam.util.DragImageView;
 import com.fishjam.util.GestureImageView;
 import com.fishjam.util.LogHelper;
 
-public class PositionView extends GestureImageView {
+public class PositionView extends  DragImageView{ // GestureImageView {
 	private final static String TAG = PositionView.class.getSimpleName();
 	
 	Paint mPaint = new Paint();
@@ -54,21 +54,6 @@ public class PositionView extends GestureImageView {
 		mUserBitmap = BitmapFactory.decodeStream(resources.openRawResource(R.drawable.ic_launcher));
 		mCarBitmap = BitmapFactory.decodeStream(resources.openRawResource(R.drawable.car_logo_benz));
 	}
-//	@Override
-//	protected void onDraw(Canvas canvas) {
-//		super.onDraw(canvas);
-//		
-//		
-////		if (mUserPositionInfo.iFloor == mCurFloor) {
-////			//”√ªß
-////			mPaint.setColor(Color.RED);
-////			canvas.drawCircle(mUserPositionInfo.ptPos.x * GlobalConfig.TILE_WIDTH, mUserPositionInfo.ptPos.y * GlobalConfig.TILE_HEIGHT, 10, mPaint);
-////		}
-////		if (mCarPositionInfo.iFloor == mCurFloor) {
-////			mPaint.setColor(Color.YELLOW);
-////			canvas.drawCircle(mCarPositionInfo.ptPos.x * GlobalConfig.TILE_WIDTH, mCarPositionInfo.ptPos.y * GlobalConfig.TILE_HEIGHT, 10, mPaint);
-////		}
-//	}
 
 	public void setFloor(int iFloor) {
 		Log.i(TAG, "setFloor," + mCurFloor + " to " + iFloor);
@@ -88,10 +73,10 @@ public class PositionView extends GestureImageView {
 			if(mCurFloor == mUserPositionInfo.iFloor){
 				Rect srcRect = new Rect(0, 0, mUserBitmap.getWidth(), mUserBitmap.getHeight());
 				Rect dstRect = new Rect(
-						(mUserPositionInfo.ptPos.y - 1) * GlobalConfig.TILE_WIDTH, 
-						(mUserPositionInfo.ptPos.x - 1) * GlobalConfig.TILE_HEIGHT, 
-						(mUserPositionInfo.ptPos.y + 1) * GlobalConfig.TILE_WIDTH, 
-						(mUserPositionInfo.ptPos.x + 1) * GlobalConfig.TILE_HEIGHT);
+						(mUserPositionInfo.ptPos.y - 2) * GlobalConfig.TILE_WIDTH, 
+						(mUserPositionInfo.ptPos.x - 2) * GlobalConfig.TILE_HEIGHT, 
+						(mUserPositionInfo.ptPos.y + 2) * GlobalConfig.TILE_WIDTH, 
+						(mUserPositionInfo.ptPos.x + 2) * GlobalConfig.TILE_HEIGHT);
 				Log.i(TAG, "DrawUser, " + LogHelper.FormatRect(srcRect) + " to " + LogHelper.FormatRect(dstRect));
 				canvas.drawBitmap(mUserBitmap, srcRect, dstRect, null);
 			}
@@ -99,10 +84,10 @@ public class PositionView extends GestureImageView {
 			if(mCurFloor == mCarPositionInfo.iFloor){
 				Rect srcRect = new Rect(0, 0, mCarBitmap.getWidth(), mCarBitmap.getHeight());
 				Rect dstRect = new Rect(
-						(mCarPositionInfo.ptPos.y - 1) * GlobalConfig.TILE_WIDTH, 
-						(mCarPositionInfo.ptPos.x - 1) * GlobalConfig.TILE_HEIGHT, 
-						(mCarPositionInfo.ptPos.y + 1) * GlobalConfig.TILE_WIDTH, 
-						(mCarPositionInfo.ptPos.x + 1) * GlobalConfig.TILE_HEIGHT);
+						(mCarPositionInfo.ptPos.y - 2) * GlobalConfig.TILE_WIDTH, 
+						(mCarPositionInfo.ptPos.x - 2) * GlobalConfig.TILE_HEIGHT, 
+						(mCarPositionInfo.ptPos.y + 2) * GlobalConfig.TILE_WIDTH, 
+						(mCarPositionInfo.ptPos.x + 2) * GlobalConfig.TILE_HEIGHT);
 				Log.i(TAG, "DrawCar, " + LogHelper.FormatRect(srcRect) + " to " + LogHelper.FormatRect(dstRect));
 				canvas.drawBitmap(mCarBitmap, srcRect, dstRect, null);
 			}
@@ -110,12 +95,14 @@ public class PositionView extends GestureImageView {
 			Paint paintRoute = new Paint();
 			paintRoute.setColor(Color.RED);
 		
-			MapData maData = FloorMapManager.getInstance().getMapByFloor(iFloor);
-			AStar aStar = new AStar(maData.mTileData, mUserPositionInfo.ptPos.x, mUserPositionInfo.ptPos.y, 
-					mCarPositionInfo.ptPos.x, mCarPositionInfo.ptPos.y, true);
+			//MapData maData = FloorMapManager.getInstance().getMapByFloor(iFloor);
+			//AStar aStar = new AStar(maData.mTileData, mUserPositionInfo.ptPos.x, mUserPositionInfo.ptPos.y, 
+			//		mCarPositionInfo.ptPos.x, mCarPositionInfo.ptPos.y, true);
 					//6, 32, 30, 48, false);
-			AStar.PosInfo[] posInfos = aStar.getResult(true);
+			//AStar.PosInfo[] posInfos = aStar.getResult(true);
+			AStar.PosInfo[] posInfos = StoreInformation.Instance().findWayToCar(mCurFloor);
 			if (posInfos != null) {
+				Log.i(TAG, "findWayToCar, length=" + posInfos.length);
 				int nStartLine = 0;
 				int nStartCol = 0;
 				//StringBuilder stringBuilder = new StringBuilder();

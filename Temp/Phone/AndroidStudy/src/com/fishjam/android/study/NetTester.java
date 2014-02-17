@@ -1,4 +1,7 @@
 package com.fishjam.android.study;
+import java.net.URL;
+
+import android.graphics.BitmapFactory;
 import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
@@ -7,9 +10,15 @@ import android.test.AndroidTestCase;
  *   InputStream in = socket.getInputStream();  byte[] buffer = new byte[in.available()];  in.read(buffer); String msg = new String(buffer);
  * DatagramSocket/DatagramPackage -- UDP
  * URL/URLConnection/HttpURLConnection 
- *   1.InputStream in = url.openStream();
- *   2.URLConnection conn = url.openConnection(); InputStream in = conn.getInputStream();
- *   3.HttpURLConnection httpConn = (HttpURLConnection)conn; in = httpConn.getInputStream();
+ *   1.InputStream in = new URL(myUrl).openStream();  //打开Url对应的输入流(如 文件、网络等?) 
+ *   2.1. 网络解析:
+ *       URLConnection conn = url.openConnection(); InputStream in = conn.getInputStream();
+ *       HttpURLConnection httpConn = (HttpURLConnection)conn; in = httpConn.getInputStream();
+ *   2.2 本地图片解析
+ *       bitmap = BitmapFactory.decodeStream(in);
+ *   3. in.close();  //使用完毕后注意关闭
+ * URLEncoder 
+ *   encode -- ?
  * Servlet 
  *   HttpServlet -- 继承子类，重载其中的 doGet /doPost 等方法
  *   HttpServletRequest/HttpServletResponse -- 

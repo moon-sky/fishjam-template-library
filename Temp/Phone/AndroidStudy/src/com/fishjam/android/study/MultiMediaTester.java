@@ -78,7 +78,7 @@ import android.test.ActivityTestCase;
  * 2D图形处理  -- android.graphics, android.view.animation 等包中
  *   图片: Drawable / Bitmap / BitmapFactory
  *     Bitmap
- *       createBitmap -- 根据参数创建位图
+ *       createBitmap -- 根据参数创建位图，filter 参数?
  *       extractAlpha -- 根据位图信息生成只有透明度没有颜色(即Alpha通道)的位图
  *       isRecycle-- 判断图片内存是否已被回收
  *       recycle -- 回收图片所占的内存
@@ -123,7 +123,7 @@ import android.test.ActivityTestCase;
  *      onMeasure -- 检测View组件及它所包含的所有组件的大小，父元素要放置该View时调用。
  *        计算时先通过 MeasureSpec 类的静态方法getMode(AT_MOST 表示最大可获得的空间，对应wrap_content; EXACTLY 表示精确的尺寸，对应fill_parent )
  *        和getSize来分析传入的边界参数。然后通过 setMeasuredDimension 指定计算结果。
- *      onLayout -- 当组件需要分配其子组件的位置、大小时回调
+ *      onLayout -- 当组件需要分配其子组件的位置、大小时回调(即调用 layout 时)
  *      onTrackballEvent -- 当发生轨迹球事件时触发
  *      onTouchEvent -- 当发生触摸屏事件时触发， TODO:怎么处理手势(Gesture?)
  *      onAttachedToWindow/onDetachedFromWindow -- 当该组件 放入窗口/从窗口分离 时触发
@@ -174,9 +174,9 @@ public class MultiMediaTester extends ActivityTestCase {
         options.inSampleSize = 4;   //width，hight设为原来的四分一，即整个图是原来的 16 分之一
         
       //以最省内存的方式读取本地资源的图片
-        options.inInputShareable = true;  
         options.inPurgeable = true;  
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        options.inInputShareable = true;  //共享一个指向数据源的引用，否则会做深拷贝
+        options.inPreferredConfig = Bitmap.Config.RGB_565;  //缺省是 ARGB_8888 
         
         Bitmap btp =BitmapFactory.decodeStream(is,null,options);
     }

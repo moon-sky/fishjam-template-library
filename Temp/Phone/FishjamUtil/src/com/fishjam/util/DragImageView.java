@@ -25,7 +25,8 @@ import android.widget.ImageView;
  * 
  */
 public class DragImageView extends ImageView {
-
+	private final static String TAG = DragImageView.class.getSimpleName();
+	
 	private Activity mActivity;
 
 	private int screen_W, screen_H;// 可见屏幕的宽高度
@@ -71,6 +72,7 @@ public class DragImageView extends ImageView {
 	/** 构造方法 **/
 	public DragImageView(Context context) {
 		super(context);
+		this.mActivity = (Activity)context;
 	}
 
 	public void setmActivity(Activity mActivity) {
@@ -101,17 +103,22 @@ public class DragImageView extends ImageView {
 		bitmap_W = bm.getWidth();
 		bitmap_H = bm.getHeight();
 
-		MAX_W = bitmap_W * 3;
-		MAX_H = bitmap_H * 3;
+		MAX_W = bitmap_W * 4;
+		MAX_H = bitmap_H * 4;
 
-		MIN_W = bitmap_W / 2;
-		MIN_H = bitmap_H / 2;
+		MIN_W = bitmap_W / 3;
+		MIN_H = bitmap_H / 3;
 
+		Log.i(TAG, String.format("setImageBitmap, bmpWH=%dx%d, MaxWH=%dx%d, MinWH=%dx%d", 
+				bitmap_W, bitmap_H, MAX_W, MAX_H, MIN_W, MIN_H
+				));
 	}
 
 	@Override
-	protected void onLayout(boolean changed, int left, int top, int right,
-			int bottom) {
+	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+		Log.i(TAG, String.format("onLayout: left=%d, top=%d, right=%d, bottom=%d", 
+				 left, top, right, bottom));
+
 		super.onLayout(changed, left, top, right, bottom);
 		if (start_Top == -1) {
 			start_Top = top;
@@ -119,7 +126,6 @@ public class DragImageView extends ImageView {
 			start_Bottom = bottom;
 			start_Right = right;
 		}
-
 	}
 
 	/***
@@ -152,6 +158,9 @@ public class DragImageView extends ImageView {
 				doScaleAnim();
 			}
 			break;
+		default:
+			Log.w(TAG, "UnHandled onTouchEvent:" + LogHelper.FormatMotionEvent(event));
+			break;
 		}
 
 		return true;
@@ -167,6 +176,8 @@ public class DragImageView extends ImageView {
 		start_x = (int) event.getX();
 		start_y = current_y - this.getTop();
 
+		Log.i(TAG, String.format("onTouchEvent, currentXY=%d,%d, startXY=%d,%d", 
+				current_x, current_y, start_x, start_y));
 	}
 
 	/** 两个手指 只能放大缩小 **/
@@ -352,10 +363,8 @@ public class DragImageView extends ImageView {
 	 * 缩放动画处理
 	 */
 	public void doScaleAnim() {
-		myAsyncTask = new MyAsyncTask(screen_W, this.getWidth(),
-				this.getHeight());
-		myAsyncTask.setLTRB(this.getLeft(), this.getTop(), this.getRight(),
-				this.getBottom());
+		myAsyncTask = new MyAsyncTask(screen_W, this.getWidth(), this.getHeight());
+		myAsyncTask.setLTRB(this.getLeft(), this.getTop(), this.getRight(), this.getBottom());
 		myAsyncTask.execute();
 		isScaleAnim = false;// 关闭动画
 	}
@@ -409,7 +418,9 @@ public class DragImageView extends ImageView {
 				right = Math.min(right, start_Right);
 				bottom = Math.min(bottom, start_Bottom);
                 Log.e("jj", "top="+top+",bottom="+bottom+",left="+left+",right="+right);
-				onProgressUpdate(new Integer[] { left, top, right, bottom });
+                
+				//onProgressUpdate(new Integer[] { left, top, right, bottom });
+                publishProgress(new Integer[] { left, top, right, bottom });
 				try {
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
@@ -423,12 +434,15 @@ public class DragImageView extends ImageView {
 		@Override
 		protected void onProgressUpdate(final Integer... values) {
 			super.onProgressUpdate(values);
+			//setFrame(values[0], values[1], values[2], values[3]);
+			//*
 			mActivity.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
 					setFrame(values[0], values[1], values[2], values[3]);
 				}
 			});
+			//*/
 
 		}
 

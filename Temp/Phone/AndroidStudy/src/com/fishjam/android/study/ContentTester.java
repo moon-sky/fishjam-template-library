@@ -1,7 +1,9 @@
 package com.fishjam.android.study;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +12,12 @@ import java.util.Map;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
+import android.os.Environment;
+import android.os.StatFs;
 import android.test.ActivityTestCase;
+import android.text.StaticLayout;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.SimpleAdapter;
@@ -87,6 +94,7 @@ import android.widget.SimpleAdapter;
  **************************************************************************************************************************************/
 
 public class ContentTester  extends ActivityTestCase{
+	private final static String TAG = ContentTester.class.getSimpleName();
 	
 	public void testArrayAdapter(){
 		String [] booksStrings = {"book1" , "book2", "book3"};
@@ -97,6 +105,28 @@ public class ContentTester  extends ActivityTestCase{
 		}
 	}
 	
+	public void testFile()
+	{
+		final String pathString =Environment.getExternalStorageDirectory() + File.pathSeparator  + "androidStudy";
+		final String fileNameString = "testFile.txt";
+		File dir = new File(pathString);
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		File file = new File(pathString + File.pathSeparator + fileNameString);
+		try {
+			file.createNewFile();
+			OutputStream outStream = new FileOutputStream(file);
+			
+			DataOutputStream dataOutputStream = new DataOutputStream(outStream);
+			dataOutputStream.writeUTF("some unicode string");
+			//bitmap.compress(Bitmap.CompressFormat.PNG, quantity, outStream);
+			outStream.flush();
+			outStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	public void testFileIoStream() {
 		FileOutputStream fileOutputStream = null;
 		DataOutputStream dataOutputStream = null;
@@ -199,5 +229,14 @@ public class ContentTester  extends ActivityTestCase{
 		 //读取模式，读取之前设置的值
 		String sKeyValue = sharedPreferences.getString("key", "defaultValue");
 		assertEquals(sKeyValue, "Value");
+	}
+
+	final static int MB = 1024 * 1024;
+	public void testSDCardInfo(){
+		Log.i(TAG, Environment.getExternalStorageState()); //Environment.MEDIA_MOUNTED -- 表示 mounted 
+		
+		StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
+		double sdFreeMB = ((double) stat.getAvailableBlocks()  * (double) stat.getBlockSize()) / MB;
+		Log.i(TAG, "SDCard Info: FreeMB=" + sdFreeMB );
 	}
 }

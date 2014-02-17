@@ -325,7 +325,8 @@ namespace FTL
         //!   @retval ERROR_TIMEOUT -- 超时
 		//! @warning 如果返回FALSE，调用方需要释放 pJob 相关的资源
 		//! @todo 本考虑在失败时由 Pool 调用 pJob->OnFinalize(TRUE) 来释放资源，但考虑到重复性检测(虽然该功能现在已经删除)的问题，觉得还是由调用方释放比较合理
-		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, DWORD dwMilliseconds = INFINITE);
+        //! @todo 考虑加入 bWorkImmediately -- 是否立即工作，如果是TRUE的话，当当前线程池中没有空闲线程时，会强制创建一个线程
+		FTLINLINE BOOL SubmitJob(CFJobBase<T>* pJob, LONG* pOutJobIndex, DWORD dwMilliseconds = INFINITE); //, BOOL bWorkImmediately = FALSE);
 
 		//! 暂停指定的Job，需要Job子类在业务逻辑中周期性调用 GetJobWaitType 来支持
 		//! @note: 如果取出Job给客户，可能调用者得到指针时，Job执行完毕 delete this，会造成野指针异常

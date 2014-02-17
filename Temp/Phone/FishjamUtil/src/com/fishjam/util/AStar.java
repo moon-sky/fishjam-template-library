@@ -224,7 +224,7 @@ public class AStar {
 
 	//ø…÷ÿ‘ÿ
 	protected boolean checkPass(int iRow, int iCol){
-		if (mMap[iRow][iCol] != 0) {
+		if (mMap[iRow][iCol] != 0 && mMap[iRow][iCol] != 9) {
 			return false;
 		}
 		return true;

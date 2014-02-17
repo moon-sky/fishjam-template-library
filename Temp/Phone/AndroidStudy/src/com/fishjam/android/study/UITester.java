@@ -1,5 +1,12 @@
 package com.fishjam.android.study;
+import com.fishjam.util.LogHelper;
+
+import android.app.Activity;
+import android.graphics.Rect;
+import android.test.ActivityTestCase;
+import android.test.ActivityUnitTestCase;
 import android.test.AndroidTestCase;
+import android.util.Log;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
@@ -276,6 +283,9 @@ import android.test.AndroidTestCase;
  *
  * LayoutInflater infater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE); //或LayoutInflater.from(getApplicationContext())
  * convertView = infater.inflate(R.layout.baseadapter_provider,null);
+ * 
+ * ViewTreeObserver -- View变化监听器(当View Tree 发生变化时会通知该监听器)，不能自定义实例，而必须通过 View.getViewTreeObserver()  获得
+ *   
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -374,10 +384,21 @@ import android.test.AndroidTestCase;
  *    
 **************************************************************************************************************************************/
 
-public class UITester extends AndroidTestCase {
-    public UITester()    {
-        
-    }
+public class UITester extends ActivityTestCase{
+	public UITester() {
+	}
+
+	private final static String TAG = UITester.class.getSimpleName();
+
+//	public UITester(Class<Activity> activityClass) {
+//		Log.e(TAG, "UITester constructor");
+//		super(activityClass);
+//	}
+
+
+//    public UITester()    {
+//        super(Activity.class);
+//    }
     protected void setUp() throws Exception {
         super.setUp();
     }
@@ -404,7 +425,7 @@ public class UITester extends AndroidTestCase {
          **************************************************************************************************/
     }
     
-    public void TabHostTester(){
+    public void testTabHost(){
         /********************************************************************************************
          * 方法1:
          *   1. 在布局文件中使用 FrameLayout 列出Tab组件及Tab中的内容组件
@@ -501,6 +522,19 @@ public class UITester extends AndroidTestCase {
     	
     	setContentView(xxxx);
    		*/
+    }
+    
+    public void testDisplayInfo(){
+    	Rect frame = new Rect();
+    	Log.i(TAG, "getActivity=" + getActivity());
+    	Log.i(TAG, "getWindow=" + getActivity().getWindow());
+    	Log.i(TAG, "getDecorView=" + getActivity().getWindow().getDecorView());
+    	Log.i(TAG, "getActivity=" + getActivity());
+
+    	getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+    	
+    	//frame.top 是状况栏高度
+		Log.i(TAG, "DecorViewSize = " + LogHelper.FormatRect(frame) );
     }
 }
 

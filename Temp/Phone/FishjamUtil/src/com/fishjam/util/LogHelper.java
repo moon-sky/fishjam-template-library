@@ -1,10 +1,15 @@
 package com.fishjam.util;
 
+import java.util.Locale;
+
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.text.BoringLayout.Metrics;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -53,6 +58,29 @@ public final class LogHelper {
 		return sBuilder.toString();
 	}
 	
+	public static String FormatDisplay(Display display){
+		//StringBuilder sBuilder = new StringBuilder();
+		DisplayMetrics metrics = new DisplayMetrics();
+		display.getMetrics(metrics);
+		String string = String.format("Display {Id=%d, WxH=[%dx%d], Ori=%d, Rot=%d,Pixel=%d, [%s] }",  
+				//1, 2, 3, "fishjam"
+				display.getDisplayId(),  display.getWidth(), display.getHeight(),
+				display.getOrientation(), display.getRotation(), display.getPixelFormat(),
+				FormatMetrics(metrics)
+				);
+		return string;
+	}
+	
+	private static String FormatMetrics(DisplayMetrics metrics) {
+		String string = String.format("Metrics{ density=%f, scaledDensity=%f, densityDpi=%d," +
+				"WxH(Pixels)=[%dx%d], Dpi=(%f,%f) }", 
+				metrics.density, metrics.scaledDensity, metrics.densityDpi, 
+				metrics.widthPixels, metrics.heightPixels, 
+				metrics.xdpi, metrics.ydpi
+				);
+		return string;
+	}
+
 	public static String FormatMotionEvent(MotionEvent event){
 		StringBuilder sBuilder = new StringBuilder();
 		int nAction = event.getAction() & MotionEvent.ACTION_MASK;

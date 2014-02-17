@@ -32,6 +32,9 @@ import android.util.Log;
  * Android语法
  *  1.Android中的命名规则采用 mXXXX 的方式（没有下划线）
  * 
+ * 字符串格式化
+ *   String.Format
+ *   
  * 类
  *   instanceof -- 判断是否是指定类型的实例
  *    
@@ -45,7 +48,7 @@ import android.util.Log;
  *      spinner.setAdapter(aa); 
  *    
  * super 调用基类的同名方法，如: super.onCreate(xxxx);
- *
+ * 
  * annotation
  * 
  * Android 使用Java中的事件处理机制，包括( TODO ):
@@ -73,6 +76,11 @@ import android.util.Log;
 public class LanguageTester  extends AndroidTestCase{
 	private static final String TAG = LanguageTester.class.getName();
 	
+	public void testStringFormat(){
+		String string = String.format("Int=%d", 123);
+		
+		Log.i(TAG, string);
+	}
 	public void testParseDouble() throws Throwable 
 	{
 		double dValue = Double.parseDouble("1.05");

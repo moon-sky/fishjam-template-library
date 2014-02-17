@@ -18,6 +18,7 @@ import android.widget.GridView;
 import android.widget.SimpleAdapter;
 
 import com.fishjam.util.CrashHandler;
+import com.fishjam.util.LogHelper;
 
 public class MainActivityView extends Activity {
 	private static final String TAG = MainActivityView.class.getSimpleName();
@@ -37,6 +38,8 @@ public class MainActivityView extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		Log.i("Display", LogHelper.FormatDisplay(getWindowManager().getDefaultDisplay()));
+		
 		mSharedPreferences = getSharedPreferences(GlobalConfig.SHARE_PREFERENCE_NAME, MODE_PRIVATE);
 		mbEnableCrashHandler = mSharedPreferences.getBoolean(GlobalConfig.CONFIG_ENABLE_CRASH_HANDLER,  true);
 
@@ -53,7 +56,7 @@ public class MainActivityView extends Activity {
 		StoreInformation.Instance(this);
 		
 		mStartIconInfos = new StartIconInfo[]{
-			new SaveCarIconItem(this),
+			//new SaveCarIconItem(this),
 			new FindCarIconItem(this),
 			new CameraParamIconItem(this),
 			new ViewFloorImage(this),
