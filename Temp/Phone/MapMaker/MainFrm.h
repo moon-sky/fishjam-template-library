@@ -14,6 +14,7 @@ public:
 
 	CMDICommandBarCtrl m_CmdBar;
 
+
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
 
@@ -31,9 +32,12 @@ public:
 		COMMAND_ID_HANDLER_EX(ID_VIEW_TOOLBAR, OnViewToolBar)
 		COMMAND_ID_HANDLER_EX(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 		COMMAND_ID_HANDLER_EX(ID_APP_ABOUT, OnAppAbout)
+
 		COMMAND_ID_HANDLER_EX(ID_WINDOW_CASCADE, OnWindowCascade)
 		COMMAND_ID_HANDLER_EX(ID_WINDOW_TILE_HORZ, OnWindowTile)
 		COMMAND_ID_HANDLER_EX(ID_WINDOW_ARRANGE, OnWindowArrangeIcons)
+
+        CHAIN_MDI_CHILD_COMMANDS()        
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CMDIFrameWindowImpl<CMainFrame>)
 	END_MSG_MAP()

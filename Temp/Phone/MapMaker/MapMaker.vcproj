@@ -211,6 +211,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OptionsDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -249,6 +253,10 @@
 			</File>
 			<File
 				RelativePath=".\MapMakerView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OptionsDlg.h"
 				>
 			</File>
 			<File

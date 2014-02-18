@@ -13,38 +13,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Chinese (P.R.C.) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 #ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
 #endif //_WIN32
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include ""atlres.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -63,6 +38,10 @@ BEGIN
     SEPARATOR
     BUTTON      ID_FILE_PRINT
     BUTTON      ID_APP_ABOUT
+    SEPARATOR
+    BUTTON      ID_DRAW_EMPTY
+    BUTTON      ID_DRAW_WALL
+    BUTTON      ID_DRAW_ELEVATOR
 END
 
 
@@ -94,7 +73,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About MapMaker",          ID_APP_ABOUT
+        MENUITEM "&About MapMaker",             ID_APP_ABOUT
     END
 END
 
@@ -126,6 +105,10 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END
+    POPUP "Tools"
+    BEGIN
+        MENUITEM "Options",                     ID_TOOLS_OPTIONS
+    END
     POPUP "&Window"
     BEGIN
         MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
@@ -134,9 +117,10 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About MapMaker",          ID_APP_ABOUT
+        MENUITEM "&About MapMaker",             ID_APP_ABOUT
     END
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -154,18 +138,27 @@ IDR_MDICHILD            ICON                    "res\\MapMakerDoc.ico"
 //
 
 IDD_ABOUTBOX DIALOG  0, 0, 187, 102
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,130,81,50,14
-    CTEXT           "MapMaker Application v1.0\n\n(c) Copyright 2014",IDC_STATIC,25,57,78,
-                    32
+    CTEXT           "MapMaker Application v1.0\n\n(c) Copyright 2014",IDC_STATIC,25,57,78,32
     ICON            IDR_MAINFRAME,IDC_STATIC,55,26,18,20
     GROUPBOX        "",IDC_STATIC,7,7,115,88
 END
 
-
+IDD_OPTIONS DIALOGEX 0, 0, 283, 218
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "ª˘±æ…Ë÷√"
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_EDIT_TILE_WIDTH,96,14,73,14,ES_AUTOHSCROLL
+    LTEXT           "Tile Width£∫",IDC_STATIC,29,16,47,15
+    EDITTEXT        IDC_EDIT_TILE_HEIGHT,95,33,73,14,ES_AUTOHSCROLL
+    LTEXT           "Tile Height£∫",IDC_STATIC,29,35,47,15
+    PUSHBUTTON      "OK",IDOK,113,162,50,14
+END
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -182,6 +175,14 @@ BEGIN
         RIGHTMARGIN, 180
         TOPMARGIN, 7
         BOTTOMMARGIN, 95
+    END
+
+    IDD_OPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 276
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 211
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -233,21 +234,21 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "MapMaker Module\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "MapMaker\0"
-            VALUE "LegalCopyright", "Copyright 2014\0"
-            VALUE "OriginalFilename", "MapMaker.exe\0"
-            VALUE "ProductName", "MapMaker Module\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "FileDescription", "MapMaker Module"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "MapMaker"
+            VALUE "LegalCopyright", "Copyright 2014"
+            VALUE "OriginalFilename", "MapMaker.exe"
+            VALUE "ProductName", "MapMaker Module"
+            VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x0409, 0x04B0
+        VALUE "Translation", 0x409, 1200
     END
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -256,8 +257,8 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_MAINFRAME	"MapMaker"
-    IDR_MDICHILD        "Document"
+    IDR_MAINFRAME           "MapMaker"
+    IDR_MDICHILD            "Document"
 END
 
 STRINGTABLE 
@@ -337,12 +338,59 @@ END
 STRINGTABLE 
 BEGIN
     ATL_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE 
+BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
 END
+
+STRINGTABLE 
+BEGIN
+    ID_DRAW_EMPTY           "Empty"
+    ID_DRAW_WALL            "Draw Wall"
+    ID_DRAW_ELEVATOR        "Elevtor"
+    ID_TOOLS_OPTIONS        "Options"
+END
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""atlres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef APSTUDIO_INVOKED
-#endif    // not APSTUDIO_INVOKED

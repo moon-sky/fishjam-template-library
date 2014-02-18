@@ -9,6 +9,7 @@
 #include "MapMakerView.h"
 #include "ChildFrm.h"
 #include "MainFrm.h"
+#include "OptionsDlg.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
@@ -92,13 +93,18 @@ void CMainFrame::OnFileNew(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CMainFrame::OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    CFileDialog dlg(TRUE);
-    if (dlg.DoModal() == IDOK)
+    CString strFilter = _T(""); //_T("All Files(*.*)\0*.*\0\0");//_T("ImageFile(*.bmp;*.jpg;*.jpeg;*.png)\0*.bmp;*.jpg;*.jpeg;*.png\0All Files(*.*)\0*.*\0\0");
+
+    CFileDialog dlgOpen(TRUE, NULL, NULL, 0, NULL, m_hWnd);
+
+    if (dlgOpen.DoModal() == IDOK)
     {
         CChildFrame* pChild = new CChildFrame;
         pChild->CreateEx(m_hWndClient);
+        pChild->SetImagePath(dlgOpen.m_szFileName);
     }
 }
+
 
 void CMainFrame::OnViewToolBar(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
