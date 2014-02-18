@@ -9,13 +9,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Bitmap;
 import android.os.Environment;
 import android.os.StatFs;
 import android.test.ActivityTestCase;
+import android.test.ActivityUnitTestCase;
 import android.text.StaticLayout;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -93,10 +96,26 @@ import android.widget.SimpleAdapter;
 
  **************************************************************************************************************************************/
 
-public class ContentTester  extends ActivityTestCase{
+public class ContentTester  extends ActivityUnitTestCase<Activity>{
 	private final static String TAG = ContentTester.class.getSimpleName();
+	 private Intent mStartIntent;
+	 
+	public ContentTester() {
+		super(Activity.class);
+		// TODO Auto-generated constructor stub
+	}
 	
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		
+		mStartIntent = new Intent(Intent.ACTION_MAIN);
+	}
+
 	public void testArrayAdapter(){
+		 startActivity(mStartIntent, null, null);
+		 assertNotNull(getActivity());
+		
 		String [] booksStrings = {"book1" , "book2", "book3"};
 		ArrayAdapter<String> adapter1 = new ArrayAdapter<String>(getActivity() , android.R.layout.simple_list_item_1, booksStrings);
 		AutoCompleteTextView autoCompleteTextView = (AutoCompleteTextView)getActivity().findViewById(R.id.textView1);
@@ -107,13 +126,15 @@ public class ContentTester  extends ActivityTestCase{
 	
 	public void testFile()
 	{
-		final String pathString =Environment.getExternalStorageDirectory() + File.pathSeparator  + "androidStudy";
+		final String pathString =Environment.getExternalStorageDirectory() + File.separator  + "androidStudy";
 		final String fileNameString = "testFile.txt";
 		File dir = new File(pathString);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		File file = new File(pathString + File.pathSeparator + fileNameString);
+		File file = new File(pathString + File.separator + fileNameString);
+		Log.i(TAG, "FilePath=" + file.getPath());
+		
 		try {
 			file.createNewFile();
 			OutputStream outStream = new FileOutputStream(file);
@@ -128,6 +149,8 @@ public class ContentTester  extends ActivityTestCase{
 		}
 	}
 	public void testFileIoStream() {
+		startActivity(mStartIntent, null, null);
+		
 		FileOutputStream fileOutputStream = null;
 		DataOutputStream dataOutputStream = null;
 		try {
@@ -153,6 +176,8 @@ public class ContentTester  extends ActivityTestCase{
 	}
 	
 	public void testSimpleAdapter(){
+		startActivity(mStartIntent, null, null);
+		
 		List<Map<String, Object>> listItems = new ArrayList<Map<String, Object>>();
 		for (int i = 0; i < 10; i++) {
 			Map<String, Object> listItem = new HashMap<String, Object>();
@@ -214,12 +239,13 @@ public class ContentTester  extends ActivityTestCase{
 	}
 	
 	public void testSharedPreferences(){
+		startActivity(mStartIntent, null, null);
 		//获取实例，操作模式有： 
 		//   MODE_PRIVATE(新内容覆盖原内容)
 		//   MODE_APPEND(新内容追加到原内容后), 
 		//   MODE_WORLD_READABLE(允许其他应用程序读取)
 		//   MODE_WORLD_WRITEABLE(允许其他应用程序写入，会覆盖原数据)
-		SharedPreferences sharedPreferences = this.getActivity().getSharedPreferences("FileName",  Context.MODE_PRIVATE);
+		SharedPreferences sharedPreferences = getActivity().getSharedPreferences("FileName",  Context.MODE_PRIVATE);
 		
 		//通过Editor接口进入编辑模式
 		Editor editor = sharedPreferences.edit();   

@@ -430,10 +430,10 @@ namespace FTL
 		UINT RWM_ATL_CREATE_OBJECT;		//ATL.CAtlAutoThreadModuleT.CreateInstance 创建COM对象时使用(内部使用的套间线程同步?)
 		UINT RWM_ATLGETCONTROL;			//AtlAxGetControl 获取Control的IUnknown接口(返回值)
 		UINT RWM_ATLGETHOST;			//AtlAxGetHost 获取Host的IUnknown接口(返回值）
-		UINT RWM_COLOROKSTRING;
+		UINT RWM_COLOROKSTRING;         //_T("commdlg_ColorOK")
 		UINT RWM_COMMDLG_FIND;
 		UINT RWM_FILEOKSTRING;
-		UINT RWM_FINDMSGSTRING;
+		UINT RWM_FINDMSGSTRING;         //_T("commdlg_FindReplace")
 		UINT RWM_LBSELCHSTRING;
 
 		//zmouse.h 中处理 MSWheel 的三个消息(有一个 MouseZ 窗体)
@@ -443,11 +443,19 @@ namespace FTL
 
 		UINT RWM_HELPMSGSTRING;
 		UINT RWM_HTML_GETOBJECT;		//从IE窗体中获取对应的IHTMLDocument2接口
-		UINT RWM_SETRGBSTRING;
+		UINT RWM_SETRGBSTRING;          //_T("commdlg_ColorOK")
 		UINT RWM_SHAREVISTRING;
 		UINT WM_SHELLHOOKMESSAGE;		//RegisterShellHookWindow 后接收
 		UINT RWM_TASKBARBUTTONCREATED;	//任务栏重新创建?(没有确认，可以用于初始化Vista的 ITaskbarList3 接口?)
 		UINT RWM_TASKBARCREATED; 
+
+        UINT RWM_DRAGLISTMSGSTRING;
+        
+        //WTL
+        UINT RWM_WTL_CMDBAR_INTERNALAUTOPOPUPMSG;   // _T("WTL_CmdBar_InternalAutoPopupMsg")
+        UINT RWM_WTL_CMDBAR_INTERNALGETBARMSG;      // _T("WTL_CmdBar_InternalGetBarMsg")
+        UINT RWM_WTL_GETEXTERIORPAGETITLEFONT;      // _T("GetExteriorPageTitleFont_531AF056-B8BE-4c4c-B786-AC608DF0DF12")
+        UINT RWM_WTL_GETBULLETFONT;                 // _T("GetBulletFont_AD347D08-8F65-45ef-982E-6352E8218AD5")
 
         //WM_DEVICECHANGE; //这个消息需要通过 RegisterDeviceNotification 注册才能获得?
 	};

@@ -1,5 +1,13 @@
 package com.fishjam.android.study;
+
+import com.fishjam.util.CallbackTesterActivity;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.test.ActivityUnitTestCase;
 import android.test.AndroidTestCase;
+import android.util.Log;
+import android.view.LayoutInflater;
 
 
 /***************************************************************************************************************************************
@@ -48,9 +56,8 @@ import android.test.AndroidTestCase;
  *     b.<application>外加入:
  *       <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
 *        <instrumentation android:name="android.test.InstrumentationTestRunner" android:targetPackage="com.fishjam.android.study" android:label="Test for Android Study"/>
- *  2.编写单元测试代码，从 android.test.AndroidTestCase 继承，
- *     可重载 setUp, tearDown 等函数
- *     TODO: 从 ActivityUnitTestCase 、 ActivityInstrumentationTestCase2 等继承即可使用 Activity 的方法？
+ *  2.编写单元测试代码，从 android.test.AndroidTestCase, ActivityUnitTestCase, ActivityInstrumentationTestCase2 等继承，
+ *     可重载 setUp, tearDown 等函数，进行必要的初始化或资源释放
  *  3.在 public void testXxx() throws Throwable{ } 中通过 junit.framework.Assert 等进行断言判断
  *    JUnit 把以 test 开头的方法作为一个实例，也可以使用 annotation @Test 表示一个方法为测试方法。
  *  4.运行
@@ -77,18 +84,32 @@ import android.test.AndroidTestCase;
  *   +-InstrumentationTestCase -- 提供了Instrumentation接口给子类，能直接控制Activity的生命周期，允许创建一些Mock对象来帮助测试，可向UI发送按键和触摸事件来模拟用户界面交互。
  *                                               如 getInstrumentation().callActivityOnStart(xxx);
  *      +-ActivityTestCase
- *         +-ActivityUnitTestCase -- 通常用来测试单独Activity，不运行在一般应用运行的环境中也不和其他Activity产生交互。
- *                                              在启动被测试的Activity之前，你可以Inject一个假的Context或是Application。
- *            getActivity() -- 调用该方法后，被测试的Activity才会启动。 
- *         +-ActivityInstrumentationTestCase2 -- 通常用于多个Activity的功能测试，使用正常的系统框架来运行Activity
+ *         +-ActivityUnitTestCase<MyActivity> -- 通常用来测试单独Activity(业务逻辑等)，不运行在一般应用运行的环境中(没有UI交互)也不和其他Activity产生交互。
+ *            在启动被测试的Activity之前，你可以Inject一个假的Context(setActivityContext)或是Application(setApplication)
+ *            getActivity() -- 调用该方法后，被测试的Activity才会启动。
+ *            使用方式：
+ *               1.从ActivityUnitTestCase继承，指定Activity的模版参数; 设置无参构造，实现为 super(MyActivity.class);
+ *               2. setUp() 中  mStartIntent = new Intent(Intent.ACTION_MAIN);
+ *               3. testXxx() 函数中，一开始需要调用 startActivity(mStartIntent, null, null); 然后才能调用 getActivity() 获得实例，否则将会返回 null
+ *               4. 然后即可使用 getActivity().findViewById(xxx) 等方法获取其他的元素进行测试
+ *         +-ActivityInstrumentationTestCase2 -- 通常用于多个Activity的功能测试，使用正常的系统框架来运行Activity, 
+ *               1.可以直接 getActivity 获取实例(会自动创建)
+ *               2.可以使用 a.sendKeys(xxxx); b.getActivity().runOnUiThread(new Runnable() {xxxx});  getInstrumentation().waitForIdleSync(); 等方法进行UI类型的交互？
+ *            使用方式：
+ *               1.无参构造中 super("packagepath", MyActivity.class>);
+ *               2.setUp 中可以直接 getActivity() 获取到实例
  *      +-SingleLaunchActivityTestCase -- 用于测试单个Activity，但只运行setUp和tearDown一次，可以保证运行多个测试之间fixture不会被重置
- *   +-AndroidTestCase -- 通常用于编写 Android 环境下通用的测试用例，可测试permission
+ *   +-AndroidTestCase -- 通常用于编写 Android 环境下通用的测试用例(可以直接通过 getContext() 获取到非空实例)，可测试permission，可以使用 FocusFinder
+ *      可用 LayoutInflater.from(getContext()).inflate(R.layout.xxx, null) 的方式加载资源并测试
  *      +-ApplicationTestCase<MyApplication> -- 测试Application对象。测试用例调用createApplication()后才会执行Application的onCreate方法，可通过 setContext 来注入自定义的MockContext对象
  *      +-ProviderTestCase2 -- 测试Content Provider
  *      +-ServiceTestCase -- 测试Service对象，其中提供了 getService() 来取得当前被测试的对象
  *      
  * MoreAsserts -- 支持更多的比较方法，如 RegEx(正则)比较等
  * ViewAsserts -- 可以用来校验 UI View
+ * 
+ * 断言方法
+ *   assertEquals -- 相等断言
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
@@ -98,9 +119,52 @@ import android.test.AndroidTestCase;
  *   @LargeTest 
 ***************************************************************************************************************************************/
 
-public class AndroidTester  extends AndroidTestCase{
-	public void testActivityLable(){
+//*
+public class AndroidTester  extends ActivityUnitTestCase<CallbackTesterActivity>{
+	private final static String TAG = AndroidTester.class.getSimpleName();
+	private Intent mStartIntent;
+	public AndroidTester() {
+		super(CallbackTesterActivity.class);
+	}
+
 	
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		mStartIntent = new Intent(Intent.ACTION_MAIN);
+	}
+
+
+	public void testActivityLife(){
+		assertNull(getActivity()); 
+		Log.i(TAG, "Before call startActivity");
+		
+		startActivity(mStartIntent, null, null);		//start 之后 getActivity 才不为null
+		Activity activity1 = getActivity();
+		Activity activity2 = getActivity();
+		
+		assertNotNull(activity1 != null);
+		assertEquals("在一次测试函数中，多次调用getActivity() 会返回同一实例", activity1,  activity2);
+		
+		Log.i(TAG, "Before callActivityOnStart");
+        // At this point, onCreate() has been called, but nothing else Complete the startup of the activity
+        getInstrumentation().callActivityOnStart(activity1);
+        Log.i(TAG, "Before callActivityOnResume");
+        getInstrumentation().callActivityOnResume(activity1);
+        
+        Log.i(TAG, "Before callActivityOnStop");
+        getInstrumentation().callActivityOnStop(activity1);
+        
+        Log.i(TAG, "Before testActivityLife function End");			//实测发现没有调用 onDestroy
+        // ActivityUnitTestCase.tearDown(), which is always automatically called, will take care
+        // of calling onDestroy().
 	}
 }
 
+/*/
+class AndroidTester extends AndroidTestCase{
+	public void testGetContext(){
+		assertNotNull("AndroidTestCase 中可以直接获取Context", getContext());
+	}
+}
+//*/

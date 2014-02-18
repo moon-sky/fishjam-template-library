@@ -18,7 +18,9 @@ import android.util.Log;
  *      然后在代码中直接使用这些 final 变量 -- if(AppConfig.bDebug) { ... }
  *
  *  TODO:使用类似方法，可以使用其他API读取配置来条件编译？ 
- *     系统会生成一个 BuildConfig 类，其中有 public final static boolean DEBUG = true;
+ *     ADT17以上系统会生成一个 BuildConfig 类，其中有 public final static boolean DEBUG 变量;
+ *     1.true -- 缺省时, 直接通过Eclipse运行; 
+ *     2.false -- 取消 Build Automatically->Clean->Build -> Export Signed Application Package
  *     
  *   system.prop(Android源码编译时使用？) -- 通过 Key=Value 键值对 的方式配置系统属性，
  *   通过 android.os.SystemProperties 类读取其中内容，可实现根据配置文件来条件编译。
@@ -89,7 +91,7 @@ public class LanguageTester  extends AndroidTestCase{
 		//NumberFormat formatter = new DecimalFormat("0.00");
 	    //String s=formatter.format(num);
 		
-		assertEquals(FloatMath.sqrt(100), 10.0);  //平方根
+		//assertEquals(FloatMath.sqrt(100), 10.0);  //平方根
 	}
 	
 	public void testTemplate(){

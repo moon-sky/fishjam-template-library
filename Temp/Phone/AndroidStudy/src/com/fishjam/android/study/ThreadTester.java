@@ -47,7 +47,7 @@ import android.util.Log;
 **************************************************************************************************************************************/
 
 public class ThreadTester extends AndroidTestCase{
-	private final static String TAG = ThreadTester.class.getName();
+	private final static String TAG = ThreadTester.class.getSimpleName();
 	
 	public void testHandleMessage(){
 		Handler handler = new Handler(){

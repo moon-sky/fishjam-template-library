@@ -2,9 +2,12 @@ package com.fishjam.android.study;
 
 import java.io.InputStream;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.test.ActivityTestCase;
+import android.test.ActivityUnitTestCase;
 
 /***************************************************************************************************************************************
  * ×î¼ÑÊµ¼ù
@@ -163,8 +166,22 @@ import android.test.ActivityTestCase;
  *   outStream.close();
 ***************************************************************************************************************************************/
 
-public class MultiMediaTester extends ActivityTestCase {
-    public void testLoadBitmap(){
+public class MultiMediaTester extends ActivityUnitTestCase<Activity> {
+	private Intent mStartIntent;
+    public MultiMediaTester() {
+		super(Activity.class);
+	}
+    
+
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		mStartIntent = new Intent(Intent.ACTION_MAIN);
+	}
+
+
+	public void testLoadBitmap(){
+    	startActivity(mStartIntent, null, null);
     	
     	InputStream is = getActivity(). getResources().openRawResource(R.drawable.ic_launcher);
         BitmapFactory.Options options=new BitmapFactory.Options();

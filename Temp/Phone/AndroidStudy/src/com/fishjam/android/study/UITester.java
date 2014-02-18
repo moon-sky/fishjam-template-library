@@ -2,11 +2,13 @@ package com.fishjam.android.study;
 import com.fishjam.util.LogHelper;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.test.ActivityTestCase;
 import android.test.ActivityUnitTestCase;
 import android.test.AndroidTestCase;
 import android.util.Log;
+import android.view.Display;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
@@ -384,30 +386,23 @@ import android.util.Log;
  *    
 **************************************************************************************************************************************/
 
-public class UITester extends ActivityTestCase{
+public class UITester extends ActivityUnitTestCase<Activity>{
+	private final static String TAG = UITester.class.getSimpleName();
+	private Intent mStartIntent;
+	
 	public UITester() {
+		super(Activity.class);
 	}
 
-	private final static String TAG = UITester.class.getSimpleName();
 
-//	public UITester(Class<Activity> activityClass) {
-//		Log.e(TAG, "UITester constructor");
-//		super(activityClass);
-//	}
+    @Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		mStartIntent = new Intent(Intent.ACTION_MAIN);
+	}
 
 
-//    public UITester()    {
-//        super(Activity.class);
-//    }
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    //界面切换 -- 有什么区别?标准应该是使用第二种方法（虽然麻烦，但更合理和）
+	//界面切换 -- 有什么区别?标准应该是使用第二种方法（虽然麻烦，但更合理和）
     //  1.切换layout -- 定义不同的layout xml文件,通过 setContentView方法 进行切换; 还在同一个Activity中，成员变量不变。
     //  2.切换Activity -- 定义不同的layout xml，实现不同的Activity子类(显示对应的layout),通过 Intent类 进行切换。
     //  注意需要在AndroidManifest.xml中定义新的activity，并设置那么属性，否则无法编译。
@@ -521,16 +516,19 @@ public class UITester extends ActivityTestCase{
     	display.getWidth(), display.getHeight();
     	
     	setContentView(xxxx);
-   		*/
+   		//*/
     }
     
     public void testDisplayInfo(){
+    	startActivity(mStartIntent, null, null);
+    	Activity activity = getActivity();
+    	assertNotNull(activity);
+    	
+    	Display display = activity.getWindowManager().getDefaultDisplay();
+    	assertNotNull(display);
+    	Log.i(TAG, "Display=" + LogHelper.FormatDisplay(display));
+    	
     	Rect frame = new Rect();
-    	Log.i(TAG, "getActivity=" + getActivity());
-    	Log.i(TAG, "getWindow=" + getActivity().getWindow());
-    	Log.i(TAG, "getDecorView=" + getActivity().getWindow().getDecorView());
-    	Log.i(TAG, "getActivity=" + getActivity());
-
     	getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
     	
     	//frame.top 是状况栏高度

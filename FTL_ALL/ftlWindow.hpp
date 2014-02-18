@@ -417,6 +417,12 @@ namespace FTL
 			RWM_TASKBARBUTTONCREATED	= RegisterWindowMessage(TEXT("TaskbarButtonCreated"));
 			RWM_TASKBARCREATED		= RegisterWindowMessage(TEXT("TaskbarCreated")); //系统托盘编程完全指南 -- http://www.vckbase.com/index.php/wv/310
 
+            RWM_DRAGLISTMSGSTRING = RegisterWindowMessage(DRAGLISTMSGSTRING);
+
+            RWM_WTL_CMDBAR_INTERNALAUTOPOPUPMSG = RegisterWindowMessage(TEXT("WTL_CmdBar_InternalAutoPopupMsg"));
+            RWM_WTL_CMDBAR_INTERNALGETBARMSG = RegisterWindowMessage(TEXT("WTL_CmdBar_InternalGetBarMsg"));
+            RWM_WTL_GETEXTERIORPAGETITLEFONT = RegisterWindowMessage(TEXT("GetExteriorPageTitleFont_531AF056-B8BE-4c4c-B786-AC608DF0DF12"));
+            RWM_WTL_GETBULLETFONT = RegisterWindowMessage(TEXT("GetBulletFont_AD347D08-8F65-45ef-982E-6352E8218AD5"));
 		}
 		return m_bInited;
 	}
@@ -445,7 +451,14 @@ namespace FTL
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_SHAREVISTRING);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, WM_SHELLHOOKMESSAGE);
 		HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_TASKBARBUTTONCREATED);
+        HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_TASKBARCREATED);
+        HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_DRAGLISTMSGSTRING);
+        HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_WTL_CMDBAR_INTERNALAUTOPOPUPMSG);
 
+        HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_WTL_CMDBAR_INTERNALGETBARMSG);
+        HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_WTL_GETEXTERIORPAGETITLEFONT);
+        HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, RWM_WTL_GETBULLETFONT);
+        
 		//HANDLE_IF_TO_STRING(m_bufInfo, _countof(m_bufInfo), msg, XXXXXXXX);
 
 		if(NULL == m_bufInfo[0])

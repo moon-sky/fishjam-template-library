@@ -5,10 +5,14 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="7"
+        android:minSdkVersion="8"
         android:targetSdkVersion="14" />
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
     <instrumentation android:name="android.test.InstrumentationTestRunner" android:targetPackage="com.fishjam.android.study" android:label="Test for Android Study"/>
     
@@ -32,6 +36,7 @@
             </intent-filter>
         </receiver>
         <uses-library android:name="android.test.runner" />
+        <service android:name="com.fishjam.android.study.MyService"></service>
     </application>
 
 

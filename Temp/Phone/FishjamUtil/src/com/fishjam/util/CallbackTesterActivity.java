@@ -1,4 +1,4 @@
-package com.fishjam.storehelper;
+package com.fishjam.util;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -19,21 +19,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager.LayoutParams;
-
-class ViewCallbackTesterIconInfo extends StartIconInfo{
-
-	ViewCallbackTesterIconInfo(Activity activity) {
-		super(activity);
-		this.name = "ActiviyCallback";
-		this.icon = R.drawable.gas_station;
-	}
-
-	@Override
-	void onExecute() {
-		Intent intent = new Intent(mActivity, CallbackTesterActivity.class);
-		mActivity.startActivity(intent);
-	}
-}
 
 public class CallbackTesterActivity extends Activity {
 	private final static String TAG = CallbackTesterActivity.class.getSimpleName();

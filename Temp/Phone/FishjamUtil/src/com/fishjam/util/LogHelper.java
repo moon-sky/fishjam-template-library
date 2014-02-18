@@ -1,13 +1,10 @@
 package com.fishjam.util;
 
-import java.util.Locale;
-
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.text.BoringLayout.Metrics;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;

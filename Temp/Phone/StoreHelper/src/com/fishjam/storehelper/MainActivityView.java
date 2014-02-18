@@ -62,7 +62,6 @@ public class MainActivityView extends Activity {
 			new ViewFloorImage(this),
 			new TestGestureIconInfo(this),
 			new ImageActivityIconInfo(this),
-			new ViewCallbackTesterIconInfo(this),
 			new AStarIconItem(this),
 		};
 		
