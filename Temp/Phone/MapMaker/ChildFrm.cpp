@@ -110,14 +110,15 @@ void CChildFrame::OnSetAllDrawTool(UINT uNotifyCode, int nID, CWindow wndCtl)
 void CChildFrame::OnFileExportMap(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     BOOL bRet = FALSE;
+    CString STR_MAP_TEXT_APPENDIX = _T("_txt.txt");
     CPath path(m_view.GetImagePath());
+    path.RemoveExtension();
+    path.m_strPath += STR_MAP_TEXT_APPENDIX;
 
-    CAtlString strDefaultFileName = ATLPath::FindFileName(path.m_strPath);
     CString strFilter = _T("Map Text Files(*.txt)|*.txt||");
     strFilter.Replace(TEXT('|'), TEXT('\0'));
 
-    strDefaultFileName += _T(".txt");
-    CFileDialog dlgSave(FALSE, TEXT(".txt"), strDefaultFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+    CFileDialog dlgSave(FALSE, TEXT(".txt"), path.m_strPath, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
         strFilter);
     if (dlgSave.DoModal() == IDOK)
     {

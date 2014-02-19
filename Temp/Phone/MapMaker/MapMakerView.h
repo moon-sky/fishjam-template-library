@@ -89,7 +89,7 @@ private:
     CRect				m_rcDrawTarget;
     DrawToolType        m_drawToolType;
 
-    typedef std::vector<DrawToolType> TileRow;
+    typedef std::vector<BYTE> TileRow;
     typedef std::vector<TileRow>    TileGrid;
 
 public:

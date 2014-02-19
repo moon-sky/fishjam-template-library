@@ -24,7 +24,7 @@ struct MapFileHeader
 
 const COLORREF COLOR_GRID_LINE = RGB(127, 127, 127);
 const COLORREF COLOR_MAP_BACKGROUND = RGB(255, 255, 255);
-const CString STR_MAP_APPENDIX   = _T(".map");
+const CString STR_MAP_APPENDIX   = _T("_map.map");
 
 const COLORREF COLOR_DRAWTOOL_TYPES[dttCount] = {
     RGB(0, 0, 0),       //Empty
@@ -120,7 +120,7 @@ BOOL CMapMakerView::LoadTileGrids(const CString& strMapPath)
         for (int i = 0; i < m_RowCount; i++)
         {
             m_tileGrids[i].resize(m_ColCount);
-            API_VERIFY(file.Read(&m_tileGrids[i][0], sizeof(DrawToolType) * m_ColCount, &dwReadCount));
+            API_VERIFY(file.Read(&m_tileGrids[i][0], sizeof(m_tileGrids[0][0]) * m_ColCount, &dwReadCount));
         }
 
         API_VERIFY(file.Close());
@@ -147,7 +147,7 @@ BOOL CMapMakerView::SaveTileGrids(const CString& strMapPath)
 
         for (int i = 0; i < m_RowCount; i++)
         {
-            API_VERIFY(file.Write(&m_tileGrids[i][0], sizeof(DrawToolType) * m_ColCount, &dwWriteCount));
+            API_VERIFY(file.Write(&m_tileGrids[i][0], sizeof(m_tileGrids[0][0]) * m_ColCount, &dwWriteCount));
         }
 
         API_VERIFY(file.Close());
@@ -172,7 +172,9 @@ BOOL CMapMakerView::SetImagePath(const CString& strImagePath)
         {
             bRet = TRUE;
             m_strImagePath = strImagePath;
-            CPath pathMap(m_strImagePath + STR_MAP_APPENDIX);
+            CPath pathMap(m_strImagePath);
+            pathMap.RemoveExtension();
+            pathMap.m_strPath += STR_MAP_APPENDIX;
             if (pathMap.FileExists())
             {
                 LoadTileGrids(pathMap.m_strPath);
@@ -320,7 +322,7 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc)
     {
         for (int y = 0; y < m_RowCount; y++)
         {
-            DrawToolType  nType = m_tileGrids[y][x];
+            DrawToolType  nType = (DrawToolType)m_tileGrids[y][x];
             if (nType != dttEmpty)
             {
                 memDC.FillSolidRect(0, 0, m_nGridWidth, m_nGridHeight, COLOR_DRAWTOOL_TYPES[nType]);
@@ -597,14 +599,18 @@ CAtlString CMapMakerView::GetExportMapString()
 BOOL CMapMakerView::SaveMapInfo(const CString& strFilePath)
 {
     BOOL bRet = FALSE;
-    CFUnicodeFile textFile(tfeUnicode);
+    CFAnsiFile textFile(tfeUnknown);
     API_VERIFY(textFile.Create(strFilePath));
     if (bRet)
     {
         API_VERIFY(textFile.WriteFileHeader());
         textFile.WriteString(GetExportMapString());
 
-        API_VERIFY(SaveTileGrids(m_strImagePath + STR_MAP_APPENDIX));
+        CPath pathMap(m_strImagePath);
+        pathMap.RemoveExtension();
+        pathMap.m_strPath += STR_MAP_APPENDIX;
+        //API_VERIFY(pathMap.AddExtension(STR_MAP_APPENDIX));
+        API_VERIFY(SaveTileGrids(pathMap.m_strPath));
     }
     return bRet;
 }

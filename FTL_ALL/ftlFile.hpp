@@ -864,6 +864,7 @@ namespace FTL
             break;
         case tfeUnknown:
             //do nothing
+            bRet = TRUE;
             break;
         default:
             FTLASSERT(FALSE);
