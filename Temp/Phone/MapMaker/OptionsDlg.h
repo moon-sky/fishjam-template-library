@@ -7,9 +7,11 @@ class COptionsDlg : public CDialogImpl<COptionsDlg>,
 public:
     int m_nTileWidth;
     int m_nTileHeight;
+    int m_nTranspant;
     BEGIN_DDX_MAP(COptionsDlg)
         DDX_INT(IDC_EDIT_TILE_HEIGHT, m_nTileHeight)
         DDX_INT(IDC_EDIT_TILE_WIDTH, m_nTileWidth)
+        DDX_INT(IDC_EDIT_TRANSPANT, m_nTranspant)
     END_DDX_MAP()
 public:
     enum { IDD = IDD_OPTIONS };

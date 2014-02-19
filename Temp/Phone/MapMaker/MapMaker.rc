@@ -28,20 +28,15 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 IDR_MAINFRAME TOOLBAR  16, 15
 BEGIN
-    BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
-    SEPARATOR
-    BUTTON      ID_EDIT_CUT
-    BUTTON      ID_EDIT_COPY
-    BUTTON      ID_EDIT_PASTE
-    SEPARATOR
-    BUTTON      ID_FILE_PRINT
-    BUTTON      ID_APP_ABOUT
     SEPARATOR
     BUTTON      ID_DRAW_EMPTY
     BUTTON      ID_DRAW_WALL
     BUTTON      ID_DRAW_ELEVATOR
+    SEPARATOR
+    BUTTON      ID_DRAW_CLEAR
+    BUTTON      ID_DRAW_SETALL
 END
 
 
@@ -84,7 +79,6 @@ BEGIN
         MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
         MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
@@ -158,6 +152,8 @@ BEGIN
     EDITTEXT        IDC_EDIT_TILE_HEIGHT,95,33,73,14,ES_AUTOHSCROLL
     LTEXT           "Tile Height：",IDC_STATIC,29,35,47,15
     PUSHBUTTON      "OK",IDOK,113,162,50,14
+    EDITTEXT        IDC_EDIT_TRANSPANT,95,53,73,14,ES_AUTOHSCROLL
+    LTEXT           "透明度：",IDC_STATIC,29,55,47,15
 END
 
 
@@ -259,6 +255,7 @@ STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "MapMaker"
     IDR_MDICHILD            "Document"
+    ID_PANE_TILE_GRID       "____Image:(h=768,w=1024), Grid(r=128,c=96)"
 END
 
 STRINGTABLE 
@@ -347,10 +344,16 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_DRAW_EMPTY           "Empty"
-    ID_DRAW_WALL            "Draw Wall"
-    ID_DRAW_ELEVATOR        "Elevtor"
-    ID_TOOLS_OPTIONS        "Options"
+    ID_DRAW_EMPTY           "Empty\n空地"
+    ID_DRAW_WALL            "Draw Wall\n禁止通行"
+    ID_DRAW_ELEVATOR        "Elevtor\n电梯"
+    ID_TOOLS_OPTIONS        "Options\n选项"
+    ID_DRAW_CLEAR           "Clear\n清除全部为可通过状态"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_DRAW_SETALL          "Set All\n设置全部为不可通过状态"
 END
 
 #endif    // Chinese (P.R.C.) resources

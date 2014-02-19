@@ -109,7 +109,8 @@ namespace FTL
 	* CFileDialog
     *   过滤字符串格式
     *     MFC -- CString strFilter = _T("ImageFile(*.bmp;*.jpg;*.jpeg;*.png)|*.bmp;*.jpg;*.jpeg;*.png|All Files(*.*)|*.*");
-    *     WTL -- CString strFilter = _T("ImageFile(*.bmp;*.jpg;*.jpeg;*.png)\0*.bmp;*.jpg;*.jpeg;*.png\0All Files(*.*)\0*.*\0\0");
+    *     WTL -- CString strFilter = _T("ImageFile(*.bmp;*.jpg;*.jpeg;*.png)|*.bmp;*.jpg;*.jpeg;*.png|All Files(*.*)|*.*||");
+    *            strFilter.Replace(TEXT('|'), TEXT('\0')); //注意：如果直接在字符串里面设置 "\0" 是不行的
 	*   多选文件:
 	*     1.设置 OFN_ALLOWMULTISELECT
 	*     2.设置文件名的缓冲区

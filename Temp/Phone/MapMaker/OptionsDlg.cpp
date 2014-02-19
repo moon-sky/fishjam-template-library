@@ -3,8 +3,9 @@
 
 COptionsDlg::COptionsDlg(void)
 {
-    m_nTileWidth = 32;
-    m_nTileHeight = 32;
+    m_nTileWidth = 0;
+    m_nTileHeight = 0;
+    m_nTranspant = 0;
 }
 
 COptionsDlg::~COptionsDlg(void)

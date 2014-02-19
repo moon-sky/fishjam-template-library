@@ -8,6 +8,7 @@
 #include "MapMakerView.h"
 #include "ChildFrm.h"
 #include "OptionsDlg.h"
+#include <atlpath.h>
 
 CChildFrame::CChildFrame()
 {
@@ -28,7 +29,7 @@ int CChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	m_hWndClient = m_view.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL | WS_VSCROLL, WS_EX_CLIENTEDGE);
 	// replace with appropriate values for the app
-	m_view.SetScrollSize(1024, 768);
+	//m_view.SetScrollSize(1024, 768);
     
     SetMsgHandled(FALSE);
 	return 1;
@@ -53,22 +54,73 @@ void CChildFrame::OnOptinos(UINT uNotifyCode, int nID, CWindow wndCtl)
     COptionsDlg dlgOptions;
     dlgOptions.m_nTileHeight = m_view.m_nGridHeight;
     dlgOptions.m_nTileWidth = m_view.m_nGridWidth;
+    dlgOptions.m_nTranspant = m_view.m_nTranspant;
     if (dlgOptions.DoModal() == IDOK)
     {
-        m_view.SetTileParams(dlgOptions.m_nTileWidth, dlgOptions.m_nTileHeight);
+        if (dlgOptions.m_nTranspant != m_view.m_nTranspant)
+        {
+            m_view.m_nTranspant = dlgOptions.m_nTranspant;
+            m_view.Invalidate();
+        }
+        if (
+            (dlgOptions.m_nTileHeight != m_view.m_nGridHeight)
+            || (dlgOptions.m_nTileWidth != m_view.m_nGridWidth)
+            )
+        {
+            m_view.SetTileParams(dlgOptions.m_nTileWidth, dlgOptions.m_nTileHeight);
+        }
+        
     }
 }
 
 void CChildFrame::OnSelectDrawEmpty(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     m_view.SetDrawToolType(dttEmpty);
+    UISetCheck(ID_DRAW_EMPTY, TRUE);
 }
 
 void CChildFrame::OnSelectDrawWall(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     m_view.SetDrawToolType(dttWall);
+    UISetCheck(ID_DRAW_WALL, TRUE);
 }
 void CChildFrame::OnSelectDrawElevator(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     m_view.SetDrawToolType(dttElevator);
+    UISetCheck(ID_DRAW_ELEVATOR, TRUE);
+}
+
+void CChildFrame::OnClearDrawTool(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    if (MessageBox(TEXT("确定清空全部表格为空地状态？"), TEXT("提示"), MB_OKCANCEL)
+        == IDOK)
+    {
+        m_view.ResetTileGrids(dttEmpty);
+    }
+}
+void CChildFrame::OnSetAllDrawTool(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    if (MessageBox(TEXT("确定设置全部表格为不可通过状态？"), TEXT("提示"), MB_OKCANCEL)
+        == IDOK)
+    {
+        m_view.ResetTileGrids(dttWall);
+    }
+}
+
+void CChildFrame::OnFileExportMap(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    BOOL bRet = FALSE;
+    CPath path(m_view.GetImagePath());
+
+    CAtlString strDefaultFileName = ATLPath::FindFileName(path.m_strPath);
+    CString strFilter = _T("Map Text Files(*.txt)|*.txt||");
+    strFilter.Replace(TEXT('|'), TEXT('\0'));
+
+    strDefaultFileName += _T(".txt");
+    CFileDialog dlgSave(FALSE, TEXT(".txt"), strDefaultFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+        strFilter);
+    if (dlgSave.DoModal() == IDOK)
+    {
+        API_VERIFY(m_view.SaveMapInfo(dlgSave.m_szFileName));
+    }
 }

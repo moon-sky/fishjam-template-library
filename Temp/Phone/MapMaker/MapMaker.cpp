@@ -9,8 +9,11 @@
 #include "aboutdlg.h"
 #include "ChildFrm.h"
 #include "MainFrm.h"
+#include <ftlCrashHandler.h>
 
 CAppModule _Module;
+
+FTL::CFCrashHandler g_CrashHandler;
 
 int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
@@ -49,7 +52,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
-	int nRet = Run(lpstrCmdLine, nCmdShow);
+	int nRet = 0;
+    {
+        g_CrashHandler.SetDefaultCrashHandlerFilter();
+        nRet = Run(lpstrCmdLine, nCmdShow);
+    }
 
 	_Module.Term();
 	::CoUninitialize();

@@ -13,21 +13,23 @@ public:
 	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
 
 	CMDICommandBarCtrl m_CmdBar;
-
+    CMultiPaneStatusBarCtrl m_wndStatusBar;
+    CString m_strPromptInfo;
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
 
 	BEGIN_UPDATE_UI_MAP(CMainFrame)
-		UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
-		UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
+		UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+		UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP | UPDUI_TOOLBAR)
+        UPDATE_ELEMENT(1, UPDUI_STATUSBAR)
 	END_UPDATE_UI_MAP()
 
 	BEGIN_MSG_MAP(CMainFrame)
 		MSG_WM_CREATE(OnCreate)
 		MSG_WM_DESTROY(OnDestroy)
 		COMMAND_ID_HANDLER_EX(ID_APP_EXIT, OnFileExit)
-		COMMAND_ID_HANDLER_EX(ID_FILE_NEW, OnFileNew)
+		//COMMAND_ID_HANDLER_EX(ID_FILE_NEW, OnFileNew)
         COMMAND_ID_HANDLER_EX(ID_FILE_OPEN, OnFileOpen)
 		COMMAND_ID_HANDLER_EX(ID_VIEW_TOOLBAR, OnViewToolBar)
 		COMMAND_ID_HANDLER_EX(ID_VIEW_STATUS_BAR, OnViewStatusBar)
@@ -54,4 +56,9 @@ public:
     void OnWindowCascade(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnWindowTile(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnWindowArrangeIcons(UINT uNotifyCode, int nID, CWindow wndCtl);
+
+    void SetPromptInfo(const CString& strPromptInfo);
 };
+
+
+extern CMainFrame* g_pMainFrame;

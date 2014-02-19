@@ -419,8 +419,8 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 * 半透明显示(snagit抓图时显示的效果)
 *   1.Bitblt 一个完整的原始位图到 dcTran
 *   2.生成一个内存DC(dcAlpha), 填入全黑 -- dcAlpha.FillSolidRect(RGB(0,0,0))
-*   3.使用 dcTran.AlphaBlend( xxx, dcAlpha, 0,0, (AC_SRC_OVER, 0, 64, 0)) 将全黑的图像采用 64 的Alpha通道覆盖到原始位图上
-*     如 (AC_SRC_OVER, 0, 255, AC_SRC_ALPHA) 表示透明绘制 ?
+*   3.使用 dcTran.AlphaBlend( xxx, dcAlpha, 0,0, (AC_SRC_OVER, 0, 50, 0)) 将全黑的图像采用 50 的Alpha通道覆盖到原始位图上
+*     BLENDFUNCTION 的第四个参数如果是 AC_SRC_ALPHA 表示啥意思? 似乎是在 UpdateLayeredWindow 函数中使用的
 *   4.选择高亮时，就先绘制 dcTran，然后在高亮位置处粘贴指定大小的bg
 *
 * 缓冲绘图API，Vista以后支持 ( atltheme 中有 CBufferedPaintBase、CBufferedPaint 辅助类)

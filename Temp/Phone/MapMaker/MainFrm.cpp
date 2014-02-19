@@ -11,6 +11,8 @@
 #include "MainFrm.h"
 #include "OptionsDlg.h"
 
+CMainFrame* g_pMainFrame;
+
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
 	if(CMDIFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -26,11 +28,16 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 BOOL CMainFrame::OnIdle()
 {
 	UIUpdateToolBar();
+    //UISetText ( 1, m_strPromptInfo);
+    UIUpdateStatusBar();
+
 	return FALSE;
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
+    g_pMainFrame = this;
+
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	// attach menu
@@ -46,7 +53,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 
-	CreateSimpleStatusBar();
+	//CreateSimpleStatusBar();
+    int anPanes[] = { ID_DEFAULT_PANE, ID_PANE_TILE_GRID };//, IDPANE_STATUS, IDPANE_CAPS_INDICATOR };
+
+    m_hWndStatusBar = m_wndStatusBar.Create ( *this );
+    UIAddStatusBar ( m_hWndStatusBar );
+    m_wndStatusBar.SetPanes(anPanes, _countof(anPanes), false);
 
 	CreateMDIClient();
 	m_CmdBar.SetMDIClient(m_hWndMDIClient);
@@ -93,9 +105,10 @@ void CMainFrame::OnFileNew(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CMainFrame::OnFileOpen(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    CString strFilter = _T(""); //_T("All Files(*.*)\0*.*\0\0");//_T("ImageFile(*.bmp;*.jpg;*.jpeg;*.png)\0*.bmp;*.jpg;*.jpeg;*.png\0All Files(*.*)\0*.*\0\0");
+    CString strFilter = _T("ImageFile(*.bmp;*.jpg;*.jpeg;*.png)|*.bmp;*.jpg;*.jpeg;*.png|All Files(*.*)|*.*||");
+    strFilter.Replace(TEXT('|'), TEXT('\0'));
 
-    CFileDialog dlgOpen(TRUE, NULL, NULL, 0, NULL, m_hWnd);
+    CFileDialog dlgOpen(TRUE, NULL, NULL, OFN_PATHMUSTEXIST, strFilter, m_hWnd);
 
     if (dlgOpen.DoModal() == IDOK)
     {
@@ -144,4 +157,11 @@ void CMainFrame::OnWindowTile(UINT uNotifyCode, int nID, CWindow wndCtl)
 void CMainFrame::OnWindowArrangeIcons(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	MDIIconArrange();
+}
+
+void CMainFrame::SetPromptInfo(const CString& strPromptInfo)
+{
+    m_strPromptInfo = strPromptInfo;
+    UISetText(1, m_strPromptInfo);
+    UIUpdateStatusBar(TRUE);
 }

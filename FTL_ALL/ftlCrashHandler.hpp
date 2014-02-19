@@ -936,7 +936,9 @@ namespace FTL
 		_GetCrashFilePrefix(szCrashFile, _countof(szCrashFile));
 		StringCchCat(szCrashFile, _countof(szCrashFile), TEXT("_StackList.txt"));
 
-		CFileDialog dlgSave(FALSE, TEXT("txt"), szCrashFile, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, TEXT("Text File\0*.txt\0\0"));
+        CAtlString strFilter = TEXT("Text File|*.txt||");
+        strFilter.Replace(TEXT('|'), TEXT('\0'));
+		CFileDialog dlgSave(FALSE, TEXT("txt"), szCrashFile, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, strFilter);
 		if (dlgSave.DoModal() == IDOK)
 		{
 			CFAnsiFile fileDump(tfeUnknown);
@@ -1002,9 +1004,12 @@ namespace FTL
 		_GetCrashFilePrefix(szCrashFile, _countof(szCrashFile));
 		StringCchCat(szCrashFile, _countof(szCrashFile), TEXT("_Dump.dmp"));
 
+        CAtlString strFilter = TEXT("MiniDump Files|*.dmp||");
+        strFilter.Replace(TEXT('|'), TEXT('\0'));
+
 		CFileDialog dlgSave(FALSE, TEXT("dmp"), szCrashFile, 
-			OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, 
-			TEXT("MiniDump Files\0*.dmp\0\0"));
+			OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, strFilter);
+			//TEXT("MiniDump Files\0*.dmp\0\0"));
 		if (dlgSave.DoModal() == IDOK)
 		{
 			CAtlFile fileDump;
