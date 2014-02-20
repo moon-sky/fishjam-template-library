@@ -350,7 +350,7 @@
 ******************************************************************************************************/
 
 #ifndef WM_SYSTIMER
-#  define WM_SYSTIMER 0x0118		//UnDocument Message
+#  define WM_SYSTIMER 0x0118		//UnDocument Message(caret blink) , afxtrace.cpp!_AfxTraceMsg()可以看到定义
 #endif 
 
 const UINT DEAFULT_DUMP_FILTER_MESSAGES[] = {
@@ -659,6 +659,8 @@ namespace FTL
         //获取 WM_COMMAND 消息的 notifyCode
         FTLINLINE static LPCTSTR GetCommandNotifyString(HWND hWnd, UINT nCode, LPTSTR pszCommandNotify, int nLength, 
 			TranslateWndClassProc pTransProc = g_pTranslateWndClassProc);
+
+        FTLINLINE static LPCTSTR GetSysCommandString(UINT nCode);
 
 		//获取窗体的类型、名字、位置、大小等最基本的信息
 		FTLINLINE static LPCTSTR GetWindowDescriptionInfo(FTL::CFStringFormater& formater, HWND hWnd);

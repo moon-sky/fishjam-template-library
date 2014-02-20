@@ -121,6 +121,28 @@ namespace FTL
 		}
 	};
 
+    class CFSysCommandMsgInfo : public CFDefaultMsgInfo
+    {
+    public:
+        virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+        {
+            HRESULT hr = E_FAIL;
+
+            FTLASSERT(WM_SYSCOMMAND == uMsg);
+            UNREFERENCED_PARAMETER(uMsg);
+
+            BOOL bRet = FALSE;
+            UINT nID = (UINT)wParam;
+            INT xPos = GET_X_LPARAM(lParam);
+            INT yPos = GET_Y_LPARAM(lParam);
+            
+            COM_VERIFY(m_strFormater.Format(TEXT("%s{nID=%s, Point=(%d,%d) }"), 
+                pszMsgName, CFWinUtil::GetSysCommandString(nID), xPos, yPos));
+
+            return m_strFormater;
+        }
+    };
+
 	class CFNotifyMsgInfo: public CFDefaultMsgInfo
 	{
 	public:
@@ -485,6 +507,7 @@ namespace FTL
         {
             switch(m_Info)
             {
+                GET_MESSAGE_INFO_ENTRY(WM_NULL, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_CREATE, CFDefaultMsgInfo);
 				//GET_MESSAGE_INFO_ENTRY(WM_CREATE, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_DESTROY, CFDefaultMsgInfo);  //关闭窗口时,如果是主窗口,必须PostQuitMessage,否则进程还在运行(只是没有窗体)
@@ -632,7 +655,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_COMMAND, CFCommandMsgInfo);
 
                 //可用于阻止屏幕保护和显示器节电模式(SC_SCREENSAVE/SC_MONITORPOWER),返回 0 即阻止
-                GET_MESSAGE_INFO_ENTRY(WM_SYSCOMMAND, CFDefaultMsgInfo);    //当用户选择窗口菜单的一条命令或当用户选择最大化或最小化时那个窗口会收到此消息
+                GET_MESSAGE_INFO_ENTRY(WM_SYSCOMMAND, CFSysCommandMsgInfo);    //当用户选择窗口菜单的一条命令或当用户选择最大化或最小化时那个窗口会收到此消息
 
                 GET_MESSAGE_INFO_ENTRY(WM_TIMER, CFDefaultMsgInfo);     //发生了定时器事件
                 GET_MESSAGE_INFO_ENTRY(WM_HSCROLL, CFScrollMsgInfo);   //水平滚动条产生一个滚动事件
@@ -2770,6 +2793,40 @@ namespace FTL
 			//FTLASSERT(FALSE);
 		}
 		return pszCommandNotify;
+    }
+
+    LPCTSTR CFWinUtil::GetSysCommandString(UINT nCode)
+    {
+        switch(nCode)
+        {
+            HANDLE_CASE_RETURN_STRING(SC_SIZE);
+            HANDLE_CASE_RETURN_STRING(SC_MOVE);
+            HANDLE_CASE_RETURN_STRING(SC_MINIMIZE);
+            HANDLE_CASE_RETURN_STRING(SC_MAXIMIZE);
+            HANDLE_CASE_RETURN_STRING(SC_NEXTWINDOW);
+            HANDLE_CASE_RETURN_STRING(SC_PREVWINDOW);
+            HANDLE_CASE_RETURN_STRING(SC_CLOSE);
+            HANDLE_CASE_RETURN_STRING(SC_VSCROLL);
+            HANDLE_CASE_RETURN_STRING(SC_HSCROLL);
+            HANDLE_CASE_RETURN_STRING(SC_MOUSEMENU);
+            HANDLE_CASE_RETURN_STRING(SC_KEYMENU);
+            HANDLE_CASE_RETURN_STRING(SC_ARRANGE);
+            HANDLE_CASE_RETURN_STRING(SC_RESTORE);
+            HANDLE_CASE_RETURN_STRING(SC_TASKLIST);
+            HANDLE_CASE_RETURN_STRING(SC_SCREENSAVE);
+            HANDLE_CASE_RETURN_STRING(SC_HOTKEY);
+
+#if(WINVER >= 0x0400)
+            HANDLE_CASE_RETURN_STRING(SC_DEFAULT);
+            HANDLE_CASE_RETURN_STRING(SC_MONITORPOWER);
+            HANDLE_CASE_RETURN_STRING(SC_CONTEXTHELP);
+            HANDLE_CASE_RETURN_STRING(SC_SEPARATOR);
+#endif /* WINVER >= 0x0400 */
+        default:
+            FTLTRACEEX(FTL::tlWarning, TEXT("Unknown SysCommand, 0x%x\n"), nCode);
+			FTLASSERT(FALSE);
+            return TEXT("Unknown");
+        }
     }
 
 	LPCTSTR CFWinUtil::GetWindowDescriptionInfo(FTL::CFStringFormater& formater, HWND hWnd)
