@@ -1,7 +1,17 @@
 package com.fishjam.storeserver.study;
 
 /**************************************************************************************************************************************
- * Struts2 -- 在 Webwork 基础上构建起来的MVC框架( Struts1.x的动作一般都以.do结尾，而Struts2是以.action结尾 )
+ * TODO:
+ *   1.需要使用 applicationContext.xml 文件来设置spring核心包？
+**************************************************************************************************************************************/
+
+
+/**************************************************************************************************************************************
+ *
+ * Struts1.x的动作一般都以.do结尾，
+ * Struts2是以.action结尾，可在 <struts>标签下恢复为.do方式, <constant name="struts.action.extension" value="do"></constant>
+ *
+ * Struts2 -- 在 Webwork 基础上构建起来的MVC框架
  *   struts.apache.org 下载安装包，包括 struts2-core, xwork, commons-logging, freemarker, ognl)
  *   MVC模式， 动作驱动：
  *    Model -- Action/ActionForm
@@ -38,6 +48,7 @@ package com.fishjam.storeserver.study;
  *         <result name="negative">/negative.jsp</result>
  *       </action>
  *     </package>
+ *     注意：支持通配符配置来自动匹配：<action name="*" class = "com.fishjam.{1}Action" method="show"></action>
  *   5.编写JSP(如 sum.jsp)页面，通过其中的form将数据提交给 Action, 其中使用 Struts2带的tag(在 标签库 "/struts-tags" 中)
  *     在<s:form>中最好都使用Struts2标签，尽量不要用HTML或普通文本.
  *     <%@ page language="java" import="java.util.*" pageEncoding="GBK"%>
