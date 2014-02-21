@@ -47,7 +47,14 @@ if(::GetCapture() == m_hWnd)
 *     或直接放一个 "Custom Control"，然后将ClassName 改为 RICHEDIT50W ? RichEdit20a(哪个版本？）
 *   2.在 App 的构造中 LoadLibrary(_T("msftedit.dll")); 析构中 FreeLibrary,
 *   3.在 InitInstance 中仍然需要调用 AfxInitRichEdit2 ? -- 实测表明不需要，而且其实现也是加载 RICHED20.DLL 或 RICHED32.DLL
-* 
+* 更改WTL源码，使用高版本RichEdit(TODO: 更改成根据 _RICHEDIT_VER 宏自动适应？ )
+*   0.定义 _RICHEDIT_VER 为高版本，如 0x0500 
+*   1.更改 atlctrls.h 中 CRichEditCtrlT 类,
+*     GetWndClassName() { return TEXT("RICHEDIT50W"); }
+*     GetLibraryName() { return _T("msftedit.dll"); }
+*   2.初始化时调用 HMODULE hInstRich = ::LoadLibrary(CRichEditCtrl::GetLibraryName()); 
+*   3.结束前 ::FreeLibrary(hInstRich);
+*
 * 默认时，当用户切换键盘布局(keyboard layout -- 比如中英韩等？)，会自动切换字体(auto font feature)，造成程序出现问题(比如换行后自动改变字体？)，为了关闭该功能：
 *   LRESULT lres = SendMessage(hRE, EM_GETLANGOPTIONS, 0, 0);
 *   lres &= ~( IMF_AUTOFONT | IMF_AUTOFONTSIZEADJUST) ;
