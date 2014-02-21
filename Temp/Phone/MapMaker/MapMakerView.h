@@ -13,7 +13,7 @@ enum DrawToolType{
     dttCount
 };
 
-#define ZOOM_COUNT	17
+#define ZOOM_COUNT	19
 
 class CMapMakerView : public CZoomScrollWindowImpl<CMapMakerView>
     // CScrollWindowImpl<CMapMakerView>

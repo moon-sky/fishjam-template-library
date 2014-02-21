@@ -13,13 +13,30 @@
 #include <ftlFile.h>
 using namespace FTL;
 
+#define MAX_FILE_HEADER_PARAM_COUNT   (10)
 struct MapFileHeader
 {
+    int nVersion;
     int nGridWidth;
     int nGridHeight;
     int nRowCount;
     int nColCount;
     int nTranspant;
+    int nPadding[MAX_FILE_HEADER_PARAM_COUNT - 6];
+
+    MapFileHeader(){
+        nVersion = 1;
+        nGridWidth = 0;
+        nGridHeight = 0;
+        nRowCount = 0;
+        nColCount = 0;
+        nTranspant = 0;
+
+        for (int i = 0; i < _countof(nPadding); i++)
+        {
+            nPadding[i] = 0x12345678;
+        }
+    }
 };
 
 const COLORREF COLOR_GRID_LINE = RGB(127, 127, 127);
@@ -44,6 +61,8 @@ const float CMapMakerView::s_FixedZoomScales[ZOOM_COUNT] =
     0.8f,
     0.9f,
     1.0f,
+    1.25f,
+    1.5f,
     2.0f,
     3.0f,
     4.0f,
@@ -107,7 +126,7 @@ BOOL CMapMakerView::LoadTileGrids(const CString& strMapPath)
     if (bRet)
     {
         DWORD dwReadCount = 0;
-        MapFileHeader header = {0};
+        MapFileHeader header;
         API_VERIFY(file.Read(&header, sizeof(header), &dwReadCount));
 
         m_ColCount = header.nColCount;
