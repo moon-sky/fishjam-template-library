@@ -3,6 +3,7 @@ package com.fishjam.storeserver.study;
 /**************************************************************************************************************************************
  * TODO:
  *   1.需要使用 applicationContext.xml 文件来设置spring核心包？
+ *   2.Struts1中的Action必需是thread－safe方式，仅允许一个实例去处理所有的请求，其用到的所有的资源都必需统一同步。
 **************************************************************************************************************************************/
 
 
@@ -14,9 +15,9 @@ package com.fishjam.storeserver.study;
  * Struts2 -- 在 Webwork 基础上构建起来的MVC框架
  *   struts.apache.org 下载安装包，包括 struts2-core, xwork, commons-logging, freemarker, ognl)
  *   MVC模式， 动作驱动：
- *    Model -- Action/ActionForm
- *    View -- Struts taglib/JSP，也可使用 XSLT 等其他表现层产品
- *    Control -- ActionServlet(1)/ActionSupport(2)
+ *    Model -- Action/ActionForm/JavaBean/EJB，实现核心商业逻辑，最后把控制权传给后续的JSP文件生成视图
+ *    View -- Struts taglib/JSP，也可使用 XSLT 等其他表现层产品，taglib中包括了 Html,Bean,Logic,Template 等
+ *    Control -- ActionServlet(1)/ActionSupport(2)，提供了处理所有发送到Struts的HTTP请求的入口点，截取和分发这些请求到相应的动作(Action)类
  *    配置文件：struts-config.xml(1)/struts.xml(2) -- 描述模型、视图、控制器对应关系，转发视图(View)的请求，组装响应数据模型（Model）
  * 
  * Struts2的使用步骤：
@@ -64,7 +65,7 @@ package com.fishjam.storeserver.study;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * struts.xml -- 通过该配置文件即可把握整个系统各部分之间的联系
+ * struts.xml -- 通过该配置文件即可把握整个系统各部分之间的联系(页面导航使系统的脉络更加清晰)
  *   
 **************************************************************************************************************************************/
 
