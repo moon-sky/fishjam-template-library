@@ -4,7 +4,7 @@ package com.fishjam.storeserver.study;
  * Android sqlite数据库操作通用框架AHibernate(一)-CRUD示例和使用步骤
  *   http://blog.csdn.net/lk_blog/article/details/7455992
  * 
- * Hibernate -- 开源的对象关系映射框架，对JDBC进行了非常轻量级的对象封装，可以使用对象编程思维来操纵数据库。
+ * Hibernate -- 开源的对象关系映射及持久化框架，对JDBC进行了非常轻量级的对象封装，可以使用对象编程思维来操纵数据库。
  *   可以应用在任何使用JDBC的场合。甚至可以在应用EJB的J2EE架构中取代CMP，完成数据持久化的重任。
  *   使用 Java 反射机制来实现透明性
  *   使用了J2EE架构中的：JDBC、JTA、JNDI 等技术
@@ -18,6 +18,8 @@ package com.fishjam.storeserver.study;
  *   6.支持各种关系数据库，从一对一到多对多的各种复杂关系
  * 缺陷：
  *   1.限制您所使用的对象模型。(例如，一个持久性类不能映射到多个表)
+ * 
+ * ORM(对象-关系映射) -- 完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表
  *
  * Hibernate运行在两种环境下：
  *  可管理环境 -- 这种环境可管理如下资源：池资源，数据库连接池，事务、安全定义等。一些典型的J2EE服务器（JBoss、Weblogic、WebSphere）已经实现了这些。
@@ -44,6 +46,44 @@ package com.fishjam.storeserver.study;
  *     openSession()
  *   Transaction
 **************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
+* 常见数据库
+* sqlite是c写的，没有官方的操作sqlite的java api，如果要在Java中使用Sqlite的话，有几种方式：
+*     1.SQLite JDBC(https://bitbucket.org/xerial/sqlite-jdbc)下载(如 sqlite-jdbc-3.7.2.jar)
+*       纯Java实现，方便，但效率较低
+*     2.SQLite Java Wrapper/JDBC Driver( http://www.ch-werner.de/javasqlite/)， 需要本地库
+**************************************************************************************************************************************/
+
 public class HibernateStudy {
+
+	public testSqliteDemo(){
+		/*
+		try {
+			String fileName = "c:/SqliteDemo.db";
+			Class.forName("org.sqlite.JDBC");
+			// Create Connection Object to SQLite Database, If you want to only create a database in memory, exclude the fileName
+			Connection conn = DriverManager.getConnection("jdbc:sqlite:" + fileName);
+			// Create a Statement object for the database connection, dunno what this stuff does though.
+			Statement stmt = conn.createStatement();
+			// Create a result set object for the statement
+			ResultSet rs = stmt.executeQuery("SELECT * FROM tbl_User");
+			// Iterate the result set, printing each column if the column was an int, we could do rs.getInt(column name here) as well, etc.
+			while (rs.next()) {
+				int id = rs.getInt("Id");					// Column 1
+				String username = rs.getString("UserName"); // Column 2
+				String password = rs.getString("Password"); // Column 3
+				System.out.println("ID: " + id + " username: " + username + " password: " + password);
+			}
+			System.out.println("End loop table");
+			// Close the connection
+			conn.close();
+		} catch (Exception e) {
+			// Print some generic debug info
+			System.out.println(e.getMessage());
+			System.out.println(e.toString());
+		}
+		*/
+	}
 
 }
