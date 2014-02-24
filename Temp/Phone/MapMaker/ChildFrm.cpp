@@ -45,7 +45,13 @@ BOOL CChildFrame::OnForwardMsg(LPMSG pMsg, DWORD nUserData)
 
 BOOL CChildFrame::SetImagePath(const CString& strImagePath)
 {
-    return m_view.SetImagePath(strImagePath);
+    BOOL bRet = m_view.SetImagePath(strImagePath);
+    if (bRet)
+    {
+        CSize szImage = m_view.GetImageSize();
+        m_view.SetScrollSize(szImage.cx, szImage.cy);
+    }
+    return bRet;
 }
 
 

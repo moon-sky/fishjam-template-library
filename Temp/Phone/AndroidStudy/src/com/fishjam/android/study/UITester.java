@@ -166,6 +166,11 @@ import android.view.Display;
  *     textSize -- 18sp
  * +-ExpandableListView -- 可展开的列表组件(类似数控件?)，把列表项分为几组，每组里可包含多个列表项，其数据由 ExpandableListAdapter 提供。
  * +-ExtractEditText -- 是EditText组件的底层服务类，负责提供全屏输入法支持
+ * +-Fragment --11里增加的，可以重用Activity等, 
+ *     通常用法：
+ *       1. 设置要替换的占位元素Id：myContrainLayout.setId( ROOT_CONTAINER_ID);
+ *       2. 将占位元素的内容换成自定义的Fragment( myGetFragment  可以由子类重载 )：
+ *           getFragmentManager().beginTransaction().replace(ROOT_CONTAINER_ID , myGetFragment()).commit();
  * +-Gallery(图库) -- 能水平方向显示其内容，而且用户可以拖动来切换列表项。一般和 ImageSwitcher 一起用来浏览图片，被选中的项位于中间。
  *      通常使用 Gallery 显示缩略图，在点击时通过 ImageSwitcher::setImageResource 切换到大图
  *      TODO: 已不再推荐该控件。推荐使用 HorizontalScrollView + ViewPager 来代替Gallery。

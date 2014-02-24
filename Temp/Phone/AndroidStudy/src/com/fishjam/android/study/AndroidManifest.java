@@ -81,7 +81,7 @@ import android.test.AndroidTestCase;
  *   INSTALL_PACKAGES
  *   INTERNAL_SYSTEM_WINDOW
  *   MANAGE_ACCOUNTS
- *   INTERNET		-- 打开网络Socket(即访问网络?)
+ *   INTERNET		-- 完全的网络访问(2、3G, 和  WiFi)
  *   MANAGE_APP_TOKENS
  *   MASTER_CLEAR
  *   MODIFY_AUDIO_SETTINGS	-- 修改全局声音设置

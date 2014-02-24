@@ -29,6 +29,7 @@ public:
         m_nGridHeight = nTileHeight;
         ResetTileGrids(dttEmpty);
     }
+    SIZE GetImageSize() const;
 public:
 	DECLARE_WND_CLASS(TEXT("CMapMakerView"))
 
@@ -66,7 +67,7 @@ protected:
 
     CRect _GetPhotoRect( CRect rcClient, LPSIZE lpSize);
 
-    void _DrawGridLine(CDCHandle dc);
+    void _DrawGridLine(CDCHandle dc, const CRect& rcClipBox);
     VOID ResetTileGrids(DrawToolType newType);
     BOOL NextZoom(BOOL bBigger);
     int  _GetNextFixedZoomIndex(float curZoom, BOOL bBigger);
@@ -82,6 +83,7 @@ protected:
 private:
     CImage* m_pImage;
     CString m_strImagePath;
+    float   m_ZoomScale;
 
     FTL::CFCanvas   m_Canvas;
     FTL::CFCalcRect *m_pCalcRect;

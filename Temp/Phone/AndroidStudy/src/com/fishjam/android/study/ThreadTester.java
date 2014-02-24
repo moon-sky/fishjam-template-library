@@ -2,6 +2,11 @@ package com.fishjam.android.study;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import android.os.Handler;
 import android.os.Message;
@@ -9,6 +14,8 @@ import android.test.AndroidTestCase;
 import android.util.Log;
 
 /**************************************************************************************************************************************
+ * Java线程池：http://www.cnblogs.com/jersey/archive/2011/03/30/2000231.html
+ * 
  * Android 的View和UI组件不是线程安全的，不允许直接在线程中访问UI。一般通过 Handler 接收消息后更新
  * 
  * Thread -- 实现 Runnable 接口支持多线程，  new Thread(Runable).start();
@@ -42,8 +49,15 @@ import android.util.Log;
  *     newScheduledThreadPool -- 
  *     newSingleThreadExecutor() -- 返回一个只有一个后台线程在执行所提交任务的线程池(3.0以后缺省？)
  *   ExecutorService -- 通过 Executors 获得系统提供的各种线程池
- *   ThreadPoolExecutor -- 线程池？可以设置 corePoolSize/maximumPoolSize 等
- *   FutureTask
+ *   ThreadPoolExecutor -- 线程池？可以设置 corePoolSize/maximumPoolSize 等，其任务为 Runnable 实例
+ *     execute() -- 将指定的任务放入线程池，等待执行
+ *     remove() -- 移除指定任务
+ *     shutdownNow() -- 
+ *     awaitTermination() --
+ *   FutureTask -- 可以取消的异步的计算任务，等价于可以携带结果的Runnable，三个状态：等待、运行和完成(正常结束、取消、异常)
+ *     get() -- 获取结果，会阻塞直到任务转入完成状态，但可以指定超时
+ *     cancel() -- 取消正在执行的任务
+ *     isDone() -- 判断任务是否已经完成，之后用get会立即得到结果
 **************************************************************************************************************************************/
 
 public class ThreadTester extends AndroidTestCase{
@@ -101,5 +115,23 @@ public class ThreadTester extends AndroidTestCase{
 		    }
 		  }.start();//开始运行线程
 		//**************************************************************************************************************************************/
+	}
+	
+	public void testThreadPool() throws InterruptedException{
+		ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 0L,TimeUnit.MILLISECONDS, 
+				new LinkedBlockingQueue<Runnable>());
+		
+		Callable<String> taskcCallable = new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+					Log.i(TAG, "taskcCallable running");
+				return null;
+			}
+		};
+		FutureTask<String> futureTask = new FutureTask<String>(taskcCallable);
+		
+		executor.execute(futureTask);
+		
+		executor.wait();
 	}
 }

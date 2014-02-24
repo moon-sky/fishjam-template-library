@@ -84,6 +84,7 @@ CMapMakerView::CMapMakerView()
     m_nGridWidth = m_nGridHeight = 8;
     m_nTranspant = 70;
     m_drawToolType = dttEmpty;
+    m_ZoomScale = 1.0f;
 }
 
 CMapMakerView::~CMapMakerView()
@@ -288,8 +289,10 @@ void CMapMakerView::PrepareDC(CDCHandle dc)
 }
 
 
-void CMapMakerView::_DrawGridLine(CDCHandle dc)
+void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
 {
+    FUNCTION_BLOCK_TRACE(50);
+
     BOOL bRet = FALSE;
     CPen penLine;
     API_VERIFY(NULL != penLine.CreatePen(PS_SOLID, 1, COLOR_GRID_LINE));
@@ -298,7 +301,21 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc)
 
     CString strText;
     dc.SetBkMode(TRANSPARENT);
-    for (LONG h = 0; h < m_RowCount; h++)
+
+    int nStartRow = (rcClipBox.top + m_nGridHeight - 1) / m_nGridHeight;
+    int nEndRow  = (rcClipBox.bottom + m_nGridHeight - 1 ) / m_nGridHeight;
+    int nStartCol = (rcClipBox.left + m_nGridWidth - 1 ) / m_nGridWidth;
+    int nEndCol = (rcClipBox.right + m_nGridWidth - 1 ) / m_nGridWidth;
+    
+    nEndCol = nEndCol < m_ColCount - 1 ? nEndCol : m_ColCount - 1;
+    nEndRow = nEndRow < m_RowCount - 1 ? nEndRow : m_RowCount - 1;
+    
+    FTLTRACE(TEXT("rcClipBox=%s, ImageSize=(%dx%d), Row=%d->%d(RowCount=%d), Col=%d->%d(ColCount=%d)\n"), 
+        CFRectDumpInfo(rcClipBox).GetConvertedInfo(), m_pImage->GetWidth(), m_pImage->GetHeight(),
+        nStartRow, nEndRow, m_RowCount, nStartCol, nEndCol, m_ColCount);
+
+    for (int h = 0; h < m_RowCount; h++)
+    //for( int h = nStartRow; h <= nEndRow; h++)
     {
         API_VERIFY(dc.MoveTo(0, h * m_nGridHeight));
         API_VERIFY(dc.LineTo(m_nGridWidth * m_ColCount, h * m_nGridHeight));
@@ -309,7 +326,8 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc)
         }
     }
 
-    for (LONG w = 0; w < m_ColCount; w++)
+    for (int w = 0; w < m_ColCount; w++)
+    //for(int w = nStartCol; w <= nEndCol; w++)
     {
         API_VERIFY(dc.MoveTo(w * m_nGridWidth, 0));
         API_VERIFY(dc.LineTo(w * m_nGridWidth, m_nGridHeight * m_RowCount));
@@ -338,8 +356,10 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc)
     //font.CreatePointFont(6, _T("Arial"));
     //HFONT hOldFont = dc.SelectFont(font);
     for (int x = 0; x < m_ColCount; x++)
+    //for(int x = nStartCol; x <= nEndCol; x++)
     {
         for (int y = 0; y < m_RowCount; y++)
+        //for(int y = nStartRow; y <= nEndRow; y++)
         {
             DrawToolType  nType = (DrawToolType)m_tileGrids[y][x];
             if (nType != dttEmpty)
@@ -355,7 +375,6 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc)
                     API_VERIFY(dc.AlphaBlend(rcClickGrid.left, rcClickGrid.top, rcClickGrid.Width(), rcClickGrid.Height(),
                         memDC, 0, 0, m_nGridWidth, m_nGridHeight, bf));
                 }
-
                 //dc.FillSolidRect(rcClickGrid, COLOR_DRAWTOOL_TYPES[nType]);
             }
             //strText.Format(TEXT("%d,%d"), y, x);            
@@ -370,6 +389,7 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc)
 void CMapMakerView::DoPaint(CDCHandle dc)
 {
     BOOL bRet = FALSE;
+    FUNCTION_BLOCK_TRACE(50);
 
     CRect rcClientLogical;
     GetClientRect(rcClientLogical);
@@ -377,7 +397,14 @@ void CMapMakerView::DoPaint(CDCHandle dc)
     rcClientLogical.InflateRect(8, 8);	//fix scroll brush display error
 
     {
-        FTL::CFScrollZoomMemoryDC memDC (dc.m_hDC, rcClientLogical);
+        CRect rcClipBox;
+        dc.GetClipBox(rcClipBox);
+
+        CRect rcClipBoxLogical = rcClipBox;
+        //dc.DPtoLP(&rcClipBoxLogical);
+        //ClientToDoc(&rcClipBoxLogical);
+        //FTL::CFScrollZoomMemoryDC memDC (dc.m_hDC, rcClipBox);
+		FTL::CFScrollZoomMemoryDC memDC (dc.m_hDC, rcClientLogical);
 
         PrepareDC(memDC.m_hDC);
         //memDC.SetBrushOrg( -m_ptOffset.x , -m_ptOffset.y);
@@ -403,7 +430,7 @@ void CMapMakerView::DoPaint(CDCHandle dc)
                 0, 0, //rcClientLogical.left, rcClientLogical.top, 
                 SRCCOPY));
 
-            _DrawGridLine(memDC.m_hDC);
+            _DrawGridLine(memDC.m_hDC, rcClipBoxLogical);
         }
 
         //memDC.DrawText(TEXT("Fishjam"), -1, rcClientLogical, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -551,6 +578,7 @@ void CMapMakerView::_SetScrollInfo(float newZoomScale, BOOL bUseCenterPoint)
 {
 	if (m_pImage && !m_pImage->IsNull())
 	{
+        m_ZoomScale = newZoomScale;
 		BOOL bRet = FALSE;
 		CRect rcClient;
 		API_VERIFY(GetClientRect(&rcClient));
@@ -592,6 +620,16 @@ void CMapMakerView::_SetScrollInfo(float newZoomScale, BOOL bUseCenterPoint)
 	}
 }
 
+SIZE CMapMakerView::GetImageSize() const
+{
+    SIZE szImage = {0, 0};
+    if (m_pImage)
+    {
+        szImage.cx = m_pImage->GetWidth();
+        szImage.cy = m_pImage->GetHeight();
+    }
+    return szImage;
+}
 CAtlString CMapMakerView::GetExportMapString()
 {
     CString strExportMap;

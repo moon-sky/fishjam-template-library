@@ -54,6 +54,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	int nRet = 0;
     {
+        FUNCTION_BLOCK_TRACE(0);
+
         g_CrashHandler.SetDefaultCrashHandlerFilter();
         nRet = Run(lpstrCmdLine, nCmdShow);
     }
