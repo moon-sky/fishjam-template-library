@@ -42,6 +42,10 @@ package com.fishjam.storeserver.study;
 * 各种常用功能对应的包
 *   Mail(收发邮件) -- activation + mail
 *   Oracle(数据库) -- classes12
+*   Json -- 好几种实现（http://www.json.org/）
+*     org.json.jar; 
+*     json-lib -- http://sourceforge.net/projects/json-lib/
+*     google-gson -- 
 * 
 **************************************************************************************************************************************/
 

@@ -29,6 +29,14 @@ package com.fishjam.storeserver.study;
 /**************************************************************************************************************************************
  * hibernate.cfg.xml 
  *   <mapping resource="com/xxx/User.hbm.xml"
+ *
+ * Dialect -- 方言。hibernate为了更好的适配各种关系数据库，针对每种数据库都指定了一个方言Dialect，用来把Java对象转换成关系数据库。
+ *   本质是一个 从 org.hibernate.dialect.Dialect 继承的类，
+ *
+ *   官方目前还不支持使用 SQLite 数据库, 开源第三方dialect(https://code.google.com/p/hibernate-sqlite/)
+ *     使用：<property name="dialect">com.applerao.hibernatesqlite.dialect.SQLiteDialect</property>
+ *     Bug:1.不支持分页查询( where xxx limit xxx offset yyy )
+ *  
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -50,9 +58,10 @@ package com.fishjam.storeserver.study;
 /**************************************************************************************************************************************
 * 常见数据库
 * sqlite是c写的，没有官方的操作sqlite的java api，如果要在Java中使用Sqlite的话，有几种方式：
-*     1.SQLite JDBC(https://bitbucket.org/xerial/sqlite-jdbc)下载(如 sqlite-jdbc-3.7.2.jar)
+*     1.SQLite JDBC Driver(https://bitbucket.org/xerial/sqlite-jdbc)下载(如 sqlite-jdbc-3.7.2.jar)
 *       纯Java实现，方便，但效率较低
 *     2.SQLite Java Wrapper/JDBC Driver( http://www.ch-werner.de/javasqlite/)， 需要本地库
+*   支持内存数据库:  Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:");
 **************************************************************************************************************************************/
 
 public class HibernateStudy {
@@ -60,14 +69,19 @@ public class HibernateStudy {
 	public testSqliteDemo(){
 		/*
 		try {
-			String fileName = "c:/SqliteDemo.db";
+			String fileName = "c:/SqliteDemo.db";  // Linux: /home/myuser/SqliteDemo.db
 			Class.forName("org.sqlite.JDBC");
 			// Create Connection Object to SQLite Database, If you want to only create a database in memory, exclude the fileName
 			Connection conn = DriverManager.getConnection("jdbc:sqlite:" + fileName);
 			// Create a Statement object for the database connection, dunno what this stuff does though.
 			Statement stmt = conn.createStatement();
+			
+			//stmt.executeUpdate("drop table if exists tbl_User");
+			//statement.executeUpdate("create table person (id integer, name string)");
+			
 			// Create a result set object for the statement
 			ResultSet rs = stmt.executeQuery("SELECT * FROM tbl_User");
+			
 			// Iterate the result set, printing each column if the column was an int, we could do rs.getInt(column name here) as well, etc.
 			while (rs.next()) {
 				int id = rs.getInt("Id");					// Column 1

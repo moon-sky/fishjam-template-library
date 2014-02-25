@@ -14,7 +14,7 @@ package com.fishjam.storeserver.study;
  *   2.安装 : 开始 ->Apache Tomcat -> Configure Tomcat -> Start
  * 
  * 设置通过调试目录运行(这样可在Tomcat中边测试边开发)
- *   1.在 server.config 的 <Host> 中，增加:
+ *   1.在 server.xml 的 <Host> 中，增加:
  *     <Context path="/myProject" docBase="D:\\workspaces\\myProject" reloadable="false" privileged="true"></Context>
  *     path 为虚拟目录，docBase 为实际目录
  *
@@ -26,15 +26,18 @@ package com.fishjam.storeserver.study;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * tomcat-users.xml -- 设置允许通过网页方式管理( http://localhost/manager/status )
+ * tomcat-users.xml -- 用户权限管理。设置允许通过网页方式管理( http://localhost/manager/status )
  *  <role rolename="admin-gui"/>
  *  <role rolename="manager-gui"/>
  *  <role rolename="manager"/>
  *  <role rolename="tomcat"/>
  *  <role rolename="admin"/>
  *  <user username="admin" password="admin" roles="admin,manager,admin-gui,manager-gui"/>
+ *
  * web.xml -- 核心配置文件
  *   
+ * server.xml --
+ *  <Connector port=8080 ... > -- 指定服务器的监听端口、协议等
 **************************************************************************************************************************************/
 public class TomcatStudy {
 
