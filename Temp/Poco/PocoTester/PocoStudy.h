@@ -17,7 +17,7 @@
 * Poco(POrtable COmponents), http://pocoproject.org/ -- 开源，侧重于互联网应用，
 *   使用Boost Software License发布，完全免费
 *   提供跨平台(Windows/WinCE/Linux/Mac OS X/Solaris/Android 等)的基础类库，可认为是一个小型的ACE?
-*   包括：Foundation、XML、Crypto、XML、Util、Net、Zip、NetSSL、Data（支持 SQLite、ODBC、MySQL）、
+*   包括：Foundation、Crypto、XML、Util、Net、Zip、NetSSL、Data（支持 SQLite、ODBC、MySQL）、
 *          Tools & Utilities、Application 等
 * 
 * 跨平台库的生成
@@ -27,8 +27,13 @@
 * 问题
 *   1.Poco中定义了一些宏，会造成标准API(如 OutputDebugString) C2065(undeclared identifier), C3861(identifier not found)的错误。
 *     解决：a.更改头文件的包含顺序?
+*            b.使用编译堆栈控制宏，如 verify
+*              #pragma push_macro("verify")
+*              #undef verify
+*              include各种Poco头文件
+*              #pragma pop_macro("verify")
 
-* 编译宏 -- 更改 Poco/Config.h 文件? 可以控制线程数最大数量、是否支持UTF8等
+* 编译宏 -- 更改 Poco/Config.h 文件? 可以控制线程数最大数量、是否支持UTF8(默认支持)等
 ****************************************************************************************************/
 
 

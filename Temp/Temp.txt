@@ -4,6 +4,19 @@
 驱动：                http://pan.baidu.com/share/link?shareid=1159878015&uk=1866394329
 如果驱动有问题请安装：http://yun.baidu.com/share/link?shareid=2341853829&uk=1866394329
 
+JsonStudy.h 中()：
+  注意：
+    1. -- a.1,a.2,a.4 都不正确，json只能输出静态库
+    2. -- 不能直接升级成 VS2010，  
+  a.1. 更改 Debug/Release 的 General -> Configuration Type 为 Dynamic Library(.dll);
+  a.2. 更改 Debug/Release 的 C/C++ -> Preprocessor -> Preprocessor Definitions， 去掉其中的 _LIB
+  a.3  更改 Debug/Release 的 Linker->Debugging -> Generate Debug Info 为 Yes(/DEBUG),允许生成pdb
+  a.4  更改 Debug/Release 的 LIner ->Advanced -> Import Library， 设置生成 .lib 文件；
+                          设置 Target Machine 为 MachineX86 (/MACHINE:X86)， 否则不会生成 .lib 文件？
+                          System->SubSystem 为 Windows (/SUBSYSTEM:WINDOWS)
+  TODO:使用的是 “Use Multi-Byte Character Set”
+ 
+
 AdapterView 的子类：GridView, Spinner, Gallery, AdapterViewFlipper 等
 
 ArrayAdapter 的的功能比较有限，每个列表项只能是TextView，一般只用于 AutoCompleteTextView 等文字的地方。 ArrayAdapter<String> aa = new ArrayAdapter<String>(this,...);

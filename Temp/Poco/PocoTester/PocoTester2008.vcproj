@@ -474,6 +474,22 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PocoConverterTester.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PocoConverterTester.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PocoCryptoTester.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PocoCryptoTester.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PocoDataTester.cpp"
 				>
 			</File>
@@ -495,6 +511,14 @@
 			</File>
 			<File
 				RelativePath=".\PocoFileTester.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PocoLoggerTester.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PocoLoggerTester.h"
 				>
 			</File>
 			<File

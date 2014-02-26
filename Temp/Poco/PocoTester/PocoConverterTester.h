@@ -3,19 +3,22 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 /**********************************************************************************************
-* Poco 采用异常的方式来处理业务逻辑
-*   Poco::Debugger::enter("提示信息") -- 调试版本下进入断言
+* 有多种 Converter：
+*   LineEndingConverter --
+*   StreamConverter --
+*   TextConverter -- 
+*   UnicodeConverter -- UTF8(std::strings) <==> UTF16(std::wstrings)
 **********************************************************************************************/
-#include "Poco/Bugcheck.h"      //调试帮助
+#include "Poco/Crypto/Crypto.h"
 
-class CPocoDebugTester : public CPPUNIT_NS::TestFixture
+class CPocoConverterTester : public CPPUNIT_NS::TestFixture
 {
 public:
-    CPPUNIT_TEST_SUITE( CPocoDebugTester );
+    CPPUNIT_TEST_SUITE( CPocoConverterTester );
     CPPUNIT_TEST( test_container_holder );
     CPPUNIT_TEST_SUITE_END();
 
-    DECLARE_DEFAULT_TEST_CLASS(CPocoDebugTester);
+    DECLARE_DEFAULT_TEST_CLASS(CPocoConverterTester);
 private:
     void test_container_holder();
 };

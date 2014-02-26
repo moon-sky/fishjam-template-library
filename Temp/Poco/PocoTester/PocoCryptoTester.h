@@ -3,19 +3,19 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 /**********************************************************************************************
-* Poco 采用异常的方式来处理业务逻辑
-*   Poco::Debugger::enter("提示信息") -- 调试版本下进入断言
+* Crypto
+*   initializeCrypto()/uninitializeCrypto() -- 使用前后的初始化和终止化
 **********************************************************************************************/
-#include "Poco/Bugcheck.h"      //调试帮助
+#include "Poco/Crypto/Crypto.h"
 
-class CPocoDebugTester : public CPPUNIT_NS::TestFixture
+class CPocoCryptoTester : public CPPUNIT_NS::TestFixture
 {
 public:
-    CPPUNIT_TEST_SUITE( CPocoDebugTester );
+    CPPUNIT_TEST_SUITE( CPocoCryptoTester );
     CPPUNIT_TEST( test_container_holder );
     CPPUNIT_TEST_SUITE_END();
 
-    DECLARE_DEFAULT_TEST_CLASS(CPocoDebugTester);
+    DECLARE_DEFAULT_TEST_CLASS(CPocoCryptoTester);
 private:
     void test_container_holder();
 };
