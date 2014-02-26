@@ -25,7 +25,7 @@ package com.fishjam.storeserver.study;
  *   2.将war放到tomcat的webapps目录下, 设置 server.xml 文件
  *
  * 直接连接数据库
- *   Windows->Preferences->MyEclipse->Database Explorer->Database Drivers
+ *   Windows->Preferences->MyEclipse->Database Explorer->Database Drivers。配置数据库驱动参数。
  *   1.Derby -- MyEclipse自带的一个关系数据库
 ***************************************************************************************************************************************/
 

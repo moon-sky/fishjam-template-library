@@ -36,7 +36,12 @@ package com.fishjam.storeserver.study;
  *   官方目前还不支持使用 SQLite 数据库, 开源第三方dialect(https://code.google.com/p/hibernate-sqlite/)
  *     使用：<property name="dialect">com.applerao.hibernatesqlite.dialect.SQLiteDialect</property>
  *     Bug:1.不支持分页查询( where xxx limit xxx offset yyy )
- *  
+ * 
+ * 常用数据库连接配置：
+ *   Access		sun.jdbc.odbc.JdbcOdbcDriver
+ *   MySql		com.mysql.jdbc.Driver
+ *   Oracle     oracle.jdbc.OracleDriver
+ *   SQLite     org.sqlite.JDBC
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
