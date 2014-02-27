@@ -1,4 +1,4 @@
-package com.fishjam.storeserver.study;
+package com.fishjam.study.javaee;
 
 /**************************************************************************************************************************************
  * TODO:
@@ -75,7 +75,7 @@ package com.fishjam.storeserver.study;
 
 public class HibernateStudy {
 
-	public testSqliteDemo(){
+	public void testSqliteDemo(){
 		/*
 		try {
 			String fileName = "c:/SqliteDemo.db";  // Linux: /home/myuser/SqliteDemo.db

@@ -24,6 +24,11 @@
 *   1.VC下编译采用没有预编译头文件的形式, 没有stdafx.h 、stdafx.cpp
 *   2.所有的Dll都是没有资源、没有dllmain存在的工程
 *
+* 编译
+*   1.更改 buildwin.cmd 批处理，设置其中的 OPENSSL_DIR,OPENSSL_LIB
+*   1.5. -- TODO: MySQL 怎么弄，需要加到VS的配置路径中？或更改 buildwin.cmd ?
+*   2.执行对应 build_vs90.cmd 等批处理
+* 
 * 问题
 *   1.Poco中定义了一些宏，会造成标准API(如 OutputDebugString) C2065(undeclared identifier), C3861(identifier not found)的错误。
 *     解决：a.更改头文件的包含顺序?

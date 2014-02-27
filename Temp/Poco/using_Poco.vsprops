@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="gb2312"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="using_Poco"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(POCO_PATH)Foundation\include&quot;;&quot;$(POCO_PATH)Crypto\include&quot;;&quot;$(POCO_PATH)Util\include&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="$(POCO_PATH)lib"
+	/>
+	<UserMacro
+		Name="POCO_PATH"
+		Value="F:\WebCode\poco-1.4.6p2-all\"
+	/>
+</VisualStudioPropertySheet>

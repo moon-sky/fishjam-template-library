@@ -65,8 +65,11 @@ void CPocoFoundationTester::test_PluginLoader()
 typedef void (WINAPI *OutputDebugStringWPtr)(LPCWSTR lpOutputString);
 void CPocoFoundationTester::test_SharedLibrary()
 {
-    std::string kernel32Path(TEXT("C:\\Windows\\System32\\Kernel32"));
-    kernel32Path.append(Poco::SharedLibrary::suffix()); // adds ".dll" or ".so"
+    CHAR szWindowDir[MAX_PATH] ={0};
+    GetSystemDirectoryA(szWindowDir, _countof(szWindowDir));
+    std::string kernel32Path(szWindowDir); //TEXT("C:\\Windows\\System32\\Kernel32"));
+    kernel32Path.append("\\Kernel32.dll");
+    //kernel32Path.append(Poco::SharedLibrary::suffix()); // adds "d.dll", ".dll"  or ".so"
 
     Poco::SharedLibrary shareLib(kernel32Path);  // will also load the library  
     OutputDebugStringWPtr pOutputDebugString = (OutputDebugStringWPtr)shareLib.getSymbol("OutputDebugStringW");

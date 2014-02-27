@@ -1,4 +1,4 @@
-package com.fishjam.storeserver.study;
+package com.fishjam.study.javaee;
 
 /**************************************************************************************************************************************
  * TODO:
@@ -49,6 +49,7 @@ package com.fishjam.storeserver.study;
 * 
 **************************************************************************************************************************************/
 
-public class J2EEStudy {
+
+public class JavaEEStudy {
 
 }

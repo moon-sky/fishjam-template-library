@@ -1,4 +1,4 @@
-﻿package com.fishjam.storeserver.study;
+﻿package com.fishjam.study.javaee;
 
 /**************************************************************************************************************************************
  * 非侵入式设计(Spring) -- 无需继承框架提供的类(但通常需要使用Reflection机制，动态调用的方式来避免硬编码的约束)
@@ -96,7 +96,7 @@
  *            配置好后，Spring会在指定目录下依次查找 _zh_CN, _zh 等后缀的 .properties 和 .class 文件，使用找到的第一个满足要求的资源文件；
  *            代码中可用 ctx.getMessage("key" [,arg, Locale.zh_CN]) 的方式加载文本; 
  *            JSP页面中通过 <spring:message code="key"/> 的方式使用。
- *            TODO:需要使用 native2ascii.exe 对资源文件进行转码(转换成\uXXXX 的格式)，否则取出来的会是乱码？能否直接将文件保存成Unicode格式？
+ *            TODO:需要使用 native2ascii.exe 对资源文件进行转码(转换成 \uFFFF 的格式)，否则取出来的会是乱码？能否直接将文件保存成Unicode格式？
  *                 实际工作中可在Ant中设置Native2Ascii任务：<native2ascii encoding="GBK" src="${src}" dest="${build}"/>
  *            JVM启动时可通过 "-Duser.language=en" 来设定当前JVM语言类型
  *        3.支持对文件和URL的访问; -- ctx.getResource 加载资源文件(如 "classpath:config.properties")
