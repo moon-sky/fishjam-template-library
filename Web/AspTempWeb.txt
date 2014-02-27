@@ -1,0 +1,43 @@
+页面回传的原理：当有设置了AutoPostBack属性的Web控件时，ASP.NET将在页面中添加名为 __doPostBack() 的JavaScript函数，调用该函数时就会引发页面回传。
+有两个隐藏字段 __EVENTTARGET, __EVENTARGUMENT,
+
+URL编解码(HttpServerUtility.UrlEncode 和 UrlDecode) -- 特殊字符将被替换为一个百分号(%)开头，后跟十六进制数的转义字符序列，如"&"将使用"%26"表示
+
+
+Page
+  可重载函数
+    Load
+    PreRender
+
+InstalledFontCollection -- 当前Web服务器上所有已安装字体的工具类(不是客户端？)
+
+枚举的静态方法: Enum.GetNames 检查枚举类型，并生成一个字符串类型的数组, 
+  获取已知颜色的列表(通过数据绑定向ListBox中填充颜色对应的字符串)
+  string[] colorArray = Enum.GetNames(typeof(KnownColor));
+  ListBoxColor.DataSource = colorArray;
+  ListBoxColor.DataBind();
+TypeConverter -- 转换类型(如 枚举值转换为字符串，或字符串转换为对应的枚举值)
+  TypeConverter converter = TypeDescriptor.GetConverter(typeof(KnownColor));
+  KnownColor color = (KnownColor)converter.ConvertFromString("AliceBlue");
+对象序列化 -- 在类定义之前添加一个 [Serializable] 属性，
+
+状态管理 -- 很多用户并发地运行Web服务器上的同一应用程序，且每次通信都是通过无状态的HTTP协议来连接。
+  ASP.NET为状态管理提供了不同的可选方案：
+  1.视图状态(ViewState)--以Base64方式保存在名为 __VIEWSTATE 的 hidden 变量中。
+    安全控制：
+      a.(缺省生效)ASP.NET使用hashcode来防止状态信息被篡改,可通过设置 web.config 中的 <pages enableViewStateMac="false"/> 禁用。
+      b.启用加密功能，使用私有视图状态。单个页面：<%@Page ViewStateEncryptionMode="Always" %>；整个网站：<pages viewStateEncryptionMode="Always"/>,缺省为Auto；
+        注意会有性能损失。
+    保存成员变量信息：Page.ViewState[变量名]=变量值(变量必须支持序列化)； 在 Page.PreRender 事件中保存；在 Page.Load 事件中获取(注意判断 IsPostBack )。
+    页面之间传递信息：
+      a.跨页传递 -- 通过按钮的 PostBackUrl 属性将一个Web页面中的全部信息，传递给另一个Web页面，然后可通过对 Page.PreviousPage 类型转换查询相关的变量;
+      b.查询字符串(URL中位于问号之后的子字符串部分), HyperLink控件或Response.Redirect进行跳转，然后通过 Request.QueryString["参数名"]获取参数。
+        局限:a.数据仅限于简单的合法的URL字符串;b.传递的信息对用户可见;c.用户可以任意修改查询字符串并赋予新值；d.长度有限制。
+	     不要使用查询字符串来传递需要隐藏或需要防止篡改的数据。
+  2.会话状态(Session)
+  3.Cookies()
+
+  数据缓存(Cache) --
+
+
+Web集群(Web农场架构) -- 
