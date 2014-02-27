@@ -7,7 +7,8 @@
 JsonStudy.h 中()：
   注意：
     1. -- a.1,a.2,a.4 都不正确，json只能输出静态库
-    2. -- 不能直接升级成 VS2010，  
+    2. -- 不能升级成 VS2010，需要先通过VS2010创建一个空的静态库，然后将相关文件都加入;
+    3. -- 可以分别指定 mt/mdt/mtt 等后缀，这样各个.lib文件可以放在同一个目录下。
   a.1. 更改 Debug/Release 的 General -> Configuration Type 为 Dynamic Library(.dll);
   a.2. 更改 Debug/Release 的 C/C++ -> Preprocessor -> Preprocessor Definitions， 去掉其中的 _LIB
   a.3  更改 Debug/Release 的 Linker->Debugging -> Generate Debug Info 为 Yes(/DEBUG),允许生成pdb

@@ -1,6 +1,10 @@
 package com.fishjam.storeserver.study;
 
 /**************************************************************************************************************************************
+ * TODO:
+ *   1.对象类(如User)中可加入 XDoclet 注释(如 @hibernate.class table="users" ),
+ *     然后通过 xdoclet ant task 自动生成对应的 user.hbm.xml 文件(参见"hibernate开发指南")
+ * 
  * Android sqlite数据库操作通用框架AHibernate(一)-CRUD示例和使用步骤
  *   http://blog.csdn.net/lk_blog/article/details/7455992
  * 

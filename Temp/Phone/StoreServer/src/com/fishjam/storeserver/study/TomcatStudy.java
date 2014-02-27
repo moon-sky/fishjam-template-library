@@ -35,7 +35,8 @@ package com.fishjam.storeserver.study;
  *  <user username="admin" password="admin" roles="admin,manager,admin-gui,manager-gui"/>
  *
  * web.xml -- 核心配置文件
- *   
+ *   <error-page> -- 配置特定异常情况的显示页面
+ *
  * server.xml --
  *  <Connector port=8080 ... > -- 指定服务器的监听端口、协议等
 **************************************************************************************************************************************/
