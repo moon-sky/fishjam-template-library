@@ -27,6 +27,12 @@ package com.fishjam.study;
  * 直接连接数据库
  *   Windows->Preferences->MyEclipse->Database Explorer->Database Drivers。配置数据库驱动参数。
  *   1.Derby -- MyEclipse自带的一个关系数据库
+ *   
+ * 安装SVN插件:
+ *   1.http://www.eclipse.org/subversive/ 下载对应的插件压缩包
+ *   1.Window--Preferences--General-Capabilities, 选中 "Classic Update", 然后 Apply
+ *   2.Help > Software Updates > Find and Install...
+ *   3.Search for new features to install >Next > New Local Site... > 并选中SVN插件解压的目录
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
