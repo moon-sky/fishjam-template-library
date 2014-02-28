@@ -25,8 +25,14 @@
 *   2.所有的Dll都是没有资源、没有dllmain存在的工程
 *
 * 编译
+*   TODO: 编译时的日志可以通过重定向保存到文本中吗？
 *   1.更改 buildwin.cmd 批处理，设置其中的 OPENSSL_DIR,OPENSSL_LIB
 *   1.5. -- TODO: MySQL 怎么弄，需要加到VS的配置路径中？或更改 buildwin.cmd ?
+*     set MYSQL_DIR=D:\MaNGOS\MaNGOSfour\dep
+*     set MYSQL_INCLUDE=%MYSQL_DIR%\include\mysql
+*     set MYSQL_LIB=%MYSQ_DIR%\lib\win32_debug;%MYSQ_DIR%\lib\win32_release;
+*     set INCLUDE=%INCLUDE%;%OPENSSL_INCLUDE%;%MYSQL_INCLUDE%
+*     set LIB=%LIB%;%OPENSSL_LIB%;%MYSQL_LIB%
 *   2.执行对应 build_vs90.cmd 等批处理
 * 
 * 问题

@@ -45,6 +45,8 @@ namespace FTL
     /**********************************************************************************************/
     #define JOIN_ONE(x, y) x ## y
     #define JOIN_TWO(x, y) JOIN_ONE(x, y)
+    #define FTL_JOIN(x, y) JOIN_TWO(x, y)
+    #define FTL_MAKE_UNIQUE_NAME( prefix )  FTL_JOIN( prefix, __LINE__ )
 
     //用于在编译器的输出窗口(Output)中输出“TODO”信息，可以双击直接进行定位
     //使用方式：pragma TODO(Fix this later)

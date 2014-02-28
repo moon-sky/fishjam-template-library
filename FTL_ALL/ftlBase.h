@@ -905,12 +905,12 @@ namespace FTL
     //CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__),__LINE__,TEXT(__FUNCTION__),FTL::_ReturnAddress(),(minElapse))
     // #pragma TODO(此处的写法有问题，无法根据行号生成唯一变量 -- "JOIN_TWO" 不支持带参数的构造)
 #  define FUNCTION_BLOCK_TRACE(minElapse) \
-    FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__), __LINE__, TEXT(__FUNCTION__), FTL::TraceDetailNone, FTL::_ReturnAddress(),(minElapse))
+    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(elapse) (TEXT(__FILE__), __LINE__, TEXT(__FUNCTION__), FTL::TraceDetailNone, FTL::_ReturnAddress(),(minElapse))
 #  define FUNCTION_BLOCK_NAME_TRACE(blockName,minElapse) \
-    FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__), __LINE__, blockName, FTL::TraceDetailNone, FTL::_ReturnAddress(),minElapse)
+    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(elapse) (TEXT(__FILE__), __LINE__, blockName, FTL::TraceDetailNone, FTL::_ReturnAddress(),minElapse)
 
 #  define FUNCTION_BLOCK_NAME_TRACE_EX(blockName, detailType, minElapse) \
-    FTL::CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__), __LINE__, blockName, detailType, FTL::_ReturnAddress(),minElapse)
+    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(elapse) (TEXT(__FILE__), __LINE__, blockName, detailType, FTL::_ReturnAddress(),minElapse)
 
 #else
 #  define  FUNCTION_BLOCK_TRACE(minElapse)                                   __noop

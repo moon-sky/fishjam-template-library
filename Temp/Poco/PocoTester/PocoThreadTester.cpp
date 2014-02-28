@@ -10,6 +10,7 @@
 #include "Poco/RWLock.h"
 #include "Poco/Thread.h"
 #include "Poco/ThreadPool.h"
+#include "poco/ThreadLocal.h"
 #include "Poco/Timer.h"
 
 void CPocoThreadTester::test_Locker()

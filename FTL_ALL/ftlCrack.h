@@ -313,11 +313,18 @@
 *
 * OpenSSL -- 基于密码学的安全开发包，为网络通信提供安全及数据完整性的一种安全协议，囊括了主要的密码算法、常用的密钥和证书封装管理功能以及SSL协议.
 *   电子文档:赵春平 的 OpenSSL编程
-*   Win32下可以直接使用OpenSSL-Win32，不用编译。http://slproweb.com/products/Win32OpenSSL.html
-*   编译(参见其中的 INSTALL.W32)：
+*   源码下载和编译：http://www.openssl.org/source/
+*     1.下载以后最好用 7-Zip 来解压，用WinRar等解压 .tar.gz 时快捷方式的文件可能会出问题
+*     2.TODO: OPENSSL_CONF (只在 Win32OpenSSL 中使用？指向 bin\openssl.cfg)
+*   编译(参见其中的 INSTALL.W32|INSTALL.W64 )：
 *     1.下载并安装 ActivePerl(http://www.activestate.com/ActivePerl);
-*     2.[可选]下载 汇编编译器 NASM(Netwide Assembler) http://www.nasm.us/ 或 http://nasm.sourceforge.net/
-*     3.编译时指定 --prefix=安装后的目录， 编译完毕后设置 OPENSSL_HOME 的环境变量，指向该目录，然后可在程序中使用
+*     2.[可选]下载 汇编编译器 NASM(Netwide Assembler) http://www.nasm.us/ 或 http://nasm.sourceforge.net/, 将nasm.exe的路径加入%PATH%中
+*     3.命令行：perl Configure VC-WIN32 no-asm --prefix=安装后的目录， 
+*     4.生成Makefile，并优化汇编：
+*       4.1.如使用MASM，则执行 ms\do_nasm 
+*     ... -- 测试未通过，无法编译
+*     n.编译完毕后设置 OPENSSL_HOME 的环境变量，指向前面设置的"安装后的目录"，然后可在程序中使用
+*   Win32下可以直接使用OpenSSL-Win32，不用编译。http://slproweb.com/products/Win32OpenSSL.html
 *
 *  实现内容：
 *   1~3.各种对称加密、非对称加密、信息摘要等算法
