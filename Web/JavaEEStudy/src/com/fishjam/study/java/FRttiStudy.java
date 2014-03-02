@@ -1,7 +1,7 @@
 package com.fishjam.study.java;
 
 /**************************************************************************************
-* RTTI(Run-time Type Identification--执行期类型识别)--需要.class
+* RTTI(Run-time Type Information, 运行时类型信息) -- 需要.class
 *   1.通过一个指向基类的引用找出其所指的确切类型－－编译时
 *   2.Reflection(反射)机制，允许在 运行时 找出和class相关的信息(如函数名称)，主要是为支持RMI和Java Beans
 *   

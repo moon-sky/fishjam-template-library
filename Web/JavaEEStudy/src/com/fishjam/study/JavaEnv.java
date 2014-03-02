@@ -1,12 +1,8 @@
 package com.fishjam.study;
 
-import java.io.IOException;
-
 import com.fishjam.utility.thread.FThread;
 
 /************************************************************************************************************
- * JSR(Java Spec. Request)--Java 规格需求
- * 
  * 安装好JDK以后，要设置 JAVA_HOME 和 CLSS_PATH 环境变量
  *   CLASS_PATH -- 含一个或多个目录，每个目录被视为.class 文件的查找起点，在此下通过展开package名称的路径查找class。
  *     安装第三方package后需要加入CLASS_PATH。jar文件被认为是目录，也可以放于该变量中。
@@ -16,25 +12,20 @@ import com.fishjam.utility.thread.FThread;
  * 
  * 
  * JVM的运行过程：载入类(ClassLoader)->字节码校验(ByteCodeVerifier)->解释器->运行时环境
- * JDK(Java Development Kit)按Java的应用环境划分
- *   J2EE(Java 2 Platform Enterprise Edition) -- 企业Web应用开发
- *   J2SE(Java 2 Platform Stand Edition) -- 普通应用程序
- *   J2ME(Java 2 Platform Micro Edition) -- 手机等消费电子产品
  *
  * java中的char占用两个字节(unicode编码)
  * Obfuscator(代码混淆器)--将字节码转换为一个逻辑上的对等物。常用的有：JODE、JavaGuard 等
  * JAD/FrontEnd--Java反编译工具，可以得到源代码。
  *
- * Java性能优化：
- *   1.尽量减少临时对象的使用
- *   2.对象不用时最好显式置为Null
- *   3.尽量使用StringBuffer,而不用String来累加字符串
- *   4.能用基本类型如Int,Long,就不用Integer,Long对象
- *   5.尽量少用静态对象变量--静态变量属于全局变量,不会被GC回收,它们会一直占用内存
- *   6.分散对象创建或删除的时间
- * 
- * Java中检测密码(必须有数字、大、小写、特殊符号等，长度8-30)的正则表达式:
- *   "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,30})"
+ *
+ * Javadoc转为CHM(微软公司发布的一种帮助文档格式,需要安装 HTML Help Workshop --
+ *   http://msdn.microsoft.com/en-us/library/ms669985.aspx)
+ *   1.Java代码格式最好统一，如使用GBK或UTF-8，在生成Javadoc时常需要对VM options进行编码设置
+ *     -locale en_US -encoding UTF-8 -charset UTF-8
+ *   2.使用jd2chm工具，能够生成hhc、hhk、hhp文件，方便我们使用HHW进行编辑。可以指定HTML的目录，但增加了一个About.html，
+ *     http://download.csdn.net/source/1024968 
+ *   3.使用 javadoc2chm-1.1.0.7.msi，指定  index.html 的路径即可，能自动生成目录和索引
+ *
  ***********************************************************************************************************/
 class MyStack<T>
 {
