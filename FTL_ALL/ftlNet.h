@@ -111,7 +111,17 @@
 *  6443 -- RFB(Remote Framebuffer Protocol), 通常用于远程控制
 
 * Fiddler2/Httpwatch -- 专门监控Http传输的工具?
-* Wireshark(网络抓包工具) -- 过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
+* Wireshark(开源遵循GPL的网络抓包工具) -- http://wiki.wireshark.org
+*   默认是混杂模式(promiscuous mode)，会捕获整个局域网段的包。
+*   过滤: -- 状态栏中左下角提示信息括号内的值(如 ip.src)可以作为过滤使用
+*     抓包时过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
+*     显示时过滤：
+*     过滤语法：http://wiki.wireshark.org/CaptureFilters
+*       [src|dst] host <host> -- 允许过滤主机ip地址或名称
+*       [tcp|udp] [src|dst] port [port] -- 过滤tcp,udp及端口号
+*       <expr> relop <expr> -- 创建一个复杂过滤表达式，来选择包的字节或字节范围符合要求的包(http://www.tcpdump.org/tcpdump_man.html)
+*     示例：
+*       捕捉特定主机的http/https通信：host www.baidu.com and (tcp port 80 or 8080)
 * IECookiesView(www.nirsoft.net): 查看编辑Cookie
 * netstat -- 系统提供的查询监听、绑定等信息的工具
 *

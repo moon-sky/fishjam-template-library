@@ -15,6 +15,7 @@ package com.fishjam.study;
  * OSGi(Open Service Gateway Initiative) -- 
  * RMI(Remote Method Invocation) -- 远程调用，通过存活于远程机器上的对象，发送消息并执行。 
  * RTTI(Run-time Type Information) -- 运行时类型信息
+ * WAP(Wireless Application Protocol) -- 无线应用协议
 *************************************************************************************************************/
 public class JavaGlossary {
 

@@ -49,6 +49,8 @@ package com.fishjam.study;
 
 
 /**************************************************************************************************************************************
+ * 更改默认字体 -- Preferences -> General -> Appearance -> Colors and Fonts， 更改 Java Editor Text Font 为默认(微软雅黑)
+ *   
  * 常用快捷键和配置 -- http://baike.baidu.com/link?url=GF0-5mxd1L_V5w-wo7K8w-3YOrNER4jjkI9yaE2tbPUr7IB4TwHk4EiuDUVt5wkZ
  *   Ctrl+O 快速显示 OutLine
  *   Ctrl+T 快速显示当前类的继承结构

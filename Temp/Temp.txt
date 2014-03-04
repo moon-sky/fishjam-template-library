@@ -5,6 +5,14 @@
 如果驱动有问题请安装：http://yun.baidu.com/share/link?shareid=2341853829&uk=1866394329
 
 JsonStudy.h 中()：
+  Json::Value::type() -- 可以获取到类型
+    nullValue--没有对应名字的节点;
+    arrayValue -- 数组，可通过 [0,size()) 进行遍历
+    objectValue -- Json::Value::Members members( value.getMemberNames() );
+       for ( Json::Value::Members::iterator it = members.begin(); it != members.end(); ++it )
+       { const std::string &name = *it; value[name]; }
+  Json::Features -- Json::Reader reader( features );初始化?
+
   注意：
     1. -- a.1,a.2,a.4 都不正确，json只能输出静态库
     2. -- 不能升级成 VS2010，需要先通过VS2010创建一个空的静态库，然后将相关文件都加入;
