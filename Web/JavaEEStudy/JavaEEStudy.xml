@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="GBK"?>
+<Context docBase="F:/Fujie/FJCODE_GOOGLE/Web/JavaEEStudy" debug="1" reloadable="false" privileged="true">
+	<!-- 
+	name : 数据源在容器中的JNDI名
+	driverClassName : 连接数据库的驱动
+	url : 指定数据库服务的URL
+	username : 连接数据库的用户名
+	password : 连接数据库的密码
+	maxActive : 数据源最大活动连接数
+	maxIdle : 数据池中最大的空闲连接数
+	maxWait : 数据池中最大等待获取连接的客户端
+	-->
+	<Resource name="jdbc/sqlitedemo" auth="Container"
+		type="javax.sql.DataSource" 
+		driverClassName="org.sqlite.JDBC"
+		url="jdbc:sqlite:F:/Fujie/FJCODE_GOOGLE/Web/JavaEEStudy/data/sqlitedemo.db"
+		username="" password="" maxActive="5"
+		maxIdle="2" maxWait="10000"/>
+		
+	<Resource name="jdbc/mysqldemo" auth="Container"
+		type="javax.sql.DataSource" 
+		driverClassName="com.mysql.jdbc.Driver"
+		url="jdbc:mysql://localhost:3306/mysqldemo"
+		username="root" password="32147" maxActive="5"
+		maxIdle="2" maxWait="10000"/>
+
+</Context>

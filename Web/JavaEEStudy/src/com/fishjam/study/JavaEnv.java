@@ -3,8 +3,10 @@ package com.fishjam.study;
 import com.fishjam.utility.thread.FThread;
 
 /************************************************************************************************************
- * 安装好JDK以后，要设置 JAVA_HOME 和 CLSS_PATH 环境变量
- *   CLASS_PATH -- 含一个或多个目录，每个目录被视为.class 文件的查找起点，在此下通过展开package名称的路径查找class。
+ * 安装好JDK以后，要设置环境变量：
+ *   JAVA_HOME -- 指向 JDK 的安装目录
+ *   CLASSPATH -- %JAVA_HOME%/lib/tools.jar;%JAVA_HOME%/lib/dt.jar 
+ *     含一个或多个目录，每个目录被视为.class 文件的查找起点，在此下通过展开package名称的路径查找class。
  *     安装第三方package后需要加入CLASS_PATH。jar文件被认为是目录，也可以放于该变量中。
  * 
  * 一次编译,到处运行 -- java字节码(Code-Byte).class，在JVM虚拟机下运行

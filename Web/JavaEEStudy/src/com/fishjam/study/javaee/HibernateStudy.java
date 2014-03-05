@@ -8,10 +8,17 @@ package com.fishjam.study.javaee;
  * Android sqlite数据库操作通用框架AHibernate(一)-CRUD示例和使用步骤
  *   http://blog.csdn.net/lk_blog/article/details/7455992
  * 
- * Hibernate -- 开源的对象关系映射及持久化框架，对JDBC进行了非常轻量级的对象封装，可以使用对象编程思维来操纵数据库。
+ * 其他ORM方案(注意：都是小范围的方案)：
+ *   JPA -- Sun 的
+ *   TopLink -- Oracle 的
+ *   OJB -- Apache 的
+**************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
+ * Hibernate -- 开源的对象关系映射及持久化框架，对JDBC进行了非常轻量级的对象封装，可以将 POJO 映射成持久化类，然后使用对象编程思维来操纵数据库。
  *   可以应用在任何使用JDBC的场合。甚至可以在应用EJB的J2EE架构中取代CMP，完成数据持久化的重任。
- *   使用 Java 反射机制来实现透明性
- *   使用了J2EE架构中的：JDBC、JTA、JNDI 等技术
+ *   使用 Java 反射机制来实现透明性， 使用了J2EE架构中的：JDBC、JTA、JNDI 等技术
+ *   
  * 框架结构：Session Bean <-> DAO <-> Hibernate <-> DB
  * 优点：
  *   1.对JDBC访问数据库的代码做了封装，大大简化了数据访问层繁琐的重复性代码
@@ -23,7 +30,6 @@ package com.fishjam.study.javaee;
  * 缺陷：
  *   1.限制您所使用的对象模型。(例如，一个持久性类不能映射到多个表)
  * 
- * ORM(对象-关系映射) -- 完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表
  *
  * Hibernate运行在两种环境下：
  *  可管理环境 -- 这种环境可管理如下资源：池资源，数据库连接池，事务、安全定义等。一些典型的J2EE服务器（JBoss、Weblogic、WebSphere）已经实现了这些。
@@ -41,11 +47,15 @@ package com.fishjam.study.javaee;
  *     使用：<property name="dialect">com.applerao.hibernatesqlite.dialect.SQLiteDialect</property>
  *     Bug:1.不支持分页查询( where xxx limit xxx offset yyy )
  * 
+ * 访问JNDI 指定的数据库: 
+ *   Context ctx = new InitialContext(); 
+ *   DataSource ds = (DataSource)ctx.lookup("java:comp/env/" + "自定义名字");
+ *
  * 常用数据库连接配置：
  *   Access		sun.jdbc.odbc.JdbcOdbcDriver
- *   MySql		com.mysql.jdbc.Driver
+ *   MySql		com.mysql.jdbc.Driver						jdbc:mysql://localhost:3306/javaee
  *   Oracle     oracle.jdbc.OracleDriver
- *   SQLite     org.sqlite.JDBC
+ *   SQLite     org.sqlite.JDBC									jdbc:sqlite:c:/sqlitedemo.db		
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************

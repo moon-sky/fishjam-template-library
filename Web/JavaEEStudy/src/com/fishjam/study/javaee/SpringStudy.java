@@ -32,7 +32,7 @@
  *       回调(Callback)机制，具有极强的灵活性和扩展性。:
  *         在执行Update等时，可通过 PreparedStatementSetter 避免SQL注入漏洞；
  *         在执行Select等时，可通过 RowCallbackHandler 来获取查询结果
- *   4.Spring自身提供了一套非常强大的MVC框架，也可以非常容易的与第三方MVC框架(如 Struts,JF)集成，
+ *   4.Spring自身提供了一套非常强大的MVC框架(SpringMVC)，也可以非常容易的与第三方MVC框架(如 Struts,JF)集成，
  *     org.springframework.web.servlet.DispatcherServlet
  *   5.简化各种技术集成：提供对Java Mail、任务调度、JMX、JMS、JNDI、EJB、动态语言、远程访问、Web Service等的集成
  *   其真正的精华是 Ioc模式 实现的 BeanFactory 和 AOP 

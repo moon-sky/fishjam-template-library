@@ -22,6 +22,7 @@ package com.fishjam.study.java;
  *   c(压缩)、t(查看文件列表)、x(解压)、v(erbose)、f(指定文件名)、m(指定manifest文件)、
  *   O(只存储文件，不压缩，用来建立一个可置于classpath中的JAR文件--lib文件不能压缩？)
  * jdb -- Java调试器
+ * native2ascii.exe -- 
 **************************************************************************************/
 
 public class JavaCommand {

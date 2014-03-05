@@ -4,6 +4,7 @@ package com.fishjam.study.javaee;
  * 
  * Web表现层
  *   JSP -- 传统的JSP技术为Web表现层技术提供了灵活、丰富的功能支持，但过于凌乱的JSP Script也成为系统维护的头号大敌。
+ *            会被Web服务器编译成Servlet( 基类 ? )。
  *          JSP 中将业务逻辑、数据逻辑、表现逻辑代码相混杂，代码重用性、系统可维护性极低。
  *          建议：以JSTL Core为基础，以及有限的、与业务逻辑无关的自定义Tag（或第三方Taglib）的JSP页面作为表现层解决方案.
  * 

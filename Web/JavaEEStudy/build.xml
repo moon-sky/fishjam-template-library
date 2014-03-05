@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	TODO: 
+	  1. include 和 exclude 中 name="**/*.java" ， 前面的 ** 代表什么意思？
+	
+    通用属性：
+       id: 唯一标识
+       refid: 引用另一个元素 
+
+	<project>: 根元素，可有多个属性。
+	  default[M]:  指定默认target，
+	  basedir[O]: 指定项目的基准路径，生成文件中的其他相对路径都是基于该路径的，若指为"."表示当前路径.
+	  name[O]: 指定项目名
+	  description[O]: 描述信息
+      子元素:
+         <property>: 定义一个或多个属性，通过 ${属性名} 的方式引用，可使用的属性：
+           name: 执行属性名
+           value:指定属性值
+           resource: 指定属性文件的资源名称，Ant将负责从属性文件中读取属性名和属性值
+           file: 指定属性文件的文件名，Ant从中读取，如 file="my.properties"
+           url: 指定属性文件的URL地址
+           environment: 指定系统环境变量的前缀，如定义 environment="env",  然后可通过  ${env.JAVA_HOME}  访问操作系统环境变量
+           classpath: 指定搜索属性文件的文件和路径集
+           classpathref: 指定搜索属性文件的文件和路径集引用，该属性并不是直接给出系列文件或路径，而是给定文件和路径集引用。
+         <path>: 定义一个或多个独立的、有名称的文件和路径，然后可在任务中通过 classpath 引用。
+            属性:
+               [id]: 唯一标识
+            可用子元素：
+              <pathelement>: 指定一个或多个目录，其中需要有一下属性之一：[path 指定一个或多个] 或 [location 指定一个]
+              <dirset>,<fileset>: 采用模式字符串的方式指定系列 目录 和 文件，需要设置属性 [dir]  
+              <filelist>: 采用直接列出系列文件名的方式指定系列文件，可以指定两个属性: [dir] 或 [files]，也可通过 <file> 子元素来指定文件列表
+         
+   每个生成目标对应一个 target 元素
+      name[M]: 指定名称，同一生成文件中名字唯一
+      depends[O]: 指定该target的一个或多个依赖target
+      if[O]: 该属性指定一个属性名，表示 仅当设置了 该属性时才执行此target, 如 if="prop1"
+      unless: 该属性指定一个属性名，表示 仅当没有设置 该属性时才执行此target， 如 unless="prop2"
+      description: 描述信息
+   
+   每个生成目标由一个或多个任务序列组成，每个任务由一段可执行的代码组成
+       定义任务的格式： <任务名 attr1="value1" attr2="value2" ... />
+       子元素: 
+          <classpath>:  可引用已有的文件和目录集，也可临时定义一个文件和目录集。
+             定义时可用的子元素同 <path>, 但可以通过 refid 引用在<project>中定义的 <path>
+             
+   An提供的核心任务(task)， 具体可以参见 %ANT_HOME%\manual\Tasks 下的文档
+       copy: 拷贝文件或路径， [todir]属性指定目的地 
+       delete: 删除文件或路径
+       echo: 输出某个字符串，如: <echo>$${dist}=${dist}</echo>
+       exec: 执行操作系统上的命令(使用时注意：这样的话就不能跨平台了)， 通过 [executable]属性指定想执行的命令
+       java: 运行某个Java类，需要 [classname] 属性指定需要运行哪个类
+       javac: 编译一个或多个Java源文件，需要设置 [srcdir] 和 [destdir] 属性
+       jar: 生成JAR包，通过 [destfile] 属性指定创建JAR包的文件名，通过 文件集(属性？名字？) 表明需要将哪些文件打包到 JAR包里
+       mkdir: 创建文件夹
+       move: 移动文件或文件夹
+       sql: 执行一条或多条SQL语句， 需要 driver,url,userid,password 等属性连接数据库，[src] 指定SQL脚本文件 或直接用文本方式指定SQL脚本字符串
+             
+ -->
+
+<project name="JavaEEStudy" default="help" basedir="." >
+	<property name="version" value="1.0"/>
+	<property name="dist" value="dist"/>
+	<property name="src" value="src"/>
+	<property environment="env" />
+	
+	<!--  整个路径表示 build/apps 目录下，所有名为 classes 且文件名不包含 Test 字符串的目录 -->
+	<path id="testbuilddir" > 
+		<!-- 指定该目录集的根路径是 build 目录 -->
+		<dirset dir="build">
+			<include name="apps/**/classes"/>		<!-- 指定包含 apps 目录下的所有 classes 目录 -->
+			<exclude name="apps/**/*Test*" />		<!-- 指定排除目录名中有 Test 的目录 -->
+		</dirset>
+	</path>
+	
+	<path id="datapath">
+		<dirset dir="data">
+		  <include name="*.db" />
+		  <exclude name="*.sql" />
+		</dirset>
+	</path>
+	
+	<path id="classpath">
+		<pathelement path="${dist}"/>
+		<fileset dir="lib" casesensitive="false" >
+			<include name="**/*.jar"/>
+			<exclude name="*.bak"/>
+		</fileset>
+	</path>
+	
+	<path id="configfiles">
+		<filelist dir="." files="build.xml, JavaEEStudy.xml">
+		</filelist>
+	</path>
+	
+	<target name="help" description="打印帮助信息">
+		<echo>help        -- 打印帮助信息</echo>
+		<echo>compile     -- 编译Java源文件</echo>
+		<echo>run         -- 运行程序</echo>
+		<echo>build       -- 打包JAR包</echo>
+        <echo>clean       -- 清除所有编译生成的文件</echo>
+
+        <echo>setup       -- 设置JavaEEStudy的Tomcat开发环境</echo>
+		<echo>testant     -- 测试Ant的Task</echo>
+	</target>
+	
+	<target name="run" depends="compile">
+	</target>
+
+	<target name="compile" description="Compile all source code">
+		<delete dir="${dist}"/>
+		<mkdir dir="${dist}"/>
+		<copy todir="${dist}">
+			<fileset dir="${src}">
+				<exclude name="**/*.java"/>
+			</fileset>		
+		</copy>
+		
+		<!-- 编译Java文件，编译后的class文件放到 classes属性所代表的文件夹内 -->
+		<javac destdir="${classes}" debug="true" includeantruntime="yes" deprecation="false" 
+			optimize="false" failonerror="true">
+			<src path="${src}"/>                      <!-- 指定需要编译的Java源文件的位置 -->
+			<classpath refid="classpath"/>       <!-- 指定编译Java文件所需要的第三方类库所在的位置 -->
+		</javac>
+	</target>
+	
+	<target name="clean">
+	</target>
+	
+	<target name="testant">
+	    <echo>$${dist}=${dist}</echo>
+	    <echo>$${JAVA_HOME}=${env.JAVA_HOME}</echo>
+	</target>
+</project>
