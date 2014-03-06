@@ -1,9 +1,20 @@
 package com.fishjam.study.javaee;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**************************************************************************************************************************************
  * TODO:
- *   1.多个客户端共享同一个Servlet实例？
- *   2.每个请求由一个Java线程处理?
+ *   1.要编译JaveEE(Ant?),需要将 SDK6 中的 javaee.jar 或 tomcat7中的 jsp-api.jar,servlet-api.jar 加到 %CLASSPATH% 中
+ *   2.多个客户端共享同一个Servlet实例？
+ *   3.每个请求由一个Java线程处理?
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -36,6 +47,29 @@ package com.fishjam.study.javaee;
  *   
 **************************************************************************************************************************************/
 
-public class ServletStudy {
+//使用 @WebServlet Annotation 进行部署
+@WebServlet(name="ServletStudy", urlPatterns={ "/ServletDemo" })
+public class ServletStudy extends HttpServlet {
+
+	@Override
+	protected void service(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		//super.service(request, response);
+		
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		out.println("<html><head><title>");
+		out.println(ServletStudy.class.getName());
+		out.println("</title></head><body>");
+		ServletContext application = getServletConfig().getServletContext();
+		
+		//获取 web.xml 中使用 context-param 配置的参数
+		String dbDriverString = application.getInitParameter("db_driver");
+		String dbUrlString = application.getInitParameter("db_url");
+		out.print("application init Params are:" + "db_driver=" + dbDriverString
+				+ ", db_url=" + dbUrlString);
+		out.println("</body></html>");
+		
+	}
 
 }

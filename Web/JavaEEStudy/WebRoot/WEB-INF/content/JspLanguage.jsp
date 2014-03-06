@@ -49,7 +49,7 @@
 	
 	%>
 
-	<table border="1">
+	<table border="1" bgcolor="#9999dd">
 		<thead>
 			<tr>
 				<th>索引</th>
@@ -117,7 +117,7 @@
 		</thead>
 		<tr>
 			<td>application(ServletContext)</td>
-			<td>代表Web应用本身，可用于访问Web应用的配置参数，或在JSP页面、Servlet之间交换信息，</td>
+			<td>代表Web应用本身，可用于访问Web应用的配置参数(如 web.xml中的context-param)，或在JSP页面、Servlet之间交换信息，</td>
 			<td>
 				<% 
 					//Enumeration<String> initParams = application.getInitParameterNames();
@@ -127,8 +127,8 @@
 		</tr>
 		<tr>
 			<td>config(ServletConfig)</td>
-			<td>代表JSP的配置信息</td>
-			<td>TODO</td>
+			<td>代表当前JSP的配置信息(但通常JSP页面都无需配置)，该对象在JSP中很少使用，但在Servlet中用处较大</td>
+			<td>ServeltName=<%= config.getServletName() %></td>
 		</tr>
 		<tr>
 			<td>exception(Throwable)</td>
@@ -147,7 +147,7 @@
 		</tr>
 		<tr>
 			<td>pageContext(PageContext)</td>
-			<td>JSP页面上下文，可访问页面中的共享数据</td>
+			<td>JSP页面上下文，主要访问共享数据(getAttribute(scope)),和 获取其他内置对象(getServletContext)等</td>
 			<td>Cell</td>
 		</tr>
 		<tr>

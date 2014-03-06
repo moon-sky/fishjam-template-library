@@ -2,7 +2,7 @@
 <%@page import="javax.servlet.jsp.tagext.TryCatchFinally"%>
 <%@ page language="java"
 	import="java.util.*,javax.naming.*,java.sql.*,javax.sql.*"
-	pageEncoding="ISO-8859-1"%>
+	pageEncoding="UTF-8"%>
 <%
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
@@ -11,7 +11,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 <%!
 	public void outputDBInfo(JspWriter out, Connection conn, String info) throws Exception
 	{
-				//获取Statement
+			//获取Statement
 			Statement stmt = conn.createStatement();
 			//执行查询，返回ResulteSet对象
 			ResultSet rs = stmt.executeQuery("select * from tlb_Students");

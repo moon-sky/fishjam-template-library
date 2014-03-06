@@ -1,15 +1,18 @@
-<?xml version="1.0" encoding="GBK"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Context docBase="F:/Fujie/FJCODE_GOOGLE/Web/JavaEEStudy" debug="1" reloadable="false" privileged="true">
 	<!-- 
-	name : Êý¾ÝÔ´ÔÚÈÝÆ÷ÖÐµÄJNDIÃû
-	driverClassName : Á¬½ÓÊý¾Ý¿âµÄÇý¶¯
-	url : Ö¸¶¨Êý¾Ý¿â·þÎñµÄURL
-	username : Á¬½ÓÊý¾Ý¿âµÄÓÃ»§Ãû
-	password : Á¬½ÓÊý¾Ý¿âµÄÃÜÂë
-	maxActive : Êý¾ÝÔ´×î´ó»î¶¯Á¬½ÓÊý
-	maxIdle : Êý¾Ý³ØÖÐ×î´óµÄ¿ÕÏÐÁ¬½ÓÊý
-	maxWait : Êý¾Ý³ØÖÐ×î´óµÈ´ý»ñÈ¡Á¬½ÓµÄ¿Í»§¶Ë
+	name : æ•°æ®æºåœ¨å®¹å™¨ä¸­çš„JNDIå
+	driverClassName : è¿žæŽ¥æ•°æ®åº“çš„é©±åŠ¨
+	url : æŒ‡å®šæ•°æ®åº“æœåŠ¡çš„URL
+	username : è¿žæŽ¥æ•°æ®åº“çš„ç”¨æˆ·å
+	password : è¿žæŽ¥æ•°æ®åº“çš„å¯†ç 
+	maxActive : æ•°æ®æºæœ€å¤§æ´»åŠ¨è¿žæŽ¥æ•°
+	maxIdle : æ•°æ®æ± ä¸­æœ€å¤§çš„ç©ºé—²è¿žæŽ¥æ•°
+	maxWait : æ•°æ®æ± ä¸­æœ€å¤§ç­‰å¾…èŽ·å–è¿žæŽ¥çš„å®¢æˆ·ç«¯
 	-->
+	
+	<!-- url="jdbc:sqlite:F:/Fujie/FJCODE_GOOGLE/Web/JavaEEStudy/data/sqlitedemo.db" -->
+	<!-- url="jdbc:sqlite:G:/FJCODE_GOOGLE/Web/JavaEEStudy/data/sqlitedemo.db" -->
 	<Resource name="jdbc/sqlitedemo" auth="Container"
 		type="javax.sql.DataSource" 
 		driverClassName="org.sqlite.JDBC"
