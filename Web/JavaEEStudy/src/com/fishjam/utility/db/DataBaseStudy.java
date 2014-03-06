@@ -2,11 +2,11 @@ package com.fishjam.utility.db;
 
 /*******************************************************************************
  * JDBC -- Java Database Connectivity 
- * JDBCÍ¨¹ıÇı¶¯¹ÜÀíÆ÷(Driver Manager)¶¯Ì¬Î¬»¤ËùÓĞÊı¾İ¿â²éÑ¯ËùĞèµÄËùÓĞÇı¶¯³ÌĞò¶ÔÏó£¬
- *   Ê¹ÓÃClass.forName("ÀàÃûÈ«³Æ")Ç¿ÆÈ×°ÔØÇı¶¯£¬²¢»á×Ô¶¯×¢²áµ½¹ÜÀíÆ÷ÖĞ
- * ²úÉúÊı¾İ¿âURL("jdbc:×ÓĞ­Òé:Êı¾İ¿â±êÊ¶·û")--Èç jdbc:odbc:mydatabase
- *   »ò jdbc:rmi://192.168.0.1:1099/jdbc:cloudscape:db -- Ô¶³ÌRMIÊ¹ÓÃDB
- *   DriverManager.getConnection("").createStatement().executeQuery("");//¼Ç×¡close
+ * JDBCé€šè¿‡é©±åŠ¨ç®¡ç†å™¨(Driver Manager)åŠ¨æ€ç»´æŠ¤æ‰€æœ‰æ•°æ®åº“æŸ¥è¯¢æ‰€éœ€çš„æ‰€æœ‰é©±åŠ¨ç¨‹åºå¯¹è±¡ï¼Œ
+ *   ä½¿ç”¨Class.forName("ç±»åå…¨ç§°")å¼ºè¿«è£…è½½é©±åŠ¨ï¼Œå¹¶ä¼šè‡ªåŠ¨æ³¨å†Œåˆ°ç®¡ç†å™¨ä¸­
+ * äº§ç”Ÿæ•°æ®åº“URL("jdbc:å­åè®®:æ•°æ®åº“æ ‡è¯†ç¬¦")--å¦‚ jdbc:odbc:mydatabase
+ *   æˆ– jdbc:rmi://192.168.0.1:1099/jdbc:cloudscape:db -- è¿œç¨‹RMIä½¿ç”¨DB
+ *   DriverManager.getConnection("").createStatement().executeQuery("");//è®°ä½close
  *   
 *******************************************************************************/
 

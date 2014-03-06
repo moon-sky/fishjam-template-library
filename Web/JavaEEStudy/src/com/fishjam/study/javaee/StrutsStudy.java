@@ -2,40 +2,40 @@ package com.fishjam.study.javaee;
 
 /**************************************************************************************************************************************
  * TODO:
- *   1.ĞèÒªÊ¹ÓÃ applicationContext.xml ÎÄ¼şÀ´ÉèÖÃspringºËĞÄ°ü£¿
- *   2.Struts1ÖĞµÄAction±ØĞèÊÇthread£­safe·½Ê½£¬½öÔÊĞíÒ»¸öÊµÀıÈ¥´¦ÀíËùÓĞµÄÇëÇó£¬ÆäÓÃµ½µÄËùÓĞµÄ×ÊÔ´¶¼±ØĞèÍ³Ò»Í¬²½¡£
+ *   1.éœ€è¦ä½¿ç”¨ applicationContext.xml æ–‡ä»¶æ¥è®¾ç½®springæ ¸å¿ƒåŒ…ï¼Ÿ
+ *   2.Struts1ä¸­çš„Actionå¿…éœ€æ˜¯threadï¼safeæ–¹å¼ï¼Œä»…å…è®¸ä¸€ä¸ªå®ä¾‹å»å¤„ç†æ‰€æœ‰çš„è¯·æ±‚ï¼Œå…¶ç”¨åˆ°çš„æ‰€æœ‰çš„èµ„æºéƒ½å¿…éœ€ç»Ÿä¸€åŒæ­¥ã€‚
  *   
- *   Convention(Ô¼¶¨)Ö§³Ö -- ?
+ *   Convention(çº¦å®š)æ”¯æŒ -- ?
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * MVC½â¾öµÄÖ÷ÒªÎÊÌâ:
- *   1.½«WebÒ³ÃæÖĞµÄÊäÈëÔªËØ·â×°ÎªÒ»¸ö(ÇëÇó)Êı¾İ¶ÔÏó -- Ò»°ãÊÇ´´½¨¶ÔÓ¦µÄÊµÌåÀà£¬È»ºóÍ¨¹ı¶ÔÓ¦ÊôĞÔµÄsetterÉèÖÃ
- *   2.(Dispatcher)¸ù¾İÇëÇóµÄ²»Í¬£¬µ÷¶ÈÏàÓ¦µÄÂß¼­´¦Àíµ¥Ôª£¬²¢½«(ÇëÇó)Êı¾İ¶ÔÏó×÷Îª²ÎÊı´«Èë;
- *   3.Âß¼­´¦Àíµ¥Ôª£¨Ò»°ãÊÇActionµÄ×ÓÀà?£©Íê³ÉÔËËãºó£¬·µ»ØÒ»¸ö½á¹ûÊı¾İ¶ÔÏó;
- *   4.£¨Resolver£©½«½á¹ûÊı¾İ¶ÔÏóÖĞµÄÊı¾İÓëÔ¤ÏÈÉè¼ÆµÄ±íÏÖ²ãÏàÈÚºÏ²¢Õ¹ÏÖ¸øÓÃ»§¡£
+ * MVCè§£å†³çš„ä¸»è¦é—®é¢˜:
+ *   1.å°†Webé¡µé¢ä¸­çš„è¾“å…¥å…ƒç´ å°è£…ä¸ºä¸€ä¸ª(è¯·æ±‚)æ•°æ®å¯¹è±¡ -- ä¸€èˆ¬æ˜¯åˆ›å»ºå¯¹åº”çš„å®ä½“ç±»ï¼Œç„¶åé€šè¿‡å¯¹åº”å±æ€§çš„setterè®¾ç½®
+ *   2.(Dispatcher)æ ¹æ®è¯·æ±‚çš„ä¸åŒï¼Œè°ƒåº¦ç›¸åº”çš„é€»è¾‘å¤„ç†å•å…ƒï¼Œå¹¶å°†(è¯·æ±‚)æ•°æ®å¯¹è±¡ä½œä¸ºå‚æ•°ä¼ å…¥;
+ *   3.é€»è¾‘å¤„ç†å•å…ƒï¼ˆä¸€èˆ¬æ˜¯Actionçš„å­ç±»?ï¼‰å®Œæˆè¿ç®—åï¼Œè¿”å›ä¸€ä¸ªç»“æœæ•°æ®å¯¹è±¡;
+ *   4.ï¼ˆResolverï¼‰å°†ç»“æœæ•°æ®å¯¹è±¡ä¸­çš„æ•°æ®ä¸é¢„å…ˆè®¾è®¡çš„è¡¨ç°å±‚ç›¸èåˆå¹¶å±•ç°ç»™ç”¨æˆ·ã€‚
  * 
- * ÆäËûµÄMVC¿ò¼Ü
- *   JSF -- Sun ÍÆ¼öµÄ Java EE ¹æ·¶£¬Apache Ò²Îª JSF Ìá¹©ÁË MyFaces ÊµÏÖ£¬Éè¼ÆÀíÄîÉÏ±ÈStruts 2 ¸üÓÅĞã( ´«Í³ RAD )£¬µ«ÊĞ³¡Õ¼ÓĞÂÊ²»¸ß
- *   Tapestry -- ÍêÈ«ÍÑÀëÁË´«Í³Servlet API£¬ÊÇÒ»ÖÖ´¿´âµÄ¡¢×é¼şÊ½µÄMVC¿ò¼Ü£¬Í¬Ê±Ìá¹©ÁË¿ØÖÆÆ÷ºÍÒ³ÃæÄ£°æµÄ½â¾ö·½°¸£¬
- *      ÎŞĞèÊ¹ÓÃ JSP µÈÆäËû±íÏÖ²ã¼¼Êõ
+ * å…¶ä»–çš„MVCæ¡†æ¶
+ *   JSF -- Sun æ¨èçš„ Java EE è§„èŒƒï¼ŒApache ä¹Ÿä¸º JSF æä¾›äº† MyFaces å®ç°ï¼Œè®¾è®¡ç†å¿µä¸Šæ¯”Struts 2 æ›´ä¼˜ç§€( ä¼ ç»Ÿ RAD )ï¼Œä½†å¸‚åœºå æœ‰ç‡ä¸é«˜
+ *   Tapestry -- å®Œå…¨è„±ç¦»äº†ä¼ ç»ŸServlet APIï¼Œæ˜¯ä¸€ç§çº¯ç²¹çš„ã€ç»„ä»¶å¼çš„MVCæ¡†æ¶ï¼ŒåŒæ—¶æä¾›äº†æ§åˆ¶å™¨å’Œé¡µé¢æ¨¡ç‰ˆçš„è§£å†³æ–¹æ¡ˆï¼Œ
+ *      æ— éœ€ä½¿ç”¨ JSP ç­‰å…¶ä»–è¡¨ç°å±‚æŠ€æœ¯
 **************************************************************************************************************************************/
 
 
 /**************************************************************************************************************************************
- * Struts1.xµÄ¶¯×÷Ò»°ã¶¼ÒÔ.do½áÎ²£¬
- * Struts2ÊÇÒÔ.action½áÎ²£¬¿ÉÔÚ <struts>±êÇ©ÏÂ»Ö¸´Îª.do·½Ê½, <constant name="struts.action.extension" value="do"></constant>
+ * Struts1.xçš„åŠ¨ä½œä¸€èˆ¬éƒ½ä»¥.doç»“å°¾ï¼Œ
+ * Struts2æ˜¯ä»¥.actionç»“å°¾ï¼Œå¯åœ¨ <struts>æ ‡ç­¾ä¸‹æ¢å¤ä¸º.doæ–¹å¼, <constant name="struts.action.extension" value="do"></constant>
  *
- * Struts2 -- ÔÚ Webwork »ù´¡ÉÏ¹¹½¨ÆğÀ´µÄMVC¿ò¼Ü£¬ÆäËûµÄMVC¿ò¼ÜÓĞ Spring MVC, JSF µÈ
- *   struts.apache.org ÏÂÔØ°²×°°ü£¬°üÀ¨ struts2-core, xwork, commons-logging, freemarker, ognl)
- *   MVCÄ£Ê½£¬ ¶¯×÷Çı¶¯£º
- *    Model -- Action/ActionForm/JavaBean/EJB£¬ÊµÏÖºËĞÄÉÌÒµÂß¼­£¬×îºó°Ñ¿ØÖÆÈ¨´«¸øºóĞøµÄJSPÎÄ¼şÉú³ÉÊÓÍ¼
- *    View -- Struts taglib/JSP£¬Ò²¿ÉÊ¹ÓÃ XSLT µÈÆäËû±íÏÖ²ã²úÆ·£¬taglibÖĞ°üÀ¨ÁË Html,Bean,Logic,Template µÈ
- *    Control -- ActionServlet(1)/ActionSupport(2)£¬Ìá¹©ÁË´¦ÀíËùÓĞ·¢ËÍµ½StrutsµÄHTTPÇëÇóµÄÈë¿Úµã£¬½ØÈ¡ºÍ·Ö·¢ÕâĞ©ÇëÇóµ½ÏàÓ¦µÄ¶¯×÷(Action)Àà
- *    ÅäÖÃÎÄ¼ş£ºstruts-config.xml(1)/struts.xml(2) -- ÃèÊöÄ£ĞÍ¡¢ÊÓÍ¼¡¢¿ØÖÆÆ÷¶ÔÓ¦¹ØÏµ£¬×ª·¢ÊÓÍ¼(View)µÄÇëÇó£¬×é×°ÏìÓ¦Êı¾İÄ£ĞÍ£¨Model£©
+ * Struts2 -- åœ¨ Webwork åŸºç¡€ä¸Šæ„å»ºèµ·æ¥çš„MVCæ¡†æ¶ï¼Œå…¶ä»–çš„MVCæ¡†æ¶æœ‰ Spring MVC, JSF ç­‰
+ *   struts.apache.org ä¸‹è½½å®‰è£…åŒ…ï¼ŒåŒ…æ‹¬ struts2-core, xwork, commons-logging, freemarker, ognl)
+ *   MVCæ¨¡å¼ï¼Œ åŠ¨ä½œé©±åŠ¨ï¼š
+ *    Model -- Action/ActionForm/JavaBean/EJBï¼Œå®ç°æ ¸å¿ƒå•†ä¸šé€»è¾‘ï¼Œæœ€åæŠŠæ§åˆ¶æƒä¼ ç»™åç»­çš„JSPæ–‡ä»¶ç”Ÿæˆè§†å›¾
+ *    View -- Struts taglib/JSPï¼Œä¹Ÿå¯ä½¿ç”¨ XSLT ç­‰å…¶ä»–è¡¨ç°å±‚äº§å“ï¼Œtaglibä¸­åŒ…æ‹¬äº† Html,Bean,Logic,Template ç­‰
+ *    Control -- ActionServlet(1)/ActionSupport(2)ï¼Œæä¾›äº†å¤„ç†æ‰€æœ‰å‘é€åˆ°Strutsçš„HTTPè¯·æ±‚çš„å…¥å£ç‚¹ï¼Œæˆªå–å’Œåˆ†å‘è¿™äº›è¯·æ±‚åˆ°ç›¸åº”çš„åŠ¨ä½œ(Action)ç±»
+ *    é…ç½®æ–‡ä»¶ï¼šstruts-config.xml(1)/struts.xml(2) -- æè¿°æ¨¡å‹ã€è§†å›¾ã€æ§åˆ¶å™¨å¯¹åº”å…³ç³»ï¼Œè½¬å‘è§†å›¾(View)çš„è¯·æ±‚ï¼Œç»„è£…å“åº”æ•°æ®æ¨¡å‹ï¼ˆModelï¼‰
  * 
- * Struts2µÄÊ¹ÓÃ²½Öè£º
- *   1.ÔÚ web.xml ÖĞÅäÖÃ Filter(¹ıÂËÆ÷)
+ * Struts2çš„ä½¿ç”¨æ­¥éª¤ï¼š
+ *   1.åœ¨ web.xml ä¸­é…ç½® Filter(è¿‡æ»¤å™¨)
  *     <filter>
  *       <filter-name>struts-prepare</filter-name>
  *       <filter-class>org.apache.struts2.dispatcher.FilterDispatcher</filter-class>
@@ -44,54 +44,54 @@ package com.fishjam.study.javaee;
  *       <filter-name>struts2</filter-name>
  *       <url-pattern>/*</url-pattern>
  *     </filter-mapping>
- *   2.´Ó com.opensymphony.xwork2.ActionSupport ¼Ì³ĞÊµÏÖ×Ô¶¨ÒåµÄ Action Àà£¬ÖØĞ´ execute ·½·¨£¬·µ»Ø±íÊ¾Ö´ĞĞ½á¹ûµÄ±êÖ¾
+ *   2.ä» com.opensymphony.xwork2.ActionSupport ç»§æ‰¿å®ç°è‡ªå®šä¹‰çš„ Action ç±»ï¼Œé‡å†™ execute æ–¹æ³•ï¼Œè¿”å›è¡¨ç¤ºæ‰§è¡Œç»“æœçš„æ ‡å¿—
  *     public class MyAction extends ActionSupport{
- *       private int operand1;  //×¢Òâ£ºÓĞ¶ÔÓ¦µÄ get/set º¯Êı
+ *       private int operand1;  //æ³¨æ„ï¼šæœ‰å¯¹åº”çš„ get/set å‡½æ•°
  *       private int operand2;
  *       public String execute() throws Exception{
- *         if ( getSum() >= 0){  // Èç¹ûºÍÊÇ·Ç¸ºÕûÊı£¬Ìøµ½positive.jspÒ³Ãæ, getSum() µÄÊµÏÖÎª return (operand1 + operand2);
+ *         if ( getSum() >= 0){  // å¦‚æœå’Œæ˜¯éè´Ÿæ•´æ•°ï¼Œè·³åˆ°positive.jspé¡µé¢, getSum() çš„å®ç°ä¸º return (operand1 + operand2);
  *           return "positive";
- *         }else // Èç¹ûºÍÊÇ¸ºÕûÊı£¬Ìøµ½negative.jspÒ³Ãæ
+ *         }else // å¦‚æœå’Œæ˜¯è´Ÿæ•´æ•°ï¼Œè·³åˆ°negative.jspé¡µé¢
  *         {
  *           return "negative";
  *         }
  *       }        
- *   4.ÔÚ struts.xml ÖĞÅäÖÃ Action(¶¯×÷Àà)µÄ´úÂë. struts(1) > package(n) > action(n)
+ *   4.åœ¨ struts.xml ä¸­é…ç½® Action(åŠ¨ä½œç±»)çš„ä»£ç . struts(1) > package(n) > action(n)
  *     <package name="struts2" namespace="/mystruts" extends="struts-default"> 
  *       <action name="sum" class="action.MyAction">
- *         <result name="positive">/positive.jsp</result>    //nameÊôĞÔ±íÊ¾¶¯×÷Ãû(execute·µ»ØµÄ×Ö·û´®)£¬class±íÊ¾¶¯×÷ÀàÃû(Ìø×ªµÄÒ³Ãæ)
+ *         <result name="positive">/positive.jsp</result>    //nameå±æ€§è¡¨ç¤ºåŠ¨ä½œå(executeè¿”å›çš„å­—ç¬¦ä¸²)ï¼Œclassè¡¨ç¤ºåŠ¨ä½œç±»å(è·³è½¬çš„é¡µé¢)
  *         <result name="negative">/negative.jsp</result>
  *       </action>
  *     </package>
- *     ×¢Òâ£ºÖ§³ÖÍ¨Åä·ûÅäÖÃÀ´×Ô¶¯Æ¥Åä£º<action name="*" class = "com.fishjam.{1}Action" method="show"></action>
- *   5.±àĞ´JSP(Èç sum.jsp)Ò³Ãæ£¬Í¨¹ıÆäÖĞµÄform½«Êı¾İÌá½»¸ø Action, ÆäÖĞÊ¹ÓÃ Struts2´øµÄtag(ÔÚ ±êÇ©¿â "/struts-tags" ÖĞ)
- *     ÔÚ<s:form>ÖĞ×îºÃ¶¼Ê¹ÓÃStruts2±êÇ©£¬¾¡Á¿²»ÒªÓÃHTML»òÆÕÍ¨ÎÄ±¾.
+ *     æ³¨æ„ï¼šæ”¯æŒé€šé…ç¬¦é…ç½®æ¥è‡ªåŠ¨åŒ¹é…ï¼š<action name="*" class = "com.fishjam.{1}Action" method="show"></action>
+ *   5.ç¼–å†™JSP(å¦‚ sum.jsp)é¡µé¢ï¼Œé€šè¿‡å…¶ä¸­çš„formå°†æ•°æ®æäº¤ç»™ Action, å…¶ä¸­ä½¿ç”¨ Struts2å¸¦çš„tag(åœ¨ æ ‡ç­¾åº“ "/struts-tags" ä¸­)
+ *     åœ¨<s:form>ä¸­æœ€å¥½éƒ½ä½¿ç”¨Struts2æ ‡ç­¾ï¼Œå°½é‡ä¸è¦ç”¨HTMLæˆ–æ™®é€šæ–‡æœ¬.
  *     <%@ page language="java" import="java.util.*" pageEncoding="GBK"%>
  *     <%@ taglib prefix="s" uri="/struts-tags"%>
  *     <html>... 
  *       <s:form action="mystructs/sum.action>
- *         <s:textfield name="operand1" label="²Ù×÷Êı1"/>
- *         <s:textfield name="operand2" label="²Ù×÷Êı2"/>
- *         <s:submit value="´úÊıºÍ" />
+ *         <s:textfield name="operand1" label="æ“ä½œæ•°1"/>
+ *         <s:textfield name="operand2" label="æ“ä½œæ•°2"/>
+ *         <s:submit value="ä»£æ•°å’Œ" />
  *       </s:form>
  *     </html>
- *     ½á¹ûÒ³Ãæ£º positive.jsp£¬ÆäÖĞÖ÷ÒªÓĞ  <s:property value="sum" />   -- <s:property>ÏÔÊ¾ActionÀàÖĞµÄsumÊôĞÔÖµ
+ *     ç»“æœé¡µé¢ï¼š positive.jspï¼Œå…¶ä¸­ä¸»è¦æœ‰  <s:property value="sum" />   -- <s:property>æ˜¾ç¤ºActionç±»ä¸­çš„sumå±æ€§å€¼
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * struts.xml -- Í¨¹ı¸ÃÅäÖÃÎÄ¼ş¼´¿É°ÑÎÕÕû¸öÏµÍ³¸÷²¿·ÖÖ®¼äµÄÁªÏµ(Ò³Ãæµ¼º½Ê¹ÏµÍ³µÄÂöÂç¸ü¼ÓÇåÎú)
+ * struts.xml -- é€šè¿‡è¯¥é…ç½®æ–‡ä»¶å³å¯æŠŠæ¡æ•´ä¸ªç³»ç»Ÿå„éƒ¨åˆ†ä¹‹é—´çš„è”ç³»(é¡µé¢å¯¼èˆªä½¿ç³»ç»Ÿçš„è„‰ç»œæ›´åŠ æ¸…æ™°)
  *   
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
  * ActionProxy -- 
- * FilterDispatcher -- ºËĞÄ¿ØÖÆÆ÷? µ÷ÓÃActionMapperÈ·¶¨ÇëÇóÄÇ¸öAction
+ * FilterDispatcher -- æ ¸å¿ƒæ§åˆ¶å™¨? è°ƒç”¨ActionMapperç¡®å®šè¯·æ±‚é‚£ä¸ªAction
  * HttpServletRequest
  * HttpServletResponse 
  * ServletDispatcher
 ***************************************************************************************************************************************/
 /***************************************************************************************************************************************
-* JSTL -- JSP Standard Tag Library,JSP±ê×¼±êÇ©¿â
+* JSTL -- JSP Standard Tag Library,JSPæ ‡å‡†æ ‡ç­¾åº“
 ***************************************************************************************************************************************/ 	 
 public class StrutsStudy {
 

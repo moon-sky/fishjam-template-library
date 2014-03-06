@@ -3,30 +3,30 @@ package com.fishjam.study;
 import com.fishjam.utility.thread.FThread;
 
 /************************************************************************************************************
- * °²×°ºÃJDKÒÔºó£¬ÒªÉèÖÃ»·¾³±äÁ¿£º
- *   JAVA_HOME -- Ö¸Ïò JDK µÄ°²×°Ä¿Â¼
+ * å®‰è£…å¥½JDKä»¥åï¼Œè¦è®¾ç½®ç¯å¢ƒå˜é‡ï¼š
+ *   JAVA_HOME -- æŒ‡å‘ JDK çš„å®‰è£…ç›®å½•
  *   CLASSPATH -- %JAVA_HOME%/lib/tools.jar;%JAVA_HOME%/lib/dt.jar 
- *     º¬Ò»¸ö»ò¶à¸öÄ¿Â¼£¬Ã¿¸öÄ¿Â¼±»ÊÓÎª.class ÎÄ¼şµÄ²éÕÒÆğµã£¬ÔÚ´ËÏÂÍ¨¹ıÕ¹¿ªpackageÃû³ÆµÄÂ·¾¶²éÕÒclass¡£
- *     °²×°µÚÈı·½packageºóĞèÒª¼ÓÈëCLASS_PATH¡£jarÎÄ¼ş±»ÈÏÎªÊÇÄ¿Â¼£¬Ò²¿ÉÒÔ·ÅÓÚ¸Ã±äÁ¿ÖĞ¡£
+ *     å«ä¸€ä¸ªæˆ–å¤šä¸ªç›®å½•ï¼Œæ¯ä¸ªç›®å½•è¢«è§†ä¸º.class æ–‡ä»¶çš„æŸ¥æ‰¾èµ·ç‚¹ï¼Œåœ¨æ­¤ä¸‹é€šè¿‡å±•å¼€packageåç§°çš„è·¯å¾„æŸ¥æ‰¾classã€‚
+ *     å®‰è£…ç¬¬ä¸‰æ–¹packageåéœ€è¦åŠ å…¥CLASS_PATHã€‚jaræ–‡ä»¶è¢«è®¤ä¸ºæ˜¯ç›®å½•ï¼Œä¹Ÿå¯ä»¥æ”¾äºè¯¥å˜é‡ä¸­ã€‚
  * 
- * Ò»´Î±àÒë,µ½´¦ÔËĞĞ -- java×Ö½ÚÂë(Code-Byte).class£¬ÔÚJVMĞéÄâ»úÏÂÔËĞĞ
- * ClassPath »·¾³±äÁ¿ÉèÖÃ java ³ÌĞò²éÕÒclassµÄÂ·¾¶
+ * ä¸€æ¬¡ç¼–è¯‘,åˆ°å¤„è¿è¡Œ -- javaå­—èŠ‚ç (Code-Byte).classï¼Œåœ¨JVMè™šæ‹Ÿæœºä¸‹è¿è¡Œ
+ * ClassPath ç¯å¢ƒå˜é‡è®¾ç½® java ç¨‹åºæŸ¥æ‰¾classçš„è·¯å¾„
  * 
  * 
- * JVMµÄÔËĞĞ¹ı³Ì£ºÔØÈëÀà(ClassLoader)->×Ö½ÚÂëĞ£Ñé(ByteCodeVerifier)->½âÊÍÆ÷->ÔËĞĞÊ±»·¾³
+ * JVMçš„è¿è¡Œè¿‡ç¨‹ï¼šè½½å…¥ç±»(ClassLoader)->å­—èŠ‚ç æ ¡éªŒ(ByteCodeVerifier)->è§£é‡Šå™¨->è¿è¡Œæ—¶ç¯å¢ƒ
  *
- * javaÖĞµÄcharÕ¼ÓÃÁ½¸ö×Ö½Ú(unicode±àÂë)
- * Obfuscator(´úÂë»ìÏıÆ÷)--½«×Ö½ÚÂë×ª»»ÎªÒ»¸öÂß¼­ÉÏµÄ¶ÔµÈÎï¡£³£ÓÃµÄÓĞ£ºJODE¡¢JavaGuard µÈ
- * JAD/FrontEnd--Java·´±àÒë¹¤¾ß£¬¿ÉÒÔµÃµ½Ô´´úÂë¡£
+ * javaä¸­çš„charå ç”¨ä¸¤ä¸ªå­—èŠ‚(unicodeç¼–ç )
+ * Obfuscator(ä»£ç æ··æ·†å™¨)--å°†å­—èŠ‚ç è½¬æ¢ä¸ºä¸€ä¸ªé€»è¾‘ä¸Šçš„å¯¹ç­‰ç‰©ã€‚å¸¸ç”¨çš„æœ‰ï¼šJODEã€JavaGuard ç­‰
+ * JAD/FrontEnd--Javaåç¼–è¯‘å·¥å…·ï¼Œå¯ä»¥å¾—åˆ°æºä»£ç ã€‚
  *
  *
- * Javadoc×ªÎªCHM(Î¢Èí¹«Ë¾·¢²¼µÄÒ»ÖÖ°ïÖúÎÄµµ¸ñÊ½,ĞèÒª°²×° HTML Help Workshop --
+ * Javadocè½¬ä¸ºCHM(å¾®è½¯å…¬å¸å‘å¸ƒçš„ä¸€ç§å¸®åŠ©æ–‡æ¡£æ ¼å¼,éœ€è¦å®‰è£… HTML Help Workshop --
  *   http://msdn.microsoft.com/en-us/library/ms669985.aspx)
- *   1.Java´úÂë¸ñÊ½×îºÃÍ³Ò»£¬ÈçÊ¹ÓÃGBK»òUTF-8£¬ÔÚÉú³ÉJavadocÊ±³£ĞèÒª¶ÔVM options½øĞĞ±àÂëÉèÖÃ
+ *   1.Javaä»£ç æ ¼å¼æœ€å¥½ç»Ÿä¸€ï¼Œå¦‚ä½¿ç”¨GBKæˆ–UTF-8ï¼Œåœ¨ç”ŸæˆJavadocæ—¶å¸¸éœ€è¦å¯¹VM optionsè¿›è¡Œç¼–ç è®¾ç½®
  *     -locale en_US -encoding UTF-8 -charset UTF-8
- *   2.Ê¹ÓÃjd2chm¹¤¾ß£¬ÄÜ¹»Éú³Éhhc¡¢hhk¡¢hhpÎÄ¼ş£¬·½±ãÎÒÃÇÊ¹ÓÃHHW½øĞĞ±à¼­¡£¿ÉÒÔÖ¸¶¨HTMLµÄÄ¿Â¼£¬µ«Ôö¼ÓÁËÒ»¸öAbout.html£¬
+ *   2.ä½¿ç”¨jd2chmå·¥å…·ï¼Œèƒ½å¤Ÿç”Ÿæˆhhcã€hhkã€hhpæ–‡ä»¶ï¼Œæ–¹ä¾¿æˆ‘ä»¬ä½¿ç”¨HHWè¿›è¡Œç¼–è¾‘ã€‚å¯ä»¥æŒ‡å®šHTMLçš„ç›®å½•ï¼Œä½†å¢åŠ äº†ä¸€ä¸ªAbout.htmlï¼Œ
  *     http://download.csdn.net/source/1024968 
- *   3.Ê¹ÓÃ javadoc2chm-1.1.0.7.msi£¬Ö¸¶¨  index.html µÄÂ·¾¶¼´¿É£¬ÄÜ×Ô¶¯Éú³ÉÄ¿Â¼ºÍË÷Òı
+ *   3.ä½¿ç”¨ javadoc2chm-1.1.0.7.msiï¼ŒæŒ‡å®š  index.html çš„è·¯å¾„å³å¯ï¼Œèƒ½è‡ªåŠ¨ç”Ÿæˆç›®å½•å’Œç´¢å¼•
  *
  ***********************************************************************************************************/
 class MyStack<T>
@@ -68,8 +68,8 @@ public class JavaEnv {
 		MyStack<String> sStack = new MyStack<String>("hello world");
 		System.out.println(sStack.toString());
 		
-		//MyStack<Object> oStack = new MyStack<String>("±ØĞëÊ¹ÓÃÍ¨Åä·û·ºĞÍ");
-		MyStack<?> oStack = new MyStack<String>("±ØĞëÊ¹ÓÃÍ¨Åä·û·ºĞÍ");
+		//MyStack<Object> oStack = new MyStack<String>("å¿…é¡»ä½¿ç”¨é€šé…ç¬¦æ³›å‹");
+		MyStack<?> oStack = new MyStack<String>("å¿…é¡»ä½¿ç”¨é€šé…ç¬¦æ³›å‹");
 		System.out.println(oStack.toString());
 		
 		MyThread myThread = new MyThread();

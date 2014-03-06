@@ -60,7 +60,9 @@
 <project name="JavaEEStudy" default="help" basedir="." >
 	<property name="version" value="1.0"/>
 	<property name="dist" value="dist"/>
+	<property name="classes" value="classes"/>
 	<property name="src" value="src"/>
+	<property name="appname" value="app" />
 	<property environment="env" />
 	
 	<!--  整个路径表示 build/apps 目录下，所有名为 classes 且文件名不包含 Test 字符串的目录 -->
@@ -103,12 +105,10 @@
 		<echo>testant     -- 测试Ant的Task</echo>
 	</target>
 	
-	<target name="run" depends="compile">
-	</target>
-
 	<target name="compile" description="Compile all source code">
 		<delete dir="${dist}"/>
 		<mkdir dir="${dist}"/>
+		<mkdir dir="${classes}" />
 		<copy todir="${dist}">
 			<fileset dir="${src}">
 				<exclude name="**/*.java"/>
@@ -117,13 +117,34 @@
 		
 		<!-- 编译Java文件，编译后的class文件放到 classes属性所代表的文件夹内 -->
 		<javac destdir="${classes}" debug="true" includeantruntime="yes" deprecation="false" 
-			optimize="false" failonerror="true">
+			encoding="UTF-8" optimize="false" failonerror="true">
 			<src path="${src}"/>                      <!-- 指定需要编译的Java源文件的位置 -->
 			<classpath refid="classpath"/>       <!-- 指定编译Java文件所需要的第三方类库所在的位置 -->
 		</javac>
 	</target>
 	
-	<target name="clean">
+	 <target name="run" description="运行程序" depends="compile">
+	 	    <!-- fork 指定启动另一个JVM来执行java命令，否则当运行 Ant 所在的JVM退出，运行的Java程序也会退出 -->
+	        <java classname="test.HelloTest" fork="true" failonerror="true">
+	        	<classpath refid="classpath"/>
+	        	<arg line="arg1 arg2"/>
+	        </java>
+	  </target>
+	
+	<target name="build" description="打包JAR文件" depends="compile">
+		<delete dir="${dist}" />
+		<mkdir dir="${dist}" />
+		<jar destfile="${dest}/${appname}.jar" basedir="${classes}" includes="**/*.class">
+			<manifest>       <!-- 将 classes 属性所代表文件夹下的所有 *.classes 文件都打包到 ${appname}.jar 文件中 -->
+				<attribute name="Main-Class" value="test.HelloTest" />   <!-- 为JAR包的清单文件添加属性-->
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="clean" description="清除所有编译生成的文件">
+		<!-- 删除两个目录，目录下的文件也一并删除 -->
+		<delete dir="${classes}" />
+		<delete dir="${dist}" />
 	</target>
 	
 	<target name="testant">

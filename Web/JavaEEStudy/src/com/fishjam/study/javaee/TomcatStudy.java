@@ -2,54 +2,54 @@ package com.fishjam.study.javaee;
 
 /**************************************************************************************************************************************
  * TODO:
- *     Apache -- ΪHTMLҳ�����
- *     Tomcat -- ����JSPҳ���Servlet����һ��Servlet��JSP���������Դ���HTMLҳ�棬����������Apache
+ *     Apache -- 为HTML页面服务
+ *     Tomcat -- 运行JSP页面和Servlet，是一个Servlet和JSP容器。可以处理HTML页面，但能力不如Apache
  *     
- * ����Web������
- *     JBoss -- ��Դ��רҵ Jave EE ������
- *     Jetty -- �ص㣺����Ϊһ��Ƕ��ʽ������(�� ����Ӧ���м����� JAR �ļ��� Ӧ�ÿ��ڴ����ж����ṩWeb���� )
- *     Resin -- Ŀǰ���� JSP��Servlet ����ƽ̨��֧��EJB������ѧϰ��ѣ��������շ�
- *     WebLogic |  WebSphere  -- רҵ������ Jave EE ������
+ * 其他Web服务器
+ *     JBoss -- 开源的专业 Jave EE 服务器
+ *     Jetty -- 特点：可作为一个嵌入式服务器(即 可在应用中加入其 JAR 文件， 应用可在代码中对外提供Web服务 )
+ *     Resin -- 目前最快的 JSP、Servlet 运行平台，支持EJB，个人学习免费，但商用收费
+ *     WebLogic |  WebSphere  -- 专业的商用 Jave EE 服务器
  *     
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * Tomcat -- ��Դ����ѵ�jsp������������С��ϵͳ�Ͳ��������û����Ǻܶ�ĳ����±��ձ�ʹ�ã���Apache����������չ
+ * Tomcat -- 开源且免费的jsp服务器，在中小型系统和并发访问用户不是很多的场合下被普遍使用，是Apache服务器的扩展
  * 
- * ʹ�÷�ʽ���Ƽ�ʹ�ý�ѹ���ķ�ʽ( ���Կ�������������ʱ�Ŀ���̨��������ڿ�������)
- *   ��������:
- *     1. ���� TOMCAT_HOME ����������
- *     2. �� lib Ŀ¼�µ� jsp-api.jar �� servlet-api.jar ���ӵ� CLASSPATH ����������
- *     3. ��WebӦ�� (����Ŀ¼ �� WAR�ļ�) ���Ƶ� webapps Ŀ¼�£������Զ����������У�
- *   ��������( Ĭ��Ϊ http://localhost:8080 )
- *     1.��ѹ��ʽ : startup.bat 
- *     2.��װ : ��ʼ ->Apache Tomcat -> Configure Tomcat -> Start( bin\TomcatX.exe ?)
+ * 使用方式，推荐使用解压缩的方式( 可以看到启动、运行时的控制台输出，利于开发调试)
+ *   环境配置:
+ *     1. 设置 TOMCAT_HOME 环境变量；
+ *     2. 将 lib 目录下的 jsp-api.jar 和 servlet-api.jar 添加到 CLASSPATH 环境变量中
+ *     3. 将Web应用 (整个目录 或 WAR文件) 复制到 webapps 目录下，即可自动部署到容器中，
+ *   启动服务( 默认为 http://localhost:8080 )
+ *     1.解压方式 : startup.bat 
+ *     2.安装 : 开始 ->Apache Tomcat -> Configure Tomcat -> Start( bin\TomcatX.exe ?)
  * 
- * ����
- *   1. bin\catalina.bat ������Java��������ڴ������Xms��PermSizeֻ��������Ӱ�죬Xmx�������������ʹ�õ��ڴ棬
+ * 配置
+ *   1. bin\catalina.bat 中设置Java虚拟机的内存参数，Xms和PermSize只对性能有影响，Xmx代表虚拟机可以使用的内存，
  *     set JAVA_OPTS=-Xms1024m -Xmx1024m -Xmn512m -XX:PermSize=128m -XX:MaxPermSize=256m
- *   2. ����DBCP����Դ -- ������Ϊ ȫ������Դ(server.xml) �� �ֲ�����Դ(����WebӦ�õ������ļ�)��
- *      �μ� myProject.xml �ļ� 
+ *   2. 配置DBCP数据源 -- 可配置为 全局数据源(server.xml) 或 局部数据源(各个Web应用的配置文件)。
+ *      参见 myProject.xml 文件 
  *     
  *   
- * ����ͨ������Ŀ¼����(��������Tomcat�б߲��Ա߿���)
- *   ����1.�� server.xml �� <Host> �У�����:
+ * 设置通过调试目录运行(这样可在Tomcat中边测试边开发)
+ *   方法1.在 server.xml 的 <Host> 中，增加:
  *     <Context path="/myProject" docBase="D:\\workspaces\\myProject" debug="0" reloadable="false" privileged="true"></Context>
- *     path Ϊ����Ŀ¼��docBase Ϊʵ��Ŀ¼������������Ŀ¼Ϊ "/", �����Ϳ���ֱ�ӷ���
- *   ����2.�� conf\Catalina\localhost Ŀ¼���½� myProject.xml �ļ�( �ļ�������ΪWebӦ�õ�����·�� )��������Ϊ��
+ *     path 为虚拟目录，docBase 为实际目录，可设置虚拟目录为 "/", 这样就可以直接访问
+ *   方法2.在 conf\Catalina\localhost 目录中新建 myProject.xml 文件( 文件名将作为Web应用的虚拟路径 )，其内容为：
  *     <Context docBase=D:\\workspaces\\myProject" debug="1" privileged="true">
- *       <Resource />  --  �����ĸ��ֲ������� ����DBCP����Դ
+ *       <Resource />  --  其他的各种参数，如 配置DBCP数据源
  *     </Context> 
  *   
- * ����
- *   ����ƽ�� -- 
- *   �ʼ����� -- 
+ * 管理
+ *   负载平衡 -- 
+ *   邮件服务 -- 
  *   
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * tomcat-users.xml -- �û�Ȩ�޹�����TomcatĬ�ϲ����ļ���ȫ�򣬿��޸ĳ�������ʽ�����壿�������û���������
- *  ��������ͨ����ҳ��ʽ����( http://localhost/manager/status��Ĭ��������κ��˶����ܷ��� ) -- �����û� admin, ������ admin-gui �Ƚ�ɫ
+ * tomcat-users.xml -- 用户权限管理。Tomcat默认采用文件安全域，可修改成其他方式（具体？）保存用户名、密码
+ *  设置允许通过网页方式管理( http://localhost/manager/status，默认情况下任何人都不能访问 ) -- 增加用户 admin, 并属于 admin-gui 等角色
  *    <role rolename="admin-gui"/>
  *    <role rolename="manager-gui"/>
  *    <role rolename="manager"/>
@@ -57,17 +57,17 @@ package com.fishjam.study.javaee;
  *    <role rolename="admin"/>
  *    <user username="admin" password="admin" roles="admin,manager,admin-gui,manager-gui"/>
  *
- * web.xml -- ���������ļ�
- *   <error-page> -- �����ض��쳣�������ʾҳ��
- *   �г�WebӦ��·��������ҳ�棬����ֱ��ѡȡ�ļ����� -- /web-app/servlet/init-para[param-name='listings'] -- ����Ӧ�� param-value ��Ϊ 'true'
+ * web.xml -- 核心配置文件
+ *   <error-page> -- 配置特定异常情况的显示页面
+ *   列出Web应用路径下所有页面，方便直接选取文件调试 -- /web-app/servlet/init-para[param-name='listings'] -- 将对应的 param-value 改为 'true'
  *     
  *   </servlet>
  *   
  *   
  *   
  * server.xml --
- *   ����ļ����˿ںͳ�ʱ�� -- /Server/Service/Connector[@port] -- Ĭ�϶˿�Ϊ"8080", ��ʱΪ "20000"(�� 20s)
- *   ͬʱ�ṩ������� -- ���Ʋ��޸� /Server/Service �ڵ�
+ *   服务的监听端口和超时等 -- /Server/Service/Connector[@port] -- 默认端口为"8080", 超时为 "20000"(即 20s)
+ *   同时提供多个服务 -- 复制并修改 /Server/Service 节点
 **************************************************************************************************************************************/
 
 public class TomcatStudy {

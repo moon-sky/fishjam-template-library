@@ -11,17 +11,17 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 /*******************************************************************************
-* Java½«socket°ü×°³Éstream¶ÔÏó£¬Ê¹ÓÃI/OÖ¸ÁîÍê³ÉÊý¾Ý½»»¥
-* Ä¬ÈÏÇé¿öÏÂ£¬socketµÄread/write»á×èÈû£¬±ØÐë¸Ä³É·Ç×èÈû·½Ê½£¬²Å¿ÉÓÃselectµÈ
+* Javaå°†socketåŒ…è£…æˆstreamå¯¹è±¡ï¼Œä½¿ç”¨I/OæŒ‡ä»¤å®Œæˆæ•°æ®äº¤äº’
+* é»˜è®¤æƒ…å†µä¸‹ï¼Œsocketçš„read/writeä¼šé˜»å¡žï¼Œå¿…é¡»æ”¹æˆéžé˜»å¡žæ–¹å¼ï¼Œæ‰å¯ç”¨selectç­‰
 * 
-* HttpÊÇÒ»ÖÖÎÞsessionÌØÐÔµÄÍ¨ÐÅÐ­Òé£¬·þÎñÆ÷ÎÞ·¨Çø·Ö»ñµÃµÄÁ½´ÎÇëÇóÊÇ·ñÀ´×ÔÍ¬Ò»Ê¹ÓÃÕß£¬
-*   Ä¿Ç°ÒÑÓÐºÜ¶à·½Ê½×·×Ùsession£ºÈç CookieÀà¡¢URL¸ÄÐ´»úÖÆ
-*   Session¶ÔÏó´æ»îÓÚÍ¨ÐÅÁ¬½ÓµÄ·þÎñ¶Ë£¬Ä¿µÄÊÇÏ£Íûµ±¿Í»§¶ËÓÚÍøÉÏä¯ÀÀ²¢ÓëÍøÂç½øÐÐ»¥¶¯Ê±£¬
-*   ÄÜ²¶×½¿Í»§¶ËÏà¹ØÊý¾Ý£¬ÆäÊý¾ÝÖ»ÊÊÓÃÓÚ¸Ãsession£­£­Èç¹ºÎïÁÐ±í
+* Httpæ˜¯ä¸€ç§æ— sessionç‰¹æ€§çš„é€šä¿¡åè®®ï¼ŒæœåŠ¡å™¨æ— æ³•åŒºåˆ†èŽ·å¾—çš„ä¸¤æ¬¡è¯·æ±‚æ˜¯å¦æ¥è‡ªåŒä¸€ä½¿ç”¨è€…ï¼Œ
+*   ç›®å‰å·²æœ‰å¾ˆå¤šæ–¹å¼è¿½è¸ªsessionï¼šå¦‚ Cookieç±»ã€URLæ”¹å†™æœºåˆ¶
+*   Sessionå¯¹è±¡å­˜æ´»äºŽé€šä¿¡è¿žæŽ¥çš„æœåŠ¡ç«¯ï¼Œç›®çš„æ˜¯å¸Œæœ›å½“å®¢æˆ·ç«¯äºŽç½‘ä¸Šæµè§ˆå¹¶ä¸Žç½‘ç»œè¿›è¡Œäº’åŠ¨æ—¶ï¼Œ
+*   èƒ½æ•æ‰å®¢æˆ·ç«¯ç›¸å…³æ•°æ®ï¼Œå…¶æ•°æ®åªé€‚ç”¨äºŽè¯¥sessionï¼ï¼å¦‚è´­ç‰©åˆ—è¡¨
 *   
-* JSP¶¨ÒåÓÚservletÉÏµÄÒ»¸öJava±ê×¼ÑÓÉì»úÖÆ£¬¿É½«ÍøÒ³µÄHTML²¿·ÖºÍ¶à¶ÎJava³ÌÐò´úÂëºÏ²¢
-*   ÔÚµ¥Ò»ÎÄµµÖÐ£¬µ±JSPÈÝÆ÷Ê×´Î×°ÔØJSPÊ±£¬»á×Ô¶¯²úÉú²¢±àÒë³ö·ûºÏJSPµÄservlet³ÌÐò´úÂë£¬
-*   ²¢¼ÓÔØÖÁservletÈÝÆ÷¡£
+* JSPå®šä¹‰äºŽservletä¸Šçš„ä¸€ä¸ªJavaæ ‡å‡†å»¶ä¼¸æœºåˆ¶ï¼Œå¯å°†ç½‘é¡µçš„HTMLéƒ¨åˆ†å’Œå¤šæ®µJavaç¨‹åºä»£ç åˆå¹¶
+*   åœ¨å•ä¸€æ–‡æ¡£ä¸­ï¼Œå½“JSPå®¹å™¨é¦–æ¬¡è£…è½½JSPæ—¶ï¼Œä¼šè‡ªåŠ¨äº§ç”Ÿå¹¶ç¼–è¯‘å‡ºç¬¦åˆJSPçš„servletç¨‹åºä»£ç ï¼Œ
+*   å¹¶åŠ è½½è‡³servletå®¹å™¨ã€‚
 *******************************************************************************/
 public class FNet
 {
@@ -35,7 +35,7 @@ public class FNet
                 new BufferedWriter(
                         new OutputStreamWriter(
                                 cs.getOutputStream())),
-                        true); //printlnºó×Ô¶¯·¢ËÍÍøÂç°ü£¬·ñÔòÐèÒªµÈ»º³åÇøÂú¡£×¢ÒâÊý¾Ý½»»¥ºÍÐ§ÂÊµÄÆ½ºâ
+                        true); //printlnåŽè‡ªåŠ¨å‘é€ç½‘ç»œåŒ…ï¼Œå¦åˆ™éœ€è¦ç­‰ç¼“å†²åŒºæ»¡ã€‚æ³¨æ„æ•°æ®äº¤äº’å’Œæ•ˆçŽ‡çš„å¹³è¡¡
         
         in.close();
         out.close();

@@ -1,28 +1,28 @@
 package com.fishjam.study.java;
 
 /****************************************************************************************
- * ÈİÆ÷Àà(JDK1.4¼ÓÈëÁËÄ£°æ¹¦ÄÜ£¬µ«ÊµÏÖ¼¼ÊõºÍC++²»Í¬)
- *   ArrayList(Ìæ´úVector)
- *   BitSet -- ÓÃÓÚÑ¹Ëõ´æ´¢´óÁ¿BoolĞÅÏ¢(½ÚÊ¡¿Õ¼ä£¬µ«ËÙ¶ÈÉÔÂı)£¬È±Ê¡ÊÇ64bits
+ * å®¹å™¨ç±»(JDK1.4åŠ å…¥äº†æ¨¡ç‰ˆåŠŸèƒ½ï¼Œä½†å®ç°æŠ€æœ¯å’ŒC++ä¸åŒ)
+ *   ArrayList(æ›¿ä»£Vector)
+ *   BitSet -- ç”¨äºå‹ç¼©å­˜å‚¨å¤§é‡Boolä¿¡æ¯(èŠ‚çœç©ºé—´ï¼Œä½†é€Ÿåº¦ç¨æ…¢)ï¼Œç¼ºçœæ˜¯64bits
  *   Collection 
- *   HashMap(Ìæ´úHashTable)¡¢
- *   HashSet(²éÕÒ¿ì)
- *   Map(key-value¶Ô) -- ¿É·µ»ØÒ»¸öÓÉkeyĞÎ³ÉµÄset»òÒ»¸öÓÉvalueĞÎ³ÉµÄCollection
- *   TreeMap(ºìºÚÊ÷£¬ÏÂ²ãÅÅĞò£¬¿ÉÍ¨¹ıSubMap·µ»ØtreeÖĞµÄ²¿·Ö)¡¢ ÈçÒª±éÀúÔªËØ£¬½¨ÒéÓÃ entrySetÈ¡´ú keySet£¬ÕâÑùĞÔÄÜ¸ü¸ß¡£
- *     ÎÊÌâ´úÂë£º Iterator set = symbolMap.keySet().iterator(); while(set.hasNext()){...}
- *     ÕıÈ·´úÂë£º for(Entry<Icon,Integer> set:symbolMap.entrySet()) { set.getValue() }
- *   TreeSet(ÓĞĞòSet)
- *   WeakHashMap(³ÖÓĞWeakReference£¬½ÚÊ¡¿Õ¼ä)
+ *   HashMap(æ›¿ä»£HashTable)ã€
+ *   HashSet(æŸ¥æ‰¾å¿«)
+ *   Map(key-valueå¯¹) -- å¯è¿”å›ä¸€ä¸ªç”±keyå½¢æˆçš„setæˆ–ä¸€ä¸ªç”±valueå½¢æˆçš„Collection
+ *   TreeMap(çº¢é»‘æ ‘ï¼Œä¸‹å±‚æ’åºï¼Œå¯é€šè¿‡SubMapè¿”å›treeä¸­çš„éƒ¨åˆ†)ã€ å¦‚è¦éå†å…ƒç´ ï¼Œå»ºè®®ç”¨ entrySetå–ä»£ keySetï¼Œè¿™æ ·æ€§èƒ½æ›´é«˜ã€‚
+ *     é—®é¢˜ä»£ç ï¼š Iterator set = symbolMap.keySet().iterator(); while(set.hasNext()){...}
+ *     æ­£ç¡®ä»£ç ï¼š for(Entry<Icon,Integer> set:symbolMap.entrySet()) { set.getValue() }
+ *   TreeSet(æœ‰åºSet)
+ *   WeakHashMap(æŒæœ‰WeakReferenceï¼ŒèŠ‚çœç©ºé—´)
  *   
- * ÔªËØÅÅĞò£º 
- *   1.±»±È½ÏÀàÊµÏÖ Comparable ½Ó¿Ú(×¢Òâ²»ÄÜ¼òµ¥Ğ´Îª return r1-r2;--Õı¸ººÅÒç³ö)£» 
- *   2.´´½¨ĞÂÀà£¬ÊµÏÖ Comparator ½Ó¿Ú£¨Èç Collection.reverseOrder--ÏµÍ³Ìá¹©µÄ·´ÏòÅÅĞò£©
- *   3.×Ô¶¨ÒåÀàµÄhashCode(¿ìËÙÕÒµ½Î»ÖÃ)ºÍequals(ÅĞ¶ÏÎ¨Ò»ĞÔ)±ØĞëÍ¬Ê±ÊµÏÖ--×÷Îªkey»òÕß·ÅÈëSetÖĞ¡£
- *     ÈôÒª·ÅÈëTreeSet/TreeMap£¬±ØĞëÊµÏÖComparable½Ó¿Ú¡£Set²»ÔÊĞí³ÖÓĞÖØ¸´ÔªËØ equalsÊµÏÖÊ±±ØĞëµ÷ÓÃ(obj instanceof ÀàÃû)ÏÈÅĞ¶Ï¶ÔÏóµÄÀàĞÍ 
+ * å…ƒç´ æ’åºï¼š 
+ *   1.è¢«æ¯”è¾ƒç±»å®ç° Comparable æ¥å£(æ³¨æ„ä¸èƒ½ç®€å•å†™ä¸º return r1-r2;--æ­£è´Ÿå·æº¢å‡º)ï¼› 
+ *   2.åˆ›å»ºæ–°ç±»ï¼Œå®ç° Comparator æ¥å£ï¼ˆå¦‚ Collection.reverseOrder--ç³»ç»Ÿæä¾›çš„åå‘æ’åºï¼‰
+ *   3.è‡ªå®šä¹‰ç±»çš„hashCode(å¿«é€Ÿæ‰¾åˆ°ä½ç½®)å’Œequals(åˆ¤æ–­å”¯ä¸€æ€§)å¿…é¡»åŒæ—¶å®ç°--ä½œä¸ºkeyæˆ–è€…æ”¾å…¥Setä¸­ã€‚
+ *     è‹¥è¦æ”¾å…¥TreeSet/TreeMapï¼Œå¿…é¡»å®ç°Comparableæ¥å£ã€‚Setä¸å…è®¸æŒæœ‰é‡å¤å…ƒç´  equalså®ç°æ—¶å¿…é¡»è°ƒç”¨(obj instanceof ç±»å)å…ˆåˆ¤æ–­å¯¹è±¡çš„ç±»å‹ 
  * 
- * HasMapµÄĞÔÄÜ·ÖÎö£ºCapacity(bucketsÊıÁ¿)¡¢loadfactor(¸ºÔØÒò×Ó)£»size/capacity Ô½´óËµÃ÷¸ºÔØÔ½¸ß£¬Ô½ÈİÒ×³öÏÖ³åÍ»£¬µ±´ïµ½Ö¸¶¨ÖµÊ±(Ä¬ÈÏ0.75)¿É×Ô¶¯À©³ä
- * UnModifialbeXXX -- »ñµÃÖ»¶Á°æ±¾µÄÈİÆ÷£¬Èç¹ûÓĞ¸ü¸Ä·½·¨µ÷ÓÃ£¬Ôò»áÅ×³öÒì³£ 
- * Collections.synchronzedXXX(new YYY) -- Éú³É¿É×Ô¶¯Í¬²½µÄÈİÆ÷
+ * HasMapçš„æ€§èƒ½åˆ†æï¼šCapacity(bucketsæ•°é‡)ã€loadfactor(è´Ÿè½½å› å­)ï¼›size/capacity è¶Šå¤§è¯´æ˜è´Ÿè½½è¶Šé«˜ï¼Œè¶Šå®¹æ˜“å‡ºç°å†²çªï¼Œå½“è¾¾åˆ°æŒ‡å®šå€¼æ—¶(é»˜è®¤0.75)å¯è‡ªåŠ¨æ‰©å……
+ * UnModifialbeXXX -- è·å¾—åªè¯»ç‰ˆæœ¬çš„å®¹å™¨ï¼Œå¦‚æœæœ‰æ›´æ”¹æ–¹æ³•è°ƒç”¨ï¼Œåˆ™ä¼šæŠ›å‡ºå¼‚å¸¸ 
+ * Collections.synchronzedXXX(new YYY) -- ç”Ÿæˆå¯è‡ªåŠ¨åŒæ­¥çš„å®¹å™¨
 ****************************************************************************************/
  
 public class ContainerStudy {

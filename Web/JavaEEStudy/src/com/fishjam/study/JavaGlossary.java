@@ -1,37 +1,40 @@
 package com.fishjam.study;
 
 /************************************************************************************************************
- * CORBA(Common Object Request Broker Architecture) -- Ò»ÖÖºÍÓïÑÔÎŞ¹ØµÄ·Ö²¼Ê½"¶ÔÏó½»»»±ê×¼¿ò¼Ü"£¬
+ * CORBA(Common Object Request Broker Architecture) -- ä¸€ç§å’Œè¯­è¨€æ— å…³çš„åˆ†å¸ƒå¼"å¯¹è±¡äº¤æ¢æ ‡å‡†æ¡†æ¶"ï¼Œ
  * CRUD -- Create + Retrieve + Update + Delete
- * DAO(Data Access Object) -- Êı¾İ·ÃÎÊ¶ÔÏó
- * DBCP -- Êı¾İÔ´£¿
- * DTO(Data Transfer Object) -- Êı¾İ´«Êä¶ÔÏó£¬JavaEEÖĞ£¬ÖĞ¼ä²ã×é¼ş½«Ó¦ÓÃµ×²ãµÄ×´Ì¬ĞÅÏ¢·â×°³ÉÃûÎªDTOµÄJavaBean£¬²¢´«ËÍµ½JSPÒ³Ãæ½øĞĞÏÔÊ¾¡£
- * EJB(Enterprise Java Bean) -- (½«ÊÂÎñÂß¼­ºÍÁ¬½ÓµÄÎÊÌâ¸ôÀë),ÒÑ±» JPA Ìæ´ú£¿
- * GC(Garbage Collector) -- À¬»ø»ØÊÕ
- * JAAS(Java Authentication Authorization Service) -- JavaÑéÖ¤ºÍÊÚÈ¨·şÎñ£¬ÓÃÓÚ¿ØÖÆ¶Ô Java Web Ó¦ÓÃµÄÊÚÈ¨·ÃÎÊ£¬
- *   ÔÚ web.xml ÖĞµÄ <security-constraint>£¬ <login-config> µÈ´¦ÌåÏÖ 
- * JDK(Java Development Kit) -- °´JavaµÄÓ¦ÓÃ»·¾³»®·Ö
- *   J2EE(Java 2 Platform Enterprise Edition) -- ÆóÒµWebÓ¦ÓÃ¿ª·¢
- *   J2SE(Java 2 Platform Stand Edition) -- ÆÕÍ¨Ó¦ÓÃ³ÌĞò
- *   J2ME(Java 2 Platform Micro Edition) -- ÊÖ»úµÈÏû·Ñµç×Ó²úÆ· 
- * JINI(Java Intelligent Network Infrastructure) -- ÄÜÇáËÉ¶¯Ì¬µØÔÚ´ú±í±¾»úÏµÍ³µÄÍøÂçÖĞ¼ÓÈë»òÒÆ³ıÓ²¼şÉè±¸
- * JIT(Just-In-Time) -- JIT±àÒëÆ÷£¬ÔÚÔËĞĞÊ±°´Ğè±àÒë£¬¿ÉÒÔ¼õÉÙ±àÒëÊ±¼äºÍÔËĞĞÊ±µÄ³ÌĞò´óĞ¡£¬µ«³õ´ÎÔËĞĞÊ±½ÏÂı?
- * JNDI(Java Naming Directory Interface) -- JavaÃüÃûºÍÄ¿Â¼½Ó¿Ú£¬ÎªÄ³¸öJava¶ÔÏóÆğÒ»¸öÃû×Ö£¬È»ºó¿ÉÍ¨¹ı¸ÃÃû×ÖÀ´·ÃÎÊ¡£
- *    ·ÃÎÊ·½Ê½£º Context ctx = new InitialContext(); DataSource ds = (DataSource)ctx.lookup("java:comp/env/" + "×Ô¶¨ÒåÃû×Ö");
- * JNI(Java Native Interface) -- JavaÔ­Éú½Ó¿Ú£¬ÓÃÒÔºÍC/C++³ÌĞò½Ó¹ì£¬»ñµÃ¸ßĞÔÄÜ
- * JPA -- ÊÇÒ»ÖÖORM¹æ·¶ 
- * JSF() -- 
- * JSR(Java Spec. Request) -- Java ¹æ¸ñĞèÇó
- * ORM(Object Relation Mapping) -- ¶ÔÏó-¹ØÏµÓ³Éä£¬Íê³É¶ÔÏóÊı¾İµ½¹ØÏµÊı¾İÓ³ÉäµÄ»úÖÆ, Èç JavaÖĞµÄUserÀà <==> Êı¾İ¿âÖĞµÄTbl_User±í¡£
- *   ×îÔçµÄORMÊÇ Entity EJB£¬µ«·Ç³£Âé·³¡£
+ * CVS(Concurrent Versions System) -- ç‰ˆæœ¬æ§åˆ¶å·¥å…·CVSï¼Œå·²è¢«SVNæ›¿ä»£
+ * DAO(Data Access Object) -- æ•°æ®è®¿é—®å¯¹è±¡
+ * DBCP -- æ•°æ®æºï¼Ÿ
+ * DTO(Data Transfer Object) -- æ•°æ®ä¼ è¾“å¯¹è±¡ï¼ŒJavaEEä¸­ï¼Œä¸­é—´å±‚ç»„ä»¶å°†åº”ç”¨åº•å±‚çš„çŠ¶æ€ä¿¡æ¯å°è£…æˆåä¸ºDTOçš„JavaBeanï¼Œå¹¶ä¼ é€åˆ°JSPé¡µé¢è¿›è¡Œæ˜¾ç¤ºã€‚
+ * EJB(Enterprise Java Bean) -- (å°†äº‹åŠ¡é€»è¾‘å’Œè¿æ¥çš„é—®é¢˜éš”ç¦»),å·²è¢« JPA æ›¿ä»£ï¼Ÿ
+ * GC(Garbage Collector) -- åƒåœ¾å›æ”¶
+ * JAAS(Java Authentication Authorization Service) -- JavaéªŒè¯å’ŒæˆæƒæœåŠ¡ï¼Œç”¨äºæ§åˆ¶å¯¹ Java Web åº”ç”¨çš„æˆæƒè®¿é—®ï¼Œ
+ *   åœ¨ web.xml ä¸­çš„ <security-constraint>ï¼Œ <login-config> ç­‰å¤„ä½“ç° 
+ * JDK(Java Development Kit) -- æŒ‰Javaçš„åº”ç”¨ç¯å¢ƒåˆ’åˆ†
+ *   J2EE(Java 2 Platform Enterprise Edition) -- ä¼ä¸šWebåº”ç”¨å¼€å‘
+ *   J2SE(Java 2 Platform Stand Edition) -- æ™®é€šåº”ç”¨ç¨‹åº
+ *   J2ME(Java 2 Platform Micro Edition) -- æ‰‹æœºç­‰æ¶ˆè´¹ç”µå­äº§å“ 
+ * JINI(Java Intelligent Network Infrastructure) -- èƒ½è½»æ¾åŠ¨æ€åœ°åœ¨ä»£è¡¨æœ¬æœºç³»ç»Ÿçš„ç½‘ç»œä¸­åŠ å…¥æˆ–ç§»é™¤ç¡¬ä»¶è®¾å¤‡
+ * JIT(Just-In-Time) -- JITç¼–è¯‘å™¨ï¼Œåœ¨è¿è¡Œæ—¶æŒ‰éœ€ç¼–è¯‘ï¼Œå¯ä»¥å‡å°‘ç¼–è¯‘æ—¶é—´å’Œè¿è¡Œæ—¶çš„ç¨‹åºå¤§å°ï¼Œä½†åˆæ¬¡è¿è¡Œæ—¶è¾ƒæ…¢?
+ * JNDI(Java Naming Directory Interface) -- Javaå‘½åå’Œç›®å½•æ¥å£ï¼Œä¸ºæŸä¸ªJavaå¯¹è±¡èµ·ä¸€ä¸ªåå­—ï¼Œç„¶åå¯é€šè¿‡è¯¥åå­—æ¥è®¿é—®ã€‚
+ *    è®¿é—®æ–¹å¼ï¼š Context ctx = new InitialContext(); DataSource ds = (DataSource)ctx.lookup("java:comp/env/" + "è‡ªå®šä¹‰åå­—");
+ * JNI(Java Native Interface) -- JavaåŸç”Ÿæ¥å£ï¼Œç”¨ä»¥å’ŒC/C++ç¨‹åºæ¥è½¨ï¼Œè·å¾—é«˜æ€§èƒ½
+ * JPA -- æ˜¯ä¸€ç§ORMè§„èŒƒ 
+ * JSF() -
+ * JSP(Java Server Page) -- æœ€ç»ˆä¼šç¼–è¯‘æˆServletæ‰èƒ½è¿è¡Œ
+ * JSR(Java Spec. Request) -- Java è§„æ ¼éœ€æ±‚
+ * JSTL(JSP Standard Tag Library) -- ç”¨äºIOã€æµç¨‹æ§åˆ¶ã€XMLæ–‡ä»¶è§£æã€æ•°æ®åº“æ’å™åŠæ–‡å­—æ ¼å¼æ ‡å‡†åŒ–ç­‰
+ * ORM(Object Relation Mapping) -- å¯¹è±¡-å…³ç³»æ˜ å°„ï¼Œå®Œæˆå¯¹è±¡æ•°æ®åˆ°å…³ç³»æ•°æ®æ˜ å°„çš„æœºåˆ¶, å¦‚ Javaä¸­çš„Userç±» <==> æ•°æ®åº“ä¸­çš„Tbl_Userè¡¨ã€‚
+ *   æœ€æ—©çš„ORMæ˜¯ Entity EJBï¼Œä½†éå¸¸éº»çƒ¦ã€‚
  * OSGi(Open Service Gateway Initiative) --
- * POJO(Plain Old Java Object) -- ÆÕÍ¨µÄ´«Í³µÄJava¶ÔÏó£¬ÆäÖĞÓĞÒ»Ğ©ÊôĞÔ¼°Æägetter setter·½·¨µÄÀà,Ã»ÓĞÒµÎñÂß¼­¡£
- *   ²»ÔÊĞíÓĞÒµÎñ·½·¨,Ò²²»ÄÜĞ¯´øÓĞconnectionÖ®ÀàµÄ·½·¨¡£Êµ¼Ê¾ÍÊÇÆÕÍ¨JavaBeans£¬ÊÇÎªÁË±ÜÃâºÍEJB»ìÏıËù´´ÔìµÄ¼ò³Æ ¡£
- * RAD() -- ¿ìËÙÓ¦ÓÃ¿ª·¢
- * RMI(Remote Method Invocation) -- Ô¶³Ìµ÷ÓÃ£¬Í¨¹ı´æ»îÓÚÔ¶³Ì»úÆ÷ÉÏµÄ¶ÔÏó£¬·¢ËÍÏûÏ¢²¢Ö´ĞĞ¡£ 
- * RTTI(Run-time Type Information) -- ÔËĞĞÊ±ÀàĞÍĞÅÏ¢
- * SSH(Struts + Spring + Hibernate) -- SSH×éºÏÊÇÒ»ÖÖÇáÁ¿¼¶µÄJavaEEÆ½Ì¨£¬¿ÉÔËĞĞÔÚÆÕÍ¨WebÈİÆ÷ÖĞ£¬ÎŞĞèEJBÈİÆ÷µÄÖ§³Ö 
- * WAP(Wireless Application Protocol) -- ÎŞÏßÓ¦ÓÃĞ­Òé
+ * POJO(Plain Old Java Object) -- æ™®é€šçš„ä¼ ç»Ÿçš„Javaå¯¹è±¡ï¼Œå…¶ä¸­æœ‰ä¸€äº›å±æ€§åŠå…¶getter setteræ–¹æ³•çš„ç±»,æ²¡æœ‰ä¸šåŠ¡é€»è¾‘ã€‚
+ *   ä¸å…è®¸æœ‰ä¸šåŠ¡æ–¹æ³•,ä¹Ÿä¸èƒ½æºå¸¦æœ‰connectionä¹‹ç±»çš„æ–¹æ³•ã€‚å®é™…å°±æ˜¯æ™®é€šJavaBeansï¼Œæ˜¯ä¸ºäº†é¿å…å’ŒEJBæ··æ·†æ‰€åˆ›é€ çš„ç®€ç§° ã€‚
+ * RAD() -- å¿«é€Ÿåº”ç”¨å¼€å‘
+ * RMI(Remote Method Invocation) -- è¿œç¨‹è°ƒç”¨ï¼Œé€šè¿‡å­˜æ´»äºè¿œç¨‹æœºå™¨ä¸Šçš„å¯¹è±¡ï¼Œå‘é€æ¶ˆæ¯å¹¶æ‰§è¡Œã€‚ 
+ * RTTI(Run-time Type Information) -- è¿è¡Œæ—¶ç±»å‹ä¿¡æ¯
+ * SSH(Struts + Spring + Hibernate) -- SSHç»„åˆæ˜¯ä¸€ç§è½»é‡çº§çš„JavaEEå¹³å°ï¼Œå¯è¿è¡Œåœ¨æ™®é€šWebå®¹å™¨ä¸­ï¼Œæ— éœ€EJBå®¹å™¨çš„æ”¯æŒ 
+ * WAP(Wireless Application Protocol) -- æ— çº¿åº”ç”¨åè®®
 *************************************************************************************************************/
 public class JavaGlossary {
 

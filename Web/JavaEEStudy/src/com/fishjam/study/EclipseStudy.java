@@ -1,115 +1,120 @@
 package com.fishjam.study;
 
 /**************************************************************************************************************************************
- * Eclipse -- Ãâ·Ñ¿ªÔ´µÄIDE£¬http://www.eclipse.org/£¬ÓÉIBM¾èÏ×
- *   Eclipse Éè¼ÆÃÀÃîÖ®´¦£¬ÔÚÓÚ³ýÁËµ×²ãµÄºËÐÄÒÔÍâ£¬ËùÓÐ¶«Î÷¶¼ÊÇÍâ¹Ò£¬¾ß±¸Ç¿´óÀ©³äÐÔ
- *   perspective -- Eclipse Ìá¹©ÊýÈºÔ¤ÏÈÑ¡¶¨µÄÊÓÍ¼£¬²¢ÒÑÊÂÏÈ¶¨ÒåºÃµÄ·½Ê½ÅÅÁÐ¡£
+ * Eclipse -- å…è´¹å¼€æºçš„IDEï¼Œhttp://www.eclipse.org/ï¼Œç”±IBMæçŒ®
+ *   Eclipse è®¾è®¡ç¾Žå¦™ä¹‹å¤„ï¼Œåœ¨äºŽé™¤äº†åº•å±‚çš„æ ¸å¿ƒä»¥å¤–ï¼Œæ‰€æœ‰ä¸œè¥¿éƒ½æ˜¯å¤–æŒ‚ï¼Œå…·å¤‡å¼ºå¤§æ‰©å……æ€§
+ *   perspective -- Eclipse æä¾›æ•°ç¾¤é¢„å…ˆé€‰å®šçš„è§†å›¾ï¼Œå¹¶å·²äº‹å…ˆå®šä¹‰å¥½çš„æ–¹å¼æŽ’åˆ—ã€‚
  *   
- *   Eclipse ÏîÄ¿ÓÉ Project Management Committee(PMC) Ëù¹ÜÀí£¬Eclipse ÏîÄ¿·Ö³É3 ¸ö×ÓÏîÄ¿£º
- *     1.Æ½Ì¨--Platform
- *     2.¿ª·¢¹¤¾ßÏä--Java Development Toolkit(JDT)
- *     3.Íâ¹Ò¿ª·¢»·¾³--Plug-in Development Environment(PDE)
+ *   Eclipse é¡¹ç›®ç”± Project Management Committee(PMC) æ‰€ç®¡ç†ï¼ŒEclipse é¡¹ç›®åˆ†æˆ3 ä¸ªå­é¡¹ç›®ï¼š
+ *     1.å¹³å°--Platform
+ *     2.å¼€å‘å·¥å…·ç®±--Java Development Toolkit(JDT)
+ *     3.å¤–æŒ‚å¼€å‘çŽ¯å¢ƒ--Plug-in Development Environment(PDE)
  *     
- *   Í¨³£ÓÐËÄÖÖ°æ±¾£º
- *     1.Release Builds -- Ö÷ÒªÎÈ¶¨°æ±¾,¾­¹ýÍêÕû²âÊÔ¡£
- *     2.Stable builds -- ¾­ÓÉEclipse ¿ª·¢ÍÅ¶Ó²âÊÔ£¬ÐÂ¹¦ÄÜÍ¨³£»áÔÚ´Ë¹ý¶É°æ±¾³öÏÖ¡£
- *     3.Integration builds -- ¸÷¸ö¶ÀÁ¢µÄ×é¼þÒÑ¾­¹ý²âÊÔ£¬µ«²»±£Ö¤ÕûºÏºóµÄÎÈ¶¨¡£
- *     4.Nightly builds -- Ã¿ÈÕAutoBuild²úÉúµÄ¡£
+ *   é€šå¸¸æœ‰å››ç§ç‰ˆæœ¬ï¼š
+ *     1.Release Builds -- ä¸»è¦ç¨³å®šç‰ˆæœ¬,ç»è¿‡å®Œæ•´æµ‹è¯•ã€‚
+ *     2.Stable builds -- ç»ç”±Eclipse å¼€å‘å›¢é˜Ÿæµ‹è¯•ï¼Œæ–°åŠŸèƒ½é€šå¸¸ä¼šåœ¨æ­¤è¿‡æ¸¡ç‰ˆæœ¬å‡ºçŽ°ã€‚
+ *     3.Integration builds -- å„ä¸ªç‹¬ç«‹çš„ç»„ä»¶å·²ç»è¿‡æµ‹è¯•ï¼Œä½†ä¸ä¿è¯æ•´åˆåŽçš„ç¨³å®šã€‚
+ *     4.Nightly builds -- æ¯æ—¥AutoBuildäº§ç”Ÿçš„ã€‚
  *     
- *   Eclipse Æ½Ì¨ÓÉÊýÖÖ×é¼þ×é³É£º
- *     Æ½Ì¨ºËÐÄ(platform kernel)--¹ÜÀíºÍ¼ÓÔØ¸÷ÖÖ²å¼þ
- *     ¹¤×÷Ì¨(workbench)--Í¼ÐÎ²Ù×÷½Ó¿Ú£¬ÓÃEclipse×Ô¼ºµÄ±ê×¼Í¼ÐÎ¹¤¾ßÏä(Standard Widget Toolkit-SWT)ºÍJFace¹¹½¨³öÀ´µÄ¡£
- *        Eclipse Ê¹ÓÃ²Ù×÷ÏµÍ³µÄÔ­ÉúÍ¼ÐÎÀ´½¨ÖÃ,Òò´ËÒªµÈSWTÒÆÖ²µ½¸ÃÆ½Ì¨£¬Eclipse ²ÅÄÜÔÚÄÇ¸öÆ½Ì¨Ö´ÐÐ¡£
- *     ÊÓÍ¼(View)--³ÊÏÖ¹¤×÷Ì¨ÖÐµÄÐÅÏ¢
- *     ±à¼­Æ÷(Editor)--ÏÔÊ¾ÎÄ¼þµÄ±à¼­Æ÷£¬¸ù¾ÝÎÄ¼þÀàÐÍ£¬ÓÐ²»Í¬µÄ±à¼­Æ÷
- *     Í¸ÊÓÍ¼(Perspective)--¶Ô¹¤×÷Ì¨ÖÐÒ»×éÊÓÍ¼µÄÉèÖÃºÍ²¼¾Ö£¬ÒÔÍê³ÉÌØ¶¨ÀàÐÍµÄÈÎÎñ(ÈçJava¿ª·¢¡¢Debug)
- *     ¹¤×÷Çø(workspace)--¹ÜÀíÊ¹ÓÃÕßµÄ×ÊÔ´(±»×éÖ¯³ÉÒ»¸ö»ò¶à¸öÏîÄ¿)£¬¿ÉÒÔ±£´æ¸ü¸ÄµÄÀúÊ·¼ÇÂ¼
- *     ÍÅ¶Ó×é¼þ(tram component)
- *     ËµÃ÷×é¼þ(help)
+ *   Eclipse å¹³å°ç”±æ•°ç§ç»„ä»¶ç»„æˆï¼š
+ *     å¹³å°æ ¸å¿ƒ(platform kernel)--ç®¡ç†å’ŒåŠ è½½å„ç§æ’ä»¶
+ *     å·¥ä½œå°(workbench)--å›¾å½¢æ“ä½œæŽ¥å£ï¼Œç”¨Eclipseè‡ªå·±çš„æ ‡å‡†å›¾å½¢å·¥å…·ç®±(Standard Widget Toolkit-SWT)å’ŒJFaceæž„å»ºå‡ºæ¥çš„ã€‚
+ *        Eclipse ä½¿ç”¨æ“ä½œç³»ç»Ÿçš„åŽŸç”Ÿå›¾å½¢æ¥å»ºç½®,å› æ­¤è¦ç­‰SWTç§»æ¤åˆ°è¯¥å¹³å°ï¼ŒEclipse æ‰èƒ½åœ¨é‚£ä¸ªå¹³å°æ‰§è¡Œã€‚
+ *     è§†å›¾(View)--å‘ˆçŽ°å·¥ä½œå°ä¸­çš„ä¿¡æ¯
+ *     ç¼–è¾‘å™¨(Editor)--æ˜¾ç¤ºæ–‡ä»¶çš„ç¼–è¾‘å™¨ï¼Œæ ¹æ®æ–‡ä»¶ç±»åž‹ï¼Œæœ‰ä¸åŒçš„ç¼–è¾‘å™¨
+ *     é€è§†å›¾(Perspective)--å¯¹å·¥ä½œå°ä¸­ä¸€ç»„è§†å›¾çš„è®¾ç½®å’Œå¸ƒå±€ï¼Œä»¥å®Œæˆç‰¹å®šç±»åž‹çš„ä»»åŠ¡(å¦‚Javaå¼€å‘ã€Debug)
+ *     å·¥ä½œåŒº(workspace)--ç®¡ç†ä½¿ç”¨è€…çš„èµ„æº(è¢«ç»„ç»‡æˆä¸€ä¸ªæˆ–å¤šä¸ªé¡¹ç›®)ï¼Œå¯ä»¥ä¿å­˜æ›´æ”¹çš„åŽ†å²è®°å½•
+ *     å›¢é˜Ÿç»„ä»¶(tram component)
+ *     è¯´æ˜Žç»„ä»¶(help)
  *     
- *   Elcipse ÎªÁË·½±ãÖ§³Ö¸÷ÖÖ²Ù×÷ÏµÍ³£¬ÔÚÎÄ¼þÏµÍ³ÉÏÌá¹©ÁËÒ»¸ö³éÏó²ã¼¶£ºÏîÄ¿(?) > Êý¾Ý¼Ð(?)
+ *   Elcipse ä¸ºäº†æ–¹ä¾¿æ”¯æŒå„ç§æ“ä½œç³»ç»Ÿï¼Œåœ¨æ–‡ä»¶ç³»ç»Ÿä¸Šæä¾›äº†ä¸€ä¸ªæŠ½è±¡å±‚çº§ï¼šé¡¹ç›®(?) > æ•°æ®å¤¹(?)
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * ¸ü¸ÄÄ¬ÈÏ×ÖÌå -- Preferences -> General -> Appearance -> Colors and Fonts£¬ ¸ü¸Ä Basic -> Text Font ÎªÄ¬ÈÏ(Î¢ÈíÑÅºÚ)
+ * æ›´æ”¹é»˜è®¤å­—ä½“ -- Preferences -> General -> Appearance -> Colors and Fontsï¼Œ æ›´æ”¹ Basic -> Text Font ä¸ºé»˜è®¤(å¾®è½¯é›…é»‘)
+ * æ›´æ”¹æ–‡ä»¶é»˜è®¤ç¼–ç ä¸ºUTF-8 -- Preferences-> General -> Workspaces -> Text file encodingï¼Œ æ›´æ”¹ä¸º UTF-8
+ *   æ³¨æ„ï¼šå½“ä½¿ç”¨ EmEditor ç­‰å·¥å…·å°†éžUTF-8 ç¼–ç çš„æ–‡ä»¶è½¬æ¢ä¸ºUTF-8æ—¶ï¼Œå¿…é¡»æ˜¯ä¸å¸¦ç­¾åçš„UTF-8ï¼Œå¦åˆ™antç¼–è¯‘æ—¶ä¼šå¤±è´¥
  *   
- * ³£ÓÃ¿ì½Ý¼üºÍÅäÖÃ -- http://baike.baidu.com/link?url=GF0-5mxd1L_V5w-wo7K8w-3YOrNER4jjkI9yaE2tbPUr7IB4TwHk4EiuDUVt5wkZ
- *   Ctrl+O ¿ìËÙÏÔÊ¾ OutLine
- *   Ctrl+T ¿ìËÙÏÔÊ¾µ±Ç°ÀàµÄ¼Ì³Ð½á¹¹
- *   Ctrl+E ¿ìËÙÏÔÊ¾µ±Ç°EditerµÄÏÂÀ­ÁÐ±í
- *   Ctrl+J ÕýÏòÔöÁ¿²éÕÒ
- *   Ctrl+Q ¶¨Î»µ½×îºóÒ»´Î±à¼­´¦
- *   Ctrl+I ¸ñÊ½»¯¼¤»îµÄÔªËØFormat Active Elements¡£
- *   Ctrl+F6 ÇÐ»»µ½ÏÂÒ»¸öEditor(±à¼­Æ÷)
- *   Ctrl+F7 ÇÐ»»µ½ÏÂÒ»¸öPerspective
- *   Ctrl+F8 ÇÐ»»µ½ÏÂÒ»¸öView
+ * å¸¸ç”¨å¿«æ·é”®å’Œé…ç½® -- http://baike.baidu.com/link?url=GF0-5mxd1L_V5w-wo7K8w-3YOrNER4jjkI9yaE2tbPUr7IB4TwHk4EiuDUVt5wkZ
+ *   Ctrl+O å¿«é€Ÿæ˜¾ç¤º OutLine
+ *   Ctrl+T å¿«é€Ÿæ˜¾ç¤ºå½“å‰ç±»çš„ç»§æ‰¿ç»“æž„
+ *   Ctrl+E å¿«é€Ÿæ˜¾ç¤ºå½“å‰Editerçš„ä¸‹æ‹‰åˆ—è¡¨
+ *   Ctrl+J æ­£å‘å¢žé‡æŸ¥æ‰¾
+ *   Ctrl+Q å®šä½åˆ°æœ€åŽä¸€æ¬¡ç¼–è¾‘å¤„
+ *   Ctrl+I æ ¼å¼åŒ–æ¿€æ´»çš„å…ƒç´ Format Active Elementsã€‚
+ *   Ctrl+F6 åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªEditor(ç¼–è¾‘å™¨)
+ *   Ctrl+F7 åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªPerspective
+ *   Ctrl+F8 åˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªView
  *   
- * ³£ÓÃ¹¦ÄÜ(¿ÉÒÔÉèÖÃ×Ô¶¨ÒåµÄ¿ì½Ý¼ü)
+ * å¸¸ç”¨åŠŸèƒ½(å¯ä»¥è®¾ç½®è‡ªå®šä¹‰çš„å¿«æ·é”®)
  *   Code Formatter(Window->Preferences->Java->Code Formatter)
- *   Override/Implement Methods -- ÖØÔØ»ùÀàµÄÐéº¯Êý£¬¿ÉÒÔ¸ü¸ÄÎª Alt+Shift+O, When Îª "Editing Java Source"
+ *   Override/Implement Methods -- é‡è½½åŸºç±»çš„è™šå‡½æ•°ï¼Œå¯ä»¥æ›´æ”¹ä¸º Alt+Shift+O, When ä¸º "Editing Java Source"
  *    
- * ´úÂëÖúÊÖµÄ×Ô¶¯ÌáÊ¾
- *   1.Code Assist -- Ä¬ÈÏÊÇ Alt+/(ÔÚ Window->Perferences->General->Keys ÖÐÉèÖÃ)£¬¿ÉÒÔ¸ü¸ÄÎª Ctrl+Space;
+ * ä»£ç åŠ©æ‰‹çš„è‡ªåŠ¨æç¤º
+ *   1.Code Assist -- é»˜è®¤æ˜¯ Alt+/(åœ¨ Window->Perferences->General->Keys ä¸­è®¾ç½®)ï¼Œå¯ä»¥æ›´æ”¹ä¸º Ctrl+Space;
  *   2.Word Completion -- 
- *   2.Window->Perferences->Java->Editor->Content Assist ÖÐÉèÖÃ "Auto activation triggers for java"£¬
- *     ¿ÉÒÔÉèÖÃÎª .ºÍa-z,A-ZµÄËùÓÐ×ÖÄ¸£¨µ¼³öÅäÖÃºóÐÞ¸Ä£¬È»ºóÔÙµ¼Èë£¬¿ÉÒÔÍ»ÆÆÔçÆÚ°æ±¾Ö»ÄÜÊäÈë4¸ö×Ö·ûµÄÏÞÖÆ£©;
- *     µ¼³öÅäÖÃ£º File -> Export -> Perferences -> µ¼³öºó ËÑË÷²¢Ìæ»» content_assist_autoactivation_triggers_java µÄÖµ
+ *   2.Window->Perferences->Java->Editor->Content Assist ä¸­è®¾ç½® "Auto activation triggers for java"ï¼Œ
+ *     å¯ä»¥è®¾ç½®ä¸º .å’Œa-z,A-Zçš„æ‰€æœ‰å­—æ¯ï¼ˆå¯¼å‡ºé…ç½®åŽä¿®æ”¹ï¼Œç„¶åŽå†å¯¼å…¥ï¼Œå¯ä»¥çªç ´æ—©æœŸç‰ˆæœ¬åªèƒ½è¾“å…¥4ä¸ªå­—ç¬¦çš„é™åˆ¶ï¼‰;
+ *     å¯¼å‡ºé…ç½®ï¼š File -> Export -> Perferences -> å¯¼å‡ºåŽ æœç´¢å¹¶æ›¿æ¢ content_assist_autoactivation_triggers_java çš„å€¼
  *
 ***************************************************************************************************************************************/
 
 /*************************************************************************************************************************************** 
-* °²×°²å¼þµÄ·½·¨
-*   Èç¹û²å¼þ³öÏÖÎÊÌâ£¬¿ÉÒÔ³¢ÊÔ½«configurationÄ¿Â¼ÏÂ³ý config.ini ÎÄ¼þÍâµÄËùÓÐÎÄ¼þ¶¼É¾³ý(Î´²âÊÔ£¬×îºÃÏÈ±¸·Ý)¡£
-*   1.½âÑ¹µ½ eclipse µÄ plugins + features »ò dropins (Èç org.vssplugin_1.6.2) Ä¿Â¼ÏÂ£¬ÖØÆô£»
-*     ÈÝÒ×µ¼ÖÂ»ìÂÒ£¬ÄÑÒÔÅÐ¶Ï¾ßÌå²å¼þµÄÀ´Ô´
-*   2.À©Õ¹°²×°(ÍÆ¼ö·½Ê½)
-*     ÔÚEclipseÄ¿Â¼ÏÂ´´½¨Ò»¸ö links Ä¿Â¼£¬½¨Á¢ *.link µÄÎÄ±¾ÎÄ¼þ£¬ÆäÖÐÖ¸Ïò·ÅÔÚÈÎÒâµØ·½µÄ²å¼þ¡£
-*     Èç path=d:\\myplugin\\eclipse\\plugins\\vssplugin_1.6.1
-*   3.ÔÚÏß°²×°
+* å®‰è£…æ’ä»¶çš„æ–¹æ³•
+*   å¦‚æžœæ’ä»¶å‡ºçŽ°é—®é¢˜ï¼Œå¯ä»¥å°è¯•å°†configurationç›®å½•ä¸‹é™¤ config.ini æ–‡ä»¶å¤–çš„æ‰€æœ‰æ–‡ä»¶éƒ½åˆ é™¤(æœªæµ‹è¯•ï¼Œæœ€å¥½å…ˆå¤‡ä»½)ã€‚
+*   1.è§£åŽ‹åˆ° eclipse çš„ plugins + features æˆ– dropins (å¦‚ org.vssplugin_1.6.2) ç›®å½•ä¸‹ï¼Œé‡å¯ï¼›
+*     å®¹æ˜“å¯¼è‡´æ··ä¹±ï¼Œéš¾ä»¥åˆ¤æ–­å…·ä½“æ’ä»¶çš„æ¥æº
+*   2.æ‰©å±•å®‰è£…(æŽ¨èæ–¹å¼)
+*     åœ¨Eclipseç›®å½•ä¸‹åˆ›å»ºä¸€ä¸ª links ç›®å½•ï¼Œå»ºç«‹ *.link çš„æ–‡æœ¬æ–‡ä»¶ï¼Œå…¶ä¸­æŒ‡å‘æ”¾åœ¨ä»»æ„åœ°æ–¹çš„æ’ä»¶ã€‚
+*     å¦‚ path=d:\\myplugin\\eclipse\\plugins\\vssplugin_1.6.1
+*   3.åœ¨çº¿å®‰è£…
 *   
 *   
-* ³£ÓÃ²å¼þ
+* å¸¸ç”¨æ’ä»¶
 *   ADT -- Android Development Toolkit
 *   CDT -- C Development Toolkit
 *   JDT -- Java Development Toolkit
-*   JET -- Java Emitter Templates ,Ò»¸ö¿ªÔ´µÄÄ£°åÒýÇæ£¬¿ÉÒÔÔÚEMFÖÐ×Ô¶¯Éú³É´úÂë¡£
+*   JET -- Java Emitter Templates ,ä¸€ä¸ªå¼€æºçš„æ¨¡æ¿å¼•æ“Žï¼Œå¯ä»¥åœ¨EMFä¸­è‡ªåŠ¨ç”Ÿæˆä»£ç ã€‚
 *   Subversive -- Subversion (SVN) Team Provider ( http://www.eclipse.org/subversive/ )
-*   TPTP -- Test & Performance Tools Platform£¬¿ÉÒÔ½øÐÐ³ÌÐòÖ´ÐÐÊ±¼äµÄÍ³¼Æ·ÖÎö¡¢ÄÚ´æµÄ¼à¿Ø¡¢¶ÔÏóµ÷ÓÃµÄ·ÖÎöµÈ
-*   VssPlug -- Ö§³ÖVSS£¬½âÑ¹µ½ dropins Ä¿Â¼ÏÂ£¬Ö÷²Ëµ¥»á¶àÒ»Ïî¡°VSS¡±£¬Í¨¹ý "Team->Share..."½øÐÐÉèÖÃ,¶ÔVSSµÄÃÜÂëÃ÷ÎÄÉèÖÃÔÚ
-*     Workspace\.metadata\.plugins\org.vssplugin\dialog_settings.xml ÖÐ
-*   WTP -- Web ¿ª·¢ÓÃµÄ²å¼þ£¬¾ßÌåÃû×Ö£¿
+*   TPTP -- Test & Performance Tools Platformï¼Œå¯ä»¥è¿›è¡Œç¨‹åºæ‰§è¡Œæ—¶é—´çš„ç»Ÿè®¡åˆ†æžã€å†…å­˜çš„ç›‘æŽ§ã€å¯¹è±¡è°ƒç”¨çš„åˆ†æžç­‰
+*   VssPlug -- æ”¯æŒVSSï¼Œè§£åŽ‹åˆ° dropins ç›®å½•ä¸‹ï¼Œä¸»èœå•ä¼šå¤šä¸€é¡¹â€œVSSâ€ï¼Œé€šè¿‡ "Team->Share..."è¿›è¡Œè®¾ç½®,å¯¹VSSçš„å¯†ç æ˜Žæ–‡è®¾ç½®åœ¨
+*     Workspace\.metadata\.plugins\org.vssplugin\dialog_settings.xml ä¸­
+*   WTP -- Web å¼€å‘ç”¨çš„æ’ä»¶ï¼Œå…·ä½“åå­—ï¼Ÿ
 * 
 ***************************************************************************************************************************************/ 
 
 /***************************************************************************************************************************************
- * MyEclipse = Eclipse + Ò»¶ÑÉÌÒµ²å¼þ, ÊÊÓÃÓÚ¿ª·¢ Java/J2EE µÈ£¬
- *   2014°æ£ºÍêÕûÖ§³Ö AJAX,CSS,Hibernate,HTML5,Javascript,Java Servlet,JDBC,JSF,JSP,JQuery,Spring,SQL,Struts
- *           ÄÚÇ¶MySql, tomcat µÈ·þÎñ£¿
+ * MyEclipse = Eclipse + ä¸€å †å•†ä¸šæ’ä»¶, é€‚ç”¨äºŽå¼€å‘ Java/J2EE ç­‰ï¼Œ
+ *   2014ç‰ˆï¼šå®Œæ•´æ”¯æŒ AJAX,CSS,Hibernate,HTML5,Javascript,Java Servlet,JDBC,JSF,JSP,JQuery,Spring,SQL,Struts
+ *           å†…åµŒMySql, tomcat ç­‰æœåŠ¡ï¼Ÿ
+ * 
+ * å„ç§å¯è§†åŒ–å¼€å‘æ’ä»¶
+ *   JSP --  Window -> Show View -> Palette
+ * 
+ * é¡¹ç›®å‘å¸ƒ(ç”Ÿæˆ WAR åŒ…)
+ *   1.å°†webé¡¹ç›®æ‰“åŒ…: Export -> JavaEE çš„WAR file(myeclipse)
+ *   2.å°†waræ”¾åˆ°tomcatçš„webappsç›®å½•ä¸‹, è®¾ç½® server.xml æ–‡ä»¶
  *
- * ÏîÄ¿·¢²¼(Éú³É WAR °ü)
- *   1.½«webÏîÄ¿´ò°ü: Export -> JavaEE µÄWAR file(myeclipse)
- *   2.½«war·Åµ½tomcatµÄwebappsÄ¿Â¼ÏÂ, ÉèÖÃ server.xml ÎÄ¼þ
- *
- * ÅäÖÃWeb·þÎñÆ÷(Tomcat)
+ * é…ç½®WebæœåŠ¡å™¨(Tomcat)
  *    Window->Preferences -> MyEclipse -> Servers -> Tomcat, 
  *    
- * Ö±½ÓÁ¬½ÓÊý¾Ý¿â
- *   Windows->Preferences->MyEclipse->Database Explorer->Database Drivers¡£ÅäÖÃÊý¾Ý¿âÇý¶¯²ÎÊý¡£
- *   1.Derby -- MyEclipse×Ô´øµÄÒ»¸ö¹ØÏµÊý¾Ý¿â
+ * ç›´æŽ¥è¿žæŽ¥æ•°æ®åº“
+ *   Windows->Preferences->MyEclipse->Database Explorer->Database Driversã€‚é…ç½®æ•°æ®åº“é©±åŠ¨å‚æ•°ã€‚
+ *   1.Derby -- MyEclipseè‡ªå¸¦çš„ä¸€ä¸ªå…³ç³»æ•°æ®åº“
  *   
- * ³£ÓÃÏòµ¼:
- *   1.Web¹¤³Ì( ÓÐÊ²Ã´Çø±ð ?)
+ * å¸¸ç”¨å‘å¯¼:
+ *   1.Webå·¥ç¨‹( æœ‰ä»€ä¹ˆåŒºåˆ« ?)
  *      a.Web Project
  *      b.Web Service Project
  *      c.Web Fragment Project
- *      d.Dynamic Web Project -- ¿ÉÒÔÖ¸¶¨ Tomcat/Servlet °æ±¾, 
+ *      d.Dynamic Web Project -- å¯ä»¥æŒ‡å®š Tomcat/Servlet ç‰ˆæœ¬, 
  *      
- *   2.ÓÒ¼ü -> Add struts Capabilities, Add Hibernate Capabilities(hibernate.cfg.xml) µÈ
+ *   2.å³é”® -> Add struts Capabilities, Add Hibernate Capabilities(hibernate.cfg.xml) ç­‰
  *   3.
  *   
- * MyEclipseÔÊÐíÔÚÏß¸üÐÂ£º
- *   1.Window--Preferences--General-Capabilities, Ñ¡ÖÐ "Classic Update", È»ºó Apply
- *   2.´Ëºó²ÅÄÜ¿´µ½ÈçÏÂ²Ëµ¥£ºHelp > Software Updates > Find and Install...
+ * MyEclipseå…è®¸åœ¨çº¿æ›´æ–°ï¼š
+ *   1.Window--Preferences--General-Capabilities, é€‰ä¸­ "Classic Update", ç„¶åŽ Apply
+ *   2.æ­¤åŽæ‰èƒ½çœ‹åˆ°å¦‚ä¸‹èœå•ï¼šHelp > Software Updates > Find and Install...
  *
  * 
 ***************************************************************************************************************************************/

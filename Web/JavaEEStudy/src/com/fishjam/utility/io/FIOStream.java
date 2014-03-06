@@ -3,40 +3,40 @@ package com.fishjam.utility.io;
 import java.io.Serializable;
 
 /************************************************************************************************************
-* IOÊ¹ÓÃStream(Á÷)µÄ³éÏó¸ÅÄî£¬½«Êµ¼ÊI/OÉè±¸ÖĞ´¦ÀíÊı¾İµÄÏ¸½Ú¶¯×÷Òş²ØÆğÀ´£¬Í¨¹ıµşºÏ¶à²ã
-* ¶ÔÏóµÄĞÎÊ½»ñµÃÏëÒªµÄ¹¦ÄÜ¡£Í¨³£Ê¹ÓÃÍê±ÏºóĞèÒªÊ¹ÓÃclose¹Ø±ÕÎÄ¼ş
+* IOä½¿ç”¨Stream(æµ)çš„æŠ½è±¡æ¦‚å¿µï¼Œå°†å®é™…I/Oè®¾å¤‡ä¸­å¤„ç†æ•°æ®çš„ç»†èŠ‚åŠ¨ä½œéšè—èµ·æ¥ï¼Œé€šè¿‡å åˆå¤šå±‚
+* å¯¹è±¡çš„å½¢å¼è·å¾—æƒ³è¦çš„åŠŸèƒ½ã€‚é€šå¸¸ä½¿ç”¨å®Œæ¯•åéœ€è¦ä½¿ç”¨closeå…³é—­æ–‡ä»¶
 * 
-* ReaderºÍWriterÌá¹©ÁË"¼æÈİÓÚUnicode²¢»ùÓÚ×Ö·ûµÄI/O"£¬Ö÷ÒªÊÇÎªÁË¹ú¼Ê»¯(¾ÉµÄI/OStream
-*   ¼Ì³ĞÌåÏµ½öÖ§³Ö8Bit Byte Stream)¡£Í¨¹ıInputStreamReader ºÍ OutputStream ½øĞĞ×ª»»¡£
+* Readerå’ŒWriteræä¾›äº†"å…¼å®¹äºUnicodeå¹¶åŸºäºå­—ç¬¦çš„I/O"ï¼Œä¸»è¦æ˜¯ä¸ºäº†å›½é™…åŒ–(æ—§çš„I/OStream
+*   ç»§æ‰¿ä½“ç³»ä»…æ”¯æŒ8Bit Byte Stream)ã€‚é€šè¿‡InputStreamReader å’Œ OutputStream è¿›è¡Œè½¬æ¢ã€‚
 * 
-* ¾ß±¸»º³å¹¦ÄÜµÄÊäÈëÎÄ¼ş£ºBufferedReader(FileInputReader) -- readLineµ½ÎÄ¼şÎ²Ê±·µ»Ønull;
-*   BufferedReader(InputStreamReader(System.in)) -- »º³å(×ª»»(±ê×¼ÊäÈë))
-* Êä³öÖÁÎÄ¼ş£ºPrintWriter(BufferedWriter(FileWriter)) -- ¸ñÊ½»¯(»º³å(ÎÄ¼ş))
+* å…·å¤‡ç¼“å†²åŠŸèƒ½çš„è¾“å…¥æ–‡ä»¶ï¼šBufferedReader(FileInputReader) -- readLineåˆ°æ–‡ä»¶å°¾æ—¶è¿”å›null;
+*   BufferedReader(InputStreamReader(System.in)) -- ç¼“å†²(è½¬æ¢(æ ‡å‡†è¾“å…¥))
+* è¾“å‡ºè‡³æ–‡ä»¶ï¼šPrintWriter(BufferedWriter(FileWriter)) -- æ ¼å¼åŒ–(ç¼“å†²(æ–‡ä»¶))
 * 
-* Java¿ÉÒÔÍ¨¹ıstaticº¯Êı¶Ô±ê×¼ÊäÈë¡¢±ê×¼Êä³ö¡¢±ê×¼´íÎóÊä³öµÈI/O Streams½øĞĞÖØ¶¨Ïò
+* Javaå¯ä»¥é€šè¿‡staticå‡½æ•°å¯¹æ ‡å‡†è¾“å…¥ã€æ ‡å‡†è¾“å‡ºã€æ ‡å‡†é”™è¯¯è¾“å‡ºç­‰I/O Streamsè¿›è¡Œé‡å®šå‘
 *   System.setIn(InputStream)
 *   System.setOut(PrintStream)
 *   System.setErr(PrintStream)
 *   
-* JavaÌá¹©ÁËÑ¹Ëõ/½âÑ¹Ëõ Streams µÄÀà
-*   Ñ¹Ëõ£ºDeflaterOutputStream <= ZipOutputStream/GZIPOutputStream
-*   ½âÑ¹£ºInflaterInputStream  <= ZipInputStream/GZIPInputStream/ZipFile
-*   CheckSum:Adler32(½Ï¿ì)£¬CRC32(½ÏÂıµ«±È½Ï¾«È·)
+* Javaæä¾›äº†å‹ç¼©/è§£å‹ç¼© Streams çš„ç±»
+*   å‹ç¼©ï¼šDeflaterOutputStream <= ZipOutputStream/GZIPOutputStream
+*   è§£å‹ï¼šInflaterInputStream  <= ZipInputStream/GZIPInputStream/ZipFile
+*   CheckSum:Adler32(è¾ƒå¿«)ï¼ŒCRC32(è¾ƒæ…¢ä½†æ¯”è¾ƒç²¾ç¡®)
 *     ZipOutputStream(new BufferedOutputStream(new CheckedOutputStream(
 *       new FileOutputStream("test.zip"),new Adler32())));
 *       
-* JAR--½«Ä³¸öappletËùĞèµÄËùÓĞÎÄ¼ş²¢ÔÚµ¥Ò»JARÎÄ¼şÄÚ£¬ä¯ÀÀÆ÷Ö»ĞèÏò·şÎñÆ÷ÇëÇóÒ»´Î¾ÍºÃ£¬¶øÇÒ´«ÊäËÙ¶È¿ì¡£
-*   ¾ßÓĞÄÚ²¿ÎÄ¼şµÄÒ»·İÇåµ¥(manifest)
+* JAR--å°†æŸä¸ªappletæ‰€éœ€çš„æ‰€æœ‰æ–‡ä»¶å¹¶åœ¨å•ä¸€JARæ–‡ä»¶å†…ï¼Œæµè§ˆå™¨åªéœ€å‘æœåŠ¡å™¨è¯·æ±‚ä¸€æ¬¡å°±å¥½ï¼Œè€Œä¸”ä¼ è¾“é€Ÿåº¦å¿«ã€‚
+*   å…·æœ‰å†…éƒ¨æ–‡ä»¶çš„ä¸€ä»½æ¸…å•(manifest)
 *   
-* ¶ÔÏóĞòÁĞ»¯(Serialization)½«ÊµÏÖ³ö Serializable ½Ó¿ÚµÄ¶ÔÏóµÄÈ«²¿Êı¾İ×Ô¶¯×ª»»ÎªÁ¬ĞøbytesÊı¾İ£¬
-*   ÕâĞ©Êı¾İ¿ÉÍ¨¹ıÍøÂç´«Êä»ò±£´æµ½´ÅÅÌ£¬Ö®ºó¿É±»»¹Ô­ÎªÔ­ÏÈµÄ¶ÔÏó×´Ì¬¡£×¢Òâ£ºÍ¨¹ıĞòÁĞ»¯
-*   Éú³É¶ÔÏóÊµÀıÊ±£¬²»»áµ÷ÓÃÈÎºÎ(°üÀ¨È±Ê¡)¹¹Ôìº¯Êı£¬Õû¸ö¶ÔÏóµÄ×´Ì¬È«¶¼Í¨¹ıInputStream
-*   ËùµÃÎ»Êı¾İ½øĞĞ»Ø¸´--ºÍMFC²»Í¬¡£¿ÉÒÔÊ¹ÓÃ¹Ø¼ü×Ötransient¹Ø±ÕÖ¸¶¨³ÉÔ±±äÁ¿²»ÒªĞòÁĞ»¯
-*   ObjectOutputStream(new FileOutputStream).writeObject¡£
-*   Èç¹ûÒª¶Ô¿ÉĞòÁĞ»¯µÄ²¿·Ö½øĞĞ¿ØÖÆ£¨Èç°²È«ÎÊÌâ£©£¬Ó¦¸ÃÊµÏÖExternalizable½Ó¿Ú£¬
-*   ²¢overrideÆäÖĞµÄwriteExternalºÍreadExternal·½·¨£¬×¢Òâ£º»áµ÷ÓÃÈ±Ê¡¹¹Ôì£¬È»ºóÍ¨¹ı
-*   readExternal»Ø¸´£¬²¢ÇÒÍ¨³£ĞèÒªµ÷ÓÃ»ùÀàµÄÍ¬Ãû·½·¨--ºÍMFCÏàÍ¬
-*   Ö»Òª½«ËùÓĞ¶«Î÷Ğ´Èëµ¥Ò»stream£¬±ã¿É»Ø¸´Ô­ÏÈµÄ¶ÔÏóÍøÂç£¬²¢ÇÒ²»»á¶îÍâ¸´ÖÆÈÎºÎ¶ÔÏó£¬
+* å¯¹è±¡åºåˆ—åŒ–(Serialization)å°†å®ç°å‡º Serializable æ¥å£çš„å¯¹è±¡çš„å…¨éƒ¨æ•°æ®è‡ªåŠ¨è½¬æ¢ä¸ºè¿ç»­bytesæ•°æ®ï¼Œ
+*   è¿™äº›æ•°æ®å¯é€šè¿‡ç½‘ç»œä¼ è¾“æˆ–ä¿å­˜åˆ°ç£ç›˜ï¼Œä¹‹åå¯è¢«è¿˜åŸä¸ºåŸå…ˆçš„å¯¹è±¡çŠ¶æ€ã€‚æ³¨æ„ï¼šé€šè¿‡åºåˆ—åŒ–
+*   ç”Ÿæˆå¯¹è±¡å®ä¾‹æ—¶ï¼Œä¸ä¼šè°ƒç”¨ä»»ä½•(åŒ…æ‹¬ç¼ºçœ)æ„é€ å‡½æ•°ï¼Œæ•´ä¸ªå¯¹è±¡çš„çŠ¶æ€å…¨éƒ½é€šè¿‡InputStream
+*   æ‰€å¾—ä½æ•°æ®è¿›è¡Œå›å¤--å’ŒMFCä¸åŒã€‚å¯ä»¥ä½¿ç”¨å…³é”®å­—transientå…³é—­æŒ‡å®šæˆå‘˜å˜é‡ä¸è¦åºåˆ—åŒ–
+*   ObjectOutputStream(new FileOutputStream).writeObjectã€‚
+*   å¦‚æœè¦å¯¹å¯åºåˆ—åŒ–çš„éƒ¨åˆ†è¿›è¡Œæ§åˆ¶ï¼ˆå¦‚å®‰å…¨é—®é¢˜ï¼‰ï¼Œåº”è¯¥å®ç°Externalizableæ¥å£ï¼Œ
+*   å¹¶overrideå…¶ä¸­çš„writeExternalå’ŒreadExternalæ–¹æ³•ï¼Œæ³¨æ„ï¼šä¼šè°ƒç”¨ç¼ºçœæ„é€ ï¼Œç„¶åé€šè¿‡
+*   readExternalå›å¤ï¼Œå¹¶ä¸”é€šå¸¸éœ€è¦è°ƒç”¨åŸºç±»çš„åŒåæ–¹æ³•--å’ŒMFCç›¸åŒ
+*   åªè¦å°†æ‰€æœ‰ä¸œè¥¿å†™å…¥å•ä¸€streamï¼Œä¾¿å¯å›å¤åŸå…ˆçš„å¯¹è±¡ç½‘ç»œï¼Œå¹¶ä¸”ä¸ä¼šé¢å¤–å¤åˆ¶ä»»ä½•å¯¹è±¡ï¼Œ
 * 
 ************************************************************************************************************/
 
