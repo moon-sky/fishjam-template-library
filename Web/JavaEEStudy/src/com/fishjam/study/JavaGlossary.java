@@ -24,7 +24,7 @@ package com.fishjam.study;
  * JSF() -
  * JSP(Java Server Page) -- 最终会编译成Servlet才能运行
  * JSR(Java Spec. Request) -- Java 规格需求
- * JSTL(JSP Standard Tag Library) -- 用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
+ * JSTL(JSP Standard Tag Library) -- Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
  * ORM(Object Relation Mapping) -- 对象-关系映射，完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表。
  *   最早的ORM是 Entity EJB，但非常麻烦。
  * OSGi(Open Service Gateway Initiative) --
@@ -33,7 +33,8 @@ package com.fishjam.study;
  * RAD() -- 快速应用开发
  * RMI(Remote Method Invocation) -- 远程调用，通过存活于远程机器上的对象，发送消息并执行。 
  * RTTI(Run-time Type Information) -- 运行时类型信息
- * SSH(Struts + Spring + Hibernate) -- SSH组合是一种轻量级的JavaEE平台，可运行在普通Web容器中，无需EJB容器的支持 
+ * SSH(Struts + Spring + Hibernate) -- SSH组合是一种轻量级的JavaEE平台，可运行在普通Web容器中，无需EJB容器的支持
+ * TLD(Tag Library Definition) -- 标签库定义，用于JSP中，文件扩展名也是 tld，一个标签库中可包含多个标签 
  * WAP(Wireless Application Protocol) -- 无线应用协议
 *************************************************************************************************************/
 public class JavaGlossary {

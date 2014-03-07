@@ -1,6 +1,6 @@
 package com.fishjam.study.javaee;
 
-//轻量级Java_EE企业应用实战_Struts_2+Spring_3+Hibernate整合开发 -- P90(共享数据)
+//轻量级Java_EE企业应用实战_Struts_2+Spring_3+Hibernate整合开发 -- P130(JSTL)
 //  使用的是 Eclipse-jee-helios 版( Eclipse 3.6 for Java EE Developers )
 
 /**************************************************************************************************************************************
@@ -10,7 +10,7 @@ package com.fishjam.study.javaee;
  *     view -- struts.action/struts.actionform/taglib
  *     controller -- servlet/utils
  *   2.DAO 和 DO 哪个在上面？书上说 DO 在下，但DAO需要和数据库打交道，感觉应该更下？
- *   3.Web应用中，Web容器会包含 WEB-INF 文件夹下的内容，客户端浏览器无法访问该路径下(外？)的任何内容
+ *   3.Web应用中，Web容器会包含 WEB-INF 文件夹下的内容，客户端浏览器无法访问该路径下的任何内容
  *    
  * 开发工具：   MyEclipse 
  * Web服务器：TomCat

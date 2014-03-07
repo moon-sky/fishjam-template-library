@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- web.xml : Web配置描述符文件, Servlet2.5以前，每个应用必须包含这个文件，且放在 WEB-INF 路径下。 Servlet 
 	3.0 以后，可通过 Annotation 来配置管理Web组件 <web-app> [metadata-complete]: 为true时该Web应用不会加载Annotation配置的Web组件(如 
-	Servlet/Filter 等) 
-	 《context-param》: 配置键值对格式的参数，对整个Web应用有效，代码中可通过 getInitParameter() 方法获得对应的值
-	 《servlet》：配置 servlet, 可以指定  servlet-name 对应的 jsp-file
-	 《servlet-mapping》： 将 servlet-name 对应的 servlet 映射到 url-pattern 指定的路径
-	 
--->
+	Servlet/Filter 等) 《context-param》: 配置键值对格式的参数，对整个Web应用有效，代码中可通过 getInitParameter() 
+	方法获得对应的值 《servlet》：配置 servlet, 可以指定 servlet-name 对应的 jsp-file 《servlet-mapping》： 
+	将 servlet-name 对应的 servlet 映射到 url-pattern 指定的路径 -->
 
 
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -28,7 +25,7 @@
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
-	
+
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>classpath:applicationContext.xml</param-value>
@@ -41,4 +38,16 @@
 		<param-name>db_url</param-name>
 		<param-value>jdbc:sqlite:./sqlitedemo.db</param-value>
 	</context-param>
+
+<!-- 
+	<servlet>
+		<servlet-name>ServletStudy</servlet-name>
+		<servlet-class>com.fishjam.study.javaee.ServletStudy</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ServletStudy</servlet-name>
+		<url-pattern>/ServletStudy</url-pattern>
+	</servlet-mapping>
+-->
+ 	
 </web-app>

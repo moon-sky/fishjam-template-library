@@ -4,6 +4,18 @@
 驱动：                http://pan.baidu.com/share/link?shareid=1159878015&uk=1866394329
 如果驱动有问题请安装：http://yun.baidu.com/share/link?shareid=2341853829&uk=1866394329
 
+Media Streaming library developer (C/C++)
+We will add our streaming library into 10M+ users movie player; Windows/iOS/Android
+ 
+DLNA/uPnP domain.
+networking, multimedia streaming and transcoding.
+Chromecast, AirPlay app experience will be plus.
+ 
+DLNA/uPNP
+良好的网路，多媒体串流、转码知识
+Chromecast, AirPlay
+ 
+
 JsonStudy.h 中()：
   Json::Value::type() -- 可以获取到类型
     nullValue--没有对应名字的节点;

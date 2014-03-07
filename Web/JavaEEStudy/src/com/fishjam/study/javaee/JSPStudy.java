@@ -26,7 +26,7 @@ package com.fishjam.study.javaee;
  *   Expression Language(EL)
  *     ${……} -- 定义了一个表达式，可是常量也可是具体的表达语句。如 ${logininfo.username}或 ${logininfo[username]}
  *
- * 
+ *  
 **************************************************************************************************************************************/
 
 public class JSPStudy {

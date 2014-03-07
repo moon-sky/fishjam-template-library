@@ -1,5 +1,7 @@
 package com.fishjam.study.java;
 
+import java.nio.charset.Charset;
+
 /****************************************************************************************
  * 子类 extends 父类  implements 接口1,接口2
  * 
@@ -112,5 +114,16 @@ public class JavaLanguage
 		mtd.invoke(obj,new Object[]{"Erica"});
 		return obj;
 	*/
+	}
+	
+	public void testString(){
+		String strChinese = "中华人民共和国";
+		try {
+			byte[] rawBytes = strChinese.getBytes("UTF-8");
+			String strUTF8 = new String(rawBytes, "UTF-8");
+			boolean isSame = strChinese.equals(strUTF8);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

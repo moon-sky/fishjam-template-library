@@ -2,7 +2,8 @@
 <!-- 
 	TODO: 
 	  1. include 和 exclude 中 name="**/*.java" ， 前面的 ** 代表什么意思？
-	
+	  2. 编译Servlet时，需要将 servlet-api.jar 和 jsp-api.jar 添加到 CLASSPATH 环境变量中，能否在ant中指定？
+	  
     通用属性：
        id: 唯一标识
        refid: 引用另一个元素 

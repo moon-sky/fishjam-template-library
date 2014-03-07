@@ -1,6 +1,6 @@
 <!-- HTML 注释，会发送到客户端，注意对比 JSP 注释 -->
 <%-- JSP 注释，不会被发送到客户端 --%>
-<!-- 
+<!------------------------------------------------------------------------------------------------------------------------------------ 
   编译指令 %@ xxx %
     page指令:
       autoFlush: 当输出缓冲区(buffer指定) 即将溢出时，是否需要强制输出缓冲区的内容。如为false则在溢出时会产生一个异常。
@@ -24,7 +24,48 @@
     getProperty：《jsp:getProperty name="beanName" property="prop1" /》
       说明: 直接使用JavaBean的类似乎更方便，new 出的对象可通过 pageContext.setAttribute("名字"， 实例) 的方式放置到指定范围(如Page)中 
     
- -->
+  使用 response 在客户端生成图片(如验证码)
+    1.设置 page 的 contentType="image/jpeg" 
+    2.设置 page 的 import ="java.awt.image.*, javax.imageio.*, java.io.*, java.awt.* "
+    3.生成图片数据： BufferedImage image = new BufferedImage(xxx); Graphics g = image.getGraphics();  绘图; g.dispose(); 
+    4.将图像输出到页面响应： ImageIO.write(image, "JPEG", response.getOutputStream());
+    5.客户端使用: 《img src="img.jsp" 》 或 通过 Action + HttpServlet 的设置方式 ?
+    
+  转发(forward)和重定向(redirect)对比
+    1.执行 forward 后依然是上一次请求，执行 redirect 后生成第二次请求;
+    2.forward 的请求参数和request范围的属性全部保留； redirect 后的原请求参数和request范围的属性全部丢失;
+    3.forward 后地址栏里的URL不变； redirect 后地址栏改为重定向的目标URL
+    4. ? forward 相当于服务器进行处理； redirect 相当于客户端进行处理
+ --- --------------------------------------------------------------------------------------------------------------------------------->
+ 
+<!-- --------------------------------------------------------------------------------------------------------------------------------
+  自定义标签库(*.tld) -- JSTL 是Sun提供的一套标准标签库，Appache 也提供了一套用于生成页面并显示的 DisplayTag
+    1.编写标签处理类：
+       a.从 SimpleTagSupport  继承， 重写 doTag() 方法，负责生成页面内容( getJspContext(). getOut().write(...) )
+         也可以从 TagSupport 继承，然后重写 doEndTag 方法? 可直接使用 pageContext.getOut().write(...)
+       b.如标签类包含属性，每个属性都有对应的 getter/setter 方法;
+    2.编写标签库定义文件(*.tld) , 格式为 taglib -> tag。编写完毕后复制到 WEB-INF 或其子目录下，Web容器会自动加载该文件 
+       a. 定义标签库的 <uri>http://www.fishjam.com/mytaglib</uri>, 相当于该标签库的唯一标识，JSP页面中使用时根据该URI属性来定位标签库
+       b.定义一到多个标签 <tag>, 其中可设置的子元素:
+          name : 标签名
+          tag-class: 标签处理类
+          body-content: 指定标签体内容，其值可为： 
+            tagdpendent(标签处理类自己负责处理标签体)
+            empty(该标签只能作为空标签使用)，
+            scriptless(标签体可以是静态HTML元素、表达式语言，但不允许出现JSP脚本)
+            JSP(标签体可以使用JSP脚本， 已不推荐使用)
+            dynamic-attributes(指定是否支持动态属性，只有当定义动态属性标签时才需要该子元素)
+       c.如果标签有属性，则需要增加 《attribute》子元素定义标签属性
+    3.使用标签
+      a.通过URI导入标签库并指定前缀: 《%@ taglib uri="http://www.fishjam.com/mytaglib" prefix="fjtag" %》
+      b.使用标签的语法: 《fjtag:tagName tagAttr="tagValue"》标签体《/fjtag:tagName》
+      
+    带标签体的标签，可内嵌其他内容，通常用于完成一些逻辑运算，如 判断和循环等
+      1.配置标签时指定 body-content 为 scriptless
+      2.在 doTag() 中 getJspContext().setAttribute("对象属性名", 属性对象);  getJspBody().invoke(null);  调用标签体中的invoke方法来输出标签体内容
+      3.在JSP 中，标签体里写上 ${pageScope.对象属性名} ， 则会自动根据 "对象属性名" 查找对应的值显示  
+
+ --- --------------------------------------------------------------------------------------------------------------------------------->
 
 <%@page import="java.util.*" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
@@ -88,13 +129,13 @@
 		<tr>
 			<td>2</td>
 			<td>动作指令</td>
-			<td>jsp:forward -- 执行页面跳转，将请求的处理转发到下一个页面，跳转时用户显示的请求地址不变<br>
-				jsp:param -- 用于传递参数，必须与其他支持参数的标签一起使用<br> jsp:include --
-				用于动态引入一个JSP页面，不会导入被include页面的编译指令，仅将被导入页面的body内容插入本页面<br>
+			<td>jsp:forward -- 执行页面跳转，将请求的处理转发到下一个页面，跳转时用户显示的请求地址不变，请求参数和request范围的属性不会丢失<br>
+				jsp:param -- 用于传递参数，必须与其他支持参数的标签一起使用<br> 
+				jsp:include --用于动态引入一个JSP页面，不会导入被include页面的编译指令，仅将被导入页面的body内容插入本页面<br>
 				jsp:plugin -- 用于下载JavaBean或Applet到客户端执行，客户端必须安装虚拟机，现在已很少使用<br>
-				jsp:useBean -- 创建一个JavaBean的实例，代码重用<br> jsp:setProperty --
-				设置JavaBean实例的属性值(通过 类的 setXxx 方法设置)<br> jsp:getProperty --
-				获取JavaBean实例的属性值(通过类的 getXxx 方法获取)
+				jsp:useBean -- 创建一个JavaBean的实例，代码重用<br> 
+				jsp:setProperty -- 设置JavaBean实例的属性值(通过 类的 setXxx 方法设置)<br> 
+				jsp:getProperty -- 获取JavaBean实例的属性值(通过类的 getXxx 方法获取)
 			</td>
 		</tr>
 		<tr>
@@ -152,17 +193,23 @@
 		</tr>
 		<tr>
 			<td>request(HttpServletRequest)</td>
-			<td>该对象封装了一次请求，客户端的请求参数都被封装在该对象里</td>
+			<td>该对象封装了一次请求，客户端的请求参数都被封装在该对象里。<br/>
+					如果POST请求的参数里包含非西欧字符，则必须在获取参数前先调用 setCharacterEncoding 设置编码的字符集(不能自动检测 contentType？ )<br/>
+					如GET请求的参数包含，则需要用 URLDecoder.decode() 进行处理。<br/> 
+					代码中如要 URL转发则需要通过 getRequestDispatcher 进行
+					</td>
 			<td>TODO</td>
 		</tr>		
 		<tr>
 			<td>response(HttpServletResponse)</td>
-			<td>代表服务器对客户端的响应，通常只用于生成二进制响应，重定向等，否则直接使用out对象更方便</td>
+			<td>代表服务器对客户端的响应，通常只用于生成二进制响应(getOutputStream)，重定向(sendRedirect, 会丢失所有的请求参数和request范围的属性)，
+			addCookie 等，否则直接使用out对象更方便</td>
 			<td>TODO</td>
 		</tr>		
 		<tr>
 			<td>session(HttpSession)</td>
-			<td>代表一次会话(浏览器与站点建立连接时会话开始，客户端关闭浏览器时会话结束)</td>
+			<td>代表一次会话(浏览器与站点建立连接时会话开始，客户端关闭浏览器时会话结束)，通常用户跟踪用户的会话信息(是否登录、购物车中的商品等)<br/>
+			注意：session中的属性值必须是可序列化的，否则将引发不可序列化的异常</td>
 			<td>TODO</td>
 		</tr>		
 		<tr>
@@ -172,34 +219,34 @@
 		</tr>		
 	</table>
 
-	<br>类说明
+	<br>JSP标签库(*.tld), 其中可以包含多个标签，由标签处理类( SimpleTagSupport 的子类) 提供支持 
 	<table border="1">
 		<tr>
-			<td>HttpJspBase</td>
+			<td>Cell</td>
 			<td>Cell</td>
 		</tr>
 		<tr>
-			<td>PageContext(pageContext)</td>
+			<td>Cell</td>
 			<td>Cell</td>
 		</tr>
 		<tr>
-			<td>HttpSession(session)</td>
+			<td>Cell</td>
 			<td>Cell</td>
 		</tr>
 		<tr>
-			<td>ServletContext(application)</td>
+			<td>Cell</td>
 			<td>Cell</td>
 		</tr>
 		<tr>
-			<td>ServletConfig(config)</td>
+			<td>Cell</td>
 			<td>Cell</td>
 		</tr>
 		<tr>
-			<td>JspWriter(out, _jspx_out)</td>
+			<td>Cell</td>
 			<td>Cell</td>
 		</tr>
 		<tr>
-			<td>Object(page = this)</td>
+			<td>Cell</td>
 			<td>Cell</td>
 		</tr>
 	</table>
