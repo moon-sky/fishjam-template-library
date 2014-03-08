@@ -205,7 +205,7 @@
 *   通过 nbtstat 命令可以列出信息。
 * OSI -- 开放系统互连，应用层、表示层、会话层、传输层、网络层、数据链路层、物理层；
 * OOB(Out Of Band) -- 带外数据(紧急数据)，通过独立的逻辑信道来接收和处理。尽量不要使用。
-* TCP(Transmission Control Protocol) -- 传输控制协议，面向连接，提供双向、有序、无重复并且无记录边界的数据流服务
+* Qos(Quality of Service):
 * RARP(Reverse Address Resolution Protocol)--用于动态完成物理地址向IP地址的转换。
 * RTP(Real-time Transport Protocol) -- 实时传输协议，目前解决实时流媒体传输的标准协议和关键技术，通常使用UDP进行传输，
 *   开源实现由 LibRTP, JRtpLib 等，每一个RTP数据报都由头部(Header)和负载(Payload)两部分组成。
@@ -214,6 +214,8 @@
 *     在两个端点之间提供稳定、有序的数据传递服务（非常类似于 TCP），基于消息流, 可以保护数据消息边界(不会出现粘包现象)
 *     最初是被设计用于在IP上传输电话，其连接可以是多宿主连接的(连接双方可声明多个地址，若当前连接失败，可切换到另一个地址)。
 *     
+* TCP(Transmission Control Protocol) -- 传输控制协议，面向连接，提供双向、有序、无重复并且无记录边界的数据流服务
+* TOE(TCP/IP Offload Engine) -- TCP/IP卸载引擎。传统TCP处理过程中，会占用大量的主机CPU资源，TOE对TCP/IP协议栈进行扩展，使部分协议从CPU转移到TOE硬件，从而减轻CPU的负担
 * TTL -- 生存时间，表示一个数据包在丢弃之前，可在网络上存在多长时间，值为0时，包被丢弃
 * UDP(User Datagram Protocol) -- 用户数据报协议，无连接，支持双向的数据流，但并不保证可靠、有序、无重复
 * URL(Uniform Resource Locator) -- 基本格式,schema://host[:port]/path/.../[?query-string][#anchor]

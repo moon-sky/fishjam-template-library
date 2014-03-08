@@ -219,6 +219,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlDLNA.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlDTEHelper.hpp"
 				>
 			</File>
@@ -422,6 +426,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlDirectx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlDLNA.h"
 				>
 			</File>
 			<File
