@@ -68,6 +68,30 @@ import javax.servlet.http.HttpServletResponse;
  *     name[O] -- 指定名称 
  *     urlPatterns/value[O] --指定该Servlet处理的URL
  **************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
+ * Filter -- Servlet的加强版，主要用于对Request进行预处理，也可对Response进行后处理，是个典型的处理链。
+ *   使用方式：Filter对Request进行预处理 => 将请求交给Servlet进行处理并生成响应 => Filter对Response进行后处理
+ *   使用场景：
+ *     用户授权Filter -- 检查用户请求，根据请求过滤用户非法请求；例：如检查请求的Session，若发现权限不够，直接重定向。
+ *     日志Filter -- 详细记录某些特殊的用户请求
+ *     解码Filter -- 对非标准编码的请求解码
+ *     XSLT Filter -- 改变XML内容
+ *   步骤：
+ *     1.从 javax.servlet.Filter 接口继承，创建Filter处理类，实现 doFilter(request, response, FilterChain chain) 等方法
+ *     2.web.xml文件中 或通过 @WebFilter 的方式配置
+ *       a.Filter 名，如 filterName="log" 
+ *       b.Filter 拦截URL 的模式，如 urlPatterns= {"/*" }， 通常使用模式字符串拦截复合条件的多个请求URL
+ *       可配置项：
+ *         dispatcherType[O]--指定该Filter仅对哪种dispatcher模式的请求进行过滤，支持 ASYNC/ERROR/FORWARD/INCLUDE/REQUEST 的任意组合，默认同时过滤这五种模式的请求
+ *         servletNames[O]--可指定多个Servlet的名称，用于指定该Filter仅对这几个Servlet执行过滤
+ *         urlPatterns -- 指定该Filter所拦截的URL 
+ *   常用类：
+ *     FilterChain -- Filter是链式处理，在Filter.doFilter()方法中，调用 chain.doFilter 之前的处理是对用户请求进行预处理；
+ *       之后的处理是对服务器响应进行后处理。  
+ *     FilterConfig -- 
+**************************************************************************************************************************************/
+
 // 使用 @WebServlet Annotation 进行部署
 // 理论上说访问地址是 http://localhost:8888/JavaEEStudy/ServletStudy， 但测试是 404
 

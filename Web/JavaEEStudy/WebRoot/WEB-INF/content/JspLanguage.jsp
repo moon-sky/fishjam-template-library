@@ -48,23 +48,28 @@
        a. 定义标签库的 <uri>http://www.fishjam.com/mytaglib</uri>, 相当于该标签库的唯一标识，JSP页面中使用时根据该URI属性来定位标签库
        b.定义一到多个标签 <tag>, 其中可设置的子元素:
           name : 标签名
-          tag-class: 标签处理类
           body-content: 指定标签体内容，其值可为： 
             tagdpendent(标签处理类自己负责处理标签体)
             empty(该标签只能作为空标签使用)，
             scriptless(标签体可以是静态HTML元素、表达式语言，但不允许出现JSP脚本)
             JSP(标签体可以使用JSP脚本， 已不推荐使用)
             dynamic-attributes(指定是否支持动态属性，只有当定义动态属性标签时才需要该子元素)
+          fragment: true|false
+          required: 是否必须提供
+          tag-class: 标签处理类
        c.如果标签有属性，则需要增加 《attribute》子元素定义标签属性
     3.使用标签
       a.通过URI导入标签库并指定前缀: 《%@ taglib uri="http://www.fishjam.com/mytaglib" prefix="fjtag" %》
       b.使用标签的语法: 《fjtag:tagName tagAttr="tagValue"》标签体《/fjtag:tagName》
       
     带标签体的标签，可内嵌其他内容，通常用于完成一些逻辑运算，如 判断和循环等
-      1.配置标签时指定 body-content 为 scriptless
-      2.在 doTag() 中 getJspContext().setAttribute("对象属性名", 属性对象);  getJspBody().invoke(null);  调用标签体中的invoke方法来输出标签体内容
-      3.在JSP 中，标签体里写上 ${pageScope.对象属性名} ， 则会自动根据 "对象属性名" 查找对应的值显示  
-
+      1.在 doTag() 中 getJspContext().setAttribute("对象属性名", 属性对象);  getJspBody().invoke(null);  调用标签体中的invoke方法来输出标签体内容
+      2.标签定义文件中指定  《body-content》 为 scriptless
+      3.在JSP 中，标签体里写上  ${pageScope.对象属性名} ， 则会自动根据 "对象属性名" 查找对应的值进行显示(如迭代容器对象)  
+  JspFragment -- 页面片段
+   动态属性标签：属性个数、属性名不确定。标签处理类需要实现 DynamicAttributes 接口，实现setDynamicAttribute来设置属性名的键值对。
+      配置文件中通过《dynamic-attributes》子元素指定该标签支持动态属性。使用时通过 dynaAttr 设置任意的属性键值对
+   
  --- --------------------------------------------------------------------------------------------------------------------------------->
 
 <%@page import="java.util.*" %>
@@ -77,7 +82,7 @@
 <title>JSP的基础语法</title>
 </head>
 <body>
-	JSP基础语法知识
+	<h1>JSP基础语法知识</h1>
 	<br />
 
 	<%! 
