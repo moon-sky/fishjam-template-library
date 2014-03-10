@@ -70,6 +70,11 @@ import javax.servlet.http.HttpServletResponse;
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
+ * TODO: 
+ * 1.使用 urlrewrite(www.tuckey.org/urlrewrite)可以过滤并重定向访问地址，实现网站的伪静态(即重定向*.html到对应的*.jsp，使得搜索引擎能收录)
+ * 2.实现地图信息重定向：配置文件(urlrewrite.xml), <from>/pos/(\w*)</from> <to type="forward">/pos.jsp?mapid=$1</to>， 
+ *   即将 /pos/* 重定向到 /pos.jsp 网页，且自动设置mapid参数为前面正则表达式匹配的字符串
+ *  
  * Filter -- Servlet的加强版，主要用于对Request进行预处理，也可对Response进行后处理，是个典型的处理链。
  *   使用方式：Filter对Request进行预处理 => 将请求交给Servlet进行处理并生成响应 => Filter对Response进行后处理
  *   使用场景：
@@ -79,7 +84,7 @@ import javax.servlet.http.HttpServletResponse;
  *     XSLT Filter -- 改变XML内容
  *   步骤：
  *     1.从 javax.servlet.Filter 接口继承，创建Filter处理类，实现 doFilter(request, response, FilterChain chain) 等方法
- *     2.web.xml文件中 或通过 @WebFilter 的方式配置
+ *     2.web.xml文件中(filter + filter_mapping) 或通过 @WebFilter 的方式配置
  *       a.Filter 名，如 filterName="log" 
  *       b.Filter 拦截URL 的模式，如 urlPatterns= {"/*" }， 通常使用模式字符串拦截复合条件的多个请求URL
  *       可配置项：
@@ -91,6 +96,20 @@ import javax.servlet.http.HttpServletResponse;
  *       之后的处理是对服务器响应进行后处理。  
  *     FilterConfig -- 
 **************************************************************************************************************************************/
+/**************************************************************************************************************************************
+ * Listener -- 监听Web应用中的各种事件
+ *   常用Web事件监听器接口：
+ *     ServletContextListener -- 监听Web应用的启动和关闭
+ *     ServletContextAttributeListener -- 监听application范围内属性的改变
+ *     ServletRequestListener -- 监听用户请求
+ *     ServletRequestAttributeListener -- 监听request范围内属性的改变
+ *     HttpSessionListener -- 监听用户session的开始和结束
+ *     HttpSessionAttributeListener -- 监听session范围内属性的改变 
+ * 配置：向Web应用注册Listener类即可，不能配置参数
+ *   a.@WebListener
+ *   b.web.xml 中使用 <listner .../> 
+**************************************************************************************************************************************/
+
 
 // 使用 @WebServlet Annotation 进行部署
 // 理论上说访问地址是 http://localhost:8888/JavaEEStudy/ServletStudy， 但测试是 404
