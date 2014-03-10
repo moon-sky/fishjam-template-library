@@ -397,7 +397,8 @@ namespace FTL
 				}
 				FTLASSERT(WAIT_OBJECT_0 == dwWaitThread && TEXT("Wait For Job Thread Time Out, Maybe Deadlock"));
 #endif 
-                CloseHandle(iter->second);
+                SAFE_CLOSE_HANDLE(iter->second, NULL);
+                //API_VERIFY(CloseHandle(iter->second));
             }
             m_TaskThreads.clear();
 		}
@@ -996,7 +997,8 @@ namespace FTL
 
 				HANDLE hOldTemp = m_TaskThreads[dwCurrentThreadId];
                 m_TaskThreads.erase(dwCurrentThreadId);
-				CloseHandle(hOldTemp);
+				//CloseHandle(hOldTemp);
+                SAFE_CLOSE_HANDLE(hOldTemp, NULL);
 
 				FTLTRACEEX(tlTrace,TEXT("CFThreadPool Subtract a thread, thread id = %d(0x%x), curThreadNum = %d\n"),
 					dwCurrentThreadId, dwCurrentThreadId, m_TaskThreads.size());
