@@ -128,7 +128,7 @@ if(::GetCapture() == m_hWnd)
 ***********************************************************************************************************/
 
 /***********************************************************************************************************
-* CListCtrl(TODO:合并到MFCStudy.h中)
+* CListCtrl(TODO:合并到MFCStudy.h中) -- MSDN中虚列表的Sample：VS2008SP1Sample\C++\MFC\general\DBVList
 *   改变行高 -- ? ON_WM_MEASUREITEM_REFLECT, 虚函数 MeasureItem 中设置 lpMeasureItemStruct->itemHeight
 *   
 * 实现真彩色(256色)的工具条(MFC -- http://www.codeguru.com/cpp/controls/toolbar/article.php/c2537/FullFeatured-24bit-Color-Toolbar.htm)

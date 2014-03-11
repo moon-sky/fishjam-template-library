@@ -25,8 +25,9 @@
 *   SlickDLNA -- https://github.com/KernelCrap/android-dlna
 *   UPnP SDK(基于其开发出DLNA) -- http://upnp.org/sdcps-and-certification/resources/sdks/
 *     有很多选择，可支持 C,C++,Java等，其中比较好的：
+*       Intel 的 openTools -- 有不少辅助工具，主要是C#，
 *       Plutinosoft -- 
-*       CyberGarage(海思也用这个) -- 
+*       CyberGarage(海思也用这个) -- http://www.cybergarage.org/net/upnp 
 *     Android平台上: NDK下面编译出 jni库 => 应用层开发
 *       注意：Android平台上的 MediaPlayer 对视频的处理能力相当的弱，若想对各种视频有良好的支持，需要移植视频播放器，
 *              如：ffmpeg、gstream、vlc 等
@@ -111,7 +112,10 @@
 
 
 /*************************************************************************************************************************
-* UPnP(Universal Plug and play) -- 通用即插即用(http://upnp.org/)，是DLNA的核心
+* 树型架构：
+*   Root Device > 物理或逻辑Device > Service > Action(Arguments) 和 Variable > 
+*
+* UPnP(Universal Plug and play) -- 通用即插即用(http://upnp.org/)，主要用于实现设备的智能互联互通，是DLNA的核心
 *   UPnP标准：http://upnp.org/resources/upnpresources.zip
 * 
 *   UPnP是一种用于 PC 机和智能设备(或仪器)的常见对等网络连接的体系结构，尤其是在家庭中。
@@ -121,7 +125,7 @@
 *       2.给家庭网内的devices做自动的NAT和端口映射(Port Mapping)--因为家庭网络里没有那么多IP。
 *   文档：
 *     UPnP Device Architecture 1.0 -- 说明设备是怎样通过UPnP来相互发现和控制，以及传递消息的
-* 
+*
 *   AV规范定义的设备
 *     MS(UPnP AV MediaServer)
 *     MR(UPnP AV MediaRender)
@@ -136,20 +140,23 @@
 *     定义了打印设备和关联的控制点应用之间的交互模型
 *
 * UPnP的工作过程
-*   0.寻址(Addressing) -- 每个设备都应当是DHCP的客户,当设备首次与网络建立连接后,得到一个IP地址，一般来说路由器已有该功能
+*   0.寻址(Addressing) -- 每个设备都应当是DHCP的客户,当设备首次与网络建立连接后,通过DHCPDISCOVER+DHCPOFFERS得到一个IP地址，
+*     一般来说路由器已有该功能。如没有响应，则使用 Auto-IP 完成IP地址的设置 (169.254/169.16)
 *   1.发现(Discovery) -- 当一个设备被添加到网络后，UPnP的发现协议允许该设备向网络上的Control Points(CPs)通知(advise)自己拥有的服务。
 *     同理，当一个CP被添加到网络后，UPnP发现协议允许该CP搜索网络上可用的设备。
 *     一般通过SSDP协议组播发送 设备和服务的基本信息(类型，唯一标识符，当前状态参数等)。
 *     组播地址为“HOST: 239.255.255.250:1900” ? Response 是UDP单播
+*     服务通知 + 
 *   2.描述(Description) -- CP向设备发送请求信息，返回XML格式的描述(device + service),其中有更详细信息的URL
 *   3.控制(Control) -- 通过向设备描述部分给出的Control URL发送控制信息来控制Device，并根据反馈进行处理。
 *     沟通信息按照SOAP的格式来写(现在的版本是 SOAP 1.1 UPnP Profile)
 *   4.事件(Eventing) -- 在服务进行的整个时间内，如状态发生了改变，可以产生一个事件，并向整个网络进行多播(multicast);
 *     CP也可以事先向事件服务器订阅(subscribe)事件信息，保证将该CP感兴趣的事件及时准确地单播传送过来(unicast)。
 *     事件的订阅和推送使用的协议是 GENA。
-*   5.表达(Presentation) -- 遥控器的UI？
+*   5.界面描述(Presentation) -- 遥控器的UI？
 *     只要得到了设备的URL，就可以取得该设备表达的URL，取得该设备表达的HTML，然后可以将此HTML纳入CP的本地浏览器上。
-*
+*     既允许设备供应商提供基于浏览器的用户界面和编程控制接口，也允许开发人员定制自己的设备界面。
+* 
 * UPnP AV(Audio/Video) Architecture -- 提供了交互的机制、模型，但并没有规定采用何种技术来实现(具有广泛的适应性)，
 *   AV架构对CP(Action通常由CP发出)的功能要求有10条：
 *     1.发现AV设备
@@ -168,10 +175,19 @@
 *     3-box model -- CP仅仅作为一个遥控器。也分为pull和push两种方式。
 *       a -- pull方式时,CP向Renderer发送Server及Server上所需媒体内容的URL，让Renderer去取
 *       b -- push方式时，CP向Server发Renderer的URL，让Server去向Renderer推送媒体内容
+*
+* 格式
+*   设备类型 -- 描述格式一般为 urn:schemas-upnp-org:device:uuid-device。其中 uuid-device 为UPnP工作委员会定义的标准设备类型。
+*     设备制造商也可以指定其他的名字，一般为 urn:domain-name:device:uuid-device，其中 uuid-device为制造商定义的标准设备类型，domain-name字段为设备制造商注册的域名
+*   服务类型 -- 表示服务的统一资源名，一般格式为 urn:schemas-upnp-org:service:serviceType:version
+*     UPnP设备制造商可以指定附加服务，格式为 urn:domain-name:service:serviceType:version
+*     典型的服务类型：扫描仪(scanner),
+
 *************************************************************************************************************************/
-
-
-
+/*************************************************************************************************************************
+* CyberLink
+*   C++ 版本 -- 
+*************************************************************************************************************************/
 namespace FTL
 {
 }

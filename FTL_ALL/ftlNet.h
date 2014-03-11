@@ -195,9 +195,12 @@
 *   安全问题：1.识别不精确。在同一台计算机上使用同一浏览器的多用户群，cookie不会区分他们的身份（除非使用不用的用户名登录OS）
 *              2.网页臭虫的图片(透明且只有一个像素-以便隐藏)，将所有访问过此页面的计算机写入cookie，方便网站发送垃圾邮件
 *              3.Cookie欺骗 -- 通过XSS(Cross Site Scripting)跨站脚本攻击; 获取别人电脑上保存的cookie文件;
-* DHCP(Dynamic Host Configuration Protocol) -- 动态主机配置协议
+* DHCP(Dynamic Host Configuration Protocol,RFC2131) -- 动态主机配置协议
 * DHT(Distributed Hash Table 分散式杂凑表) -- 可以使P2P网络完全不使用服务器，典型的有eMule中使用的 Kad，
-* GENA(General Event Notification Architecture) -- UPnP中的事件订阅，端口号7900
+* FXPP() -- 
+* GENA(General Event Notification Architecture) -- 通用事件通知架构，用在UPnP中的事件订阅(使用HTTPMU)，端口号7900
+* HTTPMU -- 在UDP上实现HTTP协议的多址传送
+* HTTPU --  在UDP上实现普通的HTTP传送协议
 * ICMP(Internet Control Message Protocol)--互连控制消息协议，主要用来供主机或路由器报告IP数据报载传输中可能出现的不正常情况。
 * IP(Internet Protocol)--互联协议，规定了数据传输的基本单元(报文分组)以及所有数据在网际传递时的确切格式规范。
 * LANA(LAN Adapter)Number -- 对应于网卡及传输协议的唯一组合
@@ -216,11 +219,14 @@
 * SCTP(Stream Control Transmission Protocol) -- 流控制传输协议, 2000年新定义的面向连接的传输层协议，对TCP的缺陷进行了一些完善。
 *     在两个端点之间提供稳定、有序的数据传递服务（非常类似于 TCP），基于消息流, 可以保护数据消息边界(不会出现粘包现象)
 *     最初是被设计用于在IP上传输电话，其连接可以是多宿主连接的(连接双方可声明多个地址，若当前连接失败，可切换到另一个地址)。
-* SSDP(Simple Service Discovery Protocol) -- 简单服务发现协议，采用UDP传输，端口号为1900，格式套用HTTP1.1的部分消息头字段
+* SOAP(Simple Object Access Protocol) -- 简单对象访问协议，是一种在HTTP上使用XML发送命令并接收值的远程过程调用
+* SSDP(Simple Service Discovery Protocol) -- 简单服务发现协议，采用UDP传输，格式套用HTTP1.1的部分消息头字段
 * TCP(Transmission Control Protocol) -- 传输控制协议，面向连接，提供双向、有序、无重复并且无记录边界的数据流服务
 * TOE(TCP/IP Offload Engine) -- TCP/IP卸载引擎。传统TCP处理过程中，会占用大量的主机CPU资源，TOE对TCP/IP协议栈进行扩展，使部分协议从CPU转移到TOE硬件，从而减轻CPU的负担
 * TTL -- 生存时间，表示一个数据包在丢弃之前，可在网络上存在多长时间，值为0时，包被丢弃
+* UDN(Unique Device Name) -- 单一设备名，基于UUID，每个表示一个设备。在不同的时间，对于同一个设备此值应该是唯一的
 * UDP(User Datagram Protocol) -- 用户数据报协议，无连接，支持双向的数据流，但并不保证可靠、有序、无重复
+* UPC(Universal Product Code) -- 通用产品编码，由12个数字构成，由统一编码委员会（Uniform Code Council）管理。这个值可由UPnP制造商指定。
 * URL(Uniform Resource Locator) -- 基本格式,schema://host[:port]/path/.../[?query-string][#anchor]
 *   如: http://www.mywebsite.com/sj/test/test.aspx?name=sviergn&x=true#stuff
 * WINS -- Windows互联网命名服务器,维护着已注册的所有NetBIOS名字的一个列表

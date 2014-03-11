@@ -26,6 +26,8 @@ package com.fishjam.utility.db;
  *   ResultSet -- query 后返回的结果集
  *     getMetaData() -- 获取
  *     next() -- 到下一条记录，如还有则返回true，之后可通过 getString 等方法获取数据
+ *     updateString -- 更新字段值
+ *     updateRow -- 更新一行
  *   ResultSetMetaData -- ?
  *     getColumnCount() -- 获取列数目
 *******************************************************************************/

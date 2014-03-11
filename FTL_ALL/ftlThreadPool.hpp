@@ -1064,11 +1064,12 @@ namespace FTL
 	unsigned int CFThreadPool<T>::JobThreadProc(void *pThis)
 	{
 		FUNCTION_BLOCK_TRACE(0);
+        BOOL bRet = FALSE;
 		CFThreadPool<T>* pThreadPool = (CFThreadPool<T>*)pThis;
 		LONG nRunningNumber = InterlockedIncrement(&pThreadPool->m_nRunningThreadNum);
 		if (1 == nRunningNumber)
 		{
-			ResetEvent(pThreadPool->m_hEventAllThreadComplete);
+			API_VERIFY(ResetEvent(pThreadPool->m_hEventAllThreadComplete));
 		}
 
 		//不用 try...catch 进行保护，防止屏蔽业务逻辑代码的BUG
@@ -1078,7 +1079,7 @@ namespace FTL
 		if (0 == nRunningNumber)
 		{
 			//线程结束后判断是否是最后一个线程，如果是，激发事件
-			SetEvent(pThreadPool->m_hEventAllThreadComplete);
+			API_VERIFY(SetEvent(pThreadPool->m_hEventAllThreadComplete));
 		}
 		return(0);
 	}
