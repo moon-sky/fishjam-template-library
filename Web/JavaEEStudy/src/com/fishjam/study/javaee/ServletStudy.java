@@ -13,7 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 
 /**************************************************************************************************************************************
  * TODO:
- *   1.要编译JaveEE(Ant?),需要将 SDK6 中的 javaee.jar 或 tomcat7中的 jsp-api.jar,servlet-api.jar 加到 %CLASSPATH% 中
+ *   1.要编译JaveEE(Ant?),需要将  %TOMCAT_HOME%/lib/jsp-api.jar;%TOMCAT_HOME%/lib/servlet-api.jar 加到 %CLASSPATH% 中
+ *     
  *   2.多个客户端共享同一个Servlet实例？
  *   3.每个请求由一个Java线程处理?
  *   
