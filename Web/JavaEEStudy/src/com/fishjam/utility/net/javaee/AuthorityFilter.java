@@ -41,7 +41,7 @@ public class AuthorityFilter implements Filter {
 		
 		HttpServletRequest hRequest = (HttpServletRequest)request;
 		HttpSession session = hRequest.getSession();
-		//获取客户请求的页面
+		//获取客户请求的页面，在服务器上以 "/" 开始的地址
 		String requestPath = hRequest.getServletPath();
 		
 		//如果session范围的user为null，即表明没有登录；

@@ -16,11 +16,17 @@ public class ServletInfoDumper {
 			StringBuilder sb = new StringBuilder();
 			
 			sb.append("CharacterEncoding=" + request.getCharacterEncoding() + strDivide);
+			
+			//TODO: java.net.URLEncoder.encode/URLDecoder -- 对QueryString 进行编解码
+			//查询字符串，通过 split("&") 拆分出参数列表;  split("="); 拆分出键值对
 			sb.append("QueryString=" + request.getQueryString() + strDivide);
-			//TODO: URLEncoder/URLDecoder -- 对QueryString 进行编解码
 			
+			//获取客户请求的页面，在服务器上以 "/" 开始的地址
+			sb.append("getServletPath=" + request.getServletPath());	
+			sb.append("getRequestURI=" + request.getRequestURI());
+			sb.append("getRequestURL=" + request.getRequestURL());
 			
-			//获取所有的请求参数(input)
+			//获取所有的请求参数(input)， getParameterValues 根据名字获取多值类型的值(如 CheckBox 选择的多个值)
 			Map<String, String[]> parmeterMap = request.getParameterMap();
 			String parmeterMapString = BaseInfoDumper.MapToString(parmeterMap);
 			sb.append("getParameterMap = { "  + parmeterMapString + " }" + strDivide);
@@ -39,7 +45,7 @@ public class ServletInfoDumper {
 				sb.append(strKey + "=" + request.getAttribute(strKey) + strDivide);
 			}
 
-			//获取所有请求头的名称
+			//获取所有请求头的名称 -- 注意：如果是 submit 的结果，则其 referer 会指向提交表单的URL
 			Enumeration<String> headerNames =request.getHeaderNames();
 			while (headerNames.hasMoreElements()) {
 				 String  headerName = headerNames.nextElement();

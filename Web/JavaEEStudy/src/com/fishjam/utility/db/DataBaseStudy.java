@@ -17,19 +17,23 @@ package com.fishjam.utility.db;
  *   Connection
  *     createStatement() -- 创建执行环境，用于 SQL 中不带 "?" 参数的情况
  *     prepareStatement(sql) -- 准备select等语句的执行环境，用于SQL中带 "?" 参数的情况
+ *   DataSource -- 一般可以通过 new InitialContext().lookup("java:comp/env/jdbc/xxxx") 从JNDI中获得
+ *     getConnection
  *   DriverManager
  *     getConnection()
  *   PreparedStatement
  *     executeUpdate() -- 执行更新相关的语句
  *     executeQuery() -- 执行 select 相关的语句，返回 ResultSet
- *     setObject -- 替换SQL语句中的"?" 参数
+ *     setObject -- 替换SQL语句中的"?" 参数, 如 ("select * from user_table  where name= ?", username); 
+ *       函数声明 insert(String sql, Object... args) { 	PreparedStatement pstmt = getConnection().prepareStatement(sql);  for{ 	pstmt.setObject( i + 1 , args[i]); }
  *   ResultSet -- query 后返回的结果集
  *     getMetaData() -- 获取
- *     next() -- 到下一条记录，如还有则返回true，之后可通过 getString 等方法获取数据
+ *     next() -- 到下一条记录，如还有则返回true，之后可通过 getString 等方法获取数据，一般用法为 while(rs.next()) { rs.getString(1)... }
  *     updateString -- 更新字段值
  *     updateRow -- 更新一行
  *   ResultSetMetaData -- ?
  *     getColumnCount() -- 获取列数目
+ *   Statement
 *******************************************************************************/
 
 public class DataBaseStudy

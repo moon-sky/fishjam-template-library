@@ -16,6 +16,12 @@ import javax.servlet.http.HttpServletResponse;
  *   1.要编译JaveEE(Ant?),需要将 SDK6 中的 javaee.jar 或 tomcat7中的 jsp-api.jar,servlet-api.jar 加到 %CLASSPATH% 中
  *   2.多个客户端共享同一个Servlet实例？
  *   3.每个请求由一个Java线程处理?
+ *   
+ * 一个使用 Servlet 的典型过程(用户登录访问资源)
+ *   1.用户访问任意资源
+ *   2.在 Filter 中判断 session.getAttribute("name") 是否为null, forward 到 login.jsp
+ *   3.login.jsp 中用户输入信息并 submit 到名为 /login 的 servlet
+ *   4./login 中 获取 用户名 + 密码 进行身份判定，若成功则 session.setAttribute("name", username); 并 getRequestDispatcher(xxx).forward 
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -58,15 +64,15 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * 将 Servlet 配置到Web应用中有两种方法： 
  *   1.修改 web.xml,
- *     a.<servlet> 元素指定名字和对应的Java类 
- *     b.<servlet-mapping> 元素指定 Servlet 映射到的 URL
+ *     a.<servlet> 元素指定名字(servlet-name)和对应的Java类(servlet-class) | jsp文件(jsp-file)
+ *     b.<servlet-mapping> 元素指定 Servlet(servlet-name) 映射到的 URL(url-pattern)
  *   2.(Servlet 3.0 以后)使用 @WebServlet 的 Annotation 修饰该Servlet类， 支持的属性： 
  *     asyncSupported[O] --是否支持异步操作模式 
  *     displayName[O] -- 指定显示名 
- *     initParams[O] -- 配置参数，然后可通过 ServletConfig 访问, 如 initParams={ @WebInitParam(name="driver", value="xxxx"), ... }
+ *     initParams[O] -- 配置参数，然后可通过 ServletConfig.getInitParameter() 访问, 如 initParams={ @WebInitParam(name="driver", value="xxxx"), ... }
  *     loadOnStartup[O] --将该Servlet配置成Web应用一启动就创建，是一个整数，值越小越早实例化
- *     name[O] -- 指定名称 
- *     urlPatterns/value[O] --指定该Servlet处理的URL
+ *     name[M] -- 指定名称，如 "login"
+ *     urlPatterns/value[M] --指定该Servlet处理的URL, 如 {"/login"} 
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -113,6 +119,7 @@ import javax.servlet.http.HttpServletResponse;
 
 // 使用 @WebServlet Annotation 进行部署
 // 理论上说访问地址是 http://localhost:8888/JavaEEStudy/ServletStudy， 但测试是 404
+//TODO: 调整 WEB-INF 的位置来尝试
 
 @WebServlet(loadOnStartup=1,  name="ServletStudy", urlPatterns={ "/ServletStudy" }  )
 public class ServletStudy extends HttpServlet {

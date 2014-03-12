@@ -4,7 +4,11 @@ package com.fishjam.study.javaee;
  * TODO:
  *   1.对象类(如User)中可加入 XDoclet 注释(如 @hibernate.class table="users" ),
  *     然后通过 xdoclet ant task 自动生成对应的 user.hbm.xml 文件(参见"hibernate开发指南")
- * 
+ *   2.使用Sqlite时的相对路径方式
+ *     TODO: web中的话.方法很简单 Web.xml文件中.使用<context-param> 标签就可以了.
+ *                用框架配置的话. 就使用${param-name}就可以得到值了.  
+ *                如果是一般的servlet 只要用getInitParameter(param-name)就可以拿到了.
+ *     
  * Android sqlite数据库操作通用框架AHibernate(一)-CRUD示例和使用步骤
  *   http://blog.csdn.net/lk_blog/article/details/7455992
  * 
@@ -51,11 +55,14 @@ package com.fishjam.study.javaee;
  *   Context ctx = new InitialContext(); 
  *   DataSource ds = (DataSource)ctx.lookup("java:comp/env/" + "自定义名字");
  *
- * 常用数据库连接配置：
+ * 常用数据库连接配置，
  *   Access		sun.jdbc.odbc.JdbcOdbcDriver
- *   MySql		com.mysql.jdbc.Driver						jdbc:mysql://localhost:3306/javaee
+ *   MySql		com.mysql.jdbc.Driver						jdbc:mysql://localhost:3306/javaee，		mysql-connector-java-5.1.7-bin.jar
  *   Oracle     oracle.jdbc.OracleDriver
- *   SQLite     org.sqlite.JDBC									jdbc:sqlite:c:/sqlitedemo.db		
+ *   SQLite     org.sqlite.JDBC									jdbc:sqlite:c:/sqlitedemo.db					sqlite-jdbc-3.7.2.jar
+ *   使用方式：
+*       Class.forName("com.mysql.jdbc.Driver");
+*       Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/javaee","root","root");	
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -81,6 +88,7 @@ package com.fishjam.study.javaee;
 *       纯Java实现，方便，但效率较低
 *     2.SQLite Java Wrapper/JDBC Driver( http://www.ch-werner.de/javasqlite/)， 需要本地库
 *   支持内存数据库:  Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:");
+*   支持资源型数据库(尚未测试通过, org\sqlite\Conn.java 中的实现发现): .getConnection("jdbc:sqlite::resource:xxx"); 
 **************************************************************************************************************************************/
 
 public class HibernateStudy {

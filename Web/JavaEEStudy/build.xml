@@ -59,6 +59,7 @@
  -->
 
 <project name="JavaEEStudy" default="help" basedir="." >
+	<!-- 定义Ant文件中会使用到的一些属性 -->
 	<property name="version" value="1.0"/>
 	<property name="dist" value="dist"/>
 	<property name="classes" value="classes"/>
@@ -83,7 +84,7 @@
 	</path>
 	
 	<path id="classpath">
-		<pathelement path="${dist}"/>
+		<pathelement path="${classes}"/>
 		<fileset dir="lib" casesensitive="false" >
 			<include name="**/*.jar"/>
 			<exclude name="*.bak"/>
@@ -107,6 +108,7 @@
 	</target>
 	
 	<target name="compile" description="Compile all source code">
+		<delete dir="${dist}"/>
 		<delete dir="${dist}"/>
 		<mkdir dir="${dist}"/>
 		<mkdir dir="${classes}" />
@@ -135,7 +137,7 @@
 	<target name="build" description="打包JAR文件" depends="compile">
 		<delete dir="${dist}" />
 		<mkdir dir="${dist}" />
-		<jar destfile="${dest}/${appname}.jar" basedir="${classes}" includes="**/*.class">
+		<jar destfile="${dist}/${appname}.jar" basedir="${classes}" includes="**/*.class">
 			<manifest>       <!-- 将 classes 属性所代表文件夹下的所有 *.classes 文件都打包到 ${appname}.jar 文件中 -->
 				<attribute name="Main-Class" value="test.HelloTest" />   <!-- 为JAR包的清单文件添加属性-->
 			</manifest>

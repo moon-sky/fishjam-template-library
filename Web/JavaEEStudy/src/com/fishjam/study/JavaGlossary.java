@@ -18,7 +18,7 @@ package com.fishjam.study;
  * JINI(Java Intelligent Network Infrastructure) -- 能轻松动态地在代表本机系统的网络中加入或移除硬件设备
  * JIT(Just-In-Time) -- JIT编译器，在运行时按需编译，可以减少编译时间和运行时的程序大小，但初次运行时较慢?
  * JNDI(Java Naming Directory Interface) -- Java命名和目录接口，为某个Java对象起一个名字，然后可通过该名字来访问。
- *    访问方式： Context ctx = new InitialContext(); DataSource ds = (DataSource)ctx.lookup("java:comp/env/" + "自定义名字");
+ *    访问方式(JSP页面脚本)： Context ctx = new InitialContext(); DataSource ds = (DataSource)ctx.lookup("java:comp/env" + "自定义名字全路径");
  * JNI(Java Native Interface) -- Java原生接口，用以和C/C++程序接轨，获得高性能
  * JPA -- 是一种ORM规范 
  * JSF() -

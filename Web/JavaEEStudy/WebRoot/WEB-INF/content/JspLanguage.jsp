@@ -1,5 +1,6 @@
 <!-- HTML 注释，会发送到客户端，注意对比 JSP 注释 -->
 <%-- JSP 注释，不会被发送到客户端 --%>
+
 <!------------------------------------------------------------------------------------------------------------------------------------ 
   编译指令 %@ xxx %
     page指令:
@@ -20,6 +21,7 @@
     include： 《jsp:include page="{relativeURL | 《%=expression %》}" flush="true"》《jsp:param name="xxx" value="yyy"/》
              flush属性指定输出缓存是否转移到被导入文件中。true(包含在被导入文件中)，false(包含在原文件中)
     useBean: 《jsp:useBean id="beanName" class="classname" scope="page|request|session|application" /》
+      初始化一个Java对象示例，然后可通过 setProperty/getProperty 等进行访问
     setProperty：《jsp:setProperty name="beanName" property="prop1" value="value1" /》
     getProperty：《jsp:getProperty name="beanName" property="prop1" /》
       说明: 直接使用JavaBean的类似乎更方便，new 出的对象可通过 pageContext.setAttribute("名字"， 实例) 的方式放置到指定范围(如Page)中 
@@ -28,7 +30,7 @@
     1.设置 page 的 contentType="image/jpeg" 
     2.设置 page 的 import ="java.awt.image.*, javax.imageio.*, java.io.*, java.awt.* "
     3.生成图片数据： BufferedImage image = new BufferedImage(xxx); Graphics g = image.getGraphics();  绘图; g.dispose(); 
-    4.将图像输出到页面响应： ImageIO.write(image, "JPEG", response.getOutputStream());
+    4.将图像输出到页面响应： ImageIO.write(image, "JPEG", response.getOutputStream());  //第二个参数也可以用 "jpg" 
     5.客户端使用: 《img src="img.jsp" 》 或 通过 Action + HttpServlet 的设置方式 ?
     
   转发(forward)和重定向(redirect)对比
@@ -47,7 +49,7 @@
     2.编写标签库定义文件(*.tld) , 格式为 taglib -> tag。编写完毕后复制到 WEB-INF 或其子目录下，Web容器会自动加载该文件 
        a. 定义标签库的 <uri>http://www.fishjam.com/mytaglib</uri>, 相当于该标签库的唯一标识，JSP页面中使用时根据该URI属性来定位标签库
        b.定义一到多个标签 <tag>, 其中可设置的子元素:
-          name : 标签名
+          name[M]: 标签名
           body-content: 指定标签体内容，其值可为： 
             tagdpendent(标签处理类自己负责处理标签体)
             empty(该标签只能作为空标签使用)，
@@ -56,7 +58,7 @@
             dynamic-attributes(指定是否支持动态属性，只有当定义动态属性标签时才需要该子元素)
           fragment: true|false
           required: 是否必须提供
-          tag-class: 标签处理类
+          tag-class[M]: 标签处理类
        c.如果标签有属性，则需要增加 《attribute》子元素定义标签属性
     3.使用标签
       a.通过URI导入标签库并指定前缀: 《%@ taglib uri="http://www.fishjam.com/mytaglib" prefix="fjtag" %》
@@ -67,7 +69,7 @@
       2.标签定义文件中指定  《body-content》 为 scriptless
       3.在JSP 中，标签体里写上  ${pageScope.对象属性名} ， 则会自动根据 "对象属性名" 查找对应的值进行显示(如迭代容器对象)  
   JspFragment -- 页面片段
-   动态属性标签：属性个数、属性名不确定。标签处理类需要实现 DynamicAttributes 接口，实现setDynamicAttribute来设置属性名的键值对。
+   动态属性标签：属性个数、属性名不确定。标签处理类需要实现 DynamicAttributes 接口，实现setDynamicAttribute来设置属性名的键值对(一般可以保存到容器类型的成员变量中)。
       配置文件中通过《dynamic-attributes》子元素指定该标签支持动态属性。使用时通过 dynaAttr 设置任意的属性键值对
    
  表达式语言(Expression Language)-- 一种简化的数据访问方式，可以方便的访问JSP的隐含对象和JavaBeans组件。
@@ -106,6 +108,12 @@
 		</thead>
 		<tr>
 			<td><%= mRowIndex++ %></td>
+			<td> JSP的注释</td>
+			<td>
+			&lt;%-- JSP 注释部分，不会发送到客户端 --%&gt;</td>
+		</tr>
+		<tr>
+			<td><%= mRowIndex++ %></td>
 			<td>声明变量和函数：&lt;%! 声明部分 %&gt;<br>注意：不能直接使用JSP内置的out等变量</td>
 			<td><%! private int mCount = 1; %> 此处定义了成员变量 mCount(初始值为
 				1)，该变量在整个Web生存期中各客户端共享<br /></td>
@@ -142,13 +150,6 @@
 				jsp:useBean -- 创建一个JavaBean的实例，代码重用<br> 
 				jsp:setProperty -- 设置JavaBean实例的属性值(通过 类的 setXxx 方法设置)<br> 
 				jsp:getProperty -- 获取JavaBean实例的属性值(通过类的 getXxx 方法获取)
-			</td>
-		</tr>
-		<tr>
-			<td>Cell</td>
-			<td></td>
-			<td>
-				
 			</td>
 		</tr>
 	</table>

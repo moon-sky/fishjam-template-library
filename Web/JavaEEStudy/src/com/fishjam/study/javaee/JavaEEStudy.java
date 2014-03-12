@@ -1,9 +1,32 @@
 package com.fishjam.study.javaee;
 
-//轻量级Java_EE企业应用实战_Struts_2+Spring_3+Hibernate整合开发 -- P130(JSTL)
+//轻量级Java_EE企业应用实战_Struts_2+Spring_3+Hibernate整合开发 -- P130(JSTL), 示例(2.12 - urlrewrite)
 //  使用的是 Eclipse-jee-helios 版( Eclipse 3.6 for Java EE Developers )
+// 官方的在线文档：http://docs.oracle.com/javaee/7/api/index.html?overview-summary.html
 
 /**************************************************************************************************************************************
+ * JavaEE 项目的目录结构
+ * 
+ * WebRoot/
+ *   index.jsp
+ *   content/
+ *   css/
+ *   images/
+ *   js/
+ *   META-INF/ 
+ *   WEB-INF/  -- 此目录下的内容客户端不能直接访问，只能服务器访问。一般放置部署描述符(web.xml) 和 Java 类(因此不放 css/js/images 一类的文件)。
+ *                       但是(不好的习惯？)：可以通过转向(forward)的方式来访问该目录下的 jsp 文件。该目录下的文件访问其他目录的文件时可以忽略 WEB-INF 目录的层次关系
+ *     web.xml
+ *     build.xml
+ *     struts-config.xml
+ *     classes/
+ *     lib/
+ *     src/  -- 保存Servlet的Java源码等
+**************************************************************************************************************************************/
+
+
+/**************************************************************************************************************************************
+ * 
  * TODO:
  *   1.项目代码分包的时候，可以先分为 MVC 对应的几个大包
  *     model -- dao/dao.hibernate/entity/service/service.spring
