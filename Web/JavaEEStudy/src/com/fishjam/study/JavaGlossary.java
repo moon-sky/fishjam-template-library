@@ -6,6 +6,7 @@ package com.fishjam.study;
  * CVS(Concurrent Versions System) -- 版本控制工具CVS，已被SVN替代
  * DAO(Data Access Object) -- 数据访问对象
  * DBCP -- 数据源？
+ * DMI(Dynamic Method Invocation) -- 动态方法调用， struts2中指定action不同的请求为 "ActionName!methodName" 
  * DTO(Data Transfer Object) -- 数据传输对象，JavaEE中，中间层组件将应用底层的状态信息封装成名为DTO的JavaBean，并传送到JSP页面进行显示。
  * EJB(Enterprise Java Bean) -- (将事务逻辑和连接的问题隔离),已被 JPA 替代？
  * GC(Garbage Collector) -- 垃圾回收
@@ -25,6 +26,7 @@ package com.fishjam.study;
  * JSP(Java Server Page) -- 最终会编译成Servlet才能运行
  * JSR(Java Spec. Request) -- Java 规格需求
  * JSTL(JSP Standard Tag Library) -- Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
+ * OGNL() -- 
  * ORM(Object Relation Mapping) -- 对象-关系映射，完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表。
  *   最早的ORM是 Entity EJB，但非常麻烦。
  * OSGi(Open Service Gateway Initiative) --

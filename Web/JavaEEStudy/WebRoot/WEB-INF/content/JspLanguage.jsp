@@ -71,10 +71,31 @@
   JspFragment -- 页面片段
    动态属性标签：属性个数、属性名不确定。标签处理类需要实现 DynamicAttributes 接口，实现setDynamicAttribute来设置属性名的键值对(一般可以保存到容器类型的成员变量中)。
       配置文件中通过《dynamic-attributes》子元素指定该标签支持动态属性。使用时通过 dynaAttr 设置任意的属性键值对
-   
- 表达式语言(Expression Language)-- 一种简化的数据访问方式，可以方便的访问JSP的隐含对象和JavaBeans组件。
- ------------------------------------------------------------------------------------------------------------------------------------>
 
+  Expression Language(EL) -- 表达式语言，是 一种简化的数据访问方式，可以方便的访问JSP的隐含对象和JavaBean组件的数据，避免使用JSP脚本
+      ${……} -- 定义了一个表达式，可是常量也可是具体的表达语句。如 ${logininfo.username}或 ${logininfo[username]}， ${param['name']}
+        内置对象：
+          pageContext, param, paramValues, header, headerValues, initParam, cookie , exception(异常处理页)
+          pageScope, requestScope，sessionScope, applicationScope, 
+        范围：page, request, session, application
+        自定义函数：开发步骤和使用方式类似标签(tag)
+          1.开发函数处理类(普通POJO),包含若干★静态方法★，其签名为 public static 
+          2.使用标签库定义函数：在 《taglib》 下增加 《function》，指定 name, function-class(类), 
+             function-signature(方法的签名，包括返回值、函数名、参数)
+          3.JSP中使用函数：《td》${fjtag:myFun(param["username"])}&nbsp;《/td》 
+          
+  TagFile(*.tag) -- 自定义标签的简化方法，可以无需定义标签处理类和标签库文件，在 JSP 页面中通过 《%@ taglib tagdir="path" %> 的方式导入使用
+    
+ ----------------------------------------------------------------------------------------------------------------------------------->
+
+<!-----------------------------------------------------------------------------------------------------------------------------------
+  标准JSTL(两个 JAR包，允许时需要拷贝到 WEB-INF\lib 目录下 )
+    使用 《%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %》
+    c:forEach items="${books} var="book" -- 迭代输出books集合 
+  
+  
+
+----------------------------------------------------------------------------------------------------------------------------------->
 <%@page import="java.util.*" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>

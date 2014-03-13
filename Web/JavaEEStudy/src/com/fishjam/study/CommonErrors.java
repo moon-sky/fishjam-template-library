@@ -1,6 +1,25 @@
 package com.fishjam.study;
 
 /**************************************************************************************************************************************
+ * 常见辅助调试的选项
+ *   IE
+ *     
+ *   Struts2
+ *     struts.xml
+ *       /struts/constant[name="struts.devMode" value="true"] -- 设置为 true可使用开发模式，应用出错时显示更多、更友好的出错信息
+ *       struts.configuration.xml.reload="true" -- 当struts.xml文件改变后，是否自动加载该文件
+ *       struts.convention.classes.reload="true" -- 如果使用 Convention 自动映射时，可在Action或JSP页面改变时自动加载相关文件
+ *     Config Browser插件(struts2-config-browser-plugin-x.y.z.jar 复制到 WEB-INF\lib 目录下) -- 查看Action等各种资源的映射情况
+ *       访问以下地址： http://xxx/应用名/config-browser/index.action 
+ *        
+ *   Tomcat
+ *     web.xml
+ *       /web-app/servlet/init-para[param-name='listings'] -- 将对应的 param-value 改为 'true', 列出Web应用路径下所有页面，方便直接选取文件调试 
+ *     动态配置或 server.xml 中 <Context docBase= > 里 reloadable="true"， 则更改 Servlet 后会自动重新加载
+
+**************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
  * TODO:
  *   1.网上说 "如果 Web 应用在启动时, WEB-INF 下的 classes 和 lib 目录不存在，则在启动应用后，新建 classes|lib  目录，动态添加的内容是没有用的，
  *      tomcat 不会进行监控这些目录”--  实测： 停止tomcat -> 删除 work -> 重启tomcat ，结果：无效  

@@ -1,6 +1,6 @@
 package com.fishjam.study.javaee;
 
-//轻量级Java_EE企业应用实战_Struts_2+Spring_3+Hibernate整合开发 -- P130(JSTL), 示例(2.12 - urlrewrite)
+//轻量级Java_EE企业应用实战_Struts_2+Spring_3+Hibernate整合开发 -- P241(国际化、资源)
 //  使用的是 Eclipse-jee-helios 版( Eclipse 3.6 for Java EE Developers )
 // 官方的在线文档：http://docs.oracle.com/javaee/7/api/index.html?overview-summary.html
 

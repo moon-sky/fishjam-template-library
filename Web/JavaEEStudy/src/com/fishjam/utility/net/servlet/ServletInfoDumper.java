@@ -1,30 +1,37 @@
 package com.fishjam.utility.net.servlet;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.fishjam.utility.dumper.BaseInfoDumper;
 
 public class ServletInfoDumper {
 
+	//当访问如下地址时： http://localhost:8888/StoreServer/Pos/12345678?name=abc&pass=123
 	public static String RequestToString(HttpServletRequest request, String strDivide) {
 		if (request != null) {
 			StringBuilder sb = new StringBuilder();
-			
+
 			sb.append("CharacterEncoding=" + request.getCharacterEncoding() + strDivide);
 			
 			//TODO: java.net.URLEncoder.encode/URLDecoder -- 对QueryString 进行编解码
 			//查询字符串，通过 split("&") 拆分出参数列表;  split("="); 拆分出键值对
-			sb.append("QueryString=" + request.getQueryString() + strDivide);
+			sb.append("QueryString=" + request.getQueryString() + strDivide);		//-- name=abc&pass=123
 			
+			sb.append("getContextPath=" + request.getContextPath() + strDivide);	//-- /StoreServer"
 			//获取客户请求的页面，在服务器上以 "/" 开始的地址
-			sb.append("getServletPath=" + request.getServletPath());	
-			sb.append("getRequestURI=" + request.getRequestURI());
-			sb.append("getRequestURL=" + request.getRequestURL());
+			sb.append("getServletPath=" + request.getServletPath() + strDivide);			//-- /Pos/12345678
+			sb.append("getRequestURI=" + request.getRequestURI()+ strDivide);		//-- /StoreServer/Pos/12345678
+			sb.append("getRequestURL=" + request.getRequestURL()+ strDivide);		//-- http://localhost:8888/StoreServer/Pos/12345678
 			
 			//获取所有的请求参数(input)， getParameterValues 根据名字获取多值类型的值(如 CheckBox 选择的多个值)
 			Map<String, String[]> parmeterMap = request.getParameterMap();
@@ -53,10 +60,26 @@ public class ServletInfoDumper {
 			}
 			
 			final Cookie[] cookies = request.getCookies();
-			sb.append("Cookies: size=" + (cookies != null ? cookies.length : 0 ) + strDivide);
-			//for (int i = 0; i < cookies.length; i++) 
-			for (Cookie cookie : cookies) {
-				sb.append(cookie.getName() + "["+ cookie.getValue() + "]" + strDivide);
+			if(cookies != null){
+				sb.append("Cookies: size=" + (cookies != null ? cookies.length : 0 ) + strDivide);
+				//for (int i = 0; i < cookies.length; i++) 
+				for (Cookie cookie : cookies) {
+					sb.append(cookie.getName() + "["+ cookie.getValue() + "]" + strDivide);
+				}
+			}
+			
+			Collection<Part> parts;
+			try {
+				parts = request.getParts();
+				if (parts != null) {
+					for (Part part : parts) {
+						sb.append("File: " +  part.getName() + ", size=" + part.getSize() + strDivide);
+						//实际上真实存储时，应该通过 java.util.UUID 工具类生成唯一文件名
+						//part.write(request.getServletContext().getRealPath("/uploadFiles") + "/" + part.getName());
+					}
+				}
+			} catch (IllegalStateException | IOException | ServletException e) {
+				e.printStackTrace();
 			}
 
 			return sb.toString();

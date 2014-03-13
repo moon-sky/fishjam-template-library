@@ -598,11 +598,11 @@
 *         地址栏输入网址然后回车 -- 浏览器会"直接使用有效的缓存"(缓存命中)，而不必非去服务器验证缓存
 *         
 *   []Connection: Keep-Alive(持久连接), Close(非持久连接)
-*   [M]Content-Type: 请求或返回的内容类型，对应于 form 中的 enctype
+*   [M]Content-Type: 请求或返回的内容类型，对应于 form 中的 enctype(表单数据的编码方式)
 *      类型列表 -- rfc1341( http://www.ietf.org/rfc/rfc1341.txt )
-*        application/x-www-form-urlencoded <== 
+*        application/x-www-form-urlencoded <== 默认的编码方式，只处理表单域里的value属性值，会将表单域的值处理成URL编码方式，对文件域部分只传输文件路径
 *        application/octet-stream <== 网络上传递二进制数据时
-*        multipart/form-data; boundary=--{boundary} <== 表单数据传输文件内容
+*        multipart/form-data; boundary=--{boundary} <== 以二进制流的方式来处理表单数据，多用于传输文件(会把文件域指定文件的内容也封装到请求参数里)
 *        video/avi   <== AVI 
 *        image/jpeg  <== JPG
 *        image/x-png <== PNG

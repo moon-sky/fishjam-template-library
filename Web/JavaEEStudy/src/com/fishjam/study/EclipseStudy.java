@@ -116,7 +116,8 @@ package com.fishjam.study;
  *   1.Window--Preferences--General-Capabilities, 选中 "Classic Update", 然后 Apply
  *   2.此后才能看到如下菜单：Help > Software Updates > Find and Install...
  *
- * 
+ * 部署
+ *   当 Eclipse生成、部署Web项目时，会自动将 src 路径下除 *.java 外的所有文件都复制到Web应用的 WEB-INF\classes 路径下
 ***************************************************************************************************************************************/
 
 public class EclipseStudy {

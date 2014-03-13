@@ -26,11 +26,24 @@ import javax.servlet.http.HttpServletResponse;
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
+ * Servlet3.0的Web模块化部署(jar 包) 
+ *   META-INF\
+ *     web-fragment.xml -- web模块部署描述符，语法类似 web.xml， 但可多指定 《name》和 《ordering》元素
+ *   Web模块说用到的类、资源文件等
+ *   使用时，将jar包复制到Web应用的 WEB-INF/lib 目录下，重启Web应用即可生效。
+ *   
  *  MVC规范出现后，Servlet 仅仅作为控制器用，不再需要生成页面标签，也不再作为视图层角色使用。
  *  
  * 功能点
- *   异步请求
- *   Annotation标注
+ *   Annotation标注 -- 3.0 中加入，通过Annotation修饰 Servlet/Filter/Listener 等类，支持模块化部署方式(不用修改web.xml)
+ *     WebServlet -- 修饰部署Servlet类
+ *     WebInitParam -- 与WebServlet或WebFilter一起使用，为其配置参数
+ *     WebListener -- 修饰部署Listener类
+ *     WebFilter -- 修饰部署Filter类
+ *     MultipartConfig -- 修饰Servlet，指定该Servlet将会负责处理 multipart/form-data 类型的请求，主要用于文件上传
+ *     ServletSecurity -- 与JAAS相关，指定该Servlet的安全与授权控制
+ *     ? HttpConstraint -- 与 ServletSecurity 一起使用，指定安全与授权控制
+ *     ? HttpMethodConstraint -- 与 ServletSecurity 一起使用，指定安全与授权控制
  *
  * 注意：
  *    1.Http有多种请求方式(GET/POST/PUT 等),HttpServlet中对应提供了 doGet/doPost/doPut 等服务方法分别对应。
@@ -49,12 +62,23 @@ import javax.servlet.http.HttpServletResponse;
  *    b.通过 Response 生成响应数据, getWriter 输出文本信息，getOutputStream() 输出二进制信息
  *   destory() -- 负责释放占有的资源
  * 
- * HttpServletRequest
+ * HttpServletRequest -- 
  *   getParameter -- 
+ *   getPart/getParts -- 获取文件上传域，支持文件上传，返回的 Part 类对应于一个文件上传域，可访问上传文件的大小、类型、输入流等。
+ *     注意：用 @MultipartConfig 修饰 Servlet 
+ *     传统的文件上传需要借助于 common-fileupload 等工具
  * HttpServletResponse
  *   setContentType("text/html;charset=GB2312");
  * 
- *   
+ * 异步处理(3.0) -- 允许Servlet重新发起一条线程去调用耗时的业务方法，(通过 Annotation 指定 asyncSupported=true 启用)
+ *   request.startAsync() -- 开启异步调用，创建并返回 AsyncContext 对象，此后响应不会被阻塞。线程执行完毕后，新的响应再次送往客户端  
+ *   AsyncContext
+ *     start(new Runnable() { ...mAsyncCtx.dispatch("/async.jsp"); } ) -- 异步方式启动后台线程，执行业务,完成业务后
+ *       再通过 AsyncContext.dispatch 方法把请求 dispatch 到指定JSP页面。
+ *       注意：1.被异步请求 dispatch 的目标页面(async.jsp)需要指定 session="false" 表明该页面不会重新创建 session。
+ *                2.JSP页面中 request.getAsyncContext().complete();
+ *     addListener -- 设置 AsyncListener 接口类型的异步监听器实例 ，可监听 开始、结束、出错、超时 事件
+ *    
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -115,6 +139,7 @@ import javax.servlet.http.HttpServletResponse;
  * 配置：向Web应用注册Listener类即可，不能配置参数
  *   a.@WebListener
  *   b.web.xml 中使用 <listner .../> 
+ *   
 **************************************************************************************************************************************/
 
 
