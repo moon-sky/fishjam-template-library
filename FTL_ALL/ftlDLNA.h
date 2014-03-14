@@ -27,7 +27,7 @@
 *     有很多选择，可支持 C,C++,Java等，其中比较好的：
 *       Intel 的 openTools -- 有不少辅助工具，主要是C#，
 *       Plutinosoft -- 
-*       CyberGarage(海思也用这个) -- http://www.cybergarage.org/net/upnp 
+*       CyberGarage(海思也用这个) -- http://www.cybergarage.org/net/upnp ,
 *     Android平台上: NDK下面编译出 jni库 => 应用层开发
 *       注意：Android平台上的 MediaPlayer 对视频的处理能力相当的弱，若想对各种视频有良好的支持，需要移植视频播放器，
 *              如：ffmpeg、gstream、vlc 等
@@ -185,8 +185,12 @@
 
 *************************************************************************************************************************/
 /*************************************************************************************************************************
-* CyberLink
-*   C++ 版本 -- 
+* CyberLink ()
+*   C++ 版本
+*     1.源码: CyberLinkForCC + HttpEngineForCC + expat
+*     2.编译:
+*       a. linux: ./boostrap -enable-libxml2<CR> ./configure<CR> make
+*      
 *************************************************************************************************************************/
 namespace FTL
 {

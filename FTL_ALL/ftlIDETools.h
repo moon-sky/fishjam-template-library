@@ -1051,7 +1051,7 @@ namespace FTL
 
 	/******************************************************************************************************************************
     * 版本控制工具 SVN（CVS的替代，对于二进制文件只保存和上一版本不同之处），SVN一般有如下目录：branches、tgs、trunk
-    *   服务器(Subversion/VisualSVN-Server 等)  -- http://subversion.tigris.org/
+    *   服务器(Subversion/VisualSVN-Server 等)  -- http://www.visualsvn.com/downloads/( http://subversion.tigris.org/)
     *     自带命令行的 svn.exe 作为客户端
     *   客户端(TortoiseSVN) -- http://tortoisesvn.net/downloads
     *   VS 插件(AnkhSvn)    -- http://ankhsvn.open.collab.net/
