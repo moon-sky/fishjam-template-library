@@ -33,6 +33,11 @@ package com.fishjam.study;
  *          注意(TODO:考虑描述方式?)：WEB-INF 必须在虚拟根目录的第一级之目录下，否则也会出现这种情况，或找不到 servlet 的问题，
  *                   WEB-INF 所在的目录即为 虚拟目录的根目录，会影响 servlet 时的设置 jsp-file 时指定的文件路径
  *          因为 Servlet 编译成 .class 后，tomcat只在第一次启动时才会加载(不监控)，所以每次更改后必须重启 tomcat ? 设置 reloadable 为 true 可不重启
+ *   2.MyEclipse 中导入Spring后，启动Tomcat时 org.apache.catalina.core.StandardContext listenerStart 类中报错：
+ *     Error configuring application listener of class org.springframework.web.context.ContextLoaderListener
+ *     a.经过检查，springhibernate/spring.jar 和 org.springframework.web-3.1.1.RELEASE.jar 中都包含了这个类
+ *     TODO: spring-web.jar ?
+ *     也可能是缓存问题？
 **************************************************************************************************************************************/
 
 public class CommonErrors {
