@@ -1,5 +1,7 @@
 package com.fishjam.study.javaee;
 
+//http://my.oschina.net/liangbo/blog?catalog=267685
+
 /**************************************************************************************************************************************
  * TODO:
  *   1.对象类(如User)中可加入 XDoclet 注释(如 @hibernate.class table="users" ),
@@ -82,6 +84,11 @@ package com.fishjam.study.javaee;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
+ * Annotation
+
+**************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
 * 常见数据库
 * sqlite是c写的，没有官方的操作sqlite的java api，如果要在Java中使用Sqlite的话，有几种方式：
 *     1.SQLite JDBC Driver(https://bitbucket.org/xerial/sqlite-jdbc)下载(如 sqlite-jdbc-3.7.2.jar)
@@ -89,6 +96,28 @@ package com.fishjam.study.javaee;
 *     2.SQLite Java Wrapper/JDBC Driver( http://www.ch-werner.de/javasqlite/)， 需要本地库
 *   支持内存数据库:  Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:");
 *   支持资源型数据库(尚未测试通过, org\sqlite\Conn.java 中的实现发现): .getConnection("jdbc:sqlite::resource:xxx"); 
+**************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
+ * 使用 Hibernate 的示例:
+
+@Entity		 							//映射实体， 普通的POJO通过该标注映射成为可持久化的类 (等价于实现Serializable？)
+@Table(name="tbl_User", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "email"} )
+//指定表的属性，如 (name,catalog,shema,uniqueConstraints 等), @UniqueConstraint 表示 不能同时存在完全相同的name和email值的记录
+class UserTableInfo implements java.io.Serializable{					//定义表对应的实体类
+	@Id										//标注主键
+	@Column(name="user_id")	//该字段对应的列属性(如 name, unique="true", nullable="false", 等)
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Integer id;
+	
+	
+	@OneToMany(targetEntity=Item.class ,mappedBy="owner")
+	@ManyToOne
+	
+	UserTableInfo(){						//@Entity 标注的类必须有一个无参构造方法
+	}
+	//各个字段的 get/set 方法
+}
 **************************************************************************************************************************************/
 
 public class HibernateStudy {

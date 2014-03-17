@@ -209,6 +209,7 @@
 * NAT(Network Address Translation) -- 网络地址转换
 * NetBios Name -- 微软网络中的机器名采用的便是NetBIOS名字，机器启动时，会将名字注册到本地的WINS。
 *   通过 nbtstat 命令可以列出信息。
+* NMPR(Networked Media Product Requirements) -- Intel的
 * OSI -- 开放系统互连，应用层、表示层、会话层、传输层、网络层、数据链路层、物理层；
 * OOB(Out Of Band) -- 带外数据(紧急数据)，通过独立的逻辑信道来接收和处理。尽量不要使用。
 * Qos(Quality of Service):

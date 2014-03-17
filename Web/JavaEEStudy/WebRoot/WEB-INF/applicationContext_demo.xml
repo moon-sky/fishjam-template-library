@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 
+<!-- 
+  applicationContext.xml： 定义各种bean。如 dataSource, Hibernate的SessionFactory 等
+  《bean id="xxx" class="yyy" /》
+-->
+
 <!-- Spring配置文件的根元素，并指定Schema信息 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:p="http://www.springframework.org/schema/p"

@@ -3,9 +3,12 @@
 	Servlet3.0 以后，可通过 Annotation 来配置管理Web组件 <web-app> 
 	[metadata-complete]: 为true时该Web应用不会加载Annotation配置的Web组件(如Servlet/Filter 等) 
 	《context-param》: 配置键值对格式的参数，对整个Web应用有效，代码中可通过 getInitParameter()方法获得对应的值
+	  contextConfigLocation：指定String配置文件，一般是 /WEB-INF/applicationContext.xml， 多个值(如 daoContext.xml)的话通过逗号分开
+	《filter》+《filter-mapping》：设置过滤器，比如 xxx.StrutsPrepareAndExecuteFilter， xxx.SiteMeshFilter 等
+	《jsp-config》+《jsp-property-group/》：配置JSP属性，主要有《el-ignored》是否允许使用表达式语言；《scripting-invalid》是否允许使用JSP脚本 等
+	《listener》：配置监听器，如 xxx.ContextLoaderListener 指定Web应用启动时候加载Spring容器
 	《servlet》：配置 servlet, 可以指定 servlet-name 对应的 jsp-file 
 	《servlet-mapping》：将 servlet-name 对应的 servlet 映射到 url-pattern 指定的路径
-	《jsp-config》+《jsp-property-group/》：配置JSP属性，主要有《el-ignored》是否允许使用表达式语言；《scripting-invalid》是否允许使用JSP脚本 等
 	  
 	  
 	

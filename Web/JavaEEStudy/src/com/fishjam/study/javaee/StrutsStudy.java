@@ -1,5 +1,7 @@
 package com.fishjam.study.javaee;
 
+import java.util.Map;
+
 /**************************************************************************************************************************************
  * TODO:
  *   1.需要使用 applicationContext.xml 文件来设置spring核心包？
@@ -70,10 +72,11 @@ package com.fishjam.study.javaee;
  *         }
  *       }
  *      补充：
- *        a.ActionContext.getContext().getSession();  //获取当前Session对应的Map
+ *        a.Map session = ActionContext.getContext().getSession();  获取当前Session对应的Map，然后通过键值方式对获取参数
  *        b.预定义的返回值： SUCCESS, ERROR, 
  *        c.Action类可以使一个普通的POJO，只需要包含一个 public String execute() 方法？
- *        d.Action类里定义的属性 可以由structs2框架根据 参数名字 自动 get/set    
+ *        d.Action类里定义的属性 可以由structs2框架根据 参数名字 自动 get/set
+ *        e.如要提示错误，可用 addActionError 方法设置     
  *   4.在 struts.xml 中配置 Action(动作类)的代码. struts(1) > package(n) > action(n)
  *     <package name="struts2" namespace="/mystruts" extends="struts-default"> 
  *       <action name="sum" class="action.MyAction"> //指定名为 sum 的Action，将会由对应的类进行处理(用户可向该Action发送请求 -- s:form 的 action )
@@ -126,7 +129,10 @@ package com.fishjam.study.javaee;
  *       全局映射结果需要通过 <global-results> 定义
  *     异常显示： <s:property value="exception"/> 和 <s:property value="exceptionStack" />
  *     
- *   输入校验：校验文件命名遵循如下规则： <ActionName>-validation.xml 
+ *   输入校验：
+ *    1.校验文件命名遵循如下规则： <ActionName>-validation.xml
+ *    2.子类重载 ActionSupport.validate 方法，对不满足要求的地方调用 addFieldError 设置错误信息
+ *     
  *   
  * 使用 struts.properties 文件来管理常量 -- 推荐在 struts.xml 中 用 <constant name="xxx" value="yyy" /> 的方式
  *   (查看 struts2-core-x.y.z.jar\org\apache\struts2\default.properties 文件可知预定义参数名和默认值)
@@ -174,12 +180,13 @@ package com.fishjam.study.javaee;
 *      name(Action 使用的属性名) 
 *      key( 国际化时的键值对 )
 *    标签：
-*     <s:form> -- 
+*     <s:actionerror cssClass="error"/> -- 输出Action的错误提示
+*     <s:form action="proLogin"> 各种控件  </s:form> -- 
 *     <s:param>
 *     <s:property value="Action类属性名" > -- 字符串属性
-*     <s:submit> -- 
+*     <s:submit value="登录" /> -- 
 *     <s:text> --  
-*     <s:textfield name="username" key="user" > --
+*     <s:textfield name="变量名" key="多语言的key" /> -- 也可以通过 label="直接设置的语言"
 ***************************************************************************************************************************************/ 	 
 public class StrutsStudy {
 

@@ -157,6 +157,13 @@
 *     只要得到了设备的URL，就可以取得该设备表达的URL，取得该设备表达的HTML，然后可以将此HTML纳入CP的本地浏览器上。
 *     既允许设备供应商提供基于浏览器的用户界面和编程控制接口，也允许开发人员定制自己的设备界面。
 * 
+* Control Point和Device交互时使用的协议：
+*   SOAP:   Control
+*   HTTP:   Description
+*   HTTPMU: Notify/Search
+*   HTTPU:  Search Response
+*   GENA:   Event
+* 
 * UPnP AV(Audio/Video) Architecture -- 提供了交互的机制、模型，但并没有规定采用何种技术来实现(具有广泛的适应性)，
 *   AV架构对CP(Action通常由CP发出)的功能要求有10条：
 *     1.发现AV设备
@@ -182,7 +189,7 @@
 *   服务类型 -- 表示服务的统一资源名，一般格式为 urn:schemas-upnp-org:service:serviceType:version
 *     UPnP设备制造商可以指定附加服务，格式为 urn:domain-name:service:serviceType:version
 *     典型的服务类型：扫描仪(scanner),
-
+*
 *************************************************************************************************************************/
 /*************************************************************************************************************************
 * CyberLink ()

@@ -1,5 +1,12 @@
 package com.fishjam.utility.dumper;
 
+/****************************************************************************************
+ * 日志：
+ *   1.import org.apache.log4j.Logger;
+ *   2.static Logger log = Logger.getLogger(BaseInfoDumper.class.getName());
+ *   3.log.debug(e.getMessage());
+****************************************************************************************/
+
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;

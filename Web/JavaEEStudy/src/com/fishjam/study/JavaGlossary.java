@@ -15,20 +15,21 @@ package com.fishjam.study;
  * JDK(Java Development Kit) -- 按Java的应用环境划分
  *   J2EE(Java 2 Platform Enterprise Edition) -- 企业Web应用开发
  *   J2SE(Java 2 Platform Stand Edition) -- 普通应用程序
- *   J2ME(Java 2 Platform Micro Edition) -- 手机等消费电子产品 
+ *   J2ME(Java 2 Platform Micro Edition) -- 手机等消费电子产品
+ * JDO(Java Data Object) -- Java数据对象，是Java EE标准中出JPA外，另一个支持管理持久化数据的规范。 
  * JINI(Java Intelligent Network Infrastructure) -- 能轻松动态地在代表本机系统的网络中加入或移除硬件设备
  * JIT(Just-In-Time) -- JIT编译器，在运行时按需编译，可以减少编译时间和运行时的程序大小，但初次运行时较慢?
  * JNDI(Java Naming Directory Interface) -- Java命名和目录接口，为某个Java对象起一个名字，然后可通过该名字来访问。
  *    访问方式(JSP页面脚本)： Context ctx = new InitialContext(); DataSource ds = (DataSource)ctx.lookup("java:comp/env" + "自定义名字全路径");
  * JNI(Java Native Interface) -- Java原生接口，用以和C/C++程序接轨，获得高性能
- * JPA -- 是一种ORM规范 
+ * JPA(Java Persistence API) -- 是sun公司官方提供的Java持久化的解决方案
  * JSF() -
  * JSP(Java Server Page) -- 最终会编译成Servlet才能运行
  * JSR(Java Spec. Request) -- Java 规格需求
  * JSTL(JSP Standard Tag Library) -- Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
  * OGNL() -- 
  * ORM(Object Relation Mapping) -- 对象-关系映射，完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表。
- *   最早的ORM是 Entity EJB，但非常麻烦。
+ *   最早的ORM是 Entity EJB，但非常麻烦。目前流行的ORM框架有Hibernate、iBatis、TopLink等
  * OSGi(Open Service Gateway Initiative) --
  * POJO(Plain Old Java Object) -- 普通的传统的Java对象，其中有一些属性及其getter setter方法的类,没有业务逻辑。
  *   不允许有业务方法,也不能携带有connection之类的方法。实际就是普通JavaBeans，是为了避免和EJB混淆所创造的简称 。

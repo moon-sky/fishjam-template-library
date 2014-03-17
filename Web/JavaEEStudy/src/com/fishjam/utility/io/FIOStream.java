@@ -38,6 +38,15 @@ import java.io.Serializable;
 *   readExternal回复，并且通常需要调用基类的同名方法--和MFC相同
 *   只要将所有东西写入单一stream，便可回复原先的对象网络，并且不会额外复制任何对象，
 * 
+* 持久化技术：
+*    1.序列化(Serialization)
+*    2.JDBC
+*    3.ORM(Object-Relational-Mapping) -- 使用XML文件定义Java对象与关系数据库之间的映射
+*    4.ODB() -- 对象数据库
+*    5.JDO -- Java数据对象
+*    6.EJB -- 
+*    7.JPA -- 使用注解定义Java对象与关系数据库之间的映射，需要 JBoss Application Server + 
+* 
 ************************************************************************************************************/
 
 public class FIOStream
