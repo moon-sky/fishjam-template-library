@@ -1,0 +1,2 @@
+SUBDIRS = upnpdump clock tv
+
