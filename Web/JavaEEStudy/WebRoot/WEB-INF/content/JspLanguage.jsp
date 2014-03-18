@@ -119,7 +119,8 @@
 	
 	%>
 
-	<table border="1" bgcolor="#9999dd">
+	<table border="1" bgcolor="#9999dd" cellpadding="0" 
+	cellspacing="1" style="border:1px solid black" align="center" >
 		<thead>
 			<tr>
 				<th>索引</th>

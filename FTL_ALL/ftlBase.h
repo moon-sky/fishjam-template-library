@@ -902,20 +902,20 @@ namespace FTL
 #ifdef FTL_DEBUG
     //KB118816
     
-    //CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__),__LINE__,TEXT(__FUNCTION__),FTL::_ReturnAddress(),(minElapse))
+    //CFBlockElapse JOIN_TWO(elapse,__LINE__) (TEXT(__FILE__),__LINE__,TEXT(__FUNCTION__),FTL::_ReturnAddress(),(elapse))
     // #pragma TODO(此处的写法有问题，无法根据行号生成唯一变量 -- "JOIN_TWO" 不支持带参数的构造)
-#  define FUNCTION_BLOCK_TRACE(minElapse) \
-    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(elapse) (TEXT(__FILE__), __LINE__, TEXT(__FUNCTION__), FTL::TraceDetailNone, FTL::_ReturnAddress(),(minElapse))
-#  define FUNCTION_BLOCK_NAME_TRACE(blockName,minElapse) \
-    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(elapse) (TEXT(__FILE__), __LINE__, blockName, FTL::TraceDetailNone, FTL::_ReturnAddress(),minElapse)
+#  define FUNCTION_BLOCK_TRACE(elapse) \
+    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(minElapse) (TEXT(__FILE__), __LINE__, TEXT(__FUNCTION__), FTL::TraceDetailNone, FTL::_ReturnAddress(),(elapse))
+#  define FUNCTION_BLOCK_NAME_TRACE(blockName,elapse) \
+    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(minElapse) (TEXT(__FILE__), __LINE__, blockName, FTL::TraceDetailNone, FTL::_ReturnAddress(), (elapse))
 
-#  define FUNCTION_BLOCK_NAME_TRACE_EX(blockName, detailType, minElapse) \
-    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(elapse) (TEXT(__FILE__), __LINE__, blockName, detailType, FTL::_ReturnAddress(),minElapse)
+#  define FUNCTION_BLOCK_NAME_TRACE_EX(blockName, detailType, elapse) \
+    FTL::CFBlockElapse FTL_MAKE_UNIQUE_NAME(minElapse) (TEXT(__FILE__), __LINE__, blockName, detailType, FTL::_ReturnAddress(), (elapse))
 
 #else
-#  define  FUNCTION_BLOCK_TRACE(minElapse)                                   __noop
-#  define  FUNCTION_BLOCK_NAME_TRACE(blockName,minElapse)                    __noop
-#  define  FUNCTION_BLOCK_NAME_TRACE_EX(blockName, detailType, minElapse)    __noop
+#  define  FUNCTION_BLOCK_TRACE(elapse)                                   __noop
+#  define  FUNCTION_BLOCK_NAME_TRACE(blockName,elapse)                    __noop
+#  define  FUNCTION_BLOCK_NAME_TRACE_EX(blockName, detailType, elapse)    __noop
 #endif
 
 

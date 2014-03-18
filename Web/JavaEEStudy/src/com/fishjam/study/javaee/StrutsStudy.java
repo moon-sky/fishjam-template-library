@@ -181,9 +181,12 @@ import java.util.Map;
 *      key( 国际化时的键值对 )
 *    标签：
 *     <s:actionerror cssClass="error"/> -- 输出Action的错误提示
-*     <s:form action="proLogin"> 各种控件  </s:form> -- 
+*     <s:form action="proLogin"> 各种控件  </s:form> -
+*     <s:if test="条件"></s:if><s:else></s:else>
+*     <s:iterator id="item" value="items" status="st"><s:property value="xxxx"/></s:iterator> -- 迭代
 *     <s:param>
 *     <s:property value="Action类属性名" > -- 字符串属性
+*     <s:select name="xxx"  list="#{ '1':'一天','值':'显示字符' }" label="yyy/> -- 下拉列表
 *     <s:submit value="登录" /> -- 
 *     <s:text> --  
 *     <s:textfield name="变量名" key="多语言的key" /> -- 也可以通过 label="直接设置的语言"
