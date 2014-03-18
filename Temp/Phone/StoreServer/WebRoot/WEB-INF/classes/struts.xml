@@ -2,4 +2,15 @@
 <!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
 <struts>
 
-	<package name="StoreServer" extends="struts-default"></package></struts>    
+	<package name="StoreServer" extends="struts-default">
+		<action name="index">
+			<result name="success">/WEB-INF/content/index.jsp</result>
+		</action>
+		<action name="mapInfo" class="com.storeserver.action.MapInfoAction">
+			<result name="success">/WEB-INF/content/MapInfo.jsp</result>
+		</action>
+		<action name="addStore" class="com.storeserver.action.AddStoreAction">
+			<result name="success">/WEB-INF/content/AddStore.jsp</result>
+		</action>
+	</package>
+</struts>    

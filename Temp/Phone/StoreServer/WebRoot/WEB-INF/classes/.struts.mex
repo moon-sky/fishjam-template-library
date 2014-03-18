@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Struts2Diagram version="2.0">
-  <package name="StoreServer" location="136,103" size="372,187" />
-  <webResource name="StoreMgr.jsp" path="/WEB-INF/content/StoreMgr.jsp" location="267,326" size="150,55" />
+  <package name="StoreServer" location="232,73" size="649,321">
+    <action name="MapInfoAction" location="61,128" size="150,41">
+      <result name="success">
+        <resourceEdge source="success" routing="0" target="MapInfo.jsp" />
+      </result>
+    </action>
+    <action name="AddStore" location="280,129" size="150,41">
+      <result name="success">
+        <resourceEdge source="success" routing="0" target="AddStore.jsp" />
+      </result>
+    </action>
+  </package>
+  <webResource name="MapInfo.jsp" path="/MapInfo.jsp" location="26,198" size="150,55" />
+  <webResource name="AddStore.jsp" path="/AddStore.jsp" location="554,483" size="150,55" />
 </Struts2Diagram>
 
