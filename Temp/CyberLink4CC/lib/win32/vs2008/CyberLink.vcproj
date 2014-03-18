@@ -616,7 +616,7 @@
 					Name="http"
 					>
 					<File
-						RelativePath="..\..\..\src\uhttp\http\HTTP.cpp"
+						RelativePath="..\..\..\src\uhttp\http\CHTTP.cpp"
 						>
 					</File>
 					<File
@@ -1049,6 +1049,14 @@
 			<Filter
 				Name="uhttp"
 				>
+				<File
+					RelativePath="..\..\..\include\uhttp\HTTP.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\uhttp\UHttpDef.h"
+					>
+				</File>
 				<Filter
 					Name="io"
 					>
@@ -1229,11 +1237,11 @@
 					Name="http"
 					>
 					<File
-						RelativePath="..\..\..\include\uhttp\http\HTML.h"
+						RelativePath="..\..\..\include\uhttp\http\CHTTP.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\include\uhttp\http\HTTP.h"
+						RelativePath="..\..\..\include\uhttp\http\HTML.h"
 						>
 					</File>
 					<File

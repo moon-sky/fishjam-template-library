@@ -23,7 +23,7 @@
 #include <iostream>
 
 #include <cybergarage/xml/Node.h>
-#include <cybergarage/upnp/media/server/UPnP.h>
+#include <cybergarage/upnp/media/server/MediaUPnP.h>
 #include <cybergarage/upnp/media/server/DC.h>
 #include <cybergarage/upnp/media/server/object/ContentPropertyList.h>
 

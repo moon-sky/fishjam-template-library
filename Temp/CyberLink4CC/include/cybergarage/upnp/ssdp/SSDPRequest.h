@@ -21,7 +21,7 @@
 #ifndef _CLINK_SSDPREQUEST_H_
 #define _CLINK_SSDPREQUEST_H_
 
-#include <uhttp/http/HTTP.h>
+#include <uhttp/http/CHTTP.h>
 #include <uhttp/http/HTTPRequest.h>
 #include <cybergarage/upnp/ssdp/SSDP.h>
 

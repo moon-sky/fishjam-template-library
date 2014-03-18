@@ -20,7 +20,7 @@
 #include <uhttp/util/Vector.h>
 #include <cybergarage/xml/AttributeList.h>
 #include <cybergarage/upnp/media/server/DC.h>
-#include <cybergarage/upnp/media/server/UPnP.h>
+#include <cybergarage/upnp/media/server/MediaUPnP.h>
 #include <cybergarage/upnp/media/server/object/DIDLLite.h>
 #include <cybergarage/upnp/media/server/object/ContentNode.h>
 

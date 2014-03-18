@@ -511,7 +511,7 @@
 								>
 							</File>
 							<File
-								RelativePath="..\..\..\include\cybergarage\upnp\media\server\UPnP.h"
+								RelativePath="..\..\..\include\cybergarage\upnp\media\server\MediaUPnP.h"
 								>
 							</File>
 							<Filter

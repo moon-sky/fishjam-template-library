@@ -17,7 +17,7 @@
 #define _CLINK_SUBSCRIPTIONREQUEST_H_
 
 #include <uhttp/http/HTTPRequest.h>
-#include <uhttp/http/HTTP.h>
+#include <uhttp/http/CHTTP.h>
 #include <cybergarage/upnp/event/Subscription.h>
 #include <cybergarage/upnp/device/NT.h>
 #include <cybergarage/upnp/event/SubscriptionRequest.h>

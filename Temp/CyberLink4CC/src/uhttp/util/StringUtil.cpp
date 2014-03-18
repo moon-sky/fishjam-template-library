@@ -15,11 +15,12 @@
 
 #include <sstream>
 
-#include <uhttp/util/StringUtil.h>
-
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
+
+#include <uhttp/UHttpDef.h>
+#include <uhttp/util/StringUtil.h>
 
 #ifdef HAVE_CTYPE_H
 #  include <ctype.h>
@@ -299,12 +300,8 @@ size_t uHTTP::HexString2Sizet(const std::string &value) {
 const char *uHTTP::Integer2String(int value, std::string &valueBuf) {
   // INT_MAX 2147483647
    // UINT_MAX 4294967295U
-  char strBuf[String::INT_STRING_MAXSIZE];
-#if defined(HAVE_SNPRINTF)
+  char strBuf[String::INT_STRING_MAXSIZE] = { 0 };
   snprintf(strBuf, sizeof(strBuf)-1, "%d", value);
-#else
-  sprintf(strBuf, "%d", value);
-#endif
   valueBuf = strBuf;
   return valueBuf.c_str();
 }
@@ -312,12 +309,9 @@ const char *uHTTP::Integer2String(int value, std::string &valueBuf) {
 const char *uHTTP::Long2String(long value, std::string &valueBuf) {
   // UINT_LONG : 18446744073709551615UL
   // LONG_MAX :  9223372036854775807L
-  char strBuf[String::LONG_STRING_MAXSIZE];
-#if defined(HAVE_SNPRINTF)
+  char strBuf[String::LONG_STRING_MAXSIZE] = { 0 };
+
   snprintf(strBuf, sizeof(strBuf)-1, "%ld", value);
-#else
-  sprintf(strBuf, "%ld", value);
-#endif
   valueBuf = strBuf;
   return valueBuf.c_str();
 }
@@ -325,12 +319,8 @@ const char *uHTTP::Long2String(long value, std::string &valueBuf) {
 const char *uHTTP::Integer2HexString(int value, std::string &valueBuf) {
   // INT_MAX 2147483647
    // UINT_MAX 4294967295U
-  char strBuf[String::INT_STRING_MAXSIZE];
-#if defined(HAVE_SNPRINTF)
+  char strBuf[String::INT_STRING_MAXSIZE] = { 0 };
   snprintf(strBuf, sizeof(strBuf)-1, "%x", value);
-#else
-  sprintf(strBuf, "%x", value);
-#endif
   valueBuf = strBuf;
   return valueBuf.c_str();
 }
@@ -338,12 +328,8 @@ const char *uHTTP::Integer2HexString(int value, std::string &valueBuf) {
 const char *uHTTP::Long2HexString(long value, std::string &valueBuf) {
   // UINT_LONG : 18446744073709551615UL
   // LONG_MAX :  9223372036854775807L
-  char strBuf[String::LONG_STRING_MAXSIZE];
-#if defined(HAVE_SNPRINTF)
+    char strBuf[String::LONG_STRING_MAXSIZE] = { 0 };
   snprintf(strBuf, sizeof(strBuf)-1, "%lx", value);
-#else
-  sprintf(strBuf, "%lx", value);
-#endif
   valueBuf = strBuf;
   return valueBuf.c_str();
 }

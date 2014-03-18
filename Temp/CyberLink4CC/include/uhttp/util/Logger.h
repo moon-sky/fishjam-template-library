@@ -24,7 +24,7 @@ namespace uHTTP {
 class Logger {
  public:
      enum{
-        MAX_LINE_STRING = 512,
+        MAX_LINE_STRING = 2048,
      };
   //static const int MAX_LINE_STRING;
   static const char *SEPARATOR;

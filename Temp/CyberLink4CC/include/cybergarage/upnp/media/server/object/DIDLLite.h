@@ -99,7 +99,7 @@ public:
 	void output(std::ostream& ps);
 
 	const char *toString(std::string &buf);
-	const char *toUnicodeString(std::string &buf);
+	//const char *toUnicodeString(std::string &buf);
 };
 
 }

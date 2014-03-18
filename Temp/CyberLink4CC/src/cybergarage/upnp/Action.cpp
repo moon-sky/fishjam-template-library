@@ -184,3 +184,22 @@ bool Action::postControlAction() {
   actionArgList->set(outArgList);
   return true;
 }
+
+
+const char* Action::toString(std::string &buf)
+{
+    std::ostringstream os;
+    ArgumentList *pActionInputArgList = getInputArgumentList();
+    if (pActionInputArgList)
+    {
+        int nArgs = pActionInputArgList->size();
+        for (int i = 0; i < nArgs; ++i)
+        {
+            Argument *pArg = pActionInputArgList->getArgument(i);
+            os << "Name=" << pArg->getName()
+                << ", Value=" << pArg->getValue();
+        }
+    }
+    buf = os.str();
+    return buf.c_str();
+}

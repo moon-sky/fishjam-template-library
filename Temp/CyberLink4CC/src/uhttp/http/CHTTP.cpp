@@ -9,7 +9,7 @@
 ******************************************************************/
 
 #include <sstream>
-#include <uhttp/http/HTTP.h>
+#include <uhttp/http/CHTTP.h>
 #include <uhttp/net/URI.h>
 
 #ifdef NO_USE_OSTRINGSTREAM

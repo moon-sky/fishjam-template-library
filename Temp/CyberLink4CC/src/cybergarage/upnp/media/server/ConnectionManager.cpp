@@ -13,6 +13,8 @@
 *
 ******************************************************************/
 
+#include <uhttp/util/Log.h>
+#include <uhttp/util/Debug.h>
 #include <cybergarage/upnp/media/server/MediaServer.h>
 #include <cybergarage/upnp/media/server/ConnectionManager.h>
 #include <cybergarage/upnp/media/server/object/Format.h>
@@ -194,9 +196,10 @@ const char *ConnectionManager::OK = "OK";
 // Constructor 
 ////////////////////////////////////////////////
 	
-ConnectionManager::ConnectionManager(MediaServer *mserver)
+ConnectionManager::ConnectionManager(MediaServer *pMserver)
 {
-	setMediaServer(mserver);
+	setMediaServer(pMserver);
+    m_maxConnectionID = 0;
 }
 
 ConnectionManager::~ConnectionManager()
@@ -219,9 +222,9 @@ ContentDirectory *ConnectionManager::getContentDirectory()
 int ConnectionManager::getNextConnectionID()
 {
 	lock();
-	maxConnectionID++;
+	m_maxConnectionID++;
 	unlock();
-	return maxConnectionID;
+	return m_maxConnectionID;
 }
 	
 ////////////////////////////////////////////////
@@ -230,9 +233,9 @@ int ConnectionManager::getNextConnectionID()
 	
 ConnectionInfo *ConnectionManager::getConnectionInfo(int id)
 {
-	int size = conInfoList.size();
+	int size = m_conInfoList.size();
 	for (int n=0; n<size; n++) {
-		ConnectionInfo *info = conInfoList.getConnectionInfo(n);
+		ConnectionInfo *info = m_conInfoList.getConnectionInfo(n);
 		if (info->getID() == id)
 			return info;
 	}
@@ -242,18 +245,18 @@ ConnectionInfo *ConnectionManager::getConnectionInfo(int id)
 void ConnectionManager::addConnectionInfo(ConnectionInfo *info)
 {
 	lock();
-	conInfoList.add(info);
+	m_conInfoList.add(info);
 	unlock();
 }
 	
 void ConnectionManager::removeConnectionInfo(int id)
 {
 	lock();
-	int size = conInfoList.size();
+	int size = m_conInfoList.size();
 	for (int n=0; n<size; n++) {
-		ConnectionInfo *info = conInfoList.getConnectionInfo(n);
+		ConnectionInfo *info = m_conInfoList.getConnectionInfo(n);
 		if (info->getID() == id) {
-			conInfoList.remove(info);
+			m_conInfoList.remove(info);
 			delete info;
 			break;
 		}
@@ -264,7 +267,7 @@ void ConnectionManager::removeConnectionInfo(int id)
 void ConnectionManager::removeConnectionInfo(ConnectionInfo *info)
 {
 	lock();
-	conInfoList.remove(info);
+	m_conInfoList.remove(info);
 	unlock();
 }
 
@@ -277,6 +280,14 @@ bool ConnectionManager::actionControlReceived(Action *action)
 	//action->print();
 		
 	string actionName = action->getName();
+    if (uHTTP::Debug::isOn())
+    {
+        std::string actionInfo;
+        action->toString(actionInfo);
+        LogInfo("ConnectionManager::actionControlReceived, action=%s\n", actionInfo);
+    }
+    
+
 	if (actionName.compare(GET_PROTOCOL_INFO) == 0) {
 		// Source
 		ostringstream sourceValueBuf;
@@ -323,9 +334,9 @@ bool ConnectionManager::getCurrentConnectionIDs(Action *action)
 {
 	ostringstream conIDs;
 	lock();
-	int size = conInfoList.size();
+	int size = m_conInfoList.size();
 	for (int n=0; n<size; n++) {
-		ConnectionInfo *info = conInfoList.getConnectionInfo(n);
+		ConnectionInfo *info = m_conInfoList.getConnectionInfo(n);
 		if (0 < n)
 			conIDs << ",";
 		conIDs << info->getID();

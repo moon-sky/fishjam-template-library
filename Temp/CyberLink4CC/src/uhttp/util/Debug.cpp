@@ -12,4 +12,4 @@
 
 using namespace uHTTP;
 
-bool Debug::enabled = true;
+bool Debug::enabled = false;

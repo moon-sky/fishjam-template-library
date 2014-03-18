@@ -242,6 +242,8 @@ private:
     return &upnpStatus;
   }
 
+  const char* toString(std::string &buf);
+
 };
 
 }

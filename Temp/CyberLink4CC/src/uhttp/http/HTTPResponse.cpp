@@ -8,7 +8,7 @@
 *
 ******************************************************************/
 
-
+#include <uhttp/util/Log.h>
 #include <uhttp/http/HTML.h>
 #include <uhttp/http/HTTPResponse.h>
 #include <uhttp/http/HTTPServer.h>
@@ -85,20 +85,22 @@ const char *HTTPResponse::getHeader(string &headerBuf) {
 //  toString
 ////////////////////////////////////////////////
 
-const char *HTTPResponse::toString(string &buf) {
+const char *HTTPResponse::toString(string &buf, bool bWithContent) {
   string header;
   buf = "";
   buf.append(getHeader(header));
-  buf.append(HTTP::CRLF);
-  buf.append(getContent());
+  if (bWithContent)
+  { 
+    buf.append(HTTP::CRLF);
+    buf.append(getContent());
+  }
+  
+
   return buf.c_str();
 }
 
 void HTTPResponse::print() {
-  std::string buf;
-#ifndef NO_USE_STD_COUT
-  std::cout << toString(buf) << std::endl;
-#else
-  printf("%s\n", toString(buf));
-#endif
+    std::string buf;
+    toString(buf, false);
+    LogInfo("HTTPResponse::print, %s\n", buf.c_str());
 }

@@ -16,7 +16,7 @@
 #ifndef _CLINK_MEDIA_TITLESEARCHCAP_H_
 #define _CLINK_MEDIA_TITLESEARCHCAP_H_
 
-#include <cybergarage/upnp/media/server/UPnP.h>
+#include <cybergarage/upnp/media/server/MediaUPnP.h>
 #include <cybergarage/upnp/media/server/object/SearchCap.h>
 #include <cybergarage/upnp/media/server/object/SearchCriteria.h>
 

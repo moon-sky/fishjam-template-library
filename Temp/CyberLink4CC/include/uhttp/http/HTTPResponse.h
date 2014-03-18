@@ -64,7 +64,7 @@ class HTTPResponse : public HTTPPacket {
   ////////////////////////////////////////////////
 
  public:
-  const char *toString(std::string &buf);
+  const char *toString(std::string &buf,bool bWithContent = false);
 
   void print();
 

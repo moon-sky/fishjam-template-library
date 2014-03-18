@@ -43,7 +43,7 @@ class Debug {
   static void message(const std::string &s) {
     if (enabled == true)
       //printf("uHTTP message : %s\n", s.c_str());
-      LogInfo("uHTTP message : %s\n", s.c_str());
+      LogInfo(s.c_str());
   }
 
   static void message(std::string &s) {

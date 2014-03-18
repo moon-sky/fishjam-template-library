@@ -11,7 +11,7 @@
 
 #include <stdlib.h>
 
-#include <uhttp/http/HTTP.h>
+#include <uhttp/http/CHTTP.h>
 #include <uhttp/http/HTTPStatus.h>
 #include <uhttp/util/StringTokenizer.h>
 #include <uhttp/util/StringUtil.h>

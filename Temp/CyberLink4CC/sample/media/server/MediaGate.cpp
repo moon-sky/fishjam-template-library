@@ -144,6 +144,7 @@ bool MediaGate::loadPreferences(const char *fname)
 		getMediaServer()->addContentDirectory(fileDir);
 	}
 
+    getMediaServer()->getContentDirectory()->print();
 	delete rootNode;
 
 	return true;

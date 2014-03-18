@@ -40,6 +40,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TV", "sample\tv\win32\vs200
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{173913A0-7D37-444D-9ED0-8E943D2525B7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FTL_ALL", "..\..\FTL_ALL\FTL_ALL.vcproj", "{F6E52FA5-531E-4A52-99F7-9465A309A3EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -74,6 +76,8 @@ Global
 		{52D13008-956F-41B2-99C9-10CD20504384}.Debug|Win32.Build.0 = Debug|Win32
 		{52D13008-956F-41B2-99C9-10CD20504384}.Release|Win32.ActiveCfg = Release|Win32
 		{52D13008-956F-41B2-99C9-10CD20504384}.Release|Win32.Build.0 = Release|Win32
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release|Win32.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -15,6 +15,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <uhttp/util/Log.h>
 #include <uhttp/http/HTTPRequest.h>
 #include <uhttp/util/StringTokenizer.h>
 #include <uhttp/net/SocketInputStream.h>
@@ -293,19 +294,19 @@ HTTPResponse *HTTPRequest::post(const std::string &host, int port, HTTPResponse 
 //  toString
 ////////////////////////////////////////////////
 
-const char *HTTPRequest::toString(std::string &buf) {
+const char *HTTPRequest::toString(std::string &buf, bool bWithContent) {
   getHeader(buf);
-  buf += HTTP::CRLF;
-  buf += getContent();
+  if (bWithContent)
+  {
+      buf += HTTP::CRLF;
+      buf += getContent();
+  }
     
   return buf.c_str();
 }
 
 void HTTPRequest::print() {
   std::string buf;
-#ifndef NO_USE_STD_COUT
-  std::cout << toString(buf) << std::endl;
-#else
-  printf("%s\n", toString(buf));
-#endif
+  toString(buf);
+  LogInfo("HTTPRequest::print, %s\n", buf.c_str());
 }

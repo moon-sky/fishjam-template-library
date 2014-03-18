@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <uhttp/util/Log.h>
 #include <cybergarage/xml/XML.h>
 #include <cybergarage/xml/Node.h>
 
@@ -90,12 +91,8 @@ void Node::setValue(int val) {
   setValue(valStr.str().c_str());
 #else
   //UINT_MAX : 4294967295U
-  char strBuf[16];
-#ifdef HAVE_SNPRINTF
-  snprintf(strBuf, sizeof(strBuf), "%d", val);
-#else
-  sprintf(strBuf, "%d", val);
-#endif
+  char strBuf[16] = { 0 } ;
+  vsnprintf(strBuf, sizeof(strBuf) - 1, "%d", val);
   setValue(strBuf);
 #endif
 }
@@ -121,12 +118,8 @@ void Node::setAttribute(const std::string &name, int value) {
   setAttribute(name, valStr.c_str());
 #else
   //UINT_MAX : 4294967295U
-  char valStr[16];
-#ifdef HAVE_SNPRINTF
-  snprintf(strBuf, sizeof(strBuf), "%d", value);
-#else
-  sprintf(valStr, "%d", value);
-#endif
+  char valStr[16] = { 0 };
+  snprintf(strBuf, sizeof(strBuf) - 1, "%d", value);
   setAttribute(name, valStr);
 #endif
 }
@@ -273,7 +266,10 @@ const char *Node::toString(std::string &buf, bool hasChildNode) {
 
 void Node::print(bool hasChildNode) {
 #ifndef NO_USE_OSTRINGSTREAM
-  output(std::cout, 0, hasChildNode);
+  std::ostringstream os;
+  output(os, 0, hasChildNode);
+  const std::string& strValue = os.str();
+  LogInfo("Node::print, %s", strValue.c_str());
 #else
   string buf;
   output(buf, 0, hasChildNode);

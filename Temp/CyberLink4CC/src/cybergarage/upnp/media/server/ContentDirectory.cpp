@@ -542,7 +542,7 @@ int ContentDirectory::getNextContentID()
 	
 void ContentDirectory::initRootNode()
 {
-	rootNode.setContentDirectory(this);
+	m_rootNode.setContentDirectory(this);
 }
 
 /*
@@ -614,8 +614,8 @@ bool ContentDirectory::addDirectory(Directory *dir)
 	dir->setContentDirectory(this);
 	dir->setID(getNextContainerID());
 	dir->update();
-	dirList.add(dir);
-	rootNode.addContentNode(dir);
+	m_dirList.add(dir);
+	m_rootNode.addContentNode(dir);
 		
 	//Update SysteUpdateID
 	updateSystemUpdateID();
@@ -627,8 +627,8 @@ bool ContentDirectory::removeDirectory(Directory *dir)
 {	
 	if (dir == NULL)
 		return false;
-	dirList.remove(dir);
-	rootNode.removeNode(dir);
+	m_dirList.remove(dir);
+	m_rootNode.removeNode(dir);
 
 	//Update SysteUpdateID
 	updateSystemUpdateID();
@@ -638,7 +638,7 @@ bool ContentDirectory::removeDirectory(Directory *dir)
 
 bool ContentDirectory::removeDirectory(const char *name)
 {
-	Directory *dir = dirList.getDirectory(name);
+	Directory *dir = m_dirList.getDirectory(name);
 	if (dir == NULL)
 		return false;
 	removeDirectory(dir);
@@ -648,7 +648,7 @@ bool ContentDirectory::removeDirectory(const char *name)
 
 bool ContentDirectory::removeDirectory(int n)
 {
-	Directory *dir = dirList.getDirectory(n);
+	Directory *dir = m_dirList.getDirectory(n);
 	if (dir == NULL)
 		return false;
 	removeDirectory(dir);
@@ -984,8 +984,10 @@ bool ContentDirectory::queryControlReceived(StateVariable *stateVar)
 
 void ContentDirectory::contentExportRequestRecieved(uHTTP::HTTPRequest *httpReq)
 {
-	if (Debug::isOn())
-		httpReq->print();
+    //if (Debug::isOn())
+    //{
+    //    httpReq->print();
+    //}
 
 	string uri;
 	httpReq->getURI(uri);
@@ -1003,8 +1005,8 @@ void ContentDirectory::contentExportRequestRecieved(uHTTP::HTTPRequest *httpReq)
 
 	const char *id = paramList.getValue(CONTENT_ID);
 
-	if (Debug::isOn())
-		cout << "id = " << id << endl;
+	//if (Debug::isOn())
+	//	cout << "id = " << id << endl;
 
 	////////////////////////////////////////
 	// Has Item Node ?
@@ -1029,12 +1031,16 @@ void ContentDirectory::contentExportRequestRecieved(uHTTP::HTTPRequest *httpReq)
 	long contentLen = itemNode->getContentLength();
 	string contentType = itemNode->getMimeType();
 	InputStream *contentIn = itemNode->getContentInputStream();
-
+    
 	if (Debug::isOn()) {
-		cout << "itemNode = " << itemNode << endl;
-		cout << "contentLen = " << contentLen << endl;
-		cout << "contentTypeIn = " << contentType << endl;
-		cout << "contentIn = " << contentIn << endl;
+        std::ostringstream os;
+        os << "ContentDirectory::contentExportRequestRecieved, Item: Id=" << id 
+            << ", Title = " << itemNode->getTitle()
+		    << ", contentLen = " << contentLen
+		    << ", contentTypeIn = " << contentType
+		    //<< ", contentIn = " << contentIn 
+            << endl;
+        LogInfo(os.str().c_str());
 	}
 
 	if (contentLen <= 0 || contentType.length() <= 0 || contentIn == NULL) {
@@ -1042,14 +1048,14 @@ void ContentDirectory::contentExportRequestRecieved(uHTTP::HTTPRequest *httpReq)
 		return;
 	}
 
-	MediaServer *mserver = getMediaServer();
-	ConnectionManager *conMan = mserver->getConnectionManager();
-	int conID = conMan->getNextConnectionID();
-	ConnectionInfo *conInfo = new ConnectionInfo(conID);
-	conInfo->setProtocolInfo(contentType.c_str());
-	conInfo->setDirection(ConnectionInfo::OUTPUT);
-	conInfo->setStatus(ConnectionInfo::OK);
-	conMan->addConnectionInfo(conInfo);
+	MediaServer *pMserver = getMediaServer();
+	ConnectionManager *pConMan = pMserver->getConnectionManager();
+	int conID = pConMan->getNextConnectionID();
+	ConnectionInfo *pConInfo = new ConnectionInfo(conID);
+	pConInfo->setProtocolInfo(contentType.c_str());
+	pConInfo->setDirection(ConnectionInfo::OUTPUT);
+	pConInfo->setStatus(ConnectionInfo::OK);
+	pConMan->addConnectionInfo(pConInfo);
 
 	// Thanks for Robert Johansson <robert.johansson@kreatel.se>
 	HTTPResponse httpRes;
@@ -1059,9 +1065,10 @@ void ContentDirectory::contentExportRequestRecieved(uHTTP::HTTPRequest *httpReq)
 	httpRes.setContentInputStream(contentIn);
 
 	httpReq->post(&httpRes);
+    httpRes.print();
 	contentIn->close();
 
-	conMan->removeConnectionInfo(conID);
+	pConMan->removeConnectionInfo(conID);
 
 	delete contentIn;
 }

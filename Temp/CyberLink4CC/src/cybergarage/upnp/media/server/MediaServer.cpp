@@ -15,6 +15,7 @@
 *
 ******************************************************************/
 
+#include <uhttp/util/Debug.h>
 #include <cybergarage/upnp/media/server/MediaServer.h>
 
 #include <string>
@@ -84,24 +85,24 @@ MediaServer::MediaServer() : Device()
 	setHTTPPort(DEFAULT_HTTP_PORT);
 
 	// Servce Configuration
-	conMan = new ConnectionManager(this);
-	conDir = new ContentDirectory(this);
+	m_pConnectionMgr = new ConnectionManager(this);
+	m_pContentDir = new ContentDirectory(this);
 		
-	Service *servConMan = getService(ConnectionManager::SERVICE_TYPE);
-	servConMan->loadSCPD(ConnectionManager::DESCRIPTION);
-	servConMan->setActionListener(getConnectionManager());
-	servConMan->setQueryListener(getConnectionManager());
+	Service *pServConnectionMgr = getService(ConnectionManager::SERVICE_TYPE);
+	pServConnectionMgr->loadSCPD(ConnectionManager::DESCRIPTION);
+	pServConnectionMgr->setActionListener(getConnectionManager());
+	pServConnectionMgr->setQueryListener(getConnectionManager());
 
-	Service *servConDir = getService(ContentDirectory::SERVICE_TYPE);
-	servConDir->loadSCPD(ContentDirectory::DESCRIPTION);
-	servConDir->setActionListener(getContentDirectory());
-	servConDir->setQueryListener(getContentDirectory());
+	Service *pServContentDir = getService(ContentDirectory::SERVICE_TYPE);
+	pServContentDir->loadSCPD(ContentDirectory::DESCRIPTION);
+	pServContentDir->setActionListener(getContentDirectory());
+	pServContentDir->setQueryListener(getContentDirectory());
 }
 
 MediaServer::~MediaServer()
 {
-	delete conMan;
-	delete conDir;
+	delete m_pConnectionMgr;
+	delete m_pContentDir;
 	stop();		
 }
 
@@ -111,9 +112,15 @@ MediaServer::~MediaServer()
 	
 uHTTP::HTTP::StatusCode MediaServer::httpRequestRecieved(uHTTP::HTTPRequest *httpReq)
 {
-	string uri;
-	httpReq->getURI(uri);
-	
+    if (Debug::isOn())
+    {
+        std::string strHttpReq;
+        httpReq->toString(strHttpReq);
+        LogInfo("MediaServer::httpRequestRecieved, httpReq=%s\n", strHttpReq.c_str());
+    }
+    
+    string uri;
+    httpReq->getURI(uri);
 	if (uri.find(ContentDirectory::CONTENT_EXPORT_URI) != string::npos) {
 		getContentDirectory()->contentExportRequestRecieved(httpReq);
 

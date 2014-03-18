@@ -17,7 +17,7 @@
 #define _CLINK_SSDPRESPONSE_H_
 
 #include <uhttp/http/HTTPResponse.h>
-#include <uhttp/http/HTTP.h>
+#include <uhttp/http/CHTTP.h>
 #include <cybergarage/upnp/ssdp/SSDP.h>
 
 namespace CyberLink {

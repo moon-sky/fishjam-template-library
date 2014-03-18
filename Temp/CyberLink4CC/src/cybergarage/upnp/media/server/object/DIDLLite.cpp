@@ -104,15 +104,15 @@ const char *DIDLLite::toString(std::string &buf)
 	return buf.c_str();
 }
 
-const char *DIDLLite::toUnicodeString(std::string &buf)
-{
-	string localStr;
-	toString(localStr);
-#if 0
-	int outLen;
-	UnicodeStr *uniStr = XML::Local2Unicode(localStr.c_str(), outLen);
-	buf = (char *)uniStr;
-	delete []uniStr;
-#endif 
-	return buf.c_str();
-}
+//const char *DIDLLite::toUnicodeString(std::string &buf)
+//{
+//	string localStr;
+//	toString(localStr);
+//#if 0
+//	int outLen;
+//	UnicodeStr *uniStr = XML::Local2Unicode(localStr.c_str(), outLen);
+//	buf = (char *)uniStr;
+//	delete []uniStr;
+//#endif 
+//	return buf.c_str();
+//}

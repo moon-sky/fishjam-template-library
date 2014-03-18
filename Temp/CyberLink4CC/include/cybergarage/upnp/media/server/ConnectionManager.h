@@ -28,10 +28,10 @@ class ContentDirectory;
 
 class ConnectionManager : public ActionListener, public QueryListener
 {
-	MediaServer *mediaServer;
-	uHTTP::Mutex mutex;
-	int maxConnectionID;
-	ConnectionInfoList conInfoList;
+	MediaServer *m_pMediaServer;
+	uHTTP::Mutex m_mutex;
+	int m_maxConnectionID;
+	ConnectionInfoList m_conInfoList;
 	
 	////////////////////////////////////////////////
 	// Constants
@@ -89,14 +89,14 @@ private:
 
 	void setMediaServer(MediaServer *mserver)
 	{
-		mediaServer = mserver;	
+		m_pMediaServer = mserver;	
 	}
 	
 public:
 
 	MediaServer *getMediaServer()
 	{
-		return mediaServer;	
+		return m_pMediaServer;	
 	}
 
 	ContentDirectory *getContentDirectory();
@@ -110,12 +110,12 @@ public:
 
 	void lock()
 	{
-		mutex.lock();
+		m_mutex.lock();
 	}
 	
 	void unlock()
 	{
-		mutex.unlock();
+		m_mutex.unlock();
 	}
 	
 	////////////////////////////////////////////////
@@ -134,7 +134,7 @@ public:
 
 	ConnectionInfoList *getConnectionInfoList()
 	{
-		return &conInfoList;
+		return &m_conInfoList;
 	}
 	
 	ConnectionInfo *getConnectionInfo(int conId);

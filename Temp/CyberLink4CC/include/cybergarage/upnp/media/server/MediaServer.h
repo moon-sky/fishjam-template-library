@@ -23,8 +23,8 @@ namespace CyberLink {
 
 class MediaServer : public Device
 {
-	ContentDirectory *conDir;
-	ConnectionManager *conMan;
+	ContentDirectory *m_pContentDir;
+	ConnectionManager *m_pConnectionMgr;
 
 	////////////////////////////////////////////////
 	// Constants
@@ -61,7 +61,7 @@ public:
 	
 	const char *getName()
 	{
-		getFriendlyName();
+		return getFriendlyName();
 	}
 
 	////////////////////////////////////////////////
@@ -72,12 +72,12 @@ public:
 
 	ConnectionManager *getConnectionManager()
 	{
-		return conMan;
+		return m_pConnectionMgr;
 	}
 
 	ContentDirectory *getContentDirectory()
 	{
-		return conDir;
+		return m_pContentDir;
 	}	
 	
 	////////////////////////////////////////////////

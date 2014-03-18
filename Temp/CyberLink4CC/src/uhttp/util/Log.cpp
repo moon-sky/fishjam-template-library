@@ -22,11 +22,11 @@ int lineNo,
 const char *functionName,
 #endif
 const char *format, ...) {
-  char outputMessage[uHTTP::Logger::MAX_LINE_STRING];
+  char outputMessage[uHTTP::Logger::MAX_LINE_STRING] = {0} ;
     
   va_list vaList;
   va_start(vaList, format);
-  int outputMessageLength = vsnprintf(outputMessage, uHTTP::Logger::MAX_LINE_STRING, format, vaList);
+  int outputMessageLength = vsnprintf(outputMessage, uHTTP::Logger::MAX_LINE_STRING - 1, format, vaList);
   va_end(vaList);
   
 #if defined(DEBUG)

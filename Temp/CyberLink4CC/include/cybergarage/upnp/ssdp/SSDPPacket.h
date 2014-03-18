@@ -22,7 +22,7 @@
 #include <string>
 
 #include <uhttp/net/DatagramPacket.h>
-#include <uhttp/http/HTTP.h>
+#include <uhttp/http/CHTTP.h>
 #include <uhttp/http/HTTPHeader.h>
 #include <cybergarage/upnp/ssdp/SSDP.h>
 #include <cybergarage/upnp/device/NTS.h>

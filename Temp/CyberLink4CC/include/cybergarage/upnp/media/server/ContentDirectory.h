@@ -41,9 +41,9 @@ class SearchCriteriaList;
 
 class ContentDirectory : public uHTTP::Thread, public ActionListener, public QueryListener
 {
-	MediaServer *mediaServer;
+	MediaServer *m_pMediaServer;
 
-	uHTTP::Mutex	mutex;
+	uHTTP::Mutex	m_mutex;
 
 	int systemUpdateID;
 	int maxContentID;
@@ -51,12 +51,12 @@ class ContentDirectory : public uHTTP::Thread, public ActionListener, public Que
 	long systemUpdateIDInterval;
 	long contentUpdateInterval;
 
-	RootNode rootNode;
+	RootNode m_rootNode;
 	
-	FormatList formatList;
-	SortCapList sortCapList;
-	SearchCapList searchCapList;
-	DirectoryList dirList;
+	FormatList m_formatList;
+	SortCapList m_sortCapList;
+	SearchCapList m_searchCapList;
+	DirectoryList m_dirList;
 	
 	////////////////////////////////////////////////
 	// Constants
@@ -106,16 +106,16 @@ public:
 
 private:
 
-	void setMediaServer(MediaServer *mserver)
+	void setMediaServer(MediaServer *pMserver)
 	{
-		mediaServer = mserver;	
+		m_pMediaServer = pMserver;	
 	}
 	
 public:
 
 	MediaServer *getMediaServer()
 	{
-		return mediaServer;	
+		return m_pMediaServer;	
 	}
 	
 	////////////////////////////////////////////////
@@ -126,12 +126,12 @@ public:
 
 	void lock()
 	{
-		mutex.lock();
+		m_mutex.lock();
 	}
 
 	void unlock()
 	{
-		mutex.unlock();
+		m_mutex.unlock();
 	}
 
 	////////////////////////////////////////////////
@@ -175,7 +175,7 @@ public:
 
 	RootNode *getRootNode()
 	{
-		return &rootNode;
+		return &m_rootNode;
 	}
 
 	////////////////////////////////////////////////
@@ -198,23 +198,23 @@ public:
 
 	bool addPlugIn(Format *format)
 	{
-		formatList.add(format);
+		m_formatList.add(format);
 		return true;
 	}
 
 	Format *getFormat(uHTTP::File *file)
 	{
-		return formatList.getFormat(file);
+		return m_formatList.getFormat(file);
 	}
 
 	Format *getFormat(int n)
 	{
-		return formatList.getFormat(n);
+		return m_formatList.getFormat(n);
 	}
 
 	int getNFormats()
 	{
-		return formatList.size();
+		return m_formatList.size();
 	}
 
 	////////////////////////////////////////////////
@@ -225,23 +225,23 @@ public:
 
 	bool addSortCap(SortCap *sortCap)
 	{
-		sortCapList.add(sortCap);
+		m_sortCapList.add(sortCap);
 		return true;
 	}
 
 	int getNSortCaps()
 	{
-		return sortCapList.size();
+		return m_sortCapList.size();
 	}
 	
 	SortCap *getSortCap(int n)
 	{
-		return sortCapList.getSortCap(n);
+		return m_sortCapList.getSortCap(n);
 	}
 	
 	SortCap *getSortCap(const char *type)
 	{
-		return sortCapList.getSortCap(type);
+		return m_sortCapList.getSortCap(type);
 	}
 
 private:
@@ -258,28 +258,28 @@ public:
 
 	SearchCapList *getSearchCapList()
 	{
-		return &searchCapList;
+		return &m_searchCapList;
 	}
 
 	bool addSearchCap(SearchCap *searchCap)
 	{
-		searchCapList.add(searchCap);
+		m_searchCapList.add(searchCap);
 		return true;
 	}
 
 	int getNSearchCaps()
 	{
-		return searchCapList.size();
+		return m_searchCapList.size();
 	}
 	
 	SearchCap *getSearchCap(int n)
 	{
-		return searchCapList.getSearchCap(n);
+		return m_searchCapList.getSearchCap(n);
 	}
 	
 	SearchCap *getSearchCap(const char *type)
 	{
-		return searchCapList.getSearchCap(type);
+		return m_searchCapList.getSearchCap(type);
 	}
 
 private:
@@ -296,7 +296,7 @@ private:
 
 	DirectoryList *getDirectoryList()
 	{
-		return &dirList;
+		return &m_dirList;
 	}
 	
 public:
@@ -309,12 +309,12 @@ public:
 
 	int getNDirectories()
 	{
-		return dirList.size();
+		return m_dirList.size();
 	}
 	
 	Directory *getDirectory(int n)
 	{
-		return dirList.getDirectory(n);
+		return m_dirList.getDirectory(n);
 	}
 
 	////////////////////////////////////////////////

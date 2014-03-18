@@ -18,6 +18,7 @@
 
 #include "resource.h"
 #include "MediaGate.h"
+#include <ftlbase.h>
 
 using namespace std;
 
@@ -322,10 +323,26 @@ void OpenAddDialog(HWND hWnd)
 
 void InitApp()
 {
-	gMediaGate = new MediaGate(MediaGate::FILESYS_MODE);
-	gMediaGate->loadPreferences(gPreferenceFileName.c_str());
-	UpdateDirectoryList();
-	gMediaGate->start();
+    FUNCTION_BLOCK_NAME_TRACE( TEXT("InitApp"),100);
+	gMediaGate = NULL;
+    {
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("new MediaGate"), 100);
+        gMediaGate = new MediaGate(MediaGate::FILESYS_MODE);
+    }
+    
+    {
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("loadPreferences"), 100);
+	    gMediaGate->loadPreferences(gPreferenceFileName.c_str());
+    }
+    {
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("UpdateDirectoryList"), 100);
+        UpdateDirectoryList();
+    }
+	
+    {
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("start"), 100);
+	    gMediaGate->start();
+    }
 }
 
 void ExitApp()
@@ -446,8 +463,14 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Message,WPARAM wParam,LPARAM lParam
 
 int PASCAL WinMain(HINSTANCE hInst,HINSTANCE  hPrevInstance,LPSTR lpszCmdLine,int nCmdShow)
 {
-    uHTTP::Logger::GetSharedInstance()->addTarget(new uHTTP::LoggerOutputDebugString());
-    uHTTP::Debug::message("some information\n");
+    FUNCTION_BLOCK_TRACE(0);
+    uHTTP::Debug::on();
+
+    uHTTP::Logger *pLogger = uHTTP::Logger::GetSharedInstance();
+    pLogger->setLevel(uHTTP::LoggerLevel::TRACE);
+    pLogger->addTarget(new uHTTP::LoggerOutputDebugString());
+
+    //uHTTP::Debug::message("some information\n");
 
 	ghInstance = hInst;
 

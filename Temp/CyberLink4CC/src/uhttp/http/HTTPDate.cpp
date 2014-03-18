@@ -13,6 +13,7 @@
 #  include "config.h"
 #endif
 
+#include <uhttp/UHttpDef.h>
 #include <uhttp/http/HTTPDate.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,11 +44,7 @@ const char *HTTPDate::getDateString() {
   gmTime = gmtime(&sysTime);
 #endif
 
-#if defined(HAVE_SNPRINTF)
-  snprintf(dateStr, sizeof(dateStr),
-#else
-  sprintf(dateStr,
-#endif
+  snprintf(dateStr, sizeof(dateStr) - 1,
     "%s, %02d %s %04d %02d:%02d:%02d GMT",
     toWeekString(gmTime->tm_wday),
     gmTime->tm_mday,

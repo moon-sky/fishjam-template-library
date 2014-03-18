@@ -27,7 +27,7 @@
 #include <sstream>
 
 #include <cybergarage/upnp/event/SubscriptionRequest.h>
-#include <uhttp/http/HTTP.h>
+#include <uhttp/http/CHTTP.h>
 #include <cybergarage/upnp/Device.h>
 #include <cybergarage/upnp/Service.h>
 #include <uhttp/net/URL.h>

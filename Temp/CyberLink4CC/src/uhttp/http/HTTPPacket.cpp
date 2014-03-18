@@ -32,18 +32,21 @@ using namespace uHTTP;
 //  Constructor::
 ////////////////////////////////////////////////
 
-HTTPPacket::HTTPPacket() {
+HTTPPacket::HTTPPacket()
+{
   setVersion(HTTP::VER);
   setContentInputStream(NULL);
 }
 
-HTTPPacket::HTTPPacket(HTTPPacket *httpPacket) {
+HTTPPacket::HTTPPacket(HTTPPacket *httpPacket) 
+{
   setVersion(HTTP::VER);
   set(httpPacket);
   setContentInputStream(NULL);
 }
 
-HTTPPacket::HTTPPacket(HTTPSocket *httpSock) {
+HTTPPacket::HTTPPacket(HTTPSocket *httpSock) 
+{
   setVersion(HTTP::VER);
   set(httpSock);
   setContentInputStream(NULL);

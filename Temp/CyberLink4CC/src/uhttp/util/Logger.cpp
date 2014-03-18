@@ -8,6 +8,7 @@
 *
 ******************************************************************/
 
+#include <uhttp/UHttpDef.h>
 #include <uhttp/util/Logger.h>
 #include <time.h>
 
@@ -67,20 +68,16 @@ int uHTTP::Logger::output(int outputType, const char *outputMessage) {
   if (outputType < getLevel())
     return 0;
 
-  char logLineMessage[MAX_LINE_STRING];
-  char localTimestampString[MAX_LINE_STRING];
+  char logLineMessage[MAX_LINE_STRING] = { 0 };
+  char localTimestampString[MAX_LINE_STRING] = { 0 } ;
   
   this->outputMutex.lock();
   
   time_t timestamp = time(NULL);
   struct tm *localTimestamp = localtime(&timestamp);
-  strftime(localTimestampString, MAX_LINE_STRING, "%c", localTimestamp);
+  strftime(localTimestampString, MAX_LINE_STRING - 1, "%c", localTimestamp);
   
-#if defined(HAVE_SNPRINTF)
-  snprintf(logLineMessage, sizeof(logLineMessage),
-#else
-  sprintf(logLineMessage,
-#endif
+  snprintf(logLineMessage, MAX_LINE_STRING - 1,
       "%s%s[%s] %s",
       localTimestampString,
       SEPARATOR,

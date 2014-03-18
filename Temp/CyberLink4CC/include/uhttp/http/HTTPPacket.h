@@ -13,7 +13,7 @@
 #define _CHTTP_HTTPPACKET_H_
 
 #include <uhttp/http/HTTPSocket.h>
-#include <uhttp/http/HTTP.h>
+#include <uhttp/http/CHTTP.h>
 #include <uhttp/http/HTTPHeader.h>
 #include <uhttp/http/HTTPDate.h>
 
@@ -31,7 +31,7 @@ class HTTPPacket  {
   std::string content;
   std::string version;
   
-  uHTTP::InputStream *contentInput;
+  uHTTP::InputStream *m_pContentInput;
 
 public:
   
@@ -239,15 +239,15 @@ public:
   ////////////////////////////////////////////////
 
   void setContentInputStream(uHTTP::InputStream *in) {
-    contentInput = in;
+    m_pContentInput = in;
   }
 
   uHTTP::InputStream *getContentInputStream() {
-    return contentInput;
+    return m_pContentInput;
   }
 
   bool hasContentInputStream() {
-    return (contentInput != NULL) ? true : false;
+    return (m_pContentInput != NULL) ? true : false;
   }
 
   ////////////////////////////////////////////////
