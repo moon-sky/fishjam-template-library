@@ -11,9 +11,12 @@ public class SqliteWebDBManager {
 	private ServletContext mApplication;
 	private String mDBDir;
 	
+	
 	//SqliteDBManager dbManger = new SqliteDBManager(request.getServletContext(), "/db");
 	public SqliteWebDBManager(ServletContext application, String dbPath){
 		mApplication = application;
+		//ActionSupport 的子类中
+		//mDBDir = ServletActionContext.getServletContext().getRealPath(dbPath);
 		mDBDir = mApplication.getRealPath(dbPath);
 
 		System.out.println("dbDir = " + mDBDir);

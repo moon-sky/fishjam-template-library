@@ -35,10 +35,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				<td>floor：<s:textfield id="floor" name="floor"></s:textfield></td>
 			</tr>
 			<tr>
-				<td>Map 文件<input type="file"  id="map" name="map" ></input></td>
+				<td>Map 文件<s:file id="map" name="mapFile" ></s:file></td>
 			</tr>
 			<tr>
-				<td>路径 文件<input type="file"  id="path" name="path" ></input></td>
+				<td>路径 文件<s:file id="path" name="pathFile" ></s:file></td>
 			</tr>
 			<tr>
 				<td><s:submit value="提交"></s:submit></td>
