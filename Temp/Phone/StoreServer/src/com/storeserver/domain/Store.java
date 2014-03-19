@@ -32,4 +32,11 @@ public class Store {
 	public void setDbName(String dbName) {
 		this.dbName = dbName;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append("StoreBean[id=" + id + ",name=" + name +",pos=" + position + ",dbName=" + dbName +"]");
+		return sBuilder.toString();
+	}
 }

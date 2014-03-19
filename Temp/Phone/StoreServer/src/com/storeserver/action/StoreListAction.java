@@ -1,39 +1,25 @@
 package com.storeserver.action;
 
-import java.util.ArrayList;
 import java.util.List;
 
-
-
-
 import com.storeserver.action.base.BaseAction;
-import com.storeserver.business.StoreBean;
+import com.storeserver.domain.Store;
 
 public class StoreListAction extends BaseAction {
 	
-	private List<StoreBean> stores;
+	private List<Store> stores;
 	
-	public List<StoreBean> getStores() {
+	public List<Store> getStores() {
 		return stores;
 	}
 
-	public void setStores(List<StoreBean> stores) {
+	public void setStores(List<Store> stores) {
 		this.stores = stores;
 	}
 
 	@Override
 	public String execute() throws Exception {
-		System.out.println("enter StoreListAction execute");
-		
-		stores = new ArrayList<StoreBean>();
-		for (int i = 1; i <= 5; i++) {
-			StoreBean sBean = new StoreBean();
-			sBean.setId(i);
-			sBean.setName("StoreName" + i);
-			sBean.setDbName("StoreDBName" + i);
-			sBean.setPosition("Position" + i);
-			stores.add(sBean);
-		}
+		stores =  mManager.getStores(this);
 
 		return SUCCESS;
 	}

@@ -7,15 +7,15 @@ import java.sql.SQLException;
 
 import javax.servlet.ServletContext;
 
-public class SqliteDBManager {
+public class SqliteWebDBManager {
 	private ServletContext mApplication;
 	private String mDBDir;
 	
 	//SqliteDBManager dbManger = new SqliteDBManager(request.getServletContext(), "/db");
-	public SqliteDBManager(ServletContext application, String dbPath){
+	public SqliteWebDBManager(ServletContext application, String dbPath){
 		mApplication = application;
 		mDBDir = mApplication.getRealPath(dbPath);
-		
+
 		System.out.println("dbDir = " + mDBDir);
 		File file = new File(mDBDir);
 		if (!file.exists()) {

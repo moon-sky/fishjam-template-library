@@ -1,5 +1,4 @@
 <%@ page language="java" import="java.util.*" pageEncoding="ISO-8859-1"%>
-<%@taglib prefix="s" uri="/struts-tags"%>
 <%
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
@@ -10,7 +9,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   <head>
     <base href="<%=basePath%>">
     
-    <title>My JSP 'StoreMgr.jsp' starting page</title>
+    <title>My JSP 'AddStoreMap.jsp' starting page</title>
     
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
@@ -24,18 +23,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   </head>
   
   <body>
-    Store Manager. <br>
-    <div>
-		<table>
-			<s:iterator id="store" value="stores" status="st">
-			<tr>
-				<td><s:property value="name"/></td>
-				<td><s:property value="position"/></td>
-				<td><s:property value="dbName"/></td>
-			</tr>
-			</s:iterator>
-		</table>
-	</div>
-    
-</body>
+    This is AddStoreMap JSP page. <br>
+  </body>
 </html>

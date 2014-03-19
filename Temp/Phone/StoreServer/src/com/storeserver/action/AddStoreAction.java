@@ -8,7 +8,7 @@ public class AddStoreAction extends BaseAction {
 	 * @return
 	 */
 	public String execute() {
-		mManager.getStores();
+		mManager.getStores(this);
 		return SUCCESS;
 	}
 }

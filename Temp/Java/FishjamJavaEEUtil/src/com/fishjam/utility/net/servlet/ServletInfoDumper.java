@@ -34,18 +34,21 @@ public class ServletInfoDumper {
 			
 			//获取所有的请求参数(input)， getParameterValues 根据名字获取多值类型的值(如 CheckBox 选择的多个值)
 			Map<String, String[]> parmeterMap = request.getParameterMap();
-			String parmeterMapString = BaseInfoDumper.MapToString(parmeterMap);
-			sb.append("getParameterMap = { "  + parmeterMapString + " }" + strDivide);
+			sb.append("ParameterMap:" + parmeterMap + strDivide);
+			
+			sb.append("getParameterMap = { "  + BaseInfoDumper.MapToString(parmeterMap) + " }" + strDivide);
 			
 			//获取所有的参数
 			Enumeration<String> paramNames= request.getParameterNames();
+			sb.append("ParameterNames:" + paramNames + strDivide);
 			while (paramNames.hasMoreElements()) {
-				String headerName = paramNames.nextElement();
-				sb.append(headerName + "-->" + request.getHeader(headerName) + strDivide);
+				String param = paramNames.nextElement();
+				sb.append("  " + param + "-->" + request.getParameter(param) + strDivide);
 			}
 
 			//获取属性
 			Enumeration<String> attributeNames = request.getAttributeNames();
+			sb.append("AttributeNames:" + attributeNames + strDivide);
 			while (attributeNames.hasMoreElements()) {
 				final String strKey = attributeNames.nextElement();
 				sb.append(strKey + "=" + request.getAttribute(strKey) + strDivide);
@@ -53,9 +56,10 @@ public class ServletInfoDumper {
 
 			//获取所有请求头的名称 -- 注意：如果是 submit 的结果，则其 referer 会指向提交表单的URL
 			Enumeration<String> headerNames =request.getHeaderNames();
+			sb.append("headerNames:" + headerNames + strDivide);
 			while (headerNames.hasMoreElements()) {
 				 String  headerName = headerNames.nextElement();
-				 sb.append(headerName + "=" + request.getHeader(headerName) + strDivide);
+				 sb.append("  " + headerName + "=" + request.getHeader(headerName) + strDivide);
 			}
 			
 			final Cookie[] cookies = request.getCookies();
@@ -63,13 +67,14 @@ public class ServletInfoDumper {
 				sb.append("Cookies: size=" + (cookies != null ? cookies.length : 0 ) + strDivide);
 				//for (int i = 0; i < cookies.length; i++) 
 				for (Cookie cookie : cookies) {
-					sb.append(cookie.getName() + "["+ cookie.getValue() + "]" + strDivide);
+					sb.append("  " + cookie.getName() + "["+ cookie.getValue() + "]" + strDivide);
 				}
 			}
 			
 			Collection<Part> parts;
 			try {
 				parts = request.getParts();
+				sb.append("parts: " + parts);
 				if (parts != null) {
 					for (Part part : parts) {
 						sb.append("File: " +  part.getName() + ", size=" + part.getSize() + strDivide);

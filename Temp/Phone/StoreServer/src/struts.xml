@@ -3,14 +3,21 @@
 <struts>
 
 	<package name="StoreServer" extends="struts-default">
+	
 		<action name="storeList" class="com.storeserver.action.StoreListAction">
 			<result name="success">/WEB-INF/content/StoreList.jsp</result>
 		</action>
 		<action name="mapInfo" class="com.storeserver.action.MapInfoAction">
-			<result name="success">/WEB-INF/content/MapInfo.jsp</result>
+			<result name="success">/WEB-INF/content/StoreMapInfo.jsp</result>
 		</action>
 		<action name="addStore" class="com.storeserver.action.AddStoreAction">
 			<result name="success">/WEB-INF/content/AddStore.jsp</result>
+		</action>
+		<action name="addStoreMap" class="com.storeserver.action.AddStoreMapAction">
+			<result name="success">/WEB-INF/content/AddStoreMap.jsp</result>
+		</action>
+		<action name="editFloor" >
+			<result name="success">/WEB-INF/content/EditFloorInfo.jsp</result>
 		</action>
 	</package>
 </struts>    

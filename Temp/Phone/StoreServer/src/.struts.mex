@@ -1,18 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Struts2Diagram version="2.0">
-  <package name="StoreServer" location="232,73" size="649,321">
-    <action name="MapInfoAction" location="61,128" size="150,41">
+  <package name="StoreServer" location="50,50" size="171,362">
+    <action name="storeList" location="15,23" size="150,41">
       <result name="success">
-        <resourceEdge source="success" routing="0" target="MapInfo.jsp" />
+        <resourceEdge source="success" routing="0" target="StoreList.jsp" />
       </result>
     </action>
-    <action name="AddStore" location="280,129" size="150,41">
+    <action name="mapInfo" location="15,115" size="150,41">
+      <result name="success">
+        <resourceEdge source="success" routing="0" target="StoreMapInfo.jsp" />
+      </result>
+    </action>
+    <action name="addStore" location="15,215" size="150,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="AddStore.jsp" />
       </result>
     </action>
+    <action name="addStoreMap" location="15,315" size="150,41">
+      <result name="success">
+        <resourceEdge source="success" routing="0" target="AddStoreMap.jsp" />
+      </result>
+    </action>
   </package>
-  <webResource name="MapInfo.jsp" path="/MapInfo.jsp" location="26,198" size="150,55" />
-  <webResource name="AddStore.jsp" path="/AddStore.jsp" location="554,483" size="150,55" />
+  <webResource name="StoreList.jsp" path="/WEB-INF/content/StoreList.jsp" location="350,50" size="150,55" />
+  <webResource name="StoreMapInfo.jsp" path="/WEB-INF/content/StoreMapInfo.jsp" location="350,200" size="150,55" />
+  <webResource name="AddStore.jsp" path="/WEB-INF/content/AddStore.jsp" location="350,350" size="150,55" />
+  <webResource name="AddStoreMap.jsp" path="/WEB-INF/content/AddStoreMap.jsp" location="50,500" size="150,55" />
+  <webResource name="EditFloorInfo.jsp" path="/WEB-INF/content/EditFloorInfo.jsp" location="244,440" size="150,55" />
 </Struts2Diagram>
 

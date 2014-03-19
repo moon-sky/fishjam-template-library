@@ -26,15 +26,28 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     This is Map Info JSP page
 	<s:debug></s:debug>
 	.
-	
-	<table>
-	<s:iterator>
+	<s:form>
+	<table cellpadding="1" cellspacing="1" width="100%">
 		<tr>
-			<td><s:property /></td>
-			<td><s:property /></td>
-		</tr>
-	</s:iterator>
-	</table>
+	<td colspan="3" >商场地图列表</td> </tr>
+				<tr>
+					<td>选中</td>
+					<td>索引</td>
+					<td>楼层</td>
+					<td>地图</td>
+					<td>定位数据</td>
+				</tr>
+			<s:iterator id="storemap" value="storeMaps" status="st">
+			<tr>
+				<td><input type="radio" name="mapId"  value=<s:property value="id"/> ></input></td>
+				<td><s:property value="id"/></td>
+				<td><s:property value="floor"/></td>
+				<td><s:property value="map"/></td>
+				<td><s:property value="path"/></td>
+			</tr>
+			</s:iterator>
+		</table>
+	</s:form>
 	<br>
   </body>
 </html>

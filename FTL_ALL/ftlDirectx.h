@@ -8,6 +8,8 @@
 #  error ftldirectx.h requires ftlbase.h to be included first
 #endif
 
+//微软系统提供的DirectShow Filter:  http://technet.microsoft.com/zh-cn/library/dd375464
+
 #include <DShow.h>
 #pragma comment( lib, "Quartz.lib" )
 

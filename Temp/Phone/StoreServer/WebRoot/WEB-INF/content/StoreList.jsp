@@ -28,18 +28,22 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     Store Manager.
 	<s:debug></s:debug>
 	<br>
+	<s:form action="/mapInfo">
     <div>
-		<table cellpadding="1"
-	cellspacing="1" style="border-bottom-style: double; border-bottom-width: thin; border-top-style: dotted; border-left-color: #000000; border-top-color: #000000; border-left-style: inset; border-right-color: #000000; border-right-width: thin; border-right-style: dashed; border-left-width: thin; border-bottom-color: #000000; border-top-width: thin">
+		<table cellpadding="1" cellspacing="1" width="100%">
 		<tr>
 	<td colspan="3" >商场列表</td> </tr>
 				<tr>
+					<td>选中</td>
+					<td>索引</td>
 					<td>名字</td>
 					<td>地址</td>
 					<td>数据库名</td>
 				</tr>
 			<s:iterator id="store" value="stores" status="st">
 			<tr>
+				<td><input type="radio" name="stroreDbName"  value=<s:property value="dbName"/> ></input></td>
+				<td><s:property value="id"/></td>
 				<td><s:property value="name"/></td>
 				<td><s:property value="position"/></td>
 				<td><s:property value="dbName"/></td>
@@ -47,6 +51,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			</s:iterator>
 		</table>
 	</div>
-    
+		<input type="submit" value="编辑">
+    </s:form>
 </body>
 </html>
