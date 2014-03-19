@@ -3,8 +3,8 @@
 <struts>
 
 	<package name="StoreServer" extends="struts-default">
-		<action name="index">
-			<result name="success">/WEB-INF/content/index.jsp</result>
+		<action name="storeList" class="com.storeserver.action.StoreListAction">
+			<result name="success">/WEB-INF/content/StoreList.jsp</result>
 		</action>
 		<action name="mapInfo" class="com.storeserver.action.MapInfoAction">
 			<result name="success">/WEB-INF/content/MapInfo.jsp</result>

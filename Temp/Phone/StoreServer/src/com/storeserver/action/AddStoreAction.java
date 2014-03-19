@@ -1,14 +1,14 @@
 package com.storeserver.action;
 
-import com.opensymphony.xwork2.ActionSupport;
+import com.storeserver.action.base.BaseAction;
 
-public class AddStoreAction extends ActionSupport {
+public class AddStoreAction extends BaseAction {
 
 	/**
 	 * @return
 	 */
 	public String execute() {
-		// TODO Auto-generated method stub
+		mManager.getStores();
 		return SUCCESS;
 	}
 }

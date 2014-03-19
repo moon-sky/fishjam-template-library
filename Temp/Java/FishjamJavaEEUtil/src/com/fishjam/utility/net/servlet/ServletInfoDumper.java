@@ -10,7 +10,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.fishjam.utility.dumper.BaseInfoDumper;
 

@@ -1,7 +1,7 @@
 package com.storeserver.action;
-import com.opensymphony.xwork2.ActionSupport;
+import com.storeserver.action.base.BaseAction;
 
-public class MapInfoAction extends ActionSupport {
+public class MapInfoAction extends BaseAction {
 
 	/**
 	 * @return

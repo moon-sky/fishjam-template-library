@@ -1,7 +1,5 @@
 package com.fishjam.study;
 
-import com.fishjam.utility.thread.FThread;
-
 /************************************************************************************************************
  * 安装好JDK以后，要设置环境变量：
  *   JAVA_HOME -- 指向 JDK 的安装目录
@@ -29,6 +27,7 @@ import com.fishjam.utility.thread.FThread;
  *   3.使用 javadoc2chm-1.1.0.7.msi，指定  index.html 的路径即可，能自动生成目录和索引
  *
  ***********************************************************************************************************/
+/*
 class MyStack<T>
 {
 	private T ob;
@@ -56,12 +55,13 @@ class MyThread extends FThread
             this.sleepAndCheckStop(1000);
         }
     }
-    
 }
+*/
 public class JavaEnv {
 	
 	public void testEnv() throws InterruptedException
 	{
+/*		
 		MyStack<Integer> iStack = new MyStack<Integer>(10);
 		System.out.println(iStack.toString());
 		
@@ -85,5 +85,6 @@ public class JavaEnv {
 		
 		myThread.join();
 		System.out.println("after thread end");
+*/
 	}
 }

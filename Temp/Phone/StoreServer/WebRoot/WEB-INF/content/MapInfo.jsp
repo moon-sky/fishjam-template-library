@@ -1,4 +1,4 @@
-<%@ page language="java" import="java.util.*" pageEncoding="ISO-8859-1"%>
+<%@taglib uri="/struts-tags" prefix="s"%><%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
@@ -23,6 +23,18 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   </head>
   
   <body>
-    This is Map Info JSP page. <br>
+    This is Map Info JSP page
+	<s:debug></s:debug>
+	.
+	
+	<table>
+	<s:iterator>
+		<tr>
+			<td><s:property /></td>
+			<td><s:property /></td>
+		</tr>
+	</s:iterator>
+	</table>
+	<br>
   </body>
 </html>
