@@ -12,7 +12,9 @@ using namespace Gdiplus;
 
 GdiPlusTestParam::GdiPlusTestParam()
 {
-	m_strPaintString = _T("123456789\r\n一二三四五六七八九\r\nABCDEFGHIJKLMNOPQRSTUVWXYX");
+    //注意回车换行的不同方式在 编辑控件、GDI+绘图 中的区别
+    //只有 \r\n 才能在所有的地方都换行
+	m_strPaintString = _T("123456789\n一二三四五六七八九\r\nABCDEFGHIJKLMN\rOPQRSTUVWXYX");
 	m_strPaintImagePath = _T("C:\\Users\\Public\\Pictures\\Sample Pictures\\Koala.jpg");
 	m_rcDrawPanelClient.SetRectEmpty();
 

@@ -8,6 +8,7 @@
 #endif
 
 #include <atlwin.h>
+//#include <ftlWindow.h>
 // 无资源对话框需要ATL
 
 namespace FTL
@@ -336,7 +337,7 @@ namespace FTL
     {
     public:
         BEGIN_MSG_MAP(CFCrashHandlerDialog)
-            DUMP_WINDOWS_MSG(__FILE__LINE__, DEAFULT_DUMP_FILTER_MESSAGES, _countof(DEAFULT_DUMP_FILTER_MESSAGES), uMsg, wParam, lParam)
+            //DUMP_WINDOWS_MSG(__FILE__LINE__, DEAFULT_DUMP_FILTER_MESSAGES, _countof(DEAFULT_DUMP_FILTER_MESSAGES), uMsg, wParam, lParam)
 
             COMMAND_HANDLER(IDC_BTN_CREATE_MINIDUMP, BN_CLICKED, OnCreateMiniDumpClick)
 			COMMAND_HANDLER(IDC_BTN_SAVE_STACK, BN_CLICKED, OnSaveStackClick)

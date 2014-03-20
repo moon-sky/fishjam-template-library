@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined(_M_IX86)
-#  define HOOK_API_DETOURS
+//#  define HOOK_API_DETOURS
 #endif 
 
 //#define HOOK_API_EASYHOOK

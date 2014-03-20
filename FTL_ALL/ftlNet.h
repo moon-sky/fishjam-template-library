@@ -221,7 +221,7 @@
 *     在两个端点之间提供稳定、有序的数据传递服务（非常类似于 TCP），基于消息流, 可以保护数据消息边界(不会出现粘包现象)
 *     最初是被设计用于在IP上传输电话，其连接可以是多宿主连接的(连接双方可声明多个地址，若当前连接失败，可切换到另一个地址)。
 * SOAP(Simple Object Access Protocol) -- 简单对象访问协议，是一种在HTTP上使用XML发送命令并接收值的远程过程调用
-* SSDP(Simple Service Discovery Protocol) -- 简单服务发现协议，采用UDP传输，格式套用HTTP1.1的部分消息头字段
+* SSDP(Simple Service Discovery Protocol) -- 简单服务发现协议，采用UDP传输(多播广播，单播应答)，格式套用HTTP1.1的部分消息头字段
 * TCP(Transmission Control Protocol) -- 传输控制协议，面向连接，提供双向、有序、无重复并且无记录边界的数据流服务
 * TOE(TCP/IP Offload Engine) -- TCP/IP卸载引擎。传统TCP处理过程中，会占用大量的主机CPU资源，TOE对TCP/IP协议栈进行扩展，使部分协议从CPU转移到TOE硬件，从而减轻CPU的负担
 * TTL -- 生存时间，表示一个数据包在丢弃之前，可在网络上存在多长时间，值为0时，包被丢弃

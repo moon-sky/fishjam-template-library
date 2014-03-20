@@ -25,9 +25,11 @@
 *   SlickDLNA -- https://github.com/KernelCrap/android-dlna
 *   UPnP SDK(基于其开发出DLNA) -- http://upnp.org/sdcps-and-certification/resources/sdks/
 *     有很多选择，可支持 C,C++,Java等，其中比较好的：
-*       Intel 的 openTools -- 有不少辅助工具，主要是C#，
+*       Cling -- 
+*       CyberGarage(海思也用这个) -- http://www.cybergarage.org/net/upnp,
+*       Intel 的 openTools -- http://opentools.homeip.net/
+*       Platinum -- http://blog.csdn.net/lancees/article/details/9865411
 *       Plutinosoft -- 
-*       CyberGarage(海思也用这个) -- http://www.cybergarage.org/net/upnp ,
 *     Android平台上: NDK下面编译出 jni库 => 应用层开发
 *       注意：Android平台上的 MediaPlayer 对视频的处理能力相当的弱，若想对各种视频有良好的支持，需要移植视频播放器，
 *              如：ffmpeg、gstream、vlc 等
@@ -64,7 +66,8 @@
 *     M-NCF(Mobile Network Connectivity Function) -- 移动网络连接功能设备，提供各种设备接入移动网络的物理介质，DLNA的希望是全部实现无线化。
 *   交互方式： HND <=> [ HID <=> ] MHD
 *     要进行HND和MHD设备之间的交互，需要HND或MHD满足对方的要求。但大多数情况下无法满足这样的条件，所以需要HID设备提供桥接和内容转换服务。
-
+*   常见规划：
+*
 * 设备能力(Device Capabilities)和角色(Roles) -- 用工具能查询到？
 *   +PU+(Push Controller) -- 发送本地内容到DMR
 *   +PR1+/+PR2+(Printing Controller-1/-2) -- 控制DMPr进行图像内容打印
@@ -145,13 +148,15 @@
 *   1.发现(Discovery) -- 当一个设备被添加到网络后，UPnP的发现协议允许该设备向网络上的Control Points(CPs)通知(advise)自己拥有的服务。
 *     同理，当一个CP被添加到网络后，UPnP发现协议允许该CP搜索网络上可用的设备。
 *     一般通过SSDP协议组播发送 设备和服务的基本信息(类型，唯一标识符，当前状态参数等)。
-*     组播地址为“HOST: 239.255.255.250:1900” ? Response 是UDP单播
-*     服务通知 + 
-*   2.描述(Description) -- CP向设备发送请求信息，返回XML格式的描述(device + service),其中有更详细信息的URL
+*     搜索: "HOST: 239.255.255.250:1900" 发 "M-SEARCH",
+*     通知: "HOST: 239.255.255.250:1900" 发 "NOTIFY", 如是响应，则使用UDP的单播发送
+*   2.描述(Description.xml) -- CP向设备发送请求信息，返回XML格式的描述(device + service),其中有更详细信息的URL
+*     描述文档 -- 描述设备，包括：制造商信息,版本等；可被设备采用的图标的URL地址；设备列表；服务列表等
+*     服务器端，设备需要运行一个标准的HTTP服务(可以是完全的Web服务器也可以是迷你服务器，主要是提供HTTP检索)
 *   3.控制(Control) -- 通过向设备描述部分给出的Control URL发送控制信息来控制Device，并根据反馈进行处理。
-*     沟通信息按照SOAP的格式来写(现在的版本是 SOAP 1.1 UPnP Profile)
+*     沟通信息按照SOAP的格式来写(现在的版本是 SOAP 1.1 UPnP Profile), 使用HTTP的POST和M-POST命令，传输XML文档
 *   4.事件(Eventing) -- 在服务进行的整个时间内，如状态发生了改变，可以产生一个事件，并向整个网络进行多播(multicast);
-*     CP也可以事先向事件服务器订阅(subscribe)事件信息，保证将该CP感兴趣的事件及时准确地单播传送过来(unicast)。
+*     CP也可以事先向事件服务器订阅(SUBSCRIBE)事件信息，保证将该CP感兴趣的事件及时准确地单播传送过来(unicast)。
 *     事件的订阅和推送使用的协议是 GENA。
 *   5.界面描述(Presentation) -- 遥控器的UI？
 *     只要得到了设备的URL，就可以取得该设备表达的URL，取得该设备表达的HTML，然后可以将此HTML纳入CP的本地浏览器上。
@@ -199,6 +204,19 @@
 *       a. linux: ./boostrap -enable-libxml2<CR> ./configure<CR> make
 *      
 *************************************************************************************************************************/
+
+/*************************************************************************************************************************
+* Intel openTools
+*   Device Builder -- 设备生成工具，
+*   Device Sniffer -- SSDP调试工具，监听和显示网络上的所有SSDP信息
+*   Device Spy -- 是一个 Control Point，在网络上搜索所有设备，提供调用方法和服务的通用方法
+*************************************************************************************************************************/
+
+/*************************************************************************************************************************
+* Android 平台开发
+*   利用NDK将SDK编译出JNI，
+*************************************************************************************************************************/
+
 namespace FTL
 {
 }
