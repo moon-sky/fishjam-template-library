@@ -29,11 +29,15 @@ using namespace CyberLink;
 ServiceData::ServiceData()  {
   service = NULL;
   scpdNode = NULL;
+  timeout = 0;
 }
 
 ServiceData::~ServiceData()  {
   if (scpdNode != NULL)
+  {
     delete scpdNode;
+    scpdNode = NULL;
+  }
 }
 
 ////////////////////////////////////////////////
@@ -42,7 +46,9 @@ ServiceData::~ServiceData()  {
 
 void ServiceData::setSCPDNode(CyberXML::Node *node) {
   if (scpdNode != NULL)
+  {
     delete scpdNode;
+  }
   scpdNode = node;
 }
 

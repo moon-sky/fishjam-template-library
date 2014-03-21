@@ -3,14 +3,6 @@
 	<MediaServer>
 		<ContentDirectory>
 			<DirectoryList>
-				<Directory>
-					<Name>Pic</Name>
-					<Path>F:\Pic</Path>
-				</Directory>
-				<Directory>
-					<Name>video</Name>
-					<Path>E:\Video</Path>
-				</Directory>
 			</DirectoryList>
 		</ContentDirectory>
 	</MediaServer>

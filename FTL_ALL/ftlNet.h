@@ -109,7 +109,8 @@
 *  1889/3550 -- RTP(Real-time Transport Protocol)
 *  2616 -- HTTP(Hypertext Transfer Protocol)
 *  6443 -- RFB(Remote Framebuffer Protocol), 通常用于远程控制
-
+*
+* Ethereal -- 抓包软件，可以抓SSDP等消息？可通过 Follow TCP Stream 来解析拆分成多个包的TCP流？
 * Fiddler2/Httpwatch -- 专门监控Http传输的工具?
 * Wireshark(开源遵循GPL的网络抓包工具) -- http://wiki.wireshark.org
 *   默认是混杂模式(promiscuous mode)，会捕获整个局域网段的包。
@@ -220,7 +221,7 @@
 * SCTP(Stream Control Transmission Protocol) -- 流控制传输协议, 2000年新定义的面向连接的传输层协议，对TCP的缺陷进行了一些完善。
 *     在两个端点之间提供稳定、有序的数据传递服务（非常类似于 TCP），基于消息流, 可以保护数据消息边界(不会出现粘包现象)
 *     最初是被设计用于在IP上传输电话，其连接可以是多宿主连接的(连接双方可声明多个地址，若当前连接失败，可切换到另一个地址)。
-* SOAP(Simple Object Access Protocol) -- 简单对象访问协议，是一种在HTTP上使用XML发送命令并接收值的远程过程调用
+* SOAP(Simple Object Access Protocol) -- 简单对象访问协议，是一种在HTTP上使用XML发送命令并接收值的远程过程调用(RPC)，多采用XML方式?
 * SSDP(Simple Service Discovery Protocol) -- 简单服务发现协议，采用UDP传输(多播广播，单播应答)，格式套用HTTP1.1的部分消息头字段
 * TCP(Transmission Control Protocol) -- 传输控制协议，面向连接，提供双向、有序、无重复并且无记录边界的数据流服务
 * TOE(TCP/IP Offload Engine) -- TCP/IP卸载引擎。传统TCP处理过程中，会占用大量的主机CPU资源，TOE对TCP/IP协议栈进行扩展，使部分协议从CPU转移到TOE硬件，从而减轻CPU的负担
@@ -228,8 +229,12 @@
 * UDN(Unique Device Name) -- 单一设备名，基于UUID，每个表示一个设备。在不同的时间，对于同一个设备此值应该是唯一的
 * UDP(User Datagram Protocol) -- 用户数据报协议，无连接，支持双向的数据流，但并不保证可靠、有序、无重复
 * UPC(Universal Product Code) -- 通用产品编码，由12个数字构成，由统一编码委员会（Uniform Code Council）管理。这个值可由UPnP制造商指定。
-* URL(Uniform Resource Locator) -- 基本格式,schema://host[:port]/path/.../[?query-string][#anchor]
+* URI(Universal Resource Identifier) -- 通用资源标志符,对可用资源(Web、本地文件等)进行定位。URI一般由三部分组成：访问资源的命名机制、存在资源的主机名、资源自身的名称
+* URL(Uniform Resource Location) -- 统一资源定位符，用来定位Web资源，是URI命名机制的子集。基本格式,schema://host[:port]/path/.../[?query-string][#anchor]
 *   如: http://www.mywebsite.com/sj/test/test.aspx?name=sviergn&x=true#stuff
+* URN(Uniform Resource Name) -- 统一资源名称，是URL的更新形式，唯一标识一个实体的标识符，但是不能给出实体的位置。
+*   相比URL更强大更容易管理(可以引用多个URL)
+* UUID(Universally Unique Identifier，等价于GUID?) -- 通用唯一识别码，其格式为 8-4-4-16 的十六进制字符串
 * WINS -- Windows互联网命名服务器,维护着已注册的所有NetBIOS名字的一个列表
 * WinSock -- 是网络编程接口，而不是协议，与协议无关。可以针对一种具体协议（如IP、TCP、IPX、lrDA等）创建套接字。
 *  “面向消息”（保护消息边界--每次读取返回一个消息，如网络游戏的控制包）和 “面向流”（连续的数据传输，会尽量地读取有效数据）

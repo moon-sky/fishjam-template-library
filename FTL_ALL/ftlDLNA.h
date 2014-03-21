@@ -11,7 +11,7 @@
 //UPnP协议编程实践(一) http://www.ibm.com/developerworks/cn/linux/other/UPnP/part1/
 //基于CyberGarage库的dlna开发 --  http://blog.csdn.net/lancees/article/details/8477513
 //DLNA开发资料 -- http://download.csdn.net/download/geniuseoe2012/4969961
-
+//网络相关的一些知识 -- http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Five/
 
 /*************************************************************************************************************************
 * 多屏互动
@@ -25,8 +25,10 @@
 *   SlickDLNA -- https://github.com/KernelCrap/android-dlna
 *   UPnP SDK(基于其开发出DLNA) -- http://upnp.org/sdcps-and-certification/resources/sdks/
 *     有很多选择，可支持 C,C++,Java等，其中比较好的：
-*       Cling -- 
-*       CyberGarage(海思也用这个) -- http://www.cybergarage.org/net/upnp,
+*       Cling -- http://4thline.org/projects/cling, Android上,
+*       CyberGarage/CyberLink(海思也用这个) -- http://www.cybergarage.org/net/upnp,
+*         出现时间比较早，支持C/C++/Java/ObjectC 等多平台，但很久没有更新，多语言支持不好，性能有问题
+*         使用BSD协议，支持商业开发。
 *       Intel 的 openTools -- http://opentools.homeip.net/
 *       Platinum -- http://blog.csdn.net/lancees/article/details/9865411
 *       Plutinosoft -- 
@@ -115,8 +117,10 @@
 
 
 /*************************************************************************************************************************
+* 
 * 树型架构：
-*   Root Device > 物理或逻辑Device > Service > Action(Arguments) 和 Variable > 
+*   +-Root Device > 物理或逻辑Device > Service > Action(Arguments) 和 Variable
+*   +-Control Point
 *
 * UPnP(Universal Plug and play) -- 通用即插即用(http://upnp.org/)，主要用于实现设备的智能互联互通，是DLNA的核心
 *   UPnP标准：http://upnp.org/resources/upnpresources.zip
@@ -143,15 +147,16 @@
 *     定义了打印设备和关联的控制点应用之间的交互模型
 *
 * UPnP的工作过程
-*   0.寻址(Addressing) -- 每个设备都应当是DHCP的客户,当设备首次与网络建立连接后,通过DHCPDISCOVER+DHCPOFFERS得到一个IP地址，
-*     一般来说路由器已有该功能。如没有响应，则使用 Auto-IP 完成IP地址的设置 (169.254/169.16)
+*   0.寻址(Addressing) -- 每个设备都应当是DHCP的客户,当设备首次与网络建立连接后,通过 DHCP Discover + DHCP Offer 得到一个IP地址，
+*     一般来说路由器已有该功能。如没有响应，则使用 Auto-IP 完成IP地址的设置 (169.254/169.16)。也可以使用静态配置的IP地址。
 *   1.发现(Discovery) -- 当一个设备被添加到网络后，UPnP的发现协议允许该设备向网络上的Control Points(CPs)通知(advise)自己拥有的服务。
 *     同理，当一个CP被添加到网络后，UPnP发现协议允许该CP搜索网络上可用的设备。
 *     一般通过SSDP协议组播发送 设备和服务的基本信息(类型，唯一标识符，当前状态参数等)。
 *     搜索: "HOST: 239.255.255.250:1900" 发 "M-SEARCH",
 *     通知: "HOST: 239.255.255.250:1900" 发 "NOTIFY", 如是响应，则使用UDP的单播发送
-*   2.描述(Description.xml) -- CP向设备发送请求信息，返回XML格式的描述(device + service),其中有更详细信息的URL
-*     描述文档 -- 描述设备，包括：制造商信息,版本等；可被设备采用的图标的URL地址；设备列表；服务列表等
+*     该步骤后可知设备或服务的UPnP类型，UUID和设备描述的URL。
+*   2.描述(Description.xml) -- CP向设备发送请求信息，返回XML格式的描述(device + service),其中有更详细信息的URL，通常会多次递归查询，
+*     描述文档 -- 主要分设备描述、服务描述等。包括：制造商信息,版本等；可被设备采用的图标的URL地址；设备列表；服务列表等，
 *     服务器端，设备需要运行一个标准的HTTP服务(可以是完全的Web服务器也可以是迷你服务器，主要是提供HTTP检索)
 *   3.控制(Control) -- 通过向设备描述部分给出的Control URL发送控制信息来控制Device，并根据反馈进行处理。
 *     沟通信息按照SOAP的格式来写(现在的版本是 SOAP 1.1 UPnP Profile), 使用HTTP的POST和M-POST命令，传输XML文档
@@ -190,12 +195,77 @@
 *
 * 格式
 *   设备类型 -- 描述格式一般为 urn:schemas-upnp-org:device:uuid-device。其中 uuid-device 为UPnP工作委员会定义的标准设备类型。
+*     uuid 值为 1 表示:
+*     device值为 0 表示:
 *     设备制造商也可以指定其他的名字，一般为 urn:domain-name:device:uuid-device，其中 uuid-device为制造商定义的标准设备类型，domain-name字段为设备制造商注册的域名
+*     常见设备类型(deviceType):InternetGatewayDevice(一般是路由器等网关设备)
 *   服务类型 -- 表示服务的统一资源名，一般格式为 urn:schemas-upnp-org:service:serviceType:version
 *     UPnP设备制造商可以指定附加服务，格式为 urn:domain-name:service:serviceType:version
 *     典型的服务类型：扫描仪(scanner),
 *
+* UPnP在NAT中的应用 
+*   用户通过NAT接入网络 + 同时需要使用 BitComment、电骡(eMule)等P2P类软件。UPnP能自动的把P2P软件侦听的端口号映射到公网上，
+*     以便公网上的用户能对NAT私网侧发起连接，大大的提高下载效率与速度
+*   前提条件：
+*     1.NAT网关设备必须打开UPnP功能
+*     2.操作系统(如WinXP)必须打开UPnP功能：
+*       a.添加删除程序->Windows组件->网络服务->UPnP用户界面;
+*       b.Windows防火墙->例外->UPnP框架
+*       c.服务-> 启动 "SSDP Discovery Service" 和 “Universal Plug and Play Device Host” 服务
+*       然后可在“网络连接”中看到多了Internet网关，等应用程序运行时添加端口后，属性中可以看到具体的信息。
+*     3.应用软件必须打开UPnP功能,如 BitComment 中:选项->高级->网络连接->允许使用UPnP自动端口映射
+*       然后在"全局统计“标签页中可以看到NAT端口映射已添加(对外IP: TCP监听端口:25118, UDP监听端口:25118)
+*   
 *************************************************************************************************************************/
+
+/*************************************************************************************************************************
+* UPnP协议分析
+-------------------------------------------------------------------------------------
+|                      UPnP设备制造商定义                                    |
+|                          UPnP论坛定义                                       |
+|                       UPnP设备定义的结构                                   |
+|      SSDP, GENA              ||    SOAP(设备控制,设备描述), GENA(设备事件)     |
+|   HTTPU/HTTPMU(设备发现)    ||                                                   |
+|                              UDP                                                  |
+|                              IP                                                   |
+-------------------------------------------------------------------------------------
+*  HTTPU/HTTPMU -- HTTP协议的变种,格式沿袭了HTTP协议，但通过UDP而非TCP来承载，并且可用于组播进行通信
+*
+* SSDP:
+*   主动通知(NOTIFY * HTTP/1.1\r\n): 设备加入到网络中时，向网络上的控制点告知它提供的服务，并且定期发送
+*     HOST:239.255.255.250:1900\r\n -- 表示是广播
+*     LOCATION: 根设备的描述URL，如 http://192.168.1.1:2800/InternetGatewayDevice.xml\r\n
+*     NT: 服务类型，如 upnp:rootdevice\r\n
+*     NTS:ssdp:alive\r\n
+*     USN:uuid:aaaabbbb-cccc-dddd-eeeeffffgggghhhh::upnp:rootdevice\r\n -- 表示不同服务的统一服务名，标示相同类型服务能力
+*   查询(M-SEARCH * HTTP/1.1\r\n): 控制点加入到网络中时，寻找网络上感兴趣的设备
+*     HOST: 239.255.255.250:1900\r\n -- 广播
+*     MAN:ssdp:discover\r\n -- 
+*     MX:3\r\n -- 设置设备响应最长等待时间，设备响应在0和这个值之间随机选择响应延迟的值
+*     ST: 搜索目标，可选类型如下：
+*         ssdp:all -- 所有设备和服务
+*         upnp:rootdevice -- 仅搜索网络中的根设备
+*         uuid:device-UUID -- 查询UUID标识的设备
+*         urn:schemas-upnp-org:device:device-type:version -- 查询device-Type字段指定的设备类型，设备类型和版本由UPNP组织定义
+*         urn:schemas-upnp-org:service:service-type:version -- 查询service-Type字段指定的服务类型，服务类型和版本由UPNP组织定义
+*   响应(HTTP/1.1 200 OK) -- 设备发现自己满足控制点搜索的目标，进行相应
+*     EXT:\r\n -- 空节点，向控制点确认MAN头域已经被设备理解
+*     LOCATION: -- 包含根设备描述得URL地址
+*     SERVER:Wireless N Router WR845N, UPnP/1.0\r\n -- 包含操作系统名，版本，产品名和产品版本信息。
+*     ST: -- 内容和意义与查询请求的相应字段相同
+*     USN: -- 
+*
+*   控制报文: 控制点先发送一个控制行为请求，要求设备开始服务，然后再按设备的URL发送相应的控制消息
+*     1.POST /EmWeb/UPnP/Control/4 HTTP/1.1 -- 对目的地址，POST Soap 格式的命令
+*       SOAPAction: "urn:schemas-upnp-org:service:WANIPConnection:1#GetSpecificPortMappingEntry"
+*       <soap:Envelope> + <soap:Header> + <soap:Body>
+*
+*   事件订阅和通知 -- 放在XML中，使用GENA格式
+*     NT: upnp:event -- 
+*     SEQ
+*************************************************************************************************************************/
+
+
 /*************************************************************************************************************************
 * CyberLink ()
 *   C++ 版本
@@ -207,7 +277,7 @@
 
 /*************************************************************************************************************************
 * Intel openTools
-*   Device Builder -- 设备生成工具，
+*   Device Builder -- 代码生成工具，
 *   Device Sniffer -- SSDP调试工具，监听和显示网络上的所有SSDP信息
 *   Device Spy -- 是一个 Control Point，在网络上搜索所有设备，提供调用方法和服务的通用方法
 *************************************************************************************************************************/
