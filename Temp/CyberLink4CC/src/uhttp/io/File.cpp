@@ -36,6 +36,7 @@
 #include <uhttp/io/FileList.h>
 
 #include <uhttp/util/StringUtil.h>
+//#include <uhttp/util/StringConverter.h>
 
 using namespace std;
 using namespace uHTTP;
@@ -373,12 +374,17 @@ int File::listFiles(FileList &fileList) {
 
 #if defined(WIN32)
   string findDir = dir + "\\*.*";
-  WIN32_FIND_DATA fd;
-  HANDLE hFind;
+  //wstring wFindDir;
+  //StringConverter::toUTF16(findDir, wFindDir);
+
+  WIN32_FIND_DATA fd = {0};
+  HANDLE hFind = NULL;
   hFind = FindFirstFile(findDir.c_str(), &fd);
   if (hFind != INVALID_HANDLE_VALUE) {
     do{
+      //wstring wfindFilename = fd.cFileName;
       string findFilename = fd.cFileName;
+      //StringConverter::toUTF8(wfindFilename, findFilename);
       if (findFilename.compare(".") != 0 && findFilename.compare("..") != 0) {
         File *file = new File(dir.c_str(), findFilename.c_str());
         fileList.add(file);

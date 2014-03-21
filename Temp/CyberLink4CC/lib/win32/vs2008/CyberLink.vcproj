@@ -524,6 +524,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\..\src\uhttp\util\StringConverter.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\..\src\uhttp\util\StringTokenizer.cpp"
 						>
 					</File>
@@ -1210,6 +1214,10 @@
 					</File>
 					<File
 						RelativePath="..\..\..\include\uhttp\util\Random.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\uhttp\util\StringConverter.h"
 						>
 					</File>
 					<File

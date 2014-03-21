@@ -20,10 +20,14 @@
 #include "MediaGate.h"
 #include <ftlbase.h>
 
-using namespace std;
+#include <ftlBase.h>
+#include <ftlConversion.h>
 
-const char WINDOW_TITLE[] = "Cyber Media Gate";
-const char WINDOW_CLASS[] = "CyberMediaGate";
+using namespace std;
+using namespace FTL;
+
+const TCHAR WINDOW_TITLE[] = TEXT("Cyber Media Gate");
+const TCHAR WINDOW_CLASS[] = TEXT("CyberMediaGate");
 
 const int SPLIT_BORDER_WIDTH = 2;
 const int DEFAULT_BUTTON_WIDTH = 50;
@@ -109,7 +113,7 @@ HFONT CreateWindowFont()
 			CLIP_DEFAULT_PRECIS,
 			DEFAULT_QUALITY, 
 			VARIABLE_PITCH | FF_DONTCARE,
-			"Lucida Sans Unicode"
+			TEXT("Lucida Sans Unicode")
 		);
 }
 
@@ -130,7 +134,7 @@ HWND CreateItemListWindow(HWND mainWnd, HINSTANCE mainInstance)
 		mainInstance,
 		NULL);
 
-	char *columTitle[] = {"title", "creator", "date", "size"};
+	TCHAR *columTitle[] = {TEXT("title"), TEXT("creator"), TEXT("date"), TEXT("size")};
 
 	LVCOLUMN col;
 	col.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
@@ -156,7 +160,7 @@ void UpdateItemList(int dirNum)
 	LVITEM item = {0};
 	item.mask = 0;
 	item.mask = LVIF_TEXT;
-	char buf[512];
+    TCHAR buf[512] = { 0 } ;
 	int itemCnt = dir->getNContentNodes();
 	for (int n=0 ; n<itemCnt ; n++) {
 		ContentNode *conNode = dir->getContentNode(n);
@@ -165,20 +169,21 @@ void UpdateItemList(int dirNum)
 		
 		ItemNode *itemNode = (ItemNode *)conNode;
 
-		item.pszText = (char *)itemNode->getTitle();
+        FTL::CFConversion conv;
+		item.pszText = conv.MBCS_TO_TCHAR(itemNode->getTitle());
 		item.iItem = n;
 		item.iSubItem = 0;
 		ListView_InsertItem(ghItemListWindow , &item);
 
-		item.pszText = (char *)itemNode->getCreator();
+		item.pszText = conv.MBCS_TO_TCHAR(itemNode->getCreator());
 		item.iSubItem = 1;
 		ListView_SetItem(ghItemListWindow , &item);
 
-		item.pszText = (char *)itemNode->getDate();
+		item.pszText = conv.MBCS_TO_TCHAR(itemNode->getDate());
 		item.iSubItem = 2;
 		ListView_SetItem(ghItemListWindow , &item);
 
-		sprintf(buf, "%ld", itemNode->getStorageUsed());
+		_stprintf(buf, TEXT("%ld"), itemNode->getStorageUsed());
 		item.pszText = buf;
 		item.iSubItem = 3;
 		ListView_SetItem(ghItemListWindow , &item);
@@ -213,7 +218,8 @@ void UpdateDirectoryList()
 	for (int n=0; n<dirCnt; n++) {
 		Directory *dir = mserver->getContentDirectory(n);
 		const char *name = dir->getFriendlyName();
-		SendMessage(ghDirectoryListWindow, LB_ADDSTRING, 0, (LPARAM)name);
+        FTL::CFConversion conv;
+		SendMessage(ghDirectoryListWindow, LB_ADDSTRING, 0, (LPARAM)conv.MBCS_TO_TCHAR(name));
 	}
 }
 
@@ -223,9 +229,10 @@ void DeleteDirectoryList(int selID)
 	Directory *dir = mserver->getContentDirectory(selID);
 	if (dir == NULL)
 		return;
-	ostringstream os;
-	os << "Are you delete the '" << dir->getFriendlyName() << "' directory ?";
-	if (MessageBox(ghMainWindow, os.str().c_str(), WINDOW_TITLE, MB_OKCANCEL) != IDOK)
+    
+	
+    if (FTL::FormatMessageBox(ghMainWindow, WINDOW_TITLE, MB_OKCANCEL, 
+        TEXT("Are you delete the '%s' directory ?"),  dir->getFriendlyName()) != IDOK)
 		return;
 	mserver->removeContentDirectory(selID);
 	UpdateDirectoryList();
@@ -235,11 +242,11 @@ void DeleteDirectoryList(int selID)
 // Content Directory
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-HWND CreateButton(HWND mainWnd, HINSTANCE mainInstance, const char *name)
+HWND CreateButton(HWND mainWnd, HINSTANCE mainInstance, const TCHAR *name)
 {
 	HWND buttonWnd =CreateWindow(
 		TEXT("BUTTON"),
-		TEXT(name),
+		name,
 		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 		0,0,DEFAULT_BUTTON_WIDTH,BUTTON_HEIGHT,
 		ghMainWindow,
@@ -254,15 +261,15 @@ HWND CreateButton(HWND mainWnd, HINSTANCE mainInstance, const char *name)
 // Add Dialog
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-char gDirName[MAX_PATH+1];
-char gDirPath[MAX_PATH+1];
+TCHAR gDirName[MAX_PATH+1];
+TCHAR gDirPath[MAX_PATH+1];
 
 void InitBrowseInfo(HWND hWnd, BROWSEINFO &bInfo)
 {
 	bInfo.hwndOwner = hWnd;
 	bInfo.pidlRoot = NULL;
 	bInfo.pszDisplayName = gDirPath;
-	bInfo.lpszTitle = "";
+	bInfo.lpszTitle = _T("");
 	bInfo.ulFlags = 0;
 	bInfo.lpfn = NULL;
 	bInfo.lParam = 0;
@@ -287,7 +294,7 @@ BOOL CALLBACK AddDialogProc(HWND hWnd, UINT msg , WPARAM wParam , LPARAM lParam)
 			else if (comID == IDOK) {
 				GetWindowText(GetDlgItem(hWnd, IDC_DIR_NAME), gDirName, MAX_PATH);
 				GetWindowText(GetDlgItem(hWnd, IDC_DIR_PATH), gDirPath, MAX_PATH);
-				if (strlen(gDirName) <= 0 || strlen(gDirPath) <= 0)
+				if (_tcslen(gDirName) <= 0 || _tcslen(gDirPath) <= 0)
 					return FALSE;
 				EndDialog(hWnd , IDOK);
 			}
@@ -311,7 +318,12 @@ void OpenAddDialog(HWND hWnd)
 		AddDialogProc);
 	if (ret != IDOK)
 		return;
-	FileDirectory *fileDir = new FileDirectory(gDirName, gDirPath);
+    std::string strUtf8Path;
+    FTL::CFConversion convName;
+    FTL::CFConversion convPath;
+
+	FileDirectory *fileDir = new FileDirectory(convName.TCHAR_TO_MBCS(gDirName), 
+        convPath.TCHAR_TO_MBCS(gDirPath));
 	MediaServer *mserver = gMediaGate->getMediaServer();
 	mserver->addContentDirectory(fileDir);
 	UpdateDirectoryList();
@@ -374,10 +386,10 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT Message,WPARAM wParam,LPARAM lParam
 			ghItemListWindow = CreateItemListWindow(ghMainWindow, ghInstance);
 			SendMessage(ghItemListWindow, WM_SETFONT, (WPARAM)font, MAKELPARAM(FALSE, 0));
 
-			ghAddWindow = CreateButton(ghMainWindow, ghInstance, "Add");
+			ghAddWindow = CreateButton(ghMainWindow, ghInstance, TEXT("Add"));
 			SendMessage(ghAddWindow, WM_SETFONT, (WPARAM)font, MAKELPARAM(FALSE, 0));
 
-			ghDelWindow = CreateButton(ghMainWindow, ghInstance, "Del");
+			ghDelWindow = CreateButton(ghMainWindow, ghInstance, TEXT("Del"));
 			SendMessage(ghDelWindow, WM_SETFONT, (WPARAM)font, MAKELPARAM(FALSE, 0));
 
 			InitApp();

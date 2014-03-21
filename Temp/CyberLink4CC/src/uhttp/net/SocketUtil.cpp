@@ -31,15 +31,15 @@ int uHTTP::GetSocketLastErrorCode() {
 
 const char *uHTTP::DecodeSocketError(int ErrorCode) {
   static char msg[1024];
-
-#if defined(WIN32) || defined(__CYGWIN__)
-  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
-    FORMAT_MESSAGE_MAX_WIDTH_MASK,
-    NULL, ErrorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-    (LPSTR)msg, 1024, NULL);
-#else
-  msg[0] = '\0';
-#endif
+  sprintf(msg, "%d", ErrorCode);
+//#if defined(WIN32) || defined(__CYGWIN__)
+//  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS |
+//    FORMAT_MESSAGE_MAX_WIDTH_MASK,
+//    NULL, ErrorCode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+//    (LPSTR)msg, 1024, NULL);
+//#else
+//  msg[0] = '\0';
+//#endif
   return msg;
 }
 
