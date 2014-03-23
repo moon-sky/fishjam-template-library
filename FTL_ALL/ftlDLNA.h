@@ -6,7 +6,6 @@
 #  error ftlDLNA.h requires ftlbase.h to be included first
 #endif
 
-//TODO: 在android系统中开发DLNA -- http://blog.csdn.net/gebitan505/article/details/19497545
 //DLNA 的设备发现和控制层使用的UPnP协议标准： http://upnp.org/sdcps-and-certification/standards/device-architecture-documents/
 //UPnP协议编程实践(一) http://www.ibm.com/developerworks/cn/linux/other/UPnP/part1/
 //基于CyberGarage库的dlna开发 --  http://blog.csdn.net/lancees/article/details/8477513
@@ -20,12 +19,12 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
-* 开源实现库
+* 开源实现库 -- 提供UPnP栈
 *   MiniDLNA -- https://github.com/azatoth/minidlna
 *   SlickDLNA -- https://github.com/KernelCrap/android-dlna
 *   UPnP SDK(基于其开发出DLNA) -- http://upnp.org/sdcps-and-certification/resources/sdks/
 *     有很多选择，可支持 C,C++,Java等，其中比较好的：
-*       Cling -- http://4thline.org/projects/cling, Android上,
+*       Cling -- http://4thline.org/projects/cling, Android上比较好的开发工具，支持客户端和服务器端。许可协议为LGPL或CDDL
 *       CyberGarage/CyberLink(海思也用这个) -- http://www.cybergarage.org/net/upnp,
 *         出现时间比较早，支持C/C++/Java/ObjectC 等多平台，但很久没有更新，多语言支持不好，性能有问题
 *         使用BSD协议，支持商业开发。
@@ -139,7 +138,7 @@
 *   AV服务：
 *     CDS(Content Directory Service) -- 内容目录服务，枚举并列出可访问的内容，如视频、音乐盒图片等
 *     CMS(Connection Manager Service) -- 决定媒体内容可以通过何种方式由 UPnP AV MediaServer 传输至 UPnp AV MediaRenderer
-*     AVT(AV Transport Service) -- 控制媒体内容的传输，如播放、停止、暂停、查找等
+*     AVT(AV Transport Service) -- 控制媒体内容的传输，如播放、停止、暂停、查找等，智能电视就需要实现这个，其中很重要的是名为 SetAVTransportURI 的 Action
 *     RCS(Rendering Control Service) -- 控制以何种方式播放内容，如 音量、静音、亮度等
 *   这个是什么？
 *     SRS(Scheduled Recording Service) -- 
@@ -193,6 +192,7 @@
 *       a -- pull方式时,CP向Renderer发送Server及Server上所需媒体内容的URL，让Renderer去取
 *       b -- push方式时，CP向Server发Renderer的URL，让Server去向Renderer推送媒体内容
 *
+*
 * 格式
 *   设备类型 -- 描述格式一般为 urn:schemas-upnp-org:device:uuid-device。其中 uuid-device 为UPnP工作委员会定义的标准设备类型。
 *     uuid 值为 1 表示:
@@ -201,7 +201,7 @@
 *     常见设备类型(deviceType):InternetGatewayDevice(一般是路由器等网关设备)
 *   服务类型 -- 表示服务的统一资源名，一般格式为 urn:schemas-upnp-org:service:serviceType:version
 *     UPnP设备制造商可以指定附加服务，格式为 urn:domain-name:service:serviceType:version
-*     典型的服务类型：扫描仪(scanner),
+*     常见服务： 扫描仪(scanner),
 *
 * UPnP在NAT中的应用 
 *   用户通过NAT接入网络 + 同时需要使用 BitComment、电骡(eMule)等P2P类软件。UPnP能自动的把P2P软件侦听的端口号映射到公网上，
@@ -265,6 +265,44 @@
 *     SEQ
 *************************************************************************************************************************/
 
+/*************************************************************************************************************************
+* UPnP的常见实例分析
+*   1.AllShare
+*     设备: 
+*       <deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
+*       服务: 
+*         a.<serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType> 
+*         Action列表(3个):
+*           a1.GetCurrentConnectionIDs
+*           a2.GetCurrentConnectionInfo
+*           a3.GetProtocolInfo
+*         b.<serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType>
+*         Action列表(31个):
+*           b1.Browse
+*           b2.GetFeatureList -- 
+*   2.Windows7 中的 "SSDP Discovery" + "Windows Media Player Network Sharing Service"
+*     开启方式:
+*       a.启动对应的服务
+*       b.控制面板\网络和 Internet\网络和共享中心 中设置当前网络的连接为家庭网络(让设备可以安全的互相访问),
+*         "共享密码"可在"家庭组"中查看; 家庭组中,选中"将我的图片、音乐和视频输出到我的家庭网络上的所有设备";
+*         "网络和共享中心\媒体流选项\流媒体选项"中允许设备访问
+*       c.Windows Media Player -- "媒体流"菜单中勾选"允许远程控制我的播放器"和"自动允许设备播放我的媒体",
+*         并保持程序的运行。
+*   3.支持DLNA的三星智能电视
+*     设备:
+*       <deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType>  -- 标准的Render，一般手机共享播放时的搜索目标就是这个
+*       服务:
+*       <deviceType>urn:samsung.com:device:MainTVServer2:1</deviceType>
+*       <deviceType>urn:samsung.com:device:MainTVServer2:1</deviceType>
+*************************************************************************************************************************/
+
+/*************************************************************************************************************************
+* Cling -- Android 上
+*  限制:
+*    1.(TODO:可能只是模拟器的问题)Android不支持接收UDP组播,但可以发送UDP组播。因此，可以发现正运行的设备，但不能发现搜寻后新开启的设备。
+*  主要接口和类
+*    interface AndroidUpnpService -- 
+*************************************************************************************************************************/
 
 /*************************************************************************************************************************
 * CyberLink ()
@@ -272,7 +310,8 @@
 *     1.源码: CyberLinkForCC + HttpEngineForCC + expat
 *     2.编译:
 *       a. linux: ./boostrap -enable-libxml2<CR> ./configure<CR> make
-*      
+*   
+*   
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************

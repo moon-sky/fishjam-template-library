@@ -55,7 +55,7 @@ MediaPlayer::~MediaPlayer()
 	
 bool MediaPlayer::start()
 {
-	return ControlPoint::start(/*MediaServer::DEVICE_TYPE*/);
+	return ControlPoint::start(MediaServer::DEVICE_TYPE);
 }
 
 bool MediaPlayer::stop()

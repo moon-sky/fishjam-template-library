@@ -21,7 +21,7 @@
 
 namespace uHTTP {
 class HTTPServer : public uHTTP::Thread {
-  uHTTP::ServerSocket *serverSock;
+  uHTTP::ServerSocket *m_pServerSock;
   uHTTP::ListenerList httpRequestListenerList;
 
   bool bind(int port, const std::string &addr = "");
@@ -29,7 +29,7 @@ class HTTPServer : public uHTTP::Thread {
   bool isOpened();
 
   uHTTP::ServerSocket *getServerSock() {
-    return serverSock;
+    return m_pServerSock;
   }
 
 public:
@@ -72,9 +72,9 @@ public:
   //  run  
   ////////////////////////////////////////////////
 
-  bool start();
-  void run();
-  bool stop();
+  virtual bool start();
+  virtual void run();
+  virtual bool stop();
 
 };
 

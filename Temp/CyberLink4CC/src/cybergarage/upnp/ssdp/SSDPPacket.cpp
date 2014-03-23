@@ -20,7 +20,7 @@
 
 #include <string>
 #include <cybergarage/upnp/ssdp/SSDPPacket.h>
-
+#include <uhttp/util/Log.h>
 using namespace CyberLink;
 
 ////////////////////////////////////////////////
@@ -50,4 +50,8 @@ void SSDPPacket::set(SSDPPacket *ssdpPacket) {
   setLocalAddress(ssdpPacket->getLocalAddress());
   setTimeStamp(ssdpPacket->getTimeStamp());
   setDatagramPacket(&ssdpPacket->getDatagramPacket());
+}
+
+void SSDPPacket::print(const std::string& info){
+	LogInfo("%s: %s\n", info.c_str(), toString());
 }

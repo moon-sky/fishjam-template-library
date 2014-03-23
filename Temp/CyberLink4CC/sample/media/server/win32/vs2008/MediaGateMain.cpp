@@ -18,7 +18,8 @@
 
 #include "resource.h"
 #include "MediaGate.h"
-#include <ftlbase.h>
+
+#include <atlstr.h>
 
 #include <ftlBase.h>
 #include <ftlConversion.h>

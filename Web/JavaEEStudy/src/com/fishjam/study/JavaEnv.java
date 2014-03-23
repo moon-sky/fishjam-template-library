@@ -25,7 +25,9 @@ package com.fishjam.study;
  *   2.使用jd2chm工具，能够生成hhc、hhk、hhp文件，方便我们使用HHW进行编辑。可以指定HTML的目录，但增加了一个About.html，
  *     http://download.csdn.net/source/1024968 
  *   3.使用 javadoc2chm-1.1.0.7.msi，指定  index.html 的路径即可，能自动生成目录和索引
- *
+ * 
+ * 在线帮助文档：
+ *   http://docs.oracle.com/javaee/7/api/
  ***********************************************************************************************************/
 /*
 class MyStack<T>

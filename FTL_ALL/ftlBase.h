@@ -48,6 +48,8 @@
 //#if defined USE_THREAD_SAFE_TRACE
 #define FTLTRACE    FAST_TRACE
 #define FTLTRACEEX  FAST_TRACE_EX
+#define FTLTRACEA    FAST_TRACEA
+#define FTLTRACEEX  FAST_TRACE_EX
 //#endif //USE_THREAD_SAFE_TRACE
 
 //调用方可以重新指定日志输出和断言的机制，如果没有指定，使用默认(日后扩展为FastTrace？)
@@ -746,6 +748,7 @@ namespace FTL
 #ifdef FTL_DEBUG
 #   define FAST_TRACE      FTL::CFFastTrace::GetInstance().WriteLogInfo
 #   define FAST_TRACE_EX   FTL::CFFastTrace::GetInstance().WriteLogInfoEx
+#   define FAST_TRACEA     FTL::CFFastTrace::GetInstance().WriteLogInfoA
 #else
 #   define FAST_TRACE      __noop
 #   define FAST_TRACE_EX   __noop
@@ -794,9 +797,22 @@ namespace FTL
         //FTLINLINE BOOL FlushAllFiles();
         //FTLINLINE BOOL SnapAllFiles();
         //默认使用 tlTrace 进行输出
-        FTLINLINE void /*__cdecl*/ WriteLogInfo(const LPCTSTR lpszFormat,...);
-        FTLINLINE void /*__cdecl*/ WriteLogInfoEx(TraceLevel level,const LPCTSTR lpszFormat,...);
-    protected:
+
+		FTLINLINE void /*__cdecl*/ WriteLogInfo(const LPCTSTR lpszFormat,...);
+		FTLINLINE void /*__cdecl*/ WriteLogInfoEx(TraceLevel level,const LPCTSTR lpszFormat,...);
+
+//#ifdef _UNICODE
+//#  define WriteLogInfo		WriteLogInfoW
+//#  define WriteLogInfoEx	WriteLogInfoExW
+//#else
+//#  define WriteLogInfo		WriteLogInfoA
+//#  define WriteLogInfoEx	WriteLogInfoExA
+//#endif 
+		FTLINLINE void /*__cdecl*/ WriteLogInfoA(const LPCSTR lpszFormat,...);
+		//FTLINLINE void /*__cdecl*/ WriteLogInfoExA(TraceLevel level,const LPCSTR lpszFormat,...);
+		//FTLINLINE void /*__cdecl*/ WriteLogInfoW(const LPCWSTR lpszFormat,...);
+		//FTLINLINE void /*__cdecl*/ WriteLogInfoExW(TraceLevel level,const LPCWSTR lpszFormat,...);
+	protected:
         class CFTFileWriter// : public CFTargetWriter<HANDLE>
         {
         public:

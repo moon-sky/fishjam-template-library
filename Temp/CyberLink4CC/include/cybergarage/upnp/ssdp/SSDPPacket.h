@@ -198,9 +198,7 @@ class SSDPPacket  {
     return getData();
   }
 
-  void print() {
-    std::cout << toString() << std::endl;
-  }  
+  void print(const std::string& info);
 };
 
 }

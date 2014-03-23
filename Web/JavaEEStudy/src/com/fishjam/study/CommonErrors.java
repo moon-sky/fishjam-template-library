@@ -7,6 +7,7 @@ package com.fishjam.study;
  *   Struts2
  *     struts.xml
  *       /struts/constant[name="struts.devMode" value="true"] -- 设置为 true可使用开发模式，应用出错时显示更多、更友好的出错信息
+ *       conststruts.devMode="true" -- 
  *       struts.configuration.xml.reload="true" -- 当struts.xml文件改变后，是否自动加载该文件
  *       struts.convention.classes.reload="true" -- 如果使用 Convention 自动映射时，可在Action或JSP页面改变时自动加载相关文件
  *     Config Browser插件(struts2-config-browser-plugin-x.y.z.jar 复制到 WEB-INF\lib 目录下) -- 查看Action等各种资源的映射情况
@@ -16,7 +17,7 @@ package com.fishjam.study;
  *     web.xml
  *       /web-app/servlet/init-para[param-name='listings'] -- 将对应的 param-value 改为 'true', 列出Web应用路径下所有页面，方便直接选取文件调试 
  *     动态配置或 server.xml 中 <Context docBase= > 里 reloadable="true"， 则更改 Servlet 后会自动重新加载
-
+ *
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************

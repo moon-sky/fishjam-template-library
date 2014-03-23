@@ -73,19 +73,22 @@ import java.util.Map;
  *       }
  *      补充：
  *        a.Map session = ActionContext.getContext().getSession();  获取当前Session对应的Map，然后通过键值方式对获取参数
+ *          ServletActionContext.getResponse().xxx;
  *        b.预定义的返回值： SUCCESS, ERROR, 
  *        c.Action类可以使一个普通的POJO，只需要包含一个 public String execute() 方法？
  *        d.Action类里定义的属性 可以由structs2框架根据 参数名字 自动 get/set
  *        e.如要提示错误，可用 addActionError 方法设置     
  *   4.在 struts.xml 中配置 Action(动作类)的代码. struts(1) > package(n) > action(n)
- *     <package name="struts2" namespace="/mystruts" extends="struts-default"> 
- *       <action name="sum" class="action.MyAction"> //指定名为 sum 的Action，将会由对应的类进行处理(用户可向该Action发送请求 -- s:form 的 action )
+ *     <package name="struts2" extends="struts-default"> 
+ *       <action name="sum" class="action.MyAction" method="execute"> //指定名为 sum 的Action，将会由对应的类进行处理(用户可向该Action发送请求 -- s:form 的 action )
 			//下面通过 result 元素，指定逻辑视图和物理资源视图之间的映射
  *         <result name="positive">/positive.jsp</result>    
  *         <result name="negative">/negative.jsp</result>
  *       </action>
  *     </package>
- *     注意：支持通配符配置来自动匹配：<action name="*" class = "com.fishjam.{1}Action" method="show"></action>
+ *     注意：a.支持通配符配置来自动匹配：<action name="*" class = "com.fishjam.{1}Action" method="show"></action>
+ *           b.如果有 namespace，则访问时连接地址必须要加名称空间的前缀
+ *           c.默认使用execute处理请求，可以通过 method="xxx" 指定使用特定的方法。在Jsp中可通过js语句 targetForm.action = "login!execute"; 指定处理方法
  *   5.编写JSP(如 sum.jsp)页面，通过其中的form将数据提交给 Action, 其中使用 Struts2带的tag(在 标签库 "/struts-tags" 中)
  *     在<s:form>中最好都使用Struts2标签，尽量不要用HTML或普通文本.
  *     <%@ page language="java" import="java.util.*" pageEncoding="GBK"%>
@@ -144,7 +147,7 @@ import java.util.Map;
 
 /**************************************************************************************************************************************
 * 国际化支持：
-*   1.structs.xml 中增加 
+*   1.structs.xml 中增加配置，指定 全局国际化资源文件和编码集
 *     <constant name="struts.custom.i18n.resources" value="messageResource"/>
 *     <constant name="struts.i18n.encoding" value="GBK"/> 
 *   2.编写 messageResource.properties, messageResource_en_US.properties 等多语言的键值对文件
@@ -178,17 +181,18 @@ import java.util.Map;
 *     需要在 WEB-INF\lib 下考入 struts2-core-xxxx.jar, ognl-xxxx.jar 等
 *   设置的属性：
 *      name(Action 使用的属性名) 
-*      key( 国际化时的键值对 )
+*      key(国际化时的键值对)
+*      id( ? )
 *    标签：
 *     <s:actionerror cssClass="error"/> -- 输出Action的错误提示
 *     <s:form action="proLogin"> 各种控件  </s:form> -
 *     <s:if test="条件"></s:if><s:else></s:else>
 *     <s:iterator id="item" value="items" status="st"><s:property value="xxxx"/></s:iterator> -- 迭代
-*     <s:param>
+*     <s:param> -- 可用在<s:text> 等中表示属性，如 <s:param>${sessionScope.user}</s:param> 表示从系统 sessionScope 变量中取出用户定义的 user 变量值 
 *     <s:property value="Action类属性名" > -- 字符串属性
 *     <s:select name="xxx"  list="#{ '1':'一天','值':'显示字符' }" label="yyy/> -- 下拉列表
 *     <s:submit value="登录" /> -- 
-*     <s:text> --  
+*     <s:text> -- 提示文本
 *     <s:textfield name="变量名" key="多语言的key" /> -- 也可以通过 label="直接设置的语言"
 ***************************************************************************************************************************************/ 	 
 public class StrutsStudy {

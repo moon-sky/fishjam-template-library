@@ -2,10 +2,10 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="serverdump"
-	ProjectGUID="{9E5FE71D-01BF-4F16-91D2-96EF6AD30D8A}"
-	RootNamespace="serverdump"
-	TargetFrameworkVersion="0"
+	Name="MediaServerDemo"
+	ProjectGUID="{451359FB-D166-4C8A-9FC0-630E028F2D31}"
+	RootNamespace="MediaServerDemo"
+	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
 		<Platform
@@ -20,10 +20,9 @@
 			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="0"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -39,24 +38,26 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/serverdump.tlb"
-				HeaderFileName=""
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="false"
+				TargetEnvironment="1"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(IntDir)/MediaServerDemo.tlb"
+				HeaderFileName="MediaServerDemo.h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="MediaServerDemo_i.c"
+				ProxyFileName="MediaServerDemo_p.c"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../../../include,../../"
-				PreprocessorDefinitions="_DEBUG;WIN32;_CONSOLE;USE_XMLPARSER_EXPAT"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Debug/serverdump.pch"
-				AssemblerListingLocation=".\Debug/"
-				ObjectFile=".\Debug/"
-				ProgramDataBaseFileName=".\Debug/"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -65,22 +66,19 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
-				Culture="1041"
+				Culture="1033"
+				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Iphlpapi.lib ws2_32.lib libexpat.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="libexpat.lib ws2_32.lib Iphlpapi.lib"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(SolutionDir)lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)lib&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/serverdump.pdb"
-				SubSystem="1"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -94,8 +92,6 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile=".\Debug/serverdump.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -112,10 +108,9 @@
 			OutputDirectory="$(SolutionDir)bin\$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
+			ATLMinimizesCRunTimeLibraryUsage="true"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -131,25 +126,25 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/serverdump.tlb"
-				HeaderFileName=""
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="false"
+				TargetEnvironment="1"
+				GenerateStublessProxies="true"
+				TypeLibraryName="$(IntDir)/MediaServerDemo.tlb"
+				HeaderFileName="MediaServerDemo.h"
+				DLLDataFileName=""
+				InterfaceIdentifierFileName="MediaServerDemo_i.c"
+				ProxyFileName="MediaServerDemo_p.c"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="../../../../../include,../../"
-				PreprocessorDefinitions="NDEBUG;WIN32;_CONSOLE;USE_XMLPARSER_EXPAT"
-				StringPooling="true"
+				AdditionalIncludeDirectories="../../include"
+				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;NDEBUG"
+				ExceptionHandling="0"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
-				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Release/serverdump.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -157,21 +152,18 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
-				Culture="1041"
+				Culture="1033"
+				AdditionalIncludeDirectories="$(IntDir)"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Iphlpapi.lib ws2_32.lib libexpat.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="libexpat.lib ws2_32.lib Iphlpapi.lib"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(SolutionDir)lib"
-				ProgramDatabaseFile=".\Release/serverdump.pdb"
-				SubSystem="1"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)lib&quot;"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -185,8 +177,6 @@
 			/>
 			<Tool
 				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-				OutputFile=".\Release/serverdump.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -204,18 +194,33 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm"
 			>
 			<File
-				RelativePath="..\..\serverdump.cpp"
+				RelativePath=".\AVMediaPlayer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AVMediaServer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MainDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MediaServerDemo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -223,21 +228,48 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
+						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl"
+			Filter="h;hpp;hxx;hm;inl;inc"
 			>
+			<File
+				RelativePath=".\AVMediaPlayer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AVMediaServer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MainDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\stdafx.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;jpg;jpeg;jpe;manifest"
 			>
+			<File
+				RelativePath=".\res\MediaServerDemo.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\MediaServerDemo.rc"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

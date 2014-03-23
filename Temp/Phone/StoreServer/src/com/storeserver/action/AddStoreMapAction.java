@@ -35,12 +35,12 @@ public class AddStoreMapAction extends BaseAction implements ServletRequestAware
 		this.mPathFile = pathFile;
 	}
 
-	private String mMapFileName; //文件名称
-	 private String mMapFileContentType; //文件类型
-	 
+//	private String mMapFileName; //文件名称
+//	 private String mMapFileContentType; //文件类型
+//	 
 	 private File mPathFile;
-	 private String mPathFileName; //文件名称
-	 private String mPathFileContentType; //文件类型
+//	 private String mPathFileName; //文件名称
+//	 private String mPathFileContentType; //文件类型
 
 	 @Override
  	public void setServletRequest(HttpServletRequest request) {
@@ -49,25 +49,43 @@ public class AddStoreMapAction extends BaseAction implements ServletRequestAware
 
 	public String execute() {
 		//mRequest.getParameter("")
-		//System.out.println("AddStoreMapAction:\n" + ServletInfoDumper.RequestToString(mRequest, "\n"));
+		System.out.println("AddStoreMapAction:\n" + ServletInfoDumper.RequestToString(mRequest, "\n"));
 		
 		StoreInfoManager.FloorInfo floorInfo = new StoreInfoManager.FloorInfo();
 		try {
-			if (mMapFile != null) {
+			//if (mMapFile != null) {
 				System.out.println("mapFile=" + mMapFile.getAbsolutePath());
+				System.out.println("pathFile=" + mPathFile.getAbsolutePath());
 				
 				String realpath = ServletActionContext.getServletContext().getRealPath("/uploadTest");
 				
-				  File savefile = new File(new File(realpath), "test.dat");
-		            if (!savefile.getParentFile().exists())
-		                savefile.getParentFile().mkdirs();
-		            FileUtils.copyFile(mMapFile, savefile);
-		            //ActionContext.getContext().put("message", "文件上传成功");
-			}
+				String strMapFile = mRequest.getParameter("map");
+				if (strMapFile == null) {
+					strMapFile = "mapFile";
+				}
+				
+				String strPathFile = mRequest.getParameter("path");
+				if (strPathFile == null) {
+					strPathFile = "pathFile.map";
+				}
+				
+				File mapSavefile = new File(new File(realpath), strMapFile);
+	            if (!mapSavefile.getParentFile().exists())
+	            	mapSavefile.getParentFile().mkdirs();
+	            FileUtils.copyFile(mMapFile, mapSavefile);
+	            
+	            File pathSaveFile = new File(new File(realpath), strPathFile);
+	            FileUtils.copyFile(mPathFile, pathSaveFile);
+	            
+	            floorInfo.mapDataStream = FileUtils.openInputStream(mapSavefile);
+	            floorInfo.pathDataStream = FileUtils.openInputStream(pathSaveFile);
+	            //ActionContext.getContext().put("message", "文件上传成功");
+			//}
 			
 			floorInfo.floor = Integer.parseInt(mRequest.getParameter("floor"));
 			floorInfo.storeId = Integer.parseInt(mRequest.getParameter("storeId"));
 
+			/*
 			Part partMap = mRequest.getPart("map");
 			if (partMap != null) {
 				floorInfo.mapDataStream = partMap.getInputStream();
@@ -78,7 +96,9 @@ public class AddStoreMapAction extends BaseAction implements ServletRequestAware
 				floorInfo.pathDataStream = partPath.getInputStream();
 				System.out.println("partPath=" + partPath.getSize());
 			}
-			//mManager.insertFloorInfo(this, "hqzx.db", floorInfo);
+			*/
+			
+			mManager.insertFloorInfo(this, "hqzx.db", floorInfo);
 			if (floorInfo.mapDataStream != null) {
 				floorInfo.mapDataStream.close();
 			}

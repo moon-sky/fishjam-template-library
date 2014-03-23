@@ -2,8 +2,6 @@
 <CyberGarage>
 	<MediaServer>
 		<ContentDirectory>
-			<DirectoryList>
-			</DirectoryList>
-		</ContentDirectory>
+			<DirectoryList />		</ContentDirectory>
 	</MediaServer>
 </CyberGarage>

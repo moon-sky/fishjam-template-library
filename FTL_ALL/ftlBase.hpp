@@ -1143,6 +1143,17 @@ namespace FTL
         va_end(argList);
         InternalWriteLogData(tlTrace, formater.GetString());
     }
+	
+	void CFFastTrace::WriteLogInfoA(const LPCSTR lpszFormat,...)
+	{
+		CFLastErrorRecovery  lastErrorRecovery;
+		CAtlStringA formater;
+		va_list argList;
+		va_start(argList, lpszFormat);
+		formater.AppendFormatV(lpszFormat,argList);
+		va_end(argList);
+		OutputDebugStringA(formater);
+	}
 
     void CFFastTrace::WriteLogInfoEx(TraceLevel level,const LPCTSTR lpszFormat,...)
     {

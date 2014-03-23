@@ -37,13 +37,15 @@ public class StoreMapInfoDao extends BaseDao{
 			try {
 				Connection conn = mSqliteDBManager.GetConnection(mStrStoreDBPath);
 				Statement stmt = conn.createStatement();
-				ResultSet rs = stmt.executeQuery("select id, storeId, floor from tbl_Map");
+				ResultSet rs = stmt.executeQuery("select id, storeId, floor, map, path from tbl_Map");
 				while (rs.next()) {
 					StoreMapInfo mapInfo = new StoreMapInfo();
 					
 					mapInfo.setId(rs.getInt(1));
 					mapInfo.setStoreId(rs.getInt(2));
 					mapInfo.setFloor(rs.getInt(3));
+					mapInfo.setMap(rs.getBytes(4));
+					mapInfo.setPath(rs.getBytes(5));
 					
 					mStoreMaps.add(mapInfo);
 				}
@@ -66,11 +68,22 @@ public class StoreMapInfoDao extends BaseDao{
 					+ "values(null, ?, ?, ?, ?)");
 			stmt.setInt(1, floorInfo.storeId);
 			stmt.setInt(2,  floorInfo.floor);
+			
+			
 			if (floorInfo.mapDataStream != null) {
-				stmt.setBlob(3, floorInfo.mapDataStream);
+				int nMapSize = floorInfo.mapDataStream.available();
+				byte[] bytes = new byte[nMapSize];
+				floorInfo.mapDataStream.read(bytes);
+				stmt.setBytes(3, bytes);
+				//stmt.setBlob(3, floorInfo.mapDataStream);
 			}
 			if (floorInfo.pathDataStream != null) {
-				stmt.setBlob(4, floorInfo.pathDataStream);
+				int nPathSize = floorInfo.pathDataStream.available();
+				byte[] bytes = new byte[nPathSize];
+				floorInfo.mapDataStream.read(bytes);
+				stmt.setBytes(4, bytes);
+
+				//stmt.setBlob(4, floorInfo.pathDataStream);
 			}
 			stmt.execute();
 		}

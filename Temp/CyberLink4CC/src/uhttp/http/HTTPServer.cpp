@@ -29,7 +29,7 @@ using namespace uHTTP;
 ////////////////////////////////////////////////
   
 HTTPServer::HTTPServer() {
-  serverSock = NULL;
+  m_pServerSock = NULL;
 }
 
 HTTPServer::~HTTPServer() {
@@ -42,18 +42,18 @@ HTTPServer::~HTTPServer() {
 ////////////////////////////////////////////////
 
 bool HTTPServer::bind(int port, const std::string &addr) {
-  if (serverSock != NULL)
+  if (m_pServerSock != NULL)
     return true;
     
-  serverSock = new ServerSocket();
-  if (serverSock->bind(port, addr) == false) {
-    delete serverSock;
-    serverSock = NULL;
+  m_pServerSock = new ServerSocket();
+  if (m_pServerSock->bind(port, addr) == false) {
+    delete m_pServerSock;
+    m_pServerSock = NULL;
     return false;
   }
-  if (serverSock->listen() == false) {
-    delete serverSock;
-    serverSock = NULL;
+  if (m_pServerSock->listen() == false) {
+    delete m_pServerSock;
+    m_pServerSock = NULL;
     return false;
   }
   return true;
@@ -64,24 +64,24 @@ bool HTTPServer::open(int port, const std::string &addr) {
 }
 
 bool HTTPServer::close() {
-  if (serverSock == NULL)
+  if (m_pServerSock == NULL)
     return true;
-  serverSock->close();
-  serverSock = NULL;
+  m_pServerSock->close();
+  m_pServerSock = NULL;
   return true;
 }
 
 bool HTTPServer::accept(uHTTP::Socket *socket) {
-  if (serverSock == NULL)
+  if (m_pServerSock == NULL)
     return false;
-  if (serverSock->accept(socket) == false)
+  if (m_pServerSock->accept(socket) == false)
     return false;
-  serverSock->setTimeout(HTTP::DEFAULT_TIMEOUT * 1000);
+  m_pServerSock->setTimeout(HTTP::DEFAULT_TIMEOUT * 1000);
   return true;
 }
 
 bool HTTPServer::isOpened() {
-  return (serverSock != NULL) ? true : false;
+  return (m_pServerSock != NULL) ? true : false;
 }
 
 ////////////////////////////////////////////////
@@ -98,8 +98,8 @@ void HTTPServer::run() {
       delete sock;
       continue;
     }
-    ServerSocket *serverSock = getServerSock();
-    if (serverSock == NULL) {
+    ServerSocket *m_pServerSock = getServerSock();
+    if (m_pServerSock == NULL) {
       delete sock;
       continue;
     }
@@ -122,7 +122,8 @@ bool HTTPServer::start() {
 ////////////////////////////////////////////////
 
 bool HTTPServer::stop() {
-  return Thread::stop();
+	close();
+	return Thread::stop();
 }
 
 ////////////////////////////////////////////////

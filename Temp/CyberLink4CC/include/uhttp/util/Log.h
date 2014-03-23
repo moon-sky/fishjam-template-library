@@ -26,6 +26,10 @@ char *functionName,
 #endif
 const char *format, ...);
 
+#if defined(WIN32)
+#  define __PRETTY_FUNCTION__ __FUNCTION__
+#endif 
+
 #if defined(DEBUG)
 #define LogTrace(format, ...)     uHTTP::Log(uHTTP::Logger::GetSharedInstance(), uHTTP::LoggerTarget::TRACE,   __FILE__,  __LINE__, __PRETTY_FUNCTION__, format, ##__VA_ARGS__)
 #define LogInfo(format, ...)      uHTTP::Log(uHTTP::Logger::GetSharedInstance(), uHTTP::LoggerTarget::INFO,    __FILE__,  __LINE__, __PRETTY_FUNCTION__, format, ##__VA_ARGS__)

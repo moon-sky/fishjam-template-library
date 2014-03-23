@@ -4,6 +4,7 @@ String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
 %>
 
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
@@ -42,8 +43,8 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				<td><input type="radio" name="mapId"  value=<s:property value="id"/> ></input></td>
 				<td><s:property value="id"/></td>
 				<td><s:property value="floor"/></td>
-				<td><s:property value="map"/></td>
-				<td><s:property value="path"/></td>
+				<td><img name="mapImage" /></img></td>
+				<td><s:property value="pathSize"/></td>
 			</tr>
 			</s:iterator>
 		</table>

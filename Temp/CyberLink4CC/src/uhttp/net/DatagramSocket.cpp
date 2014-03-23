@@ -116,7 +116,7 @@ ssize_t DatagramSocket::receive(DatagramPacket &dataPack) {
   dataPack.setAddress("");
   dataPack.setPort(0);
 
-  char recvBuf[DGRAM_SOCKET_RECV_BUFSIZE+1];
+  char recvBuf[DGRAM_SOCKET_RECV_BUFSIZE+1] = { 0 };
 
 #if defined(BTRON) || (defined(TENGINE) && !defined(TENGINE_NET_KASAGO))
   struct sockaddr_in from;

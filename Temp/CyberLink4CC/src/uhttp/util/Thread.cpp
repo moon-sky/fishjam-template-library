@@ -136,7 +136,7 @@ bool Thread::stop() {
   if (isRunnable() == true) {
     setRunnableFlag(false);
 #if defined(WIN32) && !defined(ITRON)
-    TerminateThread(hThread, 0);
+    //TerminateThread(hThread, 0);
     WaitForSingleObject(hThread, INFINITE);
 #elif defined(BTRON)
     ter_tsk(taskID);
