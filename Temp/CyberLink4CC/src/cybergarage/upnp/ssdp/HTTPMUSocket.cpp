@@ -47,15 +47,15 @@ HTTPMUSocket::~HTTPMUSocket() {
 ////////////////////////////////////////////////
 
 bool HTTPMUSocket::open(const std::string &addr, int port, const std::string &bindAddr) {
-  ssdpMultiGroup.setAddress(addr);
-  ssdpMultiGroup.setPort(port);
+  m_ssdpMultiGroup.setAddress(addr);
+  m_ssdpMultiGroup.setPort(port);
   //ssdpMultiIf.setAddress(bindAddr);
 
   const char *msockBindAddr = bindAddr.c_str();
-  if (ssdpMultiSock.bind(port, msockBindAddr) == false)
+  if (m_ssdpMultiSock.bind(port, msockBindAddr) == false)
     return false;
-  if (ssdpMultiSock.joinGroup(addr, bindAddr) == false) {
-    ssdpMultiSock.close();
+  if (m_ssdpMultiSock.joinGroup(addr, bindAddr) == false) {
+    m_ssdpMultiSock.close();
     return false;
   }    
 
@@ -63,7 +63,7 @@ bool HTTPMUSocket::open(const std::string &addr, int port, const std::string &bi
 }
 
 bool HTTPMUSocket::close() {
-  if (ssdpMultiSock.close() == false)
+  if (m_ssdpMultiSock.close() == false)
     return false;
   return true;
 }
@@ -76,7 +76,7 @@ bool HTTPMUSocket::send(const std::string &msg, const std::string &bindAddr, int
   MulticastSocket msock;
   if ((0 < bindAddr.length()) && (0 < bindPort))
       msock.bind(bindPort, bindAddr);
-  DatagramPacket dgmPacket(msg, &ssdpMultiGroup);
+  DatagramPacket dgmPacket(msg, &m_ssdpMultiGroup);
   // Thnaks for Tho Beisch (11/09/04)
   msock.setTimeToLive(4);
   msock.send(&dgmPacket);
@@ -88,10 +88,10 @@ bool HTTPMUSocket::send(const std::string &msg, const std::string &bindAddr, int
 ////////////////////////////////////////////////
 
 SSDPPacket *HTTPMUSocket::receive() {
-  recvPacket.setLocalAddress(getLocalAddress());
-  size_t nRecv = ssdpMultiSock.receive(recvPacket.getDatagramPacket());
+  m_recvPacket.setLocalAddress(getLocalAddress());
+  size_t nRecv = m_ssdpMultiSock.receive(m_recvPacket.getDatagramPacket());
   if (nRecv == 0)
     return NULL;
-  recvPacket.setTimeStamp(time(NULL));
-  return &recvPacket;
+  m_recvPacket.setTimeStamp(time(NULL));
+  return &m_recvPacket;
 }

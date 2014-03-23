@@ -306,12 +306,17 @@
 
 /*************************************************************************************************************************
 * CyberLink ()
+*   默认情况下同时支持 IPV4/IPV6, 可通过 uHTTP::HostInterface::USE_ONLY_IPV4_ADDR 等控制
 *   C++ 版本
 *     1.源码: CyberLinkForCC + HttpEngineForCC + expat
 *     2.编译:
 *       a. linux: ./boostrap -enable-libxml2<CR> ./configure<CR> make
 *   
-*   
+* 线程:
+*   HttpServer -- 本地的Http服务器
+*   SSDPNotifySocket -- 从 HttpMusocket 接收
+*   SSDPSearchResponseSocket -- 
+*   Disposer -- 每60秒循环一次，移除超时设备(removeExpiredDevices)
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************

@@ -24,10 +24,10 @@
 
 namespace CyberLink {
 class HTTPMUSocket {
-  uHTTP::InetSocketAddress ssdpMultiGroup;
-  uHTTP::MulticastSocket ssdpMultiSock;
+  uHTTP::InetSocketAddress m_ssdpMultiGroup;
+  uHTTP::MulticastSocket m_ssdpMultiSock;
   //uHTTP::NetworkInterface ssdpMultiIf;
-  SSDPPacket recvPacket;
+  SSDPPacket m_recvPacket;
 
  public:
   ////////////////////////////////////////////////
@@ -45,7 +45,7 @@ class HTTPMUSocket {
   ////////////////////////////////////////////////
 
   const char *getLocalAddress() {
-    return ssdpMultiSock.getLocalAddress();
+    return m_ssdpMultiSock.getLocalAddress();
   }
 
   ////////////////////////////////////////////////

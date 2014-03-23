@@ -59,8 +59,8 @@ class SSDPNotifySocket : public HTTPMUSocket, public uHTTP::Thread {
   //  run  
   ////////////////////////////////////////////////
 
-  void run();
-  
+  virtual void run();
+  virtual bool stop();
 };
 
 }

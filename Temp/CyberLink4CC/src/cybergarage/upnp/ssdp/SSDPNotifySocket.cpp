@@ -65,3 +65,8 @@ void SSDPNotifySocket::run() {
       ctrlPoint->notifyReceived(packet); 
   }
 }
+
+bool SSDPNotifySocket::stop(){
+	close();
+	return Thread::stop();
+}
