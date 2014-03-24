@@ -10,7 +10,6 @@
 
 
 #include <uhttp/net/SocketInputStream.h>
-#include <uhttp/util/TimeUtil.h>
 
 using namespace uHTTP;
 using namespace uHTTP;
@@ -57,7 +56,9 @@ ssize_t SocketInputStream::read(std::string &b, size_t len) {
       readSize = SOCKET_INBUF_SIZE;
     ssize_t readLen = sock->recv(this->inBuf, readSize);
     if (readLen <= 0) {
-      Wait(SOCKET_RECV_WAIT_TIME);
+      if (!m_TimeUtil.Wait(SOCKET_RECV_WAIT_TIME)){
+          break;
+      }
       retryCnt++;
       if (SOCKET_RECV_RETRY_CNT < retryCnt)
         break;
@@ -85,7 +86,9 @@ ssize_t SocketInputStream::read(char *b, size_t len) {
     size_t readSize = len - readCnt;
     ssize_t readLen = sock->recv(b+readCnt, readSize);
     if (readLen <= 0) {
-      Wait(SOCKET_RECV_WAIT_TIME);
+        if (!m_TimeUtil.Wait(SOCKET_RECV_WAIT_TIME)){
+            break;
+        }
       retryCnt++;
       if (SOCKET_RECV_RETRY_CNT < retryCnt)
         break;
@@ -119,7 +122,9 @@ long SocketInputStream::skip(long n) {
       readByte = SOCKET_INBUF_SIZE;
     ssize_t readLen = sock->recv(this->inBuf, (int)readByte);
     if (readLen <= 0) {
-      Wait(SOCKET_RECV_WAIT_TIME);
+      if(!m_TimeUtil.Wait(SOCKET_RECV_WAIT_TIME)){
+          break;
+      }
       retryCnt++; 
       if (SOCKET_RECV_RETRY_CNT < retryCnt)
         break;
@@ -135,5 +140,6 @@ long SocketInputStream::skip(long n) {
 ////////////////////////////////////////////////
 
 void SocketInputStream::close() {
-  sock->close();
+    m_TimeUtil.Stop();
+    sock->close();
 }

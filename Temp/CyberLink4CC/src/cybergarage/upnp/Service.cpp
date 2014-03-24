@@ -461,7 +461,7 @@ void Service::announce(const std::string &bindAddr) {
   ssdpReq.setUSN(devUSN.c_str());
 
   SSDPNotifySocket ssdpSock(bindAddr);
-  Device::notifyWait();
+  rootDev->notifyWait();
   ssdpSock.post(&ssdpReq);
 }
 
@@ -478,7 +478,7 @@ void Service::byebye(const std::string &bindAddr) {
   ssdpReq.setUSN(devUSN.c_str());
 
   SSDPNotifySocket ssdpSock(bindAddr);
-  Device::notifyWait();
+  getRootDevice()->notifyWait();
   ssdpSock.post(&ssdpReq);
 }
 

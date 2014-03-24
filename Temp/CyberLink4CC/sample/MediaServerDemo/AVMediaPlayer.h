@@ -13,6 +13,7 @@ class CAVMediaPlayer
 	, public CyberLink::NotifyListener
 	, public CyberLink::EventListener
 	, public CyberLink::SearchResponseListener
+    , public CyberLink::DeviceChangeListener
 
 {
 public:
@@ -25,6 +26,9 @@ public:
 	virtual void deviceNotifyReceived( CyberLink::SSDPPacket *ssdpPacket );
 	virtual void eventNotifyReceived( const std::string &uuid, long seq, const std::string &varName, const std::string &value );
 	virtual void deviceSearchResponseReceived( CyberLink::SSDPPacket *ssdpPacket );
+
+    virtual void deviceAdded(CyberLink::Device *dev);
+    virtual void deviceRemoved(CyberLink::Device *dev);
 private:
 	IAVMediaPlayerCallback* m_pCallback;
 

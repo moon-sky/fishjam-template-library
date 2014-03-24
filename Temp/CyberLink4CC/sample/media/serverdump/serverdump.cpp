@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 	PrintMessage();
 
 	MediaPlayer mplayer;
-	mplayer.start();
+	mplayer.start(NULL);
 
 #if !defined(WIN32) || defined(__CYGWIN__)
 	kbinit();

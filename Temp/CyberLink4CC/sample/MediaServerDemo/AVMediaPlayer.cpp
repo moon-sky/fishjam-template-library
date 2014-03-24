@@ -11,6 +11,7 @@ CAVMediaPlayer::CAVMediaPlayer(IAVMediaPlayerCallback* pCallback)
 	addNotifyListener(this);
 	addSearchResponseListener(this);
 	addEventListener(this);
+    addDeviceChangeListener(this);
 }
 
 CAVMediaPlayer::~CAVMediaPlayer(void)
@@ -55,4 +56,12 @@ void CAVMediaPlayer::eventNotifyReceived( const std::string &uuid, long seq, con
 void CAVMediaPlayer::deviceSearchResponseReceived( SSDPPacket *ssdpPacket )
 {
 	ssdpPacket->print("CAVMediaPlayer::deviceSearchResponseReceived");
+}
+
+void CAVMediaPlayer::deviceAdded(Device *dev){
+    dev->print("deviceAdded");
+}
+void CAVMediaPlayer::deviceRemoved(Device *dev)
+{
+    dev->print("deviceRemoved");
 }

@@ -80,6 +80,7 @@
 #include <uhttp/util/TimeUtil.h>
 #include <uhttp/http/HTTPDate.h>
 #include <uhttp/io/File.h>
+#include <uhttp/util/Log.h>
 #include <cybergarage/upnp/Device.h>
 #include <cybergarage/upnp/Service.h>
 #include <cybergarage/upnp/UPnPStatus.h>
@@ -770,7 +771,7 @@ void Device::initIconList() {
 ////////////////////////////////////////////////
 
 void Device::notifyWait() {
-  uHTTP::WaitRandom(DEFAULT_DISCOVERY_WAIT_TIME);
+    m_timeUtil.WaitRandom(DEFAULT_DISCOVERY_WAIT_TIME);
 }
 
 const char *Device::getLocationURL(const std::string &host, std::string &buf) {
@@ -948,7 +949,7 @@ bool Device::postSearchResponse(SSDPPacket *ssdpPacket, const std::string &st, c
   ssdpRes.setMYNAME(getFriendlyName());
 
   int mx = ssdpPacket->getMX();
-  uHTTP::WaitRandom(mx * 1000);
+  m_timeUtil.WaitRandom(mx * 1000);
     
   const char *remoteAddr = ssdpPacket->getRemoteAddress();
   int remotePort = ssdpPacket->getRemotePort();
@@ -1416,4 +1417,25 @@ void Device::setQueryListener(QueryListener *listener, bool includeSubDevices) {
       dev->setQueryListener(listener, true);
     }
   }
+}
+
+
+const char* Device::toString(std::string& buf) 
+{
+
+    std::ostringstream os;
+    os << "deviceType = " << getDeviceType()
+       << ",freindlyName = " << getFriendlyName()
+       << ",presentationURL = " << getPresentationURL()
+       << ",devList = " << getDeviceList()->size()
+       << ",serviceList = " << getServiceList()->size()
+       << ",iconList = " << getIconList()->size()
+       ;
+    buf = os.str();
+    return buf.c_str();
+}
+
+void Device::print(const std::string& info) {
+    std::string deviceInfo;
+    LogInfo("%s : %s\n", info.c_str(), toString(deviceInfo));
 }

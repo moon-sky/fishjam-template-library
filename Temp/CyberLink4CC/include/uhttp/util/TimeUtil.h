@@ -13,11 +13,23 @@
 #define _CUTIL_TIMERUTIL_H_
 
 namespace uHTTP {
-void Wait(long mtime);
-void WaitRandom(long mtime);
-long GetCurrentSystemTime();
-float Random();
+    long GetCurrentSystemTime();
+    float Random();
+    
+    class CTimeUtil{
+    public:
+        CTimeUtil();
+        ~CTimeUtil();
+        void Reset();
+        void Stop();
 
+        bool Wait(long mtime);
+        bool WaitRandom(long mtime);
+    private:
+#if defined(WIN32) && !defined(ITRON)
+        void* m_hEventStop;
+#endif 
+    };
 }
 
 #endif

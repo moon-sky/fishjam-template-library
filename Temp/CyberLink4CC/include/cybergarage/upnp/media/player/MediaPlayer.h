@@ -46,7 +46,7 @@ public:
 	
 public:
 
-	bool start();
+	bool start(const char* pSearchTarget);
 	bool stop();
 	
 	////////////////////////////////////////////////

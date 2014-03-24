@@ -28,6 +28,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	HICON hIconSmall = AtlLoadIconImage(IDR_MAINFRAME, LR_DEFAULTCOLOR, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON));
 	SetIcon(hIconSmall, FALSE);
 
+    DoDataExchange(FALSE);
 	return TRUE;
 }
 
@@ -53,6 +54,7 @@ LRESULT CMainDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 
 void CMainDlg::OnDestroy()
 {
+    FUNCTION_BLOCK_TRACE(100);
 	if (m_pMediaPlayer)
 	{
 		m_pMediaPlayer->stop();
@@ -100,7 +102,8 @@ void CMainDlg::OnBtnPlayerStartClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
 		m_pMediaPlayer = new CAVMediaPlayer(this);
 	}
-	m_pMediaPlayer->start();
+    m_DevicesTree.SetControlPoint(m_pMediaPlayer);
+	m_pMediaPlayer->start("ssdp:all");
 }
 
 void CMainDlg::OnBtnPlayerDumpInfo(UINT uNotifyCode, int nID, CWindow wndCtl)
@@ -109,6 +112,7 @@ void CMainDlg::OnBtnPlayerDumpInfo(UINT uNotifyCode, int nID, CWindow wndCtl)
 	{
 		m_pMediaPlayer->DumpInfo();
 	}
+    m_DevicesTree.Refresh();
 }
 
 void CMainDlg::OnBtnPlayerStopClick(UINT uNotifyCode, int nID, CWindow wndCtl)

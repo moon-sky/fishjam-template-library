@@ -17,6 +17,7 @@
 #define _CLINK_DISPOSER_H_
 
 #include <uhttp/util/Thread.h>
+#include <uhttp/util/TimeUtil.h>
 
 namespace CyberLink {
 class ControlPoint;
@@ -38,7 +39,7 @@ class Disposer : public uHTTP::Thread {
 private:
   
   ControlPoint *controlPoint;
-
+  uHTTP::CTimeUtil     m_timeUtil;
  public:
   void setControlPoint(ControlPoint *ctrlp) {
     controlPoint = ctrlp;
@@ -53,8 +54,8 @@ private:
   ////////////////////////////////////////////////
   
  public:
-  void run();
-
+   virtual void run();
+   virtual bool stop();
 };
 
 }

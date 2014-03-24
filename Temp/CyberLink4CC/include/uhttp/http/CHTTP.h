@@ -68,11 +68,11 @@ const char RANGE[] = "Range";
 const char TRANSFER_ENCODING[] = "Transfer-Encoding";
   const char CHUNKED[] = "Chunked";
 
-const char ST[] = "ST";
-const char MX[] = "MX";
+const char ST[] = "ST";     //search target
+const char MX[] = "MX";     //max wait
 const char MAN[] = "MAN";
-const char NT[] = "NT";
-const char NTS[] = "NTS";
+const char NT[] = "NT";     //search type
+const char NTS[] = "NTS";   //ssdp:alive
 const char USN[] = "USN";
 const char EXT[] = "EXT";
 const char SID[] = "SID";

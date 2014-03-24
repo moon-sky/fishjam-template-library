@@ -30,7 +30,7 @@ class HTTPRequest : public HTTPPacket {
   
   HTTPSocket *httpSocket;
 
-  Socket *postSock;
+  Socket *m_pPostSock;
   HTTPResponse httpRes;
 
 public:

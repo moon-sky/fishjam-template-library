@@ -331,7 +331,9 @@ ssize_t Socket::send(const char *cmd, size_t cmdLen) {
       retryCnt++;
       if (CG_NET_SOCKET_SEND_RETRY_CNT < retryCnt)
         break;
-      WaitRandom(CG_NET_SOCKET_SEND_RETRY_WAIT_MSEC);
+      if(!m_TimeUtil.WaitRandom(CG_NET_SOCKET_SEND_RETRY_WAIT_MSEC)){
+          break;
+      }
       continue;
     }
     nTotalSent += nSent;

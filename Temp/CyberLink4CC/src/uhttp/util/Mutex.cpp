@@ -92,3 +92,14 @@ bool Mutex::unlock() {
 #endif
   return true;
 }
+
+AutoLock::AutoLock(Mutex* pMutex)
+:m_pMutex(pMutex)
+{
+    m_pMutex->lock();
+}
+
+AutoLock::~AutoLock()
+{
+    m_pMutex->unlock();
+}

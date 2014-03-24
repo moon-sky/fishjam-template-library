@@ -30,7 +30,7 @@ using namespace uHTTP;
 
 HTTPRequest::HTTPRequest() {
   httpSocket = NULL;
-  postSock = NULL;
+  m_pPostSock = NULL;
   requestPort = -1;
 
   setVersion(HTTP::VER_11);
@@ -44,14 +44,14 @@ HTTPRequest::HTTPRequest() {
 
 HTTPRequest::HTTPRequest(HTTPSocket *httpSock) : HTTPPacket(httpSock) {
   setSocket(httpSock);
-  postSock = NULL;
+  m_pPostSock = NULL;
   requestPort = -1;
 }
 
 HTTPRequest::~HTTPRequest() {
-  if (postSock) {
-    delete postSock;
-    postSock = NULL;
+  if (m_pPostSock) {
+    delete m_pPostSock;
+    m_pPostSock = NULL;
   }
 }
 
@@ -237,10 +237,10 @@ HTTP::StatusCode HTTPRequest::post(HTTPResponse *httpRes, bool isOnlyHeader) {
 ////////////////////////////////////////////////
 
 HTTPResponse *HTTPRequest::post(const std::string &host, int port, HTTPResponse *httpRes, bool isKeepAlive) {
-  if (postSock == NULL) {
-    postSock = new Socket();
-    if (postSock->connect(host, port) == false) {
-      int socketErrno = postSock->getErrorCode();
+  if (m_pPostSock == NULL) {
+    m_pPostSock = new Socket();
+    if (m_pPostSock->connect(host, port) == false) {
+      int socketErrno = m_pPostSock->getErrorCode();
       httpRes->setStatusCode((HTTP::INTERNAL_CLIENT_ERROR + socketErrno));
       return httpRes;
     }
@@ -252,8 +252,8 @@ HTTPResponse *HTTPRequest::post(const std::string &host, int port, HTTPResponse 
 
 
   string header;
-  postSock->send(getHeader(header));
-  postSock->send(HTTP::CRLF);
+  m_pPostSock->send(getHeader(header));
+  m_pPostSock->send(HTTP::CRLF);
   
   bool isChunkedRequest = isChunked();
 
@@ -266,25 +266,25 @@ HTTPResponse *HTTPRequest::post(const std::string &host, int port, HTTPResponse 
     if (isChunkedRequest == true) {
       string chunSizeBuf;
       Sizet2HexString(strlen(content), chunSizeBuf);
-      postSock->send(chunSizeBuf.c_str());
-      postSock->send(HTTP::CRLF);
+      m_pPostSock->send(chunSizeBuf.c_str());
+      m_pPostSock->send(HTTP::CRLF);
     }
-    postSock->send(content);
+    m_pPostSock->send(content);
     if (isChunkedRequest == true)
-      postSock->send(HTTP::CRLF);
+      m_pPostSock->send(HTTP::CRLF);
   }
 
   if (isChunkedRequest == true) {
-    postSock->send("0");
-    postSock->send(HTTP::CRLF);
+    m_pPostSock->send("0");
+    m_pPostSock->send(HTTP::CRLF);
   }
 
-  httpRes->set(postSock, isHeadRequest());      
+  httpRes->set(m_pPostSock, isHeadRequest());      
 
   if (isKeepAlive == false) {
-    postSock->close();
-    delete postSock;
-    postSock = NULL;
+    m_pPostSock->close();
+    delete m_pPostSock;
+    m_pPostSock = NULL;
   }
 
   return httpRes;

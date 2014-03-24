@@ -16,7 +16,6 @@
 ******************************************************************/
 
 #include <cybergarage/upnp/Device.h>
-#include <uhttp/util/TimeUtil.h>
 
 using namespace CyberLink;
 using namespace uHTTP;
@@ -32,8 +31,14 @@ void Advertiser::run()  {
   while (isRunnable() == true) {
     notifyInterval = (leaseTime/4) + (long)((float)leaseTime * (Random() * 0.25f));
     notifyInterval *= 1000;
-    Wait(notifyInterval);
-    dev->announce();
+    if(m_TimeUtil.Wait(notifyInterval))
+    {
+        dev->announce();    
+    }
   }
 }
 
+bool Advertiser::stop(){
+    m_TimeUtil.Stop();
+    return Thread::stop();
+}

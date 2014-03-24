@@ -29,6 +29,7 @@
 #include <cybergarage/upnp/control/QueryListener.h>
 #include <uhttp/util/Mutex.h>
 #include <uhttp/util/Thread.h>
+#include <uhttp/util/TimeUtil.h>
 
 #include <string>
 
@@ -57,7 +58,7 @@ class ContentDirectory : public uHTTP::Thread, public ActionListener, public Que
 	SortCapList m_sortCapList;
 	SearchCapList m_searchCapList;
 	DirectoryList m_dirList;
-	
+    uHTTP::CTimeUtil  m_timeUtil;
 	////////////////////////////////////////////////
 	// Constants
 	////////////////////////////////////////////////
@@ -438,8 +439,9 @@ public:
 		return contentUpdateInterval;
 	}
 
-	void run();
-
+    // thread
+	virtual void run();
+    virtual bool stop();
 	////////////////////////////////////////////////
 	// print
 	////////////////////////////////////////////////

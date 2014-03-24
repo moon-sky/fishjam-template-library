@@ -89,9 +89,6 @@ const char *CyberXML::XML::EscapeXMLChars(std::string &in, std::string &out) {
 
 UnicodeStr* CyberXML::XML::Local2Unicode(const std::string &in, int& result)
 {
-#pragma TODO(Local2Unicode) 
-    int *p = NULL;
-    *p = 100;
-
+    throw ("unimplement");
     return NULL;
 }

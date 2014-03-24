@@ -53,9 +53,14 @@ MediaPlayer::~MediaPlayer()
 // start/stop
 ////////////////////////////////////////////////
 	
-bool MediaPlayer::start()
+bool MediaPlayer::start(const char* pSearchTarget)
 {
-	return ControlPoint::start(MediaServer::DEVICE_TYPE);
+    if (NULL == pSearchTarget)
+    {
+        return ControlPoint::start(/*MediaPlayer::DEVICE_TYPE*/);
+    }
+    
+	return ControlPoint::start(pSearchTarget);
 }
 
 bool MediaPlayer::stop()

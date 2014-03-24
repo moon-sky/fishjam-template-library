@@ -59,7 +59,7 @@ class Device : public uHTTP::HTTPRequestListener, public SearchListener {
   uHTTP::Mutex mutex;
 
   bool wirelessMode;
-
+  uHTTP::CTimeUtil m_timeUtil;
   ////////////////////////////////////////////////
   //  Constants
   ////////////////////////////////////////////////
@@ -601,7 +601,7 @@ private:
   const char *getNotifyDeviceTypeUSN(std::string &buf);
 
  public:
-  static void notifyWait();
+  void notifyWait();
 
   void announce(const std::string &bindAddr);
   void announce();
@@ -741,32 +741,10 @@ public:
   void setQueryListener(QueryListener *listener, bool includeSubDevices);
 
   ////////////////////////////////////////////////
-  //  output
+  //  print
   ////////////////////////////////////////////////
-
-/*
-  public void output(PrintWriter ps) 
-  {
-    ps.println("deviceType = " + getDeviceType());
-    ps.println("freindlyName = " + getFriendlyName());
-    ps.println("presentationURL = " + getPresentationURL());
-
-    DeviceList devList = getDeviceList();
-    ps.println("devList = " + devList.size());
-    
-    ServiceList serviceList = getServiceList();
-    ps.println("serviceList = " + serviceList.size());
-
-    IconList iconList = getIconList();
-    ps.println("iconList = " + iconList.size());
-  }
-
-  public void print() {
-    PrintWriter pr = new PrintWriter(System.out);
-    output(pr);
-    pr.flush();
-  }
-*/
+  const char* toString(std::string& buf);
+  void print(const std::string& info);
 };
 
 }

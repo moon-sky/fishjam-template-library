@@ -30,6 +30,7 @@
 
 #include <string>
 #include <uhttp/UHttpDef.h>
+#include <uhttp/util/TimeUtil.h>
 
 #if (!defined(WIN32) && !defined(__CYGWIN__)) || defined(ITRON)
 #if defined(BTRON) || defined(TENGINE) 
@@ -163,6 +164,7 @@ private:
 
 protected:
   SOCKET  sock;
+  CTimeUtil m_TimeUtil;
 
 };
 

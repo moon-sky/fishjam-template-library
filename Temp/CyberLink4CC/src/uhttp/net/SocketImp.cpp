@@ -124,6 +124,8 @@ bool SocketImp::close() {
   if (!isBound())
     return true;
 
+  m_TimeUtil.Stop();
+
 #if (defined(WIN32) || defined(__CYGWIN__)) && !defined(ITRON)
   WSAAsyncSelect(sock, NULL, 0, FD_CLOSE);
   shutdown(sock, SD_BOTH );

@@ -17,6 +17,7 @@
 #define _CLINK_ADVERTISER_H_
 
 #include <uhttp/util/Thread.h>
+#include <uhttp/util/TimeUtil.h>
 
 namespace CyberLink {
 class Device;
@@ -36,7 +37,7 @@ class Advertiser : public uHTTP::Thread {
   ////////////////////////////////////////////////
 
 private:
-  
+  uHTTP::CTimeUtil m_TimeUtil;
   Device *device;
 
  public:
@@ -53,8 +54,8 @@ private:
   ////////////////////////////////////////////////
   
  public:
-  void run();
-
+   virtual void run();
+   virtual bool stop();
 };
 
 }

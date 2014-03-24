@@ -31,7 +31,6 @@
 #include <cybergarage/upnp/media/server/object/SearchCriteriaList.h>
 
 #include <uhttp/util/Debug.h>
-#include <uhttp/util/TimeUtil.h>
 #include <uhttp/http/HTTPStatus.h>
 #include <uhttp/util/StringTokenizer.h>
 #include <uhttp/util/StringUtil.h>
@@ -1116,7 +1115,9 @@ void ContentDirectory::run()
 	long lastContentUpdateTime = GetCurrentSystemTime();
 
 	while (isRunnable() == true) {
-		Wait(getSystemUpdateIDInterval());
+        if(!m_timeUtil.Wait(getSystemUpdateIDInterval())){
+            break;
+        }
 
 		// WUpdate SystemUpdateID
 		int currSystemUpdateID = getSystemUpdateID();
@@ -1132,6 +1133,11 @@ void ContentDirectory::run()
 			lastContentUpdateTime = currTime;
 		}
 	}
+}
+
+bool ContentDirectory::stop(){
+    m_timeUtil.Stop();
+    return Thread::stop();
 }
 
 ////////////////////////////////////////////////

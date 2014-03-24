@@ -43,9 +43,26 @@
 
 using namespace uHTTP;
 
-void uHTTP::Wait(long mtime) {
+CTimeUtil::CTimeUtil(){
+    m_hEventStop = (void*)CreateEvent(NULL, TRUE, FALSE, NULL);
+}
+
+CTimeUtil::~CTimeUtil(){
+    CloseHandle((HANDLE)m_hEventStop);
+}
+
+void CTimeUtil::Reset(){
+    ResetEvent((HANDLE)m_hEventStop);
+}
+
+void CTimeUtil::Stop(){
+    SetEvent((HANDLE)m_hEventStop);
+}
+bool CTimeUtil::Wait(long mtime){
 #if defined(WIN32)
-  Sleep(mtime);
+    //Sleep(mtime);  
+   DWORD dwWaitResult = WaitForSingleObject((HANDLE)m_hEventStop, mtime * 1000);
+   return (WAIT_TIMEOUT == dwWaitResult);
 #elif defined(BTRON)
   slp_tsk(mtime);
 #elif defined(ITRON)
@@ -60,10 +77,10 @@ void uHTTP::Wait(long mtime) {
 #endif
 }
 
-void uHTTP::WaitRandom(long mtime) {
+bool uHTTP::CTimeUtil::WaitRandom(long mtime) {
   double factor = (double)rand() / (double)RAND_MAX;
   long waitTime = (long)((double)mtime * factor);
-  Wait(waitTime);
+  return Wait(waitTime);
 }
 
 long uHTTP::GetCurrentSystemTime() {

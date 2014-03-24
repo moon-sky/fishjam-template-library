@@ -30,6 +30,7 @@
 #endif
 
 namespace uHTTP {
+
 class Mutex {
 #if defined(WIN32) && !defined(ITRON)
   HANDLE  mutexID;
@@ -51,6 +52,14 @@ class Mutex {
 
   bool lock();
   bool unlock();
+};
+
+class AutoLock{
+public:
+    AutoLock(Mutex* pMutex);
+    ~AutoLock();
+private:
+    Mutex*  m_pMutex;
 };
 
 }

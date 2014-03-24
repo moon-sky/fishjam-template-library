@@ -5,8 +5,10 @@
 #pragma once
 #include "AVMediaServer.h"
 #include "AVMediaPlayer.h"
+#include "UPnPDeviceTree.h"
 
 class CMainDlg : public CDialogImpl<CMainDlg>,
+    public CWinDataExchange<CMainDlg>,
 	public IAVMediaServerCallback,
 	public IAVMediaPlayerCallback
 {
@@ -16,6 +18,10 @@ public:
 
 public:
 	enum { IDD = IDD_MAINDLG };
+
+    BEGIN_DDX_MAP(CMainDlg)
+        DDX_CONTROL(IDC_TREE_DEVICES, m_DevicesTree)
+    END_DDX_MAP()
 
 	BEGIN_MSG_MAP(CMainDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -55,4 +61,5 @@ public:
 private:
 	CAVMediaServer*	m_pMediaServer;
 	CAVMediaPlayer*	m_pMediaPlayer;
+    CUPnPDeviceTree m_DevicesTree;
 };

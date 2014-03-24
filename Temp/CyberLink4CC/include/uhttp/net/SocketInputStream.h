@@ -14,6 +14,7 @@
 
 #include <uhttp/net/Socket.h>
 #include <uhttp/io/InputStream.h>
+#include <uhttp/util/TimeUtil.h>
 #include <string>
 
 namespace uHTTP {
@@ -25,7 +26,7 @@ class SocketInputStream : public uHTTP::InputStream {
   Socket *sock;
   std::string unputBuf;
   char *inBuf;
-
+  CTimeUtil m_TimeUtil;
  public:
   SocketInputStream(Socket *sock);
 

@@ -35,7 +35,6 @@ public:
 
 	void deviceNotifyReceived(SSDPPacket *packet);
 	void deviceSearchResponseReceived(SSDPPacket *packet);
-	//void eventNotifyReceived(const char *uuid, long seq, const char *name, const char *value);
     void eventNotifyReceived(const std::string &uuid, long seq, const std::string &varName, const std::string &value);
 
 	void print();

@@ -54,7 +54,7 @@ Node *Parser::parse(uHTTP::File *file) {
   if (fd == -1)
     return NULL;
 #endif
-  char readBuf[PARSER_DEFAULT_READ_BUF_SIZE+1];
+  char readBuf[PARSER_DEFAULT_READ_BUF_SIZE+1] = { 0 };
   string contents;
 #if defined(WIN32) || defined(HAVE_FOPEN)
   int nRead = fread(readBuf, sizeof(char), PARSER_DEFAULT_READ_BUF_SIZE, fp);

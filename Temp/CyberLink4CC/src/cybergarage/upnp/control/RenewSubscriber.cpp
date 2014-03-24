@@ -14,7 +14,6 @@
 ******************************************************************/
 
 #include <cybergarage/upnp/ControlPoint.h>
-#include <uhttp/util/TimeUtil.h>
 
 using namespace CyberLink;
 using namespace uHTTP;
@@ -33,8 +32,14 @@ void RenewSubscriber::run()  {
   ControlPoint *ctrlp = getControlPoint();
   long renewInterval = RenewSubscriber::INTERVAL * 1000;
   while (isRunnable() == true) {
-    Wait(renewInterval);
-    ctrlp->renewSubscriberService();
+      if(m_timeUtil.Wait(renewInterval)){
+        ctrlp->renewSubscriberService();
+      }
+    
   }
 }
 
+bool RenewSubscriber::stop(){
+    m_timeUtil.Stop();
+    return Thread::stop();
+}

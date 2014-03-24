@@ -50,3 +50,8 @@ void SSDPSearchResponseSocket::run() {
       ctrlPoint->searchResponseReceived(packet); 
   }
 }
+
+bool SSDPSearchResponseSocket::stop(){
+    close();
+    return Thread::stop();
+}

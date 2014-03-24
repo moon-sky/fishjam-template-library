@@ -204,6 +204,10 @@
 					Name="xml"
 					>
 					<File
+						RelativePath="..\..\..\src\cybergarage\xml\AsyncParser.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\..\src\cybergarage\xml\AttributeList.cpp"
 						>
 					</File>
@@ -537,6 +541,10 @@
 					</File>
 					<File
 						RelativePath="..\..\..\src\uhttp\util\Thread.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\src\uhttp\util\ThreadPool.cpp"
 						>
 					</File>
 					<File
@@ -989,6 +997,10 @@
 					Name="xml"
 					>
 					<File
+						RelativePath="..\..\..\include\cybergarage\xml\AsyncParser.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\..\include\cybergarage\xml\Attribute.h"
 						>
 					</File>
@@ -1230,6 +1242,10 @@
 					</File>
 					<File
 						RelativePath="..\..\..\include\uhttp\util\Thread.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\uhttp\util\Threadpool.h"
 						>
 					</File>
 					<File
