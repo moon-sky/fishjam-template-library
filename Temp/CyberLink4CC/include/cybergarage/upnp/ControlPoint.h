@@ -54,7 +54,7 @@ class ControlPoint
   uHTTP::ListenerList deviceSearchResponseListenerList;
   uHTTP::ListenerList deviceChangeListenerList;
 
-  uHTTP::Mutex mutex;
+  uHTTP::Mutex m_mutex;
   DeviceList deviceList;
 
   int searchMx;
@@ -79,6 +79,8 @@ class ControlPoint
   static const int DEFAULT_SSDP_PORT;
   static const char *DEFAULT_EVENTSUB_URI;
   static const int DEFAULT_EXPIRED_DEVICE_MONITORING_INTERVAL;
+  static const int DEFAULT_THREAD_POOL_COUNT;
+  static const int DEFAULT_THREAD_POOL_MAX_WAIT_JOB_COUNT;
 
 private:
 
@@ -428,14 +430,14 @@ private:
   //  lock
   ////////////////////////////////////////////////
 
- public:
-  void lock() {
-    mutex.lock();
-  }
+ //public:
+ // void lock() {
+ //   m_mutex.lock();
+ // }
 
-  void unlock() {
-    mutex.unlock();
-  }
+ // void unlock() {
+ //   m_mutex.unlock();
+ // }
 
   ////////////////////////////////////////////////
   //  print

@@ -63,7 +63,8 @@ const int ControlPoint::DEFAULT_EVENTSUB_PORT = 8058;
 const int ControlPoint::DEFAULT_SSDP_PORT = 8008;
 const char *ControlPoint::DEFAULT_EVENTSUB_URI = "/evetSub";
 const int ControlPoint::DEFAULT_EXPIRED_DEVICE_MONITORING_INTERVAL = 60;
-
+const int ControlPoint::DEFAULT_THREAD_POOL_COUNT = 1;
+const int ControlPoint::DEFAULT_THREAD_POOL_MAX_WAIT_JOB_COUNT = 2;
 ////////////////////////////////////////////////
 //  Constructor
 ////////////////////////////////////////////////
@@ -98,7 +99,8 @@ Device *ControlPoint::getDevice(Node *rootNode) {
 }
 
 void ControlPoint::initDeviceList() {
-  lock();
+  AutoLock lockObj(&m_mutex);
+  //lock();
   deviceList.clear();
   int nRoots = devNodeList.size();
   for (int n = 0; n < nRoots; n++) {
@@ -108,7 +110,7 @@ void ControlPoint::initDeviceList() {
       continue;
     deviceList.add(dev);
   } 
-  unlock();
+  //unlock();
  }
 
 Device *ControlPoint::getDevice(const std::string &name) {
@@ -130,15 +132,16 @@ Device *ControlPoint::getDevice(const std::string &name) {
 ////////////////////////////////////////////////
 
 void ControlPoint::addDevice(CyberXML::Node *rootNode) {
-  lock();
+  AutoLock lockObj(&m_mutex);
+  //lock();
   devNodeList.add(rootNode);
-  unlock();
+  //unlock();
 }
 
 void ControlPoint::addDevice(SSDPPacket *ssdpPacket) {
   if (ssdpPacket->isRootDevice() == false)
     return;
-  AutoLock lockObj(&mutex);
+  AutoLock lockObj(&m_mutex);
   //lock();
   
   string usnBuf;
@@ -155,10 +158,13 @@ void ControlPoint::addDevice(SSDPPacket *ssdpPacket) {
   string locationBuf;
   const char *location = ssdpPacket->getLocation(locationBuf);
   
-  AsyncParser* pParser = new AsyncParser(this);
-  pParser->setTarget(new URL(location));
-  pParser->backupSSDPPacket(ssdpPacket);
-  m_pThreadPool->addJob(pParser);
+  if (m_pThreadPool)
+  {
+	  AsyncParser* pParser = new AsyncParser(this);
+	  pParser->setTarget(new URL(location));
+	  pParser->backupSSDPPacket(ssdpPacket);
+	  m_pThreadPool->addJob(pParser);
+  }
 }
 
 ////////////////////////////////////////////////
@@ -166,11 +172,13 @@ void ControlPoint::addDevice(SSDPPacket *ssdpPacket) {
 ////////////////////////////////////////////////
 
 void ControlPoint::removeDevice(CyberXML::Node *rootNode) {
-  lock();
-  devNodeList.remove(rootNode);
-  removedDevNodeList.add(rootNode);
-  unlock();
-
+	{
+		AutoLock lockObj(&m_mutex);
+		//lock();
+		devNodeList.remove(rootNode);
+		removedDevNodeList.add(rootNode);
+		//unlock();
+	}
   initDeviceList();
 }
 
@@ -343,8 +351,9 @@ bool ControlPoint::subscribe(Service *service, long timeout) {
   Device *rootDev = service->getRootDevice();
   if (rootDev == NULL)
     return false;
-  
-  lock();
+
+  AutoLock lockObj(&m_mutex);
+  //lock();
   
   const char *ifAddress = rootDev->getInterfaceAddress();     
   SubscriptionRequest subReq;
@@ -365,7 +374,7 @@ bool ControlPoint::subscribe(Service *service, long timeout) {
   else
     service->clearSID();
   
-  unlock();
+  //unlock();
   
   return ret;
 }
@@ -456,14 +465,15 @@ void ControlPoint::renewSubscriberService(Device *dev, long timeout) {
 }
   
 void ControlPoint::renewSubscriberService(long timeout) {
-  lock();
+  AutoLock lockObj(&m_mutex);
+  //lock();
   DeviceList *devList = getDeviceList();
   int devCnt = devList->size();
   for (int n = 0; n < devCnt; n++) {
     Device *dev = devList->getDevice(n);
     renewSubscriberService(dev, timeout);
   }
-  unlock();
+  //unlock();
 }
   
 void ControlPoint::renewSubscriberService() {
@@ -472,6 +482,7 @@ void ControlPoint::renewSubscriberService() {
 
 void ControlPoint::OnAsyncParseResult(Node* pNode, SSDPPacket* pPacket){
     if (pNode){
+		AutoLock lokObjc(&m_mutex);
         //Node *rootNode = parser.parse(&locationURL);
         Device *rootDev = getDevice(pNode);
         if (rootDev == NULL) {
@@ -514,7 +525,8 @@ bool ControlPoint::start(const std::string &target, int mx) {
   }
   httpServerList->addRequestListener(this);
   httpServerList->start();
-    
+  m_pThreadPool = new uHTTP::ThreadPool(DEFAULT_THREAD_POOL_COUNT, DEFAULT_THREAD_POOL_MAX_WAIT_JOB_COUNT);
+  m_pThreadPool->start();
   ////////////////////////////////////////
   // Notify Socket
   ////////////////////////////////////////

@@ -65,7 +65,8 @@ bool HTTPSocket::post(HTTPResponse *httpRes) {
   Socket *sock = getSocket();
   string header;
   sock->send(httpRes->getHeader(header));
-  return sock->send(HTTP::CRLF);
+  sock->send(HTTP::CRLF);
+  return true;
 }
 
 bool HTTPSocket::post(HTTPResponse *httpRes, const std::string &content, size_t contentOffset, size_t contentLength, bool isOnlyHeader, bool isChunked) {

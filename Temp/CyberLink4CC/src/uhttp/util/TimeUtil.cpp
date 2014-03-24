@@ -102,7 +102,7 @@ long uHTTP::GetCurrentSystemTime() {
   get_tim(&sysTim);
   return ((sysTim.utime / 1000) << 32) + (sysTim.ltime / 1000);
 #else
-  return time(NULL);
+  return (long)time(NULL);
 #endif
 }
 

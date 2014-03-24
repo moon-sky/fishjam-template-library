@@ -74,7 +74,7 @@ SSDPPacket *HTTPUSocket::receive() {
   size_t nRecv = ssdpUniSock.receive(recvPacket.getDatagramPacket());
   if (nRecv == 0)
     return NULL;
-  recvPacket.setTimeStamp(time(NULL));
+  recvPacket.setTimeStamp((long)time(NULL));
   return &recvPacket;
 }
 

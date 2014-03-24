@@ -15,7 +15,7 @@ public:
 
 class ThreadPool {
 public:
-    ThreadPool(int nThreadCount);
+    ThreadPool(int nThreadCount, int nMaxWaitJobCount);
     ~ThreadPool();
 
     bool start();
@@ -28,6 +28,7 @@ public:
     bool getJob(PoolJob** ppOutJob);
 private:
     int                     m_nThreadCount;
+	int						m_nMaxWaitJobCount;
     bool                    m_isRunning;
     Thread**                m_pThreads;
 
@@ -37,7 +38,7 @@ private:
     
     void*                   m_hEventStop;
     void*                   m_hSemaphoreJobToDo;
-    
+	void*					m_hSemaphoreWaitJobSlot;
 };
 
 }

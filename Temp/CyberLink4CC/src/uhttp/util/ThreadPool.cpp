@@ -17,12 +17,14 @@ public:
     }
 };
 
-ThreadPool::ThreadPool(int nThreadCount){
+ThreadPool::ThreadPool(int nThreadCount, int nMaxWaitJobCount){
     m_nThreadCount = nThreadCount;
+	m_nMaxWaitJobCount = nMaxWaitJobCount;
     m_isRunning = false;
     m_pThreads = NULL;
     m_hEventStop = CreateEvent(NULL, TRUE, FALSE, NULL);
-    m_hSemaphoreJobToDo = CreateSemaphore(NULL, 0, MAXLONG, NULL);
+    m_hSemaphoreJobToDo = CreateSemaphore(NULL, 0, nMaxWaitJobCount, NULL);
+	m_hSemaphoreWaitJobSlot = CreateSemaphore(NULL, nMaxWaitJobCount, nMaxWaitJobCount, NULL);
 }
 
 ThreadPool::~ThreadPool(){
@@ -38,6 +40,12 @@ void ThreadPool::close(){
         delete[] m_pThreads;
         m_pThreads = NULL;
     }
+	if (m_hSemaphoreWaitJobSlot)
+	{
+		CloseHandle(m_hSemaphoreWaitJobSlot);
+		m_hSemaphoreWaitJobSlot = NULL;
+	}
+	
     if (m_hSemaphoreJobToDo){
         CloseHandle(m_hSemaphoreJobToDo);
         m_hSemaphoreJobToDo = NULL;
@@ -69,6 +77,23 @@ bool ThreadPool::stop(){
 }
 
 bool ThreadPool::addJob(PoolJob* pJob){
+	HANDLE hWaitHandles[] = 
+	{
+		m_hEventStop,                 //user stop thread pool
+		m_hSemaphoreWaitJobSlot,      //there are empty slot
+	};
+	DWORD dwResult = WaitForMultipleObjects(sizeof(hWaitHandles)/sizeof(hWaitHandles[0]), 
+		hWaitHandles, FALSE, INFINITE);
+	switch(dwResult)
+	{
+	case WAIT_OBJECT_0:				//m_hEventStop
+		return false;
+	case WAIT_OBJECT_0 + 1:			//m_hSemaphoreWaitJobSlot
+		break;
+	default:
+		return false;
+	}
+
     AutoLock lockObj(&m_mutex);
     m_JobsList.push_back(pJob);
     ReleaseSemaphore(m_hSemaphoreJobToDo, 1, NULL);
@@ -89,7 +114,7 @@ bool ThreadPool::getJob(PoolJob** ppOutJob){
     {
     case WAIT_OBJECT_0:				//m_hEventStop
         return false;
-    case WAIT_OBJECT_0 + 2:			//m_hSemaphoreJobToDo
+    case WAIT_OBJECT_0 + 1:			//m_hSemaphoreJobToDo
         break;
     default:
         return false;
@@ -99,6 +124,6 @@ bool ThreadPool::getJob(PoolJob** ppOutJob){
     JobContainer::iterator iterBegin = m_JobsList.begin();
     *ppOutJob = *iterBegin;
     m_JobsList.erase(iterBegin);
-
+	ReleaseSemaphore(m_hSemaphoreWaitJobSlot, 1, NULL);
     return true;
 }

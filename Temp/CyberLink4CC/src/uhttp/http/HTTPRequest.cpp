@@ -212,8 +212,8 @@ HTTP::StatusCode HTTPRequest::returnResponse(int statusCode) {
 
 HTTP::StatusCode HTTPRequest::post(HTTPResponse *httpRes, bool isOnlyHeader) {
   HTTPSocket *httpSock = getSocket();
-  size_t offset = 0;
-  size_t length = httpRes->getContentLength();
+  long offset = 0;
+  long length = (long)httpRes->getContentLength();
   if (hasContentRange() == true) {
     long firstPos = getContentRangeFirstPosition();
     long lastPos = getContentRangeLastPosition();
