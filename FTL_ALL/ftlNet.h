@@ -234,6 +234,7 @@
 *   如: http://www.mywebsite.com/sj/test/test.aspx?name=sviergn&x=true#stuff
 * URN(Uniform Resource Name) -- 统一资源名称，是URL的更新形式，唯一标识一个实体的标识符，但是不能给出实体的位置。
 *   相比URL更强大更容易管理(可以引用多个URL)
+* USN() -- 
 * UUID(Universally Unique Identifier，等价于GUID?) -- 通用唯一识别码，其格式为 8-4-4-16 的十六进制字符串
 * WINS -- Windows互联网命名服务器,维护着已注册的所有NetBIOS名字的一个列表
 * WinSock -- 是网络编程接口，而不是协议，与协议无关。可以针对一种具体协议（如IP、TCP、IPX、lrDA等）创建套接字。

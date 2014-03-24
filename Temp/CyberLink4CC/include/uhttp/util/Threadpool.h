@@ -10,6 +10,7 @@ namespace uHTTP {
 class PoolJob{
 public:
     virtual void jobRun() = 0;
+    virtual void release() = 0;
 };
 
 class ThreadPool {
@@ -17,10 +18,26 @@ public:
     ThreadPool(int nThreadCount);
     ~ThreadPool();
 
+    bool start();
+    bool stop();
+    void close();
+public:
+    bool addJob(PoolJob* pJob);
+
+//thie is call from JobThread
+    bool getJob(PoolJob** ppOutJob);
 private:
-    Thread*                 m_pThreads;
-    std::list<PoolJob*>     m_JobsList;
+    int                     m_nThreadCount;
+    bool                    m_isRunning;
+    Thread**                m_pThreads;
+
+    typedef std::list<PoolJob*> JobContainer;
+    JobContainer            m_JobsList;
     Mutex                   m_mutex;
+    
+    void*                   m_hEventStop;
+    void*                   m_hSemaphoreJobToDo;
+    
 };
 
 }

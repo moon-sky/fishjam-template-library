@@ -77,7 +77,7 @@ ControlPoint::ControlPoint(int ssdpPort, int httpPort) {
   setExpiredDeviceMonitoringInterval(DEFAULT_EXPIRED_DEVICE_MONITORING_INTERVAL);
   setNMPRMode(false);
   renewSubscriber = NULL;
-
+  m_pThreadPool = NULL;
 }
 
 ControlPoint::~ControlPoint() {
@@ -138,8 +138,8 @@ void ControlPoint::addDevice(CyberXML::Node *rootNode) {
 void ControlPoint::addDevice(SSDPPacket *ssdpPacket) {
   if (ssdpPacket->isRootDevice() == false)
     return;
-  
-  lock();
+  AutoLock lockObj(&mutex);
+  //lock();
   
   string usnBuf;
   string udnBuf;
@@ -148,30 +148,17 @@ void ControlPoint::addDevice(SSDPPacket *ssdpPacket) {
   Device *dev = getDevice(udn);
   if (dev != NULL) {
     dev->setSSDPPacket(ssdpPacket);
-    unlock();
+    //unlock();
     return;
   }
 
   string locationBuf;
   const char *location = ssdpPacket->getLocation(locationBuf);
-  URL locationURL(location);
-  Parser parser;
-  Node *rootNode = parser.parse(&locationURL);
-  Device *rootDev = getDevice(rootNode);
-  if (rootDev == NULL) {
-    unlock();
-    return;
-  }
-  rootDev->setSSDPPacket(ssdpPacket);
-
-  unlock();
-
-  addDevice(rootNode);
-
-  initDeviceList();
-
-  // Thanks for Oliver Newell (2004/10/16)
-  performAddDeviceListener( rootDev );
+  
+  AsyncParser* pParser = new AsyncParser(this);
+  pParser->setTarget(new URL(location));
+  pParser->backupSSDPPacket(ssdpPacket);
+  m_pThreadPool->addJob(pParser);
 }
 
 ////////////////////////////////////////////////
@@ -483,6 +470,27 @@ void ControlPoint::renewSubscriberService() {
   renewSubscriberService(Subscription::INFINITE_VALUE);
 }
 
+void ControlPoint::OnAsyncParseResult(Node* pNode, SSDPPacket* pPacket){
+    if (pNode){
+        //Node *rootNode = parser.parse(&locationURL);
+        Device *rootDev = getDevice(pNode);
+        if (rootDev == NULL) {
+            //unlock();
+            return;
+        }
+        rootDev->setSSDPPacket(pPacket);
+
+        //unlock();
+
+        addDevice(pNode);
+
+        initDeviceList();
+
+        // Thanks for Oliver Newell (2004/10/16)
+        performAddDeviceListener( rootDev );
+    }
+}
+
 ////////////////////////////////////////////////
 //  run  
 ////////////////////////////////////////////////
@@ -562,6 +570,12 @@ bool ControlPoint::start(const std::string &target, int mx) {
 }
   
 bool ControlPoint::stop() {
+  if (m_pThreadPool){
+      m_pThreadPool->stop();
+      delete m_pThreadPool;
+      m_pThreadPool = NULL;
+  }
+  
   unsubscribe();
     
   SSDPNotifySocketList *ssdpNotifySocketList = getSSDPNotifySocketList();

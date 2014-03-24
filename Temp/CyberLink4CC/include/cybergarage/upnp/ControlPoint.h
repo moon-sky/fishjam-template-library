@@ -22,6 +22,7 @@
 #include <cybergarage/xml/NodeList.h>
 #include <uhttp/http/HTTPRequestListener.h>
 #include <uhttp/http/HTTPServerList.h>
+#include <uhttp/util/Threadpool.h>
 #include <cybergarage/upnp/ssdp/SSDPPacket.h>
 #include <cybergarage/upnp/ssdp/SSDPNotifySocketList.h>
 #include <cybergarage/upnp/ssdp/SSDPSearchResponseSocketList.h>
@@ -32,9 +33,13 @@
 #include <cybergarage/upnp/device/DeviceChangeListener.h>
 #include <cybergarage/upnp/event/EventListener.h>
 #include <cybergarage/upnp/control/RenewSubscriber.h>
+#include <cybergarage/xml/AsyncParser.h>
 
 namespace CyberLink {
-class ControlPoint : public uHTTP::HTTPRequestListener {
+class ControlPoint 
+: public uHTTP::HTTPRequestListener
+, public CyberXML::AsyncParseCallback
+{
   SSDPNotifySocketList ssdpNotifySocketList;
   SSDPSearchResponseSocketList ssdpSearchResponseSocketList;
   SSDPSearchResponseSocket ssdpSearchResponseSocket;
@@ -64,7 +69,7 @@ class ControlPoint : public uHTTP::HTTPRequestListener {
 
   bool nmprMode;
   RenewSubscriber *renewSubscriber;
-
+  uHTTP::ThreadPool       *m_pThreadPool;
  public:
   ////////////////////////////////////////////////
   //  Constants
@@ -388,7 +393,6 @@ private:
   ////////////////////////////////////////////////
   //  Subscriber
   ////////////////////////////////////////////////
-  
  public:
   void setRenewSubscriber(RenewSubscriber *sub) {
     if (renewSubscriber != NULL)
@@ -399,6 +403,9 @@ private:
   RenewSubscriber *getRenewSubscriber() {
     return renewSubscriber;  
   }
+
+  //AsyncParse
+  void OnAsyncParseResult(CyberXML::Node* pNode, CyberLink::SSDPPacket* pPacket);
 
   ////////////////////////////////////////////////
   //  run  

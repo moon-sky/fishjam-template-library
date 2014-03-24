@@ -231,18 +231,18 @@
 -------------------------------------------------------------------------------------
 *  HTTPU/HTTPMU -- HTTP协议的变种,格式沿袭了HTTP协议，但通过UDP而非TCP来承载，并且可用于组播进行通信
 *
-* SSDP:
+* SSDP(CyberLink 中的 SSDPPacket):
 *   主动通知(NOTIFY * HTTP/1.1\r\n): 设备加入到网络中时，向网络上的控制点告知它提供的服务，并且定期发送
 *     HOST:239.255.255.250:1900\r\n -- 表示是广播
 *     LOCATION: 根设备的描述URL，如 http://192.168.1.1:2800/InternetGatewayDevice.xml\r\n
 *     NT: 服务类型，如 upnp:rootdevice\r\n
 *     NTS:ssdp:alive\r\n
 *     USN:uuid:aaaabbbb-cccc-dddd-eeeeffffgggghhhh::upnp:rootdevice\r\n -- 表示不同服务的统一服务名，标示相同类型服务能力
-*   查询(M-SEARCH * HTTP/1.1\r\n): 控制点加入到网络中时，寻找网络上感兴趣的设备
-*     HOST: 239.255.255.250:1900\r\n -- 广播
-*     MAN:ssdp:discover\r\n -- 
+*   查询(M-SEARCH * HTTP/1.1\r\n): 控制点加入到网络中时，寻找网络上感兴趣的设备,对应 SSDPPacket::isDiscover()
+*     HOST: 239.255.255.250:1900\r\n -- 多播地址
+*     MAN:"ssdp:discover"\r\n -- 固定格式，必须有引号，没有参数，表示查询
 *     MX:3\r\n -- 设置设备响应最长等待时间，设备响应在0和这个值之间随机选择响应延迟的值
-*     ST: 搜索目标，可选类型如下：
+*     ST: 搜索目标(Search Target)，可选类型如下：
 *         ssdp:all -- 所有设备和服务
 *         upnp:rootdevice -- 仅搜索网络中的根设备
 *         uuid:device-UUID -- 查询UUID标识的设备
@@ -250,10 +250,14 @@
 *         urn:schemas-upnp-org:service:service-type:version -- 查询service-Type字段指定的服务类型，服务类型和版本由UPNP组织定义
 *   响应(HTTP/1.1 200 OK) -- 设备发现自己满足控制点搜索的目标，进行相应
 *     EXT:\r\n -- 空节点，向控制点确认MAN头域已经被设备理解
-*     LOCATION: -- 包含根设备描述得URL地址
+*     LOCATION:http://xxxx -- 包含根设备描述的URL地址
 *     SERVER:Wireless N Router WR845N, UPnP/1.0\r\n -- 包含操作系统名，版本，产品名和产品版本信息。
-*     ST: -- 内容和意义与查询请求的相应字段相同
-*     USN: -- 
+*     ST: -- 本响应对应的搜索目标，内容和意义与查询请求的相应字段相同
+*     USN: -- uuid:xxxx, 
+*   NTS(?) -- 生存期过程中的消息?
+*     ssdp:alive --
+*     ssdp:byebye
+*     upnp:propchange
 *
 *   控制报文: 控制点先发送一个控制行为请求，要求设备开始服务，然后再按设备的URL发送相应的控制消息
 *     1.POST /EmWeb/UPnP/Control/4 HTTP/1.1 -- 对目的地址，POST Soap 格式的命令
@@ -263,6 +267,9 @@
 *   事件订阅和通知 -- 放在XML中，使用GENA格式
 *     NT: upnp:event -- 
 *     SEQ
+*
+*   TODO:
+*     
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -311,6 +318,12 @@
 *     1.源码: CyberLinkForCC + HttpEngineForCC + expat
 *     2.编译:
 *       a. linux: ./boostrap -enable-libxml2<CR> ./configure<CR> make
+* 
+*   ControlPoint的回调接口(需要调用对应的 addXxxxListener 方法注册后才能生效):
+*     DeviceChangeListener -- 有 deviceAdded/deviceRemoved 方法，可以知道 Device 的增减
+*     EventListener -- 有 eventNotifyReceived 方法，可以接收到注册过的事件通知(变量+值)
+*     NotifyListener -- 有 deviceNotifyReceived 方法，可以接收到设备的SSDP通知消息
+*     SearchResponseListener -- 有 deviceSearchResponseReceived 方法，可以接收到对搜索进行相应的SSDP消息
 *   
 * 线程:
 *   HttpServer -- 本地的Http服务器
