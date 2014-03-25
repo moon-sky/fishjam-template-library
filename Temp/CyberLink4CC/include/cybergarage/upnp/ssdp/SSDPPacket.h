@@ -43,6 +43,7 @@ class SSDPPacket  {
   
  public:
   SSDPPacket() {
+      timeStamp = 0;
   }
 
   ////////////////////////////////////////////////

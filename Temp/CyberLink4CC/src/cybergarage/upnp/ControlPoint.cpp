@@ -157,9 +157,29 @@ void ControlPoint::addDevice(SSDPPacket *ssdpPacket) {
 
   string locationBuf;
   const char *location = ssdpPacket->getLocation(locationBuf);
+  if (m_asyncParsingUrls.find(locationBuf) != m_asyncParsingUrls.end())
+  {
+      return;
+  }
+  
+  if (m_badUrls.find(locationBuf) != m_badUrls.end())
+  {
+      int& nCurrentCount = m_badUrls[locationBuf];
+      nCurrentCount++;
+      if (nCurrentCount > 20)
+      {
+          m_badUrls.erase(locationBuf);
+      }
+      else
+      {
+          return;
+      }
+  }
   
   if (m_pThreadPool)
   {
+      m_asyncParsingUrls.insert(locationBuf);
+
 	  AsyncParser* pParser = new AsyncParser(this);
 	  pParser->setTarget(new URL(location));
 	  pParser->backupSSDPPacket(ssdpPacket);
@@ -295,8 +315,9 @@ void ControlPoint::notifyReceived(SSDPPacket *packet) {
 }
 
 void ControlPoint::searchResponseReceived(SSDPPacket *packet) {
-  if (packet->isRootDevice() == true)
-    addDevice(packet);
+  if (packet->isRootDevice() == true){
+     addDevice(packet);
+  }
   performSearchResponseListener(packet);
 }
 
@@ -481,25 +502,31 @@ void ControlPoint::renewSubscriberService() {
 }
 
 void ControlPoint::OnAsyncParseResult(Node* pNode, SSDPPacket* pPacket){
+    bool bSuccess = false;
+    string locationBuf;
+    const char *location = pPacket->getLocation(locationBuf);
+    AutoLock lokObjc(&m_mutex);
+    m_asyncParsingUrls.erase(locationBuf);
+
     if (pNode){
-		AutoLock lokObjc(&m_mutex);
         //Node *rootNode = parser.parse(&locationURL);
         Device *rootDev = getDevice(pNode);
-        if (rootDev == NULL) {
-            //unlock();
-            return;
+        if (rootDev != NULL) {
+            rootDev->setSSDPPacket(pPacket);
+            addDevice(pNode);
+            initDeviceList();
+
+            // Thanks for Oliver Newell (2004/10/16)
+            performAddDeviceListener( rootDev );
+            bSuccess = true;
         }
-        rootDev->setSSDPPacket(pPacket);
-
-        //unlock();
-
-        addDevice(pNode);
-
-        initDeviceList();
-
-        // Thanks for Oliver Newell (2004/10/16)
-        performAddDeviceListener( rootDev );
     }
+
+    if (!bSuccess){
+        int nCurrent = m_badUrls[locationBuf];  //access to generate the bad url and the init count(0)
+        //assert(nCurrent == 0);
+    }
+    
 }
 
 ////////////////////////////////////////////////
@@ -557,7 +584,8 @@ bool ControlPoint::start(const std::string &target, int mx) {
   ////////////////////////////////////////
   // search root devices
   ////////////////////////////////////////
-    
+  Sleep(500);  //wait server start
+
   search(target, mx);
 
   ////////////////////////////////////////

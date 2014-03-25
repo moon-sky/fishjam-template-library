@@ -6,16 +6,12 @@
 #include <uhttp/util/Threadpool.h>
 #include <cybergarage/xml/Parser.h>
 #include <cybergarage/upnp/ssdp/SSDPPacket.h>
+#include <cybergarage/xml/AsyncParserListener.h>
 
 namespace CyberXML {
 
-class AsyncParseCallback{
-public:
-    virtual void OnAsyncParseResult(Node* pNode, CyberLink::SSDPPacket* pPacket) = 0;
-};
-
 class AsyncParser : public uHTTP::PoolJob{
-    AsyncParseCallback* m_pCallback;
+    AsyncParseListener* m_pListener;
     uHTTP::URL*     m_pUrl;
     Parser m_Parser;
     CyberLink::SSDPPacket m_ssdpPacket;
@@ -23,7 +19,7 @@ class AsyncParser : public uHTTP::PoolJob{
   ////////////////////////////////////////////////
   //  Constructor
   ////////////////////////////////////////////////
-  AsyncParser(AsyncParseCallback* pCallback);
+  AsyncParser(AsyncParseListener* pListener);
   ~AsyncParser();
 
   void setTarget(uHTTP::URL* url);   //url alloc by new

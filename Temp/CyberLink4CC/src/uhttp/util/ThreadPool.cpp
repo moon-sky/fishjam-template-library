@@ -1,4 +1,5 @@
 #include <uhttp/util/ThreadPool.h>
+#include <ftlBase.h>
 
 using namespace uHTTP;
 
@@ -9,6 +10,7 @@ public:
         m_pPool = pPool;
     }
     virtual void run(){
+        FUNCTION_BLOCK_TRACE(0);
         PoolJob* pJob = NULL;
         while (m_pPool->getJob(&pJob)){
             pJob->jobRun();
@@ -73,6 +75,12 @@ bool ThreadPool::start(){
 bool ThreadPool::stop(){
     m_isRunning = false;
     SetEvent(m_hEventStop);
+    if (m_pThreads){
+        for (int i = 0; i < m_nThreadCount; i++){
+            m_pThreads[i]->stop();
+        }
+        m_pThreads = NULL;
+    }
     return true;
 }
 

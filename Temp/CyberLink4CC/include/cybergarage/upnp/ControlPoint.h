@@ -34,11 +34,14 @@
 #include <cybergarage/upnp/event/EventListener.h>
 #include <cybergarage/upnp/control/RenewSubscriber.h>
 #include <cybergarage/xml/AsyncParser.h>
+#include <cybergarage/xml/AsyncParserListener.h>
+#include <map>
+#include <set>
 
 namespace CyberLink {
 class ControlPoint 
 : public uHTTP::HTTPRequestListener
-, public CyberXML::AsyncParseCallback
+, public CyberXML::AsyncParseListener
 {
   SSDPNotifySocketList ssdpNotifySocketList;
   SSDPSearchResponseSocketList ssdpSearchResponseSocketList;
@@ -70,6 +73,12 @@ class ControlPoint
   bool nmprMode;
   RenewSubscriber *renewSubscriber;
   uHTTP::ThreadPool       *m_pThreadPool;
+
+  //url, -> access count
+  typedef std::map<std::string, int> BadUrlContainers;   //maintain bad url, so will not access it again
+  BadUrlContainers  m_badUrls;
+  typedef std::set<std::string>  AsyncParsingUrlContainers;
+  AsyncParsingUrlContainers  m_asyncParsingUrls;
  public:
   ////////////////////////////////////////////////
   //  Constants

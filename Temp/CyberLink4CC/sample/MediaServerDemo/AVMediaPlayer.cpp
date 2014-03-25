@@ -45,7 +45,7 @@ void CAVMediaPlayer::DumpInfo()
 
 void CAVMediaPlayer::deviceNotifyReceived( SSDPPacket *ssdpPacket )
 {
-	ssdpPacket->print("CAVMediaPlayer::deviceNotifyReceived");
+	ssdpPacket->print("CAVMediaPlayer::deviceNotifyReceived\n");
 }
 
 void CAVMediaPlayer::eventNotifyReceived( const std::string &uuid, long seq, const std::string &varName, const std::string &value )
@@ -55,13 +55,13 @@ void CAVMediaPlayer::eventNotifyReceived( const std::string &uuid, long seq, con
 
 void CAVMediaPlayer::deviceSearchResponseReceived( SSDPPacket *ssdpPacket )
 {
-	ssdpPacket->print("CAVMediaPlayer::deviceSearchResponseReceived");
+	ssdpPacket->print("CAVMediaPlayer::deviceSearchResponseReceived\n");
 }
 
 void CAVMediaPlayer::deviceAdded(Device *dev){
-    dev->print("deviceAdded");
+    dev->print("deviceAdded\n");
 }
 void CAVMediaPlayer::deviceRemoved(Device *dev)
 {
-    dev->print("deviceRemoved");
+    dev->print("deviceRemoved\n");
 }

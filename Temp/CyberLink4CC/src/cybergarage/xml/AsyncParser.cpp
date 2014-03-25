@@ -9,8 +9,8 @@ using namespace CyberXML;
 using namespace uHTTP;
 using namespace uHTTP;
 
-AsyncParser::AsyncParser(AsyncParseCallback* pCallback){
-    m_pCallback = pCallback;
+AsyncParser::AsyncParser(AsyncParseListener* pListener){
+    m_pListener = pListener;
     m_pUrl = NULL;
 }
 
@@ -32,8 +32,8 @@ void AsyncParser::setTarget(URL* url){
 void AsyncParser::jobRun(){
     if (m_pUrl){
         Node *pNode = m_Parser.parse(m_pUrl);
-        if (pNode && m_pCallback){
-            m_pCallback->OnAsyncParseResult(pNode, &m_ssdpPacket);
+        if (m_pListener){
+            m_pListener->OnAsyncParseResult(pNode, &m_ssdpPacket);
         }
     }
 }

@@ -57,6 +57,7 @@ private:
     man += MAN::DISCOVER;
     man += "\"";
     setHeader(uHTTP::HTTP::MAN, man.c_str());
+    setLongHeader(uHTTP::HTTP::CONTENT_LENGTH, 0);
   }
 
   ////////////////////////////////////////////////

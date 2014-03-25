@@ -19,15 +19,16 @@ const int URI_KNKOWN_PORT = -1;
 class URI {
 protected:
 
-  std::string uriStr;
-  std::string protocol;
-  std::string user;
-  std::string password;
-  std::string host;
-  int port;
-  std::string path;
-  std::string query;
-  std::string fragment;
+  std::string m_uriStr;
+  std::string m_target;
+  std::string m_protocol;
+  std::string m_user;
+  std::string m_password;
+  std::string m_host;
+  int m_port;
+  std::string m_path;
+  std::string m_query;
+  std::string m_fragment;
 
 public:
   
@@ -56,23 +57,25 @@ public:
   void setString(const std::string &value);
 
   const char *getSting() {
-    return uriStr.c_str();
+    return m_uriStr.c_str();
   }
-
+  const char *getTarget(){
+      return m_target.c_str();
+  }
   void setProtocol(const std::string &value) {
-    protocol = value;
+    m_protocol = value;
   }
   
   const char *getProtocol() {
-    return protocol.c_str();
+    return m_protocol.c_str();
   }
 
   bool hasProtocol() {
-    return (0 < protocol.length());
+    return (0 < m_protocol.length());
   }
   
   bool isProtocol(const std::string &protocolPrefix) {
-    return (protocol.compare(protocolPrefix) == 0) ? true : false;
+    return (m_protocol.compare(protocolPrefix) == 0) ? true : false;
   }
 
   bool isHTTP() {
@@ -84,63 +87,63 @@ public:
   }
   
   void setUser(const std::string &value) {
-    user = value;
+    m_user = value;
   }
   
   const char *getUser() {
-    return user.c_str();
+    return m_user.c_str();
   }
 
   void setPassword(const std::string &value) {
-    password = value;
+    m_password = value;
   }
   
   const char *getPassword() {
-    return password.c_str();
+    return m_password.c_str();
   }
 
   void setHost(const std::string &value) {
-    host = value;
+    m_host = value;
   }
   
   const char *getHost() {
-    return host.c_str();
+    return m_host.c_str();
   }
 
   void setPort(int value) {
-    port = value;
+    m_port = value;
   }
 
   int getPort() {
-    return port;
+    return m_port;
   }
 
   void setPath(const std::string &value) {
-    path = value;
+    m_path = value;
   }
   
   const char *getPath() {
-    return path.c_str();
+    return m_path.c_str();
   }
 
   bool hasPath() {
-    return (0 < path.length());
+    return (0 < m_path.length());
   }
   
   void setQuery(const std::string &value) {
-    query = value;
+    m_query = value;
   }
   
   const char *getQuery() {
-    return query.c_str();
+    return m_query.c_str();
   }
 
   void setFragment(const std::string &value) {
-    fragment = value;
+    m_fragment = value;
   }
   
   const char *getFragment() {
-    return fragment.c_str();
+    return m_fragment.c_str();
   }
 
   bool isValid();

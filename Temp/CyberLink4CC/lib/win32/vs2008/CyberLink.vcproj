@@ -20,6 +20,7 @@
 			OutputDirectory="$(SolutionDir)lib\$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -93,6 +94,7 @@
 			OutputDirectory="$(SolutionDir)lib\$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
@@ -998,6 +1000,10 @@
 					>
 					<File
 						RelativePath="..\..\..\include\cybergarage\xml\AsyncParser.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\cybergarage\xml\AsyncParserListener.h"
 						>
 					</File>
 					<File

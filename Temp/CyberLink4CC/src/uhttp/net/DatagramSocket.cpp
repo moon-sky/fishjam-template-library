@@ -58,43 +58,43 @@ bool DatagramSocket::bind(int bindPort, const std::string &bindAddr, bool bindAd
   struct sockaddr_in sockaddr;
   if (toSocketAddrIn(bindAddr, bindPort, &sockaddr) == false)
     return false;
-     sock = so_socket(PF_INET, SOCK_DGRAM, 0);
+     m_sock = so_socket(PF_INET, SOCK_DGRAM, 0);
 #elif defined(TENGINE) && defined(TENGINE_NET_KASAGO)
   struct sockaddr_in sockaddr;
   if (toSocketAddrIn(bindAddr, bindPort, &sockaddr) == false)
     return false;
-  ERR sock = ka_socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  /*ERR*/ m_sock = ka_socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);  //TODO: this might be error code(ERR sock)?
 #elif defined(ITRON)
-  sock = GetAvailableSocketID(STREAM);
+  m_sock = GetAvailableSocketID(STREAM);
 #else
   struct addrinfo *addrInfo;
   if (toSocketAddrInfo(SOCK_DGRAM, bindAddr, bindPort, &addrInfo, bindAddrFlag) == false)
     return false;
-  sock = socket(addrInfo->ai_family, addrInfo->ai_socktype, 0);
+  m_sock = socket(addrInfo->ai_family, addrInfo->ai_socktype, 0);
 #endif
 
-  if (sock < 0)
+  if (m_sock < 0)
     return false;
   
   if (reuseAddrFlag == true)
     setReuseAddress(true);
 
 #if defined(BTRON) || (defined(TENGINE) && !defined(TENGINE_NET_KASAGO))
-  ERR ret = so_bind(sock, (SOCKADDR *)&sockaddr, sizeof(struct sockaddr_in));
+  ERR ret = so_bind(m_sock, (SOCKADDR *)&sockaddr, sizeof(struct sockaddr_in));
 #elif defined(TENGINE) && defined(TENGINE_NET_KASAGO)
-  ERR ret = ka_bind(sock, (struct sockaddr *)&sockaddr, sizeof(struct sockaddr_in));
+  ERR ret = ka_bind(m_sock, (struct sockaddr *)&sockaddr, sizeof(struct sockaddr_in));
 #elif defined(ITRON)
   T_UDP_CCEP udpccep = { 0, { IPV4_ADDRANY, UDP_PORTANY }, (FP)UdpCallback };
   if (bindAddr != NULL)
     udpccep.myaddr.ipaddr = ascii_to_ipaddr((B*)bindAddr);
   udpccep.myaddr.ipaddr = htons(bindPort);
-  ER ret = udp_cre_cep(sock, &udpccep);
+  ER ret = udp_cre_cep(m_sock, &udpccep);
   if (ret != E_OK) {
     close();
     return false;
   }
 #else
-  int ret = ::bind(sock, addrInfo->ai_addr, addrInfo->ai_addrlen);
+  int ret = ::bind(m_sock, addrInfo->ai_addr, addrInfo->ai_addrlen);
   freeaddrinfo(addrInfo);
 #endif
 
@@ -121,18 +121,18 @@ ssize_t DatagramSocket::receive(DatagramPacket &dataPack) {
 #if defined(BTRON) || (defined(TENGINE) && !defined(TENGINE_NET_KASAGO))
   struct sockaddr_in from;
   W fromLen = sizeof(sockaddr_in);
-  int recvLen = so_recvfrom(sock, recvBuf, sizeof(recvBuf)-1, 0, (struct sockaddr *)&from, &fromLen);
+  int recvLen = so_recvfrom(m_sock, recvBuf, sizeof(recvBuf)-1, 0, (struct sockaddr *)&from, &fromLen);
 #elif defined(TENGINE) && defined(TENGINE_NET_KASAGO)
   struct sockaddr_in from;
   int fromLen = sizeof(from);
-  int recvLen = ka_recvfrom(sock, recvBuf, sizeof(recvBuf)-1, 0, (struct sockaddr *)&from, &fromLen);
+  int recvLen = ka_recvfrom(m_sock, recvBuf, sizeof(recvBuf)-1, 0, (struct sockaddr *)&from, &fromLen);
 #elif defined(ITRON)
   T_IPV4EP remoteHost;
-  int recvLen = udp_rcv_dat(sock, &remoteHost, recvBuf, sizeof(recvBuf)-1, TMO_FEVR);
+  int recvLen = udp_rcv_dat(m_sock, &remoteHost, recvBuf, sizeof(recvBuf)-1, TMO_FEVR);
 #else
-  struct sockaddr_storage from;
+  struct sockaddr_storage from = { 0 };
   socklen_t fromLen = sizeof(from);
-  ssize_t recvLen = ::recvfrom(sock, recvBuf, sizeof(recvBuf)-1, 0, (struct sockaddr *)&from, &fromLen);
+  ssize_t recvLen = ::recvfrom(m_sock, recvBuf, sizeof(recvBuf)-1, 0, (struct sockaddr *)&from, &fromLen);
 #endif
 
   if (recvLen <= 0)
@@ -187,50 +187,50 @@ ssize_t DatagramSocket::send(const std::string &addr, int port, const std::strin
     return 0;
 
   if (isBoundFlag == false)
-       sock = so_socket(PF_INET, SOCK_DGRAM, 0);
+       m_sock = so_socket(PF_INET, SOCK_DGRAM, 0);
 
-  if (sock < 0)
+  if (m_sock < 0)
     return -1;
 
-  ssize_t sentLen = so_sendto(sock, (B*)data, dataLen, 0, (SOCKADDR*)&sockaddr, sizeof(sockaddr_in));
+  ssize_t sentLen = so_sendto(m_sock, (B*)data, dataLen, 0, (SOCKADDR*)&sockaddr, sizeof(sockaddr_in));
 #elif defined(TENGINE) && defined(TENGINE_NET_KASAGO)
   struct sockaddr_in sockaddr;
   if (toSocketAddrIn(addr, port, &sockaddr, true) == false)
     return 0;
 
   if (isBoundFlag == FALSE) {
-       sock = ka_socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+       m_sock = ka_socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     setMulticastInterface(NULL);
   }
 
-  if (sock < 0)
+  if (m_sock < 0)
     return -1;
-  ssize_t sentLen = ka_sendto(sock, (char *)data, dataLen, 0, (struct sockaddr *)&sockaddr, sizeof(struct sockaddr_in));
+  ssize_t sentLen = ka_sendto(m_sock, (char *)data, dataLen, 0, (struct sockaddr *)&sockaddr, sizeof(struct sockaddr_in));
 #elif defined(ITRON)
   if (isBoundFlag == FALSE) {
-    sock = GetAvailableSocketID(DGRAM);
-    if (sock < 0)
+    m_sock = GetAvailableSocketID(DGRAM);
+    if (m_sock < 0)
       return FALSE;
     T_UDP_CCEP udpccep = { 0, { IPV4_ADDRANY, UDP_PORTANY }, (FP)UdpCallback };
-    if (udp_cre_cep(sock, &udpccep) != E_OK)
+    if (udp_cre_cep(m_sock, &udpccep) != E_OK)
       return FALSE;
   }
   T_IPV4EP dstaddr;
   dstaddr.ipaddr = ascii_to_ipaddr((B*)addr);
   dstaddr.portno = htons(port);
-  ssize_t sentLen = udp_snd_dat(sock, &dstaddr, data, dataLen, TMO_FEVR);
+  ssize_t sentLen = udp_snd_dat(m_sock, &dstaddr, data, dataLen, TMO_FEVR);
 #else
   struct addrinfo *addrInfo;
   if (toSocketAddrInfo(SOCK_DGRAM, addr, port, &addrInfo, true) == false)
     return false;
 
   if (isBoundFlag == false)
-    sock = socket(addrInfo->ai_family, addrInfo->ai_socktype, 0);
+    m_sock = socket(addrInfo->ai_family, addrInfo->ai_socktype, 0);
 
-  if (sock < 0)
+  if (m_sock < 0)
     return -1;
 
-  ssize_t sentLen = ::sendto(sock, data.c_str(), dataLen, 0, addrInfo->ai_addr, addrInfo->ai_addrlen);
+  ssize_t sentLen = ::sendto(m_sock, data.c_str(), dataLen, 0, addrInfo->ai_addr, addrInfo->ai_addrlen);
 #endif
 
   if (isBoundFlag == false)

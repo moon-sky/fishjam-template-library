@@ -103,7 +103,7 @@ void CMainDlg::OnBtnPlayerStartClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 		m_pMediaPlayer = new CAVMediaPlayer(this);
 	}
     m_DevicesTree.SetControlPoint(m_pMediaPlayer);
-	m_pMediaPlayer->start("ssdp:all");
+	m_pMediaPlayer->start("upnp:rootdevice");
 }
 
 void CMainDlg::OnBtnPlayerDumpInfo(UINT uNotifyCode, int nID, CWindow wndCtl)

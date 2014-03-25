@@ -22,7 +22,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -110,7 +110,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			ATLMinimizesCRunTimeLibraryUsage="true"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"

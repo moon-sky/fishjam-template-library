@@ -24,8 +24,10 @@
 #include <string>
 
 #include <uhttp/net/HostInterface.h>
-#include <cybergarage/xml/Parser.h>
+#include <uhttp/util/Log.h>
 #include <uhttp/http/HTTPRequest.h>
+#include <cybergarage/xml/Parser.h>
+#include <ftlBase.h>
 
 #if !defined(WIN32) && !defined(HAVE_FOPEN) && !defined(TENGINE) && !defined(ITRON) && !defined(BTRON)
 #include <fcntl.h>
@@ -86,15 +88,20 @@ Node *Parser::parse(uHTTP::File *file) {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 Node *Parser::parse(uHTTP::URL *url) {
+  FUNCTION_BLOCK_TRACE(10);
+  LogInfo("parse: %s\n", url->getSting()); 
+
   const char *host = url->getHost();
   int port = url->getPort();
-  const char *uri = url->getPath();
+  std::string target = url->getTarget();
+  
   HTTPRequest httpReq;
   httpReq.setMethod(HTTP::GET);
-  httpReq.setURI(uri);
+  httpReq.setURI(target);
   HTTPResponse *httpRes = httpReq.post(host, port);
-  if (httpRes->isSuccessful() == false)
+  if (httpRes->isSuccessful() == false){
     return NULL;
+  }
   const char *contents = httpRes->getContent();
   return parse(contents);
 }

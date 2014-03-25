@@ -69,11 +69,11 @@ class SocketImp {
   
  public:
   void setSocket(SOCKET value) {
-    sock = value;
+    m_sock = value;
   }
 
   SOCKET getSocket() {
-    return sock;
+    return m_sock;
   }
 
   ////////////////////////////////////////////////
@@ -97,20 +97,20 @@ public:
 
  public:
   void setLocalAddress(const std::string &addr) {
-    localAddr = addr;
+    m_localAddr = addr;
     //StripIPv6ScopeID(addr, localAddr);
   }
 
   const char *getLocalAddress() {
-    return localAddr.c_str();
+    return m_localAddr.c_str();
   }
 
   void setLocalPort(int port) {
-    localPort = port;
+    m_localPort = port;
   }
 
   int getLocalPort() {
-    return localPort;
+    return m_localPort;
   }
 
   ////////////////////////////////////////////////
@@ -120,12 +120,12 @@ public:
 protected:
   
   void setType(int value) {
-    type = value;
+    m_type = value;
   }
 
  public:
   int getType() {
-    return type;
+    return m_type;
   }
 
   ////////////////////////////////////////////////
@@ -135,12 +135,12 @@ protected:
 protected:
   
   void setErrorCode(int code) {
-    this->errorCode = code;
+    this->m_errorCode = code;
   }
 
  public:
   int getErrorCode() const {
-    return this->errorCode;
+    return this->m_errorCode;
   }
 
   ////////////////////////////////////////////////
@@ -157,13 +157,13 @@ protected:
 
 private:
 
-  int type;
-  std::string localAddr;
-  int localPort;
-  int errorCode;
+  int m_type;
+  std::string m_localAddr;
+  int m_localPort;
+  int m_errorCode;
 
 protected:
-  SOCKET  sock;
+  SOCKET  m_sock;
   CTimeUtil m_TimeUtil;
 
 };

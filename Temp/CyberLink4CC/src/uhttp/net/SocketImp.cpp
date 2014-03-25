@@ -110,9 +110,9 @@ SocketImp::~SocketImp() {
 
 bool SocketImp::isBound() {
 #if (defined(WIN32) && !defined(__CYGWIN__) && !defined(__MINGW32__)) && !defined(ITRON)
-  return (sock != INVALID_SOCKET) ? true : false;
+  return (m_sock != INVALID_SOCKET) ? true : false;
 #else
-  return (0 <= sock) ? true : false;
+  return (0 <= m_sock) ? true : false;
 #endif
 }
 
@@ -127,9 +127,9 @@ bool SocketImp::close() {
   m_TimeUtil.Stop();
 
 #if (defined(WIN32) || defined(__CYGWIN__)) && !defined(ITRON)
-  WSAAsyncSelect(sock, NULL, 0, FD_CLOSE);
-  shutdown(sock, SD_BOTH );
-  closesocket(sock);
+  WSAAsyncSelect(m_sock, NULL, 0, FD_CLOSE);
+  shutdown(m_sock, SD_BOTH );
+  closesocket(m_sock);
   #if !defined(__CYGWIN__) && !defined(__MINGW32__)
   setSocket(INVALID_SOCKET);
   #else
@@ -137,28 +137,28 @@ bool SocketImp::close() {
   #endif
 #else
   #if defined(BTRON) || (defined(TENGINE) && !defined(TENGINE_NET_KASAGO))
-  so_shutdown(sock, 2);
-  so_close(sock);
+  so_shutdown(m_sock, 2);
+  so_close(m_sock);
   #elif defined(TENGINE) && defined(TENGINE_NET_KASAGO)
-  ka_tfClose(sock);
+  ka_tfClose(m_sock);
   #elif defined(ITRON)
   if (getType() == STREAM) {
-    tcp_can_cep(sock, TFN_TCP_ALL);
-    tcp_sht_cep(sock);
-    tcp_del_cep(sock);
-    tcp_cls_cep(sock, TMO_FEVR);
-    tcp_del_rep(sock);
+    tcp_can_cep(m_sock, TFN_TCP_ALL);
+    tcp_sht_cep(m_sock);
+    tcp_del_cep(m_sock);
+    tcp_cls_cep(m_sock, TMO_FEVR);
+    tcp_del_rep(m_sock);
   }
   else {
-    udp_can_cep(sock, TFN_UDP_ALL);
-    udp_del_cep(sock);
+    udp_can_cep(m_sock, TFN_UDP_ALL);
+    udp_del_cep(m_sock);
   }
   #else
-  int flag = fcntl(sock, F_GETFL, 0);
+  int flag = fcntl(m_sock, F_GETFL, 0);
   if (0 <= flag)
-    fcntl(sock, F_SETFL, flag | O_NONBLOCK);
-  shutdown(sock, 2);
-  if (::close(sock) == -1) {
+    fcntl(m_sock, F_SETFL, flag | O_NONBLOCK);
+  shutdown(m_sock, 2);
+  if (::close(m_sock) == -1) {
     setErrorCode(errno);
     return false;
   }
@@ -177,22 +177,22 @@ bool SocketImp::setReuseAddress(bool flag) {
   int sockOptRet;
 #if defined(BTRON) || (defined(TENGINE) && !defined(TENGINE_NET_KASAGO))
   B optval = (flag == true) ? 1 : 0;
-  sockOptRet = so_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (B *)&optval, sizeof(optval));
+  sockOptRet = so_setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, (B *)&optval, sizeof(optval));
 #elif defined(TENGINE) && defined(TENGINE_NET_KASAGO)
   int optval = (flag == true) ? 1 : 0;
-  sockOptRet = ka_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const std::string &)&optval, sizeof(optval));
+  sockOptRet = ka_setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, (const std::string &)&optval, sizeof(optval));
   //printf("setReuseAddress : %d\n", sockOptRet);
 #elif defined (ITRON)
   /**** Not Implemented for NORTi ***/
   sockOptRet = -1;
 #elif defined (WIN32)
   BOOL optval = (flag == true) ? 1 : 0;
-  sockOptRet = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval));
+  sockOptRet = setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval));
 #else
   int optval = (flag == true) ? 1 : 0;
-  sockOptRet = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval));
+  sockOptRet = setsockopt(m_sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&optval, sizeof(optval));
   #ifdef USE_SO_REUSEPORT
-  setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (const std::string &)&optval, sizeof(optval));
+  setsockopt(m_sock, SOL_SOCKET, SO_REUSEPORT, (const std::string &)&optval, sizeof(optval));
   #endif
 #endif
   return (sockOptRet == 0) ? true : false;
@@ -200,8 +200,8 @@ bool SocketImp::setReuseAddress(bool flag) {
 
 void SocketImp::setTimeout(int timeout) {
 #if !defined(BTRON) && !defined(ITRON) && !defined(TENGINE)
-  setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(timeout));
-  setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(timeout));
+  setsockopt(m_sock, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(timeout));
+  setsockopt(m_sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(timeout));
 #endif
 }
 
@@ -227,7 +227,7 @@ bool SocketImp::setMulticastInterface(const std::string &ifaddr) {
   if (sockAddrSuccess == false)
     return false;
 
-  int optSuccess = ka_setsockopt(sock, IP_PROTOIP, IPO_MULTICAST_IF, (const std::string &)&sockaddr.sin_addr, sizeof(sockaddr.sin_addr));
+  int optSuccess = ka_setsockopt(m_sock, IP_PROTOIP, IPO_MULTICAST_IF, (const std::string &)&sockaddr.sin_addr, sizeof(sockaddr.sin_addr));
   if (optSuccess != 0)
     return false;
 

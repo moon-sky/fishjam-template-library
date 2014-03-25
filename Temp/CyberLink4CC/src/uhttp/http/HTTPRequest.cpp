@@ -239,6 +239,7 @@ HTTP::StatusCode HTTPRequest::post(HTTPResponse *httpRes, bool isOnlyHeader) {
 HTTPResponse *HTTPRequest::post(const std::string &host, int port, HTTPResponse *httpRes, bool isKeepAlive) {
   if (m_pPostSock == NULL) {
     m_pPostSock = new Socket();
+    m_pPostSock->setTimeout(HTTP::DEFAULT_TIMEOUT * 1000);
     if (m_pPostSock->connect(host, port) == false) {
       int socketErrno = m_pPostSock->getErrorCode();
       httpRes->setStatusCode((HTTP::INTERNAL_CLIENT_ERROR + socketErrno));
@@ -254,7 +255,7 @@ HTTPResponse *HTTPRequest::post(const std::string &host, int port, HTTPResponse 
   string header;
   m_pPostSock->send(getHeader(header));
   m_pPostSock->send(HTTP::CRLF);
-  
+
   bool isChunkedRequest = isChunked();
 
   const char *content = getContent();
@@ -301,7 +302,7 @@ const char *HTTPRequest::toString(std::string &buf, bool bWithContent) {
       buf += HTTP::CRLF;
       buf += getContent();
   }
-    
+  buf += HTTP::CRLF;
   return buf.c_str();
 }
 

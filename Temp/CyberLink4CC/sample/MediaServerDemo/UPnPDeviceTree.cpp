@@ -47,9 +47,12 @@ void CUPnPDeviceTree::_InsertDevice(CyberLink::Device* pDevice)
     tvi.cChildren = 1;
     tvi.mask |= TVIF_CHILDREN;
 
-    std::wstring wstrFriendName;
-    StringConverter::LocalToUTF16(pDevice->getFriendlyName(), wstrFriendName, CP_ACP);
-    tvi.pszText = (LPTSTR)wstrFriendName.c_str();
+    std::string DeviceInfo = pDevice->getFriendlyName();
+    DeviceInfo += "|";
+    DeviceInfo += pDevice->getDeviceType();
+    FTL::CFConversion conv;
+    tvi.pszText = (LPTSTR)conv.MBCS_TO_TCHAR(DeviceInfo.c_str());
+    
     tvi.cchTextMax = MAX_PATH;
     tvi.lParam = (LPARAM)pDevice;
 

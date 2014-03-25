@@ -19,7 +19,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*
 	uHTTP::HostInterface::USE_ONLY_IPV4_ADDR = true;
 
 	uHTTP::Logger *pLogger = uHTTP::Logger::GetSharedInstance();
-	pLogger->setLevel(uHTTP::LoggerLevel::TRACE);
+	//pLogger->setLevel(uHTTP::LoggerLevel::INFO);
 	pLogger->addTarget(new uHTTP::LoggerOutputDebugString());
 	
 

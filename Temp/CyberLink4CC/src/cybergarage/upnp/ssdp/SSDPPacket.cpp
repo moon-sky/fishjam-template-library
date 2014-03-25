@@ -53,5 +53,12 @@ void SSDPPacket::set(SSDPPacket *ssdpPacket) {
 }
 
 void SSDPPacket::print(const std::string& info){
-	LogInfo("%s: %s\n", info.c_str(), toString());
+    if (isAlive()){
+        LogTrace("%s%s\n", info.c_str(), toString());
+    }
+    else{
+        LogInfo("%s%s\n", info.c_str(), toString());
+    }
+
+	
 }
