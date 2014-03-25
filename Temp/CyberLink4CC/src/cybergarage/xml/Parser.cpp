@@ -88,20 +88,30 @@ Node *Parser::parse(uHTTP::File *file) {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 Node *Parser::parse(uHTTP::URL *url) {
-  FUNCTION_BLOCK_TRACE(10);
-  LogInfo("parse: %s\n", url->getSting()); 
-
-  const char *host = url->getHost();
-  int port = url->getPort();
-  std::string target = url->getTarget();
-  
+  LogInfo("parse,TID(0x%04x): %s\n", GetCurrentThreadId(), url->getSting()); 
   HTTPRequest httpReq;
-  httpReq.setMethod(HTTP::GET);
-  httpReq.setURI(target);
-  HTTPResponse *httpRes = httpReq.post(host, port);
-  if (httpRes->isSuccessful() == false){
-    return NULL;
+  HTTPResponse *httpRes = NULL;
+  {
+      FUNCTION_BLOCK_NAME_TRACE("post", 100);
+
+      const char *host = url->getHost();
+      int port = url->getPort();
+      std::string target = url->getTarget();
+
+      httpReq.setMethod(HTTP::GET);
+      httpReq.setURI(target);
+      httpRes = httpReq.post(host, port);
+      if (httpRes->isSuccessful() == false){
+          return NULL;
+      }
   }
-  const char *contents = httpRes->getContent();
-  return parse(contents);
+
+  Node* pNode = NULL;
+  {
+      FUNCTION_BLOCK_NAME_TRACE("ParseContent", 100);
+     const char *contents = httpRes->getContent();
+     pNode = parse(contents);
+  }
+  
+  return pNode;
 }

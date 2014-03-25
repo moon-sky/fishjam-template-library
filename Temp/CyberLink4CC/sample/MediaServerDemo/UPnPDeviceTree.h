@@ -22,5 +22,7 @@ public:
 
 private:
     CyberLink::ControlPoint* m_pControlPoint;
-    void _InsertDevice(CyberLink::Device* pDevice);
+    HTREEITEM _InsertDevice(CyberLink::Device* pDevice, HTREEITEM hPrev);
+    HTREEITEM _InsertService(CyberLink::Service* pService, HTREEITEM hParent, HTREEITEM hPrev);
+    HTREEITEM _InsertAction(CyberLink::Action* pAction, HTREEITEM hParent, HTREEITEM hPrev);
 };

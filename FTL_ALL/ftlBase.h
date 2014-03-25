@@ -81,6 +81,7 @@
 #include <set>
 #include <vector>
 #include <map>
+#include <atlstr.h>
 
 namespace FTL
 {

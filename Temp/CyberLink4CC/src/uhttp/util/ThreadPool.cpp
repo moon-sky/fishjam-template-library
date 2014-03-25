@@ -1,4 +1,5 @@
 #include <uhttp/util/ThreadPool.h>
+#include <uhttp/util/AutoLock.h>
 #include <ftlBase.h>
 
 using namespace uHTTP;
@@ -102,7 +103,7 @@ bool ThreadPool::addJob(PoolJob* pJob){
 		return false;
 	}
 
-    AutoLock lockObj(&m_mutex);
+    AutoLock<Mutex> lockObj(&m_mutex);
     m_JobsList.push_back(pJob);
     ReleaseSemaphore(m_hSemaphoreJobToDo, 1, NULL);
     return true;
@@ -128,7 +129,7 @@ bool ThreadPool::getJob(PoolJob** ppOutJob){
         return false;
     }
 
-    AutoLock lockObj(&m_mutex);
+    AutoLock<Mutex> lockObj(&m_mutex);
     JobContainer::iterator iterBegin = m_JobsList.begin();
     *ppOutJob = *iterBegin;
     m_JobsList.erase(iterBegin);

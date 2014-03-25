@@ -44,8 +44,9 @@
 *
 ******************************************************************/
 
-#include <cybergarage/upnp/ControlPoint.h>
+#include <uhttp/util/AutoLock.h>
 #include <uhttp/util/Debug.h>
+#include <cybergarage/upnp/ControlPoint.h>
 #include <cybergarage/xml/Parser.h>
 
 #include <iostream>
@@ -63,8 +64,8 @@ const int ControlPoint::DEFAULT_EVENTSUB_PORT = 8058;
 const int ControlPoint::DEFAULT_SSDP_PORT = 8008;
 const char *ControlPoint::DEFAULT_EVENTSUB_URI = "/evetSub";
 const int ControlPoint::DEFAULT_EXPIRED_DEVICE_MONITORING_INTERVAL = 60;
-const int ControlPoint::DEFAULT_THREAD_POOL_COUNT = 1;
-const int ControlPoint::DEFAULT_THREAD_POOL_MAX_WAIT_JOB_COUNT = 2;
+const int ControlPoint::DEFAULT_THREAD_POOL_COUNT = 5;
+const int ControlPoint::DEFAULT_THREAD_POOL_MAX_WAIT_JOB_COUNT = 10;
 ////////////////////////////////////////////////
 //  Constructor
 ////////////////////////////////////////////////
@@ -99,7 +100,7 @@ Device *ControlPoint::getDevice(Node *rootNode) {
 }
 
 void ControlPoint::initDeviceList() {
-  AutoLock lockObj(&m_mutex);
+  AutoLock<Mutex> lockObj(&m_mutex);
   //lock();
   deviceList.clear();
   int nRoots = devNodeList.size();
@@ -132,7 +133,7 @@ Device *ControlPoint::getDevice(const std::string &name) {
 ////////////////////////////////////////////////
 
 void ControlPoint::addDevice(CyberXML::Node *rootNode) {
-  AutoLock lockObj(&m_mutex);
+  AutoLock<Mutex> lockObj(&m_mutex);
   //lock();
   devNodeList.add(rootNode);
   //unlock();
@@ -141,7 +142,7 @@ void ControlPoint::addDevice(CyberXML::Node *rootNode) {
 void ControlPoint::addDevice(SSDPPacket *ssdpPacket) {
   if (ssdpPacket->isRootDevice() == false)
     return;
-  AutoLock lockObj(&m_mutex);
+  AutoLock<Mutex> lockObj(&m_mutex);
   //lock();
   
   string usnBuf;
@@ -193,7 +194,7 @@ void ControlPoint::addDevice(SSDPPacket *ssdpPacket) {
 
 void ControlPoint::removeDevice(CyberXML::Node *rootNode) {
 	{
-		AutoLock lockObj(&m_mutex);
+		AutoLock<Mutex> lockObj(&m_mutex);
 		//lock();
 		devNodeList.remove(rootNode);
 		removedDevNodeList.add(rootNode);
@@ -373,7 +374,7 @@ bool ControlPoint::subscribe(Service *service, long timeout) {
   if (rootDev == NULL)
     return false;
 
-  AutoLock lockObj(&m_mutex);
+  AutoLock<Mutex> lockObj(&m_mutex);
   //lock();
   
   const char *ifAddress = rootDev->getInterfaceAddress();     
@@ -486,7 +487,7 @@ void ControlPoint::renewSubscriberService(Device *dev, long timeout) {
 }
   
 void ControlPoint::renewSubscriberService(long timeout) {
-  AutoLock lockObj(&m_mutex);
+  AutoLock<Mutex> lockObj(&m_mutex);
   //lock();
   DeviceList *devList = getDeviceList();
   int devCnt = devList->size();
@@ -505,7 +506,7 @@ void ControlPoint::OnAsyncParseResult(Node* pNode, SSDPPacket* pPacket){
     bool bSuccess = false;
     string locationBuf;
     const char *location = pPacket->getLocation(locationBuf);
-    AutoLock lokObjc(&m_mutex);
+    AutoLock<Mutex> lokObjc(&m_mutex);
     m_asyncParsingUrls.erase(locationBuf);
 
     if (pNode){

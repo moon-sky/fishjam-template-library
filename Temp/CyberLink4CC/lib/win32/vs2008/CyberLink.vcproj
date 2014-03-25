@@ -1187,6 +1187,10 @@
 					Name="util"
 					>
 					<File
+						RelativePath="..\..\..\include\uhttp\util\AutoLock.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\..\include\uhttp\util\Date.h"
 						>
 					</File>

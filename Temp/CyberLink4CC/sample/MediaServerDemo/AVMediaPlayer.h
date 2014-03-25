@@ -6,6 +6,8 @@
 class IAVMediaPlayerCallback
 {
 public:
+    virtual void OnDeviceAdded(CyberLink::Device *dev) = 0;
+    virtual void OnDeviceRemoved(CyberLink::Device* dev) = 0;
 };
 
 class CAVMediaPlayer 

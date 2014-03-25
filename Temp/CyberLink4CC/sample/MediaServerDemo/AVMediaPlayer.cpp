@@ -59,9 +59,9 @@ void CAVMediaPlayer::deviceSearchResponseReceived( SSDPPacket *ssdpPacket )
 }
 
 void CAVMediaPlayer::deviceAdded(Device *dev){
-    dev->print("deviceAdded\n");
+   m_pCallback->OnDeviceAdded(dev);
 }
 void CAVMediaPlayer::deviceRemoved(Device *dev)
 {
-    dev->print("deviceRemoved\n");
+    m_pCallback->OnDeviceRemoved(dev);
 }

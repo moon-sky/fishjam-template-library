@@ -124,3 +124,19 @@ void CMainDlg::OnBtnPlayerStopClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 		m_pMediaPlayer = NULL;
 	}
 }
+
+LRESULT CMainDlg::OnRefreshDevice(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    m_DevicesTree.Refresh();
+    return 0;
+}
+
+void CMainDlg::OnDeviceAdded(CyberLink::Device *dev)
+{
+    PostMessage(UM_REFRESH_DEVICE, 1, (LPARAM)dev);
+}
+
+void CMainDlg::OnDeviceRemoved(CyberLink::Device *dev)
+{
+    PostMessage(UM_REFRESH_DEVICE, 0, (LPARAM)dev);
+}

@@ -54,14 +54,6 @@ class Mutex {
   bool unlock();
 };
 
-class AutoLock{
-public:
-    AutoLock(Mutex* pMutex);
-    ~AutoLock();
-private:
-    Mutex*  m_pMutex;
-};
-
 }
 
 #endif
