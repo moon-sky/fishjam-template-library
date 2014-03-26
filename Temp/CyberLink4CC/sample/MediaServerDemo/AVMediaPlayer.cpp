@@ -16,6 +16,7 @@ CAVMediaPlayer::CAVMediaPlayer(IAVMediaPlayerCallback* pCallback)
 
 CAVMediaPlayer::~CAVMediaPlayer(void)
 {
+    stop();
 }
 
 void CAVMediaPlayer::DumpInfo()

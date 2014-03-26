@@ -3,9 +3,12 @@
 
 #include <uhttp/util/AutoLock.h>
 #include <uhttp/util/StringConverter.h>
+#include <cybergarage/upnp/media/server/action/BrowseAction.h>
+#include <ftlFunctional.h>
 
 using namespace CyberLink;
 using namespace uHTTP;
+using namespace FTL;
 
 CUPnPDeviceTree::CUPnPDeviceTree(void)
 {
@@ -14,7 +17,12 @@ CUPnPDeviceTree::CUPnPDeviceTree(void)
 
 CUPnPDeviceTree::~CUPnPDeviceTree(void)
 {
+    //BOOL bRet = FALSE;
+    for_each(m_ItemParams.begin(), m_ItemParams.end(), ObjecteDeleter<ItemParam*>());
+    m_ItemParams.clear();
+    //API_VERIFY(DeleteAllItems());
 }
+
 
 void CUPnPDeviceTree::SetControlPoint(ControlPoint* pControlPoint)
 {
@@ -24,6 +32,8 @@ void CUPnPDeviceTree::SetControlPoint(ControlPoint* pControlPoint)
 void CUPnPDeviceTree::Refresh()
 {
     BOOL bRet = FALSE;
+    for_each(m_ItemParams.begin(), m_ItemParams.end(), ObjecteDeleter<ItemParam*>());
+    m_ItemParams.clear();
     API_VERIFY(DeleteAllItems());
 
     if (m_pControlPoint)
@@ -57,7 +67,9 @@ HTREEITEM CUPnPDeviceTree::_InsertDevice(Device* pDevice, HTREEITEM hPrev)
     tvi.pszText = (LPTSTR)conv.MBCS_TO_TCHAR(DeviceInfo.c_str());
     
     tvi.cchTextMax = MAX_PATH;
-    tvi.lParam = (LPARAM)pDevice;
+    ItemParam* pItemParm = new ItemParam(itDevice, pDevice);
+    m_ItemParams.push_back(pItemParm);
+    tvi.lParam = (LPARAM)pItemParm;
 
     tvins.hParent = NULL;
     tvins.hInsertAfter = hPrev;
@@ -91,7 +103,9 @@ HTREEITEM CUPnPDeviceTree::_InsertService(CyberLink::Service* pService, HTREEITE
     tvi.pszText = (LPTSTR)conv.MBCS_TO_TCHAR(ServiceInfo.c_str());
 
     tvi.cchTextMax = MAX_PATH;
-    tvi.lParam = (LPARAM)pService;
+    ItemParam* pItemParm = new ItemParam(itService, pService);
+    m_ItemParams.push_back(pItemParm);
+    tvi.lParam = (LPARAM)pItemParm;
 
     tvins.hParent = hParent;
     tvins.hInsertAfter = hPrev;
@@ -140,12 +154,65 @@ HTREEITEM CUPnPDeviceTree::_InsertAction(CyberLink::Action* pAction, HTREEITEM h
     tvi.pszText = (LPTSTR)conv.MBCS_TO_TCHAR(ActionInfo.c_str());
 
     tvi.cchTextMax = MAX_PATH;
-    tvi.lParam = (LPARAM)pAction;
-
+    ItemParam* pItemParm = new ItemParam(itAction, pAction);
+    m_ItemParams.push_back(pItemParm);
+    tvi.lParam = (LPARAM)pItemParm;
+    
     tvins.hParent = hParent;
     tvins.hInsertAfter = hPrev;
     tvins.item = tvi;
 
     CTreeItem item = this->InsertItem(&tvins);
     return item.m_hTreeItem;
+}
+
+LRESULT CUPnPDeviceTree::OnItemExpanding(LPNMHDR pnmh)
+{
+    FTLTRACE(TEXT("CUPnPDeviceTree::OnItemExpanding\n"));
+
+    return 0;
+}
+
+LRESULT CUPnPDeviceTree::OnRClick(LPNMHDR pnmh){
+    CPoint ptMouse;
+    GetCursorPos(&ptMouse);
+    ScreenToClient(&ptMouse);
+    UINT uFlags=TVHT_ONITEM;
+    HTREEITEM hItem = HitTest(ptMouse, &uFlags);
+    if ((hItem != NULL) && (TVHT_ONITEM & uFlags))
+    {   
+        ItemParam* pItemPara = (ItemParam*)GetItemData(hItem);
+        switch (pItemPara->type)
+        {
+        case itAction:
+            {
+                Action* pAction = (Action*)pItemPara->pUPnPObject;
+                BrowseAction browseAction(pAction);
+                browseAction.setObjectID("0");
+                browseAction.setBrowseFlag(BrowseAction::BROWSE_METADATA);
+                browseAction.setStartingIndex(0);
+                browseAction.setRequestedCount(0);
+                browseAction.setFilter("*");
+                browseAction.setSortCriteria("");
+                if (browseAction.postControlAction() == false)
+                    return NULL;
+
+                Argument *resultArg = browseAction.getArgument(BrowseAction::RESULT);
+                if (resultArg == NULL)
+                    return NULL;
+
+                const char *resultStr = resultArg->getValue();
+                if (resultStr)
+                {
+                    std::wstring wstrResult;
+                    StringConverter::toUTF16(resultStr, wstrResult);
+                    FTLTRACE(TEXT("%s\n"), wstrResult.c_str());
+                }
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return 0;
 }

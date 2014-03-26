@@ -4,8 +4,8 @@
 
 #include "stdafx.h"
 #include "resource.h"
-
 #include "MainDlg.h"
+#include <ftlShell.h>
 
 CMainDlg::CMainDlg()
 {
@@ -74,6 +74,7 @@ void CMainDlg::OnBtnServerStartClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 	if (!m_pMediaServer)
 	{
 		m_pMediaServer = new CAVMediaServer(this);
+        m_pMediaServer->loadPreferences(CAVMediaServer::DEFAULT_PREFERENCE_FILENAME);
 	}
 	m_pMediaServer->start();
 }
@@ -83,16 +84,26 @@ void CMainDlg::OnBtnServerStopClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 	if (m_pMediaServer)
 	{
 		m_pMediaServer->stop();
+        m_pMediaServer->savePreferences(CAVMediaServer::DEFAULT_PREFERENCE_FILENAME);
 		delete m_pMediaServer;
 		m_pMediaServer = NULL;
 	}
 }
 
-void CMainDlg::OnBtnServerDumpInfo(UINT uNotifyCode, int nID, CWindow wndCtl)
+void CMainDlg::OnBtnServerAddDir(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
 	if (m_pMediaServer)
 	{
-		m_pMediaServer->DumpInfo();
+        FTL::CFDirBrowser dirBrowser;
+        if (dirBrowser.DoModal())
+        {
+            std::string strUtf8Path;
+            FTL::CFConversion convName;
+            FTL::CFConversion convPath;
+            m_pMediaServer->AddDirectory("share", 
+                convPath.TCHAR_TO_MBCS(dirBrowser.GetSelectPath()));
+        }
+		//m_pMediaServer->DumpInfo();
 	}
 }
 
@@ -103,7 +114,7 @@ void CMainDlg::OnBtnPlayerStartClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 		m_pMediaPlayer = new CAVMediaPlayer(this);
 	}
     m_DevicesTree.SetControlPoint(m_pMediaPlayer);
-	m_pMediaPlayer->start("upnp:rootdevice");
+	m_pMediaPlayer->start("urn:schemas-upnp-org:device:MediaRenderer:1");// "upnp:rootdevice");
 }
 
 void CMainDlg::OnBtnPlayerDumpInfo(UINT uNotifyCode, int nID, CWindow wndCtl)

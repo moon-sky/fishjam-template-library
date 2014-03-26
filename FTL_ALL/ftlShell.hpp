@@ -462,9 +462,10 @@ namespace FTL
 					//	MessageBox(strRet, TEXT(""), MB_OK);
 					//}
 
-					USES_CONVERSION;
-					LPSTR pszCmd = T2A(strCmd);
-					API_VERIFY(::WinExec( pszCmd, SW_SHOWNORMAL ));
+					//USES_CONVERSION;
+                    //LPSTR pszCmd = T2A(strCmd);
+                    CFConversion conv;
+					API_VERIFY(::WinExec( conv.TCHAR_TO_MBCS(strCmd), SW_SHOWNORMAL ));
 				}
 			}
 			else
@@ -495,8 +496,8 @@ namespace FTL
 		PIDLIST_RELATIVE pidl = NULL;
 		//ULONG attributes = 0;
 		SFGAOF sfgaofIn = 0, sfgaofOut = 0;
-
-		COM_VERIFY(SHParseDisplayName(pszFilePath, NULL, &pidl, sfgaofIn, &sfgaofOut));
+        CFConversion conv;
+		COM_VERIFY(SHParseDisplayName(conv.TCHAR_TO_UTF16(pszFilePath), NULL, &pidl, sfgaofIn, &sfgaofOut));
 		if (SUCCEEDED(hr))
 		{
 			COM_VERIFY(SHOpenFolderAndSelectItems(pidl, 0, NULL, 0));

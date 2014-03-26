@@ -13,9 +13,41 @@
 //网络相关的一些知识 -- http://www.h3c.com.cn/MiniSite/Technology_Circle/Net_Reptile/The_Five/
 
 /*************************************************************************************************************************
+* 调试时的协议跟踪
+*   1.UDP -- 查找、发现媒体服务器时, 使用 SSDP
+*   2.HTTP -- 控制交互，发送 Action 时，使用 SOAP
+*   3.RTSP(?) -- 可选的媒体传输协议
+*
+* DLNA的媒体播放过程(控制点从 MediaServer 上选择文件，在 MediaRender 上播放)
+*   1.通过SSDP找到 MediaServer 和 MediaRender
+*     示例:a.使用 M-SEARCH 查找; b.接收到设备定时发送的 ssdp:alive 
+*   2.使用 ContentDirectory::Browse 或 Search 从 MediaServer 上浏览媒体信息，返回值为 DIDL-Lite 规范的XML
+*     示例:ObjectID(0);BrowseFlag(BrowseDirectChildren);Filter(*);StartingIndex(0);RequestedCount(0);SortCriteria(空)
+*     从中可以获取到 传输协议(protocolInfo), 连接地址URL 等信息
+*   3.使用 ConnectionManager::GetProtocolInfo 分别获取Server和Render的传输协议(protocolInfo)和支持的数据格式列表，分为 Source和Sink,
+*     返回值为逗号分开的 http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM 或 http-get:*:audio/mp3:* 等
+*   4.匹配媒体文件和播放器支持都支持的传输协议和数据格式 -- 一般来说，两个都是列表
+*   5.通过 ConnectionManger::PrepareForConnection 配置Render，得到 AVTransport::InstanceId, 之后通过该值进行状态管理
+*     示例(执行成功后会返回 InstanceId, 该值可通过 ConnectionManger::GetCurrentConnectionIDs 确认)
+*          RemoteProtocolInfo(http-get:*:video/x-ms-wmv:*);PeerConnectionManager(空字符串);PeerConnectionID(-1);Direction(Input)
+*   6.使用 AVTransport::SetAVTransportURI 向 MediaRender 发送要播放媒体文件的信息
+*     示例:
+*       InstanceID(前面的返回值);CurrentURI(指定 "Wildlife in HD" 对应的URL);
+*   7.通过 AVTransport::play/stop 和 RenderingControl::SetVolume 等来控制媒体播放
+*     示例:播放，暂停，声音和亮度调节
+*       Seek: Unit(REL_TIME); Target(00:00:05) -- 定位到第5秒
+*       GetPositionInfo -- 可以获得总长度、当前位置等
+*   8.播放完毕后需要通过 ConnectionManager::ConnectionComplete 关闭连接
+*************************************************************************************************************************/
+
+/*************************************************************************************************************************
 * 多屏互动
 *   核心技术 -- 把各个屏幕或者把各个设备关联起来的协议，主要是 Airplay, DLNA, Miracast
 *   快播针对视频业务，开发了 SmartPlay 协议，方便的打通了各个设备
+*
+* 注意：
+*   1.媒体服务器为了缩短视频播放时的缓冲时间，通常会把长视频分成小段，需要减少分段视频之间切换造成的停滞时间而平滑过渡
+*   2.注意需要考虑"AV follow me"的问题 -- 视频在电视和手机上能自由切换(来回切换时需要续点播放)
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -67,7 +99,6 @@
 *     M-NCF(Mobile Network Connectivity Function) -- 移动网络连接功能设备，提供各种设备接入移动网络的物理介质，DLNA的希望是全部实现无线化。
 *   交互方式： HND <=> [ HID <=> ] MHD
 *     要进行HND和MHD设备之间的交互，需要HND或MHD满足对方的要求。但大多数情况下无法满足这样的条件，所以需要HID设备提供桥接和内容转换服务。
-*   常见规划：
 *
 * 设备能力(Device Capabilities)和角色(Roles) -- 用工具能查询到？
 *   +PU+(Push Controller) -- 发送本地内容到DMR
@@ -106,6 +137,8 @@
 *     通过 QoS优化共享网络的资源，使得视频流和音频流播放流畅
 *
 *   1.数字版权管理、内容保护 -- 包括链路保护(必须支持DTCP-IP，可选支持WMDRM-ND)和DRM。DLNA必须能保护商业数字内容不被未授权的使用和拷贝。
+*
+*   
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -136,9 +169,13 @@
 *     MS(UPnP AV MediaServer)
 *     MR(UPnP AV MediaRender)
 *   AV服务：
-*     CDS(Content Directory Service) -- 内容目录服务，枚举并列出可访问的内容，如视频、音乐盒图片等
-*     CMS(Connection Manager Service) -- 决定媒体内容可以通过何种方式由 UPnP AV MediaServer 传输至 UPnp AV MediaRenderer
-*     AVT(AV Transport Service) -- 控制媒体内容的传输，如播放、停止、暂停、查找等，智能电视就需要实现这个，其中很重要的是名为 SetAVTransportURI 的 Action
+*     CDS(Content Directory Service) -- 内容目录服务，枚举并列出可访问的内容，如视频、音乐盒图片等，
+*       Browser -- 浏览媒体文件
+*     CMS(Connection Manager Service) -- 连接管理服务(Server和Render都必须支持)
+*     AVT(AV Transport Service) -- 控制媒体内容的传输，如播放、停止、暂停、查找等，智能电视就需要实现这个，
+*       GetPositionInfo -- 可以获取到媒体的长度、当前位置等；TODO: Windows Media Service 的 GetMediaInfo 不能获取到长度
+*       SetAVTransportURI -- 设置要播放的媒体的URL
+*       支持的订阅Event:LastChange(播放状态改变),
 *     RCS(Rendering Control Service) -- 控制以何种方式播放内容，如 音量、静音、亮度等
 *   这个是什么？
 *     SRS(Scheduled Recording Service) -- 
@@ -312,8 +349,8 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
-* CyberLink ()
-*   默认情况下同时支持 IPV4/IPV6, 可通过 uHTTP::HostInterface::USE_ONLY_IPV4_ADDR 等控制
+* CyberLink () -- 优点：简单；缺点：效率低，内部使用string(非UTF-8), 功能不完善，有较多bug
+*   默认情况下同时支持 IPV4/IPV6, 可通过 UPnP::SetEnable() 函数控制
 *   C++ 版本
 *     1.源码: CyberLinkForCC + HttpEngineForCC + expat
 *     2.编译:

@@ -61,7 +61,7 @@ void CTimeUtil::Stop(){
 bool CTimeUtil::Wait(long mtime){
 #if defined(WIN32)
     //Sleep(mtime);  
-   DWORD dwWaitResult = WaitForSingleObject((HANDLE)m_hEventStop, mtime * 1000);
+   DWORD dwWaitResult = WaitForSingleObject((HANDLE)m_hEventStop, mtime);
    return (WAIT_TIMEOUT == dwWaitResult);
 #elif defined(BTRON)
   slp_tsk(mtime);

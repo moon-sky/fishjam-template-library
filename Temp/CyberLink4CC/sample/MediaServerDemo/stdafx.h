@@ -36,4 +36,5 @@ extern CAppModule _Module;
 #endif
 
 #include <ftlBase.h>
+#include <ftlWindow.h>
 #include <ftlConversion.h>

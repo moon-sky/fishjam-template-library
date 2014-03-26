@@ -148,7 +148,7 @@ namespace FTL
 	public:
 		virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
 		{
-			FTLASSERT(WM_NOTIFY == uMsg);
+			FTLASSERT(WM_NOTIFY == uMsg || OCM_NOTIFY == uMsg);
 			BOOL bRet = FALSE;
 
 			int nIdCtrl = (int)wParam;
@@ -167,6 +167,9 @@ namespace FTL
 			return m_strFormater;
 		}
 	};
+    class CFOCMNotifyMsgInfo : public CFNotifyMsgInfo{
+
+    };
 
 #ifdef _RICHEDIT_
 	//RichEdit 有不少使用 WM_USER 的消息
@@ -1239,7 +1242,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(OCM_HSCROLL, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(OCM_VSCROLL, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(OCM_PARENTNOTIFY, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(OCM_NOTIFY, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(OCM_NOTIFY, CFOCMNotifyMsgInfo);
 				//GET_MESSAGE_INFO_ENTRY(XXXXXXXXXXXXXXXXX, CFDefaultMsgInfo);
             default:
 				if (m_Info >= WM_USER && m_Info <= 0x7FFF)

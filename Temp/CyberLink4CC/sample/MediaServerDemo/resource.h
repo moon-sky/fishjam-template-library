@@ -11,7 +11,7 @@
 #define IDC_BTN_PLAYER_STOP             1003
 #define IDC_BTN_PLAYER_STOP2            1004
 #define IDC_BTN_PLAYER_DUMP_INFO        1004
-#define IDC_BTN_SERVER_DUMP_INFO        1005
+#define IDC_BTN_SERVER_ADD_DIR          1005
 #define IDC_TREE_DEVICES                1006
 
 // Next default values for new objects

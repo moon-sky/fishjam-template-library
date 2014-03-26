@@ -33,7 +33,7 @@ public:
 
 		MSG_WM_DESTROY(OnDestroy)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_SERVER_START, OnBtnServerStartClick)
-		COMMAND_ID_HANDLER_EX(IDC_BTN_SERVER_DUMP_INFO, OnBtnServerDumpInfo)
+		COMMAND_ID_HANDLER_EX(IDC_BTN_SERVER_ADD_DIR, OnBtnServerAddDir)
 		COMMAND_ID_HANDLER_EX(IDC_BTN_SERVER_STOP, OnBtnServerStopClick)
 
 		COMMAND_ID_HANDLER_EX(IDC_BTN_PLAYER_START, OnBtnPlayerStartClick)
@@ -41,6 +41,7 @@ public:
 		COMMAND_ID_HANDLER_EX(IDC_BTN_PLAYER_START, OnBtnPlayerStopClick)
 
         MESSAGE_HANDLER_EX(UM_REFRESH_DEVICE, OnRefreshDevice)
+        REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
 // Handler prototypes (uncomment arguments if needed):
@@ -57,7 +58,7 @@ public:
 
 	void OnDestroy();
 	void OnBtnServerStartClick(UINT uNotifyCode, int nID, CWindow wndCtl);
-	void OnBtnServerDumpInfo(UINT uNotifyCode, int nID, CWindow wndCtl);
+	void OnBtnServerAddDir(UINT uNotifyCode, int nID, CWindow wndCtl);
 	void OnBtnServerStopClick(UINT uNotifyCode, int nID, CWindow wndCtl);
 
 	void OnBtnPlayerStartClick(UINT uNotifyCode, int nID, CWindow wndCtl);

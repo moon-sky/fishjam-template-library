@@ -171,16 +171,16 @@ void UpdateItemList(int dirNum)
 		ItemNode *itemNode = (ItemNode *)conNode;
 
         FTL::CFConversion conv;
-		item.pszText = conv.MBCS_TO_TCHAR(itemNode->getTitle());
+		item.pszText = (LPTSTR)conv.MBCS_TO_TCHAR(itemNode->getTitle());
 		item.iItem = n;
 		item.iSubItem = 0;
 		ListView_InsertItem(ghItemListWindow , &item);
 
-		item.pszText = conv.MBCS_TO_TCHAR(itemNode->getCreator());
+		item.pszText = (LPTSTR)conv.MBCS_TO_TCHAR(itemNode->getCreator());
 		item.iSubItem = 1;
 		ListView_SetItem(ghItemListWindow , &item);
 
-		item.pszText = conv.MBCS_TO_TCHAR(itemNode->getDate());
+		item.pszText = (LPTSTR)conv.MBCS_TO_TCHAR(itemNode->getDate());
 		item.iSubItem = 2;
 		ListView_SetItem(ghItemListWindow , &item);
 

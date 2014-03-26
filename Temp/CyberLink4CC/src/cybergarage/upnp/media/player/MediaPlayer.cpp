@@ -21,6 +21,7 @@
 #include <cybergarage/xml/XML.h>
 #include <cybergarage/xml/Parser.h>
 #include <uhttp/util/Debug.h>
+#include <uhttp/util/StringConverter.h>
 
 #include <string>
 #include <fstream>
@@ -112,12 +113,15 @@ const char *sortCaiteria)
 
 	Parser xmlParser;
 
-	int resultUniStrLen;
-	UnicodeStr *resultUniStr = XML::Local2Unicode(resultStr, resultUniStrLen);
-	if (resultUniStr != NULL) {
-		node = xmlParser.parse(resultUniStr, resultUniStrLen);
-		delete []resultUniStr;
-	}
+	//int resultUniStrLen;
+    //wstring wStrResult;
+    //StringConverter::LocalToUTF16(resultStr, wStrResult, 0);
+
+	//UnicodeStr *resultUniStr = XML::Local2Unicode(resultStr, resultUniStrLen);
+	//if (resultUniStr != NULL) {
+		node = xmlParser.parse(resultStr);
+		//delete []resultUniStr;
+	//}
 
 	if (node == NULL)
 		node = xmlParser.parse(resultStr);
