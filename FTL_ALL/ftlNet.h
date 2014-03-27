@@ -200,6 +200,7 @@
 * DHT(Distributed Hash Table 分散式杂凑表) -- 可以使P2P网络完全不使用服务器，典型的有eMule中使用的 Kad，
 * FXPP() -- 
 * GENA(General Event Notification Architecture) -- 通用事件通知架构，用在UPnP中的事件订阅(使用HTTPMU)，端口号7900
+* HLS(Http Live Streaming) -- Apple公司定义的用于实时流传输的协议,基于HTTP协议实现
 * HTTPMU -- 在UDP上实现HTTP协议的多址传送
 * HTTPU --  在UDP上实现普通的HTTP传送协议
 * ICMP(Internet Control Message Protocol)--互连控制消息协议，主要用来供主机或路由器报告IP数据报载传输中可能出现的不正常情况。

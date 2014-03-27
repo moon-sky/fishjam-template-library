@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts2.interceptor.ServletRequestAware;
 
 import com.fishjam.utility.net.servlet.ServletInfoDumper;
+import com.opensymphony.xwork2.ActionContext;
 import com.storeserver.action.base.BaseAction;
 import com.storeserver.domain.Store;
 import com.storeserver.domain.StoreMapInfo;
@@ -31,12 +32,12 @@ public class MapInfoAction extends BaseAction implements ServletRequestAware{
 		if (strStoreDbName != null) {
 			//storeId = Integer.parseInt(strStoreId, 10);
 			storeMaps = mManager.getStoreMaps(this, strStoreDbName);
+			ActionContext.getContext().getSession().put("stroreDbName", strStoreDbName);
+			return SUCCESS;
 		}
-		
+		return INPUT;
 		//String strRequest = ServletInfoDumper.RequestToString(mRequest, "\n");
 		//System.out.println(strRequest);
-		
-		return SUCCESS;
 	}
 
 	@Override

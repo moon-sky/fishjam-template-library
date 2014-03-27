@@ -9,7 +9,9 @@ import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.interceptor.ServletRequestAware;
 import org.aspectj.util.FileUtil;
 
+import com.fishjam.utility.dumper.BaseInfoDumper;
 import com.fishjam.utility.net.servlet.ServletInfoDumper;
+import com.opensymphony.xwork2.ActionContext;
 import com.storeserver.action.base.BaseAction;
 import com.storeserver.service.StoreInfoManager;
 
@@ -50,6 +52,7 @@ public class AddStoreMapAction extends BaseAction implements ServletRequestAware
 	public String execute() {
 		//mRequest.getParameter("")
 		System.out.println("AddStoreMapAction:\n" + ServletInfoDumper.RequestToString(mRequest, "\n"));
+		//System.out.println("AddStoreMapAction param:\n" + BaseInfoDumper.MapToString(ActionContext.getContext().getContextMap()));
 		
 		StoreInfoManager.FloorInfo floorInfo = new StoreInfoManager.FloorInfo();
 		try {
@@ -82,8 +85,8 @@ public class AddStoreMapAction extends BaseAction implements ServletRequestAware
 	            //ActionContext.getContext().put("message", "文件上传成功");
 			//}
 			
-			floorInfo.floor = Integer.parseInt(mRequest.getParameter("floor"));
-			floorInfo.storeId = Integer.parseInt(mRequest.getParameter("storeId"));
+			floorInfo.floor = Integer.parseInt(mRequest.getParameter("StoreMapInfo.floor"));
+			floorInfo.storeId = Integer.parseInt(mRequest.getParameter("StoreMapInfo.storeId"));
 
 			/*
 			Part partMap = mRequest.getPart("map");

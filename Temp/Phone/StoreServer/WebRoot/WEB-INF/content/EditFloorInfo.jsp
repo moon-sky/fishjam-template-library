@@ -29,10 +29,13 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	<s:form action="/addStoreMap" method="post" enctype="multipart/form-data">
 		<table>
 			<tr>
-				<td>id：<s:textfield id="storeId" name="storeId"></s:textfield></td>
+				<td>id：<s:textfield id="id" name="StoreMapInfo.id"></s:textfield></td>
 			</tr>
 			<tr>
-				<td>floor：<s:textfield id="floor" name="floor"></s:textfield></td>
+				<td>StoreId：<s:textfield id="storeId" name="StoreMapInfo.storeId"></s:textfield></td>
+			</tr>
+			<tr>
+				<td>floor：<s:textfield id="floor" name="StoreMapInfo.floor"></s:textfield></td>
 			</tr>
 			<tr>
 				<td>Map 文件<s:file id="map" name="mapFile" ></s:file></td>

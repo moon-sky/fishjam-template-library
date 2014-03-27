@@ -53,4 +53,16 @@ public class StoreDao extends BaseDao {
 		return mStores;
 	}
 
+	public Store getStoreByStoreId(int storeId) {
+		getStoreList();
+		if (mStores != null) {
+			for (Store store : mStores) {
+				if(store.getId() == storeId){
+					return store;
+				}
+			}
+		}
+		return null;
+	}
+
 }

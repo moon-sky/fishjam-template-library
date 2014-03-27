@@ -43,8 +43,12 @@
             <!-- 默认拦截器必须放在fileUpload之后，否则无效 -->
             <interceptor-ref name="defaultStack" />
 		</action>
-		<action name="editFloor" >
-			<result name="success">/WEB-INF/content/EditFloorInfo.jsp</result>
+		<action name="editFloor" class="com.storeserver.action.EditFloorAction">
+			<result name="success">
+				/WEB-INF/content/EditFloorInfo.jsp
+			</result>
 		</action>
-	</package>
+		<action name="position"  class="com.storeserver.action.DetectPosition">
+			<result name="success">/WEB-INF/content/DetectPosition.jsp</result>
+		</action></package>
 </struts>    

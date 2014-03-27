@@ -13,6 +13,7 @@ import javax.servlet.annotation.WebInitParam;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+/*
 @WebFilter(filterName="authority", urlPatterns={"/*"},
 	initParams = {
 		@WebInitParam(name="encoding", value="UTF-8"),
@@ -20,6 +21,8 @@ import javax.servlet.http.HttpSession;
 		@WebInitParam(name="proLogin", value="/proLogin.jsp")
 	}
 )
+*/
+
 public class AuthorityFilter implements Filter {
 
 	private FilterConfig mConfig;

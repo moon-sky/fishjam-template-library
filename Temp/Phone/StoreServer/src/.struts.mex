@@ -1,31 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Struts2Diagram version="2.0">
-  <package name="StoreServer" location="50,50" size="171,362">
-    <action name="storeList" location="15,23" size="150,41">
+  <package name="StoreServer" location="50,29" size="187,493">
+    <action name="storeList" location="30,25" size="150,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="StoreList.jsp" />
       </result>
     </action>
-    <action name="mapInfo" location="15,115" size="150,41">
+    <action name="mapInfo" location="29,155" size="150,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="StoreMapInfo.jsp" />
       </result>
     </action>
-    <action name="addStore" location="15,215" size="150,41">
+    <action name="addStore" location="29,229" size="150,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="AddStore.jsp" />
       </result>
     </action>
-    <action name="addStoreMap" location="15,315" size="150,41">
+    <action name="addStoreMap" location="29,329" size="150,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="AddStoreMap.jsp" />
       </result>
     </action>
+    <action name="editFloor" location="24,424" size="150,41">
+      <result name="success">
+        <resourceEdge source="success" routing="0" target="EditFloorInfo.jsp" />
+      </result>
+    </action>
+    <action name="position" location="25,80" size="150,40">
+      <result name="success">
+        <resourceEdge source="success" routing="0" target="DetectPosition.jsp" />
+      </result>
+    </action>
   </package>
-  <webResource name="StoreList.jsp" path="/WEB-INF/content/StoreList.jsp" location="350,50" size="150,55" />
+  <webResource name="StoreList.jsp" path="/WEB-INF/content/StoreList.jsp" location="347,45" size="150,55" />
   <webResource name="StoreMapInfo.jsp" path="/WEB-INF/content/StoreMapInfo.jsp" location="350,200" size="150,55" />
-  <webResource name="AddStore.jsp" path="/WEB-INF/content/AddStore.jsp" location="350,350" size="150,55" />
-  <webResource name="AddStoreMap.jsp" path="/WEB-INF/content/AddStoreMap.jsp" location="50,500" size="150,55" />
-  <webResource name="EditFloorInfo.jsp" path="/WEB-INF/content/EditFloorInfo.jsp" location="244,440" size="150,55" />
+  <webResource name="AddStore.jsp" path="/WEB-INF/content/AddStore.jsp" location="353,290" size="150,55" />
+  <webResource name="AddStoreMap.jsp" path="/WEB-INF/content/AddStoreMap.jsp" location="356,376" size="150,55" />
+  <webResource name="EditFloorInfo.jsp" path="/WEB-INF/content/EditFloorInfo.jsp" location="348,463" size="150,55" />
+  <webResource name="DetectPosition.jsp" path="/WEB-INF/content/DetectPosition.jsp" location="350,120" size="150,55" />
 </Struts2Diagram>
 

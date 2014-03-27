@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,25 @@ import com.fishjam.utility.dumper.BaseInfoDumper;
 
 public class ServletInfoDumper {
 
+	public static String ServletContextToString(ServletContext servletContext, String strDivide){
+		if (servletContext != null) {
+			StringBuilder sBuilder = new StringBuilder();
+			
+			sBuilder.append("contextPath = " +  servletContext.getContextPath() + strDivide);    // /StoreServer
+			sBuilder.append("servletContextName=" + servletContext.getServletContextName() + strDivide);  //StoreServer
+			sBuilder.append("serverInfo" + servletContext.getServerInfo() + strDivide);
+			sBuilder.append("realPath(/)=" +servletContext.getRealPath("/") + strDivide );   // C:\xxx\StoreServer\WebRoot\
+			
+			//sBuilder.append("virtualServerName=" + servletContext.getVirtualServerName()+ strDivide);
+//			sBuilder.append("xxxxxx=" + servletContext.getXXXX + strDivide);
+//			sBuilder.append("xxxxxx=" + servletContext.getXXXX + strDivide);
+//			sBuilder.append("xxxxxx=" + servletContext.getXXXX + strDivide);
+//			sBuilder.append("xxxxxx=" + servletContext.getXXXX + strDivide);
+			return sBuilder.toString();
+		}
+		return "";
+	}
+	
 	//当访问如下地址时： http://localhost:8888/StoreServer/Pos/12345678?name=abc&pass=123
 	public static String RequestToString(HttpServletRequest request, String strDivide) {
 		if (request != null) {
