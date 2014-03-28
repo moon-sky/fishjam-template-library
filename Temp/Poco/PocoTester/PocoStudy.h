@@ -56,6 +56,16 @@
 *
 * 跨平台编译( $(POCO_BASE)/build )
 *   Linux/Unix -- 在 Makefile 中需要 include $(POCO_BASE)/build/rules/global ?
+*   Android/MacOS -- 客户端使用时必须定义 POCO_ANDROID 宏，编译配置文件为 <POCO>/build/config/Android
+*     参考文档: http://www.appinf.com/docs/poco/99300-AndroidPlatformNotes.html
+*                <POCO>/doc/99300-AndroidPlatformNotes.page
+*     限制：Android下不支持以下的类: NamedEvent/NamedMutex/SharedMemory/RWLock 等
+*     1.生成自定义的 Standalone Toolchain
+*       $NDK/build/tools/make-standalone-toolchain.sh --platform=android-8 --install-dir=$HOME/my-android-toolchain
+*     2.将自定义toolchain的bin目录加入PATH环境变量: export PATH=$PATH:$HOME/my-android-toolchain/bin
+*     3.编译: ./configure --config=Android --no-samples --no-tests 
+*             ./make -s -j4  -- 可以通过 ANDROID_ABI=armeabi-v7a 改变缺省的 platform ABI
+*     TODO:也可以通过定义 Android.mk 后使用NDK来编译
 ****************************************************************************************************/
 
 /***************************************************************************************************

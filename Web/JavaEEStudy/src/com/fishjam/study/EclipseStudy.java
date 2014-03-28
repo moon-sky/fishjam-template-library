@@ -70,9 +70,9 @@ package com.fishjam.study;
 *   3.在线安装
 *   
 *   
-* 常用插件
+* 常用插件(网站找到对应的在线安装地址，然后通过 Help->Install New Software 安装)
 *   ADT -- Android Development Toolkit
-*   CDT -- C Development Toolkit
+*   CDT -- C Development Toolkit（http://www.eclipse.org/cdt/downloads.php）
 *   JDT -- Java Development Toolkit
 *   JET -- Java Emitter Templates ,一个开源的模板引擎，可以在EMF中自动生成代码。
 *   Subversive -- Subversion (SVN) Team Provider ( http://www.eclipse.org/subversive/ )

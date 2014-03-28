@@ -82,6 +82,9 @@ namespace FTL
 			UINT nSBCode = LOWORD(wParam);
 			UINT nPos = HIWORD(wParam);
 			//nSBCode 为 SB_THUMBPOSITION 或 SB_THUMBTRACK 时, nPos 才有意义，其他时候(如 SB_ENDSCROLL)其值无意义 
+            //注意：因为nPos是HIWORD出来的，其最大值为 32768,在范围较大时会出错
+            //解决方案: SCROLLINFO si = { sizeof(SCROLLINFO), SIF_POS }; CScrollBar::GetScrollInfo(&si); -- 获取真实值
+            //           si.fMask = SIF_POS;si.nPos = si.nPos; SetScrollInfo(SB_HORZ 或 SB_VERT, &si, TRUE); -- 保证其他函数(如CScrollImpl::DoScroll)获取到正确的值
 			COM_VERIFY(m_strFormater.Format(TEXT("%s{nSBCode=%s, nPos=%d, lParam(HWND)=0x%x }"), 
 				pszMsgName, CFWinUtil::GetScrollBarCodeString(nSBCode), nPos, lParam));
 			return m_strFormater;
@@ -2800,7 +2803,13 @@ namespace FTL
 
     LPCTSTR CFWinUtil::GetSysCommandString(UINT nCode)
     {
-        switch(nCode)
+#ifndef SC_CLICK_CAPTION            //鼠标左键点击标题栏
+#  define SC_CLICK_CAPTION 0xF012
+#endif 
+#ifndef SC_CLICK_CAPTION_ICON       //鼠标左键点击标题栏上的图标
+#  define SC_CLICK_CAPTION_ICON  0XF093
+#endif 
+        switch(nCode)// & 0xFFF0)
         {
             HANDLE_CASE_RETURN_STRING(SC_SIZE);
             HANDLE_CASE_RETURN_STRING(SC_MOVE);
@@ -2825,6 +2834,9 @@ namespace FTL
             HANDLE_CASE_RETURN_STRING(SC_CONTEXTHELP);
             HANDLE_CASE_RETURN_STRING(SC_SEPARATOR);
 #endif /* WINVER >= 0x0400 */
+
+            HANDLE_CASE_RETURN_STRING(SC_CLICK_CAPTION);
+            HANDLE_CASE_RETURN_STRING(SC_CLICK_CAPTION_ICON);
         default:
             FTLTRACEEX(FTL::tlWarning, TEXT("Unknown SysCommand, 0x%x\n"), nCode);
 			FTLASSERT(FALSE);
