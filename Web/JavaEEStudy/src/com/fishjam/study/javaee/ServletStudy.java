@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet3.0的Web模块化部署(jar 包) 
  *   META-INF\
  *     web-fragment.xml -- web模块部署描述符，语法类似 web.xml， 但可多指定 《name》和 《ordering》元素
- *   Web模块说用到的类、资源文件等
+ *   Web模块所用到的类、资源文件等
  *   使用时，将jar包复制到Web应用的 WEB-INF/lib 目录下，重启Web应用即可生效。
  *   
  *  MVC规范出现后，Servlet 仅仅作为控制器用，不再需要生成页面标签，也不再作为视图层角色使用。

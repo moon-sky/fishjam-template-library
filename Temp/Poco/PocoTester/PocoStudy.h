@@ -26,6 +26,7 @@
 *
 * 编译
 *   TODO: 编译时的日志可以通过重定向保存到文本中吗？
+*   0.Poco库分成很多类型 -- (Debug/Release) * (Share/Static) * (MultiThread/MultiThreadDLL), 其中：静态库需要定义 POCO_STATIC 宏
 *   1.更改 buildwin.cmd 批处理，设置其中的 OPENSSL_DIR,OPENSSL_LIB
 *   1.5. -- TODO: MySQL 怎么弄，需要加到VS的配置路径中？或更改 buildwin.cmd ?
 *     set MYSQL_DIR=D:\MaNGOS\MaNGOSfour\dep
