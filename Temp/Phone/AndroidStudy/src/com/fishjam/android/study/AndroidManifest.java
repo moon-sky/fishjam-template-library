@@ -8,7 +8,7 @@ import android.test.AndroidTestCase;
  *   
  *   versionCode="1" -- 
  *   versionName="1.0" -- 
- * <application>
+ * <application android:debuggable="true">
  *   <activity android:name=".MainActivity" android:label="@string/app_name> -- ÉùÃ÷Activity
  *   <provider android:name="EmployeeProvider" android:authorities="com.fishjam.android.study.Employees" /> -- ÉùÃ÷ ContentProvider
  *   <receiver android:name="MyReceiver"> -- ÉùÃ÷ BroadcastReceiver

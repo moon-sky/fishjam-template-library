@@ -60,12 +60,20 @@
 *     参考文档: http://www.appinf.com/docs/poco/99300-AndroidPlatformNotes.html
 *                <POCO>/doc/99300-AndroidPlatformNotes.page
 *     限制：Android下不支持以下的类: NamedEvent/NamedMutex/SharedMemory/RWLock 等
+*     0.在执行脚本时可能会报 "$'\r': command not found" 的错误 ，需要使用 dos2unix 命令先将脚本转换成unix格式
+*       需要更改的文件为 /<poco> 目录下的 build/* 和 rules/* 等
 *     1.生成自定义的 Standalone Toolchain
 *       $NDK/build/tools/make-standalone-toolchain.sh --platform=android-8 --install-dir=$HOME/my-android-toolchain
-*     2.将自定义toolchain的bin目录加入PATH环境变量: export PATH=$PATH:$HOME/my-android-toolchain/bin
+*       注意：可能需要增加 "--system=windows-x86_64" ，代表什么意思？
+*     2.将自定义toolchain的bin目录加入PATH环境变量(.bash_profile): export PATH=$PATH:$HOME/my-android-toolchain/bin
 *     3.编译: ./configure --config=Android --no-samples --no-tests 
-*             ./make -s -j4  -- 可以通过 ANDROID_ABI=armeabi-v7a 改变缺省的 platform ABI
-*     TODO:也可以通过定义 Android.mk 后使用NDK来编译
+*              make -- 可以通过 ANDROID_ABI=armeabi-v7a 改变缺省的 platform ABI
+*       TODO:也可以通过定义 Android.mk 后使用NDK来编译，如何?
+*     4.Android 中使用Poco
+*       Android.mk 中:
+*         LOCAL_CPP_FEATURES := rtti exceptions
+*       Application.mk 中:
+*         APP_STL := gnustl_shared
 ****************************************************************************************************/
 
 /***************************************************************************************************
