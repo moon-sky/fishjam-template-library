@@ -81,7 +81,7 @@
 *         出现时间比较早，支持C/C++/Java/ObjectC 等多平台(每种平台有单独的实现)，多语言支持不好，性能有问题
 *         使用BSD协议，支持商业开发。
 *       Intel 的 openTools -- http://opentools.homeip.net/
-*       Platinum -- 跨平台的C++实现,支持 Windows,Mac,iPhone,Android 等，XBMC即使用该库。双lincense
+*       Platinum -- 跨平台的C++实现,支持 Windows,Linux,Mac,iPhone,Android 等，XBMC即使用该库。双lincense
 *         http://blog.csdn.net/lancees/article/details/9865411
 *       Plutinosoft -- 
 *     Android平台上: NDK下面编译出 jni库 => 应用层开发
@@ -177,17 +177,18 @@
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
-* Platinum UPnP SDK -- 跨平台(Neptune实现)的C++库，
+* Platinum UPnP SDK -- http://www.plutinosoft.com/platinum
+*   跨平台(通过 Neptune 库实现)的C++库，
 *   缺陷:
 *     1.功能不全 -- 比如缺少 ConnectionManger::PrepareForConnection
 *   编译：Neptune 和 Platinum 都编译成静态库
-*     1.Windows:Platinum\Build\Targets\x86-microsoft-win32-vs2008\
+*     1.Windows:Platinum\Build\Targets\x86-microsoft-win32-vs2008\Platinum.sln
 *     2.Android: NDK + Cygwin
 *       2.1 设置 ANDROID_NDK_ROOT 环境变量;
 *       2.2 更改 Neptune\Source\Core\NptConfig.h 文件，在 __CYGWIN__ 的配置中加入 #define NPT_CONFIG_HAVE_GETADDRINFO
 *           否则会报告无法链接 NPT_NetworkNameResolver::Resolve 的错误
-*       2.3 进入 Neptune 和 Platinum 后执行 scons target=x86-unknown-cygwin build_config=Debug
-*           可选的target看在 Neptune\Build\Boot.scons 中查看
+*       2.3 进入 Platinum 目录后执行 scons target=x86-unknown-cygwin build_config=Debug
+*           可选的target看在 Neptune\Build\Boot.scons 中查看(也可通过 scons --help 查看)
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
