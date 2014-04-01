@@ -44,6 +44,11 @@ namespace FTL
     *   adplus -Crash -p 进程ID -quiet -fullonfirst -o C:\dumps
     *      -fullonfirst：在first chance时捕捉完整的dump信息，也就是进程的所有完整信息
     *
+    * 确认二进制文件的编译选项
+    *   1.判断Exe是Unicode/ASCII -- dumpbin /headers exe文件后查看"entry point"是不是 "_wWinMainCRTStartup"
+    *     TODO: Unicode 的 DLL 会是"__DllMainCRTStartup@12" ?
+    *     另外：dumpbin /exports 后利用 undname 查看函数签名
+    * 
     * gflags.exe -- WinDbg的全局配置工具
     *  定位内存泄露( http://support.microsoft.com/kb/268343 ):
     *    1.选中"Enable pool tagging" 和"Enable heap tagging"。

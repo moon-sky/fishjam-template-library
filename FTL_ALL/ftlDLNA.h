@@ -42,7 +42,7 @@
 *     从中可以获取到 传输协议(protocolInfo), 连接地址URL 等信息
 *   3.使用 ConnectionManager::GetProtocolInfo 分别获取Server和Render的传输协议(protocolInfo)和支持的数据格式列表，分为 Source和Sink,
 *     返回值为逗号分开的 http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM 或 http-get:*:audio/mp3:* 等
-*   4.匹配媒体文件和播放器支持都支持的传输协议和数据格式 -- 一般来说，两个都是列表
+*   4.匹配媒体文件和播放器支持都支持的传输协议和数据格式 -- 一般来说，两个都是列表，需要查找最合适的
 *   5.通过 ConnectionManger::PrepareForConnection 配置Render，得到 AVTransport::InstanceId, 之后通过该值进行状态管理
 *     示例(执行成功后会返回 InstanceId, 该值可通过 ConnectionManger::GetCurrentConnectionIDs 确认)
 *          RemoteProtocolInfo(http-get:*:video/x-ms-wmv:*);PeerConnectionManager(空字符串);PeerConnectionID(-1);Direction(Input)
@@ -78,10 +78,11 @@
 *     有很多选择，可支持 C,C++,Java等，其中比较好的：
 *       Cling -- http://4thline.org/projects/cling, Android上比较好的开发工具，支持客户端和服务器端。许可协议为LGPL或CDDL
 *       CyberGarage/CyberLink(海思也用这个) -- http://www.cybergarage.org/net/upnp,
-*         出现时间比较早，支持C/C++/Java/ObjectC 等多平台，但很久没有更新，多语言支持不好，性能有问题
+*         出现时间比较早，支持C/C++/Java/ObjectC 等多平台(每种平台有单独的实现)，多语言支持不好，性能有问题
 *         使用BSD协议，支持商业开发。
 *       Intel 的 openTools -- http://opentools.homeip.net/
-*       Platinum -- http://blog.csdn.net/lancees/article/details/9865411
+*       Platinum -- 跨平台的C++实现,支持 Windows,Mac,iPhone,Android 等，XBMC即使用该库。双lincense
+*         http://blog.csdn.net/lancees/article/details/9865411
 *       Plutinosoft -- 
 *     Android平台上: NDK下面编译出 jni库 => 应用层开发
 *       注意：Android平台上的 MediaPlayer 对视频的处理能力相当的弱，若想对各种视频有良好的支持，需要移植视频播放器，
@@ -92,6 +93,7 @@
 /*************************************************************************************************************************
 * Airplay -- 苹果所有的操作系统都支持该协议。苹果原来是DLNA的成员，后退出自立门户，协议和DLNA比较类似。
 *   新增了：镜像功能(手机上的内容直接显示在Apple TV上，比如游戏)，双屏游戏体验
+*   官方SDK -- https://developer.apple.com/library/ios/documentation/AudioVideo/Conceptual/AirPlayGuide/Introduction/Introduction.html
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -172,6 +174,38 @@
 * Miracast(WiFi Display) -- 由Wi-Fi联盟于2012年所制定，以Wi-Fi直连为基础的无线显示标准，支持此标准的设备可通过无线方式分享视频画面。
 *   缺点：技术较新，支持设备较少，技术不成熟。
 * 
+*************************************************************************************************************************/
+
+/*************************************************************************************************************************
+* Platinum UPnP SDK -- 跨平台(Neptune实现)的C++库，
+*   缺陷:
+*     1.功能不全 -- 比如缺少 ConnectionManger::PrepareForConnection
+*   编译：Neptune 和 Platinum 都编译成静态库
+*     1.Windows:Platinum\Build\Targets\x86-microsoft-win32-vs2008\
+*     2.Android: NDK + Cygwin
+*       2.1 设置 ANDROID_NDK_ROOT 环境变量;
+*       2.2 更改 Neptune\Source\Core\NptConfig.h 文件，在 __CYGWIN__ 的配置中加入 #define NPT_CONFIG_HAVE_GETADDRINFO
+*           否则会报告无法链接 NPT_NetworkNameResolver::Resolve 的错误
+*       2.3 进入 Neptune 和 Platinum 后执行 scons target=x86-unknown-cygwin build_config=Debug
+*           可选的target看在 Neptune\Build\Boot.scons 中查看
+*************************************************************************************************************************/
+
+/*************************************************************************************************************************
+* XBMC(http://xbmc.org/) -- XBOX Media Center (源码 -- git://github.com/xbmc/xbmc.git )
+*   开源媒体中心软件(GPL), 最初为XBox设计，现在已可在Linux、OSX、Windows、Android4.0系统运行, 支持 DLNA,Airplay 等协议
+*   相关工具的下载(上层目录有每日编译等): http://www2.frugalware.org/mirror/xbmc.org/build-deps/win32/
+*   Windows编译( http://wiki.xbmc.org/index.php?title=HOW-TO:Compile_XBMC_for_Windows )：
+*     1.环境: VS2010 + DirextX2009_08以后 + Git + Nullsoft + JRE
+*     2.project\BuildDependencies\DownloadBuildDeps.bat -- 自动联网下载编译所需的依赖项
+*     3.project\BuildDependencies\DownloadMingwBuildEnv.bat -- 下载编译ffmpeg所需的依赖项
+*     4.project\Win32BuildSetup\buildmingwlibs.bat -- 编译 ffmpeg 库
+*     5.二选一的编译(一般调试开发时选第二个)
+*       5.1.project\Win32BuildSetup\BuildSetup.bat -- 直接编译一个打包文件
+*       5.2.project\Win32BuildSetup\extract_git_rev.bat -- 编译后会在系统信息窗体中显示git版本
+*     6.project\VS2010Express\XBMC for Windows.sln -- VS2010进行编译，选择DirectX版本(OpenGL版本已经被弃用)
+*   目录结构分析:
+*     addons -- 附加元件，如XBMC的皮肤,屏幕保护,可视化效果等
+*     project -- 项目工程文件，主要有
 *************************************************************************************************************************/
 
 
