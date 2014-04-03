@@ -82,7 +82,7 @@
 *         使用BSD协议，支持商业开发。
 *       Intel 的 openTools -- http://opentools.homeip.net/
 *       Platinum -- 跨平台的C++实现,支持 Windows,Linux,Mac,iPhone,Android 等，XBMC即使用该库。双lincense
-*         http://blog.csdn.net/lancees/article/details/9865411
+*         http://blog.csdn.net/xdonx/article/details/11979321
 *       Plutinosoft -- 
 *     Android平台上: NDK下面编译出 jni库 => 应用层开发
 *       注意：Android平台上的 MediaPlayer 对视频的处理能力相当的弱，若想对各种视频有良好的支持，需要移植视频播放器，
@@ -192,6 +192,15 @@
 *       2.3 进入 Platinum 目录后执行 scons target=x86-unknown-cygwin build_config=Debug, 真正的Android时应该 arm-android-linux
 *           可选的target看在 Neptune\Build\Boot.scons 中查看(也可通过 scons --help 查看) 
 *       2.4 进入 Platinum/Source/Platform/Android/module/platinum， 执行 ndk-build NDK_DEBUG=1
+*   调试:
+*     1.设置日志的过滤等级: NPT_LogManager::GetDefault().Configure, 可选的level有FATAL、SEVERE、WARNING 等
+*   代码分析:
+*     1.大量使用 Delegate 类来封装实现，然后通过多继承的方式实现多个功能的融合，如  PLT_FileMediaServer
+*   主要的类:
+*     PLT_UPnP -- 管理PLT_DeviceHost和PLT_CtrlPoint的列表，并通过PLT_TaskManager管理任务
+*     PLT_MediaRenderer -- 实现了DMR
+*     PLT_FileMediaServer -- 实现了DMS
+*     PLT_MicroMediaController -- 示例，实现了DMC
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -204,7 +213,7 @@
 *     3.project\BuildDependencies\DownloadMingwBuildEnv.bat -- 下载编译ffmpeg所需的依赖项
 *     4.project\Win32BuildSetup\buildmingwlibs.bat -- 编译 ffmpeg 库
 *     5.二选一的编译(一般调试开发时选第二个)
-*       5.1.project\Win32BuildSetup\BuildSetup.bat -- 直接编译一个打包文件
+*       5.1.project\Win32BuildSetup\BuildSetup.bat -- 直接编译一个打包文件( /m 表示并行编译)
 *       5.2.project\Win32BuildSetup\extract_git_rev.bat -- 编译后会在系统信息窗体中显示git版本
 *     6.project\VS2010Express\XBMC for Windows.sln -- VS2010进行编译，选择DirectX版本(OpenGL版本已经被弃用)
 *   目录结构分析:

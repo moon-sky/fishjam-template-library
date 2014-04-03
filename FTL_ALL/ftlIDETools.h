@@ -1033,20 +1033,51 @@ namespace FTL
     ******************************************************************************************************************************/
 
 	/******************************************************************************************************************************
-	* scons(http://www.scons.org/) 
-	*   Python写的跨平台的下一代自动化构建工具(类似 GNU make，但更高效和可靠)，可以用来编译 NSIS/jsoncpp 等的源码
+	* scons(http://www.scons.org/) -- 需要先安装Python,安装好Scons后，在PATH中加入 scons.bat 所在路径
+	*   Python写的跨平台(Windows/Linux/Mac OS等)的下一代自动化构建工具(类似 GNU make，但更高效和可靠)，可以用来编译 NSIS/jsoncpp 等的源码
+    *   安装:
+    *     Linux: python setup.py install -- 需要管理员权限，似乎有 --install-lib|--install-dir 参数，但测试未成功
 	*   SConstruct -- python 格式的编译说明文件,scons可以根据该文件自动完成依赖关系的推导及编译链接等过程
-	*     Program('hello', ['hello.c']);  --  将hello.c(.cpp?) 编译成可执行文件hello
-	*     Library('foo',['f1.c','f2.c','f3.c']) -- 将文件f1.c,f2.c和f3.c编译成静态库libfoo.a
+    *   可以使用多层次的 SConscript(['子目录的SConscript脚本']) 脚本文件形成多层目录构建
+    *     Library|StaticLibrary('foo',['f1.c','f2.c','f3.c']) -- 将文件f1.c,f2.c和f3.c编译成静态库libfoo.a
+    *     Java(xxx) -- 
+    *     Object -- 只编译成目标文件(.o 或 .obj)
+	*     Program('hello', ['hello.c'], LIBS='m', LIBPATH=['/usr/lib','/usr/local/lib'],CCFLAGS='-DHELLO'); 
+    *       --  将hello.c(.cpp?) 编译成可执行文件hello，其中使用到了 libm.so|.a 库(即 -lm),
+    *       语法为:Program( target='program',source=src_files )
 	*     SharedLibrary('foo',['f1.c','f2.c','f3.c']) -- 编译成静态库libfoo.so
-	*   语法：
+    *   参数:
+    *       LIBS=[依赖的静态、动态库]
+    *       LIBPATH='../lib'  -- 指定搜索lib的路径
+    *       CCFLAGS='-D_DEBUG' -- 编译参数，如定义 _DEBUG 宏
+    *       CPPPATH=['include', '/home/project/inc'] -- 头文件包含，编译时使用 -I
+    *       CPPDEFINES -- 宏定义?
+    *       LINKFLAGS -- 链接参数?
+    *   语法(可以使用 Python 标准的 import 等语法)：
 	*     原始文件列表:
-    *       1.使用数组的方式列出所有需要编译的源文件 -- 如 ['f1.c','f2.c','f3.c']
+    *       1.使用数组的方式列出所有需要编译的源文件 -- 如 ['f1.c','f2.c','f3.c'] 或 Split('f1.c f2.c f3.c')
 	*       2.使用 Glob 函数的正则表达式 -- 如 Glob('*.c')
-	*     参数:
-	*       LIBS=[依赖的静态、动态库]
-	*       LIBPATH='../lib'  -- 指定搜索lib的路径
-	*       CCFLAGS='D_DEBUG' -- 编译参数，如定义 _DEBUG 宏
+    *     节点对象(nodes)--SCons把所有知道的文件和目录表示为节点,builder方法的返回值都是节点对象List,可以相加(+)
+    *       File(['f1.c']) -- 创建文件节点
+    *       Dir('classes') -- 创建目录节点
+    *     内置函数|对象?
+    *       Decider('MD5|timestamp-newer') -- 确定文件是否被修改的方式，默认为 MD5
+    *       Entry(xxx) -- 统一的节点对象方式(文件、目录等)
+    *       Environment -- 环境对象，需要 import os?
+    *         Dictionary() -- 获取到环境对象中的键值对，然后可通过 for key in [xxx] 等方式显示
+    *         Install('目的地','文件')
+    *       SetOption('参数名',参数值) -- 
+    *     
+    *     调试命令:
+    *        print "信息1", "信息2" -- 多个信息用逗号分隔?
+    *     示例:
+    *       1.判断文件是否存在：import os.path<CR> if not os.path.exists(program_name):<CR> print program_name, "does not exist!"
+    *   scons 命令参数
+    *     -c|--clean -- 执行清理任务
+    *     --debug=TYPE -- 打印调试信息，可选的有 includes,objects,pdb 等
+    *     -h|--help -- 打印帮助信息
+    *     -j N -- 同时执行N个Job
+    *     -Q -- 屏蔽"Reading/Building"等的进度消息
 	******************************************************************************************************************************/
 
 	/******************************************************************************************************************************

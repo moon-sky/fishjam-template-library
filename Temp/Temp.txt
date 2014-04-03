@@ -4,6 +4,31 @@
 驱动：                http://pan.baidu.com/share/link?shareid=1159878015&uk=1866394329
 如果驱动有问题请安装：http://yun.baidu.com/share/link?shareid=2341853829&uk=1866394329
 
+CHOICE /C YNC /M "确认请按 Y，否请按 N，或者取消请按 C。"
+
+if errorlevel 3 goto Cancel 
+if errorlevel 2 goto No 
+if errorlevel 1 goto Yes
+ 
+:Yes 
+echo you choose Yes
+goto End
+ 
+:No 
+echo you choose No
+goto End
+ 
+:Cancel
+echo you choose Cancel
+goto End
+
+:End 
+echo will end now
+
+rem exit
+
+pause
+
 Media Streaming library developer (C/C++)
 We will add our streaming library into 10M+ users movie player; Windows/iOS/Android
  
