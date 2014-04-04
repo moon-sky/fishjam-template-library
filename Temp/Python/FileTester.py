@@ -2,6 +2,7 @@
 #coding=utf-8
 
 import unittest   #单元测试框架
+from test import support
 import file
 
 class FileTester(unittest.TestCase):

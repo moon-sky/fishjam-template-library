@@ -49,7 +49,7 @@ BOOL CFTLDemoSheet::InitSheet()
 
     //this->AddPage(new CBasePage());
     //this->AddPage(new CControlsPage());
-    this->AddPage(new CCrackPage());
+    //this->AddPage(new CCrackPage());
     //this->AddPage(new CCrashHandlerPage());
     //this->AddPage(new CFilePage());
     //this->AddPage(new CGdiPage());
@@ -63,11 +63,11 @@ BOOL CFTLDemoSheet::InitSheet()
     //this->AddPage(new CPipelinePage());
     //this->AddPage(new CRegPage());
 	//this->AddPage(new CShellPage());
-	this->AddPage(new CSystemPage());
-	this->AddPage(new CThreadPage());
-	this->AddPage(new CThreadPoolPage());
+	//this->AddPage(new CSystemPage());
+	//this->AddPage(new CThreadPage());
+	//this->AddPage(new CThreadPoolPage());
 	//this->AddPage(new CVistaPage());
-	this->AddPage(new CWindowPage());
+	//this->AddPage(new CWindowPage());
     return bRet;
 }
 

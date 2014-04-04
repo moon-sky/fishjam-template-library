@@ -1234,6 +1234,9 @@ namespace FTL
     *   1.LNK2026:module unsafe for SAFESEH image -- VS2012编译汇编文件时，报告的错误，/SAFESEH
     *     解决：(推荐)使用 ml(64).exe 编译时，可以指定 /safeseh 参数(set the Use Safe Exception Handler MASM property to Yes)
     *            或    整个程序链接选项Command中输入 /SAFESEH:NO
+    * 
+    * 函数断点：方式为 ???
+    *   {,,USER32.DLL}_MessageBeep@4 对应 WinDbg中的 bp USER32!MessageBeep
     ******************************************************************************************************************************/
 
     /******************************************************************************************************************************

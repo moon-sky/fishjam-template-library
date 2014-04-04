@@ -1,9 +1,6 @@
 #! /usr/bin/env python
 #coding=utf-8
 
-#! /usr/bin/env python
-#coding=utf-8
-
 import unittest   #单元测试框架
 import os
 
