@@ -58,8 +58,8 @@ BOOL CChildFrame::SetImagePath(const CString& strImagePath)
 void CChildFrame::OnOptinos(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     COptionsDlg dlgOptions;
-    dlgOptions.m_nTileHeight = m_view.m_nGridHeight;
-    dlgOptions.m_nTileWidth = m_view.m_nGridWidth;
+    dlgOptions.m_nTileHeight = m_view.m_nTileHeight;
+    dlgOptions.m_nTileWidth = m_view.m_nTileWidth;
     dlgOptions.m_nTranspant = m_view.m_nTranspant;
     if (dlgOptions.DoModal() == IDOK)
     {
@@ -69,8 +69,8 @@ void CChildFrame::OnOptinos(UINT uNotifyCode, int nID, CWindow wndCtl)
             m_view.Invalidate();
         }
         if (
-            (dlgOptions.m_nTileHeight != m_view.m_nGridHeight)
-            || (dlgOptions.m_nTileWidth != m_view.m_nGridWidth)
+            (dlgOptions.m_nTileHeight != m_view.m_nTileHeight)
+            || (dlgOptions.m_nTileWidth != m_view.m_nTileWidth)
             )
         {
             m_view.SetTileParams(dlgOptions.m_nTileWidth, dlgOptions.m_nTileHeight);

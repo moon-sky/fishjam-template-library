@@ -25,8 +25,8 @@ public:
     VOID SetDrawToolType(DrawToolType newType) {m_drawToolType = newType; }
     VOID SetTileParams(int nTileWidth, int nTileHeight)
     {
-        m_nGridWidth = nTileWidth;
-        m_nGridHeight = nTileHeight;
+        m_nTileWidth = nTileWidth;
+        m_nTileHeight = nTileHeight;
         ResetTileGrids(dttWall);
     }
     SIZE GetImageSize() const;
@@ -95,8 +95,8 @@ private:
     typedef std::vector<TileRow>    TileGrid;
 
 public:
-    int     m_nGridWidth;
-    int     m_nGridHeight;
+    int     m_nTileWidth;
+    int     m_nTileHeight;
     int     m_RowCount;
     int     m_ColCount;
     int     m_nTranspant;

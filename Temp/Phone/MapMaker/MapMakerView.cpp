@@ -17,8 +17,8 @@ using namespace FTL;
 struct MapFileHeader
 {
     int nVersion;
-    int nGridWidth;
-    int nGridHeight;
+    int nTileWidth;
+    int nTileHeight;
     int nRowCount;
     int nColCount;
     int nTranspant;
@@ -26,8 +26,8 @@ struct MapFileHeader
 
     MapFileHeader(){
         nVersion = 1;
-        nGridWidth = 0;
-        nGridHeight = 0;
+        nTileWidth = 0;
+        nTileHeight = 0;
         nRowCount = 0;
         nColCount = 0;
         nTranspant = 0;
@@ -81,7 +81,7 @@ CMapMakerView::CMapMakerView()
     m_RowCount = 0;
     m_ColCount = 0;
     m_isCapturing = FALSE;
-    m_nGridWidth = m_nGridHeight = 8;
+    m_nTileWidth = m_nTileHeight = 8;
     m_nTranspant = 70;
     m_drawToolType = dttEmpty;
     m_ZoomScale = 1.0f;
@@ -103,8 +103,8 @@ int CMapMakerView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 }
 VOID CMapMakerView::ResetTileGrids(DrawToolType newType)
 {
-    m_RowCount = (m_pImage->GetHeight() + m_nGridHeight - 1 ) / m_nGridHeight;
-    m_ColCount = (m_pImage->GetWidth() + m_nGridWidth - 1 ) / m_nGridWidth;
+    m_RowCount = (m_pImage->GetHeight() + m_nTileHeight - 1 ) / m_nTileHeight;
+    m_ColCount = (m_pImage->GetWidth() + m_nTileWidth - 1 ) / m_nTileWidth;
 
     m_tileGrids.resize(m_RowCount);
     for (int i = 0; i < m_RowCount; i++)
@@ -132,8 +132,8 @@ BOOL CMapMakerView::LoadTileGrids(const CString& strMapPath)
 
         m_ColCount = header.nColCount;
         m_RowCount = header.nRowCount;
-        m_nGridHeight = header.nGridHeight;
-        m_nGridWidth = header.nGridWidth;
+        m_nTileHeight = header.nTileHeight;
+        m_nTileWidth = header.nTileWidth;
         m_nTranspant = header.nTranspant;
 
         m_tileGrids.resize(m_RowCount);
@@ -159,8 +159,8 @@ BOOL CMapMakerView::SaveTileGrids(const CString& strMapPath)
         MapFileHeader header;
         header.nColCount = m_ColCount;
         header.nRowCount = m_RowCount;
-        header.nGridHeight = m_nGridHeight;
-        header.nGridWidth = m_nGridWidth;
+        header.nTileHeight = m_nTileHeight;
+        header.nTileWidth = m_nTileWidth;
         header.nTranspant = m_nTranspant;
         DWORD dwWriteCount = 0;
         API_VERIFY(file.Write(&header, sizeof(header), &dwWriteCount));
@@ -302,10 +302,10 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
     CString strText;
     dc.SetBkMode(TRANSPARENT);
 
-    int nStartRow = (rcClipBox.top) / m_nGridHeight;
-    int nEndRow  = (rcClipBox.bottom + m_nGridHeight - 1 ) / m_nGridHeight;
-    int nStartCol = (rcClipBox.left) / m_nGridWidth;
-    int nEndCol = (rcClipBox.right + m_nGridWidth - 1 ) / m_nGridWidth;
+    int nStartRow = (rcClipBox.top) / m_nTileHeight;
+    int nEndRow  = (rcClipBox.bottom + m_nTileHeight - 1 ) / m_nTileHeight;
+    int nStartCol = (rcClipBox.left) / m_nTileWidth;
+    int nEndCol = (rcClipBox.right + m_nTileWidth - 1 ) / m_nTileWidth;
     
     nEndCol = nEndCol < m_ColCount - 1 ? nEndCol : m_ColCount - 1;
     nEndRow = nEndRow < m_RowCount - 1 ? nEndRow : m_RowCount - 1;
@@ -317,24 +317,24 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
     //for (int h = 0; h < m_RowCount; h++)
     for( int h = nStartRow; h <= nEndRow; h++)
     {
-        API_VERIFY(dc.MoveTo(0, h * m_nGridHeight));
-        API_VERIFY(dc.LineTo(m_nGridWidth * m_ColCount, h * m_nGridHeight));
+        API_VERIFY(dc.MoveTo(0, h * m_nTileHeight));
+        API_VERIFY(dc.LineTo(m_nTileWidth * m_ColCount, h * m_nTileHeight));
         if (h % 5 == 0)
         {
             strText.Format(TEXT("%d"), h);
-            dc.TextOut(m_nGridWidth * m_ColCount + 4, h * m_nGridHeight, strText);
+            dc.TextOut(m_nTileWidth * m_ColCount + 4, h * m_nTileHeight, strText);
         }
     }
 
     //for (int w = 0; w < m_ColCount; w++)
     for(int w = nStartCol; w <= nEndCol; w++)
     {
-        API_VERIFY(dc.MoveTo(w * m_nGridWidth, 0));
-        API_VERIFY(dc.LineTo(w * m_nGridWidth, m_nGridHeight * m_RowCount));
+        API_VERIFY(dc.MoveTo(w * m_nTileWidth, 0));
+        API_VERIFY(dc.LineTo(w * m_nTileWidth, m_nTileHeight * m_RowCount));
         if (w % 5 == 0)
         {
              strText.Format(TEXT("%d"), w);
-             dc.TextOut(w * m_nGridWidth, m_nGridHeight * m_RowCount + 4, strText);
+             dc.TextOut(w * m_nTileWidth, m_nTileHeight * m_RowCount + 4, strText);
         }
     }
 
@@ -343,7 +343,7 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
     API_VERIFY(memDC.CreateCompatibleDC(deskDC) != NULL);
     //PrepareDC(memDC.m_hDC);
     CBitmap memBitmap;
-    API_VERIFY(memBitmap.CreateCompatibleBitmap(deskDC, m_nGridWidth, m_nGridHeight)!= NULL);
+    API_VERIFY(memBitmap.CreateCompatibleBitmap(deskDC, m_nTileWidth, m_nTileHeight)!= NULL);
     HBITMAP hOldBmp = memDC.SelectBitmap(memBitmap);
 
     BLENDFUNCTION bf;
@@ -364,16 +364,16 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
             DrawToolType  nType = (DrawToolType)m_tileGrids[y][x];
             if (nType != dttEmpty)
             {
-                memDC.FillSolidRect(0, 0, m_nGridWidth, m_nGridHeight, COLOR_DRAWTOOL_TYPES[nType]);
+                memDC.FillSolidRect(0, 0, m_nTileWidth, m_nTileHeight, COLOR_DRAWTOOL_TYPES[nType]);
 
-                CRect rcClickGrid(x * m_nGridWidth, y * m_nGridHeight, 
-                    (x + 1) * m_nGridWidth, (y + 1) * m_nGridHeight);
+                CRect rcClickGrid(x * m_nTileWidth, y * m_nTileHeight, 
+                    (x + 1) * m_nTileWidth, (y + 1) * m_nTileHeight);
                 //API_VERIFY(dc.BitBlt(rcClickGrid.left, rcClickGrid.top, rcClickGrid.Width(), rcClickGrid.Height(),
                 //        memDC, 0, 0, SRCCOPY));
                 {
                     //CFMMTextDCGuard mmTextDCGuard(dc);
                     API_VERIFY(dc.AlphaBlend(rcClickGrid.left, rcClickGrid.top, rcClickGrid.Width(), rcClickGrid.Height(),
-                        memDC, 0, 0, m_nGridWidth, m_nGridHeight, bf));
+                        memDC, 0, 0, m_nTileWidth, m_nTileHeight, bf));
                 }
                 //dc.FillSolidRect(rcClickGrid, COLOR_DRAWTOOL_TYPES[nType]);
             }
@@ -458,13 +458,13 @@ VOID CMapMakerView::SetGridStatus(CPoint point)
     CPoint ptLogical = point;
     ClientToDoc(&ptLogical);
 
-    int nRow = ptLogical.y / m_nGridHeight;
-    int nCol = ptLogical.x / m_nGridWidth;
+    int nRow = ptLogical.y / m_nTileHeight;
+    int nCol = ptLogical.x / m_nTileWidth;
 
     if (nRow < m_RowCount && nCol < m_ColCount)
     {
-        CRect rcClickGrid(nCol * m_nGridWidth, nRow * m_nGridHeight, 
-            (nCol + 1) * m_nGridWidth, (nRow + 1) * m_nGridHeight);
+        CRect rcClickGrid(nCol * m_nTileWidth, nRow * m_nTileHeight, 
+            (nCol + 1) * m_nTileWidth, (nRow + 1) * m_nTileHeight);
 
         if (m_isCapturing)
         {

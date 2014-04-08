@@ -1,0 +1,41 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HookSpy", "HookSpy\HookSpy.vcproj", "{E622BE85-F99F-41CC-8BC7-17141E86C25F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7F638632-0FE6-43EC-8BB2-EFFA46167CC2} = {7F638632-0FE6-43EC-8BB2-EFFA46167CC2}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HookSpyDll", "HookSpyDll\HookSpyDll.vcproj", "{7F638632-0FE6-43EC-8BB2-EFFA46167CC2}"
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 3
+		SccLocalPath0 = .
+		CanCheckoutShared = false
+		SccProjectUniqueName1 = HookSpy\\HookSpy.vcproj
+		SccLocalPath1 = .
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection1 = HookSpy\\
+		SccProjectUniqueName2 = HookSpyDll\\HookSpyDll.vcproj
+		SccLocalPath2 = .
+		CanCheckoutShared = false
+		SccProjectFilePathRelativizedFromConnection2 = HookSpyDll\\
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E622BE85-F99F-41CC-8BC7-17141E86C25F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E622BE85-F99F-41CC-8BC7-17141E86C25F}.Debug|Win32.Build.0 = Debug|Win32
+		{E622BE85-F99F-41CC-8BC7-17141E86C25F}.Release|Win32.ActiveCfg = Release|Win32
+		{E622BE85-F99F-41CC-8BC7-17141E86C25F}.Release|Win32.Build.0 = Release|Win32
+		{7F638632-0FE6-43EC-8BB2-EFFA46167CC2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7F638632-0FE6-43EC-8BB2-EFFA46167CC2}.Debug|Win32.Build.0 = Debug|Win32
+		{7F638632-0FE6-43EC-8BB2-EFFA46167CC2}.Release|Win32.ActiveCfg = Release|Win32
+		{7F638632-0FE6-43EC-8BB2-EFFA46167CC2}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

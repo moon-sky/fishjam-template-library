@@ -1,0 +1,195 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(936)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_CROSS               BITMAP                  "cross.bmp"
+IDB_BLANK               BITMAP                  "blank.bmp"
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral (Default) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(936)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CROSS0              CURSOR                  "cursor.cur"
+IDC_CROSS1              CURSOR                  "cursor_hot.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_WININFO DIALOGEX 0, 0, 244, 275
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+CAPTION "   HookSpy - By Robert Kuster"
+FONT 7, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT_HANDLE,47,14,161,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_CONTROL_ID,47,26,161,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_TEXT,47,38,186,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_CLASS,47,50,186,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_STYLE,47,62,186,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_RECT,47,74,186,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_THREADID,47,86,186,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PROCESSID,47,98,186,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PAR_HANDLE,47,185,186,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PAR_TEXT,47,197,186,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PAR_CLASS,47,211,186,12,ES_AUTOHSCROLL
+    LTEXT           "Handle:",IDC_STATIC,9,15,26,10
+    LTEXT           "Text:",IDC_STATIC,9,39,26,10
+    LTEXT           "Class:",IDC_STATIC,9,51,26,10
+    LTEXT           "Style:",IDC_STATIC,9,63,26,10
+    LTEXT           "Handle:",IDC_STATIC,9,186,26,10
+    LTEXT           "Text:",IDC_STATIC,9,198,26,10
+    LTEXT           "Class:",IDC_STATIC,9,213,26,10
+    LTEXT           "Process ID:",IDC_STATIC,9,99,37,10
+    LTEXT           "Thread ID:",IDC_STATIC,9,87,35,10
+    GROUPBOX        "Window",IDC_STATIC,1,3,237,171
+    GROUPBOX        "Parent Window",IDC_STATIC,1,174,237,51
+    LTEXT           "Control ID:",IDC_STATIC,9,27,35,10
+    CONTROL         158,IDC_CAPTURE,"Static",SS_BITMAP,213,11,25,25
+    LTEXT           "Rect:",IDC_STATIC,9,75,26,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_WININFO, DIALOG
+    BEGIN
+        RIGHTMARGIN, 238
+        BOTTOMMARGIN, 268
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MYICON              ICON                    "HookSpy.ico"
+#endif    // Neutral (Default) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Slovenian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_SLV)
+#ifdef _WIN32
+LANGUAGE LANG_SLOVENIAN, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Slovenian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+2 TEXTINCLUDE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""resource.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
