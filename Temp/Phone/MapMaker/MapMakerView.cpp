@@ -41,7 +41,7 @@ struct MapFileHeader
 
 const COLORREF COLOR_GRID_LINE = RGB(127, 127, 127);
 const COLORREF COLOR_MAP_BACKGROUND = RGB(255, 255, 255);
-const CString STR_MAP_APPENDIX   = _T("_map.map");
+const CString STR_MAP_APPENDIX   = _T(".map");
 
 const COLORREF COLOR_DRAWTOOL_TYPES[dttCount] = {
     RGB(0, 0, 0),       //Empty
@@ -291,7 +291,7 @@ void CMapMakerView::PrepareDC(CDCHandle dc)
 
 void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
 {
-    FUNCTION_BLOCK_TRACE(50);
+    FUNCTION_BLOCK_TRACE(30);
 
     BOOL bRet = FALSE;
     CPen penLine;
@@ -302,9 +302,9 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
     CString strText;
     dc.SetBkMode(TRANSPARENT);
 
-    int nStartRow = (rcClipBox.top + m_nGridHeight - 1) / m_nGridHeight;
+    int nStartRow = (rcClipBox.top) / m_nGridHeight;
     int nEndRow  = (rcClipBox.bottom + m_nGridHeight - 1 ) / m_nGridHeight;
-    int nStartCol = (rcClipBox.left + m_nGridWidth - 1 ) / m_nGridWidth;
+    int nStartCol = (rcClipBox.left) / m_nGridWidth;
     int nEndCol = (rcClipBox.right + m_nGridWidth - 1 ) / m_nGridWidth;
     
     nEndCol = nEndCol < m_ColCount - 1 ? nEndCol : m_ColCount - 1;
@@ -314,8 +314,8 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
         CFRectDumpInfo(rcClipBox).GetConvertedInfo(), m_pImage->GetWidth(), m_pImage->GetHeight(),
         nStartRow, nEndRow, m_RowCount, nStartCol, nEndCol, m_ColCount);
 
-    for (int h = 0; h < m_RowCount; h++)
-    //for( int h = nStartRow; h <= nEndRow; h++)
+    //for (int h = 0; h < m_RowCount; h++)
+    for( int h = nStartRow; h <= nEndRow; h++)
     {
         API_VERIFY(dc.MoveTo(0, h * m_nGridHeight));
         API_VERIFY(dc.LineTo(m_nGridWidth * m_ColCount, h * m_nGridHeight));
@@ -326,8 +326,8 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
         }
     }
 
-    for (int w = 0; w < m_ColCount; w++)
-    //for(int w = nStartCol; w <= nEndCol; w++)
+    //for (int w = 0; w < m_ColCount; w++)
+    for(int w = nStartCol; w <= nEndCol; w++)
     {
         API_VERIFY(dc.MoveTo(w * m_nGridWidth, 0));
         API_VERIFY(dc.LineTo(w * m_nGridWidth, m_nGridHeight * m_RowCount));
@@ -355,11 +355,11 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
     //CFont font;
     //font.CreatePointFont(6, _T("Arial"));
     //HFONT hOldFont = dc.SelectFont(font);
-    for (int x = 0; x < m_ColCount; x++)
-    //for(int x = nStartCol; x <= nEndCol; x++)
+    //for (int x = 0; x < m_ColCount; x++)
+    for(int x = nStartCol; x <= nEndCol; x++)
     {
-        for (int y = 0; y < m_RowCount; y++)
-        //for(int y = nStartRow; y <= nEndRow; y++)
+        //for (int y = 0; y < m_RowCount; y++)
+        for(int y = nStartRow; y <= nEndRow; y++)
         {
             DrawToolType  nType = (DrawToolType)m_tileGrids[y][x];
             if (nType != dttEmpty)
@@ -389,12 +389,12 @@ void CMapMakerView::_DrawGridLine(CDCHandle dc, const CRect& rcClipBox)
 void CMapMakerView::DoPaint(CDCHandle dc)
 {
     BOOL bRet = FALSE;
-    FUNCTION_BLOCK_TRACE(50);
+    FUNCTION_BLOCK_TRACE(30);
 
     CRect rcClientLogical;
     GetClientRect(rcClientLogical);
     dc.DPtoLP(rcClientLogical);
-    rcClientLogical.InflateRect(8, 8);	//fix scroll brush display error
+    //rcClientLogical.InflateRect(8, 8);	//fix scroll brush display error
 
     {
         CRect rcClipBox;
@@ -422,13 +422,21 @@ void CMapMakerView::DoPaint(CDCHandle dc)
                 API_VERIFY(m_pImage->Draw(m_Canvas, rcImage));
             }
 
-            memDC.SetStretchBltMode(HALFTONE);
-            API_VERIFY(memDC.BitBlt(
-                0, 0, //rcClientLogical.left, rcClientLogical.top
-                rcImage.Width(), rcImage.Height(), // rcClientLogical.Width(), rcClientLogical.Height(),
-                m_Canvas.GetCanvasDC(), 
-                0, 0, //rcClientLogical.left, rcClientLogical.top, 
-                SRCCOPY));
+			{
+				FUNCTION_BLOCK_NAME_TRACE(TEXT("BitBlt"), 30);
+				FTLTRACE(TEXT("BitBlt, rcClientLogical=%s\n"), CFRectDumpInfo(rcClientLogical).GetConvertedInfo());
+				memDC.SetStretchBltMode(HALFTONE);
+				API_VERIFY(memDC.BitBlt(
+					//0, 0, 
+					//rcClientLogical.left, rcClientLogical.top,
+					rcClipBoxLogical.left, rcClipBoxLogical.top,
+					FTL_MIN(rcImage.Width(), rcClipBoxLogical.Width()) , FTL_MIN(rcImage.Height(), rcClipBoxLogical.Height()),
+					m_Canvas.GetCanvasDC(), 
+					//0, 0, 
+					rcClipBoxLogical.left, rcClipBoxLogical.top,
+					//rcClientLogical.left, rcClientLogical.top, 
+					SRCCOPY));
+			}
 
             _DrawGridLine(memDC.m_hDC, rcClipBoxLogical);
         }

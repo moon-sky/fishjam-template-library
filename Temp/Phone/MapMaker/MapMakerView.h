@@ -27,7 +27,7 @@ public:
     {
         m_nGridWidth = nTileWidth;
         m_nGridHeight = nTileHeight;
-        ResetTileGrids(dttEmpty);
+        ResetTileGrids(dttWall);
     }
     SIZE GetImageSize() const;
 public:

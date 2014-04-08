@@ -116,7 +116,7 @@ void CChildFrame::OnSetAllDrawTool(UINT uNotifyCode, int nID, CWindow wndCtl)
 void CChildFrame::OnFileExportMap(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     BOOL bRet = FALSE;
-    CString STR_MAP_TEXT_APPENDIX = _T("_txt.txt");
+    CString STR_MAP_TEXT_APPENDIX = _T(".txt");
     CPath path(m_view.GetImagePath());
     path.RemoveExtension();
     path.m_strPath += STR_MAP_TEXT_APPENDIX;
