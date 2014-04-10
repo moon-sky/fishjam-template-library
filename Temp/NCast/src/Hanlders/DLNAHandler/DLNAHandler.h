@@ -3,7 +3,7 @@
 
 #include "../CastingHandler.h"
 
-CASTING_HANDLER_API ICastingHandler* CreateDLNAHandlerInstance();
+CASTING_HANDLER_API INCastingHandler* CreateDLNAHandlerInstance();
 
 
 #endif //_DLNA_HANDLER_H_

@@ -6,8 +6,8 @@
 #include "PltUPnP.h"
 #include "PltMediaController.h"
 
-class CASTING_HANDLER_API CDLNAHandlerImpl: 
-    public ICastingHandler,
+class CDLNAHandlerImpl: 
+    public INCastingHandler,
     public PLT_MediaControllerDelegate,
     public PLT_MediaContainerChangesListener,
     public PLT_MediaBrowserDelegate
@@ -17,9 +17,10 @@ public:
     ~CDLNAHandlerImpl();
 
     //ICastingHandler:
-    virtual NPT_Int32   Init();
-    virtual NPT_Int32   Release();
-    virtual NPT_Int32   RefreshDevice();
+    virtual int   Init(INCastingEventCallback* pCallback);
+    virtual int   Release();
+    virtual int   RefreshDevice();
+    virtual int   PlayMediaObjectOnDevice(INMediaObject* pMediaObject, INDevice* pDevice);
 
     // PLT_MediaBrowserDelegate methods
     virtual bool OnMSAdded(PLT_DeviceDataReference& device);
@@ -34,8 +35,13 @@ public:
     virtual void OnContainerChanged(PLT_DeviceDataReference& device, const char* item_id, const char* update_id);
 
 private:
+    INCastingEventCallback*         m_pCallback;
+
     PLT_SyncMediaBrowserReference   m_pSyncMediaBrowser;
     PLT_CtrlPointReference          m_pCtrlPoint;
     PLT_MediaControllerReference    m_pMediaController;
+    PLT_DeviceHostReference         m_pMediaServerHost;
+
+    PLT_DeviceDataReference         m_curMediaRender;
     PLT_UPnP m_upnp;
 };

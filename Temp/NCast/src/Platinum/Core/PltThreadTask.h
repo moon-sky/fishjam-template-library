@@ -64,7 +64,7 @@ public:
      */
     NPT_Result Kill();
     
-protected:
+public:
     /**
      Return whether this task is in the process of stopping.
      @param timeout number of milliseconds to wait

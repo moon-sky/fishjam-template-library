@@ -4,9 +4,10 @@
 #include "CastingDefine.h"
 #include "CastingHandler.h"
 
-
 class ICastingManager{
 public:
+    
+private:
     
 };
 

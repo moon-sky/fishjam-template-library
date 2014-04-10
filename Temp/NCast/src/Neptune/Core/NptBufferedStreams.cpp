@@ -92,6 +92,7 @@ NPT_BufferedInputStream::SetBufferSize(NPT_Size size, bool force /* = false */)
             // existing data to the beginning of the buffer, reallocate
             NPT_Byte* buffer = new NPT_Byte[size];
             if (buffer == NULL) return NPT_ERROR_OUT_OF_MEMORY;
+            NPT_SetMemory((void*)buffer, 0, size);
 
             // copy existing data
             NPT_Size need_to_copy = m_Buffer.valid - m_Buffer.offset;
@@ -131,8 +132,9 @@ NPT_BufferedInputStream::FillBuffer()
     if (m_Buffer.data == NULL) {
         m_Buffer.data = new NPT_Byte[m_Buffer.size];
         if (m_Buffer.data == NULL) return NPT_ERROR_OUT_OF_MEMORY;
+        NPT_SetMemory(m_Buffer.data, 0, m_Buffer.size);
     }
-
+    
     // refill the buffer
     m_Buffer.offset = 0;
     NPT_Result result = m_Source->Read(m_Buffer.data, m_Buffer.size, &m_Buffer.valid);

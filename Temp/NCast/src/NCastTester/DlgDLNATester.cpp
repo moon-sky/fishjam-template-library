@@ -18,7 +18,7 @@ BOOL CDlgDLNATester::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
     DlgResize_Init(FALSE);
 
     m_pDLNACasting = CreateDLNAHandlerInstance();//CDLNAHandler::CreateInstance();
-    m_pDLNACasting->Init();
+    m_pDLNACasting->Init(this);
     return TRUE;
 }
 
@@ -30,5 +30,25 @@ void CDlgDLNATester::OnDestroy()
 
 void CDlgDLNATester::OnBtnRefreshDeviceClick(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    m_pDLNACasting->RefreshDevice();
+    CTreeItem selItem = m_TreeDlna.GetSelectedItem();
+    if (selItem != NULL)
+    {
+        m_pDLNACasting->PlayMediaObjectOnDevice(NULL, (INDevice*)selItem.GetData());
+    }
+    
+}
+
+void CDlgDLNATester::OnDeviceAdd(INDevice* pDevice)
+{
+    FTL::CFConversion conv;
+    CTreeItem item = m_TreeDlna.InsertItem(conv.UTF8_TO_TCHAR(pDevice->GetFriendlyName()), NULL, NULL);
+    if (item != NULL)
+    {
+        item.SetData(DWORD_PTR(pDevice));
+    }
+}
+
+void CDlgDLNATester::OnDeviceRemove(INDevice* pDevice)
+{
+
 }

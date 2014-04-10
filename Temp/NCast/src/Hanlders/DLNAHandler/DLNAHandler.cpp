@@ -7,7 +7,7 @@
 
 NPT_SET_LOCAL_LOGGER("Handler.DLNA.Create")
 
-ICastingHandler* CreateDLNAHandlerInstance()
+INCastingHandler* CreateDLNAHandlerInstance()
 {
     NPT_LogManager::GetDefault().Configure("plist:.level=FINE;.handlers=ConsoleHandler;.ConsoleHandler.colors=off;.ConsoleHandler.filter=30");
 

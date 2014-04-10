@@ -7,7 +7,8 @@
 class CDlgDLNATester : 
     public CDialogImpl<CDlgDLNATester>,
     public CWinDataExchange<CDlgDLNATester>,
-    public CDialogResizeEx<CDlgDLNATester>	
+    public CDialogResizeEx<CDlgDLNATester>,
+    public INCastingEventCallback
 {
 public:
     CDlgDLNATester(void);
@@ -28,6 +29,7 @@ public:
         //DDX_CONTROL(IDC_BTN_ST, m_BtnSt)
         //DDX_CONTROL(IDC_BTN_SHADE, m_BtnShade)
         //DDX_CONTROL(IDC_STATIC_HYPER_LINK, m_HyperLink)
+        DDX_CONTROL_HANDLE(IDC_TREE_DLNA, m_TreeDlna)
     END_DDX_MAP()
 
     BEGIN_DLGRESIZE_MAP(CDlgDLNATester)
@@ -37,10 +39,16 @@ public:
         //DLGRESIZE_CONTROL(IDC_BTN_SHADE, DLSZ_MOVE_X)
     END_DLGRESIZE_MAP()
 
+public:
+    //INCastingEventCallback
+    virtual void OnDeviceAdd(INDevice* pDevice);
+    virtual void OnDeviceRemove(INDevice* pDevice);
+
 private:
     BOOL OnInitDialog(CWindow wndFocus, LPARAM lInitParam);
     void OnDestroy();
     void OnBtnRefreshDeviceClick(UINT uNotifyCode, int nID, CWindow wndCtl);
 private:
-    ICastingHandler*    m_pDLNACasting;
+    INCastingHandler*    m_pDLNACasting;
+    CTreeViewCtrlEx      m_TreeDlna;
 };

@@ -7,7 +7,7 @@
 #define CASTING_HANDLER_API __declspec(dllimport)
 #endif
 
-#include "../Neptune/Core/NptTypes.h"
+//#include "../Neptune/Core/NptTypes.h"
 
 
 typedef enum CastingDeviceType{

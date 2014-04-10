@@ -66,6 +66,11 @@
 *   应用程序类型：
 *     1.IME-unaware(默认处理) -- 系统(DefWindowProc)自动处理IME相关的消息、内容
 *     2.IME-aware -- 应用程序通过传递、截取和处理送往默认窗体的消息，来控制窗体的操作、位置以及外观。
+*       初始化:WM_IME_SETCONTEXT -> WM_IME_NOTIFY(IMN_OPENSTATUSWINDOW) 
+*       输入: WM_KEYDOWN(VK_PROCESSKEY) -> WM_IME_STARTCOMPOSITION -> WM_IME_NOTIFY(IMN_SETCOMPOSITIONFONT) 
+*              -> WM_IME_COMPOSITION -> WM_KEYUP -> ... 
+*              -> WM_IME_ENDCOMPOSITION
+* 
 *   输入上下文(ImmGetContext/ImmReleaseContext) -- 
 *     默认时，系统为每个线程创建和指派一个输入上下文，被连接到该线程内的每个新建窗体,但可创建和关联窗体特定的上下文。
 *     输入上下文与窗体连接后(ITextHost::TxImmGetContext)，系统自动选择何时窗体被激活和被输入焦点的上下文，
@@ -80,7 +85,13 @@
 *       备选列表(CANDIDATELIST) -- 由指定字符串的数组成或用户可以从中选择的字符串组成
 *         ImmGetCandidateListCount、ImmGetCandidateList
 *   相关消息 -- 如果应用程序不处理相关消息，DefWindowProc 会进行默认处理（如 WM_IME_CHAR 转义为 一个或多个WM_CHAR） 
-*   
+*     TranslateMessage -- 从WM_KEYDOWN、WM_SYSKEYDOWN中产生"字符消息"(WM_CHAR、WM_DEADCHAR、WM_SYSCHAR或WM_SYSDEADCHAR)等
+*       英文:WM_KEYDOWN -> WM_CHAR -> WM_KEYUP
+*       中日韩: WM_KEYDOWN(VK_PROCESSKEY) -> ImmTranslateMessage函数转换插入 WM_IME_STARTCOMPOSITION 
+*                -> 多个 WM_IME_COMPOSITION -> WM_IME_ENDCOMPOSITION
+*         补充: typedef BOOL  (WINAPI *ImmTranslateMessageProc)(HWND,UINT,WPARAM,LPARAM);
+*               ImmTranslateMessageProc pImmTranslateMsg = GetProcAddress(GetModuleHandle(TEXT("imm32.dll")), "ImmTranslateMessage");
+*
 *  TF_FloatingLangBar_WndTitle(CiceroUIWndFrame)
 ****************************************************************************************************************/
 

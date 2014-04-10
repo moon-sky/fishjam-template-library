@@ -19,11 +19,16 @@ import android.test.ActivityTestCase;
  *   函数名 -- 直接供JNI调用的函数命名需要遵循 Java_包名_类名_函数名 的方式，Java中只需要import+直接使用函数名 即可
  *   类型 -- jlong, jobject,jstring 等
  *   JNIEnv* env-- 环境类,是JNI接口的第一个参数，
+ *   JavaVM* -- 在 JNI_OnLoad 方法中的参数
  *   注意：
  *     1.因为Java有回收机制，不能安全的获得和操作Java对象的指针(如String对应的字符串数组)
  *     2.JNIEnv* evn 的调用方式在 C/C++ 中不一样
  *       C中的调用方法为 (*env)->NewStringUTF(env, "xxx"); C++ 中的调用方法为 env->NewStringUTF("xxx");
  *     3.JNI 接口都是以C方式定义的，因此C++文件中导出C函数，需要用 #ifdef __cplusplus extern "C" { #endif 的方式
+ *
+ * 插入函数(未测试确认)
+*   1. __attribute__((constructor)) static void onDlOpen(void) { xxxx }
+*   2. JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) { xxx; return JNI_VERSION_1_4; }
  ****************************************************************************************************************************************/
  
 /****************************************************************************************************************************************

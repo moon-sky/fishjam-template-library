@@ -212,6 +212,14 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\MediaItemPlayTask.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NDLNADevice.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -224,6 +232,14 @@
 			</File>
 			<File
 				RelativePath=".\DLNAHandlerImpl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MediaItemPlayTask.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NDLNADevice.h"
 				>
 			</File>
 		</Filter>

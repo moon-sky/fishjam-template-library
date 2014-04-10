@@ -41,7 +41,7 @@
 *     示例:ObjectID(0);BrowseFlag(BrowseDirectChildren);Filter(*);StartingIndex(0);RequestedCount(0);SortCriteria(空)
 *     从中可以获取到 传输协议(protocolInfo), 连接地址URL 等信息
 *   3.使用 ConnectionManager::GetProtocolInfo 分别获取Server和Render的传输协议(protocolInfo)和支持的数据格式列表，分为 Source和Sink,
-*     返回值为逗号分开的 http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM 或 http-get:*:audio/mp3:* 等
+*     返回值为CSV格式(Comma-Separated Value),即逗号分开的 http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM 或 http-get:*:audio/mp3:* 等
 *   4.匹配媒体文件和播放器支持都支持的传输协议和数据格式 -- 一般来说，两个都是列表，需要查找最合适的
 *   5.通过 ConnectionManger::PrepareForConnection 配置Render，得到 AVTransport::InstanceId, 之后通过该值进行状态管理
 *     示例(执行成功后会返回 InstanceId, 该值可通过 ConnectionManger::GetCurrentConnectionIDs 确认)
@@ -107,6 +107,7 @@
 * DLNA(Digital Living Network Alliance) -- 数字生活网络联盟，索尼、英特尔、微软等发起。http://www.dlna.org/
 *   目标是共享室内和户外的可以互联的消费电子(CE)，PC及移动设备等构成的优先和无线网络，促进数字多媒体内容和服务的共享。
 *   只适用于音频、视频、图片推送，将多媒体文件通过无线的方式传送到电视机或投影仪上面。
+*   标准文档：如 UPnP-av-AVTransport-v3-Service-20101231.pdf
 *
 * DLNA 联网设备交互性指导方针(Networked Device Interoperability Guidelines -- 500$), 现在已有 1.5 版本
 *   详述了可供搭建平台和软件基础的可以交互的基本模块。
@@ -185,22 +186,31 @@
 *     2.似乎不支持IPV6
 *   编译：Neptune 和 Platinum 都编译成静态库
 *     1.Windows:Platinum\Build\Targets\x86-microsoft-win32-vs2008\Platinum.sln
-*     2.Android JNI: NDK + Cygwin
-*       2.1 设置 ANDROID_NDK_ROOT 环境变量;
+*     2.Android JNI: NDK + Linux
+*       2.1 export ANDROID_NDK_ROOT 环境变量, 可通过 source 命令立即生效;
 *       2.2 更改 Neptune\Source\Core\NptConfig.h 文件，在 __CYGWIN__ 的配置中加入 #define NPT_CONFIG_HAVE_GETADDRINFO
 *           否则会报告无法链接 NPT_NetworkNameResolver::Resolve 的错误
-*       2.3 进入 Platinum 目录后执行 scons target=x86-unknown-cygwin build_config=Debug, 真正的Android时应该 arm-android-linux
+*       2.3 进入 Platinum 目录后执行 scons target=x86-unknown-cygwin build_config=Debug, 真正的Android时应该 arm-android-linux,
+*           若成功的话，在 Platinum\Build\Targets\<target>\ 下会生成相关的 *.a 库
 *           可选的target看在 Neptune\Build\Boot.scons 中查看(也可通过 scons --help 查看) 
-*       2.4 进入 Platinum/Source/Platform/Android/module/platinum， 执行 ndk-build NDK_DEBUG=1
+*       2.4 进入 Platinum/Source/Platform/Android/module/platinum， 执行 ndk-build NDK_DEBUG=1, 若成功会生成 libplatinum-jni.so
+*           TODO: 可能需要先修改 Android.mk, 将链接库 -laxTls 改成 -laxTLS
+*       2.5 Eclipse 中导入 Platinum/Source/Platform/Android 下的两个工程(lib类型的platinum, apk类型的sample-upnp),
+*           在platinum工程中建立 libs/armeabi 目录，并导入 libplatinum-jni.so
 *   调试:
-*     1.设置日志的过滤等级: NPT_LogManager::GetDefault().Configure, 可选的level有FATAL、SEVERE、WARNING 等
+*     1.设置日志的过滤等级: NPT_LogManager::GetDefault().Configure, 可选的level有FATAL、SEVERE、WARNING 等,
+*       .level=FATAL|SEVERE|WARNING|FINE 等
+*       .handlers=ConsoleHandler|
+*       .filter=过滤参数值(如30) -- 其值是 NPT_LOG_FORMAT_FILTER_NO_TIMESTAMP(2) 等的组合
+*       .outputs=2, 
+*       .colors=on/off|true/false --
 *   代码分析:
 *     1.大量使用 Delegate 类来封装实现，然后通过多继承的方式实现多个功能的融合，如  PLT_FileMediaServer
 *   主要的类:
 *     PLT_UPnP -- 管理PLT_DeviceHost和PLT_CtrlPoint的列表，并通过PLT_TaskManager管理任务
 *     PLT_MediaRenderer -- 实现了DMR
 *     PLT_FileMediaServer -- 实现了DMS
-*     PLT_MicroMediaController -- 示例，实现了DMC
+*     PLT_MicroMediaController -- 示例，实现了DMC(继承了PLT_SyncMediaBrowser和PLT_MediaController)
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -448,6 +458,10 @@
 *   Device Builder -- 代码生成工具，
 *   Device Sniffer -- SSDP调试工具，监听和显示网络上的所有SSDP信息
 *   Device Spy -- 是一个 Control Point，在网络上搜索所有设备，提供调用方法和服务的通用方法
+*
+* 其他比较好的 DLNA 工具:
+*   bubbleupnp
+*   miragedlna
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************

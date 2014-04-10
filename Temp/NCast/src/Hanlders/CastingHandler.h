@@ -17,27 +17,32 @@
 //extern "C" {
 //#endif 
 
-
-class CASTING_HANDLER_API IDeviceInfo{
+class CASTING_HANDLER_API INMediaObject{
 public:
 
 };
 
-class CASTING_HANDLER_API IBrowserCallback{
+class CASTING_HANDLER_API INDevice{
 public:
-    virtual void OnDeviceAdd(IDeviceInfo* pDeviceInfo) = 0;
-    virtual void OnDeviceRemove(IDeviceInfo* pDeviceInfo) = 0;
+    virtual const char* GetFriendlyName() = 0;
+};
+
+class CASTING_HANDLER_API INCastingEventCallback{
+public:
+    virtual void OnDeviceAdd(INDevice* pDevice) = 0;
+    virtual void OnDeviceRemove(INDevice* pDevice) = 0;
 };
 
 
-class CASTING_HANDLER_API ICastingHandler{
+class CASTING_HANDLER_API INCastingHandler{
 public:
-    virtual NPT_Int32   Init() = 0;
-    virtual NPT_Int32   Release() = 0;
-    virtual NPT_Int32   RefreshDevice() = 0;
+    virtual int Init(INCastingEventCallback* pCallback) = 0;
+    virtual int Release() = 0;
+    virtual int RefreshDevice() = 0;
+    virtual int PlayMediaObjectOnDevice(INMediaObject* pMediaObject, INDevice* pDevice) = 0;
 
 public:
-    virtual ~ICastingHandler() {}
+    virtual ~INCastingHandler() {}
 };
 
 
