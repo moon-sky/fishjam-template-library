@@ -30,6 +30,11 @@ public:
     virtual bool OnMRAdded(PLT_DeviceDataReference& device);
     virtual void OnMRRemoved(PLT_DeviceDataReference& device);
     virtual void OnMRStateVariablesChanged(PLT_Service* service, NPT_List<PLT_StateVariable*>*  vars );
+    virtual void OnPrepareForConnectionResult(NPT_Result res, PLT_DeviceDataReference& device, 
+        PLT_ConnectionInfo*  info, void* userdata);
+    virtual void OnSetAVTransportURIResult(NPT_Result res, PLT_DeviceDataReference& device,
+        void* userdata);
+    virtual void OnPlayResult(NPT_Result res, PLT_DeviceDataReference& device,void* userdata);
 
     //PLT_MediaContainerChangesListener
     virtual void OnContainerChanged(PLT_DeviceDataReference& device, const char* item_id, const char* update_id);
@@ -44,4 +49,5 @@ private:
 
     PLT_DeviceDataReference         m_curMediaRender;
     PLT_UPnP m_upnp;
+    int m_connection_id;
 };

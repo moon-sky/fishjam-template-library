@@ -30,15 +30,15 @@ void MediaItemPlayTask::DoRun(){
 
 NPT_Result MediaItemPlayTask::_InnerPlayerProc()
 {
-    PLT_ActionDesc* pActionDesc = NULL;
-    m_ctrlPoint->
-    NPT_CHECK_FATAL(m_ctrlPoint->FindActionDesc(m_deviceMR, 
-        "urn:schemas-upnp-org:device:MediaRenderer:1", "GetProtocolInfo", pActionDesc));
-    if (pActionDesc)
-    {
-        pActionDesc->SetArgumentValue
-        m_ctrlPoint->InvokeAction(pActionDesc);
-    }
+    //PLT_ActionDesc* pActionDesc = NULL;
+    //NPT_CHECK_FATAL(m_ctrlPoint->FindActionDesc(m_deviceMR, 
+    //    "urn:schemas-upnp-org:device:MediaRenderer:1", "GetProtocolInfo", pActionDesc));
+    //if (pActionDesc)
+    //{
+    //    pActionDesc->SetArgumentValue
+    //    m_ctrlPoint->InvokeAction(pActionDesc);
+    //}
+
     //PLT_Service* pService = NULL;
     //NPT_CHECK_FATAL(m_deviceMR.FindServiceByName("urn:schemas-upnp-org:device:MediaRenderer:1", pService));
     //
@@ -47,5 +47,5 @@ NPT_Result MediaItemPlayTask::_InnerPlayerProc()
     //{
     //    pActionDesc->
     //}
-
+    return NPT_SUCCESS;
 }

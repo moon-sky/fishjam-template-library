@@ -710,6 +710,65 @@ PLT_MediaController::GetProtocolInfo(PLT_DeviceDataReference& device,
 }
 
 /*----------------------------------------------------------------------
+|   PLT_MediaController::PrepareForConnection
++---------------------------------------------------------------------*/
+NPT_Result 
+PLT_MediaController::PrepareForConnection(PLT_DeviceDataReference& device, const char* RemoteProtocolInfo,
+    const char* PeerConnectionManager, NPT_Int32 PeerConnectionId, bool input_direction, void* userdata)
+{
+    PLT_ActionReference action;
+    NPT_CHECK_SEVERE(m_CtrlPoint->CreateAction(
+        device, 
+        "urn:schemas-upnp-org:service:ConnectionManager:1", 
+        "PrepareForConnection", 
+        action));
+
+    if (NPT_FAILED(action->SetArgumentValue("RemoteProtocolInfo", RemoteProtocolInfo))) {
+        return NPT_ERROR_INVALID_PARAMETERS;
+    }
+    if (NPT_FAILED(action->SetArgumentValue("PeerConnectionManager", PeerConnectionManager))) {
+        return NPT_ERROR_INVALID_PARAMETERS;
+    }
+    if (NPT_FAILED(action->SetArgumentValue("PeerConnectionId", NPT_String::FromInteger(PeerConnectionId)))) {
+        return NPT_ERROR_INVALID_PARAMETERS;
+    }
+    if (NPT_FAILED(action->SetArgumentValue("Direction", input_direction ? "Input" : "Output"))) {
+        return NPT_ERROR_INVALID_PARAMETERS;
+    }
+
+    if (NPT_FAILED(m_CtrlPoint->InvokeAction(action, userdata))) {
+        return NPT_ERROR_INVALID_PARAMETERS;
+    }
+
+    return NPT_SUCCESS;
+}
+
+NPT_Result 
+PLT_MediaController::ConnectionComplete(PLT_DeviceDataReference& device, NPT_Int32 connection_id, void* userdata)
+{
+    PLT_ActionReference action;
+    NPT_CHECK_SEVERE(m_CtrlPoint->CreateAction(
+        device, 
+        "urn:schemas-upnp-org:service:ConnectionManager:1", 
+        "ConnectionComplete", 
+        action));
+
+    // set the ConnectionID
+    if (NPT_FAILED(action->SetArgumentValue("ConnectionID", 
+        NPT_String::FromInteger(connection_id)))) {
+            return NPT_ERROR_INVALID_PARAMETERS;
+    }
+
+    // set the arguments on the action, this will check the argument values
+    if (NPT_FAILED(m_CtrlPoint->InvokeAction(action, userdata))) {
+        return NPT_ERROR_INVALID_PARAMETERS;
+    }
+
+    return NPT_SUCCESS;
+}
+
+
+/*----------------------------------------------------------------------
 |   PLT_MediaController::SetMute
 +---------------------------------------------------------------------*/
 NPT_Result 
@@ -890,6 +949,15 @@ PLT_MediaController::OnActionResponse(NPT_Result           res,
         if (NPT_FAILED(FindRenderer(uuid, device))) res = NPT_FAILURE;
         m_Delegate->OnStopResult(res, device, userdata);
     }
+    /* ConnectionManager response */
+    else if (actionName.Compare("PrepareForConnection", true) == 0) {
+        if (NPT_FAILED(FindRenderer(uuid, device))) res = NPT_FAILURE;
+        return OnPrepareForConnectionResponse(res, device, action, userdata);
+    }
+    else if (actionName.Compare("ConnectionComplete", true) == 0) {
+        if (NPT_FAILED(FindRenderer(uuid, device))) res = NPT_FAILURE;
+        return OnConnectionCompleteResponse(res, device, action, userdata);
+    }
     else if (actionName.Compare("GetCurrentConnectionIDs", true) == 0) {
         if (NPT_FAILED(FindRenderer(uuid, device))) res = NPT_FAILURE;
         return OnGetCurrentConnectionIDsResponse(res, device, action, userdata);
@@ -902,6 +970,7 @@ PLT_MediaController::OnActionResponse(NPT_Result           res,
         if (NPT_FAILED(FindRenderer(uuid, device))) res = NPT_FAILURE;
         return OnGetProtocolInfoResponse(res, device, action, userdata);
     }
+    /* RenderingControl response */
     else if (actionName.Compare("SetMute", true) == 0) {
         if (NPT_FAILED(FindRenderer(uuid, device))) res = NPT_FAILURE;
         m_Delegate->OnSetMuteResult(res, device, userdata);
@@ -1185,6 +1254,53 @@ bad_action:
     return NPT_FAILURE;
 }
 
+NPT_Result
+PLT_MediaController::OnPrepareForConnectionResponse(NPT_Result               res, 
+                                                       PLT_DeviceDataReference& device, 
+                                                       PLT_ActionReference&     action, 
+                                                       void*                    userdata)
+{
+    PLT_ConnectionInfo info;
+
+    if (NPT_FAILED(res) || action->GetErrorCode() != 0) {
+        goto bad_action;
+    }
+
+    if (NPT_FAILED(action->GetArgumentValue("ConnectionID", info.peer_connection_id))) {
+        goto bad_action;
+    }
+    if (NPT_FAILED(action->GetArgumentValue("AVTransportID", info.avtransport_id))) {
+        goto bad_action;
+    }
+    if (NPT_FAILED(action->GetArgumentValue("RcsID", info.rcs_id))) {
+        goto bad_action;
+    }
+
+    m_Delegate->OnPrepareForConnectionResult(NPT_SUCCESS, device, &info, userdata);
+    return NPT_SUCCESS;
+
+bad_action:
+    m_Delegate->OnPrepareForConnectionResult(NPT_FAILURE, device, NULL, userdata);
+    return NPT_FAILURE;
+}
+
+NPT_Result
+PLT_MediaController::OnConnectionCompleteResponse(NPT_Result               res, 
+                                                    PLT_DeviceDataReference& device, 
+                                                    PLT_ActionReference&     action, 
+                                                    void*                    userdata)
+{
+    if (NPT_FAILED(res) || action->GetErrorCode() != 0) {
+        goto bad_action;
+    }
+
+    m_Delegate->OnConnectionCompleteResult(NPT_SUCCESS, device, userdata);
+    return NPT_SUCCESS;
+
+bad_action:
+    m_Delegate->OnConnectionCompleteResult(NPT_FAILURE, device, userdata);
+    return NPT_FAILURE;
+}
 /*----------------------------------------------------------------------
 |   PLT_MediaController::OnGetCurrentConnectionIDsResponse
 +---------------------------------------------------------------------*/

@@ -6,6 +6,8 @@
 #  error ftlDLNA.h requires ftlbase.h to be included first
 #endif
 
+//UPnP-av-ConnectionManager-v3-Service-20101231.pdf -- P16 3.4. Tracking streams in the network
+
 //TODO:
 //  1.AllCast的 app中VCR控制 -- 什么意思?
 
@@ -40,20 +42,25 @@
 *   2.使用 ContentDirectory::Browse 或 Search 从 MediaServer 上浏览媒体信息，返回值为 DIDL-Lite 规范的XML
 *     示例:ObjectID(0);BrowseFlag(BrowseDirectChildren);Filter(*);StartingIndex(0);RequestedCount(0);SortCriteria(空)
 *     从中可以获取到 传输协议(protocolInfo), 连接地址URL 等信息
-*   3.使用 ConnectionManager::GetProtocolInfo 分别获取Server和Render的传输协议(protocolInfo)和支持的数据格式列表，分为 Source和Sink,
+*   3.使用 ConnectionManager::GetProtocolInfo 获取Render的传输协议(protocolInfo)和支持的数据格式列表,
 *     返回值为CSV格式(Comma-Separated Value),即逗号分开的 http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM 或 http-get:*:audio/mp3:* 等
-*   4.匹配媒体文件和播放器支持都支持的传输协议和数据格式 -- 一般来说，两个都是列表，需要查找最合适的
-*   5.通过 ConnectionManger::PrepareForConnection 配置Render，得到 AVTransport::InstanceId, 之后通过该值进行状态管理
+*   4.匹配媒体文件和播放器都支持的传输协议和数据格式 -- 一般来说，两个都是列表，需要查找最合适的
+*     如通过 PLT_MediaController::FindBestResource 函数 或通过可选的 ConnectionManager::GetRendererItemInfo() 
+*   5.通过 ConnectionManger::PrepareForConnection 配置Server和Render，得到ConnectionId,AVTransportID,RcsID(Rendering Control ID), 
+*     之后通过这些值进行连接状态管理
 *     示例(执行成功后会返回 InstanceId, 该值可通过 ConnectionManger::GetCurrentConnectionIDs 确认)
 *          RemoteProtocolInfo(http-get:*:video/x-ms-wmv:*);PeerConnectionManager(空字符串);PeerConnectionID(-1);Direction(Input)
+*     注意：如果未实现 PrepareForConnection 函数，则只支持一个Renderer，此时 InstanceID 应该为 0
 *   6.使用 AVTransport::SetAVTransportURI 向 MediaRender 发送要播放媒体文件的信息
 *     示例:
 *       InstanceID(前面的返回值);CurrentURI(指定 "Wildlife in HD" 对应的URL);
-*   7.通过 AVTransport::play/stop 和 RenderingControl::SetVolume 等来控制媒体播放
+*   7.通过 AVTransport::play/stop(AVTransportID) 和 RenderingControl::SetVolume(RCSID) 等来控制媒体播放
+*     Play后会通过 Out-Of-Band 的方式(HTTP或RTP等)将媒体内容从Server传递到Renderer(可以使Push或Pull)
 *     示例:播放，暂停，声音和亮度调节
 *       Seek: Unit(REL_TIME); Target(00:00:05) -- 定位到第5秒
 *       GetPositionInfo -- 可以获得总长度、当前位置等
-*   8.播放完毕后需要通过 ConnectionManager::ConnectionComplete 关闭连接
+*   8.可选: 可通过 AVTransport::SetAVTransportURI 或 AVTransport::SetNextAVTRansportURI 等选择播放下一个媒体(相同的Server+Renderer)
+*   9.播放完毕后需要通过 ConnectionManager::ConnectionComplete 关闭连接
 *************************************************************************************************************************/
 
 /*************************************************************************************************************************
@@ -107,11 +114,16 @@
 * DLNA(Digital Living Network Alliance) -- 数字生活网络联盟，索尼、英特尔、微软等发起。http://www.dlna.org/
 *   目标是共享室内和户外的可以互联的消费电子(CE)，PC及移动设备等构成的优先和无线网络，促进数字多媒体内容和服务的共享。
 *   只适用于音频、视频、图片推送，将多媒体文件通过无线的方式传送到电视机或投影仪上面。
+*   不适用于双向交互的场景，如音视频会议、网络游戏等 -- 
+*   交互方式: 通过CP控制设备，而设备通过event通知状态改变。
 *   标准文档：如 UPnP-av-AVTransport-v3-Service-20101231.pdf
 *
 * DLNA 联网设备交互性指导方针(Networked Device Interoperability Guidelines -- 500$), 现在已有 1.5 版本
 *   详述了可供搭建平台和软件基础的可以交互的基本模块。
 *
+* 术语
+*   DCP(Device Control Protocol) -- 控制设备协议
+* 
 * 设备类型(Device Category)和角色(Roles)：
 *   HND(Home Network Devices) -- 指家庭设备，具有比较大的尺寸及较全面的功能
 *     DMS(Digital Media Server) -- 数字媒体服务器，提供媒体获取、记录、存储和输出功能。DMS总包含DMP的功能，
@@ -250,12 +262,13 @@
 *     UPnP Device Architecture 1.0 -- 说明设备是怎样通过UPnP来相互发现和控制，以及传递消息的
 *
 *   AV规范定义的设备
-*     MS(UPnP AV MediaServer)
-*     MR(UPnP AV MediaRender)
+*     MS(UPnP AV MediaServer) -- 包含服务: <CDS>,<CMS>(不需要实现PrepareForConnection),[AVT](支持协议，可支持播放控制等)
+*     MR(UPnP AV MediaRender) -- 包含服务：<RCS>,<CMS>, [AVT](支持协议,播放控制等)
 *   AV服务：
 *     CDS(Content Directory Service) -- 内容目录服务，枚举并列出可访问的内容，如视频、音乐盒图片等，
-*       Browser -- 浏览媒体文件
-*     CMS(Connection Manager Service) -- 连接管理服务(Server和Render都必须支持)
+*       Browser -- 浏览媒体文件，并可获取元数据(MetaData)
+*     CMS(Connection Manager Service) -- 连接管理服务(Server和Render都必须支持)，
+*       Render -- 需要多实现 PrepareForConnection + ConnectionComplete, 且 GetProtocolInfo 返回支持的协议和格式
 *     AVT(AV Transport Service) -- 控制媒体内容的传输，如播放、停止、暂停、查找等，智能电视就需要实现这个，
 *       GetPositionInfo -- 可以获取到媒体的长度、当前位置等；TODO: Windows Media Service 的 GetMediaInfo 不能获取到长度
 *       SetAVTransportURI -- 设置要播放的媒体的URL
@@ -265,6 +278,7 @@
 *     SRS(Scheduled Recording Service) -- 
 *   Printer 架构
 *     定义了打印设备和关联的控制点应用之间的交互模型
+*   涉及到AV(Movie/Song等)的设备，除了通过ControlPoint交互外，还会通过非UPnP协议(Out-Of-Band)的方式协议(如HTTP/RTP等)
 *
 * UPnP的工作过程
 *   0.寻址(Addressing) -- 每个设备都应当是DHCP的客户,当设备首次与网络建立连接后,通过 DHCP Discover + DHCP Offer 得到一个IP地址，

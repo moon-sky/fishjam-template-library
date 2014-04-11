@@ -54,11 +54,11 @@
  */
 typedef struct {
     NPT_String                   object_id;
-    PLT_MediaObjectListReference items;
-    NPT_UInt32                   si;
-    NPT_UInt32                   nr;
-    NPT_UInt32                   tm;
-    NPT_UInt32                   uid;
+    PLT_MediaObjectListReference items; //Result -> Didl Xml -> items 
+    NPT_UInt32                   si;    //StartingIndex(In) -- TODO:not get from result 
+    NPT_UInt32                   nr;    //NumberReturned
+    NPT_UInt32                   tm;    //TotalMatches
+    NPT_UInt32                   uid;   //UpdateID
 } PLT_BrowseInfo;
 
 /*----------------------------------------------------------------------

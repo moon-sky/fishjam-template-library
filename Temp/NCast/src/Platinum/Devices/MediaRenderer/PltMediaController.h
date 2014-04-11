@@ -46,13 +46,16 @@
 +---------------------------------------------------------------------*/
 typedef NPT_List<NPT_String> PLT_StringList;
 
-typedef struct {
+struct PLT_DeviceCapabilities{
     PLT_StringList play_media;
     PLT_StringList rec_media;
     PLT_StringList rec_quality_modes;
-} PLT_DeviceCapabilities;
+} ;
 
-typedef struct {
+struct PLT_MediaInfo{
+    PLT_MediaInfo(){
+        num_tracks = 0;
+    }
     NPT_UInt32    num_tracks;
     NPT_TimeStamp media_duration;
     NPT_String    cur_uri;
@@ -62,9 +65,14 @@ typedef struct {
     NPT_String    play_medium;
     NPT_String    rec_medium;
     NPT_String    write_status;
-} PLT_MediaInfo;
+};
 
-typedef struct {
+struct PLT_PositionInfo{
+    PLT_PositionInfo(){
+        track = 0;
+        rel_count = 0;
+        abs_count = 0;
+    }
     NPT_UInt32    track;
     NPT_TimeStamp track_duration;
     NPT_String    track_metadata;
@@ -73,28 +81,33 @@ typedef struct {
     NPT_TimeStamp abs_time;
     NPT_Int32     rel_count;
     NPT_Int32     abs_count;
-} PLT_PositionInfo;
+};
 
-typedef struct {
+struct PLT_TransportInfo{
     NPT_String cur_transport_state;
     NPT_String cur_transport_status;
     NPT_String cur_speed;
-} PLT_TransportInfo;
+};
 
-typedef struct {
+struct PLT_TransportSettings{
     NPT_String play_mode;
     NPT_String rec_quality_mode;
-} PLT_TransportSettings;
+} ;
 
-typedef struct {
-    NPT_UInt32 rcs_id;
+struct PLT_ConnectionInfo{
+    PLT_ConnectionInfo(){
+        rcs_id = 0;
+        avtransport_id = 0;
+        peer_connection_id = 0;
+    }
+    NPT_UInt32 rcs_id;              //Rendering Control InstanceID
     NPT_UInt32 avtransport_id;
+    NPT_UInt32 peer_connection_id;
     NPT_String protocol_info;
     NPT_String peer_connection_mgr;
-    NPT_UInt32 peer_connection_id;
     NPT_String direction;
     NPT_String status;
-} PLT_ConnectionInfo;
+} ;
 
 /*----------------------------------------------------------------------
 |   PLT_MediaControllerDelegate
@@ -205,7 +218,20 @@ public:
         PLT_StringList*          /* sources */,
         PLT_StringList*          /* sinks */,
         void*                    /* userdata */) {}
-        
+
+    virtual void OnPrepareForConnectionResult(
+        NPT_Result               /* res */,
+        PLT_DeviceDataReference& /* device */,
+        PLT_ConnectionInfo*      /* info */,
+        void*                    /* userdata */
+        ) {}
+
+    virtual void OnConnectionCompleteResult(
+        NPT_Result               /* res */,
+        PLT_DeviceDataReference& /* device */,
+        void*                    /* userdata */
+        ) {}
+
     // RenderingControl
     virtual void OnSetMuteResult(
         NPT_Result               /* res */,
@@ -275,7 +301,10 @@ public:
     NPT_Result GetCurrentConnectionIDs(PLT_DeviceDataReference& device, void* userdata);
     NPT_Result GetCurrentConnectionInfo(PLT_DeviceDataReference& device, NPT_UInt32 connection_id, void* userdata);
     NPT_Result GetProtocolInfo(PLT_DeviceDataReference& device, void* userdata);
-    
+    NPT_Result PrepareForConnection(PLT_DeviceDataReference& device, const char* RemoteProtocolInfo,
+        const char* PeerConnectionManager, NPT_Int32 PeerConnectionId, bool input_direction, void* userdata); 
+    NPT_Result ConnectionComplete(PLT_DeviceDataReference& device, NPT_Int32 connection_id, void* userdata);
+
     // RenderingControl
     NPT_Result SetMute(PLT_DeviceDataReference& device, NPT_UInt32 instance_id, const char* channel, bool mute, void* userdata);
     NPT_Result GetMute(PLT_DeviceDataReference& device, NPT_UInt32 instance_id, const char* channel, void* userdata);
@@ -302,6 +331,9 @@ private:
     NPT_Result OnGetTransportInfoResponse(NPT_Result res, PLT_DeviceDataReference& device, PLT_ActionReference& action, void* userdata);
     NPT_Result OnGetTransportSettingsResponse(NPT_Result res, PLT_DeviceDataReference& device, PLT_ActionReference& action, void* userdata);
 
+    
+    NPT_Result OnPrepareForConnectionResponse(NPT_Result res, PLT_DeviceDataReference& device, PLT_ActionReference& action, void* userdata);
+    NPT_Result OnConnectionCompleteResponse(NPT_Result res, PLT_DeviceDataReference& device, PLT_ActionReference& action, void* userdata);
     NPT_Result OnGetCurrentConnectionIDsResponse(NPT_Result res, PLT_DeviceDataReference& device, PLT_ActionReference& action, void* userdata);
     NPT_Result OnGetCurrentConnectionInfoResponse(NPT_Result res, PLT_DeviceDataReference& device, PLT_ActionReference& action, void* userdata);
     NPT_Result OnGetProtocolInfoResponse(NPT_Result res, PLT_DeviceDataReference& device, PLT_ActionReference& action, void* userdata);

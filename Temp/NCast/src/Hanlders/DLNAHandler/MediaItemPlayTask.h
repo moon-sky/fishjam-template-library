@@ -1,7 +1,8 @@
 #pragma once
 
-#include "PltThreadTask.h"
-#include "PltDeviceData.h"
+#include "Platinum.h"
+//#include "PltThreadTask.h"
+//#include "PltDeviceData.h"
 #include "../CastingHandler.h"
 
 class MediaItemPlayTask : public PLT_ThreadTask

@@ -114,6 +114,10 @@
 * Fiddler2/Httpwatch -- 专门监控Http传输的工具?
 * Wireshark(开源遵循GPL的网络抓包工具) -- http://wiki.wireshark.org
 *   默认是混杂模式(promiscuous mode)，会捕获整个局域网段的包。
+*   抓取本地程序之间的封包(localhost/loopback):
+*     route add 本地IP(如192.168.100.8) mask 255.255.255.255 网关(如192.168.100.1) metric 1
+*     也可用 RawCap.exe(http://www.netresec.com/?page=RawCap) 来捕获本地包，可指定停止的条件(包数量或时间)
+*
 *   过滤: -- 状态栏中左下角提示信息括号内的值(如 ip.src)可以作为过滤使用
 *     抓包时过滤：Capture->Options->Capture Filter->HTTP TCP port(80) 
 *     显示时过滤：
