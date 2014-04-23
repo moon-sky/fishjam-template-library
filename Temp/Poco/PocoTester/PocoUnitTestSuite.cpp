@@ -15,6 +15,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( CPocoThreadTester );
 #include "PocoCryptoTester.h"
 #include "PocoDataTester.h"
 #include "PocoDebugTester.h"
+#include "PocoDecoderEncoderTester.h"
 #include "PocoFileTester.h"
 #include "PocoFoundationTester.h"
 #include "PocoLoggerTester.h"
@@ -27,6 +28,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( CPocoConverterTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoCryptoTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoDataTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoDebugTester );
+CPPUNIT_TEST_SUITE_REGISTRATION( CPocoDecoderEncoderTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoFileTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoFoundationTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoLoggerTester );

@@ -217,11 +217,18 @@ namespace FTL
 			TCHAR szDir[_MAX_DIR] = {0};
 			TCHAR szFileName[_MAX_FNAME] = {0};
 			TCHAR szExt[_MAX_EXT] = {0};
+            TCHAR szFilePrefix[_MAX_FNAME] = {0};
 
-			_tsplitpath_s(pszFilePath, szDrive, szDir, szFileName, szExt);
+            _tsplitpath_s(pszFilePath, szDrive, szDir, szFileName, szExt);
+            int nIndex = 1;
 
-			int nIndex = 1;
-			CFStringFormater strFileName;
+            if(SpitFileNameAndIndex(szFileName, szFilePrefix, _countof(szFilePrefix), nIndex))
+            {
+                StringCchCopy(szFileName, _countof(szFileName), szFilePrefix);
+                nIndex++;
+            }
+
+            CFStringFormater strFileName;
 			while ((nIndex <= 999) && (INVALID_HANDLE_VALUE == hLocalFile))
 			{
 				strFileName.Format(TEXT("%s(%d)"), szFileName, nIndex);
@@ -265,6 +272,58 @@ namespace FTL
         FreeConsole(); 
     }
 #endif 
+
+    BOOL CFFileUtil::SpitFileNameAndIndex(LPCTSTR pszFileName, LPTSTR pszFilePrefix, DWORD dwMaxSize, int& nIndex)
+    {
+        BOOL bRet = FALSE;
+
+        FTLASSERT(pszFileName);
+        int nStrLength = lstrlen(pszFileName);
+        FTLASSERT(nStrLength > 0 && nStrLength < dwMaxSize);
+        if (nStrLength > 0 && nStrLength < dwMaxSize)
+        {
+            StringCchCopy(pszFilePrefix, dwMaxSize, pszFileName);
+
+            LPTSTR pszCloseParenthesis = NULL;  //ÓÒÀ¨ºÅ
+            LPTSTR pszOpenParenthesis = NULL;   //×óÀ¨ºÅ
+            if(_T(')') == pszFilePrefix[nStrLength - 1])
+            {
+                pszCloseParenthesis = pszFilePrefix + nStrLength - 1;
+            }
+            if (pszCloseParenthesis)
+            {
+                pszOpenParenthesis = StrRChr(pszFilePrefix, pszCloseParenthesis, _T('('));
+            }
+            if (pszCloseParenthesis && pszOpenParenthesis && pszOpenParenthesis < pszCloseParenthesis)
+            {
+                //have (xxx)
+                *pszCloseParenthesis = NULL;    //end string at close parenthesis
+
+                BOOL bAllNumber = TRUE;
+                LPCTSTR pszCheckIndex = &pszOpenParenthesis[1];
+
+                while (*pszCheckIndex && pszCheckIndex < pszCloseParenthesis)
+                {
+                    if (*pszCheckIndex < _T('0') || *pszCheckIndex > _T('9'))
+                    {
+                        //is not number
+                        bAllNumber = FALSE;
+                        break;
+                    }
+                    pszCheckIndex++;
+                }
+
+                if (bAllNumber)
+                {
+                    nIndex = StrToInt(&pszOpenParenthesis[1]);
+                    *pszOpenParenthesis = NULL;
+                    bRet = TRUE;
+                }
+            }
+        }
+
+        return bRet;
+    }
 
 	//-----------------------------------------------------------------------------
 	// Construction/Destruction

@@ -2100,7 +2100,7 @@ namespace FTL
 
 		BOOL bRet = TRUE;
 		for (TransferParamContainer::iterator iter = m_JobParam->m_transferParams.begin();
-			iter != m_JobParam->m_transferParams.end();
+			bRet && iter != m_JobParam->m_transferParams.end();
 			++iter)
 		{
 			FTransferParam& transParam = *iter;
@@ -2133,16 +2133,16 @@ namespace FTL
 				}
 			case tptLocalFile:
 				{
-					HANDLE hFile=::CreateFile(transParam.strValue, 
+					HANDLE hFile = NULL;
+                    API_VERIFY((hFile = ::CreateFile(transParam.strValue, 
 						GENERIC_READ, 
 						FILE_SHARE_READ, // share mode
 						NULL, // security attribute
 						OPEN_EXISTING, // create disposition
 						FILE_ATTRIBUTE_NORMAL, // flag and attributes
-						NULL); // template file handle
-					API_ASSERT(INVALID_HANDLE_VALUE != hFile);
+						NULL)) != INVALID_HANDLE_VALUE); // template file handle
 
-					if (INVALID_HANDLE_VALUE != hFile)
+					if (bRet) // INVALID_HANDLE_VALUE != hFile)
 					{
 						PostFileParam* pFileParam = new PostFileParam();
 						pFileParam->dwFileSize= ::GetFileSize(hFile, NULL);

@@ -54,6 +54,7 @@ BEGIN_MESSAGE_MAP(CFilePage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_FILE_READ_WRITE_COPY, &CFilePage::OnBnClickedBtnReadWriteCopy)
 
     ON_BN_CLICKED(IDC_BTN_FILE_FILLDUMP, &CFilePage::OnBnClickedBtnFillDump)
+    ON_BN_CLICKED(IDC_BTN_FILE_AUTONAME, &CFilePage::OnBnClickedBtnAutoName)
 
 END_MESSAGE_MAP()
 
@@ -451,11 +452,28 @@ void CFilePage::OnBnClickedBtnFillDump()
     }
 }
 
+void CFilePage::OnBnClickedBtnAutoName()
+{
+    CFileDialog dlg(FALSE, NULL, NULL, 0);
+    if (dlg.DoModal())
+    {
+        BOOL bRet = FALSE;
+        TCHAR szFilePath[MAX_PATH] = {0};
+        StringCchCopy(szFilePath, _countof(szFilePath), dlg.GetPathName());
+        HANDLE hFile = NULL;
+        
+        API_VERIFY((hFile = CFFileUtil::CreateLocalWriteFile(szFilePath, _countof(szFilePath), 
+            clfAutoRename)) != NULL);
+        
+        SAFE_CLOSE_HANDLE(hFile, INVALID_HANDLE_VALUE);
+    }
+}
+
 BOOL CFilePage::OnInitDialog()
 {
     CPropertyPage::OnInitDialog();
     m_progressCopyDir.SetRange32(0, 100);
-    m_iocpMgr.Start();
+    //m_iocpMgr.Start();
 
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE

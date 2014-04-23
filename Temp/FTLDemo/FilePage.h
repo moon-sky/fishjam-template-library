@@ -45,6 +45,8 @@ public:
 
     afx_msg void OnBnClickedBtnFillDump();
 
+    afx_msg void OnBnClickedBtnAutoName();
+
     LRESULT AFX_MSG_CALL OnCopyDirProgress(WPARAM wParam, LPARAM lParam);
     LRESULT AFX_MSG_CALL OnCopyDirError(WPARAM wParam, LPARAM lParam);
 

@@ -506,6 +506,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PocoDecoderEncoderTester.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PocoDecoderEncoderTester.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PocoFileTester.cpp"
 				>
 			</File>

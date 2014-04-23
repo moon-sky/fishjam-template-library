@@ -141,6 +141,9 @@ namespace FTL
 		FTLINLINE static TextFileEncoding GetTextFileEncoding(LPCTSTR pszFilePath);
 		FTLINLINE static HANDLE CreateLocalWriteFile(__inout LPTSTR pszFilePath, DWORD dwMaxSize, CreateLocalFileFlags flags);
 
+        //将符合 xxx(数字索引).xxx 的文件名分解成 文件名 + 索引 的方式
+        //如果符合规范，则返回TRUE
+        FTLINLINE static BOOL SpitFileNameAndIndex(LPCTSTR pszFileName, LPTSTR pszFilePrefix, DWORD dwMaxSize, int& nIndex);
 	};
 
 #if 0

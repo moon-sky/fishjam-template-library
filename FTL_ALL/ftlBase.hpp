@@ -1505,12 +1505,12 @@ namespace FTL
                         StringCchPrintf(pInfo->szDetailName, dwMaxSize, TEXT("%s"), m_pszBlkName);
                         break;
                     }
-                    FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
+                    FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elapse Too Long (Want-%dms:Real-%dms)\n"),
                         m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, pInfo->szDetailName,m_pReturnAdr,m_MinElapse,dwElapseTime);
                 }
                 else
                 {
-                    FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elaspse Too Long (Want-%dms:Real-%dms)\n"),
+                    FAST_TRACE_EX(tlWarning, TEXT("%s(%d):TID(0x%04x),ID(%ld) \"%s\"(0x%p) Elapse Too Long (Want-%dms:Real-%dms)\n"),
                         m_pszFileName,m_Line,GetCurrentThreadId(), m_nElapseId, m_pszBlkName,m_pReturnAdr,m_MinElapse,dwElapseTime);
                 }
             }

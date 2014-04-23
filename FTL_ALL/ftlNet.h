@@ -648,7 +648,7 @@
 *   []Keep-Alive: timeout=5, max=100
 *   []P3P: CP=CURa ADMa DEVa PSAo PSDo OUR BUS UNI PUR INT DEM STA PRE COM NAV OTC NOI DSP COR -- 用于跨域设置Cookie, 
 *     这样可以解决iframe跨域访问cookie的问题
-*   []Range: bytes=开始位置-结束位置, 请求实体的一个或者多个子范围，可通过逗号分隔多个范围
+*   []Range: bytes=开始位置-[结束位置], 请求实体的一个或者多个子范围，可通过逗号分隔多个范围
 *   []Referer: http://源资源地址， 告诉服务器是从哪个链接过来的，这可以允许服务器生成回退链表，可用来登陆、优化、cache等
 *   [S]Set-Cookie: sc=4c31523a; path=/; domain=.acookie.taobao.com -- 用于把cookie 发送到客户端浏览器，
 *     每一个写入cookie都会生成一个Set-Cookie。
@@ -660,6 +660,7 @@
 *
 * 分块/断点续传，通过Range头域请求指定范围的内容，如果请求成功服务器会返回 206(HTTP_STATUS_PARTIAL_CONTENT) OK，
 *    并通过 Content-Range 返回范围
+*    FTP的话，需要执行 "REST 文件位置" 的命令
 *    
 * 请求主体(request-body)
 *   其中可包含任意的数据，
