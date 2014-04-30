@@ -6,6 +6,8 @@
 #  error ftlDUI.h requires ftlbase.h to be included first
 #endif
 
+//Duilib入门教程 -- http://www.cnblogs.com/Alberl/tag/duilib%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/
+
 //TODO:
 //  1.duilib里面并没有对Capture做处理，分发鼠标消息到对应的子控件上，可能是还没有完善的原因
 //    需要小心是否支持拖拽
