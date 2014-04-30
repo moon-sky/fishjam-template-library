@@ -1,3 +1,11 @@
+AtlHexEncode / BEncode / QEncode /QPEncode / UUDecode / UrlEscape / AtlEscapeUrl / AtlUnicodeToUTF8 /AtlCanonicalizeUrl / AtlCombineUrl /Base64Encode(Atlenc.h)
+
+AtlServer 中的 CAtlRegExp
+
+
+http://www.tuicool.com/articles/32qaEv
+
+
 移动原厂线刷包：      http://yun.baidu.com/share/link?shareid=2611205181&uk=1866394329
 联通原厂线刷包:       http://yun.baidu.com/share/link?shareid=3651670488&uk=1866394329
 刷机工具：            http://yun.baidu.com/share/link?shareid=2239922798&uk=1866394329
@@ -41,7 +49,7 @@ DLNA/uPNP
 Chromecast, AirPlay
  
 
-JsonStudy.h 中()：
+JsonStudy.h 中()：定义指定类型的变量 -- Json::Value arr_value(Json::arrayValue)
   Json::Value::type() -- 可以获取到类型
     nullValue--没有对应名字的节点;
     arrayValue -- 数组，可通过 [0,size()) 进行遍历

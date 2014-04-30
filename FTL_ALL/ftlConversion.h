@@ -40,7 +40,7 @@ namespace FTL
 	public:
 		FTLINLINE CFConversion(UINT CodePage = CP_ACP, DWORD dwFlags = 0);
 		FTLINLINE ~CFConversion();
-		FTLINLINE BOOL IsUsedDefaultChar() { return m_bUsedDefaultChar; }
+		//FTLINLINE BOOL IsUsedDefaultChar() { return m_bUsedDefaultChar; }
 		FTLINLINE VOID SetDefaultCharForWC2MB(LPSTR pszDefaultChar);
 
 		FTLINLINE LPWSTR UTF8_TO_UTF16( LPCSTR szUTF8 , INT* pLength = NULL, BOOL bDetached = FALSE);
@@ -76,7 +76,7 @@ namespace FTL
 
 		//WideCharToMultiByte 时使用的参数 -- 注意：CodePage 为 CP_UTF7 和 CP_UTF8 时，这两个参数必须是NULL，否则会失败
 		LPSTR   m_pDefaultChar;		//遇到一个不能转换的宽字符，函数便会使用pDefaultChar参数指向的字符
-		BOOL    m_bUsedDefaultChar;	//至少有一个字符不能转换为其多字节形式，函数就会把这个变量设为TRUE
+		//BOOL    m_bUsedDefaultChar;	//(UTF-8时会失败)至少有一个字符不能转换为其多字节形式，函数就会把这个变量设为TRUE
 		CFMemAllocator<BYTE> m_Mem;
 		CFMemAllocator<BYTE> m_Mem2;
 	};
@@ -88,7 +88,6 @@ namespace FTL
 		FTLINLINE static BOOL HexFromBinary(__in const BYTE* pBufSrc, __in LONG nSrcLen, 
 			__out LPTSTR pBufDest, __inout LONG* pDestCharCount, 
 			__in TCHAR chDivision = _T('\0'));
-
 	};
 }
 

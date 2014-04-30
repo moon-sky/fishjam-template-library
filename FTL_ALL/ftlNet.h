@@ -883,6 +883,19 @@ namespace FTL
 		FTLINLINE VOID	  Init();
 	};
 
+    template<class _Elem>
+    FTLEXPORT class CFUrlEncodeT{
+    public:
+        static std::basic_string<_Elem> UrlDecode(const std::basic_string<_Elem>& strUrl);
+        static std::basic_string<_Elem> UrlEncode(const std::basic_string<_Elem>& strUrl);
+    private:
+        //const static _Elem s_HexValue[16];
+    };
+
+    typedef CFUrlEncodeT<char>      CFUrlEncodeA;
+    typedef CFUrlEncodeT<wchar_t>   CFUrlEncodeW;
+    typedef CFUrlEncodeT<TCHAR>     CFUrlEncode;
+
 	typedef std::map<tstring, tstring> CookieKeyValueMap;
     namespace FNetInfo
     {

@@ -336,6 +336,25 @@ namespace FTL
 		return bRet;
 	}
 
+    template<class _Elem>
+    std::basic_string<_Elem> CFUrlEncodeT<_Elem>::UrlDecode(const std::basic_string<_Elem>& strUrl)
+    {
+        FTLASSERT(FALSE);
+        _Elem hexVals[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+
+        std::basic_string<_Elem> strResult;
+        return strResult;
+    }
+
+    template<class _Elem>
+    std::basic_string<_Elem> CFUrlEncodeT<_Elem>::UrlEncode(const std::basic_string<_Elem>& strUrl)
+    {
+        FTLASSERT(FALSE);
+        std::basic_string<_Elem> strResult;
+        return strResult;
+    }
+
+
     namespace FNetInfo
     {
 		//LPCTSTR GetSockAddrString(CFStringFormater& formater, SOCKADDR *sa, int len)

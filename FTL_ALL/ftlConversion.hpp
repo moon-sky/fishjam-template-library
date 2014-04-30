@@ -14,7 +14,7 @@ namespace FTL
 		,m_dwFlags(dwFlags)
 	{
 		m_pDefaultChar = NULL;
-		m_bUsedDefaultChar = FALSE;
+		//m_bUsedDefaultChar = FALSE;
 	}
 	CFConversion::~CFConversion()
 	{
@@ -62,15 +62,16 @@ namespace FTL
 		int size = wcharsize * sizeof( WCHAR );
 		API_VERIFY( 0 != MultiByteToWideChar( CP_UTF8, m_dwFlags,  szUTF8, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
 
-		int charsize = WideCharToMultiByte( m_codePage, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, 
-			m_pDefaultChar, &m_bUsedDefaultChar);
+		int charsize = 0;
+		API_VERIFY((charsize = WideCharToMultiByte( m_codePage, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, 
+			m_pDefaultChar, NULL)) != 0);
         if (pLength)
         {
             *pLength = charsize - 1;
         }
 		size = charsize * sizeof( char );
 		API_VERIFY( 0 != WideCharToMultiByte( m_codePage, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, 
-			( LPSTR )m_Mem2.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) ); // NS
+			( LPSTR )m_Mem2.GetMemory( size ), size, m_pDefaultChar, NULL ) ); // NS
 		if (bDetached)
 		{
 			return (LPSTR)m_Mem2.Detatch();
@@ -103,15 +104,16 @@ namespace FTL
 		int size = wcharsize * sizeof( WCHAR );
 		API_VERIFY( MultiByteToWideChar( m_codePage, m_dwFlags,  szMBCS, -1, ( LPWSTR )m_Mem.GetMemory( size ), wcharsize ) );
 
-		int charsize = WideCharToMultiByte( CP_UTF8, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, NULL, 0, 
-			m_pDefaultChar, &m_bUsedDefaultChar);
+		int charsize = 0;
+        API_VERIFY((charsize = WideCharToMultiByte( CP_UTF8, m_dwFlags, ( LPWSTR )m_Mem.GetMemory(), -1, NULL, 0, 
+			m_pDefaultChar, NULL)) != 0); //UTF-8时使用非NULL的m_bUsedDefaultChar会失败
 		size = charsize * sizeof( char );
         if (pLength)
         {
             *pLength = charsize - 1;
         }
 		API_VERIFY( WideCharToMultiByte( CP_UTF8, m_dwFlags, ( LPWSTR )( BYTE* )m_Mem, -1, 
-			( LPSTR )m_Mem2.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) ); // NS
+			( LPSTR )m_Mem2.GetMemory( size ), size, m_pDefaultChar, NULL ) ); // NS
 
 		if (bDetached)
 		{
@@ -130,7 +132,7 @@ namespace FTL
         }
 		int size = charsize * sizeof( char );
 		API_VERIFY(0 != WideCharToMultiByte( m_codePage, m_dwFlags, szUTF16, -1, 
-			( LPSTR )m_Mem.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) );
+			( LPSTR )m_Mem.GetMemory( size ), size, m_pDefaultChar, NULL ) );
 
 		if (bDetached)
 		{
@@ -149,7 +151,7 @@ namespace FTL
         }
 		int size = charsize * sizeof( char );
 		API_VERIFY( 0 != WideCharToMultiByte( CodePage, m_dwFlags, szWcs, -1, 
-			( LPSTR )m_Mem.GetMemory( size ), size, m_pDefaultChar, &m_bUsedDefaultChar ) );
+			( LPSTR )m_Mem.GetMemory( size ), size, m_pDefaultChar, NULL ) );
 
 		if (bDetached)
 		{

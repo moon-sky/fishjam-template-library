@@ -13,13 +13,26 @@
 class CPocoDecoderEncoderTester : public CPPUNIT_NS::TestFixture
 {
 public:
+    CPocoDecoderEncoderTester();
+public:
     CPPUNIT_TEST_SUITE( CPocoDecoderEncoderTester );
-    CPPUNIT_TEST( test_base64_decoder );
-    CPPUNIT_TEST( test_base64_encoder );
+    CPPUNIT_TEST( test_Base64Decoder );
+    CPPUNIT_TEST( test_Base64Encoder );
+    CPPUNIT_TEST( test_QuotedPrintableDecoder );
+    CPPUNIT_TEST( test_QuotedPrintableEncoder );
     CPPUNIT_TEST_SUITE_END();
 
-    DECLARE_DEFAULT_TEST_CLASS(CPocoDecoderEncoderTester);
+    //DECLARE_DEFAULT_TEST_CLASS(CPocoDecoderEncoderTester);
 private:
-    void test_base64_decoder();
-	void test_base64_encoder();
+    void test_Base64Decoder();
+	void test_Base64Encoder();
+    void test_QuotedPrintableDecoder();
+    void test_QuotedPrintableEncoder();
+
+private:
+    std::wstring m_strUnicodeOriginal;
+    std::string m_strUtf8Original;
+    std::string m_strBase64String;
+
+    std::string m_strQuotedPrintableString;
 };
