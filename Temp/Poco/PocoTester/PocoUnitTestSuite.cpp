@@ -9,7 +9,7 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoFoundationTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoThreadTester );
 
-
+#include "AtlEncTester.h"
 #include "PocoConfigurationTester.h"
 #include "PocoConverterTester.h"
 #include "PocoCryptoTester.h"
@@ -23,6 +23,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( CPocoThreadTester );
 #include "PocoThreadTester.h"
 #include "PocoXmlTester.h"
 
+CPPUNIT_TEST_SUITE_REGISTRATION( CAtlEncTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoConfigurationTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoConverterTester );
 CPPUNIT_TEST_SUITE_REGISTRATION( CPocoCryptoTester );
