@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ATLCollectionTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Cpp2011Tester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CppLanguageTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MFCContainerTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyTestData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PerformanceTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdioTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLAlgorithmTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLAllocatorTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLArrayTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLDequeTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLFunctionalTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLHashContainerTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLIteratorTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLListTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLLocaleTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLMapTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLMemoryTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLMultimapTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLNumericTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLQueueTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLSetTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLStackTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLStreamTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLStringTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLTesterUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLTupleTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLUnitTestSuite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLUtilityTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLValarrayTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLVectorTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ATLCollectionTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cpp2011Tester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CppLanguageTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MFCContainerTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyTestData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PerformanceTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdioTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLAlgorithmTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLAllocatorTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLArrayTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLDequeTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLFunctionalTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLHashContainerTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLIteratorTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLListTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLLocaleTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLMapTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLMemoryTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLMultimapTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLNumericTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLQueueTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLSetTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLStackTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLStreamTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLStringTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLStudy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLTesterUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLTupleTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLUtilityTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLValarrayTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLVectorTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TesterClassDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\STLTester.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="STLTester.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\STLTester.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+    <Text Include="ReadMe_Unix.txt" />
+  </ItemGroup>
+</Project>

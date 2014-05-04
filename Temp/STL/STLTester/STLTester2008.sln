@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "STLTester", "STLTester2008.vcproj", "{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_Need_Operator|Win32 = Debug_Need_Operator|Win32
+		Debug|Win32 = Debug|Win32
+		Release_Need_Operator|Win32 = Release_Need_Operator|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}.Debug_Need_Operator|Win32.ActiveCfg = Debug_Need_Operator|Win32
+		{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}.Debug_Need_Operator|Win32.Build.0 = Debug_Need_Operator|Win32
+		{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}.Debug|Win32.Build.0 = Debug|Win32
+		{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}.Release_Need_Operator|Win32.ActiveCfg = Release_Need_Operator|Win32
+		{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}.Release_Need_Operator|Win32.Build.0 = Release_Need_Operator|Win32
+		{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}.Release|Win32.ActiveCfg = Release|Win32
+		{8CDD8B3B-730A-4E1D-BDDE-8F008BF47A90}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

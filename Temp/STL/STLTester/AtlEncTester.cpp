@@ -6,13 +6,13 @@
 
 CAtlEncTester::CAtlEncTester()
 {
-    //m_strOriginalURL = _T("http://microsoft.com/test/t%e<s t.asp?url=/{ex% ample</abc.asp?frame=true#fr%agment");
+    m_strOriginalURL = _T("http://microsoft.com/test/t%e<s t.asp?url=/{ex% ample</abc.asp?frame=true#fr%agment");
     m_strUrlEscaped  = _T("http://microsoft.com/test/t%e<s%20t.asp?url=/{ex% ample</abc.asp?frame=true#fr%agment");
 
 
-    m_strOriginalURL = _T("{\"syncDate\":1398837962127,\"page\":1,\"commands\":{\"add\":[{\"content\":\"?+\+&+=\",\"important\"\
-:false,\"registerDate\":\"2014-04-30T06:08:38Z\",\"colorId\":0,\"images\":[],\"modifyDate\":\"2014-04-30T06:08:38Z\"\
-,\"clientId\":64,\"folderId\":805}]},\"changes\":20}");
+//    m_strOriginalURL = _T("{\"syncDate\":1398837962127,\"page\":1,\"commands\":{\"add\":[{\"content\":\"?+\+&+=\",\"important\"\
+//:false,\"registerDate\":\"2014-04-30T06:08:38Z\",\"colorId\":0,\"images\":[],\"modifyDate\":\"2014-04-30T06:08:38Z\"\
+//,\"clientId\":64,\"folderId\":805}]},\"changes\":20}");
     
 }
 
@@ -22,7 +22,7 @@ void CAtlEncTester::test_AtlCanonicalizeUrl()
 
 void CAtlEncTester::test_AtlCombineUrl()
 {
-    AtlCombineUrl
+    
 }
 
 void CAtlEncTester::test_AtlEscapeUrl()
