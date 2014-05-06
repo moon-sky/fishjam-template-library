@@ -33,9 +33,23 @@
 *   4个特性：并发性、共享性、虚拟性 和 不确定性。
 *   5个管理功能：进程管理、文件管理、存储管理、设备管理 和 作业管理。
 * 
-* S1睡眠模式 -- 中央处理器暂停、内存已刷新、整个系统处于低电力模式
-* S3/S4睡眠模式 -- 未供电至中央处理器、内存延缓升级、电源处于低电力模式
-* 
+* 电源管理(具体宏的定义参见 CFPowerBroadcastMsgInfo )
+*   ACPI(Advanced Configuration Management) -- 电源管理规范，由系统而不是BIOS来全面控制电源管理，
+*   S0 -- 正常工作状态，所有设备全部供电。
+*   S1 -- 通过CPU时钟控制器将CPU关闭之。其他的部件仍然正常工作。该状态也称为POS（Power on Suspend）
+*         中央处理器暂停、内存已刷新、整个系统处于低电力模式
+*   S2 -- CPU处于停止运作状态，总线时钟也被关闭。其余的设备仍然运转。
+*   S3 -- 睡眠/待机(Sleep/StandBy), 操作系统把当前信息储存到内存中，只有内存等几个关键部件通电，可被鼠标或键盘唤醒。
+*   S4 -- 休眠(Hibernate), 操作系统把当前信息储存到硬盘中，这时系统主电源关闭。但硬盘仍然带电并可以被唤醒。
+*         TODO: 进入挂起状态(Suspend State)后，不能通过键盘或鼠标唤醒计算机，必须通过Power Key唤醒
+*   S5 -- 关机，所有设备全部断电。
+*   电源管理额消息(对应用程序来说，S3/S4 没有本质区别): 
+*     挂起 -- PBT_APMQUERYSUSPEND(WinXP) -> PBT_APMSUSPEND 
+*     恢复(顺序不保证): PBT_APMRESUMEAUTOMATIC -> PBT_APMRESUMESUSPEND (处理时的推荐消息)
+
+*   电源管理部分的设置:
+*     
+*
 * 操作系统提供的IPC机制一般分为两类：
 *   1.本地IPC -- 共享内存、管道、Unix领域socket、door(?)、信号等；
 *   2.远程IPC -- Internet领域socket、Win32命名管道(named pipe)等
@@ -289,6 +303,9 @@ namespace FTL
         FTLINLINE static VirtualMachineType CheckRunningMachineType();
 #endif 
         FTLINLINE static BOOL IsRunningOnRemoteDesktop();
+
+        //控制是否阻止由操作系统发起的挂起操作
+        FTLINLINE static EXECUTION_STATE EnablePowerSuspend(BOOL bEnabled);
 
         //把Dos的结束符转换为Unix的结束符(去掉其中的 "\r" )
         FTLINLINE static int DosLineToUnixLine(const char *src, char *dest, int maxlen);

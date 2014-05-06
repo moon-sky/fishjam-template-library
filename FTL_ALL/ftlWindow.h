@@ -133,7 +133,11 @@
 /******************************************************************************************************
 * WinProc 返回值：
 *   0 -- 用户已经处理好消息；如 WM_CLOSE 中返回0则不会关闭，返回 DefaultWindowProc 才关闭(WM_DESTROY)
-*
+* 
+* 消息映射
+*   MFC: ON_MESSAGE / ON_REGISTERED_MESSAGE
+*   WTL: 
+* 
 * 创建窗口的顺序：PreCreateWindow -> PreSubclassWindow -> OnGetMinMaxInfo -> OnNcCreate -> OnNcCalcSize -> OnCreate
 *   -> OnSize -> OnMove -> OnChildNotify
 * 关闭窗口的顺序：OnClose -> OnDestory -> OnNcDestroy -> PostNcDestory
@@ -353,7 +357,7 @@
 #  define WM_SYSTIMER 0x0118		//UnDocument Message(caret blink) , afxtrace.cpp!_AfxTraceMsg()可以看到定义
 #endif 
 
-const UINT DEAFULT_DUMP_FILTER_MESSAGES[] = {
+const UINT DEFAULT_DUMP_FILTER_MESSAGES[] = {
 	WM_MOUSEMOVE,
 	WM_SETCURSOR,
 
@@ -387,7 +391,7 @@ const UINT DEAFULT_DUMP_FILTER_MESSAGES[] = {
 namespace FTL
 {
 	//注意:
-	//1.WTSRegisterSessionNotification 后才能接收 WM_WTSSESSION_CHANGE
+	//1.WTSRegisterSessionNotification 后才能接收 WM_WTSSESSION_CHANGE, MFC 中用宏 ON_WM_WTSSESSION_CHANGE
 	//2.RegisterShellHookWindow 后可以接收 WM_SHELLHOOKMESSAGE
 
 	//在Output中Dump出当前接受到的消息，通常第一个参数是 __FILE__LINE__
@@ -448,7 +452,7 @@ namespace FTL
 		UINT RWM_SHAREVISTRING;
 		UINT WM_SHELLHOOKMESSAGE;		//RegisterShellHookWindow 后接收
 		UINT RWM_TASKBARBUTTONCREATED;	//任务栏重新创建?(没有确认，可以用于初始化Vista的 ITaskbarList3 接口?)
-		UINT RWM_TASKBARCREATED; 
+		UINT RWM_TASKBARCREATED;        //Explorer 崩溃重启后会发这个消息，App可以重新加入通知区域(Vista后需要ChangeWindowMessageFilter)
 
         UINT RWM_DRAGLISTMSGSTRING;
         

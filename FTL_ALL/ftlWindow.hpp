@@ -281,6 +281,7 @@ namespace FTL
 		}
 	};
 
+    //MFC 中通过 ON_WM_POWERBROADCAST 宏处理
 	class CFPowerBroadcastMsgInfo : public  CFDefaultMsgInfo
 	{
 	public:
@@ -292,20 +293,30 @@ namespace FTL
 			UINT nEvent = (UINT)wParam;
 			switch (nEvent)
 			{
+                //进入S3/S4前发送确认应用程序是否允许挂起，若不允许则返回 BROADCAST_QUERY_DENY
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMQUERYSUSPEND);
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMQUERYSTANDBY);
+                //若程序阻止了挂起，则发送该消息
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMQUERYSUSPENDFAILED);
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMQUERYSTANDBYFAILED);
-				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMSUSPEND);
+                //注意：Vista/Win7 不会发送以上4个消息, 应用程序也不能阻止用户手动发起的挂起请求
+                //       但可以通过SetThreadExecutionState阻止由操作系统发起的挂起操作
 
+
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMSUSPEND); //进入挂起状态前发送
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMSTANDBY);
-				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMECRITICAL);
-				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMESUSPEND);
+
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMECRITICAL); //从未知或不稳定状态恢复
+
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMESUSPEND);  //从挂起状态恢复
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMESTANDBY);
+
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMBATTERYLOW);
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMPOWERSTATUSCHANGE);
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMOEMEVENT);
-				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMEAUTOMATIC);
+
+                //注意(实测不是)：Vista 后从S3(睡眠)恢复时，只有采用键盘或鼠标唤醒系统应用程序才会收到该消息
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMEAUTOMATIC);  //自动从挂起状态恢复时所收到的事件
 
 #if (_WIN32_WINNT >= 0x0502)
 				//case PBT_POWERSETTINGCHANGE:
@@ -530,7 +541,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_PAINT, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_CLOSE, CFDefaultMsgInfo);
 #ifndef _WIN32_WCE
-                GET_MESSAGE_INFO_ENTRY(WM_QUERYENDSESSION, CFDefaultMsgInfo); //当用户选择结束对话框或程序自己调用ExitWindows函数
+                GET_MESSAGE_INFO_ENTRY(WM_QUERYENDSESSION, CFDefaultMsgInfo); //准备关机时发送? 当用户选择结束对话框或程序自己调用ExitWindows函数
                 GET_MESSAGE_INFO_ENTRY(WM_QUERYOPEN, CFDefaultMsgInfo);     //当用户窗口恢复以前的大小位置时，把此消息发送给某个图标
                 //当系统进程发出WM_QUERYENDSESSION消息后，此消息发送给应用程序，通知它对话是否结束,
                 //一半来说，过滤了 WM_CLOSE 消息的程序都需要处理这个消息，否则可能导致系统无法关闭

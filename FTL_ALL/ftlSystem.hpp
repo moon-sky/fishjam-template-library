@@ -318,7 +318,7 @@ namespace FTL
 		API_VERIFY(::SystemParametersInfo(SPI_GETSHOWIMEUI, 0, &XXXXX, 0));
 #if(WINVER >= 0x0500)
 		API_VERIFY(::SystemParametersInfo(SPI_GETMOUSESPEED, 0, &XXXXX, 0));
-		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &XXXXX, 0));
+		API_VERIFY(::SystemParametersInfo(SPI_GETSCREENSAVERRUNNING, 0, &XXXXX, 0)); //确认屏保是否在运行
 		API_VERIFY(::SystemParametersInfo(SPI_GETDESKWALLPAPER, 0, &XXXXX, 0));
 #endif /* WINVER >= 0x0500 */
 
@@ -1211,6 +1211,23 @@ namespace FTL
             }
         }
         return bRunningOnRemoteDesktop;
+    }
+
+    EXECUTION_STATE CFSystemUtil::EnablePowerSuspend(BOOL bEnabled)
+    {
+        BOOL bRet = FALSE;
+        EXECUTION_STATE dwOldState = 0;
+        if (bEnabled)
+        {
+            API_VERIFY((dwOldState = ::SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_CONTINUOUS)
+                ) != NULL );
+        }
+        else
+        {
+            API_VERIFY((dwOldState = ::SetThreadExecutionState(ES_CONTINUOUS)) 
+                != NULL);
+        }
+        return dwOldState;
     }
 
     int CFSystemUtil::DosLineToUnixLine(const char *src, char *dest, int maxlen)
