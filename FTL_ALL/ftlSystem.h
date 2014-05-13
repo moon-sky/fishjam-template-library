@@ -45,10 +45,10 @@
 *   S5 -- 关机，所有设备全部断电。
 *   电源管理额消息(对应用程序来说，S3/S4 没有本质区别): 
 *     挂起 -- PBT_APMQUERYSUSPEND(WinXP) -> PBT_APMSUSPEND 
-*     恢复(顺序不保证): PBT_APMRESUMEAUTOMATIC -> PBT_APMRESUMESUSPEND (处理时的推荐消息)
-
+*     恢复(顺序不保证): PBT_APMRESUMEAUTOMATIC (恢复时始终会发送，处理时的推荐消息?) -> PBT_APMRESUMESUSPEND(需要用户按键恢复才发送?)
 *   电源管理部分的设置:
-*     
+*     1.控制面板\所有控制面板项\电源选项
+*     2.powercfg.exe
 *
 * 操作系统提供的IPC机制一般分为两类：
 *   1.本地IPC -- 共享内存、管道、Unix领域socket、door(?)、信号等；

@@ -306,26 +306,33 @@ namespace FTL
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMSUSPEND); //进入挂起状态前发送
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMSTANDBY);
 
-				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMECRITICAL); //从未知或不稳定状态恢复
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMECRITICAL); //从未知或不稳定状态恢复(Vista后由PBT_APMRESUMEAUTOMATIC代替)
 
+                //注意(实测未确认)：Vista 后从S3(睡眠)恢复时，只有采用键盘或鼠标唤醒系统应用程序才会收到该消息
+                //可以考虑笔记本上插拔电源的方式唤醒来测试
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMESUSPEND);  //从挂起状态恢复
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMESTANDBY);
 
-				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMBATTERYLOW);
-				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMPOWERSTATUSCHANGE);
-				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMOEMEVENT);
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMBATTERYLOW); //Xp前表电量低,Vista后被PBT_APMPOWERSTATUSCHANGE代替
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMPOWERSTATUSCHANGE); //电力状态变化(比如笔记本插拔电源？电量变换？)
+				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMOEMEVENT);   //OEM 定义的事件,Vista后不再支持
 
-                //注意(实测不是)：Vista 后从S3(睡眠)恢复时，只有采用键盘或鼠标唤醒系统应用程序才会收到该消息
 				HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_APMRESUMEAUTOMATIC);  //自动从挂起状态恢复时所收到的事件
 
-#if (_WIN32_WINNT >= 0x0502)
-				//case PBT_POWERSETTINGCHANGE:
-				{
-					//TODO:POWERBROADCAST_SETTING 
-					HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_POWERSETTINGCHANGE);
-					break;
-				}
-#endif // (_WIN32_WINNT >= 0x0502)
+#ifndef PBT_POWERSETTINGCHANGE          //#if (_WIN32_WINNT >= 0x0502)
+#  define PBT_POWERSETTINGCHANGE 0x8013
+#endif  
+            case PBT_POWERSETTINGCHANGE:
+                {
+                    //HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_POWERSETTINGCHANGE);
+                    POWERBROADCAST_SETTING* pPowerBoadcastSetting =  (POWERBROADCAST_SETTING*)lParam;
+                    if (pPowerBoadcastSetting)
+                    {
+                        //pPowerBoadcastSetting->PowerSetting
+                    }
+                    break;
+                }
+                
 			default:
 				FTLASSERT(FALSE);
 				StringCchPrintf(szInfo, _countof(szInfo), TEXT("Unknown-%d"), nEvent);
