@@ -139,8 +139,23 @@
 *
 *************************************************************************************************************************/
 
+#ifdef FTL_DEBUG
+#  define DUI_DUMP_NOTIFY_MSG(msg)	FTLTRACE(TEXT("%s %s\n"), __FILE__LINE__, FTL::CFDuiNotifyDumpInfo(msg).GetConvertedInfo());
+#else
+#  define DUI_DUMP_NOTIFY_MSG(msg)	__noop
+#endif 
+
 namespace FTL
 {
+	FTLEXPORT class CFDuiNotifyDumpInfo : public CFConvertInfoT<CFDuiNotifyDumpInfo, const TNotifyUI& , 128>
+	{
+		DISABLE_COPY_AND_ASSIGNMENT(CFDuiNotifyDumpInfo);
+	public:
+	public:
+		FTLINLINE explicit CFDuiNotifyDumpInfo(const TNotifyUI& msg);
+		FTLINLINE virtual LPCTSTR ConvertInfo();
+	};
+
 }
 #endif //FTL_DUI_H
 
