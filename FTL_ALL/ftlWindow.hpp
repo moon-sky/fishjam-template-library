@@ -325,11 +325,11 @@ namespace FTL
             case PBT_POWERSETTINGCHANGE:
                 {
                     //HANDLE_CASE_TO_STRING(szInfo, _countof(szInfo), PBT_POWERSETTINGCHANGE);
-                    POWERBROADCAST_SETTING* pPowerBoadcastSetting =  (POWERBROADCAST_SETTING*)lParam;
-                    if (pPowerBoadcastSetting)
-                    {
-                        //pPowerBoadcastSetting->PowerSetting
-                    }
+                    //POWERBROADCAST_SETTING* pPowerBoadcastSetting =  (POWERBROADCAST_SETTING*)lParam;
+                    //if (pPowerBoadcastSetting)
+                    //{
+                    //    //pPowerBoadcastSetting->PowerSetting
+                    //}
                     break;
                 }
                 

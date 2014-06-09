@@ -164,7 +164,7 @@ namespace FTL
     * 常用命令(在中断状态下，通过F9键可以设置/取消断点), 直接输入问号 "?" 可以显示出一个标准命令的列表和简单介绍
     *   ~ -- 显示和切换线程
     *     ~<thread_index> s -- 切换当前线程， 如 "~6 s" 切换到第6号线程
-    *     ~*e 命令 -- 针对所有线程执行执行命令，如 ~*e kn 显示所有线程的调用堆栈; ~1 命令 -- 针对1号线程执行命令
+    *     ~*e 命令 -- 针对所有线程执行执行命令，如 ~*kb 或 ~*e kn 显示所有线程的调用堆栈; ~1 命令 -- 针对1号线程执行命令
     *     ~ThreadIndex n/m -- 增加或减少指定线程的 Suspend 数(改变线程的挂起计数系统属性)
     *     ~ThreadIndex f/u -- 冻结(Freeze)或解冻(Unfreeze)线程(改变调试器的线程设置)
     *   | -- 显示进程
@@ -373,6 +373,7 @@ namespace FTL
     *   minipkd.dll -- 用于调试AIC78xx 小端口(miniport)驱动程序。
     *   ndiskd.dll -- 用于调试网络有关驱动程序
     *   ntsdexts.dll -- 实现了!handle、!locks、!dp、!dreg(显示注册表)等命令
+    *     !locks -- 显示当前所有的锁,通常可以用来解决死锁问题
     *   rpcexts.dll -- 用于RPC 调试
     *   scsikd.dll -- 用于调试SCSI 有关的驱动程序
     *   sos.dll -- 用于调试托管代码和.Net 程序 -- .NET程序的内存问题很多情况下是缓存中没有清除机制造成的
