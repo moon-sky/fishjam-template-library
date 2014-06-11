@@ -30,6 +30,7 @@ BEGIN_MESSAGE_MAP(CWindowPage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_MESSAGE_INFO, &CWindowPage::OnBnClickedBtnMessageInfo)
     ON_BN_CLICKED(IDC_BTN_REGISTER_MESSAGE_INFO, &CWindowPage::OnBnClickedBtnRegisterMessageInfo)
     ON_BN_CLICKED(IDC_BTN_WINDOW_HIDE_SHOW_TASKBAR, &CWindowPage::OnBnClickedBtnHideShowTaskBar)
+    ON_BN_CLICKED(IDC_BTN_WINDOW_MENU_INFO_DUMP, &CWindowPage::OnBnClickedBtnMenuInfoDump)
 END_MESSAGE_MAP()
 
 
@@ -54,4 +55,13 @@ void CWindowPage::OnBnClickedBtnHideShowTaskBar()
 {
     CFWinUtil::HideTaskBar(m_bHideTaskBar);
     m_bHideTaskBar = !m_bHideTaskBar;
+}
+
+void CWindowPage::OnBnClickedBtnMenuInfoDump()
+{
+    BOOL bRet = FALSE;
+    CMenu menu;
+    API_VERIFY(menu.LoadMenu(IDR_MENU_GDI_PLUS_TEST));
+
+    CFMenuUtil::DumpMenuInfo(menu.GetSafeHmenu(), 0);
 }

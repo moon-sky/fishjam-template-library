@@ -683,6 +683,20 @@ namespace FTL
 #endif
     };//CFWinUtil
 
+    FTLEXPORT class CFMenuUtil
+    {
+    public:
+        FTLINLINE static BOOL DumpMenuInfo(HMENU hMenu, int nLevel = 0);
+
+        FTLINLINE static LPCTSTR GetMenuItemInfoString(FTL::CFStringFormater& formater, const MENUITEMINFO& menuItemInfo);
+        FTLINLINE static LPCTSTR GetMenuItemInfoMaskString(FTL::CFStringFormater& formater, UINT fMask, LPCTSTR pszDivide = TEXT("|"));
+        FTLINLINE static LPCTSTR GetMenuItemInfoTypeString(FTL::CFStringFormater& formater, UINT fType, LPCTSTR pszDivide = TEXT("|"));
+        FTLINLINE static LPCTSTR GetMenuItemInfoStateString(FTL::CFStringFormater& formater, UINT fState, LPCTSTR pszDivide = TEXT("|"));
+
+    private:
+        FTLINLINE static BOOL _GetMenuText(HMENU hMenu, UINT nIDItem, UINT nFlags, CFMemAllocator<TCHAR>& menuText);
+    };
+
 	//SetWindowHook 时的一些辅助方法
 	FTLEXPORT class CFWinHookUtil
 	{

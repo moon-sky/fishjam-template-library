@@ -584,8 +584,8 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_ICONERASEBKGND, CFDefaultMsgInfo);//此消息发送给某个最小化窗口，仅当它在画图标前它的背景必须被重画
                 GET_MESSAGE_INFO_ENTRY(WM_NEXTDLGCTL, CFDefaultMsgInfo);    //切换到下一个控件( 模拟Tab 或 禁用一个Focus的控件时 需要手工发送这个?)
                 GET_MESSAGE_INFO_ENTRY(WM_SPOOLERSTATUS, CFDefaultMsgInfo); //每当打印管理列队增加或减少一条作业时发出此消息
-                GET_MESSAGE_INFO_ENTRY(WM_DRAWITEM, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(WM_MEASUREITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_DRAWITEM, CFDefaultMsgInfo);      //自绘项绘制消息
+                GET_MESSAGE_INFO_ENTRY(WM_MEASUREITEM, CFDefaultMsgInfo);   //自绘项计算大小
                 GET_MESSAGE_INFO_ENTRY(WM_DELETEITEM, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_VKEYTOITEM, CFDefaultMsgInfo);    //由一个LBS_WANTKEYBOARDINPUT风格的发出给它的所有者来响应WM_KEYDOWN消息
                 GET_MESSAGE_INFO_ENTRY(WM_CHARTOITEM, CFDefaultMsgInfo);    //由一个LBS_WANTKEYBOARDINPUT风格的列表框发送给他的所有者来响应WM_CHAR消息
@@ -3385,6 +3385,179 @@ namespace FTL
         return formater.GetString();
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    BOOL CFMenuUtil::DumpMenuInfo(HMENU hMenu, int nLevel/* = 0*/)
+    {
+        BOOL bRet = FALSE;
+        CFMemAllocator<TCHAR> menuText;
+
+        API_VERIFY(_GetMenuText(hMenu, 0, MF_BYPOSITION, menuText));
+
+        MENUINFO menuInfo = { sizeof(menuInfo) };
+        menuInfo.fMask = MIM_MAXHEIGHT | MIM_BACKGROUND | MIM_HELPID | MIM_MENUDATA | MIM_STYLE;
+        API_VERIFY(::GetMenuInfo(hMenu, &menuInfo));
+        if (bRet)
+        {
+            int nItemCount = ::GetMenuItemCount(hMenu);
+            API_ASSERT(nItemCount != -1);
+
+            FTLTRACE(TEXT("%s, itemCount=%d -- MenuInfo: Mask=0x%x, dwStyle=0x%x, cyMax=%d, hbrBack=0x%x, helpId=%d, menuData=0x%x\n"),
+                menuText.GetMemory(), 
+                nItemCount, menuInfo.fMask, menuInfo.dwStyle, menuInfo.cyMax, menuInfo.hbrBack,
+                menuInfo.dwContextHelpID, menuInfo.dwMenuData);
+
+            for (int i = 0; i < nItemCount; i++)
+            {
+                MENUITEMINFO menuItemInfo = { sizeof(menuItemInfo) };
+                menuItemInfo.fMask = MIIM_FTYPE | MIIM_ID | MIIM_SUBMENU;
+
+                _GetMenuText(hMenu, i , MF_BYPOSITION, menuText);
+                API_VERIFY(::GetMenuItemInfo(hMenu, i, TRUE, &menuItemInfo));
+                if (bRet)
+                {
+                    if (menuItemInfo.hSubMenu != NULL)
+                    {
+                        DumpMenuInfo(menuItemInfo.hSubMenu, ++nLevel);
+                    }
+                    else
+                    {
+                        //((menuItemInfo.fType & MFT_SEPARATOR) == MFT_SEPARATOR)
+                        //normal menu or separator
+
+                        FTL::CFStringFormater formater;
+                        FTLTRACE(TEXT("Item:%s, %s\n"), menuText.GetMemory(), 
+                            GetMenuItemInfoString(formater, menuItemInfo));
+                    }
+                }
+            }
+        }
+        return bRet;
+    }
+
+    LPCTSTR CFMenuUtil::GetMenuItemInfoString(FTL::CFStringFormater& formater, const MENUITEMINFO& menuItemInfo)
+    {
+        CFStringFormater formaterMask;
+
+        formater.Format(_T("cbSize=%d, Mask=%s"), 
+            menuItemInfo.cbSize, 
+            GetMenuItemInfoMaskString(formaterMask, menuItemInfo.fMask));
+
+        if (MIIM_FTYPE == (menuItemInfo.fMask & MIIM_FTYPE))
+        {
+            CFStringFormater formaterType;
+            formater.AppendFormat(TEXT(", Type=0x%x(%s)"), menuItemInfo.fType,
+                GetMenuItemInfoTypeString(formaterType, menuItemInfo.fType));
+        }
+        if (MIIM_STATE == (menuItemInfo.fMask & MIIM_STATE))
+        {
+            CFStringFormater formaterState;
+            formater.AppendFormat(TEXT(", State=0x%x(%s)"), menuItemInfo.fState,
+                GetMenuItemInfoTypeString(formaterState, menuItemInfo.fState));
+        }
+        if (MIIM_ID == (menuItemInfo.fMask & MIIM_ID))
+        {
+            formater.AppendFormat(TEXT(", Id=0x%x(%d)"), menuItemInfo.wID, menuItemInfo.wID);
+        }
+        if (MIIM_SUBMENU == (menuItemInfo.fMask & MIIM_SUBMENU))
+        {
+            formater.AppendFormat(TEXT(", subMenu=0x%x"), menuItemInfo.hSubMenu);
+        }
+        if (MIIM_CHECKMARKS == (menuItemInfo.fMask & MIIM_CHECKMARKS))
+        {
+            formater.AppendFormat(TEXT(", check=0x%x/0x%x"), menuItemInfo.hbmpChecked, menuItemInfo.hbmpUnchecked);
+        }
+        if (MIIM_DATA == (menuItemInfo.fMask & MIIM_DATA))
+        {
+            formater.AppendFormat(TEXT(", itemData=0x%x"), menuItemInfo.dwItemData);
+        }
+        if (MIIM_TYPE == (menuItemInfo.fMask & MIIM_TYPE))
+        {
+            formater.AppendFormat(TEXT(", typeData=0x%x, cch=%d"), menuItemInfo.dwTypeData, menuItemInfo.cch);
+        }
+
+        return formater.GetString();
+    }
+
+    LPCTSTR CFMenuUtil::GetMenuItemInfoMaskString(FTL::CFStringFormater& formater, UINT fMask, LPCTSTR pszDivide/* = TEXT("|")*/)
+    {
+        //UINT    oldMask = fMask;
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_STATE, pszDivide);         //fState
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_ID, pszDivide);            //wID
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_SUBMENU, pszDivide);       //hSubMenu
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_CHECKMARKS, pszDivide);    //hbmpChecked + hbmpUnchecked 
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_TYPE, pszDivide);          //fType + dwTypeData(老标志,不再使用) 
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_DATA, pszDivide);          //dwItemData
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_STRING, pszDivide);        //dwTypeData
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_BITMAP, pszDivide);        //hbmpItem
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fMask, MIIM_FTYPE, pszDivide);         //fType
+
+        FTLASSERT(0 == fMask);
+        return formater.GetString();
+    }
+
+    LPCTSTR CFMenuUtil::GetMenuItemInfoTypeString(FTL::CFStringFormater& formater, UINT fType, LPCTSTR pszDivide/* = TEXT("|")*/)
+    {
+        FTLASSERT((fType & MFT_BITMAP) == 0); //Win9X 后应该已经不使用该标志位
+        FTLASSERT((fType & MFT_STRING) == 0); //Win9X 后应该已经不使用该标志位
+
+        //UINT    oldType = fType;
+        //注意: MFT_BITMAP, MFT_SEPARATOR, MFT_STRING 不能组合使用
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_STRING, pszDivide);         //Win9X后已被MIIM_STRING代替
+
+        //Win31中使用(dwTypeData低字节是位图句柄), Win9X后已被 MIIM_BITMAP + hbmpItem 代替
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_BITMAP, pszDivide);
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_MENUBARBREAK, pszDivide);   //竖线分割
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_MENUBREAK, pszDivide);      //不被竖线分隔
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_OWNERDRAW, pszDivide);      //自绘菜单项
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_RADIOCHECK, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_SEPARATOR, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_RIGHTORDER, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fType, MFT_RIGHTJUSTIFY, pszDivide);   //只在MenuBar中生效的右对齐
+
+        FTLASSERT(0 == fType);
+        return formater.GetString();
+    }
+
+    LPCTSTR CFMenuUtil::GetMenuItemInfoStateString(FTL::CFStringFormater& formater, UINT fState, LPCTSTR pszDivide/* = TEXT("|")*/)
+    {
+        //UINT    oldState = fState;
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MFS_DISABLED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MFS_CHECKED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MFS_HILITE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MFS_DEFAULT, pszDivide);
+
+        FTLASSERT(0 == fState);
+        return formater.GetString();
+    }
+
+    BOOL CFMenuUtil::_GetMenuText(HMENU hMenu, UINT nIDItem, UINT nFlags, CFMemAllocator<TCHAR>& menuText)
+    {
+        BOOL bRet = FALSE;
+
+        int nStringLen = ::GetMenuString(hMenu, nIDItem, NULL, 0, nFlags);
+        API_VERIFY(nStringLen >= 0);
+        if (bRet)
+        {
+            API_VERIFY(::GetMenuString(hMenu, nIDItem, menuText.GetMemory(nStringLen + 1), nStringLen + 1, nFlags) > 0);
+        }
+        else
+        {
+            //clear old menu text
+            TCHAR* pMenuText = menuText.GetMemory(1);
+            FTLASSERT(pMenuText);
+            if (pMenuText)
+            {
+                *pMenuText = _T('\0');
+            }
+        }
+        return bRet;
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 	LPCTSTR CFWinHookUtil::GetCBTCodeInfo(CFStringFormater& formater, int nCode, WPARAM wParam, LPARAM lParam)
 	{
