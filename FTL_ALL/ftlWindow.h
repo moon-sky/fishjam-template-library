@@ -686,7 +686,7 @@ namespace FTL
     FTLEXPORT class CFMenuUtil
     {
     public:
-        FTLINLINE static BOOL DumpMenuInfo(HMENU hMenu, int nLevel = 0);
+        FTLINLINE static BOOL DumpMenuInfo(HMENU hMenu, BOOL bDumpChild, int nLevel = 0);
 
         FTLINLINE static LPCTSTR GetMenuItemInfoString(FTL::CFStringFormater& formater, const MENUITEMINFO& menuItemInfo);
         FTLINLINE static LPCTSTR GetMenuItemInfoMaskString(FTL::CFStringFormater& formater, UINT fMask, LPCTSTR pszDivide = TEXT("|"));

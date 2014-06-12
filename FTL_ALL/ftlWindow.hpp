@@ -3386,12 +3386,11 @@ namespace FTL
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-    BOOL CFMenuUtil::DumpMenuInfo(HMENU hMenu, int nLevel/* = 0*/)
+    BOOL CFMenuUtil::DumpMenuInfo(HMENU hMenu, BOOL bDumpChild, int nLevel/* = 0*/)
     {
         BOOL bRet = FALSE;
-        CFMemAllocator<TCHAR> menuText;
 
-        API_VERIFY(_GetMenuText(hMenu, 0, MF_BYPOSITION, menuText));
+        FTLASSERT(IsMenu(hMenu));
 
         MENUINFO menuInfo = { sizeof(menuInfo) };
         menuInfo.fMask = MIM_MAXHEIGHT | MIM_BACKGROUND | MIM_HELPID | MIM_MENUDATA | MIM_STYLE;
@@ -3401,32 +3400,39 @@ namespace FTL
             int nItemCount = ::GetMenuItemCount(hMenu);
             API_ASSERT(nItemCount != -1);
 
-            FTLTRACE(TEXT("%s, itemCount=%d -- MenuInfo: Mask=0x%x, dwStyle=0x%x, cyMax=%d, hbrBack=0x%x, helpId=%d, menuData=0x%x\n"),
-                menuText.GetMemory(), 
+            FTLTRACE(TEXT("itemCount=%d -- MenuInfo: Mask=0x%x, dwStyle=0x%x, cyMax=%d, hbrBack=0x%x, helpId=%d, menuData=0x%x\n"),
                 nItemCount, menuInfo.fMask, menuInfo.dwStyle, menuInfo.cyMax, menuInfo.hbrBack,
                 menuInfo.dwContextHelpID, menuInfo.dwMenuData);
 
-            for (int i = 0; i < nItemCount; i++)
+            if (bDumpChild && nItemCount > 0)
             {
-                MENUITEMINFO menuItemInfo = { sizeof(menuItemInfo) };
-                menuItemInfo.fMask = MIIM_FTYPE | MIIM_ID | MIIM_SUBMENU;
+                CFMemAllocator<TCHAR> menuText;
 
-                _GetMenuText(hMenu, i , MF_BYPOSITION, menuText);
-                API_VERIFY(::GetMenuItemInfo(hMenu, i, TRUE, &menuItemInfo));
-                if (bRet)
+                UINT fCheckMask =  MIIM_STRING;
+                // MIIM_STATE | MIIM_ID | MIIM_SUBMENU | MIIM_CHECKMARKS | MIIM_TYPE | MIIM_DATA ; 
+                // MIIM_BITMAP | MIIM_FTYPE;
+                for (int i = 0; i < nItemCount; i++)
                 {
-                    if (menuItemInfo.hSubMenu != NULL)
-                    {
-                        DumpMenuInfo(menuItemInfo.hSubMenu, ++nLevel);
-                    }
-                    else
-                    {
-                        //((menuItemInfo.fType & MFT_SEPARATOR) == MFT_SEPARATOR)
-                        //normal menu or separator
+                    API_VERIFY(_GetMenuText(hMenu, i , MF_BYPOSITION, menuText));
 
-                        FTL::CFStringFormater formater;
-                        FTLTRACE(TEXT("Item:%s, %s\n"), menuText.GetMemory(), 
-                            GetMenuItemInfoString(formater, menuItemInfo));
+                    MENUITEMINFO menuItemInfo = { sizeof(menuItemInfo) };
+                    menuItemInfo.fMask = fCheckMask;
+                    API_VERIFY(::GetMenuItemInfo(hMenu, i, TRUE, &menuItemInfo));
+                    if (bRet)
+                    {
+                        if (menuItemInfo.hSubMenu != NULL)
+                        {
+                            DumpMenuInfo(menuItemInfo.hSubMenu, bDumpChild, ++nLevel);
+                        }
+                        else
+                        {
+                            //((menuItemInfo.fType & MFT_SEPARATOR) == MFT_SEPARATOR)
+                            //normal menu or separator
+
+                            FTL::CFStringFormater formater;
+                            FTLTRACE(TEXT("Item:%s, %s\n"), menuText.GetMemory(), 
+                                GetMenuItemInfoString(formater, menuItemInfo));
+                        }
                     }
                 }
             }
