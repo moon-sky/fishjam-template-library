@@ -28,7 +28,7 @@ namespace FTL
 		SAFE_DELETE_ARRAY(m_pDefaultChar);
 		if (pszDefaultChar)
 		{
-			int nLength = strlen(pszDefaultChar);
+			int nLength = (int)strlen(pszDefaultChar);
 			m_pDefaultChar = new CHAR[nLength + 1];
 			if (m_pDefaultChar)
 			{

@@ -645,7 +645,7 @@ namespace FTL
             API_VERIFY(::EmptyClipboard( ));
 			if(bRet)
             {
-				const int nLen = _tcslen (szMem);
+				const int nLen = (int)_tcslen (szMem);
 
 				//TODO:GlobalAlloc 分配的内存不释放?还是说通过下次的 EmptyClipboard 释放?
                 HGLOBAL hGlob = ::GlobalAlloc ( GHND, ( nLen + 1) * sizeof ( TCHAR ));
@@ -789,13 +789,13 @@ namespace FTL
                         HANDLE hParentProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pbi.InheritedFromUniqueProcessId); 
                         if (hParentProcess)
                         {
-                            dwParentPID = pbi.InheritedFromUniqueProcessId;
+                            dwParentPID = (DWORD)pbi.InheritedFromUniqueProcessId;
                             CloseHandle(hParentProcess);
                         }
                     }
                     else
                     {
-                        dwParentPID = pbi.InheritedFromUniqueProcessId;
+                        dwParentPID = (DWORD)pbi.InheritedFromUniqueProcessId;
                     }
                     
                 }

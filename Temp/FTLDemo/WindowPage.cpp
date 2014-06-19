@@ -63,5 +63,5 @@ void CWindowPage::OnBnClickedBtnMenuInfoDump()
     CMenu menu;
     API_VERIFY(menu.LoadMenu(IDR_MENU_GDI_PLUS_TEST));
 
-    CFMenuUtil::DumpMenuInfo(menu.GetSafeHmenu(), 0);
+    CFMenuUtil::DumpMenuInfo(menu.GetSafeHmenu(), TRUE);
 }

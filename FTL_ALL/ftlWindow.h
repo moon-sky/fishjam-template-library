@@ -6,6 +6,11 @@
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
 
+//控制是否允许Dump出ToolTip的消息( WM_USER + 1~60 左右)
+#ifndef ENABLE_DUMP_TOOLTIP_MESSAGE
+#  define ENABLE_DUMP_TOOLTIP_MESSAGE
+#endif 
+
 //#include <Wtsapi32.h>
 //#pragma comment(lib, "Wtsapi32.lib")
 
@@ -136,6 +141,7 @@
 * 
 * 消息映射
 *   MFC: ON_MESSAGE / ON_REGISTERED_MESSAGE
+*        ON_NOTIFY_EX -- 如 ON_NOTIFY_EX( TTN_NEEDTEXT, 0, SetTipText )
 *   WTL: 
 * 
 * 创建窗口的顺序：PreCreateWindow -> PreSubclassWindow -> OnGetMinMaxInfo -> OnNcCreate -> OnNcCalcSize -> OnCreate
@@ -313,6 +319,48 @@
 * 鼠标模拟 mouse_event
 *
 * 鼠标位置检测(HitTest), 系统已经定义了 HTOBJECT、HTCLIENT 等宏
+******************************************************************************************************/
+
+/******************************************************************************************************
+* ToolTip(工具条提示) -- Win32的通用控件，MFC封装为 CToolTipCtrl
+*   常见的封装方法
+*     SetTipTextColor/SetTipBkColor
+*     
+*   一般用法(自定义CWnd子类中使用):
+*     1.添加 CToolTipCtrl m_toolTip 的成员变量;
+*     2.在子控件的OnCreate等函数中创建ToolTip控件
+*       EnableToolTips(TRUE); 
+*       if (m_ToolTip.GetSafeHwnd() == NULL) { m_ToolTip.Create(this); m_ToolTip.Activate(TRUE); }
+*     3.设置要显示的文本 m_ToolTip.AddTool(this, (LPCTSTR)strText);  
+*       注意：如果自定义是个父控件，则 AddTool 中可以指定子控件的指针
+*     4.重载 PreTranslateMessage, 并调用 m_toolTip.RelayEvent(pMsg)。
+*       TODO: 只有 WM_MOUSEMOVE 时才需要 RelayEvent ?
+*   
+*   动态获取信息并显示( LPSTR_TEXTCALLBACK )
+*     1.消息映射中增加 ON_NOTIFY_EX( TTN_NEEDTEXT, 0, OnToolTipText )
+*        BOOL OnToolTipText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult){
+*          ASSERT(pNMHDR->code == TTN_NEEDTEXTA || pNMHDR->code == TTN_NEEDTEXTW);
+*          TOOLTIPTEXT *pToolTipText = (TOOLTIPTEXT *)pTTTStruct;
+*          if(pToolTipText->uFlags & TTF_IDISHWND){  //idFrom为工具条的HWND
+*            UINT nID = ::GetDlgCtrlID((HWND)pNMHDR->idFrom);
+*            ....
+*            //使工具条提示窗口在最上面
+*            ::SetWindowPos(pNMHDR->hwndFrom, HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE|SWP_NOOWNERZORDER); 
+*          }
+*          返回值TRUE/FALSE表示?
+*        }
+* 
+*   CListCtrl子类添加多行提示信息方法
+*     1.重载 OnToolHitTest 虚函数, 返回唯一的值标识是否变化(如返回 (nItem * 100 + nSubItem)), 返回-1表示不显示ToolTip 
+*       if (nFlags & LVHT_ONITEMLABEL){ 
+*         ...; pTI->lpszText = LPSTR_TEXTCALLBACK; pTI->uId = (UINT) (nItem * 100 + nSubItem); return pTI->uId;
+*       }else { return -1; }
+*     2.消息映射中增加 ON_NOTIFY_EX_RANGE(TTN_NEEDTEXT, 0, 0xFFFF, OnToolTipText) 
+*       CToolTipCtrl *pToolTip = AfxGetModuleThreadState()->m_pToolTip; 
+*   
+*   为CListCtrl单元格添加提示信息
+*     1.OnMouseMove 中通过 SubItemHitTest 判断鼠标当前所在的位置(行, 列)
+*       if((lvhti.iItem != m_nItem) || (lvhti.iSubItem != m_nSubItem)){ 通过和成员变量比较看是否移动到另外的单元格 }
 ******************************************************************************************************/
 
 /******************************************************************************************************
