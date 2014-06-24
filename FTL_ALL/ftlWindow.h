@@ -6,9 +6,9 @@
 #  error ftlwindow.h requires ftlbase.h to be included first
 #endif
 
-//控制是否允许Dump出ToolTip的消息( WM_USER + 1~60 左右)
+//控制是否允许Dump出ToolTip的消息( WM_USER + 1~60 左右), 一般只有在ToolTip的子类中才使用
 #ifndef ENABLE_DUMP_TOOLTIP_MESSAGE
-#  define ENABLE_DUMP_TOOLTIP_MESSAGE
+#  define ENABLE_DUMP_TOOLTIP_MESSAGE  0
 #endif 
 
 //#include <Wtsapi32.h>
@@ -322,7 +322,7 @@
 ******************************************************************************************************/
 
 /******************************************************************************************************
-* ToolTip(工具条提示) -- Win32的通用控件，MFC封装为 CToolTipCtrl
+* ToolTip(工具条提示) -- Win32的通用控件，MFC封装为 CToolTipCtrl( 新的扩展:CMFCToolTipCtrl + CTooltipManager)
 *   常见的封装方法
 *     SetTipTextColor/SetTipBkColor
 *     
@@ -331,23 +331,23 @@
 *     2.在子控件的OnCreate等函数中创建ToolTip控件
 *       EnableToolTips(TRUE); 
 *       if (m_ToolTip.GetSafeHwnd() == NULL) { m_ToolTip.Create(this); m_ToolTip.Activate(TRUE); }
-*     3.设置要显示的文本 m_ToolTip.AddTool(this, (LPCTSTR)strText);  
-*       注意：如果自定义是个父控件，则 AddTool 中可以指定子控件的指针
+*     3.设置控件关联的Tip文本: m_ToolTip.AddTool(this, (LPCTSTR)strText);  
+*       注意：如果自定义是个父控件，则 AddTool 中可以指定子控件(如 GetDlgItem)的指针; 可为多个控件添加不同的提示信息
 *     4.重载 PreTranslateMessage, 并调用 m_toolTip.RelayEvent(pMsg)。
-*       TODO: 只有 WM_MOUSEMOVE 时才需要 RelayEvent ?
+*     5.按需响应 WM_MOUSEHOVER(Update 或 UpdateTipText)、WM_MOUSEMOVE( if(!m_bTrack){ _TrackMouseEvent } )、WM_MOUSELEAVE(m_bTrack=FALSE;) 等消息
 *   
-*   动态获取信息并显示( LPSTR_TEXTCALLBACK )
+*   动态获取信息并显示 -- AddTool(..., LPSTR_TEXTCALLBACK )
 *     1.消息映射中增加 ON_NOTIFY_EX( TTN_NEEDTEXT, 0, OnToolTipText )
 *        BOOL OnToolTipText(UINT id, NMHDR *pTTTStruct, LRESULT *pResult){
 *          ASSERT(pNMHDR->code == TTN_NEEDTEXTA || pNMHDR->code == TTN_NEEDTEXTW);
 *          TOOLTIPTEXT *pToolTipText = (TOOLTIPTEXT *)pTTTStruct;
-*          if(pToolTipText->uFlags & TTF_IDISHWND){  //idFrom为工具条的HWND
+*          if(pToolTipText->uFlags & TTF_IDISHWND){  //idFrom为HWND
 *            UINT nID = ::GetDlgCtrlID((HWND)pNMHDR->idFrom);
 *            ....
 *            //使工具条提示窗口在最上面
 *            ::SetWindowPos(pNMHDR->hwndFrom, HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOMOVE|SWP_NOOWNERZORDER); 
 *          }
-*          返回值TRUE/FALSE表示?
+*          返回值TRUE表示设置了Tooltip，返回FALSE表示没有设置?
 *        }
 * 
 *   CListCtrl子类添加多行提示信息方法

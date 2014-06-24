@@ -427,6 +427,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MyTooltipCtrl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\NetPage.cpp"
 				>
 			</File>
@@ -578,6 +582,10 @@
 			</File>
 			<File
 				RelativePath=".\MemPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MyTooltipCtrl.h"
 				>
 			</File>
 			<File

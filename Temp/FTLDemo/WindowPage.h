@@ -2,7 +2,7 @@
 
 
 // CWindowPage dialog
-
+#include "MyTooltipCtrl.h"
 class CWindowPage : public CPropertyPage
 {
 	DECLARE_DYNAMIC(CWindowPage)
@@ -25,4 +25,12 @@ public:
     afx_msg void OnBnClickedBtnMenuInfoDump();
 
     BOOL    m_bHideTaskBar;
+
+	BOOL	m_bSetTooltip;
+	CMyTooltipCtrl    m_tooltip;
+	//CMFCToolTipCtrl m_mfcTooltipCtrl;
+	//CTooltipManager	m_tooltipMgr;
+	afx_msg void OnBnClickedBtnTooltip();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	virtual BOOL OnInitDialog();
 };
