@@ -1227,7 +1227,7 @@ namespace FTL
 	* 
 	* Visual Studio Team Explorer(下载、管理 CodePlex 上代码的工具)
 	* 
-    * Profiler(性能分析工具): 
+    * Profiler(性能分析工具 -- 企业版中才有): 
     *   Tools->Performance Tools->Performance Wizard
     * 
     * 常见编译、链接错误

@@ -14,9 +14,11 @@ namespace FTL
     //TODO:Time Travel Debugging -- 微软最新的调试技术(记录代码执行流程，且所有的代码都是顺序执行 ?)
 
     /*********************************************************************************************************
+    * BSOD(Blue Screen of Death) -- 蓝屏死机
+    *
     * WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)
     * 一般来说都是Mini dump，只包含寄存器、堆栈、和部分内存
-    *   1.设置符号路径 程序pdb路径;SRV*E:\OSSymbols*http://msdl.microsoft.com/download/symbols
+    *   1.设置符号路径 程序pdb路径;SRV*D:\OSSymbols*http://msdl.microsoft.com/download/symbols
     *   2.打开dmp文件
     *   3.!sym noisy  -- 相当于.symopt+0x80000000，即开启所谓的“吵杂”式符号加载，显示符号加载的调试信息(可检测调试符号加载时的问题)。
     *   4.!analyze -v -- 一般这个时候可以看到出问题的代码位置，但如果有异常处理(如Nelo)等，则kn看出来的地址不对,需执行下一步
@@ -164,7 +166,7 @@ namespace FTL
     * 常用命令(在中断状态下，通过F9键可以设置/取消断点), 直接输入问号 "?" 可以显示出一个标准命令的列表和简单介绍
     *   ~ -- 显示和切换线程
     *     ~<thread_index> s -- 切换当前线程， 如 "~6 s" 切换到第6号线程
-    *     ~*e 命令 -- 针对所有线程执行执行命令，如 ~*kb 或 ~*e kn 显示所有线程的调用堆栈; ~1 命令 -- 针对1号线程执行命令
+    *     ~*e 命令 -- 针对所有线程执行命令，如 ~*kb 或 ~*e kn 显示所有线程的调用堆栈; ~1 命令 -- 针对1号线程执行命令
     *     ~ThreadIndex n/m -- 增加或减少指定线程的 Suspend 数(改变线程的挂起计数系统属性)
     *     ~ThreadIndex f/u -- 冻结(Freeze)或解冻(Unfreeze)线程(改变调试器的线程设置)
     *   | -- 显示进程
@@ -173,6 +175,7 @@ namespace FTL
     *     ||<n> s -- 将当前系统切换到<n>号
     *   ? -- 以MASM方式显示表达式的值(显示地址?)
     *   ?? -- 以C++方式显示表达式的值(显示内容?)，通过 ?? varName=value 的方式可以改变变量的值
+    *     如 ??(MyClass*)@ecx 或 (MyClass*)@ESI -- 显示this指针的内容(通常在ecx中，但有时会优化到 esi 等中, TODO: 如何设置和判断)
 	*   @@ -- 用"d"显示变量内容时使用C++赋值方式？
     *   $ -- 执行命令文件
     *   a -- 汇编 -- 可以将指定位置的数据进行汇编？
@@ -196,6 +199,8 @@ namespace FTL
 	*              da poi(ebp+8)用来显示printf 的第一个参数所指定的字符串。设置偏移3的原因：入口处的栈帧建立代码执行好后，ebp+8才能指向第一个参数
     *           bp USER32!MessageBeep -- 对系统API MessageBeep 下断点， 注意：VC中对应的断点方式为 {,,USER32.DLL}_MessageBeep@4
 	*           bp my.cpp:122 100
+    *        TODO:(似乎是用 wt ?)如何在PostMessageW/SendMessageW 上设定条件断点，每次调用这两个函数时，打印消息的详细信息和callstack
+    *             Windows用户态程序高效排错(普通下载).pdf 中 P29 所述
 	*        条件断点: 命令行中通过 j(条件) 或 .if(条件) 来判断并处理。
 	*          如：当命令行参数的个数大于1时中断
 	*            1.[MASM表达式时]bp myProgress!wmain "j (poi(argc)>1) 'dd argc l1;du poi(poi(argv)+4)';'gc'"
@@ -302,6 +307,7 @@ namespace FTL
     *      .dump /ma Dump文件名   -- 手动生成Dump文件
     *   .ecxr -- 当调试用户态的转储文件时将转储文件中保存的异常上下文设置为寄存器上下文。
     *   .echo -- 显示信息，如 别名(alias)、提示信息 等
+    *   .effmach -- 显示或改变调试器使用的处理器模式(x86/amd64/ia64 等) -- 通常用于跨平台分析?
     *   .endpsrv -- 结束远程进程服务器
     *   .endsrv -- 结束引擎服务器
     *   .exepath -- 可执行文件
@@ -372,7 +378,9 @@ namespace FTL
     *   logexts.dll -- 用于监视和记录API 调用(Windows API Logging Extensions)
     *   minipkd.dll -- 用于调试AIC78xx 小端口(miniport)驱动程序。
     *   ndiskd.dll -- 用于调试网络有关驱动程序
-    *   ntsdexts.dll -- 实现了!handle、!locks、!dp、!dreg(显示注册表)等命令
+    *   ntsdexts.dll -- 实现了 !dp、!dreg(显示注册表)等命令
+    *     !cs -- 列出 CriticalSection 的详细信息
+    *     !handle -- 检查句柄信息
     *     !locks -- 显示当前所有的锁,通常可以用来解决死锁问题
     *   rpcexts.dll -- 用于RPC 调试
     *   scsikd.dll -- 用于调试SCSI 有关的驱动程序
@@ -495,8 +503,14 @@ namespace FTL
 	*********************************************************************************************************/
 
     /*********************************************************************************************************
+    * Reflector -- 反编译CLR工程的工具
+    *   
+    *********************************************************************************************************/
+
+    /*********************************************************************************************************
     * 在Release版本中设置断点: _asm int 3 (或 ntdll!DbgBreakPoint ?), 会产生 0x80000003 的异常
-    * Release 中的 this 指针会保存在 ecx 寄存器中，
+    * Release 中的 this 指针一般会保存在 ecx 寄存器中，但有可能优化后会放在 ESI 等中
+    *  
 	*   
 	* 使用 TRACE/ATLTRACE 打印带有中日韩的文字时，可能会报" _CrtDbgReport: String too long or IO Error "的错误，而无法打出日志：
 	*   原因: wprintf_s 不能正确输出中日韩的 UNICODE 文字(似乎VS2010后修复了这个Bug？)

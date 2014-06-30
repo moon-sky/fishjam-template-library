@@ -138,7 +138,10 @@
 /******************************************************************************************************
 * WinProc 返回值：
 *   0 -- 用户已经处理好消息；如 WM_CLOSE 中返回0则不会关闭，返回 DefaultWindowProc 才关闭(WM_DESTROY)
-* 
+* PreTranslateMessage 返回值：
+*   TRUE -- 表示消息已经被处理，不会继续发送给后续的消息处理链。
+*   FALSE -- 表示消息未被处理，需要进一步处理。但一般是返回 基类的该函数调用结果
+*   
 * 消息映射
 *   MFC: ON_MESSAGE / ON_REGISTERED_MESSAGE
 *        ON_NOTIFY_EX -- 如 ON_NOTIFY_EX( TTN_NEEDTEXT, 0, SetTipText )

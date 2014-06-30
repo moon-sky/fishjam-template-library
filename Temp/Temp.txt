@@ -1,3 +1,5 @@
+.NET 中 SafeHandle 可以保护向非托管代码中传入的托管缓存空间 -- 具体怎么用?(DangerousAddRef/DangerousRelease)
+
 AtlHexEncode / BEncode / QEncode /QPEncode / UUDecode / UrlEscape / AtlEscapeUrl / AtlUnicodeToUTF8 /AtlCanonicalizeUrl / AtlCombineUrl /Base64Encode(Atlenc.h)
 
 AtlServer 中的 CAtlRegExp
