@@ -381,6 +381,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlBuildWarningCheck.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlCom.h"
 				>
 			</File>

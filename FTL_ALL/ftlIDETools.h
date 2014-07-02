@@ -932,10 +932,15 @@ namespace FTL
     /******************************************************************************************************************************
     * PC-Lint(FlexeLint) -- http://www.gimpel.com/ ， 目前最高版本是9
     *   下载地址：http://download.csdn.net/source/2258242  8.x
+	*             http://download.csdn.net/download/liuchang5/3005191  9.0e(patch 不支持64位系统)
     *   对 C/C++ 源码进行静态分析的工具，主要针对指针、任务等进行分析，但无法发现
     *   运行时错误和逻辑错误。支持 VC、gcc 等，可以比一般的C/C++编译器进行更深入的语义分析
     *   运行平台是 Windows、Dos，Linux下可以用 FlexeLint，具体帮助可以参见 gcc-readme.txt
-    *
+    * 
+    * 常见错误(在结果中搜索 "error xxx" )
+    *   533 -- 不是所有的路径都返回了结果。function 'Xxx' should return a value
+    *   1401(类似的有1402,1403等) -- 成员变量未在构造函数中初始化, member 'Xxx' not initialized by constructor
+    * 
     * 文件介绍：
     *   lint-nt.exe [选项] [选项文件(*.lnt)] 分析文件(支持通配符*.cpp)或文件列表文件 
     *     +ffn -- 输出文件全路径名，确保在IDE环境中可以双击后在不同的文件间切换
@@ -962,7 +967,7 @@ namespace FTL
     *   co-msc90.lnt
     *   lib-atl.lnt lib-mfc.lnt lib-stl.lnt lib-w32.lnt
     *   options.lnt  -si4 -sp4
-    *   -iE:\FJSDK\Windows\FTL
+    *   -i"E:\FJSDK\Windows\FTL"
     *   -i"C:\Program Files\Microsoft Visual Studio 9.0\VC\include"
     *   -i"C:\Program Files\Microsoft Visual Studio 9.0\VC\atlmfc\include"
     *   -i"C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include"
@@ -971,23 +976,23 @@ namespace FTL
     * 在VC的环境中使用，通过创建外部命令的方式使用，执行检查后通过快捷键 F8 在各个警告之间切换
     *   检查当前正在编辑的单个文件：
     *     1.标题为: PC-INT File Check
-    *     2.命令为: D:\PCLint\LINT-NT.EXE
-    *     3.参数为: +v -i"D:\PCLint"  std.lnt env-vc9.lnt "$(ItemPath)"  -- 似乎可以不要“env-vc9.lnt”?
+    *     2.命令为: C:\lint\lint-nt.exe
+    *     3.参数为: +v -i"C:\lint"  std.lnt env-vc9.lnt "$(ItemPath)"  -- 似乎可以不要“env-vc9.lnt”?
     *     4.初始目录为: "$(ItemDir)"
     *     5.选中“使用输出窗口”，会自动选中“退出时关闭”
     *   检查当前正在编辑的工程，分两步：创建工程相关的.lnt -> 分析.lnt
     *     1.标题为：PC-LINT Project Creation
-    *     2.命令为: D:\PCLint\LINT-NT.EXE
+    *     2.命令为: C:\lint\lint-nt.exe
     *     3.参数为: +v -os($(TargetName).lnt) $(ProjectFileName)
     *     4.初始目录为: $(ProjectDir)
     *     5.选中“使用输出窗口”，会自动选中“退出时关闭”
     *     6.标题为: PC-LINT Check Project，
     *     7.命令为: D:\PCLint\LINT-NT.EXE
-    *     8.参数为: +v -i"D:\PCLint" std.lnt env-vc9.lnt $(TargetName).lnt
+    *     8.参数为: +v -i"C:\lint" std.lnt env-vc9.lnt $(TargetName).lnt
     *     9.初始目录为：$(ProjectDir)
     *     10.选中“使用输出窗口”，会自动选中“退出时关闭”
     *   还有一个所谓的 unit check (在创建完 Project.lnt 后)，具体有什么用？
-    *     参数：-i"D:\PCLint" std.lnt env-vc9.lnt --u $(TargetName).lnt $(ItemPath)
+    *     参数：-i"C:\lint" std.lnt env-vc9.lnt --u $(TargetName).lnt $(ItemPath)
     *     初始化目录：$(ProjectDir)
     *     
     * format 说明(如 format=%f %l %t %n:%m )
@@ -1231,6 +1236,12 @@ namespace FTL
     *   Tools->Performance Tools->Performance Wizard
     * 
     * 常见编译、链接错误
+    *   C4005 -- 宏重定义，macro redefinition
+    *   C4101 -- 未引用的本地变量 unreferenced local variable
+    *   C4390 -- 空控制语句(可能是if后直接跟了分号),empty controlled statement found; is this the intent
+    *   C4715 -- 不是所有的路径都有返回值，not all control paths return a value
+    *   C4930 -- 将定义变量的语法写成了函数声明的语法。prototyped function not called (was a variable definition intended?)
+    *   C4065 -- switch 语句里面有default但是没有case。switch statement contains 'default' but no 'case' labels
     *   1.LNK2026:module unsafe for SAFESEH image -- VS2012编译汇编文件时，报告的错误，/SAFESEH
     *     解决：(推荐)使用 ml(64).exe 编译时，可以指定 /safeseh 参数(set the Use Safe Exception Handler MASM property to Yes)
     *            或    整个程序链接选项Command中输入 /SAFESEH:NO
