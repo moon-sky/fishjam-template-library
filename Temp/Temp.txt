@@ -1,4 +1,13 @@
 .NET 中 SafeHandle 可以保护向非托管代码中传入的托管缓存空间 -- 具体怎么用?(DangerousAddRef/DangerousRelease)
+.NET 中ResourceManager::GetString 加载资源的流程
+  1.资源符号从卫星dll加载起来后会放到内存的HashTable中;
+  2.GetString 检查HashTable中是否有请求的资源，如有跳到第5步;
+  3.如没有，GetString会让ResourceManager根据当前线程的UI Culture 寻找对应卫星目录来加载;
+  4.ResourceManager 加载卫星 Assembly 到内存，同时把所有的资源符号都写入HashTable;
+  5.GetString 返回这个HashTable 中对应的资源;
+  6.如有问题发生，如未找到对应的卫星dll目录，或者资源文件不存在，就用中立语言(英语)资源代替;
+  7.一旦HashTable填充完毕，GetString的后续执行就不需要使用ResourceManager了，直接返回HashTable的内容
+
 
 AtlHexEncode / BEncode / QEncode /QPEncode / UUDecode / UrlEscape / AtlEscapeUrl / AtlUnicodeToUTF8 /AtlCanonicalizeUrl / AtlCombineUrl /Base64Encode(Atlenc.h)
 

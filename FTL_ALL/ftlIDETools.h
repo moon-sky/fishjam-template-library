@@ -8,6 +8,13 @@
 #endif
 
 /***********************************************************************************************
+* 代码静态分析(编译警告)时必须更改的项:
+*   C4700 -- uninitialized local variable 'Xxx' used
+*   C6001 -- Using uninitialized memory 'Xxx'
+***********************************************************************************************/
+
+
+/***********************************************************************************************
 * 常见功能的 Tip --http://www.watch-life.net/visual-studio/visual-studio-2008-tip-day-index.html
 *   选择矩形代码区域(列模式)：Alt + 鼠标
 *   格式化当前文档：Ctrl+K, Ctrl+D; 格式化选中文本：Ctrl+K, Ctrl+F -- 问题：怎么设置格式化的规则?
@@ -663,7 +670,7 @@ namespace FTL
 	*        Host:klocwork9.nhncorp.com, Port:27000
 	*      4.具体项目中启用klocwork的检查
     *        Linux:设置Config FileName 为编译的命令脚本（并删除编译中的命令，免得重复编译?）
-    *        Windows:设置Config FileName 为 xxx.sln, Build Parameter 中输入 --config Debug 等
+    *        Windows:设置Config FileName 为 xxx.sln, Build Parameter 中输入 --config Release|Win32 等
 	*      注意：实测效果来看，这个工具非常耗时间(一个普通的工程耗时40分钟左右)，有方法优化吗？
     *   Code Coverage(代码覆盖率,要求语句>50%,分支>40%) -- BullsEye/GCov, 收集工具是 Clover/Cobertura
     *     实现机制有两种：1.插入二进制(GCov); 2.插入源码再进行编译(BullsEye Coverage)
@@ -930,17 +937,23 @@ namespace FTL
     ******************************************************************************************************************************/
 	
     /******************************************************************************************************************************
-    * PC-Lint(FlexeLint) -- http://www.gimpel.com/ ， 目前最高版本是9
+    * PC-Lint(Windows)/FlexeLint(Linux) -- http://www.gimpel.com/ ， 静态代码检测工具,目前最高版本是9
     *   下载地址：http://download.csdn.net/source/2258242  8.x
-	*             http://download.csdn.net/download/liuchang5/3005191  9.0e(patch 不支持64位系统)
+	*             http://download.csdn.net/download/liuchang5/3005191  9.0e(其中有 pc_lint经验.pdf)
     *   对 C/C++ 源码进行静态分析的工具，主要针对指针、任务等进行分析，但无法发现
-    *   运行时错误和逻辑错误。支持 VC、gcc 等，可以比一般的C/C++编译器进行更深入的语义分析
-    *   运行平台是 Windows、Dos，Linux下可以用 FlexeLint，具体帮助可以参见 gcc-readme.txt
-    * 
-    * 常见错误(在结果中搜索 "error xxx" )
-    *   533 -- 不是所有的路径都返回了结果。function 'Xxx' should return a value
-    *   1401(类似的有1402,1403等) -- 成员变量未在构造函数中初始化, member 'Xxx' not initialized by constructor
-    * 
+    *   运行时错误和逻辑错误。支持 VC、gcc、Intel C/C++ 等，可以比一般的C/C++编译器进行更深入的语义分析
+    *   运行平台是 Windows、Dos，Linux下可以用 FlexeLint，具体帮助可以参见 gcc-readme.txt。
+    *   支持16/32/64的平台环境，可以检测单个文件和整个工程
+    *   使用前需要通过 Config.exe 向导生成配置文件(std.lnt),里面定义了检查的配置信息
+    *
+    * 常见问题及解决方式:
+    *   1."Error -- Unable to open include file 'xxxx' "
+    *      需要通过 -i 指定lint检查时需要包含的库文件的路径(可以放在 std.lnt 配置中)
+    *   2.屏蔽各种库(如 MFC/ATL 等)的警告
+    *     在 options.lnt 中加入 -wlib(0)
+    *   3.默认的输出结果很多，很难看到真正的问题(默认为 -w3, 输出 Error + Warning + Info + Note)
+    *     在 options.lnt 中加入 -w2  //只输出 Error + Warning
+    *
     * 文件介绍：
     *   lint-nt.exe [选项] [选项文件(*.lnt)] 分析文件(支持通配符*.cpp)或文件列表文件 
     *     +ffn -- 输出文件全路径名，确保在IDE环境中可以双击后在不同的文件间切换
@@ -948,10 +961,12 @@ namespace FTL
     *     -u -- 进行单元检查，抑制许多模块间问题告警
     *     -os(结果文件路径)   
     *   文件列表文件的生成：dir d:\MyWork\*.cpp /s/b/a:-d > d:\pc-lint\filelist.lnt
-    *
+    *   
+    * 
     *   LIN.bat -- 通过向导生成的批处理文件，能按照用户指定的配置(一般是 std.lnt，
     *     可以有多个，通过 _a 到 _z 的后缀区分)调用pclint，可以放到系统的Path路径中
-    *   std.lnt -- 通过向导生成的配置文件，其中会调用的 .lnt 文件需要由lnt目录拷贝到同一目录下
+    *   LSET.BAT -- 会将PC-lint的目录加入当前%PATH%的批处理，个人感觉不如将Lint的目录加入PATH更好
+    *   std.lnt -- 通过向导生成的配置文件，其中会调用的 .lnt 文件需要由lnt目录拷贝到同一目录下，否则会出 xxx 错误
     *   options.lnt -- 包含屏蔽错误信息的配置文件，可以打开或关闭某些开关，从而激活或抑制某些错误
     *     (如 if(b = fun())、 符号无符号复制等)
     *
@@ -964,42 +979,46 @@ namespace FTL
     *     分析文件里对应的代码
     *   xxx.lob -- lint分析处理时的中间文件(Lint Object Module)
     * 用向导生成的一个 std.lnt (适用于VC2008)
-    *   co-msc90.lnt
-    *   lib-atl.lnt lib-mfc.lnt lib-stl.lnt lib-w32.lnt
-    *   options.lnt  -si4 -sp4
-    *   -i"E:\FJSDK\Windows\FTL"
-    *   -i"C:\Program Files\Microsoft Visual Studio 9.0\VC\include"
-    *   -i"C:\Program Files\Microsoft Visual Studio 9.0\VC\atlmfc\include"
+    *   au-sm123.lnt au-ds.lnt                              //Effective C++, Dan Saks，MISRA 2004 等
+    *   co-msc90.lnt                                        //VC2008
+    *   lib-atl.lnt lib-mfc.lnt lib-stl.lnt lib-w32.lnt     //常用的库 ATL,MFC,STL,Win32 
+    *   options.lnt  -si4 -sp4 -wlib(1) -w3
     *   -i"C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include"
-    *
+    *   -i"D:\Microsoft Visual Studio 9.0\VC\include"
+    *   -i"D:\Microsoft Visual Studio 9.0\VC\atlmfc\include"
+    *   -i"E:\FJSDK\Windows\FTL"
+    * 自定义的options.lnt配置
+    *   -wlib(0)                    //屏蔽库中文件的告警
+    *   
     *  
     * 在VC的环境中使用，通过创建外部命令的方式使用，执行检查后通过快捷键 F8 在各个警告之间切换
     *   检查当前正在编辑的单个文件：
-    *     1.标题为: PC-INT File Check
-    *     2.命令为: C:\lint\lint-nt.exe
-    *     3.参数为: +v -i"C:\lint"  std.lnt env-vc9.lnt "$(ItemPath)"  -- 似乎可以不要“env-vc9.lnt”?
+    *     1.标题为: PC-LINT File Check
+    *     2.命令为: D:\lint\lint-nt.exe
+    *     3.参数为: +v -i"D:\lint"  std.lnt env-vc9.lnt "$(ItemPath)"  -- 似乎可以不要“env-vc9.lnt”?
     *     4.初始目录为: "$(ItemDir)"
     *     5.选中“使用输出窗口”，会自动选中“退出时关闭”
     *   检查当前正在编辑的工程，分两步：创建工程相关的.lnt -> 分析.lnt
     *     1.标题为：PC-LINT Project Creation
-    *     2.命令为: C:\lint\lint-nt.exe
+    *     2.命令为: D:\lint\lint-nt.exe
     *     3.参数为: +v -os($(TargetName).lnt) $(ProjectFileName)
     *     4.初始目录为: $(ProjectDir)
     *     5.选中“使用输出窗口”，会自动选中“退出时关闭”
     *     6.标题为: PC-LINT Check Project，
-    *     7.命令为: D:\PCLint\LINT-NT.EXE
-    *     8.参数为: +v -i"C:\lint" std.lnt env-vc9.lnt $(TargetName).lnt
+    *     7.命令为: D:\lint\lint-nt.exe
+    *     8.参数为: +v -i"D:\lint" std.lnt env-vc9.lnt $(TargetName).lnt
     *     9.初始目录为：$(ProjectDir)
     *     10.选中“使用输出窗口”，会自动选中“退出时关闭”
     *   还有一个所谓的 unit check (在创建完 Project.lnt 后)，具体有什么用？
-    *     参数：-i"C:\lint" std.lnt env-vc9.lnt --u $(TargetName).lnt $(ItemPath)
+    *     参数：-i"D:\lint" std.lnt env-vc9.lnt --u $(TargetName).lnt $(ItemPath)
     *     初始化目录：$(ProjectDir)
     *     
     * format 说明(如 format=%f %l %t %n:%m )
     *   %f -- 文件
     *   %l -- 行号
     *
-    * 告警配置(部分告警是误报，不更改时可以屏蔽，需要使用特殊的注释格式进行屏蔽)，尽量采用行屏蔽的方式，如：//lint !e813
+    * 告警配置(部分告警是误报，不更改时可以屏蔽，可以在代码中使用特殊的注释格式进行屏蔽)，
+    *   尽量采用行屏蔽的方式，如：//lint !e813 -- 各选项以空格分开
     *   /×lint -save -e813 ×/    -- 注意：这里的 × 实际上应该是 *
     *   会报告警告的代码，用 -save 和 -restore 包含起来后，就不会再报指定的错误(此处为813)了
     *   /×lint -restore ×/
@@ -1014,18 +1033,25 @@ namespace FTL
     *   -efunc(告警号,函数名列表) --
     *   -elibsym(告警号,函数名列表) --
     *   -emacro(告警号,宏名) -- 宏展开时禁止告警
-    *   -esym(告警号,符号名) -- 可对指定符号名(函数名，变量名等) 进行告警设置
+    *   -esym(告警号,符号名) -- 可对指定符号名(函数名，变量名等) 进行告警设置, 如 -esym(534, printf,scanf)
     *   -etemplate(告警号) -- 模版展开时禁止告警
     *   -s符号字节数 -- 设置符号的字节数，如 -sb8(字节为8比特)， -sc1(char为1字节)，-sl4(long为4字节)
     *   -function(比较基础函数,新函数) -- 函数模仿？设置"新函数"采用和"比较基础函数"相同的比较配置进行检查，如
     *     -function(strcpy,myStrCpy) 后：char buf[4]; myStrCpy(buf,"abcde"); 回报419 的警告(buf越界)
     *   +libdir(第三方库文件目录) -- 将指定目录下的文件设置为lib，之后可以用 -elib/-wlib 等进行设置
-    *   -wlib(等级) -- 对库文件设置高级就能够级别(0~4，0不打印)
+    *   -v -- verbosity 
+    *   -wlib(等级) -- 对函数库文件(在-i中包含的?)设置告警输出等级(0不输出信息, 1+错误,2+告警, 3+其他提示, 4所有信息)
+    *   -w输出等级 -- 设置告警输出等级
+    *
+    * 常见必须处理的错误类型(在结果中搜索 "error xxx" )
+    *   533 -- 不是所有的路径都返回了结果。function 'Xxx' should return a value
+    *   1401(类似的有1402,1403等) -- 成员变量未在构造函数中初始化, member 'Xxx' not initialized by constructor
+    *   TODO: 没有被适当检验的数组下标; 未被初始化的变量; 使用空指针; 冗余代码
     *
     * 其他的工具
     *   ALOA(A Lint Output Analyzer ) -- 可对结果统计并排序
     *   lintProject -- 开源的工具，可以将 sln/vcproj 等工程文件转换成 文件列表文件(lnt)
-    *   
+    *   RuleChecker -- 倾向于代码编码规范的检查，比如代码缩进格式、case语句书写规范、函数声明和布尔表达式的编写规则
     ******************************************************************************************************************************/
 
     /******************************************************************************************************************************
@@ -1234,7 +1260,10 @@ namespace FTL
 	* 
     * Profiler(性能分析工具 -- 企业版中才有): 
     *   Tools->Performance Tools->Performance Wizard
-    * 
+    *  
+    * 代码静态检查
+    *   Analyze -> Run Code Analysis On Only
+    *
     * 常见编译、链接错误
     *   C4005 -- 宏重定义，macro redefinition
     *   C4101 -- 未引用的本地变量 unreferenced local variable
