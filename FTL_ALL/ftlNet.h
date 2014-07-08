@@ -110,7 +110,7 @@
 *  2616 -- HTTP(Hypertext Transfer Protocol)
 *  6443 -- RFB(Remote Framebuffer Protocol), 通常用于远程控制
 * 
-* 微软的抓包工具 http://www.microsoft.com/en-us/download/details.aspx?id=4865
+* 微软的抓包工具(Microsoft Network Monitor) http://www.microsoft.com/en-us/download/details.aspx?id=4865
 * Ethereal -- 抓包软件，可以抓SSDP等消息？可通过 Follow TCP Stream 来解析拆分成多个包的TCP流？
 * Fiddler2/Httpwatch -- 专门监控Http传输的工具?
 * Wireshark(开源遵循GPL的网络抓包工具) -- http://wiki.wireshark.org

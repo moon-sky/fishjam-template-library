@@ -1,6 +1,7 @@
 package com.fishjam.study;
 
 /************************************************************************************************************
+ * springMVC3学习(一)--框架搭建 http://blog.csdn.net/itmyhome1990/article/details/18311467
  * 安装好JDK以后，要设置环境变量：
  *   JAVA_HOME -- 指向 JDK 的安装目录
  *   CLASSPATH -- %JAVA_HOME%/lib/tools.jar;%JAVA_HOME%/lib/dt.jar 
