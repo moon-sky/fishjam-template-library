@@ -1,6 +1,19 @@
 package com.fishjam.study.javaee;
 
 /**************************************************************************************************************************************
+* 常见问题及解决方案
+*    1.当拦截"/" 时(REST 风格)，无法访问静态文件
+*      解决方案一：激活Tomcat的defaultServlet(必须在最前面)来处理静态文件，<servlet-name>default</servlet-name><url-pattern>*.jpg</url-pattern> 
+*      补充：Tomcat, Jetty, JBoss, and GlassFish 自带的默认Servlet的名字 -- "default"
+*               Google App Engine 自带的 默认Servlet的名字 -- "_ah_default"
+*               Resin 自带的 默认Servlet的名字 -- "resin-file"
+*               WebLogic 自带的 默认Servlet的名字  -- "FileServlet"
+*               WebSphere  自带的 默认Servlet的名字 -- "SimpleFileServlet"
+*      解决方案二：Spring 3.0.4 后映射到ResourceHttpRequestHandler： <mvc:resources mapping="/images/**" location="/images/" />  
+*    2. 
+**************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
  * 非侵入式设计(Spring) -- 无需继承框架提供的类(但通常需要使用Reflection机制，动态调用的方式来避免硬编码的约束)
  *   Class.forName("xxxx").newInstance();
  * 侵入设计(EJB) -- 需要继承框架类，如果以后想更换框架，之前写过的代码几乎无法重用

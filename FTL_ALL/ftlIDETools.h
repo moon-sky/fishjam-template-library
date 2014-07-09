@@ -8,6 +8,12 @@
 #endif
 
 /***********************************************************************************************
+* TODO:
+*   各种编辑器推荐保存的文件类型:
+*   1.VS -- 带签名的UTF8
+*   2.Eclipse -- 不带签名的UTF8(Ant 不支持签名)
+*   3.Go语言 -- 
+*
 * 代码静态分析(编译警告)时必须更改的项:
 *   C4700 -- uninitialized local variable 'Xxx' used
 *   C6001 -- Using uninitialized memory 'Xxx'
@@ -949,18 +955,21 @@ namespace FTL
     * 常见问题及解决方式:
     *   1."Error -- Unable to open include file 'xxxx' "
     *      需要通过 -i 指定lint检查时需要包含的库文件的路径(可以放在 std.lnt 配置中)
-    *   2.屏蔽各种库(如 MFC/ATL 等)的警告
+    *   2.屏蔽各种库(如 MFC/ATL 等)的警告(std.lnt 中设置的会被options.lnt中的同名配置覆盖?)
     *     在 options.lnt 中加入 -wlib(0)
     *   3.默认的输出结果很多，很难看到真正的问题(默认为 -w3, 输出 Error + Warning + Info + Note)
     *     在 options.lnt 中加入 -w2  //只输出 Error + Warning
+    *   4.Lint 不支持 UTF16，因此源代码最好保存成带签名的UTF8格式
+    *   5.先使用 dir 生成要检测的文件列表，然后 lint-nt [选项] filelist.lnt 的方式进行检查
+    *     文件列表文件的生成：dir d:\MyWork\*.cpp /s/b/a:-d > d:\pc-lint\filelist.lnt
     *
     * 文件介绍：
     *   lint-nt.exe [选项] [选项文件(*.lnt)] 分析文件(支持通配符*.cpp)或文件列表文件 
     *     +ffn -- 输出文件全路径名，确保在IDE环境中可以双击后在不同的文件间切换
     *     -i -- 指定lint检查时需要包含的路径
     *     -u -- 进行单元检查，抑制许多模块间问题告警
+    *        ?? -u xxx.lnt -- 使用指定的xxx.lnt配置文件
     *     -os(结果文件路径)   
-    *   文件列表文件的生成：dir d:\MyWork\*.cpp /s/b/a:-d > d:\pc-lint\filelist.lnt
     *   
     * 
     *   LIN.bat -- 通过向导生成的批处理文件，能按照用户指定的配置(一般是 std.lnt，
@@ -982,7 +991,7 @@ namespace FTL
     *   au-sm123.lnt au-ds.lnt                              //Effective C++, Dan Saks，MISRA 2004 等
     *   co-msc90.lnt                                        //VC2008
     *   lib-atl.lnt lib-mfc.lnt lib-stl.lnt lib-w32.lnt     //常用的库 ATL,MFC,STL,Win32 
-    *   options.lnt  -si4 -sp4 -wlib(1) -w3
+    *   options.lnt  -si4 -sp4 -wlib(1) -w3                 //会使用自定义的options.lnt中的配置
     *   -i"C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include"
     *   -i"D:\Microsoft Visual Studio 9.0\VC\include"
     *   -i"D:\Microsoft Visual Studio 9.0\VC\atlmfc\include"
@@ -999,6 +1008,7 @@ namespace FTL
     *     4.初始目录为: "$(ItemDir)"
     *     5.选中“使用输出窗口”，会自动选中“退出时关闭”
     *   检查当前正在编辑的工程，分两步：创建工程相关的.lnt -> 分析.lnt
+    *     TODO:实测不行，最好是写批处理，生成文件列表来检查
     *     1.标题为：PC-LINT Project Creation
     *     2.命令为: D:\lint\lint-nt.exe
     *     3.参数为: +v -os($(TargetName).lnt) $(ProjectFileName)
@@ -1018,21 +1028,21 @@ namespace FTL
     *   %l -- 行号
     *
     * 告警配置(部分告警是误报，不更改时可以屏蔽，可以在代码中使用特殊的注释格式进行屏蔽)，
-    *   尽量采用行屏蔽的方式，如：//lint !e813 -- 各选项以空格分开
-    *   /×lint -save -e813 ×/    -- 注意：这里的 × 实际上应该是 *
-    *   会报告警告的代码，用 -save 和 -restore 包含起来后，就不会再报指定的错误(此处为813)了
-    *   /×lint -restore ×/
+    *   尽量采用行屏蔽的方式，
+    *     //lint !e告警号1 -e告警号2 -- 本行禁止输出指定的告警，一般放在行尾,各选项以空格分开
+    *   多行会报告警告的代码，用 -save 和 -restore 包含起来后，就不会再报指定的错误(此处为813)了
+    *     /×lint -save -e813 ×/ 需要检测的代码 /×lint -restore ×/    -- 注意：这里的 × 实际上应该是 *
+    * options.lnt 中的配置
     *   "-" -- 禁止输出相应的错误信息
     *   "+" -- 允许输出相应的错误信息
     *   "#" -- 允许使用通配符 "?" 和 "*"
     *   -e(告警号1,[告警号2]) -- 禁止下一个表达式的告警
     *   --e(告警号1,告警号2) -- 对当前整个表达式禁止输出告警
     *   -e{告警号} -- 表达式整个屏蔽(和上一个的区别？)
-    *   //lint !e告警号 -- 本行禁止输出指定的告警，一般放在行尾
     *   -efile(告警号,文件列表) -- 禁止指定的文件对告警
     *   -efunc(告警号,函数名列表) --
     *   -elibsym(告警号,函数名列表) --
-    *   -emacro(告警号,宏名) -- 宏展开时禁止告警
+    *   -emacro(告警号,宏名) -- 宏展开时禁止告警，如 -emacro(*,END_MSG_MAP)
     *   -esym(告警号,符号名) -- 可对指定符号名(函数名，变量名等) 进行告警设置, 如 -esym(534, printf,scanf)
     *   -etemplate(告警号) -- 模版展开时禁止告警
     *   -s符号字节数 -- 设置符号的字节数，如 -sb8(字节为8比特)， -sc1(char为1字节)，-sl4(long为4字节)
@@ -1043,9 +1053,28 @@ namespace FTL
     *   -wlib(等级) -- 对函数库文件(在-i中包含的?)设置告警输出等级(0不输出信息, 1+错误,2+告警, 3+其他提示, 4所有信息)
     *   -w输出等级 -- 设置告警输出等级
     *
-    * 常见必须处理的错误类型(在结果中搜索 "error xxx" )
-    *   533 -- 不是所有的路径都返回了结果。function 'Xxx' should return a value
-    *   1401(类似的有1402,1403等) -- 成员变量未在构造函数中初始化, member 'Xxx' not initialized by constructor
+    * 常见错误类型(在结果中搜索 "error xxx" ), <必改>, [建议更改], {可忽略}
+    *   [429] -- Custodial pointer 'Symbol' (Location) has not been freed or returned
+    *            指针没有释放或返回，可能出现内存泄露。但也可能是加入了特定容器进行管理。
+    *   [438] -- Last value assigned to variable 'Symbol' not used
+	*   [529] -- Symbol 'Symbol' (Location) not subsequently referenced, 定义以后就没有再使用
+	*            一般可以把变量定义和复制删除(注意：不能简单地把整行代码删除，否则函数就不会调用了)
+    *   <530> -- Symbol 'xxx' not initialized, 变量未初始化
+    *   <533> -- 不是所有的路径都返回了结果。function 'Xxx' should return a value
+    *   [534] -- Ignoring return value of function 'xxx', 忽视了函数的返回值
+	*   {537} -- Repeated include file 'FileName', 重复包含了相同的头文件?
+    *   <540> -- Excessive size, 字符串初始化时超过定义的缓冲区大小
+    *   <604> -- Returning address of auto variable 'xxx', 返回局部变量的地址
+    *   <644> -- Variable 'xxx' may not have been initialized, 因为执行路径的问题，变量可能未初始化
+    *   {830} -- "Location cited in prior message"。通常接在一个特定的错误后面，指定该错误指向的函数原型，通常只更改调用的地方即可。
+    *   <1401>(类似的有1402,1403等) -- 成员变量未在构造函数中初始化, member 'Xxx' not initialized by constructor
+    *     BUG? 如果类没有构造函数，则检查不出来
+    *   1411 -- Member with different signature hides virtual member 'Symbol', 子类有同父类同名，但函数签名不同的函数
+    *   <1510> -- base class 'Name' has no destructor, 子类有析构函数，但父类没有定义析构，一般需要增加虚析构定义
+    *   <1516> -- Member declaration hides inherited member 'Symbol', 子类定义了和父类同名字的成员变量,
+    *             注意:通过宏定义的消息映射等会有相同的变量名
+    *   [1551] -- function 'Symbol' may throw an exception in destructor 'Symbol', 
+    *      在析构函数中调用可能抛出异常的代码，需要通过 try...catch 捕获异常
     *   TODO: 没有被适当检验的数组下标; 未被初始化的变量; 使用空指针; 冗余代码
     *
     * 其他的工具

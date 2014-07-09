@@ -90,7 +90,9 @@ import javax.servlet.http.HttpServletResponse;
  * 将 Servlet 配置到Web应用中有两种方法： 
  *   1.修改 web.xml,
  *     a.<servlet> 元素指定名字(servlet-name)和对应的Java类(servlet-class) | jsp文件(jsp-file)
- *     b.<servlet-mapping> 元素指定 Servlet(servlet-name) 映射到的 URL(url-pattern)
+ *        注意：每一个 <servlet-name> 定义的 servlet 有自己的 WebApplicationContext 上下文对象
+ *                 可通过 contextConfigLocation 参数指定 配置文件，该文件用于生成定义的Bean
+ *     b.<servlet-mapping> 元素指定 Servlet(servlet-name) 映射到的 URL(url-pattern), 如 *.do 或 *.form 等
  *   2.(Servlet 3.0 以后)使用 @WebServlet 的 Annotation 修饰该Servlet类， 支持的属性： 
  *     asyncSupported[O] --是否支持异步操作模式 
  *     displayName[O] -- 指定显示名 
@@ -156,7 +158,7 @@ public class ServletStudy extends HttpServlet {
 		super.init(config);
 		log("in ServletStudy init");
 		System.out.println("in ServletStudy init");
-		throw new ServletException("i am here");
+		//throw new ServletException("i am here");
 }
 	@Override
 	protected void service(HttpServletRequest request,
