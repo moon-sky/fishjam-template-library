@@ -29,16 +29,18 @@ import org.springframework.web.servlet.ModelAndView;
  *     DispatcherServlet -> 
  *     
  *     
- * 常用的注解 -- <context:component-scan/>扫描指定的包中的类上的注解
+ * 常用的注解 -- 配置I中需要通过 <context:component-scan/> 启用Bean的自动扫描功能，否则不能扫描类上的注解
+ *    通过配置注解，Spring会自动创建相应的 BeanDefinition 对象，并注册到 ApplicationContext 中，这些类就成了Spring受管组件
  *    @Autowired 用于注入，(srping提供的) 默认按类型装配
- *    @Component -- 泛指组件, 当不好归类时
- *    @Controller -- 声明Action组件
- *    @Repository -- 声明Dao组件
+ *    @Component -- 泛指组件(Bean), 当不好归类时使用
+ *    @Controller -- 声明Action组件，通常用在控制层
+ *    @Repository -- 将数据访问层 (DAO层)的类标识为 Spring Bean，然后就不再需要在XML中通过<bean/>显示配置。
+ *       可自动提供一些数据访问相关的功能。如 数据访问异常类型.
  *    @RequestMapping("访问的地址") -- 请求映射
  *    @Resource -- 用于注入，( j2ee提供的 ) 默认按名称装配，@Resource(name="beanName")
  *    @ResponseBody -- 
  *    @Scope("prototype") -- 设定bean的作用域 
- *    @Service -- 声明Service组件
+ *    @Service -- 声明Service组件，通常用在业务层
  *    @Transactional( rollbackFor={Exception.class}) -- 事务管理
  *  TODO(可能支持的，未确定)
  *    @NumberFormatannotation

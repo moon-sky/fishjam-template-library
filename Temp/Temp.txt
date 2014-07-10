@@ -1,3 +1,5 @@
+测试 strncpy 等的字符串范围、是否增加NULL结束符等
+
 .NET 中 SafeHandle 可以保护向非托管代码中传入的托管缓存空间 -- 具体怎么用?(DangerousAddRef/DangerousRelease)
 .NET 中ResourceManager::GetString 加载资源的流程
   1.资源符号从卫星dll加载起来后会放到内存的HashTable中;

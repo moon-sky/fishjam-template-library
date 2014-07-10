@@ -1,5 +1,9 @@
 package com.fishjam.study.java;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+
 /**************************************************************************************
 * RTTI(Run-time Type Information, 运行时类型信息) -- 需要.class
 *   1.通过一个指向基类的引用找出其所指的确切类型－－编译时
@@ -18,5 +22,15 @@ package com.fishjam.study.java;
 
 public class FRttiStudy
 {
-     
+     public void test() throws Exception{
+    	 
+    	 Class clsClass = FRttiStudy.class;
+    	 Method method = clsClass.getMethod("test");  //int.class
+    	 boolean bIsAnnotation = method.isAnnotationPresent(Deprecated.class);
+    	 Annotation annotations[] =  method.getAnnotations();
+    	 //AnnotatedElement 
+    	 for(Method m : Class.forName("FRttiStudy").getMethods()){
+    		 	m.invoke(null);
+    	 }
+     }
 }
