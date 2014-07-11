@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "FTLThreadTester.h"
+#include <ftlMem.h>
 #include <string>
 
 CString g_strAllocOrder;
@@ -366,7 +367,7 @@ void CFTLThreadTester::test_FMemCacheT()
 {
     LONG oldCount = CMyTestData::GetTestDataCount();
     {
-        CFMemCacheT<CMyTestData>   memCache(5,10);
+        CFMemoryPoolT<CMyTestData>   memPool(5,10);
         std::vector<CMyTestData*>  allDataPtrArray;
 
         CPPUNIT_ASSERT(oldCount + 5 == CMyTestData::GetTestDataCount());
@@ -374,7 +375,7 @@ void CFTLThreadTester::test_FMemCacheT()
         //先获取3个
         for (int i = 0; i < 3; i++)
         {
-            CMyTestData* pData = memCache.Get();
+            CMyTestData* pData = memPool.Get();
             allDataPtrArray.push_back(pData);
         }
         CPPUNIT_ASSERT(oldCount + 5 == CMyTestData::GetTestDataCount());
@@ -383,12 +384,12 @@ void CFTLThreadTester::test_FMemCacheT()
         //再获取7个
         for (int i = 0; i < 7; i++)
         {
-            CMyTestData* pData = memCache.Get();
+            CMyTestData* pData = memPool.Get();
             allDataPtrArray.push_back(pData);
         }
         CPPUNIT_ASSERT(oldCount + 10 == CMyTestData::GetTestDataCount());
 
-        CMyTestData* pNewData = memCache.Get();
+        CMyTestData* pNewData = memPool.Get();
         CPPUNIT_ASSERT(pNewData == NULL);
         CPPUNIT_ASSERT(oldCount + 10 == CMyTestData::GetTestDataCount());
 
@@ -396,7 +397,7 @@ void CFTLThreadTester::test_FMemCacheT()
         for (std::vector<CMyTestData*>::iterator iter = allDataPtrArray.begin();
             iter != allDataPtrArray.end(); ++iter)
         {
-            memCache.Release(*iter);
+            memPool.Retrun(*iter);
         }
         CPPUNIT_ASSERT(oldCount + 10 == CMyTestData::GetTestDataCount());
     }

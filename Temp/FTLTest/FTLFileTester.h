@@ -25,6 +25,7 @@ public:
 
 
     //ICopyDirCallback
+    virtual VOID OnBeginPrepareSourceFiles(LPCTSTR pszSrcDir, LPCTSTR pszDstDir){};
     virtual VOID OnBegin(LONGLONG nTotalSize, LONG nFileCount) { }
     virtual VOID OnCopyFile(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, LONG nIndex, LONGLONG nFileSize, LONGLONG nCopiedSize) { }
     virtual VOID OnError(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, DWORD dwError) { }
