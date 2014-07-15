@@ -67,7 +67,7 @@ package com.fishjam.study;
 *   2.扩展安装(推荐方式)
 *     在Eclipse目录下创建一个 links 目录，建立 *.link 的文本文件，其中指向放在任意地方的插件。
 *     如 path=d:\\myplugin\\eclipse\\plugins\\vssplugin_1.6.1
-*   3.在线安装
+*   3.在线安装(Eclipse中: Help->Eclipse Marketplace; MyEclipse中:  )
 *   
 *   
 * 常用插件(网站找到对应的在线安装地址，然后通过 Help->Install New Software 安装)
@@ -75,6 +75,8 @@ package com.fishjam.study;
 *   CDT -- C Development Toolkit（http://www.eclipse.org/cdt/downloads.php）
 *   JDT -- Java Development Toolkit
 *   JET -- Java Emitter Templates ,一个开源的模板引擎，可以在EMF中自动生成代码。
+*   Maven -- Maven Integration for Eclipse,  安装好插件以后需要让eclipse中的maven重新定位成手动安装的外部版本:
+*      Window -> Preference -> Maven -> Installation -> Add -> 选中安装的外部Maven路径
 *   Subversive -- Subversion (SVN) Team Provider ( http://www.eclipse.org/subversive/ )
 *   TPTP -- Test & Performance Tools Platform，可以进行程序执行时间的统计分析、内存的监控、对象调用的分析等
 *   VssPlug -- 支持VSS，解压到 dropins 目录下，主菜单会多一项“VSS”，通过 "Team->Share..."进行设置,对VSS的密码明文设置在

@@ -70,7 +70,8 @@ setlocal enabledelayedexpansion -- ???
 *     mysqldump --opt school>school.bbb -- 测试失败(unknown option '--no-beep')
 *
 * 管理工具
-*   SQLyog -- 第三方的客户端管理工具
+*   SQLyog -- 第三方的客户端管理工具, 
+*     30天使用其的破解:删除或更改 HKCU\Software\{数字} 的项(一般是第一个)，注意先备份
 *   Navicat_for_MySQL -- 
 *   MySQL Administrator
 *   MySQL Query Browser

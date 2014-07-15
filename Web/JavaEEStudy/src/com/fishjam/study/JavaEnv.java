@@ -11,6 +11,8 @@ package com.fishjam.study;
  * 一次编译,到处运行 -- java字节码(Code-Byte).class，在JVM虚拟机下运行
  * ClassPath 环境变量设置 java 程序查找class的路径
  * 
+ * Java命令行运行
+ *   java -cp Xxx.jar 运行类的全路径： 如 java -cp target/myApp-1.0-SNAPSHOT.jar com.fishjam.test.App
  * 
  * JVM的运行过程：载入类(ClassLoader)->字节码校验(ByteCodeVerifier)->解释器->运行时环境
  *
