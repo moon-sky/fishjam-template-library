@@ -1,18 +1,24 @@
 package com.fishjam.study;
 
 /************************************************************************************************************
- * AOP(Aspect-Oriented Programming) -- 面向切面编程
+ * AOP(Aspect-Oriented Programming) -- 面向切面编程，通过在编译期间、装载期间或运行期间实现在不修改源代码的情况下给程序动态添加功能的一种技术。
+ *   即把可重用的功能(如 安全、日志记录、)提取出来，然后将这些通用功能在合适的时候织入到应用程序中
+ * Bean -- 一般指容器管理对象，在Spring中指Spring IoC容器管理对象
  * BO(Business Object) -- 业务对象，可以理解为
  * CORBA(Common Object Request Broker Architecture) -- 一种和语言无关的分布式"对象交换标准框架"，
  * CRUD -- Create + Retrieve + Update + Delete
  * CVS(Concurrent Versions System) -- 版本控制工具CVS，已被SVN替代
  * DAO(Data Access Object) -- 数据访问对象
  * DBCP -- 数据源？
- * DI(Dependency Injection) -- 依赖注入
+ * DI(Dependency Injection) -- 依赖注入，对象的依赖关系将由负责协调系统中各个对象的第三方组件在创建对象时设定，
+ *    对象无需自行创建或管理它们的依赖关系 -- 依赖关系将被自动注入到需要它们的对象中去。现实例子就是USB接口。
+ *    在配置Bean时，应用对象可以借助依赖注入来保持松散耦合。
  * DMI(Dynamic Method Invocation) -- 动态方法调用， struts2中指定action不同的请求为 "ActionName!methodName" 
  * DTO(Data Transfer Object) -- 数据传输对象，JavaEE中，中间层组件将应用底层的状态信息封装成名为DTO的JavaBean，并传送到JSP页面进行显示。
  * EJB(Enterprise Java Bean) -- (将事务逻辑和连接的问题隔离),已被 JPA 替代？
  * GC(Garbage Collector) -- 垃圾回收
+ * Ioc(Inversion of Control) -- 控制反转(也称作 依赖注入：Dependency Injection。
+ *   即由容器控制程序之间的关系，而非传统实现中的程序代码直接控制。即控制权由应用代码中转到了外部容器。
  * JAAS(Java Authentication Authorization Service) -- Java验证和授权服务，用于控制对 Java Web 应用的授权访问，
  *   在 web.xml 中的 <security-constraint>， <login-config> 等处体现 
  * JDK(Java Development Kit) -- 按Java的应用环境划分
@@ -31,7 +37,7 @@ package com.fishjam.study;
  * JSF() -
  * JSP(Java Server Page) -- 最终会编译成Servlet才能运行
  * JSR(Java Spec. Request) -- Java 规格需求
- * JSTL(JSP Standard Tag Library) -- Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
+ * JSTL(JSP Standard Tag Library) -- JSP标准标签库， Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
  * OGNL() -- 
  * ORM(Object Relation Mapping) -- 对象-关系映射，完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表。
  *   最早的ORM是 Entity EJB，但非常麻烦。目前流行的ORM框架有Hibernate、iBatis、TopLink等
@@ -39,11 +45,12 @@ package com.fishjam.study;
  * PO(Persistent Object) --  持久对象，可以理解为 数据库模型通过映射转化成的持久化类，通常和数据库的表对应 
  * POJO(Plain Old Java Object) -- 普通的传统的Java对象，其中有一些属性及其getter setter方法的类,没有业务逻辑。
  *   不允许有业务方法,也不能携带有connection之类的方法。实际就是普通JavaBeans，是为了避免和EJB混淆所创造的简称 。
+ *   它可以包含业务逻辑或持久化逻辑，但不担当任何特殊角色且不继承或不实现任何其它Java框架的类或接口
  * RAD() -- 快速应用开发
  * REST(Representational State Transfer) -- 表述性状态转移, 针对网络应用的设计和开发方式的一种软件架构风格
  * RMI(Remote Method Invocation) -- 远程调用，通过存活于远程机器上的对象，发送消息并执行。 
  * RTTI(Run-time Type Information) -- 运行时类型信息
- * SOAP -- 
+ * SOAP --  
  * SSH(Struts + Spring + Hibernate) -- SSH组合是一种轻量级的JavaEE平台，可运行在普通Web容器中，无需EJB容器的支持
  * TLD(Tag Library Definition) -- 标签库定义，用于JSP中，文件扩展名也是 tld，一个标签库中可包含多个标签
  * VO(Value Object) -- 值对象, 可以理解为了便于使用而在PO的基础上进行又一次加工而产生的对象, 通常用于业务层之间的数据传递，可以不和数据库的表对应 
