@@ -48,7 +48,7 @@ package com.fishjam.study.javaee;
  *     
  * 常见问题
  *    1.FreeMaker 默认情况下不能引用不存在的变量，或Java中返回null的属性，否则会抛出 xxxx(TODO) 的异常?
- *      除非:a. 使用 "!" 提供默认值； b.<#!if (变量名)??> xxxxx</#if> -- 如变量名不存在的话会忽略其中的代码  
+ *      除非:a. 使用 "!" 提供默认值； b.<#if (变量名)??> xxxxx</#if> -- 如变量名存在的话执行其中的代码  
  *    2.空格剥离 -- FreeMaker默认会去除文本中多余的 空格、制表符、换行符 等，如要输出，必须使用 &nbsp;(空格) 等?
  *      strip_text 参数将从模版中删除所有顶级文本 ？ 
  *    3.通过 > 和 >= 进行比较时，需要将表达式放入括号中，否则 FreeMarker 会把它当成结束符。如 <#if (x > y) >xxxx</#if>
@@ -96,10 +96,11 @@ package com.fishjam.study.javaee;
  *    html -- 字符串中所有的特殊HTML字符都需要用实体引用来代替(比如 < 替换为 &lt; )
  *    int -- 对数字取整
  *    lower_case -- 字符串的小写形式
- *    size -- 序列中元素的个数
+ *    size -- 返回序列中元素的个数
  *    string -- user?string[0], 这种语法取出 user 字符串中的第一个字符。TODO:转换为字符串，也可以设置数字、时间的转换规则。
  *       ${ (1==2) ? string("yes", "no") } -- 会打印出 "no"
- *    substring --
+ *       string('yyyy-MM-dd') -- 对日期类型进行进行格式化
+ *    substring(start, end) -- 截取子字符串
  *    time 
  *    trim -- 去掉字符串首尾的空格
  *    upper_case -- 字符串的大写 形式
@@ -151,7 +152,12 @@ package com.fishjam.study.javaee;
  *       getTemplate("test.ftl"); 获取模版
  *    .Template -- 模版
  *      process(root, out) -- 模版(this)关联数据模型(root)，输出到out中
+ *    
+ * 方法变量 -- ftl中使用Java中定义的方法
+ *   1.Java实现 freemarker.template.TemplateMethodModelEx 接口， 如 class MenuTools implements TemplateMethodModelEx
+ *   2.实现其 exec 方法，其执行的 list 参数为 ???, 返回 ???
+ *   2.
 **************************************************************************************************************************************/
 public class FreeMarkerStudy {
-
+	
 }

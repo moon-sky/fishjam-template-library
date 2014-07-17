@@ -1,4 +1,11 @@
-package com.fishjam.study.java;
+package com.java.tester;
+
+import static org.junit.Assert.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Test;
 
 /****************************************************************************************
  * 容器类(JDK1.4加入了模版功能，但实现技术和C++不同)
@@ -25,6 +32,17 @@ package com.fishjam.study.java;
  * Collections.synchronzedXXX(new YYY) -- 生成可自动同步的容器
 ****************************************************************************************/
  
-public class ContainerStudy {
+
+public class ContainerTester {
+
+	@Test
+	public void testHashMap(){
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		map.put(1,  "one");
+		map.put(2, "two");
+		map.put(3, "three");
+		
+		assertEquals(map.size(), 3);
+	}
 
 }

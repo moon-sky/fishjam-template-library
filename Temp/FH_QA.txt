@@ -1,0 +1,27 @@
+listbuyerproduct2.ftl
+  点击查询按钮(comeon)=> /admin/listbuyertwodoit0.do
+  listBuyerproductsByrole2 函数进行实际的查找
+  BuyerProductDao.xml 中是对应的搜索语句
+
+
+DictTools.java 中有字典映射
+MenuTools.java 中有各role的导航菜单列表，其中的数字是 role 表的主键
+
+当前用户：${Session.userinfo.realName}
+角色：    ${role(Session.userinfo.roles)}
+左侧菜单: ${menu(Session.userinfo.roles)}
+状态转换成文字: ${dict("buyerproduct.status" + buyerproduct.status)}
+权限检查:  <#if checkRoleTools(Session.userinfo.roles, 3)> -- listbuyerproduct2.ftl 什么意思? 检测是否是 销售二部 的人?
+
+
+产品关键字: ${page.wahaha.pname!""}
+发布人: ${page.wahaha.operationName!""}
+
+供应二部采购招标信息列表 : listavailablebuyerproducts
+buyerproduct_index -- 每一页的索引
+
+报价人的个数: ${buyerproduct.happytime} -- TODO: 变量名什么意思。。。
+
+
+暂时不关注的:
+  1.page.ftl 中  $("#${key}").val("${page.wahaha[key]}");

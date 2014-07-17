@@ -160,6 +160,7 @@ test("TODO: Firefox中的学习资料", function() {
     //History -- 历史对象包含了用户已浏览的 URL 的信息,鉴于安全性的需要，该对象收到很多限制，目前只有如下属性和方法：
     //   length, back(), forward(), go(pos);
     //location -- 地址对象, 描述的是某一个窗口对象所打开的完整URL,内部有 protocol、pathname、href 等多个属性
+    //  JavaScript中: location.href = xxx; return false; -- 即可直接跳转 ?
     //  属于不同协议或不同主机的两个地址之间不能互相引用对方的 location对象(安全性的需要)
     //  URL地址：协议//主机:端口/路径名称#哈希标识?搜索条件
     //    协议 -- 如 http, ftp, file, javascript(对JS表达式求值，如 JavaScript:void(0) ), about 等，

@@ -1,4 +1,8 @@
-package com.fishjam.study.java;
+package com.java.tester;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /************************************************************************************************************************
  * apt.exe(Annotation Processing Tool)--注释处理工具，提供了处理Annotation的框架：
@@ -9,14 +13,14 @@ package com.fishjam.study.java;
  *   -Xlint <== 对代码进行检查?
  * javadoc.exe -- 将说明文档和程序代码统一维护，通过处理/xx ... x/包含的注释生成文档，由 内嵌的HTML 或 文档标签(@命令)组成
  *   <br> -- 换行
- *   @see 类全名#方法名 -- 参考(生成超链接)
- *   @version
  *   @author
- *   @since -- 开始使用的版本
+ *   @deprecated -- 建议不再使用的
  *   @param 参数名 描述
  *   @return
+ *   @see 类全名#方法名 -- 参考(生成超链接)
+ *   @since -- 开始使用的版本
  *   @throws 可抛出的异常 描述
- *   @deprecated -- 建议不再使用的
+ *   @version
  *   javadoc -d 目的目录 [其他参数] 源文件
  * javah.exe -- 创建 C 的头文件和Stub文件，用于编写原生代码(native methods)
  * javap.exe -- Java 类的反编译工具
@@ -27,6 +31,16 @@ package com.fishjam.study.java;
  * native2ascii.exe -- 
 ************************************************************************************************************************/
 
-public class JavaCommand {
+public class JavaCommandTester {
 
+	@Test
+	public void testCommand() {
+		//fail("Not yet implemented");
+		assertEquals(1, 1);
+	}
+
+	@Test
+	public void testCommand2(){
+		assertEquals(1, 1);
+	}
 }

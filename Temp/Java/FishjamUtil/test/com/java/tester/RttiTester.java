@@ -1,8 +1,10 @@
-package com.fishjam.study.java;
+package com.java.tester;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**************************************************************************************
 * RTTI(Run-time Type Information, 运行时类型信息) -- 需要.class
@@ -20,17 +22,16 @@ import java.lang.reflect.Method;
 *     或者使用 Class对象.isInstance(实例对象) 进行判断   
 **************************************************************************************/
 
-public class FRttiStudy
-{
-     public void test() throws Exception{
-    	 
-    	 Class clsClass = FRttiStudy.class;
-    	 Method method = clsClass.getMethod("test");  //int.class
-    	 boolean bIsAnnotation = method.isAnnotationPresent(Deprecated.class);
-    	 Annotation annotations[] =  method.getAnnotations();
-    	 //AnnotatedElement 
-    	 for(Method m : Class.forName("FRttiStudy").getMethods()){
-    		 	m.invoke(null);
-    	 }
-     }
+public class RttiTester {
+	@Test
+	//测试反射 -- 动态加载了User类，并通过Reflection调用了User.setName方法设置其name属性。
+	public void testReflectio(){
+	/*
+		Class cls = Class.forName("net.xiaxin.beans.User");
+		Method mtd = cls.getMethod("setName",new Class[]{String.class});
+		Object obj = (Object)cls.newInstance();
+		mtd.invoke(obj,new Object[]{"Erica"});
+		return obj;
+	*/
+	}
 }

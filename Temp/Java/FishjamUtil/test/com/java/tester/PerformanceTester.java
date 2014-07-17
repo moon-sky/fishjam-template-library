@@ -1,4 +1,8 @@
-package com.fishjam.study.java;
+package com.java.tester;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /****************************************************************************************
  * TODO
@@ -40,6 +44,12 @@ package com.fishjam.study.java;
  *
 ****************************************************************************************/
 
-public class PerformanceStudy {
+public class PerformanceTester {
+
+	@Test
+	public void test() {
+		//fail("Not yet implemented");
+		assertEquals(1, 1);
+	}
 
 }

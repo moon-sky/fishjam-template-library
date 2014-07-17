@@ -27,7 +27,7 @@
 *   4.Visual Studio 2008 
 *     + KB958502 补丁(http://archive.msdn.microsoft.com/KB958502)
 *     + jquery-vsdoc.js(http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.9.1-vsdoc.js, 该文件版本和jQuery一致，而且 "-" 前面的部分必须和jQuery文件名一样，放在相同目录)
-*     实测似乎不行?
+*     TODO: 实测似乎不行? 但 VS2010的ProjectTemplatesCache\...\WebApplication20.zip 等目录下有 jquery-1.4.1-vsdoc.js 文件
 * 辅助工具:
 *   1.Chrome中有一款jQuery的扩展程序，  
 * 
@@ -38,7 +38,11 @@
 *       jquery.js 可以保存到本地或者服务器直接引用，也可以直接使用CDN提供的(优点:用户已经访问过时会缓存;缺点:万一连不上?)
 *       Google CDN: http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js  -- 注：1.8.0 可以省略成 1.8 或 1 等(自动选择满足要求的最高版本)
 *   两个版本：Production version -- 已被精简和压缩，用于实际的网站
-*             Development version -- 完整无压缩，用于测试、学习和开发
+*              Development version -- 完整无压缩，用于测试、学习和开发
+*   文件名:
+*     jquery-x.y.z-vsdoc.js -- 包含完整提示注释的版本,在VS里编写代码时会有智能地显示提示信息及注释?
+*     jquery-x.y.z.js -- 标准版本
+*     jquery-x.y.z.min.js -- 压缩精简后的版本，为的是在客户端减少下载时间.
 *
 * jQuery对象 和 DOM 对象对比
 *   jQuery对象 -- 通过jQuery包装DOM对象后产生的对象(是一个数组)，只能使用jQuery的方法。命名时通常在变量名前面加上 "$"

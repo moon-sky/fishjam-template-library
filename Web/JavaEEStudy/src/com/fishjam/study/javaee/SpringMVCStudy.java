@@ -3,6 +3,7 @@ package com.fishjam.study.javaee;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 
@@ -36,7 +37,8 @@ import org.springframework.web.servlet.ModelAndView;
  *    @Controller -- 声明Action组件，通常用在控制层
  *    @Repository -- 将数据访问层 (DAO层)的类标识为 Spring Bean，然后就不再需要在XML中通过<bean/>显示配置。
  *       可自动提供一些数据访问相关的功能。如 数据访问异常类型.
- *    @RequestMapping("访问的地址") -- 请求映射
+ *    @RequestMapping("/login/login.do") -- 请求映射, 用在方法前
+ *    @RequestParam(参数) 类型 变量名 -- 在 @RequestMapping 中的参数
  *    @Resource -- 用于注入，( j2ee提供的 ) 默认按名称装配，@Resource(name="beanName")
  *    @ResponseBody -- 
  *    @Scope("prototype") -- 设定bean的作用域 
@@ -53,7 +55,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 public class SpringMVCStudy {
 	@RequestMapping("/login/login.do")
-	 public ModelAndView listBuyerProduct(HttpSession session) {
+	 public ModelAndView listBuyerProduct(HttpSession session,
+			 @RequestParam(required = false, defaultValue = "1" )  Integer curPage
+			 )
+	{
         ModelAndView modelAndView = new ModelAndView("login");
 //        modelAndView.addObject("listavailablebuyerproducts", buyerProductService.listAvailableBuyerProducts());
 //        if (session.getAttribute("userinfo") != null) {

@@ -1,6 +1,9 @@
-package com.fishjam.study.java;
+package com.java.tester;
 
-import java.nio.charset.Charset;
+import static org.junit.Assert.*;
+import org.junit.Test;
+
+
 /***************************************************************************************************************
  * TODO
  *   1.容器中迭代 : SomeType [] values = xxx; for(SomeType v : values) { v.Xxx(); }
@@ -107,27 +110,77 @@ import java.nio.charset.Charset;
  * JNI调用库？： system.loadLibrary("MyLib);
  ****************************************************************************************/
 
-public class JavaLanguage
-{
-	//测试反射 -- 动态加载了User类，并通过Reflection调用了User.setName方法设置其name属性。
-	public void testReflectio(){
-	/*
-		Class cls = Class.forName("net.xiaxin.beans.User");
-		Method mtd = cls.getMethod("setName",new Class[]{String.class});
-		Object obj = (Object)cls.newInstance();
-		mtd.invoke(obj,new Object[]{"Erica"});
-		return obj;
-	*/
+public class JavaLanguageTester {
+
+	private String myContacStrings(String... ss)
+	{
+		StringBuilder sBuilder = new StringBuilder("[");
+		boolean bAppened = false;
+		boolean bMoreThanOne = (ss.length > 1);
+		for (String string : ss) {
+			if (bAppened ) {
+				if (bMoreThanOne) {
+					sBuilder.append(", ");
+				}
+			}
+			else {
+				bAppened = true;
+			}
+			sBuilder.append(string);
+		}
+		sBuilder.append("]");
+		return sBuilder.toString();
 	}
 	
+	@Test
+	public void testArrayParam() {
+		String testString = myContacStrings("one", "two", "three");
+		System.out.println(testString);
+		
+		assertEquals(testString, "[one, two, three]");
+		//fail("Not yet implemented");
+	}
+	
+	//测试字符串
+	@Test
 	public void testString(){
 		String strChinese = "中华人民共和国";
 		try {
 			byte[] rawBytes = strChinese.getBytes("UTF-8");
 			String strUTF8 = new String(rawBytes, "UTF-8");
-			boolean isSame = strChinese.equals(strUTF8);
+			assertEquals(strChinese, strUTF8);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		{
+			//String.split
+			String splitString = "one, two, three";
+			String strs[] = splitString.split(",");
+			assertEquals(strs.length, 3);
+			
+			assertEquals(strs[0].trim(), "one");
+			assertEquals(strs[1].trim(), "two");
+			assertEquals(strs[2].trim(), "three");
+		}
 	}
+	
+	@Test
+	public void testParse(){
+		assertEquals(Integer.parseInt("123"), 123);
+		assertEquals(Integer.parseInt("0123"),  123);
+		assertEquals(Integer.parseInt("0123", 10), 123);
+		assertEquals(Integer.parseInt("0123", 8), 83);
+
+		boolean bThrowException = false;
+		try {
+			int a = Integer.parseInt("A0123B", 10);	//解析字符串时，会抛出异常
+		} catch (NumberFormatException e) {
+			bThrowException  = true;
+			//e.printStackTrace();
+		}
+		assertTrue(bThrowException);
+	}
+	
+
 }

@@ -36,6 +36,10 @@ package com.fishjam.study;
  *   注意：当使用 EmEditor 等工具将非UTF-8 编码的文件转换为UTF-8时，必须是不带签名的UTF-8，否则ant编译时会失败
  *   
  * 常用快捷键和配置 -- http://baike.baidu.com/link?url=GF0-5mxd1L_V5w-wo7K8w-3YOrNER4jjkI9yaE2tbPUr7IB4TwHk4EiuDUVt5wkZ
+ *   Ctrl+Shift+T 根据类名打开相关文件，支持通配符
+ *   Ctrl+Shift+R 根据文件名打开相关文件
+ *   TODO: 没有根据函数名打开相关文件
+ *   
  *   Ctrl+O 快速显示 OutLine
  *   Ctrl+T 快速显示当前类的继承结构
  *   Ctrl+E 快速显示当前Editer的下拉列表
@@ -45,6 +49,7 @@ package com.fishjam.study;
  *   Ctrl+F6 切换到下一个Editor(编辑器)
  *   Ctrl+F7 切换到下一个Perspective
  *   Ctrl+F8 切换到下一个View
+ *    
  *   
  * 常用功能(可以设置自定义的快捷键)
  *   Code Formatter(Window->Preferences->Java->Code Formatter)

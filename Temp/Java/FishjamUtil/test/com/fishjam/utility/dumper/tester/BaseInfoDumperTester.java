@@ -10,13 +10,16 @@ public class BaseInfoDumperTester extends TestCase {
 
 	public void testCollectionToString() {
 		ArrayList <Integer> IntArray = new ArrayList<>();
-		assertEquals("", BaseInfoDumper.CollectionToString(IntArray));
+		//System.out.println("BaseInfoDumper.CollectionToString(IntArray) =" + BaseInfoDumper.CollectionToString(IntArray));
+		assertEquals("[]", BaseInfoDumper.CollectionToString(IntArray));
 		
 		for (int i = 0; i < 10; i++) {
 			IntArray.add(i);
 		}
-		
-		assertEquals("0,1,2,3,4,5,6,7,8,9", BaseInfoDumper.CollectionToString(IntArray));
+
+		//System.out.println("IntArray == " + BaseInfoDumper.CollectionToString(IntArray));
+		//assertEquals("[0,1,2,3,4,5,6,7,8,9]", BaseInfoDumper.CollectionToString(IntArray));
+		assertEquals("[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]", BaseInfoDumper.CollectionToString(IntArray));
 		assertEquals("[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]", IntArray.toString());
 	}
 

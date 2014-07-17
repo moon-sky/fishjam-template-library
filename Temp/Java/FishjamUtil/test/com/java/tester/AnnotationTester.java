@@ -1,7 +1,12 @@
-package com.fishjam.study.java;
+package com.java.tester;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 import java.lang.annotation.*;
 import java.lang.reflect.Method;
+
 /********************************************************************************************************************
  * Annotation -- 类似修饰符，可以给包、类型、方法、变量、参数 等通过键值对的方式提供额外的元数据，
  *     然后可以通过反射API(java.lang.reflect.AnnotatedElement 等)对其信息进行访问(返回一个实现了该Annotation类型接口的对象，然后可以访问其成员值)
@@ -57,6 +62,24 @@ import java.lang.reflect.Method;
 }
 
 @MyAnnotation(id = 1, author="fujie")
-public class JavaAnnotationStudy {
-	int a;
+public class AnnotationTester {
+	@Test
+	
+	public void testAnnotation() {
+		
+		 Class<AnnotationTester> clsClass = AnnotationTester.class;
+		try {
+			boolean bIsAnnotation =  clsClass.isAnnotationPresent(MyAnnotation.class);
+			assertEquals(bIsAnnotation, true);
+			
+			MyAnnotation myAnnotation = (MyAnnotation)clsClass.getAnnotation(MyAnnotation.class);
+			assertEquals(myAnnotation.author(), "fujie");
+			assertEquals(myAnnotation.id(), 1l);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}  //int.class
+		
+		//fail("Not yet implemented");
+	}
+
 }
