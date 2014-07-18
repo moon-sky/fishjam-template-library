@@ -1,6 +1,7 @@
 package com.fishjam.study.javaee;
 
-//SPRING in action(第三版中文版).pdf (Spring实战) -- P27 Spring的核心
+
+//SPRING in action(第三版中文版).pdf (Spring实战) -- P50 装配Bean
 //   http://www.manning.com/walls4/ -- 下载Sample
 
 /**************************************************************************************************************************************
@@ -24,8 +25,9 @@ package com.fishjam.study.javaee;
  * 为了降低Java开发的复杂性，Spring采取了以下关键策略：
  *   1.基于POJO的轻量级和最小侵入性编程 -- 不用继承框架的特定接口或类，能轻松切换框架
  *   2.通过依赖注入(DI)和面向接口实现松耦合；
- *   3.基于切面(AOP)和惯例进行声明式编程；
- *   4.通过切面和模版减少样板式代码;
+ *   3.基于切面(AOP)和惯例进行声明式编程
+ *     通过 <aop:config><aop:aspect><asp:pointcut> 等进行配置(切面、切入点), <aop:before>(前置通知); <aop:after>(后置通知)
+ *   4.通过切面和模版减少样板式代码(如使用 JdbcTemplate 封装JDBC数据库操作的代码); 
  *   
 **************************************************************************************************************************************/
 
@@ -74,7 +76,8 @@ package com.fishjam.study.javaee;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- applicationContext.xml -- Bean工厂配置文件，ApplicationContext extends BeanFactory,
+ applicationContext.xml -- Bean工厂配置文件，Spring容器根据这些信息创建和管理Bean，
+   ApplicationContext extends BeanFactory,
  <beans>
    <!-- id(唯一标识，可通过 Action myAction=(Action)context.getBean("MyAction")获得实例)；depends-on(设置依赖关系，会决定构建顺序)；-->
    <bean id="MyAction" class="com.fishjam.xxx.MyActionImpl" singleton="false" init-method="init" destroy-method="cleanup" depends-on="ActionManager"> 
@@ -124,6 +127,10 @@ package com.fishjam.study.javaee;
  *        4.事件传播 -- 基于Observer模式提供了针对Bean的事件传播功能。为系统中状态改变时的检测提供了良好支持。
  *            可通过 publishEvent方法，将事件通知系统内所有的ApplicationListener。典型应用是异常处理
  *        5.可以在同一个应用中加载多个Context实例
+ *        有多种子类(分别通过不同的方式读取xml配置信息): 
+ *           ClassPathXmlApplicationContext -- 从应用的类路径(包含JAR文件)下加载
+ *           FileSystemXmlApplicationContext -- 指定文件系统的路径进行加载
+ *           XmlWebApplicationContext -- 读取Web应用下的XML配置文件进行加载
  *     BeanFactory -- 负责根据配置文件创建并维护Bean实例，是Bean的管理容器。从配置中读取类名、属性和值，然后使用Reflection机制进行加载和属性设定。
  *     BeanWrapper -- 实现了针对单个Bean的属性设定操作。
  *                    使用示例: Object obj = Class.forName("net.xiaxin.beans.User").newInstance(); BeanWrapper bw = new BeanWrapperImpl(obj); 
@@ -132,10 +139,32 @@ package com.fishjam.study.javaee;
  *   .Apache
  *     BeanUtils
  *       setProperty(obj,"属性名","属性值");
+ *       
+ * 测试
+ *    Spring 提供了测试模块来测试Spring应用：
+ *       为JNDI、Servlet等编写单元测试提供了一系列的模拟对象实现；
+ *       对于继承测试，为加载Spring应用上下文中的Bean的集合及交互提供了支持。
 **************************************************************************************************************************************/
 
+/**************************************************************************************************************************************       
+ * Spring Portfolio(http://spring.io/projects) -- 包括多个构建于核心Spring框架之上的框架和类库，几乎为每一个领域的Java开发都提供了Spring编程模型
+ *   Spring Web Flow -- 建立与Spring MVC框架之上，并为基于流程的会话式Web应用(购物车、向导)提供支持。
+ *   Spring Web Service -- 提供了契约优先的Web Service 模型
+ *   Spring Security -- 为应用提供了声明式的安全机制
+ *   Spring Integration -- 提供了几种通用的应用集成模式的Spring声明式风格的实现
+ *   Spring Batch -- 对数据进行大量操作时，使用的批处理方式
+ *   Spring Social --  社交网络扩展模块
+ *   Spring Mobile/Android -- 移动Web应用开发
+ *   Spring Dynamic Module -- 整合了Spring声明式依赖注入和OSGi的动态组件模型，可以采用模块化的方式构建应用
+ *   Spring Rich Client -- 富应用工具箱，开发桌面应用程序
+ *   Spring .NET -- 面向.NET平台的，提供了松耦合和面向切面的Spring特性。
+**************************************************************************************************************************************/
 public class SpringStudy {
-
+	
+	public void testSpring(){
+		 ApplicationContext context = new ClassPathXmlApplicationContext("context.xml"); //TODO: 需要配置bean信息
+		 SpringStudy myBean = context.getBean(SpringStudy.class);
+	}
 }
 
 //典型的异常显示页面：

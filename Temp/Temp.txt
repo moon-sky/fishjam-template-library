@@ -705,7 +705,6 @@ void CMainDlg::OnStartFill(UINT uNotifyCode, int nID, CWindow wndCtl)
 		}
 	}
 }
-https://218.89.136.26:6443/svn/Projects/MinJiangRiver/
 
 Java程序优化
   1.I/O 操作较慢，是一个很耗时的操作，可考虑减少IO(如减少日志)的方式大幅提升

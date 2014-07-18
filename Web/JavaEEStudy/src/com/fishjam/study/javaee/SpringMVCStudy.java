@@ -35,11 +35,15 @@ import org.springframework.web.servlet.ModelAndView;
  *    @Autowired 用于注入，(srping提供的) 默认按类型装配
  *    @Component -- 泛指组件(Bean), 当不好归类时使用
  *    @Controller -- 声明Action组件，通常用在控制层
+ *    @CookieValue -- 
+ *    @PostConstruct -- 
+ *    @PreDestroy -- 
  *    @Repository -- 将数据访问层 (DAO层)的类标识为 Spring Bean，然后就不再需要在XML中通过<bean/>显示配置。
  *       可自动提供一些数据访问相关的功能。如 数据访问异常类型.
+ *    @RequestHeader -- 从请求中获取值
  *    @RequestMapping("/login/login.do") -- 请求映射, 用在方法前
  *    @RequestParam(参数) 类型 变量名 -- 在 @RequestMapping 中的参数
- *    @Resource -- 用于注入，( j2ee提供的 ) 默认按名称装配，@Resource(name="beanName")
+ *    @Resource -- 用于命名资源依赖注入，( j2ee提供的 ) 默认按名称装配，@Resource(name="beanName")
  *    @ResponseBody -- 
  *    @Scope("prototype") -- 设定bean的作用域 
  *    @Service -- 声明Service组件，通常用在业务层
@@ -54,6 +58,8 @@ import org.springframework.web.servlet.ModelAndView;
 **************************************************************************************************************************************/
 
 public class SpringMVCStudy {
+	
+	
 	@RequestMapping("/login/login.do")
 	 public ModelAndView listBuyerProduct(HttpSession session,
 			 @RequestParam(required = false, defaultValue = "1" )  Integer curPage

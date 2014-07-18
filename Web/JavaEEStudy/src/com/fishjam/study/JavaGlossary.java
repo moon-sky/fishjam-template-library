@@ -1,8 +1,10 @@
 package com.fishjam.study;
 
+
 /************************************************************************************************************
  * AOP(Aspect-Oriented Programming) -- 面向切面编程，通过在编译期间、装载期间或运行期间实现在不修改源代码的情况下给程序动态添加功能的一种技术。
- *   即把可重用的功能(如 安全、日志记录、)提取出来，然后将这些通用功能在合适的时候织入到应用程序中
+ *   即把可重用的功能(如 安全、日志记录、事务管理 等)提取出来，然后将这些通用功能在合适的时候织入到应用程序中。
+ *   AOP允许把遍布应用各处的功能分离出来形成可重用的组件，然后包裹核心业务层并提供服务，甚至核心应用根本不知道其存在。
  * Bean -- 一般指容器管理对象，在Spring中指Spring IoC容器管理对象
  * BO(Business Object) -- 业务对象，可以理解为
  * CORBA(Common Object Request Broker Architecture) -- 一种和语言无关的分布式"对象交换标准框架"，
@@ -11,8 +13,8 @@ package com.fishjam.study;
  * DAO(Data Access Object) -- 数据访问对象
  * DBCP -- 数据源？
  * DI(Dependency Injection) -- 依赖注入，对象的依赖关系将由负责协调系统中各个对象的第三方组件在创建对象时设定，
- *    对象无需自行创建或管理它们的依赖关系 -- 依赖关系将被自动注入到需要它们的对象中去。现实例子就是USB接口。
- *    在配置Bean时，应用对象可以借助依赖注入来保持松散耦合。
+ *    对象无需自行创建或管理它们的依赖关系 -- 依赖关系将被自动注入(通过 XML配置、注解、)到需要它们的对象中去。现实例子就是USB接口。
+ *    依赖注入让相互协作的软件组件保持松散耦合。
  * DMI(Dynamic Method Invocation) -- 动态方法调用， struts2中指定action不同的请求为 "ActionName!methodName" 
  * DTO(Data Transfer Object) -- 数据传输对象，JavaEE中，中间层组件将应用底层的状态信息封装成名为DTO的JavaBean，并传送到JSP页面进行显示。
  * EJB(Enterprise Java Bean) -- (将事务逻辑和连接的问题隔离),已被 JPA 替代？
@@ -34,6 +36,7 @@ package com.fishjam.study;
  *    访问方式(JSP页面脚本)： Context ctx = new InitialContext(); DataSource ds = (DataSource)ctx.lookup("java:comp/env" + "自定义名字全路径");
  * JNI(Java Native Interface) -- Java原生接口，用以和C/C++程序接轨，获得高性能
  * JPA(Java Persistence API) -- 是sun公司官方提供的Java持久化的解决方案
+ * JPA(Java Portlet API) -- ???
  * JSF() -
  * JSP(Java Server Page) -- 最终会编译成Servlet才能运行
  * JSR(Java Spec. Request) -- Java 规格需求
@@ -57,5 +60,7 @@ package com.fishjam.study;
  * WAP(Wireless Application Protocol) -- 无线应用协议
 *************************************************************************************************************/
 public class JavaGlossary {
-
+	public void testGlossary(){
+		
+	}
 }
