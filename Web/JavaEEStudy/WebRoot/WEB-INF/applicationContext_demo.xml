@@ -1,8 +1,23 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- 
+	Spring框架的配置文件：
+	《aop》- 为声明切面以及将 @AspectJ 注解的类代理为Spring切面提供了配置元素;
+	《beans》- 支持声明Bean和装配Bean，最核心的部分
+	《context》- 为配置Spring应用上下文提供了配置元素，包括自动检测和自动装配Bean、注入非Spring直接管理的对象 
+	《jee》- 提供了与JavaEE API的集成，如 JNDI和EJB
+	《jms》- 为声明消息驱动的POJO提供了配置元素
+	《lang》 - 支持配置由Groovy、JRuby或BeanShell等脚本实现的Bean
+	《mvc》-启用Spring MVC的能力，如面向注解的控制器、视图控制器和拦截器
+	《oxm》-支持Spring的对象到XML映射配置
+	《tx》-提供声明式事务配置
+	《util》-提供各种各样的工具类元素，包括把集合配置为Bean、支持属性占位符元素等
+
   applicationContext.xml： 定义各种bean。如 dataSource, Hibernate的SessionFactory 等
   《bean id="xxx" class="yyy" /》
+  
+    其他常见的配置项:
+      《import resource="其他的xml配置文件，遵循相同的语法规则(如定义bean)" 》
 -->
 
 <!-- Spring配置文件的根元素，并指定Schema信息 -->
@@ -146,4 +161,5 @@
 			</list>
 		</property>
 	</bean>
+	
 </beans>

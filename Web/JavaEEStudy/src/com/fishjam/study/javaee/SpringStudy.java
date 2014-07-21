@@ -1,5 +1,7 @@
 package com.fishjam.study.javaee;
 
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 
 //SPRING in action(第三版中文版).pdf (Spring实战) -- P50 装配Bean
 //   http://www.manning.com/walls4/ -- 下载Sample
@@ -14,7 +16,8 @@ package com.fishjam.study.javaee;
 *               WebLogic 自带的 默认Servlet的名字  -- "FileServlet"
 *               WebSphere  自带的 默认Servlet的名字 -- "SimpleFileServlet"
 *      解决方案二：Spring 3.0.4 后映射到ResourceHttpRequestHandler： <mvc:resources mapping="/images/**" location="/images/" />  
-*    2. 
+*    2. 所有的Bean默认都是单例(singleton)，可通过 scope 属性配置Bean的作用域来更改, 
+*        如 prototype(每次调用时生成实例), request(一次HTTP请求), session, global-session  
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -53,6 +56,10 @@ package com.fishjam.study.javaee;
  *   5.简化各种技术集成：提供对Java Mail、任务调度、JMX、JMS、JNDI、EJB、动态语言、远程访问、Web Service等的集成
  *   其真正的精华是 Ioc模式 实现的 BeanFactory 和 AOP 
  * Spring通过依赖注入模式，将依赖关系从编码中脱离出来，从而大大降低了组件之间的耦合，实现了组件真正意义上的即插即用。这也是Spring最具价值的特性之一。
+ *    创建应用对象之间协作关系的行为通常被称为装配(wiring)，使用流程为:
+ *    1.声明Bean，使得容器能够加载--a. xml中通过 <beans><bean> 的方式; b.
+ *      内部Bean(inner bean)，其实例仅使用于当前的Bean，不能被其他的bean共享
+ *      <bean><property name="xxx"> <bean class="内部类的路径" /></property></bean>
  *
  * 依赖注入的几种实现类型：
  *   1.接口注入 -- 常常借助接口来将调用者与实现者分离，如 Context.lookup(ServletContext.getXXX);
@@ -80,13 +87,20 @@ package com.fishjam.study.javaee;
    ApplicationContext extends BeanFactory,
  <beans>
    <!-- id(唯一标识，可通过 Action myAction=(Action)context.getBean("MyAction")获得实例)；depends-on(设置依赖关系，会决定构建顺序)；-->
-   <bean id="MyAction" class="com.fishjam.xxx.MyActionImpl" singleton="false" init-method="init" destroy-method="cleanup" depends-on="ActionManager"> 
-     <property name="属性名">   -- Spring读取该属性后，对应到Action中的setXxx()
-       <value>属性值</value>
-     </property>
-     <property name="dataSource">   -- 对应类中有一个名为 DataSource 的属性,引用到id为 dataSource 的另外一个bean
-       <ref local="dataSource"/>    -- 指定了属性对BeanFactory中其他Bean的引用关系
-     </property>
+   <bean id="MyAction" class="com.fishjam.xxx.MyActionImpl" singleton="false" init-method="init" destroy-method="cleanup" 
+         depends-on="ActionManager" factory-method="class中的静态工厂方法(通常用于装备单例Bean)">
+     <constructor-arg value="数值类型的值1" />  《== 设置构造函数的参数值
+     <constructor-arg ref="引用类型(如其他的Bean)的值2" /> 
+     <property name="属性名" value="xxx"></property>   -- Spring读取该属性后，对应到Action中的setXxx()
+     <property name="dataSource" ref="dataSource">   -- 对应类中有一个名为 DataSource 的属性,引用到id为 dataSource 的另外一个bean
+       <ref local="dataSource"/>   《== 指定了属性对BeanFactory中其他Bean的引用关系 , 
+     </property>  《== 引用了 p 名称空间后( xmlns:p="http://www.springframework.org/schema/p" )等价于 -- p:dataSource-ref="dataSource"
+	<property name="roles">  《装配 集合类型的Bean属性(list, set, map, props 等), 对应Java中的 Collection 子类等类型的成员变量
+		<list>
+			<ref bean="admin" />
+			<ref bean="normal" />
+		</list>
+	</property>    《== <map><entry key="xxx" value-ref="XXX' />
    </bean>
    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
      <property name="xxxx"><value>yyyy</value></property>
@@ -162,8 +176,8 @@ package com.fishjam.study.javaee;
 public class SpringStudy {
 	
 	public void testSpring(){
-		 ApplicationContext context = new ClassPathXmlApplicationContext("context.xml"); //TODO: 需要配置bean信息
-		 SpringStudy myBean = context.getBean(SpringStudy.class);
+		 ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext_demo.xml"); //TODO: 路径
+		 SpringStudy myBean = (MyBean)context.getBean("myBean");// SpringStudy.class);
 	}
 }
 

@@ -8,6 +8,10 @@ import java.util.Map;
 import org.junit.Test;
 
 /***************************************************************************************************************************
+ * java.util.Collection; -- list, set ?
+ * java.util.Map;
+ * java.util.Properties;  -- Map的一种特例？要求键和值都必须为String类型
+ * 
  * 容器类(JDK1.4加入了模版功能，但实现技术和C++不同)
  *   ArrayList(替代Vector)
  *   BitSet -- 用于压缩存储大量Bool信息(节省空间，但速度稍慢)，缺省是64bits

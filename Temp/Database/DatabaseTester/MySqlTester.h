@@ -65,7 +65,7 @@ setlocal enabledelayedexpansion -- ???
 *         FLUSH PRIVILEGES;
 *       控制用户权限
 *         grant select,insert,update,delete on 数据库名.表名 to 用户名@登录主机 identified by "密码"
-*   mysqladmin -u用户名 -p旧密码 password 新密码
+*   mysqladmin -u用户名 -p旧密码 password 新密码 <== 更改用户(如root)的密码
 *   mysqldump -- 备份，恢复?
 *     mysqldump --opt school>school.bbb -- 测试失败(unknown option '--no-beep')
 *

@@ -1,7 +1,9 @@
 package com.java.tester;
 
 import static org.junit.Assert.*;
+
 import org.junit.Test;
+import org.omg.CORBA.PRIVATE_MEMBER;
 
 
 /***************************************************************************************************************
@@ -183,4 +185,19 @@ public class JavaLanguageTester {
 	}
 	
 
+	@Test
+	public void testSingleInstance(){
+		/*
+		 * 单实例：处于线程安全考虑，getInstance() 使用了一种被称为 "initialization on demand holder" 的技术来创建单例类的实例
+		class Stage{
+			private Stage() {}
+		}
+		private static class StageSingletonHolder{
+			static Stage instance = new Stage();
+		}
+		public static Stage getInstance() {
+			return StageSingletonHolder.instance;
+		}	
+		*/
+	}
 }

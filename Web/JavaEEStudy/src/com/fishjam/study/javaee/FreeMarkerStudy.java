@@ -16,6 +16,17 @@ package com.fishjam.study.javaee;
  * 最佳实践
  *    1.当生成HTML时，你最好将完整的模板放入到 escape 指令中， 从而阻止跨站脚本攻击和非格式良好的HTML页面
 **************************************************************************************************************************************/
+/**************************************************************************************************************************************
+* 配置
+*   1. <bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer"
+        p:templateLoaderPath="/WEB-INF/ftl/" p:freemarkerSettings-ref="freemarkerSettings">
+           <property name="freemarkerVariables">
+                <map>
+                  <entry key="menu" value-ref="menuTools"/>   <== 配置FTL中 ${menu(Session.userinfo.roles)} 语法对应的 TemplateMethodModelEx 子类
+                </map>
+           </property>
+        </bean>
+**************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
  * FreeMarker(freemarker.org) -- 模板 + 数据模型 = 输出
