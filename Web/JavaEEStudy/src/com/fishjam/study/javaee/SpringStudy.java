@@ -3,7 +3,7 @@ package com.fishjam.study.javaee;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
-//SPRING in action(第三版中文版).pdf (Spring实战) -- P50 装配Bean
+//SPRING in action(第三版中文版).pdf (Spring实战) -- P97 自动检测Bean
 //   http://www.manning.com/walls4/ -- 下载Sample
 
 /**************************************************************************************************************************************
@@ -57,9 +57,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *   其真正的精华是 Ioc模式 实现的 BeanFactory 和 AOP 
  * Spring通过依赖注入模式，将依赖关系从编码中脱离出来，从而大大降低了组件之间的耦合，实现了组件真正意义上的即插即用。这也是Spring最具价值的特性之一。
  *    创建应用对象之间协作关系的行为通常被称为装配(wiring)，使用流程为:
- *    1.声明Bean，使得容器能够加载--a. xml中通过 <beans><bean> 的方式; b.
- *      内部Bean(inner bean)，其实例仅使用于当前的Bean，不能被其他的bean共享
- *      <bean><property name="xxx"> <bean class="内部类的路径" /></property></bean>
+ *    1.声明Bean，使得容器能够加载--
+ *      a. xml中通过 <beans><bean> 的方式显示声明;可通过 <property> 等指定， 
+ *        内部Bean(inner bean)，其实例仅使用于当前的Bean，不能被其他的bean共享
+ *        <bean><property name="xxx"> <bean class="内部类的路径" /></property></bean>
+ *         也可以利用自动装配(autowire 或 default-autowire[none] 设置类型) -- id和属性名相同(byName, 典型场景就是整个应用中唯一的 DataSource); 属性类型相同(byType);构造函数参数类型相同(constructor);
+ *      b.使用注解(Annotation)进行配置 (默认禁用，需要通过 <context:annotation-config> 启用)
+ *      
  *
  * 依赖注入的几种实现类型：
  *   1.接口注入 -- 常常借助接口来将调用者与实现者分离，如 Context.lookup(ServletContext.getXXX);
@@ -77,9 +81,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * Spring3 中使用的Annotation -- 注解驱动(配置中有 <context:annotation-config /> ) -- 括号中是在 xml 中的等价配置方式
+ * Spring3 中使用的Annotation -- 注解驱动(配置中先启用 <context:annotation-config /> ) -- 括号中是在 xml 中的等价配置方式
+ *   @Autowired -- 允许Spring自动装配，要求应用中只能有一个适合装配到注解所标注的属性或参数中，否则会抛出NoSuchBeanDefinitionException异常
+ *   @Inject -- JSR-330 中定义的 Java依赖注入规范，
  *   @PostConstruct(init-method) -- 定义容器初始化bean之后进行的操作，一般放在自定义的 init() 方法前
  *   @PreDestroy(destory-method) -- 定义销毁bean之前进行的操作，一般放在自定义的 destroy() 方法前
+ *   @Value(SpEL) -- 设置属性值，可以设置Spring表达式格式的值。如对 DataSource 的URL指定 "#{systemProperties.myDataSource"}
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -91,7 +98,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
          depends-on="ActionManager" factory-method="class中的静态工厂方法(通常用于装备单例Bean)">
      <constructor-arg value="数值类型的值1" />  《== 设置构造函数的参数值
      <constructor-arg ref="引用类型(如其他的Bean)的值2" /> 
-     <property name="属性名" value="xxx"></property>   -- Spring读取该属性后，对应到Action中的setXxx()
+     <property name="属性名" value="xxx"></property>   -- Spring读取该属性后，对应到Action中的setXxx()，可通过 <null/> 语法给属性值赋空值
      <property name="dataSource" ref="dataSource">   -- 对应类中有一个名为 DataSource 的属性,引用到id为 dataSource 的另外一个bean
        <ref local="dataSource"/>   《== 指定了属性对BeanFactory中其他Bean的引用关系 , 
      </property>  《== 引用了 p 名称空间后( xmlns:p="http://www.springframework.org/schema/p" )等价于 -- p:dataSource-ref="dataSource"
@@ -100,7 +107,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 			<ref bean="admin" />
 			<ref bean="normal" />
 		</list>
-	</property>    《== <map><entry key="xxx" value-ref="XXX' />
+	</property>   《== <map><entry key="xxx" value-ref="XXX' /></map> 设置映射类型的属性(key/key-ref/value/value-ref) 等, <props><prop> 只支持字符串映射
    </bean>
    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
      <property name="xxxx"><value>yyyy</value></property>
@@ -119,6 +126,27 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
  TODO: bean.xml? 位于工作路径下(默认为项目根路径-- .project文件所在目录)，配置文件需要用 FileSystemXmlApplicationContext、XmlBeanFactory 等 加载?
 ***************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
+ * Spring表达式语言(Spring Expression Language -- SpEL) : 通过运行期执行的表达式将值装配到Bean的属性或构造器参数中。
+ *    注意：虽然功能很强大， 但是没有IDE的语法检查支持，很难调试和维护，因此不要把过多的逻辑放入SpEL表达式中
+ *    语法：value = "#{表达式}"， 
+ *       #{myBean.property1}  <== 获取属性值 
+ *       #{myBean.getObj()?.fun()}<== 调用getObj()方法获得返回的对象，如不为null，则通过其fun()方法获得返回值
+ *       T() <== 调用类作用域的方法和常量，通常可用于调用静态方法和常量， #{T(java.lang.Math).PI * circle.radius ^ 2 } 计算园的面积
+ *       运算符的文本替代方式(textual alternatives): ==(eq), <(lt), <=(le), >(gt), >=(ge)
+ *       逻辑表达式<== and / or / not(或 !)
+ *       条件表达式<==  条件 ? 真时的值 : 假时的值， 常见的使用场景为检测null， 简化形式为 #{ 变量 ?: "默认值" }   
+ *       正则表达式匹配 <== <property name="validEmail" value="#{admin.email matches '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.com'}" /> 
+ *       操作集合 <== 获取一个成员: #{集合名[index]};  或 #{集合名['keyName']}。
+ *          特殊：#{systemEnvironment['HOME']} -- 访问名为 HOME 的环境变量;  
+ *                   #{systemProperties['application.home']} -- Java启动时的属性(-D参数)
+ *          查询集合成员： 
+ *             .?[条件] -- 查询满足条件的所有元素，如 <property name="bigCities" value="#{cities.?[population gt  1000000]}" /> -- 选择所有人口数大于100万的城市
+ *             .^[条件] -- 查询第一个匹配项;  
+ *             .$[条件] -- 查询最后一个匹配项； 
+ *             .![属性] -- 集合投影(从集合的每一个成员中选择特定的属性放入新的集合中)，如 <property name="cityNames" value="#{cities.![name]}" /> -- 获取所有城市的名字并放入新的集合中 
+**************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
  * Spring.jar -- Spring 框架需要的包

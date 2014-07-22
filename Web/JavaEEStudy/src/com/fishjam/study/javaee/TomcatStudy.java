@@ -34,7 +34,7 @@ package com.fishjam.study.javaee;
  *   
  * 设置通过调试目录运行(这样可在Tomcat中边测试边开发)
  *   方法1.在 server.xml 的 <Host> 中，增加:
- *     <Context path="/myProject" docBase="D:\\workspaces\\myProject\\WebRoot" debug="0" reloadable="false" privileged="true"></Context>
+ *     <Context path="/myProject" docBase="D:\\workspaces\\myProject\\WebRoot" debug="0" reloadable="true" privileged="true"></Context>
  *     path 为虚拟目录，docBase 为实际目录，可设置虚拟目录为 "/", 这样就可以直接访问
  *   方法2.在 conf\Catalina\localhost 目录中新建 myProject.xml 文件( 文件名将作为Web应用的虚拟路径 )，其内容为：
  *     <Context docBase=D:\\workspaces\\myProject\\WebRoot" debug="1" privileged="true">
@@ -72,6 +72,7 @@ package com.fishjam.study.javaee;
  *   keepAliveTimeout -- 长连接最大保持时间(毫秒)
  *   disableUploadTimeout -- 传时是否使用超时机制
  *   enableLookups -- 是否反查域名，为了提高处理能力，一般应设置为false
+ *   Context -- ?, 其中有 crossContext="true" reloadable="true" 等
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************

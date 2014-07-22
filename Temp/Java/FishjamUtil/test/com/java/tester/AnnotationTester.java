@@ -34,7 +34,8 @@ import java.lang.reflect.Method;
  *       SOURCE -- 源码中，被编译器丢弃
  *       [CLASS] -- 编译在class中，运行时会被虚拟机忽略(不能被反射访问)
  *       RUNTIME -- 运行时加载,可通过反射读取, 然后可通过 Method.isAnnotationPresent 等判断是否存在指定Annotation
- *   @Target -- 修饰的程序成员的类型, 如METHOD(修饰方法声明), TYPE(修饰类型)
+ *   @Target -- 修饰的程序成员的类型, 如 FIELD(), METHOD(修饰方法声明), PARAMETER(参数), TYPE(修饰类型)
+ *   @Qualifier -- 指定是自定义的限定器，通常用于Spring的自动注入注解中(@Autowired)
  * 内建Annotation
  *    @Deprecated -- 修饰已经过时的类型或方法
  *    @Override  -- ?? 修饰此方法覆盖了父类的方法（而非重载）??

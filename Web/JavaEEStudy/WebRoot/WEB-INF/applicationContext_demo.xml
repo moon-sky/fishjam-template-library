@@ -11,7 +11,7 @@
 	《mvc》-启用Spring MVC的能力，如面向注解的控制器、视图控制器和拦截器
 	《oxm》-支持Spring的对象到XML映射配置
 	《tx》-提供声明式事务配置
-	《util》-提供各种各样的工具类元素，包括把集合配置为Bean、支持属性占位符元素等
+	《util》-提供各种各样的工具类元素，包括把集合配置为Bean、支持属性占位符元素等, 如 <util:list>
 
   applicationContext.xml： 定义各种bean。如 dataSource, Hibernate的SessionFactory 等
   《bean id="xxx" class="yyy" /》

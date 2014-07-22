@@ -97,7 +97,22 @@ package com.fishjam.study.javaee;
 * 
 **************************************************************************************************************************************/
 
-
+/**************************************************************************************************************************************
+ * 热部署 -- 应用正在运行的时候升级软件，却不需要重新启动应用，开发阶段可以实时编辑、调试Java文件 等。
+ *   能否支持热部署，除了服务器(Tomcat, Jetty 等) 外，也受限于第三方软件包(Struts, Spring, Hibernate 等) -- 必须把.class复制到对应的目录下
+ *   容器
+ *      Tomcat -- server.xml 中 <Context ... reloadable="true" />, 参见 TomcatStudy.java, 可以检测修改的类文件？
+ *        TODO: <WatchedResource>WEB-INF/web.xml</WatchedResource>  《==可以检测配置文件的更改？
+ *      JBoss --
+ *      Jetty -- 使用maven插件"jetty-maven-plugin" 运行项目，更改pom.xml中jetty的配置: <configuration><scanIntervalSeconds> 为 0 
+ *        TODO: 实际上还需要 JRebel 检视指定的classes目录？
+ *          Eclipse 中在线安装JRebel -- http://www.zeroturnaround.com/update-site/
+ *   开发工具：
+ *      Eclipse -- 
+ *  
+ *   Struts -- <constant name="struts.devMode" value="true" /> ？
+ *   Mule -- ？
+ ***************************************************************************************************************************************/
 public class JavaEEStudy {
 
 }

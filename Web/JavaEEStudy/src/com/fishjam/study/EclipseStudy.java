@@ -1,6 +1,14 @@
 package com.fishjam.study;
 
 /**************************************************************************************************************************************
+* 常用的开发工具:
+*    Eclipse -- 免费开源,
+*    IntelliJ -- 综合的Java 编程环境，被誉为市场上最好的IDE，有免费的社区开源版本。
+*    JRebel -- 收费软件, 可快速实现热部署，也有 Plugin ?
+*    MyEclipse -- 
+**************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
  * Eclipse -- 免费开源的IDE，http://www.eclipse.org/，由IBM捐献
  *   Eclipse 设计美妙之处，在于除了底层的核心以外，所有东西都是外挂，具备强大扩充性
  *   perspective -- Eclipse 提供数群预先选定的视图，并已事先定义好的方式排列。
@@ -31,9 +39,19 @@ package com.fishjam.study;
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
+ * 配置修改完毕后可以通过 File -> Export -> General -> Preferences 导出
+ * 
  * 更改默认字体 -- Preferences -> General -> Appearance -> Colors and Fonts， 更改 Basic -> Text Font 为默认(微软雅黑)
  * 更改文件默认编码为UTF-8 -- Preferences-> General -> Workspaces -> Text file encoding， 更改为 UTF-8
  *   注意：当使用 EmEditor 等工具将非UTF-8 编码的文件转换为UTF-8时，必须是不带签名的UTF-8，否则ant编译时会失败
+ *   
+ * 更改快捷键 -- General -> Keys。
+ *    Ctrl+F6              (Next Editor)            => Ctrl+Tab
+ *    Ctrl+Shift+F6     (Previous Editor)       => Ctrl+Shfit+Tab
+ *    Ctrl+K               (Find Next)               => F3
+ *    
+ *   Code Formatter(Window->Preferences->Java->Code Formatter)
+ *   Override/Implement Methods -- 重载基类的虚函数，可以更改为 Alt+Shift+O, When 为 "Editing Java Source"
  *   
  * 常用快捷键和配置 -- http://baike.baidu.com/link?url=GF0-5mxd1L_V5w-wo7K8w-3YOrNER4jjkI9yaE2tbPUr7IB4TwHk4EiuDUVt5wkZ
  *   Ctrl+Shift+T 根据类名打开相关文件，支持通配符
@@ -46,14 +64,11 @@ package com.fishjam.study;
  *   Ctrl+J 正向增量查找
  *   Ctrl+Q 定位到最后一次编辑处
  *   Ctrl+I 格式化激活的元素Format Active Elements。
- *   Ctrl+F6 切换到下一个Editor(编辑器)
+ *   Ctrl+F6 切换到下一个Editor(编辑器)， 推荐设置为 Ctrl + Tab
  *   Ctrl+F7 切换到下一个Perspective
  *   Ctrl+F8 切换到下一个View
  *    
  *   
- * 常用功能(可以设置自定义的快捷键)
- *   Code Formatter(Window->Preferences->Java->Code Formatter)
- *   Override/Implement Methods -- 重载基类的虚函数，可以更改为 Alt+Shift+O, When 为 "Editing Java Source"
  *    
  * 代码助手的自动提示
  *   1.Code Assist -- 默认是 Alt+/(在 Window->Perferences->General->Keys 中设置)，可以更改为 Ctrl+Space;
@@ -62,7 +77,7 @@ package com.fishjam.study;
  *     可以设置为 .和a-z,A-Z的所有字母（导出配置后修改，然后再导入，可以突破早期版本只能输入4个字符的限制）;
  *     导出配置： File -> Export -> Perferences -> 导出后 搜索并替换 content_assist_autoactivation_triggers_java 的值
  *
-***************************************************************************************************************************************/
+ ***************************************************************************************************************************************/
 
 /*************************************************************************************************************************************** 
 * 安装插件的方法

@@ -22,7 +22,8 @@ package com.fishjam.study;
  * Ioc(Inversion of Control) -- 控制反转(也称作 依赖注入：Dependency Injection。
  *   即由容器控制程序之间的关系，而非传统实现中的程序代码直接控制。即控制权由应用代码中转到了外部容器。
  * JAAS(Java Authentication Authorization Service) -- Java验证和授权服务，用于控制对 Java Web 应用的授权访问，
- *   在 web.xml 中的 <security-constraint>， <login-config> 等处体现 
+ *   在 web.xml 中的 <security-constraint>， <login-config> 等处体现
+ * JCP(Java Community Process) --  
  * JDK(Java Development Kit) -- 按Java的应用环境划分
  *   J2EE(Java 2 Platform Enterprise Edition) -- 企业Web应用开发
  *   J2SE(Java 2 Platform Stand Edition) -- 普通应用程序
@@ -39,7 +40,7 @@ package com.fishjam.study;
  * JPA(Java Portlet API) -- ???
  * JSF() -
  * JSP(Java Server Page) -- 最终会编译成Servlet才能运行
- * JSR(Java Spec. Request) -- Java 规格需求
+ * JSR(Java Spec. Request) -- Java 规格需求，比如 JSR-250， JSR330 等
  * JSTL(JSP Standard Tag Library) -- JSP标准标签库， Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
  * OGNL() -- 
  * ORM(Object Relation Mapping) -- 对象-关系映射，完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表。
@@ -53,7 +54,8 @@ package com.fishjam.study;
  * REST(Representational State Transfer) -- 表述性状态转移, 针对网络应用的设计和开发方式的一种软件架构风格
  * RMI(Remote Method Invocation) -- 远程调用，通过存活于远程机器上的对象，发送消息并执行。 
  * RTTI(Run-time Type Information) -- 运行时类型信息
- * SOAP --  
+ * SOAP -- 
+ * SpEL(Spring Expression Language) -- Spring表达式语言  
  * SSH(Struts + Spring + Hibernate) -- SSH组合是一种轻量级的JavaEE平台，可运行在普通Web容器中，无需EJB容器的支持
  * TLD(Tag Library Definition) -- 标签库定义，用于JSP中，文件扩展名也是 tld，一个标签库中可包含多个标签
  * VO(Value Object) -- 值对象, 可以理解为了便于使用而在PO的基础上进行又一次加工而产生的对象, 通常用于业务层之间的数据传递，可以不和数据库的表对应 
