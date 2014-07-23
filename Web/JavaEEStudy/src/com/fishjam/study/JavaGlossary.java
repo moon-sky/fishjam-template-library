@@ -2,9 +2,7 @@ package com.fishjam.study;
 
 
 /************************************************************************************************************
- * AOP(Aspect-Oriented Programming) -- 面向切面编程，通过在编译期间、装载期间或运行期间实现在不修改源代码的情况下给程序动态添加功能的一种技术。
- *   即把可重用的功能(如 安全、日志记录、事务管理 等)提取出来，然后将这些通用功能在合适的时候织入到应用程序中。
- *   AOP允许把遍布应用各处的功能分离出来形成可重用的组件，然后包裹核心业务层并提供服务，甚至核心应用根本不知道其存在。
+ * AOP(Aspect-Oriented Programming) -- 面向切面编程(详情参见 AopStudy.java )
  * Bean -- 一般指容器管理对象，在Spring中指Spring IoC容器管理对象
  * BO(Business Object) -- 业务对象，可以理解为
  * CORBA(Common Object Request Broker Architecture) -- 一种和语言无关的分布式"对象交换标准框架"，

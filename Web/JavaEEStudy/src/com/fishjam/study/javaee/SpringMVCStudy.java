@@ -30,11 +30,20 @@ import org.springframework.web.servlet.ModelAndView;
  *     DispatcherServlet -> 
  *     
  *     
- * 常用的注解 -- 配置I中需要通过 <context:component-scan/> 启用Bean的自动扫描功能，否则不能扫描类上的注解
- *    通过配置注解，Spring会自动创建相应的 BeanDefinition 对象，并注册到 ApplicationContext 中，这些类就成了Spring受管组件
+ * 常用的注解 -- 配置中需要通过 <context:component-scan 配置参数/> 启用Bean的自动扫描功能，否则不能扫描类上的注解
+ *    通过配置注解，Spring会自动创建相应的 BeanDefinition 对象，并注册到 ApplicationContext 中，这些类就成了Spring受管组件，
+ *    配置参数： <include-filter> 或 <exclude-filter> + type(过滤器类型) + expression(表达式)
+ *       如 : <include-filter type="assignable" expression="com.myInterface"> -- 自动注册所有 myInterface 的实现类 
+ *       过滤器类型：
+ *          annotation(指定注解所标注的类);
+ *          assignable(派生于指定类型的类);
+ *          aspectj(指定AspectJ表达式匹配的类);
+ *          custom(自定义的 TypeFilter 实现类);
+ *          regex(正则表达式匹配的类);
  *    @Autowired 用于注入，(srping提供的) 默认按类型装配
  *    @Component -- 泛指组件(Bean), 当不好归类时使用
  *    @Controller -- 声明Action组件，通常用在控制层
+ *    @Configuration -- 声明Spring的配置类，等价于XML配置中的 <beans> 元素，然后可在其中使用 @Bean 声明返回Bean对象的函数(函数名即为其id)
  *    @CookieValue -- 
  *    @PostConstruct -- 
  *    @PreDestroy -- 

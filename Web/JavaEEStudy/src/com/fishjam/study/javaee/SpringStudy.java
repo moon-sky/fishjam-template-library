@@ -3,7 +3,7 @@ package com.fishjam.study.javaee;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
-//SPRING in action(第三版中文版).pdf (Spring实战) -- P97 自动检测Bean
+//SPRING in action(第三版中文版).pdf (Spring实战) -- P122 注解切面
 //   http://www.manning.com/walls4/ -- 下载Sample
 
 /**************************************************************************************************************************************
@@ -29,7 +29,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *   1.基于POJO的轻量级和最小侵入性编程 -- 不用继承框架的特定接口或类，能轻松切换框架
  *   2.通过依赖注入(DI)和面向接口实现松耦合；
  *   3.基于切面(AOP)和惯例进行声明式编程
- *     通过 <aop:config><aop:aspect><asp:pointcut> 等进行配置(切面、切入点), <aop:before>(前置通知); <aop:after>(后置通知)
+ *     通过 <aop:config><aop:aspect><asp:pointcut> 等进行配置(切面、切入点), <aop:before>(前置通知); <aop:after>(后置通知)，
+ *     这样可以在指定的方法调用前后，指定调用特殊的方法(比如日志记录等)，而对原有的方法不产生影响。
  *   4.通过切面和模版减少样板式代码(如使用 JdbcTemplate 封装JDBC数据库操作的代码); 
  *   
 **************************************************************************************************************************************/
@@ -63,7 +64,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *        <bean><property name="xxx"> <bean class="内部类的路径" /></property></bean>
  *         也可以利用自动装配(autowire 或 default-autowire[none] 设置类型) -- id和属性名相同(byName, 典型场景就是整个应用中唯一的 DataSource); 属性类型相同(byType);构造函数参数类型相同(constructor);
  *      b.使用注解(Annotation)进行配置 (默认禁用，需要通过 <context:annotation-config> 启用)
- *      
+ *         如换成<context:component-scan base-package="xxx">则允许Spring扫描指定包及其子包，找出能自动注册为Bean的类。
+ *         自动检测依据：@Component, @Controller, @Repository, @Service  -- 详情参见SpringMVCStudy.java
  *
  * 依赖注入的几种实现类型：
  *   1.接口注入 -- 常常借助接口来将调用者与实现者分离，如 Context.lookup(ServletContext.getXXX);
@@ -78,7 +80,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 统一的异常处理 -- <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
  *   可通过 exceptionMappings 的属性配置将不同的异常映射到不同的jsp页面，
  *   可通过 defaultErrorView 的属性配置指定一个默认的异常提示页面
-**************************************************************************************************************************************/
+ **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
  * Spring3 中使用的Annotation -- 注解驱动(配置中先启用 <context:annotation-config /> ) -- 括号中是在 xml 中的等价配置方式
@@ -87,7 +89,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *   @PostConstruct(init-method) -- 定义容器初始化bean之后进行的操作，一般放在自定义的 init() 方法前
  *   @PreDestroy(destory-method) -- 定义销毁bean之前进行的操作，一般放在自定义的 destroy() 方法前
  *   @Value(SpEL) -- 设置属性值，可以设置Spring表达式格式的值。如对 DataSource 的URL指定 "#{systemProperties.myDataSource"}
-**************************************************************************************************************************************/
+ *   允许<context:component-scan>自动检测为Bean的标注类型
+ *   @Component -- 
+ **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
  applicationContext.xml -- Bean工厂配置文件，Spring容器根据这些信息创建和管理Bean，
