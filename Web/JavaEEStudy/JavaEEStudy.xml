@@ -16,7 +16,7 @@
 	<Resource name="jdbc/sqlitedemo" auth="Container"
 		type="javax.sql.DataSource" 
 		driverClassName="org.sqlite.JDBC"
-		url="jdbc:sqlite:F:/Fujie/FJCODE_GOOGLE/Web/JavaEEStudy/data/sqlitedemo.db"
+		url="jdbc:sqlite:G:/FJCODE_GOOGLE/Web/JavaEEStudy/data/sqlitedemo.db"
 		username="" password="" maxActive="5"
 		maxIdle="2" maxWait="10000"/>
 		

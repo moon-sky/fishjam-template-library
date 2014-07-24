@@ -100,13 +100,14 @@
 *   background-image: url("chrome://xxxx/skin/back.png");  <== 背景图片
 *   background-position : center ; <== 改变图像在背景中的位置, 如要表示右上角需要用 :top right; 或 npx mpx 指定详细的像素位置
 *   background-repeat: repeat|repeat-x|no-repeat; <== 背景图像重复平铺，默认是 repeat
-*   border: 1px dotted #000000; <== 一个像素宽的黑色点状边框
+*   border: 1px dotted #000000; <== 一个像素宽的黑色点状边框, 其他的有 solid 等
+*   clear: left|right|both <==	规定元素的哪一侧不允许其他浮动元素
 *   color:red|#ff0000;  <== 前景色，颜色有几种表示方式：
 *     1.英文单词(如 red/black 等)；
 *     2.以"#"开头的十六进制颜色值；
 *     3.rgb(255,0,0);
 *   crop <== 裁剪元素的内容，当元素的宽度超过maxwidth时，超出的部分会去掉，变成"...", 可用在 label(其他?) 元素中
-*   display <== ?
+*   display:block <== 规定元素应该生成的框的类型
 *   flex <== 设置元素是否自动扩展，当box发生变化时，拥有flex属性的元素会分享变化的空间，按照flex之间的比率来分享。只对没有指定宽度的元素起作用。
 *   float: none|left|right <== 可以在 <li> 元素中使用，改变列表项的排列方式(如从左到右排列，默认是从上到下)
 *   font-size:14px; <== 设置字体大小
@@ -114,11 +115,13 @@
 *   font-style: italic;	<== 字体格式，如斜体
 *   font-weight: normal|bold;	<== 字体粗细
 *   font-varian: small-caps <== 控制字体的大小?(会把英文字体全部转换为小型的大写字母)
-*   line-height:1.5; <== ?
+*   line-height:1.5|10px; <== 设置行间的距离(行高)
 *   margin: 0;  <== 外边距? 对应的有 margin-top 等细化部分
 *   opacity: 0~1 <== 透明度，如 0.5 表示半透明
 *   ?orient: horizental | ?  <== 用在 window/box 等容器中，控制自动对齐方式
-*   padding: 1px; <== 内边距
+*   overflow: [visible]|hidden|scroll <== 元素中的内容超出了给定的宽度和高度, 是否显示滚动条等
+*   padding: 1px; <== 内边距,对应的有 padding-left, padding-top 等细节项 
+*   position: absolute <== 控制元素的位置，然后可以通过 left/top/bottom 等设置位置
 *   quotes: "前符号" "后符号";  <== 设置包含引用(<q>)文字的符号(系统默认是引号")，注意：需要设置两个
 *   resize: none| <== 用在 window 等元素中，控制是否可以控制大小?
 *   text-align: left|center|right|justify;  <== 文字水平对齐,justify表两端对齐， (垂直方向的是 vertical-align?)
@@ -126,6 +129,8 @@
 *   text-indent : 2em; <== 段落的首行缩进
 *   text-transform: uppercase|lowercase|capitalize; <== 文字的特殊转换 -- 有时不生效? font-varian: small-caps 能生效?
 *   visibility : collapse  <== 可以控制收起(高和宽为0，但元素还是存在)
+*   white-space: nowrap <== 规定段落中的文本不进行换行
+*   width: 100%|50px <== 控制宽度范围，默认 ?
 * 
 * 单位(width/height/minwidth/minheight/maxwidth/maxheight)
 *   http://kb.mozillazine.org/Em_units_versus_ex_units

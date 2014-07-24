@@ -2,7 +2,8 @@
 
 /******************************************************************************************************************************************
 * 官方演示: http://jqueryui.com/demos/
-* 
+* 另一个UI库(HTML5的): http://usman.it/themes/charisma/table.html
+*                      http://getbootstrap.com/
 * jQueryUI -- 在jQuery 基础上开发的一套界面工具,免费开源,几乎包括了网页上你所能想到和用到的插件以及动画特效
 * 使用方法：
 *   0.通过 <script src="/js/jquery-x.y.z.js" type="text/javascript" /> 引入jQuery 库
