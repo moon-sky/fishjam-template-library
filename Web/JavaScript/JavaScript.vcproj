@@ -232,6 +232,10 @@
 				RelativePath=".\tests\MathTester.js"
 				>
 			</File>
+			<File
+				RelativePath=".\tests\UEditorTester.js"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="js"
