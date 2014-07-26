@@ -592,7 +592,7 @@ namespace FTL
 	*   VS90COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\Tools\
 	*
 	*
-    * Hudson -- 持续集成(Continuous Integration)的工具
+    * Hudson -- 持续集成(Continuous Integration)的工具， 其他的服务器有：CruiseControl 等
     *   NHN的帮助：http://devcafe.nhncorp.com/QPTalk/529396
     * 执行流程：Svn Update->Build(batch/shell)->PostBuild(生成gtest测试报告等)
     * 

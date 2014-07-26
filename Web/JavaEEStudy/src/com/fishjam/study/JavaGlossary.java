@@ -5,6 +5,7 @@ package com.fishjam.study;
  * AOP(Aspect-Oriented Programming) -- 面向切面编程(详情参见 AopStudy.java )
  * Bean -- 一般指容器管理对象，在Spring中指Spring IoC容器管理对象
  * BO(Business Object) -- 业务对象，可以理解为
+ * Convention Over Configuration -- 约定优于配置，
  * CORBA(Common Object Request Broker Architecture) -- 一种和语言无关的分布式"对象交换标准框架"，
  * CRUD -- Create + Retrieve + Update + Delete
  * CVS(Concurrent Versions System) -- 版本控制工具CVS，已被SVN替代
@@ -21,6 +22,7 @@ package com.fishjam.study;
  *   即由容器控制程序之间的关系，而非传统实现中的程序代码直接控制。即控制权由应用代码中转到了外部容器。
  * JAAS(Java Authentication Authorization Service) -- Java验证和授权服务，用于控制对 Java Web 应用的授权访问，
  *   在 web.xml 中的 <security-constraint>， <login-config> 等处体现
+ * JAF(JavaBeans Activation Framework) -- 
  * JCP(Java Community Process) --  
  * JDK(Java Development Kit) -- 按Java的应用环境划分
  *   J2EE(Java 2 Platform Enterprise Edition) -- 企业Web应用开发

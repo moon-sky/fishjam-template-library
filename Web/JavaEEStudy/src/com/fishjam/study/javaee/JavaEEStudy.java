@@ -88,7 +88,7 @@ package com.fishjam.study.javaee;
 
 /**************************************************************************************************************************************
 * 各种常用功能对应的包
-*   Mail(收发邮件) -- activation + mail
+*   Mail(收发邮件) -- activation.jar + mail.jar
 *   Oracle(数据库) -- classes12
 *   Json -- 好几种实现（http://www.json.org/）
 *     org.json.jar; 

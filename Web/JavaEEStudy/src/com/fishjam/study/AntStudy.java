@@ -1,7 +1,9 @@
 package com.fishjam.study;
 
 /**************************************************************************************************************************************
- * Ant(ant.apache.org) -- 基于Java的构建工具，跨平台。为 Java 技术开发项目提供跨平台构建任务。类似 Make 工具
+ * TODO: Ant 可以借助 Ivy 来管理依赖。
+ * 
+ * Ant(Another Neat Tool, ant.apache.org) -- 基于Java的构建工具，跨平台。为 Java 技术开发项目提供跨平台构建任务。类似 Make 工具
  *   安装：解压后 设置 ANT_HOME 环境变量，并将 %ANT_HOME%/bin 加入 %PATH% 
  *   缺点：构建文件中，很难发现项目的相关性信息和其它信息（如开发人员/拥有者、版本或站点主页） -- maven 
  *   project -> target(1~n) > task(1~n)
