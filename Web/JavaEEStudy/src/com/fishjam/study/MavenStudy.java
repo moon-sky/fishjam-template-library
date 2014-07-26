@@ -115,7 +115,7 @@ package com.fishjam.study;
 /**************************************************************************************************************************************
 * 常见的<dependency>, 在pom.xml中配置，排版按照 <groupId><artifactId>[version] 的方式
 *    MySQL的JDBC驱动 -- <mysql><mysql-connector-java>[5.1.10]
-*    
+*    JMail -- <javax.mail><mail>[1.4.4]  <== TODO: 需要确认，这个到底是JavaMail还是SpringMail?似乎是JavaMail
 **************************************************************************************************************************************/
 
 public class MavenStudy {
