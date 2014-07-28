@@ -81,9 +81,9 @@ package com.fishjam.study.javaee;
  *   数据库层(Database Layer) -- 提供持久化服务
  *   
  * 业务流程：
- *   UI  层: JSP用户交互  -> Request/Respone -> Structs/Structs2根据 struts-config.xml(1)/struts.xml(2) 将ActionServlet/ActionSupport接收到的Request委派给响应的Action
- *   业务层: Spring IoC容器负责向Action提供业务模型(Model)组件 和 对应的DAO组件 完成业务逻辑，并提供事务处理、缓冲池等容器组件以提升系统性能和保证数据的完整性
- *   持久层：依赖于Hibernate的对象化映射和数据库交互，处理DAO组件请求的数据，并返回处理结果
+ *   UI  层(Web层): JSP用户交互  -> Request/Respone -> Structs/Structs2根据 struts-config.xml(1)/struts.xml(2) 将ActionServlet/ActionSupport接收到的Request委派给响应的Action
+ *   业务层(Service层): Spring IoC容器负责向Action提供业务模型(Model)组件 和 对应的DAO组件 完成业务逻辑，并提供事务处理、缓冲池等容器组件以提升系统性能和保证数据的完整性
+ *   持久层(Dao层)：依赖于Hibernate的对象化映射和数据库交互，处理DAO组件请求的数据，并返回处理结果
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
