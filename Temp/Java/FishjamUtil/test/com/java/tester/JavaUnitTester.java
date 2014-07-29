@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 /**********************************************************************************************************************************
- * JUnit -- Java 下单元测试的标准
+ * JUnit -- Java 下单元测试的标准，其他的框架还有 TestNG等， 另外有一些 Mock 框架(如 JMock, Easymock, PowerMock等)
  * 
  * 使用
  *   import static org.junit.Assert.assertEquals;

@@ -18,6 +18,8 @@ package com.fishjam.study;
 *       原因：Eclipse默认是运行在JRE上的，而m2eclipse的一些功能要求使用JDK
 *       解决？：配置Eclipse安装目录的eclipse.ini文件，添加vm配置指向JDK。如: -vm D:\java\jdk1.6.0_07\bin\javaw.exe
 *    2.Maven 默认 Archetype 使用的 JUnit 版本比较老(3.xxx), 推荐手工更改 pom.xml，使用较新的 4.xxx 版本(如 4.7 )
+*    3.TODO: 为什么有两种 jetty maven 的plugin
+*           <org.mortbay.jetty> 下可以搜索到 <maven-jetty-plugin> 和 <jetty-maven-plugin>
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -95,19 +97,19 @@ package com.fishjam.study;
  * 配置文件：基于 Jelly 的可执行 XML，构建规则动态，类似于编程语言，可以管理项目的整个生命周期，包括编译、构建、测试、发布等。
  *     pom.xml -- 项目对象模型配置文件
  *        <artifactId>test-maven -- 定义了当前Maven项目在组中唯一的ID，一般是各个子模块的名字
- *        <build> --  编译设置
  *        <dependencies><dependency> -- 定义依赖关系，第一次使用时会自动下载
  *        <groupId>com.fishjam.app -- 项目或者组织的唯一标志，会生成java的名称空间
  *        <modules><module> -- 定义项目中的多个模块 
  *        <name>test-maven -- 声明了一个对于用户更为友好的项目名称
  *        <packaging> -- 打包机制，如pom, jar, war 等
  *        <parent> -- 项目继承
- *        <plugins><plugin> -- build时执行的插件
  *        <reporting> --
- *        <resources><resource> -- 定义项目中需要的资源 
  *        <version>1.0-SNAPSHOT -- 当前版本，SNAPSHOT表示该项目还处于开发中，是不稳定的版本
  *          <scope> -- 指定依赖范围，如 [compile], test, runtime, system 等，当设置为 test 时表示该依赖只对测试有效
  *          <exclusions><exclusion> -- 告诉maven只包括指定的项目，不包括相关的依赖，一般用于解决版本冲突问题
+ *        <build> --  编译设置, 
+ *          <plugins><plugin> -- build时执行的插件，常见的有 <maven-jetty-plugin><maven-compiler-plugin> 等
+ *          <resources><resource> -- 定义项目中需要的资源，一般需要指定 <directory> + <includes> 等 
  *     settings.xml -- 可以有两个，最佳实践为：拷贝 %M2_HOME% 下的到 %HOMEPATH%\.m2\ 下，进行个性化配置
  *       %M2_HOME%\conf\settings.xml --  maven应用程序的配置文件，用于所有项目，配置mvn本地仓库、自动下载的服务器地址等信息
  *       %HOMEPATH%\.m2\setting.xml -- 用户的本地配置，可以配置一些特殊的自定义信息，如用户信息等 
@@ -139,16 +141,90 @@ package com.fishjam.study;
 
 /**************************************************************************************************************************************
 * 常见的<dependency>, 在pom.xml中配置，排版按照 <groupId><artifactId>[version] 的方式，这三个元素定义了一个项目基本的坐标。
-*    maven-shade-plugin(可用于生成可执行的jar文件) -- <org.apache.maven.plugins><maven-shade-plugin>[1.2.1] 
-*    MySQL的JDBC驱动 -- <mysql><mysql-connector-java>[5.1.10]
+*    maven-shade-plugin(可用于生成可执行的jar文件) -- <org.apache.maven.plugins><maven-shade-plugin>[1.2.1]
 *    JMail -- <javax.mail><mail>[1.4.4]  <== TODO: 需要确认，这个到底是JavaMail还是SpringMail?似乎是JavaMail
-*    JUnit单元测试 -- <junit><junit>[4.7] <== 一般会加上 <scope>test</scope> 表示只用于 test 
+*    数据库
+*       <mysql><mysql-connector-java>[5.1.10] <== MySQL的JDBC驱动
+*       <c3p0><c3p0>[0.9.1.2] <== 一个简单的数据库连接池
+*    数据解析
+*       <net.sf.json-lib><json-lib>[2.4] <== Json解析， 需要加上 <classifier>jdk15</classifier> ?
+*       <pinyin4j><pinyin4j>[2.5.0] <== 汉字拼音
+*       <javax.servlet><jstl>[1.2]  <== JStl
+*    调试和测试：
+*       <junit><junit>[4.7] <== JUnit单元测试，一般会加上 <scope>test</scope> 表示只用于 test
+*       <org.springframework><spring-test>[3.0.5.RELEASE]
+*       <log4j><log4j>[1.2.9] <== 
+*    Servlet相关的: 
+*       <javax.servlet><servlet-api>[2.5] <== 一般会加上 <scope>provided</scope> 表示只用于 provided ?
+*       <javax.servlet.jsp><jsp-api>[2.1] <== 一般会加上 <scope>provided</scope> 表示只用于 provided ?
+*    Spring开发时的核心包(各个包最好选同一个版本):
+*       <org.springframework><spring-core>[3.0.5.RELEASE]
+*       <org.springframework><spring-context>[3.0.5.RELEASE]
+*       <org.springframework><spring-context-support>[3.0.5.RELEASE]
+*       <org.springframework><spring-aop>[3.0.5.RELEASE]
+*       <org.springframework><spring-asm>[3.0.5.RELEASE]
+*       <org.springframework><spring-beans>[3.0.5.RELEASE]
+*       <org.springframework><spring-tx>[3.0.5.RELEASE]
+*       <org.springframework><spring-jdbc>[3.0.5.RELEASE]
+*    Spring MVC框架
+*       <org.springframework><spring-web>[3.0.5.RELEASE]
+*       <org.springframework><spring-webmvc>[3.0.5.RELEASE]
+*    数据库持久化层
+*       <javax.persistence><persistence-api>[1.0.2] <== 标准的数据库持久化API ?
+*       <org.mybatis><mybatis>[3.2.2] <==  mybatis 的数据库持久化层
+*       <org.mybatis><mybatis-spring>[1.2.0] <==
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
+ * 常见 plugin
+ *    
+**************************************************************************************************************************************/
+
+
+/**************************************************************************************************************************************
+ * 常见 ArcheType
+ *    SpringMVC -- <org.apache.maven.archetypes><maven-archetype-webapp>[RELEASE] 
+ *    
  * 开发自定义的 ArcheType(工程框架向导)
  *    
 **************************************************************************************************************************************/
 public class MavenStudy {
 
 }
+
+//使用Jetty插件啥子编译选项 -- 修改java后自动编译生效？还是因为 Properties -> Java Build Path -> Source -> Output folder ?
+/*
+<build>
+<finalName>springtest1</finalName>
+<plugins>
+    <plugin>
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>maven-jetty-plugin</artifactId>
+        <version>6.1.25</version>
+        <configuration>
+            <reload>manual</reload>
+            <scanIntervalSeconds>0</scanIntervalSeconds>
+            <contextPath>/</contextPath>
+            <!-- <webDefaultXml>src/main/resources/webdefault.xml</webDefaultXml> -->
+            <connectors>
+                <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                    <port>8080</port>
+                    <maxIdleTime>60000</maxIdleTime>
+                </connector>
+            </connectors>
+        </configuration>
+    </plugin>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.1</version>
+        <configuration>
+            <source>1.5</source>
+            <target>1.5</target>
+            <encoding>UTF-8</encoding>
+            <!-- <failOnError>false</failOnError> -->
+        </configuration>
+    </plugin>
+</plugins>
+</build>
+*/

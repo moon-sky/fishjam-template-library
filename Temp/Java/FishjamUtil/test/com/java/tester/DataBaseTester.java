@@ -23,6 +23,7 @@ public class DataBaseTester {
 
 	@Test
 	public void testJDBC() {
+		/*
 		int id = 0;
 		DataSource dataSource = null;  //getDataSource();
 
@@ -56,6 +57,7 @@ public class DataBaseTester {
 			}
 		}
 		//fail("Not yet implemented");
+		*/
 	}
 
 	/*

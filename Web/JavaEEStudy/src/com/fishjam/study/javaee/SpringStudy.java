@@ -186,10 +186,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *     BeanUtils
  *       setProperty(obj,"属性名","属性值");
  *       
- * 测试
- *    Spring 提供了测试模块来测试Spring应用：
- *       为JNDI、Servlet等编写单元测试提供了一系列的模拟对象实现；
- *       对于继承测试，为加载Spring应用上下文中的Bean的集合及交互提供了支持。
+**************************************************************************************************************************************/
+
+/**************************************************************************************************************************************
+ * Spring的单元测试框架:
+ *    为JNDI、Servlet等编写单元测试提供了一系列的模拟对象实现；
+ *    对于继承测试，为加载Spring应用上下文中的Bean的集合及交互提供了支持。
+ *    TODO?: Spring 3.1 支持在测试类中使用非 XML 配置方法和基于 Profile 的 bean 配置模式
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************       
@@ -208,8 +211,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class SpringStudy {
 	
 	public void testSpring(){
-		 ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext_demo.xml"); //TODO: 路径
-		 SpringStudy myBean = (MyBean)context.getBean("myBean");// SpringStudy.class);
+		 //ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext_demo.xml"); //TODO: 路径
+		 //SpringStudy myBean = (MyBean)context.getBean("myBean");// SpringStudy.class);
 	}
 }
 
