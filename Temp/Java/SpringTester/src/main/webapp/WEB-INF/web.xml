@@ -25,13 +25,13 @@
     </filter-mapping>
 
     <servlet>
-        <servlet-name>SpringServlet</servlet-name>
+        <servlet-name>SpringTester</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-       <!-- 查找springtest3-servlet.xml -->
-        <servlet-name>SpringServlet</servlet-name>
+       <!-- 查找SpringTester-servlet.xml -->
+        <servlet-name>SpringTester</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
     

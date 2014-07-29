@@ -12,7 +12,7 @@ public class HelloWorldController implements Controller {
 	public ModelAndView handleRequest(HttpServletRequest arg0,
 			HttpServletResponse arg1) throws Exception {
 		ModelAndView mv = new ModelAndView();
-		mv.addObject("message", "你好，WELCOME  Spring MVC!");
+		mv.addObject("message", "fishjam 你好，WELCOME  Spring MVC!");
 		mv.setViewName("hello");
 		return mv;
 	}

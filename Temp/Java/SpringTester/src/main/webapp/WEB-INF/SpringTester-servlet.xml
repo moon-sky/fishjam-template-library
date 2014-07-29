@@ -18,6 +18,6 @@
     </bean>
     
     <!-- 处理器 -->
-    <bean name="/hello" class="com.cn.myspring.controller.HelloWorldController"/>
+    <bean name="/hello" class="com.fishjam.springtester.controller.HelloWorldController"/>
     
 </beans>
