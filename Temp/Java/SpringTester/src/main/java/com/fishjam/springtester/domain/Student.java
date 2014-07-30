@@ -1,4 +1,4 @@
-package com.fishjam.springtester.vo;
+package com.fishjam.springtester.domain;
 
 import java.sql.Timestamp;
 

@@ -1,12 +1,9 @@
 package com.fishjam.springtester.service;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fishjam.springtester.dao.StudentDao;
-import com.fishjam.springtester.vo.Student;
+import com.fishjam.springtester.domain.Student;
 
 @Service
 public class StudentService {

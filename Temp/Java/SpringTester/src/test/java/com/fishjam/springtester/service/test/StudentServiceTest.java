@@ -3,8 +3,6 @@ package com.fishjam.springtester.service.test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import com.fishjam.springtester.service.StudentService;
@@ -18,7 +16,7 @@ public class StudentServiceTest extends AbstractJUnit4SpringContextTests{
 	public static void init(){
 		//执行整个测试类需要一次性初始化的环境
 		//ApplicationContext context = new ClassPathXmlApplicationContext("config/Spring-db-old.xml"); 
-		//service = (StudentService)context.getBean("studentService"); 
+		//service = (StudentService)context.getBean("studentService");
 	}
 	
 	@AfterClass

@@ -2,20 +2,13 @@ package com.fishjam.springtester.dao;
 
 //数据访问层: 提供了基于 Spring Jdbc Template 实现的数据库访问方法
 
-import java.sql.ResultSet; 
-import java.sql.SQLException; 
-import java.util.HashMap; 
-import java.util.List; 
-import java.util.Map; 
+import java.util.HashMap;
+import java.util.Map;
 
-import org.springframework.context.ApplicationContext; 
-import org.springframework.context.support.ClassPathXmlApplicationContext; 
-import org.springframework.jdbc.core.RowMapper; 
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport; 
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper; 
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Repository;
 
-import com.fishjam.springtester.vo.Student;
+import com.fishjam.springtester.domain.Student;
 
 @Repository
 public class StudentDao extends NamedParameterJdbcDaoSupport{
