@@ -1,4 +1,4 @@
-package com.fishjam.springtester.dao.test;
+package com.fishjam.spring.tester.dao;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,4 +1,4 @@
-package com.fishjam.springtester.service.test;
+package com.fishjam.spring.tester.service;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
