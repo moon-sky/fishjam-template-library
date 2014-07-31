@@ -44,6 +44,8 @@ import java.util.Map;
 
 public class BaseInfoDumper {
 	
+	public static final String DEFAULT_DIVIDE = "\r\n";
+	
 	public final static <T> String CollectionToString(Collection<T> cv) {
 		if (cv != null) {
 			return cv.toString();

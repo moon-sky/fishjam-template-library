@@ -1,23 +1,38 @@
 package com.fishjam.springtester.dao.test;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+import javax.annotation.Resource;
+
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)  
-//@ContextConfiguration({"classpath:SpringTester-servlet.xml"})
+import com.fishjam.springtester.dao.StudentDao;
+import com.fishjam.springtester.domain.Student;
 
+@RunWith(SpringJUnit4ClassRunner.class)  
+//@ContextConfiguration(locations = {"classpath:SpringTester-servlet.xml"})
+@ContextConfiguration({"/app*.xml", "Spring*.xml", "Context*.xml"})
 public class StudentDaoTest extends AbstractJUnit4SpringContextTests {
 	
-	//StudentDao studentDao;
+	@Resource
+	StudentDao studentDao;
 	
+	public void setStudentDao(StudentDao studentDao) {
+		this.studentDao = studentDao;
+	}
+
 	@Test
 	public void testSaveStudent(){
-		assertEquals(1, 1);
-		//Student student = new Student();
-		//studentDao.saveStudent(student);
+		Student student = new Student();
+		student.setId(100);
+		student.setName("fishjam");
+		student.setSex(Student.SEX_MALE);
+		
+		studentDao.saveStudent(student);
+		assertEquals(1, 0);
 	}
 }
