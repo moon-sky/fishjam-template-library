@@ -40,7 +40,8 @@ import org.springframework.web.servlet.ModelAndView;
  *          aspectj(指定AspectJ表达式匹配的类);
  *          custom(自定义的 TypeFilter 实现类);
  *          regex(正则表达式匹配的类);
- *    @Autowired 用于注入，(srping提供的) 默认按类型装配
+ *    @Autowired 用于注入，(srping提供的) 默认按类型装配，要求必须存在，若允许null值，可以设置其required属性为false
+ *       若想按名称装配，则可以结合 @Qualifier 注解一起使用
  *    @Component -- 泛指组件(Bean), 当不好归类时使用
  *    @Controller -- 声明Action组件，通常用在控制层
  *    @Configuration -- 声明Spring的配置类，等价于XML配置中的 <beans> 元素，然后可在其中使用 @Bean 声明返回Bean对象的函数(函数名即为其id)
@@ -52,7 +53,8 @@ import org.springframework.web.servlet.ModelAndView;
  *    @RequestHeader -- 从请求中获取值
  *    @RequestMapping("/login/login.do") -- 请求映射, 用在方法前
  *    @RequestParam(参数) 类型 变量名 -- 在 @RequestMapping 中的参数
- *    @Resource -- 用于命名资源依赖注入，( j2ee提供的 ) 默认按名称装配，@Resource(name="beanName")
+ *    @Resource -- 用于命名资源依赖注入，( j2ee提供的 ) 默认按名称装配，对比：@Autowired默认按类型.
+ *       例：@Resource(name="beanName")，若未提供name，则先取字段的名称作为bean名称寻找对象，若找不到，则使用类型装配方式 
  *    @ResponseBody -- 
  *    @Scope("prototype") -- 设定bean的作用域 
  *    @Service -- 声明Service组件，通常用在业务层

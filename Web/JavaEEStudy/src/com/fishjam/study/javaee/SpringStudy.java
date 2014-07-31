@@ -25,13 +25,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *   Class.forName("xxxx").newInstance();
  * 侵入设计(EJB) -- 需要继承框架类，如果以后想更换框架，之前写过的代码几乎无法重用
  * 
- * 为了降低Java开发的复杂性，Spring采取了以下关键策略：
- *   1.基于POJO的轻量级和最小侵入性编程 -- 不用继承框架的特定接口或类，能轻松切换框架
- *   2.通过依赖注入(DI)和面向接口实现松耦合；
- *   3.基于切面(AOP)和惯例进行声明式编程
- *     通过 <aop:config><aop:aspect><asp:pointcut> 等进行配置(切面、切入点), <aop:before>(前置通知); <aop:after>(后置通知)，
- *     这样可以在指定的方法调用前后，指定调用特殊的方法(比如日志记录等)，而对原有的方法不产生影响。
- *   4.通过切面和模版减少样板式代码(如使用 JdbcTemplate 封装JDBC数据库操作的代码); 
  *   
 **************************************************************************************************************************************/
 
@@ -67,10 +60,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *         如换成<context:component-scan base-package="xxx">则允许Spring扫描指定包及其子包，找出能自动注册为Bean的类。
  *         自动检测依据：@Component, @Controller, @Repository, @Service  -- 详情参见SpringMVCStudy.java
  *
- * 依赖注入的几种实现类型：
- *   1.接口注入 -- 常常借助接口来将调用者与实现者分离，如 Context.lookup(ServletContext.getXXX);
- *   2.构造子注入 -- 即通过构造函数完成依赖关系的设定，
- *   3.设值注入(使用最广泛) -- 通过配置属性，使用类的setter方法完成依赖关系的设置
  * 
  * 缺点：
  *   1.使用人数不多、jsp中要写很多代码、控制器过于灵活，缺少一个公用控制器
@@ -189,12 +178,28 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * Spring的单元测试框架:
+ * Spring的单元测试框架(spring-test):
  *    支持在测试类中使用依赖注入 Denpendency Injection
  *    支持使用各种注释标签，提高开发效率和代码简洁性
  *    为JNDI、Servlet等编写单元测试提供了一系列的模拟对象实现；
  *    对于继承测试，为加载Spring应用上下文中的Bean的集合及交互提供了支持。
  *    TODO?: Spring 3.1 支持在测试类中使用非 XML 配置方法和基于 Profile 的 bean 配置模式
+ * 步骤：
+ *    1.引入依赖包 -- spring-test.jar, junit4
+ *    2.测试类从 AbstractJUnit4SpringContextTests 继承，然后可使用注解简单的注入需要的bean
+ *      @RunWith(SpringJUnit4ClassRunner.class) //使用junit4进行测试
+ *      @ContextConfiguration(locations= { "classpath:applicationContext.xml" }) //加载配置文件,可用逗号分开加载多个,也可使用通配符的方式
+ *      public class XxxTest extends AbstractJUnit4SpringContextTests{
+ *         @Resource StudentDao studentDao;
+ *         @Test public void testGetStudentFromDao(){ ... }
+ *      }
+ *      TODO:需要在 main 里手动加载并启动spring容器？ 
+ *      ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
+ *      context.start();
+ *      StudentDao studentDao = (StudentDao) context.getBean("studentDao");
+ *      
+ * Spring TestContext
+ *    基于注解的IoC功能；基于注解驱动的Spring MVC功能；基于注解的TestContext测试框架    
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************       

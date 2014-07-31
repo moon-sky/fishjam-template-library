@@ -159,6 +159,8 @@ package com.fishjam.study;
 *       <junit><junit>[4.7] <== JUnit单元测试，一般会加上 <scope>test</scope> 表示只用于 test
 *       <org.springframework><spring-test>[3.0.5.RELEASE]
 *       <log4j><log4j>[1.2.9] <== 
+*       <org.mockito><mockito-core>[1.9.5]
+*       <org.mockito><mockito-all>[1.9.5]
 *    Servlet相关的: 
 *       <javax.servlet><servlet-api>[2.5] <== 一般会加上 <scope>provided</scope> 表示只在编译时使用
 *       <javax.servlet.jsp><jsp-api>[2.1] <== 一般会加上 <scope>provided</scope> 表示只在编译时使用
