@@ -9,21 +9,20 @@
         ">
         
     <bean id="student" class="com.fishjam.springtester.domain.Student" >
-        <!-- constructor-arg value=999></constructor-arg -->
-        <property name="id" value="999" />
+        <constructor-arg value="999"></constructor-arg>   <!-- 类似的有 constructor-arg ref="xxx" -->
+        <!-- property name="id" value="999" / -->
         <property name="name" value="fishjam" />
         <property name="sex" value="male" />
         <!--property name="birthday" value="1979-03-30 00:00:00:000" / -->
     </bean>
     
-    <!-- 
-        <bean id="beanLifeCycleDemo" class="com.fishjam.springtester.domain.BeanLifeCycleDemo" >
-        </bean>
-     -->
+    <!-- 通过scope指定作用域prototype，表示每次请求时都产生一个新的实例 -->
+    <bean id="beanLifeCycleDemo" class="com.fishjam.springtester.domain.BeanLifeCycleDemo" scope="prototype"></bean>
     
-        
-    <bean id="mylog" class="com.fishjam.springtester.tools.MyLog">
-    </bean>
+    <!-- 通过工厂方法创建单实例的mylog -->
+    <bean id="mylog" class="com.fishjam.springtester.tools.MyLog" factory-method="getInstance" />
+    <!--bean id="mylog" class="com.fishjam.springtester.tools.MyLog"></bean-->
+    
     
     <aop:config>
         <aop:aspect ref="mylog">

@@ -20,6 +20,8 @@ import com.fishjam.utility.web.spring.ApplicationContextDumper;
 
 import junit.framework.TestCase;
 
+//SPRING in action(第三版中文版).pdf -- P58, 初始化和销毁Bean
+
 /*********************************************************************************************************
  * 为了降低Java开发的复杂性，Spring采取了以下关键策略：
  *   1.基于POJO的轻量级和最小侵入性编程 -- 不用继承框架的特定接口或类，能轻松切换框架
@@ -44,6 +46,10 @@ import junit.framework.TestCase;
  *     TODO:怎么知道应用的类路径是什么？好写相对路径来加载
  *  FileSystemXmlApplicationContext -- 读取文件系统下的XML配置文件并加载上下文定义
  *  XmlWebApplicationContext -- 读取Web应用下的XMl配置文件并装载上下文定义
+ *  
+ * Spring容器提供了两种装配(Wiring)Bean的方式:
+ *   XML配置 -- 
+ *   注解(Annotation)
 *********************************************************************************************************/ 
 
 @RunWith(SpringJUnit4ClassRunner.class)
