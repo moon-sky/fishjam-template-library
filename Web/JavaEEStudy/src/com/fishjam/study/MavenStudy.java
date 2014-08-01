@@ -170,11 +170,17 @@ package com.fishjam.study;
 *       <org.springframework><spring-context>[3.0.5.RELEASE]
 *       <org.springframework><spring-context-support>[3.0.5.RELEASE]
 *       <org.springframework><spring-aop>[3.0.5.RELEASE]
+*       <org.springframework><spring-aspects>[3.0.5.RELEASE]
 *       <org.springframework><spring-asm>[3.0.5.RELEASE]
+*       <org.springframework><spring-expression>[3.0.5.RELEASE]
 *       <org.springframework><spring-beans>[3.0.5.RELEASE]
-*       <org.springframework><spring-tx>[3.0.5.RELEASE]
+*       <org.springframework><spring-tx>[3.0.5.RELEASE]   <== 提供声明式事务配置
 *       <org.springframework><spring-jdbc>[3.0.5.RELEASE]
+*       <org.springframework><spring-jms>[3.0.5.RELEASE]  <== 消息驱动
 *       <org.springframework><spring-orm>[3.0.5.RELEASE]
+*       <org.springframework><spring-oxm>[3.0.5.RELEASE]
+*       <org.springframework><spring-instrument>[3.0.5.RELEASE]
+*       <org.springframework><spring-instrument-tomcat>[3.0.5.RELEASE]
 *    Spring MVC框架
 *       <org.springframework><spring-web>[3.0.5.RELEASE]
 *       <org.springframework><spring-webmvc>[3.0.5.RELEASE]

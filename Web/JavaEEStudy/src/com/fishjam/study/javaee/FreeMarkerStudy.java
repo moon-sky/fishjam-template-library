@@ -39,6 +39,7 @@ package com.fishjam.study.javaee;
  *    FTL tags标签(以 # 开头) -- FreeMarker的指令，不会直接输出。
  *    <@用户自定义标签> --   
  *    注释 : <#-- 注释内容 -->， 不会在输出内容中显示
+ *    条件表达式:  条件?真值:假值;
  *    转义符号: \l (小于号 <); \g(大于号 >); \a(和号 &); \xXXXX(16进制Unicode码，如 版权符号 \x00A9 )
  *    原生字符串(其中的反斜杠和 ${ 等被视为普通字符) -- r"字符串" , 如 ${r"C:\test\maven\"}
  *    日期时间
@@ -103,7 +104,7 @@ package com.fishjam.study.javaee;
  *    c -- 计算机格式(不会将数字转换为人易读取的格式) , 如 ${product.id?c} 
  *    cap_first -- 字符串的第一个字母变为大写形式
  *    date -- 
- *    datetime -- 
+ *    datetime --
  *    html -- 字符串中所有的特殊HTML字符都需要用实体引用来代替(比如 < 替换为 &lt; )
  *    int -- 对数字取整
  *    lower_case -- 字符串的小写形式
@@ -117,7 +118,7 @@ package com.fishjam.study.javaee;
  *    upper_case -- 字符串的大写 形式
  *    
  * 旧的内建函数(不推荐使用?)
- *     default
+ *     default(值) -- 提供缺省值 
  *     exists
  *     if_exists
  *    

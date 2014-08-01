@@ -352,6 +352,8 @@
 *     expires -- 10天 -- 10; 三天后 -- var date = new Date(); date.getTime() + (3 * 24 * 60 * 60 * 1000); { xxxx, expires: date }
 *       如果不设置或设置为null，会作为 Session Cookie处理(浏览器关闭后删除)
 *   Form -- jquery.form.js，表单插件，可以无侵入地升级HTML表单以支持Ajax。提供 .ajaxForm/.ajaxSubmit/.formSerialize 等方法
+*     ajaxForm(); -- 
+*     ajaxSubmit({url:'/xxx.do', dataType:'json', success:function (data, statusText){成功时执行的代码}, error:function(){失败时执行的代码} }); -- 
 *   jQueryUI -- UI扩展库，主要分为三个部分
 *     交互(ui.sortable.js 等) -- 与鼠标交互相关的内容，可以很容易地支持 拖拽(.sortable({delay:1}))、缩放、选择、排序等;
 *     Widget(ui.core.js 等) -- 一些界面的扩展，如 自动完成(Autocomplete),取色器(Colorpicker),对话框(Dialog),滑块(Slider),放大镜(Magnifier) 等;
