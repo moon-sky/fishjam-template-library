@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        ">
+        
+    <bean id="student" class="com.fishjam.springtester.domain.Student" >
+        <!-- constructor-arg value=999></constructor-arg -->
+        <property name="id" value="999" />
+        <property name="name" value="fishjam" />
+        <property name="sex" value="male" />
+        <!--property name="birthday" value="1979-03-30 00:00:00:000" / -->
+    </bean>
+    
+    <!-- 
+        <bean id="beanLifeCycleDemo" class="com.fishjam.springtester.domain.BeanLifeCycleDemo" >
+        </bean>
+     -->
+    
+        
+    <bean id="mylog" class="com.fishjam.springtester.tools.MyLog">
+    </bean>
+    
+    <aop:config>
+        <aop:aspect ref="mylog">
+            <aop:pointcut id="doAction" expression="execution(* *.DoAction(..))" />     <!-- 定义切入点，表示在执行 DoAction 前后等时机进行统治 -->
+            <aop:before pointcut-ref="doAction" method="logBeforeAction" />           <!-- 声明前置通知 -->
+            <aop:after pointcut-ref="doAction" method="logAfterAction" />                 <!-- 声明后置通知 -->
+        </aop:aspect>
+    </aop:config>
+    
+</beans>

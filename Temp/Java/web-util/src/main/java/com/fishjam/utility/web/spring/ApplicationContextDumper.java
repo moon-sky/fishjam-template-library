@@ -8,6 +8,7 @@ public class ApplicationContextDumper extends BaseInfoDumper {
 	public static String ApplicationContextToString(ApplicationContext applicationContext, String strDivide){
 		if (applicationContext != null) {
 			StringBuilder sBuilder = new StringBuilder();
+			sBuilder.append("{" + strDivide) ;
 			
 			sBuilder.append("applicationName=" +  applicationContext.getApplicationName() + strDivide);
 			sBuilder.append("displayName=" + applicationContext.getDisplayName() + strDivide);
@@ -17,12 +18,16 @@ public class ApplicationContextDumper extends BaseInfoDumper {
 			int idxOfBean = 1;
 			for (String strBeanName : beanNames) {
 				Object objBean = applicationContext.getBean(strBeanName);
-				sBuilder.append("\t[" + idxOfBean + "]=" + objBean.getClass().getCanonicalName() + strDivide);
+				sBuilder.append("\t[" + idxOfBean + "]=" + objBean.getClass().getCanonicalName() + "; " + objBean.toString() + strDivide);
 				idxOfBean++;
 			}
 
+			sBuilder.append("Environment=" + strDivide + 
+					EnvironmentDumper.EnvironmentToString(applicationContext.getEnvironment(), strDivide));
+			
+			sBuilder.append("}" + strDivide) ;
 			return sBuilder.toString();
 		}
-		return "";
+		return "null";
 	}
 }

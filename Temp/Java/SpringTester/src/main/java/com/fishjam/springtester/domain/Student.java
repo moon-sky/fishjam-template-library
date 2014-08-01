@@ -46,8 +46,8 @@ public class Student {
 	}
 	@Override
 	public String toString() {
-		return String.format("Student[id=%d,name:%s,birthday:%d,sex:%s]", 
-				id, name, birthday.toString(), sex);
+		return String.format("Student[id=%d,name:%s,birthday:%s, sex:%s]", 
+				id, name, birthday != null ? birthday.toString() : "null",  sex);
 	}
 	
 	public PersonAction[] getActions() {
@@ -57,8 +57,10 @@ public class Student {
 		this.actions = actions;
 	}
 	public void DoAction() {
-		for (PersonAction action : actions) {
-			action.Do();
+		if (actions != null) {
+			for (PersonAction action : actions) {
+				action.Do();
+			}
 		}
 	}
 }

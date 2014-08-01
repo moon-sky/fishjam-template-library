@@ -10,8 +10,8 @@ package com.fishjam.utility.db;
 *******************************************************************************/
 
 /*******************************************************************************
- * 打开顺序
- * 关闭顺序:  ResultSet -> PreparedStatement -> Connection
+ * 打开顺序: 
+ * 关闭顺序: ResultSet -> PreparedStatement -> Connection -> DataSource ?
  * 
  * 常见DB相关的类   
  *   Connection

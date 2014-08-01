@@ -12,7 +12,7 @@ import junit.framework.TestCase;
 *********************************************************************************************************/
 
 
-public class MockitoTester  extends TestCase {
+public class MockitoTest  extends TestCase {
 	
 	@Test
 	public void testMockitoDemo(){
