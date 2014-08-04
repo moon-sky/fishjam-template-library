@@ -47,13 +47,15 @@ test("TODO: Browser", function() {
 });
 
 test("TODO: Screen", function() {
-    with (screen) { //全局屏幕对象 反映了当前用户的屏幕设置
+    //全局屏幕对象 反映了当前用户的屏幕设置
+    //with (screen) --Strict 模式下禁止使用 with
+    { 
         //TODO:Chrome里，在双屏显示器时，height 和 availHeight 有的时候会失败(语法错误)，换一个显示器并且F5刷新后又变好，为什么？
-        ok(width >= 1280, "屏幕宽度");
+        ok(screen.width >= 1280, "屏幕宽度");
         //ok(height >= 1024, "屏幕高度"); //960
-        ok(availWidth >= 1280, "屏幕的可用宽度");
+        ok(screen.availWidth >= 1280, "屏幕的可用宽度");
         //ok(availHeight >= 1024, "屏幕的可用高度（除去了一些不自动隐藏的类似任务栏的东西所占用的高度"); //960
-        equal(colorDepth, 32, "当前颜色设置所用的位数");
+        ok(screen.colorDepth == 32 || screen.colorDepth == 24, "当前颜色设置所用的位数");
     }
 });
 
@@ -109,28 +111,29 @@ test("TODO: Window", function() {
     window.defaultStatus = "缺省状态栏消息";
     window.status = "指定用户将鼠标移到某个窗口等操作时，出现的瞬时状态消息"
 
-    with (window.document) {
+    //with (window.document) -- 严格模式下禁止使用with
+    {
         //document.open([MIMEType]) -- 以指定的MimeType(缺省是text/html)打开文档，然后可通过 write/writeln 等方法写入，写完通过close关闭
 
         //如果在 form 中指定其 name="xxx", 则可以通过 window.document.xxx 的方式引用?
 
-        equal(characterSet, "GBK", "字符集");
-        equal(referrer, "", "referrer -- 如果当前文档是通过点击连接打开的,返回原来的URL");
+        equal(window.document.characterSet, "GBK", "字符集");
+        equal(window.document.referrer, "", "referrer -- 如果当前文档是通过点击连接打开的,返回原来的URL");
 
-        equal(anchors.length, 0, "文档中所有锚标记(包含name属性的<a>标记)的数组");
-        equal(links.length > 0, true, "文档中所有连接标记(包含href属性的<a>标记和<map>标记段里的<area>标记的数组");
-        equal(applets.length, 0, "文档中所有的Applet对象(Java 小程序)的数组");
-        equal(embeds.length, 0, "文档中所有的插件<embed>标记的数组");
-        equal(forms.length, 0, "文档中所有表单<form>的数组");
-        equal(cookie.length, 0, "文档中的Cookie");
+        equal(window.document.anchors.length, 0, "文档中所有锚标记(包含name属性的<a>标记)的数组");
+        equal(window.document.links.length > 0, true, "文档中所有连接标记(包含href属性的<a>标记和<map>标记段里的<area>标记的数组");
+        equal(window.document.applets.length, 0, "文档中所有的Applet对象(Java 小程序)的数组");
+        equal(window.document.embeds.length, 0, "文档中所有的插件<embed>标记的数组");
+        equal(window.document.forms.length, 0, "文档中所有表单<form>的数组");
+        equal(window.document.cookie.length, 0, "文档中的Cookie");
 
-        equal(images.length, 0, "文档中的所有图像");
+        equal(window.document.images.length, 0, "文档中的所有图像");
         /*
         //在 QUnitTestFramework.html 中加入 <img src="..\HTML\img\merglobe.gif"/> 后测试这些
-        equal(images.length, 1, "文档中的所有图像");
-        ok(images[0].src.indexOf("merglobe.gif") > 0, "img src");
-        equal(images[0].height, "100", "img src");
-        equal(images[0].width, "100", "img src");
+        equal(window.document.images.length, 1, "文档中的所有图像");
+        ok(window.document.images[0].src.indexOf("merglobe.gif") > 0, "img src");
+        equal(window.document.images[0].height, "100", "img src");
+        equal(window.document.images[0].width, "100", "img src");
         //*/
     }
 

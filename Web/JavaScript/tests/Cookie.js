@@ -12,7 +12,8 @@ module("CookieTester", {
 test("读写Cookie", function() {
     var oldCookie = document.cookie;
 
-    with (window.document) {
+    //with (window.document) -- 严格模式下禁止使用with
+    {
         //注意：本地磁盘中的页面，chrome的控制台是无法用JavaScript读写操作 cookie 的
         //一个网站可以创建多个cookie(通过 域 或 路径?)
 
@@ -33,10 +34,10 @@ test("读写Cookie", function() {
         //  注意：只是网络传输时加密，本地保存未加密(需要自己加密)
 
         var strCookie = "name=fishjam,email=fishjam@163.com;secure;path=/;domain=jstest.com;expires=" + expires.toGMTString();
-        cookie = escape(strCookie); //设置时最好使用 escape -- cookie信息时不能包含空格，分号，逗号等特殊符号
+        window.document.cookie = escape(strCookie); //设置时最好使用 escape -- cookie信息时不能包含空格，分号，逗号等特殊符号
         if (gBrowserInfo.IsIE) {
             //Chrome 中不能设置本地Cookie, 测试IE支持
-            equal(unescape(cookie), strCookie, "document.cookie， TODO: 多个cookie用什么分隔？普通是逗号, 失效时间前是分号?");
+            equal(unescape(window.document.cookie), strCookie, "document.cookie， TODO: 多个cookie用什么分隔？普通是逗号, 失效时间前是分号?");
         }
         equal(0, 0, "TODO: 怎么判断、设置失效时期? expires ?, 默认的生命周期是浏览器关闭时");
     }

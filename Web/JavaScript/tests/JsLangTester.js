@@ -1,7 +1,8 @@
 "use strict";
+//一些JS知识的网页 -- http://www.cnblogs.com/TomXu/archive/2011/12/31/2289423.html
 
 //★JavaScript区分大小写★
-//Netscape中如果多次因为用 for 循环向文档重复写 HTML 代码会导致浏览器卡死
+//Netscape中如果多次使用 for 循环向文档重复写 HTML 代码会导致浏览器卡死
 //字符串操作没有 StringBuffer 等类型?
 
 module("JSLanguageTester", {
@@ -22,7 +23,7 @@ test("变量", function() {
     var varNull;
     equal(varNull, null, "变量未定义或定义之后未赋值，则值为\"null\"");
 
-    ok(0144 == 100, "八进制");
+    //ok(0144 == 100, "八进制"); //Octal literals are not allowed in strict mode. 
     ok(100 == 100, "十进制");
     ok(0x64 == 100, "十六进制");
 
@@ -57,6 +58,14 @@ test("变量", function() {
     //使用构造函数属性来判断对象的类型 -- 返回的是对象
     ok(iNumber.constructor == Number, "constructor for Number");
     ok("stringInfo".constructor == String, "constructor for String");
+    
+    
+    //定义只读属性 name 
+    //var person = {};
+    //Object.defineProperty(person, "name"{ writable: false, value: "fishjam"});
+    //equal(person.name, "fishjam", "只读属性");
+    //person.name = "another name";   //严格模式下，此行代码会抛出异常
+    
 });
 
 test("基础语法", function() {
@@ -93,19 +102,21 @@ test("基础语法", function() {
     equal(iNumber, 4, "switch 也可以判断字符串(区分大小写)");
 
 
-    with (navigator) {  //with 为一个或一组语句指定默认对象
-        var strAppName = appName;
-        var strAppCodeName = appCodeName;
+    //注意：因为 Strict 模式下禁止使用with，因此此处不再测试 with
+    //with 为一个或一组语句指定默认对象
+    //with (navigator) {
+        var strAppName = navigator.appName;
+        var strAppCodeName = navigator.appCodeName;
 
         ok(strAppName != "" && strAppCodeName != "", "测试 with() 语法，能取出对象的数据，不报错");
         //alert(strAppName);
-    }
+    //}
 
     ok(1, "this 返回\"当前\"对象。在不同的地方，this 代表不同的对象, 全局代表 window对象");
 
     equal(1, 1, "TODO: undefined 不是 JavaScript 常数, 不能直接使用 ?");
 
-    //label -- 语句钱可冠以标号语句(label)，用于 break 或 continue 语句确定执行程序的转移点,
+    //label -- 语句前可冠以标号语句(label)，用于 break 或 continue 语句确定执行程序的转移点,
     //如 label : statement  指明可以跳转的位置后， break statement; 离开标号表示的闭合语句?
     //TODO: 怎么测试 label ?
     var arrayTimes17 = new Array();  //保存能被17整除的数的数组
@@ -117,7 +128,7 @@ test("基础语法", function() {
             arrayTimes17.push(i);
         }
     }
-    equal(arrayTimes17.length, 4, "测试continue");  //
+    equal(arrayTimes17.length, 4, "测试数组和continue");  //
 
     //for...in 循环处理对象中定义的属性 -- 可以获取对象的全部属性
     var iCountForIn = 0;
@@ -155,7 +166,7 @@ test("字符串String", function() {
         "anchor返回对应的超链接方式，然后可用 document.write 写入文档");
     equal(strObject.link("www.baidu.com"),   "<a href=\"www.baidu.com\">百度</a>", "link 和 anchor 一样");
     
-    equal(strObject.charAt(0), "百", "返回指定位置的字符")
+    equal(strObject.charAt(0), "百", "返回指定位置的字符支持Unicode")
     equal(strObject.indexOf("度", 0), 1, "从0开始查找指定字符串");
     equal(strObject.indexOf("网", 0), -1, "没有找到对应的字符串会返回 -1");
     equal(strObject.lastIndexOf("百", 0), 0, "lastIndexOf");
@@ -347,7 +358,8 @@ test("Math", function() {
     equal(Math.pow(2, 3), 8, "返回x的y次方");
 
     //三角函数(cos/sin/tan/acos/asin/atan/atan2)
-    equal(Math.sin(90), 0.8939966636005579, "三角函数 sin/cos 等");
+    //equal(Math.sin(90), 0.8939966636005579, "三角函数 sin/cos 等");
+    equal(Math.floor(Math.sin(90) * 1e10), 8939966636, "三角函数 sin/cos 等");
 
     var myRandomNumber = Math.random() * 40 + 60;
     ok(myRandomNumber >= 60 && myRandomNumber < 100, "random 返回大于 0 小于 1 的一个随机数");
@@ -454,9 +466,11 @@ test("自定义函数", function() {
 
     function SomeFun() { //此处最好写上参数列表 -- 方便函数使用者知道调用方式
         checkParams("SomeFun", arguments);
-        
+
         equal(arguments.length, 4, "函数中的 arguments 数组参数");
-        equal(SomeFun.arguments.length, 4, "函数名前缀.arguments");
+        //equal(SomeFun.arguments.length, 4, "函数名前缀.arguments"); //Strict模式下不能访问 'caller', 'callee', and 'arguments 等参数
+        //SomeFun.caller;
+        //SomeFun.callee;
 
         strictParams([Number, String, Date, String], arguments);  //使用 Utils 中定义的辅助函数验证输入的参数
         for (var i = 0; i < arguments.length; i++) {
@@ -508,6 +522,35 @@ test("自定义函数", function() {
     equal(addFive(4), 9, "函数生成器");
 });
 
+test("具有变参的函数", function() {
+    function someVariableFun(paramObj) {
+        console.log("someVariableFun=%o", paramObj);
+        equal(paramObj["name"], "testVariableFun", "属性名取参数");
+        equal(paramObj.value1, "testValue1", "");
+        equal(paramObj.value2, "testValue2");
+        if(paramObj.optionValue != null){
+            equal(paramObj.optionValue, "this is option Value", "可选参数");
+        }
+
+        return paramObj.name;
+    }
+
+    //调用方式1: 
+    var callParamObj = new Object();
+    callParamObj["name"] = "testVariableFun";
+    callParamObj["value1"] = "testValue1";
+    callParamObj["value2"] = "testValue2";
+    equal(someVariableFun(callParamObj), "testVariableFun", "生成指定的变量设置属性来调用变参函数");
+
+    var checkResult = someVariableFun( {
+        "name":"testVariableFun",
+        value1 : "testValue1",
+        value2: "testValue2",
+        optionValue : "this is option Value",
+    });
+    equal(checkResult, "testVariableFun", "使用匿名对象的方式来调用变参函数");
+
+});
 
 //指定事件处理程序的方法
 //1.直接在 HTML 标记中指定, onload="xxx" onunload="xxx"
@@ -537,7 +580,7 @@ test("TODO: 错误处理程序", function() {
 
 function someFun() {
     var localVariable = 100;    //加了var的是局部变量
-    g_varInSomeFun = 10;        //不加var的是全局变量
+    //g_varInSomeFun = 10;        //不加var的是全局变量  -- Strict 模式下不生效
 }
 
 var g_myGlobalVariable = "some value";  //此处加不加var都一样是全局变量
@@ -545,7 +588,7 @@ test("作用域", function() {
     equal(window.g_myGlobalVariable, "some value", "全局作用域的变量都是window对象的属性");
 
     someFun();   //必须先调用一次该函数，才能使用其内部生成的全局变量。TODO：如果多次调用会如何?
-    equal(g_varInSomeFun, 10, "定义在函数内部的全局变量，需要调用函数后才会生效");
+    //equal(g_varInSomeFun, 10, "定义在函数内部的全局变量，需要调用函数后才会生效");
 });
 
 function delayCheckString(msg, time) {

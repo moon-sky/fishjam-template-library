@@ -209,6 +209,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tests\JsNoneStrictModeTester.js"
+				>
+			</File>
+			<File
 				RelativePath=".\tests\JsPerformanceTester.js"
 				>
 			</File>

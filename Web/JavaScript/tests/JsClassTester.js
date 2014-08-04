@@ -137,9 +137,13 @@ test("funObj", function() {
 	
 	var you = new me.constructor(); //
 	equal(typeof(me), typeof(you), "使用对象的 construcotr 可以创建相同类型的对象，类似拷贝构造 ?");
-	
-	User("setUserName");					//当成正常的函数来使用
-	equal(window.name, "setUserName");		//但因为是在 window 里面调用的，会设置其name属性，造成名称污染,容易出现Bug?
+
+    //未启用严格模式时造成名称污染的bug	
+	//User("setUserName");					//当成正常的函数来使用 -- 注意：严格模式下会抛出异常，必须通过new来使用构造
+	// equal(window.name, "setUserName");		//但因为是在 window 里面调用的，会设置其name属性，造成名称污染,容易出现Bug?
+	new User("setUserName");
+	equal(window.name, "");  //启用严格模式后，不会造成名称污染
+	   
 	
 	//函数可以作为对象来建立，并用 Function() 构造器将函数对象赋予变量，其语法为 "new Function([arg1,..,argn], functionBody);
 	var triple = new Function("n", "return 3*n");  //创建将数值乘以3以后的函数
@@ -152,7 +156,7 @@ test("prototype", function(){
 	//使用 prototype 定义的类, 其属性都在对象中，且有合适的上下文
 	var userObj1 = new CUser("fishjam", new Date(1979, 3, 30, 12, 0, 0, 0)); //1979-03-30 12:00:00:000
 	equal(userObj1.getName(), "fishjam", "userObj1.getName() == fishjam");
-	equal(userObj1.getAge(), 34, "userObj1.getAge() == 34, 老了。。。。");
+	equal(userObj1.getAge(), 35, "userObj1.getAge() == 35, 老了。。。。");
 	
 	var userCloneObj = CUser.clone(userObj1);
 	console.log("%s:%o", userCloneObj.toString(), userCloneObj);
