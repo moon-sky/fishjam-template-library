@@ -1,4 +1,8 @@
 package com.fishjam.study.javaee;
+
+import org.apache.ibatis.annotations.Update;
+import org.springframework.stereotype.Repository;
+
 /**************************************************************************************************************************************
  * http://www.cnblogs.com/ycxyyzw/archive/2012/10/13/2722567.html
  * 
@@ -12,8 +16,15 @@ package com.fishjam.study.javaee;
  * 		<select id="selectAllStudent" resultClass="Student">  //id表示select里的sql语句，resultClass表示返回结果的类型
  *			select * from 	tbl_student
  *		</select>
- *    
-**************************************************************************************************************************************/
+ * 
+ * 用法：
+ *   1.java中: 若返回int，则 ???
+ *     @Repository public interface XxxDao{ 
+ *        @Insert("insert into Xxx values( #{param1.property1} )") int addFuncName(@Param("param1") 参数类型 param1);
+ *        @Update("delete from Xxx where param=#{param1.property1}") int delFunName(@Param("param1") 参数类型 param1);
+ *        @Update("update Xxx set Yyy=#{param1.property1} where ...") int updateFunName(@Param("param1") 参数类型 param1);
+**        @Select("select * from Xxx where param=#{param1.property1}") list<返回值类型> selectFunName(@Param("param1") 参数类型 param1);
+ *************************************************************************************************************************************/
 
 public class IbatisStudy {
 }

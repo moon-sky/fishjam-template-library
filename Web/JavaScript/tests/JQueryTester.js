@@ -77,7 +77,7 @@
 *   querySelectorAll() -- W3C在SelectorsAPI草案中提到的标准方法，为浏览器(IE8以后)原生，jQuery可能会使用该方法来重构选择器
 * 
 *   基本选择器
-*     tagType -- 选择所有指定类型的元素， 如类型 <p> 的 $("p"), $("input[type=button]")选择所有button按钮(等价于 :button ?)
+*     tagType -- 选择所有指定类型的元素， 如类型 <p> 的 $("p"), $("input[type='button']")选择所有button按钮(等价于 :button ?)
 *     #IdObj -- 选择  id="IdObj" 的元素，可以选取任何元素
 *       如对于 <link type="text/css" id="cssfile" href="css/skin_0.css"/>, 通过 $("#cssfile").attr("href","css/"+this.id+".css") 可切换使用的css文件，即动态换肤功能
 *     .className -- 选择所有 class="className" 的元素
