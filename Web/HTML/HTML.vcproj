@@ -221,6 +221,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\content\jqueryform.html"
+				>
+			</File>
+			<File
 				RelativePath=".\content\language.html"
 				>
 			</File>

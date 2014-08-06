@@ -9,6 +9,7 @@
 *   3.有的时候选择器为什么要加上 ",this" ? 比如 《锋利的jQuery中》P152,5.1.4下拉框应用中， $var options=$("option:selected",this); //获取选中的选项
 *   4.parseJSON 将JSON字符串解析成JS对象 -- 有这个函数吗?
 *   5.jsonp 非官方协议用于实现跨域访问(从服务器端直接返回可执行的JavaScript函数调用或JavaScript对象)，已成为各大公司的Web应用程序跨域首选
+*   6.很多jQuery的函数都是可链接(Chainable)的，表示支持以下语法 $("#obj").fun1().fun2();
 *
 * 可以在线测试各种数据的地址(照片分享网站) -- TODO: 淘宝的链接转换?
 *   $(.getJSON("http://api.flickr.com/services/feeds/photos_public.gne?tags=car&tagmode=any&format=json&jsoncallback=?",function(data){ xxx });
@@ -353,8 +354,7 @@
 *       如果不设置或设置为null，会作为 Session Cookie处理(浏览器关闭后删除)
 *   Form -- jquery.form.js，表单插件，可以无侵入地升级HTML表单以支持Ajax。提供 .ajaxForm/.ajaxSubmit/.formSerialize 等方法
 *     ajaxForm(); -- 
-*     ajaxSubmit({url:'/xxx.do', dataType:'json', success:function (data, statusText){成功时执行的代码}, error:function(){失败时执行的代码} }); -- 
-*   jQueryUI -- UI扩展库，主要分为三个部分
+*     ajaxSubmit({url:'/xxx.do', dataType:'json', success:function (data, statusText){成功时执行的代码}, error:function(){失败时执行的代码} *   jQueryUI -- UI扩展库，主要分为三个部分
 *     交互(ui.sortable.js 等) -- 与鼠标交互相关的内容，可以很容易地支持 拖拽(.sortable({delay:1}))、缩放、选择、排序等;
 *     Widget(ui.core.js 等) -- 一些界面的扩展，如 自动完成(Autocomplete),取色器(Colorpicker),对话框(Dialog),滑块(Slider),放大镜(Magnifier) 等;
 *     效果库(effects.core.js) -- 提供丰富的动画效果，不再局限于 animate 方法,
