@@ -154,7 +154,7 @@ package com.fishjam.study;
 *       <commons-fileupload><commons-fileupload>[1.2.2] <== 文件上传
 *    数据解析
 *       <net.sf.json-lib><json-lib>[2.4] <== Json解析， 需要加上 <classifier>jdk15</classifier> ?
-*       <pinyin4j><pinyin4j>[2.5.0] <== 汉字拼音
+*       <com.belerweb><pinyin4j>[2.5.0] <== 汉字拼音
 *    调试和测试：
 *       <junit><junit>[4.7] <== JUnit单元测试，一般会加上 <scope>test</scope> 表示只用于 test
 *       <org.springframework><spring-test>[3.0.5.RELEASE]
