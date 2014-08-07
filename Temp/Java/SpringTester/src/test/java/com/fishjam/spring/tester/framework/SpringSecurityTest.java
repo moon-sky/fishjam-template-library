@@ -1,5 +1,7 @@
 package com.fishjam.spring.tester.framework;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 import static org.junit.Assert.*;
 
@@ -9,6 +11,7 @@ import static org.junit.Assert.*;
 **********************************************************************************************************/
 public class SpringSecurityTest extends TestCase {
 	
+	@Test
 	public void testSecurity(){
 		assertEquals(1, 1);
 	}
