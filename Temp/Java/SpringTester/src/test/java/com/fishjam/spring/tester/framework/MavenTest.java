@@ -1,4 +1,9 @@
-package com.fishjam.study;
+package com.fishjam.spring.tester.framework;
+
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**************************************************************************************************************************************
 * 命令行生成POM工程: mvn archetype:create -DgroupId=com.fishjam.tester -DartifactId=JavaTester, 生成如下目录结构：
@@ -214,8 +219,11 @@ package com.fishjam.study;
  * 开发自定义的 ArcheType(工程框架向导)
  *    
 **************************************************************************************************************************************/
-public class MavenStudy {
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:DemoBeans.xml"})
+public class MavenTest extends AbstractJUnit4SpringContextTests {
+	
 }
 
 //使用Jetty插件啥子编译选项 -- 修改java后自动编译生效？还是因为 Properties -> Java Build Path -> Source -> Output folder ?

@@ -1,7 +1,9 @@
-package com.fishjam.study.javaee;
+package com.fishjam.spring.tester.framework;
 
-import org.apache.ibatis.annotations.Update;
-import org.springframework.stereotype.Repository;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**************************************************************************************************************************************
  * http://www.cnblogs.com/ycxyyzw/archive/2012/10/13/2722567.html
@@ -26,5 +28,9 @@ import org.springframework.stereotype.Repository;
 **        @Select("select * from Xxx where param=#{param1.property1}") list<返回值类型> selectFunName(@Param("param1") 参数类型 param1);
  *************************************************************************************************************************************/
 
-public class IbatisStudy {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:DemoBeans.xml"})
+public class IbatisTest extends AbstractJUnit4SpringContextTests {
+	
 }
+
