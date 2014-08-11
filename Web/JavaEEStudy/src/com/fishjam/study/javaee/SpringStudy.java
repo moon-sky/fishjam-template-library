@@ -16,8 +16,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 *               WebLogic 自带的 默认Servlet的名字  -- "FileServlet"
 *               WebSphere  自带的 默认Servlet的名字 -- "SimpleFileServlet"
 *      解决方案二：Spring 3.0.4 后映射到ResourceHttpRequestHandler： <mvc:resources mapping="/images/**" location="/images/" />  
-*    2. 所有的Bean默认都是单例(singleton)，可通过 scope 属性配置Bean的作用域来更改, 
-*        如 prototype(每次调用时生成实例), request(一次HTTP请求), session, global-session  
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -95,7 +93,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
      <property name="dataSource" ref="dataSource">   -- 对应类中有一个名为 DataSource 的属性,引用到id为 dataSource 的另外一个bean
        <ref local="dataSource"/>   《== 指定了属性对BeanFactory中其他Bean的引用关系 , 
      </property>  《== 引用了 p 名称空间后( xmlns:p="http://www.springframework.org/schema/p" )等价于 -- p:dataSource-ref="dataSource"
-	<property name="roles">  《装配 集合类型的Bean属性(list, set, map, props 等), 对应Java中的 Collection 子类等类型的成员变量
+	<property name="roles">
 		<list>
 			<ref bean="admin" />
 			<ref bean="normal" />
@@ -121,24 +119,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * Spring表达式语言(Spring Expression Language -- SpEL) : 通过运行期执行的表达式将值装配到Bean的属性或构造器参数中。
- *    注意：虽然功能很强大， 但是没有IDE的语法检查支持，很难调试和维护，因此不要把过多的逻辑放入SpEL表达式中
- *    语法：value = "#{表达式}"， 
- *       #{myBean.property1}  <== 获取属性值 
- *       #{myBean.getObj()?.fun()}<== 调用getObj()方法获得返回的对象，如不为null，则通过其fun()方法获得返回值
- *       T() <== 调用类作用域的方法和常量，通常可用于调用静态方法和常量， #{T(java.lang.Math).PI * circle.radius ^ 2 } 计算园的面积
- *       运算符的文本替代方式(textual alternatives): ==(eq), <(lt), <=(le), >(gt), >=(ge)
- *       逻辑表达式<== and / or / not(或 !)
- *       条件表达式<==  条件 ? 真时的值 : 假时的值， 常见的使用场景为检测null， 简化形式为 #{ 变量 ?: "默认值" }   
- *       正则表达式匹配 <== <property name="validEmail" value="#{admin.email matches '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.com'}" /> 
- *       操作集合 <== 获取一个成员: #{集合名[index]};  或 #{集合名['keyName']}。
- *          特殊：#{systemEnvironment['HOME']} -- 访问名为 HOME 的环境变量;  
- *                   #{systemProperties['application.home']} -- Java启动时的属性(-D参数)
- *          查询集合成员： 
- *             .?[条件] -- 查询满足条件的所有元素，如 <property name="bigCities" value="#{cities.?[population gt  1000000]}" /> -- 选择所有人口数大于100万的城市
- *             .^[条件] -- 查询第一个匹配项;  
- *             .$[条件] -- 查询最后一个匹配项； 
- *             .![属性] -- 集合投影(从集合的每一个成员中选择特定的属性放入新的集合中)，如 <property name="cityNames" value="#{cities.![name]}" /> -- 获取所有城市的名字并放入新的集合中 
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************

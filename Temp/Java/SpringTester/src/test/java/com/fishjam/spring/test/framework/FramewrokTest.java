@@ -20,7 +20,7 @@ import com.fishjam.utility.web.spring.ApplicationContextDumper;
 
 import junit.framework.TestCase;
 
-//SPRING in action(第三版中文版).pdf -- P58, 初始化和销毁Bean
+//SPRING in action(第三版中文版).pdf -- P80
 
 /*********************************************************************************************************
  * 为了降低Java开发的复杂性，Spring采取了以下关键策略：

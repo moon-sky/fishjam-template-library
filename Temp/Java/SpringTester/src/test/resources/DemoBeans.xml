@@ -34,6 +34,10 @@
     <bean id="mylog" class="com.fishjam.springtester.tools.MyLog" factory-method="getInstance" />
     <!--bean id="mylog" class="com.fishjam.springtester.tools.MyLog"></bean-->
     
+    <!--
+        <util:properties id="settings" location="classpath:settings.properties" >
+        </util:properties> 
+     -->
     
     <aop:config>
         <aop:aspect ref="mylog">
