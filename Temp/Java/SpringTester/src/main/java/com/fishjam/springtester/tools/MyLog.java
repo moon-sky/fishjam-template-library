@@ -27,4 +27,8 @@ public class MyLog {
 	public void logAfterAction(){
 		System.out.println("Log after action");
 	}
+	
+	public void LogInfo(String strInfo){
+		System.out.println(strInfo);
+	}
 }

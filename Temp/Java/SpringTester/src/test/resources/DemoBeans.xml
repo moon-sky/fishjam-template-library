@@ -11,13 +11,24 @@
     <bean id="student" class="com.fishjam.springtester.domain.Student" >
         <constructor-arg value="999"></constructor-arg>   <!-- 类似的有 constructor-arg ref="xxx" -->
         <!-- property name="id" value="999" / -->
-        <property name="name" value="fishjam" />
+        <property name="name" value="fishjam" />            <!-- 通过 setName 方法给属性注入值，简单值用value,对象值用ref -->
         <property name="sex" value="male" />
-        <!--property name="birthday" value="1979-03-30 00:00:00:000" / -->
+        <!--property name="birthday" value="1979-03-30 00:00:00:000" / -->  <!-- value属性可以注入String、int、float、Double、boolean 等类型(TODO:时间？) -->
+        
+        <!-- 装配 集合类型的Bean属性( list, set, map, props 等), 对应Java中的 数组/Collection/Map/Properties 等类型的成员变量  -->
+        <property name="actions">
+            <list>   
+                <bean class = "com.fishjam.springtester.domain.StudyAction" />  <!-- 此处使用了内部Bean的方式，可以通过 ref bean="xxx" 的方式应用其他公有bean -->
+                <bean class ="com.fishjam.springtester.domain.PlayAction" />
+            </list>
+        </property>
     </bean>
     
     <!-- 通过scope指定作用域prototype，表示每次请求时都产生一个新的实例 -->
-    <bean id="beanLifeCycleDemo" class="com.fishjam.springtester.domain.BeanLifeCycleDemo" scope="prototype"></bean>
+    <bean id="beanLifeCycleDemo" class="com.fishjam.springtester.domain.BeanLifeCycleDemo" 
+        scope="prototype" 
+        init-method="callForInitMethod" destroy-method="callForDestroyMethod">
+    </bean>
     
     <!-- 通过工厂方法创建单实例的mylog -->
     <bean id="mylog" class="com.fishjam.springtester.tools.MyLog" factory-method="getInstance" />

@@ -46,8 +46,9 @@ public class Student {
 	}
 	@Override
 	public String toString() {
-		return String.format("Student[id=%d,name:%s,birthday:%s, sex:%s]", 
-				id, name, birthday != null ? birthday.toString() : "null",  sex);
+		return String.format("Student[id=%d,name:%s,birthday:%s, sex:%s, actions[size=%d]", 
+				id, name, birthday != null ? birthday.toString() : "null",  sex, 
+				actions != null ? actions.length : 0 );
 	}
 	
 	public PersonAction[] getActions() {
