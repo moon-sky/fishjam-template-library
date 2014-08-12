@@ -18,7 +18,7 @@ import junit.framework.TestCase;
  *       条件表达式<==  条件 ? 真时的值 : 假时的值， 常见的使用场景为检测null， 简化形式为 #{ 变量 ?: "默认值" }   
  *       正则表达式匹配(matches) <== <property name="validEmail" value="#{admin.email matches '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.com'}" /> 
  *       操作集合 <== 获取一个成员: #{集合名[index]};  或 #{集合名['keyName']}。
- *          特殊：#{systemEnvironment['HOME']} -- 访问名为 HOME 的环境变量;  
+ *          特殊：#{systemEnvironment['JAVA_HOME']} -- 访问名为 JAVA_HOME 的环境变量;  
  *                   #{systemProperties['application.home']} -- Java启动时的属性(-D参数)
  *          查询集合成员： 
  *             .?[条件] -- 查询满足条件的所有元素，如 <property name="bigCities" value="#{cities.?[population gt  1000000]}" /> -- 选择所有人口数大于100万的城市

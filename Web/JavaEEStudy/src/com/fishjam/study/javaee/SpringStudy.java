@@ -47,16 +47,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *     org.springframework.web.servlet.DispatcherServlet
  *   5.简化各种技术集成：提供对Java Mail、任务调度、JMX、JMS、JNDI、EJB、动态语言、远程访问、Web Service等的集成
  *   其真正的精华是 Ioc模式 实现的 BeanFactory 和 AOP 
- * Spring通过依赖注入模式，将依赖关系从编码中脱离出来，从而大大降低了组件之间的耦合，实现了组件真正意义上的即插即用。这也是Spring最具价值的特性之一。
- *    创建应用对象之间协作关系的行为通常被称为装配(wiring)，使用流程为:
- *    1.声明Bean，使得容器能够加载--
- *      a. xml中通过 <beans><bean> 的方式显示声明;可通过 <property> 等指定， 
- *        内部Bean(inner bean)，其实例仅使用于当前的Bean，不能被其他的bean共享
- *        <bean><property name="xxx"> <bean class="内部类的路径" /></property></bean>
- *         也可以利用自动装配(autowire 或 default-autowire[none] 设置类型) -- id和属性名相同(byName, 典型场景就是整个应用中唯一的 DataSource); 属性类型相同(byType);构造函数参数类型相同(constructor);
- *      b.使用注解(Annotation)进行配置 (默认禁用，需要通过 <context:annotation-config> 启用)
- *         如换成<context:component-scan base-package="xxx">则允许Spring扫描指定包及其子包，找出能自动注册为Bean的类。
- *         自动检测依据：@Component, @Controller, @Repository, @Service  -- 详情参见SpringMVCStudy.java
  *
  * 
  * 缺点：

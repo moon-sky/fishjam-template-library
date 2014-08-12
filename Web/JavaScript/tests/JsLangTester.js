@@ -5,6 +5,8 @@
 //Netscape中如果多次使用 for 循环向文档重复写 HTML 代码会导致浏览器卡死
 //字符串操作没有 StringBuffer 等类型?
 
+//属性 -- 有两种访问方式, obj.property 和 obj["property"]
+
 module("JSLanguageTester", {
     setup: function() {
     //dump("in JavaScriptLanguage::setup\n");
@@ -288,7 +290,7 @@ test("数组Array", function() {
     arrayProperty["one"] = 1;
     arrayProperty["two"] = 2;
     equal(arrayProperty.length, 0);
-    equal(arrayProperty["one"] + arrayProperty["two"], 3);  //通过取属性的方式进行运算
+    equal(arrayProperty["one"] + arrayProperty.two, 3);  //通过取属性的方式进行运算
     //equal(arrayMap["one"], 1);
     //console.log("arrayProperty, %o", arrayProperty);
 
@@ -495,7 +497,7 @@ test("自定义函数", function() {
     }
 
     //函数生成器：一个返回函数的函数
-    //  利用闭包的特性，返回一个简单的求两个数字和的函数
+    //  利用闭包的特性，返回一个简单的求两个数字和的函数，外面可以使用
     function addGenerator(num) {
         return function(toAdd) { return num + toAdd; }
     }
@@ -599,7 +601,16 @@ function delayCheckString(msg, time) {
 }
 
 /***********************************************************************************************************
-* 闭包:
+* 闭包:简单理解就是 "定义在一个函数内部的函数，该函数能够读取其他函数(父函数?)的内部变量"
+*      本质上 闭包就是将函数内部和函数外部连接起来的一座桥梁
+* 用途: 
+*   1.读取函数内部的变量; 
+*   2.让这些变量的值始终保持在内存中(闭包被保存成变量，其依赖的外部函数即使生存期结束，也会保留在内存中)
+* 注意：
+*   1.由于闭包会使得函数中的变量都被保存在内存中，内存消耗很大，所以不能滥用闭包，否则会造成性能问题，且可能导致内存泄露.
+*     解决：在退出函数之前，将不使用的局部变量全部删除
+*   2.闭包会在父函数外部，改变父函数内部变量的值。如当把父函数当作对象(object)使用，把闭包当作它的公用方法(Public Method)，
+*     把内部变量当作它的私有属性(private value)时，不要随意改变傅函数内部变量的值
 ***********************************************************************************************************/
 
 test("闭包", function() {

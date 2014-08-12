@@ -20,9 +20,15 @@ import com.fishjam.utility.web.spring.ApplicationContextDumper;
 
 import junit.framework.TestCase;
 
-//SPRING in action(第三版中文版).pdf -- P80
+//SPRING in action(第三版中文版).pdf -- P90
+/***********************************************************************************************************************************************
+ * Spring开发中的最佳实践
+ *   1.设置 <beans> 的 default-autowire="byName" 启用 name=>bean.id 的自动装配;
+ *   2.
+***********************************************************************************************************************************************/
 
-/*********************************************************************************************************
+
+/***********************************************************************************************************************************************
  * 为了降低Java开发的复杂性，Spring采取了以下关键策略：
  *   1.基于POJO的轻量级和最小侵入性编程 -- 不用继承框架的特定接口或类，能轻松切换框架
  *   2.通过依赖注入(DI)和面向接口实现松耦合；
@@ -32,9 +38,9 @@ import junit.framework.TestCase;
  *   4.通过切面和模版减少样板式代码(如使用 JdbcTemplate 封装JDBC数据库操作的代码);
  *    
  *  
-**********************************************************************************************************/
+************************************************************************************************************************************************/
 
-/*********************************************************************************************************
+/***********************************************************************************************************************************************
  * 容器是Spring框架的核心 -- 使用依赖注入管理构成应用的组件，会创建相互协作的组件之间的关联。
  * 
  * Spring 自带的容器实现：
@@ -54,7 +60,7 @@ import junit.framework.TestCase;
  * 内部Bean -- 定义在其他Bean内部的Bean。
  *   定义方法：声明一个<bean>元素作为<property> 或 <constructor-arg> 元素的子节点。
  *      如：<property name="myInnerBean"><bean class="xxxx"/></property>
-*********************************************************************************************************/ 
+***********************************************************************************************************************************************/ 
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:DemoBeans.xml"})
@@ -69,12 +75,33 @@ public class FramewrokTest extends AbstractJUnit4SpringContextTests {
 	private MyLog	mylog;
 	
 	/**********************************************************************************************************
+	 * Spring通过依赖注入模式，将依赖关系从编码中脱离出来，从而大大降低了组件之间的耦合，实现了组件真正意义上的即插即用。这也是Spring最具价值的特性之一。
 	 * 依赖注入(DI)
 	 *   依赖注入的几种实现类型：
 	 *   1.接口注入 -- 常常借助接口来将调用者与实现者分离，如 Context.lookup(ServletContext.getXXX);
 	 *   2.构造器注入 -- 即通过构造函数完成依赖关系的设定
 	 *   3.设值注入(使用最广泛) -- 通过配置属性，使用类的setter方法完成依赖关系的设置
+	 *   
+	 * 自动装配(autowiring) -- Spring自动识别如何装配Bean的依赖关系(减少  <property> 和 <constructor-arg> 等元素)
+	 *    四种类型( autowire="xxx", 也可在 <beans> 中通过 default-autowire="xxx" 来设置缺省匹配类型 ): 
+	 *       [none] -- 缺省值，表示所有Bean都不是用自动装配
+	 *       byName -- 为属性自动装配Id与该属性的名字相同的Bean, 如 name="datasource" 会自动匹配到 id="datasource" 的bean
+	 *       byType(不好) -- 类型相同即自动匹配，注意：当有多个匹配的类型时，会抛出异常，可通过设置首选(primary[true])或取消资格(autowire-candidate="false")的方式解决
+	 *       constructor(不好) -- 构造函数的参数类型匹配，当有多个匹配的类型时，会抛出异常
+	 *       autodetect -- 先用constructor,如失败再byType
+	 * 自动检测(autodiscovery) -- 自动识别哪些类需要被配置成Bean( 减少 <bean> 元素)
+	 *  
+	 * 创建应用对象之间协作关系的行为通常被称为装配(wiring)，使用流程为:
+	 *    1.声明Bean，使得容器能够加载--
+	 *      a. xml中通过 <beans><bean> 的方式显示声明;可通过 <property> 等指定内部Bean(inner bean)，其实例仅使用于当前的Bean，不能被其他的bean共享
+	 *        <bean><property name="xxx"> <bean class="内部类的路径" /></property></bean>
+	 *         也可以利用自动装配(autowire 或 default-autowire[none] 设置类型) -- id和属性名相同(byName, 典型场景就是整个应用中唯一的 DataSource); 属性类型相同(byType);构造函数参数类型相同(constructor);
+	 *      b.使用注解(Annotation)进行配置 (默认禁用，需要通过 <context:annotation-config> 启用)
+	 *         如换成<context:component-scan base-package="xxx.*">则允许Spring扫描指定包及其子包，找出能自动注册为Bean的类。
+	 *         自动检测依据：@Component, @Controller, @Repository, @Service  -- 详情参见SpringMVCStudy.java
 	**********************************************************************************************************/
+	
+
 	//测试手工加载Bean的配置XML文件，并获取其中的bean信息
 	@Test
 	public void testLoadBeansFromXmlManual(){
@@ -86,7 +113,7 @@ public class FramewrokTest extends AbstractJUnit4SpringContextTests {
 		//ApplicationContext applicationContext = new ClassPathXmlApplicationContext("DemoBeans.xml");
 		System.out.println(ApplicationContextDumper.ApplicationContextToString(applicationContext, ApplicationContextDumper.DEFAULT_DIVIDE));
 		
-		assertEquals(applicationContext.getBeanDefinitionCount(), 7);
+		assertEquals(applicationContext.getBeanDefinitionCount(), 8);
 		
 		Student studentBean = (Student)applicationContext.getBean("student");
 

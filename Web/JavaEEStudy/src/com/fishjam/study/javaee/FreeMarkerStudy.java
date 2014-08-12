@@ -1,5 +1,8 @@
 package com.fishjam.study.javaee;
 
+	
+		<#if (listquotedpricepriceone.amount < buyerproducts.amount ) >xxxx</#if>
+                                            	
 /**************************************************************************************************************************************
  * 文档 -- FreeMarker_Manual_zh_CN.pdf， P20
  * 

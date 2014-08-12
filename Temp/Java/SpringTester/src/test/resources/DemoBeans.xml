@@ -2,12 +2,21 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:context="http://www.springframework.org/schema/context"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/aop
         http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util-3.2.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.2.xsd
         ">
-        
+     
+     <context:component-scan annotation-config="true"    base-package="com.fishjam.springtester.*" />
+     <!-- 或用如下方式打开 使用注解配置Bean 的开关  <context:annotation-config />  -->
+     
     <bean id="student" class="com.fishjam.springtester.domain.Student" >
         <constructor-arg value="999"></constructor-arg>   <!-- 类似的有 constructor-arg ref="xxx" -->
         <!-- property name="id" value="999" / -->
@@ -34,10 +43,15 @@
     <bean id="mylog" class="com.fishjam.springtester.tools.MyLog" factory-method="getInstance" />
     <!--bean id="mylog" class="com.fishjam.springtester.tools.MyLog"></bean-->
     
+    <util:map id="myConfig">
+        <entry key="autho" value="fishjam" />
+        <entry key="java_home" value="#{systemEnvironment['JAVA_HOME']} " />
+    </util:map>
     <!--
-        <util:properties id="settings" location="classpath:settings.properties" >
+        <util:properties id="settings" location="classpath*:settings.properties" >
         </util:properties> 
-     -->
+        使用( 从中读取信息) : <property name="author" value="#{settings['Author']}" />
+    -->
     
     <aop:config>
         <aop:aspect ref="mylog">

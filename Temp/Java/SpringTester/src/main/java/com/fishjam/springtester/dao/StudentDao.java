@@ -5,6 +5,8 @@ package com.fishjam.springtester.dao;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Repository;
 
@@ -13,6 +15,7 @@ import com.fishjam.springtester.domain.Student;
 @Repository
 public class StudentDao extends NamedParameterJdbcDaoSupport{
 
+	private DataSource	dataSource;
 	 public void saveStudent(Student student) { 
 		 String sql = "insert into tbl_student(id,name,birthday,sex) " + 
 				"values(:id,:name,:birthday,:sex)"; 
