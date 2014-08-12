@@ -14,7 +14,10 @@
         http://www.springframework.org/schema/context/spring-context-3.2.xsd
         ">
      
-     <context:component-scan annotation-config="true"    base-package="com.fishjam.springtester.*" />
+     <context:component-scan annotation-config="true" base-package="com.fishjam.springtester.*" >
+        <!-- 可通过 include-filter/exclude-filter 调整扫描的过滤机制  -->
+        <!-- context:include-filter type="regex" expression="*Test"/ -->
+     </context:component-scan>
      <!-- 或用如下方式打开 使用注解配置Bean 的开关  <context:annotation-config />  -->
      
     <bean id="student" class="com.fishjam.springtester.domain.Student" >

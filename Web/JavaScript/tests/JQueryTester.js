@@ -15,6 +15,8 @@
 *   $(.getJSON("http://api.flickr.com/services/feeds/photos_public.gne?tags=car&tagmode=any&format=json&jsoncallback=?",function(data){ xxx });
 *   使用 jsonp方式。jQuery 将自动把URL里的回调函数，如 "url?callback=?" 中的后一个"?"替换为正确的函数名，以执行回调函数。
 * 
+* 常见jQuery的写法
+*   下拉列表(select)默认选中第一项: Xxx.find("option:eq(0)").attr("selected","selected"); 找到选中项: .find("option:checked")
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
@@ -272,7 +274,7 @@
 *       如: function foo(options) { options = jQuery.extend({name:"test", length: 5 }, options); //前面是默认参数， options 是传递的参数
 * 
 *   Ajax封装函数(以 $. 开始的是全局函数， 以 $obj. 开始是指定对象上的函数 )
-*     $.ajax( { 各个参数的键值对 } ) -- 底层AJAX实现的全局函数，比如  $.ajax({ type:"GET", url:"test.js", dataType:"script" }); 
+*     $.ajax( { 各个参数的键值对 } ) -- 底层AJAX实现的全局函数，比如  $.ajax({ type:"POST", url:"delUser.do", data:"id="+id, dataType:"json" }); 
 *       等价于 .getScript("test.js")
 *         属性
 *          async -- 是否是异步请求，默认为true
@@ -316,13 +318,15 @@
 *     .ajaxStart()/.ajaxStop() -- AJAX开始和结束时的事件，注意：必须写成类似 $("#loading").ajaxStart 的方式
 *       .ajaxComplete(请求完成，无论成功失败?), .ajaxError(请求发生错误),.ajaxSend(发送前), .ajaxSuccess(请求成功时)
 *     .bind("事件1 [事件2]" [,data] , fun) -- 通用地绑定指定事件, data是可选参数，作为 event.data 属性值传递给事件对象的额外数据对象
-*        TODO:jQuery1.3.1中新增了 .live(type,fn) 方法动态绑定事件(类似livequery，但功能没那么强?),取消绑定时使用 die(type,fn)
 *     .blur -- 失去焦点时
 *     .change() -- 设置change事件，如 $("select").change(function(){ xxx; })
+*        TODO: <select> 用 .live("change", function(){...});
 *     .click -- 设置click事件
 *     .error -- 
 *     .focus -- 获得焦点时
 *     .keyXxx -- 键盘事件: .keydown/.keypress/.keyup
+*     .live(type, fn) -- jQuery1.3.1中新增了 .live(type,fn) 方法动态绑定事件(类似livequery，但功能没那么强?),取消绑定时使用 die(type,fn)
+*        TODO: 和.bind的区别?
 *     .load -- 等价于 onload
 *     .mouseXxxx -- 鼠标事件: .mousedown/.mouseup/.mousemove(内部移动时)
 *                             .mouseover/.mouseout -- 不论鼠标指针穿过被选元素或其子元素，都会触发 mouseover 事件

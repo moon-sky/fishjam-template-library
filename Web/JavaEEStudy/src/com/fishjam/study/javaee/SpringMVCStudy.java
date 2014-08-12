@@ -48,7 +48,8 @@ import org.springframework.web.servlet.ModelAndView;
  *    @CookieValue -- 
  *    @PostConstruct -- 
  *    @PreDestroy -- 
- *    @Repository -- 将数据访问层 (DAO层)的类标识为 Spring Bean，然后就不再需要在XML中通过<bean/>显示配置。
+ *    @Qualifier("beanName") -- 优先配置指定名字的Bean，也可以用来创建自己的限定器注解
+ *    @Repository -- 数据仓库，将数据访问层 (DAO层)的类标识为 Spring Bean，然后就不再需要在XML中通过<bean/>显示配置。
  *       可自动提供一些数据访问相关的功能。如 数据访问异常类型.
  *    @RequestHeader -- 从请求中获取值
  *    @RequestMapping("/login/login.do") -- 请求映射, 用在方法前
