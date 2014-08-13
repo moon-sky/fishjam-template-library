@@ -103,7 +103,6 @@ test("基础语法", function() {
     }
     equal(iNumber, 4, "switch 也可以判断字符串(区分大小写)");
 
-
     //注意：因为 Strict 模式下禁止使用with，因此此处不再测试 with
     //with 为一个或一组语句指定默认对象
     //with (navigator) {
@@ -385,8 +384,11 @@ test("图像image", function() {
 });
 
 test("Number", function() {
-    ok(Number.MAX_VALUE < Number.POSITIVE_INFINITY);    //最大值 < 正无穷大
-    ok(Number.NEGATIVE_INFINITY < Number.MIN_VALUE); //负无穷大 < 最小值
+	ok("99" > "100", "字符串比较会使用ASCII序进行比较，而非真正的数值比较");
+	ok((+"99") < (+"100"), "前面加'+'号，提示JavaScript里面是数值");
+	
+    ok(Number.MAX_VALUE < Number.POSITIVE_INFINITY, "最大值 < 正无穷大");
+    ok(Number.NEGATIVE_INFINITY < Number.MIN_VALUE, "负无穷大 < 最小值");
 });
 
 test("Date", function() {

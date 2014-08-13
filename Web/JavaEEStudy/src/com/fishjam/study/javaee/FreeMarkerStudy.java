@@ -104,21 +104,35 @@ package com.fishjam.study.javaee;
  *    2. Java开发人员 -- 扩展 freemarker.template.TemplateDirectiveModel 类
  *    
  * 内建函数 -- 语法:  变量?函数名 , 如 ${user?upper_case} -- 返回user变量对应字符串的大写形式。
- *    c -- 计算机格式(不会将数字转换为人易读取的格式) , 如 ${product.id?c} 
- *    cap_first -- 字符串的第一个字母变为大写形式
- *    date -- 
- *    datetime --
- *    html -- 字符串中所有的特殊HTML字符都需要用实体引用来代替(比如 < 替换为 &lt; )
- *    int -- 对数字取整
- *    lower_case -- 字符串的小写形式
- *    size -- 返回序列中元素的个数
- *    string -- user?string[0], 这种语法取出 user 字符串中的第一个字符。TODO:转换为字符串，也可以设置数字、时间的转换规则。
+ *   通用
+ *   Sequence(list 等)
+ *     first -- 返回序列中第一个值
+ *     last -- 返回序列中最后一个值
+ *     reverse -- 将的现有顺序反转，即倒序排序
+ *     size -- 返回序列中元素的个数
+ *     sort -- 将序列中的对象转化为字符串后顺序排序
+ *     sort_by(value) -- 按序列中对象的属性value进行排序
+ *   Hash
+ *     keys -- 返回hash里的所有key, 返回结果为sequence
+ *     values -- 返回hash里的所有value, 返回结果为sequence
+ *   字符串(String)
+ *     cap_first/uncap_first -- 字符串的第一个字母变为 大/小 写形式
+ *     capitalize -- 字符串中的所有的字母变为大写
+ *     date/datetime -- 将字符串转换为日期, 如 <#assign date1="2009-10-12 9:28:20"?datetime("yyyy-MM-dd HH:mm:ss")>
+ *     ends_with -- 判断某个字符串是否由某个子串结尾，返回布尔值
+ *     length -- 获取字符串的长度?
+ *     lower_case -- 字符串的小写形式
+ *     substring(start, end) -- 截取子字符串,等价于 myStr[start..end] ?
+ *     trim -- 去掉字符串首尾的空格
+ *     time -- 
+ *     upper_case -- 字符串的大写 形式
+ *
+ *     c -- 计算机格式(不会将数字转换为人易读取的格式) , 如 ${product.id?c} 
+ *     html -- 字符串中所有的特殊HTML字符都需要用实体引用来代替(比如 < 替换为 &lt; )
+ *     int -- 对数字取整
+ *     string -- user?string[0], 这种语法取出 user 字符串中的第一个字符。TODO:转换为字符串，也可以设置数字、时间的转换规则。
  *       ${ (1==2) ? string("yes", "no") } -- 会打印出 "no"
  *       string('yyyy-MM-dd') -- 对日期类型进行进行格式化
- *    substring(start, end) -- 截取子字符串
- *    time 
- *    trim -- 去掉字符串首尾的空格
- *    upper_case -- 字符串的大写 形式
  *    
  * 旧的内建函数(不推荐使用?)
  *     default(值) -- 提供缺省值 
