@@ -73,3 +73,13 @@ function checkParams(funName, args, logType) {
     }
     return argInfo;
 }
+
+
+//通用的设置继承关系的方法?   -- Object-Oriented JavaScript.pdf 中介绍(P195)
+function extend(Child, Parent) {
+    var F = function() { };
+    F.prototype = Parent.prototype;
+    Child.prototype = new F();
+    Child.prototype.constructor = Child;
+    Child.uber = Parent.prototype;
+}

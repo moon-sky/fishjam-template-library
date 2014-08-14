@@ -3,7 +3,7 @@
 
 //★JavaScript区分大小写★
 //Netscape中如果多次使用 for 循环向文档重复写 HTML 代码会导致浏览器卡死
-//字符串操作没有 StringBuffer 等类型?
+//字符串操作没有 StringBuffer 等类型? 通过数组的 join 方法来提高效率
 
 //属性 -- 有两种访问方式, obj.property 和 obj["property"]
 
@@ -23,7 +23,10 @@ module("JSLanguageTester", {
 //      2.另一种进行对象类型检测的方法是引用所有对象都有的名为 constructor 的属性
 test("变量", function() {
     var varNull;
-    equal(varNull, null, "变量未定义或定义之后未赋值，则值为\"null\"");
+    console.log("变量: varNull=%o(%s), undefined=%o(%s), null=%o(%s)", varNull, typeof (varNull), undefined, typeof(undefined), null, typeof(null));
+    equal(varNull, undefined, "变量未定义或定义之后未赋值，则值为\"undefined\"");
+    ok(typeof(varNull) === "undefined", "推荐判断变量是否定义的方法");
+
 
     //ok(0144 == 100, "八进制"); //Octal literals are not allowed in strict mode. 
     ok(100 == 100, "十进制");
@@ -45,13 +48,14 @@ test("变量", function() {
     equal(true, 1, "布尔值用于数字表达式时自动变为1和0");
     equal(false, 0);
 
-    var varInfinity = 1 / 0;
-    equal(varInfinity, Infinity, "Infinity");
+    var varInfinity = 1 / 0;    //js能处理的最大的数是：1.7976931348623157e+308
+    equal(varInfinity, Infinity, "Infinity");  
 
     //NaN -- Not a Number
     var varNaN = parseInt("abc");
     equal(varNaN.toString(), NaN.toString(), "NaN 字符串比较");
-    notEqual(varNaN, NaN, "NaN直接比较");  //注意：NaN 值非常特殊，因为它“不是数字”，所以任何数跟它都不相等，甚至 NaN 本身也不等于 NaN
+    ok(varNaN != NaN, "NaN直接比较");  
+    ok(NaN != NaN, "NaN直接比较"); //注意：NaN 值非常特殊，因为它"不是数字"，所以任何数跟它都不相等，甚至 NaN 本身也不等于 NaN
 
     var errResult = 123 * "test";  //数字 乘以 字符串 是无法正确转换的
     equal(errResult.toString(), NaN.toString(), "无法正确计算出结果时返回 NaN");
@@ -152,6 +156,17 @@ test("字符串String", function() {
 
     strItem += " some info";
     ok(strItemRef != strItem, "修改字符串会创建新的变量");
+    ok(strItemRef !== strItem, "修改字符串会创建新的变量");
+
+    var strObj = new String("hello");
+    console.log("String test: before %o(%s)", strObj, typeof(strObj));
+
+    var oldStrObj = strObj;
+    strObj += " world";
+    console.log("String test: after %o(%s) => %o(%s)", oldStrObj, typeof(oldStrObj), strObj, typeof(strObj));
+    
+    ok(typeof(oldStrObj) == "object", "new String 出来的是 object");
+    ok(typeof(strObj) == "string", "进行字符串操作后会转变称string");
 
     //equal(String.big(strItem), "", "");
 
@@ -212,9 +227,9 @@ test("运算符", function() {
     //逻辑运算符: &&, ||, !
     equal(!true, false, "逻辑非");
 
-    //比较运算符: ==, ===, !=, <, <=, >, >=
-    equal(100 == "100", true, "数字和字符串比较(==) -- 相等"); //JavaScript1.2以后才会这样(先转换成公共类型后比较)
-    equal(100 === "100", false, "数字和字符串比较(===) -- 不相等");
+    //比较运算符: ==, ===, !=, !==,  <, <=, >, >=
+    equal(100 == "100", true, "== 和 != 在比较之前会先进行类型转换，然后比较转换之后的值是否相等"); //JavaScript1.2以后才会这样(先转换成公共类型后比较)
+    equal(100 === "100", false, "=== 和 !== 会比较值和类型，只有值和类型均相等的时候才会返回true");
 
     //字符串运算符: + 
 
@@ -252,6 +267,7 @@ test("数组Array", function() {
     //  myArray[0] = "abc";
     //  myArray[1] = 123;
 
+   
     var strArrayJoin = myArray.join(" "); //join方法把数组中的各个元素用<分隔符>串起来形成一个字符串，不影响数组内容
     equal(strArrayJoin, "abc 123");
 
@@ -460,7 +476,8 @@ test("TODO: 全局函数", function() {
 
     equal("123".toString(), "123", "toString把对象转换成字符串");
     equal("123".toString(16), "123", "0x7B -- TODO(为什么不行？):toString(N)可以转换成特定进制");
-
+    
+    
 });
 
 test("自定义函数", function() {
@@ -470,7 +487,7 @@ test("自定义函数", function() {
 
     function SomeFun() { //此处最好写上参数列表 -- 方便函数使用者知道调用方式
         checkParams("SomeFun", arguments);
-
+        
         equal(arguments.length, 4, "函数中的 arguments 数组参数");
         //equal(SomeFun.arguments.length, 4, "函数名前缀.arguments"); //Strict模式下不能访问 'caller', 'callee', and 'arguments 等参数
         //SomeFun.caller;
@@ -484,8 +501,12 @@ test("自定义函数", function() {
         //函数内部声明变量时，前面没有加 "var"， 则会是全局变量
         //tmpGlobalVariable = 100;  //如果启用这句，且 Qunit 中选中"Check for Globals", 则会显示这是全局变量("Introduced global variable")
     }
-    SomeFun(100, "abc", new Date(), new String("abcde"));
+    var funReturn = SomeFun(100, "abc", new Date(), new String("abcde"));
 
+    console.log("typeof(SomeFun) = %s, funReturn=%o(%s)", typeof(SomeFun), funReturn, typeof(funReturn));
+    ok(typeof(SomeFun) === "function", "函数对象");
+    //ok(typeof(funReturn) === "undefined", "");
+    ok(funReturn === undefined, "JavaScript的函数一定有返回值，如果没有显式返回，则返回undefined");
 
     //一个接受任意数量参数并将其转换为数组的自定义函数
     function makeArray() {
@@ -504,21 +525,19 @@ test("自定义函数", function() {
         return function(toAdd) { return num + toAdd; }
     }
 
-    //自动执行的匿名函数
+    //自动执行的匿名函数 -- 自调用函数(self-invoking functions)
     (function() {
-        //这个函数只在 IE 里面自动执行
-        var msg = "自动执行的匿名函数，这个函数可以使用原来必须写成全局的变量，但似乎只在IE里面自动执行";
-        window.onunload = function() {
+        var msg = "自动执行的匿名函数，这个函数可以使用原来必须写成全局的变量(特指 window.onunload = xxx 部分?)";
+        //window.onunload = function() {
             //绑定函数到全局对象，并使用“隐藏”的msg变量
-            alert(msg);
-        };
+        console.log(msg);
+        //};
     })();
 
     //TODO:具体的参数是什么?
     equal(arguments.length, 1, "TODO:函数内部可以用 arguments 数组属性来获得外部程序调用函数时指定的参数信息");
     //这样可以在函数中获取任意多个参数 -- 不过对开发来说，可读性降低，只在调试时使用?
     //注意：1.arguments参数不能修改; 2.如果对形参没有提供实参，也能编译过，但 typedef 参数名 == "undefined" 
-
 
     equal(makeArray("a", 1, 10.2).length, 3, "使用 arguments 参数的函数");
 
@@ -545,7 +564,9 @@ test("具有变参的函数", function() {
     callParamObj["value1"] = "testValue1";
     callParamObj["value2"] = "testValue2";
     equal(someVariableFun(callParamObj), "testVariableFun", "生成指定的变量设置属性来调用变参函数");
-
+    
+    
+    //调用方式2:
     var checkResult = someVariableFun( {
         "name":"testVariableFun",
         value1 : "testValue1",
@@ -554,6 +575,14 @@ test("具有变参的函数", function() {
     });
     equal(checkResult, "testVariableFun", "使用匿名对象的方式来调用变参函数");
 
+    //调用方式2等价于：
+    var anotherCallParamObj = {
+        name:"testVariableFun",
+        value1:"testValue1",
+        value2: "testValue2",
+        optionValue : "this is option Value",
+    };
+    equal(someVariableFun(anotherCallParamObj), "testVariableFun", "生成变量再调用");
 });
 
 //指定事件处理程序的方法
@@ -589,6 +618,7 @@ function someFun() {
 
 var g_myGlobalVariable = "some value";  //此处加不加var都一样是全局变量
 test("作用域", function() {
+    //JavaScript的变量的作用域不是块（block scope）而是函数(function scope)
     equal(window.g_myGlobalVariable, "some value", "全局作用域的变量都是window对象的属性");
 
     someFun();   //必须先调用一次该函数，才能使用其内部生成的全局变量。TODO：如果多次调用会如何?

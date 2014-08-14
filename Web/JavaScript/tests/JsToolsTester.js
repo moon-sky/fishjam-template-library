@@ -22,3 +22,10 @@ module("ToolsTester", {
 test("JavaScript相关的工具", function() {
     equal(1, 1, "TODO:工具");
 });
+
+
+test("JUnit测试", function() {
+    var objNull;
+    equal(objNull, null, "jUnit的 equal 采用 == 进行判断");
+    ok(objNull !== null, "证明 objNull !== null");
+});

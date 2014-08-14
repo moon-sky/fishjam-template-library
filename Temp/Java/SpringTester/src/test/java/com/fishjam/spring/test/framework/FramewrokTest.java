@@ -3,8 +3,6 @@ package com.fishjam.spring.test.framework;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import javax.inject.Inject;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +12,12 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import com.fishjam.springtester.domain.Student;
 import com.fishjam.springtester.tools.MyLog;
 import com.fishjam.utility.web.spring.ApplicationContextDumper;
 
-import junit.framework.TestCase;
-
-//SPRING in action(第三版中文版).pdf -- P100
+//SPRING in action(第三版中文版).pdf -- P110
 /***********************************************************************************************************************************************
  * Spring开发中的最佳实践
  *   1.设置 <beans> 的 default-autowire="byName" 启用 name=>bean.id 的自动装配;
@@ -66,7 +61,7 @@ import junit.framework.TestCase;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:DemoBeans.xml"})
-public class FramewrokTest extends AbstractJUnit4SpringContextTests {
+public class FrameworkTest extends AbstractJUnit4SpringContextTests {
 
 	
 	
@@ -76,7 +71,7 @@ public class FramewrokTest extends AbstractJUnit4SpringContextTests {
 	@Autowired
 	private MyLog	mylog;
 	
-	/**********************************************************************************************************
+	/*******************************************************************************************************************************************
 	 * Spring通过依赖注入模式，将依赖关系从编码中脱离出来，从而大大降低了组件之间的耦合，实现了组件真正意义上的即插即用。这也是Spring最具价值的特性之一。
 	 * 依赖注入(DI)
 	 *   依赖注入的几种实现类型：
@@ -105,7 +100,8 @@ public class FramewrokTest extends AbstractJUnit4SpringContextTests {
 	 *           1).Spring自带的@Autowired注解 -- 用于setter方法等处，Spring会自动尝试byType的自动匹配,可通过 required=false 设置为可选
 	 *           2).Java 提供的@Inject注解(JSR-330)，用于统一各种依赖注入框架的编程模型，其依赖关系必须存在，
 	 *              可注入一个Provider接口来实现Bean引用的延迟注入以及注入Bean的多个实例等功能；通过 @Named 注解来标识可选择的Bean
-	 *           3).JSR-250的@Resource注解,bean的ID默认为无限定类名，也可以指定
+	 *           3).JSR-250 -- Spring 基于Java的配置
+	 *             @Resource注解, bean的ID默认为无限定类名，也可以指定
 	 *             @Component, @Controller, @Repository, @Service  -- 详情参见SpringMVCStudy.java
 	 *             <context:include-filter | exclude-filter> 中的 type + expression 协作定义组件扫描策略,可选type和expression:
 	 *             annotation -- 扫描使用指定注解所标注的类，expression属性指定要扫描的注解
@@ -113,7 +109,8 @@ public class FramewrokTest extends AbstractJUnit4SpringContextTests {
 	 *             aspectj -- 扫描与expression属性所指定的AspectJ表达式所匹配的那些类
 	 *             custom -- 使用自定义的 org.springframework.core.type.TypeFilter实现类
 	 *             regex -- 扫描类的名称与expression属性所指定的正则表达式所匹配的那些类
-	**********************************************************************************************************/
+	 *             @Configuration -- 定义配置类，等价于XML中的<beans>配置，但仍然需要先在XML中通过 <context:component-scan>启用
+	*********************************************************************************************************************************************/
 	
 	
 

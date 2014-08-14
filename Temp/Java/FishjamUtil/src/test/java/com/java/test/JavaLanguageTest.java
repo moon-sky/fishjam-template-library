@@ -114,6 +114,21 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 
 public class JavaLanguageTest {
 
+	@Test
+	public void testArray(){
+		int total = 0;
+		int[] dynamicArray = new int[5];
+		for(int i = 0; i < dynamicArray.length; i++){		//1~5
+			dynamicArray[i] = i + 1;
+			total +=dynamicArray[i]; 
+		}
+		assertEquals(total, 15);
+		
+		int  staticArray[] = { 1, 2, 3, 4, 5 };
+		assertEquals(staticArray.length, 5);
+		assertArrayEquals(dynamicArray, staticArray);
+	}
+	
 	private String myContacStrings(String... ss)
 	{
 		StringBuilder sBuilder = new StringBuilder("[");
