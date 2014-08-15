@@ -139,6 +139,12 @@
             <artifactId>aspectjweaver</artifactId>
             <version>1.7.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>aspectj</groupId>
+            <artifactId>aspectjlib</artifactId>
+            <version>1.5.3</version>
+        </dependency>
         
         <!-- end spring 核心依赖包 -->
 

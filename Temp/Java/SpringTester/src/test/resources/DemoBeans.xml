@@ -42,8 +42,8 @@
         init-method="callForInitMethod" destroy-method="callForDestroyMethod">
     </bean>
     
-    <!-- 通过工厂方法创建单实例的mylog -->
-    <bean id="mylog" class="com.fishjam.springtester.tools.MyLog" factory-method="getInstance" />
+    <!-- 通过工厂方法创建单实例的mylog，通过 aop:aspect ref="mylog" 的方式，以 AOP 的方式进行自动调用 -->
+    <bean id="mylog" class="com.fishjam.springtester.tools.MyLog"  factory-method="getInstance" />
     <!--bean id="mylog" class="com.fishjam.springtester.tools.MyLog"></bean-->
     
     <util:map id="myConfig">
@@ -58,9 +58,17 @@
     
     <aop:config>
         <aop:aspect ref="mylog">
-            <aop:pointcut id="doAction" expression="execution(* *.DoAction(..))" />     <!-- 定义切入点，表示在执行 DoAction 前后等时机进行统治 -->
+            <aop:pointcut id="doAction" expression="execution(* *.DoAction(..))"  />     <!-- 定义切入点，表示在执行 DoAction 前后等时机进行统治 -->
             <aop:before pointcut-ref="doAction" method="logBeforeAction" />           <!-- 声明前置通知 -->
             <aop:after pointcut-ref="doAction" method="logAfterAction" />                 <!-- 声明后置通知 -->
+            <aop:around pointcut-ref="doAction" method="logElapseTime" />
+        </aop:aspect>
+        
+        <aop:aspect>
+            <!-- 通过切面引入新功能  -->
+            <aop:declare-parents types-matching="com.fishjam.springtester.domain.Student+" 
+                implement-interface="com.fishjam.springtester.tools.PerformanceCheck" 
+                default-impl="com.fishjam.springtester.tools.DefaultPerformanceCheck"/>
         </aop:aspect>
     </aop:config>
     

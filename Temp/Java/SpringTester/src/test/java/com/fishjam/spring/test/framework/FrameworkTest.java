@@ -17,11 +17,12 @@ import com.fishjam.springtester.domain.Student;
 import com.fishjam.springtester.tools.MyLog;
 import com.fishjam.utility.web.spring.ApplicationContextDumper;
 
-//SPRING in action(第三版中文版).pdf -- P110
+//SPRING in action(第三版中文版).pdf -- P139
 /***********************************************************************************************************************************************
  * Spring开发中的最佳实践
  *   1.设置 <beans> 的 default-autowire="byName" 启用 name=>bean.id 的自动装配;
  *   2.? 使用Java提供的 @Inject 注解进行注入(Java提供的通用依赖注入模型)
+ *   3.通过接口进行交互，如 服务对象 -> (DAO接口 <== DAO实现)
 ***********************************************************************************************************************************************/
 
 
@@ -126,7 +127,7 @@ public class FrameworkTest extends AbstractJUnit4SpringContextTests {
 		//ApplicationContext applicationContext = new ClassPathXmlApplicationContext("DemoBeans.xml");
 		System.out.println(ApplicationContextDumper.ApplicationContextToString(applicationContext, ApplicationContextDumper.DEFAULT_DIVIDE));
 		
-		assertEquals(applicationContext.getBeanDefinitionCount(), 8);
+		assertEquals(applicationContext.getBeanDefinitionCount(), 20);
 		
 		Student studentBean = (Student)applicationContext.getBean("student");
 
@@ -134,28 +135,5 @@ public class FrameworkTest extends AbstractJUnit4SpringContextTests {
 		assertEquals(studentBean.getId(), 999);
 		assertEquals(studentBean.getName(), "fishjam");
 		assertEquals(studentBean.getSex(), Student.SEX_MALE);
-	}
-
-	/**********************************************************************************************************
-	 * AOP(切面编程) -- 确保POJO保持简单
-	 *   通常用于将系统服务(如日志、安全控制、事务管理等)模块化，并从业务对象中分离出来，以声明的方式应用进去
-	 *
-	 * 示例：
-	 *    在 Student.DoAction 的前后自动调用 MyLog 对应的方法记录日志，在Console中会看到 System.out 打印出的日志
-	 *    TODO:  怎么给 logBeforeAction 传递参数（如 方法名)
-	 *    
-	 * 使用方法（参见 DemoBeans.xml）-- 
-	 *    1.将对应的服务类 (MyLog) 声明为一个Bean;
-	 *    2.在 <aop:aspect> 中通过 ref 引用该Bean;
-	 *    3.通过 <aop:pointcut> 定义切入点和表达式(expression)属性来选择所应用的通知，其语法为 AspectJ 的切点表达式语言
-	 *    4.声明需要调用的切面方法和时机 <aop:before>, <aop:after>, <aop:异常> 等
-	 *    
-	 * 常见错误
-	 *    1.NoClassDefFoundError: org/aspectj/weaver/reflect/ReflectionWorld$ReflectionWorld
-	 *      使用了AOP 和 AspectJ 语法，但没有加入依赖包 <org.aspectj><aspectjweaver>
-	 ***********************************************************************************************************/
-	@Test
-	public void testAOP(){
-		student.DoAction();
 	}
 }

@@ -1,4 +1,4 @@
-package com.fishjam.spring.test.framework;
+package com.fishjam.spring.test.framework.db;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,7 +9,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 /**************************************************************************************************************************************
  * http://www.cnblogs.com/ycxyyzw/archive/2012/10/13/2722567.html
  * 
- * Ibatis(2010改名为MyBatis，并在GoogleCode托管) -- 基于SQL映射支持Java(SQL Maps)和·NET(DAO)的持久层框架， 类似 Hibernate(全自动映射)，
+ * iBatis(2010改名为MyBatis，并在GoogleCode托管) -- 基于SQL映射支持Java(SQL Maps)和·NET(DAO)的持久层框架， 类似 Hibernate(全自动映射)，
  *   但程序员需要编写具体的SQL，然后通过映射配置文件，将SQL所需的参数，以及返回的结果字段映射到指定 POJO。
  *   ibatis 以 SQL开发的工作量和数据库移植性上的让步，为系统设计提供了更大的自由空间。
  * 
