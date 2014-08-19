@@ -17,7 +17,7 @@ import com.fishjam.springtester.domain.Student;
 import com.fishjam.springtester.tools.MyLog;
 import com.fishjam.utility.web.spring.ApplicationContextDumper;
 
-//SPRING in action(第三版中文版).pdf -- P139
+//SPRING in action(第三版中文版).pdf -- P154
 /***********************************************************************************************************************************************
  * Spring开发中的最佳实践
  *   1.设置 <beans> 的 default-autowire="byName" 启用 name=>bean.id 的自动装配;

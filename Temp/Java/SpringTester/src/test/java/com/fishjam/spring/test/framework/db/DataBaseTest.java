@@ -1,16 +1,25 @@
 package com.fishjam.spring.test.framework.db;
 
+import static org.junit.Assert.assertEquals;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
-import junit.framework.TestCase;
+import javax.sql.DataSource;
 
 import org.junit.Test;
-import org.springframework.dao.DataAccessException;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fishjam.springtester.domain.Student;
 
@@ -23,9 +32,17 @@ import com.fishjam.springtester.domain.Student;
  *   DriverManager.getConnection("").createStatement().executeQuery("");//记住close
  *   
  * 配置数据源(Spring 提供了多种配置数据源Bean的方式)
- *   1.通过JDBC驱动程序定义
+ *   1.通过JDBC驱动定义 -- 最简单的配置方式，Spring提供了两种数据源对象供选择:
+ *     a.DriverManagerDataSource -- 在每个连接请求时都会返回一个新建的连接，没有进行池化管理，性能消耗大
+ *     b.SingleConnectionDataSource -- 每个连接请求时会返回同一个连接, 不适用于多线程的应用程序
  *   2.通过JNDI查找 -- 数据源可以在应用程序之外进行管理，更改时不用重新编译，支持热切换
- *   3.连接池(实际运行环境中建议使用)
+ *      <jee:jndi-lookup> 检索JNDI中的数据源对象并应用于Bean中，其中 jndi-name 指定JNDI中资源的名称。如只设置了 jndi-name 属性，
+ *      会根据指定的名称查找数据源，但如果应用程序运行在Java应用程序服务器中，需要设置 resource-ref 为true,这样会自动添加 java:comp/env/ 前缀
+ *   3.连接池(实际运行环境中建议使用)， Spring没有提供数据源连接池的实现，但有其他的多种实现:
+ *     a.dbcp -- Apache的 Jakarta Commons Database Connection Pooling， 缺点：没有自动回收空闲连接的功能
+ *       BasicDataSource -- 最常用，易于在Spring中配置，类似于Spring自带的DriverManagerDataSource 
+ *     b.c3p0 -- 开源的JDBC连接池，优点：有自动回收空闲连接的功能
+ *     
  *   
  *    
 ***********************************************************************************************************************************************/
@@ -71,28 +88,53 @@ import com.fishjam.springtester.domain.Student;
  *    
  * RowMapper -- 把数据映射为一个域对象
  * 
- * 数据访问模版，封装JDBC的样板式代码，只需将其配置为Spring中的Bean并织入到应用程序的DAO中
+ * 数据访问模版，封装JDBC的样板式代码(资源管理和异常处理)，只需将其配置为Spring中的Bean并织入到应用程序的DAO中
  * 将数据访问过程中固定的和可变的部分明确划分为两种不同的类：
  *   模版 -- 处理 事务控制、资源管理、异常处理 等
  *   回调 -- 应用程序相关的数据访问，如 创建语句、绑定参数、整理结果集 等
- *   针对不同的持久化平台，Spring提供了多个可选的模版 和 DAO支持类(应用程序的DAO可以继承自这些支持类)：
+ *   针对不同的持久化平台，Spring提供了多个可选的模版 和 DAO支持类(应用程序的DAO可以继承自这些支持类,然后可使用 getXxxTemplate 等方法)：
  *      HibernateTemplate -- Hibernate，可以分为 2、3 等多个版本
- *      JdbcTemplate | JdbcDaoSupport -- 直接使用JDBC
+ *      JdbcTemplate | JdbcDaoSupport -- 直接使用JDBC，支持最简单的JDBC数据库访问功能及简单的索引参数查询
  *      JdoTemplate | JdoDaoSupport -- Java数据对象(Java Data Object) 实现
  *      JpaTemplate | JpaDaoSupport-- Java持久化API的实体管理器
- *      NamedParameterJdbcTemplate | NamedParameterJdbcDaoSupport -- 支持命名参数的JDBC连接
- *      SimpleJdbcTemplate | SimpleJdbcDaoSupport-- 通过Java5简化后的JDBC连接
+ *      (已合并到SimpleXxx)NamedParameterJdbcTemplate | NamedParameterJdbcDaoSupport -- 支持命名参数(而不是使用简单的索引参数)的JDBC连接
+ *      SimpleJdbcTemplate | SimpleJdbcDaoSupport-- 利用Java5的一些特性(如自动装箱、泛型及可变参数列表等)的JDBC连接
  *      SqlMapClientTemplate | SqlMapClientDaoSupport -- iBATIS SqlMap 客户端
  * 
- *      
 ***********************************************************************************************************************************************/
 
-//@RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration(locations={"classpath:DemoBeans.xml"})
-public class DataBaseTest extends TestCase { //AbstractJUnit4SpringContextTests {
+/***********************************************************************************************************************************************
+ * ORM框架的特性
+ *   延迟加载(Lazy loading) -- 只获取需要的数据，避免大的开销
+ *   预先抓取(Eager fetching) -- 与延迟加载相对，可以使用一个查询获取完整的关联对象，节省多次查询的成本
+ *   级联(Cascading) -- 更改表中数据时，自动更改关联表的数据
+ *   缓存
+ *   分布式缓存 -- hibernate 支持
+ *   
+ * Spring声明式事务的集成支持
+ * 
+ * 
+ * 集成持久化框架(Hibernate) 
+ *   1.使用方式已被淘汰? -- Spring提供了 HibernateTemplate 模版类来抽象其持久化功能 -- 管理Session、
+ *   2.最佳实践 -- 使用Hibernate提供的 上下文Session(ContextualSession)
+ *     a.配置 SessionFactory(负责Session的打开、关闭和管理)
+ *       指定持久化域对象是通过XML文件(LocalSessionFactoryBean)还是通过注解(AnnotationSessionFactoryBean)来进行配置
+ *       <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean" > [dataSource], [mappingResources],[hibernateProperties]
+ *       <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"> [dataSource],[packagesToScan],[hibernateProperties]
+ *       hibernateProperties -- 配置Hibernate如何进行操作的细节，即使用什么数据库的 Dialect 
+ *       packagesToScan -- 告诉Spring扫描包的路径列表，其类使用 @Entrity 或 @MappedSuperclass 注解
+ *    b. ? 直接使用 Hibernate 的 org.hibernate.SessionFactory ?
+***********************************************************************************************************************************************/
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={"classpath:DemoDatabase.xml"})
+public class DataBaseTest extends AbstractJUnit4SpringContextTests {
 	
 	
+	@Autowired
+	private DataSource dataSource;
 	
+	@Autowired
+	private JdbcTemplate	jdbcTemplate;
 	//@Autowired
 	//private Student student;
 	
@@ -102,42 +144,91 @@ public class DataBaseTest extends TestCase { //AbstractJUnit4SpringContextTests 
 		//Student stu = getStudentById(999);
 		//assertNotNull(stu);
 		assertEquals(1, 1);
+		try {
+			CreateStudentTable();
+			Student originalStudent = new Student();
+			originalStudent.setName("fishjam");
+			originalStudent.setSex(Student.SEX_MALE);
+			originalStudent.setBirthday( new Timestamp(1979, 3, 30, 12, 0, 0, 0));
+			int nNewId = InsertStudentIntoDB(originalStudent);
+			originalStudent.setName( originalStudent.getName() + "[Change]");
+			UpdateStudentInfo(originalStudent);
+			
+			Student queryStudent = QueryStudentById(nNewId);
+			assertEquals(originalStudent.getName() + "[Change]", queryStudent.getName());
+			assertEquals(originalStudent.getSex(), queryStudent.getSex());
+		} finally{
+			DropStudentTable();
+		}
 	}
 	
-	//*
-	JdbcTemplate jdbcTemplate;
-	private Student getStudentById(int id) {
-		return jdbcTemplate.queryForObject(
-				"select id, firstname, lastname from student where id=?",
-				new RowMapper<Student>() {
-					public Student mapRow(ResultSet rs, int rowNum)
-							throws SQLException {
-						Student student = new Student(); // 将结果映射为对象
-						student.setId(rs.getInt("id"));
-						return student;
-					}
-				}, id); // 指定查询参数
+	private void CreateStudentTable(){
+		jdbcTemplate.update("create table student (id int not null, "
+				+ "name varchar, "
+				+ "sex varchar)"
+				);
 	}
-	//*/
+	private int InsertStudentIntoDB(Student student){
+		//使用参数索引的方式
+		jdbcTemplate.update("insert into student(id, name, sex) values( ?, ?, ?)",
+				null,
+				student.getName(), 
+				student.getSex()
+				);
+		//student.setId(queryForIdentity());
+		return 0;
+	}
 	
+	private int UpdateStudentInfo(Student student){
+		//使用命名参数的方式 更新DB
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("id", null);
+		params.put("name", student.getName());
+		params.put("sex", student.getSex());
+		jdbcTemplate.update("update student set name = :name, sex = :sex where id=:id ", params); 
+		return student.getId();
+	}
+	
+	private Student QueryStudentById(int nId) {
+			return jdbcTemplate.queryForObject(
+					"select id, name, sex from student where id=?",	//参数1: 从数据库中查找数据的SQL
+					new ParameterizedRowMapper<Student>(){		//参数2: RowMapper 实例，用来从ResultSet中提取值并构建域对象
+						public Student mapRow(ResultSet rs, int rowNum)	//TODO: 如果是查询结果有多条?
+								throws SQLException {
+							Student student = new Student();	// 将结果映射为对象
+							student.setId(rs.getInt(1));
+							student.setName(rs.getString("name"));
+							student.setSex(rs.getString(3));
+							return student;
+						}
+					}, nId																	//参数3: 可变参数列表，列出了要绑定到查询上的索引参数值
+				);
+	}
+	private void DropStudentTable() {
+		jdbcTemplate.update("drop table if exists student");
+	}
+
 	@Test
 	public void testJDBC() {
-		/*
+		//*
 		int id = 0;
-		DataSource dataSource = null;  //getDataSource();
+		//DataSource dataSource = null;  //getDataSource();
 
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		ResultSet rSet = null;
 		try {
 			conn = dataSource.getConnection();
+			//conn.prepareStatement("create table employee ( id int NOT NULL")
 			stmt = conn.prepareStatement("select id, firstname, lastname from employee where id=?");
 			stmt.setLong(1, id);
-			rSet = stmt.executeQuery();
+			rSet = stmt.executeQuery();	 //stmt.execute();
 			while (rSet.next()) {
 				//employee = new Employee();
 				//employee.setId(rSet.getLong("id"));
+				//listResult.add(employee);
 			}
+			//return listResult;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally{
@@ -155,7 +246,8 @@ public class DataBaseTest extends TestCase { //AbstractJUnit4SpringContextTests 
 				e.printStackTrace();
 			}
 		}
+		//return null;
 		//fail("Not yet implemented");
-		*/
+		//*/
 	}
 }

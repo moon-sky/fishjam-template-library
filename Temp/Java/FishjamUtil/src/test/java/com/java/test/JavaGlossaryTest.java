@@ -1,4 +1,4 @@
-package com.fishjam.study;
+package com.java.test;
 
 
 /************************************************************************************************************
@@ -10,7 +10,7 @@ package com.fishjam.study;
  * CRUD -- Create + Retrieve + Update + Delete
  * CVS(Concurrent Versions System) -- 版本控制工具CVS，已被SVN替代
  * DAO(Data Access Object) -- 数据访问对象
- * DBCP -- 数据源？
+ * DBCP(Database Connection Pooling) -- 数据库连接池，是Apache的 Jakarta Commons 项目  
  * DI(Dependency Injection) -- 依赖注入，对象的依赖关系将由负责协调系统中各个对象的第三方组件在创建对象时设定，
  *    对象无需自行创建或管理它们的依赖关系 -- 依赖关系将被自动注入(通过 XML配置、注解、)到需要它们的对象中去。现实例子就是USB接口。
  *    依赖注入让相互协作的软件组件保持松散耦合。
@@ -28,7 +28,7 @@ package com.fishjam.study;
  *   J2EE(Java 2 Platform Enterprise Edition) -- 企业Web应用开发
  *   J2SE(Java 2 Platform Stand Edition) -- 普通应用程序
  *   J2ME(Java 2 Platform Micro Edition) -- 手机等消费电子产品
- * JDO(Java Data Object) -- Java数据对象，是Java EE标准中出JPA外，另一个支持管理持久化数据的规范。 
+ * JDO(Java Data Object) -- Java数据对象，是Java EE标准中除JPA外，另一个支持管理持久化数据的规范。 
  * JINI(Java Intelligent Network Infrastructure) -- 能轻松动态地在代表本机系统的网络中加入或移除硬件设备
  * JIT(Just-In-Time) -- JIT编译器，在运行时按需编译，可以减少编译时间和运行时的程序大小，但初次运行时较慢?
  * JMS -- (发送和接收异步消息的?)
@@ -61,7 +61,7 @@ package com.fishjam.study;
  * VO(Value Object) -- 值对象, 可以理解为了便于使用而在PO的基础上进行又一次加工而产生的对象, 通常用于业务层之间的数据传递，可以不和数据库的表对应 
  * WAP(Wireless Application Protocol) -- 无线应用协议
 *************************************************************************************************************/
-public class JavaGlossary {
+public class JavaGlossaryTest {
 	public void testGlossary(){
 		
 	}
