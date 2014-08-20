@@ -15,11 +15,14 @@ import javax.sql.DataSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.TransactionDefinition;
 
 import com.fishjam.springtester.domain.Student;
 
@@ -85,6 +88,9 @@ import com.fishjam.springtester.domain.Student;
  *    ConcurrencyFailureException
  *    InvalidDataAccessResourceUsageException
  *    TypeMismatchDataAccessException
+ * 为了给不使用模版的DAO添加异常转换功能，需要在Spring应用上下文中添加一个 <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" /> 的Bean
+ *    是一个Bean的后置处理程序，会在所有拥有 @Repository 注解的类上添加一个通知器(advisor)，捕获任何平台相关的异常并以Spring
+ *    的非检查型数据访问异常的形式重新抛出
  *    
  * RowMapper -- 把数据映射为一个域对象
  * 
@@ -111,8 +117,6 @@ import com.fishjam.springtester.domain.Student;
  *   缓存
  *   分布式缓存 -- hibernate 支持
  *   
- * Spring声明式事务的集成支持
- * 
  * 
  * 集成持久化框架(Hibernate) 
  *   1.使用方式已被淘汰? -- Spring提供了 HibernateTemplate 模版类来抽象其持久化功能 -- 管理Session、
@@ -123,8 +127,43 @@ import com.fishjam.springtester.domain.Student;
  *       <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean"> [dataSource],[packagesToScan],[hibernateProperties]
  *       hibernateProperties -- 配置Hibernate如何进行操作的细节，即使用什么数据库的 Dialect 
  *       packagesToScan -- 告诉Spring扫描包的路径列表，其类使用 @Entrity 或 @MappedSuperclass 注解
- *    b. ? 直接使用 Hibernate 的 org.hibernate.SessionFactory ?
+ *    b. ? 直接使用 Hibernate 的 org.hibernate.SessionFactory, 可通过其 getCurrentSession 方法获取Session
 ***********************************************************************************************************************************************/
+/***********************************************************************************************************************************************
+ * 集成JPA(配置文件为 persistence.xml )
+ *    JPA定义了两种类型的实体管理器( EntityManager ), JpaTemplate 隐藏了两者的处理细节：
+ *    a.应用程序管理类型(Application-managed, createEntityManagerFactory) -- 想实体管理器工厂请求实体管理器时，工厂创建一个，程序要负责对齐进行控制，
+ *      适合于不运行在Java EE容器中的独立应用程序。对应的 Spring工程Bean为: LocalEntityManagerFactoryBean 
+ *    b.容器管理类型(Container-managed, createContainerEntityManagerFactory) -- 实体管理器由 JavaEE 容器创建和管理，
+ *      通过注入或JNDI来获取，适合于 JavaEE 容器. 对应的 Spring工程Bean为: LocalContainerEntityManagerFactoryBean
+ *      
+ * Spring提供了多个JPA厂商适配器,在配置中通过 jpaVendorAdapter 属性指定：
+ *   EclipseLinkJpaVendorAdapter
+ *   HibernateJpaVendorAdapter
+ *   OpenJpaVendorAdapter
+ *   TopLinkJpaVendorAdapter
+ * 
+***********************************************************************************************************************************************/
+
+/***********************************************************************************************************************************************
+* Spring对事务的支持( tx命名空间 )
+*   1.编码式 -- 通过回调机制实现， TransactionTemplate.execute( new TransactionCallback<Void>(){ ... }); 
+*   2.声明式 -- 通过AOP框架实现，@Transactional，只能在方法级别声明事务边界，可以配置事务属性：
+*     a.传播行为(propagation behavior) -- 定义了客户端与被调用方法之间的事务边界, TransactionDefinition 中常量值
+*     b.隔离级别
+*     c.回滚规则
+*     d.事务超时
+*     e.是否只读
+*   
+* Spring 不直接管理事务，而是提供多种事务管理器，将对应的职责委托给JTA等持久化机制所提供的平台相关的事务实现 
+*   DataSourceTransactionManager[dataSource] -- 用于Spring对JDBC抽象的支持，也可用于使用 iBATIS 进行持久化的场景，内部通过 Connection 来管理事务(commit + rollback)
+*   HibernateTransactionManager[sessionFactory] -- 用于 Hibernate3 进行持久化
+*   xxx.orm.jpa.JpaTransactionManager[entityManagerFactory] -- 用于JPA持久化
+*   transaction.jta.JtaTransactionManger -- 需要分布式(XA)事务或没有其他的事务管理器满足需求 
+*   
+***********************************************************************************************************************************************/
+
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:DemoDatabase.xml"})
 public class DataBaseTest extends AbstractJUnit4SpringContextTests {

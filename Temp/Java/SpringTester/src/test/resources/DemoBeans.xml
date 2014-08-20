@@ -36,6 +36,13 @@
         </property>
     </bean>
     
+    <!-- 定义JPA的信息 
+    <bean id="emf" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" >
+        <property name="dataSource" ref="dataSource" />
+        <property name="jpaVendorAdapter" ref="jpaVendorAdapter" />  //指定JPA厂商适配器
+    </bean>
+     -->
+    
     <!-- 通过scope指定作用域prototype，表示每次请求时都产生一个新的实例 -->
     <bean id="beanLifeCycleDemo" class="com.fishjam.springtester.domain.BeanLifeCycleDemo" 
         scope="prototype" 

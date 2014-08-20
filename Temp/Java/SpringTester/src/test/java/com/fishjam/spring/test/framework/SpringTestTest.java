@@ -27,6 +27,8 @@ import com.fishjam.utility.web.spring.ApplicationContextDumper;
  *      通过注解声明的Bean如何测试?
  * 
  *
+ * 单元测试 ? 
+ *    JUnitActionBase
  **********************************************************************************************************/
 
 @RunWith(SpringJUnit4ClassRunner.class)

@@ -1,10 +1,13 @@
 package com.java.test;
 
 
-/************************************************************************************************************
+/**********************************************************************************************************************************************
+ * ACID(Atomic, Consistent, Isolated, Durable) -- 事务的4个特性，即原子性、一致性、隔离性(锁定表或行)、持久性
  * AOP(Aspect-Oriented Programming) -- 面向切面编程(详情参见 AopStudy.java )
  * Bean -- 一般指容器管理对象，在Spring中指Spring IoC容器管理对象
+ * BMP(Bean-Managed Persistence) -- Bean管理持久化
  * BO(Business Object) -- 业务对象，可以理解为
+ * CMP(Container-Managed Persistence) -- 容器管理持久化
  * Convention Over Configuration -- 约定优于配置，
  * CORBA(Common Object Request Broker Architecture) -- 一种和语言无关的分布式"对象交换标准框架"，
  * CRUD -- Create + Retrieve + Update + Delete
@@ -36,12 +39,13 @@ package com.java.test;
  * JNDI(Java Naming Directory Interface) -- Java命名和目录接口，为某个Java对象起一个名字，然后可通过该名字来访问。
  *    访问方式(JSP页面脚本)： Context ctx = new InitialContext(); DataSource ds = (DataSource)ctx.lookup("java:comp/env" + "自定义名字全路径");
  * JNI(Java Native Interface) -- Java原生接口，用以和C/C++程序接轨，获得高性能
- * JPA(Java Persistence API) -- 是sun公司官方提供的Java持久化的解决方案
+ * JPA(Java Persistence API) -- 是sun公司官方提供的Java持久化的解决方案，基于POJO。推荐在基于Spring的应用程序中使用JPA实现持久化
  * JPA(Java Portlet API) -- ???
  * JSF() -
  * JSP(Java Server Page) -- 最终会编译成Servlet才能运行
  * JSR(Java Spec. Request) -- Java 规格需求，比如 JSR-250， JSR330 等
  * JSTL(JSP Standard Tag Library) -- JSP标准标签库， Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
+ * JTA(Java Transaction API) -- Java事务API
  * OGNL() -- 
  * ORM(Object Relation Mapping) -- 对象-关系映射，完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表。
  *   最早的ORM是 Entity EJB，但非常麻烦。目前流行的ORM框架有Hibernate、iBatis、TopLink等
@@ -60,7 +64,7 @@ package com.java.test;
  * TLD(Tag Library Definition) -- 标签库定义，用于JSP中，文件扩展名也是 tld，一个标签库中可包含多个标签
  * VO(Value Object) -- 值对象, 可以理解为了便于使用而在PO的基础上进行又一次加工而产生的对象, 通常用于业务层之间的数据传递，可以不和数据库的表对应 
  * WAP(Wireless Application Protocol) -- 无线应用协议
-*************************************************************************************************************/
+***********************************************************************************************************************************************/
 public class JavaGlossaryTest {
 	public void testGlossary(){
 		
