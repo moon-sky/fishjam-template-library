@@ -19,13 +19,13 @@ import com.fishjam.springtester.domain.Student;
 import com.fishjam.springtester.tools.MyLog;
 import com.fishjam.utility.web.spring.ApplicationContextDumper;
 
-//SPRING in action(第三版中文版).pdf -- P154
+//SPRING in action(第三版中文版).pdf -- P195
 //Spring 的下载地址 -- http://www.springsource.org/download 
 	
 /***********************************************************************************************************************************************
  * Spring开发中的最佳实践
  *   1.设置 <beans> 的 default-autowire="byName" 启用 name=>bean.id 的自动装配;
- *   2.? 使用Java提供的 @Inject 注解进行注入(Java提供的通用依赖注入模型)
+ *   2.? 使用Java提供的 @Inject 注解进行注入(Java提供的通用依赖注入模型， 可用于变量、构造函数等地方)
  *   3.通过接口进行交互，如 服务对象 -> (DAO接口 <== DAO实现)
 ***********************************************************************************************************************************************/
 
@@ -108,7 +108,7 @@ import com.fishjam.utility.web.spring.ApplicationContextDumper;
  *    @Repository -- 数据仓库，将数据访问层 (DAO层)的类标识为 Spring Bean，然后就不再需要在XML中通过<bean/>显示配置。
  *       可自动提供一些数据访问相关的功能。如 数据访问异常类型(需要添加 PersistenceExceptionTranslationPostProcessor 类型的Bean).
  *    @RequestHeader -- 从请求中获取值
- *    @RequestMapping("/login/login.do") -- 请求映射, 用在方法前
+ *    @RequestMapping( {"/", "/home", "/login/login.do"} ) -- 请求映射, 用在方法前, 其参数是一个数组，当自由一个URL时，可简化
  *    @RequestParam(参数) 类型 变量名 -- 在 @RequestMapping 中的参数
  *    @Resource -- 用于命名资源依赖注入，( j2ee提供的 ) 默认按名称装配，对比：@Autowired默认按类型.
  *       例：@Resource(name="beanName")，若未提供name，则先取字段的名称作为bean名称寻找对象，若找不到，则使用类型装配方式 

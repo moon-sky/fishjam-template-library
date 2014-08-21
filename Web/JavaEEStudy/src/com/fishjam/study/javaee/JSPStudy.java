@@ -22,6 +22,13 @@ package com.fishjam.study.javaee;
 /**************************************************************************************************************************************
  * JSP -- 从开发角度而言，只允许使用TAG的JSP页面(不要写JS)，已经在很大程度上保证了页面表现逻辑与业务逻辑的分离。
  * 
+ * JSTL(简单示例)
+ *   <@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+ *   <@ taglib prefix="s" uri="http://www.springframework.org/tags" %>
+ *   <@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+ *   <c:forEach var="student" items="${students}"> ... </c:forEach>
+ *   <s:url value="xxxx" var="xxx_url">
+ *   <fmt:formatDate value="xxx" pattern="hh:mma MMM d, yyyy" />
 **************************************************************************************************************************************/
 
 public class JSPStudy {

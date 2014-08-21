@@ -46,6 +46,7 @@ package com.java.test;
  * JSR(Java Spec. Request) -- Java 规格需求，比如 JSR-250， JSR330 等
  * JSTL(JSP Standard Tag Library) -- JSP标准标签库， Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
  * JTA(Java Transaction API) -- Java事务API
+ * MVC(Model-View-Controller) -- 模型-视图-控制器, 
  * OGNL() -- 
  * ORM(Object Relation Mapping) -- 对象-关系映射，完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表。
  *   最早的ORM是 Entity EJB，但非常麻烦。目前流行的ORM框架有Hibernate、iBatis、TopLink等

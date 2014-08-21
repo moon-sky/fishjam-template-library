@@ -2,11 +2,14 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:aop="http://www.springframework.org/schema/aop"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/aop
-        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"
-       >
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd 
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+        ">
        
        <!-- 使用 JNDI 数据源
        <jee:jndi-lookup id="dataSource" jndi-name="/jdbc/DemoDS" resource-ref = "true" />
@@ -43,6 +46,21 @@
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
 	   <property name="dataSource" ref="dataSource"></property>
 	</bean>
+	
+	<!-- 事务的 tx 命名空间，advice 声明事务性策略, 通过 method 指定特定方法的事务参数, 名字以 save 开头的方法表明需要事务，
+	    其他方法支持但并不要求必须在事务中运行 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+	   <tx:attributes>
+	       <tx:method name="save*" propagation="REQUIRED" />
+	       <tx:method name="*" propagation="SUPPORTS"  read-only="true"  />
+	   </tx:attributes>
+	</tx:advice>
+	
+	
+	<!-- 定义事务性切面(通知器 advisor) 来声明哪些Bean应该使用事务通知  -->
+	<aop:config>
+	   <aop:advisor pointcut="execution(* *..StudentService.*(..))" advice-ref="txAdvice"/>
+	</aop:config>
 </beans>
 
 <!-- 

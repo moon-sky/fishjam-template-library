@@ -23,6 +23,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fishjam.springtester.domain.Student;
 
@@ -146,21 +148,24 @@ import com.fishjam.springtester.domain.Student;
 ***********************************************************************************************************************************************/
 
 /***********************************************************************************************************************************************
-* Spring对事务的支持( tx命名空间 )
+* Spring对事务的支持(tx 配置命名空间)
 *   1.编码式 -- 通过回调机制实现， TransactionTemplate.execute( new TransactionCallback<Void>(){ ... }); 
 *   2.声明式 -- 通过AOP框架实现，@Transactional，只能在方法级别声明事务边界，可以配置事务属性：
-*     a.传播行为(propagation behavior) -- 定义了客户端与被调用方法之间的事务边界, TransactionDefinition 中常量值
-*     b.隔离级别
-*     c.回滚规则
-*     d.事务超时
-*     e.是否只读
-*   
+*     a.传播行为(propagation) -- 定义了客户端与被调用方法之间的事务边界, TransactionDefinition 中常量值(PROPAGATION_REQUIRES_NEW 等)
+*     b.隔离级别(isolation) -- 定义了事务可能受其他并发事务影响的程度，锁定数据库中的记录或表，但可能导致性能问题，可选 ISOLATION_SERIALIZABLE(最安全但最慢) 等
+*     c.是否只读(read-only) -- 如事务只进行读操作，数据库可进行特殊优化，需要是启动新事务的传播行为才有意义 
+*     d.事务超时(timeout) -- 设置超时值，超过时间后自动回滚
+*     e.回滚规则(rollback-for / no-rollback-for) -- 定义了哪些异常会导致事务回滚而哪些不会，默认：运行期异常时回滚，检查型异常不回滚
+*  
 * Spring 不直接管理事务，而是提供多种事务管理器，将对应的职责委托给JTA等持久化机制所提供的平台相关的事务实现 
 *   DataSourceTransactionManager[dataSource] -- 用于Spring对JDBC抽象的支持，也可用于使用 iBATIS 进行持久化的场景，内部通过 Connection 来管理事务(commit + rollback)
 *   HibernateTransactionManager[sessionFactory] -- 用于 Hibernate3 进行持久化
 *   xxx.orm.jpa.JpaTransactionManager[entityManagerFactory] -- 用于JPA持久化
 *   transaction.jta.JtaTransactionManger -- 需要分布式(XA)事务或没有其他的事务管理器满足需求 
-*   
+*
+* 定义事务
+*   1.XML中定义(需要 aop 支持) -- 参见 DemoDatabase.xml 中的 <tx:advice> + <aop:config>
+*   2.注解中定义 -- a.在 XML 中通过 <tx:annotation-driven/> 允许使用注解事务; b.使用 @Transactional 注解Bean或方法
 ***********************************************************************************************************************************************/
 
 

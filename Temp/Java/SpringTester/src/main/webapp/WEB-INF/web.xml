@@ -3,8 +3,9 @@
 
     xmlns="http://java.sun.com/xml/ns/javaee" 
     xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
-        id="WebApp_ID" version="2.5"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+        http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    id="WebApp_ID" version="2.5"
      
         >
 	<display-name>springtester</display-name>
@@ -50,9 +51,10 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-       <!-- 查找SpringTester-servlet.xml -->
+       <!-- 查找 SpringTester-servlet.xml， 映射到 /, 表示作为默认的servlet并且处理所有的请求, 在 SpringTester-servlet.xml 中通过 mvc:resources 处理静态资源的请求  -->
         <servlet-name>SpringTester</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+
     
 </web-app>
