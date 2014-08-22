@@ -32,3 +32,12 @@
     color:#333;
 	display:none;
 }
+
+.clear
+{
+    /* 清除之前的效果 */
+    clear: both;
+    height: 1px;
+    margin-top: -1px;
+    overflow: hidden;
+}
