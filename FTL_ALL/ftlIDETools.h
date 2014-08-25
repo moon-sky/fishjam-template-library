@@ -519,14 +519,22 @@ namespace FTL
 
 	/******************************************************************************************************************************
 	* GNU 环境(Windows 下的),
-	*   MinGW(http://sourceforge.net/projects/mingw/) -- 可以在没有第三方动态链接库的情况下使用GCC产生Win32程序
+	*   MinGW(Minimalist GNU For Windows) + MSYS(类似linux的命令行环境) , 一套精简的Windows平台编译器，相比Cygwin体积小很多。
+	*     提供了完整的开源编译工具集，可以在没有第三方动态链接库的情况下使用GCC产生Win32程序
 	*     C/C++ 编译环境：binutils/mingw-runtime-dev/mingw-runtime/w32api/gcc-core/gcc-c++/libstdc++ 等
 	*     安装：
+	*       0.通过 mingw-get-setup.exe 选择需要安装的组件，在线安装
 	*       1.设置 MINGW_HOME 环境变量指向其根目录，将 %MINGW_HOME%\bin 加入Path
 	*       2.将 %MINGW_HOME%\bin\mingw32-make.exe 复制为 make.exe 供eclipse使用
 	*     启动及配置(msys\1.0\msys.bat)：
-	*       运行后通过 mount 可加载本机上的所有磁盘, 可直接访问（但在 / 下看不到)，也可以修改 MinGW\msys\1.0\etc\fstab 文件指定目录
-	*      
+	*       1.运行后通过 mount 可加载本机上的所有磁盘, 可直接访问（但在 / 下看不到)，也可以修改 MinGW\msys\1.0\etc\fstab 文件指定目录
+	*       2.可以通过 ln -s 的方式设置 mingw 为 msys 下的mingw 目录(TODO: 实测发现会拷贝目录，而且会递归？)
+	*       3.从GTK+ for Windows下载 pkg-config.exe 和 GLib DLL 到 MinGW/bin
+	*         http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/pkg-config_0.23-3_win32.zip
+	*         http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28/glib_2.28.1-1_win32.zip
+	*         TODO:1.有些dll在 VMWare 中有; 2.可以 copy libintl-8.dll initl.dll
+	*       4.介绍了一些MingW的配置和常见软件的编译方式: http://www.gaia-gis.it/gaia-sins/mingw_how_to.html
+	*
 	*   yasm -- 不管下载的是哪个版本，必须改名为 yasm.exe,放在 bin 下
 	******************************************************************************************************************************/
 
