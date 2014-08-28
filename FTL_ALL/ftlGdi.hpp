@@ -1595,7 +1595,7 @@ namespace FTL
     {
 		UNREFERENCED_PARAMETER(hWnd);
         FTLASSERT( NULL == m_hCanvasDC );
-        FTLASSERT( 32 == bpp && TEXT("Now just support 32 bit"));
+        //FTLASSERT( 32 == bpp && TEXT("Now just support 32 bit"));
 
         BOOL bRet = FALSE;
         m_height = FTL_ABS(heigth);

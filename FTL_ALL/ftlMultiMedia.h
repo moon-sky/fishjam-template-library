@@ -35,9 +35,10 @@
 * BMP(Bitmap) -- 位图(光栅图象),BMP 文件通常不压缩，因此不太适合通过 Internet 传输。
 * Exif(Exchangeable Image File) -- 可交换图像文件，适用于数码相机拍摄的照片的文件格式。
 *   含有根据 JPEG 规格压缩的图像 和 拍摄日期、快门速度、曝光时间、相机型号 等照片和相机的信息。
-* Gif(Graphics Interchange Format) -- 用于在 Web 页中显示图像的通用格式,适用于在颜色之间有清晰边界的图片。
+* Gif(Graphics Interchange Format) -- 版权所有，使用时需要授权(已于Xx年过期?)。用于在 Web 页中显示图像的通用格式,适用于在颜色之间有清晰边界的图片。
 *   采用无损压缩。可指定一种颜色为透明色(图像将具有显示它的任何 Web 页的背景色)。
-*   在单个文件中存储一系列 GIF 图像可以形成一个动画 GIF，但每像素最多能存储8位，只能显示256种颜色。
+*   在单个文件中存储一系列 GIF 图像可以形成一个动画 GIF，基于颜色列表，图像数据是对应于颜色列表的索引值，每像素最多能存储8位(256色)。
+*   内部分成许多存储块，用来存储多幅图像或是决定图像表现行为的控制块。通过 LZW 压缩算法压缩图像数据。
 * ICON() -- 图标是大小固定的小方型图像，且每一个图标资源中可含为多种显示设备和用途准备的具有不同大小和位数的多个图像。
 *   图标由一个图片和一个用于产生透明区的掩膜组成，标准的图标为32×32像素的256色图像，扩展图标为 256×256像素的32位色。
 * JPEG(Joint Photographic Experts Group) -- 联合图像专家组，将人眼难以察觉的(高频?)信息在压缩中丢弃，
@@ -210,10 +211,11 @@
 *********************************************************************************************/
 
 /*********************************************************************************************
-* giflib -- 查看、生成gif的开源库
-*   Gif有多个版本(87,89 等，参见 gif89.txt)；可存放一帧或多帧图像数据，并可以存放图像控制信息(动画)，其图像基于调色板，最多只能有255种颜色。
-*   格式: 文件头 + [图像数据块] + [扩展数据块] + 文件尾
-* 
+* giflib -- 查看、生成gif的开源库(gif版本为 87a)
+*   Gif有多个版本(87a,89a 等，参见 gif89.txt)；可存放一帧或多帧图像数据，并可以存放图像控制信息(动画)，其图像基于调色板，最多只能有255种颜色。
+*   格式:文件头(Header) + 数据部分( 控制标识符[Control Block] + [图像数据块Data Sub-blocks] + [扩展数据块 -- 89a] ) + 文件尾(Trailer, 0x3B[";"]的字符)
+*         每个数据块大小为[0..255],第一个字节为该数据块的大小,计算大小时不包括该字节(空数据块有一个字节，即标志大小的 0x00),
+*   
 *   windows下编译: Cygwin + autogen.sh -- 有少部分错误，TODO: MinGW无法编译.
 *   util下的demo程序(一个.c文件生成一个可执行文件)，所有的程序都可通过 -h 查看帮助
 *     gifasm.c -- 合并多个gif文件为一个动画文件，例: gifasm.exe -A 100 src01.gif src02.gif > result.gif
@@ -226,38 +228,61 @@
 *   类型和结构:
 *     ColorMapSize[1,8]: 色深，如 6位色深表示有 2^6=64 种颜色
 *     ColorResolution - 8 ?
-*     ColorMapObject(实际上就是调色板数据?) -- 分为全局(GifFileType.SColorMap)和局部调色板(GifFileType.Image.ColorMap)，其中有 ColorCount 个 GifColorType(RGB三元色)类型的Colors内存块
-*     GifImageDesc -- 图像数据块，其中的 Interlace 表示是否是隔行扫描(交织处理?)，如果是的话，需要 4 x 每隔4行 的方式进行处理 ?
+*     ColorMapObject(颜色映射对象，实际上就是调色板?) -- 分为全局(GifFileType.SColorMap)和局部(GifFileType.Image.ColorMap)两种类型，
+*       其中有 ColorCount 个 GifColorType(RGB三元色)类型的Colors内存块
+*     GifColorType -- 代表颜色列表的一个条目，由三个字节组成，按R、G、B的顺序排列
+*     GifImageDesc -- 图像数据块，其中的 Interlace 表示是否使用交织方式排列，如果是的话，需要 4 x 每隔4行 的方式进行处理 ?
+*                     其中的SortFlag(似乎giflib未z支持?)表示紧跟着的颜色列表是否分类排列
 *     GifFileType -- gif文件类型的句柄指针，其中有大小、ColorMap 等信息，★每次解析或输出时的图像数据块都在其 Image 变量内★
 *     GifPixelType -- 每个像素的类型，为 unsigned char(256色)
 *     GifRecordType--数据块的类型，解码时通过 DGifGetRecordType 获取。其类型分为:
 *       SCREEN_DESC_RECORD_TYPE
-*       IMAGE_DESC_RECORD_TYPE(以','开始)--图像数据块,可通过 DGifGetImageDesc 和 EGifPutImageDesc 操作，每行的数据需要通过 DGifGetLine/EGifPutLine 操作(注意 Image.Interlace 的影响)
-*       EXTENSION_RECORD_TYPE(以'!'开始)--扩展块，实现一些辅助功能，会影响其后的图像数据解码。比较重要的是: 图像控制扩展块(GRAPHICS_EXT_FUNC_CODE)
-*       TERMINATE_RECORD_TYPE(以';'开始)-- 表明到了结束块的位置，可跳出 do{ DGifGetRecordType }while(RecordType != TERMINATE_RECORD_TYPE) 的循环
+*       IMAGE_DESC_RECORD_TYPE(以','[0x2C]开始)--图像数据块,可通过 DGifGetImageDesc 和 EGifPutImageDesc 操作，每行的数据需要通过 DGifGetLine/EGifPutLine 操作(注意 Image.Interlace 的影响)
+*       EXTENSION_RECORD_TYPE (以'!'[0x21]开始)--扩展块，实现一些辅助功能，会影响其后的图像数据解码。比较重要的是: 图像控制扩展块(GRAPHICS_EXT_FUNC_CODE)
+*       TERMINATE_RECORD_TYPE (固定的';'[0x3B])--表明到了结束块的位置，可跳出 do{ DGifGetRecordType }while(RecordType != TERMINATE_RECORD_TYPE) 的循环
 *   函数，主要分为两类: Decode(函数名以D开始) + Encode(函数名以E开始)
 *     DGifSlurp
 *     EGifCloseFile -- 关闭打开的文件句柄并释放资源
 *     EGifOpenFileHandle -- 根据文件句柄打开输出文件，如 (1) 表示stdout
 *     EGifOpenFileName -- 根据文件名打开输出文件
 *     EGifOpen -- 通过回调的方式打开输出文件，可以适配各式各样的数据输出方式比如网络 等
-*	  EGifPutScreenDesc -- 设置输出屏幕(文件)的大小(SWidth * SHeight * ColorResolution / 8)、背景色索引(SBackGroundColor)、GlobalColorMap 等参数信息
+*	  EGifPutScreenDesc -- 设置逻辑屏幕标识符的信息，包括大小(SWidth * SHeight), 色深(ColorResolution[1..8])、背景色索引(SBackGroundColor)、
+*       GlobalColorMap、像素宽高比(Pixel Aspect Radio -- TODO:未直接设置?) 等参数信息
 *     EGifPutImageDesc -- 设置一张Image图片数据的参数信息
 *     EGifPutLine -- 设置当前行的像素值?
 *     EGifPutPixel -- 设置当前位置的像素值?
 *     EGifSpew --
 *     EGifPutCode|EGifPutCodeNext -- 
 *   辅助函数:
-*     QuantizeBuffer -- 将RGB量化为调色板颜色，参考 QuantizeRGBBuffer 的实现方式
+*     QuantizeBuffer|GifQuantizeBuffer -- 将RGB量化为调色板颜色，参考 QuantizeRGBBuffer 的实现方式
+*     
+*   基于颜色列表的图像数据(Table-Based Image Data),采用LZW算法压缩
+*     LZW编码长度(LZW Minimum Code Size) -- 也就是要压缩的数据的位数，其值一般等于图像的色深,需要根据该值初始化编译表
+*       图像数据在压缩前有两种排列格式：
+*         连续的--从左到右、从上到下的顺序排列图像的光栅数据 
+*         交织的--创建四个通道(pass)保存数据，每个通道提取不同行的数据：
+*           Pass1提取从第0行开始每隔8行的数据 -- [0, 8, 16, 24, ...]
+*           Pass2提取从第4行开始每隔8行的数据 -- [4, 12, 20, 28,...]
+*           Pass3提取从第2行开始每隔4行的数据 -- [2, 6, 10, 14, ...]
+*           Pass4提取从第1行开始每隔2行的数据 -- [1, 3, 5, 7, 9,...]
+*     图像数据(Image Data) -- 由一或多个DataSubBlock 组成, 每个SubBlock为：一字节长度+最多255字节的Data
 *
-*   GIF89 扩展块(extension function), 可通过 EGifPutExtensionFirst => EGifPutExtensionNext => EGifPutExtensionLast 或 EGifPutExtension 两套函数进行处理
-*       扩展快数据的第一个字节都是长度，其他信息参见 gif89.txt
-*     PLAINTEXT_EXT_FUNC_CODE(0x1--1) --
-*     GRAPHICS_EXT_FUNC_CODE(0xf9-249) --图像控制扩展块。unsigned char Extension[4] = { 长度, 标志字节, delay低位, delay高位, 透明色 }
-*       延时(delay time), 
-*       透明色(transparent color) -- 当图像解码时，遇到同样的颜色值，表示为透明部分? 怎么半透明?
-*     COMMENT_EXT_FUNC_CODE(0xfe-254)--注释,通过 EGifPutComment 设置
-*     APPLICATION_EXT_FUNC_CODE(0xff-255)	
+*   GIF89 扩展块(extension function), 放在一个图像块(图像标识符)或文本扩展块的前面，用来控制跟在它后面的第一个图像(或文本)的渲染(Render)形式。
+*     可通过 EGifPutExtensionFirst => EGifPutExtensionNext => EGifPutExtensionLast 或 EGifPutExtension 两套函数进行处理
+*     PLAINTEXT_EXT_FUNC_CODE(0x1--1) --图形文本扩展,用来绘制一个简单的文本图像。由用来绘制的纯文本数据(7-bit ASCII字符)和控制绘制的参数等组成。
+*       在文本框(GridBox)控制的矩形范围内使用全局颜色表的颜色进行绘制。
+*       unsigned char plain[12] = {块大小, GridLeft(2byte), GridTop(2byte), GridWidth(2byte),GridHeight(2byte), CellWidth, CellHeight, ForegroundColorIndex, BackColorIndex};
+*     GRAPHICS_EXT_FUNC_CODE(0xF9-249) --图像控制扩展块。unsigned char Extension[4] = { 长度, 标志字节, delay低位, delay高位, 透明色 }
+*       标志字节-- 里面设置了 处置方法(Disposal Method)、用户输入标志(Use Input Flag)、透明色标志 等
+*       延时(delay time) -- 单位为 1/100 秒, 如果值不为1，表示暂停规定的时间后再继续往下处理数据流
+*       透明色索引(transparent color index) -- 当图像解码时，遇到同样的颜色值，表示为透明部分? 怎么半透明?
+*     COMMENT_EXT_FUNC_CODE(0xFE-254)--注释扩展，可以用来记录图形、版权、描述等任何的非图形和控制的纯文本数据(7-bit ASCII字符),
+*       注释扩展并不影响对图像数据流的处理，推荐放在数据流的开始或结尾。通过 EGifPutComment 设置
+*     APPLICATION_EXT_FUNC_CODE(0xFF-255)--应用程序扩展,由应用程序自己使用。应用程序可以在这里定义自己的标识、信息等
+*       unsigned char app[11] = {11, AppI(8byte), AuthCode(3byte) } + data
+*
+*   Bug更改:
+*     1.GifFilePrivateType 的初始化: memset(Private, '\0', sizeof(GifFilePrivateType));
 *********************************************************************************************/
 
 /*********************************************************************************************

@@ -373,6 +373,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlAlgorithm.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlBase.h"
 				>
 			</File>
