@@ -119,7 +119,7 @@ int GifQuantizeRGBBuffer(unsigned int Width, unsigned int Height,
 int
 GifQuantizeBuffer(unsigned int Width,
                unsigned int Height,
-               int *ColorMapSize,
+               unsigned int *ColorMapSize,
                GifByteType * RedInput,
                GifByteType * GreenInput,
                GifByteType * BlueInput,
@@ -127,7 +127,8 @@ GifQuantizeBuffer(unsigned int Width,
                GifColorType * OutputColorMap) {
 
     unsigned int Index = 0, NumOfEntries = 0;
-    int i = 0, j = 0, MaxRGBError[3] = {0};
+    unsigned int i = 0, j = 0;
+    int MaxRGBError[3] = {0};
     unsigned int NewColorMapSize = 0;
     long Red = 0, Green = 0, Blue = 0;
     NewColorMapType NewColorSubdiv[256] = {0};
@@ -212,9 +213,9 @@ GifQuantizeBuffer(unsigned int Width,
                 Blue += QuantizedColor->RGB[2];
                 QuantizedColor = QuantizedColor->Pnext;
             }
-            OutputColorMap[i].Red = (Red << (8 - BITS_PER_PRIM_COLOR)) / j;
-            OutputColorMap[i].Green = (Green << (8 - BITS_PER_PRIM_COLOR)) / j;
-            OutputColorMap[i].Blue = (Blue << (8 - BITS_PER_PRIM_COLOR)) / j;
+            OutputColorMap[i].Red = (GifByteType)((Red << (8 - BITS_PER_PRIM_COLOR)) / j);
+            OutputColorMap[i].Green = (GifByteType)((Green << (8 - BITS_PER_PRIM_COLOR)) / j);
+            OutputColorMap[i].Blue = (GifByteType)((Blue << (8 - BITS_PER_PRIM_COLOR)) / j);
         }
     }
 

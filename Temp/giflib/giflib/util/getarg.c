@@ -105,7 +105,7 @@ have the same length and format, i.e. sizeof(int *) == sizeof(char *).
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 #include <stdarg.h>
  
 #include "getarg.h"

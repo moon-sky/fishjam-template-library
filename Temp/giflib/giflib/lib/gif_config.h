@@ -6,6 +6,9 @@
     #define bool unsigned int
     #define true 1
     #define false 0
+    //typedef int bool;
+    //const bool true = 1;
+    //const bool false = 0;
 #endif
 
 #ifdef __cplusplus

@@ -169,17 +169,47 @@ HCURSOR CGifLibDemoDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+BOOL CGifLibDemoDlg::_OverlayMouseToScreen(HDC hdc, LPRECT lpRect)
+{
+    //ATLASSERT(m_rcCapture == *lpRect);
+
+    BOOL bRet = FALSE;
+    POINT point = {0};
+    API_VERIFY(::GetCursorPos(&point));
+    if (!PtInRect(lpRect, point))
+    {
+        //Mouse is not in rect, so donot draw it and return TRUE;
+        return TRUE;
+    }
+    CURSORINFO CursorInfo;
+    CursorInfo.cbSize = sizeof(CURSORINFO);
+
+    API_VERIFY(GetCursorInfo(&CursorInfo));
+    if (bRet)
+    {
+        API_VERIFY_EXCEPT1(::DrawIconEx(hdc, CursorInfo.ptScreenPos.x - lpRect->left, CursorInfo.ptScreenPos.y - lpRect->top , CursorInfo.hCursor,
+            32, 32, 0, NULL, DI_NORMAL), ERROR_INVALID_CURSOR_HANDLE);
+        if (!bRet && GetLastError() == ERROR_INVALID_CURSOR_HANDLE)
+        {
+            SetLastError(0);
+            bRet = TRUE;
+        }
+        ::ReleaseDC(NULL, hdc);
+    }
+    return bRet;
+}
+
 
 void CGifLibDemoDlg::OnBnClickedButton1()
 {
     BOOL bRet = FALSE;
     int nRet = 0;
     int nError = 0;
-    int nWidth = 100;
-    int nHeight = 100;
+    int nWidth = 1280;
+    int nHeight = 800;
     int nGifColorRes = 8;
     int NumLevels = 256;
-    int nDelay = 100;
+    int nDelay = 1;
 
     GifColorType ColorMap256[256] = {0};
     for (int i = 0; i < 255; i++)
@@ -191,9 +221,12 @@ void CGifLibDemoDlg::OnBnClickedButton1()
     //ColorMap256[1].Red = 255;
 
     FTL::CFCanvas canvas;
+    CRect rectCapture(0, 0, nWidth, nHeight);
     API_VERIFY(canvas.Create(m_hWnd, nWidth, -nHeight, 24));
     CWindowDC desktopDC(GetDesktopWindow());
     API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0, 0, SRCCOPY));
+    _OverlayMouseToScreen(canvas.GetCanvasDC(), &rectCapture);
+
 #if 0
     CDC dcMem;
     dcMem.Attach(canvas.GetCanvasDC());
@@ -203,8 +236,8 @@ void CGifLibDemoDlg::OnBnClickedButton1()
     dcMem.Detach();
 #endif 
 
-    CClientDC wndDC(this);
-    ::BitBlt(wndDC.GetSafeHdc(), 0, 0, nWidth, nHeight, canvas.GetCanvasDC(), 0, 0, SRCCOPY);
+    //CClientDC wndDC(this);
+    //::BitBlt(wndDC.GetSafeHdc(), 0, 0, nWidth, nHeight, canvas.GetCanvasDC(), 0, 0, SRCCOPY);
 
     int nSize = sizeof(GifPixelType) * nWidth * nHeight;
     GifByteType* pOutputBuffer = (GifByteType *) malloc(nSize);
@@ -230,16 +263,15 @@ void CGifLibDemoDlg::OnBnClickedButton1()
             ExtStr[1] = nDelay % 256;
             ExtStr[2] = nDelay / 256;
 
-            for (int index = 0; index < 1; index++)
+            for (int index = 0; index < 100; index++)
             {
 
                 /* Dump graphics control block. */
                 GIF_VERIFY(EGifPutExtension(pGifFile, GRAPHICS_EXT_FUNC_CODE, 4, ExtStr));
                 
-                ColorMapObject *pColorMap2 = GifMakeMapObject(NumLevels, ColorMap256);
-
-                GIF_VERIFY(EGifPutImageDesc(pGifFile, 0, 0, nWidth, nHeight, FALSE, pColorMap2));
-                GifFreeMapObject(pColorMap2);
+                //ColorMapObject *pColorMap2 = GifMakeMapObject(NumLevels, ColorMap256);
+                GIF_VERIFY(EGifPutImageDesc(pGifFile, 0, 0, nWidth, nHeight, FALSE, NULL));//pColorMap2));
+                //GifFreeMapObject(pColorMap2);
 
                 int nLength = nWidth * nHeight;
                 //GifByteType* pOutputBuffer = (GifByteType *) malloc(nLength * sizeof(GifByteType));
@@ -265,13 +297,18 @@ void CGifLibDemoDlg::OnBnClickedButton1()
                     GIF_VERIFY(EGifPutLine(pGifFile, Ptr, nWidth));
                     Ptr += nWidth;
                 }
-                
-                CDC dcMem;
-                dcMem.Attach(canvas.GetCanvasDC());
-                for(int i = 0; i < 100; i ++){
-                    dcMem.FillSolidRect(i, 0, i + 1, nHeight, RGB(i * 2, index * 50, 255 - index * 50));
-                }
-                dcMem.Detach();
+
+                Sleep(nDelay * 10);
+                //CDC dcMem;
+                //dcMem.Attach(canvas.GetCanvasDC());
+                //for(int i = 0; i < 100; i ++){
+                //    dcMem.FillSolidRect(i, 0, i + 1, nHeight, RGB(i * 2, index * 50, 255 - index * 50));
+                //}
+                //dcMem.Detach();
+
+                CWindowDC desktopDC(GetDesktopWindow());
+                API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0, 0, SRCCOPY));
+                _OverlayMouseToScreen(canvas.GetCanvasDC(), &rectCapture);
 
                 ZeroMemory(pOutputBuffer, nSize);
                 nRet = GifQuantizeRGBBuffer(nWidth, nHeight, 24, canvas.GetBuffer(), ColorMap256, pOutputBuffer);
@@ -292,4 +329,5 @@ void CGifLibDemoDlg::OnBnClickedButton1()
     //free(GlblGifBuffer);
     free(pOutputBuffer);
 
+    AfxMessageBox(TEXT("After Generate Gif"));
 }

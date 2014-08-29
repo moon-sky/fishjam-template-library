@@ -31,4 +31,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
     afx_msg void OnBnClickedButton1();
+    BOOL _OverlayMouseToScreen(HDC hdc, LPRECT lpRect);
 };

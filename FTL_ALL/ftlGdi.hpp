@@ -1606,7 +1606,7 @@ namespace FTL
         ZeroMemory(m_ReserveSpace, sizeof(m_ReserveSpace));
         m_bmpInfo.bmiHeader.biSize = sizeof(m_bmpInfo.bmiHeader); // sizeof(BITMAPINFO);
         m_bmpInfo.bmiHeader.biWidth = m_width;
-        m_bmpInfo.bmiHeader.biHeight = m_height;
+        m_bmpInfo.bmiHeader.biHeight = heigth;
         m_bmpInfo.bmiHeader.biPlanes = 1;
         m_bmpInfo.bmiHeader.biBitCount = (WORD)bpp;
         m_bmpInfo.bmiHeader.biCompression = BI_RGB;

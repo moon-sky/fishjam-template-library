@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "util", "giflib\util\util.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FTL_ALL", "F:\Fujie\FJCODE_GOOGLE\FTL_ALL\FTL_ALL.vcproj", "{F6E52FA5-531E-4A52-99F7-9465A309A3EB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "giftext", "giftext\giftext.vcproj", "{F3955296-1E55-480B-B38F-154FAE221850}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -30,6 +32,10 @@ Global
 		{A718EF72-D90D-49F8-8522-95FCE089F08C}.Release|Win32.ActiveCfg = Release|Win32
 		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Debug|Win32.ActiveCfg = Debug|Win32
 		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release|Win32.ActiveCfg = Release|Win32
+		{F3955296-1E55-480B-B38F-154FAE221850}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F3955296-1E55-480B-B38F-154FAE221850}.Debug|Win32.Build.0 = Debug|Win32
+		{F3955296-1E55-480B-B38F-154FAE221850}.Release|Win32.ActiveCfg = Release|Win32
+		{F3955296-1E55-480B-B38F-154FAE221850}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

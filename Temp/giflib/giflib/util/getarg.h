@@ -7,7 +7,8 @@ getarg.h - Support routines for the giflib utilities
 #ifndef _GETARG_H
 #define _GETARG_H
 
-#include <stdbool.h>
+//#include <stdbool.h>
+#include "../lib/gif_config.h"
 
 #define VERSION_COOKIE " Version %d.%d, "
 

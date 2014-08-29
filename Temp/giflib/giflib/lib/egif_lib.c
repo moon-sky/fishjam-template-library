@@ -880,7 +880,7 @@ EGifSetupCompress(GifFileType *GifFile)
 static int
 EGifCompressLine(GifFileType *GifFile,
                  GifPixelType *Line,
-                 const int LineLen)
+                 int LineLen)
 {
     int i = 0, CrntCode, NewCode;
     unsigned long NewKey;
@@ -968,7 +968,7 @@ EGifCompressLine(GifFileType *GifFile,
 ******************************************************************************/
 static int
 EGifCompressOutput(GifFileType *GifFile,
-                   const int Code)
+                   int Code)
 {
     GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
     int retval = GIF_OK;

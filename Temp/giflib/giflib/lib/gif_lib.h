@@ -159,7 +159,7 @@ int EGifPutImageDesc(GifFileType *GifFile,
 void EGifSetGifVersion(GifFileType *GifFile, const bool gif89);
 int EGifPutLine(GifFileType *GifFile, GifPixelType *GifLine,
                 int GifLineLen);
-int EGifPutPixel(GifFileType *GifFile, const GifPixelType GifPixel);
+int EGifPutPixel(GifFileType *GifFile, GifPixelType GifPixel);
 int EGifPutComment(GifFileType *GifFile, const char *GifComment);
 int EGifPutExtensionLeader(GifFileType *GifFile, const int GifExtCode);
 int EGifPutExtensionBlock(GifFileType *GifFile,
@@ -224,7 +224,7 @@ int GifQuantizeRGBBuffer(unsigned int Width, unsigned int Height,
                          GifColorType * ColorMap, GifByteType * GIFBuffer);
 
 int GifQuantizeBuffer(unsigned int Width, unsigned int Height,
-                   int *ColorMapSize, GifByteType * RedInput,
+                   unsigned int *ColorMapSize, GifByteType * RedInput,
                    GifByteType * GreenInput, GifByteType * BlueInput,
                    GifByteType * OutputBuffer,
                    GifColorType * OutputColorMap);

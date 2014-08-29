@@ -8,10 +8,11 @@
 
 
 #include <stdio.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 #include <stdarg.h>
 
-#include "gif_lib.h"
+#include "../lib/gif_config.h"
+#include "../lib/gif_lib.h"
 
 bool GifNoisyPrint = false;
 
