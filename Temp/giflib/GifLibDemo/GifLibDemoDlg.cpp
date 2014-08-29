@@ -6,7 +6,7 @@
 #include "GifLibDemo.h"
 #include "GifLibDemoDlg.h"
 
-#include "../../Lib/gif_lib.h"
+#include "../giflib/lib/gif_lib.h"
 #ifdef _DEBUG
 #  pragma comment(lib, "../Debug/giflib.lib")
 #else

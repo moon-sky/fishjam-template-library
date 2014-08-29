@@ -13,6 +13,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <memory.h>
+
 #include "gif_lib.h"
 #include "gif_lib_private.h"
 
@@ -60,7 +62,7 @@ int GifQuantizeRGBBuffer(unsigned int Width, unsigned int Height,
                          int ColorRes, unsigned char *RGBBuffer, 
                          GifColorType * ColorMap, GifByteType * GIFBuffer)
 {
-    int i;
+    unsigned int i;
     GifByteType *RedInput = NULL, *GreenInput = NULL, *BlueInput = NULL;
 
     /* Convert the RGB Buffer into 3 seperated buffers: */
