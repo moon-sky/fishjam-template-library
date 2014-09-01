@@ -1344,12 +1344,10 @@ namespace FTL
 		bi.biClrUsed         = 0;
 		bi.biClrImportant      = 0;
 
-		dwBmBitsSize = ((Bitmap.bmWidth *
-			wBitCount+31)/32)* 4
-			*Bitmap.bmHeight ;
+		dwBmBitsSize = ((Bitmap.bmWidth * wBitCount + 31 ) / 32 ) * 4 * Bitmap.bmHeight;
 		//为位图内容分配内存
-		hDib  = GlobalAlloc(GHND,dwBmBitsSize+
-			dwPaletteSize+sizeof(BITMAPINFOHEADER));
+
+		hDib  = GlobalAlloc(GHND, dwBmBitsSize + dwPaletteSize + sizeof(BITMAPINFOHEADER));
 		lpbi = (LPBITMAPINFOHEADER)GlobalLock(hDib);
 		*lpbi = bi;
 		// 处理调色板   
@@ -1361,9 +1359,7 @@ namespace FTL
 			RealizePalette(hDC);
 		}
 		// 获取该调色板下新的像素值
-		GetDIBits(hDC, hBmp, 0, (UINT) Bitmap.bmHeight,
-			(LPSTR)lpbi + sizeof(BITMAPINFOHEADER)
-			+dwPaletteSize,(LPBITMAPINFO)lpbi, DIB_RGB_COLORS);
+		GetDIBits(hDC, hBmp, 0, (UINT) Bitmap.bmHeight, (LPSTR)lpbi + sizeof(BITMAPINFOHEADER)+ dwPaletteSize, (LPBITMAPINFO)lpbi, DIB_RGB_COLORS);
 		//恢复调色板   
 		if (hOldPal)
 		{
@@ -1375,26 +1371,20 @@ namespace FTL
 		fh = CreateFile(pszFilePath, GENERIC_WRITE, 
 			0, NULL, CREATE_ALWAYS,
 			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-		if (fh == INVALID_HANDLE_VALUE)
+        if (fh == INVALID_HANDLE_VALUE){
 			return FALSE;
+        }
 		// 设置位图文件头
 		bmfHdr.bfType = 0x4D42;  // "BM"
-		dwDIBSize    = sizeof(BITMAPFILEHEADER) 
-			+ sizeof(BITMAPINFOHEADER)
-			+ dwPaletteSize + dwBmBitsSize;  
+		dwDIBSize    = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPaletteSize + dwBmBitsSize;  
 		bmfHdr.bfSize = dwDIBSize;
 		bmfHdr.bfReserved1 = 0;
 		bmfHdr.bfReserved2 = 0;
-		bmfHdr.bfOffBits = (DWORD)sizeof
-			(BITMAPFILEHEADER) 
-			+ (DWORD)sizeof(BITMAPINFOHEADER)
-			+ dwPaletteSize;
+		bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
 		// 写入位图文件头
-		API_VERIFY(WriteFile(fh, (LPSTR)&bmfHdr, sizeof
-			(BITMAPFILEHEADER), &dwWritten, NULL));
+		API_VERIFY(WriteFile(fh, (LPSTR)&bmfHdr, sizeof(BITMAPFILEHEADER), &dwWritten, NULL));
 		// 写入位图文件其余内容
-		API_VERIFY(WriteFile(fh, (LPSTR)lpbi, dwDIBSize, 
-			&dwWritten, NULL));
+		API_VERIFY(WriteFile(fh, (LPSTR)lpbi, dwDIBSize, &dwWritten, NULL));
 		//清除   
 		GlobalUnlock(hDib);
 		GlobalFree(hDib);
@@ -1458,6 +1448,65 @@ namespace FTL
 
 		return bRet;
 	}
+
+    int CFGdiUtil::ComapreBitmapData(int nWidth, int nHeight, int bpp, void* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize)
+    {
+        FTLASSERT(bpp >= 8);
+        if(bpp < 8)
+        {
+            FTLTRACE(TEXT("ComapreBitmapData need bpp >= 8 \n"));
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return -1;
+        }
+
+        int nRowBytes = (nWidth * bpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
+
+        int nNeedResultSize = nRowBytes * nHeight; // /8
+        if (nNeedResultSize > nResultSize)
+        {
+            FTLTRACE(TEXT("ComapreBitmapData resultSize need %d, bigger than provide %d\n"), nNeedResultSize, nResultSize);
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return -1;
+        }
+
+
+        int nDiffCount = 0;
+        int nPixOffset = (bpp / 8);
+        byte  bDiffer = 0;
+
+        for (int h = 0; h < nHeight; h++)
+        {
+            byte* pBuf1 = (pBmp1 + h * nRowBytes);
+            byte* pBuf2 = (pBmp2 + h * nRowBytes);
+
+            for (int w = 0; w < nWidth; w++)
+            {
+                bDiffer = (memcmp(pBuf1, pBuf2, nPixOffset) != 0);
+                //switch (nPixOffset)
+                //{
+                //case 1: //8色
+                //    bDiffer = (*pBuf1 != *pBuf2);
+                //    break;
+                //case 2: //16色
+                //    bDiffer = ((*(unsigned short*)(pBuf1)) != (*(unsigned short*)(pBuf2)));
+                //    break;
+                //case 3: //24位真彩色
+                //    break;
+                //case 4: //32位真彩色
+                //    bDiffer = ((*(unsigned int*)(pBuf1)) != (*(unsigned int*)(pBuf2)));
+                //    break;
+                //}
+
+                if (bDiffer)
+                {
+                    nDiffCount++;
+                }
+                pBuf1 += nPixOffset;
+                pBuf2 += nPixOffset;
+            }
+        }
+        return nDiffCount;
+    }
 	//////////////////////////////////////////////////////////////////////////
 
 
