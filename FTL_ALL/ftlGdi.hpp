@@ -1449,7 +1449,7 @@ namespace FTL
 		return bRet;
 	}
 
-    int CFGdiUtil::ComapreBitmapData(int nWidth, int nHeight, int bpp, void* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize)
+    int CFGdiUtil::ComapreBitmapData(int nWidth, int nHeight, int bpp, byte* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize)
     {
         FTLASSERT(bpp >= 8);
         if(bpp < 8)
@@ -1468,7 +1468,8 @@ namespace FTL
             SetLastError(ERROR_INVALID_PARAMETER);
             return -1;
         }
-
+        
+        ZeroMemory(pOutResult, nResultSize);
 
         int nDiffCount = 0;
         int nPixOffset = (bpp / 8);
@@ -1500,6 +1501,7 @@ namespace FTL
                 if (bDiffer)
                 {
                     nDiffCount++;
+                    *(pOutResult + h * nWidth + w) = 1;
                 }
                 pBuf1 += nPixOffset;
                 pBuf2 += nPixOffset;
@@ -1680,13 +1682,28 @@ namespace FTL
         API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(
 			hScreen, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
 			&m_bmpInfo, 
-			DIB_RGB_COLORS,
+			DIB_RGB_COLORS, //DIB_PAL_COLORS
             (VOID**)&m_pBuffer, NULL, 0)));
         ZeroMemory(m_pBuffer, m_bmpInfo.bmiHeader.biSizeImage);
         if (bpp <= 8)
         {
             //获取调色板，并设置到 DIB中
             //GetPaletteEntries + SetDIBColorTable
+
+            //int nColors = 1 << bpp;
+            //HANDLE hLogPal = GlobalAlloc(GHND,sizeof(LOGPALETTE) + nColors * sizeof(PALETTEENTRY));
+            //if (hLogPal)
+            //{
+            //    LPLOGPALETTE lpLogPal = (LPLOGPALETTE)GlobalLock(hLogPal);
+            //    lpLogPal->palVersion = 0x300;
+            //    lpLogPal->palNumEntries = (WORD)nColors;
+            //    GetSystemPaletteEntries(hScreen, 0, nColors, (LPPALETTEENTRY)(lpLogPal->palPalEntry));
+            //    //HPALETTE hPal = CreatePalette(lpLogPal);
+            ////    SetDIBColorTable(m_hCanvasDC, 0, nColors, (LPPALETTEENTRY)lpLogPal->palNumEntries);
+
+            //    GlobalUnlock(hLogPal);
+            //    GlobalFree(hLogPal);
+            //}
         }
         ReleaseDC(NULL, hScreen);
 

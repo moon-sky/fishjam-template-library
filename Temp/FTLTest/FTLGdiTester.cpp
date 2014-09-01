@@ -422,3 +422,50 @@ void CFTLGdiTester::test_CalcRect_RectSmallThanSize()
 {
 
 }
+
+
+void CFTLGdiTester::test_ComapreBitmapData()
+{
+    int nWidth = 100, nHeight = 100;
+
+    BOOL bRet = FALSE;
+    HWND hWndDesktop = GetDesktopWindow();
+    HDC hDcDesktop = GetDC(hWndDesktop);
+
+    int nBpps[] = {32, 24, 16 }; 
+    int nCmpResultSize = nWidth * nHeight * 4;
+    CFMemAllocator<byte> cmpResult(nCmpResultSize);
+
+    for (int i = 0; i< _countof(nBpps); i++)
+    {
+        FTL::CFCanvas canvas1, canvas2;
+
+        API_VERIFY(canvas1.Create(hWndDesktop, nWidth, nHeight, nBpps[i]));
+        API_VERIFY(canvas2.Create(hWndDesktop, nWidth, nHeight, nBpps[i]));
+
+        API_VERIFY(BitBlt(canvas1.GetCanvasDC(), 0, 0, nWidth, nHeight, hDcDesktop, 0, 0, SRCCOPY));
+        API_VERIFY(BitBlt(canvas2.GetCanvasDC(), 0, 0, nWidth, nHeight, hDcDesktop, 0, 0, SRCCOPY));
+        
+        CDC memDC;
+        memDC.Attach(canvas2.GetCanvasDC());
+        memDC.FillSolidRect(0, 0, 5, 5, RGB(255, 0, 0));
+
+        memDC.FillSolidRect(nWidth - 5, nHeight - 5, 5, 5, RGB(255, 0, 0));
+
+        memDC.Detach();
+
+        FTL::CFStringFormater formaterName1, formaterName2;
+        formaterName1.Format(TEXT("Canvas1_%d.bmp"), nBpps[i]);
+        formaterName2.Format(TEXT("Canvas2_%d.bmp"), nBpps[i]);
+
+        FTL::CFGdiUtil::SaveBitmapToFile(canvas1.GetMemoryBitmap(), formaterName1.GetString());
+        FTL::CFGdiUtil::SaveBitmapToFile(canvas2.GetMemoryBitmap(), formaterName2.GetString());
+
+        int nCmpResult = CFGdiUtil::ComapreBitmapData(nWidth, nHeight, nBpps[i], canvas1.GetBuffer(), canvas2.GetBuffer(), cmpResult.GetMemory(), nCmpResultSize);
+        FTLTRACE(TEXT("nBpp=%d, nCmpResult=%d\n"), nBpps[i], nCmpResult);
+
+        CPPUNIT_ASSERT(nCmpResult == 50);
+    }
+ 
+    ReleaseDC(hWndDesktop, hDcDesktop);
+}

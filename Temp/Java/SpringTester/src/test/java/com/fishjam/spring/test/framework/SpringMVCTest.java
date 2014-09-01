@@ -59,7 +59,6 @@ public class SpringMVCTest extends TestCase {
 
 	@Test
 	public void testMVC(){
-		TilesConfigurer
 		assertEquals(1, 1);
 	}
 	

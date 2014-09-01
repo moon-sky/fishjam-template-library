@@ -36,6 +36,7 @@ public:
 	//≤‚ ‘ CFCalcRect
 	CPPUNIT_TEST( test_CalcRect_RectBigThanSize );
 	CPPUNIT_TEST( test_CalcRect_RectSmallThanSize );
+    CPPUNIT_TEST( test_ComapreBitmapData );
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -54,6 +55,8 @@ public:
 
 	void test_CalcRect_RectBigThanSize();
 	void test_CalcRect_RectSmallThanSize();
+
+    void test_ComapreBitmapData();
 private:
     enum 
     {

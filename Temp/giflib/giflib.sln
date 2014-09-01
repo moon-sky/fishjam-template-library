@@ -14,6 +14,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FTL_ALL", "F:\Fujie\FJCODE_
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "giftext", "giftext\giftext.vcproj", "{F3955296-1E55-480B-B38F-154FAE221850}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gifMaker", "gifMaker\gifMaker.vcproj", "{DFAB690C-5B2B-463D-97C4-A293D6FAD445}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -36,6 +38,10 @@ Global
 		{F3955296-1E55-480B-B38F-154FAE221850}.Debug|Win32.Build.0 = Debug|Win32
 		{F3955296-1E55-480B-B38F-154FAE221850}.Release|Win32.ActiveCfg = Release|Win32
 		{F3955296-1E55-480B-B38F-154FAE221850}.Release|Win32.Build.0 = Release|Win32
+		{DFAB690C-5B2B-463D-97C4-A293D6FAD445}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DFAB690C-5B2B-463D-97C4-A293D6FAD445}.Debug|Win32.Build.0 = Debug|Win32
+		{DFAB690C-5B2B-463D-97C4-A293D6FAD445}.Release|Win32.ActiveCfg = Release|Win32
+		{DFAB690C-5B2B-463D-97C4-A293D6FAD445}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

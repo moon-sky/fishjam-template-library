@@ -685,7 +685,7 @@ namespace FTL
 		FTLINLINE static BOOL ReplaceBitmapColor(HBITMAP hBmp, COLORREF clrFrom, COLORREF clrTo);
 
         //比较位图的图像数据, 返回值 >= 0 表示不同颜色的数目, < 0 表示失败
-        FTLINLINE static int ComapreBitmapData(int nWidth, int nHeight, int bpp, void* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize);
+        FTLINLINE static int ComapreBitmapData(int nWidth, int nHeight, int bpp, byte* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize);
     };
 
 	//根据指定的方式，计算一个RECT内(居中)包含一个SIZE时的RECT位置，通常用于窗体内居中显示图片或视频
