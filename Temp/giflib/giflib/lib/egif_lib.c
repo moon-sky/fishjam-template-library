@@ -91,9 +91,9 @@ EGifOpenFileName(const char *FileName, const bool TestExistence, int *Error)
 GifFileType *
 EGifOpenFileHandle(const int FileHandle, int *Error)
 {
-    GifFileType *GifFile;
-    GifFilePrivateType *Private;
-    FILE *f;
+    GifFileType *GifFile = NULL;
+    GifFilePrivateType *Private = NULL;
+    FILE *f = NULL;
 
     GifFile = (GifFileType *) malloc(sizeof(GifFileType));
     if (GifFile == NULL) {
@@ -109,6 +109,8 @@ EGifOpenFileHandle(const int FileHandle, int *Error)
 	    *Error = E_GIF_ERR_NOT_ENOUGH_MEM;
         return NULL;
     }
+    memset(Private, 0, sizeof(GifFilePrivateType));
+
     if ((Private->HashTable = _InitHashTable()) == NULL) {
         free(GifFile);
         free(Private);
@@ -126,6 +128,7 @@ EGifOpenFileHandle(const int FileHandle, int *Error)
     GifFile->Private = (void *)Private;
     Private->FileHandle = FileHandle;
     Private->File = f;
+    Private->gif89 = false;
     Private->FileState = FILE_STATE_WRITE;
 
     Private->Write = (OutputFunc) 0;    /* No user write routine (MRB) */
@@ -143,8 +146,8 @@ EGifOpenFileHandle(const int FileHandle, int *Error)
 GifFileType *
 EGifOpen(void *userData, OutputFunc writeFunc, int *Error)
 {
-    GifFileType *GifFile;
-    GifFilePrivateType *Private;
+    GifFileType *GifFile = NULL;
+    GifFilePrivateType *Private = NULL;
 
     GifFile = (GifFileType *)malloc(sizeof(GifFileType));
     if (GifFile == NULL) {
@@ -162,6 +165,7 @@ EGifOpen(void *userData, OutputFunc writeFunc, int *Error)
 	    *Error = E_GIF_ERR_NOT_ENOUGH_MEM;
         return NULL;
     }
+    memset(Private, 0, sizeof(GifFilePrivateType));
 
     Private->HashTable = _InitHashTable();
     if (Private->HashTable == NULL) {
@@ -689,8 +693,9 @@ int EGifGCBToSavedExtension(const GraphicsControlBlock *GCB,
 			     &GifFile->SavedImages[ImageIndex].ExtensionBlocks,
 			     GRAPHICS_EXT_FUNC_CODE,
 			     Len,
-			     (unsigned char *)buf) == GIF_ERROR)
-	return (GIF_ERROR);
+                 (unsigned char *)buf) == GIF_ERROR){
+	    return (GIF_ERROR);
+    }
 
     return (GIF_OK);
 }
@@ -1080,7 +1085,7 @@ EGifWriteExtensions(GifFileType *GifFileOut,
 int
 EGifSpew(GifFileType *GifFileOut) 
 {
-    int i, j; 
+    int i = 0, j = 0; 
 
     if (EGifPutScreenDesc(GifFileOut,
                           GifFileOut->SWidth,

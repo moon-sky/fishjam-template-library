@@ -37,15 +37,22 @@ private:
     int m_nImgCount;
     BOOL m_bFirstImage;
     BOOL m_bDelayImage;
+    BOOL m_bWriteFirst;
     
     BYTE* m_pPreBmp;
     BYTE* m_pDiffResult;
     BYTE* m_pGifBuffer;
+    BYTE* m_pGiffDiffBuffer;
+    RECT  m_rcDiff;
+
     GifFileType* m_pGifFile;
     GifColorType* m_pColorMap256;
     DWORD m_dwLastTicket;
 
-    BOOL _WriteGifData(BOOL bWriteGraphControl, BOOL bWriteImageData, DWORD dwTicket);
+    BOOL _WriteGifData(BYTE* pBmpData, RECT rcBmp, DWORD dwTicket);
+
+    BYTE* _DuplicateBmpRect(BYTE* pSrcBmpData, int nSrcWidth, int nSrcHeight, int nBpp, RECT rcSrc);
+    VOID _FreeDuplicateBmpData(BYTE* pData);
 };
 
 //extern GIFMAKER_API int ngifMaker;

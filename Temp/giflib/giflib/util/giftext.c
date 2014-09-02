@@ -54,7 +54,7 @@ static void PrintLZCodes(GifFileType *GifFile);
 ******************************************************************************/
 int main(int argc, char **argv)
 {
-    int i = 0, j=0, ExtCode=0, ErrorCode=0, CodeSize=0, NumFiles=0, Len=0, ImageNum = 1;
+    int i = 0, j=0, ExtCode=0, ErrorCode=0, CodeSize=0, NumFiles=0, Len=0, ImageNum = 1, nLzCompressSize = 0;
     bool Error = false,
 	ColorMapFlag = false, EncodedFlag = false, LZCodesFlag = false,
 	PixelFlag = false, HelpFlag = false, RawFlag = false; 

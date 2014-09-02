@@ -100,9 +100,9 @@ int GifQuantizeRGBBuffer(unsigned int Width, unsigned int Height,
         break;
     }
     
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < 256; i++){
         ColorMap[i].Red = ColorMap[i].Green = ColorMap[i].Blue = 0;
-
+    }
     i = 256;
     if(GifQuantizeBuffer(Width, Height, &i,
         RedInput, GreenInput, BlueInput, GIFBuffer, ColorMap) == GIF_ERROR)
@@ -134,8 +134,7 @@ GifQuantizeBuffer(unsigned int Width,
     NewColorMapType NewColorSubdiv[256] = {0};
     QuantizedColorType *ColorArrayEntries = NULL, *QuantizedColor = NULL;
 
-    ColorArrayEntries = (QuantizedColorType *)malloc(
-                           sizeof(QuantizedColorType) * COLOR_ARRAY_SIZE);
+    ColorArrayEntries = (QuantizedColorType *)malloc( sizeof(QuantizedColorType) * COLOR_ARRAY_SIZE);
     if (ColorArrayEntries == NULL) {
         return GIF_ERROR;
     }

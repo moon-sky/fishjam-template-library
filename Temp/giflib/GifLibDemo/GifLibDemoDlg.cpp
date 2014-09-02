@@ -361,10 +361,21 @@ void CGifLibDemoDlg::OnBnClickedButton2()
 
    gifMaker.BeginMakeGif(nWidth, nHeight, nBpp, "gifMakerDemo.gif");
    int i = 0;
+   CRect rcDiffColor(30, 30, 10, 10);
    for (i = 0; i < 5; i++)
    {
        CWindowDC desktopDC(GetDesktopWindow());
-       API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0 + i * 10, 0 + i * 10, SRCCOPY));
+       API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0, 0, SRCCOPY));
+
+       CDC memDC;
+       memDC.Attach(canvas.GetCanvasDC());
+       memDC.FillSolidRect(rcDiffColor, RGB(255, 0, 0));
+       memDC.Detach();
+       rcDiffColor.OffsetRect(10, 10);
+
+       CString strFileName;
+       strFileName.Format(TEXT("gifMakerSrc_%d.bmp"), i);
+       API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
        //_OverlayMouseToScreen(canvas.GetCanvasDC(), &rectCapture);
        gifMaker.AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), (i + 1) * 1000);
    }
