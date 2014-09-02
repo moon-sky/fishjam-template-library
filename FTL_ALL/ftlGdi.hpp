@@ -1459,9 +1459,8 @@ namespace FTL
             return -1;
         }
 
-        int nRowBytes = (nWidth * bpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
-
-        int nNeedResultSize = nRowBytes * nHeight; // /8
+        //计算输出比较结果 位图 的内存量。TODO:现在每个结果用 1byte, 以后更改成 1bit?
+        int nNeedResultSize = (nWidth * 8 + 31) >> 5 << 2 * nHeight; 
         if (nNeedResultSize > nResultSize)
         {
             FTLTRACE(TEXT("ComapreBitmapData resultSize need %d, bigger than provide %d\n"), nNeedResultSize, nResultSize);
@@ -1475,6 +1474,7 @@ namespace FTL
         int nPixOffset = (bpp / 8);
         byte  bDiffer = 0;
 
+        int nRowBytes = (nWidth * bpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
         for (int h = 0; h < nHeight; h++)
         {
             byte* pBuf1 = (pBmp1 + h * nRowBytes);
@@ -1750,7 +1750,7 @@ namespace FTL
         HANDLE hDib = NULL;
         if (m_pBuffer)
         {
-            hDib = GlobalAlloc(GHND, GetSize());
+            hDib = GlobalAlloc(GHND, GetTotalSize());
             BYTE* pDst = (BYTE*)GlobalLock(hDib);
             if (pDst)
             {
@@ -1763,11 +1763,6 @@ namespace FTL
         return hDib;
     }
 
-    DWORD CFCanvas::GetSize()
-    {
-        DWORD dwSize = m_bmpInfo.bmiHeader.biSize + m_bmpInfo.bmiHeader.biSizeImage;
-        return dwSize;
-    }
 
 #ifdef __ATLGDI_H__
 

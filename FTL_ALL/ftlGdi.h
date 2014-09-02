@@ -741,7 +741,8 @@ namespace FTL
         FTLINLINE  operator HDC() const { return m_hCanvasDC; }
         FTLINLINE HBITMAP GetMemoryBitmap() const { return m_hMemBitmap; }
         FTLINLINE HANDLE CopyToHandle();
-        FTLINLINE DWORD GetSize();
+        FTLINLINE DWORD GetTotalSize() { return  m_bmpInfo.bmiHeader.biSize + m_bmpInfo.bmiHeader.biSizeImage; }
+        FTLINLINE DWORD GetBufferSize() { return m_bmpInfo.bmiHeader.biSizeImage; }
     private:
         HDC     m_hCanvasDC;
         HBITMAP m_hMemBitmap;

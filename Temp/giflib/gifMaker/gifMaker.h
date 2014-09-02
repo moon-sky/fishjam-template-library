@@ -11,13 +11,41 @@
 #endif
 
 //// This class is exported from the gifMaker.dll
+
+namespace FTL{
+    template <typename ThreadTraits = DefaultThreadTraits>
+    class CFThread;
+}
+
+struct GifFileType;
+struct GifColorType;
+
+
 class GIFMAKER_API CGifMaker {
 public:
 	CGifMaker(void);
+    ~CGifMaker();
 
-    int BeginMakeGif(int nWidth, int nHeight, int bpp);
-    int AddGifImage(, byte* pBmpData);
-    int EndMakeGif();
+    BOOL BeginMakeGif(int nWidth, int nHeight, int bpp, const char* fileName);
+    BOOL AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket);
+    BOOL EndMakeGif(DWORD dwTicket);
+private:
+    //FTL::CFThread<>* m_pThreadMaker;
+    int m_nPreWidth, m_nPreHeight, m_nPreBpp, m_nPreBmpBytes, m_nDiffResultSize;
+    int m_nGifColorRes;     //8
+    int m_nGifNumLevels;    //256
+    int m_nImgCount;
+    BOOL m_bFirstImage;
+    BOOL m_bDelayImage;
+    
+    BYTE* m_pPreBmp;
+    BYTE* m_pDiffResult;
+    BYTE* m_pGifBuffer;
+    GifFileType* m_pGifFile;
+    GifColorType* m_pColorMap256;
+    DWORD m_dwLastTicket;
+
+    BOOL _WriteGifData(BOOL bWriteGraphControl, BOOL bWriteImageData, DWORD dwTicket);
 };
 
 //extern GIFMAKER_API int ngifMaker;

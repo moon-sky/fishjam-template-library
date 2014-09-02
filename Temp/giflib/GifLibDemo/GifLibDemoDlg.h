@@ -32,4 +32,5 @@ protected:
 public:
     afx_msg void OnBnClickedButton1();
     BOOL _OverlayMouseToScreen(HDC hdc, LPRECT lpRect);
+    afx_msg void OnBnClickedButton2();
 };

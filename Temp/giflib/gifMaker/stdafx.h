@@ -11,6 +11,7 @@
 // Windows Header Files:
 #include <windows.h>
 
-
+#include <atlbase.h>
+#include <ftlBase.h>
 
 // TODO: reference additional headers your program requires here

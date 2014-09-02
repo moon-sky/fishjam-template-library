@@ -13,12 +13,20 @@
 #  pragma comment(lib, "../Release/giflib.lib")
 #endif 
 
+#include "../gifMaker/gifMaker.h"
+#ifdef _DEBUG
+#  pragma comment(lib, "../Debug/gifMaker.lib")
+#else
+#  pragma comment(lib, "../Release/gifMaker.lib")
+#endif 
+
+
 #include <ftlBase.h>
 #include <ftlGdi.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 #define GIF_VERIFY(x) \
     nRet = (x);\
@@ -81,6 +89,7 @@ BEGIN_MESSAGE_MAP(CGifLibDemoDlg, CDialog)
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
     ON_BN_CLICKED(IDC_BUTTON1, &CGifLibDemoDlg::OnBnClickedButton1)
+    ON_BN_CLICKED(IDC_BUTTON2, &CGifLibDemoDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
@@ -330,4 +339,34 @@ void CGifLibDemoDlg::OnBnClickedButton1()
     free(pOutputBuffer);
 
     AfxMessageBox(TEXT("After Generate Gif"));
+}
+
+void CGifLibDemoDlg::OnBnClickedButton2()
+{
+    BOOL bRet = FALSE;
+    int nRet = 0;
+    int nError = 0;
+    int nWidth = 100;
+    int nHeight = 100;
+    int nGifColorRes = 8;
+    int NumLevels = 256;
+    int nBpp = 24;
+    int nDelay = 1;
+
+    CGifMaker    gifMaker;
+
+   FTL::CFCanvas canvas;
+   CRect rectCapture(0, 0, nWidth, nHeight);
+   API_VERIFY(canvas.Create(m_hWnd, nWidth, -nHeight, nBpp));
+
+   gifMaker.BeginMakeGif(nWidth, nHeight, nBpp, "gifMakerDemo.gif");
+   int i = 0;
+   for (i = 0; i < 5; i++)
+   {
+       CWindowDC desktopDC(GetDesktopWindow());
+       API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0 + i * 10, 0 + i * 10, SRCCOPY));
+       //_OverlayMouseToScreen(canvas.GetCanvasDC(), &rectCapture);
+       gifMaker.AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), (i + 1) * 1000);
+   }
+   gifMaker.EndMakeGif( (i) * 100);
 }
