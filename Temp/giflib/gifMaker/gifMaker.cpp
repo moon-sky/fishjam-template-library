@@ -146,11 +146,14 @@ BOOL CGifMaker::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
                     && ((rcMinDiff.right - rcMinDiff.left) < m_nPreWidth)
                     && ((rcMinDiff.bottom - rcMinDiff.top) < m_nPreHeight))
                 {
-                    //RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
-                    //_WriteGifData(pBmpData, rcTotal, dwTicket);
+#if 1
+                    RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
+                    _WriteGifData(pBmpData, rcTotal, dwTicket);
+#else
                     BYTE* pNewBmpData = _DuplicateBmpRect(pBmpData, m_nPreWidth, m_nPreHeight, m_nPreBpp, rcMinDiff);
                     _WriteGifData(pNewBmpData, rcMinDiff, dwTicket);
                     _FreeDuplicateBmpData(pNewBmpData);
+#endif 
                 }
                 else{
                     RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};

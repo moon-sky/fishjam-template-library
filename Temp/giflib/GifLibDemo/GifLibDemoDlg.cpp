@@ -343,11 +343,33 @@ void CGifLibDemoDlg::OnBnClickedButton1()
 
 void CGifLibDemoDlg::OnBnClickedButton2()
 {
+
+    //{
+    //    BOOL bRet = FALSE;
+    //    FTL::CFCanvas canvas;
+    //    API_VERIFY(canvas.Create(m_hWnd, 7, -6, 24));
+    //    memset(canvas.GetBuffer(), 0x78, canvas.GetBufferSize());
+
+    //    CDC memDC;
+    //    memDC.Attach(canvas.GetCanvasDC());
+    //    for (int j = 0; j < 6; j++)
+    //    {
+    //       memDC.FillSolidRect(0, j, 7, 1, RGB(255, 0, j * 10));
+    //    }
+    //    
+    //    memDC.Detach();
+
+    //    BYTE* pBuffer = canvas.GetBuffer();
+    //    INT nSize = canvas.GetBufferSize();
+    //    
+    //    return;
+    //}
+
     BOOL bRet = FALSE;
     int nRet = 0;
     int nError = 0;
-    int nWidth = 100;
-    int nHeight = 100;
+    int nWidth = 100;//77;
+    int nHeight = 100;//77;
     int nGifColorRes = 8;
     int NumLevels = 256;
     int nBpp = 24;
@@ -369,6 +391,8 @@ void CGifLibDemoDlg::OnBnClickedButton2()
 
        CDC memDC;
        memDC.Attach(canvas.GetCanvasDC());
+       //CRect rcTotal(0, 0, nWidth, nHeight);
+       //memDC.FillSolidRect(rcTotal, RGB(1, 2, 3));
        memDC.FillSolidRect(rcDiffColor, RGB(255, 0, 0));
        memDC.Detach();
        rcDiffColor.OffsetRect(10, 10);
