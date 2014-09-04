@@ -149,31 +149,31 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="dgif_lib.c"
+				RelativePath=".\dgif_lib.c"
 				>
 			</File>
 			<File
-				RelativePath="egif_lib.c"
+				RelativePath=".\egif_lib.c"
 				>
 			</File>
 			<File
-				RelativePath="gif_err.c"
+				RelativePath=".\gif_err.c"
 				>
 			</File>
 			<File
-				RelativePath="gif_font.c"
+				RelativePath=".\gif_font.c"
 				>
 			</File>
 			<File
-				RelativePath="gif_hash.c"
+				RelativePath=".\gif_hash.c"
 				>
 			</File>
 			<File
-				RelativePath="gifalloc.c"
+				RelativePath=".\gifalloc.c"
 				>
 			</File>
 			<File
-				RelativePath="quantize.c"
+				RelativePath=".\quantize.c"
 				>
 			</File>
 		</Filter>

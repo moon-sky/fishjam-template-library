@@ -43,6 +43,7 @@ private:
     BYTE* m_pDiffResult;
     BYTE* m_pGifBuffer;
     BYTE* m_pGiffDiffBuffer;
+    BYTE* m_pTranslateBuffer;
     RECT  m_rcDiff;
 
 

@@ -422,7 +422,7 @@ void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
     BOOL bRet = FALSE;
 
     m_nClipIndex++;
-    if (m_nClipIndex < 10)
+    if (m_nClipIndex < 300)
     {
         FTL::CFCanvas canvas;
 
@@ -431,9 +431,11 @@ void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
         CWindowDC desktopDC(GetDesktopWindow());
         API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, g_nWidth, g_nHeight, desktopDC, 100, 100, SRCCOPY));
 
+#ifdef _DEBUG
         CString strFileName;
         strFileName.Format(TEXT("gifTimerClip_%d.bmp"), m_nClipIndex);
         API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
+#endif
 
         g_gifMaker.AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
     }
@@ -459,5 +461,5 @@ void CGifLibDemoDlg::OnBnClickedBtnTimerClip()
     g_gifMaker.BeginMakeGif(g_nWidth, g_nHeight, g_nBpp, "gifTimerClip.gif");
     m_nClipIndex = 0;
     
-    SetTimer(1, 1000, NULL);
+    SetTimer(1, 100, NULL);
 }

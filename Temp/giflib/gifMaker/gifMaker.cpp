@@ -43,6 +43,7 @@ CGifMaker::CGifMaker()
     m_pDiffResult = NULL;
     m_pGifFile = NULL;
     m_pGifBuffer = NULL;
+    m_pTranslateBuffer = NULL;
     m_pColorMap256 = NULL;
     m_bFirstImage = TRUE;
     m_bDelayImage = FALSE;
@@ -58,7 +59,7 @@ CGifMaker::CGifMaker()
 CGifMaker::~CGifMaker()
 {
     FTLASSERT(m_pGifFile == NULL);
-
+    SAFE_DELETE_ARRAY(m_pTranslateBuffer);
     SAFE_DELETE_ARRAY(m_pColorMap256);
     SAFE_DELETE_ARRAY(m_pGifBuffer);
     SAFE_DELETE_ARRAY(m_pPreBmp);
@@ -80,6 +81,9 @@ BOOL CGifMaker::BeginMakeGif(int nWidth, int nHeight, int bpp, const char* fileN
     m_nPreBmpBytes = ((nWidth * bpp + 31) / 32 * 4) * nHeight;  //四字节对齐
     m_pPreBmp = new BYTE[m_nPreBmpBytes];
     ZeroMemory(m_pPreBmp, m_nPreBmpBytes);
+
+    m_pTranslateBuffer = new BYTE[m_nPreBmpBytes];
+    ZeroMemory(m_pTranslateBuffer, m_nPreBmpBytes);
 
     m_nDiffResultSize= ((nWidth * 8 + 31) / 32 * 4) * nHeight;  //四字节对齐的
     m_pDiffResult = new BYTE[m_nDiffResultSize];
@@ -124,7 +128,9 @@ BOOL CGifMaker::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
     else
     {
         RECT rcMinDiff = {0};
-        int nDiffCount = FTL::CFGdiUtil::CompareBitmapData(m_nPreWidth, m_nPreHeight, m_nPreBpp, m_pPreBmp, pBmpData, m_pDiffResult, m_nDiffResultSize, &rcMinDiff);
+        //CopyMemory(m_pTranslateBuffer, pBmpData, nLength);
+        int nDiffCount = FTL::CFGdiUtil::CompareBitmapData(m_nPreWidth, m_nPreHeight, m_nPreBpp, m_pPreBmp, pBmpData, m_pDiffResult, 
+            m_nDiffResultSize, &rcMinDiff);
         FTLTRACE(TEXT("[%d], dwTicket=%d, nDiffCount=%d/%d, rcMinDiff=%s\n"), m_nImgCount, dwTicket, nDiffCount, m_nDiffResultSize, 
             FTL::CFRectDumpInfo(rcMinDiff).GetConvertedInfo());
         if (0 == nDiffCount)
@@ -142,7 +148,6 @@ BOOL CGifMaker::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
                 m_pGiffDiffBuffer = NULL;
                 ZeroMemory(&m_rcDiff, sizeof(m_rcDiff));
             }
-
             //if (m_bWriteFirst)
             //{
             //    RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
@@ -154,6 +159,7 @@ BOOL CGifMaker::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
                     && ((rcMinDiff.right - rcMinDiff.left) < m_nPreWidth)
                     && ((rcMinDiff.bottom - rcMinDiff.top) < m_nPreHeight))
                 {
+
                     m_rcDiff = rcMinDiff;
                     //::SetRect(&m_rcDiff, 0, 0, m_nPreWidth, m_nPreHeight);
                     m_pGiffDiffBuffer = _DuplicateBmpRect(pBmpData, m_nPreWidth, m_nPreHeight, m_nPreBpp, m_rcDiff);
