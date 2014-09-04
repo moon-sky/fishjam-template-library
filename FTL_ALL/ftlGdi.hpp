@@ -1344,7 +1344,15 @@ namespace FTL
 		bi.biClrUsed         = 0;
 		bi.biClrImportant      = 0;
 
-		dwBmBitsSize = ((Bitmap.bmWidth * wBitCount + 31 ) / 32 ) * 4 * Bitmap.bmHeight;
+		//dwBmBitsSize = ((Bitmap.bmWidth * wBitCount + 31 ) / 32 ) * 4 * Bitmap.bmHeight;
+        LONG nSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(Bitmap.bmWidth, wBitCount);
+        dwBmBitsSize =  nSize * Bitmap.bmHeight;
+
+#ifdef _DEBUG
+        DWORD dwCheckValue = ((Bitmap.bmWidth * wBitCount + 31 ) / 32 ) * 4 * Bitmap.bmHeight;
+        FTLASSERT(dwCheckValue == dwBmBitsSize);
+#endif
+
 		//为位图内容分配内存
 
 		hDib  = GlobalAlloc(GHND, dwBmBitsSize + dwPaletteSize + sizeof(BITMAPINFOHEADER));
@@ -1449,7 +1457,7 @@ namespace FTL
 		return bRet;
 	}
 
-    int CFGdiUtil::ComapreBitmapData(int nWidth, int nHeight, int bpp, byte* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize)
+    int CFGdiUtil::CompareBitmapData(int nWidth, int nHeight, int bpp, byte* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize, RECT* pMinDiffRect)
     {
         FTLASSERT(bpp >= 8);
         if(bpp < 8)
@@ -1460,7 +1468,11 @@ namespace FTL
         }
 
         //计算输出比较结果 位图 的内存量。TODO:现在每个结果用 1byte, 以后更改成 1bit?
-        int nNeedResultSize = (nWidth * 8 + 31) >> 5 << 2 * nHeight; 
+        int nNeedResultSize = (nWidth * 8 + 31) / 32 * 4 * nHeight; 
+#ifdef _DEBUG
+        int nCheckResultSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth , 8) * nHeight;
+        FTLASSERT(nNeedResultSize == nCheckResultSize);
+#endif
         if (nNeedResultSize > nResultSize)
         {
             FTLTRACE(TEXT("ComapreBitmapData resultSize need %d, bigger than provide %d\n"), nNeedResultSize, nResultSize);
@@ -1468,6 +1480,7 @@ namespace FTL
             return -1;
         }
         
+        RECT rcMinDiff = { nWidth, nHeight, 0, 0 }; //包含不同区域的最小范围
         ZeroMemory(pOutResult, nResultSize);
 
         int nDiffCount = 0;
@@ -1475,6 +1488,11 @@ namespace FTL
         byte  bDiffer = 0;
 
         int nRowBytes = (nWidth * bpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
+#ifdef _DEBUG
+        int nCheckRowBytes = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth , bpp);
+        FTLASSERT(nRowBytes == nCheckRowBytes);
+#endif
+
         for (int h = 0; h < nHeight; h++)
         {
             byte* pBuf1 = (pBmp1 + h * nRowBytes);
@@ -1502,10 +1520,18 @@ namespace FTL
                 {
                     nDiffCount++;
                     *(pOutResult + h * nWidth + w) = 1;
+                    rcMinDiff.left = FTL_MIN(rcMinDiff.left, w);
+                    rcMinDiff.top = FTL_MIN(rcMinDiff.top, h);
+                    rcMinDiff.right = FTL_MAX(rcMinDiff.right, w + 1);
+                    rcMinDiff.bottom = FTL_MAX(rcMinDiff.bottom, h + 1);
                 }
                 pBuf1 += nPixOffset;
                 pBuf2 += nPixOffset;
             }
+        }
+        if (pMinDiffRect)
+        {
+            *pMinDiffRect = rcMinDiff;
         }
         return nDiffCount;
     }
@@ -1661,7 +1687,11 @@ namespace FTL
         m_bmpInfo.bmiHeader.biPlanes = 1;
         m_bmpInfo.bmiHeader.biBitCount = (WORD)bpp;
         m_bmpInfo.bmiHeader.biCompression = BI_RGB;
-        m_bmpInfo.bmiHeader.biSizeImage = ((m_height * m_width * bpp + 31) >> 3) & ~3;
+        m_bmpInfo.bmiHeader.biSizeImage = (((m_width * bpp + 31) >> 3) & ~3) * m_height;
+#ifdef _DEBUG
+        int nCheckSizeImage = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(m_width, bpp) * m_height;
+        FTLASSERT(nCheckSizeImage, m_bmpInfo.bmiHeader.biSizeImage);
+#endif
 										  //(m_height * m_width * bpp + 31) / 32 * 4 ; 
         if (bpp <= 8)
         {

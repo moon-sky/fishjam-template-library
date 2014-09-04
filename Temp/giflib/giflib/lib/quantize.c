@@ -196,11 +196,12 @@ GifQuantizeBuffer(unsigned int Width,
             NumOfEntries++;
         }
     }
-
     QuantizedColor->Pnext = NULL;
 
     NewColorSubdiv[0].NumEntries = NumOfEntries; /* Different sampled colors */
     NewColorSubdiv[0].Count = ((long)Width) * Height; /* Pixels */
+
+    //合并多的量化结果
     NewColorMapSize = 1;
     if (SubdivColorMap(NewColorSubdiv, *ColorMapSize, &NewColorMapSize) != GIF_OK) {
         free((char *)ColorArrayEntries);
@@ -213,6 +214,7 @@ GifQuantizeBuffer(unsigned int Width,
         }
     }
 
+    //计算使用同一个颜色表索引的多个颜色的平均值
     /* Average the colors in each entry to be the color to be used in the
      * output color map, and plug it into the output color map itself. */
     for (i = 0; i < NewColorMapSize; i++) {

@@ -63,6 +63,11 @@ CGifMaker::~CGifMaker()
     SAFE_DELETE_ARRAY(m_pGifBuffer);
     SAFE_DELETE_ARRAY(m_pPreBmp);
     SAFE_DELETE_ARRAY(m_pDiffResult);
+    if (m_pGiffDiffBuffer)
+    {
+        _FreeDuplicateBmpData(m_pGiffDiffBuffer);
+        m_pGiffDiffBuffer = NULL;
+    }
 }
 
 BOOL CGifMaker::BeginMakeGif(int nWidth, int nHeight, int bpp, const char* fileName)
@@ -107,17 +112,19 @@ BOOL CGifMaker::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
 
     BOOL bWriteImageData = FALSE;
     BOOL bWriteGraphControl = FALSE;
-    
+    FTLTRACE(TEXT("AddGifImage, Index=%d, nLength=%d, dwTicket=%d\n"), m_nImgCount, nLength, dwTicket);
     if (m_bFirstImage)
     {
         m_bFirstImage = FALSE;    
         m_dwLastTicket = dwTicket;
         CopyMemory(m_pPreBmp, pBmpData, nLength);
+        ::SetRect(&m_rcDiff, 0, 0, m_nPreWidth, m_nPreHeight);
+        m_pGiffDiffBuffer = _DuplicateBmpRect(pBmpData, m_nPreWidth, m_nPreHeight, m_nPreBpp, m_rcDiff);
     }
     else
     {
         RECT rcMinDiff = {0};
-        int nDiffCount = FTL::CFGdiUtil::ComapreBitmapData(m_nPreWidth, m_nPreHeight, m_nPreBpp, m_pPreBmp, pBmpData, m_pDiffResult, m_nDiffResultSize, &rcMinDiff);
+        int nDiffCount = FTL::CFGdiUtil::CompareBitmapData(m_nPreWidth, m_nPreHeight, m_nPreBpp, m_pPreBmp, pBmpData, m_pDiffResult, m_nDiffResultSize, &rcMinDiff);
         FTLTRACE(TEXT("[%d], dwTicket=%d, nDiffCount=%d/%d, rcMinDiff=%s\n"), m_nImgCount, dwTicket, nDiffCount, m_nDiffResultSize, 
             FTL::CFRectDumpInfo(rcMinDiff).GetConvertedInfo());
         if (0 == nDiffCount)
@@ -136,24 +143,29 @@ BOOL CGifMaker::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
                 ZeroMemory(&m_rcDiff, sizeof(m_rcDiff));
             }
 
-            if (m_bWriteFirst)
+            //if (m_bWriteFirst)
+            //{
+            //    RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
+            //    _WriteGifData(pBmpData, rcTotal, dwTicket);
+            //}
+            //else
             {
-                RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
-                _WriteGifData(pBmpData, rcTotal, dwTicket);
-            }
-            else{
                 if (nDiffCount * 10 / m_nDiffResultSize < 6  //不同的数小于 60%
                     && ((rcMinDiff.right - rcMinDiff.left) < m_nPreWidth)
                     && ((rcMinDiff.bottom - rcMinDiff.top) < m_nPreHeight))
                 {
-#if 1
-                    RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
-                    _WriteGifData(pBmpData, rcTotal, dwTicket);
-#else
-                    BYTE* pNewBmpData = _DuplicateBmpRect(pBmpData, m_nPreWidth, m_nPreHeight, m_nPreBpp, rcMinDiff);
-                    _WriteGifData(pNewBmpData, rcMinDiff, dwTicket);
-                    _FreeDuplicateBmpData(pNewBmpData);
-#endif 
+                    m_rcDiff = rcMinDiff;
+                    //::SetRect(&m_rcDiff, 0, 0, m_nPreWidth, m_nPreHeight);
+                    m_pGiffDiffBuffer = _DuplicateBmpRect(pBmpData, m_nPreWidth, m_nPreHeight, m_nPreBpp, m_rcDiff);
+
+//#if 0
+//                    RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
+//                    _WriteGifData(pBmpData, rcTotal, dwTicket);
+//#else
+//                    BYTE* pNewBmpData = _DuplicateBmpRect(pBmpData, m_nPreWidth, m_nPreHeight, m_nPreBpp, rcMinDiff);
+//                    _WriteGifData(pNewBmpData, rcMinDiff, dwTicket);
+//                    _FreeDuplicateBmpData(pNewBmpData);
+//#endif 
                 }
                 else{
                     RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
@@ -164,6 +176,7 @@ BOOL CGifMaker::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
         }
     }
     m_bDelayImage = !bWriteImageData;
+
     return TRUE;
 }
 
@@ -173,11 +186,19 @@ BOOL CGifMaker::EndMakeGif(DWORD dwTicket)
     int nError = 0;
     if (m_pGifFile)
     {
-        if (m_bDelayImage)
+        //if (!m_bDelayImage)
+        //{
+        //    RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
+        //    _WriteGifData(m_pPreBmp, rcTotal, dwTicket);
+        //}
+        if (m_pGiffDiffBuffer)
         {
-            RECT rcTotal = {0, 0, m_nPreWidth, m_nPreHeight};
-            _WriteGifData(m_pPreBmp, rcTotal, dwTicket);
+            _WriteGifData(m_pGiffDiffBuffer, m_rcDiff, dwTicket);
+            _FreeDuplicateBmpData(m_pGiffDiffBuffer);
+            m_pGiffDiffBuffer = NULL;
+            ZeroMemory(&m_rcDiff, sizeof(m_rcDiff));
         }
+
         GIF_VERIFY(EGifCloseFile(m_pGifFile, &nError));
         m_pGifFile = NULL;
     }
@@ -186,6 +207,7 @@ BOOL CGifMaker::EndMakeGif(DWORD dwTicket)
 
 BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
 {
+    FTLTRACE(TEXT("_WriteGifData, %d\n "), m_nImgCount);
     int nRet = 0;
     m_bWriteFirst = FALSE;
     //if (bWriteGraphControl)
@@ -194,7 +216,7 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
         GraphicsControlBlock gcb = {0};
 
         gcb.DelayTime = (dwTicket - m_dwLastTicket) / 10;
-        gcb.TransparentColor = 0;
+        gcb.TransparentColor = NO_TRANSPARENT_COLOR;
         gcb.UserInputFlag = 0;
         gcb.DisposalMode = DISPOSAL_UNSPECIFIED;
         EGifGCBToExtension(&gcb, Extension);
@@ -232,6 +254,8 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
 
 BYTE* CGifMaker::_DuplicateBmpRect(BYTE* pSrcBmpData, int nSrcWidth, int nSrcHeight, int nBpp, RECT rcSrc)
 {
+    FTLTRACE(TEXT("_DuplicateBmpRect[%d], nSrcWidth=%d, nSrcHeight=%d, rcSrc=%s\n"), m_nImgCount, nSrcWidth, nSrcHeight, 
+        FTL::CFRectDumpInfo(rcSrc).GetConvertedInfo());
     BYTE* pBufResult = NULL;
     FTLASSERT(rcSrc.left >= 0 && rcSrc.top >= 0);
     FTLASSERT(rcSrc.right <= nSrcWidth && rcSrc.bottom <= nSrcHeight);
@@ -249,7 +273,7 @@ BYTE* CGifMaker::_DuplicateBmpRect(BYTE* pSrcBmpData, int nSrcWidth, int nSrcHei
             BYTE* pSrc = pSrcBmpData + j * dwOldWidthBytes + rcSrc.left * nBpp / 8;
             BYTE* pDest = pBufResult + (j - rcSrc.top) * dwNewWidthBytes;
             
-            CopyMemory(pDest, pSrc, dwNewWidthBytes);
+            CopyMemory(pDest, pSrc, (rcSrc.right - rcSrc.left) * nBpp / 8);
         }
     }
 

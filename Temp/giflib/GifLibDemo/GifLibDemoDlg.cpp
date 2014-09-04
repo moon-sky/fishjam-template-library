@@ -23,6 +23,7 @@
 
 #include <ftlBase.h>
 #include <ftlGdi.h>
+#include <ftlDebug.h>
 
 //#ifdef _DEBUG
 //#define new DEBUG_NEW
@@ -76,6 +77,7 @@ CGifLibDemoDlg::CGifLibDemoDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CGifLibDemoDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+    m_nClipIndex = 0;
 }
 
 void CGifLibDemoDlg::DoDataExchange(CDataExchange* pDX)
@@ -90,6 +92,8 @@ BEGIN_MESSAGE_MAP(CGifLibDemoDlg, CDialog)
 	//}}AFX_MSG_MAP
     ON_BN_CLICKED(IDC_BUTTON1, &CGifLibDemoDlg::OnBnClickedButton1)
     ON_BN_CLICKED(IDC_BUTTON2, &CGifLibDemoDlg::OnBnClickedButton2)
+    ON_WM_TIMER()
+    ON_BN_CLICKED(IDC_BTN_TIMER_CLIP, &CGifLibDemoDlg::OnBnClickedBtnTimerClip)
 END_MESSAGE_MAP()
 
 
@@ -262,6 +266,7 @@ void CGifLibDemoDlg::OnBnClickedButton1()
     ColorMapObject *pColorMap = GifMakeMapObject(NumLevels, ColorMap256);
     if (pColorMap)
     {
+        //pColorMap->SortFlag = true;
         GifFileType* pGifFile = EGifOpenFileName("gifDemo.gif", false, &nError);
         if (pGifFile)
         {
@@ -383,7 +388,7 @@ void CGifLibDemoDlg::OnBnClickedButton2()
 
    gifMaker.BeginMakeGif(nWidth, nHeight, nBpp, "gifMakerDemo.gif");
    int i = 0;
-   CRect rcDiffColor(30, 30, 10, 10);
+   CRect rcDiffColor(10, 10, 30, 30);
    for (i = 0; i < 5; i++)
    {
        CWindowDC desktopDC(GetDesktopWindow());
@@ -394,9 +399,10 @@ void CGifLibDemoDlg::OnBnClickedButton2()
        //CRect rcTotal(0, 0, nWidth, nHeight);
        //memDC.FillSolidRect(rcTotal, RGB(1, 2, 3));
        memDC.FillSolidRect(rcDiffColor, RGB(255, 0, 0));
+       FTLTRACE(TEXT("[%d] Fill SolidRect %s\n"), i + 1, FTL::CFRectDumpInfo(rcDiffColor).GetConvertedInfo());
        memDC.Detach();
        rcDiffColor.OffsetRect(10, 10);
-
+        
        CString strFileName;
        strFileName.Format(TEXT("gifMakerSrc_%d.bmp"), i);
        API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
@@ -404,4 +410,54 @@ void CGifLibDemoDlg::OnBnClickedButton2()
        gifMaker.AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), (i + 1) * 1000);
    }
    gifMaker.EndMakeGif( (i) * 100);
+}
+
+CGifMaker    g_gifMaker;
+int         g_nWidth = 800;
+int         g_nHeight = 600;
+int         g_nBpp = 24;
+
+void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
+{
+    BOOL bRet = FALSE;
+
+    m_nClipIndex++;
+    if (m_nClipIndex < 10)
+    {
+        FTL::CFCanvas canvas;
+
+        CRect rectCapture(0, 0, g_nWidth, g_nHeight);
+        API_VERIFY(canvas.Create(m_hWnd, g_nWidth, -g_nHeight, g_nBpp));
+        CWindowDC desktopDC(GetDesktopWindow());
+        API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, g_nWidth, g_nHeight, desktopDC, 100, 100, SRCCOPY));
+
+        CString strFileName;
+        strFileName.Format(TEXT("gifTimerClip_%d.bmp"), m_nClipIndex);
+        API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
+
+        g_gifMaker.AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
+    }
+    else
+    {
+        KillTimer(1);
+        g_gifMaker.EndMakeGif(GetTickCount());
+        AfxMessageBox(TEXT("Timer Clip Over"));
+        
+    }
+    
+
+    CDialog::OnTimer(nIDEvent);
+}
+
+
+void CGifLibDemoDlg::OnBnClickedBtnTimerClip()
+{
+    BOOL bRet = FALSE;
+    int nRet = 0;
+    int nError = 0;
+
+    g_gifMaker.BeginMakeGif(g_nWidth, g_nHeight, g_nBpp, "gifTimerClip.gif");
+    m_nClipIndex = 0;
+    
+    SetTimer(1, 1000, NULL);
 }

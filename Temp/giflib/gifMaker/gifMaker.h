@@ -45,6 +45,7 @@ private:
     BYTE* m_pGiffDiffBuffer;
     RECT  m_rcDiff;
 
+
     GifFileType* m_pGifFile;
     GifColorType* m_pColorMap256;
     DWORD m_dwLastTicket;

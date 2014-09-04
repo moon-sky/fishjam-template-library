@@ -35,10 +35,10 @@
 * BMP(Bitmap) -- 位图(光栅图象),BMP 文件通常不压缩，因此不太适合通过 Internet 传输。
 * Exif(Exchangeable Image File) -- 可交换图像文件，适用于数码相机拍摄的照片的文件格式。
 *   含有根据 JPEG 规格压缩的图像 和 拍摄日期、快门速度、曝光时间、相机型号 等照片和相机的信息。
-* Gif(Graphics Interchange Format) -- 版权所有，使用时需要授权(已于Xx年过期?)。用于在 Web 页中显示图像的通用格式,适用于在颜色之间有清晰边界的图片。
-*   采用无损压缩。可指定一种颜色为透明色(图像将具有显示它的任何 Web 页的背景色)。
+* Gif(Graphics Interchange Format) -- 版权所有，使用时需要授权(已于20030620过期)。用于在 Web 页中显示图像的通用格式,适用于在颜色之间有清晰边界的图片。
+*   通过 LZW 的无损压缩算法压缩图像数据。可指定一种颜色为透明色(图像将具有显示它的任何 Web 页的背景色)。
 *   在单个文件中存储一系列 GIF 图像可以形成一个动画 GIF，基于颜色列表，图像数据是对应于颜色列表的索引值，每像素最多能存储8位(256色)。
-*   内部分成许多存储块，用来存储多幅图像或是决定图像表现行为的控制块。通过 LZW 压缩算法压缩图像数据。
+*   内部分成许多存储块，用来存储多幅图像或是决定图像表现行为的控制块，即可显示简单动画。
 * ICON() -- 图标是大小固定的小方型图像，且每一个图标资源中可含为多种显示设备和用途准备的具有不同大小和位数的多个图像。
 *   图标由一个图片和一个用于产生透明区的掩膜组成，标准的图标为32×32像素的256色图像，扩展图标为 256×256像素的32位色。
 * JPEG(Joint Photographic Experts Group) -- 联合图像专家组，将人眼难以察觉的(高频?)信息在压缩中丢弃，
@@ -214,8 +214,9 @@
 * NGif(Animated GIF Encoder for .NET) -- http://www.codeproject.com/Articles/11505/NGif-Animated-GIF-Encoder-for-NET
 * ScreenToGif(开源的C#录制工具，可以查看是否有比较内容等功能) -- https://screentogif.codeplex.com/
 * 
-* giflib -- 查看、生成gif的开源库(gif版本为 87a)
-*   Gif有多个版本(87a,89a 等，参见 gif89.txt)；可存放一帧或多帧图像数据，并可以存放图像控制信息(动画)，其图像基于调色板，最多只能有255种颜色。
+* giflib -- 查看、生成gif的开源库
+*   Gif有多个版本(87a,89a 等，参见 gif89.txt)；可存放一帧或多帧图像数据，并可以存放图像控制信息(动画)，其图像基于颜色表(调色板)，最多只能有256种颜色。
+*   颜色表分为全局(用于没有局部颜色表的图像和纯文本扩充)和局部(作用域紧接其后的单张图像)，都是可选的。
 *   格式:文件头(Header) + 数据部分( 控制标识符[Control Block] + [图像数据块Data Sub-blocks] + [扩展数据块 -- 89a] ) + 文件尾(Trailer, 0x3B[";"]的字符)
 *         每个数据块大小为[0..255],第一个字节为该数据块的大小,计算大小时不包括该字节(空数据块有一个字节，即标志大小的 0x00),
 *   
@@ -244,23 +245,27 @@
 *       EXTENSION_RECORD_TYPE (以'!'[0x21]开始)--扩展块，实现一些辅助功能，会影响其后的图像数据解码。比较重要的是: 图像控制扩展块(GRAPHICS_EXT_FUNC_CODE)
 *       TERMINATE_RECORD_TYPE (固定的';'[0x3B])--表明到了结束块的位置，可跳出 do{ DGifGetRecordType }while(RecordType != TERMINATE_RECORD_TYPE) 的循环
 *   函数，主要分为两类: Decode(函数名以D开始) + Encode(函数名以E开始)
-*     DGifSlurp
+*     DGifSlurp/EGifSpew -- ?
 *     EGifCloseFile -- 关闭打开的文件句柄并释放资源
 *     EGifOpenFileHandle -- 根据文件句柄打开输出文件，如 (1) 表示stdout
 *     EGifOpenFileName -- 根据文件名打开输出文件
 *     EGifOpen -- 通过回调的方式打开输出文件，可以适配各式各样的数据输出方式比如网络 等
-*	  EGifPutScreenDesc -- 设置逻辑屏幕标识符的信息，包括大小(SWidth * SHeight), 色深(ColorResolution[1..8])、背景色索引(SBackGroundColor)、
-*       GlobalColorMap、像素宽高比(Pixel Aspect Radio -- TODO:未直接设置?) 等参数信息
+*     EGifPutScreenDesc -- 设置逻辑屏幕标识符的信息，包括大小(SWidth * SHeight), 色深(ColorResolution[1..8])、
+*       背景色索引(SBackGroundColor，指向全局颜色表，指定没有被图像覆盖的视屏部分的颜色，若全局颜色表标志为0，该字段也被置为0，且被忽略)、
+*       GlobalColorMap、
+*       SortFlag(排序标志) -- 表明全局色表是否被排序，如值为1,表示全局色表按照重要性递减(颜色使用频度)的原则进行了排序，可帮助解码器选择最好的颜色子集来成像、
+*       像素宽高比(Pixel Aspect Radio -- 高宽比=(象素高宽比+15)/64,其值为 0(无比值)或1~255,表示范围从最宽的4:1到最高的1:4?, TODO:未直接设置 )
+*       
+*       等参数信息
 *     EGifPutImageDesc -- 设置一张Image图片数据的参数信息
 *     EGifPutLine -- 设置当前行的像素值?
 *     EGifPutPixel -- 设置当前位置的像素值?
-*     EGifSpew --
 *     EGifPutCode|EGifPutCodeNext -- 
 *   辅助函数:
 *     QuantizeBuffer|GifQuantizeBuffer -- 将RGB量化为调色板颜色，参考 QuantizeRGBBuffer 的实现方式
 *     
 *   基于颜色列表的图像数据(Table-Based Image Data),采用LZW算法压缩
-*     LZW编码长度(LZW Minimum Code Size) -- 也就是要压缩的数据的位数，其值一般等于图像的色深,需要根据该值初始化编译表
+*     LZW编码长度(LZW Minimum Code Size) -- 在图像数据中用LZW编码最初的位数，其值一般等于图像的色深,需要根据该值初始化编译表
 *       图像数据在压缩前有两种排列格式：
 *         连续的--从左到右、从上到下的顺序排列图像的光栅数据 
 *         交织的--创建四个通道(pass)保存数据，每个通道提取不同行的数据：
@@ -268,17 +273,24 @@
 *           Pass2提取从第4行开始每隔8行的数据 -- [4, 12, 20, 28,...]
 *           Pass3提取从第2行开始每隔4行的数据 -- [2, 6, 10, 14, ...]
 *           Pass4提取从第1行开始每隔2行的数据 -- [1, 3, 5, 7, 9,...]
-*     图像数据(Image Data) -- 由一或多个DataSubBlock 组成, 每个SubBlock为：一字节长度+最多255字节的Data
-*
+* 
+*   ImageDescriptor(图像描述符): ImageSeperator(图像分隔符,表示图像描述符的开始,0x2C) + 图像的Left,Top,Width,Height(各2Byte) + 标志位(LocalColorTableFlag, InterlaceFlag, SortFlag, 等)
+*   ImageData(图像数据) -- 由一或多个DataSubBlock 组成, 每个SubBlock为：一字节长度+最多255字节的Data，其值为使用LZW算法编码的颜色索引.
+* 
 *   GIF89 扩展块(extension function), 放在一个图像块(图像标识符)或文本扩展块的前面，用来控制跟在它后面的第一个图像(或文本)的渲染(Render)形式。
 *     可通过 EGifPutExtensionFirst => EGifPutExtensionNext => EGifPutExtensionLast 或 EGifPutExtension 两套函数进行处理
+*     格式(010Editor的命名): 
+*       ExtensionIntroducer(扩充导入符1Byte,0x21) + 类型标记(1Byte) + BlockSize(块尺寸,1Byte) + 内容(长度为BlockSize) + BlockTerminator(结束标志, 1Byte, 0x00)
 *     PLAINTEXT_EXT_FUNC_CODE(0x1--1) --图形文本扩展,用来绘制一个简单的文本图像。由用来绘制的纯文本数据(7-bit ASCII字符)和控制绘制的参数等组成。
 *       在文本框(GridBox)控制的矩形范围内使用全局颜色表的颜色进行绘制。
 *       unsigned char plain[12] = {块大小, GridLeft(2byte), GridTop(2byte), GridWidth(2byte),GridHeight(2byte), CellWidth, CellHeight, ForegroundColorIndex, BackColorIndex};
 *     GRAPHICS_EXT_FUNC_CODE(0xF9-249) --图像控制扩展块。unsigned char Extension[4] = { 长度, 标志字节, delay低位, delay高位, 透明色 }
-*       标志字节-- 里面设置了 处置方法(Disposal Method)、用户输入标志(Use Input Flag)、透明色标志 等
-*       延时(delay time) -- 单位为 1/100 秒, 如果值不为1，表示暂停规定的时间后再继续往下处理数据流
-*       透明色索引(transparent color index) -- 当图像解码时，遇到同样的颜色值，表示为透明部分? 怎么半透明?
+*       标志字节-- 里面设置了: 
+*         DisposalMethod(配置方法) -- 指示图像显示后的处理方法。0(无指定的配置，解码器不需要做任何处理);1(图像将被留在原位置);2(恢复背景颜色);3(恢复以前的颜色);4~7(未定义)
+*         UseInputFlag(用户输入标志) -- 在继续处理之前是否需要用户输入。可以和输入延时一起使用。
+*         TransparentColorFlag(透明色标志) -- 表明在透明色索引字段是否给定透明索引
+*       DelayTime(延时,2Byte) -- 单位为 1/100 秒, 如果值不为0，表示暂停规定的时间后再继续往下处理数据流
+*       TransparentColorIndex(透明色索引, 1Byte) -- 当图像解码时，如果遇到透明索引，则显示设备的相关象素不被改变，继续处理下一个象素
 *     COMMENT_EXT_FUNC_CODE(0xFE-254)--注释扩展，可以用来记录图形、版权、描述等任何的非图形和控制的纯文本数据(7-bit ASCII字符),
 *       注释扩展并不影响对图像数据流的处理，推荐放在数据流的开始或结尾。通过 EGifPutComment 设置
 *     APPLICATION_EXT_FUNC_CODE(0xFF-255)--应用程序扩展,由应用程序自己使用。应用程序可以在这里定义自己的标识、信息等

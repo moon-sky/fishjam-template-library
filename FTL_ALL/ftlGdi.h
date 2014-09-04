@@ -442,6 +442,11 @@ namespace FTL
 #define MAKE_RGBA(r,g,b,a)  ((COLORREF)((((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16))|(((DWORD)(BYTE)(a))<<24)))
 #define GetAValue(rgba)     (LOBYTE((rgba)>>24))
 
+
+    //计算位图宽度4字节对齐时每行占用的字节数，比如 宽度 7, bpp为4(16色)的位图格式，对齐后每行占4个字节(实际数据为3.5字节)
+#define CALC_BMP_ALLIGNMENT_WIDTH_COUNT( nWidth, nBpp) (( (nWidth) * (nBpp) + 31) / 32 * 4)
+    
+
     #ifdef FTL_DEBUG
         //判断位图是否可选入MemoryDC:1.要有效; 2.没有被选入别的DC中
     #define CHECK_BITMAP_SELECTABLE(h)   \
@@ -685,7 +690,8 @@ namespace FTL
 		FTLINLINE static BOOL ReplaceBitmapColor(HBITMAP hBmp, COLORREF clrFrom, COLORREF clrTo);
 
         //比较位图的图像数据, 返回值 >= 0 表示不同颜色的数目, < 0 表示失败
-        FTLINLINE static int ComapreBitmapData(int nWidth, int nHeight, int bpp, byte* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize);
+        FTLINLINE static int CompareBitmapData(int nWidth, int nHeight, int bpp, byte* pBmp1, byte* pBmp2, 
+            byte* pOutResult, int nResultSize, RECT* pMinDiffRect);
     };
 
 	//根据指定的方式，计算一个RECT内(居中)包含一个SIZE时的RECT位置，通常用于窗体内居中显示图片或视频

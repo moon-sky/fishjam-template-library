@@ -33,4 +33,8 @@ public:
     afx_msg void OnBnClickedButton1();
     BOOL _OverlayMouseToScreen(HDC hdc, LPRECT lpRect);
     afx_msg void OnBnClickedButton2();
+    afx_msg void OnTimer(UINT_PTR nIDEvent);
+    int m_nClipIndex;
+    DWORD m_dwTicket;
+    afx_msg void OnBnClickedBtnTimerClip();
 };
