@@ -1690,7 +1690,7 @@ namespace FTL
         m_bmpInfo.bmiHeader.biSizeImage = (((m_width * bpp + 31) >> 3) & ~3) * m_height;
 #ifdef _DEBUG
         int nCheckSizeImage = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(m_width, bpp) * m_height;
-        FTLASSERT(nCheckSizeImage, m_bmpInfo.bmiHeader.biSizeImage);
+        FTLASSERT(nCheckSizeImage == m_bmpInfo.bmiHeader.biSizeImage);
 #endif
 										  //(m_height * m_width * bpp + 31) / 32 * 4 ; 
         if (bpp <= 8)

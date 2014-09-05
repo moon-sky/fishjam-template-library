@@ -267,7 +267,7 @@ void CGifLibDemoDlg::OnBnClickedButton1()
     if (pColorMap)
     {
         //pColorMap->SortFlag = true;
-        GifFileType* pGifFile = EGifOpenFileName("gifDemo.gif", false, &nError);
+        GifFileType* pGifFile = EGifOpenFileName(L"gifDemo.gif", false, &nError);
         if (pGifFile)
         {
             GIF_VERIFY(EGifPutScreenDesc(pGifFile, nWidth, nHeight, nGifColorRes, 0, pColorMap));
@@ -386,7 +386,7 @@ void CGifLibDemoDlg::OnBnClickedButton2()
    CRect rectCapture(0, 0, nWidth, nHeight);
    API_VERIFY(canvas.Create(m_hWnd, nWidth, -nHeight, nBpp));
 
-   gifMaker.BeginMakeGif(nWidth, nHeight, nBpp, "gifMakerDemo.gif");
+   gifMaker.BeginMakeGif(nWidth, nHeight, nBpp, L"gifMakerDemo.gif");
    int i = 0;
    CRect rcDiffColor(10, 10, 30, 30);
    for (i = 0; i < 5; i++)
@@ -458,7 +458,7 @@ void CGifLibDemoDlg::OnBnClickedBtnTimerClip()
     int nRet = 0;
     int nError = 0;
 
-    g_gifMaker.BeginMakeGif(g_nWidth, g_nHeight, g_nBpp, "gifTimerClip.gif");
+    g_gifMaker.BeginMakeGif(g_nWidth, g_nHeight, g_nBpp, L"gifTimerClip.gif");
     m_nClipIndex = 0;
     
     SetTimer(1, 100, NULL);

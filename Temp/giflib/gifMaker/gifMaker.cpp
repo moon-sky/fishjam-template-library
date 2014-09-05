@@ -71,7 +71,7 @@ CGifMaker::~CGifMaker()
     }
 }
 
-BOOL CGifMaker::BeginMakeGif(int nWidth, int nHeight, int bpp, const char* fileName)
+BOOL CGifMaker::BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileName)
 {
     int nRet = 0;
     m_nPreWidth = nWidth;
@@ -90,7 +90,7 @@ BOOL CGifMaker::BeginMakeGif(int nWidth, int nHeight, int bpp, const char* fileN
     ZeroMemory(m_pDiffResult, m_nDiffResultSize);
 
     int nError = 0;
-    m_pGifFile = EGifOpenFileName(fileName, false, &nError);
+    m_pGifFile = EGifOpenFileName(pszFileName, false, &nError);
     GIF_VERIFY(EGifPutScreenDesc(m_pGifFile, nWidth, nHeight, bpp, 0, NULL));
     EGifSetGifVersion(m_pGifFile, true);
 

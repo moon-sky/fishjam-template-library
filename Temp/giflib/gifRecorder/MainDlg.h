@@ -6,10 +6,14 @@
 
 class CGifMaker;
 
-class CMainDlg : public CDialogImpl<CMainDlg>
+class CMainDlg : public CDialogImpl<CMainDlg>,
+    public CWinDataExchange<CMainDlg>
 {
 public:
-	enum { IDD = IDD_MAINDLG };
+	enum { 
+        IDD = IDD_MAINDLG,
+        ID_TIMER_FPS = 1,
+    };
     CMainDlg();
     ~CMainDlg();
 
@@ -17,9 +21,10 @@ public:
         DDX_TEXT(IDC_STATIC_SAVE_PATH, m_strSavePath)
         DDX_INT(IDC_EDIT_RECORD_LEFT, m_nLeft)
         DDX_INT(IDC_EDIT_RECORD_TOP, m_nTop)
-        DDX_INT(IDC_EDIT_WIDTH, m_nLeft)
-        DDX_INT(IDC_EDIT_RECORD_LEFT, m_nLeft)
-        DDX_INT(IDC_EDIT_RECORD_LEFT, m_nLeft)
+        DDX_INT(IDC_EDIT_RECORD_WIDTH, m_nWidth)
+        DDX_INT(IDC_EDIT_RECORD_HEIGHT, m_nHeight)
+        DDX_INT(IDC_EDIT_RECORD_FPS, m_nFps)
+        DDX_INT(IDC_EDIT_RECORD_BPP, m_nBpp);
     END_DDX_MAP()
 
 	BEGIN_MSG_MAP(CMainDlg)
@@ -29,6 +34,8 @@ public:
 		COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
         
         MSG_WM_DESTROY(OnDestroy)
+        MSG_WM_TIMER(OnTimer)
+
         COMMAND_ID_HANDLER_EX(IDC_BTN_CHOOSE_SAVE_PATH, OnBtnChooseSavePath)
         COMMAND_ID_HANDLER_EX(IDC_BTN_START_RECORD, OnBtnStartRecord)
         COMMAND_ID_HANDLER_EX(IDC_BTN_STOP_RECORD, OnBtnStopRecord)
@@ -49,9 +56,12 @@ public:
     void OnBtnStartRecord(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnBtnStopRecord(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnDestroy();
+    void OnTimer(UINT_PTR nIDEvent);
+
 private:
     CGifMaker*  m_pGifMaker;
     CString m_strSavePath;
     int m_nLeft, m_nTop, m_nWidth, m_nHeight;
-    int m_nFps;
+    int m_nFps, m_nBpp;
+    int m_nImageIndex;
 };

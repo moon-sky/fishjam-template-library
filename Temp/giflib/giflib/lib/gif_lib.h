@@ -125,7 +125,7 @@ typedef struct GraphicsControlBlock {
 ******************************************************************************/
 
 /* Main entry points */
-GifFileType *EGifOpenFileName(const char *GifFileName,
+GifFileType *EGifOpenFileName(const wchar_t *GifFileName,
                               const bool GifTestExistence, int *Error);
 GifFileType *EGifOpenFileHandle(const int GifFileHandle, int *Error);
 GifFileType *EGifOpen(void *userPtr, OutputFunc writeFunc, int *Error);

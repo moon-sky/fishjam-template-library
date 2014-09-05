@@ -13,8 +13,8 @@
 //// This class is exported from the gifMaker.dll
 
 namespace FTL{
-    template <typename ThreadTraits = DefaultThreadTraits>
-    class CFThread;
+    //template <typename ThreadTraits = DefaultThreadTraits>
+    //class CFThread;
 }
 
 struct GifFileType;
@@ -26,7 +26,7 @@ public:
 	CGifMaker(void);
     ~CGifMaker();
 
-    BOOL BeginMakeGif(int nWidth, int nHeight, int bpp, const char* fileName);
+    BOOL BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileName);
     BOOL AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket);
     BOOL EndMakeGif(DWORD dwTicket);
 private:

@@ -7,6 +7,8 @@
 
 #include "MainDlg.h"
 
+#include "../gifMaker/gifMaker.h"
+
 CMainDlg::CMainDlg()
 {
     m_strSavePath = TEXT("gifRecorder.gif");
@@ -16,6 +18,8 @@ CMainDlg::CMainDlg()
     m_nWidth = 640;
     m_nHeight = 480;
     m_nFps = 10;
+    m_nBpp = 24;
+    m_nImageIndex = 0;
 }
 
 CMainDlg::~CMainDlg()
@@ -77,12 +81,63 @@ void CMainDlg::OnBtnChooseSavePath(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CMainDlg::OnBtnStartRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    FTLASSERT(NULL == m_pGifMaker);
-    
+    BOOL bRet = FALSE;
+    API_VERIFY(DoDataExchange(TRUE));
+    if (m_nFps < 1 || m_nFps > 30)
+    {
+        MessageBox(TEXT("FPS must be in [1~30]"));
+        return;
+    }
+    if(m_nBpp != 1 && m_nBpp != 2 && m_nBpp != 4 && m_nBpp != 8 && m_nBpp != 16 && m_nBpp != 24 && m_nBpp != 32){
+        MessageBox(TEXT("Invalid Bpp"));
+        return;
+    }
+
+    if (bRet)
+    {
+        FTLASSERT(NULL == m_pGifMaker);
+        if (NULL == m_pGifMaker)
+        {
+            m_pGifMaker = new CGifMaker();
+            m_pGifMaker->BeginMakeGif(m_nWidth, m_nHeight, m_nBpp, m_strSavePath);
+            SetTimer(ID_TIMER_FPS, 1000/m_nFps, NULL);
+        }
+    }
     
 }
 
 void CMainDlg::OnBtnStopRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    if(m_pGifMaker)
+    {
+        KillTimer(ID_TIMER_FPS);
+        m_pGifMaker->EndMakeGif(GetTickCount());
+        SAFE_DELETE(m_pGifMaker);
+    }
 
+}
+
+void CMainDlg::OnTimer(UINT_PTR nIDEvent)
+{
+    BOOL bRet = FALSE;
+
+    m_nImageIndex++;
+    {
+        FTL::CFCanvas canvas;
+
+        CRect rectCapture(0, 0, m_nWidth, m_nHeight);
+        API_VERIFY(canvas.Create(m_hWnd, m_nWidth, -m_nHeight, m_nBpp));
+        CWindowDC desktopDC(GetDesktopWindow());
+        API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, m_nWidth, m_nHeight, desktopDC, m_nLeft, m_nTop, SRCCOPY));
+
+#if 0
+        CPath   path(m_strSavePath);
+        path.RemoveExtension();
+        CString strFileName = path.m_strPath;
+        strFileName.AppendFormat(TEXT("_%d.bmp"), m_nImageIndex);
+        API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
+#endif
+
+        m_pGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
+    }
 }

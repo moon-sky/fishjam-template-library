@@ -57,17 +57,17 @@ static int EGifBufferedOutput(GifFileType * GifFile, GifByteType * Buf,
  info record. The Error member is cleared if successful.
 ******************************************************************************/
 GifFileType *
-EGifOpenFileName(const char *FileName, const bool TestExistence, int *Error)
+EGifOpenFileName(const wchar_t *FileName, const bool TestExistence, int *Error)
 {
 
     int FileHandle = -1;
     GifFileType *GifFile;
 
     if (TestExistence){
-        FileHandle = open(FileName, O_WRONLY | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
+        FileHandle = _wopen(FileName, O_WRONLY | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
     }
     else {
-        FileHandle = open(FileName, O_WRONLY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+        FileHandle = _wopen(FileName, O_WRONLY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     }
 
     if (FileHandle == -1) {
