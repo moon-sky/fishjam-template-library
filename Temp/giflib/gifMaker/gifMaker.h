@@ -19,7 +19,7 @@ namespace FTL{
 
 struct GifFileType;
 struct GifColorType;
-
+class CQuantizer;
 
 class GIFMAKER_API CGifMaker {
 public:
@@ -50,6 +50,7 @@ private:
     GifFileType* m_pGifFile;
     GifColorType* m_pColorMap256;
     DWORD m_dwLastTicket;
+    CQuantizer* m_pQuantizer;
 
     BOOL _WriteGifData(BYTE* pBmpData, RECT rcBmp, DWORD dwTicket);
 

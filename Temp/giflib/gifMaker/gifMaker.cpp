@@ -8,6 +8,8 @@
 #include <ftlThread.h>
 #include <ftlGdi.h>
 #include <ftlDebug.h>
+#include <ftlAlgorithm.h>
+#include "Quantize.h"
 
 #include "../giflib/lib/gif_lib.h"
 #ifdef _DEBUG
@@ -45,6 +47,8 @@ CGifMaker::CGifMaker()
     m_pGifBuffer = NULL;
     m_pTranslateBuffer = NULL;
     m_pColorMap256 = NULL;
+    m_pQuantizer = new CQuantizer(256, 8);
+
     m_bFirstImage = TRUE;
     m_bDelayImage = FALSE;
     m_pGiffDiffBuffer = NULL;
@@ -59,6 +63,8 @@ CGifMaker::CGifMaker()
 CGifMaker::~CGifMaker()
 {
     FTLASSERT(m_pGifFile == NULL);
+    SAFE_DELETE(m_pQuantizer);
+
     SAFE_DELETE_ARRAY(m_pTranslateBuffer);
     SAFE_DELETE_ARRAY(m_pColorMap256);
     SAFE_DELETE_ARRAY(m_pGifBuffer);
@@ -73,6 +79,8 @@ CGifMaker::~CGifMaker()
 
 BOOL CGifMaker::BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileName)
 {
+    FTL::CFWuColorQuantizer clrQuantizer;
+
     int nRet = 0;
     m_nPreWidth = nWidth;
     m_nPreHeight = nHeight;
@@ -242,7 +250,12 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
 
     //if (bWriteImageData)
     {
+#if 1
         nRet = GifQuantizeRGBBuffer(nWidth, nHeight, m_nPreBpp, pBmpData, m_pColorMap256, m_pGifBuffer);
+#else
+        API_VERIFY(m_pQuantizer->ProcessImage(nWidth, nHeight, m_nPreBpp, pBmpData));
+        m_pQuantizer->SetColorTable(m_pColorMap256);
+#endif 
         ColorMapObject *pColorMap = GifMakeMapObject(m_nGifNumLevels, m_pColorMap256);
 
         GIF_VERIFY(EGifPutImageDesc(m_pGifFile, rcBmp.left, rcBmp.top, nWidth, nHeight, FALSE, pColorMap));

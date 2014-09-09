@@ -349,26 +349,41 @@ void CGifLibDemoDlg::OnBnClickedButton1()
 void CGifLibDemoDlg::OnBnClickedButton2()
 {
 
-    //{
-    //    BOOL bRet = FALSE;
-    //    FTL::CFCanvas canvas;
-    //    API_VERIFY(canvas.Create(m_hWnd, 7, -6, 24));
-    //    memset(canvas.GetBuffer(), 0x78, canvas.GetBufferSize());
+    {
+        int nWidth = 100;//77;
+        int nHeight = 100;//77;
+        int nGifColorRes = 8;
+        int NumLevels = 256;
+        int nBpp = 8;
 
-    //    CDC memDC;
-    //    memDC.Attach(canvas.GetCanvasDC());
-    //    for (int j = 0; j < 6; j++)
-    //    {
-    //       memDC.FillSolidRect(0, j, 7, 1, RGB(255, 0, j * 10));
-    //    }
-    //    
-    //    memDC.Detach();
+        BOOL bRet = FALSE;
+        FTL::CFCanvas canvas;
+        API_VERIFY(canvas.Create(m_hWnd, nWidth, -nHeight, nBpp));
+        //memset(canvas.GetBuffer(), 0x78, canvas.GetBufferSize());
+        CWindowDC desktopDC(GetDesktopWindow());
+        API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0, 0, SRCCOPY));
 
-    //    BYTE* pBuffer = canvas.GetBuffer();
-    //    INT nSize = canvas.GetBufferSize();
-    //    
-    //    return;
-    //}
+        CClientDC wndDC(this);
+        ::BitBlt(wndDC.GetSafeHdc(), 0, 0, nWidth, nHeight, canvas.GetCanvasDC(), 0, 0, SRCCOPY);
+
+
+        CString strFileName;
+        API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), TEXT("OnBnClickedButton2.bmp")));
+        
+
+        //CDC memDC;
+        //memDC.Attach(canvas.GetCanvasDC());
+        //for (int j = 0; j < 6; j++)
+        //{
+        //   memDC.FillSolidRect(0, j, 7, 1, RGB(255, 0, j * 10));
+        //}
+        //memDC.Detach();
+
+        //BYTE* pBuffer = canvas.GetBuffer();
+        //INT nSize = canvas.GetBufferSize();
+        
+        return;
+    }
 
     BOOL bRet = FALSE;
     int nRet = 0;
