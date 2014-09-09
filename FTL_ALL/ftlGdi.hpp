@@ -1712,7 +1712,7 @@ namespace FTL
         API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(
 			hScreen, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
 			&m_bmpInfo, 
-			DIB_RGB_COLORS, //DIB_PAL_COLORS
+            bpp > 8 ? DIB_RGB_COLORS :DIB_PAL_COLORS,
             (VOID**)&m_pBuffer, NULL, 0)));
         ZeroMemory(m_pBuffer, m_bmpInfo.bmiHeader.biSizeImage);
         if (bpp <= 8)

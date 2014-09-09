@@ -34,7 +34,7 @@ VGA中, 1逻辑英寸=96像素, 300dpi的打印机，1英寸300像素
 
 颜色空间(Color Space) -- 微软在 CDrawingManager 中提供了各种颜色空间转换的函数(如RGBtoHSL),但依赖于MFC
   RGB -- Red, Green, Blue, 科学研究一般不采用RGB颜色空间(难以进行数字化的调整),是最通用的面向硬件的彩色模型
-  HSL -- Hue(色调 0~239), Saturation(饱和度,0~240), Lum(亮度,0~240)，能更好的数字化处理
+  HSL -- Hue(色调 0~239, 代表颜色), Saturation(饱和度,0~240,代表颜色纯度), Lum(亮度,0~240)，能更好的数字化处理
   CMY -- 工业印刷采用的颜色空间
 
 COLORREF -- 0x00bbggrr, 四字节，RGB 只能设置3个字节，自定义一个扩展的 RGBA, 测试向Canvas上手动生成RGBA的数据
