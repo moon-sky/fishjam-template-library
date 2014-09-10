@@ -84,6 +84,11 @@ namespace FTL{
         //IFColorQuantizer
         FTLINLINE virtual BOOL SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize);
         FTLINLINE virtual COLORREF*   GetPalette(UINT* pResultCount);
+        FTLINLINE virtual BOOL ProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
+    protected:
+        FTLINLINE virtual BOOL OnPrepare();
+        FTLINLINE virtual void OnFinish();
+        virtual BOOL OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount) = 0;
     protected:
         UINT m_nWidth;
         UINT m_nHeight;
@@ -117,9 +122,9 @@ namespace FTL{
     public:
         FTLINLINE CFWuColorQuantizer();
         FTLINLINE virtual ~CFWuColorQuantizer();
-        FTLINLINE virtual BOOL ProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount);
+    protected:
         FTLINLINE virtual BOOL OnPrepare();
-        FTLINLINE virtual BOOL OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount);
+        FTLINLINE virtual BOOL OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
         FTLINLINE virtual void OnFinish();
     private:
         enum {
@@ -134,7 +139,7 @@ namespace FTL{
 
         //template<typename T>
         //using MomentType = std::vector<std::vector<std::vector<T> > >; //long moment[SIDE_SIZE][SIDE_SIZE][SIDE_SIZE]);
-        typedef std::vector<std::vector<std::vector<long> > > ColorMomentType;
+        typedef std::vector<std::vector<std::vector<INT64> > > ColorMomentType;
         typedef std::vector<std::vector<std::vector<float> > > VolumeMomentType;
 
         struct ColorCube{
@@ -156,14 +161,14 @@ namespace FTL{
             int Volume;
         };
         
-        FTLINLINE long Bottom(ColorCube &cube, int direction, ColorMomentType& moment);
-        FTLINLINE long Top(ColorCube& cube, int direction,  int position, ColorMomentType& moment);
+        FTLINLINE INT64 Bottom(ColorCube &cube, int direction, ColorMomentType& moment);
+        FTLINLINE INT64 Top(ColorCube& cube, int direction,  int position, ColorMomentType& moment);
 
-        FTLINLINE long Volume(ColorCube& cube, ColorMomentType& moment);
+        FTLINLINE INT64 Volume(ColorCube& cube, ColorMomentType& moment);
         FTLINLINE float VolumeFloat(ColorCube& cube, VolumeMomentType& moment);
         FTLINLINE float CalculateVariance(ColorCube& cube);
         float Maximize(ColorCube& cube, int direction, int first, int last, 
-            int* cut, long wholeRed, long wholeGreen, long wholeBlue, long wholeWeight);
+            int* cut, INT64 wholeRed, INT64 wholeGreen, INT64 wholeBlue, INT64 wholeWeight);
         BOOL Cut(ColorCube& first, ColorCube& second);
         void Mark(ColorCube& cube, int label, int* tag);
 
@@ -172,7 +177,7 @@ namespace FTL{
         void _InitMomentSize(VolumeMomentType& moments);
     //private:
     public:
-        std::vector<int> reds;
+        std::vector<int> m_reds;
         std::vector<int> greens;
         std::vector<int> blues;
         std::vector<int> sums;
@@ -187,7 +192,7 @@ namespace FTL{
         int* tag;
         int* quantizedPixels;
         int*             table;
-        UINT* pixels;
+        COLORREF* pixels;
         
         int imageWidth;
         int imageSize;

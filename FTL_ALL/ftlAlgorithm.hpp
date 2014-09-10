@@ -28,8 +28,8 @@ namespace FTL
 
     CFColorQuantizerBase::~CFColorQuantizerBase(){
         SAFE_DELETE_ARRAY(m_pResultBuffer);
-        SAFE_DELETE_ARRAY(m_pBmpData);
         SAFE_DELETE_ARRAY(m_pResultPalette);
+        SAFE_DELETE_ARRAY(m_pBmpData);
     }
 
     BOOL CFColorQuantizerBase::SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize)
@@ -58,7 +58,6 @@ namespace FTL
                 m_nBpp = nBpp;
                 m_nBmpLineBytes = nBmpLineBytes;
                 m_nBmpDataSize = nBmpDataSize;
-                //ZeroMemory(m_pBmpData, nBmpDataSize);
                 CopyMemory(m_pBmpData, pBmpData, nBmpDataSize);
             }
             else{
@@ -68,6 +67,28 @@ namespace FTL
         }
 
         return TRUE;
+    }
+
+    BOOL CFColorQuantizerBase::ProcessQuantizer(UINT colorCount, UINT *pResultClrCount)
+    {
+        FUNCTION_BLOCK_TRACE(100);
+        BOOL bRet = FALSE;
+        API_VERIFY(OnPrepare());
+        if (bRet)
+        {
+            API_VERIFY(OnProcessQuantizer(colorCount, pResultClrCount));
+
+            OnFinish();
+        }
+        return bRet;
+    }
+
+    BOOL CFColorQuantizerBase::OnPrepare()
+    {
+        return TRUE;
+    }
+    void CFColorQuantizerBase::OnFinish()
+    {
     }
 
     COLORREF* CFColorQuantizerBase::GetPalette(UINT* pResultCount)
@@ -87,6 +108,7 @@ namespace FTL
         pixels = NULL;
         quantizedPixels = NULL;
         cubes = NULL;
+        tag = NULL;
         imageWidth = 0;
         imageSize = 0;
         pixelIndex = 0;
@@ -94,24 +116,15 @@ namespace FTL
 
     CFWuColorQuantizer::~CFWuColorQuantizer()
     {
-
+        SAFE_DELETE_ARRAY(tag);
+        SAFE_DELETE_ARRAY(cubes);
+        SAFE_DELETE_ARRAY(quantizedPixels);
+        SAFE_DELETE_ARRAY(pixels);
+        SAFE_DELETE_ARRAY(table);
     }
 
-    BOOL CFWuColorQuantizer::ProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount)
-    {
-        FUNCTION_BLOCK_TRACE(100);
-        BOOL bRet = FALSE;
-        API_VERIFY(OnPrepare());
-        if (bRet)
-        {
-            API_VERIFY(OnProcessQuantizer(nWantClrCount, pResultClrCount));
 
-            OnFinish();
-        }
-        return bRet;
-    }
-
-    BOOL CFWuColorQuantizer::OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount)
+    BOOL CFWuColorQuantizer::OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount)
     {
         FUNCTION_BLOCK_TRACE(100);
         BOOL bRet = FALSE;
@@ -120,9 +133,11 @@ namespace FTL
         int next = 0;
         std::vector<float> volumeVariance(MAX_COLOR);
 
+        int nCalcCount = 0;
         // processes the cubes
-        for (int cubeIndex = 1; cubeIndex < nWantClrCount; ++cubeIndex)
+        for (int cubeIndex = 1; cubeIndex < colorCount; ++cubeIndex)
         {
+            nCalcCount++;
             // if cut is possible; make it
             if (Cut(cubes[next], cubes[cubeIndex]))
             {
@@ -149,7 +164,7 @@ namespace FTL
 
             if (temp <= 0.0)
             {
-                nWantClrCount = cubeIndex + 1;
+                colorCount = cubeIndex + 1;
                 break;
             }
         }
@@ -162,7 +177,7 @@ namespace FTL
         //std::vector<int> tag(MAX_VOLUME);
         
         // precalculates lookup tables
-        for (int k = 0; k < nWantClrCount; ++k)
+        for (int k = 0; k < colorCount; ++k)
         {
             Mark(cubes[k], k, tag);
 
@@ -188,10 +203,10 @@ namespace FTL
             quantizedPixels[index] = tag[quantizedPixels[index]];
         }
 
-        reds.resize(nWantClrCount + 1);
-        greens.resize(nWantClrCount + 1);
-        blues.resize(nWantClrCount + 1);
-        sums.resize(nWantClrCount + 1);
+        m_reds.resize(colorCount + 1);
+        greens.resize(colorCount + 1);
+        blues.resize(colorCount + 1);
+        sums.resize(colorCount + 1);
         indices.resize(imageSize);
 
         // scans and adds colors
@@ -204,7 +219,7 @@ namespace FTL
             int bestMatch = match;
             int bestDistance = 100000000;
 
-            for (int lookup = 0; lookup < nWantClrCount; lookup++)
+            for (int lookup = 0; lookup < colorCount; lookup++)
             {
                 int foundRed = lookupRed[lookup];
                 int foundGreen = lookupGreen[lookup];
@@ -222,7 +237,7 @@ namespace FTL
                 }
             }
 
-            reds[bestMatch] += GetRValue(color);
+            m_reds[bestMatch] += GetRValue(color);
             greens[bestMatch] += GetGValue(color);
             blues[bestMatch] += GetBValue(color);
             sums[bestMatch]++;
@@ -230,23 +245,26 @@ namespace FTL
             indices[index] = bestMatch;
         }
         
-        m_pResultPalette = new COLORREF[nWantClrCount];
-        ZeroMemory(m_pResultPalette, sizeof(COLORREF) * nWantClrCount);
+        m_pResultPalette = new COLORREF[colorCount];
+        ZeroMemory(m_pResultPalette, sizeof(COLORREF) * colorCount);
         m_nPaletteItemCount = 0;
 
         //List<Color> result = new List<Color>();
 
         // generates palette
-        for (int paletteIndex = 0; paletteIndex < nWantClrCount; paletteIndex++)
+        for (int paletteIndex = 0; paletteIndex < colorCount; paletteIndex++)
         {
             if (sums[paletteIndex] > 0)
             {
-                reds[paletteIndex] /= sums[paletteIndex];
+                m_reds[paletteIndex] /= sums[paletteIndex];
                 greens[paletteIndex] /= sums[paletteIndex];
                 blues[paletteIndex] /= sums[paletteIndex];
             }
 
-            COLORREF color = MAKE_RGBA(reds[paletteIndex], greens[paletteIndex], blues[paletteIndex], 0xFF);
+            COLORREF color = MAKE_RGBA(m_reds[paletteIndex], greens[paletteIndex], blues[paletteIndex], 0xFF);
+            int R = GetRValue(color);
+            int G = GetGValue(color);
+            int B = GetBValue(color);
             //Color color = Color.FromArgb(255, );
             m_pResultPalette[m_nPaletteItemCount++] = color;
             //result.Add(color);
@@ -321,7 +339,9 @@ namespace FTL
         imageSize = m_nWidth * m_nHeight;
 
         quantizedPixels = new int[imageSize];
-        pixels = new UINT[imageSize];
+        ZeroMemory(quantizedPixels, sizeof(int) * imageSize);
+        pixels = new COLORREF[imageSize];
+        ZeroMemory(pixels, sizeof(COLORREF) * imageSize);
 
 
         //OnAddColor
@@ -350,6 +370,10 @@ namespace FTL
 
                 quantizedPixels[pixelIndex] = (indexRed << 10) + (indexRed << 6) + indexRed + (indexGreen << 5) + indexGreen + indexBlue;
                 pixels[pixelIndex] = MAKE_RGBA(Red, Green, Blue, 0xFF);
+                int R = GetRValue(pixels[pixelIndex]);
+                int G = GetGValue(pixels[pixelIndex]);
+                int B = GetBValue(pixels[pixelIndex]);
+
                 pixelIndex++;
             }
         }
@@ -360,10 +384,10 @@ namespace FTL
     void CFWuColorQuantizer::CalculateMoments()
     {
         FUNCTION_BLOCK_TRACE(100);
-        std::vector<long> area(SIDE_SIZE);
-        std::vector<long> areaRed(SIDE_SIZE);
-        std::vector<long> areaGreen(SIDE_SIZE);
-        std::vector<long> areaBlue(SIDE_SIZE);
+        std::vector<INT64> area(SIDE_SIZE);
+        std::vector<INT64> areaRed(SIDE_SIZE);
+        std::vector<INT64> areaGreen(SIDE_SIZE);
+        std::vector<INT64> areaBlue(SIDE_SIZE);
         std::vector<float> area2(SIDE_SIZE);
 
         for (int redIndex = 1; redIndex <= MAX_SIDE_INDEX; ++redIndex)
@@ -379,10 +403,10 @@ namespace FTL
 
             for (int greenIndex = 1; greenIndex <= MAX_SIDE_INDEX; ++greenIndex)
             {
-                long line = 0;
-                long lineRed = 0;
-                long lineGreen = 0;
-                long lineBlue = 0;
+                INT64 line = 0;
+                INT64 lineRed = 0;
+                INT64 lineGreen = 0;
+                INT64 lineBlue = 0;
                 float line2 = 0.0f;
 
                 for (int blueIndex = 1; blueIndex <= MAX_SIDE_INDEX; ++blueIndex)
@@ -413,7 +437,7 @@ namespace FTL
 
     }
 
-    long CFWuColorQuantizer::Volume(ColorCube& cube, ColorMomentType& moment)
+    INT64 CFWuColorQuantizer::Volume(ColorCube& cube, ColorMomentType& moment)
     {
         return moment[cube.RedMaximum][cube.GreenMaximum][cube.BlueMaximum]
             - moment[cube.RedMaximum][cube.GreenMaximum][cube.BlueMinimum]
@@ -437,7 +461,7 @@ namespace FTL
             - moment[cube.RedMinimum][cube.GreenMinimum][cube.BlueMinimum];
     }
 
-    long CFWuColorQuantizer::Top(ColorCube& cube, int direction,  int position, ColorMomentType& moment)
+    INT64 CFWuColorQuantizer::Top(ColorCube& cube, int direction,  int position, ColorMomentType& moment)
     {
         switch (direction)
         {
@@ -463,13 +487,12 @@ namespace FTL
             return 0;
         }
     }
-    long CFWuColorQuantizer::Bottom(ColorCube &cube, int direction, ColorMomentType& moment)
+    INT64 CFWuColorQuantizer::Bottom(ColorCube &cube, int direction, ColorMomentType& moment)
     {
         switch (direction)
         {
         case DIR_RED:
-            return (
-                -moment[cube.RedMinimum][cube.GreenMaximum][cube.BlueMaximum] 
+            return (-moment[cube.RedMinimum][cube.GreenMaximum][cube.BlueMaximum] 
             + moment[cube.RedMinimum][cube.GreenMaximum][cube.BlueMinimum]
             + moment[cube.RedMinimum][cube.GreenMinimum][cube.BlueMaximum]
             - moment[cube.RedMinimum][cube.GreenMinimum][cube.BlueMinimum]);
@@ -505,12 +528,12 @@ namespace FTL
     }
 
     float CFWuColorQuantizer::Maximize(ColorCube& cube, int direction, int first, int last, 
-        int* cut, long wholeRed, long wholeGreen, long wholeBlue, long wholeWeight)
+        int* cut, INT64 wholeRed, INT64 wholeGreen, INT64 wholeBlue, INT64 wholeWeight)
     {
-        long bottomRed = Bottom(cube, direction, momentsRed);
-        long bottomGreen = Bottom(cube, direction, momentsGreen);
-        long bottomBlue = Bottom(cube, direction, momentsBlue);
-        long bottomWeight = Bottom(cube, direction, weights);
+        INT64 bottomRed = Bottom(cube, direction, momentsRed);
+        INT64 bottomGreen = Bottom(cube, direction, momentsGreen);
+        INT64 bottomBlue = Bottom(cube, direction, momentsBlue);
+        INT64 bottomWeight = Bottom(cube, direction, weights);
 
         float result = 0.0f;
         *cut = -1;
@@ -518,10 +541,10 @@ namespace FTL
         for (int position = first; position < last; ++position)
         {
             // determines the cube cut at a certain position
-            long halfRed = bottomRed + Top(cube, direction, position, momentsRed);
-            long halfGreen = bottomGreen + Top(cube, direction, position, momentsGreen);
-            long halfBlue = bottomBlue + Top(cube, direction, position, momentsBlue);
-            long halfWeight = bottomWeight + Top(cube, direction, position, weights);
+            INT64 halfRed = bottomRed + Top(cube, direction, position, momentsRed);
+            INT64 halfGreen = bottomGreen + Top(cube, direction, position, momentsGreen);
+            INT64 halfBlue = bottomBlue + Top(cube, direction, position, momentsBlue);
+            INT64 halfWeight = bottomWeight + Top(cube, direction, position, weights);
 
             // the cube cannot be cut at bottom (this would lead to empty cube)
             if (halfWeight != 0)
@@ -559,10 +582,10 @@ namespace FTL
         int cutGreen = 0;
         int cutBlue = 0;
 
-        long wholeRed = Volume(first, momentsRed);
-        long wholeGreen = Volume(first, momentsGreen);
-        long wholeBlue = Volume(first, momentsBlue);
-        long wholeWeight = Volume(first, weights);
+        INT64 wholeRed = Volume(first, momentsRed);
+        INT64 wholeGreen = Volume(first, momentsGreen);
+        INT64 wholeBlue = Volume(first, momentsBlue);
+        INT64 wholeWeight = Volume(first, weights);
 
         float maxRed = Maximize(first, DIR_RED, first.RedMinimum + 1, first.RedMaximum, &cutRed, wholeRed, wholeGreen, wholeBlue, wholeWeight);
         float maxGreen = Maximize(first, DIR_GREEN, first.GreenMinimum + 1, first.GreenMaximum, &cutGreen, wholeRed, wholeGreen, wholeBlue, wholeWeight);

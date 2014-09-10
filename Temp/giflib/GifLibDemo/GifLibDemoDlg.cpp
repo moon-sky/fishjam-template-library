@@ -430,8 +430,8 @@ void CGifLibDemoDlg::OnBnClickedButton2()
 }
 
 CGifMaker    g_gifMaker;
-int         g_nWidth = 800;
-int         g_nHeight = 600;
+int         g_nWidth = 100;
+int         g_nHeight = 100;
 int         g_nBpp = 24;
 
 void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
@@ -442,7 +442,6 @@ void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
     if (m_nClipIndex < 300)
     {
         FTL::CFCanvas canvas;
-
         CRect rectCapture(0, 0, g_nWidth, g_nHeight);
         API_VERIFY(canvas.Create(m_hWnd, g_nWidth, -g_nHeight, g_nBpp));
         CWindowDC desktopDC(GetDesktopWindow());
@@ -484,17 +483,53 @@ void CGifLibDemoDlg::OnBnClickedBtnTimerClip()
 void CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer()
 {
     BOOL bRet = FALSE;
-    FTL::CFCanvas canvas;
 
     FTL::CFElapseCounter    elpaseCounter;
 
+    //CBitmap bmp;
+    //API_VERIFY(bmp.LoadBitmap(IDB_BITMAP1));
+    //if (bRet)
+    //{
+    //    BITMAP bitmap = {0};
+    //    bmp.GetBitmap(&bitmap);
+    //    //CALC_BMP_ALLIGNMENT_WIDTH_COUNT(bitmap.bmWidthBytes bitmap.bmBitsPixel
+    //    DWORD dwSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(bitmap.bmWidth, bitmap.bmBitsPixel) * bitmap.bmHeight;
+    //    BITMAPINFO  bmInfo = {0};
+    //    bmInfo.bmiHeader.biSize = sizeof(bmInfo.bmiHeader);
+    //    bmInfo.bmiHeader.biWidth = bitmap.bmWidth;
+    //    bmInfo.bmiHeader.biHeight = bitmap.bmHeight;
+    //    bmInfo.bmiHeader.biPlanes = 1;
+    //    bmInfo.bmiHeader.biBitCount = bitmap.bmBitsPixel;
+    //    bmInfo.bmiHeader.biSizeImage = dwSize;
+    //    BYTE* pBuffer = new BYTE[dwSize ];
+    //    //bmp.GetBitmapBits(dwSize, pBuffer);
+    //    int nRet = GetDIBits(NULL, bmp, 0, bitmap.bmHeight-1, pBuffer, &bmInfo, DIB_RGB_COLORS);
+    //    CGifMaker    gifMaker;
+    //    gifMaker.BeginMakeGif(bitmap.bmWidth, bitmap.bmHeight, bitmap.bmBitsPixel, TEXT("WuColorQuantizer.gif"));
+    //    gifMaker.AddGifImage(pBuffer, dwSize, GetTickCount());
+    //    gifMaker.EndMakeGif(GetTickCount());
+    //    
+    //    return;
+    //}
+
     CRect rectCapture(0, 0, g_nWidth, g_nHeight);
+    FTL::CFCanvas canvas;
     API_VERIFY(canvas.Create(m_hWnd, g_nWidth, -g_nHeight, g_nBpp));
     
-#if 0
+#if 1
     CDC memDC;
     memDC.Attach(canvas.GetCanvasDC());
-    memDC.FillSolidRect(0, 0, g_nWidth, g_nHeight, RGB(255, 0, 0));
+    int nFillWidth = 8, nFillHeight = 8;
+    int nColorCount = 0;
+    for (int w = 0; w < g_nWidth; w+=nFillWidth)
+    {
+        for (int h = 0; h < g_nHeight; h+=nFillHeight)
+        {
+            nColorCount++;
+            memDC.FillSolidRect(w, h, nFillWidth, nFillHeight, RGB(w * 2, 0x0, 0xFF - h * 2));
+        }
+    }
+    FTLTRACE(TEXT("nCOlorCount=%d\n"), nColorCount);
     memDC.Detach();
 #else
     CWindowDC desktopDC(GetDesktopWindow());
