@@ -24,6 +24,7 @@
 #include <ftlBase.h>
 #include <ftlGdi.h>
 #include <ftlDebug.h>
+#include <ftlAlgorithm.h>
 
 //#ifdef _DEBUG
 //#define new DEBUG_NEW
@@ -94,6 +95,7 @@ BEGIN_MESSAGE_MAP(CGifLibDemoDlg, CDialog)
     ON_BN_CLICKED(IDC_BUTTON2, &CGifLibDemoDlg::OnBnClickedButton2)
     ON_WM_TIMER()
     ON_BN_CLICKED(IDC_BTN_TIMER_CLIP, &CGifLibDemoDlg::OnBnClickedBtnTimerClip)
+    ON_BN_CLICKED(IDC_BTN_WU_COLOR_QUANTIZER, &CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer)
 END_MESSAGE_MAP()
 
 
@@ -477,4 +479,48 @@ void CGifLibDemoDlg::OnBnClickedBtnTimerClip()
     m_nClipIndex = 0;
     
     SetTimer(1, 100, NULL);
+}
+
+void CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer()
+{
+    BOOL bRet = FALSE;
+    FTL::CFCanvas canvas;
+
+    FTL::CFElapseCounter    elpaseCounter;
+
+    CRect rectCapture(0, 0, g_nWidth, g_nHeight);
+    API_VERIFY(canvas.Create(m_hWnd, g_nWidth, -g_nHeight, g_nBpp));
+    
+#if 0
+    CDC memDC;
+    memDC.Attach(canvas.GetCanvasDC());
+    memDC.FillSolidRect(0, 0, g_nWidth, g_nHeight, RGB(255, 0, 0));
+    memDC.Detach();
+#else
+    CWindowDC desktopDC(GetDesktopWindow());
+    API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, g_nWidth, g_nHeight, desktopDC, 100, 100, SRCCOPY));
+#endif 
+
+#ifdef _DEBUG
+    API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), TEXT("WuColorQuantizer.bmp")));
+#endif
+
+    CGifMaker    gifMaker;
+    gifMaker.BeginMakeGif(canvas.GetWidth(), canvas.GetHeight(), canvas.GetBpp(), TEXT("WuColorQuantizer.gif"));
+    gifMaker.AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
+    gifMaker.EndMakeGif(GetTickCount());
+
+    //COLORREF* pPaletteArray = colorQuantizer.GetPalette(&nPaletteCount);
+
+    //for (int i = 0; i < nPaletteCount; i++)
+    //{
+    //    COLORREF palette = *(pPaletteArray + i);
+    //    FTLTRACE(TEXT("palette=0x%x\n"), palette);
+    //}
+
+    int i = 0;
+
+    FTL::CFStringFormater formater;
+    formater.Format(TEXT("Elapse %d"), elpaseCounter.GetElapseTime() / NANOSECOND_PER_MILLISECOND);
+    MessageBox(formater.GetString());
 }

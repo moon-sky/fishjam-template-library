@@ -58,6 +58,7 @@ CGifMaker::CGifMaker()
     m_nGifNumLevels = 256;
     m_dwLastTicket = 0;
     m_nImgCount = 0;
+    m_nGifBufferSize = 0;
 }
 
 CGifMaker::~CGifMaker()
@@ -102,9 +103,9 @@ BOOL CGifMaker::BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileNa
     GIF_VERIFY(EGifPutScreenDesc(m_pGifFile, nWidth, nHeight, bpp, 0, NULL));
     EGifSetGifVersion(m_pGifFile, true);
 
-    int nSize = sizeof(GifPixelType) * nWidth * nHeight;
-    m_pGifBuffer = (GifByteType *) new BYTE[nSize];
-    ZeroMemory(m_pGifBuffer, nSize);
+    m_nGifBufferSize = sizeof(GifPixelType) * nWidth * nHeight;
+    m_pGifBuffer = (GifByteType *) new BYTE[m_nGifBufferSize];
+    ZeroMemory(m_pGifBuffer, m_nGifBufferSize);
 
     m_pColorMap256 = new GifColorType[256];
     ZeroMemory(m_pColorMap256, sizeof(GifColorType) * 256);
@@ -250,11 +251,26 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
 
     //if (bWriteImageData)
     {
-#if 1
+#if 0
         nRet = GifQuantizeRGBBuffer(nWidth, nHeight, m_nPreBpp, pBmpData, m_pColorMap256, m_pGifBuffer);
 #else
-        API_VERIFY(m_pQuantizer->ProcessImage(nWidth, nHeight, m_nPreBpp, pBmpData));
-        m_pQuantizer->SetColorTable(m_pColorMap256);
+        UINT nPaletteSize = 0;
+        UINT nBufferSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth, m_nPreBpp) * nHeight;
+        FTL::CFWuColorQuantizer colorQuantizer;
+        colorQuantizer.SetBmpInfo(nWidth, nHeight, m_nPreBpp, pBmpData, nBufferSize);
+        colorQuantizer.ProcessQuantizer(256, &nPaletteSize);
+        COLORREF* pPalette = colorQuantizer.GetPalette(&nPaletteSize);
+        for (int i = 0; i < nPaletteSize; i++)
+        {
+            COLORREF color = *(pPalette + i);
+            m_pColorMap256[i].Red = GetRValue(color);
+            m_pColorMap256[i].Green = GetGValue(color);
+            m_pColorMap256[i].Blue = GetBValue(color);
+        }
+        CopyMemory(m_pGifBuffer, &colorQuantizer.indices[0], m_nGifBufferSize);
+
+        //API_VERIFY(m_pQuantizer->ProcessImage(nWidth, nHeight, m_nPreBpp, pBmpData));
+        //m_pQuantizer->SetColorTable(m_pColorMap256);
 #endif 
         ColorMapObject *pColorMap = GifMakeMapObject(m_nGifNumLevels, m_pColorMap256);
 

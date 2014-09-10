@@ -35,6 +35,7 @@ private:
     int m_nGifColorRes;     //8
     int m_nGifNumLevels;    //256
     int m_nImgCount;
+    int m_nGifBufferSize;
     BOOL m_bFirstImage;
     BOOL m_bDelayImage;
     BOOL m_bWriteFirst;

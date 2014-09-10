@@ -73,6 +73,7 @@ namespace FTL{
         virtual ~IFColorQuantizer();
         virtual BOOL SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize) = 0;
         virtual COLORREF* GetPalette(UINT* pResultCount) = 0;
+        virtual BOOL ProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount) = 0;
     };
 
     FTLEXPORT class CFColorQuantizerBase : public IFColorQuantizer{
@@ -93,6 +94,7 @@ namespace FTL{
 
         BYTE*       m_pBmpData;
         COLORREF*   m_pResultPalette;
+        UCHAR*      m_pResultBuffer;
     };
 
     /*******************************************************************************************************
@@ -113,7 +115,12 @@ namespace FTL{
     //Xiaolin Wu -- http://www.ece.mcmaster.ca/~xwu/cq.c
     FTLEXPORT class CFWuColorQuantizer : public CFColorQuantizerBase{
     public:
-
+        FTLINLINE CFWuColorQuantizer();
+        FTLINLINE virtual ~CFWuColorQuantizer();
+        FTLINLINE virtual BOOL ProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount);
+        FTLINLINE virtual BOOL OnPrepare();
+        FTLINLINE virtual BOOL OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount);
+        FTLINLINE virtual void OnFinish();
     private:
         enum {
             MAX_COLOR = 512,
@@ -131,6 +138,15 @@ namespace FTL{
         typedef std::vector<std::vector<std::vector<float> > > VolumeMomentType;
 
         struct ColorCube{
+            ColorCube(){
+                RedMinimum = 0;
+                RedMaximum = 0;
+                GreenMinimum = 0;
+                GreenMaximum = 0;
+                BlueMinimum = 0;
+                BlueMaximum = 0;
+                Volume = 0;
+            }
             int RedMinimum;
             int RedMaximum;
             int GreenMinimum;
@@ -149,13 +165,35 @@ namespace FTL{
         float Maximize(ColorCube& cube, int direction, int first, int last, 
             int* cut, long wholeRed, long wholeGreen, long wholeBlue, long wholeWeight);
         BOOL Cut(ColorCube& first, ColorCube& second);
-        void Mark(ColorCube& cube, int label, std::vector<int>& tag);
-    private:
+        void Mark(ColorCube& cube, int label, int* tag);
+
+        void CalculateMoments();
+        void _InitMomentSize(ColorMomentType& moments);
+        void _InitMomentSize(VolumeMomentType& moments);
+    //private:
+    public:
+        std::vector<int> reds;
+        std::vector<int> greens;
+        std::vector<int> blues;
+        std::vector<int> sums;
+        std::vector<int> indices;
+
         ColorMomentType weights;
         ColorMomentType momentsRed;
         ColorMomentType momentsGreen;
         ColorMomentType momentsBlue;
         VolumeMomentType moments;
+
+        int* tag;
+        int* quantizedPixels;
+        int*             table;
+        UINT* pixels;
+        
+        int imageWidth;
+        int imageSize;
+        int pixelIndex;
+
+        ColorCube*       cubes;
     };
 }
 

@@ -37,4 +37,5 @@ public:
     int m_nClipIndex;
     DWORD m_dwTicket;
     afx_msg void OnBnClickedBtnTimerClip();
+    afx_msg void OnBnClickedBtnWuColorQuantizer();
 };
