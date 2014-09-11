@@ -259,6 +259,7 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
         FTL::CFWuColorQuantizer colorQuantizer;
         colorQuantizer.SetBmpInfo(nWidth, nHeight, m_nPreBpp, pBmpData, nBufferSize);
         colorQuantizer.ProcessQuantizer(256, &nPaletteSize);
+        int nGifBufferSize = nWidth * nHeight;
         COLORREF* pPalette = colorQuantizer.GetPalette(&nPaletteSize);
         for (int i = 0; i < nPaletteSize; i++)
         {
@@ -267,7 +268,11 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
             m_pColorMap256[i].Green = GetGValue(color);
             m_pColorMap256[i].Blue = GetBValue(color);
         }
-        CopyMemory(m_pGifBuffer, &colorQuantizer.indices[0], m_nGifBufferSize);
+        for (int i = 0; i < nGifBufferSize; i++)
+        {
+            m_pGifBuffer[i] = colorQuantizer.m_indices[i];
+        }
+        //CopyMemory(m_pGifBuffer, &colorQuantizer.m_indices[0], m_nGifBufferSize);
 
         //API_VERIFY(m_pQuantizer->ProcessImage(nWidth, nHeight, m_nPreBpp, pBmpData));
         //m_pQuantizer->SetColorTable(m_pColorMap256);

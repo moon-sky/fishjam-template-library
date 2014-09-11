@@ -140,7 +140,7 @@ namespace FTL{
         //template<typename T>
         //using MomentType = std::vector<std::vector<std::vector<T> > >; //long moment[SIDE_SIZE][SIDE_SIZE][SIDE_SIZE]);
         typedef std::vector<std::vector<std::vector<INT64> > > ColorMomentType;
-        typedef std::vector<std::vector<std::vector<float> > > VolumeMomentType;
+        typedef std::vector<std::vector<std::vector<double> > > VolumeMomentType;
 
         struct ColorCube{
             ColorCube(){
@@ -165,12 +165,12 @@ namespace FTL{
         FTLINLINE INT64 Top(ColorCube& cube, int direction,  int position, ColorMomentType& moment);
 
         FTLINLINE INT64 Volume(ColorCube& cube, ColorMomentType& moment);
-        FTLINLINE float VolumeFloat(ColorCube& cube, VolumeMomentType& moment);
-        FTLINLINE float CalculateVariance(ColorCube& cube);
-        float Maximize(ColorCube& cube, int direction, int first, int last, 
+        FTLINLINE double VolumeFloat(ColorCube& cube, VolumeMomentType& moment);
+        FTLINLINE double CalculateVariance(ColorCube& cube);
+        double Maximize(ColorCube& cube, int direction, int first, int last, 
             int* cut, INT64 wholeRed, INT64 wholeGreen, INT64 wholeBlue, INT64 wholeWeight);
         BOOL Cut(ColorCube& first, ColorCube& second);
-        void Mark(ColorCube& cube, int label, int* tag);
+        void Mark(ColorCube& cube, int label, int* pTag);
 
         void CalculateMoments();
         void _InitMomentSize(ColorMomentType& moments);
@@ -178,27 +178,27 @@ namespace FTL{
     //private:
     public:
         std::vector<int> m_reds;
-        std::vector<int> greens;
-        std::vector<int> blues;
-        std::vector<int> sums;
-        std::vector<int> indices;
+        std::vector<int> m_greens;
+        std::vector<int> m_blues;
+        std::vector<int> m_sums;
+        std::vector<int> m_indices;
 
-        ColorMomentType weights;
-        ColorMomentType momentsRed;
-        ColorMomentType momentsGreen;
-        ColorMomentType momentsBlue;
-        VolumeMomentType moments;
+        ColorMomentType m_weights;
+        ColorMomentType m_momentsRed;
+        ColorMomentType m_momentsGreen;
+        ColorMomentType m_momentsBlue;
+        VolumeMomentType m_moments;
 
-        int* tag;
-        int* quantizedPixels;
-        int*             table;
-        COLORREF* pixels;
+        int* m_tag;
+        int* m_quantizedPixels;
+        int*             m_table;
+        COLORREF* m_pixels;
         
-        int imageWidth;
-        int imageSize;
-        int pixelIndex;
+        int m_imageWidth;
+        int m_imageSize;
+        int m_pixelIndex;
 
-        ColorCube*       cubes;
+        ColorCube*       m_cubes;
     };
 }
 

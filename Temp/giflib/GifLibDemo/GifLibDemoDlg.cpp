@@ -430,8 +430,8 @@ void CGifLibDemoDlg::OnBnClickedButton2()
 }
 
 CGifMaker    g_gifMaker;
-int         g_nWidth = 100;
-int         g_nHeight = 100;
+int         g_nWidth = 400;
+int         g_nHeight = 400;
 int         g_nBpp = 24;
 
 void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
@@ -439,7 +439,7 @@ void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
     BOOL bRet = FALSE;
 
     m_nClipIndex++;
-    if (m_nClipIndex < 300)
+    if (m_nClipIndex < 50)
     {
         FTL::CFCanvas canvas;
         CRect rectCapture(0, 0, g_nWidth, g_nHeight);
@@ -516,10 +516,10 @@ void CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer()
     FTL::CFCanvas canvas;
     API_VERIFY(canvas.Create(m_hWnd, g_nWidth, -g_nHeight, g_nBpp));
     
-#if 1
+#if 0
     CDC memDC;
     memDC.Attach(canvas.GetCanvasDC());
-    int nFillWidth = 8, nFillHeight = 8;
+    int nFillWidth = 1, nFillHeight = 1;
     int nColorCount = 0;
     for (int w = 0; w < g_nWidth; w+=nFillWidth)
     {
