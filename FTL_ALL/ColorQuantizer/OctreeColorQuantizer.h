@@ -13,9 +13,47 @@
 *   3.所有像素处理结束，遍历八叉树，将叶子节点的各颜色值求平均值作为节点的颜色分量值读出并存入目标调色板。
 *   4.再次遍历所有像素，通过每个像素的颜色值与调色板中选中的256色运算，求得一个最接近像素颜色值的调色板颜色，把该像素换相应的调色板颜色索引
 *******************************************************************************************************/
+#include <list>
+#include <vector>
 
 namespace FTL
 {
+    class CFOctreeNode;
+    class CFOctreeColorQuantizer;
+    
+    typedef std::list<CFOctreeNode*>        OctreeNodeList;
+
+    class CFOctreeNode{
+    public:
+        enum {
+            MAX_NODE_COUNT  = 8,
+        };
+        CFOctreeNode(int level, CFOctreeColorQuantizer* pParent);
+        BOOL IsLeaf() const { return pixelCount > 0; }
+        COLORREF    GetColor() const;
+        int GetActiveNodesPixelCount() const;
+        OctreeNodeList GetActiveNodes() const;
+        void AddColor(COLORREF color, int level, CFOctreeColorQuantizer* pParent);
+        int GetPaletteIndex(COLORREF color, int level);
+        int RemoveLeaves(int level, int activeColorCount, int targetColorCount, CFOctreeColorQuantizer* parent);
+
+        int GetColorIndexAtLevel(COLORREF color, int level);
+        void SetPaletteIndex(int index);
+        bool operator < (const CFOctreeNode & other) const{
+            return GetActiveNodesPixelCount() < other.GetActiveNodesPixelCount();
+        }
+    private:
+
+        static BYTE s_MASK[8];// = new Byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+        int Red;
+        int Green;
+        int Blue;
+
+        int pixelCount;
+        int paletteIndex;
+        CFOctreeNode* nodes[8];
+    };
+
     class CFOctreeColorQuantizer : public CFColorQuantizerBase
     {
     public:
@@ -25,18 +63,12 @@ namespace FTL
         virtual BOOL OnPrepare();
         virtual BOOL OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
         virtual void OnFinish();
+    public:
+        OctreeNodeList Leaves();
+        void AddLevelNode(int level, CFOctreeNode* octreeNode);
     private:
-        class CFOctreeNode{
-        private:
-
-            static BYTE s_MASK[8];// = new Byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
-            unsigned char Red;
-            unsigned char Green;
-            unsigned char Blue;
-
-            int pixelCount;
-            int paletteIndex;
-
-        };
+        CFOctreeNode*   root;
+        int lastColorCount;
+        OctreeNodeList*    levels;
     };
 }

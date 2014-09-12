@@ -52,11 +52,16 @@
 
 namespace FTL
 {
+    //COLORREF 中一个元素(R/G/B)的无效值
+    #define INVALID_COLOR_META      (unsigned char)(-1)
+
     class IFColorQuantizer{
     public:
         virtual ~IFColorQuantizer();
         virtual BOOL SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize) = 0;
-        virtual COLORREF* GetPalette(UINT* pResultCount) = 0;
         virtual BOOL ProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount) = 0;
+
+        virtual COLORREF* GetPalette(UINT* pResultCount) = 0;
+        virtual int* GetQuantizerBuffer(INT* pSize) = 0;
     };
 }

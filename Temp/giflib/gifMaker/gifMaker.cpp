@@ -10,6 +10,7 @@
 #include <ftlDebug.h>
 #include <ftlAlgorithm.h>
 #include <ColorQuantizer/WuColorQuantizer.h>
+#include <ColorQuantizer/OctreeColorQuantizer.h>
 #include "Quantize.h"
 
 
@@ -267,11 +268,14 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
         else{
             UINT nPaletteSize = 0;
             UINT nBufferSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth, m_nPreBpp) * nHeight;
-            FTL::CFWuColorQuantizer colorQuantizer;
-            colorQuantizer.SetBmpInfo(nWidth, nHeight, m_nPreBpp, pBmpData, nBufferSize);
-            colorQuantizer.ProcessQuantizer(256, &nPaletteSize);
+            
+            //FTL::IFColorQuantizer* pColorQuantizer = new FTL::CFWuColorQuantizer();
+            FTL::IFColorQuantizer* pColorQuantizer = new FTL::CFOctreeColorQuantizer();
+
+            pColorQuantizer->SetBmpInfo(nWidth, nHeight, m_nPreBpp, pBmpData, nBufferSize);
+            pColorQuantizer->ProcessQuantizer(256, &nPaletteSize);
             int nGifBufferSize = nWidth * nHeight;
-            COLORREF* pPalette = colorQuantizer.GetPalette(&nPaletteSize);
+            COLORREF* pPalette = pColorQuantizer->GetPalette(&nPaletteSize);
             for (int i = 0; i < nPaletteSize; i++)
             {
                 COLORREF color = *(pPalette + i);
@@ -279,14 +283,17 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
                 m_pColorMap256[i].Green = GetGValue(color);
                 m_pColorMap256[i].Blue = GetBValue(color);
             }
+
+            int* pQuantizerBuffer = pColorQuantizer->GetQuantizerBuffer(NULL);
             for (int i = 0; i < nGifBufferSize; i++)
             {
-                m_pGifBuffer[i] = colorQuantizer.m_indices[i];
+                m_pGifBuffer[i] = pQuantizerBuffer[i];
             }
             //CopyMemory(m_pGifBuffer, &colorQuantizer.m_indices[0], m_nGifBufferSize);
 
             //API_VERIFY(m_pQuantizer->ProcessImage(nWidth, nHeight, m_nPreBpp, pBmpData));
             //m_pQuantizer->SetColorTable(m_pColorMap256);
+            delete pColorQuantizer;
         }
 
         ColorMapObject *pColorMap = GifMakeMapObject(m_nGifNumLevels, m_pColorMap256);

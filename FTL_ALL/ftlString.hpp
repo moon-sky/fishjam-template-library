@@ -8,6 +8,13 @@
 
 namespace FTL
 {
+    int ciStringCompare(const std::string& s1, const std::string& s2)
+    {
+        //效率比使用 mismatch 或 lexicographical_compare 高
+        //return std::lexicographical_compare(s1.begin(), s1.end(), s2.begin(), s2.end()).
+        return _stricmp(s1.c_str(), s2.c_str());
+    }
+
     BOOL CFStringUtil::IsMatchMask(LPCTSTR pszName, LPCTSTR pszMask, BOOL bCaseSensitive /* = TRUE */)
     {
         if (!pszMask)

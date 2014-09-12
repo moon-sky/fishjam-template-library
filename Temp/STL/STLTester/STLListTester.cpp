@@ -6,6 +6,9 @@
 #include <list>
 #include <string>
 #include <algorithm>
+
+#include <ftlString.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -112,7 +115,31 @@ void CSTLListTester::test_sort()
     CPPUNIT_ASSERT( (*Staff.begin()) == "Bill");  //第一个位置
     CPPUNIT_ASSERT( (*Staff.rbegin()) == "Tony"); //最后一个位置
 
-    //TODO:怎么反向排序？ -- 采用反向输出的方式？
+
+    
+    std::list<unsigned char> numbers;  //4, 6, 
+    int i = 0;
+    for (i = 4; i >= 0; i--)
+    {
+        numbers.push_back('0' + i);
+        numbers.push_back('0' + (9 - i));
+    }
+
+    std::string strBuf;
+    std::copy(numbers.begin(),numbers.end(),std::back_inserter<std::string>(strBuf));
+    CPPUNIT_ASSERT(strBuf == "4536271809");
+
+    numbers.sort();
+    strBuf = "";
+    std::copy(numbers.begin(),numbers.end(),std::back_inserter<std::string>(strBuf));
+    CPPUNIT_ASSERT(strBuf == "0123456789");
+
+    //使用指定的 greater 函数进行反向排序
+    numbers.sort(std::greater<unsigned char>());
+    strBuf = "";
+    std::copy(numbers.begin(),numbers.end(),std::back_inserter<std::string>(strBuf));
+    CPPUNIT_ASSERT(strBuf == "9876543210");
+
 }
 
 

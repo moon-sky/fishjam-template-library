@@ -14,21 +14,11 @@
 ************************************************************************/
 
 #if 0
-//忽略大小写字符串比较的函数
-int ciStringCompare(const string& s1, const string& s2);
 
-//用于忽略大小写字符串比较的仿函数类 -- 参见 Effective STL 中的条款19
-struct CIStringCompare : public binary_function<string, string, bool>
-{
-    bool operator()(const string& lhs, const string& rhs) const
-    {
-        return ciStringCompare(lhs, rhs);
-    }
-};
 //以忽略大小写的方式排序字符串的vector.
 // std::sort(v.begin(),v.end(),CIStringCompare());
 
-//另外一种忽视大小写德字符串比较类 -- 参见 Effective STL 中的附录 A
+//另外一种忽视大小写的字符串比较类 -- 参见 Effective STL 中的附录 A
 struct lt_str_1 : public std::binary_function<std::string, std::string, bool> {
         struct lt_char {
             const std::ctype<char>& ct;

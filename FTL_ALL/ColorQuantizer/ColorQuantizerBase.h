@@ -12,8 +12,9 @@ namespace FTL
     public:
         //IFColorQuantizer
         virtual BOOL SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize);
-        virtual COLORREF*   GetPalette(UINT* pResultCount);
         virtual BOOL ProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
+        virtual COLORREF*   GetPalette(UINT* pResultCount);
+        virtual int* GetQuantizerBuffer(INT* pSize);
     protected:
         virtual BOOL OnPrepare();
         virtual void OnFinish();
@@ -29,5 +30,6 @@ namespace FTL
         BYTE*       m_pBmpData;
         COLORREF*   m_pResultPalette;
         UCHAR*      m_pResultBuffer;
+        std::vector<int> m_indices;
     };
 }

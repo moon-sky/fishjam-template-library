@@ -20,7 +20,7 @@ CMainDlg::CMainDlg()
     m_nFps = 10;
     m_nBpp = 24;
     m_nImageIndex = 0;
-    m_nCompressType = ctFast;
+    m_nCompressType = ctHighQuality;
 }
 
 CMainDlg::~CMainDlg()

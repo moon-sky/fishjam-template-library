@@ -90,4 +90,13 @@ namespace FTL
         }
         return m_pResultPalette;
     }
+
+    int* CFColorQuantizerBase::GetQuantizerBuffer(INT* pSize)
+    {
+        if (pSize)
+        {
+            *pSize = m_nWidth * m_nHeight;
+        }
+        return &m_indices[0];
+    }
 }

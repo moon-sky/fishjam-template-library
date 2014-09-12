@@ -70,7 +70,6 @@ namespace FTL
         std::vector<int> m_greens;
         std::vector<int> m_blues;
         std::vector<int> m_sums;
-        std::vector<int> m_indices;
 
         ColorMomentType m_weights;
         ColorMomentType m_momentsRed;

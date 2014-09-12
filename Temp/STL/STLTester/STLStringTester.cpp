@@ -5,15 +5,6 @@
 #define new DEBUG_NEW
 #endif
 
-#if 0
-int ciStringCompare(const string& s1, const string& s2)
-{
-    //效率比使用 mismatch 或 lexicographical_compare 高
-    //return std::lexicographical_compare(s1.begin(), s1.end(), s2.begin(), s2.end()).
-    return _stricmp(s1.c_str(), s2.c_str());
-}
-#endif
-
 void CSTLStringTester::test_reserve()
 {
     
