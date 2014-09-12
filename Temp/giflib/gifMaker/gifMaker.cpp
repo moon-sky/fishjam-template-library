@@ -9,7 +9,9 @@
 #include <ftlGdi.h>
 #include <ftlDebug.h>
 #include <ftlAlgorithm.h>
+#include <ColorQuantizer/WuColorQuantizer.h>
 #include "Quantize.h"
+
 
 #include "../giflib/lib/gif_lib.h"
 #ifdef _DEBUG

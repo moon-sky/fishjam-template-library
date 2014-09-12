@@ -251,6 +251,42 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
+		<Filter
+			Name="ColorQuantizer"
+			>
+			<File
+				RelativePath="..\..\..\FTL_ALL\ColorQuantizer\ColorQuantizer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\FTL_ALL\ColorQuantizer\ColorQuantizer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\FTL_ALL\ColorQuantizer\ColorQuantizerBase.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\FTL_ALL\ColorQuantizer\ColorQuantizerBase.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\FTL_ALL\ColorQuantizer\OctreeColorQuantizer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\FTL_ALL\ColorQuantizer\OctreeColorQuantizer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\FTL_ALL\ColorQuantizer\WuColorQuantizer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\FTL_ALL\ColorQuantizer\WuColorQuantizer.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
 			>
