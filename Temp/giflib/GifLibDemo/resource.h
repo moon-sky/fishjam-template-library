@@ -7,7 +7,6 @@
 #define IDS_ABOUTBOX                    101
 #define IDD_GIFLIBDEMO_DIALOG           102
 #define IDR_MAINFRAME                   128
-#define IDB_BITMAP1                     129
 #define IDC_BUTTON1                     1000
 #define IDC_BUTTON2                     1001
 #define IDC_BUTTON3                     1002

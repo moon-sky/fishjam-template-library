@@ -446,6 +446,7 @@ void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
         API_VERIFY(canvas.Create(m_hWnd, g_nWidth, -g_nHeight, g_nBpp));
         CWindowDC desktopDC(GetDesktopWindow());
         API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, g_nWidth, g_nHeight, desktopDC, 100, 100, SRCCOPY));
+        _OverlayMouseToScreen(canvas.GetCanvasDC(), &rectCapture);
 
 #ifdef _DEBUG
         CString strFileName;

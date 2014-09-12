@@ -33,6 +33,7 @@
 
 CGifMaker::CGifMaker()
 {
+    m_compressType = ctFast;
     m_nPreBmpBytes = 0;
     m_nDiffResultSize = 0;
     m_bWriteFirst = TRUE;
@@ -76,6 +77,12 @@ CGifMaker::~CGifMaker()
         _FreeDuplicateBmpData(m_pGiffDiffBuffer);
         m_pGiffDiffBuffer = NULL;
     }
+}
+
+CompressType CGifMaker::SetCompressType(CompressType type){
+    CompressType oldType = type;  
+    m_compressType = type;  
+    return oldType; 
 }
 
 BOOL CGifMaker::BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileName)
@@ -251,32 +258,35 @@ BOOL CGifMaker::_WriteGifData(BYTE* pBmpData, RECT rcBmp,DWORD dwTicket)
 
     //if (bWriteImageData)
     {
-#if 0
-        nRet = GifQuantizeRGBBuffer(nWidth, nHeight, m_nPreBpp, pBmpData, m_pColorMap256, m_pGifBuffer);
-#else
-        UINT nPaletteSize = 0;
-        UINT nBufferSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth, m_nPreBpp) * nHeight;
-        FTL::CFWuColorQuantizer colorQuantizer;
-        colorQuantizer.SetBmpInfo(nWidth, nHeight, m_nPreBpp, pBmpData, nBufferSize);
-        colorQuantizer.ProcessQuantizer(256, &nPaletteSize);
-        int nGifBufferSize = nWidth * nHeight;
-        COLORREF* pPalette = colorQuantizer.GetPalette(&nPaletteSize);
-        for (int i = 0; i < nPaletteSize; i++)
+        if (m_compressType == ctFast)
         {
-            COLORREF color = *(pPalette + i);
-            m_pColorMap256[i].Red = GetRValue(color);
-            m_pColorMap256[i].Green = GetGValue(color);
-            m_pColorMap256[i].Blue = GetBValue(color);
+            nRet = GifQuantizeRGBBuffer(nWidth, nHeight, m_nPreBpp, pBmpData, m_pColorMap256, m_pGifBuffer);
         }
-        for (int i = 0; i < nGifBufferSize; i++)
-        {
-            m_pGifBuffer[i] = colorQuantizer.m_indices[i];
-        }
-        //CopyMemory(m_pGifBuffer, &colorQuantizer.m_indices[0], m_nGifBufferSize);
+        else{
+            UINT nPaletteSize = 0;
+            UINT nBufferSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth, m_nPreBpp) * nHeight;
+            FTL::CFWuColorQuantizer colorQuantizer;
+            colorQuantizer.SetBmpInfo(nWidth, nHeight, m_nPreBpp, pBmpData, nBufferSize);
+            colorQuantizer.ProcessQuantizer(256, &nPaletteSize);
+            int nGifBufferSize = nWidth * nHeight;
+            COLORREF* pPalette = colorQuantizer.GetPalette(&nPaletteSize);
+            for (int i = 0; i < nPaletteSize; i++)
+            {
+                COLORREF color = *(pPalette + i);
+                m_pColorMap256[i].Red = GetRValue(color);
+                m_pColorMap256[i].Green = GetGValue(color);
+                m_pColorMap256[i].Blue = GetBValue(color);
+            }
+            for (int i = 0; i < nGifBufferSize; i++)
+            {
+                m_pGifBuffer[i] = colorQuantizer.m_indices[i];
+            }
+            //CopyMemory(m_pGifBuffer, &colorQuantizer.m_indices[0], m_nGifBufferSize);
 
-        //API_VERIFY(m_pQuantizer->ProcessImage(nWidth, nHeight, m_nPreBpp, pBmpData));
-        //m_pQuantizer->SetColorTable(m_pColorMap256);
-#endif 
+            //API_VERIFY(m_pQuantizer->ProcessImage(nWidth, nHeight, m_nPreBpp, pBmpData));
+            //m_pQuantizer->SetColorTable(m_pColorMap256);
+        }
+
         ColorMapObject *pColorMap = GifMakeMapObject(m_nGifNumLevels, m_pColorMap256);
 
         GIF_VERIFY(EGifPutImageDesc(m_pGifFile, rcBmp.left, rcBmp.top, nWidth, nHeight, FALSE, pColorMap));

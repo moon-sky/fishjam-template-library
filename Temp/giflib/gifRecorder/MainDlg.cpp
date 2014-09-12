@@ -13,13 +13,14 @@ CMainDlg::CMainDlg()
 {
     m_strSavePath = TEXT("gifRecorder.gif");
     m_pGifMaker = NULL;
-    m_nLeft = 200;
-    m_nTop = 200;
+    m_nLeft = 0;
+    m_nTop = 0;
     m_nWidth = 640;
     m_nHeight = 480;
     m_nFps = 10;
     m_nBpp = 24;
     m_nImageIndex = 0;
+    m_nCompressType = ctFast;
 }
 
 CMainDlg::~CMainDlg()
@@ -75,7 +76,16 @@ LRESULT CMainDlg::OnCancel(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 
 void CMainDlg::OnBtnChooseSavePath(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
+    BOOL bRet = FALSE;
+    CString strFilter = _T("Gif Files(*.gif)|*.gif|All Files(*.*)|*.*||");
+    strFilter.Replace(TEXT('|'), TEXT('\0'));
 
+    CFileDialog dlg(FALSE, TEXT(".gif"), m_strSavePath, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, strFilter, m_hWnd);
+    if (dlg.DoModal() == IDOK)
+    {
+        m_strSavePath = dlg.m_szFileName;
+        API_VERIFY(DoDataExchange(FALSE, IDC_STATIC_SAVE_PATH));
+    }
 }
 
 
@@ -98,37 +108,125 @@ void CMainDlg::OnBtnStartRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
         FTLASSERT(NULL == m_pGifMaker);
         if (NULL == m_pGifMaker)
         {
+            m_nImageIndex = 0;
             m_pGifMaker = new CGifMaker();
+            m_pGifMaker->SetCompressType((CompressType)m_nCompressType);
             m_pGifMaker->BeginMakeGif(m_nWidth, m_nHeight, m_nBpp, m_strSavePath);
-            SetTimer(ID_TIMER_FPS, 1000/m_nFps, NULL);
+            //SetTimer(ID_TIMER_FPS, 1000/m_nFps, NULL);
+            API_VERIFY(m_threadRecord.Start(RecordGifThreadProc, this));
         }
     }
     
+}
+
+void CMainDlg::OnBtnPauseResumeRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
+{
+    if (m_pGifMaker)
+    {
+        if(m_threadRecord.HadRequestPause()){
+            m_threadRecord.Resume();
+            SetDlgItemText(IDC_BTN_PAUSE_RESUME_RECORD, TEXT("Pause"));
+        }
+        else
+        {
+            m_threadRecord.Pause();
+            SetDlgItemText(IDC_BTN_PAUSE_RESUME_RECORD, TEXT("Resume"));
+        }
+    }
 }
 
 void CMainDlg::OnBtnStopRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     if(m_pGifMaker)
     {
-        KillTimer(ID_TIMER_FPS);
-        m_pGifMaker->EndMakeGif(GetTickCount());
+        m_threadRecord.StopAndWait(INFINITE);
         SAFE_DELETE(m_pGifMaker);
+
+        //KillTimer(ID_TIMER_FPS);
+        //m_pGifMaker->EndMakeGif(GetTickCount());
     }
 
 }
 
-void CMainDlg::OnTimer(UINT_PTR nIDEvent)
+//void CMainDlg::OnTimer(UINT_PTR nIDEvent)
+//{
+//    BOOL bRet = FALSE;
+//
+//    m_nImageIndex++;
+//    {
+//        FTL::CFCanvas canvas;
+//
+//        CRect rectCapture(0, 0, m_nWidth, m_nHeight);
+//        API_VERIFY(canvas.Create(m_hWnd, m_nWidth, -m_nHeight, m_nBpp));
+//        CWindowDC desktopDC(GetDesktopWindow());
+//        API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, m_nWidth, m_nHeight, desktopDC, m_nLeft, m_nTop, SRCCOPY));
+//
+//#if 0
+//        CPath   path(m_strSavePath);
+//        path.RemoveExtension();
+//        CString strFileName = path.m_strPath;
+//        strFileName.AppendFormat(TEXT("_%d.bmp"), m_nImageIndex);
+//        API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
+//#endif
+//
+//        m_pGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
+//    }
+//}
+
+BOOL CMainDlg::_OverlayMouseToScreen(HDC hdc, LPRECT lpRect)
 {
     BOOL bRet = FALSE;
-
-    m_nImageIndex++;
+    POINT point = {0};
+    API_VERIFY(::GetCursorPos(&point));
+    if (!PtInRect(lpRect, point))
     {
-        FTL::CFCanvas canvas;
+        //Mouse is not in rect, so donot draw it and return TRUE;
+        return TRUE;
+    }
+    CURSORINFO CursorInfo;
+    CursorInfo.cbSize = sizeof(CURSORINFO);
 
+    API_VERIFY(GetCursorInfo(&CursorInfo));
+    if (bRet)
+    {
+        API_VERIFY_EXCEPT1(::DrawIconEx(hdc, CursorInfo.ptScreenPos.x - lpRect->left, CursorInfo.ptScreenPos.y - lpRect->top , CursorInfo.hCursor,
+            32, 32, 0, NULL, DI_NORMAL), ERROR_INVALID_CURSOR_HANDLE);
+        if (!bRet && GetLastError() == ERROR_INVALID_CURSOR_HANDLE)
+        {
+            SetLastError(0);
+            bRet = TRUE;
+        }
+        ::ReleaseDC(NULL, hdc);
+    }
+    return bRet;
+}
+
+DWORD CMainDlg::RecordGifThreadProc(LPVOID pParam)
+{
+    CMainDlg* pThis = (CMainDlg*)pParam;
+    DWORD dwResult = pThis->_InnerRecordGifThreadProc();
+    return dwResult;
+}
+
+DWORD CMainDlg::_InnerRecordGifThreadProc()
+{
+    BOOL bRet = FALSE;
+    FTL::FTLThreadWaitType waitType = FTL::ftwtStop;
+    int nSleepTime = 1000/m_nFps;
+    FTLTRACE(TEXT("Record Thread [%d] Start, Sleep=%d\n"), GetCurrentThreadId(), nSleepTime);
+
+    FTL::CFCanvas canvas;
+    API_VERIFY(canvas.Create(m_hWnd, m_nWidth, -m_nHeight, m_nBpp));
+
+    do 
+    {
+        m_nImageIndex++;
+
+        DWORD dwStartTickCount = GetTickCount();
         CRect rectCapture(0, 0, m_nWidth, m_nHeight);
-        API_VERIFY(canvas.Create(m_hWnd, m_nWidth, -m_nHeight, m_nBpp));
         CWindowDC desktopDC(GetDesktopWindow());
         API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, m_nWidth, m_nHeight, desktopDC, m_nLeft, m_nTop, SRCCOPY));
+        _OverlayMouseToScreen(canvas.GetCanvasDC(), rectCapture);
 
 #if 0
         CPath   path(m_strSavePath);
@@ -136,8 +234,28 @@ void CMainDlg::OnTimer(UINT_PTR nIDEvent)
         CString strFileName = path.m_strPath;
         strFileName.AppendFormat(TEXT("_%d.bmp"), m_nImageIndex);
         API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
-#endif
+#endif 
 
-        m_pGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
-    }
+        m_pGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), dwStartTickCount);
+
+        DWORD dwEndTickCount = GetTickCount();
+        if (dwStartTickCount + nSleepTime < dwEndTickCount)
+        {
+            waitType = m_threadRecord.SleepAndCheckStop( dwEndTickCount - (dwStartTickCount + nSleepTime) );
+        }
+
+        waitType = m_threadRecord.GetThreadWaitType(INFINITE);
+        if (waitType != FTL::ftwtContinue )
+        {
+            break;
+        }
+        
+    } while (TRUE);
+    
+
+    m_pGifMaker->EndMakeGif(GetTickCount());
+    //SAFE_DELETE(m_pGifMaker);
+
+    FTLTRACE(TEXT("Record Thread [%d] Quit\n"), GetCurrentThreadId());
+    return 0;
 }

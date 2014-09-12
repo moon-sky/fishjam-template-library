@@ -61,7 +61,13 @@
 *     缺点:没有选择性，比较盲目，质量差，量化的空间有限
 *   Wu's Color Quantizer(Xiaolin Wu)
 *     优点:图像质量最好
-*     缺点:很慢，内存消耗大。
+*     缺点:很慢，内存消耗大。TODO: 慢的原因是"scans and adds colors" 部分对 所有像素x颜色表像素 进行了二重循环，
+*           来计算每一个像素最匹配的颜色表像素值，可以考虑用 分而治之的算法(距离最近的点对) 进行优化
+*******************************************************************************************************/
+
+/*******************************************************************************************************
+* 分而治之算法 -- 为了解决一个大的问题，将其分成成两个或多个更小的问题，递归方式解决后，组合答案得出原问题的解答
+*   
 *******************************************************************************************************/
 #include <set>
 #include <list>
@@ -114,10 +120,32 @@ namespace FTL{
     *   4.再次遍历所有像素，通过每个像素的颜色值与调色板中选中的256色运算，求得一个最接近像素颜色值的调色板颜色，把该像素换相应的调色板颜色索引
     *******************************************************************************************************/
     FTLEXPORT class CFOctreeColorQuantizer : public CFColorQuantizerBase{
+    public:
+        FTLINLINE CFOctreeColorQuantizer();
+        FTLINLINE virtual ~CFOctreeColorQuantizer();
+    protected:
+        FTLINLINE virtual BOOL OnPrepare();
+        FTLINLINE virtual BOOL OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
+        FTLINLINE virtual void OnFinish();
+    private:
+        class CFOctreeNode{
+        private:
 
+            static BYTE s_MASK[8];// = new Byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+            unsigned char Red;
+            unsigned char Green;
+            unsigned char Blue;
+
+            int pixelCount;
+            int paletteIndex;
+
+        };
     };
 
-    //Xiaolin Wu -- http://www.ece.mcmaster.ca/~xwu/cq.c
+    /*******************************************************************************************************
+    * Xiaolin Wu -- http://www.ece.mcmaster.ca/~xwu/cq.c
+    *******************************************************************************************************/
+
     FTLEXPORT class CFWuColorQuantizer : public CFColorQuantizerBase{
     public:
         FTLINLINE CFWuColorQuantizer();
@@ -200,6 +228,8 @@ namespace FTL{
 
         ColorCube*       m_cubes;
     };
+
+
 }
 
 #endif //FTL_ALGORITHM_H

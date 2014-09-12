@@ -21,16 +21,24 @@ struct GifFileType;
 struct GifColorType;
 class CQuantizer;
 
+enum GIFMAKER_API CompressType{
+    ctFast = 0,
+    ctHighQuality,
+};
+
 class GIFMAKER_API CGifMaker {
 public:
 	CGifMaker(void);
     ~CGifMaker();
+    
+    CompressType SetCompressType(CompressType type);
 
     BOOL BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileName);
     BOOL AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket);
     BOOL EndMakeGif(DWORD dwTicket);
 private:
     //FTL::CFThread<>* m_pThreadMaker;
+    CompressType    m_compressType;
     int m_nPreWidth, m_nPreHeight, m_nPreBpp, m_nPreBmpBytes, m_nDiffResultSize;
     int m_nGifColorRes;     //8
     int m_nGifNumLevels;    //256
