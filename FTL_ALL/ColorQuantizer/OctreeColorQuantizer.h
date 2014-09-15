@@ -29,10 +29,11 @@ namespace FTL
             MAX_NODE_COUNT  = 8,
         };
         CFOctreeNode(int level, CFOctreeColorQuantizer* pParent);
-        BOOL IsLeaf() const { return pixelCount > 0; }
+        ~CFOctreeNode();
+        BOOL IsLeaf() const { return m_nPixelCount > 0; }
         COLORREF    GetColor() const;
         int GetActiveNodesPixelCount() const;
-        OctreeNodeList GetActiveNodes() const;
+        int GetActiveNodes(OctreeNodeList& result) const;
         void AddColor(COLORREF color, int level, CFOctreeColorQuantizer* pParent);
         int GetPaletteIndex(COLORREF color, int level);
         int RemoveLeaves(int level, int activeColorCount, int targetColorCount, CFOctreeColorQuantizer* parent);
@@ -45,13 +46,13 @@ namespace FTL
     private:
 
         static BYTE s_MASK[8];// = new Byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
-        int Red;
-        int Green;
-        int Blue;
+        int m_Red;
+        int m_Green;
+        int m_Blue;
 
-        int pixelCount;
-        int paletteIndex;
-        CFOctreeNode* nodes[8];
+        int m_nPixelCount;
+        int m_nPaletteIndex;
+        CFOctreeNode* m_pNodes[8];
     };
 
     class CFOctreeColorQuantizer : public CFColorQuantizerBase
@@ -64,11 +65,11 @@ namespace FTL
         virtual BOOL OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
         virtual void OnFinish();
     public:
-        OctreeNodeList Leaves();
+        int Leaves(OctreeNodeList& result);
         void AddLevelNode(int level, CFOctreeNode* octreeNode);
     private:
-        CFOctreeNode*   root;
-        int lastColorCount;
-        OctreeNodeList*    levels;
+        int m_nLastColorCount;
+        CFOctreeNode*   m_pRoot;
+        OctreeNodeList*    m_pLevels;
     };
 }

@@ -236,7 +236,7 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
         API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, m_nWidth, m_nHeight, desktopDC, m_nLeft, m_nTop, SRCCOPY));
         _OverlayMouseToScreen(canvas.GetCanvasDC(), rectCapture);
 
-#if 0
+#if 1
         CPath   path(m_strSavePath);
         path.RemoveExtension();
         CString strFileName = path.m_strPath;
