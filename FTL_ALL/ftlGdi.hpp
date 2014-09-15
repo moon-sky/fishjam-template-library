@@ -1473,16 +1473,19 @@ namespace FTL
         int nCheckResultSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth , 8) * nHeight;
         FTLASSERT(nNeedResultSize == nCheckResultSize);
 #endif
-        if (nNeedResultSize > nResultSize)
+        if (pOutResult && nResultSize > 0)
         {
-            FTLTRACE(TEXT("ComapreBitmapData resultSize need %d, bigger than provide %d\n"), nNeedResultSize, nResultSize);
-            SetLastError(ERROR_INVALID_PARAMETER);
-            return -1;
-        }
-        
-        RECT rcMinDiff = { nWidth, nHeight, 0, 0 }; //包含不同区域的最小范围
-        ZeroMemory(pOutResult, nResultSize);
+            if (nNeedResultSize > nResultSize)
+            {
+                FTLTRACE(TEXT("ComapreBitmapData resultSize need %d, bigger than provide %d\n"), nNeedResultSize, nResultSize);
+                SetLastError(ERROR_INVALID_PARAMETER);
+                return -1;
+            }
 
+            ZeroMemory(pOutResult, nResultSize);
+        }
+
+        RECT rcMinDiff = { nWidth, nHeight, 0, 0 }; //包含不同区域的最小范围
         int nDiffCount = 0;
         int nPixOffset = (bpp / 8);
         byte  bDiffer = 0;
@@ -1519,7 +1522,10 @@ namespace FTL
                 if (bDiffer)
                 {
                     nDiffCount++;
-                    *(pOutResult + h * nWidth + w) = 1;
+                    if (pOutResult)
+                    {
+                        *(pOutResult + h * nWidth + w) = 1;
+                    }
                     rcMinDiff.left = FTL_MIN(rcMinDiff.left, w);
                     rcMinDiff.top = FTL_MIN(rcMinDiff.top, h);
                     rcMinDiff.right = FTL_MAX(rcMinDiff.right, w + 1);

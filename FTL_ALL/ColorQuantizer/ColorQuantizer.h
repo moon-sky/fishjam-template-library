@@ -58,7 +58,7 @@ namespace FTL
     class IFColorQuantizer{
     public:
         virtual ~IFColorQuantizer();
-        virtual BOOL SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize) = 0;
+        virtual BOOL SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize, BOOL bCopyMem) = 0;
         virtual BOOL ProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount) = 0;
 
         virtual COLORREF* GetPalette(UINT* pResultCount) = 0;

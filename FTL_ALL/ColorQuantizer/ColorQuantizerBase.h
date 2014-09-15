@@ -11,7 +11,7 @@ namespace FTL
         virtual ~CFColorQuantizerBase();
     public:
         //IFColorQuantizer
-        virtual BOOL SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize);
+        virtual BOOL SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize, BOOL bCopyMem);
         virtual BOOL ProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
         virtual COLORREF*   GetPalette(UINT* pResultCount);
         virtual int* GetQuantizerBuffer(INT* pSize);
@@ -27,6 +27,7 @@ namespace FTL
         UINT m_nBmpLineBytes;   //每行的字节数(4字节对齐)
         UINT m_nPaletteItemCount;
 
+        BOOL        m_bCopyMem;
         BYTE*       m_pBmpData;
         COLORREF*   m_pResultPalette;
         UCHAR*      m_pResultBuffer;

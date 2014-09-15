@@ -11,8 +11,9 @@ namespace FTL
         m_nBmpDataSize = 0;
         m_nBmpLineBytes = 0;
         m_nPaletteItemCount = 0;
-
+    
         m_pBmpData = NULL;
+        m_bCopyMem = FALSE;
         m_pResultPalette = NULL;
         m_pResultBuffer = NULL;
     }
@@ -20,16 +21,32 @@ namespace FTL
     CFColorQuantizerBase::~CFColorQuantizerBase(){
         SAFE_DELETE_ARRAY(m_pResultBuffer);
         SAFE_DELETE_ARRAY(m_pResultPalette);
-        SAFE_DELETE_ARRAY(m_pBmpData);
+
+        if (m_bCopyMem)
+        {
+            SAFE_DELETE_ARRAY(m_pBmpData);
+        }
+        else
+        {
+            m_pBmpData = NULL;
+        }
+        
     }
 
-    BOOL CFColorQuantizerBase::SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize)
+    BOOL CFColorQuantizerBase::SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize, BOOL bCopyMem)
     {
         BOOL bRet = FALSE;
+        m_bCopyMem = bCopyMem;
 
         UINT nBmpLineBytes = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth, nBpp);
         UINT nBmpDataSizeCheck = nBmpLineBytes * nHeight; 
         FTLASSERT(nBmpDataSizeCheck == nBmpDataSize && TEXT("BMP图片的大小需要四字节对齐"));
+
+        m_nWidth = nWidth;
+        m_nHeight = nHeight;
+        m_nBpp = nBpp;
+        m_nBmpLineBytes = nBmpLineBytes;
+        m_nBmpDataSize = nBmpDataSize;
 
         if (nBmpDataSizeCheck != nBmpDataSize)
         {
@@ -37,23 +54,28 @@ namespace FTL
             return FALSE;
         }
 
-        SAFE_DELETE_ARRAY(m_pBmpData);
+        if (bCopyMem)
+        {
+            SAFE_DELETE_ARRAY(m_pBmpData);
+        }
 
         if (nBmpDataSize > 0)
         {
-            m_pBmpData = new BYTE[nBmpDataSize];
-            if (m_pBmpData)
+            if (bCopyMem)
             {
-                m_nWidth = nWidth;
-                m_nHeight = nHeight;
-                m_nBpp = nBpp;
-                m_nBmpLineBytes = nBmpLineBytes;
-                m_nBmpDataSize = nBmpDataSize;
-                CopyMemory(m_pBmpData, pBmpData, nBmpDataSize);
+                m_pBmpData = new BYTE[nBmpDataSize];
+                if (m_pBmpData)
+                {
+                    CopyMemory(m_pBmpData, pBmpData, nBmpDataSize);
+                }
+                else{
+                    SetLastError(ERROR_NOT_ENOUGH_MEMORY);
+                    return FALSE;
+                }
             }
-            else{
-                SetLastError(ERROR_NOT_ENOUGH_MEMORY);
-                return FALSE;
+            else
+            {
+                m_pBmpData = pBmpData;
             }
         }
 

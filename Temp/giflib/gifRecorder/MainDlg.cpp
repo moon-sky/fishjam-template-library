@@ -143,7 +143,8 @@ void CMainDlg::OnBtnStopRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
     if(m_pGifMaker)
     {
-        m_threadRecord.StopAndWait(INFINITE);
+        m_threadRecord.Stop();
+        m_threadRecord.Wait(1000);
         SAFE_DELETE(m_pGifMaker);
 
         GetDlgItem(IDC_BTN_START_RECORD).EnableWindow(TRUE);
@@ -236,7 +237,7 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
         API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, m_nWidth, m_nHeight, desktopDC, m_nLeft, m_nTop, SRCCOPY));
         _OverlayMouseToScreen(canvas.GetCanvasDC(), rectCapture);
 
-#if 1
+#if 0
         CPath   path(m_strSavePath);
         path.RemoveExtension();
         CString strFileName = path.m_strPath;
@@ -263,7 +264,7 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
     } while (TRUE);
     
 
-    m_pGifMaker->EndMakeGif(GetTickCount());
+    m_pGifMaker->EndMakeGif(GetTickCount(), INFINITE);
     //SAFE_DELETE(m_pGifMaker);
 
     FTLTRACE(TEXT("Record Thread [%d] Quit\n"), GetCurrentThreadId());

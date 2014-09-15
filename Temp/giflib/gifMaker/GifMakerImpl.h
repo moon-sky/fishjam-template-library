@@ -25,15 +25,14 @@
 class SnapBiampInfo{
 public:
     SnapBiampInfo();
-    SnapBiampInfo(int nWidth, int nHeight, int nBpp, BYTE* pBmpData, DWORD dwTicket, BOOL bAttachMem);
+    SnapBiampInfo(int nIndex, BYTE* pBmpData, DWORD dwTicket, const RECT& rcTarget, int nBpp, BOOL bAttachMem);
     ~SnapBiampInfo();
 public:
-    int     nWidth;
-    int     nHeight;
-    int     nBpp;
-    int     nTotalSize;
+    int     nIndex;
     BYTE*   pBmpData;
     DWORD   dwTicket;
+    RECT    rcTarget; 
+    int     nBpp;
 };
 typedef CFSharePtr<SnapBiampInfo>   SnapBiampInfoPtr;
 
@@ -56,7 +55,9 @@ private:
     DWORD  _innerMakerThreadProc();
 
     CompressType    m_compressType;
-    int m_nWidth, m_nHeight, m_nBpp, m_nPreBmpBytes, m_nDiffResultSize;
+    int m_nWidth, m_nHeight, m_nBpp;
+    int m_nPreBmpBytes;     //上一张图片的大小
+    int m_nDiffResultSize;
     int m_nGifColorRes;     //8
     int m_nGifNumLevels;    //256
     int m_nImgCount;
@@ -67,18 +68,20 @@ private:
 
     BYTE* m_pPreBmp;
     BYTE* m_pDiffResult;
-    BYTE* m_pGifBuffer;
-    BYTE* m_pGiffDiffBuffer;
-    BYTE* m_pTranslateBuffer;
+    //BYTE* m_pGiffDiffBuffer;
     RECT  m_rcDiff;
 
-
     GifFileType* m_pGifFile;
-    GifColorType* m_pColorMap256;
-    DWORD m_dwLastTicket;
-    CQuantizer* m_pQuantizer;
+    GifColorType* m_pColorMap256;   //量化后Gif的颜色表数值
+    GifByteType*  m_pGifBuffer;     //量化后的像素索引值
 
-    BOOL _WriteGifData(BYTE* pBmpData, RECT rcBmp, DWORD dwTicket);
+    FTL::IFColorQuantizer*  m_pColorQuantizer;
+
+    DWORD m_dwLastTicket;
+    //CQuantizer* m_pQuantizer;
+    
+
+    BOOL _WriteGifData(SnapBiampInfoPtr& pSnapBitmapInfo);
 
     BYTE* _DuplicateBmpRect(BYTE* pSrcBmpData, int nSrcWidth, int nSrcHeight, int nBpp, RECT rcSrc);
     VOID _FreeDuplicateBmpData(BYTE* pData);
