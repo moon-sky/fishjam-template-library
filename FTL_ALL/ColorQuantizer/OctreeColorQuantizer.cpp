@@ -31,7 +31,12 @@ namespace FTL
             }
         }
     }
-    
+     
+    BOOL CFOctreeNode::IsLeaf() const
+    { 
+        return m_nPixelCount > 0; 
+    }
+
     COLORREF CFOctreeNode::GetColor() const
     {
         COLORREF result = RGB(0, 0, 0);
@@ -56,7 +61,7 @@ namespace FTL
         int result = m_nPixelCount;
 
         // sums up all the pixel presence for all the active nodes
-        for (int index = 0; index < 8; index++)
+        for (int index = 0; index < _countof(m_pNodes); index++)
         {
             CFOctreeNode* pNode = m_pNodes[index];
 
@@ -73,7 +78,7 @@ namespace FTL
     {
         int nCount= 0;
         // adds all the active sub-nodes to a list
-        for (int index = 0; index < 8; index++)
+        for (int index = 0; index < _countof(m_pNodes); index++)
         {
             CFOctreeNode* pNode = m_pNodes[index];
 
@@ -128,6 +133,7 @@ namespace FTL
         if (IsLeaf())
         {
             result = m_nPaletteIndex;
+            FTLASSERT(result != -1);
         }
         else // otherwise continue in to the lower depths
         {
@@ -165,7 +171,7 @@ namespace FTL
         int result = 0;
 
         // scans thru all the active nodes
-        for (int index = 0; index < 8; index++)
+        for (int index = 0; index < _countof(m_pNodes); index++)
         {
             CFOctreeNode* pNode = m_pNodes[index];
 
@@ -265,6 +271,7 @@ namespace FTL
         //std::list<COLORREF> result;
         SAFE_DELETE_ARRAY(m_pResultPalette);
         m_pResultPalette = new COLORREF[colorCount];
+        ZeroMemory(m_pResultPalette, sizeof(COLORREF) * colorCount);
 
         OctreeNodeList curLeaves;
         
@@ -353,7 +360,7 @@ namespace FTL
 
                 COLORREF color = MAKE_RGBA(Red, Green, Blue, 0xFF);
                 
-                m_indices[palIndex] = m_pRoot->GetPaletteIndex(color, 0);
+                m_indices[palIndex++] = m_pRoot->GetPaletteIndex(color, 0);
                 pBuf += nPixOffset;
             }
         }

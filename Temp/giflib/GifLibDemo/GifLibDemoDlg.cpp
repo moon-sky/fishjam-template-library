@@ -430,8 +430,8 @@ void CGifLibDemoDlg::OnBnClickedButton2()
 }
 
 CGifMaker    g_gifMaker;
-int         g_nWidth = 400;
-int         g_nHeight = 400;
+int         g_nWidth = 100;
+int         g_nHeight = 100;
 int         g_nBpp = 24;
 
 void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
@@ -517,17 +517,17 @@ void CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer()
     FTL::CFCanvas canvas;
     API_VERIFY(canvas.Create(m_hWnd, g_nWidth, -g_nHeight, g_nBpp));
     
-#if 0
+#if 1
     CDC memDC;
     memDC.Attach(canvas.GetCanvasDC());
-    int nFillWidth = 1, nFillHeight = 1;
+    int nFillWidth = 10, nFillHeight = 10;
     int nColorCount = 0;
     for (int w = 0; w < g_nWidth; w+=nFillWidth)
     {
         for (int h = 0; h < g_nHeight; h+=nFillHeight)
         {
             nColorCount++;
-            memDC.FillSolidRect(w, h, nFillWidth, nFillHeight, RGB(w * 2, 0x0, 0xFF - h * 2));
+            memDC.FillSolidRect(w, h, nFillWidth, nFillHeight, RGB(w * (g_nWidth / nFillWidth), 0x0, 0xFF - h * (g_nHeight / nFillHeight)));
         }
     }
     FTLTRACE(TEXT("nCOlorCount=%d\n"), nColorCount);

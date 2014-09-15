@@ -30,7 +30,7 @@ namespace FTL
         };
         CFOctreeNode(int level, CFOctreeColorQuantizer* pParent);
         ~CFOctreeNode();
-        BOOL IsLeaf() const { return m_nPixelCount > 0; }
+        BOOL IsLeaf() const;
         COLORREF    GetColor() const;
         int GetActiveNodesPixelCount() const;
         int GetActiveNodes(OctreeNodeList& result) const;

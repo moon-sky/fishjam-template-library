@@ -36,7 +36,7 @@
 
 CGifMaker::CGifMaker()
 {
-    m_compressType = ctFast;
+    m_compressType = ctHighQuality;
     m_nPreBmpBytes = 0;
     m_nDiffResultSize = 0;
     m_bWriteFirst = TRUE;
