@@ -1,3 +1,4 @@
+#pragma once
 // The following ifdef block is the standard way of creating macros which make exporting 
 // from a DLL simpler. All files within this DLL are compiled with the GIFMAKER_EXPORTS
 // symbol defined on the command line. this symbol should not be defined on any project
@@ -10,61 +11,24 @@
 #define GIFMAKER_API __declspec(dllimport)
 #endif
 
-//// This class is exported from the gifMaker.dll
-
-namespace FTL{
-    //template <typename ThreadTraits = DefaultThreadTraits>
-    //class CFThread;
-}
-
-struct GifFileType;
-struct GifColorType;
-class CQuantizer;
-
 enum GIFMAKER_API CompressType{
     ctFast = 0,
     ctHighQuality,
 };
 
-class GIFMAKER_API CGifMaker {
+
+class GIFMAKER_API IGifMaker {
 public:
-	CGifMaker(void);
-    ~CGifMaker();
-    
-    CompressType SetCompressType(CompressType type);
+    virtual ~IGifMaker();
+    virtual CompressType SetCompressType(CompressType type) = 0;
 
-    BOOL BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileName);
-    BOOL AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket);
-    BOOL EndMakeGif(DWORD dwTicket);
-private:
-    //FTL::CFThread<>* m_pThreadMaker;
-    CompressType    m_compressType;
-    int m_nPreWidth, m_nPreHeight, m_nPreBpp, m_nPreBmpBytes, m_nDiffResultSize;
-    int m_nGifColorRes;     //8
-    int m_nGifNumLevels;    //256
-    int m_nImgCount;
-    int m_nGifBufferSize;
-    BOOL m_bFirstImage;
-    BOOL m_bDelayImage;
-    BOOL m_bWriteFirst;
-    
-    BYTE* m_pPreBmp;
-    BYTE* m_pDiffResult;
-    BYTE* m_pGifBuffer;
-    BYTE* m_pGiffDiffBuffer;
-    BYTE* m_pTranslateBuffer;
-    RECT  m_rcDiff;
+    virtual BOOL BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileName) = 0;
+    virtual BOOL AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket) = 0;
+    virtual BOOL EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut = INFINITE) = 0;
+    virtual void Release() = 0;
 
-
-    GifFileType* m_pGifFile;
-    GifColorType* m_pColorMap256;
-    DWORD m_dwLastTicket;
-    CQuantizer* m_pQuantizer;
-
-    BOOL _WriteGifData(BYTE* pBmpData, RECT rcBmp, DWORD dwTicket);
-
-    BYTE* _DuplicateBmpRect(BYTE* pSrcBmpData, int nSrcWidth, int nSrcHeight, int nBpp, RECT rcSrc);
-    VOID _FreeDuplicateBmpData(BYTE* pData);
+public:
+    static IGifMaker* GetInstance();
+protected:
+    IGifMaker();
 };
-
-//extern GIFMAKER_API int ngifMaker;

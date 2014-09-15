@@ -4,8 +4,8 @@
 
 #pragma once
 
-class CGifMaker;
 #include <ftlThread.h>
+#include "../gifMaker/gifMaker.h"
 
 class CMainDlg : public CDialogImpl<CMainDlg>,
     public CWinDataExchange<CMainDlg>
@@ -63,7 +63,7 @@ public:
     //void OnTimer(UINT_PTR nIDEvent);
 
 private:
-    CGifMaker*  m_pGifMaker;
+    IGifMaker*  m_pGifMaker;
     CString m_strSavePath;
     int m_nLeft, m_nTop, m_nWidth, m_nHeight;
     int m_nFps, m_nBpp;

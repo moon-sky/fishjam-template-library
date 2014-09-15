@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../gifMaker/gifMaker.h"
 
 // CGifLibDemoDlg dialog
 class CGifLibDemoDlg : public CDialog
@@ -38,4 +39,7 @@ public:
     DWORD m_dwTicket;
     afx_msg void OnBnClickedBtnTimerClip();
     afx_msg void OnBnClickedBtnWuColorQuantizer();
+
+    IGifMaker*    m_pTimerGifMaker;
+
 };

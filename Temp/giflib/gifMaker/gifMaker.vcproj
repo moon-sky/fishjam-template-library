@@ -199,6 +199,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GifMakerImpl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Quantize.cpp"
 				>
 			</File>
@@ -230,6 +234,10 @@
 			>
 			<File
 				RelativePath=".\gifMaker.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GifMakerImpl.h"
 				>
 			</File>
 			<File

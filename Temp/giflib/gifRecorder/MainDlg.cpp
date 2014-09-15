@@ -7,7 +7,6 @@
 
 #include "MainDlg.h"
 
-#include "../gifMaker/gifMaker.h"
 
 CMainDlg::CMainDlg()
 {
@@ -49,8 +48,9 @@ void CMainDlg::OnDestroy()
     if (m_pGifMaker)
     {
         m_pGifMaker->EndMakeGif(GetTickCount());
-        delete m_pGifMaker;
-        m_pGifMaker = NULL;
+        m_pGifMaker->Release();
+        //delete m_pGifMaker;
+        //m_pGifMaker = NULL;
     }
 }
 
@@ -109,7 +109,7 @@ void CMainDlg::OnBtnStartRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
         if (NULL == m_pGifMaker)
         {
             m_nImageIndex = 0;
-            m_pGifMaker = new CGifMaker();
+            m_pGifMaker = IGifMaker::GetInstance(); //new CGifMaker();
             m_pGifMaker->SetCompressType((CompressType)m_nCompressType);
             m_pGifMaker->BeginMakeGif(m_nWidth, m_nHeight, m_nBpp, m_strSavePath);
             //SetTimer(ID_TIMER_FPS, 1000/m_nFps, NULL);
