@@ -1364,7 +1364,7 @@ namespace FTL
         , m_nReserveSlot(nReserveSlot)
         , m_hEventStop(hEventStop)
     {
-        FUNCTION_BLOCK_TRACE(0);
+        //FUNCTION_BLOCK_TRACE(0);
         FTLASSERT(0 <= nReserveSlot);
         FTLASSERT(nReserveSlot <= nCapability);
         
@@ -1389,7 +1389,7 @@ namespace FTL
     template<typename ELEMENT>
     CFProducerResumerQueue<ELEMENT>::~CFProducerResumerQueue()
     {
-        FUNCTION_BLOCK_TRACE(0);
+        //FUNCTION_BLOCK_TRACE(0);
 #ifdef FTL_DEBUG
         //Stop后可以用RemoveAfterStop进行清理工作？Stop后应该不允许Append&Remove
         FTLASSERT(0 == m_AllElement.size()); //must remove all Element,for avoid resource/memory leak，

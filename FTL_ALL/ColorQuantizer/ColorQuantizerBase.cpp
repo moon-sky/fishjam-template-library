@@ -84,7 +84,7 @@ namespace FTL
 
     BOOL CFColorQuantizerBase::ProcessQuantizer(UINT colorCount, UINT *pResultClrCount)
     {
-        FUNCTION_BLOCK_TRACE(100);
+        FUNCTION_BLOCK_TRACE(500);
         BOOL bRet = FALSE;
         API_VERIFY(OnPrepare());
         if (bRet)
@@ -120,5 +120,36 @@ namespace FTL
             *pSize = m_nWidth * m_nHeight;
         }
         return &m_indices[0];
+    }
+
+    void CFColorQuantizerBase::_AnalyzeColorMeta()
+    {
+        m_redList.clear();
+        m_greenList.clear();
+        m_blueList.clear();
+
+        FTLASSERT(24 == m_nBpp || 32 == m_nBpp);
+
+        UINT nColorCount = m_nWidth * m_nHeight;
+        UINT nPixOffset = (m_nBpp / 8);
+        UINT nRowBytes = (m_nWidth * m_nBpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
+
+        for (UINT h = 0; h < m_nHeight; h++)
+        {
+            BYTE* pBuf = m_pBmpData + (nRowBytes * h);
+            for (UINT w = 0; w < m_nWidth; w++)
+            {
+                unsigned char Red = *(pBuf + 2);
+                unsigned char Green = *(pBuf+1);
+                unsigned char Blue = *(pBuf);
+                
+                m_redList.push_back(Red);
+                m_greenList.push_back(Green);
+                m_blueList.push_back(Blue);
+
+                pBuf += nPixOffset;
+            }
+        }
+
     }
 }

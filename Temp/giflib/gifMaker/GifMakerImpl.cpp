@@ -10,19 +10,23 @@
 SnapBiampInfo::SnapBiampInfo()
 {
     nIndex = -1;
+    nLength = 0;
     pBmpData = NULL;
     dwTicket = 0;
     ::SetRectEmpty(&rcTarget);
     nBpp = 0;
+    FTLTRACE(TEXT("Enter SnapBitmapInfo::SnapBiampInfo, nIndex=%d\n"), nIndex);
 }
 
-SnapBiampInfo::SnapBiampInfo(int nIndex, BYTE* pBmpData, DWORD dwTicket, const RECT& rcTarget, int nBpp, BOOL bAttachMem)
+SnapBiampInfo::SnapBiampInfo(int nIndex, BYTE* pBmpData, int nLength, DWORD dwTicket, const RECT& rcTarget, int nBpp, BOOL bAttachMem)
 {
     BOOL bRet = FALSE;
     this->nIndex = nIndex;
+    this->nLength = nLength;
     this->pBmpData = NULL;
     this->dwTicket = dwTicket;
     this->nBpp = nBpp;
+
     API_VERIFY(::CopyRect(&(this->rcTarget), &rcTarget));
 
     if (!bAttachMem)
@@ -30,6 +34,7 @@ SnapBiampInfo::SnapBiampInfo(int nIndex, BYTE* pBmpData, DWORD dwTicket, const R
         int nWidth = (rcTarget.right - rcTarget.left);
         int nHeight = rcTarget.bottom - rcTarget.top;
         int nTotalSize = ((nWidth * nBpp + 31) / 32 * 4) * nHeight;  //四字节对齐
+        FTLASSERT(nLength == nTotalSize);
 
         this->pBmpData = new BYTE[nTotalSize];
         CopyMemory(this->pBmpData, pBmpData, nTotalSize);
@@ -38,10 +43,12 @@ SnapBiampInfo::SnapBiampInfo(int nIndex, BYTE* pBmpData, DWORD dwTicket, const R
     {
         this->pBmpData = pBmpData;
     }
+    FTLTRACE(TEXT("Enter SnapBitmapInfo construction, nIndex=%d, bAttachMem=%d\n"), nIndex, bAttachMem);
 }
 
 SnapBiampInfo::~SnapBiampInfo()
 {
+    FTLTRACE(TEXT("Enter SnapBitmapInfo destruct, nIndex=%d\n"), nIndex);
     SAFE_DELETE_ARRAY(pBmpData);
 }
 
@@ -62,7 +69,7 @@ CGifMakerImpl::CGifMakerImpl()
     m_pDiffResult = NULL;
     m_pGifFile = NULL;
 
-    m_pColorMap256 = NULL;
+    m_pColorMap = NULL;
     m_pGifBuffer = NULL;
     m_pColorQuantizer = NULL;
 
@@ -77,7 +84,7 @@ CGifMakerImpl::CGifMakerImpl()
     m_nGifColorRes = 8;
     m_nGifNumLevels = 256;
     m_dwLastTicket = 0;
-    m_nImgCount = 0;
+    m_nImgIndex = 0;
     m_nGifBufferSize = 0;
 }
 
@@ -87,7 +94,7 @@ CGifMakerImpl::~CGifMakerImpl()
     //SAFE_DELETE(m_pQuantizer);
     SAFE_DELETE(m_pColorQuantizer);
 
-    SAFE_DELETE_ARRAY(m_pColorMap256);
+    SAFE_DELETE_ARRAY(m_pColorMap);
     SAFE_DELETE_ARRAY(m_pGifBuffer);
     SAFE_DELETE_ARRAY(m_pPreBmp);
     SAFE_DELETE_ARRAY(m_pDiffResult);
@@ -131,6 +138,8 @@ DWORD  CGifMakerImpl::MakerThreadProc(LPVOID lpThreadParameter)
 
 DWORD  CGifMakerImpl::_innerMakerThreadProc()
 {
+    FUNCTION_BLOCK_TRACE(0);
+
     FTLASSERT(m_pGifFile);
     DWORD dwResult = 0;
     if (m_pGifFile)
@@ -145,6 +154,7 @@ DWORD  CGifMakerImpl::_innerMakerThreadProc()
                 //TODO: handle bitmap data
                 _WriteGifData(pSnapBitmapInfo);
             }
+            pSnapBitmapInfo.reset();
         } while (FTL::ftwtContinue == waitType);
 
 
@@ -166,7 +176,7 @@ BOOL CGifMakerImpl::BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFi
     m_pGifFile = EGifOpenFileName(pszFileName, false, &nError);
     if (m_pGifFile)
     {
-        GIF_VERIFY(EGifPutScreenDesc(m_pGifFile, nWidth, nHeight, bpp, 0, NULL));
+        GIF_VERIFY(EGifPutScreenDesc(m_pGifFile, nWidth, nHeight, bpp, 0, NULL), m_pGifFile->Error);
         EGifSetGifVersion(m_pGifFile, true);
 
         m_nWidth = nWidth;
@@ -185,11 +195,11 @@ BOOL CGifMakerImpl::BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFi
         m_pGifBuffer = new GifByteType[m_nGifBufferSize];
         ZeroMemory(m_pGifBuffer, m_nGifBufferSize);
 
-        m_pColorMap256 = new GifColorType[256];
-        ZeroMemory(m_pColorMap256, sizeof(GifColorType) * 256);
+        m_pColorMap = new GifColorType[MAX_COLOR_MAP_COUNT];
+        ZeroMemory(m_pColorMap, sizeof(GifColorType) * MAX_COLOR_MAP_COUNT);
 
         m_bFirstImage = TRUE; 
-        m_nImgCount = 0;
+        m_nImgIndex = 0;
 
         FTLASSERT(NULL == m_pThreadMaker);
         if (NULL == m_pThreadMaker)
@@ -213,19 +223,20 @@ BOOL CGifMakerImpl::BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFi
 BOOL CGifMakerImpl::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
 {
     int nRet = 0;
+    FUNCTION_BLOCK_TRACE(500);
     FTLASSERT(m_pGifFile);
     FTLASSERT(m_nPreBmpBytes == nLength);
-    m_nImgCount++;
+    m_nImgIndex++;
 
     BOOL bWriteImageData = FALSE;
-    FTLTRACE(TEXT("AddGifImage, Index=%d, nLength=%d, dwTicket=%d\n"), m_nImgCount, nLength, dwTicket);
+    FTLTRACE(TEXT("AddGifImage, Index=%d, nLength=%d, dwTicket=%d\n"), m_nImgIndex, nLength, dwTicket);
     if (m_bFirstImage)
     {
         m_bFirstImage = FALSE;
         m_dwLastTicket = dwTicket;
         CopyMemory(m_pPreBmp, pBmpData, nLength);
         ::SetRect(&m_rcDiff, 0, 0, m_nWidth, m_nHeight);
-        SnapBiampInfoPtr pSnapBitmapInfo(new SnapBiampInfo(m_nImgCount, pBmpData, dwTicket, m_rcDiff, m_nBpp, FALSE));
+        SnapBiampInfoPtr pSnapBitmapInfo(new SnapBiampInfo(m_nImgIndex, pBmpData, nLength, dwTicket, m_rcDiff, m_nBpp, FALSE));
         m_WaitingBitmapInfoQueue.Append(pSnapBitmapInfo, INFINITE);
         //m_pGiffDiffBuffer = _DuplicateBmpRect(pBmpData, m_nWidth, m_nHeight, m_nBpp, m_rcDiff);
     }
@@ -234,7 +245,7 @@ BOOL CGifMakerImpl::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
         RECT rcMinDiff = {0};
         int nDiffCount = FTL::CFGdiUtil::CompareBitmapData(m_nWidth, m_nHeight, m_nBpp, m_pPreBmp, pBmpData, m_pDiffResult, 
             m_nDiffResultSize, &rcMinDiff);
-        FTLTRACE(TEXT("[%d], dwTicket=%d, nDiffCount=%d/%d, rcMinDiff=%s\n"), m_nImgCount, dwTicket, nDiffCount, m_nDiffResultSize, 
+        FTLTRACE(TEXT("[ImageIndex=%d], dwTicket=%d, nDiffCount=%d/%d, rcMinDiff=%s\n"), m_nImgIndex, dwTicket, nDiffCount, m_nDiffResultSize, 
             FTL::CFRectDumpInfo(rcMinDiff).GetConvertedInfo());
         if (0 == nDiffCount)
         {
@@ -252,18 +263,24 @@ BOOL CGifMakerImpl::AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket)
             {
                 //if (nDiffCount * 10 / m_nDiffResultSize < 6  //不同的数小于 60%
                 //    && ((rcMinDiff.right - rcMinDiff.left) < m_nWidth)
-                //    && ((rcMinDiff.bottom - rcMinDiff.top) < m_nHeight))
+                //    && ()
+                if(((rcMinDiff.right - rcMinDiff.left) < m_nWidth) || ((rcMinDiff.bottom - rcMinDiff.top) < m_nHeight))
                 {
+                    //need copy
                     m_rcDiff = rcMinDiff;
-                    BYTE* pDiffBuffer = _DuplicateBmpRect(pBmpData, m_nWidth, m_nHeight, m_nBpp, m_rcDiff);
-                    SnapBiampInfoPtr pSnapBitmapInfo(new SnapBiampInfo(m_nImgCount, pDiffBuffer, dwTicket, m_rcDiff, m_nBpp,TRUE));
-                    m_WaitingBitmapInfoQueue.Append(pSnapBitmapInfo, 100);
+                    int nDiffBufferSize = 0;
+                    BYTE* pDiffBuffer = _DuplicateBmpRect(pBmpData, m_nWidth, m_nHeight, m_nBpp, m_rcDiff, &nDiffBufferSize);
+                    SnapBiampInfoPtr pSnapBitmapInfo(new SnapBiampInfo(m_nImgIndex, pDiffBuffer, nDiffBufferSize, dwTicket, m_rcDiff, m_nBpp, TRUE));
+                    m_WaitingBitmapInfoQueue.Append(pSnapBitmapInfo, INFINITE);
                     //m_pGiffDiffBuffer = _DuplicateBmpRect(pBmpData, m_nWidth, m_nHeight, m_nBpp, m_rcDiff);
                 }
-                //else{
-                //    RECT rcTotal = {0, 0, m_nWidth, m_nHeight};
-                //    _WriteGifData(pBmpData, rcTotal, dwTicket);
-                //}
+                else{
+                    //write all
+                    RECT rcTotal = {0, 0, m_nWidth, m_nHeight};
+                    SnapBiampInfoPtr pSnapBitmapInfo(new SnapBiampInfo(m_nImgIndex, pBmpData, nLength, dwTicket, rcTotal, m_nBpp, FALSE));
+                    m_WaitingBitmapInfoQueue.Append(pSnapBitmapInfo, INFINITE);
+                    //_WriteGifData(pBmpData, rcTotal, dwTicket);
+                }
             }
             CopyMemory(m_pPreBmp, pBmpData, nLength);
         }
@@ -285,9 +302,9 @@ BOOL CGifMakerImpl::EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut /* = INFINITE
         //    _WriteGifData(m_pPreBmp, rcTotal, dwTicket);
         //}
 
-        RECT rcTotal = {0, 0, m_nWidth, m_nHeight};
-        SnapBiampInfoPtr pSnapBitmapInfo(new SnapBiampInfo(m_nImgCount, m_pPreBmp, dwTicket, rcTotal, m_nBpp, FALSE));
-        m_WaitingBitmapInfoQueue.Append(pSnapBitmapInfo, INFINITE);
+        //RECT rcTotal = {0, 0, m_nWidth, m_nHeight};
+        //SnapBiampInfoPtr pSnapBitmapInfo(new SnapBiampInfo(m_nImgIndex, m_pPreBmp, m_nPreBmpBytes, dwTicket, rcTotal, m_nBpp, FALSE));
+        //m_WaitingBitmapInfoQueue.Append(pSnapBitmapInfo, INFINITE);
 
         if (INFINITE == dwWaitTimeOut)
         {
@@ -296,10 +313,12 @@ BOOL CGifMakerImpl::EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut /* = INFINITE
                 m_pThreadMaker->SleepAndCheckStop(100);
             }
         }
-
+        
         m_WaitingBitmapInfoQueue.Stop();
+        SnapBiampInfoPtr pSnapBitmapInfo;
         while (m_WaitingBitmapInfoQueue.RemoveAfterStop(pSnapBitmapInfo))
         {
+            FTLTRACE(TEXT("Remove Un Written Image:%d\n"), pSnapBitmapInfo->nIndex);
             //remove all the waiting snap bitmap info, will clear automatic
         }
 
@@ -312,13 +331,13 @@ BOOL CGifMakerImpl::EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut /* = INFINITE
         //    ZeroMemory(&m_rcDiff, sizeof(m_rcDiff));
         //}
 
-        GIF_VERIFY(EGifCloseFile(m_pGifFile, &nError));
+        GIF_VERIFY(EGifCloseFile(m_pGifFile, &nError), nError);
         m_pGifFile = NULL;
     }
     return FALSE;
 }
 
-BOOL CGifMakerImpl::_WriteGifData(SnapBiampInfoPtr& pSnapBitmapInfo)
+BOOL CGifMakerImpl::_WriteGifData(SnapBiampInfoPtr pSnapBitmapInfo)
 {
     //BYTE* pBmpData, const RECT& rcBmp,DWORD dwTicket
     FTLTRACE(TEXT("_WriteGifData, %d\n "), pSnapBitmapInfo->nIndex);
@@ -340,7 +359,7 @@ BOOL CGifMakerImpl::_WriteGifData(SnapBiampInfoPtr& pSnapBitmapInfo)
         //ExtStr[1] = dwElapse % 256;
         //ExtStr[2] = dwElapse / 256;
 
-        GIF_VERIFY(EGifPutExtension(m_pGifFile, GRAPHICS_EXT_FUNC_CODE, 4, Extension));
+        GIF_VERIFY(EGifPutExtension(m_pGifFile, GRAPHICS_EXT_FUNC_CODE, 4, Extension), m_pGifFile->Error);
 
         m_dwLastTicket = pSnapBitmapInfo->dwTicket;
     }
@@ -353,7 +372,7 @@ BOOL CGifMakerImpl::_WriteGifData(SnapBiampInfoPtr& pSnapBitmapInfo)
     {
         if (m_compressType == ctFast)
         {
-            nRet = GifQuantizeRGBBuffer(nWidth, nHeight, m_nBpp, pSnapBitmapInfo->pBmpData, m_pColorMap256, m_pGifBuffer);
+            nRet = GifQuantizeRGBBuffer(nWidth, nHeight, m_nBpp, pSnapBitmapInfo->pBmpData, m_pColorMap, m_pGifBuffer);
         }
         else{
             UINT nPaletteSize = 0;
@@ -366,13 +385,15 @@ BOOL CGifMakerImpl::_WriteGifData(SnapBiampInfoPtr& pSnapBitmapInfo)
             m_pColorQuantizer->ProcessQuantizer(256, &nPaletteSize);
             int nGifBufferSize = nWidth * nHeight;
             COLORREF* pPalette = m_pColorQuantizer->GetPalette(&nPaletteSize);
+            ZeroMemory(m_pColorMap, sizeof(GifColorType) * MAX_COLOR_MAP_COUNT);
             for (int i = 0; i < nPaletteSize; i++)
             {
                 COLORREF color = *(pPalette + i);
-                m_pColorMap256[i].Red = GetRValue(color);
-                m_pColorMap256[i].Green = GetGValue(color);
-                m_pColorMap256[i].Blue = GetBValue(color);
+                m_pColorMap[i].Red = GetRValue(color);
+                m_pColorMap[i].Green = GetGValue(color);
+                m_pColorMap[i].Blue = GetBValue(color);
             }
+            //m_nGifNumLevels = nPaletteSize;
 
             int* pQuantizerBuffer = m_pColorQuantizer->GetQuantizerBuffer(NULL);
             for (int i = 0; i < nGifBufferSize; i++)
@@ -386,14 +407,14 @@ BOOL CGifMakerImpl::_WriteGifData(SnapBiampInfoPtr& pSnapBitmapInfo)
             //delete pColorQuantizer;
         }
 
-        ColorMapObject *pColorMap = GifMakeMapObject(m_nGifNumLevels, m_pColorMap256);
+        ColorMapObject *pColorMap = GifMakeMapObject(m_nGifNumLevels, m_pColorMap);
 
-        GIF_VERIFY(EGifPutImageDesc(m_pGifFile, rcBmp.left, rcBmp.top, nWidth, nHeight, FALSE, pColorMap));
+        GIF_VERIFY(EGifPutImageDesc(m_pGifFile, rcBmp.left, rcBmp.top, nWidth, nHeight, FALSE, pColorMap), m_pGifFile->Error);
 
         GifByteType *Ptr = m_pGifBuffer;
         for (int j = 0; j < nHeight; j++) 
         {
-            GIF_VERIFY(EGifPutLine(m_pGifFile, Ptr, nWidth));
+            GIF_VERIFY(EGifPutLine(m_pGifFile, Ptr, nWidth), m_pGifFile->Error);
             Ptr += nWidth;
         }
         GifFreeMapObject(pColorMap);
@@ -401,9 +422,9 @@ BOOL CGifMakerImpl::_WriteGifData(SnapBiampInfoPtr& pSnapBitmapInfo)
     return FALSE;
 }
 
-BYTE* CGifMakerImpl::_DuplicateBmpRect(BYTE* pSrcBmpData, int nSrcWidth, int nSrcHeight, int nBpp, RECT rcSrc)
+BYTE* CGifMakerImpl::_DuplicateBmpRect(BYTE* pSrcBmpData, int nSrcWidth, int nSrcHeight, int nBpp, RECT rcSrc, int* pReturnBufSize)
 {
-    FTLTRACE(TEXT("_DuplicateBmpRect[%d], nSrcWidth=%d, nSrcHeight=%d, rcSrc=%s\n"), m_nImgCount, nSrcWidth, nSrcHeight, 
+    FTLTRACE(TEXT("_DuplicateBmpRect[%d], nSrcWidth=%d, nSrcHeight=%d, rcSrc=%s\n"), m_nImgIndex, nSrcWidth, nSrcHeight, 
         FTL::CFRectDumpInfo(rcSrc).GetConvertedInfo());
     BYTE* pBufResult = NULL;
     FTLASSERT(rcSrc.left >= 0 && rcSrc.top >= 0);
@@ -425,7 +446,10 @@ BYTE* CGifMakerImpl::_DuplicateBmpRect(BYTE* pSrcBmpData, int nSrcWidth, int nSr
             CopyMemory(pDest, pSrc, (rcSrc.right - rcSrc.left) * nBpp / 8);
         }
     }
-
+    if (pReturnBufSize)
+    {
+        *pReturnBufSize = dwNewBmpSize;
+    }
     return pBufResult;
 }
 

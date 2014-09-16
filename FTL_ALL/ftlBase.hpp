@@ -1442,8 +1442,8 @@ namespace FTL
             BlockElapseInfo* pInfo = (BlockElapseInfo*)TlsGetValue(rBlockElapseTlsIndex);
             if (NULL == pInfo)
             {
-                FTLTRACEEX(FTL::tlWarning, TEXT("%s New Thread[%d] Begin Block Elapse Trace\n"), 
-                    __FILE__LINE__, GetCurrentThreadId());
+                FTLTRACEEX(FTL::tlWarning, TEXT("%s(%d):New Thread[%d] Begin Block Elapse Trace\n"), 
+                    m_pszFileName, m_Line, GetCurrentThreadId());
                 pInfo = new BlockElapseInfo();
                 ZeroMemory(pInfo, sizeof(BlockElapseInfo));
                 TlsSetValue(rBlockElapseTlsIndex, pInfo);
@@ -1455,7 +1455,7 @@ namespace FTL
                 pInfo->bufIndicate[n] = TEXT('>');
             }
             pInfo->bufIndicate[curLevel] = 0;
-            FAST_TRACE_EX(tlDetail, TEXT("%s(%d) :\t TID(0x%04x) %s (Enter \t%d): %s\n"),
+            FAST_TRACE_EX(tlDetail, TEXT("%s(%d):\t TID(0x%04x) %s (Enter \t%d): %s\n"),
                 m_pszFileName,m_Line,GetCurrentThreadId(),pInfo->bufIndicate,pInfo->indent ,
                 m_pszBlkName);
         }
@@ -1522,13 +1522,13 @@ namespace FTL
                     pInfo->bufIndicate[n] = TEXT('<');
                 }
                 pInfo->bufIndicate[curLevel] = 0;
-                FAST_TRACE_EX(tlDetail,TEXT("%s(%d) :\t TID(0x%04x) %s (Leave \t%d): %s\n"),
+                FAST_TRACE_EX(tlDetail,TEXT("%s(%d):\t TID(0x%04x) %s (Leave \t%d): %s\n"),
                     m_pszFileName,m_Line,GetCurrentThreadId(), pInfo->bufIndicate,pInfo->indent,m_pszBlkName);
                 pInfo->indent--;
                 if (0 == pInfo->indent)
                 {
-                    FTLTRACEEX(FTL::tlWarning, TEXT("%s Thread[%d] End Block Elapse Trace\n"), 
-                        __FILE__LINE__, GetCurrentThreadId());
+                    FTLTRACEEX(FTL::tlWarning, TEXT("%s(%d):Thread[%d] End Block Elapse Trace\n"), 
+                        m_pszFileName, m_Line, GetCurrentThreadId());
                     delete pInfo;
                     TlsSetValue(rBlockElapseTlsIndex, NULL);
                 }

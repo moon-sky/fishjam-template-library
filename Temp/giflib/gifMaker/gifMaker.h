@@ -25,6 +25,8 @@ public:
     virtual BOOL BeginMakeGif(int nWidth, int nHeight, int bpp, LPCTSTR pszFileName) = 0;
     virtual BOOL AddGifImage(BYTE* pBmpData, int nLength, DWORD dwTicket) = 0;
     virtual BOOL EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut = INFINITE) = 0;
+    //virtual BOOL Pause() = 0;
+    //virtual BOOL Resume() = 0;
     virtual void Release() = 0;
 
 public:

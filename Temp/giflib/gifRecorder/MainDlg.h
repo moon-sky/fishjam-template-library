@@ -14,6 +14,7 @@ public:
 	enum { 
         IDD = IDD_MAINDLG,
         ID_TIMER_FPS = 1,
+        WM_THREAD_MAKEGIF_QUIT = (WM_USER + 100),
     };
     CMainDlg();
     ~CMainDlg();
@@ -42,6 +43,9 @@ public:
         COMMAND_ID_HANDLER_EX(IDC_BTN_START_RECORD, OnBtnStartRecord)
         COMMAND_ID_HANDLER_EX(IDC_BTN_PAUSE_RESUME_RECORD, OnBtnPauseResumeRecord)
         COMMAND_ID_HANDLER_EX(IDC_BTN_STOP_RECORD, OnBtnStopRecord)
+
+        MESSAGE_HANDLER_EX(WM_THREAD_MAKEGIF_QUIT, OnMessageThreadMakeGifQuit)
+        
 	END_MSG_MAP()
 
 // Handler prototypes (uncomment arguments if needed):
@@ -60,6 +64,7 @@ public:
     void OnBtnPauseResumeRecord(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnBtnStopRecord(UINT uNotifyCode, int nID, CWindow wndCtl);
     void OnDestroy();
+    LRESULT OnMessageThreadMakeGifQuit(UINT uMsg, WPARAM wParam, LPARAM lParam);
     //void OnTimer(UINT_PTR nIDEvent);
 
 private:

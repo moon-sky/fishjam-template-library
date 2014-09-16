@@ -129,11 +129,13 @@ void CMainDlg::OnBtnPauseResumeRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
     {
         if(m_threadRecord.HadRequestPause()){
             m_threadRecord.Resume();
+            //m_pGifMaker->Resume();
             SetDlgItemText(IDC_BTN_PAUSE_RESUME_RECORD, TEXT("Pause"));
         }
         else
         {
             m_threadRecord.Pause();
+            //m_pGifMaker->Pause();
             SetDlgItemText(IDC_BTN_PAUSE_RESUME_RECORD, TEXT("Resume"));
         }
     }
@@ -144,17 +146,21 @@ void CMainDlg::OnBtnStopRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
     if(m_pGifMaker)
     {
         m_threadRecord.Stop();
-        m_threadRecord.Wait(1000);
-        SAFE_DELETE(m_pGifMaker);
-
-        GetDlgItem(IDC_BTN_START_RECORD).EnableWindow(TRUE);
-        GetDlgItem(IDC_BTN_PAUSE_RESUME_RECORD).EnableWindow(FALSE);
         GetDlgItem(IDC_BTN_STOP_RECORD).EnableWindow(FALSE);
-
-        //KillTimer(ID_TIMER_FPS);
-        //m_pGifMaker->EndMakeGif(GetTickCount());
     }
+}
 
+LRESULT CMainDlg::OnMessageThreadMakeGifQuit(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    m_threadRecord.Wait(INFINITE);
+    SAFE_DELETE(m_pGifMaker);
+    GetDlgItem(IDC_BTN_START_RECORD).EnableWindow(TRUE);
+    GetDlgItem(IDC_BTN_PAUSE_RESUME_RECORD).EnableWindow(FALSE);
+
+    //KillTimer(ID_TIMER_FPS);
+    //m_pGifMaker->EndMakeGif(GetTickCount());
+    MessageBox(TEXT("Thread Make Gif Quit"));
+    return 0;
 }
 
 //void CMainDlg::OnTimer(UINT_PTR nIDEvent)
@@ -219,6 +225,8 @@ DWORD CMainDlg::RecordGifThreadProc(LPVOID pParam)
 
 DWORD CMainDlg::_InnerRecordGifThreadProc()
 {
+    FUNCTION_BLOCK_TRACE(0);
+
     BOOL bRet = FALSE;
     FTL::FTLThreadWaitType waitType = FTL::ftwtStop;
     int nSleepTime = 1000/m_nFps;
@@ -248,8 +256,9 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
         m_pGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), dwStartTickCount);
 
         DWORD dwEndTickCount = GetTickCount();
-        FTLTRACE(TEXT("start=%d, nSleep=%d, End=%d, needSleep=%d\n"), dwStartTickCount, nSleepTime, dwEndTickCount, 
-            (dwStartTickCount + nSleepTime > dwEndTickCount));
+        FTLTRACE(TEXT("RecordGif[%d] start=%d, nSleep=%d, End=%d, needSleep=%d\n"), 
+            m_nImageIndex, dwStartTickCount, nSleepTime, dwEndTickCount, 
+            (LONG(nSleepTime) - (dwEndTickCount - dwStartTickCount)));
         if (dwStartTickCount + nSleepTime > dwEndTickCount)
         {
             waitType = m_threadRecord.SleepAndCheckStop( nSleepTime - (dwEndTickCount - dwStartTickCount));
@@ -268,5 +277,6 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
     //SAFE_DELETE(m_pGifMaker);
 
     FTLTRACE(TEXT("Record Thread [%d] Quit\n"), GetCurrentThreadId());
+    PostMessage(WM_THREAD_MAKEGIF_QUIT, 0, 0);
     return 0;
 }

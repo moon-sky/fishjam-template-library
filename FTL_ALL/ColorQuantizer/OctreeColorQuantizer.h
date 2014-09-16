@@ -15,6 +15,8 @@
 *******************************************************************************************************/
 #include <list>
 #include <vector>
+#include <set>
+#include <ftlFunctional.h>
 
 namespace FTL
 {
@@ -24,6 +26,7 @@ namespace FTL
     typedef std::list<CFOctreeNode*>        OctreeNodeList;
 
     class CFOctreeNode{
+        DISABLE_COPY_AND_ASSIGNMENT(CFOctreeNode);
     public:
         enum {
             MAX_NODE_COUNT  = 8,
@@ -33,7 +36,7 @@ namespace FTL
         BOOL IsLeaf() const;
         COLORREF    GetColor() const;
         int GetActiveNodesPixelCount() const;
-        int GetActiveNodes(OctreeNodeList& result) const;
+        void GetActiveNodes(OctreeNodeList& result) const;
         void AddColor(COLORREF color, int level, CFOctreeColorQuantizer* pParent);
         int GetPaletteIndex(COLORREF color, int level);
         int RemoveLeaves(int level, int activeColorCount, int targetColorCount, CFOctreeColorQuantizer* parent);
@@ -46,6 +49,7 @@ namespace FTL
     private:
 
         static BYTE s_MASK[8];// = new Byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+        static LONG s_Count;
         int m_Red;
         int m_Green;
         int m_Blue;
@@ -67,9 +71,11 @@ namespace FTL
     public:
         int Leaves(OctreeNodeList& result);
         void AddLevelNode(int level, CFOctreeNode* octreeNode);
+        void AddNodeCount(){ m_nNodeCount++; }
     private:
         int m_nLastColorCount;
+        int m_nNodeCount;
         CFOctreeNode*   m_pRoot;
-        OctreeNodeList*    m_pLevels;
+        OctreeNodeList    m_levels[7];
     };
 }

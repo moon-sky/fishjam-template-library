@@ -1537,6 +1537,10 @@ namespace FTL
         }
         if (pMinDiffRect)
         {
+            if (0 == nDiffCount)
+            {
+                SetRectEmpty(&rcMinDiff);
+            }
             *pMinDiffRect = rcMinDiff;
         }
         return nDiffCount;

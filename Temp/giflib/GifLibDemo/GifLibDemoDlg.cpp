@@ -19,6 +19,11 @@
 #  pragma comment(lib, "../Release/gifMaker.lib")
 #endif 
 
+#define GIF_VERIFY(x, err) \
+    nRet = (x);\
+    if(nRet == GIF_ERROR){\
+        FTLTRACE(TEXT("%s(%d) :\t Gif Error: %s(%d)\n"), TEXT(__FILE__), __LINE__, TEXT(#x), (err)); \
+    }
 
 #include <ftlBase.h>
 #include <ftlGdi.h>
@@ -28,14 +33,6 @@
 //#ifdef _DEBUG
 //#define new DEBUG_NEW
 //#endif
-
-#define GIF_VERIFY(x) \
-    nRet = (x);\
-        if(nRet == GIF_ERROR){\
-        TRACE(TEXT("ERROR: %s(%d)"), TEXT(#x), 0); \
-    }
-
-
 
 // CAboutDlg dialog used for App About
 
@@ -272,7 +269,7 @@ void CGifLibDemoDlg::OnBnClickedButton1()
         GifFileType* pGifFile = EGifOpenFileName(L"gifDemo.gif", false, &nError);
         if (pGifFile)
         {
-            GIF_VERIFY(EGifPutScreenDesc(pGifFile, nWidth, nHeight, nGifColorRes, 0, pColorMap));
+            GIF_VERIFY(EGifPutScreenDesc(pGifFile, nWidth, nHeight, nGifColorRes, 0, pColorMap),pGifFile->Error);
 
             unsigned char ExtStr[4] = { 0x04, 0x00, 0x00, 0xff };
             ExtStr[0] = 0x04;
@@ -283,10 +280,10 @@ void CGifLibDemoDlg::OnBnClickedButton1()
             {
 
                 /* Dump graphics control block. */
-                GIF_VERIFY(EGifPutExtension(pGifFile, GRAPHICS_EXT_FUNC_CODE, 4, ExtStr));
+                GIF_VERIFY(EGifPutExtension(pGifFile, GRAPHICS_EXT_FUNC_CODE, 4, ExtStr),pGifFile->Error);
                 
                 //ColorMapObject *pColorMap2 = GifMakeMapObject(NumLevels, ColorMap256);
-                GIF_VERIFY(EGifPutImageDesc(pGifFile, 0, 0, nWidth, nHeight, FALSE, NULL));//pColorMap2));
+                GIF_VERIFY(EGifPutImageDesc(pGifFile, 0, 0, nWidth, nHeight, FALSE, NULL),pGifFile->Error);//pColorMap2));
                 //GifFreeMapObject(pColorMap2);
 
                 int nLength = nWidth * nHeight;
@@ -310,7 +307,7 @@ void CGifLibDemoDlg::OnBnClickedButton1()
                 {
                     //GifPixelType* pPixel = (GlblGifBuffer + j * nWidth);
                     //GIF_VERIFY(EGifPutLine(pGifFile, pRasterBuffer[j], nWidth));
-                    GIF_VERIFY(EGifPutLine(pGifFile, Ptr, nWidth));
+                    GIF_VERIFY(EGifPutLine(pGifFile, Ptr, nWidth),pGifFile->Error);
                     Ptr += nWidth;
                 }
 
@@ -337,7 +334,7 @@ void CGifLibDemoDlg::OnBnClickedButton1()
             }
             
 
-            GIF_VERIFY(EGifCloseFile(pGifFile, &nError));
+            GIF_VERIFY(EGifCloseFile(pGifFile, &nError), nError);
         }
         GifFreeMapObject(pColorMap);
     }
