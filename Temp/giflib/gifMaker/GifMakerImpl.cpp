@@ -11,6 +11,7 @@
 CGifMakerImpl::CGifMakerImpl()
 :m_WaitingFrameInfoQueue(2)
 {
+    m_pCallback = NULL;
     m_compressType = ctHighQuality;
     m_nPreBmpBytes = 0;
     m_nDiffResultSize = 0;

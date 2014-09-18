@@ -25,6 +25,8 @@ public:
     virtual void Release();
 
 private:
+    IGifMakerCallback*  m_pCallback;
+
     FTL::CFThread<>* m_pThreadMaker;
     FTL::CFProducerResumerQueue<CGifFrameInfoPtr>   m_WaitingFrameInfoQueue;
     static DWORD  __stdcall MakerThreadProc(LPVOID lpThreadParameter);

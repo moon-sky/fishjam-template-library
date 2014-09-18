@@ -17,6 +17,13 @@ enum GIF_UTILS_API CompressType{
     ctHighQuality,
 };
 
+class IGifMakerCallback{
+public:
+    virtual VOID OnBeginWrite() = 0;
+    virtual VOID OnWriteFrame(INT nIndex) = 0;
+    virtual VOID OnEndWrite() = 0;
+};
+
 class GIF_UTILS_API IGifMaker {
 public:
     virtual ~IGifMaker();
