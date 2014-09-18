@@ -7,7 +7,8 @@
 #include "../gifMaker/gifMaker.h"
 
 // CGifLibDemoDlg dialog
-class CGifLibDemoDlg : public CDialog
+class CGifLibDemoDlg : public CDialog, 
+    public IGifParserCallback
 {
 // Construction
 public:
@@ -19,6 +20,11 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
+
+public:
+    //IGifParserCallback
+    virtual VOID OnGetGifInfo(INT nWidth, INT nHeight, DWORD_PTR callbackData);
+    virtual BOOL OnParseFrame(INT nIndex, const GifControlInfo& gifControlInfo, const RECT& rcFrame, BYTE* pBmpBuffer, INT nLength, DWORD_PTR callbackData);
 
 // Implementation
 protected:
@@ -35,11 +41,15 @@ public:
     BOOL _OverlayMouseToScreen(HDC hdc, LPRECT lpRect);
     afx_msg void OnBnClickedButton2();
     afx_msg void OnTimer(UINT_PTR nIDEvent);
-    int m_nClipIndex;
-    DWORD m_dwTicket;
     afx_msg void OnBnClickedBtnTimerClip();
     afx_msg void OnBnClickedBtnWuColorQuantizer();
+    afx_msg void OnBnClickedBtnGifParser();
 
+private:
     IGifMaker*    m_pTimerGifMaker;
-
+    int m_nClipIndex;
+    DWORD m_dwTicket;
+    int m_nTargetBpp;
+    INT m_nParserScreenWidth;
+    INT m_nParserScreenHeight;
 };

@@ -76,6 +76,9 @@ CGifLibDemoDlg::CGifLibDemoDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
     m_nClipIndex = 0;
     m_pTimerGifMaker = NULL;
+    m_nParserScreenWidth = 0;
+    m_nParserScreenHeight = 0;
+    m_nTargetBpp = 32;
 }
 
 void CGifLibDemoDlg::DoDataExchange(CDataExchange* pDX)
@@ -93,6 +96,7 @@ BEGIN_MESSAGE_MAP(CGifLibDemoDlg, CDialog)
     ON_WM_TIMER()
     ON_BN_CLICKED(IDC_BTN_TIMER_CLIP, &CGifLibDemoDlg::OnBnClickedBtnTimerClip)
     ON_BN_CLICKED(IDC_BTN_WU_COLOR_QUANTIZER, &CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer)
+    ON_BN_CLICKED(IDC_BTN_GIF_PARSER, &CGifLibDemoDlg::OnBnClickedBtnGifParser)
 END_MESSAGE_MAP()
 
 
@@ -560,4 +564,53 @@ void CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer()
     FTL::CFStringFormater formater;
     formater.Format(TEXT("Elapse %d"), elpaseCounter.GetElapseTime() / NANOSECOND_PER_MILLISECOND);
     MessageBox(formater.GetString());
+}
+
+VOID CGifLibDemoDlg::OnGetGifInfo(INT nWidth, INT nHeight, DWORD_PTR callbackData)
+{
+    m_nParserScreenWidth = nWidth;
+    m_nParserScreenHeight = nHeight;
+}
+
+BOOL CGifLibDemoDlg::OnParseFrame(INT nIndex, const GifControlInfo& gifControlInfo, const RECT& rcFrame, BYTE* pBmpBuffer, INT nLength, DWORD_PTR callbackData)
+{
+    FTLTRACE(TEXT("CGifLibDemoDlg::OnParseFrame[%d], rcFrame=%s, nLength=%d, delay=%d, translateColor=%d\n"), 
+        nIndex, FTL::CFRectDumpInfo(rcFrame).GetConvertedInfo(), nLength,
+        gifControlInfo.nDelayMilliSeconds, gifControlInfo.nTransparentColorIndex);
+
+#if 1
+    BOOL bRet = FALSE;
+    FTL::CFCanvas canvas;
+    API_VERIFY(canvas.Create(NULL, m_nParserScreenWidth, -m_nParserScreenHeight, m_nTargetBpp));
+    FTLASSERT(canvas.GetBufferSize() == nLength);
+    CopyMemory(canvas.GetBuffer(), pBmpBuffer, nLength);
+    FTL::CFStringFormater formaterName;
+    formaterName.Format(TEXT("ParseBmp_%d.bmp"), nIndex);
+    API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), formaterName));
+#endif 
+
+    return TRUE;
+}
+
+
+void CGifLibDemoDlg::OnBnClickedBtnGifParser()
+{
+    BOOL bRet = FALSE;
+    IGifParser*     pGifParser = IGifParser::GetInstance();
+    
+    CFileDialog dlg(TRUE);
+    if (dlg.DoModal() == IDOK)
+    {
+        m_nTargetBpp = 24;
+
+        API_VERIFY(pGifParser->OpenGifFile(dlg.GetPathName()));// TEXT("gifParserSource.gif")));
+        INT nCount = pGifParser->ParseGif(m_nTargetBpp, this, (DWORD_PTR)this);
+        for (INT nIndex = 0; nIndex < nCount; nIndex++)
+        {
+            //pGifParser->GetGifImage(nIndex, )
+        }
+        MessageBox(TEXT("After Analyze"));
+        pGifParser->CloseFile();
+    }
+    pGifParser->Release();
 }

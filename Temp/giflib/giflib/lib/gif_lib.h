@@ -178,7 +178,7 @@ int EGifPutCodeNext(GifFileType *GifFile,
 ******************************************************************************/
 
 /* Main entry points */
-GifFileType *DGifOpenFileName(const char *GifFileName, int *Error);
+GifFileType *DGifOpenFileName(const wchar_t *GifFileName, int *Error);
 GifFileType *DGifOpenFileHandle(int GifFileHandle, int *Error);
 int DGifSlurp(GifFileType * GifFile);
 GifFileType *DGifOpen(void *userPtr, InputFunc readFunc, int *Error);    /* new one (TVT) */
@@ -233,7 +233,7 @@ int GifQuantizeBuffer(unsigned int Width, unsigned int Height,
 /******************************************************************************
  Error handling and reporting.
 ******************************************************************************/
-extern const char *GifErrorString(int ErrorCode);     /* new in 2012 - ESR */
+extern const wchar_t *GifErrorString(int ErrorCode);     /* new in 2012 - ESR */
 
 /*****************************************************************************
  Everything below this point is new after version 1.2, supporting `slurp

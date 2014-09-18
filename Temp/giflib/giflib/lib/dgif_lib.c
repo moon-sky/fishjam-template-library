@@ -47,12 +47,12 @@ static int DGifBufferedInput(GifFileType *GifFile, GifByteType *Buf,
  info record.
 ******************************************************************************/
 GifFileType *
-DGifOpenFileName(const char *FileName, int *Error)
+DGifOpenFileName(const wchar_t *FileName, int *Error)
 {
     int FileHandle;
     GifFileType *GifFile;
 
-    if ((FileHandle = open(FileName, O_RDONLY)) == -1) {
+    if ((FileHandle = _wopen(FileName, O_RDONLY)) == -1) {
     if (Error != NULL)
         *Error = D_GIF_ERR_OPEN_FAILED;
         return NULL;
@@ -515,7 +515,7 @@ DGifGetPixel(GifFileType *GifFile, GifPixelType Pixel)
 int
 DGifGetExtension(GifFileType *GifFile, int *ExtCode, GifByteType **Extension)
 {
-    GifByteType Buf;
+    GifByteType Buf = 0;
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (!IS_READABLE(Private)) {

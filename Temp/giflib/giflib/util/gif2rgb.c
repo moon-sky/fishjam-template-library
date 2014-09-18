@@ -411,78 +411,83 @@ static void GIF2RGB(int NumFiles, char *FileName,
     for (i = 0; i < GifFile->SWidth; i++)  /* Set its color to BackGround. */
     ScreenBuffer[0][i] = GifFile->SBackGroundColor;
     for (i = 1; i < GifFile->SHeight; i++) {
-    /* Allocate the other rows, and set their color to background too: */
-    if ((ScreenBuffer[i] = (GifRowType) malloc(Size)) == NULL)
-        GIF_EXIT("Failed to allocate memory required, aborted.");
-
-    memcpy(ScreenBuffer[i], ScreenBuffer[0], Size);
+        /* Allocate the other rows, and set their color to background too: */
+        if ((ScreenBuffer[i] = (GifRowType) malloc(Size)) == NULL)
+            GIF_EXIT("Failed to allocate memory required, aborted.");
+        memcpy(ScreenBuffer[i], ScreenBuffer[0], Size);
     }
 
     /* Scan the content of the GIF file and load the image(s) in: */
     do {
-    if (DGifGetRecordType(GifFile, &RecordType) == GIF_ERROR) {
-        PrintGifError(GifFile->Error);
-        exit(EXIT_FAILURE);
-    }
-    switch (RecordType) {
-        case IMAGE_DESC_RECORD_TYPE:
-        if (DGifGetImageDesc(GifFile) == GIF_ERROR) {
+        if (DGifGetRecordType(GifFile, &RecordType) == GIF_ERROR) {
             PrintGifError(GifFile->Error);
             exit(EXIT_FAILURE);
         }
-        Row = GifFile->Image.Top; /* Image Position relative to Screen. */
-        Col = GifFile->Image.Left;
-        Width = GifFile->Image.Width;
-        Height = GifFile->Image.Height;
-        GifQprintf("\n%s: Image %d at (%d, %d) [%dx%d]:     ",
-            PROGRAM_NAME, ++ImageNum, Col, Row, Width, Height);
-        if (GifFile->Image.Left + GifFile->Image.Width > GifFile->SWidth ||
-           GifFile->Image.Top + GifFile->Image.Height > GifFile->SHeight) {
-            fprintf(stderr, "Image %d is not confined to screen dimension, aborted.\n",ImageNum);
-            exit(EXIT_FAILURE);
-        }
-        if (GifFile->Image.Interlace) {
-            /* Need to perform 4 passes on the images: */
-            for (Count = i = 0; i < 4; i++)
-            for (j = Row + InterlacedOffset[i]; j < Row + Height;
-                         j += InterlacedJumps[i]) {
-                GifQprintf("\b\b\b\b%-4d", Count++);
-                if (DGifGetLine(GifFile, &ScreenBuffer[j][Col],
-                Width) == GIF_ERROR) {
-                PrintGifError(GifFile->Error);
-                exit(EXIT_FAILURE);
+        switch (RecordType) {
+            case IMAGE_DESC_RECORD_TYPE:
+                {
+                    if (DGifGetImageDesc(GifFile) == GIF_ERROR) {
+                        PrintGifError(GifFile->Error);
+                        exit(EXIT_FAILURE);
+                    }
+                    Row = GifFile->Image.Top; /* Image Position relative to Screen. */
+                    Col = GifFile->Image.Left;
+                    Width = GifFile->Image.Width;
+                    Height = GifFile->Image.Height;
+                    GifQprintf("\n%s: Image %d at (%d, %d) [%dx%d]:     ",
+                        PROGRAM_NAME, ++ImageNum, Col, Row, Width, Height);
+                    if (GifFile->Image.Left + GifFile->Image.Width > GifFile->SWidth ||
+                        GifFile->Image.Top + GifFile->Image.Height > GifFile->SHeight) {
+                            fprintf(stderr, "Image %d is not confined to screen dimension, aborted.\n",ImageNum);
+                            exit(EXIT_FAILURE);
+                    }
+                    if (GifFile->Image.Interlace) {
+                        /* Need to perform 4 passes on the images: */
+                        for (Count = i = 0; i < 4; i++)
+                            for (j = Row + InterlacedOffset[i]; j < Row + Height;
+                                j += InterlacedJumps[i]) {
+                                    GifQprintf("\b\b\b\b%-4d", Count++);
+                                    if (DGifGetLine(GifFile, &ScreenBuffer[j][Col],
+                                        Width) == GIF_ERROR) {
+                                            PrintGifError(GifFile->Error);
+                                            exit(EXIT_FAILURE);
+                                    }
+                            }
+                    }
+                    else {
+                        for (i = 0; i < Height; i++) {
+                            GifQprintf("\b\b\b\b%-4d", i);
+                            if (DGifGetLine(GifFile, &ScreenBuffer[Row++][Col],
+                                Width) == GIF_ERROR) {
+                                    PrintGifError(GifFile->Error);
+                                    exit(EXIT_FAILURE);
+                            }
+                        }
+                    }
+                    break;
                 }
-            }
+            case EXTENSION_RECORD_TYPE:
+                {
+                    /* Skip any extension blocks in file: */
+                    if (DGifGetExtension(GifFile, &ExtCode, &Extension) == GIF_ERROR) {
+                        PrintGifError(GifFile->Error);
+                        exit(EXIT_FAILURE);
+                    }
+                    while (Extension != NULL) {
+                        if (DGifGetExtensionNext(GifFile, &Extension) == GIF_ERROR) {
+                            PrintGifError(GifFile->Error);
+                            exit(EXIT_FAILURE);
+                        }
+                    }
+                    break;
+                }
+            case TERMINATE_RECORD_TYPE:
+                {
+                    break;
+                }
+            default:		    /* Should be trapped by DGifGetRecordType. */
+                break;
         }
-        else {
-            for (i = 0; i < Height; i++) {
-            GifQprintf("\b\b\b\b%-4d", i);
-            if (DGifGetLine(GifFile, &ScreenBuffer[Row++][Col],
-                Width) == GIF_ERROR) {
-                PrintGifError(GifFile->Error);
-                exit(EXIT_FAILURE);
-            }
-            }
-        }
-        break;
-        case EXTENSION_RECORD_TYPE:
-        /* Skip any extension blocks in file: */
-        if (DGifGetExtension(GifFile, &ExtCode, &Extension) == GIF_ERROR) {
-            PrintGifError(GifFile->Error);
-            exit(EXIT_FAILURE);
-        }
-        while (Extension != NULL) {
-            if (DGifGetExtensionNext(GifFile, &Extension) == GIF_ERROR) {
-            PrintGifError(GifFile->Error);
-            exit(EXIT_FAILURE);
-            }
-        }
-        break;
-        case TERMINATE_RECORD_TYPE:
-        break;
-        default:		    /* Should be trapped by DGifGetRecordType. */
-        break;
-    }
     } while (RecordType != TERMINATE_RECORD_TYPE);
 
     /* Lets dump it - set the global variables required and do it: */

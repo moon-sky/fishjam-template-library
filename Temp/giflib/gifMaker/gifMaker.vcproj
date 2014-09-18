@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GIFMAKER_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;GIF_UTILS_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -116,7 +116,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GIFMAKER_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;GIF_UTILS_EXPORTS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
@@ -195,11 +195,19 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GifFrameInfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\gifMaker.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\GifMakerImpl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\GifParserImpl.cpp"
 				>
 			</File>
 			<File
@@ -233,11 +241,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\GifFrameInfo.h"
+				>
+			</File>
+			<File
 				RelativePath=".\gifMaker.h"
 				>
 			</File>
 			<File
 				RelativePath=".\GifMakerImpl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GifParserImpl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\gifUtilDefine.h"
 				>
 			</File>
 			<File
