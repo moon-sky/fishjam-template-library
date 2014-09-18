@@ -19,8 +19,8 @@ public:
     virtual ~CGifMakerImpl();
     virtual CompressType SetCompressType(CompressType type);
 
-    virtual BOOL BeginMakeGif(INT nWidth, INT nHeight, INT bpp, LPCTSTR pszFileName);
-    virtual BOOL AddGifImage(BYTE* pBmpData, INT nLength, DWORD dwTicket);
+    virtual BOOL BeginMakeGif(INT nWidth, INT nHeight, LPCTSTR pszFileName);
+    virtual BOOL AddGifImage(const RECT& rcFrame, BYTE* pBmpData, INT nLength, INT nBpp, DWORD dwTicket);
     virtual BOOL EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut = INFINITE);
     virtual void Release();
 
@@ -31,7 +31,7 @@ private:
     DWORD  _innerMakerThreadProc();
 
     CompressType    m_compressType;
-    INT m_nWidth, m_nHeight, m_nBpp;
+    INT m_nWidth, m_nHeight;// m_nBpp;
     INT m_nPreBmpBytes;     //上一张图片的大小
     INT m_nDiffResultSize;
     INT m_nGifColorRes;     //8

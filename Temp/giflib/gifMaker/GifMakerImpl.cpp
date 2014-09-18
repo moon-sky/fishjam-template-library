@@ -18,7 +18,7 @@ CGifMakerImpl::CGifMakerImpl()
 
     m_nWidth = 0;
     m_nHeight = 0;
-    m_nBpp = 0;
+    //m_nBpp = 0;
     m_pThreadMaker = NULL;
     
     m_pPreBmp = NULL;
@@ -122,7 +122,7 @@ DWORD  CGifMakerImpl::_innerMakerThreadProc()
 
 
 
-BOOL CGifMakerImpl::BeginMakeGif(INT nWidth, INT nHeight, INT bpp, LPCTSTR pszFileName)
+BOOL CGifMakerImpl::BeginMakeGif(INT nWidth, INT nHeight, LPCTSTR pszFileName)
 {
     BOOL bRet = FALSE;
 
@@ -132,14 +132,14 @@ BOOL CGifMakerImpl::BeginMakeGif(INT nWidth, INT nHeight, INT bpp, LPCTSTR pszFi
     m_pGifFile = EGifOpenFileName(pszFileName, false, &nError);
     if (m_pGifFile)
     {
-        GIF_VERIFY(EGifPutScreenDesc(m_pGifFile, nWidth, nHeight, bpp, 0, NULL), m_pGifFile->Error);
+        GIF_VERIFY(EGifPutScreenDesc(m_pGifFile, nWidth, nHeight, 8, 0, NULL), m_pGifFile->Error);
         EGifSetGifVersion(m_pGifFile, true);
 
         m_nWidth = nWidth;
         m_nHeight = nHeight;
-        m_nBpp = bpp;
+        //m_nBpp = bpp;
 
-        m_nPreBmpBytes = ((nWidth * bpp + 31) / 32 * 4) * nHeight;  //四字节对齐
+        m_nPreBmpBytes = ((nWidth * 32 + 31) / 32 * 4) * nHeight;  //四字节对齐
         m_pPreBmp = new BYTE[m_nPreBmpBytes];
         ZeroMemory(m_pPreBmp, m_nPreBmpBytes);
 
@@ -176,12 +176,12 @@ BOOL CGifMakerImpl::BeginMakeGif(INT nWidth, INT nHeight, INT bpp, LPCTSTR pszFi
     return bRet;
 }
 
-BOOL CGifMakerImpl::AddGifImage(BYTE* pBmpData, INT nLength, DWORD dwTicket)
+BOOL CGifMakerImpl::AddGifImage(const RECT& rcFrame, BYTE* pBmpData, INT nLength, INT nBpp, DWORD dwTicket)
 {
     INT nRet = 0;
     FUNCTION_BLOCK_TRACE(500);
     FTLASSERT(m_pGifFile);
-    FTLASSERT(m_nPreBmpBytes == nLength);
+    FTLASSERT(m_nPreBmpBytes >= nLength);
     m_nImgIndex++;
 
     BOOL bWriteImageData = FALSE;
@@ -192,14 +192,14 @@ BOOL CGifMakerImpl::AddGifImage(BYTE* pBmpData, INT nLength, DWORD dwTicket)
         m_dwLastTicket = dwTicket;
         CopyMemory(m_pPreBmp, pBmpData, nLength);
         ::SetRect(&m_rcDiff, 0, 0, m_nWidth, m_nHeight);
-        CGifFrameInfoPtr pFrameInfo(new CGifFrameInfo(m_nImgIndex, pBmpData, nLength, dwTicket, m_rcDiff, m_nBpp, FALSE));
+        CGifFrameInfoPtr pFrameInfo(new CGifFrameInfo(m_nImgIndex, pBmpData, nLength, dwTicket, m_rcDiff, nBpp, FALSE));
         m_WaitingFrameInfoQueue.Append(pFrameInfo, INFINITE);
         //m_pGiffDiffBuffer = _DuplicateBmpRect(pBmpData, m_nWidth, m_nHeight, m_nBpp, m_rcDiff);
     }
     else
     {
         RECT rcMinDiff = {0};
-        INT nDiffCount = FTL::CFGdiUtil::CompareBitmapData(m_nWidth, m_nHeight, m_nBpp, m_pPreBmp, pBmpData, m_pDiffResult, 
+        INT nDiffCount = FTL::CFGdiUtil::CompareBitmapData(m_nWidth, m_nHeight, nBpp, m_pPreBmp, pBmpData, m_pDiffResult, 
             m_nDiffResultSize, &rcMinDiff);
         FTLTRACE(TEXT("[ImageIndex=%d], dwTicket=%d, nDiffCount=%d/%d, rcMinDiff=%s\n"), m_nImgIndex, dwTicket, nDiffCount, m_nDiffResultSize, 
             FTL::CFRectDumpInfo(rcMinDiff).GetConvertedInfo());
@@ -225,15 +225,15 @@ BOOL CGifMakerImpl::AddGifImage(BYTE* pBmpData, INT nLength, DWORD dwTicket)
                     //need copy
                     m_rcDiff = rcMinDiff;
                     INT nDiffBufferSize = 0;
-                    BYTE* pDiffBuffer = _DuplicateBmpRect(pBmpData, m_nWidth, m_nHeight, m_nBpp, m_rcDiff, &nDiffBufferSize);
-                    CGifFrameInfoPtr pFrameInfo(new CGifFrameInfo(m_nImgIndex, pDiffBuffer, nDiffBufferSize, dwTicket, m_rcDiff, m_nBpp, TRUE));
+                    BYTE* pDiffBuffer = _DuplicateBmpRect(pBmpData, m_nWidth, m_nHeight, nBpp, m_rcDiff, &nDiffBufferSize);
+                    CGifFrameInfoPtr pFrameInfo(new CGifFrameInfo(m_nImgIndex, pDiffBuffer, nDiffBufferSize, dwTicket, m_rcDiff, nBpp, TRUE));
                     m_WaitingFrameInfoQueue.Append(pFrameInfo, INFINITE);
                     //m_pGiffDiffBuffer = _DuplicateBmpRect(pBmpData, m_nWidth, m_nHeight, m_nBpp, m_rcDiff);
                 }
                 else{
                     //write all
                     RECT rcTotal = {0, 0, m_nWidth, m_nHeight};
-                    CGifFrameInfoPtr pFrameInfo(new CGifFrameInfo(m_nImgIndex, pBmpData, nLength, dwTicket, rcTotal, m_nBpp, FALSE));
+                    CGifFrameInfoPtr pFrameInfo(new CGifFrameInfo(m_nImgIndex, pBmpData, nLength, dwTicket, rcTotal, nBpp, FALSE));
                     m_WaitingFrameInfoQueue.Append(pFrameInfo, INFINITE);
                     //_WriteGifData(pBmpData, rcTotal, dwTicket);
                 }
@@ -328,16 +328,16 @@ BOOL CGifMakerImpl::_WriteGifData(CGifFrameInfoPtr pFrameInfo)
     {
         if (m_compressType == ctFast)
         {
-            nRet = GifQuantizeRGBBuffer(nWidth, nHeight, m_nBpp, pFrameInfo->pBmpData, m_pColorMap, m_pGifBuffer);
+            nRet = GifQuantizeRGBBuffer(nWidth, nHeight, pFrameInfo->nBpp, pFrameInfo->pBmpData, m_pColorMap, m_pGifBuffer);
         }
         else{
             UINT nPaletteSize = 0;
-            UINT nBufferSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth, m_nBpp) * nHeight;
+            UINT nBufferSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth, pFrameInfo->nBpp) * nHeight;
 
             //FTL::IFColorQuantizer* pColorQuantizer = new FTL::CFWuColorQuantizer();
             //FTL::IFColorQuantizer* pColorQuantizer = new FTL::CFOctreeColorQuantizer();
 
-            m_pColorQuantizer->SetBmpInfo(nWidth, nHeight, m_nBpp, pFrameInfo->pBmpData, nBufferSize, FALSE);
+            m_pColorQuantizer->SetBmpInfo(nWidth, nHeight, pFrameInfo->nBpp, pFrameInfo->pBmpData, nBufferSize, FALSE);
             m_pColorQuantizer->ProcessQuantizer(256, &nPaletteSize);
             INT nGifBufferSize = nWidth * nHeight;
             COLORREF* pPalette = m_pColorQuantizer->GetPalette(&nPaletteSize);

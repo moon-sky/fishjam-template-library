@@ -404,7 +404,7 @@ void CGifLibDemoDlg::OnBnClickedButton2()
    CRect rectCapture(0, 0, nWidth, nHeight);
    API_VERIFY(canvas.Create(m_hWnd, nWidth, -nHeight, nBpp));
 
-   pGifMaker->BeginMakeGif(nWidth, nHeight, nBpp, L"gifMakerDemo.gif");
+   pGifMaker->BeginMakeGif(nWidth, nHeight, L"gifMakerDemo.gif");
    int i = 0;
    CRect rcDiffColor(10, 10, 30, 30);
    for (i = 0; i < 5; i++)
@@ -425,7 +425,8 @@ void CGifLibDemoDlg::OnBnClickedButton2()
        strFileName.Format(TEXT("gifMakerSrc_%d.bmp"), i);
        API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
        //_OverlayMouseToScreen(canvas.GetCanvasDC(), &rectCapture);
-       pGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), (i + 1) * 1000);
+       CRect rcFrame(0, 0, canvas.GetWidth(), canvas.GetHeight());
+       pGifMaker->AddGifImage(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(),canvas.GetBpp(),  (i + 1) * 1000);
    }
    pGifMaker->EndMakeGif( (i) * 100);
 }
@@ -454,7 +455,8 @@ void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
         API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
 #endif
 
-        m_pTimerGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
+        CRect rcFrame(0, 0, canvas.GetWidth(), canvas.GetHeight());
+        m_pTimerGifMaker->AddGifImage(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
     }
     else
     {
@@ -478,7 +480,7 @@ void CGifLibDemoDlg::OnBnClickedBtnTimerClip()
 
     ASSERT(m_pTimerGifMaker == NULL);
     m_pTimerGifMaker = IGifMaker::GetInstance();
-    m_pTimerGifMaker->BeginMakeGif(g_nWidth, g_nHeight, g_nBpp, L"gifTimerClip.gif");
+    m_pTimerGifMaker->BeginMakeGif(g_nWidth, g_nHeight, L"gifTimerClip.gif");
     m_nClipIndex = 0;
     
     SetTimer(1, 100, NULL);
@@ -545,9 +547,9 @@ void CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer()
 #endif
 
     IGifMaker*  pGifMaker = IGifMaker::GetInstance();
-
-    pGifMaker->BeginMakeGif(canvas.GetWidth(), canvas.GetHeight(), canvas.GetBpp(), TEXT("WuColorQuantizer.gif"));
-    pGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
+    CRect rcFrame(0, 0, canvas.GetWidth(), canvas.GetHeight());
+    pGifMaker->BeginMakeGif(canvas.GetWidth(), canvas.GetHeight(), TEXT("WuColorQuantizer.gif"));
+    pGifMaker->AddGifImage(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
     pGifMaker->EndMakeGif(GetTickCount());
     pGifMaker->Release();
 

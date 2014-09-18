@@ -22,8 +22,8 @@ public:
     virtual ~IGifMaker();
     virtual CompressType SetCompressType(CompressType type) = 0;
 
-    virtual BOOL BeginMakeGif(INT nWidth, INT nHeight, INT bpp, LPCTSTR pszFileName) = 0;
-    virtual BOOL AddGifImage(BYTE* pBmpData, INT nLength, DWORD dwTicket) = 0;
+    virtual BOOL BeginMakeGif(INT nWidth, INT nHeight, LPCTSTR pszFileName) = 0;
+    virtual BOOL AddGifImage(const RECT& rcFrame, BYTE* pBmpData, INT nLength, INT nBpp, DWORD dwTicket) = 0;
     virtual BOOL EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut = INFINITE) = 0;
     //virtual BOOL Pause() = 0;
     //virtual BOOL Resume() = 0;
