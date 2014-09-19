@@ -8,6 +8,7 @@
 
 // CGifLibDemoDlg dialog
 class CGifLibDemoDlg : public CDialog, 
+    public IGifMakerCallback,
     public IGifParserCallback
 {
 // Construction
@@ -22,9 +23,14 @@ public:
 
 
 public:
+    //IGifMakerCallback
+    virtual VOID OnBeginWriteGif();
+    virtual VOID OnWriteGifFrame(INT nIndex, INT nTotal);
+    virtual VOID OnEndWriteGif();
+
     //IGifParserCallback
     virtual VOID OnGetGifInfo(INT nWidth, INT nHeight, DWORD_PTR callbackData);
-    virtual BOOL OnParseFrame(INT nIndex, const GifControlInfo& gifControlInfo, const RECT& rcFrame, BYTE* pBmpBuffer, INT nLength, DWORD_PTR callbackData);
+    virtual BOOL OnParseGifFrame(INT nIndex, const GifControlInfo& gifControlInfo, const RECT& rcFrame, BYTE* pBmpBuffer, INT nLength, DWORD_PTR callbackData);
 
 // Implementation
 protected:
@@ -42,7 +48,7 @@ public:
     afx_msg void OnBnClickedButton2();
     afx_msg void OnTimer(UINT_PTR nIDEvent);
     afx_msg void OnBnClickedBtnTimerClip();
-    afx_msg void OnBnClickedBtnWuColorQuantizer();
+    afx_msg void OnBnClickedBtnSingleColorQuantizer();
     afx_msg void OnBnClickedBtnGifParser();
 
 private:

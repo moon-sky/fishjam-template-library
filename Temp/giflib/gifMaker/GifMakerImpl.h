@@ -10,44 +10,49 @@
 #include "../giflib/lib/gif_lib.h"
 #include "GifFrameInfo.h"
 
-#define MAX_COLOR_MAP_COUNT (256)
 
 class CGifMakerImpl : public IGifMaker
 {
 public:
     CGifMakerImpl(void);
     virtual ~CGifMakerImpl();
-    virtual CompressType SetCompressType(CompressType type);
 
-    virtual BOOL BeginMakeGif(INT nWidth, INT nHeight, LPCTSTR pszFileName);
-    virtual BOOL AddGifImage(const RECT& rcFrame, BYTE* pBmpData, INT nLength, INT nBpp, DWORD dwTicket);
-    virtual BOOL EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut = INFINITE);
+    virtual CompressType SetCompressType(CompressType type);
+    virtual VOID SetCallBack(IGifMakerCallback* pCallback, DWORD_PTR callbackData);
+    virtual COLORREF SetBackgroundColor(COLORREF color);
+    virtual VOID EnableCompareWithPrevious(BOOL bEnabled);
+
+    virtual BOOL BeginMakeGif(INT nWidth, INT nHeight, INT nWantColorCount, LPCTSTR pszFileName);
+    virtual INT AddGifFrame(const RECT& rcFrame, BYTE* pBmpData, INT nLength, INT nBpp, DWORD dwTicket);
+    virtual BOOL EndMakeGif(DWORD dwTicket, BOOL bCancelUnwritten);
     virtual void Release();
 
 private:
     IGifMakerCallback*  m_pCallback;
-
-    FTL::CFThread<>* m_pThreadMaker;
-    FTL::CFProducerResumerQueue<CGifFrameInfoPtr>   m_WaitingFrameInfoQueue;
-    static DWORD  __stdcall MakerThreadProc(LPVOID lpThreadParameter);
-    DWORD  _innerMakerThreadProc();
+    DWORD_PTR           m_callbackData;
+    COLORREF            m_backgroundColor;
+    BOOL                m_bEnableCompareWithPrevious;
 
     CompressType    m_compressType;
-    INT m_nWidth, m_nHeight;// m_nBpp;
-    INT m_nPreBmpBytes;     //上一张图片的大小
+    INT m_nScreenWidth, m_nScreenHeight;// m_nBpp;
+    INT m_nWantColorCount;
+
+    INT m_nScreenBufferSize;
     INT m_nDiffResultSize;
     INT m_nGifColorRes;     //8
     INT m_nGifNumLevels;    //256
-    INT m_nImgIndex;
+    INT m_nFrameIndex;
+    INT m_nWrittenFrameIndex;  //排除掉重复的
     INT m_nGifBufferSize;
     BOOL m_bFirstImage;
     BOOL m_bDelayImage;
-    BOOL m_bWriteFirst;
 
-    BYTE* m_pPreBmp;
+    BYTE* m_pScreenBuffer;
     BYTE* m_pDiffResult;
     //BYTE* m_pGiffDiffBuffer;
-    RECT  m_rcDiff;
+    RECT  m_rcPreviousFrame;
+    INT   m_nPreviousBpp;
+    INT   m_nPreviousBmpDataLength;
 
     GifFileType* m_pGifFile;
     GifColorType* m_pColorMap;   //量化后Gif的颜色表数值
@@ -55,11 +60,15 @@ private:
 
     FTL::IFColorQuantizer*  m_pColorQuantizer;
 
-    DWORD m_dwLastTicket;
     //CQuantizer* m_pQuantizer;
     
+    FTL::CFThread<>* m_pThreadMaker;
+    FTL::CFProducerResumerQueue<CGifFrameInfoPtr>*   m_pWaitingFrameInfoQueue;
 
-    BOOL _WriteGifData(CGifFrameInfoPtr pFrameInfo);
+    static DWORD  __stdcall MakerThreadProc(LPVOID lpThreadParameter);
+    DWORD  _innerMakerThreadProc();
+
+    BOOL _WriteGifData(CGifFrameInfoPtr pFrameInfo, DWORD dwPreviousTicket);
 
     BYTE* _DuplicateBmpRect(BYTE* pSrcBmpData, INT nSrcWidth, INT nSrcHeight, INT nBpp, RECT rcSrc, INT* pReturnBufSize);
     VOID _FreeDuplicateBmpData(BYTE* pData);

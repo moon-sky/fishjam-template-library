@@ -193,10 +193,10 @@ INT CGifParserImpl::_InnerAnalyze2FrameInfo(const RECT& rcFrame, ColorMapObject*
         nRet = GIF_OK;
         if (m_pCallBack)
         {
-            if(!m_pCallBack->OnParseFrame(m_nFrameIndex, m_gifControlInfo, rcFrame, m_pBmpBuffer, m_nBmpBufferSize, m_callbackData))
+            if(!m_pCallBack->OnParseGifFrame(m_nFrameIndex, m_gifControlInfo, rcFrame, m_pBmpBuffer, m_nBmpBufferSize, m_callbackData))
             {
                 //User Cancel
-                FTLTRACE(TEXT("OnParseFrame Return FALSE, indicate user cancel\n"));
+                FTLTRACE(TEXT("OnParseGifFrame Return FALSE, indicate user cancel\n"));
                 nRet = GIF_ERROR;
             }
         }

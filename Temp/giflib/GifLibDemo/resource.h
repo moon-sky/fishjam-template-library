@@ -11,8 +11,7 @@
 #define IDC_BUTTON2                     1001
 #define IDC_BUTTON3                     1002
 #define IDC_BTN_TIMER_CLIP              1002
-#define IDC_BTN_WU_COLOR_QUANTIZER      1003
-#define IDC_BTN_WU_COLOR_QUANTIZER2     1004
+#define IDC_BTN_SINGLE_COLOR_QUANTIZER  1003
 #define IDC_BTN_GIF_PARSER              1004
 
 // Next default values for new objects

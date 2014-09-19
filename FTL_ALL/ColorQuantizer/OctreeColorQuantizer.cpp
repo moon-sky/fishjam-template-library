@@ -6,12 +6,12 @@
 namespace FTL
 {
     BYTE CFOctreeNode::s_MASK[8] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
-    LONG CFOctreeNode::s_Count = 0;
 
     CFOctreeNode::CFOctreeNode(int level, CFOctreeColorQuantizer* pParent)
     {
         FTLASSERT(level <= 7);
 
+        m_Level = level;
         m_Red = 0;
         m_Green = 0;
         m_Blue = 0;
@@ -25,14 +25,11 @@ namespace FTL
         }
         else{
             FTLASSERT(level == 7);
-            pParent->AddNodeCount();
         }
-        InterlockedIncrement(&s_Count);
     }
 
     CFOctreeNode::~CFOctreeNode()
     {
-        InterlockedDecrement(&s_Count);
         for (int i = 0; i < _countof(m_pNodes); i++)
         {
             if (NULL != m_pNodes[i])
@@ -169,11 +166,6 @@ namespace FTL
                     }
                 }
             }
-            //result = nodes[index] != NULL ? nodes[index].GetPaletteIndex(color, level + 1) : nodes.
-            //    Where(node => node != NULL).
-            //    First().
-            //    GetPaletteIndex(color, level + 1);
-            //FTLASSERT(FALSE && TEXT("TODO"));
 #endif 
         }
 
@@ -202,7 +194,7 @@ namespace FTL
                 // increases the count of reduced nodes
                 result++;
 
-                //SAFE_DELETE(m_pNodes[index]);
+                SAFE_DELETE(m_pNodes[index]);
             }
         }
 
@@ -227,65 +219,46 @@ namespace FTL
 
     CFOctreeColorQuantizer::CFOctreeColorQuantizer()
     {
-        m_nLastColorCount = 0;
-        m_nNodeCount = 0;
+        //m_nLastColorCount = 0;
+        m_nLevelNodeCount = 0;
         m_pRoot = NULL;
-        //m_pLevels = NULL;
+        FTLASSERT(sizeof(m_pLevels) == 28); // sizeof(OctreeNodeList*) * 7
+        for (int i = 0; i < _countof(m_pLevels); i++)
+        {
+            m_pLevels[i] = new OctreeNodeList();
+        }
     }
     CFOctreeColorQuantizer::~CFOctreeColorQuantizer()
     {
         SAFE_DELETE(m_pRoot);
-        for (int i = 0; i < _countof(m_levels); i++)
+        for (int i = 0; i < _countof(m_pLevels); i++)
         {
-            //std::for_each(m_levels[i].begin(), m_levels[i].end(), FTL::ObjecteDeleter<CFOctreeNode*>());
-            m_levels[i].clear();
+            //m_pLevels[i]->clear();
+            SAFE_DELETE(m_pLevels[i]);
         }
-        //SAFE_DELETE_ARRAY(m_pLevels);
     }
 
-    //void CFOctreeColorQuantizer::OnAddColor(Color color, Int32 key, Int32 x, Int32 y){
-    //    root->AddColor(Color, 0, this);
-    //}
-    
     BOOL CFOctreeColorQuantizer::OnPrepare()
     {
-        BOOL bRet = __super::OnPrepare();
-        //FTLASSERT(NULL == m_pLevels);
-
-        //m_pLevels = new OctreeNodeList[7];
-
-        // creates the octree level lists
-        //for (int level = 0; level < 7; level++)
-        //{
-        //    levels[level] = new List<OctreeNode>();
-        //}
+        BOOL bRet = FALSE;
+        
+        API_VERIFY(__super::OnPrepare());
+        API_VERIFY(_AnalyzeColorMeta());
 
         // creates a root node
         m_pRoot = new CFOctreeNode(0, this);
 
-        int nPixOffset = (m_nBpp / 8);
-        int nRowBytes = (m_nWidth * m_nBpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
-
-        for (UINT h = 0; h < m_nHeight; h++)
+        for (ColorMetaList::iterator iter = m_clrList.begin(); 
+            iter != m_clrList.end();
+            ++iter)
         {
-            BYTE* pBuf = m_pBmpData + (nRowBytes * h);
-            for (UINT w = 0; w < m_nWidth; w++)
-            {
-                int Red = *(pBuf + 2);
-                int Green = *(pBuf+1);
-                int Blue = *(pBuf);
-
-                COLORREF color = MAKE_RGBA(Red, Green, Blue, 0xFF);
-                m_pRoot->AddColor(color, 0, this);
-                pBuf += nPixOffset;
-            }
+            m_pRoot->AddColor(*iter, 0, this);
         }
-        //TODO: OnFinish();
-        
+
         return bRet;
     }
 
-    BOOL CFOctreeColorQuantizer::OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount)
+    BOOL CFOctreeColorQuantizer::OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount)
     {
         FUNCTION_BLOCK_NAME_TRACE(TEXT("OnProcessQuantizer"), 100);
         // use optimized palette, if any
@@ -295,18 +268,15 @@ namespace FTL
 #endif 
         // otherwise let's get to build one
         //std::list<COLORREF> result;
-        SAFE_DELETE_ARRAY(m_pResultPalette);
-        m_pResultPalette = new COLORREF[colorCount];
-        ZeroMemory(m_pResultPalette, sizeof(COLORREF) * colorCount);
 
-        int paletteIndex = 0;
-        int nResultCount = 0;
-        int leafCount = 0;
+        INT paletteIndex = 0;
+        INT nResultCount = 0;
+        INT leafCount = 0;
         {
             FUNCTION_BLOCK_NAME_TRACE(TEXT("GetLeaves"), 100);
             OctreeNodeList curLeaves;
             leafCount = Leaves(curLeaves);
-            m_nLastColorCount = leafCount;
+            //m_nLastColorCount = leafCount;
         }
 
         {
@@ -315,10 +285,10 @@ namespace FTL
             for (int level = 6; level >= 0; level--)
             {
                 // if level contains any node
-                if (m_levels[level].size() > 0)
+                if (m_pLevels[level]->size() > 0)
                 {
                     // orders the level node list by pixel presence (those with least pixels are at the top)
-                    OctreeNodeList sortedNodeList = m_levels[level];
+                    OctreeNodeList& sortedNodeList = *m_pLevels[level];
                     //IEnumerable<OctreeNode> sortedNodeList = levels[level].OrderBy(node => node.ActiveNodesPixelCount);
                     sortedNodeList.sort(FTL::UnreferenceLess<CFOctreeNode*>());
 
@@ -329,23 +299,22 @@ namespace FTL
                     {
                         CFOctreeNode* pNode = (*iter);
                         // removes a node
-                        leafCount -= pNode->RemoveLeaves(level, leafCount, colorCount, this);
+                        leafCount -= pNode->RemoveLeaves(level, leafCount, nWantClrCount, this);
 
                         // if the count of leaves is lower then our requested count terminate the loop
-                        if (leafCount <= colorCount){
+                        if (leafCount <= nWantClrCount){
                             break;
                         }
                     }
 
                     // if the count of leaves is lower then our requested count terminate the level loop as well
-                    if (leafCount <= colorCount){
+                    if (leafCount <= nWantClrCount){
                         break;
                     }
                     // otherwise clear whole level, as it is not needed anymore
-                    m_levels[level].clear();
+                    m_pLevels[level]->clear();
                 }
             }
-
         }
 
         {
@@ -354,22 +323,31 @@ namespace FTL
             OctreeNodeList sortLeaves;
             Leaves(sortLeaves);
 
+            SAFE_DELETE_ARRAY(m_pResultPalette);
+            m_pResultPalette = new COLORREF[nWantClrCount];
+            ZeroMemory(m_pResultPalette, sizeof(COLORREF) * nWantClrCount);
+
             sortLeaves.sort(FTL::UnreferenceLess<CFOctreeNode*>());
             for(OctreeNodeList::reverse_iterator iter = sortLeaves.rbegin(); 
                 iter != sortLeaves.rend();
                 iter++)
                 //foreach (OctreeNode node in Leaves.OrderByDescending(node => node.ActiveNodesPixelCount))
             {
-                if (paletteIndex >= colorCount) break;
+                CFOctreeNode* pNode = *iter;
 
                 // adds the leaf color to a palette
-                if ((*iter)->IsLeaf())
+                if (pNode->IsLeaf())
                 {
-                    m_pResultPalette[nResultCount++] = (*iter)->GetColor();
+                    m_pResultPalette[nResultCount++] = pNode->GetColor();
                 }
 
                 // and marks the node with a palette index
-                (*iter)->SetPaletteIndex(paletteIndex++);
+                pNode->SetPaletteIndex(paletteIndex++);
+
+                if (paletteIndex >= nWantClrCount)
+                {
+                    break;
+                }
             }
 
             // we're unable to reduce the Octree with enough precision, and the leaf count is zero
@@ -384,46 +362,30 @@ namespace FTL
             m_nPaletteItemCount = nResultCount;
         }
 
-
         {
             FUNCTION_BLOCK_NAME_TRACE(TEXT("GetResultPaletteIndex"), 100);
+            FTLASSERT(m_clrList.size() == m_nHeight * m_nWidth);
+
+            m_QuantizerResultIndexes.resize(m_nHeight * m_nWidth);
             int palIndex = 0;
-            int nPixOffset = (m_nBpp / 8);
-            //BYTE* pBuf = m_pBmpData;
-            m_indices.resize(m_nHeight * m_nWidth);
-            int nRowBytes = (m_nWidth * m_nBpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
-
-            for (UINT h = 0; h < m_nHeight; h++)
+            for (ColorMetaList::iterator iter = m_clrList.begin();
+                iter != m_clrList.end();
+                ++iter)
             {
-                BYTE* pBuf = m_pBmpData + (nRowBytes * h);
-                for (UINT w = 0; w < m_nWidth; w++)
-                {
-                    int Red = *(pBuf + 2);
-                    int Green = *(pBuf+1);
-                    int Blue = *(pBuf);
-
-                    COLORREF color = MAKE_RGBA(Red, Green, Blue, 0xFF);
-
-                    m_indices[palIndex++] = m_pRoot->GetPaletteIndex(color, 0);
-                    pBuf += nPixOffset;
-                }
+                int nPaletteIndex = m_pRoot->GetPaletteIndex(*iter, 0);
+                FTLASSERT(0 <= nPaletteIndex && nPaletteIndex <= UCHAR_MAX);
+                m_QuantizerResultIndexes[palIndex++] = (UCHAR)nPaletteIndex;
             }
         }
 
         return nResultCount;
     }
 
-    //protected override void OnGetPaletteIndex(Color color, Int32 key, Int32 x, Int32 y, out Int32 paletteIndex)
-    //{
-    //    // retrieves a palette index
-    //    paletteIndex = root.GetPaletteIndex(color, 0);
-    //}
-
     void CFOctreeColorQuantizer::OnFinish()
     {
     }
 
-    int CFOctreeColorQuantizer::Leaves(OctreeNodeList& result)
+    INT CFOctreeColorQuantizer::Leaves(OctreeNodeList& result)
     {
 #if 1
         OctreeNodeList activeNodes;
@@ -439,18 +401,18 @@ namespace FTL
                 //FTLASSERT(insertResult.second);
             }
         }
-        //FTLASSERT(activeNodes.size() == result.size());
-        //result.clear();
+        FTLASSERT(activeNodes.size() == result.size());
+        result.clear();
 #endif
-        //m_pRoot->GetActiveNodes(result);
+        m_pRoot->GetActiveNodes(result);
         return result.size();
         //return root.ActiveNodes.Where(node => node.IsLeaf); 
     }
 
     void CFOctreeColorQuantizer::AddLevelNode(int level, CFOctreeNode* octreeNode)
     { 
-        m_nNodeCount++;
-        m_levels[level].push_back(octreeNode); 
+        m_nLevelNodeCount++;
+        m_pLevels[level]->push_back(octreeNode); 
     }
 }
 

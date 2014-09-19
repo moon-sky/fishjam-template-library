@@ -47,9 +47,8 @@ namespace FTL
             return GetActiveNodesPixelCount() < other.GetActiveNodesPixelCount();
         }
     private:
-
         static BYTE s_MASK[8];// = new Byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
-        static LONG s_Count;
+        int m_Level;
         int m_Red;
         int m_Green;
         int m_Blue;
@@ -66,16 +65,15 @@ namespace FTL
         virtual ~CFOctreeColorQuantizer();
     protected:
         virtual BOOL OnPrepare();
-        virtual BOOL OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
+        virtual BOOL OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount);
         virtual void OnFinish();
     public:
-        int Leaves(OctreeNodeList& result);
+        INT Leaves(OctreeNodeList& result);
         void AddLevelNode(int level, CFOctreeNode* octreeNode);
-        void AddNodeCount(){ m_nNodeCount++; }
     private:
-        int m_nLastColorCount;
-        int m_nNodeCount;
+        //int m_nLastColorCount;
+        int m_nLevelNodeCount;
         CFOctreeNode*   m_pRoot;
-        OctreeNodeList    m_levels[7];
+        OctreeNodeList*    m_pLevels[7];
     };
 }

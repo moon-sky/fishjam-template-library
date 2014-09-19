@@ -19,19 +19,22 @@ enum GIF_UTILS_API CompressType{
 
 class IGifMakerCallback{
 public:
-    virtual VOID OnBeginWrite() = 0;
-    virtual VOID OnWriteFrame(INT nIndex) = 0;
-    virtual VOID OnEndWrite() = 0;
+    virtual VOID OnBeginWriteGif() = 0;
+    virtual VOID OnWriteGifFrame(INT nIndex, INT nTotal) = 0;
+    virtual VOID OnEndWriteGif() = 0;
 };
 
 class GIF_UTILS_API IGifMaker {
 public:
     virtual ~IGifMaker();
     virtual CompressType SetCompressType(CompressType type) = 0;
+    virtual VOID SetCallBack(IGifMakerCallback* pCallback, DWORD_PTR callbackData) = 0;
+    virtual COLORREF SetBackgroundColor(COLORREF color) = 0;
+    virtual VOID EnableCompareWithPrevious(BOOL bEnabled) = 0;
 
-    virtual BOOL BeginMakeGif(INT nWidth, INT nHeight, LPCTSTR pszFileName) = 0;
-    virtual BOOL AddGifImage(const RECT& rcFrame, BYTE* pBmpData, INT nLength, INT nBpp, DWORD dwTicket) = 0;
-    virtual BOOL EndMakeGif(DWORD dwTicket, DWORD dwWaitTimeOut = INFINITE) = 0;
+    virtual BOOL BeginMakeGif(INT nWidth, INT nHeight, INT nWantColorCount, LPCTSTR pszFileName) = 0;
+    virtual INT AddGifFrame(const RECT& rcFrame, BYTE* pBmpData, INT nLength, INT nBpp, DWORD dwTicket) = 0;
+    virtual BOOL EndMakeGif(DWORD dwTicket, BOOL bCancelUnwritten) = 0;
     //virtual BOOL Pause() = 0;
     //virtual BOOL Resume() = 0;
     virtual void Release() = 0;
@@ -51,7 +54,7 @@ struct GifControlInfo
 class IGifParserCallback{
 public:
     virtual VOID OnGetGifInfo(INT nWidth, INT nHeight, DWORD_PTR callbackData) = 0;
-    virtual BOOL OnParseFrame(INT nIndex, const GifControlInfo& gifControlInfo, const RECT& rcFrame, BYTE* pBmpBuffer, INT nLength, DWORD_PTR callbackData) = 0;
+    virtual BOOL OnParseGifFrame(INT nIndex, const GifControlInfo& gifControlInfo, const RECT& rcFrame, BYTE* pBmpBuffer, INT nLength, DWORD_PTR callbackData) = 0;
 };
 
 class GIF_UTILS_API IGifParser

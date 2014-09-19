@@ -47,7 +47,7 @@ void CMainDlg::OnDestroy()
 {
     if (m_pGifMaker)
     {
-        m_pGifMaker->EndMakeGif(GetTickCount());
+        m_pGifMaker->EndMakeGif(GetTickCount(), TRUE);
         m_pGifMaker->Release();
         //delete m_pGifMaker;
         //m_pGifMaker = NULL;
@@ -111,7 +111,7 @@ void CMainDlg::OnBtnStartRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
             m_nImageIndex = 0;
             m_pGifMaker = IGifMaker::GetInstance(); //new CGifMaker();
             m_pGifMaker->SetCompressType((CompressType)m_nCompressType);
-            m_pGifMaker->BeginMakeGif(m_nWidth, m_nHeight, m_strSavePath);
+            m_pGifMaker->BeginMakeGif(m_nWidth, m_nHeight, 256, m_strSavePath);
             //SetTimer(ID_TIMER_FPS, 1000/m_nFps, NULL);
             API_VERIFY(m_threadRecord.Start(RecordGifThreadProc, this));
             
@@ -184,7 +184,7 @@ LRESULT CMainDlg::OnMessageThreadMakeGifQuit(UINT uMsg, WPARAM wParam, LPARAM lP
 //        API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
 //#endif
 //
-//        m_pGifMaker->AddGifImage(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
+//        m_pGifMaker->AddGifFrame(canvas.GetBuffer(), canvas.GetBufferSize(), GetTickCount());
 //    }
 //}
 
@@ -254,7 +254,7 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
         API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
 #endif 
 
-        m_pGifMaker->AddGifImage(rcRecord, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), dwStartTickCount);
+        m_pGifMaker->AddGifFrame(rcRecord, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), dwStartTickCount);
 
         DWORD dwEndTickCount = GetTickCount();
         FTLTRACE(TEXT("RecordGif[%d] start=%d, nSleep=%d, End=%d, needSleep=%d\n"), 

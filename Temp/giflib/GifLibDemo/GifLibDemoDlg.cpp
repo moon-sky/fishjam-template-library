@@ -95,7 +95,7 @@ BEGIN_MESSAGE_MAP(CGifLibDemoDlg, CDialog)
     ON_BN_CLICKED(IDC_BUTTON2, &CGifLibDemoDlg::OnBnClickedButton2)
     ON_WM_TIMER()
     ON_BN_CLICKED(IDC_BTN_TIMER_CLIP, &CGifLibDemoDlg::OnBnClickedBtnTimerClip)
-    ON_BN_CLICKED(IDC_BTN_WU_COLOR_QUANTIZER, &CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer)
+    ON_BN_CLICKED(IDC_BTN_SINGLE_COLOR_QUANTIZER, &CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer)
     ON_BN_CLICKED(IDC_BTN_GIF_PARSER, &CGifLibDemoDlg::OnBnClickedBtnGifParser)
 END_MESSAGE_MAP()
 
@@ -404,7 +404,8 @@ void CGifLibDemoDlg::OnBnClickedButton2()
    CRect rectCapture(0, 0, nWidth, nHeight);
    API_VERIFY(canvas.Create(m_hWnd, nWidth, -nHeight, nBpp));
 
-   pGifMaker->BeginMakeGif(nWidth, nHeight, L"gifMakerDemo.gif");
+   pGifMaker->SetCallBack(this, (DWORD_PTR)this);
+   pGifMaker->BeginMakeGif(nWidth, nHeight, 256, L"gifMakerDemo.gif");
    int i = 0;
    CRect rcDiffColor(10, 10, 30, 30);
    for (i = 0; i < 5; i++)
@@ -426,9 +427,9 @@ void CGifLibDemoDlg::OnBnClickedButton2()
        API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
        //_OverlayMouseToScreen(canvas.GetCanvasDC(), &rectCapture);
        CRect rcFrame(0, 0, canvas.GetWidth(), canvas.GetHeight());
-       pGifMaker->AddGifImage(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(),canvas.GetBpp(),  (i + 1) * 1000);
+       pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(),canvas.GetBpp(),  (i + 1) * 1000);
    }
-   pGifMaker->EndMakeGif( (i) * 100);
+   pGifMaker->EndMakeGif( (i) * 100, FALSE);
 }
 
 int         g_nWidth = 100;
@@ -456,12 +457,12 @@ void CGifLibDemoDlg::OnTimer(UINT_PTR nIDEvent)
 #endif
 
         CRect rcFrame(0, 0, canvas.GetWidth(), canvas.GetHeight());
-        m_pTimerGifMaker->AddGifImage(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
+        m_pTimerGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
     }
     else
     {
         KillTimer(1);
-        m_pTimerGifMaker->EndMakeGif(GetTickCount());
+        m_pTimerGifMaker->EndMakeGif(GetTickCount(), FALSE);
         m_pTimerGifMaker->Release();
         AfxMessageBox(TEXT("Timer Clip Over"));
         
@@ -480,77 +481,61 @@ void CGifLibDemoDlg::OnBnClickedBtnTimerClip()
 
     ASSERT(m_pTimerGifMaker == NULL);
     m_pTimerGifMaker = IGifMaker::GetInstance();
-    m_pTimerGifMaker->BeginMakeGif(g_nWidth, g_nHeight, L"gifTimerClip.gif");
+    m_pTimerGifMaker->BeginMakeGif(g_nWidth, g_nHeight, 256, L"gifTimerClip.gif");
     m_nClipIndex = 0;
     
     SetTimer(1, 100, NULL);
 }
 
-void CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer()
+void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
 {
     BOOL bRet = FALSE;
-
     FTL::CFElapseCounter    elpaseCounter;
 
-    //CBitmap bmp;
-    //API_VERIFY(bmp.LoadBitmap(IDB_BITMAP1));
-    //if (bRet)
-    //{
-    //    BITMAP bitmap = {0};
-    //    bmp.GetBitmap(&bitmap);
-    //    //CALC_BMP_ALLIGNMENT_WIDTH_COUNT(bitmap.bmWidthBytes bitmap.bmBitsPixel
-    //    DWORD dwSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(bitmap.bmWidth, bitmap.bmBitsPixel) * bitmap.bmHeight;
-    //    BITMAPINFO  bmInfo = {0};
-    //    bmInfo.bmiHeader.biSize = sizeof(bmInfo.bmiHeader);
-    //    bmInfo.bmiHeader.biWidth = bitmap.bmWidth;
-    //    bmInfo.bmiHeader.biHeight = bitmap.bmHeight;
-    //    bmInfo.bmiHeader.biPlanes = 1;
-    //    bmInfo.bmiHeader.biBitCount = bitmap.bmBitsPixel;
-    //    bmInfo.bmiHeader.biSizeImage = dwSize;
-    //    BYTE* pBuffer = new BYTE[dwSize ];
-    //    //bmp.GetBitmapBits(dwSize, pBuffer);
-    //    int nRet = GetDIBits(NULL, bmp, 0, bitmap.bmHeight-1, pBuffer, &bmInfo, DIB_RGB_COLORS);
-    //    CGifMaker    gifMaker;
-    //    gifMaker.BeginMakeGif(bitmap.bmWidth, bitmap.bmHeight, bitmap.bmBitsPixel, TEXT("WuColorQuantizer.gif"));
-    //    gifMaker.AddGifImage(pBuffer, dwSize, GetTickCount());
-    //    gifMaker.EndMakeGif(GetTickCount());
-    //    
-    //    return;
-    //}
+    INT nWidth = 800;
+    INT nHeight = 600;
+    INT nBpp = 24;
 
-    CRect rectCapture(0, 0, g_nWidth, g_nHeight);
+    CRect rectCapture(0, 0, nWidth, nHeight);
     FTL::CFCanvas canvas;
-    API_VERIFY(canvas.Create(m_hWnd, g_nWidth, -g_nHeight, g_nBpp));
+    API_VERIFY(canvas.Create(m_hWnd, nWidth, -nHeight, nBpp));
     
-#if 1
+#if 0
     CDC memDC;
     memDC.Attach(canvas.GetCanvasDC());
-    int nFillWidth = 10, nFillHeight = 10;
+    int nFillWidth = 1, nFillHeight = 1;
     int nColorCount = 0;
-    for (int w = 0; w < g_nWidth; w+=nFillWidth)
+
+    for (int w = nWidth; w > 0 ; w-=4 )
     {
-        for (int h = 0; h < g_nHeight; h+=nFillHeight)
-        {
-            nColorCount++;
-            memDC.FillSolidRect(w, h, nFillWidth, nFillHeight, RGB(w * (g_nWidth / nFillWidth), 0x0, 0xFF - h * (g_nHeight / nFillHeight)));
-        }
+        nColorCount++;
+        CRect rcFill(0, 0, w, w);
+        memDC.FillSolidRect(rcFill, RGB(w * 255 / nWidth, 0, 0));
     }
-    FTLTRACE(TEXT("nCOlorCount=%d\n"), nColorCount);
+    //for (int w = 0; w < nWidth; w+=nFillWidth)
+    //{
+    //    for (int h = 0; h < nHeight; h+=nFillHeight)
+    //    {
+    //        nColorCount++;
+    //        memDC.FillSolidRect(w, h, nFillWidth, nFillHeight, RGB(w * (nWidth / nFillWidth), 0x0, 0xFF - h * (nHeight / nFillHeight)));
+    //    }
+    //}
+    FTLTRACE(TEXT("nColorCount=%d\n"), nColorCount);
     memDC.Detach();
 #else
     CWindowDC desktopDC(GetDesktopWindow());
-    API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, g_nWidth, g_nHeight, desktopDC, 100, 100, SRCCOPY));
+    API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0, 0, SRCCOPY));
 #endif 
 
 #ifdef _DEBUG
-    API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), TEXT("WuColorQuantizer.bmp")));
+    API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), TEXT("SingleColorQuantizer.bmp")));
 #endif
 
     IGifMaker*  pGifMaker = IGifMaker::GetInstance();
     CRect rcFrame(0, 0, canvas.GetWidth(), canvas.GetHeight());
-    pGifMaker->BeginMakeGif(canvas.GetWidth(), canvas.GetHeight(), TEXT("WuColorQuantizer.gif"));
-    pGifMaker->AddGifImage(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
-    pGifMaker->EndMakeGif(GetTickCount());
+    pGifMaker->BeginMakeGif(canvas.GetWidth(), canvas.GetHeight(), 256, TEXT("SingleColorQuantizer.gif"));
+    pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
+    pGifMaker->EndMakeGif(GetTickCount(), FALSE);
     pGifMaker->Release();
 
     //COLORREF* pPaletteArray = colorQuantizer.GetPalette(&nPaletteCount);
@@ -568,15 +553,30 @@ void CGifLibDemoDlg::OnBnClickedBtnWuColorQuantizer()
     MessageBox(formater.GetString());
 }
 
+VOID CGifLibDemoDlg::OnBeginWriteGif()
+{
+    FTLTRACE(TEXT("CGifLibDemoDlg::OnEndWriteGif\n"));
+
+}
+VOID CGifLibDemoDlg::OnWriteGifFrame(INT nIndex, INT nTotal)
+{
+    FTLTRACE(TEXT("CGifLibDemoDlg::OnWriteGifFrame, nIndex=%d, nTotal=%d\n"), nIndex, nTotal);
+}
+VOID CGifLibDemoDlg::OnEndWriteGif()
+{
+    FTLTRACE(TEXT("CGifLibDemoDlg::OnEndWriteGif\n"));
+}
+
+
 VOID CGifLibDemoDlg::OnGetGifInfo(INT nWidth, INT nHeight, DWORD_PTR callbackData)
 {
     m_nParserScreenWidth = nWidth;
     m_nParserScreenHeight = nHeight;
 }
 
-BOOL CGifLibDemoDlg::OnParseFrame(INT nIndex, const GifControlInfo& gifControlInfo, const RECT& rcFrame, BYTE* pBmpBuffer, INT nLength, DWORD_PTR callbackData)
+BOOL CGifLibDemoDlg::OnParseGifFrame(INT nIndex, const GifControlInfo& gifControlInfo, const RECT& rcFrame, BYTE* pBmpBuffer, INT nLength, DWORD_PTR callbackData)
 {
-    FTLTRACE(TEXT("CGifLibDemoDlg::OnParseFrame[%d], rcFrame=%s, nLength=%d, delay=%d, translateColor=%d\n"), 
+    FTLTRACE(TEXT("CGifLibDemoDlg::OnParseGifFrame[%d], rcFrame=%s, nLength=%d, delay=%d, translateColor=%d\n"), 
         nIndex, FTL::CFRectDumpInfo(rcFrame).GetConvertedInfo(), nLength,
         gifControlInfo.nDelayMilliSeconds, gifControlInfo.nTransparentColorIndex);
 

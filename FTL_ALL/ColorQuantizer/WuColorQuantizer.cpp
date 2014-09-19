@@ -26,7 +26,7 @@ namespace FTL
     }
 
 
-    BOOL CFWuColorQuantizer::OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount)
+    BOOL CFWuColorQuantizer::OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount)
     {
         FUNCTION_BLOCK_TRACE(100);
         BOOL bRet = FALSE;
@@ -37,7 +37,7 @@ namespace FTL
 
         int nCalcCount = 0;
         // processes the cubes
-        for (UINT cubeIndex = 1; cubeIndex < colorCount; ++cubeIndex)
+        for (UINT cubeIndex = 1; cubeIndex < nWantClrCount; ++cubeIndex)
         {
             nCalcCount++;
             // if cut is possible; make it
@@ -66,7 +66,7 @@ namespace FTL
 
             if (temp <= 0.0)
             {
-                colorCount = cubeIndex + 1;
+                nWantClrCount = cubeIndex + 1;
                 break;
             }
         }
@@ -79,7 +79,7 @@ namespace FTL
         //std::vector<int> tag(MAX_VOLUME);
 
         // precalculates lookup tables
-        for (UINT k = 0; k < colorCount; ++k)
+        for (UINT k = 0; k < nWantClrCount; ++k)
         {
             Mark(m_cubes[k], k, m_tag);
 
@@ -107,11 +107,11 @@ namespace FTL
             m_quantizedPixels[index] = newIndex;
         }
 
-        m_reds.resize(colorCount + 1);
-        m_greens.resize(colorCount + 1);
-        m_blues.resize(colorCount + 1);
-        m_sums.resize(colorCount + 1);
-        m_indices.resize(m_imageSize);
+        m_reds.resize(nWantClrCount + 1);
+        m_greens.resize(nWantClrCount + 1);
+        m_blues.resize(nWantClrCount + 1);
+        m_sums.resize(nWantClrCount + 1);
+        m_QuantizerResultIndexes.resize(m_imageSize);
 
         // scans and adds colors
         for (int index = 0; index < m_imageSize; index++)
@@ -123,7 +123,7 @@ namespace FTL
             int bestMatch = match;
             int bestDistance = 100000000;
 
-            for (UINT lookup = 0; lookup < colorCount; lookup++)
+            for (UINT lookup = 0; lookup < nWantClrCount; lookup++)
             {
                 int foundRed = lookupRed[lookup];
                 int foundGreen = lookupGreen[lookup];
@@ -146,17 +146,19 @@ namespace FTL
             m_blues[bestMatch] += GetBValue(color);
             m_sums[bestMatch]++;
 
-            m_indices[index] = bestMatch;
+            FTLASSERT(0 <= bestMatch && bestMatch <= UCHAR_MAX );
+            m_QuantizerResultIndexes[index] = (UCHAR)bestMatch;
         }
 
-        m_pResultPalette = new COLORREF[colorCount];
-        ZeroMemory(m_pResultPalette, sizeof(COLORREF) * colorCount);
+        SAFE_DELETE_ARRAY(m_pResultPalette);
+        m_pResultPalette = new COLORREF[nWantClrCount];
+        ZeroMemory(m_pResultPalette, sizeof(COLORREF) * nWantClrCount);
         m_nPaletteItemCount = 0;
 
         //List<Color> result = new List<Color>();
 
         // generates palette
-        for (UINT paletteIndex = 0; paletteIndex < colorCount; paletteIndex++)
+        for (UINT paletteIndex = 0; paletteIndex < nWantClrCount; paletteIndex++)
         {
             if (m_sums[paletteIndex] > 0)
             {

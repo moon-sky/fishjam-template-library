@@ -11,15 +11,14 @@ namespace FTL
         m_nBmpDataSize = 0;
         m_nBmpLineBytes = 0;
         m_nPaletteItemCount = 0;
-    
-        m_pBmpData = NULL;
+
         m_bCopyMem = FALSE;
+        m_pBmpData = NULL;
         m_pResultPalette = NULL;
-        m_pResultBuffer = NULL;
     }
 
-    CFColorQuantizerBase::~CFColorQuantizerBase(){
-        SAFE_DELETE_ARRAY(m_pResultBuffer);
+    CFColorQuantizerBase::~CFColorQuantizerBase()
+    {
         SAFE_DELETE_ARRAY(m_pResultPalette);
 
         if (m_bCopyMem)
@@ -30,40 +29,42 @@ namespace FTL
         {
             m_pBmpData = NULL;
         }
-        
     }
 
     BOOL CFColorQuantizerBase::SetBmpInfo(UINT nWidth, UINT nHeight, UINT nBpp, BYTE* pBmpData, UINT nBmpDataSize, BOOL bCopyMem)
     {
         BOOL bRet = FALSE;
-        m_bCopyMem = bCopyMem;
 
         UINT nBmpLineBytes = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth, nBpp);
         UINT nBmpDataSizeCheck = nBmpLineBytes * nHeight; 
         FTLASSERT(nBmpDataSizeCheck == nBmpDataSize && TEXT("BMP图片的大小需要四字节对齐"));
-
-        m_nWidth = nWidth;
-        m_nHeight = nHeight;
-        m_nBpp = nBpp;
-        m_nBmpLineBytes = nBmpLineBytes;
-        m_nBmpDataSize = nBmpDataSize;
-
         if (nBmpDataSizeCheck != nBmpDataSize)
         {
             SetLastError(ERROR_INVALID_PARAMETER);
             return FALSE;
         }
 
-        if (bCopyMem)
+        if (m_bCopyMem)
         {
-            SAFE_DELETE_ARRAY(m_pBmpData);
+            if (m_nBmpDataSize != nBmpDataSize)
+            {
+                //当旧的数据是拷贝出来的，且大小不一样时，清除旧的
+                SAFE_DELETE_ARRAY(m_pBmpData);
+            }
+        }
+        else
+        {
+            m_pBmpData = NULL;
         }
 
         if (nBmpDataSize > 0)
         {
             if (bCopyMem)
             {
-                m_pBmpData = new BYTE[nBmpDataSize];
+                if(!m_pBmpData){
+                    m_pBmpData = new BYTE[nBmpDataSize];
+                }
+                
                 if (m_pBmpData)
                 {
                     CopyMemory(m_pBmpData, pBmpData, nBmpDataSize);
@@ -79,17 +80,24 @@ namespace FTL
             }
         }
 
+        m_nWidth = nWidth;
+        m_nHeight = nHeight;
+        m_nBpp = nBpp;
+        m_nBmpLineBytes = nBmpLineBytes;
+        m_nBmpDataSize = nBmpDataSize;
+        m_bCopyMem = bCopyMem;
+
         return TRUE;
     }
 
-    BOOL CFColorQuantizerBase::ProcessQuantizer(UINT colorCount, UINT *pResultClrCount)
+    BOOL CFColorQuantizerBase::ProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount)
     {
         FUNCTION_BLOCK_TRACE(500);
         BOOL bRet = FALSE;
         API_VERIFY(OnPrepare());
         if (bRet)
         {
-            API_VERIFY(OnProcessQuantizer(colorCount, pResultClrCount));
+            API_VERIFY(OnProcessQuantizer(nWantClrCount, pResultClrCount));
 
             OnFinish();
         }
@@ -106,50 +114,64 @@ namespace FTL
 
     COLORREF* CFColorQuantizerBase::GetPalette(UINT* pResultCount)
     {
-        if (pResultCount && m_pResultPalette)
+        if (pResultCount)
         {
-            *pResultCount = m_nPaletteItemCount;
+            if (m_pResultPalette){
+                *pResultCount = m_nPaletteItemCount;
+            }
+            else{
+                *pResultCount = 0;
+            }
         }
         return m_pResultPalette;
     }
 
-    int* CFColorQuantizerBase::GetQuantizerBuffer(INT* pSize)
+    UCHAR* CFColorQuantizerBase::GetQuantizerResult(UINT* pBufferSize)
     {
-        if (pSize)
+        FTLASSERT(m_QuantizerResultIndexes.size() == m_nWidth * m_nHeight);
+
+        if (pBufferSize)
         {
-            *pSize = m_nWidth * m_nHeight;
+            *pBufferSize = m_QuantizerResultIndexes.size();
         }
-        return &m_indices[0];
+        return &m_QuantizerResultIndexes[0];
     }
 
-    void CFColorQuantizerBase::_AnalyzeColorMeta()
+    BOOL CFColorQuantizerBase::_AnalyzeColorMeta()
     {
-        m_redList.clear();
-        m_greenList.clear();
-        m_blueList.clear();
-
         FTLASSERT(24 == m_nBpp || 32 == m_nBpp);
+        if (24 != m_nBpp && 32 != m_nBpp)
+        {
+            return FALSE;
+        }
 
-        UINT nColorCount = m_nWidth * m_nHeight;
+        m_clrList.clear();
+
+        //UINT nColorCount = m_nWidth * m_nHeight;
         UINT nPixOffset = (m_nBpp / 8);
-        UINT nRowBytes = (m_nWidth * m_nBpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
+        UINT nRowBytes = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(m_nWidth, m_nBpp); //4字节对齐，计算每行的字节数
 
         for (UINT h = 0; h < m_nHeight; h++)
         {
             BYTE* pBuf = m_pBmpData + (nRowBytes * h);
             for (UINT w = 0; w < m_nWidth; w++)
             {
-                unsigned char Red = *(pBuf + 2);
-                unsigned char Green = *(pBuf+1);
-                unsigned char Blue = *(pBuf);
-                
-                m_redList.push_back(Red);
-                m_greenList.push_back(Green);
-                m_blueList.push_back(Blue);
+                UCHAR Alpha = 0xFF;
+                UCHAR Red = *(pBuf + 2);
+                UCHAR Green = *(pBuf+1);
+                UCHAR Blue = *(pBuf);
+
+                if (32 == m_nBpp)
+                {
+                    Alpha = *(pBuf + 3);
+                }
+                COLORREF clr = MAKE_RGBA(Red, Green, Blue, Alpha);
+                m_clrList.push_back(clr);
 
                 pBuf += nPixOffset;
             }
         }
 
+        return TRUE;
     }
 }

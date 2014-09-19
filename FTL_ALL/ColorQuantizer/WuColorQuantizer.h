@@ -13,7 +13,7 @@ namespace FTL
         virtual ~CFWuColorQuantizer();
     protected:
         virtual BOOL OnPrepare();
-        virtual BOOL OnProcessQuantizer(UINT colorCount, UINT *pResultClrCount);
+        virtual BOOL OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount);
         virtual void OnFinish();
     private:
         enum {
