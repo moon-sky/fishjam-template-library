@@ -221,7 +221,7 @@ BOOL CGifMakerImpl::BeginMakeGif(INT nWidth, INT nHeight, INT nWantColorCount, L
             SAFE_DELETE(m_pColorQuantizer);
             m_pColorQuantizer = new FTL::CFOctreeColorQuantizer();
             m_pThreadMaker = new FTL::CFThread<>();
-            m_pWaitingFrameInfoQueue = new FTL::CFProducerResumerQueue<CGifFrameInfoPtr>(2);
+            m_pWaitingFrameInfoQueue = new FTL::CFProducerResumerQueue<CGifFrameInfoPtr>(1);
 
             API_VERIFY(m_pWaitingFrameInfoQueue->Start());
             API_VERIFY(m_pThreadMaker->Start(MakerThreadProc, this));

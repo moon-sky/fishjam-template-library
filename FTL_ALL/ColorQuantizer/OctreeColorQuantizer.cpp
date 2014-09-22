@@ -22,11 +22,29 @@ namespace FTL
         m_nPaletteIndex = -1;
         ZeroMemory(m_pNodes, sizeof(CFOctreeNode*) * _countof(m_pNodes));
 
+        Reset();
     }
 
     CFOctreeNode::~CFOctreeNode()
     {
         InterlockedIncrement(&s_NodeFreeCount);
+    }
+
+    void CFOctreeNode::Reset()
+    {
+        m_Level = -1;
+
+        m_Red = 0;
+        m_Green = 0;
+        m_Blue = 0;
+        m_nPixelCount = 0;
+        m_nPaletteIndex = -1;
+        
+        for (int i = 0; i < _countof(m_pNodes); i++)
+        {
+            FTLASSERT(m_pNodes[i] == NULL);
+        }
+        //ZeroMemory(m_pNodes, sizeof(CFOctreeNode*) * _countof(m_pNodes));
     }
 
     void CFOctreeNode::ReturnMem()
@@ -41,18 +59,12 @@ namespace FTL
             }
         }
 
+        Reset();
         m_pParent->m_TreeNodeMemoryPool.Retrun(this);
     }
     void CFOctreeNode::SetParam(int level, CFOctreeColorQuantizer* pParent)
     {
         FTLASSERT(level <= 7);
-
-        m_Level = -1;
-        m_Red = 0;
-        m_Green = 0;
-        m_Blue = 0;
-        m_nPixelCount = 0;
-        m_nPaletteIndex = -1;
 
         for (int i = 0; i < _countof(m_pNodes); i++)
         {
@@ -227,8 +239,9 @@ namespace FTL
                 // increases the count of reduced nodes
                 result++;
 
-                m_pParent->m_TreeNodeMemoryPool.Retrun(m_pNodes[index]);
+                m_pNodes[index]->ReturnMem();
                 m_pNodes[index] = NULL;
+
                 //SAFE_DELETE(m_pNodes[index]);
             }
         }
@@ -255,7 +268,7 @@ namespace FTL
     CFOctreeColorQuantizer::CFOctreeColorQuantizer()
     {
         //m_nLastColorCount = 0;
-        m_nQuantizerLevel = 7;
+        m_nQuantizerLevel = 6;
         m_nLevelNodeCount = 0;
         m_pRoot = NULL;
         FTLASSERT(sizeof(m_pLevels) == 28); // sizeof(OctreeNodeList*) * 7
@@ -434,6 +447,10 @@ namespace FTL
 
     void CFOctreeColorQuantizer::OnFinish()
     {
+        for (int i = 0; i < _countof(m_pLevels); i++)
+        {
+            m_pLevels[i]->clear();
+        }
     }
 
     INT CFOctreeColorQuantizer::Leaves(OctreeNodeList& result)

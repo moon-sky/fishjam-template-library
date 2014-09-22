@@ -11,7 +11,7 @@
 CMainDlg::CMainDlg()
 {
     m_strSavePath = TEXT("gifRecorder.gif");
-    m_pGifMaker = NULL;
+    //m_pGifMaker = NULL;
     m_nLeft = 0;
     m_nTop = 0;
     m_nWidth = 640;
@@ -45,13 +45,15 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 void CMainDlg::OnDestroy()
 {
-    if (m_pGifMaker)
-    {
-        m_pGifMaker->EndMakeGif(GetTickCount(), TRUE);
-        m_pGifMaker->Release();
+    m_threadRecord.Wait(INFINITE);
+    
+    //if (m_pGifMaker)
+    //{
+        //m_pGifMaker->EndMakeGif(GetTickCount(), TRUE);
+        //m_pGifMaker->Release();
         //delete m_pGifMaker;
         //m_pGifMaker = NULL;
-    }
+    //}
 }
 
 LRESULT CMainDlg::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -105,13 +107,8 @@ void CMainDlg::OnBtnStartRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 
     if (bRet)
     {
-        FTLASSERT(NULL == m_pGifMaker);
-        if (NULL == m_pGifMaker)
         {
             m_nImageIndex = 0;
-            m_pGifMaker = IGifMaker::GetInstance(); //new CGifMaker();
-            m_pGifMaker->SetCompressType((CompressType)m_nCompressType);
-            m_pGifMaker->BeginMakeGif(m_nWidth, m_nHeight, 256, m_strSavePath);
             //SetTimer(ID_TIMER_FPS, 1000/m_nFps, NULL);
             API_VERIFY(m_threadRecord.Start(RecordGifThreadProc, this));
             
@@ -125,7 +122,7 @@ void CMainDlg::OnBtnStartRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CMainDlg::OnBtnPauseResumeRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    if (m_pGifMaker)
+    //if (m_pGifMaker)
     {
         if(m_threadRecord.HadRequestPause()){
             m_threadRecord.Resume();
@@ -143,7 +140,7 @@ void CMainDlg::OnBtnPauseResumeRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 
 void CMainDlg::OnBtnStopRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 {
-    if(m_pGifMaker)
+    //if(m_pGifMaker)
     {
         m_threadRecord.Stop();
         GetDlgItem(IDC_BTN_STOP_RECORD).EnableWindow(FALSE);
@@ -153,7 +150,9 @@ void CMainDlg::OnBtnStopRecord(UINT uNotifyCode, int nID, CWindow wndCtl)
 LRESULT CMainDlg::OnMessageThreadMakeGifQuit(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     m_threadRecord.Wait(INFINITE);
-    SAFE_DELETE(m_pGifMaker);
+    //m_pGifMaker->Release();
+    //m_pGifMaker = NULL;
+    //SAFE_DELETE(m_pGifMaker);
     GetDlgItem(IDC_BTN_START_RECORD).EnableWindow(TRUE);
     GetDlgItem(IDC_BTN_PAUSE_RESUME_RECORD).EnableWindow(FALSE);
 
@@ -227,6 +226,10 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
 {
     FUNCTION_BLOCK_TRACE(0);
 
+    IGifMaker* pGifMaker = IGifMaker::GetInstance(); //new CGifMaker();
+    pGifMaker->SetCompressType((CompressType)m_nCompressType);
+    pGifMaker->BeginMakeGif(m_nWidth, m_nHeight, 256, m_strSavePath);
+
     BOOL bRet = FALSE;
     FTL::FTLThreadWaitType waitType = FTL::ftwtStop;
     int nSleepTime = 1000/m_nFps;
@@ -254,7 +257,7 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
         API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strFileName));
 #endif 
 
-        m_pGifMaker->AddGifFrame(rcRecord, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), dwStartTickCount);
+        pGifMaker->AddGifFrame(rcRecord, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), dwStartTickCount);
 
         DWORD dwEndTickCount = GetTickCount();
         FTLTRACE(TEXT("RecordGif[%d] start=%d, nSleep=%d, End=%d, needSleep=%d\n"), 
@@ -274,9 +277,10 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
     } while (TRUE);
     
 
-    m_pGifMaker->EndMakeGif(GetTickCount(), FALSE);
+    pGifMaker->EndMakeGif(GetTickCount(), FALSE);
     //SAFE_DELETE(m_pGifMaker);
-
+    pGifMaker->Release();
+    pGifMaker = NULL;
     FTLTRACE(TEXT("Record Thread [%d] Quit\n"), GetCurrentThreadId());
     PostMessage(WM_THREAD_MAKEGIF_QUIT, 0, 0);
     return 0;

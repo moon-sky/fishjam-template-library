@@ -68,7 +68,7 @@ public:
     //void OnTimer(UINT_PTR nIDEvent);
 
 private:
-    IGifMaker*  m_pGifMaker;
+    //IGifMaker*  m_pGifMaker;
     CString m_strSavePath;
     int m_nLeft, m_nTop, m_nWidth, m_nHeight;
     int m_nFps, m_nBpp;

@@ -533,6 +533,13 @@ void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
             //    }
             //}
             FTLTRACE(TEXT("nColorCount=%d\n"), nColorCount);
+            CString strDrawText;
+            strDrawText.Format(TEXT("%d"), i);
+            CPen pen;
+            pen.CreatePen(PS_SOLID, 10, RGB(0, 255, 0));
+            HPEN oldPen = (HPEN)memDC.SelectObject(pen);
+            memDC.TextOut(0, 0, strDrawText);
+            memDC.SelectObject(oldPen);
             memDC.Detach();
 #else
             CWindowDC desktopDC(GetDesktopWindow());
@@ -546,7 +553,7 @@ void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
 #endif
 
             FUNCTION_BLOCK_NAME_TRACE(TEXT("GifMaker->AddGifFrame"), 100);
-            pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
+            pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), i * 100);
         }
     }
     {

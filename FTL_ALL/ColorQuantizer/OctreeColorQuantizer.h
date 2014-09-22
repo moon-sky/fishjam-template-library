@@ -62,6 +62,7 @@ namespace FTL
         int m_nPaletteIndex;
         CFOctreeNode* m_pNodes[8];
         CFOctreeColorQuantizer* m_pParent;
+        void Reset();
     public:
         static LONG s_NodeCreateCount;
         static LONG s_NodeFreeCount;
