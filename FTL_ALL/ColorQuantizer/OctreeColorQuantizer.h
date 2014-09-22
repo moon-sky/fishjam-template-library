@@ -68,11 +68,14 @@ namespace FTL
         virtual BOOL OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount);
         virtual void OnFinish();
     public:
+        INT GetQuantizerLevel() { return m_nQuantizerLevel; }
         INT Leaves(OctreeNodeList& result);
         void AddLevelNode(int level, CFOctreeNode* octreeNode);
+
     private:
         //int m_nLastColorCount;
-        int m_nLevelNodeCount;
+        INT m_nQuantizerLevel;
+        INT m_nLevelNodeCount;
         CFOctreeNode*   m_pRoot;
         OctreeNodeList*    m_pLevels[7];
     };

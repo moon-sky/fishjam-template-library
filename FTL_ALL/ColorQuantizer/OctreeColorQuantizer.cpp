@@ -19,12 +19,10 @@ namespace FTL
         m_nPaletteIndex = -1;
         ZeroMemory(m_pNodes, sizeof(CFOctreeNode*) * _countof(m_pNodes));
 
-        if (level < 7)
+        //if (level < 7)
+        if(level < pParent->GetQuantizerLevel())
         {
             pParent->AddLevelNode(level, this);
-        }
-        else{
-            FTLASSERT(level == 7);
         }
     }
 
@@ -113,14 +111,15 @@ namespace FTL
     void CFOctreeNode::AddColor(COLORREF color, int level, CFOctreeColorQuantizer* pParent)
     {
         // if this node is a leaf, then increase a color amount, and pixel presence
-        if (level == 8)
+        //if (level == 8)
+        if(level == pParent->GetQuantizerLevel() + 1)
         {
             m_Red += GetRValue(color);
             m_Green += GetGValue(color);
             m_Blue += GetBValue(color);
             m_nPixelCount++;
         }
-        else if (level < 8) // otherwise goes one level deeper
+        else// if (level < 8) // otherwise goes one level deeper
         {
             // calculates an index for the next sub-branch
             int index = GetColorIndexAtLevel(color, level);
@@ -220,6 +219,7 @@ namespace FTL
     CFOctreeColorQuantizer::CFOctreeColorQuantizer()
     {
         //m_nLastColorCount = 0;
+        m_nQuantizerLevel = 5;
         m_nLevelNodeCount = 0;
         m_pRoot = NULL;
         FTLASSERT(sizeof(m_pLevels) == 28); // sizeof(OctreeNodeList*) * 7
