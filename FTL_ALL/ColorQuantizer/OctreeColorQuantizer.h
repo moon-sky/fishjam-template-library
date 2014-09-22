@@ -17,6 +17,7 @@
 #include <vector>
 #include <set>
 #include <ftlFunctional.h>
+#include <ftlMem.h>
 
 namespace FTL
 {
@@ -31,8 +32,11 @@ namespace FTL
         enum {
             MAX_NODE_COUNT  = 8,
         };
-        CFOctreeNode(int level, CFOctreeColorQuantizer* pParent);
+        CFOctreeNode();
+        //CFOctreeNode(int level, CFOctreeColorQuantizer* pParent);
         ~CFOctreeNode();
+        void ReturnMem();
+        void SetParam(int level, CFOctreeColorQuantizer* pParent);
         BOOL IsLeaf() const;
         COLORREF    GetColor() const;
         int GetActiveNodesPixelCount() const;
@@ -48,6 +52,7 @@ namespace FTL
         }
     private:
         static BYTE s_MASK[8];// = new Byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+        LONG m_nIndex;
         int m_Level;
         int m_Red;
         int m_Green;
@@ -56,6 +61,10 @@ namespace FTL
         int m_nPixelCount;
         int m_nPaletteIndex;
         CFOctreeNode* m_pNodes[8];
+        CFOctreeColorQuantizer* m_pParent;
+    public:
+        static LONG s_NodeCreateCount;
+        static LONG s_NodeFreeCount;
     };
 
     class CFOctreeColorQuantizer : public CFColorQuantizerBase
@@ -71,7 +80,7 @@ namespace FTL
         INT GetQuantizerLevel() { return m_nQuantizerLevel; }
         INT Leaves(OctreeNodeList& result);
         void AddLevelNode(int level, CFOctreeNode* octreeNode);
-
+        FTL::CFMemoryPoolT<CFOctreeNode>    m_TreeNodeMemoryPool;
     private:
         //int m_nLastColorCount;
         INT m_nQuantizerLevel;

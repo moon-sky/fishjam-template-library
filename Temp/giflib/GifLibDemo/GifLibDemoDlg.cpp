@@ -489,8 +489,9 @@ void CGifLibDemoDlg::OnBnClickedBtnTimerClip()
 
 void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
 {
+    FUNCTION_BLOCK_TRACE(1000);
+
     BOOL bRet = FALSE;
-    FTL::CFElapseCounter    elpaseCounter;
 
     INT nWidth = 800;
     INT nHeight = 600;
@@ -500,43 +501,63 @@ void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
     FTL::CFCanvas canvas;
     API_VERIFY(canvas.Create(m_hWnd, nWidth, -nHeight, nBpp));
     
-#if 0
-    CDC memDC;
-    memDC.Attach(canvas.GetCanvasDC());
-    int nFillWidth = 1, nFillHeight = 1;
-    int nColorCount = 0;
-
-    for (int w = nWidth; w > 0 ; w-=4 )
-    {
-        nColorCount++;
-        CRect rcFill(0, 0, w, w);
-        memDC.FillSolidRect(rcFill, RGB(w * 255 / nWidth, 0, 0));
-    }
-    //for (int w = 0; w < nWidth; w+=nFillWidth)
-    //{
-    //    for (int h = 0; h < nHeight; h+=nFillHeight)
-    //    {
-    //        nColorCount++;
-    //        memDC.FillSolidRect(w, h, nFillWidth, nFillHeight, RGB(w * (nWidth / nFillWidth), 0x0, 0xFF - h * (nHeight / nFillHeight)));
-    //    }
-    //}
-    FTLTRACE(TEXT("nColorCount=%d\n"), nColorCount);
-    memDC.Detach();
-#else
-    CWindowDC desktopDC(GetDesktopWindow());
-    API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0, 0, SRCCOPY));
-#endif 
-
-#ifdef _DEBUG
-    API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), TEXT("SingleColorQuantizer.bmp")));
-#endif
+    FTL::CFElapseCounter    elpaseCounter;
 
     IGifMaker*  pGifMaker = IGifMaker::GetInstance();
     CRect rcFrame(0, 0, canvas.GetWidth(), canvas.GetHeight());
     pGifMaker->BeginMakeGif(canvas.GetWidth(), canvas.GetHeight(), 256, TEXT("SingleColorQuantizer.gif"));
-    pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
-    pGifMaker->EndMakeGif(GetTickCount(), FALSE);
-    pGifMaker->Release();
+    {
+
+        for(int i = 0; i < 20; i++)
+        {
+#if 1
+            CDC memDC;
+            memDC.Attach(canvas.GetCanvasDC());
+            int nFillWidth = 1, nFillHeight = 1;
+            int nColorCount = 0;
+
+            int nRandBlue = i * rand() % 255;
+            int nRandGreen = i * rand() % 255;
+            for (int w = nWidth; w > 0 ; w-=4 )
+            {
+                nColorCount++;
+                CRect rcFill(0, 0, w, w);
+                memDC.FillSolidRect(rcFill, RGB(w * 255 / nWidth, nRandBlue, nRandBlue));
+            }
+            //for (int w = 0; w < nWidth; w+=nFillWidth)
+            //{
+            //    for (int h = 0; h < nHeight; h+=nFillHeight)
+            //    {
+            //        nColorCount++;
+            //        memDC.FillSolidRect(w, h, nFillWidth, nFillHeight, RGB(w * (nWidth / nFillWidth), 0x0, 0xFF - h * (nHeight / nFillHeight)));
+            //    }
+            //}
+            FTLTRACE(TEXT("nColorCount=%d\n"), nColorCount);
+            memDC.Detach();
+#else
+            CWindowDC desktopDC(GetDesktopWindow());
+            API_VERIFY(::BitBlt(canvas.GetCanvasDC(), 0, 0, nWidth, nHeight, desktopDC, 0, 0, SRCCOPY));
+#endif 
+
+#ifdef _DEBUG
+            CString strSingleColorQuantizerName;
+            strSingleColorQuantizerName.Format(TEXT("SingleColorQuantizer_%d.bmp"), i);
+            API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strSingleColorQuantizerName));
+#endif
+
+            FUNCTION_BLOCK_NAME_TRACE(TEXT("GifMaker->AddGifFrame"), 100);
+            pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), GetTickCount());
+        }
+    }
+    {
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("GifMaker->EndMakeGif"), 100);
+        pGifMaker->EndMakeGif(GetTickCount(), FALSE);
+    }
+    
+    {
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("GifMaker->Release"), 100);
+        pGifMaker->Release();
+    }
 
     //COLORREF* pPaletteArray = colorQuantizer.GetPalette(&nPaletteCount);
 

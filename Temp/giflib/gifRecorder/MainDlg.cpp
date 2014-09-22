@@ -274,7 +274,7 @@ DWORD CMainDlg::_InnerRecordGifThreadProc()
     } while (TRUE);
     
 
-    m_pGifMaker->EndMakeGif(GetTickCount(), INFINITE);
+    m_pGifMaker->EndMakeGif(GetTickCount(), FALSE);
     //SAFE_DELETE(m_pGifMaker);
 
     FTLTRACE(TEXT("Record Thread [%d] Quit\n"), GetCurrentThreadId());

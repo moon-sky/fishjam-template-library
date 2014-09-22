@@ -38,6 +38,7 @@ namespace FTL
     template < typename T >
     CFMemoryPoolT<T>::~CFMemoryPoolT()
     {
+        FUNCTION_BLOCK_TRACE(100);
         CFAutoLock<CFLockObject> lock(&m_lockObject);
 
         FTLTRACE(TEXT("~CFMemoryPoolT, allBlocksSize=%d, freeBlocksSize=%d\n"),
@@ -115,7 +116,7 @@ namespace FTL
         }
         else
         {
-            nCount = FTL_MIN(nCount, m_freeBlocks.size());
+            nCount = FTL_MIN(nCount, (INT)m_freeBlocks.size());
         }
         //BOOL isFreeAndAllCountSame = (m_freeBlocks.size() == m_allBlocks.size());
 

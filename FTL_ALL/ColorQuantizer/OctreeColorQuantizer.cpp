@@ -6,12 +6,15 @@
 namespace FTL
 {
     BYTE CFOctreeNode::s_MASK[8] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+    LONG CFOctreeNode::s_NodeCreateCount = 0;
+    LONG CFOctreeNode::s_NodeFreeCount = 0;
 
-    CFOctreeNode::CFOctreeNode(int level, CFOctreeColorQuantizer* pParent)
+    CFOctreeNode::CFOctreeNode()//()
     {
-        FTLASSERT(level <= 7);
+        m_pParent = NULL;
+        m_nIndex = InterlockedIncrement(&s_NodeCreateCount);
+        m_Level = -1;
 
-        m_Level = level;
         m_Red = 0;
         m_Green = 0;
         m_Blue = 0;
@@ -19,6 +22,45 @@ namespace FTL
         m_nPaletteIndex = -1;
         ZeroMemory(m_pNodes, sizeof(CFOctreeNode*) * _countof(m_pNodes));
 
+    }
+
+    CFOctreeNode::~CFOctreeNode()
+    {
+        InterlockedIncrement(&s_NodeFreeCount);
+    }
+
+    void CFOctreeNode::ReturnMem()
+    {
+        for (int i = 0; i < _countof(m_pNodes); i++)
+        {
+            if (NULL != m_pNodes[i])
+            {
+                m_pNodes[i]->ReturnMem();
+                m_pNodes[i] = NULL;
+                //SAFE_DELETE(m_pNodes[i]);
+            }
+        }
+
+        m_pParent->m_TreeNodeMemoryPool.Retrun(this);
+    }
+    void CFOctreeNode::SetParam(int level, CFOctreeColorQuantizer* pParent)
+    {
+        FTLASSERT(level <= 7);
+
+        m_Level = -1;
+        m_Red = 0;
+        m_Green = 0;
+        m_Blue = 0;
+        m_nPixelCount = 0;
+        m_nPaletteIndex = -1;
+
+        for (int i = 0; i < _countof(m_pNodes); i++)
+        {
+            FTLASSERT(m_pNodes[i]==NULL);
+        }
+
+        m_pParent = pParent;
+        m_Level = level;
         //if (level < 7)
         if(level < pParent->GetQuantizerLevel())
         {
@@ -26,17 +68,7 @@ namespace FTL
         }
     }
 
-    CFOctreeNode::~CFOctreeNode()
-    {
-        for (int i = 0; i < _countof(m_pNodes); i++)
-        {
-            if (NULL != m_pNodes[i])
-            {
-                SAFE_DELETE(m_pNodes[i]);
-            }
-        }
-    }
-     
+
     BOOL CFOctreeNode::IsLeaf() const
     { 
         return m_nPixelCount > 0; 
@@ -127,7 +159,9 @@ namespace FTL
             // if that branch doesn't exist, grows it
             if (m_pNodes[index] == NULL)
             {
-                m_pNodes[index] = new CFOctreeNode(level, pParent);
+                CFOctreeNode* pNode = pParent->m_TreeNodeMemoryPool.Get();
+                pNode->SetParam(level, pParent);
+                m_pNodes[index] =  pNode; //new CFOctreeNode(level, pParent);
             }
 
             // adds a color to that branch
@@ -193,7 +227,9 @@ namespace FTL
                 // increases the count of reduced nodes
                 result++;
 
-                SAFE_DELETE(m_pNodes[index]);
+                m_pParent->m_TreeNodeMemoryPool.Retrun(m_pNodes[index]);
+                m_pNodes[index] = NULL;
+                //SAFE_DELETE(m_pNodes[index]);
             }
         }
 
@@ -219,7 +255,7 @@ namespace FTL
     CFOctreeColorQuantizer::CFOctreeColorQuantizer()
     {
         //m_nLastColorCount = 0;
-        m_nQuantizerLevel = 5;
+        m_nQuantizerLevel = 7;
         m_nLevelNodeCount = 0;
         m_pRoot = NULL;
         FTLASSERT(sizeof(m_pLevels) == 28); // sizeof(OctreeNodeList*) * 7
@@ -230,12 +266,23 @@ namespace FTL
     }
     CFOctreeColorQuantizer::~CFOctreeColorQuantizer()
     {
-        SAFE_DELETE(m_pRoot);
+        FUNCTION_BLOCK_TRACE(100);
+        if (m_pRoot)
+        {
+            m_pRoot->ReturnMem();
+        }
         for (int i = 0; i < _countof(m_pLevels); i++)
         {
             //m_pLevels[i]->clear();
             SAFE_DELETE(m_pLevels[i]);
         }
+        {
+            m_TreeNodeMemoryPool.Free(-1);
+        }
+        FTLTRACE(TEXT("CFOctreeNode -- s_NodeCreateCount=%d, s_NodeFreeCount=%d\n"),
+            CFOctreeNode::s_NodeCreateCount, CFOctreeNode::s_NodeFreeCount);
+
+        FTLASSERT(CFOctreeNode::s_NodeCreateCount == CFOctreeNode::s_NodeFreeCount);
     }
 
     BOOL CFOctreeColorQuantizer::OnPrepare()
@@ -244,15 +291,19 @@ namespace FTL
         
         API_VERIFY(__super::OnPrepare());
         API_VERIFY(_AnalyzeColorMeta());
-
+ 
         // creates a root node
-        m_pRoot = new CFOctreeNode(0, this);
-
-        for (ColorMetaList::iterator iter = m_clrList.begin(); 
-            iter != m_clrList.end();
-            ++iter)
+        if (m_pRoot)
         {
-            m_pRoot->AddColor(*iter, 0, this);
+            m_pRoot->ReturnMem();
+            m_pRoot = NULL;
+        }
+        m_pRoot = m_TreeNodeMemoryPool.Get();// new CFOctreeNode();//(0, this);
+        m_pRoot->SetParam(0, this);
+
+        for (UINT nPixelIndex = 0; nPixelIndex < m_nBmpPixelCount; nPixelIndex++)
+        {
+            m_pRoot->AddColor(m_pPixelClrList[nPixelIndex], 0, this);
         }
 
         return bRet;
@@ -364,21 +415,21 @@ namespace FTL
 
         {
             FUNCTION_BLOCK_NAME_TRACE(TEXT("GetResultPaletteIndex"), 100);
-            FTLASSERT(m_clrList.size() == m_nHeight * m_nWidth);
+            FTLASSERT(m_pPixelClrList != NULL);
+            FTLASSERT(m_nBmpPixelCount == m_nHeight * m_nWidth);
 
             m_QuantizerResultIndexes.resize(m_nHeight * m_nWidth);
             int palIndex = 0;
-            for (ColorMetaList::iterator iter = m_clrList.begin();
-                iter != m_clrList.end();
-                ++iter)
+            for (UINT nPixelIndex = 0; nPixelIndex < m_nBmpPixelCount; nPixelIndex++)
             {
-                int nPaletteIndex = m_pRoot->GetPaletteIndex(*iter, 0);
+                int nPaletteIndex = m_pRoot->GetPaletteIndex(m_pPixelClrList[nPixelIndex], 0);
                 FTLASSERT(0 <= nPaletteIndex && nPaletteIndex <= UCHAR_MAX);
                 m_QuantizerResultIndexes[palIndex++] = (UCHAR)nPaletteIndex;
+
             }
         }
 
-        return nResultCount;
+        return (nResultCount > 0);
     }
 
     void CFOctreeColorQuantizer::OnFinish()
@@ -405,6 +456,8 @@ namespace FTL
         result.clear();
 #endif
         m_pRoot->GetActiveNodes(result);
+
+        FTLTRACE(TEXT("Leaves, result.size=%d\n"), result.size());
         return result.size();
         //return root.ActiveNodes.Where(node => node.IsLeaf); 
     }

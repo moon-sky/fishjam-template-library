@@ -32,14 +32,17 @@ namespace FTL
         UINT m_nBmpDataSize;    //总的字节数
         UINT m_nBmpLineBytes;   //每行的字节数(4字节对齐)
         UINT m_nPaletteItemCount;
-        
+        UINT m_nBmpPixelCount;
+
         BOOL        m_bCopyMem;
         BYTE*       m_pBmpData;
         COLORREF*   m_pResultPalette;
         std::vector<UCHAR> m_QuantizerResultIndexes;
         
-        //考虑4字节对齐 和 Bpp，计算出颜色的COLORREF 列表
-        typedef std::list<COLORREF>    ColorMetaList;
-        ColorMetaList m_clrList;
+        
+        //typedef std::list<COLORREF>    ColorMetaList;
+        //ColorMetaList m_clrList;
+
+        COLORREF*   m_pPixelClrList;  //考虑4字节对齐 和 Bpp，计算出颜色的COLORREF 列表
     };
 }

@@ -54,16 +54,25 @@ CGifMakerImpl::CGifMakerImpl()
 
 CGifMakerImpl::~CGifMakerImpl()
 {
+    FUNCTION_BLOCK_TRACE(100);
+
     FTLASSERT(NULL == m_pGifFile);
     FTLASSERT(NULL == m_pWaitingFrameInfoQueue);
 
     //SAFE_DELETE(m_pQuantizer);
-    SAFE_DELETE(m_pColorQuantizer);
+    {
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("Delete m_pColorQuantizer"), 100);
+        SAFE_DELETE(m_pColorQuantizer);
+    }
 
-    SAFE_DELETE_ARRAY(m_pColorMap);
-    SAFE_DELETE_ARRAY(m_pGifBuffer);
-    SAFE_DELETE_ARRAY(m_pScreenBuffer);
-    SAFE_DELETE_ARRAY(m_pDiffResult);
+    {
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("Delete Memory"), 100);
+
+        SAFE_DELETE_ARRAY(m_pColorMap);
+        SAFE_DELETE_ARRAY(m_pGifBuffer);
+        SAFE_DELETE_ARRAY(m_pScreenBuffer);
+        SAFE_DELETE_ARRAY(m_pDiffResult);
+    }
     //if (m_pGiffDiffBuffer)
     //{
     //    _FreeDuplicateBmpData(m_pGiffDiffBuffer);
@@ -104,7 +113,7 @@ DWORD  CGifMakerImpl::MakerThreadProc(LPVOID lpThreadParameter)
 
 DWORD  CGifMakerImpl::_innerMakerThreadProc()
 {
-    FUNCTION_BLOCK_TRACE(0);
+    FUNCTION_BLOCK_TRACE(100);
 
     FTLASSERT(m_pGifFile);
     DWORD dwResult = 0;
@@ -313,6 +322,8 @@ INT CGifMakerImpl::AddGifFrame(const RECT& rcFrame, BYTE* pBmpData, INT nLength,
 
 BOOL CGifMakerImpl::EndMakeGif(DWORD dwTicket, BOOL bCancelUnwritten)
 {
+    FUNCTION_BLOCK_TRACE(100);
+
     INT nRet = 0;
     INT nError = 0;
     if (m_pGifFile)
@@ -342,9 +353,12 @@ BOOL CGifMakerImpl::EndMakeGif(DWORD dwTicket, BOOL bCancelUnwritten)
             FTLTRACE(TEXT("Remove Unwritten Frame:%d\n"), pFrameInfo->nIndex);
             //remove all the waiting snap bitmap info, will clear automatic
         }
-
-        m_pThreadMaker->StopAndWait(INFINITE);
-        SAFE_DELETE(m_pThreadMaker);
+        FTLASSERT(NULL != m_pThreadMaker);
+        if (m_pThreadMaker)
+        {
+            m_pThreadMaker->StopAndWait(INFINITE);
+            SAFE_DELETE(m_pThreadMaker);
+        }
         SAFE_DELETE(m_pWaitingFrameInfoQueue);
 
         GIF_VERIFY(EGifCloseFile(m_pGifFile, &nError), nError);

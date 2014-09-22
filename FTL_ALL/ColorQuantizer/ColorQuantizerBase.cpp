@@ -11,15 +11,19 @@ namespace FTL
         m_nBmpDataSize = 0;
         m_nBmpLineBytes = 0;
         m_nPaletteItemCount = 0;
+        m_nBmpPixelCount = 0;
 
         m_bCopyMem = FALSE;
         m_pBmpData = NULL;
         m_pResultPalette = NULL;
+        m_pPixelClrList = NULL;
     }
 
     CFColorQuantizerBase::~CFColorQuantizerBase()
     {
+        FUNCTION_BLOCK_TRACE(100);
         SAFE_DELETE_ARRAY(m_pResultPalette);
+        SAFE_DELETE_ARRAY(m_pPixelClrList);
 
         if (m_bCopyMem)
         {
@@ -86,6 +90,7 @@ namespace FTL
         m_nBmpLineBytes = nBmpLineBytes;
         m_nBmpDataSize = nBmpDataSize;
         m_bCopyMem = bCopyMem;
+        m_nBmpPixelCount = nWidth * nHeight;
 
         return TRUE;
     }
@@ -145,11 +150,15 @@ namespace FTL
             return FALSE;
         }
 
-        m_clrList.clear();
+        SAFE_DELETE_ARRAY(m_pPixelClrList);
+        
+        m_pPixelClrList = new COLORREF[m_nBmpPixelCount];
+        ZeroMemory(m_pPixelClrList, sizeof(COLORREF) * m_nBmpPixelCount);
 
         //UINT nColorCount = m_nWidth * m_nHeight;
         UINT nPixOffset = (m_nBpp / 8);
         UINT nRowBytes = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(m_nWidth, m_nBpp); //4字节对齐，计算每行的字节数
+        UINT nPixelIndex = 0;
 
         for (UINT h = 0; h < m_nHeight; h++)
         {
@@ -165,12 +174,14 @@ namespace FTL
                 {
                     Alpha = *(pBuf + 3);
                 }
-                COLORREF clr = MAKE_RGBA(Red, Green, Blue, Alpha);
-                m_clrList.push_back(clr);
+                //COLORREF clr = MAKE_RGBA(Red, Green, Blue, Alpha);
+                //m_clrList.push_back(clr);
+                m_pPixelClrList[nPixelIndex++] = MAKE_RGBA(Red, Green, Blue, Alpha);
 
                 pBuf += nPixOffset;
             }
         }
+        FTLASSERT(nPixelIndex == m_nBmpPixelCount);
 
         return TRUE;
     }
