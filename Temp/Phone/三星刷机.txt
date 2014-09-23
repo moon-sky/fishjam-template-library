@@ -1,0 +1,51 @@
+字库门 -- 死机时用户拔下电池，因读写时突然断电，造成 eMMC 芯片被击穿造成物理损坏。
+          目前唯一的规避方法：死机后，务必等待2分钟(120秒)以上再拔电重启。
+KIES -- PC上的手机管理软件，可以升级固件(TODO:Root后是否还能升?有各种回答), 维护联系人等 -- 似乎XP上更稳定
+        Root后再升级，ROOT就没有了，需要再用 Framearoot ?
+
+三星S5全系完美Root -- http://bbs.gfan.com/android-7476793-1-1.html
+第三方的Recover -- ?
+
+电信版: SM-9009W
+国际版: SM-900F(骁龙800)
+
+
+先刷CWM 再ROOT 然后卡刷GAPPS包 
+
+关机 -> 音量下+HOME+电源键 -> 音量上 -> 进入刷机(挖矿)模式 -> 
+打开odin软件 -> 自动识别，成功后在 ID:COM 处显示蓝色 ->
+  通过AP加载Recovery文件(如 g9009w-cwm-recovery-6.0.5.0-cn(0816).tar)TODO: 有没有验证是否选对了类型? ,
+  去掉 AutoReboot 选项(似乎有的说要去，有的没要求?),如果去了自动启动的话，
+    a.要在PASS时:按 音量上+HOME+电源 直到屏灭了 继续按住不要松手.屏再次亮起时 松开电源键 其他两个按键继续按着.就进入了RECOVERY模式
+    b.在 RECOVERY模式 下卡刷 UPDATE-SuperSU-v1.94压缩包，然后重启；
+    c.重启后运行 SUPERSU 程序，禁用 KNOX(手机防火墙)
+  确保未勾选"Re-Partition", 避免重新分区 -> Start 开始Root
+
+
+0.手机开启 USB调试(), 未知来源
+1.安装驱动(可用91助手或豌豆荚等) -- http://www.netded.com/a/jishuyingyong/2014/0226/27553.html
+  安装驱动，连接手机时，需要在手机上点一下"一律允许调试" 才能连接上
+
+2.Odin3 -- 刷机工具? TODO: http://pan.baidu.com/s/1c0mtQDU
+3.9009W工具(http://pan.baidu.com/s/1kTl25fx)
+  g9009w-cwm-recovery-6.0.5.0-en%280715%29.tar -- TODO:对应的原始名字为 g9009w-cwm-recovery-6.0.5.0-en(0715).tar
+    TODO: 应该用 g9009w-cwm-recovery-6.0.5.0-cn(0816).tar ?
+  Google-4.4.2-940549.zip
+  UPDATE-SuperSU-v1.94.zip  --(TODO:需要解压吗?) ROOT包文件, 需要放到手机或内存卡的根目录，然后进入第三方RECOVERY卡刷该包
+4.G9009WKEW1ANG6.zip (http://pan.baidu.com/s/1dDxfS)
+  TODO: 这个包和 G9009WKEU1ANG6 不一样，两边都下载下来进行比较
+
+
+S5 Recover -- TODO: 拿来干嘛?
+ http://yun.baidu.com/pcloud/album/info?query_uk=704970239&album_id=6031394112765541086
+
+
+最新固件(三星半官方的，可以恢复官方系统，但没有ROOT):  http://samsung-updates.com/device/?id=SM-G9009W
+  SM-G9009W	SM-G9009W	CTC	G9009WKEU1ANH9	Android	4.4.2	29.08.2014
+  SM-G9009W	SM-G9009W	CTC	G9009WKEU1ANH8	Android	4.4.2	17.08.2014	1862277
+  SM-G9009W	SM-G9009W	CTC	G9009WKEU1ANH7	Android	4.4.2	15.08.2014
+  SM-G9009W	SM-G9009W	CTC	G9009WKEU1ANG6	Android	4.4.2	09.07.2014
+
+
+在线Root(针对国际版 SM-900F的):
+1. CF-Auto-Root-klte-kltexx-smg900f.zip -- http://download.chainfire.eu/397/CF-Root/CF-Auto-Root/CF-Auto-Root-klte-kltexx-smg900f.zip 
