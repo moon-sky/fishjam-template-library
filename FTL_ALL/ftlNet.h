@@ -129,7 +129,7 @@
 *     示例：
 *       捕捉特定主机的http/https通信：host www.baidu.com and (tcp port 80 or 8080)
 * IECookiesView(www.nirsoft.net): 查看编辑Cookie
-* netstat -- 系统提供的查询监听、绑定等信息的工具
+* netstat -- 系统提供的查询监听、绑定等信息的工具, 示例: netstat -aon|findstr "5037", 然后 tasklist | findstr "xxx" 即可找到使用对应端口的程序
 *
 * CAsyncSocketEx -- 代替MFC::CAsyncSocket的异步Socket类，可以通过从 CAsyncSocketExLayer 继承子类并AddLayer(xxx)
 *   来支持代理(CAsyncProxySocketLayer) 和 SSL(CAsyncSslSocketLayer) 等, Layer通过链表结构保存，可支持多个。

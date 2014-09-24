@@ -3,29 +3,42 @@
 KIES -- PC上的手机管理软件，可以升级固件(TODO:Root后是否还能升?有各种回答), 维护联系人等 -- 似乎XP上更稳定
         Root后再升级，ROOT就没有了，需要再用 Framearoot ?
 
+重置系统前请进入设定---一般---安全性，取消“重新启动锁定”选项，不然会启动不了recovery。
+
 三星S5全系完美Root -- http://bbs.gfan.com/android-7476793-1-1.html
+米柚上的ROOT教程GS3 -- http://www.miui.com/thread-728484-1-1.html
+
+TODO: 无法启动recovery请拔电池，按住音量下和home键装上电池进入odin模式重新刷官方包
+
 第三方的Recover -- ?
+刷机前需要先备份EFS(?) -- EFS文件是用来存取手机IMEI串号、无线网卡MAC地址以及网络设置的重要信息组件
+  若刷机时损坏可能造成 IMEI串号被清空或置零，基带丢失，无法使用移动网络等故障
 
 电信版: SM-9009W
+  9009W下还有 ZDA/ZKA/ZWA 等三个版本，如 G9009W SM-G9009ZDACTC , 有什么区别(颜色?)?
 国际版: SM-900F(骁龙800)
 
 
-先刷CWM 再ROOT 然后卡刷GAPPS包 
 
-关机 -> 音量下+HOME+电源键 -> 音量上 -> 进入刷机(挖矿)模式 -> 
+先刷CWM(第三方Recover) => 再ROOT(进入Recover后卡刷Root) => 然后卡刷GAPPS包 
+
+不连电脑 -> 关机 -> 音量下+HOME+电源键 -> 音量上 -> 进入刷机(挖矿,download)模式 -> 插数据线，连接电脑，等驱动自动安装,
 打开odin软件 -> 自动识别，成功后在 ID:COM 处显示蓝色 ->
   通过AP加载Recovery文件(如 g9009w-cwm-recovery-6.0.5.0-cn(0816).tar)TODO: 有没有验证是否选对了类型? ,
   去掉 AutoReboot 选项(似乎有的说要去，有的没要求?),如果去了自动启动的话，
     a.要在PASS时:按 音量上+HOME+电源 直到屏灭了 继续按住不要松手.屏再次亮起时 松开电源键 其他两个按键继续按着.就进入了RECOVERY模式
-    b.在 RECOVERY模式 下卡刷 UPDATE-SuperSU-v1.94压缩包，然后重启；
+      TODO:刷入以后还是官方recovery的，请在odin刷机点击start以后，手机没有重启之前，按住手机音量上+home键不松直到手机显示RECOVERYBOOTING，松开按键，
+           或者odin刷的时候不选自动重启，刷完，按住音量键上+home键+电源键不松，直到手机自动重启显示RECOVERYBOOTING，松开按键，手机即可进入cwm recovery。
+    b.在 RECOVERY模式 下卡刷 UPDATE-SuperSU-v1.94压缩包，然后重启 即可获得Root权限；
     c.重启后运行 SUPERSU 程序，禁用 KNOX(手机防火墙)
+  若没有去除自动启动的话：
+    a.重启以后，手机完全关机，然后再 音量上键+HOME+电源键进入recovery 开机进入 recovery
   确保未勾选"Re-Partition", 避免重新分区 -> Start 开始Root
 
 
 0.手机开启 USB调试(), 未知来源
 1.安装驱动(可用91助手或豌豆荚等) -- http://www.netded.com/a/jishuyingyong/2014/0226/27553.html
   安装驱动，连接手机时，需要在手机上点一下"一律允许调试" 才能连接上
-
 2.Odin3 -- 刷机工具? TODO: http://pan.baidu.com/s/1c0mtQDU
 3.9009W工具(http://pan.baidu.com/s/1kTl25fx)
   g9009w-cwm-recovery-6.0.5.0-en%280715%29.tar -- TODO:对应的原始名字为 g9009w-cwm-recovery-6.0.5.0-en(0715).tar
