@@ -493,9 +493,10 @@ void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
 
     BOOL bRet = FALSE;
 
-    INT nWidth = 800;
-    INT nHeight = 600;
+    INT nWidth = 80;
+    INT nHeight = 80;
     INT nBpp = 24;
+    INT nRecordCount = 4;
 
     CRect rectCapture(0, 0, nWidth, nHeight);
     FTL::CFCanvas canvas;
@@ -507,23 +508,45 @@ void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
     CRect rcFrame(0, 0, canvas.GetWidth(), canvas.GetHeight());
     pGifMaker->BeginMakeGif(canvas.GetWidth(), canvas.GetHeight(), 256, TEXT("SingleColorQuantizer.gif"));
     {
+        int nFillWidth = 30, nFillHeight = 30;
 
-        for(int i = 0; i < 20; i++)
+        COLORREF clrFillList[] = {
+            RGB(255, 0, 0), 
+            RGB(0, 255, 0),
+            RGB(0, 0, 255),
+            RGB(255, 255, 0)
+        };
+        CRect rcFills[] = {
+            CRect(0, 0, nFillWidth * 2, nFillHeight),
+            CRect(nFillWidth, 0, 2 * nFillWidth, 2 * nFillHeight),
+            CRect(0, nFillHeight, 2 * nFillWidth, 2 * nFillHeight),
+            CRect(0, 0, nFillWidth, 2 * nFillHeight),
+        };
+
+        for(int i = 0; i < nRecordCount; i++)
         {
 #if 1
             CDC memDC;
             memDC.Attach(canvas.GetCanvasDC());
-            int nFillWidth = 1, nFillHeight = 1;
             int nColorCount = 0;
+            memDC.FillSolidRect(rcFrame, RGB(0, 255, 255));
+            memDC.FillSolidRect(rcFills[i], clrFillList[i]);
+            int nInnerPaddingWidth = rcFills[i].Width() / 4;
+            int nInnerPaddingHeight = rcFills[i].Height() / 4;
 
-            int nRandBlue = i * rand() % 255;
-            int nRandGreen = i * rand() % 255;
-            for (int w = nWidth; w > 0 ; w-=4 )
-            {
-                nColorCount++;
-                CRect rcFill(0, 0, w, w);
-                memDC.FillSolidRect(rcFill, RGB(w * 255 / nWidth, nRandBlue, nRandBlue));
-            }
+            CRect rcInner(rcFills[i].left + nInnerPaddingWidth, rcFills[i].top + nInnerPaddingHeight, 
+                rcFills[i].right - nInnerPaddingWidth, rcFills[i].bottom - nInnerPaddingHeight);
+            memDC.FillSolidRect(rcInner, RGB(255, 0, 255));// MAKE_RGBA(0x250, 0x1, 0x2, 0xFF));
+//#if 0
+//            int nRandBlue = i * rand() % 255;
+//            int nRandGreen = i * rand() % 255;
+//            for (int w = nWidth; w > 0 ; w-=4 )
+//            {
+//                nColorCount++;
+//                CRect rcFill(0, 0, w, w);
+//                memDC.FillSolidRect(rcFill, RGB(w * 255 / nWidth, nRandBlue, nRandBlue));
+//            }
+//#endif 
             //for (int w = 0; w < nWidth; w+=nFillWidth)
             //{
             //    for (int h = 0; h < nHeight; h+=nFillHeight)
@@ -532,14 +555,15 @@ void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
             //        memDC.FillSolidRect(w, h, nFillWidth, nFillHeight, RGB(w * (nWidth / nFillWidth), 0x0, 0xFF - h * (nHeight / nFillHeight)));
             //    }
             //}
-            FTLTRACE(TEXT("nColorCount=%d\n"), nColorCount);
-            CString strDrawText;
-            strDrawText.Format(TEXT("%d"), i);
-            CPen pen;
-            pen.CreatePen(PS_SOLID, 10, RGB(0, 255, 0));
-            HPEN oldPen = (HPEN)memDC.SelectObject(pen);
-            memDC.TextOut(0, 0, strDrawText);
-            memDC.SelectObject(oldPen);
+            //FTLTRACE(TEXT("nColorCount=%d\n"), nColorCount);
+            //CString strDrawText;
+            //strDrawText.Format(TEXT("%d"), i);
+            //CPen pen;
+            //pen.CreatePen(PS_SOLID, 10, RGB(0, 255, 0));
+            //HPEN oldPen = (HPEN)memDC.SelectObject(pen);
+            //memDC.TextOut(0, 0, strDrawText);
+            //memDC.SelectObject(oldPen);
+
             memDC.Detach();
 #else
             CWindowDC desktopDC(GetDesktopWindow());
@@ -553,7 +577,7 @@ void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
 #endif
 
             FUNCTION_BLOCK_NAME_TRACE(TEXT("GifMaker->AddGifFrame"), 100);
-            pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), i * 100);
+            pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), (i + 1) * 1000);
         }
     }
     {
@@ -628,7 +652,8 @@ void CGifLibDemoDlg::OnBnClickedBtnGifParser()
     BOOL bRet = FALSE;
     IGifParser*     pGifParser = IGifParser::GetInstance();
     
-    CFileDialog dlg(TRUE);
+    CString strFilter = _T("Gif File(*.gif)|*.gif|All Files(*.*)|*.*||");
+    CFileDialog dlg(TRUE, NULL, NULL, 0, strFilter);
     if (dlg.DoModal() == IDOK)
     {
         m_nTargetBpp = 24;

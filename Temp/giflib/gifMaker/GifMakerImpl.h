@@ -58,6 +58,7 @@ private:
     GifColorType* m_pColorMap;   //量化后Gif的颜色表数值
     GifByteType*  m_pGifBuffer;     //量化后的像素索引值
 
+    COLORREF    m_clrCompareSameTransparent; //前后两张图片，比较时如果相同，则设置为该透明色
     FTL::IFColorQuantizer*  m_pColorQuantizer;
 
     //CQuantizer* m_pQuantizer;

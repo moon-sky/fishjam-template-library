@@ -172,6 +172,7 @@ INT CGifParserImpl::_InnerAnalyze2FrameInfo(const RECT& rcFrame, ColorMapObject*
             for (INT w = 0; w < nScreenWidth; w++)
             {
                 INT nLineIndex = pLineBuf[w];
+#if 1
                 if (m_nFrameIndex != 1      //不处理第一张图的透明色
                     && nTransparentColorIndex != NO_TRANSPARENT_COLOR
                     && nTransparentColorIndex == nLineIndex)
@@ -179,6 +180,7 @@ INT CGifParserImpl::_InnerAnalyze2FrameInfo(const RECT& rcFrame, ColorMapObject*
                     pBmpColor += nPixelSize;
                     continue;
                 }
+#endif 
                 GifColorType& ColorMapEntry = pColorMap->Colors[nLineIndex];
                 *pBmpColor++ = ColorMapEntry.Blue;
                 *pBmpColor++ = ColorMapEntry.Green;

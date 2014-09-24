@@ -1457,8 +1457,11 @@ namespace FTL
 		return bRet;
 	}
 
-    int CFGdiUtil::CompareBitmapData(int nWidth, int nHeight, int bpp, byte* pBmp1, byte* pBmp2, byte* pOutResult, int nResultSize, RECT* pMinDiffRect)
+    int CFGdiUtil::CompareBitmapData(int nWidth, int nHeight, int bpp, 
+        byte* pBmp1, byte* pBmp2, RECT* pMinDiffRect,
+        byte* pDiffResult, int nResultSize, int clrSameFill)
     {
+        //TODO:如果bpp是8的话，buffer的值都是索引，此时 clrSameFill 表示填充的索引值，否则是具体的颜色值
         FTLASSERT(bpp >= 8);
         if(bpp < 8)
         {
@@ -1467,13 +1470,9 @@ namespace FTL
             return -1;
         }
 
-        //计算输出比较结果 位图 的内存量。TODO:现在每个结果用 1byte, 以后更改成 1bit?
-        int nNeedResultSize = (nWidth * 8 + 31) / 32 * 4 * nHeight; 
-#ifdef _DEBUG
-        int nCheckResultSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth , 8) * nHeight;
-        FTLASSERT(nNeedResultSize == nCheckResultSize);
-#endif
-        if (pOutResult && nResultSize > 0)
+        //计算输出比较结果位图的内存量
+        int nNeedResultSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth , bpp) * nHeight;
+        if (pDiffResult && nResultSize > 0)
         {
             if (nNeedResultSize > nResultSize)
             {
@@ -1482,7 +1481,7 @@ namespace FTL
                 return -1;
             }
 
-            ZeroMemory(pOutResult, nResultSize);
+            ZeroMemory(pDiffResult, nResultSize);
         }
 
         RECT rcMinDiff = { nWidth, nHeight, 0, 0 }; //包含不同区域的最小范围
@@ -1490,46 +1489,62 @@ namespace FTL
         int nPixOffset = (bpp / 8);
         byte  bDiffer = 0;
 
-        int nRowBytes = (nWidth * bpp + 31) >> 5 << 2;  //4字节对齐，计算每行的字节数 //<< 2
-#ifdef _DEBUG
-        int nCheckRowBytes = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth , bpp);
-        FTLASSERT(nRowBytes == nCheckRowBytes);
-#endif
-
+        int nRowBytes = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(nWidth , bpp);
         for (int h = 0; h < nHeight; h++)
         {
             byte* pBuf1 = (pBmp1 + h * nRowBytes);
             byte* pBuf2 = (pBmp2 + h * nRowBytes);
+            byte* pBufDiffResult = pDiffResult ? (pDiffResult + h * nRowBytes) : NULL;
 
             for (int w = 0; w < nWidth; w++)
             {
                 bDiffer = (memcmp(pBuf1, pBuf2, nPixOffset) != 0);
-                //switch (nPixOffset)
-                //{
-                //case 1: //8色
-                //    bDiffer = (*pBuf1 != *pBuf2);
-                //    break;
-                //case 2: //16色
-                //    bDiffer = ((*(unsigned short*)(pBuf1)) != (*(unsigned short*)(pBuf2)));
-                //    break;
-                //case 3: //24位真彩色
-                //    break;
-                //case 4: //32位真彩色
-                //    bDiffer = ((*(unsigned int*)(pBuf1)) != (*(unsigned int*)(pBuf2)));
-                //    break;
-                //}
 
                 if (bDiffer)
                 {
+                    //如果颜色不同，则设置为Buffer2的颜色
                     nDiffCount++;
-                    if (pOutResult)
+                    if (pBufDiffResult)
                     {
-                        *(pOutResult + h * nWidth + w) = 1;
+                        memcpy(pBufDiffResult, pBuf2, nPixOffset);
+                        pBufDiffResult += nPixOffset;
                     }
                     rcMinDiff.left = FTL_MIN(rcMinDiff.left, w);
                     rcMinDiff.top = FTL_MIN(rcMinDiff.top, h);
                     rcMinDiff.right = FTL_MAX(rcMinDiff.right, w + 1);
                     rcMinDiff.bottom = FTL_MAX(rcMinDiff.bottom, h + 1);
+                }
+                else
+                {
+                    //如果颜色相同, 则填充成指定的填充色
+                    if (pBufDiffResult)
+                    {
+                        switch (nPixOffset)
+                        {
+                        case 1: //8色
+                            //bDiffer = (*pBuf1 != *pBuf2);
+                            *pBufDiffResult = clrSameFill;
+                            break;
+                        case 2: //16色
+                            FTLASSERT(FALSE && TEXT("NOT SUPPORT 16, for 565, 555"));
+                            //bDiffer = ((*(unsigned short*)(pBuf1)) != (*(unsigned short*)(pBuf2)));
+                            break;
+                        case 3: //24位真彩色
+                            *(pBufDiffResult + 0) = GetBValue(clrSameFill);
+                            *(pBufDiffResult + 1) = GetGValue(clrSameFill);
+                            *(pBufDiffResult + 2) = GetRValue(clrSameFill);
+                            break;
+                        case 4: //32位真彩色
+                            //bDiffer = ((*(unsigned int*)(pBuf1)) != (*(unsigned int*)(pBuf2)));
+                            *(pBufDiffResult + 0) = GetBValue(clrSameFill);
+                            *(pBufDiffResult + 1) = GetGValue(clrSameFill);
+                            *(pBufDiffResult + 2) = GetRValue(clrSameFill);
+                            *(pBufDiffResult + 3) = GetAValue(clrSameFill);
+                            break;
+                        }
+                        //memcpy(pBufDiffResult, &clrSameFill, nPixOffset);
+                        pBufDiffResult += nPixOffset;
+                    }
                 }
                 pBuf1 += nPixOffset;
                 pBuf2 += nPixOffset;

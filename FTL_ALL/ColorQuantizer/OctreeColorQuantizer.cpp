@@ -202,6 +202,9 @@ namespace FTL
             }
             else
             {
+                result = -1;
+                FTLASSERT(FALSE &&TEXT("Can not Find the Color"));
+#if 0
                 for (int i = 0; i < 8; i++)
                 {
                     if (m_pNodes[i] != NULL)
@@ -210,6 +213,7 @@ namespace FTL
                         break;
                     }
                 }
+#endif 
             }
 #endif 
         }
@@ -451,6 +455,11 @@ namespace FTL
         {
             m_pLevels[i]->clear();
         }
+    }
+
+    INT CFOctreeColorQuantizer::GetTransparentIndex(COLORREF clrTransparent)
+    {
+        return m_pRoot->GetPaletteIndex(clrTransparent, 0);
     }
 
     INT CFOctreeColorQuantizer::Leaves(OctreeNodeList& result)

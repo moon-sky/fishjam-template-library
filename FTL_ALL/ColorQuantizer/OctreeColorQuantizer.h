@@ -77,6 +77,8 @@ namespace FTL
         virtual BOOL OnPrepare();
         virtual BOOL OnProcessQuantizer(UINT nWantClrCount, UINT *pResultClrCount);
         virtual void OnFinish();
+
+        virtual INT GetTransparentIndex(COLORREF clrTransparent);
     public:
         INT GetQuantizerLevel() { return m_nQuantizerLevel; }
         INT Leaves(OctreeNodeList& result);

@@ -66,5 +66,6 @@ namespace FTL
 
         virtual COLORREF* GetPalette(UINT* pResultCount) = 0;
         virtual UCHAR* GetQuantizerResult(UINT* pBufferSize) = 0;
+        virtual INT GetTransparentIndex(COLORREF clrTransparent) = 0;
     };
 }
