@@ -24,31 +24,31 @@ import android.text.Html.TagHandler;
 import android.util.Log;
 
 /***************************************************************************************************************************************
- * ×¢Òâ£º 
- *   1.ÍøÂçÏà¹ØµÄ²Ù×÷±ØĞëÔÚÏß³ÌÖĞµ÷ÓÃ(Ö÷Ïß³ÌÖĞµ÷ÓÃµÄ»°£¬»áÅ×³ö xxx Òì³£ )
+ * æ³¨æ„ï¼š 
+ *   1.ç½‘ç»œç›¸å…³çš„æ“ä½œå¿…é¡»åœ¨çº¿ç¨‹ä¸­è°ƒç”¨(ä¸»çº¿ç¨‹ä¸­è°ƒç”¨çš„è¯ï¼Œä¼šæŠ›å‡º xxx å¼‚å¸¸ )
  * 
- * Socket/ServerSocket -- TCP/IP±à³ÌÖĞÊ¹ÓÃ
- *   Socket client = server.accept(); //»ñµÃ¿Í»§¶ËÌ×½Ó×Ö£¬È»ºó client.getOutputStream() »ñµÃÊä³öÁ÷£¬¼´¿É½øĞĞ½»»¥ÁË
+ * Socket/ServerSocket -- TCP/IPç¼–ç¨‹ä¸­ä½¿ç”¨
+ *   Socket client = server.accept(); //è·å¾—å®¢æˆ·ç«¯å¥—æ¥å­—ï¼Œç„¶å client.getOutputStream() è·å¾—è¾“å‡ºæµï¼Œå³å¯è¿›è¡Œäº¤äº’äº†
  *   InputStream in = socket.getInputStream();  byte[] buffer = new byte[in.available()];  in.read(buffer); String msg = new String(buffer);
  * DatagramSocket/DatagramPackage -- UDP
  * URL/URLConnection/HttpURLConnection 
- *   1.InputStream in = new URL(myUrl).openStream();  //´ò¿ªUrl¶ÔÓ¦µÄÊäÈëÁ÷(Èç ÎÄ¼ş¡¢ÍøÂçµÈ?) 
- *   2.1. ÍøÂç½âÎö:
+ *   1.InputStream in = new URL(myUrl).openStream();  //æ‰“å¼€Urlå¯¹åº”çš„è¾“å…¥æµ(å¦‚ æ–‡ä»¶ã€ç½‘ç»œç­‰?) 
+ *   2.1. ç½‘ç»œè§£æ:
  *       URLConnection conn = url.openConnection(); InputStream in = conn.getInputStream();
  *       HttpURLConnection httpConn = (HttpURLConnection)conn; in = httpConn.getInputStream();
- *   2.2 ±¾µØÍ¼Æ¬½âÎö
+ *   2.2 æœ¬åœ°å›¾ç‰‡è§£æ
  *       bitmap = BitmapFactory.decodeStream(in);
- *   3. in.close();  //Ê¹ÓÃÍê±Ïºó×¢Òâ¹Ø±Õ
+ *   3. in.close();  //ä½¿ç”¨å®Œæ¯•åæ³¨æ„å…³é—­
  * URLEncoder 
  *   encode -- ?
  * Servlet 
- *   HttpServlet -- ¼Ì³Ğ×ÓÀà£¬ÖØÔØÆäÖĞµÄ doGet /doPost µÈ·½·¨
+ *   HttpServlet -- ç»§æ‰¿å­ç±»ï¼Œé‡è½½å…¶ä¸­çš„ doGet /doPost ç­‰æ–¹æ³•
  *   HttpServletRequest/HttpServletResponse -- 
- * Apache Http ¿Í»§¶Ë
- *   HttpGet/HttpPost£¬Ê¹ÓÃ DefaultHttpClient Ö´ĞĞÇëÇó»ñµÃÏìÓ¦
+ * Apache Http å®¢æˆ·ç«¯
+ *   HttpGet/HttpPostï¼Œä½¿ç”¨ DefaultHttpClient æ‰§è¡Œè¯·æ±‚è·å¾—å“åº”
  *     HttpPost request = new HttpPost(urlStr); ... HttpResponse response = new DefaultHttpClient().execute(request);
- * WebService -- Ê¹ÓÃµ¥¶ÀÏÂÔØµÄ KSOAP.jar ?
- * WebView -- ÊÓÍ¼×é¼şÖ±½ÓÏÔÊ¾ÍøÒ³£¬ÆäÊ¹ÓÃÁË¿ªÔ´µÄ WebKit ÒıÇæ
+ * WebService -- ä½¿ç”¨å•ç‹¬ä¸‹è½½çš„ KSOAP.jar ?
+ * WebView -- è§†å›¾ç»„ä»¶ç›´æ¥æ˜¾ç¤ºç½‘é¡µï¼Œå…¶ä½¿ç”¨äº†å¼€æºçš„ WebKit å¼•æ“
  * 
  * 
 ***************************************************************************************************************************************/
@@ -68,20 +68,20 @@ public class NetTester extends AndroidTestCase {
 
 	public void testGetCityListFromWebService(){
 		/****************************************************************************************************************************************
-		//Í¨¹ıWebService»ñÈ¡ÌìÆøÔ¤±¨µÄ³ÇÊĞÁĞ±í
+		//é€šè¿‡WebServiceè·å–å¤©æ°”é¢„æŠ¥çš„åŸå¸‚åˆ—è¡¨
 		List<String > lstCiteStrings = new ArrayList<String>();
 		SoapObject request = new SoapObject("http://webXml.com.cn/", "getRegionProvince");
-		//»ñµÃĞòÁĞ»¯µÄ envelope
+		//è·å¾—åºåˆ—åŒ–çš„ envelope
 		SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
 		envelope.bodyOut = request;
 		(new MarshalBase64()).register(envelope);
 		AndroidHttpTransport ht = new AndroidHttpTransport("http://webservice.webxml.com.cn/WebServices/WeatherWS.asmx");
 		ht.debug = true;
-		ht.call("http://webXml.com.cn/getRegionProvince", envelope);  //µ÷ÓÃ
+		ht.call("http://webXml.com.cn/getRegionProvince", envelope);  //è°ƒç”¨
 		if (envelope.getResponse() != null) {
 			String str = envelope.bodyIn.toString();
 			if (str.length() > 0) {
-				//×Ö·û´®½âÎö²¢¼ÓÈë½á¹û
+				//å­—ç¬¦ä¸²è§£æå¹¶åŠ å…¥ç»“æœ
 				lstCiteStrings.add("xxxx");
 			}
 		}
@@ -91,15 +91,15 @@ public class NetTester extends AndroidTestCase {
 	public void testHttpClientGet() throws Exception{
 		final String GET_URL = "http://www.baidu.com/";
 
-		// ´´½¨HttpClient¶ÔÏó
+		// åˆ›å»ºHttpClientå¯¹è±¡
 		HttpClient httpClient = new DefaultHttpClient();
 
-		// ´´½¨HttpGet¶ÔÏó¡£
+		// åˆ›å»ºHttpGetå¯¹è±¡ã€‚
 		HttpGet get = new HttpGet(GET_URL);
-		// ·¢ËÍGETÇëÇó
+		// å‘é€GETè¯·æ±‚
 		HttpResponse httpResponse = httpClient.execute(get);
 		if (httpResponse.getStatusLine().getStatusCode() == 200) {
-			// »ñÈ¡·şÎñÆ÷ÏìÓ¦×Ö·û´®
+			// è·å–æœåŠ¡å™¨å“åº”å­—ç¬¦ä¸²
 			String result = EntityUtils.toString(httpResponse.getEntity());
 			Log.i(TAG, result);
 		}
@@ -107,26 +107,26 @@ public class NetTester extends AndroidTestCase {
 	
 	public void testHttpClientPost() throws Exception {
 		final String POST_URL = "http://www.baidu.com/";
-		Map<String ,String> rawParams = new HashMap<String, String>();  //ÇëÇó²ÎÊı
+		Map<String ,String> rawParams = new HashMap<String, String>();  //è¯·æ±‚å‚æ•°
 		rawParams.put("user", "fishjam");
 		rawParams.put("pass", "password");
 		
-		HttpClient httpClient = new DefaultHttpClient();		// ´´½¨HttpClient¶ÔÏó
-		HttpPost post = new HttpPost(POST_URL);		// ´´½¨HttpPost¶ÔÏó¡£
+		HttpClient httpClient = new DefaultHttpClient();		// åˆ›å»ºHttpClientå¯¹è±¡
+		HttpPost post = new HttpPost(POST_URL);		// åˆ›å»ºHttpPostå¯¹è±¡ã€‚
 		
-		// Èç¹û´«µİ²ÎÊı¸öÊı±È½Ï¶àµÄ»°¿ÉÒÔ¶Ô´«µİµÄ²ÎÊı½øĞĞ·â×°
+		// å¦‚æœä¼ é€’å‚æ•°ä¸ªæ•°æ¯”è¾ƒå¤šçš„è¯å¯ä»¥å¯¹ä¼ é€’çš„å‚æ•°è¿›è¡Œå°è£…
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		for(String key : rawParams.keySet())
 		{
-			params.add(new BasicNameValuePair(key, rawParams.get(key)));	//·â×°ÇëÇó²ÎÊı
+			params.add(new BasicNameValuePair(key, rawParams.get(key)));	//å°è£…è¯·æ±‚å‚æ•°
 		}
-		post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));		// ÉèÖÃÇëÇó²ÎÊı
-		HttpResponse httpResponse = httpClient.execute(post);		// ·¢ËÍPOSTÇëÇó
+		post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));		// è®¾ç½®è¯·æ±‚å‚æ•°
+		HttpResponse httpResponse = httpClient.execute(post);		// å‘é€POSTè¯·æ±‚
 		
-		// Èç¹û·şÎñÆ÷³É¹¦µØ·µ»ØÏìÓ¦
+		// å¦‚æœæœåŠ¡å™¨æˆåŠŸåœ°è¿”å›å“åº”
 		if (httpResponse.getStatusLine().getStatusCode() == 200)
 		{
-			// »ñÈ¡·şÎñÆ÷ÏìÓ¦×Ö·û´®
+			// è·å–æœåŠ¡å™¨å“åº”å­—ç¬¦ä¸²
 			String result = EntityUtils.toString(httpResponse.getEntity());
 			Log.i(TAG, result);
 		}

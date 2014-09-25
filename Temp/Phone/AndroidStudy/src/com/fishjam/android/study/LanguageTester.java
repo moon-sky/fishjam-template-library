@@ -8,70 +8,70 @@ import android.util.FloatMath;
 import android.util.Log;
 
 /***************************************************************************************************************************************
- * Android µÄÌõ¼ş±àÒë
- *   Java ÓïÑÔ±¾ÉíÃ»ÓĞÒıÈëÌõ¼ş±àÒëµÄ¹¦ÄÜ£¬¸ù¾İJava±àÒëÆ÷µÄÓÅ»¯ºÍ²¼¶û³£Á¿(final Boolean)µÄ»úÖÆ£¬¶ÔÓÚÌõ¼ş±í´ïÊ½ÖĞÓÀÔ¶ÎªfalseµÄÓï¾ä£¬
- *   ±àÒëÆ÷½«²¿¶ÓÌõ¼ş¸²¸ÇµÄ´úÂë¶ÎÉú³É×Ö½ÚÂë(²»±àÒë½ø½á¹ûÎÄ¼ş) ¡£Èç£º
+ * Android çš„æ¡ä»¶ç¼–è¯‘
+ *   Java è¯­è¨€æœ¬èº«æ²¡æœ‰å¼•å…¥æ¡ä»¶ç¼–è¯‘çš„åŠŸèƒ½ï¼Œæ ¹æ®Javaç¼–è¯‘å™¨çš„ä¼˜åŒ–å’Œå¸ƒå°”å¸¸é‡(final Boolean)çš„æœºåˆ¶ï¼Œå¯¹äºæ¡ä»¶è¡¨è¾¾å¼ä¸­æ°¸è¿œä¸ºfalseçš„è¯­å¥ï¼Œ
+ *   ç¼–è¯‘å™¨å°†éƒ¨é˜Ÿæ¡ä»¶è¦†ç›–çš„ä»£ç æ®µç”Ÿæˆå­—èŠ‚ç (ä¸ç¼–è¯‘è¿›ç»“æœæ–‡ä»¶) ã€‚å¦‚ï¼š
  *      final boolean bDebug = false;
- *      if(bDebug) { xxxxx -- ±àÒëÊ±»á±»ÓÅ»¯µô }
- *   ¿ÉÒÔ¶¨ÒåÒ»¸ö´¿Êı¾İµÄÅäÖÃÀàÀ´¿ØÖÆ£¬Èç£º
+ *      if(bDebug) { xxxxx -- ç¼–è¯‘æ—¶ä¼šè¢«ä¼˜åŒ–æ‰ }
+ *   å¯ä»¥å®šä¹‰ä¸€ä¸ªçº¯æ•°æ®çš„é…ç½®ç±»æ¥æ§åˆ¶ï¼Œå¦‚ï¼š
  *      public class AppConfig { public static final boolean bDebug = true; .... }
- *      È»ºóÔÚ´úÂëÖĞÖ±½ÓÊ¹ÓÃÕâĞ© final ±äÁ¿ -- if(AppConfig.bDebug) { ... }
+ *      ç„¶ååœ¨ä»£ç ä¸­ç›´æ¥ä½¿ç”¨è¿™äº› final å˜é‡ -- if(AppConfig.bDebug) { ... }
  *
- *  TODO:Ê¹ÓÃÀàËÆ·½·¨£¬¿ÉÒÔÊ¹ÓÃÆäËûAPI¶ÁÈ¡ÅäÖÃÀ´Ìõ¼ş±àÒë£¿ 
- *     ADT17ÒÔÉÏÏµÍ³»áÉú³ÉÒ»¸ö BuildConfig Àà£¬ÆäÖĞÓĞ public final static boolean DEBUG ±äÁ¿;
- *     1.true -- È±Ê¡Ê±, Ö±½ÓÍ¨¹ıEclipseÔËĞĞ; 
- *     2.false -- È¡Ïû Build Automatically->Clean->Build -> Export Signed Application Package
+ *  TODO:ä½¿ç”¨ç±»ä¼¼æ–¹æ³•ï¼Œå¯ä»¥ä½¿ç”¨å…¶ä»–APIè¯»å–é…ç½®æ¥æ¡ä»¶ç¼–è¯‘ï¼Ÿ 
+ *     ADT17ä»¥ä¸Šç³»ç»Ÿä¼šç”Ÿæˆä¸€ä¸ª BuildConfig ç±»ï¼Œå…¶ä¸­æœ‰ public final static boolean DEBUG å˜é‡;
+ *     1.true -- ç¼ºçœæ—¶, ç›´æ¥é€šè¿‡Eclipseè¿è¡Œ; 
+ *     2.false -- å–æ¶ˆ Build Automatically->Clean->Build -> Export Signed Application Package
  *     
- *   system.prop(AndroidÔ´Âë±àÒëÊ±Ê¹ÓÃ£¿) -- Í¨¹ı Key=Value ¼üÖµ¶Ô µÄ·½Ê½ÅäÖÃÏµÍ³ÊôĞÔ£¬
- *   Í¨¹ı android.os.SystemProperties Àà¶ÁÈ¡ÆäÖĞÄÚÈİ£¬¿ÉÊµÏÖ¸ù¾İÅäÖÃÎÄ¼şÀ´Ìõ¼ş±àÒë¡£
- *   ×¢Òâ£ºSystemProperties ÊÇ·Ç±ê×¼µÄSDK½Ó¿Ú£¬ÈçÒªÊ¹ÓÃ£¬ÔÚ Android.mk ÎÄ¼şÖĞ²»ÄÜ¶¨Òå LOCAL_SDK_VERION ±äÁ¿(¸Ã±äÁ¿±íÊ¾Ó¦ÓÃÖ»ÄÜÊ¹ÓÃ±ê×¼µÄSDK½Ó¿Ú)
- *     Èç£º./build/target/board/generic/system.prop ÎÄ¼ş(±àÒëÊ±£¬±àÒë½Å±¾»á¸ù¾İ¸ÃÎÄ¼şÉú³É  build.prop ÎÄ¼ş)
+ *   system.prop(Androidæºç ç¼–è¯‘æ—¶ä½¿ç”¨ï¼Ÿ) -- é€šè¿‡ Key=Value é”®å€¼å¯¹ çš„æ–¹å¼é…ç½®ç³»ç»Ÿå±æ€§ï¼Œ
+ *   é€šè¿‡ android.os.SystemProperties ç±»è¯»å–å…¶ä¸­å†…å®¹ï¼Œå¯å®ç°æ ¹æ®é…ç½®æ–‡ä»¶æ¥æ¡ä»¶ç¼–è¯‘ã€‚
+ *   æ³¨æ„ï¼šSystemProperties æ˜¯éæ ‡å‡†çš„SDKæ¥å£ï¼Œå¦‚è¦ä½¿ç”¨ï¼Œåœ¨ Android.mk æ–‡ä»¶ä¸­ä¸èƒ½å®šä¹‰ LOCAL_SDK_VERION å˜é‡(è¯¥å˜é‡è¡¨ç¤ºåº”ç”¨åªèƒ½ä½¿ç”¨æ ‡å‡†çš„SDKæ¥å£)
+ *     å¦‚ï¼š./build/target/board/generic/system.prop æ–‡ä»¶(ç¼–è¯‘æ—¶ï¼Œç¼–è¯‘è„šæœ¬ä¼šæ ¹æ®è¯¥æ–‡ä»¶ç”Ÿæˆ  build.prop æ–‡ä»¶)
  *     private static final boolean bSupportBluetooth = SystemProperties.getBoolean("ro.Gallery.bSupportBluetooth", false);
  *     if(bSupportBluetooth) { ... } 
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * AndroidÓï·¨
- *  1.AndroidÖĞµÄÃüÃû¹æÔò²ÉÓÃ mXXXX µÄ·½Ê½£¨Ã»ÓĞÏÂ»®Ïß£©
+ * Androidè¯­æ³•
+ *  1.Androidä¸­çš„å‘½åè§„åˆ™é‡‡ç”¨ mXXXX çš„æ–¹å¼ï¼ˆæ²¡æœ‰ä¸‹åˆ’çº¿ï¼‰
  * 
- * ×Ö·û´®¸ñÊ½»¯
+ * å­—ç¬¦ä¸²æ ¼å¼åŒ–
  *   String.Format
  *   
- * Àà
- *   instanceof -- ÅĞ¶ÏÊÇ·ñÊÇÖ¸¶¨ÀàĞÍµÄÊµÀı
+ * ç±»
+ *   instanceof -- åˆ¤æ–­æ˜¯å¦æ˜¯æŒ‡å®šç±»å‹çš„å®ä¾‹
  *    
- *  HashMap<String, String> -- ²»Í¬²½¡¢¿Õ¼üÖµ¡¢Ğ§ÂÊ¸ß
- *  HashTable -- Í¬²½¡¢·Ç¿Õ¼üÖµ¡¢Ğ§ÂÊÂÔµÍ
+ *  HashMap<String, String> -- ä¸åŒæ­¥ã€ç©ºé”®å€¼ã€æ•ˆç‡é«˜
+ *  HashTable -- åŒæ­¥ã€éç©ºé”®å€¼ã€æ•ˆç‡ç•¥ä½
  * 
- * Êı×é
+ * æ•°ç»„
  *    private int[] mColors = new int[] { Color.BLACK, Color.RED, Color.BLUE,Color.GREEN, Color.MAGENTA, Color.YELLOW };
- *    ArrayAdapter -- Êı×éÊÊÅäÆ÷
+ *    ArrayAdapter -- æ•°ç»„é€‚é…å™¨
  *      String[] strs = {"a", "b", "c"}; ArrayAdapter aa = new ArrayAdapter(this, android.R.layout.simple_spinner_item, strs);
  *      spinner.setAdapter(aa); 
  *    
- * super µ÷ÓÃ»ùÀàµÄÍ¬Ãû·½·¨£¬Èç: super.onCreate(xxxx);
+ * super è°ƒç”¨åŸºç±»çš„åŒåæ–¹æ³•ï¼Œå¦‚: super.onCreate(xxxx);
  * 
  * annotation
  * 
- * Android Ê¹ÓÃJavaÖĞµÄÊÂ¼ş´¦Àí»úÖÆ£¬°üÀ¨( TODO ):
- *   ÊÂ¼ş -- (extends EventObject), Í¨¹ı FireEvent ¼¤·¢ÊÂ¼ş 
- *   ÊÂ¼şÔ´
- *   ÊÂ¼ş¼àÌıÆ÷ -- ´ÓEventListener ¼Ì³ĞÀ´¶¨Òå¼àÌı½Ó¿Ú£¬¾ßÌåµÄ¼àÌıÆ÷ implements ¸Ã½Ó¿Ú  
- *     AndroidÏµÍ³ÖĞ³£¼ûµÄÊÂ¼ş¼àÌıÆ÷£º
- *       View ÖĞµÄ OnClickListener, OnFocusChangeListener, OnKeyListener, OnTouchListener, OnCheckedChangeListener µÈ 
+ * Android ä½¿ç”¨Javaä¸­çš„äº‹ä»¶å¤„ç†æœºåˆ¶ï¼ŒåŒ…æ‹¬( TODO ):
+ *   äº‹ä»¶ -- (extends EventObject), é€šè¿‡ FireEvent æ¿€å‘äº‹ä»¶ 
+ *   äº‹ä»¶æº
+ *   äº‹ä»¶ç›‘å¬å™¨ -- ä»EventListener ç»§æ‰¿æ¥å®šä¹‰ç›‘å¬æ¥å£ï¼Œå…·ä½“çš„ç›‘å¬å™¨ implements è¯¥æ¥å£  
+ *     Androidç³»ç»Ÿä¸­å¸¸è§çš„äº‹ä»¶ç›‘å¬å™¨ï¼š
+ *       View ä¸­çš„ OnClickListener, OnFocusChangeListener, OnKeyListener, OnTouchListener, OnCheckedChangeListener ç­‰ 
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- *  Android °üº¬Ò»Ì×C/C++¿â£¬¿ÉÒÔ±»AndroidÏµÍ³µÄ¸÷ÖÖ×é¼şÊ¹ÓÃ£¬ÕâĞ©ÌØĞÔÍ¨¹ıAndroid Ó¦ÓÃ³ÌĞò¿ò¼Ü¿ª·Å¸ø¿ª·¢Õß£¬ÏÂÃæÁĞ³öÁËºËĞÄ¿â¡£
- *    ÏµÍ³Cº¯Êı¿â ´ÓBSD±ê×¼CÏµÍ³¿â¼Ì³ĞµÄ£¬»ùÓÚÇ¶ÈëÊ½linuxÉè±¸½øĞĞÓÅ»¯µÄ°æ±¾¡£
- *    ¶àÃ½Ìå¿â -- »ùÓÚPacketVideo¹«Ë¾µÄOpenCORE¿â£¬¸Ã¿âÖ§³ÖÂ¼Òô»Ø·Å£¬Â¼ÖÆÁ÷ĞĞµÄÉùÒôºÍÊÓÆµ¸ñÊ½ÎÄ¼ş£¬ÒÔ¼°¾²Ì¬Í¼ÏñÎÄ¼ş£¬ÕâĞ©ÎÄ¼ş¸ñÊ½°üÀ¨MPEG4,H.264,MP3,AAC,AMR,JPG,ºÍPNG.
- *    ½çÃæ¹ÜÀí(Surface Manager) -- ¹ÜÀí¶ÔÏÔÊ¾×ÓÏµÍ³µÄ·ÃÎÊ£¬²¢ÇÒÎŞ·ìºÏ³É²»Í¬µÄÓ¦ÓÃ³ÌĞòÖĞµÄ2DºÍ3DÍ¼Ïñ²ã
- *    LibWebCord ¨C Ò»¸öÁ÷ĞĞµÄÍøÒ³ä¯ÀÀÆ÷ÒıÇæ£¬ÔöÇ¿Androidä¯ÀÀÆ÷ºÍÇ¶ÈëÊ½ÍøÒ³ä¯ÀÀµÄÄÜÁ¦
- *    SGL ¨C µ×²ãµÄ2D Í¼ÏñÒıÇæ
- *    3D ¿â ¨C Ò»¸ö»ùÓÚOpenGL ES 1.0 APIsµÄ°æ±¾£¬Õâ¸ö¿â¼È¿ÉÒÔÊ¹ÓÃÓ²¼ş3D¼ÓËÙ£¨Ó²¼şÖ§³Ö£©»òÕßÄÚÖÃµÄ£¬¸ß¶ÈÓÅ»¯µÄ3DÈí¼ÓËÙ
- *    ×ÖÌåÀàĞÍ(FreeType) -- Î»Í¼(bitmap)»òÕßÊ¸Á¿(vector)×ÖÌå
- *    SQLite ¨C Ò»¸öÇ¿´óµÄÇáÁ¿¼¶¹ØÏµÊı¾İ¿âÒıÇæ£¬ÔÊĞíËùÓĞµÄÓ¦ÓÃ³ÌĞòÊ¹ÓÃ
- *    ÆäËû(?): À¶ÑÀ(Bluetooth), EDGE, 3G, WiFi(ÒÀÀµÓÚÓ²¼ş)£¬ÕÕÏà»ú, GPS, Ö¸ÄÏÕë, ¼ÓËÙ¶È¼Æ
+ *  Android åŒ…å«ä¸€å¥—C/C++åº“ï¼Œå¯ä»¥è¢«Androidç³»ç»Ÿçš„å„ç§ç»„ä»¶ä½¿ç”¨ï¼Œè¿™äº›ç‰¹æ€§é€šè¿‡Android åº”ç”¨ç¨‹åºæ¡†æ¶å¼€æ”¾ç»™å¼€å‘è€…ï¼Œä¸‹é¢åˆ—å‡ºäº†æ ¸å¿ƒåº“ã€‚
+ *    ç³»ç»ŸCå‡½æ•°åº“ ä»BSDæ ‡å‡†Cç³»ç»Ÿåº“ç»§æ‰¿çš„ï¼ŒåŸºäºåµŒå…¥å¼linuxè®¾å¤‡è¿›è¡Œä¼˜åŒ–çš„ç‰ˆæœ¬ã€‚
+ *    å¤šåª’ä½“åº“ -- åŸºäºPacketVideoå…¬å¸çš„OpenCOREåº“ï¼Œè¯¥åº“æ”¯æŒå½•éŸ³å›æ”¾ï¼Œå½•åˆ¶æµè¡Œçš„å£°éŸ³å’Œè§†é¢‘æ ¼å¼æ–‡ä»¶ï¼Œä»¥åŠé™æ€å›¾åƒæ–‡ä»¶ï¼Œè¿™äº›æ–‡ä»¶æ ¼å¼åŒ…æ‹¬MPEG4,H.264,MP3,AAC,AMR,JPG,å’ŒPNG.
+ *    ç•Œé¢ç®¡ç†(Surface Manager) -- ç®¡ç†å¯¹æ˜¾ç¤ºå­ç³»ç»Ÿçš„è®¿é—®ï¼Œå¹¶ä¸”æ— ç¼åˆæˆä¸åŒçš„åº”ç”¨ç¨‹åºä¸­çš„2Då’Œ3Då›¾åƒå±‚
+ *    LibWebCord â€“ ä¸€ä¸ªæµè¡Œçš„ç½‘é¡µæµè§ˆå™¨å¼•æ“ï¼Œå¢å¼ºAndroidæµè§ˆå™¨å’ŒåµŒå…¥å¼ç½‘é¡µæµè§ˆçš„èƒ½åŠ›
+ *    SGL â€“ åº•å±‚çš„2D å›¾åƒå¼•æ“
+ *    3D åº“ â€“ ä¸€ä¸ªåŸºäºOpenGL ES 1.0 APIsçš„ç‰ˆæœ¬ï¼Œè¿™ä¸ªåº“æ—¢å¯ä»¥ä½¿ç”¨ç¡¬ä»¶3DåŠ é€Ÿï¼ˆç¡¬ä»¶æ”¯æŒï¼‰æˆ–è€…å†…ç½®çš„ï¼Œé«˜åº¦ä¼˜åŒ–çš„3Dè½¯åŠ é€Ÿ
+ *    å­—ä½“ç±»å‹(FreeType) -- ä½å›¾(bitmap)æˆ–è€…çŸ¢é‡(vector)å­—ä½“
+ *    SQLite â€“ ä¸€ä¸ªå¼ºå¤§çš„è½»é‡çº§å…³ç³»æ•°æ®åº“å¼•æ“ï¼Œå…è®¸æ‰€æœ‰çš„åº”ç”¨ç¨‹åºä½¿ç”¨
+ *    å…¶ä»–(?): è“ç‰™(Bluetooth), EDGE, 3G, WiFi(ä¾èµ–äºç¡¬ä»¶)ï¼Œç…§ç›¸æœº, GPS, æŒ‡å—é’ˆ, åŠ é€Ÿåº¦è®¡
  *    
 **************************************************************************************************************************************/
 
@@ -87,11 +87,11 @@ public class LanguageTester  extends AndroidTestCase{
 	{
 		double dValue = Double.parseDouble("1.05");
 		assertEquals(dValue, 1.05, 0.001);
-		//½«Double½øĞĞËÄÉáÎåÈë
+		//å°†Doubleè¿›è¡Œå››èˆäº”å…¥
 		//NumberFormat formatter = new DecimalFormat("0.00");
 	    //String s=formatter.format(num);
 		
-		//assertEquals(FloatMath.sqrt(100), 10.0);  //Æ½·½¸ù
+		//assertEquals(FloatMath.sqrt(100), 10.0);  //å¹³æ–¹æ ¹
 	}
 	
 	public void testTemplate(){

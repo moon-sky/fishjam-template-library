@@ -2,83 +2,83 @@ package com.fishjam.android.study;
 import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
- * ×¢Òâ£º
- *   1. id="@+id/MyTextView01" -- Ç°ÃæµÄ¼ÓºÅ"+"±íÊ¾Ö±½Ó·ÖÅä±êÊ¶·û(Ã»ÓĞ×¨ÃÅµÄ×ÊÔ´ÎÄ¼ş)£¬Ö»ÓÃÓÚ id£¬ÆäËûµØ·½ÒıÓÃÊ±Ê¹ÓÃ "@id/xxx" µÄ·½Ê½
+ * æ³¨æ„ï¼š
+ *   1. id="@+id/MyTextView01" -- å‰é¢çš„åŠ å·"+"è¡¨ç¤ºç›´æ¥åˆ†é…æ ‡è¯†ç¬¦(æ²¡æœ‰ä¸“é—¨çš„èµ„æºæ–‡ä»¶)ï¼Œåªç”¨äº idï¼Œå…¶ä»–åœ°æ–¹å¼•ç”¨æ—¶ä½¿ç”¨ "@id/xxx" çš„æ–¹å¼
  *
- * ×ÊÔ´¹ÜÀíÆ÷(ResourceManager)--Ìá¹©·ÃÎÊ·Ç´úÂë×ÊÔ´£¬Èç±¾µØ»¯×Ö·û´®£¬Í¼Ïñ£¬²¼¾ÖÎÄ¼şµÄÄÜÁ¦¡£
- *   Ê¹ÓÃ×ÊÔ´(resouces -- ÆäÖĞÓĞ attr/drawable/id/layout/string/style µÈ¶àÖÖ)
+ * èµ„æºç®¡ç†å™¨(ResourceManager)--æä¾›è®¿é—®éä»£ç èµ„æºï¼Œå¦‚æœ¬åœ°åŒ–å­—ç¬¦ä¸²ï¼Œå›¾åƒï¼Œå¸ƒå±€æ–‡ä»¶çš„èƒ½åŠ›ã€‚
+ *   ä½¿ç”¨èµ„æº(resouces -- å…¶ä¸­æœ‰ attr/drawable/id/layout/string/style ç­‰å¤šç§)
  *     Resources resources = getBaseContext().getResources();
  *     Drawable HippoDrawable = resources.getDrawable(R.drawable.white);
- *     mTextView01.setBackgroundDrawable(HippoDrawable); //ÉèÖÃ±³¾°É«
- *   Ê¹ÓÃ×ÊÔ´Ê±£¬ÓĞÈıÖÖÒıÓÃĞÎÊ½£º
+ *     mTextView01.setBackgroundDrawable(HippoDrawable); //è®¾ç½®èƒŒæ™¯è‰²
+ *   ä½¿ç”¨èµ„æºæ—¶ï¼Œæœ‰ä¸‰ç§å¼•ç”¨å½¢å¼ï¼š
  *     android:xxx/yyy,
- *     android:@xxxx/yyy  -- Èç @string/hello, @drawable/white
+ *     android:@xxxx/yyy  -- å¦‚ @string/hello, @drawable/white
  *     android:?xxx
  *       @+id/myPassword
  *   
 **************************************************************************************************************************************/
 /**************************************************************************************************************************************
- * AndroidÌá¹©ÁË»ùÓÚXMLµÄ½çÃæ¹¹½¨·½Ê½£¬½«½çÃæºÍÓ¦ÓÃ³ÌĞòÂß¼­·ÖÀë.xmlÎÄ¼ş·ÅÔÚ res(´æ·ÅËùÓĞ·Ç´úÂë×ÊÔ´ -- Í¼Æ¬¡¢±¾µØ»¯×Ö·û´®¡¢XML²¼¾ÖÎÄ¼şµÈ)Ä¿Â¼ÏÂ¡£
- *   Ê¹ÓÃÃûÎª"R.java"µÄÎÄ¼şÀ´¶¨ÒåËùÓĞ×ÊÔ´µÄË÷Òı£¬×Ô¶¯Éú³É£¬²»Òª¸ü¸Ä¡£
- *   ÆäÖĞ·ÖÎª attr(ÊôĞÔ, declare-styleable), drawable(Í¼Æ¬×ÊÔ´)¡¢layout(Ò³Ãæ²¼¾Ö)¡¢stringµÈ¶à¸ö¾²Ì¬ÄÚ²¿Àà, public final class R { xxxx }£¬
- *   ´úÂëÖĞÒıÓÃ×ÊÔ´Ê±£º R.×ÊÔ´ÀàĞÍ.×ÊÔ´Ãû³Æ
+ * Androidæä¾›äº†åŸºäºXMLçš„ç•Œé¢æ„å»ºæ–¹å¼ï¼Œå°†ç•Œé¢å’Œåº”ç”¨ç¨‹åºé€»è¾‘åˆ†ç¦».xmlæ–‡ä»¶æ”¾åœ¨ res(å­˜æ”¾æ‰€æœ‰éä»£ç èµ„æº -- å›¾ç‰‡ã€æœ¬åœ°åŒ–å­—ç¬¦ä¸²ã€XMLå¸ƒå±€æ–‡ä»¶ç­‰)ç›®å½•ä¸‹ã€‚
+ *   ä½¿ç”¨åä¸º"R.java"çš„æ–‡ä»¶æ¥å®šä¹‰æ‰€æœ‰èµ„æºçš„ç´¢å¼•ï¼Œè‡ªåŠ¨ç”Ÿæˆï¼Œä¸è¦æ›´æ”¹ã€‚
+ *   å…¶ä¸­åˆ†ä¸º attr(å±æ€§, declare-styleable), drawable(å›¾ç‰‡èµ„æº)ã€layout(é¡µé¢å¸ƒå±€)ã€stringç­‰å¤šä¸ªé™æ€å†…éƒ¨ç±», public final class R { xxxx }ï¼Œ
+ *   ä»£ç ä¸­å¼•ç”¨èµ„æºæ—¶ï¼š R.èµ„æºç±»å‹.èµ„æºåç§°
  *   
- *   ? layout Ê±µÄË³Ğò£º£¿  setFrame -> layout [ onLayout ]-> 
+ *   ? layout æ—¶çš„é¡ºåºï¼šï¼Ÿ  setFrame -> layout [ onLayout ]-> 
  *   
- * ÏµÍ³Ìá¹©µÄ×ÊÔ´£º android.R.×ÊÔ´ÀàĞÍ.×ÊÔ´Ãû³Æ, Èç android.R.anim.fade_in(ÏµÍ³Ô¤¶¨Òå¶¯»­); android.R.string.cancel(ÏµÍ³Ô¤¶¨ÒåµÄ×Ö·û´® -- ¿É×Ô¶¯Ö§³Ö¶àÓïÑÔ?)
+ * ç³»ç»Ÿæä¾›çš„èµ„æºï¼š android.R.èµ„æºç±»å‹.èµ„æºåç§°, å¦‚ android.R.anim.fade_in(ç³»ç»Ÿé¢„å®šä¹‰åŠ¨ç”»); android.R.string.cancel(ç³»ç»Ÿé¢„å®šä¹‰çš„å­—ç¬¦ä¸² -- å¯è‡ªåŠ¨æ”¯æŒå¤šè¯­è¨€?)
  *   Context.getString()/
- *   ×ÊÔ´ÎÄ¼şÖĞÒıÓÃÊ±£º "@×ÊÔ´ÀàĞÍ.×ÊÔ´Ãû³Æ"
+ *   èµ„æºæ–‡ä»¶ä¸­å¼•ç”¨æ—¶ï¼š "@èµ„æºç±»å‹.èµ„æºåç§°"
  *   
- * ´Ó×ÊÔ´ÖĞ¼ÓÔØ×Ö·û´®
- *   CharSequence str_2 = getString(R.string.str_2);  »ò String str = getString(R.string.str_2).toString();
- *   ×Ö·û´®×ÊÔ´¿ÉÒÔÍ¨¹ı array/ item µÄ·½Ê½´´½¨×Ö·û´®Êı×é£¬È»ºóÔÚ AlertDialogÖĞÍ¨¹ı setItems(R.array.items_irdc_dialog, ...) À´Ê¹ÓÃ
- *   »òÕßÍ¨¹ı getResources().getStringArray(R.array.items_irdc_dialog) ·µ»Ø String[] ¡£
- *   Ê¾Àı£º <array name="items_irdc_dialog"><item>ÖĞ²Í</item><item>ÈÕÊ½»ğ¹ø</item><item>°ÍÎ÷ÉÕ¿¾</item></array>
+ * ä»èµ„æºä¸­åŠ è½½å­—ç¬¦ä¸²
+ *   CharSequence str_2 = getString(R.string.str_2);  æˆ– String str = getString(R.string.str_2).toString();
+ *   å­—ç¬¦ä¸²èµ„æºå¯ä»¥é€šè¿‡ array/ item çš„æ–¹å¼åˆ›å»ºå­—ç¬¦ä¸²æ•°ç»„ï¼Œç„¶ååœ¨ AlertDialogä¸­é€šè¿‡ setItems(R.array.items_irdc_dialog, ...) æ¥ä½¿ç”¨
+ *   æˆ–è€…é€šè¿‡ getResources().getStringArray(R.array.items_irdc_dialog) è¿”å› String[] ã€‚
+ *   ç¤ºä¾‹ï¼š <array name="items_irdc_dialog"><item>ä¸­é¤</item><item>æ—¥å¼ç«é”…</item><item>å·´è¥¿çƒ§çƒ¤</item></array>
  *   
- * ×Ö·û´®Êı×é
+ * å­—ç¬¦ä¸²æ•°ç»„
  *   <resources> <string-array name="books"> <item>xxxx</item></string-array></resources>
  *   
- * ÑÕÉ«( #Alpha-Red-Green-Blue ¸ñÊ½), Èç£º #RGB, #ARGB, #RRGGBB, #AARRGGBB£¬ ´úÂëÖĞ»ñµÃÑÕÉ«·½·¨£ºResources.getColor
- *   ¶¨ÒåÃûÎªcolor.xmlµÄÎÄ¼ş,·ÅÔÚvaluesÄ¿Â¼ÏÂ,È»ºó¿ÉÒÔmain.xmlÖĞÊ¹ÓÃ:Èç android:background="@drawable/white" 
- *      <resources>  //ÔÚ graphics.Color ÖĞ¶¨ÒåÁËÄ¬ÈÏµÄÑÕÉ«³£Êı
+ * é¢œè‰²( #Alpha-Red-Green-Blue æ ¼å¼), å¦‚ï¼š #RGB, #ARGB, #RRGGBB, #AARRGGBBï¼Œ ä»£ç ä¸­è·å¾—é¢œè‰²æ–¹æ³•ï¼šResources.getColor
+ *   å®šä¹‰åä¸ºcolor.xmlçš„æ–‡ä»¶,æ”¾åœ¨valuesç›®å½•ä¸‹,ç„¶åå¯ä»¥main.xmlä¸­ä½¿ç”¨:å¦‚ android:background="@drawable/white" 
+ *      <resources>  //åœ¨ graphics.Color ä¸­å®šä¹‰äº†é»˜è®¤çš„é¢œè‰²å¸¸æ•°
  *        <drawable name="darkgray">#808080FF</drawable>
  *        <drawable name="white">#FFFFFFFF</drawable>
  *      </resources>
  *
- * ¶¯»­ -- ArrayAdapter<String> ºÏ×÷ ? 
+ * åŠ¨ç”» -- ArrayAdapter<String> åˆä½œ ? 
  *   ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, countriesStr);
- *   adapter.setDropDownViewResource(R.layout.myspinner_dropdown);  //myspinner_dropdownÎª×Ô¶¨ÒåÏÂÀ­²Ëµ¥Ä£Ê½¶¨ÒåÔÚres/layoutÄ¿Â¼ÏÂ
- *   mySpinner.setAdapter(adapter);		//½«ArrayAdapterÌí¼ÓSpinner¶ÔÏóÖĞ
+ *   adapter.setDropDownViewResource(R.layout.myspinner_dropdown);  //myspinner_dropdownä¸ºè‡ªå®šä¹‰ä¸‹æ‹‰èœå•æ¨¡å¼å®šä¹‰åœ¨res/layoutç›®å½•ä¸‹
+ *   mySpinner.setAdapter(adapter);		//å°†ArrayAdapteræ·»åŠ Spinnerå¯¹è±¡ä¸­
  * 
- * Ê¹ÓÃ×ÖÌå
- *   1.ÔÚassetsÄ¿Â¼ÖĞ´´½¨ fonts ×ÓÄ¿Â¼,¼ÓÈë .ttf ÎÄ¼ş;
- *   2.ÒıÓÃ android.graphics.Typeface;
- *   3.Í¨¹ı creatFromAsset ´´½¨Typeface¶ÔÏó
+ * ä½¿ç”¨å­—ä½“
+ *   1.åœ¨assetsç›®å½•ä¸­åˆ›å»º fonts å­ç›®å½•,åŠ å…¥ .ttf æ–‡ä»¶;
+ *   2.å¼•ç”¨ android.graphics.Typeface;
+ *   3.é€šè¿‡ creatFromAsset åˆ›å»ºTypefaceå¯¹è±¡
  *      m_Text.setTypeface(Typeface.createFromAsset(getAssets(),"fonts/HandmadeTypewriter.ttf"));
  *  
- * ²Ëµ¥ -- Ñ¡Ïî²Ëµ¥(OptionMenu)¡¢ÉÏÏÂÎÄ²Ëµ¥(ContextMenu -- ³¤Ê±¼ä°´¼ü²»·ÅÊ±)¡¢×Ó²Ëµ¥(SubMenu)
+ * èœå• -- é€‰é¡¹èœå•(OptionMenu)ã€ä¸Šä¸‹æ–‡èœå•(ContextMenu -- é•¿æ—¶é—´æŒ‰é”®ä¸æ”¾æ—¶)ã€å­èœå•(SubMenu)
  *   MenuInflater --
- *   ÏµÍ³²Ëµ¥ -- ÖØÔØ Activity µÄ ÌØ¶¨º¯Êı
- *      onCreate { mi = new MenuInflater(this); »ò getMenuInflater(); } 
+ *   ç³»ç»Ÿèœå• -- é‡è½½ Activity çš„ ç‰¹å®šå‡½æ•°
+ *      onCreate { mi = new MenuInflater(this); æˆ– getMenuInflater(); } 
  *      onCreateOptionsMenu(Menu menu){ mi.inflate(R.menu.test_menu, menu); return true; } 
- *        »òÍ¨¹ı menu.add/addSubMenu µÈ·½·¨¶¯Ì¬Ìí¼Ó
+ *        æˆ–é€šè¿‡ menu.add/addSubMenu ç­‰æ–¹æ³•åŠ¨æ€æ·»åŠ 
  *      onOptionsItemSelected(MenuItem item){ switch(item.getItemId()) { case R.id.about:  xxxx; break; } return true; }
- *    ÉÏÏÂÎÄ²Ëµ¥ -- ÖØÔØ onCreateContextMenu/onContextItemSelected,  È»ºóµ÷ÓÃ registerForContextMenu(xxx) ÎªÖ¸¶¨ÊÓÍ¼×¢²á
+ *    ä¸Šä¸‹æ–‡èœå• -- é‡è½½ onCreateContextMenu/onContextItemSelected,  ç„¶åè°ƒç”¨ registerForContextMenu(xxx) ä¸ºæŒ‡å®šè§†å›¾æ³¨å†Œ
  *    
  *      
- * Ê¹ÓÃ³ß´ç -- µ¥Î»(dimens)
+ * ä½¿ç”¨å°ºå¯¸ -- å•ä½(dimens)
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * XML -- Í¨¹ı getResources().getXml() »ñµÃ XmlResourceParser ¶ÔÏóÊµÀı±íÊ¾XMLÔ­Ê¼ÎÄ¼ş
+ * XML -- é€šè¿‡ getResources().getXml() è·å¾— XmlResourceParser å¯¹è±¡å®ä¾‹è¡¨ç¤ºXMLåŸå§‹æ–‡ä»¶
  *   import org.xmlpull.v1.XmlPullParser;
  *   XmlResourceParser xrp = getResources().getXml(R.xml.testXmlFile);
- *   while(xrp.getEventType() != XmlResourceParser.END_DOCUMENT) { 	//Î´µ½ÎÄ¼şÎ²Ôò¼ÌĞøÑ­»·
- *     if(xrp.getEventType() == XmlResourceParser.START_TAG) { 	//Èç¹ûÊÇ¿ªÊ¼±êÇ©  
- *       String name = xrp.getName(); 	//»ñÈ¡±êÇ©Ãû
- *       xrp.getAttributeValue(nIndex); 	//»ñÈ¡Ö¸¶¨Ë÷ÒıÎ»ÖÃµÄÊôĞÔÖµ,¸üºÃµÄ·½·¨ÊÇ¸ù¾İÊôĞÔÃû»ñÈ¡Öµ
+ *   while(xrp.getEventType() != XmlResourceParser.END_DOCUMENT) { 	//æœªåˆ°æ–‡ä»¶å°¾åˆ™ç»§ç»­å¾ªç¯
+ *     if(xrp.getEventType() == XmlResourceParser.START_TAG) { 	//å¦‚æœæ˜¯å¼€å§‹æ ‡ç­¾  
+ *       String name = xrp.getName(); 	//è·å–æ ‡ç­¾å
+ *       xrp.getAttributeValue(nIndex); 	//è·å–æŒ‡å®šç´¢å¼•ä½ç½®çš„å±æ€§å€¼,æ›´å¥½çš„æ–¹æ³•æ˜¯æ ¹æ®å±æ€§åè·å–å€¼
  *     }
- *     xrp.next();  //»ñÈ¡ÏÂÒ»Ìõ¼ÇÂ¼
+ *     xrp.next();  //è·å–ä¸‹ä¸€æ¡è®°å½•
  *   }
 **************************************************************************************************************************************/
 public class ResourceTester  extends AndroidTestCase {

@@ -2,97 +2,99 @@ package com.fishjam.android.study;
 import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
- * aapt.exe(Android Asset Packaging Tool) -- ×ÊÔ´(ÒôÊÓÆµ¡¢Í¼Æ¬¡¢xmlÅäÖÃµÈ)´ò°ü¹¤¾ß? (¾É: ¿ÉÒÔ»ñÈ¡log£¬°²×°Ó¦ÓÃ³ÌĞò£¬¸´ÖÆÎÄ¼şµÈµÈ)
- *    ×ÓÃüÁî:
- *       a -- add, ÏòÑ¹Ëõ°üÖĞÌí¼ÓÖ¸¶¨ÎÄ¼ş
- *       d --dump µ¼³öAPK°üÄÚµÄÖ¸¶¨ÄÚÈİ
- *       l -- list, ÁĞ³ö×ÊÔ´Ñ¹Ëõ°üÄÚµÄÄÚÈİ
- *       p -- package,´ò°üÉú³É×ÊÔ´Ñ¹ËõÎÄ¼ş
- *       v -- version, ´òÓ¡aaptµÄ°æ±¾ 
- *    Èç£ºaapt p -A "¸½¼ş×ÊÔ´Â·¾¶Èçassets" -S "×ÊÔ´Â·¾¶Èçres" -M AndroidManifest.xml -I "¶îÍâµÄ°üÈç android-9\android.jar" 
- *       -F \bin\resources.ap_ -- ½«¹¤³ÌÏÂµÄ assets×ÓÄ¿Â¼¡¢res×ÓÄ¿Â¼¡¢AndroidManifest.xml µÈ×ÊÔ´´ò°üÎª \bin\resources.ap_ Ñ¹ËõÎÄ¼ş
- * activityCreator.py -- Ò»¸öPython½Å±¾£¬ÓÃÓÚÎªÏîÄ¿´´½¨ËùÓĞµÄÔ´´úÂëºÍÄ¿Â¼µÄ±àÒë»·¾³(¼´²úÉú¿ÉÓÃÓÚant±àÒëµÄbuild.xml)
- *    activityCreator.py --out HelloAndroid com.google.android.hello.HelloAndroid  -- ²úÉú build.xml
- * adb.exe(Android Debug Bridge) -- Ìá¹©Ò»¸ö¼òµ¥µÄshell»·¾³,¿ÉÒÔµÇÂ¼µ½ÊÖ»ú/Ä£ÄâÆ÷ÉÏ½øĞĞ¸÷ÖÖÃüÁîĞĞ²Ù×÷£¬¾ÍÏñÔÚÒ»Ì¨LinuxµçÄÔÀïÒ»Ñù¡£
- *  ¿ÉÒÔ°²×°Ò»¸öARM°æµÄbusybox,Ê¹ÓÃÆğÀ´¸ü¼Ó·½±ã
- *    adb bugreport -- ²é¿´Bug±¨¸æ
- *    adb devices -- È¡µÃµ±Ç°ÔËĞĞµÄÄ£ÄâÆ÷¡¢Éè±¸µÄÊµÀıÁĞ±í¼°Ã¿¸öÊµÀıµÄ×´Ì¬
- *    adb forward tcp:5555 tcp:8000 -- ÉèÖÃ·¢²¼¶Ë¿Ú£¬×öÎªÖ÷»úÏòÄ£ÄâÆ÷»òÉè±¸µÄÇëÇó¶Ë¿Ú
- *    adb install [-r] [-s] myapp.apk -- ÔÚCMD»·¾³ÏÂ½«Ó¦ÓÃ³ÌĞò°²×°µ½Ä£ÄâÆ÷ /data/app Ä¿Â¼ÏÂ£¬°²×°Ç°ĞèÒªÏÈ¸´ÖÆµ½Éè±¸ÉÏ¡£
- *      ¿ÉÒÔÔÚ²»ÍË³öÄ£ÄâÆ÷µÄÇé¿öÏÂÍ¨¹ı°²×°¡¢É¾³ıµÄ·½Ê½½øĞĞµ÷ÊÔ¡£
- *      -r -- ÖØĞÂ°²×°¸ÃAPK°ü; -s -- ½«APK°ü°²×°µ½SDK¿¨ÉÏ(Ä¬ÈÏ°²×°µ½ÄÚ²¿´æ´¢Æ÷ÉÏ)
- *    adb logcat --  ¿ÉÒÔ²é¿´ÏµÍ³log£¬ÓÃÓÚµ÷ÊÔ¡£
- *    adb pull /android/lib/libwebcore.os .\ -- ´ÓÉè±¸»òÄ£ÄâÆ÷ÉÏ¸´ÖÆÒ»¸öÎÄ¼ş»òÄ¿Â¼µ½µ±Ç°Ä¿Â¼
- *    adb push D:/test.txt /sdcard/test.txt -- ¸´ÖÆÒ»¸öÎÄ¼ş»òÄ¿Â¼µ½Éè±¸»òÄ£ÄâÆ÷ÉÏ
- *    adb shell -- ½øÈëshell½»»¥Ä£Ê½£¬¿ÉÒÔÊ¹ÓÃ ls¡¢cd¡¢rm¡¢dmsg µÈ¼òµ¥ÃüÁî£»»¹¿ÉÒÔÊ¹ÓÃ sqlite3 ÃüÁî·ÃÎÊÊı¾İ¿â
- *    adb uninstall [-k] <°üÃû> -- ´ÓÏµÍ³ÖĞÉ¾³ıÖ¸¶¨Èí¼ş°ü¡£ -k ±íÊ¾Ö»É¾³ı¸ÃÓ¦ÓÃ³ÌĞò£¬µ«±£ÁôÆäÊ¹ÓÃµÄÊı¾İºÍ»º´æÄ¿Â¼
- * android.bat -- Ö±½ÓÔËĞĞ»áÆô¶¯Android SDK¹ÜÀíÆ÷(TODO: ¹Ù·½ÓĞ°ïÖú?)
- *   list [avd|target]-- ÁĞ³ö»úÆ÷ÉÏËùÓĞÒÑ¾­°²×°µÄ AVDÉè±¸ ºÍ|»ò Android°æ±¾
- *   create|move|delete avd  -- ´´½¨|ÒÆ¶¯»òÖØÃüÃû|É¾³ı Ò»¸öAVDÉè±¸
- *   create|update project -- ´´½¨|¸üĞÂ  Ò»¸öĞÂµÄAndroidÏîÄ¿£¬»áÌá¹©AntÉú³ÉÎÄ¼ş(build.xml)£¬È»ºó¿ÉÍ¨¹ıAntÀ´Éú³É¡¢°²×°ÏîÄ¿¡£
- *   create|update test-project -- ´´½¨|¸üĞÂ  Ò»¸öĞÂµÄAndroid²âÊÔÏîÄ¿   
- * ant.bat -- Ê¹ÓÃAnt±àÒë£¬»áÔÚbinÄ¿Â¼ÏÂÉú³É HelloAndroid.apk °üÎÄ¼ş£¬È»ºó¿ÉÒÔÓÃ adb °²×°½øÄ£ÄâÆ÷¡£
- *   build.xml ÖĞ°üº¬µÄ target: clean,debug,release,test,install,uninstall
- * apkbuilder.bat -- ½«dx¹¤¾ßÖÆ×÷µÄ.dex ºÍ apptÃüÁîÖÆ×÷µÄ×ÊÔ´ÎÄ¼ş ´ò°ü³É .apk ÎÄ¼ş
- * AVD(Android Virtual Device) -- AndroidĞéÄâÉè±¸£¬ÊÇÄ£ÄâÆ÷µÄÅäÖÃ£¬ÈÃÓÃ»§¿ÉÒÔ¸üºÃµØÄ£ÄâÕæÊµÉè±¸¡£
- *    °üº¬:Ó²¼şÅäÖÃ(ÈçÊÇ·ñÓĞÕÕÏà»ú¡¢¼üÅÌÀàĞÍ¡¢ÄÚ´æ´óĞ¡µÈ)¡¢°æ±¾Ñ¡Ôñ¡¢Éè±¸µÄÆÁÄ»³ß´ç¡¢SD¿¨´óĞ¡µÈ¡£
- *    ´´½¨µÄÅäÖÃÎÄ¼ş±£´æÔÚ%ANDROID_SDK_HOME%»·¾³±äÁ¿ÖĞ(ÈçÎŞÔòÊÇ%HOMEPATH%? ÖĞ)µÄ .android\avd Ä¿Â¼ÏÂ
- *    ÔÊĞíDPad¼ü£º´ò¿ª .android\avd\xxxx.avd\config.ini ÎÄ¼ş£¬½« hw.dPad=no ¸ÄÎª hw.dPad=yes
- * Dalvik VM -- AndroidÖĞµÄĞéÄâ»ú»úÖÆ£¬ºÍJava VMÀàËÆ£¬µ«²»¼æÈİ¡£×¨ÃÅÎªÒÆ¶¯Éè±¸×öÁËÓÅ»¯(»ùÓÚ¼Ä´æÆ÷µÄ)£¬Ïà¶ÔJavaĞéÄâ»úËÙ¶È¿ìºÜ¶à,Ö´ĞĞ.dexµÄDalvik¿ÉÖ´ĞĞÎÄ¼ş
- * ddms.bat(Dalvik Debug Monitor Service) -- Dalvik µ÷ÊÔ¼à¿Ø·şÎñ¡£Ö÷Òª¶ÔÏµÍ³ÔËĞĞºóÌ¨ÈÕÖ¾¡¢ÏµÍ³Ïß³Ì¡¢ĞéÄâ»ú×´Ì¬µÈµÄ¼à¿Ø? »¹¿ÉÄ£Äâ·¢ËÍ¶ÌĞÅ¡¢²¦´òµç»°¡¢·¢ËÍGPSÎ»ÖÃĞÅÏ¢µÈ¡£
- *     (¾É: ÊÖ»ú/Ä£ÄâÆ÷µÄÆÁÄ»½ØÍ¼»òlog)
- * dmtracedump -- ´ÓtraceÎÄ¼şÖĞÉú³Éº¯Êıµ÷ÓÃÍ¼(ËÆºõÊÇ¸öÊ§°ÜµÄ¹¤¾ß£¿Ìæ»»¹¤¾ß£ºhttp://blog.csdn.net/zjujoe/article/details/6080738)
- * draw9patch.bat-- ÖÆ×÷9PatchÍ¼Æ¬µÄ¹¤¾ß£¬http://blog.csdn.net/xiaominghimi/article/details/6107837
- * dx.bat -- ½«Java±àÒëºóµÄÀàÎÄ¼ş(.class×Ö½ÚÂëÎÄ¼ş)×ª»»³ÉDalvikĞéÄâ»ú¿ÉÖ´ĞĞµÄ.dex(Dalvik Executable Format)ÎÄ¼ş
- *      dx --dex [--dump-to=<Ä¿µÄ.dexÎÄ¼ş>] [--core-library <file>.class | f<file>.{zip,jar,apk} | <directory> ]
- *      Èç: dx --dex --dump-to=D:\MyAndroid\testProject.dex --core-library D:\MyAndroid\Bin
- * emulator.exe Ä£ÄâÆ÷Èí¼ş£¬¼¸ºõÌá¹©ÁË´ó¶àÊıÎïÀíÓ²¼şÉè±¸µÄÌØĞÔ£¬µ«²»ÄÜ ½Ó´òµç»°¡¢ÅÄÕÕ µÈ
- *    -avd <AVDÃû> -- ÔËĞĞÖ¸¶¨Ãû×ÖµÄAVDÉè±¸
- *    -data <¾µÏñÎÄ¼şÂ·¾¶> -- Ö±½ÓÊ¹ÓÃÖ¸¶¨¾µÏñÎÄ¼şÀ´ÔËĞĞAVD
- *    -wipe-data  -- °ÑÄ£ÄâÆ÷µÄÉèÖÃ»Ö¸´µ½³õÊ¼×´Ì¬
- *    -sdcard sdcard.img -- ¼ÓÔØSD¿¨µÄ¾µÏñÎÄ¼ş
- * jarsigner.exe -- ¶ÔÎ´Ç©ÃûµÄAPK°²×°°ü½øĞĞÇ©Ãû£¬»áÒÔ½»»¥·½Ê½ÈÃÓÃ»§ÊäÈëÃÜÂë(ÄÜ·ñ×Ô¶¯»¯?)
- *   -verbose -- Ö¸¶¨Éú³ÉÏêÏ¸Êä³ö
- *   -keystore -- Ö¸¶¨Êı×ÖÖ¤ÊéµÄ´æ´¢Â·¾¶
- *   -signedjar <Ç©ÃûºóµÄAPK°ü> <Î´Ç©ÃûµÄAPK°ü> <Êı×ÖÖ¤ÊéµÄ±ğÃû> -- 
- *    Ç©Ãû: jarsigner -verbose -keystore Ö¤ÊéÎÄ¼ş(Èçfishjam.keystore) -signedjar HelloWorld_Signed.apk HelloWorld.apk ±ğÃû(Èçfishjam)
- * keytool -- Êı×ÖÖ¤Êé¹¤¾ß
- *   -genkeypair -- Ö¸¶¨Éú³ÉÊı×ÖÖ¤Êé
- *   -alias -- Ö¸¶¨Éú³ÉÊı×ÖÖ¤ÊéµÄ±ğÃû
- *   -keyalg -- Ö¸¶¨Éú³ÉÖ¤ÊéµÄËã·¨£¬Èç RSA
- *   -validity -- Ö¸¶¨ÓĞĞ§ÆÚ
- *   -keystore -- Ö¸¶¨Ö¤ÊéÎÄ¼şµÄ´æ´¢Â·¾¶
- *    Éú³ÉÖ¤Êé: keytool -genkeypair -alias ±ğÃû(Èçfishjam) -keyalg RSA -validity 400 -keystore ÎÄ¼şÂ·¾¶(Èç fishjam.keystore) -- Ö´ĞĞºóÏòµ¼Ä£Ê½ÊäÈë¹«Ë¾µÈĞÅÏ¢
- * logcat  -- Debug ¹¤¾ß£¬ÏÔÊ¾ android.util.Log µÄÈÕÖ¾Êä³ö¡£
- *   abd shell ½øÈë½»»¥ºó£¬Í¨¹ı logcat ÃüÁîÖ´ĞĞ¡£³£ÓÃ²ÎÊı£º
- *     -s -- ÉèÖÃÄ¬ÈÏµÄ¹ıÂË¼¶±ğ¼°¹ıÂËĞÅÏ¢£¬Èç -s "Module1:i"  -- ÏÔÊ¾TagÎª "Module1" ÖĞ´óÓÚµÈÓÚI(nfo)µÄĞÅÏ¢
- *     -b -- ´ò¿ª²»Í¬µÄlog buffer(Î»ÓÚ /dev/log/ Ä¿Â¼ÏÂ£¬ÓĞÈı¸ö£ºmain¡¢radio¡¢events)
- *     -c -- Çå³ıÒÑÓĞµÄlogĞÅÏ¢¡£Èç£º#logcat -cb events #logcat -b events
- *     -d -- ÔÚÆÁÄ»ÉÏÏÔÊ¾logĞÅÏ¢£¬²¢ÔÚĞÅÏ¢½áÊøºóÍË³ö¡£
- *     -f -- ½«logĞÅÏ¢×÷ÎªÎÄ¼ş±£´æÆğÀ´£¬¿ÉÒÔ½«logĞÅÏ¢½ÏÎª³¤¾ÃµÄ±£´æÔÚÊÖ»úÉè±¸ÖĞ¡£
- *       # mount -o remount,rw rootfs /      -- ½«ÎÄ¼şÏµÍ³¸ÄÎª¿É¶ÁĞ´
- *       # logcat -b events -f /tmp/events   --  ½«events bufferÖĞµÄlogĞÅÏ¢´æÈë tmpÎÄ¼ş¼ĞÏÂµÄeventsÎÄ¼şÖĞ
- *     -g -- ²é¿´Èı¸ölog buffer µÄ´óĞ¡
- *     -n -- ÉèÖÃÈÕÖ¾µÄ×î´óÊıÄ¿<count>£¬Ä¬ÈÏÊÇ4¡£ºÍ -f ÃüÁîÅäÌ×Ê¹ÓÃ
- *     -r  -- Ã¿ <kbytes>Ê±Êä³öÈÕÖ¾£¬Ä¬ÈÏÖµÎª16¡£ºÍ -f ÃüÁîÅäÌ×Ê¹ÓÃ
- *     -v -- ÉèÖÃlogµÄÊä³ö¸ñÊ½¡£brief(Ä¬ÈÏ)¡¢process¡¢tag¡¢thread¡¢raw¡¢time¡¢long
- *            TODO: log¼¶±ğ£º V(erbose) ¡¢D(ebug)¡¢I(nfo)¡¢W(arning)¡¢E(rror)¡¢F(atal)¡¢S(ilent) 
- * mksdcard.exe -- ´´½¨sd¿¨Ó°ÏñÎÄ¼ş
- *   mksdcard.exe [-l "Label"] <´óĞ¡Èç512M> <Â·¾¶£¬Èç E:\Android_SDK\sdcard.img>
- * monitor.bat -- Android Debug Monitor,ÓÃÓÚµ÷ÊÔ¼à¿Ø(´úÌæddms.bat)
- * traceview.bat -- ÓÃÓÚ¶ÔAndroidµÄÓ¦ÓÃ³ÌĞòÒÔ¼°Framework²ãµÄ´úÂë½øĞĞĞÔÄÜ·ÖÎö¡£
- *   1.ĞŞ¸Ä´úÂë£¬ÔÚĞèÒªµ÷ÊÔµÄÆğÊ¼Î»ÖÃ¼ÓÈëµ÷ÊÔº¯Êı( Debug.startMethodTracing/stopMethodTracing )
- *   2.ÔËĞĞ³ÌĞò£¬»áÔÚSDµÄ¸ùÄ¿Â¼ÏÂ²úÉú*.traceÎÄ¼şÀ´±£´æÔËĞĞÊ±µÄÊı¾İ£¬
- *   3.½«*.trace¿½±´µ½PCÉÏ£¬È»ºó traceview.bat xxxx.trace ÎÄ¼ş½øĞĞ·ÖÎö(TODO: Â·¾¶±ØĞëÓÃ¾ø¶ÔÂ·¾¶£¿)
- * zipalign.exe -- µµ°¸ÕûÀí¹¤¾ß£¬¿ÉÓÃÓÚÓÅ»¯APK°²×°°ü,´Ó¶øÌáÉıAndroidÓ¦ÓÃÓëÏµÍ³Ö®¼äµÄ½»»¥Ğ§ÂÊºÍÔËĞĞËÙ¶È
- *   -f -- Ö¸¶¨Ç¿ÖÆ¸²¸ÇÒÑÓĞµÄÎÄ¼ş
- *   -v -- Ö¸¶¨Éú³ÉÏêÏ¸Êä³ö
- *   4 -- Ö¸¶¨µµ°¸ÕûÀíËù»ùÓÚµÄ×Ö½ÚÊı£¬Í¨³£Ö¸¶¨Îª4(¼´»ùÓÚ32Î»½øĞĞÕûÀí)
+ * aapt.exe(Android Asset Packaging Tool) -- èµ„æº(éŸ³è§†é¢‘ã€å›¾ç‰‡ã€xmlé…ç½®ç­‰)æ‰“åŒ…å·¥å…·? (æ—§: å¯ä»¥è·å–logï¼Œå®‰è£…åº”ç”¨ç¨‹åºï¼Œå¤åˆ¶æ–‡ä»¶ç­‰ç­‰)
+ *    å­å‘½ä»¤:
+ *       a -- add, å‘å‹ç¼©åŒ…ä¸­æ·»åŠ æŒ‡å®šæ–‡ä»¶
+ *       d --dump å¯¼å‡ºAPKåŒ…å†…çš„æŒ‡å®šå†…å®¹
+ *       l -- list, åˆ—å‡ºèµ„æºå‹ç¼©åŒ…å†…çš„å†…å®¹
+ *       p -- package,æ‰“åŒ…ç”Ÿæˆèµ„æºå‹ç¼©æ–‡ä»¶
+ *       v -- version, æ‰“å°aaptçš„ç‰ˆæœ¬ 
+ *    å¦‚ï¼šaapt p -A "é™„ä»¶èµ„æºè·¯å¾„å¦‚assets" -S "èµ„æºè·¯å¾„å¦‚res" -M AndroidManifest.xml -I "é¢å¤–çš„åŒ…å¦‚ android-9\android.jar" 
+ *       -F \bin\resources.ap_ -- å°†å·¥ç¨‹ä¸‹çš„ assetså­ç›®å½•ã€reså­ç›®å½•ã€AndroidManifest.xml ç­‰èµ„æºæ‰“åŒ…ä¸º \bin\resources.ap_ å‹ç¼©æ–‡ä»¶
+ * activityCreator.py -- ä¸€ä¸ªPythonè„šæœ¬ï¼Œç”¨äºä¸ºé¡¹ç›®åˆ›å»ºæ‰€æœ‰çš„æºä»£ç å’Œç›®å½•çš„ç¼–è¯‘ç¯å¢ƒ(å³äº§ç”Ÿå¯ç”¨äºantç¼–è¯‘çš„build.xml)
+ *    activityCreator.py --out HelloAndroid com.google.android.hello.HelloAndroid  -- äº§ç”Ÿ build.xml
+ * adb.exe(Android Debug Bridge) -- æä¾›ä¸€ä¸ªç®€å•çš„shellç¯å¢ƒ,å¯ä»¥ç™»å½•åˆ°æ‰‹æœº/æ¨¡æ‹Ÿå™¨ä¸Šè¿›è¡Œå„ç§å‘½ä»¤è¡Œæ“ä½œï¼Œå°±åƒåœ¨ä¸€å°Linuxç”µè„‘é‡Œä¸€æ ·ã€‚
+ *  å¯ä»¥å®‰è£…ä¸€ä¸ªARMç‰ˆçš„busybox,ä½¿ç”¨èµ·æ¥æ›´åŠ æ–¹ä¾¿
+ *    adb bugreport -- æŸ¥çœ‹BugæŠ¥å‘Š
+ *    adb devices -- å–å¾—å½“å‰è¿è¡Œçš„æ¨¡æ‹Ÿå™¨ã€è®¾å¤‡çš„å®ä¾‹åˆ—è¡¨åŠæ¯ä¸ªå®ä¾‹çš„çŠ¶æ€
+ *    adb forward tcp:5555 tcp:8000 -- è®¾ç½®å‘å¸ƒç«¯å£ï¼Œåšä¸ºä¸»æœºå‘æ¨¡æ‹Ÿå™¨æˆ–è®¾å¤‡çš„è¯·æ±‚ç«¯å£
+ *    adb install [-r] [-s] myapp.apk -- åœ¨CMDç¯å¢ƒä¸‹å°†åº”ç”¨ç¨‹åºå®‰è£…åˆ°æ¨¡æ‹Ÿå™¨ /data/app ç›®å½•ä¸‹ï¼Œå®‰è£…å‰éœ€è¦å…ˆå¤åˆ¶åˆ°è®¾å¤‡ä¸Šã€‚
+ *      å¯ä»¥åœ¨ä¸é€€å‡ºæ¨¡æ‹Ÿå™¨çš„æƒ…å†µä¸‹é€šè¿‡å®‰è£…ã€åˆ é™¤çš„æ–¹å¼è¿›è¡Œè°ƒè¯•ã€‚
+ *      -r -- é‡æ–°å®‰è£…è¯¥APKåŒ…; -s -- å°†APKåŒ…å®‰è£…åˆ°SDKå¡ä¸Š(é»˜è®¤å®‰è£…åˆ°å†…éƒ¨å­˜å‚¨å™¨ä¸Š)
+ *    adb logcat --  å¯ä»¥æŸ¥çœ‹ç³»ç»Ÿlogï¼Œç”¨äºè°ƒè¯•ã€‚
+ *    adb pull /android/lib/libwebcore.os .\ -- ä»è®¾å¤‡æˆ–æ¨¡æ‹Ÿå™¨ä¸Šå¤åˆ¶ä¸€ä¸ªæ–‡ä»¶æˆ–ç›®å½•åˆ°å½“å‰ç›®å½•
+ *    adb push D:/test.txt /sdcard/test.txt -- å¤åˆ¶ä¸€ä¸ªæ–‡ä»¶æˆ–ç›®å½•åˆ°è®¾å¤‡æˆ–æ¨¡æ‹Ÿå™¨ä¸Š
+ *    adb remount -- TODO: åŠ è½½æŒ‡å®šè®¾å¤‡ï¼Œå¯ä»¥è§£å†³ adb shell å rm ç­‰çš„æƒé™é—®é¢˜? å¦‚ rm /system/app/Launcher.apk
+ *    adb shell -- è¿›å…¥shelläº¤äº’æ¨¡å¼(ä¼šè¿›å…¥è®¾å¤‡çš„æ ¹ç›®å½• / ?)ï¼Œå¯ä»¥ä½¿ç”¨ lsã€cdã€rmã€dmsg ç­‰ç®€å•å‘½ä»¤ï¼›è¿˜å¯ä»¥ä½¿ç”¨ sqlite3 å‘½ä»¤è®¿é—®æ•°æ®åº“
+ *    adb uninstall [-k] <åŒ…å> -- ä»ç³»ç»Ÿä¸­åˆ é™¤æŒ‡å®šè½¯ä»¶åŒ…ã€‚ -k è¡¨ç¤ºåªåˆ é™¤è¯¥åº”ç”¨ç¨‹åºï¼Œä½†ä¿ç•™å…¶ä½¿ç”¨çš„æ•°æ®å’Œç¼“å­˜ç›®å½•
+ * android.bat -- ç›´æ¥è¿è¡Œä¼šå¯åŠ¨Android SDKç®¡ç†å™¨(TODO: å®˜æ–¹æœ‰å¸®åŠ©?)
+ *   list [avds|targets]-- åˆ—å‡ºæœºå™¨ä¸Šæ‰€æœ‰å·²ç»å®‰è£…çš„ AVDè®¾å¤‡ å’Œ|æˆ– Androidç‰ˆæœ¬
+ *   create|move|delete avd  -- åˆ›å»º|ç§»åŠ¨æˆ–é‡å‘½å|åˆ é™¤ ä¸€ä¸ªAVDè®¾å¤‡
+ *     --name Android20 --target 5 <== create æ—¶çš„å‚æ•°
+ *   create|update project -- åˆ›å»º|æ›´æ–°  ä¸€ä¸ªæ–°çš„Androidé¡¹ç›®ï¼Œä¼šæä¾›Antç”Ÿæˆæ–‡ä»¶(build.xml)ï¼Œç„¶åå¯é€šè¿‡Antæ¥ç”Ÿæˆã€å®‰è£…é¡¹ç›®ã€‚
+ *   create|update test-project -- åˆ›å»º|æ›´æ–°  ä¸€ä¸ªæ–°çš„Androidæµ‹è¯•é¡¹ç›®   
+ * ant.bat -- ä½¿ç”¨Antç¼–è¯‘ï¼Œä¼šåœ¨binç›®å½•ä¸‹ç”Ÿæˆ HelloAndroid.apk åŒ…æ–‡ä»¶ï¼Œç„¶åå¯ä»¥ç”¨ adb å®‰è£…è¿›æ¨¡æ‹Ÿå™¨ã€‚
+ *   build.xml ä¸­åŒ…å«çš„ target: clean,debug,release,test,install,uninstall
+ * apkbuilder.bat -- å°†dxå·¥å…·åˆ¶ä½œçš„.dex å’Œ apptå‘½ä»¤åˆ¶ä½œçš„èµ„æºæ–‡ä»¶ æ‰“åŒ…æˆ .apk æ–‡ä»¶
+ * AVD(Android Virtual Device) -- Androidè™šæ‹Ÿè®¾å¤‡ï¼Œæ˜¯æ¨¡æ‹Ÿå™¨çš„é…ç½®ï¼Œè®©ç”¨æˆ·å¯ä»¥æ›´å¥½åœ°æ¨¡æ‹ŸçœŸå®è®¾å¤‡ã€‚
+ *    åŒ…å«:ç¡¬ä»¶é…ç½®(å¦‚æ˜¯å¦æœ‰ç…§ç›¸æœºã€é”®ç›˜ç±»å‹ã€å†…å­˜å¤§å°ç­‰)ã€ç‰ˆæœ¬é€‰æ‹©ã€è®¾å¤‡çš„å±å¹•å°ºå¯¸ã€SDå¡å¤§å°ç­‰ã€‚
+ *    åˆ›å»ºçš„é…ç½®æ–‡ä»¶ä¿å­˜åœ¨%ANDROID_SDK_HOME%ç¯å¢ƒå˜é‡ä¸­(å¦‚æ— åˆ™æ˜¯%HOMEPATH%? ä¸­)çš„ .android\avd ç›®å½•ä¸‹
+ *    å…è®¸DPadé”®ï¼šæ‰“å¼€ .android\avd\xxxx.avd\config.ini æ–‡ä»¶ï¼Œå°† hw.dPad=no æ”¹ä¸º hw.dPad=yes
+ * Dalvik VM -- Androidä¸­çš„è™šæ‹Ÿæœºæœºåˆ¶ï¼Œå’ŒJava VMç±»ä¼¼ï¼Œä½†ä¸å…¼å®¹ã€‚ä¸“é—¨ä¸ºç§»åŠ¨è®¾å¤‡åšäº†ä¼˜åŒ–(åŸºäºå¯„å­˜å™¨çš„)ï¼Œç›¸å¯¹Javaè™šæ‹Ÿæœºé€Ÿåº¦å¿«å¾ˆå¤š,æ‰§è¡Œ.dexçš„Dalvikå¯æ‰§è¡Œæ–‡ä»¶
+ * ddms.bat(Dalvik Debug Monitor Service) -- Dalvik è°ƒè¯•ç›‘æ§æœåŠ¡ã€‚ä¸»è¦å¯¹ç³»ç»Ÿè¿è¡Œåå°æ—¥å¿—ã€ç³»ç»Ÿçº¿ç¨‹ã€è™šæ‹ŸæœºçŠ¶æ€ç­‰çš„ç›‘æ§? è¿˜å¯æ¨¡æ‹Ÿå‘é€çŸ­ä¿¡ã€æ‹¨æ‰“ç”µè¯ã€å‘é€GPSä½ç½®ä¿¡æ¯ç­‰ã€‚
+ *     (æ—§: æ‰‹æœº/æ¨¡æ‹Ÿå™¨çš„å±å¹•æˆªå›¾æˆ–log)
+ * dmtracedump -- ä»traceæ–‡ä»¶ä¸­ç”Ÿæˆå‡½æ•°è°ƒç”¨å›¾(ä¼¼ä¹æ˜¯ä¸ªå¤±è´¥çš„å·¥å…·ï¼Ÿæ›¿æ¢å·¥å…·ï¼šhttp://blog.csdn.net/zjujoe/article/details/6080738)
+ * draw9patch.bat-- åˆ¶ä½œ9Patchå›¾ç‰‡çš„å·¥å…·ï¼Œhttp://blog.csdn.net/xiaominghimi/article/details/6107837
+ * dx.bat -- å°†Javaç¼–è¯‘åçš„ç±»æ–‡ä»¶(.classå­—èŠ‚ç æ–‡ä»¶)è½¬æ¢æˆDalvikè™šæ‹Ÿæœºå¯æ‰§è¡Œçš„.dex(Dalvik Executable Format)æ–‡ä»¶
+ *      dx --dex [--dump-to=<ç›®çš„.dexæ–‡ä»¶>] [--core-library <file>.class | f<file>.{zip,jar,apk} | <directory> ]
+ *      å¦‚: dx --dex --dump-to=D:\MyAndroid\testProject.dex --core-library D:\MyAndroid\Bin
+ * emulator.exe æ¨¡æ‹Ÿå™¨è½¯ä»¶ï¼Œå‡ ä¹æä¾›äº†å¤§å¤šæ•°ç‰©ç†ç¡¬ä»¶è®¾å¤‡çš„ç‰¹æ€§ï¼Œä½†ä¸èƒ½ æ¥æ‰“ç”µè¯ã€æ‹ç…§ ç­‰
+ *    -avd <AVDå> -- è¿è¡ŒæŒ‡å®šåå­—çš„AVDè®¾å¤‡
+ *    -data <é•œåƒæ–‡ä»¶è·¯å¾„> -- ç›´æ¥ä½¿ç”¨æŒ‡å®šé•œåƒæ–‡ä»¶æ¥è¿è¡ŒAVD
+ *    -wipe-data  -- æŠŠæ¨¡æ‹Ÿå™¨çš„è®¾ç½®æ¢å¤åˆ°åˆå§‹çŠ¶æ€
+ *    -sdcard sdcard.img -- åŠ è½½SDå¡çš„é•œåƒæ–‡ä»¶
+ * jarsigner.exe -- å¯¹æœªç­¾åçš„APKå®‰è£…åŒ…è¿›è¡Œç­¾åï¼Œä¼šä»¥äº¤äº’æ–¹å¼è®©ç”¨æˆ·è¾“å…¥å¯†ç (èƒ½å¦è‡ªåŠ¨åŒ–?)
+ *   -verbose -- æŒ‡å®šç”Ÿæˆè¯¦ç»†è¾“å‡º
+ *   -keystore -- æŒ‡å®šæ•°å­—è¯ä¹¦çš„å­˜å‚¨è·¯å¾„
+ *   -signedjar <ç­¾ååçš„APKåŒ…> <æœªç­¾åçš„APKåŒ…> <æ•°å­—è¯ä¹¦çš„åˆ«å> -- 
+ *    ç­¾å: jarsigner -verbose -keystore è¯ä¹¦æ–‡ä»¶(å¦‚fishjam.keystore) -signedjar HelloWorld_Signed.apk HelloWorld.apk åˆ«å(å¦‚fishjam)
+ * keytool -- æ•°å­—è¯ä¹¦å·¥å…·
+ *   -genkeypair -- æŒ‡å®šç”Ÿæˆæ•°å­—è¯ä¹¦
+ *   -alias -- æŒ‡å®šç”Ÿæˆæ•°å­—è¯ä¹¦çš„åˆ«å
+ *   -keyalg -- æŒ‡å®šç”Ÿæˆè¯ä¹¦çš„ç®—æ³•ï¼Œå¦‚ RSA
+ *   -validity -- æŒ‡å®šæœ‰æ•ˆæœŸ
+ *   -keystore -- æŒ‡å®šè¯ä¹¦æ–‡ä»¶çš„å­˜å‚¨è·¯å¾„
+ *    ç”Ÿæˆè¯ä¹¦: keytool -genkeypair -alias åˆ«å(å¦‚fishjam) -keyalg RSA -validity 400 -keystore æ–‡ä»¶è·¯å¾„(å¦‚ fishjam.keystore) -- æ‰§è¡Œåå‘å¯¼æ¨¡å¼è¾“å…¥å…¬å¸ç­‰ä¿¡æ¯
+ * logcat  -- Debug å·¥å…·ï¼Œæ˜¾ç¤º android.util.Log çš„æ—¥å¿—è¾“å‡ºã€‚
+ *   abd shell è¿›å…¥äº¤äº’åï¼Œé€šè¿‡ logcat å‘½ä»¤æ‰§è¡Œã€‚å¸¸ç”¨å‚æ•°ï¼š
+ *     -s -- è®¾ç½®é»˜è®¤çš„è¿‡æ»¤çº§åˆ«åŠè¿‡æ»¤ä¿¡æ¯ï¼Œå¦‚ -s "Module1:i"  -- æ˜¾ç¤ºTagä¸º "Module1" ä¸­å¤§äºç­‰äºI(nfo)çš„ä¿¡æ¯
+ *     -b -- æ‰“å¼€ä¸åŒçš„log buffer(ä½äº /dev/log/ ç›®å½•ä¸‹ï¼Œæœ‰ä¸‰ä¸ªï¼šmainã€radioã€events)
+ *     -c -- æ¸…é™¤å·²æœ‰çš„logä¿¡æ¯ã€‚å¦‚ï¼š#logcat -cb events #logcat -b events
+ *     -d -- åœ¨å±å¹•ä¸Šæ˜¾ç¤ºlogä¿¡æ¯ï¼Œå¹¶åœ¨ä¿¡æ¯ç»“æŸåé€€å‡ºã€‚
+ *     -f -- å°†logä¿¡æ¯ä½œä¸ºæ–‡ä»¶ä¿å­˜èµ·æ¥ï¼Œå¯ä»¥å°†logä¿¡æ¯è¾ƒä¸ºé•¿ä¹…çš„ä¿å­˜åœ¨æ‰‹æœºè®¾å¤‡ä¸­ã€‚
+ *       # mount -o remount,rw rootfs /      -- å°†æ–‡ä»¶ç³»ç»Ÿæ”¹ä¸ºå¯è¯»å†™
+ *       # logcat -b events -f /tmp/events   --  å°†events bufferä¸­çš„logä¿¡æ¯å­˜å…¥ tmpæ–‡ä»¶å¤¹ä¸‹çš„eventsæ–‡ä»¶ä¸­
+ *     -g -- æŸ¥çœ‹ä¸‰ä¸ªlog buffer çš„å¤§å°
+ *     -n -- è®¾ç½®æ—¥å¿—çš„æœ€å¤§æ•°ç›®<count>ï¼Œé»˜è®¤æ˜¯4ã€‚å’Œ -f å‘½ä»¤é…å¥—ä½¿ç”¨
+ *     -r  -- æ¯ <kbytes>æ—¶è¾“å‡ºæ—¥å¿—ï¼Œé»˜è®¤å€¼ä¸º16ã€‚å’Œ -f å‘½ä»¤é…å¥—ä½¿ç”¨
+ *     -v -- è®¾ç½®logçš„è¾“å‡ºæ ¼å¼ã€‚brief(é»˜è®¤)ã€processã€tagã€threadã€rawã€timeã€long
+ *            TODO: logçº§åˆ«ï¼š V(erbose) ã€D(ebug)ã€I(nfo)ã€W(arning)ã€E(rror)ã€F(atal)ã€S(ilent) 
+ * mksdcard.exe -- åˆ›å»ºsdå¡é•œåƒæ–‡ä»¶
+ *   mksdcard.exe [-l "Label"] <å¤§å°å¦‚512M> <è·¯å¾„ï¼Œå¦‚ E:\Android_SDK\sdcard.img>
+ * monitor.bat -- Android Debug Monitor,ç”¨äºè°ƒè¯•ç›‘æ§(ä»£æ›¿ddms.bat)
+ * traceview.bat -- ç”¨äºå¯¹Androidçš„åº”ç”¨ç¨‹åºä»¥åŠFrameworkå±‚çš„ä»£ç è¿›è¡Œæ€§èƒ½åˆ†æã€‚
+ *   1.ä¿®æ”¹ä»£ç ï¼Œåœ¨éœ€è¦è°ƒè¯•çš„èµ·å§‹ä½ç½®åŠ å…¥è°ƒè¯•å‡½æ•°( Debug.startMethodTracing/stopMethodTracing )
+ *   2.è¿è¡Œç¨‹åºï¼Œä¼šåœ¨SDçš„æ ¹ç›®å½•ä¸‹äº§ç”Ÿ*.traceæ–‡ä»¶æ¥ä¿å­˜è¿è¡Œæ—¶çš„æ•°æ®ï¼Œ
+ *   3.å°†*.traceæ‹·è´åˆ°PCä¸Šï¼Œç„¶å traceview.bat xxxx.trace æ–‡ä»¶è¿›è¡Œåˆ†æ(TODO: è·¯å¾„å¿…é¡»ç”¨ç»å¯¹è·¯å¾„ï¼Ÿ)
+ * zipalign.exe -- æ¡£æ¡ˆæ•´ç†å·¥å…·ï¼Œå¯ç”¨äºä¼˜åŒ–APKå®‰è£…åŒ…,ä»è€Œæå‡Androidåº”ç”¨ä¸ç³»ç»Ÿä¹‹é—´çš„äº¤äº’æ•ˆç‡å’Œè¿è¡Œé€Ÿåº¦
+ *   -f -- æŒ‡å®šå¼ºåˆ¶è¦†ç›–å·²æœ‰çš„æ–‡ä»¶
+ *   -v -- æŒ‡å®šç”Ÿæˆè¯¦ç»†è¾“å‡º
+ *   4 -- æŒ‡å®šæ¡£æ¡ˆæ•´ç†æ‰€åŸºäºçš„å­—èŠ‚æ•°ï¼Œé€šå¸¸æŒ‡å®šä¸º4(å³åŸºäº32ä½è¿›è¡Œæ•´ç†)
  *   zipalign.exe -f -v 4 HelloWorld_Signed.apk HelloWorld_Signed_zip.apk
  * 
- * Ëæ»ú²âÊÔ £º adb shell monkey -p com.fishjam.android.study  -v 500  -- Ê¹ÓÃÈ±Ê¡ÅäÖÃ£¬ÏëÓ¦ÓÃ·¢ËÍ500¸öËæ»úÊÂ¼ş(°üÀ¨°´¼ü¡¢touchÊÂ¼ş¡¢ÏµÍ³ÊÂ¼şµÈ)
- * ²é¿´Ó¦ÓÃÄÚ´æÕ¼ÓÃÇé¿ö£º
- *   1.Ê¹ÓÃEclipse²å¼şMAT
+ * éšæœºæµ‹è¯• ï¼š adb shell monkey -p com.fishjam.android.study  -v 500  -- ä½¿ç”¨ç¼ºçœé…ç½®ï¼Œæƒ³åº”ç”¨å‘é€500ä¸ªéšæœºäº‹ä»¶(åŒ…æ‹¬æŒ‰é”®ã€touchäº‹ä»¶ã€ç³»ç»Ÿäº‹ä»¶ç­‰)
+ * æŸ¥çœ‹åº”ç”¨å†…å­˜å ç”¨æƒ…å†µï¼š
+ *   1.ä½¿ç”¨Eclipseæ’ä»¶MAT
  *   2.adb shell dumpsys meminfo <package_name>
  **************************************************************************************************************************************/
 

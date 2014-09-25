@@ -14,7 +14,7 @@ import android.test.AndroidTestCase;
 public class IOTester extends AndroidTestCase {
 
 	public void testFileIO(){
-		//¶ÁÐ´ÎÄ¼þµÄÊ¾Àý -- TODO: Î´Êµ²âºÍ×ÐÏ¸¿¼ÂÇ
+		//è¯»å†™æ–‡ä»¶çš„ç¤ºä¾‹ -- TODO: æœªå®žæµ‹å’Œä»”ç»†è€ƒè™‘
 		/*
 		File fileInput = new File("inputFilePath");
 		File fileOutput = new File("OutputFilePath");

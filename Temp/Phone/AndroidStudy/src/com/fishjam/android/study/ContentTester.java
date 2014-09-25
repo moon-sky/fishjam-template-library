@@ -35,64 +35,64 @@ import android.widget.SimpleAdapter;
 *     sUriMatcher.addURI(Employees.AUTHORITY, "employee/#", EMPLOYEE_ID);
 *     switch(sUriMatcher.match(uri)){ case EMPLOYEE_ID:  String noteId= uri.getPathSegments().get(1);  };
 *     
-* ÏµÍ³ÄÚÖÃÁË´óÁ¿µÄURI
+* ç³»ç»Ÿå†…ç½®äº†å¤§é‡çš„URI
 *   Contacts.People.CONTENT_URI --
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * AndroidÌá¹©ÁË¶àÖÖÊı¾İ´æÈ¡·½Ê½£º
- *   SharedPreferences -- Êı¾İ½ÏÉÙµÄÅäÖÃĞÅÏ¢µÈ£¬ Ê¹ÓÃ¼üÖµ¶ÔµÄ·½Ê½±£´æÔÚ XML ÎÄ¼şÖĞ ( /Android/data/<package>/shared_prefs/ Ä¿Â¼ÏÂ ),
- *     Ê¹ÓÃÉÏ±È½Ï·½±ã£¬µ«¹¦ÄÜ²»Ç¿£¬²»ÊÊºÏ±£´æ±È½Ï´óµÄÊı¾İ£¬±£´æµÄÎÄ¼şÖ»ÄÜÔÚÍ¬Ò»°üÄÚÊ¹ÓÃ£¬²»ÄÜÔÚ²»Í¬°üÖ®¼äÊ¹ÓÃ(Í¬Ò»¸ö³ÌĞòµÄ²»Í¬packageÒ²²»ÄÜÓÃ£¿)
- *        Ê¹ÓÃ£ºActivity.getSharedPreferences(»ñµÃÊµÀı) -> 
- *     ³ÌĞòÅäÖÃÏî
- *         1.Éú³É Preference ÀàĞÍµÄxml£¬²¢±£´æÔÚ res/xml ÏÂ£¬ÆäÖĞ¶¨Òå¸÷ÖÖPreferenceĞÅÏ¢µÈ(½«ÓÃÓÚÏÔÊ¾)£¬³£¼ûÊôĞÔÏî(key/title/summary)
- *            PreferenceScreen -- PreferenceActivityµÄ¸ùÔªËØ£¬Ö»ÓĞÒ»¸ö
- *              PreferenceCategory -- Àà±ğ·Ö×é(¿É¶à¸ö)£¬×÷Îª¸¸½Úµã£¬ÆäÏÂµÄ×Ó½ÚµãÒÔÊ÷½á¹¹Õ¹Ê¾
+ * Androidæä¾›äº†å¤šç§æ•°æ®å­˜å–æ–¹å¼ï¼š
+ *   SharedPreferences -- æ•°æ®è¾ƒå°‘çš„é…ç½®ä¿¡æ¯ç­‰ï¼Œ ä½¿ç”¨é”®å€¼å¯¹çš„æ–¹å¼ä¿å­˜åœ¨ XML æ–‡ä»¶ä¸­ ( /Android/data/<package>/shared_prefs/ ç›®å½•ä¸‹ ),
+ *     ä½¿ç”¨ä¸Šæ¯”è¾ƒæ–¹ä¾¿ï¼Œä½†åŠŸèƒ½ä¸å¼ºï¼Œä¸é€‚åˆä¿å­˜æ¯”è¾ƒå¤§çš„æ•°æ®ï¼Œä¿å­˜çš„æ–‡ä»¶åªèƒ½åœ¨åŒä¸€åŒ…å†…ä½¿ç”¨ï¼Œä¸èƒ½åœ¨ä¸åŒåŒ…ä¹‹é—´ä½¿ç”¨(åŒä¸€ä¸ªç¨‹åºçš„ä¸åŒpackageä¹Ÿä¸èƒ½ç”¨ï¼Ÿ)
+ *        ä½¿ç”¨ï¼šActivity.getSharedPreferences(è·å¾—å®ä¾‹) -> 
+ *     ç¨‹åºé…ç½®é¡¹
+ *         1.ç”Ÿæˆ Preference ç±»å‹çš„xmlï¼Œå¹¶ä¿å­˜åœ¨ res/xml ä¸‹ï¼Œå…¶ä¸­å®šä¹‰å„ç§Preferenceä¿¡æ¯ç­‰(å°†ç”¨äºæ˜¾ç¤º)ï¼Œå¸¸è§å±æ€§é¡¹(key/title/summary)
+ *            PreferenceScreen -- PreferenceActivityçš„æ ¹å…ƒç´ ï¼Œåªæœ‰ä¸€ä¸ª
+ *              PreferenceCategory -- ç±»åˆ«åˆ†ç»„(å¯å¤šä¸ª)ï¼Œä½œä¸ºçˆ¶èŠ‚ç‚¹ï¼Œå…¶ä¸‹çš„å­èŠ‚ç‚¹ä»¥æ ‘ç»“æ„å±•ç¤º
  *                CheckBoxPreference -- 
- *                EditTextPreference -- ±à¼­¿ò
- *                ListPreference -- ÁĞ±íÏî£¬¿ÉÍ¨¹ı entries/entryValues ¹ØÁªµ½ string-array ÉèÖÃµÄÊı×é×ÊÔ´ 
- *                Preference -- Ö»½øĞĞÎÄ±¾ÏÔÊ¾£¬Ò»°ãÓÃÓÚµ¯³öÌØ¶¨µÄÉèÖÃ½çÃæ£¬Èç"À¶ÑÀÉèÖÃ"¡£Í¨³£»áÍ¨¹ı dependency ÊôĞÔÀ´¹ØÁªÆäËûÏî(Èç"ÆôÓÃÀ¶ÑÀ")¿ØÖÆ±¾ÉèÖÃÊÇ·ñ¿ÉÓÃ
- *                RingtonePreference -- ÁåÉù
- *         2.´Ó PreferenceActivity ¼Ì³Ğ£¬ÔÚ onCreate ÖĞ addPreferencesFromResource(R.xml.mypreference); ÉèÖÃÒªÏÔÊ¾µÄÊôĞÔÅäÖÃÒ³Ãæ
- *         3.ÔÚ onPreferenceTreeClick ÖĞÊ¹ÓÃ SharedPreferences Í¨¹ı key½øĞĞ¶ÁĞ´
+ *                EditTextPreference -- ç¼–è¾‘æ¡†
+ *                ListPreference -- åˆ—è¡¨é¡¹ï¼Œå¯é€šè¿‡ entries/entryValues å…³è”åˆ° string-array è®¾ç½®çš„æ•°ç»„èµ„æº 
+ *                Preference -- åªè¿›è¡Œæ–‡æœ¬æ˜¾ç¤ºï¼Œä¸€èˆ¬ç”¨äºå¼¹å‡ºç‰¹å®šçš„è®¾ç½®ç•Œé¢ï¼Œå¦‚"è“ç‰™è®¾ç½®"ã€‚é€šå¸¸ä¼šé€šè¿‡ dependency å±æ€§æ¥å…³è”å…¶ä»–é¡¹(å¦‚"å¯ç”¨è“ç‰™")æ§åˆ¶æœ¬è®¾ç½®æ˜¯å¦å¯ç”¨
+ *                RingtonePreference -- é“ƒå£°
+ *         2.ä» PreferenceActivity ç»§æ‰¿ï¼Œåœ¨ onCreate ä¸­ addPreferencesFromResource(R.xml.mypreference); è®¾ç½®è¦æ˜¾ç¤ºçš„å±æ€§é…ç½®é¡µé¢
+ *         3.åœ¨ onPreferenceTreeClick ä¸­ä½¿ç”¨ SharedPreferences é€šè¿‡ keyè¿›è¡Œè¯»å†™
  *      
- *   File (Ä¬ÈÏ±£´æÔÚ /data/<package>/files ÏÂÃæ)
- *     Context.openFileInput   -- »ñµÃ±ê×¼µÄJavaÎÄ¼şÊäÈëÁ÷(FileInputStream)£¬È»ºóÑ­»·¶ÁÈ¡ 
- *     Context.openFileOutput -- »ñµÃ±ê×¼µÄJavaÎÄ¼şÊä³öÁ÷(FileOutputStream)¡£fos.write(content.getBytes()); fos.close();
- *     Resources.openRawResource -- ·µ»Ø InputStream
- *     ¿ÉÒÔÊ¹ÓÃ DataOutputStream/DataInputStream ·â×°FileÁ÷£¬¼´¿ÉÖ§³Ö¸ü¶àµÄ¶ÁĞ´²Ù×÷( Èç writeUTF(String) ).
- *   SQLite (Êı¾İÎÄ¼şÒ»°ã±£´æÔÚ /data/<package>/databases/ ÏÂ£¬´´½¨»ò´ò¿ªÊ±ĞèÒªÊ¹ÓÃÈ«Â·¾¶ )
- *     SQLiteDatabase -- Êı¾İ¿â¹ÜÀíÀà£¬¿ØÖÆ ´´½¨¡¢ÔöÉ¾¸Ä µÈ
- *     SQLiteOpenHelper -- ¸¨ÖúÀà£¬¹ÜÀíÊı¾İ¿â´´½¨ºÍ°æ±¾¸üĞÂ¡£¼Ì³ĞºóÖØÔØ onCreate/onUpgrade µÈ·½·¨£¬¿ÉÍ¨¹ı getWritableDatabase/getReadableDatabase »ñÈ¡¶ÔÓ¦µÄÊı¾İ¿â
- *     Cursor(ÓÎ±ê½Ó¿Ú£¬Ìá¹©±ãÀû²éÑ¯½á¹ûµÄ·½·¨)
- *   ÍøÂç
+ *   File (é»˜è®¤ä¿å­˜åœ¨ /data/<package>/files ä¸‹é¢)
+ *     Context.openFileInput   -- è·å¾—æ ‡å‡†çš„Javaæ–‡ä»¶è¾“å…¥æµ(FileInputStream)ï¼Œç„¶åå¾ªç¯è¯»å– 
+ *     Context.openFileOutput -- è·å¾—æ ‡å‡†çš„Javaæ–‡ä»¶è¾“å‡ºæµ(FileOutputStream)ã€‚fos.write(content.getBytes()); fos.close();
+ *     Resources.openRawResource -- è¿”å› InputStream
+ *     å¯ä»¥ä½¿ç”¨ DataOutputStream/DataInputStream å°è£…Fileæµï¼Œå³å¯æ”¯æŒæ›´å¤šçš„è¯»å†™æ“ä½œ( å¦‚ writeUTF(String) ).
+ *   SQLite (æ•°æ®æ–‡ä»¶ä¸€èˆ¬ä¿å­˜åœ¨ /data/<package>/databases/ ä¸‹ï¼Œåˆ›å»ºæˆ–æ‰“å¼€æ—¶éœ€è¦ä½¿ç”¨å…¨è·¯å¾„ )
+ *     SQLiteDatabase -- æ•°æ®åº“ç®¡ç†ç±»ï¼Œæ§åˆ¶ åˆ›å»ºã€å¢åˆ æ”¹ ç­‰
+ *     SQLiteOpenHelper -- è¾…åŠ©ç±»ï¼Œç®¡ç†æ•°æ®åº“åˆ›å»ºå’Œç‰ˆæœ¬æ›´æ–°ã€‚ç»§æ‰¿åé‡è½½ onCreate/onUpgrade ç­‰æ–¹æ³•ï¼Œå¯é€šè¿‡ getWritableDatabase/getReadableDatabase è·å–å¯¹åº”çš„æ•°æ®åº“
+ *     Cursor(æ¸¸æ ‡æ¥å£ï¼Œæä¾›ä¾¿åˆ©æŸ¥è¯¢ç»“æœçš„æ–¹æ³•)
+ *   ç½‘ç»œ
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * Êı¾İÌá¹©Õß(ContentProvider) -- ¿çÓ¦ÓÃ³ÌĞò¹²ÏíÊı¾İµÄÎ¨Ò»·½·¨£¿ ¶ÔÓ¦µÄURI±ØĞëÊÇ "content://" ¿ªÍ·µÄ¡£
- *   AndroidÖĞ¸÷¸öÓ¦ÓÃ³ÌĞò×é¼şÖ®¼äÊÇÏà»¥¶ÀÁ¢µÄ£¬±Ë´ËµÄÊı¾İ²»ÄÜ¹²Ïí(ÄÜ·ÃÎÊÆäËû³ÌĞòµÄ DB/File Âğ£¿)¡£ 
- *     ContentProvider -- ¼ìË÷ºÍ±£´æÊı¾İ£¬ÔÊĞíÒ»¸öÓ¦ÓÃ³ÌĞò·ÃÎÊÆäËûÓ¦ÓÃ³ÌĞò£¨±ÈÈçÍ¨ĞÅÂ¼£©µÄÊı¾İ£¬»òÕß¹²ÏíËü×Ô¼ºµÄÊı¾İ£¬ÆäÖĞ°üº¬ÁËÔöÉ¾¸Ä¡¢²éÑ¯µÈ²Ù×÷
- *       Èç×Ô¶¨ÒåÊ±£¬ĞèÒªÖØÔØµÄ³éÏó·½·¨: query/insert/update/delete/getType µÈ£¬È»ºóÔÚÅäÖÃÎÄ¼şÖĞÉùÃ÷¡£
- *       ÏµÍ³ÒÑ¾­Îª³£ÓÃµÄÊı¾İÀàĞÍ(ÒôÆµ¡¢ÊÓÆµ¡¢Í¼Æ¬¡¢ÁªÏµ·½Ê½µÈ)Ìá¹©ÁË´óÁ¿µÄContentProvider
- *       -- MediaStoreContentProvider -- Ôö¼Ó¶àÃ½ÌåÎÄ¼şµÄ²Ù×÷µÄ ContentProvider
- *     ContentResolver -- ¿Í»§¶Ë·ÃÎÊÊ±Ê¹ÓÃµÄÀà(Context.getContentResolver() )£¬ÆäÄÚ²¿²Ù×÷¶ÔÓ¦µÄ ContentProvider À´¶ÔÊı¾İ½øĞĞ²Ù×÷¡£ 
+ * æ•°æ®æä¾›è€…(ContentProvider) -- è·¨åº”ç”¨ç¨‹åºå…±äº«æ•°æ®çš„å”¯ä¸€æ–¹æ³•ï¼Ÿ å¯¹åº”çš„URIå¿…é¡»æ˜¯ "content://" å¼€å¤´çš„ã€‚
+ *   Androidä¸­å„ä¸ªåº”ç”¨ç¨‹åºç»„ä»¶ä¹‹é—´æ˜¯ç›¸äº’ç‹¬ç«‹çš„ï¼Œå½¼æ­¤çš„æ•°æ®ä¸èƒ½å…±äº«(èƒ½è®¿é—®å…¶ä»–ç¨‹åºçš„ DB/File å—ï¼Ÿ)ã€‚ 
+ *     ContentProvider -- æ£€ç´¢å’Œä¿å­˜æ•°æ®ï¼Œå…è®¸ä¸€ä¸ªåº”ç”¨ç¨‹åºè®¿é—®å…¶ä»–åº”ç”¨ç¨‹åºï¼ˆæ¯”å¦‚é€šä¿¡å½•ï¼‰çš„æ•°æ®ï¼Œæˆ–è€…å…±äº«å®ƒè‡ªå·±çš„æ•°æ®ï¼Œå…¶ä¸­åŒ…å«äº†å¢åˆ æ”¹ã€æŸ¥è¯¢ç­‰æ“ä½œ
+ *       å¦‚è‡ªå®šä¹‰æ—¶ï¼Œéœ€è¦é‡è½½çš„æŠ½è±¡æ–¹æ³•: query/insert/update/delete/getType ç­‰ï¼Œç„¶ååœ¨é…ç½®æ–‡ä»¶ä¸­å£°æ˜ã€‚
+ *       ç³»ç»Ÿå·²ç»ä¸ºå¸¸ç”¨çš„æ•°æ®ç±»å‹(éŸ³é¢‘ã€è§†é¢‘ã€å›¾ç‰‡ã€è”ç³»æ–¹å¼ç­‰)æä¾›äº†å¤§é‡çš„ContentProvider
+ *       -- MediaStoreContentProvider -- å¢åŠ å¤šåª’ä½“æ–‡ä»¶çš„æ“ä½œçš„ ContentProvider
+ *     ContentResolver -- å®¢æˆ·ç«¯è®¿é—®æ—¶ä½¿ç”¨çš„ç±»(Context.getContentResolver() )ï¼Œå…¶å†…éƒ¨æ“ä½œå¯¹åº”çš„ ContentProvider æ¥å¯¹æ•°æ®è¿›è¡Œæ“ä½œã€‚ 
  *     
- * Adapter -- ÊÊÅäÆ÷½Ó¿Ú
- *   BaseAdapter -- ×Ô¶¨ÒåÊÊÅäÆ÷µÄ»ùÀà£¬Ò»°ã´Ó¸ÃÀà¼Ì³Ğ£¬×÷ÎªModuleºÍViewÖ®¼äµÄÇÅÁº¡£´Ó¸ÃÀà¼Ì³Ğ¿ÉÒÔÈ¡µÃ¶ÔAdapter×î´óµÄ¿ØÖÆÈ¨£¬
- *     ÊµÏÖ getCount, getItem{return null}, getView{ return myCustomView; } µÈ·½·¨¡£¿ÉÓÃÓÚÀàËÆ Windows Virtual ListView µÄ¸ßĞÔÄÜÏÔÊ¾
- *   ArrayAdapter -- ³£ÓÃÓÚ½«Êı×é»òList¼¯ºÏµÄ¶à¸öÖµ°ü×°³É¶à¸öÁĞ±íÏî£¬¹¦ÄÜÓĞÏŞ£¬ÆäÁĞ±íÏîÖ»ÄÜÊÇTextView£¬Ò»°ãÖ»ÓÃÓÚ AutoCompleteTextView µÈÖ»ÏÔÊ¾ÎÄ±¾µÄµØ·½
- *   SimpleAdapter -- ¿ÉÓÃÓÚ½«List¼¯ºÏµÄ¶à¸ö¶ÔÏó°ü×°³É¶à¸öÁĞ±íÏî£¬¹¦ÄÜºÜÇ¿´ó
+ * Adapter -- é€‚é…å™¨æ¥å£
+ *   BaseAdapter -- è‡ªå®šä¹‰é€‚é…å™¨çš„åŸºç±»ï¼Œä¸€èˆ¬ä»è¯¥ç±»ç»§æ‰¿ï¼Œä½œä¸ºModuleå’ŒViewä¹‹é—´çš„æ¡¥æ¢ã€‚ä»è¯¥ç±»ç»§æ‰¿å¯ä»¥å–å¾—å¯¹Adapteræœ€å¤§çš„æ§åˆ¶æƒï¼Œ
+ *     å®ç° getCount, getItem{return null}, getView{ return myCustomView; } ç­‰æ–¹æ³•ã€‚å¯ç”¨äºç±»ä¼¼ Windows Virtual ListView çš„é«˜æ€§èƒ½æ˜¾ç¤º
+ *   ArrayAdapter -- å¸¸ç”¨äºå°†æ•°ç»„æˆ–Listé›†åˆçš„å¤šä¸ªå€¼åŒ…è£…æˆå¤šä¸ªåˆ—è¡¨é¡¹ï¼ŒåŠŸèƒ½æœ‰é™ï¼Œå…¶åˆ—è¡¨é¡¹åªèƒ½æ˜¯TextViewï¼Œä¸€èˆ¬åªç”¨äº AutoCompleteTextView ç­‰åªæ˜¾ç¤ºæ–‡æœ¬çš„åœ°æ–¹
+ *   SimpleAdapter -- å¯ç”¨äºå°†Listé›†åˆçš„å¤šä¸ªå¯¹è±¡åŒ…è£…æˆå¤šä¸ªåˆ—è¡¨é¡¹ï¼ŒåŠŸèƒ½å¾ˆå¼ºå¤§
 
- *   SimpleCursorAdapter -- °ü×°CursorÌá¹©µÄÊı¾İ
+ *   SimpleCursorAdapter -- åŒ…è£…Cursoræä¾›çš„æ•°æ®
  *     
- * Intent/IntentFilter -- ²»Í¬×é¼şÖ®¼äÍ¨ĞÅµÄÔØÌå
- *   ÏÔÊ½Intent -- Ã÷È·Ö¸¶¨ĞèÒªÆô¶¯»ò´¥·¢µÄ×é¼şµÄÀàÃû
- *   ÒşÊ½Intent -- Ö»ÊÇÖ¸¶¨ĞèÒªÆô¶¯»ò´¥·¢µÄ×é¼şÓ¦Âú×ãÔõÑùµÄÌõ¼ş£¬AndroidÏµÍ³½âÎö³öÌõ¼ş£¬²¢ÔÚÏµÍ³ÖĞ²éÕÒÓëÖ®Æ¥ÅäµÄÄ¿±ê×é¼ş£¬ÈçÕÒµ½ÔòÆô¶¯»ò´¥·¢¡£
+ * Intent/IntentFilter -- ä¸åŒç»„ä»¶ä¹‹é—´é€šä¿¡çš„è½½ä½“
+ *   æ˜¾å¼Intent -- æ˜ç¡®æŒ‡å®šéœ€è¦å¯åŠ¨æˆ–è§¦å‘çš„ç»„ä»¶çš„ç±»å
+ *   éšå¼Intent -- åªæ˜¯æŒ‡å®šéœ€è¦å¯åŠ¨æˆ–è§¦å‘çš„ç»„ä»¶åº”æ»¡è¶³æ€æ ·çš„æ¡ä»¶ï¼ŒAndroidç³»ç»Ÿè§£æå‡ºæ¡ä»¶ï¼Œå¹¶åœ¨ç³»ç»Ÿä¸­æŸ¥æ‰¾ä¸ä¹‹åŒ¹é…çš„ç›®æ ‡ç»„ä»¶ï¼Œå¦‚æ‰¾åˆ°åˆ™å¯åŠ¨æˆ–è§¦å‘ã€‚
  *   
- *   Æô¶¯ÀàĞÍºÍ·½Ê½
- *     Æô¶¯Activity -- Context.startActivity/startActivityForResult
- *     Æô¶¯Service -- Context.startService/bindService
- *     ·¢ËÍ¹ã²¥ -- Context.sendBroadcast, sendStickyBroadcast, sendOrderedBroadcast
+ *   å¯åŠ¨ç±»å‹å’Œæ–¹å¼
+ *     å¯åŠ¨Activity -- Context.startActivity/startActivityForResult
+ *     å¯åŠ¨Service -- Context.startService/bindService
+ *     å‘é€å¹¿æ’­ -- Context.sendBroadcast, sendStickyBroadcast, sendOrderedBroadcast
 
  **************************************************************************************************************************************/
 
@@ -186,10 +186,10 @@ public class ContentTester  extends ActivityUnitTestCase<Activity>{
 		}
 		SimpleAdapter simpleAdapter = new SimpleAdapter(
 				this.getActivity(), 
-				listItems,	//List<? extends Map<String, ?>> ÀàĞÍµÄ¼¯ºÏ¶ÔÏó£¬ÆäÖĞµÄÃ¿¸ö Map<String, ?> ¶ÔÏóÉú³ÉÒ»¸öÁĞ±íÏî 
-				android.R.layout.simple_list_item_checked, 	//Ò»¸ö½çÃæ²¼¾ÖID£¬Ã¿¸öÁĞ±íÏî¶¼°´ÕÕÕâ¸ö½øĞĞ²¼¾Ö
-				new String[]{"keyName"}, 	//String[] µÄÊı×é£¬¾ö¶¨ÌáÈ¡Map<String,?>¶ÔÏóÖĞÄÄĞ©key¶ÔÓ¦µÄvalueÀ´Éú³ÉÁĞ±íÏî
-				new int[]{android.R.id.text1}	//int[] ÀàĞÍµÄÊı×é£¬¾ö¶¨¶ÔÓ¦µÄ Key ÏÔÊ¾ÔÚ½çÃæ²¼¾ÖÖĞµÄÄÄ¸ö×é¼şÉÏ
+				listItems,	//List<? extends Map<String, ?>> ç±»å‹çš„é›†åˆå¯¹è±¡ï¼Œå…¶ä¸­çš„æ¯ä¸ª Map<String, ?> å¯¹è±¡ç”Ÿæˆä¸€ä¸ªåˆ—è¡¨é¡¹ 
+				android.R.layout.simple_list_item_checked, 	//ä¸€ä¸ªç•Œé¢å¸ƒå±€IDï¼Œæ¯ä¸ªåˆ—è¡¨é¡¹éƒ½æŒ‰ç…§è¿™ä¸ªè¿›è¡Œå¸ƒå±€
+				new String[]{"keyName"}, 	//String[] çš„æ•°ç»„ï¼Œå†³å®šæå–Map<String,?>å¯¹è±¡ä¸­å“ªäº›keyå¯¹åº”çš„valueæ¥ç”Ÿæˆåˆ—è¡¨é¡¹
+				new int[]{android.R.id.text1}	//int[] ç±»å‹çš„æ•°ç»„ï¼Œå†³å®šå¯¹åº”çš„ Key æ˜¾ç¤ºåœ¨ç•Œé¢å¸ƒå±€ä¸­çš„å“ªä¸ªç»„ä»¶ä¸Š
 		);
 		//ListView listView = (ListView)getActivity().findViewById(R.id.mylist);
 		//listView.setAdapter(simpleAdapter);
@@ -207,28 +207,28 @@ public class ContentTester  extends ActivityUnitTestCase<Activity>{
 		*********************************************************************************************************/
 	}
 	
-	//¸ù¾İÓÃ»§Ãû´ÓÁªÏµÈË¹ÜÀí³ÌĞòÖĞ²éÑ¯
+	//æ ¹æ®ç”¨æˆ·åä»è”ç³»äººç®¡ç†ç¨‹åºä¸­æŸ¥è¯¢
 	public void testQueryUserInfoByName(){
 	/********************************************************************************************************
-	//TODO: 1.Ê¹ÓÃµÄ·½Ê½ÒÑ¾­±»ÌÔÌ­£¬Ó¦¸ÃÓĞ¸üºÏÊÊµÄ·½Ê½; 2.ĞèÒªÔö¼Ó READ_CONTACTS µÄÈ¨ÏŞ
+	//TODO: 1.ä½¿ç”¨çš„æ–¹å¼å·²ç»è¢«æ·˜æ±°ï¼Œåº”è¯¥æœ‰æ›´åˆé€‚çš„æ–¹å¼; 2.éœ€è¦å¢åŠ  READ_CONTACTS çš„æƒé™
 	 
 		String name = "userName";
-		//´´½¨²éÑ¯Êı×é
+		//åˆ›å»ºæŸ¥è¯¢æ•°ç»„
 		String [] projectionStrings = new String[] { People._ID, People.NAME, People.NUMBER };
-		Uri contactsUri = People.CONTENT_URI;  //²éÑ¯Uri¶ÔÏó
-		String[] args = { name };	//²éÑ¯²ÎÊı
-		//¸ù¾İĞÕÃû²éÑ¯ÁªÏµÈË
+		Uri contactsUri = People.CONTENT_URI;  //æŸ¥è¯¢Uriå¯¹è±¡
+		String[] args = { name };	//æŸ¥è¯¢å‚æ•°
+		//æ ¹æ®å§“åæŸ¥è¯¢è”ç³»äºº
 		Cursor managedCursor = managedQuery(contactsUri, projectionStrings, "name=?", args, People.NAME, " ASC" );
 		if(managedCursor.moveToFirst()){
-			String name1 = managedCursor.getString(1); 	//»ñµÃĞÕÃû
-			String number = managedCursor.getString(2); //»ñµÃµç»°ºÅÂë
+			String name1 = managedCursor.getString(1); 	//è·å¾—å§“å
+			String number = managedCursor.getString(2); //è·å¾—ç”µè¯å·ç 
 		}
 	*******************************************************************************************************/
 	}
 	
 	public void testDialTel(){
 	/*******************************************************************************************************
-	    //ÏÔÊ¾²¦´òµç»°£¬ÈçÊ¹ÓÃ Intent.ACTION_CALL ÔòÖ±½Ó²¦´òµç»°
+	    //æ˜¾ç¤ºæ‹¨æ‰“ç”µè¯ï¼Œå¦‚ä½¿ç”¨ Intent.ACTION_CALL åˆ™ç›´æ¥æ‹¨æ‰“ç”µè¯
 		String data = "tel:15184464231";
 		Uri uri = Uri.parse(data);
 		Intent intent = new Intent();
@@ -240,26 +240,26 @@ public class ContentTester  extends ActivityUnitTestCase<Activity>{
 	
 	public void testSharedPreferences(){
 		startActivity(mStartIntent, null, null);
-		//»ñÈ¡ÊµÀı£¬²Ù×÷Ä£Ê½ÓĞ£º 
-		//   MODE_PRIVATE(ĞÂÄÚÈİ¸²¸ÇÔ­ÄÚÈİ)
-		//   MODE_APPEND(ĞÂÄÚÈİ×·¼Óµ½Ô­ÄÚÈİºó), 
-		//   MODE_WORLD_READABLE(ÔÊĞíÆäËûÓ¦ÓÃ³ÌĞò¶ÁÈ¡)
-		//   MODE_WORLD_WRITEABLE(ÔÊĞíÆäËûÓ¦ÓÃ³ÌĞòĞ´Èë£¬»á¸²¸ÇÔ­Êı¾İ)
+		//è·å–å®ä¾‹ï¼Œæ“ä½œæ¨¡å¼æœ‰ï¼š 
+		//   MODE_PRIVATE(æ–°å†…å®¹è¦†ç›–åŸå†…å®¹)
+		//   MODE_APPEND(æ–°å†…å®¹è¿½åŠ åˆ°åŸå†…å®¹å), 
+		//   MODE_WORLD_READABLE(å…è®¸å…¶ä»–åº”ç”¨ç¨‹åºè¯»å–)
+		//   MODE_WORLD_WRITEABLE(å…è®¸å…¶ä»–åº”ç”¨ç¨‹åºå†™å…¥ï¼Œä¼šè¦†ç›–åŸæ•°æ®)
 		SharedPreferences sharedPreferences = getActivity().getSharedPreferences("FileName",  Context.MODE_PRIVATE);
 		
-		//Í¨¹ıEditor½Ó¿Ú½øÈë±à¼­Ä£Ê½
+		//é€šè¿‡Editoræ¥å£è¿›å…¥ç¼–è¾‘æ¨¡å¼
 		Editor editor = sharedPreferences.edit();   
 		editor.putString("key","Value");  
-		editor.commit();  //Ìá½»ÉúĞ§
+		editor.commit();  //æäº¤ç”Ÿæ•ˆ
 		 
-		 //¶ÁÈ¡Ä£Ê½£¬¶ÁÈ¡Ö®Ç°ÉèÖÃµÄÖµ
+		 //è¯»å–æ¨¡å¼ï¼Œè¯»å–ä¹‹å‰è®¾ç½®çš„å€¼
 		String sKeyValue = sharedPreferences.getString("key", "defaultValue");
 		assertEquals(sKeyValue, "Value");
 	}
 
 	final static int MB = 1024 * 1024;
 	public void testSDCardInfo(){
-		Log.i(TAG, Environment.getExternalStorageState()); //Environment.MEDIA_MOUNTED -- ±íÊ¾ mounted 
+		Log.i(TAG, Environment.getExternalStorageState()); //Environment.MEDIA_MOUNTED -- è¡¨ç¤º mounted 
 		
 		StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
 		double sdFreeMB = ((double) stat.getAvailableBlocks()  * (double) stat.getBlockSize()) / MB;

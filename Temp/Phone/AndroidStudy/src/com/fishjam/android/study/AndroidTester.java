@@ -11,109 +11,109 @@ import android.view.LayoutInflater;
 
 
 /***************************************************************************************************************************************
- * µ¥Ôª²âÊÔ --  http://tech.ddvip.com/2012-12/1356946984188084.html
- *   Android²âÊÔÏîÄ¿Ò²ÊÇÒ»¸öAndroidÓ¦ÓÃÏîÄ¿£¬ Æä»ù±¾Ê¹ÓÃ·½·¨ºÍ¿ª·¢Ò»°ãµÄAndroidÓ¦ÓÃ·Ç³£ÀàËÆ¡£
+ * å•å…ƒæµ‹è¯• --  http://tech.ddvip.com/2012-12/1356946984188084.html
+ *   Androidæµ‹è¯•é¡¹ç›®ä¹Ÿæ˜¯ä¸€ä¸ªAndroidåº”ç”¨é¡¹ç›®ï¼Œ å…¶åŸºæœ¬ä½¿ç”¨æ–¹æ³•å’Œå¼€å‘ä¸€èˆ¬çš„Androidåº”ç”¨éå¸¸ç±»ä¼¼ã€‚
  *   
- *   Android Testing Framework -- ¿ÉÓÃÀ´²âÊÔAndroidµÄ¸÷¸ö·½Ãæ£¬µ¥Ôª²âÊÔ¡¢¿ò¼Ü²âÊÔ¡¢UI²âÊÔµÈ¡£
- *   Android JUint À©Õ¹ -- Ìá¹©ÁË¶ÔAndroidÌØ¶¨×é¼ş£¨ÈçActivity£¬Service£©µÄ²âÊÔÖ§³Ö
+ *   Android Testing Framework -- å¯ç”¨æ¥æµ‹è¯•Androidçš„å„ä¸ªæ–¹é¢ï¼Œå•å…ƒæµ‹è¯•ã€æ¡†æ¶æµ‹è¯•ã€UIæµ‹è¯•ç­‰ã€‚
+ *   Android JUint æ‰©å±• -- æä¾›äº†å¯¹Androidç‰¹å®šç»„ä»¶ï¼ˆå¦‚Activityï¼ŒServiceï¼‰çš„æµ‹è¯•æ”¯æŒ
  *   
- * ×Ô¶¯²âÊÔ
- *   SDKÌá¹©ÁËÒ»¸ömonkeyrunner(Ò»¸öpythonÓ¦ÓÃ)£¬¿ÉÒÔÄ£ÄâÓÃ»§°´¼üÊÂ¼şÀ´²âÊÔUI¡£
- *   ¿ÉÒÔ±àĞ´Python³ÌĞòÀ´°²×°Ó¦ÓÃ»ò²âÊÔ°ü¡¢ÔËĞĞ¡¢Ä£Äâ·¢ËÍ°´¼üÏûÏ¢£¬½ØÆÁµÈ¡£
- *   °ü£º
- *     MonkeyRunner -- Ìá¹©Ó¦ÓÃµÄ¸¨Öú·½·¨ÒÔ¼°ÓÃÀ´Á´½ÓÉè±¸»òÊÇÄ£ÄâÆ÷µÄ·½·¨£¬²¢Ìá¹©UIÖ§³ÖµÈ(×¢ÒâÊ± Python ÎÄ¼ş)
- *     MonkeyDevice -- ´ú±íÒ»¸öÉè±¸»òÊÇÄ£ÄâÆ÷£¬Ìá¹©°²×°£¬Ğ¶ÔØÓ¦ÓÃµÄ·½·¨£¬Æô¶¯Ò»¸öActivity£¬·¢ËÍ°´¼ü»òÊÇTouch ÊÂ¼şµÈ¡£
- *     MonkeyImage -- ´ú±íÒ»¸ö½ØÆÁÍ¼Ïñ£¬¿ÉÒÔ½ØÈ¡²»Í¬¸ñÊ½µÄÍ¼Ïñ£¬±È½ÏÁ½¸öMonkeyImageÍ¼Ïñ£¬±£´æÍ¼ÏñµÈ
- *        device = MonkeyRunner.waitForConnection() -- Á¬½Óµ½Éè±¸
- *        device.press('KEYCODE_MENU','DOWN_AND_UP')  -- Ä£Äâ°´¼ü
- *        device.takeSnapshot() -- ½ØÍ¼
+ * è‡ªåŠ¨æµ‹è¯•
+ *   SDKæä¾›äº†ä¸€ä¸ªmonkeyrunner(ä¸€ä¸ªpythonåº”ç”¨)ï¼Œå¯ä»¥æ¨¡æ‹Ÿç”¨æˆ·æŒ‰é”®äº‹ä»¶æ¥æµ‹è¯•UIã€‚
+ *   å¯ä»¥ç¼–å†™Pythonç¨‹åºæ¥å®‰è£…åº”ç”¨æˆ–æµ‹è¯•åŒ…ã€è¿è¡Œã€æ¨¡æ‹Ÿå‘é€æŒ‰é”®æ¶ˆæ¯ï¼Œæˆªå±ç­‰ã€‚
+ *   åŒ…ï¼š
+ *     MonkeyRunner -- æä¾›åº”ç”¨çš„è¾…åŠ©æ–¹æ³•ä»¥åŠç”¨æ¥é“¾æ¥è®¾å¤‡æˆ–æ˜¯æ¨¡æ‹Ÿå™¨çš„æ–¹æ³•ï¼Œå¹¶æä¾›UIæ”¯æŒç­‰(æ³¨æ„æ—¶ Python æ–‡ä»¶)
+ *     MonkeyDevice -- ä»£è¡¨ä¸€ä¸ªè®¾å¤‡æˆ–æ˜¯æ¨¡æ‹Ÿå™¨ï¼Œæä¾›å®‰è£…ï¼Œå¸è½½åº”ç”¨çš„æ–¹æ³•ï¼Œå¯åŠ¨ä¸€ä¸ªActivityï¼Œå‘é€æŒ‰é”®æˆ–æ˜¯Touch äº‹ä»¶ç­‰ã€‚
+ *     MonkeyImage -- ä»£è¡¨ä¸€ä¸ªæˆªå±å›¾åƒï¼Œå¯ä»¥æˆªå–ä¸åŒæ ¼å¼çš„å›¾åƒï¼Œæ¯”è¾ƒä¸¤ä¸ªMonkeyImageå›¾åƒï¼Œä¿å­˜å›¾åƒç­‰
+ *        device = MonkeyRunner.waitForConnection() -- è¿æ¥åˆ°è®¾å¤‡
+ *        device.press('KEYCODE_MENU','DOWN_AND_UP')  -- æ¨¡æ‹ŸæŒ‰é”®
+ *        device.takeSnapshot() -- æˆªå›¾
  *        
- *   Ëæ»ú²âÊÔ
- *      adb shell monkey -p com.fishjam.android.study  -v 500  -- Ê¹ÓÃÈ±Ê¡ÅäÖÃ£¬ÏëÓ¦ÓÃ·¢ËÍ500¸öËæ»úÊÂ¼ş(°üÀ¨°´¼ü¡¢touchÊÂ¼ş¡¢ÏµÍ³ÊÂ¼şµÈ)
- *      MonkeyÑ¡Ïî£º
- *        1.»ù±¾ÅäÖÃ -- ÈçÉèÖÃ³¢ÊÔµÄÊÂ¼şÊıÁ¿
- *        2.ÔËĞĞÔ¼Êø -- ÈçÉèÖÃÖ»¶Ôµ¥¶ÀµÄÒ»¸ö°ü½øĞĞ²âÊÔ
- *        3.ÊÂ¼şÀàĞÍºÍÆµÂÊ
- *           ¨Cthrottle <milliseconds> -- ÔÚÊÂ¼şÖ®¼ä²åÈë¹Ì¶¨ÑÓ³Ù£¬Í¨¹ı¸ÃÑ¡Ïî¿ÉÒÔ¼õ»º Monkey µÄÖ´ĞĞËÙ¶È
- *        4.µ÷ÊÔÑ¡Ïî
+ *   éšæœºæµ‹è¯•
+ *      adb shell monkey -p com.fishjam.android.study  -v 500  -- ä½¿ç”¨ç¼ºçœé…ç½®ï¼Œæƒ³åº”ç”¨å‘é€500ä¸ªéšæœºäº‹ä»¶(åŒ…æ‹¬æŒ‰é”®ã€touchäº‹ä»¶ã€ç³»ç»Ÿäº‹ä»¶ç­‰)
+ *      Monkeyé€‰é¡¹ï¼š
+ *        1.åŸºæœ¬é…ç½® -- å¦‚è®¾ç½®å°è¯•çš„äº‹ä»¶æ•°é‡
+ *        2.è¿è¡Œçº¦æŸ -- å¦‚è®¾ç½®åªå¯¹å•ç‹¬çš„ä¸€ä¸ªåŒ…è¿›è¡Œæµ‹è¯•
+ *        3.äº‹ä»¶ç±»å‹å’Œé¢‘ç‡
+ *           â€“throttle <milliseconds> -- åœ¨äº‹ä»¶ä¹‹é—´æ’å…¥å›ºå®šå»¶è¿Ÿï¼Œé€šè¿‡è¯¥é€‰é¡¹å¯ä»¥å‡ç¼“ Monkey çš„æ‰§è¡Œé€Ÿåº¦
+ *        4.è°ƒè¯•é€‰é¡¹
 ***************************************************************************************************************************************/
 
 /****************************************************************************************************************************************
- * 1.´´½¨¹¤³Ì¶ÔÓ¦µÄTest¹¤³Ì( Èç ApiDemos ¶ÔÓ¦µÄ ApiDemos.tests)
- * 2.Java Build Path-> Projects ÖĞÒıÓÃ¶ÔÓ¦µÄ´ı²âÊÔ¹¤³Ì(ÔÚTestÏîÄ¿ÖĞ¼´¿ÉÒıÓÃÆäÖĞµÄÀà)
- * 3.Ôö¼ÓÒ»¸ö AllTests.java ÎÄ¼ş£¬ÆäÄÚÈİÎª(²Î¼û ApiDemos\tests ÖĞµÄÔ´Âë) -- ËÆºõÊÇ¿ÉÑ¡µÄ£¿ÓĞÊ²Ã´ÓÃ£¿
+ * 1.åˆ›å»ºå·¥ç¨‹å¯¹åº”çš„Testå·¥ç¨‹( å¦‚ ApiDemos å¯¹åº”çš„ ApiDemos.tests)
+ * 2.Java Build Path-> Projects ä¸­å¼•ç”¨å¯¹åº”çš„å¾…æµ‹è¯•å·¥ç¨‹(åœ¨Testé¡¹ç›®ä¸­å³å¯å¼•ç”¨å…¶ä¸­çš„ç±»)
+ * 3.å¢åŠ ä¸€ä¸ª AllTests.java æ–‡ä»¶ï¼Œå…¶å†…å®¹ä¸º(å‚è§ ApiDemos\tests ä¸­çš„æºç ) -- ä¼¼ä¹æ˜¯å¯é€‰çš„ï¼Ÿæœ‰ä»€ä¹ˆç”¨ï¼Ÿ
  *   public class AllTests extends TestSuite {
  *      public static Test suite() {
- *        // Ö¸Ã÷ËùÓĞ¸Ã°üºÍÆä×Ó°üÖĞ¶¨ÒåµÄTestCase¶¼Îª×îÖÕTestSuite µÄÒ»²¿·Ö
+ *        // æŒ‡æ˜æ‰€æœ‰è¯¥åŒ…å’Œå…¶å­åŒ…ä¸­å®šä¹‰çš„TestCaseéƒ½ä¸ºæœ€ç»ˆTestSuite çš„ä¸€éƒ¨åˆ†
  *        return new TestSuiteBuilder(AllTests.class).includeAllPackagesUnderHere().build();
  *      }
  *   }
  *
  * 
- *   1.Menifest.xml ÖĞ¼ÓÈë:
- *     a.<application>ÖĞ¼ÓÈë: 
+ *   1.Menifest.xml ä¸­åŠ å…¥:
+ *     a.<application>ä¸­åŠ å…¥: 
  *       <uses-library android:name="android.test.runner" />
- *     b.<application>Íâ¼ÓÈë:
+ *     b.<application>å¤–åŠ å…¥:
  *       <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
 *        <instrumentation android:name="android.test.InstrumentationTestRunner" android:targetPackage="com.fishjam.android.study" android:label="Test for Android Study"/>
- *  2.±àĞ´µ¥Ôª²âÊÔ´úÂë£¬´Ó android.test.AndroidTestCase, ActivityUnitTestCase, ActivityInstrumentationTestCase2 µÈ¼Ì³Ğ£¬
- *     ¿ÉÖØÔØ setUp, tearDown µÈº¯Êı£¬½øĞĞ±ØÒªµÄ³õÊ¼»¯»ò×ÊÔ´ÊÍ·Å
- *  3.ÔÚ public void testXxx() throws Throwable{ } ÖĞÍ¨¹ı junit.framework.Assert µÈ½øĞĞ¶ÏÑÔÅĞ¶Ï
- *    JUnit °ÑÒÔ test ¿ªÍ·µÄ·½·¨×÷ÎªÒ»¸öÊµÀı£¬Ò²¿ÉÒÔÊ¹ÓÃ annotation @Test ±íÊ¾Ò»¸ö·½·¨Îª²âÊÔ·½·¨¡£
- *  4.ÔËĞĞ
- *    a. eclipseÖĞ -- ÓÒ¼ü Run as "Android JUnit Test"
+ *  2.ç¼–å†™å•å…ƒæµ‹è¯•ä»£ç ï¼Œä» android.test.AndroidTestCase, ActivityUnitTestCase, ActivityInstrumentationTestCase2 ç­‰ç»§æ‰¿ï¼Œ
+ *     å¯é‡è½½ setUp, tearDown ç­‰å‡½æ•°ï¼Œè¿›è¡Œå¿…è¦çš„åˆå§‹åŒ–æˆ–èµ„æºé‡Šæ”¾
+ *  3.åœ¨ public void testXxx() throws Throwable{ } ä¸­é€šè¿‡ junit.framework.Assert ç­‰è¿›è¡Œæ–­è¨€åˆ¤æ–­
+ *    JUnit æŠŠä»¥ test å¼€å¤´çš„æ–¹æ³•ä½œä¸ºä¸€ä¸ªå®ä¾‹ï¼Œä¹Ÿå¯ä»¥ä½¿ç”¨ annotation @Test è¡¨ç¤ºä¸€ä¸ªæ–¹æ³•ä¸ºæµ‹è¯•æ–¹æ³•ã€‚
+ *  4.è¿è¡Œ
+ *    a. eclipseä¸­ -- å³é”® Run as "Android JUnit Test"
  *    b. adb shell am instrument -w com.fishjam.android.study/android.test.InstrumentationTestRunner
  * 
- * Activity Testing -- ²àÖØÓÚActivityµÄ²âÊÔ£¬Ê¹ÓÃ Instrumentation ÔÚÕı³£ActivityÉúÃüÖÜÆÚÖ®ÍâÀ´¿ØÖÆActivity£¬È»ºó²âÊÔActivityµÄÌØ¶¨µÄ¹¦ÄÜ
+ * Activity Testing -- ä¾§é‡äºActivityçš„æµ‹è¯•ï¼Œä½¿ç”¨ Instrumentation åœ¨æ­£å¸¸Activityç”Ÿå‘½å‘¨æœŸä¹‹å¤–æ¥æ§åˆ¶Activityï¼Œç„¶åæµ‹è¯•Activityçš„ç‰¹å®šçš„åŠŸèƒ½
  * Content Provider Testing
  * Service Testing
  **************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * ²âÊÔÏà¹ØµÄ°üºÍÀà
- *   android.test -- ÓÃÓÚ±àĞ´Android²âÊÔÓÃÀı
- *   android.test.mock -- ¶¨ÒåÁË·½±ã²âÊÔÓÃµÄ²âÊÔ"×®"Àà, Èç MockApplication, MockContentProvider, MockContext, MockCursor µÈ 
- *   android.test.suitebuilder -- ÔËĞĞ²âÊÔÓÃÀıµÄTest RunnerÀà
+ * æµ‹è¯•ç›¸å…³çš„åŒ…å’Œç±»
+ *   android.test -- ç”¨äºç¼–å†™Androidæµ‹è¯•ç”¨ä¾‹
+ *   android.test.mock -- å®šä¹‰äº†æ–¹ä¾¿æµ‹è¯•ç”¨çš„æµ‹è¯•"æ¡©"ç±», å¦‚ MockApplication, MockContentProvider, MockContext, MockCursor ç­‰ 
+ *   android.test.suitebuilder -- è¿è¡Œæµ‹è¯•ç”¨ä¾‹çš„Test Runnerç±»
  * 
- *  Instrumentation -- Ìá¹©ÁËÒ»Ğ©"¹³×Ó"·½·¨Á¬½Óµ½Android²Ù×÷ÏµÍ³ÖĞ£¬¿É¶ÀÁ¢¿ØÖÆAndroid×é¼ş(Activity,ServiceµÈ)µÄÉúÃüÖÜÆÚ,
- *    ²¢¿ÉÒÔ¿ØÖÆAndroidÈçºÎµ÷ÓÃÒ»¸öÓ¦ÓÃ¡£Ê¹ÓÃInstrumatation APIÊ±Äã¿ÉÒÔÖ±½Óµ÷ÓÃ onCreate, onResume µÈÉú´æÆÚ ·½·¨¡£
- *    Ò²¿ÉÒÔÖ§³ÖÇ¿ÖÆÄ³¸öÓ¦ÓÃºÍÁíÒ»¸öÒÑ¾­ÔÚÔË×÷µÄÓ¦ÓÃÔËĞĞÔÚÍ¬Ò»¸ö½ø³ÌÖĞ(ÔÚ²âÊÔ´úÂëÖĞ¿ÉÒÔÖ±½Óµ÷ÓÃ±»²âÊÔÓ¦ÓÃµÄ·½·¨ºÍ·ÃÎÊÆä³ÉÔ±)£¬ÕâÔÚÍ¨³£µÄÇé¿öÏÂÊÇ²»¿ÉÄÜÊµÏÖµÄ¡£
+ *  Instrumentation -- æä¾›äº†ä¸€äº›"é’©å­"æ–¹æ³•è¿æ¥åˆ°Androidæ“ä½œç³»ç»Ÿä¸­ï¼Œå¯ç‹¬ç«‹æ§åˆ¶Androidç»„ä»¶(Activity,Serviceç­‰)çš„ç”Ÿå‘½å‘¨æœŸ,
+ *    å¹¶å¯ä»¥æ§åˆ¶Androidå¦‚ä½•è°ƒç”¨ä¸€ä¸ªåº”ç”¨ã€‚ä½¿ç”¨Instrumatation APIæ—¶ä½ å¯ä»¥ç›´æ¥è°ƒç”¨ onCreate, onResume ç­‰ç”Ÿå­˜æœŸ æ–¹æ³•ã€‚
+ *    ä¹Ÿå¯ä»¥æ”¯æŒå¼ºåˆ¶æŸä¸ªåº”ç”¨å’Œå¦ä¸€ä¸ªå·²ç»åœ¨è¿ä½œçš„åº”ç”¨è¿è¡Œåœ¨åŒä¸€ä¸ªè¿›ç¨‹ä¸­(åœ¨æµ‹è¯•ä»£ç ä¸­å¯ä»¥ç›´æ¥è°ƒç”¨è¢«æµ‹è¯•åº”ç”¨çš„æ–¹æ³•å’Œè®¿é—®å…¶æˆå‘˜)ï¼Œè¿™åœ¨é€šå¸¸çš„æƒ…å†µä¸‹æ˜¯ä¸å¯èƒ½å®ç°çš„ã€‚
  *  InstrumentationTestRunner 
  *   
- *  TestCase  -- JUnit ÖĞµÄ»ù´¡Case»ùÀà£¬¿ÉÓÃÓÚ±àĞ´Ò»Ğ©ºÍÆ½Ì¨ÎŞ¹ØµÄ²âÊÔÓÃÀı
- *   +-InstrumentationTestCase -- Ìá¹©ÁËInstrumentation½Ó¿Ú¸ø×ÓÀà£¬ÄÜÖ±½Ó¿ØÖÆActivityµÄÉúÃüÖÜÆÚ£¬ÔÊĞí´´½¨Ò»Ğ©Mock¶ÔÏóÀ´°ïÖú²âÊÔ£¬¿ÉÏòUI·¢ËÍ°´¼üºÍ´¥ÃşÊÂ¼şÀ´Ä£ÄâÓÃ»§½çÃæ½»»¥¡£
- *                                               Èç getInstrumentation().callActivityOnStart(xxx);
+ *  TestCase  -- JUnit ä¸­çš„åŸºç¡€CaseåŸºç±»ï¼Œå¯ç”¨äºç¼–å†™ä¸€äº›å’Œå¹³å°æ— å…³çš„æµ‹è¯•ç”¨ä¾‹
+ *   +-InstrumentationTestCase -- æä¾›äº†Instrumentationæ¥å£ç»™å­ç±»ï¼Œèƒ½ç›´æ¥æ§åˆ¶Activityçš„ç”Ÿå‘½å‘¨æœŸï¼Œå…è®¸åˆ›å»ºä¸€äº›Mockå¯¹è±¡æ¥å¸®åŠ©æµ‹è¯•ï¼Œå¯å‘UIå‘é€æŒ‰é”®å’Œè§¦æ‘¸äº‹ä»¶æ¥æ¨¡æ‹Ÿç”¨æˆ·ç•Œé¢äº¤äº’ã€‚
+ *                                               å¦‚ getInstrumentation().callActivityOnStart(xxx);
  *      +-ActivityTestCase
- *         +-ActivityUnitTestCase<MyActivity> -- Í¨³£ÓÃÀ´²âÊÔµ¥¶ÀActivity(ÒµÎñÂß¼­µÈ)£¬²»ÔËĞĞÔÚÒ»°ãÓ¦ÓÃÔËĞĞµÄ»·¾³ÖĞ(Ã»ÓĞUI½»»¥)Ò²²»ºÍÆäËûActivity²úÉú½»»¥¡£
- *            ÔÚÆô¶¯±»²âÊÔµÄActivityÖ®Ç°£¬Äã¿ÉÒÔInjectÒ»¸ö¼ÙµÄContext(setActivityContext)»òÊÇApplication(setApplication)
- *            getActivity() -- µ÷ÓÃ¸Ã·½·¨ºó£¬±»²âÊÔµÄActivity²Å»áÆô¶¯¡£
- *            Ê¹ÓÃ·½Ê½£º
- *               1.´ÓActivityUnitTestCase¼Ì³Ğ£¬Ö¸¶¨ActivityµÄÄ£°æ²ÎÊı; ÉèÖÃÎŞ²Î¹¹Ôì£¬ÊµÏÖÎª super(MyActivity.class);
- *               2. setUp() ÖĞ  mStartIntent = new Intent(Intent.ACTION_MAIN);
- *               3. testXxx() º¯ÊıÖĞ£¬Ò»¿ªÊ¼ĞèÒªµ÷ÓÃ startActivity(mStartIntent, null, null); È»ºó²ÅÄÜµ÷ÓÃ getActivity() »ñµÃÊµÀı£¬·ñÔò½«»á·µ»Ø null
- *               4. È»ºó¼´¿ÉÊ¹ÓÃ getActivity().findViewById(xxx) µÈ·½·¨»ñÈ¡ÆäËûµÄÔªËØ½øĞĞ²âÊÔ
- *         +-ActivityInstrumentationTestCase2 -- Í¨³£ÓÃÓÚ¶à¸öActivityµÄ¹¦ÄÜ²âÊÔ£¬Ê¹ÓÃÕı³£µÄÏµÍ³¿ò¼ÜÀ´ÔËĞĞActivity, 
- *               1.¿ÉÒÔÖ±½Ó getActivity »ñÈ¡ÊµÀı(»á×Ô¶¯´´½¨)
- *               2.¿ÉÒÔÊ¹ÓÃ a.sendKeys(xxxx); b.getActivity().runOnUiThread(new Runnable() {xxxx});  getInstrumentation().waitForIdleSync(); µÈ·½·¨½øĞĞUIÀàĞÍµÄ½»»¥£¿
- *            Ê¹ÓÃ·½Ê½£º
- *               1.ÎŞ²Î¹¹ÔìÖĞ super("packagepath", MyActivity.class>);
- *               2.setUp ÖĞ¿ÉÒÔÖ±½Ó getActivity() »ñÈ¡µ½ÊµÀı
- *      +-SingleLaunchActivityTestCase -- ÓÃÓÚ²âÊÔµ¥¸öActivity£¬µ«Ö»ÔËĞĞsetUpºÍtearDownÒ»´Î£¬¿ÉÒÔ±£Ö¤ÔËĞĞ¶à¸ö²âÊÔÖ®¼äfixture²»»á±»ÖØÖÃ
- *   +-AndroidTestCase -- Í¨³£ÓÃÓÚ±àĞ´ Android »·¾³ÏÂÍ¨ÓÃµÄ²âÊÔÓÃÀı(¿ÉÒÔÖ±½ÓÍ¨¹ı getContext() »ñÈ¡µ½·Ç¿ÕÊµÀı)£¬¿É²âÊÔpermission£¬¿ÉÒÔÊ¹ÓÃ FocusFinder
- *      ¿ÉÓÃ LayoutInflater.from(getContext()).inflate(R.layout.xxx, null) µÄ·½Ê½¼ÓÔØ×ÊÔ´²¢²âÊÔ
- *      +-ApplicationTestCase<MyApplication> -- ²âÊÔApplication¶ÔÏó¡£²âÊÔÓÃÀıµ÷ÓÃcreateApplication()ºó²Å»áÖ´ĞĞApplicationµÄonCreate·½·¨£¬¿ÉÍ¨¹ı setContext À´×¢Èë×Ô¶¨ÒåµÄMockContext¶ÔÏó
- *      +-ProviderTestCase2 -- ²âÊÔContent Provider
- *      +-ServiceTestCase -- ²âÊÔService¶ÔÏó£¬ÆäÖĞÌá¹©ÁË getService() À´È¡µÃµ±Ç°±»²âÊÔµÄ¶ÔÏó
+ *         +-ActivityUnitTestCase<MyActivity> -- é€šå¸¸ç”¨æ¥æµ‹è¯•å•ç‹¬Activity(ä¸šåŠ¡é€»è¾‘ç­‰)ï¼Œä¸è¿è¡Œåœ¨ä¸€èˆ¬åº”ç”¨è¿è¡Œçš„ç¯å¢ƒä¸­(æ²¡æœ‰UIäº¤äº’)ä¹Ÿä¸å’Œå…¶ä»–Activityäº§ç”Ÿäº¤äº’ã€‚
+ *            åœ¨å¯åŠ¨è¢«æµ‹è¯•çš„Activityä¹‹å‰ï¼Œä½ å¯ä»¥Injectä¸€ä¸ªå‡çš„Context(setActivityContext)æˆ–æ˜¯Application(setApplication)
+ *            getActivity() -- è°ƒç”¨è¯¥æ–¹æ³•åï¼Œè¢«æµ‹è¯•çš„Activityæ‰ä¼šå¯åŠ¨ã€‚
+ *            ä½¿ç”¨æ–¹å¼ï¼š
+ *               1.ä»ActivityUnitTestCaseç»§æ‰¿ï¼ŒæŒ‡å®šActivityçš„æ¨¡ç‰ˆå‚æ•°; è®¾ç½®æ— å‚æ„é€ ï¼Œå®ç°ä¸º super(MyActivity.class);
+ *               2. setUp() ä¸­  mStartIntent = new Intent(Intent.ACTION_MAIN);
+ *               3. testXxx() å‡½æ•°ä¸­ï¼Œä¸€å¼€å§‹éœ€è¦è°ƒç”¨ startActivity(mStartIntent, null, null); ç„¶åæ‰èƒ½è°ƒç”¨ getActivity() è·å¾—å®ä¾‹ï¼Œå¦åˆ™å°†ä¼šè¿”å› null
+ *               4. ç„¶åå³å¯ä½¿ç”¨ getActivity().findViewById(xxx) ç­‰æ–¹æ³•è·å–å…¶ä»–çš„å…ƒç´ è¿›è¡Œæµ‹è¯•
+ *         +-ActivityInstrumentationTestCase2 -- é€šå¸¸ç”¨äºå¤šä¸ªActivityçš„åŠŸèƒ½æµ‹è¯•ï¼Œä½¿ç”¨æ­£å¸¸çš„ç³»ç»Ÿæ¡†æ¶æ¥è¿è¡ŒActivity, 
+ *               1.å¯ä»¥ç›´æ¥ getActivity è·å–å®ä¾‹(ä¼šè‡ªåŠ¨åˆ›å»º)
+ *               2.å¯ä»¥ä½¿ç”¨ a.sendKeys(xxxx); b.getActivity().runOnUiThread(new Runnable() {xxxx});  getInstrumentation().waitForIdleSync(); ç­‰æ–¹æ³•è¿›è¡ŒUIç±»å‹çš„äº¤äº’ï¼Ÿ
+ *            ä½¿ç”¨æ–¹å¼ï¼š
+ *               1.æ— å‚æ„é€ ä¸­ super("packagepath", MyActivity.class>);
+ *               2.setUp ä¸­å¯ä»¥ç›´æ¥ getActivity() è·å–åˆ°å®ä¾‹
+ *      +-SingleLaunchActivityTestCase -- ç”¨äºæµ‹è¯•å•ä¸ªActivityï¼Œä½†åªè¿è¡ŒsetUpå’ŒtearDownä¸€æ¬¡ï¼Œå¯ä»¥ä¿è¯è¿è¡Œå¤šä¸ªæµ‹è¯•ä¹‹é—´fixtureä¸ä¼šè¢«é‡ç½®
+ *   +-AndroidTestCase -- é€šå¸¸ç”¨äºç¼–å†™ Android ç¯å¢ƒä¸‹é€šç”¨çš„æµ‹è¯•ç”¨ä¾‹(å¯ä»¥ç›´æ¥é€šè¿‡ getContext() è·å–åˆ°éç©ºå®ä¾‹)ï¼Œå¯æµ‹è¯•permissionï¼Œå¯ä»¥ä½¿ç”¨ FocusFinder
+ *      å¯ç”¨ LayoutInflater.from(getContext()).inflate(R.layout.xxx, null) çš„æ–¹å¼åŠ è½½èµ„æºå¹¶æµ‹è¯•
+ *      +-ApplicationTestCase<MyApplication> -- æµ‹è¯•Applicationå¯¹è±¡ã€‚æµ‹è¯•ç”¨ä¾‹è°ƒç”¨createApplication()åæ‰ä¼šæ‰§è¡ŒApplicationçš„onCreateæ–¹æ³•ï¼Œå¯é€šè¿‡ setContext æ¥æ³¨å…¥è‡ªå®šä¹‰çš„MockContextå¯¹è±¡
+ *      +-ProviderTestCase2 -- æµ‹è¯•Content Provider
+ *      +-ServiceTestCase -- æµ‹è¯•Serviceå¯¹è±¡ï¼Œå…¶ä¸­æä¾›äº† getService() æ¥å–å¾—å½“å‰è¢«æµ‹è¯•çš„å¯¹è±¡
  *      
- * MoreAsserts -- Ö§³Ö¸ü¶àµÄ±È½Ï·½·¨£¬Èç RegEx(ÕıÔò)±È½ÏµÈ
- * ViewAsserts -- ¿ÉÒÔÓÃÀ´Ğ£Ñé UI View
+ * MoreAsserts -- æ”¯æŒæ›´å¤šçš„æ¯”è¾ƒæ–¹æ³•ï¼Œå¦‚ RegEx(æ­£åˆ™)æ¯”è¾ƒç­‰
+ * ViewAsserts -- å¯ä»¥ç”¨æ¥æ ¡éªŒ UI View
  * 
- * ¶ÏÑÔ·½·¨
- *   assertEquals -- ÏàµÈ¶ÏÑÔ
+ * æ–­è¨€æ–¹æ³•
+ *   assertEquals -- ç›¸ç­‰æ–­è¨€
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * ±ê×¢ -- ±ê×¢²âÊÔ·½·¨£¬·ÖÀà»®·ÖÖ÷ÒªÊÇ¸ù¾İ²âÊÔ·ÃÎÊÊı¾İµÄÎ»ÖÃ£¬Èç±¾µØ£¬Êı¾İ¿â£¬SD¿¨£¬ÍøÂç£¬Ö§³Ö¶àÏß³Ì µÈ
+ * æ ‡æ³¨ -- æ ‡æ³¨æµ‹è¯•æ–¹æ³•ï¼Œåˆ†ç±»åˆ’åˆ†ä¸»è¦æ˜¯æ ¹æ®æµ‹è¯•è®¿é—®æ•°æ®çš„ä½ç½®ï¼Œå¦‚æœ¬åœ°ï¼Œæ•°æ®åº“ï¼ŒSDå¡ï¼Œç½‘ç»œï¼Œæ”¯æŒå¤šçº¿ç¨‹ ç­‰
  *   @SmallTest 
  *   @MediumTest
  *   @LargeTest 
@@ -139,12 +139,12 @@ public class AndroidTester  extends ActivityUnitTestCase<CallbackTesterActivity>
 		assertNull(getActivity()); 
 		Log.i(TAG, "Before call startActivity");
 		
-		startActivity(mStartIntent, null, null);		//start Ö®ºó getActivity ²Å²»Îªnull
+		startActivity(mStartIntent, null, null);		//start ä¹‹å getActivity æ‰ä¸ä¸ºnull
 		Activity activity1 = getActivity();
 		Activity activity2 = getActivity();
 		
 		assertNotNull(activity1 != null);
-		assertEquals("ÔÚÒ»´Î²âÊÔº¯ÊıÖĞ£¬¶à´Îµ÷ÓÃgetActivity() »á·µ»ØÍ¬Ò»ÊµÀı", activity1,  activity2);
+		assertEquals("åœ¨ä¸€æ¬¡æµ‹è¯•å‡½æ•°ä¸­ï¼Œå¤šæ¬¡è°ƒç”¨getActivity() ä¼šè¿”å›åŒä¸€å®ä¾‹", activity1,  activity2);
 		
 		Log.i(TAG, "Before callActivityOnStart");
         // At this point, onCreate() has been called, but nothing else Complete the startup of the activity
@@ -155,7 +155,7 @@ public class AndroidTester  extends ActivityUnitTestCase<CallbackTesterActivity>
         Log.i(TAG, "Before callActivityOnStop");
         getInstrumentation().callActivityOnStop(activity1);
         
-        Log.i(TAG, "Before testActivityLife function End");			//Êµ²â·¢ÏÖÃ»ÓĞµ÷ÓÃ onDestroy
+        Log.i(TAG, "Before testActivityLife function End");			//å®æµ‹å‘ç°æ²¡æœ‰è°ƒç”¨ onDestroy
         // ActivityUnitTestCase.tearDown(), which is always automatically called, will take care
         // of calling onDestroy().
 	}
@@ -164,7 +164,7 @@ public class AndroidTester  extends ActivityUnitTestCase<CallbackTesterActivity>
 /*/
 class AndroidTester extends AndroidTestCase{
 	public void testGetContext(){
-		assertNotNull("AndroidTestCase ÖĞ¿ÉÒÔÖ±½Ó»ñÈ¡Context", getContext());
+		assertNotNull("AndroidTestCase ä¸­å¯ä»¥ç›´æ¥è·å–Context", getContext());
 	}
 }
 //*/

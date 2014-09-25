@@ -11,383 +11,386 @@ import android.util.Log;
 import android.view.Display;
 
 /***************************************************************************************************************************************
- * HVGA( Half-size VGA) -- VGA(640x480)µÄÒ»°ë£¬·Ö±æÂÊÎª480x320, iPhone,µÚÒ»¿îgPhoneµÈÊÖ»ú¶¼ÊÇ¡£
+ * HVGA( Half-size VGA) -- VGA(640x480)çš„ä¸€åŠï¼Œåˆ†è¾¨ç‡ä¸º480x320, iPhone,ç¬¬ä¸€æ¬¾gPhoneç­‰æ‰‹æœºéƒ½æ˜¯ã€‚
  * WVGA() -- 800x480
  *
- * ³£ÓÃ¾àÀëµ¥Î»
- *    dip/dp(density-independent pixels) -- ÃÜ¶ÈÎŞ¹ØµÄÏñËØ, »ùÓÚÆÁÄ»ÃÜ¶ÈµÄ³éÏóµ¥Î»£¬³ÌĞòÓÃËüÀ´¶¨Òå½çÃæÔªËØ¡£
- *      ÏñËØ(px)=dip * (ÃÜ¶È / 160) , Èç ÃÜ¶ÈÎª160dpiµÄÆÁÄ»ÉÏ£¬1dipµÈÓÚ1x; ÃÜ¶È240dpiµÄÆÁÄ»ÉÏ,1dip=1.5px
- *    in(Ó¢´ç) -- »ùÓÚÆÁÄ»µÄÎïÀí³ß´ç
- *    mm(ºÁÃ×) -- 
- *    pt(°õ)-- 1/72Ó¢´ç
- *    px -- ÏñËØ£¬¶ÔÓ¦ÆÁÄ»ÉÏµÄÒ»¸öµã
- *    sp(scaled pixels) -- ±ÈÀıÏñËØ£¬ºÍ¾«¶ÈÎŞ¹ØµÄÏñËØ¡£Ö÷Òª´¦Àí×ÖÌåµÄ´óĞ¡£¬¿ÉÒÔ¸ù¾İÓÃ»§µÄ×ÖÌå´óĞ¡Ê×Ñ¡Ïî½øĞĞËõ·Å
+ * å¸¸ç”¨è·ç¦»å•ä½
+ *    dip/dp(density-independent pixels) -- å¯†åº¦æ— å…³çš„åƒç´ , åŸºäºå±å¹•å¯†åº¦çš„æŠ½è±¡å•ä½ï¼Œç¨‹åºç”¨å®ƒæ¥å®šä¹‰ç•Œé¢å…ƒç´ ã€‚
+ *      åƒç´ (px)=dip * (å¯†åº¦ / 160) , å¦‚ å¯†åº¦ä¸º160dpiçš„å±å¹•ä¸Šï¼Œ1dipç­‰äº1x; å¯†åº¦240dpiçš„å±å¹•ä¸Š,1dip=1.5px
+ *    in(è‹±å¯¸) -- åŸºäºå±å¹•çš„ç‰©ç†å°ºå¯¸
+ *    mm(æ¯«ç±³) -- 
+ *    pt(ç£…)-- 1/72è‹±å¯¸
+ *    px -- åƒç´ ï¼Œå¯¹åº”å±å¹•ä¸Šçš„ä¸€ä¸ªç‚¹
+ *    sp(scaled pixels) -- æ¯”ä¾‹åƒç´ ï¼Œå’Œç²¾åº¦æ— å…³çš„åƒç´ ã€‚ä¸»è¦å¤„ç†å­—ä½“çš„å¤§å°ï¼Œå¯ä»¥æ ¹æ®ç”¨æˆ·çš„å­—ä½“å¤§å°é¦–é€‰é¡¹è¿›è¡Œç¼©æ”¾
 
  *
- * ³ß´ç£ºÆÁÄ»µÄÎïÀí³ß´ç£¬Ö¸ÆÁÄ»µÄ¶Ô½ÇÏß³¤¶È£¬Èç 2.8Ó¢´ç¡¢3.7Ó¢´ç
- * ±ÈÀı£ºÆÁÄ»µÄÎïÀí³¤¶ÈºÍÎïÀí¿í¶È±È£¬16:9»ò16:10µÄÊÇ¿íÆÁ£¬4:3µÄÎªÕ­ÆÁ
- * ·Ö±æÂÊ£ºÆÁÄ»ÉÏÓµÓĞµÄÏñËØµÄ×ÜÊı£¬³£Ê¹ÓÃ"¿í¶Èx³¤¶È"±í´ï£¬£¿Í¨³£Ó¦ÓÃ³ÌĞò²¢²»Ö±½Ó´¦Àí·Ö±æÂÊ£¿
- * ÃÜ¶È£ºÒÔÆÁÄ»·Ö±æÂÊÎª»ù´¡£¬ÑØÆÁÄ»³¤¿í·½ÏòÅÅÁĞµÄÏñËØ£¬ÃÜ¶È½ÏµÍµÄÆÁÄ»£¬ÔÚ³¤¿í·½Ïò¶¼Ö»ÓĞ±È½ÏÉÙµÄÏñËØ¡£
- * ÊÓÍøÄ¤(Retina)ÏÔÊ¾ÆÁ£ºÒ»ÖÖ³¬¸ßÏñËØºÍÔ½¸ßÃÜ¶ÈµÄÒº¾§ÆÁ£¬Ïà¶ÔÓÚÒÔÇ°µÄiPhone£¬Ôö¼ÓÁË4±¶µÄÏñËØÊıÁ¿£¬
- *       ½«960*640µÄ·Ö±æÂÊÑ¹Ëõµ½ºÍÇ°´úiPhoneÏàÍ¬ÎïÀí³ß´ç(3.5Ó¢´ç)µÄÏÔÊ¾ÆÁÄÚ¡£ÆÁÄ»ÃÜ¶È´ïµ½ 326ÏñËØ/Ó¢´ç
+ * å°ºå¯¸ï¼šå±å¹•çš„ç‰©ç†å°ºå¯¸ï¼ŒæŒ‡å±å¹•çš„å¯¹è§’çº¿é•¿åº¦ï¼Œå¦‚ 2.8è‹±å¯¸ã€3.7è‹±å¯¸
+ * æ¯”ä¾‹ï¼šå±å¹•çš„ç‰©ç†é•¿åº¦å’Œç‰©ç†å®½åº¦æ¯”ï¼Œ16:9æˆ–16:10çš„æ˜¯å®½å±ï¼Œ4:3çš„ä¸ºçª„å±
+ * åˆ†è¾¨ç‡ï¼šå±å¹•ä¸Šæ‹¥æœ‰çš„åƒç´ çš„æ€»æ•°ï¼Œå¸¸ä½¿ç”¨"å®½åº¦xé•¿åº¦"è¡¨è¾¾ï¼Œï¼Ÿé€šå¸¸åº”ç”¨ç¨‹åºå¹¶ä¸ç›´æ¥å¤„ç†åˆ†è¾¨ç‡ï¼Ÿ
+ * å¯†åº¦ï¼šä»¥å±å¹•åˆ†è¾¨ç‡ä¸ºåŸºç¡€ï¼Œæ²¿å±å¹•é•¿å®½æ–¹å‘æ’åˆ—çš„åƒç´ ï¼Œå¯†åº¦è¾ƒä½çš„å±å¹•ï¼Œåœ¨é•¿å®½æ–¹å‘éƒ½åªæœ‰æ¯”è¾ƒå°‘çš„åƒç´ ã€‚
+ * è§†ç½‘è†œ(Retina)æ˜¾ç¤ºå±ï¼šä¸€ç§è¶…é«˜åƒç´ å’Œè¶Šé«˜å¯†åº¦çš„æ¶²æ™¶å±ï¼Œç›¸å¯¹äºä»¥å‰çš„iPhoneï¼Œå¢åŠ äº†4å€çš„åƒç´ æ•°é‡ï¼Œ
+ *       å°†960*640çš„åˆ†è¾¨ç‡å‹ç¼©åˆ°å’Œå‰ä»£iPhoneç›¸åŒç‰©ç†å°ºå¯¸(3.5è‹±å¯¸)çš„æ˜¾ç¤ºå±å†…ã€‚å±å¹•å¯†åº¦è¾¾åˆ° 326åƒç´ /è‹±å¯¸
  *  
- * ¶à·Ö±æÂÊ¹æ¸ñµÄ½çÃæÉè¼Æ -- ÕæÕıĞèÒªÇø±ğµÄÊÇOS°æ±¾(1.5ºÍ1.6¼°ÒÔÉÏ)¶ø²»ÊÇÆÁÄ»·Ö±æÂÊ
- *   ¸÷ÖÖÆÁÄ»ºÍUIÀàĞÍ£º
- *     HTC Sense UI, SamSung TouchWiz UI, Motorola MOTO blur UI, Xiaomi MIUI, OMS(Ophone), LEOS(LePhone), AlibabaÔÆOS µÈ
- *   A.1.5ÒÔÇ°²»Ö§³Ö¸ß·ÖÆÁ£¬ËùÓĞÍ¼Æ¬·ÅÔÚÍ¬Ò»¸ödrawableÄ¿Â¼ÏÂ;
- *     1.6¿ªÊ¼Ö§³Ö ¸ß(drawable-hdpi)¡¢ÖĞ(drawable-mdpi)¡¢µÍ(drawable-ldpi)ÈıÖÖÃÜ¶È¡£
- *     3.0ÒÔºóÖ§³Ö ³¬¸ß(drawable-xhdpi)£¬
- *     ÎªÁËµçÊÓ? Ö§³Ö (drawable-xxhdpi)
+ * å¤šåˆ†è¾¨ç‡è§„æ ¼çš„ç•Œé¢è®¾è®¡ -- çœŸæ­£éœ€è¦åŒºåˆ«çš„æ˜¯OSç‰ˆæœ¬(1.5å’Œ1.6åŠä»¥ä¸Š)è€Œä¸æ˜¯å±å¹•åˆ†è¾¨ç‡
+ *   å„ç§å±å¹•å’ŒUIç±»å‹ï¼š
+ *     HTC Sense UI, SamSung TouchWiz UI, Motorola MOTO blur UI, Xiaomi MIUI, OMS(Ophone), LEOS(LePhone), Alibabaäº‘OS ç­‰
+ *   A.1.5ä»¥å‰ä¸æ”¯æŒé«˜åˆ†å±ï¼Œæ‰€æœ‰å›¾ç‰‡æ”¾åœ¨åŒä¸€ä¸ªdrawableç›®å½•ä¸‹;
+ *     1.6å¼€å§‹æ”¯æŒ é«˜(drawable-hdpi)ã€ä¸­(drawable-mdpi)ã€ä½(drawable-ldpi)ä¸‰ç§å¯†åº¦ã€‚
+ *     3.0ä»¥åæ”¯æŒ è¶…é«˜(drawable-xhdpi)ï¼Œ
+ *     ä¸ºäº†ç”µè§†? æ”¯æŒ (drawable-xxhdpi)
  * 
- *  ½»»¥Éè¼Æ½¨Òé£º
- *    1.ÒÔÖĞÃÜ¶È(mdpi)µÄÕı³£ÆÁÄ»(HVGA, 320x480)ÎªÉè¼Æ»ù×¼½øĞĞ½çÃæ²¼¾Ö(´ËÊ± dipºÍpxÎª1:1£¬ÄÜ¸ü³ä·ÖÀí½â¿Õ¼ä²¢ºÏÀíÊ¹ÓÃ)£»
- *    2.³ÌĞò¿ÉÒÔÎª¸÷ÖÖ³ß´çµÄÆÁÄ»Ìá¹©²»Í¬µÄ×ÊÔ´(Ö÷ÒªÊÇ²¼¾Ö),Ò²¿ÉÒÔÎª¸÷ÖÖÃÜ¶ÈµÄÆÁÄ»Ìá¹©²»Í¬µÄ×ÊÔ´(Ö÷ÒªÊÇÎ»Í¼);
- *    3.Ê¹ÓÃÓëÃÜ¶ÈÎŞ¹ØµÄÏñËØ(dip)À´¶¨ÒåÓ¦ÓÃ³ÌĞòµÄ½çÃæ²¼¾Ö£¬¶ø²»ÊÇpx -- ÕâÑù¿É±£Ö¤Ó¦ÓÃ³ÌĞòµÄ½çÃæÄÜÔÚ¸÷ÖÖ·Ö±æÂÊµÄÆÁÄ»ÉÏ¶¼¿ÉÒÔÕı³£ÏÔÊ¾¡£
- *    4.Ö´ĞĞÊ±£¬Æ½Ì¨»á¸ù¾İÆÁÄ»±¾ÉíµÄ³ß´çÓëÃÜ¶ÈÌØĞÔ£¬×Ô¶¯ÔØÈë¶ÔÓ¦µÄ×ÊÔ´£¬²¢°ÑËüÃÇ´ÓÓëÃÜ¶ÈÎŞ¹ØµÄÏñËØ×ª»»³ÉÆÁÄ»ÉÏµÄÎïÀíÏñËØ
- *    5.ÔÚ´¦ÀíÆÁÄ»·½Ïò±ä»¯Ê±£¬ÎªÆäÓÅ»¯¶ø²»ÊÇµ¥´¿µØ¸Ä±ä·½Ïò
- *    6.ÌôÑ¡¾ßÓĞ´ú±íĞÔµÄÌØĞÔ½çÃæÔÚÕæ»úÔ¤ÀÀĞ§¹û
- *    7.´¦Àí°´Å¥µÄ·Å´óËõĞ¡Ê±£¬¾¡¿ÉÄÜÊ¹ÓÃ¾Å¹¬¸ñÍ¼Æ¬£¬¶ø²»ÊÇµ¥´¿»æÍ¼
+ *  äº¤äº’è®¾è®¡å»ºè®®ï¼š
+ *    1.ä»¥ä¸­å¯†åº¦(mdpi)çš„æ­£å¸¸å±å¹•(HVGA, 320x480)ä¸ºè®¾è®¡åŸºå‡†è¿›è¡Œç•Œé¢å¸ƒå±€(æ­¤æ—¶ dipå’Œpxä¸º1:1ï¼Œèƒ½æ›´å……åˆ†ç†è§£ç©ºé—´å¹¶åˆç†ä½¿ç”¨)ï¼›
+ *    2.ç¨‹åºå¯ä»¥ä¸ºå„ç§å°ºå¯¸çš„å±å¹•æä¾›ä¸åŒçš„èµ„æº(ä¸»è¦æ˜¯å¸ƒå±€),ä¹Ÿå¯ä»¥ä¸ºå„ç§å¯†åº¦çš„å±å¹•æä¾›ä¸åŒçš„èµ„æº(ä¸»è¦æ˜¯ä½å›¾);
+ *    3.ä½¿ç”¨ä¸å¯†åº¦æ— å…³çš„åƒç´ (dip)æ¥å®šä¹‰åº”ç”¨ç¨‹åºçš„ç•Œé¢å¸ƒå±€ï¼Œè€Œä¸æ˜¯px -- è¿™æ ·å¯ä¿è¯åº”ç”¨ç¨‹åºçš„ç•Œé¢èƒ½åœ¨å„ç§åˆ†è¾¨ç‡çš„å±å¹•ä¸Šéƒ½å¯ä»¥æ­£å¸¸æ˜¾ç¤ºã€‚
+ *    4.æ‰§è¡Œæ—¶ï¼Œå¹³å°ä¼šæ ¹æ®å±å¹•æœ¬èº«çš„å°ºå¯¸ä¸å¯†åº¦ç‰¹æ€§ï¼Œè‡ªåŠ¨è½½å…¥å¯¹åº”çš„èµ„æºï¼Œå¹¶æŠŠå®ƒä»¬ä»ä¸å¯†åº¦æ— å…³çš„åƒç´ è½¬æ¢æˆå±å¹•ä¸Šçš„ç‰©ç†åƒç´ 
+ *    5.åœ¨å¤„ç†å±å¹•æ–¹å‘å˜åŒ–æ—¶ï¼Œä¸ºå…¶ä¼˜åŒ–è€Œä¸æ˜¯å•çº¯åœ°æ”¹å˜æ–¹å‘
+ *    6.æŒ‘é€‰å…·æœ‰ä»£è¡¨æ€§çš„ç‰¹æ€§ç•Œé¢åœ¨çœŸæœºé¢„è§ˆæ•ˆæœ
+ *    7.å¤„ç†æŒ‰é’®çš„æ”¾å¤§ç¼©å°æ—¶ï¼Œå°½å¯èƒ½ä½¿ç”¨ä¹å®«æ ¼å›¾ç‰‡ï¼Œè€Œä¸æ˜¯å•çº¯ç»˜å›¾
  *  
- *  ÔÚ layout ÖĞ¿ÉÒÔÍ¨¹ı <include> ºÍ <merge> ±êÇ©ÖØÓÃÒÑÓĞµÄlayoutµÈ -- TODO£ºÏ¸½Ú£¿
+ *  åœ¨ layout ä¸­å¯ä»¥é€šè¿‡ <include> å’Œ <merge> æ ‡ç­¾é‡ç”¨å·²æœ‰çš„layoutç­‰ -- TODOï¼šç»†èŠ‚ï¼Ÿ
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * ·ç¸ñ(Style)
- *   ×Ô¶¨ÒåStyle(Ö¸¶¨ÑÕÉ«¡¢´óĞ¡µÈ)
- *     1.±àĞ´style.xmlÎÄ¼ş,·ÅÔÚvaluesÄ¿Â¼ÏÂ
+ * é£æ ¼(Style)
+ *   è‡ªå®šä¹‰Style(æŒ‡å®šé¢œè‰²ã€å¤§å°ç­‰)
+ *     1.ç¼–å†™style.xmlæ–‡ä»¶,æ”¾åœ¨valuesç›®å½•ä¸‹
  *       <?xml version="1.0" encoding="utf-8"?>
  *       <resources>
- *         <style name="DavidStyleText1" [parent=¡°¸¸StyleÃû¡±]>
+ *         <style name="DavidStyleText1" [parent=â€œçˆ¶Styleåâ€]>
  *           <item name="android:textSize">18sp</item>
  *           <item name="android:textColor">#EC9237</item>
- *         </style>    ¿ÉÒÔÊ¹ÓÃ <style></style> ¶¨Òå¶à¸ö,
+ *         </style>    å¯ä»¥ä½¿ç”¨ <style></style> å®šä¹‰å¤šä¸ª,
  *       </resources>
- *     2.main.xml ÖĞ <TextView style="@style/DavidStyleText1" ...>
+ *     2.main.xml ä¸­ <TextView style="@style/DavidStyleText1" ...>
  *     
- * Ö÷Ìâ(Theme)
- *   ÅäÖÃÖĞ£ºandroid:theme="@android:style/Theme.Dialog"
+ * ä¸»é¢˜(Theme)
+ *   é…ç½®ä¸­ï¼šandroid:theme="@android:style/Theme.Dialog"
  *   
- * view  -- ËùÓĞUIÀà¶¼½¨Á¢ÔÚViewºÍViewGroupÁ½¸öÀàµÄ»ù´¡Ö®ÉÏ£¬²ÉÓÃ×éºÏ(Composite)Éè¼ÆÄ£Ê½£¬ĞèÒªÍ¨¹ı Activity.setContentView ÉèÖÃÏÔÊ¾
- *   View --»ù±¾¿Ø¼ş,  Æä×ÓÀà³ÆÎª Widget
+ * view  -- æ‰€æœ‰UIç±»éƒ½å»ºç«‹åœ¨Viewå’ŒViewGroupä¸¤ä¸ªç±»çš„åŸºç¡€ä¹‹ä¸Šï¼Œé‡‡ç”¨ç»„åˆ(Composite)è®¾è®¡æ¨¡å¼ï¼Œéœ€è¦é€šè¿‡ Activity.setContentView è®¾ç½®æ˜¾ç¤º
+ *   View --åŸºæœ¬æ§ä»¶,  å…¶å­ç±»ç§°ä¸º Widget
  *     Button( setOnClickListener(new Button.OnClickListener(){public void onClick(View v) {...}}); )
  *     EditText
  *     TextView
  *     RelativeLayout
  *     lists,grids,text boxes,buttons,
- *   ViewGroup -- ²¼¾ÖÈİÆ÷µÄ³éÏó¸¸Àà£¬×ÓÀà³ÆÎªLayout(²¼¾Ö¹ÜÀíÆ÷)£¬¿ØÖÆÆä×Ó×é¼şµÄ·Ö²¼ÒÀÀµÓÚLayoutParams,MarginLayoutParams 
- *     Á½¸öÄÚ²¿Àà£¬ÆäÌá¹©ÁËÒ»Ğ©XMLÊôĞÔ(Èç layout_heidth/layout_width)¡£ViewGroupµÄ×ÓÀàÍ¨¹ıÖ¸¶¨ÕâĞ©ÊôĞÔÀ´½øĞĞ²¼¾Ö£¿
+ *   ViewGroup -- å¸ƒå±€å®¹å™¨çš„æŠ½è±¡çˆ¶ç±»ï¼Œå­ç±»ç§°ä¸ºLayout(å¸ƒå±€ç®¡ç†å™¨)ï¼Œæ§åˆ¶å…¶å­ç»„ä»¶çš„åˆ†å¸ƒä¾èµ–äºLayoutParams,MarginLayoutParams 
+ *     ä¸¤ä¸ªå†…éƒ¨ç±»ï¼Œå…¶æä¾›äº†ä¸€äº›XMLå±æ€§(å¦‚ layout_heidth/layout_width)ã€‚ViewGroupçš„å­ç±»é€šè¿‡æŒ‡å®šè¿™äº›å±æ€§æ¥è¿›è¡Œå¸ƒå±€ï¼Ÿ
  *   
- * ×Ô»æ
- *   Ïà¹Ø×é¼ş: Canvas + Bitmap + Paint 
- *   ÔÚViewµÄ×ÓÀàÖĞÖØÔØ onDraw(Canvas canvas) º¯Êı£¬²¢ÔÚÆäÖĞÊ¹ÓÃ ½øĞĞ»æÖÆ¡£
+ * è‡ªç»˜
+ *   ç›¸å…³ç»„ä»¶: Canvas + Bitmap + Paint 
+ *   åœ¨Viewçš„å­ç±»ä¸­é‡è½½ onDraw(Canvas canvas) å‡½æ•°ï¼Œå¹¶åœ¨å…¶ä¸­ä½¿ç”¨ è¿›è¡Œç»˜åˆ¶ã€‚
  *   
- * ÊÖÊÆÊ¶±ğ -- Èç Ëõ·ÅÍ¼Æ¬»òÕßËõ·ÅÍøÒ³£¬ÔÚ android.gesture °üÖĞ»¹Ìá¹©ÁËºÜ¶à¸¨ÖúÀà£¬
- *   +-GestureDetector(v1)/GestureDetectorCompat(sv4£¬ÍÆ¼ö£¬¿ÉÒÔÊ¹¸ü¶àµÄActionÊÊÅäµ½API4)£¬¿É¼òµ¥µÄ½« View.onTouchEvent ÊÂ¼ş×ª·¢½øÈ¥´¦Àí¡£
+ * æ‰‹åŠ¿è¯†åˆ« -- å¦‚ ç¼©æ”¾å›¾ç‰‡æˆ–è€…ç¼©æ”¾ç½‘é¡µï¼Œåœ¨ android.gesture åŒ…ä¸­è¿˜æä¾›äº†å¾ˆå¤šè¾…åŠ©ç±»ï¼Œ
+ *   +-GestureDetector(v1)/GestureDetectorCompat(sv4ï¼Œæ¨èï¼Œå¯ä»¥ä½¿æ›´å¤šçš„Actioné€‚é…åˆ°API4)ï¼Œå¯ç®€å•çš„å°† View.onTouchEvent äº‹ä»¶è½¬å‘è¿›å»å¤„ç†ã€‚
  *      OnDoubleTapListener -- 
- *   +-ScaleGestureDetector -- ¼ì²âÁ½¸öÊÖÖ¸ÔÚÆÁÄ»ÉÏËõ·ÅµÄÊÖÊÆ£¬
+ *   +-ScaleGestureDetector -- æ£€æµ‹ä¸¤ä¸ªæ‰‹æŒ‡åœ¨å±å¹•ä¸Šç¼©æ”¾çš„æ‰‹åŠ¿ï¼Œ
  *       http://www.cnblogs.com/over140/archive/2010/12/08/1899839.html
- *       OnScaleGestureListener -- ÓÃ»§Ìá¹©µÄ»Øµ÷½Ó¿Ú£¬Ò»°ãÔÚ¸÷¸ö»Øµ÷º¯ÊıÖĞµ÷ÓÃ Detector µÄ·½·¨½øĞĞ´¦Àí¡£
- *         onScaleBegin(·µ»Øtrue±íÃ÷¿ªÊ¼Ëõ·Å) -> Ñ­»·onScale -> onScaleEnd
- *       getScaleFactor() -- ·µ»ØËõ·Å±ÈÀı£¬×¢Òâ£ºonScale ÖĞÈç¹û·µ»Øtrue»á¸üĞÂfactorµÄ»ùÊı, ·µ»Øfalse»áÒÔ¾ÉÖµ¼ÆËãfactor.
- *   ÊµÏÖÊÖÊÆÊ¶±ğµÄ·½·¨£º
- *     1.ÊµÏÖ OnGestureListener ºÍ OnDoubleTapListener ½Ó¿Ú£¬ÊµÏÖËùÓĞ·½·¨
- *       onDown --°´ÏÂ 
- *       onFling(¿ìËÙÒÆ¶¯²¢ËÉ¿ª)
- *       onLongPress -- ³¤°´ÇÒÎ´ËÉ¿ª£¬´ËºóËÉ¿ªÒ²²»»á³öÏÖ Up ÊÂ¼ş?
- *       onScroll -- µ¥Ö¸»¬¶¯, ÔÚonDownºóÁ¢¼´ÒÆ¶¯(²»´¥·¢ onShowPress), °üÀ¨Ëõ·Å? 
- *       onShowPress -- °´ÏÂµ½¼¤·¢³¤°´Ö®Ç°
- *       onSingleTapUp(ÊÖÖ¸Àë¿ª´¥ÃşÆÁ)
- *       onDoubleTap(Ë«»÷)--Ê²Ã´Çø±ğ£¿ÎªÊ²Ã´GestureImageViewÖĞ»á·¢Éú¶Ô´Î£¿
- *       onDoubleTapEvent -- Í¨ÖªDoubleTapÊÖÊÆÖĞµÄÊÂ¼ş£¬°üº¬down¡¢upºÍmoveÊÂ¼ş(Ö¸ÔÚË«»÷Ö®¼ä·¢ÉúµÄÊÂ¼ş)
- *       onSingleTapConfirmed -- ÓÃÀ´ÅĞ¶¨¸Ã´Îµã»÷ÊÇSingleTap¶ø²»ÊÇDoubleTap
+ *       OnScaleGestureListener -- ç”¨æˆ·æä¾›çš„å›è°ƒæ¥å£ï¼Œä¸€èˆ¬åœ¨å„ä¸ªå›è°ƒå‡½æ•°ä¸­è°ƒç”¨ Detector çš„æ–¹æ³•è¿›è¡Œå¤„ç†ã€‚
+ *         onScaleBegin(è¿”å›trueè¡¨æ˜å¼€å§‹ç¼©æ”¾) -> å¾ªç¯onScale -> onScaleEnd
+ *       getScaleFactor() -- è¿”å›ç¼©æ”¾æ¯”ä¾‹ï¼Œæ³¨æ„ï¼šonScale ä¸­å¦‚æœè¿”å›trueä¼šæ›´æ–°factorçš„åŸºæ•°, è¿”å›falseä¼šä»¥æ—§å€¼è®¡ç®—factor.
+ *   å®ç°æ‰‹åŠ¿è¯†åˆ«çš„æ–¹æ³•ï¼š
+ *     1.å®ç° OnGestureListener å’Œ OnDoubleTapListener æ¥å£ï¼Œå®ç°æ‰€æœ‰æ–¹æ³•
+ *       onDown --æŒ‰ä¸‹ 
+ *       onFling(å¿«é€Ÿç§»åŠ¨å¹¶æ¾å¼€)
+ *       onLongPress -- é•¿æŒ‰ä¸”æœªæ¾å¼€ï¼Œæ­¤åæ¾å¼€ä¹Ÿä¸ä¼šå‡ºç° Up äº‹ä»¶?
+ *       onScroll -- å•æŒ‡æ»‘åŠ¨, åœ¨onDownåç«‹å³ç§»åŠ¨(ä¸è§¦å‘ onShowPress), åŒ…æ‹¬ç¼©æ”¾? 
+ *       onShowPress -- æŒ‰ä¸‹åˆ°æ¿€å‘é•¿æŒ‰ä¹‹å‰
+ *       onSingleTapUp(æ‰‹æŒ‡ç¦»å¼€è§¦æ‘¸å±)
+ *       onDoubleTap(åŒå‡»)--ä»€ä¹ˆåŒºåˆ«ï¼Ÿä¸ºä»€ä¹ˆGestureImageViewä¸­ä¼šå‘ç”Ÿå¯¹æ¬¡ï¼Ÿ
+ *       onDoubleTapEvent -- é€šçŸ¥DoubleTapæ‰‹åŠ¿ä¸­çš„äº‹ä»¶ï¼ŒåŒ…å«downã€upå’Œmoveäº‹ä»¶(æŒ‡åœ¨åŒå‡»ä¹‹é—´å‘ç”Ÿçš„äº‹ä»¶)
+ *       onSingleTapConfirmed -- ç”¨æ¥åˆ¤å®šè¯¥æ¬¡ç‚¹å‡»æ˜¯SingleTapè€Œä¸æ˜¯DoubleTap
  *       
- *     2.¼Ì³ĞÒÑÓĞµÄ SimpleOnGestureListener Àà£¬Ö»ĞèÖØÔØĞèÒªµÄ²¿·Ö·½·¨¼´¿É
- *   ×Ô¶¨ÒåÊÖÊÆÊ¶±ğ£º
- *     1.Ê¹ÓÃ Sample ÖĞµÄ GestureBuilder ½¨Á¢×Ô¶¨ÒåµÄÊÖÊÆĞÅÏ¢(»á±£´æ³É sdcard\gestures ÎÄ¼ş)£¬ ÆäÖĞÊ¹ÓÃÁË GestureOverlayView 
- *     2.¿½±´ gestures ÎÄ¼şµ½±¾¹¤³ÌµÄ raw Ä¿Â¼ÏÂ£¬´úÂëÖĞ£º
+ *     2.ç»§æ‰¿å·²æœ‰çš„ SimpleOnGestureListener ç±»ï¼Œåªéœ€é‡è½½éœ€è¦çš„éƒ¨åˆ†æ–¹æ³•å³å¯
+ *   è‡ªå®šä¹‰æ‰‹åŠ¿è¯†åˆ«ï¼š
+ *     1.ä½¿ç”¨ Sample ä¸­çš„ GestureBuilder å»ºç«‹è‡ªå®šä¹‰çš„æ‰‹åŠ¿ä¿¡æ¯(ä¼šä¿å­˜æˆ sdcard\gestures æ–‡ä»¶)ï¼Œ å…¶ä¸­ä½¿ç”¨äº† GestureOverlayView 
+ *     2.æ‹·è´ gestures æ–‡ä»¶åˆ°æœ¬å·¥ç¨‹çš„ raw ç›®å½•ä¸‹ï¼Œä»£ç ä¸­ï¼š
  *       GestureLibrary glib = GestureLibraries.fromRawResource(this, R.raw.gestures); glib.load();
  *       GestureOverlayView gov = (GestureOverlayView)findViewById(xxxx);
  *       gov.addOnGesturePerformedListener(){ new OnGesturePerformedListener(){
  *         public void onGesturePerformed(GestureOverlayView overlay, Gesture gesture){ 
- *           ArrayList<Prediction> list = gl.recognize(gesture); //Ê¶±ğÊÖÊÆ£¬·µ»ØÒ»¸öÀàĞÍÎªPredictionµÄÁĞ±í
+ *           ArrayList<Prediction> list = gl.recognize(gesture); //è¯†åˆ«æ‰‹åŠ¿ï¼Œè¿”å›ä¸€ä¸ªç±»å‹ä¸ºPredictionçš„åˆ—è¡¨
  *           Prediction pre = list.get(0); 
- *            if(pre.score > 1){  //Èç¹ûÆ¥Åä¶È´óÓÚ1£¬±íÊ¾¿ÉÒÔÊ¶±ğ£¬·ñÔòÌáÊ¾ÎŞ·¨Ê¶±ğ
- *               if(pre.name.equals("myGesture")) { ...  }  //ÅĞ¶ÏÃû×ÖÊÇ·ñÓëÊÖÊÆ¿âµÄÃû×ÖÏàÍ¬  
+ *            if(pre.score > 1){  //å¦‚æœåŒ¹é…åº¦å¤§äº1ï¼Œè¡¨ç¤ºå¯ä»¥è¯†åˆ«ï¼Œå¦åˆ™æç¤ºæ— æ³•è¯†åˆ«
+ *               if(pre.name.equals("myGesture")) { ...  }  //åˆ¤æ–­åå­—æ˜¯å¦ä¸æ‰‹åŠ¿åº“çš„åå­—ç›¸åŒ  
  *            }
  *         } 
  *       }
- * ÖØÁ¦¸ĞÓ¦
+ * é‡åŠ›æ„Ÿåº”
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * ViewÊÂ¼ş
- *     onTouchEvent() -- µ±·¢Éú´¥ÃşÆÁÊÂ¼şÊ±µÄ»Øµ÷£¬×¢ÒâÖØÔØÒÔºóµÄ·µ»ØÖµ(1. Ö±½Ó·µ»Øtrue£» 2(¸üºÃ£¿).onCreateÊ± setClickable(true)£¬È»ºó·µ»Øsuper.onTouchEvent)
- *           int action = MotionEventCompat.getActionMasked(event);  È»ºó switch(action) {...}
- *       »ò switch(event.getAction() & MotionEvent.ACTION_MASK) À´ÅĞ¶Ï°´¼ü×´Ì¬(down,move,up µÈ), 
- *     getX(Ïà¶ÔÓÚ×ÔÉí×óÉÏ½ÇµÄ×ø±ê)/getRawX(Ïà¶ÔÓÚÆÁÄ»×óÉÏ½ÇµÄ×ø±ê) µÈ·½·¨»ñÈ¡Î»ÖÃ¡£
- *       µ¥µã£ºACTION_DOWN -> ACTION_MOVE -> ACTION_UP
- *       ¶àµã£ºACTION_DOWN -> ACTION_POINTER_DOWN(getPointerCount == 2) -> ACTION_MOVE -> ACTION_POINTER_UP -> ACTION_UP
- * ViewÊôĞÔ
- *   tag -- Îª×é¼şÉèÖÃI¸ö×Ö·û´®ÀàĞÍµÄtagÖµ£¬È»ºó¿ÉÍ¨¹ı getTag()»ñÈ¡¸ÃÖµ »òÍ¨¹ı findViewWithTag ÕÒµ½¸Ã×é¼ş
+ * Viewäº‹ä»¶
+ *     onTouchEvent() -- å½“å‘ç”Ÿè§¦æ‘¸å±äº‹ä»¶æ—¶çš„å›è°ƒï¼Œæ³¨æ„é‡è½½ä»¥åçš„è¿”å›å€¼(1. ç›´æ¥è¿”å›trueï¼› 2(æ›´å¥½ï¼Ÿ).onCreateæ—¶ setClickable(true)ï¼Œç„¶åè¿”å›super.onTouchEvent)
+ *           int action = MotionEventCompat.getActionMasked(event);  ç„¶å switch(action) {...}
+ *       æˆ– switch(event.getAction() & MotionEvent.ACTION_MASK) æ¥åˆ¤æ–­æŒ‰é”®çŠ¶æ€(down,move,up ç­‰), 
+ *     getX(ç›¸å¯¹äºè‡ªèº«å·¦ä¸Šè§’çš„åæ ‡)/getRawX(ç›¸å¯¹äºå±å¹•å·¦ä¸Šè§’çš„åæ ‡) ç­‰æ–¹æ³•è·å–ä½ç½®ã€‚
+ *       å•ç‚¹ï¼šACTION_DOWN -> ACTION_MOVE -> ACTION_UP
+ *       å¤šç‚¹ï¼šACTION_DOWN -> ACTION_POINTER_DOWN(getPointerCount == 2) -> ACTION_MOVE -> ACTION_POINTER_UP -> ACTION_UP
+ * Viewå±æ€§
+ *   tag -- ä¸ºç»„ä»¶è®¾ç½®Iä¸ªå­—ç¬¦ä¸²ç±»å‹çš„tagå€¼ï¼Œç„¶åå¯é€šè¿‡ getTag()è·å–è¯¥å€¼ æˆ–é€šè¿‡ findViewWithTag æ‰¾åˆ°è¯¥ç»„ä»¶
  *   
  * View --
- * +-AbsListView --  ÁĞ±íÊÓÍ¼µÄ³éÏó»ùÀà£¬ÓĞ GridView¡¢ListView µÈ×ÓÀà
- *    choiceMode -- Ñ¡ÔñĞĞÎª£¬Èç none(²»ÏÔÊ¾ÈÎºÎÑ¡ÖĞÏî), singleChoice(µ¥Ñ¡), multipleChoice(¶àÑ¡)
- *    divider -- ÉèÖÃÁĞ±íÏîµÄ·Ö¸ôÌõ(¼´¿ÉÓÃÑÕÉ«¡¢Ò²¿ÉÓÃDrawable)
- *    entries -- Ö¸¶¨Ò»¸öÊı×é×ÊÔ´£¬½«¸ù¾İ¸ÃÊı×é×ÊÔ´À´Éú³ÉListView, ÈçÖ¸¶¨ "@array/bools"
- *    fastScrollEnabled -- ÉèÖÃÊÇ·ñÔÊĞí¿ìËÙ¹ö¶¯£¬ÈçÎªtrue£¬Ôò»áÏÔÊ¾¹ö¶¯Í¼±ê£¬²¢ÔÊĞíÓÃ»§ÍÏ¶¯¸Ã¹ö¶¯Í¼±ê½øĞĞ¿ìËÙ¹ö¶¯
- *    scrollingCache -- ÈçÉèÎªtrue£¬ÔÚ¹ö¶¯Ê±½«»áÊ¹ÓÃ»æÖÆ»º´æ
- *    textFilterEnabled -- ÉèÖÃÊÇ·ñ¶ÔÁĞ±íÏî½øĞĞ¹ıÂË£¬ĞèÒª¶ÔÓ¦µÄAdapterÊµÏÖÁËFilter½Ó¿ÚÊ±²ÅÆğ×÷ÓÃ
- * +-AdapterView -- ³éÏó»ùÀà£¬¿ÉÒÔ°üÀ¨¶à¸ö"ÁĞ±íÏî"²¢½«ÆäÒÔºÏÊÊµÄĞÎÊ½ÏÔÊ¾³öÀ´£¬ÆäÏÔÊ¾µÄÁĞ±íÏîÓÉ Adapter Ìá¹©(Í¨¹ı setAdapter ·½·¨ÉèÖÃ).
- *     AdapterView µÄ¸÷×ÓÀà¸ºÔğ²ÉÓÃºÏÊÊµÄ·½Ê½ÏÔÊ¾AdapterÌá¹©µÄÃ¿¸ö"ÁĞ±íÏî"×é¼ş¡£
- *     setOnItemClickListener()/setOnItemSelectedListener() -- Ìí¼Óµ¥»÷¡¢Ñ¡ÖĞÊÂ¼ş
- * +-AdapterViewFlipper -- Ò»°ãÓÃÓÚ»ÃµÆ²¥·Å¡£Ò»´ÎÏÔÊ¾Ò»¸öAdapterÌá¹©µÄView×é¼ş£¬¿ÉÒÔÍ¨¹ı showPrevious()/showNext() ·½·¨À´¿ØÖÆÏÔÊ¾ÉÏÒ»¸ö¡¢ÏÂÒ»¸ö¡£
- *    inAnimation/outAnimation -- ¿ØÖÆ ÏÔÊ¾/Òş²Ø Ê±Ê¹ÓÃµÄ¶¯»­
- *    flipInterval -- ÉèÖÃ×Ô¶¯²¥·ÅµÄÊ±¼ä¼ä¸ô
- * +-AnalogClock -- Ä£ÄâÊ±ÖÓ£¬ÏÔÊ¾ Ğ¡Ê±¡¢·ÖÖÓ
- *    dial -- ÉèÖÃ±íÅÌÊ¹ÓÃµÄÍ¼Æ¬
- *    hand_hour/hand_minute -- ÉèÖÃÊ±Õë¡¢·ÖÕëÊ¹ÓÃµÄÍ¼Æ¬
- * +-AutoCompleteTextView -- ×Ô¶¯Íê³ÉÎÄ±¾¿ò£¬Í¨¹ıÉèÖÃÏëÒªÏÔÊ¾×ÊÔ´µÄÊÊÅäÆ÷(setAdapter)À´ÊµÏÖ
- *    completionHint/completionHintView -- ÏÂÀ­²Ëµ¥ÖĞµÄ ÌáÊ¾±êÌâ / ÌáÊ¾±êÌâÊÓÍ¼ 
- *    completionThreshold -- ÓÃ»§ÖÁÉÙÊäÈë¼¸¸ö×Ö·û²Å»áÏÔÊ¾ÌáÊ¾
+ * +-AbsListView --  åˆ—è¡¨è§†å›¾çš„æŠ½è±¡åŸºç±»ï¼Œæœ‰ GridViewã€ListView ç­‰å­ç±»
+ *    choiceMode -- é€‰æ‹©è¡Œä¸ºï¼Œå¦‚ none(ä¸æ˜¾ç¤ºä»»ä½•é€‰ä¸­é¡¹), singleChoice(å•é€‰), multipleChoice(å¤šé€‰)
+ *    divider -- è®¾ç½®åˆ—è¡¨é¡¹çš„åˆ†éš”æ¡(å³å¯ç”¨é¢œè‰²ã€ä¹Ÿå¯ç”¨Drawable)
+ *    entries -- æŒ‡å®šä¸€ä¸ªæ•°ç»„èµ„æºï¼Œå°†æ ¹æ®è¯¥æ•°ç»„èµ„æºæ¥ç”ŸæˆListView, å¦‚æŒ‡å®š "@array/bools"
+ *    fastScrollEnabled -- è®¾ç½®æ˜¯å¦å…è®¸å¿«é€Ÿæ»šåŠ¨ï¼Œå¦‚ä¸ºtrueï¼Œåˆ™ä¼šæ˜¾ç¤ºæ»šåŠ¨å›¾æ ‡ï¼Œå¹¶å…è®¸ç”¨æˆ·æ‹–åŠ¨è¯¥æ»šåŠ¨å›¾æ ‡è¿›è¡Œå¿«é€Ÿæ»šåŠ¨
+ *    scrollingCache -- å¦‚è®¾ä¸ºtrueï¼Œåœ¨æ»šåŠ¨æ—¶å°†ä¼šä½¿ç”¨ç»˜åˆ¶ç¼“å­˜
+ *    textFilterEnabled -- è®¾ç½®æ˜¯å¦å¯¹åˆ—è¡¨é¡¹è¿›è¡Œè¿‡æ»¤ï¼Œéœ€è¦å¯¹åº”çš„Adapterå®ç°äº†Filteræ¥å£æ—¶æ‰èµ·ä½œç”¨
+ * +-AdapterView -- æŠ½è±¡åŸºç±»ï¼Œå¯ä»¥åŒ…æ‹¬å¤šä¸ª"åˆ—è¡¨é¡¹"å¹¶å°†å…¶ä»¥åˆé€‚çš„å½¢å¼æ˜¾ç¤ºå‡ºæ¥ï¼Œå…¶æ˜¾ç¤ºçš„åˆ—è¡¨é¡¹ç”± Adapter æä¾›(é€šè¿‡ setAdapter æ–¹æ³•è®¾ç½®).
+ *     AdapterView çš„å„å­ç±»è´Ÿè´£é‡‡ç”¨åˆé€‚çš„æ–¹å¼æ˜¾ç¤ºAdapteræä¾›çš„æ¯ä¸ª"åˆ—è¡¨é¡¹"ç»„ä»¶ã€‚
+ *     setOnItemClickListener()/setOnItemSelectedListener() -- æ·»åŠ å•å‡»ã€é€‰ä¸­äº‹ä»¶
+ * +-AdapterViewFlipper -- ä¸€èˆ¬ç”¨äºå¹»ç¯æ’­æ”¾ã€‚ä¸€æ¬¡æ˜¾ç¤ºä¸€ä¸ªAdapteræä¾›çš„Viewç»„ä»¶ï¼Œå¯ä»¥é€šè¿‡ showPrevious()/showNext() æ–¹æ³•æ¥æ§åˆ¶æ˜¾ç¤ºä¸Šä¸€ä¸ªã€ä¸‹ä¸€ä¸ªã€‚
+ *    inAnimation/outAnimation -- æ§åˆ¶ æ˜¾ç¤º/éšè— æ—¶ä½¿ç”¨çš„åŠ¨ç”»
+ *    flipInterval -- è®¾ç½®è‡ªåŠ¨æ’­æ”¾çš„æ—¶é—´é—´éš”
+ * +-AnalogClock -- æ¨¡æ‹Ÿæ—¶é’Ÿï¼Œæ˜¾ç¤º å°æ—¶ã€åˆ†é’Ÿ
+ *    dial -- è®¾ç½®è¡¨ç›˜ä½¿ç”¨çš„å›¾ç‰‡
+ *    hand_hour/hand_minute -- è®¾ç½®æ—¶é’ˆã€åˆ†é’ˆä½¿ç”¨çš„å›¾ç‰‡
+ * +-AutoCompleteTextView -- è‡ªåŠ¨å®Œæˆæ–‡æœ¬æ¡†ï¼Œé€šè¿‡è®¾ç½®æƒ³è¦æ˜¾ç¤ºèµ„æºçš„é€‚é…å™¨(setAdapter)æ¥å®ç°
+ *    completionHint/completionHintView -- ä¸‹æ‹‰èœå•ä¸­çš„ æç¤ºæ ‡é¢˜ / æç¤ºæ ‡é¢˜è§†å›¾ 
+ *    completionThreshold -- ç”¨æˆ·è‡³å°‘è¾“å…¥å‡ ä¸ªå­—ç¬¦æ‰ä¼šæ˜¾ç¤ºæç¤º
  * +-BaseAdapter -- 
  * +-Button
  *     text
- * +-CheckBox -- ¸´Ñ¡°´Å¥
- * +-Chronmeter -- ¼ÆÊ±Æ÷£¬ÏÔÊ¾´ÓÄ³¸öÆğÊ¼Ê±¼ä¿ªÊ¼£¬Ò»¹²¹ıÈ¥ÁË¶à³¤Ê±¼ä
- *     format -- Ö¸¶¨¼ÆÊ±Æ÷µÄ¼ÆÊ±¸ñÊ½£¬
- *     setBase(long) -- ÉèÖÃ¼ÆÊ±Æ÷µÄÆğÊ¼Ê±¼ä£¬µ¥Î»ÎªºÁÃë¡£Èç SystemClock.elapsedRealtime()
- * +-DigitalClock -- Êı×ÖÊ±ÖÓ£¬¿ÉÒÔÏÔÊ¾µ±Ç°µÄÃëÊı
- * +-EditText -- ±à¼­¿ò»òÃÜÂë¿ò
- *     hint -- Ã»ÓĞÊäÈëÄÚÈİÊ±µÄÌáÊ¾ĞÅÏ¢
- *     inputType -- Ö¸¶¨ÊäÈë×é¼şµÄÀàĞÍ(ÀàËÆ HTML ÖĞ <input> µÄtypeÊôĞÔ)£¬Èç date(ÈÕÆÚ), number(ÊıÖµ), numberPassword(Ö»½ÓÊÜÊı×ÖÃÜÂë), µÈ
- *     numeric -- ÉèÖÃ¹ØÁªµÄÊıÖµÊäÈë·¨£¬Èç integer(ÕûÊı), signed(ÔÊĞíÊäÈë·ûºÅµÄÊıÖµ)£¬ decimal(ÔÊĞíÊäÈëĞ¡ÊıµãµÄÊıÖµ)
+ * +-CheckBox -- å¤é€‰æŒ‰é’®
+ * +-Chronmeter -- è®¡æ—¶å™¨ï¼Œæ˜¾ç¤ºä»æŸä¸ªèµ·å§‹æ—¶é—´å¼€å§‹ï¼Œä¸€å…±è¿‡å»äº†å¤šé•¿æ—¶é—´
+ *     format -- æŒ‡å®šè®¡æ—¶å™¨çš„è®¡æ—¶æ ¼å¼ï¼Œ
+ *     setBase(long) -- è®¾ç½®è®¡æ—¶å™¨çš„èµ·å§‹æ—¶é—´ï¼Œå•ä½ä¸ºæ¯«ç§’ã€‚å¦‚ SystemClock.elapsedRealtime()
+ * +-DigitalClock -- æ•°å­—æ—¶é’Ÿï¼Œå¯ä»¥æ˜¾ç¤ºå½“å‰çš„ç§’æ•°
+ * +-EditText -- ç¼–è¾‘æ¡†æˆ–å¯†ç æ¡†
+ *     hint -- æ²¡æœ‰è¾“å…¥å†…å®¹æ—¶çš„æç¤ºä¿¡æ¯
+ *     inputType -- æŒ‡å®šè¾“å…¥ç»„ä»¶çš„ç±»å‹(ç±»ä¼¼ HTML ä¸­ <input> çš„typeå±æ€§)ï¼Œå¦‚ date(æ—¥æœŸ), number(æ•°å€¼), numberPassword(åªæ¥å—æ•°å­—å¯†ç ), ç­‰
+ *     numeric -- è®¾ç½®å…³è”çš„æ•°å€¼è¾“å…¥æ³•ï¼Œå¦‚ integer(æ•´æ•°), signed(å…è®¸è¾“å…¥ç¬¦å·çš„æ•°å€¼)ï¼Œ decimal(å…è®¸è¾“å…¥å°æ•°ç‚¹çš„æ•°å€¼)
  *     password -- true
  *     textSize -- 18sp
- * +-ExpandableListView -- ¿ÉÕ¹¿ªµÄÁĞ±í×é¼ş(ÀàËÆÊı¿Ø¼ş?)£¬°ÑÁĞ±íÏî·ÖÎª¼¸×é£¬Ã¿×éÀï¿É°üº¬¶à¸öÁĞ±íÏî£¬ÆäÊı¾İÓÉ ExpandableListAdapter Ìá¹©¡£
- * +-ExtractEditText -- ÊÇEditText×é¼şµÄµ×²ã·şÎñÀà£¬¸ºÔğÌá¹©È«ÆÁÊäÈë·¨Ö§³Ö
- * +-Fragment --11ÀïÔö¼ÓµÄ£¬¿ÉÒÔÖØÓÃActivityµÈ, 
- *     Í¨³£ÓÃ·¨£º
- *       1. ÉèÖÃÒªÌæ»»µÄÕ¼Î»ÔªËØId£ºmyContrainLayout.setId( ROOT_CONTAINER_ID);
- *       2. ½«Õ¼Î»ÔªËØµÄÄÚÈİ»»³É×Ô¶¨ÒåµÄFragment( myGetFragment  ¿ÉÒÔÓÉ×ÓÀàÖØÔØ )£º
+ * +-ExpandableListView -- å¯å±•å¼€çš„åˆ—è¡¨ç»„ä»¶(ç±»ä¼¼æ•°æ§ä»¶?)ï¼ŒæŠŠåˆ—è¡¨é¡¹åˆ†ä¸ºå‡ ç»„ï¼Œæ¯ç»„é‡Œå¯åŒ…å«å¤šä¸ªåˆ—è¡¨é¡¹ï¼Œå…¶æ•°æ®ç”± ExpandableListAdapter æä¾›ã€‚
+ * +-ExtractEditText -- æ˜¯EditTextç»„ä»¶çš„åº•å±‚æœåŠ¡ç±»ï¼Œè´Ÿè´£æä¾›å…¨å±è¾“å…¥æ³•æ”¯æŒ
+ * +-Fragment --11é‡Œå¢åŠ çš„ï¼Œå¯ä»¥é‡ç”¨Activityç­‰, 
+ *     é€šå¸¸ç”¨æ³•ï¼š
+ *       1. è®¾ç½®è¦æ›¿æ¢çš„å ä½å…ƒç´ Idï¼šmyContrainLayout.setId( ROOT_CONTAINER_ID);
+ *       2. å°†å ä½å…ƒç´ çš„å†…å®¹æ¢æˆè‡ªå®šä¹‰çš„Fragment( myGetFragment  å¯ä»¥ç”±å­ç±»é‡è½½ )ï¼š
  *           getFragmentManager().beginTransaction().replace(ROOT_CONTAINER_ID , myGetFragment()).commit();
- * +-Gallery(Í¼¿â) -- ÄÜË®Æ½·½ÏòÏÔÊ¾ÆäÄÚÈİ£¬¶øÇÒÓÃ»§¿ÉÒÔÍÏ¶¯À´ÇĞ»»ÁĞ±íÏî¡£Ò»°ãºÍ ImageSwitcher Ò»ÆğÓÃÀ´ä¯ÀÀÍ¼Æ¬£¬±»Ñ¡ÖĞµÄÏîÎ»ÓÚÖĞ¼ä¡£
- *      Í¨³£Ê¹ÓÃ Gallery ÏÔÊ¾ËõÂÔÍ¼£¬ÔÚµã»÷Ê±Í¨¹ı ImageSwitcher::setImageResource ÇĞ»»µ½´óÍ¼
- *      TODO: ÒÑ²»ÔÙÍÆ¼ö¸Ã¿Ø¼ş¡£ÍÆ¼öÊ¹ÓÃ HorizontalScrollView + ViewPager À´´úÌæGallery¡£
- *      animationDuration -- ÉèÖÃÍ¼Æ¬ÇĞ»»Ê±µÄ¶¯»­³ÖĞøÊ±¼ä
- *      unselectedAlpha -- ÉèÖÃÃ»ÓĞÑ¡ÖĞµÄÍ¼Æ¬µÄÍ¸Ã÷¶È£¬Èç "0.6"
- *      ImageSwitcher::setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out)); // ÉèÖÃ¶¯»­Ğ§¹û
- * +-Gesture -- ÊÖÊÆÊ¶±ğ 
- * +-GridView -- °´ÕÕĞĞÁĞµÄ·½Ê½ÏÔÊ¾ÄÚÈİ£¬Ò»°ãÊÊºÏÏÔÊ¾Í¼Æ¬)
- *     horizontalSpacing/verticalSpacing -- ¸÷ÔªËØÖ®¼äµÄ Ë®Æ½/´¹Ö± ¼ä¾à
- *     numColumns -- ÉèÖÃÁĞÊı£¬Ä¬ÈÏÎª1¡£×¢Òâ£ºĞĞÊıÊÇ¸ù¾İAdapter¶¯Ì¬¸Ä±äµÄ
- *     stretchMode -- ÉèÖÃÀ­ÉìÄ£Ê½£¬Èç NO_STRETCH(²»À­Éì)£¬ STRETCH_COLUMN_WIDTH(À­ÉìÔªËØ±í¸ñÔªËØ±¾Éí)
- * +-ImageButton -- Í¼Æ¬°´Å¥(ImageViewµÄ×ÓÀà£¬ÉèÖÃtextÎŞĞ§)
+ * +-Gallery(å›¾åº“) -- èƒ½æ°´å¹³æ–¹å‘æ˜¾ç¤ºå…¶å†…å®¹ï¼Œè€Œä¸”ç”¨æˆ·å¯ä»¥æ‹–åŠ¨æ¥åˆ‡æ¢åˆ—è¡¨é¡¹ã€‚ä¸€èˆ¬å’Œ ImageSwitcher ä¸€èµ·ç”¨æ¥æµè§ˆå›¾ç‰‡ï¼Œè¢«é€‰ä¸­çš„é¡¹ä½äºä¸­é—´ã€‚
+ *      é€šå¸¸ä½¿ç”¨ Gallery æ˜¾ç¤ºç¼©ç•¥å›¾ï¼Œåœ¨ç‚¹å‡»æ—¶é€šè¿‡ ImageSwitcher::setImageResource åˆ‡æ¢åˆ°å¤§å›¾
+ *      TODO: å·²ä¸å†æ¨èè¯¥æ§ä»¶ã€‚æ¨èä½¿ç”¨ HorizontalScrollView + ViewPager æ¥ä»£æ›¿Galleryã€‚
+ *      animationDuration -- è®¾ç½®å›¾ç‰‡åˆ‡æ¢æ—¶çš„åŠ¨ç”»æŒç»­æ—¶é—´
+ *      unselectedAlpha -- è®¾ç½®æ²¡æœ‰é€‰ä¸­çš„å›¾ç‰‡çš„é€æ˜åº¦ï¼Œå¦‚ "0.6"
+ *      ImageSwitcher::setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out)); // è®¾ç½®åŠ¨ç”»æ•ˆæœ
+ * +-Gesture -- æ‰‹åŠ¿è¯†åˆ« 
+ * +-GridView -- æŒ‰ç…§è¡Œåˆ—çš„æ–¹å¼æ˜¾ç¤ºå†…å®¹ï¼Œä¸€èˆ¬é€‚åˆæ˜¾ç¤ºå›¾ç‰‡)
+ *     horizontalSpacing/verticalSpacing -- å„å…ƒç´ ä¹‹é—´çš„ æ°´å¹³/å‚ç›´ é—´è·
+ *     numColumns -- è®¾ç½®åˆ—æ•°ï¼Œé»˜è®¤ä¸º1ã€‚æ³¨æ„ï¼šè¡Œæ•°æ˜¯æ ¹æ®AdapteråŠ¨æ€æ”¹å˜çš„
+ *     stretchMode -- è®¾ç½®æ‹‰ä¼¸æ¨¡å¼ï¼Œå¦‚ NO_STRETCH(ä¸æ‹‰ä¼¸)ï¼Œ STRETCH_COLUMN_WIDTH(æ‹‰ä¼¸å…ƒç´ è¡¨æ ¼å…ƒç´ æœ¬èº«)
+ * +-ImageButton -- å›¾ç‰‡æŒ‰é’®(ImageViewçš„å­ç±»ï¼Œè®¾ç½®textæ— æ•ˆ)
  *     src -- "@drawable/iconempty"
  *     setImageResource(R.drawable.iconempty);
- * +-ImageView -- ÏÔÊ¾Í¼Æ¬µÈDrawable¶ÔÏó
- *     adjustViewBounds -- ÉèÖÃÊÇ·ñµ÷Õû×Ô¼ºµÄ±ß½çÀ´±£³ÖËùÏÔÊ¾µÄÍ¼Æ¬µÄ³¤¿í±È
- *     cropToPadding -- ÉèÖÃÊÇ·ñ²Ã¼ôµ½±£Áôpadding
- *     scaleType -- ÉèÖÃÏÔÊ¾µÄÍ¼Æ¬ÈçºÎËõ·Å»òÒÆ¶¯ÒÔÊÊÓ¦ImageViewµÄ´óĞ¡£¬
- *       center(Í¼Æ¬·ÅÔÚÖĞ¼ä£¬²»½øĞĞËõ·Å), centerCrop(±£³Ö×İºá±ÈËõ·Å£¬Ê¹µÃÍ¼Æ¬ÄÜÍêÈ«¸²¸ÇImageView), centerInside(±£³Ö×İºá±ÈËõ·Å£¬Ê¹µÃÄÜÍêÈ«ÏÔÊ¾Í¼Æ¬)
- *       fitCenter(±£³Ö×İºá±ÈËõ·Å£¬²¢½«Ëõ·ÅºóµÄÍ¼Æ¬·ÅÔÚÖĞÑë) , fitXY(ºáÏò×İÏò¶ÀÁ¢Ëõ·Å£¬Í¼Æ¬ÍêÈ«ÊÊÓ¦¸ÃImageView)£¬
- *       matrix(Ê¹ÓÃÍ¼Ïñ¾ØÕó·½Ê½Ëõ·Å),
- *     setOnTouchListener -- ÉèÖÃTouchÊÂ¼ş¼àÌıÆ÷ 
- *     ÉèÖÃÏÔÊ¾µÄÄÚÈİ
- *       setImageDrawable(getResources().getDrawable(R.drawable.right));   //ÉèÖÃÏÔÊ¾µÄÍ¼Æ¬, »òÍ¨¹ı src ÊôĞÔÉèÖÃ
+ * +-ImageView -- æ˜¾ç¤ºå›¾ç‰‡ç­‰Drawableå¯¹è±¡
+ *     adjustViewBounds -- è®¾ç½®æ˜¯å¦è°ƒæ•´è‡ªå·±çš„è¾¹ç•Œæ¥ä¿æŒæ‰€æ˜¾ç¤ºçš„å›¾ç‰‡çš„é•¿å®½æ¯”
+ *     cropToPadding -- è®¾ç½®æ˜¯å¦è£å‰ªåˆ°ä¿ç•™padding
+ *     scaleType -- è®¾ç½®æ˜¾ç¤ºçš„å›¾ç‰‡å¦‚ä½•ç¼©æ”¾æˆ–ç§»åŠ¨ä»¥é€‚åº”ImageViewçš„å¤§å°ï¼Œ
+ *       center(å›¾ç‰‡æ”¾åœ¨ä¸­é—´ï¼Œä¸è¿›è¡Œç¼©æ”¾), centerCrop(ä¿æŒçºµæ¨ªæ¯”ç¼©æ”¾ï¼Œä½¿å¾—å›¾ç‰‡èƒ½å®Œå…¨è¦†ç›–ImageView), centerInside(ä¿æŒçºµæ¨ªæ¯”ç¼©æ”¾ï¼Œä½¿å¾—èƒ½å®Œå…¨æ˜¾ç¤ºå›¾ç‰‡)
+ *       fitCenter(ä¿æŒçºµæ¨ªæ¯”ç¼©æ”¾ï¼Œå¹¶å°†ç¼©æ”¾åçš„å›¾ç‰‡æ”¾åœ¨ä¸­å¤®) , fitXY(æ¨ªå‘çºµå‘ç‹¬ç«‹ç¼©æ”¾ï¼Œå›¾ç‰‡å®Œå…¨é€‚åº”è¯¥ImageView)ï¼Œ
+ *       matrix(ä½¿ç”¨å›¾åƒçŸ©é˜µæ–¹å¼ç¼©æ”¾),
+ *     setOnTouchListener -- è®¾ç½®Touchäº‹ä»¶ç›‘å¬å™¨ 
+ *     è®¾ç½®æ˜¾ç¤ºçš„å†…å®¹
+ *       setImageDrawable(getResources().getDrawable(R.drawable.right));   //è®¾ç½®æ˜¾ç¤ºçš„å›¾ç‰‡, æˆ–é€šè¿‡ src å±æ€§è®¾ç½®
  *       setImageResource(xxx); setImageBitmap(); setImageURI()
- * +-ListView/ListActivity -- ÁĞ±íÊÓÍ¼£¬ÒÔ´¹Ö±ÁĞ±íµÄ·½Ê½ÁĞ³öĞèÒªÏÔÊ¾µÄÁĞ±íÏî(ÈçÁªÏµÈËÃûµ¥¡¢ÏµÍ³ÉèÖÃÏîµÈ)
- *     ¹Ø¼üµã£ºÉèÖÃAdapter¡£ Èô ListActivty ÖĞÒªÊ¹ÓÃ×Ô¶¨ÒåµÄ½çÃæ²¼¾ÖÎÄ¼ş£¬ÔòÆäÖĞ±ØĞëÓĞÒ»¸öidÎª "@+id/android:list" µÄListView¡£
- * +-MapView -- ÏÔÊ¾GoogleµØÍ¼
- * +-MultiAutoCompleteTextView -- ÔÊĞíÊäÈë¶à¸öÌáÊ¾Ïî(¶à¸öÌáÊ¾ÏîÒÔ·Ö¸ô·û·Ö¸ô)µÄ×Ô¶¯ÌáÊ¾£¬
- *    setTokenizer -- ÉèÖÃ·Ö¸ô·û£¬Èç  myAuto.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
- * +-ProgressBar -- ½ø¶ÈÌõ£¬ÓĞºÜ¶àÖÖ:
- *     1.ProgressDialog(¶Ô»°¿ò½ø¶ÈÌõ)£º ¸²¸ÇActivityµÄonCreateDialog·½·¨£¬²¢ÔÚÆäÖĞ´´½¨½ø¶ÈÌõ²¢·µ»Ø£»µ÷ÓÃshowDialog·½·¨ÏÔÊ¾;
- *     2.ProgressBarIndeterminate(±êÌâÀ¸½ø¶ÈÌõ)£ºµ÷ÓÃ Activity.requestWindowFeature(Window.FEATURE_PROGRESS) ·½·¨ÉèÖÃ´°¿ÚÓĞ½ø¶ÈÌõµÄÌØÕ÷;
- *       µ÷ÓÃ Activity.setProgressBarVisibility(´ø½ø¶È)/setProgressBarIndeterminateVisibility(²»´ø½ø¶È) ÏÔÊ¾½ø¶ÈÌõ£¬ Activity.setProgress ÉèÖÃ½ø¶È
- *     3.ProgressBar(ÆÕÍ¨½ø¶ÈÌõ) -- ²¼¾ÖÎÄ¼şÖĞÉùÃ÷ProgressBar£¬»ñÈ¡µ½±äÁ¿ºóµ÷ÓÃ incrementProgressBy µÈ·½·¨ÉèÖÃ½ø¶È
- *       style -- Ö¸¶¨·ç¸ñ, Èç : @android:style/Widget.ProgressBar.Inverse -- ÆÕÍ¨´óĞ¡µÄ»·ĞÎ½ø¶ÈÌõ
- *       indeterminate/indeterminateDuration -- ÉèÖÃÎªtrue£¬±íÊ¾²»¾«È·ÏÔÊ¾ ½ø¶È /½ø¶ÈµÄ³ÖĞøÊ±¼ä
- *       progressDrawable -- ÉèÖÃ½ø¶ÈÌõµÄ¹ìµÀ¶ÔÓ¦µÄDrawable¶ÔÏó(Îª LayerDrawable ¶ÔÏó, Í¨¹ı <layer-list> ÔªËØ½øĞĞÅäÖÃ)
+ * +-ListView/ListActivity -- åˆ—è¡¨è§†å›¾ï¼Œä»¥å‚ç›´åˆ—è¡¨çš„æ–¹å¼åˆ—å‡ºéœ€è¦æ˜¾ç¤ºçš„åˆ—è¡¨é¡¹(å¦‚è”ç³»äººåå•ã€ç³»ç»Ÿè®¾ç½®é¡¹ç­‰)
+ *     å…³é”®ç‚¹ï¼šè®¾ç½®Adapterã€‚ è‹¥ ListActivty ä¸­è¦ä½¿ç”¨è‡ªå®šä¹‰çš„ç•Œé¢å¸ƒå±€æ–‡ä»¶ï¼Œåˆ™å…¶ä¸­å¿…é¡»æœ‰ä¸€ä¸ªidä¸º "@+id/android:list" çš„ListViewã€‚
+ * +-MapView -- æ˜¾ç¤ºGoogleåœ°å›¾
+ * +-MultiAutoCompleteTextView -- å…è®¸è¾“å…¥å¤šä¸ªæç¤ºé¡¹(å¤šä¸ªæç¤ºé¡¹ä»¥åˆ†éš”ç¬¦åˆ†éš”)çš„è‡ªåŠ¨æç¤ºï¼Œ
+ *    setTokenizer -- è®¾ç½®åˆ†éš”ç¬¦ï¼Œå¦‚  myAuto.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+ * +-ProgressBar -- è¿›åº¦æ¡ï¼Œæœ‰å¾ˆå¤šç§:
+ *     1.ProgressDialog(å¯¹è¯æ¡†è¿›åº¦æ¡)ï¼š è¦†ç›–Activityçš„onCreateDialogæ–¹æ³•ï¼Œå¹¶åœ¨å…¶ä¸­åˆ›å»ºè¿›åº¦æ¡å¹¶è¿”å›ï¼›è°ƒç”¨showDialogæ–¹æ³•æ˜¾ç¤º;
+ *     2.ProgressBarIndeterminate(æ ‡é¢˜æ è¿›åº¦æ¡)ï¼šè°ƒç”¨ Activity.requestWindowFeature(Window.FEATURE_PROGRESS) æ–¹æ³•è®¾ç½®çª—å£æœ‰è¿›åº¦æ¡çš„ç‰¹å¾;
+ *       è°ƒç”¨ Activity.setProgressBarVisibility(å¸¦è¿›åº¦)/setProgressBarIndeterminateVisibility(ä¸å¸¦è¿›åº¦) æ˜¾ç¤ºè¿›åº¦æ¡ï¼Œ Activity.setProgress è®¾ç½®è¿›åº¦
+ *     3.ProgressBar(æ™®é€šè¿›åº¦æ¡) -- å¸ƒå±€æ–‡ä»¶ä¸­å£°æ˜ProgressBarï¼Œè·å–åˆ°å˜é‡åè°ƒç”¨ incrementProgressBy ç­‰æ–¹æ³•è®¾ç½®è¿›åº¦
+ *       style -- æŒ‡å®šé£æ ¼, å¦‚ : @android:style/Widget.ProgressBar.Inverse -- æ™®é€šå¤§å°çš„ç¯å½¢è¿›åº¦æ¡
+ *       indeterminate/indeterminateDuration -- è®¾ç½®ä¸ºtrueï¼Œè¡¨ç¤ºä¸ç²¾ç¡®æ˜¾ç¤º è¿›åº¦ /è¿›åº¦çš„æŒç»­æ—¶é—´
+ *       progressDrawable -- è®¾ç½®è¿›åº¦æ¡çš„è½¨é“å¯¹åº”çš„Drawableå¯¹è±¡(ä¸º LayerDrawable å¯¹è±¡, é€šè¿‡ <layer-list> å…ƒç´ è¿›è¡Œé…ç½®)
  *       
- * +-QuickContactBadge -- ÏÔÊ¾¹ØÁªµ½ÌØ¶¨ÁªÏµÈËµÄÍ¼Æ¬£¬µ¥»÷Í¼Æ¬Ê±»á´ò¿ªÏàÓ¦ÁªÏµÈËµÄÁªÏµ·½Ê½½çÃæ
+ * +-QuickContactBadge -- æ˜¾ç¤ºå…³è”åˆ°ç‰¹å®šè”ç³»äººçš„å›¾ç‰‡ï¼Œå•å‡»å›¾ç‰‡æ—¶ä¼šæ‰“å¼€ç›¸åº”è”ç³»äººçš„è”ç³»æ–¹å¼ç•Œé¢
  *     assignContactFromEmail()/assignContactPhone()/assignContactUri() 
- * +-RadioButton(µ¥Ñ¡°´Å¥) + RadioGroup(¹ÜÀíÒ»×éRadioButton) 
+ * +-RadioButton(å•é€‰æŒ‰é’®) + RadioGroup(ç®¡ç†ä¸€ç»„RadioButton) 
  *     checkedButton -- "@+id/sex1"
  *     orientation -- vertical,horizontal
  * +-RatingBar -- 
- * +-SeekBar -- ÍÏ¶¯Ìõ
- *     thumb -- Ö¸¶¨Ò»¸öDrawable¶ÔÏó£¬¿É×Ô¶¨Òå»¬¿éµÄÍâ¹Û£¬ÏìÓ¦ OnSeekBarChangeListener 
- * +-StackView -- ÒÔ¶ÑÕ»·½Ê½À´ÏÔÊ¾¶à¸öÁĞ±íÏî
- * +-Spinner -- ÏÂÀ­ÁĞ±í
- *     entries -- Ê¹ÓÃÊı×é×ÊÔ´ÉèÖÃ¸ÃÏÂÀ­ÁĞ±í¿òµÄÁĞ±íÏîÄ¿
- * +-Switch -- ¿ª¹Ø
- *     switchTextAppearance -- ¸Ã¿ª¹ØÍ¼±êÉÏµÄÎÄ±¾ÑùÊ½
- *     thumb -- Ö¸¶¨Ê¹ÓÃ×Ô¶¨ÒåDrawable¿ØÖÆ¸Ã¿ª¹ØµÄ¿ª¹Ø°´Å¥
- *     track -- Ö¸¶¨Ê¹ÓÃ×Ô¶¨ÒåDrawable¿ØÖÆ¸Ã¿ª¹ØµÄ¿ª¹Ø¹ìµÀ
- * +-TabHost / TabActivity -- Ñ¡Ïî¿¨
- * +-TextView -- ÎÄ±¾ÊÓÍ¼£¬ÏÔÊ¾×Ö·û´®
- *     autoLink -- all(¿ÉÒÔÏÔÊ¾Á´½Ó£¬Èç http://)£¬ »ò "email|phone" -- ¶ÔÓÊ¼ş¡¢µç»°Ôö¼ÓÁ´½Ó
- *     editable -- ¿ØÖÆÊÇ·ñÔÊĞí±à¼­
- *     ellipsize -- ÉèÖÃµ±ÏÔÊ¾µÄÎÄ±¾³¬¹ı³¤¶ÈÊ±ÈçºÎ´¦ÀíÎÄ±¾ÄÚÈİ£¬Èç end(ÔÚÎÄ±¾½áÎ²´¦½Ø¶ÏÏÔÊ¾Ê¡ÂÔºÅ), marquee(¹ö¶¯¶¯»­ÏÔÊ¾ÎÄ±¾)
+ * +-SeekBar -- æ‹–åŠ¨æ¡
+ *     thumb -- æŒ‡å®šä¸€ä¸ªDrawableå¯¹è±¡ï¼Œå¯è‡ªå®šä¹‰æ»‘å—çš„å¤–è§‚ï¼Œå“åº” OnSeekBarChangeListener 
+ * +-StackView -- ä»¥å †æ ˆæ–¹å¼æ¥æ˜¾ç¤ºå¤šä¸ªåˆ—è¡¨é¡¹
+ * +-Spinner -- ä¸‹æ‹‰åˆ—è¡¨
+ *     entries -- ä½¿ç”¨æ•°ç»„èµ„æºè®¾ç½®è¯¥ä¸‹æ‹‰åˆ—è¡¨æ¡†çš„åˆ—è¡¨é¡¹ç›®
+ * +-Switch -- å¼€å…³
+ *     switchTextAppearance -- è¯¥å¼€å…³å›¾æ ‡ä¸Šçš„æ–‡æœ¬æ ·å¼
+ *     thumb -- æŒ‡å®šä½¿ç”¨è‡ªå®šä¹‰Drawableæ§åˆ¶è¯¥å¼€å…³çš„å¼€å…³æŒ‰é’®
+ *     track -- æŒ‡å®šä½¿ç”¨è‡ªå®šä¹‰Drawableæ§åˆ¶è¯¥å¼€å…³çš„å¼€å…³è½¨é“
+ * +-TabHost / TabActivity -- é€‰é¡¹å¡
+ * +-TextView -- æ–‡æœ¬è§†å›¾ï¼Œæ˜¾ç¤ºå­—ç¬¦ä¸²
+ *     autoLink -- all(å¯ä»¥æ˜¾ç¤ºé“¾æ¥ï¼Œå¦‚ http://)ï¼Œ æˆ– "email|phone" -- å¯¹é‚®ä»¶ã€ç”µè¯å¢åŠ é“¾æ¥
+ *     editable -- æ§åˆ¶æ˜¯å¦å…è®¸ç¼–è¾‘
+ *     ellipsize -- è®¾ç½®å½“æ˜¾ç¤ºçš„æ–‡æœ¬è¶…è¿‡é•¿åº¦æ—¶å¦‚ä½•å¤„ç†æ–‡æœ¬å†…å®¹ï¼Œå¦‚ end(åœ¨æ–‡æœ¬ç»“å°¾å¤„æˆªæ–­æ˜¾ç¤ºçœç•¥å·), marquee(æ»šåŠ¨åŠ¨ç”»æ˜¾ç¤ºæ–‡æœ¬)
  *     text -- @string/str_id
  *     textColor -- @drawable/darkgray
- *    +-CheckedTextView -- Ôö¼ÓÁËchecked×´Ì¬
- * +-ToggleButton -- ×´Ì¬¿ª¹Ø°´Å¥£¬ÓµÓĞ checked ÊôĞÔ
- *     textOn/textOff -- µ±°´Å¥µÄ×´Ì¬ ´ò¿ª/¹Ø±Õ Ê±ÏÔÊ¾µÄÎÄ±¾
+ *    +-CheckedTextView -- å¢åŠ äº†checkedçŠ¶æ€
+ * +-ToggleButton -- çŠ¶æ€å¼€å…³æŒ‰é’®ï¼Œæ‹¥æœ‰ checked å±æ€§
+ *     textOn/textOff -- å½“æŒ‰é’®çš„çŠ¶æ€ æ‰“å¼€/å…³é—­ æ—¶æ˜¾ç¤ºçš„æ–‡æœ¬
  * +-VideoView -- 
- * +-WebView -- ÄÚÖÃä¯ÀÀÆ÷¿Ø¼ş£¬¿ÉÖ±½Ó¼ÓÔØÍøÒ³¡£ÎªÏìÓ¦³¬Á´½Ó¹¦ÄÜ£¬µ÷ÓÃ setWebViewClient ·½·¨ÉèÖÃ×Ô¶¨ÒåµÄ WebViewClient ×ÓÀàÊµÀı
- *     getSettings().setJavaScriptEnabled(true) -- ¸ü¸ÄÉèÖÃ
- *     loadUrl -- ¼ÓÔØÖ¸¶¨µÄURLµØÖ·ÍøÒ³
+ * +-WebView -- å†…ç½®æµè§ˆå™¨æ§ä»¶ï¼Œå¯ç›´æ¥åŠ è½½ç½‘é¡µã€‚ä¸ºå“åº”è¶…é“¾æ¥åŠŸèƒ½ï¼Œè°ƒç”¨ setWebViewClient æ–¹æ³•è®¾ç½®è‡ªå®šä¹‰çš„ WebViewClient å­ç±»å®ä¾‹
+ *     getSettings().setJavaScriptEnabled(true) -- æ›´æ”¹è®¾ç½®
+ *     loadUrl -- åŠ è½½æŒ‡å®šçš„URLåœ°å€ç½‘é¡µ
  * +-Window
- *     setFormat -- ÉèÖÃ´°¿ÚÌØÕ÷£¬Èç PixelFormat.TRANSLUCENT(°ëÍ¸Ã÷)£¬ ĞèÒªÔÚ setContentView Ö®Ç°µ÷ÓÃ
- * +-ZoomButton -- ·Å´ó/ËõĞ¡ °´Å¥£¬AndroidÏµÍ³Ìá¹©ÁË @android:drawable/btn_minus,btn_plus Á½¸ö×ÊÔ´£¬Ö»ĞèÖ¸¶¨Æä src ÊôĞÔ¼´¿É
- * +-ZoomControls -- Í¬Ê±×éºÏÁË ·Å´ó¡¢ËõĞ¡ Á½¸ö°´Å¥£¬²¢¿É·Ö±ğ°ó¶¨²»Í¬µÄÊÂ¼ş¼àÌıÆ÷
+ *     setFormat -- è®¾ç½®çª—å£ç‰¹å¾ï¼Œå¦‚ PixelFormat.TRANSLUCENT(åŠé€æ˜)ï¼Œ éœ€è¦åœ¨ setContentView ä¹‹å‰è°ƒç”¨
+ * +-ZoomButton -- æ”¾å¤§/ç¼©å° æŒ‰é’®ï¼ŒAndroidç³»ç»Ÿæä¾›äº† @android:drawable/btn_minus,btn_plus ä¸¤ä¸ªèµ„æºï¼Œåªéœ€æŒ‡å®šå…¶ src å±æ€§å³å¯
+ * +-ZoomControls -- åŒæ—¶ç»„åˆäº† æ”¾å¤§ã€ç¼©å° ä¸¤ä¸ªæŒ‰é’®ï¼Œå¹¶å¯åˆ†åˆ«ç»‘å®šä¸åŒçš„äº‹ä»¶ç›‘å¬å™¨
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * Layout -- Android Í¨¹ı LayoutInflater/MenuInflater  µÈÀà½« XML ¸ñÊ½µÄ²¼¾ÖÎÄ¼şÖĞµÄ×é¼ş½âÎöÎª¿ÉÊÓ»¯µÄÊÓÍ¼×é¼ş¡£
- *   »á¸ù¾İÔËĞĞÆ½Ì¨µ÷ÕûÆäÖĞ×é¼şµÄÎ»ÖÃ¡¢´óĞ¡¡£Æä¹ı³Ì·ÖÎªÁ½²½£ºmeasure(¼ÆËãÎ»ÖÃ) -> layout(¸ù¾İ¼ÆËã½á¹û½øĞĞ²¼¾Ö)
- *   ²¼¾ÖÎÄ¼şÖĞµÄ <requestFocus/> Ïî´ú±íÊ²Ã´ÒâË¼?
- * ViewGroup -- ĞéÄâ¸¸Àà
- *   gravity -- ¿ØÖÆ²¼¾Ö¹ÜÀíÆ÷ÄÚ×é¼şµÄ¶ÔÆë·½Ê½£¬Èç top, bottom, left, right, center_vertical µÈ£¬¶à¸öÊôĞÔ¿ÉÍ¨¹ı "|" ×éºÏ
- *   layout_width/layout_height -- fill_parent(¼õÈ¥Ìî³ä¿Õ°×ºóµÈÍ¬ÓÚ¸¸ÈİÆ÷),match_parent(µÈ¼ÛÓÚfill_parent?ÍÆ¼ö) wrap_content(¸ù¾İÄÚÈİÖ¸¶¨¸ß¿í),320px,80dip
- *   +-AbsoluteLayout(TODO:ÒÑ·ÏÆú ) -- ¾ø¶ÔÎ»ÖÃ¶¨Î»£¬½µµÍ¼æÈİĞÔ£¬Î¬»¤³É±¾¸ß
- *       layout_x, layout_y -- 30px£¬ Ö¸¶¨×Ó×é¼şµÄ X¡¢Y ×ø±ê
- *   +-FrameLayout -- Ö¡²¼¾Ö£¬×é¼ş´ÓÆÁÄ»µÄ×óÉÏ½Ç¿ªÊ¼²¼¾Ö£¬¶à¸ö×é¼ş²ãµşÅÅĞò£¬ºóÃæµÄ×é¼ş¸²¸ÇÇ°ÃæµÄ×é¼ş¡£
- *                             ÎªÃ¿¸ö¼ÓÈëÆäÖĞµÄ×é¼ş´´½¨Ò»¸ö¿Õ°×µÄÇøÓò(³ÆÎªÒ»Ö¡),Ã¿¸ö×Ó×é¼şÕ¼¾İÒ»Ö¡¡£ÕâĞ©Ö¡»á¸ù¾İgravityÊôĞÔ×Ô¶¯¶ÔÆë¡£
- *                             ¿ÉÍ¨¹ıÉèÖÃ¶à¸ö layout_gravity="center" µÄÖğ½¥¼õĞ¡µÄ×ÓÔªËØ´ïµ½ÄŞºçµÆµÄĞ§¹û(ÈçÍ¬ĞÄÔ²»·)
- *         foreground -- ÉèÖÃ¸ÃÖ¡²¼¾ÖÈİÆ÷µÄÇ°¾°Í¼Ïñ(DrawableÀàĞÍ)
- *         foregroundGravity -- ¶¨Òå»æÖÆÇ°¾°Í¼ÏñµÄgravityÊôĞÔ
- *     +-ViewAnimator--ÎªÆäÖĞµÄViewÇĞ»»Ìá¹©¶¯»­Ğ§¹û£¬¿ÉÍ¨¹ı setInAnimation/setOutAnimation ÉèÖÃ½øÈëºÍÍË³öÆÁÄ»Ê±Ê¹ÓÃµÄ¶¯»­
- *       +-ViewFlipper--Ö¸¶¨¶à¸öViewÖ®¼äµÄÇĞ»»Ğ§¹û
- *       +-ViewSwitcher--ÔÚÁ½¸öViewÖ®¼äÇĞ»»¡£¿ÉÍ¨¹ıÖ¸¶¨ ViewSwitcher.ViewFactory À´´´½¨£¬Æä×ÓÀà ImageSwitcher/TextSwitcher
- *   +-GridLayout -- 4.0ĞÂÔöµÄÍø¸ñ²¼¾Ö,½«ÈİÆ÷»®·ÖÎª rowsXcolumns ¸öÍø¸ñ£¬Ã¿¸öÍø¸ñ¿ÉÒÔ·ÀÖ¹Ò»¸ö×é¼ş
- *       columnCount/rowCount -- ÉèÖÃÍø¸ñµÄ ÁĞÊı ¡¢ĞĞÊı
- *       layout_column/layout_row -- ÉèÖÃ¸Ã×Ó×é¼şÔÚGridLayoutµÄµÚ¼¸ÁĞ¡¢µÚ¼¸ĞĞ
- *       layout_columnSpan/layout_rowSpan -- ÉèÖÃ¸Ã×Ó×é¼şÔÚGridLayout ºáÏò¡¢×İÏòÉÏ ¿ç¼¸ÁĞ¡¢¼¸ĞĞ
- *   +-LinearLayout -- ÏßĞÍ²¼¾Ö£¬°´ÕÕ´¹Ö±»òÕßË®Æ½·½Ïò²¼¾Ö×é¼ş¡£×¢Òâ£ºË®Æ½ÅÅÁĞÊ±²»»á»»ĞĞÏÔÊ¾¶àÓàµÄ×é¼ş¡£
+ * Layout -- Android é€šè¿‡ LayoutInflater/MenuInflater  ç­‰ç±»å°† XML æ ¼å¼çš„å¸ƒå±€æ–‡ä»¶ä¸­çš„ç»„ä»¶è§£æä¸ºå¯è§†åŒ–çš„è§†å›¾ç»„ä»¶ã€‚
+ *   ä¼šæ ¹æ®è¿è¡Œå¹³å°è°ƒæ•´å…¶ä¸­ç»„ä»¶çš„ä½ç½®ã€å¤§å°ã€‚å…¶è¿‡ç¨‹åˆ†ä¸ºä¸¤æ­¥ï¼šmeasure(è®¡ç®—ä½ç½®) -> layout(æ ¹æ®è®¡ç®—ç»“æœè¿›è¡Œå¸ƒå±€)
+ *   å¸ƒå±€æ–‡ä»¶ä¸­çš„ <requestFocus/> é¡¹ä»£è¡¨ä»€ä¹ˆæ„æ€?
+ * ViewGroup -- è™šæ‹Ÿçˆ¶ç±»
+ *   gravity -- æ§åˆ¶å¸ƒå±€ç®¡ç†å™¨å†…ç»„ä»¶çš„å¯¹é½æ–¹å¼ï¼Œå¦‚ top, bottom, left, right, center_vertical ç­‰ï¼Œå¤šä¸ªå±æ€§å¯é€šè¿‡ "|" ç»„åˆ
+ *   layout_width/layout_height -- fill_parent(å‡å»å¡«å……ç©ºç™½åç­‰åŒäºçˆ¶å®¹å™¨),match_parent(ç­‰ä»·äºfill_parent?æ¨è) wrap_content(æ ¹æ®å†…å®¹æŒ‡å®šé«˜å®½),320px,80dip
+ *   +-AbsoluteLayout(TODO:å·²åºŸå¼ƒ ) -- ç»å¯¹ä½ç½®å®šä½ï¼Œé™ä½å…¼å®¹æ€§ï¼Œç»´æŠ¤æˆæœ¬é«˜
+ *       layout_x, layout_y -- 30pxï¼Œ æŒ‡å®šå­ç»„ä»¶çš„ Xã€Y åæ ‡
+ *   +-FrameLayout -- å¸§å¸ƒå±€ï¼Œç»„ä»¶ä»å±å¹•çš„å·¦ä¸Šè§’å¼€å§‹å¸ƒå±€ï¼Œå¤šä¸ªç»„ä»¶å±‚å æ’åºï¼Œåé¢çš„ç»„ä»¶è¦†ç›–å‰é¢çš„ç»„ä»¶ã€‚
+ *                             ä¸ºæ¯ä¸ªåŠ å…¥å…¶ä¸­çš„ç»„ä»¶åˆ›å»ºä¸€ä¸ªç©ºç™½çš„åŒºåŸŸ(ç§°ä¸ºä¸€å¸§),æ¯ä¸ªå­ç»„ä»¶å æ®ä¸€å¸§ã€‚è¿™äº›å¸§ä¼šæ ¹æ®gravityå±æ€§è‡ªåŠ¨å¯¹é½ã€‚
+ *                             å¯é€šè¿‡è®¾ç½®å¤šä¸ª layout_gravity="center" çš„é€æ¸å‡å°çš„å­å…ƒç´ è¾¾åˆ°éœ“è™¹ç¯çš„æ•ˆæœ(å¦‚åŒå¿ƒåœ†ç¯)
+ *         foreground -- è®¾ç½®è¯¥å¸§å¸ƒå±€å®¹å™¨çš„å‰æ™¯å›¾åƒ(Drawableç±»å‹)
+ *         foregroundGravity -- å®šä¹‰ç»˜åˆ¶å‰æ™¯å›¾åƒçš„gravityå±æ€§
+ *     +-ViewAnimator--ä¸ºå…¶ä¸­çš„Viewåˆ‡æ¢æä¾›åŠ¨ç”»æ•ˆæœï¼Œå¯é€šè¿‡ setInAnimation/setOutAnimation è®¾ç½®è¿›å…¥å’Œé€€å‡ºå±å¹•æ—¶ä½¿ç”¨çš„åŠ¨ç”»
+ *       +-ViewFlipper--æŒ‡å®šå¤šä¸ªViewä¹‹é—´çš„åˆ‡æ¢æ•ˆæœ
+ *       +-ViewSwitcher--åœ¨ä¸¤ä¸ªViewä¹‹é—´åˆ‡æ¢ã€‚å¯é€šè¿‡æŒ‡å®š ViewSwitcher.ViewFactory æ¥åˆ›å»ºï¼Œå…¶å­ç±» ImageSwitcher/TextSwitcher
+ *   +-GridLayout -- 4.0æ–°å¢çš„ç½‘æ ¼å¸ƒå±€,å°†å®¹å™¨åˆ’åˆ†ä¸º rowsXcolumns ä¸ªç½‘æ ¼ï¼Œæ¯ä¸ªç½‘æ ¼å¯ä»¥é˜²æ­¢ä¸€ä¸ªç»„ä»¶
+ *       columnCount/rowCount -- è®¾ç½®ç½‘æ ¼çš„ åˆ—æ•° ã€è¡Œæ•°
+ *       layout_column/layout_row -- è®¾ç½®è¯¥å­ç»„ä»¶åœ¨GridLayoutçš„ç¬¬å‡ åˆ—ã€ç¬¬å‡ è¡Œ
+ *       layout_columnSpan/layout_rowSpan -- è®¾ç½®è¯¥å­ç»„ä»¶åœ¨GridLayout æ¨ªå‘ã€çºµå‘ä¸Š è·¨å‡ åˆ—ã€å‡ è¡Œ
+ *   +-LinearLayout -- çº¿å‹å¸ƒå±€ï¼ŒæŒ‰ç…§å‚ç›´æˆ–è€…æ°´å¹³æ–¹å‘å¸ƒå±€ç»„ä»¶ã€‚æ³¨æ„ï¼šæ°´å¹³æ’åˆ—æ—¶ä¸ä¼šæ¢è¡Œæ˜¾ç¤ºå¤šä½™çš„ç»„ä»¶ã€‚
  *       background -- "@drawable/testpic",
- *       divider -- ´¹Ö±²¼¾ÖÊ±Á½¸ö°´Å¥Ö®¼äµÄ·Ö¸ôÌõ(Drawable¶ÔÏó)
- *       layout_gravity -- ÉèÖÃ¸Ã×ÓÔªËØÔÚ¸¸ÈİÆ÷ÖĞµÄ¶ÔÆë·½Ê½£¬Èç center_horizontal
- *       orientation -- ÅÅÁĞ·½Ê½, Èç   vertical(´¹Ö±ÅÅÁĞ£¬Ä¬ÈÏÖµ),horizontal
- *       layout_weight -- È¨ÖØ
- *       layout_alignParentLeft/layout_alignParentTop/ -- true »ò false
+ *       divider -- å‚ç›´å¸ƒå±€æ—¶ä¸¤ä¸ªæŒ‰é’®ä¹‹é—´çš„åˆ†éš”æ¡(Drawableå¯¹è±¡)
+ *       layout_gravity -- è®¾ç½®è¯¥å­å…ƒç´ åœ¨çˆ¶å®¹å™¨ä¸­çš„å¯¹é½æ–¹å¼ï¼Œå¦‚ center_horizontal
+ *       orientation -- æ’åˆ—æ–¹å¼, å¦‚   vertical(å‚ç›´æ’åˆ—ï¼Œé»˜è®¤å€¼),horizontal
+ *       layout_weight -- æƒé‡
+ *       layout_alignParentLeft/layout_alignParentTop/ -- true æˆ– false
  *       layout_marginRight -- 80dip, 
- *       layout_below/layout_alignTop -- "@+id/ExitButton", ÉèÖÃÏà¶ÔÎ»ÖÃµÄÔªËØID
+ *       layout_below/layout_alignTop -- "@+id/ExitButton", è®¾ç½®ç›¸å¯¹ä½ç½®çš„å…ƒç´ ID
  *       layout_centerHorizontal -- true
- *       measureWithLargestChild -- ÉèÖÃÎªtrueÊ±£¬ËùÓĞ´øÈ¨ÖØµÄ×ÓÔªËØ¶¼»á¾ßÓĞ×î´ó×ÓÔªËØµÄ×îĞ¡³ß´ç
- *     +-TableLayout  -- ±í¸ñ²¼¾Ö£¬¼Ì³Ğ×ÔLinearLayout£¬°´ÕÕĞĞÁĞ·½Ê½²¼¾Ö×é¼ş( ²ÉÓÃ > TableRow > ÔªËØ µÄ·½Ê½)¡£
- *         ÈôÖ±½Ó½«ÔªËØ·ÅÈëTableLayout£¬Ôò¸ÃÔªËØ½«Õ¼ÂúÒ»ĞĞ
- *           collapseColumns -- ÉèÖÃĞèÒª±»Òş²ØµÄÁĞµÄÁĞĞòºÅ£¬¶à¸öÁĞĞòºÅÖ®¼äÓÃ¶ººÅ¸ô¿ª
- *           shrinkColumns -- ÉèÖÃÔÊĞí±»ÊÕËõµÄÁĞµÄÁĞĞòºÅ£¬¶à¸öÁĞĞòºÅÖ®¼äÓÃ¶ººÅ¸ô¿ª
- *           stretchColumns -- ÉèÖÃÔÊĞí±»À­ÉìµÄÁĞµÄÁĞĞòºÅ£¬¶à¸öÁĞĞòºÅÖ®¼äÓÃ¶ººÅ¸ô¿ª£¬¿É±£Ö¤×é¼şÄÜÍêÈ«ÌîÂú±í¸ñ¿ÕÓà¿Õ¼ä
- *   +-RelativeLayout -- Ïà¶Ô²¼¾Ö£¬Ïà¶ÔÆäËû×é¼şµÄ²¼¾Ö·½Ê½(ÈçÔÚÆäÉÏÏÂ×óÓÒµÈ)¡£¿ÉÒÔÀ­Éì×Ô¶¯ÊÊÓ¦£¬µ«»áÔì³ÉÍ¼Ïñ±äĞÎ¡£
+ *       measureWithLargestChild -- è®¾ç½®ä¸ºtrueæ—¶ï¼Œæ‰€æœ‰å¸¦æƒé‡çš„å­å…ƒç´ éƒ½ä¼šå…·æœ‰æœ€å¤§å­å…ƒç´ çš„æœ€å°å°ºå¯¸
+ *     +-TableLayout  -- è¡¨æ ¼å¸ƒå±€ï¼Œç»§æ‰¿è‡ªLinearLayoutï¼ŒæŒ‰ç…§è¡Œåˆ—æ–¹å¼å¸ƒå±€ç»„ä»¶( é‡‡ç”¨ > TableRow > å…ƒç´  çš„æ–¹å¼)ã€‚
+ *         è‹¥ç›´æ¥å°†å…ƒç´ æ”¾å…¥TableLayoutï¼Œåˆ™è¯¥å…ƒç´ å°†å æ»¡ä¸€è¡Œ
+ *           collapseColumns -- è®¾ç½®éœ€è¦è¢«éšè—çš„åˆ—çš„åˆ—åºå·ï¼Œå¤šä¸ªåˆ—åºå·ä¹‹é—´ç”¨é€—å·éš”å¼€
+ *           shrinkColumns -- è®¾ç½®å…è®¸è¢«æ”¶ç¼©çš„åˆ—çš„åˆ—åºå·ï¼Œå¤šä¸ªåˆ—åºå·ä¹‹é—´ç”¨é€—å·éš”å¼€
+ *           stretchColumns -- è®¾ç½®å…è®¸è¢«æ‹‰ä¼¸çš„åˆ—çš„åˆ—åºå·ï¼Œå¤šä¸ªåˆ—åºå·ä¹‹é—´ç”¨é€—å·éš”å¼€ï¼Œå¯ä¿è¯ç»„ä»¶èƒ½å®Œå…¨å¡«æ»¡è¡¨æ ¼ç©ºä½™ç©ºé—´
+ *   +-RelativeLayout -- ç›¸å¯¹å¸ƒå±€ï¼Œç›¸å¯¹å…¶ä»–ç»„ä»¶çš„å¸ƒå±€æ–¹å¼(å¦‚åœ¨å…¶ä¸Šä¸‹å·¦å³ç­‰)ã€‚å¯ä»¥æ‹‰ä¼¸è‡ªåŠ¨é€‚åº”ï¼Œä½†ä¼šé€ æˆå›¾åƒå˜å½¢ã€‚
  *        layout_below, layout_alignParentBottom, layout_toRightOf
- *        ignoreGravity -- Ö¸¶¨ÄÄ¸ö×é¼ş²»ÊÜgravityÊôĞÔµÄÓ°Ïì
- *   +-ScrollView -- ¹ö¶¯ÊÓÍ¼
+ *        ignoreGravity -- æŒ‡å®šå“ªä¸ªç»„ä»¶ä¸å—gravityå±æ€§çš„å½±å“
+ *   +-ScrollView -- æ»šåŠ¨è§†å›¾
  *   +-TableRow
  *
- * LayoutInflater infater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE); //»òLayoutInflater.from(getApplicationContext())
+ * LayoutInflater infater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE); //æˆ–LayoutInflater.from(getApplicationContext())
  * convertView = infater.inflate(R.layout.baseadapter_provider,null);
  * 
- * ViewTreeObserver -- View±ä»¯¼àÌıÆ÷(µ±View Tree ·¢Éú±ä»¯Ê±»áÍ¨Öª¸Ã¼àÌıÆ÷)£¬²»ÄÜ×Ô¶¨ÒåÊµÀı£¬¶ø±ØĞëÍ¨¹ı View.getViewTreeObserver()  »ñµÃ
+ * ViewTreeObserver -- Viewå˜åŒ–ç›‘å¬å™¨(å½“View Tree å‘ç”Ÿå˜åŒ–æ—¶ä¼šé€šçŸ¥è¯¥ç›‘å¬å™¨)ï¼Œä¸èƒ½è‡ªå®šä¹‰å®ä¾‹ï¼Œè€Œå¿…é¡»é€šè¿‡ View.getViewTreeObserver()  è·å¾—
  *   
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * ¶Ô»°¿ò(Dialog)
- *   AlertDialog(¾¯¸æ¶Ô»°¿ò)
- *     Ê¾Àı: 
- *       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);  //´´½¨Builder£¬È»ºó¿ÉÒÔÒÀ´ÎÉèÖÃ¸÷ÖÖ²ÎÊı
- *       dlgBuilder.setMessage(msg).setCancelable(false).setPositiveButton("È·¶¨", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //ÉèÖÃbuilder
- *       AlertDialog alert = dlgBuilder.create();  //´´½¨¶Ô»°¿òÊµÀı
- *       alert.show(); //ÏÔÊ¾
- *  ColorPickerDialog -- Ñ¡ÔñÑÕÉ«¶Ô»°¿ò
- *  DatePickerDialog/TimePickerDialog(ÈÕÆÚ/Ê±¼ä Ñ¡Ôñ¶Ô»°¿ò) --  
- *    1.ÖØÔØ Activity.onCreateDialog(int id) { switch(id) {...}  } ·½·¨´´½¨¶Ô»°¿ò;
- *    2.ÔÚ OnDateSetListener ºÍ OnTimeSetListener µÄ¶ÔÓ¦ÊÂ¼ş·½·¨ÖĞÏìÓ¦ÈÕÆÚºÍÊ±¼äµÄÉèÖÃ;
- *    3.µ÷ÓÃ Activity.showDialog ÏÔÊ¾¶Ô»°¿ò
+ * å¯¹è¯æ¡†(Dialog)
+ *   AlertDialog(è­¦å‘Šå¯¹è¯æ¡†)
+ *     ç¤ºä¾‹: 
+ *       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);  //åˆ›å»ºBuilderï¼Œç„¶åå¯ä»¥ä¾æ¬¡è®¾ç½®å„ç§å‚æ•°
+ *       dlgBuilder.setMessage(msg).setCancelable(false).setPositiveButton("ç¡®å®š", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //è®¾ç½®builder
+ *       AlertDialog alert = dlgBuilder.create();  //åˆ›å»ºå¯¹è¯æ¡†å®ä¾‹
+ *       alert.show(); //æ˜¾ç¤º
+ *  ColorPickerDialog -- é€‰æ‹©é¢œè‰²å¯¹è¯æ¡†
+ *  DatePickerDialog/TimePickerDialog(æ—¥æœŸ/æ—¶é—´ é€‰æ‹©å¯¹è¯æ¡†) --  
+ *    1.é‡è½½ Activity.onCreateDialog(int id) { switch(id) {...}  } æ–¹æ³•åˆ›å»ºå¯¹è¯æ¡†;
+ *    2.åœ¨ OnDateSetListener å’Œ OnTimeSetListener çš„å¯¹åº”äº‹ä»¶æ–¹æ³•ä¸­å“åº”æ—¥æœŸå’Œæ—¶é—´çš„è®¾ç½®;
+ *    3.è°ƒç”¨ Activity.showDialog æ˜¾ç¤ºå¯¹è¯æ¡†
  *  
- * Toast -- ÌáÊ¾ĞÅÏ¢(Ã»ÓĞ½»»¥¹¦ÄÜ£¬Ö»ÊÇÌáÊ¾), ¾²Ì¬µÄmakeTextÉèÖÃÏÔÊ¾ÎÄ±¾ºÍÊ±³¤
- *    Toast.makeText(getApplicationContext(), "ÌáÊ¾ĞÅÏ¢", Toast.LENGTH_LONG).show;
+ * Toast -- æç¤ºä¿¡æ¯(æ²¡æœ‰äº¤äº’åŠŸèƒ½ï¼Œåªæ˜¯æç¤º), é™æ€çš„makeTextè®¾ç½®æ˜¾ç¤ºæ–‡æœ¬å’Œæ—¶é•¿
+ *    Toast.makeText(getApplicationContext(), "æç¤ºä¿¡æ¯", Toast.LENGTH_LONG).show;
 **************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * Activity  :  ±íÊ¾ÓÃ»§½çÃæÖĞµÄÒ»¸öÆÁÄ»£¬ÏÔÊ¾ÓÉ¼¸¸öViews¿Ø¼ş×é³ÉµÄÓÃ»§½Ó¿Ú£¬²¢¶ÔÊÂ¼ş×ö³öÏìÓ¦£¬¿ÉÒÔÔÚxmlÎÄ¼şÖĞ¶¨ÒåËùĞèÒªµÄViews»òÔÚ´úÂëÖĞ¶¨Òå£¬
+ * Activity  :  è¡¨ç¤ºç”¨æˆ·ç•Œé¢ä¸­çš„ä¸€ä¸ªå±å¹•ï¼Œæ˜¾ç¤ºç”±å‡ ä¸ªViewsæ§ä»¶ç»„æˆçš„ç”¨æˆ·æ¥å£ï¼Œå¹¶å¯¹äº‹ä»¶åšå‡ºå“åº”ï¼Œå¯ä»¥åœ¨xmlæ–‡ä»¶ä¸­å®šä¹‰æ‰€éœ€è¦çš„Viewsæˆ–åœ¨ä»£ç ä¸­å®šä¹‰ï¼Œ
  *     Context <- ContextWrapper <- ContextThemeWrapper <- Activity
- *     ×¢Òâ£ºActivity±ØĞëÔÚÇåµ¥ÎÄ¼şÖĞÉùÃ÷²ÅÄÜÊ¹ÓÃ
- *   Ã¿¸öActivityµÄ×´Ì¬ÓÉËüËùÔÚActivityÕ»ÖĞµÄÎ»ÖÃËù¾ö¶¨£¬ËùÓĞµ±Ç°ÕıÔÚÔËĞĞµÄActivity½«×ñÑ­ºó½øÏÈ³öµÄÔ­Ôò¡£
- *   µ±Ò»¸öĞÂµÄActivityÆô¶¯£¬µ±Ç°µÄActivity½«ÒÆÖÁ¶ÑÕ»µÄ¶¥²¿£¬Èç¹ûÓÃ»§Ê¹ÓÃBack°´Å¥£¬»òÔÚÇ°Ì¨Activity±»¹Ø±Õ£¬ÏÂÒ»¸öActivity½«±»¼¤»î²¢ÇÒÒÆÖÁµ½¶ÑÕ»µÄ¶¥²¿¡£
- *   ÈçÔÚ startActivity Ê± setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) ±êÖ¾¿ÉÇå¿ÕÒÑÓĞµÄÕ»(¼´ĞÂÆğµÄActivity½«³ÉÎª×îºóÒ»¸ö£¬finishÊ±½«½áÊø³ÌĞò)
- *     TODO£ºAPI°æ±¾Ğ¡ÓÚ8£¿·ñÔòÓÃ FLAG_ACTIVITY_NEW_TASK
+ *     æ³¨æ„ï¼šActivityå¿…é¡»åœ¨æ¸…å•æ–‡ä»¶ä¸­å£°æ˜æ‰èƒ½ä½¿ç”¨
+ *   æ¯ä¸ªActivityçš„çŠ¶æ€ç”±å®ƒæ‰€åœ¨Activityæ ˆä¸­çš„ä½ç½®æ‰€å†³å®šï¼Œæ‰€æœ‰å½“å‰æ­£åœ¨è¿è¡Œçš„Activityå°†éµå¾ªåè¿›å…ˆå‡ºçš„åŸåˆ™ã€‚
+ *   å½“ä¸€ä¸ªæ–°çš„Activityå¯åŠ¨ï¼Œå½“å‰çš„Activityå°†ç§»è‡³å †æ ˆçš„é¡¶éƒ¨ï¼Œå¦‚æœç”¨æˆ·ä½¿ç”¨BackæŒ‰é’®ï¼Œæˆ–åœ¨å‰å°Activityè¢«å…³é—­ï¼Œä¸‹ä¸€ä¸ªActivityå°†è¢«æ¿€æ´»å¹¶ä¸”ç§»è‡³åˆ°å †æ ˆçš„é¡¶éƒ¨ã€‚
+ *   å¦‚åœ¨ startActivity æ—¶ setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) æ ‡å¿—å¯æ¸…ç©ºå·²æœ‰çš„æ ˆ(å³æ–°èµ·çš„Activityå°†æˆä¸ºæœ€åä¸€ä¸ªï¼Œfinishæ—¶å°†ç»“æŸç¨‹åº)
+ *     TODOï¼šAPIç‰ˆæœ¬å°äº8ï¼Ÿå¦åˆ™ç”¨ FLAG_ACTIVITY_NEW_TASK
  *     
- *   Activity×´Ì¬ -- ×´Ì¬¹ı¶É¾ßÓĞ²»È·¶¨ĞÔ²¢ÇÒÓÉRuntimeÍêÈ«¹ÜÀí
- *     Active×´Ì¬£ºÕâÊ±ºòActivity´¦ÓÚÕ»¶¥£¬ÇÒÊÇ¿É¼ûµÄ£¬ÓĞ½¹µãµÄ£¬ÄÜ¹»½ÓÊÕÓÃ»§ÊäÈëÇ°¾°Activity¡£
- *     Paused×´Ì¬£ºActivityÊÇ¿É¼ûµÄ£¬µ«Ã»ÓĞ½¹µã¡£ÀıÈç£¬Èç¹ûÓĞÒ»¸öÍ¸Ã÷»ò·ÇÈ«ÆÁÄ»ÉÏµÄActivityÔÚÄãµÄActivityÉÏÃæ¡£
- *     Stopped×´Ì¬£ºÍêÈ«±»ÕÚ×¡£¨²»¿É¼û£©Ê±£¬½«¼ÌĞø±£ÁôÔÚÄÚ´æÖĞ±£³Öµ±Ç°µÄËùÓĞ×´Ì¬ºÍ³ÉÔ±ĞÅÏ¢£¬µ«»áÊÇ±»»ØÊÕ¶ÔÏóµÄÖ÷ÒªºòÑ¡¡£
- *     Inactive×´Ì¬£ºActivity±»É±µôÒÔºó»òÕß±»Æô¶¯ÒÔÇ°£¬ÒÑ±»´ÓActivity¶ÑÕ»ÖĞÒÆ³ı£¬ĞèÒªÖØĞÂÆô¶¯²Å¿ÉÒÔÏÔÊ¾ºÍÊ¹ÓÃ¡£
- *   ¼à²âActivityµÄ×´Ì¬±ä»¯
- *     onCreate -- ÔÚActivityÉúÃüÖÜÆÚ¿ªÊ¼Ê±±»µ÷ÓÃ£¬³õÊ¼»¯ÓÃ»§½çÃæ£¬·ÖÅäÒıÓÃÀà±äÁ¿£¬°ó¶¨Êı¾İ¿Ø¼ş£¬²¢´´½¨·şÎñºÍÏß³Ì -- Í¨³£ĞèÒªfindViewById½«³ÉÔ±±äÁ¿ºÍ¿Ø¼ş½¨Á¢¹ØÁª¡£
- *     onRestore -- onCreateÍê³Éºó±»µ÷ÓÃ£¬ÓÃÀ´»Ø¸´UI×´Ì¬
- *     onRestart -- µ±activity´ÓÍ£Ö¹×´Ì¬ÖØĞÂÆô¶¯Ê±µ÷ÓÃ(onStop->onRestart->onStart)
- *     onStart -- µ±activity¶ÔÓÃ»§¼´½«¿É¼ûµÄÊ±ºòµ÷ÓÃ£¬¿É×¢²á¸üĞÂÓÃ»§½çÃæIntent½ÓÊÕÕß
- *     onResume -- µ±activity½«ÒªÓëÓÃ»§½»»¥Ê±µ÷ÓÃ´Ë·½·¨£¬´ËÊ±activityÔÚactivityÕ»µÄÕ»¶¥£¬ÓÃ»§ÊäÈëÒÑ¾­¿ÉÒÔ´«µİ¸øËü 
- *     onSave -- Activity¼´½«ÒÆ³öÕ»¶¥±£ÁôUI×´Ì¬Ê±µ÷ÓÃ´Ë·½·¨
- *     onPause -- µ±ÏµÍ³ÒªÆô¶¯Ò»¸öÆäËûµÄactivityÊ±µ÷ÓÃ£¬Õâ¸ö·½·¨±»ÓÃÀ´Ìá½»ÄÇĞ©³Ö¾ÃÊı¾İµÄ¸Ä±ä¡¢Í£Ö¹¶¯»­¡¢ºÍÆäËûÕ¼ÓÃ CPU×ÊÔ´µÄ¶«Î÷¡£
- *     onStop -- µ±ÁíÍâÒ»¸öactivity»Ö¸´²¢ÕÚ¸Ç×¡´Ëactivity,µ¼ÖÂÆä¶ÔÓÃ»§²»ÔÙ¿É¼ûÊ±µ÷ÓÃ¡£Ò»¸öĞÂactivityÆô¶¯¡¢ÆäËüactivity±»ÇĞ»»ÖÁÇ°¾°¡¢µ±Ç°activity±»Ïú»ÙÊ±¶¼»á·¢ÉúÕâÖÖ³¡¾°¡£¿É×¢Ïú¸üĞÂÓÃ»§½çÃæIntent½ÓÊÕÕß
- *     onDestroy -- ÔÚactivity±»Ïú»ÙÇ°Ëùµ÷ÓÃµÄ×îºóÒ»¸ö·½·¨£¬ÓĞ¿ÉÄÜÔÚÄ³Ğ©Çé¿öÏÂ£¬Ò»¸öActivity±»ÖÕÖ¹Ê±²¢²»µ÷ÓÃonDestroy·½·¨¡£
- *   ³£¼û³¡¾°µÄÖ´ĞĞË³Ğò(TODO: BackPress ºÍ Home ²»Ò»Ñù ?):
- *     ³õ´ÎÆô¶¯:    onApplyThemeResource -> {onCreate} -> onStart -> onPostCreate -> onResume -> onPostResume -> onAttachedToWindow
- *     ÍË³ö:    [onBackPressed ->] onPause(ÇĞ»»Ê±´¥·¢)  -> onStop(ºóÌ¨ÓÉÏµÍ³Ñ¡ÔñÊ±»ú´¥·¢) -> onDestroy -> onDetachedFromWindow
- *     Homeµ½ºóÌ¨£ºonUserLeaveHint -> onSaveInstanceState -> onPause -> onCreateDescription -> onStop
- *     µ½Ç°Ì¨: {onRestart} ->onStart -> onResume -> onPostResume
- *   ³£¼ûÊôĞÔ
- *     ConfigChanges -- ¿ÉÒÔÊ¹Activity²¶×½Éè±¸×´Ì¬±ä»¯, Èç orientation(Éè±¸Ğı×ª) µÈ
- *   ³£¼û·½·¨
- *     findViewById() -- ¸ù¾İID²éÕÒ×é¼şµÄÊµÀı
- *     finish() -- ½áÊøActivity, Í¨³£ÓÃ·¨Îª MyActivity.this.finish();
- *     getWindow() -- ·µ»Ø¸ÃActivityËù°üº¬µÄ´°¿Ú£¬Èç²»µ÷ÓÃ setContentView À´ÉèÖÃ¸Ã´°¿ÚÏÔÊ¾µÄÄÚÈİ£¬ÔòÏÔÊ¾ÎªÒ»¸ö¿Õ´°¿Ú 
- *     setContentView -- Í¨³£ÔÚÖØÔØµÄ onCreate ÖĞµ÷ÓÃÀ´ÉèÖÃÒªÏÔÊ¾µÄÊÓÍ¼£¬´Ó¶øÊµÏÖÓëÓÃ»§½»»¥µÄ¹¦ÄÜ
- *     setThemem -- ÉèÖÃ´°¿Ú·ç¸ñ(Èç ²»ÏÔÊ¾ActionBar¡¢ÒÔ¶Ô»°¿òĞÎÊ½ÏÔÊ¾´°¿ÚµÈ)
- *     startActivity -- Æô¶¯²¢µ¼º½µ½ÁíÒ»¸öActivity£¬²ÎÊı±»·â×°ÔÚIntentÖĞ,
- *       Intent intent = new Intent(FirstActivity.this, SecondActivity.class);  Í¨¹ıBundleÉèÖÃ²ÎÊı;  startActivity(intent);  //ÔÚFirstActivityÖĞÆô¶¯SecondActivity
- *       ÔÚ SecondActivity::onCreate ÖĞ: Intent intent = getIntent(); Bundle bundle = intent.getExtras(); ...
- *     startActivityForResult -- ÒÔµÈ´ı·µ»Ø½á¹ûµÄ·½Ê½Æô¶¯²¢µ¼º½µ½ÁíÒ»¸öActivity£¬ ĞèÒªÖØÔØ onActivityResult ´¦Àí·µ»ØµÄ Intent µÈ½á¹û¡£
- *                                       ÔÚSecondActivityÖĞÍ¨¹ı SecondActivity.this.setResult(0, intent); ÉèÖÃ·µ»ØÖµ£¬ È»ºó finish() ½áÊø
- *   ³£¼û×ÓÀà
- *     ListActivity, MapActivity, PreferenceActivity(¶ÔÏµÍ³½øĞĞĞÅÏ¢ÅäÖÃºÍ¹ÜÀí) µÈ
+ *   ActivityçŠ¶æ€ -- çŠ¶æ€è¿‡æ¸¡å…·æœ‰ä¸ç¡®å®šæ€§å¹¶ä¸”ç”±Runtimeå®Œå…¨ç®¡ç†
+ *     ActiveçŠ¶æ€ï¼šè¿™æ—¶å€™Activityå¤„äºæ ˆé¡¶ï¼Œä¸”æ˜¯å¯è§çš„ï¼Œæœ‰ç„¦ç‚¹çš„ï¼Œèƒ½å¤Ÿæ¥æ”¶ç”¨æˆ·è¾“å…¥å‰æ™¯Activityã€‚
+ *     PausedçŠ¶æ€ï¼šActivityæ˜¯å¯è§çš„ï¼Œä½†æ²¡æœ‰ç„¦ç‚¹ã€‚ä¾‹å¦‚ï¼Œå¦‚æœæœ‰ä¸€ä¸ªé€æ˜æˆ–éå…¨å±å¹•ä¸Šçš„Activityåœ¨ä½ çš„Activityä¸Šé¢ã€‚
+ *     StoppedçŠ¶æ€ï¼šå®Œå…¨è¢«é®ä½ï¼ˆä¸å¯è§ï¼‰æ—¶ï¼Œå°†ç»§ç»­ä¿ç•™åœ¨å†…å­˜ä¸­ä¿æŒå½“å‰çš„æ‰€æœ‰çŠ¶æ€å’Œæˆå‘˜ä¿¡æ¯ï¼Œä½†ä¼šæ˜¯è¢«å›æ”¶å¯¹è±¡çš„ä¸»è¦å€™é€‰ã€‚
+ *     InactiveçŠ¶æ€ï¼šActivityè¢«æ€æ‰ä»¥åæˆ–è€…è¢«å¯åŠ¨ä»¥å‰ï¼Œå·²è¢«ä»Activityå †æ ˆä¸­ç§»é™¤ï¼Œéœ€è¦é‡æ–°å¯åŠ¨æ‰å¯ä»¥æ˜¾ç¤ºå’Œä½¿ç”¨ã€‚
+ *   ç›‘æµ‹Activityçš„çŠ¶æ€å˜åŒ–
+ *     onCreate -- åœ¨Activityç”Ÿå‘½å‘¨æœŸå¼€å§‹æ—¶è¢«è°ƒç”¨ï¼Œåˆå§‹åŒ–ç”¨æˆ·ç•Œé¢ï¼Œåˆ†é…å¼•ç”¨ç±»å˜é‡ï¼Œç»‘å®šæ•°æ®æ§ä»¶ï¼Œå¹¶åˆ›å»ºæœåŠ¡å’Œçº¿ç¨‹ -- é€šå¸¸éœ€è¦ findViewById å°†æˆå‘˜å˜é‡å’Œæ§ä»¶å»ºç«‹å…³è”ã€‚
+ *     onRestore -- onCreateå®Œæˆåè¢«è°ƒç”¨ï¼Œç”¨æ¥å›å¤UIçŠ¶æ€
+ *     onRestart -- å½“activityä»åœæ­¢çŠ¶æ€é‡æ–°å¯åŠ¨æ—¶è°ƒç”¨(onStop->onRestart->onStart)
+ *     onStart -- å½“activityå¯¹ç”¨æˆ·å³å°†å¯è§çš„æ—¶å€™è°ƒç”¨ï¼Œå¯æ³¨å†Œæ›´æ–°ç”¨æˆ·ç•Œé¢Intentæ¥æ”¶è€…
+ *     onResume -- å½“activityå°†è¦ä¸ç”¨æˆ·äº¤äº’æ—¶è°ƒç”¨æ­¤æ–¹æ³•ï¼Œæ­¤æ—¶activityåœ¨activityæ ˆçš„æ ˆé¡¶ï¼Œç”¨æˆ·è¾“å…¥å·²ç»å¯ä»¥ä¼ é€’ç»™å®ƒ 
+ *     onSave -- Activityå³å°†ç§»å‡ºæ ˆé¡¶ä¿ç•™UIçŠ¶æ€æ—¶è°ƒç”¨æ­¤æ–¹æ³•
+ *     onPause -- å½“ç³»ç»Ÿè¦å¯åŠ¨ä¸€ä¸ªå…¶ä»–çš„activityæ—¶è°ƒç”¨ï¼Œè¿™ä¸ªæ–¹æ³•è¢«ç”¨æ¥æäº¤é‚£äº›æŒä¹…æ•°æ®çš„æ”¹å˜ã€åœæ­¢åŠ¨ç”»ã€å’Œå…¶ä»–å ç”¨ CPUèµ„æºçš„ä¸œè¥¿ã€‚
+ *     onStop -- å½“å¦å¤–ä¸€ä¸ªactivityæ¢å¤å¹¶é®ç›–ä½æ­¤activity,å¯¼è‡´å…¶å¯¹ç”¨æˆ·ä¸å†å¯è§æ—¶è°ƒç”¨ã€‚ä¸€ä¸ªæ–°activityå¯åŠ¨ã€å…¶å®ƒactivityè¢«åˆ‡æ¢è‡³å‰æ™¯ã€å½“å‰activityè¢«é”€æ¯æ—¶éƒ½ä¼šå‘ç”Ÿè¿™ç§åœºæ™¯ã€‚å¯æ³¨é”€æ›´æ–°ç”¨æˆ·ç•Œé¢Intentæ¥æ”¶è€…
+ *     onDestroy -- åœ¨activityè¢«é”€æ¯å‰æ‰€è°ƒç”¨çš„æœ€åä¸€ä¸ªæ–¹æ³•ï¼Œæœ‰å¯èƒ½åœ¨æŸäº›æƒ…å†µä¸‹ï¼Œä¸€ä¸ªActivityè¢«ç»ˆæ­¢æ—¶å¹¶ä¸è°ƒç”¨onDestroyæ–¹æ³•ã€‚
+ *     
+ *     onSaveInstanceState -- 
+ *   å¸¸è§åœºæ™¯çš„æ‰§è¡Œé¡ºåº(TODO: BackPress å’Œ Home ä¸ä¸€æ · ?)ï¼Œå…·ä½“çš„ç”Ÿå‘½å‘¨æœŸå¯ä»¥å‚è§å›¾ ActivityLifeCycle.gif
+ *     åˆæ¬¡å¯åŠ¨:    onApplyThemeResource -> {onCreate} -> onStart -> onPostCreate -> onResume -> onPostResume -> onAttachedToWindow
+ *     é€€å‡º:    [onBackPressed ->] onPause(åˆ‡æ¢æ—¶è§¦å‘)  -> onStop(åå°ç”±ç³»ç»Ÿé€‰æ‹©æ—¶æœºè§¦å‘) -> onDestroy -> onDetachedFromWindow
+ *     Homeåˆ°åå°ï¼šonUserLeaveHint -> onSaveInstanceState(ä¿å­˜å†…å®¹) -> onPause(å¦ä¸€ä¸ªåˆ°å‰å°) -> onCreateDescription -> onStop(ä¸å¯è§)
+ *     åˆ°å‰å°: {onRestart} ->onStart -> onResume -> onPostResume
+ *     é”å±æ—¶(TODO: æœªæµ‹è¯•ç¡®è®¤): onSaveInstanceState -> onPause 
+ *   å¸¸è§å±æ€§
+ *     ConfigChanges -- å¯ä»¥ä½¿Activityæ•æ‰è®¾å¤‡çŠ¶æ€å˜åŒ–, å¦‚ orientation(è®¾å¤‡æ—‹è½¬) ç­‰
+ *   å¸¸è§æ–¹æ³•
+ *     findViewById() -- æ ¹æ®IDæŸ¥æ‰¾ç»„ä»¶çš„å®ä¾‹
+ *     finish() -- ç»“æŸActivity, é€šå¸¸ç”¨æ³•ä¸º MyActivity.this.finish();
+ *     getWindow() -- è¿”å›è¯¥Activityæ‰€åŒ…å«çš„çª—å£ï¼Œå¦‚ä¸è°ƒç”¨ setContentView æ¥è®¾ç½®è¯¥çª—å£æ˜¾ç¤ºçš„å†…å®¹ï¼Œåˆ™æ˜¾ç¤ºä¸ºä¸€ä¸ªç©ºçª—å£ 
+ *     setContentView -- é€šå¸¸åœ¨é‡è½½çš„ onCreate ä¸­è°ƒç”¨æ¥è®¾ç½®è¦æ˜¾ç¤ºçš„è§†å›¾ï¼Œä»è€Œå®ç°ä¸ç”¨æˆ·äº¤äº’çš„åŠŸèƒ½
+ *     setThemem -- è®¾ç½®çª—å£é£æ ¼(å¦‚ ä¸æ˜¾ç¤ºActionBarã€ä»¥å¯¹è¯æ¡†å½¢å¼æ˜¾ç¤ºçª—å£ç­‰)
+ *     startActivity -- å¯åŠ¨å¹¶å¯¼èˆªåˆ°å¦ä¸€ä¸ªActivityï¼Œå‚æ•°è¢«å°è£…åœ¨Intentä¸­,
+ *       Intent intent = new Intent(FirstActivity.this, SecondActivity.class);  é€šè¿‡Bundleè®¾ç½®å‚æ•°;  startActivity(intent);  //åœ¨FirstActivityä¸­å¯åŠ¨SecondActivity
+ *       åœ¨ SecondActivity::onCreate ä¸­: Intent intent = getIntent(); Bundle bundle = intent.getExtras(); ...
+ *     startActivityForResult -- ä»¥ç­‰å¾…è¿”å›ç»“æœçš„æ–¹å¼å¯åŠ¨å¹¶å¯¼èˆªåˆ°å¦ä¸€ä¸ªActivityï¼Œ éœ€è¦é‡è½½ onActivityResult å¤„ç†è¿”å›çš„ Intent ç­‰ç»“æœã€‚
+ *                                       åœ¨SecondActivityä¸­é€šè¿‡ SecondActivity.this.setResult(0, intent); è®¾ç½®è¿”å›å€¼ï¼Œ ç„¶å finish() ç»“æŸ
+ *   å¸¸è§å­ç±»
+ *     ListActivity, MapActivity, PreferenceActivity(å¯¹ç³»ç»Ÿè¿›è¡Œä¿¡æ¯é…ç½®å’Œç®¡ç†) ç­‰
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * °´Å¥½»»¥
+ * æŒ‰é’®äº¤äº’
  *   1. implements OnClickListener
  *      Button ResolutionTest = (Button)findViewById(R.id.ResolutionTest); 
- *      ResolutionTest.setOnClickListener(this);  //±ØĞëÔÚ onClickÖĞ±È½Ï getId²ÅÄÜ´¦Àí¶à¸ö°´Å¥µÄµã»÷Çé¿ö
+ *      ResolutionTest.setOnClickListener(this);  //å¿…é¡»åœ¨ onClickä¸­æ¯”è¾ƒ getIdæ‰èƒ½å¤„ç†å¤šä¸ªæŒ‰é’®çš„ç‚¹å‡»æƒ…å†µ
  *      public void onClick(View arg0) { 
  *          if (arg0.getId() == R.id.ResolutionTest)  { startTest(); } 
  *      } 
- *   2. Ê¹ÓÃ³ÉÔ±±äÁ¿
+ *   2. ä½¿ç”¨æˆå‘˜å˜é‡
  *       ResolutionTest.setOnClickListener(m_myButtonClick);
  *       Button.OnClickListener m_myButtonClick =  new Button.OnClickListener() {...}
- *   3. Ê¹ÓÃÄäÃûÊÂ¼ş
+ *   3. ä½¿ç”¨åŒ¿åäº‹ä»¶
  *       ResolutionTest.setOnClickListener(new Button.OnClickListener() {
- *           //@Override -- ÊÇ·ñĞèÒªÕâĞĞ
+ *           //@Override -- æ˜¯å¦éœ€è¦è¿™è¡Œ
  *           public void onClick(View v) {
- *              startTest();  //²»ÓÃ±È½ÏgetId,Ã¿¸öButton¶¼¿ÉÒÔÓĞ×Ô¼ºµÄOnClick
+ *              startTest();  //ä¸ç”¨æ¯”è¾ƒgetId,æ¯ä¸ªButtonéƒ½å¯ä»¥æœ‰è‡ªå·±çš„OnClick
  *           }
  *       });
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * 1. Òş²ØTitleBar ºÍ Status Bar -- TODO£ºĞèÒªÔÚsetContentView(R.layout.start_test)Ö®Ç°µ÷ÓÃ£¬·ñÔò»á³öÏÖforce close ´íÎó¡£
- *    ÔÚµ±Ç°ActivityµÄJavaÔ´ÎÄ¼şÒıÈëandroid.view.WindowºÍandroid.view.WindowManager£¬²¢ÔÚoncreate()·½·¨ÖĞµ÷ÓÃ:
+ * 1. éšè—TitleBar å’Œ Status Bar -- TODOï¼šéœ€è¦åœ¨setContentView(R.layout.start_test)ä¹‹å‰è°ƒç”¨ï¼Œå¦åˆ™ä¼šå‡ºç°force close é”™è¯¯ã€‚
+ *    åœ¨å½“å‰Activityçš„Javaæºæ–‡ä»¶å¼•å…¥android.view.Windowå’Œandroid.view.WindowManagerï¼Œå¹¶åœ¨oncreate()æ–¹æ³•ä¸­è°ƒç”¨:
  *    requestWindowFeature(Window.FEATURE_NO_TITLE);   //Hide title bar;
  *    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);  //Hide status bar;
- *    //getWindow().setBackgroundDrawableResource(R.color.red_bg); //ÉèÖÃ±³¾°É«
- * 2. Í¨¹ı×ÊÔ´ÖĞ¶¨ÒåµÄidÕÒµ½¶ÔÓ¦µÄ¶ÔÏó -- findViewById
+ *    //getWindow().setBackgroundDrawableResource(R.color.red_bg); //è®¾ç½®èƒŒæ™¯è‰²
+ * 2. é€šè¿‡èµ„æºä¸­å®šä¹‰çš„idæ‰¾åˆ°å¯¹åº”çš„å¯¹è±¡ -- findViewById
  *    TextView ResultText = (TextView)findViewById(R.id.ResultText);
- * 3. ÏÔÊ¾Í¼Æ¬
+ * 3. æ˜¾ç¤ºå›¾ç‰‡
  *    
 **************************************************************************************************************************************/
 
@@ -407,49 +410,49 @@ public class UITester extends ActivityUnitTestCase<Activity>{
 	}
 
 
-	//½çÃæÇĞ»» -- ÓĞÊ²Ã´Çø±ğ?±ê×¼Ó¦¸ÃÊÇÊ¹ÓÃµÚ¶şÖÖ·½·¨£¨ËäÈ»Âé·³£¬µ«¸üºÏÀíºÍ£©
-    //  1.ÇĞ»»layout -- ¶¨Òå²»Í¬µÄlayout xmlÎÄ¼ş,Í¨¹ı setContentView·½·¨ ½øĞĞÇĞ»»; »¹ÔÚÍ¬Ò»¸öActivityÖĞ£¬³ÉÔ±±äÁ¿²»±ä¡£
-    //  2.ÇĞ»»Activity -- ¶¨Òå²»Í¬µÄlayout xml£¬ÊµÏÖ²»Í¬µÄActivity×ÓÀà(ÏÔÊ¾¶ÔÓ¦µÄlayout),Í¨¹ı IntentÀà ½øĞĞÇĞ»»¡£
-    //  ×¢ÒâĞèÒªÔÚAndroidManifest.xmlÖĞ¶¨ÒåĞÂµÄactivity£¬²¢ÉèÖÃÄÇÃ´ÊôĞÔ£¬·ñÔòÎŞ·¨±àÒë¡£
+	//ç•Œé¢åˆ‡æ¢ -- æœ‰ä»€ä¹ˆåŒºåˆ«?æ ‡å‡†åº”è¯¥æ˜¯ä½¿ç”¨ç¬¬äºŒç§æ–¹æ³•ï¼ˆè™½ç„¶éº»çƒ¦ï¼Œä½†æ›´åˆç†å’Œï¼‰
+    //  1.åˆ‡æ¢layout -- å®šä¹‰ä¸åŒçš„layout xmlæ–‡ä»¶,é€šè¿‡ setContentViewæ–¹æ³• è¿›è¡Œåˆ‡æ¢; è¿˜åœ¨åŒä¸€ä¸ªActivityä¸­ï¼Œæˆå‘˜å˜é‡ä¸å˜ã€‚
+    //  2.åˆ‡æ¢Activity -- å®šä¹‰ä¸åŒçš„layout xmlï¼Œå®ç°ä¸åŒçš„Activityå­ç±»(æ˜¾ç¤ºå¯¹åº”çš„layout),é€šè¿‡ Intentç±» è¿›è¡Œåˆ‡æ¢ã€‚
+    //  æ³¨æ„éœ€è¦åœ¨AndroidManifest.xmlä¸­å®šä¹‰æ–°çš„activityï¼Œå¹¶è®¾ç½®é‚£ä¹ˆå±æ€§ï¼Œå¦åˆ™æ— æ³•ç¼–è¯‘ã€‚
     public void TestSwitchUI() {
         /*************************************************************************************************
-         * Intent intent = new Intent();// newÒ»¸öIntent¶ÔÏó
-         * intent.setClass(EX03_09.this, EX03_09_1.class); //Ö¸¶¨ÒªÆô¶¯µÄclass
-         * startActivity(intent);// µ÷ÓÃÒ»¸öĞÂµÄActivity -- ÀàËÆ·ÇÄ£Ì¬£¿
-         * //startActivityForResult(intent,0); // ±»µ÷ÓÃActivityÒª·µ»ØÖµµÄÒÀ¾İ,
-         * Æô¶¯ĞÂµÄActivity²¢µÈ´ıÆä½áÊø£¬ // ²¢Í¨¹ıÖØÔØ onActivityResult º¯ÊıÅĞ¶Ï·µ»ØÖµ(resultCode ==
-         * RESULT_OK), ¿ÉÒÔÍ¨¹ı data.getExtras »ñÈ¡Êı¾İ£¬ ¾ßÓĞ²ã´Î¹ØÏµ // ×ÓActivityÖĞÍ¨¹ıÈçÏÂ·½Ê½·µ»Ø½á¹û:
+         * Intent intent = new Intent();// newä¸€ä¸ªIntentå¯¹è±¡
+         * intent.setClass(EX03_09.this, EX03_09_1.class); //æŒ‡å®šè¦å¯åŠ¨çš„class
+         * startActivity(intent);// è°ƒç”¨ä¸€ä¸ªæ–°çš„Activity -- ç±»ä¼¼éæ¨¡æ€ï¼Ÿ
+         * //startActivityForResult(intent,0); // è¢«è°ƒç”¨Activityè¦è¿”å›å€¼çš„ä¾æ®,
+         * å¯åŠ¨æ–°çš„Activityå¹¶ç­‰å¾…å…¶ç»“æŸï¼Œ // å¹¶é€šè¿‡é‡è½½ onActivityResult å‡½æ•°åˆ¤æ–­è¿”å›å€¼(resultCode ==
+         * RESULT_OK), å¯ä»¥é€šè¿‡ data.getExtras è·å–æ•°æ®ï¼Œ å…·æœ‰å±‚æ¬¡å…³ç³» // å­Activityä¸­é€šè¿‡å¦‚ä¸‹æ–¹å¼è¿”å›ç»“æœ:
          * // EX03_09_1.this.setResult(RESULT_OK, intent); //
-         * ·µ»Øresult»ØÉÏÒ»¸öactivity // EX03_09_1.this.finish();// ½áÊøÕâ¸öactivity
-         * EX03_09.this.finish(); // ¹Ø±ÕÔ­±¾µÄActivity(¸ù¾İ¾ßÌåÇé¿ö)
+         * è¿”å›resultå›ä¸Šä¸€ä¸ªactivity // EX03_09_1.this.finish();// ç»“æŸè¿™ä¸ªactivity
+         * EX03_09.this.finish(); // å…³é—­åŸæœ¬çš„Activity(æ ¹æ®å…·ä½“æƒ…å†µ)
          **************************************************************************************************/
     }
     
     public void testTabHost(){
         /********************************************************************************************
-         * ·½·¨1:
-         *   1. ÔÚ²¼¾ÖÎÄ¼şÖĞÊ¹ÓÃ FrameLayout ÁĞ³öTab×é¼ş¼°TabÖĞµÄÄÚÈİ×é¼ş
-         *   2. Activity Òª¼Ì³Ğ TabActivity;
-         *   3.µ÷ÓÃ TabActivity::getTabHost »ñµÃ TabHost ¶ÔÏó£¬È»ºó´´½¨ Tab Ñ¡ÏîÒ³
-         * ·½·¨2:
-         *   1.ÊµÏÖ½Ó¿Ú TabHost.TabContentFactory µÄ createTabContent ·½·¨À´Ö¸¶¨
+         * æ–¹æ³•1:
+         *   1. åœ¨å¸ƒå±€æ–‡ä»¶ä¸­ä½¿ç”¨ FrameLayout åˆ—å‡ºTabç»„ä»¶åŠTabä¸­çš„å†…å®¹ç»„ä»¶
+         *   2. Activity è¦ç»§æ‰¿ TabActivity;
+         *   3.è°ƒç”¨ TabActivity::getTabHost è·å¾— TabHost å¯¹è±¡ï¼Œç„¶ååˆ›å»º Tab é€‰é¡¹é¡µ
+         * æ–¹æ³•2:
+         *   1.å®ç°æ¥å£ TabHost.TabContentFactory çš„ createTabContent æ–¹æ³•æ¥æŒ‡å®š
          *     public class MyActivity extends TabActivity implements TabHost.TabContentFactory { 
-         *          onCreate ÖĞ:  getTabHost().addTab(getTabHost().newTabSpec("all").setContent(this);
-         *          public View createTabContent(String tag) { ...; if(tag.equals("all")) {  ÉèÖÃallÒ³Ãæ¶ÔÓ¦µÄÄÚÈİ  }  } 
+         *          onCreate ä¸­:  getTabHost().addTab(getTabHost().newTabSpec("all").setContent(this);
+         *          public View createTabContent(String tag) { ...; if(tag.equals("all")) {  è®¾ç½®allé¡µé¢å¯¹åº”çš„å†…å®¹  }  } 
          ********************************************************************************************/
         
         /*******************************************************************************************
-        //´úÂë²¿·Ö
+        //ä»£ç éƒ¨åˆ†
             TabHost tabHost = getTabHost();
             LayoutInflater.from(this).infalte(R.layout.main, tabHost.getTabContentView(), true);
-            tabHost.addTab(tabHost.newTabSpec("all").setIndicator("ËùÓĞÍ¨»°¼ÇÂ¼").setContent(R.id.TextViewAll));
-            tabHost.addTab(tabHost.newTabSpec("ok").setIndicator("ÒÑ½ÓÀ´µç").setContent(R.id.TextViewReceived));
-            tabHost.addTab(tabHost.newTabSpec("cancel").setIndicator("Î´½ÓÀ´µç").setContent(R.id.TextViewUnreceived));
+            tabHost.addTab(tabHost.newTabSpec("all").setIndicator("æ‰€æœ‰é€šè¯è®°å½•").setContent(R.id.TextViewAll));
+            tabHost.addTab(tabHost.newTabSpec("ok").setIndicator("å·²æ¥æ¥ç”µ").setContent(R.id.TextViewReceived));
+            tabHost.addTab(tabHost.newTabSpec("cancel").setIndicator("æœªæ¥æ¥ç”µ").setContent(R.id.TextViewUnreceived));
 
-         //²¼¾Ö²¿·Ö
+         //å¸ƒå±€éƒ¨åˆ†
            <FrameLayout ....>
                  <TabHost>
-                   <TextView android:id="@+id/TextViewAll" android:layout_width="wrap_content" android.text="ËùÓĞÍ¨»°¼ÇÂ¼">
+                   <TextView android:id="@+id/TextViewAll" android:layout_width="wrap_content" android.text="æ‰€æœ‰é€šè¯è®°å½•">
                    </TextView>
                  </TabHost>
            </FrameLayout>
@@ -457,26 +460,26 @@ public class UITester extends ActivityUnitTestCase<Activity>{
     }
     
     public void testTouchImage(){
-    	//setOnTouchListener -- ÔÚÍ¼Æ¬ÉÏÍ¨¹ı´¥Ãş¸ü¸ÄÎ»ÖÃ¡¢´óĞ¡µÈ(²»ÍêÕû£¬ ¶øÇÒ¿ÉÄÜ»áÓĞĞÔÄÜÎÊÌâ£¿)
+    	//setOnTouchListener -- åœ¨å›¾ç‰‡ä¸Šé€šè¿‡è§¦æ‘¸æ›´æ”¹ä½ç½®ã€å¤§å°ç­‰(ä¸å®Œæ•´ï¼Œ è€Œä¸”å¯èƒ½ä¼šæœ‰æ€§èƒ½é—®é¢˜ï¼Ÿ)
     	/*
     	public boolean onTouchEvent(View view, MotionEvent event){
 	    	ImageView image1 = new ImageView();
 	    	BitmapDrawable bitmapDrawable = (BitmapDrawable)image1.getDrawable();
-	    	Bitmap bitmap = bitmapDrawable.getBitmap();  //»ñÈ¡Î»Í¼
-	    	double scale  = bitmap.getWidth() / 320.0; // »ñµÃËõ·Å±ÈÀı
-	    	//¼ÆËãÒªÏÔÊ¾µÄÍ¼Æ¬µÄ¿ªÊ¼µã£¨×¢ÒâÔö¼Ó·¶Î§¼ì²é£©
+	    	Bitmap bitmap = bitmapDrawable.getBitmap();  //è·å–ä½å›¾
+	    	double scale  = bitmap.getWidth() / 320.0; // è·å¾—ç¼©æ”¾æ¯”ä¾‹
+	    	//è®¡ç®—è¦æ˜¾ç¤ºçš„å›¾ç‰‡çš„å¼€å§‹ç‚¹ï¼ˆæ³¨æ„å¢åŠ èŒƒå›´æ£€æŸ¥ï¼‰
 	    	int x = (int)(event.getX() * scale);
 	    	int y = (int)(event.getY() * scale);
-	    	image2.setImageBitmap(Bitmap.createBitmap(bitmap, x, y, 120, 120));  //´ÓÖ¸¶¨¿ªÊ¼Î»ÖÃ´´½¨ÒªÏÔÊ¾µÄ×ÓÎ»Í¼£¬²¢ÏÔÊ¾
+	    	image2.setImageBitmap(Bitmap.createBitmap(bitmap, x, y, 120, 120));  //ä»æŒ‡å®šå¼€å§‹ä½ç½®åˆ›å»ºè¦æ˜¾ç¤ºçš„å­ä½å›¾ï¼Œå¹¶æ˜¾ç¤º
 	    	return false;
     	}
     	*/
     }
     
     public void GridViewDisplayImageTester(){
-        //Ê¹ÓÃ BaseAdapter Àà£¬ÖØĞ´ÆäÖĞµÄ·½·¨( Èç getView À´ÉèÖÃÍ¼Æ¬ÏÔÊ¾¸ñÊ½ )
+        //ä½¿ç”¨ BaseAdapter ç±»ï¼Œé‡å†™å…¶ä¸­çš„æ–¹æ³•( å¦‚ getView æ¥è®¾ç½®å›¾ç‰‡æ˜¾ç¤ºæ ¼å¼ )
         /********************************************************************************************
-        //×Ô¶¨ÒåµÄ BaseAdapter Àà£¬¸ù¾İĞèÒª·µ»Ø²¢Í¼Æ¬µÄÊı¾İĞÅÏ¢
+        //è‡ªå®šä¹‰çš„ BaseAdapter ç±»ï¼Œæ ¹æ®éœ€è¦è¿”å›å¹¶å›¾ç‰‡çš„æ•°æ®ä¿¡æ¯
             class MyAdapter extends BaseAdapter{
                 private Integer [] imgs = {
                         R.drawable.ic_launcher
@@ -490,31 +493,31 @@ public class UITester extends ActivityUnitTestCase<Activity>{
                     ImageView imageView;
                     if(convertView == null){
                         imageView = new ImageView(context);
-                        imageView.setLayoutParams(new GridView.LayoutParams(45, 45));    //ÉèÖÃImageView¶ÔÏó²¼¾Ö
-                        imageView.setAdjustViewBounds(false);         //ÉèÖÃ±ß½ç¶ÔÆë
-                        imageView.setPadding(8,  8,  8,  8);                //ÉèÖÃ¼ä¾à
+                        imageView.setLayoutParams(new GridView.LayoutParams(45, 45));    //è®¾ç½®ImageViewå¯¹è±¡å¸ƒå±€
+                        imageView.setAdjustViewBounds(false);         //è®¾ç½®è¾¹ç•Œå¯¹é½
+                        imageView.setPadding(8,  8,  8,  8);                //è®¾ç½®é—´è·
                     }
                     else{
                         imageView = (ImageView)convertView;
                     }
-                    imageView.setImageResource(imgs[position]);    //Îª ImageView ÉèÖÃÍ¼Æ¬×ÊÔ´
+                    imageView.setImageResource(imgs[position]);    //ä¸º ImageView è®¾ç½®å›¾ç‰‡èµ„æº
                     return imageView;
                 }
             }
-        //Activity ×ÓÀàÖĞ£¬Ê¹ÓÃ×Ô¶¨ÒåµÄ Adapter ÔÚ GridView ÖĞÏÔÊ¾Í¼Æ¬
+        //Activity å­ç±»ä¸­ï¼Œä½¿ç”¨è‡ªå®šä¹‰çš„ Adapter åœ¨ GridView ä¸­æ˜¾ç¤ºå›¾ç‰‡
             GridView gridView = (GridView)findViewById(R.id.xxx);
-            gridView.setNumColumns(4);     //ÉèÖÃÁĞÊı
+            gridView.setNumColumns(4);     //è®¾ç½®åˆ—æ•°
             gridView.setAdapter(new MyAdapter(this));
         *********************************************************************************************/
     }
     
-	// È«ÆÁÏÔÊ¾´°¿Ú²¢»ñÈ¡ÆÁÄ»¸ß¿íµÈ, Activity.onCreate ÖĞ
+	// å…¨å±æ˜¾ç¤ºçª—å£å¹¶è·å–å±å¹•é«˜å®½ç­‰, Activity.onCreate ä¸­
     public void testFullScreen(){
     	/*
-    	// ÒşÈ¥±êÌâÀ¸£¨³ÌĞòµÄÃû×Ö£©, µÈ¼ÛÓÚ android:theme="@android:style/Theme.NoTitleBar"
+    	// éšå»æ ‡é¢˜æ ï¼ˆç¨‹åºçš„åå­—ï¼‰, ç­‰ä»·äº android:theme="@android:style/Theme.NoTitleBar"
     	requestWindowFeature(Window.FEATURE_NO_TITLE);
     	  
-    	//ÒşÈ¥µç³ØµÈÍ¼±êºÍÒ»ÇĞĞŞÊÎ²¿·Ö£¨×´Ì¬À¸²¿·Ö£©£¬ µÈ¼ÛÓÚ android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+    	//éšå»ç”µæ± ç­‰å›¾æ ‡å’Œä¸€åˆ‡ä¿®é¥°éƒ¨åˆ†ï¼ˆçŠ¶æ€æ éƒ¨åˆ†ï¼‰ï¼Œ ç­‰ä»·äº android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
     	getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);  
     		
     	Display display = getWindowManager().getDefaultDisplay();
@@ -536,7 +539,7 @@ public class UITester extends ActivityUnitTestCase<Activity>{
     	Rect frame = new Rect();
     	getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
     	
-    	//frame.top ÊÇ×´¿öÀ¸¸ß¶È
+    	//frame.top æ˜¯çŠ¶å†µæ é«˜åº¦
 		Log.i(TAG, "DecorViewSize = " + LogHelper.FormatRect(frame) );
     }
 }

@@ -7,106 +7,106 @@ import android.content.Intent;
 import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
- * 1.¶à¸öActivityµÄÓ¦ÓÃ³ÌĞòµÄÍêÈ«¹Ø±Õ·½·¨(TODO: ÆÀÂÛËµÄ£ÄâÆ÷ÉÏ²Å¿ÉÒÔ)
- *   a.ÉùÃ÷ <uses-permission android:name="android.permission.RESTART_PACKAGES"/> È¨ÏŞ
- *   b.ÔÚÍË³öµÄµØ·½µ÷ÓÃ£º 
+ * 1.å¤šä¸ªActivityçš„åº”ç”¨ç¨‹åºçš„å®Œå…¨å…³é—­æ–¹æ³•(TODO: è¯„è®ºè¯´æ¨¡æ‹Ÿå™¨ä¸Šæ‰å¯ä»¥)
+ *   a.å£°æ˜ <uses-permission android:name="android.permission.RESTART_PACKAGES"/> æƒé™
+ *   b.åœ¨é€€å‡ºçš„åœ°æ–¹è°ƒç”¨ï¼š 
  *     ActivityManager activityMgr= (ActivityManager)this.getSystemService(ACTIVITY_SERVICE);
  *     activityMgr.restartPackage(getPackageName());
- *   ÆäËû·½Ê½£º
- *   1.ÓÃ¹ã²¥Ò²ĞĞ°¡£¬¹ã²¥½ÓÊÕÆ÷ĞèÒªÔÚÃ¿¸öactivityÀï×¢²á£¬ĞèÒªÈ«ÍËÊ±£¬¹ã²¥Ò»ÏÂ
- *   2.¼Ì³ĞApplication°ÑËùÓĞactivity¶¼·Åµ½Ò»¸ö¼¯ºÏÀï£¬ÍË³öÊ±£¬Ö±½Ó°ÑÕâ¸ö¼¯ºÏÀïµÄactivityÒ»¸öÒ»¸öÍË³ö
+ *   å…¶ä»–æ–¹å¼ï¼š
+ *   1.ç”¨å¹¿æ’­ä¹Ÿè¡Œå•Šï¼Œå¹¿æ’­æ¥æ”¶å™¨éœ€è¦åœ¨æ¯ä¸ªactivityé‡Œæ³¨å†Œï¼Œéœ€è¦å…¨é€€æ—¶ï¼Œå¹¿æ’­ä¸€ä¸‹
+ *   2.ç»§æ‰¿ApplicationæŠŠæ‰€æœ‰activityéƒ½æ”¾åˆ°ä¸€ä¸ªé›†åˆé‡Œï¼Œé€€å‡ºæ—¶ï¼Œç›´æ¥æŠŠè¿™ä¸ªé›†åˆé‡Œçš„activityä¸€ä¸ªä¸€ä¸ªé€€å‡º
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
  * os --
- *   Bundle -- ÊôĞÔ¶Ô£¬Í¨³£ÓÃÓÚ×´Ì¬Öµ±£´æºÍ»Ö¸´¡£Ò²¿ÉÓÃÓÚÊı¾İ´«µİ¡£
- *     new Bundle ºóÍ¨¹ı Intent µÄ putExtras ·½·¨½øĞĞÉèÖÃ¡£½ÓÊÕ¶ËµÄ Activity.getIntent (²»µÈÓÚsavedInstanceState).getExtras ½øĞĞ»ñÈ¡¡£
- *   Context--Context¿ÉÒÔ·ÃÎÊAndroidÓ¦ÓÃ»·¾³µÄÏµÍ³µ÷ÓÃ, ËüÌá¹©ÁËÖîÈç×ÊÔ´½âÎö, ·ÃÎÊÊı¾İ¿âµÈ£¬Activity¡¢ServiceµÈ¶¼ÊÇÆä×ÓÀà¡£
- *     getResources() -- µÃµ½Resources¶ÔÏó£¬´Ó¶ø¼ÌĞø·ÃÎÊ¸÷ÖÖÀàĞÍ×ÊÔ´£¬Èç r.getDimension(³ß´ç×ÊÔ´)£¬r.getXML(ÎÄ¼şÃû), getDrawable(Í¼Æ¬×ÊÔ´)
- *       ÒıÓÃ×ÊÔ´µÄÒ»°ã¸ñÊ½Îª: @[°üÃû:]×ÊÔ´ÀàĞÍ/×ÊÔ´Ãû
- *     getString() -- TODO: ¾¿¾¹ÊÇ Context.getString »¹ÊÇ Resources.getString ?
+ *   Bundle -- å±æ€§å¯¹ï¼Œé€šå¸¸ç”¨äºçŠ¶æ€å€¼ä¿å­˜å’Œæ¢å¤ã€‚ä¹Ÿå¯ç”¨äºæ•°æ®ä¼ é€’ã€‚
+ *     new Bundle åé€šè¿‡ Intent çš„ putExtras æ–¹æ³•è¿›è¡Œè®¾ç½®ã€‚æ¥æ”¶ç«¯çš„ Activity.getIntent (ä¸ç­‰äºsavedInstanceState).getExtras è¿›è¡Œè·å–ã€‚
+ *   Context--Contextå¯ä»¥è®¿é—®Androidåº”ç”¨ç¯å¢ƒçš„ç³»ç»Ÿè°ƒç”¨, å®ƒæä¾›äº†è¯¸å¦‚èµ„æºè§£æ, è®¿é—®æ•°æ®åº“ç­‰ï¼ŒActivityã€Serviceç­‰éƒ½æ˜¯å…¶å­ç±»ã€‚
+ *     getResources() -- å¾—åˆ°Resourceså¯¹è±¡ï¼Œä»è€Œç»§ç»­è®¿é—®å„ç§ç±»å‹èµ„æºï¼Œå¦‚ r.getDimension(å°ºå¯¸èµ„æº)ï¼Œr.getXML(æ–‡ä»¶å), getDrawable(å›¾ç‰‡èµ„æº)
+ *       å¼•ç”¨èµ„æºçš„ä¸€èˆ¬æ ¼å¼ä¸º: @[åŒ…å:]èµ„æºç±»å‹/èµ„æºå
+ *     getString() -- TODO: ç©¶ç«Ÿæ˜¯ Context.getString è¿˜æ˜¯ Resources.getString ?
  *   Environment
- *     getExternalStorageState -- »ñÈ¡SD¿¨µÄ×´Ì¬£¬Èç MEDIA_MOUNTED 
+ *     getExternalStorageState -- è·å–SDå¡çš„çŠ¶æ€ï¼Œå¦‚ MEDIA_MOUNTED 
  *   Process
- *     killProcess(android.os.Process.myPid()) -- Ç¿ÖÆÉ±ËÀ±¾½ø³Ì£¬µ«²»°²È«¡£ĞèÒªÔÚ Activity.onDestroy ÖĞµ÷ÓÃ?
+ *     killProcess(android.os.Process.myPid()) -- å¼ºåˆ¶æ€æ­»æœ¬è¿›ç¨‹ï¼Œä½†ä¸å®‰å…¨ã€‚éœ€è¦åœ¨ Activity.onDestroy ä¸­è°ƒç”¨?
  *   
- * Intent(¶¯×÷ + URI¸ñÊ½µÄÊı¾İ) -- AndroidÖĞÒıÈëµÄĞÂµÄÉè¼ÆÔªËØ£¬²»Í¬×é¼şÖ®¼äÏà»¥µ¼º½µÄÅ¦´ø£¬·â×°ÁË²»Í¬×é¼şÖ®¼äµ¼º½²éÕÒµÄÌõ¼ş¡£
- *   Ó¦ÓÃ³ÌĞò¿ÉÒÔÍ¨¹ıËü·¢³öÇëÇó£¬¾ÍÏñÊÇ·¢³öÇóÖúĞÅºÅ¡£Ó¦ÓÃ³ÌĞò¿ÉÒÔ°´ÕÕÏàËÆ»ò»¥²¹µÄ·½Ê½½øĞĞ×¢²á£¬±íÃ÷ËûÃÇÓĞÄÜÁ¦»òÓĞĞËÈ¤Ö´ĞĞ¸÷ÖÖÇëÇó»òintent¡£
- *   Ö÷Òª²¿·Ö£º 
- *     ¶¯×÷(Action) -- ÒªÍê³ÉµÄ¶¯×÷£¬Intent ÀàÖĞÔ¤¶¨ÒåÁË´óÁ¿µÄAction³£Á¿£¬ Èç ACTION_CALL£¬ACTION_EDIT, ACTION_BATTERY_LOW µÈ
- *       ·ÃÎÊÏµÍ³Action: Èçµ÷ÓÃÏµÍ³µç»°±¾À´²éÕÒµç»°ºÅÂë¿ÉÖ±½ÓÊ¹ÓÃ intent.setAction(Intent.ACTION_GET_CONTENT); intent.setType("vnd.android.cursor.item/phone"); 
- *       ×Ô¶¨ÒåAction: 1.¶¨Òå¶ÔÓ¦µÄ static final ×Ö·û´®; 2.ÔÚÄ¿±ê×é¼şµÄAndroidManifest.xml¶ÔÓ¦µÄ <intent-filter> ÖĞÖ¸¶¨ action ÊôĞÔ
- *     Êı¾İ(Data) -- Ö´ĞĞ¶¯×÷µÄURIºÍMIMEÀàĞÍµÈĞÅÏ¢£¬²»Í¬µÄActionÓĞ²»Í¬µÄDataÊı¾İÖ¸¶¨
- *     ·ÖÀà(Category) -- Ö´ĞĞActionµÄ¸½¼ÓĞÅÏ¢£¬Èç CATEGORY_LAUNCHER ±íÊ¾¼ÓÔØ³ÌĞòÊ±¸ÃActivity³öÏÖÔÚ×îÉÏÃæ¡£
- *     ÀàĞÍ(Type),
- *     ×é¼ş(Component) -- ¿ÉÒÔÍ¨¹ı×é¼şÃû³ÆÖ±½ÓÖ¸¶¨Ä¿±ê
- *     À©Õ¹ĞÅÏ¢(Extra) -- ¶îÍâµÄ¸½¼ÓĞÅÏ¢£¬ÈçÍ¨¹ıActivity·¢ËÍÓÊ¼şÊ±£¬¿ÉÍ¨¹ıExtrasÊôĞÔÀ´Ìí¼ÓsubjectºÍbodyµÈ
- *     setClass(Ô´, Ä¿µÄ) -- ÉèÖÃÌø×ªµÄÔ´(Èç MainActivity.this)ºÍÄ¿µÄclass(ResultActivity.class)
- *   Í¨¹ıIntent¿ÉÒÔ£º
- *       Æô¶¯Activity( startActivity, startActivityForResult)
- *       Æô¶¯Service( startService, bindService  )
- *       ·¢ÆğBroadcasts( sendBroadcast, sendOrderedBroadcast, sendStickyBroadcast )
- *   Ñ°ÕÒÄ¿±ê×é¼şµÄ·½·¨£º
- *     1.Í¨¹ı×é¼şÃû³ÆÖ±½ÓÖ¸¶¨(  intent.setComponent(new ComponetName(MyActivity.this, "com.fishjam.targetApp.MainActivity")) ) ;
- *     2.Í¨¹ı AndroidManifest.xml ÎÄ¼şÖĞµÄ <intent-filter> Ö¸¶¨ÄÜ´¦ÀíµÄIntentÊôĞÔ£¬ÏµÍ³½âÎöºóÓ³Éäµ½¶ÔÓ¦µÄ Activity¡¢IntentReceiver¡¢Service µÈ¡£
- *       ÈçÏµÍ³ÖĞ×¢²áÁË¶à¸öÄÜ´¦Àí¶ÔÓ¦IntentµÄ <intent-filter>£¬ÔòÏµÍ³»áÌáÊ¾ÓÃ»§Ñ¡ÔñÒ»¸ö×é¼şÀ´ÔËĞĞ¡£
- *       Ê¹ÓÃÊ±ĞèÒª¿¼ÂÇÈı¸öÊôĞÔ£º
- *          <action> -- Èç Intent Ö¸¶¨ÁË£¬ÔòIntentFilterÖĞµÄ±ØĞëÆ¥Åä; Èç <action android:name="android.intent.action.VIEW" />
- *          <data> -- Ö¸¶¨Òª·ÃÎÊÊı¾İµÄURI(¸ñÊ½Îª: scheme://host:port/path )ºÍMIMEÀàĞÍ£¬Èç <data android:scheme="http" />
- *          <category> -- ±ØĞë³öÏÖ£¬ Èç <category android:name="android.intent.category.BROWSABLE" />
+ * Intent(åŠ¨ä½œ + URIæ ¼å¼çš„æ•°æ®) -- Androidä¸­å¼•å…¥çš„æ–°çš„è®¾è®¡å…ƒç´ ï¼Œä¸åŒç»„ä»¶ä¹‹é—´ç›¸äº’å¯¼èˆªçš„çº½å¸¦ï¼Œå°è£…äº†ä¸åŒç»„ä»¶ä¹‹é—´å¯¼èˆªæŸ¥æ‰¾çš„æ¡ä»¶ã€‚
+ *   åº”ç”¨ç¨‹åºå¯ä»¥é€šè¿‡å®ƒå‘å‡ºè¯·æ±‚ï¼Œå°±åƒæ˜¯å‘å‡ºæ±‚åŠ©ä¿¡å·ã€‚åº”ç”¨ç¨‹åºå¯ä»¥æŒ‰ç…§ç›¸ä¼¼æˆ–äº’è¡¥çš„æ–¹å¼è¿›è¡Œæ³¨å†Œï¼Œè¡¨æ˜ä»–ä»¬æœ‰èƒ½åŠ›æˆ–æœ‰å…´è¶£æ‰§è¡Œå„ç§è¯·æ±‚æˆ–intentã€‚
+ *   ä¸»è¦éƒ¨åˆ†ï¼š 
+ *     åŠ¨ä½œ(Action) -- è¦å®Œæˆçš„åŠ¨ä½œï¼ŒIntent ç±»ä¸­é¢„å®šä¹‰äº†å¤§é‡çš„Actionå¸¸é‡ï¼Œ å¦‚ ACTION_CALLï¼ŒACTION_EDIT, ACTION_BATTERY_LOW ç­‰
+ *       è®¿é—®ç³»ç»ŸAction: å¦‚è°ƒç”¨ç³»ç»Ÿç”µè¯æœ¬æ¥æŸ¥æ‰¾ç”µè¯å·ç å¯ç›´æ¥ä½¿ç”¨ intent.setAction(Intent.ACTION_GET_CONTENT); intent.setType("vnd.android.cursor.item/phone"); 
+ *       è‡ªå®šä¹‰Action: 1.å®šä¹‰å¯¹åº”çš„ static final å­—ç¬¦ä¸²; 2.åœ¨ç›®æ ‡ç»„ä»¶çš„AndroidManifest.xmlå¯¹åº”çš„ <intent-filter> ä¸­æŒ‡å®š action å±æ€§
+ *     æ•°æ®(Data) -- æ‰§è¡ŒåŠ¨ä½œçš„URIå’ŒMIMEç±»å‹ç­‰ä¿¡æ¯ï¼Œä¸åŒçš„Actionæœ‰ä¸åŒçš„Dataæ•°æ®æŒ‡å®š
+ *     åˆ†ç±»(Category) -- æ‰§è¡ŒActionçš„é™„åŠ ä¿¡æ¯ï¼Œå¦‚ CATEGORY_LAUNCHER è¡¨ç¤ºåŠ è½½ç¨‹åºæ—¶è¯¥Activityå‡ºç°åœ¨æœ€ä¸Šé¢ã€‚
+ *     ç±»å‹(Type),
+ *     ç»„ä»¶(Component) -- å¯ä»¥é€šè¿‡ç»„ä»¶åç§°ç›´æ¥æŒ‡å®šç›®æ ‡
+ *     æ‰©å±•ä¿¡æ¯(Extra) -- é¢å¤–çš„é™„åŠ ä¿¡æ¯ï¼Œå¦‚é€šè¿‡Activityå‘é€é‚®ä»¶æ—¶ï¼Œå¯é€šè¿‡Extraså±æ€§æ¥æ·»åŠ subjectå’Œbodyç­‰
+ *     setClass(æº, ç›®çš„) -- è®¾ç½®è·³è½¬çš„æº(å¦‚ MainActivity.this)å’Œç›®çš„class(ResultActivity.class)
+ *   é€šè¿‡Intentå¯ä»¥ï¼š
+ *       å¯åŠ¨Activity( startActivity, startActivityForResult)
+ *       å¯åŠ¨Service( startService, bindService  )
+ *       å‘èµ·Broadcasts( sendBroadcast, sendOrderedBroadcast, sendStickyBroadcast )
+ *   å¯»æ‰¾ç›®æ ‡ç»„ä»¶çš„æ–¹æ³•ï¼š
+ *     1.é€šè¿‡ç»„ä»¶åç§°ç›´æ¥æŒ‡å®š(  intent.setComponent(new ComponetName(MyActivity.this, "com.fishjam.targetApp.MainActivity")) ) ;
+ *     2.é€šè¿‡ AndroidManifest.xml æ–‡ä»¶ä¸­çš„ <intent-filter> æŒ‡å®šèƒ½å¤„ç†çš„Intentå±æ€§ï¼Œç³»ç»Ÿè§£æåæ˜ å°„åˆ°å¯¹åº”çš„ Activityã€IntentReceiverã€Service ç­‰ã€‚
+ *       å¦‚ç³»ç»Ÿä¸­æ³¨å†Œäº†å¤šä¸ªèƒ½å¤„ç†å¯¹åº”Intentçš„ <intent-filter>ï¼Œåˆ™ç³»ç»Ÿä¼šæç¤ºç”¨æˆ·é€‰æ‹©ä¸€ä¸ªç»„ä»¶æ¥è¿è¡Œã€‚
+ *       ä½¿ç”¨æ—¶éœ€è¦è€ƒè™‘ä¸‰ä¸ªå±æ€§ï¼š
+ *          <action> -- å¦‚ Intent æŒ‡å®šäº†ï¼Œåˆ™IntentFilterä¸­çš„å¿…é¡»åŒ¹é…; å¦‚ <action android:name="android.intent.action.VIEW" />
+ *          <data> -- æŒ‡å®šè¦è®¿é—®æ•°æ®çš„URI(æ ¼å¼ä¸º: scheme://host:port/path )å’ŒMIMEç±»å‹ï¼Œå¦‚ <data android:scheme="http" />
+ *          <category> -- å¿…é¡»å‡ºç°ï¼Œ å¦‚ <category android:name="android.intent.category.BROWSABLE" />
  *        createChooser
- *   ³£¼ûº¯Êı
- * PendingIntent -- ÓÃÓÚ Alarm¡¢Notification µÈÖĞµÄÑÓ³Ù Intent ?
+ *   å¸¸è§å‡½æ•°
+ * PendingIntent -- ç”¨äº Alarmã€Notification ç­‰ä¸­çš„å»¶è¿Ÿ Intent ?
  *   PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this, 0, intent, 0);     
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * BroadcastReceiver -- ¹ã²¥½ÓÊÕÆ÷£¬Ó¦ÓÃ³ÌĞòÖĞ¼Ì³Ğ¸ÃÀàÀ´ÊµÏÖ¼àÌıºÍÏìÓ¦ÕâĞ©¹ã²¥µÄIntent£¬ ĞèÒªÏòÏµÍ³×¢²á(ÅäÖÃÎÄ¼ş»ò Context.registerReceiver )¡£
- *   onReceive -- ÖØÔØ¸Ã·½·¨£¬ÏìÓ¦ÊÂ¼ş
- * ? ¿Í»§¶ËÍ¨¹ı Context::sendBroadcast  ·¢ÆğÒ»¸öÏµÍ³¼¶±ğµÄÊÂ¼ş¹ã²¥À´´«µİÏûÏ¢
- * ÏµÍ³Ô¤¶¨ÒåµÄÏµÍ³¹ã²¥ÊÂ¼ş:
- *   ACTION_BOOT_COMPLETED -- ÏµÍ³Æô¶¯Íê³É
- *   ACTION_BATTERY_LOW -- µçÁ¿µÍ
- *   ACTION_MEDIA_BUTTON -- °´ÏÂÃ½Ìå°´Å¥
- *   ACTION_MEDIA_EJECT -- ²åÈë»ò°Î³öÍâ²¿Ã½Ìå
- *   ACTION_PACKAGE_ADDED -- Ìí¼Ó°ü
- *   ACTION_TIME_CHANGED -- Ê±¼ä¸Ä±ä
+ * BroadcastReceiver -- å¹¿æ’­æ¥æ”¶å™¨ï¼Œåº”ç”¨ç¨‹åºä¸­ç»§æ‰¿è¯¥ç±»æ¥å®ç°ç›‘å¬å’Œå“åº”è¿™äº›å¹¿æ’­çš„Intentï¼Œ éœ€è¦å‘ç³»ç»Ÿæ³¨å†Œ(é…ç½®æ–‡ä»¶æˆ– Context.registerReceiver )ã€‚
+ *   onReceive -- é‡è½½è¯¥æ–¹æ³•ï¼Œå“åº”äº‹ä»¶
+ * ? å®¢æˆ·ç«¯é€šè¿‡ Context::sendBroadcast  å‘èµ·ä¸€ä¸ªç³»ç»Ÿçº§åˆ«çš„äº‹ä»¶å¹¿æ’­æ¥ä¼ é€’æ¶ˆæ¯
+ * ç³»ç»Ÿé¢„å®šä¹‰çš„ç³»ç»Ÿå¹¿æ’­äº‹ä»¶:
+ *   ACTION_BOOT_COMPLETED -- ç³»ç»Ÿå¯åŠ¨å®Œæˆ
+ *   ACTION_BATTERY_LOW -- ç”µé‡ä½
+ *   ACTION_MEDIA_BUTTON -- æŒ‰ä¸‹åª’ä½“æŒ‰é’®
+ *   ACTION_MEDIA_EJECT -- æ’å…¥æˆ–æ‹”å‡ºå¤–éƒ¨åª’ä½“
+ *   ACTION_PACKAGE_ADDED -- æ·»åŠ åŒ…
+ *   ACTION_TIME_CHANGED -- æ—¶é—´æ”¹å˜
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * AlarmManager -- ÏµÍ³¼¶µÄÌáÊ¾·şÎñ£¬Í¨¹ı Context.getSystemService(Context.ALARM_SERVICE) »ñµÃ
+ * AlarmManager -- ç³»ç»Ÿçº§çš„æç¤ºæœåŠ¡ï¼Œé€šè¿‡ Context.getSystemService(Context.ALARM_SERVICE) è·å¾—
  *   setRepeating(AlarmManager.RTC_WAKEUP, time, 8*1000, pi);
  *   
- * Í¨¸æ¹ÜÀíÆ÷(NotificationManager)--ÔÊĞíËùÓĞÓ¦ÓÃ³ÌĞòÏÔÊ¾ÌØ¶¨µÄ¾¯¸æĞÅÏ¢ÔÚ×´Ì¬ÌõÉÏ
- *   ¿ÉÒÔÏÔÊ¾¹ã²¥ĞÅÏ¢µÄÄÚÈİ¡¢Í¼±ê¼°Õñ¶¯µÈĞÅÏ¢
- *   Ê¹ÓÃ²½Öè£º
- *     1.»ñµÃÏµÍ³·şÎñ NotificationManager -- (NotificationManager)Context.getSystemService(NOTIFICATION_SERVICE);
- *     2.ÊµÀı»¯ Notification ²¢ÉèÖÃÊôĞÔ
+ * é€šå‘Šç®¡ç†å™¨(NotificationManager)--å…è®¸æ‰€æœ‰åº”ç”¨ç¨‹åºæ˜¾ç¤ºç‰¹å®šçš„è­¦å‘Šä¿¡æ¯åœ¨çŠ¶æ€æ¡ä¸Š
+ *   å¯ä»¥æ˜¾ç¤ºå¹¿æ’­ä¿¡æ¯çš„å†…å®¹ã€å›¾æ ‡åŠæŒ¯åŠ¨ç­‰ä¿¡æ¯
+ *   ä½¿ç”¨æ­¥éª¤ï¼š
+ *     1.è·å¾—ç³»ç»ŸæœåŠ¡ NotificationManager -- (NotificationManager)Context.getSystemService(NOTIFICATION_SERVICE);
+ *     2.å®ä¾‹åŒ– Notification å¹¶è®¾ç½®å±æ€§
  *        notice = new Notification(); notice.tickerText = "xxx";  notice.when = System.currentTimeMillis();
  *        Intent intent = new Intent(MainActivity.this, MainActivity.class);
  *        PendingIntent pi = PendingIntent.getActivity(MainActivity.this, 0, intent, 0); 
- *        notice.setLatestEventInfo(this, "MyTitile", "MyContent", pi); // ÉèÖÃÊÂ¼şĞÅÏ¢
- *     3.±êÊ¾¸ÃÍ¨ÖªµÄID²¢·¢³öÍ¨Öª
+ *        notice.setLatestEventInfo(this, "MyTitile", "MyContent", pi); // è®¾ç½®äº‹ä»¶ä¿¡æ¯
+ *     3.æ ‡ç¤ºè¯¥é€šçŸ¥çš„IDå¹¶å‘å‡ºé€šçŸ¥
  *        nm.notify(nID, n);
  *     
- * ÈÎÎñ¹ÜÀíÆ÷(ActivityManager)--¹ÜÀíÓ¦ÓÃ³ÌĞòµÄ»î¶¯ÖÜÆÚ£¬²¢ÇÒÌá¹©Í¨ÓÃµÄµ¼º½Ö§³Ö£¨navigation backstack£©
+ * ä»»åŠ¡ç®¡ç†å™¨(ActivityManager)--ç®¡ç†åº”ç”¨ç¨‹åºçš„æ´»åŠ¨å‘¨æœŸï¼Œå¹¶ä¸”æä¾›é€šç”¨çš„å¯¼èˆªæ”¯æŒï¼ˆnavigation backstackï¼‰
  * 
- * TODO: ·´Éä²¿·Ö?
- * °ü¹ÜÀíÆ÷(PackageManager)--¹ÜÀíÓ¦ÓÃ³ÌĞò°ü¡£Í¨¹ı getPackageManager()·½·¨»ñµÃ
- *   ¿ÉÒÔ»ñÈ¡Ó¦ÓÃ³ÌĞòµÄĞÅÏ¢(ÈçÃû×Ö,CacheSize¡¢DataSizeµÈ),±¾ÖÊÊÇ´ÓËùÓĞ°üµÄ AndroidManifest.xml ÖĞ½âÎöÊı¾İ?
- *   PackageItemInfo -- AndroidManifest.xmlÎÄ¼şÖĞËùÓĞ½ÚµãµÄ»ùÀà£¬ÓĞ ActivityInfo¡¢ApplicationInfo¡¢ServiceInfo µÈ¶àÖÖ×ÓÀà
- *   Ê¾Àı£ºqueryIntentActivities ¿É²éÑ¯ËùÓĞ¾ß±¸ACTION_MAINºÍCATEGORY_LAUNCHERµÄIntentµÄÓ¦ÓÃ³ÌĞò£¬È»ºó¿ÉÈÃÓÃ»§µã»÷Ê±Æô¶¯Ó¦ÓÃ(ÀàËÆHome³ÌĞòµÄLauncher)
+ * TODO: åå°„éƒ¨åˆ†?
+ * åŒ…ç®¡ç†å™¨(PackageManager)--ç®¡ç†åº”ç”¨ç¨‹åºåŒ…ã€‚é€šè¿‡ getPackageManager()æ–¹æ³•è·å¾—
+ *   å¯ä»¥è·å–åº”ç”¨ç¨‹åºçš„ä¿¡æ¯(å¦‚åå­—,CacheSizeã€DataSizeç­‰),æœ¬è´¨æ˜¯ä»æ‰€æœ‰åŒ…çš„ AndroidManifest.xml ä¸­è§£ææ•°æ®?
+ *   PackageItemInfo -- AndroidManifest.xmlæ–‡ä»¶ä¸­æ‰€æœ‰èŠ‚ç‚¹çš„åŸºç±»ï¼Œæœ‰ ActivityInfoã€ApplicationInfoã€ServiceInfo ç­‰å¤šç§å­ç±»
+ *   ç¤ºä¾‹ï¼šqueryIntentActivities å¯æŸ¥è¯¢æ‰€æœ‰å…·å¤‡ACTION_MAINå’ŒCATEGORY_LAUNCHERçš„Intentçš„åº”ç”¨ç¨‹åºï¼Œç„¶åå¯è®©ç”¨æˆ·ç‚¹å‡»æ—¶å¯åŠ¨åº”ç”¨(ç±»ä¼¼Homeç¨‹åºçš„Launcher)
  *   
  *   
  * 
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * ĞéÄâ»ú¿ØÖÆ -- TODO: ×îºÃ²»ÒªÖ±½Ó¿ØÖÆĞéÄâ»ú²ÎÊı
+ * è™šæ‹Ÿæœºæ§åˆ¶ -- TODO: æœ€å¥½ä¸è¦ç›´æ¥æ§åˆ¶è™šæ‹Ÿæœºå‚æ•°
  *    +-dalvik.system.VMRuntime
- *        getRuntime() -- »ñÈ¡µ±Ç°µÄÔËĞĞÊµÀı 
- *        setTargetHeapUtilization() -- ÔöÇ¿³ÌĞò¶ÑÄÚ´æµÄ´¦ÀíĞ§ÂÊ£¬Èç 0.75f
- *        setMinimumHeapSize() -- ÉèÖÃ×îĞ¡heap´óĞ¡
+ *        getRuntime() -- è·å–å½“å‰çš„è¿è¡Œå®ä¾‹ 
+ *        setTargetHeapUtilization() -- å¢å¼ºç¨‹åºå †å†…å­˜çš„å¤„ç†æ•ˆç‡ï¼Œå¦‚ 0.75f
+ *        setMinimumHeapSize() -- è®¾ç½®æœ€å°heapå¤§å°
 ***************************************************************************************************************************************/
 
 public class OsTester  extends AndroidTestCase {
@@ -129,21 +129,21 @@ public class OsTester  extends AndroidTestCase {
 	public void CheckPhoneConfig() {
 		//DisplayMetrics dm = new DisplayMetrics();
 		//getWindowManager().getDefaultDisplay().getMetrics(dm);
-		//String strOpt = "ÊÖ»úÆÁÄ»·Ö±æÂÊÎª£º" +  dm.widthPixels + " ¡Á " + dm.heightPixels;  //320 x 480
+		//String strOpt = "æ‰‹æœºå±å¹•åˆ†è¾¨ç‡ä¸ºï¼š" +  dm.widthPixels + " Ã— " + dm.heightPixels;  //320 x 480
 	}
 	public void IntentTester(){
-		//ÒÔÏÂ´úÂëÔÚÔ´ActivityµÄ×ÓÀà(MainActivity) ÖĞÖ´ĞĞ£¬Æô¶¯²¢¸ø ResultActivity ´«µİ²ÎÊı
+		//ä»¥ä¸‹ä»£ç åœ¨æºActivityçš„å­ç±»(MainActivity) ä¸­æ‰§è¡Œï¼Œå¯åŠ¨å¹¶ç»™ ResultActivity ä¼ é€’å‚æ•°
 		/*
 		Bundle bundle = new Bundle();
 		bundle.putString("username", "userNameString");
 		bundle.putString("passwd", "passwdString");
 		Intent intent = new Intent(MainActivity.this, ResultActivity.class); 
-		//»ò new Intent(); intent.setClass(MainActivity.this, ResultActivity.class);
+		//æˆ– new Intent(); intent.setClass(MainActivity.this, ResultActivity.class);
 		intent.putExtra("data", bundle);
 		startActivity(intent);
 		*/
 		
-		//ÒÔÏÂ´úÂëÔÚÄ¿µÄActivityµÄ×ÓÀà(ResultActivity) ÖĞÖ´ĞĞ£¬½ÓÊÕ´«ÈëµÄ²ÎÊı
+		//ä»¥ä¸‹ä»£ç åœ¨ç›®çš„Activityçš„å­ç±»(ResultActivity) ä¸­æ‰§è¡Œï¼Œæ¥æ”¶ä¼ å…¥çš„å‚æ•°
 		/*
 		Intent intent = this.getIntent();
 		Bundle bundle = intent.getBundleExtra("data");
@@ -156,7 +156,7 @@ public class OsTester  extends AndroidTestCase {
 	
 	public void CalendarTester()
 	{
-		 //Calendar -- ÈÕÀú(TODO: ÊÇ²»ÊÇUI¿Ø¼ş ?)
+		 //Calendar -- æ—¥å†(TODO: æ˜¯ä¸æ˜¯UIæ§ä»¶ ?)
 		Calendar calendar = Calendar.getInstance();
 		if (calendar != null) {
 			int  year 	= calendar.get(Calendar.YEAR);

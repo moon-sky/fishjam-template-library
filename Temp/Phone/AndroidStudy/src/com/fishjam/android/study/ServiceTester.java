@@ -13,42 +13,42 @@ import android.test.ServiceTestCase;
 import android.util.Log;
 
 /**************************************************************************************************************************************
- * AIDL(Android Interface Definition Language) -- Android½Ó¿Ú ¶¨ÒåÓïÑÔ¡£
- *   ¿Í»§¶ËºÍ±»µ÷ÓÃÊµÏÖÖ®¼äÊÇÍ¨¹ı´úÀíÄ£Ê½µÄÇáÁ¿¼¶ÊµÏÖ£¬´úÀíÀàºÍ±»´úÀíÀà¶¼ÊµÏÖ IBinder ½Ó¿Ú
- *   Stub -- ´æ¸ùÀà£¬Í¨¹ıÆä asInterface ·µ»ØÄ¿±ê½Ó¿Ú(Í¨¹ı´úÀíÄ£Ê½·µ»ØJava½Ó¿ÚµÄÊµÏÖ)
- *   Proxy -- ´úÀíÀà
+ * AIDL(Android Interface Definition Language) -- Androidæ¥å£ å®šä¹‰è¯­è¨€ã€‚
+ *   å®¢æˆ·ç«¯å’Œè¢«è°ƒç”¨å®ç°ä¹‹é—´æ˜¯é€šè¿‡ä»£ç†æ¨¡å¼çš„è½»é‡çº§å®ç°ï¼Œä»£ç†ç±»å’Œè¢«ä»£ç†ç±»éƒ½å®ç° IBinder æ¥å£
+ *   Stub -- å­˜æ ¹ç±»ï¼Œé€šè¿‡å…¶ asInterface è¿”å›ç›®æ ‡æ¥å£(é€šè¿‡ä»£ç†æ¨¡å¼è¿”å›Javaæ¥å£çš„å®ç°)
+ *   Proxy -- ä»£ç†ç±»
  * 
- * Ê¹ÓÃRPCµÄÁ÷³Ì
- *   1.Ê¹ÓÃAIDL¶¨Òå½Ó¿Ú(Èç IMath)£¬ À©Õ¹ÃûÎª .aidl;
- *   2.Ê¹ÓÃ aidl.exe  ¹¤¾ß²úÉúJava½Ó¿ÚÊµÏÖ´úÂë(ADT »á×Ô¶¯ÔÚgenÄ¿Â¼ÏÂÉú³É)
- *   3.¶¨ÒåÊµÏÖÀà, IMathImpl extends IMath.Stub { ÊµÏÖ¾ßÌåµÄ·½·¨ }
- *   4.½«½Ó¿Ú±©Â¶¸ø¿Í»§¶Ë -- Service::onBind ÖĞ·µ»Ø¸Ã½Ó¿ÚµÄÊµÀı
- *   5.¿Í»§¶Ë ÔÚ ServiceConnection::onServiceConnected ÖĞ IMath iMath = IMath.Stub.asInterface(ibinder);     
- *   AIDLµÄÀı×Ó:   
- *     interface IMath{   //»áÉú³É public interface IPerson extends android.os.IInterface { ... } µÄ½Ó¿ÚÊµÏÖ»ùÀà
+ * ä½¿ç”¨RPCçš„æµç¨‹
+ *   1.ä½¿ç”¨AIDLå®šä¹‰æ¥å£(å¦‚ IMath)ï¼Œ æ‰©å±•åä¸º .aidl;
+ *   2.ä½¿ç”¨ aidl.exe  å·¥å…·äº§ç”ŸJavaæ¥å£å®ç°ä»£ç (ADT ä¼šè‡ªåŠ¨åœ¨genç›®å½•ä¸‹ç”Ÿæˆ)
+ *   3.å®šä¹‰å®ç°ç±», IMathImpl extends IMath.Stub { å®ç°å…·ä½“çš„æ–¹æ³• }
+ *   4.å°†æ¥å£æš´éœ²ç»™å®¢æˆ·ç«¯ -- Service::onBind ä¸­è¿”å›è¯¥æ¥å£çš„å®ä¾‹
+ *   5.å®¢æˆ·ç«¯ åœ¨ ServiceConnection::onServiceConnected ä¸­ IMath iMath = IMath.Stub.asInterface(ibinder);     
+ *   AIDLçš„ä¾‹å­:   
+ *     interface IMath{   //ä¼šç”Ÿæˆ public interface IPerson extends android.os.IInterface { ... } çš„æ¥å£å®ç°åŸºç±»
  *       int Add(int  a, int b);
  *     }
  *
  * 
- *   ×¢Òâ£º
- *     1.±ØĞëµ¼Èë³ıÄÚ½¨ÀàĞÍÍâµÄÈÎºÎÆäËûÀàĞÍ¡£
- *     2.Ô¶³Ìµ÷ÓÃÊ±¿ÉÄÜÅ×³ö RemoteException Òì³££¬ĞèÒª´¦Àí
+ *   æ³¨æ„ï¼š
+ *     1.å¿…é¡»å¯¼å…¥é™¤å†…å»ºç±»å‹å¤–çš„ä»»ä½•å…¶ä»–ç±»å‹ã€‚
+ *     2.è¿œç¨‹è°ƒç”¨æ—¶å¯èƒ½æŠ›å‡º RemoteException å¼‚å¸¸ï¼Œéœ€è¦å¤„ç†
 **************************************************************************************************************************************/
 /**************************************************************************************************************************************
  * 
- * ±àĞ´Service -- ¼Ì³Ğ Service Àà£¬ÖØÔØÆäÉúÃüÖÜÆÚÖĞµÄ·½·¨£¬²¢ÔÚ AndroidManifest.xml ÖĞÍ¨¹ı <service> ÔªËØÉùÃ÷¡£
+ * ç¼–å†™Service -- ç»§æ‰¿ Service ç±»ï¼Œé‡è½½å…¶ç”Ÿå‘½å‘¨æœŸä¸­çš„æ–¹æ³•ï¼Œå¹¶åœ¨ AndroidManifest.xml ä¸­é€šè¿‡ <service> å…ƒç´ å£°æ˜ã€‚
  *   Service
- *     onBind -- ±ØĞëÊµÏÖ£¬·µ»ØÒ»¸ö°ó¶¨µÄ½Ó¿Ú¸øService
- *     onCreate -- µÚÒ»´Î´´½¨Ê±ÓÉÏµÍ³µ÷ÓÃ
- *     onStart -- µ±Í¨¹ı startService ·½·¨Æô¶¯Ê±£¬¸Ã·½·¨±»µ÷ÓÃ
- *     onDestroy -- ·şÎñÍË³öÊ±ÓÉÏµÍ³µ÷ÓÃ
- *     stopSelf -- ·şÎñ×Ô¼ºÖ÷¶¯ÍË³ö?
- * Ê¹ÓÃService (Ê¹ÓÃ Context ÀàµÄ·½·¨)
- *   startService/stopService -- Æô¶¯/Í£Ö¹ Service
- *   bindService/unbindService -- °ó¶¨/½â°ó¶¨ Service£¬Ò»°ãÓÃÔÚÔ¶³ÌServiceµ÷ÓÃ
- *   ¿ÉÍ¨¹ı RPC »úÖÆÀ´ÊµÏÖ²»Í¬½ø³Ì¼ä Service µÄµ÷ÓÃ
+ *     onBind -- å¿…é¡»å®ç°ï¼Œè¿”å›ä¸€ä¸ªç»‘å®šçš„æ¥å£ç»™Service
+ *     onCreate -- ç¬¬ä¸€æ¬¡åˆ›å»ºæ—¶ç”±ç³»ç»Ÿè°ƒç”¨
+ *     onStart -- å½“é€šè¿‡ startService æ–¹æ³•å¯åŠ¨æ—¶ï¼Œè¯¥æ–¹æ³•è¢«è°ƒç”¨
+ *     onDestroy -- æœåŠ¡é€€å‡ºæ—¶ç”±ç³»ç»Ÿè°ƒç”¨
+ *     stopSelf -- æœåŠ¡è‡ªå·±ä¸»åŠ¨é€€å‡º?
+ * ä½¿ç”¨Service (ä½¿ç”¨ Context ç±»çš„æ–¹æ³•)
+ *   startService/stopService -- å¯åŠ¨/åœæ­¢ Service
+ *   bindService/unbindService -- ç»‘å®š/è§£ç»‘å®š Serviceï¼Œä¸€èˆ¬ç”¨åœ¨è¿œç¨‹Serviceè°ƒç”¨
+ *   å¯é€šè¿‡ RPC æœºåˆ¶æ¥å®ç°ä¸åŒè¿›ç¨‹é—´ Service çš„è°ƒç”¨
  *   
- *   ServiceConnection -- ½øĞĞÔ¶³ÌServiceµ÷ÓÃÊ±µÄ»Øµ÷½Ó¿Ú£¿Æä onServiceConnected/onServiceDisconnected ¿ÉÅĞ¶ÏÁ¬½Ó³É¹¦»ò¶Ï¿ª¡£
+ *   ServiceConnection -- è¿›è¡Œè¿œç¨‹Serviceè°ƒç”¨æ—¶çš„å›è°ƒæ¥å£ï¼Ÿå…¶ onServiceConnected/onServiceDisconnected å¯åˆ¤æ–­è¿æ¥æˆåŠŸæˆ–æ–­å¼€ã€‚
  *   IBinder -- 
 ***************************************************************************************************************************************/
 

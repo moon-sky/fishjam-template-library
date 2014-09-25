@@ -10,159 +10,159 @@ import android.test.ActivityTestCase;
 import android.test.ActivityUnitTestCase;
 
 /***************************************************************************************************************************************
- * ×î¼ÑÊµ¼ù
- *   1.¼ÓÔØÍ¼Æ¬
- *     BitmapFactory.decodeStream(getResources.openRawResource())  ¹¹ÔìÍ¼Æ¬(²»Ê¹ÓÃJava²ãµÄcreateBitmap£¬½ÚÔ¼ÄÚ´æ)
- *     TODO: ¸Ã·½·¨²»»á¸ù¾İ»úÆ÷µÄ¸÷ÖÖ·Ö±æÂÊÀ´×Ô¶¯ÊÊÓ¦ £¿
+ * æœ€ä½³å®è·µ
+ *   1.åŠ è½½å›¾ç‰‡
+ *     BitmapFactory.decodeStream(getResources.openRawResource())  æ„é€ å›¾ç‰‡(ä¸ä½¿ç”¨Javaå±‚çš„createBitmapï¼ŒèŠ‚çº¦å†…å­˜)
+ *     TODO: è¯¥æ–¹æ³•ä¸ä¼šæ ¹æ®æœºå™¨çš„å„ç§åˆ†è¾¨ç‡æ¥è‡ªåŠ¨é€‚åº” ï¼Ÿ
  *   2.BitmapFactory.Options
- *     ¶ÁÈ¡Í¼Æ¬Ê±¼ÓÉÏÍ¼Æ¬µÄConfig²ÎÊı£¬¿ÉÒÔ¸üÓĞĞ§¼õÉÙ¼ÓÔØµÄÄÚ´æ
- *   3.ÏÔÊ¾Í¼Æ¬ -- setImageBitmap ?
+ *     è¯»å–å›¾ç‰‡æ—¶åŠ ä¸Šå›¾ç‰‡çš„Configå‚æ•°ï¼Œå¯ä»¥æ›´æœ‰æ•ˆå‡å°‘åŠ è½½çš„å†…å­˜
+ *   3.æ˜¾ç¤ºå›¾ç‰‡ -- setImageBitmap ?
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * ÊÖ»úÉÏµÄµ÷½ÚÒôÁ¿µÄ°´Å¥·ÖÁ½ÖÖÇé¿ö£º
- *   1.µ÷ÕûÊÖ»ú±¾ÉíµÄÁåÉùÒôÁ¿
- *   2.µ÷ÕûÓÎÏ·£¬Èí¼ş£¬ÒôÀÖ²¥·ÅµÄÒôÁ¿£¬ ĞèÒªÏÈÍ¨¹ı Activity.setVolumeControlStream(AudioManager.STREAM_MUSIC) ÉèÖÃÒ»ÏÂ£¬
- *      ·ñÔòÖ»ÓĞÓÎÏ·ÖĞÓĞÉùÒôÔÚ²¥·ÅµÄÊ±ºò²ÅÄÜµ÷ÕûÓÎÏ·µÄÒôÁ¿¡£
+ * æ‰‹æœºä¸Šçš„è°ƒèŠ‚éŸ³é‡çš„æŒ‰é’®åˆ†ä¸¤ç§æƒ…å†µï¼š
+ *   1.è°ƒæ•´æ‰‹æœºæœ¬èº«çš„é“ƒå£°éŸ³é‡
+ *   2.è°ƒæ•´æ¸¸æˆï¼Œè½¯ä»¶ï¼ŒéŸ³ä¹æ’­æ”¾çš„éŸ³é‡ï¼Œ éœ€è¦å…ˆé€šè¿‡ Activity.setVolumeControlStream(AudioManager.STREAM_MUSIC) è®¾ç½®ä¸€ä¸‹ï¼Œ
+ *      å¦åˆ™åªæœ‰æ¸¸æˆä¸­æœ‰å£°éŸ³åœ¨æ’­æ”¾çš„æ—¶å€™æ‰èƒ½è°ƒæ•´æ¸¸æˆçš„éŸ³é‡ã€‚
  * 
- * AudioManager -- (AudioManager)getSystemService(Context.AUDIO_SERVICE); //Í¨¹ı·şÎñ»ñÈ¡ÒôÆµ¹ÜÀíÆ÷£¬¿É¿ØÖÆÒôÁ¿´óĞ¡µÈ
- *   getStreamMaxVolume(AudioManager.STREAM_MUSIC); -- »ñÈ¡×î´óÒôÁ¿Öµ(TODO: ×¢ÒâÊÇ 15£¬¶ø²»ÊÇ100)
- *   setStreamVolume(AudioManager.STREAM_MUSIC, currentVol, AudioManager.FLAG_PLAY_SOUND); --  ÉèÖÃµ±Ç°µÄÒôÁ¿´óĞ¡
+ * AudioManager -- (AudioManager)getSystemService(Context.AUDIO_SERVICE); //é€šè¿‡æœåŠ¡è·å–éŸ³é¢‘ç®¡ç†å™¨ï¼Œå¯æ§åˆ¶éŸ³é‡å¤§å°ç­‰
+ *   getStreamMaxVolume(AudioManager.STREAM_MUSIC); -- è·å–æœ€å¤§éŸ³é‡å€¼(TODO: æ³¨æ„æ˜¯ 15ï¼Œè€Œä¸æ˜¯100)
+ *   setStreamVolume(AudioManager.STREAM_MUSIC, currentVol, AudioManager.FLAG_PLAY_SOUND); --  è®¾ç½®å½“å‰çš„éŸ³é‡å¤§å°
  *   
- * Android ¶Ô³£¼ûÃ½Ìå¸ñÊ½Ìá¹©ÁËÖ§³Ö£¬
- *   Í¼Æ¬£ºJPEG, GIF, PNG, BMP µÈ
- *   ÒôÆµ£º3GP, MP3, WAV µÈ
- *   ÊÓÆµ£º3GP, MP4 µÈ
+ * Android å¯¹å¸¸è§åª’ä½“æ ¼å¼æä¾›äº†æ”¯æŒï¼Œ
+ *   å›¾ç‰‡ï¼šJPEG, GIF, PNG, BMP ç­‰
+ *   éŸ³é¢‘ï¼š3GP, MP3, WAV ç­‰
+ *   è§†é¢‘ï¼š3GP, MP4 ç­‰
  *   
- * ²¥·ÅÒôÊÓÆµ
- *   MediaPlayer -- ¾²Ì¬µÄ create ·½·¨·µ»ØÊµÀı£¬È»ºó¿ÉÍ¨¹ı start/pause/stop µÈ·½·¨¿ØÖÆ
- *       È±µã£º×ÊÔ´Õ¼ÓÃÁ¿½Ï¸ß¡¢ÑÓ³ÙÊ±¼ä½Ï³¤¡¢²»Ö§³Ö¶à¸öÒôÆµÍ¬Ê±²¥·Å
- *       ÓÅµã£º 
- *     setDataSrouce -- ÉèÖÃÏëÒª²¥·ÅÎÄ¼şµÄÂ·¾¶
- *     setVolue -- µ÷Õû×óÓÒÉùµÀµÄ´óĞ¡
- *     prepare -- ÔÚstartÇ°µ÷ÓÃ
- *     OnCompletionListener -- ÔÚÃ½Ìå²¥·ÅÍê³ÉÊ±»á»Øµ÷µÄ½Ó¿Ú£¬ÆäÓĞ onCompletion ·½·¨¡£Í¨¹ı setOnCompletionListener ÉèÖÃ
- * JetPlayer -- ¿ÉÒÔ²¥·Å±È½Ï³¤µÄÓÎÏ·±³¾°ÒôÀÖ, ²Î¼û Samples ÖĞµÄ JetBoy
- * VideoView + MediaController -- ¿ÉºÜÈİÒ×µÄÊµÏÖÊÓÆµ²¥·ÅÆ÷
- *   video.setMediaController ºÍ ctrl.setMediaPlayer Ïà»¥¹ØÁª£¬ È»ºó video.requestFocus »ñµÃ½¹µã
- * SoundPool -- Ö±½ÓnewÊµÀı£º new SoundPool(4, AudioManager.STREAM_MUSIC, 100);  //ÔÊĞí4¸öÉùÒôÁ÷Í¬Ê±²¥·Å£¬ÉùÒôÆ·ÖÊÎª100
- *   ÓÅµã£ºÊÊÓÃÓÚÓÎÏ·ÖĞÍ¬Ê±²¥·Å¶à¸öÒôĞ§£¬ 
- *   È±µã£ºÖ»ÄÜ²¥·Å½Ï¶ÌµÄÉùÒôÆ¬¶Î(×î´óÖ»ÄÜÉêÇë1MµÄÄÚ´æ¿Õ¼ä)£¬ÒôÆµ¸ñÊ½½¨ÒéÊ¹ÓÃOGG£¬Ä¿Ç°Ö»¶Ô16bitµÄWAVÎÄ¼şÓĞ½ÏºÃµÄÖ§³Ö
- *   load -- ¼ÓÔØÉùÒô×ÊÔ´£¬·µ»ØID
- *   play() -- ¸ù¾İID²¥·ÅÒÑ¾­¼ÓÔØµÄÉùÒô×ÊÔ´
+ * æ’­æ”¾éŸ³è§†é¢‘
+ *   MediaPlayer -- é™æ€çš„ create æ–¹æ³•è¿”å›å®ä¾‹ï¼Œç„¶åå¯é€šè¿‡ start/pause/stop ç­‰æ–¹æ³•æ§åˆ¶
+ *       ç¼ºç‚¹ï¼šèµ„æºå ç”¨é‡è¾ƒé«˜ã€å»¶è¿Ÿæ—¶é—´è¾ƒé•¿ã€ä¸æ”¯æŒå¤šä¸ªéŸ³é¢‘åŒæ—¶æ’­æ”¾
+ *       ä¼˜ç‚¹ï¼š 
+ *     setDataSrouce -- è®¾ç½®æƒ³è¦æ’­æ”¾æ–‡ä»¶çš„è·¯å¾„
+ *     setVolue -- è°ƒæ•´å·¦å³å£°é“çš„å¤§å°
+ *     prepare -- åœ¨startå‰è°ƒç”¨
+ *     OnCompletionListener -- åœ¨åª’ä½“æ’­æ”¾å®Œæˆæ—¶ä¼šå›è°ƒçš„æ¥å£ï¼Œå…¶æœ‰ onCompletion æ–¹æ³•ã€‚é€šè¿‡ setOnCompletionListener è®¾ç½®
+ * JetPlayer -- å¯ä»¥æ’­æ”¾æ¯”è¾ƒé•¿çš„æ¸¸æˆèƒŒæ™¯éŸ³ä¹, å‚è§ Samples ä¸­çš„ JetBoy
+ * VideoView + MediaController -- å¯å¾ˆå®¹æ˜“çš„å®ç°è§†é¢‘æ’­æ”¾å™¨
+ *   video.setMediaController å’Œ ctrl.setMediaPlayer ç›¸äº’å…³è”ï¼Œ ç„¶å video.requestFocus è·å¾—ç„¦ç‚¹
+ * SoundPool -- ç›´æ¥newå®ä¾‹ï¼š new SoundPool(4, AudioManager.STREAM_MUSIC, 100);  //å…è®¸4ä¸ªå£°éŸ³æµåŒæ—¶æ’­æ”¾ï¼Œå£°éŸ³å“è´¨ä¸º100
+ *   ä¼˜ç‚¹ï¼šé€‚ç”¨äºæ¸¸æˆä¸­åŒæ—¶æ’­æ”¾å¤šä¸ªéŸ³æ•ˆï¼Œ 
+ *   ç¼ºç‚¹ï¼šåªèƒ½æ’­æ”¾è¾ƒçŸ­çš„å£°éŸ³ç‰‡æ®µ(æœ€å¤§åªèƒ½ç”³è¯·1Mçš„å†…å­˜ç©ºé—´)ï¼ŒéŸ³é¢‘æ ¼å¼å»ºè®®ä½¿ç”¨OGGï¼Œç›®å‰åªå¯¹16bitçš„WAVæ–‡ä»¶æœ‰è¾ƒå¥½çš„æ”¯æŒ
+ *   load -- åŠ è½½å£°éŸ³èµ„æºï¼Œè¿”å›ID
+ *   play() -- æ ¹æ®IDæ’­æ”¾å·²ç»åŠ è½½çš„å£°éŸ³èµ„æº
  * 
- * Â¼ÖÆÒôÊÓÆµ
+ * å½•åˆ¶éŸ³è§†é¢‘
  *   MediaRecorder 
- *     setAudioSource -- ÉèÖÃÒôÆµÔ´£¬Èç AudioSource.MIC
- *     setOutputFormat -- ÉèÖÃÊä³ö¸ñÊ½£¬Èç OutputFormat.THREEE_GPP
- *     setAudioEncoder -- ÉèÖÃÒôÆµ±àÂëÆ÷£¬Èç AudioEncoder.AMR_NB
- *     setOutputFile -- ÉèÖÃÊä³öÎÄ¼şÂ·¾¶
+ *     setAudioSource -- è®¾ç½®éŸ³é¢‘æºï¼Œå¦‚ AudioSource.MIC
+ *     setOutputFormat -- è®¾ç½®è¾“å‡ºæ ¼å¼ï¼Œå¦‚ OutputFormat.THREEE_GPP
+ *     setAudioEncoder -- è®¾ç½®éŸ³é¢‘ç¼–ç å™¨ï¼Œå¦‚ AudioEncoder.AMR_NB
+ *     setOutputFile -- è®¾ç½®è¾“å‡ºæ–‡ä»¶è·¯å¾„
  *     
- * ÊÖ»úÅÄÕÕ
- *   Camera -- Ïà»úÀà£¬ÊµÏÖÅÄÕÕ¹¦ÄÜ
- *     PictureCallback -- ÄÚ²¿½Ó¿Ú£¬´¦ÀíÕÕÆ¬×¼±¸ºÃºóµÄ»Øµ÷
- *       onPictureTaken() -- ÕÕÆ¬»Øµ÷£¬¿ÉÍ¨¹ı AsnycTask ×ÓÀà½øĞĞÒì²½±£´æ
- *     open() -- ´ò¿ªÏà»ú
- *     release() -- ÊÍ·Å·ÇÍĞ¹Ü×ÊÔ´, ¿ÉÒÔÔÚ SurfaceHolder.Callback.surfaceDestroyed ÖĞµ÷ÓÃ£¬×¢ÒâÏÈ stopPreview
- *     setPreviewDisplay(SurfaceHolder) -- ÉèÖÃÔ¤ÀÀ£¬¿ÉÒÔÔÚ SurfaceHolder.Callback.surfaceCreated ÖĞµ÷ÓÃ
- *     setParameters() -> startPreview() -- ÉèÖÃ²ÎÊıºó½øĞĞÔ¤ÀÀ£¬¿ÉÒÔÔÚ SurfaceHolder.Callback.surfaceChanged ÖĞµ÷ÓÃ
- *     takePicture() -- ½øĞĞÕÕÏà
- *   SurfaceView -- ÊµÏÖ×Ô»æµÄÊÓÍ¼×é¼ş£¬¿ÉÒÔ¿ØÖÆ±íÃæµÄ¸ñÊ½£¬µ×²ãÌá¹©ÁËGPU¼ÓËÙ£¬¾ßÓĞºÜºÃµÄĞÔÄÜ£¬
- *      Æä×ÓÀàÓĞ GLSurfaceView¡¢VideoView µÈ. Í¨³£ÓÃÓÚÖ÷¶¯³ÖĞø¸üĞÂµÄ»­Ãæ(Èç ¿áÅÜÓÎÏ·µÈ)
- *      ×¢Òâ£ºSurfaceView¿ÉÒÔÔÚÒ»¸ö×ÓÏß³ÌÖĞÖ±½Ó»æÖÆ£¬¶øView±ØĞëÔÚUIµÄÖ÷Ïß³ÌÖĞ»æÖÆ¡£
- *   SurfaceHolder -- ½çÃæ¿ØÖÆ½Ó¿Ú£¬Ò»°ãÍ¨¹ı SurfaceView.getHolder »ñµÃ£¬ÔÊĞí¿ØÖÆ½çÃæµÄ³ß´ç¡¢¸ñÊ½¡¢ÏñËØ£¬¼°¼à¿Ø½çÃæ³ß´çµÄ¸Ä±äµÈ
- *     Callback -- ÄÚ²¿»Øµ÷½Ó¿Ú£¬¿É»ñµÃ½çÃæ¸Ä±äÏûÏ¢(surfaceCreated, surfaceChanged, surfaceDestroyed )£¬Í¨¹ı addCallback ÉèÖÃ
- *     lockCanvas/unlockCanvasAndPost --Ëø¶¨surface(¿ÉËø¶¨²¿·Ö·¶Î§)²¢·µ»Ø¿É»æÍ¼µÄCanvas£»»æÖÆÍê³Éºó½âËøcanvas²¢µÈ´ıÖ÷Ïß³Ì¸üĞÂ
- *       ×¢Òâ£º unlockCanvasAndPost ºóÖ»ÊÇÌá½»ÁË¸üĞÂÇëÇó£¬Ö÷Ïß³Ì¿ÉÄÜÉĞÎ´¸üĞÂ£¬Òò´Ë»æÖÆµÄÄÚÈİ»á±»¸²¸Ç¡£
- *                ÎªÁËÊ¹Ìá½»Á¢¼´ÉúĞ§£¬¿ÉÒÔ lockCanvas(new Rect(0, 0, 0, 0)) + unlockCanvasAndPost() Ò»´Î¡£
- *     setType() -- ÉèÖÃÀàĞÍ£¬Èç SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS
- *   Surface -- ±£´æÁËµ±Ç°´°¿ÚµÄÏñËØÊı¾İ£¬µ«Ò»°ã²»Ö±½ÓºÍSurface´ò½»µÀ¡£¶øÊÇÍ¨¹ıÔÚCanvasÉÏ»æÍ¼À´¸Ä±äÆäÖĞµÄÊı¾İ 
+ * æ‰‹æœºæ‹ç…§
+ *   Camera -- ç›¸æœºç±»ï¼Œå®ç°æ‹ç…§åŠŸèƒ½
+ *     PictureCallback -- å†…éƒ¨æ¥å£ï¼Œå¤„ç†ç…§ç‰‡å‡†å¤‡å¥½åçš„å›è°ƒ
+ *       onPictureTaken() -- ç…§ç‰‡å›è°ƒï¼Œå¯é€šè¿‡ AsnycTask å­ç±»è¿›è¡Œå¼‚æ­¥ä¿å­˜
+ *     open() -- æ‰“å¼€ç›¸æœº
+ *     release() -- é‡Šæ”¾éæ‰˜ç®¡èµ„æº, å¯ä»¥åœ¨ SurfaceHolder.Callback.surfaceDestroyed ä¸­è°ƒç”¨ï¼Œæ³¨æ„å…ˆ stopPreview
+ *     setPreviewDisplay(SurfaceHolder) -- è®¾ç½®é¢„è§ˆï¼Œå¯ä»¥åœ¨ SurfaceHolder.Callback.surfaceCreated ä¸­è°ƒç”¨
+ *     setParameters() -> startPreview() -- è®¾ç½®å‚æ•°åè¿›è¡Œé¢„è§ˆï¼Œå¯ä»¥åœ¨ SurfaceHolder.Callback.surfaceChanged ä¸­è°ƒç”¨
+ *     takePicture() -- è¿›è¡Œç…§ç›¸
+ *   SurfaceView -- å®ç°è‡ªç»˜çš„è§†å›¾ç»„ä»¶ï¼Œå¯ä»¥æ§åˆ¶è¡¨é¢çš„æ ¼å¼ï¼Œåº•å±‚æä¾›äº†GPUåŠ é€Ÿï¼Œå…·æœ‰å¾ˆå¥½çš„æ€§èƒ½ï¼Œ
+ *      å…¶å­ç±»æœ‰ GLSurfaceViewã€VideoView ç­‰. é€šå¸¸ç”¨äºä¸»åŠ¨æŒç»­æ›´æ–°çš„ç”»é¢(å¦‚ é…·è·‘æ¸¸æˆç­‰)
+ *      æ³¨æ„ï¼šSurfaceViewå¯ä»¥åœ¨ä¸€ä¸ªå­çº¿ç¨‹ä¸­ç›´æ¥ç»˜åˆ¶ï¼Œè€ŒViewå¿…é¡»åœ¨UIçš„ä¸»çº¿ç¨‹ä¸­ç»˜åˆ¶ã€‚
+ *   SurfaceHolder -- ç•Œé¢æ§åˆ¶æ¥å£ï¼Œä¸€èˆ¬é€šè¿‡ SurfaceView.getHolder è·å¾—ï¼Œå…è®¸æ§åˆ¶ç•Œé¢çš„å°ºå¯¸ã€æ ¼å¼ã€åƒç´ ï¼ŒåŠç›‘æ§ç•Œé¢å°ºå¯¸çš„æ”¹å˜ç­‰
+ *     Callback -- å†…éƒ¨å›è°ƒæ¥å£ï¼Œå¯è·å¾—ç•Œé¢æ”¹å˜æ¶ˆæ¯(surfaceCreated, surfaceChanged, surfaceDestroyed )ï¼Œé€šè¿‡ addCallback è®¾ç½®
+ *     lockCanvas/unlockCanvasAndPost --é”å®šsurface(å¯é”å®šéƒ¨åˆ†èŒƒå›´)å¹¶è¿”å›å¯ç»˜å›¾çš„Canvasï¼›ç»˜åˆ¶å®Œæˆåè§£é”canvaså¹¶ç­‰å¾…ä¸»çº¿ç¨‹æ›´æ–°
+ *       æ³¨æ„ï¼š unlockCanvasAndPost ååªæ˜¯æäº¤äº†æ›´æ–°è¯·æ±‚ï¼Œä¸»çº¿ç¨‹å¯èƒ½å°šæœªæ›´æ–°ï¼Œå› æ­¤ç»˜åˆ¶çš„å†…å®¹ä¼šè¢«è¦†ç›–ã€‚
+ *                ä¸ºäº†ä½¿æäº¤ç«‹å³ç”Ÿæ•ˆï¼Œå¯ä»¥ lockCanvas(new Rect(0, 0, 0, 0)) + unlockCanvasAndPost() ä¸€æ¬¡ã€‚
+ *     setType() -- è®¾ç½®ç±»å‹ï¼Œå¦‚ SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS
+ *   Surface -- ä¿å­˜äº†å½“å‰çª—å£çš„åƒç´ æ•°æ®ï¼Œä½†ä¸€èˆ¬ä¸ç›´æ¥å’ŒSurfaceæ‰“äº¤é“ã€‚è€Œæ˜¯é€šè¿‡åœ¨Canvasä¸Šç»˜å›¾æ¥æ”¹å˜å…¶ä¸­çš„æ•°æ® 
  *     
- * 2DÍ¼ĞÎ´¦Àí  -- android.graphics, android.view.animation µÈ°üÖĞ
- *   Í¼Æ¬: Drawable / Bitmap / BitmapFactory
+ * 2Då›¾å½¢å¤„ç†  -- android.graphics, android.view.animation ç­‰åŒ…ä¸­
+ *   å›¾ç‰‡: Drawable / Bitmap / BitmapFactory
  *     Bitmap
- *       createBitmap -- ¸ù¾İ²ÎÊı´´½¨Î»Í¼£¬filter ²ÎÊı?
- *       extractAlpha -- ¸ù¾İÎ»Í¼ĞÅÏ¢Éú³ÉÖ»ÓĞÍ¸Ã÷¶ÈÃ»ÓĞÑÕÉ«(¼´AlphaÍ¨µÀ)µÄÎ»Í¼
- *       isRecycle-- ÅĞ¶ÏÍ¼Æ¬ÄÚ´æÊÇ·ñÒÑ±»»ØÊÕ
- *       recycle -- »ØÊÕÍ¼Æ¬ËùÕ¼µÄÄÚ´æ
- *     Drawable -- ³éÏó»ùÀà£¬´ú±í¿ÉÒÔ±»»æÖÆ³öÀ´µÄÄ³¶«Î÷£¬³£ÓÃÓÚ¶¨ÖÆUI£¬ÆäÓĞ¶à¸ö×ÓÀà: BitmapDrawable/ColorDrawable/ShapeDrawable/StateListDrawable µÈ
- *       Ê¹ÓÃ·½Ê½:
- *         1.±£´æÔÚ¹¤³ÌÖĞµÄÍ¼Æ¬ÎÄ¼ş, Èç ImageView.setImageResource(R.drawable.myImage); 
- *         2.XMLÎÄ¼ş¶¨ÒåDrawableÊôĞÔ, Èç <ImageView android:id=¡°@id/ImageView01" android:src="@drawable/myimage" ... />
- *           ×¢Òâ£º¿ÉÒÔÍ¨¹ı XML ¶¨Òå drawable ¶ÔÏó, Ê¹ÓÃ·½Ê½:  android:background="@drawable/bg_border" 
- *              bg_border.xml(Í¸Ã÷±³¾°É« + ºìÉ«±ß¿ò) : <shape xmlns:android="http://xxx"><solid android:color="#0000"/><stroke android:width="4px" android:color="#f00" /></shape>
- *              button_selector.xml(°´Å¥°´ÏÂ¡¢µ¯ÆğÊ±µÄ½çÃæ) : <selector> <item state_pressed="true" drawable="xxx"/> <item state_pressed="false" drawable="xxx"/> </selector>
- *         3.Ö±½Ó¹¹ÔìÊµÀı¶ÁÈ¡(SD) 
+ *       createBitmap -- æ ¹æ®å‚æ•°åˆ›å»ºä½å›¾ï¼Œfilter å‚æ•°?
+ *       extractAlpha -- æ ¹æ®ä½å›¾ä¿¡æ¯ç”Ÿæˆåªæœ‰é€æ˜åº¦æ²¡æœ‰é¢œè‰²(å³Alphaé€šé“)çš„ä½å›¾
+ *       isRecycle-- åˆ¤æ–­å›¾ç‰‡å†…å­˜æ˜¯å¦å·²è¢«å›æ”¶
+ *       recycle -- å›æ”¶å›¾ç‰‡æ‰€å çš„å†…å­˜
+ *     Drawable -- æŠ½è±¡åŸºç±»ï¼Œä»£è¡¨å¯ä»¥è¢«ç»˜åˆ¶å‡ºæ¥çš„æŸä¸œè¥¿ï¼Œå¸¸ç”¨äºå®šåˆ¶UIï¼Œå…¶æœ‰å¤šä¸ªå­ç±»: BitmapDrawable/ColorDrawable/ShapeDrawable/StateListDrawable ç­‰
+ *       ä½¿ç”¨æ–¹å¼:
+ *         1.ä¿å­˜åœ¨å·¥ç¨‹ä¸­çš„å›¾ç‰‡æ–‡ä»¶, å¦‚ ImageView.setImageResource(R.drawable.myImage); 
+ *         2.XMLæ–‡ä»¶å®šä¹‰Drawableå±æ€§, å¦‚ <ImageView android:id=â€œ@id/ImageView01" android:src="@drawable/myimage" ... />
+ *           æ³¨æ„ï¼šå¯ä»¥é€šè¿‡ XML å®šä¹‰ drawable å¯¹è±¡, ä½¿ç”¨æ–¹å¼:  android:background="@drawable/bg_border" 
+ *              bg_border.xml(é€æ˜èƒŒæ™¯è‰² + çº¢è‰²è¾¹æ¡†) : <shape xmlns:android="http://xxx"><solid android:color="#0000"/><stroke android:width="4px" android:color="#f00" /></shape>
+ *              button_selector.xml(æŒ‰é’®æŒ‰ä¸‹ã€å¼¹èµ·æ—¶çš„ç•Œé¢) : <selector> <item state_pressed="true" drawable="xxx"/> <item state_pressed="false" drawable="xxx"/> </selector>
+ *         3.ç›´æ¥æ„é€ å®ä¾‹è¯»å–(SD) 
  *           a.Bitmap bmp = BitmapFactory.decodeFile("/sdcard/test.jpg"); 
- *             ÀàËÆµÄÓĞ decodeResource(getResources(), R.drawable.xxx);
+ *             ç±»ä¼¼çš„æœ‰ decodeResource(getResources(), R.drawable.xxx);
  *                          decodeStream(context.getResources().openRawResource(xxx));
- *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //¸ù¾İÔ­Ê¼Î»Í¼´´½¨ĞÂÊÓÍ¼  
- *     BitmapFactory -- BitmapµÄ¹¤³§Àà£¬¾ßÓĞ decodeFile/decodeResource/decodeStream µÈ¶àÖÖ·½Ê½À´¹¹ÔìBitmap
+ *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //æ ¹æ®åŸå§‹ä½å›¾åˆ›å»ºæ–°è§†å›¾  
+ *     BitmapFactory -- Bitmapçš„å·¥å‚ç±»ï¼Œå…·æœ‰ decodeFile/decodeResource/decodeStream ç­‰å¤šç§æ–¹å¼æ¥æ„é€ Bitmap
  *     
- *   9PitchÍ¼Æ¬ -- ÌØÊâµÄPNGÍ¼Æ¬(À©Õ¹ÃûÎª .9.png£¬Ê¹ÓÃ draw9patch.bat ±à¼­)£¬
- *     ÔÚÔ­Ê¼Í¼Æ¬ËÄÖÜ¸÷Ìí¼ÓÒ»¸ö¿í¶ÈÎª1ÏñËØµÄÏßÌõ£¬Õâ4ÌõÏß¾ö¶¨ÁËÍ¼Æ¬µÄËõ·Å¡¢ÏÔÊ¾¹æÔò¡£
- *     ´úÂëÖĞÊ¹ÓÃ£º
+ *   9Pitchå›¾ç‰‡ -- ç‰¹æ®Šçš„PNGå›¾ç‰‡(æ‰©å±•åä¸º .9.pngï¼Œä½¿ç”¨ draw9patch.bat ç¼–è¾‘)ï¼Œ
+ *     åœ¨åŸå§‹å›¾ç‰‡å››å‘¨å„æ·»åŠ ä¸€ä¸ªå®½åº¦ä¸º1åƒç´ çš„çº¿æ¡ï¼Œè¿™4æ¡çº¿å†³å®šäº†å›¾ç‰‡çš„ç¼©æ”¾ã€æ˜¾ç¤ºè§„åˆ™ã€‚
+ *     ä»£ç ä¸­ä½¿ç”¨ï¼š
  *       Bitmap bmp_9path = BitmapFactory.decodeResource(getResources(), R.drawable.9path);  
- *       NinePatch np = new NinePatch(bmp_9path, bmp_9path.getNinePatchChunk(), null); //µÚ¶ş¸ö²ÎÊı¾ÍÊÇ.9.pngÍ¼Æ¬ÎÄ¼şÖĞ±£´æµÄ´¦ÀíÀ­Éì·½Ê½µÄĞÅÏ¢Êı¾İ
+ *       NinePatch np = new NinePatch(bmp_9path, bmp_9path.getNinePatchChunk(), null); //ç¬¬äºŒä¸ªå‚æ•°å°±æ˜¯.9.pngå›¾ç‰‡æ–‡ä»¶ä¸­ä¿å­˜çš„å¤„ç†æ‹‰ä¼¸æ–¹å¼çš„ä¿¡æ¯æ•°æ®
  *       np.draw(canvas, xxxx); 
  *     
- *   ¶¯»­ -- Animation(¶¯»­³éÏóÀà£¬ÓĞ¶à¸ö×ÓÀà) 
- *       AnimationSet -- ¶¨Òå¶¯»­ÊôĞÔ¼¯ºÏÀà
- *       AnimationUtils -- ¶¯»­¹¤¾ßÀà
+ *   åŠ¨ç”» -- Animation(åŠ¨ç”»æŠ½è±¡ç±»ï¼Œæœ‰å¤šä¸ªå­ç±») 
+ *       AnimationSet -- å®šä¹‰åŠ¨ç”»å±æ€§é›†åˆç±»
+ *       AnimationUtils -- åŠ¨ç”»å·¥å…·ç±»
  *       ViewPropertyAnimator -- 
- *     1.Tween -- ¿ÉÒÔÊ¹ÊÓÍ¼×é¼şÒÆ¶¯¡¢·Å´ó¡¢ËõĞ¡¡¢Ğı×ª¡¢¼°Í¸Ã÷¶ÈµÈ±ä»¯£»
+ *     1.Tween -- å¯ä»¥ä½¿è§†å›¾ç»„ä»¶ç§»åŠ¨ã€æ”¾å¤§ã€ç¼©å°ã€æ—‹è½¬ã€åŠé€æ˜åº¦ç­‰å˜åŒ–ï¼›
  *       ScaleAnimation/AlphaAnimation/RotateAnimation/TranslateAnimation
- *       Ê¹ÓÃ·½Ê½:
- *         1.Ó²±àÂë -- ¹¹ÔìAnimation×ÓÀàÊµÀı²¢ÉèÖÃºÃ²ÎÊıºó£¬Í¨¹ı ImageView.startAnimation µÈº¯ÊıÆô¶¯Ö¸¶¨¶¯»­
- *         2.ÅäÖÃÎÄ¼ş(ÍÆ¼ö) -- res\anim\ Ä¿Â¼ÖĞÉèÖÃ¶¯»­ÎÄ¼ş£¬È»ºóÍ¨¹ı AnimationUtils.loadAnimation ·½·¨»ñµÃ¶¯»­ÊµÀı£¬²¢Í¨¹ı×é¼şµÄ startAnimation ¿ªÊ¼£¬
- *           <set> <alpha android:fromAlpha="0.1" toAlpha="1.0" duration="3000" /></set>£¬ ÀàËÆµÄÓĞ <scale>, <translate>, <rotate> µÈ
- *     2.Frame -- Ö¡¶¯»­£¬Í¨¹ıË³Ğò²¥·ÅÅÅÁĞºÃµÄÍ¼Æ¬À´ÊµÏÖ£¬ÀàËÆµçÓ°¡£
- *       AnimationDrawable -- Ò»°ãÍ¨¹ıXMLÅäÖÃÎÄ¼şÅäÖÃ£¬<animation-list> <item/></animation-list>£¬È»ºóÔÚActivityµÄxmlÅäÖÃÖĞ¿ÉÒÔÍ¨¹ı android:background Ö¸¶¨£¿
+ *       ä½¿ç”¨æ–¹å¼:
+ *         1.ç¡¬ç¼–ç  -- æ„é€ Animationå­ç±»å®ä¾‹å¹¶è®¾ç½®å¥½å‚æ•°åï¼Œé€šè¿‡ ImageView.startAnimation ç­‰å‡½æ•°å¯åŠ¨æŒ‡å®šåŠ¨ç”»
+ *         2.é…ç½®æ–‡ä»¶(æ¨è) -- res\anim\ ç›®å½•ä¸­è®¾ç½®åŠ¨ç”»æ–‡ä»¶ï¼Œç„¶åé€šè¿‡ AnimationUtils.loadAnimation æ–¹æ³•è·å¾—åŠ¨ç”»å®ä¾‹ï¼Œå¹¶é€šè¿‡ç»„ä»¶çš„ startAnimation å¼€å§‹ï¼Œ
+ *           <set> <alpha android:fromAlpha="0.1" toAlpha="1.0" duration="3000" /></set>ï¼Œ ç±»ä¼¼çš„æœ‰ <scale>, <translate>, <rotate> ç­‰
+ *     2.Frame -- å¸§åŠ¨ç”»ï¼Œé€šè¿‡é¡ºåºæ’­æ”¾æ’åˆ—å¥½çš„å›¾ç‰‡æ¥å®ç°ï¼Œç±»ä¼¼ç”µå½±ã€‚
+ *       AnimationDrawable -- ä¸€èˆ¬é€šè¿‡XMLé…ç½®æ–‡ä»¶é…ç½®ï¼Œ<animation-list> <item/></animation-list>ï¼Œç„¶ååœ¨Activityçš„xmlé…ç½®ä¸­å¯ä»¥é€šè¿‡ android:background æŒ‡å®šï¼Ÿ
  *     
- * ×Ô»æ
- *   1.´Ó View/SurfaceView µÈÀà¼Ì³Ğ£¬È»ºóÑ¡ÔñĞÔÖØÔØÒÔÏÂ·½·¨£º
- *      onDraw -- Ê¹ÓÃCanvas½øĞĞ»æÖÆ£¬Í¨¹ı invalidate »ò postInvalidate ÇëÇó¸üĞÂ
- *      onFinishInflate -- µ±Ó¦ÓÃ´ÓXML²¼¾ÖÎÄ¼ş¼ÓÔØ×é¼ş²¢ÀûÓÃËüÀ´¹¹½¨½çÃæÖ®ºóµ÷ÓÃ
- *      onMeasure -- ¼ì²âView×é¼ş¼°ËüËù°üº¬µÄËùÓĞ×é¼şµÄ´óĞ¡£¬¸¸ÔªËØÒª·ÅÖÃ¸ÃViewÊ±µ÷ÓÃ¡£
- *        ¼ÆËãÊ±ÏÈÍ¨¹ı MeasureSpec ÀàµÄ¾²Ì¬·½·¨getMode(AT_MOST ±íÊ¾×î´ó¿É»ñµÃµÄ¿Õ¼ä£¬¶ÔÓ¦wrap_content; EXACTLY ±íÊ¾¾«È·µÄ³ß´ç£¬¶ÔÓ¦fill_parent )
- *        ºÍgetSizeÀ´·ÖÎö´«ÈëµÄ±ß½ç²ÎÊı¡£È»ºóÍ¨¹ı setMeasuredDimension Ö¸¶¨¼ÆËã½á¹û¡£
- *      onLayout -- µ±×é¼şĞèÒª·ÖÅäÆä×Ó×é¼şµÄÎ»ÖÃ¡¢´óĞ¡Ê±»Øµ÷(¼´µ÷ÓÃ layout Ê±)
- *      onTrackballEvent -- µ±·¢Éú¹ì¼£ÇòÊÂ¼şÊ±´¥·¢
- *      onTouchEvent -- µ±·¢Éú´¥ÃşÆÁÊÂ¼şÊ±´¥·¢£¬ TODO:ÔõÃ´´¦ÀíÊÖÊÆ(Gesture?)
- *      onAttachedToWindow/onDetachedFromWindow -- µ±¸Ã×é¼ş ·ÅÈë´°¿Ú/´Ó´°¿Ú·ÖÀë Ê±´¥·¢
- *   2.¿ÉÒÔ´Ó GraphicsActivity ¼Ì³Ğ
+ * è‡ªç»˜
+ *   1.ä» View/SurfaceView ç­‰ç±»ç»§æ‰¿ï¼Œç„¶åé€‰æ‹©æ€§é‡è½½ä»¥ä¸‹æ–¹æ³•ï¼š
+ *      onDraw -- ä½¿ç”¨Canvasè¿›è¡Œç»˜åˆ¶ï¼Œé€šè¿‡ invalidate æˆ– postInvalidate è¯·æ±‚æ›´æ–°
+ *      onFinishInflate -- å½“åº”ç”¨ä»XMLå¸ƒå±€æ–‡ä»¶åŠ è½½ç»„ä»¶å¹¶åˆ©ç”¨å®ƒæ¥æ„å»ºç•Œé¢ä¹‹åè°ƒç”¨
+ *      onMeasure -- æ£€æµ‹Viewç»„ä»¶åŠå®ƒæ‰€åŒ…å«çš„æ‰€æœ‰ç»„ä»¶çš„å¤§å°ï¼Œçˆ¶å…ƒç´ è¦æ”¾ç½®è¯¥Viewæ—¶è°ƒç”¨ã€‚
+ *        è®¡ç®—æ—¶å…ˆé€šè¿‡ MeasureSpec ç±»çš„é™æ€æ–¹æ³•getMode(AT_MOST è¡¨ç¤ºæœ€å¤§å¯è·å¾—çš„ç©ºé—´ï¼Œå¯¹åº”wrap_content; EXACTLY è¡¨ç¤ºç²¾ç¡®çš„å°ºå¯¸ï¼Œå¯¹åº”fill_parent )
+ *        å’ŒgetSizeæ¥åˆ†æä¼ å…¥çš„è¾¹ç•Œå‚æ•°ã€‚ç„¶åé€šè¿‡ setMeasuredDimension æŒ‡å®šè®¡ç®—ç»“æœã€‚
+ *      onLayout -- å½“ç»„ä»¶éœ€è¦åˆ†é…å…¶å­ç»„ä»¶çš„ä½ç½®ã€å¤§å°æ—¶å›è°ƒ(å³è°ƒç”¨ layout æ—¶)
+ *      onTrackballEvent -- å½“å‘ç”Ÿè½¨è¿¹çƒäº‹ä»¶æ—¶è§¦å‘
+ *      onTouchEvent -- å½“å‘ç”Ÿè§¦æ‘¸å±äº‹ä»¶æ—¶è§¦å‘ï¼Œ TODO:æ€ä¹ˆå¤„ç†æ‰‹åŠ¿(Gesture?)
+ *      onAttachedToWindow/onDetachedFromWindow -- å½“è¯¥ç»„ä»¶ æ”¾å…¥çª—å£/ä»çª—å£åˆ†ç¦» æ—¶è§¦å‘
+ *   2.å¯ä»¥ä» GraphicsActivity ç»§æ‰¿
  *   
- *   Canvas -- »­²¼
- *     save/restore -- ±£´æºÍÈ¡³ö»­²¼µÄ×´Ì¬£¬³É¶Ô³öÏÖ¡£Í¨³£ÓÃÓÚ¶ÔCanvas½øĞĞ Ğı×ª/Ëõ·Å/Æ½ÒÆµÈ²Ù×÷£¬À´¶ÔÆäÖĞµÄ²¿·ÖÔªËØ½øĞĞÌØÊâ»æÖÆ£¬»æÖÆÍê±Ïºó»Ö¸´Canvs
- *   Color/Paint(»­±Ê)/Path/ShapeDrawable¼°Æä×ÓÀà£¬Èç OvalShape(ÍÖÔ²)¡¢RectShape(¾ØĞÎ)
+ *   Canvas -- ç”»å¸ƒ
+ *     save/restore -- ä¿å­˜å’Œå–å‡ºç”»å¸ƒçš„çŠ¶æ€ï¼Œæˆå¯¹å‡ºç°ã€‚é€šå¸¸ç”¨äºå¯¹Canvasè¿›è¡Œ æ—‹è½¬/ç¼©æ”¾/å¹³ç§»ç­‰æ“ä½œï¼Œæ¥å¯¹å…¶ä¸­çš„éƒ¨åˆ†å…ƒç´ è¿›è¡Œç‰¹æ®Šç»˜åˆ¶ï¼Œç»˜åˆ¶å®Œæ¯•åæ¢å¤Canvs
+ *   Color/Paint(ç”»ç¬”)/Path/ShapeDrawableåŠå…¶å­ç±»ï¼Œå¦‚ OvalShape(æ¤­åœ†)ã€RectShape(çŸ©å½¢)
  *   
- * Í¼ĞÎÌØĞ§
- *   Matrix -- 3x3µÄ×ø±ê±ä»»¾ØÕó£¬Í¨³£ÓÃÓÚÍ¼Æ¬µÄÌØĞ§´¦ÀíµÈ¡£
- *     ¿ÉÒÔÊµÏÖÍ¼ĞÎµÄ Æ½ÒÆ(Translate)¡¢ Ğı×ª(Rotate)¡¢Ëõ·Å(Scale)¡¢´íÇĞ(Skew, x»òy±£³Ö²»±ä£¬¶ø¶ÔÓ¦µÄy»òx°´±ÈÀıÆ½ÒÆ: Èç ¾ØĞÎ=>ÁâĞÎ£¬ÊôÓÚµÈÃæ»ı±ä»» )µÈ£¬ (TODO: Persp Í¸ÊÓ±ä»»?)¡£
- *       Ã¿ÖÖ±ä»»ÓĞÈıÖÖ²Ù×÷·½Ê½£º set(Ö±½ÓÉèÖÃ), pre(ÏÈ³Ë, ¼´¾ØÕóµÄÓÒ³Ë)£¬post(ºó³Ë, ¼´¾ØÕóµÄ×ó³Ë) -- ¾ØÕóµÄ³Ë·¨²»Âú×ã½»»»ÂÉ£¬ÏÈ³Ëºó³Ë±ØĞëÑÏ¸ñÇø·Ö¡£
- *       Ğı×ª/Ëõ·Å/´íÇĞ ¿ÉÒÔÎ§ÈÆÒ»¸öÖĞĞÄµã½øĞĞ£¬Èç²»Ö¸¶¨£¬ÔòÎ§ÈÆ(0,0)½øĞĞ±ä»»¡£
- *       Ë®Æ½¶Ô³Æ£ºfloat matrix_values[] = {1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f}; matrix.setValues(matrix_values); 
- *       ´¹Ö±¶Ô³Æ£ºfloat matrix_values[] = {-1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f}; matrix.setValues(matrix_values);
- *       x=yÖá¶Ô³Æ£º float matrix_values[] = {0f, -1f, 0f, -1f, 0f, 0f, 0f, 0f, 1f};
+ * å›¾å½¢ç‰¹æ•ˆ
+ *   Matrix -- 3x3çš„åæ ‡å˜æ¢çŸ©é˜µï¼Œé€šå¸¸ç”¨äºå›¾ç‰‡çš„ç‰¹æ•ˆå¤„ç†ç­‰ã€‚
+ *     å¯ä»¥å®ç°å›¾å½¢çš„ å¹³ç§»(Translate)ã€ æ—‹è½¬(Rotate)ã€ç¼©æ”¾(Scale)ã€é”™åˆ‡(Skew, xæˆ–yä¿æŒä¸å˜ï¼Œè€Œå¯¹åº”çš„yæˆ–xæŒ‰æ¯”ä¾‹å¹³ç§»: å¦‚ çŸ©å½¢=>è±å½¢ï¼Œå±äºç­‰é¢ç§¯å˜æ¢ )ç­‰ï¼Œ (TODO: Persp é€è§†å˜æ¢?)ã€‚
+ *       æ¯ç§å˜æ¢æœ‰ä¸‰ç§æ“ä½œæ–¹å¼ï¼š set(ç›´æ¥è®¾ç½®), pre(å…ˆä¹˜, å³çŸ©é˜µçš„å³ä¹˜)ï¼Œpost(åä¹˜, å³çŸ©é˜µçš„å·¦ä¹˜) -- çŸ©é˜µçš„ä¹˜æ³•ä¸æ»¡è¶³äº¤æ¢å¾‹ï¼Œå…ˆä¹˜åä¹˜å¿…é¡»ä¸¥æ ¼åŒºåˆ†ã€‚
+ *       æ—‹è½¬/ç¼©æ”¾/é”™åˆ‡ å¯ä»¥å›´ç»•ä¸€ä¸ªä¸­å¿ƒç‚¹è¿›è¡Œï¼Œå¦‚ä¸æŒ‡å®šï¼Œåˆ™å›´ç»•(0,0)è¿›è¡Œå˜æ¢ã€‚
+ *       æ°´å¹³å¯¹ç§°ï¼šfloat matrix_values[] = {1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f}; matrix.setValues(matrix_values); 
+ *       å‚ç›´å¯¹ç§°ï¼šfloat matrix_values[] = {-1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f}; matrix.setValues(matrix_values);
+ *       x=yè½´å¯¹ç§°ï¼š float matrix_values[] = {0f, -1f, 0f, -1f, 0f, 0f, 0f, 0f, 1f};
  *     invert() -- 
  *     setTranslate() -- 
- *   ColorMatrix -- ÑÕÉ«¾ØÕó(RGBA)¡£¿ÉÓÃÓÚÍ¼Æ¬ÌØĞ§´¦Àí£¬Èç ½«Í¼Æ¬×ö³öºÚ°×µÄ£¬»òÕßÀÏÕÕÆ¬µÄĞ§¹û µÈ
- *   Shader -- äÖÈ¾Ğ§¹û£¬¿ÉÍ¨¹ı Paint.setShader(); µÈ·½Ê½À´Ê¹ÓÃ¡£
- *      ÆäÓĞºÜ¶à×ÓÀà£¬Èç BitmapShader(Î»Í¼äÖÈ¾)¡¢ComposeShader(»ìºÏäÖÈ¾)¡¢LinearGradient(ÏßĞÔäÖÈ¾)¡¢RadialGradient(¹âÊøäÖÈ¾), SweepGradient(Ìİ¶ÈäÖÈ¾) µÈ 
- *   Xfermode -- Á½ÕÅÍ¼½»»¥Ê±µÄ¸²¸ÇÄ£Ê½£¬Ò»°ãÓÃ·¨Îª paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN µÈÄ£Ê½Ã¶¾ÙÖµ ));
- *   EdgeEffect/EdgeEffectCompat -- ±ßÔµĞ§¹û
+ *   ColorMatrix -- é¢œè‰²çŸ©é˜µ(RGBA)ã€‚å¯ç”¨äºå›¾ç‰‡ç‰¹æ•ˆå¤„ç†ï¼Œå¦‚ å°†å›¾ç‰‡åšå‡ºé»‘ç™½çš„ï¼Œæˆ–è€…è€ç…§ç‰‡çš„æ•ˆæœ ç­‰
+ *   Shader -- æ¸²æŸ“æ•ˆæœï¼Œå¯é€šè¿‡ Paint.setShader(); ç­‰æ–¹å¼æ¥ä½¿ç”¨ã€‚
+ *      å…¶æœ‰å¾ˆå¤šå­ç±»ï¼Œå¦‚ BitmapShader(ä½å›¾æ¸²æŸ“)ã€ComposeShader(æ··åˆæ¸²æŸ“)ã€LinearGradient(çº¿æ€§æ¸²æŸ“)ã€RadialGradient(å…‰æŸæ¸²æŸ“), SweepGradient(æ¢¯åº¦æ¸²æŸ“) ç­‰ 
+ *   Xfermode -- ä¸¤å¼ å›¾äº¤äº’æ—¶çš„è¦†ç›–æ¨¡å¼ï¼Œä¸€èˆ¬ç”¨æ³•ä¸º paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN ç­‰æ¨¡å¼æšä¸¾å€¼ ));
+ *   EdgeEffect/EdgeEffectCompat -- è¾¹ç¼˜æ•ˆæœ
  *   
- * 3DÍ¼ĞÎ´¦Àí(OpenGL ES) -- Î»ÓÚ javax.microedition.khronos.opengles, android.opengl µÈ°üÖĞ
+ * 3Då›¾å½¢å¤„ç†(OpenGL ES) -- ä½äº javax.microedition.khronos.opengles, android.opengl ç­‰åŒ…ä¸­
  *   
  *   
  ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * Ñ¹ËõÍ¼Æ¬³ÉËõÂÔÍ¼(ÏòMediaStoreÖĞ²åÈëÍ¼Æ¬Êı¾İ)
+ * å‹ç¼©å›¾ç‰‡æˆç¼©ç•¥å›¾(å‘MediaStoreä¸­æ’å…¥å›¾ç‰‡æ•°æ®)
  *   Uri uri = getContentResolver().insert(Media.EXTERNAL_CONTENT_URI, values); 
- *   Bitmap sourceBmp = BitmapFactory.decodeFile("ÎÄ¼şÈ«Â·¾¶.jpg");             //»ñµÃBitmapÊµÀı
- *   OutputStream outStream = getContentResolver().openOutputStream(uri);  //»ñµÃÊä³öÁ÷
- *   sourceBmp.compress(Bitmap.CompressFormat.JPEG, 50, outStream);      //Ñ¹ËõÊä³öÁ÷ 
+ *   Bitmap sourceBmp = BitmapFactory.decodeFile("æ–‡ä»¶å…¨è·¯å¾„.jpg");             //è·å¾—Bitmapå®ä¾‹
+ *   OutputStream outStream = getContentResolver().openOutputStream(uri);  //è·å¾—è¾“å‡ºæµ
+ *   sourceBmp.compress(Bitmap.CompressFormat.JPEG, 50, outStream);      //å‹ç¼©è¾“å‡ºæµ 
  *   outStream.close();
 ***************************************************************************************************************************************/
 
@@ -187,13 +187,13 @@ public class MultiMediaTester extends ActivityUnitTestCase<Activity> {
         BitmapFactory.Options options=new BitmapFactory.Options();
         options.inJustDecodeBounds = false;
         
-        //Ëõ·ÅµÄ±ÈÀı£¬Ëõ·ÅÊÇºÜÄÑ°´×¼±¸µÄ±ÈÀı½øĞĞËõ·ÅµÄ£¬ÆäÖµ±íÃ÷Ëõ·ÅµÄ±¶Êı£¬SDKÖĞ½¨ÒéÆäÖµÊÇ2µÄÖ¸ÊıÖµ,ÖµÔ½´ó»áµ¼ÖÂÍ¼Æ¬²»ÇåÎú
-        options.inSampleSize = 4;   //width£¬hightÉèÎªÔ­À´µÄËÄ·ÖÒ»£¬¼´Õû¸öÍ¼ÊÇÔ­À´µÄ 16 ·ÖÖ®Ò»
+        //ç¼©æ”¾çš„æ¯”ä¾‹ï¼Œç¼©æ”¾æ˜¯å¾ˆéš¾æŒ‰å‡†å¤‡çš„æ¯”ä¾‹è¿›è¡Œç¼©æ”¾çš„ï¼Œå…¶å€¼è¡¨æ˜ç¼©æ”¾çš„å€æ•°ï¼ŒSDKä¸­å»ºè®®å…¶å€¼æ˜¯2çš„æŒ‡æ•°å€¼,å€¼è¶Šå¤§ä¼šå¯¼è‡´å›¾ç‰‡ä¸æ¸…æ™°
+        options.inSampleSize = 4;   //widthï¼Œhightè®¾ä¸ºåŸæ¥çš„å››åˆ†ä¸€ï¼Œå³æ•´ä¸ªå›¾æ˜¯åŸæ¥çš„ 16 åˆ†ä¹‹ä¸€
         
-      //ÒÔ×îÊ¡ÄÚ´æµÄ·½Ê½¶ÁÈ¡±¾µØ×ÊÔ´µÄÍ¼Æ¬
+      //ä»¥æœ€çœå†…å­˜çš„æ–¹å¼è¯»å–æœ¬åœ°èµ„æºçš„å›¾ç‰‡
         options.inPurgeable = true;  
-        options.inInputShareable = true;  //¹²ÏíÒ»¸öÖ¸ÏòÊı¾İÔ´µÄÒıÓÃ£¬·ñÔò»á×öÉî¿½±´
-        options.inPreferredConfig = Bitmap.Config.RGB_565;  //È±Ê¡ÊÇ ARGB_8888 
+        options.inInputShareable = true;  //å…±äº«ä¸€ä¸ªæŒ‡å‘æ•°æ®æºçš„å¼•ç”¨ï¼Œå¦åˆ™ä¼šåšæ·±æ‹·è´
+        options.inPreferredConfig = Bitmap.Config.RGB_565;  //ç¼ºçœæ˜¯ ARGB_8888 
         
         Bitmap btp =BitmapFactory.decodeStream(is,null,options);
         if (btp != null) {

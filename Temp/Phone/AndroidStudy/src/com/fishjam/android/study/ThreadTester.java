@@ -14,50 +14,50 @@ import android.test.AndroidTestCase;
 import android.util.Log;
 
 /**************************************************************************************************************************************
- * JavaÏß³Ì³Ø£ºhttp://www.cnblogs.com/jersey/archive/2011/03/30/2000231.html
+ * Javaçº¿ç¨‹æ± ï¼šhttp://www.cnblogs.com/jersey/archive/2011/03/30/2000231.html
  * 
- * Android µÄViewºÍUI×é¼ş²»ÊÇÏß³Ì°²È«µÄ£¬²»ÔÊĞíÖ±½ÓÔÚÏß³ÌÖĞ·ÃÎÊUI¡£Ò»°ãÍ¨¹ı Handler ½ÓÊÕÏûÏ¢ºó¸üĞÂ
+ * Android çš„Viewå’ŒUIç»„ä»¶ä¸æ˜¯çº¿ç¨‹å®‰å…¨çš„ï¼Œä¸å…è®¸ç›´æ¥åœ¨çº¿ç¨‹ä¸­è®¿é—®UIã€‚ä¸€èˆ¬é€šè¿‡ Handler æ¥æ”¶æ¶ˆæ¯åæ›´æ–°
  * 
- * Thread -- ÊµÏÖ Runnable ½Ó¿ÚÖ§³Ö¶àÏß³Ì£¬  new Thread(Runable).start();
+ * Thread -- å®ç° Runnable æ¥å£æ”¯æŒå¤šçº¿ç¨‹ï¼Œ  new Thread(Runable).start();
  *   while(!Thread.currentThread().isInterrupted()) { ... } 
  *   
- *   AsyncTask<Params, Progress, Result> -- ºóÌ¨µÄÒì²½ÈÎÎñÀà£¬²ÎÊı¶¼ÊÇÄ£°æ£¬Èç²»ĞèÒª¿ÉÉèÖÃÎªvoid¡£
- *     http://blog.csdn.net/hitlion2008/article/details/7560878 -- ÓÃAsyncTaskµ½ÍøÂçÉÏÏÂÔØÍ¼Æ¬£¬Í¬Ê±ÏÔÊ¾½ø¶È£¬ÏÂÔØÍêÍ¼Æ¬¸üĞÂUI
- *     Ö´ĞĞºóÌ¨²Ù×÷²¢½«½á¹û·¢ËÍ¸øÇ°Ì¨Ïß³Ì£¬ÊÊÓÃÓÚ¶ÌÊ±¼äÇÒÓëUIÓĞ½»»¥µÄ²Ù×÷¡£
- *     ×¢Òâ£ºÒ»¸ö½ø³ÌÖĞËùÓĞµÄ AsyncTask »áÍ¨¹ıÏß³Ì³ØË³ĞòÖ´ĞĞ£¬ÓëÖ÷Ïß³ÌÍ¨¹ıHandler½»»¥
- *     doInBackground(xxx...params) -- ¼Ì³ĞÀàÖĞĞèÒªÖØÔØµÄ¾ßÌå¹¤×÷·½·¨£¬ÔÚÓÃ»§µ÷ÓÃ execute ºó×Ô¶¯Ö´ĞĞ¸Ã·½·¨
- *     onProgressUpdate(xxx) -- ½ø¶È¸üĞÂµÄ»Øµ÷£¬´ËÊ±¿ÉÒÔÖ±½Ó¸üĞÂUI£¬ÔÚ doInBackground ÖĞÍ¨¹ıµ÷ÓÃ publishProgress ½øĞĞÍ³ÖÎ 
- *     execute(²ÎÊı) -- µ÷ÓÃ¿ªÊ¼Òì²½Ö´ĞĞ£¬ 2.3ÒÔÇ°Í¬Ê±×î¶à5¸öÏß³Ì(THREAD_POOL_EXECUTOR), 3.0ÒÔºó×î¶à1¸öÏß³Ì(SERIAL_EXECUTOR)
- *     executeOnExecutor -- 3.0ºóĞÂÔöº¯Êı£¬¿ÉÌá¹©×Ô¶¨ÒåµÄÏß³Ì³ØÀ´ÔËĞĞºÍµ÷¶È
- *       executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR) µÈ¼ÛÓÚ2.3ÒÔÇ°µÄ execute()
+ *   AsyncTask<Params, Progress, Result> -- åå°çš„å¼‚æ­¥ä»»åŠ¡ç±»ï¼Œå‚æ•°éƒ½æ˜¯æ¨¡ç‰ˆï¼Œå¦‚ä¸éœ€è¦å¯è®¾ç½®ä¸ºvoidã€‚
+ *     http://blog.csdn.net/hitlion2008/article/details/7560878 -- ç”¨AsyncTaskåˆ°ç½‘ç»œä¸Šä¸‹è½½å›¾ç‰‡ï¼ŒåŒæ—¶æ˜¾ç¤ºè¿›åº¦ï¼Œä¸‹è½½å®Œå›¾ç‰‡æ›´æ–°UI
+ *     æ‰§è¡Œåå°æ“ä½œå¹¶å°†ç»“æœå‘é€ç»™å‰å°çº¿ç¨‹ï¼Œé€‚ç”¨äºçŸ­æ—¶é—´ä¸”ä¸UIæœ‰äº¤äº’çš„æ“ä½œã€‚
+ *     æ³¨æ„ï¼šä¸€ä¸ªè¿›ç¨‹ä¸­æ‰€æœ‰çš„ AsyncTask ä¼šé€šè¿‡çº¿ç¨‹æ± é¡ºåºæ‰§è¡Œï¼Œä¸ä¸»çº¿ç¨‹é€šè¿‡Handleräº¤äº’
+ *     doInBackground(xxx...params) -- ç»§æ‰¿ç±»ä¸­éœ€è¦é‡è½½çš„å…·ä½“å·¥ä½œæ–¹æ³•ï¼Œåœ¨ç”¨æˆ·è°ƒç”¨ execute åè‡ªåŠ¨æ‰§è¡Œè¯¥æ–¹æ³•
+ *     onProgressUpdate(xxx) -- è¿›åº¦æ›´æ–°çš„å›è°ƒï¼Œæ­¤æ—¶å¯ä»¥ç›´æ¥æ›´æ–°UIï¼Œåœ¨ doInBackground ä¸­é€šè¿‡è°ƒç”¨ publishProgress è¿›è¡Œç»Ÿæ²» 
+ *     execute(å‚æ•°) -- è°ƒç”¨å¼€å§‹å¼‚æ­¥æ‰§è¡Œï¼Œ 2.3ä»¥å‰åŒæ—¶æœ€å¤š5ä¸ªçº¿ç¨‹(THREAD_POOL_EXECUTOR), 3.0ä»¥åæœ€å¤š1ä¸ªçº¿ç¨‹(SERIAL_EXECUTOR)
+ *     executeOnExecutor -- 3.0åæ–°å¢å‡½æ•°ï¼Œå¯æä¾›è‡ªå®šä¹‰çš„çº¿ç¨‹æ± æ¥è¿è¡Œå’Œè°ƒåº¦
+ *       executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR) ç­‰ä»·äº2.3ä»¥å‰çš„ execute()
  *
- *   Handler + Message -- Òì²½´¦Àí»úÖÆ¡£AndroidÖĞ½ûÖ¹Ïß³ÌÖĞÖ±½Ó¸üĞÂUI£¬Òò´ËĞèÒªÍ¨¹ı·¢ËÍ Message µ½Ö÷Ïß³ÌÖĞ£¬ÓÉHandle»ñÈ¡µ½Messageºó¸üĞÂ¡£ 
- *     Ê¹ÓÃÊ±Ö»Ğè new Handler ²¢ÖØÔØhandleMessage ·½·¨£¬ ²¢ÔÚÆäÖĞ switch(Message.what) { } ´¦Àí¼´¿É( ²»ĞèÒª set µ½ActivityµÈ )
+ *   Handler + Message -- å¼‚æ­¥å¤„ç†æœºåˆ¶ã€‚Androidä¸­ç¦æ­¢çº¿ç¨‹ä¸­ç›´æ¥æ›´æ–°UIï¼Œå› æ­¤éœ€è¦é€šè¿‡å‘é€ Message åˆ°ä¸»çº¿ç¨‹ä¸­ï¼Œç”±Handleè·å–åˆ°Messageåæ›´æ–°ã€‚ 
+ *     ä½¿ç”¨æ—¶åªéœ€ new Handler å¹¶é‡è½½handleMessage æ–¹æ³•ï¼Œ å¹¶åœ¨å…¶ä¸­ switch(Message.what) { } å¤„ç†å³å¯( ä¸éœ€è¦ set åˆ°Activityç­‰ )
  *     content--
- *     sendEmptyMessage -- ·¢ËÍÏûÏ¢
- *     TODO: HandlerLeak -- ? Í¬Ò»¸öÏß³ÌÏÂµÄhandler¹²ÏíÒ»¸ölooper¶ÔÏó£¬ÏûÏ¢ÖĞ±£ÁôÁË¶ÔhandlerµÄÒıÓÃ£¬Ö»ÒªÓĞÏûÏ¢ÔÚ¶ÓÁĞÖĞ£¬ÄÇÃ´handler±ãÎŞ·¨±»»ØÊÕ
+ *     sendEmptyMessage -- å‘é€æ¶ˆæ¯
+ *     TODO: HandlerLeak -- ? åŒä¸€ä¸ªçº¿ç¨‹ä¸‹çš„handlerå…±äº«ä¸€ä¸ªlooperå¯¹è±¡ï¼Œæ¶ˆæ¯ä¸­ä¿ç•™äº†å¯¹handlerçš„å¼•ç”¨ï¼Œåªè¦æœ‰æ¶ˆæ¯åœ¨é˜Ÿåˆ—ä¸­ï¼Œé‚£ä¹ˆhandlerä¾¿æ— æ³•è¢«å›æ”¶
  *     
- *   Timer -- ¶¨Ê±Æ÷
- *     schedule(new TimerTask() { run }, 0, 1000 ); -- ÖÜÆÚĞÔÖ´ĞĞÈÎÎñ
+ *   Timer -- å®šæ—¶å™¨
+ *     schedule(new TimerTask() { run }, 0, 1000 ); -- å‘¨æœŸæ€§æ‰§è¡Œä»»åŠ¡
  *     
- * ²¢·¢±à³Ì(java.util.concurrent)
- *   Executor¿ò¼Ü -- °üÀ¨Ïß³Ì³Ø£¬Executor£¬Executors£¬CompletionService£¬Future£¬CallableµÈ
- *   Executor -- ½Ó¿Ú
- *   Executors -- Ö÷ÒªÌá¹©Ò»Ğ©¾²Ì¬·½·¨µÄ¹ÜÀíÀà
- *     newCachedThreadPool() -- ·µ»ØÒ»¸ö°´Ğè´´½¨Ïß³Ì(²»ÉèÉÏÏŞ)µÄÏß³Ì³Ø
- *     newFixedThreadPool(n) -- Ö¸¶¨Ïß³Ì¸öÊıµÄ[¹Ì¶¨?]Ïß³Ì³Ø
+ * å¹¶å‘ç¼–ç¨‹(java.util.concurrent)
+ *   Executoræ¡†æ¶ -- åŒ…æ‹¬çº¿ç¨‹æ± ï¼ŒExecutorï¼ŒExecutorsï¼ŒCompletionServiceï¼ŒFutureï¼ŒCallableç­‰
+ *   Executor -- æ¥å£
+ *   Executors -- ä¸»è¦æä¾›ä¸€äº›é™æ€æ–¹æ³•çš„ç®¡ç†ç±»
+ *     newCachedThreadPool() -- è¿”å›ä¸€ä¸ªæŒ‰éœ€åˆ›å»ºçº¿ç¨‹(ä¸è®¾ä¸Šé™)çš„çº¿ç¨‹æ± 
+ *     newFixedThreadPool(n) -- æŒ‡å®šçº¿ç¨‹ä¸ªæ•°çš„[å›ºå®š?]çº¿ç¨‹æ± 
  *     newScheduledThreadPool -- 
- *     newSingleThreadExecutor() -- ·µ»ØÒ»¸öÖ»ÓĞÒ»¸öºóÌ¨Ïß³ÌÔÚÖ´ĞĞËùÌá½»ÈÎÎñµÄÏß³Ì³Ø(3.0ÒÔºóÈ±Ê¡£¿)
- *   ExecutorService -- Í¨¹ı Executors »ñµÃÏµÍ³Ìá¹©µÄ¸÷ÖÖÏß³Ì³Ø
- *   ThreadPoolExecutor -- Ïß³Ì³Ø£¿¿ÉÒÔÉèÖÃ corePoolSize/maximumPoolSize µÈ£¬ÆäÈÎÎñÎª Runnable ÊµÀı
- *     execute() -- ½«Ö¸¶¨µÄÈÎÎñ·ÅÈëÏß³Ì³Ø£¬µÈ´ıÖ´ĞĞ
- *     remove() -- ÒÆ³ıÖ¸¶¨ÈÎÎñ
+ *     newSingleThreadExecutor() -- è¿”å›ä¸€ä¸ªåªæœ‰ä¸€ä¸ªåå°çº¿ç¨‹åœ¨æ‰§è¡Œæ‰€æäº¤ä»»åŠ¡çš„çº¿ç¨‹æ± (3.0ä»¥åç¼ºçœï¼Ÿ)
+ *   ExecutorService -- é€šè¿‡ Executors è·å¾—ç³»ç»Ÿæä¾›çš„å„ç§çº¿ç¨‹æ± 
+ *   ThreadPoolExecutor -- çº¿ç¨‹æ± ï¼Ÿå¯ä»¥è®¾ç½® corePoolSize/maximumPoolSize ç­‰ï¼Œå…¶ä»»åŠ¡ä¸º Runnable å®ä¾‹
+ *     execute() -- å°†æŒ‡å®šçš„ä»»åŠ¡æ”¾å…¥çº¿ç¨‹æ± ï¼Œç­‰å¾…æ‰§è¡Œ
+ *     remove() -- ç§»é™¤æŒ‡å®šä»»åŠ¡
  *     shutdownNow() -- 
  *     awaitTermination() --
- *   FutureTask -- ¿ÉÒÔÈ¡ÏûµÄÒì²½µÄ¼ÆËãÈÎÎñ£¬µÈ¼ÛÓÚ¿ÉÒÔĞ¯´ø½á¹ûµÄRunnable£¬Èı¸ö×´Ì¬£ºµÈ´ı¡¢ÔËĞĞºÍÍê³É(Õı³£½áÊø¡¢È¡Ïû¡¢Òì³£)
- *     get() -- »ñÈ¡½á¹û£¬»á×èÈûÖ±µ½ÈÎÎñ×ªÈëÍê³É×´Ì¬£¬µ«¿ÉÒÔÖ¸¶¨³¬Ê±
- *     cancel() -- È¡ÏûÕıÔÚÖ´ĞĞµÄÈÎÎñ
- *     isDone() -- ÅĞ¶ÏÈÎÎñÊÇ·ñÒÑ¾­Íê³É£¬Ö®ºóÓÃget»áÁ¢¼´µÃµ½½á¹û
+ *   FutureTask -- å¯ä»¥å–æ¶ˆçš„å¼‚æ­¥çš„è®¡ç®—ä»»åŠ¡ï¼Œç­‰ä»·äºå¯ä»¥æºå¸¦ç»“æœçš„Runnableï¼Œä¸‰ä¸ªçŠ¶æ€ï¼šç­‰å¾…ã€è¿è¡Œå’Œå®Œæˆ(æ­£å¸¸ç»“æŸã€å–æ¶ˆã€å¼‚å¸¸)
+ *     get() -- è·å–ç»“æœï¼Œä¼šé˜»å¡ç›´åˆ°ä»»åŠ¡è½¬å…¥å®ŒæˆçŠ¶æ€ï¼Œä½†å¯ä»¥æŒ‡å®šè¶…æ—¶
+ *     cancel() -- å–æ¶ˆæ­£åœ¨æ‰§è¡Œçš„ä»»åŠ¡
+ *     isDone() -- åˆ¤æ–­ä»»åŠ¡æ˜¯å¦å·²ç»å®Œæˆï¼Œä¹‹åç”¨getä¼šç«‹å³å¾—åˆ°ç»“æœ
 **************************************************************************************************************************************/
 
 public class ThreadTester extends AndroidTestCase{
@@ -69,7 +69,7 @@ public class ThreadTester extends AndroidTestCase{
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case 100:
-					Log.i(TAG,  "receive 100 message");  //Í¨³£¿ÉÒÔ¸üĞÂUI£¬Èç view.setBackgroundResource(xxx)
+					Log.i(TAG,  "receive 100 message");  //é€šå¸¸å¯ä»¥æ›´æ–°UIï¼Œå¦‚ view.setBackgroundResource(xxx)
 					break;
 				default:
 					break;
@@ -90,10 +90,10 @@ public class ThreadTester extends AndroidTestCase{
 	}
 	public void testExecutor(){
 
-		//Executor.execute(Runnalbe) ¡£ExecutorÔÚÖ´ĞĞÊ±Ê¹ÓÃÄÚ²¿µÄÏß³Ì³ØÍê³É²Ù×÷¡£
+		//Executor.execute(Runnalbe) ã€‚Executoråœ¨æ‰§è¡Œæ—¶ä½¿ç”¨å†…éƒ¨çš„çº¿ç¨‹æ± å®Œæˆæ“ä½œã€‚
 	}
 	public void ThreadDemo(){
-		//Ïß³ÌºóÌ¨Ö´ĞĞ£¬Ç°Ì¨ÏÔÊ¾½ø¶È¶Ô»°¿ò
+		//çº¿ç¨‹åå°æ‰§è¡Œï¼Œå‰å°æ˜¾ç¤ºè¿›åº¦å¯¹è¯æ¡†
 		/**************************************************************************************************************************************
 		 m_myDialog = ProgressDialog.show(EX03_18.this,strDialogTitle,strDialogBody, true);
 		 new Thread()
@@ -102,7 +102,7 @@ public class ThreadTester extends AndroidTestCase{
 		    {
 		      try
 		      {
-		        sleep(3000); //ºóÌ¨ÔËĞĞµÄ³ÌĞòÆ¬¶Î£¬´Ë´¦ÒÔÔİÍ£3Ãë×÷ÎªÊ¾·¶
+		        sleep(3000); //åå°è¿è¡Œçš„ç¨‹åºç‰‡æ®µï¼Œæ­¤å¤„ä»¥æš‚åœ3ç§’ä½œä¸ºç¤ºèŒƒ
 		      }
 		      catch(Exception e)
 		      {
@@ -110,10 +110,10 @@ public class ThreadTester extends AndroidTestCase{
 		      }
 		      finally
 		      {
-		         myDialog.dismiss(); //Ğ¶ÔØËù´´½¨µÄm_myDialog¶ÔÏó
+		         myDialog.dismiss(); //å¸è½½æ‰€åˆ›å»ºçš„m_myDialogå¯¹è±¡
 		      }
 		    }
-		  }.start();//¿ªÊ¼ÔËĞĞÏß³Ì
+		  }.start();//å¼€å§‹è¿è¡Œçº¿ç¨‹
 		//**************************************************************************************************************************************/
 	}
 	

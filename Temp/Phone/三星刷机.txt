@@ -3,6 +3,23 @@
 KIES -- PC上的手机管理软件，可以升级固件(TODO:Root后是否还能升?有各种回答), 维护联系人等 -- 似乎XP上更稳定
         Root后再升级，ROOT就没有了，需要再用 Framearoot ?
 
+谷歌服务包(最重要的是：谷歌服务框架、谷歌商店、谷歌play服务)
+安装谷歌服务框架GoogleServicesFramework，有两个方法(都需要Root)： http://jingyan.baidu.com/article/ca41422ffbab1e1eae99edda.html
+1.(很复杂)先安装对应软件包，然后用RE管理器对应apk程序拷贝(移动)到 /sysytem/app 目录下并赋予 rw-r-r- 权限
+  若不移动，则会不停的报错？
+2.在recovery下卡刷上述应用 -- 刷之前可用WinRAR等直接从包里面删除不用的软件(不要解压删除后重新压缩，有Meta的顺序问题)
+  TODO: a.各个版本的名字不一样？b.默认的安装路径在 /data/app 下，需要复制到 system/app 下?
+    GoogleServicesFramework.apk -- 最重要的，必须保留的服务框架, 进程是 com.google.process.gapps ?
+    GoogleLoginService.apk -- 帐户登录
+    GooglePlayStore.apk -- 
+    com.google.android.gms.apk
+
+    MarketUpdater.apk -- 市场升级
+    com.android.vending-1.apk -- Google play
+    com.google.android.gsf-1.apk
+    
+
+
 重置系统前请进入设定---一般---安全性，取消“重新启动锁定”选项，不然会启动不了recovery。
 
 三星S5全系完美Root -- http://bbs.gfan.com/android-7476793-1-1.html

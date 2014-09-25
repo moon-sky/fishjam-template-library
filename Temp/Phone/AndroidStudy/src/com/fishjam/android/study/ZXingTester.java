@@ -3,42 +3,42 @@ import android.test.AndroidTestCase;
 
 /**************************************************************************************************************************************
  * 
- * ZXing(http://code.google.com/p/zxing/) -- ¿ªÔ´µÄ¶şÎ¬Âë¡¢ÌõĞÎÂë´¦Àí¿â£¬°üº¬ÁË¶àÖÖÓïÑÔµÄ½Ó¿Ú¡£ÈçÎ¢ĞÅÖĞµÄÉ¨Ò»É¨¡£
- *    Ö÷Òª·ÖÎª£º
- *      core -- ºËĞÄ±à½âÂë¿â
- *      android -- Android¿Í»§¶Ë£¿È±µã£ºÒªÇóÓÃ»§±ØĞë°²×°BarcodeScanner?ÓÃ»§ÌåÑé²»ºÃ¡£
- *    È±µã£º
- *       ÊµÏÖÌ«¹ı¸´ÔÓ¶àÓà¶«Î÷Ì«¶à(Ö¸ 2.1 ÒÔÇ°µÄ°æ±¾?)¡£
+ * ZXing(http://code.google.com/p/zxing/) -- å¼€æºçš„äºŒç»´ç ã€æ¡å½¢ç å¤„ç†åº“ï¼ŒåŒ…å«äº†å¤šç§è¯­è¨€çš„æ¥å£ã€‚å¦‚å¾®ä¿¡ä¸­çš„æ‰«ä¸€æ‰«ã€‚
+ *    ä¸»è¦åˆ†ä¸ºï¼š
+ *      core -- æ ¸å¿ƒç¼–è§£ç åº“
+ *      android -- Androidå®¢æˆ·ç«¯ï¼Ÿç¼ºç‚¹ï¼šè¦æ±‚ç”¨æˆ·å¿…é¡»å®‰è£…BarcodeScanner?ç”¨æˆ·ä½“éªŒä¸å¥½ã€‚
+ *    ç¼ºç‚¹ï¼š
+ *       å®ç°å¤ªè¿‡å¤æ‚å¤šä½™ä¸œè¥¿å¤ªå¤š(æŒ‡ 2.1 ä»¥å‰çš„ç‰ˆæœ¬?)ã€‚
  *  
- * ±àÒë£º
- *   ZXing2.1 ÒÔÇ°°æ±¾(Ê¹ÓÃant±àÒë, Ê¹ÓÃ build.xml)
- *     1.B.ÏÂÔØ Ant -- http://ant.apache.org/, ½âÑ¹ºóÉèÖÃ ANT_HOME »·¾³±äÁ¿£¬²¢½«bin¼ÓÈë%PATH%
- *     2.ÏÂÔØ ProGuard -- http://proguard.sourceforge.net/ -- Ñ¹Ëõ¡¢ÓÅ»¯ºÍ»ìÏıJava×Ö½ÚÂëÎÄ¼şµÄÃâ·Ñ¹¤¾ß£¬¿ÉÒÔÉ¾³ıÎŞÓÃµÄÀà¡¢×Ö¶Î¡¢·½·¨ºÍÊôĞÔµÈ
- *   ZXing2.1 ÒÔºó°æ±¾(Ê¹ÓÃmaven±àÒë, Ê¹ÓÃ pom.xml ?)
- *     1.ÏÂÔØ maven -- https://maven.apache.org/download.cgi£¬ ½âÑ¹ºóÉèÖÃ MAVEN_HOME »·¾³±äÁ¿£¬²¢½«bin¼ÓÈë%PATH%
- *     2.½øÈë core Ä¿Â¼ºó£¬Ö´ĞĞ  mvn -DskipTests -Dgpg.skip=true install ½øĞĞ±àÒë£¬µÚÒ»´ÎÊ¹ÓÃÊ±»áÏÂÔØºÜ¶àÒÀÀµ¿â¡£±àÒëºóÔÚ target ÕÒµ½Éú³ÉµÄjar°ü
- *     3.¸üĞÂ±¾µØAndroid¹¤³ÌÅäÖÃ(Ôö¼Ó local.properties ÎÄ¼şÉèÖÃSDKµÄÂ·¾¶): android.bat update project --path <¹¤³ÌÄ¿Â¼£¬Èç android>
- *     3.µ¼ÈëÔ´Âëºó£¬"Build path" -> "Add External Archives" £¬¼ÓÈë core.jar
+ * ç¼–è¯‘ï¼š
+ *   ZXing2.1 ä»¥å‰ç‰ˆæœ¬(ä½¿ç”¨antç¼–è¯‘, ä½¿ç”¨ build.xml)
+ *     1.B.ä¸‹è½½ Ant -- http://ant.apache.org/, è§£å‹åè®¾ç½® ANT_HOME ç¯å¢ƒå˜é‡ï¼Œå¹¶å°†binåŠ å…¥%PATH%
+ *     2.ä¸‹è½½ ProGuard -- http://proguard.sourceforge.net/ -- å‹ç¼©ã€ä¼˜åŒ–å’Œæ··æ·†Javaå­—èŠ‚ç æ–‡ä»¶çš„å…è´¹å·¥å…·ï¼Œå¯ä»¥åˆ é™¤æ— ç”¨çš„ç±»ã€å­—æ®µã€æ–¹æ³•å’Œå±æ€§ç­‰
+ *   ZXing2.1 ä»¥åç‰ˆæœ¬(ä½¿ç”¨mavenç¼–è¯‘, ä½¿ç”¨ pom.xml ?)
+ *     1.ä¸‹è½½ maven -- https://maven.apache.org/download.cgiï¼Œ è§£å‹åè®¾ç½® MAVEN_HOME ç¯å¢ƒå˜é‡ï¼Œå¹¶å°†binåŠ å…¥%PATH%
+ *     2.è¿›å…¥ core ç›®å½•åï¼Œæ‰§è¡Œ  mvn -DskipTests -Dgpg.skip=true install è¿›è¡Œç¼–è¯‘ï¼Œç¬¬ä¸€æ¬¡ä½¿ç”¨æ—¶ä¼šä¸‹è½½å¾ˆå¤šä¾èµ–åº“ã€‚ç¼–è¯‘ååœ¨ target æ‰¾åˆ°ç”Ÿæˆçš„jaråŒ…
+ *     3.æ›´æ–°æœ¬åœ°Androidå·¥ç¨‹é…ç½®(å¢åŠ  local.properties æ–‡ä»¶è®¾ç½®SDKçš„è·¯å¾„): android.bat update project --path <å·¥ç¨‹ç›®å½•ï¼Œå¦‚ android>
+ *     3.å¯¼å…¥æºç åï¼Œ"Build path" -> "Add External Archives" ï¼ŒåŠ å…¥ core.jar
  *   
- *  Ô´Âë·ÖÎö
- *    CaptureActivity -- Æô¶¯Activity(É¨ÃèÆ÷µÄÖ÷½çÃæ?)
- *    CaptureActivityHandler -- ½âÂë´¦ÀíÀà£¬¸ºÔğµ÷ÓÃÁíÍâµÄÏß³Ì½øĞĞ½âÂë
- *    DecodeThread -- ½âÂëµÄÏß³Ì
- *    ViewfinderView -- ×Ô¶¨ÒåµÄView£¬¼´ÅÄÉãÊ±ÖĞ¼äµÄ¿ò¿ò
- * ¹¤¾ßÀà
- *    IntentIntegrator + IntentResult -- Í¨¹ı Intents ·½Ê½Ê¹ÓÃ¶şÎ¬Âë(µ«ÒªÇóÓÃ»§°²×°BarcodeScanner)
- *    MatrixToImageWriter -- Éú³É¶şÎ¬Âë
- *    MultiFormatReader -- ¶ÁÈ¡ºÍ·ÖÎö¶şÎ¬ÂëÍ¼Æ¬
+ *  æºç åˆ†æ
+ *    CaptureActivity -- å¯åŠ¨Activity(æ‰«æå™¨çš„ä¸»ç•Œé¢?)
+ *    CaptureActivityHandler -- è§£ç å¤„ç†ç±»ï¼Œè´Ÿè´£è°ƒç”¨å¦å¤–çš„çº¿ç¨‹è¿›è¡Œè§£ç 
+ *    DecodeThread -- è§£ç çš„çº¿ç¨‹
+ *    ViewfinderView -- è‡ªå®šä¹‰çš„Viewï¼Œå³æ‹æ‘„æ—¶ä¸­é—´çš„æ¡†æ¡†
+ * å·¥å…·ç±»
+ *    IntentIntegrator + IntentResult -- é€šè¿‡ Intents æ–¹å¼ä½¿ç”¨äºŒç»´ç (ä½†è¦æ±‚ç”¨æˆ·å®‰è£…BarcodeScanner)
+ *    MatrixToImageWriter -- ç”ŸæˆäºŒç»´ç 
+ *    MultiFormatReader -- è¯»å–å’Œåˆ†æäºŒç»´ç å›¾ç‰‡
 **************************************************************************************************************************************/
 
 public class ZXingTester extends AndroidTestCase {
 
 	public void testGenerateCode(){
-		//Éú³É¶şÎ¬ÂëÎÄ¼ş
+		//ç”ŸæˆäºŒç»´ç æ–‡ä»¶
 		/*
-		 BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, width, height,hints);  //Éú³É¶şÎ¬Âë 
-		 File outputFile = new File("d://new.png"); //¶¨ÒåÍ¼Æ¬´æ´¢µÄÎ»ÖÃ£¨DÇø¸ùÄ¿Â¼£©ºÍÎÄ¼şÃû(new.png)
-		 MatrixToImageWriter.writeToFile(bitMatrix, format, outputFile);  //½«¶şÎ¬ÂëĞ´ÈëÍ¼Æ¬ÎÄ¼ş
+		 BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, width, height,hints);  //ç”ŸæˆäºŒç»´ç  
+		 File outputFile = new File("d://new.png"); //å®šä¹‰å›¾ç‰‡å­˜å‚¨çš„ä½ç½®ï¼ˆDåŒºæ ¹ç›®å½•ï¼‰å’Œæ–‡ä»¶å(new.png)
+		 MatrixToImageWriter.writeToFile(bitMatrix, format, outputFile);  //å°†äºŒç»´ç å†™å…¥å›¾ç‰‡æ–‡ä»¶
 		 */ 		
 	}
 }

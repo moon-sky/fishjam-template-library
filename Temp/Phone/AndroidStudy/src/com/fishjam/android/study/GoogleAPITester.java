@@ -4,35 +4,35 @@ import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
 * GoogleMap
-*   Ê¹ÓÃ²½Öè:
-*     1.´´½¨ÏîÄ¿Ê± Build Target ÒªÑ¡Ôñ"GoogleAPIs", ¼´Ìí¼Ó maps.jar
-*     2.Ñ¡Ôñ"AVD"Ê±ÒªÊ¹"Target"Îª"GoogleAPIs", 
-*     3.AndroidManifest.xml ÖĞ
-*       Ìí¼Ó <uses-library android:name="com.google.android.maps" />
-*       ÉùÃ÷È¨ÏŞ: <uses-permission android:name="android.permission.INTERNET" />
-*          ÊÇ·ñĞèÒªÕâ¸ö? <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
-*     4.»ñµÃ "Google Map API key"£ºÊ¹ÓÃ JDKµÄkeytoolÉú³ÉMD5 key£¬µ½googleÍøÕ¾ÉêÇë ApiKey
+*   ä½¿ç”¨æ­¥éª¤:
+*     1.åˆ›å»ºé¡¹ç›®æ—¶ Build Target è¦é€‰æ‹©"GoogleAPIs", å³æ·»åŠ  maps.jar
+*     2.é€‰æ‹©"AVD"æ—¶è¦ä½¿"Target"ä¸º"GoogleAPIs", 
+*     3.AndroidManifest.xml ä¸­
+*       æ·»åŠ  <uses-library android:name="com.google.android.maps" />
+*       å£°æ˜æƒé™: <uses-permission android:name="android.permission.INTERNET" />
+*          æ˜¯å¦éœ€è¦è¿™ä¸ª? <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+*     4.è·å¾— "Google Map API key"ï¼šä½¿ç”¨ JDKçš„keytoolç”ŸæˆMD5 keyï¼Œåˆ°googleç½‘ç«™ç”³è¯· ApiKey
 *       http://code.google.com/intl/zh-cn/android/maps-api-signup.html
-*     5.²¼¾ÖÎÄ¼ş <com.google.android.maps.MapView android:apiKey="xxxxxxx" />
-*     6.¼Ì³Ğ MapActivity, ÀïÃæÊ¹ÓÃ MapView ½øĞĞÏÔÊ¾ºÍ¿ØÖÆ
+*     5.å¸ƒå±€æ–‡ä»¶ <com.google.android.maps.MapView android:apiKey="xxxxxxx" />
+*     6.ç»§æ‰¿ MapActivity, é‡Œé¢ä½¿ç”¨ MapView è¿›è¡Œæ˜¾ç¤ºå’Œæ§åˆ¶
 *   
-*   ÒªÏÔÊ¾µØÍ¼Ê±£¬Ò²¿ÉÊ¹ÓÃ ACTION_VIEW + Uri="geo£º½ø¶È,Î¬¶È" µÄIntent·½Ê½
+*   è¦æ˜¾ç¤ºåœ°å›¾æ—¶ï¼Œä¹Ÿå¯ä½¿ç”¨ ACTION_VIEW + Uri="geoï¼šè¿›åº¦,ç»´åº¦" çš„Intentæ–¹å¼
 *
-*   GPS(Global Position System) -- 24¿ÅÎÀĞÇÔÚÀëµØ1.2W¹«ÀïµÄ¸ß¿Õ£¬ÒÔ12Ğ¡Ê±µÄÖÜÆÚ»·ÈÆµØÇòÔËĞĞ¡£
-*     ÈÎÒâÊ±¿Ì£¬ÔÚµØÃæÉÏµÄÈÎÒâÒ»µã¶¼ÖÁÉÙ¿ÉÒÔÍ¬Ê±¹Û²âµ½4¿ÅÒÔÉÏµÄÎÀĞÇ¡£¸ù¾İÎÀĞÇµ½½ÓÊÕ»úµÄ¾àÀë½â³ö¹Û²âµãµÄÎ»ÖÃ¡£
-*     LocationManager -- Ìá¹©ÁËÏµÍ³Î»ÖÃ·ÃÎÊµÄ·½·¨£¬Èç¶¨Î»¡¢¸ú×Ù(requestLocationUpdates)¡¢Ç÷½ü¸æ¾¯(addProximityAlert)µÈ.
+*   GPS(Global Position System) -- 24é¢—å«æ˜Ÿåœ¨ç¦»åœ°1.2Wå…¬é‡Œçš„é«˜ç©ºï¼Œä»¥12å°æ—¶çš„å‘¨æœŸç¯ç»•åœ°çƒè¿è¡Œã€‚
+*     ä»»æ„æ—¶åˆ»ï¼Œåœ¨åœ°é¢ä¸Šçš„ä»»æ„ä¸€ç‚¹éƒ½è‡³å°‘å¯ä»¥åŒæ—¶è§‚æµ‹åˆ°4é¢—ä»¥ä¸Šçš„å«æ˜Ÿã€‚æ ¹æ®å«æ˜Ÿåˆ°æ¥æ”¶æœºçš„è·ç¦»è§£å‡ºè§‚æµ‹ç‚¹çš„ä½ç½®ã€‚
+*     LocationManager -- æä¾›äº†ç³»ç»Ÿä½ç½®è®¿é—®çš„æ–¹æ³•ï¼Œå¦‚å®šä½ã€è·Ÿè¸ª(requestLocationUpdates)ã€è¶‹è¿‘å‘Šè­¦(addProximityAlert)ç­‰.
 *       locationManager = (LocationManager)Context.getSystemService(Context.LOCATION_SERVICE);
-*       getLastKnownLocation() -- ¸ù¾İProvider»ñµÃÎ»ÖÃĞÅÏ¢
-*     LocationProvider -- ¶¨ÒåÁËÎ»ÖÃ·şÎñµÄÌá¹©·½·¨(Èç GPSÉè±¸»òÍøÂçÌá¹© ),ÉèÖÃÏà¹ØÊôĞÔ£¬¿ÉÍ¨¹ı Criterial ÀàÀ´ÉèÖÃÌõ¼ş
+*       getLastKnownLocation() -- æ ¹æ®Providerè·å¾—ä½ç½®ä¿¡æ¯
+*     LocationProvider -- å®šä¹‰äº†ä½ç½®æœåŠ¡çš„æä¾›æ–¹æ³•(å¦‚ GPSè®¾å¤‡æˆ–ç½‘ç»œæä¾› ),è®¾ç½®ç›¸å…³å±æ€§ï¼Œå¯é€šè¿‡ Criterial ç±»æ¥è®¾ç½®æ¡ä»¶
 *       
-*     LocationListener -- Î»ÖÃ±ä»¯»Øµ÷½Ó¿Ú£¬¿ÉÒÔ·¢³ö onLocationChanged¡¢onProviderDisabled¡¢onStatusChanged µÈ»Øµ÷·½·¨
-*     Location -- Î»ÖÃĞÅÏ¢
-*       getLatitue -- »ñµÃ¾­¶È
-*       getLongitude -- »ñµÃÎ¬¶È
+*     LocationListener -- ä½ç½®å˜åŒ–å›è°ƒæ¥å£ï¼Œå¯ä»¥å‘å‡º onLocationChangedã€onProviderDisabledã€onStatusChanged ç­‰å›è°ƒæ–¹æ³•
+*     Location -- ä½ç½®ä¿¡æ¯
+*       getLatitue -- è·å¾—ç»åº¦
+*       getLongitude -- è·å¾—ç»´åº¦
 *   
-*   ÓÊ¼ş
-*     1.ÄÚÖÃ Gmail ÒıÇæÊÕ·¢ÓÊ¼ş
-*     2.Ê¹ÓÃ SMTP À´ÊÕ·¢
+*   é‚®ä»¶
+*     1.å†…ç½® Gmail å¼•æ“æ”¶å‘é‚®ä»¶
+*     2.ä½¿ç”¨ SMTP æ¥æ”¶å‘
  **************************************************************************************************************************************/
 
 public class GoogleAPITester  extends AndroidTestCase{

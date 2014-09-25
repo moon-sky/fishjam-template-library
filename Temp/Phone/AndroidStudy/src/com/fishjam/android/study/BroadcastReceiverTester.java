@@ -2,12 +2,12 @@ package com.fishjam.android.study;
 import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
-* BroadcastReceiver -- ½ÓÊÕ¹ã²¥ÏûÏ¢£¬¿ÉÒÔ½ÓÊÕÆäËû×é¼şÍ¨¹ı sendBroadcast, sendStickyBroadcast, sendOrderedBroadcast µÈ·¢ËÍµÄÏûÏ¢¡£
-*   onReceive -- ÖØĞ´¸Ã·½·¨£¬½ÓÊÕÏµÍ³µÄ¹ã²¥ÏûÏ¢
+* BroadcastReceiver -- æ¥æ”¶å¹¿æ’­æ¶ˆæ¯ï¼Œå¯ä»¥æ¥æ”¶å…¶ä»–ç»„ä»¶é€šè¿‡ sendBroadcast, sendStickyBroadcast, sendOrderedBroadcast ç­‰å‘é€çš„æ¶ˆæ¯ã€‚
+*   onReceive -- é‡å†™è¯¥æ–¹æ³•ï¼Œæ¥æ”¶ç³»ç»Ÿçš„å¹¿æ’­æ¶ˆæ¯
 *   
-*   ×¢²á£º
-*     1.AndroidManifest.xml ÎÄ¼şÖĞÊ¹ÓÃ <receiver ... /> ÅäÖÃ¡£
-*     2.´úÂëÖĞÍ¨¹ı Context.registReceiver() À´×¢²á
+*   æ³¨å†Œï¼š
+*     1.AndroidManifest.xml æ–‡ä»¶ä¸­ä½¿ç”¨ <receiver ... /> é…ç½®ã€‚
+*     2.ä»£ç ä¸­é€šè¿‡ Context.registReceiver() æ¥æ³¨å†Œ
 ***************************************************************************************************************************************/
 
 public class BroadcastReceiverTester extends AndroidTestCase{
