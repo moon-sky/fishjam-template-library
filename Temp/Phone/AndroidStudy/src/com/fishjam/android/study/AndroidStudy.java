@@ -21,7 +21,7 @@ import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
  * 学习书籍
- *     疯狂Android讲义 -- P113 (使用SimpleAdapter创建ListView)
+ *     疯狂Android讲义 -- P171 (显示提示消息的对话框)
  *     Android应用开发详解.pdf -- 311, 
  *     欢迎来到Android世界 http://www.docin.com/p-31448231.html
  *     Android中可视化GUI布局拖拉开源工具程序  http://code.google.com/p/droiddraw , 或者通过 http://www.droiddraw.org/ 在线使用
