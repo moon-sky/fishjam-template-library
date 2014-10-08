@@ -31,10 +31,11 @@ import android.util.Log;
  *     executeOnExecutor -- 3.0后新增函数，可提供自定义的线程池来运行和调度
  *       executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR) 等价于2.3以前的 execute()
  *
- *   Handler + Message -- 异步处理机制。Android中禁止线程中直接更新UI，因此需要通过发送 Message 到主线程中，由Handle获取到Message后更新。 
- *     使用时只需 new Handler 并重载handleMessage 方法， 并在其中 switch(Message.what) { } 处理即可( 不需要 set 到Activity等 )
+ *   Handler + Message -- 异步处理机制。Android中禁止线程中直接更新UI，因此需要通过发送 Message 到主线程中，由Handle获取到Message后更新。
+ *     1.工作线程处理后 mHandler.sendEmptyMessage(0x1111); 发送消息到 Handler; 
+ *     2. mHandler = new Handler(){  @Override void handleMessage(Message){ switch(Message.what) { case 0x1111: 可直接更新UI控件 } };
  *     content--
- *     sendEmptyMessage -- 发送消息
+ *     sendEmptyMessage -- 发送简单的空消息
  *     TODO: HandlerLeak -- ? 同一个线程下的handler共享一个looper对象，消息中保留了对handler的引用，只要有消息在队列中，那么handler便无法被回收
  *     
  *   Timer -- 定时器

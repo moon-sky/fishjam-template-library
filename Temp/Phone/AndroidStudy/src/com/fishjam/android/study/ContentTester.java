@@ -29,6 +29,8 @@ import android.widget.SimpleAdapter;
 /***************************************************************************************************************************************
 * Uri
 *      Uri uri = Uri.parse("content://contacts/people/1");  
+*      Uri uri = Uri.parse("android.resource://com.fishjam.test/" + R.raw.msg); -- 加载程序中的资源?
+*      Uri uri = Uri.parse("file:///sdcard/click.mp3");
 * UriMatcher 
 *     UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 *     sUriMatcher.addURI(Employees.AUTHORITY, "employee", EMPLOYEE);
@@ -79,7 +81,7 @@ import android.widget.SimpleAdapter;
  *     
  * Adapter -- 适配器接口
  *   BaseAdapter -- 自定义适配器的基类，一般从该类继承，作为Module和View之间的桥梁。从该类继承可以取得对Adapter最大的控制权，
- *     实现 getCount, getItem{return null}, getView{ return myCustomView; } 等方法。可用于类似 Windows Virtual ListView 的高性能显示
+ *     实现 getCount, getItem{return null}, getView(int position,...){ return myCustomView; } 等方法。可用于类似 Windows Virtual ListView 的高性能显示
  *   ArrayAdapter -- 常用于将数组或List集合的多个值包装成多个列表项，功能有限，其列表项只能是TextView，一般只用于 AutoCompleteTextView 等只显示文本的地方
  *   SimpleAdapter -- 可用于将List集合的多个对象包装成多个列表项，功能很强大
 
@@ -179,9 +181,9 @@ public class ContentTester  extends ActivityUnitTestCase<Activity>{
 		startActivity(mStartIntent, null, null);
 		
 		List<Map<String, Object>> listItems = new ArrayList<Map<String, Object>>();
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) { //listItems长度为10，会包含4个列表项
 			Map<String, Object> listItem = new HashMap<String, Object>();
-			listItem.put("keyName", "myValue");
+			listItem.put("keyName", "myValue" + i);
 			listItems.add(listItem);
 		}
 		SimpleAdapter simpleAdapter = new SimpleAdapter(

@@ -9,6 +9,7 @@ import android.test.ActivityUnitTestCase;
 import android.test.AndroidTestCase;
 import android.util.Log;
 import android.view.Display;
+import android.widget.SimpleExpandableListAdapter;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
@@ -131,10 +132,10 @@ import android.view.Display;
  *   tag -- 为组件设置I个字符串类型的tag值，然后可通过 getTag()获取该值 或通过 findViewWithTag 找到该组件
  *   
  * View --
- * +-AbsListView --  列表视图的抽象基类，有 GridView、ListView 等子类
+ * +-AbsListView --  列表视图的抽象基类，有 GridView(多列)、ListView(一列) 等子类
  *    choiceMode -- 选择行为，如 none(不显示任何选中项), singleChoice(单选), multipleChoice(多选)
  *    divider -- 设置列表项的分隔条(即可用颜色、也可用Drawable)
- *    entries -- 指定一个数组资源，将根据该数组资源来生成ListView, 如指定 "@array/bools"
+ *    entries -- 指定一个数组资源，将根据该数组资源来生成ListView, 如指定 "@array/books"
  *    fastScrollEnabled -- 设置是否允许快速滚动，如为true，则会显示滚动图标，并允许用户拖动该滚动图标进行快速滚动
  *    scrollingCache -- 如设为true，在滚动时将会使用绘制缓存
  *    textFilterEnabled -- 设置是否对列表项进行过滤，需要对应的Adapter实现了Filter接口时才起作用
@@ -143,20 +144,30 @@ import android.view.Display;
  *     setOnItemClickListener()/setOnItemSelectedListener() -- 添加单击、选中事件
  * +-AdapterViewFlipper -- 一般用于幻灯播放。一次显示一个Adapter提供的View组件，可以通过 showPrevious()/showNext() 方法来控制显示上一个、下一个。
  *    inAnimation/outAnimation -- 控制 显示/隐藏 时使用的动画
+ *    loopViews -- 设置是否循环
  *    flipInterval -- 设置自动播放的时间间隔
  * +-AnalogClock -- 模拟时钟，显示 小时、分钟
  *    dial -- 设置表盘使用的图片
  *    hand_hour/hand_minute -- 设置时针、分针使用的图片
- * +-AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter)来实现
+ * +-AutoCompleteTextView -- 自动完成文本框，通过设置想要显示资源的适配器(setAdapter, 一般用最简单的文本类型的ArrayAdapter即可)来实现
  *    completionHint/completionHintView -- 下拉菜单中的 提示标题 / 提示标题视图 
  *    completionThreshold -- 用户至少输入几个字符才会显示提示
  * +-BaseAdapter -- 
  * +-Button
  *     text
+ * +-CalendarView -- 日历视图，显示和选择日期，通过 setOnDateChangeListener 监控日期改变
+ *     dateTextAppearance -- 设置日期文字的样式
+ *     minDate/maxDate -- 设置该日历组件支持的 最小/最大 日期，以 mm/dd/yyyy 格式指定
+ *     showWeekNumber/showWeekCount -- 设置是否显示 第几周/总共显示几周
  * +-CheckBox -- 复选按钮
  * +-Chronmeter -- 计时器，显示从某个起始时间开始，一共过去了多长时间
  *     format -- 指定计时器的计时格式，
  *     setBase(long) -- 设置计时器的起始时间，单位为毫秒。如 SystemClock.elapsedRealtime()
+ * +-DatePicker/TimePicker -- 日期/时间选择器
+ *     calendarViewShown -- 是否显示 CalendarView 组件
+ *     minDate/maxDate -- 以 mm/dd/yyyy 格式指定 最小/最大 日期， 
+ *     spinnersShown -- 设置日期选择器是否显示 Spinner 日期选择组件
+ *     startYear/endYear -- 设置日期选择器允许选择的 第一年/最后一年
  * +-DigitalClock -- 数字时钟，可以显示当前的秒数
  * +-EditText -- 编辑框或密码框
  *     hint -- 没有输入内容时的提示信息
@@ -164,7 +175,11 @@ import android.view.Display;
  *     numeric -- 设置关联的数值输入法，如 integer(整数), signed(允许输入符号的数值)， decimal(允许输入小数点的数值)
  *     password -- true
  *     textSize -- 18sp
- * +-ExpandableListView -- 可展开的列表组件(类似数控件?)，把列表项分为几组，每组里可包含多个列表项，其数据由 ExpandableListAdapter 提供。
+ * +-ExpandableListView -- 可展开的列表组件(类似数控件?)，把列表项分为几组，每组里可包含多个列表项，
+ *       其数据由 ExpandableListAdapter接口的实现类提供，如 BaseExpandableListAdapter(可扩展性最强), SimpleCursorTreeAdapter, SimpleExpandableListAdapter 等
+ *       childDivider -- 指定各组内各子列表项之间的分隔条
+ *       childIndicator -- 显示在子列表项旁边的Drawable对象
+ *       groupIndicator -- 显示在组列表项旁边的Drawable对象 
  * +-ExtractEditText -- 是EditText组件的底层服务类，负责提供全屏输入法支持
  * +-Fragment --11里增加的，可以重用Activity等, 
  *     通常用法：
@@ -178,10 +193,10 @@ import android.view.Display;
  *      unselectedAlpha -- 设置没有选中的图片的透明度，如 "0.6"
  *      ImageSwitcher::setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out)); // 设置动画效果
  * +-Gesture -- 手势识别 
- * +-GridView -- 按照行列的方式显示内容，一般适合显示图片)
+ * +-GridView -- 按照行列的方式显示内容，一般适合显示图片的缩略图)
  *     horizontalSpacing/verticalSpacing -- 各元素之间的 水平/垂直 间距
  *     numColumns -- 设置列数，默认为1。注意：行数是根据Adapter动态改变的
- *     stretchMode -- 设置拉伸模式，如 NO_STRETCH(不拉伸)， STRETCH_COLUMN_WIDTH(拉伸元素表格元素本身)
+ *     stretchMode -- 设置拉伸模式，如 NO_STRETCH(不拉伸)， STRETCH_COLUMN_WIDTH(拉伸元素表格元素本身), STRETCH_SPACING_UNIFORM(表格元素、间距一起拉伸)
  * +-ImageButton -- 图片按钮(ImageView的子类，设置text无效)
  *     src -- "@drawable/iconempty"
  *     setImageResource(R.drawable.iconempty);
@@ -198,34 +213,48 @@ import android.view.Display;
  *       setImageResource(xxx); setImageBitmap(); setImageURI()
  * +-ListView/ListActivity -- 列表视图，以垂直列表的方式列出需要显示的列表项(如联系人名单、系统设置项等)
  *     关键点：设置Adapter。 若 ListActivty 中要使用自定义的界面布局文件，则其中必须有一个id为 "@+id/android:list" 的ListView。
+ *     setTextFilterEnabled()/setFilterText()/clearTextFilter() -- 根据文本对列表项进行过滤显示  
  * +-MapView -- 显示Google地图
  * +-MultiAutoCompleteTextView -- 允许输入多个提示项(多个提示项以分隔符分隔)的自动提示，
- *    setTokenizer -- 设置分隔符，如  myAuto.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
- * +-ProgressBar -- 进度条，有很多种:
+ *    setTokenizer -- 设置分隔符，如  myAuto.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer()); //此处设置的分隔符是逗号?
+ * +-Notification -- 显示在手机状态栏的通知(如 网络状态、电池状态、时间等)，程序通过 NotificationManager 服务来发送通知。
+ *     setContentIntent -- 设置通知将要启动程序的 PendingIntent 信息
+ * +-NumberPicker -- 数值选择器，用户即可通过键盘输入，也可通过拖动来选择
+ *    focusable/focusableInTouchMode -- 似乎是通用的属性?
+ * +-ProgressBar -- 进度条，有两个子类: SeekBar 和 RatingBar,  并且ProgressBar也有多种:
  *     1.ProgressDialog(对话框进度条)： 覆盖Activity的onCreateDialog方法，并在其中创建进度条并返回；调用showDialog方法显示;
- *     2.ProgressBarIndeterminate(标题栏进度条)：调用 Activity.requestWindowFeature(Window.FEATURE_PROGRESS) 方法设置窗口有进度条的特征;
+ *     2.ProgressBarIndeterminate(标题栏进度条)：调用 Activity.requestWindowFeature(Window.FEATURE_PROGRESS 或 FEATURE_INDETERMINATE_PROGRESS) 方法设置窗口有进度条的特征;
  *       调用 Activity.setProgressBarVisibility(带进度)/setProgressBarIndeterminateVisibility(不带进度) 显示进度条， Activity.setProgress 设置进度
  *     3.ProgressBar(普通进度条) -- 布局文件中声明ProgressBar，获取到变量后调用 incrementProgressBy 等方法设置进度
- *       style -- 指定风格, 如 : @android:style/Widget.ProgressBar.Inverse -- 普通大小的环形进度条
- *       indeterminate/indeterminateDuration -- 设置为true，表示不精确显示 进度 /进度的持续时间
- *       progressDrawable -- 设置进度条的轨道对应的Drawable对象(为 LayerDrawable 对象, 通过 <layer-list> 元素进行配置)
- *       
+ *       style -- 指定风格, 如 : @android:style/Widget.ProgressBar.Horizontal--水平进度条; @android:style/Widget.ProgressBar.Inverse -- 普通大小的环形进度条; 
+ *       indeterminate/indeterminateDuration -- 设置为true，表示不精确显示 进度 / 进度的持续时间
+ *       progressDrawable -- 设置进度条的轨道对应的Drawable对象(为 LayerDrawable 对象, 通过 <layer-list><item id="@android:id/background" android:drawalbe="@drawable/no" /> 元素进行配置)
+ *       max/progress -- 最大值/当前值
  * +-QuickContactBadge -- 显示关联到特定联系人的图片，单击图片时会打开相应联系人的联系方式界面
  *     assignContactFromEmail()/assignContactPhone()/assignContactUri() 
  * +-RadioButton(单选按钮) + RadioGroup(管理一组RadioButton) 
  *     checkedButton -- "@+id/sex1"
  *     orientation -- vertical,horizontal
- * +-RatingBar -- 
- * +-SeekBar -- 拖动条
- *     thumb -- 指定一个Drawable对象，可自定义滑块的外观，响应 OnSeekBarChangeListener 
- * +-StackView -- 以堆栈方式来显示多个列表项
- * +-Spinner -- 下拉列表
+ * +-RatingBar -- 星级评分条，从ProgressBar继承，通过星星表示进度，通过 OnRatingBarChangeLister 响应评分的改变
+ *     isIndicator -- 设置为true表示不允许用户改变
+ *     numStars -- 设置总共有多少个星级
+ *     stepSize -- 设置每次最少需要改变多少个星级，如 "0.5"表示最少变化半个星级
+ * +-SearchView -- 搜索框，允许用户在文本框内输入文字，当输入完成提交时，可通过监听器执行实际的搜索。在其下方放置一个ListView，并通过setFilterText设置显示的列表项，则可模拟自动完成的功能
+ *       setIconifiedByDefault() -- 设置默认是否最懂缩小为图标
+ *       setSubmitButtonEnabled -- 设置是否显示搜索按钮
+ *       setQueryHint -- 设置搜索框内默认显示的提示文本
+ * +-SeekBar -- 拖动条，继承自ProgressBar，通过滑块来标识数值，并且允许用户拖动滑块来改变值(响应 OnSeekBarChangeListener)
+ *     thumb -- 指定一个Drawable对象，可自定义滑块的外观。 
+ * +-StackView -- 以堆叠方式来显示多个列表项
+ * +-Spinner -- 下拉列表，相当于弹出一个菜单供用户选择，如开发时已知可选内容，可直接设置entries属性为数组资源; 如需要在运行时设置，可通过Adapter提供
  *     entries -- 使用数组资源设置该下拉列表框的列表项目
+ *     prompt -- 设置提示信息
  * +-Switch -- 开关
  *     switchTextAppearance -- 该开关图标上的文本样式
  *     thumb -- 指定使用自定义Drawable控制该开关的开关按钮
  *     track -- 指定使用自定义Drawable控制该开关的开关轨道
- * +-TabHost / TabActivity -- 选项卡
+ * +-TabHost / TabActivity -- 选项卡，可显示多个标签页并进行切换。TabHost(选项卡) -> [ TabSpec(标签页面) + TabWidget(标签条) ]
+ *     TODO: 新版本推荐使用 Fragment 代替 TabHost/TabActivity  
  * +-TextView -- 文本视图，显示字符串
  *     autoLink -- all(可以显示链接，如 http://)， 或 "email|phone" -- 对邮件、电话增加链接
  *     editable -- 控制是否允许编辑
@@ -250,7 +279,7 @@ import android.view.Display;
  *   会根据运行平台调整其中组件的位置、大小。其过程分为两步：measure(计算位置) -> layout(根据计算结果进行布局)
  *   布局文件中的 <requestFocus/> 项代表什么意思?
  * ViewGroup -- 虚拟父类
- *   gravity -- 控制布局管理器内组件的对齐方式，如 top, bottom, left, right, center_vertical 等，多个属性可通过 "|" 组合
+ *   gravity -- 控制布局管理器内组件的对齐方式，如 top, bottom, left, right, center, center_vertical, 等，多个属性可通过 "|" 组合
  *   layout_width/layout_height -- fill_parent(减去填充空白后等同于父容器),match_parent(等价于fill_parent?推荐) wrap_content(根据内容指定高宽),320px,80dip
  *   +-AbsoluteLayout(TODO:已废弃 ) -- 绝对位置定位，降低兼容性，维护成本高
  *       layout_x, layout_y -- 30px， 指定子组件的 X、Y 坐标
@@ -260,8 +289,12 @@ import android.view.Display;
  *         foreground -- 设置该帧布局容器的前景图像(Drawable类型)
  *         foregroundGravity -- 定义绘制前景图像的gravity属性
  *     +-ViewAnimator--为其中的View切换提供动画效果，可通过 setInAnimation/setOutAnimation 设置进入和退出屏幕时使用的动画
- *       +-ViewFlipper--指定多个View之间的切换效果
- *       +-ViewSwitcher--在两个View之间切换。可通过指定 ViewSwitcher.ViewFactory 来创建，其子类 ImageSwitcher/TextSwitcher
+ *        animateFirstView -- 设置显示第一个View组件时是否使用动画
+ *        inAnimation/outAnimation -- 设置 显示/隐藏 组件时使用的动画
+ *       +-ViewFlipper--指定多个View之间的切换效果，通过 addView 添加多个组件
+ *       +-ViewSwitcher--在两个View之间切换(如Launcher界面的左右滚动切换)。可通过指定 ViewSwitcher.ViewFactory 来创建需要显示的View(重载其 makeView 方法)
+ *         +-ImageSwitcher -- 使用更简单。1.提供一个ViewFactory,其生成的View必须是ImageView; 2.切换图片时，通过 setImageDrawable, setImageResource, setImageURI 等更换图片即可 
+ *         +-TextSwitcher -- 显示文本内容，可在文本切换时动画效果。1.ViewFactory的makeView方法必须返回一个 TextView 组件； 切换文本时，通过 setText 设置即可
  *   +-GridLayout -- 4.0新增的网格布局,将容器划分为 rowsXcolumns 个网格，每个网格可以防止一个组件
  *       columnCount/rowCount -- 设置网格的 列数 、行数
  *       layout_column/layout_row -- 设置该子组件在GridLayout的第几列、第几行
@@ -285,7 +318,7 @@ import android.view.Display;
  *   +-RelativeLayout -- 相对布局，相对其他组件的布局方式(如在其上下左右等)。可以拉伸自动适应，但会造成图像变形。
  *        layout_below, layout_alignParentBottom, layout_toRightOf
  *        ignoreGravity -- 指定哪个组件不受gravity属性的影响
- *   +-ScrollView -- 滚动视图
+ *   +-ScrollView/HorizontalScrollView -- 滚动视图, 为普通组件添加 垂直/水平 滚动条的组件，其中最多只能包含一个组件
  *   +-TableRow
  *
  * LayoutInflater infater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE); //或LayoutInflater.from(getApplicationContext())
@@ -297,7 +330,11 @@ import android.view.Display;
 
 /**************************************************************************************************************************************
  * 对话框(Dialog)
- *   AlertDialog(警告对话框)
+ *   AlertDialog(警告对话框，功能最丰富，实际应用最广)，其对话框有如下区域：图表区、标题区、内容区、按钮区，均可定制
+ *     setPositiveButton()、setNegativeButton()、setNeutralButton() -- 设置按钮
+ *     setItems/setSingleChoiceItems/setMultiChoiceItems -- 设置对话框内容为 简单列表项/单选列表项/多选列表项
+ *     setAdapter -- 设置内容为自定义列表项
+ *     setView -- 设置对话框内容为自定义View
  *     示例: 
  *       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);  //创建Builder，然后可以依次设置各种参数
  *       dlgBuilder.setMessage(msg).setCancelable(false).setPositiveButton("确定", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //设置builder
@@ -309,8 +346,9 @@ import android.view.Display;
  *    2.在 OnDateSetListener 和 OnTimeSetListener 的对应事件方法中响应日期和时间的设置;
  *    3.调用 Activity.showDialog 显示对话框
  *  
- * Toast -- 提示信息(没有交互功能，只是提示), 静态的makeText设置显示文本和时长
- *    Toast.makeText(getApplicationContext(), "提示信息", Toast.LENGTH_LONG).show;
+ * Toast -- 提示信息(没有交互功能，只是提示，一段时间后自动消失), 静态的makeText设置显示文本和时长
+ *    1.Toast.makeText(getApplicationContext(), "提示信息", Toast.LENGTH_LONG).show;
+ *    2.可通过构造函数创建实例后，调用 setView 设置要显示的内容，来自定义显示。
 **************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
@@ -400,6 +438,7 @@ public class UITester extends ActivityUnitTestCase<Activity>{
 	
 	public UITester() {
 		super(Activity.class);
+		
 	}
 
 

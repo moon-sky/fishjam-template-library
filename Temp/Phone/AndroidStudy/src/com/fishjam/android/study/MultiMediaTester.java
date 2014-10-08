@@ -11,12 +11,14 @@ import android.test.ActivityUnitTestCase;
 
 /***************************************************************************************************************************************
  * 最佳实践
+ *   TODO: Google 的Sample -- http://developer.android.com/training/displaying-bitmaps/index.html
  *   1.加载图片
  *     BitmapFactory.decodeStream(getResources.openRawResource())  构造图片(不使用Java层的createBitmap，节约内存)
  *     TODO: 该方法不会根据机器的各种分辨率来自动适应 ？
- *   2.BitmapFactory.Options
- *     读取图片时加上图片的Config参数，可以更有效减少加载的内存
+ *   2.BitmapFactory.Options( inJustDecodeBounds-设置为true时只获取图片高宽信息, inSampleSize-压缩比例 )
+ *     读取图片时加上图片的Config参数，可以更有效减少加载的内存,否则容易出现OOM问题
  *   3.显示图片 -- setImageBitmap ?
+ *   4.用 LruCache 来缓存Drawable和图片，内存紧缺时清掉不必要的图
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
@@ -97,7 +99,7 @@ import android.test.ActivityUnitTestCase;
  *             类似的有 decodeResource(getResources(), R.drawable.xxx);
  *                          decodeStream(context.getResources().openRawResource(xxx));
  *           b.Bitmap bmp2 = Bitmap.createBitmap(bmp, ...);  //根据原始位图创建新视图  
- *     BitmapFactory -- Bitmap的工厂类，具有 decodeFile/decodeResource/decodeStream 等多种方式来构造Bitmap
+ *     BitmapFactory -- Bitmap的工厂类，具有 decodeFile/decodeResource/decodeStream/decodeByteArray 等多种方式来构造Bitmap
  *     
  *   9Pitch图片 -- 特殊的PNG图片(扩展名为 .9.png，使用 draw9patch.bat 编辑)，
  *     在原始图片四周各添加一个宽度为1像素的线条，这4条线决定了图片的缩放、显示规则。
@@ -185,10 +187,18 @@ public class MultiMediaTester extends ActivityUnitTestCase<Activity> {
     	
     	InputStream is = getActivity(). getResources().openRawResource(R.drawable.ic_launcher);
         BitmapFactory.Options options=new BitmapFactory.Options();
-        options.inJustDecodeBounds = false;
         
+        //第一步: 获取图片的高宽信息, 此时 decode的bitmap为null(节约内存)
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(is,null,options);
+        int nWidth = options.outWidth;
+        int nHeight = options.outHeight;
+        
+        //第二部, 根据图片的高宽和设备的范围设置压缩比例，从而以较小的内存消耗获得合适的bitmap
+        options.inJustDecodeBounds = false;
         //缩放的比例，缩放是很难按准备的比例进行缩放的，其值表明缩放的倍数，SDK中建议其值是2的指数值,值越大会导致图片不清晰
         options.inSampleSize = 4;   //width，hight设为原来的四分一，即整个图是原来的 16 分之一
+        
         
       //以最省内存的方式读取本地资源的图片
         options.inPurgeable = true;  

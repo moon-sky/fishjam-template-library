@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.test.AndroidTestCase;
+import android.text.TextUtils;
 
 /***************************************************************************************************************************************
  * 1.多个Activity的应用程序的完全关闭方法(TODO: 评论说模拟器上才可以)
@@ -19,6 +20,7 @@ import android.test.AndroidTestCase;
 
 /***************************************************************************************************************************************
  * os --
+ *   Application -- 全局单例，如果要覆盖系统默认的，则需要继承该类，并通过 AndroidMainifest.xml 注册(<application  android:name=".MainApplication" > )
  *   Bundle -- 属性对，通常用于状态值保存和恢复。也可用于数据传递。
  *     new Bundle 后通过 Intent 的 putExtras 方法进行设置。接收端的 Activity.getIntent (不等于savedInstanceState).getExtras 进行获取。
  *   Context--Context可以访问Android应用环境的系统调用, 它提供了诸如资源解析, 访问数据库等，Activity、Service等都是其子类。
@@ -56,7 +58,7 @@ import android.test.AndroidTestCase;
  *          <category> -- 必须出现， 如 <category android:name="android.intent.category.BROWSABLE" />
  *        createChooser
  *   常见函数
- * PendingIntent -- 用于 Alarm、Notification 等中的延迟 Intent ?
+ * PendingIntent -- 用于 Alarm、Notification 等中的延迟 Intent ? 其中封装了 Intent
  *   PendingIntent pi = PendingIntent.getBroadcast(MainActivity.this, 0, intent, 0);     
 ***************************************************************************************************************************************/
 
@@ -81,9 +83,10 @@ import android.test.AndroidTestCase;
  *   可以显示广播信息的内容、图标及振动等信息
  *   使用步骤：
  *     1.获得系统服务 NotificationManager -- (NotificationManager)Context.getSystemService(NOTIFICATION_SERVICE);
- *     2.实例化 Notification 并设置属性
- *        notice = new Notification(); notice.tickerText = "xxx";  notice.when = System.currentTimeMillis();
- *        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+ *     2.实例化 Notification 并设置属性， 3.0增加了 Notification.Builder 类
+ *        notice = new Notification();   //notice = new Notification.builder(this).setAutoCancel(true)....setContentTitle("通知消息").build(); 
+ *        notice.tickerText = "xxx";  notice.when = System.currentTimeMillis();
+ *        Intent intent = new Intent(MainActivity.this, OtherActivity.class);
  *        PendingIntent pi = PendingIntent.getActivity(MainActivity.this, 0, intent, 0); 
  *        notice.setLatestEventInfo(this, "MyTitile", "MyContent", pi); // 设置事件信息
  *     3.标示该通知的ID并发出通知
@@ -156,13 +159,21 @@ public class OsTester  extends AndroidTestCase {
 	
 	public void CalendarTester()
 	{
-		 //Calendar -- 日历(TODO: 是不是UI控件 ?)
-		Calendar calendar = Calendar.getInstance();
+		 //Calendar -- 日历(对应的UI组件时 CalendarView)
+		Calendar calendar = Calendar.getInstance();  //获取当前时间
 		if (calendar != null) {
 			int  year 	= calendar.get(Calendar.YEAR);
 			int month = calendar.get(Calendar.MONTH);
 			int day 		= calendar.get(Calendar.DAY_OF_MONTH) ;
-			Log.i(TAG, "year=" + year + ",month=" + month + ",day=" + day);
+			int hour  = calendar.get(Calendar.HOUR_OF_DAY);
+			int min = calendar.get(Calendar.MINUTE);
+			int sec = calendar.get(Calendar.SECOND);
+			Log.i(TAG,  year + "-" + month + "-" + day + " " + day +":" + min + ":" + sec );
 		}
+	}
+	
+	public void TextUtilsTest(){
+		String strTest = " ";
+		assertEquals(TextUtils.isEmpty(strTest), true);
 	}
 }

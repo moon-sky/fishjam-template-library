@@ -7,6 +7,14 @@
 #  error ftlIDETools.h requires ftlbase.h to be included first
 #endif
 
+/******************************************************************************************************************************
+* BigBlueButton -- 开源视频会议系统(sourceforge上下载)
+*   使用 ActionScript 开发的远程教育平台，服务器端用到的项目包括有 ActiveMQ,Asterisk,Nginx,Tomcat等
+*   服务器端(8.0)运行在Ubuntu 10.04 32-bit 或者 64-bit.  部署bbb服务器端有两种方式:
+*     1.安装包安装
+*     2.安装bbb虚拟机: VirtualBox + 桥接，初始用户/密码是 firstuser/default
+******************************************************************************************************************************/
+
 /***********************************************************************************************
 * TODO:
 *   各种编辑器推荐保存的文件类型:
@@ -480,6 +488,7 @@ namespace FTL
 	*   集中式(SVN) -- 核心是服务器，有非常明确的权限管理机制(分支访问限制)，不适合开源开发
 	*   分布式(Git) -- 开发者可以本地离线工作(提交、合并、创建分支等，每个开发者机器上都有一个服务器的数据库，clone -> pull/fetch),
 	*     然后本地修改后生成补丁通过邮件提交或反馈给主开发者，主开发者确认后合并到公共服务器( push/ pull )
+    *   git最为出色的是它的合并跟踪(merge tracing)能力
 	*   git没有提供权限管理功能，需要通过ssh设置
 	*   Git中的相关概念
 	*     分支(branch) -- master是默认的分支,git假设在master上开始并展开工作，除非创建自己的分支
@@ -510,10 +519,11 @@ namespace FTL
 	* 其他相关工具 -- 想开发一个 nGit(参考 Git 和 Gemit的使用，如在VS里打开IE View)
 	*   Git -- http://git-scm.com/download/win
 	*   EGit -- Eclipse 下的 Git Plugin
-    *   Gerrit -- 基于Web的代码评审工具和项目管理工具
+	*   Gerrit -- 基于Web的代码评审工具和项目管理工具
 	*   GitHub -- 可与 Hudson 连接?
-    *   TortoiseGit -- 提供 Git 和 Windows 资源管理器的整合(图形化操作界面)
-    *     
+	*   TortoiseGit -- 提供 Git 和 Windows 资源管理器的整合(图形化操作界面)
+	*   Msysgit -- Window下的Git客户端程序, http://code.google.com/p/msysgit/
+	* 
 	* Git可以通过SSH连接(ssh-keygen -t rsa -C "xxx" 生成)
     *******************************************************************************************************************************/
 
