@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gifMaker.h"
+#include "gifUtil.h"
 #include "gifUtilDefine.h"
 
 #include <ColorQuantizer/WuColorQuantizer.h>

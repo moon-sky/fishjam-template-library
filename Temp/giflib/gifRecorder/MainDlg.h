@@ -5,7 +5,7 @@
 #pragma once
 
 #include <ftlThread.h>
-#include "../gifMaker/gifMaker.h"
+#include "../gifUtil/gifUtil.h"
 
 class CMainDlg : public CDialogImpl<CMainDlg>,
     public CWinDataExchange<CMainDlg>

@@ -2,7 +2,7 @@
 
 #include "../giflib/lib/gif_lib.h"
 
-#include "gifMaker.h"
+#include "gifUtil.h"
 #include "gifUtilDefine.h"
 #include "GifFrameInfo.h"
 

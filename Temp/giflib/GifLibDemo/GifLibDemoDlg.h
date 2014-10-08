@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../gifMaker/gifMaker.h"
+#include "../gifUtil/gifUtil.h"
 
 // CGifLibDemoDlg dialog
 class CGifLibDemoDlg : public CDialog, 

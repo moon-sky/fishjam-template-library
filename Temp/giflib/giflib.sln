@@ -18,7 +18,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "giftext", "giftext\giftext.
 		{7BD9935F-51CF-487E-B569-ABCC22F4543F} = {7BD9935F-51CF-487E-B569-ABCC22F4543F}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gifMaker", "gifMaker\gifMaker.vcproj", "{DFAB690C-5B2B-463D-97C4-A293D6FAD445}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gifUtil", "gifUtil\gifUtil.vcproj", "{DFAB690C-5B2B-463D-97C4-A293D6FAD445}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7BD9935F-51CF-487E-B569-ABCC22F4543F} = {7BD9935F-51CF-487E-B569-ABCC22F4543F}
 	EndProjectSection

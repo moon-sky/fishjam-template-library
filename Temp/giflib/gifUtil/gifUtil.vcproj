@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="gifMaker"
+	Name="gifUtil"
 	ProjectGUID="{DFAB690C-5B2B-463D-97C4-A293D6FAD445}"
-	RootNamespace="gifMaker"
+	RootNamespace="gifUtil"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -199,7 +199,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\gifMaker.cpp"
+				RelativePath=".\gifUtil.cpp"
 				>
 			</File>
 			<File
@@ -245,7 +245,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\gifMaker.h"
+				RelativePath=".\gifUtil.h"
 				>
 			</File>
 			<File

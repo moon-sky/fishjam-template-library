@@ -14,9 +14,9 @@
 #endif 
 
 #ifdef _DEBUG
-#  pragma comment(lib, "../Debug/gifMaker.lib")
+#  pragma comment(lib, "../Debug/gifUtil.lib")
 #else
-#  pragma comment(lib, "../Release/gifMaker.lib")
+#  pragma comment(lib, "../Release/gifUtil.lib")
 #endif 
 
 #define GIF_VERIFY(x, err) \
@@ -576,17 +576,17 @@ void CGifLibDemoDlg::OnBnClickedBtnSingleColorQuantizer()
             API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), strSingleColorQuantizerName));
 #endif
 
-            FUNCTION_BLOCK_NAME_TRACE(TEXT("GifMaker->AddGifFrame"), 100);
+            FUNCTION_BLOCK_NAME_TRACE(TEXT("GifUtil->AddGifFrame"), 100);
             pGifMaker->AddGifFrame(rcFrame, canvas.GetBuffer(), canvas.GetBufferSize(), canvas.GetBpp(), (i + 1) * 1000);
         }
     }
     {
-        FUNCTION_BLOCK_NAME_TRACE(TEXT("GifMaker->EndMakeGif"), 100);
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("GifUtil->EndMakeGif"), 100);
         pGifMaker->EndMakeGif(GetTickCount(), FALSE);
     }
     
     {
-        FUNCTION_BLOCK_NAME_TRACE(TEXT("GifMaker->Release"), 100);
+        FUNCTION_BLOCK_NAME_TRACE(TEXT("GifUtil->Release"), 100);
         pGifMaker->Release();
     }
 

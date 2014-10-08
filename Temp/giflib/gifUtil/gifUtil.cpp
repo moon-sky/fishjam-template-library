@@ -1,8 +1,8 @@
-// gifMaker.cpp : Defines the exported functions for the DLL application.
+// gifUtil.cpp : Defines the exported functions for the DLL application.
 //
 
 #include "stdafx.h"
-#include "gifMaker.h"
+#include "gifUtil.h"
 #include "GifMakerImpl.h"
 #include "GifParserImpl.h"
 

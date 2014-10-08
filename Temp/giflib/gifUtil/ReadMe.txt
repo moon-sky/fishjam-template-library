@@ -1,20 +1,20 @@
 ========================================================================
-    DYNAMIC LINK LIBRARY : gifMaker Project Overview
+    DYNAMIC LINK LIBRARY : gifUtil Project Overview
 ========================================================================
 
-AppWizard has created this gifMaker DLL for you.
+AppWizard has created this gifUtil DLL for you.
 
 This file contains a summary of what you will find in each of the files that
-make up your gifMaker application.
+make up your gifUtil application.
 
 
-gifMaker.vcproj
+gifUtil.vcproj
     This is the main project file for VC++ projects generated using an Application Wizard.
     It contains information about the version of Visual C++ that generated the file, and
     information about the platforms, configurations, and project features selected with the
     Application Wizard.
 
-gifMaker.cpp
+gifUtil.cpp
     This is the main DLL source file.
 
 /////////////////////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ Other standard files:
 
 StdAfx.h, StdAfx.cpp
     These files are used to build a precompiled header (PCH) file
-    named gifMaker.pch and a precompiled types file named StdAfx.obj.
+    named gifUtil.pch and a precompiled types file named StdAfx.obj.
 
 /////////////////////////////////////////////////////////////////////////////
 Other notes:
