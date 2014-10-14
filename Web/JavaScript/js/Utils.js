@@ -83,3 +83,16 @@ function extend(Child, Parent) {
     Child.prototype.constructor = Child;
     Child.uber = Parent.prototype;
 }
+
+/*****************************************************************************************
+* Url中可以输入 %\/?#&= 等特殊符号，如果直接在网络上传递或存入数据库，会因为乱码出错，
+*   因此传输以前需要转换（TODO: 是否有标准的系统函数做这个工作?）
+******************************************************************************************/
+function handleUrlSpecialWord(quotReply) {
+	if (null == quotReply) {
+		return "";
+	}
+	
+	return quotReply.replace(/%/g,"%25").replace(/\+/g,"%2B").replace(/\//g,"%2F")
+			.replace(/\?/g,"%3F").replace(/#/g,"%23").replace(/&/g,"%26").replace(/=/g,"%3D");
+}

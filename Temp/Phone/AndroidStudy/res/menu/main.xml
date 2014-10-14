@@ -1,8 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 
+    通过可视化编辑很容易生成菜单 : item 元素定义一份菜单项，其中又可以包含 menu 元素代表子菜单
+ -->
+ 
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
         android:id="@+id/action_settings"
+        android:icon="@drawable/ic_launcher"
         android:orderInCategory="100"
-        android:title="@string/action_settings"/>
+        android:title="@string/action_settings" >
+        <menu>
 
+            <!--
+   				group 控制整组菜单的行为:
+   				checkableBehavior: 指定菜单的选择行为;
+   				menuCategory: 对菜单进行分类，指定菜单的优先级            -->
+            <group
+                android:checkableBehavior="single"
+                android:menuCategory="container" >
+                <item
+                    android:id="@+id/action_red"
+                    android:title="@string/action_red"/>
+                <item
+                    android:id="@+id/action_green"
+                    android:title="@string/action_green"/>
+                <item
+                    android:id="@+id/action_blue"
+                    android:title="@string/action_blue"/>
+            </group>
+        </menu>
+    </item>
 </menu>

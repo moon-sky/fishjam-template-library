@@ -56,16 +56,25 @@ import android.test.AndroidTestCase;
  *   3.通过 creatFromAsset 创建Typeface对象
  *      m_Text.setTypeface(Typeface.createFromAsset(getAssets(),"fonts/HandmadeTypewriter.ttf"));
  *  
- * 菜单 -- 选项菜单(OptionMenu)、上下文菜单(ContextMenu -- 长时间按键不放时)、子菜单(SubMenu)
- *   MenuInflater --
+ * 菜单(/res/menu 下) -- 
+ *     选项菜单(OptionMenu)
+ *     上下文菜单(ContextMenu -- 长时间按键不放时, 不支持快捷键和图标)
+ *     子菜单(SubMenu, 不支持图标和嵌套)
+ *     弹出式菜单(PopupMenu) -- 指定竹简上弹出，默认显示在组件的下方或上方。
+ *  注意：从Android3.0( targetSdkVersion >= 11 )开始，并不要求手机设备上必须提供MENU按键，推荐使用 ActionBar 来代替菜单
+ *           groupId -- 具有相同groupId的菜单项可互斥选择， MenuItem.setGroupCheckable(...)  
+ *           可勾选菜单的勾选状态必须由程序代码来控制(TODO: 为什么系统不处理这些细节? )
+ *   MenuInflater -- 通过 inflate 方法加载指定资源
+ *   MenuItem
+ *     setShowAsAction -- 3.0以后，设置是否将该菜单项显示在ActionBar上，作为ActionItem
  *   系统菜单 -- 重载 Activity 的 特定函数
  *      onCreate { mi = new MenuInflater(this); 或 getMenuInflater(); } 
- *      onCreateOptionsMenu(Menu menu){ mi.inflate(R.menu.test_menu, menu); return true; } 
+ *      onCreateOptionsMenu(Menu menu){ mi.inflate(R.menu.test_menu, menu); return super.onCreateOptionsMenu(menu); } 
  *        或通过 menu.add/addSubMenu 等方法动态添加
  *      onOptionsItemSelected(MenuItem item){ switch(item.getItemId()) { case R.id.about:  xxxx; break; } return true; }
- *    上下文菜单 -- 重载 onCreateContextMenu/onContextItemSelected,  然后调用 registerForContextMenu(xxx) 为指定视图注册
+ *         也可通过 setOnMenuItemClickListener( 不推荐 ) 绑定事件监听器
+ *    上下文菜单 -- 重载 onCreateContextMenu/onContextItemSelected,  然后调用 registerForContextMenu(view) 为指定视图注册上下文菜单
  *    
- *      
  * 使用尺寸 -- 单位(dimens)
 **************************************************************************************************************************************/
 

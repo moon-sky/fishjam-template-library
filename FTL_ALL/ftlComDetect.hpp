@@ -2390,7 +2390,12 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IFont)
 
 			//COM中对图片的封装，可以通过 OleCreatePictureIndirect 从 HBITMAP 获得，
-			//  OleLoadPictureXXX-- 从内存块(CreateStreamOnHGlobal->)、文件等获得
+            //  PICTDESC pictDesc = {0};
+            //  pictDesc.cbSizeofstruct = sizeof(PICTDESC);
+            //  pictDesc.picType = PICTYPE_BITMAP;
+            //  pictDesc.bmp.hbitmap = hBmpSnap;
+            //  COM_VERIFY(OleCreatePictureIndirect(&pictDesc, IID_IPicture, FALSE, (void**)&spPicture));
+			//OleLoadPictureXXX-- 从内存块(CreateStreamOnHGlobal->)、文件等获得
 			//  注意 get_Height 等的单位是 HIMETRIC,需要 MulDiv(hmPicWidth, GetDeviceCaps(LOGPIXELSX), HIMERIC_PER_INCH)
 			//  保存: CreateLockBytesOnHGlobal -> StgCreateDocfileOnILockBytes -> IStorage::CreateStream -> IPicture::SaveAsFile
             DETECT_INTERFACE_ENTRY(IPicture)

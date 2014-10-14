@@ -139,6 +139,16 @@ import android.widget.SimpleExpandableListAdapter;
  *    fastScrollEnabled -- 设置是否允许快速滚动，如为true，则会显示滚动图标，并允许用户拖动该滚动图标进行快速滚动
  *    scrollingCache -- 如设为true，在滚动时将会使用绘制缓存
  *    textFilterEnabled -- 设置是否对列表项进行过滤，需要对应的Adapter实现了Filter接口时才起作用
+ * +-ActionBar -- 从Android3.0( targetSdkVersion >= 11 )开始，并不要求手机设备上必须提供 MENU 按键，推荐使用 ActionBar 来代替菜单。通过 Activity.getActionBar() 获取
+ *      位于显示的屏幕的顶部(标题)，可显示: 菜单项(Action Item), 应用的图标和Activity标题(作为返回Home主屏的导航操作), 提供交互式的ActionView,基于Tab的导航方式，用于切换多个Fragment.
+ *      当选项很多时，ActionBar无法同时显示所有的选项菜单项。对有MENU按键的手机，单击MENU即可看到剩余的菜单项；没有MENU的手机，最后显示一个折叠图标，点击时显示。
+ *      若要关闭ActionBar: android:theme="@android:style/Theme.Holo.NoActionBar" 
+ *      添加ActionView: a.定义ActionItem时使用 actionViewClass 属性指定其实现类(如 "android.widget.SearchView"); 
+ *                             b.定义ActionItem时使用 actionLayout 属性指定对应的视图资源(如 "@layout/clock" )
+ *      Tab导航: setNavigationMode + addTab + new Fragment() 
+ *      setDisplayHomeAsUpEnabled() -- 设置是否将应用程序图标转变成可点击的图标，并在图标上添加一个向左的箭头(返回)
+ *      setHomeButtonEnabled -- 设置是否将应用程序图标转变成可点击的按钮
+ *      setNavigationMode(NAVIGATION_MODE_TABS) -- 设置使用使用Tab导航方式      
  * +-AdapterView -- 抽象基类，可以包括多个"列表项"并将其以合适的形式显示出来，其显示的列表项由 Adapter 提供(通过 setAdapter 方法设置).
  *     AdapterView 的各子类负责采用合适的方式显示Adapter提供的每个"列表项"组件。
  *     setOnItemClickListener()/setOnItemSelectedListener() -- 添加单击、选中事件
@@ -181,11 +191,12 @@ import android.widget.SimpleExpandableListAdapter;
  *       childIndicator -- 显示在子列表项旁边的Drawable对象
  *       groupIndicator -- 显示在组列表项旁边的Drawable对象 
  * +-ExtractEditText -- 是EditText组件的底层服务类，负责提供全屏输入法支持
- * +-Fragment --11里增加的，可以重用Activity等, 
+ * +-Fragment --11里增加的，可以重用Activity等, 相当于Activity片段(模块化区域)
  *     通常用法：
  *       1. 设置要替换的占位元素Id：myContrainLayout.setId( ROOT_CONTAINER_ID);
  *       2. 将占位元素的内容换成自定义的Fragment( myGetFragment  可以由子类重载 )：
  *           getFragmentManager().beginTransaction().replace(ROOT_CONTAINER_ID , myGetFragment()).commit();
+ *      onCreateView -- 一般重写该方法进行初始化
  * +-Gallery(图库) -- 能水平方向显示其内容，而且用户可以拖动来切换列表项。一般和 ImageSwitcher 一起用来浏览图片，被选中的项位于中间。
  *      通常使用 Gallery 显示缩略图，在点击时通过 ImageSwitcher::setImageResource 切换到大图
  *      TODO: 已不再推荐该控件。推荐使用 HorizontalScrollView + ViewPager 来代替Gallery。
@@ -221,8 +232,11 @@ import android.widget.SimpleExpandableListAdapter;
  *     setContentIntent -- 设置通知将要启动程序的 PendingIntent 信息
  * +-NumberPicker -- 数值选择器，用户即可通过键盘输入，也可通过拖动来选择
  *    focusable/focusableInTouchMode -- 似乎是通用的属性?
+ * +-PopupWindow -- 可以创建类似对话框风格的窗口（浮动显示）, 在关闭按钮中调用 popup.dismiss() 来关闭 
+ *    showAsDropDown(View v) -- 作为 v 组件的下拉组件显示出来;
+ *    showAtLocation -- 在指定位置显示出来 
  * +-ProgressBar -- 进度条，有两个子类: SeekBar 和 RatingBar,  并且ProgressBar也有多种:
- *     1.ProgressDialog(对话框进度条)： 覆盖Activity的onCreateDialog方法，并在其中创建进度条并返回；调用showDialog方法显示;
+ *     1.ProgressDialog(对话框进度条)： a. new + show; b.覆盖Activity的onCreateDialog方法，并在其中创建进度条并返回, 调用showDialog方法显示; c.直接调用静态的 show 函数;
  *     2.ProgressBarIndeterminate(标题栏进度条)：调用 Activity.requestWindowFeature(Window.FEATURE_PROGRESS 或 FEATURE_INDETERMINATE_PROGRESS) 方法设置窗口有进度条的特征;
  *       调用 Activity.setProgressBarVisibility(带进度)/setProgressBarIndeterminateVisibility(不带进度) 显示进度条， Activity.setProgress 设置进度
  *     3.ProgressBar(普通进度条) -- 布局文件中声明ProgressBar，获取到变量后调用 incrementProgressBy 等方法设置进度
@@ -329,20 +343,21 @@ import android.widget.SimpleExpandableListAdapter;
 ***************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * 对话框(Dialog)
+ * 对话框(Dialog) -- 也可以将 Activity 的风格设置为对话框风格( <activity android:theme="@android:style/Theme.Dialog"> )模拟对话框，需要在关闭按钮处理中调用 finish();
  *   AlertDialog(警告对话框，功能最丰富，实际应用最广)，其对话框有如下区域：图表区、标题区、内容区、按钮区，均可定制
- *     setPositiveButton()、setNegativeButton()、setNeutralButton() -- 设置按钮
- *     setItems/setSingleChoiceItems/setMultiChoiceItems -- 设置对话框内容为 简单列表项/单选列表项/多选列表项
- *     setAdapter -- 设置内容为自定义列表项
- *     setView -- 设置对话框内容为自定义View
+ *     setPositiveButton(确定)、setNegativeButton(取消)、setNeutralButton(装饰性按钮) -- 设置按钮
+ *     setItems(简单列表项)/setSingleChoiceItems(单选列表项)/setMultiChoiceItems(多选列表项) -- 设置对话框内容
+ *     setAdapter -- 设置内容为自定义列表项，由该Adapter负责提供多个列表项组件
+ *     setView -- 设置对话框内容为自定义View，可任意定制对话框内容(如 制作登录对话框 ):  
  *     示例: 
  *       AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);  //创建Builder，然后可以依次设置各种参数
  *       dlgBuilder.setMessage(msg).setCancelable(false).setPositiveButton("确定", new DialogInterface.OnClickListener() { ...onClick(...){finish();} }); //设置builder
  *       AlertDialog alert = dlgBuilder.create();  //创建对话框实例
  *       alert.show(); //显示
+ *       //TableLayout loginForm =(TableLayout)getlayoutInflater().inflate( R.layout.login, null);  xxx.setView(loginForm);  
  *  ColorPickerDialog -- 选择颜色对话框
  *  DatePickerDialog/TimePickerDialog(日期/时间 选择对话框) --  
- *    1.重载 Activity.onCreateDialog(int id) { switch(id) {...}  } 方法创建对话框;
+ *    1.new 以后 show() 或 重载 Activity.onCreateDialog(int id) { switch(id) {...}  } 方法创建对话框;
  *    2.在 OnDateSetListener 和 OnTimeSetListener 的对应事件方法中响应日期和时间的设置;
  *    3.调用 Activity.showDialog 显示对话框
  *  

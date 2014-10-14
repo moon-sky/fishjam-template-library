@@ -317,15 +317,15 @@ namespace FTL
         UNREFERENCED_PARAMETER(outInfo);
 #pragma TODO(Use SHGetFileInfo get all info)
 
-		//CComPtr<IMalloc> spMalloc;
-		//CComPtr<IShellFolder> spShellFolder;
-		//COM_VERIFY(SHGetMalloc(&spMalloc));
-		//COM_VERIFY(SHGetDesktopFolder(&spShellFolder));
+		CComPtr<IMalloc> spMalloc;
+		CComPtr<IShellFolder> spShellFolder;
+		COM_VERIFY(SHGetMalloc(&spMalloc));
+		COM_VERIFY(SHGetDesktopFolder(&spShellFolder));
 		//
-		//if (spShellFolder && spMalloc)
-		//{
-        //      SHParseDisplayName(pszPath, NULL, &outInfo.pIdl, )
-		//}
+		if (spShellFolder && spMalloc)
+		{
+              SHParseDisplayName(pszPath, NULL, &outInfo.pIdl, )
+		}
 		
         return hr;
     }
