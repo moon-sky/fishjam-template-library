@@ -324,7 +324,7 @@ namespace FTL
 		//
 		if (spShellFolder && spMalloc)
 		{
-              SHParseDisplayName(pszPath, NULL, &outInfo.pIdl, )
+              //SHParseDisplayName(pszPath, NULL, &outInfo.pIdl, )
 		}
 		
         return hr;

@@ -145,7 +145,7 @@ import android.widget.SimpleExpandableListAdapter;
  *      若要关闭ActionBar: android:theme="@android:style/Theme.Holo.NoActionBar" 
  *      添加ActionView: a.定义ActionItem时使用 actionViewClass 属性指定其实现类(如 "android.widget.SearchView"); 
  *                             b.定义ActionItem时使用 actionLayout 属性指定对应的视图资源(如 "@layout/clock" )
- *      Tab导航: setNavigationMode + addTab + new Fragment() 
+ *      Tab导航: setNavigationMode + addTab + new Fragment() + 响应 ActionBar.TabListener
  *      setDisplayHomeAsUpEnabled() -- 设置是否将应用程序图标转变成可点击的图标，并在图标上添加一个向左的箭头(返回)
  *      setHomeButtonEnabled -- 设置是否将应用程序图标转变成可点击的按钮
  *      setNavigationMode(NAVIGATION_MODE_TABS) -- 设置使用使用Tab导航方式      
@@ -191,11 +191,14 @@ import android.widget.SimpleExpandableListAdapter;
  *       childIndicator -- 显示在子列表项旁边的Drawable对象
  *       groupIndicator -- 显示在组列表项旁边的Drawable对象 
  * +-ExtractEditText -- 是EditText组件的底层服务类，负责提供全屏输入法支持
- * +-Fragment --11里增加的，可以重用Activity等, 相当于Activity片段(模块化区域)
+ * +-Fragment --3.0(11)里增加的，可以重用Activity等, 相当于Activity片段(模块化区域)，从 android.app.Fragment 继承
+ *         3.0 以前的平台使用: 从 android.support.v4.app.Fragment 继承，并通过 FragmentActivity.getSupportFragmentManager() 获取管理器
  *     通常用法：
  *       1. 设置要替换的占位元素Id：myContrainLayout.setId( ROOT_CONTAINER_ID);
  *       2. 将占位元素的内容换成自定义的Fragment( myGetFragment  可以由子类重载 )：
- *           getFragmentManager().beginTransaction().replace(ROOT_CONTAINER_ID , myGetFragment()).commit();
+ *           FragmentTransaction ft = getFragmentManager().beginTransaction();
+ *           ft.replace(ROOT_CONTAINER_ID , myGetFragment());	//使用自定义的fragment代替 container 组件
+ *           ft.commit();	//提交事务
  *      onCreateView -- 一般重写该方法进行初始化
  * +-Gallery(图库) -- 能水平方向显示其内容，而且用户可以拖动来切换列表项。一般和 ImageSwitcher 一起用来浏览图片，被选中的项位于中间。
  *      通常使用 Gallery 显示缩略图，在点击时通过 ImageSwitcher::setImageResource 切换到大图
@@ -232,6 +235,7 @@ import android.widget.SimpleExpandableListAdapter;
  *     setContentIntent -- 设置通知将要启动程序的 PendingIntent 信息
  * +-NumberPicker -- 数值选择器，用户即可通过键盘输入，也可通过拖动来选择
  *    focusable/focusableInTouchMode -- 似乎是通用的属性?
+ * +-PagerTitleStrip -- 与 ViewPager 结合使用，在其上显示 "导航条" 
  * +-PopupWindow -- 可以创建类似对话框风格的窗口（浮动显示）, 在关闭按钮中调用 popup.dismiss() 来关闭 
  *    showAsDropDown(View v) -- 作为 v 组件的下拉组件显示出来;
  *    showAtLocation -- 在指定位置显示出来 
@@ -278,7 +282,8 @@ import android.widget.SimpleExpandableListAdapter;
  *    +-CheckedTextView -- 增加了checked状态
  * +-ToggleButton -- 状态开关按钮，拥有 checked 属性
  *     textOn/textOff -- 当按钮的状态 打开/关闭 时显示的文本
- * +-VideoView -- 
+ * +-VideoView --
+ * +-ViewPager-- Fragment容器，可以同时管理多个Fragment，并允许多个Fragment切换时提供动画效果, 可通过 FragmentPagerAdapter 提供多个Fragment  
  * +-WebView -- 内置浏览器控件，可直接加载网页。为响应超链接功能，调用 setWebViewClient 方法设置自定义的 WebViewClient 子类实例
  *     getSettings().setJavaScriptEnabled(true) -- 更改设置
  *     loadUrl -- 加载指定的URL地址网页
@@ -390,8 +395,9 @@ import android.widget.SimpleExpandableListAdapter;
  *     onPause -- 当系统要启动一个其他的activity时调用，这个方法被用来提交那些持久数据的改变、停止动画、和其他占用 CPU资源的东西。
  *     onStop -- 当另外一个activity恢复并遮盖住此activity,导致其对用户不再可见时调用。一个新activity启动、其它activity被切换至前景、当前activity被销毁时都会发生这种场景。可注销更新用户界面Intent接收者
  *     onDestroy -- 在activity被销毁前所调用的最后一个方法，有可能在某些情况下，一个Activity被终止时并不调用onDestroy方法。
- *     
- *     onSaveInstanceState -- 
+ *   状态保存和恢复( Bundle savedInstanceState ) -- TODO: 什么时候调用?
+ *     onSaveInstanceState --
+ *     onRestoreInstanceState -- 
  *   常见场景的执行顺序(TODO: BackPress 和 Home 不一样 ?)，具体的生命周期可以参见图 ActivityLifeCycle.gif
  *     初次启动:    onApplyThemeResource -> {onCreate} -> onStart -> onPostCreate -> onResume -> onPostResume -> onAttachedToWindow
  *     退出:    [onBackPressed ->] onPause(切换时触发)  -> onStop(后台由系统选择时机触发) -> onDestroy -> onDetachedFromWindow
