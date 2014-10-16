@@ -1,9 +1,11 @@
 package com.fishjam.android.study;
 import java.util.Calendar;
 import android.util.Log;
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.test.AndroidTestCase;
 import android.text.TextUtils;
 
@@ -19,18 +21,28 @@ import android.text.TextUtils;
 ***************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
- * os --
- *   Application -- 全局单例，如果要覆盖系统默认的，则需要继承该类，并通过 AndroidMainifest.xml 注册(<application  android:name=".MainApplication" > )
- *   Bundle -- 属性对，通常用于状态值保存和恢复。也可用于数据传递。
- *     new Bundle 后通过 Intent 的 putExtras 方法进行设置。接收端的 Activity.getIntent (不等于savedInstanceState).getExtras 进行获取。
- *   Context--Context可以访问Android应用环境的系统调用, 它提供了诸如资源解析, 访问数据库等，Activity、Service等都是其子类。
- *     getResources() -- 得到Resources对象，从而继续访问各种类型资源，如 r.getDimension(尺寸资源)，r.getXML(文件名), getDrawable(图片资源)
- *       引用资源的一般格式为: @[包名:]资源类型/资源名
- *     getString() -- TODO: 究竟是 Context.getString 还是 Resources.getString ?
- *   Environment
- *     getExternalStorageState -- 获取SD卡的状态，如 MEDIA_MOUNTED 
- *   Process
- *     killProcess(android.os.Process.myPid()) -- 强制杀死本进程，但不安全。需要在 Activity.onDestroy 中调用?
+ * Application -- 全局单例，如果要覆盖系统默认的，则需要继承该类，并通过 AndroidMainifest.xml 注册(<application  android:name=".MainApplication" > )
+ * Bundle -- 属性对，通常用于状态值保存和恢复。也可用于数据传递。
+ *   new Bundle 后通过 Intent 的 putExtras 方法进行设置。接收端的 Activity.getIntent (不等于savedInstanceState).getExtras 进行获取。
+ * Configuration -- 描述手机设备上的配置信息 ( 用户配置、系统的动态设备配置 等)， 通过 Activity.getResources().getConfiguration() 获得
+ *   fontScale -- 用户设置的字体缩放因子.
+ *   keyboard -- 当前设备所关联的键盘类型，如 _NOKEYS, _QWERTY(全键盘), _12KEY(电话的小键盘)
+ *   keyboardHidden -- 当前键盘（硬件键盘 和 软键盘）是否可用
+ *   mcc -- 电话信号的国家码.
+ *   mnc -- 电话信号的网络码
+ *   navigation -- 方向控制设备的类型，如 _NONAV(无方向控制), _DPAD(方向键), _TRACKBALL(轨迹球), _WHEEL(滚轮) 等
+ *   orientation -- 屏幕方向， _LANDSCAPE(横向), _PORTRAIT(纵向), _SQUARE(方形屏幕) 等
+ *   touchscreen -- 获取系统触摸屏的触摸方式，如 _NOTOUCH(无触摸屏), _STYLUS(触摸笔), _FINGER(手指)
+ *   如要监听系统设置的更改:  Activity中配置 android:configChanges 属性允许监听配置更改事件； 重载 Activity.onConfigurationChanged 方法响应。
+ *      TODO:如果 targetSdkVersion 超过12，则 onConfigurationChanged 不会响应? 
+ * Context--Context可以访问Android应用环境的系统调用, 它提供了诸如资源解析, 访问数据库等，Activity、Service等都是其子类。
+ *   getResources() -- 得到Resources对象，从而继续访问各种类型资源，如 r.getDimension(尺寸资源)，r.getXML(文件名), getDrawable(图片资源)
+ *     引用资源的一般格式为: @[包名:]资源类型/资源名
+ *   getString() -- TODO: 究竟是 Context.getString 还是 Resources.getString ?
+ * Environment
+ *   getExternalStorageState -- 获取SD卡的状态，如 MEDIA_MOUNTED 
+ * Process
+ *   killProcess(android.os.Process.myPid()) -- 强制杀死本进程，但不安全。需要在 Activity.onDestroy 中调用?
  *   
  * Intent(动作 + URI格式的数据) -- Android中引入的新的设计元素，不同组件之间相互导航的纽带，封装了不同组件之间导航查找的条件。
  *   应用程序可以通过它发出请求，就像是发出求助信号。应用程序可以按照相似或互补的方式进行注册，表明他们有能力或有兴趣执行各种请求或intent。

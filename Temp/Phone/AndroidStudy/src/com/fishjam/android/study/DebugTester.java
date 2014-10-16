@@ -1,6 +1,10 @@
 package com.fishjam.android.study;
 import android.test.AndroidTestCase;
 
+/***************************************************************************************************************************************
+ * 常见异常
+ *    ANR(Application Not Responding) --
+****************************************************************************************************************************************/
 
 /***************************************************************************************************************************************
  * 模拟器切换 纵(port)、横屏(land) -- 快捷键F12或 Ctrl+F11， TODO: 在小键盘上按数字键7也可以切换 ?
@@ -8,6 +12,7 @@ import android.test.AndroidTestCase;
  *     然后获取当前状态并处理： if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){ }
  *     Manifest中设置Activity的属性：
  *       1. 指定横屏、竖屏(禁止切换) -- android:screenOrientation="landscape"(横屏)、"portrait" 竖屏 。
+ *          若要在代码中切换，需要调用 Activity.setRequestedOrientation(...);
  *       2.屏幕切换时不重启Activity  --  android:configChanges="orientation|keyboardHidden"，之后只会调用onConfigurationChanged方法
  *           
  * 部署到手机 

@@ -123,7 +123,7 @@ import android.test.ActivityUnitTestCase;
  *     
  * 自绘
  *   1.从 View/SurfaceView 等类继承，然后选择性重载以下方法：
- *      onDraw -- 使用Canvas进行绘制，通过 invalidate 或 postInvalidate 请求更新
+ *      onDraw( Canvas ) -- 使用Canvas进行绘制，通过 invalidate 或 postInvalidate 请求更新
  *      onFinishInflate -- 当应用从XML布局文件加载组件并利用它来构建界面之后调用
  *      onMeasure -- 检测View组件及它所包含的所有组件的大小，父元素要放置该View时调用。
  *        计算时先通过 MeasureSpec 类的静态方法getMode(AT_MOST 表示最大可获得的空间，对应wrap_content; EXACTLY 表示精确的尺寸，对应fill_parent )

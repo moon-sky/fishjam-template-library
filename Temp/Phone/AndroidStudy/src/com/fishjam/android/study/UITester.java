@@ -1,15 +1,10 @@
 package com.fishjam.android.study;
-import com.fishjam.util.LogHelper;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Rect;
-import android.test.ActivityTestCase;
 import android.test.ActivityUnitTestCase;
-import android.test.AndroidTestCase;
 import android.util.Log;
 import android.view.Display;
-import android.widget.SimpleExpandableListAdapter;
 
 /***************************************************************************************************************************************
  * HVGA( Half-size VGA) -- VGA(640x480)的一半，分辨率为480x320, iPhone,第一款gPhone等手机都是。
@@ -90,7 +85,7 @@ import android.widget.SimpleExpandableListAdapter;
  *       OnScaleGestureListener -- 用户提供的回调接口，一般在各个回调函数中调用 Detector 的方法进行处理。
  *         onScaleBegin(返回true表明开始缩放) -> 循环onScale -> onScaleEnd
  *       getScaleFactor() -- 返回缩放比例，注意：onScale 中如果返回true会更新factor的基数, 返回false会以旧值计算factor.
- *   实现手势识别的方法：
+ *   实现手势识别的方法( TODO: 需要先 setFocusable(true) ? )：
  *     1.实现 OnGestureListener 和 OnDoubleTapListener 接口，实现所有方法
  *       onDown --按下 
  *       onFling(快速移动并松开)
@@ -145,10 +140,11 @@ import android.widget.SimpleExpandableListAdapter;
  *      若要关闭ActionBar: android:theme="@android:style/Theme.Holo.NoActionBar" 
  *      添加ActionView: a.定义ActionItem时使用 actionViewClass 属性指定其实现类(如 "android.widget.SearchView"); 
  *                             b.定义ActionItem时使用 actionLayout 属性指定对应的视图资源(如 "@layout/clock" )
- *      Tab导航: setNavigationMode + addTab + new Fragment() + 响应 ActionBar.TabListener
+ *      Tab导航: setNavigationMode(_TABS) + addTab + new Fragment() + 响应 ActionBar.TabListener
+ *      下拉式(DropDown)导航: setNavigationMode(_LIST) + setListNavigationCallbacks(添加列表项和事件监听, 在 onNavigationItemSelected 中创建并设置UI界面，通常是 Fragment) 
  *      setDisplayHomeAsUpEnabled() -- 设置是否将应用程序图标转变成可点击的图标，并在图标上添加一个向左的箭头(返回)
  *      setHomeButtonEnabled -- 设置是否将应用程序图标转变成可点击的按钮
- *      setNavigationMode(NAVIGATION_MODE_TABS) -- 设置使用使用Tab导航方式      
+ *      setNavigationMode(NAVIGATION_MODE_TABS / NAVIGATION_MODE_LIST) -- 设置使用使用 Tab / DropDown 导航方式      
  * +-AdapterView -- 抽象基类，可以包括多个"列表项"并将其以合适的形式显示出来，其显示的列表项由 Adapter 提供(通过 setAdapter 方法设置).
  *     AdapterView 的各子类负责采用合适的方式显示Adapter提供的每个"列表项"组件。
  *     setOnItemClickListener()/setOnItemSelectedListener() -- 添加单击、选中事件
@@ -442,14 +438,19 @@ import android.widget.SimpleExpandableListAdapter;
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
- * 1. 隐藏TitleBar 和 Status Bar -- TODO：需要在setContentView(R.layout.start_test)之前调用，否则会出现force close 错误。
+ * 1. 隐藏TitleBar 和 Status Bar -- TODO：需要在 setContentView(R.layout.start_test) 之前调用，否则会出现 force close 错误。
  *    在当前Activity的Java源文件引入android.view.Window和android.view.WindowManager，并在oncreate()方法中调用:
  *    requestWindowFeature(Window.FEATURE_NO_TITLE);   //Hide title bar;
- *    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);  //Hide status bar;
+ *    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);  //全屏显示
  *    //getWindow().setBackgroundDrawableResource(R.color.red_bg); //设置背景色
- * 2. 通过资源中定义的id找到对应的对象 -- findViewById
+ * 2.获取屏幕高宽
+ *     	WindowManager windowManager = getWindowManager()
+ *      Display display = windowManager.getDefaultDisplay();
+ *      DisplayMetrics metrics = new DisplayMetrics();
+ *      display.getMetrics(metrics);  
+ *    	display.getWidth(), display.getHeight(); metrics.widthPixels; metrics.heightPixels;   //TODO: 区别 ?
+ * 3. 通过资源中定义的id找到对应的对象 -- findViewById
  *    TextView ResultText = (TextView)findViewById(R.id.ResultText);
- * 3. 显示图片
  *    
 **************************************************************************************************************************************/
 
@@ -459,7 +460,6 @@ public class UITester extends ActivityUnitTestCase<Activity>{
 	
 	public UITester() {
 		super(Activity.class);
-		
 	}
 
 

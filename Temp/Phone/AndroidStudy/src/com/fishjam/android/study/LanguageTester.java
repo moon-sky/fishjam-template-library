@@ -36,6 +36,7 @@ import android.util.Log;
  * 
  * 字符串格式化
  *   String.Format
+ *   十六进制转换: Long.toHexString(xxx);
  *   
  * 类
  *   instanceof -- 判断是否是指定类型的实例
@@ -53,10 +54,20 @@ import android.util.Log;
  * 
  * annotation
  * 
- * Android 使用Java中的事件处理机制，包括( TODO ):
- *   事件 -- (extends EventObject), 通过 FireEvent 激发事件 
- *   事件源
- *   事件监听器 -- 从EventListener 继承来定义监听接口，具体的监听器 implements 该接口  
+ * Android 使用Java中的事件处理机制，有两种方式( 基于监听的事件监听器会被优先触发 )：
+ *   基于回调的事件处理(组件自己处理) -- 继承并重载组件或Activity等的回调方法( onXxx ), 通常用于处理一些具有通用性的事件； 或自定义组件时将逻辑封装在内部。提高内聚性。
+ *   基于监听的事件处理(委托式) -- 为组件绑定特定的事件监听器( setOnXxxListener )
+ *  
+ * 一般来说，事件处理函数中返回 true 表示已经完全处理，不再继续扩散。否则会继续向父组件(如 所在的 Activity) 扩散. 
+ *   
+ *   事件(Event extends EventObject) -- 封装了界面组件上发生的特定事情(如用户操作),  通过 FireEvent 激发事件 
+ *   事件源(Event Source) -- 事件发生的场所，通常就是各个组件，如 按钮、窗口等
+ *   事件监听器(EventListener 继承的接口) -- 负责监听事件源所发生的事件，并对各种事件作出相应的响应。有几种实现方式:
+ *      内部类 -- 可在当前类中复用，可只有访问其所在外部类的所有界面组件;
+ *      外部类(不推荐) -- 不利于提高程序的内聚性，不能自由访问创建GUI界面的类中的组件。 
+ *      组件实现监听器接口 -- 简洁，但可能造成程序结构混乱，
+ *      匿名内部类(使用最广泛) -- 可复用代码通常都被抽象成了业务逻辑类，事件监听器只是临时使用一次
+ *         setXxxListener(new OnXxxListener(){ ... });
  *     Android系统中常见的事件监听器：
  *       View 中的 OnClickListener, OnFocusChangeListener, OnKeyListener, OnTouchListener, OnCheckedChangeListener 等 
  **************************************************************************************************************************************/
