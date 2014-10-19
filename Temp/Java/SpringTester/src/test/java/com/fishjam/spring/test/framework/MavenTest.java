@@ -76,7 +76,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *      integration-test -- 如有需要，将包处理和发布到一个能够进行集成测试的环境
  *      verify -- 运行所有检查，验证包是否有效且达到质量标准。
  *      install -- 把包安装在本地的repository中，可以被其他工程作为依赖来使用
- *      
+ *        mvn install:install-file -Dfile=emayclient.jar -DgroupId=cn.emay.sdk -DartifactId=client -Dversion=1.5 -Dpackaging=jar
  *      deploy -- 在集成或者发布环境下执行，将最终版本的包拷贝到远程的repository，使得其他的开发者或者工程可以共享。
  *      site -- 生成基于pom.xml配置的项目信息，可以在target/site目录下看到生成的文档
  *      clean -- 清除先前构建的artifacts(即 删除 target 及其所有子目录内容 ?)

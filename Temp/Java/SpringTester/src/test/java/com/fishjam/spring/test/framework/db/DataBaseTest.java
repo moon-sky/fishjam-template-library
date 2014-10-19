@@ -207,14 +207,14 @@ public class DataBaseTest extends AbstractJUnit4SpringContextTests {
 	}
 	
 	private void CreateStudentTable(){
-		jdbcTemplate.update("create table student (id int not null, "
+		jdbcTemplate.update("create table student (id INTEGER PRIMARY KEY NOT NULL, "
 				+ "name varchar, "
 				+ "sex varchar)"
 				);
 	}
 	private int InsertStudentIntoDB(Student student){
 		//使用参数索引的方式
-		jdbcTemplate.update("insert into student(id, name, sex) values( ?, ?, ?)",
+		jdbcTemplate.update("insert into student(id, name, sex) values(?, ?, ?)",
 				null,
 				student.getName(), 
 				student.getSex()

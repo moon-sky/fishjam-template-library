@@ -206,6 +206,9 @@ test("字符串String", function() {
     //通过 fromCharCode 获得对应的Unicode符号(此处是向右的黑色箭头，一般用于播放按钮)
     ok(String.fromCharCode('0x25B6') == String.fromCharCode('0x25B6'), "String get Unicode");
 
+	var formatResult="hello {0}, your are {1}".format("fishjam",30);
+	ok(formatResult == "hello fishjam, your are 30", "String Format");
+	
     /*
     //系统没有提供 StringBuffer 这个类?
     var strBuf = new StringBuffer();

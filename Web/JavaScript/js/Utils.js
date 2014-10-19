@@ -84,6 +84,29 @@ function extend(Child, Parent) {
     Child.uber = Parent.prototype;
 }
 
+String.prototype.format = function(args) {
+    var result = this;
+    if (arguments.length > 0) {    
+        if (arguments.length == 1 && typeof (args) == "object") {
+            for (var key in args) {
+                if(args[key]!=undefined){
+                    var reg = new RegExp("({" + key + "})", "g");
+                    result = result.replace(reg, args[key]);
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < arguments.length; i++) {
+                if (arguments[i] != undefined) {
+                    var reg = new RegExp("({[" + i + "]})", "g");
+                    result = result.replace(reg, arguments[i]);
+                }
+            }
+        }
+    }
+    return result;
+}
+
 /*****************************************************************************************
 * Url中可以输入 %\/?#&= 等特殊符号，如果直接在网络上传递或存入数据库，会因为乱码出错，
 *   因此传输以前需要转换（TODO: 是否有标准的系统函数做这个工作?）
