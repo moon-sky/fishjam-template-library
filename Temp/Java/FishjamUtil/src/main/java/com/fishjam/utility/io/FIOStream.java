@@ -1,6 +1,17 @@
 package com.fishjam.utility.io;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.security.Timestamp;
+import java.sql.Time;
+import java.util.zip.ZipOutputStream;
+
+import javax.naming.directory.SearchControls;
+
+import junit.framework.TestCase;
+
+import org.junit.Test;
 
 /************************************************************************************************************
 * IO使用Stream(流)的抽象概念，将实际I/O设备中处理数据的细节动作隐藏起来，通过叠合多层
@@ -28,7 +39,7 @@ import java.io.Serializable;
 * JAR--将某个applet所需的所有文件并在单一JAR文件内，浏览器只需向服务器请求一次就好，而且传输速度快。
 *   具有内部文件的一份清单(manifest)
 *   
-* 对象序列化(Serialization)将实现出 Serializable 接口的对象的全部数据自动转换为连续bytes数据，
+* 对象序列化(Serialization)将实现了 Serializable 接口的对象的全部数据自动转换为连续bytes数据，
 *   这些数据可通过网络传输或保存到磁盘，之后可被还原为原先的对象状态。注意：通过序列化
 *   生成对象实例时，不会调用任何(包括缺省)构造函数，整个对象的状态全都通过InputStream
 *   所得位数据进行回复--和MFC不同。可以使用关键字transient关闭指定成员变量不要序列化
@@ -49,7 +60,29 @@ import java.io.Serializable;
 * 
 ************************************************************************************************************/
 
-public class FIOStream
+public class FIOStream extends TestCase
 {
-    
+	class SerializablePerson implements Serializable{
+		private String name;
+		private Timestamp birthday;
+		
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		public Timestamp getBirthday() {
+			return birthday;
+		}
+		public void setBirthday(Timestamp birthday) {
+			this.birthday = birthday;
+		}
+	}
+	
+	@Test
+	public void testSerializable(){
+		SerializablePerson person = new SerializablePerson();
+		assertEquals(1, 1);
+	}
 }

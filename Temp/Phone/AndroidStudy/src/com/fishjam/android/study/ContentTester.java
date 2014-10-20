@@ -24,6 +24,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.SimpleAdapter;
+import android.widget.SimpleCursorTreeAdapter;
 
 
 /***************************************************************************************************************************************
@@ -43,7 +44,7 @@ import android.widget.SimpleAdapter;
 
 /***************************************************************************************************************************************
  * Android提供了多种数据存取方式：
- *   SharedPreferences -- 数据较少的配置信息等， 使用键值对的方式保存在 XML 文件中 ( /Android/data/<package>/shared_prefs/ 目录下 ),
+ *   SharedPreferences -- 数据较少的配置信息等， 使用键值对的方式保存在 XML 文件中 ( /Android/data/<package>/shared_prefs/<package>_preferences.xml  ),
  *     使用上比较方便，但功能不强，不适合保存比较大的数据，保存的文件只能在同一包内使用，不能在不同包之间使用(同一个程序的不同package也不能用？)
  *        使用：Activity.getSharedPreferences(获得实例) -> 
  *     程序配置项
@@ -79,18 +80,22 @@ import android.widget.SimpleAdapter;
  *       -- MediaStoreContentProvider -- 增加多媒体文件的操作的 ContentProvider
  *     ContentResolver -- 客户端访问时使用的类(Context.getContentResolver() )，其内部操作对应的 ContentProvider 来对数据进行操作。 
  *     
- * Adapter -- 适配器接口
+ * Adapter -- 适配器接口（TODO: 类继承结构尚未整理清楚）
+ *   ArrayAdapter -- 常用于将数组或List集合的多个值包装成多个列表项，功能有限，其列表项只能是TextView，一般只用于 AutoCompleteTextView 等只显示文本的地方
  *   BaseAdapter -- 自定义适配器的基类，一般从该类继承，作为Module和View之间的桥梁。从该类继承可以取得对Adapter最大的控制权，
  *     实现 getCount, getItem{return null}, getView(int position,...){ return myCustomView; } 等方法。可用于类似 Windows Virtual ListView 的高性能显示
- *   ArrayAdapter -- 常用于将数组或List集合的多个值包装成多个列表项，功能有限，其列表项只能是TextView，一般只用于 AutoCompleteTextView 等只显示文本的地方
+ *   ExpandableListAdapter -- 可展开数据，通常用做树结构
  *   SimpleAdapter -- 可用于将List集合的多个对象包装成多个列表项，功能很强大
-
  *   SimpleCursorAdapter -- 包装Cursor提供的数据
+ * 非Adapter实现类的Adapter 
+ *     SimpleCursorTreeAdapter -- 
+ *     BaseExpandableListAdapter
  *     
  * Intent/IntentFilter -- 不同组件之间通信的载体
  *   显式Intent -- 明确指定需要启动或触发的组件的类名
  *   隐式Intent -- 只是指定需要启动或触发的组件应满足怎样的条件，Android系统解析出条件，并在系统中查找与之匹配的目标组件，如找到则启动或触发。
- *   
+ *        如通过 action 指定的字符串等, 如 intent.setAction("com.fishjam.intent.action.MY_ACTION"); startActivity(intent); 
+ *        
  *   启动类型和方式
  *     启动Activity -- Context.startActivity/startActivityForResult
  *     启动Service -- Context.startService/bindService

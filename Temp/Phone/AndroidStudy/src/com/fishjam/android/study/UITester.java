@@ -187,15 +187,36 @@ import android.view.Display;
  *       childIndicator -- 显示在子列表项旁边的Drawable对象
  *       groupIndicator -- 显示在组列表项旁边的Drawable对象 
  * +-ExtractEditText -- 是EditText组件的底层服务类，负责提供全屏输入法支持
- * +-Fragment --3.0(11)里增加的，可以重用Activity等, 相当于Activity片段(模块化区域)，从 android.app.Fragment 继承
- *         3.0 以前的平台使用: 从 android.support.v4.app.Fragment 继承，并通过 FragmentActivity.getSupportFragmentManager() 获取管理器
+ * +-Fragment --3.0(11)里为了适应大屏幕的平板(如网易新闻左侧显示列表，右侧显示内容)而增加的，可以重用Activity等, 相当于Activity片段(模块化区域)，必须嵌入 Activity 中使用。
+ *         拥有自己的生命周期，但被其所属的Activity的生命周期控制。Fragment向Activity传递数据时可在Fragment中定义回调接口，由Activity实现。
+ *         从 android.app.Fragment 继承，3.0 以前的平台使用: 从 android.support.v4.app.Fragment 继承，并通过 FragmentActivity.getSupportFragmentManager() 获取管理器
+ *     常见子类 -- DialogFragment, ListFragment, PreferenceFragment, WebViewFragment
+ *     FragmentManager
+ *       add/remove/replace -- 动态的增加、删除、替换Fragment
+ *       addToBackStack() -- 在调用commit()前调用，可将事务添加到back栈，该栈由Activity负责管理，允许用户按BACK按键返回到前一个Fragment状态。
+ *       findFragmentById 或 findFragmentByTag -- 获取 Fragment
  *     通常用法：
- *       1. 设置要替换的占位元素Id：myContrainLayout.setId( ROOT_CONTAINER_ID);
- *       2. 将占位元素的内容换成自定义的Fragment( myGetFragment  可以由子类重载 )：
- *           FragmentTransaction ft = getFragmentManager().beginTransaction();
- *           ft.replace(ROOT_CONTAINER_ID , myGetFragment());	//使用自定义的fragment代替 container 组件
- *           ft.commit();	//提交事务
- *      onCreateView -- 一般重写该方法进行初始化
+ *       静态: 在布局文件中使用 <fragment> 元素添加，通过 name 属性指定实现类;
+ *       动态: 1. 设置要替换的占位元素Id：myContrainLayout.setId( ROOT_CONTAINER_ID);
+ *               2. 将占位元素的内容换成自定义的Fragment( myGetFragment  可以由子类重载 )：
+ *                  FragmentTransaction ft = getFragmentManager().beginTransaction();
+ *                  ft.replace(ROOT_CONTAINER_ID , myGetFragment());	//使用自定义的fragment代替 container 组件
+ *                  ft.commit();	//提交事务
+ *      getActivity() -- 获取所在的Activity
+ *      onActivityCreated() -- 当所在的Activity被启动完成后回调该方法
+ *      onAttach() -- 当该Fragment被添加到Activity时，回调该方法，只会被调用一次。
+ *      onCreate() -- 创建时回调，只会被调用一次。可初始化想要在Fragment中保持的必要组件，当fragment被暂停或停止后可以恢复
+ *      onCreateView() -- 每次创建绘制界面组件时回调该方法，其返回值就是Fragment所显示的View。 一般重写该方法进行初始化。会调用多次?
+ *      onDetach() -- 当该Fragment从它所属的Activity中被删除、替换完成时回调该方法，只被调用一次
+ *      onDestroy() -- 销毁Fragment时被回调，只调用一次
+ *      onDestroyView() -- 销毁该Fragment所包含的View组件时调用
+ *      onPause()|onResume() -- 暂停 | 恢复 Fragment时被回调 
+ *      onStart() | onStop() -- 启动 | 停止 Fragment时被回调
+ *      常见场景的执行顺序(未实测):
+ *         启动时:
+ *         转到后台时:
+ *         重回前台时:
+ *         结束时:
  * +-Gallery(图库) -- 能水平方向显示其内容，而且用户可以拖动来切换列表项。一般和 ImageSwitcher 一起用来浏览图片，被选中的项位于中间。
  *      通常使用 Gallery 显示缩略图，在点击时通过 ImageSwitcher::setImageResource 切换到大图
  *      TODO: 已不再推荐该控件。推荐使用 HorizontalScrollView + ViewPager 来代替Gallery。
@@ -316,15 +337,16 @@ import android.view.Display;
  *       layout_columnSpan/layout_rowSpan -- 设置该子组件在GridLayout 横向、纵向上 跨几列、几行
  *   +-LinearLayout -- 线型布局，按照垂直或者水平方向布局组件。注意：水平排列时不会换行显示多余的组件。
  *       background -- "@drawable/testpic",
- *       divider -- 垂直布局时两个按钮之间的分隔条(Drawable对象)
+ *       divider -- 布局时的分隔条(Drawable对象，如 "?android:attr/dividerHorizontal" )，然后通过 showDividers= "middle"  等来显示
  *       layout_gravity -- 设置该子元素在父容器中的对齐方式，如 center_horizontal
- *       orientation -- 排列方式, 如   vertical(垂直排列，默认值),horizontal
  *       layout_weight -- 权重
  *       layout_alignParentLeft/layout_alignParentTop/ -- true 或 false
  *       layout_marginRight -- 80dip, 
  *       layout_below/layout_alignTop -- "@+id/ExitButton", 设置相对位置的元素ID
  *       layout_centerHorizontal -- true
  *       measureWithLargestChild -- 设置为true时，所有带权重的子元素都会具有最大子元素的最小尺寸
+ *       orientation -- 排列方式, 如   vertical(垂直排列，默认值),horizontal
+ *       
  *     +-TableLayout  -- 表格布局，继承自LinearLayout，按照行列方式布局组件( 采用 > TableRow > 元素 的方式)。
  *         若直接将元素放入TableLayout，则该元素将占满一行
  *           collapseColumns -- 设置需要被隐藏的列的列序号，多个列序号之间用逗号隔开
@@ -371,6 +393,7 @@ import android.view.Display;
  * Activity  :  表示用户界面中的一个屏幕，显示由几个Views控件组成的用户接口，并对事件做出响应，可以在xml文件中定义所需要的Views或在代码中定义，
  *     Context <- ContextWrapper <- ContextThemeWrapper <- Activity
  *     注意：Activity必须在清单文件中声明才能使用
+ *              配置时若指定其 exported 属性为true，则可被其他应用启动。可在 <action android:name> 中指定能响应Action为指定字符串的 Intent 
  *   每个Activity的状态由它所在Activity栈中的位置所决定，所有当前正在运行的Activity将遵循后进先出的原则。
  *   当一个新的Activity启动，当前的Activity将移至堆栈的顶部，如果用户使用Back按钮，或在前台Activity被关闭，下一个Activity将被激活并且移至到堆栈的顶部。
  *   如在 startActivity 时 setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) 标志可清空已有的栈(即新起的Activity将成为最后一个，finish时将结束程序)
@@ -388,7 +411,7 @@ import android.view.Display;
  *     onStart -- 当activity对用户即将可见的时候调用，可注册更新用户界面Intent接收者
  *     onResume -- 当activity将要与用户交互时调用此方法，此时activity在activity栈的栈顶，用户输入已经可以传递给它 
  *     onSave -- Activity即将移出栈顶保留UI状态时调用此方法
- *     onPause -- 当系统要启动一个其他的activity时调用，这个方法被用来提交那些持久数据的改变、停止动画、和其他占用 CPU资源的东西。
+ *     onPause -- 当系统要启动一个其他的activity(如 接到电话 )时调用，这个方法被用来提交那些持久数据的改变、停止动画、和其他占用 CPU资源的东西。
  *     onStop -- 当另外一个activity恢复并遮盖住此activity,导致其对用户不再可见时调用。一个新activity启动、其它activity被切换至前景、当前activity被销毁时都会发生这种场景。可注销更新用户界面Intent接收者
  *     onDestroy -- 在activity被销毁前所调用的最后一个方法，有可能在某些情况下，一个Activity被终止时并不调用onDestroy方法。
  *   状态保存和恢复( Bundle savedInstanceState ) -- TODO: 什么时候调用?
@@ -399,12 +422,18 @@ import android.view.Display;
  *     退出:    [onBackPressed ->] onPause(切换时触发)  -> onStop(后台由系统选择时机触发) -> onDestroy -> onDetachedFromWindow
  *     Home到后台：onUserLeaveHint -> onSaveInstanceState(保存内容) -> onPause(另一个到前台) -> onCreateDescription -> onStop(不可见)
  *     到前台: {onRestart} ->onStart -> onResume -> onPostResume
- *     锁屏时(TODO: 未测试确认): onSaveInstanceState -> onPause 
+ *     锁屏时(TODO: 未测试确认): onSaveInstanceState -> onPause
+ *   加载方式( android:launchMode )
+ *     standard(默认) -- 标准模式，启动时会创建新的Activity实例，并添加到当前Task栈中，不启动新的Task( Activity.getTaskId() 相同), 点击"返回"键时会逐一从栈顶删除Activity实例返回
+ *     singleTop -- Task顶的单例模式, 当要被启动的目标Activity已经位于Task栈顶时，系统直接复用已有的实例。若目标Activity不在栈顶时，系统创建目标实例并加载到Task栈顶。
+ *     singleTask -- Task内单例模式， 目标Activty在同一个Task内只有一个实例。a.目标不存在=>创建并加入栈顶;b.已经在栈顶=>同singleTop; c.存在且不在栈顶=>将其上所有Activity移出栈
+ *     singleInstance -- 全局单例模式，系统保证无论从哪个Task中启动目标Activity，只会创建一个目标实例，其所在Task也只包含该Activity。
  *   常见属性
  *     ConfigChanges -- 可以使Activity捕捉设备状态变化, 如 orientation(设备旋转) 等
  *   常见方法
  *     findViewById() -- 根据ID查找组件的实例
  *     finish() -- 结束Activity, 通常用法为 MyActivity.this.finish();
+ *     finishActivity(requestCode) -- 结束以 startActivityForResult 方法启动的Activity(具体意思 ?)
  *     getWindow() -- 返回该Activity所包含的窗口，如不调用 setContentView 来设置该窗口显示的内容，则显示为一个空窗口 
  *     setContentView -- 通常在重载的 onCreate 中调用来设置要显示的视图，从而实现与用户交互的功能
  *     setThemem -- 设置窗口风格(如 不显示ActionBar、以对话框形式显示窗口等)
@@ -412,9 +441,19 @@ import android.view.Display;
  *       Intent intent = new Intent(FirstActivity.this, SecondActivity.class);  通过Bundle设置参数;  startActivity(intent);  //在FirstActivity中启动SecondActivity
  *       在 SecondActivity::onCreate 中: Intent intent = getIntent(); Bundle bundle = intent.getExtras(); ...
  *     startActivityForResult -- 以等待返回结果的方式启动并导航到另一个Activity， 需要重载 onActivityResult 处理返回的 Intent 等结果。
- *                                       在SecondActivity中通过 SecondActivity.this.setResult(0, intent); 设置返回值， 然后 finish() 结束
+ *                                       在SecondActivity中通过 setResult(resultCode, intent); 设置返回值， 然后 finish() 结束
  *   常见子类
- *     ListActivity, MapActivity, PreferenceActivity(对系统进行信息配置和管理) 等
+ *     AccountAuthenticatorActivity -- 账户管理界面
+ *     ExpandableListActivity -- 可展开列表，通过 ExpandableListAdapter 提供数据
+ *     ListActivity
+ *     LauncherActivity -- 应用启动列表, 每个列表项对应一个Intent，单击时自动启动对应的Activity, 需要重写 intentForPosition 方法来返回对应的 Intent
+ *        示例: Class<?>[] classes = { AAA.class, BBB.class };  public Intent intentForPosition(int position) { return new Intent(MyLauncherActivy.this, classes[position]); } 
+ *     MapActivity(还是 MainActiviy ?) --
+ *     TabActivity 
+ *     PreferenceActivity -- 显示设置选项参数并进行保存，需结合 PreferenceScreen + PreferenceFragment子类(3.0以后) 实现参数设置界面，然后自动通过 Preferences 进行保存
+ *       1.UI配置xml文件: <preference-headers> <header fragment="xxx">  
+ *       2.<PreferenceScreen><PreferenceCategory>
+ *       3.Fragment 继承 PreferenceFragment, 在 onCreate 中调用 addPreferencesFromResource 方法加载指定的界面布局文件
  **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
@@ -573,6 +612,7 @@ public class UITester extends ActivityUnitTestCase<Activity>{
     
 	// 全屏显示窗口并获取屏幕高宽等, Activity.onCreate 中
     public void testFullScreen(){
+    	
     	/*
     	// 隐去标题栏（程序的名字）, 等价于 android:theme="@android:style/Theme.NoTitleBar"
     	requestWindowFeature(Window.FEATURE_NO_TITLE);

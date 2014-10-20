@@ -44,7 +44,7 @@ import android.text.TextUtils;
  * Process
  *   killProcess(android.os.Process.myPid()) -- 强制杀死本进程，但不安全。需要在 Activity.onDestroy 中调用?
  *   
- * Intent(动作 + URI格式的数据) -- Android中引入的新的设计元素，不同组件之间相互导航的纽带，封装了不同组件之间导航查找的条件。
+ * Intent(意图: 动作 + URI格式的数据) -- Android中引入的新的设计元素，不同组件之间相互导航的纽带，封装了不同组件之间导航查找的条件。松耦合方式编程。
  *   应用程序可以通过它发出请求，就像是发出求助信号。应用程序可以按照相似或互补的方式进行注册，表明他们有能力或有兴趣执行各种请求或intent。
  *   主要部分： 
  *     动作(Action) -- 要完成的动作，Intent 类中预定义了大量的Action常量， 如 ACTION_CALL，ACTION_EDIT, ACTION_BATTERY_LOW 等
@@ -53,7 +53,7 @@ import android.text.TextUtils;
  *     数据(Data) -- 执行动作的URI和MIME类型等信息，不同的Action有不同的Data数据指定
  *     分类(Category) -- 执行Action的附加信息，如 CATEGORY_LAUNCHER 表示加载程序时该Activity出现在最上面。
  *     类型(Type),
- *     组件(Component) -- 可以通过组件名称直接指定目标
+ *     组件(Component) -- 用于明确指定需要启动的目标组件( package+class )  
  *     扩展信息(Extra) -- 额外的附加信息，如通过Activity发送邮件时，可通过Extras属性来添加subject和body等
  *     setClass(源, 目的) -- 设置跳转的源(如 MainActivity.this)和目的class(ResultActivity.class)
  *   通过Intent可以：
