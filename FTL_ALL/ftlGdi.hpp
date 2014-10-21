@@ -1465,7 +1465,7 @@ namespace FTL
         FTLASSERT(bpp >= 8);
         if(bpp < 8)
         {
-            FTLTRACE(TEXT("ComapreBitmapData need bpp >= 8 \n"));
+            FTLTRACE(TEXT("CompareBitmapData need bpp >= 8 \n"));
             SetLastError(ERROR_INVALID_PARAMETER);
             return -1;
         }
@@ -1476,7 +1476,7 @@ namespace FTL
         {
             if (nNeedResultSize > nResultSize)
             {
-                FTLTRACE(TEXT("ComapreBitmapData resultSize need %d, bigger than provide %d\n"), nNeedResultSize, nResultSize);
+                FTLTRACE(TEXT("CompareBitmapData resultSize need %d, bigger than provide %d\n"), nNeedResultSize, nResultSize);
                 SetLastError(ERROR_INVALID_PARAMETER);
                 return -1;
             }
@@ -1523,7 +1523,7 @@ namespace FTL
                         {
                         case 1: //8色
                             //bDiffer = (*pBuf1 != *pBuf2);
-                            *pBufDiffResult = clrSameFill;
+                            *pBufDiffResult = (byte)clrSameFill;
                             break;
                         case 2: //16色
                             FTLASSERT(FALSE && TEXT("NOT SUPPORT 16, for 565, 555"));
@@ -1681,11 +1681,14 @@ namespace FTL
         m_hCanvasDC = NULL;
         m_hMemBitmap = NULL;
         m_hOldBitmap = NULL;
+        m_hFileMapping = INVALID_HANDLE_VALUE;
+        m_hSection = NULL;
+        m_pBmpInfo = NULL;
         m_pBuffer = NULL;
+        m_pColorTable = NULL;
         m_width = 0;
         m_height = 0;
         m_bpp = 0;
-        ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
     }
 
     CFCanvas::~CFCanvas()
@@ -1693,97 +1696,242 @@ namespace FTL
         Release();
     }
 
+    DWORD CFCanvas::GetTotalSize()
+    {
+        if (m_pBmpInfo)
+        {
+            return m_pBmpInfo->bmiHeader.biSize + m_pBmpInfo->bmiHeader.biSizeImage; 
+        }
+        return  0;
+    }
+    DWORD CFCanvas::GetBufferSize()
+    {
+        if (m_pBmpInfo)
+        {
+            return m_pBmpInfo->bmiHeader.biSizeImage;
+        }
+        return 0;
+    }
+
     BOOL CFCanvas::Create(HWND hWnd, int width, int heigth, int bpp /* = 32 */)
     {
-		UNREFERENCED_PARAMETER(hWnd);
+        UNREFERENCED_PARAMETER(hWnd);
         FTLASSERT( NULL == m_hCanvasDC );
-        //FTLASSERT( 32 == bpp && TEXT("Now just support 32 bit"));
+        FTLASSERT( NULL == m_hSection);
+        FTLASSERT( width > 0);
 
-        BOOL bRet = FALSE;
-        m_height = FTL_ABS(heigth);
-        m_width = FTL_ABS(width);
-        m_bpp = bpp;
-
-        ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
-        ZeroMemory(m_ReserveSpace, sizeof(m_ReserveSpace));
-        m_bmpInfo.bmiHeader.biSize = sizeof(m_bmpInfo.bmiHeader); // sizeof(BITMAPINFO);
-        m_bmpInfo.bmiHeader.biWidth = m_width;
-        m_bmpInfo.bmiHeader.biHeight = heigth;
-        m_bmpInfo.bmiHeader.biPlanes = 1;
-        m_bmpInfo.bmiHeader.biBitCount = (WORD)bpp;
-        m_bmpInfo.bmiHeader.biCompression = BI_RGB;
-        m_bmpInfo.bmiHeader.biSizeImage = (((m_width * bpp + 31) >> 3) & ~3) * m_height;
-#ifdef _DEBUG
-        int nCheckSizeImage = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(m_width, bpp) * m_height;
-        FTLASSERT(nCheckSizeImage == m_bmpInfo.bmiHeader.biSizeImage);
-#endif
-										  //(m_height * m_width * bpp + 31) / 32 * 4 ; 
-        if (bpp <= 8)
+        BOOL  bRet = FALSE;
+        //BYTE* pBase = NULL;
+        HDC   hDCScreen = NULL;
+        do 
         {
-            // 这个图像是调色板观看里的，所以我们需要合成它的调色板
-            m_bmpInfo.bmiHeader.biClrUsed = 1 << bpp;
-        }
-        else
+            DWORD dwImageSize = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(width,bpp) * FTL_ABS(heigth);
+            DWORD dwPalleteSize = 0;
+            DWORD dwColorTableEntries = 0;
+            if (bpp <= 8)
+            {
+                // 这个图像是调色板观看里的，所以我们需要合成它的调色板
+                dwColorTableEntries = 1 << bpp;
+                dwPalleteSize = dwColorTableEntries * sizeof(RGBQUAD);
+            }
+            DWORD dwTotalSize = sizeof(BITMAPINFOHEADER) + dwPalleteSize + dwImageSize;
+
+            API_VERIFY((m_hSection = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
+                0, dwTotalSize, NULL)) != NULL);
+            if (!bRet)
+            {
+                break;
+            }
+            API_VERIFY((m_pBmpInfo = (BITMAPINFO*)::MapViewOfFile(m_hSection,FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0)) != NULL);
+            if (!bRet)
+            {
+                break;
+            }
+            //m_pBmpInfo = (BITMAPINFO*)pBase; // + sizeof(BITMAPINFOHEADER);
+            ZeroMemory(m_pBmpInfo, sizeof(BITMAPINFOHEADER) + dwPalleteSize);
+
+            m_pBmpInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+            m_pBmpInfo->bmiHeader.biWidth = width;
+            m_pBmpInfo->bmiHeader.biHeight = heigth;
+            m_pBmpInfo->bmiHeader.biPlanes = 1;
+            m_pBmpInfo->bmiHeader.biBitCount = (WORD)bpp;
+            m_pBmpInfo->bmiHeader.biCompression = BI_RGB;
+            m_pBmpInfo->bmiHeader.biSizeImage = dwImageSize;
+            m_pBmpInfo->bmiHeader.biClrUsed = dwColorTableEntries;
+            m_pBmpInfo->bmiHeader.biClrImportant = dwColorTableEntries;
+            //m_pBmpInfo->bmiHeader.biXPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSX);
+            //m_pBmpInfo->bmiHeader.biYPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSY);
+
+            if (dwColorTableEntries > 0)
+            {
+                m_pColorTable = (BYTE*)&m_pBmpInfo->bmiColors[0];// 
+            }
+
+            hDCScreen = GetDC(NULL);
+
+            API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(
+                hDCScreen, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
+                m_pBmpInfo, 
+                bpp > 8 ? DIB_RGB_COLORS :DIB_PAL_COLORS,
+                (VOID**)&m_pBuffer, m_hSection, sizeof(BITMAPINFOHEADER) + dwPalleteSize)));
+            if (!bRet || NULL == m_pBuffer)
+            {
+                break;
+            }
+
+            ZeroMemory(m_pBuffer, m_pBmpInfo->bmiHeader.biSizeImage);
+            if (bpp <= 8)
+            {
+                //获取调色板，并设置到 DIB中 -- TODO:
+                //1. SelectPalette + RealizePalette
+                //2. GetPaletteEntries + SetDIBColorTable
+
+                //int nColors = 1 << bpp;
+                //HANDLE hLogPal = GlobalAlloc(GHND,sizeof(LOGPALETTE) + nColors * sizeof(PALETTEENTRY));
+                //if (hLogPal)
+                //{
+                //    LPLOGPALETTE lpLogPal = (LPLOGPALETTE)GlobalLock(hLogPal);
+                //    lpLogPal->palVersion = 0x300;
+                //    lpLogPal->palNumEntries = (WORD)nColors;
+                //    GetSystemPaletteEntries(hScreen, 0, nColors, (LPPALETTEENTRY)(lpLogPal->palPalEntry));
+                //    //HPALETTE hPal = CreatePalette(lpLogPal);
+                ////    SetDIBColorTable(m_hCanvasDC, 0, nColors, (LPPALETTEENTRY)lpLogPal->palNumEntries);
+
+                //    GlobalUnlock(hLogPal);
+                //    GlobalFree(hLogPal);
+                //}
+            }
+            m_hCanvasDC = ::CreateCompatibleDC(NULL);
+            m_hOldBitmap = (HBITMAP)::SelectObject(m_hCanvasDC, (HGDIOBJ)m_hMemBitmap);
+
+
+            m_height = FTL_ABS(heigth);
+            m_width = FTL_ABS(width);
+            m_bpp = bpp;
+        } while (FALSE);
+
+
+        //if (pBase)
+        //{
+        //    BOOL bTmpRet = UnmapViewOfFile(pBase);
+        //    API_ASSERT(bTmpRet);
+        //}
+        
+        if (hDCScreen)
         {
-            m_bmpInfo.bmiHeader.biClrUsed = 0;
+            ReleaseDC(NULL, hDCScreen);
         }
-        m_bmpInfo.bmiHeader.biClrImportant = m_bmpInfo.bmiHeader.biClrUsed;
-        //bmpInfo.bmiHeader.biXPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSX);
-        //bmpInfo.bmiHeader.biYPelsPerMeter = ::GetDeviceCaps(hdc, LOGPIXELSY);
-		
-        m_hCanvasDC = ::CreateCompatibleDC(NULL);
 
-        HDC hScreen = GetDC(NULL);
-        API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(
-			hScreen, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
-			&m_bmpInfo, 
-            bpp > 8 ? DIB_RGB_COLORS :DIB_PAL_COLORS,
-            (VOID**)&m_pBuffer, NULL, 0)));
-        ZeroMemory(m_pBuffer, m_bmpInfo.bmiHeader.biSizeImage);
-        if (bpp <= 8)
+        if (!bRet)
         {
-            //获取调色板，并设置到 DIB中
-            //GetPaletteEntries + SetDIBColorTable
-
-            //int nColors = 1 << bpp;
-            //HANDLE hLogPal = GlobalAlloc(GHND,sizeof(LOGPALETTE) + nColors * sizeof(PALETTEENTRY));
-            //if (hLogPal)
-            //{
-            //    LPLOGPALETTE lpLogPal = (LPLOGPALETTE)GlobalLock(hLogPal);
-            //    lpLogPal->palVersion = 0x300;
-            //    lpLogPal->palNumEntries = (WORD)nColors;
-            //    GetSystemPaletteEntries(hScreen, 0, nColors, (LPPALETTEENTRY)(lpLogPal->palPalEntry));
-            //    //HPALETTE hPal = CreatePalette(lpLogPal);
-            ////    SetDIBColorTable(m_hCanvasDC, 0, nColors, (LPPALETTEENTRY)lpLogPal->palNumEntries);
-
-            //    GlobalUnlock(hLogPal);
-            //    GlobalFree(hLogPal);
-            //}
+            Release();
         }
-        ReleaseDC(NULL, hScreen);
 
-        m_hOldBitmap = (HBITMAP)::SelectObject(m_hCanvasDC, (HGDIOBJ)m_hMemBitmap);
         return bRet;
     }
 
     VOID CFCanvas::Release()
     {
+        BOOL bRet = FALSE;
         if(m_hCanvasDC)
         {
-            BOOL bRet = FALSE;
             ::SelectObject(m_hCanvasDC, m_hOldBitmap);
             API_VERIFY(::DeleteObject(m_hMemBitmap));
             API_VERIFY(::DeleteDC(m_hCanvasDC));
-
-            m_hCanvasDC = NULL;
             m_hMemBitmap = NULL;
-            m_hOldBitmap = NULL;
-            m_pBuffer = NULL;
-            m_width = 0;
-            m_height = 0;
-            m_bpp = 0;
-            ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
+            m_hCanvasDC = NULL;
+            //ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
         }
+
+        if (m_hSection)
+        {
+            UnmapViewOfFile(m_pBmpInfo);
+            SAFE_CLOSE_HANDLE(m_hSection, NULL);
+        }
+        
+        SAFE_CLOSE_HANDLE(m_hFileMapping, INVALID_HANDLE_VALUE);
+
+        m_hOldBitmap = NULL;
+        m_pBmpInfo = NULL;
+        m_pBuffer = NULL;
+        m_pColorTable = NULL;
+        m_width = 0;
+        m_height = 0;
+        m_bpp = 0;
+    }
+
+    BOOL CFCanvas::AttachBmpFile(LPCTSTR pszFilePath)
+    {
+        FTLASSERT(NULL == m_hSection);
+        FTLASSERT(NULL == m_hMemBitmap);
+
+        BOOL bRet = FALSE;
+
+        HANDLE hFile = NULL;
+        API_VERIFY((hFile = ::CreateFile(pszFilePath, GENERIC_WRITE | GENERIC_READ,
+            0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)) != NULL);
+        if (bRet)
+        {
+            //不支持大于4G的位图文件
+            DWORD dwFileSize = ::GetFileSize(hFile, NULL);
+            API_VERIFY((m_hSection = ::CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, 0, NULL)) != NULL);
+            if (bRet)
+            {
+                BYTE* pFileMap = (BYTE*)::MapViewOfFile(m_hSection, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 0); 
+                if (pFileMap)
+                {
+                    if(((LPBITMAPFILEHEADER)pFileMap)->bfType != 0x4d42) //BM
+                    { 
+                        bRet = FALSE;
+                    }
+                }
+            }
+        }
+
+        if (!bRet)
+        {
+            Release();
+        }
+        return bRet;
+    }
+
+    BOOL CFCanvas::SaveToBmpFile(LPCTSTR pszFilePath)
+    {
+        BOOL bRet = FALSE;
+
+        BITMAPFILEHEADER   bmfHdr = {0};    //位图文件头结构
+        //LPBITMAPINFOHEADER lpbi = NULL;     //指向位图信息头结构
+        DWORD   dwPaletteSize = 0;          //定义调色板大小
+        //DWORD   dwBmBitsSize = 0;           //位图中像素字节大小
+        //DWORD   dwDIBSize = 0;              //位图文件大小 
+        DWORD   dwWritten = 0;              //写入文件字节数
+
+        if (m_pBmpInfo)
+        {
+            //创建位图文件    
+            HANDLE hFile = NULL;
+            API_VERIFY((hFile = CreateFile(pszFilePath, GENERIC_WRITE, 0, NULL, 
+                CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL)) != INVALID_HANDLE_VALUE);
+            if (bRet)
+            {
+                dwPaletteSize = m_pBmpInfo->bmiHeader.biClrUsed * sizeof(RGBQUAD);
+
+                // 设置位图文件头
+                bmfHdr.bfType = 0x4D42;  // "BM"
+                bmfHdr.bfReserved1 = 0;
+                bmfHdr.bfReserved2 = 0;
+                bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
+                bmfHdr.bfSize = bmfHdr.bfOffBits + m_pBmpInfo->bmiHeader.biSizeImage;
+            
+                // 写入位图文件头
+                API_VERIFY(WriteFile(hFile, (LPSTR)&bmfHdr, sizeof(BITMAPFILEHEADER), &dwWritten, NULL));
+                // 写入位图文件其余内容
+                API_VERIFY(WriteFile(hFile, (LPSTR)m_pBmpInfo, bmfHdr.bfSize, &dwWritten, NULL));
+
+                CloseHandle(hFile);
+            }
+        }
+        return bRet;
     }
 
     BOOL CFCanvas::IsCanvasChanged( const RECT& rc , int bpp /* = 32*/ )
@@ -1809,9 +1957,9 @@ namespace FTL
             BYTE* pDst = (BYTE*)GlobalLock(hDib);
             if (pDst)
             {
-                memcpy(pDst, &m_bmpInfo, m_bmpInfo.bmiHeader.biSize);
-                pDst += m_bmpInfo.bmiHeader.biSize;
-                memcpy(pDst, m_pBuffer, m_bmpInfo.bmiHeader.biSizeImage);
+                memcpy(pDst, m_pBmpInfo, m_pBmpInfo->bmiHeader.biSize);
+                pDst += m_pBmpInfo->bmiHeader.biSize;
+                memcpy(pDst, m_pBuffer, m_pBmpInfo->bmiHeader.biSizeImage);
                 GlobalUnlock(hDib);
             }
         }

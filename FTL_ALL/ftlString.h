@@ -7,12 +7,12 @@
 namespace FTL
 {
     //忽略大小写字符串比较的函数
-    int ciStringCompare(const std::string& s1, const std::string& s2);
+    FTLINLINE int ciStringCompare(const std::string& s1, const std::string& s2);
 
     //用于忽略大小写字符串比较的仿函数类 -- 参见 Effective STL 中的条款19
     struct CIStringCompare : public std::binary_function<std::string, std::string, bool>
     {
-        bool operator()(const std::string& lhs, const std::string& rhs) const
+        FTLINLINE bool operator()(const std::string& lhs, const std::string& rhs) const
         {
             return ciStringCompare(lhs, rhs);
         }

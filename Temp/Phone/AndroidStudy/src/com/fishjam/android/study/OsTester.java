@@ -35,7 +35,7 @@ import android.text.TextUtils;
  *   touchscreen -- 获取系统触摸屏的触摸方式，如 _NOTOUCH(无触摸屏), _STYLUS(触摸笔), _FINGER(手指)
  *   如要监听系统设置的更改:  Activity中配置 android:configChanges 属性允许监听配置更改事件； 重载 Activity.onConfigurationChanged 方法响应。
  *      TODO:如果 targetSdkVersion 超过12，则 onConfigurationChanged 不会响应? 
- * Context--Context可以访问Android应用环境的系统调用, 它提供了诸如资源解析, 访问数据库等，Activity、Service等都是其子类。
+ * Context--Context可以访问Android应用环境的系统调用, 它提供了诸如资源解析, 访问数据库等，Activity、Service等都是其子类。Context对象与应用的包有一一对应关系。
  *   getResources() -- 得到Resources对象，从而继续访问各种类型资源，如 r.getDimension(尺寸资源)，r.getXML(文件名), getDrawable(图片资源)
  *     引用资源的一般格式为: @[包名:]资源类型/资源名
  *   getString() -- TODO: 究竟是 Context.getString 还是 Resources.getString ?
@@ -44,27 +44,32 @@ import android.text.TextUtils;
  * Process
  *   killProcess(android.os.Process.myPid()) -- 强制杀死本进程，但不安全。需要在 Activity.onDestroy 中调用?
  *   
- * Intent(意图: 动作 + URI格式的数据) -- Android中引入的新的设计元素，不同组件之间相互导航的纽带，封装了不同组件之间导航查找的条件。松耦合方式编程。
+ * Intent/IntentFilter(意图: 动作 + URI格式的数据) -- Android中引入的新的设计元素，不同组件之间相互导航的纽带，封装了不同组件之间导航查找的条件。松耦合方式编程。
  *   应用程序可以通过它发出请求，就像是发出求助信号。应用程序可以按照相似或互补的方式进行注册，表明他们有能力或有兴趣执行各种请求或intent。
  *   主要部分： 
- *     动作(Action) -- 要完成的动作，Intent 类中预定义了大量的Action常量， 如 ACTION_CALL，ACTION_EDIT, ACTION_BATTERY_LOW 等
+ *     动作(Action) -- 表示要完成动作的字符串，Intent 类中预定义了大量的Action常量， 如 ACTION_CALL，ACTION_EDIT, ACTION_BATTERY_LOW, ACTION_VIEW 等
  *       访问系统Action: 如调用系统电话本来查找电话号码可直接使用 intent.setAction(Intent.ACTION_GET_CONTENT); intent.setType("vnd.android.cursor.item/phone"); 
  *       自定义Action: 1.定义对应的 static final 字符串; 2.在目标组件的AndroidManifest.xml对应的 <intent-filter> 中指定 action 属性
  *     数据(Data) -- 执行动作的URI和MIME类型等信息，不同的Action有不同的Data数据指定
  *     分类(Category) -- 执行Action的附加信息，如 CATEGORY_LAUNCHER 表示加载程序时该Activity出现在最上面。
  *     类型(Type),
- *     组件(Component) -- 用于明确指定需要启动的目标组件( package+class )  
+ *     组件(Component) -- 用于明确指定需要启动的目标组件( package|context + class )  
  *     扩展信息(Extra) -- 额外的附加信息，如通过Activity发送邮件时，可通过Extras属性来添加subject和body等
  *     setClass(源, 目的) -- 设置跳转的源(如 MainActivity.this)和目的class(ResultActivity.class)
  *   通过Intent可以：
- *       启动Activity( startActivity, startActivityForResult)
+ *       启动Activity( startActivity, startActivityForResult )
  *       启动Service( startService, bindService  )
  *       发起Broadcasts( sendBroadcast, sendOrderedBroadcast, sendStickyBroadcast )
+ *   启动方式
+ *   显式Intent -- 明确指定需要启动或触发的组件的类名，一般通过 组件(Component) 或直接 new Intent(xxx.this, SecondActivity.class) 的方式 
+ *   隐式Intent -- 只是指定需要启动或触发的组件应满足怎样的条件，Android系统解析出条件，并在系统中查找与之匹配的目标组件，如找到则启动或触发。
+ *      如通过 action 指定的字符串等, 如 intent.setAction("com.fishjam.intent.action.MY_ACTION"); startActivity(intent);
+ *      被启动组件需要通过 <intent-filter> 配置? 
  *   寻找目标组件的方法：
- *     1.通过组件名称直接指定(  intent.setComponent(new ComponetName(MyActivity.this, "com.fishjam.targetApp.MainActivity")) ) ;
- *     2.通过 AndroidManifest.xml 文件中的 <intent-filter> 指定能处理的Intent属性，系统解析后映射到对应的 Activity、IntentReceiver、Service 等。
- *       如系统中注册了多个能处理对应Intent的 <intent-filter>，则系统会提示用户选择一个组件来运行。
- *       使用时需要考虑三个属性：
+ *      1.(显示)通过组件名称直接指定 -- intent.setComponent(new ComponetName(MyActivity.this, "com.fishjam.targetApp.MainActivity")) ) ;
+ *      2.(隐式)通过 AndroidManifest.xml 文件中的 <intent-filter> 指定能处理的Intent属性，系统解析后映射到对应的 Activity、IntentReceiver、Service 等。
+ *         如系统中注册了多个能处理对应Intent的 <intent-filter>，则系统会提示用户选择一个组件来运行。
+ *         使用时需要考虑三个属性：
  *          <action> -- 如 Intent 指定了，则IntentFilter中的必须匹配; 如 <action android:name="android.intent.action.VIEW" />
  *          <data> -- 指定要访问数据的URI(格式为: scheme://host:port/path )和MIME类型，如 <data android:scheme="http" />
  *          <category> -- 必须出现， 如 <category android:name="android.intent.category.BROWSABLE" />

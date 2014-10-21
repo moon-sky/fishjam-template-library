@@ -424,7 +424,7 @@ void CFTLGdiTester::test_CalcRect_RectSmallThanSize()
 }
 
 
-void CFTLGdiTester::test_ComapreBitmapData()
+void CFTLGdiTester::test_CompareBitmapData()
 {
     int nWidth = 100, nHeight = 100;
 
@@ -460,12 +460,41 @@ void CFTLGdiTester::test_ComapreBitmapData()
 
         FTL::CFGdiUtil::SaveBitmapToFile(canvas1.GetMemoryBitmap(), formaterName1.GetString());
         FTL::CFGdiUtil::SaveBitmapToFile(canvas2.GetMemoryBitmap(), formaterName2.GetString());
-
-        int nCmpResult = CFGdiUtil::ComapreBitmapData(nWidth, nHeight, nBpps[i], canvas1.GetBuffer(), canvas2.GetBuffer(), cmpResult.GetMemory(), nCmpResultSize);
+        RECT rcMinDiff = {0};
+        int nCmpResult = CFGdiUtil::CompareBitmapData(nWidth, nHeight, nBpps[i], 
+            canvas1.GetBuffer(), canvas2.GetBuffer(), &rcMinDiff,
+            cmpResult.GetMemory(), nCmpResultSize, 0xFF);
         FTLTRACE(TEXT("nBpp=%d, nCmpResult=%d\n"), nBpps[i], nCmpResult);
 
         CPPUNIT_ASSERT(nCmpResult == 50);
     }
  
     ReleaseDC(hWndDesktop, hDcDesktop);
+}
+
+void CFTLGdiTester::test_LargetBitmap()
+{
+	BOOL bRet = FALSE;
+	CFCanvas	canvas;
+	CRect rcLarge;
+	rcLarge.SetRect(0, 0, 10240, 10240);
+
+	API_VERIFY(canvas.Create(NULL, rcLarge.Width(), rcLarge.Height(), 32));
+	HBITMAP hDibBitmap = canvas.GetMemoryBitmap();
+	CPPUNIT_ASSERT(hDibBitmap != NULL);
+
+    
+    CWindowDC wndDC(CWnd::FromHandle(GetDesktopWindow()));
+    ::StretchBlt(canvas.GetCanvasDC(), 0, 0, rcLarge.Width(), rcLarge.Height(), wndDC.GetSafeHdc(), 0, 0, 1080, 1080, SRCCOPY);
+
+	//CDC memDC;
+	//API_VERIFY(memDC.Attach(canvas.GetCanvasDC()));
+	//memDC.FillSolidRect(&rcLarge, RGB(255, 0, 0));
+	//memDC.Detach();
+
+    API_VERIFY(canvas.SaveToBmpFile(TEXT("LargeBitmap.bmp")));
+	//API_VERIFY(CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), TEXT("LargeBitmap.bmp")));
+
+
+	canvas.Release();
 }

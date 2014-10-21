@@ -91,15 +91,7 @@ import android.widget.SimpleCursorTreeAdapter;
  *     SimpleCursorTreeAdapter -- 
  *     BaseExpandableListAdapter
  *     
- * Intent/IntentFilter -- 不同组件之间通信的载体
- *   显式Intent -- 明确指定需要启动或触发的组件的类名
- *   隐式Intent -- 只是指定需要启动或触发的组件应满足怎样的条件，Android系统解析出条件，并在系统中查找与之匹配的目标组件，如找到则启动或触发。
- *        如通过 action 指定的字符串等, 如 intent.setAction("com.fishjam.intent.action.MY_ACTION"); startActivity(intent); 
- *        
- *   启动类型和方式
- *     启动Activity -- Context.startActivity/startActivityForResult
- *     启动Service -- Context.startService/bindService
- *     发送广播 -- Context.sendBroadcast, sendStickyBroadcast, sendOrderedBroadcast
+
 
  **************************************************************************************************************************************/
 
