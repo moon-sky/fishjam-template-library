@@ -1683,9 +1683,11 @@ namespace FTL
         m_hOldBitmap = NULL;
         m_hFileMapping = INVALID_HANDLE_VALUE;
         m_hSection = NULL;
+        m_pBmpFileHeader = NULL;
         m_pBmpInfo = NULL;
-        m_pBuffer = NULL;
+        m_pImageBuffer = NULL;
         m_pColorTable = NULL;
+        m_dwTotalSize= 0;
         m_width = 0;
         m_height = 0;
         m_bpp = 0;
@@ -1696,15 +1698,48 @@ namespace FTL
         Release();
     }
 
+    VOID CFCanvas::Release()
+    {
+        BOOL bRet = FALSE;
+        if(m_hCanvasDC)
+        {
+            ::SelectObject(m_hCanvasDC, m_hOldBitmap);
+            API_VERIFY(::DeleteObject(m_hMemBitmap));
+            API_VERIFY(::DeleteDC(m_hCanvasDC));
+            m_hMemBitmap = NULL;
+            m_hCanvasDC = NULL;
+            //ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
+        }
+
+        if (m_hSection)
+        {
+            API_VERIFY(UnmapViewOfFile(m_pBmpFileHeader));
+            SAFE_CLOSE_HANDLE(m_hSection, NULL);
+        }
+
+        SAFE_CLOSE_HANDLE(m_hFileMapping, INVALID_HANDLE_VALUE);
+
+        m_hOldBitmap = NULL;
+        m_pBmpFileHeader = NULL;
+        m_pBmpInfo = NULL;
+        m_pImageBuffer = NULL;
+        m_pColorTable = NULL;
+        m_dwTotalSize = 0;
+        m_width = 0;
+        m_height = 0;
+        m_bpp = 0;
+    }
+
     DWORD CFCanvas::GetTotalSize()
     {
         if (m_pBmpInfo)
         {
-            return m_pBmpInfo->bmiHeader.biSize + m_pBmpInfo->bmiHeader.biSizeImage; 
+            // { return  m_bmpInfo.bmiHeader.biSize + m_bmpInfo.bmiHeader.biSizeImage; }
+            return m_dwTotalSize; //m_pBmpInfo->bmiHeader.biSize + m_pBmpInfo->bmiHeader.biSizeImage; 
         }
         return  0;
     }
-    DWORD CFCanvas::GetBufferSize()
+    DWORD CFCanvas::GetImageBufferSize()
     {
         if (m_pBmpInfo)
         {
@@ -1734,7 +1769,9 @@ namespace FTL
                 dwColorTableEntries = 1 << bpp;
                 dwPalleteSize = dwColorTableEntries * sizeof(RGBQUAD);
             }
-            DWORD dwTotalSize = sizeof(BITMAPINFOHEADER) + dwPalleteSize + dwImageSize;
+
+            DWORD dwHeaderSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPalleteSize; //BMP文件头 + BMP信息头 + 调色板(可选)
+            DWORD dwTotalSize = dwHeaderSize + dwImageSize;
 
             API_VERIFY((m_hSection = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
                 0, dwTotalSize, NULL)) != NULL);
@@ -1742,13 +1779,14 @@ namespace FTL
             {
                 break;
             }
-            API_VERIFY((m_pBmpInfo = (BITMAPINFO*)::MapViewOfFile(m_hSection,FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0)) != NULL);
+            API_VERIFY((m_pBmpFileHeader = (BITMAPFILEHEADER*)::MapViewOfFile(m_hSection,FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0)) != NULL);
             if (!bRet)
             {
                 break;
             }
             //m_pBmpInfo = (BITMAPINFO*)pBase; // + sizeof(BITMAPINFOHEADER);
-            ZeroMemory(m_pBmpInfo, sizeof(BITMAPINFOHEADER) + dwPalleteSize);
+            ZeroMemory(m_pBmpFileHeader, dwHeaderSize); //处于性能的考虑, 只将图像的信息部分内存初始化
+            m_pBmpInfo = (BITMAPINFO*)((BYTE*)m_pBmpFileHeader + sizeof(BITMAPFILEHEADER));
 
             m_pBmpInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
             m_pBmpInfo->bmiHeader.biWidth = width;
@@ -1773,13 +1811,13 @@ namespace FTL
                 hDCScreen, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
                 m_pBmpInfo, 
                 bpp > 8 ? DIB_RGB_COLORS :DIB_PAL_COLORS,
-                (VOID**)&m_pBuffer, m_hSection, sizeof(BITMAPINFOHEADER) + dwPalleteSize)));
-            if (!bRet || NULL == m_pBuffer)
+                (VOID**)&m_pImageBuffer, m_hSection, sizeof(BITMAPINFOHEADER) + dwPalleteSize)));
+            if (!bRet || NULL == m_pImageBuffer)
             {
                 break;
             }
 
-            ZeroMemory(m_pBuffer, m_pBmpInfo->bmiHeader.biSizeImage);
+            ZeroMemory(m_pImageBuffer, m_pBmpInfo->bmiHeader.biSizeImage);
             if (bpp <= 8)
             {
                 //获取调色板，并设置到 DIB中 -- TODO:
@@ -1804,7 +1842,7 @@ namespace FTL
             m_hCanvasDC = ::CreateCompatibleDC(NULL);
             m_hOldBitmap = (HBITMAP)::SelectObject(m_hCanvasDC, (HGDIOBJ)m_hMemBitmap);
 
-
+            m_dwTotalSize  = dwTotalSize;
             m_height = FTL_ABS(heigth);
             m_width = FTL_ABS(width);
             m_bpp = bpp;
@@ -1830,36 +1868,6 @@ namespace FTL
         return bRet;
     }
 
-    VOID CFCanvas::Release()
-    {
-        BOOL bRet = FALSE;
-        if(m_hCanvasDC)
-        {
-            ::SelectObject(m_hCanvasDC, m_hOldBitmap);
-            API_VERIFY(::DeleteObject(m_hMemBitmap));
-            API_VERIFY(::DeleteDC(m_hCanvasDC));
-            m_hMemBitmap = NULL;
-            m_hCanvasDC = NULL;
-            //ZeroMemory(&m_bmpInfo, sizeof(m_bmpInfo));
-        }
-
-        if (m_hSection)
-        {
-            UnmapViewOfFile(m_pBmpInfo);
-            SAFE_CLOSE_HANDLE(m_hSection, NULL);
-        }
-        
-        SAFE_CLOSE_HANDLE(m_hFileMapping, INVALID_HANDLE_VALUE);
-
-        m_hOldBitmap = NULL;
-        m_pBmpInfo = NULL;
-        m_pBuffer = NULL;
-        m_pColorTable = NULL;
-        m_width = 0;
-        m_height = 0;
-        m_bpp = 0;
-    }
-
     BOOL CFCanvas::AttachBmpFile(LPCTSTR pszFilePath)
     {
         FTLASSERT(NULL == m_hSection);
@@ -1880,9 +1888,52 @@ namespace FTL
                 BYTE* pFileMap = (BYTE*)::MapViewOfFile(m_hSection, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 0); 
                 if (pFileMap)
                 {
-                    if(((LPBITMAPFILEHEADER)pFileMap)->bfType != 0x4d42) //BM
+                    LPBITMAPFILEHEADER pFileHeader = (LPBITMAPFILEHEADER)pFileMap;
+                    if(pFileHeader->bfType != 0x4d42) //BM
                     { 
                         bRet = FALSE;
+                    }
+                    else
+                    {
+                        m_pBmpInfo = (BITMAPINFO*)(pFileMap + sizeof(BITMAPFILEHEADER));
+                        m_pImageBuffer = pFileMap + pFileHeader->bfOffBits;
+                        m_pBmpFileHeader = pFileHeader;
+
+                        DWORD dwPalleteSize = 0;
+                        BYTE* pCheckImagePos = (BYTE*)&m_pBmpInfo->bmiColors[0];
+
+                        if (m_pBmpInfo->bmiHeader.biClrUsed != 0)
+                        {
+                            m_pColorTable = (BYTE*)&m_pBmpInfo->bmiColors[0];
+                            dwPalleteSize = m_pBmpInfo->bmiHeader.biClrUsed * sizeof(RGBQUAD);
+                            pCheckImagePos += dwPalleteSize;
+                        }
+                        
+                        m_width = m_pBmpInfo->bmiHeader.biWidth;
+                        m_height = FTL_ABS(m_pBmpInfo->bmiHeader.biHeight);
+                        m_bpp = m_pBmpInfo->bmiHeader.biBitCount;
+                        m_hFileMapping = hFile;
+                        m_dwTotalSize = dwFileSize;
+
+                        FTLASSERT(pCheckImagePos == m_pImageBuffer);
+                        bRet = (pCheckImagePos == m_pImageBuffer);
+                        if (bRet)
+                        {
+#if 0
+                            HDC hDCScreen = GetDC(NULL);
+                            API_VERIFY(NULL != (m_hMemBitmap = ::CreateDIBSection(
+                                hDCScreen, //使用 DIB_RGB_COLORS 时忽略 HDC 参数，只有使用 DIB_PAL_COLORS 时才使用该参数
+                                m_pBmpInfo, 
+                                m_bpp > 8 ? DIB_RGB_COLORS :DIB_PAL_COLORS,
+                                (VOID**)&m_pImageBuffer, m_hSection, sizeof(BITMAPINFOHEADER) + dwPalleteSize)));
+                            
+                            FTLASSERT(pCheckImagePos == m_pImageBuffer);
+                            ReleaseDC(NULL, hDCScreen);
+
+                            m_hCanvasDC = ::CreateCompatibleDC(NULL);
+                            m_hOldBitmap = (HBITMAP)::SelectObject(m_hCanvasDC, (HGDIOBJ)m_hMemBitmap);
+#endif
+                        }
                     }
                 }
             }
@@ -1951,7 +2002,7 @@ namespace FTL
     HANDLE CFCanvas::CopyToHandle()
     {
         HANDLE hDib = NULL;
-        if (m_pBuffer)
+        if (m_pImageBuffer)
         {
             hDib = GlobalAlloc(GHND, GetTotalSize());
             BYTE* pDst = (BYTE*)GlobalLock(hDib);
@@ -1959,13 +2010,75 @@ namespace FTL
             {
                 memcpy(pDst, m_pBmpInfo, m_pBmpInfo->bmiHeader.biSize);
                 pDst += m_pBmpInfo->bmiHeader.biSize;
-                memcpy(pDst, m_pBuffer, m_pBmpInfo->bmiHeader.biSizeImage);
+                memcpy(pDst, m_pImageBuffer, m_pBmpInfo->bmiHeader.biSizeImage);
                 GlobalUnlock(hDib);
             }
         }
         return hDib;
     }
 
+    BOOL CFCanvas::Draw(HDC hdc)
+    {
+        BOOL bRet = FALSE;
+        FTLASSERT(m_pBmpInfo && m_pImageBuffer);
+        if (!m_pBmpInfo || !m_pImageBuffer)
+        {
+            return FALSE;
+        }
+
+        BITMAPINFOHEADER *pBmiHeader = &m_pBmpInfo->bmiHeader;
+        bool bFlipY = (pBmiHeader->biHeight < 0);
+        API_VERIFY(Draw(hdc, 0, 0, pBmiHeader->biWidth, pBmiHeader->biHeight, NULL, bFlipY));
+        return bRet;
+    }
+
+    BOOL CFCanvas::Draw(HDC hdc, int x, int y, int cx, int cy, RECT* pClipRect, bool bFlipY)
+    {
+        BOOL bRet = FALSE;
+        FTLASSERT(m_pBmpInfo && m_pImageBuffer);
+        if (!m_pBmpInfo || !m_pImageBuffer)
+        {
+            return FALSE;
+        }
+
+        RECT mainbox = {0};
+        if (pClipRect)
+        {
+            HRGN rgn = NULL;
+            API_VERIFY(ERROR != GetClipBox(hdc,&mainbox));
+            API_VERIFY(NULL != CreateRectRgnIndirect(pClipRect));
+            if (bRet)
+            {
+                API_VERIFY(ERROR != ExtSelectClipRgn(hdc,rgn,RGN_AND));
+                API_VERIFY(DeleteObject(rgn));
+            }
+        }
+
+        RECT clipbox = {0}, paintbox = {0};
+        GetClipBox(hdc,&clipbox);
+
+        
+        paintbox.top = FTL_CLAMP(y, clipbox.top, clipbox.bottom);
+        paintbox.left = FTL_CLAMP(x, clipbox.left, clipbox.right);
+        paintbox.right = FTL_CLAMP(x+cx, clipbox.left, clipbox.right); // FTL_MAX(clipbox.left,FTL_MIN(clipbox.right,x+cx));
+        paintbox.bottom = FTL_CLAMP(y+cy, clipbox.top, clipbox.bottom);// FTL_MAX(clipbox.top,FTL_MIN(clipbox.bottom,y+cy));
+
+        int nOldStretchMode = 0;
+        API_VERIFY((nOldStretchMode = SetStretchBltMode(hdc, HALFTONE)) != 0);
+        if (bRet)
+        {
+            if (bFlipY){
+                API_VERIFY(GDI_ERROR != StretchDIBits(hdc, x, y + cy-1, cx, -cy, 
+                    0, 0, GetWidth(), GetHeight(), m_pImageBuffer, m_pBmpInfo, DIB_RGB_COLORS, SRCCOPY));
+            } else {
+                API_VERIFY(GDI_ERROR != StretchDIBits(hdc, x, y, cx, cy, 
+                    0, 0, GetWidth(), GetHeight(), m_pImageBuffer, m_pBmpInfo, DIB_RGB_COLORS, SRCCOPY));
+            }
+            API_VERIFY(SetStretchBltMode(hdc, nOldStretchMode));
+        }
+
+        return bRet;
+    }
 
 #ifdef __ATLGDI_H__
 

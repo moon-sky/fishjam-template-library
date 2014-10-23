@@ -374,7 +374,7 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *  CreateDIBSection -- 创建可直接访问的DIB，可直接访问位图的位信息，创建DIBSECTION
 *    LoadImage(, LR_DEFAULTSIZE | LR_CREATEDIBSECTION) -- 加载图像资源，并且创建可直接访问像素的 DIBSection
 *  CreateDIBitmap -- 从DIB创建DDB，创建BITMAP
-*  StretchDIBits -- 直接通过内存信息进行绘制
+*  StretchDIBits -- 直接通过DIB的内存信息进行绘制
 *
 * 画笔
 *   创建方法:CreatePen/CreatePenIndirect/ExtCreatePen
@@ -745,13 +745,15 @@ namespace FTL
         FTLINLINE int GetBpp() const { return m_bpp; }
         FTLINLINE int GetPitch() const { return m_width * m_bpp >> 3; }
         FTLINLINE BOOL  IsCanvasChanged( const RECT& rc , int bpp = 32 );
-        FTLINLINE BYTE* GetBuffer() { return m_pBuffer; } //绘制时可以通过 StretchDIBits 直接使用 ?
+        FTLINLINE BYTE* GetImageBuffer() { return m_pImageBuffer; } //绘制时可以通过 StretchDIBits 直接使用 ?
         FTLINLINE HDC   GetCanvasDC() const { return m_hCanvasDC; }
         FTLINLINE  operator HDC() const { return m_hCanvasDC; }
         FTLINLINE HBITMAP GetMemoryBitmap() const { return m_hMemBitmap; }
         FTLINLINE HANDLE CopyToHandle();
-        FTLINLINE DWORD GetTotalSize();// { return  m_bmpInfo.bmiHeader.biSize + m_bmpInfo.bmiHeader.biSizeImage; }
-        FTLINLINE DWORD GetBufferSize();// { return m_bmpInfo.bmiHeader.biSizeImage; }
+        FTLINLINE DWORD GetTotalSize();
+        FTLINLINE DWORD GetImageBufferSize();
+        FTLINLINE BOOL Draw(HDC hdc);
+        FTLINLINE BOOL Draw(HDC hdc, int x, int y, int cx, int cy, RECT* pClipRect, bool bFlipY);
 
         FTLINLINE BOOL AttachBmpFile(LPCTSTR pszFilePath);
         FTLINLINE BOOL SaveToBmpFile(LPCTSTR pszFilePath);
@@ -761,9 +763,11 @@ namespace FTL
         HBITMAP m_hOldBitmap;
         HANDLE  m_hFileMapping;
         HANDLE  m_hSection;	//file mapping object to support big bitmap
-        BITMAPINFO*  m_pBmpInfo;
-        BYTE*        m_pBuffer; 
-        BYTE*        m_pColorTable;
+        BITMAPFILEHEADER*   m_pBmpFileHeader;
+        BITMAPINFO*         m_pBmpInfo;
+        BYTE*               m_pColorTable;
+        BYTE*               m_pImageBuffer; 
+        DWORD               m_dwTotalSize;
         int     m_width;
         int     m_height;
         int     m_bpp;

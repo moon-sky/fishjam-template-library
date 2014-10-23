@@ -5,7 +5,6 @@
 #include "FTLDemo.h"
 #include "GdiPage.h"
 #include <afxwin.h>
-#include <ftlGdi.h>
 #include "CheckComboBox.h"
 
 // CGdiPage dialog
@@ -26,11 +25,14 @@ void CGdiPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO_STOCK_OBJECT, m_cmbStockObject);
-
+    DDX_Control(pDX, IDC_STATIC_DRAW_TARGET, m_staticDrawTarget);
 }
 
 BEGIN_MESSAGE_MAP(CGdiPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_COMBO_STOCK_OBJECT, &CGdiPage::OnCbnSelchangeComboStockObject)
+    ON_BN_CLICKED(IDC_BTN_CANVAS_DRAW, &CGdiPage::OnBnClickedBtnCanvasDraw)
+    ON_BN_CLICKED(IDC_BTN_CANVAS_ATTACH_BMP, &CGdiPage::OnBnClickedBtnCanvasAttachBmp)
+    ON_BN_CLICKED(IDC_BTN_BITBLT_CANVAS, &CGdiPage::OnBnClickedBtnBitbltCanvas)
 END_MESSAGE_MAP()
 
 BOOL CGdiPage::OnInitDialog()
@@ -91,4 +93,38 @@ void CGdiPage::OnCbnSelchangeComboStockObject()
 		FTL::FormatMessageBox(m_hWnd, strSelStockObj, MB_OK, TEXT("%s"), 
 			objInfoDumper.GetGdiObjectInfoString());
 	}
+}
+
+
+void CGdiPage::OnBnClickedBtnCanvasAttachBmp()
+{
+    BOOL bRet = FALSE;
+    //CString strFilter = _T("Bmp Files(*.bmp)|*.bmp|All Files(*.*)|*.*||");
+    //CFileDialog dlg(TRUE, TEXT(".BMP"), NULL, 0, strFilter, this);
+    //if (dlg.DoModal() == IDOK)
+    {
+        m_canvas.Release();
+        API_VERIFY(m_canvas.AttachBmpFile(TEXT("F:\\Fujie\\FJCODE_GOOGLE\\Temp\\FTLTest\\LargeBitmap.bmp"))); //dlg.GetPathName()
+    }
+}
+
+void CGdiPage::OnBnClickedBtnCanvasDraw()
+{
+    BOOL bRet = FALSE;
+
+    CWindowDC dcTarget(&m_staticDrawTarget);
+    CRect rcTarget;
+    m_staticDrawTarget.GetClientRect(&rcTarget);
+    m_canvas.Draw(dcTarget.GetSafeHdc(), rcTarget.left, rcTarget.top, rcTarget.right, rcTarget.bottom,
+        NULL, true);
+}
+
+
+void CGdiPage::OnBnClickedBtnBitbltCanvas()
+{
+    BOOL bRet = FALSE;
+    CWindowDC dcTarget(&m_staticDrawTarget);
+    
+    API_VERIFY(::BitBlt(dcTarget.GetSafeHdc(), 0, 0, m_canvas.GetWidth(), m_canvas.GetHeight(), 
+        m_canvas.GetCanvasDC(), 0, 0, SRCCOPY));
 }

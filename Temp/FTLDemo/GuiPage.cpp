@@ -52,7 +52,7 @@ void CGuiPage::OnBnClickedBtnRefresh()
     
     CFCanvas canvas;
     API_VERIFY(canvas.Create(m_hWnd, rcWndDraw.Width(), rcWndDraw.Height()));
-    DWORD* pBuffer = (DWORD*)canvas.GetBuffer();
+    DWORD* pBuffer = (DWORD*)canvas.GetImageBuffer();
     for (int h = 0; h < rcWndDraw.Height(); h++)
     {
         for (int w = 0; w < rcWndDraw.Width(); w++)

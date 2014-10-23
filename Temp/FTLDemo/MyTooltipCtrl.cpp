@@ -63,6 +63,6 @@ BOOL CMyTooltipCtrl::MyAddTool(CWnd* pWnd, LPCTSTR lpszText, LPCRECT lpRectTool,
 
 LRESULT CMyTooltipCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	DUMP_WINDOWS_MSG(__FILE__LINE__, NULL, 0, message, wParam, lParam);
+	//DUMP_WINDOWS_MSG(__FILE__LINE__, NULL, 0, message, wParam, lParam);
 	return CToolTipCtrl::WindowProc(message, wParam, lParam);
 }

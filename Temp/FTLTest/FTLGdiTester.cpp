@@ -477,7 +477,7 @@ void CFTLGdiTester::test_LargetBitmap()
 	BOOL bRet = FALSE;
 	CFCanvas	canvas;
 	CRect rcLarge;
-	rcLarge.SetRect(0, 0, 10240, 10240);
+	rcLarge.SetRect(0, 0, 5124, 5124);
 
 	API_VERIFY(canvas.Create(NULL, rcLarge.Width(), rcLarge.Height(), 32));
 	HBITMAP hDibBitmap = canvas.GetMemoryBitmap();
