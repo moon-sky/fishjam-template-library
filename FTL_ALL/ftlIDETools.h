@@ -7,6 +7,8 @@
 #  error ftlIDETools.h requires ftlbase.h to be included first
 #endif
 
+//国外程序员整理的 C++ 资源大全 -- http://blog.jobbole.com/78901/
+
 /******************************************************************************************************************************
 * BigBlueButton -- 开源视频会议系统(sourceforge上下载)
 *   使用 ActionScript 开发的远程教育平台，服务器端用到的项目包括有 ActiveMQ,Asterisk,Nginx,Tomcat等
