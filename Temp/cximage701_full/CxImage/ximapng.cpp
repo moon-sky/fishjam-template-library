@@ -249,7 +249,7 @@ bool CxImagePNG::Decode(CxFile *hFile)
 						prow[ax] = row_pointers[px];
 						AlphaSet(ax,ay,row_pointers[px+chan_offset]);
 					} else {
-						int32_t qx = ax * 3;
+						int32_t qx = ax * 4;
 						prow[qx]  =row_pointers[px];
 						prow[qx+1]=row_pointers[px+chan_offset];
 						prow[qx+2]=row_pointers[px+chan_offset*2];

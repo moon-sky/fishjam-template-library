@@ -230,6 +230,7 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
 		strcpy(info.szLastError,"CxImage::Create can't allocate memory");
 		return NULL;
 	}
+    memset(pDib, 0, GetSize());
 
 	//clear the palette
 	RGBQUAD* pal=GetPalette();

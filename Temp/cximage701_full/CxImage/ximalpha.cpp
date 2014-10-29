@@ -72,7 +72,7 @@ void CxImage::AlphaSet(uint8_t level)
         {
             for (int32_t x = 0; x < head.biWidth; x++)    
             {
-                RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * info.dwEffWidth];
+                RGBQUAD* pClr =  &((RGBQUAD*)info.pImage)[x + y * info.dwEffWidth];
                 pClr->rgbReserved = level;
             }
         }
@@ -108,7 +108,7 @@ void CxImage::AlphaInvert()
         {
             for (int32_t x = 0; x < head.biWidth; x++)    
             {
-                RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * info.dwEffWidth];
+                RGBQUAD* pClr =  &((RGBQUAD*)info.pImage)[x + y * info.dwEffWidth];
                 pClr->rgbReserved = (uint8_t)~(pClr->rgbReserved);
             }
         }
@@ -135,8 +135,8 @@ bool CxImage::AlphaCopy(CxImage &from)
     {
         for (int32_t x = 0; x < head.biWidth; x++)    
         {
-            RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * info.dwEffWidth];
-            RGBQUAD* pClrFrom =  &((RGBQUAD*)from.pDib)[x + y * info.dwEffWidth];
+            RGBQUAD* pClr =  &((RGBQUAD*)info.pImage)[x + y * info.dwEffWidth];
+            RGBQUAD* pClrFrom =  &((RGBQUAD*)from.info.pImage)[x + y * info.dwEffWidth];
             pClr->rgbReserved = pClrFrom->rgbReserved;
         }
     }
@@ -165,7 +165,7 @@ bool CxImage::AlphaSet(CxImage &from)
 	if (src==NULL) return false;
 	for (int32_t y=0; y<head.biHeight; y++){
         for (int32_t x = 0; x < head.biWidth; x++){
-            RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * info.dwEffWidth];
+            RGBQUAD* pClr =  &((RGBQUAD*)info.pImage)[x + y * info.dwEffWidth];
             pClr->rgbReserved = *(src + x);
         }
 		//memcpy(dst,src,head.biWidth);
@@ -182,7 +182,7 @@ void CxImage::AlphaSet(const int32_t x,const int32_t y,const uint8_t level)
 {
     if (bAlpha && IsInside(x,y))
     {
-        RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * head.biWidth];
+        RGBQUAD* pClr =  &((RGBQUAD*)info.pImage)[x + y * head.biWidth];
         pClr->rgbReserved = level;
     }
 	//if (pAlpha && IsInside(x,y)) pAlpha[x+y*head.biWidth]=level;
@@ -195,7 +195,7 @@ uint8_t CxImage::AlphaGet(const int32_t x,const int32_t y)
 {
     if (bAlpha && IsInside(x,y))
     {
-        return ((RGBQUAD*)pDib)[x + y * head.biWidth].rgbReserved;
+        return ((RGBQUAD*)info.pImage)[x + y * head.biWidth].rgbReserved;
     }
 	//if (pAlpha && IsInside(x,y)) return pAlpha[x+y*head.biWidth];
 	return 0;
@@ -210,7 +210,7 @@ uint8_t* CxImage::AlphaGetPointer(const int32_t x,const int32_t y)
 {
     if (bAlpha && IsInside(x,y))
     {
-        return &(((RGBQUAD*)pDib)[x + y * head.biWidth].rgbReserved);
+        return &(((RGBQUAD*)info.pImage)[x + y * head.biWidth].rgbReserved);
     }
 	//if (pAlpha && IsInside(x,y)) return pAlpha+x+y*head.biWidth;
 	return 0;
@@ -231,7 +231,7 @@ uint8_t CxImage::BlindAlphaGet(const int32_t x,const int32_t y)
 		return 0;
   #endif
 #endif
-    return ((RGBQUAD*)pDib)[x + y * head.biWidth].rgbReserved;
+    return ((RGBQUAD*)info.pImage)[x + y * head.biWidth].rgbReserved;
 	//return  pAlpha[x+y*head.biWidth];
 }
 ////////////////////////////////////////////////////////////////////////////////

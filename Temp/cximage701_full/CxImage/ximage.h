@@ -505,6 +505,8 @@ public:
 	int32_t	Tile(HDC hdc, RECT *rc);
 	int32_t	Draw2(HDC hdc, int32_t x=0, int32_t y=0, int32_t cx = -1, int32_t cy = -1);
 	int32_t	Draw2(HDC hdc, const RECT& rect);
+    int32_t	Draw3(HDC hdc, int32_t x=0, int32_t y=0, int32_t cx = -1, int32_t cy = -1);
+    int32_t	Draw3(HDC hdc, const RECT& rect);
 	//int32_t	DrawString(HDC hdc, int32_t x, int32_t y, const char* text, RGBQUAD color, const char* font, int32_t lSize=0, int32_t lWeight=400, uint8_t bItalic=0, uint8_t bUnderline=0, bool bSetAlpha=false);
 	int32_t	DrawString(HDC hdc, int32_t x, int32_t y, const TCHAR* text, RGBQUAD color, const TCHAR* font, int32_t lSize=0, int32_t lWeight=400, uint8_t bItalic=0, uint8_t bUnderline=0, bool bSetAlpha=false);
 	// <VATI> extensions

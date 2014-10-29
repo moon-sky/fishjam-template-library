@@ -7,6 +7,8 @@
 
 #include "ximaiter.h" 
 #include "ximabmp.h"
+#include <ftlbase.h>
+#include <ftlgdi.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 #if defined (_WIN32_WCE)
@@ -923,7 +925,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 							if (head.biClrUsed){
 								c=GetPaletteColor(GetPixelIndex(sx,sy));
 							} else {
-								ppix = psrc + sx*3;
+								ppix = psrc + sx*4;
 								c.rgbBlue = *ppix++;
 								c.rgbGreen= *ppix++;
 								c.rgbRed  = *ppix;
@@ -937,6 +939,8 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 			}
 			//paint the image & cleanup
 			SetDIBitsToDevice(hdc,paintbox.left,paintbox.top,destw,desth,0,0,0,desth,pbase,&bmInfo,0);
+            FTL::CFGdiUtil::SaveDCImageToFile(hdc, TEXT("CxImageDraw_NoAlpha.bmp"));
+
 			DeleteObject(SelectObject(TmpDC,TmpObj));
 			DeleteDC(TmpDC);
 		}
@@ -1032,7 +1036,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 							} else
 #endif //CXIMAGE_SUPPORT_INTERPOLATION
 							{
-								ppix = psrc + sx*3;
+								ppix = psrc + sx*4;
 								c.rgbBlue = *ppix++;
 								c.rgbGreen= *ppix++;
 								c.rgbRed  = *ppix;
@@ -1070,7 +1074,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 					} else {
 						pdst = pbase+yy*ew;
 					}
-					ppix=info.pImage+iy*info.dwEffWidth+ix*3;
+					ppix=info.pImage+iy*info.dwEffWidth+ix*4;
 					for(xx=0;xx<destw;xx++,ix++){
 
 						if (bAlpha) a=AlphaGet(ix,iy); else a=255; //pAlpha[alphaoffset+ix]; 
@@ -1086,6 +1090,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 							c.rgbBlue = *ppix++;
 							c.rgbGreen= *ppix++;
 							c.rgbRed  = *ppix++;
+                            c.rgbReserved = *ppix++;
 						}
 
 						//if (*pc!=*pct || !bTransparent){
@@ -1112,6 +1117,8 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 		}
 		//paint the image & cleanup
 		SetDIBitsToDevice(hdc,paintbox.left,paintbox.top,destw,desth,0,0,0,desth,pbase,&bmInfo,0);
+        FTL::CFGdiUtil::SaveDCImageToFile(hdc, TEXT("CxImageDraw_Alpha.bmp"));
+
 		DeleteObject(SelectObject(TmpDC,TmpObj));
 		DeleteDC(TmpDC);
 	}
@@ -1239,7 +1246,7 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 							if (head.biClrUsed){
 								c=GetPaletteColor(GetPixelIndex(sx,sy));
 							} else {
-								ppix = psrc + sx*3;
+								ppix = psrc + sx*4;
 								c.rgbBlue = *ppix++;
 								c.rgbGreen= *ppix++;
 								c.rgbRed  = *ppix;
@@ -1343,7 +1350,7 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 							} else
 #endif //CXIMAGE_SUPPORT_INTERPOLATION
 							{
-								ppix = psrc + sx*3;
+								ppix = psrc + sx*4;
 								c.rgbBlue = *ppix++;
 								c.rgbGreen= *ppix++;
 								c.rgbRed  = *ppix;
@@ -1519,6 +1526,69 @@ int32_t CxImage::Draw2(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
 	::RestoreDC(hdc,hdc_Restore);
 	return 1;
 }
+
+int32_t	CxImage::Draw3(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
+{
+    if((pDib==0)||(hdc==0)||(cx==0)||(cy==0)||(!info.bEnabled)) return 0;
+    if (cx < 0) cx = head.biWidth;
+    if (cy < 0) cy = head.biHeight;
+    bool bTransparent = (info.nBkgndIndex >= 0);
+
+    //required for MM_ANISOTROPIC, MM_HIENGLISH, and similar modes [Greg Peatfield]
+    int32_t hdc_Restore = ::SaveDC(hdc);
+    if (!hdc_Restore) 
+        return 0;
+
+    if (!bTransparent){
+#if !defined (_WIN32_WCE)
+        SetStretchBltMode(hdc,HALFTONE);	
+#endif
+        StretchDIBits(hdc, x, y, cx, cy, 0, 0, head.biWidth, head.biHeight,
+            info.pImage,(BITMAPINFO*)pDib, DIB_RGB_COLORS,SRCCOPY);
+    
+        FTL::CFGdiUtil::SaveDCImageToFile(hdc, TEXT("CxImageDraw3.bmp"));
+
+    } else 
+    {
+        // draw image with transparent background
+        const int32_t safe = 0; // or else GDI fails in the following - sometimes 
+        RECT rcDst = {x+safe, y+safe, x+cx, y+cy};
+        if (RectVisible(hdc, &rcDst)){
+            /////////////////////////////////////////////////////////////////
+            // True Mask Method - Thanks to Paul Reynolds and Ron Gery
+            int32_t nWidth = head.biWidth;
+            int32_t nHeight = head.biHeight;
+            // Create two memory dcs for the image and the mask
+            HDC dcImage=CreateCompatibleDC(hdc);
+            HDC dcTrans=CreateCompatibleDC(hdc);
+            // Select the image into the appropriate dc
+            HBITMAP bm = CreateCompatibleBitmap(hdc, nWidth, nHeight);
+            HBITMAP pOldBitmapImage = (HBITMAP)SelectObject(dcImage,bm);
+#if !defined (_WIN32_WCE)
+            SetStretchBltMode(dcImage,HALFTONE);
+#endif
+            StretchDIBits(dcImage, 0, 0, nWidth, nHeight, 0, 0, nWidth, nHeight,
+                info.pImage,(BITMAPINFO*)pDib,DIB_RGB_COLORS,SRCCOPY);
+            
+            BLENDFUNCTION blendFunction = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA  };
+            AlphaBlend(hdc, x, y, cx, cy, dcImage, 0, 0, nWidth, nHeight, blendFunction);
+
+            // Restore settings
+            SelectObject(dcImage,pOldBitmapImage);
+            DeleteDC(dcImage);
+            DeleteDC(dcTrans);
+            DeleteObject(bm);
+        }
+    }
+    ::RestoreDC(hdc,hdc_Restore);
+    return 1;
+}
+
+int32_t	CxImage::Draw3(HDC hdc, const RECT& rect)
+{
+    return Draw3(hdc, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 int32_t CxImage::Stretch(HDC hdc, const RECT& rect, uint32_t dwRop)
 {
