@@ -2196,7 +2196,7 @@ bool CxImage::Crop(int32_t left, int32_t top, int32_t right, int32_t bottom, CxI
 		break;
 	}
 	case 8:
-	case 24:
+	case 32:
 	{
 		int32_t linelen = tmp.head.biWidth * tmp.head.biBitCount >> 3;
 		uint8_t* pDest = tmp.info.pImage;
@@ -2211,17 +2211,17 @@ bool CxImage::Crop(int32_t left, int32_t top, int32_t right, int32_t bottom, CxI
 	}
 
 #if CXIMAGE_SUPPORT_ALPHA
-	if (AlphaIsValid()){ //<oboolo>
-		tmp.AlphaCreate();
-		if (!tmp.AlphaIsValid()) return false;
-		uint8_t* pDest = tmp.pAlpha;
-		uint8_t* pSrc = pAlpha + startx + starty*head.biWidth;
-		for (int32_t y=starty; y<endy; y++){
-			memcpy(pDest,pSrc,endx-startx);
-			pDest+=tmp.head.biWidth;
-			pSrc+=head.biWidth;
-		}
-	}
+	//if (AlphaIsValid()){ //<oboolo>
+	//	tmp.AlphaCreate();
+	//	if (!tmp.AlphaIsValid()) return false;
+	//	uint8_t* pDest = tmp.pAlpha;
+	//	uint8_t* pSrc = pAlpha + startx + starty*head.biWidth;
+	//	for (int32_t y=starty; y<endy; y++){
+	//		memcpy(pDest,pSrc,endx-startx);
+	//		pDest+=tmp.head.biWidth;
+	//		pSrc+=head.biWidth;
+	//	}
+	//}
 #endif //CXIMAGE_SUPPORT_ALPHA
 
 	//select the destination
@@ -2686,7 +2686,7 @@ bool CxImage::QIShrink(int32_t newx, int32_t newy, CxImage* const iDst, bool bCh
 				*(accuPtr+2) += rgb.rgbGreen;
 				(*(accuPtr+3)) ++;
 #if CXIMAGE_SUPPORT_ALPHA
-				if (pAlpha) *(accuPtr+4) += rgb.rgbReserved;
+				if (bAlpha) *(accuPtr+4) += rgb.rgbReserved;
 #endif
 				if (ex>oldx) {                                                //when we reach oldx, it's time to move to new slot
 					accuPtr += accuCellSize;
@@ -2702,9 +2702,9 @@ bool CxImage::QIShrink(int32_t newx, int32_t newy, CxImage* const iDst, bool bCh
 					rgb.rgbRed  = (uint8_t)(*(accuPtr+1) / *(accuPtr+3));
 					rgb.rgbGreen= (uint8_t)(*(accuPtr+2) / *(accuPtr+3));
 #if CXIMAGE_SUPPORT_ALPHA
-					if (pAlpha) rgb.rgbReserved = (uint8_t)(*(accuPtr+4) / *(accuPtr+3));
+					if (bAlpha) rgb.rgbReserved = (uint8_t)(*(accuPtr+4) / *(accuPtr+3));
 #endif
-					newImage.SetPixelColor(dx, dy, rgb, pAlpha!=0);
+					newImage.SetPixelColor(dx, dy, rgb, bAlpha);
 					accuPtr += accuCellSize;
 				}//for dx
 				memset(accu, 0, newx * accuCellSize * sizeof(uint32_t));                   //clear accu

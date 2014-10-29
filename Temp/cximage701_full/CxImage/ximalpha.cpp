@@ -31,7 +31,7 @@ void CxImage::AlphaSetMax(uint8_t nAlphaMax)
  */
 bool CxImage::AlphaIsValid()
 {
-	return pAlpha!=0;
+	return bAlpha;
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -55,7 +55,8 @@ bool CxImage::AlphaPaletteIsEnabled()
  */
 void CxImage::AlphaClear()
 {
-	if (pAlpha)	memset(pAlpha,0,head.biWidth * head.biHeight);
+    AlphaSet(0);
+	//if (bAlpha)	memset(pAlpha,0,head.biWidth * head.biHeight);
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -64,7 +65,18 @@ void CxImage::AlphaClear()
  */
 void CxImage::AlphaSet(uint8_t level)
 {
-	if (pAlpha)	memset(pAlpha,level,head.biWidth * head.biHeight);
+	//if (pAlpha)	memset(pAlpha,level,head.biWidth * head.biHeight);
+    if (bAlpha)
+    {
+        for (int32_t y = 0; y < head.biHeight; y++)
+        {
+            for (int32_t x = 0; x < head.biWidth; x++)    
+            {
+                RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * info.dwEffWidth];
+                pClr->rgbReserved = level;
+            }
+        }
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -72,27 +84,40 @@ void CxImage::AlphaSet(uint8_t level)
  */
 bool CxImage::AlphaCreate()
 {
-	if (pAlpha==NULL) {
-		pAlpha = (uint8_t*)malloc(head.biWidth * head.biHeight);
-		if (pAlpha) memset(pAlpha,255,head.biWidth * head.biHeight);
-	}
-	return (pAlpha!=0);
+    if (32 == head.biBitCount)
+    {
+        bAlpha = true;
+    }
+    return bAlpha;
+	//if (pAlpha==NULL) {
+	//	pAlpha = (uint8_t*)malloc(head.biWidth * head.biHeight);
+	//	if (pAlpha) memset(pAlpha,255,head.biWidth * head.biHeight);
+	//}
+	//return (pAlpha!=0);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void CxImage::AlphaDelete()
 {
-	if (pAlpha) { free(pAlpha); pAlpha=0; }
+	//if (pAlpha) { free(pAlpha); pAlpha=0; }
 }
 ////////////////////////////////////////////////////////////////////////////////
 void CxImage::AlphaInvert()
 {
-	if (pAlpha) {
-		uint8_t *iSrc=pAlpha;
-		int32_t n=head.biHeight*head.biWidth;
-		for(int32_t i=0; i < n; i++){
-			*iSrc=(uint8_t)~(*(iSrc));
-			iSrc++;
-		}
+	if (bAlpha) {
+        for (int32_t y = 0; y < head.biHeight; y++)
+        {
+            for (int32_t x = 0; x < head.biWidth; x++)    
+            {
+                RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * info.dwEffWidth];
+                pClr->rgbReserved = (uint8_t)~(pClr->rgbReserved);
+            }
+        }
+		//uint8_t *iSrc=pAlpha;
+		//int32_t n=head.biHeight*head.biWidth;
+		//for(int32_t i=0; i < n; i++){
+		//	*iSrc=(uint8_t)~(*(iSrc));
+		//	iSrc++;
+		//}
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,10 +126,24 @@ void CxImage::AlphaInvert()
  */
 bool CxImage::AlphaCopy(CxImage &from)
 {
-	if (from.pAlpha == NULL || head.biWidth != from.head.biWidth || head.biHeight != from.head.biHeight) return false;
-	if (pAlpha==NULL) pAlpha = (uint8_t*)malloc(head.biWidth * head.biHeight);
-	if (pAlpha==NULL) return false;
-	memcpy(pAlpha,from.pAlpha,head.biWidth * head.biHeight);
+	if (!from.bAlpha || head.biWidth != from.head.biWidth || head.biHeight != from.head.biHeight) return false;
+    if (!bAlpha)
+    {
+        return false;
+    }
+    for (int32_t y = 0; y < head.biHeight; y++)
+    {
+        for (int32_t x = 0; x < head.biWidth; x++)    
+        {
+            RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * info.dwEffWidth];
+            RGBQUAD* pClrFrom =  &((RGBQUAD*)from.pDib)[x + y * info.dwEffWidth];
+            pClr->rgbReserved = pClrFrom->rgbReserved;
+        }
+    }
+
+	//if (pAlpha==NULL) pAlpha = (uint8_t*)malloc(head.biWidth * head.biHeight);
+	//if (pAlpha==NULL) return false;
+	//memcpy(pAlpha,from.pAlpha,head.biWidth * head.biHeight);
 	info.nAlphaMax=from.info.nAlphaMax;
 	return true;
 }
@@ -115,13 +154,22 @@ bool CxImage::AlphaCopy(CxImage &from)
 bool CxImage::AlphaSet(CxImage &from)
 {
 	if (!from.IsGrayScale() || head.biWidth != from.head.biWidth || head.biHeight != from.head.biHeight) return false;
-	if (pAlpha==NULL) pAlpha = (uint8_t*)malloc(head.biWidth * head.biHeight);
+	if (!bAlpha)
+	{
+        return false;
+	}
+    
+    //if (pAlpha==NULL) pAlpha = (uint8_t*)malloc(head.biWidth * head.biHeight);
 	uint8_t* src = from.info.pImage;
-	uint8_t* dst = pAlpha;
-	if (src==NULL || dst==NULL) return false;
+	//uint8_t* dst = pAlpha;
+	if (src==NULL) return false;
 	for (int32_t y=0; y<head.biHeight; y++){
-		memcpy(dst,src,head.biWidth);
-		dst += head.biWidth;
+        for (int32_t x = 0; x < head.biWidth; x++){
+            RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * info.dwEffWidth];
+            pClr->rgbReserved = *(src + x);
+        }
+		//memcpy(dst,src,head.biWidth);
+		//dst += head.biWidth;
 		src += from.info.dwEffWidth;
 	}
 	return true;
@@ -132,7 +180,12 @@ bool CxImage::AlphaSet(CxImage &from)
  */
 void CxImage::AlphaSet(const int32_t x,const int32_t y,const uint8_t level)
 {
-	if (pAlpha && IsInside(x,y)) pAlpha[x+y*head.biWidth]=level;
+    if (bAlpha && IsInside(x,y))
+    {
+        RGBQUAD* pClr =  &((RGBQUAD*)pDib)[x + y * head.biWidth];
+        pClr->rgbReserved = level;
+    }
+	//if (pAlpha && IsInside(x,y)) pAlpha[x+y*head.biWidth]=level;
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -140,7 +193,11 @@ void CxImage::AlphaSet(const int32_t x,const int32_t y,const uint8_t level)
  */
 uint8_t CxImage::AlphaGet(const int32_t x,const int32_t y)
 {
-	if (pAlpha && IsInside(x,y)) return pAlpha[x+y*head.biWidth];
+    if (bAlpha && IsInside(x,y))
+    {
+        return ((RGBQUAD*)pDib)[x + y * head.biWidth].rgbReserved;
+    }
+	//if (pAlpha && IsInside(x,y)) return pAlpha[x+y*head.biWidth];
 	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +208,11 @@ uint8_t CxImage::AlphaGet(const int32_t x,const int32_t y)
  */
 uint8_t* CxImage::AlphaGetPointer(const int32_t x,const int32_t y)
 {
-	if (pAlpha && IsInside(x,y)) return pAlpha+x+y*head.biWidth;
+    if (bAlpha && IsInside(x,y))
+    {
+        return &(((RGBQUAD*)pDib)[x + y * head.biWidth].rgbReserved);
+    }
+	//if (pAlpha && IsInside(x,y)) return pAlpha+x+y*head.biWidth;
 	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,14 +224,15 @@ uint8_t* CxImage::AlphaGetPointer(const int32_t x,const int32_t y)
 uint8_t CxImage::BlindAlphaGet(const int32_t x,const int32_t y)
 {
 #ifdef _DEBUG
-	if (!IsInside(x,y) || (pAlpha==0))
+	if (!IsInside(x,y) || (!bAlpha))
   #if CXIMAGE_SUPPORT_EXCEPTION_HANDLING
 		throw 0;
   #else
 		return 0;
   #endif
 #endif
-	return pAlpha[x+y*head.biWidth];
+    return ((RGBQUAD*)pDib)[x + y * head.biWidth].rgbReserved;
+	//return  pAlpha[x+y*head.biWidth];
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -200,7 +262,7 @@ bool CxImage::AlphaPaletteIsValid()
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * Blends the alpha channel and the alpha palette with the pixels. The result is a 24 bit image.
+ * Blends the alpha channel and the alpha palette with the pixels. The result is a 32 bit image.
  * The background color can be selected using SetTransColor().
  */
 void CxImage::AlphaStrip()
@@ -210,7 +272,7 @@ void CxImage::AlphaStrip()
 	if (!(bAlphaIsValid || bAlphaPaletteIsValid)) return;
 	RGBQUAD c;
 	int32_t a, a1;
-	if (head.biBitCount==24){
+	if (head.biBitCount==32){
 		for(int32_t y=0; y<head.biHeight; y++){
 			for(int32_t x=0; x<head.biWidth; x++){
 				c = BlindGetPixelColor(x,y);
@@ -224,7 +286,7 @@ void CxImage::AlphaStrip()
 		}
 		AlphaDelete();
 	} else {
-		CxImage tmp(head.biWidth,head.biHeight,24);
+		CxImage tmp(head.biWidth,head.biHeight,32);
 		if (!tmp.IsValid()){
 			strcpy(info.szLastError,tmp.GetLastError());
 			return;
@@ -249,7 +311,10 @@ void CxImage::AlphaStrip()
 ////////////////////////////////////////////////////////////////////////////////
 bool CxImage::AlphaFlip()
 {
-	if (!pAlpha) return false;
+    throw "not impl";
+#if 0
+	//if (!pAlpha) return false;
+    if(!bAlpha) return false;
 
 	uint8_t *buff = (uint8_t*)malloc(head.biWidth);
 	if (!buff) return false;
@@ -267,12 +332,15 @@ bool CxImage::AlphaFlip()
 	}
 
 	free(buff);
-
+#endif 
 	return true;
+
 }
 ////////////////////////////////////////////////////////////////////////////////
 bool CxImage::AlphaMirror()
 {
+    throw "not impl";
+#if 0
 	if (!pAlpha) return false;
 	uint8_t* pAlpha2 = (uint8_t*)malloc(head.biWidth * head.biHeight);
 	if (!pAlpha2) return false;
@@ -289,6 +357,7 @@ bool CxImage::AlphaMirror()
 	free(pAlpha);
 	pAlpha=pAlpha2;
 	return true;
+#endif 
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -296,6 +365,8 @@ bool CxImage::AlphaMirror()
  */
 bool CxImage::AlphaSplit(CxImage *dest)
 {
+    throw "not imipl";
+#if 0
 	if (!pAlpha || !dest) return false;
 
 	CxImage tmp(head.biWidth,head.biHeight,8);
@@ -314,7 +385,7 @@ bool CxImage::AlphaSplit(CxImage *dest)
 
 	tmp.SetGrayPalette();
 	dest->Transfer(tmp);
-
+#endif 
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////

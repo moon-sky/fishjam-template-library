@@ -108,7 +108,7 @@ bool CxImagePNG::Decode(CxFile *hFile)
 	int32_t pixel_depth = info_ptr->pixel_depth;
 	if (channels == 1 && pixel_depth>8) pixel_depth=8;
 	if (channels == 2) pixel_depth=8;
-	if (channels >= 3) pixel_depth=24;
+	if (channels >= 3) pixel_depth=32;
 
 	if (!Create(info_ptr->width, info_ptr->height, pixel_depth, CXIMAGE_FORMAT_PNG)){
 		longjmp(png_ptr->png_jmpbuf, 1);
@@ -471,7 +471,7 @@ bool CxImagePNG::Encode(CxFile *hFile)
 
 #if CXIMAGE_SUPPORT_ALPHA	// <vho>
 	//Merge the transparent color with the alpha channel
-	if (AlphaIsValid() && head.biBitCount==24 && info.nBkgndIndex>=0){
+	if (AlphaIsValid() && head.biBitCount==32 && info.nBkgndIndex>=0){
 		for(int32_t y=0; y < head.biHeight; y++){
 			for(int32_t x=0; x < head.biWidth ; x++){
 				RGBQUAD c=GetPixelColor(x,y,false);

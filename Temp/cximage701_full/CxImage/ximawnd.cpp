@@ -539,7 +539,7 @@ HBITMAP CxImage::MakeBitmap(HDC hdc, bool bTransparency)
 		return NULL;
 
 	// Create HBITMAP with Trancparency
-	if( (pAlpha!=0) && bTransparency )
+	if( (bAlpha) && bTransparency )
 	{
 		HDC hMemDC;
 		if (hdc)
@@ -825,7 +825,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 	if (cx < 0) cx = head.biWidth;
 	if (cy < 0) cy = head.biHeight;
 	bool bTransparent = info.nBkgndIndex >= 0;
-	bool bAlpha = pAlpha != 0;
+	//bool bAlpha = pAlpha != 0;
 
 	//required for MM_ANISOTROPIC, MM_HIENGLISH, and similar modes [Greg Peatfield]
 	int32_t hdc_Restore = ::SaveDC(hdc);
@@ -1001,7 +1001,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 						dx = (xx+xmin-x)*fx;
 						sx = max(0L,(int32_t)floor(dx));
 
-						if (bAlpha) a=pAlpha[alphaoffset+sx]; else a=255;
+						if (bAlpha) a=AlphaGet(sx,sy); else a=255; // a=pAlpha[alphaoffset+sx]; 
 						a =(uint8_t)((a*(1+info.nAlphaMax))>>8);
 
 						if (head.biClrUsed){
@@ -1073,7 +1073,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 					ppix=info.pImage+iy*info.dwEffWidth+ix*3;
 					for(xx=0;xx<destw;xx++,ix++){
 
-						if (bAlpha) a=pAlpha[alphaoffset+ix]; else a=255;
+						if (bAlpha) a=AlphaGet(ix,iy); else a=255; //pAlpha[alphaoffset+ix]; 
 						a = (uint8_t)((a*(1+info.nAlphaMax))>>8);
 
 						if (head.biClrUsed){
@@ -1149,7 +1149,7 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 	if (cx < 0) cx = head.biWidth;
 	if (cy < 0) cy = head.biHeight;
 	bool bTransparent = info.nBkgndIndex >= 0;
-	bool bAlpha = pAlpha != 0;
+	//bool bAlpha = pAlpha != 0;
 
 	//required for MM_ANISOTROPIC, MM_HIENGLISH, and similar modes [Greg Peatfield]
 	int32_t hdc_Restore = ::SaveDC(hdc);
@@ -1312,7 +1312,7 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 						dx = (xx+xmin-x)*fx;
 						sx = max(0L,(int32_t)floor(dx));
 
-						if (bAlpha) a=pAlpha[alphaoffset+sx]; else a=255;
+						if (bAlpha) a=AlphaGet(sx, sy);else a=255; //a=pAlpha[alphaoffset+sx]; 
 						a =(uint8_t)((a*(1+info.nAlphaMax))>>8);
 
 						if (head.biClrUsed){
@@ -1380,7 +1380,7 @@ HBITMAP CxImage::Draw2HBITMAP(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t
 					ppix=info.pImage+iy*info.dwEffWidth+ix*3;
 					for(xx=0;xx<destw;xx++,ix++){
 
-						if (bAlpha) a=pAlpha[alphaoffset+ix]; else a=255;
+						if (bAlpha) a=AlphaGet(ix, iy);else a=255; //a=pAlpha[alphaoffset+ix]; 
 						a = (uint8_t)((a*(1+info.nAlphaMax))>>8);
 
 						if (head.biClrUsed){

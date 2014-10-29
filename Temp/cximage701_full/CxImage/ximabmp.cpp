@@ -143,7 +143,7 @@ bool CxImageBMP::Decode(CxFile * hFile)
 	if (info.nEscape) cx_throw("Cancelled"); // <vho> - cancel decoding
 
 	switch (dwBitCount) {
-		case 32 :
+		case 24 :
 			uint32_t bfmask[3];
 			if (dwCompression == BI_BITFIELDS)
 			{
@@ -155,37 +155,37 @@ bool CxImageBMP::Decode(CxFile * hFile)
 			}
 			if (bf.bfOffBits != 0L) hFile->Seek(off + bf.bfOffBits,SEEK_SET);
 			if (dwCompression == BI_BITFIELDS || dwCompression == BI_RGB){
-				int32_t imagesize=4*head.biHeight*head.biWidth;
+				int32_t imagesize=3*head.biHeight*head.biWidth;
 				uint8_t* buff32=(uint8_t*)malloc(imagesize);
 				if (buff32){
 					hFile->Read(buff32, imagesize,1); // read in the pixels
 
-#if CXIMAGE_SUPPORT_ALPHA
-					if (dwCompression == BI_RGB){
-						AlphaCreate();
-						if (AlphaIsValid()){
-							bool bAlphaOk = false;
-							uint8_t* p;
-							for (int32_t y=0; y<head.biHeight; y++){
-								p = buff32 + 3 + head.biWidth * 4 * y;
-								for (int32_t x=0; x<head.biWidth; x++){
-									if (*p) bAlphaOk = true;
-									AlphaSet(x,y,*p);
-									p+=4;
-								}
-							}
-							// fix if alpha pixels are all zero
-							if (!bAlphaOk) AlphaInvert();
-						}
-					}
-#endif //CXIMAGE_SUPPORT_ALPHA
+//#if CXIMAGE_SUPPORT_ALPHA
+//					if (dwCompression == BI_RGB){
+//						AlphaCreate();
+//						if (AlphaIsValid()){
+//							bool bAlphaOk = false;
+//							uint8_t* p;
+//							for (int32_t y=0; y<head.biHeight; y++){
+//								p = buff32 + 3 + head.biWidth * 3 * y;
+//								for (int32_t x=0; x<head.biWidth; x++){
+//									if (*p) bAlphaOk = true;
+//									AlphaSet(x,y,*p);
+//									p+=4;
+//								}
+//							}
+//							// fix if alpha pixels are all zero
+//							if (!bAlphaOk) AlphaInvert();
+//						}
+//					}
+//#endif //CXIMAGE_SUPPORT_ALPHA
 
-					Bitfield2RGB(buff32,bfmask[0],bfmask[1],bfmask[2],32);
+					Bitfield2RGB(buff32,bfmask[0],bfmask[1],bfmask[2],24);
 					free(buff32);
 				} else cx_throw("can't allocate memory");
 			} else cx_throw("unknown compression");
 			break;
-		case 24 :
+		case 32 :
 			if (bf.bfOffBits != 0L) hFile->Seek(off + bf.bfOffBits,SEEK_SET);
 			if (dwCompression == BI_RGB){
 				hFile->Read(info.pImage, head.biSizeImage,1); // read in the pixels

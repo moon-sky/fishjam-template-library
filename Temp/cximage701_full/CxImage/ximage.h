@@ -797,7 +797,8 @@ protected:
     BITMAPINFOHEADER    head; //standard header
 	CXIMAGEINFO			info; //extended information
 	uint8_t*			pSelection;	//selected region
-	uint8_t*			pAlpha; //alpha channel
+	//uint8_t*			pAlpha; //alpha channel
+    bool                bAlpha;
 	CxImage**			ppLayers; //generic layers
 	CxImage**			ppFrames;
 //@}

@@ -782,9 +782,10 @@ uint32_t CxImage::DumpSize()
 	n = sizeof(BITMAPINFOHEADER) + sizeof(CXIMAGEINFO) + GetSize();
 
 #if CXIMAGE_SUPPORT_ALPHA
-	if (pAlpha){
-		n += 1 + head.biWidth * head.biHeight;
-	} else n++;
+	//if (pAlpha){
+	//	n += 1 + head.biWidth * head.biHeight;
+	//} else n++;
+    n++;
 #endif
 
 #if CXIMAGE_SUPPORT_SELECTION
@@ -828,10 +829,10 @@ uint32_t CxImage::Dump(uint8_t * dst)
 	dst += GetSize();
 
 #if CXIMAGE_SUPPORT_ALPHA
-	if (pAlpha){
+	if (bAlpha){
 		memset(dst++, 1, 1);
-		memcpy(dst,pAlpha,head.biWidth * head.biHeight);
-		dst += head.biWidth * head.biHeight;
+		//memcpy(dst,pAlpha,head.biWidth * head.biHeight);
+		//dst += head.biWidth * head.biHeight;
 	} else {
 		memset(dst++, 0, 1);
 	}
@@ -900,9 +901,9 @@ uint32_t CxImage::UnDump(const uint8_t * src)
 #if CXIMAGE_SUPPORT_ALPHA
 	if (src[n++]){
 		if (AlphaCreate()){
-			memcpy(pAlpha, &src[n], head.biWidth * head.biHeight);
+			//memcpy(pAlpha, &src[n], head.biWidth * head.biHeight);
 		}
-		n += head.biWidth * head.biHeight;
+		//n += head.biWidth * head.biHeight;
 	}
 #endif
 

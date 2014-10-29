@@ -416,7 +416,7 @@ bool CxImageTIF::Decode(CxFile * hFile)
 					int32_t ii=0;
 					int32_t yi=height-ys-nrow+y;
 #if CXIMAGE_SUPPORT_ALPHA
-					if (!pAlpha) AlphaCreate();			// + VK
+					if (!bAlpha) AlphaCreate();			// + VK
 #endif //CXIMAGE_SUPPORT_ALPHA
 					while (ii<line){
 						SetPixelIndex(xi,yi,bits[ii+offset]);

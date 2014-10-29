@@ -14,8 +14,9 @@
 void CxImage::Startup(uint32_t imagetype)
 {
 	//init pointers
-	pDib = pSelection = pAlpha = NULL;
+	pDib = pSelection = NULL;
 	ppLayers = ppFrames = NULL;
+    bAlpha = false;
 	//init structures
 	memset(&head,0,sizeof(BITMAPINFOHEADER));
 	memset(&info,0,sizeof(CXIMAGEINFO));
@@ -57,7 +58,7 @@ bool CxImage::Destroy()
 			delete [] ppLayers; ppLayers=0; info.nNumLayers = 0;
 		}
 		if (pSelection) {free(pSelection); pSelection=0;}
-		if (pAlpha) {free(pAlpha); pAlpha=0;}
+		//if (pAlpha) {free(pAlpha); pAlpha=0;}
 		if (pDib) {free(pDib); pDib=0;}
 		return true;
 	}
@@ -80,7 +81,7 @@ bool CxImage::DestroyFrames()
  * Sized image constructor
  * \param dwWidth: width
  * \param dwHeight: height
- * \param wBpp: bit per pixel, can be 1, 4, 8, 24
+ * \param wBpp: bit per pixel, can be 1, 4, 8, 32
  * \param imagetype: (optional) set the image format, see ENUM_CXIMAGE_FORMATS
  */
 CxImage::CxImage(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32_t imagetype)
@@ -133,11 +134,15 @@ void CxImage::Copy(const CxImage &src, bool copypixels, bool copyselection, bool
 		memcpy(pSelection,src.pSelection,nSize);
 	}
 	//copy the alpha channel
-	if (copyalpha && src.pAlpha){
-		if (pAlpha) free(pAlpha);
-		pAlpha = (uint8_t*)malloc(nSize);
-		memcpy(pAlpha,src.pAlpha,nSize);
-	}
+	//if (copyalpha && src.pAlpha){
+	//	if (pAlpha) free(pAlpha);
+	//	pAlpha = (uint8_t*)malloc(nSize);
+	//	memcpy(pAlpha,src.pAlpha,nSize);
+	//}
+    if (!copyalpha)
+    {
+        AlphaSet(255);
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -163,7 +168,7 @@ CxImage& CxImage::operator = (const CxImage& isrc)
  * Initializes or rebuilds the image.
  * \param dwWidth: width
  * \param dwHeight: height
- * \param wBpp: bit per pixel, can be 1, 4, 8, 24
+ * \param wBpp: bit per pixel, can be 1, 4, 8, 32
  * \param imagetype: (optional) set the image format, see ENUM_CXIMAGE_FORMATS
  * \return pointer to the internal pDib object; NULL if an error occurs.
  */
@@ -183,14 +188,14 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
     if		(wBpp <= 1)	wBpp = 1;
     else if (wBpp <= 4)	wBpp = 4;
     else if (wBpp <= 8)	wBpp = 8;
-    else				wBpp = 24;
+    else				wBpp = 32;
 
 	// limit memory requirements
-	if ((((float)dwWidth*(float)dwHeight*(float)wBpp)/8.0f) > (float)CXIMAGE_MAX_MEMORY)
-	{
-		strcpy(info.szLastError,"CXIMAGE_MAX_MEMORY exceeded");
-		return NULL;
-	}
+	//if ((((float)dwWidth*(float)dwHeight*(float)wBpp)/8.0f) > (float)CXIMAGE_MAX_MEMORY)
+	//{
+	//	strcpy(info.szLastError,"CXIMAGE_MAX_MEMORY exceeded");
+	//	return NULL;
+	//}
 
 	// set the correct bpp value
     switch (wBpp){
@@ -234,9 +239,9 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
 	if (pSelection) SelectionDelete();
 #endif //CXIMAGE_SUPPORT_SELECTION
 	//Destroy the existing alpha channel
-#if CXIMAGE_SUPPORT_ALPHA
-	if (pAlpha) AlphaDelete();
-#endif //CXIMAGE_SUPPORT_ALPHA
+//#if CXIMAGE_SUPPORT_ALPHA
+//	if (pAlpha) AlphaDelete();
+//#endif //CXIMAGE_SUPPORT_ALPHA
 
     // use our bitmap info structure to fill in first part of
     // our DIB with the BITMAPINFOHEADER
@@ -318,12 +323,13 @@ bool CxImage::Transfer(CxImage &from, bool bTransferFrames /*=true*/)
 
 	pDib = from.pDib;
 	pSelection = from.pSelection;
-	pAlpha = from.pAlpha;
+    bAlpha = from.bAlpha;
+	//pAlpha = from.pAlpha;
 	ppLayers = from.ppLayers;
 
 	memset(&from.head,0,sizeof(BITMAPINFOHEADER));
 	memset(&from.info,0,sizeof(CXIMAGEINFO));
-	from.pDib = from.pSelection = from.pAlpha = NULL;
+	from.pDib = from.pSelection = NULL;
 	from.ppLayers = NULL;
 
 	if (bTransferFrames){
@@ -346,7 +352,8 @@ void CxImage::Ghost(const CxImage *from)
 		memcpy(&info,&from->info,sizeof(CXIMAGEINFO));
 		pDib = from->pDib;
 		pSelection = from->pSelection;
-		pAlpha = from->pAlpha;
+		//pAlpha = from->pAlpha;
+        bAlpha = from->bAlpha;
 		ppLayers = from->ppLayers;
 		ppFrames = from->ppFrames;
 		info.pGhost=(CxImage *)from;
@@ -354,7 +361,7 @@ void CxImage::Ghost(const CxImage *from)
 }
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * turns a 16 or 32 bit bitfield image into a RGB image
+ * turns a 16 or 24 bit bitfield image into a RGB image
  */
 void CxImage::Bitfield2RGB(uint8_t *src, uint32_t redmask, uint32_t greenmask, uint32_t bluemask, uint8_t bpp)
 {
@@ -389,7 +396,7 @@ void CxImage::Bitfield2RGB(uint8_t *src, uint32_t redmask, uint32_t greenmask, u
 		}
 		break;
 	}
-	case 32:
+	case 24:
 	{
 		uint32_t ns[3]={0,0,0};
 		// compute the number of shift for each mask
@@ -399,7 +406,7 @@ void CxImage::Bitfield2RGB(uint8_t *src, uint32_t redmask, uint32_t greenmask, u
 			if (bluemask>>i) ns[2]++;
 		}
 		// dword aligned width for 32 bit image
-		int32_t effwidth4 = head.biWidth * 4;
+        int32_t effwidth4 = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(head.biWidth, bpp);
 		int32_t y4,y3,x4,x3;
 		uint8_t *p=info.pImage;
 		// scan the buffer in reverse direction to avoid reallocations
@@ -407,8 +414,8 @@ void CxImage::Bitfield2RGB(uint8_t *src, uint32_t redmask, uint32_t greenmask, u
 			y4=effwidth4*y;
 			y3=info.dwEffWidth*y;
 			for (int32_t x=head.biWidth-1; x>=0; x--){
-				x4 = 4*x+y4;
-				x3 = 3*x+y3;
+				x4 = 3*x+y4;
+				x3 = 4*x+y3;
 				p[  x3]=src[ns[2]+x4];
 				p[1+x3]=src[ns[1]+x4];
 				p[2+x3]=src[ns[0]+x4];

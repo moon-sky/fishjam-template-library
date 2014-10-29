@@ -69,6 +69,7 @@
  #define PI 3.141592653589793f
 #endif
 
+#define CALC_BMP_ALLIGNMENT_WIDTH_COUNT( nWidth, nBpp) (( (nWidth) * (nBpp) + 31) / 32 * 4)
 
 #if defined(WIN32) || defined(_WIN32_WCE)
 #include <windows.h>
