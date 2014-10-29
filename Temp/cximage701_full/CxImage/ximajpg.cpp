@@ -269,22 +269,23 @@ bool CxImageJPG::Decode(CxFile * hFile)
 		
 		(void) jpeg_read_scanlines(&cinfo, buffer, 1);
 		// info.nProgress = (int32_t)(100*cinfo.output_scanline/cinfo.output_height);
-		//<DP> Step 6a: CMYK->RGB */ 
+		
 		if ((cinfo.num_components==4)&&(cinfo.quantize_colors==FALSE)){
-			uint8_t k,*dst,*src;
-			dst=iter.GetRow();
-			src=buffer[0];
-			for(int32_t x3=0,x4=0; x3<(int32_t)info.dwEffWidth && x4<row_stride; x3+=3, x4+=4){
-				k=src[x4+3];
-				dst[x3]  =(uint8_t)((k * src[x4+2])/255);
-				dst[x3+1]=(uint8_t)((k * src[x4+1])/255);
-				dst[x3+2]=(uint8_t)((k * src[x4+0])/255);
-			}
+            /* Assume put_scanline_someplace wants a pointer and sample count. */
+            iter.SetRow(buffer[0], row_stride);
 		} else {
-			/* Assume put_scanline_someplace wants a pointer and sample count. */
-			iter.SetRow(buffer[0], row_stride);
+            //<DP> Step 6a: CMYK->RGB */ 
+            uint8_t k,*dst,*src;
+            dst=iter.GetRow();
+            src=buffer[0];
+            for(int32_t x3=0,x4=0; x3<(int32_t)info.dwEffWidth && x4<row_stride; x3+=4, x4+=4){
+                k=src[x4+3];
+                dst[x3]  =(uint8_t)((k * src[x4+2])/255);
+                dst[x3+1]=(uint8_t)((k * src[x4+1])/255);
+                dst[x3+2]=(uint8_t)((k * src[x4+0])/255);
+            }
 		}
-			iter.PrevRow();
+		iter.PrevRow();
 	}
 
 	/* Step 7: Finish decompression */
@@ -295,7 +296,7 @@ bool CxImageJPG::Decode(CxFile * hFile)
 
 	//<DP> Step 7A: Swap red and blue components
 	// not necessary if swapped red and blue definition in jmorecfg.h;ln322 <W. Morrison>
-	if ((cinfo.num_components==3)&&(cinfo.quantize_colors==FALSE)){
+	if ((cinfo.num_components==4)&&(cinfo.quantize_colors==FALSE)){
 		uint8_t* r0=GetBits();
 		for(int32_t y=0;y<head.biHeight;y++){
 			if (info.nEscape) longjmp(jerr.setjmp_buffer, 1); // <vho> - cancel decoding

@@ -17,6 +17,7 @@ void CxImage::Startup(uint32_t imagetype)
 	pDib = pSelection = NULL;
 	ppLayers = ppFrames = NULL;
     bAlpha = false;
+    hDib = NULL;
 	//init structures
 	memset(&head,0,sizeof(BITMAPINFOHEADER));
 	memset(&info,0,sizeof(CXIMAGEINFO));
@@ -240,9 +241,10 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
 	if (pSelection) SelectionDelete();
 #endif //CXIMAGE_SUPPORT_SELECTION
 	//Destroy the existing alpha channel
-//#if CXIMAGE_SUPPORT_ALPHA
-//	if (pAlpha) AlphaDelete();
-//#endif //CXIMAGE_SUPPORT_ALPHA
+#if CXIMAGE_SUPPORT_ALPHA
+    if(32 == wBpp) { AlphaCreate(); }
+	//if (pAlpha) AlphaDelete();
+#endif //CXIMAGE_SUPPORT_ALPHA
 
     // use our bitmap info structure to fill in first part of
     // our DIB with the BITMAPINFOHEADER
@@ -251,7 +253,7 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
     *lpbi = head;
 
 	info.pImage=GetBits();
-
+    
     return pDib; //return handle to the DIB
 }
 ////////////////////////////////////////////////////////////////////////////////

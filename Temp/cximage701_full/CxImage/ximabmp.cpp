@@ -83,7 +83,7 @@ bool CxImageBMP::Decode(CxFile * hFile)
 {
 	if (hFile == NULL) return false;
 
-	BITMAPFILEHEADER   bf;
+    BITMAPFILEHEADER   bf = {0};
 	uint32_t off = hFile->Tell(); //<CSC>
   cx_try {
 	if (hFile->Read(&bf,min(14,sizeof(bf)),1)==0) cx_throw("Not a BMP");
@@ -96,7 +96,7 @@ bool CxImageBMP::Decode(CxFile * hFile)
         hFile->Seek(off,SEEK_SET);
     }
 
-	BITMAPINFOHEADER bmpHeader;
+    BITMAPINFOHEADER bmpHeader = {0};
 	if (!DibReadBitmapInfo(hFile,&bmpHeader)) cx_throw("Error reading BMP info");
 	uint32_t dwCompression=bmpHeader.biCompression;
 	uint32_t dwBitCount=bmpHeader.biBitCount; //preserve for BI_BITFIELDS compression <Thomas Ernst>

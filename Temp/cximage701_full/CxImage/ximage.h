@@ -803,6 +803,7 @@ protected:
     bool                bAlpha;
 	CxImage**			ppLayers; //generic layers
 	CxImage**			ppFrames;
+    HBITMAP             hDib;
 //@}
 };
 

@@ -129,7 +129,7 @@ void CDemoView::OnDraw(CDC* pDC)
 			tmp.Stretch(pDC->GetSafeHdc(), CRect(100,100,cx,cy));
 		} else {
 
-#define USER_DRAW3 0
+#define USER_DRAW3 1
 
 			if (pDoc->GetStretchMode()) {
 				CRect rect;
