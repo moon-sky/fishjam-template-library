@@ -15,9 +15,12 @@ void CxImage::Startup(uint32_t imagetype)
 {
 	//init pointers
 	pDib = pSelection = NULL;
+    hFileMapping = NULL;
 	ppLayers = ppFrames = NULL;
     bAlpha = false;
     hDib = NULL;
+    hOldBitmap = NULL;
+    hMemoDC = NULL;
 	//init structures
 	memset(&head,0,sizeof(BITMAPINFOHEADER));
 	memset(&info,0,sizeof(CXIMAGEINFO));
@@ -60,7 +63,11 @@ bool CxImage::Destroy()
 		}
 		if (pSelection) {free(pSelection); pSelection=0;}
 		//if (pAlpha) {free(pAlpha); pAlpha=0;}
-		if (pDib) {free(pDib); pDib=0;}
+		//if (pDib) {free(pDib); pDib=0;}
+        if(hMemoDC){ SelectObject(hMemoDC, hOldBitmap); ::DeleteDC(hMemoDC); hMemoDC = NULL; }
+        if (hDib){DeleteObject(hDib); hDib = NULL;}
+        if(pDib){ UnmapViewOfFile(pDib); pDib = NULL; }
+        if (hFileMapping){ CloseHandle(hFileMapping); hFileMapping = NULL;}
 		return true;
 	}
 	return false;
@@ -226,9 +233,16 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
 //    head.biYPelsPerMeter = 0; See SetYDPI
 //    head.biClrImportant = 0;  See SetClrImportant
 
-	pDib = malloc(GetSize()); // alloc memory block to store our bitmap
-    if (!pDib){
-		strcpy(info.szLastError,"CxImage::Create can't allocate memory");
+	hFileMapping = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, GetSize(), NULL);
+	if (hFileMapping)
+	{
+		pDib = MapViewOfFile(hFileMapping, FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0);
+	}
+	//pDib = malloc(GetSize()); // alloc memory block to store our bitmap
+	if (!pDib){
+		CloseHandle(hFileMapping);
+		hFileMapping = NULL;
+		strcpy(info.szLastError,"ERROR_NOT_ENOUGH_MEMORY"); //"CxImage::Create can't allocate memory");
 		return NULL;
 	}
     memset(pDib, 0, GetSize());
@@ -254,6 +268,17 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
 
 	info.pImage=GetBits();
     
+    if (32 == wBpp)
+    {
+        //void* pBit32 = NULL;
+        //hMemoDC = ::CreateCompatibleDC(NULL);
+        //hDib = CreateDIBSection(hMemoDC, (LPBITMAPINFO)pDib, DIB_RGB_COLORS, &pBit32, hFileMapping, 0);
+        //if (pBit32 == info.pImage)
+        //{
+        //    OutputDebugString(TEXT("Same\n"));
+        //}
+    }
+
     return pDib; //return handle to the DIB
 }
 ////////////////////////////////////////////////////////////////////////////////

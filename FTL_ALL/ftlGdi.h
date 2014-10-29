@@ -763,7 +763,7 @@ namespace FTL
         HBITMAP m_hOldBitmap;
         HANDLE  m_hFileMapping;
         HANDLE  m_hSection;	//file mapping object to support big bitmap
-        BITMAPFILEHEADER*   m_pBmpFileHeader;
+        //BITMAPFILEHEADER*   m_pBmpFileHeader;
         BITMAPINFO*         m_pBmpInfo;
         BYTE*               m_pColorTable;
         BYTE*               m_pImageBuffer; 

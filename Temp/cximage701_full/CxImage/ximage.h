@@ -796,6 +796,7 @@ protected:
 	void bihtoh(BITMAPINFOHEADER* bih);
 
 	void*				pDib; //contains the header, the palette, the pixels
+    HANDLE              hFileMapping;
     BITMAPINFOHEADER    head; //standard header
 	CXIMAGEINFO			info; //extended information
 	uint8_t*			pSelection;	//selected region
@@ -804,6 +805,8 @@ protected:
 	CxImage**			ppLayers; //generic layers
 	CxImage**			ppFrames;
     HBITMAP             hDib;
+    HBITMAP             hOldBitmap;
+    HDC                 hMemoDC;
 //@}
 };
 

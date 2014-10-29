@@ -462,7 +462,7 @@ void CFTLGdiTester::test_CompareBitmapData()
         FTL::CFGdiUtil::SaveBitmapToFile(canvas2.GetMemoryBitmap(), formaterName2.GetString());
         RECT rcMinDiff = {0};
         int nCmpResult = CFGdiUtil::CompareBitmapData(nWidth, nHeight, nBpps[i], 
-            canvas1.GetBuffer(), canvas2.GetBuffer(), &rcMinDiff,
+            canvas1.GetImageBuffer(), canvas2.GetImageBuffer(), &rcMinDiff,
             cmpResult.GetMemory(), nCmpResultSize, 0xFF);
         FTLTRACE(TEXT("nBpp=%d, nCmpResult=%d\n"), nBpps[i], nCmpResult);
 
@@ -477,20 +477,33 @@ void CFTLGdiTester::test_LargetBitmap()
 	BOOL bRet = FALSE;
 	CFCanvas	canvas;
 	CRect rcLarge;
-	rcLarge.SetRect(0, 0, 5124, 5124);
+	rcLarge.SetRect(0, 0, 100, 100);
 
 	API_VERIFY(canvas.Create(NULL, rcLarge.Width(), rcLarge.Height(), 32));
 	HBITMAP hDibBitmap = canvas.GetMemoryBitmap();
 	CPPUNIT_ASSERT(hDibBitmap != NULL);
 
     
-    CWindowDC wndDC(CWnd::FromHandle(GetDesktopWindow()));
-    ::StretchBlt(canvas.GetCanvasDC(), 0, 0, rcLarge.Width(), rcLarge.Height(), wndDC.GetSafeHdc(), 0, 0, 1080, 1080, SRCCOPY);
+    //CWindowDC wndDC(CWnd::FromHandle(GetDesktopWindow()));
+    //::StretchBlt(canvas.GetCanvasDC(), 0, 0, rcLarge.Width(), rcLarge.Height(), wndDC.GetSafeHdc(), 0, 0, 100, 100, SRCCOPY);
 
-	//CDC memDC;
-	//API_VERIFY(memDC.Attach(canvas.GetCanvasDC()));
-	//memDC.FillSolidRect(&rcLarge, RGB(255, 0, 0));
-	//memDC.Detach();
+	CDC memDC;
+	API_VERIFY(memDC.Attach(canvas.GetCanvasDC()));
+	memDC.FillSolidRect(&rcLarge, RGB(255, 0x22, 0x11));
+	memDC.Detach();
+    
+    RGBQUAD* pImgBuffer = (RGBQUAD*)canvas.GetImageBuffer();
+    int nEffectWidth = canvas.GetPitch();
+    for (int y = 0; y < rcLarge.Height(); y++)
+    {
+        for (int x = 0; x < rcLarge.Width(); x++)
+        {
+            int nAlpha = (y * rcLarge.Height() + x) % 255;
+
+            RGBQUAD* pClr = (RGBQUAD*)(pImgBuffer + nEffectWidth / 4 * y + x);
+            pClr->rgbReserved = nAlpha;
+        }
+    }
 
     API_VERIFY(canvas.SaveToBmpFile(TEXT("LargeBitmap.bmp")));
 	//API_VERIFY(CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), TEXT("LargeBitmap.bmp")));

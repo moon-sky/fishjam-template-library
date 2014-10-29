@@ -1683,7 +1683,7 @@ namespace FTL
         m_hOldBitmap = NULL;
         m_hFileMapping = INVALID_HANDLE_VALUE;
         m_hSection = NULL;
-        m_pBmpFileHeader = NULL;
+        //m_pBmpFileHeader = NULL;
         m_pBmpInfo = NULL;
         m_pImageBuffer = NULL;
         m_pColorTable = NULL;
@@ -1713,14 +1713,14 @@ namespace FTL
 
         if (m_hSection)
         {
-            API_VERIFY(UnmapViewOfFile(m_pBmpFileHeader));
+            API_VERIFY(UnmapViewOfFile(m_pBmpInfo));
             SAFE_CLOSE_HANDLE(m_hSection, NULL);
         }
 
         SAFE_CLOSE_HANDLE(m_hFileMapping, INVALID_HANDLE_VALUE);
 
         m_hOldBitmap = NULL;
-        m_pBmpFileHeader = NULL;
+        //m_pBmpFileHeader = NULL;
         m_pBmpInfo = NULL;
         m_pImageBuffer = NULL;
         m_pColorTable = NULL;
@@ -1770,7 +1770,8 @@ namespace FTL
                 dwPalleteSize = dwColorTableEntries * sizeof(RGBQUAD);
             }
 
-            DWORD dwHeaderSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPalleteSize; //BMP文件头 + BMP信息头 + 调色板(可选)
+            //sizeof(BITMAPFILEHEADER) + 
+            DWORD dwHeaderSize = sizeof(BITMAPINFOHEADER) + dwPalleteSize; //BMP文件头 + BMP信息头 + 调色板(可选)
             DWORD dwTotalSize = dwHeaderSize + dwImageSize;
 
             API_VERIFY((m_hSection = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
@@ -1779,14 +1780,14 @@ namespace FTL
             {
                 break;
             }
-            API_VERIFY((m_pBmpFileHeader = (BITMAPFILEHEADER*)::MapViewOfFile(m_hSection,FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0)) != NULL);
+            API_VERIFY((m_pBmpInfo = (BITMAPINFO*)::MapViewOfFile(m_hSection,FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0)) != NULL);
             if (!bRet)
             {
                 break;
             }
             //m_pBmpInfo = (BITMAPINFO*)pBase; // + sizeof(BITMAPINFOHEADER);
-            ZeroMemory(m_pBmpFileHeader, dwHeaderSize); //处于性能的考虑, 只将图像的信息部分内存初始化
-            m_pBmpInfo = (BITMAPINFO*)((BYTE*)m_pBmpFileHeader + sizeof(BITMAPFILEHEADER));
+            ZeroMemory(m_pBmpInfo, dwHeaderSize); //处于性能的考虑, 只将图像的信息部分内存初始化
+            //m_pBmpInfo = (BITMAPINFO*)((BYTE*)m_pBmpFileHeader + sizeof(BITMAPFILEHEADER));
 
             m_pBmpInfo->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
             m_pBmpInfo->bmiHeader.biWidth = width;
@@ -1897,7 +1898,7 @@ namespace FTL
                     {
                         m_pBmpInfo = (BITMAPINFO*)(pFileMap + sizeof(BITMAPFILEHEADER));
                         m_pImageBuffer = pFileMap + pFileHeader->bfOffBits;
-                        m_pBmpFileHeader = pFileHeader;
+                        //m_pBmpFileHeader = pFileHeader;
 
                         DWORD dwPalleteSize = 0;
                         BYTE* pCheckImagePos = (BYTE*)&m_pBmpInfo->bmiColors[0];
@@ -1971,7 +1972,7 @@ namespace FTL
                 bmfHdr.bfType = 0x4D42;  // "BM"
                 bmfHdr.bfReserved1 = 0;
                 bmfHdr.bfReserved2 = 0;
-                bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
+                bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize; //
                 bmfHdr.bfSize = bmfHdr.bfOffBits + m_pBmpInfo->bmiHeader.biSizeImage;
             
                 // 写入位图文件头
