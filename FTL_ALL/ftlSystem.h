@@ -331,8 +331,8 @@ namespace FTL
         int     m_cyBorder;
         int     m_cxDlgFrame;
         int     m_cyDlgFrame;
-        int     m_cyVThumb;
         int     m_cxHThumb;
+        int     m_cyVThumb;
         int     m_cxIcon;
         int     m_cyIcon;
         int     m_cxCursor;

@@ -1282,8 +1282,9 @@ namespace FTL
 
     CFSystemMetricsProperty::CFSystemMetricsProperty()
     {
+        BOOL bRet = FALSE;
         m_dwOldGetProperty = 0;
-        
+
         m_cxScreen = GetSystemMetrics(SM_CXSCREEN);				//主显示屏幕宽度(1280像素/1440像素)，等价于 GetDeviceCaps( hdcPrimaryMonitor, HORZRES).
         m_cyScreen = GetSystemMetrics(SM_CYSCREEN);				//主显示屏幕高度(1024像素/900像素)         
         m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);			//垂直滚动条的宽度(XP -- 16像素, Win7 -- 17像素)
@@ -1293,8 +1294,8 @@ namespace FTL
         m_cyBorder = GetSystemMetrics(SM_CYBORDER);				//窗体边框的高度(1像素)
         m_cxDlgFrame = GetSystemMetrics(SM_CXDLGFRAME);			//对话框边框的宽度(3像素)
         m_cyDlgFrame = GetSystemMetrics(SM_CYDLGFRAME);			//对话框边框的高度(3像素)
-        m_cyVThumb = GetSystemMetrics(SM_CYVTHUMB);				//垂直滚动条中 thumb box 的高度(XP -- 16像素, Win7 -- 17像素)
         m_cxHThumb = GetSystemMetrics(SM_CXHTHUMB);				//水平滚动条中 thumb box 的宽度(XP -- 16像素, Win7 -- 17像素)
+        m_cyVThumb = GetSystemMetrics(SM_CYVTHUMB);				//垂直滚动条中 thumb box 的高度(XP -- 16像素, Win7 -- 17像素)
         m_cxIcon = GetSystemMetrics(SM_CXICON);					//Icon的缺省宽度(32像素)
         m_cyIcon = GetSystemMetrics(SM_CYICON);					//Icon的缺省高度(32像素)
         m_cxCursor = GetSystemMetrics(SM_CXCURSOR);				//Cursor的宽度(32像素)
@@ -1428,8 +1429,144 @@ namespace FTL
 	LPCTSTR CFSystemMetricsProperty::GetPropertyString(DWORD dwPropertyGet /* = SYSTEM_METRICS_PROPERTY_GET_DEFAULT */)
 	{
 		UNREFERENCED_PARAMETER(dwPropertyGet);
-		m_strFormater.Format(TEXT("%d"), 100);
-		return m_strFormater.GetString();
+        if (m_dwOldGetProperty != dwPropertyGet)
+        {
+            m_strFormater.Reset();
+            m_dwOldGetProperty = dwPropertyGet;
+
+            m_strFormater.Format(
+                TEXT("cxScreen=%d, cyScreen=%d, ")
+                TEXT("cxVScroll=%d, cyHScroll=%d, ")
+                TEXT("cyCaption=%d, cxBorder=%d, cyBorder=%d, \n")
+
+                TEXT("cxDlgFrame=%d, cyDlgFrame=%d, ")
+                TEXT("cxHThumb=%d, cyVThumb=%d, ")
+                TEXT("cxIcon=%d, cyIcon=%d, ")
+                TEXT("cxCursor=%d, cyCursor=%d, ")
+                TEXT("cyMenu=%d, \n")
+
+                TEXT("cxFullScreen=%d, cyFullScreen=%d, ")
+                TEXT("cyKanjiWindow=%d, MousePresent=%d, ")
+                TEXT("cxHscroll=%d, cyVscroll=%d, ")
+                TEXT("Debug=%d, SwapButton=%d, ")
+                TEXT("Reserved1=%d, Reserved2=%d, Reserved3=%d, Reserved4=%d, \n")
+
+
+                TEXT("cxMin=%d, cyMin=%d, cxSize=%d, cySize=%d, ")
+                TEXT("cxFrame=%d, cyFrame=%d, cxMinTrack=%d, cyMinTrack=%d, cxDoubleClk=%d, cyDoubleClk=%d, \n")
+                TEXT("cxIconSpacing=%d, cyIconSpacing=%d, MenuDropAlignment=%d, PenWindows=%d, DBCSEnabled=%d, CMouseButtons=%d, ")
+#if(WINVER >= 0x0400)
+                TEXT("cxFixedFrame=%d, cyFixedframe=%d, cxSizeFrame=%d, cySizeFrame=%d, ")
+                TEXT("Secure=%d, cxEdge=%d, cyEdge=%d, cxMinSpacing=%d, cyMinSpacing=%d, cxSMIcon=%d, cySMIcon=%d, cySMCaption=%d, \n")
+                TEXT("cxSMSize=%d, cySMSize=%d, cxMenuSize=%d, cyMenuSize=%d, Arrange=%d, cxMinimized=%d, cyMinimized=%d, ")
+                TEXT("cxMaxTrack=%d, cyMaxTrack=%d, cxMaximized=%d, cyMaximized=%d, Network=%d, CleanBoot=%d, cxDrag=%d, cyDrag=%d, \n")
+#endif /* WINVER >= 0x0400 */
+                TEXT("ShowSounds=%d, ")
+#if(WINVER >= 0x0400)
+                TEXT("cxMenuCheck=%d, cyMenuCheck=%d, SlowMachine=%d, MideaStenabled=%d, \n")
+#endif /* WINVER >= 0x0400 */
+
+#if (WINVER >= 0x0500) || (_WIN32_WINNT >= 0x0400)
+                TEXT("MouseWheelPresent=%d, ")
+#endif
+#if(WINVER >= 0x0500)
+                TEXT("XVirtualScreen=%d, YVirtualScreen=%d, cxVirtualScreen=%d, cyVirtualScreen=%d, CMonitors=%d, SameDisplayFormat=%d, \n")
+#endif /* WINVER >= 0x0500 */
+#if(_WIN32_WINNT >= 0x0500)
+                TEXT("IMMEnabled=%d, ")
+#endif /* _WIN32_WINNT >= 0x0500 */
+
+
+#if(_WIN32_WINNT >= 0x0501)
+                TEXT("cxFocusBorder=%d, cyFocusBorder=%d, ")
+#endif /* _WIN32_WINNT >= 0x0501 */
+
+#if(_WIN32_WINNT >= 0x0501)
+                TEXT("TabletPc=%d, MediaCenter=%d, Starter=%d, Serverr2=%d, \n")
+#endif /* _WIN32_WINNT >= 0x0501 */
+#if(_WIN32_WINNT >= 0x0600)
+                TEXT("MouseHorizontalWheelPresent=%d, cxPaddedBorder=%d, ")
+#endif /* _WIN32_WINNT >= 0x0600 */
+                TEXT("CMetrics=%d, ")
+#if(WINVER >= 0x0500)
+                TEXT("RemoteSession=%d, ")
+#  if(_WIN32_WINNT >= 0x0501)
+                TEXT("ShuttingDown=%d, ")
+#  endif /* _WIN32_WINNT >= 0x0501 */
+#  if(WINVER >= 0x0501)
+                TEXT("RemoteControl=%d, ")
+#  endif /* WINVER >= 0x0501 */
+#  if(WINVER >= 0x0501)
+                TEXT("m_CaretBlinkingEnabled=%d, ")
+#  endif /* WINVER >= 0x0501 */
+#endif /* WINVER >= 0x0500 */
+                ,
+                m_cxScreen, m_cyScreen,
+                m_cxVScroll, m_cyHScroll,
+                m_cyCaption, m_cxBorder, m_cyBorder,
+                m_cxDlgFrame, m_cyDlgFrame,
+                m_cxHThumb, m_cyVThumb,
+                m_cxIcon , m_cyIcon,
+                m_cxCursor, m_cyCursor,
+                m_cyMenu, 
+                m_cxFullScreen, m_cyFullScreen,
+                m_cyKanjiWindow, m_MousePresent,
+                m_cxHscroll, m_cyVscroll,
+                m_Debug, m_SwapButton,
+                m_Reserved1, m_Reserved2, m_Reserved3, m_Reserved4,
+                m_cxMin, m_cyMin, m_cxSize, m_cySize,
+                m_cxFrame, m_cyFrame, m_cxMinTrack, m_cyMinTrack, m_cxDoubleClk, m_cyDoubleClk, 
+                m_cxIconSpacing, m_cyIconSpacing, m_MenuDropAlignment, m_PenWindows, m_DBCSEnabled, m_CMouseButtons,
+#if(WINVER >= 0x0400)
+                m_cxFixedFrame, m_cyFixedframe, m_cxSizeFrame, m_cySizeFrame, 
+                m_Secure, m_cxEdge, m_cyEdge, m_cxMinSpacing, m_cyMinSpacing, m_cxSMIcon, m_cySMIcon, m_cySMCaption,
+                m_cxSMSize, m_cySMSize, m_cxMenuSize, m_cyMenuSize, m_Arrange, m_cxMinimized, m_cyMinimized,
+                m_cxMaxTrack, m_cyMaxTrack, m_cxMaximized, m_cyMaximized, m_Network, m_CleanBoot, m_cxDrag, m_cyDrag,
+#endif /* WINVER >= 0x0400 */
+                m_ShowSounds,
+#if(WINVER >= 0x0400)
+                m_cxMenuCheck, m_cyMenuCheck, m_SlowMachine, m_MideaStenabled,
+#endif /* WINVER >= 0x0400 */
+
+#if (WINVER >= 0x0500) || (_WIN32_WINNT >= 0x0400)
+                m_MouseWheelPresent,
+#endif
+
+#if(WINVER >= 0x0500)
+                m_XVirtualScreen, m_YVirtualScreen, m_cxVirtualScreen, m_cyVirtualScreen, m_CMonitors, m_SameDisplayFormat,
+#endif /* WINVER >= 0x0500 */
+
+#if(_WIN32_WINNT >= 0x0500)
+                m_IMMEnabled,
+#endif /* _WIN32_WINNT >= 0x0500 */
+
+#if(_WIN32_WINNT >= 0x0501)
+                m_cxFocusBorder, m_cyFocusBorder,
+#endif /* _WIN32_WINNT >= 0x0501 */
+
+#if(_WIN32_WINNT >= 0x0501)
+                m_TabletPc, m_MediaCenter, m_Starter, m_Serverr2,
+#endif /* _WIN32_WINNT >= 0x0501 */
+#if(_WIN32_WINNT >= 0x0600)
+                m_MouseHorizontalWheelPresent, m_cxPaddedBorder,
+#endif /* _WIN32_WINNT >= 0x0600 */
+                m_CMetrics,
+#if(WINVER >= 0x0500)
+                m_RemoteSession,
+#  if(_WIN32_WINNT >= 0x0501)
+                m_ShuttingDown, 
+#  endif /* _WIN32_WINNT >= 0x0501 */
+#  if(WINVER >= 0x0501)
+                m_RemoteControl,
+#  endif /* WINVER >= 0x0501 */
+#  if(WINVER >= 0x0501)
+                m_CaretBlinkingEnabled
+#  endif /* WINVER >= 0x0501 */
+#endif /* WINVER >= 0x0500 */
+                );
+        }
+
+        return m_strFormater.GetString();
 	}
 
     template <typename T, typename F> // = FTL::ObjecteDeleter<T*> 

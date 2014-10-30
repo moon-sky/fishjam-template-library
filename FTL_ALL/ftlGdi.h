@@ -25,9 +25,24 @@ DOS等传统字符界面用点阵模板显示文字
 GUI中的文字一般是利用轮廓字体中的控制点数据经计算后再绘制出来,
   Windows采用基于二次贝塞尔曲线的TrueType轮廓字体(*.ttf)
 
-DPI-- dots per Inch(每英寸的点数,打印分辨率使用的单位，LOGPIXELSY)，一般来说是 96(较小)/120(中等)/150(较大)/600(激光打印机)
+DPI-- dots per Inch(每逻辑英寸的点数,打印分辨率使用的单位，LOGPIXELSX/LOGPIXELSY)
+  XP/2003: 会更改DPI, 96(较小)/120(中等)/150(较大)/600(激光打印机)
+    缩放必须由应用程序实现
+  Vista(屏幕分辨率->放大或缩小其他项目)
+    对于无法自行缩放的所有应用程序，桌面窗口管理器(DWM)将对其执行默认缩放, 调用 SetProcessDPIAware 表示本程序对DPI感知，会自己处理，可以防止UI被DWM放大
+    若不调用 SetProcessDPIAware：
+      较小: LOGPIXELSX /LOGPIXELSY 为96,  ASPECTX/ASPECTY 为36
+      中等: LOGPIXELSX /LOGPIXELSY 为120, ASPECTX/ASPECTY 为36  <== 自动比例
+      较大: LOGPIXELSX /LOGPIXELSY 为96,  ASPECTX/ASPECTY 为24
+    若调用 SetProcessDPIAware：
+      较小: LOGPIXELSX /LOGPIXELSY 为??,  ASPECTX/ASPECTY 为??,
+      中等: LOGPIXELSX /LOGPIXELSY 为??,, ASPECTX/ASPECTY 为??, 
+      较大: LOGPIXELSX /LOGPIXELSY 为??,,  ASPECTX/ASPECTY 为??,
+
+
 PPI -- Pixels Per Inch(每英寸的像素数，图像分辨率所使用的单位)
   TODO: http://hi.baidu.com/kingcham/item/b3653ce0c69756216dabb8cd
+
 
 1物理英寸 = 25.4mm; 1磅 = 1/72 英寸 = 25.4/72 mm
 VGA中, 1逻辑英寸=96像素, 300dpi的打印机，1英寸300像素
@@ -36,6 +51,11 @@ VGA中, 1逻辑英寸=96像素, 300dpi的打印机，1英寸300像素
   RGB -- Red, Green, Blue, 科学研究一般不采用RGB颜色空间(难以进行数字化的调整),是最通用的面向硬件的彩色模型
   HSL -- Hue(色调 0~239, 代表颜色), Saturation(饱和度,0~240,代表颜色纯度), Lum(亮度,0~240)，能更好的数字化处理
   CMY -- 工业印刷采用的颜色空间
+
+Windows颜色系统(Windows Color System, Vista后出现，代替ICM Image Color Management)
+  对图像的色彩进行非线性变换, 实现ICC(International Color Consortium)定义的色彩管理算法
+  OpenColorProfile -> GetStandardColorSpaceProfile -> CloseColorProfile
+  ICM(Image Color Managment) -- 图像色彩管理系统, 基于Windows系统的色彩空间管理方案
 
 COLORREF -- 0x00bbggrr, 四字节，RGB 只能设置3个字节，自定义一个扩展的 RGBA, 测试向Canvas上手动生成RGBA的数据
 RGB(r,g,b)==#bbggrr
@@ -371,11 +391,14 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 *     被Select时也会返回NULL，但此时GetLastError为0。
 *     HBITMAP 同一时间只能选入一个DC中，第二次Select时会返回NULL，但GetLastError为0
 * 
-*  CreateDIBSection -- 创建可直接访问的DIB，可直接访问位图的位信息，创建DIBSECTION
+*  CreateDIBSection -- 创建应用程序可以直接读写位信息的、与设备无关的位图，创建DIBSECTION
 *    LoadImage(, LR_DEFAULTSIZE | LR_CREATEDIBSECTION) -- 加载图像资源，并且创建可直接访问像素的 DIBSection
-*  CreateDIBitmap -- 从DIB创建DDB，创建BITMAP
-*  StretchDIBits -- 直接通过DIB的内存信息进行绘制
-*
+*  CreateDIBitmap -- 从DIB创建DDB, 可以提高低于24位位图的显示速度(避免调色板转换 或 555/565 映射运算)
+*  StretchDIBits -- 直接通过DIB的内存信息进行绘制，支持缩放(支持颜色混合)
+*  SetDIBitsToDevice -- 使用DIB位图和颜色数据对设备上指定矩形中的像素进行设置(覆盖操作)，
+*    支持JPEG或PNG数据(biCompression 为 BI_JPEG 或 BI_PNG)。
+*    ★对于大的DIB图像输出，可通过重复调用该函数区块性的输出(uStartScan+cScanLines)，来减少需要使用的内存量★ 
+* 
 * 画笔
 *   创建方法:CreatePen/CreatePenIndirect/ExtCreatePen
 *   // 创建Geometric画笔( LOGBRUSH lb )
@@ -682,6 +705,7 @@ namespace FTL
         //然后可通过 OffsetWindowOrg(-x,y)移动原点，使得屏幕平均显示四个象限等(参见 MFC 中的 DrawClient )
         FTLINLINE static BOOL   SetLogicalMapMode(HDC hdc, LogicalMapMode logicalMapmode);
 
+        //保存的是DIB-- 文件表头(BITMAPFILEHEADER) + 信息表头(BITMAPINFOHEADER) + [调色板] + 位图像素值或调色板索引
 		FTLINLINE static BOOL SaveBitmapToFile(HBITMAP hBmp, LPCTSTR pszFilePath);
 		FTLINLINE static BOOL SaveDCImageToFile(HDC hdc, LPCTSTR pszFilePath);
 
@@ -735,10 +759,11 @@ namespace FTL
     //使用FileMapping操作位图 -- http://blog.csdn.net/lvxuesong/article/details/6113262
     FTLEXPORT class CFCanvas
     {
+    //TODO: OS/2兼容格式, 自顶向下位图, 超大位图 等
     public:
         FTLINLINE CFCanvas();
         FTLINLINE ~CFCanvas();
-        FTLINLINE BOOL Create(HWND hWnd, int width, int heigth, int bpp = 32);//bpp -- bits-per-pixel
+        FTLINLINE BOOL Create(int width, int heigth, int bpp = 32, HDC hdc = NULL);//bpp -- bits-per-pixel
         FTLINLINE VOID Release();
         FTLINLINE int GetWidth() const { return m_width; }
         FTLINLINE int GetHeight() const { return m_height; }
@@ -755,7 +780,7 @@ namespace FTL
         FTLINLINE BOOL Draw(HDC hdc);
         FTLINLINE BOOL Draw(HDC hdc, int x, int y, int cx, int cy, RECT* pClipRect, bool bFlipY);
 
-        FTLINLINE BOOL AttachBmpFile(LPCTSTR pszFilePath);
+        FTLINLINE BOOL AttachBmpFile(LPCTSTR pszFilePath, BOOL bWritable = FALSE);
         FTLINLINE BOOL SaveToBmpFile(LPCTSTR pszFilePath);
     private:
         HDC     m_hCanvasDC;

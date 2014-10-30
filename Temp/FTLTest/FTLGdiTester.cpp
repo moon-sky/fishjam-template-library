@@ -145,7 +145,7 @@ void CFTLGdiTester::test_GdiObjectInfoDump()
 
     //测试 Canvas 中的 CreateDIBSection 创建的 DIBSECTION
     CFCanvas canvas;
-    API_VERIFY(canvas.Create(NULL, 100, 100, 32));
+    API_VERIFY(canvas.Create(100, 100, 32));
     HBITMAP hDibBitmap = canvas.GetMemoryBitmap();
     
 #if 0
@@ -440,8 +440,8 @@ void CFTLGdiTester::test_CompareBitmapData()
     {
         FTL::CFCanvas canvas1, canvas2;
 
-        API_VERIFY(canvas1.Create(hWndDesktop, nWidth, nHeight, nBpps[i]));
-        API_VERIFY(canvas2.Create(hWndDesktop, nWidth, nHeight, nBpps[i]));
+        API_VERIFY(canvas1.Create(nWidth, nHeight, nBpps[i]));
+        API_VERIFY(canvas2.Create(nWidth, nHeight, nBpps[i]));
 
         API_VERIFY(BitBlt(canvas1.GetCanvasDC(), 0, 0, nWidth, nHeight, hDcDesktop, 0, 0, SRCCOPY));
         API_VERIFY(BitBlt(canvas2.GetCanvasDC(), 0, 0, nWidth, nHeight, hDcDesktop, 0, 0, SRCCOPY));
@@ -479,7 +479,7 @@ void CFTLGdiTester::test_LargetBitmap()
 	CRect rcLarge;
 	rcLarge.SetRect(0, 0, 100, 100);
 
-	API_VERIFY(canvas.Create(NULL, rcLarge.Width(), rcLarge.Height(), 32));
+	API_VERIFY(canvas.Create(rcLarge.Width(), rcLarge.Height(), 4));
 	HBITMAP hDibBitmap = canvas.GetMemoryBitmap();
 	CPPUNIT_ASSERT(hDibBitmap != NULL);
 
@@ -492,22 +492,32 @@ void CFTLGdiTester::test_LargetBitmap()
 	memDC.FillSolidRect(&rcLarge, RGB(255, 0x22, 0x11));
 	memDC.Detach();
     
-    RGBQUAD* pImgBuffer = (RGBQUAD*)canvas.GetImageBuffer();
-    int nEffectWidth = canvas.GetPitch();
-    for (int y = 0; y < rcLarge.Height(); y++)
-    {
-        for (int x = 0; x < rcLarge.Width(); x++)
-        {
-            int nAlpha = (y * rcLarge.Height() + x) % 255;
-
-            RGBQUAD* pClr = (RGBQUAD*)(pImgBuffer + nEffectWidth / 4 * y + x);
-            pClr->rgbReserved = nAlpha;
-        }
-    }
+    //RGBQUAD* pImgBuffer = (RGBQUAD*)canvas.GetImageBuffer();
+    //int nEffectWidth = canvas.GetPitch();
+    //for (int y = 0; y < rcLarge.Height(); y++)
+    //{
+    //    for (int x = 0; x < rcLarge.Width(); x++)
+    //    {
+    //        int nAlpha = (y * rcLarge.Height() + x) % 255;
+    //        RGBQUAD* pClr = (RGBQUAD*)(pImgBuffer + nEffectWidth / 4 * y + x);
+    //        pClr->rgbReserved = nAlpha;
+    //    }
+    //}
 
     API_VERIFY(canvas.SaveToBmpFile(TEXT("LargeBitmap.bmp")));
 	//API_VERIFY(CFGdiUtil::SaveBitmapToFile(canvas.GetMemoryBitmap(), TEXT("LargeBitmap.bmp")));
 
 
 	canvas.Release();
+}
+
+void CFTLGdiTester::test_AttachBmpFile()
+{
+    BOOL bRet = FALSE;
+    FTL::CFCanvas canvas;
+    API_VERIFY(canvas.AttachBmpFile(TEXT("E:\\MyWork\\MouseGestures_src\\src\\images\\leftarrow.bmp"), FALSE));
+
+
+    API_VERIFY(canvas.SaveToBmpFile(TEXT("Myleftarrow.bmp")));
+    FTLTRACE(TEXT("bRet = %d\n"), bRet);
 }

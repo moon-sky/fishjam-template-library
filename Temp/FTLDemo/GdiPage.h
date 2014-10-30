@@ -36,4 +36,5 @@ public:
 private:
 	BOOL _InitControls();
 public:
+    afx_msg void OnBnClickedBtnGdiUtilGethdcProperty();
 };

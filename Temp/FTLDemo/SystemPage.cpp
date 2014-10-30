@@ -66,7 +66,7 @@ void CSystemPage::OnBnClickedBtnTempFpuRcReset()
 void CSystemPage::OnBnClickedBtnSystemMetrics()
 {
 	CFSystemMetricsProperty	systemMetricsProperty;
-	FTLTRACE(TEXT("SystemMetricsProperty = %s\n"), systemMetricsProperty.GetPropertyString());
+    FTLTRACE(TEXT("SystemMetricsProperty: %s\n"), systemMetricsProperty.GetPropertyString());
 }
 
 void CSystemPage::OnBnClickedBtnCreateProcessAsUser()

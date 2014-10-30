@@ -17,7 +17,7 @@
 //#define GDIPVER		0x0110
 
 #ifndef WINVER
-#  define WINVER 0x0501
+#  define WINVER 0x0601
 #endif
 
 //#ifndef _WIN32_WINNT

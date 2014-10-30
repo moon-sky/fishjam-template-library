@@ -57,13 +57,30 @@
 *********************************************************************************************/
 
 /*********************************************************************************************
+* DIB/DDB 相关知识的Blog系列 -- http://blog.csdn.net/wenzhou1219/article/details/26162869
+*
+* DDB=>DIB: GetDIBits -- 如屏幕截图后保存到磁盘上
+* DIB=>DDB: CreateDIBitmap + SetDIBits -- 如将存储格式转成显示格式, 避免每次显示时转换,从而提高显示效率,但不能直接编辑
+* CreateDIBSection -- 既提高显示效率和性能,又可以直接操作像素点, 通过 BitBlt/StretchBlt 等显示时，会自动发生 DIB->DDB 的转换
+* 
 * 位图--点阵图或光栅图,由像素阵列组成
 *   设备相关位图(DDB--Device Dependent Bitmap) -- 图像的显示(CBitmap),依赖于硬件的调色板,使用:LoadBitmap
 *   设备无关位图(DIB--Device Independent Bitmap) -- 图像的存储(CImage),自己带有颜色信息，颜色模式与设备无关。
 *     是一种文件格式，使用:CImage 或 LoadImage+FromHandle。 256级以下的DIB有自己的颜色表，像素的颜色独立于系统调色板。
 *     DIB所包含的图像信息主要有：颜色格式、分辨率、调色板和压缩标志.
 *     对应的结构 -- BITMAPFILEHEADER、BITMAPINFO、BITMAPINFOHEADER
-*     DIB的输出？：SetDIBitsToDevice/StetchDIBits 等，GDI函数会把DIB转换成DDB ？
+*     DIB的输出显示 -- 通过DIB函数显示时会进行转换(主要是小于24位的)，如经常要显示时，推荐转换成DDB(CreateDIBitmap)
+*       1.8位以下:通过调色板获取需要显示的RGB;
+*       2.16位   :通过掩码(555,565等)计算出要显示的RGB;
+*       3.24|32位 :直接获得要显示的RGB;
+*       StetchDIBits -- 可拉伸，可指定光栅操作，
+*       SetDIBitsToDevice -- 指定扫描线, 可以翻转图像?
+*       SetDIBColorTable -- TODO: 作用? 调色板方式使用 ? 设置该内存DC的颜色表(把8级灰度映射到24位真彩色)
+*     转换成DDB: CreateDIBitmap, 可通过 CBM_INIT 指定创建时转换数据
+*     将DIB数据转换成DDB的数据: SetDIBits
+*     GetDIBColorTable/SetDIBColorTable -- 获取和设置指定的调色板项,可以屏蔽OS/2兼容位图带来的差异(RGBTRIPLE / RGBQUAD)
+*     GetObject(hDib, sizeof(DIBSECTION),...) -- 获取信息(兼容DDB), 可以不考虑不同DIB位图格式带来的差异(BITMAPCOREHEADER / BITMAPV4HEADER / BITMAPV5HWEADER)
+*
 *   颜色深度(BPP -- bits-per-pixel) -- 位图的每个像素用若干二进制位表示，二进制位的个数称为位图的颜色深度，
 *     常见的颜色深度为 1,2,4,8,15,16,24(全彩),32(带Alpha通道)。
 *   低于或等于8位（256色）的位图，都为索引色，保存调色板中的颜色表项的索引值,需要调色板。
@@ -78,6 +95,14 @@
 *   bmBitsPixel -- 颜色深度
 *   bmBits -- 指向存放位图数据的字符(字节)数组的指针
 *
+* DIB兼容(CFCanvas::AttachBmpFile)：
+*   1.OS/2格式位图的兼容(BITMAPCOREHEADER , RGBTRIPLE 等) -- 	if (pBmpInfo->bmiHeader.biSize == sizeof(BITMAPCOREHEADER))
+*   2.BV4HEADER, BV5HEADER 等,其中会包含掩码，因此 biSize 的大小会加上掩码大小
+*   3.若 bmiHeader.biCompression==BI_BITFIELDS , 则 会多12个字节(3个 RGBQUAD);
+*   4.不标准DIB位图
+*     a.不填充ClrUsed、SizeImage等项;
+*     b.小于8bit的DIB位图没有调色板需要使用通用调色板(CreateHalftonePalette 或 GetStockObject(DEFAULT_PALETTE));
+*     c.有的16bit位图不提供掩码
 *********************************************************************************************/
 
 /*********************************************************************************************

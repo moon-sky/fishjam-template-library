@@ -1,8 +1,10 @@
 package com.java.test;
 
 /***********************************************************************************************************************************************
+ * http://www.iteye.com/topic/802573
+ * http://www.iteye.com/topic/802638
  * http://wenku.baidu.com/view/11d2305c3b3567ec102d8a9c.html?re=view
- *
+ * 
  * 最佳实践(未确认):
  *   1.设置 -Xms 与 -Xmx 相同,以避免每次垃圾回收完成后JVM重新分配内存
  *   2.设置 -XX:+HeapDumpOnOutOfMemoryError ， JVM会在发生OutOfMemoryError错误时自动dump当时的内存转储文件
@@ -16,10 +18,13 @@ package com.java.test;
 ***********************************************************************************************************************************************/
 
 /***********************************************************************************************************************************************
- * Sun JVM 的内存管理方式 -- 在一个地方创建对象，在其长期占据空间之前给它多次死亡的机会
- *   年轻的一代(Young generation) -- 包括 Eden(创建位置) + From Space() + To Space 三部分
- *   老一代(Old generation) -- Tenured Space
- *   永久的一代(Permanent generation) -- 可通过 MaxPermSize 配置，JVM存放第三方jar和应用的类信息
+ * GC分两种:
+ *   Copy Collection(Minor GC) -- 复制算法,小幅度的调整收集，将可用内存划分为两块，每次只使用其中的一块，当半区内存用完了，仅将还存活的对象复制到另外一块上面
+ *   Mark-Sweep Collection -- 标记-清除算法，大幅度的调整收集，停止所有在堆中运行的线程，并进行标记清除动作
+ * Sun JVM 的内存管理方式 -- 在一个地方创建对象，在其长期占据空间之前给它多次死亡的机会，针对各个年代的特点采用最合适的收集算法
+ *   新生代(Young generation) -- 包括 Eden(创建位置) + 2个Survivor Space，通常采用 复制算法
+ *   老年代(Old generation) -- Tenured Space
+ *   永久代(Permanent generation) -- 可通过 MaxPermSize 配置，JVM存放第三方jar和应用的类信息
  *   ? 判断内存泄漏的方式: 查看老一代(Tenured Space) 是否增加
  * IBM JVM的内存管理方式 -- 不是运行在一个巨大的继承HEAP中，它仅在一个单一的地区维护了所有的对象同时随着堆的增长来释放内存。
  *   开始运行时很小，随着对象实例不断的填充，在需要执行垃圾收集的地方清除掉无效的对象同时把所有有效的对象紧凑的放置到堆的底部
@@ -28,12 +33,15 @@ package com.java.test;
 
 
 /***********************************************************************************************************************************************
+ * Java程序 + 虚拟机(JVM) + 操作系统(OS) 三个层次
+ *
+ * Java内存(未确认是否是这样, 另一种分发是 方法区 + 堆 + 栈):
+ *   heap(-Xmx 和 -XX:MaxPermSize=Xxxm) -- 
+ *   native heap -- used by JVM and OS , (作用? 加载类，保存结构、类静态成员等?)
+ *
  * Java内存泄露，造成 OutOfMemoryError,分两类
  *   PermGen space -- 
  *   Java heap space -- 
- * GC分两种:
- *   Copy Collection -- 小幅度的调整收集
- *   Mark and Sweep Collection -- 大幅度的调整收集，停止所有在堆中运行的线程，并进行标记清除动作
  *
  * jvm的内存控制 -- 整个堆大小=年轻代大小+年老代大小+持久代大小(一般固定为64M)
  *   -Xms -- 设置JVM初始内存, 默认为物理内存的 1/64,内存剩余超过70%时，减小到该值。
@@ -52,6 +60,7 @@ package com.java.test;
  *   JConsole -- 
  *   jmap -- jdk自带的转储(dump)java内存堆数据到文件中，然后可通过 MAT 进行分析,主要的文件格式有Sun的hrpof和IBM的PHD。
  *     jmap -dump:format=b,file=heap.bin <pid> -- 将进程号为<pid>的Java进程的object转储到 heap.bin 文件
+ *     TODO: jmap -heap <pid> -- 有这个命令吗?(苹果下的，其他平台呢)
  *     
  *   jstack -l <pid> -- 列出<pid>指定进程的调用堆栈
  *   jProfile -- 进行java内存实时监控，观看哪些对象在增长，哪些对象的数据没有释放
@@ -71,6 +80,8 @@ package com.java.test;
  * 常见泄露的场景及分析:
  *   1.
  *
+ * 常见的工具类
+ *   Runtime -- 可获取JVM的内存等信息(totalMemory/freeMemory/maxMemory)
  ***********************************************************************************************************************************************/
 
 public class MemoryTest {

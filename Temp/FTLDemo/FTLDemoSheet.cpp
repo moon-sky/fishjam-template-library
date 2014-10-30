@@ -63,7 +63,7 @@ BOOL CFTLDemoSheet::InitSheet()
     //this->AddPage(new CPipelinePage());
     //this->AddPage(new CRegPage());
 	//this->AddPage(new CShellPage());
-	//this->AddPage(new CSystemPage());
+	this->AddPage(new CSystemPage());
 	//this->AddPage(new CThreadPage());
 	//this->AddPage(new CThreadPoolPage());
 	//this->AddPage(new CVistaPage());

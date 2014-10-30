@@ -29,7 +29,6 @@ public:
     CPPUNIT_TEST( test_Clipping );
     CPPUNIT_TEST( test_GdiObjectInfoDump );
     CPPUNIT_TEST( test_GdiObjectChecker );
-	CPPUNIT_TEST( test_LargetBitmap );
     CPPUNIT_TEST( test_Region );
 	CPPUNIT_TEST( test_CompatibleBitmap );
 	CPPUNIT_TEST( test_CalcPointPosQuadrant );
@@ -38,6 +37,9 @@ public:
 	CPPUNIT_TEST( test_CalcRect_RectBigThanSize );
 	CPPUNIT_TEST( test_CalcRect_RectSmallThanSize );
     CPPUNIT_TEST( test_CompareBitmapData );
+
+    CPPUNIT_TEST( test_LargetBitmap );
+    CPPUNIT_TEST( test_AttachBmpFile );
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -61,6 +63,7 @@ public:
 
 	//使用 CFCanvs(CreateFileMapping) 支持大图片
 	void test_LargetBitmap();
+    void test_AttachBmpFile();
 private:
     enum 
     {

@@ -33,6 +33,7 @@ BEGIN_MESSAGE_MAP(CGdiPage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_CANVAS_DRAW, &CGdiPage::OnBnClickedBtnCanvasDraw)
     ON_BN_CLICKED(IDC_BTN_CANVAS_ATTACH_BMP, &CGdiPage::OnBnClickedBtnCanvasAttachBmp)
     ON_BN_CLICKED(IDC_BTN_BITBLT_CANVAS, &CGdiPage::OnBnClickedBtnBitbltCanvas)
+    ON_BN_CLICKED(IDC_BTN_GDI_UTIL_GETHDC_PROPERTY, &CGdiPage::OnBnClickedBtnGdiUtilGethdcProperty)
 END_MESSAGE_MAP()
 
 BOOL CGdiPage::OnInitDialog()
@@ -127,4 +128,20 @@ void CGdiPage::OnBnClickedBtnBitbltCanvas()
     
     API_VERIFY(::BitBlt(dcTarget.GetSafeHdc(), 0, 0, m_canvas.GetWidth(), m_canvas.GetHeight(), 
         m_canvas.GetCanvasDC(), 0, 0, SRCCOPY));
+}
+
+void CGdiPage::OnBnClickedBtnGdiUtilGethdcProperty()
+{
+    BOOL bRet = FALSE;
+    FTL::HDCProperty hdcProperty;
+    HWND hWndDesktop = ::GetDesktopWindow();
+    HDC hdcDesktop = ::GetDC(hWndDesktop);
+    if (hdcDesktop)
+    {
+        API_VERIFY(FTL::CFGdiUtil::GetHDCProperty(hdcDesktop, &hdcProperty));
+        FTLTRACE(TEXT("hdc Desktop=%s\n"), hdcProperty.GetPropertyString(HDC_PROPERTY_GET_ALL));
+
+        ::ReleaseDC(hWndDesktop, hdcDesktop);
+    }
+    
 }
