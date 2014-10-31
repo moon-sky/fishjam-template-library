@@ -465,7 +465,7 @@ namespace FTL
                     TEXT("nPolyFillMode=%s,\n")
 
                     TEXT("\txForm is [eM11=%f,eM12=%f,eM21=%f,eM22=%f,eDx=%f,eDy=%f]\n")
-                    TEXT("\trcClipBox = [(%d,%d)X(%d,%d)], ptCurrentPosition=(%d X %d)\n"),
+                    TEXT("\trcClipBox = [(%d,%d)X(%d,%d)], ptCurrentPosition=(%d X %d),"),
 
                     CFGdiUtil::GetGraphicsModeString(m_nGraphicsMode),
                     m_BkColor,
@@ -483,7 +483,7 @@ namespace FTL
             if (HDC_PROPERTY_GET_BITMAP == (HDC_PROPERTY_GET_BITMAP & dwPropertyGet))
             {
                 formater.AppendFormat(
-                    TEXT("\n%s"), BitmapProperty(m_curBitmapInfo).GetPropertyString()
+                    TEXT("\n\t%s"), BitmapProperty(m_curBitmapInfo).GetPropertyString()
                     );
             }
             m_pszProperty = formater.Detach();
@@ -1231,6 +1231,23 @@ namespace FTL
         return bRet;
     }
 
+    BOOL CFGdiUtil::SetProcessDPIAdware()
+    {
+        BOOL bRet = TRUE;
+        HMODULE hUser32 = LoadLibrary(TEXT("User32.dll"));
+        if (hUser32)
+        {
+            typedef BOOL ( __stdcall *SetProcessDPIAwareProc )(void);
+            SetProcessDPIAwareProc pSetProcessDPIAdware = (SetProcessDPIAwareProc)::GetProcAddress(hUser32, "SetProcessDPIAware");
+            if (pSetProcessDPIAdware)
+            {
+                API_VERIFY((*pSetProcessDPIAdware)());
+            }
+            FreeLibrary(hUser32);
+        }
+        return bRet;
+    }
+
     BOOL CFGdiUtil::SetLogicalMapMode(HDC hdc, LogicalMapMode logicalMapmode)
     {
         int xWinExt = 0;
@@ -1331,6 +1348,8 @@ namespace FTL
 			dwPaletteSize = (1 <<  wBitCount) *	sizeof(RGBQUAD);
 		}
 		//设置位图信息头结构
+        DIBSECTION ds = {0};
+        GetObject(hBmp, sizeof(DIBSECTION), (LPVOID)&ds);
 		GetObject(hBmp, sizeof(BITMAP), (LPSTR)&Bitmap);
 		bi.biSize            = sizeof(BITMAPINFOHEADER);
 		bi.biWidth           = Bitmap.bmWidth;
@@ -1381,14 +1400,14 @@ namespace FTL
 		//创建位图文件    
 		fh = CreateFile(pszFilePath, GENERIC_WRITE, 
 			0, NULL, CREATE_ALWAYS,
-			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			FILE_ATTRIBUTE_NORMAL, NULL);  //FILE_FLAG_SEQUENTIAL_SCAN
         if (fh == INVALID_HANDLE_VALUE){
 			return FALSE;
         }
 		// 设置位图文件头
 		bmfHdr.bfType = 0x4D42;  // "BM"
-		dwDIBSize    = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPaletteSize + dwBmBitsSize;  
-		bmfHdr.bfSize = dwDIBSize;
+		dwDIBSize    = sizeof(BITMAPINFOHEADER) + dwPaletteSize + dwBmBitsSize;  
+		bmfHdr.bfSize = sizeof(BITMAPFILEHEADER) + dwDIBSize;
 		bmfHdr.bfReserved1 = 0;
 		bmfHdr.bfReserved2 = 0;
 		bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
@@ -1684,7 +1703,7 @@ namespace FTL
         m_hCanvasDC = NULL;
         m_hMemBitmap = NULL;
         m_hOldBitmap = NULL;
-        m_hFileMapping = INVALID_HANDLE_VALUE;
+        m_hFile = INVALID_HANDLE_VALUE;
         m_hSection = NULL;
         //m_pBmpFileHeader = NULL;
         m_pBmpInfo = NULL;
@@ -1720,7 +1739,7 @@ namespace FTL
             SAFE_CLOSE_HANDLE(m_hSection, NULL);
         }
 
-        SAFE_CLOSE_HANDLE(m_hFileMapping, INVALID_HANDLE_VALUE);
+        SAFE_CLOSE_HANDLE(m_hFile, INVALID_HANDLE_VALUE);
 
         m_hOldBitmap = NULL;
         //m_pBmpFileHeader = NULL;
@@ -1797,8 +1816,8 @@ namespace FTL
             bmpInfo.bmiHeader.biSizeImage = dwImageSize;
             bmpInfo.bmiHeader.biClrUsed = dwColorTableEntries;
             bmpInfo.bmiHeader.biClrImportant = dwColorTableEntries;
-            bmpInfo.bmiHeader.biXPelsPerMeter = (LONG)(::GetDeviceCaps(hDC, LOGPIXELSX) * 10000.0 / 254.0 + 0.5);
-            bmpInfo.bmiHeader.biYPelsPerMeter = (LONG)(::GetDeviceCaps(hDC, LOGPIXELSY) * 10000.0 / 254.0 + 0.5);
+            //bmpInfo.bmiHeader.biXPelsPerMeter = (LONG)(::GetDeviceCaps(hDC, LOGPIXELSX) * 10000.0 / 254.0 + 0.5);
+            //bmpInfo.bmiHeader.biYPelsPerMeter = (LONG)(::GetDeviceCaps(hDC, LOGPIXELSY) * 10000.0 / 254.0 + 0.5);
 
             FTLASSERT( dwHeaderSize % 4 == 0); //必须是4字节对齐
 
@@ -1881,6 +1900,10 @@ namespace FTL
 
     BOOL CFCanvas::AttachBmpFile(LPCTSTR pszFilePath, BOOL bWritable/* = FALSE */)
     {
+        FTLASSERT(FALSE);
+        //注意: 因为 CreateDIBSection 时的偏移有4字节对齐的要求，而标准的BMP文件头不满足4字节对齐，
+        //       因此无法实现直接关联 BMP 文件
+
         //TODO:
         //1.如果有逻辑调色板，则CreatePalette
 
@@ -1890,9 +1913,13 @@ namespace FTL
         BOOL bRet = FALSE;
 
         HANDLE hFile = INVALID_HANDLE_VALUE;
+        HANDLE hSection = NULL;
+        HBITMAP hDIB = NULL;
+        HDC hDCPalette = NULL;
+
         DWORD dwDesiredAccess = GENERIC_READ;
         DWORD dwShareMode = FILE_SHARE_READ;
-        DWORD flProtected = PAGE_WRITECOPY;
+        DWORD flProtected = PAGE_READWRITE; //PAGE_WRITECOPY;
         DWORD dwFileMapAccess = FILE_MAP_READ;
         if (bWritable)
         {
@@ -1901,27 +1928,94 @@ namespace FTL
             flProtected = PAGE_READWRITE;
             dwFileMapAccess = FILE_MAP_READ | FILE_MAP_WRITE;
         }
-        API_VERIFY((hFile = ::CreateFile(pszFilePath, dwDesiredAccess,
-            dwShareMode, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL)) != INVALID_HANDLE_VALUE);
-        if (bRet)
+
+        do 
         {
-            //不支持大于4G的位图文件
-            DWORD dwFileSize = ::GetFileSize(hFile, NULL);
-            API_VERIFY((m_hSection = ::CreateFileMapping(hFile, NULL, flProtected, 0, 0, NULL)) != NULL);
-            if (bRet)
+            API_VERIFY((hFile = ::CreateFile(pszFilePath, dwDesiredAccess,
+                dwShareMode, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL)) != INVALID_HANDLE_VALUE);
+            if (!bRet)
             {
+                break;
+            }
+
+            BITMAPFILEHEADER bmpFileHeader = {0};
+            DWORD dwFileRead = 0;
+            API_VERIFY(::ReadFile(hFile, &bmpFileHeader, sizeof(BITMAPFILEHEADER), &dwFileRead, NULL));
+            if (!bRet || sizeof(BITMAPFILEHEADER) != dwFileRead)
+            {
+                bRet = FALSE;
+                break;
+            }
+
+            if (bmpFileHeader.bfType != *(WORD*)"BM") //BM -- 0x4d42
+            {
+                bRet = FALSE;
+                break;
+            }
+            BITMAPINFO bmpInfo = {0};
+            API_VERIFY(::ReadFile(hFile, &bmpInfo, sizeof(BITMAPINFOHEADER), &dwFileRead, NULL));
+            if (!bRet || sizeof(BITMAPINFOHEADER) != dwFileRead)
+            {
+                bRet = FALSE;
+                break;
+            }
+
+            //API_VERIFY(INVALID_SET_FILE_POINTER != SetFilePointer(hFile, 0, NULL, FILE_BEGIN));
+
+            DWORD dwInfoHeaderSize = 0;
+
+            //不支持大于4G的位图文件
+            //DWORD dwFileSize = ::GetFileSize(hFile, NULL);
+            API_VERIFY((hSection = ::CreateFileMapping(hFile, NULL, flProtected, 0, 0, NULL)) != NULL);
+            if (!bRet)
+            {
+                break;
+            }
+    
+            UINT bmpBytesUsage = DIB_RGB_COLORS;
+            if (bmpInfo.bmiHeader.biBitCount <= 8)
+            {
+                bmpBytesUsage = DIB_PAL_COLORS;
+                hDCPalette = ::GetDC(NULL);
+            }
+            //API_VERIFY((hDIB = CreateDIBSection(hDCPalette, &bmpInfo, bmpBytesUsage, 
+            //    (void**)&m_pImageBuffer, hSection, 0)) != NULL);
+
+            PBYTE pTotalMap = NULL;
+            API_VERIFY((hDIB = CreateDIBSection(hDCPalette, &bmpInfo, bmpBytesUsage, 
+                (void**)&pTotalMap, hSection, 0)) != NULL);
+
+            if (!bRet)
+            {
+                break;
+            }
+
+            m_pBmpInfo = (BITMAPINFO*)(pTotalMap + sizeof(BITMAPFILEHEADER));
+            m_pImageBuffer = pTotalMap + bmpFileHeader.bfOffBits;
+            m_hSection = hSection;
+            m_width = bmpInfo.bmiHeader.biWidth;
+            m_height = bmpInfo.bmiHeader.biHeight;
+            m_bpp = bmpInfo.bmiHeader.biBitCount;
+            m_dwTotalSize = bmpFileHeader.bfSize - sizeof(BITMAPFILEHEADER);
+            m_hFile = hFile;
+            m_hMemBitmap = hDIB;
+
+            DWORD dwPalleteBufferSize = (BYTE*)m_pImageBuffer - (BYTE*)m_pBmpInfo;
+            if (m_bpp <= 8)
+            {
+                m_pColorTable = (BYTE*)m_pBmpInfo->bmiColors;
+            }
+            
+            m_hCanvasDC = ::CreateCompatibleDC(hDCPalette);
+            m_hOldBitmap = (HBITMAP)::SelectObject(m_hCanvasDC, (HGDIOBJ)m_hMemBitmap);
+
+#if 0
+            //CreateDIBSection(NULL, )
+
                 BYTE* pFileMap = NULL;
                 API_VERIFY((pFileMap =  (BYTE*)::MapViewOfFile(m_hSection, dwFileMapAccess, 0, 0, 0)) != NULL); 
                 if (pFileMap)
                 {
-                    LPBITMAPFILEHEADER pFileHeader = (LPBITMAPFILEHEADER)pFileMap;
-                    if(pFileHeader->bfType != *(WORD*)"BM") //BM -- 0x4d42
-                    { 
-                        bRet = FALSE;
-                        CloseHandle(hFile);
-                        hFile  = INVALID_HANDLE_VALUE;
-                    }
-                    else
                     {
                         //TODO: OS/2兼容格式位图 bmiHeader.biSize == sizeof(BITMAPCOREHEADER)
                         m_pBmpInfo = (BITMAPINFO*)(pFileMap + sizeof(BITMAPFILEHEADER));
@@ -1937,7 +2031,7 @@ namespace FTL
                             dwPalleteSize = m_pBmpInfo->bmiHeader.biClrUsed * sizeof(RGBQUAD);
                             pCheckImagePos += dwPalleteSize;
                         }
-                        
+
                         m_width = m_pBmpInfo->bmiHeader.biWidth;
                         m_height = FTL_ABS(m_pBmpInfo->bmiHeader.biHeight);
                         m_bpp = m_pBmpInfo->bmiHeader.biBitCount;
@@ -1955,7 +2049,7 @@ namespace FTL
                                 m_pBmpInfo, 
                                 m_bpp > 8 ? DIB_RGB_COLORS :DIB_PAL_COLORS,
                                 (VOID**)&m_pImageBuffer, m_hSection, sizeof(BITMAPINFOHEADER) + dwPalleteSize)));
-                            
+
                             FTLASSERT(pCheckImagePos == m_pImageBuffer);
                             ReleaseDC(NULL, hDCScreen);
 
@@ -1966,10 +2060,31 @@ namespace FTL
                     }
                 }
             }
-        }
+#endif 
+        } while (FALSE);
 
         if (!bRet)
         {
+            if (hDCPalette)
+            {
+                ReleaseDC(NULL, hDCPalette);
+                hDCPalette = NULL;
+            }
+            if(hDIB){
+                DeleteObject(hDIB);
+                hDIB = NULL;
+            }
+            if (hSection)
+            {
+                CloseHandle(hSection);
+                hSection = NULL;
+            }
+            if (INVALID_HANDLE_VALUE != hFile)
+            {
+                CloseHandle(hFile);
+                hFile = INVALID_HANDLE_VALUE;
+            }
+
             Release();
         }
         return bRet;
@@ -2006,7 +2121,14 @@ namespace FTL
                 // 写入位图文件头
                 API_VERIFY(WriteFile(hFile, &bmfHdr, sizeof(BITMAPFILEHEADER), &dwWritten, NULL));
                 // 写入位图文件其余内容
+                
+                LONG nOldHeight = m_pBmpInfo->bmiHeader.biHeight;
+                if (m_pBmpInfo->bmiHeader.biHeight < 0)
+                {
+                    m_pBmpInfo->bmiHeader.biHeight = -m_pBmpInfo->bmiHeader.biHeight;
+                }
                 API_VERIFY(WriteFile(hFile, m_pBmpInfo, m_dwTotalSize, &dwWritten, NULL));
+                m_pBmpInfo->bmiHeader.biHeight = nOldHeight;
                 if (!bRet)
                 {
                     //::DeleteFile()

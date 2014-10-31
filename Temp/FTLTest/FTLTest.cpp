@@ -8,6 +8,7 @@
 #include <cppunit/ui/mfc/TestRunner.h>
 //#include <cppunit/ui/qt/QtTestRunner.h>
 //#include <cppunit/ui/text/TestRunner.h>
+#include <ftlGdi.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,6 +66,8 @@ BOOL CFTLTestApp::InitInstance()
         SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
         CoInitialize(NULL);
+        
+        FTL::CFGdiUtil::SetProcessDPIAdware();
 
         CPPUNIT_NS::MfcUi::TestRunner runner;
         //CPPUNIT_NS::QtUi::TestRunner runner;

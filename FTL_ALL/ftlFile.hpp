@@ -325,6 +325,27 @@ namespace FTL
         return bRet;
     }
 
+    BOOL CFFileUtil::DumpMemoryToFile(PVOID pBuffer, DWORD dwSize, LPCTSTR pszFilePath)
+    {
+        BOOL bRet = FALSE;
+        
+        HANDLE hFile = INVALID_HANDLE_VALUE;
+        API_VERIFY((hFile = CreateFile(pszFilePath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL, NULL)) != INVALID_HANDLE_VALUE);
+        if (bRet)
+        {
+            DWORD dwWritten = 0;
+            API_VERIFY(WriteFile(hFile, pBuffer, dwSize, &dwWritten, NULL));
+            if (bRet)
+            {
+                bRet = (dwWritten == dwSize);
+            }
+            SAFE_CLOSE_HANDLE(hFile, INVALID_HANDLE_VALUE);
+        }
+
+        return bRet;
+    }
+
 	//-----------------------------------------------------------------------------
 	// Construction/Destruction
 	//-----------------------------------------------------------------------------

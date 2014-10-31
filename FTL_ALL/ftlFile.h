@@ -144,6 +144,8 @@ namespace FTL
         //将符合 xxx(数字索引).xxx 的文件名分解成 文件名 + 索引 的方式
         //如果符合规范，则返回TRUE
         FTLINLINE static BOOL SpitFileNameAndIndex(LPCTSTR pszFileName, LPTSTR pszFilePrefix, DWORD dwMaxSize, int& nIndex);
+
+        FTLINLINE static BOOL DumpMemoryToFile(PVOID pBuffer, DWORD dwSize, LPCTSTR pszFilePath);
 	};
 
 #if 0

@@ -5,6 +5,7 @@
 #include "FTLDemo.h"
 #include "FTLDemoSheet.h"
 #include <ftlCrashHandler.h>
+#include <ftlGdi.h>
 #include <ftlgdiplus.h>
 #include <ftlSocket.h>
 //#include "vld.h"
@@ -69,6 +70,7 @@ BOOL CFTLDemoApp::InitInstance()
         // 不需要的特定初始化例程
         // 更改用于存储设置的注册表项
         SetRegistryKey(_T("Fishjam"));
+        //FTL::CFGdiUtil::SetProcessDPIAdware();
 
 		FTL::CFCrashHandler crashHandler;
         crashHandler.SetDefaultCrashHandlerFilter();

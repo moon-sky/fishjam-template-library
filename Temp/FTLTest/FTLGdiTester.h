@@ -27,6 +27,7 @@ public:
 
     CPPUNIT_TEST_SUITE( CFTLGdiTester );
     CPPUNIT_TEST( test_Clipping );
+    CPPUNIT_TEST( test_AlphaBlend );
     CPPUNIT_TEST( test_GdiObjectInfoDump );
     CPPUNIT_TEST( test_GdiObjectChecker );
     CPPUNIT_TEST( test_Region );
@@ -44,6 +45,8 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void test_Clipping();
+
+    void test_AlphaBlend();
 
     void test_GdiObjectInfoDump();
 

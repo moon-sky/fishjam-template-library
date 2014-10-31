@@ -692,6 +692,8 @@ namespace FTL
 		//通过九宫格图片的拉伸效果进行绘制
 		//FTLINLINE static BOOL DrawNineBlockImage(HDC hdc, )
 
+        FTLINLINE static BOOL SetProcessDPIAdware();
+
         //设置基于 一逻辑单位对应的逻辑大小 进行映射
         enum LogicalMapMode
         {
@@ -786,7 +788,7 @@ namespace FTL
         HDC     m_hCanvasDC;
         HBITMAP m_hMemBitmap;
         HBITMAP m_hOldBitmap;
-        HANDLE  m_hFileMapping;
+        HANDLE  m_hFile;
         HANDLE  m_hSection;	//file mapping object to support big bitmap
         //BITMAPFILEHEADER*   m_pBmpFileHeader;
         BITMAPINFO*         m_pBmpInfo;

@@ -9,6 +9,7 @@
 #include "ximabmp.h"
 #include <ftlbase.h>
 #include <ftlgdi.h>
+#include <ftlFile.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 #if defined (_WIN32_WCE)
@@ -822,6 +823,10 @@ int32_t CxImage::Draw(HDC hdc, const RECT& rect, RECT* pClipRect, bool bSmooth, 
  */
 int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, RECT* pClipRect, bool bSmooth, bool bFlipY)
 {
+    BOOL bRet = FALSE;
+    FTLASSERT(bSmooth == false);
+    FTLASSERT(bFlipY == false);
+    bFlipY = true;
 	if((pDib==0)||(hdc==0)||(cx==0)||(cy==0)||(!info.bEnabled)) return 0;
 
 	if (cx < 0) cx = head.biWidth;
@@ -857,6 +862,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 	int32_t desth = paintbox.bottom - paintbox.top;
 
 	if (!(bTransparent || bAlpha || info.bAlphaPaletteEnabled)){
+        FTLASSERT(FALSE);
 		if (cx==head.biWidth && cy==head.biHeight){ //NORMAL
 #if !defined (_WIN32_WCE)
 			SetStretchBltMode(hdc,COLORONCOLOR);
@@ -965,15 +971,24 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 		bmInfo.bmiHeader.biPlanes=1;
 		bmInfo.bmiHeader.biBitCount=24;
 
-		uint8_t *pbase;	//points to the final dib
-		uint8_t *pdst;		//current pixel from pbase
-		uint8_t *ppix;		//current pixel from image
+		uint8_t *pbase = NULL;	//points to the final dib
+		uint8_t *pdst = NULL;		//current pixel from pbase
+		uint8_t *ppix = NULL;		//current pixel from image
 
 		//get the background
+        FTL::CFGdiObjectInfoDump hdcInfoDump;
+        API_VERIFY(hdcInfoDump.GetGdiObjectInfo(hdc));
+        FTLTRACE(TEXT("hdc Info = %s\n"), hdcInfoDump.GetGdiObjectInfoString());
+
 		HDC TmpDC=CreateCompatibleDC(hdc);
 		HBITMAP TmpBmp=CreateDIBSection(hdc,&bmInfo,DIB_RGB_COLORS,(void**)&pbase,0,0);
 		HGDIOBJ TmpObj=SelectObject(TmpDC,TmpBmp);
 		BitBlt(TmpDC,0,0,destw,desth,hdc,paintbox.left,paintbox.top,SRCCOPY);
+
+        API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(pDib, GetSize(), TEXT("Draw_0.dmp")));
+        API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(pbase, bmInfo.bmiHeader.biWidth * bmInfo.bmiHeader.biHeight * 3, TEXT("Draw_1.dmp")));
+
+        //FTL::CFGdiUtil::SaveBitmapToFile(TmpBmp, TEXT("CxImageDraw.bmp"));
 
 		if (pbase){
 			int32_t xx,yy,alphaoffset,ix,iy;
@@ -983,6 +998,7 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 			int32_t xmin = paintbox.left;
 
 			if (cx!=head.biWidth || cy!=head.biHeight){
+                FTLASSERT(FALSE);
 				//STRETCH
 				float fx=(float)head.biWidth/(float)cx;
 				float fy=(float)head.biHeight/(float)cy;
@@ -1117,6 +1133,9 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 		}
 		//paint the image & cleanup
 		SetDIBitsToDevice(hdc,paintbox.left,paintbox.top,destw,desth,0,0,0,desth,pbase,&bmInfo,0);
+
+        API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(pbase, bmInfo.bmiHeader.biWidth * bmInfo.bmiHeader.biHeight * 3, TEXT("Draw_2.dmp")));
+
         FTL::CFGdiUtil::SaveDCImageToFile(hdc, TEXT("CxImageDraw_Alpha.bmp"));
 
 		DeleteObject(SelectObject(TmpDC,TmpObj));
@@ -1529,6 +1548,7 @@ int32_t CxImage::Draw2(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
 
 int32_t	CxImage::Draw3(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
 {
+    BOOL bRet = FALSE;
     if((pDib==0)||(hdc==0)||(cx==0)||(cy==0)||(!info.bEnabled)) return 0;
     if (cx < 0) cx = head.biWidth;
     if (cy < 0) cy = head.biHeight;
@@ -1538,6 +1558,59 @@ int32_t	CxImage::Draw3(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
     int32_t hdc_Restore = ::SaveDC(hdc);
     if (!hdc_Restore) 
         return 0;
+
+    RECT clipbox,paintbox;
+    GetClipBox(hdc,&clipbox);
+
+    paintbox.top = min(clipbox.bottom,max(clipbox.top,y));
+    paintbox.left = min(clipbox.right,max(clipbox.left,x));
+    paintbox.right = max(clipbox.left,min(clipbox.right,x+cx));
+    paintbox.bottom = max(clipbox.top,min(clipbox.bottom,y+cy));
+
+    int32_t destw = paintbox.right - paintbox.left;
+    int32_t desth = paintbox.bottom - paintbox.top;
+
+    static bool bWrited = false;
+    if (!bWrited)
+    {
+        bWrited = true;
+    }
+   
+    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(pDib, GetSize(), TEXT("Draw3_0.dmp")));
+
+    FTL::CFCanvas canvas;
+    canvas.Create(destw, desth, 32, hdc);
+    BitBlt(canvas.GetCanvasDC(), 0, 0, destw, desth, hdc, 0, 0, SRCCOPY);
+    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvas.GetImageBuffer(), canvas.GetImageBufferSize(), TEXT("Draw3_1.dmp")));
+
+#if 0
+    SetStretchBltMode(hdc, HALFTONE);
+    SetDIBitsToDevice(canvas.GetCanvasDC(), paintbox.left, paintbox.top, destw, desth, 0, 0, 0, head.biHeight,
+        info.pImage,(BITMAPINFO*)pDib, DIB_RGB_COLORS);
+
+    BLENDFUNCTION blendFunction = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA  };
+    AlphaBlend(hdc, 0, 0, destw, desth, canvas.GetCanvasDC(), 0, 0, destw, desth, blendFunction);
+#endif 
+    
+
+    //RGBQUAD* pBmpBuffer = (RGBQUAD*)canvas.GetImageBuffer();
+    //for (int y = 0; y< desth; y++)
+    //{
+    //    for(int x= 0; x < destw; x++){
+    //        RGBQUAD* pClr = &pBmpBuffer[ x + y * destw];
+    //        pClr->rgbReserved = 255;
+    //    }
+    //}
+    //HDC hMemDC = ::CreateCompatibleDC(hdc);
+    //HGDIOBJ hOldBmp = ::SelectObject(hMemDC, hDib);
+    //BitBlt(hdc, paintbox.left, paintbox.top, destw, desth, canvas.GetCanvasDC(), 0, 0, SRCCOPY);
+    //SelectObject(hMemDC, hOldBmp);
+    //DeleteDC(hMemDC);
+    ::RestoreDC(hdc, hdc_Restore);
+
+    FTL::CFGdiUtil::SaveDCImageToFile(hdc, TEXT("SavePngDump.bmp"));
+
+    return 0;
 
     if (!bTransparent){
 #if !defined (_WIN32_WCE)

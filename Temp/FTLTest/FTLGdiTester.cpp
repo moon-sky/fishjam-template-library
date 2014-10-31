@@ -3,6 +3,7 @@
 #include <WindowsX.h>
 #include <ftlGdi.h>
 #include <ftlDebug.h>
+#include <ftlFile.h>
 
 CFTLGdiTester::CFTLGdiTester()
 {
@@ -118,6 +119,49 @@ void CFTLGdiTester::test_Clipping()
 
     API_VERIFY(DeleteObject(hRgnBmp));
     releaseBitmap();
+}
+
+void CFTLGdiTester::test_AlphaBlend()
+{
+    BOOL bRet = FALSE;
+    CRect rcDraw( 0, 0, 256, 256);
+
+    const int FILL_RECT_COUNT_X = 255;
+    const int FILL_RECT_COUNT_Y = 255;
+
+    CFCanvas canvasSrc;
+    API_VERIFY(canvasSrc.Create(rcDraw.Width(), -rcDraw.Height(), 32, NULL));
+
+    //CFCanvas canvasDest;
+    //API_VERIFY(canvasDest.Create(rcDraw.Width(), -rcDraw.Height(), 32, NULL));
+
+    CDC memDCSrc;
+    //CDC memDCDest;
+
+    memDCSrc.Attach(canvasSrc.GetCanvasDC());
+    //memDCDest.Attach(canvasDest.GetCanvasDC());
+    
+    RGBQUAD* pClrSrcBase = (RGBQUAD*)canvasSrc.GetImageBuffer();
+    int nEffectWidth = canvasSrc.GetPitch() / 4;
+    for (int y = 0; y < rcDraw.Height(); y++)
+    {
+        for(int x = 0; x < rcDraw.Width(); x++)
+        {
+            //CRect rcFill(x, y, x + 1, y + 1);
+            //memDCSrc.FillSolidRect(rcFill, MAKE_RGBA(y, x, (y + x) % 255, y));
+            RGBQUAD* pClrSrc = (pClrSrcBase + nEffectWidth * y + x);
+            pClrSrc->rgbRed = 0xFF;
+            pClrSrc->rgbReserved = x;
+        }
+    }
+
+    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvasSrc.GetImageBuffer(), canvasSrc.GetImageBufferSize(), TEXT("Test_AlphaBlend_Src_1.bin")));
+    API_VERIFY(canvasSrc.SaveToBmpFile(TEXT("Test_AlphaBlend_Src_1.bmp")));
+    FTL::CFGdiUtil::SaveBitmapToFile(canvasSrc.GetMemoryBitmap(), TEXT("Test_AlphaBlend_Src_2.bmp"));
+
+
+    memDCSrc.Detach();
+    //memDCDest.Detach();
 }
 
 void CFTLGdiTester::test_GdiObjectInfoDump()
@@ -479,7 +523,7 @@ void CFTLGdiTester::test_LargetBitmap()
 	CRect rcLarge;
 	rcLarge.SetRect(0, 0, 100, 100);
 
-	API_VERIFY(canvas.Create(rcLarge.Width(), rcLarge.Height(), 4));
+	API_VERIFY(canvas.Create(rcLarge.Width(), rcLarge.Height(), 32));
 	HBITMAP hDibBitmap = canvas.GetMemoryBitmap();
 	CPPUNIT_ASSERT(hDibBitmap != NULL);
 
@@ -515,9 +559,17 @@ void CFTLGdiTester::test_AttachBmpFile()
 {
     BOOL bRet = FALSE;
     FTL::CFCanvas canvas;
-    API_VERIFY(canvas.AttachBmpFile(TEXT("E:\\MyWork\\MouseGestures_src\\src\\images\\leftarrow.bmp"), FALSE));
+    //API_VERIFY(canvas.AttachBmpFile(TEXT("E:\\MyWork\\MouseGestures_src\\src\\images\\leftarrow.bmp"), FALSE));
+    API_VERIFY(canvas.AttachBmpFile(TEXT("Canvas1_16.bmp"), TRUE));
 
+    CDC memDC;
+    memDC.Attach(canvas.GetCanvasDC());
+    CRect rcImage(0, 0, canvas.GetWidth(), canvas.GetHeight());
+    memDC.FillSolidRect(rcImage, RGB(255, 0, 0));
+    memDC.Detach();
 
-    API_VERIFY(canvas.SaveToBmpFile(TEXT("Myleftarrow.bmp")));
+    canvas.Release();
+    
+    //API_VERIFY(canvas.SaveToBmpFile(TEXT("Myleftarrow.bmp")));
     FTLTRACE(TEXT("bRet = %d\n"), bRet);
 }
