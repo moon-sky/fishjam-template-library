@@ -124,7 +124,7 @@ void CFTLGdiTester::test_Clipping()
 void CFTLGdiTester::test_AlphaBlend()
 {
     BOOL bRet = FALSE;
-    CRect rcDraw( 0, 0, 256, 256);
+    CRect rcDraw( 0, 0, 10, 10);
 
     const int FILL_RECT_COUNT_X = 255;
     const int FILL_RECT_COUNT_Y = 255;
@@ -132,14 +132,14 @@ void CFTLGdiTester::test_AlphaBlend()
     CFCanvas canvasSrc;
     API_VERIFY(canvasSrc.Create(rcDraw.Width(), -rcDraw.Height(), 32, NULL));
 
-    //CFCanvas canvasDest;
-    //API_VERIFY(canvasDest.Create(rcDraw.Width(), -rcDraw.Height(), 32, NULL));
+    CFCanvas canvasDest;
+    API_VERIFY(canvasDest.Create(rcDraw.Width(), -rcDraw.Height(), 32, NULL));
 
     CDC memDCSrc;
-    //CDC memDCDest;
+    CDC memDCDest;
 
     memDCSrc.Attach(canvasSrc.GetCanvasDC());
-    //memDCDest.Attach(canvasDest.GetCanvasDC());
+    memDCDest.Attach(canvasDest.GetCanvasDC());
     
     RGBQUAD* pClrSrcBase = (RGBQUAD*)canvasSrc.GetImageBuffer();
     int nEffectWidth = canvasSrc.GetPitch() / 4;
@@ -151,17 +151,55 @@ void CFTLGdiTester::test_AlphaBlend()
             //memDCSrc.FillSolidRect(rcFill, MAKE_RGBA(y, x, (y + x) % 255, y));
             RGBQUAD* pClrSrc = (pClrSrcBase + nEffectWidth * y + x);
             pClrSrc->rgbRed = 0xFF;
-            pClrSrc->rgbReserved = x;
+            pClrSrc->rgbGreen = 100;
+            pClrSrc->rgbBlue = 10;
+            pClrSrc->rgbReserved = x >= 8 ? 255 : ( x + 1 ) / 4 * 100;
         }
     }
 
-    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvasSrc.GetImageBuffer(), canvasSrc.GetImageBufferSize(), TEXT("Test_AlphaBlend_Src_1.bin")));
-    API_VERIFY(canvasSrc.SaveToBmpFile(TEXT("Test_AlphaBlend_Src_1.bmp")));
-    FTL::CFGdiUtil::SaveBitmapToFile(canvasSrc.GetMemoryBitmap(), TEXT("Test_AlphaBlend_Src_2.bmp"));
+    memDCDest.FillSolidRect(rcDraw, RGB(128, 128, 128));
+    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvasDest.GetImageBuffer(), canvasDest.GetImageBufferSize(), TEXT("Test_AlphaBlend_Dst_0.bin")));
+    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvasSrc.GetImageBuffer(), canvasSrc.GetImageBufferSize(), TEXT("Test_AlphaBlend_Src_0.bin")));
 
+#if 0
+    //if(bmInfo.bmiHeader.biBitCount == 32 ) // Alpha Channel
+    {
+        // pre-multiply rgb channels with alpha channel
+        for (int y=0; y<canvasSrc.GetHeight(); ++y)
+        {
+            BYTE *pPixel= (BYTE *) canvasSrc.GetImageBuffer() + canvasSrc.GetWidth() * 4 * y;
+            for (int x=0; x< canvasSrc.GetWidth() ; ++x)
+            {
+                pPixel[0]= pPixel[0]*pPixel[3]/255;
+                pPixel[1]= pPixel[1]*pPixel[3]/255;
+                pPixel[2]= pPixel[2]*pPixel[3]/255;
+                pPixel+= 4;
+            }
+        }
+    }
+    BLENDFUNCTION blendFunc = { 0 };
+    blendFunc.BlendOp = AC_SRC_OVER;
+    blendFunc.BlendFlags = 1;
+    blendFunc.SourceConstantAlpha = (BYTE)0xFF;
+    blendFunc.AlphaFormat = AC_SRC_ALPHA;
+    API_VERIFY(AlphaBlend(memDCDest, 0, 0, rcDraw.Width(), rcDraw.Height(), memDCSrc, 0, 0, rcDraw.Width(), rcDraw.Height(), blendFunc));
+#else
+    API_VERIFY(CFGdiUtil::DDBAlphaBlend(canvasDest.GetCanvasDC(), 0, 0, canvasDest.GetWidth(), canvasDest.GetHeight(), 
+        canvasSrc.GetCanvasDC(), 0, 0, canvasSrc.GetWidth(), canvasSrc.GetHeight()));
+#endif 
+
+    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvasDest.GetImageBuffer(), canvasDest.GetImageBufferSize(), TEXT("Test_AlphaBlend_Dst_1.bin")));
+    //API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvasSrc.GetImageBuffer(), canvasSrc.GetImageBufferSize(), TEXT("Test_AlphaBlend_Src_1.bin")));
+
+
+    API_VERIFY(canvasSrc.SaveToBmpFile(TEXT("Test_AlphaBlend_Src_1.bmp")));
+    API_VERIFY(canvasDest.SaveToBmpFile(TEXT("Test_AlphaBlend_Dest_1.bmp")));
+
+    //API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvasSrc.GetMemoryBitmap(), TEXT("Test_AlphaBlend_Src_2.bmp")));
+    //API_VERIFY(FTL::CFGdiUtil::SaveBitmapToFile(canvasDest.GetMemoryBitmap(), TEXT("Test_AlphaBlend_Dest_2.bmp")));
 
     memDCSrc.Detach();
-    //memDCDest.Detach();
+    memDCDest.Detach();
 }
 
 void CFTLGdiTester::test_GdiObjectInfoDump()

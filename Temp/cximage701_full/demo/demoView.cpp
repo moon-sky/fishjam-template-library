@@ -129,15 +129,15 @@ void CDemoView::OnDraw(CDC* pDC)
 			tmp.Stretch(pDC->GetSafeHdc(), CRect(100,100,cx,cy));
 		} else {
 
-#define USER_DRAW3 0
+#define USER_DRAW3 1
 
 			if (pDoc->GetStretchMode()) {
 				CRect rect;
 				GetClientRect(&rect);
 #if USER_DRAW3
-				ima->Draw3(pDC->GetSafeHdc(), rect);
+				ima->Draw3(pDC->GetSafeHdc(), rect, 0, false);
 #else
-                ima->Draw(pDC->GetSafeHdc(), rect,0,pDoc->GetSmoothMode()!=0);
+                ima->Draw(pDC->GetSafeHdc(), rect,0, pDoc->GetSmoothMode()!=0);
 #endif 
 			} else {
 				float zoom=pDoc->GetZoomFactor();
@@ -151,8 +151,8 @@ void CDemoView::OnDraw(CDC* pDC)
                 {
 #if USER_DRAW3
                     ima->Draw3(pDC->GetSafeHdc(),
-                        CRect(0,0,(int)(ima->GetWidth()*zoom),(int)(ima->GetHeight()*zoom)));
-                    //0,pDoc->GetSmoothMode()!=0
+                        CRect(0,0,(int)(ima->GetWidth()*zoom),(int)(ima->GetHeight()*zoom)), 
+                    NULL, false);
 #else
                     ima->Draw(pDC->GetSafeHdc(),
                         CRect(0,0,(int)(ima->GetWidth()*zoom),(int)(ima->GetHeight()*zoom)),

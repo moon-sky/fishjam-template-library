@@ -823,15 +823,11 @@ int32_t CxImage::Draw(HDC hdc, const RECT& rect, RECT* pClipRect, bool bSmooth, 
  */
 int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, RECT* pClipRect, bool bSmooth, bool bFlipY)
 {
-    BOOL bRet = FALSE;
-    FTLASSERT(bSmooth == false);
-    FTLASSERT(bFlipY == false);
-    bFlipY = true;
+	BOOL bRet = FALSE;
 	if((pDib==0)||(hdc==0)||(cx==0)||(cy==0)||(!info.bEnabled)) return 0;
-
 	if (cx < 0) cx = head.biWidth;
 	if (cy < 0) cy = head.biHeight;
-	bool bTransparent = info.nBkgndIndex >= 0;
+	bool bTransparent = (info.nBkgndIndex >= 0);
 	//bool bAlpha = pAlpha != 0;
 
 	//required for MM_ANISOTROPIC, MM_HIENGLISH, and similar modes [Greg Peatfield]
@@ -862,7 +858,6 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 	int32_t desth = paintbox.bottom - paintbox.top;
 
 	if (!(bTransparent || bAlpha || info.bAlphaPaletteEnabled)){
-        FTLASSERT(FALSE);
 		if (cx==head.biWidth && cy==head.biHeight){ //NORMAL
 #if !defined (_WIN32_WCE)
 			SetStretchBltMode(hdc,COLORONCOLOR);
@@ -998,7 +993,6 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 			int32_t xmin = paintbox.left;
 
 			if (cx!=head.biWidth || cy!=head.biHeight){
-                FTLASSERT(FALSE);
 				//STRETCH
 				float fx=(float)head.biWidth/(float)cx;
 				float fy=(float)head.biHeight/(float)cy;
@@ -1546,19 +1540,31 @@ int32_t CxImage::Draw2(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
 	return 1;
 }
 
-int32_t	CxImage::Draw3(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
+int32_t	CxImage::Draw3(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, RECT* pClipRect, bool bFlipY)
 {
     BOOL bRet = FALSE;
     if((pDib==0)||(hdc==0)||(cx==0)||(cy==0)||(!info.bEnabled)) return 0;
     if (cx < 0) cx = head.biWidth;
     if (cy < 0) cy = head.biHeight;
     bool bTransparent = (info.nBkgndIndex >= 0);
+    //bool bAlpha = pAlpha != 0;
 
     //required for MM_ANISOTROPIC, MM_HIENGLISH, and similar modes [Greg Peatfield]
     int32_t hdc_Restore = ::SaveDC(hdc);
     if (!hdc_Restore) 
         return 0;
 
+#if !defined (_WIN32_WCE)
+    RECT mainbox; // (experimental) 
+    if (pClipRect){
+        GetClipBox(hdc,&mainbox);
+        HRGN rgn = CreateRectRgnIndirect(pClipRect);
+        ExtSelectClipRgn(hdc,rgn,RGN_AND);
+        DeleteObject(rgn);
+    }
+#endif
+
+    //find the smallest area to paint
     RECT clipbox,paintbox;
     GetClipBox(hdc,&clipbox);
 
@@ -1570,42 +1576,38 @@ int32_t	CxImage::Draw3(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
     int32_t destw = paintbox.right - paintbox.left;
     int32_t desth = paintbox.bottom - paintbox.top;
 
-    static bool bWrited = false;
-    if (!bWrited)
-    {
-        bWrited = true;
-    }
-   
-    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(pDib, GetSize(), TEXT("Draw3_0.dmp")));
-
     FTL::CFCanvas canvas;
     canvas.Create(destw, desth, 32, hdc);
-    BitBlt(canvas.GetCanvasDC(), 0, 0, destw, desth, hdc, 0, 0, SRCCOPY);
-    API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvas.GetImageBuffer(), canvas.GetImageBufferSize(), TEXT("Draw3_1.dmp")));
+    API_VERIFY(BitBlt(canvas.GetCanvasDC(), 0, 0, destw, desth, hdc, 0, 0, SRCCOPY));
 
-#if 0
+    if (head.biBitCount == 32)
+    {
+        // pre-multiply rgb channels with alpha channel
+        for (int y=0; y< head.biHeight; ++y)
+        {
+            BYTE *pPixel= (BYTE *) info.pImage+  head.biWidth* 4 * y;
+            for (int x=0; x< head.biWidth; ++x)
+            {
+                pPixel[0]= pPixel[0]*pPixel[3]/255;
+                pPixel[1]= pPixel[1]*pPixel[3]/255;
+                pPixel[2]= pPixel[2]*pPixel[3]/255;
+                pPixel+= 4;
+            }
+        }
+    }
+    //FTL::CFGdiUtil::DDBAlphaBlend(hdc, 0, 0, destw, desth, canvas.GetCanvasDC(), 0, 0, destw, desth);
+#if 1
     SetStretchBltMode(hdc, HALFTONE);
-    SetDIBitsToDevice(canvas.GetCanvasDC(), paintbox.left, paintbox.top, destw, desth, 0, 0, 0, head.biHeight,
-        info.pImage,(BITMAPINFO*)pDib, DIB_RGB_COLORS);
+    StretchDIBits(canvas.GetCanvasDC(), 0, 0, destw, desth, 0, 0, cx, cy, 
+        info.pImage, (BITMAPINFO*)pDib, DIB_RGB_COLORS, SRCCOPY);
+    //StretchDIBits(canvas.GetCanvasDC(), 0, 0, destw, desth, 0, 0, cx, cy, 
+    //    info.pImage, (BITMAPINFO*)pDib, DIB_RGB_COLORS, SRCCOPY);
+    ////SetDIBitsToDevice(canvas.GetCanvasDC(), paintbox.left, paintbox.top, destw, desth, 0, 0, 0, head.biHeight,
+    ////    info.pImage,(BITMAPINFO*)pDib, DIB_RGB_COLORS);
 
     BLENDFUNCTION blendFunction = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA  };
-    AlphaBlend(hdc, 0, 0, destw, desth, canvas.GetCanvasDC(), 0, 0, destw, desth, blendFunction);
+    AlphaBlend(hdc, paintbox.left,paintbox.top, destw, desth, canvas.GetCanvasDC(), 0, 0, destw, desth, blendFunction);
 #endif 
-    
-
-    //RGBQUAD* pBmpBuffer = (RGBQUAD*)canvas.GetImageBuffer();
-    //for (int y = 0; y< desth; y++)
-    //{
-    //    for(int x= 0; x < destw; x++){
-    //        RGBQUAD* pClr = &pBmpBuffer[ x + y * destw];
-    //        pClr->rgbReserved = 255;
-    //    }
-    //}
-    //HDC hMemDC = ::CreateCompatibleDC(hdc);
-    //HGDIOBJ hOldBmp = ::SelectObject(hMemDC, hDib);
-    //BitBlt(hdc, paintbox.left, paintbox.top, destw, desth, canvas.GetCanvasDC(), 0, 0, SRCCOPY);
-    //SelectObject(hMemDC, hOldBmp);
-    //DeleteDC(hMemDC);
     ::RestoreDC(hdc, hdc_Restore);
 
     FTL::CFGdiUtil::SaveDCImageToFile(hdc, TEXT("SavePngDump.bmp"));
@@ -1657,9 +1659,9 @@ int32_t	CxImage::Draw3(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy)
     return 1;
 }
 
-int32_t	CxImage::Draw3(HDC hdc, const RECT& rect)
+int32_t	CxImage::Draw3(HDC hdc, const RECT& rect, RECT* pClipRect /*=NULL */, bool bFlipY/* = false */)
 {
-    return Draw3(hdc, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+    return Draw3(hdc, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, pClipRect, bFlipY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
