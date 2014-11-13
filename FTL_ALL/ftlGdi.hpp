@@ -1290,6 +1290,103 @@ namespace FTL
         return bRet;
     }
 
+    RGBQUAD CFGdiUtil::CalcColorBlend(RGBQUAD clrDst, RGBQUAD clrSrc)
+    {
+        RGBQUAD clrTarget = clrDst;
+
+        BYTE alpha = clrSrc.rgbReserved;
+        BYTE alphaBack = (BYTE)(255 - alpha);
+
+        if (0 == alpha) //完全透明，使用背景色
+        {
+            clrTarget  = clrDst;
+        }
+        else if(255 == alpha) //完全不透明，使用前景色
+        {
+            clrTarget = clrSrc;
+        }
+        else
+        {
+            //半透明，根据Alpha值进行计算
+
+            //#define alpha_blend(sr, dr, alpha)  (((sr - dr) * alpha + (dr << 8)) >> 8)
+
+            //TODO: 标准要求 /255, 此处通过 C = A * B + 0x80; C = ((C >> 8) + C) >> 8; 来进行近似计算，避免使用除法
+            //      http://bbs.csdn.net/topics/290080863   -- 实测结果不正确
+            clrTarget.rgbRed = ((clrDst.rgbRed * alphaBack + clrSrc.rgbRed * alpha) + 0x80) >> 8 ; // ((nRed >> 8) + nRed) >> 8;
+            clrTarget.rgbGreen = ((clrDst.rgbGreen * alphaBack + clrSrc.rgbGreen * alpha) + 0x80) >> 8; //((nGreen >> 8) + nRed) >> 8;
+            clrTarget.rgbBlue =  ((clrDst.rgbBlue * alphaBack + clrSrc.rgbBlue * alpha) + 0x80) >> 8; //((nBlue >> 8) + nRed) >> 8;
+            clrTarget.rgbReserved = alpha; // ((nAlpha >> 8) + nRed) >> 8;
+        }
+        return clrTarget;
+    }
+
+    BOOL CFGdiUtil::DDBAlphaBlend(
+        RGBQUAD* pDst, int nXDst, int nYDst, int nWidthDst, int nHeightDst, int nBmpWidthDst, int nBmpHeightDst, 
+        RGBQUAD* pSrc, int nXSrc, int nYSrc, int nWidthSrc, int nHeightSrc, int nBmpWidthSrc, int nBmpHeightSrc)
+        //Anti-Grain Geometry
+    {
+        BOOL bRet = FALSE;
+        if (!pDst || !pSrc)
+        {
+            FTLASSERT(FALSE);
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return FALSE;
+        }
+        //检测绘制范围的有效区域
+        if (   (nXDst > nBmpWidthDst)
+            || (nXDst + nWidthDst > nBmpWidthDst)
+            || (nYDst > nBmpHeightDst) 
+            || (nYDst + nHeightDst > nBmpHeightDst)
+            || (nXSrc + nBmpWidthSrc)
+            || (nXSrc + nWidthSrc > nBmpWidthSrc)
+            || (nYSrc > nBmpHeightSrc)
+            || (nYSrc + nHeightSrc > nBmpHeightSrc)
+            ) 
+        {
+            FTLASSERT(FALSE);
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return FALSE;
+        }
+
+        RGBQUAD* pRead = NULL; 
+        RGBQUAD* pWrite = NULL;
+
+        if (nWidthDst == nWidthSrc && nHeightDst == nHeightSrc)
+        {
+            //同样大小
+            for (int y = 0; y < nHeightDst; y++)
+            {
+                pRead = pSrc + (y + nYSrc) * nBmpWidthSrc + nXSrc;
+                pWrite = pDst + (y + nYDst) * nBmpWidthDst + nXDst;
+                for(int x = 0; x < nWidthDst; x++)
+                {
+                    *pDst = CalcColorBlend(*pWrite, *pRead);
+                    pRead++;
+                    pWrite++;
+                }
+            }
+        }
+        else
+        {
+            //进行缩放stretch
+            float fx=(float)nWidthSrc/(float)nWidthDst;
+            float fy=(float)nHeightSrc/(float)nHeightDst;
+            float dx,dy;
+            int sx,sy;
+            for (int y = 0; y < nHeightSrc; y++)
+            {
+                for (int x = 0; x < nWidthSrc; x++)
+                {
+
+                }
+            }
+        }
+
+        return bRet;
+    }
+
+
 	BOOL CFGdiUtil::SaveBitmapToFile(HBITMAP hBmp, LPCTSTR pszFilePath)
 	{
 		//BOOL bRet = FALSE;

@@ -1,3 +1,32 @@
+:DevPartner 响应(TODO: 尚未增加产品)三处访问 activationServerName, 通过 RequestFunction 进行区分
+1.getAuthData()
+<?xml version="1.0" encoding="utf-8"?>
+<Response>
+    <retcode>0</retcode>
+    <errmsg></errmsg>
+    <clnlockselreqd></clnlockselreqd>
+    <clnlockselfloat></clnlockselfloat>
+    <clnlockselmin></clnlockselmin>
+    <srvlockselreqd></srvlockselreqd>
+    <srvlockselfloat></srvlockselfloat>
+    <srvlockselmin></srvlockselmin>
+
+    <actcount>10</actcount>
+    <licversion>10</licversion>
+    <Product>
+      <SerialNumber></SerialNumber>
+      <License></License>
+      <ExpiryDate></ExpiryDate>
+      <Hash></Hash>
+      <Type></Type>
+      <Hosted></Hosted>
+    </Product>
+</Response>
+
+
+getLicenseData(): 访问 activationServerName:
+
+
 测试 strncpy 等的字符串范围、是否增加NULL结束符等
 
 .NET 中 SafeHandle 可以保护向非托管代码中传入的托管缓存空间 -- 具体怎么用?(DangerousAddRef/DangerousRelease)

@@ -14,6 +14,7 @@
 #include "FTLNetTester.h"
 #include "FTLNlsTester.h"
 #include "FTLPipelineTester.h"
+#include "FTLShellTester.h"
 #include "FTLStringTester.h"
 #include "FTLSystemTester.h"
 #include "FTLThreadTester.h"
@@ -38,6 +39,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(CFTLMemTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLNetTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLNlsTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLPipelineTester);
+CPPUNIT_TEST_SUITE_REGISTRATION(CFTLShellTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLStringTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLSystemTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLThreadTester);

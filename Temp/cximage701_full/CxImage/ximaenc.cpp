@@ -215,29 +215,72 @@ bool CxImage::Encode(CxFile *hFile, uint32_t imagetype)
 	if (CXIMAGE_FORMAT_JPG==imagetype){
 		CxImageJPG *newima = new CxImageJPG;
 		if (!newima) return false;
-		newima->Ghost(this);
-		if (newima->Encode(hFile)){
-			delete newima;
-			return true;
-		} else {
-			strcpy(info.szLastError,newima->GetLastError());
-			delete newima;
-			return false;
+		if (head.biClrUsed!=0 && !IsGrayScale())
+		{
+			CxImage* pImg = new CxImage(*this);
+			pImg->IncreaseBpp(24);
+			newima->Ghost(pImg);
+			if (newima->Encode(hFile)){
+				delete newima;
+				delete pImg;
+				return true;
+			} else {
+				strcpy(info.szLastError,newima->GetLastError());
+				delete newima;
+				delete pImg;
+				return false;
+			}
 		}
+		else
+		{
+			newima->Ghost(this);
+			if (newima->Encode(hFile)){
+				delete newima;
+				return true;
+			} else {
+				strcpy(info.szLastError,newima->GetLastError());
+				delete newima;
+				return false;
+			}
+		}
+
 	}
 #endif
 #if CXIMAGE_SUPPORT_GIF
 	if (CXIMAGE_FORMAT_GIF==imagetype){
 		CxImageGIF *newima = new CxImageGIF;
 		if (!newima) return false;
-		newima->Ghost(this);
-		if (newima->Encode(hFile)){
-			delete newima;
-			return true;
-		} else {
-			strcpy(info.szLastError,newima->GetLastError());
-			delete newima;
+		if(head.biBitCount > 8)
+		{
+			CxImage* pTmp = new CxImage(*this);
+			if (pTmp)
+			{
+				pTmp->DecreaseBpp(8, false);
+				newima->Ghost(pTmp);
+				if (newima->Encode(hFile)){
+					delete newima;
+					delete pTmp;
+					return true;
+				} else {
+					strcpy(info.szLastError,newima->GetLastError());
+					delete newima;
+					delete pTmp;
+					return false;
+				}
+			}
 			return false;
+		}
+		else
+		{
+			newima->Ghost(this);
+			if (newima->Encode(hFile)){
+				delete newima;
+				return true;
+			} else {
+				strcpy(info.szLastError,newima->GetLastError());
+				delete newima;
+				return false;
+			}
 		}
 	}
 #endif
@@ -583,7 +626,7 @@ bool CxImage::Load(const TCHAR * filename, uint32_t imagetype)
 		fclose(hFile);
 		if (bOK) return bOK;
 	}
-
+#if 0
 	char szError[256];
 	strcpy(szError,info.szLastError); //save the first error
 
@@ -600,7 +643,7 @@ bool CxImage::Load(const TCHAR * filename, uint32_t imagetype)
 	fclose(hFile);
 
 	if (!bOK && imagetype > 0) strcpy(info.szLastError,szError); //restore the first error
-
+#endif
 	return bOK;
 }
 ////////////////////////////////////////////////////////////////////////////////

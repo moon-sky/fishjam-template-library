@@ -141,12 +141,15 @@ namespace FTL
 
 		FTLINLINE static HRESULT ExplorerToSpecialFile(LPCTSTR pszFilePath);
 
+        FTLINLINE static HRESULT LaunchIE(LPCTSTR szURL, int nCmdShow = SW_SHOW);
+
         //FTLINLINE static BOOL BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle = NULL, UINT nFlags = BIF_NEWDIALOGSTYLE);
     };
 
 
     //BUG -- Win7 下，当有 BIF_NEWDIALOGSTYLE 时，无法自动定位显示 pszInit 的目录
     //https://connect.microsoft.com/VisualStudio/feedback/details/518103/bffm-setselection-does-not-work-with-shbrowseforfolder-on-windows-7
+    //atldlgs.h 中有 CFolderDialog -- CFolderDialog dlg ( hWnd, NULL, BIF_USENEWUI | BIF_RETURNONLYFSDIRS ); dlg.SetInitialFolder( szDefaultPath ); if (IDOK ==dlg.DoModal() ){ ... }
     class CFDirBrowser
     {
     public:

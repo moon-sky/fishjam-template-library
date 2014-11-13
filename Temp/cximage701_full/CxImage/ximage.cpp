@@ -4,8 +4,7 @@
  */
 
 #include "ximage.h"
-#include <ftlBase.h>
-#include <ftlGdi.h>
+
 ////////////////////////////////////////////////////////////////////////////////
 // CxImage 
 ////////////////////////////////////////////////////////////////////////////////
@@ -242,12 +241,6 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
         hDib = ::CreateDIBSection(NULL, (BITMAPINFO*)&head, wBpp <= 8 ? DIB_RGB_COLORS : DIB_PAL_COLORS, (void**)&pImageBuffer, hFileMapping, nOffset);
         
         pDib = pImageBuffer - nOffset;
-        BOOL bRet = FALSE;
-        FTL::CFGdiObjectInfoDump objInfoDumper;
-        API_VERIFY(objInfoDumper.GetGdiObjectInfo(hDib));
-
-        FTLTRACE(TEXT("hDib=%s\n"), objInfoDumper.GetGdiObjectInfoString());
-
 		//pDib = MapViewOfFile(hFileMapping, FILE_MAP_READ|FILE_MAP_WRITE, 0, 0, 0);
 	}
 	//pDib = malloc(GetSize()); // alloc memory block to store our bitmap
@@ -279,17 +272,6 @@ void* CxImage::Create(uint32_t dwWidth, uint32_t dwHeight, uint32_t wBpp, uint32
     *lpbi = head;
 
 	info.pImage=GetBits();
-    
-    //if (32 == wBpp)
-    //{
-    //    void* pBit32 = NULL;
-    //    //hMemoDC = ::CreateCompatibleDC(NULL);
-    //    hDib = CreateDIBSection(hMemoDC, (LPBITMAPINFO)pDib, DIB_RGB_COLORS, &pBit32, hFileMapping, 0);
-    //    //if (pBit32 == info.pImage)
-    //    //{
-    //    //    OutputDebugString(TEXT("Same\n"));
-    //    //}
-    //}
 
     return pDib; //return handle to the DIB
 }

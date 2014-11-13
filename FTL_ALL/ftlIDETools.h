@@ -61,6 +61,8 @@
 ************************************************************************************************/
 
 /************************************************************************************************
+* 静态库的查看、搜索工具 -- libdump(有源码)
+* 
 * How to: Deploy using XCopy -- http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
 * 
 * 依赖于 CRT、MFC 等多个版本时的重定向 -- 缺少 DebugCRT.9.0.30729.6161 等无法运行程序的问题
@@ -153,7 +155,7 @@
 *   vcredist_x86.exe 文件各版本的下载路径
 *      9.0.30729.1(VS2008 SP1) -- http://www.microsoft.com/en-us/download/confirmation.aspx?id=5582
 *      9.0.30729.6161(KB2538243/MS11-025) --  http://www.microsoft.com/en-us/download/details.aspx?id=26368
-*   
+* 
 * Fuslogvw.exe -- Assembly Binding Log Viewer,怎么用？
 * PDBCopy.exe -- 复制调试符号
 * SvcTraceViewer.exe -- 查看系统日志的工具?
@@ -197,6 +199,8 @@ namespace FTL
     * IDE常用命令和工具
     *   nmake
     *   dumpbin 输出可执行文件(EXE、DLL)的信息。
+    *     dumpbin /headers xxx.lib 后查看 "FILE HEADER VALUES" 的信息，可以知道对应的文件是 x86/x64 的
+    *     查找 x86/x64 lib 库混用: dumpbin /headers *.lib > check.txt 后全文搜索 “Dump of file"，然后查看后面 machine 类型
 	*   mt.exe -- manifest 的控制工具
 	*     mt.exe -inputresource:ExePath;#1 -out:extracted.manifest <== 导出 Exe 中的 manifest
     *   系统设备扫描工具 -- gmer.exe
@@ -974,7 +978,7 @@ namespace FTL
     *
     * 常见问题及解决方式:
     *   1."Error -- Unable to open include file 'xxxx' "
-    *      需要通过 -i 指定lint检查时需要包含的库文件的路径(可以放在 std.lnt 配置中)
+    *      需要通过 -i 指定lint检查时需要包含的库文件的路径(系统的可以放在 std.lnt 配置中, 项目相关的可以放在 options.lnt 中)
     *   2.屏蔽各种库(如 MFC/ATL 等)的警告(std.lnt 中设置的会被options.lnt中的同名配置覆盖?)
     *     在 options.lnt 中加入 -wlib(0)
     *   3.默认的输出结果很多，很难看到真正的问题(默认为 -w3, 输出 Error + Warning + Info + Note)
@@ -1074,6 +1078,7 @@ namespace FTL
     *   -w输出等级 -- 设置告警输出等级
     *
     * 常见错误类型(在结果中搜索 "error xxx" ), <必改>, [建议更改], {可忽略}
+    *   [ 19] -- Useless Declaration, 通常是有两个连着的分号，一般是宏本身定义了分号，但使用时又在结尾加了分号
     *   [429] -- Custodial pointer 'Symbol' (Location) has not been freed or returned
     *            指针没有释放或返回，可能出现内存泄露。但也可能是加入了特定容器进行管理。
     *   [438] -- Last value assigned to variable 'Symbol' not used

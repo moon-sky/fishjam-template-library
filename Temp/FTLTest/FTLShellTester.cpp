@@ -15,3 +15,8 @@ void CFTLShellTester::test_ITEMIDLIST()
 		ILFree(pItemIdListModulePath);
 	}
 }
+
+void CFTLShellTester::test_LaunchIE()
+{
+    FTL::CFShellUtil::LaunchIE(TEXT("www.baidu.com"), SW_SHOW);
+}

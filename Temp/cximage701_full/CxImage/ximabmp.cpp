@@ -10,7 +10,8 @@
 #if CXIMAGE_SUPPORT_BMP
 
 #include "ximaiter.h" 
-
+#include "xmapfile.h"
+ 
 ////////////////////////////////////////////////////////////////////////////////
 #if CXIMAGE_SUPPORT_ENCODE
 ////////////////////////////////////////////////////////////////////////////////
@@ -156,7 +157,11 @@ bool CxImageBMP::Decode(CxFile * hFile)
 			if (bf.bfOffBits != 0L) hFile->Seek(off + bf.bfOffBits,SEEK_SET);
 			if (dwCompression == BI_BITFIELDS || dwCompression == BI_RGB){
 				int32_t imagesize=3*head.biHeight*head.biWidth;
-				uint8_t* buff32=(uint8_t*)malloc(imagesize);
+                //uint8_t* buff32=(uint8_t*)malloc(imagesize);
+                CxMapFile   mapFile;
+                mapFile.Create(NULL, imagesize);
+				uint8_t* buff32= (uint8_t*)mapFile.GetBuffer();
+                //uint8_t* buff32 = info.pImage;
 				if (buff32){
 					hFile->Read(buff32, imagesize,1); // read in the pixels
 
@@ -181,7 +186,7 @@ bool CxImageBMP::Decode(CxFile * hFile)
 //#endif //CXIMAGE_SUPPORT_ALPHA
 
 					Bitfield2RGB(buff32,bfmask[0],bfmask[1],bfmask[2],24);
-					free(buff32);
+					//free(buff32);
 				} else cx_throw("can't allocate memory");
 			} else cx_throw("unknown compression");
 			break;

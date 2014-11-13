@@ -526,11 +526,17 @@ namespace FTL
 
     BOOL CFSystemUtil::Is64BitWindows()
     {
-        BOOL bIsWow64 = FALSE;
+        static BOOL bIsWow64 = FALSE;
 #if defined(_WIN64)
         //64位程序只能在64位系统上运行
         bIsWow64 = TRUE;
 #elif defined(_WIN32)
+        static BOOL b64bitFind = FALSE;
+        if ( b64bitFind )
+        {
+            return bIsWow64;
+        }
+
         //32位程序可同时在 32/64 位系统上运行
         HMODULE hKernel32 = GetModuleHandle(TEXT("kernel32.dll"));
         FTLASSERT(hKernel32);
@@ -539,11 +545,12 @@ namespace FTL
         LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(hKernel32, "IsWow64Process");
         if (fnIsWow64Process)
         {
-            if (!fnIsWow64Process(GetCurrentProcess(),&bIsWow64))
+            if (!fnIsWow64Process(GetCurrentProcess(), &bIsWow64))
             {
                 bIsWow64 = FALSE;
             }
         }
+        b64bitFind = TRUE;
 #endif
         return bIsWow64;
     }

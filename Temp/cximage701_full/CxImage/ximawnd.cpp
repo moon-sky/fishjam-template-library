@@ -7,9 +7,6 @@
 
 #include "ximaiter.h" 
 #include "ximabmp.h"
-#include <ftlbase.h>
-#include <ftlgdi.h>
-#include <ftlFile.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 #if defined (_WIN32_WCE)
@@ -823,8 +820,8 @@ int32_t CxImage::Draw(HDC hdc, const RECT& rect, RECT* pClipRect, bool bSmooth, 
  */
 int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, RECT* pClipRect, bool bSmooth, bool bFlipY)
 {
-	BOOL bRet = FALSE;
 	if((pDib==0)||(hdc==0)||(cx==0)||(cy==0)||(!info.bEnabled)) return 0;
+
 	if (cx < 0) cx = head.biWidth;
 	if (cy < 0) cy = head.biHeight;
 	bool bTransparent = (info.nBkgndIndex >= 0);
@@ -940,8 +937,6 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 			}
 			//paint the image & cleanup
 			SetDIBitsToDevice(hdc,paintbox.left,paintbox.top,destw,desth,0,0,0,desth,pbase,&bmInfo,0);
-            FTL::CFGdiUtil::SaveDCImageToFile(hdc, TEXT("CxImageDraw_NoAlpha.bmp"));
-
 			DeleteObject(SelectObject(TmpDC,TmpObj));
 			DeleteDC(TmpDC);
 		}
@@ -971,19 +966,10 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 		uint8_t *ppix = NULL;		//current pixel from image
 
 		//get the background
-        FTL::CFGdiObjectInfoDump hdcInfoDump;
-        API_VERIFY(hdcInfoDump.GetGdiObjectInfo(hdc));
-        FTLTRACE(TEXT("hdc Info = %s\n"), hdcInfoDump.GetGdiObjectInfoString());
-
 		HDC TmpDC=CreateCompatibleDC(hdc);
 		HBITMAP TmpBmp=CreateDIBSection(hdc,&bmInfo,DIB_RGB_COLORS,(void**)&pbase,0,0);
 		HGDIOBJ TmpObj=SelectObject(TmpDC,TmpBmp);
 		BitBlt(TmpDC,0,0,destw,desth,hdc,paintbox.left,paintbox.top,SRCCOPY);
-
-        API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(pDib, GetSize(), TEXT("Draw_0.dmp")));
-        API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(pbase, bmInfo.bmiHeader.biWidth * bmInfo.bmiHeader.biHeight * 3, TEXT("Draw_1.dmp")));
-
-        //FTL::CFGdiUtil::SaveBitmapToFile(TmpBmp, TEXT("CxImageDraw.bmp"));
 
 		if (pbase){
 			int32_t xx,yy,alphaoffset,ix,iy;
@@ -1127,11 +1113,6 @@ int32_t CxImage::Draw(HDC hdc, int32_t x, int32_t y, int32_t cx, int32_t cy, REC
 		}
 		//paint the image & cleanup
 		SetDIBitsToDevice(hdc,paintbox.left,paintbox.top,destw,desth,0,0,0,desth,pbase,&bmInfo,0);
-
-        API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(pbase, bmInfo.bmiHeader.biWidth * bmInfo.bmiHeader.biHeight * 3, TEXT("Draw_2.dmp")));
-
-        FTL::CFGdiUtil::SaveDCImageToFile(hdc, TEXT("CxImageDraw_Alpha.bmp"));
-
 		DeleteObject(SelectObject(TmpDC,TmpObj));
 		DeleteDC(TmpDC);
 	}

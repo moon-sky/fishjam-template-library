@@ -11,8 +11,11 @@ public:
 
     CPPUNIT_TEST_SUITE( CFTLShellTester );
     CPPUNIT_TEST( test_ITEMIDLIST );
+    CPPUNIT_TEST( test_LaunchIE );
     CPPUNIT_TEST_SUITE_END();
 
     void test_ITEMIDLIST();
+    void test_LaunchIE();
+
     DECLARE_DEFAULT_TEST_CLASS(CFTLShellTester);
 };

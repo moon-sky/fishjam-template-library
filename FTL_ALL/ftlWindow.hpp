@@ -1762,97 +1762,70 @@ namespace FTL
         return bRet;
     }
 
-#if 0
-    BOOL CFWinUtil::CenterWindow(HWND hWndCenter , BOOL bCurrMonitor)
+    BOOL CFWinUtil::CenterWindow(HWND hWndCenter, BOOL bCurrMonitor)
     {
-        FTLASSERT ( ::IsWindow ( m_hWnd ) ) ;
+        BOOL bRet = FALSE;
+
+        FTLASSERT ( ::IsWindow ( hWndCenter ) ) ;
         // determine owner window to center against
-        DWORD dwStyle = (DWORD)GetWindowLongPtr ( GWL_STYLE ) ;
-        if ( NULL == hWndCenter )
-        {
-            if( dwStyle & WS_CHILD )
-            {
-                hWndCenter = ::GetParent ( m_hWnd ) ;
-            }
-            else
-            {
-                hWndCenter = ::GetWindow ( m_hWnd , GW_OWNER ) ;
-            }
+        LONG_PTR dwStyle = ::GetWindowLongPtr (hWndCenter, GWL_STYLE ) ;
+        if( dwStyle & WS_CHILD ){
+            FTLASSERT(FALSE && TEXT("do not support child window"));
+            SetLastError(ERROR_INVALID_PARAMETER);
+            return FALSE;
         }
 
+        if( ( dwStyle & WS_VISIBLE  ) || ( dwStyle & WS_MINIMIZE )){
+             // Don't center against invisible or minimized windows
+            return FALSE; //TRUE ?
+        }
+        //if ( NULL == hWndParent )
+        //{
+        //    if( dwStyle & WS_CHILD )
+        //    {
+        //        hWndParent = ::GetParent ( hWndCenter ) ;
+        //    }
+        //    else
+        //    {
+        //        hWndParent = ::GetWindow ( hWndCenter , GW_OWNER ) ;
+        //    }
+
+        //    if (NULL == hWndParent)
+        //    {
+        //        hWndParent = ::GetDesktopWindow(); 
+        //    }
+        //}
+
         // Get coordinates of the window relative to its parent
-        RECT rcDlg ;
-        GetWindowRect ( &rcDlg ) ;
-        RECT rcArea ;
-        RECT rcCenter ;
-        HWND hWndParent ;
-        if ( !( dwStyle & WS_CHILD ) )
+        RECT rcDlg = {0};
+        API_VERIFY(::GetWindowRect (hWndCenter, &rcDlg ));
+        RECT rcArea = {0};
+        RECT rcCenter = {0};
+
+        if ( ! bCurrMonitor )
         {
-            // Don't center against invisible or minimized windows
-            if( NULL != hWndCenter )
-            {
-                DWORD dwStyle = ::GetWindowLongPtr ( hWndCenter ,
-                    GWL_STYLE   ) ;
-                if( !( dwStyle & WS_VISIBLE  ) ||
-                    ( dwStyle & WS_MINIMIZE )   )
-                {
-                    hWndCenter = NULL ;
-                }
-            }
-
-            if ( FALSE == bCurrMonitor )
-            {
-                // Center within screen coordinates
-                ::SystemParametersInfo ( SPI_GETWORKAREA ,
-                    NULL            ,
-                    &rcArea         ,
-                    NULL             ) ;
-            }
-            else
-            {
-                // Center based on the monitor containing the majority of
-                // the window.
-                HMONITOR hMon = MonitorFromWindow ( m_hWnd  ,
-                    MONITOR_DEFAULTTONEAREST); //MONITOR_DEFAULTTOPRIMARY
-
-                MONITORINFO stMI ;
-                ZeroMemory ( &stMI , sizeof ( MONITORINFO ) ) ;
-                stMI.cbSize = sizeof ( MONITORINFO ) ;
-
-                GetMonitorInfo ( hMon , &stMI ) ;
-
-                rcArea = stMI.rcMonitor ;
-            }
-
-            if ( NULL == hWndCenter )
-            {
-                rcCenter = rcArea;
-            }
-            else
-            {
-                ::GetWindowRect ( hWndCenter , &rcCenter ) ;
-            }
+            // Center within screen coordinates
+            API_VERIFY(::SystemParametersInfo ( SPI_GETWORKAREA , NULL, &rcArea, NULL));
+            rcCenter = rcArea;
         }
         else
         {
-            // center within parent client coordinates
-            hWndParent = GetParent ( ) ;
-
-            ::GetClientRect ( hWndParent , &rcArea ) ;
-
-            ::GetClientRect ( hWndCenter , &rcCenter ) ;
-            ::MapWindowPoints ( hWndCenter        ,
-                hWndParent        ,
-                (POINT*)&rcCenter ,
-                2                  ) ;
+            // Center based on the monitor containing the majority of the window.
+            HMONITOR hMon = MonitorFromWindow ( hWndCenter  , MONITOR_DEFAULTTONEAREST);
+            MONITORINFO stMI = {0};
+            stMI.cbSize = sizeof ( MONITORINFO ) ;
+            API_VERIFY(GetMonitorInfo ( hMon , &stMI));
+            rcArea = stMI.rcWork;
+            rcCenter = stMI.rcMonitor;
         }
+        
 
         int DlgWidth = rcDlg.right - rcDlg.left ;
         int DlgHeight = rcDlg.bottom - rcDlg.top ;
 
         // Find dialog's upper left based on rcCenter
-        int xLeft = (rcCenter.left + rcCenter.right) / 2 - DlgWidth / 2 ;
-        int yTop = (rcCenter.top + rcCenter.bottom) / 2 - DlgHeight / 2 ;
+        int xLeft = (rcArea.left + rcArea.right) / 2 - DlgWidth / 2 ;
+        int yTop = (rcArea.top + rcArea.bottom) / 2 - DlgHeight / 2 ;
 
         // If the dialog is outside the screen, move it inside
         if ( xLeft < rcArea.left )
@@ -1874,19 +1847,10 @@ namespace FTL
         }
 
         // Map screen coordinates to child coordinates
-        return ( ::SetWindowPos ( m_hWnd ,
-            NULL   ,
-            xLeft  ,
-            yTop   ,
-            -1     ,
-            -1     ,
-            SWP_NOSIZE |
-            SWP_NOZORDER |
-            SWP_NOACTIVATE  ) ) ;
-
+        API_VERIFY(::SetWindowPos ( hWndCenter, NULL, xLeft, yTop, -1, -1, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE)) ;
+        return bRet;
     }
 
-#endif 
 
 	LRESULT CFWinUtil::CalcNcHitTestPostion(LPPOINT pPtClient, LPCRECT prcClient, LPCRECT prcCaption, BOOL bZoomed)
 	{
@@ -2013,10 +1977,15 @@ namespace FTL
 
 		//是否需要这些代码
 #if 0
-		if ( TRUE ==  ::IsIconic ( hWnd ) )
-		{
-			::SendMessage ( hWnd, WM_SYSCOMMAND, SC_RESTORE, 0 );
-		}
+        if ( ::IsIconic ( hWnd ) )
+        {
+            ::ShowWindow( hWnd, SW_RESTORE );
+            //::SendMessage ( hWnd, WM_SYSCOMMAND, SC_RESTORE, 0 );
+        }
+        else
+        {
+            SetForegroundWindow( hMovWnd );
+        }
 #endif 
 
         return bRet;

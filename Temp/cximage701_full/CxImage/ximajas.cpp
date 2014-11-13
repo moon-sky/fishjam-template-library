@@ -46,7 +46,8 @@ bool CxImageJAS::Decode(CxFile *hFile, uint32_t imagetype)
 
 	char szfmt[4];
 	*szfmt = '\0';
-	strncpy(szfmt,jas_image_fmttostr(fmt),3);
+	char* szfindfmt = jas_image_fmttostr(fmt);
+	strncpy(szfmt,szfindfmt,3);
 	szfmt[3] = '\0';
 
 	fmt = -1;

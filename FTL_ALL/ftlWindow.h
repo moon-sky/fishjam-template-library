@@ -728,10 +728,9 @@ namespace FTL
 
 		FTLINLINE static LPCTSTR GetOwnerDrawState(FTL::CFStringFormater& formater, UINT itemState, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetOwnerDrawAction(FTL::CFStringFormater& formater, UINT itemAction, LPCTSTR pszDivide = TEXT("|"));
-#if 0
-        //窗体居中放置(ATL有源码？)
-        FTLINLINE static BOOL CenterWindow(HWND hWndCenter , HWND hWndParent, BOOL bCurrMonitor);
-#endif
+
+        //窗体居中放置(ATL有源码？) -- TODO: 未测试
+        FTLINLINE static BOOL CenterWindow(HWND hWndCenter , BOOL bCurrMonitor); //HWND hWndParent, 
     };//CFWinUtil
 
     FTLEXPORT class CFMenuUtil

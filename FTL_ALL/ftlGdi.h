@@ -438,7 +438,16 @@ PtInRect、Rectangle -- 等函数的矩形区域不包括矩形的右边界和底边界,
 /*****************************************************************************************************
 * 透明绘制
 *   AlphaBlend -- 显示有透明度的图象， Alpha 指定所绘制颜色与背景颜色的混合程度
-*     显示颜色 = 源像素颜色*Alpha/255 + 背景颜色*(255-Alpha)/255( Alpha 为0时完全透明，255时完全不透明 ) 
+*     颜色计算: 
+*       1.AlphaFormat=0 时: 
+*       2.AlphaFormat=AC_SRC_ALPHA, SourceConstantAlpha=255时,混合时根据源图像每个像素的alpha值进行.
+*         Dst.Clr = Src.Clr + Dst.Clr*(255-Src.Alpha)/255
+*         因为Src没有乘以Alpha值, 如果通过AlphaBlend输出PNG时，最好将透明背景像素的颜色值设为黑色(0), 否则会显示透明背景
+*         按照网上的说法，如果先进行 pre-multiplyed 处理转换成 PARGB 格式(Clr = Clr * Alpha/255)，即可成为真正的Alpha合并，
+*         但这样的算法会改变原始数据，而且由于进度丢失，是不可逆的。
+*       3.TODO: AlphaBlend未提供(个人感觉最有用的合并算法):
+*         Dst.Clr = Src.Clr*Alpha/255 + Dst.Clr*(255-Src.Alpha)/255 ;
+*         Dst.Alpha = ?
 * 
 * 半透明显示(snagit抓图时显示的效果)
 *   1.Bitblt 一个完整的原始位图到 dcTran
@@ -707,6 +716,14 @@ namespace FTL
         //然后可通过 OffsetWindowOrg(-x,y)移动原点，使得屏幕平均显示四个象限等(参见 MFC 中的 DrawClient )
         FTLINLINE static BOOL   SetLogicalMapMode(HDC hdc, LogicalMapMode logicalMapmode);
 
+        FTLINLINE static RGBQUAD CalcColorBlend(RGBQUAD clrDst, RGBQUAD clrSrc);
+
+        //32位DDB的AlphaBlend, 按位计算Alpha -- TODO: 加入缩放
+        //  Dst.Clr = Src.Clr * Alpha / 255 + Dst.CLr * (255 - Src.Alpha) / 255
+        FTLINLINE static BOOL DDBAlphaBlend(
+            RGBQUAD* pDst, int nXDst, int nYDst, int nWidthDst, int nHeightDst, int nBmpWidthDst, int nBmpHeightDst, 
+            RGBQUAD* pSrc, int nXSrc, int nYSrc, int nWidthSrc, int nHeightSrc, int nBmpWidthSrc, int nBmpHeightSrc);
+
         //保存的是DIB-- 文件表头(BITMAPFILEHEADER) + 信息表头(BITMAPINFOHEADER) + [调色板] + 位图像素值或调色板索引
 		FTLINLINE static BOOL SaveBitmapToFile(HBITMAP hBmp, LPCTSTR pszFilePath);
 		FTLINLINE static BOOL SaveDCImageToFile(HDC hdc, LPCTSTR pszFilePath);
@@ -781,7 +798,6 @@ namespace FTL
         FTLINLINE DWORD GetImageBufferSize();
         FTLINLINE BOOL Draw(HDC hdc);
         FTLINLINE BOOL Draw(HDC hdc, int x, int y, int cx, int cy, RECT* pClipRect, bool bFlipY);
-
         FTLINLINE BOOL AttachBmpFile(LPCTSTR pszFilePath, BOOL bWritable = FALSE);
         FTLINLINE BOOL SaveToBmpFile(LPCTSTR pszFilePath);
     private:

@@ -184,8 +184,9 @@ void CFTLGdiTester::test_AlphaBlend()
     blendFunc.AlphaFormat = AC_SRC_ALPHA;
     API_VERIFY(AlphaBlend(memDCDest, 0, 0, rcDraw.Width(), rcDraw.Height(), memDCSrc, 0, 0, rcDraw.Width(), rcDraw.Height(), blendFunc));
 #else
-    API_VERIFY(CFGdiUtil::DDBAlphaBlend(canvasDest.GetCanvasDC(), 0, 0, canvasDest.GetWidth(), canvasDest.GetHeight(), 
-        canvasSrc.GetCanvasDC(), 0, 0, canvasSrc.GetWidth(), canvasSrc.GetHeight()));
+    API_VERIFY(CFGdiUtil::DDBAlphaBlend((RGBQUAD*)canvasDest.GetImageBuffer(), 0, 0, canvasDest.GetWidth(), canvasDest.GetHeight(), 
+        canvasDest.GetWidth(), canvasDest.GetHeight(),
+        (RGBQUAD*)canvasSrc.GetImageBuffer(), 0, 0, canvasSrc.GetWidth(), canvasSrc.GetHeight(), canvasSrc.GetWidth(), canvasSrc.GetHeight()));
 #endif 
 
     API_VERIFY(FTL::CFFileUtil::DumpMemoryToFile(canvasDest.GetImageBuffer(), canvasDest.GetImageBufferSize(), TEXT("Test_AlphaBlend_Dst_1.bin")));

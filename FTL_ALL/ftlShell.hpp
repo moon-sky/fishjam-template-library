@@ -489,6 +489,10 @@ namespace FTL
 		return hr;
 	}
 
+    //TODO: 
+    //  http://support.microsoft.com/kb/314853
+    //  strParam.Format( _T( "/n, \"%s\"" ), szDirPath ); »ò .Format( _T( "/n, /select, \"%s\"" ), szFilePath );
+    //  ::ShellExecute( NULL, _T( "open" ), _T( "explorer.exe" ), strParam, NULL, SW_SHOWNORMAL ); 
 	HRESULT CFShellUtil::ExplorerToSpecialFile(LPCTSTR pszFilePath)
 	{
 		HRESULT hr = E_FAIL;
@@ -507,6 +511,66 @@ namespace FTL
 		}
 		return hr;
 	}
+
+    HRESULT CFShellUtil::LaunchIE(LPCTSTR szURL, int nCmdShow/* = SW_SHOW */)
+    {
+        HRESULT hr = S_OK;
+        LONG lRet = ERROR_SUCCESS;
+        BOOL bRet = FALSE;
+
+        const TCHAR REGKEY_CURVER[]     = _T( "SOFTWARE\\Microsoft\\Windows\\CurrentVersion" );
+        const TCHAR REGVAL_PROGFILES[]  = _T( "ProgramFilesDir" ) ;
+        const TCHAR IE_DIR_NAME[]       = _T( "Internet Explorer" );
+        const TCHAR IE_FILE_NAME[]      = _T( "iexplore.exe" );
+
+        TCHAR szIEPath[MAX_PATH] = {0};
+
+        DWORD dwCount = _countof( szIEPath ) ;
+        
+        HKEY hKey = NULL;
+
+        REG_VERIFY(RegOpenKeyEx(HKEY_LOCAL_MACHINE, REGKEY_CURVER, 0, KEY_QUERY_VALUE, &hKey));
+        if (ERROR_SUCCESS == lRet)
+        {
+            DWORD dwType = 0;
+            DWORD dwBytes = dwCount * sizeof(TCHAR);
+            REG_VERIFY(::RegQueryValueEx(hKey, REGVAL_PROGFILES, NULL, &dwType, (LPBYTE)szIEPath, &dwBytes));
+            if (ERROR_SUCCESS == lRet)
+            {
+                dwCount = dwBytes / sizeof(TCHAR);
+                *( szIEPath + dwCount ) = _T( '\0' ) ;
+            }
+            else{
+                dwCount = 0;
+            }
+            REG_VERIFY(RegCloseKey(hKey));
+        }
+
+        API_VERIFY(::PathAppend( szIEPath, IE_DIR_NAME ));
+        API_VERIFY(::PathAppend( szIEPath, IE_FILE_NAME ));
+
+        SHELLEXECUTEINFO ExecuteInfo= {0};
+        ExecuteInfo.cbSize = sizeof(ExecuteInfo);
+        ExecuteInfo.fMask = 0; // SEE_MASK_NOCLOSEPROCESS;
+        ExecuteInfo.hwnd = NULL;
+        ExecuteInfo.lpVerb = TEXT("open");
+        ExecuteInfo.nShow = nCmdShow;
+        ExecuteInfo.lpParameters = szURL;
+        if ( ::PathFileExists( szIEPath ) )
+        {
+            ExecuteInfo.lpFile =  szIEPath;
+        }
+        else{
+            ExecuteInfo.lpFile = NULL;
+        }
+        API_VERIFY(ShellExecuteEx(&ExecuteInfo));
+        if (!bRet)
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+        }
+        return hr;
+    }
+
 
     CFDirBrowser::CFDirBrowser(LPCTSTR lpszTitle /* = NULL */, HWND hWndOwner /* = NULL */, LPCTSTR pszInit /* = NULL */, 
         UINT nFlags)
