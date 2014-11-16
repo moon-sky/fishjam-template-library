@@ -1,3 +1,6 @@
+CEditWndMgr::DestroyWindow
+
+
 :DevPartner 响应(TODO: 尚未增加产品)三处访问 activationServerName, 通过 RequestFunction 进行区分
 1.getAuthData()
 <?xml version="1.0" encoding="utf-8"?>

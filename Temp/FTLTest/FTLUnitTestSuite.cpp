@@ -20,6 +20,7 @@
 #include "FTLThreadTester.h"
 #include "FTLUuidsTester.h"
 #include "FTLWindowTester.h"
+#include "OpenMPTester.h"
 #include "ShlWAPITester.h"
 #include "StrSafeTester.h"
 #include "TCharTester.h"
@@ -45,6 +46,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(CFTLSystemTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLThreadTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLUuidsTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLWindowTester);
+CPPUNIT_TEST_SUITE_REGISTRATION(COpenMPTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CShlWAPITester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CStrSafeTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CTCharTester);
