@@ -613,7 +613,7 @@ namespace FTL
 			API_ASSERT(NULL != lpRsrc);
 			if (lpRsrc)
 			{
-				HGLOBAL hGlobal = GlobalAlloc(GMEM_FIXED, dwResSize); //GMEM_MOVEABLE
+				HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwResSize);
                 if (hGlobal)
                 {
                     BYTE* pmem = (BYTE*)GlobalLock(hGlobal);
@@ -663,7 +663,7 @@ namespace FTL
             //LPVOID lpRsrc = LockResource(hResData);
             if (lpRsrc)
             {
-                HGLOBAL hGlobal = GlobalAlloc(GMEM_FIXED, dwResSize); //GMEM_MOVEABLE
+                HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwResSize);
                 if (hGlobal)
                 {
                     BYTE* pmem = (BYTE*)GlobalLock(hGlobal);
@@ -672,7 +672,7 @@ namespace FTL
 
                     HRESULT hr = E_FAIL;
                     CComPtr<IStream> pStream;
-                    COM_VERIFY(CreateStreamOnHGlobal(hGlobal, FALSE, &pStream));
+                    COM_VERIFY(CreateStreamOnHGlobal(hGlobal, TRUE, &pStream)); //FALSE
                     if (SUCCEEDED(hr) && pStream)
                     {
                         pImage = new Gdiplus::Image(pStream);

@@ -7,7 +7,6 @@
 *     $(this)["removeClass"]('selected') 等价于 $(this).removeClass('selected');
 *   2.jQuery做动画效果时要求在标准模式下，否则可能引起动画抖动(即  -//W3C//DTD XHTML 1.0 Transitional )
 *   3.有的时候选择器为什么要加上 ",this" ? 比如 《锋利的jQuery中》P152,5.1.4下拉框应用中， $var options=$("option:selected",this); //获取选中的选项
-*   4.parseJSON 将JSON字符串解析成JS对象 -- 有这个函数吗?
 *   5.jsonp 非官方协议用于实现跨域访问(从服务器端直接返回可执行的JavaScript函数调用或JavaScript对象)，已成为各大公司的Web应用程序跨域首选
 *   6.很多jQuery的函数都是可链接(Chainable)的，表示支持以下语法 $("#obj").fun1().fun2();
 *
@@ -306,6 +305,7 @@
 *     $.getJSON(".json地址" [, function(data){ 成功加载完毕的回调函数 }]) -- data就是已经解析出的JSON对象？
 *     $.getScript(".js地址" [, function(){ 成功加载完毕后的回调函数 }]) -- 全局函数，动态加载并执行 JavsScript 文件
 *     $.param("键值对参数") -- 将键值对参数序列化成字符串格式， 如 $.param({a:1,b:2,c:3}) 返回 "a=1&b=2&c=3"
+*     $.parseJSON("json格式的字符串") -- 将JSON字符串解析成JS对象
 *     $.post("URL",{ 参数键值对 }, 成功时的回调函数, 返回类型 ) -- 全局POST的全局提交函数，基本同 $.get，但post默认时会禁用缓存。
 *        回调函数格式 -- function (data, statusText) { xxx } 
 *     $obj.load("URL[ selector]" [,{参数键值对}] [,回调函数] ) -- 在匹配元素上加载指定URL对应的内容，没有参数时采用GET方式，有参数时使用POST方式

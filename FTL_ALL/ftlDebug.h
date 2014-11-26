@@ -18,7 +18,8 @@ namespace FTL
     *
     * WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)
     * 一般来说都是Mini dump，只包含寄存器、堆栈、和部分内存
-    *   1.设置符号路径 程序pdb路径;SRV*D:\OSSymbols*http://msdl.microsoft.com/download/symbols
+    *   1.设置符号路径 程序pdb路径;SRV*E:\OSSymbols\MicrosoftPublicSymbols*http://msdl.microsoft.com/download/symbols
+    *     VS中的 Cache symbols in this directory 只要设置 E:\OSSymbols 即可。默认下载路径是 C:\Windows\symbols\dll ?
     *   2.打开dmp文件
     *   3.!sym noisy  -- 相当于.symopt+0x80000000，即开启所谓的“吵杂”式符号加载，显示符号加载的调试信息(可检测调试符号加载时的问题)。
     *   4.!analyze -v -- 一般这个时候可以看到出问题的代码位置，但如果有异常处理(如Nelo)等，则kn看出来的地址不对,需执行下一步

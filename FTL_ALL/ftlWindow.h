@@ -146,6 +146,7 @@
 *   MFC: ON_MESSAGE / ON_REGISTERED_MESSAGE
 *        ON_NOTIFY_EX -- 如 ON_NOTIFY_EX( TTN_NEEDTEXT, 0, SetTipText )
 *   WTL: 
+*   TODO: WTL 中的 BEGIN_MSG_MAP_EX 里面定义了 m_bMsgHandled 变量，但没有提前赋值，使用时会是一个随机值
 * 
 * 创建窗口的顺序：PreCreateWindow -> PreSubclassWindow -> OnGetMinMaxInfo -> OnNcCreate -> OnNcCalcSize -> OnCreate
 *   -> OnSize -> OnMove -> OnChildNotify

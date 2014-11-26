@@ -449,6 +449,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlOpenMP.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlP2P.hpp"
 				>
 			</File>
@@ -672,6 +676,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlOpenGL.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlOpenMP.h"
 				>
 			</File>
 			<File

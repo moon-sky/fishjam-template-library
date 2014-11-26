@@ -86,7 +86,6 @@
 #  endif 
 
 
-
 //判断编译器类型
 #if defined(__cplusplus)
 #  pragma message( "  C++ Compiler" )
@@ -523,6 +522,14 @@
 #    endif
 #  endif //BOOST_MULTI_INDEX_HPP
 #endif //BOOST_MSVC
+
+//判断是否增加了 OPENMP 支持
+#  if defined(_OPENMP)
+#  pragma message( "  Support OpenMP" )
+#  else
+#  pragma message( "  NOT Support OpenMP" )
+#  endif
+
 #  pragma message(__FILE__ "(" QQUOTE(__LINE__) ") : End IDE Config Detect.................................." )
 
 #endif //FTL_CONFIG_DETECT_H

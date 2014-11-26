@@ -60,10 +60,43 @@
 *   Client Blocks   -- MFC 使用
 *
 * 字节对齐 --  #pragma pack(1)
+*
+* HGLOBAL -- 兼容16位内存分配API的数据，表示一个内存区，GlobalAlloc -> GlobalLock -> 读写内存 -> GlobalUnlock -> GlobalFree 
+*   GlobalAlloc 时的参数
+*     GMEM_FIXED: 分配固定位置的内存，返回值就是内存指针(GlobalLock 会返回同样的值)，可以直接使用，但推荐还是通过 Lock/Unlock 后使用?
+*     GMEM_MOVEABLE: 分配可移动的内存(内存块不会在物理内存区域移动，但会在缺省 heap 内移动? ), 需要通过 GlobalLock 后才能使用
+*                    实测没有发现地址移动 -- Win32 采用了高级的内存管理方案，因此不会移动？只有在16位时才会移动 ?
+*     GMEM_DISCARDABLE：分配可丢弃内存块
+*     GMEM_NODISCARD： 函数调用期间不丢弃任何内存块
+*     GMEM_ZEROINIT：新分配的内存块全部初始化成零，可和其他标志组合
+*   GlobalUnlock -- 解除被锁定的内存对象，如返回值为TRUE(通常是1)，表指定的内存对象仍处于被锁定状态；如返回值为FALSE且GetLastError为0，表内存对象已经解锁
+*     实质是对内存对象的锁定计数器减一
+*
+* CreateStreamOnHGlobal -- 使用 HGLOBAL 句柄指向的内存创建流对象(IStream),
+*   TODO: 1.其 HGGLOBAL 句柄必须是 moveable and nondiscardable 的 ?
+*         2.使用 SHCreateMemStream 性能更好
 ********************************************************************************************/
 
 namespace FTL
 {
+    //check GlobalAlloc memory status,
+    //h -- HGLOBAL return GlobalAlloc
+    //n -- lock count by GlobalLock
+    //a -- allocation values of the memory object, It can be zero or GMEM_DISCARDED
+    //ATLASSERT(((nTmpFlags & 0xFF00) >> 8) == (a));
+    #ifndef GLOBAL_FLAGS_CHECK
+    # ifdef _DEBUG
+    #   define GLOBAL_FLAGS_CHECK(h, n, a) \
+        { \
+        INT nTmpFlags = GlobalFlags(h); \
+        ASSERT(GMEM_INVALID_HANDLE != nTmpFlags); \
+        ATLASSERT((nTmpFlags & GMEM_LOCKCOUNT) == (n)); \
+    }
+    # else
+    #  define GLOBAL_FLAGS_CHECK(h, n, a) __noop
+    # endif 
+    #endif 
+
     //Class
     
     //模板内存池
