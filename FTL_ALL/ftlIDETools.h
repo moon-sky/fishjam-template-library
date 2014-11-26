@@ -1079,6 +1079,9 @@ namespace FTL
     *
     * 常见错误类型(在结果中搜索 "error xxx" ), <必改>, [建议更改], {可忽略}
     *   [ 19] -- Useless Declaration, 通常是有两个连着的分号，一般是宏本身定义了分号，但使用时又在结尾加了分号
+    *   { 40} -- Undeclared identifier 'xxx', 
+    *   <415> -- access of out-of-bounds pointer, 数组访问越界
+    *   <423> -- Creation of memory leak in assignment to variable 'Symbol', 给已有变量的指针赋值，可能造成内存泄露
     *   [429] -- Custodial pointer 'Symbol' (Location) has not been freed or returned
     *            指针没有释放或返回，可能出现内存泄露。但也可能是加入了特定容器进行管理。
     *   [438] -- Last value assigned to variable 'Symbol' not used
@@ -1090,16 +1093,23 @@ namespace FTL
 	*   {537} -- Repeated include file 'FileName', 重复包含了相同的头文件?
     *   <540> -- Excessive size, 字符串初始化时超过定义的缓冲区大小
     *   <604> -- Returning address of auto variable 'xxx', 返回局部变量的地址
+    *   <616> -- control flows into case/default, swtich...case 中没有break, 通常是错误
     *   <644> -- Variable 'xxx' may not have been initialized, 因为执行路径的问题，变量可能未初始化
+    *   <661> -- possible access of out-of-bounds pointer, 定义的数组，访问时越界
     *   {830} -- "Location cited in prior message"。通常接在一个特定的错误后面，指定该错误指向的函数原型，通常只更改调用的地方即可。
     *   <1401>(类似的有1402,1403等) -- 成员变量未在构造函数中初始化, member 'Xxx' not initialized by constructor
     *     BUG? 如果类没有构造函数，则检查不出来
-    *   1411 -- Member with different signature hides virtual member 'Symbol', 子类有同父类同名，但函数签名不同的函数
+    *   <1411> -- Member with different signature hides virtual member 'Symbol', 子类有同父类同名，但函数签名不同的函数
+    *   <1509> -- base class destructor for class 'Name' is not virtual, 有子类的父类的析构函数不是虚拟的
     *   <1510> -- base class 'Name' has no destructor, 子类有析构函数，但父类没有定义析构，一般需要增加虚析构定义
     *   <1516> -- Member declaration hides inherited member 'Symbol', 子类定义了和父类同名字的成员变量,
     *             注意:通过宏定义的消息映射等会有相同的变量名
+    *   <1540> -- pointer member 'Symbol' (Location) neither freed nor zero'ed by destructor. 指针变量在析构中没有释放或赋值为NULL
+    *   <1541> -- member 'Symbol' (Location) possibly not initialized by constructor, 构造函数中可能没有初始化指定变量
     *   [1551] -- function 'Symbol' may throw an exception in destructor 'Symbol', 
     *      在析构函数中调用可能抛出异常的代码，需要通过 try...catch 捕获异常
+    *   [1579] -- Pointer member ’Symbol’ (Location) might have been freed by a separate function, 类中指针类型的变量没有在析构函数中明确释放(可能通过内部函数释放了),
+    *             可以设置 /x -sem( CMyClass::myCleanMethod, cleanup ) x/ 的选项来过滤。
     *   TODO: 没有被适当检验的数组下标; 未被初始化的变量; 使用空指针; 冗余代码
     *
     * 其他的工具

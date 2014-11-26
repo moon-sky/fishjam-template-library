@@ -7,6 +7,10 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 
 
 /***************************************************************************************************************
+ * 书籍: 
+ *    疯狂Java -- P46, javadoc
+*     ThinkingInJava -- P34
+*     
  * TODO
  *   1.容器中迭代 : SomeType [] values = xxx; for(SomeType v : values) { v.Xxx(); }
  * 
@@ -117,7 +121,7 @@ public class JavaLanguageTest {
 	@Test
 	public void testArray(){
 		int total = 0;
-		int[] dynamicArray = new int[5];
+		int[] dynamicArray = new int[5];   //int dynamicArray[] = new int[5];	Java 同时支持两种语法定义数组，推荐第一种
 		for(int i = 0; i < dynamicArray.length; i++){		//1~5
 			dynamicArray[i] = i + 1;
 			total +=dynamicArray[i]; 

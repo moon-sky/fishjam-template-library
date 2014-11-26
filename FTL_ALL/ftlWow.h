@@ -55,9 +55,9 @@ namespace FTL
 	*   if ( ERROR_SUCCESS == reg.Open(HKEY_LOCAL_MACHINE, _T("SOFTWARE\Microsoft\VisualStudio"),	KEY_READ) )
 	*   #endif
 	*
-	* 64位OS上注册DLL时：
-	*   32-bit DLL -- syswow64\regsvr32.exe
-	*   64-bit DLL -- system32\regsvr32.exe
+	* 64位OS上注册DLL时(TODO:运行 .js 等时，也需要使用 %systemroot%\SysWoW64\wscript.exe 等)：
+	*   32-bit DLL -- %systemroot%\SysWoW64\regsvr32.exe
+	*   64-bit DLL -- %systemroot%\System32\regsvr32.exe
     *
     * 注册表编辑器(regedit)
     *   32-bit版本 -- %windir%\SysWOW64\regedit.exe

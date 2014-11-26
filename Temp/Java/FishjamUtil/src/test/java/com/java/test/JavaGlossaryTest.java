@@ -20,7 +20,8 @@ package com.java.test;
  * DMI(Dynamic Method Invocation) -- 动态方法调用， struts2中指定action不同的请求为 "ActionName!methodName" 
  * DTO(Data Transfer Object) -- 数据传输对象，JavaEE中，中间层组件将应用底层的状态信息封装成名为DTO的JavaBean，并传送到JSP页面进行显示。
  * EJB(Enterprise Java Bean) -- (将事务逻辑和连接的问题隔离),已被 JPA 替代？
- * GC(Garbage Collector) -- 垃圾回收
+ * GC(Garbage Collection) -- 垃圾回收。通常JRE会提供一条超级线程来进行检测和控制，一般都是在CPU空闲或内存不足时自动进行。
+ *   垃圾回收只能回收内存资源，对于其他物理资源(如 数据库连接，磁盘IO等) 则无能为力。
  * Ioc(Inversion of Control) -- 控制反转(也称作 依赖注入：Dependency Injection。
  *   即由容器控制程序之间的关系，而非传统实现中的程序代码直接控制。即控制权由应用代码中转到了外部容器。
  * JAAS(Java Authentication Authorization Service) -- Java验证和授权服务，用于控制对 Java Web 应用的授权访问，
@@ -41,11 +42,13 @@ package com.java.test;
  * JNI(Java Native Interface) -- Java原生接口，用以和C/C++程序接轨，获得高性能
  * JPA(Java Persistence API) -- 是sun公司官方提供的Java持久化的解决方案，基于POJO。推荐在基于Spring的应用程序中使用JPA实现持久化
  * JPA(Java Portlet API) -- ???
+ * JRE(Java Runtime Environment) -- Java运行时环境
  * JSF() -
  * JSP(Java Server Page) -- 最终会编译成Servlet才能运行
  * JSR(Java Spec. Request) -- Java 规格需求，比如 JSR-250， JSR330 等
  * JSTL(JSP Standard Tag Library) -- JSP标准标签库， Sun提供的一套标签库，用于IO、流程控制、XML文件解析、数据库插叙及文字格式标准化等
  * JTA(Java Transaction API) -- Java事务API
+ * JVM(Java Virtual Machine) -- Java虚拟机，可运行Java字节码文件的虚拟计算机
  * MVC(Model-View-Controller) -- 模型-视图-控制器, 
  * OGNL() -- 
  * ORM(Object Relation Mapping) -- 对象-关系映射，完成对象数据到关系数据映射的机制, 如 Java中的User类 <==> 数据库中的Tbl_User表。

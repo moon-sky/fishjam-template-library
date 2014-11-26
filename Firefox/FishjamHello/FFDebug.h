@@ -20,7 +20,8 @@
 *   1.定位到扩展安装的路径： %USERPROFILE%\Application Data\Mozilla\Firefox\Profiles\<profile_id>\extensions\
 *     如 Win7: C:\Users\%USERNAME%\AppData\Roaming\Mozilla\Firefox\Profiles\XXXX\extensions\
 *       WinXP: C:\Documents and Settings\%USERNAME%\Application Data\Mozilla\Firefox\Profiles\XXXX\extensions
-*   2.创建一个文本文件，用扩展ID做为文件名来保存文件，没有文件扩展名。如果使用ID是GUID值，那么文件名也必须包含‘{}’。
+*     TODO:新的FF版本需要更改为 %FIREFOX_HOME%\browser\extensions\ 目录
+*   2.创建一个文本文件，用扩展ID(即install.rdf文件中的<em:id> )做为文件名来保存文件，没有文件扩展名。如果使用ID是GUID值，那么文件名也必须包含‘{}’。
 *   3.文本文件中输入开发目录的全路径(如：c:\extensions\my_extension\)，路径必须以‘\’结尾并且之后不能有空格。
 *   4.启动Firefox，Firefox将检测到文本链接扩展目录，并安装扩展。
 *   补充：

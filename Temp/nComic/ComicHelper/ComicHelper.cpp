@@ -130,7 +130,7 @@ unsigned int __stdcall _AsyncHookControl(void * param)
 COMICHELPER_API BOOL HookApi()
 {
     BOOL bRet = TRUE;
-#if 1
+#if 0
     unsigned int nThreadId = 0;
 	HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, _AsyncHookControl, (void*)TRUE, 0, &nThreadId);
 	CloseHandle(hThread);
@@ -144,7 +144,8 @@ COMICHELPER_API BOOL UnHookApi()
 {
     FUNCTION_BLOCK_NAME_TRACE_EX(TEXT("UnHookApi"), FTL::TraceDetailExeName, 100);
     //notify all the toplevel progress
-    BroadcastSystemMessage(BSF_FORCEIFHUNG |BSF_POSTMESSAGE, NULL, WM_NULL, 0, 0);
+    DWORD dwRecipients = BSM_APPLICATIONS;
+    BroadcastSystemMessage(BSF_POSTMESSAGE | BSF_IGNORECURRENTTASK , &dwRecipients, WM_NULL, 0, 0);
     //Sync UnHook API
 	BOOL bRet = FALSE;
     API_VERIFY(g_ProtectWndHookApi.StopHook());

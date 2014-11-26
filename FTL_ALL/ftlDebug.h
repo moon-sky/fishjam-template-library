@@ -510,8 +510,8 @@ namespace FTL
 
     /*********************************************************************************************************
     * 在Release版本中设置断点: _asm int 3 (或 ntdll!DbgBreakPoint ?), 会产生 0x80000003 的异常
-    * Release 中的 this 指针一般会保存在 ecx 寄存器中，但有可能优化后会放在 ESI 等中
-    *  
+    * Release 中的 this 指针一般会保存在 ecx 寄存器中，但有可能优化后会放在 ESI 等中（TODO: 怎么区分确认?）
+    *  在命令窗口里通过: eval ecx 查看 ?
 	*   
 	* 使用 TRACE/ATLTRACE 打印带有中日韩的文字时，可能会报" _CrtDbgReport: String too long or IO Error "的错误，而无法打出日志：
 	*   原因: wprintf_s 不能正确输出中日韩的 UNICODE 文字(似乎VS2010后修复了这个Bug？)

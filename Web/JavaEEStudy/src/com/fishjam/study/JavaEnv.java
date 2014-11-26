@@ -4,9 +4,10 @@ package com.fishjam.study;
  * springMVC3学习(一)--框架搭建 http://blog.csdn.net/itmyhome1990/article/details/18311467
  * 安装好JDK以后，要设置环境变量：
  *   JAVA_HOME -- 指向 JDK 的安装目录
- *   CLASSPATH -- %JAVA_HOME%/lib/tools.jar;%JAVA_HOME%/lib/dt.jar 
+ *   CLASSPATH -- .;%JAVA_HOME%/lib/tools.jar;%JAVA_HOME%/lib/dt.jar
  *     含一个或多个目录，每个目录被视为.class 文件的查找起点，在此下通过展开package名称的路径查找class。
  *     安装第三方package后需要加入CLASSPATH。jar文件被认为是目录，也可以放于该变量中。
+ *     注意:1.5 以上的JDK已经可以不用设置该变量即可自动搜索加载相关类,但如果设置了的话，会按照指定路径搜索(如不会自动查找当前目录)
  *   验证JDK环境：java -version 和 javac -version
  *   TODO: mvn help:system 打印出所有的Java系统属性和环境变量，用什么 java 命令可以打印出来对应信息
  *   
@@ -37,7 +38,9 @@ package com.fishjam.study;
 
 /*****************************************************************************************************************************************************
  * 常见错误
- *    1.java.lang.OutOfMemeoryError -- a.内存泄露或需要优化；b.默认内存太小，需要使用 -Xms 或 -Xmx 等参数设置较大内存量 
+ *    1.java.lang.NoClassDefFoundError -- 运行时找不到指定类，通常是没有设置 CLASSPATH(1.4及以前) 或 设置CLASSPATH后没包含当前路径.(1.5及以后) 造成
+ *    2.java.lang.OutOfMemeoryError -- a.内存泄露或需要优化；b.默认内存太小，需要使用 -Xms 或 -Xmx 等参数设置较大内存量 
+ *    
 *****************************************************************************************************************************************************/
 /*
 class MyStack<T>
