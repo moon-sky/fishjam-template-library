@@ -2,6 +2,8 @@ package com.java.test;
 
 import static org.junit.Assert.*;
 
+import java.math.BigDecimal;
+
 import org.junit.Test;
 import org.omg.CORBA.PRIVATE_MEMBER;
 
@@ -15,7 +17,17 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  *   1.容器中迭代 : SomeType [] values = xxx; for(SomeType v : values) { v.Xxx(); }
  * 
  ***************************************************************************************************************/
-/****************************************************************************************
+/***************************************************************************************************************
+ * 关键字
+ *    assert 
+ *    instanceof
+ *    strictfp <== 
+ *    synchronized <==
+ *    throw
+ *    throws 
+ *    transient
+ *    volatile
+ *    
  * 子类 extends 父类  implements 接口1,接口2
  * 
  * Java的访问控制分为： public > protected(同一package中其他class也可以访问) >
@@ -114,10 +126,71 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  *   "((?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,30})"
  * 
  * JNI调用库？： system.loadLibrary("MyLib);
- ****************************************************************************************/
+ *****************************************************************************************************************/
 
 public class JavaLanguageTest {
 
+	@Test
+	public void testBasicGrammar(){
+		//long wroingValue = 999999999999;  //系统不会自动把大的值当成 long类型处理，会超出 int 的范围，从而引起编译错误
+		long rightValue = 999999999999L;   //使用 "L" 后缀，强制使用 long 类型 
+		assertEquals(rightValue, 999999999999L);
+		
+		int octalValue = 013; 	//八进制
+		int hexValue = 0xB;	//十六进制
+		assertTrue((octalValue == hexValue) && (octalValue == 11));
+		
+		char zhong = '中';		//Java 中的 char 类型是UNICODE的(16位)
+		assertEquals(zhong, '中');
+		
+		BigDecimal	exactFloat = new BigDecimal("3.1415926"); 	//float 和 double在要求的精度很高时(通常不存在这种情况)可能不能精确保存其值，此时用 BigDecimal
+		
+		float f = 0.5f;   	//Java语言浮点型默认是 double 型，需要加后缀 "f|F" 指定为 float
+		
+		assertTrue(Double.POSITIVE_INFINITY == 10.0 / 0.0); 	//正无穷大， 但如果是 10/0 ， 则会抛出 " / by zero" 异常
+		assertTrue(Float.NaN !=  (0.0f / 0.0f));						//非数, NaN不与任何数(即使是NaN)相等
+		
+		int intValue = 233;                          
+		byte byteValue = (byte)intValue;     //二进制(0xE9) : 11101001 => 1(负数) 1101001(补码) =(减1再取反)> -(0010111) 即 -23
+		assertEquals(-23, byteValue);			//强制类型转换，可能造成数据丢失
+		
+		//按位的 与或非, 移位 等运算
+		assertEquals( (5 & 9) , 1);  // 101 & 1001 = 1
+		assertEquals( (5  | 9 ) , 13);    // 101 |   1001 = 1101
+		assertEquals( (5 ^ 9) , 12);   // 101 ^  1001 = 1100
+		assertEquals( (5 << 2) , 20);
+		
+		assertEquals(-20, (-5 << 2));						//左移
+		assertEquals(-2 , (-5 >> 2));						//带符号右移
+		assertEquals(1073741822, -5 >>> 2);			//无符号右移
+		
+		byte bAdd = 5;
+		bAdd+=5;
+		//bAdd = bAdd + 5;    //编译错误  --  +时会转换为 int, 计算完以后无法赋值给 byte
+		assertEquals(10, bAdd);
+		
+		String str1 = "Hello world";
+		String str2 = "Hello ";
+		str2 += "world";
+		String str3 = "Hello " + "world";  
+		assertTrue(str1.equals(str2));	
+		assertTrue( str1 != str2);			//引用类型的变量，只有指向相同的实例时 == 才是 true
+		assertTrue(str1 == str3);			//通过直接量直接赋值的String进行缓存，因此指向同一个变量，类似的有 包装类自动装箱的cache数组 
+		
+		assertTrue(new Integer(2) != new Integer(2));		//基本类型的包装类直接比较的话比较的是“是否指向同一对象"
+		assertTrue(new Integer(2) == 2); 
+		
+		assertTrue( true && (1 > 0)); 		//前后两个操作数都是 true 时才返回 true
+
+		//注意： & 和 | 不会短路，需要进行全部的逻辑比较，这样可能造成代码错误， 如 if( obj != null & obj->xxx()); 可能访问到空指针
+		int aLogical = 5;
+		int bLogical = 10;
+		boolean bResult = (aLogical < 3)  && (  bLogical++ < 15);			// && 会短路
+		assertTrue((bResult == false) && (bLogical==10 ));
+		bResult = (aLogical < 3)  & (  bLogical++ < 15);							// & 不会短路
+		assertTrue((bResult == false) && (bLogical==11 ));
+	}
+	
 	@Test
 	public void testArray(){
 		int total = 0;
@@ -128,9 +201,16 @@ public class JavaLanguageTest {
 		}
 		assertEquals(total, 15);
 		
+		total = 0;
+		for (int i : dynamicArray) {			//通过 foreach 循环遍历 集合、数组 的元素
+			total += i;
+		}
+		assertEquals(total, 15);
+		
 		int  staticArray[] = { 1, 2, 3, 4, 5 };
 		assertEquals(staticArray.length, 5);
 		assertArrayEquals(dynamicArray, staticArray);
+
 	}
 	
 	private String myContacStrings(String... ss)
@@ -156,7 +236,7 @@ public class JavaLanguageTest {
 	@Test
 	public void testArrayParam() {
 		String testString = myContacStrings("one", "two", "three");
-		System.out.println(testString);
+		//System.out.println(testString);
 		
 		assertEquals(testString, "[one, two, three]");
 		//fail("Not yet implemented");

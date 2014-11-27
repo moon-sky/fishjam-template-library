@@ -1226,7 +1226,9 @@ namespace FTL
     *     <== 使用 notepad 设置属性(如果设置了SVN_EDITOR 环境变量的话，可以用指定的编辑器进行编辑设置 )
     *   设置属性( propset )
     *       svn:externals "[-r版本] 服务器URL地址 本地名"  <== 实现文件、目录共享。
-    *         注意，URL中的空格必须用%20代替，本地名的空格必须用双引号。"^/"代表根URL
+    *         注意，URL中的空格必须用%20代替，本地名的空格必须用双引号。"^/"代表根URL, 示例:
+    *         绝对路径方式: swanfalconapp https://....    (TODO: 需要确认)
+    *         相对路径方式: ^/trunk/Temp/FJDriverDemo/InlineHook.h Temp/nComic/ComicHelper/InlineHook.h
     *       svn:executable <== 设置可执行属性(用于linux的so等？)
     *       svn:ignore  "*.obj *.exe *.bak" 要设置的目录(如.) <== 设置SVN忽略的文件(可以通过 * 指定特殊的扩展名)
     *    update <== 更新代码，可能会发生冲突
@@ -1237,7 +1239,7 @@ namespace FTL
     *   2.svn co file:///本地仓库目录 . <== 将本机仓库目录checkout到临时目录下，之后会进一步进行配置
     *   3.创建需要的目录结构，加入需要的文件，然后使用 svn add 加入;
     *   4.$SVN_EDITOR=gedit svn pe svn:externals 链接名 <== 设置 svn 外链接属性
-    *     在弹出的 gedit 中输入外部链接的路径：外部链接名 SVN地址(如 swanfalconapp https://....)
+    *     在弹出的 gedit 中输入外部链接的路径：外部链接名 SVN地址，如:
     *   5.svn commit -m "注释" <== 将已经配置好的本地目录结构 commit 到 本地的 Local Repository 中
     *   6.Eclipse 中添加 Resposity location，并使得 URL 指向本地的 Local Repository，Checkout后
     *     就可以直接在Eclipse中管理代码了
