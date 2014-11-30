@@ -10,7 +10,7 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 
 /***************************************************************************************************************
  * 书籍: 
- *    疯狂Java -- P46, javadoc
+ *    疯狂Java -- P93, 深入数组
 *     ThinkingInJava -- P34
 *     
  * TODO
@@ -189,11 +189,36 @@ public class JavaLanguageTest {
 		assertTrue((bResult == false) && (bLogical==10 ));
 		bResult = (aLogical < 3)  & (  bLogical++ < 15);							// & 不会短路
 		assertTrue((bResult == false) && (bLogical==11 ));
+	
+	
+		//通过在 break|continue 后跟一个标识外层循环的标签，可以直接结束外层循环 -- 示例: 
+		String strBreakResult = "";
+		outer:  //定义标签，必须在 break 语句所在的循环之前定义
+		for( int i = 1; i < 10; i++)
+		{
+			for( int j = 1; j < 10; j++)
+			{
+				if( i * j == 10){
+					strBreakResult = "i="+i + ";j=" + j;
+					break outer;  //continue outer;
+				}
+			}
+		}
+		assertTrue(strBreakResult.equals("i=2;j=5"));
 	}
 	
 	@Test
 	public void testArray(){
 		int total = 0;
+		//int[] dynamicArray -- 定义了一个引用类型的数组变量，此时尚未指向任何有效内存，且定义时不能指定数组的长度
+		//new int[5] -- 为数组元素分配内存空间，此时每个数组元素尚未赋值，其值是默认值(如 int 的0， 引用类型的 null)
+		//数组的初始化：
+		//1.静态初始化 -- 程序员显式指定每个数组元素的初始值，由系统决定需要的数组长度，如 staticArray
+		//2.动态初始化 -- 初始化时程序员只指定数组长度，由系统为数组元素分配初始值, 如 dynamicArray
+
+		int[]  staticArray = { 1, 2, 3, 4, 5 }; //也可以: = new int[]{ 1, 2, 3, 4, 5};
+		assertEquals(staticArray.length, 5);
+
 		int[] dynamicArray = new int[5];   //int dynamicArray[] = new int[5];	Java 同时支持两种语法定义数组，推荐第一种
 		for(int i = 0; i < dynamicArray.length; i++){		//1~5
 			dynamicArray[i] = i + 1;
@@ -202,15 +227,14 @@ public class JavaLanguageTest {
 		assertEquals(total, 15);
 		
 		total = 0;
-		for (int i : dynamicArray) {			//通过 foreach 循环遍历 集合、数组 的元素
+		for (int i : dynamicArray) {//通过 foreach 循环遍历 集合、数组 的元素
+			//注意：此时的迭代变量(i)是 集合元素的副本，因此无法通过更改迭代变量来改变集合、数组中的值(引用类型)
 			total += i;
 		}
 		assertEquals(total, 15);
-		
-		int  staticArray[] = { 1, 2, 3, 4, 5 };
-		assertEquals(staticArray.length, 5);
-		assertArrayEquals(dynamicArray, staticArray);
 
+		//dynamicArray[0] = 99;
+		assertArrayEquals(dynamicArray, staticArray);  //数组进行了重载? 比较时比较长度和每一个元素?
 	}
 	
 	private String myContacStrings(String... ss)
