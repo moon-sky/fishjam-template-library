@@ -1,0 +1,204 @@
+//-----------------------------------
+//--- 010 Editor v2.0 Binary Template
+//
+// File:     PSDTemplate.bt
+// Author:   fishjam
+// Revision: 1.0
+// Purpose:  Defines a template for parsing PSD image files.
+// Doc:      http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_72092 
+//-----------------------------------
+
+//Photoshop file structure
+//1.File Header(1)
+//2.Color Mode Data
+//3.Image Resources
+//4.Layer and Mask Information
+//5 Image Data
+
+
+// Define structures used in PSD files
+enum<uint16> COLORMODE { 
+    Bitmap          = 0, 
+    Grayscale       = 1, 
+    Indexed         = 2,
+    RGB             = 3,
+    CMYK            = 4,
+    Multichannel    = 7,
+    Duotone         = 8,
+    Lab             = 9
+};
+
+typedef struct {
+    CHAR    Signature[4];   //always equal to '8BPS' . Do not try to read the file if the signature does not match this value.
+    WORD    Version;        //always equal to 1. Do not try to read the file if the version does not match this value. (**PSB** version is 2.)
+    CHAR    Reserved[6];    //must be zero.
+    WORD    ChannelNumber;  //he number of channels in the image, including any alpha channels. Supported range is 1 to 56.
+    DWORD   Heigth;         //The height of the image in pixels. Supported range is 1 to 30,000.
+    DWORD   Width;          //The width of the image in pixels. Supported range is 1 to 30,000.
+    WORD    Depth;          //the number of bits per channel. Supported values are 1, 8, 16 and 32.
+    COLORMODE    ColorMode; //The color mode of the file
+} PSDFILEHEADER;
+
+// Only indexed color and duotone have color mode data
+typedef struct{
+    DWORD   Length;         //The length of the following color data
+    UBYTE   ColorData[Length];
+} COLORMODEDATASECTION;
+
+typedef struct{
+    DWORD   Length;         //Length of image resource section. The length may be zero
+    UBYTE   ImageData[Length];
+}IMAGERESOURCESSECTION;
+
+typedef struct{
+    CHAR    Signature[4];      //'8BIM' , TODO:OsType?
+    WORD    ImageResourceID;//
+    UBYTE   Name[1];        //TODO:
+    DWORD   DataSize;
+    UBYTE   Data[DataSize]; 
+}IMAGERESOURCEBLOCK;
+
+typedef struct{
+    DWORD   Format;         //1 = kJpegRGB . Also supports kRawRGB (0).
+    DWORD   Width;          //Width of thumbnail in pixels.
+    DWORD   Height;         //Height of thumbnail in pixels.
+    DWORD   Widthbytes;     //Padded row bytes = (width * bits per pixel + 31) / 32 * 4.
+    DWORD   TotalSize;      //widthbytes * height * planes
+    DWORD   SizeAfterCompression;  //Used for consistency check.
+    WORD    BitsPerPixel;   //=24
+    WORD    Planes;         //1
+    UBYTE   Data[TotalSize];//TODO:JFIF data in RGB format.For resource ID 1033 the data is in BGR format.
+}THUMBNAILRESOURCE;
+
+/*
+typedef struct {    // bmih
+    DWORD   biSize;
+    LONG    biWidth;
+    LONG    biHeight;
+    WORD    biPlanes;
+    WORD    biBitCount;
+    DWORD   biCompression;
+    DWORD   biSizeImage;
+    LONG    biXPelsPerMeter;
+    LONG    biYPelsPerMeter;
+    DWORD   biClrUsed;
+    DWORD   biClrImportant;
+} BITMAPINFOHEADER;
+
+typedef struct {   // rgbq
+    UBYTE   rgbBlue;
+    UBYTE   rgbGreen;
+    UBYTE   rgbRed;
+    UBYTE   rgbReserved;
+} RGBQUAD <read=ReadRGBQUAD>;
+
+typedef struct {   // rgbt
+    UBYTE   rgbBlue;
+    UBYTE   rgbGreen;
+    UBYTE   rgbRed;
+} RGBTRIPLE <read=ReadRGBTRIPLE>;
+
+//---------------------------------------------
+// Custom read functions for color types - this allows the
+//  color to be displayed without having to open up the structure.
+
+string ReadRGBQUAD( RGBQUAD &a )
+{
+    string s;
+    SPrintf( s, "#%02X%02X%02X%02X", (int)a.rgbReserved, (int)a.rgbRed, (int)a.rgbGreen, (int)a.rgbBlue );
+    return s;
+}
+
+string ReadRGBTRIPLE( RGBTRIPLE &a )
+{
+    string s;
+    SPrintf( s, "#%02X%02X%02X", (int)a.rgbRed, (int)a.rgbGreen, (int)a.rgbBlue );
+    return s;
+}
+*/
+
+//---------------------------------------------
+
+// Define the headers
+BigEndian(); 
+SetBackColor( cLtGray );
+PSDFILEHEADER psdfh;
+//BITMAPINFOHEADER bmih;
+
+// Check for header
+if( psdfh.Signature != "8BPS" )
+{
+    Warning( "File is not a psd file. Template stopped." );
+    return -1;
+}
+
+if( psdfh.Version != 1 )
+{
+    Warning( "Psd file version error. Template stopped." );
+    return -1;
+}
+
+//color mode
+DWORD ColorModeLength;
+if(ColorModeLength > 0){
+    Warning("Not support color mode data now");
+    return -1;
+}
+
+//image resource
+DWORD ImageResourceLength;
+if(ImageResourceLength > 0){
+   IMAGERESOURCEBLOCK   imageResourceBlock;
+}
+
+/*
+
+// Define the color table
+if( (bmih.biBitCount != 24) && (bmih.biBitCount != 32) )
+{
+    SetBackColor( cLtAqua );
+    if( bmih.biClrUsed > 0 )
+        RGBQUAD aColors[ bmih.biClrUsed ];
+    else
+        RGBQUAD aColors[ 1 << bmih.biBitCount ];
+}
+
+// Define the bytes of the data
+SetBackColor( cNone );
+if( bmih.biCompression > 0 )
+{
+    // Bytes are compressed
+    if( bmih.biSizeImage > 0 )
+        UBYTE rleData[ bmih.biSizeImage ];
+    else
+        UBYTE rleData[ bmfh.bfSize - FTell() ];
+}
+else
+{
+    // Calculate bytes per line and padding required
+    local int bytesPerLine = (int)Ceil( bmih.biWidth * bmih.biBitCount / 8.0 );
+    local int padding      = 4 - (bytesPerLine % 4);
+    if( padding == 4 )
+        padding = 0;
+
+    // Define each line of the image
+    struct BITMAPLINE {
+
+        // Define color data
+        if( bmih.biBitCount < 8 )
+             UBYTE     imageData[ bytesPerLine ];
+        else if( bmih.biBitCount == 8 )
+             UBYTE     colorIndex[ bmih.biWidth ];
+        else if( bmih.biBitCount == 24 )
+             RGBTRIPLE colors[ bmih.biWidth ];
+        else if( bmih.biBitCount == 32 )
+             RGBQUAD   colors[ bmih.biWidth ];
+
+        // Pad if necessary        
+        if( padding != 0 )
+             UBYTE padBytes[ padding ];
+
+    } lines[ bmih.biHeight ] <optimize=true>;
+} 
+
+*/
