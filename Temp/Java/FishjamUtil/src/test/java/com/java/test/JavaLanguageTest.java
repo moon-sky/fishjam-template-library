@@ -3,6 +3,7 @@ package com.java.test;
 import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 
 import org.junit.Test;
 import org.omg.CORBA.PRIVATE_MEMBER;
@@ -10,7 +11,7 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 
 /***************************************************************************************************************
  * 书籍: 
- *    疯狂Java -- P93, 深入数组
+ *    疯狂Java -- P109, 类
 *     ThinkingInJava -- P34
 *     
  * TODO
@@ -207,6 +208,9 @@ public class JavaLanguageTest {
 		assertTrue(strBreakResult.equals("i=2;j=5"));
 	}
 	
+	/**
+	 * 
+	 */
 	@Test
 	public void testArray(){
 		int total = 0;
@@ -234,7 +238,40 @@ public class JavaLanguageTest {
 		assertEquals(total, 15);
 
 		//dynamicArray[0] = 99;
-		assertArrayEquals(dynamicArray, staticArray);  //数组进行了重载? 比较时比较长度和每一个元素?
+		assertArrayEquals(dynamicArray, staticArray);  				//数组进行了重载? 比较时比较长度和每一个元素?
+		assertTrue(Arrays.equals(dynamicArray, staticArray));	//两个数组的长度相等，并且每个元素依次相等
+		assertTrue(dynamicArray != staticArray);						//两个数组的变量不是指向同一个数组对象
+		
+		//多维数组
+		int multiArrayIndex = 1;
+		int [][] multiArray = new int[3][4];
+		for(int i = 0; i  < multiArray.length; i++){
+			for (int j = 0; j < multiArray[i].length; j++) {
+				multiArray[i][j]=  multiArrayIndex++;
+			}
+		}
+		int multiArraySum = 0;
+		for (int[] is : multiArray) {
+			for (int i : is) {
+				multiArraySum += i;
+			}
+		}
+		assertEquals(78, multiArraySum);  // 1 + 2 + ... + 12
+		
+		//操作数组的 工具类 Arrays, 其中定义了一些可以直接操作数组数据的静态方法
+		Arrays.sort(staticArray);
+		int nBinaraySearchIndex = Arrays.binarySearch(staticArray, 4);		//二分法查找 -- 必须已经按升序排好序
+		assertEquals(3, nBinaraySearchIndex);
+		assertTrue(Arrays.binarySearch(staticArray, 10)  < 0);					//找不到的话，返回值为 负数(不一定是 -1)
+		
+		int[] copyResult = Arrays.copyOf(staticArray, 3);
+		assertEquals(3, copyResult.length);
+		
+		String strArraysToString = Arrays.toString(copyResult);	//按顺序把多个数组元素连接在一起，多个数组元素使用英文逗号(,) 和 空格 隔开
+		String strDirectToString = copyResult.toString();			//返回地址相关的字符串
+		assertFalse( strArraysToString == strDirectToString);	//★两种方法的结果不一样★
+		assertEquals("[1, 2, 3]", strArraysToString);
+		assertEquals("[I@182f0db", strDirectToString);				//实际上因为每次运行的地址可能不同，本assert可能不正确
 	}
 	
 	private String myContacStrings(String... ss)
