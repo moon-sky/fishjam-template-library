@@ -1,5 +1,4 @@
-CEditWndMgr::DestroyWindow
-
+assoc -- 显示或修改文件扩展名关联。可用于解决 .lnk 缺少打开方式的问题。即命令行下输入: assoc .lnk=lnkfile
 
 :DevPartner 响应(TODO: 尚未增加产品)三处访问 activationServerName, 通过 RequestFunction 进行区分
 1.getAuthData()

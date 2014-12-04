@@ -13,7 +13,11 @@
 *   不能通过赋值操作来初始化auto_ptr 。
 * 
 * std::tr1::shared_ptr -- 新版本中加入了SharePtr
-
+*   智能指针的类型转换
+*     std::tr1::static_pointer_cast
+*     std::tr1::dynamic_pointer_cast
+*
+* 允许对this使用 shared_ptr -- 从 enable_share_from_this<> 继承 + shared_from_this();
 *********************************************************************************************************/
 class CSTLMemoryTester : public CPPUNIT_NS::TestFixture
 {

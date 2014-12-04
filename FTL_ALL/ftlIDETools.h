@@ -211,14 +211,47 @@ namespace FTL
     *************************************************************************************************************************/
 
     /*************************************************************************************************************************
-    * 010Editor -- 编辑和查看二进制文件的工具，可以通过模板分析文件
+    * 010Editor -- 编辑和查看二进制文件的工具，可以通过模板分析文件。可以配置使得打开特定类型文件时自动使用对应的模版。
 	*   语法
-	*     char s[]; -- 动态匹配其长度
-	*   内置函数
-	*     FSeek(地址) -- 定位到指定地址
-	*     FTell() -- 返回文件的长度
+	*     0.可通过 #include "Vector.bt" 的语法包含预定义的模版文件，实现重用
+	*     1.只要声明变量，变量就会映射到文件当前位置的数据。除非通过关键字 "local" 声明。
+	*       char|wchar_t str[] 或 string|wstring str; -- 动态匹配NULL结尾的字符串(读取字符内容直到遇到NULL)
+	*     2.十六进制: 0xff, 25h; 二进制: 0b011; 12u 表无符号整数; -1L 表示int64; 0.2表8字节的double; 0.2f 表4字节的float 
+	*     3.变量名后可以通过 <xxx=yyy> 指定特定的属性, 如：
+	*       bgcolor=<color>, -- 指定当前变量的背景色，SetBackColor() 函数指定当前位置开始的背景色
+	*       comment="xxxx", 
+	*       fgcolor=<color>, -- 指定当前变量的前景色。()
+	*       format=hex|decimal|octal|binary,
+	*       hidden=true|false,
+	*       open=true|false|suppress, 
+	*       read=<function_name>, 
+	*     4.颜色值可以通过 0x0000FF(BGR格式) 等十六进制格式 或 cBlack|cLtGray|cRed|cNone 等常量指定
+	*     5.可通过 struct|union 等定义结构体，其中可以包含 if|for|while 等控制语句，可以嵌套并使用数组(参见 ?).
+    *       定义结构时可以指定参数，如 typedef struct (int arraySize) { int id; int array[arraySize];}VarSizeStruct 
+    *       然后当声明变量时可通过参数指定大小。
+    *     6.两个位域填充模式(bitfield modes) -- 会影响结构体的位域模式( ushort r:5; ushort g:5; ushort b:5 }
+    *       TODO:因为位域模式的自动填充比较复杂，最好在定义 结构体的位域数据时就将所有位都定义好，避免由系统填充
+    *       [padded bitfields] | unpadded bitfields
+    *     7.自定义函数:
+    *       <return type> <function name> ( <argument_list> ) { <statements> }
+    *   限制:
+    *     1.不能使用指针;
+    *     2.不支持多维数组(也包括strings数组)，但可通过 结构体+数组 的方式模拟
+	*   内置函数 -- 参数默认为值传递，可通过 & 表示引用传递
+	*     BigEndian|LittleEndian -- 设置大端(缺省为 packed left-to-right)|小端(缺省为 packed right-to-left)
+	*     BitfieldRightToLeft|BitfieldLeftToRight -- 设置位域模式时的读取方式
+	*     BitfieldDisablePadding|BitfieldEnablePadding -- 切换位域的填充模式
+	*     FSeek(pos) -- 定位到指定地址，返回0表示成功
+	*     FSkip(offset) -- 偏移
+	*     FTell() -- 返回文的当前位置
 	*     FEof() -- 返回是否到达文件结尾
-	*     ReadBytes(内存变量, 
+	*     FileSize() -- 文件大小
+	*     Printf|Warning("string='%s', lenght=%d\n", str, Strlen(str)); -- 
+	*     ReadBytes(内存变量,
+	*     ReadByte|ReadShort|ReadInt|ReadFloat|ReadQuad -- 从指定地址直接读取数据(不通过定义变量的方式)
+	*     SetBackColor|SetColor|SetForeColor -- 指定当前位置开始的默认颜色
+	*     Strchr|Strlen|SubStr -- 字符串函数
+	*     SwapBytes(data_type) -- TODO:交换变量的字节? 比如 0x1234 => 0x3412 ?
 	*   用法:
 	*     while(!FEof()){ 分析脚本 } -- 分析到文件结尾
     *   最佳实践:
@@ -941,7 +974,7 @@ namespace FTL
 	*                       ${Switch} $0 ${Case} 'some string' xxx ${Break} ${Default} yyy ${Break} ${EndSwitch}
 	*           注册表：ReadRegStr
 	*           调试函数：
-	*              MessageBox MB_YESNO "提示信息" IDYES 跳转标号
+	*              MessageBox MB_YESNO "提示信息" IDYES 跳转标号 或 MessageBox MB_OK "提示信息"
 	*              DetailPrint 字符串信息或变量 -- 在安装的进度窗体显示信息，如 DetailPrint $R0
 	*              Dumpstate
 	*           

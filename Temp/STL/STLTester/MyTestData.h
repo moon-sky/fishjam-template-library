@@ -235,3 +235,12 @@ private:
     LPCSTR     m_pszFile;
     DWORD       m_dwLine;
 };
+
+class CMyTestDataChild : public CMyTestData
+{
+public:
+    CMyTestDataChild(LONG index,BOOL bDumpInfo = TRUE) : CMyTestData(index, bDumpInfo)
+    {
+    }
+
+};

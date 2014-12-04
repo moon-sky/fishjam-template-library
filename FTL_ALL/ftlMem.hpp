@@ -459,7 +459,13 @@ namespace FTL
 	{
 		BOOL bRet = FALSE;
 		CFAutoLock<CFLockObject>	locker(&m_LockObj);
-		ObjectPtrInfoContainer::iterator iter = m_allObjects.find(pObject);
+        if (m_bTrace)
+        {
+            FTLTRACE(TEXT("CFMemCheckManager::AddObject[%d], pObject=0x%p, pos=%s, name=%s\n"),
+                m_allObjects.size(), pObject, pszPosition, pszName);
+        }
+
+        ObjectPtrInfoContainer::iterator iter = m_allObjects.find(pObject);
 		if (iter != m_allObjects.end())
 		{
 			//找到相同的地址，原因是:
@@ -468,7 +474,24 @@ namespace FTL
 		else
 		{
 			ObjectInfo* pInfo = new ObjectInfo;
-			pInfo->m_strInfo.Format(TEXT("%s:%s"), pszPosition, pszName);
+#if ENABLE_CALL_STACK
+            {
+                CONTEXT context;
+                GET_CURRENT_CONTEXT(context, 0);
+                CFStackWalker   stackWalker;
+                stackWalker.SetMaxCallStacksNum(15);
+                stackWalker.GetCallStackArray(GetCurrentThread(), &context);
+                INT nTraceNum = stackWalker.GetStackTraceNum();
+                for (INT i = 0; i < nTraceNum; i++)
+                {
+                     pInfo->m_strInfo += stackWalker.GetStackTraceStringByIndex(i);
+                     pInfo->m_strInfo += _T("\r\n");
+                }
+            }
+#else
+            pInfo->m_strInfo.Format(TEXT("%s:%s"), pszPosition, pszName);
+#endif 
+			
 			m_allObjects[pObject] = pInfo;
 			bRet = TRUE;
 		}
@@ -477,9 +500,15 @@ namespace FTL
 
 	BOOL CFMemCheckManager::RemoveObject(DWORD_PTR pObject)
 	{
-		CFAutoLock<CFLockObject>	locker(&m_LockObj);
-		BOOL bRet = FALSE;
-		ObjectPtrInfoContainer::iterator iter = m_allObjects.find(pObject);
+        BOOL bRet = FALSE;
+        CFAutoLock<CFLockObject>	locker(&m_LockObj);
+        if (m_bTrace)
+        {
+            FTLTRACE(TEXT("CFMemCheckManager::RemoveObject[%d], pObject=0x%p\n"),
+                m_allObjects.size(), pObject);
+        }
+
+        ObjectPtrInfoContainer::iterator iter = m_allObjects.find(pObject);
 		if (iter != m_allObjects.end())
 		{
 			delete iter->second;
@@ -515,8 +544,16 @@ namespace FTL
     {
         return m_bTrace;
     }
-
 	
+    CFMemCheckManagerHelper::CFMemCheckManagerHelper()
+    {
+        CFMemCheckManager::GetInstance();
+    }
+
+    CFMemCheckManagerHelper::~CFMemCheckManagerHelper()
+    {
+        CFMemCheckManager::ReleaseInstance();
+    }
 }
 
 #endif //FTL_MEM_HPP

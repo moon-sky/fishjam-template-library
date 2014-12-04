@@ -1,0 +1,16 @@
+//--------------------------------------
+//--- 010 Editor v3.1 Binary Template
+//
+// File:
+// Author:
+// Revision:
+// Purpose:
+//--------------------------------------
+
+//Pascal string, padded to make the size even (a null name consists of two bytes of 0)
+typedef struct {
+    USHORT   Length;
+    if(Length > 0){ //StrLen(Name) % 2 == 1){
+        string  Value;
+    }
+}PascalString;

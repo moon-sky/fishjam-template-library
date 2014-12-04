@@ -11,6 +11,14 @@
 #include "ftlThread.h"
 #include "ftlFunctional.h"
 
+#ifndef ENABLE_CALL_STACK
+# define ENABLE_CALL_STACK 1
+#endif
+
+#if ENABLE_CALL_STACK
+#include "ftlStackWalker.h"
+#endif
+
 /********************************************************************************************
 * EM64T -- Intel 的延伸内存64技术
 *
@@ -261,7 +269,7 @@ namespace FTL
 		{
 			//UINT				m_nCount;		//o or 1
 			//DWORD_PTR			pObjectAddr;
-			CFStringFormater	m_strInfo;
+			CAtlString	        m_strInfo;
 		};
 		CFCriticalSection		m_LockObj;
 		typedef std::map<DWORD_PTR, ObjectInfo*>	ObjectPtrInfoContainer;
@@ -271,6 +279,12 @@ namespace FTL
 		static CFMemCheckManager*	s_pMemCheckMgr;
 	};
 
+    class CFMemCheckManagerHelper
+    {
+    public:
+        CFMemCheckManagerHelper();
+        ~CFMemCheckManagerHelper();
+    };
 	//#define CHECK_OBJ_MEM_LEAK()   \
 	//if( 0 != CFDoubleFreeCheckMgr::Instance(). ) \
 	//	{\

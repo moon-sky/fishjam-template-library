@@ -127,16 +127,51 @@ void CSTLMemoryTester::test_contain_assign()
 
 void CSTLMemoryTester::test_shared_ptr()
 {
-	//可以将 shared_ptr 的指针放入容器，并且在容器超出范围或 clear 后会自动释放
-	DECLARE_MYTEST_DATA_COUNT_CHECKER(dataCountChecker,ctDataCount, 0, __FILE__, __LINE__);
-	DECLARE_MYTEST_DATA_COUNT_CHECKER(constructCountChecker,ctConstructCount, 4, __FILE__, __LINE__);
-	{
-		typedef std::vector<std::tr1::shared_ptr<CMyTestData> >		CMyTestDataSharePtrContainer;
-		CMyTestDataSharePtrContainer myTestDataSharedPtrs;
-		for (int i = 0; i < 4; i++)
-		{
-			myTestDataSharedPtrs.push_back(shared_ptr<CMyTestData>(new CMyTestData(i)));
-		}
-	}//此处以后自动释放
+    typedef std::tr1::shared_ptr<CMyTestData>           CMyTestDataSharePtr;
+    typedef std::tr1::shared_ptr<CMyTestDataChild>      CMyTestDataChildSharePtr;
 
+    {
+	    //可以将 shared_ptr 的指针放入容器，并且在容器超出范围或 clear 后会自动释放
+	    DECLARE_MYTEST_DATA_COUNT_CHECKER(dataCountChecker,ctDataCount, 0, __FILE__, __LINE__);
+	    DECLARE_MYTEST_DATA_COUNT_CHECKER(constructCountChecker,ctConstructCount, 4, __FILE__, __LINE__);
+	    {
+		    typedef std::vector<CMyTestDataSharePtr>		CMyTestDataSharePtrContainer;
+		    CMyTestDataSharePtrContainer myTestDataSharedPtrs;
+		    for (int i = 0; i < 4; i++)
+		    {
+			    myTestDataSharedPtrs.push_back(CMyTestDataSharePtr(new CMyTestData(i)));
+		    }
+	    }//此处以后自动释放
+    }
+
+    {
+        DECLARE_MYTEST_DATA_COUNT_CHECKER(dataCountChecker,ctDataCount, 0, __FILE__, __LINE__);
+        DECLARE_MYTEST_DATA_COUNT_CHECKER(constructCountChecker,ctConstructCount, 2, __FILE__, __LINE__);
+        DECLARE_MYTEST_DATA_COUNT_CHECKER(dataDestructCountChecker,ctDestructCount, 2, __FILE__, __LINE__);
+        CMyTestDataSharePtr     ptr1(new CMyTestData(1));
+        CMyTestDataSharePtr     ptr2(new CMyTestData(2));
+        {
+            DECLARE_MYTEST_DATA_COUNT_CHECKER(dataDestructCountChecker,ctDestructCount, 1, __FILE__, __LINE__);
+            ptr1 = ptr2;        //一个只能指针赋值给已有的智能指针，自动释放
+        }
+    }
+
+    {
+        DECLARE_MYTEST_DATA_COUNT_CHECKER(dataCountChecker,ctDataCount, 0, __FILE__, __LINE__);
+        DECLARE_MYTEST_DATA_COUNT_CHECKER(constructCountChecker,ctConstructCount, 2, __FILE__, __LINE__);
+        DECLARE_MYTEST_DATA_COUNT_CHECKER(dataDestructCountChecker,ctDestructCount, 2, __FILE__, __LINE__);
+
+        //智能指针保存 父子 类型 -- 并相互转换：
+        CMyTestDataChildSharePtr    pChild1(new CMyTestDataChild(1));
+        CMyTestDataSharePtr         pParent1(new CMyTestData(10));
+
+
+        //pChild1 = pParent1;       //直接这样写，无法编译通过
+        CMyTestDataChildSharePtr pParentToChildNULL =  std::tr1::dynamic_pointer_cast<CMyTestDataChild>(pParent1);
+        CPPUNIT_ASSERT(pParentToChildNULL == NULL);  //由于 pParent1 实际指向父类型的变量，因此无法动态转换到子类型
+
+        pParent1 = pChild1;         //将父类型的指针指向子类型的变量 -- 可以直接赋值
+        CMyTestDataChildSharePtr pChildNoNull =  std::tr1::dynamic_pointer_cast<CMyTestDataChild>(pParent1);
+        CPPUNIT_ASSERT(pChildNoNull != NULL);
+    }
 }

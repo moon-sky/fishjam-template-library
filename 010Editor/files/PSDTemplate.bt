@@ -8,6 +8,8 @@
 // Doc:      http://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_72092 
 //-----------------------------------
 
+#include "FCommonFun.bt"
+
 //Photoshop file structure
 //1.File Header(1)
 //2.Color Mode Data
@@ -17,7 +19,7 @@
 
 
 // Define structures used in PSD files
-enum<uint16> COLORMODE { 
+typedef enum<uint16> { 
     Bitmap          = 0, 
     Grayscale       = 1, 
     Indexed         = 2,
@@ -26,7 +28,7 @@ enum<uint16> COLORMODE {
     Multichannel    = 7,
     Duotone         = 8,
     Lab             = 9
-};
+}COLOR_MODE;
 
 typedef struct {
     CHAR    Signature[4];   //always equal to '8BPS' . Do not try to read the file if the signature does not match this value.
@@ -36,27 +38,34 @@ typedef struct {
     DWORD   Heigth;         //The height of the image in pixels. Supported range is 1 to 30,000.
     DWORD   Width;          //The width of the image in pixels. Supported range is 1 to 30,000.
     WORD    Depth;          //the number of bits per channel. Supported values are 1, 8, 16 and 32.
-    COLORMODE    ColorMode; //The color mode of the file
-} PSDFILEHEADER;
+    COLOR_MODE    ColorMode; //The color mode of the file
+
+    // Check for header
+    if( psdfh.Signature != "8BPS" ){
+       Warning( "File is not a psd file. Template stopped." );
+       return -1;
+    }
+
+    if( psdfh.Version != 1 ){
+        Warning( "Psd file version error. Template stopped." );
+        return -1;
+    }
+} PSD_FILE_HEADER;
 
 // Only indexed color and duotone have color mode data
 typedef struct{
     DWORD   Length;         //The length of the following color data
-    UBYTE   ColorData[Length];
-} COLORMODEDATASECTION;
+    if(Length > 0){
+        UBYTE   ColorData[Length];  //RGB color ?
+    }
+} COLOR_MODE_DATA_SECTION;
 
 typedef struct{
     DWORD   Length;         //Length of image resource section. The length may be zero
-    UBYTE   ImageData[Length];
-}IMAGERESOURCESSECTION;
-
-typedef struct{
-    CHAR    Signature[4];      //'8BIM' , TODO:OsType?
-    WORD    ImageResourceID;//
-    UBYTE   Name[1];        //TODO:
-    DWORD   DataSize;
-    UBYTE   Data[DataSize]; 
-}IMAGERESOURCEBLOCK;
+    if(Length > 0){
+        UBYTE   ImageData[Length];
+    }
+}IMAGE_RESOURCES_SECTION;
 
 typedef struct{
     DWORD   Format;         //1 = kJpegRGB . Also supports kRawRGB (0).
@@ -67,8 +76,67 @@ typedef struct{
     DWORD   SizeAfterCompression;  //Used for consistency check.
     WORD    BitsPerPixel;   //=24
     WORD    Planes;         //1
-    UBYTE   Data[TotalSize];//TODO:JFIF data in RGB format.For resource ID 1033 the data is in BGR format.
-}THUMBNAILRESOURCE;
+    UBYTE   Data[SizeAfterCompression];//TODO:JFIF data in RGB format.For resource ID 1033 the data is in BGR format.
+}THUMBNAIL_RESOURCE;
+
+
+typedef struct{
+    int     Length;
+    /*/
+    if(Length > 0){
+        UBYTE Data[Length];
+    }
+    /*/
+    local   int remainLength = Length;
+    while(remainLength > 0){
+        struct{
+            local   int ItemLength = 0;
+            CHAR    Signature[4];      //'8BIM' , TODO:OsType?
+            WORD    ImageResourceID;//
+            PascalString Name;
+            DWORD   DataSize;
+            if(DataSize > 0){
+                switch(ImageResourceID){
+                    
+                    case 1036:  //Thumbnail resource
+                        THUMBNAIL_RESOURCE  thumbnailResource;
+                        break;
+                    case 1060:  // XMP metadata.File info as XML description
+                        UCHAR str[DataSize] <optimize=true, bgcolor=cRed>; 
+                        break;
+                    case 1028:  //IPTC-NAA record
+                    case 1061:  //Caption digest. 16 bytes: RSA Data Security, MD5 message-digest algorithm
+                    default:
+                        UBYTE   Data[DataSize] <optimize=true>; 
+                        break;
+                }
+                
+            }
+            //UCHAR length2;
+            //if(length2 > 0){
+            //    UBYTE data2[length2] <optimize=true>;
+            //}
+            ItemLength = 4 + 2 + 1 + Name.Length + 4 + DataSize;// + 1 + length2;
+            if(ItemLength % 2 == 0){
+                UCHAR pad;
+                ItemLength += 1;
+            }
+            remainLength -= (ItemLength);
+        }Item;
+    }
+    //*/
+}IMAGE_RESOURCE_BLOCK;
+
+typedef struct{
+    int Length;
+    if(Length > 0){
+        UBYTE Data[Length];
+    }
+}LAYER_AND_MASK_INFORMATION;
+
+typedef struct{
+}IMAGE_DATA;
+
 
 /*
 typedef struct {    // bmih
@@ -122,34 +190,11 @@ string ReadRGBTRIPLE( RGBTRIPLE &a )
 // Define the headers
 BigEndian(); 
 SetBackColor( cLtGray );
-PSDFILEHEADER psdfh;
-//BITMAPINFOHEADER bmih;
 
-// Check for header
-if( psdfh.Signature != "8BPS" )
-{
-    Warning( "File is not a psd file. Template stopped." );
-    return -1;
-}
-
-if( psdfh.Version != 1 )
-{
-    Warning( "Psd file version error. Template stopped." );
-    return -1;
-}
-
-//color mode
-DWORD ColorModeLength;
-if(ColorModeLength > 0){
-    Warning("Not support color mode data now");
-    return -1;
-}
-
-//image resource
-DWORD ImageResourceLength;
-if(ImageResourceLength > 0){
-   IMAGERESOURCEBLOCK   imageResourceBlock;
-}
+PSD_FILE_HEADER             psdfh;
+COLOR_MODE_DATA_SECTION     colorModeData;
+IMAGE_RESOURCE_BLOCK        imageResourceBlock;
+LAYER_AND_MASK_INFORMATION  layerAndMaskInformation;
 
 /*
 
