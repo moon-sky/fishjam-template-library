@@ -11,12 +11,15 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 
 /***************************************************************************************************************
  * 书籍: 
- *    疯狂Java -- P109, 类
+ *    疯狂Java -- P144, 类的继承
 *     ThinkingInJava -- P34
 *     
  * TODO
  *   1.容器中迭代 : SomeType [] values = xxx; for(SomeType v : values) { v.Xxx(); }
- * 
+ *   2.类的生命周期: 加载 -> 验证 -> 准备 -> 解析 -> 初始化
+ *     对象的生命周期: 
+ *   3.访问控制级别由小到大: private->default(相同包下的类)->protected(相同包下的类+其他包的子类)->public
+ *   4.import 可以导入指定包下某个类或全部类，1.5以后可以通过静态导入的语法来导入 指定类的静态属性值或方法(import static)
  ***************************************************************************************************************/
 /***************************************************************************************************************
  * 关键字
@@ -274,7 +277,13 @@ public class JavaLanguageTest {
 		assertEquals("[I@182f0db", strDirectToString);				//实际上因为每次运行的地址可能不同，本assert可能不正确
 	}
 	
-	private String myContacStrings(String... ss)
+	//形参长度可变的方法，多个参数被当成数组传入 -- 操作上等价于数组
+	//区别:
+	//  1.调用时可变形参更方便，
+	//    String... ss -- 逗号分开的列表 或 new String[]{初始化列表}
+	//    String[]  ss -- new String[]{初始化列表}
+	//  2.数组形参可位于任何位置，可有多个；可变形参只能位于最后，且最多一个
+	private String myContacStrings(String... ss)  
 	{
 		StringBuilder sBuilder = new StringBuilder("[");
 		boolean bAppened = false;

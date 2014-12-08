@@ -3,10 +3,49 @@
 #include <memory>
 #include <iterator>
 using std::tr1::shared_ptr;
+using std::tr1::enable_shared_from_this;
+using std::tr1::dynamic_pointer_cast;
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+class CEnableSharedFromThis : public enable_shared_from_this<CEnableSharedFromThis>{
+public:
+    static LONG s_Count;
+public:
+    CEnableSharedFromThis(){
+        InterlockedIncrement(&s_Count);
+        FTLTRACE(TEXT("CEnableSharedFromThis  Construct\n"));
+    }
+    virtual ~CEnableSharedFromThis(){
+        InterlockedDecrement(&s_Count);
+        FTLTRACE(TEXT("CEnableSharedFromThis  Destruct\n"));
+    }
+    shared_ptr<CEnableSharedFromThis> getSharedThis(){
+        return shared_from_this();
+    }
+    virtual int GetIdentify(){
+        return 1;
+    }
+};
+LONG CEnableSharedFromThis::s_Count = 0;
+
+class CEnableSharedFromThisChild : public CEnableSharedFromThis{
+public:
+    CEnableSharedFromThisChild(){
+        FTLTRACE(TEXT("CEnableSharedFromThisChild  Construct\n"));
+    }
+    virtual ~CEnableSharedFromThisChild(){
+        FTLTRACE(TEXT("CEnableSharedFromThisChild  Destruct\n"));
+    }
+    virtual int GetIdentify(){
+        return 2;
+    }
+    int CallChildMethod(){return 3;}
+};
+
 
 void CSTLMemoryTester::test_auto_ptr()
 {
@@ -127,8 +166,8 @@ void CSTLMemoryTester::test_contain_assign()
 
 void CSTLMemoryTester::test_shared_ptr()
 {
-    typedef std::tr1::shared_ptr<CMyTestData>           CMyTestDataSharePtr;
-    typedef std::tr1::shared_ptr<CMyTestDataChild>      CMyTestDataChildSharePtr;
+    typedef shared_ptr<CMyTestData>           CMyTestDataSharePtr;
+    typedef shared_ptr<CMyTestDataChild>      CMyTestDataChildSharePtr;
 
     {
 	    //可以将 shared_ptr 的指针放入容器，并且在容器超出范围或 clear 后会自动释放
@@ -167,11 +206,36 @@ void CSTLMemoryTester::test_shared_ptr()
 
 
         //pChild1 = pParent1;       //直接这样写，无法编译通过
-        CMyTestDataChildSharePtr pParentToChildNULL =  std::tr1::dynamic_pointer_cast<CMyTestDataChild>(pParent1);
+        CMyTestDataChildSharePtr pParentToChildNULL =  dynamic_pointer_cast<CMyTestDataChild>(pParent1);
         CPPUNIT_ASSERT(pParentToChildNULL == NULL);  //由于 pParent1 实际指向父类型的变量，因此无法动态转换到子类型
 
         pParent1 = pChild1;         //将父类型的指针指向子类型的变量 -- 可以直接赋值
-        CMyTestDataChildSharePtr pChildNoNull =  std::tr1::dynamic_pointer_cast<CMyTestDataChild>(pParent1);
+        CMyTestDataChildSharePtr pChildNoNull =  dynamic_pointer_cast<CMyTestDataChild>(pParent1);
         CPPUNIT_ASSERT(pChildNoNull != NULL);
+
+#if 0
+        //错误的用法 -- 会造成引用计数的混乱
+        CMyTestDataSharePtr         pParent2;
+        pParent2.reset((CMyTestDataChild*)pChild1.get());
+#endif
+    }
+
+    {
+        //测试通过 shared_from_this() + dynamic_pointer_cast<> 将父类指针特例化为 子类指针并调用子类的 特定方法
+
+        CPPUNIT_ASSERT(CEnableSharedFromThis::s_Count == 0);
+        {
+            shared_ptr<CEnableSharedFromThis>   pEnableSharedFromThis(new CEnableSharedFromThisChild());
+            CPPUNIT_ASSERT(pEnableSharedFromThis->GetIdentify() == 2);
+
+            //转换成子类
+            shared_ptr<CEnableSharedFromThisChild> pEnableShaedChild(
+                dynamic_pointer_cast<CEnableSharedFromThisChild>(pEnableSharedFromThis->getSharedThis()));
+            
+            CPPUNIT_ASSERT(CEnableSharedFromThis::s_Count == 1);
+            CPPUNIT_ASSERT(pEnableShaedChild->GetIdentify() == 2);
+            CPPUNIT_ASSERT(pEnableShaedChild->CallChildMethod() == 3);  //调用子类特有的方法
+        }
+        CPPUNIT_ASSERT(CEnableSharedFromThis::s_Count == 0);
     }
 }
