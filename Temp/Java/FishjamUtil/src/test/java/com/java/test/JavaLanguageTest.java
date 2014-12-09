@@ -4,14 +4,15 @@ import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 
 import org.junit.Test;
-import org.omg.CORBA.PRIVATE_MEMBER;
+//import org.omg.CORBA.PRIVATE_MEMBER;
 
 
 /***************************************************************************************************************
  * 书籍: 
- *    疯狂Java -- P144, 类的继承
+ *    疯狂Java -- P191, 抽象类的作用
 *     ThinkingInJava -- P34
 *     
  * TODO
@@ -24,7 +25,7 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 /***************************************************************************************************************
  * 关键字
  *    assert 
- *    instanceof
+ *    instanceof <== 判断实例是否是指定的类型或接口(进行类型转换), if(objStr instanceof String){ ... } 
  *    strictfp <== 
  *    synchronized <==
  *    throw
@@ -38,7 +39,8 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  * package/friendly(同一个包内可以访问，其他包内同 private) > private
  * 
  * Java 是单根继承，所有类有共同的父类(Object)，有共同的接口 -- GC(垃圾回收机制)实现更容易；完全通过引用操作对象；都有RTTI，易于异常处理
- * 子类调用父类的方法：super.方法名(参数)；如果是构造函数中调用父类构造，则是 super(参数)
+ * 子类调用父类的方法：super.方法名(被覆盖的是实例方法) 或 父类类名.方法名(被覆盖的是类方法)；如果是构造函数中调用父类构造，则是 super(参数)
+ * 初始化块 -- 其中可以包含任何可执行性语句，在构造函数前隐式执行。可以使用 static 修饰符对类 进行静态初始化。类定义中可以有多个(一般一个即可)，多个之间有顺序，先定义的先执行。
  * 
  * C++成员函数缺省是非virtual的(前期绑定)，而java的成员函数缺省是virtual的(后期绑定),子类覆盖实现时，最好加上 @Override，可以发现名字不匹配的问题。
  * abstract -- 定义抽象类(有部分实现，但不可实例化)，并指定其中的抽象成员函数 
@@ -46,7 +48,13 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  * 
  * 对象相等的测试： == 和 != 判断对象引用是否相同，
  * equals 判断内容是否相同（Object缺省的实现是比较引用），可以override，标准库中很多类（如基本类型的Wrapper类、String等）都进行了override
- * 
+ *    注意：override 后一般也需要同时重写 hashCode 方法，来保证 equals 为true 的两个对象其 hashCode 也相同
+ *    public boolean equals(Object obj) --  
+ *    实现时一般: 
+ *      1.先判断比较对象是否是 this(总相等); 
+ *      2. 判断是否为 null(总不等)，且是否是指定类型 -- 使用 instance 的话会认为子类实例也满足条件，因此推荐使用 obj.getClass() == Xxx.class  
+ *      3.强制转换后判断具体的值
+ *    
  * 位运算符 -- 操作基本整数类型中个别的位(bits)，&(与)、|(或)、^(异或)、~(取反)，
  * 如~0x1234(4660)=0xFFFFEDCB(-4661) 位移运算符 -- <<、>> 只能用于基本整数，左移(补0) 、右移(符号位扩展) >>>、右移(无论原值正负，一律在较高处补0)
  * Java 不允许程序员实现自定义的运算符重载 -- Java库唯一实现了String的+重载？
@@ -63,7 +71,9 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  * 
  * 类定义中，成员变量可在定义时初始化或构造中初始化，如没有，则由Java设置初始值(0或null)
  * Java源文件中最多只能有一个public类，该类的类名必须和文件名相同
- * 基本类型(primitive type)用自动变量(automatic)方式解决效率问题；基本类型有所谓的包装类(Wrapper classes)，可用new创建
+ * 基本类型(primitive type)用自动变量(automatic)方式解决效率问题；基本类型有所谓的包装类(Wrapper classes)，可用new创建，并可通过字符串格式的构造参数进行初始化
+ *    1.5以后JDK提供了自动装箱(Autoboxing)和自动拆箱(AutoUnboxing)功能，可直接赋值。包装类可通过 parseXxx(String) 静态方法将字符串转换成基本类型变量。
+ *    对应的 String.valueOf(xxx) 可将基本类型变量转换成字符串
  * 高精度计算(如精确金融)使用 -- BigInteger 和 BigDecimal(任意精度的定点数)
  * 
  * Java的applet使用sandbox(砂盒)的方式，applet无法写、删除文件，如果数字签名了的话可以不受限。 
@@ -87,13 +97,21 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  * 
  * 每个Class都可以有一个public的main -- 可以使每个Class的单元测试更容易？
  * 
- * final -- 用于不能被改变处(类似C++中的const)。可用于：
+ * final -- 用于不能被改变处(类似C++中的const, 或C#中的 sealed )。可用于：
  *   data -- 编译器常量(static)；或执行期被构造函数初始化后不能再更改。如果作用于对象引用，表示指向的目标不变，但目标的内容可变；
  *   argument -- 参数中声明为常量，函数实体中不可更改 
  *   method -- 1.锁住函数，使子类无法override(即成为非虚函数)；
- *             2.效率，可被编译器转化为内联函数。
- *             Class中所有的private函数自动是final的 class -- 不能被继承，主要基于设计上的考虑（如不想变动）或为了安全、保密
- * 
+ *                   2.效率，可被编译器转化为内联函数。
+ *                   Class中所有的private函数自动是final的 class -- 不能被继承，主要基于设计上的考虑（如不想变动）或为了安全、保密
+ *   class -- 使得类不可被继承(如 java.lang.String )
+ *   
+ * 不可变类(immutable) -- 创建类实例后，其属性不可改变。如: 基本数据的包装类和 String(其 value/offset/count 等都是 private final 的)。规则：
+ *    1.使用 private + final 来修饰该类的属性;
+ *    2.提供带参数的构造函数，根据传入参数来初始化类里的属性;
+ *    3.仅为该类的属性提供 getter 方法，不要提供 setter 方法;
+ *    4.如有必要，重写 hashCode 和 equals 方法，在 equals 方法中根据关键属性来作为两个对象相等的标准。且需要保证用 equals 方法判断为相等的对象的 hashCode 也相等
+ *    5.需要特别注意其引用类型的属性，如其是可变的，必须采用必要的措施(如 初始化时从入参构造副本；返回属性引用时创建临时的匿名副本对象 )来保护该属性所引用的对象不会被修改
+ *    
  * 强制类型转换：((子类名)对象).方法
  * 
  * innerClass(内嵌类) -- 除有代码隐藏功能外，更可和外部类沟通（典型使用：Swing中的event机制） 
@@ -177,9 +195,13 @@ public class JavaLanguageTest {
 		String str2 = "Hello ";
 		str2 += "world";
 		String str3 = "Hello " + "world";  
-		assertTrue(str1.equals(str2));	
+		assertTrue(str1 instanceof Comparable);		//String 类实现了 Comparable 接口
+		assertTrue(str1.equals(str2));						//TODO: 会通过 Comparable 比较内容?
+		assertTrue(str1.hashCode() == str2.hashCode());	 	
 		assertTrue( str1 != str2);			//引用类型的变量，只有指向相同的实例时 == 才是 true
-		assertTrue(str1 == str3);			//通过直接量直接赋值的String进行缓存，因此指向同一个变量，类似的有 包装类自动装箱的cache数组 
+		
+		assertTrue(str1 == str3);			//通过直接量直接赋值的String进行缓存，因此指向同一个变量，类似的有 包装类自动装箱的cache数组
+		
 		
 		assertTrue(new Integer(2) != new Integer(2));		//基本类型的包装类直接比较的话比较的是“是否指向同一对象"
 		assertTrue(new Integer(2) == 2); 
@@ -271,10 +293,10 @@ public class JavaLanguageTest {
 		assertEquals(3, copyResult.length);
 		
 		String strArraysToString = Arrays.toString(copyResult);	//按顺序把多个数组元素连接在一起，多个数组元素使用英文逗号(,) 和 空格 隔开
-		String strDirectToString = copyResult.toString();			//返回地址相关的字符串
-		assertFalse( strArraysToString == strDirectToString);	//★两种方法的结果不一样★
+		String strDirectToString = copyResult.toString();			//默认的 toString() 返回 "类名@hashCode" 格式的字符串，如果要重写的话，一般返回 "类名[属性1=值1, ...]" 格式的字符串
+		assertTrue( strArraysToString != strDirectToString);	    //★两种方法的结果不一样★
 		assertEquals("[1, 2, 3]", strArraysToString);
-		assertEquals("[I@182f0db", strDirectToString);				//实际上因为每次运行的地址可能不同，本assert可能不正确
+		//assertEquals("[I@182f0db", strDirectToString);				//实际上因为每次运行的地址可能不同，本assert可能不正确
 	}
 	
 	//形参长度可变的方法，多个参数被当成数组传入 -- 操作上等价于数组
@@ -337,12 +359,21 @@ public class JavaLanguageTest {
 	}
 	
 	@Test
-	public void testParse(){
+	public void testPrimitive(){
+		//通过包装类的 parseXxx(String) 可将特定字符串转换成基本类型变量
 		assertEquals(Integer.parseInt("123"), 123);
 		assertEquals(Integer.parseInt("0123"),  123);
 		assertEquals(Integer.parseInt("0123", 10), 123);
 		assertEquals(Integer.parseInt("0123", 8), 83);
 
+		assertEquals("123",  String.valueOf(123));
+		
+		Integer intNew3 = new Integer(3);
+		Integer intValueOf3_1 = Integer.valueOf(3);			
+		Integer intValueOf3_2 = Integer.valueOf(3);
+		assertTrue(intNew3 != intValueOf3_1);				//new 出来的肯定返回新的对象
+		assertTrue(intValueOf3_1  == intValueOf3_2);	//Integer类会缓存  [-128, 127] 的数据，因此使用 valueOf 会返回相同的对象
+		
 		boolean bThrowException = false;
 		try {
 			int a = Integer.parseInt("A0123B", 10);	//解析字符串时，会抛出异常
@@ -368,5 +399,51 @@ public class JavaLanguageTest {
 			return StageSingletonHolder.instance;
 		}	
 		*/
+	}
+	
+	class Base
+	{
+		public int     checkLength;
+		public String checkValue;
+		public int setCheckValue() { 
+			checkValue = "Base Call";
+			return 0;
+		}
+		public Base(){
+			checkLength = setCheckValue();
+		}
+	}
+	class Sub extends Base{
+		public String childValue;
+		
+		Sub(String value){
+			childValue = value;
+		}
+		@Override
+		public  int setCheckValue() {
+			checkValue = "Sub Call";
+			if(childValue == null){
+				//父类的构造函数中调用该重写函数时，因为子类尚未完全初始化，因此会进到这里 -- ★逻辑错误甚至空指针异常★
+				return -1;
+			}
+			else{
+				return childValue.length();
+			}
+			
+		}
+	}
+	
+	
+	//测试Java中在构造函数中调用子类会重载的函数 -- 语法上可以调用，但很危险(子类尚未完全初始化好)，比如：不要再构造中调用 toString() 等 ?
+	@Test
+	public void testCallChildMethodInConstructor(){
+		Base base = new Sub("child");
+		assertEquals("Sub Call", base.checkValue);   //Java可以在构造函数中调用子类会重载的方法，但这样可能会造成错误：子类尚未实例化好 -- 注意和 C++(不能调用) 的区别
+		assertEquals(-1, base.checkLength);				//子类的构造函数尚未实例化好，因此 childValue 为 null, 子类的方法无法正确执行
+		
+		Sub sub = (Sub)base;
+		assertNotNull(sub.childValue);						//子类完全构造好
+		assertEquals("child", sub.childValue);
+		assertEquals(5, sub.setCheckValue());			
 	}
 }
