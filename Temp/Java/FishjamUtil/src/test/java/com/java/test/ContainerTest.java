@@ -1,6 +1,22 @@
 package com.java.test;
 
 /***************************************************************************************************************************
+ * TODO:
+ *   1.如果向HashSet中添加一个可变对象后，并且后面程序修改了该可变对象的属性，可能导致它与集合中其他元素相同，
+ *     可能导致HashSet中包含两个相同的对象 -- 因此进行 equals 和 hashCode 计算的属性值最好是不可变的(比如 Id 等)
+ *   2.LinkedHashSet -- 根据hashCode值决定元素存储位置(方便查找)，但同时使用链表维护元素的次序，当遍历时会按元素的添加顺序来访问，此时速度快
+ *   3.TreeSet -- 集合元素处于排序状态(红黑树), 集合元素必须实现 Comparable 接口，通过其 compareTo()方法来比较元素之间的大小关系，
+ *     并按升序排序。判断两个对象相等依据为: equals + compareTo 返回0。
+ *     如果构造TreeSet时传入定制的Comparator实现，可实现定制排序，且集合元素可以不实现 Comparable 接口。
+ *   4.EnumSet -- 专为枚举类设计的集合类，其值都必须是指定枚举类型的枚举值，通过静态方法构造实例。内部以位向量的形式存储，在比较时非常高效
+ *   5.List -- 可以根据索引来操作集合元素，并额外提供了 listIterator() 返回可向前遍历、并可在当前位置插入新元素 的迭代器
+ *   6.ArrayList(推荐)/Vector(旧的) -- 基于数组实现的List。添加大量元素时，可使用 ensureCapacity 提高性能。
+ *   7.LinkedList -- 基于链表实现的List+Deque，且对顺序访问集合中的元素进行了优化，插入、删除元素时速度快
+ *   8.Arrays.ArrayList -- 固定长度的List集合，通过Array.asList()将一个数组或指定个数的对象转换 ，只能遍历访问，不能增删 -- 会抛出不支持的异常
+ *   n.Collections 工具类 -- synchronizedSortedSet 包装Set集合即可成为线程安全的类?
+ *     SortedSet s = Collections.synchronizedSortedSet(new TreeSet(...));
+ *   
+ *   
  * java.util.Collection; -- list, set ?
  * java.util.Map;
  * java.util.Properties;  -- Map的一种特例？要求键和值都必须为String类型

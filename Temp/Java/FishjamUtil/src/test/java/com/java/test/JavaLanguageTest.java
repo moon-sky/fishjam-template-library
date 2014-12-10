@@ -11,7 +11,7 @@ import org.junit.Test;
 
 
 /***************************************************************************************************************
- * 书籍: 
+ * 书籍:  P266
  *    疯狂Java -- P191, 抽象类的作用
 *     ThinkingInJava -- P34
 *     
@@ -34,6 +34,7 @@ import org.junit.Test;
  *    volatile
  *    
  * 子类 extends 父类  implements 接口1,接口2
+ * 内部类：成员内部类(类中定义)，局部内部类(方法里定义)，匿名内部类
  * 
  * Java的访问控制分为： public > protected(同一package中其他class也可以访问) >
  * package/friendly(同一个包内可以访问，其他包内同 private) > private
