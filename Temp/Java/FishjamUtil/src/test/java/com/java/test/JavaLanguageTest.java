@@ -8,11 +8,12 @@ import java.util.concurrent.Callable;
 
 import org.junit.Test;
 //import org.omg.CORBA.PRIVATE_MEMBER;
+import org.omg.CORBA.PRIVATE_MEMBER;
 
 
 /***************************************************************************************************************
- * 书籍:  P266
- *    疯狂Java -- P191, 抽象类的作用
+ * 书籍:  
+ *    疯狂Java -- P266, hashset
 *     ThinkingInJava -- P34
 *     
  * TODO
@@ -21,17 +22,23 @@ import org.junit.Test;
  *     对象的生命周期: 
  *   3.访问控制级别由小到大: private->default(相同包下的类)->protected(相同包下的类+其他包的子类)->public
  *   4.import 可以导入指定包下某个类或全部类，1.5以后可以通过静态导入的语法来导入 指定类的静态属性值或方法(import static)
+ *   
+ * 闭包(Closure) -- 一种能被调用的对象，它保存了创建它的作用域的信息。Java不能显式的支持闭包，但可以把非静态内部类当成面向对象领域的闭包
+ *   ( 内部类记录了其外部类的详细信息，有对外部类对象的引用，能直接调用其 private 成员 ).
+ *   TODO: 通过闭包可以实现: 
+ * 
  ***************************************************************************************************************/
 /***************************************************************************************************************
  * 关键字
- *    assert 
+ *    assert
+ *    native <== 修饰方法，通常采用C语言实现，通常在需要利用平台相关特性或 访问系统硬件时使用。
  *    instanceof <== 判断实例是否是指定的类型或接口(进行类型转换), if(objStr instanceof String){ ... } 
- *    strictfp <== 
+ *    strictfp <== 精确浮点(FP-strict)， 用于类、接口或方法。指定对浮点数运算时按照浮点规范 IEEE-754 来执行
  *    synchronized <==
  *    throw
  *    throws 
- *    transient
- *    volatile
+ *    transient <== 修饰成员属性
+ *    volatile   <== 修饰成员属性
  *    
  * 子类 extends 父类  implements 接口1,接口2
  * 内部类：成员内部类(类中定义)，局部内部类(方法里定义)，匿名内部类
@@ -81,10 +88,15 @@ import org.junit.Test;
  *   可以使用SecurityManager--设定Java的安全策略 
  *   Java在服务器端，编写servlets及其衍生物JSP，可消除因浏览器能力不同造成的问题
  * 
- * 嵌套类可以直接访问嵌套它的类的成员，包括private成员，但是，嵌套类的成员不能被嵌套它的类直接访问。
- *   在内部类对象保存了一个对外部类对象的引用，当内部类的成员方法中访问某一变量时，如果在该方法和内部类
- *   中都没有定义过这个变量，内部类中对this的引用会被传递给那个外部类对象的引用 (即 this.变量 不存在时会传递 Outer类.this.变量)。
+ * 嵌套类可以直接访问嵌套它的类的成员，包括private成员，但是，嵌套类的成员不能被嵌套它的类直接访问(必须显示 使用具体的内部类对象来访问)。
+ *   在内部类对象保存了一个对外部类对象的引用，当内部类的成员方法中访问某一变量时，如果在该方法和内部类中都没有定义过这个变量，
+ *   内部类中对this的引用会被传递给那个外部类对象的引用 (即 this.变量 不存在时会传递 Outer类.this.变量)。
  *   如果内部类被定义为static，则不能访问外部类的变量(少用static内部类)
+ *   因为非静态内部类的对象必须寄存在外部类的对象里，因此在外部类以外的地方创建的语法为： OuterInstance.new InnerConstructor();
+ *      如: Out.In in = new Out().new In("内部类实例") -- 即通过外部类的实例来创建
+ *   匿名内部类必须继承一个父类或实现一个接口，在创建匿名内部类时立即创建一个该类的实例，其定义立即消失，不能重复使用。
+ *      匿名内部类不能定义构造函数，但可以通过实例初始化代码来进行初始化。
+ *      如果匿名内部类需要访问外部类的局部变量，必须使用 final 来修饰外部类的局部变量 
  * 
  * Java不具备条件编译的能力 -- 可以用package来模拟(参考 C#?) -- 编译不同的实现，并放在不同的package中。 
  * 可以使用 this在构造函数中调用另一个构造函数或private的初始化函数（以免编写重复代码，注意：由于Java默认是虚拟函数，
@@ -446,5 +458,45 @@ public class JavaLanguageTest {
 		assertNotNull(sub.childValue);						//子类完全构造好
 		assertEquals("child", sub.childValue);
 		assertEquals(5, sub.setCheckValue());			
+	}
+	
+	/***
+	 * 枚举类 
+	 *    1.5以后增加 enum 关键字进行定义，继承自 java.lang.Enum 类，可通过 values() 方法遍历所有的枚举值
+	 *    
+	 */
+	
+	enum SeasonEnum { 
+		//定义枚举类的枚举值(实际就是该类所有可能的实例)，系统自动添加 public static final 修饰
+		//等价于 : public static final SeasonEnum SPRING = new SeasonEnum("春天");
+		SPRING("春天"), 
+		SUMMER("夏天"), 
+		FALL("秋天"), 
+		WINTER("冬天"); 		//最后一个以分号结尾
+		
+		//一些扩展的用法 -- 定义属性、构造等，提供更详细的信息, 在方法体内可通过 	switch (this) { case SPRING: xxx; } 的方式进行判断处理
+		private SeasonEnum(String desc){
+			this.desc = desc;
+		}
+		private String desc;
+		//public String getDesc(){
+		//	return desc;
+		//}
+	}
+	@Test
+	public void testEnumClass(){
+		SeasonEnum spring = SeasonEnum.SPRING;
+		assertEquals(0, spring.ordinal()); 		//在枚举类中的索引值
+		assertEquals("SPRING", spring.toString());		//toString 返回更用户友好的名称
+		assertEquals("SPRING", spring.name());
+		assertEquals("春天", spring.desc);					//TODO: 为啥能访问到 private 的变量? 枚举中会自动更正为 public 的?
+		SeasonEnum winter = SeasonEnum.valueOf("WINTER");  //注意：大小写必须一样，否则会抛出异常(如 "winter" 错误)
+									// 等价写法： Enum.valueOf(SeasonEnum.class, "WINTER");
+		assertTrue(winter == SeasonEnum.WINTER);
+		
+		//for (SeasonEnum season : SeasonEnum.values()) {
+		//	System.out.println(season);
+		//}
+		
 	}
 }

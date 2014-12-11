@@ -19,6 +19,7 @@ package com.java.test;
  *    依赖注入让相互协作的软件组件保持松散耦合。
  * DMI(Dynamic Method Invocation) -- 动态方法调用， struts2中指定action不同的请求为 "ActionName!methodName" 
  * DTO(Data Transfer Object) -- 数据传输对象，JavaEE中，中间层组件将应用底层的状态信息封装成名为DTO的JavaBean，并传送到JSP页面进行显示。
+ * EAR(Enterprise Archive File) -- 对应一个企业应用文档的压缩格式，通常由Web应用和EJB两个部分组成
  * EJB(Enterprise Java Bean) -- (将事务逻辑和连接的问题隔离),已被 JPA 替代？
  * GC(Garbage Collection) -- 垃圾回收。通常JRE会提供一条超级线程来进行检测和控制，一般都是在CPU空闲或内存不足时自动进行。
  *   垃圾回收只能回收内存资源，对于其他物理资源(如 数据库连接，磁盘IO等) 则无能为力。
@@ -26,7 +27,9 @@ package com.java.test;
  *   即由容器控制程序之间的关系，而非传统实现中的程序代码直接控制。即控制权由应用代码中转到了外部容器。
  * JAAS(Java Authentication Authorization Service) -- Java验证和授权服务，用于控制对 Java Web 应用的授权访问，
  *   在 web.xml 中的 <security-constraint>， <login-config> 等处体现
- * JAF(JavaBeans Activation Framework) -- 
+ * JAF(JavaBeans Activation Framework) --
+ * JAR(Java Archive File) -- Java档案文件，其格式与Zip压缩文件兼容，但包含一个 META-INF/MANIFEST.MF 的清单文件(在生成 jar时由系统自动创建 )
+ *    有两个变体: WAR 和 EAR
  * JCP(Java Community Process) --  
  * JDK(Java Development Kit) -- 按Java的应用环境划分
  *   J2EE(Java 2 Platform Enterprise Edition) -- 企业Web应用开发
@@ -66,8 +69,9 @@ package com.java.test;
  * SpEL(Spring Expression Language) -- Spring表达式语言  
  * SSH(Struts + Spring + Hibernate) -- SSH组合是一种轻量级的JavaEE平台，可运行在普通Web容器中，无需EJB容器的支持
  * TLD(Tag Library Definition) -- 标签库定义，用于JSP中，文件扩展名也是 tld，一个标签库中可包含多个标签
- * VO(Value Object) -- 值对象, 可以理解为了便于使用而在PO的基础上进行又一次加工而产生的对象, 通常用于业务层之间的数据传递，可以不和数据库的表对应 
+ * VO(Value Object) -- 值对象, 可以理解为了便于使用而在PO的基础上进行又一次加工而产生的对象, 通常用于业务层之间的数据传递，可以不和数据库的表对应
  * WAP(Wireless Application Protocol) -- 无线应用协议
+ * WAR(Web Archive File) -- Web应用文档的压缩文件格式 
 ***********************************************************************************************************************************************/
 public class JavaGlossaryTest {
 	public void testGlossary(){
