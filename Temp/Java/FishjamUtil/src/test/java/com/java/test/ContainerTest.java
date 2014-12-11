@@ -14,6 +14,10 @@ package com.java.test;
  * HasMap的性能分析：Capacity(buckets数量)、loadfactor(负载因子)；size/capacity 越大说明负载越高，越容易出现冲突，当达到指定值时(默认0.75)可自动扩充
  * UnModifialbeXXX -- 获得只读版本的容器，如果有更改方法调用，则会抛出异常 
  * Collections.synchronzedXXX(new YYY) -- 生成可自动同步的容器
+ * 
+ * Enumeration(不再使用) -- 迭代器的老版本
+ * Iterator() -- 迭代器的新版本
+ * foreach -- 
 ***************************************************************************************************************************/
  
 import static org.junit.Assert.*;
@@ -84,17 +88,16 @@ import org.junit.Test;
  *   1.提供了大量方法对集合元素进行排序、查询和修改等操作;
  *   2.可将对象设置为不可变;
  *   3.synchronizedXxx 包装容器集合即可成为线程安全的类 
- *     SortedSet s = Collections.synchronizedSortedSet(new TreeSet(...));
- *   
+ *     SortedSet<String> s = Collections.synchronizedSortedSet(new TreeSet<String>());
+ *   4.返回不可变集合()只读对象：
+ *     emptyXxx()--空的不可变集合对象; 
+ *     singletonXxx --只包含指定对象(一个或一项元素); 
+ *     unmodifiableXxx(指定集合对象的不可变视图)
  *
  ***********************************************************************************************************************************************/
 public class ContainerTest {
 
-	@Test
-	public void testArrayUtils(){
-		//TODO: ArrayUitls -- 似乎不是 Java 里的工具类 ?
-	}
-	
+
 	@Test
 	public void testCollections(){
 		List<String>		listStrings = new ArrayList<String>();
@@ -104,6 +107,7 @@ public class ContainerTest {
 		assertEquals("[1, 2, 3, 4, 5]", listStrings.toString());
 		Collections.reverse(listStrings);		//反转集合中的元素
 		assertEquals("[5, 4, 3, 2, 1]", listStrings.toString());
+		assertEquals("5", Collections.max(listStrings));
 		
 		Collections.shuffle(listStrings);			//随机排序(模拟洗牌)
 		String strShuffle1 = listStrings.toString();
@@ -114,9 +118,9 @@ public class ContainerTest {
 		Collections.sort(listStrings);			//根据元素的自然顺序按升序排序
 		assertEquals("[1, 2, 3, 4, 5]", listStrings.toString());
 		
-		int nSearchResult = Collections.binarySearch(listStrings, "4");		//返回找到的位置索引
+		//二分法查找(必须是按升序排序的)，
+		int nSearchResult = Collections.binarySearch(listStrings, "4");	//若找到，则返回找到的位置索引
 		assertEquals(3, nSearchResult);
-		
 		nSearchResult = Collections.binarySearch(listStrings, "8");
 		assertEquals(-6, nSearchResult);			//找不到的时候，为 -(size + 1)
 		
@@ -126,9 +130,12 @@ public class ContainerTest {
 		Collections.swap(listStrings, 1, 3); 		//将第 1 处元素 和第 3 处元素进行交换 -- 0 基址
 		assertEquals("[5, 2, 3, 4, 1]", listStrings.toString());
 		
+		//生成只读对象
+		List<String> listReadOnly = Collections.unmodifiableList(listStrings);
+		assertEquals(listStrings.size(), listReadOnly.size());
+		//listReadOnly.add("will throw exception");	//UnsupportedOperationException
 		
-		
-		//Collections.synchronizedCollection(List) syncList = 
+		//生成线程安全的包装对象 
 		SortedSet<String> syncSet = Collections.synchronizedSortedSet(new TreeSet<String>());
 		syncSet.add(new String("thread1 value"));
 	}
