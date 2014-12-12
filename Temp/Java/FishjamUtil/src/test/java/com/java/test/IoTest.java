@@ -8,15 +8,11 @@ package com.java.test;
 **********************************************************************************************************************************************/
 
 import static org.junit.Assert.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import com.fishjam.test.support.Student;
+import com.fishjam.test.Student;
 
 import org.junit.Test;
 
@@ -40,7 +36,7 @@ public class IoTest {
 			oiStream.close();
 			
 			//System.out.println("objRead Class=" + objRead.getClass().getName());
-			assertEquals("com.fishjam.test.support.Student", objRead.getClass().getName());
+			assertEquals("com.fishjam.test.Student", objRead.getClass().getName());
 			
 			
 			Student stu = (Student)objRead;

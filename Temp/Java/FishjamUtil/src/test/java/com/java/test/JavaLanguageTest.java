@@ -139,14 +139,19 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  *     1.每个内嵌类都能够各自继承某一实现类或接口，不受限于外部类是否已继承自某一实现类。
  *     2.内部类机制才能有效而实际地允许"多实现继承" -- 在单一的外部类中，可以拥有多个内嵌类，每个都实现相同的interface或以不同的方式继承同一个class
  * 
- * Java泛型－－SE 1.5引入的新特性，有 泛型类、泛型接口、泛型方法 
+ * Java泛型(Generic) -- 1.5引入的新特性，有 泛型类、泛型接口、泛型方法，可以做到编译时类型检查
  *   1.泛型的类型参数只能是类类型（包括自定义类），不能是简单类型，即默认 <T extends Object> 
+ *      实例： public interface List<E> extends Collection<E> { ... void add(E x);  } -- 形参名为E，然后在定义内可作为类型来使用
  *   2.泛型的参数类型可以使用extends语句，例如<T extends superclass>。 习惯上称为"有界类型"
- *   3.为了解决类型被限制死了不能动态根据实例来确定的缺点，引入了"通配符泛型"。 
- *     例如 MyStack<? extends Collection> typeStack = new ... 
- *     3.1 如果只指定了<?>，而没有extends，则默认是允许Object及其下的任何Java类了。也就是任意类。
+ *   3.为了解决类型被限制死了不能动态根据实例来确定的缺点，引入了"通配符泛型(问号 "?" 表示通配符，可匹配任何类型 )"，可同时指定必须实现的接口 (通过 "& 接口" 的语法指定)。 
+ *     例如 MyStack<? extends Collection> typeStack = new ...
+ *            public void drawAllShape(List<?  extends Shape> shapes) { ... }, 表示参数可接收所有 Shape 泛型List实例，如 List<Shape>, List<Circle>, List<Rectange> 等多种实例
+ *            若 函数为 drawAllShape(List<Shape> shapes), 则只能接收 List<Shape> 类型的实参实例。
+ *     3.1 如果只指定了<?>，而没有 extends，则默认是允许Object及其下的任何Java类了。也就是任意类。
  *     3.2 通配符泛型不单可以向下限制,还可以向上限制，如<? super Double>，表示类型只能接受Double及其上层父类类型
- *   4.泛型方法--只需将泛型参数列表置于返回值前，如 public <T> void fun(T x)
+ *     3.3. TODO: ★ 向下限制(extends)通常用于定义函数的参数，读数据； 向上限制(super) 通常用于作为保存对象的容器(写数据)
+ *   4.泛型方法--只需将泛型参数列表置于返回值前(类型形参声明)，如 public <T> void fun(T x)
+ *   5.因为类的静态变量、静态方法等会在所有的实例间共享，因此不能在静态方法、静态初始化或静态变量的声明和初始化中使用类型形参。
  * 
  * 远程调用(RMI--Remote Method Invocation)，通过存活于远程机器上的对象，发送消息并执行。
  *   interface->本地Stub->网络 远端接口必须继承自rmi.Remote，而且远端接口的函数都必须声明可抛出RemoteException，
