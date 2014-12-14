@@ -2,7 +2,9 @@ package com.java.test;
 
 import static org.junit.Assert.*;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -18,7 +20,7 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 
 /***************************************************************************************************************
  * 书籍:  
- *    疯狂Java -- P306, 泛型方法和类型通配符
+ *    疯狂Java -- P327, Math
 *     ThinkingInJava -- P34
 *     
  * TODO
@@ -360,15 +362,14 @@ public class JavaLanguageTest {
 	
 	//测试字符串
 	@Test
-	public void testString(){
+	public void testString() throws UnsupportedEncodingException{
 		String strChinese = "中华人民共和国";
-		try {
-			byte[] rawBytes = strChinese.getBytes("UTF-8");
-			String strUTF8 = new String(rawBytes, "UTF-8");
-			assertEquals(strChinese, strUTF8);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		char[] strCharArray = strChinese.toCharArray();
+		assertEquals(7, strCharArray.length);
+		
+		byte[] rawBytes = strChinese.getBytes("UTF-8");
+		String strUTF8 = new String(rawBytes, "UTF-8");	//使用UTF-8字符集将指定的byte数组解码成String对象
+		assertEquals(strChinese, strUTF8);
 		
 		{
 			//String.split
@@ -380,6 +381,34 @@ public class JavaLanguageTest {
 			assertEquals(strs[1].trim(), "two");
 			assertEquals(strs[2].trim(), "three");
 		}
+		
+		{
+			assertTrue("abcdefg".endsWith("efg"));			  //是否以指定字符串结尾
+			assertTrue("abcdefg".equalsIgnoreCase("AbcdeFG"));//忽略大小写的比较
+		}
+	}
+	@Test
+	public void testStringBufferAndBuilder(){
+		//String        -- 是不可变类，每次尝试更改内容都会生成一个新的实例
+		//StringBuffer  -- 线程安全, 代表一个字符序列可变的字符串，可通过 append/insert/reverse 等方法改变字符串对象的字符序列
+		//StringBuilder -- 1.5后新增的类(非线程安全,但性能高)
+
+		StringBuilder sBuilder = new StringBuilder();
+		sBuilder.append("hello");
+		sBuilder.append(" world");
+		assertEquals("hello world", sBuilder.toString());
+		
+		assertEquals(11, sBuilder.length());
+		assertTrue(sBuilder.length() <= sBuilder.capacity());
+		
+		sBuilder.setLength(5);
+		assertEquals("hello", sBuilder.toString());
+		
+		sBuilder.replace(0, 1, "H");
+		assertEquals("Hello", sBuilder.toString());
+		
+		sBuilder.reverse();
+		assertEquals("olleH", sBuilder.toString());
 	}
 	
 	@Test
@@ -519,7 +548,9 @@ public class JavaLanguageTest {
 	}
 	
 	//国际化支持 -- 使用Locale对象封装一个国家、语言环境，使用 ResourceBundle 根据 Locale 加载语言资源包
+	@Test
 	public void testLocale(){
 		
 	}
+	
 }
