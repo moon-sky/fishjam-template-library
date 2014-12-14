@@ -3,8 +3,13 @@ package com.java.test;
 import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.Test;
 //import org.omg.CORBA.PRIVATE_MEMBER;
@@ -13,7 +18,7 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 
 /***************************************************************************************************************
  * 书籍:  
- *    疯狂Java -- P266, hashset
+ *    疯狂Java -- P306, 泛型方法和类型通配符
 *     ThinkingInJava -- P34
 *     
  * TODO
@@ -149,6 +154,7 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  *            若 函数为 drawAllShape(List<Shape> shapes), 则只能接收 List<Shape> 类型的实参实例。
  *     3.1 如果只指定了<?>，而没有 extends，则默认是允许Object及其下的任何Java类了。也就是任意类。
  *     3.2 通配符泛型不单可以向下限制,还可以向上限制，如<? super Double>，表示类型只能接受Double及其上层父类类型
+ *         示例如 : TreeSet(Comparator<? super E> comparator){ ... }
  *     3.3. TODO: ★ 向下限制(extends)通常用于定义函数的参数，读数据； 向上限制(super) 通常用于作为保存对象的容器(写数据)
  *   4.泛型方法--只需将泛型参数列表置于返回值前(类型形参声明)，如 public <T> void fun(T x)
  *   5.因为类的静态变量、静态方法等会在所有的实例间共享，因此不能在静态方法、静态初始化或静态变量的声明和初始化中使用类型形参。
@@ -502,6 +508,18 @@ public class JavaLanguageTest {
 		//for (SeasonEnum season : SeasonEnum.values()) {
 		//	System.out.println(season);
 		//}
+	}
+	
+	//正则表达式 -- String类增加了正则表达式支持
+	@Test
+	public void testRegex(){
+		Pattern	pattern = null;
+		Matcher matcher = null;
+		
+	}
+	
+	//国际化支持 -- 使用Locale对象封装一个国家、语言环境，使用 ResourceBundle 根据 Locale 加载语言资源包
+	public void testLocale(){
 		
 	}
 }
