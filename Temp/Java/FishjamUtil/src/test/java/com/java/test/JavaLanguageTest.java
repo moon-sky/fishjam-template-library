@@ -21,8 +21,12 @@ import org.omg.CORBA.PRIVATE_MEMBER;
 /***************************************************************************************************************
  * 书籍:  
  *    疯狂Java -- P327, Math
-*     ThinkingInJava -- P34
-*     
+ *    ThinkingInJava -- P34
+ *    
+ * Temp
+ *   1.DateFormat 的 SHORT/LONG 等的区别,UT
+ *   2.使用 DateFormat解析日期字符串不灵活，推荐使用 SimpleDateFormat,需要传入日期模版字符串
+ *   
  * TODO
  *   1.容器中迭代 : SomeType [] values = xxx; for(SomeType v : values) { v.Xxx(); }
  *   2.类的生命周期: 加载 -> 验证 -> 准备 -> 解析 -> 初始化
@@ -133,6 +137,11 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  *    5.需要特别注意其引用类型的属性，如其是可变的，必须采用必要的措施(如 初始化时从入参构造副本；返回属性引用时创建临时的匿名副本对象 )来保护该属性所引用的对象不会被修改
  *    
  * 强制类型转换：((子类名)对象).方法
+ * 
+ * Java的异常机制
+ *   将异常分为两种：Checked异常(可以在编译阶段被处理的异常) 和  Runtime异常
+ *   
+ *   
  * 
  * innerClass(内嵌类) -- 除有代码隐藏功能外，更可和外部类沟通（典型使用：Swing中的event机制） 
  *   private内嵌类 使设计者完全避免任何"与型别相依的程序代码"，并得以完全隐藏实现细节
