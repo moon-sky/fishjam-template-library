@@ -80,11 +80,54 @@ bool CxImageBMP::Encode(CxFile * hFile)
 ////////////////////////////////////////////////////////////////////////////////
 #if CXIMAGE_SUPPORT_DECODE
 ////////////////////////////////////////////////////////////////////////////////
+bool CxImageBMP::DecodeInfo(CxFile * hFile)
+{
+    if (hFile == NULL) return false;
+
+    BITMAPFILEHEADER   bf;
+    uint32_t off = hFile->Tell(); //<CSC>
+    cx_try {
+        if (hFile->Read(&bf,min(14,sizeof(bf)),1)==0) cx_throw("Not a BMP");
+
+        bf.bfSize = m_ntohl(bf.bfSize); 
+        bf.bfOffBits = m_ntohl(bf.bfOffBits); 
+
+        if (m_ntohs(bf.bfType) != BFT_BITMAP) { //do we have a RC HEADER?
+            bf.bfOffBits = 0L;
+            hFile->Seek(off,SEEK_SET);
+        }
+
+        BITMAPINFOHEADER bmpHeader;
+        if (!DibReadBitmapInfo(hFile,&bmpHeader)) cx_throw("Error reading BMP info");
+        uint32_t dwCompression=bmpHeader.biCompression;
+        uint32_t dwBitCount=bmpHeader.biBitCount; //preserve for BI_BITFIELDS compression <Thomas Ernst>
+        bool bIsOldBmp = bmpHeader.biSize == sizeof(BITMAPCOREHEADER);
+
+        bool bTopDownDib = bmpHeader.biHeight<0; //<Flanders> check if it's a top-down bitmap
+        if (bTopDownDib) bmpHeader.biHeight=-bmpHeader.biHeight;
+
+        if (info.nEscape == -1) {
+            // Return output dimensions only
+            head.biWidth = bmpHeader.biWidth;
+            head.biHeight = bmpHeader.biHeight;
+            info.dwType = CXIMAGE_FORMAT_BMP;
+            cx_throw("output dimensions returned");
+        }
+        head = bmpHeader;
+
+    } cx_catch {
+        if (strcmp(message,"")) strncpy(info.szLastError,message,255);
+        if (info.nEscape == -1 && info.dwType == CXIMAGE_FORMAT_BMP) return true;
+        return false;
+    }
+    return true;
+}
+
 bool CxImageBMP::Decode(CxFile * hFile)
 {
 	if (hFile == NULL) return false;
 
-    BITMAPFILEHEADER   bf = {0};
+	BITMAPFILEHEADER   bf;
 	uint32_t off = hFile->Tell(); //<CSC>
   cx_try {
 	if (hFile->Read(&bf,min(14,sizeof(bf)),1)==0) cx_throw("Not a BMP");
@@ -97,7 +140,7 @@ bool CxImageBMP::Decode(CxFile * hFile)
         hFile->Seek(off,SEEK_SET);
     }
 
-    BITMAPINFOHEADER bmpHeader = {0};
+	BITMAPINFOHEADER bmpHeader;
 	if (!DibReadBitmapInfo(hFile,&bmpHeader)) cx_throw("Error reading BMP info");
 	uint32_t dwCompression=bmpHeader.biCompression;
 	uint32_t dwBitCount=bmpHeader.biBitCount; //preserve for BI_BITFIELDS compression <Thomas Ernst>
@@ -144,7 +187,7 @@ bool CxImageBMP::Decode(CxFile * hFile)
 	if (info.nEscape) cx_throw("Cancelled"); // <vho> - cancel decoding
 
 	switch (dwBitCount) {
-		case 24 :
+		case 32 :
 			uint32_t bfmask[3];
 			if (dwCompression == BI_BITFIELDS)
 			{
@@ -156,7 +199,7 @@ bool CxImageBMP::Decode(CxFile * hFile)
 			}
 			if (bf.bfOffBits != 0L) hFile->Seek(off + bf.bfOffBits,SEEK_SET);
 			if (dwCompression == BI_BITFIELDS || dwCompression == BI_RGB){
-				int32_t imagesize=3*head.biHeight*head.biWidth;
+				int32_t imagesize=4*head.biHeight*head.biWidth;
                 //uint8_t* buff32=(uint8_t*)malloc(imagesize);
                 CxMapFile   mapFile;
                 mapFile.Create(NULL, imagesize);
@@ -165,32 +208,32 @@ bool CxImageBMP::Decode(CxFile * hFile)
 				if (buff32){
 					hFile->Read(buff32, imagesize,1); // read in the pixels
 
-//#if CXIMAGE_SUPPORT_ALPHA
-//					if (dwCompression == BI_RGB){
-//						AlphaCreate();
-//						if (AlphaIsValid()){
-//							bool bAlphaOk = false;
-//							uint8_t* p;
-//							for (int32_t y=0; y<head.biHeight; y++){
-//								p = buff32 + 3 + head.biWidth * 3 * y;
-//								for (int32_t x=0; x<head.biWidth; x++){
-//									if (*p) bAlphaOk = true;
-//									AlphaSet(x,y,*p);
-//									p+=4;
-//								}
-//							}
-//							// fix if alpha pixels are all zero
-//							if (!bAlphaOk) AlphaInvert();
-//						}
-//					}
-//#endif //CXIMAGE_SUPPORT_ALPHA
+#if CXIMAGE_SUPPORT_ALPHA
+					if (dwCompression == BI_RGB){
+						AlphaCreate();
+						if (AlphaIsValid()){
+							bool bAlphaOk = false;
+							uint8_t* p;
+							for (int32_t y=0; y<head.biHeight; y++){
+								p = buff32 + 3 + head.biWidth * 4 * y;
+								for (int32_t x=0; x<head.biWidth; x++){
+									if (*p) bAlphaOk = true;
+									AlphaSet(x,y,*p);
+									p+=4;
+								}
+							}
+							// fix if alpha pixels are all zero
+							if (!bAlphaOk) AlphaInvert();
+						}
+					}
+#endif //CXIMAGE_SUPPORT_ALPHA
 
-					Bitfield2RGB(buff32,bfmask[0],bfmask[1],bfmask[2],24);
+					Bitfield2RGB(buff32,bfmask[0],bfmask[1],bfmask[2],32);
 					//free(buff32);
 				} else cx_throw("can't allocate memory");
 			} else cx_throw("unknown compression");
 			break;
-		case 32 :
+		case 24 :
 			if (bf.bfOffBits != 0L) hFile->Seek(off + bf.bfOffBits,SEEK_SET);
 			if (dwCompression == BI_RGB){
 				hFile->Read(info.pImage, head.biSizeImage,1); // read in the pixels

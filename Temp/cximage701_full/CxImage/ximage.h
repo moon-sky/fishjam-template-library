@@ -267,7 +267,7 @@ public:
 	CxImage(CxFile * stream, uint32_t imagetype);
 	CxImage(uint8_t * buffer, uint32_t size, uint32_t imagetype);
 #endif
-	virtual ~CxImage() { DestroyFrames(); Destroy(); };
+	virtual ~CxImage();
 	CxImage& operator = (const CxImage&);
 //@}
 
@@ -455,6 +455,7 @@ public:
 	};
 	RGBQUAD GetPixelColorInterpolated(float x,float y, InterpolationMethod const inMethod=IM_BILINEAR, OverflowMethod const ofMethod=OM_BACKGROUND, RGBQUAD* const rplColor=0);
 	RGBQUAD GetAreaColorInterpolated(float const xc, float const yc, float const w, float const h, InterpolationMethod const inMethod, OverflowMethod const ofMethod=OM_BACKGROUND, RGBQUAD* const rplColor=0);
+    RGBQUAD GetAverageColor(int32_t sx, int32_t sy, float w, float h);
 //@}
 
 protected:
@@ -505,8 +506,6 @@ public:
 	int32_t	Tile(HDC hdc, RECT *rc);
 	int32_t	Draw2(HDC hdc, int32_t x=0, int32_t y=0, int32_t cx = -1, int32_t cy = -1);
 	int32_t	Draw2(HDC hdc, const RECT& rect);
-    int32_t	Draw3(HDC hdc, int32_t x=0, int32_t y=0, int32_t cx = -1, int32_t cy = -1, RECT* pClipRect = 0, bool bFlipY = false);
-    int32_t	Draw3(HDC hdc, const RECT& rect, RECT* pClipRect=NULL, bool bFlipY = false);
 	//int32_t	DrawString(HDC hdc, int32_t x, int32_t y, const char* text, RGBQUAD color, const char* font, int32_t lSize=0, int32_t lWeight=400, uint8_t bItalic=0, uint8_t bUnderline=0, bool bSetAlpha=false);
 	int32_t	DrawString(HDC hdc, int32_t x, int32_t y, const TCHAR* text, RGBQUAD color, const TCHAR* font, int32_t lSize=0, int32_t lWeight=400, uint8_t bItalic=0, uint8_t bUnderline=0, bool bSetAlpha=false);
 	// <VATI> extensions
@@ -528,10 +527,12 @@ public:
 	// For UNICODE support: char -> TCHAR
 	bool Load(const TCHAR* filename, uint32_t imagetype=0);
 	//bool Load(const char * filename, uint32_t imagetype=0);
-	bool Decode(FILE * hFile, uint32_t imagetype);
-	bool Decode(CxFile * hFile, uint32_t imagetype);
-	bool Decode(uint8_t * buffer, uint32_t size, uint32_t imagetype);
+	bool Decode(FILE * hFile, uint32_t imagetype, bool bJustInfo = false);
+	bool Decode(CxFile * hFile, uint32_t imagetype, bool bJustInfo = false);
+	bool Decode(uint8_t * buffer, uint32_t size, uint32_t imagetype, bool bJustInfo = false);
 
+    //load and decode file information(width/height/bpp, etc)
+    bool DecodeInfo(const TCHAR* filename, uint32_t imagetype=0);
 	bool CheckFormat(CxFile * hFile, uint32_t imagetype = 0);
 	bool CheckFormat(uint8_t * buffer, uint32_t size, uint32_t imagetype = 0);
 //@}
@@ -800,13 +801,9 @@ protected:
     BITMAPINFOHEADER    head; //standard header
 	CXIMAGEINFO			info; //extended information
 	uint8_t*			pSelection;	//selected region
-	//uint8_t*			pAlpha; //alpha channel
-    bool                bAlpha;
+	uint8_t*			pAlpha; //alpha channel
 	CxImage**			ppLayers; //generic layers
 	CxImage**			ppFrames;
-    HBITMAP             hDib;
-    HBITMAP             hOldBitmap;
-    HDC                 hMemoDC;
 //@}
 };
 
