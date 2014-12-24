@@ -31,6 +31,7 @@ package com.java.test;
  * JAR(Java Archive File) -- Java档案文件，其格式与Zip压缩文件兼容，但包含一个 META-INF/MANIFEST.MF 的清单文件(在生成 jar时由系统自动创建 )
  *    有两个变体: WAR 和 EAR
  * JCP(Java Community Process) --  
+ * JDBC(Java Database Connectivity) -- Java数据库连接
  * JDK(Java Development Kit) -- 按Java的应用环境划分
  *   J2EE(Java 2 Platform Enterprise Edition) -- 企业Web应用开发
  *   J2SE(Java 2 Platform Stand Edition) -- 普通应用程序
