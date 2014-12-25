@@ -1308,8 +1308,14 @@ namespace FTL
         else
         {
             //半透明，根据Alpha值进行计算
-
             //#define alpha_blend(sr, dr, alpha)  (((sr - dr) * alpha + (dr << 8)) >> 8)
+
+            //TODO: 1.标准算法? 虽然效率不高
+            //      2.Alpha的值是否也应该合成? 
+            //BYTE a =  srcA * alpha / 0xff + (dstA - dstA * alpha / 0xff);
+            //BYTE r =  srcR * alpha / 0xff + (dstR - dstR * alpha / 0xff);
+            //BYTE g =  srcG * alpha / 0xff + (dstG - dstG * alpha / 0xff);
+            //BYTE b =  srcB * alpha / 0xff + (dstB - dstB * alpha / 0xff);
 
             //TODO: 标准要求 /255, 此处通过 C = A * B + 0x80; C = ((C >> 8) + C) >> 8; 来进行近似计算，避免使用除法
             //      http://bbs.csdn.net/topics/290080863   -- 实测结果不正确
@@ -1317,6 +1323,7 @@ namespace FTL
             clrTarget.rgbGreen = ((clrDst.rgbGreen * alphaBack + clrSrc.rgbGreen * alpha) + 0x80) >> 8; //((nGreen >> 8) + nRed) >> 8;
             clrTarget.rgbBlue =  ((clrDst.rgbBlue * alphaBack + clrSrc.rgbBlue * alpha) + 0x80) >> 8; //((nBlue >> 8) + nRed) >> 8;
             clrTarget.rgbReserved = alpha; // ((nAlpha >> 8) + nRed) >> 8;
+
         }
         return clrTarget;
     }
@@ -1349,7 +1356,7 @@ namespace FTL
             return FALSE;
         }
 
-        RGBQUAD* pRead = NULL; 
+        const RGBQUAD* pRead = NULL; 
         RGBQUAD* pWrite = NULL;
 
         if (nWidthDst == nWidthSrc && nHeightDst == nHeightSrc)
@@ -1810,6 +1817,7 @@ namespace FTL
         m_width = 0;
         m_height = 0;
         m_bpp = 0;
+        m_nStride = 0;
     }
 
     CFCanvas::~CFCanvas()
@@ -1847,6 +1855,7 @@ namespace FTL
         m_width = 0;
         m_height = 0;
         m_bpp = 0;
+        m_nStride = 0;
     }
 
     DWORD CFCanvas::GetTotalSize()
@@ -1858,6 +1867,31 @@ namespace FTL
         }
         return  0;
     }
+
+    BYTE* CFCanvas::GetRowAddress(int y)
+    {
+        BYTE* pRowAddr = NULL;
+        FTLASSERT(m_pImageBuffer);
+        FTLASSERT(y >= 0 && y < m_height);
+        if (y >= 0 && y < m_height)
+        {
+            pRowAddr = m_pImageBuffer + y * m_nStride;
+        }
+        return pRowAddr;
+    }
+
+    BYTE* CFCanvas::GetPointAddr(int x, int y)
+    {
+        BYTE* pPointAddr = NULL;
+        FTLASSERT(m_pImageBuffer);
+        FTLASSERT(y >= 0 && y < m_height);
+        if (y >= 0 && y < m_height)
+        {
+            pRowAddr = m_pImageBuffer + y * m_nStride;
+        }
+        return pRowAddr;
+    }
+
     DWORD CFCanvas::GetImageBufferSize()
     {
         if (m_pBmpInfo)
@@ -1979,6 +2013,7 @@ namespace FTL
             m_height = FTL_ABS(heigth);
             m_width = FTL_ABS(width);
             m_bpp = bpp;
+            m_nStride = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(m_width, bpp);
         } while (FALSE);
 
         if (hDCScreen)
@@ -2093,6 +2128,8 @@ namespace FTL
             m_width = bmpInfo.bmiHeader.biWidth;
             m_height = bmpInfo.bmiHeader.biHeight;
             m_bpp = bmpInfo.bmiHeader.biBitCount;
+            m_nStride = CALC_BMP_ALLIGNMENT_WIDTH_COUNT(m_width, m_bpp);
+
             m_dwTotalSize = bmpFileHeader.bfSize - sizeof(BITMAPFILEHEADER);
             m_hFile = hFile;
             m_hMemBitmap = hDIB;

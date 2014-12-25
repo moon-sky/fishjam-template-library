@@ -9,6 +9,7 @@
 #include "FTLCrackTester.h"
 #include "FTLFileTester.h"
 #include "FTLFunctionalTester.h"
+#include "FTLGdiPlusTester.h"
 #include "FTLGdiTester.h"
 #include "FTLMemTester.h"
 #include "FTLNetTester.h"
@@ -35,6 +36,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(CFTLComTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLCrackTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLFileTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLFunctionalTester);
+CPPUNIT_TEST_SUITE_REGISTRATION(CFTLGdiPlusTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLGdiTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLMemTester);
 CPPUNIT_TEST_SUITE_REGISTRATION(CFTLNetTester);

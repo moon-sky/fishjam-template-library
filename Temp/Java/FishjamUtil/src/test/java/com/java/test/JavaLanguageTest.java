@@ -5,10 +5,17 @@ import static org.junit.Assert.*;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.text.Bidi;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,7 +101,9 @@ import org.omg.CORBA.PRIVATE_MEMBER;
  * 基本类型(primitive type)用自动变量(automatic)方式解决效率问题；基本类型有所谓的包装类(Wrapper classes)，可用new创建，并可通过字符串格式的构造参数进行初始化
  *    1.5以后JDK提供了自动装箱(Autoboxing)和自动拆箱(AutoUnboxing)功能，可直接赋值。包装类可通过 parseXxx(String) 静态方法将字符串转换成基本类型变量。
  *    对应的 String.valueOf(xxx) 可将基本类型变量转换成字符串
- * 高精度计算(如精确金融)使用 -- BigInteger 和 BigDecimal(任意精度的定点数)
+ * 高精度计算(如精确金融)使用 -- BigInteger 和 BigDecimal(任意精度的定点数),对应的计算使用 add/substract/multiply/divide/pow 等函数进行。
+ *   注意：创建 BigDecimal 对象时，一定要使用 String 对象作为构造函数的参数，而不要直接使用 double 数字； 或者使用静态的 BigDecimal.valueof 构造。  
+ *   float,double 在进行算术运算时容易发生进度丢失。
  * 
  * Java的applet使用sandbox(砂盒)的方式，applet无法写、删除文件，如果数字签名了的话可以不受限。 
  *   可以使用SecurityManager--设定Java的安全策略 
@@ -372,6 +381,41 @@ public class JavaLanguageTest {
 		//fail("Not yet implemented");
 	}
 	
+	@Test
+	public void testCalendar(){
+		//Date 是一个比较老的类，推荐使用 Calendar 代替Date 进行日期和时间的处理
+		//Calendar 是一个抽象类，用于表示日历，有多种子类，表示不同的日历方式，如  GregorianCalendar(公历)。
+		//              注意：调用多次 set 方法时会延迟到下次 getXxx 时才进行实际的计算(避免多次set时不必要的计算)。
+		//  add -- 根据日历的规则，为给定的日历字段添加或减去指定的时间量。当被修改的字段超出允许的范围时，会发生进位；
+		//            如下一级的字段也需要改变，会修正到变化最小的值。如 20030731 + 6月后，理论是 20040231，但因为2月没有31日，因此自动调整为 20040229 
+		//  roll  -- 与add方法基本类似，区别在于加上的value超过了该字段所能表示的最大范围后，不会向上一个字段进位
+		//TimeZone -- 时区(中国属于东八区)，Java程序默认是按格林威治时间进行处理。
+		
+		Locale[] avaiLocales = Calendar.getAvailableLocales();
+		//for (Locale locale : avaiLocales) {
+		//	System.out.println(locale.toString());
+		//}
+		
+		Calendar calendarDefault = Calendar.getInstance();		//使用默认的 TimeZone, Locale 来创建实例
+		calendarDefault.setLenient(false); 		//关闭容错性 -- 每一字段都必须在有效范围内(如不能设置 大于11的月份值) ,否则会抛出异常
+		Date date = calendarDefault.getTime();		//获得当前时间
+		assertEquals(2014, calendarDefault.get(Calendar.YEAR));		//获得 年字段 的值
+		
+		calendarDefault.set(2008, 8, 8, 20, 0, 0);		//北京奥运
+		calendarDefault.add(Calendar.MONTH, -10);		//向前10个月, 因为使用的是 add, 所以年份会变
+		assertEquals(2007, calendarDefault.get(Calendar.YEAR));
+		
+		calendarDefault.set(2008, 8, 8, 20, 0, 0);		//北京奥运
+		calendarDefault.roll(Calendar.MONTH, -10);			//向前10个月, 因为使用的是 roll, 所以年份不变
+		assertEquals(2008, calendarDefault.get(Calendar.YEAR));
+		
+		//Calendar calendarCN = Calendar.getInstance(Locale.CHINA);
+		
+		TimeZone timezoneDefault = TimeZone.getDefault();						//获取运行机器上默认的时区 -- 中国，东八区
+		assertEquals("Asia/Shanghai", timezoneDefault.getID());
+		assertEquals("中国标准时间", timezoneDefault.getDisplayName());
+		assertEquals(8 * 60 * 60 * 1000, timezoneDefault.getRawOffset());  //和 UTC 的偏差
+	}
 	//测试字符串
 	@Test
 	public void testString() throws UnsupportedEncodingException{
@@ -551,18 +595,30 @@ public class JavaLanguageTest {
 		//}
 	}
 	
-	//正则表达式 -- String类增加了正则表达式支持
-	@Test
-	public void testRegex(){
-		Pattern	pattern = null;
-		Matcher matcher = null;
-		
-	}
-	
 	//国际化支持 -- 使用Locale对象封装一个国家、语言环境，使用 ResourceBundle 根据 Locale 加载语言资源包
 	@Test
 	public void testLocale(){
 		
+	}
+	
+	@Test
+	public void testMath(){
+		double dRandom = Math.random();				//伪随机数， [ 0,1 )
+		assertTrue(0 <= dRandom && dRandom < 1.0);
+		
+		//伪随机数生成器
+		Random rand = new Random(System.currentTimeMillis());
+		
+		//double dGaussian = rand.nextGaussian();		//平均值是 0.0, 标准差是 1.0 的伪高斯数
+		//System.out.println("dGaussian=" + dGaussian);
+		//assertTrue(-1.0 < dGaussian && dGaussian < 1.0);
+		
+		int nInt = 60 + (int)Math.ceil(rand.nextInt(40)); 	//生成处于 [60 ~ 100] 之间的伪随机数
+		assertTrue(60 <= nInt && nInt <= 100);
+	
+		BigDecimal bigDecimal = new BigDecimal("0.123456789");
+		bigDecimal = bigDecimal.multiply(new BigDecimal("1000000")); 
+		assertEquals("123456.789000000", bigDecimal.toString());
 	}
 	
 }

@@ -10,6 +10,7 @@
 #include <atlwin.h>
 //#include <ftlWindow.h>
 // 无资源对话框需要ATL
+#include <DbgHelp.h>
 
 namespace FTL
 {

@@ -644,6 +644,7 @@ namespace FTL
 		posTopLeft,
 	};
 
+
     FTLEXPORT class CFGdiUtil
     {
     public:
@@ -790,6 +791,8 @@ namespace FTL
         FTLINLINE int GetPitch() const { return m_width * m_bpp >> 3; }
         FTLINLINE BOOL  IsCanvasChanged( const RECT& rc , int bpp = 32 );
         FTLINLINE BYTE* GetImageBuffer() { return m_pImageBuffer; } //绘制时可以通过 StretchDIBits 直接使用 ?
+        FTLINLINE BYTE* GetRowAddress(int y);
+        FTLINLINE BYTE* GetPointAddr(int x, int y);
         FTLINLINE HDC   GetCanvasDC() const { return m_hCanvasDC; }
         FTLINLINE  operator HDC() const { return m_hCanvasDC; }
         FTLINLINE HBITMAP GetMemoryBitmap() const { return m_hMemBitmap; }
@@ -814,6 +817,7 @@ namespace FTL
         int     m_width;
         int     m_height;
         int     m_bpp;
+        int     m_nStride;      //一行图片占用的字节数(4字节对齐)，对应 GdiPlus::BitmapData::Stride
     };
 
     template <typename T>

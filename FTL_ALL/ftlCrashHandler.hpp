@@ -9,6 +9,8 @@
 #include "ftlFile.h"
 //#include <atldlgs.h>
 #include <WindowsX.h>
+#include "ftlStackWalker.h"
+
 namespace FTL
 {
     // Dailog creation functions

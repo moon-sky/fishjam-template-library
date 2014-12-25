@@ -282,8 +282,8 @@ namespace FTL
     class CFMemCheckManagerHelper
     {
     public:
-        CFMemCheckManagerHelper();
-        ~CFMemCheckManagerHelper();
+        FTLINLINE CFMemCheckManagerHelper();
+        FTLINLINE ~CFMemCheckManagerHelper();
     };
 	//#define CHECK_OBJ_MEM_LEAK()   \
 	//if( 0 != CFDoubleFreeCheckMgr::Instance(). ) \

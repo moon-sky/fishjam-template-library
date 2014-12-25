@@ -473,6 +473,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ftlStackWalker.hpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ftlString.hpp"
 				>
 			</File>
@@ -704,6 +708,10 @@
 			</File>
 			<File
 				RelativePath=".\ftlSocket.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ftlStackWalker.h"
 				>
 			</File>
 			<File

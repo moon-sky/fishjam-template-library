@@ -9,6 +9,7 @@
 //#include <cppunit/ui/qt/QtTestRunner.h>
 //#include <cppunit/ui/text/TestRunner.h>
 #include <ftlGdi.h>
+#include <ftlGdiPlus.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,6 +42,7 @@ CFTLTestApp theApp;
 BOOL CFTLTestApp::InitInstance()
 {
     //FUNCTION_BLOCK_INIT();
+    FTL::CFAutoGdiplus  autoGdiPlus;
     {
         //FAST_TRACE_OPTIONS traceOptions;
         //traceOptions.bWriteToFile = TRUE;
