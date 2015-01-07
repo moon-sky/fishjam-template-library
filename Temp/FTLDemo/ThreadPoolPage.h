@@ -2,9 +2,14 @@
 
 // CThreadPoolPage 对话框
 
+#define TEST_ATL_THREAD_POOL    0
 #include <ftlThreadPool.h>
-#include <atlutil.h>		//ATL ThreadPool CThreadPool
 #include "afxcmn.h"
+
+
+#if TEST_ATL_THREAD_POOL
+#  include <atlutil.h>		//ATL ThreadPool CThreadPool
+#endif
 
 //定义是否测试 Vista 后的 Thread Pool API 的宏，设置为 1 则测试(需要Vista以后的运行环境)
 #define CHECK_VISTA_THREAD_POOL	0
@@ -68,8 +73,11 @@ protected:
 
     //CProgressCtrl m_ProgressOfThread;
 	FTL::CFThreadPool<CThreadPoolPage*>*	m_pFtlThreadPool;
+
+#if TEST_ATL_THREAD_POOL
 	CThreadPool<CATLPoolJob>				m_AtlThreadPool;
-	
+#endif
+
 	LONG	m_nFtlThreadPoolMaxWaitingJobs;
 	LONG    m_nFtlThreadPoolMinThreads;
 	LONG	m_nFtlThreadPoolMaxThreads;

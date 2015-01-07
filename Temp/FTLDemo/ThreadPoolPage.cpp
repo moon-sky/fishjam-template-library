@@ -271,20 +271,26 @@ void CThreadPoolPage::SetAtlThreadPoolButtonStatus(BOOL bStarted, BOOL bPaused)
 
 void CThreadPoolPage::OnBnClickedBtnAtlThreadPoolStart()
 {
+#if TEST_ATL_THREAD_POOL
 	m_AtlThreadPool.Initialize((void*)321, 3);
 	SetAtlThreadPoolButtonStatus(TRUE, FALSE);
+#endif
 }
 
 void CThreadPoolPage::OnBnClickedBtnAtlThreadPoolAddJob()
 {
+#if TEST_ATL_THREAD_POOL
 	m_AtlThreadPool.QueueRequest( (CATLPoolJob::RequestType) new CATLPoolJob());
+#endif
 }
 
 void CThreadPoolPage::OnBnClickedBtnAtlThreadPoolStop()
 {
 	FUNCTION_BLOCK_TRACE(DEFAULT_BLOCK_TRACE_THRESHOLD);
+#if TEST_ATL_THREAD_POOL
 	m_AtlThreadPool.Shutdown(0);
 	SetAtlThreadPoolButtonStatus(FALSE, FALSE);
+#endif
 }
 
 

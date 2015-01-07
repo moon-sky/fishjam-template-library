@@ -5,6 +5,9 @@
 
 namespace FTL
 {
+	//TODO:
+	//1.注册表干什么的? --  HKEY_CURRENT_USER\Software\Microsoft\Windows\Windows Error Reporting\Debug
+	
     //WinDBG用法详解.pdf -- P79,  30.14 遍历链表
     //Windows用户态程序高效排错(普通下载).pdf -- P37(SharePoint中文界面变英文) P43, 符号文件
     //  http://blog.csdn.net/eparg/
@@ -14,6 +17,12 @@ namespace FTL
     //TODO:Time Travel Debugging -- 微软最新的调试技术(记录代码执行流程，且所有的代码都是顺序执行 ?)
 
     /*********************************************************************************************************
+    * 常见问题:
+    *   1.调试 .dmp 时, VS提示"There is no source code available for the current location", 然后无法定位到代码位置，只能显示汇编.
+    *     原因:多半是不在同一个机器上编译的, pdb 中保存的文件路径不一致
+    *     解决:
+    *   2.
+    * 
     * BSOD(Blue Screen of Death) -- 蓝屏死机
     *
     * WinDbg调试dmp文件(可以下载并加载不匹配的符号 -- VS2008不能下载)

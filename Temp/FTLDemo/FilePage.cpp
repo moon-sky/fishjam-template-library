@@ -22,10 +22,28 @@ CFilePage::CFilePage()
     m_nTotalSize = 0LL;
     m_nCopiedSize = 0LL;
     m_nCopyFileCount = 5;
+
+    m_dwHandleShareMode = 0; //FILE_SHARE_READ | FILE_SHARE_WRITE;
+    m_nStreamShareMode = _SH_DENYRW; //_SH_DENYNO;
+
+    m_strShareFileName = TEXT("TestShareMode.txt");
+    m_hShareFileHandle = INVALID_HANDLE_VALUE;
+    m_pShareFilePointer = NULL;
 }
 
 CFilePage::~CFilePage()
 {
+    BOOL bRet = FALSE;
+    SAFE_CLOSE_HANDLE(m_hShareFileHandle, INVALID_HANDLE_VALUE);
+    if (m_pShareFilePointer)
+    {
+        fclose(m_pShareFilePointer);
+        m_pShareFilePointer = NULL;
+    }
+    if (m_nShareFileStream.is_open())
+    {
+        m_nShareFileStream.close();
+    }
 }
 
 void CFilePage::DoDataExchange(CDataExchange* pDX)
@@ -34,6 +52,8 @@ void CFilePage::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_EDIT_FILE_COPY_SRC_DIR, m_strCopySrcDir);
     DDX_Text(pDX, IDC_EDIT_FILE_COPY_DST_DIR, m_strCopyDstDir);
     DDX_Control(pDX, IDC_PROGRESS_FILE_COPY_DIR, m_progressCopyDir);
+    DDX_Control(pDX, IDC_CHK_SHARE_READ, m_chkShareRead);
+    DDX_Control(pDX, IDC_CHK_SHARE_WRITE, m_chkShareWrite);
 }
 
 
@@ -56,6 +76,14 @@ BEGIN_MESSAGE_MAP(CFilePage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_FILE_FILLDUMP, &CFilePage::OnBnClickedBtnFillDump)
     ON_BN_CLICKED(IDC_BTN_FILE_AUTONAME, &CFilePage::OnBnClickedBtnAutoName)
 
+    ON_BN_CLICKED(IDC_BTN_CREATEFILE, &CFilePage::OnBnClickedBtnCreatefile)
+    ON_BN_CLICKED(IDC_BTN_CLOSEFILE, &CFilePage::OnBnClickedBtnClosefile)
+    ON_BN_CLICKED(IDC_BTN_FOPEN, &CFilePage::OnBnClickedBtnFopen)
+    ON_BN_CLICKED(IDC_BTN_FCLOSE, &CFilePage::OnBnClickedBtnFclose)
+    ON_BN_CLICKED(IDC_BTN_FSTREAM_OPEN, &CFilePage::OnBnClickedBtnFstreamOpen)
+    ON_BN_CLICKED(IDC_BTN_FSTREAM_CLOSE, &CFilePage::OnBnClickedBtnFstreamClose)
+    ON_BN_CLICKED(IDC_CHK_SHARE_WRITE, &CFilePage::OnBnClickedChkShareWrite)
+    ON_BN_CLICKED(IDC_CHK_SHARE_READ, &CFilePage::OnBnClickedChkShareRead)
 END_MESSAGE_MAP()
 
 
@@ -475,6 +503,10 @@ BOOL CFilePage::OnInitDialog()
     m_progressCopyDir.SetRange32(0, 100);
     //m_iocpMgr.Start();
 
+    m_chkShareRead.SetCheck(0 != (m_dwHandleShareMode & FILE_SHARE_READ));
+    m_chkShareWrite.SetCheck(0 != (m_dwHandleShareMode & FILE_SHARE_WRITE));
+    _SetFileButtonStatus();
+
     return TRUE;  // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -522,4 +554,150 @@ VOID CFilePage::OnError(LPCTSTR pszSrcFile, LPCTSTR pszTargetFile, DWORD dwError
     FTLTRACE(TEXT("OnError, pszSrcFile=%s, pszTargetFile=%s, dwError=%d\n"),
         pszSrcFile, pszTargetFile, dwError);
     SendMessage(UM_UPDATE_COPY_DIR_ERROR, dwError, 0);
+}
+
+void CFilePage::_SetFileButtonStatus()
+{
+    BOOL bOpenFileHandle = (m_hShareFileHandle != INVALID_HANDLE_VALUE);
+    GetDlgItem(IDC_BTN_CREATEFILE)->EnableWindow(!bOpenFileHandle);
+    GetDlgItem(IDC_BTN_CLOSEFILE)->EnableWindow(bOpenFileHandle);
+
+    BOOL bOpenFilePointer = (m_pShareFilePointer != NULL);
+    GetDlgItem(IDC_BTN_FOPEN)->EnableWindow(!bOpenFilePointer);
+    GetDlgItem(IDC_BTN_FCLOSE)->EnableWindow(bOpenFilePointer);
+
+    BOOL bOpenStreamFile = (m_nShareFileStream.is_open() != false);
+    GetDlgItem(IDC_BTN_FSTREAM_OPEN)->EnableWindow(!bOpenStreamFile);
+    GetDlgItem(IDC_BTN_FSTREAM_CLOSE)->EnableWindow(bOpenStreamFile);
+}
+void CFilePage::OnBnClickedBtnCreatefile()
+{
+    BOOL bRet = FALSE;
+    ATLASSERT(INVALID_HANDLE_VALUE == m_hShareFileHandle);
+    if (INVALID_HANDLE_VALUE == m_hShareFileHandle)
+    {
+        API_VERIFY(INVALID_HANDLE_VALUE != 
+            (m_hShareFileHandle = ::CreateFile(m_strShareFileName, GENERIC_WRITE, m_dwHandleShareMode, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL)));
+        if (bRet)
+        {
+            _SetFileButtonStatus();
+            CString strInfo = TEXT("CreateFile Write\n");
+            DWORD dwWrite = strInfo.GetLength() * sizeof(TCHAR);
+            DWORD dwWritten = 0;
+            API_VERIFY(::WriteFile(m_hShareFileHandle, (LPCTSTR)strInfo, dwWrite, &dwWritten, NULL));
+            API_VERIFY(::FlushFileBuffers(m_hShareFileHandle));
+        }
+    }
+    _SetFileButtonStatus();
+}
+
+void CFilePage::OnBnClickedBtnClosefile()
+{
+    BOOL bRet = FALSE;
+    SAFE_CLOSE_HANDLE(m_hShareFileHandle, INVALID_HANDLE_VALUE);
+    _SetFileButtonStatus();
+}
+
+void CFilePage::OnBnClickedBtnFopen()
+{
+    ATLASSERT(NULL == m_pShareFilePointer);
+    if (NULL == m_pShareFilePointer)
+    {
+        m_pShareFilePointer = _tfopen(m_strShareFileName, _T("wb"));
+        ATLASSERT(m_pShareFilePointer);
+        if (m_pShareFilePointer)
+        {
+            CString strInfo = TEXT("_tfopen Write\n");
+            DWORD dwWrite = strInfo.GetLength();
+            DWORD dwWritten = 0;
+            fwrite((LPCTSTR)strInfo, sizeof(TCHAR), dwWrite, m_pShareFilePointer);
+            fflush(m_pShareFilePointer);
+        }
+    }
+    _SetFileButtonStatus();
+}
+
+void CFilePage::OnBnClickedBtnFclose()
+{
+    if (m_pShareFilePointer)
+    {
+        fclose(m_pShareFilePointer);
+        m_pShareFilePointer = NULL;
+    }
+    _SetFileButtonStatus();
+}
+
+void CFilePage::OnBnClickedBtnFstreamOpen()
+{
+    FTLASSERT(!m_nShareFileStream.is_open());
+    if (!m_nShareFileStream.is_open())
+    {
+        m_nShareFileStream.open(m_strShareFileName, std::ios_base::out | std::ios_base::binary, m_nStreamShareMode);
+        FTLASSERT(m_nShareFileStream.is_open());
+        if (m_nShareFileStream.is_open())
+        {
+            CString strInfo = TEXT("ofstream Write\n");
+            m_nShareFileStream << strInfo;
+        }
+    }
+    _SetFileButtonStatus();
+}
+
+
+void CFilePage::OnBnClickedBtnFstreamClose()
+{
+    if (m_nShareFileStream.is_open())
+    {
+        m_nShareFileStream.close();
+    }
+    _SetFileButtonStatus();
+}
+
+void CFilePage::_SetFileShareMode(BOOL bShareWrite, BOOL bShareRead)
+{
+    //if (bShareWrite)
+    //{
+    //    m_dwHandleShareMode |= FILE_SHARE_WRITE;
+    //}
+    //else
+    //{
+    //    m_dwHandleShareMode &= ~FILE_SHARE_WRITE;
+    //}
+
+    //if (bShareRead)
+    //{
+    //    m_dwHandleShareMode |= FILE_SHARE_READ;
+    //}
+    //else
+    //{
+    //    m_dwHandleShareMode &= ~FILE_SHARE_READ;
+    //}
+
+    if (!bShareWrite && !bShareRead)
+    {
+        m_dwHandleShareMode = 0;
+        m_nStreamShareMode = _SH_DENYRW;
+    }
+    else if(bShareWrite && bShareRead){
+        m_dwHandleShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+        m_nStreamShareMode = _SH_DENYNO;
+    }
+    else if(bShareRead){
+        m_dwHandleShareMode = FILE_SHARE_READ;
+        m_nStreamShareMode = _SH_DENYRW;
+    }
+    else{
+        m_dwHandleShareMode = FILE_SHARE_WRITE;
+        m_nStreamShareMode = _SH_DENYRD;
+    }
+}
+
+void CFilePage::OnBnClickedChkShareWrite()
+{
+    _SetFileShareMode(m_chkShareWrite.GetCheck(), m_chkShareRead.GetCheck());
+}
+
+void CFilePage::OnBnClickedChkShareRead()
+{
+    _SetFileShareMode(m_chkShareWrite.GetCheck(), m_chkShareRead.GetCheck());
 }

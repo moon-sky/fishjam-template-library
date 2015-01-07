@@ -38,6 +38,15 @@ namespace FTL
 	*   Unicode[1200, 0xFFFE] -- Unicode 编码，英文对应的是 0xXX00
 	*   Unicode Big-Endian[1201, 0xFEFF] -- Unicode 编码，英文对应的是 0x00XX
 	*   UTF-7[65000] -- UTF7编码？文件头没有标识符
+    *
+    * ShareMode(具体测试参见 FtlDemo 的 FilePage )
+    *   CreateFile -- 
+    *   ofstream -- 默认以 _SH_DENYNO 方式打开(即允许其他的进行读写)， 会造成逻辑错误, 默认值，可在 open 时指定
+    *   fopen -- 默认以 允许写 方式打开(似乎没有可以更改的地方
+    * 
+    *  ofstream 参数问题 -- http://bbs.chinaunix.net/thread-846808-1-1.html
+    *  C标准库的setlocale()用法笔记 -- http://www.cnblogs.com/hnrainll/archive/2011/05/07/2039700.html
+    *  Unicode下TRACE中文(_CrtDbgReport: String too long or IO Error) -- http://blog.csdn.net/beyond_cn/article/details/37657693
 	**************************************************************************************************/
 	enum TextFileEncoding
 	{

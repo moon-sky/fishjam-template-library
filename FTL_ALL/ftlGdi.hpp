@@ -1882,7 +1882,7 @@ namespace FTL
 
     BYTE* CFCanvas::GetPointAddr(int x, int y)
     {
-        BYTE* pPointAddr = NULL;
+        BYTE* pRowAddr = NULL;
         FTLASSERT(m_pImageBuffer);
         FTLASSERT(y >= 0 && y < m_height);
         if (y >= 0 && y < m_height)
