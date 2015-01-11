@@ -204,6 +204,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 *       <javax.persistence><persistence-api>[1.0.2] <== 标准的数据库持久化API ?
 *       <org.mybatis><mybatis>[3.2.2] <==  mybatis(ibatis) 的数据库持久化层
 *       <org.mybatis><mybatis-spring>[1.2.2] <== 帮助将MyBatis代码和Spring进行无缝整合
+*       <redis.clients><jedis>[2.0.0] <== Redis的官方首选Java开发包(TODO: 会缺少 org.apache.commons ?)
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************

@@ -1,9 +1,7 @@
 package com.fishjam.study.javaee;
-
-	
-		<#if (listquotedpricepriceone.amount < buyerproducts.amount ) >xxxx</#if>
                                             	
 /**************************************************************************************************************************************
+ * 	<#if (listquotedpricepriceone.amount < buyerproducts.amount ) >xxxx</#if>
  * 文档 -- FreeMarker_Manual_zh_CN.pdf， P20
  * 
  * 编辑工具
@@ -18,17 +16,20 @@ package com.fishjam.study.javaee;
  *    
  * 最佳实践
  *    1.当生成HTML时，你最好将完整的模板放入到 escape 指令中， 从而阻止跨站脚本攻击和非格式良好的HTML页面
+ *    2.开发调试时，最好将 <freemarkerSettings> 中的 template_update_delay 值设为0，表明每次更新文件后，刷新时立即生效。
+ *      发布版本时，再将其值调大(如 1800)
 **************************************************************************************************************************************/
+
 /**************************************************************************************************************************************
 * 配置
 *   1. <bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer"
-        p:templateLoaderPath="/WEB-INF/ftl/" p:freemarkerSettings-ref="freemarkerSettings">
-           <property name="freemarkerVariables">
-                <map>
-                  <entry key="menu" value-ref="menuTools"/>   <== 配置FTL中 ${menu(Session.userinfo.roles)} 语法对应的 TemplateMethodModelEx 子类
-                </map>
-           </property>
-        </bean>
+*       p:templateLoaderPath="/WEB-INF/ftl/" p:freemarkerSettings-ref="freemarkerSettings">
+*          <property name="freemarkerVariables">
+*               <map>
+*                 <entry key="menu" value-ref="menuTools"/>   <== 配置FTL中 ${menu(Session.userinfo.roles)} 语法对应的 TemplateMethodModelEx 子类
+*               </map>
+*          </property>
+*       </bean>
 **************************************************************************************************************************************/
 
 /**************************************************************************************************************************************
