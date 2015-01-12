@@ -158,6 +158,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 *    服务器功能开发相关
 *    	<javax.mail><mail>[1.4.4]  <== javaxmail， TODO: 需要确认，这个到底是JavaMail还是SpringMail?似乎是JavaMail
 *       <commons-fileupload><commons-fileupload>[1.2.2] <== 文件上传
+*       <com.octo.captcha><jcaptcha>[1.0]	<== 验证码
 *    数据解析
 *       <net.sf.json-lib><json-lib>[2.4] <== Json解析， 需要加上 <classifier>jdk15</classifier> ?
 *       <com.belerweb><pinyin4j>[2.5.0] <== 汉字拼音

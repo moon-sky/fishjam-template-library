@@ -21,6 +21,12 @@ import org.junit.Test;
 *   log4j提供分级方法在程序中嵌入日志记录语句。
 *   日志信息具有多种输出格式和多个。
 * 
+* 配置
+*   1.建立 log4j.properties 文件，在其中写入详细的配置键值对，如：
+*     log4j.rootLogger=warn, A1
+*     log4j.logger.org.springframework=warn  -- 
+*     log4j.appender.A1=org.apache.log4j.ConsoleAppender
+*   
 * 输出级别(只输出等于或高于特定级别的信息) -- [all] < debug < info < warn < error < fatal  <[off]
 *    
 * 基本概念

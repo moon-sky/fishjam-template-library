@@ -12,7 +12,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;  
 import redis.clients.jedis.JedisPoolConfig;  
 
-http://blog.csdn.net/renfufei/article/details/38474435
 /**********************************************************************************************************************************************
  * Redis -- http://redis.io/download , 开源，提供多种语言(Java，C++，python 等)的API
  *   可基于内存亦可持久化的日志型、Key-Value数据库,和Memcached类似。
