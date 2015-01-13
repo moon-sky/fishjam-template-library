@@ -1,4 +1,4 @@
-package com.fishjam.study.javaee;
+package com.fishjam.springtester.framework;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -185,7 +185,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  *   Spring Rich Client -- 富应用工具箱，开发桌面应用程序
  *   Spring .NET -- 面向.NET平台的，提供了松耦合和面向切面的Spring特性。
 **************************************************************************************************************************************/
-public class SpringStudy {
+public class SpringTest {
 	
 	public void testSpring(){
 		 //ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext_demo.xml"); //TODO: 路径

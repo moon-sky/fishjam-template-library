@@ -23,6 +23,12 @@ import com.fishjam.utility.web.spring.ApplicationContextDumper;
 //Spring 的下载地址 -- http://www.springsource.org/download 
 	
 /***********************************************************************************************************************************************
+ * 网站开发的最佳实践
+ *   1.网站通常会采用 web服务器( Nginx、apache) + 应用服务器(tomcat、jboss、jetty等) 组合提供服务。
+ *     Web服务器性能显著，对js、css、图片等静态文件有较强的处理能力，按照预定规则过滤或重定向(到应用服务器)，可作为软负载提供负载均衡服务等。
+ *     应用服务器相对笨重，主要处理较复杂的业务逻辑
+ *
+ *
  * Spring开发中的最佳实践
  *   1.设置 <beans> 的 default-autowire="byName" 启用 name=>bean.id 的自动装配;
  *   2.? 使用Java提供的 @Inject 注解进行注入(Java提供的通用依赖注入模型， 可用于变量、构造函数等地方)

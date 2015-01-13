@@ -1,4 +1,4 @@
-package com.fishjam.study.javaee;
+package com.fishjam.springtester.framework;
 
 //轻量级Java_EE企业应用实战_Struts_2+Spring_3+Hibernate整合开发 -- P241(国际化、资源)
 //  使用的是 Eclipse-jee-helios 版( Eclipse 3.6 for Java EE Developers )
@@ -113,6 +113,6 @@ package com.fishjam.study.javaee;
  *   Struts -- <constant name="struts.devMode" value="true" /> ？
  *   Mule -- ？
  ***************************************************************************************************************************************/
-public class JavaEEStudy {
+public class JavaEETest {
 
 }

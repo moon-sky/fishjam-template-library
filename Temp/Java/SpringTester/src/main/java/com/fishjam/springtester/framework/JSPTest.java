@@ -1,4 +1,4 @@
-package com.fishjam.study.javaee;
+package com.fishjam.springtester.framework;
 
 /**************************************************************************************************************************************
  * 
@@ -31,6 +31,6 @@ package com.fishjam.study.javaee;
  *   <fmt:formatDate value="xxx" pattern="hh:mma MMM d, yyyy" />
 **************************************************************************************************************************************/
 
-public class JSPStudy {
+public class JSPTest {
 
 }

@@ -1,4 +1,4 @@
-package com.fishjam.study.javaee;
+package com.fishjam.springtester.framework;
 
 import java.util.Map;
 
@@ -198,7 +198,7 @@ import java.util.Map;
 *     <s:text> -- 提示文本
 *     <s:textfield name="变量名" key="多语言的key" /> -- 也可以通过 label="直接设置的语言"
 ***************************************************************************************************************************************/ 	 
-public class StrutsStudy {
+public class StrutsTest {
 
 	
 }

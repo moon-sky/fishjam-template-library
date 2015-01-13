@@ -1,4 +1,4 @@
-package com.fishjam.study.javaee;
+package com.fishjam.springtester.framework;
                                             	
 /**************************************************************************************************************************************
  * 	<#if (listquotedpricepriceone.amount < buyerproducts.amount ) >xxxx</#if>
@@ -211,6 +211,6 @@ package com.fishjam.study.javaee;
  *   2.实现其 exec 方法，其执行的 list 参数为 ???, 返回 ???
  *   2.
 **************************************************************************************************************************************/
-public class FreeMarkerStudy {
+public class FreeMarkerTest {
 	
 }

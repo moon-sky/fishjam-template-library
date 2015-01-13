@@ -1,4 +1,4 @@
-package com.fishjam.study;
+package com.fishjam.springtester.framework;
 
 /******************************************************************************************************************************************************
  * springMVC3学习(一)--框架搭建 http://blog.csdn.net/itmyhome1990/article/details/18311467
@@ -72,7 +72,7 @@ class MyThread extends FThread
     }
 }
 */
-public class JavaEnv {
+public class JavaEnvTest {
 	
 	public void testEnv() throws InterruptedException
 	{

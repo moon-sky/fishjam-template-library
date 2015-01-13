@@ -1,4 +1,4 @@
-package com.fishjam.study.javaee;
+package com.fishjam.springtester.framework;
 
 /**************************************************************************************************************************************
  * TODO:
@@ -86,6 +86,6 @@ package com.fishjam.study.javaee;
  *   2.修改 server.xml， 设置 maxThreads,  maxSpareThreads 等
  *   3.使用 APR 库(tcnative-1.dl) -- 在Tomcat中使用JNI的方式来读取文件以及进行网络传输， 可以大大提升对静态文件的处理性能
 **************************************************************************************************************************************/
-public class TomcatStudy {
+public class TomcatTest {
 
 }

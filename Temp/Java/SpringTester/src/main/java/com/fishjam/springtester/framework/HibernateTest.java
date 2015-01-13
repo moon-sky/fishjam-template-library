@@ -1,4 +1,4 @@
-package com.fishjam.study.javaee;
+package com.fishjam.springtester.framework;
 
 //http://my.oschina.net/liangbo/blog?catalog=267685
 
@@ -124,7 +124,7 @@ class UserTableInfo implements java.io.Serializable{					//定义表对应的实
 }
 **************************************************************************************************************************************/
 
-public class HibernateStudy {
+public class HibernateTest {
 
 	public void testSqliteDemo(){
 		/*

@@ -1,4 +1,4 @@
-package com.fishjam.study;
+package com.fishjam.springtester.framework;
 
 /**************************************************************************************************************************************
 * 常用的开发工具:
@@ -144,6 +144,6 @@ package com.fishjam.study;
  *   当 Eclipse生成、部署Web项目时，会自动将 src 路径下除 *.java 外的所有文件都复制到Web应用的 WEB-INF\classes 路径下
 ***************************************************************************************************************************************/
 
-public class EclipseStudy {
+public class EclipseTest {
 
 }

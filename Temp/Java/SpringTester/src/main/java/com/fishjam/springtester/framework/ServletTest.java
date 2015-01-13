@@ -1,4 +1,4 @@
-package com.fishjam.study.javaee;
+package com.fishjam.springtester.framework;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
+//import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -149,8 +149,8 @@ import javax.servlet.http.HttpServletResponse;
 // 理论上说访问地址是 http://localhost:8888/JavaEEStudy/ServletStudy， 但测试是 404
 //TODO: 调整 WEB-INF 的位置来尝试
 
-@WebServlet(loadOnStartup=1,  name="ServletStudy", urlPatterns={ "/ServletStudy" }  )
-public class ServletStudy extends HttpServlet {
+//@WebServlet(loadOnStartup=1,  name="ServletStudy", urlPatterns={ "/ServletStudy" }  )
+public class ServletTest extends HttpServlet {
 	private static final long serialVersionUID = -9155460960679805493L;
 
 	@Override
@@ -174,7 +174,7 @@ public class ServletStudy extends HttpServlet {
 		PrintWriter out = response.getWriter(); // 获取文本输出 out
 
 		out.println("<html><head><title>");
-		out.println(ServletStudy.class.getName());
+		out.println(ServletTest.class.getName());
 		out.println("</title></head><body>");
 		ServletContext application = getServletConfig().getServletContext();
 

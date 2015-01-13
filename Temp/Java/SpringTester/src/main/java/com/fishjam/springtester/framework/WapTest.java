@@ -1,4 +1,4 @@
-package com.fishjam.study;
+package com.fishjam.springtester.framework;
 
 /**************************************************************************************************************************************
  * WAP(Wireless Application Protocol) -- 无线应用协议WAP
@@ -21,6 +21,6 @@ package com.fishjam.study;
 **************************************************************************************************************************************/
 
 
-public class WapStudy {
+public class WapTest {
 
 }
