@@ -56,6 +56,7 @@ namespace FTL
 		tfeUTF8,					//0xEF BB BF
 		tfeUnicode,					//0xFF FE
 		tfeUnicodeBigEndian,		//0xFE FF
+		tfeUnicodeLittleEndian,     //0xFF FF
 	};
 
 	enum CreateLocalFileFlags{
@@ -64,10 +65,10 @@ namespace FTL
 		clfOverwrite,
 	};
 
-	const BYTE TEXT_FILE_HEADER_UTF8[]				= { 0xEF, 0xBB, 0xBF };
-	const BYTE TEXT_FILE_HEADER_UNICODE[]			= { 0xFF, 0xFE };
-	const BYTE TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN[]= { 0xFE, 0xFF };
-
+	const BYTE TEXT_FILE_HEADER_UTF8[]					= { 0xEF, 0xBB, 0xBF };
+	const BYTE TEXT_FILE_HEADER_UNICODE[]				= { 0xFF, 0xFE };
+	const BYTE TEXT_FILE_HEADER_UNICODE_BIG_ENDIAN[]	= { 0xFE, 0xFF };
+	const BYTE TEXT_FILE_HEADER_UNICODE_LITTLE_ENDIAN[] = { 0xFF, 0xFF };
     /**************************************************************************************************
     * IOCP -- 
     * 

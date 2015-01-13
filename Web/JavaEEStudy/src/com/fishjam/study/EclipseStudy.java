@@ -44,7 +44,8 @@ package com.fishjam.study;
  * 更改默认字体 -- Preferences -> General -> Appearance -> Colors and Fonts， 更改 Basic -> Text Font 为默认(微软雅黑)
  * 更改文件默认编码为UTF-8 -- Preferences-> General -> Workspaces -> Text file encoding， 更改为 UTF-8
  *   注意：当使用 EmEditor 等工具将非UTF-8 编码的文件转换为UTF-8时，必须是不带签名的UTF-8，否则ant编译时会失败
- *   
+ * 让编辑器高亮显示相关的变量: Java -> Editor -> Mark Occurences, 设置后必须重新打开编辑窗体才能生效
+ *
  * 更改快捷键 -- General -> Keys。
  *    Ctrl+F6              (Next Editor)            => Ctrl+Tab
  *    Ctrl+Shift+F6     (Previous Editor)       => Ctrl+Shfit+Tab

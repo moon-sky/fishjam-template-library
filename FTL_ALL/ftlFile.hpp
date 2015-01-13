@@ -176,6 +176,10 @@ namespace FTL
 					{
 						encoding = tfeUnicodeBigEndian;
 					}
+					else if(memcmp(TEXT_FILE_HEADER_UNICODE_LITTLE_ENDIAN, header, sizeof(TEXT_FILE_HEADER_UNICODE_LITTLE_ENDIAN)) == 0)
+					{
+						encoding = tfeUnicodeLittleEndian;
+					}
 					else
 					{
 						encoding = tfeUnknown;

@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.text.Bidi;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -621,4 +622,12 @@ public class JavaLanguageTest {
 		assertEquals("123456.789000000", bigDecimal.toString());
 	}
 	
+	@Test
+	public void testDateTimeFormat(){
+		SimpleDateFormat	dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Calendar dateBeijingOlympic  = Calendar.getInstance();
+		dateBeijingOlympic.set(2008, 8, 8, 20, 0, 0);
+		String strFormat = dateFormat.format(dateBeijingOlympic.getTime());
+		assertEquals("2008-08-08 20:00:00", strFormat);
+	}
 }

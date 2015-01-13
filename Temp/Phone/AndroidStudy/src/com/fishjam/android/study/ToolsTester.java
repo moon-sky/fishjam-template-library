@@ -82,6 +82,7 @@ import android.test.AndroidTestCase;
  * mksdcard.exe -- 创建sd卡镜像文件
  *   mksdcard.exe [-l "Label"] <大小如512M> <路径，如 E:\Android_SDK\sdcard.img>
  * monitor.bat -- Android Debug Monitor,用于调试监控(代替ddms.bat)
+ * proguardgui.bat -- 启动混淆的GUI界面
  * traceview.bat -- 用于对Android的应用程序以及Framework层的代码进行性能分析。
  *   1.修改代码，在需要调试的起始位置加入调试函数( Debug.startMethodTracing/stopMethodTracing )
  *   2.运行程序，会在SD的根目录下产生*.trace文件来保存运行时的数据，

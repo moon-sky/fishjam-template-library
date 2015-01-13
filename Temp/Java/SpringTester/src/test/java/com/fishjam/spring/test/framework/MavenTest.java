@@ -19,6 +19,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 *    
 * Maven Project Wizard 
 *    
+* Maven常见问题 -- http://blog.csdn.net/natian306/article/details/23247777
+* 
 * 常见错误:
 *    1.Eclipse is running in a JRE, but a JDK is required Some Maven plugins may not work when importing projects or updating source folders.
 *       原因：Eclipse默认是运行在JRE上的，而m2eclipse的一些功能要求使用JDK
