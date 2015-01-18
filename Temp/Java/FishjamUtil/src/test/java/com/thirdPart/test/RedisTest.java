@@ -1,48 +1,71 @@
 package com.thirdPart.test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;  
 import redis.clients.jedis.JedisPool;  
 import redis.clients.jedis.JedisPoolConfig;  
-
+blog.csdn.net/freebird_lb/article/details/7733979
 /**********************************************************************************************************************************************
- * Redis -- http://redis.io/download , 开源，提供多种语言(Java，C++，python 等)的API
- *   可基于内存亦可持久化的日志型、Key-Value数据库,和Memcached类似。
- *   支持很多value类型,包括 string、list、set、zset(sorted set)和hash。
+ * TODO: 
+ *   1.命令行下 get 出来的字符串，采用unicode编码方式显示，无法显示对应的字符。如何设置？
+ *   2.如何更新到磁盘上进行持久化？
+**********************************************************************************************************************************************/
+
+//http://blog.csdn.net/renfufei/article/details/38474435
+/**********************************************************************************************************************************************
+ * Redis(Remote Dictionary Server) -- http://redis.io/download 
+ *   开源，提供多种语言(Java，C++，python 等)的API
+ *   可基于内存亦可持久化的日志型、Key-Value数据库,和Memcached(只能操作string、且不能持久化?)类似。
+ *   支持很多value类型,包括 string、list、set、zset(sorted set)和 hash 等。
  *   支持push/pop、add/remove及取交集并集和差集及更丰富的操作。
  *   为了保证效率，数据都是缓存在内存中。区别的是redis会周期性的把更新的数据写入磁盘或者把修改操作写入追加的记录文件，
+ *   Redis同样支持主从复制(master-slave replication)，且具有非常快速的非阻塞首次同步(non-blockingfirst synchronization),
+ *     网络断开自动重连等功能。
  *   并且在此基础上实现了master-slave。
  **********************************************************************************************************************************************/
+
+/**********************************************************************************************************************************************
+ * Linux下源码方式安装并设置
+ *   解压后 + make, 然后可执行 redis-server + redis-cli 测试
+ * 
+ * 1.文件列表及说明
+ *   redis-server 		-- 服务器程序
+ *   redis-cli			-- 客户端程序
+ *   redis-check-dump	-- 本地数据库检查
+ *   redis-check-aof	    -- 更新日志检查
+ *   redis-benchmark	    -- 性能基准测试,用以模拟同时由N个客户端发送M个 SETs/GETs 查询(类似于Apache的ab工具)
+ *   redis.conf		    -- 配置文件
+**********************************************************************************************************************************************/
 
 /**********************************************************************************************************************************************
  * Windows下安装并设置Redis（http://blog.csdn.net/renfufei/article/details/38474435）
  *   注意：这种方式不是官方支持的，通常只用于加速开发、调试，只有64位版本
  * 0.使用管理员账号，如出现权限问题，可能需要设置属性中的 兼容性权限(以管理员身份运行)
  *   下载: https://github.com/MSOpenTech/redis/releases/download/win-2.8.17.3/redis-2.8.17.zip
- * 1.文件列表及说明
- *   redis-server.exe 		-- 服务器程序
- *   redis-cli.exe			-- 客户端程序
- *   redis-check-dump.exe	-- 本地数据库检查
- *   redis-check-aof.exe	-- 更新日志检查
- *   redis-benchmark.exe	-- 性能基准测试,用以模拟同时由N个客户端发送M个 SETs/GETs 查询(类似于Apache的ab工具)
- *   redis.windows.conf		-- 配置文件
- * 2.修改 conf 配置文件 -- 如果不修改会提示 "--maxheap" 的错误
+ * 1.修改 conf 配置文件 -- 如果不修改会提示 "--maxheap" 的错误
  *   将 "# maxheap <bytes>" 改为 "maxheap 512000000"  -- 即指定为 512M
- * 3.启动，配置文件中的默认端口为 6379
+ * 2.启动，配置文件中的默认端口为 6379
  *   redis-server  redis.windows.conf
- * 4.redis-cli.exe <== 默认连接本地? 可通过 -h <host> -p <port> 的方式指定
+ * 3.redis-cli <== 默认连接本地? 可通过 -h <host> -p <port> 的方式指定
  *   然后可通过 set/get 等命令进行测试。
  *   如 set author fishjam <== 设置 author 变量的值
  *      get author <== 获取 author变量的值，应该显示 "fishjam"
  *   可通过 help [tab] 的方式获取相关命令的帮助
- * 5.辅助批处理脚本
+ * 4.停止服务
+ *   redis-cli -p 6379 shutdown <== 其中6379是redis的端口号
+ * 4.辅助批处理脚本
  *   service-install.bat   <== redis-server.exe --service-install redis.windows.conf --loglevel verbose
  *   uninstall-service.bat <== redis-server --service-uninstall
  *   startup.bat           <== redis-server.exe redis.windows.conf
@@ -54,50 +77,151 @@ import redis.clients.jedis.JedisPoolConfig;
  *   Jedis jedis = pool.getResource(); 
  *   jedis.auth("password");
  *     
+ * JedisPool -- 支持对象池，通过 getResource 获取,通过 returnResource 释放
  **********************************************************************************************************************************************/
 
-public class RedisTest {
+/**********************************************************************************************************************************************
+ * key -- 字符串，不要包含空格、换行。格式约定 "object-type:id:field", 如 "user:1000:password" 等
+ * value
+ *   string -- 最基本的类型,是二进制安全的,可以包含任何数据(如jpg图片或序列化的对象等), 上限为1G
+ *   list -- 每个子元素都是string类型的双向链表, 可通过 push/pup 从头部/尾部 添加删除元素。其操作分为 阻塞版本(生产者消费者队列)和非阻塞版本。
+ *   set -- string类型的无序集合，通过hash表方式实现，除了常用的增、删、查等操作外，还有计算集合的 并集、交集、差集(可很容易的实现 sns 中的好友推荐等功能)
+ *   sorted set -- 其中的每个元素都会关联一个double类型的score，按score排序，其内部实现是skip list(跳表)和hash table的混合体
+ *   hash
+ *   
+ * 命令(一般来说返回1表示成功) -- 可通过 help xxx 来查询详细的说明
+ * http://redis.io/commands， 中文版本: http://redis.readthedocs.org/en/2.4/index.html
+ *   APPEND key value <== 给指定key的字符串值追加value,返回新字符串值的长度
+ *   ★DBSIZE <== 返回当前数据库的key数量
+ *   DECR key <== 对key的值做 减一 操作,并返回新的值。decr一个不存在key，则设置key为-1
+ *   DECRBY key decrement <== 对key的值做 减指定值 操作
+ *   DEL key [key ...] <== 删除给定key，返回删除key的数目，0表示给定key都不存在
+ *   EXISTS key <== 测试指定key是否存在，返回1表示存在，0不存在
+ *   EXPIRE key seconds <== 为key指定过期时间，单位是秒
+ *   FLUSHALL(慎用) <== 删除所有数据库中的所有key
+ *   FLUSHDB(慎用) <== 删除当前数据库中所有key
+ *   GET key <== 获取key对应的string值,如果key不存在返回nil
+ *   GETRANGE key start end <== 返回截取过的key的字符串值,下标从0开始。TODO: 旧版本中是 substr ?
+ *   GETSET key value <== 原子的设置key的值，并返回key的旧值。如果key不存在返回nil
+ *   INCR key <== 对key的值做 加一 操作,并返回新的值。若value不是int类型会返回错误。incr一个不存在的key，则设置key为1
+ *   INCRBY key increment <== 对key的值做 加指定值 的操作
+ *   ★KEYS pattern <== 返回匹配指定模式(正则?)的所有key, 如 KEYS k?? 或 KEYS *
+ *   MGET key [key ...] <== 一次获取多个key的值，如果对应key不存在，则对应返回nil
+ *   MSET key value [key value ...] <== 一次设置多个key的值，成功返回1表示所有的值都设置了，失败返回0表示没有任何值被设置(TODO: 部分成功呢？)
+ *   MSETNX key value [key value ...] <== 一次设置多个key的值, 不覆盖
+ *   RANDOMKEY <== 返回从当前数据库中随机选择的一个key(TODO:有什么用?)，如果当前数据库是空的，返回空串
+ *   MOVE key db <== 将key从当前数据库移动到指定数据库
+ *   RENAME key newkey <== 原子的重命名一个key，如果newkey存在，将会被覆盖
+ *   RENAMENX key newkey <== 原子的重命名一个key，如果newkey存在返回失败
+ *   SELECT index <== 将key从当前数据库移动到指定数据库(TODO:Change the selected database for the current connection)
+ *   SET key value <== 设置key对应的值为string类型的value
+ *   SETNX key value <== 设置key对应的值为string类型的value, 如果key已经存在，返回0。nx 表示 not exist
+ *   TTL key <== 返回设置过过期时间的key的剩余过期秒数, -1表示key不存在或者没有设置过过期时间
+ *   TYPE key <== 返回给定key的value类型。如 none(不存在key)，string, list, set 等
+ *   
+ * List 相关
+ *   B[LR]POP key [key ...] timeout <== 依次扫描key对应的list,找到第一个非空list进行阻塞式的POP操作. timeout单位为秒，0表示一直阻塞
+ *   [LR]PUSH key value [value ...] <== 在key对应list的 [头部|尾部] 添加字符串元素，返回值为添加新元素后list的元素个数
+ *   [LR]POP key <== 从list的 [头部|尾部] 删除元素，并返回删除元素
+ *   ★LLEN key <== 返回key对应list的长度，key不存在返回0
+ *   LRANGE key start stop <== 返回指定区间内的元素，下标从0开始，负值表示从后面计算, -1表示倒数第一个元素
+ *   LREM key count value <== 从key对应list中删除count个和value相同的元素, count为0时候删除全部
+ *   LSET key index value <== 设置list中指定下标的元素值
+ *   LTRIM key start stop <== 截取list，保留指定区间内元素
+ *   [B]RPOPLPUSH srckey destkey <== 从srckey对应list的尾部移除元素并添加到destkey对应list的头部,最后返回被移除的元素值。带B的是阻塞版本
+ *   
+ * Set 相关
+ *   SADD key member [member ...] <== 添加一个string元素到key对应的set集合中
+ *   ★SCARD key <== 返回set的元素个数
+ *   SDIFF key [key ...] <== 返回所有给定key的差集
+ *   SDIFFSTORE dstkey key [key ...] <== 所有给定key的差集保存到dstkey下
+ *   SISMEMBER key member <== 判断member是否在set中，存在返回1，0表示不存在或者key不存在
+ *   SINTER key [key ...] <== 返回所有给定key的交集
+ *   SINTERSTORE dstkey key [key ...] <== 将所有给定key的交集存到dstkey下
+ *   SMEMBERS key <== 返回key对应set的所有元素，结果是无序的
+ *   SMOVE srckey dstkey member <== 从srckey对应set中移除member并添加到dstkey对应set中，整个操作是原子的
+ *   SPOP key <== 删除并返回key对应set中随机的一个元素
+ *   SRANDMEMBER key [count] <== 随机获取set中的count个元素，但是不删除元素
+ *   SREM key member [member ...] <== 从key对应set中移除给定元素
+ *   SUNION key [key ...] <== 返回所有给定key的并集
+ *   SUNIONSTORE dstkey key [key ...] <== 所有给定key的并集保存到dstkey下
+ *   
+ * Sorted Set 相关
+ *   ZADD key score member [score member ...] <== 添加元素到集合，元素在集合中存在则更新对应score
+ *   ★ZCARD key <== 返回集合中元素个数
+ *   ZCOUNT key min max <== 返回集合中score在给定区间的数量
+ *   ZINCRBY key increment member <== 增加对应member的score值，然后移动元素并保持skip list保持有序。返回更新后的score值
+ *   ZRANGE|ZREVRANGE  key start stop [WITHSCORES] <== 返回集合中指定区间的元素。返回的是按score[从小到大|从大到小]的有序结果
+ *   ZRANGEBYSCORE key min max <== 返回集合中score在给定区间的元素,可指定个数限制
+ *   ★ZRANK|ZREVRANK key member <== 返回指定元素在集合中的排名(下标),集合中元素是按score [从小到大|从大到小] 排序的
+ *   ZREM key member [member ...] <== 删除指定元素
+
+**********************************************************************************************************************************************/
+
+public class RedisTest extends TestCase {
+	JedisPoolConfig	config;
 	JedisPool pool;  
     Jedis jedis;  
     
     @Before  
-    public void setUp() {  
-        pool = new JedisPool(new JedisPoolConfig(), "127.0.0.1");  
-  
+    public void setUp() {
+    	//jedis = new Jedis("127.0.0.1", 6379);
+    	config = new JedisPoolConfig();
+    	config.setMaxIdle(1000);
+    	config.setMaxWaitMillis(100000);
+    	
+        pool = new JedisPool(config, "127.0.0.1", 6379);  
         jedis = pool.getResource();  
-        jedis.auth("password");  
+        //jedis.auth("password");  
     } 
-    /** 
-     * Redis存储初级的字符串 
-     * CRUD 
-     */  
-    @Test  
+
+    @After
+	protected void tearDown() throws Exception {
+    	if(jedis != null){
+    		pool.returnResource(jedis);	//释放回池
+        	//jedis.disconnect();    	//直接关闭连接
+        	jedis = null;
+    	}
+    	if(pool != null){
+    		pool.destroy();
+    		pool = null;
+    	}
+
+    	super.tearDown();
+	}
+
+
+
+	@Test  
     public void testBasicString(){  
         //-----添加数据----------  
-        jedis.set("name","minxr");//向key-->name中放入了value-->minxr  
-        System.out.println(jedis.get("name"));//执行结果：minxr  
+        jedis.set("name","fujie");//向key-->name中放入了value-->minxr
+        assertEquals("fujie", jedis.get("name"));
   
         //-----修改数据-----------  
         //1、在原来基础上修改  
-        jedis.append("name","jarorwar");   //很直观，类似map 将jarorwar append到已经有的value之后  
-        System.out.println(jedis.get("name"));//执行结果:minxrjarorwar  
+        jedis.append("name"," fishjam");
+        assertEquals("fujie fishjam", jedis.get("name"));
   
         //2、直接覆盖原来的数据  
-        jedis.set("name","闵晓荣");  
-        System.out.println(jedis.get("name"));//执行结果：闵晓荣  
+        jedis.set("name","fishjam");  
+        assertEquals("fishjam", jedis.get("name"));
   
         //删除key对应的记录  
         jedis.del("name");  
-        System.out.println(jedis.get("name"));//执行结果：null  
+        assertNull(jedis.get("name"));
   
         /** 
          * mset相当于 
-         * jedis.set("name","minxr"); 
-         * jedis.set("jarorwar","闵晓荣"); 
+         * jedis.set("name","fishjam"); 
+         * jedis.set("birthday", 1979); 
          */  
-        jedis.mset("name","minxr","jarorwar","闵晓荣");  
-        System.out.println(jedis.mget("name","jarorwar"));  
-  
+        jedis.mset("name","fishjam", "birthday","1979");
+        List<String> resultList = new ArrayList<String>();
+        resultList.add("fishjam");
+        resultList.add("1979");
+        assertEquals( resultList, jedis.mget("name","birthday"));  
+        //System.out.println(jedis.mget("name","birthday"));
     }  
   
     /** 
