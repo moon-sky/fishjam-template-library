@@ -241,6 +241,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NodejsTester.js"
+				>
+			</File>
+			<File
 				RelativePath=".\tests\UEditorTester.js"
 				>
 			</File>

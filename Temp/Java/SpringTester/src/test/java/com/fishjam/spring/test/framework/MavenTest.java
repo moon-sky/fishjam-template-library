@@ -22,6 +22,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 * Maven常见问题 -- http://blog.csdn.net/natian306/article/details/23247777
 * 
 * 常见错误:
+*    注意: mvn -X 可以查看详细的信息(比如当前的配置文件、repository 目录等)，方便调错
 *    1.Eclipse is running in a JRE, but a JDK is required Some Maven plugins may not work when importing projects or updating source folders.
 *       原因：Eclipse默认是运行在JRE上的，而m2eclipse的一些功能要求使用JDK
 *       解决？：配置Eclipse安装目录的eclipse.ini文件，添加vm配置指向JDK。如: -vm D:\java\jdk1.6.0_07\bin\javaw.exe
@@ -104,7 +105,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *    参数说明 -- -D<property>=<value> -- 运行时指定属性来覆盖生成文件中指定的属性值
  *      -DartifactId=test-maven -- 生成 test-maven 的目录，里面会自动生成 src\main\* + src\test\* + pom.xml 的标准项目结构
  *      -DgroupId=com.fishjam.app  -- 会自动生成 src\main\java\com\fishjam\app\  的结构( 里面有 App.java 文件 )
-
+ *		-o|--offline -- 以offline方式进行工作
+ *
  *    组合示例：clean package -Dmaven.test.skip=true:清除以前的包后重新打包，跳过测试类
  *  
  * 配置文件：基于 Jelly 的可执行 XML，构建规则动态，类似于编程语言，可以管理项目的整个生命周期，包括编译、构建、测试、发布等。
@@ -127,7 +129,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  *     settings.xml -- 可以有两个，最佳实践为：拷贝 %M2_HOME% 下的到 %HOMEPATH%\.m2\ 下，进行个性化配置
  *       %M2_HOME%\conf\settings.xml --  maven应用程序的配置文件，用于所有项目，配置mvn本地仓库、自动下载的服务器地址等信息
  *       %HOMEPATH%\.m2\setting.xml -- 用户的本地配置，可以配置一些特殊的自定义信息，如用户信息等 
- *         <localRepository> -- 本地仓库的保存位置，默认在 %HOMEPATH%\.m2\repository，可改为 D:/.m2/repository 等非系统盘
+ *         <localRepository> -- 本地仓库的保存位置，默认在 %HOMEPATH%\.m2\repository，可改为 D:/repository 等非系统盘
  *         <offline> -- 如果不想每次编译，都去查找远程中心库，那就设置为true，前提是已经下载了所有必须的依赖包
  *         <mirrors><mirror> -- 镜像库，通过 <id> + <mirrorOf>central</mirrorOf> +<url> 的方式指定镜像的地址
  *         <proxies><proxy> -- 指定代理

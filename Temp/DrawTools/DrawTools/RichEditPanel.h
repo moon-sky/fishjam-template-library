@@ -95,6 +95,7 @@ public:
 	virtual ~CRichEditPanel();
 	HRESULT Init(HWND hWndOwner, const RECT* prcBound, IDrawCanvas* pDrawCanvas,
 		const LOGFONT* pLogFont, COLORREF clrFontFore, INotifyCallBack* pNotifyCallback = NULL);
+	void AssignFrom(CRichEditPanel* pOther);
 	BOOL SetActive(BOOL bActive);
 	BOOL IsActive();
 
@@ -141,7 +142,7 @@ public:
 
 	
 	HRESULT SetClientBound(const RECT *pRcBound, RECT* pNewRcBound = NULL, BOOL fUpdateExtent = TRUE);
-	SIZE	GetMinBoundSize(int nRow, int nCol);
+	//SIZE	GetMinBoundSize(int nRow, int nCol);
 	//CRect   CheckClientBoundRect();
 
 	//RECT* GetClientRect() { return &m_rcClient; }
@@ -149,6 +150,7 @@ public:
 	HRESULT SetText(LPCTSTR pszText);		//TODO:change to RTF?
 	HRESULT Range(long cpFirst, long cpLim, ITextRange** ppRange);
 	VOID SetNotifyCallback(INotifyCallBack* pNotifyCallback);
+	INotifyCallBack* GetNotifyCallback();
 	BOOL HandleControlMessage(IDrawCanvas* pView, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult);
 
 	//property
@@ -171,6 +173,8 @@ public:
 	SIZEL *GetExtent(void);
 	void SetExtent(SIZEL *psizelExtent, BOOL fNotify);
 	void SetZoom(UINT Numerator, UINT Denominator);
+	HRESULT SetTextAlignment(int nHorAlignment, int nVerAlignment);
+
 	//BOOL GetActiveState(void);
 	//BOOL DoSetCursor(RECT *prc, POINT *pt);
 	//void SetTransparent(BOOL fTransparent);
@@ -190,6 +194,7 @@ public:
 	BEGIN_MSG_MAP_EX(CRichEditPanel)
 		MESSAGE_RANGE_HANDLER(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseMessageHandler)
 		MESSAGE_RANGE_HANDLER(WM_KEYFIRST, WM_KEYLAST, OnKeyMessageHandler)
+		MESSAGE_HANDLER(WM_SIZE, OnWindowsSize)
 		//MESSAGE_RANGE_HANDLER(WM_IME_SETCONTEXT, WM_IME_KEYUP, OnIMEMessageHandler)
 	END_MSG_MAP()
 
@@ -252,7 +257,7 @@ public:
 	LRESULT OnMouseMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnIMEMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-
+	LRESULT OnWindowsSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	// nStart => nEnd
 	//   0    =>   0   -- Current Select
 	//   0    =>  -1   -- All Text
@@ -318,26 +323,28 @@ private:
 	BOOL					m_bUserChangeCaretPos;
 
 	unsigned    m_fNotify				:1;
-	unsigned	m_fBorder				:1;	// control has border
-	unsigned	m_fCustRect				:1;	// client changed format rect
-	unsigned	m_fInBottomless			:1;	// inside bottomless callback
-	unsigned	m_fInDialogBox			:1;	// control is in a dialog box
-	unsigned	m_fEnableAutoWordSel	:1;	// enable Word style auto word selection?
-	unsigned	m_fVertical				:1;	// vertical writing
-	unsigned	m_fIconic				:1;	// control window is iconic
-	unsigned	m_fHidden				:1;	// control window is hidden
+	//unsigned	m_fBorder				:1;	// control has border
+	//unsigned	m_fCustRect				:1;	// client changed format rect
+	//unsigned	m_fInBottomless			:1;	// inside bottomless callback
+	//unsigned	m_fInDialogBox			:1;	// control is in a dialog box
+	//unsigned	m_fEnableAutoWordSel	:1;	// enable Word style auto word selection?
+	//unsigned	m_fVertical				:1;	// vertical writing
+	//unsigned	m_fIconic				:1;	// control window is iconic
+	//unsigned	m_fHidden				:1;	// control window is hidden
 	unsigned	m_fNotSysBkgnd			:1;	// not using system background color
-	unsigned	m_fWindowLocked			:1;	// window is locked (no update)
-	unsigned	m_fRegisteredForDrop	:1; // whether host has registered for drop
-	unsigned	m_fVisible				:1;	// Whether window is visible or not.
-	unsigned	m_fResized				:1;	// resized while hidden
-	unsigned	m_fWordWrap				:1;	// Whether control should word wrap
-	unsigned	m_fAllowBeep			:1;	// Whether beep is allowed
-	unsigned	m_fRich					:1;	// Whether control is rich text
-	unsigned	m_fSaveSelection		:1;	// Whether to save the selection when inactive
+	//unsigned	m_fWindowLocked			:1;	// window is locked (no update)
+	//unsigned	m_fRegisteredForDrop	:1; // whether host has registered for drop
+	//unsigned	m_fVisible				:1;	// Whether window is visible or not.
+	//unsigned	m_fResized				:1;	// resized while hidden
+	//unsigned	m_fWordWrap				:1;	// Whether control should word wrap
+	//unsigned	m_fAllowBeep			:1;	// Whether beep is allowed
+	//unsigned	m_fRich					:1;	// Whether control is rich text
+	//unsigned	m_fSaveSelection		:1;	// Whether to save the selection when inactive
 	unsigned	m_fInplaceActive		:1; // Whether control is inplace active
 	unsigned	m_fTransparent			:1; // Whether control is transparent
-	unsigned	m_fTimer				:1;	// A timer is set
+	//unsigned	m_fTimer				:1;	// A timer is set
 	unsigned	m_fCapture				:1;	// Captured
-	unsigned	m_fAutoVExpand			:1; // Will Auto Expand
+	//unsigned	m_fAutoVExpand			:1; // Will Auto Expand
 };
+
+typedef std::tr1::shared_ptr<CRichEditPanel> CShareEditPtr;

@@ -400,7 +400,7 @@ public class JavaLanguageTest {
 		Calendar calendarDefault = Calendar.getInstance();		//使用默认的 TimeZone, Locale 来创建实例
 		calendarDefault.setLenient(false); 		//关闭容错性 -- 每一字段都必须在有效范围内(如不能设置 大于11的月份值) ,否则会抛出异常
 		Date date = calendarDefault.getTime();		//获得当前时间
-		assertEquals(2014, calendarDefault.get(Calendar.YEAR));		//获得 年字段 的值
+		assertEquals(2015, calendarDefault.get(Calendar.YEAR));		//获得 年字段 的值
 		
 		calendarDefault.set(2008, 8, 8, 20, 0, 0);		//北京奥运
 		calendarDefault.add(Calendar.MONTH, -10);		//向前10个月, 因为使用的是 add, 所以年份会变
@@ -626,7 +626,7 @@ public class JavaLanguageTest {
 	public void testDateTimeFormat(){
 		SimpleDateFormat	dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Calendar dateBeijingOlympic  = Calendar.getInstance();
-		dateBeijingOlympic.set(2008, 8, 8, 20, 0, 0);
+		dateBeijingOlympic.set(2008, 7, 8, 20, 0, 0);
 		String strFormat = dateFormat.format(dateBeijingOlympic.getTime());
 		assertEquals("2008-08-08 20:00:00", strFormat);
 	}

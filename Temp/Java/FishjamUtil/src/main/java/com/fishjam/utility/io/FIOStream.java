@@ -1,19 +1,9 @@
 package com.fishjam.utility.io;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.security.Timestamp;
-import java.sql.Date;
-import java.sql.Time;
-import java.text.SimpleDateFormat;
-import java.util.zip.ZipOutputStream;
-
-import javax.naming.directory.SearchControls;
-
-import junit.framework.TestCase;
-
-import org.junit.Test;
+//import junit.framework.TestCase;
+//import org.junit.Test;
 
 /***********************************************************************************************************************************************
 * TODO:
@@ -139,8 +129,10 @@ import org.junit.Test;
 * 
 ***********************************************************************************************************************************************/
 
-public class FIOStream extends TestCase
+//TODO: 这个代码在src中，不支持UT
+public class FIOStream// extends TestCase
 {
+	/*
 	class SerializablePerson implements Serializable{
 		private String name;
 		private Timestamp birthday;
@@ -159,10 +151,10 @@ public class FIOStream extends TestCase
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testSerializable(){
 		SerializablePerson person = new SerializablePerson();
-		assertEquals(1, 1);
+		//assertEquals(1, 1);
 	}
-
+	*/
 }

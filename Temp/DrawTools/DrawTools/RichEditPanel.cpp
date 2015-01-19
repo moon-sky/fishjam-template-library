@@ -98,6 +98,30 @@ CRichEditPanel::~CRichEditPanel()
 	FTLTRACEEX(FTL::tlTrace, TEXT("CRichEditPanel::~CRichEditPanel, destrcutor for 0x%x\n"), this);
 }
 
+void CRichEditPanel::AssignFrom(CRichEditPanel* pOther)
+{
+	if (pOther)
+	{
+		HRESULT hr = E_FAIL;
+		m_undoCounts = pOther->m_undoCounts;
+		m_redoCounts = pOther->m_redoCounts;
+		m_strOldText = pOther->m_strOldText;
+
+		CComPtr<IStream> spStream;
+		COM_VERIFY(pOther->GetTextStream(0, -1, &spStream));
+		COM_VERIFY(SetTextStream(0, -1, spStream));
+
+		m_stBeginEditInfo = pOther->m_stBeginEditInfo;
+		m_stCurrentEditInfo = pOther->m_stCurrentEditInfo;
+		m_stEmptyEditInfo = pOther->m_stEmptyEditInfo;
+
+		m_cRefs = pOther->m_cRefs;
+		m_hWndOwner = pOther->m_hWndOwner;
+		m_rcClient = pOther->m_rcClient;
+		m_rcBound = pOther->m_rcBound;
+	}
+}
+
 HRESULT STDMETHODCALLTYPE CRichEditPanel::QueryInterface(REFIID riid, void **ppvObject)
 {
 	HRESULT hr = E_NOINTERFACE;
@@ -1177,6 +1201,18 @@ void CRichEditPanel::SetZoom(UINT Numerator, UINT Denominator)
 #endif 
 }
 
+HRESULT CRichEditPanel::SetTextAlignment(int nHorAlignment, int nVerAlignment)
+{
+	HRESULT hr = S_FALSE;
+	//SetWindowLong(RichEdit1.Handle,GWL_STYLE,GetWindowLong(Handle,GWL_STYLE);or ES_CENTER);
+	if (m_paraFormat.wAlignment != nVerAlignment)
+	{
+		m_paraFormat.wAlignment = nVerAlignment;// PFA_LEFT;
+		COM_VERIFY(m_spTextServices->OnTxPropertyBitsChange(TXTBIT_PARAFORMATCHANGE, TXTBIT_PARAFORMATCHANGE));
+	}
+	return hr;
+}
+
 HRESULT CRichEditPanel::TxGetExtent( LPSIZEL lpExtent )
 {
 	HRESULT hr = S_OK;
@@ -1202,6 +1238,11 @@ VOID CRichEditPanel::SetNotifyCallback(INotifyCallBack* pNotifyCallback)
 	m_pNotifyCallback = pNotifyCallback;
 }
 
+INotifyCallBack* CRichEditPanel::GetNotifyCallback()
+{
+	return m_pNotifyCallback;
+}
+
 HDC CRichEditPanel::TxGetDC()
 {
 	ATLASSERT(::IsWindow(m_hWndOwner));
@@ -1221,7 +1262,8 @@ BOOL CRichEditPanel::TxShowScrollBar( INT fnBar, BOOL fShow )
 {
 	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxShowScrollBar, fnBar=%d, fShow=%d\n"), fnBar, fShow);
 	BOOL bRet = FALSE;
-	//API_VERIFY(::ShowScrollBar(m_hWndOwner, fnBar, fShow));
+	FTLASSERT(FALSE); // will not call this
+	API_VERIFY(::ShowScrollBar(m_hWndOwner, fnBar, fShow));
 	return TRUE;
 }
 
@@ -1229,8 +1271,9 @@ BOOL CRichEditPanel::TxEnableScrollBar( INT fuSBFlags, INT fuArrowflags )
 {
 	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxEnableScrollBar, fuSBFlags=%d, fuArrowflags=%d\n"),
 		fuSBFlags, fuArrowflags);
+	FTLASSERT(FALSE); // will not call this
 	BOOL bRet = FALSE;
-	//API_VERIFY(::EnableScrollBar(m_hWndOwner, fuSBFlags, fuArrowflags));
+	API_VERIFY(::EnableScrollBar(m_hWndOwner, fuSBFlags, fuArrowflags));
 	return bRet;
 }
 
@@ -1240,7 +1283,7 @@ BOOL CRichEditPanel::TxSetScrollRange( INT fnBar, LONG nMinPos, INT nMaxPos, BOO
 		TEXT("CRichEditPanel::TxSetScrollRange, fnBar=%d, nMinPos=%d, nMaxPos=%d, fRedraw=%d, m_rcClient.Height=%d\n"),
 		fnBar, nMinPos, nMaxPos, fRedraw, m_rcClient.Height());
 	FTLASSERT(SB_VERT == fnBar);
-	FTLASSERT(FALSE);  //TxGetScrollBars return 0
+	FTLASSERT(FALSE); // will not call this
 
 	BOOL bRet = FALSE;
 	//if (m_fAutoVExpand && nMaxPos - nMinPos > m_rcClient.Height())
@@ -1258,8 +1301,9 @@ BOOL CRichEditPanel::TxSetScrollPos( INT fnBar, INT nPos, BOOL fRedraw )
 {
 	FTLTRACEEX(FTL::tlDetail, TEXT("CRichEditPanel::TxSetScrollPos, fnBar=%d, nPos=%d, fRedraw=%d\n"),
 		fnBar, nPos, fRedraw);
+	FTLASSERT(FALSE); // will not call this
 	BOOL bRet = FALSE;
-	//API_VERIFY(SetScrollPos(m_hWndOwner, fnBar, nPos, fRedraw));
+	API_VERIFY(SetScrollPos(m_hWndOwner, fnBar, nPos, fRedraw));
 	return bRet;
 }
 
@@ -1700,7 +1744,13 @@ BOOL CRichEditPanel::_IsNeedHandleMsg(UINT uMsg, WPARAM wParam, LPARAM lParam)
 		do 
 		{
 #if 1
-			
+			if(WM_SIZE == uMsg)
+			{
+				//make sure caret will repaint at right position
+				bRet = TRUE;
+				break;
+			}
+
 			CPoint ptClient;
 			GetCursorPos(&ptClient);
 			TxScreenToClient(&ptClient);
@@ -1766,6 +1816,12 @@ LRESULT CRichEditPanel::OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lPa
 {
 	HRESULT hr = E_FAIL;
 	LRESULT lResult = 0;
+	
+	if (KEY_DOWN(VK_CONTROL))
+	{	//skip control
+		hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lResult);
+		return lResult;
+	}
 
 	if (VK_RETURN == wParam)
 	{
@@ -1776,7 +1832,7 @@ LRESULT CRichEditPanel::OnKeyMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lPa
 		m_bKeyReturn = FALSE;
 	}
 
-	if (m_bHaveUndo)
+	if(m_bHaveUndo && _IsDocumentChanged())
 	{
 		m_redoCounts.clear();
 		m_bHaveUndo = FALSE;
@@ -1835,6 +1891,17 @@ LRESULT CRichEditPanel::OnIMEMessageHandler(UINT uMsg, WPARAM wParam, LPARAM lPa
 	//	bHandled = FALSE;
 	//}
 	return lResult;
+}
+
+LRESULT CRichEditPanel::OnWindowsSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	if (IsActive())
+	{
+		//make sure caret display at right position
+		TxShowCaret(FALSE);
+	}
+	bHandled = FALSE;
+	return 0;
 }
 
 BOOL CRichEditPanel::_CheckAndPushRedoInfo()
@@ -2021,11 +2088,11 @@ HRESULT CRichEditPanel::_SetPropertyBits(DWORD dwProperty)
 	return E_NOTIMPL;
 }
 
-SIZE CRichEditPanel::GetMinBoundSize(int nRow, int nCol)
-{
-	//TODO:check font height
-	return CSize(100, 30);
-}
+//SIZE CRichEditPanel::GetMinBoundSize(int nRow, int nCol)
+//{
+//	//TODO:check font height
+//	return CSize(100, 0);
+//}
 
 DWORD CALLBACK EditStreamOutCallback(DWORD_PTR dwCookie,
 						 LPBYTE pbBuff,

@@ -67,6 +67,6 @@ public class SystemTest {
 		assertTrue(runtime.totalMemory() > 0);			//总内存数
 		assertTrue(runtime.maxMemory() > 0);			//可用最大内存数
 		
-		runtime.exec("notepad.exe");					//执行操作系统命令
+		//runtime.exec("notepad.exe");					//执行操作系统命令
 	}
 }
