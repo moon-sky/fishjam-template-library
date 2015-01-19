@@ -99,6 +99,9 @@ package com.fishjam.springtester.framework;
 *   m2eclipse -- Maven Integration for Eclipse,  安装好插件以后需要让eclipse中的maven重新定位成手动安装的外部版本:
 *      Window -> Preference -> Maven -> Installation -> Add -> 选中安装的外部Maven路径
 *   m2e-extra -- Maven的一些额外组件，可以与其他工具(如 Subversion)进行集成(http://m2eclipse.sonatype.org/sites/m2e-extras)
+*   Spket -- 开发JavaScript和Ext等的开发工具,有独立IDE和插件(http://www.spket.com/)
+*     提示js: Window -> Preference -> Spket -> JavaScript Profiles -> New -> 添加Ext后选中 -> Add Library -> ExtJS.
+*             选中 ExtJS-> Add File -> 选中 ext 包中source下的 ext.jsb(TODO: 这个文件在哪里?) -> 选中全部包
 *   Subversive -- Subversion (SVN) Team Provider ( http://www.eclipse.org/subversive/ )
 *   TPTP -- Test & Performance Tools Platform，可以进行程序执行时间的统计分析、内存的监控、对象调用的分析等
 *   VssPlug -- 支持VSS，解压到 dropins 目录下，主菜单会多一项“VSS”，通过 "Team->Share..."进行设置,对VSS的密码明文设置在

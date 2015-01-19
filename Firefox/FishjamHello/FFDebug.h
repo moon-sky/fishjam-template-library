@@ -29,6 +29,7 @@
 *     b.(未确认)安装 名为 Remote XUL Manager 的扩展，FF菜单中 Web Developer -> Remote XUL Manager -> 添加LocalFiles, 双击xul文件，使用FF打开，就可执行XUL的布局和功能了
 *       https://addons.mozilla.org/en-US/firefox/addon/remote-xul-manager/
 *     c.为了调试通过 overlay 加载到FF主界面上的东西(比如系统菜单、工具条等),可以通过浏览器中打开 "browser.xul"的方式调试，即可不重启FF看到更改后的效果。
+*       如: chrome://browser/content/browser.xul
 *
 * FF配置(地址栏输入 about:config，本质是更改配置目录下的 prefs.js )
 *   已有选项:
