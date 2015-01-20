@@ -891,7 +891,8 @@ namespace FTL
 	*       参数传递是通过 全局变量 或 堆栈操作 Pop，Push 和 20 个寄存器变量 $0～$9、$R0～$R9 进行
 	*     2.三种压缩算法(ZLib, BZip2, LZMA) -- LZMA 压缩具有比其它通用压缩方法更好的效果
 	*     3.可通过"XXXX"实现自定义对话框和界面
-	*
+	*   常见问题:
+	*     1.SetOverwrite -- 设置是否覆盖已经存在的文件。可选值:[on(直接覆盖,如不能覆盖的话提示)],off(不覆盖),try(尽力覆盖)
 	*   静默安装(silent installations) -- 程序全部按照NSIS给予的默认配置进行安装，安装过程也不显示，全部后台运行
 	*     启动参数 /silent ? 或 /M ?
 	*   
@@ -961,7 +962,7 @@ namespace FTL
 	*             un.onGUIEnd
 	*             un.onRebootFailed
 	*             un.onUserAbort
-	*       4.指令 -- 可带参数，如 /REBOOTOK
+	*       4.指令 -- 可带参数，如 /REBOOTOK . TODO: 错误处理?
 	*           基本指令：Delete、Exec、ExecShell、ExecWait、Rename、RMDir
 	*             Abort -- 中断当前操作，如在 .onInit 中表示停止安装并退出
 	*             File -- 释放文件到当前输出路径($OUTDIR) ，通常需要配合SetOutPath使用
@@ -1007,7 +1008,8 @@ namespace FTL
     *         MUI_WELCOMEPAGE_TITLE -- 安装包标题(字符串)  
     *         MUI_WELCOMEFINISHPAGE_BITMAP -- 
     *         MUI_WELCOMEPAGE_TEXT -- 
-	* 
+	*       8.系统控制(一般是通过 !define 定义的一些宏 ?)
+	*         MUI_FINISHPAGE_NOREBOOTSUPPORT -- 控制是否支持 /REBOOTOK 等参数指定的重启，默认(?) 
 	*
     ******************************************************************************************************************************/
 	

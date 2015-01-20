@@ -95,4 +95,5 @@ public:
     afx_msg void OnBnClickedBtnFstreamClose();
     afx_msg void OnBnClickedChkShareWrite();
     afx_msg void OnBnClickedChkShareRead();
+    afx_msg void OnBnClickedBtnLockOpen();
 };

@@ -84,6 +84,7 @@ BEGIN_MESSAGE_MAP(CFilePage, CPropertyPage)
     ON_BN_CLICKED(IDC_BTN_FSTREAM_CLOSE, &CFilePage::OnBnClickedBtnFstreamClose)
     ON_BN_CLICKED(IDC_CHK_SHARE_WRITE, &CFilePage::OnBnClickedChkShareWrite)
     ON_BN_CLICKED(IDC_CHK_SHARE_READ, &CFilePage::OnBnClickedChkShareRead)
+    ON_BN_CLICKED(IDC_BTN_LOCK_OPEN, &CFilePage::OnBnClickedBtnLockOpen)
 END_MESSAGE_MAP()
 
 
@@ -701,3 +702,25 @@ void CFilePage::OnBnClickedChkShareRead()
 {
     _SetFileShareMode(m_chkShareWrite.GetCheck(), m_chkShareRead.GetCheck());
 }
+
+void CFilePage::OnBnClickedBtnLockOpen()
+{
+    BOOL bRet = FALSE;
+    CFileDialog dlgFile(TRUE);
+    if(dlgFile.DoModal() == IDOK)
+    {
+        HANDLE hFileLockOpen = INVALID_HANDLE_VALUE;
+        API_VERIFY(INVALID_HANDLE_VALUE != 
+            (hFileLockOpen = ::CreateFile(dlgFile.GetPathName(), GENERIC_WRITE, 
+            m_dwHandleShareMode, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)));
+        if(bRet)
+        {
+            MessageBox(TEXT("Open file Success, close file when close the message dialog"));
+            SAFE_CLOSE_HANDLE(hFileLockOpen, INVALID_HANDLE_VALUE);
+        }
+        else{
+            MessageBox(TEXT("Open file fail"));
+        }
+    }
+}
+

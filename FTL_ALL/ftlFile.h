@@ -29,6 +29,17 @@ namespace FTL
     #define BYTES_PER_PETABYTE      (BYTES_PER_TERABYTE * 1000)
 	// ? 
 	//#define BYTES_PER_ZETATABYTE	(BYTES_PER_PETABYTE * 1000)
+    /**************************************************************************************************
+    * TODO:
+    * 0.正在运行的程序可以被移动，但是不能被删除? 原因? 可能是HANDLE等链接?
+    *   延迟文件改名:PendingFileRenameOperations ;
+    *   延迟文件删除:PendingFileRenameOperations2 ;
+    * 1.替换运行中的文件(重启后删除或替换):把正在使用的文件移动到一个临时目录中去->标记为重启时删除->拷贝新文件
+    *   HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\下的PendingFileRenameOperations,为REG_MULTI_SZ格式,
+    *   MoveFileEx(cTempFileName, NULL, MOVEFILE_DELAY_UNTIL_REBOOT)
+    *   流程:系统重启->Autochk检查->移动指定文件->
+    **************************************************************************************************/
+
 
 	/**************************************************************************************************
 	* 文本文件：

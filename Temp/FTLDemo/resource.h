@@ -263,6 +263,7 @@
 #define IDC_CHK_SHARE_READ              1160
 #define IDC_CHK_SHARE_WRITE             1161
 #define IDC_CHK_SHARE_DELETE            1162
+#define IDC_BTN_LOCK_OPEN               1163
 #define ID_GDIPLUSTEST_DRAWSTRING       32771
 #define ID_GDIPLUSTEST_MEASURECHARACTERRANGES 32772
 #define ID_IMAGETEST_DRAWIMAGE          32773
@@ -279,7 +280,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32780
-#define _APS_NEXT_CONTROL_VALUE         1161
+#define _APS_NEXT_CONTROL_VALUE         1164
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
