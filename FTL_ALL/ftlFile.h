@@ -36,6 +36,7 @@ namespace FTL
     *   延迟文件删除:PendingFileRenameOperations2 ;
     * 1.替换运行中的文件(重启后删除或替换):把正在使用的文件移动到一个临时目录中去->标记为重启时删除->拷贝新文件
     *   HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\下的PendingFileRenameOperations,为REG_MULTI_SZ格式,
+    *   TODO: ControlSet001\Control\Session Manager\ 下也有, 是链接吗?
     *   MoveFileEx(cTempFileName, NULL, MOVEFILE_DELAY_UNTIL_REBOOT)
     *   流程:系统重启->Autochk检查->移动指定文件->
     **************************************************************************************************/
