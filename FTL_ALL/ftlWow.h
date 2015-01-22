@@ -87,8 +87,11 @@ namespace FTL
     *   注册表反射(Registry Reflection)
     *     用于处理注册表重定向时的例外情况(如程序在 HKLM\Software\Wow6432Node\Classes 下新建值会立刻复制到 HKLM\Software\Classes  下 )
     * 
-    * Wow64DisableWow64FsRedirection/Wow64RevertWow64FsRedirection -- 禁止或恢复文件系统重定向
-    * RegEnableReflectionKey/RegDisableReflectionKey -- 打开或禁用反射功能
+    * Wow64DisableWow64FsRedirection-- 禁止文件系统重定向
+    * Wow64EnableWow64FsRedirection -- 允许文件系统重定向
+    * Wow64RevertWow64FsRedirection -- 恢复文件系统重定向
+    * RegEnableReflectionKey  -- 打开注册表反射功能
+    * RegDisableReflectionKey -- 禁用注册表反射功能
     *****************************************************************************************************/
     
     class CFWow

@@ -11,7 +11,7 @@
 #  error ftlIEHelper.h requires ftlCom.h to be included first
 #endif
 
-
+http://blog.csdn.net/xt_xiaotian/article/details/5336809
 /********************************************************************************************
 * http://blogs.msdn.com/b/ieinternals/archive/2012/03/23/understanding-ie10-enhanced-protected-mode-network-security-addons-cookies-metro-desktop.aspx 
 * 
@@ -40,7 +40,8 @@
 *     2.SHGetSpecialFolderPath(NULL, szSavePath, CSIDL_LOCAL_APPDATA , TRUE); //取得 %UserProfile%\AppData\Local
 *       CString strFilePath(szSavePath); 
 *       strFilePath += TEXT("\\Temp\\Low\\nCapture\\IEToobar\\");  -- 之后的访问都在具有 Low 完整性等级的目录下
-* 
+*   TODO:
+*     1.PhotoViewer 会在 HKLM\SOFTWARE\Microsoft\Internet Explorer\Low Rights\ElevationPolicy 下写信息(Policy = 3 等)，似乎是为了发消息?
 * 代理进程(特权分离思想) -- 把传统的IE进程一分为三，分别负责不同安全等级的任务.
 *   IE进程本身 -- 完成最常用的、无需特权的网页浏览任务
 *   IeUser.exe(用户级代理进程) -- 完成中等特权的任务(例如保存图片等)
