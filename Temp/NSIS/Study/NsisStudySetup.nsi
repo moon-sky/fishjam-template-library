@@ -36,6 +36,7 @@ Function LicensePageLeave
     EnableWindow $0 0
     ShowWindow $0 ${SW_HIDE}
     SendMessage $0 ${BM_SETCHECK} ${BST_CHECKED} 0
+    ;SendMessage $0 ${WM_SETTEXT} 0 'STR:MyText'
   ${EndIF}
   */
 FunctionEnd
@@ -56,7 +57,7 @@ FunctionEnd
 
 ; Welcome page
 !define MUI_WELCOMEPAGE_TITLE "MUI_WELCOMEPAGE_TITLE"
-!define MUI_WELCOMEPAGE_TEXT "MUI_WELCOMEPAGE_TEXT \r\n\r\n$_CLICK"
+!define MUI_WELCOMEPAGE_TEXT "MUI_WELCOMEPAGE_TEXT \r\n\r\n$_CLICK\r\n\r\n注意:通过 '$$_CLICK' 控制是否显示下一步: "
 !insertmacro MUI_PAGE_WELCOME
 
 ; License page

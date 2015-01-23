@@ -16,8 +16,10 @@ import org.junit.Test;
 import redis.clients.jedis.Jedis;  
 import redis.clients.jedis.JedisPool;  
 import redis.clients.jedis.JedisPoolConfig;  
-blog.csdn.net/freebird_lb/article/details/7733979
+
 /**********************************************************************************************************************************************
+ * blog.csdn.net/freebird_lb/article/details/7733979
+ * 
  * TODO: 
  *   1.命令行下 get 出来的字符串，采用unicode编码方式显示，无法显示对应的字符。如何设置？
  *   2.如何更新到磁盘上进行持久化？
@@ -87,22 +89,22 @@ blog.csdn.net/freebird_lb/article/details/7733979
  *   list -- 每个子元素都是string类型的双向链表, 可通过 push/pup 从头部/尾部 添加删除元素。其操作分为 阻塞版本(生产者消费者队列)和非阻塞版本。
  *   set -- string类型的无序集合，通过hash表方式实现，除了常用的增、删、查等操作外，还有计算集合的 并集、交集、差集(可很容易的实现 sns 中的好友推荐等功能)
  *   sorted set -- 其中的每个元素都会关联一个double类型的score，按score排序，其内部实现是skip list(跳表)和hash table的混合体
- *   hash
+ *   hash -- string类型的field 和 value的映射表，特别适合用于存储对象(节约内存、且方便存取整个对象)
  *   
  * 命令(一般来说返回1表示成功) -- 可通过 help xxx 来查询详细的说明
  * http://redis.io/commands， 中文版本: http://redis.readthedocs.org/en/2.4/index.html
- *   APPEND key value <== 给指定key的字符串值追加value,返回新字符串值的长度
- *   ★DBSIZE <== 返回当前数据库的key数量
- *   DECR key <== 对key的值做 减一 操作,并返回新的值。decr一个不存在key，则设置key为-1
- *   DECRBY key decrement <== 对key的值做 减指定值 操作
- *   DEL key [key ...] <== 删除给定key，返回删除key的数目，0表示给定key都不存在
- *   EXISTS key <== 测试指定key是否存在，返回1表示存在，0不存在
- *   EXPIRE key seconds <== 为key指定过期时间，单位是秒
- *   FLUSHALL(慎用) <== 删除所有数据库中的所有key
- *   FLUSHDB(慎用) <== 删除当前数据库中所有key
- *   GET key <== 获取key对应的string值,如果key不存在返回nil
- *   GETRANGE key start end <== 返回截取过的key的字符串值,下标从0开始。TODO: 旧版本中是 substr ?
- *   GETSET key value <== 原子的设置key的值，并返回key的旧值。如果key不存在返回nil
+ *   Append key value <== 给指定key的字符串值追加value,返回新字符串值的长度
+ *   ★DBSize <== 返回当前数据库的key数量
+ *   Decr key <== 对key的值做 减一 操作,并返回新的值。decr一个不存在key，则设置key为-1
+ *   DecrBy key decrement <== 对key的值做 减指定值 操作
+ *   Del key [key ...] <== 删除给定key，返回删除key的数目，0表示给定key都不存在
+ *   Exists key <== 测试指定key是否存在，返回1表示存在，0不存在
+ *   Expire key seconds <== 为key指定过期时间，单位是秒
+ *   FlushAll(慎用) <== 删除所有数据库中的所有key
+ *   FlushDB(慎用) <== 删除当前数据库中所有key
+ *   Get key <== 获取key对应的string值,如果key不存在返回nil
+ *   GetRange key start end <== 返回截取过的key的字符串值,下标从0开始。TODO: 旧版本中是 substr ?
+ *   GetSet key value <== 原子的设置key的值，并返回key的旧值。如果key不存在返回nil
  *   INCR key <== 对key的值做 加一 操作,并返回新的值。若value不是int类型会返回错误。incr一个不存在的key，则设置key为1
  *   INCRBY key increment <== 对key的值做 加指定值 的操作
  *   ★KEYS pattern <== 返回匹配指定模式(正则?)的所有key, 如 KEYS k?? 或 KEYS *
@@ -118,6 +120,14 @@ blog.csdn.net/freebird_lb/article/details/7733979
  *   SETNX key value <== 设置key对应的值为string类型的value, 如果key已经存在，返回0。nx 表示 not exist
  *   TTL key <== 返回设置过过期时间的key的剩余过期秒数, -1表示key不存在或者没有设置过过期时间
  *   TYPE key <== 返回给定key的value类型。如 none(不存在key)，string, list, set 等
+ *   
+ * Hash 相关
+ *   HGET key field <== 获取指定的hash field
+ *   HIncrBy key field increment <== 将指定的hash filed 加上给定值
+ *   HMGET key field [field ...] <== 获取全部指定的hash filed
+ *   HMSET key field value [field value ...] <== 同时设置hash的多个field
+ *   HSET key field value <== 设置hash field为指定值，如果key不存在，则先创建
+ *
  *   
  * List 相关
  *   B[LR]POP key [key ...] timeout <== 依次扫描key对应的list,找到第一个非空list进行阻塞式的POP操作. timeout单位为秒，0表示一直阻塞
@@ -155,7 +165,9 @@ blog.csdn.net/freebird_lb/article/details/7733979
  *   ZRANGEBYSCORE key min max <== 返回集合中score在给定区间的元素,可指定个数限制
  *   ★ZRANK|ZREVRANK key member <== 返回指定元素在集合中的排名(下标),集合中元素是按score [从小到大|从大到小] 排序的
  *   ZREM key member [member ...] <== 删除指定元素
-
+ *   ZREMRANGEBYRANK key start stop <== 删除集合中排名在给定区间的元素
+ *   ZREMRANGEBYSCORE key min max <== 删除集合中score在给定区间的元素
+ *   ZSCORE key member <== 返回给定元素对应的score
 **********************************************************************************************************************************************/
 
 public class RedisTest extends TestCase {

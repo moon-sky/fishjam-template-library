@@ -1,3 +1,6 @@
+!ifndef ___FUTILS_INCLUDED___
+!define ___FUTILS_INCLUDED___
+               
 !include "WinMessages.nsh"
 !include nsDialogs.nsh
 !include LogicLib.nsh
@@ -44,3 +47,4 @@ Function GetControlInfo
       
 FunctionEnd
 
+!endif ;___FUTILS_INCLUDED___

@@ -61,6 +61,7 @@
 *         命令很长时, 可以用 "\" 来换行继续写, 如 Messagebox MB_OK \<CR> "This is line breaks demo"
 *         !define 常量名 [常量值]   -- 引用时：${常量名}, TODO: 如果二次定义会如何, 后面的会覆盖?
 *            可以通过 !insertmacro MUI_SET Xxx 的方式来定义常量且防止二次定义
+*         !echo "消息" -- 编译时在编译窗体里面输出指定消息(TODO:似乎很难看到?)
 *         !macro 宏名 参数列表 XXX !macroend -- 定义宏,实现中可通过 ${参数名} 的方式引用, 然后通过 !insertmacro 宏名 参数 的方式引用
 *            注意:由于宏实现中可能通过宏连接的方式拼接出对应的常量名、函数名等，如果在源码中搜索全文的话，可能无法搜索到.
 *                 ( 比如 MUI_PAGE_CUSTOMFUNCTION_SHOW = MUI_PAGE_CUSTOMFUNCTION_ + SHOW )
@@ -110,6 +111,7 @@
 *       4.指令 -- 可带参数, 如 /REBOOTOK . TODO: 错误处理?
 *           基本指令：Delete, Exec, ExecShell, ExecWait, Rename, RMDir
 *             Abort -- 中断当前操作, 如在 .onInit 中表示停止安装并退出
+*             Delete -- 删除指定文件，如果不能删除会提示错误, 除非指定了 /REBOOTOK
 *             File -- 释放文件到当前输出路径($OUTDIR) , 通常需要配合SetOutPath使用。其文件名必须是在编译时当前系统存在的文件
 *               参数: /r 递归, /oname=目标文件名, /x 排除指定文件,  如 File /r *.dll
 *             SetOutPath -- 设置输出路径(即更改$OUTDIR的值?), 当路径不存在时会自动创建。常用的路径有  $INSTDIR, $SYSDIR,
@@ -140,6 +142,7 @@
 *          Library.nsh -- 一些dll, tlb 等相关的辅助函数
 *          LogicLib.nsh -- 逻辑控制宏
 *          nsDialogs.nsh --
+*          Util.nsh --
 *          WinMessages.nsh -- Windows 消息定义
 *          x64.nsh -- 控制在64位系统上安装逻辑
 ******************************************************************************************************************************/
