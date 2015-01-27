@@ -8,6 +8,7 @@
 *   1.Unicode版本？
 *   2.MUI_ABORTWARNING -- TODO: 在 System.nsh 中是个宏, 但很多地方都写 !define MUI_ABORTWARNING , 是为了取消宏定义还是说两个正好同名?
 *   3.卸载信息(一般都写在 HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\ 子目录下)
+*   4.似乎可以通过 !insertmacro INSTALLOPTIONS_WRITE "ioSpecial.ini" "Field 3" "Bottom" "185" 的方式(参见 MUI_WELCOMEPAGE_TITLE_3LINES)来完全控制界面布局
 *
 * 帮助文档
 *   NSIS帮助文档(蓝色网际)：通过查看 System.nsh 等系统源码文件, 可以学到很多用法
@@ -133,7 +134,7 @@
 *
 *
 *       8.多语言控制 -- 如果需要重新定义文字或语言,查看 %NSIS%\Contrib\Language files\ 下的文件，定义对应的常量即可
-*         !insertmacro MUI_LANGUAGE "语言(如English, SimpChinese) <== 需要对应的资源文件(如 Contrib\Language files\English.nsh)
+*         !insertmacro MUI_LANGUAGE "语言(如English, SimpChinese) <== 需要对应的资源文件(如 Contrib\Language files\English.nsh 和 English.nlf)
 *
 *       9.系统控制(一般是通过 !define 定义的一些宏 ?  查看System.nsh 等系统文件源码)
 *         MUI_ABORTWARNING -- 控制安装时取消的话是否有提示
@@ -146,44 +147,118 @@
 *          WinMessages.nsh -- Windows 消息定义
 *          x64.nsh -- 控制在64位系统上安装逻辑
 ******************************************************************************************************************************/
-
+     
 /******************************************************************************************************************************
 * 1.页面 -- 非静默安装所需要的向导页面, 用于指导用户进行安装。
 *   内置界面(??) -- uninstConfirm
 *
-* 预定义页面 (一般是通过 !insertmacro 的方式插入, 且在插入前可以通过 !define MUI_XXXX_YYY 的方式指定特定时刻所使用的文字或位图等信息 ):
-*   安装|卸载 相关
-*     MUI_PAGE_INIT <== TODO: 测试时没有看到具体的页面
-*     MUI_PAGE_WELCOME|MUI_UNPAGE_WELCOME -- 欢迎页面。控制常量:
-*       MUI_WELCOMEPAGE_TITLE -- 安装包标题(字符串)
-*       MUI_WELCOMEPAGE_TEXT -- 详细描述信息,可以通过 "\r\n" 指定分段的文字。$_CLICK" 表示 "单击[下一步(N)]继续"
-*       MUI_WELCOMEFINISHPAGE_BITMAP <== 欢迎界面左侧的位图
-*     MUI_PAGE_LICENSE|MUI_UNPAGE_LICENSE licenseData <== 版权页面, 可通过参数指定 license 文件(如 ".\license.txt" )
-*     MUI_PAGE_COMPONENTS | MUI_UNPAGE_COMPONENTS <== 选择需要安装的组件(TODO: 组件定义?)
-*     MUI_PAGE_DIRECTORY|MUI_UNPAGE_DIRECTORY <== 选择安装路径, 控制常量:
-*       MUI_DIRECTORYPAGE_TEXT_DESTINATION
-*     MUI_PAGE_STARTMENU ID $Var <== 用户选择菜单项的位置。参数:
-*       ID  <== 如 Application,
-*       Var <== 为通过 var 定义的变量(如前面通过 var ICONS_GROUP 定义后, $ICONS_GROUP 使用), 用于获取返回值进行后续操作?
-*       另外, 在插入宏前, 可 !define 控制常量:
-*         a.MUI_STARTMENUPAGE_NODISABLE
-*         b.MUI_STARTMENUPAGE_DEFAULTFOLDER
-*         c.MUI_STARTMENUPAGE_REGISTRY_ROOT
-*     MUI_PAGE_INSTFILES | MUI_UNPAGE_INSTFILES -- 显示安装文件进度, 要显示这个页面时, 其前一个页面的"Next"按钮会变为"Install"
-*       TODO: 这是一个长时间的操作, 是否能控制能否取消, 以及具体的操作?
-*     MUI_PAGE_FINISH | MUI_UNPAGE_FINISH -- 结束页面。控制常量:
-*       MUI_FINISHPAGE_NOREBOOTSUPPORT -- 不重启系统(Delete,RMDir 等指令带上 /REBOOTOK 时, 如果不能删除会提示重启, 并在重启后删除)
-*         重启标记 <== 判断(IfRebootFlag), 设置(SetRebootFlag)
-*       MUI_FINISHPAGE_SHOWREADME "ReadMe.txt" <== 指定Readme文件
-*       MUI_FINISHPAGE_SHOWREADME_TEXT <== ReadMe时的描述信息
-*       MUI_FINISHPAGE_RUN <== 指向结束后会自动运行的程序, 一般为 "$INSTDIR\xxx.exe"
-*   安装特有
+* NSIS 2.0 版本支持定制的用户界面(Modern UI, 即 MUI)-- 模仿Windows界面风格，MUI使用宏来指定各种属性, 改变了NSIS脚本的编写习惯
+*   (即不再必须通过 LicenseText, Icon, CheckBitmap, InstallColors 来指定)
 *
-*   卸载特有
-*      MUI_UNPAGE_CONFIRM <== 确认是否卸载
+* 内置向导页面 (一般是通过 !insertmacro 的方式插入, 且在插入前可以通过 !define MUI_XXXX_YYY 的方式指定特定时刻所使用的文字或位图等信息 ):
+*   MUI_PAGE_INIT <== TODO: 测试时没有看到具体的页面
+*   MUI_PAGE_WELCOME|MUI_UNPAGE_WELCOME -- 欢迎页面。控制常量:
+*     MUI_WELCOMEPAGE_TITLE -- 欢迎向导页上的标题(字符串)
+*     MUI_WELCOMEPAGE_TEXT -- 详细描述信息,可以通过 "\r\n" 指定分段的文字。$_CLICK" 表示 "单击[下一步(N)]继续"
+*     MUI_WELCOMEFINISHPAGE_BITMAP <== 欢迎界面左侧的位图
+*     MUI_WELCOMEPAGE_TITLE_3LINES <== 实测时发现定义了该变量后，Title 和 Text 之间的间距变大了(三行的距离，默认为两行)
+*   MUI_UNPAGE_CONFIRM <== 确认是否卸载，此乃卸载特有。
+*     MUI_UNCONFIRMPAGE_TEXT_TOP <== 显示在页面顶部的文字
+*     MUI_UNCONFIRMPAGE_TEXT_LOCATION <== 显示在 uninstall location 旁的文字(卸载目录)
+*   MUI_PAGE_LICENSE|MUI_UNPAGE_LICENSE licenseData <== 版权页面, 可通过参数指定 license 文件(如 ".\license.txt" 或 ".\license.rtf" )
+*     三种授权方式: 按钮(默认); MUI_LICENSEPAGE_CHECKBOX; MUI_LICENSEPAGE_RADIOBUTTONS
+*       注意: 也可通过 LicenseForceSelection 指令直接指定所有的详细信息
+*     MUI_LICENSEPAGE_TEXT_TOP <== 显示在页面顶部的文字
+*     MUI_LICENSEPAGE_TEXT_BOTTOM <== 显示在页面底部的文字
+*     MUI_LICENSEPAGE_BUTTON <== 按钮方式时显示在按钮上的文字
+*     MUI_LICENSEPAGE_CHECKBOX_TEXT <== CheckBox方式时显示在按钮旁的文字
+*     MUI_LICENSEPAGE_RADIOBUTTONS_TEXT_ACCEPT | MUI_LICENSEPAGE_RADIOBUTTONS_TEXT_DECLINE <== radio方式时显示的 接收|拒绝 的文字
+*   MUI_PAGE_COMPONENTS | MUI_UNPAGE_COMPONENTS <==(Components.nsh) 选择需要安装的组件(TODO: 组件定义?)
+*     MUI_COMPONENTSPAGE_TEXT_TOP <== 显示在页面顶部的文字
+*     MUI_COMPONENTSPAGE_TEXT_COMPLIST <== 显示在组件列表旁边的文字
+*     MUI_COMPONENTSPAGE_TEXT_INSTTYPE <== 显示在安转类型下拉框旁边的文字
+*     MUI_COMPONENTSPAGE_TEXT_DESCRIPTION_TITLE <== 显示在描述框顶部的文字
+*     MUI_COMPONENTSPAGE_TEXT_DESCRIPTION_INFO <== 当没有安装组件选中时，显示在描述框中的文字
+*     TODO:似乎没有控制"所需空间" 文字的常量(通过查询 Components.nsh 源码，似乎是 mui.ComponentsPage.SpaceRequired 变量控制?)
+*   MUI_PAGE_DIRECTORY | MUI_UNPAGE_DIRECTORY <== 选择安装路径, 控制常量:
+*     MUI_DIRECTORYPAGE_TEXT_TOP <== 显示在页面顶部的文字
+*     MUI_DIRECTORYPAGE_TEXT_DESTINATION <== 显示在目地目录选择框上的文字
+*     MUI_DIRECTORYPAGE_VERIFYONLEAVE <== 在离开该页面时验证目录的有效性，不禁用"下一步"这个按钮(TODO:似乎不好，这样需要自己进行有效性验证, 可通过 GetInstDirError 获取安装目录的信息)
+*     MUI_DIRECTORYPAGE_VARIABLE $PLUGINS_FOLDER <== 将目录选择页面中用户选择的目录位置存放到通过 var PLUGINS_FOLDER 定义的变量中去,默认是 $INSTDIR
+*     TODO:似乎没有控制 "所需空间" 和 "可用空间" 文字的常量
+*   MUI_PAGE_STARTMENU ID $Var <== 用户选择菜单项的位置。此乃安装特有。参数:
+*     ID  <== 如 Application,
+*     Var <== 为通过 var 定义的变量(如前面通过 var ICONS_GROUP 定义后, $ICONS_GROUP 使用), 用于获取返回值进行后续操作?
+*     控制常量:
+*       MUI_STARTMENUPAGE_TEXT_TOP <== 显示在页面顶部的文字
+*       MUI_STARTMENUPAGE_TEXT_CHECKBOX <== 显示在 checkbox 旁的表示禁止快捷方式创建的文字
+*       MUI_STARTMENUPAGE_NODISABLE <== 不实现用于禁止快捷方式创建的CheckBox
+*       MUI_STARTMENUPAGE_DEFAULTFOLDER folder <== 默认的开始菜单目录
+*       MUI_STARTMENUPAGE_REGISTRY_ROOT + MUI_STARTMENUPAGE_REGISTRY_KEY + MUI_STARTMENUPAGE_REGISTRY_VALUENAME
+*         <== 指定开始菜单设定在注册表中的键和值，用于记录用户的偏好。在卸载时应当删除之
+*     注意: 1.创建快捷方式的代码应当放在 MUI_STARTMENU_WRITE_BEGIN 和 MUI_STARTMENU_WRITE_END 之间.
+*           2.卸载程序可以用宏MUI_STARTMENU_GETFOLDER获得开始菜单目录
+*   MUI_PAGE_INSTFILES | MUI_UNPAGE_INSTFILES -- 显示安装|卸载的文件进度, 要显示这个页面时, 其前一个页面的"Next"按钮会变为"Install"
+*     TODO: 这是一个长时间的操作, 是否能控制能否取消, 以及具体的操作?
+*     MUI_INSTFILESPAGE_FINISHHEADER_TEXT <== 显示安装进度页面头上的文字，但对于结束页面不是MUI_(UN)FINISHPAGE_NOAUTOCLOSE)不显示
+*     MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT <== 显示安装进度页面头上的补充说明文字
+*     MUI_INSTFILESPAGE_ABORTHEADER_TEXT <== 显示安装进度页面头上的表示安装过程非正常终止的文字
+*     MUI_INSTFILESPAGE_ABORTHEADER_SUBTEXT <== 非正常终止时的补充说明文字
+*   MUI_PAGE_FINISH | MUI_UNPAGE_FINISH --(Finish.nsh)结束页面。控制常量:
+*     MUI_FINISHPAGE_TITLE_3LINES <== 页面标题区的额外空格
+*     MUI_FINISHPAGE_TITLE <== 页面标题
+*     MUI_FINISHPAGE_TITLE   "MUI_FINISHPAGE_TITLE"
+*     MUI_FINISHPAGE_TEXT_LARGE <== 如果使用了 checkbox 时，需要设定的文本区的额外空间
+*     MUI_FINISHPAGE_TEXT <== 显示在完成页面上文字，用\r\n换行
+*     MUI_FINISHPAGE_TEXT_REBOOT <== 重启操作系统提示的文字，用\r\n换行
+*     MUI_FINISHPAGE_TEXT_REBOOTNOW <== "立即重启"的提示文字
+*     MUI_FINISHPAGE_TEXT_REBOOTLATER <== "稍后重启"的提示文字
+*     MUI_FINISHPAGE_LINK <== 用户可及点击的超链上的文字
+*     MUI_FINISHPAGE_LINK_LOCATION file/url <== 指定用户是否可以用超链查看网站
+*     MUI_FINISHPAGE_LINK_COLOR color <== 超链上文字的颜色(RRGGBB)，默认为 000080
+*     MUI_FINISHPAGE_RUN "Notepad.exe" <== 指定立即运行的应用程序
+*     MUI_FINISHPAGE_RUN_TEXT <== 立即运行程序的提示文字
+*     MUI_FINISHPAGE_RUN_PARAMETERS 
+*     MUI_FINISHPAGE_RUN_FUNCTION funName <== 指定安装完成后要执行的nsi函数，在该函数中可以运行多个应用程序
+*     MUI_FINISHPAGE_RUN_NOTCHECKED <== 指定运行应用程序 checkbox 为非选中状态
+*     MUI_FINISHPAGE_SHOWREADME "$INSTDIR\ReadMe.txt"  <== 指定Readme文件(指定用户可以用 checkbox 选择是否查看的文件或网站)
+*     MUI_FINISHPAGE_SHOWREADME_TEXT <== ReadMe时的描述信息
+*     MUI_FINISHPAGE_SHOWREADME_NOTCHECKED <== 指定 'Show Readme' checkbox 为非选中状态
+*     MUI_FINISHPAGE_SHOWREADME_FUNCTION funName <== 指定安装完成后要执行的 nsis 函数，在该函数中可以显示多个文件或网站
+*     MUI_FINISHPAGE_BUTTON <== 完成按钮的显示文字
+*     MUI_FINISHPAGE_NOREBOOTSUPPORT -- 禁用重启操作系统的功能(Delete,RMDir 等指令带上 /REBOOTOK 时, 如果不能删除会提示重启, 并在重启后删除)
+*       重启标记 <== 判断(IfRebootFlag), 设置(SetRebootFlag)
+*     MUI_FINISHPAGE_RUN <== 指向结束后会自动运行的程序, 一般为 "$INSTDIR\xxx.exe"
+*     TODO:似乎在有重启选项的时候 Run 和 ShowReadme 不会出来 ?
 *
-*
-* 定制界面
+* Header -- 各个界面通用的Header控制，因为每个 预定义预定义的 MUI_PAGE_ 宏结束的时候都会 undef 这些宏，因此在插入宏前可分别定义不同的值
+*   MUI_HEADERIMAGE <== 控制 Header 部分是否显示背景图片
+*   MUI_HEADERIMAGE_BITMAP "Header.bmp"    <== 指定Header的图片
+*   MUI_PAGE_HEADER_TEXT text <== 显示在向导页头上的文字
+*   MUI_PAGE_HEADER_SUBTEXT text <== 显示在向导页头上的文字，它是通常显示在 MUI_PAGE_HEADER_TEXT 之下，表示对 MUI_PAGE_HEADER_TEXT 的进一步解释
+*      TODO: 对于使用 InstallOptions 的定制界面，使用宏 !insertmacro MUI_HEADER_TEXT "$(TEXT_IO_TITLE)" "$(TEXT_IO_SUBTITLE)" 实现类似功能
+******************************************************************************************************************************/
+
+/******************************************************************************************************************************
+* 定制界面(InstallOptions) -- 一个NSIS插件，允许开发人员创建定制的向导页面来获得内置向导页面不能提供的用户输入。
+*   创建内嵌在NSIS窗体中的对话框，其控件通过 ini(如 WordFunc.ini ) 进行描述和控制，可通过 HM NIS EDIT 等可视化工具编辑
+*   1.设计定制向导页界面，产生界面描述ini文件
+*     [Settings] <== 设置控件的数量，并定义窗体的属性
+*        NumFields=控件数目
+*     [Field #] <== 每个控件段以"Field #"模式命名，"#"号表示数字，从1开始
+*        对于 Button、Link 等控件，可以通过 Flags 指定 NOTIFY，使InstallOptions触发事件，调用定制页面的validation/leave方法
+*   2.编写nsi脚本
+*     2.1.如果使用了lzma,gzip等压缩算法，需要在所有File指令前reserve定制界面的ini文件：ReserveFile ".ini"
+*     2.2.在 Function .onInit 中使用宏 !insertmacro MUI_INSTALLOPTIONS_EXTRACT ".ini"
+*         TODO:没有找到该宏的示例，本质是 ? File /oname=$INI "WordFunc.ini"
+*   3.编写定制对话框的显示函数 -- 参见 useInstallOptionsDemo
+*   4.用Page指令在合适的位置插入该向导页面，如:
+*     Page custom useInstallOptionsDemo "" "--显示installOptionsDemo对话框"
+*   TODO:
+*     a.PhotoViewer 是 !insertmacro MUI_INSTALLOPTIONS_INITDIALOG "InstEnd.ini"
+******************************************************************************************************************************/
+
+/******************************************************************************************************************************
 *   Page/UninstPage/PageEx 页面名 -- 指定特定的安装/卸载页面, 可通过回调函数进行验证,如没有回调, 则对应的位置用 ""
 *
 *   修改内置页面行为:
@@ -198,6 +273,24 @@
 *
 *   自定义页面:
 *     Page <custom> [creator_function] [leave_function] [caption]
+*
+*
+*   nsDialogs.nsh(TODO:有待确认) -- 动态创建控件来更改UI(查询文档获得详细的说明) -- CreateXxx 的结果需要 Pop 到变量中?
+*     创建控件
+*       ${NSD_CreateBitmap}      0u 0u 109u 193u ""
+*       ${NSD_CreateCheckbox}    120u ${MUI_FINISHPAGE_RUN_TOP}u 195u 10u "${MUI_FINISHPAGE_RUN_TEXT}"
+*       ${NSD_CreateLabel}       120u 10u 195u ${MUI_FINISHPAGE_TITLE_HEIGHT}u "${MUI_FINISHPAGE_TITLE}"
+*       ${NSD_CreateLink}        120u 175u 195u 10u "${MUI_FINISHPAGE_LINK}"
+*       ${NSD_CreateRadioButton} 120u ${MUI_FINISHPAGE_REBOOTNOW_TOP}u 195u 10u "${MUI_FINISHPAGE_TEXT_REBOOTNOW}"
+*     读写属性
+*       ${NSD_FreeImage}         $mui.FinishPage.Image.Bitmap
+*       ${NSD_GetText} <== ?
+*       ${NSD_SetStretchedImage} $mui.FinishPage.Image $PLUGINSDIR\modern-wizard.bmp $mui.FinishPage.Image.Bitmap
+*       ${NSD_SetImage}          $mui.FinishPage.Image $PLUGINSDIR\modern-wizard.bmp $mui.FinishPage.Image.Bitmap
+*       ${NSD_SetFocus}          $mui.FinishPage.RebootNow
+*     设置事件:
+*       ${NSD_OnClick}           $mui.FinishPage.Link "${LINK}"
+*
 *
 *   修改整个安装样式(TODO: 未测试和确认)
 *     使用 Resource Hacker 调整 NSIS\Contrib\UIs\modern.exe 文件的布局，之后所有的安装界面全都会更改 -- 或者修改 NSIS 的源码资源?

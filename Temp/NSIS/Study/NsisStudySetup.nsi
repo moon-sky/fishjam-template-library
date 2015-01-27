@@ -15,11 +15,19 @@
 
 ;Control variable and macro
 !define MUI_HEADERIMAGE          ;控制 Header 部分是否显示背景图片
+;!define MUI_HEADERIMAGE_BITMAP Header.bmp    ;指定Header的图片
+;!define MUI_HEADERIMAGE_BITMAP_NOSTRETCH
+;!define MUI_HEADERIMAGE_UNBITMAP_NOSTRETCH
+;!define MUI_HEADERIMAGE_UNBITMAP Header.bmp
 ;!define MUI_HEADERIMAGE_RIGHT    ;控制图片显示在右侧, TODO:缺省的效果不好，最好换图
 
+;ReserveFile ".ini"
 SetCompressor lzma
 
 !include "FUtils.nsh"
+
+; MUI 1.67 compatible ------
+!include "MUI.nsh"
 
 ;Control Functions
 Function LicensePageLeave
@@ -41,9 +49,20 @@ Function LicensePageLeave
   */
 FunctionEnd
 
+Function InstfilesPageShow
+  MessageBox MB_OK "InstfilesPageShow"
+FunctionEnd
 
-; MUI 1.67 compatible ------
-!include "MUI.nsh"
+Function InstfilesPageLeave
+  MessageBox MB_OK "InstfilesPageLeave"
+FunctionEnd
+
+Function useInstallOptionsDemo
+  ;!insertmacro MUI_HEADER_TEXT "请选择构建目录" "请选择构建目录"
+  !insertmacro MUI_INSTALLOPTIONS_WRITE "installOptionsDemo.ini" "Field 2" "State" "$INSTDIR\buildarea"
+  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "buildarea.ini"
+FunctionEnd
+
 
 ; MUI Settings
 !define MUI_ABORTWARNING
@@ -58,24 +77,40 @@ FunctionEnd
 ; Welcome page
 !define MUI_WELCOMEPAGE_TITLE "MUI_WELCOMEPAGE_TITLE"
 !define MUI_WELCOMEPAGE_TEXT "MUI_WELCOMEPAGE_TEXT \r\n\r\n$_CLICK\r\n\r\n注意:通过 '$$_CLICK' 控制是否显示下一步: "
+;!define MUI_WELCOMEFINISHPAGE_BITMAP "Welcome.bmp"
+;!define MUI_WELCOMEPAGE_TITLE_3LINES
 !insertmacro MUI_PAGE_WELCOME
 
+Page custom useInstallOptionsDemo "" "--显示installOptionsDemo对话框"
+
 ; License page
-LicenseForceSelection radiobuttons "accept_text" "decline_text"
+!define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT in LICENSE"
+!define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT in LICENSE"
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE LicensePageLeave
+;LicenseForceSelection radiobuttons "accept_text" "decline_text"
 ;!define MUI_LICENSEPAGE_CHECKBOX  ;MUI_LICENSEPAGE_RADIOBUTTONS
-;!define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT"
-;!define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT"
+!define MUI_LICENSEPAGE_TITLE "MUI_LICENSEPAGE_TITLE"
+!define MUI_LICENSEPAGE_TEXT_TOP "MUI_LICENSEPAGE_TEXT_TOP"
+!define MUI_LICENSEPAGE_TEXT_BOTTOM "MUI_LICENSEPAGE_TEXT_BOTTOM"
+!define MUI_LICENSEPAGE_BUTTON "_BUTTON"
 !insertmacro MUI_PAGE_LICENSE "License.txt"
 
 ; Components page
-;!define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT"
-;!define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT"
+!define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT in COMPONENTS"
+!define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT in COMPONENTS"
+!define MUI_COMPONENTSPAGE_TEXT_TOP "MUI_COMPONENTSPAGE_TEXT_TOP"
+!define MUI_COMPONENTSPAGE_TEXT_COMPLIST "_TEXT_COMPLIST"
+!define MUI_COMPONENTSPAGE_TEXT_INSTTYPE "_TEXT_INSTTYPE"
+!define MUI_COMPONENTSPAGE_TEXT_DESCRIPTION_TITLE "_DESCRIPTION_TITLE"
+!define MUI_COMPONENTSPAGE_TEXT_DESCRIPTION_INFO "_DESCRIPTION_INFO"
 !insertmacro MUI_PAGE_COMPONENTS
 
 ; Directory page
+!define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT in Directory"
+!define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT in Directory"
 !define MUI_DIRECTORYPAGE_TEXT_TOP "MUI_DIRECTORYPAGE_TEXT_TOP"
 !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "MUI_DIRECTORYPAGE_TEXT_DESTINATION"
+;!define MUI_DIRECTORYPAGE_VERIFYONLEAVE
 !insertmacro MUI_PAGE_DIRECTORY
 
 ;variable
@@ -83,7 +118,11 @@ Var hmci     ;background music
    
 ; Start menu page
 var ICONS_GROUP
-!define MUI_STARTMENUPAGE_NODISABLE
+!define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT in StartMenu"
+!define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT in StartMenu"
+!define MUI_STARTMENUPAGE_TEXT_TOP "MUI_STARTMENUPAGE_TEXT_TOP"
+!define MUI_STARTMENUPAGE_TEXT_CHECKBOX "MUI_STARTMENUPAGE_TEXT_CHECKBOX"
+;!define MUI_STARTMENUPAGE_NODISABLE
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "NsisStudy"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
@@ -91,18 +130,47 @@ var ICONS_GROUP
 !insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
 
 ; Instfiles page
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW  InstfilesPageShow
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE InstfilesPageLeave
+
+!define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT in Instfiles"
+!define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT in Instfiles"
+!define MUI_INSTFILESPAGE_FINISHHEADER_TEXT "MUI_INSTFILESPAGE_FINISHHEADER_TEXT"
+!define MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT "MUI_INSTFILESPAGE_FINISHHEADER_SUBTEXT"
+!define MUI_INSTFILESPAGE_ABORTHEADER_TEXT "MUI_INSTFILESPAGE_ABORTHEADER_TEXT"
+!define MUI_INSTFILESPAGE_ABORTHEADER_SUBTEXT "MUI_INSTFILESPAGE_ABORTHEADER_SUBTEXT"
 !insertmacro MUI_PAGE_INSTFILES
 
 ; Finish page
+;!define MUI_FINISHPAGE_NOREBOOTSUPPORT
+;!define MUI_FINISHPAGE_TITLE_3LINES
 !define MUI_FINISHPAGE_TITLE   "MUI_FINISHPAGE_TITLE"
 !define MUI_FINISHPAGE_TEXT    "MUI_FINISHPAGE_TEXT"
-!define MUI_FINISHPAGE_BUTTON  "MUI_FINISHPAGE_BUTTON"
+;!define MUI_FINISHPAGE_TEXT_LARGE
 !define MUI_FINISHPAGE_TEXT_REBOOT "MUI_FINISHPAGE_TEXT_REBOOT"
+!define MUI_FINISHPAGE_TEXT_REBOOTNOW "MUI_FINISHPAGE_TEXT_REBOOTNOW"
+!define MUI_FINISHPAGE_TEXT_REBOOTLATER "MUI_FINISHPAGE_TEXT_REBOOTLATER"
+!define MUI_FINISHPAGE_REBOOTLATER_DEFAULT
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\ReadMe.txt"
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "MUI_FINISHPAGE_SHOWREADME_TEXT"
-!define MUI_FINISHPAGE_RUN "Calc"
+!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+!define MUI_FINISHPAGE_RUN "Notepad.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "MUI_FINISHPAGE_RUN_TEXT"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "abc.txt"
+!define MUI_FINISHPAGE_RUN_NOTCHECKED
+!define MUI_FINISHPAGE_LINK "fishjam"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://www.fishjam.com"
+!define MUI_FINISHPAGE_LINK_COLOR FF0000
+!define MUI_FINISHPAGE_BUTTON  "_BUTTON"
 !insertmacro MUI_PAGE_FINISH
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; UnInstall ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;Uninstall confirm pages
+!define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT in confirm"
+!define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT in confirm"
+;!define MUI_UNCONFIRMPAGE_TEXT_TOP "MUI_UNCONFIRMPAGE_TEXT_TOP"
+;!define MUI_UNCONFIRMPAGE_TEXT_LOCATION "_LOCATION"
+!insertmacro MUI_UNPAGE_CONFIRM
 
 ; Uninstaller pages
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -126,7 +194,8 @@ BrandingText "  BrandingText"
 
 Function .onInit
   !insertmacro MUI_LANGDLL_DISPLAY
-
+;  !insertmacro MUI_INSTALLOPTIONS_EXTRACT ".ini"
+  
 ;;Splash 效果
 /*
    ;普通效果
@@ -156,6 +225,7 @@ Function .onInit
 
 FunctionEnd
 
+
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
@@ -166,6 +236,8 @@ Section "MainSection" SEC01
   CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\NsisStudy.lnk" "$INSTDIR\NsisStudy.nsh"
   !insertmacro MUI_STARTMENU_WRITE_END
+  
+  MessageBox MB_OK "installing... "
 SectionEnd
 
 Section "Misc" SEC02
@@ -175,6 +247,10 @@ Section "Misc" SEC02
 ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   !insertmacro MUI_STARTMENU_WRITE_END
+SectionEnd
+
+Section "Reboot" SEC03
+  SetRebootFlag true
 SectionEnd
 
 Section -AdditionalIcons
@@ -198,6 +274,7 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "Choose Main Section Files"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "Choose Misc Files"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "Choose This to Reboot"
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
@@ -214,7 +291,7 @@ Function un.onInit
 FunctionEnd
 
 Section Uninstall
-  !insertmacro MUI_STARTMENU_GETFOLDER "Application" $ICONS_GROUP
+  !insertmacro MUI_STARTMENU_GETFOLDER "Application" $ICONS_GROUP  ;获得安装时选择的开始菜单,然后可通过 $ICONS_GROUP 删除指定的快捷方式和目录
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\ReadMe.txt"

@@ -47,4 +47,12 @@ Function GetControlInfo
       
 FunctionEnd
 
+
+Function RefreshStartMenu
+  ; Based on RefreshShellIcons
+  ; By jerome tremblay - april 2003
+  ;System::Call 'shell32.dll::SHChangeNotify(l, l, i, i) v (${SHCNE_ASSOCCHANGED}, ${SHCNF_PATH}, 0, 0)'
+FunctionEnd
+
+
 !endif ;___FUTILS_INCLUDED___
