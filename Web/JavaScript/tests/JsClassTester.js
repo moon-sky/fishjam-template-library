@@ -240,7 +240,7 @@ test("prototype", function(){
 	console.log("prototype 创建的类CUser对象: %o", userObj1);
 	equal(userObj1.whoAreYou(), "I'm fishjam and my birthday is Mon Apr 30 1979 12:00:00 GMT+0800 (中国标准时间)", "调用共有方法");
 	equal(userObj1.getName(), "fishjam", "userObj1.getName() == fishjam");
-	equal(userObj1.getAge(), 35, "userObj1.getAge() == 35, 老了。。。。");
+	equal(userObj1.getAge(), 36, "userObj1.getAge() == 36, 老了。。。。");
 	
 	
 	

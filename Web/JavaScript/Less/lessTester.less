@@ -1,0 +1,81 @@
+/******************************************************************************************************************************************
+* 学习文档
+*   http://www.w3cschool.cc/manual/lessguide/usage/index.html
+******************************************************************************************************************************************/
+
+
+/******************************************************************************************************************************************
+* 最佳实践
+*   1.开发阶段通过 less.js 在网页内直接解析 .less 文件; 并通过 less 变量设置浏览器选项参数.
+*     发布时将LESS文件编译生成静态CSS文件,并在HTML文档中应用
+*
+* TODO:
+*   1.Visual Studio 2012 可以直接编辑 .less 文件
+*   2.高级功能: 字符串插值, 服务器端使用配置, JavaScript 表达式, 避免编译 等(需要参见官方文档)
+******************************************************************************************************************************************/
+
+/******************************************************************************************************************************************
+* Less( http://lesscss.org/ ) -- CSS 预处理语言,扩充了CSS语言，增加了诸如变量,混合(mixin),函数等功能，更易维护、方便制作主题、扩充等.
+*   类似的有 SASS(http://sass-lang.com/ ) 
+*   
+* 原理
+*   包含一套自定义的语法及一个解析器,将 .less 文件编译生成对应的 .css 文件.
+*   本质是在现有CSS语法的基础上，为CSS加入程序式语言的特性.
+*
+* 用法:
+*   1.客户端端使用(方便开发调试): 在HTML中直接引入 .less 文件,并在其后面引入less.js(http://lesscss.org)进行解析
+*     <link rel="stylesheet/less" type="text/css" href="lessTester.less">
+*     <script src="less.js" type="text/javascript"></script>
+*     TODO: 在引入 less.js 前，可以定义全局 less 对象设置参数, 如 less = { env:"development", async: false, fileAsync: false, dumpLineNumbers: "comments" };
+*   2.服务器端使用: 使用 npm 安装less( npm install -g less), 并在node环境中对less源文件进行编译(lessc lessTester.less > lessTester.css)
+*     @import "variables.less";
+*   2.1.Node平台上代码中使用: var less = require('less'); less.render('.class { width: (1 + 1) }', function (e, css) { console.log(css); });
+*   3.(最通用)将LESS文件编译生成静态CSS文件,并在HTML文档中应用: 
+* 
+*
+* 语法:
+*   注释 <== 单行注释(//) 多行注释 /x .... x/, 注意: 单行注释不会显示在编译后的CSS中
+*   @varName: value; <== 定义变量, 通过 @varName 的方式引用, 一般将相同的值定义成变量统一管理起来。通常用于定义主题。
+*      预定义变量: @arguments 在 Mixins 中引用时, 该参数表示所有的变量
+*   @import "xxxx.less" <== 引入 .less(可省略扩展名) 或 .css 文件
+*   #mynamespace { .user {定义名为user的样式, 可嵌套定义} } <== 定义名为 mynamespace 的命名空间,并在其中定义样式。 使用方式: #mynamespace > .user
+*   混入(mixins) <== 在一个 class 中引入另外一个已经定义的 class，就像在当前 class 中增加一个属性一样
+*     when(iscolor(@c)){ ...} <== 条件编译?
+*   支持数值型value(如 color、padding、margin )的四则运算
+*   函数:
+*     rgba(r,g,b,a) <== 生成颜色
+*     color转换( 如 lighten(@color, 10%)) <== lighten, darken, saturate, desaturate, fadein, fadeout, spin
+*     类型判断 <== iscolor, isnumber
+*   TODO:
+*     1.&:hover{...} <== 有 & 时解析的是同一个元素或此元素的伪类，没有 & 解析是后代元素
+******************************************************************************************************************************************/
+
+
+
+
+//引入定义变量的文件
+@import "variables.less";
+
+// 定义一个样式选择器(注意 样式后面有括号, 其中可包含参数) -- 带变量参数 @radius, 其默认值是 5px
+.roundedCorners(@radius:5px) { 
+  -moz-border-radius: @radius; 
+  -webkit-border-radius: @radius; 
+  border-radius: @radius; 
+} 
+
+//定义一个使用 @arguments 参数的样式
+.boxShadow(@x:0,@y:0,@blur:1px,@color:#000){ 
+  -moz-box-shadow: @arguments; 
+  -webkit-box-shadow: @arguments; 
+  box-shadow: @arguments; 
+} 
+ 
+
+ #header { 
+  color: @color; 
+  .roundedCorners(10px);   //使用 mixins 语法引入已经定义的 roundedCorners 样式,并指定参数 @radius 为 10px
+  .boxShadow(2px,2px,3px,#f36); 
+ } 
+ h2 { 
+  color: @color; 
+ }

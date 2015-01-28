@@ -173,6 +173,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tests\BootstrapTester.js"
+				>
+			</File>
+			<File
 				RelativePath=".\tests\BrowserTester.js"
 				>
 			</File>
@@ -237,6 +241,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\tests\LessTester.js"
+				>
+			</File>
+			<File
 				RelativePath=".\tests\MathTester.js"
 				>
 			</File>
@@ -274,6 +282,18 @@
 			</File>
 			<File
 				RelativePath=".\qunit\readme.txt"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="less"
+			>
+			<File
+				RelativePath=".\Less\lessTester.less"
+				>
+			</File>
+			<File
+				RelativePath=".\Less\variables.less"
 				>
 			</File>
 		</Filter>
