@@ -1,7 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <!--
+    基本属性: disabled
+
 	HTML5 中新增了智能表单,且加入了一些新的 input 类型，如果浏览器无法识别新类型，会默认为 type=text 并显示为文本。
-	input 中新增类型:date-time(日期时间),date(日期),month(月份),week(星期),time(时间),datetime-local(本地时间),color,range
+	input 中新增类型:datetime(日期时间),date(日期),month(月份),week(星期),time(时间),datetime-local(本地时间),number,
+	email, url, search, tel, color,range 等
 	
 	HTML5 新增属性：
 	  autocomplete[on/off/default] -- 自动为表单填充存储数据
@@ -93,7 +96,7 @@
         密码区域(password)：<input type="password" name="pwdInput" placeholder="please input password" /><br />
         长文本输入(textarea)：<textarea rows="10" cols="50"></textarea><br />
 
-        单选按钮(radio,支持标签切换)：
+        单选按钮(radio,支持标签切换, name 相同的 radio 是互斥的)：
           <label for="male"><input type="radio" name="sex" value="male" id="male" checked="checked"/>男</label>
           <label for="female"><input type="radio" name="sex" value="female" id="female" />女</label>
         <br />

@@ -7,7 +7,8 @@ package com.java.test;
  * Bean -- 一般指容器管理对象，在Spring中指Spring IoC容器管理对象
  * BMP(Bean-Managed Persistence) -- Bean管理持久化
  * BO(Business Object) -- 业务对象，可以理解为
- * CDN(Content Delivery Network) -- 
+ * CDN(Content Delivery Network) -- 内容分发网络。.通过在网络各处放置节点服务器所构成的在现有的互联网基础之上的一层智能虚拟网络，
+ *    实时计算后将用户的请求重新导向离用户最近的服务节点。比如 百度静态资源库（http://cdn.code.baidu.com/ )
  * CMP(Container-Managed Persistence) -- 容器管理持久化
  * Convention Over Configuration -- 约定优于配置，
  * CORBA(Common Object Request Broker Architecture) -- 一种和语言无关的分布式"对象交换标准框架"，

@@ -5,18 +5,21 @@
 *
 * 最佳实践
 *   1.在线的可视化布局: http://www.w3cschool.cc/try/bootstrap/layoutit/
+*     Pingendo: 本地Java程序
 *     TODO: a.官网是否有工具? b.是否有本地的工具?  http://www.w3cschool.cc/bootstrap/bootstrap-ui-editor.html
+*       
 *     bootstrap ui 编辑器,可直接成bootstrap布局代码
 *   2. -- 
 *     
-*   
+* 常见问题:
+*   1.data-toggle -- TODO: 进行数据状态的切换，如 button, buttons, collapse(), dropdown(下拉菜单),modal(), tab(), pill
 *
 * 官方网站 --  http://getbootstrap.com/ 
 * 中文网站 -- http://www.bootcss.com/
 * 视频 ?  http://www.icoolxue.com/album/show/78
 *
 * TODO:
-*   2.响应式布局(responsive) --
+*   2.
 *   3.目前最新版本是3.2(里面是 bootstrap.css 和 bootstrap-theme.css); 而老的2.3版本里面是 bootstrap.css 和 bootstrap-responsive.css
 *     
 ******************************************************************************************************************************************/
@@ -24,14 +27,19 @@
 /******************************************************************************************************************************************
 * 移动设备优先策略
 *   内容 -- 决定什么是最重要的
-*   布局 -- 优先设计更小的宽度
-*            基础的 CSS 是移动设备优先，媒体查询是针对于平板电脑、台式电脑,有条件的CSS规则,允许基于视口大小移动、显示并隐藏内容。
-*            语法: @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) { ... }
-*              如: @media (min-width: @screen-sm-min) { 小型设备: 平板电脑，>= 768px }
-*                   @media (min-width: @screen-md-min) { 中型设备: 台式电脑，>= 992px }
-*                   @media (min-width: @screen-lg-min) { 大型设备: 大台式电脑，>=1200px }
+*   响应式布局(responsive) -- 可根据屏幕宽度自动调节UI布局
+*     基础的 CSS 是移动设备优先，媒体查询是针对于平板电脑、台式电脑,有条件的CSS规则,允许基于视口大小移动、显示并隐藏内容。
+*     语法: @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) { ... }
+*       如:  @media (min-width: @screen-xs-min) { 超小型设备: <768px }
+*            @media (min-width: @screen-sm-min) { 小型设备: 平板电脑，>= 768px }
+*            @media (min-width: @screen-md-min) { 中型设备: 台式电脑，>= 992px }
+*            @media (min-width: @screen-lg-min) { 大型设备: 大台式电脑，>=1200px }
 *          
 *   渐进增强 -- 随着屏幕大小的增加而添加元素
+******************************************************************************************************************************************/
+
+/******************************************************************************************************************************************
+*   
 ******************************************************************************************************************************************/
 
 /******************************************************************************************************************************************
@@ -70,16 +78,29 @@
 /******************************************************************************************************************************************
 * Bootstrap CSS -- 预定义了很多默认的类型(即只要包含了 bootstrap.css, 就会覆盖默认的属性)
 *   class
+*     btn|btn-* : 指定按钮的各种风格和大小
+*     caret: 使用插入符表示下拉功能和方向。如 <p>下拉菜单<span class="caret"></span></p>
+*     center-block： 设置元素为 display:block 并居中显示
+*     checkbox-inline: 控制复选框在同一行
+*     clearfix: 清除浮动
 *     col-*-* : 用于表格系统,其中的星号(*)用于指定 设备类型(小型sm, 中型md, 大型lg)和列数,如 col-sm-3 col-md-6, col-lg-8 等,
 *        多个col-* 类型可以修饰同一个元素, 系统会根据窗体大小自动应用合适的类型。一般来说，同一行中的列数和应该为12?
 *     container|container-fluid : 容器,用于包裹页面上的内容，确保居中和最大宽度。注意: 默认情况下不可嵌套.
+*     has-success|has-error|has-warning : 验证状态
 *     img-responsive : 响应式图像, 内联形式呈现(display:inline-block), 图像按比例缩放,不超过其父元素的尺寸
-*     pagination
+*     img-rounded|img-circle: 图片圆角(border-radius:6px)|圆形图片(border-radius:500px)
+*     img-thumbnail:添加一些内边距（padding）和一个灰色的边框
+*     input-*-* : 用于设置表单输入项在表格系统中的高度和宽度
+*     navbar-left|navbar-right :对齐导航栏中的组件
+*     pull-left|pull-right: 素浮动到左边|右边
+*     radio-inline: 控制单选框在同一行
 *     row|row-fluid : 网格系统中的行
 *     small : 设置文本为父文本大小的 85%。可以用于 h1~h6 的标题内部，颜色会浅一些。也可以通过 <small> 标签指定子元素
-*     text-success|text-info|text-warning|text-danger -- 用于文本
+*     text-success|text-info|text-warning|text-danger: 用于文本验证状态,
+*     text-muted|text-primary: 控制文字颜色
 *     table|table-xxx : 用于表格的, 如 table(表格有内边距和水平分割条), table-striped(间隔条纹), table-bordered(边框), table-hover(鼠标悬停), table-condensed(紧凑表格,内边距减半)
 *     table-responsive: 响应式表格,一般用在包含<table>的<div>中, 可以让表格水平滚动以自动适应小型设备(<768px),在大于768px宽的设备上查看时看不到差别
+*     visible-*-*|hidden: 控制对不同屏幕大小的可见性, 第一个星号(*)是屏幕类型(xs|sm|md|lg), 第二个星号(*)指定display属性(block|inline|inline-block)
 ******************************************************************************************************************************************/
 
 
@@ -88,15 +109,32 @@
 *   1.行必须放置在 .container 内，以便获得适当的对齐(alignment)和内边距(padding)
 *   2.内容应该放置在列内，且唯有列可以是行的直接子元素
 *
+* 表单(Form)
+*   1.向父 <form> 元素添加 role="form";
+*     内联form: 指定 class .form-inline , 向左对齐，标签并排;
+*     水平form: 指定 class .form-horizontal, 向标签添加 class .control-label
+*   2.把标签和控件放在一个带有 class .form-group 的 <div> 中获取最佳间距
+*   3.向所有的文本元素 <input>、<textarea> 和 <select> 添加 class .form-control
 *
-* 内置Web组件:
-*   下拉菜单
-*   按钮组
-*   按钮下拉菜单
-*   导航
-*   导航条
-*   面包屑
-*   分页
+* 字体图标(Glyphicons) -- 在Web项目中使用的图标字体,在 fonts 目录下的 *.eot,*.svg,*.ttf, *.woff 等文件
+*   http://www.w3cschool.cc/try/demo_source/bootstrap3-glyph-icons.htm
+*   
+*
+* 内置布局组件(主要是定义了特殊的 CSS class):
+*   下拉菜单(class=dropdown): 以列表格式显示链接的上下文菜单。
+*     在 class=dropdown 内加入上下菜单即可,一般是 button(class=dropdown-toggle) + ul(class=dropdown-menu, role=menu) + li(role=menuitem)
+*   按钮组(btn-group|btn-group-vertical|btn-toolbar): 多个按钮被堆叠在同一行或列上。
+*     class=btn-toolbar + class=btn-group + class=btn 
+*   按钮下拉菜单: .btn-group + button(.caret, data-toggle="dropdown") + .dropdown-menu
+*   输入框组:可以向基于文本的输入框添加作为前缀和后缀的文本或按钮
+*     div(.input-group) + span(.input-group-addon) + input
+*   导航: 标签式的导航菜单 ul(.nav .nav-tabs[表格式]|.nav-pills[胶囊式]|.nav-stacked[堆栈式] ) + li
+*     如加上 .nav-justified  表两端对齐
+*   导航栏: nav(.navbar .navbar-default role=navigation) + div(.navbar-header) + a(navbar-brand) + ul(.nav .navbar-nav) + li(
+*   面包屑导航(Breadcrumbs):基于网站层次信息的显示方式
+*     ol(.breadcrumb) + li
+*   分页: ul(.pagination) + li
+*   翻页: ul(.pager) + li
 *   排版
 *   缩略图
 *   警告对话框
