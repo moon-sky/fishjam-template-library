@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "FTLNetTester.h"
 #include <ftlNet.h>
-#include <ftlSocket.h>
+//#include <ftlSocket.h>
 //#include <tuple>
 
 void CFTLNetTester::test_FNetServerT()
@@ -97,4 +97,13 @@ void CFTLNetTester::test_WinSocket()
             wsaData.lpVendorInfo ?  CA2T(wsaData.lpVendorInfo)  : TEXT("No VendorInfo"));
         WSACleanup();
     }
+}
+
+void CFTLNetTester::test_UrlMonFunctions()
+{
+    HRESULT hr = E_FAIL;
+    CHAR szUserAgent[4096] = {0};
+    DWORD dwSize = _countof(szUserAgent) - 1;
+    COM_VERIFY(ObtainUserAgentString(0, szUserAgent, &dwSize));
+    FTLTRACEA("userAgent=%s\n", szUserAgent);
 }

@@ -1507,7 +1507,7 @@ namespace FTL
                 TEXT("m_CaretBlinkingEnabled=%d, ")
 #  endif /* WINVER >= 0x0501 */
 #endif /* WINVER >= 0x0500 */
-                ,
+                TEXT("%s"),
                 m_cxScreen, m_cyScreen,
                 m_cxVScroll, m_cyHScroll,
                 m_cyCaption, m_cxBorder, m_cyBorder,
@@ -1567,10 +1567,12 @@ namespace FTL
                 m_RemoteControl,
 #  endif /* WINVER >= 0x0501 */
 #  if(WINVER >= 0x0501)
-                m_CaretBlinkingEnabled
+                m_CaretBlinkingEnabled,
 #  endif /* WINVER >= 0x0501 */
 #endif /* WINVER >= 0x0500 */
-                );
+
+                _T("")      //empty, to avoid macro error
+              );
         }
 
         return m_strFormater.GetString();

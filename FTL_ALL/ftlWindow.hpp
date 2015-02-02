@@ -3416,26 +3416,41 @@ namespace FTL
             int nItemCount = ::GetMenuItemCount(hMenu);
             API_ASSERT(nItemCount != -1);
 
-            FTLTRACE(TEXT("itemCount=%d -- MenuInfo: Mask=0x%x, dwStyle=0x%x, cyMax=%d, hbrBack=0x%x, helpId=%d, menuData=0x%x\n"),
-                nItemCount, menuInfo.fMask, menuInfo.dwStyle, menuInfo.cyMax, menuInfo.hbrBack,
-                menuInfo.dwContextHelpID, menuInfo.dwMenuData);
+            FTLTRACE(TEXT("itemCount=%d\n"), nItemCount);
+            //MenuInfo: Mask=0x%x, dwStyle=0x%x, cyMax=%d, hbrBack=0x%x, helpId=%d, menuData=0x%x\n"),
+            //    nItemCount, menuInfo.fMask, menuInfo.dwStyle, menuInfo.cyMax, menuInfo.hbrBack,
+            //    menuInfo.dwContextHelpID, menuInfo.dwMenuData);
 
             if (bDumpChild && nItemCount > 0)
             {
                 CFMemAllocator<TCHAR> menuText;
 
-                UINT fCheckMask =  MIIM_STRING;
+                UINT fCheckMask =  MIIM_STRING | MIIM_SUBMENU; 
                 // MIIM_STATE | MIIM_ID | MIIM_SUBMENU | MIIM_CHECKMARKS | MIIM_TYPE | MIIM_DATA ; 
                 // MIIM_BITMAP | MIIM_FTYPE;
                 for (int i = 0; i < nItemCount; i++)
                 {
                     API_VERIFY(_GetMenuText(hMenu, i , MF_BYPOSITION, menuText));
 
+                    UINT nState = 0;
                     MENUITEMINFO menuItemInfo = { sizeof(menuItemInfo) };
                     menuItemInfo.fMask = fCheckMask;
                     API_VERIFY(::GetMenuItemInfo(hMenu, i, TRUE, &menuItemInfo));
+                    API_VERIFY(-1 != (nState = ::GetMenuState(hMenu, i , MF_BYPOSITION)));
                     if (bRet)
                     {
+                        CFStringFormater formaterSpace(nLevel + 1);
+                        formaterSpace.AppendFormat(TEXT(""));
+                        for (int j = 0; j < nLevel; j++)
+                        {
+                            formaterSpace.AppendFormat(TEXT(" "));
+                        }
+                        CFStringFormater InfoFormater, stateFormater;
+                        
+                        FTLTRACE(TEXT("%sItem[%d]:%s, Info=%s, state=%s\n"), formaterSpace.GetString(), i, menuText.GetMemory(), 
+                            GetMenuItemInfoString(InfoFormater, menuItemInfo), 
+                            GetMenuStateString(stateFormater, nState));
+                        
                         if (menuItemInfo.hSubMenu != NULL)
                         {
                             DumpMenuInfo(menuItemInfo.hSubMenu, bDumpChild, ++nLevel);
@@ -3445,9 +3460,9 @@ namespace FTL
                             //((menuItemInfo.fType & MFT_SEPARATOR) == MFT_SEPARATOR)
                             //normal menu or separator
 
-                            FTL::CFStringFormater formater;
-                            FTLTRACE(TEXT("Item:%s, %s\n"), menuText.GetMemory(), 
-                                GetMenuItemInfoString(formater, menuItemInfo));
+                            //FTL::CFStringFormater formater;
+                            //FTLTRACE(TEXT("Item:%s, %s\n"), menuText.GetMemory(), 
+                            //    GetMenuItemInfoString(formater, menuItemInfo));
                         }
                     }
                 }
@@ -3460,8 +3475,8 @@ namespace FTL
     {
         CFStringFormater formaterMask;
 
-        formater.Format(_T("cbSize=%d, Mask=%s"), 
-            menuItemInfo.cbSize, 
+        formater.Format(_T("Mask=%s"), 
+            //menuItemInfo.cbSize, 
             GetMenuItemInfoMaskString(formaterMask, menuItemInfo.fMask));
 
         if (MIIM_FTYPE == (menuItemInfo.fMask & MIIM_FTYPE))
@@ -3546,11 +3561,35 @@ namespace FTL
 
     LPCTSTR CFMenuUtil::GetMenuItemInfoStateString(FTL::CFStringFormater& formater, UINT fState, LPCTSTR pszDivide/* = TEXT("|")*/)
     {
+        formater.AppendFormat(TEXT(""));
         //UINT    oldState = fState;
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MFS_DISABLED, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MFS_CHECKED, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MFS_HILITE, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MFS_DEFAULT, pszDivide);
+
+        FTLASSERT(0 == fState);
+        return formater.GetString();
+    }
+
+    LPCTSTR CFMenuUtil::GetMenuStateString(FTL::CFStringFormater& formater, UINT fState, LPCTSTR pszDivide /* = TEXT("|")*/)
+    {
+        
+#pragma TODO(GetMenuState is error for MF_SEPARATOR)
+        ATLASSERT(FALSE); //
+        UINT nSubItemCount = HIBYTE(fState);        //
+        fState = LOBYTE(fState);
+        formater.AppendFormat(TEXT("SubItemCount=%d,"), nSubItemCount);  //当有 MF_SEPARATOR 时, 会误认为是 8 -- 设计有问题
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_GRAYED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_DISABLED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_CHECKED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_POPUP, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_MENUBARBREAK, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_MENUBREAK, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_HILITE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_OWNERDRAW, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, fState, MF_SEPARATOR, pszDivide);
 
         FTLASSERT(0 == fState);
         return formater.GetString();
@@ -3564,7 +3603,14 @@ namespace FTL
         API_VERIFY(nStringLen >= 0);
         if (bRet)
         {
-            API_VERIFY(::GetMenuString(hMenu, nIDItem, menuText.GetMemory(nStringLen + 1), nStringLen + 1, nFlags) > 0);
+            //MF_SEPARATOR
+            API_VERIFY_EXCEPT1(::GetMenuString(hMenu, nIDItem, menuText.GetMemory(nStringLen + 1), nStringLen + 1, nFlags) > 0, ERROR_SUCCESS);
+            if (!bRet && ERROR_SUCCESS == GetLastError())
+            {
+                //TCHAR* pMenuText = menuText.GetMemory(2);
+                //lstrcpyn(pMenuText, _T("-"), 1);
+                bRet = TRUE;
+            }
         }
         else
         {

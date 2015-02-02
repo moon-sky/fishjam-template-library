@@ -743,6 +743,7 @@ namespace FTL
         FTLINLINE static LPCTSTR GetMenuItemInfoMaskString(FTL::CFStringFormater& formater, UINT fMask, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetMenuItemInfoTypeString(FTL::CFStringFormater& formater, UINT fType, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetMenuItemInfoStateString(FTL::CFStringFormater& formater, UINT fState, LPCTSTR pszDivide = TEXT("|"));
+        FTLINLINE static LPCTSTR GetMenuStateString(FTL::CFStringFormater& formater, UINT fState, LPCTSTR pszDivide = TEXT("|"));
 
     private:
         FTLINLINE static BOOL _GetMenuText(HMENU hMenu, UINT nIDItem, UINT nFlags, CFMemAllocator<TCHAR>& menuText);
