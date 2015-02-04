@@ -28,7 +28,7 @@
 *         默认(0x1);图象(0x2);控件(0x4);表(0x8);被选文字(0x10);锚点(0x20)
 *   2.添加定制菜单项到<工具>菜单下，如 NetAnts, FalshGet，MSN Message Service 
 *     a.创建唯一的GUID，并以其为名称加入到 HKLM\SOFTWARE\Microsoft\Internet Explorer\Extensions\ 下,
-*     b.在该子键下创建一个名为 CLSID 的字符串值“{1FBA04EE-3024-11D2-8F1F-0000F87ABD16}”-- 固定值，用处是？
+*     b.在该子键下创建一个名为 CLSID 的字符串值“{1FBA04EE-3024-11D2-8F1F-0000F87ABD16}”-- IE工具条的类标识码
 *     c.MenuText--菜单项显示字串；MenuStatusBar--菜单高亮时状态栏显示的帮助字串
 *     d.要响应菜单命令有三种实现方式: Exe文件，脚本文件，COM对象
 *       (1).Exe -- 在子键下添加名为Exec的值为Exe文件的路径；
@@ -44,7 +44,7 @@
 *       BandCLSID -- 要打开的浏览栏的CLSID
 *       MenuStatusBar-- 显示的文本
 *       MenuText -- 显示的文本
-*   4.添加定制的浏览栏，工具栏 -- 实现三个基本接口IDeskBand, IObjectWithSite, IpersistStream，可以扩展实现IContextMenu
+*   4.添加定制的浏览栏，工具栏 -- 实现三个基本接口 IDeskBand, IObjectWithSite, IpersistStream，可以扩展实现IContextMenu
 *     有四种可定制的栏(区别在于组件分类注册，可以通过 IMPLEMENTED_CATEGORY 宏注册？)：
 *       水平浏览栏 -- CATID_CommBand，
 *       垂直浏览栏 -- CATID_InfoBand，
@@ -60,7 +60,8 @@
 *     b.必须实现 IObjectWithSite 接口，在 SetSite 中，可以获取IE实例的 IWebBrowser2 接口，并获取当前IE的所有信息。
 *       要截获事件，需获取 IConnectionPointerContainer 接口，再 FindConnectionPoint (如 DIID_DWebBrowserEvents2),
 *       找到某一事件对应的出接口的连接点对象，并用Advise注册(然后可截获浏览器的大量事件，如浏览新地址，前进、后退、生成新窗口等)
-*    
+*
+* 
 ************************************************************************************************/
 
 /**************************************************************************************************************

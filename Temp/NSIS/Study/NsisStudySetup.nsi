@@ -56,11 +56,11 @@ Function LicensePageLeave
 FunctionEnd
 
 Function InstfilesPageShow
-  MessageBox MB_OK "InstfilesPageShow"
+  ;MessageBox MB_OK "InstfilesPageShow"
 FunctionEnd
 
 Function InstfilesPageLeave
-  MessageBox MB_OK "InstfilesPageLeave"
+  ;MessageBox MB_OK "InstfilesPageLeave"
 FunctionEnd
 
 Function useInstallOptionsDemo
@@ -244,7 +244,7 @@ Section "MainSection" SEC01
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\NsisStudy.lnk" "$INSTDIR\NsisStudy.nsh"
   !insertmacro MUI_STARTMENU_WRITE_END
   
-  MessageBox MB_OK "installing... "
+  ;MessageBox MB_OK "installing... "
 SectionEnd
 
 Section "Misc" SEC02

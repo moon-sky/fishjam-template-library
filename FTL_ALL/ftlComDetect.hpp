@@ -2613,8 +2613,13 @@ namespace FTL
             DETECT_INTERFACE_ENTRY_IID(IDefViewFrame, IID_IDefViewFrame)
             DETECT_INTERFACE_ENTRY_IID(IDefViewID, IID_IDefViewID)
             //DETECT_INTERFACE_ENTRY(IDefViewSafety)
+
+            //IE 工具条需要实现的接口, 从IDockingWindow继承,增加了GetBandInfo, 其实现体中返回Band的信息(如高宽范围,Title,背景等)
+            //TODO: IDeskBand2 用于出现玻璃效果
             DETECT_INTERFACE_ENTRY_IID(IDeskBand, IID_IDeskBand)
             DETECT_INTERFACE_ENTRY(IDeskBar)
+
+            //用于显示、隐藏和关闭窗体
             DETECT_INTERFACE_ENTRY_IID(IDockingWindow, IID_IDockingWindow)
             DETECT_INTERFACE_ENTRY_IID(IDockingWindowFrame, IID_IDockingWindowFrame)
             DETECT_INTERFACE_ENTRY_IID(IDockingWindowSite, IID_IDockingWindowSite)

@@ -19,7 +19,7 @@
 *   DECLSPEC_UUID -- class DECLSPEC_UUID("74740E11-DDD5-4B62-A739-32A56DD60933") FtlLogAddinLib;
 *   DECLARE_LIBID(LIBID_XXXX) -- CXXXModule 中定义整个COM组件的 ATL::CAtlModule::m_libid 变量
 *   DECLARE_REGISTRY_APPID_RESOURCEID -- CXXXModule 中
-*   DECLARE_PROTECT_FINAL_CONSTRUCT -- 有什么用?
+*   DECLARE_PROTECT_FINAL_CONSTRUCT -- 有什么用? TODO:用于在 FinalConstruct 中聚合对象的引用计数? 一般是必加的?
 *   DECLARE_CLASSFACTORY_SINGLETON(COM类) -- 声明COM服务为单实例，所有的客户端会连接到同一个实例
 *   OBJECT_ENTRY_AUTO(CLSID_XXX, 实现类) -- 在类定义体外部声明，可自动实现相关的类工厂等
 *     旧的映射方式为 BEGIN_OBJECT_MAP =>OBJECT_ENTRY=> END_OBJECT_MAP
@@ -246,7 +246,7 @@
 *         宏中会设置 pEntries->dw 的值为 (DWORD)((x*)(x2*)((_ComMapClass*)8))-8，然后通过 
 *         IUnknown* pUnk = (IUnknown*)((int)pThis+pEntries->dw) 找到对应分支的虚函数表指针
 *           <== 菱形继承时，多个虚函数表指针和内存块顶端之间的偏移量
-*       COM_INTERFACE_ENTRY_IID(想要的IID, 实际会返回的接口) -- ???(可用于聚合?)
+*       COM_INTERFACE_ENTRY_IID(想要的IID, 实际会返回的接口类型) -- ???(可用于聚合?)
 *       COM_INTERFACE_ENTRY_TEAR_OFF(IID_IMyTearOff, CMyInnerTearOff) -- 把很少用到的IID_IMyTearOff接口
 *         放在一个单独的组件(CMyInnerTearOff)中实现，仅当查询到这个接口时，才创建这个组件，
 *         并且当它的引用计数减为0时就会被释放掉。注意：内部的 CMyInnerTearOff 需要从 CComTearOffObjectBase 继承
@@ -280,6 +280,9 @@
 *   7.实现组件类别注册(如IE工具栏的类型)：BEGIN_CATEGORY_MAP -> IMPLEMENTED_CATEGORY -> END_CATEGORY_MAP
 *       IMPLEMENTED_CATEGORY(CATID_SafeForScripting)  <== 使用脚本时，添加脚本安全组件类型，可以去掉“不安全交互”的提示
 *       IMPLEMENTED_CATEGORY(CATID_SafeForInitializing)
+*       IMPLEMENTED_CATEGORY(CATID_InfoBand) <== IE中的垂直浏览栏?
+*       IMPLEMENTED_CATEGORY(CATID_CommBand) <== IE中的水平浏览栏
+*       IMPLEMENTED_CATEGORY(CATID_DeskBand) <== 桌面工具栏
 *   8.服务注册？：BEGIN_SERVICE_MAP -> SERVICE_ENTRY -> END_SERVICE_MAP
 *
 *   A.MFC中 BEGIN_EVENTSINK_MAP -> ON_EVENT -> END_EVENTSINK_MAP

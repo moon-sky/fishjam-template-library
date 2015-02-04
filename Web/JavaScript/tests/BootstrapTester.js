@@ -5,7 +5,7 @@
 *
 * 最佳实践
 *   1.在线的可视化布局: http://www.w3cschool.cc/try/bootstrap/layoutit/
-*     Pingendo: 本地Java程序
+*     Pingendo(http://www.pingendo.com/): 本地Java程序
 *     TODO: a.官网是否有工具? b.是否有本地的工具?  http://www.w3cschool.cc/bootstrap/bootstrap-ui-editor.html
 *       
 *     bootstrap ui 编辑器,可直接成bootstrap布局代码
@@ -15,7 +15,7 @@
 *   1.data-toggle -- TODO: 进行数据状态的切换，如 button, buttons, collapse(), dropdown(下拉菜单),modal(), tab(), pill
 *
 * 官方网站 --  http://getbootstrap.com/ 
-* 中文网站 -- http://www.bootcss.com/
+* 中文网站 -- http://www.bootcss.com/indexAction.java
 * 视频 ?  http://www.icoolxue.com/album/show/78
 *
 * TODO:
