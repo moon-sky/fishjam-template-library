@@ -3,7 +3,7 @@
 class CFanxianTaoToolBar;
 class CFanxianBand;
 
-class IToolbar
+class IFToolbar
 {
 public:
 	virtual HWND GetToolbarWnd() = 0;

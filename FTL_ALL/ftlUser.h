@@ -19,7 +19,7 @@
 *   DEP -- 数据执行保护
 *   NTLM -- NT LAN Manager(win2000早期版本中的一种验证身份方式), 基于一种"提问-答复"机制来进行客户端验证
 *   MIC(Mandatory Integrity Control) -- 强制完整性控制。Vista中的所有安全性对象和进程都有一个完整性级别，
-*     完整性级别(Integrity Level -- IL)低的进程不能修改(可以读取?)级别高的文件或注册表表项。
+*     完整性级别(Integrity Level -- IL)低的进程不能修改(可以读取)级别高的文件或注册表表项。
 *     注意：Win2K/XP 下，安全子系统只把进程的访问令牌和资源的访问控制列表进行匹配比较，以确认该进程是否具有访问该资源的权限。
 *     1.Untrusted(非信任级别) -- 被设置给匿名空连接会话, TODO: Chrome.exe 的部分进程显示为这个
 *     2.Low(低) -- 保护模式下的IE浏览器, 以 Untrusted 的系统权限运行程序，只能存取低存取级别的路径位置，如 "Temporary Internet Files\Low"。
@@ -30,7 +30,9 @@
 *     4.High(高) -- 真正的 administrator用户 或提升权限后的程序
 *     5.System(系统) -- 内核级别的Windows文件
 *     6.保护进程级别 -- 级别最高，只有在系统需要的时候才会被使用
-*     
+*     7.AppContainer -- Win8 引入,是个沙盒机制，低的进程不能读写(注意:已经不能读了)级别高的文件或注册表项。
+*             所有Metro-sytle的应用都运行在其中
+*
 *   应用文件和注册虚拟化(虚拟重定向) -- 对指定位置进行读写的时候会被重定向到每个用户的虚拟化的区域，
 *     在以下位置建立了一个和"用户配置文件夹"完全一致的且完整性级别为"Low"的目录层次:
 *     %LocalAppData%\Microsoft\Windows\Temporary Internet Files\Virtualized\XXXX -- XXX部分即是应该的 C:\ProgramData\MyProgramData 等

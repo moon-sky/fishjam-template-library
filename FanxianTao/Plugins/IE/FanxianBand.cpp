@@ -280,6 +280,7 @@ STDMETHODIMP CFanxianBand::SetSite(IUnknown *pUnkSite)
 
 #ifdef DEBUG
 		FormatMessageBox(NULL, TEXT("SetSite"), MB_OK, TEXT("SetSite for 0x%p"), pUnkSite);
+        FTLASSERT(CONNECT_E_NOCONNECTION == 0x80040200)
 #endif 
 		COM_DETECT_INTERFACE_FROM_REGISTER(pUnkSite);
 
@@ -311,7 +312,7 @@ STDMETHODIMP CFanxianBand::SetSite(IUnknown *pUnkSite)
 	}
 	else
 	{
-		COM_VERIFY_EXCEPT1(RegisterEventHandler(FALSE), 0x80040200);
+		COM_VERIFY_EXCEPT1(RegisterEventHandler(FALSE), CONNECT_E_NOCONNECTION);
 	}
 	if(SUCCEEDED(hr))
 	{

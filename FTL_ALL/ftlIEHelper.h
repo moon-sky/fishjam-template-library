@@ -13,8 +13,44 @@
 
 //理解在保护模式下Internet Explorer的工作方式 --  http://blog.csdn.net/xt_xiaotian/article/details/5336809
 //  原文:https://msdn.microsoft.com/zh-cn/library/bb250462(en-us,VS.85).aspx
-
 //IEBlog 简体中文 http://blogs.msdn.com/b/ie_cn/
+//允许通过Fiddle调试Metro风格程序的工具: http://blogs.msdn.com/b/fiddler/archive/2011/12/10/fiddler-windows-8-apps-enable-loopback-network-isolation-exemption.aspx
+//CATID_AppContainerCompatible
+
+//Cross-Site-Request-Forgery (CSRF)
+
+/****************************************************************************************************************************
+* App capability declarations -- https://msdn.microsoft.com/en-us/library/windows/apps/hh464936.aspx
+*   internetClient
+*   location
+*   sharedUserCertificates
+*   
+*   internetClientServer -- 可以作为服务器,能接收连接请求
+*   privateNetworkClientServer -- 可以访问Intranet资源?
+*   enterpriseAuthentication
+*   musicLibrary
+*   picturesLibrary
+*   videosLibrary
+*   documentsLibrary
+*   
+* 
+****************************************************************************************************************************/
+
+/****************************************************************************************************************************
+* TODO: Enhanced Protected Mode 和  的区别?
+* 保护模式(Protected Mode): Internet选项=>安全=>选择区域后"启用保护模式"
+*   受限制的站点 -- 限制最多
+*   Internet -- 限制较多, 包括通过 127.0.0.1 访问时
+*   本地Intranet(Local Intranet) -- 限制较少(Medium), 包括通过 localhost 访问时
+*   受信任的站点(Trusted Zones) -- 限制最少
+* 增强保护模式(Enhanced Protected Mode):Internet选项=>高级=>安全=>启用增强保护模式
+*   所有的Content Process 为64Bit, 且运行在保护模式, Win8以后运行在AppContainer中.
+*   不能接收连接请求，不能连接本地服务(loopback) -- 不能通过Fiddler调试
+* AppContainer(windows_ie_ac_001) -- Win8以后, 启用EPM时 Content Process的一种沙盒(sandboxed)表现形式?访问 Cookies/Cache 时可能出问题
+*   声明了 internetClient, location, sharedUserCertificates 的能力?
+* LowIL
+****************************************************************************************************************************/
+
 
 /****************************************************************************************************************************
 * TODO:
@@ -33,12 +69,15 @@
 * http://blogs.msdn.com/b/ieinternals/archive/2012/03/23/understanding-ie10-enhanced-protected-mode-network-security-addons-cookies-metro-desktop.aspx
 *
 * Win8 -- 两种不同的用户接口，需要分别运行不同类型的应用程序（如IE有对应的 Metro style 和 Desktop style)
-*   1.经典 -- 桌面应用程序
-*   2.Metro -- 专门的 Metro 程序或 Metro-style enabled desktop browsers (MEDB).Metro模式下的IE只有Flash插件，不能安装或运行其他的任何插件?
+*   1.经典 -- 桌面应用程序, 64Bit上 64Bit Manager + 32Bit Content Process
+*   2.Metro -- 专门的 Metro 程序或 Metro-style enabled desktop browsers (MEDB), 运行在AppContainer中。通过 HTML+JavaScript 开发.
+*              Metro模式下的IE只有Flash,Silverlight,Java 插件?
+*              不能安装或运行其他的任何插件(Boolbar, BHO, MIME Handler, URLMon Protocol Handler,ActiveX Controls 等)
+*              64Bit上只有64Bit Content Process, 
 *     WinRT -- ARM平台上的Window8，只能运行纯粹的Metro程序，不能使用Win32API，需要使用专门的 WinRT API?
 *
 * <iepmapi.h> -- IE Protected Mode API, 其中有 IEIsProtectedModeProcess 等函数的定义(但考虑到 WinXP 等得运行，最好动态加载)
-* EPM(Enhanced Protected Mode) -- 启用后很多插件都无法正确运行。Metro类型的始终运行于EPM, Desktop类型的可选(Internet Options->Advanced),
+* EPM(Enhanced Protected Mode) -- IE10加入, 启用后很多插件都无法正确运行。Metro类型的始终运行于EPM, Desktop类型的可选(Internet Options->Advanced),
 *   Web网站的开发者在 Http Header 中通过"X-UA-Compatible:requiresActiveX=true" 选项要求plugin(即要求经典模式?)
 *   Win8.0默认Disabled, Win8.1默认Enabled, IE11后来又改为默认禁用
 * 
@@ -90,8 +129,12 @@
 *   桌面模式
 *   Windows UI 模式下的IE
 *   
-* 
-* IE中的多进程控制
+*
+* IE中的多进程控制: 
+*   Manager|Frame process -- Medium(64Bit)
+*   Content|Tab Process -- Low(Protected Mode) or Medium(32Bit, Not Protected Mode or Intranet)
+*     所有的 HTML, ActiveX, Toolbar(界面上似乎是Manager process) 等都是运行在 Content Process 中的
+*
 *   HKLM或HKCR \SOFTWARE\Microsoft\Internet Explorer\MAIN\TabProcGrowth  -- REG_SZ, 为 0 表示单进程? 为 Medium 表示多进程?
 *
 * 相关函数

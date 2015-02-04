@@ -2,13 +2,13 @@
 
 #include "FanxiantaoDefine.h"
 
-class CFanxianTaoToolBar: public CWindowImpl<CFanxianTaoToolBar> , public IToolbar
+class CFanxianTaoToolBar: public CWindowImpl<CFanxianTaoToolBar> , public IFToolbar
 {
 public:
 	CFanxianTaoToolBar(void);
 	virtual ~CFanxianTaoToolBar(void);
 
-	//IToolbar
+	//IFToolbar
 	virtual HWND GetToolbarWnd();
 
 	BOOL CreateToolbar(HWND hParentWnd, CFanxianBand* pSrchBand);

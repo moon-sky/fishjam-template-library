@@ -3,6 +3,7 @@
 !include "NsisStudy.nsh"
 !include "WinMessages.nsh"
 !include "LogicLib.nsh"
+!include "nsDialogs.nsh"
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "NsisStudy"
@@ -30,6 +31,11 @@ SetCompressor lzma
 !include "MUI.nsh"
 
 ;Control Functions
+Function LicensePageShow
+  ;${NSD_CreateCheckbox}    50u 50u 20u 10u "fishjam createcheckbox"
+  ;MessageBox MB_OK "in LicensePageShow $R0 ~ $R9"
+FunctionEnd
+
 Function LicensePageLeave
   ;License 页面显示时候进行初始化(TODO: 似乎找不到 1034 控件 -- Accept 的 RadioButton )
   ;MessageBox MB_OK "In LicensePagePre"
@@ -86,6 +92,7 @@ Page custom useInstallOptionsDemo "" "--显示installOptionsDemo对话框"
 ; License page
 !define MUI_PAGE_HEADER_TEXT "MUI_PAGE_HEADER_TEXT in LICENSE"
 !define MUI_PAGE_HEADER_SUBTEXT "MUI_PAGE_HEADER_SUBTEXT in LICENSE"
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW  LicensePageShow
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE LicensePageLeave
 ;LicenseForceSelection radiobuttons "accept_text" "decline_text"
 ;!define MUI_LICENSEPAGE_CHECKBOX  ;MUI_LICENSEPAGE_RADIOBUTTONS
