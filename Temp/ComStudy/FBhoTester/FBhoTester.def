@@ -1,0 +1,10 @@
+; FBhoTester.def : Declares the module parameters.
+
+LIBRARY      "FBhoTester.DLL"
+
+EXPORTS
+	DllCanUnloadNow		PRIVATE
+	DllGetClassObject	PRIVATE
+	DllRegisterServer	PRIVATE
+	DllUnregisterServer	PRIVATE
+	DllInstall		PRIVATE

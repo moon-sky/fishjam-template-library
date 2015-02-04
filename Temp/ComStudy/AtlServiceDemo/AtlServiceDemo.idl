@@ -1,0 +1,39 @@
+// AtlServiceDemo.idl : IDL source for AtlServiceDemo
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (AtlServiceDemo.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(966AC91F-3404-436f-97FA-F8455FA9D8A5),
+	dual,
+	nonextensible,
+	helpstring("IAtlServiceDemoObject Interface"),
+	pointer_default(unique)
+]
+interface IAtlServiceDemoObject : IDispatch{
+	[id(1), helpstring("method Multi")] HRESULT Multi([in] LONG a, [in] LONG b, [out] LONG* pResult);
+};
+
+[
+	uuid(79A3B135-6C0A-4571-B022-713968207C75),
+	version(1.0),
+	helpstring("AtlServiceDemo 1.0 Type Library")
+]
+library AtlServiceDemoLib
+{
+	importlib("stdole2.tlb");
+   	[
+		uuid(AC987C31-48DC-49d4-B46F-B73C6E2E213D),
+		helpstring("AtlServiceDemoObject Class")
+	]
+	coclass AtlServiceDemoObject
+	{
+		[default] interface IAtlServiceDemoObject;
+	};
+
+};

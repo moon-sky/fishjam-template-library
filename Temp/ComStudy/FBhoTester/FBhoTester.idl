@@ -1,0 +1,46 @@
+// FBhoTester.idl : IDL source for FBhoTester
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (FBhoTester.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(6EA9C2EF-8B35-446F-BD72-99A4AEB7AFB8),
+	dual,
+	nonextensible,
+	helpstring("IFBhoObject Interface"),
+	pointer_default(unique)
+]
+interface IFBhoObject : IDispatch{
+};
+[
+	uuid(62252A8A-CEEC-44F4-85F0-9F36952D2E6F),
+	version(1.0),
+	helpstring("FBhoTester 1.0 Type Library")
+]
+library FBhoTesterLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(8B1BED32-1B74-4D18-BDC8-B57056A8C04D),
+		helpstring("_IFBhoObjectEvents Interface")
+	]
+	dispinterface _IFBhoObjectEvents
+	{
+		properties:
+		methods:
+	};
+	[
+		uuid(B42B4492-2F3C-4090-83E1-A52B2E3D74F0),
+		helpstring("FBhoObject Class")
+	]
+	coclass FBhoObject
+	{
+		[default] interface IFBhoObject;
+		[default, source] dispinterface _IFBhoObjectEvents;
+	};
+};

@@ -1,0 +1,250 @@
+// ATLCom.idl : IDL source for ATLCom
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (ATLCom.tlb) and marshalling code.
+
+// 此文件将由 MIDL 工具处理以
+// 产生类型库(ATLCom.tlb)和封送处理代码。
+
+//引入 IUnknown 和ATL已经定义的其它接口描述文件。import 类似与 C 语言中的 #include
+
+cpp_quote("/////////////////////////////////////////////")
+cpp_quote("//     fishjam Com Study Demo Project      //")
+cpp_quote("/////////////////////////////////////////////")
+
+#include "olectl.h"
+import "oaidl.idl";
+import "ocidl.idl";
+
+
+////////////////////// 手工加入用于通知的回调接口 IMyMathCallBack 接口 /////////////////////////
+[
+	object,
+	uuid(DB72DF86-70E9-4ABC-B2F8-5E04062D3B2E),	// 这个 IID 可以用 GUDIGEN.EXE 产生
+	helpstring("IMyMathCallBack 接口"),
+	pointer_default(unique)
+]
+interface IMyMathCallBack : IUnknown{
+	// 接口函数可以手工输入
+	// 也可以在 ClassView 上，鼠标右键点接口名后在弹出菜单上，用Add Method输入
+	[helpstring("方法Fire_Result")] HRESULT Fire_Result([in] LONG nResult);
+};
+
+//////////////////////////// 第一个 Custom 接口 IMyMath /////////////////////////////////////
+//一个接口的完整描述
+[
+    //object 表示本块描述的是一个接口。IDL文件是借用了PRC远程数据交换格式的说明方法
+	object,
+	//接口的 IID，这个值是 ATL 自动生成的，可以手工修改或用 guidgen.exe 产生
+    uuid(918585EA-2C08-4351-91F0-03DFA0E285CE), 
+	//dual,
+	//nonextensible,
+    oleautomation,          //使用标准的通用调度器
+	helpstring("IMyMath Interface"), //在某些软件或工具中，能看到这个提示
+	pointer_default(unique) //定义接口函数中参数所使用指针的默认属性
+]
+//接口派生自 IDispatch，如果是Custom接口，接口派生自 IUnknown
+interface IMyMath : IUnknown{
+    [helpstring("method Add")]      HRESULT Add([in] LONG n1, [in] LONG n2, [out,retval] LONG* pResult);
+
+    [helpstring("method Sub")]      HRESULT Sub([in] LONG n1, [in] LONG n2);    //使用事件来通知结果的方法
+    [helpstring("method Advise")]   HRESULT MyAdvise([in] IMyMathCallBack* pCallBack, [out,retval] LONG* pdwCookie);
+    [helpstring("method UnAdvise")] HRESULT MyUnAdvise([in] LONG dwCookie);
+    [helpstring("method LengthyComOperation")] HRESULT LengthyComOperation(LONG nTimeout);
+};
+
+//定义枚举(需要用 uuid 等说明，但结构就不需要？)
+typedef[v1_enum]   //v1_enum使得enum 在列集的时候不是以16位而是以32位进行传输
+[
+    uuid(31E0C88A-B55F-4bb7-889D-8BCA0569CFCC),
+    helpstring("Operation Type"),
+]
+enum mathOPERATION
+{
+    [helpstring("Add")]         mathAdd = 0x0001,
+    [helpstring("Subtract")]    mathSub = 0x0002,
+    [helpstring("Multiply")]    mathMul = 0x0003,
+    [helpstring("Divide")]      mathDiv = 0x0004,
+}mathOPERATION;
+
+
+//定义联合 
+typedef [switch_type(short)] union _MY_UNION_TYPE {
+	 [case(24)] float   fMays; 
+	 [case(25)] double  dMcCovey;
+	 [default] ; 
+}MY_UNION_TYPE; 
+//使用示例： HRESULT Foo([in] short shNo, [in]MY_UNION_TYPE un);
+
+
+//定义结构(不像枚举，不需要uuid一类的属性说明？)
+typedef struct COMPONENT_INFO
+{
+    //[string] char* pstrAutor;
+    short   Major;
+    short   Minor;
+    BSTR    Author;
+}COMPONENT_INFO;
+//定义使用自定义结构体的接口
+[
+	//object,
+    uuid(86653579-C849-47da-A901-ADFAB054EF52),
+    helpstring("IComponentInfo Interface"),
+    pointer_default(unique)
+]
+interface IComponentInfo : IUnknown
+{
+    //使用自定义的结构体，并且从资源中加载信息(注意需要使用 _AtlBaseModule.GetResourceInstance )
+    [helpstring("method GetComponentInfo")] HRESULT GetComponentInfo([out,retval] COMPONENT_INFO** ppInfo);
+}
+
+//////////////////////////   通过复制第一个Custom 接口生成的扩展接口 IMyMath2   /////////////////
+//手工加入的第二个接口(复制第一个接口并进行更改)
+[
+	object,
+    uuid(918585EB-2C08-4351-91F0-03DFA0E285CE), 
+	helpstring("IMyMath2 Interface"), 
+	pointer_default(unique)
+]
+
+interface IMyMath2 : IMyMath{
+    //IMyMath2 中新加的函数，由于接口继承，因此不用再添加 Add 方法的声明
+    [helpstring("method Mul")] HRESULT Mul([in] LONG n1, [in] LONG n2, [out,retval] LONG* pResult);
+
+    //动态数组，使用 size_is 关键字说明数组的大小；如果是多维的话，可以变化的只能是第一维，其他维的大小必须是固定的。
+    //也可以使用固定长度的数组([in] long rgl[50])
+    [helpstring("method Sum")] HRESULT Sum([in] LONG nArraySize, [in,size_is(nArraySize)] LONG nArray[], [out,retval] LONG* plResult);
+    
+    //使用动态数组作为[out]参数 -- 使用CoTaskMemXXX更好？
+    [helpstring("method GetPrim")] HRESULT GetPrim([out] LONG * plCount, [out, size_is(,*plCount)] LONG** ppLData);
+
+
+    //用于演示持续性的接口方法
+    [helpstring("method GetNext")] HRESULT GetNext([out,retval] LONG* pVal);
+    //用于演示需要对接口必须进行Marshal的操作
+    [helpstring("method DemoMarshalLongOperation")] HRESULT DemoMarshalLongOperation([in] BSTR strParam);
+
+    //演示使用自定义的枚举方法
+    [helpstring("method Compute")] HRESULT Compute([in] mathOPERATION enumOp,[in] LONG lOp1,[in] LONG lOp2, [out,retval] LONG* plResult);
+};
+
+////////////////////////////// 第三个支持自动化的 IMyDispatch 接口 ////////////////////////////////
+[
+	object,
+    uuid(918585EC-2C08-4351-91F0-03DFA0E285CE), 
+   	dual,
+	nonextensible,
+	helpstring("IMyDispatch Interface"), 
+	pointer_default(unique)
+]
+
+interface IMyDispatch : IDispatch{
+    [id(1), helpstring("method Upper")] HRESULT Upper([in] BSTR str, [out,retval] BSTR* pVal);
+};
+
+////////////////////////////////      使用连接点        //////////////////////////////////////
+[
+	object,
+	uuid(EC3C79D9-4235-4F08-9D61-34768933DA95),
+	dual,
+	nonextensible,
+	helpstring("IMyTimer Interface"),
+	pointer_default(unique)
+]
+interface IMyTimer : IDispatch{
+ 	[helpstring("方法SetTimer")] HRESULT SetTimer([in] LONG uElapse);
+	[helpstring("方法KillTimer")] HRESULT KillTimer(void);
+};
+[
+	object,
+	uuid(1FE0DA5A-3DCD-4EDE-9FE3-AFC03C99A95B),
+	dual,
+	nonextensible,
+	helpstring("IComActiveXObj Interface"),
+	pointer_default(unique)
+]
+interface IComActiveXObj : IDispatch{
+	[propput, bindable, requestedit, id(DISPID_BACKCOLOR)]
+	HRESULT BackColor([in]OLE_COLOR clr);
+	[propget, bindable, requestedit, id(DISPID_BACKCOLOR)]
+	HRESULT BackColor([out,retval]OLE_COLOR* pclr);
+	[propput, bindable, requestedit, id(DISPID_FILLCOLOR)]
+	HRESULT FillColor([in]OLE_COLOR clr);
+	[propget, bindable, requestedit, id(DISPID_FILLCOLOR)]
+	HRESULT FillColor([out, retval]OLE_COLOR* pclr);
+	[propput, bindable, requestedit, id(DISPID_ENABLED)]
+	HRESULT Enabled([in]VARIANT_BOOL vbool);
+	[propget, bindable, requestedit, id(DISPID_ENABLED)]
+	HRESULT Enabled([out,retval]VARIANT_BOOL* pbool);
+	[propput, bindable, requestedit, id(DISPID_CAPTION)]
+	HRESULT Caption([in]BSTR strCaption);
+	[propget, bindable, requestedit, id(DISPID_CAPTION)]
+	HRESULT Caption([out,retval]BSTR* pstrCaption);
+};
+
+[
+	uuid(C9396D0B-4784-4C08-824A-AC71973BA5B1),
+	version(1.0),
+	helpstring("ATLCom 1.0 Type Library")
+]
+
+////////////////////////////////      类型库的完整描述  //////////////////////////////////////
+library ATLComLib  //#import 时候的默认命名空间
+{
+	importlib("stdole2.tlb");
+    [
+		uuid(49BE457B-D359-447F-810D-EB47DAFDF658), //组件的 CLSID，CoCreateInstance()的第一个参数就是它
+		helpstring("MyMath Class")
+	]
+	coclass MyMath    //ATLComLib.MyMath (就是COM的 ProgID，也可以查看 rgs 获得)
+	{
+        //增加 TLB 中的接口信息 -- 如果不加的话，通过 import 的方式将无法编译
+        //接口列表
+		[default] interface IMyMath;//[default]表示谁提供了IUnknown接口
+                  interface IMyMath2; 
+                  interface IMyDispatch;
+        [source, default] interface IMyMathCallBack;	// 需要手工输入，据说 VB 使用的话，不能有 [source,default] 属性
+	};
+
+
+    //生成的第二个COM组件
+	[
+		uuid(7DF62336-2A07-4C52-BB73-E818C6EF1D64),
+		helpstring("_IMyTimerEvents Interface") //_IMyTimer事件接口
+	]
+	dispinterface _IMyTimerEvents
+	{
+		properties:
+		methods:
+        [id(1), helpstring("method Timer")] HRESULT Timer([in] VARIANT varDate);
+    };
+	[
+		uuid(74664E9F-FD93-48E4-A0A7-11FCF0C89ECB),
+		helpstring("MyTimer Class")
+	]
+	coclass MyTimer
+	{
+		[default] interface IMyTimer;
+		[default, source] dispinterface _IMyTimerEvents;
+	};
+	[
+		uuid(816C599A-A2EF-4EBF-ACFF-F73871C1B068),
+		helpstring("_IComActiveXObjEvents Interface")
+	]
+	dispinterface _IComActiveXObjEvents
+	{
+		properties:
+		methods:
+	};
+	[
+		uuid(2816ED6C-2393-4D83-9CEE-30304A0600AB),
+		licensed,
+		helpstring("ComActiveXObj Class")
+	]
+	coclass ComActiveXObj
+	{
+		[default] interface IComActiveXObj;
+		[default, source] dispinterface _IComActiveXObjEvents;
+	};
+};

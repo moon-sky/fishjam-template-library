@@ -1,0 +1,24 @@
+HKCR
+{
+	AtlServiceDemo.AtlServiceDemoObject.1 = s 'AtlServiceDemoObject Class'
+	{
+		CLSID = s '{AC987C31-48DC-49d4-B46F-B73C6E2E213D}'
+	}
+	AtlServiceDemo.AtlServiceDemoObject = s 'AtlServiceDemoObject Class'
+	{
+		CLSID = s '{AC987C31-48DC-49d4-B46F-B73C6E2E213D}'
+		CurVer = s 'AtlServiceDemo.AtlServiceDemoObject.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {AC987C31-48DC-49d4-B46F-B73C6E2E213D} = s 'AtlServiceDemoObject Class'
+		{
+			ProgID = s 'AtlServiceDemo.AtlServiceDemoObject.1'
+			VersionIndependentProgID = s 'AtlServiceDemo.AtlServiceDemoObject'
+			ForceRemove 'Programmable'
+			LocalServer32 = s '%MODULE%'
+			TypeLib = s '{79A3B135-6C0A-4571-B022-713968207C75}'
+			val AppID = s '%APPID%'
+		}
+	}
+}

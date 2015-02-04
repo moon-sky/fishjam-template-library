@@ -1,0 +1,229 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\ComCaller.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\ComCaller.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 235, 55
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About ComCaller"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "ComCaller Version 1.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2008",IDC_STATIC,40,25,119,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,16,WS_GROUP
+END
+
+IDD_COMCALLER_DIALOG DIALOGEX 0, 0, 467, 347
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "ComCaller"
+FONT 9, "宋体", 400, 0, 0x86
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,410,7,50,16
+    PUSHBUTTON      "Cancel",IDCANCEL,410,25,50,16
+    PUSHBUTTON      "查看复合文件",IDC_BTN_VIEW_STORAGE_FILE,7,7,84,14
+    PUSHBUTTON      "DrawPic",IDC_BTN_DRAW_PIC,215,7,84,14
+    PUSHBUTTON      "IMyMath::Add",IDC_BTN_CALL_MYMATH_ADD,107,7,84,14
+    PUSHBUTTON      "IMyMath2::Mul",IDC_BTN_CALL_MYMATH2_MUL,107,57,84,14
+    PUSHBUTTON      "ImportUpper",IDC_BTN_IMPORT_UPPER,107,82,84,14
+    PUSHBUTTON      "查看Dispatch",IDC_BTN_VIEW_DISPATCH,7,29,84,14
+    PUSHBUTTON      "Dispatch API",IDC_BTN_DISPATCH_API,107,132,84,14
+    PUSHBUTTON      "CComDispatchDriver",IDC_BTN_USE_CCOMDISPATCHDRIVER,107,157,84,14
+    PUSHBUTTON      "ErrorHandle",IDC_BTN_ERROR_HANDLE,107,107,84,14
+    PUSHBUTTON      "Sub && Callback",IDC_BTN_SUB_AND_CALLBACK,107,32,84,14
+    PUSHBUTTON      "Timer && ConnectPoint",IDC_BTN_TIMER_CONNECTPOINT,107,182,84,14
+    PUSHBUTTON      "Persist's GetNext",IDC_BTN_PERSIST,107,213,84,14
+    PUSHBUTTON      "DemoMarshal",IDC_BTN_DEMO_MARSHAL,107,238,85,16
+    PUSHBUTTON      "Sum Array",IDC_BTN_SUM_ARRAY,105,265,86,14
+    PUSHBUTTON      "GetComponentInfo",IDC_BTN_GET_COMPONENT_INFO,105,291,85,14
+    PUSHBUTTON      "Detect Interface",IDC_BTN_DETECT_INTERFACE,215,31,84,14
+    PUSHBUTTON      "Moniker",IDC_BTN_MONIKER,217,57,82,14
+    PUSHBUTTON      "WIA",IDC_BTN_WIA,217,82,80,14
+    PUSHBUTTON      "lengthyCOMoperation",IDC_BTN_LENGTHY_COM_OPERATION,7,58,81,14
+    PUSHBUTTON      "Event && Hook",IDC_BTN_EVENT_HOOK,219,109,78,14
+    PUSHBUTTON      "ServiceDemo::Multi",IDC_BTN_CALL_SERVICE_EXE_MULTI,7,181,84,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_COMCALLER_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 460
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 340
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "ComCaller.exe"
+            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "OriginalFilename", "ComCaller.exe"
+            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About ComCaller..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\ComCaller.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

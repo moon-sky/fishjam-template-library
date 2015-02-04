@@ -1,0 +1,34 @@
+HKCR
+{
+	ForceRemove ATLCom.ComActiveXObj.1 = s 'ComActiveXObj Class'
+	{
+		CLSID = s '{2816ED6C-2393-4D83-9CEE-30304A0600AB}'
+	}
+	ForceRemove ATLCom.ComActiveXObj = s 'ComActiveXObj Class'
+	{
+		CLSID = s '{2816ED6C-2393-4D83-9CEE-30304A0600AB}'
+		CurVer = s 'ATLCom.ComActiveXObj.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {2816ED6C-2393-4D83-9CEE-30304A0600AB} = s 'ComActiveXObj Class'
+		{
+			ProgID = s 'ATLCom.ComActiveXObj.1'
+			VersionIndependentProgID = s 'ATLCom.ComActiveXObj'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			val AppID = s '%APPID%'
+			ForceRemove 'Control'
+			ForceRemove 'ToolboxBitmap32' = s '%MODULE%, 104'
+			'MiscStatus' = s '0'
+			{
+			    '1' = s '%OLEMISC%'
+			}
+			'TypeLib' = s '{C9396D0B-4784-4C08-824A-AC71973BA5B1}'
+			'Version' = s '1.0'
+		}
+	}
+}

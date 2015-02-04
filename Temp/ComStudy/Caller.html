@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>COM Caller</title>
+</head>
+<body>
+	<object width="640" height="480" classid="clsid:49BE457B-D359-447F-810D-EB47DAFDF658" id="myMath"> 
+        <!--
+			<param name=xxxx value=100> 
+			sub objName._onXXX(value)
+             //脚本中处理连接点激发的事件 -- 对象需要实现 IProvideClassInfo2 接口
+	        end sub 
+	   -->
+	</object>
+    <input type=button name=cmdTest value="test" onClick="myMath.Upper('hello')">
+    <script language=vbscript> 
+	  sub .cmdTest_onClick 
+        myMath.Upper("hello")
+      end Sub
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+HKCR
+{
+	ForceRemove ATLCom.MyTimer.1 = s 'MyTimer Class'
+	{
+		CLSID = s '{74664E9F-FD93-48E4-A0A7-11FCF0C89ECB}'
+	}
+	ForceRemove ATLCom.MyTimer = s 'MyTimer Class'
+	{
+		CLSID = s '{74664E9F-FD93-48E4-A0A7-11FCF0C89ECB}'
+		CurVer = s 'ATLCom.MyTimer.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {74664E9F-FD93-48E4-A0A7-11FCF0C89ECB} = s 'MyTimer Class'
+		{
+			ProgID = s 'ATLCom.MyTimer.1'
+			VersionIndependentProgID = s 'ATLCom.MyTimer'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			val AppID = s '%APPID%'
+			'TypeLib' = s '{C9396D0B-4784-4C08-824A-AC71973BA5B1}'
+		}
+	}
+}

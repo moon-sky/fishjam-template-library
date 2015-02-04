@@ -1,0 +1,49 @@
+HKCR
+{
+	FBhoTester.FBhoObject.1 = s 'FBhoObject Class'
+	{
+		CLSID = s '{B42B4492-2F3C-4090-83E1-A52B2E3D74F0}'
+	}
+	FBhoTester.FBhoObject = s 'FBhoObject Class'
+	{
+		CLSID = s '{B42B4492-2F3C-4090-83E1-A52B2E3D74F0}'
+		CurVer = s 'FBhoTester.FBhoObject.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {B42B4492-2F3C-4090-83E1-A52B2E3D74F0} = s 'FBhoObject Class'
+		{
+			ProgID = s 'FBhoTester.FBhoObject.1'
+			VersionIndependentProgID = s 'FBhoTester.FBhoObject'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{62252A8A-CEEC-44F4-85F0-9F36952D2E6F}'
+		}
+	}
+}
+
+HKLM
+{
+    SOFTWARE
+    {
+        Microsoft
+        {
+            Windows
+            {
+                CurrentVersion
+                {
+                    Explorer
+                    {
+                        'Browser Helper Objects'
+                        {
+                            {B42B4492-2F3C-4090-83E1-A52B2E3D74F0}
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
