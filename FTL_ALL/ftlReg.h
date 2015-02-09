@@ -8,6 +8,19 @@
 
 #include "ftlFile.h"
 /*************************************************************************************************************************
+* API函数说明
+*   RegNotifyChangeKeyValue -- 检测注册表的变化，可以快速响应
+*   RegCreateKeyEx -- 创建注册表项，如果存在的话则打开
+*   RegQueryValueEx -- 获取 字符串(REG_SZ)、DWORD(REG_DWORD) 注册表的 类型 和值
+*   RegSetValueEx -- 设置值，如果lpSubKey为NULL或""，则设置默认值
+*   RegOpenKeyEx -- 打开注册表
+*   RegEnumKeyEx -- 枚举子键，可用于删除、查找子键等，没有更多时返回 ERROR_NO_MORE_ITEMS
+*   RegDeleteKey -- 删除没有下级子键的子键,如果要递归删除，可以使用 CRegKey::RecurseDeleteKey 
+*   RegSaveKey/RegSaveKeyEx -- 以二进制方式导出注册表内容
+* 
+* 参数说明:
+*   dwOptions:
+*     REG_OPTION_NON_VOLATILE -- 
 *************************************************************************************************************************/
 
 
@@ -26,15 +39,6 @@ namespace FTL
     public:
         FTLINLINE static LPCTSTR ConvertRegRootKeyToString(HKEY hKeyRoot);
         FTLINLINE static HKEY ConvertStringToRegRootKey(LPCTSTR pszKeyRoot);
-
-        //RegNotifyChangeKeyValue -- 检测注册表的变化，可以快速响应
-        //RegCreateKeyEx -- 创建注册表项，如果存在的话则打开
-        //RegQueryValueEx -- 获取 字符串(REG_SZ)、DWORD(REG_DWORD) 注册表的 类型 和值
-        //RegSetValueEx -- 设置值，如果lpSubKey为NULL或""，则设置默认值
-        //RegOpenKeyEx -- 打开注册表
-        //RegEnumKeyEx -- 枚举子键，可用于删除、查找子键等，没有更多时返回 ERROR_NO_MORE_ITEMS
-        //RegDeleteKey -- 删除没有下级子键的子键,如果要递归删除，可以使用 CRegKey::RecurseDeleteKey 
-        //RegSaveKey/RegSaveKeyEx -- 以二进制方式导出注册表内容
 
         //获取键值导出时对应的格式字符串
         FTLINLINE static LONG GetRegValueExportString(HKEY hKey, LPCTSTR pszValueName, CAtlString& strResult, DWORD* pRegType);

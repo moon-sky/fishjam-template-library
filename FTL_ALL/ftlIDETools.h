@@ -1242,6 +1242,7 @@ namespace FTL
     *   Analyze -> Run Code Analysis On Only
     *
     * 常见编译, 链接错误
+    *   C1859 -- unexpected precompiled header error, 微软的BUG, http://code.msdn.microsoft.com/KB976656
     *   C4005 -- 宏重定义, macro redefinition
     *   C4101 -- 未引用的本地变量 unreferenced local variable
     *   C4390 -- 空控制语句(可能是if后直接跟了分号),empty controlled statement found; is this the intent

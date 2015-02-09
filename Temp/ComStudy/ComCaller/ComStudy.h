@@ -234,10 +234,10 @@
 *
 * 映射：
 *   1.COM组件对象映射(建立COM对象和C++实现类的映射，是旧的方式，新的方式已经采用OBJECT_ENTRY_AUTO)
-*       BEGIN_OBJECT_MAP -> OBJECT_ENTRY -> END_OBJECT_MAP
+*       BEGIN_OBJECT_MAP(ObjectMap) -> OBJECT_ENTRY -> END_OBJECT_MAP
 *       OBJECT_ENTRY(CLSID_AtlComp, CAtlComp) <== 将 CLSID_AtlComp 映射到 CAtlCom 类，用于类工厂，
 *       在 CoCreateInstace 时知道应该new哪个
-*       实现：生成一个静态全局 _ATL_OBJMAP_ENTRY 型数组 ObjectMap[]，并在 _Module.Init 中初始化
+*       实现：生成一个静态全局 _ATL_OBJMAP_ENTRY 型数组 ObjectMap[]，并在 _Module.Init(ObjectMap...) 中初始化
 *   2.接口映射：BEGIN_COM_MAP -> COM_INTERFACE_ENTRY -> END_COM_MAP
 *       http://www.cnblogs.com/huqingyu/articles/46505.aspx
 *       COM_INTERFACE_ENTRY(IMyMath)  <== 可以 QueryInterface 到 IMyMath 接口
@@ -246,7 +246,7 @@
 *         宏中会设置 pEntries->dw 的值为 (DWORD)((x*)(x2*)((_ComMapClass*)8))-8，然后通过 
 *         IUnknown* pUnk = (IUnknown*)((int)pThis+pEntries->dw) 找到对应分支的虚函数表指针
 *           <== 菱形继承时，多个虚函数表指针和内存块顶端之间的偏移量
-*       COM_INTERFACE_ENTRY_IID(想要的IID, 实际会返回的接口类型) -- ???(可用于聚合?)
+*       COM_INTERFACE_ENTRY_IID(想要的IID, 实际会返回的接口类型) -- 一般用于有父子关系的接口? 还是用于聚合?
 *       COM_INTERFACE_ENTRY_TEAR_OFF(IID_IMyTearOff, CMyInnerTearOff) -- 把很少用到的IID_IMyTearOff接口
 *         放在一个单独的组件(CMyInnerTearOff)中实现，仅当查询到这个接口时，才创建这个组件，
 *         并且当它的引用计数减为0时就会被释放掉。注意：内部的 CMyInnerTearOff 需要从 CComTearOffObjectBase 继承

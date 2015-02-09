@@ -12,11 +12,11 @@ namespace FTL
 	HRESULT CFIEUtils::GetIEDocumentFromHWnd(HWND hWnd, IHTMLDocument** ppDocument)
 	{
 		HRESULT hr = E_FAIL;
-		LRESULT lRes = 0;
+		DWORD_PTR nRes = 0;
 
 		UINT nMsg = ::RegisterWindowMessage( TEXT("WM_HTML_GETOBJECT") );
-		::SendMessageTimeout( hWnd, nMsg, 0L, 0L, SMTO_ABORTIFHUNG, 1000, (DWORD*)&lRes );
-		hr = ObjectFromLresult( lRes, IID_IHTMLDocument, 0, (void**)&ppDocument );
+		::SendMessageTimeout( hWnd, nMsg, 0L, 0L, SMTO_ABORTIFHUNG, 1000, (DWORD_PTR*)&nRes );
+		hr = ObjectFromLresult( nRes, IID_IHTMLDocument, 0, (void**)&ppDocument );
 		return hr;
 	}
 

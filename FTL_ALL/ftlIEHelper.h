@@ -20,6 +20,7 @@
 //Cross-Site-Request-Forgery (CSRF)
 
 /****************************************************************************************************************************
+* AppContainers (沙盒) -- 定义允许应用使用的特性
 * App capability declarations -- https://msdn.microsoft.com/en-us/library/windows/apps/hh464936.aspx
 *   internetClient
 *   location
@@ -84,7 +85,11 @@
 *   开启时: 父IE运行在 AppContainer 的 Integrity Level, 成为 Metro Style, 很多高权限的功能会被Deny(Create global event 等函数返回 Access denied)
 *   关闭时: 子IE运行在 Low 的 Integrity Level, 会 
 *   TODO: 父IE运行在 Medium 的 Integrity Level
-*   解决方案: 
+*   原理:64位进程的高级内存保护(被crack前crash + 减少堆栈溢出的可能性?) + 完整性级别 + AppContainers(沙盒)
+*        ASLR -- 地址空间布局随机化, 通过 /DYNAMICBASE 开启
+*   解决方案(TODO:尚未实际测试):
+*     0.安装 32 位和 64 位二进制文件 + 将组件注册为 CATID_AppContainerCompatible 类别 -- 即可在EPM启用时加载组件?
+*       部分资源访问错误的解决: 可以通过更新资源的安全访问控制列表 (SACL) 来加入 IE AppContainer 的安全 ID (SID) 以解决此问题.
 *     1.增加Local COM Server 类型的Broker, BHO(AppContainer) <=> Broker(Medium) <=> 高权限Process(?)
 *       TODO: ? Broker及相关的dll需要设置ALL_APPLICATION_PACKAGES权限? 可通过 ConvertStringSidToSid("S-1-15-2-1") + AddAceToObjectsSecurityDescriptor 来增加?
 *     2.对应的BHO,Broker 等需要签名;
@@ -95,6 +100,14 @@
 *     注意: 8.1的话，需要给CLSID注册AppContainer的category才能让它兼容，另外还要注册64位的ActiveX
 *   允许从网页拖拽到指定程序(避免提示):
 *     HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Internet Explorer/Low Rights/DragDrop
+
+//EPM
+#ifndef CATID_AppContainerCompatible
+//#include <shlguid.h>
+//#include <exdispid.h>
+DEFINE_GUID(CATID_AppContainerCompatible, 0x59fb2056,0xd625,0x48d0,0xa9,0x44,0x1a,0x85,0xb5,0xab,0x26,0x40);
+#endif
+
 *
 * IE 7 的保护模式(Protected Mode) -- 也叫IE低权利(Low Rights) -- TODO: Win7上实际测试IE10, 和理论不同
 *   通过 Process Explorer 查看进程的"安全"属性，可看到有
@@ -106,6 +119,7 @@
 *     3.Cookies: %UserProfile%\AppData\Roaming\Microsoft\Windows\Cookies\Low
 *     4.历史: %UserProfile%\AppData\Local\Microsoft\Windows\History\Low
 *     5.收藏夹: 收藏夹默认允许低级别的IE进程访问，因此不需要独立的目录？
+*     6.注册表: HKEY_CURRENT_USER\Software\AppDataLow\Software 等
 *     TODO: %userprofile%/AppData/LocalLow , 可通过 SHGetKnownFolderPath(FOLDERID_LocalAppDataLow) 获取 
 *   解决兼容性问题：
 *     1.通过建立NTFS软链接(Soft Link)的方法来解决IE保护模式的兼容性问题：linkd 源目录 低权限的目的目录
@@ -135,8 +149,9 @@
 *   Content|Tab Process -- Low(Protected Mode) or Medium(32Bit, Not Protected Mode or Intranet)
 *     所有的 HTML, ActiveX, Toolbar(界面上似乎是Manager process) 等都是运行在 Content Process 中的
 *
-*   HKLM或HKCR \SOFTWARE\Microsoft\Internet Explorer\MAIN\TabProcGrowth  -- REG_SZ, 为 0 表示单进程? 为 Medium 表示多进程?
-*
+*   HKCR\SOFTWARE\Microsoft\Internet Explorer\Main\TabProcGrowth  -- REG_SZ, 为 0 表示单进程? 为 Medium 表示多进程?
+*     TODO:需要重启才能生效?
+* 
 * 相关函数
 *   IEIsProtectedModeURL -- 
 *   IEIsProtectedModeProcess  -- 判断是否运行在保护模式下
@@ -171,6 +186,9 @@
 *     Url 是规范化后的URL，也可能经过服务器重定位后的，在没有frame的页面中，加载完成后只触发一次，有多个frame时，每个frame均触发；
 *     highest frame 触发最终的事件，此时 pDisp 指向 highest frame。
 ****************************************************************************************************************************/
+
+
+
 
 namespace FTL
 {

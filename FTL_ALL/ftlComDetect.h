@@ -483,9 +483,15 @@ namespace FTL
 	}
 
 #else //FTL_DEBUG
-# define COM_DETECT_INTERFACE_FROM_LIST(pUnk)        (void)pUnk;
-# define COM_DETECT_RIID_FROM_LIST(riid)             (void)riid;
-# define COM_DETECT_INTERFACE_FROM_REGISTER(pUnk)    (void)pUnk;
+# define COM_DETECT_INTERFACE_FROM_LIST(pUnk)                       (void)pUnk;
+# define COM_DETECT_MONIKER_BIND_TO_OBJECT_FROM_LIST(pMoniker)      (void)pMoniker;
+# define COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pServiceProvider)    (void)pServiceProvider;
+# define COM_DETECT_RIID_FROM_LIST(riid)                            (void)riid;
+
+# define COM_DETECT_INTERFACE_FROM_REGISTER(pUnknown)               (void)pUnknown;
+# define COM_DETECT_MONIKER_BIND_TO_OBJECT_FROM_REGISTER(pMoniker)  (void)pMoniker;
+# define COM_DETECT_VIEW_INTERFACE_FROM_REGISTER(pUnknown)          (void)pUnknown;
+# define COM_DETECT_SERVICE_PROVIDER_FROM_REGISTER(pUnknown)        (void)pUnknown;
 #endif  //NONE FTL_DEBUG
 
 	#define DETECT_INTERFACE_ENTRY_IID(IntType, riid) \

@@ -4,6 +4,7 @@
 
 class CFanxianTaoToolBar: public CWindowImpl<CFanxianTaoToolBar> , public IFToolbar
 {
+    //DECLARE_WND_SUPERCLASS(TEXT("FANXIANTOOLBAR"), TOOLBARCLASSNAME)
 public:
 	CFanxianTaoToolBar(void);
 	virtual ~CFanxianTaoToolBar(void);

@@ -539,6 +539,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\BHOStudy.h"
+				>
+			</File>
+			<File
 				RelativePath=".\dlldatax.h"
 				>
 			</File>

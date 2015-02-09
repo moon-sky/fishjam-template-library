@@ -7,6 +7,16 @@
 #endif
 
 #pragma TODO(从 FUUser 文件中同步)
+/*********************************************************************************************************************************
+* 最佳实践
+* 
+* 工具
+*   cacls|icacls(推荐) -- 系统自带的命令行ACL管理工具
+*     使用方式参见: https://technet.microsoft.com/zh-cn/magazine/2007.07.securitywatch.aspx
+*   
+*********************************************************************************************************************************/
+
+
 //用户帐号控制(UAC) -- http://www.cnblogs.com/rainbowzc/archive/2012/02/28/2371526.html
 /*********************************************************************************************************************************
 * 安全控制
@@ -77,7 +87,7 @@ namespace FTL
 	{
 	public:
         //判断当前用户(当前进程的Owner)是否是本地 Adminstrators 组中的成员(注意：不是域的)
-        FTLINLINE static IsProcessUserAdministrator();
+        FTLINLINE static BOOL IsProcessUserAdministrator();
 	};
 
     //How To Manage User Privileges Programmatically in Windows NT

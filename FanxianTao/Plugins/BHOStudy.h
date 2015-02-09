@@ -36,21 +36,22 @@
 *       (3).COM对象 -- 添加名为 ClsidExtension 字符串值为你为此扩展所创建的COM的 GUID,COM 必须实现 IOleCommandTarget 接口,
 *           COm对象中每个菜单或按钮命令都以整数标识(OLECMDID_XXX)存在于数组中，该数组有一个唯一的GUID标识，依靠命令的整数标识执行相应的操作。
 *   3.添加定制按钮到标准工具栏，如 NetAnts, FalshGet -- HKLM\SOFTWARE\Microsoft\Internet Explorer\Extensions
-*     a.基本注册项同定制菜单，但 CLSID的字符串值为“{E0DD6CAB-2D10-11D2-8F1A-0000F87ABD16}”
-*     b.ButtonText--按钮的文本标签；
-*       HotIcon--Hot图标的路径;
+*     a.基本注册项同定制菜单，但 CLSID的字符串值不同
+*     b.BandCLSID -- 关联的Toolbar的CLSID
+*       ButtonText--按钮的文本标签
+*       Clsid -- 固定为 {E0DD6CAB-2D10-11D2-8F1A-0000F87ABD16} -- 
+*       Hot Icon --Hot 图标的路径;
 *       Icon--灰色图标路径;
 *       'Default Visible'--是否默认可见(YES/NO);
-*       BandCLSID -- 要打开的浏览栏的CLSID
 *       MenuStatusBar-- 显示的文本
 *       MenuText -- 显示的文本
 *   4.添加定制的浏览栏，工具栏 -- 实现三个基本接口 IDeskBand, IObjectWithSite, IpersistStream，可以扩展实现IContextMenu
 *     有四种可定制的栏(区别在于组件分类注册，可以通过 IMPLEMENTED_CATEGORY 宏注册？)：
-*       水平浏览栏 -- CATID_CommBand，
-*       垂直浏览栏 -- CATID_InfoBand，
+*       水平浏览栏 -- CATID_CommBand
+*       垂直浏览栏 -- CATID_InfoBand
 *         <IE5以后，CommBand 和 InfoBand 统称为 Explorer Bars，可用于IE或资源管理器>
 *       桌面工具栏 -- CATID_DeskBand
-*       IE工具栏 -- 在 HKLM\Software\Microsoft\Internet Explorer\Toolbar\下以COM类的CLSID为名创建一个字符串值
+*       IE工具栏 -- 在 HKLM\Software\Microsoft\Internet Explorer\Toolbar\ 下以COM类的CLSID为名创建一个字符串值
 *
 *   5.浏览器插件(ATL DLL) -- Browser Helper Objects(BHO)，可以监测到IE的各种事件(由于采用连接点的方式通知，因此必须实现 IDispatch 接口，
 *     并重载Invoke, 响应IE发送的事件)，BHO适用于Windows系统下的IE浏览器(CLSID_InternetExplorer)和文件浏览器(CLSID_ShellDesktop)
@@ -61,7 +62,7 @@
 *       要截获事件，需获取 IConnectionPointerContainer 接口，再 FindConnectionPoint (如 DIID_DWebBrowserEvents2),
 *       找到某一事件对应的出接口的连接点对象，并用Advise注册(然后可截获浏览器的大量事件，如浏览新地址，前进、后退、生成新窗口等)
 *
-* 
+*  
 ************************************************************************************************/
 
 /**************************************************************************************************************

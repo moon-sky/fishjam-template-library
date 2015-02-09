@@ -937,9 +937,9 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_APP, CFDefaultMsgInfo);
 #endif
                 GET_MESSAGE_INFO_ENTRY(DM_GETDEFID, CFDefaultMsgInfo);
-                GET_MESSAGE_INFO_ENTRY(DM_SETDEFID, CFDefaultMsgInfo);
+                //GET_MESSAGE_INFO_ENTRY(DM_SETDEFID, CFDefaultMsgInfo);
 #if(WINVER >= 0x0400)
-                GET_MESSAGE_INFO_ENTRY(DM_REPOSITION, CFDefaultMsgInfo);
+                //GET_MESSAGE_INFO_ENTRY(DM_REPOSITION, CFDefaultMsgInfo);
 #endif
 
 				//Edit Control Messages
@@ -1312,7 +1312,107 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(TTM_SETTITLEW, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(TTM_POPUP, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(TTM_GETTITLE, CFDefaultMsgInfo);
-#endif
+#endif //ENABLE_DUMP_TOOLTIP_MESSAGE
+
+#ifdef _INC_COMMCTRL    //Windows Common Controls (Toolbar) -- 可以通过 WTL::CToolBarCtrlT 简化函数
+                GET_MESSAGE_INFO_ENTRY(TB_ENABLEBUTTON|DM_SETDEFID, CFDefaultMsgInfo);      //和 DM_SETDEFID 冲突
+                GET_MESSAGE_INFO_ENTRY(TB_CHECKBUTTON|DM_REPOSITION, CFDefaultMsgInfo);     //和 DM_REPOSITION 冲突
+                GET_MESSAGE_INFO_ENTRY(TB_PRESSBUTTON, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_HIDEBUTTON, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_INDETERMINATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_MARKBUTTON, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ISBUTTONENABLED, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ISBUTTONCHECKED, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ISBUTTONPRESSED, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ISBUTTONHIDDEN, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ISBUTTONINDETERMINATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ISBUTTONHIGHLIGHTED, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETSTATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETSTATE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ADDBITMAP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ADDBUTTONSA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_INSERTBUTTONA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_DELETEBUTTON, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETBUTTON, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_BUTTONCOUNT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_COMMANDTOINDEX, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SAVERESTOREA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SAVERESTOREW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_CUSTOMIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ADDSTRINGA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ADDSTRINGW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETITEMRECT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_BUTTONSTRUCTSIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETBUTTONSIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETBITMAPSIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_AUTOSIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETTOOLTIPS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETTOOLTIPS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETPARENT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETROWS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETROWS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETCMDID, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_CHANGEBITMAP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETBITMAP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETBUTTONTEXTA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETBUTTONTEXTW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_REPLACEBITMAP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETINDENT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETIMAGELIST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETIMAGELIST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_LOADIMAGES, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETRECT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETHOTIMAGELIST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETHOTIMAGELIST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETDISABLEDIMAGELIST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETDISABLEDIMAGELIST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETSTYLE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETSTYLE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETBUTTONSIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETBUTTONWIDTH, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETMAXTEXTROWS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETTEXTROWS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETOBJECT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETHOTITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETHOTITEM, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETANCHORHIGHLIGHT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETANCHORHIGHLIGHT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_MAPACCELERATORA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETINSERTMARK, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETINSERTMARK, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_INSERTMARKHITTEST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_MOVEBUTTON, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETMAXSIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETEXTENDEDSTYLE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETEXTENDEDSTYLE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETPADDING, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETPADDING, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETINSERTMARKCOLOR, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETINSERTMARKCOLOR, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETBITMAPFLAGS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETBUTTONINFOW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETBUTTONINFOW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETBUTTONINFOA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETBUTTONINFOA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_INSERTBUTTONW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_ADDBUTTONSW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_HITTEST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETDRAWTEXTFLAGS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETSTRINGW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETSTRINGA, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETHOTITEM2, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETLISTGAP, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETIMAGELISTCOUNT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETIDEALSIZE, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETMETRICS, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETMETRICS, CFDefaultMsgInfo);
+#if (_WIN32_WINNT >= 0x600)
+                GET_MESSAGE_INFO_ENTRY(TB_GETITEMDROPDOWNRECT, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_SETPRESSEDIMAGELIST, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(TB_GETPRESSEDIMAGELIST, CFDefaultMsgInfo);
+#endif // _WIN32_WINNT >= 0x600
+
+#endif //_INC_COMMCTRL
 
             default:
 				if (m_Info >= WM_USER && m_Info <= 0x7FFF)
@@ -3050,6 +3150,7 @@ namespace FTL
 			HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, CBS_LOWERCASE, pszDivide);
 		}
 
+#ifdef _RICHEDIT_
 		if (0 ==  lstrcmp(szClassName, WC_EDIT)                     //Edit Control Styles
             || 0 == lstrcmp(szClassName, TEXT("RICHEDIT50W")))      //Rich Edit Control Styles
 		{
@@ -3084,6 +3185,7 @@ namespace FTL
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_VERTICAL, pszDivide);
             HANDLE_COMBINATION_VALUE_TO_STRING(formater, lStyle, ES_SELECTIONBAR, pszDivide);
 		}
+#endif //_RICHEDIT_
 
         //ListView
         if (0 ==  lstrcmp(szClassName, WC_LISTVIEW))
