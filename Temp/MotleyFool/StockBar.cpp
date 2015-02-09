@@ -156,6 +156,9 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 	//If punkSite is not NULL, a new site is being set.
 	if(pUnkSite)
 	{
+        COM_DETECT_INTERFACE_FROM_LIST(pUnkSite);
+        COM_DETECT_INTERFACE_FROM_REGISTER(pUnkSite);
+        
 		//Get the parent window.
 		IOleWindow  *pOleWindow = NULL;
 
@@ -186,6 +189,8 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 		{
 			IServiceProvider* pSP;
 			hr = pCmdTarget->QueryInterface(IID_IServiceProvider, (LPVOID*)&pSP);
+            COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pSP);
+            COM_DETECT_SERVICE_PROVIDER_FROM_REGISTER(pSP);
 
 			pCmdTarget->Release();
 
@@ -204,6 +209,8 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 
 STDMETHODIMP CStockBar::GetSite(REFIID riid, void **ppvSite)
 {
+    FTLTRACE(TEXT("%s\n"), TEXT(__FUNCTION__));
+
 	*ppvSite = NULL;
 
 	if(m_pSite)
@@ -215,7 +222,9 @@ STDMETHODIMP CStockBar::GetSite(REFIID riid, void **ppvSite)
 
 void CStockBar::FocusChange(BOOL bHaveFocus)
 {
-	if (m_pSite)
+    FTLTRACE(TEXT("%s, bHaveFocus=%d\n"), TEXT(__FUNCTION__), bHaveFocus);
+
+    if (m_pSite)
 	{
 		IUnknown* pUnk = NULL;
 		if (SUCCEEDED(QueryInterface(IID_IUnknown, (LPVOID*)&pUnk)) && pUnk != NULL)
@@ -229,6 +238,8 @@ void CStockBar::FocusChange(BOOL bHaveFocus)
 
 STDMETHODIMP CStockBar::HasFocusIO(void)
 {
+    FTLTRACE(TEXT("%s\n"), TEXT(__FUNCTION__));
+
 	// if any of the windows in our toolbar have focus then return S_OK else S_FALSE.
 	if (m_ReflectWnd.GetToolBar().m_hWnd == ::GetFocus())
 		return S_OK;
@@ -238,11 +249,15 @@ STDMETHODIMP CStockBar::HasFocusIO(void)
 }
 STDMETHODIMP CStockBar::TranslateAcceleratorIO(LPMSG lpMsg)
 {
+    DUMP_WINDOWS_MSG(__FILE__LINE__, NULL, 0, lpMsg->message, lpMsg->wParam, lpMsg->lParam);
+
 	// the only window that needs to translate messages is our edit box so forward them.
 	return m_ReflectWnd.GetToolBar().GetEditBox().TranslateAcceleratorIO(lpMsg);
 }
 STDMETHODIMP CStockBar::UIActivateIO(BOOL fActivate, LPMSG lpMsg)
 {
+    FTLTRACE(TEXT("%s, fActive=%d\n"), TEXT(__FUNCTION__), fActivate);
+
 	// if our deskband is being activated then set focus to the edit box.
 	if(fActivate)
 	{

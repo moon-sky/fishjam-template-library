@@ -3,7 +3,7 @@
 //***************************************************************************//
 //                                                                           //
 //  This file was created using the CWindowImpl ATL Object Wizard            //
-//  By Erik Thompson © 2000                                                  //
+//  By Erik Thompson 2000                                                  //
 //	Version 1.1                                                              //
 //  Email questions and comments to ErikT@RadBytes.com                       //
 //                                                                           //
@@ -17,7 +17,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CMFToolbar
-class CMFToolbar : public CWindowImpl<CMFToolbar>
+class CMFToolbar : public CWindowImpl<CMFToolbar> //CToolBarCtrlT
 {
 public:
 
@@ -25,6 +25,7 @@ public:
 	DECLARE_WND_SUPERCLASS(TEXT("MOTLEYFOOLTOOLBAR"), TOOLBARCLASSNAME)
 
 	BEGIN_MSG_MAP(CMFToolbar)
+        DUMP_WINDOWS_MSG(__FILE__LINE__, NULL, 0, uMsg, wParam, lParam)
 		CHAIN_MSG_MAP_MEMBER(m_EditWnd)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)

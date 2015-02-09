@@ -3,6 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MotleyFool", "MotleyFool.vcproj", "{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComCaller", "..\ComStudy\ComCaller\ComCaller.vcproj", "{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FTL_ALL", "..\..\FTL_ALL\FTL_ALL.vcproj", "{F6E52FA5-531E-4A52-99F7-9465A309A3EB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FanXianIEPlugin", "..\..\FanxianTao\Plugins\IE\FanXianIEPlugin.vcproj", "{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -11,6 +17,8 @@ Global
 		Release MinDependency|x64 = Release MinDependency|x64
 		Release MinSize|Win32 = Release MinSize|Win32
 		Release MinSize|x64 = Release MinSize|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 		Unicode Debug|Win32 = Unicode Debug|Win32
 		Unicode Debug|x64 = Unicode Debug|x64
 		Unicode Release MinDependency|Win32 = Unicode Release MinDependency|Win32
@@ -31,6 +39,9 @@ Global
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Release MinSize|Win32.Build.0 = Release MinSize|Win32
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Release MinSize|x64.ActiveCfg = Release MinSize|x64
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Release MinSize|x64.Build.0 = Release MinSize|x64
+		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Release|Win32.ActiveCfg = Release MinDependency|x64
+		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Release|x64.ActiveCfg = Release MinDependency|x64
+		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Release|x64.Build.0 = Release MinDependency|x64
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Unicode Debug|Win32.ActiveCfg = Unicode Debug|Win32
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Unicode Debug|Win32.Build.0 = Unicode Debug|Win32
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Unicode Debug|x64.ActiveCfg = Unicode Debug|x64
@@ -43,6 +54,49 @@ Global
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Unicode Release MinSize|Win32.Build.0 = Unicode Release MinSize|Win32
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Unicode Release MinSize|x64.ActiveCfg = Unicode Release MinSize|x64
 		{9328F42B-EB04-407D-AE0B-0CC77B6E3EC2}.Unicode Release MinSize|x64.Build.0 = Unicode Release MinSize|x64
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Debug|x64.ActiveCfg = Debug|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Release MinDependency|Win32.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Release MinDependency|x64.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Release MinSize|Win32.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Release MinSize|x64.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Release|Win32.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Release|x64.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Unicode Debug|Win32.ActiveCfg = Debug|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Unicode Debug|x64.ActiveCfg = Debug|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Unicode Release MinDependency|Win32.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Unicode Release MinDependency|x64.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Unicode Release MinSize|Win32.ActiveCfg = Release|Win32
+		{D7C29AB0-4774-42A0-9031-6E1DE4500DA8}.Unicode Release MinSize|x64.ActiveCfg = Release|Win32
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Debug|x64.ActiveCfg = Debug|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release MinDependency|Win32.ActiveCfg = Release|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release MinDependency|x64.ActiveCfg = Release|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release MinSize|Win32.ActiveCfg = Release|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release MinSize|x64.ActiveCfg = Release|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release|Win32.ActiveCfg = Release|Win32
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release|Win32.Build.0 = Release|Win32
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Release|x64.ActiveCfg = Release|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Unicode Debug|Win32.ActiveCfg = Debug|Win32
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Unicode Debug|x64.ActiveCfg = Debug|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Unicode Release MinDependency|Win32.ActiveCfg = Release|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Unicode Release MinDependency|x64.ActiveCfg = Release|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Unicode Release MinSize|Win32.ActiveCfg = Release|x64
+		{F6E52FA5-531E-4A52-99F7-9465A309A3EB}.Unicode Release MinSize|x64.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|x64.ActiveCfg = Debug|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release MinDependency|Win32.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release MinDependency|x64.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release MinSize|Win32.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release MinSize|x64.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|Win32.ActiveCfg = Release|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|x64.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Unicode Debug|Win32.ActiveCfg = Debug|Win32
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Unicode Debug|x64.ActiveCfg = Debug|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Unicode Release MinDependency|Win32.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Unicode Release MinDependency|x64.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Unicode Release MinSize|Win32.ActiveCfg = Release|x64
+		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Unicode Release MinSize|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

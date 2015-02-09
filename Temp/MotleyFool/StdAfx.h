@@ -11,7 +11,7 @@
 
 #define STRICT
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0400
+#define _WIN32_WINNT 0x0501
 #endif
 
 #define _WIN32_IE 0x0501
@@ -42,5 +42,6 @@ extern CComModule _Module;
 #include <ftlCom.h>
 #include <ftlComDetect.h>
 #include <ftlIEHelper.h>
+#include <ftlWindow.h>
 
 #endif // !defined(AFX_STDAFX_H__47022C0C_6BB7_44FF_B8E6_3C8ADDC7E3FC__INCLUDED)
