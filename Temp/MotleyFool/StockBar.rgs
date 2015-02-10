@@ -21,6 +21,10 @@ HKCR
 				val ThreadingModel = s 'Apartment'
 			}
 			'TypeLib' = s '{84C94803-B5EC-4491-B2BE-7B113E013B77}'
+			'Implemented Categories'
+			{
+			   {59fb2056-d625-48d0-a944-1a85b5ab2640}
+			}
 		}
 	}
 }
@@ -44,8 +48,29 @@ HKLM
 						val Icon = s '%MODULE%,425'
 						val MenuStatusBar = s 'The Motley Fool Stock Quote Toolbar'
 						val MenuText = s 'The Motley Fool'
-
+						
+						'Implemented Categories'
+						{
+							{59fb2056-d625-48d0-a944-1a85b5ab2640}
+						}
 					}
+				}
+			}
+		}
+	}
+}
+
+HKLM
+{
+	NoRemove Software
+	{
+		NoRemove Microsoft
+		{
+			NoRemove 'Internet Explorer'
+			{
+				NoRemove Toolbar
+				{
+					val '{A6790AA5-C6C7-4BCF-A46D-0FDAC4EA90EB}' = s 'MotleyToolbar'
 				}
 			}
 		}

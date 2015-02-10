@@ -3,7 +3,7 @@
 //***************************************************************************//
 //                                                                           //
 //  This file was created using the CWindowImpl ATL Object Wizard            //
-//  By Erik Thompson © 2000                                                  //
+//  By Erik Thompson 2000                                                  //
 //	Version 1.1                                                              //
 //  Email questions and comments to ErikT@RadBytes.com                       //
 //                                                                           //

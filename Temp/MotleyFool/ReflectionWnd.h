@@ -3,7 +3,7 @@
 //***************************************************************************//
 //                                                                           //
 //  This file was created using the CWindowImpl ATL Object Wizard            //
-//  By Erik Thompson © 2000                                                  //
+//  By Erik Thompson 2000                                                  //
 //	Version 1.1                                                              //
 //  Email questions and comments to ErikT@RadBytes.com                       //
 //                                                                           //
@@ -26,6 +26,7 @@ public:
 	DECLARE_WND_CLASS(NULL)
 
 	BEGIN_MSG_MAP(CReflectionWnd)
+        DUMP_WINDOWS_MSG(__FILE__LINE__, NULL, 0, uMsg, wParam, lParam)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		CHAIN_MSG_MAP_MEMBER(m_ToolbarWnd)
 	END_MSG_MAP()

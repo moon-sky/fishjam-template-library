@@ -3,7 +3,7 @@
 //***************************************************************************//
 //                                                                           //
 //  This file was created using the CWindowImpl ATL Object Wizard            //
-//  By Erik Thompson © 2000                                                  //
+//  By Erik Thompson 2000                                                  //
 //	Version 1.1                                                              //
 //  Email questions and comments to ErikT@RadBytes.com                       //
 //                                                                           //
@@ -32,8 +32,12 @@ const DWORD DEFAULT_TOOLBAR_STYLE =
 
 LRESULT CReflectionWnd::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+    BOOL bRet = FALSE;
 	RECT rect;
 	GetClientRect(&rect);
-	m_ToolbarWnd.Create(m_hWnd, rect, NULL, DEFAULT_TOOLBAR_STYLE);
+    FTLTRACE(TEXT("%s, m_hWnd=0x%x, rect=%s\n"), TEXT(__FUNCTION__), m_hWnd, CFRectDumpInfo(rect).GetConvertedInfo());
+
+    //ÔÚ´Ë´¦´´½¨ÕæÊµµÄToolBar
+	API_VERIFY(NULL != m_ToolbarWnd.Create(m_hWnd, rect, NULL, DEFAULT_TOOLBAR_STYLE));
 	return 0;
 }

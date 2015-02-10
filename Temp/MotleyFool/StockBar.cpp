@@ -3,7 +3,7 @@
 //***************************************************************************//
 //                                                                           //
 //  This file was created using the DeskBand ATL Object Wizard 2.0           //
-//  By Erik Thompson ?2001                                                  //
+//  By Erik Thompson 2001                                                  //
 //  Email questions and comments to erikt@radbytes.com						 //
 //                                                                           //
 //***************************************************************************//
@@ -32,10 +32,9 @@ CStockBar::CStockBar():
 
 BOOL CStockBar::RegisterAndCreateWindow()
 {
-    FTLTRACE(TEXT("%s\n"), TEXT(__FUNCTION__));
-
 	RECT rect;
 	::GetClientRect(m_hWndParent, &rect);
+    FTLTRACE(TEXT("%s, rect=%s\n"), TEXT(__FUNCTION__), CFRectDumpInfo(rect).GetConvertedInfo());
 	m_ReflectWnd.Create(m_hWndParent, rect, NULL, WS_CHILD);
 	// The toolbar is the window that the host will be using so it is the window that is important.
 	return m_ReflectWnd.GetToolBar().IsWindow();
@@ -143,6 +142,14 @@ STDMETHODIMP CStockBar::ShowDW(BOOL fShow)
 // IObjectWithSite
 STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 {
+    HRESULT hr = E_FAIL;
+    BOOL bRet = FALSE;
+#if defined _M_IX86
+    ::MessageBox(NULL, TEXT("in CStockBar::SetSite"), TEXT("X86"), MB_OK);
+#else
+    ::MessageBox(NULL, TEXT("in CStockBar::SetSite"), TEXT("X64"), MB_OK);
+#endif 
+
     FTLTRACE(TEXT("%s, pUnkSite=0x%p, m_pSite=0x%p\n"), TEXT(__FUNCTION__), pUnkSite, m_pSite);
 
 //If a site is being held, release it.
@@ -164,27 +171,32 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 
 		m_hWndParent = NULL;
 
-		if(SUCCEEDED(pUnkSite->QueryInterface(IID_IOleWindow, (LPVOID*)&pOleWindow)))
+		COM_VERIFY(pUnkSite->QueryInterface(IID_IOleWindow, (LPVOID*)&pOleWindow));
+        if(SUCCEEDED(hr))
 		{
-			pOleWindow->GetWindow(&m_hWndParent);
+			COM_VERIFY(pOleWindow->GetWindow(&m_hWndParent));
+            FTLTRACE(TEXT("m_hWndParent = 0x%x\n"), m_hWndParent);
 			pOleWindow->Release();
 		}
+        FTLASSERT(::IsWindow(m_hWndParent));
 
 		if(!::IsWindow(m_hWndParent))
 			return E_FAIL;
 
-		if(!RegisterAndCreateWindow())
+		API_VERIFY(RegisterAndCreateWindow());
+        if(!bRet){
 			return E_FAIL;
-
+        }
 		//Get and keep the IInputObjectSite pointer.
-		if(FAILED(pUnkSite->QueryInterface(IID_IInputObjectSite, (LPVOID*)&m_pSite)))
-		{
-			return E_FAIL;
+		COM_VERIFY((pUnkSite->QueryInterface(IID_IInputObjectSite, (LPVOID*)&m_pSite)));
+		if(FAILED(hr))
+        {
+			return hr;
 		}  
 
 		IWebBrowser2* s_pFrameWB = NULL;
 		IOleCommandTarget* pCmdTarget = NULL;
-		HRESULT hr = pUnkSite->QueryInterface(IID_IOleCommandTarget, (LPVOID*)&pCmdTarget);
+		COM_VERIFY(pUnkSite->QueryInterface(IID_IOleCommandTarget, (LPVOID*)&pCmdTarget));
 		if (SUCCEEDED(hr))
 		{
 			IServiceProvider* pSP;

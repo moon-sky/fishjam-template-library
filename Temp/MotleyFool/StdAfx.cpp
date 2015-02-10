@@ -10,3 +10,5 @@
 #endif
 
 #include <atlimpl.cpp>
+
+#include <ftlConfigDetect.h>

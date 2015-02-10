@@ -3,7 +3,7 @@
 //***************************************************************************//
 //                                                                           //
 //  This file was created using the CWindowImpl ATL Object Wizard            //
-//  By Erik Thompson © 2000                                                  //
+//  By Erik Thompson 2000                                                  //
 //	Version 1.1                                                              //
 //  Email questions and comments to ErikT@RadBytes.com                       //
 //                                                                           //
@@ -40,7 +40,7 @@ LRESULT CMFToolbar::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 
 	// add our button's caption to the toolbar window
 	TCHAR* pCaption = _T("Get Quote");
-	int iIndex = ::SendMessage(m_hWnd, TB_ADDSTRING, 0,(LPARAM)pCaption);
+	LRESULT iIndex = ::SendMessage(m_hWnd, TB_ADDSTRING, 0,(LPARAM)pCaption);
 
 	// load our button's icon and create the image list to house it.
 	HICON hMotley = LoadIcon(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDI_MOTLEY));

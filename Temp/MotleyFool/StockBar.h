@@ -14,6 +14,15 @@
 #include "resource.h"       // main symbols
 #include "ReflectionWnd.h"
 
+#ifndef CATID_AppContainerCompatible
+#include <shlguid.h>
+#include <exdispid.h>
+//{59FB2056-D625-48D0-A944-1A85B5AB2640}
+DEFINE_GUID(CATID_AppContainerCompatible, 
+            0x59fb2056,0xd625,0x48d0,0xa9,0x44,0x1a,0x85,0xb5,0xab,0x26,0x40);
+#endif
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CStockBar
 class ATL_NO_VTABLE CStockBar : 
@@ -32,9 +41,12 @@ DECLARE_REGISTRY_RESOURCEID(IDR_STOCKBAR)
 DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 BEGIN_CATEGORY_MAP(CStockBar)
-//	IMPLEMENTED_CATEGORY(CATID_InfoBand)
-//	IMPLEMENTED_CATEGORY(CATID_CommBand)
-//	IMPLEMENTED_CATEGORY(CATID_DeskBand)
+	IMPLEMENTED_CATEGORY(CATID_InfoBand)
+	IMPLEMENTED_CATEGORY(CATID_CommBand)
+	IMPLEMENTED_CATEGORY(CATID_DeskBand)
+    IMPLEMENTED_CATEGORY(CATID_SafeForScripting)
+    IMPLEMENTED_CATEGORY(CATID_SafeForInitializing)
+    IMPLEMENTED_CATEGORY(CATID_AppContainerCompatible)
 END_CATEGORY_MAP()
 
 BEGIN_COM_MAP(CStockBar)
