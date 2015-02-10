@@ -61,7 +61,17 @@
 *     b.必须实现 IObjectWithSite 接口，在 SetSite 中，可以获取IE实例的 IWebBrowser2 接口，并获取当前IE的所有信息。
 *       要截获事件，需获取 IConnectionPointerContainer 接口，再 FindConnectionPoint (如 DIID_DWebBrowserEvents2),
 *       找到某一事件对应的出接口的连接点对象，并用Advise注册(然后可截获浏览器的大量事件，如浏览新地址，前进、后退、生成新窗口等)
-*
+*       SetSite 中传入的 IUnknown 接口可以QI出: 
+*         IBandSite -- 
+*         IDropTarget -- 
+*         IInputObject/IInputObjectSite -- , 
+*         IOleWindow -- 可获取IE的主窗体, 
+*         IOleCommandTarget -- ,
+*         IPersist/IPersistStream
+*         IServiceProvider -- 可进一步获取的接口:
+*            IWebBrowserApp, IShellBrowser, IHTMLWindow2, IWebBrowserEventsService, IHTMLOMWindowServices, 
+*            IShdocvwBroker, ITargetFrame, IProfferService
+*         
 *  
 ************************************************************************************************/
 

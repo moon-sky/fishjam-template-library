@@ -15,19 +15,18 @@
 //  原文:https://msdn.microsoft.com/zh-cn/library/bb250462(en-us,VS.85).aspx
 //IEBlog 简体中文 http://blogs.msdn.com/b/ie_cn/
 //允许通过Fiddle调试Metro风格程序的工具: http://blogs.msdn.com/b/fiddler/archive/2011/12/10/fiddler-windows-8-apps-enable-loopback-network-isolation-exemption.aspx
-//CATID_AppContainerCompatible
 
 //Cross-Site-Request-Forgery (CSRF)
 
 /****************************************************************************************************************************
-* AppContainers (沙盒) -- 定义允许应用使用的特性
+* AppContainers (沙盒) -- 定义允许应用使用的特性(TODO:怎么定义? 扩展DLL能定义吗?)
 * App capability declarations -- https://msdn.microsoft.com/en-us/library/windows/apps/hh464936.aspx
 *   internetClient
 *   location
 *   sharedUserCertificates
 *   
 *   internetClientServer -- 可以作为服务器,能接收连接请求
-*   privateNetworkClientServer -- 可以访问Intranet资源?
+*   privateNetworkClientServer -- 可以访问Intranet资源, (EPM时没有声明改能力,因此可避免 CSRF(Cross-Site-Request-Forgery) 和 Intranet Port Scanning) 
 *   enterpriseAuthentication
 *   musicLibrary
 *   picturesLibrary
@@ -38,7 +37,13 @@
 ****************************************************************************************************************************/
 
 /****************************************************************************************************************************
-* TODO: Enhanced Protected Mode 和  的区别?
+* TODO: 
+*   1.Protected Mode 和 Enhanced Protected Mode  的区别?
+*     PM -- 可以针对四种类型的Sites分别启用或禁用
+*     EPM -- 针对整个IE浏览器进行配置
+*   2.MotleyFool目前的配置, 在同时启用 PM + EPM 后无法显示，为什么?签名?
+*   3.通过 Delete Browser History 可以删除EPM相关的配置信息, 重新提示?
+* 
 * 保护模式(Protected Mode): Internet选项=>安全=>选择区域后"启用保护模式"
 *   受限制的站点 -- 限制最多
 *   Internet -- 限制较多, 包括通过 127.0.0.1 访问时
@@ -47,8 +52,11 @@
 * 增强保护模式(Enhanced Protected Mode):Internet选项=>高级=>安全=>启用增强保护模式
 *   所有的Content Process 为64Bit, 且运行在保护模式, Win8以后运行在AppContainer中.
 *   不能接收连接请求，不能连接本地服务(loopback) -- 不能通过Fiddler调试
-* AppContainer(windows_ie_ac_001) -- Win8以后, 启用EPM时 Content Process的一种沙盒(sandboxed)表现形式?访问 Cookies/Cache 时可能出问题
+* AppContainer(windows_ie_ac_001) -- Win8以后, 启用EPM时 Content Process的一种沙盒(sandboxed)表现形式?
+*   各个AppContainer等的资源独立 -- 如 Cookies/Cache/Web Storage/IndexedDB 等, 可能造成同一个网站有多份 cookies 实例(Low/Medium/AppContainer)
 *   声明了 internetClient, location, sharedUserCertificates 的能力?
+*   AppContainer 的限制能力和很多方面都有关系: OS(32/64); Win版本; IE版本和类型(Desktop|Metro); PM|EPM 的设置; 访问的网址类型(Internet|Intranet|Trusted); 
+*      网络类型(家庭|公用|工作); 防火墙 等
 * LowIL
 ****************************************************************************************************************************/
 
@@ -66,22 +74,28 @@
 ****************************************************************************************************************************/
 
 /****************************************************************************************************************************
-* http://blogs.msdn.com/b/ieinternals/archive/2012/03/23/understanding-ie10-enhanced-protected-mode-network-security-addons-cookies-metro-desktop.aspx 
-* http://blogs.msdn.com/b/ieinternals/archive/2012/03/23/understanding-ie10-enhanced-protected-mode-network-security-addons-cookies-metro-desktop.aspx
-*
+* EPM -- (已读完)http://blogs.msdn.com/b/ieinternals/archive/2012/03/23/understanding-ie10-enhanced-protected-mode-network-security-addons-cookies-metro-desktop.aspx 
+*        回复读到 tommcg1 1 Mar 2013 11:54 AM 
+*        https://msdn.microsoft.com/en-us/library/bb250462(v=vs.85).aspx
+*        https://msdn.microsoft.com/en-us/library/ie/dn519894(v=vs.85).aspx
+* 
 * Win8 -- 两种不同的用户接口，需要分别运行不同类型的应用程序（如IE有对应的 Metro style 和 Desktop style)
 *   1.经典 -- 桌面应用程序, 64Bit上 64Bit Manager + 32Bit Content Process
 *   2.Metro -- 专门的 Metro 程序或 Metro-style enabled desktop browsers (MEDB), 运行在AppContainer中。通过 HTML+JavaScript 开发.
 *              Metro模式下的IE只有Flash,Silverlight,Java 插件?
-*              不能安装或运行其他的任何插件(Boolbar, BHO, MIME Handler, URLMon Protocol Handler,ActiveX Controls 等)
+*              不能安装或运行其他的任何插件, Toolbar, BHO, non-browser-platform COM objects(MIME Handler, URLMon Protocol Handler,ActiveX Controls) 等
 *              64Bit上只有64Bit Content Process, 
+*              注意：其上有"View on the Desktop" 的命令选项,会push 当前的session cookies(不会push persistent cookies)到桌面形式的IE实例，然后访问相同网站
 *     WinRT -- ARM平台上的Window8，只能运行纯粹的Metro程序，不能使用Win32API，需要使用专门的 WinRT API?
 *
 * <iepmapi.h> -- IE Protected Mode API, 其中有 IEIsProtectedModeProcess 等函数的定义(但考虑到 WinXP 等得运行，最好动态加载)
 * EPM(Enhanced Protected Mode) -- IE10加入, 启用后很多插件都无法正确运行。Metro类型的始终运行于EPM, Desktop类型的可选(Internet Options->Advanced),
-*   Web网站的开发者在 Http Header 中通过"X-UA-Compatible:requiresActiveX=true" 选项要求plugin(即要求经典模式?)
+*   Web网站的开发者在 Http Header 中通过"X-UA-Compatible:requiresActiveX=true" 选项要求plugin,用户会得到提示，允许插件运行在 "Low IL Compat" 进程中
 *   Win8.0默认Disabled, Win8.1默认Enabled, IE11后来又改为默认禁用
-* 
+*   Win7上的IE10,如果启用EPM,只会 打开64位Content Process(没有 AppContainer 的沙盒)
+*   TODO:EPM 禁用时才能使用 AdminAPI ?
+*   BHO|Toolbar和EPM不兼容时, 会提示 " 'Xxx' isn't compatible with Enhanced Protected Mode and has been disabled.
+*
 *   开启时: 父IE运行在 AppContainer 的 Integrity Level, 成为 Metro Style, 很多高权限的功能会被Deny(Create global event 等函数返回 Access denied)
 *   关闭时: 子IE运行在 Low 的 Integrity Level, 会 
 *   TODO: 父IE运行在 Medium 的 Integrity Level
@@ -100,14 +114,6 @@
 *     注意: 8.1的话，需要给CLSID注册AppContainer的category才能让它兼容，另外还要注册64位的ActiveX
 *   允许从网页拖拽到指定程序(避免提示):
 *     HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Internet Explorer/Low Rights/DragDrop
-
-//EPM
-#ifndef CATID_AppContainerCompatible
-//#include <shlguid.h>
-//#include <exdispid.h>
-DEFINE_GUID(CATID_AppContainerCompatible, 0x59fb2056,0xd625,0x48d0,0xa9,0x44,0x1a,0x85,0xb5,0xab,0x26,0x40);
-#endif
-
 *
 * IE 7 的保护模式(Protected Mode) -- 也叫IE低权利(Low Rights) -- TODO: Win7上实际测试IE10, 和理论不同
 *   通过 Process Explorer 查看进程的"安全"属性，可看到有
@@ -120,7 +126,7 @@ DEFINE_GUID(CATID_AppContainerCompatible, 0x59fb2056,0xd625,0x48d0,0xa9,0x44,0x1
 *     4.历史: %UserProfile%\AppData\Local\Microsoft\Windows\History\Low
 *     5.收藏夹: 收藏夹默认允许低级别的IE进程访问，因此不需要独立的目录？
 *     6.注册表: HKEY_CURRENT_USER\Software\AppDataLow\Software 等
-*     TODO: %userprofile%/AppData/LocalLow , 可通过 SHGetKnownFolderPath(FOLDERID_LocalAppDataLow) 获取 
+*     TODO: %userprofile%/AppData/LocalLow , 可通过 SHGetKnownFolderPath(FOLDERID_LocalAppDataLow) 获取,似乎不同的Tab会返回同的结果? 
 *   解决兼容性问题：
 *     1.通过建立NTFS软链接(Soft Link)的方法来解决IE保护模式的兼容性问题：linkd 源目录 低权限的目的目录
 *       实质：给NTFS文件增加一个重解析点(FILE_ATTRIBUTE_REPARSE_POINT)的属性
@@ -145,9 +151,10 @@ DEFINE_GUID(CATID_AppContainerCompatible, 0x59fb2056,0xd625,0x48d0,0xa9,0x44,0x1
 *   
 *
 * IE中的多进程控制: 
-*   Manager|Frame process -- Medium(64Bit)
-*   Content|Tab Process -- Low(Protected Mode) or Medium(32Bit, Not Protected Mode or Intranet)
+*   Manager|Frame process -- Medium(64Bit),不会运行任何第三方的内容
+*   Content|Tab Process -- Low(Protected Mode) or Medium(32Bit, Not Protected Mode or Intranet) -- 
 *     所有的 HTML, ActiveX, Toolbar(界面上似乎是Manager process) 等都是运行在 Content Process 中的
+*     TODO:如果跟访问的站点有关的话，岂不是进程的权限会随时变?
 *
 *   HKCR\SOFTWARE\Microsoft\Internet Explorer\Main\TabProcGrowth  -- REG_SZ, 为 0 表示单进程? 为 Medium 表示多进程?
 *     TODO:需要重启才能生效?
@@ -159,6 +166,7 @@ DEFINE_GUID(CATID_AppContainerCompatible, 0x59fb2056,0xd625,0x48d0,0xa9,0x44,0x1
 *   IELaunchURL -- 使用合适的完整性启动IE访问URL(不要使用 CreateProcess 启动IE?)
 *   IESaveFile -- 保存文件到IEShowSaveFileDialog返回的路径中? TODO: 需要现在  %userprofile%/AppData/LocalLow 中创建一个临时文件? 然后保存时指定该文件?
 *   IEShowSaveFileDialog -- 示用户保存文件到的路径(高完整性上下文中?)
+*   TODO: 有 AppContainer 的函数?
 ****************************************************************************************************************************/
 
 /****************************************************************************************************************************
@@ -192,6 +200,12 @@ DEFINE_GUID(CATID_AppContainerCompatible, 0x59fb2056,0xd625,0x48d0,0xa9,0x44,0x1
 
 namespace FTL
 {
+    enum IETabIntegrityLevel{
+        ilAppContainer,
+        ilLowCompat,  //网页要求 ActiveX control which is not EPM-compatible 时
+        ilLow, 
+    };
+
     class CFIEUtils
     {
     public:
@@ -199,6 +213,8 @@ namespace FTL
 		FTLINLINE static HRESULT GetIEDocumentFromHWnd(HWND hWnd, IHTMLDocument** ppDocument);
 
 		FTLINLINE static BOOL IsProtectedModeProcess();
+        
+        FTLINLINE static IETabIntegrityLevel GetIETabProcessIntegrityLevel(HANDLE hProcess);
 
 		FTLINLINE static BOOL MakeNavigatePosData(LPCTSTR pszPostInfo)
 		{

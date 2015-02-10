@@ -144,12 +144,13 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 {
     HRESULT hr = E_FAIL;
     BOOL bRet = FALSE;
+    FormatMessageBox(NULL, 
 #if defined _M_IX86
-    ::MessageBox(NULL, TEXT("in CStockBar::SetSite"), TEXT("X86"), MB_OK);
+        TEXT("X86"),
 #else
-    ::MessageBox(NULL, TEXT("in CStockBar::SetSite"), TEXT("X64"), MB_OK);
+        TEXT("X64"),
 #endif 
-
+    MB_OK, TEXT("in CStockBar::SetSite, PID=%d"), GetCurrentProcessId());
     FTLTRACE(TEXT("%s, pUnkSite=0x%p, m_pSite=0x%p\n"), TEXT(__FUNCTION__), pUnkSite, m_pSite);
 
 //If a site is being held, release it.

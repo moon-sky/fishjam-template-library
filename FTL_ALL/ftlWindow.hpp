@@ -45,6 +45,23 @@ namespace FTL
 			return m_strFormater;
 		}
 	};
+    class CFShowWindowMsgInfo : public CFDefaultMsgInfo
+    {
+    public:
+        virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM wParam, LPARAM lParam)
+        {
+            FTLASSERT(WM_SHOWWINDOW == uMsg );
+            UNREFERENCED_PARAMETER(uMsg);
+            HRESULT hr = E_FAIL;
+            BOOL bShow = (BOOL)wParam;
+            DWORD dwStatus = (DWORD)lParam;
+
+            COM_VERIFY(m_strFormater.Format(TEXT("%s{bShow=%d, status=%d"), 
+                pszMsgName, bShow, dwStatus));
+            return m_strFormater;
+        }
+    };
+
 	class CFWindowPosMsgInfo : public CFDefaultMsgInfo
 	{
 	public:
@@ -69,6 +86,30 @@ namespace FTL
 			return m_strFormater;
 		}
 	};
+
+    class CFNcCreateMsgInfo : public CFDefaultMsgInfo
+    {
+    public:
+        virtual LPCTSTR GetMsgInfo(UINT uMsg, LPCTSTR pszMsgName, WPARAM /*wParam*/, LPARAM lParam)
+        {
+            FTLASSERT(WM_NCCREATE == uMsg);
+            UNREFERENCED_PARAMETER(uMsg);
+
+            HRESULT hr = E_FAIL;
+            CREATESTRUCT* pCreateStruct = (CREATESTRUCT*)lParam;
+            FTLASSERT(pCreateStruct);
+            if (pCreateStruct)
+            {
+                COM_VERIFY(m_strFormater.Format(TEXT("%s{hInstance=0x%x, hMenu=0x%x, hwndParent=0x%x,")
+                    TEXT("Pos=(%d,%d)-(%d,%d), %dx%d, style=0x%x, ExStyle=0x%x }"), 
+                    pszMsgName, pCreateStruct->hInstance, pCreateStruct->hMenu, pCreateStruct->hwndParent,
+                    pCreateStruct->x, pCreateStruct->y, pCreateStruct->x + pCreateStruct->cx, pCreateStruct->y + pCreateStruct->cy,
+                    pCreateStruct->cx, pCreateStruct->cy, 
+                    pCreateStruct->style, pCreateStruct->dwExStyle));
+            }
+            return m_strFormater;
+        }
+    };
 
 	class CFScrollMsgInfo : public CFDefaultMsgInfo
 	{
@@ -560,7 +601,7 @@ namespace FTL
 				//缺省实现是使用窗体类结构中的Brush擦除
                 GET_MESSAGE_INFO_ENTRY(WM_ERASEBKGND, CFDefaultMsgInfo); 
                 GET_MESSAGE_INFO_ENTRY(WM_SYSCOLORCHANGE, CFDefaultMsgInfo);    //当系统颜色改变时，发送此消息给所有顶级窗口
-                GET_MESSAGE_INFO_ENTRY(WM_SHOWWINDOW, CFDefaultMsgInfo);
+                GET_MESSAGE_INFO_ENTRY(WM_SHOWWINDOW, CFShowWindowMsgInfo);
 
 #ifndef WM_CTLCOLOR
 #  define WM_CTLCOLOR                             0x0019
@@ -623,7 +664,7 @@ namespace FTL
                 GET_MESSAGE_INFO_ENTRY(WM_GETICON, CFDefaultMsgInfo);
                 GET_MESSAGE_INFO_ENTRY(WM_SETICON, CFDefaultMsgInfo);
 #endif
-                GET_MESSAGE_INFO_ENTRY(WM_NCCREATE, CFDefaultMsgInfo);      //当某个窗口第一次被创建时，此消息在WM_CREATE消息发送前发送
+                GET_MESSAGE_INFO_ENTRY(WM_NCCREATE, CFNcCreateMsgInfo);      //当某个窗口第一次被创建时，此消息在WM_CREATE消息发送前发送
                 GET_MESSAGE_INFO_ENTRY(WM_NCDESTROY, CFDefaultMsgInfo);     //此消息通知某个窗口，非客户区正在销毁
                 
                 //需要计算窗口客户区的大小和位置时发送，通过处理该消息，可以在窗口大小或位置改变时控制客户区的内容     

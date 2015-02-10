@@ -278,11 +278,25 @@
 *           void __stdcall OnDocumentComplete ( IDispatch* pDispatch, VARIANT* pvUrl); 
 
 *   7.实现组件类别注册(如IE工具栏的类型)：BEGIN_CATEGORY_MAP -> IMPLEMENTED_CATEGORY -> END_CATEGORY_MAP
+*       本质是在组件的注册信息中增加 "Implemented Categories" 子项和对应的 CLSID
 *       IMPLEMENTED_CATEGORY(CATID_SafeForScripting)  <== 使用脚本时，添加脚本安全组件类型，可以去掉“不安全交互”的提示
 *       IMPLEMENTED_CATEGORY(CATID_SafeForInitializing)
 *       IMPLEMENTED_CATEGORY(CATID_InfoBand) <== IE中的垂直浏览栏?
 *       IMPLEMENTED_CATEGORY(CATID_CommBand) <== IE中的水平浏览栏
 *       IMPLEMENTED_CATEGORY(CATID_DeskBand) <== 桌面工具栏
+*       IMPLEMENTED_CATEGORY(CATID_SimpleFrameControl) <== 
+*       IMPLEMENTED_CATEGORY(CATID_PropertyNotifyControl) <== 
+*       IMPLEMENTED_CATEGORY(CATID_VBDataBound) <== 
+*       IMPLEMENTED_CATEGORY(CATID_WindowlessObject) <== 
+*       IMPLEMENTED_CATEGORY(CATID_PersistsToMoniker) <== 
+*       IMPLEMENTED_CATEGORY(CATID_PersistsToStreamInit) <== 
+*       IMPLEMENTED_CATEGORY(CATID_PersisitsToStream) <== 
+*       IMPLEMENTED_CATEGORY(CATID_PersistsToStorage) <== 
+*       IMPLEMENTED_CATEGORY(CATID_PersistsToMemory) <== 
+*       IMPLEMENTED_CATEGORY(CATID_PersistsToFile) <== 
+*       IMPLEMENTED_CATEGORY(CATID_PersistsToPropertyBag) <== 
+*       IMPLEMENTED_CATEGORY(CATID_RequiresDataPathHost) <== 
+*       IMPLEMENTED_CATEGORY(CATID_AppContainerCompatible) <== IE工具条中支持EPM, //{59FB2056-D625-48D0-A944-1A85B5AB2640}
 *   8.服务注册？：BEGIN_SERVICE_MAP -> SERVICE_ENTRY -> END_SERVICE_MAP
 *
 *   A.MFC中 BEGIN_EVENTSINK_MAP -> ON_EVENT -> END_EVENTSINK_MAP

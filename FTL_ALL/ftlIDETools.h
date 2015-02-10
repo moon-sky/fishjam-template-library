@@ -1229,6 +1229,12 @@ namespace FTL
     * 
     * 查找中输入 ":a+" 且选中"正则表达式", 可以搜索 文档内硬编码的字符串
     * 利用正则表达式去除 .ini 文件中 = 前后的空格和Tab： 查找： ^{[^ \t=]*}{[ \t]*}={[ \t]*}{.*}$ , 替换成：\1=\4 
+    * 利用正则对VS2010中的.vcxproj.filters文件设置过滤目录(EmEditor中):
+    *   查找: <(\w+) Include=\"(((\w*\\)*).*)\"\sx/>$           <== 注意: 组后的 "sx/>$" 其中的 x 应该是 *
+    *   替换: <\1 Include=\"\2">\n        <Filter>\3</Filter>\n    </\1> 
+    *   EditPlus中的语法(支持命名): <(?<tag>\w+) Include=\"(?<wholename>(?<path>(\w*\\)*).*)\"\sx/>$
+    *                                       <$+{tag} Include=\"$+{wholename}\">\n        <Filter>$+{path}</Filter>\n    </$+{tag}>
+    *   TODO:目前的替换方法会多一个 "\" 符号
     *
     * Visual Studio Team System(VSTS)
     *   内置工具和过程管理框架
@@ -1241,18 +1247,22 @@ namespace FTL
     * 代码静态检查
     *   Analyze -> Run Code Analysis On Only
     *
-    * 常见编译, 链接错误
-    *   C1859 -- unexpected precompiled header error, 微软的BUG, http://code.msdn.microsoft.com/KB976656
+    * 常见编译, 链接警告和错误
+    *   C1859 -- unexpected precompiled header error, 微软的BUG, http://code.msdn.microsoft.com/KB976656, TODO:似乎工程配置出错也会报这个错
     *   C4005 -- 宏重定义, macro redefinition
     *   C4101 -- 未引用的本地变量 unreferenced local variable
     *   C4390 -- 空控制语句(可能是if后直接跟了分号),empty controlled statement found; is this the intent
     *   C4715 -- 不是所有的路径都有返回值, not all control paths return a value
     *   C4930 -- 将定义变量的语法写成了函数声明的语法。prototyped function not called (was a variable definition intended?)
     *   C4065 -- switch 语句里面有default但是没有case。switch statement contains 'default' but no 'case' labels
-    *   1.LNK2026:module unsafe for SAFESEH image -- VS2012编译汇编文件时, 报告的错误, /SAFESEH
+    *   D9038 -- /ZI is not supported on this platform; enabling /Zi instead
+    *     解决: 仅 x86 支持 /ZI, 如果在x64下启用就会报这个错。更改: C/C++ => General =>Debug Information Format
+    *   LNK2026:module unsafe for SAFESEH image -- VS2012编译汇编文件时, 报告的错误, /SAFESEH
     *     解决：(推荐)使用 ml(64).exe 编译时, 可以指定 /safeseh 参数(set the Use Safe Exception Handler MASM property to Yes)
     *            或    整个程序链接选项Command中输入 /SAFESEH:NO
-    * 
+    *   LNK4222: exported symbol 'DllCanUnloadNow' should not be assigned an ordinal
+    *     解决: DllCanUnloadNow 等函数不能通过序号导出, 删除 .def 中对应的序号即可
+    *
     * 函数断点：方式为 ???  -- 
     *   {,,USER32.DLL}_MessageBeep@4 对应 WinDbg中的 bp USER32!MessageBeep
     *   TODO:为什么有的函数设置不起来？而且规则是什么？@4 对应什么 -- 可以通过 dumpbin 查看导出的函数, 来确认是否能设置断点
