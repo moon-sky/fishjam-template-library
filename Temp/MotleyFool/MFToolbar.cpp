@@ -115,6 +115,7 @@ LRESULT CMFToolbar::OnGetQuote(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 
 void CMFToolbar::GetQuote()
 {
+    BOOL bRet = FALSE;
 	// if we have a web browser pointer then try to navigate to The Motley Fool site to retrieve stock quotes.
 	if (m_pBrowser)
 	{
@@ -127,14 +128,23 @@ void CMFToolbar::GetQuote()
 		{
 			BSTR bstrTickers = NULL;
 			m_EditWnd.GetWindowText(&bstrTickers);
-			bsSite = "http://quote.fool.com/news/symbolnews.asp?Symbols=";
-			bsSite += bstrTickers;
+			//bsSite = "http://quote.fool.com/news/symbolnews.asp?Symbols=";
+			bsSite = bstrTickers;
 			SysFreeString(bstrTickers);
 		}
 		// if the user has not entered any stock quotes then just take them to The Motley Fool website.
-		else
-			bsSite = "http://www.fool.com";
+		//else
+		//	bsSite = "http://www.fool.com";
 		// have the webrowser navigate to the site URL requested depending on user input.
-		m_pBrowser->Navigate(bsSite, &vEmpty, &vEmpty, &vEmpty, &vEmpty);
+        FormatMessageBox(m_hWnd, TEXT("GetQuote"), MB_OK, TEXT("%s"), OLE2CT(bsSite));
+        CFUnicodeFile textFile(tfeUnicode);
+        API_VERIFY(textFile.Create(bsSite));
+        if (bRet)
+        {
+            API_VERIFY(textFile.WriteFileHeader(NULL));
+            API_VERIFY(textFile.WriteString(TEXT("CMFToolbar::GetQuote Test")));
+            API_VERIFY(textFile.Close());
+        }
+		//m_pBrowser->Navigate(bsSite, &vEmpty, &vEmpty, &vEmpty, &vEmpty);
 	}
 }

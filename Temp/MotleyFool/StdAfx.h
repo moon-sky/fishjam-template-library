@@ -18,7 +18,15 @@
 
 #define _ATL_APARTMENT_THREADED
 
+#define _WTL_NO_CSTRING
+#define _WTL_NO_WTYPES
+#define _WTL_NO_UNION_CLASSES
+
 #include <atlbase.h>
+#include <atlstr.h>
+#include <atltypes.h>
+#include <atlapp.h>
+
 //You may derive a class from CComModule and use it if you want to override
 //something, but do not change the name of _Module
 extern CComModule _Module;
@@ -38,12 +46,17 @@ extern CComModule _Module;
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
+#define USE_MESSAGEBOX_ERROR 1
+#define INCLUDE_DETECT_SHLOBJ 1
+
 #include <ftlbase.h>
 #include <ftlCom.h>
 #include <ftlComDetect.h>
-#include <ftlIEHelper.h>
 #include <ftlWindow.h>
 #include <ftlDebug.h>
+#include <ftlFile.h>
+#include <ftlIEHelper.h>
+#include <ftlWebInterfaceDetect.h>
 using namespace FTL;
 
 #if defined _M_IX86

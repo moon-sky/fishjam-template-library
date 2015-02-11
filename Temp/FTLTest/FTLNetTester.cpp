@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "FTLNetTester.h"
 #include <ftlNet.h>
-//#include <ftlSocket.h>
+#include <ftlSocket.h>
 //#include <tuple>
 
 void CFTLNetTester::test_FNetServerT()

@@ -38,6 +38,6 @@ LRESULT CReflectionWnd::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& 
     FTLTRACE(TEXT("%s, m_hWnd=0x%x, rect=%s\n"), TEXT(__FUNCTION__), m_hWnd, CFRectDumpInfo(rect).GetConvertedInfo());
 
     //在此处创建真实的ToolBar
-	API_VERIFY(NULL != m_ToolbarWnd.Create(m_hWnd, rect, NULL, DEFAULT_TOOLBAR_STYLE));
+	API_VERIFY(NULL != m_ToolbarWnd.Create(m_hWnd, rect, TEXT("m_ToolbarWnd"), DEFAULT_TOOLBAR_STYLE));
 	return 0;
 }

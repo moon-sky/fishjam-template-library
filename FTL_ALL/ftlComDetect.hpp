@@ -269,6 +269,25 @@ namespace FTL
         }
     };
 
+    class CFOleWindowDump{
+    public:
+        static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+        {
+            HRESULT hr = S_FALSE;
+            CComQIPtr<IOleWindow> pOleWindow(pUnknown);
+            if (pOleWindow)
+            {
+                HWND hWnd = NULL;
+                COM_VERIFY(pOleWindow->GetWindow(&hWnd));
+                if (SUCCEEDED(hr))
+                {
+                    FTLTRACEEX(FTL::tlTrace,TEXT("\t\tOle Window=0x%x\n"), hWnd);
+                }
+            }
+            return hr;
+        }
+    };
+
     class CFServiceProviderDump
     {
     public:
@@ -341,6 +360,26 @@ namespace FTL
         }
     };
 
+    class CFPersistDump{
+    public:
+        static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+        {
+            HRESULT hr = E_FAIL;
+            ATL::CComQIPtr<IPersist> pPersist(pUnknown);
+            if (pPersist)
+            {
+                CLSID clsid = {0};
+                COM_VERIFY(pPersist->GetClassID(&clsid));
+                if (SUCCEEDED(hr))
+                {
+                    TCHAR szGuid[40] = {0};
+                    StringFromGUID2(clsid, szGuid, _countof(szGuid));
+                    FTLTRACE(TEXT("\t\tPersist ClassID is %s\n"), szGuid);
+                }
+            }
+            return hr;
+        }
+    };
 	class CFEnumConnectionsDump
 	{
 	public:
@@ -360,9 +399,10 @@ namespace FTL
 					FTLTRACEEX(tlTrace, TEXT("Connect Cookie For 0x%p is %d\n"), ConnectData.pUnk, ConnectData.dwCookie);
 					ConnectData.pUnk->Release();
 				}
-				FTLTRACE(TEXT("EnumConnections For 0x%p has %d Connection\n"), nCount);				
+				FTLTRACE(TEXT("EnumConnections For 0x%p has %d Connection\n"), nCount);
+                return S_OK;
 			}
-			return S_OK;
+			return hr;
 		}
 	};
 
@@ -2161,7 +2201,7 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY(IDocHostShowUI)
 			DETECT_INTERFACE_ENTRY(IClassFactoryEx)
 			DETECT_INTERFACE_ENTRY(IHTMLOMWindowServices)
-			DETECT_INTERFACE_ENTRY(IHTMLWindow2)
+			//DETECT_INTERFACE_ENTRY(IHTMLWindow2)
 #endif //INCLUDE_DETECT_MSHTMHST
 
 #if INCLUDE_DETECT_MSXML
@@ -2272,7 +2312,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IEnumMoniker)
             DETECT_INTERFACE_ENTRY(IRunnableObject)
             DETECT_INTERFACE_ENTRY(IRunningObjectTable)
-            DETECT_INTERFACE_ENTRY(IPersist)
+            DETECT_INTERFACE_ENTRY_EX(IPersist, CFPersistDump)
             DETECT_INTERFACE_ENTRY(IPersistStream)
             DETECT_INTERFACE_ENTRY(IMoniker)
             DETECT_INTERFACE_ENTRY(IROTData)
@@ -2433,7 +2473,7 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IOleClientSite)  //
             DETECT_INTERFACE_ENTRY(IOleObject)  //提供了OLE文档架构的基本内容，容器和组件可以协商被嵌入对象的信息
             //如果控件要与包容器程序的站点对象进行通讯，那么必须实现此接口。
-            DETECT_INTERFACE_ENTRY(IOleWindow)
+            DETECT_INTERFACE_ENTRY_EX(IOleWindow, CFOleWindowDump)
             DETECT_INTERFACE_ENTRY(IOleLink)
             DETECT_INTERFACE_ENTRY(IOleItemContainer)
             DETECT_INTERFACE_ENTRY(IOleInPlaceUIWindow)
@@ -2617,7 +2657,9 @@ namespace FTL
             //IE 工具条需要实现的接口, 从IDockingWindow继承,增加了GetBandInfo, 其实现体中返回Band的信息(如高宽范围,Title,背景等)
             //TODO: IDeskBand2 用于出现玻璃效果
             DETECT_INTERFACE_ENTRY_IID(IDeskBand, IID_IDeskBand)
-            DETECT_INTERFACE_ENTRY(IDeskBar)
+#if (_WIN32_IE >= _WIN32_IE_IE60)
+            DETECT_INTERFACE_ENTRY_IID(IDeskBar, IID_IDeskBar)
+#endif //_WIN32_IE >= _WIN32_IE_IE60
 
             //用于显示、隐藏和关闭窗体
             DETECT_INTERFACE_ENTRY_IID(IDockingWindow, IID_IDockingWindow)
@@ -2647,7 +2689,9 @@ namespace FTL
             DETECT_INTERFACE_ENTRY(IInsertItem)
             DETECT_INTERFACE_ENTRY_IID(IItemNameLimits, IID_IItemNameLimits)
             DETECT_INTERFACE_ENTRY(IMenuBand)
+#if (_WIN32_IE >= _WIN32_IE_IE60)
             DETECT_INTERFACE_ENTRY(IMenuPopup)
+#endif 
             DETECT_INTERFACE_ENTRY(IModalWindow)
             DETECT_INTERFACE_ENTRY_IID(INamedPropertyBag, IID_INamedPropertyBag)
             DETECT_INTERFACE_ENTRY(INamespaceWalk)

@@ -479,7 +479,7 @@ namespace FTL
 		FTLTRACEEX(FTL::tlTrace, TEXT("%s(%d) : Begin Detect Service Provider %s( 0x%p ) From Register\n"),\
 		TEXT(__FILE__),__LINE__,TEXT(#pUnknown),pUnknown);\
 		DWORD dwServiceCount = FTL::CFComDetect::CoDetectInterfaceFromRegister(pUnknown,GUID_NULL,FTL::CFComDetect::cdtService);\
-		FTLTRACEEX(FTL::tlInfo,TEXT("%s's Services Count are at least %d\n\n"),TEXT(#pUnknown),dwServiceCount);\
+		FTLTRACEEX(FTL::tlInfo,TEXT("%s's Services Count are at least %d\n"),TEXT(#pUnknown),dwServiceCount);\
 	}
 
 #else //FTL_DEBUG

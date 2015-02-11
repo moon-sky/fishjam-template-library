@@ -45,6 +45,11 @@
 #include "ftlDefine.h"
 #include "ftlTypes.h"
 
+//在某些情况下(比如 IE插件), XXX_VERIFY 检测到错误时, _CrtDbgReport 无法弹出 assert 对话框
+#ifndef USE_MESSAGEBOX_ERROR
+#  define USE_MESSAGEBOX_ERROR 0
+#endif 
+
 //#if defined USE_THREAD_SAFE_TRACE
 #define FTLTRACE    FAST_TRACE
 #define FTLTRACEEX  FAST_TRACE_EX
@@ -110,7 +115,11 @@ namespace FTL
     //  L"%hS" -- 可以直接将 ANSI 转换为 UNICODE? wsprintfW 等函数?
 
     #ifdef _DEBUG
-    #  define DBG_REPORT    _CrtDbgReport
+    #  if USE_MESSAGEBOX_ERROR
+    #    define DBG_REPORT(_err, e)    FormatMessageBox(::GetActiveWindow(), TEXT("Error Prompt"), MB_OKCANCEL|MB_ICONERROR|MB_DEFBUTTON1, TEXT("%s(0x%x, %d)\n in %s(%d), Debug Now?\n"), _err.GetConvertedInfo(), e, e, TEXT(__FUNCTION__), __LINE__)
+    #  else
+    #    define DBG_REPORT(_err, e)    _CrtDbgReport(_CRT_ASSERT, __FILE__, __LINE__, NULL, "%s(0x%x, %d)", T2CA(_err.GetConvertedInfo()), e, e)
+    #  endif 
     #  define DBG_BREAK     _CrtDbgBreak
     #else
     #  define DBG_REPORT    __noop
@@ -124,7 +133,7 @@ namespace FTL
              USES_CONVERSION;\
              FAST_TRACE_EX(FTL::tlError, TEXT("%s(%d) :\t Error!!! Reason = 0x%08x(%d,%s),Code:\"%s\" \n"),\
                TEXT(__FILE__),__LINE__, e, e, _err.GetConvertedInfo(),TEXT(#x));\
-             (1 != DBG_REPORT(_CRT_ASSERT, __FILE__, __LINE__, NULL, "%s(0x%x, %d)", T2CA(_err.GetConvertedInfo()), e, e)) || \
+             (1 != DBG_REPORT(_err, e)) || \
                (DBG_BREAK(), 0);\
          }while(0)
     #else //Not Define FTL_DEBUG

@@ -32,8 +32,9 @@ CStockBar::CStockBar():
 
 BOOL CStockBar::RegisterAndCreateWindow()
 {
-	RECT rect;
-	::GetClientRect(m_hWndParent, &rect);
+    BOOL bRet = FALSE;
+    RECT rect = {0};
+	API_VERIFY(::GetClientRect(m_hWndParent, &rect));
     FTLTRACE(TEXT("%s, rect=%s\n"), TEXT(__FUNCTION__), CFRectDumpInfo(rect).GetConvertedInfo());
 	m_ReflectWnd.Create(m_hWndParent, rect, NULL, WS_CHILD);
 	// The toolbar is the window that the host will be using so it is the window that is important.
@@ -144,14 +145,13 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 {
     HRESULT hr = E_FAIL;
     BOOL bRet = FALSE;
-    FormatMessageBox(NULL, 
-#if defined _M_IX86
-        TEXT("X86"),
-#else
-        TEXT("X64"),
-#endif 
-    MB_OK, TEXT("in CStockBar::SetSite, PID=%d"), GetCurrentProcessId());
-    FTLTRACE(TEXT("%s, pUnkSite=0x%p, m_pSite=0x%p\n"), TEXT(__FUNCTION__), pUnkSite, m_pSite);
+    CString strCPUType = 
+    #if defined _M_IX86
+            TEXT("X86");
+    #else
+            TEXT("X64");
+    #endif 
+    FTLTRACE(TEXT("%s, pUnkSite=0x%p, m_pSite=0x%p, PID=%d, CPU=%s\n"), TEXT(__FUNCTION__), pUnkSite, m_pSite, GetCurrentProcessId(), strCPUType);
 
 //If a site is being held, release it.
 	if(m_pSite)
@@ -168,18 +168,16 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
         COM_DETECT_INTERFACE_FROM_REGISTER(pUnkSite);
         
 		//Get the parent window.
-		IOleWindow  *pOleWindow = NULL;
+        m_hWndParent = NULL;
+		CComQIPtr<IOleWindow> pOleWindow = pUnkSite;
+        if (pOleWindow)
+        {
+            COM_VERIFY(pOleWindow->GetWindow(&m_hWndParent));
+            FTLTRACE(TEXT("m_hWndParent = 0x%x, %s\n"), m_hWndParent, CFWindowDumpInfo(m_hWndParent).GetConvertedInfo());
+        }
 
-		m_hWndParent = NULL;
-
-		COM_VERIFY(pUnkSite->QueryInterface(IID_IOleWindow, (LPVOID*)&pOleWindow));
-        if(SUCCEEDED(hr))
-		{
-			COM_VERIFY(pOleWindow->GetWindow(&m_hWndParent));
-            FTLTRACE(TEXT("m_hWndParent = 0x%x\n"), m_hWndParent);
-			pOleWindow->Release();
-		}
         FTLASSERT(::IsWindow(m_hWndParent));
+        FormatMessageBox(m_hWndParent, TEXT("CStockBar::SetSite"), MB_OK, TEXT("PID=%d, CPU=%s"), GetCurrentProcessId(),strCPUType);
 
 		if(!::IsWindow(m_hWndParent))
 			return E_FAIL;
@@ -195,25 +193,23 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 			return hr;
 		}  
 
-		IWebBrowser2* s_pFrameWB = NULL;
-		IOleCommandTarget* pCmdTarget = NULL;
-		COM_VERIFY(pUnkSite->QueryInterface(IID_IOleCommandTarget, (LPVOID*)&pCmdTarget));
-		if (SUCCEEDED(hr))
+        CComQIPtr<IServiceProvider> pServiceProvider(pUnkSite);
+        FTLASSERT(pServiceProvider);
+		if (pServiceProvider)
 		{
-			IServiceProvider* pSP;
-			hr = pCmdTarget->QueryInterface(IID_IServiceProvider, (LPVOID*)&pSP);
-            COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pSP);
-            COM_DETECT_SERVICE_PROVIDER_FROM_REGISTER(pSP);
+            COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pServiceProvider);
+            COM_DETECT_SERVICE_PROVIDER_FROM_REGISTER(pServiceProvider);
 
-			pCmdTarget->Release();
-
-			if (SUCCEEDED(hr))
+            if (SUCCEEDED(hr))
 			{
-				hr = pSP->QueryService(SID_SWebBrowserApp, IID_IWebBrowser2, (LPVOID*)&s_pFrameWB);
-				pSP->Release();
-				_ASSERT(s_pFrameWB);
-				m_ReflectWnd.GetToolBar().SetBrowser(s_pFrameWB);
-				s_pFrameWB->Release();
+                CComPtr<IWebBrowser2>  pWebBrowser2;
+				COM_VERIFY(pServiceProvider->QueryService(SID_SWebBrowserApp, IID_IWebBrowser2, (LPVOID*)&pWebBrowser2));
+                FTLASSERT(pWebBrowser2);
+                if (pWebBrowser2)
+                {
+                    CFWebBrowserDumper browserDumper(pWebBrowser2, CFOutputWindowInfoOutput::Instance(), 0);
+                    m_ReflectWnd.GetToolBar().SetBrowser(pWebBrowser2);
+                }
 			}
 		}
 	}

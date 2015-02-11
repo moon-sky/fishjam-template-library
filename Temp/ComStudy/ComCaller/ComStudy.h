@@ -278,7 +278,7 @@
 *           void __stdcall OnDocumentComplete ( IDispatch* pDispatch, VARIANT* pvUrl); 
 
 *   7.实现组件类别注册(如IE工具栏的类型)：BEGIN_CATEGORY_MAP -> IMPLEMENTED_CATEGORY -> END_CATEGORY_MAP
-*       本质是在组件的注册信息中增加 "Implemented Categories" 子项和对应的 CLSID
+*       ? 本质是调用 ICatRegister::RegisterClassImplCategories 在组件的注册信息中增加 "Implemented Categories" 子项和对应的 CLSID
 *       IMPLEMENTED_CATEGORY(CATID_SafeForScripting)  <== 使用脚本时，添加脚本安全组件类型，可以去掉“不安全交互”的提示
 *       IMPLEMENTED_CATEGORY(CATID_SafeForInitializing)
 *       IMPLEMENTED_CATEGORY(CATID_InfoBand) <== IE中的垂直浏览栏?

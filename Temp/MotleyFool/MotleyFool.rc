@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "1 TYPELIB ""MotleyFool.tlb""\r\n"
     "\0"
@@ -47,7 +47,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -68,17 +67,16 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "MotleyFool Module\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "MotleyFool\0"
-            VALUE "LegalCopyright", "Copyright 2001\0"
-            VALUE "OriginalFilename", "MotleyFool.DLL\0"
-            VALUE "ProductName", "MotleyFool Module\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "OLESelfRegister", "\0"
+            VALUE "CompanyName", "fishjam test"
+            VALUE "FileDescription", "MotleyFool Module"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "MotleyFool"
+            VALUE "LegalCopyright", "Copyright 2001"
+            VALUE "OriginalFilename", "MotleyFool.DLL"
+            VALUE "ProductName", "MotleyFool Module"
+            VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
     BLOCK "VarFileInfo"
@@ -87,15 +85,13 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-IDR_STOCKBAR            REGISTRY DISCARDABLE    "StockBar.rgs"
+IDR_STOCKBAR            REGISTRY                "StockBar.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -104,14 +100,14 @@ IDR_STOCKBAR            REGISTRY DISCARDABLE    "StockBar.rgs"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_MOTLEY              ICON    DISCARDABLE     "motley.ico"
+IDI_MOTLEY              ICON                    "motley.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "MotleyFool"
 END

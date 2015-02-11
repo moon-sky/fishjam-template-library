@@ -11,12 +11,20 @@
 #  error ftlIEHelper.h requires ftlCom.h to be included first
 #endif
 
+/****************************************************************************************************************************
+* (已读)Step-by-Step EPM BHO -- http://www.askyb.com/bho/step-by-step-guide-to-making-you-bho-epm-compatible-with-ie11-on-windows-8/
+*
+****************************************************************************************************************************/
+
+
 //理解在保护模式下Internet Explorer的工作方式 --  http://blog.csdn.net/xt_xiaotian/article/details/5336809
 //  原文:https://msdn.microsoft.com/zh-cn/library/bb250462(en-us,VS.85).aspx
 //IEBlog 简体中文 http://blogs.msdn.com/b/ie_cn/
 //允许通过Fiddle调试Metro风格程序的工具: http://blogs.msdn.com/b/fiddler/archive/2011/12/10/fiddler-windows-8-apps-enable-loopback-network-isolation-exemption.aspx
-
 //Cross-Site-Request-Forgery (CSRF)
+
+//TODO: tab disabled ? EPM 启用时,插件不支持时会出现这种情况?
+// 通过降低或empty的权限, 能否在 不同 IL 的进程之间通信? ConvertStringSecurityDescriptorToSecurityDescriptorW + SetSecurityInfo. 或 CreateXxxx 时指定
 
 /****************************************************************************************************************************
 * AppContainers (沙盒) -- 定义允许应用使用的特性(TODO:怎么定义? 扩展DLL能定义吗?)
@@ -48,7 +56,7 @@
 *   受限制的站点 -- 限制最多
 *   Internet -- 限制较多, 包括通过 127.0.0.1 访问时
 *   本地Intranet(Local Intranet) -- 限制较少(Medium), 包括通过 localhost 访问时
-*   受信任的站点(Trusted Zones) -- 限制最少
+*   受信任的站点(Trusted Zones) -- 限制最少,以32位方式运行?
 * 增强保护模式(Enhanced Protected Mode):Internet选项=>高级=>安全=>启用增强保护模式
 *   所有的Content Process 为64Bit, 且运行在保护模式, Win8以后运行在AppContainer中.
 *   不能接收连接请求，不能连接本地服务(loopback) -- 不能通过Fiddler调试
@@ -57,7 +65,15 @@
 *   声明了 internetClient, location, sharedUserCertificates 的能力?
 *   AppContainer 的限制能力和很多方面都有关系: OS(32/64); Win版本; IE版本和类型(Desktop|Metro); PM|EPM 的设置; 访问的网址类型(Internet|Intranet|Trusted); 
 *      网络类型(家庭|公用|工作); 防火墙 等
+*      TODO:IE中是否启用选项卡(常规-> 选项卡)
 * LowIL
+****************************************************************************************************************************/
+
+/****************************************************************************************************************************
+* 实测信息:
+*   TOOD: about:blank -- EPM(on), 64
+*         输入地址:
+*         收藏夹: 
 ****************************************************************************************************************************/
 
 
@@ -102,7 +118,10 @@
 *   原理:64位进程的高级内存保护(被crack前crash + 减少堆栈溢出的可能性?) + 完整性级别 + AppContainers(沙盒)
 *        ASLR -- 地址空间布局随机化, 通过 /DYNAMICBASE 开启
 *   解决方案(TODO:尚未实际测试):
-*     0.安装 32 位和 64 位二进制文件 + 将组件注册为 CATID_AppContainerCompatible 类别 -- 即可在EPM启用时加载组件?
+*     0.编译 32 位和 64 位二进制文件 + 将组件注册为 CATID_AppContainerCompatible 类别 -- 即可在EPM启用时加载组件?
+*       注意: 组件的DLL必须在 AppContainer 可以读的目录下(比如 Program Files 和 program files (x86) ), 
+*             该DLL不能读 AppData\LocalLow 等目录(Low), 需要通过broker才行?
+*             启用增强保护模式后, DebugViewer 都无法接收日志
 *       部分资源访问错误的解决: 可以通过更新资源的安全访问控制列表 (SACL) 来加入 IE AppContainer 的安全 ID (SID) 以解决此问题.
 *     1.增加Local COM Server 类型的Broker, BHO(AppContainer) <=> Broker(Medium) <=> 高权限Process(?)
 *       TODO: ? Broker及相关的dll需要设置ALL_APPLICATION_PACKAGES权限? 可通过 ConvertStringSidToSid("S-1-15-2-1") + AddAceToObjectsSecurityDescriptor 来增加?
@@ -142,7 +161,7 @@
 *   IeUser.exe(用户级代理进程, User Broker) -- 完成中等特权的任务(例如保存图片等)
 *   IeInstal.exe(管理级代理进程 - Admin Broker) -- 完成高特权的任务(例如安装加载项，需要写INF文件?)。
 * 
-* IE兼容性视图(CV)列表 -- 维护系统下的网站与IE兼容的信息
+* IE兼容性视图(CV)列表 -- 维护系统下的网站与IE兼容的信息(EPMCompatMode), 由微软维护,需要向其申请才能加入? 是否可以在安装包中加入?
 *   %LocalAppData%\Microsoft\Internet Explorer\IECompatData\
 *     ie9CompatViewList.xml IE9)
 *     iecompatdata.xml (IE10)
@@ -156,8 +175,8 @@
 *     所有的 HTML, ActiveX, Toolbar(界面上似乎是Manager process) 等都是运行在 Content Process 中的
 *     TODO:如果跟访问的站点有关的话，岂不是进程的权限会随时变?
 *
-*   HKCR\SOFTWARE\Microsoft\Internet Explorer\Main\TabProcGrowth  -- REG_SZ, 为 0 表示单进程? 为 Medium 表示多进程?
-*     TODO:需要重启才能生效?
+*   HKCU\SOFTWARE\Microsoft\Internet Explorer\Main\TabProcGrowth  -- REG_SZ, 为 0 表示单进程? 删除(默认)就是多进程
+*     TODO:需要重启IE才能生效?
 * 
 * 相关函数
 *   IEIsProtectedModeURL -- 
@@ -166,6 +185,7 @@
 *   IELaunchURL -- 使用合适的完整性启动IE访问URL(不要使用 CreateProcess 启动IE?)
 *   IESaveFile -- 保存文件到IEShowSaveFileDialog返回的路径中? TODO: 需要现在  %userprofile%/AppData/LocalLow 中创建一个临时文件? 然后保存时指定该文件?
 *   IEShowSaveFileDialog -- 示用户保存文件到的路径(高完整性上下文中?)
+*   IEGetProtectedModeCookie -- ?
 *   TODO: 有 AppContainer 的函数?
 ****************************************************************************************************************************/
 
@@ -211,9 +231,9 @@ namespace FTL
     public:
 		//从Window窗体句柄获取IE内的Docuemnt接口
 		FTLINLINE static HRESULT GetIEDocumentFromHWnd(HWND hWnd, IHTMLDocument** ppDocument);
-
 		FTLINLINE static BOOL IsProtectedModeProcess();
-        
+        FTLINLINE static BOOL IsEPMEnabled(); 
+
         FTLINLINE static IETabIntegrityLevel GetIETabProcessIntegrityLevel(HANDLE hProcess);
 
 		FTLINLINE static BOOL MakeNavigatePosData(LPCTSTR pszPostInfo)

@@ -21,9 +21,7 @@
 class CReflectionWnd : public CWindowImpl<CReflectionWnd>
 {
 public:
-
-	
-	DECLARE_WND_CLASS(NULL)
+	DECLARE_WND_CLASS(TEXT("CReflectionWnd"))
 
 	BEGIN_MSG_MAP(CReflectionWnd)
         DUMP_WINDOWS_MSG(__FILE__LINE__, NULL, 0, uMsg, wParam, lParam)

@@ -65,13 +65,27 @@
 *         IBandSite -- 
 *         IDropTarget -- 
 *         IInputObject/IInputObjectSite -- , 
-*         IOleWindow -- 可获取IE的主窗体, 
+*         IOleWindow -- 获取的窗体是 IE 上的 "ReBarWindow32", 工具条的窗体是其下的子窗体
+*           窗体层次关系为 [Window Caption](Class Name): 
+*           +-[Xxx-Windows Internet Explorer](IEFrame)
+*           +-+-[](Frame Tab)
+*           +-+-+-[ITBarHost](InternetToolbarHost)
+*           +-+-+-+-[菜单栏](WorkerW)
+*           +-+-+-+-+-[](ReBarWindow32)
 *         IOleCommandTarget -- ,
-*         IPersist/IPersistStream
+*         IPersist -- TODO: 其 IPersist::ClassID 是 {BFAD62EE-9D54-4b2a-BF3B-76F90697BD2A}, 即 IE Shell Rebar BandSite
+*         IPersistStream --
 *         IServiceProvider -- 可进一步获取的接口:
-*            IWebBrowserApp, IShellBrowser, IHTMLWindow2, IWebBrowserEventsService, IHTMLOMWindowServices, 
-*            IShdocvwBroker, ITargetFrame, IProfferService
-*         
+*            IHlinkFrame
+*            IHTMLOMWindowServices, 
+*            IHTMLWindow2 -- 
+*            IProfferService
+*            IShdocvwBroker
+*            IShellBrowser
+*            ITargetFrame | ITargetFrame2
+*            ITravelLogStg
+*            IWebBrowserApp
+*            IWebBrowserEventsService
 *  
 ************************************************************************************************/
 

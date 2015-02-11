@@ -53,6 +53,26 @@ namespace FTL
 
 		return IsProtecedMode;
 	}
+
+    BOOL CFIEUtils::IsEPMEnabled(){
+        /*
+        if (GetBrowserVersion() < IE_1000)
+        {
+            return FALSE;
+        }
+
+        TCHAR szREGValue[100];
+        BOOL bOK = GetRegistryStr( HKEY_CURRENT_USER, _T("Software\\Microsoft\\Internet Explorer\\Main"), _T("Isolation"), _T(""), 
+            szREGValue,  _countof(szREGValue));
+        CAtlString strRegValue = szREGValue;
+
+        if ( strRegValue.GetLength() < 0 || strRegValue == _T("PMIL"))
+        {
+            return FALSE;
+        }
+        */
+        return TRUE;
+    }
 }
 
 #endif //FTL_IE_HELPER_HPP
