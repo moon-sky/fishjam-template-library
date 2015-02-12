@@ -54,6 +54,7 @@ void CEditQuote::SetBand(CStockBar* pBand)
 
 LRESULT CEditQuote::OnSetFocus(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+    FTLTRACE(TEXT("%s\n"), TEXT(__FUNCTION__));
 	//Notify host that our band has the focus so TranslateAcceleratorIO 
 	//messages are directed towards our band.
 	if (m_pBand) m_pBand->FocusChange(TRUE);

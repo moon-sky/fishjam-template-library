@@ -647,6 +647,10 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath="..\IE10_SingleInstance.reg"
+			>
+		</File>
+		<File
 			RelativePath=".\ReadMe.txt"
 			>
 		</File>

@@ -2684,8 +2684,8 @@ namespace FTL
             DETECT_INTERFACE_ENTRY_IID(IFolderViewHost, IID_IFolderViewHost)
             DETECT_INTERFACE_ENTRY_IID(IHWEventHandler, IID_IHWEventHandler)
             DETECT_INTERFACE_ENTRY(IImageRecompress)
-            DETECT_INTERFACE_ENTRY_IID(IInputObject, IID_IInputObject)
-            DETECT_INTERFACE_ENTRY_IID(IInputObjectSite, IID_IInputObjectSite)
+            DETECT_INTERFACE_ENTRY_IID(IInputObject, IID_IInputObject)  //主要用于处理激活、快捷键等，通常处理完毕后需要 TranslateMessage + DispatchMessage
+            DETECT_INTERFACE_ENTRY_IID(IInputObjectSite, IID_IInputObjectSite)  //主要用于通知Shell中的Focus改变
             DETECT_INTERFACE_ENTRY(IInsertItem)
             DETECT_INTERFACE_ENTRY_IID(IItemNameLimits, IID_IItemNameLimits)
             DETECT_INTERFACE_ENTRY(IMenuBand)

@@ -84,7 +84,7 @@
 *            IShellBrowser
 *            ITargetFrame | ITargetFrame2
 *            ITravelLogStg
-*            IWebBrowserApp
+*            IWebBrowserApp|IWebBrowser2
 *            IWebBrowserEventsService
 *  
 ************************************************************************************************/

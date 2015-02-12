@@ -26,6 +26,7 @@ public:
 	BEGIN_MSG_MAP(CReflectionWnd)
         DUMP_WINDOWS_MSG(__FILE__LINE__, NULL, 0, uMsg, wParam, lParam)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+        //REFLECT_NOTIFICATIONS()
 		CHAIN_MSG_MAP_MEMBER(m_ToolbarWnd)
 	END_MSG_MAP()
 
@@ -34,7 +35,6 @@ public:
 //  LRESULT CommandHandler(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 //  LRESULT NotifyHandler(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-
 
 	CReflectionWnd();
 	virtual ~CReflectionWnd();

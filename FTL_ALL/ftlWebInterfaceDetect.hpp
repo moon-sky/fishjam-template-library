@@ -111,6 +111,12 @@ namespace FTL
 			CComQIPtr<IWebBrowser>     spWebBrowser(m_pObj);
 			if (spWebBrowser)
 			{
+                CComBSTR bstrLocaitionURL, bstrType;
+                COM_VERIFY(spWebBrowser->get_LocationURL(&bstrLocaitionURL));
+                COM_VERIFY(spWebBrowser->get_Type(&bstrType));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("LocationUrl"), &bstrLocaitionURL));
+                COM_VERIFY(pInfoOutput->OnOutput(TEXT("Type"), &bstrType));
+
 				CComPtr<IDispatch> spDispDocument;
 				COM_VERIFY(spWebBrowser->get_Document(&spDispDocument));
 

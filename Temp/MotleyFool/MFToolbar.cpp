@@ -132,11 +132,12 @@ void CMFToolbar::GetQuote()
 			bsSite = bstrTickers;
 			SysFreeString(bstrTickers);
 		}
+        FormatMessageBox(m_hWnd, TEXT("GetQuote"), MB_OK, TEXT("%s"), OLE2CT(bsSite));
+        return;
 		// if the user has not entered any stock quotes then just take them to The Motley Fool website.
 		//else
 		//	bsSite = "http://www.fool.com";
 		// have the webrowser navigate to the site URL requested depending on user input.
-        FormatMessageBox(m_hWnd, TEXT("GetQuote"), MB_OK, TEXT("%s"), OLE2CT(bsSite));
         CFUnicodeFile textFile(tfeUnicode);
         API_VERIFY(textFile.Create(bsSite));
         if (bRet)

@@ -12,3 +12,28 @@
 #include <atlimpl.cpp>
 
 #include <ftlConfigDetect.h>
+
+
+BOOL CALLBACK MyTranslateWndClassProc(LPCTSTR pszOriClassName, LPTSTR pszNewClass, UINT nLength)
+{
+    if (0 == lstrcmpi(pszOriClassName, TEXT("EDITQUOTE"))){
+        lstrcpyn(pszNewClass, TEXT("Edit"), nLength);
+        return TRUE;
+    }
+    else if(0 == lstrcmpi(pszOriClassName, TEXT("MOTLEYFOOLTOOLBAR"))){
+        lstrcpyn(pszNewClass, TOOLBARCLASSNAME, nLength);
+    }
+    return FALSE;
+}
+
+class CTmpSetup{
+public:
+    CTmpSetup(){
+        SetTranslateWndClassProc(MyTranslateWndClassProc);
+    }
+    ~CTmpSetup(){
+        SetTranslateWndClassProc(NULL);
+    }
+};
+
+CTmpSetup g_tmpSetup;

@@ -33,6 +33,12 @@ extern CComModule _Module;
 #include <atlcom.h>
 #include <atlwin.h>
 
+#include <atlcrack.h>
+#include <atlctrls.h>
+#include <atlctrlw.h>
+#include <atlctrlx.h>
+#include <atlddx.h>
+
 //
 // These are needed for IDeskBand
 //

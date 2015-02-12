@@ -152,6 +152,7 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
             TEXT("X64");
     #endif 
     FTLTRACE(TEXT("%s, pUnkSite=0x%p, m_pSite=0x%p, PID=%d, CPU=%s\n"), TEXT(__FUNCTION__), pUnkSite, m_pSite, GetCurrentProcessId(), strCPUType);
+    //FormatMessageBox(NULL, TEXT("CStockBar::SetSite"), MB_OK, TEXT("pUnkSite=0x%x, PID=%d, CPU=%s"), pUnkSite, GetCurrentProcessId(),strCPUType);
 
 //If a site is being held, release it.
 	if(m_pSite)
@@ -164,8 +165,8 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
 	//If punkSite is not NULL, a new site is being set.
 	if(pUnkSite)
 	{
-        COM_DETECT_INTERFACE_FROM_LIST(pUnkSite);
-        COM_DETECT_INTERFACE_FROM_REGISTER(pUnkSite);
+        //COM_DETECT_INTERFACE_FROM_LIST(pUnkSite);
+        //COM_DETECT_INTERFACE_FROM_REGISTER(pUnkSite);
         
 		//Get the parent window.
         m_hWndParent = NULL;
@@ -177,7 +178,6 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
         }
 
         FTLASSERT(::IsWindow(m_hWndParent));
-        FormatMessageBox(m_hWndParent, TEXT("CStockBar::SetSite"), MB_OK, TEXT("PID=%d, CPU=%s"), GetCurrentProcessId(),strCPUType);
 
 		if(!::IsWindow(m_hWndParent))
 			return E_FAIL;
@@ -197,8 +197,8 @@ STDMETHODIMP CStockBar::SetSite(IUnknown* pUnkSite)
         FTLASSERT(pServiceProvider);
 		if (pServiceProvider)
 		{
-            COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pServiceProvider);
-            COM_DETECT_SERVICE_PROVIDER_FROM_REGISTER(pServiceProvider);
+            //COM_DETECT_SERVICE_PROVIDER_FROM_LIST(pServiceProvider);
+            //COM_DETECT_SERVICE_PROVIDER_FROM_REGISTER(pServiceProvider);
 
             if (SUCCEEDED(hr))
 			{

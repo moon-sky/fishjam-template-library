@@ -2060,7 +2060,7 @@ namespace FTL
     BOOL CFWinUtil::ActiveAndForegroundWindow(HWND hWnd)
     {
         //IPMSG 中也有一个 SetForceForegroundWindow 方法，大致相同
-
+#pragma TODO(Foreground 和 Active 有啥区别)
         BOOL bRet = TRUE;
         HWND   hForegdWnd   =  ::GetForegroundWindow();
         if(NULL == hForegdWnd)
@@ -2860,7 +2860,7 @@ namespace FTL
 		if (pTransProc)
 		{
 			TCHAR szNewClassName[FTL_MAX_CLASS_NAME_LENGTH] = {0};
-			API_VERIFY((*pTransProc)(szClassName, szNewClassName, _countof(szNewClassName)));
+			bRet = (*pTransProc)(szClassName, szNewClassName, _countof(szNewClassName));
 			if (bRet)
 			{
 				FTLTRACEEX(FTL::tlInfo, TEXT("Translate Window Class Name From %s to %s\n"), szClassName, szNewClassName);
@@ -2966,6 +2966,10 @@ namespace FTL
 			}
 #endif	//_RICHEDIT_
 		}
+        //Toolbar
+        else if(0 == lstrcmpi(szClassName, TEXT("ToolbarWindow"))
+            || (0 == lstrcmpi(szClassName, TEXT("ToolbarWindow32")))
+            )
 
 		if ( 0 == pszCommandNotify[0] )
 		{
