@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FTL_ALL", "..\..\FTL_ALL\FT
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FanXianIEPlugin", "..\..\FanxianTao\Plugins\IE\FanXianIEPlugin.vcproj", "{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FTLTest", "..\FTLTest\FTLTest.vcproj", "{D6E5245F-5369-4EFF-8C7F-ECFA84C31D22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -37,6 +39,13 @@ Global
 		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Debug|x64.ActiveCfg = Debug|x64
 		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|Win32.ActiveCfg = Release|Win32
 		{F08BFC7D-408B-4CB3-B041-D1A9FCD37E6B}.Release|x64.ActiveCfg = Release|x64
+		{D6E5245F-5369-4EFF-8C7F-ECFA84C31D22}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D6E5245F-5369-4EFF-8C7F-ECFA84C31D22}.Debug|Win32.Build.0 = Debug|Win32
+		{D6E5245F-5369-4EFF-8C7F-ECFA84C31D22}.Debug|x64.ActiveCfg = Debug|x64
+		{D6E5245F-5369-4EFF-8C7F-ECFA84C31D22}.Release|Win32.ActiveCfg = Release|Win32
+		{D6E5245F-5369-4EFF-8C7F-ECFA84C31D22}.Release|Win32.Build.0 = Release|Win32
+		{D6E5245F-5369-4EFF-8C7F-ECFA84C31D22}.Release|x64.ActiveCfg = Release|x64
+		{D6E5245F-5369-4EFF-8C7F-ECFA84C31D22}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

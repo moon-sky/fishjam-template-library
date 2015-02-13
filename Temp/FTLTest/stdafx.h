@@ -46,7 +46,7 @@
 #include <atlbase.h>
 #include <atlwin.h>
 
-#define USE_MESSAGEBOX_ERROR 1
+//#define USE_MESSAGEBOX_ERROR 1
 #define SHOW_BLOCK_SCOPE
 #  include <atlbase.h>
 #  include <ftlbase.h>

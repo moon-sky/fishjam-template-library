@@ -83,11 +83,50 @@
 
 namespace FTL
 {
+    enum IntegrityLevel{
+        ilUnknown = 0,
+        ilAppContainer, //Win8 + IE10 + EPM 或 Metro 时, 
+        ilLowCompat,    //TODO: 网页要求 ActiveX control which is not EPM-compatible 时
+        ilLow, 
+        ilMedium,
+        ilHigh,
+    };
+
 	class CFUserUtil
 	{
 	public:
+        FTLINLINE static LPCTSTR GetSidInfo(CFStringFormater& formater, PSID pSid);
+        FTLINLINE static LPCTSTR GetSidAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide = TEXT("|"));
+
         //判断当前用户(当前进程的Owner)是否是本地 Adminstrators 组中的成员(注意：不是域的)
         FTLINLINE static BOOL IsProcessUserAdministrator();
+
+        FTLINLINE static IntegrityLevel GetProcessIntegrityLevel(HANDLE hProcess);
+        FTLINLINE static BOOL DumpTokenInformation(HANDLE hToken);
+    private:
+        static LPCTSTR WINAPI GetTokenReservedInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenDwordInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenUserInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenGroupsInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenPrivilegesInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenOwnerInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+
+        static LPCTSTR WINAPI GetTokenPrimaryGroupInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenDefaultDaclInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenSourceInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenTypeInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetSecurityImpersonationLevelInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenStatisticsInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenGroupsAndPrivilegesInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenOriginInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenElevationTypeInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenLinkedTokenInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenElevationInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenAccessInformationInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenMandatoryLabelInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenMandatoryPolicyInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetTokenAppcontainerInformationInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
+        static LPCTSTR WINAPI GetClaimSecurityAttributesInformationInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);
 	};
 
     //How To Manage User Privileges Programmatically in Windows NT
@@ -104,9 +143,9 @@ namespace FTL
         //设置权限：如 L"SeServiceLogonRight", 其内部可调用 LsaAddAccountRights/LsaRemoveAccountRights
         FTLINLINE BOOL SetPrivilegeOnAccount(LPWSTR PrivilegeName, BOOL bEnable ); 
     private:
-        FTLINLINE void _InitLsaString(PLSA_UNICODE_STRING LsaString,LPWSTR String);
+        //FTLINLINE void _InitLsaString(PLSA_UNICODE_STRING LsaString,LPWSTR String);
     private:
-        LSA_HANDLE  m_hPolicy;
+        //LSA_HANDLE  m_hPolicy;
     };
 }
 #endif //FTL_USER_H

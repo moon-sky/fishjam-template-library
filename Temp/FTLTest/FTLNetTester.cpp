@@ -2,10 +2,52 @@
 #include "FTLNetTester.h"
 #include <ftlNet.h>
 #include <ftlSocket.h>
+#include <ftlConversion.h>
 //#include <tuple>
+#pragma comment( lib, "Iphlpapi.lib" )
+void CFTLNetTester::dump_allAdaptersInfo()
+{
+    //显示所有 Enable 的网络适配器的地址信息(注意:Disable的无法获取)
+    BOOL bRet = FALSE;
+    IP_ADAPTER_INFO AdapterInfo[16] = { NULL };
+    DWORD dwBufLen = sizeof(AdapterInfo);
+
+    DWORD adpIndex = 0;
+    DWORD dwStatus = 0;
+    API_VERIFY(ERROR_SUCCESS == (dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen)));
+    if (bRet)
+    {
+        PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
+        while (pAdapterInfo)
+        {
+            FTLASSERT(pAdapterInfo->ComboIndex == pAdapterInfo->Index); //TODO:实测这两个值一样, 有什么区别?
+
+            adpIndex++;
+            //将16进制的Mac地址转换为易读的方式
+            LONG nStrBinaryCount = 0;
+            API_VERIFY(CFConvUtil::HexFromBinary(pAdapterInfo->Address, pAdapterInfo->AddressLength, NULL, &nStrBinaryCount, _T('-')));
+            CFMemAllocator<TCHAR> AddressBuf(nStrBinaryCount);
+            API_VERIFY(CFConvUtil::HexFromBinary(pAdapterInfo->Address, pAdapterInfo->AddressLength, AddressBuf.GetMemory(), &nStrBinaryCount, _T('-')));
+            
+            FTLTRACE(TEXT("[%d]:ComboIdx=%d, Idx=%d,Type=%d Desc=%s, AdapterName=%s, AddressLength=%d, Address=%s\n"), 
+                adpIndex,
+                pAdapterInfo->ComboIndex,
+                pAdapterInfo->Index,
+                pAdapterInfo->Type, //目前实测都是 6, TODO: 具体对应的枚举
+                CFConversion().MBCS_TO_TCHAR(pAdapterInfo->Description),    //描述信息, 如: Realtek PCIe GBE Family Controller
+                CFConversion().MBCS_TO_TCHAR(pAdapterInfo->AdapterName),    //GUID, 如 {6CF21E5D-0708-4F63-903E-47208B4F51EB}
+                pAdapterInfo->AddressLength, AddressBuf.GetMemory());       //MAC地址(Address)的16位表示, 如: 8c-89-a5-3d-6d-d7
+
+            //其他可以获取到IP地址等
+            pAdapterInfo = pAdapterInfo->Next;
+        }
+    }
+}
 
 void CFTLNetTester::test_FNetServerT()
 {
+
+
 }
 
 void CFTLNetTester::test_FSocketAddress()

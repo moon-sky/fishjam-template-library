@@ -220,12 +220,6 @@
 
 namespace FTL
 {
-    enum IETabIntegrityLevel{
-        ilAppContainer,
-        ilLowCompat,  //ÍøÒ³ÒªÇó ActiveX control which is not EPM-compatible Ê±
-        ilLow, 
-    };
-
     class CFIEUtils
     {
     public:
@@ -233,8 +227,6 @@ namespace FTL
 		FTLINLINE static HRESULT GetIEDocumentFromHWnd(HWND hWnd, IHTMLDocument** ppDocument);
 		FTLINLINE static BOOL IsProtectedModeProcess();
         FTLINLINE static BOOL IsEPMEnabled(); 
-
-        FTLINLINE static IETabIntegrityLevel GetIETabProcessIntegrityLevel(HANDLE hProcess);
 
 		FTLINLINE static BOOL MakeNavigatePosData(LPCTSTR pszPostInfo)
 		{

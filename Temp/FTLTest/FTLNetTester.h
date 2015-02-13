@@ -12,6 +12,7 @@ public:
 
     CPPUNIT_TEST_SUITE( CFTLNetTester );
     
+    CPPUNIT_TEST( dump_allAdaptersInfo );
     CPPUNIT_TEST( test_FNetServerT );
     CPPUNIT_TEST( test_FSocketAddress );
     CPPUNIT_TEST( test_GetNetInfo );
@@ -22,6 +23,7 @@ public:
 
     CPPUNIT_TEST_SUITE_END();
 
+    void dump_allAdaptersInfo();
     void test_FNetServerT();
     void test_FSocketAddress();
     void test_GetNetInfo();
