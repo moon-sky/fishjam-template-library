@@ -78,11 +78,10 @@ namespace FTL
         DWORD				Type, BuffLen = MAX_BUFFER_LENGTH;
         TCHAR				LangKeyValue[MAX_BUFFER_LENGTH];
 
-        CFOSInfo osInfo;
-        if (osInfo.IsGreaterWinNT())
+        if (CFOSInfo::Instance()->IsGreaterWinNT())
         {
             // On Windows NT, Windows 2000 or higher
-            if (osInfo.GetOSType() >= CFOSInfo::ostWin2000)
+            if (CFOSInfo::Instance()->GetOSType() >= CFOSInfo::ostWin2000)
             { 
                 // Windows 2000 or higher
                 uiLangID = GetUserDefaultUILanguage();

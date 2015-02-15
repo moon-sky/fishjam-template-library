@@ -48,11 +48,11 @@ namespace FTL
 		LPITEMIDLIST pItemMonitor = NULL;
         if (NULL == pszMonitorPath)
         {
-            COM_VERIFY(::SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOPDIRECTORY, &pItemMonitor)); //CSIDL_DESKTOP
+            COM_VERIFY(::SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOP, &pItemMonitor)); //CSIDL_DESKTOPDIRECTORY
         }
 		else
 		{
-			//pItemMonitor = GetPidlFromPath(pszMonitorPath);
+            COM_VERIFY(CFShellUtil::GetItemIDListFromPath(pszMonitorPath, &pItemMonitor, NULL));
 		}
 		if (pItemMonitor)
 		{
@@ -143,8 +143,8 @@ namespace FTL
 				LRESULT nResult = 0;
 				const LPCITEMIDLIST* pidls = ( LPCITEMIDLIST* )wParam;
 				const LONG wEventId = ( LONG )lParam;
-				LPCITEMIDLIST pIdlDst = pidls[0];
-				LPCITEMIDLIST pIdlSrc = pidls[1];
+                LPCITEMIDLIST pIdlSrc = pidls[0];
+				LPCITEMIDLIST pIdlDst = pidls[1];
 				nResult = pThis->_HandleMonitorEvent(wEventId, pIdlDst, pIdlSrc);
 				return nResult;
 			}
@@ -155,23 +155,41 @@ namespace FTL
 	LRESULT CFShellChangeMonitor::_HandleMonitorEvent(LONG wEventId, LPCITEMIDLIST pIdlDst, LPCITEMIDLIST pIdlSrc)
 	{
 		HRESULT hr = E_FAIL;
-
+        BOOL bRet = FALSE;
 #ifdef FTL_DEBUG
 		TCHAR szSrcPath[MAX_PATH] = {0};
 		TCHAR szDstPath[MAX_PATH] = {0};
-		
+		int nSrcIdListSize = 0;
+        int nDstIdListSize = 0;
+
 		if (pIdlDst)
 		{
+            nDstIdListSize = pIdlDst->mkid.cb;
 			COM_VERIFY(CFShellUtil::GetItemIdName(pIdlDst, szDstPath, _countof(szDstPath), SHGDN_FORPARSING, m_pShellFolder));
+
+            TCHAR szDstCheck[MAX_PATH] = {0};
+            API_VERIFY(SHGetPathFromIDList(pIdlDst, szDstCheck));
+            API_VERIFY(lstrcmp(szDstCheck, szDstPath) == 0);
 		}
 		if (pIdlSrc)
 		{
+            nSrcIdListSize = pIdlSrc->mkid.cb;
 			COM_VERIFY(CFShellUtil::GetItemIdName(pIdlSrc, szSrcPath, _countof(szSrcPath), SHGDN_FORPARSING, m_pShellFolder));
-		}
+
+            TCHAR szSrcCheck[MAX_PATH] = {0};
+            API_VERIFY(SHGetPathFromIDList(pIdlSrc, szSrcCheck));
+            BOOL bSamePath = (lstrcmp(szSrcCheck, szSrcPath) == 0);
+            FTLTRACE(TEXT("bSamePath=%d\n"), bSamePath);
+        }
+
+        LPITEMIDLIST pItemNew = NULL;
+        CFShellUtil::GetItemIDListFromPath(szSrcPath, &pItemNew);
+        BOOL isSame = (m_pShellFolder->CompareIDs(0, pIdlSrc, pItemNew) == 0);
+
 		CFStringFormater formaterChangeNotify;
-		FTLTRACEEX(tlTrace, TEXT("_HandleMonitorEvent: event=%s(0x%x), srcPath=%s, dstPath=%s\n"), 
+		FTLTRACEEX(tlTrace, TEXT("_HandleMonitorEvent: event=%s(0x%x), srcPath=(cb=%d)%s, dstPath=(cb=%d)%s\n"), 
 			CFShellUtil::GetShellChangeNotifyString(wEventId, formaterChangeNotify),
-			wEventId, szSrcPath, szDstPath);
+			wEventId, nSrcIdListSize, szSrcPath, nDstIdListSize, szDstPath);
 #endif 
 
 		if (m_pChangeObserver)
@@ -309,6 +327,38 @@ namespace FTL
 		}
 		return hr;
 	}
+
+    HRESULT CFShellUtil::GetItemIDListFromPath(LPCTSTR szFullPath, LPITEMIDLIST* ppidl, IShellFolder* pSF)
+    {
+        HRESULT hr = E_FAIL;
+        IShellFolder* pShellFolder  = pSF;
+        if ( pShellFolder == NULL )
+        {
+            COM_VERIFY(SHGetDesktopFolder( &pShellFolder ));
+            if ( !pShellFolder )
+            {
+                return hr;
+            }
+        }
+        ULONG chEaten = 0;
+        DWORD dwAttributes = SFGAO_COMPRESSED;
+
+        OLECHAR olePath[MAX_PATH] = { '\0' };
+#ifdef UNICODE
+        StringCchCopy( olePath, MAX_PATH, szFullPath );
+#else
+        MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, szFileName, -1, olePath, MAX_PATH );
+#endif
+
+        //LPWSTR pszNPath = (LPWSTR)conv.TCHAR_TO_UTF16(szFullPath);
+        COM_VERIFY(pShellFolder->ParseDisplayName(NULL, NULL, olePath, &chEaten, ppidl, &dwAttributes));
+        if ( NULL == pSF )
+        {
+            pShellFolder->Release();
+            pShellFolder = NULL;
+        }
+        return hr;
+    }
 
     HRESULT CFShellUtil::GetFileShellInfo(LPCTSTR pszPath, ShellFileInfo& outInfo)
     {

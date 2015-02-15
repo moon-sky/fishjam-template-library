@@ -2,8 +2,9 @@
 
 
 // CShellPage dialog
+#include <ftlshell.h>
 
-class CShellPage : public CPropertyPage
+class CShellPage : public CPropertyPage, public IShellChangeObserver
 {
 	DECLARE_DYNAMIC(CShellPage)
 
@@ -21,4 +22,7 @@ protected:
 public:
     afx_msg void OnBnClickedBtnShellExecute();
     afx_msg void OnBnClickedBtnShellExecuteEx();
+    afx_msg void OnBnClickedBtnShellChangeMonitor();
+private:
+    CFShellChangeMonitor*   m_pShellChangeMonitor;
 };

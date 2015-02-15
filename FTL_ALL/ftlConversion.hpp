@@ -215,7 +215,7 @@ namespace FTL
 			return lp;
 		}
 	}
-    LPCTSTR CFConversion::TCHAR_TO_UTF16( LPCTSTR lp, INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
+    LPCWSTR CFConversion::TCHAR_TO_UTF16( LPCTSTR lp, INT* pLength /* = NULL */, BOOL bDetached /* = FALSE */)
 	{
         int nSrc = lstrlen(lp) + 1;
         if (pLength)

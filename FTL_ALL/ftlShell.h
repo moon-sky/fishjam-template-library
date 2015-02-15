@@ -68,7 +68,10 @@ namespace FTL
 		virtual void OnFileDelete( LPCITEMIDLIST /* pIdl */  ) {};
 		virtual void OnFileUpdated( LPCITEMIDLIST /* pIdl */  ) {};
 		virtual void OnFreeSpace(LPCITEMIDLIST /* pIdl */  ) {};
-		virtual void OnDirRename( LPCITEMIDLIST /* pIdl_Src */, LPCITEMIDLIST /* pIdl_Dst */ ){};
+		virtual void OnDirRename( LPCITEMIDLIST /* pIdl_Src */, LPCITEMIDLIST /* pIdl_Dst */ ){
+            FTLTRACE(TEXT("OnDirRename: \n"));
+        };
+
 		virtual void OnDirCreate( LPCITEMIDLIST /* pIdl */  ) {};
 		virtual void OnDirDelete( LPCITEMIDLIST /* pIdl */  ) {};
 		virtual void OnDirUpdated( LPCITEMIDLIST /* pIdl */  ){};
@@ -124,6 +127,9 @@ namespace FTL
 		//获取 pItemIdList 对应的字符串
 		FTLINLINE static HRESULT GetItemIdName(  LPCITEMIDLIST  pItemIdList, LPTSTR pFriendlyName, UINT cchBuf, 
 			DWORD dwFlags = SHGDN_FORPARSING, IShellFolder* pSF = NULL );
+
+        //获取路径对应的 LPITEMIDLIST
+        FTLINLINE static HRESULT GetItemIDListFromPath( LPCTSTR szFullPath, LPITEMIDLIST* ppidl, IShellFolder* pSF = NULL);
 
         //TODO: 系统已经提供了 SHGetFileInfo 函数
         FTLINLINE static HRESULT GetFileShellInfo(LPCTSTR pszPath, ShellFileInfo& outInfo);

@@ -7,9 +7,8 @@
 COpenMPTester::COpenMPTester()
 {
     m_nOpenMPMaxThreadCount = omp_get_num_procs();
-    FTL::CFOSInfo osInfo;
 
-    m_nProcessorsCount = osInfo.GetNumberOfProcessors();
+    m_nProcessorsCount = CFOSInfo::Instance()->GetNumberOfProcessors();
     FTLTRACE(TEXT("m_nOpenMPMaxThreadCount=%d, m_nProcessorsCount=%d\n"), m_nOpenMPMaxThreadCount, m_nProcessorsCount);
 
     //CPPUNIT_ASSERT(m_nOpenMPMaxThreadCount == m_nProcessorsCount);

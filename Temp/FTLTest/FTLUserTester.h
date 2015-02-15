@@ -17,4 +17,6 @@ public:
     void dump_TokenInfo();
 
     DECLARE_DEFAULT_TEST_CLASS(CFTLUserTester);
+private:
+    static unsigned int __stdcall _DumpThreadTokenProc(void* pParam);
 };

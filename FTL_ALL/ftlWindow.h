@@ -681,7 +681,7 @@ namespace FTL
 	typedef BOOL (CALLBACK* TranslateWndClassProc)(LPCTSTR pszOriClassName, LPTSTR pszNewClass, UINT nLength);
 	__declspec(selectany) TranslateWndClassProc g_pTranslateWndClassProc = NULL;
 
-    void SetTranslateWndClassProc(TranslateWndClassProc pNewProc){
+    void FTLINLINE SetTranslateWndClassProc(TranslateWndClassProc pNewProc){
         g_pTranslateWndClassProc = pNewProc;
     }
 

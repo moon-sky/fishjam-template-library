@@ -149,7 +149,7 @@ namespace FTL
     template <typename T>
     typename CFSingletonT<T>::SelfPtr CFSingletonT<T>::s_pSelf = CFSingletonT<T>::SelfPtr();
 
-    class CFOSInfo
+    class CFOSInfo : public CFSingletonT<CFOSInfo>
     {
     public:
         enum OSType
@@ -170,8 +170,8 @@ namespace FTL
 			ostWindows8,//OK
             ostHighUnknown
         };//OSType;
+    public:
         //_osver,_winmajor,_winminor
-        FTLINLINE CFOSInfo();
         FTLINLINE BOOL IsGreaterWinNT() const;
         FTLINLINE OSType GetOSType() const;
         // if NT without ServicePack, return TRUE but csCSDVersion is ""
@@ -179,6 +179,8 @@ namespace FTL
         FTLINLINE DWORD GetNumberOfProcessors() const;
         FTLINLINE BOOL GetPhysicalBytes(DWORDLONG* pAvailablePhysicalBytes, DWORDLONG *pTotalPhysicalBytes) const;
         FTLINLINE BOOL GetVolumeVisibleName(LPCTSTR pszVolume, LPTSTR pszBuf, DWORD bufSize) const;
+    public:
+        FTLINLINE CFOSInfo();
     private:
         OSVERSIONINFO m_OsInfo;
     };
@@ -472,20 +474,6 @@ namespace FTL
     private:
         CFStringFormater	m_strFormater;
         DWORD   m_dwOldGetProperty;
-    };
-
-    class CFSecurityUtil
-    {
-        //创建一个任何人都可以使用的Mutex -- ATL中已有函数？
-
-        //SECURITY_DESCRIPTOR sd;
-        //BOOL ret = InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
-        //ret = SetSecurityDescriptorDacl(&sd, TRUE, (PACL)NULL, FALSE);
-        //SECURITY_ATTRIBUTES sa;
-        //sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-        //sa.lpSecurityDescriptor = &sd;
-        //sa.bInheritHandle = FALSE;
-        //::CreateMutex(&sa, FALSE, NULL);
     };
 
     class CFTempFpuRcReset  //FPU的四舍五入设定 -- 能提高有效位数？
