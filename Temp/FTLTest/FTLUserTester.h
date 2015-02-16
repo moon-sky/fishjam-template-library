@@ -12,9 +12,11 @@ public:
 
     CPPUNIT_TEST_SUITE( CFTLUserTester );
     CPPUNIT_TEST( dump_TokenInfo );
+    CPPUNIT_TEST( test_IsVistaUACEnabled );
     CPPUNIT_TEST_SUITE_END();
 
     void dump_TokenInfo();
+    void test_IsVistaUACEnabled();
 
     DECLARE_DEFAULT_TEST_CLASS(CFTLUserTester);
 private:

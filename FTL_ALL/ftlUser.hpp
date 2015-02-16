@@ -7,6 +7,7 @@
 #endif
 #include <sddl.h>
 #include <ftlConversion.h>
+#include <ftlSystem.h>
 
 namespace FTL
 {
@@ -196,6 +197,46 @@ namespace FTL
         
     }
 
+    IntegrityLevel CFUserUtil::GetIntegrityLevel(DWORD dwIntegrityLevel)
+    {
+        IntegrityLevel ilRet = ilUnknown;
+
+        if(dwIntegrityLevel >= SECURITY_MANDATORY_PROTECTED_PROCESS_RID){
+            ilRet = ilProtectedProcess;
+        }else if(dwIntegrityLevel >= SECURITY_MANDATORY_SYSTEM_RID){
+            ilRet = ilSystem;
+        }else if(dwIntegrityLevel >= SECURITY_MANDATORY_HIGH_RID){
+            ilRet = ilHigh;
+        }else if(dwIntegrityLevel >= SECURITY_MANDATORY_MEDIUM_RID){
+            ilRet = ilMedium;
+        }else if(dwIntegrityLevel >= SECURITY_MANDATORY_LOW_RID){
+            ilRet = ilLow;
+        }else{
+            ilRet = ilUntrusted;
+        }
+        return ilRet;
+    }
+
+    LPCTSTR CFUserUtil::GetIntegrityLevelString(IntegrityLevel iLevel)
+    {
+        switch (iLevel)
+        {
+            HANDLE_CASE_RETURN_STRING(ilUnknown);
+            HANDLE_CASE_RETURN_STRING(ilAppContainer);
+            HANDLE_CASE_RETURN_STRING(ilLowCompat);
+            HANDLE_CASE_RETURN_STRING(ilUntrusted);
+            HANDLE_CASE_RETURN_STRING(ilLow);
+            HANDLE_CASE_RETURN_STRING(ilMedium);
+            HANDLE_CASE_RETURN_STRING(ilHigh);
+            HANDLE_CASE_RETURN_STRING(ilSystem);
+            HANDLE_CASE_RETURN_STRING(ilProtectedProcess);
+        default:
+            FTLASSERT(FALSE);
+            break;
+        }
+        return NULL;
+    }
+
     LPCTSTR CFUserUtil::GetAclInfo(CFStringFormater& formater, PACL pAcl)
     {
         HRESULT hr = E_FAIL;
@@ -215,8 +256,9 @@ namespace FTL
         return formater.GetString();
     }
 
-    LPCTSTR CFUserUtil::GetSidInfo(CFStringFormater& formater, PSID pSid)
+    LPCTSTR CFUserUtil::GetSidInfo(CFStringFormater& formater, PSID pSid, BOOL bGetSubAuthority)
     {
+        //SID 的信息一般是通过API函数操作, 比如 EqualSid 比较用于比较是否和 Admin 的SID 相同
         BOOL bRet = FALSE;
         HRESULT hr = E_FAIL;
 
@@ -237,18 +279,25 @@ namespace FTL
                 API_VERIFY(CFConvUtil::HexFromBinary((const BYTE*)pSidIdAuth, sizeof(SID_IDENTIFIER_AUTHORITY), NULL, &nStrBinaryCount, _T(',')));
                 CFMemAllocator<TCHAR> sidAuthBuf(nStrBinaryCount);
                 API_VERIFY(CFConvUtil::HexFromBinary((const BYTE*)pSidIdAuth, sizeof(SID_IDENTIFIER_AUTHORITY), sidAuthBuf.GetMemory(), &nStrBinaryCount, _T(',')));
-
-
             }
 
             // Get the number of subauthorities in the SID.
-            //TODO: SECURITY_MANDATORY_LABEL_AUTHORITY
-            DWORD dwSubAuthorityCount = *GetSidSubAuthorityCount(pSid);
-            COM_VERIFY(formater.AppendFormat(TEXT(",SubAuthorityCount=%d"), dwSubAuthorityCount));
-            for (DWORD dwSubAuthorIndex = 0; dwSubAuthorIndex < dwSubAuthorityCount; dwSubAuthorIndex++)
+            if (bGetSubAuthority)
             {
-                DWORD dwIntegrityLevel = *GetSidSubAuthority(pSid, dwSubAuthorIndex);
-                COM_VERIFY(formater.AppendFormat(TEXT("[%d]=0x%x"), dwSubAuthorIndex, dwIntegrityLevel));
+                DWORD dwSubAuthorityCount = *GetSidSubAuthorityCount(pSid);
+                COM_VERIFY(formater.AppendFormat(TEXT(",SubAuthorityCount=%d,"), dwSubAuthorityCount));
+                for (DWORD dwSubAuthorIndex = 0; dwSubAuthorIndex < dwSubAuthorityCount; dwSubAuthorIndex++)
+                {
+                    DWORD dwSubAuthority = *GetSidSubAuthority(pSid, dwSubAuthorIndex);
+                    COM_VERIFY(formater.AppendFormat(TEXT("[%d]=%d(0x%x),"), dwSubAuthorIndex, dwSubAuthority, dwSubAuthority));
+
+                    //TokenIntegrityLevel 的最后一个 SubAuthority 的值代表 Integrity Level
+                    if(dwSubAuthorIndex == (dwSubAuthorityCount - 1))
+                    {
+                        IntegrityLevel il = GetIntegrityLevel(dwSubAuthority);
+                        COM_VERIFY(formater.AppendFormat(TEXT("IL=%d(%s),"), il, GetIntegrityLevelString(il)));
+                    }
+                }
             }
         }
 
@@ -280,12 +329,13 @@ namespace FTL
         return formater.GetString();
     }
 
-    LPCTSTR CFUserUtil::GetSidAndAttributesInfo(CFStringFormater& formater, PSID_AND_ATTRIBUTES pSidAndAttributes, LPCTSTR pszDivide /* = TEXT("|") */)
+    LPCTSTR CFUserUtil::GetSidAndAttributesInfo(CFStringFormater& formater, PSID_AND_ATTRIBUTES pSidAndAttributes, 
+        BOOL bGetSubAuthority ,LPCTSTR pszDivide /* = TEXT("|") */)
     {
         HRESULT hr = E_FAIL;
         CFStringFormater formaterSid, formaterAttributes;
         
-        COM_VERIFY(formater.Format(TEXT("sid=%s, attributes=0x%x(%s)"), GetSidInfo(formaterSid, pSidAndAttributes->Sid),
+        COM_VERIFY(formater.Format(TEXT("sid=%s, attributes=0x%x(%s)"), GetSidInfo(formaterSid, pSidAndAttributes->Sid, bGetSubAuthority),
             pSidAndAttributes->Attributes, GetSidAttributesString(formaterAttributes, pSidAndAttributes->Attributes, pszDivide)));
         return formater.GetString();
     }
@@ -318,6 +368,10 @@ namespace FTL
 
     BOOL CFUserUtil::IsProcessUserAdministrator()
     {
+        if(CFOSInfo::Instance()->GetOSType() <= CFOSInfo::ostWinMe ){
+            return TRUE;
+        }
+
         BOOL bRet = FALSE;
         BOOL bIsAdmin = FALSE;
         DWORD dwError = 0;
@@ -325,7 +379,6 @@ namespace FTL
         HANDLE                   hToken = NULL;
         DWORD                    cbTokenGroups;
         DWORD                    dwGroup;
-        SID_IDENTIFIER_AUTHORITY SystemSidAuthority= SECURITY_NT_AUTHORITY;
 
         API_VERIFY(OpenThreadToken(GetCurrentThread(),TOKEN_QUERY, FALSE, &hToken));
         if (!bRet)
@@ -338,7 +391,7 @@ namespace FTL
         }
         if (bRet)
         {
-            API_VERIFY_EXCEPT1(GetTokenInformation(hToken,TokenGroups,NULL,0,&cbTokenGroups), ERROR_INSUFFICIENT_BUFFER);
+            API_VERIFY_EXCEPT1(GetTokenInformation(hToken, TokenGroups, NULL, 0, &cbTokenGroups), ERROR_INSUFFICIENT_BUFFER);
             dwError = GetLastError();
             if (ERROR_INSUFFICIENT_BUFFER == dwError)
             {
@@ -349,6 +402,7 @@ namespace FTL
                 {
                     // Now we must create a System Identifier for the Admin group.
                     PSID psidAdmin = NULL;
+                    SID_IDENTIFIER_AUTHORITY SystemSidAuthority = SECURITY_NT_AUTHORITY;
                     API_VERIFY(AllocateAndInitializeSid(&SystemSidAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, 
                         DOMAIN_ALIAS_RID_ADMINS,0,0,0,0,0,0,&psidAdmin));
                     if (bRet)
@@ -356,7 +410,7 @@ namespace FTL
                         TOKEN_GROUPS* pTokenGroups = (TOKEN_GROUPS*)tokenBuf.GetMemory();
                         for (dwGroup = 0; dwGroup < pTokenGroups->GroupCount; dwGroup++)
                         {
-                            if (EqualSid(pTokenGroups->Groups[dwGroup].Sid,psidAdmin))
+                            if (EqualSid(pTokenGroups->Groups[dwGroup].Sid, psidAdmin))
                             {
                                 bIsAdmin = TRUE;
                                 break;
@@ -366,9 +420,38 @@ namespace FTL
                     }
                 }
             }
+            SAFE_CLOSE_HANDLE(hToken, NULL);
         }
-
+        FTLASSERT(NULL == hToken);
         return bIsAdmin;
+    }
+
+    BOOL CFUserUtil::IsVistaUACEnabled()
+    {
+        if(CFOSInfo::Instance()->GetOSType() < CFOSInfo::ostVista){
+            return FALSE;
+        }
+        BOOL bRet = FALSE;
+        BOOL bUACEnabled = FALSE;
+
+        HKEY hKey = NULL;
+        LSTATUS lRet = ERROR_SUCCESS;
+        REG_VERIFY(::RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"),
+            0,  KEY_READ, &hKey));//STANDARD_RIGHTS_READ | KEY_QUERY_VALUE, &hKey));
+        if (ERROR_SUCCESS == lRet)
+        {
+            DWORD dwUAC	= 0;
+            DWORD nSize = sizeof(dwUAC);
+            DWORD dwType = REG_NONE;
+            //REG_VERIFY(::RegSetValueEx(hKey, TEXT("fishjam_UACTestPos"), NULL, REG_DWORD, (const BYTE*)&dwUAC, nSize));
+            REG_VERIFY(::RegQueryValueEx(hKey, TEXT("EnableLUA"), NULL, &dwType, (LPBYTE)&dwUAC, &nSize));
+            if(ERROR_SUCCESS == lRet)
+            {
+                bUACEnabled =  (1 == dwUAC);
+            }
+            SAFE_CLOSE_REG(hKey);
+        }
+        return bUACEnabled;
     }
 
     IntegrityLevel CFUserUtil::GetProcessIntegrityLevel(HANDLE hProcess)
@@ -480,7 +563,7 @@ namespace FTL
         FTLTRACEEX(FTL::tlDetail,  TEXT("GetTokenInformation: %d need memory Bytes %d\n"), c, l); \
         if((ERROR_INSUFFICIENT_BUFFER == GetLastError()) && (l > 0)){ \
             DWORD dwWant = l;\
-            API_VERIFY_EXCEPT1( (GetTokenInformation(h, (TOKEN_INFORMATION_CLASS)c, (LPVOID)a.GetMemory(dwWant), dwWant, &l) && (dwWant == l)), e); \
+            API_VERIFY_EXCEPT1( (GetTokenInformation(h, (TOKEN_INFORMATION_CLASS)c, (LPVOID)a.GetMemory(dwWant * 2), dwWant * 2, &l) && (dwWant == l)), e); \
         }\
     }
 
@@ -513,8 +596,8 @@ namespace FTL
 
         TOKEN_USER* pTokenUser = (TOKEN_USER*)TokenInformation;
         DWORD dwAttributes = pTokenUser->User.Attributes;
-        COM_VERIFY(formater.Format(TEXT("Sid=%s, Attributes=0x%x(%s)"), GetSidInfo(formaterSid, pTokenUser->User.Sid), 
-            dwAttributes, GetSidAttributesString(formaterAttributes, dwAttributes)));
+        COM_VERIFY(formater.Format(TEXT("Sid=%s, Attributes=0x%x(%s)"), GetSidInfo(formaterSid, pTokenUser->User.Sid, FALSE), 
+            dwAttributes, GetSidAttributesString(formaterAttributes, dwAttributes, TEXT("|"))));
         return formater.GetString();
     }
 
@@ -526,8 +609,8 @@ namespace FTL
         {
             CFStringFormater formaterSid, formaterAttributes;
             DWORD dwAttributes = pTokenGroups->Groups[dwIndex].Attributes;
-            formater.AppendFormat(TEXT("\n  [%d]=%s, Attributes=0x%x(%s)"), dwIndex, GetSidInfo(formaterSid, pTokenGroups->Groups[dwIndex].Sid), 
-                dwAttributes, GetSidAttributesString(formaterAttributes, dwAttributes));
+            formater.AppendFormat(TEXT("\n  [%d]=%s, Attributes=0x%x(%s)"), dwIndex, GetSidInfo(formaterSid, pTokenGroups->Groups[dwIndex].Sid, FALSE), 
+                dwAttributes, GetSidAttributesString(formaterAttributes, dwAttributes, TEXT("|")));
         }
 
         return formater.GetString();
@@ -547,7 +630,7 @@ namespace FTL
             if(bRet){
                 CFStringFormater formaterPrivilege;
                 formater.AppendFormat(TEXT("\n  [%d]=%s, Attributes=0x%x(%s)"), dwIndex, szPrivilegeName, pPrivilege->Attributes, 
-                    GetPrivilegeAttributesString(formaterPrivilege, pPrivilege->Attributes));
+                    GetPrivilegeAttributesString(formaterPrivilege, pPrivilege->Attributes, TEXT("|")));
             }
         }
         return formater.GetString();
@@ -557,7 +640,7 @@ namespace FTL
     {
         CFStringFormater formaterSid;
         TOKEN_OWNER* pTokenOwner = (TOKEN_OWNER*)TokenInformation;
-        formater.Format(TEXT("Owner=%s"), GetSidInfo(formaterSid, pTokenOwner->Owner));
+        formater.Format(TEXT("Owner=%s"), GetSidInfo(formaterSid, pTokenOwner->Owner, FALSE));
         return formater.GetString();
     }
 
@@ -565,7 +648,7 @@ namespace FTL
     {
         CFStringFormater formaterSid;
         TOKEN_PRIMARY_GROUP* pTokenPrimaryGroup = (TOKEN_PRIMARY_GROUP*)TokenInformation;
-        formater.Format(TEXT("PrimaryGroup=%s"), GetSidInfo(formaterSid, pTokenPrimaryGroup->PrimaryGroup));
+        formater.Format(TEXT("PrimaryGroup=%s"), GetSidInfo(formaterSid, pTokenPrimaryGroup->PrimaryGroup, FALSE));
 
         return formater.GetString();
     }
@@ -696,7 +779,7 @@ namespace FTL
     LPCTSTR WINAPI CFUserUtil::GetTokenMandatoryLabelInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD /* TokenInformationLength */)
     {
         TOKEN_MANDATORY_LABEL* pTokenMandatoryLabel = (TOKEN_MANDATORY_LABEL*)TokenInformation;
-        return GetSidAndAttributesInfo(formater, &pTokenMandatoryLabel->Label);
+        return GetSidAndAttributesInfo(formater, &pTokenMandatoryLabel->Label, TRUE, TEXT("|"));
     }
     LPCTSTR WINAPI CFUserUtil::GetTokenMandatoryPolicyInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD /* TokenInformationLength */)
     {
@@ -717,7 +800,7 @@ namespace FTL
     LPCTSTR WINAPI CFUserUtil::GetTokenAppcontainerInformationInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD /* TokenInformationLength */)
     {
         TOKEN_APPCONTAINER_INFORMATION* pTokenAppcontainerInformation = (TOKEN_APPCONTAINER_INFORMATION*)TokenInformation;
-        return GetSidInfo(formater, pTokenAppcontainerInformation->TokenAppContainer);
+        return GetSidInfo(formater, pTokenAppcontainerInformation->TokenAppContainer, FALSE);
     }
     LPCTSTR WINAPI CFUserUtil::GetClaimSecurityAttributesInformationInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD /* TokenInformationLength */)
     {
@@ -804,7 +887,7 @@ namespace FTL
                 GET_TOKEN_INFORMATION_DYNAMIC(hToken, pDumpParams->tokenInformationClass, memAllocator, dwReturnLength, pDumpParams->dwSkipError);
                 if (bRet)
                 {
-                    CFStringFormater formater;
+                    CFStringFormater formater(512, 16);
                     FTLTRACE(TEXT("%s(%d): %s\n"), pDumpParams->pszClassName, pDumpParams->tokenInformationClass,
                         pDumpParams->pDumpProc(formater, memAllocator.GetMemory(), dwReturnLength));
                 }

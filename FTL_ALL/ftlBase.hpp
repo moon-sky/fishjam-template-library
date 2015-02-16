@@ -664,7 +664,7 @@ namespace FTL
 		if (NULL == m_pBuf)
 		{
 			m_dwTotalSpaceSize = 0;
-			hr = HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
+			hr = HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY);
 		}
 
 		return hr;
@@ -690,9 +690,8 @@ namespace FTL
             return hr;
         }
 
-        
         DWORD dwOldStringLen = static_cast<DWORD>(_tcslen(m_pBuf));
-		LPTSTR pszOldString = NULL;
+        LPTSTR pszOldString = NULL;
 
         LPTSTR pszDestEnd = NULL;
         size_t cchRemaining = 0;
@@ -702,7 +701,7 @@ namespace FTL
         //指向原来字符串的结束位置
         LPTSTR pszAppendPos = m_pBuf + dwOldStringLen;
         DWORD dwLength = m_dwTotalSpaceSize;
-        COM_VERIFY_EXCEPT1(StringCchVPrintfEx(pszAppendPos,dwLength - dwOldStringLen, &pszDestEnd,&cchRemaining,dwFlags,lpszFormat,argList)
+        COM_VERIFY_EXCEPT1(StringCchVPrintfEx(pszAppendPos,dwLength - dwOldStringLen, &pszDestEnd, &cchRemaining, dwFlags, lpszFormat, argList)
             ,STRSAFE_E_INSUFFICIENT_BUFFER);
 
 		if (STRSAFE_E_INSUFFICIENT_BUFFER == hr)
@@ -714,7 +713,7 @@ namespace FTL
 		}
 
         //如果内存空间不够，每次扩大2倍内存长度，重新尝试，直到成功或内存分配失败
-        while (hr == STRSAFE_E_INSUFFICIENT_BUFFER && dwLength < 8 * m_dwInitAllocLength)
+        while (hr == STRSAFE_E_INSUFFICIENT_BUFFER && dwLength < m_dwMaxBufferTimes * m_dwInitAllocLength)
         {
             SAFE_DELETE_ARRAY(m_pBuf);
             dwLength *= 2;

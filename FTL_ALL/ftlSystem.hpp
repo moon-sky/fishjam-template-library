@@ -26,11 +26,13 @@ namespace FTL
     CFOSInfo::CFOSInfo()
     {
         BOOL bRet = FALSE;
-		ZeroMemory(&m_OsInfo, sizeof(m_OsInfo));
+        ZeroMemory(&m_OsInfo, sizeof(m_OsInfo));
         m_OsInfo.dwOSVersionInfoSize = sizeof(m_OsInfo);
-        API_VERIFY(::GetVersionEx(&m_OsInfo));
-        FTLTRACEEX(tlTrace,_T("GetVersionEx :{ dwPlatformId=%d, dwMajorVersion=%d, dwMinorVersion=%d,dwBuildNumber=%d,szCSDVersion=%s}\r\n"),
-            m_OsInfo.dwPlatformId,m_OsInfo.dwMajorVersion,m_OsInfo.dwMinorVersion,m_OsInfo.dwBuildNumber,m_OsInfo.szCSDVersion);
+        API_VERIFY(::GetVersionEx((OSVERSIONINFO*) &m_OsInfo));
+        FTLTRACEEX(tlTrace, TEXT("GetVersionEx :{size=%d, dwPlatformId=%d, dwMajorVersion=%d, dwMinorVersion=%d,dwBuildNumber=%d,szCSDVersion=%s,")
+            TEXT("spMajor=%d, spMinor=%d, SuiteMask=0x%x, spProductType=%d, reserved=%d\r\n"),
+            m_OsInfo.dwOSVersionInfoSize, m_OsInfo.dwPlatformId, m_OsInfo.dwMajorVersion, m_OsInfo.dwMinorVersion, m_OsInfo.dwBuildNumber, m_OsInfo.szCSDVersion, 
+            m_OsInfo.wServicePackMajor, m_OsInfo.wServicePackMinor, m_OsInfo.wSuiteMask, m_OsInfo.wProductType, m_OsInfo.wReserved);
     }
 
     CFOSInfo::OSType CFOSInfo::GetOSType() const
@@ -82,13 +84,16 @@ namespace FTL
         case 20601:
             osType = ostWindows7;
             break;
-		case 20602:
-			osType = ostWindows8;
-			break;
+        case 20602:
+            osType = ostWindows8;
+            break;
+        case 20603:
+            osType = ostWindows81;
+            break;
         default:
             {
                 _ASSERT(FALSE);
-                if (dwOsVersion > 20602)
+                if (dwOsVersion > 20603)
                 {
                     osType = ostHighUnknown;
                 }

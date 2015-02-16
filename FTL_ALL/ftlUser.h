@@ -108,25 +108,31 @@ namespace FTL
         ilUnknown = 0,
         ilAppContainer, //Win8 + IE10 + EPM 或 Metro 时, 
         ilLowCompat,    //TODO: 网页要求 ActiveX control which is not EPM-compatible 时
+        ilUntrusted,
         ilLow, 
         ilMedium,
         ilHigh,
+        ilSystem,
+        ilProtectedProcess
     };
 
 	class CFUserUtil
 	{
 	public:
+        FTLINLINE static IntegrityLevel GetIntegrityLevel(DWORD dwIntegrityLevel);
+        FTLINLINE static LPCTSTR GetIntegrityLevelString(IntegrityLevel iLevel);
         FTLINLINE static LPCTSTR GetWellKnownSidTypeString(WELL_KNOWN_SID_TYPE sidType);
         FTLINLINE static LPCTSTR GetAclInfo(CFStringFormater& formater, PACL pAcl);
         FTLINLINE static LPCTSTR GetPrivilegeNameByLuid(CFStringFormater& formater, PLUID pLuid, LPCTSTR lpSystemName = NULL);
-        FTLINLINE static LPCTSTR GetSidInfo(CFStringFormater& formater, PSID pSid);
-        FTLINLINE static LPCTSTR GetSidAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide = TEXT("|"));
-        FTLINLINE static LPCTSTR GetSidAndAttributesInfo(CFStringFormater& formater, PSID_AND_ATTRIBUTES pSidAndAttributes, LPCTSTR pszDivide = TEXT("|"));
-        FTLINLINE static LPCTSTR GetPrivilegeAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide = TEXT("|"));
+        FTLINLINE static LPCTSTR GetSidInfo(CFStringFormater& formater, PSID pSid, BOOL bGetSubAuthority);
+        FTLINLINE static LPCTSTR GetSidAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide /*= TEXT("|") */);
+        FTLINLINE static LPCTSTR GetSidAndAttributesInfo(CFStringFormater& formater, PSID_AND_ATTRIBUTES pSidAndAttributes, BOOL bGetSubAuthority, LPCTSTR pszDivide);
+        FTLINLINE static LPCTSTR GetPrivilegeAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide /*= TEXT("|") */);
         FTLINLINE static LPCTSTR GetSecurityDescriptorinfo(CFStringFormater& formater, SECURITY_DESCRIPTOR* pSecurityDescriptor);
 
         //判断当前用户(当前进程的Owner)是否是本地 Adminstrators 组中的成员(注意：不是域的)
         FTLINLINE static BOOL IsProcessUserAdministrator();
+        FTLINLINE static BOOL IsVistaUACEnabled();
 
         FTLINLINE static IntegrityLevel GetProcessIntegrityLevel(HANDLE hProcess);
 

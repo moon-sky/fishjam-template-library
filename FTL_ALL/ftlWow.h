@@ -47,7 +47,7 @@ namespace FTL
     * 
     * 定义变量时，使用 UINT_PTR、DWORD_PTR 等自动支持 32/64 的变量(WPARAM,LPARAM,LRESULT,各种HANDLE本质都是指针)
 	*
-	* 64位程序使用注册表时，需要使用 KEY_WOW64_32KEY 参数?
+	* 64位程序使用注册表时，可以使用 KEY_WOW64_32KEY 参数指定访问32位的注册表
 	*   CRegKey reg;
 	*   #if _WIN64
 	*   if ( ERROR_SUCCESS == reg.Open(HKEY_LOCAL_MACHINE, _T("SOFTWARE\Microsoft\VisualStudio"),	KEY_READ | KEY_WOW64_32KEY) )

@@ -20,7 +20,7 @@ public:
     CPPUNIT_TEST( test_UrlEscape );
     CPPUNIT_TEST( test_WinSocket );
     CPPUNIT_TEST( test_UrlMonFunctions );
-
+    CPPUNIT_TEST( test_DownloadMethods );
     CPPUNIT_TEST_SUITE_END();
 
     void dump_allAdaptersInfo();
@@ -32,6 +32,7 @@ public:
     void test_WinSocket();
 
     void test_UrlMonFunctions();
+    void test_DownloadMethods();
 
     DECLARE_DEFAULT_TEST_CLASS(CFTLNetTester);
 };

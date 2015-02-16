@@ -157,7 +157,9 @@ namespace FTL
         //获取 CreateFile(xxx, dwDesiredAccess, xxx) 中的 dwDesiredAccess 参数
         FTLINLINE static LPCTSTR GetFileDesiredAccessFlagsString(FTL::CFStringFormater& formater, DWORD dwDesiredAccess, LPCTSTR pszDivide = TEXT("|"));
 
-        //调试方法，输出所有能获取到的系统目录
+        //系统提供了多个函数来获取一些特定的目录, 本函数测试输出所有能获取到的系统目录, 测试的函数有:
+        // SHGetFolderPath -- 旧函数(支持9x),不再推荐,Vista后是 SHGetKnownFolderPath 的简单封装.可指定获取 缺省 或 当前 两种目录类型。
+        // SHGetKnownFolderPath -- Vista以后的新函数,
         FTLINLINE static BOOL DumpAllAPISystemFolderPath(DWORD dwSHGetFolderPathFlags = SHGFP_TYPE_DEFAULT);
 
 		FTLINLINE static TextFileEncoding GetTextFileEncoding(LPCTSTR pszFilePath);

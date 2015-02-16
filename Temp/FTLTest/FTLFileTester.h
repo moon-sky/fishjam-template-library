@@ -13,13 +13,16 @@ class CFTLFileTester : public CPPUNIT_NS::TestFixture,
 public:
 
     CPPUNIT_TEST_SUITE( CFTLFileTester );
+
     CPPUNIT_TEST( test_CreateFile );
     CPPUNIT_TEST( test_DirectoryCopier );
+    CPPUNIT_TEST( test_DumpAllAPISystemFolderPath );
 
     CPPUNIT_TEST_SUITE_END();
 
     void test_CreateFile();
     void test_DirectoryCopier();
+    void test_DumpAllAPISystemFolderPath();
 
     DECLARE_DEFAULT_TEST_CLASS(CFTLFileTester);
 

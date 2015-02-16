@@ -7,6 +7,7 @@
 #endif
 
 #include "ftlConversion.h"
+#pragma comment(lib, "Version.lib")
 
 namespace FTL
 {
@@ -618,6 +619,47 @@ namespace FTL
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
         }
+        return hr;
+    }
+
+    HRESULT CFShellUtil::GetFileVersionInfo(LPCTSTR pszFilePath, VS_FIXEDFILEINFO *pFileInfo, DWORD dwFlags)
+    {
+        //定义可以获得版本信息的路径
+        static LPCTSTR PATH_VER_FIXEDFILEINFO = TEXT("\\");
+
+        HRESULT hr = E_FAIL;
+        BOOL bRet = FALSE;
+
+        CHECK_POINTER_ISSTRING_PTR_RETURN_VALUE_IF_FAIL(pszFilePath,  HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER));
+        CHECK_POINTER_WRITABLE_DATA_RETURN_VALUE_IF_FAIL(pFileInfo, sizeof(VS_FIXEDFILEINFO), HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER));
+
+        DWORD dwValue = 0 ;
+        DWORD dwSize = ::GetFileVersionInfoSizeEx(dwFlags, pszFilePath, &dwValue) ;
+        API_VERIFY(0 != dwSize);
+
+        if (dwSize != 0)
+        {
+            ZeroMemory(pFileInfo, sizeof(*pFileInfo)) ;
+            CFMemAllocator<BYTE> dataBuf(dwSize);
+            API_VERIFY(::GetFileVersionInfoEx(dwFlags, pszFilePath, 0, dwSize, dataBuf.GetMemory()));
+            if (bRet)
+            {
+                BYTE *pbyBlock = NULL ;
+                UINT cbBlock = 0 ;
+                API_VERIFY(VerQueryValue(dataBuf.GetMemory(), PATH_VER_FIXEDFILEINFO, reinterpret_cast<void **>(&pbyBlock), &cbBlock));
+                FTLASSERT(sizeof(*pFileInfo) == cbBlock);
+                if (sizeof(*pFileInfo) == cbBlock)
+                {
+                    CopyMemory(pFileInfo, pbyBlock, cbBlock);
+                    hr = S_OK;
+                }
+            }
+        }
+        if (FAILED(hr))
+        {
+            hr = HRESULT_FROM_WIN32(GetLastError());
+        }
+        
         return hr;
     }
 

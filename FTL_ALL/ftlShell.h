@@ -149,7 +149,10 @@ namespace FTL
 
         FTLINLINE static HRESULT LaunchIE(LPCTSTR szURL, int nCmdShow = SW_SHOW);
 
-        //FTLINLINE static BOOL BrowserDirectory(CFStringFormater& strResult, LPCTSTR strTitle = NULL, UINT nFlags = BIF_NEWDIALOGSTYLE);
+        //TODO: 获取文件的版本信息 -- 版本信息里面有很多内容(比如iexplore.exe有3K多的内容), 
+        //  采用树结构进行保存各分享信息(如 \\VarFileInfo\\Translation ), 参见 PATH_VER_FIXEDFILEINFO 定义
+        FTLINLINE static HRESULT GetFileVersionInfo(LPCTSTR pszFilePath, VS_FIXEDFILEINFO *pFileInfo, 
+            DWORD dwFlags = FILE_VER_GET_LOCALISED | FILE_VER_GET_NEUTRAL);
     };
 
 

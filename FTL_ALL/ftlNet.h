@@ -689,7 +689,8 @@
 *   返回的状态头
 *
 * 封装函数
-*   URLDownloadToFile -- 指定URL直接下载文件，缺点：同步调用，不能下载大文件。
+*   URLDownloadToFile -- 指定URL直接下载文件，缺点：同步调用，不能下载大文件; 下载前先在本地缓存中查找文件，如缓存中有则不会再去下载
+*                        可通过URL中增加timestamp 或 DeleteUrlCacheEntry 清理缓存后再下载
 *
 * WinINet API 函数(MFC 封装: CHttpFile) -- 通常只适用于客户端程序，服务器程序开发需要用 WinHTTP(升级版? 参见 "Porting WinINet Applications to WinHTTP" )
 *   一般有三个 HINTERNET(可通过 GetHInternetHandleType 函数区分):

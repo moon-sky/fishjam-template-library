@@ -50,3 +50,10 @@ void CFTLFileTester::test_DirectoryCopier()
     Sleep(10000);
 
 }
+
+void CFTLFileTester::test_DumpAllAPISystemFolderPath()
+{
+    BOOL bRet = FALSE;
+    API_VERIFY(FTL::CFFileUtil::DumpAllAPISystemFolderPath(SHGFP_TYPE_CURRENT));
+    //API_VERIFY(FTL::CFFileUtil::DumpAllAPISystemFolderPath(SHGFP_TYPE_DEFAULT));
+}

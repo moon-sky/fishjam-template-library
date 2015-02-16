@@ -34,11 +34,11 @@ namespace FTL
 				GetProcAddress(Instance, "IEIsProtectedModeProcess");
 			if (IEIsProtectedModeProcessProc)
 			{
-				HRESULT Res = IEIsProtectedModeProcessProc(&IsProtecedMode);
-				if (FAILED(Res))
+				HRESULT hr = IEIsProtectedModeProcessProc(&IsProtecedMode);
+				if (FAILED(hr))
 				{
 					FTLASSERT(E_ACCESSDENIED == 0x80070005);
-					if (E_ACCESSDENIED == Res)
+					if (E_ACCESSDENIED == hr)
 					{
 						IsProtecedMode = TRUE;    // access denied, assume protected mode
 					}

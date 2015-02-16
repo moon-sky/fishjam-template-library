@@ -201,6 +201,10 @@ namespace FTL
 # define INCLUDE_DETECT_STRMIF      0
 #endif
 
+#ifndef INCLUDE_DETECT_URLHIST
+# define INCLUDE_DETECT_URLHIST      0
+#endif
+
 #ifndef INCLUDE_DETECT_URLMON
 # define INCLUDE_DETECT_URLMON      1
 #endif
@@ -374,6 +378,10 @@ namespace FTL
 #  include <dmodshow.h>
 #  include <amvideo.h>
 #  include <qnetwork.h>
+#endif 
+
+#if INCLUDE_DETECT_URLHIST
+#  include <UrlHist.h>
 #endif 
 
 #if INCLUDE_DETECT_URLMON

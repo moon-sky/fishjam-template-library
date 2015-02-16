@@ -874,6 +874,10 @@ namespace FTL
 
 #endif //INCLUDE_DETECT_STRMIF
 
+#if INCLUDE_DETECT_URLHIST
+
+#endif //INCLUDE_DETECT_URLHIST
+
 #if INCLUDE_DETECT_URLMON
 #  if(_WIN32_IE >= _WIN32_IE_IE70)
 	class CFUriDump
@@ -2974,6 +2978,14 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY_IID(IDShowPlugin, IID_IDShowPlugin)
 
 #endif //INCLUDE_DETECT_STRMIF
+
+#if INCLUDE_DETECT_URLHIST
+            //进行IE的URL 历史管理, CLSID_CUrlHistory
+            DETECT_INTERFACE_ENTRY(IEnumSTATURL)
+            DETECT_INTERFACE_ENTRY(IUrlHistoryStg)
+            DETECT_INTERFACE_ENTRY(IUrlHistoryStg2)
+            DETECT_INTERFACE_ENTRY(IUrlHistoryNotify)
+#endif //INCLUDE_DETECT_URLHIST
 
 #if INCLUDE_DETECT_URLMON
             DETECT_INTERFACE_ENTRY(IPersistMoniker)

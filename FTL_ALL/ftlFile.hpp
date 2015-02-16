@@ -96,7 +96,7 @@ namespace FTL
             std::make_pair(CSIDL_COMMON_APPDATA, TEXT("CSIDL_COMMON_APPDATA")), //%ProgramData%
             std::make_pair(CSIDL_WINDOWS, TEXT("CSIDL_WINDOWS")),               //%SystemRoot%
             std::make_pair(CSIDL_SYSTEM, TEXT("CSIDL_SYSTEM")),                 //%SystemRoot%\System32
-            std::make_pair(CSIDL_PROGRAM_FILES, TEXT("CSIDL_PROGRAM_FILES")),   //%ProgramFiles(x86)% -- 32
+            std::make_pair(CSIDL_PROGRAM_FILES, TEXT("CSIDL_PROGRAM_FILES")),   //%ProgramFiles(x86)% -- 32程序时 或 %ProgramFiles% -- 64位程序时
             std::make_pair(CSIDL_MYPICTURES, TEXT("CSIDL_MYPICTURES")),         //%USERPROFILE%\Pictures
             std::make_pair(CSIDL_PROFILE, TEXT("CSIDL_PROFILE")),               //%USERPROFILE%
             std::make_pair(CSIDL_SYSTEMX86, TEXT("CSIDL_SYSTEMX86")),           //%SystemRoot%\SysWOW64
@@ -113,7 +113,7 @@ namespace FTL
             std::make_pair(CSIDL_COMMON_VIDEO, TEXT("CSIDL_COMMON_VIDEO")),     //%PUBLIC%\Videos
             std::make_pair(CSIDL_RESOURCES, TEXT("CSIDL_RESOURCES")),           //%SystemRoot%\resources
             std::make_pair(CSIDL_RESOURCES_LOCALIZED, TEXT("CSIDL_RESOURCES_LOCALIZED")),   //%SystemRoot%\resources\0804 -- 中文
-            std::make_pair(CSIDL_COMMON_OEM_LINKS, TEXT("CSIDL_COMMON_OEM_LINKS")), //%ProgramData%\OEM Links
+            std::make_pair(CSIDL_COMMON_OEM_LINKS, TEXT("CSIDL_COMMON_OEM_LINKS")), //%ProgramData%\OEM Links , 测试时发生过 COR_E_FILENOTFOUND(0x80070002) 错误
             std::make_pair(CSIDL_CDBURN_AREA, TEXT("CSIDL_CDBURN_AREA")),           //%LOCALAPPDATA%\Microsoft\Windows\Burn\Burn
             std::make_pair(CSIDL_COMPUTERSNEARME, TEXT("CSIDL_COMPUTERSNEARME")),   //E_FAIL
 
@@ -133,11 +133,163 @@ namespace FTL
                 FTLTRACEEX(tlWarning, TEXT("SHGetFolderPath Get %s Failed(0x%x)\n"), checkClsids[i].second, hr);
             }
         }
-        
+
+        typedef std::pair<GUID, LPCTSTR> GUID2NameInfoPair;
+        GUID2NameInfoPair checkGuids[] = {
+            //TODO: 这些为什么会失败，是因为参数不正确?
+            std::make_pair(FOLDERID_NetworkFolder, TEXT("FOLDERID_NetworkFolder")),             //E_FAIL
+            std::make_pair(FOLDERID_ComputerFolder, TEXT("FOLDERID_ComputerFolder")),           //E_FAIL
+            std::make_pair(FOLDERID_InternetFolder, TEXT("FOLDERID_InternetFolder")),           //E_FAIL
+            std::make_pair(FOLDERID_ControlPanelFolder, TEXT("FOLDERID_ControlPanelFolder")),   //E_FAIL
+            std::make_pair(FOLDERID_PrintersFolder, TEXT("FOLDERID_PrintersFolder")),           //E_FAIL
+            std::make_pair(FOLDERID_SyncManagerFolder, TEXT("FOLDERID_SyncManagerFolder")),     //E_FAIL
+            std::make_pair(FOLDERID_SyncSetupFolder, TEXT("FOLDERID_SyncSetupFolder")),         //E_FAIL
+            std::make_pair(FOLDERID_ConflictFolder, TEXT("FOLDERID_ConflictFolder")),           //E_FAIL
+            std::make_pair(FOLDERID_SyncResultsFolder, TEXT("FOLDERID_SyncResultsFolder")),     //E_FAIL
+            std::make_pair(FOLDERID_RecycleBinFolder, TEXT("FOLDERID_RecycleBinFolder")),       //E_FAIL
+            std::make_pair(FOLDERID_ConnectionsFolder, TEXT("FOLDERID_ConnectionsFolder")),     //E_FAIL
+            std::make_pair(FOLDERID_Fonts, TEXT("FOLDERID_Fonts")),                             //%SystemRoot%\Fonts
+            std::make_pair(FOLDERID_Desktop, TEXT("FOLDERID_Desktop")),                         //%USERPROFILE%\Desktop
+            std::make_pair(FOLDERID_Startup, TEXT("FOLDERID_Startup")),                         //%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
+            std::make_pair(FOLDERID_Programs, TEXT("FOLDERID_Programs")),                       //%APPDATA%\Microsoft\Windows\Start Menu\Programs
+            std::make_pair(FOLDERID_StartMenu, TEXT("FOLDERID_StartMenu")),                     //%APPDATA%\Microsoft\Windows\Start Menu
+            std::make_pair(FOLDERID_Recent, TEXT("FOLDERID_Recent")),                           //%APPDATA%\Microsoft\Windows\Recent
+            std::make_pair(FOLDERID_SendTo, TEXT("FOLDERID_SendTo")),                           //%APPDATA%\Microsoft\Windows\SendTo
+            std::make_pair(FOLDERID_Documents, TEXT("FOLDERID_Documents")),                     //%USERPROFILE%\Documents
+            std::make_pair(FOLDERID_Favorites, TEXT("FOLDERID_Favorites")),                     //%USERPROFILE%\Favorites
+            std::make_pair(FOLDERID_NetHood, TEXT("FOLDERID_NetHood")),                         //%APPDATA%\Microsoft\Windows\Network Shortcuts
+            std::make_pair(FOLDERID_PrintHood, TEXT("FOLDERID_PrintHood")),                     //%APPDATA%\Microsoft\Windows\Printer Shortcuts
+            std::make_pair(FOLDERID_Templates, TEXT("FOLDERID_Templates")),                     //%APPDATA%\Microsoft\Windows\Templates
+            std::make_pair(FOLDERID_CommonStartup, TEXT("FOLDERID_CommonStartup")),             //%ProgramData%\Microsoft\Windows\Start Menu\Programs\Startup
+            std::make_pair(FOLDERID_CommonPrograms, TEXT("FOLDERID_CommonPrograms")),           //%ProgramData%\Microsoft\Windows\Start Menu\Programs
+            std::make_pair(FOLDERID_CommonStartMenu, TEXT("FOLDERID_CommonStartMenu")),         //%ProgramData%\Microsoft\Windows\Start Menu
+            std::make_pair(FOLDERID_PublicDesktop, TEXT("FOLDERID_PublicDesktop")),             //%PUBLIC%\Desktop
+            std::make_pair(FOLDERID_ProgramData, TEXT("FOLDERID_ProgramData")),                 //%ProgramData%
+            std::make_pair(FOLDERID_CommonTemplates, TEXT("FOLDERID_CommonTemplates")),         //%ProgramData%\Microsoft\Windows\Templates
+            std::make_pair(FOLDERID_PublicDocuments, TEXT("FOLDERID_PublicDocuments")),         //%PUBLIC%\Documents
+
+            //普通程序一般在 FOLDERID_RoamingAppData 写数据
+            std::make_pair(FOLDERID_RoamingAppData, TEXT("FOLDERID_RoamingAppData")),           //%APPDATA%      (如: C:\Users\<user>\AppData\Roaming )
+            std::make_pair(FOLDERID_LocalAppData, TEXT("FOLDERID_LocalAppData")),               //%LOCALAPPDATA% (如: C:\Users\<user>\AppData\Local )
+
+            //IE保护模式等低权限的程序一般在 FOLDERID_LocalAppDataLow 写数据
+            //注意: Win7下该值没有直接对应的环境变量
+            std::make_pair(FOLDERID_LocalAppDataLow, TEXT("FOLDERID_LocalAppDataLow")),         //%USERPROFILE%\AppData\LocalLow(如 C:\Users\<user>\AppData\LocalLow ) 
+
+            std::make_pair(FOLDERID_InternetCache, TEXT("FOLDERID_InternetCache")),             //%LOCALAPPDATA%\Microsoft\Windows\Temporary Internet Files
+            std::make_pair(FOLDERID_Cookies, TEXT("FOLDERID_Cookies")),                         //%APPDATA%\Microsoft\Windows\Cookies
+            std::make_pair(FOLDERID_History, TEXT("FOLDERID_History")),                         //%LOCALAPPDATA%\Microsoft\Windows\History
+            std::make_pair(FOLDERID_System, TEXT("FOLDERID_System")),                           //%SystemRoot%\system32
+            std::make_pair(FOLDERID_SystemX86, TEXT("FOLDERID_SystemX86")),                     //%SystemRoot%\SysWOW64
+            std::make_pair(FOLDERID_Windows, TEXT("FOLDERID_Windows")),                         //%windir%
+            std::make_pair(FOLDERID_Profile, TEXT("FOLDERID_Profile")),                         //%USERPROFILE%
+            std::make_pair(FOLDERID_Pictures, TEXT("FOLDERID_Pictures")),                       //%USERPROFILE%\Pictures
+            std::make_pair(FOLDERID_ProgramFilesX86, TEXT("FOLDERID_ProgramFilesX86")),         //%ProgramFiles(x86)%
+            std::make_pair(FOLDERID_ProgramFilesCommonX86, TEXT("FOLDERID_ProgramFilesCommonX86")),     //%CommonProgramFiles(x86)%
+            std::make_pair(FOLDERID_ProgramFilesX64, TEXT("FOLDERID_ProgramFilesX64")),         //COR_E_FILENOTFOUND
+            std::make_pair(FOLDERID_ProgramFilesCommonX64, TEXT("FOLDERID_ProgramFilesCommonX64")),     //COR_E_FILENOTFOUND
+            std::make_pair(FOLDERID_ProgramFiles, TEXT("FOLDERID_ProgramFiles")),               //%ProgramFiles(x86)% -- 32位程序时 或 %ProgramFiles% -- 64位程序时
+            std::make_pair(FOLDERID_ProgramFilesCommon, TEXT("FOLDERID_ProgramFilesCommon")),   //%CommonProgramFiles(x86)%
+            std::make_pair(FOLDERID_UserProgramFiles, TEXT("FOLDERID_UserProgramFiles")),       //%LOCALAPPDATA%\Programs
+            std::make_pair(FOLDERID_UserProgramFilesCommon, TEXT("FOLDERID_UserProgramFilesCommon")),   //%LOCALAPPDATA%\Programs\Common
+            std::make_pair(FOLDERID_AdminTools, TEXT("FOLDERID_AdminTools")),                   //%APPDATA%\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+            std::make_pair(FOLDERID_CommonAdminTools, TEXT("FOLDERID_CommonAdminTools")),       //%ProgramData%\Microsoft\Windows\Start Menu\Programs\Administrative Tools
+            std::make_pair(FOLDERID_Music, TEXT("FOLDERID_Music")),                             //%USERPROFILE%\Music
+            std::make_pair(FOLDERID_Videos, TEXT("FOLDERID_Videos")),                           //%USERPROFILE%\Videos
+            std::make_pair(FOLDERID_Ringtones, TEXT("FOLDERID_Ringtones")),                     //%LOCALAPPDATA%\Microsoft\Windows\Ringtones
+            std::make_pair(FOLDERID_PublicPictures, TEXT("FOLDERID_PublicPictures")),           //%PUBLIC%\Pictures
+            std::make_pair(FOLDERID_PublicMusic, TEXT("FOLDERID_PublicMusic")),                 //%PUBLIC%\Music
+            std::make_pair(FOLDERID_PublicVideos, TEXT("FOLDERID_PublicVideos")),               //%PUBLIC%\Videos
+            std::make_pair(FOLDERID_PublicRingtones, TEXT("FOLDERID_PublicRingtones")),         //%ProgramData%\Microsoft\Windows\Ringtones
+            std::make_pair(FOLDERID_ResourceDir, TEXT("FOLDERID_ResourceDir")),                 //%SystemRoot%\resources
+            std::make_pair(FOLDERID_LocalizedResourcesDir, TEXT("FOLDERID_LocalizedResourcesDir")), //%SystemRoot%\resources\0804
+            std::make_pair(FOLDERID_CommonOEMLinks, TEXT("FOLDERID_CommonOEMLinks")),           //COR_E_FILENOTFOUND
+            std::make_pair(FOLDERID_CDBurning, TEXT("FOLDERID_CDBurning")),                     //%LOCALAPPDATA%\Microsoft\Windows\Burn\Burn
+            std::make_pair(FOLDERID_UserProfiles, TEXT("FOLDERID_UserProfiles")),               //%SystemDrive%\Users
+            std::make_pair(FOLDERID_Playlists, TEXT("FOLDERID_Playlists")),                     //COR_E_FILENOTFOUND
+            std::make_pair(FOLDERID_SamplePlaylists, TEXT("FOLDERID_SamplePlaylists")),         //COR_E_FILENOTFOUND
+            std::make_pair(FOLDERID_SampleMusic, TEXT("FOLDERID_SampleMusic")),                 //%PUBLIC%\Music\Sample Music
+            std::make_pair(FOLDERID_SamplePictures, TEXT("FOLDERID_SamplePictures")),           //%PUBLIC%\Pictures\Sample Pictures
+            std::make_pair(FOLDERID_SampleVideos, TEXT("FOLDERID_SampleVideos")),               //%PUBLIC%\Videos\Sample Videos
+            std::make_pair(FOLDERID_PhotoAlbums, TEXT("FOLDERID_PhotoAlbums")),                 //COR_E_FILENOTFOUND
+            std::make_pair(FOLDERID_Public, TEXT("FOLDERID_Public")),                           //%PUBLIC%
+            std::make_pair(FOLDERID_ChangeRemovePrograms, TEXT("FOLDERID_ChangeRemovePrograms")),       //E_FAIL
+            std::make_pair(FOLDERID_AppUpdates, TEXT("FOLDERID_AppUpdates")),                   //E_FAIL
+            std::make_pair(FOLDERID_AddNewPrograms, TEXT("FOLDERID_AddNewPrograms")),           //E_FAIL
+            std::make_pair(FOLDERID_Downloads, TEXT("FOLDERID_Downloads")),                     //%USERPROFILE%\Downloads
+            std::make_pair(FOLDERID_PublicDownloads, TEXT("FOLDERID_PublicDownloads")),         //%PUBLIC%\Downloads
+            std::make_pair(FOLDERID_SavedSearches, TEXT("FOLDERID_SavedSearches")),             //%USERPROFILE%\Searches
+            std::make_pair(FOLDERID_QuickLaunch, TEXT("FOLDERID_QuickLaunch")),                 //%APPDATA%\Microsoft\Internet Explorer\Quick Launch
+            std::make_pair(FOLDERID_Contacts, TEXT("FOLDERID_Contacts")),                       //%USERPROFILE%\Contacts
+            std::make_pair(FOLDERID_SidebarParts, TEXT("FOLDERID_SidebarParts")),               //%LOCALAPPDATA%\Microsoft\Windows Sidebar\Gadgets
+            std::make_pair(FOLDERID_SidebarDefaultParts, TEXT("FOLDERID_SidebarDefaultParts")), //%ProgramFiles(x86)%\Windows Sidebar\Gadgets
+            std::make_pair(FOLDERID_PublicGameTasks, TEXT("FOLDERID_PublicGameTasks")),         //%ProgramData%\Microsoft\Windows\GameExplorer
+            std::make_pair(FOLDERID_GameTasks, TEXT("FOLDERID_GameTasks")),                     //%LOCALAPPDATA%\Microsoft\Windows\GameExplorer
+            std::make_pair(FOLDERID_SavedGames, TEXT("FOLDERID_SavedGames")),                   //E_FAIL
+            std::make_pair(FOLDERID_Games, TEXT("FOLDERID_Games")),                             //E_FAIL
+            std::make_pair(FOLDERID_SEARCH_MAPI, TEXT("FOLDERID_SEARCH_MAPI")),                 //E_FAIL
+            std::make_pair(FOLDERID_SEARCH_CSC, TEXT("FOLDERID_SEARCH_CSC")),                   //E_FAIL
+            std::make_pair(FOLDERID_Links, TEXT("FOLDERID_Links")),                             //%USERPROFILE%\Links
+            std::make_pair(FOLDERID_UsersFiles, TEXT("FOLDERID_UsersFiles")),                   //E_FAIL
+            std::make_pair(FOLDERID_UsersLibraries, TEXT("FOLDERID_UsersLibraries")),           //E_FAIL
+            std::make_pair(FOLDERID_SearchHome, TEXT("FOLDERID_SearchHome")),                   //E_FAIL
+            std::make_pair(FOLDERID_OriginalImages, TEXT("FOLDERID_OriginalImages")),           //COR_E_DIRECTORYNOTFOUND
+            std::make_pair(FOLDERID_DocumentsLibrary, TEXT("FOLDERID_DocumentsLibrary")),       //%APPDATA%\Microsoft\Windows\Libraries\Documents.library-ms
+            std::make_pair(FOLDERID_MusicLibrary, TEXT("FOLDERID_MusicLibrary")),               //%APPDATA%\Microsoft\Windows\Libraries\Music.library-ms
+            std::make_pair(FOLDERID_PicturesLibrary, TEXT("FOLDERID_PicturesLibrary")),         //%APPDATA%\Microsoft\Windows\Libraries\Pictures.library-ms
+            std::make_pair(FOLDERID_VideosLibrary, TEXT("FOLDERID_VideosLibrary")),             //%APPDATA%\Microsoft\Windows\Libraries\Videos.library-ms
+            std::make_pair(FOLDERID_RecordedTVLibrary, TEXT("FOLDERID_RecordedTVLibrary")),     //%PUBLIC%\Libraries\RecordedTV.library-ms
+            std::make_pair(FOLDERID_HomeGroup, TEXT("FOLDERID_HomeGroup")),                     //E_FAIL
+            std::make_pair(FOLDERID_DeviceMetadataStore, TEXT("FOLDERID_DeviceMetadataStore")), //%ProgramData%\Microsoft\Windows\DeviceMetadataStore
+            std::make_pair(FOLDERID_Libraries, TEXT("FOLDERID_Libraries")),                     //%APPDATA%\Microsoft\Windows\Libraries
+            std::make_pair(FOLDERID_PublicLibraries, TEXT("FOLDERID_PublicLibraries")),         //%PUBLIC%\Libraries
+            std::make_pair(FOLDERID_UserPinned, TEXT("FOLDERID_UserPinned")),                   //%APPDATA%\Microsoft\Internet Explorer\Quick Launch\User Pinned
+            std::make_pair(FOLDERID_ImplicitAppShortcuts, TEXT("FOLDERID_ImplicitAppShortcuts")),       //%APPDATA%\Microsoft\Internet Explorer\Quick Launch\User Pinned\ImplicitAppShortcuts
+            //std::make_pair(xxxxxx, TEXT("xxxxx")),
+        };
+
+        //static const GUID_NAME_STRING_ENTRY KnownFolderPathNames[] = {
+        //    #include <KnownFolders.h>
+        //};
+        //for (int i = 0; i < _countof(KnownFolderPathNames); i++)
+        //{
+        //    FTLTRACE(TEXT("Name=%s\n"), KnownFolderPathNames[i].pszName);
+        //}
+        {
+            //测试 SHGetKnownFolderPath
+            typedef HRESULT (STDAPICALLTYPE* SHGETKNOWNFOLDERPATH)(REFGUID clsidFolderID, DWORD dwFlags, HANDLE hToken, PWSTR* ppszPath); // NS
+            HINSTANCE hInstanceShell32 = LoadLibrary(_T("shell32.dll"));
+            API_VERIFY(hInstanceShell32 != NULL);
+            DWORD dwFlags = 0x00000000 | 0x00001000 | 0x00004000; //KF_FLAG_DEFAULT | KF_FLAG_NO_ALIAS | KF_FLAG_DONT_VERIFY;
+            if (hInstanceShell32)
+            {
+                SHGETKNOWNFOLDERPATH pSHGetKnownFolderPathProc = (SHGETKNOWNFOLDERPATH) GetProcAddress(hInstanceShell32, "SHGetKnownFolderPath");
+                if (pSHGetKnownFolderPathProc)
+                {
+                    FTLTRACEEX(tlTrace, TEXT("\nSHGetKnownFolderPath Folders are:\n"));
+                    for (int i = 0; i <_countof(checkGuids); i++)
+                    {
+                        PWSTR pszPath = NULL;
+                        COM_VERIFY_EXCEPT1(pSHGetKnownFolderPathProc(checkGuids[i].first, dwFlags, NULL, &pszPath), E_FAIL);
+                        if (SUCCEEDED(hr))
+                        {
+                            FTLTRACEEX(tlTrace, TEXT("%s => %s\n"), checkGuids[i].second, pszPath);
+                            CoTaskMemFree(pszPath);
+                        }
+                        else
+                        {
+                            FTLTRACEEX(tlWarning, TEXT("SHGetFolderPath Get %s Failed(0x%x)\n"), checkGuids[i].second, hr);
+                        }
+                    }
+                }
+                FreeLibrary(hInstanceShell32);
+                hInstanceShell32 = NULL;
+            }
+        }
         API_VERIFY(0 != GetTempPath(_countof(szFolderPath), szFolderPath));
         if (bRet)
         {
-            FTLTRACEEX(tlTrace, TEXT("GetTempPath => %s\n"), szFolderPath);
+            FTLTRACEEX(tlTrace, TEXT("GetTempPath => %s\n"), szFolderPath);     //%LOCALAPPDATA%\Temp\   //注意:最后多一个"\\" 符号
         }
 
         return bRet;

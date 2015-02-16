@@ -14,27 +14,39 @@ void CFTLUserTester::dump_TokenInfo()
 {
     BOOL bRet = FALSE;
 
-    HANDLE hToken = NULL;
+    HANDLE hTokenProcess = NULL;
+    HANDLE hTokenCurThread = NULL;
+    HANDLE hTokenNewThread = NULL;
+
     unsigned int threadId = 0;
     HANDLE hSubThread = (HANDLE)_beginthreadex(NULL, 0, _DumpThreadTokenProc, this, CREATE_SUSPENDED, &threadId);
+
+    API_VERIFY(OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &hTokenProcess));
+    //API_VERIFY(OpenThreadToken(GetCurrentThread(), TOKEN_ALL_ACCESS, FALSE, &hTokenCurThread));
+    //API_VERIFY(OpenThreadToken(hSubThread, TOKEN_ALL_ACCESS, FALSE, &hTokenNewThread));
     HANDLE handles[] = {
-        GetCurrentProcess(),
-        GetCurrentThread(),
-        hSubThread
+        hTokenProcess,
+        hTokenCurThread,
+        hTokenNewThread
     };
 
     for (int i = 0; i < _countof(handles); i++)
     {
-        API_VERIFY(OpenProcessToken(handles[i], TOKEN_QUERY | TOKEN_QUERY_SOURCE, &hToken));
-        if (bRet)
+        FTLTRACE(TEXT(">>>>>>>>>>>>>>> DumpTokenInformation %d <<<<<<<<<<<<<<<<<<<<<\n"), i);
+        if (NULL != handles[i])
         {
-            FTLTRACE(TEXT(">>>>>>>>>>>>>>> DumpTokenInformation %d <<<<<<<<<<<<<<<<<<<<<\n"), i);
-            API_VERIFY(CFUserUtil::DumpTokenInformation(hToken));
-            SAFE_CLOSE_HANDLE(hToken, NULL);
+            API_VERIFY(CFUserUtil::DumpTokenInformation(handles[i]));
+            SAFE_CLOSE_HANDLE(handles[i], NULL);
         }
     }
 
     ResumeThread(hSubThread);
     WaitForSingleObject(hSubThread, INFINITE);
+    CloseHandle(hSubThread);
+}
 
+void CFTLUserTester::test_IsVistaUACEnabled()
+{
+    BOOL bUACEnabled = CFUserUtil::IsVistaUACEnabled();
+    CPPUNIT_ASSERT(FALSE == bUACEnabled);
 }
