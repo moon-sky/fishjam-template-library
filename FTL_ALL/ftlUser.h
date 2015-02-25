@@ -8,12 +8,12 @@
 
 #pragma TODO(从 FUUser 文件中同步)
 //资料:
-//http://blog.csdn.net/chenjinxian88/article/details/8933073
 //http://blog.csdn.net/xbgprogrammer/article/details/16818973
 //https://msdn.microsoft.com/zh-cn/library/2007.07.securitywatch.aspx
 //http://pnig0s1992.blog.51cto.com/393390/908495/
 //http://wenku.baidu.com/link?url=tiLVXTK_8BYakF985QIRX9GFNiWKiLtKuRBJne0bDNmw-3379rz8wAAAjFkgvCWw7dN_zlHZMvRJGRszH9D_T5N5cJBwauafSfUKm2F32g3
 //http://mqc173.blog.163.com/blog/static/30899093200751110582422/
+//Windows完整性机制设计 -- https://msdn.microsoft.com/en-us/library/bb625963.aspx
 
 /*********************************************************************************************************************************
 * 最佳实践
@@ -24,7 +24,7 @@
 *   
 *
 * TODO:
-*   CreateWellKnownSid -- ?
+*   1.字符形式的 SD/SID 等如何解读和分析?
 *********************************************************************************************************************************/
 
 
@@ -38,6 +38,11 @@
 *     SACL(System ACL) -- 系统访问控制列表，为审核服务的，包含了对象被访问的时间
 *   Security Context -- 安全上下文，定义某个进程允许做什么的许可和权限的集合，通过登录会话确定，通过访问令牌维护。
 *   SD(Security Descriptors) -- 安全描述符,保存权限的设置信息,对应 SECURITY_DESCRIPTOR 结构,主要由 SID + DACL + SACL 等组成.
+*     可通过 ConvertSecurityDescriptorToStringSecurityDescriptor 转换为易读形式，常见的内置SD:
+*       NULL -- 默认属性, 如果是Admin，则其他用户无法打开
+*       D:(A;;GA;;;BA) -- 
+*       S:(ML;;NW;;;LW) -- LowIntegrity(低级别的安全属性?), 参见 CFLowIntegritySA
+*       
 *   Securable Object -- 安全对象,即拥有SD的Windows的对象(主要是各种Handle)
 *   SID(Security Identifier) -- 安全标识符, 标识用户、组和计算机帐户的唯一的号码,内部安全管理通过SID进行(而非用户名或组名),
 *     因此删除账户后再创建同名的账户,也无法继承之前的权限。
@@ -64,6 +69,7 @@
 *     4.High(高) -- 真正的 administrator用户 或提升权限后的程序
 *     5.System(系统) -- 内核级别的Windows文件
 *     6.保护进程级别 -- 级别最高，只有在系统需要的时候才会被使用
+*     TODO: WinLowLabelSid 等对应SID?
 *
 *   应用文件和注册虚拟化(虚拟重定向) -- 对指定位置进行读写的时候会被重定向到每个用户的虚拟化的区域，
 *     在以下位置建立了一个和"用户配置文件夹"完全一致的且完整性级别为"Low"的目录层次:
@@ -94,8 +100,20 @@
 *   1.manifest 中的 requireAdministrator ?
 *   2.COM Elevation Moniker -- 参见 ftlCom.h 
 *
-* 安全描述符
-*   
+* 核心对象的名称(是否正确？) -- 微软没有提供任何专门的机制来保证为内核对象指定的名称是惟一的，所有这些对象都共享同一个命名空间
+*   \\Global\
+*   \\Local\
+*
+*
+* 对象命名空间(Vista后增加的安全机制, 创建安全环境, 可以保护命名对象免遭未授权的访问, 在CreateEvent等时可以通过名字名称空间)
+*   边界描述符(BoundaryDescriptor) -- 
+*     CreateBoundaryDescriptor -- 创建边界描述符
+*     AddSIDToBoundaryDescriptor -- 在边界描述符里增加SID
+*     DeleteBoundaryDescriptor -- 删除边界描述符的句柄
+*   私有名称空间(PrivateNamespace) 
+*     CreatePrivateNamespace -- 创建私有命名空间,需指定要被隔离的对象的边界
+*     ClosePrivateNamespace
+* 
 * 函数
 *   CreateRestrictedToken -- 根据现有的访问令牌的约束创建一个新的受限访问令牌
 *   ConvertStringSecurityDescriptorToSecurityDescriptor -- 按安全描述符格式的字符串转换成有效的安全描述符结构
@@ -104,6 +122,20 @@
 
 namespace FTL
 {
+    class CFLowIntegritySA : public SECURITY_ATTRIBUTES
+    { 
+    public:
+        FTLINLINE CFLowIntegritySA();
+        FTLINLINE ~CFLowIntegritySA();
+        SECURITY_ATTRIBUTES* operator&()
+        {
+            if(SECURITY_ATTRIBUTES::lpSecurityDescriptor != NULL){
+                return this;
+            }
+            return NULL;
+        }
+    };
+
     enum IntegrityLevel{
         ilUnknown = 0,
         ilAppContainer, //Win8 + IE10 + EPM 或 Metro 时, 

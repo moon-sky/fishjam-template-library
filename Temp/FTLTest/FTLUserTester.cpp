@@ -50,3 +50,30 @@ void CFTLUserTester::test_IsVistaUACEnabled()
     BOOL bUACEnabled = CFUserUtil::IsVistaUACEnabled();
     CPPUNIT_ASSERT(FALSE == bUACEnabled);
 }
+
+void CFTLUserTester::dump_WellKnownSid()
+{
+    BOOL bRet = FALSE;
+    BYTE localAdminSID[SECURITY_MAX_SID_SIZE] = {0};  
+    PSID pLocalAdminSID = &localAdminSID;  
+    DWORD cbSID = sizeof(localAdminSID);
+
+    //WinBuiltinAdministratorsSid -- 管理员账户组
+    //WinWorldSid -- 所有账户(AllUser?)
+
+    const int MAX_DEFINE_WELL_KNOWN_SID = (int)WinCapabilityRemovableStorageSid;
+    for(int type = WinNullSid; type < MAX_DEFINE_WELL_KNOWN_SID; type++)
+    {
+        API_VERIFY_EXCEPT1(CreateWellKnownSid(WELL_KNOWN_SID_TYPE(type), NULL, pLocalAdminSID, &cbSID), ERROR_INVALID_PARAMETER);
+        if (bRet)
+        {
+            FTL::CFStringFormater formater;
+            FTLTRACE(TEXT("%s = %s\n"), CFUserUtil::GetWellKnownSidTypeString(WELL_KNOWN_SID_TYPE(type)), CFUserUtil::GetSidInfo(formater, pLocalAdminSID, FALSE));
+        }
+        else{
+            DWORD dwLastError = GetLastError();
+            FTLTRACE(TEXT("%s Fail, Reason=%d\n"), CFUserUtil::GetWellKnownSidTypeString(WELL_KNOWN_SID_TYPE(type)), dwLastError);
+        }
+    }
+    
+}

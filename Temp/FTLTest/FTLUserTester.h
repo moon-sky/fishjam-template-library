@@ -13,10 +13,12 @@ public:
     CPPUNIT_TEST_SUITE( CFTLUserTester );
     CPPUNIT_TEST( dump_TokenInfo );
     CPPUNIT_TEST( test_IsVistaUACEnabled );
+    CPPUNIT_TEST( dump_WellKnownSid );
     CPPUNIT_TEST_SUITE_END();
 
     void dump_TokenInfo();
     void test_IsVistaUACEnabled();
+    void dump_WellKnownSid();
 
     DECLARE_DEFAULT_TEST_CLASS(CFTLUserTester);
 private:

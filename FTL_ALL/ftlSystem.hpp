@@ -1294,7 +1294,7 @@ namespace FTL
 
     CFSystemMetricsProperty::CFSystemMetricsProperty()
     {
-        BOOL bRet = FALSE;
+        //BOOL bRet = FALSE;
         m_dwOldGetProperty = 0;
 
         m_cxScreen = GetSystemMetrics(SM_CXSCREEN);				//主显示屏幕宽度(1280像素/1440像素)，等价于 GetDeviceCaps( hdcPrimaryMonitor, HORZRES).

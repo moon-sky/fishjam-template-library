@@ -11,6 +11,29 @@
 
 namespace FTL
 {
+    CFLowIntegritySA::CFLowIntegritySA()
+    {
+        BOOL bRet = FALSE;
+        SECURITY_ATTRIBUTES::nLength = sizeof(SECURITY_ATTRIBUTES);
+        SECURITY_ATTRIBUTES::bInheritHandle = TRUE;
+        SECURITY_ATTRIBUTES::lpSecurityDescriptor = NULL;
+
+#define LOW_INTEGRITY_SDDL_SACL TEXT("S:(ML;;NW;;;LW)")
+
+        PSECURITY_DESCRIPTOR pSD = NULL;
+        API_VERIFY(ConvertStringSecurityDescriptorToSecurityDescriptor(LOW_INTEGRITY_SDDL_SACL, SDDL_REVISION_1, &pSD, NULL));
+        if (bRet)
+        {
+            SECURITY_ATTRIBUTES::lpSecurityDescriptor = pSD; 
+        }
+    }
+
+    CFLowIntegritySA::~CFLowIntegritySA()
+    {
+        SAFE_LOCAL_FREE(SECURITY_ATTRIBUTES::lpSecurityDescriptor);
+    }
+
+
 #define GET_ALL_TOKEN_INFOMATION
 
 //winnt.h 中没有定义足够的枚举(sdk版本问题) -- 如何根据sdk版本自动检测编译方式?
@@ -89,91 +112,92 @@ namespace FTL
     LPCTSTR CFUserUtil::GetWellKnownSidTypeString(WELL_KNOWN_SID_TYPE sidType){
         switch (sidType)
         {
-            HANDLE_CASE_RETURN_STRING(WinNullSid);
-            HANDLE_CASE_RETURN_STRING(WinWorldSid);
-            HANDLE_CASE_RETURN_STRING(WinLocalSid);
-            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerSid);
-            HANDLE_CASE_RETURN_STRING(WinCreatorGroupSid);
-            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerServerSid);
-            HANDLE_CASE_RETURN_STRING(WinCreatorGroupServerSid);
-            HANDLE_CASE_RETURN_STRING(WinNtAuthoritySid);
-            HANDLE_CASE_RETURN_STRING(WinDialupSid);
-            HANDLE_CASE_RETURN_STRING(WinNetworkSid);
-            HANDLE_CASE_RETURN_STRING(WinBatchSid);
-            HANDLE_CASE_RETURN_STRING(WinInteractiveSid);
-            HANDLE_CASE_RETURN_STRING(WinServiceSid);
-            HANDLE_CASE_RETURN_STRING(WinAnonymousSid);
-            HANDLE_CASE_RETURN_STRING(WinProxySid);
-            HANDLE_CASE_RETURN_STRING(WinEnterpriseControllersSid);
-            HANDLE_CASE_RETURN_STRING(WinSelfSid);
-            HANDLE_CASE_RETURN_STRING(WinAuthenticatedUserSid);
-            HANDLE_CASE_RETURN_STRING(WinRestrictedCodeSid);
-            HANDLE_CASE_RETURN_STRING(WinTerminalServerSid);
-            HANDLE_CASE_RETURN_STRING(WinRemoteLogonIdSid);
-            HANDLE_CASE_RETURN_STRING(WinLogonIdsSid);
-            HANDLE_CASE_RETURN_STRING(WinLocalSystemSid);
-            HANDLE_CASE_RETURN_STRING(WinLocalServiceSid);
-            HANDLE_CASE_RETURN_STRING(WinNetworkServiceSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinDomainSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinAdministratorsSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinUsersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinGuestsSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPowerUsersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinAccountOperatorsSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinSystemOperatorsSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPrintOperatorsSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinBackupOperatorsSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinReplicatorSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPreWindows2000CompatibleAccessSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinRemoteDesktopUsersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinNetworkConfigurationOperatorsSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountAdministratorSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountGuestSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountKrbtgtSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountDomainAdminsSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountDomainUsersSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountDomainGuestsSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountComputersSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountControllersSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountCertAdminsSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountSchemaAdminsSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountEnterpriseAdminsSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountPolicyAdminsSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountRasAndIasServersSid);
-            HANDLE_CASE_RETURN_STRING(WinNTLMAuthenticationSid);
-            HANDLE_CASE_RETURN_STRING(WinDigestAuthenticationSid);
-            HANDLE_CASE_RETURN_STRING(WinSChannelAuthenticationSid);
-            HANDLE_CASE_RETURN_STRING(WinThisOrganizationSid);
-            HANDLE_CASE_RETURN_STRING(WinOtherOrganizationSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinIncomingForestTrustBuildersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPerfMonitoringUsersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPerfLoggingUsersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinAuthorizationAccessSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinTerminalServerLicenseServersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinDCOMUsersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinIUsersSid);
-            HANDLE_CASE_RETURN_STRING(WinIUserSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinCryptoOperatorsSid);
-            HANDLE_CASE_RETURN_STRING(WinUntrustedLabelSid);
-            HANDLE_CASE_RETURN_STRING(WinLowLabelSid);
-            HANDLE_CASE_RETURN_STRING(WinMediumLabelSid);
-            HANDLE_CASE_RETURN_STRING(WinHighLabelSid);
-            HANDLE_CASE_RETURN_STRING(WinSystemLabelSid);
-            HANDLE_CASE_RETURN_STRING(WinWriteRestrictedCodeSid);
-            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerRightsSid);
-            HANDLE_CASE_RETURN_STRING(WinCacheablePrincipalsGroupSid);
-            HANDLE_CASE_RETURN_STRING(WinNonCacheablePrincipalsGroupSid);
-            HANDLE_CASE_RETURN_STRING(WinEnterpriseReadonlyControllersSid);
-            HANDLE_CASE_RETURN_STRING(WinAccountReadonlyControllersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinEventLogReadersGroup);
-            HANDLE_CASE_RETURN_STRING(WinNewEnterpriseReadonlyControllersSid);
-            HANDLE_CASE_RETURN_STRING(WinBuiltinCertSvcDComAccessGroup);
-            HANDLE_CASE_RETURN_STRING(WinMediumPlusLabelSid);
-            HANDLE_CASE_RETURN_STRING(WinLocalLogonSid);
-            HANDLE_CASE_RETURN_STRING(WinConsoleLogonSid);
-            HANDLE_CASE_RETURN_STRING(WinThisOrganizationCertificateSid);
+            HANDLE_CASE_RETURN_STRING(WinNullSid);                  //S-1-0-0
+            HANDLE_CASE_RETURN_STRING(WinWorldSid);                 //S-1-1-0
+            HANDLE_CASE_RETURN_STRING(WinLocalSid);                 //S-1-2-0
+            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerSid);          //S-1-3-0
+            HANDLE_CASE_RETURN_STRING(WinCreatorGroupSid);          //S-1-3-1
+            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerServerSid);    //S-1-3-2
+            HANDLE_CASE_RETURN_STRING(WinCreatorGroupServerSid);    //S-1-3-3
+            HANDLE_CASE_RETURN_STRING(WinNtAuthoritySid);           //S-1-5
+            HANDLE_CASE_RETURN_STRING(WinDialupSid);                //Error: 122(ERROR_INSUFFICIENT_BUFFER)
+            HANDLE_CASE_RETURN_STRING(WinNetworkSid);               //S-1-5-2
+            HANDLE_CASE_RETURN_STRING(WinBatchSid);                 //S-1-5-3
+            HANDLE_CASE_RETURN_STRING(WinInteractiveSid);           //S-1-5-4
+            HANDLE_CASE_RETURN_STRING(WinServiceSid);               //S-1-5-6
+            HANDLE_CASE_RETURN_STRING(WinAnonymousSid);             //S-1-5-7
+            HANDLE_CASE_RETURN_STRING(WinProxySid);                 //S-1-5-8
+            HANDLE_CASE_RETURN_STRING(WinEnterpriseControllersSid); //S-1-5-9
+            HANDLE_CASE_RETURN_STRING(WinSelfSid);                  //S-1-5-10
+            HANDLE_CASE_RETURN_STRING(WinAuthenticatedUserSid);     //S-1-5-11
+            HANDLE_CASE_RETURN_STRING(WinRestrictedCodeSid);        //S-1-5-12
+            HANDLE_CASE_RETURN_STRING(WinTerminalServerSid);        //S-1-5-13
+            HANDLE_CASE_RETURN_STRING(WinRemoteLogonIdSid);         //S-1-5-14
+            HANDLE_CASE_RETURN_STRING(WinLogonIdsSid);              //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinLocalSystemSid);           //S-1-5-18
+            HANDLE_CASE_RETURN_STRING(WinLocalServiceSid);          //S-1-5-19
+            HANDLE_CASE_RETURN_STRING(WinNetworkServiceSid);        //S-1-5-20
+            HANDLE_CASE_RETURN_STRING(WinBuiltinDomainSid);         //S-1-5-32
+            HANDLE_CASE_RETURN_STRING(WinBuiltinAdministratorsSid); //Error: 122(ERROR_INSUFFICIENT_BUFFER)
+            HANDLE_CASE_RETURN_STRING(WinBuiltinUsersSid);          //S-1-5-32-545
+            HANDLE_CASE_RETURN_STRING(WinBuiltinGuestsSid);         //S-1-5-32-546
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPowerUsersSid);     //S-1-5-32-547
+            HANDLE_CASE_RETURN_STRING(WinBuiltinAccountOperatorsSid);   //S-1-5-32-548
+            HANDLE_CASE_RETURN_STRING(WinBuiltinSystemOperatorsSid);    //S-1-5-32-549
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPrintOperatorsSid); //S-1-5-32-550
+            HANDLE_CASE_RETURN_STRING(WinBuiltinBackupOperatorsSid);//S-1-5-32-551
+            HANDLE_CASE_RETURN_STRING(WinBuiltinReplicatorSid);     //S-1-5-32-552
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPreWindows2000CompatibleAccessSid); //S-1-5-32-554
+            HANDLE_CASE_RETURN_STRING(WinBuiltinRemoteDesktopUsersSid); //S-1-5-32-555
+            HANDLE_CASE_RETURN_STRING(WinBuiltinNetworkConfigurationOperatorsSid);  //S-1-5-32-556
+            HANDLE_CASE_RETURN_STRING(WinAccountAdministratorSid);  //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountGuestSid);          //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountKrbtgtSid);         //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountDomainAdminsSid);   //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountDomainUsersSid);    //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountDomainGuestsSid);   //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountComputersSid);      //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountControllersSid);    //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountCertAdminsSid);     //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountSchemaAdminsSid);   //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountEnterpriseAdminsSid);   //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountPolicyAdminsSid);   //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinAccountRasAndIasServersSid);   //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinNTLMAuthenticationSid);    //S-1-5-64-10
+            HANDLE_CASE_RETURN_STRING(WinDigestAuthenticationSid);  //S-1-5-64-21
+            HANDLE_CASE_RETURN_STRING(WinSChannelAuthenticationSid);//S-1-5-64-14
+            HANDLE_CASE_RETURN_STRING(WinThisOrganizationSid);      //S-1-5-15
+            HANDLE_CASE_RETURN_STRING(WinOtherOrganizationSid);     //S-1-5-1000
+            HANDLE_CASE_RETURN_STRING(WinBuiltinIncomingForestTrustBuildersSid);    //Error: 122(ERROR_INSUFFICIENT_BUFFER)
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPerfMonitoringUsersSid);//S-1-5-32-558
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPerfLoggingUsersSid);   //S-1-5-32-559
+            HANDLE_CASE_RETURN_STRING(WinBuiltinAuthorizationAccessSid);//S-1-5-32-560
+            HANDLE_CASE_RETURN_STRING(WinBuiltinTerminalServerLicenseServersSid);   //S-1-5-32-561
+            HANDLE_CASE_RETURN_STRING(WinBuiltinDCOMUsersSid);      //S-1-5-32-562
+            HANDLE_CASE_RETURN_STRING(WinBuiltinIUsersSid);         //S-1-5-32-568
+            HANDLE_CASE_RETURN_STRING(WinIUserSid);                 //S-1-5-17
+            HANDLE_CASE_RETURN_STRING(WinBuiltinCryptoOperatorsSid);//Error: 122(ERROR_INSUFFICIENT_BUFFER)
+            HANDLE_CASE_RETURN_STRING(WinUntrustedLabelSid);        //S-1-16-0
+            HANDLE_CASE_RETURN_STRING(WinLowLabelSid);              //S-1-16-4096
+            HANDLE_CASE_RETURN_STRING(WinMediumLabelSid);           //S-1-16-8192
+            HANDLE_CASE_RETURN_STRING(WinHighLabelSid);             //S-1-16-12288
+            HANDLE_CASE_RETURN_STRING(WinSystemLabelSid);           //S-1-16-16384
+            HANDLE_CASE_RETURN_STRING(WinWriteRestrictedCodeSid);   //S-1-5-33
+            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerRightsSid);    //S-1-3-4
+            HANDLE_CASE_RETURN_STRING(WinCacheablePrincipalsGroupSid);      //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinNonCacheablePrincipalsGroupSid);   //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinEnterpriseReadonlyControllersSid); //S-1-5-22
+            HANDLE_CASE_RETURN_STRING(WinAccountReadonlyControllersSid);    //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinBuiltinEventLogReadersGroup);      //Error: 122(ERROR_INSUFFICIENT_BUFFER)
+            HANDLE_CASE_RETURN_STRING(WinNewEnterpriseReadonlyControllersSid);  //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinBuiltinCertSvcDComAccessGroup);    //S-1-5-32-574
+            HANDLE_CASE_RETURN_STRING(WinMediumPlusLabelSid);       //S-1-16-8448
+            HANDLE_CASE_RETURN_STRING(WinLocalLogonSid);            //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinConsoleLogonSid);          //S-1-2-1
+            HANDLE_CASE_RETURN_STRING(WinThisOrganizationCertificateSid);   //Error: 122(ERROR_INSUFFICIENT_BUFFER)
 
 #ifdef GET_ALL_TOKEN_INFOMATION
+            //Win7上测试会返回 Error: 87(ERROR_INVALID_PARAMETER)
             HANDLE_CASE_RETURN_STRING(WinApplicationPackageAuthoritySid);
             HANDLE_CASE_RETURN_STRING(WinBuiltinAnyPackageSid);
             HANDLE_CASE_RETURN_STRING(WinCapabilityInternetClientSid);
@@ -194,7 +218,6 @@ namespace FTL
             break;
         }
         return TEXT("");
-        
     }
 
     IntegrityLevel CFUserUtil::GetIntegrityLevel(DWORD dwIntegrityLevel)
