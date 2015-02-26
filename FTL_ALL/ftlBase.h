@@ -126,6 +126,9 @@ namespace FTL
     #  define DBG_BREAK     __noop  
     #endif
 
+    //c -- error convert class, such as FTL::CFAPIErrorInfo
+    //e -- error information, such as value return by GetLastError
+    //x -- prompt information, such as call code
     #ifdef FTL_DEBUG
     #  define REPORT_ERROR_INFO(c, e, x) \
          do{ \
@@ -147,6 +150,13 @@ namespace FTL
     //可以通过 HRESULT_SEVERITY、HRESULT_FACILITY、HRESULT_CODE 分别获取对应的值
 
     #ifdef FTL_DEBUG  //调试版本时，获取并判断 LastError，为了防止 REPORT_ERROR_INFO 对LastError产生影响，需要重新设置
+    # define ERROR_RETURN_VERIFY(x)\
+        dwRet = (x);\
+        if(ERROR_SUCCESS != dwRet);\
+        {\
+            REPORT_ERROR_INFO(FTL::CFAPIErrorInfo, dwRet, x);\
+        }
+
     # define API_ASSERT(x)\
         if(FALSE == (x))\
         {\
@@ -327,7 +337,11 @@ namespace FTL
 	#  define HANDLE_COMBINATION_VALUE_TO_STRING_EX(f, v, c, s, d) \
 		if(((v) & (c)) == (c))\
 		{\
-			f.AppendFormat(TEXT("%s%s"), s, d);\
+			if(f.GetStringLength() != 0){ \
+				f.AppendFormat(TEXT("%s%s"), d, s);\
+			}else{\
+				f.AppendFormat(TEXT("%s"), s);\
+			}\
 			v &= ~c;\
 		}
 	#  define HANDLE_COMBINATION_VALUE_TO_STRING(f, v, c, d)	HANDLE_COMBINATION_VALUE_TO_STRING_EX(f, v, c, TEXT(#c), d) 
@@ -622,7 +636,7 @@ namespace FTL
     {
         matNew,             //使用new分配，使用delete释放，为了方便管理，即使只分配一个，也使用数组方式
         matVirtualAlloc,    //使用VirtualAlloc直接在进程的地址空间中保留一快内存(既非堆又非栈)，速度快
-        //matAlloc,           //使用
+        matLocalAlloc,      //使用LocalAlloc分配,LocalFree释放,主要是为了兼容老的程序?
         //matMalloca,         //使用_malloca在栈上分配
     };
 

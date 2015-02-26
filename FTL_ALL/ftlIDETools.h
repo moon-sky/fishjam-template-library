@@ -203,6 +203,7 @@ namespace FTL
     *     查找 x86/x64 lib 库混用: dumpbin /headers *.lib > check.txt 后全文搜索 “Dump of file", 然后查看后面 machine 类型
     *   mt.exe -- manifest 的控制工具
     *     mt.exe -inputresource:ExePath;#1 -out:extracted.manifest <== 导出 Exe 中的 manifest
+    *   undname <== C++函数名解析
     *   系统设备扫描工具 -- gmer.exe
     *   Inspect -- MS提供的类似Spy的工具, 能看到窗体, IAccessible 等信息
     *   AccExplorer32窗口属性查看工具(类似Spy++) -- 可查看DirectUI界面(如 MSN), 但查不了DUIlib 或 QQ等的

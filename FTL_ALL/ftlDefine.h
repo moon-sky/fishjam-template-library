@@ -68,6 +68,8 @@ namespace FTL
     #  define    QQUOTE(y)       QUOTE(y)
     #endif //QQUOTE
 
+    #define MAKE_TYPE_DESC(type) { type, _T(#type) }  
+
 	#define     __FILE__LINE__  TEXT(__FILE__) TEXT("(") TEXT(QQUOTE(__LINE__)) TEXT(") :")
 
     /**********************************************************************************************

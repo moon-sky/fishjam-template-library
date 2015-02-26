@@ -445,6 +445,9 @@ namespace FTL
             case matVirtualAlloc:
                 m_pMem = (T*)VirtualAlloc(NULL, sizeof(T) * nCount, MEM_COMMIT, PAGE_READWRITE);
                 break;
+            case matLocalAlloc:
+                m_pMem = (T*)LocalAlloc(LMEM_FIXED | LMEM_ZEROINIT, sizeof(T) * nCount);
+                break;
             default:
                 FTLASSERT(FALSE);
                 break;
@@ -486,6 +489,10 @@ namespace FTL
                 break;
             case matVirtualAlloc:
                 API_VERIFY(VirtualFree(m_pMem, 0, MEM_RELEASE));
+                m_pMem = NULL;
+                break;
+            case matLocalAlloc:
+                LocalFree((HLOCAL)m_pMem);
                 m_pMem = NULL;
                 break;
             default:

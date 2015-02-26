@@ -21,10 +21,13 @@
 * 工具
 *   cacls|icacls(推荐) -- 系统自带的命令行ACL管理工具
 *     使用方式参见: https://technet.microsoft.com/zh-cn/magazine/2007.07.securitywatch.aspx
+* <aclapi.h> -- ACL 相关的 API
+*   GetExplicitEntriesFromAcl -- 从ACL中获取ACE?
+*   GetEffectiveRightsFromAcl -- 
 *   
-*
 * TODO:
 *   1.字符形式的 SD/SID 等如何解读和分析?
+*     LookupAccountSid 
 *********************************************************************************************************************************/
 
 
@@ -37,7 +40,8 @@
 *        每一个用户或组在任意访问控制列表中都有特殊的权限。如果一个对象没有DACL，那么就是说这个对象是任何人都可以拥有完全的访问权限.
 *     SACL(System ACL) -- 系统访问控制列表，为审核服务的，包含了对象被访问的时间
 *   Security Context -- 安全上下文，定义某个进程允许做什么的许可和权限的集合，通过登录会话确定，通过访问令牌维护。
-*   SD(Security Descriptors) -- 安全描述符,保存权限的设置信息,对应 SECURITY_DESCRIPTOR 结构,主要由 SID + DACL + SACL 等组成.
+*   SD(Security Descriptors) -- 安全描述符,保存权限的设置信息,描述允许什么用户使用某种权限访问它，拒绝什么用户使用某种权限访问它。
+*     对应 SECURITY_DESCRIPTOR 结构,主要由 SID + DACL + SACL 等组成.
 *     可通过 ConvertSecurityDescriptorToStringSecurityDescriptor 转换为易读形式，常见的内置SD:
 *       NULL -- 默认属性, 如果是Admin，则其他用户无法打开
 *       D:(A;;GA;;;BA) -- 
@@ -87,8 +91,9 @@
 *   会话隔离(Session Isolation) -- Vista后所有系统服务运行在会话0以增强系统服务的安全性
 *   Restricted Token -- 受限访问令牌
 *   SFP -- 系统文件保护, Win2K 以前的文件保护机制
-*   UAC(User Account Control) -- 用户帐户控制， 管理员登录时会为该登录会话创建了两个不同的访问令牌，默认使用受限访问令牌(创建时指定了禁用SID并删除了某些权限)，
-*     以减少Windows Vista系统的受攻击面；需要权限提升时，会使用非限制访问令牌所提供的安全上下文来运行应用程序
+*   UAC(User Account Control) -- 用户帐户控制， Vista以后增加。管理员登录时会为该登录会话创建了两个不同的访问令牌: 受限令牌(Restricted Access Token) + 非限制令牌.
+*     默认使用受限访问令牌(创建时指定了禁用SID并删除了某些权限)，以减少Windows Vista系统的受攻击面；
+*     需要权限提升时，会使用非限制访问令牌所提供的安全上下文来运行应用程序
 *     UAC Elevation -- 实际上一个软件在用不同的模块运行，因Virtualization映射到其他位置的Data文件，所以在操作磁盘文件以及注册表的时候，实际上是一个软件在用不同的模块运行。
 *       CheckElevationEnabled -- Kernel32.dll 中的未公开函数，typedef DWORD (WINAPI* CheckElevationEnabledProc)(BOOL* pResult);
 *   UIPI(User Interface Privilege Isolation) -- 用户界面特权隔离，完整性级别低(lower integrity)的进程，不能向完整性级别高的进程发送Window消息。
@@ -117,8 +122,9 @@
 * 函数
 *   CreateRestrictedToken -- 根据现有的访问令牌的约束创建一个新的受限访问令牌
 *   ConvertStringSecurityDescriptorToSecurityDescriptor -- 按安全描述符格式的字符串转换成有效的安全描述符结构
+*   CheckTokenMembership -- 判断一个Token是否属于某个组(即检查Token中是否有指定的SID, 可用来判断是否是Admin等). 
+*     注意:必须存在且有 SE_GROUP_ENABLED属性才认为属于。所以使用该方法时,一个权限未提升的进程的令牌是不会认为属于Administrators组的
 *********************************************************************************************************************************/
-
 
 namespace FTL
 {
@@ -151,16 +157,25 @@ namespace FTL
 	class CFUserUtil
 	{
 	public:
+        FTLINLINE static LPCTSTR GetSeObjectTypeString(SE_OBJECT_TYPE seObjType);
+        FTLINLINE static LPCTSTR GetAccessModeString(DWORD accessMode);
+        FTLINLINE static LPCTSTR GetAccessMaskString(CFStringFormater& formater, ACCESS_MASK access, LPCTSTR pszDivide = TEXT("|"));
+        FTLINLINE static LPCTSTR GetSecurityDescriptorControlString(CFStringFormater& formater, SECURITY_DESCRIPTOR_CONTROL seControl, LPCTSTR pszDivide = TEXT("|"));
+        FTLINLINE static LPCTSTR GetAceInfo(CFStringFormater& formater, PACE_HEADER pAce);
+        FTLINLINE static LPCTSTR GetAclInfo(CFStringFormater& formater, PACL pAcl);
+        FTLINLINE static LPCTSTR GetSecurityDescriptorinfo(CFStringFormater& formater, PSECURITY_DESCRIPTOR pSecurityDescriptor);
+
+        //FTLINLINE static BOOL DumpNamedObjectSecurityInformation(LPCTSTR pszName, SE_OBJECT_TYPE seObjType = SE_UNKNOWN_OBJECT_TYPE);
+
         FTLINLINE static IntegrityLevel GetIntegrityLevel(DWORD dwIntegrityLevel);
         FTLINLINE static LPCTSTR GetIntegrityLevelString(IntegrityLevel iLevel);
         FTLINLINE static LPCTSTR GetWellKnownSidTypeString(WELL_KNOWN_SID_TYPE sidType);
-        FTLINLINE static LPCTSTR GetAclInfo(CFStringFormater& formater, PACL pAcl);
         FTLINLINE static LPCTSTR GetPrivilegeNameByLuid(CFStringFormater& formater, PLUID pLuid, LPCTSTR lpSystemName = NULL);
         FTLINLINE static LPCTSTR GetSidInfo(CFStringFormater& formater, PSID pSid, BOOL bGetSubAuthority);
-        FTLINLINE static LPCTSTR GetSidAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide /*= TEXT("|") */);
+        FTLINLINE static LPCTSTR GetSidNameUseString(SID_NAME_USE type);
+        FTLINLINE static LPCTSTR GetSidAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide = TEXT("|"));
         FTLINLINE static LPCTSTR GetSidAndAttributesInfo(CFStringFormater& formater, PSID_AND_ATTRIBUTES pSidAndAttributes, BOOL bGetSubAuthority, LPCTSTR pszDivide);
-        FTLINLINE static LPCTSTR GetPrivilegeAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide /*= TEXT("|") */);
-        FTLINLINE static LPCTSTR GetSecurityDescriptorinfo(CFStringFormater& formater, SECURITY_DESCRIPTOR* pSecurityDescriptor);
+        FTLINLINE static LPCTSTR GetPrivilegeAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide = TEXT("|"));
 
         //判断当前用户(当前进程的Owner)是否是本地 Adminstrators 组中的成员(注意：不是域的)
         FTLINLINE static BOOL IsProcessUserAdministrator();
@@ -171,7 +186,7 @@ namespace FTL
         //TODO: 函数还不正确，需要重写： 创建一个任何人都可以使用的 SECURITY_ATTRIBUTES  -- ATL中已有函数？
         FTLINLINE static BOOL CreateEmptySecurityAttributes(SECURITY_ATTRIBUTES* pSecurityAttr);
 
-        //导出指定Token(访问令牌)的权限信息
+        //导出指定Token(访问令牌)的权限信息(如 用户SID,组ID, Session, 权限等)
         FTLINLINE static BOOL DumpTokenInformation(HANDLE hToken);
     private:
         static LPCTSTR WINAPI GetTokenReservedInfo(CFStringFormater& formater, LPVOID TokenInformation, DWORD TokenInformationLength);

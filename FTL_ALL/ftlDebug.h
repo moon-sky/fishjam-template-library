@@ -19,8 +19,11 @@ namespace FTL
     /*********************************************************************************************************
     * 常见问题:
     *   1.调试 .dmp 时, VS提示"There is no source code available for the current location", 然后无法定位到代码位置，只能显示汇编.
-    *     原因:多半是不在同一个机器上编译的, pdb 中保存的文件路径不一致
+    *     原因:a.多半是不在同一个机器上编译的, pdb 中保存的文件路径不一致
+    *          b.(warning C4819)代码中有 code page 不同的注释、字符串等.
+    *          c.似乎通过 __raise 激发事件后会找不到文件位置?
     *     解决:
+    *       TODO:尝试 -- Tools | Options | Debugging | Native | Load DLL exports, 勾上
     *   2.
     * 
     * BSOD(Blue Screen of Death) -- 蓝屏死机
@@ -41,7 +44,8 @@ namespace FTL
     *        FAULTING_THREAD -- 导致出错的线程，可以通过 ? 查看
     *        BUGCHECK_STR -- "错误检查"的文字描述，但这里不区分用户态和内核态，可能导致误解
     *   5. .ecxr 后 kn -- 在有异常处理函数的情况下查看错误时的真实调用堆栈
-    * 
+    *   6.通过 .frame n 切换堆栈层次, 并使用 dv(查看本地变量) 或 ?? this(查看this变量) 等方式查看具体的值
+    *
     * 通过MAP文件根据地址(如异常地址)定位代码位置
     *   1.编译时需要生成Map -- Linker: Generate Map File(Yes, /MAP); Map File Name(xxx); Map Exports(Yes, /MAPINFO:EXPORTS)
     *   2.将指定地址和 Rva+Base栏地址(即 偏移地址+基址) 进行比较，找到最后一个比指定地址小的函数,即为目标函数;

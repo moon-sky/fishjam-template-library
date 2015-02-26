@@ -6,6 +6,8 @@
 #  include "ftlUser.h"
 #endif
 #include <sddl.h>
+#include <AclAPI.h>
+
 #include <ftlConversion.h>
 #include <ftlSystem.h>
 
@@ -110,47 +112,48 @@ namespace FTL
 #endif //GET_ALL_TOKEN_INFOMATION
 
     LPCTSTR CFUserUtil::GetWellKnownSidTypeString(WELL_KNOWN_SID_TYPE sidType){
-        switch (sidType)
-        {
-            HANDLE_CASE_RETURN_STRING(WinNullSid);                  //S-1-0-0
-            HANDLE_CASE_RETURN_STRING(WinWorldSid);                 //S-1-1-0
-            HANDLE_CASE_RETURN_STRING(WinLocalSid);                 //S-1-2-0
-            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerSid);          //S-1-3-0
-            HANDLE_CASE_RETURN_STRING(WinCreatorGroupSid);          //S-1-3-1
-            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerServerSid);    //S-1-3-2
-            HANDLE_CASE_RETURN_STRING(WinCreatorGroupServerSid);    //S-1-3-3
-            HANDLE_CASE_RETURN_STRING(WinNtAuthoritySid);           //S-1-5
+        switch (sidType) //其 SID_NAME_USE 都是 SidTypeWellKnownGroup , SidTypeAlias, SidTypeLabel 等
+        {                                                           //SID, Domain\Name, 
+            HANDLE_CASE_RETURN_STRING(WinNullSid);                  //S-1-0-0,  \NULL SID
+            HANDLE_CASE_RETURN_STRING(WinWorldSid);                 //S-1-1-0,  \Everyone
+            HANDLE_CASE_RETURN_STRING(WinLocalSid);                 //S-1-2-0,  \LOCAL
+            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerSid);          //S-1-3-0,  \CREATOR OWNER
+            HANDLE_CASE_RETURN_STRING(WinCreatorGroupSid);          //S-1-3-1,  \CREATOR GROUP
+            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerServerSid);    //S-1-3-2,  \CREATOR OWNER SERVER
+            HANDLE_CASE_RETURN_STRING(WinCreatorGroupServerSid);    //S-1-3-3,  \CREATOR GROUP SERVER
+            HANDLE_CASE_RETURN_STRING(WinNtAuthoritySid);           //S-1-5,    NT Pseudo Domain\NT Pseudo Domain
             HANDLE_CASE_RETURN_STRING(WinDialupSid);                //Error: 122(ERROR_INSUFFICIENT_BUFFER)
-            HANDLE_CASE_RETURN_STRING(WinNetworkSid);               //S-1-5-2
-            HANDLE_CASE_RETURN_STRING(WinBatchSid);                 //S-1-5-3
-            HANDLE_CASE_RETURN_STRING(WinInteractiveSid);           //S-1-5-4
-            HANDLE_CASE_RETURN_STRING(WinServiceSid);               //S-1-5-6
-            HANDLE_CASE_RETURN_STRING(WinAnonymousSid);             //S-1-5-7
-            HANDLE_CASE_RETURN_STRING(WinProxySid);                 //S-1-5-8
-            HANDLE_CASE_RETURN_STRING(WinEnterpriseControllersSid); //S-1-5-9
-            HANDLE_CASE_RETURN_STRING(WinSelfSid);                  //S-1-5-10
-            HANDLE_CASE_RETURN_STRING(WinAuthenticatedUserSid);     //S-1-5-11
-            HANDLE_CASE_RETURN_STRING(WinRestrictedCodeSid);        //S-1-5-12
-            HANDLE_CASE_RETURN_STRING(WinTerminalServerSid);        //S-1-5-13
-            HANDLE_CASE_RETURN_STRING(WinRemoteLogonIdSid);         //S-1-5-14
+            HANDLE_CASE_RETURN_STRING(WinNetworkSid);               //S-1-5-2,  NT AUTHORITY\NETWORK
+            HANDLE_CASE_RETURN_STRING(WinBatchSid);                 //S-1-5-3,  NT AUTHORITY\BATCH
+            HANDLE_CASE_RETURN_STRING(WinInteractiveSid);           //S-1-5-4,  NT AUTHORITY\INTERACTIVE
+            HANDLE_CASE_RETURN_STRING(WinServiceSid);               //S-1-5-6,  NT AUTHORITY\SERVICE
+            HANDLE_CASE_RETURN_STRING(WinAnonymousSid);             //S-1-5-7,  NT AUTHORITY\ANONYMOUS LOGON
+            HANDLE_CASE_RETURN_STRING(WinProxySid);                 //S-1-5-8,  NT AUTHORITY\PROXY
+            HANDLE_CASE_RETURN_STRING(WinEnterpriseControllersSid); //S-1-5-9,  NT AUTHORITY\ENTERPRISE DOMAIN CONTROLLERS
+            HANDLE_CASE_RETURN_STRING(WinSelfSid);                  //S-1-5-10, NT AUTHORITY\SELF
+            HANDLE_CASE_RETURN_STRING(WinAuthenticatedUserSid);     //S-1-5-11, NT AUTHORITY\Authenticated Users
+            HANDLE_CASE_RETURN_STRING(WinRestrictedCodeSid);        //S-1-5-12, NT AUTHORITY\RESTRICTED
+            HANDLE_CASE_RETURN_STRING(WinTerminalServerSid);        //S-1-5-13, NT AUTHORITY\TERMINAL SERVER USER
+            HANDLE_CASE_RETURN_STRING(WinRemoteLogonIdSid);         //S-1-5-14, NT AUTHORITY\REMOTE INTERACTIVE LOGON
             HANDLE_CASE_RETURN_STRING(WinLogonIdsSid);              //Error: 87(ERROR_INVALID_PARAMETER)
-            HANDLE_CASE_RETURN_STRING(WinLocalSystemSid);           //S-1-5-18
-            HANDLE_CASE_RETURN_STRING(WinLocalServiceSid);          //S-1-5-19
-            HANDLE_CASE_RETURN_STRING(WinNetworkServiceSid);        //S-1-5-20
-            HANDLE_CASE_RETURN_STRING(WinBuiltinDomainSid);         //S-1-5-32
-            HANDLE_CASE_RETURN_STRING(WinBuiltinAdministratorsSid); //Error: 122(ERROR_INSUFFICIENT_BUFFER)
-            HANDLE_CASE_RETURN_STRING(WinBuiltinUsersSid);          //S-1-5-32-545
-            HANDLE_CASE_RETURN_STRING(WinBuiltinGuestsSid);         //S-1-5-32-546
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPowerUsersSid);     //S-1-5-32-547
-            HANDLE_CASE_RETURN_STRING(WinBuiltinAccountOperatorsSid);   //S-1-5-32-548
-            HANDLE_CASE_RETURN_STRING(WinBuiltinSystemOperatorsSid);    //S-1-5-32-549
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPrintOperatorsSid); //S-1-5-32-550
-            HANDLE_CASE_RETURN_STRING(WinBuiltinBackupOperatorsSid);//S-1-5-32-551
-            HANDLE_CASE_RETURN_STRING(WinBuiltinReplicatorSid);     //S-1-5-32-552
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPreWindows2000CompatibleAccessSid); //S-1-5-32-554
-            HANDLE_CASE_RETURN_STRING(WinBuiltinRemoteDesktopUsersSid); //S-1-5-32-555
-            HANDLE_CASE_RETURN_STRING(WinBuiltinNetworkConfigurationOperatorsSid);  //S-1-5-32-556
-            HANDLE_CASE_RETURN_STRING(WinAccountAdministratorSid);  //Error: 87(ERROR_INVALID_PARAMETER)
+            HANDLE_CASE_RETURN_STRING(WinLocalSystemSid);           //S-1-5-18, NT AUTHORITY\SYSTEM
+            HANDLE_CASE_RETURN_STRING(WinLocalServiceSid);          //S-1-5-19, NT AUTHORITY\LOCAL SERVICE
+            HANDLE_CASE_RETURN_STRING(WinNetworkServiceSid);        //S-1-5-20, NT AUTHORITY\NETWORK SERVICE
+
+            HANDLE_CASE_RETURN_STRING(WinBuiltinDomainSid);         //S-1-5-32,BUILTIN\BUILTIN
+            HANDLE_CASE_RETURN_STRING(WinBuiltinAdministratorsSid); //Error: 122(ERROR_INSUFFICIENT_BUFFER), TODO:为什么创建不成功? 可能是 S-1-5-32-544, BUILTIN\Administrators
+            HANDLE_CASE_RETURN_STRING(WinBuiltinUsersSid);          //S-1-5-32-545, BUILTIN\Users
+            HANDLE_CASE_RETURN_STRING(WinBuiltinGuestsSid);         //S-1-5-32-546, BUILTIN\Guests
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPowerUsersSid);     //S-1-5-32-547, BUILTIN\Power Users
+            HANDLE_CASE_RETURN_STRING(WinBuiltinAccountOperatorsSid);   //S-1-5-32-548, <None>
+            HANDLE_CASE_RETURN_STRING(WinBuiltinSystemOperatorsSid);    //S-1-5-32-549, <None>
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPrintOperatorsSid); //S-1-5-32-550, <None>
+            HANDLE_CASE_RETURN_STRING(WinBuiltinBackupOperatorsSid);//S-1-5-32-551, BUILTIN\Backup Operators
+            HANDLE_CASE_RETURN_STRING(WinBuiltinReplicatorSid);     //S-1-5-32-552, BUILTIN\Replicator
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPreWindows2000CompatibleAccessSid); //S-1-5-32-554, <None>
+            HANDLE_CASE_RETURN_STRING(WinBuiltinRemoteDesktopUsersSid); //S-1-5-32-555, BUILTIN\Remote Desktop Users
+            HANDLE_CASE_RETURN_STRING(WinBuiltinNetworkConfigurationOperatorsSid);  //S-1-5-32-556, BUILTIN\Network Configuration Operators, SidTypeAlias
+            HANDLE_CASE_RETURN_STRING(WinAccountAdministratorSid);  //Error: 87(ERROR_INVALID_PARAMETER),
             HANDLE_CASE_RETURN_STRING(WinAccountGuestSid);          //Error: 87(ERROR_INVALID_PARAMETER)
             HANDLE_CASE_RETURN_STRING(WinAccountKrbtgtSid);         //Error: 87(ERROR_INVALID_PARAMETER)
             HANDLE_CASE_RETURN_STRING(WinAccountDomainAdminsSid);   //Error: 87(ERROR_INVALID_PARAMETER)
@@ -163,37 +166,37 @@ namespace FTL
             HANDLE_CASE_RETURN_STRING(WinAccountEnterpriseAdminsSid);   //Error: 87(ERROR_INVALID_PARAMETER)
             HANDLE_CASE_RETURN_STRING(WinAccountPolicyAdminsSid);   //Error: 87(ERROR_INVALID_PARAMETER)
             HANDLE_CASE_RETURN_STRING(WinAccountRasAndIasServersSid);   //Error: 87(ERROR_INVALID_PARAMETER)
-            HANDLE_CASE_RETURN_STRING(WinNTLMAuthenticationSid);    //S-1-5-64-10
-            HANDLE_CASE_RETURN_STRING(WinDigestAuthenticationSid);  //S-1-5-64-21
-            HANDLE_CASE_RETURN_STRING(WinSChannelAuthenticationSid);//S-1-5-64-14
-            HANDLE_CASE_RETURN_STRING(WinThisOrganizationSid);      //S-1-5-15
-            HANDLE_CASE_RETURN_STRING(WinOtherOrganizationSid);     //S-1-5-1000
+            HANDLE_CASE_RETURN_STRING(WinNTLMAuthenticationSid);    //S-1-5-64-10,  NT AUTHORITY\NTLM Authentication
+            HANDLE_CASE_RETURN_STRING(WinDigestAuthenticationSid);  //S-1-5-64-21,  NT AUTHORITY\Digest Authentication
+            HANDLE_CASE_RETURN_STRING(WinSChannelAuthenticationSid);//S-1-5-64-14,  NT AUTHORITY\SChannel Authentication
+            HANDLE_CASE_RETURN_STRING(WinThisOrganizationSid);      //S-1-5-15,     NT AUTHORITY\This Organization
+            HANDLE_CASE_RETURN_STRING(WinOtherOrganizationSid);     //S-1-5-1000,   NT AUTHORITY\Other Organization
             HANDLE_CASE_RETURN_STRING(WinBuiltinIncomingForestTrustBuildersSid);    //Error: 122(ERROR_INSUFFICIENT_BUFFER)
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPerfMonitoringUsersSid);//S-1-5-32-558
-            HANDLE_CASE_RETURN_STRING(WinBuiltinPerfLoggingUsersSid);   //S-1-5-32-559
-            HANDLE_CASE_RETURN_STRING(WinBuiltinAuthorizationAccessSid);//S-1-5-32-560
-            HANDLE_CASE_RETURN_STRING(WinBuiltinTerminalServerLicenseServersSid);   //S-1-5-32-561
-            HANDLE_CASE_RETURN_STRING(WinBuiltinDCOMUsersSid);      //S-1-5-32-562
-            HANDLE_CASE_RETURN_STRING(WinBuiltinIUsersSid);         //S-1-5-32-568
-            HANDLE_CASE_RETURN_STRING(WinIUserSid);                 //S-1-5-17
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPerfMonitoringUsersSid);//S-1-5-32-558, BUILTIN\Performance Monitor Users
+            HANDLE_CASE_RETURN_STRING(WinBuiltinPerfLoggingUsersSid);   //S-1-5-32-559, BUILTIN\Performance Log Users
+            HANDLE_CASE_RETURN_STRING(WinBuiltinAuthorizationAccessSid);//S-1-5-32-560, <None>
+            HANDLE_CASE_RETURN_STRING(WinBuiltinTerminalServerLicenseServersSid);   //S-1-5-32-561, <None>
+            HANDLE_CASE_RETURN_STRING(WinBuiltinDCOMUsersSid);      //S-1-5-32-562, BUILTIN\Distributed COM Users
+            HANDLE_CASE_RETURN_STRING(WinBuiltinIUsersSid);         //S-1-5-32-568, BUILTIN\IIS_IUSRS
+            HANDLE_CASE_RETURN_STRING(WinIUserSid);                 //S-1-5-17,     NT AUTHORITY\IUSR
             HANDLE_CASE_RETURN_STRING(WinBuiltinCryptoOperatorsSid);//Error: 122(ERROR_INSUFFICIENT_BUFFER)
-            HANDLE_CASE_RETURN_STRING(WinUntrustedLabelSid);        //S-1-16-0
-            HANDLE_CASE_RETURN_STRING(WinLowLabelSid);              //S-1-16-4096
-            HANDLE_CASE_RETURN_STRING(WinMediumLabelSid);           //S-1-16-8192
-            HANDLE_CASE_RETURN_STRING(WinHighLabelSid);             //S-1-16-12288
-            HANDLE_CASE_RETURN_STRING(WinSystemLabelSid);           //S-1-16-16384
-            HANDLE_CASE_RETURN_STRING(WinWriteRestrictedCodeSid);   //S-1-5-33
-            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerRightsSid);    //S-1-3-4
+            HANDLE_CASE_RETURN_STRING(WinUntrustedLabelSid);        //S-1-16-0,     Mandatory Label\Untrusted Mandatory Level, SidTypeLabel
+            HANDLE_CASE_RETURN_STRING(WinLowLabelSid);              //S-1-16-4096,  Mandatory Label\Low Mandatory Level, SidTypeLabel
+            HANDLE_CASE_RETURN_STRING(WinMediumLabelSid);           //S-1-16-8192,  Mandatory Label\Medium Mandatory Level, SidTypeLabel
+            HANDLE_CASE_RETURN_STRING(WinHighLabelSid);             //S-1-16-12288, Mandatory Label\High Mandatory Level, SidTypeLabel
+            HANDLE_CASE_RETURN_STRING(WinSystemLabelSid);           //S-1-16-16384, Mandatory Label\System Mandatory Level
+            HANDLE_CASE_RETURN_STRING(WinWriteRestrictedCodeSid);   //S-1-5-33,     NT AUTHORITY\WRITE RESTRICTED
+            HANDLE_CASE_RETURN_STRING(WinCreatorOwnerRightsSid);    //S-1-3-4,      \OWNER RIGHTS
             HANDLE_CASE_RETURN_STRING(WinCacheablePrincipalsGroupSid);      //Error: 87(ERROR_INVALID_PARAMETER)
             HANDLE_CASE_RETURN_STRING(WinNonCacheablePrincipalsGroupSid);   //Error: 87(ERROR_INVALID_PARAMETER)
-            HANDLE_CASE_RETURN_STRING(WinEnterpriseReadonlyControllersSid); //S-1-5-22
+            HANDLE_CASE_RETURN_STRING(WinEnterpriseReadonlyControllersSid); //S-1-5-22, NT AUTHORITY\ENTERPRISE READ-ONLY DOMAIN CONTROLLERS BETA
             HANDLE_CASE_RETURN_STRING(WinAccountReadonlyControllersSid);    //Error: 87(ERROR_INVALID_PARAMETER)
             HANDLE_CASE_RETURN_STRING(WinBuiltinEventLogReadersGroup);      //Error: 122(ERROR_INSUFFICIENT_BUFFER)
             HANDLE_CASE_RETURN_STRING(WinNewEnterpriseReadonlyControllersSid);  //Error: 87(ERROR_INVALID_PARAMETER)
-            HANDLE_CASE_RETURN_STRING(WinBuiltinCertSvcDComAccessGroup);    //S-1-5-32-574
-            HANDLE_CASE_RETURN_STRING(WinMediumPlusLabelSid);       //S-1-16-8448
+            HANDLE_CASE_RETURN_STRING(WinBuiltinCertSvcDComAccessGroup);    //S-1-5-32-574, <None>
+            HANDLE_CASE_RETURN_STRING(WinMediumPlusLabelSid);       //S-1-16-8448,  Mandatory Label\中等级别和强制级别
             HANDLE_CASE_RETURN_STRING(WinLocalLogonSid);            //Error: 87(ERROR_INVALID_PARAMETER)
-            HANDLE_CASE_RETURN_STRING(WinConsoleLogonSid);          //S-1-2-1
+            HANDLE_CASE_RETURN_STRING(WinConsoleLogonSid);          //S-1-2-1,  \控制台登录
             HANDLE_CASE_RETURN_STRING(WinThisOrganizationCertificateSid);   //Error: 122(ERROR_INSUFFICIENT_BUFFER)
 
 #ifdef GET_ALL_TOKEN_INFOMATION
@@ -217,8 +220,173 @@ namespace FTL
             FTLASSERT(FALSE && TEXT("Unknown the well known sid type"));
             break;
         }
-        return TEXT("");
+        return NULL; //TEXT("");
     }
+
+    LPCTSTR CFUserUtil::GetSeObjectTypeString(SE_OBJECT_TYPE seObjType)
+    {
+        switch(seObjType)
+        {
+            HANDLE_CASE_RETURN_STRING(SE_UNKNOWN_OBJECT_TYPE);
+            HANDLE_CASE_RETURN_STRING(SE_FILE_OBJECT);
+            HANDLE_CASE_RETURN_STRING(SE_SERVICE);
+            HANDLE_CASE_RETURN_STRING(SE_PRINTER);
+            HANDLE_CASE_RETURN_STRING(SE_REGISTRY_KEY);
+            HANDLE_CASE_RETURN_STRING(SE_LMSHARE);
+            HANDLE_CASE_RETURN_STRING(SE_KERNEL_OBJECT);
+            HANDLE_CASE_RETURN_STRING(SE_WINDOW_OBJECT);
+            HANDLE_CASE_RETURN_STRING(SE_DS_OBJECT);
+            HANDLE_CASE_RETURN_STRING(SE_DS_OBJECT_ALL);
+            HANDLE_CASE_RETURN_STRING(SE_PROVIDER_DEFINED_OBJECT);
+            HANDLE_CASE_RETURN_STRING(SE_WMIGUID_OBJECT);
+            HANDLE_CASE_RETURN_STRING(SE_REGISTRY_WOW64_32KEY);
+            //HANDLE_CASE_RETURN_STRING(xxxx);
+        default:
+            FTLTRACEEX(tlError, TEXT("Unknown SE_OBJECT_TYPE: %d\n"), seObjType);
+            FTLASSERT(FALSE);
+            break;
+        }
+        return NULL;
+    }
+
+    LPCTSTR CFUserUtil::GetAccessModeString(DWORD accessMode)
+    {
+        switch(accessMode)
+        {
+            HANDLE_CASE_RETURN_STRING(NOT_USED_ACCESS);
+            HANDLE_CASE_RETURN_STRING(GRANT_ACCESS);
+            HANDLE_CASE_RETURN_STRING(SET_ACCESS);
+            HANDLE_CASE_RETURN_STRING(DENY_ACCESS);
+            HANDLE_CASE_RETURN_STRING(REVOKE_ACCESS);
+            HANDLE_CASE_RETURN_STRING(SET_AUDIT_SUCCESS);
+            HANDLE_CASE_RETURN_STRING(SET_AUDIT_FAILURE);
+        default:
+            FTLTRACEEX(tlError, TEXT("Unknown AccessMode: %d\n"), accessMode);
+            FTLASSERT(FALSE);
+            break;
+        }
+        return NULL;
+    }
+
+    LPCTSTR CFUserUtil::GetAccessMaskString(CFStringFormater& formater, ACCESS_MASK access, LPCTSTR pszDivide /* = TEXT("|") */)
+    {
+        ACCESS_MASK oldAccess = access;
+        formater.Format(TEXT(""));
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, access, DELETE, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, access, READ_CONTROL, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, access, WRITE_DAC, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, access, WRITE_OWNER, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, access, SYNCHRONIZE, pszDivide);
+        //HANDLE_COMBINATION_VALUE_TO_STRING(formater, access, xxxx, pszDivide);
+        //HANDLE_COMBINATION_VALUE_TO_STRING(formater, access, xxxx, pszDivide);
+
+        FTLASSERT( 0 == access);
+        if (0 != access)
+        {
+            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check Access Mask String Not Complete, total=0x%x, remain=0x%x\n"),
+                __FILE__LINE__, oldAccess, access);
+        }
+        return formater.GetString();
+    }
+
+    LPCTSTR CFUserUtil::GetSecurityDescriptorControlString(CFStringFormater& formater, SECURITY_DESCRIPTOR_CONTROL seControl, LPCTSTR pszDivide /* = TEXT("|") */)
+    {
+        ACCESS_MASK oldSeControl = seControl;
+        formater.Format(TEXT(""));
+
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_OWNER_DEFAULTED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_GROUP_DEFAULTED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_DACL_PRESENT,     pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_DACL_DEFAULTED,   pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_SACL_PRESENT,     pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_SACL_DEFAULTED,   pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_DACL_AUTO_INHERIT_REQ, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_SACL_AUTO_INHERIT_REQ, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_DACL_AUTO_INHERITED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_SACL_AUTO_INHERITED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_DACL_PROTECTED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_SACL_PROTECTED, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_RM_CONTROL_VALID, pszDivide);
+        HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, SE_SELF_RELATIVE, pszDivide);
+        //HANDLE_COMBINATION_VALUE_TO_STRING(formater, seControl, XXx, pszDivide);
+
+        FTLASSERT( 0 == seControl);
+        if (0 != seControl)
+        {
+            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check SecurityDescriptor Control String Not Complete, total=0x%x, remain=0x%x\n"),
+                __FILE__LINE__, oldSeControl, seControl);
+        }
+        return formater.GetString();
+    }
+
+    
+
+    LPCTSTR CFUserUtil::GetAceInfo(CFStringFormater& formater, PACE_HEADER pAce)
+    {
+        HRESULT hr = E_FAIL;
+        return formater.GetString();
+    }
+
+    LPCTSTR CFUserUtil::GetAclInfo(CFStringFormater& formater, PACL pAcl)
+    {
+        HRESULT hr = E_FAIL;
+        DWORD dwRet = ERROR_SUCCESS;
+        FTLASSERT(ACL_REVISION == pAcl->AclRevision || ACL_REVISION_DS == pAcl->AclRevision);
+        
+        ACL_SIZE_INFORMATION asi = {0};
+        API_VERIFY(GetAclInformation(pAcl, &asi, sizeof(ACL_SIZE_INFORMATION), AclSizeInformation));
+        
+
+        ULONG countofExplicitEntries = 0;
+        PEXPLICIT_ACCESS pExplicitAcess = NULL;
+
+        
+        ERROR_RETURN_VERIFY(GetExplicitEntriesFromAcl(pAcl, &countofExplicitEntries, &pExplicitAcess));
+        if (ERROR_SUCCESS == dwRet)
+        {
+             for (ULONG index = 0; index < countofExplicitEntries; index++)
+             {
+                CFStringFormater formaterAccessMask;
+                COM_VERIFY(formater.AppendFormat(TEXT("%d: accessMask=%d(%s), accessMode=%d(%s)"), index, 
+                    pExplicitAcess[index].grfAccessPermissions, GetAccessMaskString(formaterAccessMask, pExplicitAcess[index].grfAccessPermissions),
+                    pExplicitAcess[index].grfAccessMode, GetAccessModeString(pExplicitAcess[index].grfAccessMode))
+                );
+             }
+             SAFE_LOCAL_FREE(pExplicitAcess);
+        }
+
+        COM_VERIFY(formater.Format(TEXT("ver=%d, aceCount=%d"), pAcl->AclRevision, pAcl->AceCount));
+        return formater.GetString();
+    }
+
+    LPCTSTR CFUserUtil::GetSecurityDescriptorinfo(CFStringFormater& formater, PSECURITY_DESCRIPTOR pSecurityDescriptor)
+    {
+        BOOL bRet = FALSE;
+        HRESULT hr = E_FAIL;
+
+        SECURITY_DESCRIPTOR_CONTROL controlBit = 0;
+        DWORD dwRevision = 0;
+        API_VERIFY(GetSecurityDescriptorControl(pSecurityDescriptor, &controlBit, &dwRevision));
+        if (bRet)
+        {
+            CFStringFormater formaterControl;
+            COM_VERIFY(formater.AppendFormat(TEXT("Control=0x%x(%s)"), 
+                controlBit, GetSecurityDescriptorControlString(formaterControl, controlBit, TEXT("|"))
+            ));
+        }
+        return formater.GetString();
+    }
+
+    //BOOL CFUserUtil::DumpNamedObjectSecurityInformation(LPCTSTR pszName, SE_OBJECT_TYPE seObjType /* = SE_UNKNOWN_OBJECT_TYPE */)
+    //{
+    //    BOOL bRet = FALSE;
+    //    if(SE_UNKNOWN_OBJECT_TYPE == seObjType){
+    //        //seObjType = xxxx; //TODO:
+    //    }
+    //    return bRet;
+    //}
+
 
     IntegrityLevel CFUserUtil::GetIntegrityLevel(DWORD dwIntegrityLevel)
     {
@@ -254,19 +422,13 @@ namespace FTL
             HANDLE_CASE_RETURN_STRING(ilSystem);
             HANDLE_CASE_RETURN_STRING(ilProtectedProcess);
         default:
-            FTLASSERT(FALSE);
+            FTLTRACEEX(tlError, TEXT("Unknown IntegrityLevel: %d\n"), iLevel);
+            FTLASSERT(FALSE && TEXT("Unknown IntegrityLevel"));
             break;
         }
         return NULL;
     }
 
-    LPCTSTR CFUserUtil::GetAclInfo(CFStringFormater& formater, PACL pAcl)
-    {
-        HRESULT hr = E_FAIL;
-        FTLASSERT(ACL_REVISION == pAcl->AclRevision || ACL_REVISION_DS == pAcl->AclRevision);
-        COM_VERIFY(formater.Format(TEXT("ver=%d, aceCount=%d"), pAcl->AclRevision, pAcl->AceCount));
-        return formater.GetString();
-    }
 
     LPCTSTR CFUserUtil::GetPrivilegeNameByLuid(CFStringFormater& formater, PLUID pLuid, LPCTSTR lpSystemName /* = NULL */)
     {
@@ -291,8 +453,20 @@ namespace FTL
         API_VERIFY(ConvertSidToStringSid(pSid, &pStringSid));
         if (bRet)
         {
-            COM_VERIFY(formater.AppendFormat(TEXT("%s"), pStringSid));
+            COM_VERIFY(formater.AppendFormat(TEXT("%s, "), pStringSid));
             LocalFree(pStringSid); 
+
+#define MAX_NAME_SIZE 256
+            TCHAR AccountName[MAX_NAME_SIZE] = {0};
+            TCHAR DomainName[MAX_NAME_SIZE] = {0};
+            DWORD dwAccountName = _countof(AccountName) - 1;
+            DWORD dwDomainName = _countof(DomainName) - 1;
+            SID_NAME_USE sidNameUse = (SID_NAME_USE)0;
+            API_VERIFY_EXCEPT1(LookupAccountSid(NULL, pSid, AccountName, &dwAccountName, DomainName, &dwDomainName, &sidNameUse), ERROR_NONE_MAPPED);
+            if (bRet)
+            {
+                COM_VERIFY(formater.AppendFormat(TEXT("Account=%s\\%s, type=%d(%s),"), DomainName, AccountName, sidNameUse, GetSidNameUseString(sidNameUse)));
+            }
 
             // Get the identifier authority value from the SID.
             PSID_IDENTIFIER_AUTHORITY pSidIdAuth =  GetSidIdentifierAuthority(pSid);
@@ -327,6 +501,28 @@ namespace FTL
         return formater.GetString();
     }
 
+    LPCTSTR CFUserUtil::GetSidNameUseString(SID_NAME_USE type)
+    {
+        switch (type)
+        {
+            HANDLE_CASE_RETURN_STRING(SidTypeUser);
+            HANDLE_CASE_RETURN_STRING(SidTypeGroup);
+            HANDLE_CASE_RETURN_STRING(SidTypeDomain);
+            HANDLE_CASE_RETURN_STRING(SidTypeAlias);
+            HANDLE_CASE_RETURN_STRING(SidTypeWellKnownGroup);
+            HANDLE_CASE_RETURN_STRING(SidTypeDeletedAccount);
+            HANDLE_CASE_RETURN_STRING(SidTypeInvalid);
+            HANDLE_CASE_RETURN_STRING(SidTypeUnknown);
+            HANDLE_CASE_RETURN_STRING(SidTypeComputer);
+            HANDLE_CASE_RETURN_STRING(SidTypeLabel);
+        default:
+            FTLTRACEEX(tlError, TEXT("Unknown Sid Name Type: %d\n"), type);
+            FTLASSERT(FALSE && TEXT("Unknown Sid Name Type"));
+            break;
+        }
+        return NULL;
+    }
+ 
     LPCTSTR CFUserUtil::GetSidAttributesString(CFStringFormater& formater, DWORD dwAttributes, LPCTSTR pszDivide /* = TEXT("|") */)
     {
         DWORD dwOldAttributes = dwAttributes;
@@ -336,7 +532,11 @@ namespace FTL
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwAttributes, SE_GROUP_ENABLED_BY_DEFAULT, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwAttributes, SE_GROUP_ENABLED, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwAttributes, SE_GROUP_OWNER, pszDivide);
+
+        //系统在访问检查时，只会检查给这个组应用了拒绝访问的那些ACE项，而允许访问的ACE项被忽略
+        //TODO: UAC开启时才可能在受限访问令牌中出现? 
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwAttributes, SE_GROUP_USE_FOR_DENY_ONLY, pszDivide);
+
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwAttributes, SE_GROUP_INTEGRITY, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwAttributes, SE_GROUP_INTEGRITY_ENABLED, pszDivide);
         HANDLE_COMBINATION_VALUE_TO_STRING(formater, dwAttributes, SE_GROUP_LOGON_ID, pszDivide);
@@ -346,7 +546,7 @@ namespace FTL
         FTLASSERT( 0 == dwAttributes);
         if (0 != dwAttributes)
         {
-            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check Sid Attributes String Not Complete, total=0x%08x, remain=0x%08x\n"),
+            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check Sid Attributes String Not Complete, total=0x%x, remain=0x%x\n"),
                 __FILE__LINE__, dwOldAttributes, dwAttributes);
         }
         return formater.GetString();
@@ -383,7 +583,7 @@ namespace FTL
         FTLASSERT( 0 == dwAttributes);
         if (0 != dwAttributes)
         {
-            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check Sid Attributes String Not Complete, total=0x%08x, remain=0x%08x\n"),
+            FTLTRACEEX(FTL::tlWarning, TEXT("%s:Check Sid Attributes String Not Complete, total=0x%x, remain=0x%x\n"),
                 __FILE__LINE__, dwOldAttributes, dwAttributes);
         }
         return formater.GetString();
@@ -433,6 +633,7 @@ namespace FTL
                         TOKEN_GROUPS* pTokenGroups = (TOKEN_GROUPS*)tokenBuf.GetMemory();
                         for (dwGroup = 0; dwGroup < pTokenGroups->GroupCount; dwGroup++)
                         {
+                            //TODO: if (CheckTokenMembership( NULL, psidAdmin, &bIsAdmin)) 
                             if (EqualSid(pTokenGroups->Groups[dwGroup].Sid, psidAdmin))
                             {
                                 bIsAdmin = TRUE;
@@ -586,7 +787,7 @@ namespace FTL
         FTLTRACEEX(FTL::tlDetail,  TEXT("GetTokenInformation: %d need memory Bytes %d\n"), c, l); \
         if((ERROR_INSUFFICIENT_BUFFER == GetLastError()) && (l > 0)){ \
             DWORD dwWant = l;\
-            API_VERIFY_EXCEPT1( (GetTokenInformation(h, (TOKEN_INFORMATION_CLASS)c, (LPVOID)a.GetMemory(dwWant * 2), dwWant * 2, &l) && (dwWant == l)), e); \
+            API_VERIFY_EXCEPT1( (GetTokenInformation(h, (TOKEN_INFORMATION_CLASS)c, (LPVOID)a.GetMemory(dwWant), dwWant, &l) && (dwWant == l)), e); \
         }\
     }
 
@@ -643,7 +844,7 @@ namespace FTL
     {
         BOOL bRet = FALSE;
         TOKEN_PRIVILEGES* pTokenPrivileges = (TOKEN_PRIVILEGES*)TokenInformation;
-        formater.Format(TEXT("Count=%d"), pTokenPrivileges->PrivilegeCount);
+        formater.Format(TEXT("Privileges Count=%d"), pTokenPrivileges->PrivilegeCount);
         TCHAR szPrivilegeName[40] = {0};
         for (DWORD dwIndex = 0; dwIndex < pTokenPrivileges->PrivilegeCount; dwIndex++)
         {
@@ -842,16 +1043,18 @@ namespace FTL
 
         static TokenInfoDumpParams dumpTokenParams[] = {
             //{ TokenNone, _T("TokenNone"), GetTokenDwordInfo },                        //0 -- 测试一下是否能获取到 0 值对应的信息, 实测获取不到
-            { TokenUser, _T("TokenUser"), GetTokenUserInfo },                           //1 -- TOKEN_USER 
-            { TokenGroups, _T("TokenGroups"), GetTokenGroupsInfo },                     //2 -- TOKEN_GROUPS
+            { TokenUser, _T("TokenUser"), GetTokenUserInfo },                           //1 -- TOKEN_USER , 用户信息(SID, 如 CN15076-D-1\nhn 等)
 
-            //获得权限列表, 如 SeDebugPrivilege 等
+            //组信息, 可能会属于多个组(实测属于16个组), TODO: 注意其中有 SE_GROUP_OWNER 的 Group，等价于 TokenOwner ?
+            { TokenGroups, _T("TokenGroups"), GetTokenGroupsInfo },                     //2 -- TOKEN_GROUPS, 
+
+            //获得权限列表, 如 SeDebugPrivilege 等, 
             { TokenPrivileges, _T("TokenPrivileges"), GetTokenPrivilegesInfo },         //3 -- TOKEN_PRIVILEGES
             { TokenOwner, _T("TokenOwner"), GetTokenOwnerInfo },                        //4 -- TOKEN_OWNER
-            { TokenPrimaryGroup, _T("TokenPrimaryGroup"), GetTokenPrimaryGroupInfo },   //5 -- TOKEN_PRIMARY_GROUP
+            { TokenPrimaryGroup, _T("TokenPrimaryGroup"), GetTokenPrimaryGroupInfo },   //5 -- TOKEN_PRIMARY_GROUP, 似乎是 TokenGroups 的第一个组?
             { TokenDefaultDacl, _T("TokenDefaultDacl"), GetTokenDefaultDaclInfo },      //6 -- TOKEN_DEFAULT_DACL
-            { TokenSource, _T("TokenSource"), GetTokenSourceInfo },                     //7 -- TOKEN_SOURCE
-            { TokenType, _T("TokenType"), GetTokenTypeInfo },                           //8 -- TOKEN_TYPE
+            { TokenSource, _T("TokenSource"), GetTokenSourceInfo },                     //7 -- TOKEN_SOURCE, TODO: SourceName=User32 , Identifier=0x7271e(0:7271e)
+            { TokenType, _T("TokenType"), GetTokenTypeInfo },                           //8 -- TOKEN_TYPE, 类型: 有 TokenPrimary 和 TokenImpersonation 之分
             
             //只有 TokenType 为 TokenImpersonation 的Token才能获得该信息
             { TokenImpersonationLevel, _T("TokenImpersonationLevel"), GetSecurityImpersonationLevelInfo, ERROR_INVALID_PARAMETER },  //9 -- SECURITY_IMPERSONATION_LEVEL
@@ -861,6 +1064,7 @@ namespace FTL
 
             //Session Id 值: 比如 0(服务进程), 1~n(普通的用户进程) -- 注意: Vista 以后服务始终在 Session 0
             { TokenSessionId, _T("TokenSessionId"), GetTokenDwordInfo },                //12 -- DWORD
+
             { TokenGroupsAndPrivileges, _T("TokenGroupsAndPrivileges"), GetTokenGroupsAndPrivilegesInfo },  //13 -- TOKEN_GROUPS_AND_PRIVILEGES
             { TokenSessionReference, _T("TokenSessionReference"), GetTokenReservedInfo , ERROR_INVALID_PARAMETER },                   //14 -- Reserved
             { TokenSandBoxInert, _T("TokenSandBoxInert"), GetTokenDwordInfo },          //15 -- DWORD
@@ -905,7 +1109,7 @@ namespace FTL
             TokenInfoDumpParams* pDumpParams = &dumpTokenParams[dwIndex];
             if (pDumpParams->pszClassName != NULL)
             {
-                CFMemAllocator<BYTE> memAllocator; 
+                CFMemAllocator<BYTE, DEFAULT_MEMALLOCATOR_FIXED_COUNT, matLocalAlloc> memAllocator; 
                 DWORD dwReturnLength = 0;
                 GET_TOKEN_INFORMATION_DYNAMIC(hToken, pDumpParams->tokenInformationClass, memAllocator, dwReturnLength, pDumpParams->dwSkipError);
                 if (bRet)
