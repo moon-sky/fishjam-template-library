@@ -5,6 +5,7 @@
 #ifdef USE_EXPORT
 #  include "ftlComDetect.h"
 #endif
+#include "ftlCom.h"
 
 //#if INCLUDE_DETECT_DDRAW
 //#include <ddraw.h>
@@ -268,6 +269,40 @@ namespace FTL
             return S_OK;
         }
     };
+#if INCLUDE_DETECT_NETFW
+    class CFNetFwProfileDump{
+    public:
+        static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
+        {
+            HRESULT hr = S_FALSE;
+            CComQIPtr<INetFwProfile> pNetFwProfile(pUnknown);
+            if (pNetFwProfile)
+            {
+                NET_FW_PROFILE_TYPE profileType = NET_FW_PROFILE_DOMAIN;
+                COM_VERIFY(pNetFwProfile->get_Type(&profileType));
+                FTLTRACEEX(FTL::tlTrace,TEXT("\t\tType=0x%x\n"), profileType);
+
+                VARIANT_BOOL bFirewallEnabled = VARIANT_FALSE;
+                COM_VERIFY(pNetFwProfile->get_FirewallEnabled(&bFirewallEnabled));
+                FTLTRACEEX(FTL::tlTrace,TEXT("\t\tFirewallEnabled=%d\n"), bFirewallEnabled);
+                
+                VARIANT_BOOL bExceptionsNotAllowed = VARIANT_FALSE;
+                COM_VERIFY(pNetFwProfile->get_ExceptionsNotAllowed(&bExceptionsNotAllowed));
+                FTLTRACEEX(FTL::tlTrace,TEXT("\t\tExceptionsNotAllowed=%d\n"), bExceptionsNotAllowed);
+
+                VARIANT_BOOL bNotificationsDisabled = VARIANT_FALSE;
+                COM_VERIFY(pNetFwProfile->get_NotificationsDisabled(&bNotificationsDisabled));
+                FTLTRACEEX(FTL::tlTrace,TEXT("\t\tNotificationsDisabled=%d\n"), bNotificationsDisabled);
+
+                VARIANT_BOOL bUnicastResponsesToMulticastBroadcastDisabled = VARIANT_FALSE;
+                COM_VERIFY(pNetFwProfile->get_UnicastResponsesToMulticastBroadcastDisabled(&bUnicastResponsesToMulticastBroadcastDisabled));
+                FTLTRACEEX(FTL::tlTrace,TEXT("\t\tUnicastResponsesToMulticastBroadcastDisabled=%d\n"), bUnicastResponsesToMulticastBroadcastDisabled);
+
+            }
+            return hr;
+        }
+    };
+#endif //INCLUDE_DETECT_NETFW
 
     class CFOleWindowDump{
     public:
@@ -307,11 +342,33 @@ namespace FTL
         static HRESULT DumpInterfaceInfo(IUnknown* pUnknown)
         {
             HRESULT hr = S_FALSE;
-			ATL::CComQIPtr<IEnumVARIANT> pEnumVariant(pUnknown);
-			if (pEnumVariant)
-			{
-				COM_VERIFY(pEnumVariant->Reset());
-			}
+            ATL::CComQIPtr<IEnumVARIANT> pEnumVariant(pUnknown);
+            if (pEnumVariant)
+            {
+                COM_VERIFY(pEnumVariant->Reset());
+
+                ULONG nFetched = 0;
+                CComVariant varEnumObject;
+                ULONG nIndex = 0;
+                do 
+                {
+                    COM_VERIFY_EXCEPT1(pEnumVariant->Next(1, &varEnumObject, &nFetched), S_FALSE);
+                    if (S_OK == hr){
+                        FTLASSERT(1 == nFetched);
+                        CFVariantInfo varInfo(varEnumObject);
+                        FTLTRACE(TEXT("\t\t[%d]: \"%s\"\n"), nIndex, varInfo.GetConvertedInfo());
+                        nIndex++;
+                        //if (VT_DISPATCH == varEnumObject.vt)
+                        //{
+                        //    COM_DETECT_INTERFACE_FROM_LIST(varEnumObject.pdispVal);
+                        //    COM_DETECT_INTERFACE_FROM_REGISTER(varEnumObject.pdispVal);
+                        //}
+                    }
+                    else{
+                        FTLASSERT(0 == nFetched);
+                    }
+                } while (S_OK == hr);
+            }
             return hr;
         }
     };
@@ -2242,7 +2299,7 @@ namespace FTL
 #endif //INCLUDE_DETECT_MSXML
 
 #if INCLUDE_DETECT_NETFW
-			//CoCreateInstance(__uuidof(NetFwMgr),...__uuidof(INetFwMgr), (void**)&pNetFwMgr);
+            //防火墙管理组件, 通过 CoCreateInstance(__uuidof(NetFwMgr),...__uuidof(INetFwMgr), (void**)&pNetFwMgr); 创建后使用
 			DETECT_INTERFACE_ENTRY(INetFwRemoteAdminSettings)
 			DETECT_INTERFACE_ENTRY(INetFwIcmpSettings)
 			DETECT_INTERFACE_ENTRY(INetFwOpenPort)
@@ -2250,6 +2307,7 @@ namespace FTL
 			DETECT_INTERFACE_ENTRY(INetFwService)
 			DETECT_INTERFACE_ENTRY(INetFwServices)
 
+            //设置应用程序在防火墙中的信息 -- 如是否允许通过防火墙
 			//CoCreateInstance(__uuidof(NetFwAuthorizedApplication),...,__uuidof(INetFwAuthorizedApplication),(void**)&fwApp);
 			DETECT_INTERFACE_ENTRY(INetFwAuthorizedApplication)
 
@@ -2260,7 +2318,7 @@ namespace FTL
 # endif //__INetFwRule2_INTERFACE_DEFINED__
 			DETECT_INTERFACE_ENTRY(INetFwRules)
 			DETECT_INTERFACE_ENTRY(INetFwServiceRestriction)
-			DETECT_INTERFACE_ENTRY(INetFwProfile)
+			DETECT_INTERFACE_ENTRY_EX(INetFwProfile, CFNetFwProfileDump)
 			DETECT_INTERFACE_ENTRY(INetFwPolicy)
 			DETECT_INTERFACE_ENTRY(INetFwPolicy2)
 			DETECT_INTERFACE_ENTRY(INetFwMgr)

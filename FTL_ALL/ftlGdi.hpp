@@ -1376,7 +1376,9 @@ namespace FTL
         }
         else
         {
+            FTLASSERT(FALSE);
             //进行缩放stretch
+#if 0
             float fx=(float)nWidthSrc/(float)nWidthDst;
             float fy=(float)nHeightSrc/(float)nHeightDst;
             float dx,dy;
@@ -1388,6 +1390,7 @@ namespace FTL
 
                 }
             }
+#endif 
         }
 
         return bRet;
@@ -1882,14 +1885,14 @@ namespace FTL
 
     BYTE* CFCanvas::GetPointAddr(int x, int y)
     {
-        BYTE* pRowAddr = NULL;
+        BYTE* pPointAddr = NULL;
         FTLASSERT(m_pImageBuffer);
         FTLASSERT(y >= 0 && y < m_height);
         if (y >= 0 && y < m_height)
         {
-            pRowAddr = m_pImageBuffer + y * m_nStride;
+            pPointAddr = m_pImageBuffer + y * m_nStride + x;
         }
-        return pRowAddr;
+        return pPointAddr;
     }
 
     DWORD CFCanvas::GetImageBufferSize()
@@ -2094,7 +2097,7 @@ namespace FTL
 
             //API_VERIFY(INVALID_SET_FILE_POINTER != SetFilePointer(hFile, 0, NULL, FILE_BEGIN));
 
-            DWORD dwInfoHeaderSize = 0;
+            //DWORD dwInfoHeaderSize = 0;
 
             //不支持大于4G的位图文件
             //DWORD dwFileSize = ::GetFileSize(hFile, NULL);

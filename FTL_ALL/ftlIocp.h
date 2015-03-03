@@ -98,10 +98,10 @@ namespace FTL
         virtual INT    GetIocpHandleCount() const { return 1; }
         virtual HANDLE GetIocpHandle(INT index) const = 0;
         //virtual BOOL   OnIoComplete(CFIocpMgr* pIocpMgr, CFIoBufferPoolObjectPtr& pIoBuffer, DWORD dwBytesTransferred) = 0;
-        virtual BOOL OnInitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred) { return TRUE; }
-        virtual BOOL AfterReadCompleted(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred) { return TRUE; }
-        virtual BOOL AfterWriteCompleted(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred) { return TRUE; }
-        virtual BOOL OnUninitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred) { return TRUE; }
+        virtual BOOL OnInitialize(CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */) { return TRUE; }
+        virtual BOOL AfterReadCompleted(CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */) { return TRUE; }
+        virtual BOOL AfterWriteCompleted(CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */) { return TRUE; }
+        virtual BOOL OnUninitialize(CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */) { return TRUE; }
 
         FTLINLINE VOID AddBuffer(CFIocpBuffer* pIoBuffer);
         FTLINLINE BOOL RemoveBuffer(CFIocpBuffer* pIoBuffer);

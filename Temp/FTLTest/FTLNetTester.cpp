@@ -174,6 +174,46 @@ void CFTLNetTester::test_DownloadMethods()
     COM_VERIFY(URLDownloadToFile(NULL, STR_DOWNLOAD_FILE_URL, path, 0, NULL));
     API_VERIFY(counter.Stop());
     FTLTRACE(TEXT("URLDownloadToFile Elapse %d(ms)\n"), counter.GetElapseTime() / NANOSECOND_PER_MILLISECOND);
+}
 
+void CFTLNetTester::test_FireWallInterface()
+{
+    HRESULT hr = E_FAIL;
 
+    COM_VERIFY(CoInitialize(NULL));
+
+    CComPtr<INetFwMgr>      spNetFwMgr;
+    CComPtr<INetFwPolicy>   spNetFwPolicy;
+    CComPtr<INetFwProfile>  spNetFwProfile;
+    CComPtr<INetFwAuthorizedApplications>   spNetFwAuthorizedApplications;
+
+    COM_VERIFY(spNetFwMgr.CoCreateInstance(__uuidof(NetFwMgr), NULL));
+    if (spNetFwMgr)
+    {
+        COM_VERIFY(spNetFwMgr->get_LocalPolicy(&spNetFwPolicy));
+        if (spNetFwPolicy)
+        {
+            COM_VERIFY(spNetFwPolicy->get_CurrentProfile(&spNetFwProfile));
+            if (spNetFwProfile)
+            {
+                COM_VERIFY(spNetFwProfile->get_AuthorizedApplications(&spNetFwAuthorizedApplications));
+                if (spNetFwAuthorizedApplications)
+                {
+                    long nAuthorizedApplicationCount = 0;
+                    COM_VERIFY(spNetFwAuthorizedApplications->get_Count(&nAuthorizedApplicationCount));
+                    FTLTRACE(TEXT("nAuthorizedApplicationCount=%d\n"), nAuthorizedApplicationCount);
+                    CComPtr<IUnknown> spEnum;
+                    COM_VERIFY(spNetFwAuthorizedApplications->get__NewEnum(&spEnum));
+                    CComQIPtr<IEnumVARIANT>     spEnumAuthorizedApp = spEnum;
+                    if (spEnumAuthorizedApp)
+                    {
+                        //COM_DETECT_INTERFACE_FROM_LIST(spEnumAuthorizedApp);
+                    }
+                }
+            }
+        }
+
+    }
+
+    CoUninitialize();
 }

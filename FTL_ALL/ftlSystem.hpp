@@ -979,7 +979,7 @@ namespace FTL
     BOOL CFSystemUtil::IsInsideVirtualBox()
     {
         //»ã±àµÄÎÄµµ -- Intel 64 and IA-32 Architecture Software Developer¡¯s Manual Volume 3A: System Programming Guide
-        BOOL bRet = FALSE;
+        //BOOL bRet = FALSE;
         BOOL isInsideVBox = FALSE;
         FTLASSERT(DFP_RECEIVE_DRIVE_DATA == SMART_RCV_DRIVE_DATA);
 

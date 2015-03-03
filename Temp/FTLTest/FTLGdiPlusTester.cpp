@@ -31,8 +31,8 @@ void CFTLGdiPlusTester::test_Bitmap()
         if (Ok == sts)
         {
             CPPUNIT_ASSERT(PixelFormat32bppARGB == lockedBitmapData.PixelFormat);
-            CPPUNIT_ASSERT(rcImage.Width        == lockedBitmapData.Width);
-            CPPUNIT_ASSERT(rcImage.Height       == lockedBitmapData.Height);
+            CPPUNIT_ASSERT((UINT)rcImage.Width  == lockedBitmapData.Width);
+            CPPUNIT_ASSERT((UINT)rcImage.Height == lockedBitmapData.Height);
             CPPUNIT_ASSERT(rcImage.Width * 4    == lockedBitmapData.Stride);  //100*4--要求按照32位ARGB的方式进行lock, 表示一行的字节数
             RGBQUAD* pClrFirstPixel = (RGBQUAD*)lockedBitmapData.Scan0;
             CPPUNIT_ASSERT(pClrFirstPixel->rgbReserved == 0xFF);              //本来是24位的Bmp位图，要求按照32位ARGB进行lock时, Alpha 会被填充为 0xFF(255)
@@ -44,10 +44,10 @@ void CFTLGdiPlusTester::test_Bitmap()
         GDIPLUS_VERIFY(pBitmap->LockBits(&rcImage, ImageLockModeRead, PixelFormat24bppRGB, &lockedBitmapData));
         if (Ok == sts)
         {
-            CPPUNIT_ASSERT(PixelFormat24bppRGB == lockedBitmapData.PixelFormat);
-            CPPUNIT_ASSERT(rcImage.Width        == lockedBitmapData.Width);
-            CPPUNIT_ASSERT(rcImage.Height       == lockedBitmapData.Height);
-            CPPUNIT_ASSERT(rcImage.Width * 3    == lockedBitmapData.Stride);        //100*3--要求按照24位ARGB的方式进行lock, 表示一行的字节数
+            CPPUNIT_ASSERT(PixelFormat24bppRGB  == lockedBitmapData.PixelFormat);
+            CPPUNIT_ASSERT((UINT)rcImage.Width  == lockedBitmapData.Width);
+            CPPUNIT_ASSERT((UINT)rcImage.Height == lockedBitmapData.Height);
+            CPPUNIT_ASSERT(rcImage.Width * 3   == lockedBitmapData.Stride);        //100*3--要求按照24位ARGB的方式进行lock, 表示一行的字节数
             RGBTRIPLE* pClrFirstPixel = (RGBTRIPLE*)lockedBitmapData.Scan0;
             CPPUNIT_ASSERT(pClrFirstPixel->rgbtRed == 0xDF
                 && pClrFirstPixel->rgbtGreen == 0xE9

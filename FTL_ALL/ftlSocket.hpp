@@ -821,17 +821,17 @@ namespace FTL
         return 1;
     }
 
-    HANDLE CFIocpClientSocket::GetIocpHandle( INT index ) const
+    HANDLE CFIocpClientSocket::GetIocpHandle( INT /* index */) const
     {
         return (HANDLE)m_socket;
     }
 
-    BOOL CFIocpClientSocket::OnInitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    BOOL CFIocpClientSocket::OnInitialize( CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */ )
     {
         throw std::exception("The method or operation is not implemented.");
     }
 
-    BOOL CFIocpClientSocket::AfterReadCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    BOOL CFIocpClientSocket::AfterReadCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD /* dwBytesTransferred */ )
     {
         SOCKADDR_IN* ClientAddr = &m_foreignAddr;
         CFConversion convAddr, convInfo;
@@ -849,12 +849,12 @@ namespace FTL
         return TRUE;
     }
 
-    BOOL CFIocpClientSocket::AfterWriteCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    BOOL CFIocpClientSocket::AfterWriteCompleted( CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */ )
     {
         throw std::exception("The method or operation is not implemented.");
     }
 
-    BOOL CFIocpClientSocket::OnUninitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    BOOL CFIocpClientSocket::OnUninitialize( CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */ )
     {
         Close();
         delete this;
@@ -882,7 +882,7 @@ namespace FTL
         return (HANDLE)m_socketListen;
     }
 
-    BOOL CFIocpListenTask::OnInitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    BOOL CFIocpListenTask::OnInitialize(CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD /* dwBytesTransferred */ )
     {
         FTLASSERT(pIoBuffer->m_operType == otInitialize);
 
@@ -946,17 +946,17 @@ namespace FTL
         return TRUE;
     }
 
-    BOOL CFIocpListenTask::AfterReadCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    BOOL CFIocpListenTask::AfterReadCompleted( CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */ )
     {
         throw std::exception("The method or operation is not implemented.");
     }
 
-    BOOL CFIocpListenTask::AfterWriteCompleted( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    BOOL CFIocpListenTask::AfterWriteCompleted( CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */ )
     {
         throw std::exception("The method or operation is not implemented.");
     }
 
-    BOOL CFIocpListenTask::OnUninitialize( CFIocpMgr* pIocpMgr, CFIocpBuffer* pIoBuffer, DWORD dwBytesTransferred )
+    BOOL CFIocpListenTask::OnUninitialize( CFIocpMgr* /*pIocpMgr */, CFIocpBuffer* /*pIoBuffer*/, DWORD /* dwBytesTransferred */ )
     {
         throw std::exception("The method or operation is not implemented.");
     }

@@ -14,6 +14,7 @@ namespace FTL
 	*****************************************************************************************************/
 
 	//网络的读写缓冲基类 -- 参照 CInternetFile::Read/Write 改写而来(原有代码有Bug，进行了更改)
+    //模版实现子类必须实现 ReadReal 和 WriteReal 方法, 从而提供真正的读写函数(本地文件、网络socket等)
 	template <typename T>
 	class CFRWBufferT 
 	{

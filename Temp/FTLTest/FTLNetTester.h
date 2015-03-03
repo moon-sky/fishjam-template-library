@@ -21,6 +21,7 @@ public:
     CPPUNIT_TEST( test_WinSocket );
     CPPUNIT_TEST( test_UrlMonFunctions );
     CPPUNIT_TEST( test_DownloadMethods );
+    CPPUNIT_TEST( test_FireWallInterface );
     CPPUNIT_TEST_SUITE_END();
 
     void dump_allAdaptersInfo();
@@ -33,6 +34,7 @@ public:
 
     void test_UrlMonFunctions();
     void test_DownloadMethods();
+    void test_FireWallInterface();
 
     DECLARE_DEFAULT_TEST_CLASS(CFTLNetTester);
 };

@@ -35,44 +35,41 @@ namespace FTL
         {
             //如果服务路径里面有空格的话一定要将路径用引号引起来(PathQuoteSpaces)
 
-            if (IsServiceInstalled(lpServiceName))
+            if (IsServiceInstalled(lpServiceName)){
                 return TRUE;
+            }
+            BOOL bInstallSuccess = FALSE;
             BOOL bRet = FALSE;
 
             SC_HANDLE hSCM = NULL;
             API_VERIFY(( hSCM= ::OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS))!= NULL);
-            if (hSCM == NULL)
+            if (hSCM != NULL)
             {
-                FTLTRACE(_T("Couldn't open service manager\r\n"));
-                return FALSE;
+                SC_LOCK sclLock = LockServiceDatabase(hSCM); 
+                API_ASSERT(sclLock != NULL);
+                if (NULL != sclLock)
+                {
+                    SC_HANDLE hService = NULL;
+                    API_VERIFY((hService = ::CreateService(
+                        hSCM, lpServiceName, lpServiceName,
+                        SERVICE_ALL_ACCESS, 
+                        SERVICE_WIN32_OWN_PROCESS, //服务类型(TODO:从参数传入更好?)
+                        SERVICE_AUTO_START,// SERVICE_DEMAND_START是手动启动，SERVICE_AUTO_START是自动启动
+                        SERVICE_ERROR_NORMAL,
+                        lpBinaryPathName, NULL, NULL, 
+                        lpDependencies,   //服务的依存关系, 如依存 SQL Server，需要设置为 _T("MSSQLSERVER\0")；
+                        NULL, NULL))!=NULL);
+
+                    if (hService != NULL)
+                    {
+                        bInstallSuccess = TRUE;
+                        API_VERIFY(::CloseServiceHandle(hService));
+                    }
+                    API_VERIFY(UnlockServiceDatabase(sclLock));
+                }
+                API_VERIFY(::CloseServiceHandle(hSCM));
             }
-
-            //SC_LOCK sclLock = LockServiceDatabase(hSCM); 
-            //API_ASSERT(sclLock != NULL);
-
-            SC_HANDLE hService = NULL;
-            API_VERIFY((hService = ::CreateService(
-                hSCM, lpServiceName, lpServiceName,
-                SERVICE_ALL_ACCESS, 
-                SERVICE_WIN32_OWN_PROCESS, //服务类型(TODO:从参数传入更好?)
-                SERVICE_AUTO_START,// SERVICE_DEMAND_START是手动启动，SERVICE_AUTO_START是自动启动
-                SERVICE_ERROR_NORMAL,
-                lpBinaryPathName, NULL, NULL, 
-                lpDependencies,   //服务的依存关系, 如依存 SQL Server，需要设置为 _T("MSSQLSERVER\0")；
-                NULL, NULL))!=NULL);
-
-            if (hService == NULL)
-            {
-                //UnlockServiceDatabase(sclLock);
-                ::CloseServiceHandle(hSCM);
-                FTLTRACE(_T("Couldn't create service"));
-                return FALSE;
-            }
-            //UnlockServiceDatabase(sclLock); 
-
-            API_VERIFY(::CloseServiceHandle(hService));
-            API_VERIFY(::CloseServiceHandle(hSCM));
-            return TRUE;
+            return bInstallSuccess;
         }
 
         BOOL CFService::UninstallService(LPCTSTR lpServiceName)
@@ -88,6 +85,9 @@ namespace FTL
                 FTLTRACE(_T("Couldn't open service manager\r\n"));
                 return FALSE;
             }
+
+            SC_LOCK sclLock = LockServiceDatabase(hSCM); 
+            API_ASSERT(sclLock != NULL);
 
             SC_HANDLE hService =NULL;
             API_VERIFY((hService = ::OpenService(hSCM, lpServiceName, SERVICE_STOP | DELETE)) != NULL);

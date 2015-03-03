@@ -188,7 +188,10 @@
 *     GetProperty/PutProperty -- 获取或设置属性的值
 *     GetPropertyByName/PutPropertyByName -- 根据属性名字来获取或设置属性值
 *     InvokeN -- 提供了多个重载的方法，方便对Invoke的调用
-*   _com_ptr_t -- 使用 _COM_SMARTPTR_TYPEDEF 宏定义的智能指针(IXxxPtr)，使用异常表明错误(_com_error)
+*   _com_ptr_t -- 使用 _COM_SMARTPTR_TYPEDEF 宏定义的智能指针(IXxxPtr)，使用异常表明错误(_com_error),
+*      (TODO? ) 直接使用如下语法就可声明并创建实例: 
+*      #import "hnetcfg.tlb" no_namespace, named_guids
+*      INetFwAuthorizedApplicationPtr pIAuthApp = INetFwAuthorizedApplicationPtr(__uuidof(NetFwAuthorizedApplication));
 *
 * 生存期管理
 *   服务器生存期：锁计数和组件计数

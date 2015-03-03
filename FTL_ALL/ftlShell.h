@@ -37,6 +37,7 @@
 *	SHELLEXECUTEINFO ShExecInfo = {0};
 *   ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
 *   ShExecInfo.fMask = SEE_MASK_IDLIST;
+*      SEE_MASK_NOCLOSEPROCESS <== 控制是否通过 hProcess 返回进程的句柄
 *   ShExecInfo.lpIDList= pidlItemTarget;
 *   ShExecInfo.nShow = SW_MAXIMIZE;
 *   ShellExecuteEx(&ShExecInfo);

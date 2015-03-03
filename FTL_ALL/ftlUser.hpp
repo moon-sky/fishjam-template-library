@@ -330,6 +330,7 @@ namespace FTL
 
     LPCTSTR CFUserUtil::GetAclInfo(CFStringFormater& formater, PACL pAcl)
     {
+        BOOL bRet = FALSE;
         HRESULT hr = E_FAIL;
         DWORD dwRet = ERROR_SUCCESS;
         FTLASSERT(ACL_REVISION == pAcl->AclRevision || ACL_REVISION_DS == pAcl->AclRevision);

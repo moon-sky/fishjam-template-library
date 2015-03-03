@@ -304,7 +304,7 @@ namespace FTL
         DWORD dwResult = ERROR_SUCCESS;
 
         DWORD dwBytesTransferred = 0;
-        ULONG_PTR nCompletionKey = NULL;
+        //ULONG_PTR nCompletionKey = NULL;
         LPOVERLAPPED lpOverlapped = NULL;
         CFIocpBuffer* pFIocpBuffer = NULL;
         CFIocpBaseTask* pIocpTask = NULL;

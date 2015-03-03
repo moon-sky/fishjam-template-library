@@ -1263,7 +1263,9 @@ namespace FTL
     *            或    整个程序链接选项Command中输入 /SAFESEH:NO
     *   LNK4222: exported symbol 'DllCanUnloadNow' should not be assigned an ordinal
     *     解决: DllCanUnloadNow 等函数不能通过序号导出, 删除 .def 中对应的序号即可
-    *
+    * 运行错误:
+    *   64位机器上运行32位的程序时,报告0xc000007b(STATUS_INVALID_IMAGE_FORMAT) -- 
+    * 
     * 函数断点：方式为 ???  -- 
     *   {,,USER32.DLL}_MessageBeep@4 对应 WinDbg中的 bp USER32!MessageBeep
     *   TODO:为什么有的函数设置不起来？而且规则是什么？@4 对应什么 -- 可以通过 dumpbin 查看导出的函数, 来确认是否能设置断点

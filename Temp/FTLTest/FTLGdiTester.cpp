@@ -126,8 +126,8 @@ void CFTLGdiTester::test_AlphaBlend()
     BOOL bRet = FALSE;
     CRect rcDraw( 0, 0, 10, 10);
 
-    const int FILL_RECT_COUNT_X = 255;
-    const int FILL_RECT_COUNT_Y = 255;
+    //const int FILL_RECT_COUNT_X = 255;
+    //const int FILL_RECT_COUNT_Y = 255;
 
     CFCanvas canvasSrc;
     API_VERIFY(canvasSrc.Create(rcDraw.Width(), -rcDraw.Height(), 32, NULL));
@@ -153,7 +153,7 @@ void CFTLGdiTester::test_AlphaBlend()
             pClrSrc->rgbRed = 0xFF;
             pClrSrc->rgbGreen = 100;
             pClrSrc->rgbBlue = 10;
-            pClrSrc->rgbReserved = x >= 8 ? 255 : ( x + 1 ) / 4 * 100;
+            pClrSrc->rgbReserved = (BYTE)(x >= 8 ? 255 : ( x + 1 ) / 4 * 100);
         }
     }
 
