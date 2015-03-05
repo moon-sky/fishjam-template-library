@@ -26,7 +26,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			UseOfMFC="0"
-			UseOfATL="0"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
@@ -114,7 +114,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			UseOfMFC="0"
-			UseOfATL="0"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
@@ -203,7 +203,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			UseOfMFC="0"
-			UseOfATL="0"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>
@@ -292,7 +292,7 @@
 			ConfigurationType="2"
 			InheritedPropertySheets="$(FJSDK)FJSDK.vsprops"
 			UseOfMFC="0"
-			UseOfATL="0"
+			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
 			>

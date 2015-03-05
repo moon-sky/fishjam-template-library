@@ -194,6 +194,7 @@ namespace FTL
 		}
 
     #else //没有定义 FTL_DEBUG 的时候 -- 不进行 GetLastError/SetLastError 的调用
+    # define ERROR_RETURN_VERIFY(x) dwRet = (x); 
     # define API_ASSERT(x)  
     # define API_VERIFY(x)   \
         bRet = (x);

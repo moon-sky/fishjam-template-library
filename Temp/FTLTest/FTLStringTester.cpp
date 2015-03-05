@@ -1,12 +1,9 @@
-#include "StdAfx.h"
+ï»¿#include "StdAfx.h"
 #include "FTLStringTester.h"
 #include <ftlString.h>
 
 void CFTLStringTester::test_IsMachMask()
 {
-    
-
-
     LPCTSTR pszName = TEXT("This is a same string");
     CPPUNIT_ASSERT(FTL::CFStringUtil::IsMatchMask(pszName, TEXT("*")));
     CPPUNIT_ASSERT(FTL::CFStringUtil::IsMatchMask(pszName, TEXT("This is * string")));
@@ -18,29 +15,43 @@ void CFTLStringTester::test_IsMachMask()
 
 void CFTLStringTester::test_UpperLower()
 {
-    //×¢Òâ£º×Ö·û´®º¯Êı²Ù×÷Ê±£¬×îºÃÊ¹ÓÃUnicode°æ±¾£¬·ñÔò¹ú¼Ê»¯Ê±¿ÉÄÜ³öÏÖÎÊÌâ
+    //æ³¨æ„ï¼šå­—ç¬¦ä¸²å‡½æ•°æ“ä½œæ—¶ï¼Œæœ€å¥½ä½¿ç”¨Unicodeç‰ˆæœ¬ï¼Œå¦åˆ™å›½é™…åŒ–æ—¶å¯èƒ½å‡ºç°é—®é¢˜
 
-    TCHAR buf[] = _T("some ÖĞ»ªÈËÃñ¹²ºÍ¹ú INFO");
+    TCHAR buf[] = _T("some ä¸­åäººæ°‘å…±å’Œå›½ INFO");
 
-    //Ê¹ÓÃCRTº¯Êı
+    //ä½¿ç”¨CRTå‡½æ•°
     LPTSTR pUpperResult = _tcsupr(buf);
-    CPPUNIT_ASSERT(StrCmp(pUpperResult, _T("SOME ÖĞ»ªÈËÃñ¹²ºÍ¹ú INFO")) == 0);
+    CPPUNIT_ASSERT(StrCmp(pUpperResult, _T("SOME ä¸­åäººæ°‘å…±å’Œå›½ INFO")) == 0);
 
-    //Ê¹ÓÃÎ¢ÈíAPI
+    //ä½¿ç”¨å¾®è½¯API
     CharLower(buf);
-    CPPUNIT_ASSERT(StrCmp(buf, _T("some ÖĞ»ªÈËÃñ¹²ºÍ¹ú info")) == 0);
+    CPPUNIT_ASSERT(StrCmp(buf, _T("some ä¸­åäººæ°‘å…±å’Œå›½ info")) == 0);
 
-    CharUpperBuff(buf, _countof(buf) - 3); //ÌØÒâ²»×ª»»×îºóµÄ "fo\0" ¹²3¸ö×Ö·ûÀ´²âÊÔ(°üÀ¨×îºóµÄNULL½áÊø·û)
-    CPPUNIT_ASSERT(StrCmp(buf, _T("SOME ÖĞ»ªÈËÃñ¹²ºÍ¹ú INfo")) == 0);
+    CharUpperBuff(buf, _countof(buf) - 3); //ç‰¹æ„ä¸è½¬æ¢æœ€åçš„ "fo\0" å…±3ä¸ªå­—ç¬¦æ¥æµ‹è¯•(åŒ…æ‹¬æœ€åçš„NULLç»“æŸç¬¦)
+    CPPUNIT_ASSERT(StrCmp(buf, _T("SOME ä¸­åäººæ°‘å…±å’Œå›½ INfo")) == 0);
 
-    //Ê¹ÓÃMFCÖĞµÄCString ºÍ ATL ÖĞµÄ CAtlString
+    //ä½¿ç”¨MFCä¸­çš„CString å’Œ ATL ä¸­çš„ CAtlString
     CString strMFC = buf;
     strMFC.MakeLower();
-    CPPUNIT_ASSERT(StrCmp(strMFC, _T("some ÖĞ»ªÈËÃñ¹²ºÍ¹ú info")) == 0);
+    CPPUNIT_ASSERT(StrCmp(strMFC, _T("some ä¸­åäººæ°‘å…±å’Œå›½ info")) == 0);
 
     CAtlString strAtl = buf;
     strAtl.MakeUpper();
-    CPPUNIT_ASSERT(StrCmp(strAtl, _T("SOME ÖĞ»ªÈËÃñ¹²ºÍ¹ú INFO")) == 0);
-
-
+    CPPUNIT_ASSERT(StrCmp(strAtl, _T("SOME ä¸­åäººæ°‘å…±å’Œå›½ INFO")) == 0);
 }
+
+void CFTLStringTester::test_UnicodeHardCodeString()
+{
+    //å­—ç¬¦ä¸²è½¬æ¢æ—¶æ²¡æœ‰æ­£ç¡®è®¾ç½®ç¼–ç é›†(nDriveçš„ä¸€ä¸ªbug) -- é€ æˆæ–‡ä»¶åé”™è¯¯
+    //  TODO: ä¸¤ç§æ–‡å­—çœ‹èµ·æ¥å·®ä¸å¤šï¼Œä¼¼ä¹å’ŒUnicodeç¼–ç ç›¸å…³?
+    //ï¤™ï¤‚ï¤”ï¤•ï¤–ï¤…ï¤—ï¤«ï¤¼ <== \uF919\uF902\uF914\uF915\uF916\uF905\uF917\uF92B\uF93C
+    //é…ªè»Šæ¨‚æ´›çƒ™ä¸²çç‹¼ç¥¿ <== \u916A\u8ECA\u6A02\u6D1B\u70D9\u4E32\u73DE\u72FC\u797F
+
+    //ä¸¤ç§ç¡¬ç¼–ç å­—ç¬¦ä¸²çš„å£°æ˜æ–¹å¼
+    wchar_t pSrc1[] = { L'\uF919', L'\uF902', L'\uF914', L'\uF915', L'\uF916', L'\uF905', L'\uF917', L'\uF92B', L'\uF93C', '\0' }; 
+    wchar_t pSrc2[] = { L"\u916A\u8ECA\u6A02\u6D1B\u70D9\u4E32\u73DE\u72FC\u797F" }; 
+
+    FTLTRACE(TEXT("pSrc1=%s\n"), pSrc1);
+    FTLTRACE(TEXT("pSrc2=%s\n"), pSrc2);
+}
+

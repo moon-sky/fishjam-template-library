@@ -149,7 +149,7 @@ void CFTLNetTester::test_UrlMonFunctions()
     CHAR szUserAgent[4096] = {0};
     DWORD dwSize = _countof(szUserAgent) - 1;
     COM_VERIFY(ObtainUserAgentString(0, szUserAgent, &dwSize));
-    FTLTRACEA("userAgent=%s\n", szUserAgent);
+    //FTLTRACEA("userAgent=%s\n", szUserAgent);
 }
 
 void CFTLNetTester::test_DownloadMethods()

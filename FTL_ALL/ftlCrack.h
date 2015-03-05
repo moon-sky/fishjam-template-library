@@ -391,7 +391,8 @@ namespace FTL
     //http://support.microsoft.com/kb/323809
     //WinVerifyTrust -- 这个API只能简单的验证可执行文件的签名，
     //CryptQueryObject -- 获取可执行文件中详细的验证签名信息(如 时间戳、发行商等)
-
+	//在进行签名信息验证时，1.检测是合法发布商发布的软件; 2.检测发行商等.
+	//  从而避免私造的签名
     class CFCodeSignInfo
     {
     public:
