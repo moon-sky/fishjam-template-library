@@ -34,11 +34,26 @@ DPI-- dots per Inch(每逻辑英寸的点数,打印分辨率使用的单位，LOGPIXELSX/LOGPIXELSY
       较小: LOGPIXELSX /LOGPIXELSY 为96,  ASPECTX/ASPECTY 为36
       中等: LOGPIXELSX /LOGPIXELSY 为120, ASPECTX/ASPECTY 为36  <== 自动比例
       较大: LOGPIXELSX /LOGPIXELSY 为96,  ASPECTX/ASPECTY 为24
+    Win10(DriverVersion=0x4000)
+      较小: Horzsize=339,Vertsize=271,Horzres=1280,Vertres=1024,LogPixelsX=96,LogPixelsY=96,AspectX=36,AspectY=36,AspectXY=51
+            rcClient=(0,0)-(385,298), 385x298, rcToWindow=(38,69)-(423,367), 385x298, rcWindow=(35,43)-(426,370), 391x327, 实测Sheet大小为 694x595
+      中等: Horzsize=339,Vertsize=271,Horzres=1024,Vertres=819,LogPixelsX=96,LogPixelsY=96,AspectX=36,AspectY=36,AspectXY=51,
+            rcClient=(0,0)-(385,298), 385x298, rcToWindow=(38,69)-(423,367), 385x298, rcWindow=(35,43)-(426,370), 391x327, 实测Sheet大小为 868x744
+      较大: Horzsize=339,Vertsize=271,Horzres=853,Vertres=683,LogPixelsX=96,LogPixelsY=96,AspectX=36,AspectY=36,AspectXY=51,
+            rcClient=(0,0)-(385,298), 385x298, rcToWindow=(38,69)-(423,367), 385x298, rcWindow=(35,43)-(426,370), 391x327, 实测Sheet大小为 1041x893
+            
     若调用 SetProcessDPIAware：
       较小: LOGPIXELSX /LOGPIXELSY 为??,  ASPECTX/ASPECTY 为??,
       中等: LOGPIXELSX /LOGPIXELSY 为??,, ASPECTX/ASPECTY 为??, 
       较大: LOGPIXELSX /LOGPIXELSY 为??,,  ASPECTX/ASPECTY 为??,
-
+    Win10(DriverVersion=0x4000)
+      较小:Horzsize=339,Vertsize=271,Horzres=1280,Vertres=1024,LogPixelsX=96,LogPixelsY=96,AspectX=36,AspectY=36,AspectXY=51,
+           rcClient=(0,0)-(385,298), 385x298, rcToWindow=(38,69)-(423,367), 385x298, rcWindow=(35,43)-(426,370), 391x327, 实测Sheet大小为 694x595
+      中等:Horzsize=339,Vertsize=271,Horzres=1280,Vertres=1024,LogPixelsX=120,LogPixelsY=120,AspectX=36,AspectY=36,AspectXY=51,
+           rcClient=(0,0)-(495,350), 495x350, rcToWindow=(48,82)-(543,432), 495x350, rcWindow=(45,50)-(546,435), 501x385, 实测Sheet大小为 890x698
+      较大:Horzsize=339,Vertsize=271,Horzres=1280,Vertres=1024,LogPixelsX=144,LogPixelsY=144,AspectX=36,AspectY=36,AspectXY=51,
+           rcClient=(0,0)-(605,420), 605x420, rcToWindow=(58,97)-(663,517), 605x420, rcWindow=(55,60)-(666,520), 611x460, 实测Sheet大小为 1086x835
+  Win10默认开启了DPI自动适应(?)
 
 PPI -- Pixels Per Inch(每英寸的像素数，图像分辨率所使用的单位)
   TODO: http://hi.baidu.com/kingcham/item/b3653ce0c69756216dabb8cd

@@ -31,6 +31,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
+    afx_msg int OnCreate(LPCREATESTRUCT pCreateStruct);
 	afx_msg void OnDestroy();
 };
 

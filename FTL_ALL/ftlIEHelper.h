@@ -175,7 +175,7 @@
 *     所有的 HTML, ActiveX, Toolbar(界面上似乎是Manager process) 等都是运行在 Content Process 中的
 *     TODO:如果跟访问的站点有关的话，岂不是进程的权限会随时变?
 *
-*   HKCU\SOFTWARE\Microsoft\Internet Explorer\Main\TabProcGrowth  -- REG_SZ, 为 0 表示单进程? 删除(默认)就是多进程
+*   HKCU\SOFTWARE\Microsoft\Internet Explorer\Main\TabProcGrowth  -- REG_SZ, 为 0 表示不生成Tab进程(即单进程模式), 删除(默认)就是多进程
 *     TODO:需要重启IE才能生效?
 * 
 * 相关函数

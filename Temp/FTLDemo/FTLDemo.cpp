@@ -40,6 +40,7 @@ CFTLDemoApp theApp;
 BOOL CFTLDemoApp::InitInstance()
 {
     //FUNCTION_BLOCK_INIT();
+    BOOL bRet = FALSE;
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     {
         //VLDEnable();
@@ -70,7 +71,8 @@ BOOL CFTLDemoApp::InitInstance()
         // 不需要的特定初始化例程
         // 更改用于存储设置的注册表项
         SetRegistryKey(_T("Fishjam"));
-        //FTL::CFGdiUtil::SetProcessDPIAdware();
+        API_VERIFY(FTL::CFGdiUtil::SetProcessDPIAdware());
+        FTLTRACE(TEXT("SetProcessDPIAdware:%d\n"), bRet);
 
 		FTL::CFCrashHandler crashHandler;
         crashHandler.SetDefaultCrashHandlerFilter();

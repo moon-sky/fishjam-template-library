@@ -68,6 +68,7 @@ BOOL CFTLDemoSheet::InitSheet()
 	//this->AddPage(new CThreadPoolPage());
 	//this->AddPage(new CVistaPage());
 	this->AddPage(new CWindowPage());
+
     return bRet;
 }
 
@@ -85,11 +86,30 @@ BOOL CFTLDemoSheet::UninitSheet()
 }
 
 BEGIN_MESSAGE_MAP(CFTLDemoSheet, CPropertySheet)
+    ON_WM_CREATE()
 	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
 // CFTLDemoSheet 消息处理程序
+int CFTLDemoSheet::OnCreate(LPCREATESTRUCT pCreateStruct)
+{
+    BOOL bRet = FALSE;
+    int nRet = CPropertySheet::OnCreate(pCreateStruct);
+
+    CRect rcClient, rcToWindow, rcWindow;
+    API_VERIFY(::GetClientRect(m_hWnd, &rcClient));
+    rcToWindow = rcClient;
+    ClientToScreen(&rcToWindow);
+    API_VERIFY(::GetWindowRect(m_hWnd, &rcWindow));
+    FTLTRACE(TEXT("FTLDemoSheet, rcClient=%s, rcToWindow=%s, rcWindow=%s\n"), 
+        FTL::CFRectDumpInfo(rcClient).GetConvertedInfo(), 
+        FTL::CFRectDumpInfo(rcToWindow).GetConvertedInfo(), 
+        FTL::CFRectDumpInfo(rcWindow).GetConvertedInfo()
+        );
+
+    return nRet;
+}
 
 void CFTLDemoSheet::OnDestroy()
 {
